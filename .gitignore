@@ -10,3 +10,5 @@
 !/docs/
 !/docs/**/*
 !tr.coe
+!/.github/
+!/.github/**/*
