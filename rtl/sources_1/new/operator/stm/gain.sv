@@ -1,0 +1,122 @@
+/*
+ * File: gain.sv
+ * Project: stm
+ * Created Date: 13/04/2022
+ * Author: Shun Suzuki
+ * -----
+ * Last Modified: 20/04/2022
+ * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+ * -----
+ * Copyright (c) 2022 Hapis Lab. All rights reserved.
+ * 
+ */
+
+`timescale 1ns / 1ps
+module stm_gain_operator#(
+           parameter int WIDTH = 13,
+           parameter int DEPTH = 249
+       )(
+           input var CLK,
+           input var RST,
+           input var [15:0] IDX,
+           ss_bus_if.gain_port SS_BUS,
+           output var [WIDTH-1:0] DUTY[0:DEPTH-1],
+           output var [WIDTH-1:0] PHASE[0:DEPTH-1],
+           output var START,
+           output var DONE
+       );
+
+bit [WIDTH-1:0] duty[0:DEPTH-1];
+bit [WIDTH-1:0] phase[0:DEPTH-1];
+bit [WIDTH-1:0] duty_buf[0:DEPTH-1];
+bit [WIDTH-1:0] phase_buf[0:DEPTH-1];
+
+bit [15:0] idx;
+bit [127:0] data_out;
+bit [15:0] idx_old;
+bit start;
+bit done;
+
+bit [9:0] gain_addr_base;
+bit [5:0] gain_addr_offset;
+bit [5:0] set_cnt;
+
+enum bit [2:0] {
+         IDLE,
+         WAIT_0,
+         WAIT_1,
+         SET,
+         BUF
+     } state = IDLE;
+
+for (genvar i = 0; i < DEPTH; i++) begin
+    assign DUTY[i] = duty[i];
+    assign PHASE[i] = phase[i];
+end
+
+assign idx = IDX;
+assign SS_BUS.GAIN_ADDR = {gain_addr_base, gain_addr_offset};
+assign data_out = SS_BUS.DATA_OUT;
+
+assign START = start;
+assign DONE = done;
+
+always_ff @(posedge CLK) begin
+    idx_old <= idx;
+    start <= idx != idx_old;
+end
+
+always_ff @(posedge CLK) begin
+    if (RST) begin
+        duty <= '{DEPTH{0}};
+        phase <= '{DEPTH{0}};
+    end
+    else begin
+        case(state)
+            IDLE: begin
+                if (start) begin
+                    done <= 0;
+                    gain_addr_base <= idx[9:0];
+                    gain_addr_offset <= 0;
+                    state <= WAIT_0;
+                end
+            end
+            WAIT_0: begin
+                gain_addr_offset <= gain_addr_offset + 1;
+                state <= WAIT_1;
+            end
+            WAIT_1: begin
+                gain_addr_offset <= gain_addr_offset + 1;
+                set_cnt <= 0;
+                state <= SET;
+            end
+            SET: begin
+                if (set_cnt < DEPTH[7:2]) begin
+                    phase_buf[{set_cnt, 2'b00}] <= data_out[WIDTH-1:0];
+                    duty_buf[{set_cnt, 2'b00}] <= data_out[WIDTH-1+16:16];
+                    phase_buf[{set_cnt, 2'b00}+1] <= data_out[WIDTH-1+32:32];
+                    duty_buf[{set_cnt, 2'b00}+1] <= data_out[WIDTH-1+48:48];
+                    phase_buf[{set_cnt, 2'b00}+2] <= data_out[WIDTH-1+64:64];
+                    duty_buf[{set_cnt, 2'b00}+2] <= data_out[WIDTH-1+80:80];
+                    phase_buf[{set_cnt, 2'b00}+3] <= data_out[WIDTH-1+96:96];
+                    duty_buf[{set_cnt, 2'b00}+3] <= data_out[WIDTH-1+112:112];
+                    gain_addr_offset <= gain_addr_offset + 1;
+                    set_cnt <= set_cnt + 1;
+                end
+                else begin
+                    phase_buf[{set_cnt, 2'b00}] <= data_out[WIDTH-1:0];
+                    duty_buf[{set_cnt, 2'b00}] <= data_out[WIDTH-1+16:16];
+                    state <= BUF;
+                end
+            end
+            BUF: begin
+                phase <= phase_buf;
+                duty <= duty_buf;
+                done <= 1;
+                state <= IDLE;
+            end
+        endcase
+    end
+end
+
+endmodule

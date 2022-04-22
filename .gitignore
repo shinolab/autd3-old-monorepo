@@ -1,0 +1,12 @@
+*
+!.gitignore
+!/rtl/
+!/rtl/**/*
+
+!README.md
+!LICENSE
+!/*.ps1
+!/*.tcl
+!/docs/
+!/docs/**/*
+!tr.coe
