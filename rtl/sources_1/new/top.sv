@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/04/2022
+ * Last Modified: 23/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -31,15 +31,10 @@ module top(
        );
 
 `include "cvt_uid.vh"
-
-localparam string ENABLE_MODULATOR = "TRUE";
-localparam string ENABLE_SILENCER = "TRUE";
-localparam string ENABLE_STM = "TRUE";
+`include "params.vh"
 
 localparam int WIDTH = 13;
 localparam int TRANS_NUM = 249;
-
-localparam [7:0] VERSION_NUM = 8'h70;
 
 bit clk, clk_l, clk_ctl;
 bit reset;
@@ -49,6 +44,8 @@ bit [63:0] sys_time;
 bit [63:0] ecat_sync_time;
 bit [15:0] ecat_sync_cycle_ticks;
 bit sync_set;
+
+bit [1:0] load_mode;
 
 bit op_mode;
 bit [WIDTH-1:0] duty_normal[0:TRANS_NUM-1];
@@ -132,11 +129,7 @@ wdt wdt(
 
 controller#(
               .WIDTH(WIDTH),
-              .DEPTH(TRANS_NUM),
-              .VERSION_NUM(VERSION_NUM),
-              .ENABLE_MODULATOR(ENABLE_MODULATOR),
-              .ENABLE_STM(ENABLE_STM),
-              .ENABLE_SILENCER(ENABLE_SILENCER)
+              .DEPTH(TRANS_NUM)
           ) controller (
               .CLK(clk_l),
               .THERMO(THERMO),
@@ -155,6 +148,7 @@ controller#(
               .FREQ_DIV_STM(freq_div_stm),
               .SOUND_SPEED(sound_speed),
               .CYCLE(cycle),
+              .LOAD_MODE(load_mode),
               .WDT_RST(wdt_rst)
           );
 
@@ -165,6 +159,8 @@ normal_operator#(
                    .CLK(clk_l),
                    .RST(wst_assert),
                    .CPU_BUS(cpu_bus.normal_port),
+                   .CYCLE(cycle),
+                   .LOAD_MODE(load_mode),
                    .DUTY(duty_normal),
                    .PHASE(phase_normal)
                );
@@ -177,6 +173,7 @@ if (ENABLE_STM == "TRUE") begin
                     .CLK(clk_l),
                     .RST(wst_assert),
                     .SYS_TIME(sys_time),
+                    .LOAD_MODE(load_mode),
                     .ULTRASOUND_CYCLE(cycle),
                     .CYCLE(cycle_stm),
                     .FREQ_DIV(freq_div_stm),

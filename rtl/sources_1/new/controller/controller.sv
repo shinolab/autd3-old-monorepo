@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/04/2022
+ * Last Modified: 23/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -14,11 +14,7 @@
 `timescale 1ns / 1ps
 module controller#(
            parameter int WIDTH = 13,
-           parameter int DEPTH = 249,
-           parameter bit [7:0] VERSION_NUM = 8'h80,
-           parameter string ENABLE_STM = "TRUE",
-           parameter string ENABLE_MODULATOR = "TRUE",
-           parameter string ENABLE_SILENCER = "TRUE"
+           parameter int DEPTH = 249
        )(
            input var CLK,
            input var THERMO,
@@ -37,41 +33,11 @@ module controller#(
            output var [31:0] FREQ_DIV_STM,
            output var [31:0] SOUND_SPEED,
            output var [WIDTH-1:0] CYCLE[0:DEPTH-1],
+           output var [1:0] LOAD_MODE,
            output var WDT_RST
        );
 
-localparam bit [8:0] ADDR_CTL_REG             = 9'h000;
-localparam bit [8:0] ADDR_FPGA_INFO           = 9'h001;
-localparam bit [8:0] ADDR_EC_SYNC_CYCLE_TICKS = 9'h010;
-localparam bit [8:0] ADDR_EC_SYNC_TIME_0      = ADDR_EC_SYNC_CYCLE_TICKS + 1;
-localparam bit [8:0] ADDR_EC_SYNC_TIME_1      = ADDR_EC_SYNC_CYCLE_TICKS + 2;
-localparam bit [8:0] ADDR_EC_SYNC_TIME_2      = ADDR_EC_SYNC_CYCLE_TICKS + 3;
-localparam bit [8:0] ADDR_EC_SYNC_TIME_3      = ADDR_EC_SYNC_CYCLE_TICKS + 4;
-localparam bit [8:0] ADDR_MOD_ADDR_OFFSET     = 9'h020;
-localparam bit [8:0] ADDR_MOD_CYCLE           = 9'h021;
-localparam bit [8:0] ADDR_MOD_FREQ_DIV_0      = 9'h022;
-localparam bit [8:0] ADDR_MOD_FREQ_DIV_1      = 9'h023;
-localparam bit [8:0] ADDR_VERSION_NUM         = 9'h03F; // For backward compatibility
-localparam bit [8:0] ADDR_SILENT_CYCLE        = 9'h040;
-localparam bit [8:0] ADDR_SILENT_STEP         = 9'h041;
-localparam bit [8:0] ADDR_STM_ADDR_OFFSET     = 9'h050;
-localparam bit [8:0] ADDR_STM_CYCLE           = 9'h051;
-localparam bit [8:0] ADDR_STM_FREQ_DIV_0      = 9'h052;
-localparam bit [8:0] ADDR_STM_FREQ_DIV_1      = 9'h053;
-localparam bit [8:0] ADDR_SOUND_SPEED_0       = 9'h054;
-localparam bit [8:0] ADDR_SOUND_SPEED_1       = 9'h055;
-localparam bit [8:0] ADDR_CYCLE_BASE          = 9'h100;
-
-localparam int CTL_REG_FORCE_FAN_BIT     = 4;
-localparam int CTL_REG_OP_MODE_BIT       = 5;
-localparam int CTL_REG_STM_GAIN_MODE_BIT = 6;
-localparam int CTL_REG_SYNC_BIT          = 14;
-localparam int CTL_REG_WDT_RST_BIT       = 15;
-
-localparam bit [7:0] ENABLED_STM_BIT = ENABLE_STM == "TRUE" ? 8'h01 : 8'h00;
-localparam bit [7:0] ENABLED_MODULATOR_BIT = ENABLE_MODULATOR == "TRUE" ? 8'h02 : 8'h00;
-localparam bit [7:0] ENABLED_SILENCER_BIT = ENABLE_SILENCER == "TRUE" ? 8'h04 : 8'h00;
-localparam bit [7:0] ENABLED_FEATURES_BITS = ENABLED_STM_BIT | ENABLED_MODULATOR_BIT | ENABLED_SILENCER_BIT;
+`include "params.vh"
 
 bit bus_clk;
 bit ctl_ena;
@@ -107,6 +73,7 @@ assign ctl_addr = CPU_BUS.BRAM_ADDR[8:0];
 assign cpu_data_in = CPU_BUS.DATA_IN;
 assign CPU_BUS.DATA_OUT = cpu_data_out;
 
+assign LOAD_MODE = ctl_reg[CTL_REG_LOAD_MODE_BITS_HIGH:CTL_REG_LOAD_MODE_BITS_LOW];
 assign FORCE_FAN = ctl_reg[CTL_REG_FORCE_FAN_BIT];
 assign OP_MODE = ctl_reg[CTL_REG_OP_MODE_BIT];
 assign STM_GAIN_MODE = ctl_reg[CTL_REG_STM_GAIN_MODE_BIT];
