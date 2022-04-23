@@ -86,7 +86,7 @@ always_ff @(posedge CLK) begin
     case(LOAD_MODE)
         LOAD_LEGACY: begin
             phase_buf[set_addr] <= {dout[7:0], 5'h00};
-            duty_buf[set_addr] <= {dout[15:8], 5'h1F} + 1;
+            duty_buf[set_addr] <= {2'b00, dout[15:8], 3'h7} + 1;
         end
         LOAD_RAW: begin
             phase_buf[set_addr] <= dout[WIDTH-1:0];

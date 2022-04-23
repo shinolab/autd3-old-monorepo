@@ -99,13 +99,13 @@ always_ff @(posedge CLK) begin
                     case(LOAD_MODE)
                         LOAD_LEGACY: begin
                             phase_buf[{set_cnt, 2'b00}] <= {data_out[7:0], 5'h00};
-                            duty_buf[{set_cnt, 2'b00}] <= {data_out[15:8], 5'h1F} + 1;
+                            duty_buf[{set_cnt, 2'b00}] <= {2'b00, data_out[15:8], 3'h7} + 1;
                             phase_buf[{set_cnt, 2'b00}+1] <= {data_out[39:32], 5'h00};
-                            duty_buf[{set_cnt, 2'b00}+1] <= {data_out[47:40], 5'h1F} + 1;
+                            duty_buf[{set_cnt, 2'b00}+1] <= {2'b00, data_out[47:40], 3'h7} + 1;
                             phase_buf[{set_cnt, 2'b00}+2] <= {data_out[71:64], 5'h00};
-                            duty_buf[{set_cnt, 2'b00}+2] <= {data_out[79:72], 5'h1F} + 1;
+                            duty_buf[{set_cnt, 2'b00}+2] <= {2'b00, data_out[79:72], 3'h7} + 1;
                             phase_buf[{set_cnt, 2'b00}+3] <= {data_out[103:96], 5'h00};
-                            duty_buf[{set_cnt, 2'b00}+3] <= {data_out[111:104], 5'h1F} + 1;
+                            duty_buf[{set_cnt, 2'b00}+3] <= {2'b00, data_out[111:104], 3'h7} + 1;
                         end
                         LOAD_RAW: begin
                             phase_buf[{set_cnt, 2'b00}] <= data_out[WIDTH-1:0];
@@ -135,7 +135,7 @@ always_ff @(posedge CLK) begin
                     case(LOAD_MODE)
                         LOAD_LEGACY: begin
                             phase_buf[{set_cnt, 2'b00}] <= {data_out[7:0], 5'h00};
-                            duty_buf[{set_cnt, 2'b00}] <= {data_out[15:8], 5'h1F} + 1;
+                            duty_buf[{set_cnt, 2'b00}] <= {2'b00, data_out[15:8], 3'h7} + 1;
                         end
                         LOAD_RAW: begin
                             phase_buf[{set_cnt, 2'b00}] <= data_out[WIDTH-1:0];
