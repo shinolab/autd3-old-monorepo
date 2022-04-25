@@ -6,6 +6,10 @@ Version: 2.0
 
 Some codes has omitted because they contain proprietary parts.
 
+# Document
+
+* [日本語/Japanese](https://shinolab.github.io/autd3-fpga/)
+
 # LICENSE
 
 See [LICENSE](./LICENSE).
