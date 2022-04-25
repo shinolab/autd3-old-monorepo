@@ -3,7 +3,7 @@
 // Created Date: 22/04/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/04/2022
+// Last Modified: 25/04/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -39,6 +39,7 @@
 #define BRAM_ADDR_SOUND_SPEED_1 (0x055);
 #define BRAM_ADDR_CYCLE_BASE (0x100);
 
+#define CTL_REG_LEGACY_MODE_BIT (0);
 #define CTL_REG_FORCE_FAN_BIT (4);
 #define CTL_REG_OP_MODE_BIT (5);
 #define CTL_REG_STM_GAIN_MODE_BIT (6);
