@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/04/2022
+ * Last Modified: 24/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -33,7 +33,7 @@ module controller#(
            output var [31:0] FREQ_DIV_STM,
            output var [31:0] SOUND_SPEED,
            output var [WIDTH-1:0] CYCLE[0:DEPTH-1],
-           output var [1:0] LOAD_MODE,
+           output var LEGACY_MODE,
            output var WDT_RST
        );
 
@@ -73,7 +73,7 @@ assign ctl_addr = CPU_BUS.BRAM_ADDR[8:0];
 assign cpu_data_in = CPU_BUS.DATA_IN;
 assign CPU_BUS.DATA_OUT = cpu_data_out;
 
-assign LOAD_MODE = ctl_reg[CTL_REG_LOAD_MODE_BITS_HIGH:CTL_REG_LOAD_MODE_BITS_LOW];
+assign LEGACY_MODE = ctl_reg[CTL_REG_LEGACY_MODE_BIT];
 assign FORCE_FAN = ctl_reg[CTL_REG_FORCE_FAN_BIT];
 assign OP_MODE = ctl_reg[CTL_REG_OP_MODE_BIT];
 assign STM_GAIN_MODE = ctl_reg[CTL_REG_STM_GAIN_MODE_BIT];

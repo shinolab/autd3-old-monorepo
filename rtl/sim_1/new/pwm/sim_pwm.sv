@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/04/2022
+ * Last Modified: 25/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -123,16 +123,16 @@ initial begin
     phase = '{DEPTH{0}};
     @(posedge locked);
 
-    set(0, CYCLE, CYCLE/2);
-    set(0, 1000, CYCLE/2);
-    set(0, 0, 0);
+    // set(0, CYCLE, CYCLE/2);
+    // set(0, 1000, CYCLE/2);
+    // set(0, 0, 0);
 
     // at random
     for(int i = 0; i < 100; i++) begin
         set_and_check_random();
     end
 
-    $display("OK!");
+    $display("OK! sim_pwm");
     $finish();
 end
 

@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/04/2022
+ * Last Modified: 24/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -45,7 +45,7 @@ bit [63:0] ecat_sync_time;
 bit [15:0] ecat_sync_cycle_ticks;
 bit sync_set;
 
-bit [1:0] load_mode;
+bit legacy_mode;
 
 bit op_mode;
 bit [WIDTH-1:0] duty_normal[0:TRANS_NUM-1];
@@ -148,7 +148,7 @@ controller#(
               .FREQ_DIV_STM(freq_div_stm),
               .SOUND_SPEED(sound_speed),
               .CYCLE(cycle),
-              .LOAD_MODE(load_mode),
+              .LEGACY_MODE(legacy_mode),
               .WDT_RST(wdt_rst)
           );
 
@@ -160,7 +160,7 @@ normal_operator#(
                    .RST(wst_assert),
                    .CPU_BUS(cpu_bus.normal_port),
                    .CYCLE(cycle),
-                   .LOAD_MODE(load_mode),
+                   .LEGACY_MODE(legacy_mode),
                    .DUTY(duty_normal),
                    .PHASE(phase_normal)
                );
@@ -173,7 +173,7 @@ if (ENABLE_STM == "TRUE") begin
                     .CLK(clk_l),
                     .RST(wst_assert),
                     .SYS_TIME(sys_time),
-                    .LOAD_MODE(load_mode),
+                    .LEGACY_MODE(legacy_mode),
                     .ULTRASOUND_CYCLE(cycle),
                     .CYCLE(cycle_stm),
                     .FREQ_DIV(freq_div_stm),
@@ -241,7 +241,6 @@ pwm #(
     ) pwm (
         .CLK(clk),
         .CLK_L(clk_l),
-        .SET(sync_set),
         .SYS_TIME(sys_time),
         .CYCLE(cycle),
         .DUTY(duty_s),

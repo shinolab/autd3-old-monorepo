@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/04/2022
+ * Last Modified: 24/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -44,8 +44,7 @@ localparam bit [13:0] ADDR_SOUND_SPEED_0       = 14'h054;
 localparam bit [13:0] ADDR_SOUND_SPEED_1       = 14'h055;
 localparam bit [13:0] ADDR_CYCLE_BASE          = 14'h100;
 
-localparam int CTL_REG_LOAD_MODE_BITS_LOW  = 0;
-localparam int CTL_REG_LOAD_MODE_BITS_HIGH = 1;
+localparam int CTL_REG_LEGACY_MODE_BIT     = 0;
 localparam int CTL_REG_FORCE_FAN_BIT       = 4;
 localparam int CTL_REG_OP_MODE_BIT         = 5;
 localparam int CTL_REG_STM_GAIN_MODE_BIT   = 6;
@@ -56,7 +55,3 @@ localparam bit [7:0] ENABLED_STM_BIT = ENABLE_STM == "TRUE" ? 8'h01 : 8'h00;
 localparam bit [7:0] ENABLED_MODULATOR_BIT = ENABLE_MODULATOR == "TRUE" ? 8'h02 : 8'h00;
 localparam bit [7:0] ENABLED_SILENCER_BIT = ENABLE_SILENCER == "TRUE" ? 8'h04 : 8'h00;
 localparam bit [7:0] ENABLED_FEATURES_BITS = ENABLED_STM_BIT | ENABLED_MODULATOR_BIT | ENABLED_SILENCER_BIT;
-
-localparam bit [CTL_REG_LOAD_MODE_BITS_HIGH:CTL_REG_LOAD_MODE_BITS_LOW] LOAD_LEGACY = 2'b00;
-localparam bit [CTL_REG_LOAD_MODE_BITS_HIGH:CTL_REG_LOAD_MODE_BITS_LOW] LOAD_RAW = 2'b01;
-localparam bit [CTL_REG_LOAD_MODE_BITS_HIGH:CTL_REG_LOAD_MODE_BITS_LOW] LOAD_DUTY_SHIFT_RAW_PHASE = 2'b11;

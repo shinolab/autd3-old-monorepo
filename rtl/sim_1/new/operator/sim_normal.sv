@@ -4,7 +4,7 @@
  * Created Date: 12/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/04/2022
+ * Last Modified: 24/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -33,7 +33,7 @@ sim_helper_random sim_helper_random();
 
 bit rst;
 bit [WIDTH-1:0] cycle[0:DEPTH-1];
-bit [1:0] load_mode;
+bit legacy_mode;
 
 bit [WIDTH-1:0] duty_buf[0:DEPTH-1];
 bit [WIDTH-1:0] phase_buf[0:DEPTH-1];
@@ -48,18 +48,18 @@ normal_operator#(
                    .RST(rst),
                    .CPU_BUS(sim_helper_bram.cpu_bus.normal_port),
                    .CYCLE(cycle),
-                   .LOAD_MODE(load_mode),
+                   .LEGACY_MODE(legacy_mode),
                    .DUTY(duty),
                    .PHASE(phase)
                );
 
 initial begin
     rst = 0;
-    load_mode = LOAD_RAW;
+    legacy_mode = 0;
 
     sim_helper_random.init();
     for (int i = 0; i < DEPTH; i++) begin
-        if (load_mode == LOAD_LEGACY) begin
+        if (legacy_mode) begin
             cycle[i] = 4096;
         end
         else begin
@@ -70,23 +70,16 @@ initial begin
     @(posedge locked);
 
     for (int i = 0; i < DEPTH; i++) begin
-        case(load_mode)
-            LOAD_LEGACY: begin
-                duty_buf[i] = sim_helper_random.range(8'hFF, 0);
-                phase_buf[i] = sim_helper_random.range(8'hFF, 0);
-                sim_helper_bram.write_duty_phase(i, 0, {duty_buf[i][7:0], phase_buf[i][7:0]});
-            end
-            LOAD_RAW: begin
-                duty_buf[i] = sim_helper_random.range(cycle[i], 0);
-                phase_buf[i] = sim_helper_random.range(cycle[i], 0);
-                sim_helper_bram.write_duty_phase(i, duty_buf[i], phase_buf[i]);
-            end
-            LOAD_DUTY_SHIFT_RAW_PHASE: begin
-                duty_buf[i] = sim_helper_random.range(15, 0);
-                phase_buf[i] = sim_helper_random.range(cycle[i], 0);
-                sim_helper_bram.write_duty_phase(i, duty_buf[i], phase_buf[i]);
-            end
-        endcase
+        if (legacy_mode)  begin
+            duty_buf[i] = sim_helper_random.range(8'hFF, 0);
+            phase_buf[i] = sim_helper_random.range(8'hFF, 0);
+            sim_helper_bram.write_duty_phase(i, 0, {duty_buf[i][7:0], phase_buf[i][7:0]});
+        end
+        else begin
+            duty_buf[i] = sim_helper_random.range(cycle[i], 0);
+            phase_buf[i] = sim_helper_random.range(cycle[i], 0);
+            sim_helper_bram.write_duty_phase(i, duty_buf[i], phase_buf[i]);
+        end
     end
 
     for (int i = 0; i < DEPTH * 2; i++) begin
@@ -94,38 +87,26 @@ initial begin
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-        case(load_mode)
-            LOAD_LEGACY: begin
-                if (({duty_buf[i], 3'h7}+1) != duty[i]) begin
-                    $display("failed at duty[%d], %d!=%d", i, duty_buf[i], duty[i]);
-                    $finish();
-                end
-                if ({phase_buf[i], 5'h00} != phase[i]) begin
-                    $display("failed at phase[%d], %d!=%d", i, {phase_buf[i], 5'h00}, phase[i]);
-                    $finish();
-                end
+        if (legacy_mode) begin
+            if (({duty_buf[i], 3'h7}+1) != duty[i]) begin
+                $display("failed at duty[%d], %d!=%d", i, duty_buf[i], duty[i]);
+                $finish();
             end
-            LOAD_RAW: begin
-                if (duty_buf[i] != duty[i]) begin
-                    $display("failed at duty[%d], %d!=%d", i, duty_buf[i], duty[i]);
-                    $finish();
-                end
-                if (phase_buf[i] != phase[i]) begin
-                    $display("failed at phase[%d], %d!=%d", i, phase_buf[i], phase[i]);
-                    $finish();
-                end
+            if ({phase_buf[i], 5'h00} != phase[i]) begin
+                $display("failed at phase[%d], %d!=%d", i, {phase_buf[i], 5'h00}, phase[i]);
+                $finish();
             end
-            LOAD_DUTY_SHIFT_RAW_PHASE: begin
-                if ((cycle[i] >> (duty_buf[i] + 1)) != duty[i]) begin
-                    $display("failed at duty[%d], %d!=%d", i, cycle[i] >> (duty_buf[i] + 1), duty[i]);
-                    $finish();
-                end
-                if (phase_buf[i] != phase[i]) begin
-                    $display("failed at phase[%d], %d!=%d", i, phase_buf[i], phase[i]);
-                    $finish();
-                end
+        end
+        else begin
+            if (duty_buf[i] != duty[i]) begin
+                $display("failed at duty[%d], %d!=%d", i, duty_buf[i], duty[i]);
+                $finish();
             end
-        endcase
+            if (phase_buf[i] != phase[i]) begin
+                $display("failed at phase[%d], %d!=%d", i, phase_buf[i], phase[i]);
+                $finish();
+            end
+        end
     end
 
     rst = 1;
