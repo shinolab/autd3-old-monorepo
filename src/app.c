@@ -362,7 +362,7 @@ static void clear(void) {
   _mod_buf_write_end = false;
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE, max(1, _mod_cycle) - 1);
   bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_0, (uint16_t*)&freq_div_40k, sizeof(uint32_t) >> 1);
-  bram_write(BRAM_SELECT_MOD, 0, 0xFFFF);
+  bram_write(BRAM_SELECT_MOD, 0, 0x0000);
 
   bram_set(BRAM_SELECT_NORMAL, 0, 0x0000, TRANS_NUM << 1);
 }
