@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/04/2022
+ * Last Modified: 26/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -64,7 +64,8 @@ typedef enum {
   STM_END = 1 << 3,
   IS_DUTY = 1 << 4,
   CONFIG_SILENCER = 1 << 5,
-  READS_FPGA_INFO = 1 << 6
+  READS_FPGA_INFO = 1 << 6,
+  DO_SYNC = 1 << 7
 } CPUControlFlags;
 
 typedef struct {
@@ -414,11 +415,12 @@ void recv_ethercat(void) {
       _ack = (_ack & 0xFF00) | ((get_fpga_version() >> 8) & 0xFF);
       break;
     default:
+      if ((header->cpu_ctl_reg & DO_SYNC) != 0) {
+        synchronize(header, body);
+        break;
+      }
       if ((header->cpu_ctl_reg & CONFIG_SILENCER) != 0) {
         config_silencer(header);
-        break;
-      } else if ((header->fpga_ctl_reg & SYNC) != 0) {
-        synchronize(header, body);
         break;
       }
       _ctl_reg = header->fpga_ctl_reg;
@@ -428,12 +430,13 @@ void recv_ethercat(void) {
 
       if ((_ctl_reg & OP_MODE) == 0) {
         write_normal_op(header, body);
-      } else {
-        if ((_ctl_reg & STM_GAIN_MODE) == 0)
-          write_point_stm(header, body);
-        else
-          write_gain_stm(header, body);
+        break;
       }
+
+      if ((_ctl_reg & STM_GAIN_MODE) == 0)
+        write_point_stm(header, body);
+      else
+        write_gain_stm(header, body);
       break;
   }
   _sTx.ack = _ack;
