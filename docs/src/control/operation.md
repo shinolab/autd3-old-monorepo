@@ -99,4 +99,15 @@ STM動作時のデータはBodyに書き込む.
 
 ### Point STM (STM_GAIN_MODE = 0)
 
+Point STMの場合も, Modulatorと同じく, いくつかのフレームに分けてデータを送信する.
+最初のフレームではCPU_CTL_REGのSTM_BEGIN bitをセットする.
+また, Bodyの先頭$\SI{2}{byte}$に点列数を, 続く$\SI{4}{byte}$にサンプリング周波数分周比を, さらに続く$\SI{4}{byte}$に音速を書き込み, 残りの$\SI{488}{byte}$に点列データを書き込む.
+点列データがすべて含まれている場合はCPU_CTL_REGのSTM_END bitをセットし, 終了する.
+そうでない場合は, MSG_IDを別の値に設定し, Bodyの上位$\SI{2}{byte}$に点列データのサイズを書き込み, 続く$\SI{496}{byte}$に点列データを書き込む, というのを繰り返す.
+変調データをすべて送信した場合はCPU_CTL_REGのSTM_END bitをセットする.
+
 ### Gain STM (STM_GAIN_MODE = 1)
+
+Gain STMの場合は, 最初のフレームのCPU_CTL_REGのSTM_BEGIN bitをセットし, Bodyの先頭$\SI{4}{byte}$にサンプリング周波数分周比を書き込む. 残りは使用しない.
+その後, 1パターンずつ, Normal動作と同様のデータをBodyに書き込み送信する.
+最終フレームではCPU_CTL_REGのSTM_END bitをセットする.
