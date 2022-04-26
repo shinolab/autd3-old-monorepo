@@ -32,10 +32,9 @@
 #define GAIN_STM_BUF_SEGMENT_SIZE_MASK (GAIN_STM_BUF_SEGMENT_SIZE - 1)
 
 #define MSG_CLEAR (0x00)
-#define MSG_RD_CPU_V_LSB (0x01)
-#define MSG_RD_CPU_V_MSB (0x02)
-#define MSG_RD_FPGA_V_LSB (0x03)
-#define MSG_RD_FPGA_V_MSB (0x04)
+#define MSG_RD_CPU_VERSION (0x01)
+#define MSG_RD_FPGA_VERSION (0x03)
+#define MSG_RD_FPGA_FUNCTION (0x04)
 
 extern RX_STR0 _sRx0;
 extern RX_STR1 _sRx1;
@@ -402,16 +401,13 @@ void recv_ethercat(void) {
     case MSG_CLEAR:
       clear();
       break;
-    case MSG_RD_CPU_V_LSB:
+    case MSG_RD_CPU_VERSION:
       _ack = (_ack & 0xFF00) | (get_cpu_version() & 0xFF);
       break;
-    case MSG_RD_CPU_V_MSB:
-      _ack = (_ack & 0xFF00) | ((get_cpu_version() >> 8) & 0xFF);
-      break;
-    case MSG_RD_FPGA_V_LSB:
+    case MSG_RD_FPGA_VERSION:
       _ack = (_ack & 0xFF00) | (get_fpga_version() & 0xFF);
       break;
-    case MSG_RD_FPGA_V_MSB:
+    case MSG_RD_FPGA_FUNCTION:
       _ack = (_ack & 0xFF00) | ((get_fpga_version() >> 8) & 0xFF);
       break;
     default:

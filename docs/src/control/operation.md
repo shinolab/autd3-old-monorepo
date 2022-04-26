@@ -111,3 +111,51 @@ Point STMの場合も, Modulatorと同じく, いくつかのフレームに分�
 Gain STMの場合は, 最初のフレームのCPU_CTL_REGのSTM_BEGIN bitをセットし, Bodyの先頭$\SI{4}{byte}$にサンプリング周波数分周比を書き込む. 残りは使用しない.
 その後, 1パターンずつ, Normal動作と同様のデータをBodyに書き込み送信する.
 最終フレームではCPU_CTL_REGのSTM_END bitをセットする.
+
+## Version情報の取得
+
+Version情報を取得するには, MSG_IDを特定の値にしたフレームを送信すれば良い.
+
+- 0x01: CPU version number
+- 0x03: FPGA version number
+- 0x04: FPGA function bits
+
+Version情報が取得された後, Ackの上位$\SI{8}{bit}$に上記MSG_IDが, 下位$\SI{8}{bit}$にVersion情報が書き込まれたフレームが返送される.
+
+### Version number
+
+| Version number | Version        | 
+|----------------|----------------| 
+| 0x00 (0)       | v0.3 or former | 
+| 0x01 (1)       | v0.4           | 
+| 0x02 (2)       | v0.5           | 
+| 0x03 (3)       | v0.6           | 
+| 0x04 (4)       | v0.7           | 
+| 0x05 (5)       | v0.8           | 
+| 0x06 (6)       | v0.9           | 
+| 0x0A (10)      | v1.0           | 
+| 0x0B (11)      | v1.1           | 
+| 0x0C (12)      | v1.2           | 
+| 0x0D (13)      | v1.3           | 
+| 0x10 (16)      | v1.6           | 
+| 0x11 (17)      | v1.7           | 
+| 0x12 (18)      | v1.8           | 
+| 0x13 (19)      | v1.9           | 
+| 0x14 (20)      | v1.10          | 
+| 0x15 (21)      | v1.11          | 
+| 0x80 (128)     | v2.0           |
+
+### Function bit
+
+Function bitは各機能が有効になっているかを表す.
+
+| Bit | Function  | 
+|-----|-----------| 
+| 0   | STM       | 
+| 1   | Modulator | 
+| 2   | Silencer  | 
+| 3   | -         | 
+| 4   | -         | 
+| 5   | -         | 
+| 6   | -         | 
+| 7   | -         | 
