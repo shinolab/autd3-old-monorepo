@@ -1,4 +1,8 @@
-# Summary
+# Document organization
+
+本文章の目的は, AUTD3に搭載されているCPUのFirmwareの仕様を記述することである.
+
+本文章の構成は以下の通りである.
 
 - [Document organization](./organization.md)
 - [Document history](./document_history.md)
@@ -15,3 +19,8 @@
     - [FAQ](./appendix/faq.md)
     - [License](./appendix/license.md)
     - [Contribution](./appendix/contribution.md)
+
+## Author Information
+
+* Name: 鈴木 颯
+* email: suzuki\[at\]hapis.k.u-tokyo.ac.jp
