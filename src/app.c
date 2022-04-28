@@ -368,10 +368,9 @@ void init_app(void) { clear(); }
 
 void update(void) {
   switch (_msg_id) {
-    case MSG_RD_CPU_V_LSB:
-    case MSG_RD_CPU_V_MSB:
-    case MSG_RD_FPGA_V_LSB:
-    case MSG_RD_FPGA_V_MSB:
+    case MSG_RD_CPU_VERSION:
+    case MSG_RD_FPGA_VERSION:
+    case MSG_RD_FPGA_FUNCTION:
       break;
     default:
       if (_read_fpga_info) _ack = (_ack & 0xFF00) | read_fpga_info();
