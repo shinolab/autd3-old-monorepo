@@ -3,7 +3,7 @@
 // Created Date: 22/04/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/04/2022
+// Last Modified: 28/04/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -43,7 +43,6 @@
 #define CTL_REG_FORCE_FAN_BIT (4)
 #define CTL_REG_OP_MODE_BIT (5)
 #define CTL_REG_STM_GAIN_MODE_BIT (6)
-#define CTL_REG_SYNC_BIT (14)
-#define CTL_REG_WDT_RST_BIT (15)
+#define CTL_REG_SYNC_BIT (8)
 
 #endif  // INC_PARAMS_H_

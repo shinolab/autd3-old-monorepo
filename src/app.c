@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/04/2022
+ * Last Modified: 28/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -52,8 +52,7 @@ typedef enum {
   FORCE_FAN = 1 << CTL_REG_FORCE_FAN_BIT,
   OP_MODE = 1 << CTL_REG_OP_MODE_BIT,
   STM_GAIN_MODE = 1 << CTL_REG_STM_GAIN_MODE_BIT,
-  SYNC = 1 << CTL_REG_SYNC_BIT,
-  WDT_RST = 1 << CTL_REG_WDT_RST_BIT,
+  SYNC = 1 << CTL_REG_SYNC_BIT
 } FPGAControlFlags;
 
 typedef enum {
@@ -143,11 +142,6 @@ void synchronize(GlobalHeader* header, Body* body) {
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_EC_SYNC_CYCLE_TICKS, ecat_sync_cycle_ticks);
   bram_cpy_volatile(BRAM_SELECT_CONTROLLER, BRAM_ADDR_EC_SYNC_TIME_0, (volatile uint16_t*)&next_sync0, sizeof(uint64_t) >> 1);
 
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, _ctl_reg);
-}
-
-void rst_wdt() {
-  _ctl_reg ^= WDT_RST;
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, _ctl_reg);
 }
 
@@ -387,8 +381,6 @@ void update(void) {
 }
 
 void recv_ethercat(void) {
-  rst_wdt();
-
   GlobalHeader* header = (GlobalHeader*)(_sRx1.data);
   Body* body = (Body*)(_sRx0.data);
   if (header->msg_id == _msg_id) return;
