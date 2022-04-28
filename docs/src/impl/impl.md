@@ -11,6 +11,4 @@ Normal/STM Operatorから出力されたDuty比/位相データがMuxによっ�
 
 以上のモジュールはSynchronizerから生成された同期時刻を参照し, タイミングを制御する.
 
-また, WDTモジュールはEtherCATの動作を監視し, 動作が止まった際にPWMの出力を止める.
-
 以上すべての設定や制御をControllerモジュールが担当する.

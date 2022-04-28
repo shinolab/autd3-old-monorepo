@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e" compressed="false">
     <diagram id="86R6ZRfhnQo9sD8B5-7s" name="Page-1">
-        <mxGraphModel dx="433" dy="784" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="#161923" math="0" shadow="0">
+        <mxGraphModel dx="2526" dy="784" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="#161923" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -196,18 +196,6 @@
                 </mxCell>
                 <mxCell id="52" value="&lt;i style=&quot;font-size: 14px;&quot;&gt;DONE&lt;/i&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;labelBackgroundColor=none;fontSize=14;fontColor=#BCBDD0;" parent="1" vertex="1">
                     <mxGeometry x="880" y="900" width="50" height="40" as="geometry"/>
-                </mxCell>
-                <mxCell id="56" value="&lt;i style=&quot;font-size: 14px&quot;&gt;RST&lt;/i&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;labelBackgroundColor=none;fontSize=14;fontColor=#BCBDD0;" vertex="1" parent="1">
-                    <mxGeometry x="290" y="690" width="39" height="40" as="geometry"/>
-                </mxCell>
-                <mxCell id="57" value="" style="endArrow=classic;html=1;rounded=0;fontSize=14;fontColor=#BCBDD0;entryX=0.604;entryY=-0.002;entryDx=0;entryDy=0;strokeColor=#bcbdd0;strokeWidth=3;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryPerimeter=0;" edge="1" parent="1" source="56" target="10">
-                    <mxGeometry width="50" height="50" relative="1" as="geometry">
-                        <mxPoint x="339" y="690" as="sourcePoint"/>
-                        <mxPoint x="413.4799999999999" y="759.8399999999999" as="targetPoint"/>
-                        <Array as="points">
-                            <mxPoint x="462" y="710"/>
-                        </Array>
-                    </mxGeometry>
                 </mxCell>
             </root>
         </mxGraphModel>

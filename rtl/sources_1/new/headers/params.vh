@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/04/2022
+ * Last Modified: 28/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -48,8 +48,7 @@ localparam int CTL_REG_LEGACY_MODE_BIT     = 0;
 localparam int CTL_REG_FORCE_FAN_BIT       = 4;
 localparam int CTL_REG_OP_MODE_BIT         = 5;
 localparam int CTL_REG_STM_GAIN_MODE_BIT   = 6;
-localparam int CTL_REG_SYNC_BIT            = 14;
-localparam int CTL_REG_WDT_RST_BIT         = 15;
+localparam int CTL_REG_SYNC_BIT            = 8;
 
 localparam bit [7:0] ENABLED_STM_BIT = ENABLE_STM == "TRUE" ? 8'h01 : 8'h00;
 localparam bit [7:0] ENABLED_MODULATOR_BIT = ENABLE_MODULATOR == "TRUE" ? 8'h02 : 8'h00;

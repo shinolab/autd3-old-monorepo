@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/04/2022
+ * Last Modified: 28/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -18,7 +18,6 @@ module normal_operator#(
            parameter int DEPTH = 249
        )(
            input var CLK,
-           input var RST,
            cpu_bus_if.normal_port CPU_BUS,
            input var [WIDTH-1:0] CYCLE[0:DEPTH-1],
            input var [1:0] LEGACY_MODE,
@@ -94,15 +93,9 @@ always_ff @(posedge CLK) begin
 end
 
 always_ff @(posedge CLK) begin
-    if (RST) begin
-        duty <= '{DEPTH{0}};
-        phase <= '{DEPTH{0}};
-    end
-    else begin
-        if (set_addr == 0) begin
-            duty <= duty_buf;
-            phase <= phase_buf;
-        end
+    if (set_addr == 0) begin
+        duty <= duty_buf;
+        phase <= phase_buf;
     end
 end
 

@@ -42,7 +42,6 @@
     * 5: OP_MODE (0: Normal, 1: STM)
     * 6: SEQ_MODE (0: Point STM, 1: Gain STM)
     * 8: SYNC_SET
-    * 15: WDT_RST
 
 ## Modulator
 

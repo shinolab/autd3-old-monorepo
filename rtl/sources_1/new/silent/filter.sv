@@ -4,7 +4,7 @@
  * Created Date: 21/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/04/2022
+ * Last Modified: 28/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -18,7 +18,6 @@ module silent_filter#(
            parameter int DEPTH = 249
        )(
            input var CLK,
-           input var RST,
            input var UPDATE,
            input var [WIDTH-1:0] STEP,
            input var [WIDTH-1:0] CYCLE[0:DEPTH-1],
@@ -127,8 +126,8 @@ always_ff @(posedge CLK) begin
     case(state)
         IDLE: begin
             if (UPDATE) begin
-                step <= RST ? 1'sd1 : {1'b0, STEP};
-                step_n <= RST ? -1'sd1 :-{1'b0, STEP};
+                step <= {1'b0, STEP};
+                step_n <= -{1'b0, STEP};
 
                 calc_step_cnt <= 0;
                 calc_cnt <= 0;

@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/04/2022
+ * Last Modified: 28/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -73,9 +73,6 @@ bit [31:0] sound_speed;
 
 bit PWM_OUT[0:TRANS_NUM-1];
 
-bit wdt_rst;
-bit wst_assert;
-
 assign reset = ~RESET_N;
 if (ENABLE_STM == "TRUE") begin
     for (genvar i = 0; i < TRANS_NUM; i++) begin
@@ -121,12 +118,6 @@ ultrasound_cnt_clk_gen ultrasound_cnt_clk_gen(
                            .locked()
                        );
 
-wdt wdt(
-        .CLK(clk_l),
-        .RST(wdt_rst),
-        .ASSERT(wst_assert)
-    );
-
 controller#(
               .WIDTH(WIDTH),
               .DEPTH(TRANS_NUM)
@@ -148,8 +139,7 @@ controller#(
               .FREQ_DIV_STM(freq_div_stm),
               .SOUND_SPEED(sound_speed),
               .CYCLE(cycle),
-              .LEGACY_MODE(legacy_mode),
-              .WDT_RST(wdt_rst)
+              .LEGACY_MODE(legacy_mode)
           );
 
 normal_operator#(
@@ -157,7 +147,6 @@ normal_operator#(
                    .DEPTH(TRANS_NUM)
                ) normal_operator (
                    .CLK(clk_l),
-                   .RST(wst_assert),
                    .CPU_BUS(cpu_bus.normal_port),
                    .CYCLE(cycle),
                    .LEGACY_MODE(legacy_mode),
@@ -171,7 +160,6 @@ if (ENABLE_STM == "TRUE") begin
                     .DEPTH(TRANS_NUM)
                 ) stm_operator (
                     .CLK(clk_l),
-                    .RST(wst_assert),
                     .SYS_TIME(sys_time),
                     .LEGACY_MODE(legacy_mode),
                     .ULTRASOUND_CYCLE(cycle),
@@ -222,7 +210,6 @@ if (ENABLE_SILENCER == "TRUE") begin
                 .DEPTH(TRANS_NUM)
             ) silencer (
                 .CLK(clk_l),
-                .RST(wst_assert),
                 .SYS_TIME(sys_time),
                 .CYCLE_S(cycle_s),
                 .STEP(step_s),

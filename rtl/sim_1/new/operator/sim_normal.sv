@@ -4,7 +4,7 @@
  * Created Date: 12/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/04/2022
+ * Last Modified: 28/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -31,7 +31,6 @@ localparam bit [WIDTH-1:0] MAX = (1 << WIDTH) - 1;
 sim_helper_bram sim_helper_bram();
 sim_helper_random sim_helper_random();
 
-bit rst;
 bit [WIDTH-1:0] cycle[0:DEPTH-1];
 bit legacy_mode;
 
@@ -45,7 +44,6 @@ normal_operator#(
                    .DEPTH(DEPTH)
                ) normal_operator (
                    .CLK(CLK_20P48M),
-                   .RST(rst),
                    .CPU_BUS(sim_helper_bram.cpu_bus.normal_port),
                    .CYCLE(cycle),
                    .LEGACY_MODE(legacy_mode),
@@ -54,7 +52,6 @@ normal_operator#(
                );
 
 initial begin
-    rst = 0;
     legacy_mode = 0;
 
     sim_helper_random.init();
@@ -106,22 +103,6 @@ initial begin
                 $display("failed at phase[%d], %d!=%d", i, phase_buf[i], phase[i]);
                 $finish();
             end
-        end
-    end
-
-    rst = 1;
-    for (int i = 0; i < DEPTH * 2; i++) begin
-        @(posedge CLK_20P48M);
-    end
-
-    for (int i = 0; i < DEPTH; i++) begin
-        if (0 != duty[i]) begin
-            $display("failed at duty[%d], %d!=0", i, duty[i]);
-            $finish();
-        end
-        if (0 != phase[i]) begin
-            $display("failed at phase[%d], %d!=0", i, phase[i]);
-            $finish();
         end
     end
 

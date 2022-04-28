@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/04/2022
+ * Last Modified: 28/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -17,7 +17,6 @@ module stm_gain_operator#(
            parameter int DEPTH = 249
        )(
            input var CLK,
-           input var RST,
            input var [15:0] IDX,
            ss_bus_if.gain_port SS_BUS,
            input var [1:0] LEGACY_MODE,
@@ -71,74 +70,69 @@ always_ff @(posedge CLK) begin
 end
 
 always_ff @(posedge CLK) begin
-    if (RST) begin
-        duty <= '{DEPTH{0}};
-        phase <= '{DEPTH{0}};
-    end
-    else begin
-        case(state)
-            IDLE: begin
-                if (start) begin
-                    done <= 0;
-                    gain_addr_base <= idx[9:0];
-                    gain_addr_offset <= 0;
-                    state <= WAIT_0;
+
+    case(state)
+        IDLE: begin
+            if (start) begin
+                done <= 0;
+                gain_addr_base <= idx[9:0];
+                gain_addr_offset <= 0;
+                state <= WAIT_0;
+            end
+        end
+        WAIT_0: begin
+            gain_addr_offset <= gain_addr_offset + 1;
+            state <= WAIT_1;
+        end
+        WAIT_1: begin
+            gain_addr_offset <= gain_addr_offset + 1;
+            set_cnt <= 0;
+            state <= SET;
+        end
+        SET: begin
+            if (set_cnt < DEPTH[7:2]) begin
+                if (LEGACY_MODE) begin
+                    phase_buf[{set_cnt, 2'b00}] <= {data_out[7:0], 5'h00};
+                    duty_buf[{set_cnt, 2'b00}] <= {2'b00, data_out[15:8], 3'h7} + 1;
+                    phase_buf[{set_cnt, 2'b00}+1] <= {data_out[39:32], 5'h00};
+                    duty_buf[{set_cnt, 2'b00}+1] <= {2'b00, data_out[47:40], 3'h7} + 1;
+                    phase_buf[{set_cnt, 2'b00}+2] <= {data_out[71:64], 5'h00};
+                    duty_buf[{set_cnt, 2'b00}+2] <= {2'b00, data_out[79:72], 3'h7} + 1;
+                    phase_buf[{set_cnt, 2'b00}+3] <= {data_out[103:96], 5'h00};
+                    duty_buf[{set_cnt, 2'b00}+3] <= {2'b00, data_out[111:104], 3'h7} + 1;
                 end
-            end
-            WAIT_0: begin
+                else  begin
+                    phase_buf[{set_cnt, 2'b00}] <= data_out[WIDTH-1:0];
+                    duty_buf[{set_cnt, 2'b00}] <= data_out[WIDTH-1+16:16];
+                    phase_buf[{set_cnt, 2'b00}+1] <= data_out[WIDTH-1+32:32];
+                    duty_buf[{set_cnt, 2'b00}+1] <= data_out[WIDTH-1+48:48];
+                    phase_buf[{set_cnt, 2'b00}+2] <= data_out[WIDTH-1+64:64];
+                    duty_buf[{set_cnt, 2'b00}+2] <= data_out[WIDTH-1+80:80];
+                    phase_buf[{set_cnt, 2'b00}+3] <= data_out[WIDTH-1+96:96];
+                    duty_buf[{set_cnt, 2'b00}+3] <= data_out[WIDTH-1+112:112];
+                end
                 gain_addr_offset <= gain_addr_offset + 1;
-                state <= WAIT_1;
+                set_cnt <= set_cnt + 1;
             end
-            WAIT_1: begin
-                gain_addr_offset <= gain_addr_offset + 1;
-                set_cnt <= 0;
-                state <= SET;
-            end
-            SET: begin
-                if (set_cnt < DEPTH[7:2]) begin
-                    if (LEGACY_MODE) begin
-                        phase_buf[{set_cnt, 2'b00}] <= {data_out[7:0], 5'h00};
-                        duty_buf[{set_cnt, 2'b00}] <= {2'b00, data_out[15:8], 3'h7} + 1;
-                        phase_buf[{set_cnt, 2'b00}+1] <= {data_out[39:32], 5'h00};
-                        duty_buf[{set_cnt, 2'b00}+1] <= {2'b00, data_out[47:40], 3'h7} + 1;
-                        phase_buf[{set_cnt, 2'b00}+2] <= {data_out[71:64], 5'h00};
-                        duty_buf[{set_cnt, 2'b00}+2] <= {2'b00, data_out[79:72], 3'h7} + 1;
-                        phase_buf[{set_cnt, 2'b00}+3] <= {data_out[103:96], 5'h00};
-                        duty_buf[{set_cnt, 2'b00}+3] <= {2'b00, data_out[111:104], 3'h7} + 1;
-                    end
-                    else  begin
-                        phase_buf[{set_cnt, 2'b00}] <= data_out[WIDTH-1:0];
-                        duty_buf[{set_cnt, 2'b00}] <= data_out[WIDTH-1+16:16];
-                        phase_buf[{set_cnt, 2'b00}+1] <= data_out[WIDTH-1+32:32];
-                        duty_buf[{set_cnt, 2'b00}+1] <= data_out[WIDTH-1+48:48];
-                        phase_buf[{set_cnt, 2'b00}+2] <= data_out[WIDTH-1+64:64];
-                        duty_buf[{set_cnt, 2'b00}+2] <= data_out[WIDTH-1+80:80];
-                        phase_buf[{set_cnt, 2'b00}+3] <= data_out[WIDTH-1+96:96];
-                        duty_buf[{set_cnt, 2'b00}+3] <= data_out[WIDTH-1+112:112];
-                    end
-                    gain_addr_offset <= gain_addr_offset + 1;
-                    set_cnt <= set_cnt + 1;
+            else begin
+                if (LEGACY_MODE) begin
+                    phase_buf[{set_cnt, 2'b00}] <= {data_out[7:0], 5'h00};
+                    duty_buf[{set_cnt, 2'b00}] <= {2'b00, data_out[15:8], 3'h7} + 1;
                 end
                 else begin
-                    if (LEGACY_MODE) begin
-                        phase_buf[{set_cnt, 2'b00}] <= {data_out[7:0], 5'h00};
-                        duty_buf[{set_cnt, 2'b00}] <= {2'b00, data_out[15:8], 3'h7} + 1;
-                    end
-                    else begin
-                        phase_buf[{set_cnt, 2'b00}] <= data_out[WIDTH-1:0];
-                        duty_buf[{set_cnt, 2'b00}] <= data_out[WIDTH-1+16:16];
-                    end
-                    state <= BUF;
+                    phase_buf[{set_cnt, 2'b00}] <= data_out[WIDTH-1:0];
+                    duty_buf[{set_cnt, 2'b00}] <= data_out[WIDTH-1+16:16];
                 end
+                state <= BUF;
             end
-            BUF: begin
-                phase <= phase_buf;
-                duty <= duty_buf;
-                done <= 1;
-                state <= IDLE;
-            end
-        endcase
-    end
+        end
+        BUF: begin
+            phase <= phase_buf;
+            duty <= duty_buf;
+            done <= 1;
+            state <= IDLE;
+        end
+    endcase
 end
 
 endmodule
