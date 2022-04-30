@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/04/2022
+ * Last Modified: 30/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -92,13 +92,13 @@ always_ff @(posedge CLK) begin
         SET: begin
             if (set_cnt < DEPTH[7:2]) begin
                 if (LEGACY_MODE) begin
-                    phase_buf[{set_cnt, 2'b00}] <= {data_out[7:0], 5'h00};
+                    phase_buf[{set_cnt, 2'b00}] <= {1'b0, data_out[7:0], 4'h00};
                     duty_buf[{set_cnt, 2'b00}] <= {2'b00, data_out[15:8], 3'h7} + 1;
-                    phase_buf[{set_cnt, 2'b00}+1] <= {data_out[39:32], 5'h00};
+                    phase_buf[{set_cnt, 2'b00}+1] <= {1'b0, data_out[39:32], 4'h00};
                     duty_buf[{set_cnt, 2'b00}+1] <= {2'b00, data_out[47:40], 3'h7} + 1;
-                    phase_buf[{set_cnt, 2'b00}+2] <= {data_out[71:64], 5'h00};
+                    phase_buf[{set_cnt, 2'b00}+2] <= {1'b0, data_out[71:64], 4'h00};
                     duty_buf[{set_cnt, 2'b00}+2] <= {2'b00, data_out[79:72], 3'h7} + 1;
-                    phase_buf[{set_cnt, 2'b00}+3] <= {data_out[103:96], 5'h00};
+                    phase_buf[{set_cnt, 2'b00}+3] <= {1'b0, data_out[103:96], 4'h00};
                     duty_buf[{set_cnt, 2'b00}+3] <= {2'b00, data_out[111:104], 3'h7} + 1;
                 end
                 else  begin
@@ -116,7 +116,7 @@ always_ff @(posedge CLK) begin
             end
             else begin
                 if (LEGACY_MODE) begin
-                    phase_buf[{set_cnt, 2'b00}] <= {data_out[7:0], 5'h00};
+                    phase_buf[{set_cnt, 2'b00}] <= {1'b0, data_out[7:0], 4'h00};
                     duty_buf[{set_cnt, 2'b00}] <= {2'b00, data_out[15:8], 3'h7} + 1;
                 end
                 else begin

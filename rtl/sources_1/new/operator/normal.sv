@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/04/2022
+ * Last Modified: 30/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -83,7 +83,7 @@ always_ff @(posedge CLK) begin
     end
 
     if (LEGACY_MODE) begin
-        phase_buf[set_addr] <= {dout[7:0], 5'h00};
+        phase_buf[set_addr] <= {1'b0, dout[7:0], 4'h00};
         duty_buf[set_addr] <= {2'b00, dout[15:8], 3'h7} + 1;
     end
     else begin
