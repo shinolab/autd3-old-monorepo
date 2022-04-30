@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/04/2022
+ * Last Modified: 30/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -70,24 +70,24 @@ typedef struct {
   uint8_t msg_id;
   uint8_t fpga_ctl_reg;
   uint8_t cpu_ctl_reg;
+  uint8_t size;
   union {
     struct {
       uint16_t ecat_sync_cycle_ticks;
-      uint8_t _data[123];
+      uint16_t _pad;
+      uint8_t _data[120];
     } SYNC_HEADER;
     struct {
-      uint8_t size;
       uint32_t freq_div;
       uint8_t data[120];
     } MOD_HEAD;
     struct {
-      uint8_t size;
       uint8_t data[124];
     } MOD_BODY;
     struct {
+      uint16_t cycle;
       uint16_t step;
-      uint32_t cycle;
-      uint8_t _data[119];
+      uint8_t _data[120];
     } SILENT;
   } DATA;
 } GlobalHeader;
@@ -142,14 +142,14 @@ void synchronize(GlobalHeader* header, Body* body) {
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_EC_SYNC_CYCLE_TICKS, ecat_sync_cycle_ticks);
   bram_cpy_volatile(BRAM_SELECT_CONTROLLER, BRAM_ADDR_EC_SYNC_TIME_0, (volatile uint16_t*)&next_sync0, sizeof(uint64_t) >> 1);
 
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, _ctl_reg);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, _ctl_reg | SYNC);
 }
 
 void write_mod(GlobalHeader* header) {
   uint32_t freq_div;
   uint16_t* data;
   uint32_t segment_capacity;
-  uint32_t write;
+  uint32_t write = header->size;
 
   if ((header->cpu_ctl_reg & MOD_BEGIN) != 0) {
     _mod_cycle = 0;
@@ -158,10 +158,8 @@ void write_mod(GlobalHeader* header) {
     freq_div = header->DATA.MOD_HEAD.freq_div;
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_0, (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
     data = (uint16_t*)header->DATA.MOD_HEAD.data;
-    write = header->DATA.MOD_HEAD.size;
   } else {
     data = (uint16_t*)header->DATA.MOD_BODY.data;
-    write = header->DATA.MOD_BODY.size;
   }
 
   segment_capacity = (_mod_cycle & ~MOD_BUF_SEGMENT_SIZE_MASK) + MOD_BUF_SEGMENT_SIZE - _mod_cycle;
@@ -185,9 +183,9 @@ void write_mod(GlobalHeader* header) {
 
 void config_silencer(GlobalHeader* header) {
   uint16_t step = header->DATA.SILENT.step;
-  uint32_t cycle = header->DATA.SILENT.cycle;
-  bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP, &step, sizeof(uint16_t) >> 1);
-  bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_CYCLE, (uint16_t*)&cycle, sizeof(uint32_t) >> 1);
+  uint16_t cycle = header->DATA.SILENT.cycle;
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP, step);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_CYCLE, cycle);
 }
 
 static void write_normal_op_legacy(Body* body) {
@@ -351,7 +349,7 @@ static void clear(void) {
   _stm_cycle = 0;
   _stm_buf_write_end = false;
 
-  _mod_cycle = 1;
+  _mod_cycle = 2;
   _mod_buf_write_end = false;
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE, max(1, _mod_cycle) - 1);
   bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_0, (uint16_t*)&freq_div_40k, sizeof(uint32_t) >> 1);
