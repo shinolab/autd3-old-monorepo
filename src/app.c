@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/04/2022
+ * Last Modified: 06/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -101,18 +101,13 @@ typedef struct {
       uint16_t cycle[TRANS_NUM];
     } CYCLE;
     struct {
-      uint16_t size;
-      uint32_t freq_div;
-      uint32_t sound_speed;
-      uint16_t data[TRANS_NUM - 1 - 2 - 2];
+      uint16_t data[TRANS_NUM];
     } POINT_STM_HEAD;
     struct {
-      uint16_t size;
-      uint16_t data[TRANS_NUM - 1];
+      uint16_t data[TRANS_NUM];
     } POINT_STM_BODY;
     struct {
-      uint32_t freq_div;
-      uint16_t _data[TRANS_NUM - 2];
+      uint16_t data[TRANS_NUM];
     } GAIN_STM_HEAD;
     struct {
       uint16_t data[TRANS_NUM];
@@ -128,10 +123,9 @@ static volatile bool_t _read_fpga_info;
 static volatile uint16_t _ctl_reg;
 
 static volatile uint32_t _mod_cycle = 0;
-static volatile bool_t _mod_buf_write_end = 0;
 
 static volatile uint32_t _stm_cycle = 0;
-static volatile bool_t _stm_buf_write_end = 0;
+static volatile uint32_t _stm_write = 0;
 
 void synchronize(GlobalHeader* header, Body* body) {
   uint16_t ecat_sync_cycle_ticks = header->DATA.SYNC_HEADER.ecat_sync_cycle_ticks;
@@ -153,7 +147,6 @@ void write_mod(GlobalHeader* header) {
 
   if ((header->cpu_ctl_reg & MOD_BEGIN) != 0) {
     _mod_cycle = 0;
-    _mod_buf_write_end = false;
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_ADDR_OFFSET, 0);
     freq_div = header->DATA.MOD_HEAD.freq_div;
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_0, (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
@@ -177,7 +170,6 @@ void write_mod(GlobalHeader* header) {
 
   if ((header->cpu_ctl_reg & MOD_END) != 0) {
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE, max(1, _mod_cycle) - 1);
-    _mod_buf_write_end = true;
   }
 }
 
@@ -232,17 +224,18 @@ static void write_point_stm(GlobalHeader* header, Body* body) {
 
   if ((header->cpu_ctl_reg & STM_BEGIN) != 0) {
     _stm_cycle = 0;
-    _stm_buf_write_end = false;
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, 0);
-    freq_div = body->DATA.POINT_STM_HEAD.freq_div;
+
+    size = body->DATA.POINT_STM_HEAD.data[0];
+    freq_div = (body->DATA.POINT_STM_HEAD.data[2] << 16) | body->DATA.POINT_STM_HEAD.data[1];
+    sound_speed = (body->DATA.POINT_STM_HEAD.data[4] << 16) | body->DATA.POINT_STM_HEAD.data[3];
+
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0, (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
-    sound_speed = body->DATA.POINT_STM_HEAD.sound_speed;
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SOUND_SPEED_0, (uint16_t*)&sound_speed, sizeof(uint32_t) >> 1);
-    size = body->DATA.POINT_STM_HEAD.size;
-    src = body->DATA.POINT_STM_HEAD.data;
+    src = body->DATA.POINT_STM_HEAD.data + 5;
   } else {
-    size = body->DATA.POINT_STM_BODY.size;
-    src = body->DATA.POINT_STM_BODY.data;
+    size = body->DATA.POINT_STM_HEAD.data[0];
+    src = body->DATA.POINT_STM_BODY.data + 1;
   }
 
   segment_capacity = (_stm_cycle & ~POINT_STM_BUF_SEGMENT_SIZE_MASK) + POINT_STM_BUF_SEGMENT_SIZE - _stm_cycle;
@@ -289,7 +282,6 @@ static void write_point_stm(GlobalHeader* header, Body* body) {
 
   if ((header->cpu_ctl_reg & STM_END) != 0) {
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_cycle) - 1);
-    _stm_buf_write_end = true;
   }
 }
 
@@ -303,56 +295,58 @@ static void write_gain_stm(GlobalHeader* header, Body* body) {
 
   if ((header->cpu_ctl_reg & STM_BEGIN) != 0) {
     _stm_cycle = 0;
-    _stm_buf_write_end = false;
+    _stm_write = 0;
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, 0);
-    freq_div = body->DATA.GAIN_STM_HEAD.freq_div;
+    freq_div = (body->DATA.GAIN_STM_HEAD.data[1] << 16) | body->DATA.GAIN_STM_HEAD.data[0];
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0, (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
     return;
   }
 
   src = body->DATA.GAIN_STM_BODY.data;
 
-  addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 9);
+  addr = get_addr(BRAM_SELECT_STM, (_stm_write & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 9);
   if ((header->fpga_ctl_reg & LEGACY_MODE) != 0) {
     dst = &base[addr];
+    _stm_cycle += 1;
   } else {
-    dst = &base[addr] + ((header->cpu_ctl_reg & IS_DUTY) != 0 ? 1 : 0);
+    if ((header->cpu_ctl_reg & IS_DUTY) != 0) {
+      dst = &base[addr] + 1;
+      _stm_cycle += 1;
+    } else {
+      dst = &base[addr];
+    }
   }
   cnt = TRANS_NUM;
   while (cnt--) {
     *dst = *src++;
     dst += 2;
   }
-  _stm_cycle += 1;
+  _stm_write += 1;
 
-  if ((_stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) == 0) {
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, (_stm_cycle & ~GAIN_STM_BUF_SEGMENT_SIZE_MASK) >> GAIN_STM_BUF_SEGMENT_SIZE_WIDTH);
+  if ((_stm_write & GAIN_STM_BUF_SEGMENT_SIZE_MASK) == 0) {
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, (_stm_write & ~GAIN_STM_BUF_SEGMENT_SIZE_MASK) >> GAIN_STM_BUF_SEGMENT_SIZE_WIDTH);
   }
 
   if ((header->cpu_ctl_reg & STM_END) != 0) {
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_cycle) - 1);
-    _stm_buf_write_end = true;
   }
 }
 
 static void clear(void) {
-  uint32_t freq_div_40k = 4096;
+  uint32_t freq_div_4k = 40960;
 
   _ctl_reg = LEGACY_MODE;
   _read_fpga_info = false;
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, _ctl_reg);
 
-  uint16_t step = 10;
-  bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP, &step, sizeof(uint16_t) >> 1);
-  bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_CYCLE, (uint16_t*)&freq_div_40k, sizeof(uint32_t) >> 1);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP, 10);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_CYCLE, 4096);
 
   _stm_cycle = 0;
-  _stm_buf_write_end = false;
 
   _mod_cycle = 2;
-  _mod_buf_write_end = false;
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE, max(1, _mod_cycle) - 1);
-  bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_0, (uint16_t*)&freq_div_40k, sizeof(uint32_t) >> 1);
+  bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_0, (uint16_t*)&freq_div_4k, sizeof(uint32_t) >> 1);
   bram_write(BRAM_SELECT_MOD, 0, 0x0000);
 
   bram_set(BRAM_SELECT_NORMAL, 0, 0x0000, TRANS_NUM << 1);
