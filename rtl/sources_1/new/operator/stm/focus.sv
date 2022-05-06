@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/04/2022
+ * Last Modified: 06/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -221,7 +221,7 @@ always_ff @(posedge CLK) begin
                     set_cnt <= set_cnt + 1;
                 end
                 phase_buf[set_cnt] <= rem[WIDTH-1:0];
-                duty_buf[set_cnt] <= ULTRASOUND_CYCLE[set_cnt] >> duty_shift;
+                duty_buf[set_cnt] <= ULTRASOUND_CYCLE[set_cnt][WIDTH-1:1] >> duty_shift;
             end
         end
         BUF: begin
