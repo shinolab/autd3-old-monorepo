@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/05/2022
+ * Last Modified: 07/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -27,7 +27,7 @@
 #define POINT_STM_BUF_SEGMENT_SIZE (1 << POINT_STM_BUF_SEGMENT_SIZE_WIDTH)
 #define POINT_STM_BUF_SEGMENT_SIZE_MASK (POINT_STM_BUF_SEGMENT_SIZE - 1)
 
-#define GAIN_STM_BUF_SEGMENT_SIZE_WIDTH (3)
+#define GAIN_STM_BUF_SEGMENT_SIZE_WIDTH (5)
 #define GAIN_STM_BUF_SEGMENT_SIZE (1 << GAIN_STM_BUF_SEGMENT_SIZE_WIDTH)
 #define GAIN_STM_BUF_SEGMENT_SIZE_MASK (GAIN_STM_BUF_SEGMENT_SIZE - 1)
 
@@ -125,7 +125,6 @@ static volatile uint16_t _ctl_reg;
 static volatile uint32_t _mod_cycle = 0;
 
 static volatile uint32_t _stm_cycle = 0;
-static volatile uint32_t _stm_write = 0;
 
 void synchronize(GlobalHeader* header, Body* body) {
   uint16_t ecat_sync_cycle_ticks = header->DATA.SYNC_HEADER.ecat_sync_cycle_ticks;
@@ -295,7 +294,6 @@ static void write_gain_stm(GlobalHeader* header, Body* body) {
 
   if ((header->cpu_ctl_reg & STM_BEGIN) != 0) {
     _stm_cycle = 0;
-    _stm_write = 0;
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, 0);
     freq_div = (body->DATA.GAIN_STM_HEAD.data[1] << 16) | body->DATA.GAIN_STM_HEAD.data[0];
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0, (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
@@ -304,7 +302,7 @@ static void write_gain_stm(GlobalHeader* header, Body* body) {
 
   src = body->DATA.GAIN_STM_BODY.data;
 
-  addr = get_addr(BRAM_SELECT_STM, (_stm_write & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 9);
+  addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 9);
   if ((header->fpga_ctl_reg & LEGACY_MODE) != 0) {
     dst = &base[addr];
     _stm_cycle += 1;
@@ -321,10 +319,9 @@ static void write_gain_stm(GlobalHeader* header, Body* body) {
     *dst = *src++;
     dst += 2;
   }
-  _stm_write += 1;
 
-  if ((_stm_write & GAIN_STM_BUF_SEGMENT_SIZE_MASK) == 0) {
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, (_stm_write & ~GAIN_STM_BUF_SEGMENT_SIZE_MASK) >> GAIN_STM_BUF_SEGMENT_SIZE_WIDTH);
+  if ((_stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) == 0) {
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, (_stm_cycle & ~GAIN_STM_BUF_SEGMENT_SIZE_MASK) >> GAIN_STM_BUF_SEGMENT_SIZE_WIDTH);
   }
 
   if ((header->cpu_ctl_reg & STM_END) != 0) {
