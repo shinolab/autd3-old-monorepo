@@ -233,7 +233,7 @@ static void write_point_stm(GlobalHeader* header, Body* body) {
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SOUND_SPEED_0, (uint16_t*)&sound_speed, sizeof(uint32_t) >> 1);
     src = body->DATA.POINT_STM_HEAD.data + 5;
   } else {
-    size = body->DATA.POINT_STM_HEAD.data[0];
+    size = body->DATA.POINT_STM_BODY.data[0];
     src = body->DATA.POINT_STM_BODY.data + 1;
   }
 
