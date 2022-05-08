@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/04/2022
+ * Last Modified: 07/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -63,6 +63,17 @@ task write_stm_gain_duty_phase(int idx, input [WIDTH-1:0] duty[0:DEPTH-1], input
     for (int j = 0; j < DEPTH; j++) begin
         bram_write(BRAM_SELECT_STM, i+j*2, phase[j]);
         bram_write(BRAM_SELECT_STM, i+j*2+1, duty[j]);
+    end
+endtask
+
+task write_stm_gain_duty_phase_legacy(int idx, input [WIDTH-1:0] duty[0:DEPTH-1], input [WIDTH-1:0] phase[0:DEPTH-1]);
+    bit [15:0] offset;
+    bit [15:0] i;
+    offset = idx[20:5];
+    i = idx[4:0] << 9;
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_ADDR_OFFSET, offset);
+    for (int j = 0; j < DEPTH; j++) begin
+        bram_write(BRAM_SELECT_STM, i+j*2, {duty[j][7:0], phase[j][7:0]});
     end
 endtask
 

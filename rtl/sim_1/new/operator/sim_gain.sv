@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/04/2022
+ * Last Modified: 07/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -32,6 +32,7 @@ sim_helper_random sim_helper_random();
 
 bit [15:0] cycle_s;
 bit [31:0] freq_div_s;
+bit legacy_mode;
 
 bit start, done;
 bit [15:0] idx;
@@ -47,6 +48,7 @@ stm_operator#(
             ) stm_operator (
                 .CLK(CLK_20P48M),
                 .SYS_TIME(SYS_TIME),
+                .LEGACY_MODE(legacy_mode),
                 .ULTRASOUND_CYCLE(),
                 .CYCLE(cycle_s),
                 .FREQ_DIV(freq_div_s),
@@ -62,17 +64,28 @@ stm_operator#(
 
 bit [15:0] idx_buf;
 initial begin
-    cycle_s = 33 - 1;
+    legacy_mode = 0;
+
+    cycle_s = 10 - 1;
     freq_div_s = 8*(1 + DEPTH / 4 + 3 + 2);
     @(posedge locked);
 
     sim_helper_random.init();
     for (int i = 0; i < cycle_s + 1; i++) begin
-        for (int j = 0; j < DEPTH; j++) begin
-            duty_buf[i][j] = sim_helper_random.range(MAX, 0);
-            phase_buf[i][j] = sim_helper_random.range(MAX, 0);
+        if (legacy_mode)  begin
+            for (int j = 0; j < DEPTH; j++) begin
+                duty_buf[i][j] = sim_helper_random.range(8'hFF, 0);
+                phase_buf[i][j] = sim_helper_random.range(8'hFF, 0);
+            end
+            sim_helper_bram.write_stm_gain_duty_phase_legacy(i, duty_buf[i], phase_buf[i]);
         end
-        sim_helper_bram.write_stm_gain_duty_phase(i, duty_buf[i], phase_buf[i]);
+        else begin
+            for (int j = 0; j < DEPTH; j++) begin
+                duty_buf[i][j] = sim_helper_random.range(MAX, 0);
+                phase_buf[i][j] = sim_helper_random.range(MAX, 0);
+            end
+            sim_helper_bram.write_stm_gain_duty_phase(i, duty_buf[i], phase_buf[i]);
+        end
     end
 
     for (int j = 0; j < cycle_s + 1; j++) begin
@@ -81,13 +94,25 @@ initial begin
         $display("check %d @%d", idx_buf, SYS_TIME);
         @(posedge done);
         for (int i = 0; i < DEPTH; i++) begin
-            if (duty_buf[idx_buf][i] != duty[i]) begin
-                $error("Failed at d_in=%d, d_out=%d", duty_buf[idx_buf][i], duty[i]);
-                $finish();
+            if (legacy_mode) begin
+                if (({duty_buf[idx_buf][i], 3'h7}+1) != duty[i]) begin
+                    $display("failed at duty[%d], %d!=%d", i, duty_buf[idx_buf][i], duty[i]);
+                    $finish();
+                end
+                if ({phase_buf[idx_buf][i], 4'h00} != phase[i]) begin
+                    $display("failed at phase[%d], %d!=%d", i, {phase_buf[idx_buf][i], 4'h00}, phase[i]);
+                    $finish();
+                end
             end
-            if (phase_buf[idx_buf][i] != phase[i]) begin
-                $error("Failed at p_in=%d, p_out=%d", phase_buf[idx_buf][i], phase[i]);
-                $finish();
+            else begin
+                if (duty_buf[idx_buf][i] != duty[i]) begin
+                    $error("Failed at d_in=%d, d_out=%d", duty_buf[idx_buf][i], duty[i]);
+                    $finish();
+                end
+                if (phase_buf[idx_buf][i] != phase[i]) begin
+                    $error("Failed at p_in=%d, p_out=%d", phase_buf[idx_buf][i], phase[i]);
+                    $finish();
+                end
             end
         end
     end

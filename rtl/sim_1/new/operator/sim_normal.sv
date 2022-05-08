@@ -4,7 +4,7 @@
  * Created Date: 12/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/04/2022
+ * Last Modified: 07/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -89,7 +89,7 @@ initial begin
                 $display("failed at duty[%d], %d!=%d", i, duty_buf[i], duty[i]);
                 $finish();
             end
-            if ({phase_buf[i], 5'h00} != phase[i]) begin
+            if ({phase_buf[i], 4'h00} != phase[i]) begin
                 $display("failed at phase[%d], %d!=%d", i, {phase_buf[i], 5'h00}, phase[i]);
                 $finish();
             end

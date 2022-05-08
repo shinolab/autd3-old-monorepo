@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/04/2022
+ * Last Modified: 07/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -26,7 +26,7 @@ module top(
            output var FORCE_FAN,
            input var THERMO,
            output var [252:1] XDCR_OUT,
-           //    output var [3:0] GPIO_OUT
+           output var [3:0] GPIO_OUT,
            input var [3:0] GPIO_IN
        );
 
@@ -36,7 +36,7 @@ module top(
 localparam int WIDTH = 13;
 localparam int TRANS_NUM = 249;
 
-bit clk, clk_l, clk_ctl;
+bit clk, clk_l;
 bit reset;
 
 bit [63:0] sys_time;
@@ -67,11 +67,17 @@ bit [WIDTH-1:0] step_s;
 bit [WIDTH-1:0] duty_s[0:TRANS_NUM-1];
 bit [WIDTH-1:0] phase_s[0:TRANS_NUM-1];
 
+bit stm_gain_mode;
 bit [15:0] cycle_stm;
 bit [31:0] freq_div_stm;
 bit [31:0] sound_speed;
 
 bit PWM_OUT[0:TRANS_NUM-1];
+
+bit gpo_0, gpo_1, gpo_2;
+bit gpo_3 = 0;
+
+assign GPIO_OUT = {gpo_3, gpo_2, gpo_1, gpo_0};
 
 assign reset = ~RESET_N;
 if (ENABLE_STM == "TRUE") begin
@@ -171,9 +177,12 @@ if (ENABLE_STM == "TRUE") begin
                     .DUTY(duty_stm),
                     .PHASE(phase_stm),
                     .START(),
-                    .DONE(),
+                    .DONE(gpo_0),
                     .IDX()
                 );
+end
+else begin
+    assign gpo_0 = 0;
 end
 
 synchronizer synchronizer(
@@ -200,8 +209,11 @@ if (ENABLE_MODULATOR == "TRUE") begin
                  .DUTY_OUT(duty_m),
                  .PHASE_OUT(phase_m),
                  .START(),
-                 .DONE()
+                 .DONE(gpo_1)
              );
+end
+else begin
+    assign gpo_1 = 0;
 end
 
 if (ENABLE_SILENCER == "TRUE") begin
@@ -218,8 +230,11 @@ if (ENABLE_SILENCER == "TRUE") begin
                 .PHASE(phase_m),
                 .DUTY_S(duty_s),
                 .PHASE_S(phase_s),
-                .DONE()
+                .DONE(gpo_2)
             );
+end
+else begin
+    assign gpo_2 = 0;
 end
 
 pwm #(
