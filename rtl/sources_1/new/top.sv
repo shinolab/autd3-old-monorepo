@@ -75,7 +75,9 @@ bit [31:0] sound_speed;
 bit PWM_OUT[0:TRANS_NUM-1];
 
 bit stm_done, mod_done, silencer_done;
-bit gpo_0, gpo_1, gpo_2;
+bit gpo_0 = 0;
+bit gpo_1 = 0;
+bit gpo_2 = 0;
 bit gpo_3 = 0;
 
 assign GPIO_OUT = {gpo_3, gpo_2, gpo_1, gpo_0};
@@ -189,7 +191,7 @@ if (ENABLE_STM == "TRUE") begin
                 );
 end
 else begin
-    assign gpo_0 = 0;
+    assign stm_done = 0;
 end
 
 synchronizer synchronizer(
@@ -220,7 +222,7 @@ if (ENABLE_MODULATOR == "TRUE") begin
              );
 end
 else begin
-    assign gpo_1 = 0;
+    assign mod_done = 0;
 end
 
 if (ENABLE_SILENCER == "TRUE") begin
@@ -241,7 +243,7 @@ if (ENABLE_SILENCER == "TRUE") begin
             );
 end
 else begin
-    assign gpo_2 = 0;
+    assign silencer_done = 0;
 end
 
 pwm #(
