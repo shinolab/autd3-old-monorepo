@@ -4,7 +4,7 @@
  * Created Date: 22/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/04/2022
+ * Last Modified: 28/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -43,7 +43,6 @@ silencer #(
              .DEPTH(DEPTH)
          ) silencer(
              .CLK(CLK_20P48M),
-             .RST(1'b0),
              .SYS_TIME(SYS_TIME),
              .CYCLE_S(cycle_s),
              .STEP(step),

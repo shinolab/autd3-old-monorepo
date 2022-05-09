@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/03/2022
+ * Last Modified: 25/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -28,12 +28,18 @@ bit [WIDTH-1:0] t;
 bit [WIDTH-1:0] R;
 bit [WIDTH-1:0] F;
 
+bit [WIDTH-1:0] cycle_m1;
+
 assign t = TIME_CNT;
 assign RISE_OUT = R;
 assign FALL_OUT = F;
 
 always_ff @(posedge CLK) begin
-    if (t == CYCLE - 1) begin
+    cycle_m1 <= CYCLE - 1;
+end
+
+always_ff @(posedge CLK) begin
+    if (t == cycle_m1) begin
         R <= RISE_IN;
         F <= FALL_IN;
     end

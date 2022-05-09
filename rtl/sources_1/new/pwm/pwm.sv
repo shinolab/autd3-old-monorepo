@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/04/2022
+ * Last Modified: 25/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -17,7 +17,6 @@ module pwm#(
        )(
            input var CLK,
            input var CLK_L,
-           input var SET,
            input var [63:0] SYS_TIME,
            input var [WIDTH-1:0] CYCLE[0:TRANS_NUM-1],
            input var [WIDTH-1:0] DUTY[0:TRANS_NUM-1],
@@ -30,23 +29,13 @@ module pwm#(
 bit [WIDTH-1:0] R[0:TRANS_NUM-1];
 bit [WIDTH-1:0] F[0:TRANS_NUM-1];
 
-bit [WIDTH-1:0] cycle[0:TRANS_NUM-1];
-
-for (genvar i = 0; i < TRANS_NUM; i++) begin
-    always_ff @(posedge CLK) begin
-        if (SET) begin
-            cycle[i] <= CYCLE[i];
-        end
-    end
-end
-
 time_cnt_generator#(
                       .WIDTH(WIDTH),
                       .DEPTH(TRANS_NUM)
                   ) time_cnt_generator(
                       .CLK(CLK),
                       .SYS_TIME(SYS_TIME),
-                      .CYCLE(cycle),
+                      .CYCLE(CYCLE),
                       .TIME_CNT(TIME_CNT)
                   );
 
@@ -55,7 +44,7 @@ pwm_preconditioner#(
                       .DEPTH(TRANS_NUM)
                   ) pwm_preconditioner(
                       .CLK(CLK_L),
-                      .CYCLE(cycle),
+                      .CYCLE(CYCLE),
                       .DUTY(DUTY),
                       .PHASE(PHASE),
                       .RISE(R),
@@ -63,14 +52,13 @@ pwm_preconditioner#(
                       .DONE(DONE)
                   );
 
-
 for (genvar i = 0; i < TRANS_NUM; i++) begin
     bit [WIDTH-1:0] R_buf, F_buf;
     pwm_buffer#(
                   .WIDTH(WIDTH)
               ) pwm_buffer(
                   .CLK(CLK),
-                  .CYCLE(cycle[i]),
+                  .CYCLE(CYCLE[i]),
                   .TIME_CNT(TIME_CNT[i]),
                   .RISE_IN(R[i]),
                   .FALL_IN(F[i]),

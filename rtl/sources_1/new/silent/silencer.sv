@@ -4,7 +4,7 @@
  * Created Date: 22/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/03/2022
+ * Last Modified: 28/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -16,7 +16,6 @@ module silencer#(
            parameter int DEPTH = 249
        )(
            input var CLK,
-           input var RST,
            input var [63:0] SYS_TIME,
            input var [15:0] CYCLE_S,
            input var [WIDTH-1:0] STEP,
@@ -49,7 +48,6 @@ silent_filter#(
                  .DEPTH(DEPTH)
              ) silent_filter (
                  .CLK(CLK),
-                 .RST(RST),
                  .UPDATE(update),
                  .STEP(STEP),
                  .CYCLE(CYCLE),

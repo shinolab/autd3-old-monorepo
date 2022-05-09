@@ -4,7 +4,7 @@
  * Created Date: 07/01/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/02/2022
+ * Last Modified: 28/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -13,8 +13,8 @@
 
 `timescale 1ns / 1ps
 module mult#(
-           parameter int WIDTH_A,
-           parameter int WIDTH_B
+           parameter int WIDTH_A = 16,
+           parameter int WIDTH_B = 16
        )(
            input var CLK,
            input var signed [WIDTH_A-1:0] A,

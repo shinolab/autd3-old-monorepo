@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/04/2022
+ * Last Modified: 07/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -17,35 +17,7 @@ module sim_helper_bram#(
            parameter int DEPTH = 249
        )();
 
-localparam bit [1:0] BRAM_SELECT_CONTROLLER = 2'h0;
-localparam bit [1:0] BRAM_SELECT_MOD        = 2'h1;
-localparam bit [1:0] BRAM_SELECT_NORMAL     = 2'h2;
-localparam bit [1:0] BRAM_SELECT_STM        = 2'h3;
-
-localparam bit [8:0] ADDR_CTL_REG             = 9'h000;
-localparam bit [8:0] ADDR_FPGA_INFO           = 9'h001;
-localparam bit [8:0] ADDR_EC_SYNC_CYCLE_TICKS = 9'h010;
-localparam bit [8:0] ADDR_EC_SYNC_TIME_0      = ADDR_EC_SYNC_CYCLE_TICKS + 1;
-localparam bit [8:0] ADDR_EC_SYNC_TIME_1      = ADDR_EC_SYNC_CYCLE_TICKS + 2;
-localparam bit [8:0] ADDR_EC_SYNC_TIME_2      = ADDR_EC_SYNC_CYCLE_TICKS + 3;
-localparam bit [8:0] ADDR_EC_SYNC_TIME_3      = ADDR_EC_SYNC_CYCLE_TICKS + 4;
-localparam bit [8:0] ADDR_MOD_ADDR_OFFSET     = 9'h020;
-localparam bit [8:0] ADDR_MOD_CYCLE           = 9'h021;
-localparam bit [8:0] ADDR_MOD_FREQ_DIV_0      = 9'h022;
-localparam bit [8:0] ADDR_MOD_FREQ_DIV_1      = 9'h023;
-localparam bit [8:0] ADDR_VERSION_NUM         = 9'h03F; // For backward compatibility
-localparam bit [8:0] ADDR_SILENT_CYCLE        = 9'h040;
-localparam bit [8:0] ADDR_SILENT_STEP         = 9'h041;
-localparam bit [8:0] ADDR_STM_ADDR_OFFSET     = 9'h050;
-localparam bit [8:0] ADDR_STM_CYCLE           = 9'h051;
-localparam bit [8:0] ADDR_STM_FREQ_DIV_0      = 9'h052;
-localparam bit [8:0] ADDR_STM_FREQ_DIV_1      = 9'h053;
-localparam bit [8:0] ADDR_SOUND_SPEED_0       = 9'h054;
-localparam bit [8:0] ADDR_SOUND_SPEED_1       = 9'h055;
-localparam bit [8:0] ADDR_CYCLE_BASE          = 9'h100;
-
-localparam int CTL_REG_SYNC_BIT        = 1;
-localparam int CTL_REG_FORCE_FAN_BIT   = 4;
+`include "params.vh"
 
 // CPU
 bit [15:0] bram_addr;
@@ -91,6 +63,17 @@ task write_stm_gain_duty_phase(int idx, input [WIDTH-1:0] duty[0:DEPTH-1], input
     for (int j = 0; j < DEPTH; j++) begin
         bram_write(BRAM_SELECT_STM, i+j*2, phase[j]);
         bram_write(BRAM_SELECT_STM, i+j*2+1, duty[j]);
+    end
+endtask
+
+task write_stm_gain_duty_phase_legacy(int idx, input [WIDTH-1:0] duty[0:DEPTH-1], input [WIDTH-1:0] phase[0:DEPTH-1]);
+    bit [15:0] offset;
+    bit [15:0] i;
+    offset = idx[20:5];
+    i = idx[4:0] << 9;
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_ADDR_OFFSET, offset);
+    for (int j = 0; j < DEPTH; j++) begin
+        bram_write(BRAM_SELECT_STM, i+j*2, {duty[j][7:0], phase[j][7:0]});
     end
 endtask
 

@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/04/2022
+ * Last Modified: 09/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -26,22 +26,17 @@ module top(
            output var FORCE_FAN,
            input var THERMO,
            output var [252:1] XDCR_OUT,
-           //    output var [3:0] GPIO_OUT
+           output var [3:0] GPIO_OUT,
            input var [3:0] GPIO_IN
        );
 
 `include "cvt_uid.vh"
-
-localparam string ENABLE_MODULATOR = "TRUE";
-localparam string ENABLE_SILENCER = "TRUE";
-localparam string ENABLE_STM = "TRUE";
+`include "params.vh"
 
 localparam int WIDTH = 13;
 localparam int TRANS_NUM = 249;
 
-localparam [7:0] VERSION_NUM = 8'h70;
-
-bit clk, clk_l, clk_ctl;
+bit clk, clk_l;
 bit reset;
 
 bit [63:0] sys_time;
@@ -49,6 +44,8 @@ bit [63:0] sys_time;
 bit [63:0] ecat_sync_time;
 bit [15:0] ecat_sync_cycle_ticks;
 bit sync_set;
+
+bit legacy_mode;
 
 bit op_mode;
 bit [WIDTH-1:0] duty_normal[0:TRANS_NUM-1];
@@ -70,14 +67,26 @@ bit [WIDTH-1:0] step_s;
 bit [WIDTH-1:0] duty_s[0:TRANS_NUM-1];
 bit [WIDTH-1:0] phase_s[0:TRANS_NUM-1];
 
+bit stm_gain_mode;
 bit [15:0] cycle_stm;
 bit [31:0] freq_div_stm;
 bit [31:0] sound_speed;
 
 bit PWM_OUT[0:TRANS_NUM-1];
 
-bit wdt_rst;
-bit wst_assert;
+bit stm_done, mod_done, silencer_done;
+bit gpo_0 = 0;
+bit gpo_1 = 0;
+bit gpo_2 = 0;
+bit gpo_3 = 0;
+
+assign GPIO_OUT = {gpo_3, gpo_2, gpo_1, gpo_0};
+
+always_ff @(posedge clk_l) begin
+    gpo_0 <= stm_done ? ~gpo_0 : gpo_0;
+    gpo_1 <= mod_done ? ~gpo_1 : gpo_1;
+    gpo_2 <= silencer_done ? ~gpo_2 : gpo_2;
+end
 
 assign reset = ~RESET_N;
 if (ENABLE_STM == "TRUE") begin
@@ -124,19 +133,9 @@ ultrasound_cnt_clk_gen ultrasound_cnt_clk_gen(
                            .locked()
                        );
 
-wdt wdt(
-        .CLK(clk_l),
-        .RST(wdt_rst),
-        .ASSERT(wst_assert)
-    );
-
 controller#(
               .WIDTH(WIDTH),
-              .DEPTH(TRANS_NUM),
-              .VERSION_NUM(VERSION_NUM),
-              .ENABLE_MODULATOR(ENABLE_MODULATOR),
-              .ENABLE_STM(ENABLE_STM),
-              .ENABLE_SILENCER(ENABLE_SILENCER)
+              .DEPTH(TRANS_NUM)
           ) controller (
               .CLK(clk_l),
               .THERMO(THERMO),
@@ -155,7 +154,7 @@ controller#(
               .FREQ_DIV_STM(freq_div_stm),
               .SOUND_SPEED(sound_speed),
               .CYCLE(cycle),
-              .WDT_RST(wdt_rst)
+              .LEGACY_MODE(legacy_mode)
           );
 
 normal_operator#(
@@ -163,8 +162,9 @@ normal_operator#(
                    .DEPTH(TRANS_NUM)
                ) normal_operator (
                    .CLK(clk_l),
-                   .RST(wst_assert),
                    .CPU_BUS(cpu_bus.normal_port),
+                   .CYCLE(cycle),
+                   .LEGACY_MODE(legacy_mode),
                    .DUTY(duty_normal),
                    .PHASE(phase_normal)
                );
@@ -175,8 +175,8 @@ if (ENABLE_STM == "TRUE") begin
                     .DEPTH(TRANS_NUM)
                 ) stm_operator (
                     .CLK(clk_l),
-                    .RST(wst_assert),
                     .SYS_TIME(sys_time),
+                    .LEGACY_MODE(legacy_mode),
                     .ULTRASOUND_CYCLE(cycle),
                     .CYCLE(cycle_stm),
                     .FREQ_DIV(freq_div_stm),
@@ -186,9 +186,12 @@ if (ENABLE_STM == "TRUE") begin
                     .DUTY(duty_stm),
                     .PHASE(phase_stm),
                     .START(),
-                    .DONE(),
+                    .DONE(stm_done),
                     .IDX()
                 );
+end
+else begin
+    assign stm_done = 0;
 end
 
 synchronizer synchronizer(
@@ -215,8 +218,11 @@ if (ENABLE_MODULATOR == "TRUE") begin
                  .DUTY_OUT(duty_m),
                  .PHASE_OUT(phase_m),
                  .START(),
-                 .DONE()
+                 .DONE(mod_done)
              );
+end
+else begin
+    assign mod_done = 0;
 end
 
 if (ENABLE_SILENCER == "TRUE") begin
@@ -225,7 +231,6 @@ if (ENABLE_SILENCER == "TRUE") begin
                 .DEPTH(TRANS_NUM)
             ) silencer (
                 .CLK(clk_l),
-                .RST(wst_assert),
                 .SYS_TIME(sys_time),
                 .CYCLE_S(cycle_s),
                 .STEP(step_s),
@@ -234,8 +239,11 @@ if (ENABLE_SILENCER == "TRUE") begin
                 .PHASE(phase_m),
                 .DUTY_S(duty_s),
                 .PHASE_S(phase_s),
-                .DONE()
+                .DONE(silencer_done)
             );
+end
+else begin
+    assign silencer_done = 0;
 end
 
 pwm #(
@@ -244,7 +252,6 @@ pwm #(
     ) pwm (
         .CLK(clk),
         .CLK_L(clk_l),
-        .SET(sync_set),
         .SYS_TIME(sys_time),
         .CYCLE(cycle),
         .DUTY(duty_s),

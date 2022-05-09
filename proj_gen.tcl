@@ -24,7 +24,7 @@ if {[string equal [get_filesets -quiet sim_1] ""]} {
 }
 
 
-set synth_1_flow     "Vivado Synthesis 2021"
+set synth_1_flow     "Vivado Synthesis 2022"
 set synth_1_strategy "Flow_PerfOptimized_high"
 if {[string equal [get_runs -quiet synth_1] ""]} {
     create_run -name synth_1 -flow $synth_1_flow -strategy $synth_1_strategy -constrset constrs_1
@@ -32,7 +32,7 @@ if {[string equal [get_runs -quiet synth_1] ""]} {
     set_property flow     $synth_1_flow     [get_runs synth_1]
     set_property strategy $synth_1_strategy [get_runs synth_1]
 }
-set synth_2_flow     "Vivado Synthesis 2021"
+set synth_2_flow     "Vivado Synthesis 2022"
 set synth_2_strategy "Vivado Synthesis Defaults"
 if {[string equal [get_runs -quiet synth_2] ""]} {
     create_run -name synth_2 -flow $synth_2_flow -strategy $synth_2_strategy -constrset constrs_1
@@ -40,9 +40,17 @@ if {[string equal [get_runs -quiet synth_2] ""]} {
     set_property flow     $synth_2_flow     [get_runs synth_2]
     set_property strategy $synth_2_strategy [get_runs synth_2]
 }
+set synth_3_flow     "Vivado Synthesis 2022"
+set synth_3_strategy "Flow_AreaOptimized_high"
+if {[string equal [get_runs -quiet synth_3] ""]} {
+    create_run -name synth_3 -flow $synth_3_flow -strategy $synth_3_strategy -constrset constrs_1
+} else {
+    set_property flow     $synth_3_flow     [get_runs synth_3]
+    set_property strategy $synth_3_strategy [get_runs synth_3]
+}
 current_run -synthesis [get_runs synth_1]
 
-set impl_1_flow      "Vivado Implementation 2021"
+set impl_1_flow      "Vivado Implementation 2022"
 set impl_1_strategy  "Performance_ExplorePostRoutePhysOpt"
 if {[string equal [get_runs -quiet impl_1] ""]} {
     create_run -name impl_1 -flow $impl_1_flow -strategy $impl_1_strategy -constrset constrs_1 -parent_run synth_1
@@ -50,13 +58,21 @@ if {[string equal [get_runs -quiet impl_1] ""]} {
     set_property flow     $impl_1_flow      [get_runs impl_1]
     set_property strategy $impl_1_strategy  [get_runs impl_1]
 }
-set impl_2_flow      "Vivado Implementation 2021"
+set impl_2_flow      "Vivado Implementation 2022"
 set impl_2_strategy  "Vivado Implementation Defaults"
 if {[string equal [get_runs -quiet impl_2] ""]} {
     create_run -name impl_2 -flow $impl_2_flow -strategy $impl_2_strategy -constrset constrs_1 -parent_run synth_2
 } else {
     set_property flow     $impl_2_flow      [get_runs impl_2]
     set_property strategy $impl_2_strategy  [get_runs impl_2]
+}
+set impl_3_flow      "Vivado Implementation 2022"
+set impl_3_strategy  "Area_ExploreWithRemap"
+if {[string equal [get_runs -quiet impl_3] ""]} {
+    create_run -name impl_3 -flow $impl_3_flow -strategy $impl_3_strategy -constrset constrs_1 -parent_run synth_3
+} else {
+    set_property flow     $impl_3_flow      [get_runs impl_3]
+    set_property strategy $impl_3_strategy  [get_runs impl_3]
 }
 current_run -implementation [get_runs impl_1]
 

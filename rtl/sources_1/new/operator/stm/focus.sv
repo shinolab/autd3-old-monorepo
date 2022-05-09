@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/04/2022
+ * Last Modified: 06/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -17,7 +17,6 @@ module stm_focus_operator#(
            parameter int DEPTH = 249
        )(
            input var CLK,
-           input var RST,
            input var [15:0] IDX,
            ss_bus_if.focus_port SS_BUS,
            input var [31:0] SOUND_SPEED,
@@ -192,51 +191,45 @@ always_ff @(posedge CLK) begin
 end
 
 always_ff @(posedge CLK) begin
-    if (RST) begin
-        duty <= '{DEPTH{0}};
-        phase <= '{DEPTH{0}};
-    end
-    else begin
-        case(state)
-            IDLE: begin
-                done  <= 0;
-                if (start) begin
-                    focus_x <= data_out[17:0];
-                    focus_y <= data_out[35:18];
-                    focus_z <= data_out[53:36];
-                    duty_shift <= data_out[57:54];
-                    tr_idx <= 0;
-                    cnt <= 0;
-                    cycle_load_cnt <= 0;
-                    set_cnt <= 0;
-                    state <= CALC;
-                end
+    case(state)
+        IDLE: begin
+            done  <= 0;
+            if (start) begin
+                focus_x <= data_out[17:0];
+                focus_y <= data_out[35:18];
+                focus_z <= data_out[53:36];
+                duty_shift <= data_out[57:54];
+                tr_idx <= 0;
+                cnt <= 0;
+                cycle_load_cnt <= 0;
+                set_cnt <= 0;
+                state <= CALC;
             end
-            CALC: begin
-                tr_idx <= tr_idx == DEPTH - 1 ? tr_idx : tr_idx + 1;
-                cnt <= cnt + 1;
-                if (cnt >= SQRT_LATENCY) begin
-                    cycle_load_cnt <= cycle_load_cnt == DEPTH - 1 ? cycle_load_cnt : cycle_load_cnt + 1;
-                    divined <= ULTRASOUND_CYCLE[cycle_load_cnt];
-                end
-                if (cnt >= DIV_LATENCY) begin
-                    if (set_cnt == DEPTH - 1) begin
-                        state <= BUF;
-                    end
-                    else begin
-                        set_cnt <= set_cnt + 1;
-                    end
-                    phase_buf[set_cnt] <= rem[WIDTH-1:0];
-                    duty_buf[set_cnt] <= ULTRASOUND_CYCLE[set_cnt] >> duty_shift;
-                end
+        end
+        CALC: begin
+            tr_idx <= tr_idx == DEPTH - 1 ? tr_idx : tr_idx + 1;
+            cnt <= cnt + 1;
+            if (cnt >= SQRT_LATENCY) begin
+                cycle_load_cnt <= cycle_load_cnt == DEPTH - 1 ? cycle_load_cnt : cycle_load_cnt + 1;
+                divined <= ULTRASOUND_CYCLE[cycle_load_cnt];
             end
-            BUF: begin
-                phase <= phase_buf;
-                duty <= duty_buf;
-                done  <= 1;
-                state <= IDLE;
+            if (cnt >= DIV_LATENCY) begin
+                if (set_cnt == DEPTH - 1) begin
+                    state <= BUF;
+                end
+                else begin
+                    set_cnt <= set_cnt + 1;
+                end
+                phase_buf[set_cnt] <= rem[WIDTH-1:0];
+                duty_buf[set_cnt] <= ULTRASOUND_CYCLE[set_cnt][WIDTH-1:1] >> duty_shift;
             end
-        endcase
-    end
+        end
+        BUF: begin
+            phase <= phase_buf;
+            duty <= duty_buf;
+            done  <= 1;
+            state <= IDLE;
+        end
+    endcase
 end
 endmodule

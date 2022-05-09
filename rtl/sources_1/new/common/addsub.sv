@@ -4,7 +4,7 @@
  * Created Date: 04/01/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/01/2022
+ * Last Modified: 28/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -13,7 +13,7 @@
 
 `timescale 1ns / 1ps
 module addsub#(
-           parameter int WIDTH
+           parameter int WIDTH = 16
        )(
            input var CLK,
            input var [WIDTH-1:0] A,

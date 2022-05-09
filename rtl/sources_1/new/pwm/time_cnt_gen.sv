@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/04/2022
+ * Last Modified: 25/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -34,6 +34,9 @@ bit [WIDTH-1:0] t[0:DEPTH-1] = '{DEPTH{0}};
 bit [$clog2(DEPTH)-1:0] sync_cnt = DIV_LATENCY % DEPTH;
 bit [$clog2(DEPTH)-1:0] set_cnt = 0;
 
+bit [WIDTH-1:0] cycle_m1[0:DEPTH];
+bit [WIDTH-1:0] cycle_m2[0:DEPTH];
+
 div_64_16 div_64_16(
               .s_axis_dividend_tdata(divined),
               .s_axis_dividend_tvalid(1'b1),
@@ -47,10 +50,10 @@ div_64_16 div_64_16(
 for (genvar i = 0; i < DEPTH; i++) begin
     always_ff @(posedge CLK) begin
         if (i == set_cnt) begin
-            t[i] <= (t[i] == CYCLE[i] - 2) && (rem[WIDTH-1:0] == 0) ? t[i] + 1 : rem[WIDTH-1:0]; // make sure t be T-1
+            t[i] <= (t[i] == cycle_m2[i]) && (rem[WIDTH-1:0] == 0) ? t[i] + 1 : rem[WIDTH-1:0]; // make sure t be T-1
         end
         else begin
-            t[i] <= (t[i] == CYCLE[i] - 1) ? 0 : t[i] + 1;
+            t[i] <= (t[i] == cycle_m1[i]) ? 0 : t[i] + 1;
         end
     end
     assign TIME_CNT[i] = t[i];
@@ -62,6 +65,13 @@ always_ff @(posedge CLK) begin
 
     sync_cnt <= (sync_cnt == DEPTH - 1) ? 0 : sync_cnt + 1;
     set_cnt <= (set_cnt == DEPTH - 1) ? 0 : set_cnt + 1;
+end
+
+for (genvar i = 0; i < DEPTH; i++) begin
+    always_ff @(posedge CLK) begin
+        cycle_m1[i] <= CYCLE[i] - 1;
+        cycle_m2[i] <= cycle_m1[i] - 1;
+    end
 end
 
 endmodule

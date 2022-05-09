@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/04/2022
+ * Last Modified: 23/04/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -13,13 +13,7 @@
 
 interface cpu_bus_if();
 
-localparam bit [1:0] BRAM_SELECT_CONTROLLER = 2'h0;
-localparam bit [1:0] BRAM_SELECT_MOD        = 2'h1;
-localparam bit [1:0] BRAM_SELECT_NORMAL     = 2'h2;
-localparam bit [1:0] BRAM_SELECT_STM        = 2'h3;
-
-localparam bit [13:0] MOD_BRAM_ADDR_OFFSET_ADDR = 14'h0020;
-localparam bit [13:0] STM_BRAM_ADDR_OFFSET_ADDR = 14'h0050;
+`include "params.vh"
 
 bit BUS_CLK;
 bit EN;
@@ -71,9 +65,9 @@ always_ff @(posedge BUS_CLK) begin
     ctl_we_edge <= {ctl_we_edge[1:0], (WE & CTL_EN)};
     if (ctl_we_edge == 3'b011) begin
         case(BRAM_ADDR)
-            MOD_BRAM_ADDR_OFFSET_ADDR:
+            ADDR_MOD_ADDR_OFFSET:
                 MOD_ADDR_OFFSET <= DATA_IN[0];
-            STM_BRAM_ADDR_OFFSET_ADDR: begin
+            ADDR_STM_ADDR_OFFSET: begin
                 STM_ADDR_OFFSET <= DATA_IN[4:0];
             end
         endcase

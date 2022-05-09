@@ -8,5 +8,4 @@
 | MUX   | MUltipleXer                         |
 | PWM   | Pulse Width Modulation              |
 | STM   | Spatio-Temporal Modulation          |
-| WDT   | WatchDog Timer                      |
 <link rel="stylesheet" href="styles/table_wo_header.css">
