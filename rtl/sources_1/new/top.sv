@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/05/2022
+ * Last Modified: 09/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -74,10 +74,17 @@ bit [31:0] sound_speed;
 
 bit PWM_OUT[0:TRANS_NUM-1];
 
+bit stm_done, mod_done, silencer_done;
 bit gpo_0, gpo_1, gpo_2;
 bit gpo_3 = 0;
 
 assign GPIO_OUT = {gpo_3, gpo_2, gpo_1, gpo_0};
+
+always_ff @(posedge clk_l) begin
+    gpo_0 <= stm_done ? ~gpo_0 : gpo_0;
+    gpo_1 <= mod_done ? ~gpo_1 : gpo_1;
+    gpo_2 <= silencer_done ? ~gpo_2 : gpo_2;
+end
 
 assign reset = ~RESET_N;
 if (ENABLE_STM == "TRUE") begin
@@ -177,7 +184,7 @@ if (ENABLE_STM == "TRUE") begin
                     .DUTY(duty_stm),
                     .PHASE(phase_stm),
                     .START(),
-                    .DONE(gpo_0),
+                    .DONE(stm_done),
                     .IDX()
                 );
 end
@@ -209,7 +216,7 @@ if (ENABLE_MODULATOR == "TRUE") begin
                  .DUTY_OUT(duty_m),
                  .PHASE_OUT(phase_m),
                  .START(),
-                 .DONE(gpo_1)
+                 .DONE(mod_done)
              );
 end
 else begin
@@ -230,7 +237,7 @@ if (ENABLE_SILENCER == "TRUE") begin
                 .PHASE(phase_m),
                 .DUTY_S(duty_s),
                 .PHASE_S(phase_s),
-                .DONE(gpo_2)
+                .DONE(silencer_done)
             );
 end
 else begin
