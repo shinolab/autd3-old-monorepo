@@ -1,0 +1,9 @@
+[submodule "3rdparty/eigen"]
+	path = 3rdparty/eigen
+	url = https://gitlab.com/libeigen/eigen.git
+[submodule "3rdparty/cpplint"]
+	path = 3rdparty/cpplint
+	url = https://github.com/cpplint/cpplint.git
+[submodule "3rdparty/boost"]
+	path = 3rdparty/boost
+	url = https://github.com/boostorg/boost.git
