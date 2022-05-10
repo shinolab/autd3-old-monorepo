@@ -22,14 +22,14 @@ constexpr uint8_t ENABLED_MODULATOR_BIT = 0x02;
 constexpr uint8_t ENABLED_SILENCER_BIT = 0x04;
 
 struct FirmwareInfo {
-  FirmwareInfo(const size_t idx, const uint8_t cpu_version_number, const uint8_t fpga_version_number, const uint8_t fpga_function_bits)
+  FirmwareInfo(const size_t idx, const uint8_t cpu_version_number, const uint8_t fpga_version_number, const uint8_t fpga_function_bits) noexcept
       : _idx(idx), _cpu_version_number(cpu_version_number), _fpga_version_number(fpga_version_number), _fpga_function_bits(fpga_function_bits) {}
 
   [[nodiscard]] std::string cpu_version() const { return firmware_version_map(_cpu_version_number); }
   [[nodiscard]] std::string fpga_version() const { return firmware_version_map(_fpga_version_number); }
-  [[nodiscard]] bool stm_enabled() const { return (_fpga_function_bits & ENABLED_STM_BIT) != 0; }
-  [[nodiscard]] bool modulator_enabled() const { return (_fpga_function_bits & ENABLED_MODULATOR_BIT) != 0; }
-  [[nodiscard]] bool silencer_enabled() const { return (_fpga_function_bits & ENABLED_SILENCER_BIT) != 0; }
+  [[nodiscard]] bool stm_enabled() const noexcept { return (_fpga_function_bits & ENABLED_STM_BIT) != 0; }
+  [[nodiscard]] bool modulator_enabled() const noexcept { return (_fpga_function_bits & ENABLED_MODULATOR_BIT) != 0; }
+  [[nodiscard]] bool silencer_enabled() const noexcept { return (_fpga_function_bits & ENABLED_SILENCER_BIT) != 0; }
 
   [[nodiscard]] std::string to_string() const {
     std::stringstream ss;

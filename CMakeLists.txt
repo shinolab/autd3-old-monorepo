@@ -121,6 +121,8 @@ if(NOT USE_SYSTEM_EIGEN)
 endif()
 add_compile_definitions(EIGEN_MPL2_ONLY)
 
+include(cmakes/gsl.cmake)
+
 add_subdirectory(src)
 
 if(BUILD_EXAMPLES)

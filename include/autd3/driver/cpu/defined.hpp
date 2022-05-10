@@ -45,12 +45,12 @@ class CPUControlFlags final {
   };
 
   CPUControlFlags() = default;
-  explicit CPUControlFlags(const VALUE value) : _value(value) {}
+  explicit CPUControlFlags(const VALUE value) noexcept : _value(value) {}
 
   ~CPUControlFlags() = default;
   CPUControlFlags(const CPUControlFlags& v) noexcept = default;
   CPUControlFlags& operator=(const CPUControlFlags& obj) = default;
-  CPUControlFlags& operator=(const VALUE v) {
+  CPUControlFlags& operator=(const VALUE v) noexcept {
     _value = v;
     return *this;
   }
@@ -60,9 +60,9 @@ class CPUControlFlags final {
   constexpr bool operator==(const CPUControlFlags a) const { return _value == a._value; }
   constexpr bool operator!=(const CPUControlFlags a) const { return _value != a._value; }
 
-  void set(const VALUE v) { _value = static_cast<VALUE>(_value | v); }
+  void set(const VALUE v) noexcept { _value = static_cast<VALUE>(_value | v); }
 
-  void remove(const VALUE v) { _value = static_cast<VALUE>(_value & ~v); }
+  void remove(const VALUE v) noexcept { _value = static_cast<VALUE>(_value & ~v); }
 
  private:
   VALUE _value;

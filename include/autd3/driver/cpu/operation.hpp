@@ -22,7 +22,7 @@ inline void clear(TxDatagram& tx) noexcept {
   tx.num_bodies = 0;
 }
 
-inline void sync(const uint8_t msg_id, const uint16_t sync_cycle_ticks, const std::span<uint16_t> cycles, TxDatagram& tx) noexcept {
+inline void sync(const uint8_t msg_id, const uint16_t sync_cycle_ticks, const gsl::span<uint16_t> cycles, TxDatagram& tx) noexcept {
   tx.header().msg_id = msg_id;
   tx.header().cpu_flag.set(CPUControlFlags::DO_SYNC);
   tx.header().sync_header().ecat_sync_cycle_ticks = sync_cycle_ticks;
@@ -30,13 +30,13 @@ inline void sync(const uint8_t msg_id, const uint16_t sync_cycle_ticks, const st
   for (size_t i = 0; i < tx.bodies().size(); i++) {
     auto& dst = tx.bodies()[i];
     const auto src = cycles.subspan(i * NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT);
-    std::memcpy(dst.data, src.data(), src.size_bytes());
+    std::memcpy(&dst.data[0], src.data(), src.size_bytes());
   }
 
   tx.num_bodies = tx.bodies().size();
 }
 
-inline void modulation(const uint8_t msg_id, const std::span<uint8_t> mod_data, const bool is_first_frame, const uint32_t freq_div,
+inline void modulation(const uint8_t msg_id, const gsl::span<uint8_t> mod_data, const bool is_first_frame, const uint32_t freq_div,
                        const bool is_last_frame, TxDatagram& tx) noexcept(false) {
   tx.header().msg_id = msg_id;
   tx.header().cpu_flag.remove(CPUControlFlags::DO_SYNC);
@@ -51,272 +51,247 @@ inline void modulation(const uint8_t msg_id, const std::span<uint8_t> mod_data, 
 
     tx.header().cpu_flag.set(CPUControlFlags::MOD_BEGIN);
     tx.header().mod_head().freq_div = freq_div;
-    std::memcpy(tx.header().mod_head().data, mod_data.data(), mod_data.size_bytes());
+    std::memcpy(&tx.header().mod_head().data[0], mod_data.data(), mod_data.size_bytes());
   } else {
-    std::memcpy(tx.header().mod_body().data, mod_data.data(), mod_data.size_bytes());
+    std::memcpy(&tx.header().mod_body().data[0], mod_data.data(), mod_data.size_bytes());
   }
-  tx.header().size = static_cast<uint8_t>(mod_data.size());
+  tx.header().size = gsl::narrow_cast<uint8_t>(mod_data.size());
 
   if (is_last_frame) {
     tx.header().cpu_flag.set(CPUControlFlags::MOD_END);
   }
 }
 
-// pub fn config_silencer(msg_id : u8, cycle : u16, step : u16, tx : &mut TxDatagram)->Result<()> {
-//   if cycle
-//     < SILENCER_CYCLE_MIN { return Err(FPGAError::SilencerCycleOutOfRange(cycle).into()); }
+inline void config_silencer(const uint8_t msg_id, const uint16_t cycle, const uint16_t step, TxDatagram& tx) {
+  if (cycle < SILENCER_CYCLE_MIN) {
+    std::stringstream ss;
+    ss << "Silencer cycle is oud of range. Minimum is " << SILENCER_CYCLE_MIN << ", but you use " << cycle;
+    throw std::runtime_error(ss.str());
+  }
 
-//   tx.header_mut().msg_id = msg_id;
-//   tx.header_mut().cpu_flag.remove(CPUControlFlags::DO_SYNC);
-//   tx.header_mut().cpu_flag.set(CPUControlFlags::CONFIG_SILENCER, true);
+  tx.header().msg_id = msg_id;
+  tx.header().cpu_flag.remove(CPUControlFlags::DO_SYNC);
+  tx.header().cpu_flag.set(CPUControlFlags::CONFIG_SILENCER);
 
-//   tx.header_mut().silencer_header_mut().cycle = cycle;
-//   tx.header_mut().silencer_header_mut().step = step;
+  tx.header().silencer_header().cycle = cycle;
+  tx.header().silencer_header().step = step;
+}
 
-//   Ok(())
-// }
+inline void normal_legacy(const uint8_t msg_id, const gsl::span<LegacyDrive> drives, TxDatagram& tx) noexcept {
+  tx.header().msg_id = msg_id;
 
-// pub fn normal_legacy(msg_id : u8, drive : &[LegacyDrive], tx : &mut TxDatagram)->Result<()> {
-//   if drive
-//     .len() / NUM_TRANS_IN_UNIT != tx.body().len() {
-//       return Err(CPUError::DeviceNumberNotCorrect{
-//         a : tx.body().len(),
-//         b : drive.len() / NUM_TRANS_IN_UNIT,
-//       }
-//                      .into());
-//     }
+  tx.header().fpga_flag.set(FPGAControlFlags::LEGACY_MODE);
+  tx.header().fpga_flag.remove(FPGAControlFlags::STM_MODE);
 
-//   tx.header_mut().msg_id = msg_id;
+  for (size_t i = 0; i < tx.bodies().size(); i++) {
+    auto& dst = tx.bodies()[i];
+    const auto src = drives.subspan(i * NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT);
+    std::memcpy(&dst.data[0], src.data(), src.size_bytes());
+  }
 
-//   tx.header_mut().fpga_flag.set(FPGAControlFlags::LEGACY_MODE, true);
-//   tx.header_mut().fpga_flag.remove(FPGAControlFlags::STM_MODE);
+  tx.num_bodies = tx.bodies().size();
+}
 
-//   tx.body_mut().iter_mut().zip(drive.chunks(NUM_TRANS_IN_UNIT)).for_each(| (d, s) | d.legacy_drives_mut().copy_from_slice(s));
+inline void normal_duty(const uint8_t msg_id, const gsl::span<Duty> drives, TxDatagram& tx) noexcept {
+  tx.header().msg_id = msg_id;
 
-//   tx.num_bodies = tx.body().len();
+  tx.header().fpga_flag.remove(FPGAControlFlags::LEGACY_MODE);
+  tx.header().fpga_flag.remove(FPGAControlFlags::STM_MODE);
 
-//   Ok(())
-// }
+  tx.header().cpu_flag.set(CPUControlFlags::IS_DUTY);
 
-// pub fn normal_duty(msg_id : u8, drive : &[Duty], tx : &mut TxDatagram)->Result<()> {
-//   if drive
-//     .len() / NUM_TRANS_IN_UNIT != tx.body().len() {
-//       return Err(CPUError::DeviceNumberNotCorrect{
-//         a : tx.body().len(),
-//         b : drive.len() / NUM_TRANS_IN_UNIT,
-//       }
-//                      .into());
-//     }
+  for (size_t i = 0; i < tx.bodies().size(); i++) {
+    auto& dst = tx.bodies()[i];
+    const auto src = drives.subspan(i * NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT);
+    std::memcpy(&dst.data[0], src.data(), src.size_bytes());
+  }
 
-//   tx.header_mut().msg_id = msg_id;
+  tx.num_bodies = tx.bodies().size();
+}
 
-//   tx.header_mut().fpga_flag.remove(FPGAControlFlags::LEGACY_MODE);
-//   tx.header_mut().fpga_flag.remove(FPGAControlFlags::STM_MODE);
+inline void normal_duty(const uint8_t msg_id, const gsl::span<Phase> drives, TxDatagram& tx) noexcept {
+  tx.header().msg_id = msg_id;
 
-//   tx.header_mut().cpu_flag.set(CPUControlFlags::IS_DUTY, true);
+  tx.header().fpga_flag.remove(FPGAControlFlags::LEGACY_MODE);
+  tx.header().fpga_flag.remove(FPGAControlFlags::STM_MODE);
 
-//   tx.body_mut().iter_mut().zip(drive.chunks(NUM_TRANS_IN_UNIT)).for_each(| (d, s) | d.duties_mut().copy_from_slice(s));
+  tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
 
-//   tx.num_bodies = tx.body().len();
+  for (size_t i = 0; i < tx.bodies().size(); i++) {
+    auto& dst = tx.bodies()[i];
+    const auto src = drives.subspan(i * NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT);
+    std::memcpy(&dst.data[0], src.data(), src.size_bytes());
+  }
 
-//   Ok(())
-// }
+  tx.num_bodies = tx.bodies().size();
+}
 
-// pub fn normal_phase(msg_id : u8, drive : &[Phase], tx : &mut TxDatagram)->Result<()> {
-//   if drive
-//     .len() / NUM_TRANS_IN_UNIT != tx.body().len() {
-//       return Err(CPUError::DeviceNumberNotCorrect{
-//         a : tx.body().len(),
-//         b : drive.len() / NUM_TRANS_IN_UNIT,
-//       }
-//                      .into());
-//     }
+inline void point_stm(const uint8_t msg_id, const gsl::span<gsl::span<STMFocus>> points, const bool is_first_frame, const uint32_t freq_div,
+                      const double sound_speed, const bool is_last_frame, TxDatagram& tx) noexcept(false) {
+  tx.header().msg_id = msg_id;
 
-//   tx.header_mut().msg_id = msg_id;
+  tx.header().fpga_flag.set(FPGAControlFlags::STM_MODE);
+  tx.header().fpga_flag.remove(FPGAControlFlags::STM_GAIN_MODE);
 
-//   tx.header_mut().fpga_flag.remove(FPGAControlFlags::LEGACY_MODE);
-//   tx.header_mut().fpga_flag.remove(FPGAControlFlags::STM_MODE);
+  if (is_first_frame) {
+    if (freq_div < STM_SAMPLING_FREQ_DIV_MIN) {
+      std::stringstream ss;
+      ss << "STM frequency division is oud of range. Minimum is " << STM_SAMPLING_FREQ_DIV_MIN << ", but you use " << freq_div;
+      throw std::runtime_error(ss.str());
+    }
 
-//   tx.header_mut().cpu_flag.remove(CPUControlFlags::IS_DUTY);
+    tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
+    const auto sound_speed_internal = gsl::narrow_cast<uint32_t>(std::round(sound_speed * 1024.0));
 
-//   tx.body_mut().iter_mut().zip(drive.chunks(NUM_TRANS_IN_UNIT)).for_each(| (d, s) | d.phases_mut().copy_from_slice(s));
+    for (size_t i = 0; i < tx.bodies().size(); i++) {
+      auto& d = tx.bodies()[i];
+      const gsl::span<STMFocus> s = points[i];
+      d.point_stm_head().set_size(gsl::narrow_cast<uint16_t>(s.size()));
+      d.point_stm_head().set_freq_div(freq_div);
+      d.point_stm_head().set_sound_speed(sound_speed_internal);
+      d.point_stm_head().set_point(s);
+    }
+  } else {
+    for (size_t i = 0; i < tx.bodies().size(); i++) {
+      auto& d = tx.bodies()[i];
+      const gsl::span<STMFocus> s = points[i];
+      d.point_stm_body().set_size(gsl::narrow_cast<uint16_t>(s.size()));
+      d.point_stm_body().set_point(s);
+    }
+  }
 
-//   tx.num_bodies = tx.body().len();
+  if (is_last_frame) {
+    tx.header().cpu_flag.set(CPUControlFlags::STM_END);
+  }
 
-//   Ok(())
-// }
+  tx.num_bodies = tx.bodies().size();
+}
 
-// pub fn point_stm(msg_id
-//                  : u8, points
-//                  : &[Vec<SeqFocus>], is_first_frame
-//                  : bool, freq_div
-//                  : u32, sound_speed
-//                  : f64, is_last_frame
-//                  : bool, tx
-//                  : &mut TxDatagram, )
-//     ->Result<()> {
-//   tx.header_mut().msg_id = msg_id;
+inline void gain_stm_legacy(const uint8_t msg_id, const gsl::span<LegacyDrive> drives, const bool is_first_frame, const uint32_t freq_div,
+                            const bool is_last_frame, TxDatagram& tx) noexcept(false) {
+  tx.header().msg_id = msg_id;
 
-//   tx.header_mut().fpga_flag.set(FPGAControlFlags::STM_MODE, true);
-//   tx.header_mut().fpga_flag.remove(FPGAControlFlags::STM_GAIN_MODE);
+  tx.header().fpga_flag.set(FPGAControlFlags::LEGACY_MODE);
+  tx.header().fpga_flag.set(FPGAControlFlags::STM_MODE);
+  tx.header().fpga_flag.set(FPGAControlFlags::STM_GAIN_MODE);
 
-//   if is_first_frame {
-//         for
-//           s in points {
-//             if s
-//               .len() > POINT_STM_HEAD_DATA_SIZE { return Err(CPUError::PointSTMHeadDataSizeOutOfRange(s.len()).into()); }
-//           }
-//   }
+  if (is_first_frame) {
+    if (freq_div < STM_SAMPLING_FREQ_DIV_MIN) {
+      std::stringstream ss;
+      ss << "STM frequency division is oud of range. Minimum is " << STM_SAMPLING_FREQ_DIV_MIN << ", but you use " << freq_div;
+      throw std::runtime_error(ss.str());
+    }
 
-//   if
-//     !is_first_frame {
-//         for
-//           s in points {
-//             if s
-//               .len() > POINT_STM_BODY_DATA_SIZE { return Err(CPUError::PointSTMBodyDataSizeOutOfRange(s.len()).into()); }
-//           }
-//     }
+    tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
+    for (size_t i = 0; i < tx.bodies().size(); i++) {
+      auto& dst = tx.bodies()[i];
+      const auto src = drives.subspan(i * NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT);
+      std::memcpy(&dst.data[0], src.data(), src.size_bytes());
+    }
+  } else {
+    for (size_t i = 0; i < tx.bodies().size(); i++) {
+      auto& dst = tx.bodies()[i];
+      const auto src = drives.subspan(i * NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT);
+      std::memcpy(&dst.data[0], src.data(), src.size_bytes());
+    }
+  }
 
-//   if is_first_frame {
-//     if freq_div
-//       < STM_SAMPLING_FREQ_DIV_MIN { return Err(FPGAError::STMFreqDivOutOfRange(freq_div).into()); }
-//     tx.header_mut().cpu_flag.set(CPUControlFlags::STM_BEGIN, true);
-//     let sound_speed = (sound_speed * 1024.0).round() as u32;
-//     tx.body_mut().iter_mut().zip(points).for_each(| (d, s) | {
-//       d.point_stm_head_mut().set_size(s.len() as _);
-//       d.point_stm_head_mut().set_freq_div(freq_div);
-//       d.point_stm_head_mut().set_sound_speed(sound_speed);
-//       d.point_stm_head_mut().set_points(s);
-//     });
-//   } else {
-//     tx.body_mut().iter_mut().zip(points).for_each(| (d, s) | {
-//       d.point_stm_body_mut().set_size(s.len() as _);
-//       d.point_stm_body_mut().set_points(s);
-//     });
-//   }
+  if (is_last_frame) {
+    tx.header().cpu_flag.set(CPUControlFlags::STM_END);
+  }
 
-//   if is_last_frame {
-//     tx.header_mut().cpu_flag.set(CPUControlFlags::STM_END, true);
-//   }
+  tx.num_bodies = tx.bodies().size();
+}
 
-//   tx.num_bodies = tx.body().len();
+inline void gain_stm_phase(const uint8_t msg_id, const gsl::span<Phase> drives, const bool is_first_frame, const uint32_t freq_div,
+                           TxDatagram& tx) noexcept(false) {
+  tx.header().msg_id = msg_id;
 
-//   Ok(())
-// }
+  tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
 
-// pub fn gain_stm_legacy(msg_id
-//                        : u8, gain
-//                        : &[LegacyDrive], is_first_frame
-//                        : bool, freq_div
-//                        : u32, is_last_frame
-//                        : bool, tx
-//                        : &mut TxDatagram, )
-//     ->Result<()> {
-//   tx.header_mut().msg_id = msg_id;
+  tx.header().fpga_flag.remove(FPGAControlFlags::LEGACY_MODE);
+  tx.header().fpga_flag.set(FPGAControlFlags::STM_MODE);
+  tx.header().fpga_flag.set(FPGAControlFlags::STM_GAIN_MODE);
 
-//   tx.header_mut().fpga_flag.set(FPGAControlFlags::LEGACY_MODE, true);
-//   tx.header_mut().fpga_flag.set(FPGAControlFlags::STM_MODE, true);
-//   tx.header_mut().fpga_flag.set(FPGAControlFlags::STM_GAIN_MODE, true);
+  if (is_first_frame) {
+    if (freq_div < STM_SAMPLING_FREQ_DIV_MIN) {
+      std::stringstream ss;
+      ss << "STM frequency division is oud of range. Minimum is " << STM_SAMPLING_FREQ_DIV_MIN << ", but you use " << freq_div;
+      throw std::runtime_error(ss.str());
+    }
 
-//   if is_first_frame {
-//     if freq_div
-//       < STM_SAMPLING_FREQ_DIV_MIN { return Err(FPGAError::STMFreqDivOutOfRange(freq_div).into()); }
-//     tx.header_mut().cpu_flag.set(CPUControlFlags::STM_BEGIN, true);
-//     tx.body_mut().iter_mut().for_each(| d | { d.gain_stm_head_mut().set_freq_div(freq_div); });
-//   } else {
-//     tx.body_mut().iter_mut().zip(gain.chunks(NUM_TRANS_IN_UNIT)).for_each(| (d, s) | {
-//       d.gain_stm_body_mut().legacy_drives_mut().clone_from_slice(s);
-//     });
-//   }
+    tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
+    for (size_t i = 0; i < tx.bodies().size(); i++) {
+      auto& dst = tx.bodies()[i];
+      const auto src = drives.subspan(i * NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT);
+      std::memcpy(&dst.data[0], src.data(), src.size_bytes());
+    }
+  } else {
+    for (size_t i = 0; i < tx.bodies().size(); i++) {
+      auto& dst = tx.bodies()[i];
+      const auto src = drives.subspan(i * NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT);
+      std::memcpy(&dst.data[0], src.data(), src.size_bytes());
+    }
+  }
 
-//   if is_last_frame {
-//     tx.header_mut().cpu_flag.set(CPUControlFlags::STM_END, true);
-//   }
+  tx.num_bodies = tx.bodies().size();
+}
 
-//   tx.num_bodies = tx.body().len();
+inline void gain_stm_duty(const uint8_t msg_id, const gsl::span<Duty> drives, const bool is_last_frame, TxDatagram& tx) noexcept(false) {
+  tx.header().msg_id = msg_id;
 
-//   Ok(())
-// }
+  tx.header().cpu_flag.set(CPUControlFlags::IS_DUTY);
 
-// pub fn gain_stm_normal_phase(msg_id : u8, phase : &[Phase], is_first_frame : bool, freq_div : u32, tx : &mut TxDatagram, )->Result<()> {
-//   tx.header_mut().msg_id = msg_id;
+  tx.header().fpga_flag.remove(FPGAControlFlags::LEGACY_MODE);
+  tx.header().fpga_flag.set(FPGAControlFlags::STM_MODE);
+  tx.header().fpga_flag.set(FPGAControlFlags::STM_GAIN_MODE);
 
-//   tx.header_mut().cpu_flag.remove(CPUControlFlags::IS_DUTY);
+  for (size_t i = 0; i < tx.bodies().size(); i++) {
+    auto& dst = tx.bodies()[i];
+    const auto src = drives.subspan(i * NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT);
+    std::memcpy(&dst.data[0], src.data(), src.size_bytes());
+  }
 
-//   tx.header_mut().fpga_flag.remove(FPGAControlFlags::LEGACY_MODE);
-//   tx.header_mut().fpga_flag.set(FPGAControlFlags::STM_MODE, true);
-//   tx.header_mut().fpga_flag.set(FPGAControlFlags::STM_GAIN_MODE, true);
+  if (is_last_frame) {
+    tx.header().cpu_flag.set(CPUControlFlags::STM_END);
+  }
 
-//   if is_first_frame {
-//     if freq_div
-//       < STM_SAMPLING_FREQ_DIV_MIN { return Err(FPGAError::STMFreqDivOutOfRange(freq_div).into()); }
-//     tx.header_mut().cpu_flag.set(CPUControlFlags::STM_BEGIN, true);
-//     tx.body_mut().iter_mut().for_each(| d | { d.gain_stm_head_mut().set_freq_div(freq_div); });
-//   } else {
-//     tx.body_mut().iter_mut().zip(phase.chunks(NUM_TRANS_IN_UNIT)).for_each(| (d, s) | { d.gain_stm_body_mut().phases_mut().clone_from_slice(s);
-//     });
-//   }
+  tx.num_bodies = tx.bodies().size();
+}
 
-//   tx.num_bodies = tx.body().len();
+inline void force_fan(TxDatagram& tx, const bool value) noexcept {
+  if (value) {
+    tx.header().fpga_flag.set(FPGAControlFlags::FORCE_FAN);
+  } else {
+    tx.header().fpga_flag.remove(FPGAControlFlags::FORCE_FAN);
+  }
+}
 
-//   Ok(())
-// }
+inline void reads_fpga_info(TxDatagram& tx, const bool value) noexcept {
+  if (value) {
+    tx.header().cpu_flag.set(CPUControlFlags::READS_FPGA_INFO);
+  } else {
+    tx.header().cpu_flag.remove(CPUControlFlags::READS_FPGA_INFO);
+  }
+}
 
-// pub fn gain_stm_normal_duty(msg_id
-//                             : u8, duty
-//                             : &[Duty], is_first_frame
-//                             : bool, freq_div
-//                             : u32, is_last_frame
-//                             : bool, tx
-//                             : &mut TxDatagram, )
-//     ->Result<()> {
-//   tx.header_mut().msg_id = msg_id;
+inline void cpu_version(TxDatagram& tx) noexcept {
+  tx.header().msg_id = MSG_RD_CPU_VERSION;
+  tx.header().cpu_flag = CPUControlFlags::MOD_END;  // For backward compatibility before 1.9
+  tx.num_bodies = 0;
+}
 
-//   tx.header_mut().cpu_flag.set(CPUControlFlags::IS_DUTY, true);
+inline void fpga_version(TxDatagram& tx) noexcept {
+  tx.header().msg_id = MSG_RD_FPGA_VERSION;
+  tx.header().cpu_flag = CPUControlFlags::STM_BEGIN;  // For backward compatibility before 1.9
+  tx.num_bodies = 0;
+}
 
-//   tx.header_mut().fpga_flag.remove(FPGAControlFlags::LEGACY_MODE);
-//   tx.header_mut().fpga_flag.set(FPGAControlFlags::STM_MODE, true);
-//   tx.header_mut().fpga_flag.set(FPGAControlFlags::STM_GAIN_MODE, true);
-
-//   if is_first_frame {
-//     if freq_div
-//       < STM_SAMPLING_FREQ_DIV_MIN { return Err(FPGAError::STMFreqDivOutOfRange(freq_div).into()); }
-//     tx.header_mut().cpu_flag.set(CPUControlFlags::STM_BEGIN, true);
-//     tx.body_mut().iter_mut().for_each(| d | { d.gain_stm_head_mut().set_freq_div(freq_div); });
-//   } else {
-//     tx.body_mut().iter_mut().zip(duty.chunks(NUM_TRANS_IN_UNIT)).for_each(| (d, s) | { d.gain_stm_body_mut().duties_mut().clone_from_slice(s);
-//     });
-//   }
-
-//   if is_last_frame {
-//     tx.header_mut().cpu_flag.set(CPUControlFlags::STM_END, true);
-//   }
-
-//   tx.num_bodies = tx.body().len();
-
-//   Ok(())
-// }
-
-// pub fn force_fan(tx : &mut TxDatagram, value : bool) { tx.header_mut().fpga_flag.set(FPGAControlFlags::FORCE_FAN, value); }
-
-// pub fn reads_fpga_info(tx : &mut TxDatagram, value : bool) { tx.header_mut().cpu_flag.set(CPUControlFlags::READS_FPGA_INFO, value); }
-
-// pub fn cpu_version(tx : &mut TxDatagram) {
-//   tx.header_mut().msg_id = MSG_RD_CPU_VERSION;
-//   tx.header_mut().cpu_flag = CPUControlFlags::from_bits(0x02).unwrap();  // For backward compatibility before 1.9
-//   tx.num_bodies = 0;
-// }
-
-// pub fn fpga_version(tx : &mut TxDatagram) {
-//   tx.header_mut().msg_id = MSG_RD_FPGA_VERSION;
-//   tx.header_mut().cpu_flag = CPUControlFlags::from_bits(0x04).unwrap();  // For backward compatibility before 1.9
-//   tx.num_bodies = 0;
-// }
-
-// pub fn fpga_functions(tx : &mut TxDatagram) {
-//   tx.header_mut().msg_id = MSG_RD_FPGA_FUNCTION;
-//   tx.header_mut().cpu_flag = CPUControlFlags::from_bits(0x05).unwrap();  // For backward compatibility before 1.9
-//   tx.num_bodies = 0;
-// }
+inline void fpga_functions(TxDatagram& tx) noexcept {
+  tx.header().msg_id = MSG_RD_FPGA_FUNCTION;
+  tx.header().cpu_flag =
+      static_cast<CPUControlFlags::VALUE>(CPUControlFlags::STM_BEGIN | CPUControlFlags::MOD_BEGIN);  // For backward compatibility before 1.9
+  tx.num_bodies = 0;
+}
 
 }  // namespace autd3::driver

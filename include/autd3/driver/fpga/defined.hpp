@@ -43,12 +43,12 @@ class FPGAControlFlags final {
   };
 
   FPGAControlFlags() = default;
-  explicit FPGAControlFlags(const VALUE value) : _value(value) {}
+  explicit FPGAControlFlags(const VALUE value) noexcept : _value(value) {}
 
   ~FPGAControlFlags() = default;
   FPGAControlFlags(const FPGAControlFlags& v) noexcept = default;
   FPGAControlFlags& operator=(const FPGAControlFlags& obj) = default;
-  FPGAControlFlags& operator=(const VALUE v) {
+  FPGAControlFlags& operator=(const VALUE v) noexcept {
     _value = v;
     return *this;
   }
@@ -57,6 +57,10 @@ class FPGAControlFlags final {
 
   constexpr bool operator==(const FPGAControlFlags a) const { return _value == a._value; }
   constexpr bool operator!=(const FPGAControlFlags a) const { return _value != a._value; }
+
+  void set(const VALUE v) noexcept { _value = static_cast<VALUE>(_value | v); }
+
+  void remove(const VALUE v) noexcept { _value = static_cast<VALUE>(_value & ~v); }
 
  private:
   VALUE _value;
@@ -81,7 +85,7 @@ struct FPGAInfo {
 
   FPGAInfo() noexcept : info(0) {}
 
-  bool is_fan_running() { return (info & 0x01) != 0; }
+  bool is_fan_running() noexcept { return (info & 0x01) != 0; }
 };
 
 }  // namespace autd3::driver
