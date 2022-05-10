@@ -4,6 +4,6 @@
 [submodule "3rdparty/cpplint"]
 	path = 3rdparty/cpplint
 	url = https://github.com/cpplint/cpplint.git
-[submodule "3rdparty/boost"]
-	path = 3rdparty/boost
-	url = https://github.com/boostorg/boost.git
+[submodule "3rdparty/lockfree"]
+	path = 3rdparty/lockfree
+	url = https://github.com/boostorg/lockfree.git
