@@ -123,8 +123,8 @@ add_compile_definitions(EIGEN_MPL2_ONLY)
 
 if(NOT USE_SYSTEM_BOOST)
   if(Git_FOUND)
-    execute_process(COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init -- ${PROJECT_SOURCE_DIR}/3rdparty/boost)
-    set(BOOST_LOCKFREE_PATH ${PROJECT_SOURCE_DIR}/3rdparty/boost/libs/lockfree)
+    execute_process(COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init --recursive -- ${PROJECT_SOURCE_DIR}/3rdparty/lockfree)
+    set(BOOST_LOCKFREE_PATH ${PROJECT_SOURCE_DIR}/3rdparty/lockfree)
   endif()
 endif()
 

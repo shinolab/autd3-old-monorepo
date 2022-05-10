@@ -118,7 +118,7 @@ if (-not (Get-Command git -ea SilentlyContinue)) {
 if (Get-Command git -ea SilentlyContinue) {
     ColorEcho "Green" "INFO" "Git is found."
     ColorEcho "Green" "INFO" "Updating git submodules..."
-    Invoke-Expression "git submodule update --init"
+    Invoke-Expression "git submodule update --init --recursive"
 }
 
 # CMake build
