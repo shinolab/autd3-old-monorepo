@@ -50,6 +50,7 @@ struct DriveData {
 
   virtual void init(size_t size) = 0;
   virtual void set_drive(const T& tr, double phase, double amp) = 0;
+  virtual void copy_from(size_t idx, const typename T::D& src) = 0;
 };
 
 template <typename T>

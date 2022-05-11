@@ -13,7 +13,7 @@ set(SOURCE_LIST
 
 add_library(autd3 ${SOURCE_LIST})
 target_include_directories(autd3 PUBLIC ${PROJECT_SOURCE_DIR}/include ${EIGEN_PATH} ${BOOST_LIBRALIES})
-target_link_libraries(autd3 PRIVATE GSL)
+target_link_libraries(autd3 PUBLIC GSL)
 if(WIN32)
   target_link_libraries(autd3 ${AUTD_LINK_LIBRARIES_KEYWORD} winmm)
 endif()

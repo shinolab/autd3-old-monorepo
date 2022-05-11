@@ -38,6 +38,16 @@ struct Device {
     _trans_inv = transform_matrix.inverse();
   }
 
+  [[nodiscard]] Vector3 center() const {
+    Vector3 sum = Vector3::Zero();
+    return std::accumulate(begin(), end(), sum,
+                           [](Vector3 acc, const T& tr) {
+                             Vector3 res = acc + tr.position();
+                             return res;
+                           }) /
+           _transducers.size();
+  }
+
   [[nodiscard]] typename std::vector<T>::const_iterator begin() const noexcept { return _transducers.begin(); }
   [[nodiscard]] typename std::vector<T>::const_iterator end() const noexcept { return _transducers.end(); }
   [[nodiscard]] typename std::vector<T>::iterator begin() noexcept { return _transducers.begin(); }
