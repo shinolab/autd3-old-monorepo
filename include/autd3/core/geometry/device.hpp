@@ -48,6 +48,15 @@ struct Device {
            _transducers.size();
   }
 
+  /**
+   * @brief Convert a global position to a local position
+   */
+  [[nodiscard]] Vector3 to_local_position(const Vector3& global_position) const {
+    const auto homo = Vector4(global_position[0], global_position[1], global_position[2], 1.0);
+    const Vector4 local_position = _trans_inv * homo;
+    return local_position.head<3>();
+  }
+
   [[nodiscard]] typename std::vector<T>::const_iterator begin() const noexcept { return _transducers.begin(); }
   [[nodiscard]] typename std::vector<T>::const_iterator end() const noexcept { return _transducers.end(); }
   [[nodiscard]] typename std::vector<T>::iterator begin() noexcept { return _transducers.begin(); }

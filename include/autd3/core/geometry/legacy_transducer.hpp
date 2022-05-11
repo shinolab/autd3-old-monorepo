@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <numbers>
 #include <utility>
 #include <vector>
@@ -31,7 +32,7 @@ struct LegacyDriveData final : DriveData<T> {
 
   void copy_from(size_t idx, const typename T::D& src) override {
     auto s = gsl::span{src.data}.subspan(idx * driver::NUM_TRANS_IN_UNIT, driver::NUM_TRANS_IN_UNIT);
-    auto d = gsl::span{data}.subspan(idx * driver::NUM_TRANS_IN_UNIT, driver::NUM_TRANS_IN_UNIT);
+    const auto d = gsl::span{data}.subspan(idx * driver::NUM_TRANS_IN_UNIT, driver::NUM_TRANS_IN_UNIT);
     std::copy(s.begin(), s.end(), d.begin());
   }
 
@@ -42,8 +43,8 @@ struct LegacyTransducer final : Transducer<LegacyDriveData<LegacyTransducer>> {
   LegacyTransducer(const size_t id, Vector3 pos, Vector3 x_direction, Vector3 y_direction, Vector3 z_direction) noexcept
       : Transducer(id, std::move(pos), std::move(x_direction), std::move(y_direction), std::move(z_direction)) {}
   ~LegacyTransducer() override = default;
-  LegacyTransducer(const LegacyTransducer& v) noexcept = delete;
-  LegacyTransducer& operator=(const LegacyTransducer& obj) = delete;
+  LegacyTransducer(const LegacyTransducer& v) noexcept = default;
+  LegacyTransducer& operator=(const LegacyTransducer& obj) = default;
   LegacyTransducer(LegacyTransducer&& obj) = default;
   LegacyTransducer& operator=(LegacyTransducer&& obj) = default;
 
