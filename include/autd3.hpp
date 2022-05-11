@@ -13,6 +13,8 @@
 
 #include "autd3/controller.hpp"
 #include "autd3/core/geometry/geometry.hpp"
+#include "autd3/core/stm/gain.hpp"
+#include "autd3/core/stm/point.hpp"
 #include "autd3/gain/primitive.hpp"
 #include "autd3/modulation/primitive.hpp"
 
@@ -22,6 +24,9 @@ constexpr double pi = std::numbers::pi;
 using core::Geometry;
 
 using core::Vector3;
+
+using core::GainSTM;
+using core::PointSTM;
 
 using driver::DEVICE_HEIGHT;
 using driver::DEVICE_WIDTH;

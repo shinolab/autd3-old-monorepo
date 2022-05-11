@@ -43,8 +43,8 @@ template <typename T>
 struct DriveData {
   DriveData() = default;
   virtual ~DriveData() = default;
-  DriveData(const DriveData& v) noexcept = delete;
-  DriveData& operator=(const DriveData& obj) = delete;
+  DriveData(const DriveData& v) noexcept = default;
+  DriveData& operator=(const DriveData& obj) = default;
   DriveData(DriveData&& obj) = default;
   DriveData& operator=(DriveData&& obj) = default;
 
@@ -64,8 +64,8 @@ struct Transducer {
         _y_direction(std::move(y_direction)),
         _z_direction(std::move(z_direction)) {}
   virtual ~Transducer() = default;
-  Transducer(const Transducer& v) noexcept = delete;
-  Transducer& operator=(const Transducer& obj) = delete;
+  Transducer(const Transducer& v) noexcept = default;
+  Transducer& operator=(const Transducer& obj) = default;
   Transducer(Transducer&& obj) = default;
   Transducer& operator=(Transducer&& obj) = default;
 

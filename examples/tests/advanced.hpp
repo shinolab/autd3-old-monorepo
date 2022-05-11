@@ -19,10 +19,12 @@ class BurstModulation final : public autd3::core::Modulation {
  public:
   void calc() override {
     this->_props.buffer.resize(_buf_size, 0);
-    this->_props.buffer[_buf_size - 1] = 0xFF;
+    this->_props.buffer.at(_buf_size - 1) = 0xFF;
   }
 
-  explicit BurstModulation(const size_t buf_size = 4000, const uint16_t freq_div = 40960) : _buf_size(buf_size) { _props.freq_div = freq_div; }
+  explicit BurstModulation(const size_t buf_size = 4000, const uint16_t freq_div = 40960) noexcept : _buf_size(buf_size) {
+    _props.freq_div = freq_div;
+  }
 
  private:
   size_t _buf_size;
@@ -34,7 +36,7 @@ class UniformGain final : public autd3::core::Gain<T> {
  public:
   UniformGain() = default;
 
-  void calc(const autd3::Geometry<T>& geometry) override {
+  void calc(const autd3::core::Geometry<T>& geometry) override {
     for (const auto& dev : geometry)
       for (const auto& trans : dev) this->_props.drives.set_drive(trans, 0.0, 1.0);
   }
@@ -45,7 +47,7 @@ void advanced_test(autd3::Controller<T>& autd) {
   const auto config = autd3::SilencerConfig::none();
   autd.config_silencer(config);
 
-  UniformGain g;
+  UniformGain<T> g;
   BurstModulation m;
   autd.send(m, g);
 }

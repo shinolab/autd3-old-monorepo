@@ -153,11 +153,13 @@ class EmulatorImpl final : public core::Link {
   }
 };
 
+template <>
 core::LinkPtr Emulator<core::LegacyTransducer>::build() {
   core::LinkPtr link = std::make_unique<EmulatorImpl<core::LegacyTransducer>>(_port, _geometry);
   return link;
 }
 
+template <>
 core::LinkPtr Emulator<core::NormalTransducer>::build() {
   core::LinkPtr link = std::make_unique<EmulatorImpl<core::NormalTransducer>>(_port, _geometry);
   return link;

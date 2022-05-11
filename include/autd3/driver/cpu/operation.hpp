@@ -12,6 +12,7 @@
 #pragma once
 
 #include <sstream>
+#include <vector>
 
 #include "datagram.hpp"
 
@@ -124,13 +125,15 @@ inline void normal_phase_body(const gsl::span<Phase> drives, TxDatagram& tx) noe
   tx.num_bodies = tx.bodies().size();
 }
 
-inline void point_stm(const uint8_t msg_id, const gsl::span<gsl::span<STMFocus>> points, const bool is_first_frame, const uint32_t freq_div,
-                      const double sound_speed, const bool is_last_frame, TxDatagram& tx) noexcept(false) {
+inline void point_stm_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
   tx.header().msg_id = msg_id;
 
   tx.header().fpga_flag.set(FPGAControlFlags::STM_MODE);
   tx.header().fpga_flag.remove(FPGAControlFlags::STM_GAIN_MODE);
+}
 
+inline void point_stm_body(const std::vector<std::vector<STMFocus>>& points, const bool is_first_frame, const uint32_t freq_div,
+                           const double sound_speed, const bool is_last_frame, TxDatagram& tx) noexcept(false) {
   if (is_first_frame) {
     if (freq_div < STM_SAMPLING_FREQ_DIV_MIN) {
       std::stringstream ss;
@@ -143,7 +146,7 @@ inline void point_stm(const uint8_t msg_id, const gsl::span<gsl::span<STMFocus>>
 
     for (size_t i = 0; i < tx.bodies().size(); i++) {
       auto& d = tx.bodies()[i];
-      const gsl::span<STMFocus> s = points[i];
+      auto s = gsl::span{points.at(i)};
       d.point_stm_head().set_size(gsl::narrow_cast<uint16_t>(s.size()));
       d.point_stm_head().set_freq_div(freq_div);
       d.point_stm_head().set_sound_speed(sound_speed_internal);
@@ -152,7 +155,7 @@ inline void point_stm(const uint8_t msg_id, const gsl::span<gsl::span<STMFocus>>
   } else {
     for (size_t i = 0; i < tx.bodies().size(); i++) {
       auto& d = tx.bodies()[i];
-      const gsl::span<STMFocus> s = points[i];
+      auto s = gsl::span{points.at(i)};
       d.point_stm_body().set_size(gsl::narrow_cast<uint16_t>(s.size()));
       d.point_stm_body().set_point(s);
     }
@@ -165,14 +168,16 @@ inline void point_stm(const uint8_t msg_id, const gsl::span<gsl::span<STMFocus>>
   tx.num_bodies = tx.bodies().size();
 }
 
-inline void gain_stm_legacy(const uint8_t msg_id, const gsl::span<LegacyDrive> drives, const bool is_first_frame, const uint32_t freq_div,
-                            const bool is_last_frame, TxDatagram& tx) noexcept(false) {
+inline void gain_stm_legacy_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
   tx.header().msg_id = msg_id;
 
   tx.header().fpga_flag.set(FPGAControlFlags::LEGACY_MODE);
   tx.header().fpga_flag.set(FPGAControlFlags::STM_MODE);
   tx.header().fpga_flag.set(FPGAControlFlags::STM_GAIN_MODE);
+}
 
+inline void gain_stm_legacy_body(const gsl::span<LegacyDrive> drives, const bool is_first_frame, const uint32_t freq_div, const bool is_last_frame,
+                                 TxDatagram& tx) noexcept(false) {
   if (is_first_frame) {
     if (freq_div < STM_SAMPLING_FREQ_DIV_MIN) {
       std::stringstream ss;
@@ -181,11 +186,7 @@ inline void gain_stm_legacy(const uint8_t msg_id, const gsl::span<LegacyDrive> d
     }
 
     tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
-    for (size_t i = 0; i < tx.bodies().size(); i++) {
-      auto& dst = tx.bodies()[i];
-      const auto src = drives.subspan(i * NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT);
-      std::memcpy(&dst.data[0], src.data(), src.size_bytes());
-    }
+    for (auto& body : tx.bodies()) body.gain_stm_head().set_freq_div(freq_div);
   } else {
     for (size_t i = 0; i < tx.bodies().size(); i++) {
       auto& dst = tx.bodies()[i];
@@ -194,23 +195,22 @@ inline void gain_stm_legacy(const uint8_t msg_id, const gsl::span<LegacyDrive> d
     }
   }
 
-  if (is_last_frame) {
-    tx.header().cpu_flag.set(CPUControlFlags::STM_END);
-  }
+  if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::STM_END);
 
   tx.num_bodies = tx.bodies().size();
 }
 
-inline void gain_stm_phase(const uint8_t msg_id, const gsl::span<Phase> drives, const bool is_first_frame, const uint32_t freq_div,
-                           TxDatagram& tx) noexcept(false) {
+inline void gain_stm_normal_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
   tx.header().msg_id = msg_id;
 
+  tx.header().fpga_flag.remove(FPGAControlFlags::LEGACY_MODE);
+  tx.header().fpga_flag.set(FPGAControlFlags::STM_MODE);
+  tx.header().fpga_flag.set(FPGAControlFlags::STM_GAIN_MODE);
+}
+
+inline void gain_stm_normal_phase(const gsl::span<Phase> drives, const bool is_first_frame, const uint32_t freq_div, TxDatagram& tx) noexcept(false) {
   tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
 
-  tx.header().fpga_flag.remove(FPGAControlFlags::LEGACY_MODE);
-  tx.header().fpga_flag.set(FPGAControlFlags::STM_MODE);
-  tx.header().fpga_flag.set(FPGAControlFlags::STM_GAIN_MODE);
-
   if (is_first_frame) {
     if (freq_div < STM_SAMPLING_FREQ_DIV_MIN) {
       std::stringstream ss;
@@ -219,11 +219,7 @@ inline void gain_stm_phase(const uint8_t msg_id, const gsl::span<Phase> drives, 
     }
 
     tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
-    for (size_t i = 0; i < tx.bodies().size(); i++) {
-      auto& dst = tx.bodies()[i];
-      const auto src = drives.subspan(i * NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT);
-      std::memcpy(&dst.data[0], src.data(), src.size_bytes());
-    }
+    for (auto& body : tx.bodies()) body.gain_stm_head().set_freq_div(freq_div);
   } else {
     for (size_t i = 0; i < tx.bodies().size(); i++) {
       auto& dst = tx.bodies()[i];
@@ -235,14 +231,8 @@ inline void gain_stm_phase(const uint8_t msg_id, const gsl::span<Phase> drives, 
   tx.num_bodies = tx.bodies().size();
 }
 
-inline void gain_stm_duty(const uint8_t msg_id, const gsl::span<Duty> drives, const bool is_last_frame, TxDatagram& tx) noexcept(false) {
-  tx.header().msg_id = msg_id;
-
+inline void gain_stm_normal_duty(const gsl::span<Duty> drives, const bool is_last_frame, TxDatagram& tx) noexcept(false) {
   tx.header().cpu_flag.set(CPUControlFlags::IS_DUTY);
-
-  tx.header().fpga_flag.remove(FPGAControlFlags::LEGACY_MODE);
-  tx.header().fpga_flag.set(FPGAControlFlags::STM_MODE);
-  tx.header().fpga_flag.set(FPGAControlFlags::STM_GAIN_MODE);
 
   for (size_t i = 0; i < tx.bodies().size(); i++) {
     auto& dst = tx.bodies()[i];

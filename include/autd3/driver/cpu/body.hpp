@@ -30,7 +30,7 @@ struct STMFocus {
         gsl::narrow_cast<uint16_t>(iy << 2 & 0xFFFC) | gsl::narrow_cast<uint16_t>(ix >> 30 & 0x0002) | gsl::narrow_cast<uint16_t>(ix >> 16 & 0x0001);
     _data[2] =
         gsl::narrow_cast<uint16_t>(iz << 4 & 0xFFF0) | gsl::narrow_cast<uint16_t>(iy >> 28 & 0x0008) | gsl::narrow_cast<uint16_t>(iy >> 14 & 0x0007);
-    _data[3] = gsl::narrow_cast<uint16_t>(duty_shift << 6 & 0x3FC0) | gsl::narrow_cast<uint16_t>(ix >> 26 & 0x0020) |
+    _data[3] = gsl::narrow_cast<uint16_t>(duty_shift << 6 & 0x3FC0) | gsl::narrow_cast<uint16_t>(iz >> 26 & 0x0020) |
                gsl::narrow_cast<uint16_t>(iz >> 12 & 0x001F);
   }
 
@@ -53,7 +53,7 @@ struct PointSTMBodyHead {
     _data[4] = gsl::narrow_cast<uint16_t>(sound_speed >> 16 & 0xFFFF);
   }
 
-  void set_point(const gsl::span<STMFocus> points) noexcept { std::memcpy(&_data[5], points.data(), points.size_bytes()); }
+  void set_point(const gsl::span<const STMFocus> points) noexcept { std::memcpy(&_data[5], points.data(), points.size_bytes()); }
 
  private:
   uint16_t _data[NUM_TRANS_IN_UNIT]{};
@@ -64,7 +64,7 @@ struct PointSTMBodyBody {
 
   void set_size(const uint16_t size) noexcept { _data[0] = size; }
 
-  void set_point(const gsl::span<STMFocus> points) noexcept { std::memcpy(&_data[1], points.data(), points.size_bytes()); }
+  void set_point(const gsl::span<const STMFocus> points) noexcept { std::memcpy(&_data[1], points.data(), points.size_bytes()); }
 
  private:
   uint16_t _data[NUM_TRANS_IN_UNIT]{};

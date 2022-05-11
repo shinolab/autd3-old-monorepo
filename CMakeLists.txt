@@ -4,7 +4,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
   message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt. ")
 endif()
 
-project(autd3)
+project(autd3 LANGUAGES CXX)
 
 set(VERSION_MAJOR 2 CACHE STRING "Project major version number.")
 set(VERSION_MINOR 0 CACHE STRING "Project minor version number.")
@@ -104,9 +104,9 @@ if(ENABLE_LINT)
   ADD_CUSTOM_TARGET(cpplint
     python
     ${PROJECT_SOURCE_DIR}/3rdparty/cpplint/cpplint.py
-    --filter=-runtime/references,-build/c++11,-whitespace/comments,-readability/braces,-build/include_subdir
+    --filter=-runtime/references,-build/c++11,-whitespace/comments,-readability/braces,-build/include_subdir,-build/include_order
     --linelength=1000
-    ${lint_files} 
+    ${lint_files}
   )
 endif()
 

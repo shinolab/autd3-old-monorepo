@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <gsl/gsl>
 #include <numbers>
 #include <utility>
@@ -36,10 +37,10 @@ struct NormalDriveData final : DriveData<T> {
   }
   void copy_from(size_t idx, const typename T::D& src) override {
     auto ds = gsl::span{src.duties}.subspan(idx * driver::NUM_TRANS_IN_UNIT, driver::NUM_TRANS_IN_UNIT);
-    auto dd = gsl::span{duties}.subspan(idx * driver::NUM_TRANS_IN_UNIT, driver::NUM_TRANS_IN_UNIT);
+    const auto dd = gsl::span{duties}.subspan(idx * driver::NUM_TRANS_IN_UNIT, driver::NUM_TRANS_IN_UNIT);
     std::copy(ds.begin(), ds.end(), dd.begin());
     auto ps = gsl::span{src.phases}.subspan(idx * driver::NUM_TRANS_IN_UNIT, driver::NUM_TRANS_IN_UNIT);
-    auto pd = gsl::span{phases}.subspan(idx * driver::NUM_TRANS_IN_UNIT, driver::NUM_TRANS_IN_UNIT);
+    const auto pd = gsl::span{phases}.subspan(idx * driver::NUM_TRANS_IN_UNIT, driver::NUM_TRANS_IN_UNIT);
     std::copy(ps.begin(), ps.end(), pd.begin());
   }
 
@@ -51,8 +52,8 @@ struct NormalTransducer final : Transducer<NormalDriveData<NormalTransducer>> {
   NormalTransducer(const size_t id, Vector3 pos, Vector3 x_direction, Vector3 y_direction, Vector3 z_direction) noexcept
       : Transducer(id, std::move(pos), std::move(x_direction), std::move(y_direction), std::move(z_direction)), _cycle(4096) {}
   ~NormalTransducer() override = default;
-  NormalTransducer(const NormalTransducer& v) noexcept = delete;
-  NormalTransducer& operator=(const NormalTransducer& obj) = delete;
+  NormalTransducer(const NormalTransducer& v) noexcept = default;
+  NormalTransducer& operator=(const NormalTransducer& obj) = default;
   NormalTransducer(NormalTransducer&& obj) = default;
   NormalTransducer& operator=(NormalTransducer&& obj) = default;
 
