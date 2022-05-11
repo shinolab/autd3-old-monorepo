@@ -105,8 +105,8 @@ if(ENABLE_LINT)
     python
     ${PROJECT_SOURCE_DIR}/3rdparty/cpplint/cpplint.py
     --filter=-runtime/references,-build/c++11,-whitespace/comments,-readability/braces,-build/include_subdir
-    --linelength=150
-    ${lint_files}
+    --linelength=1000
+    ${lint_files} 
   )
 endif()
 
