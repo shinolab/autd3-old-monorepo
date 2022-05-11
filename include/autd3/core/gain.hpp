@@ -30,7 +30,8 @@ struct GainProps {
 
   void init(size_t size) { drives.init(size); }
 
-  void pack(const uint8_t msg_id, driver::TxDatagram& tx) { T::pack(msg_id, phase_sent, duty_sent, drives, tx); }
+  void pack_header(const uint8_t msg_id, driver::TxDatagram& tx) { T::pack_header(msg_id, tx); }
+  void pack_body(driver::TxDatagram& tx) { T::pack_body(phase_sent, duty_sent, drives, tx); }
 };
 
 template <typename T, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
@@ -68,11 +69,12 @@ struct Gain : DatagramBody<T> {
   }
 
   void pack(uint8_t msg_id, Geometry<T>& geometry, driver::TxDatagram& tx) override {
+    _props.pack_header(msg_id, tx);
     if (is_finished()) {
       return;
     }
     build(geometry);
-    _props.pack(msg_id, tx);
+    _props.pack_body(tx);
   }
 
   [[nodiscard]] bool is_finished() const noexcept override { return _props.phase_sent && _props.duty_sent; }

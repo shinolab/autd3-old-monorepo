@@ -17,5 +17,16 @@
 #include "autd3/modulation/primitive.hpp"
 
 namespace autd3 {
+constexpr double pi = std::numbers::pi;
+
 using core::Geometry;
+
+using core::Vector3;
+
+using driver::DEVICE_HEIGHT;
+using driver::DEVICE_WIDTH;
+using driver::NUM_TRANS_X;
+using driver::NUM_TRANS_Y;
+using driver::TRANS_SPACING_MM;
+
 }  // namespace autd3

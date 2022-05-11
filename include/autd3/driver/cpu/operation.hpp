@@ -77,12 +77,14 @@ inline void config_silencer(const uint8_t msg_id, const uint16_t cycle, const ui
   tx.header().silencer_header().step = step;
 }
 
-inline void normal_legacy(const uint8_t msg_id, const gsl::span<LegacyDrive> drives, TxDatagram& tx) noexcept {
+inline void normal_legacy_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
   tx.header().msg_id = msg_id;
 
   tx.header().fpga_flag.set(FPGAControlFlags::LEGACY_MODE);
   tx.header().fpga_flag.remove(FPGAControlFlags::STM_MODE);
+}
 
+inline void normal_legacy_body(const gsl::span<LegacyDrive> drives, TxDatagram& tx) noexcept {
   for (size_t i = 0; i < tx.bodies().size(); i++) {
     auto& dst = tx.bodies()[i];
     const auto src = drives.subspan(i * NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT);
@@ -92,12 +94,14 @@ inline void normal_legacy(const uint8_t msg_id, const gsl::span<LegacyDrive> dri
   tx.num_bodies = tx.bodies().size();
 }
 
-inline void normal_duty(const uint8_t msg_id, const gsl::span<Duty> drives, TxDatagram& tx) noexcept {
+inline void normal_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
   tx.header().msg_id = msg_id;
 
   tx.header().fpga_flag.remove(FPGAControlFlags::LEGACY_MODE);
   tx.header().fpga_flag.remove(FPGAControlFlags::STM_MODE);
+}
 
+inline void normal_duty_body(const gsl::span<Duty> drives, TxDatagram& tx) noexcept {
   tx.header().cpu_flag.set(CPUControlFlags::IS_DUTY);
 
   for (size_t i = 0; i < tx.bodies().size(); i++) {
@@ -105,16 +109,10 @@ inline void normal_duty(const uint8_t msg_id, const gsl::span<Duty> drives, TxDa
     const auto src = drives.subspan(i * NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT);
     std::memcpy(&dst.data[0], src.data(), src.size_bytes());
   }
-
   tx.num_bodies = tx.bodies().size();
 }
 
-inline void normal_phase(const uint8_t msg_id, const gsl::span<Phase> drives, TxDatagram& tx) noexcept {
-  tx.header().msg_id = msg_id;
-
-  tx.header().fpga_flag.remove(FPGAControlFlags::LEGACY_MODE);
-  tx.header().fpga_flag.remove(FPGAControlFlags::STM_MODE);
-
+inline void normal_phase_body(const gsl::span<Phase> drives, TxDatagram& tx) noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
 
   for (size_t i = 0; i < tx.bodies().size(); i++) {

@@ -29,6 +29,12 @@ struct LegacyDriveData final : DriveData<T> {
     data.at(tr.id()).phase = gsl::narrow_cast<uint8_t>(static_cast<int32_t>(std::round(phase * 256.0)) & 0xFF);
   }
 
+  void copy_from(size_t idx, const typename T::D& src) override {
+    auto s = gsl::span{src.data}.subspan(idx * driver::NUM_TRANS_IN_UNIT, driver::NUM_TRANS_IN_UNIT);
+    auto d = gsl::span{data}.subspan(idx * driver::NUM_TRANS_IN_UNIT, driver::NUM_TRANS_IN_UNIT);
+    std::copy(s.begin(), s.end(), d.begin());
+  }
+
   std::vector<driver::LegacyDrive> data{};
 };
 
@@ -46,8 +52,10 @@ struct LegacyTransducer final : Transducer<LegacyDriveData<LegacyTransducer>> {
   [[nodiscard]] double wavelength(const double sound_speed) const noexcept override { return sound_speed * 1e3 / 40e3; }
   [[nodiscard]] double wavenumber(const double sound_speed) const noexcept override { return 2.0 * std::numbers::pi * 40e3 / (sound_speed * 1e3); }
 
-  static void pack(const uint8_t msg_id, bool& phase_sent, bool& duty_sent, D& drives, driver::TxDatagram& tx) noexcept {
-    normal_legacy(msg_id, gsl::span{drives.data}, tx);
+  static void pack_header(const uint8_t msg_id, driver::TxDatagram& tx) noexcept { normal_legacy_header(msg_id, tx); }
+
+  static void pack_body(bool& phase_sent, bool& duty_sent, D& drives, driver::TxDatagram& tx) noexcept {
+    normal_legacy_body(gsl::span{drives.data}, tx);
     phase_sent = true;
     duty_sent = true;
   }

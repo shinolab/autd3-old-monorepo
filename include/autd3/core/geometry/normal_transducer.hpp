@@ -34,6 +34,14 @@ struct NormalDriveData final : DriveData<T> {
     phases.at(tr.id()).phase = gsl::narrow_cast<uint16_t>(
         rem_euclid(static_cast<int32_t>(std::round(phase * static_cast<double>(tr.cycle()))), static_cast<int32_t>(tr.cycle())));
   }
+  void copy_from(size_t idx, const typename T::D& src) override {
+    auto ds = gsl::span{src.duties}.subspan(idx * driver::NUM_TRANS_IN_UNIT, driver::NUM_TRANS_IN_UNIT);
+    auto dd = gsl::span{duties}.subspan(idx * driver::NUM_TRANS_IN_UNIT, driver::NUM_TRANS_IN_UNIT);
+    std::copy(ds.begin(), ds.end(), dd.begin());
+    auto ps = gsl::span{src.phases}.subspan(idx * driver::NUM_TRANS_IN_UNIT, driver::NUM_TRANS_IN_UNIT);
+    auto pd = gsl::span{phases}.subspan(idx * driver::NUM_TRANS_IN_UNIT, driver::NUM_TRANS_IN_UNIT);
+    std::copy(ps.begin(), ps.end(), pd.begin());
+  }
 
   std::vector<driver::Duty> duties{};
   std::vector<driver::Phase> phases{};
@@ -53,12 +61,14 @@ struct NormalTransducer final : Transducer<NormalDriveData<NormalTransducer>> {
   [[nodiscard]] double wavelength(const double sound_speed) const noexcept override { return sound_speed * 1e3 / 40e3; }
   [[nodiscard]] double wavenumber(const double sound_speed) const noexcept override { return 2.0 * std::numbers::pi * 40e3 / (sound_speed * 1e3); }
 
-  static void pack(const uint8_t msg_id, bool& phase_sent, bool& duty_sent, D& drives, driver::TxDatagram& tx) noexcept {
+  static void pack_header(const uint8_t msg_id, driver::TxDatagram& tx) noexcept { normal_header(msg_id, tx); }
+
+  static void pack_body(bool& phase_sent, bool& duty_sent, D& drives, driver::TxDatagram& tx) noexcept {
     if (!phase_sent) {
-      normal_phase(msg_id, gsl::span{drives.phases}, tx);
+      normal_phase_body(gsl::span{drives.phases}, tx);
       phase_sent = true;
     } else {
-      normal_duty(msg_id, gsl::span{drives.duties}, tx);
+      normal_duty_body(gsl::span{drives.duties}, tx);
       duty_sent = true;
     }
   }

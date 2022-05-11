@@ -30,9 +30,13 @@ struct Geometry {
 
   [[nodiscard]] size_t num_transducers() const noexcept { return _devices.size() * driver::NUM_TRANS_IN_UNIT; }
   [[nodiscard]] Vector3 center() const {
-    auto sum = Vector3::Zero();
-    for (auto& device : this) std::accumulate(device.begin(), device.end(), sum);
-    return sum / num_transducers();
+    Vector3 sum = Vector3::Zero();
+    return std::accumulate(begin(), end(), sum,
+                           [](Vector3 acc, const Device<T>& dev) {
+                             Vector3 res = acc + dev.center();
+                             return res;
+                           }) /
+           _devices.size();
   }
 
   size_t add_device(const Vector3& position, const Vector3& euler_angles) {
