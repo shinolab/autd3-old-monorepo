@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/05/2022
+// Last Modified: 11/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -109,7 +109,7 @@ inline void normal_duty(const uint8_t msg_id, const gsl::span<Duty> drives, TxDa
   tx.num_bodies = tx.bodies().size();
 }
 
-inline void normal_duty(const uint8_t msg_id, const gsl::span<Phase> drives, TxDatagram& tx) noexcept {
+inline void normal_phase(const uint8_t msg_id, const gsl::span<Phase> drives, TxDatagram& tx) noexcept {
   tx.header().msg_id = msg_id;
 
   tx.header().fpga_flag.remove(FPGAControlFlags::LEGACY_MODE);

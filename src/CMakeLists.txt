@@ -6,8 +6,6 @@ file(GLOB_RECURSE driver_include_files ${PROJECT_SOURCE_DIR}/include/autd3/drive
 
 set(SOURCE_LIST
   controller.cpp
-  gain/primitive.cpp
-  modulation/primitive.cpp
   ${include_files}
   ${core_include_files}
   ${driver_include_files}
@@ -19,6 +17,13 @@ target_link_libraries(autd3 PRIVATE GSL)
 if(WIN32)
   target_link_libraries(autd3 ${AUTD_LINK_LIBRARIES_KEYWORD} winmm)
 endif()
+
+set_target_properties(autd3
+  PROPERTIES
+  ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+  LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+)
 
 if (NOT WIN32)
   set_target_properties(autd3 PROPERTIES POSITION_INDEPENDENT_CODE ON)
