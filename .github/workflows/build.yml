@@ -1,0 +1,103 @@
+name: build
+
+on:
+  push:
+    tags-ignore:
+      - v*
+    branches:
+      - 'dev'
+
+jobs:
+  build:
+    name: build ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    
+    steps:
+    - uses: actions/checkout@v2
+    - name: Checkout submodules
+      run: git submodule update --init --force --recursive
+    - name: setup-msbuild
+      if: matrix.os == 'windows-latest'
+      uses: microsoft/setup-msbuild@v1
+    - name: build for Windows x64
+      if: matrix.os == 'windows-latest'
+      run: |
+        cd client
+        cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON
+        cd build
+        msbuild autd3.sln /t:build /p:Configuration=Release
+    - name: build for Windows x86
+      if: matrix.os == 'windows-latest'
+      run: |
+        cd client
+        cmake -G "Visual Studio 17 2022" -A Win32 -B "build_x86" -DBUILD_ALL=ON
+        cd build_x86
+        msbuild autd3.sln /t:build /p:Configuration=Release
+    - name: install gcc-10
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt update
+        sudo apt install gcc-10 g++-10 g++-arm-linux-gnueabihf g++-aarch64-linux-gnu -y
+      shell: bash
+    - name: build for Linux
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        cd client
+        mkdir -p build && cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON
+        make -j8
+      shell: bash
+      env:
+        CC: gcc-10
+        CXX: g++-10
+    - name: build for Linux ARM32
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        cd client
+        mkdir -p build_arm32 && cd build_arm32
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM32 -DBUILD_ALL=ON
+        make -j8
+      shell: bash
+      env:
+        CC: gcc-10
+        CXX: g++-10
+    - name: build for Linux ARM64
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        cd client
+        mkdir -p build_arm64 && cd build_arm64
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM64 -DBUILD_ALL=ON
+        make -j8
+      shell: bash
+      env:
+        CC: gcc-10
+        CXX: g++-10
+    - name: build for macOS
+      if: matrix.os == 'macos-latest'
+      run: |
+        cd client
+        mkdir -p build && cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON
+        make -j8
+        
+        
+  lint:
+    name: lint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    steps: 
+    - uses: actions/checkout@v2
+    - name: Checkout submodules
+      run: git submodule update --init --force --recursive
+    - name: lint
+      run: |
+        cd client
+        mkdir -p build && cd build
+        cmake .. -DBUILD_ALL=ON -DENABLE_LINT=ON
+        make cpplint
