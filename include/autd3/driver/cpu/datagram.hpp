@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/05/2022
+// Last Modified: 11/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -27,7 +27,9 @@ struct TxDatagram {
 
   [[nodiscard]] size_t size() const noexcept { return sizeof(GlobalHeader) + sizeof(Body) * num_bodies; }
 
-  gsl::span<uint8_t> data() noexcept { return gsl::span{_data}; }
+  std::vector<uint8_t> &data() noexcept { return _data; }
+
+  [[nodiscard]] const std::vector<uint8_t> &data() const noexcept { return _data; }
 
   GlobalHeader &header() noexcept { return *std::bit_cast<GlobalHeader *>(_data.data()); }
   [[nodiscard]] GlobalHeader const &header() const noexcept { return *std::bit_cast<GlobalHeader const *const>(_data.data()); }
@@ -56,11 +58,20 @@ struct RxMessage {
 struct RxDatagram {
   explicit RxDatagram(const size_t size) { _data.resize(size); }
 
-  gsl::span<RxMessage> messages() noexcept { return gsl::span{_data}; }
+  std::vector<RxMessage> &messages() noexcept { return _data; }
+  [[nodiscard]] const std::vector<RxMessage> &messages() const noexcept { return _data; }
 
   bool is_msg_processed(uint8_t msg_id) {
     return std::ranges::all_of(_data, [msg_id](const RxMessage msg) noexcept { return msg.msg_id == msg_id; });
   }
+
+  [[nodiscard]] std::vector<RxMessage>::const_iterator begin() const noexcept { return _data.begin(); }
+  [[nodiscard]] std::vector<RxMessage>::const_iterator end() const noexcept { return _data.end(); }
+  [[nodiscard]] std::vector<RxMessage>::iterator begin() noexcept { return _data.begin(); }
+  [[nodiscard]] std::vector<RxMessage>::iterator end() noexcept { return _data.end(); }
+
+  RxMessage &operator[](const size_t i) noexcept { return _data.at(i); }
+  const RxMessage &operator[](const size_t i) const noexcept { return _data.at(i); }
 
  private:
   std::vector<RxMessage> _data;

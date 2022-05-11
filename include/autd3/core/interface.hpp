@@ -1,0 +1,49 @@
+// File: interface.hpp
+// Project: core
+// Created Date: 11/05/2022
+// Author: Shun Suzuki
+// -----
+// Last Modified: 11/05/2022
+// Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+// -----
+// Copyright (c) 2022 Hapis Lab. All rights reserved.
+//
+
+#pragma once
+
+#include <cstdint>
+
+#include "autd3/driver/cpu/datagram.hpp"
+#include "geometry/geometry.hpp"
+#include "geometry/transducer.hpp"
+
+namespace autd3::core {
+
+struct DatagramHeader {
+  DatagramHeader() = default;
+  virtual ~DatagramHeader() = default;
+  DatagramHeader(const DatagramHeader& v) = default;
+  DatagramHeader& operator=(const DatagramHeader& obj) = default;
+  DatagramHeader(DatagramHeader&& obj) = default;
+  DatagramHeader& operator=(DatagramHeader&& obj) = default;
+
+  virtual void init() = 0;
+  virtual void pack(uint8_t msg_id, driver::TxDatagram& tx) = 0;
+  [[nodiscard]] virtual bool is_finished() const = 0;
+};
+
+template <typename T, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+struct DatagramBody {
+  DatagramBody() = default;
+  virtual ~DatagramBody() = default;
+  DatagramBody(const DatagramBody& v) = default;
+  DatagramBody& operator=(const DatagramBody& obj) = default;
+  DatagramBody(DatagramBody&& obj) = default;
+  DatagramBody& operator=(DatagramBody&& obj) = default;
+
+  virtual void init() = 0;
+  virtual void pack(uint8_t msg_id, Geometry<T>& geometry, driver::TxDatagram& tx) = 0;
+  [[nodiscard]] virtual bool is_finished() const = 0;
+};
+
+}  // namespace autd3::core
