@@ -25,14 +25,12 @@ jobs:
     - name: build for Windows x64
       if: matrix.os == 'windows-latest'
       run: |
-        cd client
         cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON
         cd build
         msbuild autd3.sln /t:build /p:Configuration=Release
     - name: build for Windows x86
       if: matrix.os == 'windows-latest'
       run: |
-        cd client
         cmake -G "Visual Studio 17 2022" -A Win32 -B "build_x86" -DBUILD_ALL=ON
         cd build_x86
         msbuild autd3.sln /t:build /p:Configuration=Release
@@ -45,7 +43,6 @@ jobs:
     - name: build for Linux
       if: matrix.os == 'ubuntu-latest'
       run: |
-        cd client
         mkdir -p build && cd build
         cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON
         make -j8
@@ -56,7 +53,6 @@ jobs:
     - name: build for Linux ARM32
       if: matrix.os == 'ubuntu-latest'
       run: |
-        cd client
         mkdir -p build_arm32 && cd build_arm32
         cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM32 -DBUILD_ALL=ON
         make -j8
@@ -67,7 +63,6 @@ jobs:
     - name: build for Linux ARM64
       if: matrix.os == 'ubuntu-latest'
       run: |
-        cd client
         mkdir -p build_arm64 && cd build_arm64
         cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM64 -DBUILD_ALL=ON
         make -j8
@@ -78,7 +73,6 @@ jobs:
     - name: build for macOS
       if: matrix.os == 'macos-latest'
       run: |
-        cd client
         mkdir -p build && cd build
         cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON
         make -j8
@@ -97,7 +91,6 @@ jobs:
       run: git submodule update --init --force --recursive
     - name: lint
       run: |
-        cd client
         mkdir -p build && cd build
         cmake .. -DBUILD_ALL=ON -DENABLE_LINT=ON
         make cpplint
