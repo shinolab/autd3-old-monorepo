@@ -14,6 +14,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cstring>
+#include <vector>
 
 #include "autd3/driver/fpga/defined.hpp"
 #include "autd3/driver/hardware.hpp"
@@ -36,7 +37,7 @@ struct STMFocus {
 };
 
 struct PointSTMBodyHead {
-  const uint16_t* data() const noexcept { return _data; }
+  [[nodiscard]] const uint16_t* data() const noexcept { return _data; }
 
   void set_size(const uint16_t size) noexcept { _data[0] = size; }
 
@@ -57,7 +58,7 @@ struct PointSTMBodyHead {
 };
 
 struct PointSTMBodyBody {
-  const uint16_t* data() const noexcept { return _data; }
+  [[nodiscard]] const uint16_t* data() const noexcept { return _data; }
 
   void set_size(const uint16_t size) noexcept { _data[0] = size; }
 
@@ -80,7 +81,7 @@ struct GainSTMBodyHead {
 };
 
 struct GainSTMBodyBody {
-  const uint16_t* data() const noexcept { return _data; }
+  [[nodiscard]] const uint16_t* data() const noexcept { return _data; }
 
  private:
   uint16_t _data[NUM_TRANS_IN_UNIT]{};

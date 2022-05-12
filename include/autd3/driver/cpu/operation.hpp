@@ -117,9 +117,9 @@ inline void normal_phase_body(const Phase* drives, TxDatagram& tx) noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
 
   for (size_t i = 0; i < tx.size(); i++) {
-    auto& dst = tx.bodies()[i];
+    auto& [data] = tx.bodies()[i];
     const auto src = drives + i * NUM_TRANS_IN_UNIT;
-    std::memcpy(&dst.data[0], src, sizeof(Body));
+    std::memcpy(data, src, sizeof(Body));
   }
 
   tx.num_bodies = tx.size();

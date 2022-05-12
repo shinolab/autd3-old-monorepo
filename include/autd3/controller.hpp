@@ -47,7 +47,7 @@ class Controller {
     _link->open();
   }
 
-  bool config_silencer(SilencerConfig config) {
+  bool config_silencer(const SilencerConfig config) {
     _tx_buf.clear();
 
     driver::force_fan(_tx_buf, force_fan);
@@ -203,7 +203,7 @@ class Controller {
 
  private:
   static uint8_t get_id() noexcept {
-    static std::atomic<uint8_t> id{driver::MSG_NORMAL_BEGINNING};
+    static std::atomic id{driver::MSG_NORMAL_BEGINNING};
     if (uint8_t expected = driver::MSG_NORMAL_END; !id.compare_exchange_weak(expected, driver::MSG_NORMAL_BEGINNING)) id.fetch_add(0x01);
     return id.load();
   }
