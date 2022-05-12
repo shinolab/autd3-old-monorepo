@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/05/2022
+// Last Modified: 12/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -94,15 +94,15 @@ struct Body {
 
   Body() noexcept = default;
 
-  [[nodiscard]] const PointSTMBodyHead& point_stm_head() const noexcept { return *std::bit_cast<const PointSTMBodyHead* const>(&data[0]); }
-  PointSTMBodyHead& point_stm_head() noexcept { return *std::bit_cast<PointSTMBodyHead*>(&data[0]); }
-  [[nodiscard]] const PointSTMBodyBody& point_stm_body() const noexcept { return *std::bit_cast<const PointSTMBodyBody* const>(&data[0]); }
-  PointSTMBodyBody& point_stm_body() noexcept { return *std::bit_cast<PointSTMBodyBody*>(&data[0]); }
+  [[nodiscard]] const PointSTMBodyHead& point_stm_head() const noexcept { return *reinterpret_cast<const PointSTMBodyHead* const>(&data[0]); }
+  PointSTMBodyHead& point_stm_head() noexcept { return *reinterpret_cast<PointSTMBodyHead*>(&data[0]); }
+  [[nodiscard]] const PointSTMBodyBody& point_stm_body() const noexcept { return *reinterpret_cast<const PointSTMBodyBody* const>(&data[0]); }
+  PointSTMBodyBody& point_stm_body() noexcept { return *reinterpret_cast<PointSTMBodyBody*>(&data[0]); }
 
-  [[nodiscard]] const GainSTMBodyHead& gain_stm_head() const noexcept { return *std::bit_cast<const GainSTMBodyHead* const>(&data[0]); }
-  GainSTMBodyHead& gain_stm_head() noexcept { return *std::bit_cast<GainSTMBodyHead*>(&data[0]); }
-  [[nodiscard]] const GainSTMBodyBody& gain_stm_body() const noexcept { return *std::bit_cast<const GainSTMBodyBody* const>(&data[0]); }
-  GainSTMBodyBody& gain_stm_body() noexcept { return *std::bit_cast<GainSTMBodyBody*>(&data[0]); }
+  [[nodiscard]] const GainSTMBodyHead& gain_stm_head() const noexcept { return *reinterpret_cast<const GainSTMBodyHead* const>(&data[0]); }
+  GainSTMBodyHead& gain_stm_head() noexcept { return *reinterpret_cast<GainSTMBodyHead*>(&data[0]); }
+  [[nodiscard]] const GainSTMBodyBody& gain_stm_body() const noexcept { return *reinterpret_cast<const GainSTMBodyBody* const>(&data[0]); }
+  GainSTMBodyBody& gain_stm_body() noexcept { return *reinterpret_cast<GainSTMBodyBody*>(&data[0]); }
 };
 
 }  // namespace autd3::driver
