@@ -30,9 +30,7 @@ struct GainSTM<LegacyTransducer> final : STM, DatagramBody<LegacyTransducer> {
 
   template <typename G>
   void add(G& gain) {
-    if (_gains.size() + 1 > driver::GAIN_STM_BUF_SIZE_MAX) {
-      throw std::runtime_error("PointSTM out of buffer");
-    }
+    if (_gains.size() + 1 > driver::GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("PointSTM out of buffer");
 
     gain.build(_geometry);
 
@@ -46,9 +44,7 @@ struct GainSTM<LegacyTransducer> final : STM, DatagramBody<LegacyTransducer> {
   void pack(const uint8_t msg_id, Geometry<LegacyTransducer>& geometry, driver::TxDatagram& tx) override {
     gain_stm_legacy_header(msg_id, tx);
 
-    if (is_finished()) {
-      return;
-    }
+    if (is_finished()) return;
 
     const auto is_first_frame = _sent == 0;
     const auto is_last_frame = _sent + 1 == _gains.size() + 1;
@@ -78,9 +74,7 @@ struct GainSTM<NormalTransducer> final : STM, DatagramBody<NormalTransducer> {
 
   template <typename G>
   void add(G& gain) {
-    if (_gains.size() + 1 > driver::GAIN_STM_BUF_SIZE_MAX) {
-      throw std::runtime_error("PointSTM out of buffer");
-    }
+    if (_gains.size() + 1 > driver::GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("PointSTM out of buffer");
 
     gain.build(_geometry);
 
@@ -94,9 +88,7 @@ struct GainSTM<NormalTransducer> final : STM, DatagramBody<NormalTransducer> {
   void pack(const uint8_t msg_id, Geometry<NormalTransducer>& geometry, driver::TxDatagram& tx) override {
     gain_stm_normal_header(msg_id, tx);
 
-    if (is_finished()) {
-      return;
-    }
+    if (is_finished()) return;
 
     const auto is_first_frame = _sent == 0;
     const auto is_last_frame = _sent + 1 == _gains.size() * 2 + 1;
@@ -107,13 +99,12 @@ struct GainSTM<NormalTransducer> final : STM, DatagramBody<NormalTransducer> {
       return;
     }
 
-    if (!_next_duty) {
+    if (!_next_duty)
       gain_stm_normal_phase(_gains.at((_sent - 1) / 2).phases.data(), is_first_frame, _freq_div, tx);
-      _next_duty = true;
-    } else {
+    else
       gain_stm_normal_duty(_gains.at((_sent - 1) / 2).duties.data(), is_last_frame, tx);
-      _next_duty = false;
-    }
+
+    _next_duty = !_next_duty;
 
     _sent += 1;
   }

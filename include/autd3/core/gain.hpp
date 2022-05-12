@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/05/2022
+// Last Modified: 12/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -46,9 +46,7 @@ struct Gain : DatagramBody<T> {
   virtual void calc(const Geometry<T>& geometry) = 0;
 
   void build(const Geometry<T>& geometry) {
-    if (_props.built) {
-      return;
-    }
+    if (_props.built) return;
     _props.init(geometry.num_devices() * driver::NUM_TRANS_IN_UNIT);
     calc(geometry);
     _props.built = true;
@@ -70,9 +68,7 @@ struct Gain : DatagramBody<T> {
 
   void pack(uint8_t msg_id, Geometry<T>& geometry, driver::TxDatagram& tx) override {
     _props.pack_header(msg_id, tx);
-    if (is_finished()) {
-      return;
-    }
+    if (is_finished()) return;
     build(geometry);
     _props.pack_body(tx);
   }
