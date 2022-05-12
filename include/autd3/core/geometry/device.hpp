@@ -19,7 +19,7 @@
 namespace autd3::core {
 template <typename T>
 struct Device {
-  Device(const size_t id, const Vector3& position, const Quaternion& rotation) : _origin(position) {
+  explicit Device(const size_t id, const Vector3& position, const Quaternion& rotation) : _origin(position) {
     const Eigen::Transform<double, 3, Eigen::Affine> transform_matrix = Eigen::Translation<double, 3>(position) * rotation;
     const Vector3 x_direction = rotation * Vector3(1, 0, 0);
     const Vector3 y_direction = rotation * Vector3(0, 1, 0);
@@ -37,6 +37,13 @@ struct Device {
       }
     _trans_inv = transform_matrix.inverse();
   }
+
+  Device() = delete;
+  ~Device() = default;
+  Device(const Device& v) noexcept = default;
+  Device& operator=(const Device& obj) = default;
+  Device(Device&& obj) = default;
+  Device& operator=(Device&& obj) = default;
 
   [[nodiscard]] Vector3 center() const {
     Vector3 sum = Vector3::Zero();

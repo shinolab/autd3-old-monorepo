@@ -34,11 +34,11 @@ jobs:
         cmake -G "Visual Studio 17 2022" -A Win32 -B "build_x86" -DBUILD_ALL=ON
         cd build_x86
         msbuild autd3.sln /t:build /p:Configuration=Release
-    - name: install gcc-11
+    - name: install gcc-10
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt update
-        sudo apt install gcc-11 g++-11 g++-arm-linux-gnueabihf g++-aarch64-linux-gnu -y
+        sudo apt install gcc-10 g++-10 g++-arm-linux-gnueabihf g++-aarch64-linux-gnu -y
       shell: bash
     - name: build for Linux
       if: matrix.os == 'ubuntu-latest'
@@ -48,8 +48,8 @@ jobs:
         make -j8
       shell: bash
       env:
-        CC: gcc-11
-        CXX: g++-11
+        CC: gcc-10
+        CXX: g++-10
     - name: build for Linux ARM32
       if: matrix.os == 'ubuntu-latest'
       run: |
@@ -58,8 +58,8 @@ jobs:
         make -j8
       shell: bash
       env:
-        CC: gcc-11
-        CXX: g++-11
+        CC: gcc-10
+        CXX: g++-10
     - name: build for Linux ARM64
       if: matrix.os == 'ubuntu-latest'
       run: |
@@ -68,8 +68,8 @@ jobs:
         make -j8
       shell: bash
       env:
-        CC: gcc-11
-        CXX: g++-11
+        CC: gcc-10
+        CXX: g++-10
     - name: build for macOS
       if: matrix.os == 'macos-latest'
       run: |
