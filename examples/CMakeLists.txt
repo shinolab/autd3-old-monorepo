@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-cmake_minimum_required(VERSION 3.16)
+find_package(Threads REQUIRED)
 
 file(GLOB hpp_files tests/*.hpp runner.hpp)
 
@@ -26,6 +26,7 @@ if(BUILD_LINK_REMOTE_TWINCAT)
   add_executable(example_remote_twincat remote_twincat.cpp ${hpp_files})
   target_link_libraries(example_remote_twincat autd3)
   target_link_libraries(example_remote_twincat link_remote_twincat)
+  target_link_libraries(example_remote_twincat ${CMAKE_THREAD_LIBS_INIT})
   if(WIN32)
     set_target_properties(example_remote_twincat PROPERTIES FOLDER "example")
   endif()

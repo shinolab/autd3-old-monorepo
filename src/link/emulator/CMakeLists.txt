@@ -7,7 +7,7 @@ add_library(link_emulator
 target_include_directories(link_emulator PUBLIC ${PROJECT_SOURCE_DIR}/include ${EIGEN_PATH})
 
 if(WIN32)
-  target_link_libraries(link_emulator PUBLIC ws2_32)
+  target_link_libraries(link_emulator INTERFACE ws2_32)
 endif()
 
 set_target_properties(link_emulator
