@@ -25,9 +25,8 @@ template <typename T>
 struct GainSTM {};
 
 template <>
-struct GainSTM<LegacyTransducer> : STM, DatagramBody<LegacyTransducer> {
-  explicit GainSTM(const Geometry<LegacyTransducer>& geometry)
-      : STM(), DatagramBody<LegacyTransducer>(), _geometry(geometry), _sent(0), _next_duty(false) {}
+struct GainSTM<LegacyTransducer> final : STM, DatagramBody<LegacyTransducer> {
+  explicit GainSTM(const Geometry<LegacyTransducer>& geometry) : STM(), DatagramBody<LegacyTransducer>(), _geometry(geometry), _sent(0) {}
 
   template <typename G>
   void add(G& gain) {
@@ -64,17 +63,16 @@ struct GainSTM<LegacyTransducer> : STM, DatagramBody<LegacyTransducer> {
     _sent += 1;
   }
 
-  bool is_finished() const override { return _sent == _gains.size() + 1; }
+  [[nodiscard]] bool is_finished() const override { return _sent == _gains.size() + 1; }
 
  private:
   const Geometry<LegacyTransducer>& _geometry;
-  std::vector<typename LegacyTransducer::D> _gains;
+  std::vector<LegacyTransducer::D> _gains;
   size_t _sent;
-  bool _next_duty;
 };
 
 template <>
-struct GainSTM<NormalTransducer> : STM, DatagramBody<NormalTransducer> {
+struct GainSTM<NormalTransducer> final : STM, DatagramBody<NormalTransducer> {
   explicit GainSTM(const Geometry<NormalTransducer>& geometry)
       : STM(), DatagramBody<NormalTransducer>(), _geometry(geometry), _sent(0), _next_duty(false) {}
 
@@ -120,11 +118,11 @@ struct GainSTM<NormalTransducer> : STM, DatagramBody<NormalTransducer> {
     _sent += 1;
   }
 
-  bool is_finished() const override { return _sent == _gains.size() * 2 + 1; }
+  [[nodiscard]] bool is_finished() const override { return _sent == _gains.size() * 2 + 1; }
 
  private:
   const Geometry<NormalTransducer>& _geometry;
-  std::vector<typename NormalTransducer::D> _gains;
+  std::vector<NormalTransducer::D> _gains;
   size_t _sent;
   bool _next_duty;
 };

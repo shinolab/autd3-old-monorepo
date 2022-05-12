@@ -13,6 +13,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "autd3/core/link.hpp"
 
@@ -33,8 +34,8 @@ class RemoteTwinCAT {
     return *this;
   }
 
-  RemoteTwinCAT(const uint16_t cycle_ticks, const std::string& ipv4_addr, const std::string& remote_ams_net_id)
-      : _cycle_ticks(cycle_ticks), _ipv4_addr(ipv4_addr), _remote_ams_net_id(remote_ams_net_id), _local_ams_net_id("") {}
+  RemoteTwinCAT(const uint16_t cycle_ticks, std::string ipv4_addr, std::string remote_ams_net_id)
+      : _cycle_ticks(cycle_ticks), _ipv4_addr(std::move(ipv4_addr)), _remote_ams_net_id(std::move(remote_ams_net_id)) {}
   ~RemoteTwinCAT() = default;
   RemoteTwinCAT(const RemoteTwinCAT& v) noexcept = delete;
   RemoteTwinCAT& operator=(const RemoteTwinCAT& obj) = delete;

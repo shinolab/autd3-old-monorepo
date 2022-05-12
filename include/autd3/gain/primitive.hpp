@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/05/2022
+// Last Modified: 12/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -23,7 +23,7 @@ namespace autd3::gain {
 template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class Null final : public core::Gain<T> {
  public:
-  Null() noexcept {}
+  Null() noexcept = default;
 
   void calc(const core::Geometry<T>& geometry) override {
     for (const auto& dev : geometry)

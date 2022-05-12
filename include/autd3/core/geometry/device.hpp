@@ -41,7 +41,7 @@ struct Device {
   [[nodiscard]] Vector3 center() const {
     Vector3 sum = Vector3::Zero();
     return std::accumulate(begin(), end(), sum,
-                           [](Vector3 acc, const T& tr) {
+                           [](const Vector3& acc, const T& tr) {
                              Vector3 res = acc + tr.position();
                              return res;
                            }) /

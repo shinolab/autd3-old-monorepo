@@ -62,7 +62,7 @@ struct NormalTransducer final : Transducer<NormalDriveData<NormalTransducer>> {
 
   static void pack_header(const uint8_t msg_id, driver::TxDatagram& tx) noexcept { normal_header(msg_id, tx); }
 
-  static void pack_body(bool& phase_sent, bool& duty_sent, D& drives, driver::TxDatagram& tx) noexcept {
+  static void pack_body(bool& phase_sent, bool& duty_sent, const D& drives, driver::TxDatagram& tx) noexcept {
     if (!phase_sent) {
       normal_phase_body(drives.phases.data(), tx);
       phase_sent = true;

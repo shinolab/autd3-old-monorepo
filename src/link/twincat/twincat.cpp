@@ -58,9 +58,9 @@ constexpr auto TCADS_ADS_SYNC_WRITE_REQ_EX = "AdsSyncWriteReqEx";
 constexpr auto TCADS_ADS_SYNC_READ_REQ_EX = "AdsSyncReadReqEx2";
 #endif
 
-class TwinCATImpl final : public autd3::core::Link {
+class TwinCATImpl final : public core::Link {
  public:
-  TwinCATImpl(const uint16_t cycle_ticks) : Link(cycle_ticks), _port(0) {}
+  explicit TwinCATImpl(const uint16_t cycle_ticks) : Link(cycle_ticks), _port(0) {}
   ~TwinCATImpl() override = default;
   TwinCATImpl(const TwinCATImpl& v) noexcept = delete;
   TwinCATImpl& operator=(const TwinCATImpl& obj) = delete;
