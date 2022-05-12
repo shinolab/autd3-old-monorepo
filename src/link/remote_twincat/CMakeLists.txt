@@ -19,7 +19,6 @@ add_library(link_remote_twincat
 
 target_include_directories(link_remote_twincat PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(link_remote_twincat PRIVATE ${ADS_PATH}/AdsLib ${ADS_PATH}/AdsLib/standalone)
-target_link_libraries(link_remote_twincat PRIVATE GSL)
 
 if(WIN32)
   target_link_libraries(link_remote_twincat ${AUTD_LINK_LIBRARIES_KEYWORD} ws2_32)

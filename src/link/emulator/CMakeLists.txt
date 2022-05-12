@@ -5,7 +5,6 @@ add_library(link_emulator
   ${PROJECT_SOURCE_DIR}/include/autd3/link/emulator.hpp
 )
 target_include_directories(link_emulator PUBLIC ${PROJECT_SOURCE_DIR}/include ${EIGEN_PATH})
-target_link_libraries(link_emulator PRIVATE GSL)
 
 if(WIN32)
   target_link_libraries(link_emulator ${AUTD_LINK_LIBRARIES_KEYWORD} ws2_32)

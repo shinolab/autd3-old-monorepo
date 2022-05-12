@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/05/2022
+// Last Modified: 12/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -32,7 +32,7 @@ struct Geometry {
   [[nodiscard]] Vector3 center() const {
     Vector3 sum = Vector3::Zero();
     return std::accumulate(begin(), end(), sum,
-                           [](Vector3 acc, const Device<T>& dev) {
+                           [](const Vector3& acc, const Device<T>& dev) {
                              Vector3 res = acc + dev.center();
                              return res;
                            }) /

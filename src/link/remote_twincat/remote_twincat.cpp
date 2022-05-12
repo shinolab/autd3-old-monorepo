@@ -111,7 +111,8 @@ void RemoteTwinCATImpl::close() {
 
 bool RemoteTwinCATImpl::send(const driver::TxDatagram& tx) {
   const AmsAddr p_addr = {this->_net_id, PORT};
-  const auto ret = AdsSyncWriteReqEx(this->_port, &p_addr, INDEX_GROUP, INDEX_OFFSET_BASE, static_cast<uint32_t>(tx.size()), tx.data().data());
+  const auto ret =
+      AdsSyncWriteReqEx(this->_port, &p_addr, INDEX_GROUP, INDEX_OFFSET_BASE, static_cast<uint32_t>(tx.effective_size()), tx.data().data());
   if (ret == 0) return true;
 
   std::stringstream ss;

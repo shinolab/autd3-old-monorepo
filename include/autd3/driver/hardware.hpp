@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/05/2022
+// Last Modified: 12/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -12,6 +12,9 @@
 #pragma once
 
 namespace autd3::driver {
+
+constexpr double pi = 3.141592653589793238462643383279502884L;
+
 constexpr size_t NUM_TRANS_IN_UNIT = 249;
 constexpr size_t NUM_TRANS_X = 18;
 constexpr size_t NUM_TRANS_Y = 14;

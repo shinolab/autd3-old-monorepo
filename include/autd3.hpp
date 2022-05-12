@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/05/2022
+// Last Modified: 12/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -19,7 +19,7 @@
 #include "autd3/modulation/primitive.hpp"
 
 namespace autd3 {
-constexpr double pi = std::numbers::pi;
+constexpr double pi = driver::pi;
 
 using core::Geometry;
 

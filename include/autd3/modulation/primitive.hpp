@@ -3,14 +3,16 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/05/2022
+// Last Modified: 12/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
 //
 
 #pragma once
+
 #include "autd3/core/modulation.hpp"
+#include "autd3/driver/hardware.hpp"
 
 namespace autd3::modulation {
 
@@ -27,7 +29,7 @@ class Static final : public core::Modulation {
   void calc() override {
     this->_props.buffer.resize(2, 0);
     for (size_t i = 0; i < 2; i++) {
-      const auto duty = gsl::narrow_cast<uint8_t>(std::round(std::asin(std::clamp(_amp, 0.0, 1.0)) / std::numbers::pi * 510.0));
+      const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp(_amp, 0.0, 1.0)) / driver::pi * 510.0));
       this->_props.buffer.at(i) = duty;
     }
   }
@@ -68,8 +70,8 @@ class Sine final : public core::Modulation {
 
     this->_props.buffer.resize(n, 0);
     for (size_t i = 0; i < n; i++) {
-      const auto amp = this->_amp / 2.0 * std::sin(2.0 * std::numbers::pi * static_cast<double>(d * i) / static_cast<double>(n)) + this->_offset;
-      const auto duty = gsl::narrow_cast<uint8_t>(std::round(std::asin(std::clamp(amp, 0.0, 1.0)) / std::numbers::pi * 510.0));
+      const auto amp = this->_amp / 2.0 * std::sin(2.0 * driver::pi * static_cast<double>(d * i) / static_cast<double>(n)) + this->_offset;
+      const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi * 510.0));
       this->_props.buffer.at(i) = duty;
     }
   }

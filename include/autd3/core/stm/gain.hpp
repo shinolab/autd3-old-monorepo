@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/05/2022
+// Last Modified: 12/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -55,12 +55,12 @@ struct GainSTM<LegacyTransducer> : STM, DatagramBody<LegacyTransducer> {
     const auto is_last_frame = _sent + 1 == _gains.size() + 1;
 
     if (is_first_frame) {
-      gain_stm_legacy_body(gsl::span<driver::LegacyDrive>{}, is_first_frame, _freq_div, is_last_frame, tx);
+      gain_stm_legacy_body(nullptr, is_first_frame, _freq_div, is_last_frame, tx);
       _sent += 1;
       return;
     }
 
-    gain_stm_legacy_body(gsl::span{_gains.at(_sent - 1).data}, is_first_frame, _freq_div, is_last_frame, tx);
+    gain_stm_legacy_body(_gains.at(_sent - 1).data.data(), is_first_frame, _freq_div, is_last_frame, tx);
     _sent += 1;
   }
 
@@ -104,16 +104,16 @@ struct GainSTM<NormalTransducer> : STM, DatagramBody<NormalTransducer> {
     const auto is_last_frame = _sent + 1 == _gains.size() * 2 + 1;
 
     if (is_first_frame) {
-      gain_stm_normal_phase(gsl::span<driver::Phase>{}, is_first_frame, _freq_div, tx);
+      gain_stm_normal_phase(nullptr, is_first_frame, _freq_div, tx);
       _sent += 1;
       return;
     }
 
     if (!_next_duty) {
-      gain_stm_normal_phase(gsl::span{_gains.at((_sent - 1) / 2).phases}, is_first_frame, _freq_div, tx);
+      gain_stm_normal_phase(_gains.at((_sent - 1) / 2).phases.data(), is_first_frame, _freq_div, tx);
       _next_duty = true;
     } else {
-      gain_stm_normal_duty(gsl::span{_gains.at((_sent - 1) / 2).duties}, is_last_frame, tx);
+      gain_stm_normal_duty(_gains.at((_sent - 1) / 2).duties.data(), is_last_frame, tx);
       _next_duty = false;
     }
 
