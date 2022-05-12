@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/05/2022
+// Last Modified: 12/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -27,7 +27,7 @@ void gain_stm(autd3::Controller<T>& autd) {
   for (auto i = 0; i < point_num; i++) {
     constexpr auto radius = 30.0;
     const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(point_num);
-    autd3::gain::Focus g(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0.0));
+    autd3::gain::Focus<T> g(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0.0));
     stm.add(g);
   }
 

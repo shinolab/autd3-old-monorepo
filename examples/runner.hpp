@@ -43,7 +43,6 @@ int run(autd3::Controller<T> autd) {
   for (const auto& firm_info : autd.firmware_infos()) std::cout << firm_info << std::endl;
 
   autd.clear();
-
   autd.synchronize();
 
   while (true) {
