@@ -24,6 +24,16 @@ struct TxDatagram {
   size_t num_bodies;
 
   explicit TxDatagram(const size_t size) : num_bodies(size), _size(size) { _data.resize(sizeof(GlobalHeader) + sizeof(Body) * size, 0x00); }
+  TxDatagram(const TxDatagram &v) noexcept = delete;
+  TxDatagram &operator=(const TxDatagram &obj) = delete;
+  TxDatagram(TxDatagram &&obj) = default;
+  TxDatagram &operator=(TxDatagram &&obj) = default;
+
+  [[nodiscard]] TxDatagram clone() const {
+    TxDatagram tx(_size);
+    std::copy(_data.begin(), _data.end(), tx._data.begin());
+    return tx;
+  }
 
   [[nodiscard]] size_t size() const noexcept { return _size; }
 
@@ -64,6 +74,8 @@ struct RxDatagram {
   bool is_msg_processed(uint8_t msg_id) {
     return std::all_of(_data.begin(), _data.end(), [msg_id](const RxMessage msg) noexcept { return msg.msg_id == msg_id; });
   }
+
+  void copy_from(const RxMessage *const src) { std::memcpy(_data.data(), src, _data.size() * sizeof(RxMessage)); }
 
   [[nodiscard]] std::vector<RxMessage>::const_iterator begin() const noexcept { return _data.begin(); }
   [[nodiscard]] std::vector<RxMessage>::const_iterator end() const noexcept { return _data.end(); }

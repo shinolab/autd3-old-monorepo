@@ -7,3 +7,6 @@
 [submodule "3rdparty/ADS"]
 	path = 3rdparty/ADS
 	url = https://github.com/Beckhoff/ADS.git
+[submodule "3rdparty/SOEM"]
+	path = 3rdparty/SOEM
+	url = https://github.com/OpenEtherCATsociety/SOEM.git
