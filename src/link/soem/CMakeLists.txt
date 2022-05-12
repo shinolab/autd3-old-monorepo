@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
+find_package(Threads REQUIRED)
+
 file(GLOB_RECURSE SOEM_SRC_FILES ${SOEM_PATH}/soem/*.c ${SOEM_PATH}/osal/${OS}/*.c ${SOEM_PATH}/oshw/${OS}/*.c)
 
 add_library(link_soem
