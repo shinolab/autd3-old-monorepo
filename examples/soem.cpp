@@ -31,11 +31,12 @@ std::string get_adapter_name() {
 }
 
 int main() try {
-  autd3::Geometry geometry;
-  geometry.add_device(autd3::core::Vector3::Zero(), autd3::core::Vector3::Zero());
+  autd3::Controller autd;
+
+  autd.geometry().add_device(autd3::core::Vector3::Zero(), autd3::core::Vector3::Zero());
 
   const auto ifname = get_adapter_name();
-  auto link = autd3::link::SOEM(ifname, geometry.num_devices())
+  auto link = autd3::link::SOEM(ifname, autd.geometry().num_devices())
                   .cycle_ticks(2)
                   .on_lost([](const std::string& msg) {
                     std::cerr << "Link is lost\n";
@@ -49,8 +50,7 @@ int main() try {
                   })
                   .high_precision(true)
                   .build();
-
-  autd3::Controller autd(std::move(link), std::move(geometry));
+  autd.open(std::move(link));
 
   return run(std::move(autd));
 } catch (std::exception& e) {

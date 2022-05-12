@@ -36,16 +36,22 @@ class Controller {
  public:
   core::Geometry<T>& geometry() noexcept { return _geometry; }
 
-  explicit Controller(core::LinkPtr link, core::Geometry<T> geometry)
+  explicit Controller()
       : force_fan(false),
         reads_fpga_info(false),
         check_ack(false),
-        _geometry(std::move(geometry)),
+        _geometry(),
         _tx_buf(_geometry.num_devices()),
         _rx_buf(_geometry.num_devices()),
-        _link(std::move(link)) {
-    _link->open();
+        _link(nullptr) {}
+
+  bool open(core::LinkPtr link) {
+    _link = std::move(link);
+    if (_link != nullptr) _link->open();
+    return is_open();
   }
+
+  bool is_open() { return (_link != nullptr) && _link->is_open(); }
 
   bool config_silencer(const SilencerConfig config) {
     _tx_buf.clear();
