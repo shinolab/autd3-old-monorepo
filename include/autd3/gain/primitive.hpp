@@ -23,7 +23,7 @@ namespace autd3::gain {
 template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class Null final : public core::Gain<T> {
  public:
-  Null() noexcept = default;
+  Null() noexcept {}
 
   void calc(const core::Geometry<T>& geometry) override {
     for (const auto& dev : geometry)
