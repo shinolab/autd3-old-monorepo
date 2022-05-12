@@ -36,7 +36,7 @@ class Controller {
  public:
   core::Geometry<T>& geometry() noexcept { return _geometry; }
 
-  explicit Controller()
+  Controller()
       : force_fan(false),
         reads_fpga_info(false),
         check_ack(false),
