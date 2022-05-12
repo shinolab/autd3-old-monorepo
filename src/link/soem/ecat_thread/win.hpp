@@ -53,10 +53,7 @@ inline void add_timespec(timespec& ts, const int64_t addtime) {
 }
 
 void timed_wait(const timespec& abs_time) {
-  auto tp = timeval{
-      0,
-      0,
-  };
+  auto tp = timeval{0, 0};
   osal_gettimeofday(&tp, nullptr);
 
   const auto sleep = (abs_time.tv_sec - tp.tv_sec) * 1000000000 + (abs_time.tv_nsec - tp.tv_usec * 1000);
@@ -65,10 +62,7 @@ void timed_wait(const timespec& abs_time) {
 }
 
 void timed_wait_h(const timespec& abs_time) {
-  auto tp = timeval{
-      0,
-      0,
-  };
+  auto tp = timeval{0, 0};
   osal_gettimeofday(&tp, nullptr);
 
   const auto sleep = (abs_time.tv_sec - tp.tv_sec) * 1000000000 + (abs_time.tv_nsec - tp.tv_usec * 1000);
@@ -85,15 +79,9 @@ void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wk
   const auto priority = GetPriorityClass(h_process);
   SetPriorityClass(h_process, REALTIME_PRIORITY_CLASS);
 
-  auto ts = timespec{
-      0,
-      0,
-  };
+  auto ts = timespec{0, 0};
 
-  auto tp = timeval{
-      0,
-      0,
-  };
+  auto tp = timeval{0, 0};
   osal_gettimeofday(&tp, nullptr);
 
   const auto cyctime_us = cycletime_ns / 1000;
@@ -138,15 +126,9 @@ void ecat_run_h(std::atomic<bool>* is_open, bool* is_running, int32_t expected_w
   const auto priority = GetPriorityClass(h_process);
   SetPriorityClass(h_process, REALTIME_PRIORITY_CLASS);
 
-  auto ts = timespec{
-      0,
-      0,
-  };
+  auto ts = timespec{0, 0};
 
-  auto tp = timeval{
-      0,
-      0,
-  };
+  auto tp = timeval{0, 0};
   osal_gettimeofday(&tp, nullptr);
 
   const auto cyctime_us = cycletime_ns / 1000;

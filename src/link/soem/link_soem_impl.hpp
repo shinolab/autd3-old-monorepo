@@ -11,12 +11,14 @@
 
 #pragma once
 
+#include <atomic>
 #include <cstring>
 #include <functional>
 #include <memory>
 #include <mutex>
 #include <queue>
 #include <string>
+#include <thread>
 
 #include "autd3/core/link.hpp"
 #include "autd3/driver/cpu/body.hpp"
