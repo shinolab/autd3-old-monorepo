@@ -1,14 +1,4 @@
 cmake_minimum_required(VERSION 3.16)
 
-file(GLOB_RECURSE include_files ${PROJECT_SOURCE_DIR}/include/*.hpp ${PROJECT_SOURCE_DIR}/include/autd3/*.hpp)
-file(GLOB_RECURSE core_include_files ${PROJECT_SOURCE_DIR}/include/autd3/core/*.hpp)
-file(GLOB_RECURSE driver_include_files ${PROJECT_SOURCE_DIR}/include/autd3/driver/*.hpp)
-
-set(SOURCE_LIST
-  ${include_files}
-  ${core_include_files}
-  ${driver_include_files}
-)
-
-add_library(autd3 INTERFACE ${SOURCE_LIST})
+add_library(autd3 INTERFACE)
 target_include_directories(autd3 INTERFACE ${PROJECT_SOURCE_DIR}/include ${EIGEN_PATH})

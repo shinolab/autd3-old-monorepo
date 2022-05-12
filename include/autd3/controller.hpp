@@ -178,7 +178,6 @@ class Controller {
     header.init();
     body.init();
 
-    auto success = true;
     while (true) {
       _tx_buf.clear();
 
@@ -189,12 +188,10 @@ class Controller {
       header.pack(msg_id, _tx_buf);
       body.pack(msg_id, _geometry, _tx_buf);
       _link->send(_tx_buf);
-      success &= wait_msg_processed(50);
-      if (!success || (header.is_finished() && body.is_finished())) {
-        break;
-      }
+      if (!wait_msg_processed(50)) return false;
+      if (header.is_finished() && body.is_finished()) break;
     }
-    return success;
+    return true;
   }
 
   bool force_fan;

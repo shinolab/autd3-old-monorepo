@@ -22,6 +22,19 @@
 
 namespace autd3::core {
 
+struct Point {
+  Vector3 point;
+  uint8_t shift;
+
+  Point(Vector3 point, const uint8_t shift) : point(std::move(point)), shift(shift) {}
+  Point() = delete;
+  ~Point() = default;
+  Point(const Point& v) noexcept = default;
+  Point& operator=(const Point& obj) = default;
+  Point(Point&& obj) = default;
+  Point& operator=(Point&& obj) = default;
+};
+
 template <typename T = LegacyTransducer, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 struct PointSTM final : STM, DatagramBody<T> {
   PointSTM() : STM(), DatagramBody<T>(), _sent(0) {}
@@ -34,7 +47,7 @@ struct PointSTM final : STM, DatagramBody<T> {
 
   size_t size() override { return _points.size(); }
   void init() override { _sent = 0; }
-  void pack(const uint8_t msg_id, Geometry<T>& geometry, driver::TxDatagram& tx) override {
+  void pack(const uint8_t msg_id, const Geometry<T>& geometry, driver::TxDatagram& tx) override {
     point_stm_header(msg_id, tx);
 
     if (is_finished()) return;
@@ -49,10 +62,9 @@ struct PointSTM final : STM, DatagramBody<T> {
     std::transform(geometry.begin(), geometry.end(), std::back_inserter(points), [this, send_size](const Device<T>& dev) {
       std::vector<driver::STMFocus> lp;
       const auto src = _points.data() + _sent;
-      std::transform(src, src + send_size, std::back_inserter(lp), [dev](const auto ps) {
-        const auto [pos, shift] = ps;
-        const auto local = dev.to_local_position(pos);
-        return driver::STMFocus(local.x(), local.y(), local.z(), shift);
+      std::transform(src, src + send_size, std::back_inserter(lp), [&dev](const auto& p) {
+        const auto local = dev.to_local_position(p.point);
+        return driver::STMFocus(local.x(), local.y(), local.z(), p.shift);
       });
       return lp;
     });
@@ -65,7 +77,7 @@ struct PointSTM final : STM, DatagramBody<T> {
   [[nodiscard]] bool is_finished() const override { return _sent == _points.size(); }
 
  private:
-  std::vector<std::pair<Vector3, uint8_t>> _points;
+  std::vector<Point> _points;
   size_t _sent;
 };
 

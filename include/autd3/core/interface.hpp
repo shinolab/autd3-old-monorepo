@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/05/2022
+// Last Modified: 12/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -42,7 +42,7 @@ struct DatagramBody {
   DatagramBody& operator=(DatagramBody&& obj) = default;
 
   virtual void init() = 0;
-  virtual void pack(uint8_t msg_id, Geometry<T>& geometry, driver::TxDatagram& tx) = 0;
+  virtual void pack(uint8_t msg_id, const Geometry<T>& geometry, driver::TxDatagram& tx) = 0;
   [[nodiscard]] virtual bool is_finished() const = 0;
 };
 

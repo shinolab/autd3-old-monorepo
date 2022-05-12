@@ -41,7 +41,7 @@ struct GainSTM<LegacyTransducer> final : STM, DatagramBody<LegacyTransducer> {
 
   void init() override { _sent = 0; }
 
-  void pack(const uint8_t msg_id, Geometry<LegacyTransducer>& geometry, driver::TxDatagram& tx) override {
+  void pack(const uint8_t msg_id, const Geometry<LegacyTransducer>& geometry, driver::TxDatagram& tx) override {
     gain_stm_legacy_header(msg_id, tx);
 
     if (is_finished()) return;
@@ -85,7 +85,7 @@ struct GainSTM<NormalTransducer> final : STM, DatagramBody<NormalTransducer> {
 
   void init() override { _sent = 0; }
 
-  void pack(const uint8_t msg_id, Geometry<NormalTransducer>& geometry, driver::TxDatagram& tx) override {
+  void pack(const uint8_t msg_id, const Geometry<NormalTransducer>& geometry, driver::TxDatagram& tx) override {
     gain_stm_normal_header(msg_id, tx);
 
     if (is_finished()) return;

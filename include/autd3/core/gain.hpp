@@ -66,7 +66,7 @@ struct Gain : DatagramBody<T> {
     _props.duty_sent = false;
   }
 
-  void pack(uint8_t msg_id, Geometry<T>& geometry, driver::TxDatagram& tx) override {
+  void pack(uint8_t msg_id, const Geometry<T>& geometry, driver::TxDatagram& tx) override {
     _props.pack_header(msg_id, tx);
     if (is_finished()) return;
     build(geometry);
