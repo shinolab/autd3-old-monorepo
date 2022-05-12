@@ -21,7 +21,7 @@ target_include_directories(link_remote_twincat PUBLIC ${PROJECT_SOURCE_DIR}/incl
 target_include_directories(link_remote_twincat PRIVATE ${ADS_PATH}/AdsLib ${ADS_PATH}/AdsLib/standalone)
 
 if(WIN32)
-  target_link_libraries(link_remote_twincat ${AUTD_LINK_LIBRARIES_KEYWORD} ws2_32)
+  target_link_libraries(link_remote_twincat PUBLIC ws2_32)
 endif()
 
 set_target_properties(link_remote_twincat
