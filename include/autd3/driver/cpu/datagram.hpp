@@ -24,6 +24,7 @@ struct TxDatagram {
   size_t num_bodies;
 
   explicit TxDatagram(const size_t size) : num_bodies(size), _size(size) { _data.resize(sizeof(GlobalHeader) + sizeof(Body) * size, 0x00); }
+  ~TxDatagram() = default;
   TxDatagram(const TxDatagram &v) noexcept = delete;
   TxDatagram &operator=(const TxDatagram &obj) = delete;
   TxDatagram(TxDatagram &&obj) = default;
