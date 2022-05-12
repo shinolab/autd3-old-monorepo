@@ -122,6 +122,10 @@ include(cmakes/gsl.cmake)
 
 add_subdirectory(src)
 
+if(BUILD_LINK_TWINCAT)
+  add_subdirectory(src/link/twincat)
+endif()
+
 if(BUILD_LINK_EMULATOR)
   add_subdirectory(src/link/emulator)
 endif()
