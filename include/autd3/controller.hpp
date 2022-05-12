@@ -190,7 +190,7 @@ class Controller {
       body.pack(msg_id, _geometry, _tx_buf);
       _link->send(_tx_buf);
       success &= wait_msg_processed(50);
-      if (!success || header.is_finished() && body.is_finished()) {
+      if (!success || (header.is_finished() && body.is_finished())) {
         break;
       }
     }
