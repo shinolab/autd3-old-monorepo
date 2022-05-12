@@ -15,12 +15,12 @@
 #include "runner.hpp"
 
 int main() try {
-  autd3::Geometry geometry;
-  geometry.add_device(autd3::core::Vector3::Zero(), autd3::core::Vector3::Zero());
+  autd3::Controller autd;
+
+  autd.geometry().add_device(autd3::core::Vector3::Zero(), autd3::core::Vector3::Zero());
 
   auto link = autd3::link::TwinCAT(2).build();
-
-  autd3::Controller autd(std::move(link), std::move(geometry));
+  autd.open(std::move(link));
 
   return run(std::move(autd));
 } catch (std::exception& e) {
