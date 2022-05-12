@@ -52,7 +52,7 @@ void SOEMLink::open() {
 
   if (ec_init(_ifname.c_str()) <= 0) {
     std::stringstream ss;
-    ss << "No socket connection on" << _ifname;
+    ss << "No socket connection on " << _ifname;
     throw std::runtime_error(ss.str());
   }
 
