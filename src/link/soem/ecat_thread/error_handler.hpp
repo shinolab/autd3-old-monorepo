@@ -57,7 +57,7 @@ bool error_handle(std::atomic<bool>* is_open, std::function<void(std::string)>& 
 
   for (uint16_t slave = 1; slave <= static_cast<uint16_t>(ec_slavecount); slave++) {
     if (ec_slave[slave].islost != 0) {
-      is_open = false;
+      is_open->store(false);
       if (on_lost != nullptr) on_lost(ss.str());
       return false;
     }

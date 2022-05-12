@@ -11,4 +11,10 @@
 
 #pragma once
 
+#if WIN32
 #include "win.hpp"
+#elif __APPLE__
+#include "mac.hpp"
+#else
+#include "unix.hpp"
+#endif
