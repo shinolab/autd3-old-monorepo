@@ -27,9 +27,8 @@ struct PointSTM final : STM, DatagramBody<T> {
   PointSTM() : STM(), DatagramBody<T>(), _sent(0) {}
 
   void add(const Vector3& point, uint8_t duty_shift = 0) {
-    if (_points.size() + 1 > driver::POINT_STM_BUF_SIZE_MAX) {
-      throw std::runtime_error("PointSTM out of buffer");
-    }
+    if (_points.size() + 1 > driver::POINT_STM_BUF_SIZE_MAX) throw std::runtime_error("PointSTM out of buffer");
+
     _points.emplace_back(point, duty_shift);
   }
 
@@ -37,9 +36,8 @@ struct PointSTM final : STM, DatagramBody<T> {
   void init() override { _sent = 0; }
   void pack(const uint8_t msg_id, Geometry<T>& geometry, driver::TxDatagram& tx) override {
     point_stm_header(msg_id, tx);
-    if (is_finished()) {
-      return;
-    }
+
+    if (is_finished()) return;
 
     const auto is_first_frame = _sent == 0;
     const auto max_size = is_first_frame ? driver::POINT_STM_HEAD_DATA_SIZE : driver::POINT_STM_BODY_DATA_SIZE;

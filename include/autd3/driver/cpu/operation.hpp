@@ -28,11 +28,7 @@ inline void sync(const uint8_t msg_id, const uint16_t sync_cycle_ticks, const ui
   tx.header().cpu_flag.set(CPUControlFlags::DO_SYNC);
   tx.header().sync_header().ecat_sync_cycle_ticks = sync_cycle_ticks;
 
-  for (size_t i = 0; i < tx.size(); i++) {
-    auto& [dst] = tx.bodies()[i];
-    const auto* src = cycles + i * NUM_TRANS_IN_UNIT;
-    std::memcpy(dst, src, sizeof(Body));
-  }
+  std::memcpy(tx.bodies(), cycles, sizeof(Body) * tx.size());
 
   tx.num_bodies = tx.size();
 }
@@ -58,9 +54,7 @@ inline void modulation(const uint8_t msg_id, const uint8_t* const mod_data, cons
   }
   tx.header().size = static_cast<uint8_t>(mod_size);
 
-  if (is_last_frame) {
-    tx.header().cpu_flag.set(CPUControlFlags::MOD_END);
-  }
+  if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::MOD_END);
 }
 
 inline void config_silencer(const uint8_t msg_id, const uint16_t cycle, const uint16_t step, TxDatagram& tx) {
@@ -86,11 +80,7 @@ inline void normal_legacy_header(const uint8_t msg_id, TxDatagram& tx) noexcept 
 }
 
 inline void normal_legacy_body(const LegacyDrive* const drives, TxDatagram& tx) noexcept {
-  for (size_t i = 0; i < tx.size(); i++) {
-    auto& [dst] = tx.bodies()[i];
-    const auto src = drives + i * NUM_TRANS_IN_UNIT;
-    std::memcpy(&dst[0], src, sizeof(Body));
-  }
+  std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
 
   tx.num_bodies = tx.size();
 }
@@ -105,22 +95,15 @@ inline void normal_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
 inline void normal_duty_body(const Duty* drives, TxDatagram& tx) noexcept {
   tx.header().cpu_flag.set(CPUControlFlags::IS_DUTY);
 
-  for (size_t i = 0; i < tx.size(); i++) {
-    auto& [dst] = tx.bodies()[i];
-    const auto src = drives + i * NUM_TRANS_IN_UNIT;
-    std::memcpy(&dst[0], src, sizeof(Body));
-  }
+  std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
+
   tx.num_bodies = tx.size();
 }
 
 inline void normal_phase_body(const Phase* drives, TxDatagram& tx) noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
 
-  for (size_t i = 0; i < tx.size(); i++) {
-    auto& [data] = tx.bodies()[i];
-    const auto src = drives + i * NUM_TRANS_IN_UNIT;
-    std::memcpy(data, src, sizeof(Body));
-  }
+  std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
 
   tx.num_bodies = tx.size();
 }
@@ -161,9 +144,7 @@ inline void point_stm_body(const std::vector<std::vector<STMFocus>>& points, con
     }
   }
 
-  if (is_last_frame) {
-    tx.header().cpu_flag.set(CPUControlFlags::STM_END);
-  }
+  if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::STM_END);
 
   tx.num_bodies = tx.size();
 }

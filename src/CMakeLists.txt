@@ -10,6 +10,5 @@ set(SOURCE_LIST
   ${driver_include_files}
 )
 
-add_library(autd3 ${SOURCE_LIST})
-target_include_directories(autd3 PUBLIC ${PROJECT_SOURCE_DIR}/include ${EIGEN_PATH})
-set_target_properties(autd3 PROPERTIES LINKER_LANGUAGE CXX)
+add_library(autd3 INTERFACE ${SOURCE_LIST})
+target_include_directories(autd3 INTERFACE ${PROJECT_SOURCE_DIR}/include ${EIGEN_PATH})
