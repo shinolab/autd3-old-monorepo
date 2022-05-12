@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/05/2022
+// Last Modified: 12/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -70,7 +70,7 @@ class Controller {
     std::vector<uint16_t> cycles;
     for (const auto& dev : _geometry) std::transform(dev.begin(), dev.end(), std::back_inserter(cycles), [](const T& tr) { return tr.cycle(); });
 
-    sync(msg_id, _link->cycle_ticks(), gsl::span{cycles}, _tx_buf);
+    sync(msg_id, _link->cycle_ticks(), cycles.data(), _tx_buf);
 
     _link->send(_tx_buf);
     return wait_msg_processed(50);
@@ -213,8 +213,8 @@ class Controller {
       return true;
     }
     const auto msg_id = _tx_buf.header().msg_id;
-    const auto wait = gsl::narrow_cast<uint64_t>(std::ceil(driver::EC_TRAFFIC_DELAY * 1000.0 / static_cast<double>(driver::EC_DEVICE_PER_FRAME) *
-                                                           static_cast<double>(_geometry.num_devices())));
+    const auto wait = static_cast<uint64_t>(std::ceil(driver::EC_TRAFFIC_DELAY * 1000.0 / static_cast<double>(driver::EC_DEVICE_PER_FRAME) *
+                                                      static_cast<double>(_geometry.num_devices())));
     auto success = false;
     for (size_t i = 0; i < max_trial; i++) {
       if (!_link->receive(_rx_buf)) {

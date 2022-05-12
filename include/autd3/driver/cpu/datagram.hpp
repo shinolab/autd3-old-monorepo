@@ -25,7 +25,9 @@ struct TxDatagram {
 
   explicit TxDatagram(const size_t size) : num_bodies(size), _size(size) { _data.resize(sizeof(GlobalHeader) + sizeof(Body) * size, 0x00); }
 
-  [[nodiscard]] size_t size() const noexcept { return sizeof(GlobalHeader) + sizeof(Body) * num_bodies; }
+  [[nodiscard]] size_t size() const noexcept { return _size; }
+
+  [[nodiscard]] size_t effective_size() const noexcept { return sizeof(GlobalHeader) + sizeof(Body) * num_bodies; }
 
   std::vector<uint8_t> &data() noexcept { return _data; }
 
@@ -34,9 +36,7 @@ struct TxDatagram {
   GlobalHeader &header() noexcept { return *reinterpret_cast<GlobalHeader *>(_data.data()); }
   [[nodiscard]] GlobalHeader const &header() const noexcept { return *reinterpret_cast<GlobalHeader const *const>(_data.data()); }
 
-  gsl::span<Body> bodies() noexcept {
-    return gsl::span{reinterpret_cast<Body *>(gsl::span{_data}.subspan(sizeof(GlobalHeader), _size * sizeof(Body)).data()), _size};
-  }
+  Body *bodies() noexcept { return reinterpret_cast<Body *>(_data.data() + sizeof(GlobalHeader)); }
 
   void clear() noexcept {
     header().clear();
@@ -44,8 +44,8 @@ struct TxDatagram {
   }
 
  private:
-  std::vector<uint8_t> _data;
   size_t _size;
+  std::vector<uint8_t> _data;
 };
 
 struct RxMessage {

@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/05/2022
+// Last Modified: 12/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -12,7 +12,6 @@
 #pragma once
 
 #include <algorithm>
-#include <numbers>
 #include <utility>
 #include <vector>
 
@@ -26,14 +25,14 @@ template <typename T>
 struct LegacyDriveData final : DriveData<T> {
   void init(const size_t size) override { data.resize(size, driver::LegacyDrive{0x00, 0x00}); }
   void set_drive(const T& tr, const double phase, const double amp) noexcept override {
-    data.at(tr.id()).duty = gsl::narrow_cast<uint8_t>(std::round(510.0 * std::asin(amp) / std::numbers::pi));
-    data.at(tr.id()).phase = gsl::narrow_cast<uint8_t>(static_cast<int32_t>(std::round(phase * 256.0)) & 0xFF);
+    data.at(tr.id()).duty = static_cast<uint8_t>(std::round(510.0 * std::asin(amp) / driver::pi));
+    data.at(tr.id()).phase = static_cast<uint8_t>(static_cast<int32_t>(std::round(phase * 256.0)) & 0xFF);
   }
 
   void copy_from(size_t idx, const typename T::D& src) override {
-    auto s = gsl::span{src.data}.subspan(idx * driver::NUM_TRANS_IN_UNIT, driver::NUM_TRANS_IN_UNIT);
-    const auto d = gsl::span{data}.subspan(idx * driver::NUM_TRANS_IN_UNIT, driver::NUM_TRANS_IN_UNIT);
-    std::copy(s.begin(), s.end(), d.begin());
+    const auto* s = src.data.data() + idx * driver::NUM_TRANS_IN_UNIT;
+    auto* d = data.data() + idx * driver::NUM_TRANS_IN_UNIT;
+    std::memcpy(d, s, sizeof(driver::LegacyDrive) * driver::NUM_TRANS_IN_UNIT);
   }
 
   std::vector<driver::LegacyDrive> data{};
@@ -51,12 +50,12 @@ struct LegacyTransducer final : Transducer<LegacyDriveData<LegacyTransducer>> {
   [[nodiscard]] uint16_t cycle() const noexcept override { return 4096; }
   [[nodiscard]] double frequency() const noexcept override { return 40e3; }
   [[nodiscard]] double wavelength(const double sound_speed) const noexcept override { return sound_speed * 1e3 / 40e3; }
-  [[nodiscard]] double wavenumber(const double sound_speed) const noexcept override { return 2.0 * std::numbers::pi * 40e3 / (sound_speed * 1e3); }
+  [[nodiscard]] double wavenumber(const double sound_speed) const noexcept override { return 2.0 * driver::pi * 40e3 / (sound_speed * 1e3); }
 
   static void pack_header(const uint8_t msg_id, driver::TxDatagram& tx) noexcept { normal_legacy_header(msg_id, tx); }
 
-  static void pack_body(bool& phase_sent, bool& duty_sent, D& drives, driver::TxDatagram& tx) noexcept {
-    normal_legacy_body(gsl::span{drives.data}, tx);
+  static void pack_body(bool& phase_sent, bool& duty_sent, const D& drives, driver::TxDatagram& tx) noexcept {
+    normal_legacy_body(drives.data.data(), tx);
     phase_sent = true;
     duty_sent = true;
   }

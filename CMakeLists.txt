@@ -4,14 +4,16 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
   message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt. ")
 endif()
 
-project(autd3 LANGUAGES CXX)
+project(autd3)
 
 set(VERSION_MAJOR 2 CACHE STRING "Project major version number.")
 set(VERSION_MINOR 0 CACHE STRING "Project minor version number.")
 set(VERSION_PATCH 0 CACHE STRING "Project patch version number.")
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(BUILD_ALL "BUILD_ALL" OFF)
 option(BUILD_DOC "BUILD_DOC" OFF)
@@ -117,8 +119,6 @@ if(NOT USE_SYSTEM_EIGEN)
   endif()
 endif()
 add_compile_definitions(EIGEN_MPL2_ONLY)
-
-include(cmakes/gsl.cmake)
 
 add_subdirectory(src)
 

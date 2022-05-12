@@ -130,7 +130,7 @@ bool TwinCATImpl::send(const driver::TxDatagram& tx) {
 
   if (const auto ret = this->_write(this->_port,  // NOLINT
                                     &this->_net_addr, INDEX_GROUP, INDEX_OFFSET_BASE,
-                                    static_cast<unsigned long>(tx.size()),  // NOLINT
+                                    static_cast<unsigned long>(tx.effective_size()),  // NOLINT
                                     const_cast<void*>(static_cast<const void*>(tx.data().data())));
       ret != 0) {
     // https://infosys.beckhoff.com/english.php?content=../content/1033/tcadscommon/html/tcadscommon_intro.htm&id=

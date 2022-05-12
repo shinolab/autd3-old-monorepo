@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/05/2022
+// Last Modified: 12/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -50,8 +50,8 @@ struct PointSTM final : STM, DatagramBody<T> {
     std::vector<std::vector<driver::STMFocus>> points;
     std::transform(geometry.begin(), geometry.end(), std::back_inserter(points), [this, send_size](const Device<T>& dev) {
       std::vector<driver::STMFocus> lp;
-      const auto src = gsl::span{_points}.subspan(_sent, send_size);
-      std::transform(src.begin(), src.end(), std::back_inserter(lp), [dev](const auto ps) {
+      const auto src = _points.data() + _sent;
+      std::transform(src, src + send_size, std::back_inserter(lp), [dev](const auto ps) {
         const auto [pos, shift] = ps;
         const auto local = dev.to_local_position(pos);
         return driver::STMFocus(local.x(), local.y(), local.z(), shift);

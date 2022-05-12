@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/05/2022
+// Last Modified: 12/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -12,7 +12,6 @@
 #pragma once
 
 #include <algorithm>
-#include <gsl/gsl>
 #include <stdexcept>
 #include <vector>
 
@@ -105,8 +104,8 @@ class Modulation : public DatagramHeader {
     const auto max_size = is_first_frame ? driver::MOD_HEAD_DATA_SIZE : driver::MOD_BODY_DATA_SIZE;
     const auto mod_size = std::min(buffer().size() - _props.sent, max_size);
     const auto is_last_frame = _props.sent + mod_size == buffer().size();
-    const auto buf = gsl::span{_props.buffer}.subspan(_props.sent, mod_size);
-    modulation(msg_id, buf, is_first_frame, _props.freq_div, is_last_frame, tx);
+    const auto* buf = _props.buffer.data() + _props.sent;
+    modulation(msg_id, buf, mod_size, is_first_frame, _props.freq_div, is_last_frame, tx);
 
     _props.sent += mod_size;
   }

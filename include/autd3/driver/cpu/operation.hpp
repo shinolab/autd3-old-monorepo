@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/05/2022
+// Last Modified: 12/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -23,21 +23,21 @@ inline void clear(TxDatagram& tx) noexcept {
   tx.num_bodies = 0;
 }
 
-inline void sync(const uint8_t msg_id, const uint16_t sync_cycle_ticks, const gsl::span<uint16_t> cycles, TxDatagram& tx) noexcept {
+inline void sync(const uint8_t msg_id, const uint16_t sync_cycle_ticks, const uint16_t* const cycles, TxDatagram& tx) noexcept {
   tx.header().msg_id = msg_id;
   tx.header().cpu_flag.set(CPUControlFlags::DO_SYNC);
   tx.header().sync_header().ecat_sync_cycle_ticks = sync_cycle_ticks;
 
-  for (size_t i = 0; i < tx.bodies().size(); i++) {
-    auto& dst = tx.bodies()[i];
-    const auto src = cycles.subspan(i * NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT);
-    std::memcpy(&dst.data[0], src.data(), src.size_bytes());
+  for (size_t i = 0; i < tx.size(); i++) {
+    auto& [dst] = tx.bodies()[i];
+    const auto* src = cycles + i * NUM_TRANS_IN_UNIT;
+    std::memcpy(dst, src, sizeof(Body));
   }
 
-  tx.num_bodies = tx.bodies().size();
+  tx.num_bodies = tx.size();
 }
 
-inline void modulation(const uint8_t msg_id, const gsl::span<uint8_t> mod_data, const bool is_first_frame, const uint32_t freq_div,
+inline void modulation(const uint8_t msg_id, const uint8_t* const mod_data, const size_t mod_size, const bool is_first_frame, const uint32_t freq_div,
                        const bool is_last_frame, TxDatagram& tx) noexcept(false) {
   tx.header().msg_id = msg_id;
   tx.header().cpu_flag.remove(CPUControlFlags::DO_SYNC);
@@ -52,11 +52,11 @@ inline void modulation(const uint8_t msg_id, const gsl::span<uint8_t> mod_data, 
 
     tx.header().cpu_flag.set(CPUControlFlags::MOD_BEGIN);
     tx.header().mod_head().freq_div = freq_div;
-    std::memcpy(&tx.header().mod_head().data[0], mod_data.data(), mod_data.size_bytes());
+    std::memcpy(&tx.header().mod_head().data[0], mod_data, mod_size);
   } else {
-    std::memcpy(&tx.header().mod_body().data[0], mod_data.data(), mod_data.size_bytes());
+    std::memcpy(&tx.header().mod_body().data[0], mod_data, mod_size);
   }
-  tx.header().size = gsl::narrow_cast<uint8_t>(mod_data.size());
+  tx.header().size = static_cast<uint8_t>(mod_size);
 
   if (is_last_frame) {
     tx.header().cpu_flag.set(CPUControlFlags::MOD_END);
@@ -85,14 +85,14 @@ inline void normal_legacy_header(const uint8_t msg_id, TxDatagram& tx) noexcept 
   tx.header().fpga_flag.remove(FPGAControlFlags::STM_MODE);
 }
 
-inline void normal_legacy_body(const gsl::span<LegacyDrive> drives, TxDatagram& tx) noexcept {
-  for (size_t i = 0; i < tx.bodies().size(); i++) {
-    auto& dst = tx.bodies()[i];
-    const auto src = drives.subspan(i * NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT);
-    std::memcpy(&dst.data[0], src.data(), src.size_bytes());
+inline void normal_legacy_body(const LegacyDrive* const drives, TxDatagram& tx) noexcept {
+  for (size_t i = 0; i < tx.size(); i++) {
+    auto& [dst] = tx.bodies()[i];
+    const auto src = drives + i * NUM_TRANS_IN_UNIT;
+    std::memcpy(&dst[0], src, sizeof(Body));
   }
 
-  tx.num_bodies = tx.bodies().size();
+  tx.num_bodies = tx.size();
 }
 
 inline void normal_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
@@ -102,27 +102,27 @@ inline void normal_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
   tx.header().fpga_flag.remove(FPGAControlFlags::STM_MODE);
 }
 
-inline void normal_duty_body(const gsl::span<Duty> drives, TxDatagram& tx) noexcept {
+inline void normal_duty_body(const Duty* drives, TxDatagram& tx) noexcept {
   tx.header().cpu_flag.set(CPUControlFlags::IS_DUTY);
 
-  for (size_t i = 0; i < tx.bodies().size(); i++) {
-    auto& dst = tx.bodies()[i];
-    const auto src = drives.subspan(i * NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT);
-    std::memcpy(&dst.data[0], src.data(), src.size_bytes());
+  for (size_t i = 0; i < tx.size(); i++) {
+    auto& [dst] = tx.bodies()[i];
+    const auto src = drives + i * NUM_TRANS_IN_UNIT;
+    std::memcpy(&dst[0], src, sizeof(Body));
   }
-  tx.num_bodies = tx.bodies().size();
+  tx.num_bodies = tx.size();
 }
 
-inline void normal_phase_body(const gsl::span<Phase> drives, TxDatagram& tx) noexcept {
+inline void normal_phase_body(const Phase* drives, TxDatagram& tx) noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
 
-  for (size_t i = 0; i < tx.bodies().size(); i++) {
+  for (size_t i = 0; i < tx.size(); i++) {
     auto& dst = tx.bodies()[i];
-    const auto src = drives.subspan(i * NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT);
-    std::memcpy(&dst.data[0], src.data(), src.size_bytes());
+    const auto src = drives + i * NUM_TRANS_IN_UNIT;
+    std::memcpy(&dst.data[0], src, sizeof(Body));
   }
 
-  tx.num_bodies = tx.bodies().size();
+  tx.num_bodies = tx.size();
 }
 
 inline void point_stm_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
@@ -142,21 +142,21 @@ inline void point_stm_body(const std::vector<std::vector<STMFocus>>& points, con
     }
 
     tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
-    const auto sound_speed_internal = gsl::narrow_cast<uint32_t>(std::round(sound_speed * 1024.0));
+    const auto sound_speed_internal = static_cast<uint32_t>(std::round(sound_speed * 1024.0));
 
-    for (size_t i = 0; i < tx.bodies().size(); i++) {
+    for (size_t i = 0; i < tx.size(); i++) {
       auto& d = tx.bodies()[i];
-      auto s = gsl::span{points.at(i)};
-      d.point_stm_head().set_size(gsl::narrow_cast<uint16_t>(s.size()));
+      const auto& s = points.at(i);
+      d.point_stm_head().set_size(static_cast<uint16_t>(s.size()));
       d.point_stm_head().set_freq_div(freq_div);
       d.point_stm_head().set_sound_speed(sound_speed_internal);
       d.point_stm_head().set_point(s);
     }
   } else {
-    for (size_t i = 0; i < tx.bodies().size(); i++) {
+    for (size_t i = 0; i < tx.size(); i++) {
       auto& d = tx.bodies()[i];
-      auto s = gsl::span{points.at(i)};
-      d.point_stm_body().set_size(gsl::narrow_cast<uint16_t>(s.size()));
+      const auto& s = points.at(i);
+      d.point_stm_body().set_size(static_cast<uint16_t>(s.size()));
       d.point_stm_body().set_point(s);
     }
   }
@@ -165,7 +165,7 @@ inline void point_stm_body(const std::vector<std::vector<STMFocus>>& points, con
     tx.header().cpu_flag.set(CPUControlFlags::STM_END);
   }
 
-  tx.num_bodies = tx.bodies().size();
+  tx.num_bodies = tx.size();
 }
 
 inline void gain_stm_legacy_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
@@ -176,7 +176,7 @@ inline void gain_stm_legacy_header(const uint8_t msg_id, TxDatagram& tx) noexcep
   tx.header().fpga_flag.set(FPGAControlFlags::STM_GAIN_MODE);
 }
 
-inline void gain_stm_legacy_body(const gsl::span<LegacyDrive> drives, const bool is_first_frame, const uint32_t freq_div, const bool is_last_frame,
+inline void gain_stm_legacy_body(const LegacyDrive* const drives, const bool is_first_frame, const uint32_t freq_div, const bool is_last_frame,
                                  TxDatagram& tx) noexcept(false) {
   if (is_first_frame) {
     if (freq_div < STM_SAMPLING_FREQ_DIV_MIN) {
@@ -186,18 +186,14 @@ inline void gain_stm_legacy_body(const gsl::span<LegacyDrive> drives, const bool
     }
 
     tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
-    for (auto& body : tx.bodies()) body.gain_stm_head().set_freq_div(freq_div);
+    for (size_t i = 0; i < tx.size(); i++) tx.bodies()[i].gain_stm_head().set_freq_div(freq_div);
   } else {
-    for (size_t i = 0; i < tx.bodies().size(); i++) {
-      auto& dst = tx.bodies()[i];
-      const auto src = drives.subspan(i * NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT);
-      std::memcpy(&dst.data[0], src.data(), src.size_bytes());
-    }
+    std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
   }
 
   if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::STM_END);
 
-  tx.num_bodies = tx.bodies().size();
+  tx.num_bodies = tx.size();
 }
 
 inline void gain_stm_normal_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
@@ -208,7 +204,7 @@ inline void gain_stm_normal_header(const uint8_t msg_id, TxDatagram& tx) noexcep
   tx.header().fpga_flag.set(FPGAControlFlags::STM_GAIN_MODE);
 }
 
-inline void gain_stm_normal_phase(const gsl::span<Phase> drives, const bool is_first_frame, const uint32_t freq_div, TxDatagram& tx) noexcept(false) {
+inline void gain_stm_normal_phase(const Phase* const drives, const bool is_first_frame, const uint32_t freq_div, TxDatagram& tx) noexcept(false) {
   tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
 
   if (is_first_frame) {
@@ -219,48 +215,35 @@ inline void gain_stm_normal_phase(const gsl::span<Phase> drives, const bool is_f
     }
 
     tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
-    for (auto& body : tx.bodies()) body.gain_stm_head().set_freq_div(freq_div);
+    for (size_t i = 0; i < tx.size(); i++) tx.bodies()[i].gain_stm_head().set_freq_div(freq_div);
   } else {
-    for (size_t i = 0; i < tx.bodies().size(); i++) {
-      auto& dst = tx.bodies()[i];
-      const auto src = drives.subspan(i * NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT);
-      std::memcpy(&dst.data[0], src.data(), src.size_bytes());
-    }
+    std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
   }
 
-  tx.num_bodies = tx.bodies().size();
+  tx.num_bodies = tx.size();
 }
 
-inline void gain_stm_normal_duty(const gsl::span<Duty> drives, const bool is_last_frame, TxDatagram& tx) noexcept(false) {
+inline void gain_stm_normal_duty(const Duty* const drives, const bool is_last_frame, TxDatagram& tx) noexcept(false) {
   tx.header().cpu_flag.set(CPUControlFlags::IS_DUTY);
 
-  for (size_t i = 0; i < tx.bodies().size(); i++) {
-    auto& dst = tx.bodies()[i];
-    const auto src = drives.subspan(i * NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT);
-    std::memcpy(&dst.data[0], src.data(), src.size_bytes());
-  }
+  std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
+  if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::STM_END);
 
-  if (is_last_frame) {
-    tx.header().cpu_flag.set(CPUControlFlags::STM_END);
-  }
-
-  tx.num_bodies = tx.bodies().size();
+  tx.num_bodies = tx.size();
 }
 
 inline void force_fan(TxDatagram& tx, const bool value) noexcept {
-  if (value) {
+  if (value)
     tx.header().fpga_flag.set(FPGAControlFlags::FORCE_FAN);
-  } else {
+  else
     tx.header().fpga_flag.remove(FPGAControlFlags::FORCE_FAN);
-  }
 }
 
 inline void reads_fpga_info(TxDatagram& tx, const bool value) noexcept {
-  if (value) {
+  if (value)
     tx.header().cpu_flag.set(CPUControlFlags::READS_FPGA_INFO);
-  } else {
+  else
     tx.header().cpu_flag.remove(CPUControlFlags::READS_FPGA_INFO);
-  }
 }
 
 inline void cpu_version(TxDatagram& tx) noexcept {

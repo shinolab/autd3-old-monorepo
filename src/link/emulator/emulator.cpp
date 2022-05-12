@@ -3,7 +3,7 @@
 // Created Date: 08/03/2021
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/05/2022
+// Last Modified: 12/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -83,8 +83,8 @@ class EmulatorImpl final : public core::Link {
 
   bool send(const driver::TxDatagram& tx) override {
     _last_msg_id = tx.header().msg_id;
-    if (sendto(_socket, reinterpret_cast<const char*>(tx.data().data()), static_cast<int>(tx.size()), 0, reinterpret_cast<sockaddr*>(&_addr),
-               sizeof _addr) == -1)
+    if (sendto(_socket, reinterpret_cast<const char*>(tx.data().data()), static_cast<int>(tx.effective_size()), 0,
+               reinterpret_cast<sockaddr*>(&_addr), sizeof _addr) == -1)
       throw std::runtime_error("failed to send data");
     return true;
   }
