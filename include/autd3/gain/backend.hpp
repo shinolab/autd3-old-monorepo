@@ -13,23 +13,7 @@
 
 #include <memory>
 
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning( \
-    disable : 4068 6031 6255 6294 26408 26450 26426 26429 26432 26434 26440 26446 26447 26451 26454 26455 26461 26462 26471 26472 26474 26475 26495 26481 26482 26485 26490 26491 26493 26494 26496 26497 26812 26813 26814)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#pragma GCC diagnostic ignored "-Wclass-memaccess"
-#endif
-#include <Eigen/Dense>
-#if _MSC_VER
-#pragma warning(pop)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic pop
-#endif
+#include "autd3/core/geometry/geometry.hpp"
 
 namespace autd3::gain::holo {
 
@@ -40,13 +24,10 @@ using complex = std::complex<double>;
 constexpr complex ONE = complex(1.0, 0.0);
 constexpr complex ZERO = complex(0.0, 0.0);
 
-using VectorXd = Eigen::Matrix<double, -1, 1>;
-using VectorXc = Eigen::Matrix<complex, -1, 1>;
+using VectorXd = Eigen::Vector<double, -1>;
+using VectorXc = Eigen::Vector<complex, -1>;
 using MatrixXd = Eigen::Matrix<double, -1, -1>;
 using MatrixXc = Eigen::Matrix<complex, -1, -1>;
-
-class Backend;
-using BackendPtr = std::shared_ptr<Backend>;
 
 /**
  * \brief Backend for HoloGain
@@ -60,9 +41,36 @@ class Backend {
   Backend(Backend&& obj) = default;
   Backend& operator=(Backend&& obj) = default;
 
-  virtual void make_complex(const VectorXd& r, const VectorXd& i, VectorXc& c) = 0;
-  virtual void make_complex(const MatrixXd& r, const MatrixXd& i, MatrixXc& c) = 0;
+  virtual void copy(const MatrixXc& src, MatrixXc& dst) = 0;
+
+  virtual void conj(const VectorXc& src, VectorXc& dst) = 0;
+
+  virtual void create_diagonal(const VectorXc& src, MatrixXc& dst) = 0;
+
+  virtual void set(size_t i, complex value, VectorXc& dst) = 0;
+  virtual void set_row(VectorXc& src, size_t i, size_t begin, size_t end, MatrixXc& dst) = 0;
+  virtual void set_col(VectorXc& src, size_t i, size_t begin, size_t end, MatrixXc& dst) = 0;
+
+  virtual void get_col(const MatrixXc& src, size_t i, VectorXc& dst) = 0;
+
+  virtual complex max_abs_element(const VectorXc& src) = 0;
+
+  virtual void scale(complex value, VectorXc& dst) = 0;
+
+  virtual complex dot(const VectorXc& a, const VectorXc& b) = 0;
+
+  virtual void mul(TRANSPOSE trans_a, TRANSPOSE trans_b, complex alpha, const MatrixXc& a, const MatrixXc& b, complex beta, MatrixXc& c) = 0;
+  virtual void mul(TRANSPOSE trans_a, complex alpha, const MatrixXc& a, const VectorXc& b, complex beta, VectorXc& c) = 0;
+
+  virtual void max_eigen_vector(const MatrixXc& src, VectorXc& dst) = 0;
+
+  virtual void pseudo_inverse_svd(const MatrixXc& src, double alpha, const MatrixXc& u, const MatrixXc& s, const MatrixXc& vt, const MatrixXc& buf,
+                                  MatrixXc& dst) = 0;
+
+  virtual void generate_transfer_matrix(const std::vector<core::Vector3>& foci, const std::vector<core::Vector3>& transducers, MatrixXc& dst) = 0;
 };
+
+using BackendPtr = std::shared_ptr<Backend>;
 
 /**
  * \brief Backend for HoloGain
@@ -76,8 +84,33 @@ class EigenBackend final : public Backend {
   EigenBackend(EigenBackend&& obj) = default;
   EigenBackend& operator=(EigenBackend&& obj) = default;
 
-  void make_complex(const VectorXd& r, const VectorXd& i, VectorXc& c) override;
-  void make_complex(const MatrixXd& r, const MatrixXd& i, MatrixXc& c) override;
+  void copy(const MatrixXc& src, MatrixXc& dst) override;
+
+  void conj(const VectorXc& src, VectorXc& dst) override;
+
+  void create_diagonal(const VectorXc& src, MatrixXc& dst) override;
+
+  void set(size_t i, complex value, VectorXc& dst) override;
+  void set_row(VectorXc& src, size_t i, size_t begin, size_t end, MatrixXc& dst) override;
+  void set_col(VectorXc& src, size_t i, size_t begin, size_t end, MatrixXc& dst) override;
+
+  void get_col(const MatrixXc& src, size_t i, VectorXc& dst) override;
+
+  complex max_abs_element(const VectorXc& src) override;
+
+  void scale(complex value, VectorXc& dst) override;
+
+  complex dot(const VectorXc& a, const VectorXc& b) override;
+
+  void mul(TRANSPOSE trans_a, TRANSPOSE trans_b, complex alpha, const MatrixXc& a, const MatrixXc& b, complex beta, MatrixXc& c) override;
+  void mul(TRANSPOSE trans_a, complex alpha, const MatrixXc& a, const VectorXc& b, complex beta, VectorXc& c) override;
+
+  void max_eigen_vector(const MatrixXc& src, VectorXc& dst) override;
+
+  void pseudo_inverse_svd(const MatrixXc& src, double alpha, const MatrixXc& u, const MatrixXc& s, const MatrixXc& vt, const MatrixXc& buf,
+                          MatrixXc& dst) override;
+
+  void generate_transfer_matrix(const std::vector<core::Vector3>& foci, const std::vector<core::Vector3>& transducers, MatrixXc& dst) override;
 
   static BackendPtr create() { return std::make_shared<EigenBackend>(); }
 };
