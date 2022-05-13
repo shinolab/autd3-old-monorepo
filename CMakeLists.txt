@@ -37,7 +37,6 @@ option(BUILD_CAPI "BUILD_CAPI" OFF)
 option(ENABLE_LINT "ENABLE_LINT" OFF)
 option(BUILD_TEST "BUILD_TEST" OFF)
 
-
 if(BUILD_ALL)
   set(BUILD_GAIN_HOLO ON)
   set(BUILD_LINK_SOEM ON)
@@ -85,7 +84,7 @@ endif()
 
 if(ENABLE_LINT)
   if(Git_FOUND)
-  execute_process(COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init --recursive -- ${PROJECT_SOURCE_DIR}/3rdparty/cpplint)
+    execute_process(COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init --recursive -- ${PROJECT_SOURCE_DIR}/3rdparty/cpplint)
   endif()
   file(GLOB_RECURSE lint_files lib/*.cpp lib/*.hpp include/*.hpp capi/*.cpp capi/*.hpp examples/*.cpp examples/*.hpp)
   ADD_CUSTOM_TARGET(cpplint
