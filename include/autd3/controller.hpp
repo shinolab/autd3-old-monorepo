@@ -15,6 +15,7 @@
 #include <atomic>
 #include <chrono>
 #include <thread>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -55,7 +56,7 @@ class Controller {
     driver::force_fan(_tx_buf, force_fan);
     driver::reads_fpga_info(_tx_buf, reads_fpga_info);
 
-    const auto msg_id = get_id();
+    const auto msg_id = get_id_header();
     driver::config_silencer(msg_id, config.cycle, config.step, _tx_buf);
 
     _link->send(_tx_buf);
@@ -68,7 +69,7 @@ class Controller {
     driver::force_fan(_tx_buf, force_fan);
     driver::reads_fpga_info(_tx_buf, reads_fpga_info);
 
-    const auto msg_id = get_id();
+    const auto msg_id = get_id_body();
     std::vector<uint16_t> cycles;
     for (const auto& dev : _geometry) std::transform(dev.begin(), dev.end(), std::back_inserter(cycles), [](const T& tr) { return tr.cycle(); });
 
@@ -76,6 +77,26 @@ class Controller {
 
     _link->send(_tx_buf);
     return wait_msg_processed(50);
+  }
+
+  bool update_flag() {
+    _tx_buf.clear();
+
+    driver::force_fan(_tx_buf, force_fan);
+    driver::reads_fpga_info(_tx_buf, reads_fpga_info);
+
+    const auto msg_id = get_id_header();
+
+    _link->send(_tx_buf);
+    return wait_msg_processed(50);
+  }
+
+  std::vector<driver::FPGAInfo> read_fpga_info() {
+    std::vector<driver::FPGAInfo> fpga_info;
+    _link->receive(_rx_buf);
+    std::transform(_rx_buf.begin(), _rx_buf.end(), std::back_inserter(fpga_info),
+                   [](const driver::RxMessage& rx) { return driver::FPGAInfo(rx.ack); });
+    return fpga_info;
   }
 
   /**
@@ -99,7 +120,7 @@ class Controller {
    */
   bool stop() {
     auto res = config_silencer(SilencerConfig());
-    auto g = gain::Null<T>();
+    gain::Null<T> g;
     res &= send(g);
     return res;
   }
@@ -146,37 +167,47 @@ class Controller {
     return firmware_infos;
   }
 
-  bool send(core::DatagramBody<T>&& body) {
-    auto& b = body;
-    return send(b);
-  }
-  bool send(core::DatagramBody<T>& body) {
-    body.init();
+  template <typename H>
+  auto send(H& header) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, bool> {
+    header.init();
 
-    auto success = true;
     while (true) {
       _tx_buf.clear();
 
       driver::force_fan(_tx_buf, force_fan);
       driver::reads_fpga_info(_tx_buf, reads_fpga_info);
 
-      const auto msg_id = get_id();
-      body.pack(msg_id, _geometry, _tx_buf);
+      const auto msg_id = get_id_header();
+      header.pack(msg_id, _tx_buf);
       _link->send(_tx_buf);
-      success &= wait_msg_processed(50);
-      if (!success || body.is_finished()) {
-        break;
-      }
+      if (!wait_msg_processed(50)) return false;
+      if (header.is_finished()) break;
     }
-    return success;
+    return true;
   }
 
-  bool send(core::DatagramHeader&& header, core::DatagramBody<T>&& body) {
-    auto& h = header;
-    auto& b = body;
-    return send(h, b);
+  template <typename B>
+  auto send(B& body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody<T>, B>, bool> {
+    body.init();
+
+    while (true) {
+      _tx_buf.clear();
+
+      driver::force_fan(_tx_buf, force_fan);
+      driver::reads_fpga_info(_tx_buf, reads_fpga_info);
+
+      const auto msg_id = get_id_body();
+      body.pack(msg_id, _geometry, _tx_buf);
+      _link->send(_tx_buf);
+      if (!wait_msg_processed(50)) return false;
+      if (body.is_finished()) break;
+    }
+    return true;
   }
-  bool send(core::DatagramHeader& header, core::DatagramBody<T>& body) {
+
+  template <typename H, typename B>
+  auto send(H& header, B& body) ->
+      typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody<T>, B>, bool> {
     header.init();
     body.init();
 
@@ -186,7 +217,7 @@ class Controller {
       driver::force_fan(_tx_buf, force_fan);
       driver::reads_fpga_info(_tx_buf, reads_fpga_info);
 
-      const auto msg_id = get_id();
+      const auto msg_id = get_id_body();
       header.pack(msg_id, _tx_buf);
       body.pack(msg_id, _geometry, _tx_buf);
       _link->send(_tx_buf);
@@ -201,10 +232,18 @@ class Controller {
   bool check_ack;
 
  private:
-  static uint8_t get_id() noexcept {
-    static std::atomic id{driver::MSG_NORMAL_BEGINNING};
-    if (uint8_t expected = driver::MSG_NORMAL_END; !id.compare_exchange_weak(expected, driver::MSG_NORMAL_BEGINNING)) id.fetch_add(0x01);
-    return id.load();
+  static uint8_t get_id_header() noexcept {
+    static std::atomic id_header{driver::MSG_HEADER_ONLY_BEGINNING};
+    if (uint8_t expected = driver::MSG_HEADER_ONLY_END; !id_header.compare_exchange_weak(expected, driver::MSG_HEADER_ONLY_BEGINNING))
+      id_header.fetch_add(0x01);
+    return id_header.load();
+  }
+
+  static uint8_t get_id_body() noexcept {
+    static std::atomic id_body{driver::MSG_CONTAIN_BODY_BEGINNING};
+    if (uint8_t expected = driver::MSG_CONTAIN_BODY_END; !id_body.compare_exchange_weak(expected, driver::MSG_CONTAIN_BODY_BEGINNING))
+      id_body.fetch_add(0x01);
+    return id_body.load();
   }
 
   bool wait_msg_processed(const size_t max_trial) {

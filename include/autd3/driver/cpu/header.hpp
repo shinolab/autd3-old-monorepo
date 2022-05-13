@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/05/2022
+// Last Modified: 13/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -19,9 +19,9 @@
 namespace autd3::driver {
 
 struct SyncHeader {
-  uint16_t ecat_sync_cycle_ticks = 0;
-  uint16_t pad = 0;
-  uint8_t data[120]{};
+  uint16_t ecat_sync_cycle_ticks;
+  uint16_t pad;
+  uint8_t data[120];
 };
 
 struct ModHead {
@@ -34,9 +34,9 @@ struct ModBody {
 };
 
 struct SilencerHeader {
-  uint16_t cycle = 0;
-  uint16_t step = 0;
-  uint8_t data[120]{};
+  uint16_t cycle;
+  uint16_t step;
+  uint8_t data[120];
 };
 
 struct GlobalHeader {
