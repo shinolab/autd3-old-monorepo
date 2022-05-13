@@ -12,6 +12,7 @@
 #pragma once
 
 #include <thread>
+#include <vector>
 
 #include "autd3.hpp"
 
