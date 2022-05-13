@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/05/2022
+// Last Modified: 13/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -36,16 +36,12 @@ class Controller {
  public:
   core::Geometry<T>& geometry() noexcept { return _geometry; }
 
-  Controller()
-      : force_fan(false),
-        reads_fpga_info(false),
-        check_ack(false),
-        _geometry(),
-        _tx_buf(_geometry.num_devices()),
-        _rx_buf(_geometry.num_devices()),
-        _link(nullptr) {}
+  Controller() : force_fan(false), reads_fpga_info(false), check_ack(false), _geometry(), _tx_buf(0), _rx_buf(0), _link(nullptr) {}
 
   bool open(core::LinkPtr link) {
+    _tx_buf = driver::TxDatagram(_geometry.num_devices());
+    _rx_buf = driver::RxDatagram(_geometry.num_devices());
+
     _link = std::move(link);
     if (_link != nullptr) _link->open();
     return is_open();
