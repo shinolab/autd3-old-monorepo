@@ -86,7 +86,7 @@ struct FPGAInfo {
   FPGAInfo() noexcept : info(0) {}
   explicit FPGAInfo(const uint8_t ack) noexcept : info(ack) {}
 
-  [[nodiscard]] bool is_fan_running() const noexcept { return (info & 0x01) != 0; }
+  [[nodiscard]] bool is_thermal_assert() const noexcept { return (info & 0x01) != 0; }
 };
 
 }  // namespace autd3::driver

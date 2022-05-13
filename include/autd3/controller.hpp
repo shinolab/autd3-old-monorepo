@@ -84,8 +84,7 @@ class Controller {
 
     driver::force_fan(_tx_buf, force_fan);
     driver::reads_fpga_info(_tx_buf, reads_fpga_info);
-
-    const auto msg_id = get_id_header();
+    _tx_buf.header().msg_id = get_id_header();
 
     _link->send(_tx_buf);
     return wait_msg_processed(50);
