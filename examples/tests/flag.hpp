@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include <thread>
+
 #include "autd3.hpp"
 
 template <typename T>
@@ -23,11 +25,24 @@ void flag_test(autd3::Controller<T>& autd) {
   autd.force_fan = true;
   autd.update_flag();
 
-  while (true) {
-    const auto states = autd.read_fpga_info();
-    for (size_t i = 0; i < autd.geometry().num_devices(); i++)
-      std::cout << "[" << i << "]: fan = " << std::boolalpha << states.at(i).is_fan_running() << std::endl;
-  }
+  bool fin = false;
+  auto check_states_thread = std::thread([&] {
+    const std::vector<char> prompts = {'-', '/', '|', '\\'};
+    size_t prompts_idx = 0;
+    while (!fin) {
+      const auto states = autd.read_fpga_info();
+      std::cout << prompts[prompts_idx] << " Thermo assert: " << std::boolalpha << states.at(0).is_thermal_assert();
+      for (size_t i = 1; i < autd.geometry().num_devices(); i++) std::cout << ", " << states.at(i).is_thermal_assert();
+      std::cout << "\r";
+      prompts_idx = (prompts_idx + 1) % prompts.size();
+    }
+  });
+
+  std::cout << "press any key stop checking fpga states..." << std::endl;
+  std::cin.ignore();
+
+  fin = true;
+  if (check_states_thread.joinable()) check_states_thread.join();
 
   autd.force_fan = false;
   autd.update_flag();
