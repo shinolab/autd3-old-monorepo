@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/05/2022
+// Last Modified: 13/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -32,7 +32,7 @@ inline void nanosleep(const int64_t t) {
   LARGE_INTEGER start;
   QueryPerformanceCounter(&start);
 
-  const auto sleep = t * PERFORMANCE_FREQUENCY.QuadPart / (1000 * 1000 * 1000);
+  const auto sleep = t * PERFORMANCE_FREQUENCY.QuadPart / (1000L * 1000L * 1000L);
   while (true) {
     LARGE_INTEGER now;
     QueryPerformanceCounter(&now);

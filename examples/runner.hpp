@@ -3,7 +3,7 @@
 // Created Date: 03/04/2021
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/05/2022
+// Last Modified: 13/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -21,6 +21,7 @@
 #include "autd3.hpp"
 #include "tests/advanced.hpp"
 #include "tests/bessel.hpp"
+#include "tests/flag.hpp"
 #include "tests/focus.hpp"
 #include "tests/gain_stm.hpp"
 #include "tests/group.hpp"
@@ -35,8 +36,11 @@ int run(autd3::Controller<T> autd) {
       std::pair(F{point_stm<T>}, "PointSTM Test"),
       std::pair(F{gain_stm<T>}, "GainSTM Test"),
       std::pair(F{advanced_test<T>}, "Custom Gain & Modulation Test"),
+      std::pair(F{flag_test<T>}, "Flag Test"),
   };
   if (autd.geometry().num_devices() == 2) tests.emplace_back(std::pair(F{group_test<T>}, "Grouped Gain Test"));
+
+  autd.check_ack = true;
 
   autd.geometry().sound_speed = 340.0;  // m/s
 

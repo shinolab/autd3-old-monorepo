@@ -3,7 +3,7 @@
 // Created Date: 08/03/2021
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/05/2022
+// Last Modified: 13/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -69,12 +69,11 @@ struct IOMap {
   size_t _device_num;
 };
 
-constexpr size_t SEND_BUF_SIZE = 32;
-
 class SOEMLink final : public core::Link {
  public:
   SOEMLink(const bool high_precision, std::string ifname, const size_t dev_num, const uint16_t cycle_ticks, std::function<void(std::string)> on_lost)
-      : _high_precision(high_precision),
+      : Link(cycle_ticks),
+        _high_precision(high_precision),
         _ifname(std::move(ifname)),
         _cycle_ticks(cycle_ticks),
         _on_lost(std::move(on_lost)),

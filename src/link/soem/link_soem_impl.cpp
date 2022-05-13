@@ -3,7 +3,7 @@
 // Created Date: 23/08/2019
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/05/2022
+// Last Modified: 13/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2019-2020 Hapis Lab. All rights reserved.
@@ -28,8 +28,6 @@ bool SOEMLink::is_open() { return _is_open.load(); }
 
 bool SOEMLink::send(const driver::TxDatagram& tx) {
   if (!_is_open.load()) throw std::runtime_error("link is closed");
-
-  if (_send_buf.size() == SEND_BUF_SIZE) return false;
 
   std::lock_guard lock(_send_mtx);
   _send_buf.push(tx.clone());
