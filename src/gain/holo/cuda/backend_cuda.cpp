@@ -13,42 +13,44 @@
 
 #include <cuda_runtime_api.h>
 
-#include <iostream>
-
 #include "./kernel.h"
 
 namespace autd3::gain::holo {
 
 CUDABackend::CUDABackend(const int device_idx) { cudaSetDevice(device_idx); }
 
-void CUDABackend::make_complex(const VectorXd& r, const VectorXd& i, VectorXc& c) {
-  printf("CUDA backend\n");
-  const auto rows = (uint32_t)c.size();
-  constexpr uint32_t cols = 1;
+void CUDABackend::copy(const MatrixXc& src, MatrixXc& dst) {}
 
-  double *d_r, *d_i;
-  cuDoubleComplex* d_c;
-  cudaMalloc((void**)&d_r, sizeof(double) * rows);
-  cudaMalloc((void**)&d_i, sizeof(double) * rows);
-  cudaMalloc((void**)&d_c, sizeof(cuDoubleComplex) * rows);
+void CUDABackend::scale(complex value, VectorXc& dst) {}
 
-  cudaMemcpy(d_r, r.data(), sizeof(double) * rows, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_i, i.data(), sizeof(double) * rows, cudaMemcpyHostToDevice);
+complex CUDABackend::dot(const VectorXc& a, const VectorXc& b) { return a.dot(b); }
 
-  cu_make_complex(d_r, d_i, rows, cols, d_c);
+void CUDABackend::mul(TRANSPOSE trans_a, TRANSPOSE trans_b, complex alpha, const MatrixXc& a, const MatrixXc& b, complex beta, MatrixXc& c) {}
 
-  cudaMemcpy(c.data(), d_c, sizeof(cuDoubleComplex) * rows, cudaMemcpyDeviceToHost);
+void CUDABackend::mul(TRANSPOSE trans_a, complex alpha, const MatrixXc& a, const VectorXc& b, complex beta, VectorXc& c) {}
 
-  cudaFree(d_r);
-  cudaFree(d_i);
-  cudaFree(d_c);
+void CUDABackend::max_eigen_vector(const MatrixXc& src, VectorXc& dst) {}
+
+void CUDABackend::pseudo_inverse_svd(const MatrixXc& src, double alpha, const MatrixXc& u, const MatrixXc& s, const MatrixXc& vt, const MatrixXc& buf,
+                                     MatrixXc& dst) {}
+
+void CUDABackend::generate_transfer_matrix(const std::vector<core::Vector3>& foci, const std::vector<core::Vector3>& transducers, MatrixXc& dst) {}
+
+void CUDABackend::conj(const VectorXc& src, VectorXc& dst) {}
+
+void CUDABackend::create_diagonal(const VectorXc& src, MatrixXc& dst) {
+  dst.fill(ZERO);
+  dst.diagonal() = src;
 }
 
-void CUDABackend::make_complex(const MatrixXd& r, const MatrixXd& i, MatrixXc& c) {
-  printf("CUDA backend\n");
-  const auto rows = (uint32_t)c.rows();
-  const auto cols = (uint32_t)c.cols();
-  cu_make_complex(r.data(), i.data(), rows, cols, (cuDoubleComplex*)c.data());
-}
+void CUDABackend::set(size_t i, complex value, VectorXc& dst) {}
+
+void CUDABackend::set_row(VectorXc& src, size_t i, size_t begin, size_t end, MatrixXc& dst) {}
+
+void CUDABackend::set_col(VectorXc& src, size_t i, size_t begin, size_t end, MatrixXc& dst) {}
+
+void CUDABackend::get_col(const MatrixXc& src, size_t i, VectorXc& dst) {}
+
+complex CUDABackend::max_abs_element(const VectorXc& src) { return std::sqrt(src.cwiseAbs2().maxCoeff()); }
 
 }  // namespace autd3::gain::holo
