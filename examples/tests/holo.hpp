@@ -27,8 +27,8 @@ void holo_test(autd3::Controller<T>& autd) {
   std::vector<autd3::Vector3> foci = {center + autd3::Vector3(30.0, 0.0, 0.0), center - autd3::Vector3(30.0, 0.0, 0.0)};
   std::vector<double> amps = {1.0, 1.0};
 
-  auto backend = autd3::gain::holo::EigenBackend::create();
-  //   auto backend = autd3::gain::holo::CUDABackend::create();
+  // auto backend = autd3::gain::holo::EigenBackend::create();
+  auto backend = autd3::gain::holo::CUDABackend::create();
   autd3::gain::holo::SDP<T> g(backend, foci, amps);
 
   autd.send(m, g);
