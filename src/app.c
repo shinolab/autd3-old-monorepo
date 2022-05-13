@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/05/2022
+ * Last Modified: 13/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -35,6 +35,10 @@
 #define MSG_RD_CPU_VERSION (0x01)
 #define MSG_RD_FPGA_VERSION (0x03)
 #define MSG_RD_FPGA_FUNCTION (0x04)
+#define MSG_HEADER_ONLY_BEGIN (0x05)
+#define MSG_HEADER_ONLY_END (0x7F)
+#define MSG_CONTAIN_BODY_BEGIN (0x80)
+#define MSG_CONTAIN_BODY_END (0xF0)
 
 extern RX_STR0 _sRx0;
 extern RX_STR1 _sRx1;
@@ -167,9 +171,7 @@ void write_mod(GlobalHeader* header) {
     _mod_cycle += write - segment_capacity;
   }
 
-  if ((header->cpu_ctl_reg & MOD_END) != 0) {
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE, max(1, _mod_cycle) - 1);
-  }
+  if ((header->cpu_ctl_reg & MOD_END) != 0) bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE, max(1, _mod_cycle) - 1);
 }
 
 void config_silencer(GlobalHeader* header) {
@@ -279,9 +281,7 @@ static void write_point_stm(GlobalHeader* header, Body* body) {
     _stm_cycle += size - segment_capacity;
   }
 
-  if ((header->cpu_ctl_reg & STM_END) != 0) {
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_cycle) - 1);
-  }
+  if ((header->cpu_ctl_reg & STM_END) != 0) bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_cycle) - 1);
 }
 
 static void write_gain_stm(GlobalHeader* header, Body* body) {
@@ -320,13 +320,10 @@ static void write_gain_stm(GlobalHeader* header, Body* body) {
     dst += 2;
   }
 
-  if ((_stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) == 0) {
+  if ((_stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) == 0)
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, (_stm_cycle & ~GAIN_STM_BUF_SEGMENT_SIZE_MASK) >> GAIN_STM_BUF_SEGMENT_SIZE_WIDTH);
-  }
 
-  if ((header->cpu_ctl_reg & STM_END) != 0) {
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_cycle) - 1);
-  }
+  if ((header->cpu_ctl_reg & STM_END) != 0) bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_cycle) - 1);
 }
 
 static void clear(void) {
@@ -391,10 +388,8 @@ void recv_ethercat(void) {
       _ack = (_ack & 0xFF00) | ((get_fpga_version() >> 8) & 0xFF);
       break;
     default:
-      if ((header->cpu_ctl_reg & DO_SYNC) != 0) {
-        synchronize(header, body);
-        break;
-      }
+      if (_msg_id > MSG_CONTAIN_BODY_END) break;
+
       if ((header->cpu_ctl_reg & CONFIG_SILENCER) != 0) {
         config_silencer(header);
         break;
@@ -403,6 +398,13 @@ void recv_ethercat(void) {
       write_mod(header);
 
       bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, _ctl_reg);
+
+      if (_msg_id <= MSG_HEADER_ONLY_END) break;
+
+      if ((header->cpu_ctl_reg & DO_SYNC) != 0) {
+        synchronize(header, body);
+        break;
+      }
 
       if ((_ctl_reg & OP_MODE) == 0) {
         write_normal_op(header, body);
