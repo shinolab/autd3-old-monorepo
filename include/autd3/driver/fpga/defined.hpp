@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/05/2022
+// Last Modified: 13/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -84,8 +84,9 @@ struct FPGAInfo {
   uint8_t info;
 
   FPGAInfo() noexcept : info(0) {}
+  explicit FPGAInfo(const uint8_t ack) noexcept : info(ack) {}
 
-  bool is_fan_running() noexcept { return (info & 0x01) != 0; }
+  [[nodiscard]] bool is_fan_running() const noexcept { return (info & 0x01) != 0; }
 };
 
 }  // namespace autd3::driver

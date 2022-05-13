@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/05/2022
+// Last Modified: 13/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -18,8 +18,10 @@ constexpr uint8_t MSG_CLEAR = 0x00;
 constexpr uint8_t MSG_RD_CPU_VERSION = 0x01;
 constexpr uint8_t MSG_RD_FPGA_VERSION = 0x03;
 constexpr uint8_t MSG_RD_FPGA_FUNCTION = 0x04;
-constexpr uint8_t MSG_NORMAL_BEGINNING = 0x05;
-constexpr uint8_t MSG_NORMAL_END = 0xF0;
+constexpr uint8_t MSG_HEADER_ONLY_BEGINNING = 0x05;
+constexpr uint8_t MSG_HEADER_ONLY_END = 0x7F;
+constexpr uint8_t MSG_CONTAIN_BODY_BEGINNING = 0x80;
+constexpr uint8_t MSG_CONTAIN_BODY_END = 0xF0;
 constexpr uint8_t MSG_EMU_GEOMETRY_SET = 0xFF;
 
 constexpr size_t MOD_HEAD_DATA_SIZE = 120;
