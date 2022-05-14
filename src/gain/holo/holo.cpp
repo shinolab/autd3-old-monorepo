@@ -31,16 +31,16 @@ void generate_transfer_matrix(const std::vector<core::Vector3>& foci, const core
 void back_prop(const BackendPtr& backend, const MatrixXc& transfer, const VectorXc& amps, MatrixXc& b) {
   const auto m = transfer.rows();
 
+  MatrixXc tmp = MatrixXc::Zero(m, m);
+  backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::CONJ_TRANS, ONE, transfer, transfer, ZERO, tmp);
+
   VectorXc denominator(m);
-  backend->reduce_col(transfer, denominator);
-  backend->abs(denominator, denominator);
+  backend->get_diagonal(tmp, denominator);
   backend->reciprocal(denominator, denominator);
   backend->hadamard_product(amps, denominator, denominator);
 
-  MatrixXc b_tmp(m, m);
-  backend->create_diagonal(denominator, b_tmp);
-
-  backend->mul(TRANSPOSE::CONJ_TRANS, TRANSPOSE::NO_TRANS, ONE, transfer, b_tmp, ZERO, b);
+  backend->create_diagonal(denominator, tmp);
+  backend->mul(TRANSPOSE::CONJ_TRANS, TRANSPOSE::NO_TRANS, ONE, transfer, tmp, ZERO, b);
 }
 
 template <typename T>
@@ -204,7 +204,7 @@ void gspat_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>
   backend->init();
 
   const auto m = static_cast<Eigen::Index>(foci.size());
-  const auto n = geometry.num_transducers();
+  const auto n = static_cast<Eigen::Index>(geometry.num_transducers());
 
   const VectorXc amps_ = Eigen::Map<VectorXc, Eigen::Unaligned>(amps.data(), static_cast<Eigen::Index>(amps.size()));
 
