@@ -56,7 +56,7 @@ class CUDABackend : public Backend {
 
   void max_eigen_vector(const MatrixXc& src, VectorXc& dst) override = 0;
 
-  void pseudo_inverse_svd(const MatrixXc& src, double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) override = 0;
+  void pseudo_inverse_svd(MatrixXc& src, double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) override = 0;
 
   static BackendPtr create(int device_idx = 0);
 };

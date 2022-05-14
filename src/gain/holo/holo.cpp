@@ -11,6 +11,7 @@
 
 #include "autd3/gain/holo.hpp"
 
+#include <iostream>
 #include <random>
 
 #include "autd3/core/geometry/legacy_transducer.hpp"
@@ -36,7 +37,7 @@ void sdp_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& 
   const auto m = foci.size();
   const auto n = geometry.num_transducers();
 
-  VectorXc amps_ = Eigen::Map<VectorXc, Eigen::Unaligned>(amps.data(), static_cast<Eigen::Index>(amps.size()));
+  const VectorXc amps_ = Eigen::Map<VectorXc, Eigen::Unaligned>(amps.data(), static_cast<Eigen::Index>(amps.size()));
 
   MatrixXc p(m, m);
   backend->create_diagonal(amps_, p);
@@ -115,6 +116,36 @@ void sdp_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& 
       drives.set_drive(tr, phase, power);
     }
 }
+
+template <typename T>
+void naive_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& foci, std::vector<complex>& amps, const core::Geometry<T>& geometry,
+                     AmplitudeConstraint constraint, typename T::D& drives) {
+  backend->init();
+
+  const auto m = foci.size();
+  const auto n = geometry.num_transducers();
+
+  const VectorXc p = Eigen::Map<VectorXc, Eigen::Unaligned>(amps.data(), static_cast<Eigen::Index>(amps.size()));
+
+  MatrixXc g(m, n);
+  generate_transfer_matrix(foci, geometry, g);
+
+  VectorXc q = VectorXc::Zero(n);
+  backend->mul(TRANSPOSE::CONJ_TRANS, ONE, g, p, ZERO, q);
+  backend->to_host(q);
+
+  std::cout << q << std::endl;
+
+  const auto max_coefficient = std::abs(backend->max_abs_element(q));
+  for (auto& dev : geometry)
+    for (auto& tr : dev) {
+      const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
+      const auto raw = std::abs(q(tr.id()));
+      const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
+      drives.set_drive(tr, phase, power);
+    }
+}
+
 }  // namespace
 
 void SDP<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
@@ -122,6 +153,13 @@ void SDP<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransduc
 }
 void SDP<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
   sdp_calc_impl(_backend, _foci, _amps, geometry, alpha, lambda, repeat, constraint, this->_props.drives);
+}
+
+void Naive<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
+  naive_calc_impl(_backend, _foci, _amps, geometry, constraint, this->_props.drives);
+}
+void Naive<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
+  naive_calc_impl(_backend, _foci, _amps, geometry, constraint, this->_props.drives);
 }
 
 }  // namespace autd3::gain::holo
