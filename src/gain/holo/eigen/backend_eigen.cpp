@@ -25,6 +25,10 @@ class EigenBackendImpl final : public EigenBackend<T> {
   EigenBackendImpl(EigenBackendImpl&& obj) = default;
   EigenBackendImpl& operator=(EigenBackendImpl&& obj) = default;
 
+  void init() override {}
+  void to_host(VectorXc&) override {}
+  void to_host(MatrixXc&) override {}
+
   void copy(const MatrixXc& src, MatrixXc& dst) override { dst = src; }
 
   void conj(const VectorXc& src, VectorXc& dst) override { dst = src.conjugate(); }

@@ -42,6 +42,10 @@ class Backend {
   Backend(Backend&& obj) = default;
   Backend& operator=(Backend&& obj) = default;
 
+  virtual void init() = 0;
+  virtual void to_host(VectorXc& dst) = 0;
+  virtual void to_host(MatrixXc& dst) = 0;
+
   virtual void copy(const MatrixXc& src, MatrixXc& dst) = 0;
 
   virtual void conj(const VectorXc& src, VectorXc& dst) = 0;
@@ -85,6 +89,10 @@ class EigenBackend : public Backend<T> {
   EigenBackend& operator=(const EigenBackend& obj) = default;
   EigenBackend(EigenBackend&& obj) = default;
   EigenBackend& operator=(EigenBackend&& obj) = default;
+
+  void init() override = 0;
+  void to_host(VectorXc& dst) override = 0;
+  void to_host(MatrixXc& dst) override = 0;
 
   void copy(const MatrixXc& src, MatrixXc& dst) override = 0;
 
