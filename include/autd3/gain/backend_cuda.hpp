@@ -20,8 +20,7 @@ namespace autd3::gain::holo {
 /**
  * \brief Backend for HoloGain
  */
-template <typename T, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
-class CUDABackend : public Backend<T> {
+class CUDABackend : public Backend {
  public:
   CUDABackend() = default;
   ~CUDABackend() override = default;
@@ -59,9 +58,7 @@ class CUDABackend : public Backend<T> {
 
   void pseudo_inverse_svd(const MatrixXc& src, double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) override = 0;
 
-  void generate_transfer_matrix(const std::vector<core::Vector3>& foci, const core::Geometry<T>& geometry, MatrixXc& dst) override = 0;
-
-  static BackendPtr<T> create(int device_idx = 0);
+  static BackendPtr create(int device_idx = 0);
 };
 
 }  // namespace autd3::gain::holo

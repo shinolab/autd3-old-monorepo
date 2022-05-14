@@ -18,7 +18,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(BUILD_ALL "BUILD_ALL" OFF)
 option(BUILD_DOC "BUILD_DOC" OFF)
 
-option(BUILD_GAIN_HOLO "BUILD_HOLO_GAIN" ON)
+option(BUILD_GAIN_HOLO "BUILD_GAIN_HOLO" ON)
 option(BUILD_BACKEND_BLAS "BUILD_BACKEND_BLAS" OFF)
 set(BLAS_LIB_DIR CACHE PATH "BLAS library directory")
 set(BLAS_DEPEND_LIB_DIR CACHE PATH "Additional library directory for BLAS")
@@ -35,7 +35,9 @@ option(BUILD_EXAMPLES "BUILD_EXAMPLES" ON)
 
 option(BUILD_CAPI "BUILD_CAPI" OFF)
 option(ENABLE_LINT "ENABLE_LINT" OFF)
+
 option(BUILD_TEST "BUILD_TEST" OFF)
+option(gtest_disable_pthreads  "gtest_disable_pthreads" ON)
 
 option(BUILD_WITH_STATIC_CRT "BUILD_WITH_STATIC_CRT" OFF)
 
@@ -45,6 +47,7 @@ if(BUILD_ALL)
   set(BUILD_LINK_TWINCAT ON)
   set(BUILD_LINK_REMOTE_TWINCAT ON)
   set(BUILD_LINK_EMULATOR ON)
+  set(BUILD_EXAMPLES ON)
   set(BUILD_CAPI ON)
 endif()
 
@@ -88,7 +91,7 @@ if(ENABLE_LINT)
   if(Git_FOUND)
     execute_process(COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init --recursive -- ${PROJECT_SOURCE_DIR}/3rdparty/cpplint)
   endif()
-  file(GLOB_RECURSE lint_files lib/*.cpp lib/*.hpp include/*.hpp capi/*.cpp capi/*.hpp examples/*.cpp examples/*.hpp)
+  file(GLOB_RECURSE lint_files src/*.cpp src/*.hpp include/*.hpp capi/*.cpp capi/*.hpp examples/*.cpp examples/*.hpp)
   ADD_CUSTOM_TARGET(cpplint
     python
     ${PROJECT_SOURCE_DIR}/3rdparty/cpplint/cpplint.py
@@ -136,4 +139,10 @@ endif()
 
 if(BUILD_EXAMPLES)
   add_subdirectory(examples)
+endif()
+
+if(BUILD_TEST)
+  set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+  include(${PROJECT_SOURCE_DIR}/cmakes/gtest.cmake)
+  add_subdirectory(tests)
 endif()

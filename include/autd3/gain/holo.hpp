@@ -50,7 +50,7 @@ using AmplitudeConstraint = std::variant<DontCare, Normalize, Uniform, Clamp>;
 template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class Holo : public core::Gain<T> {
  public:
-  explicit Holo(BackendPtr<T> backend) : constraint(Normalize()), _backend(std::move(backend)) {}
+  explicit Holo(BackendPtr backend) : constraint(Normalize()), _backend(std::move(backend)) {}
   ~Holo() override = default;
   Holo(const Holo& v) noexcept = delete;
   Holo& operator=(const Holo& obj) = delete;
@@ -68,7 +68,7 @@ class Holo : public core::Gain<T> {
   AmplitudeConstraint constraint;
 
  protected:
-  BackendPtr<T> _backend;
+  BackendPtr _backend;
   std::vector<core::Vector3> _foci;
   std::vector<complex> _amps;
 };
@@ -85,7 +85,7 @@ class SDP final : public Holo<T> {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit SDP(BackendPtr<T> backend) : Holo(std::move(backend)), alpha(1e-3), lambda(0.9), repeat(100) {}
+  explicit SDP(BackendPtr backend) : Holo(std::move(backend)), alpha(1e-3), lambda(0.9), repeat(100) {}
 
   void calc(const core::Geometry<T>& geometry) override;
 
