@@ -191,7 +191,7 @@ class CUDABackendImpl final : public CUDABackend {
     cudaMemcpy(tmp.data(), src_p, sizeof(complex) * src.size(), cudaMemcpyDeviceToHost);
     Eigen::Index idx = 0;
     tmp.cwiseAbs2().maxCoeff(&idx);
-    return src(idx);
+    return tmp(idx);
   }
 
   void scale(const complex value, VectorXc& dst) override {
