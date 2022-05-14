@@ -34,7 +34,6 @@ using MatrixXc = Eigen::Matrix<complex, -1, -1, Eigen::ColMajor>;
 /**
  * \brief Backend for HoloGain
  */
-template <typename T, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class Backend {
  public:
   Backend() = default;
@@ -72,18 +71,14 @@ class Backend {
   virtual void max_eigen_vector(const MatrixXc& src, VectorXc& dst) = 0;
 
   virtual void pseudo_inverse_svd(const MatrixXc& src, double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) = 0;
-
-  virtual void generate_transfer_matrix(const std::vector<core::Vector3>& foci, const core::Geometry<T>& geometry, MatrixXc& dst) = 0;
 };
 
-template <typename T, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
-using BackendPtr = std::shared_ptr<Backend<T>>;
+using BackendPtr = std::shared_ptr<Backend>;
 
 /**
  * \brief Backend for HoloGain
  */
-template <typename T, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
-class EigenBackend : public Backend<T> {
+class EigenBackend : public Backend {
  public:
   EigenBackend() = default;
   ~EigenBackend() override = default;
@@ -121,9 +116,7 @@ class EigenBackend : public Backend<T> {
 
   void pseudo_inverse_svd(const MatrixXc& src, double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) override = 0;
 
-  void generate_transfer_matrix(const std::vector<core::Vector3>& foci, const core::Geometry<T>& geometry, MatrixXc& dst) override = 0;
-
-  static BackendPtr<T> create();
+  static BackendPtr create();
 };
 
 }  // namespace autd3::gain::holo
