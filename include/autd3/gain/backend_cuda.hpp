@@ -39,6 +39,7 @@ class CUDABackend : public Backend {
   void reciprocal(const VectorXc& src, VectorXc& dst) override = 0;
 
   void create_diagonal(const VectorXc& src, MatrixXc& dst) override = 0;
+  void get_diagonal(const MatrixXc& src, VectorXc& dst) override = 0;
 
   void set(size_t i, complex value, VectorXc& dst) override = 0;
   void set_row(VectorXc& src, size_t i, size_t begin, size_t end, MatrixXc& dst) override = 0;
@@ -55,8 +56,6 @@ class CUDABackend : public Backend {
   void mul(TRANSPOSE trans_a, TRANSPOSE trans_b, complex alpha, const MatrixXc& a, const MatrixXc& b, complex beta, MatrixXc& c) override = 0;
   void mul(TRANSPOSE trans_a, complex alpha, const MatrixXc& a, const VectorXc& b, complex beta, VectorXc& c) override = 0;
   void hadamard_product(const VectorXc& a, const VectorXc& b, VectorXc& c) override = 0;
-
-  void reduce_col(const MatrixXc& a, VectorXc& b) override = 0;
 
   void max_eigen_vector(const MatrixXc& src, VectorXc& dst) override = 0;
 

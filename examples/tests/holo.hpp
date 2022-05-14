@@ -38,5 +38,6 @@ void holo_test(autd3::Controller<T>& autd) {
   autd3::gain::holo::GSPAT<T> gc(backendc);
   gc.add_focus(center + autd3::Vector3(30.0, 0.0, 0.0), 1.0);
   gc.add_focus(center - autd3::Vector3(30.0, 0.0, 0.0), 1.0);
+
   autd.send(m, gc);
 }

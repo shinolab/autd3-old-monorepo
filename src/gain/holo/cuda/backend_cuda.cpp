@@ -151,6 +151,14 @@ class CUDABackendImpl final : public CUDABackend {
     cu_set_diagonal(src_p, row, col, dst_p);
   }
 
+  void get_diagonal(const MatrixXc& src, VectorXc& dst) override {
+    const auto row = static_cast<uint32_t>(src.rows());
+    const auto col = static_cast<uint32_t>(src.cols());
+    const auto src_p = static_cast<cuDoubleComplex*>(_pool.get(src));
+    const auto dst_p = static_cast<cuDoubleComplex*>(_pool.get(dst));
+    cu_get_diagonal(src_p, row, col, dst_p);
+  }
+
   void set(const size_t i, const complex value, VectorXc& dst) override {
     const auto dst_p = static_cast<complex*>(_pool.get(dst));
     cudaMemcpy(dst_p + i, &value, sizeof(complex), cudaMemcpyHostToDevice);
@@ -232,17 +240,6 @@ class CUDABackendImpl final : public CUDABackend {
     const auto b_p = static_cast<cuDoubleComplex*>(_pool.get(b));
     const auto c_p = static_cast<cuDoubleComplex*>(_pool.get(c));
     cu_hadamard_product(a_p, b_p, m, 1, c_p);
-  }
-
-  void reduce_col(const MatrixXc& a, VectorXc& b) override {
-    const auto m = static_cast<uint32_t>(a.rows());
-    const auto n = static_cast<uint32_t>(a.cols());
-    const auto a_p = static_cast<cuDoubleComplex*>(_pool.get(a));
-    const auto b_p = static_cast<cuDoubleComplex*>(_pool.get(b));
-    cuDoubleComplex* buffer = nullptr;
-    cudaMalloc(reinterpret_cast<void**>(&buffer), n * BLOCK_SIZE / 2 * sizeof(cuDoubleComplex));
-    cu_reduce_col(a_p, m, n, b_p, buffer);
-    cudaFree(buffer);
   }
 
   void max_eigen_vector(const MatrixXc& src, VectorXc& dst) override {
