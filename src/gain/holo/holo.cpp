@@ -42,7 +42,7 @@ void sdp_calc_impl(const BackendPtr<T>& backend, const std::vector<core::Vector3
   MatrixXc vt(n, n);
   MatrixXc buf(n, m);
   MatrixXc b_tmp(m, n);
-  backend->copy(b, b_tmp);
+  backend->copy_to(b, b_tmp);
   backend->pseudo_inverse_svd(b_tmp, alpha, u_, s, vt, buf, pseudo_inv_b);
 
   MatrixXc mm(m, m);
