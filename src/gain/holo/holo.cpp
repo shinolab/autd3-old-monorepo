@@ -11,7 +11,6 @@
 
 #include "autd3/gain/holo.hpp"
 
-#include <iostream>
 #include <random>
 
 #include "autd3/core/geometry/legacy_transducer.hpp"
@@ -27,6 +26,21 @@ void generate_transfer_matrix(const std::vector<core::Vector3>& foci, const core
     for (const auto& dev : geometry)
       for (const auto& tr : dev)
         dst(i, tr.id()) = core::propagate(tr.position(), tr.z_direction(), geometry.attenuation, tr.wavenumber(geometry.sound_speed), foci[i]);
+}
+
+void back_prop(const BackendPtr& backend, const MatrixXc& transfer, const VectorXc& amps, MatrixXc& b) {
+  const auto m = transfer.rows();
+
+  VectorXc denominator(m);
+  backend->reduce_col(transfer, denominator);
+  backend->abs(denominator, denominator);
+  backend->reciprocal(denominator, denominator);
+  backend->hadamard_product(amps, denominator, denominator);
+
+  MatrixXc b_tmp(m, m);
+  backend->create_diagonal(denominator, b_tmp);
+
+  backend->mul(TRANSPOSE::CONJ_TRANS, TRANSPOSE::NO_TRANS, ONE, transfer, b_tmp, ZERO, b);
 }
 
 template <typename T>
@@ -134,9 +148,98 @@ void naive_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>
   backend->mul(TRANSPOSE::CONJ_TRANS, ONE, g, p, ZERO, q);
   backend->to_host(q);
 
-  std::cout << q << std::endl;
+  const auto max_coefficient = std::abs(backend->max_abs_element(q));
+  for (auto& dev : geometry)
+    for (auto& tr : dev) {
+      const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
+      const auto raw = std::abs(q(tr.id()));
+      const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
+      drives.set_drive(tr, phase, power);
+    }
+}
+
+template <typename T>
+void gs_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& foci, std::vector<complex>& amps, const core::Geometry<T>& geometry,
+                  const size_t repeat, AmplitudeConstraint constraint, typename T::D& drives) {
+  backend->init();
+
+  const auto m = static_cast<Eigen::Index>(foci.size());
+  const auto n = geometry.num_transducers();
+
+  const VectorXc amps_ = Eigen::Map<VectorXc, Eigen::Unaligned>(amps.data(), static_cast<Eigen::Index>(amps.size()));
+
+  MatrixXc g(m, n);
+  generate_transfer_matrix(foci, geometry, g);
+
+  const VectorXc q0 = VectorXc::Ones(n);
+
+  VectorXc q = q0;
+
+  VectorXc gamma = VectorXc::Zero(m);
+  VectorXc p(m);
+  VectorXc xi = VectorXc::Zero(n);
+  for (size_t k = 0; k < repeat; k++) {
+    backend->mul(TRANSPOSE::NO_TRANS, ONE, g, q, ZERO, gamma);
+    backend->arg(gamma, gamma);
+    backend->hadamard_product(gamma, amps_, p);
+    backend->mul(TRANSPOSE::CONJ_TRANS, ONE, g, p, ZERO, xi);
+    backend->arg(xi, xi);
+    backend->hadamard_product(xi, q0, q);
+  }
 
   const auto max_coefficient = std::abs(backend->max_abs_element(q));
+  backend->to_host(q);
+  for (auto& dev : geometry)
+    for (auto& tr : dev) {
+      const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
+      const auto raw = std::abs(q(tr.id()));
+      const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
+      drives.set_drive(tr, phase, power);
+    }
+}
+
+template <typename T>
+void gspat_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& foci, std::vector<complex>& amps, const core::Geometry<T>& geometry,
+                     const size_t repeat, AmplitudeConstraint constraint, typename T::D& drives) {
+  backend->init();
+
+  const auto m = static_cast<Eigen::Index>(foci.size());
+  const auto n = geometry.num_transducers();
+
+  const VectorXc amps_ = Eigen::Map<VectorXc, Eigen::Unaligned>(amps.data(), static_cast<Eigen::Index>(amps.size()));
+
+  MatrixXc g(m, n);
+  generate_transfer_matrix(foci, geometry, g);
+
+  MatrixXc b = MatrixXc::Zero(n, m);
+  back_prop(backend, g, amps_, b);
+
+  MatrixXc r = MatrixXc::Zero(m, m);
+  backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, g, b, ZERO, r);
+
+  VectorXc p = amps_;
+
+  VectorXc gamma = VectorXc::Zero(m);
+  backend->mul(TRANSPOSE::NO_TRANS, ONE, r, p, ZERO, gamma);
+  for (size_t k = 0; k < repeat; k++) {
+    backend->arg(gamma, gamma);
+    backend->hadamard_product(gamma, amps_, p);
+    backend->mul(TRANSPOSE::NO_TRANS, ONE, r, p, ZERO, gamma);
+  }
+
+  VectorXc tmp(m);
+  backend->abs(gamma, tmp);
+  backend->reciprocal(tmp, tmp);
+  backend->hadamard_product(tmp, amps_, tmp);
+  backend->hadamard_product(tmp, amps_, tmp);
+  backend->arg(gamma, gamma);
+  backend->hadamard_product(gamma, tmp, p);
+
+  VectorXc q = VectorXc::Zero(n);
+  backend->mul(TRANSPOSE::NO_TRANS, ONE, b, p, ZERO, q);
+
+  const auto max_coefficient = std::abs(backend->max_abs_element(q));
+  backend->to_host(q);
   for (auto& dev : geometry)
     for (auto& tr : dev) {
       const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
@@ -160,6 +263,20 @@ void Naive<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransd
 }
 void Naive<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
   naive_calc_impl(_backend, _foci, _amps, geometry, constraint, this->_props.drives);
+}
+
+void GS<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
+  gs_calc_impl(_backend, _foci, _amps, geometry, repeat, constraint, this->_props.drives);
+}
+void GS<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
+  gs_calc_impl(_backend, _foci, _amps, geometry, repeat, constraint, this->_props.drives);
+}
+
+void GSPAT<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
+  gspat_calc_impl(_backend, _foci, _amps, geometry, repeat, constraint, this->_props.drives);
+}
+void GSPAT<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
+  gspat_calc_impl(_backend, _foci, _amps, geometry, repeat, constraint, this->_props.drives);
 }
 
 }  // namespace autd3::gain::holo
