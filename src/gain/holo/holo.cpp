@@ -23,6 +23,8 @@ template <typename T>
 void sdp_calc_impl(const BackendPtr<T>& backend, const std::vector<core::Vector3>& foci, std::vector<complex>& amps,
                    const core::Geometry<T>& geometry, const double alpha, const double lambda, const size_t repeat, AmplitudeConstraint constraint,
                    typename T::D& drives) {
+  backend->init();
+
   const auto m = foci.size();
   const auto n = geometry.num_transducers();
 
@@ -94,9 +96,9 @@ void sdp_calc_impl(const BackendPtr<T>& backend, const std::vector<core::Vector3
 
   VectorXc q = VectorXc::Zero(n);
   backend->mul(TRANSPOSE::NO_TRANS, ONE, pseudo_inv_b, ut, ZERO, q);
+  backend->to_host(q);
 
   const auto max_coefficient = std::abs(backend->max_abs_element(q));
-
   for (auto& dev : geometry)
     for (auto& tr : dev) {
       const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
