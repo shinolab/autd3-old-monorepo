@@ -19,10 +19,18 @@
 namespace autd3::gain::holo {
 
 namespace {
+
 template <typename T>
-void sdp_calc_impl(const BackendPtr<T>& backend, const std::vector<core::Vector3>& foci, std::vector<complex>& amps,
-                   const core::Geometry<T>& geometry, const double alpha, const double lambda, const size_t repeat, AmplitudeConstraint constraint,
-                   typename T::D& drives) {
+void generate_transfer_matrix(const std::vector<core::Vector3>& foci, const core::Geometry<T>& geometry, MatrixXc& dst) {
+  for (size_t i = 0; i < foci.size(); i++)
+    for (const auto& dev : geometry)
+      for (const auto& tr : dev)
+        dst(i, tr.id()) = core::propagate(tr.position(), tr.z_direction(), geometry.attenuation, tr.wavenumber(geometry.sound_speed), foci[i]);
+}
+
+template <typename T>
+void sdp_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& foci, std::vector<complex>& amps, const core::Geometry<T>& geometry,
+                   const double alpha, const double lambda, const size_t repeat, AmplitudeConstraint constraint, typename T::D& drives) {
   backend->init();
 
   const auto m = foci.size();
@@ -34,7 +42,7 @@ void sdp_calc_impl(const BackendPtr<T>& backend, const std::vector<core::Vector3
   backend->create_diagonal(amps_, p);
 
   MatrixXc b(m, n);
-  backend->generate_transfer_matrix(foci, geometry, b);
+  generate_transfer_matrix(foci, geometry, b);
 
   MatrixXc pseudo_inv_b(n, m);
   MatrixXc u_(m, m);

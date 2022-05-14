@@ -24,8 +24,6 @@
 #pragma warning(pop)
 #endif
 
-#include "autd3/core/geometry/normal_transducer.hpp"
-
 namespace autd3::gain::holo {
 
 namespace {
@@ -41,8 +39,6 @@ cublasOperation_t convert(const TRANSPOSE trans) {
   return CUBLAS_OP_N;
 }
 }  // namespace
-
-
 
 #if _MSC_VER
 #pragma warning(push)
@@ -89,8 +85,7 @@ class BufferPool final {
   std::unordered_map<std::uintptr_t, void*> _pool;
 };
 
-template <typename T>
-class CUDABackendImpl final : public CUDABackend<T> {
+class CUDABackendImpl final : public CUDABackend {
  public:
   explicit CUDABackendImpl(const int device_idx) {
     cudaSetDevice(device_idx);
@@ -284,14 +279,6 @@ class CUDABackendImpl final : public CUDABackend<T> {
     free(workspace_buffer_on_host);
   }
 
-  void generate_transfer_matrix(const std::vector<core::Vector3>& foci, const core::Geometry<T>& geometry, MatrixXc& dst) override {
-    // FIXME: Implement with CUDA
-    for (size_t i = 0; i < foci.size(); i++)
-      for (const auto& dev : geometry)
-        for (const auto& tr : dev)
-          dst(i, tr.id()) = core::propagate(tr.position(), tr.z_direction(), geometry.attenuation, tr.wavenumber(geometry.sound_speed), foci[i]);
-  }
-
  private:
   BufferPool _pool;
   cublasHandle_t _handle = nullptr;
@@ -302,14 +289,6 @@ class CUDABackendImpl final : public CUDABackend<T> {
 #pragma warning(pop)
 #endif
 
-template <>
-BackendPtr<core::LegacyTransducer> CUDABackend<core::LegacyTransducer>::create(const int device_idx) {
-  return std::make_shared<CUDABackendImpl<core::LegacyTransducer>>(device_idx);
-}
-
-template <>
-BackendPtr<core::NormalTransducer> CUDABackend<core::NormalTransducer>::create(const int device_idx) {
-  return std::make_shared<CUDABackendImpl<core::NormalTransducer>>(device_idx);
-}
+BackendPtr CUDABackend::create(const int device_idx) { return std::make_shared<CUDABackendImpl>(device_idx); }
 
 }  // namespace autd3::gain::holo

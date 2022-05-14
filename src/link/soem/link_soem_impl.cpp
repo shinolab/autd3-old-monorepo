@@ -3,7 +3,7 @@
 // Created Date: 23/08/2019
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/05/2022
+// Last Modified: 14/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2019-2020 Hapis Lab. All rights reserved.
@@ -16,6 +16,7 @@
 #include <queue>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "./ethercat.h"

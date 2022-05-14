@@ -9,14 +9,11 @@
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
 //
 
-#include <autd3/core/geometry/normal_transducer.hpp>
-
 #include "autd3/gain/backend.hpp"
 
 namespace autd3::gain::holo {
 
-template <typename T>
-class EigenBackendImpl final : public EigenBackend<T> {
+class EigenBackendImpl final : public EigenBackend {
  public:
   EigenBackendImpl() = default;
   ~EigenBackendImpl() override = default;
@@ -131,23 +128,8 @@ class EigenBackendImpl final : public EigenBackend<T> {
     for (Eigen::Index i = 0; i < size; i++) s(i, i) = singular_values(i) / (singular_values(i) * singular_values(i) + alpha);
     dst.noalias() = svd.matrixV() * s * svd.matrixU().adjoint();
   }
-
-  void generate_transfer_matrix(const std::vector<core::Vector3>& foci, const core::Geometry<T>& geometry, MatrixXc& dst) override {
-    for (size_t i = 0; i < foci.size(); i++)
-      for (const auto& dev : geometry)
-        for (const auto& tr : dev)
-          dst(i, tr.id()) = core::propagate(tr.position(), tr.z_direction(), geometry.attenuation, tr.wavenumber(geometry.sound_speed), foci[i]);
-  }
 };
 
-template <>
-BackendPtr<core::LegacyTransducer> EigenBackend<core::LegacyTransducer>::create() {
-  return std::make_shared<EigenBackendImpl<core::LegacyTransducer>>();
-}
-
-template <>
-BackendPtr<core::NormalTransducer> EigenBackend<core::NormalTransducer>::create() {
-  return std::make_shared<EigenBackendImpl<core::NormalTransducer>>();
-}
+BackendPtr EigenBackend::create() { return std::make_shared<EigenBackendImpl>(); }
 
 }  // namespace autd3::gain::holo

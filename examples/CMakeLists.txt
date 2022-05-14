@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 
-find_package(Threads REQUIRED)
+if(NOT WIN32)
+  find_package(Threads REQUIRED)
+endif()
 
 file(GLOB hpp_files tests/*.hpp runner.hpp)
 
