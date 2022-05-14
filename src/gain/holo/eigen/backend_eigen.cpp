@@ -29,7 +29,7 @@ class EigenBackendImpl final : public EigenBackend<T> {
   void to_host(VectorXc&) override {}
   void to_host(MatrixXc&) override {}
 
-  void copy(const MatrixXc& src, MatrixXc& dst) override { dst = src; }
+  void copy_to(const MatrixXc& src, MatrixXc& dst) override { dst = src; }
 
   void conj(const VectorXc& src, VectorXc& dst) override { dst = src.conjugate(); }
 
@@ -126,7 +126,7 @@ class EigenBackendImpl final : public EigenBackend<T> {
   void pseudo_inverse_svd(const MatrixXc& src, const double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) override {
     const Eigen::BDCSVD svd(src, Eigen::ComputeFullU | Eigen::ComputeFullV);
     s.fill(ZERO);
-    auto singular_values = svd.singularValues();
+    auto& singular_values = svd.singularValues();
     const auto size = singular_values.size();
     for (Eigen::Index i = 0; i < size; i++) s(i, i) = singular_values(i) / (singular_values(i) * singular_values(i) + alpha);
     dst.noalias() = svd.matrixV() * s * svd.matrixU().adjoint();
