@@ -124,7 +124,7 @@ class EigenBackendImpl final : public EigenBackend {
     dst = ces.eigenvectors().col(idx);
   }
 
-  void pseudo_inverse_svd(const MatrixXc& src, const double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) override {
+  void pseudo_inverse_svd(MatrixXc& src, const double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) override {
     const Eigen::BDCSVD svd(src, Eigen::ComputeFullU | Eigen::ComputeFullV);
     s.fill(ZERO);
     auto& singular_values = svd.singularValues();
