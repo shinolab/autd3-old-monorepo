@@ -163,7 +163,9 @@ class CUDABackendImpl final : public CUDABackend {
     const auto src_p = _pool.get(src);
     VectorXc tmp(src.size());
     cudaMemcpy(tmp.data(), src_p, sizeof(complex) * src.size(), cudaMemcpyDeviceToHost);
-    return std::sqrt(tmp.cwiseAbs2().maxCoeff());
+    Eigen::Index idx = 0;
+    tmp.cwiseAbs2().maxCoeff(&idx);
+    return src(idx);
   }
 
   void scale(const complex value, VectorXc& dst) override {
@@ -241,7 +243,7 @@ class CUDABackendImpl final : public CUDABackend {
     const auto src_p = static_cast<complex*>(_pool.get(src));
     const auto u_p = static_cast<complex*>(_pool.get(u));
     const auto v_p = static_cast<complex*>(_pool.get(vt));
-    const auto s_p = static_cast<complex*>(_pool.get(s));
+    const auto s_p = static_cast<cuDoubleComplex*>(_pool.get(s));
 
     const auto lda = static_cast<int>(nr);
     const auto ldu = static_cast<int>(nr);
@@ -269,7 +271,7 @@ class CUDABackendImpl final : public CUDABackend {
                       d_s, CUDA_C_64F, u_p, ldu, CUDA_C_64F, v_p, ldv, CUDA_C_64F, workspace_buffer_on_device, workspace_in_bytes_on_device,
                       workspace_buffer_on_host, workspace_in_bytes_on_host, info, &h_err_sigma);
 
-    cu_calc_singular_inv(d_s, static_cast<uint32_t>(s_size), alpha, reinterpret_cast<cuDoubleComplex*>(s_p));
+    cu_calc_singular_inv(d_s, static_cast<uint32_t>(s_size), alpha, s_p);
 
     mul(TRANSPOSE::NO_TRANS, TRANSPOSE::CONJ_TRANS, ONE, s, u, ZERO, buf);
     mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, vt, buf, ZERO, dst);

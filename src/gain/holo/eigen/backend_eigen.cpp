@@ -47,7 +47,11 @@ class EigenBackendImpl final : public EigenBackend {
 
   void get_col(const MatrixXc& src, const size_t i, VectorXc& dst) override { dst = src.col(static_cast<Eigen::Index>(i)); }
 
-  complex max_abs_element(const VectorXc& src) override { return std::sqrt(src.cwiseAbs2().maxCoeff()); }
+  complex max_abs_element(const VectorXc& src) override {
+    Eigen::Index idx = 0;
+    src.cwiseAbs2().maxCoeff(&idx);
+    return src(idx);
+  }
 
   void scale(const complex value, VectorXc& dst) override { dst *= value; }
 
