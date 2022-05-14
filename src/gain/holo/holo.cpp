@@ -3,7 +3,7 @@
 // Created Date: 09/12/2021
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/05/2022
+// Last Modified: 14/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -20,8 +20,9 @@ namespace autd3::gain::holo {
 
 namespace {
 template <typename T>
-void sdp_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& foci, std::vector<complex>& amps, const core::Geometry<T>& geometry,
-                   const double alpha, const double lambda, const size_t repeat) {
+void sdp_calc_impl(const BackendPtr<T>& backend, const std::vector<core::Vector3>& foci, std::vector<complex>& amps,
+                   const core::Geometry<T>& geometry, const double alpha, const double lambda, const size_t repeat, AmplitudeConstraint constraint,
+                   typename T::D& drives) {
   const auto m = foci.size();
   const auto n = geometry.num_transducers();
 
@@ -31,11 +32,7 @@ void sdp_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& 
   backend->create_diagonal(amps_, p);
 
   MatrixXc b(m, n);
-  std::vector<core::Vector3> transducers;
-  std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-    std::transform(dev.begin(), dev.end(), std::back_inserter(transducers), [](const auto& tr) { return tr.position(); });
-  });
-  backend->generate_transfer_matrix(foci, transducers, b);
+  backend->generate_transfer_matrix(foci, geometry, b);
 
   MatrixXc pseudo_inv_b(n, m);
   MatrixXc u_(m, m);
@@ -98,16 +95,23 @@ void sdp_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& 
   VectorXc q = VectorXc::Zero(n);
   backend->mul(TRANSPOSE::NO_TRANS, ONE, pseudo_inv_b, ut, ZERO, q);
 
-  const auto max_coefficient = backend->max_abs_element(q);
-  // backend->set_from_complex_drive(q, normalize, max_coefficient, dst);
+  const auto max_coefficient = std::abs(backend->max_abs_element(q));
+
+  for (auto& dev : geometry)
+    for (auto& tr : dev) {
+      const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
+      const auto raw = std::abs(q(tr.id()));
+      const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
+      drives.set_drive(tr, phase, power);
+    }
 }
 }  // namespace
 
 void SDP<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
-  sdp_calc_impl(_backend, _foci, _amps, geometry, _alpha, _lambda, _repeat);
+  sdp_calc_impl(_backend, _foci, _amps, geometry, alpha, lambda, repeat, constraint, this->_props.drives);
 }
 void SDP<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
-  sdp_calc_impl(_backend, _foci, _amps, geometry, _alpha, _lambda, _repeat);
+  sdp_calc_impl(_backend, _foci, _amps, geometry, alpha, lambda, repeat, constraint, this->_props.drives);
 }
 
 }  // namespace autd3::gain::holo

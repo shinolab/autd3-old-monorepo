@@ -3,46 +3,147 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/05/2022
+// Last Modified: 14/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
 //
 
+#include <autd3/core/geometry/normal_transducer.hpp>
+
 #include "autd3/gain/backend.hpp"
 
 namespace autd3::gain::holo {
-void EigenBackend::copy(const MatrixXc& src, MatrixXc& dst) {}
 
-void EigenBackend::scale(complex value, VectorXc& dst) {}
+template <typename T>
+class EigenBackendImpl final : public EigenBackend<T> {
+ public:
+  EigenBackendImpl() = default;
+  ~EigenBackendImpl() override = default;
+  EigenBackendImpl(const EigenBackendImpl& v) = default;
+  EigenBackendImpl& operator=(const EigenBackendImpl& obj) = default;
+  EigenBackendImpl(EigenBackendImpl&& obj) = default;
+  EigenBackendImpl& operator=(EigenBackendImpl&& obj) = default;
 
-complex EigenBackend::dot(const VectorXc& a, const VectorXc& b) { return a.dot(b); }
+  void copy(const MatrixXc& src, MatrixXc& dst) override { dst = src; }
 
-void EigenBackend::mul(TRANSPOSE trans_a, TRANSPOSE trans_b, complex alpha, const MatrixXc& a, const MatrixXc& b, complex beta, MatrixXc& c) {}
+  void conj(const VectorXc& src, VectorXc& dst) override { dst = src.conjugate(); }
 
-void EigenBackend::mul(TRANSPOSE trans_a, complex alpha, const MatrixXc& a, const VectorXc& b, complex beta, VectorXc& c) {}
+  void create_diagonal(const VectorXc& src, MatrixXc& dst) override {
+    dst.fill(ZERO);
+    dst.diagonal() = src;
+  }
 
-void EigenBackend::max_eigen_vector(const MatrixXc& src, VectorXc& dst) {}
+  void set(const size_t i, const complex value, VectorXc& dst) override { dst(static_cast<Eigen::Index>(i)) = value; }
+  void set_row(VectorXc& src, const size_t i, const size_t begin, const size_t end, MatrixXc& dst) override {
+    dst.block(static_cast<Eigen::Index>(i), static_cast<Eigen::Index>(begin), 1, end - begin) =
+        src.block(static_cast<Eigen::Index>(begin), 0, end - begin, 1).transpose();
+  }
+  void set_col(VectorXc& src, const size_t i, const size_t begin, const size_t end, MatrixXc& dst) override {
+    dst.block(static_cast<Eigen::Index>(begin), static_cast<Eigen::Index>(i), end - begin, 1) =
+        src.block(static_cast<Eigen::Index>(begin), 0, end - begin, 1);
+  }
 
-void EigenBackend::pseudo_inverse_svd(const MatrixXc& src, double alpha, const MatrixXc& u, const MatrixXc& s, const MatrixXc& vt,
-                                      const MatrixXc& buf, MatrixXc& dst) {}
+  void get_col(const MatrixXc& src, const size_t i, VectorXc& dst) override { dst = src.col(static_cast<Eigen::Index>(i)); }
 
-void EigenBackend::generate_transfer_matrix(const std::vector<core::Vector3>& foci, const std::vector<core::Vector3>& transducers, MatrixXc& dst) {}
+  complex max_abs_element(const VectorXc& src) override { return std::sqrt(src.cwiseAbs2().maxCoeff()); }
 
-void EigenBackend::conj(const VectorXc& src, VectorXc& dst) {}
+  void scale(const complex value, VectorXc& dst) override { dst *= value; }
 
-void EigenBackend::create_diagonal(const VectorXc& src, MatrixXc& dst) {
-  dst.fill(ZERO);
-  dst.diagonal() = src;
+  complex dot(const VectorXc& a, const VectorXc& b) override { return a.dot(b); }
+
+  void mul(const TRANSPOSE trans_a, const TRANSPOSE trans_b, const complex alpha, const MatrixXc& a, const MatrixXc& b, const complex beta,
+           MatrixXc& c) override {
+    c *= beta;
+    switch (trans_a) {
+      case TRANSPOSE::CONJ_TRANS:
+        switch (trans_b) {
+          case TRANSPOSE::CONJ_TRANS:
+            c.noalias() += alpha * (a.adjoint() * b.adjoint());
+            break;
+          case TRANSPOSE::TRANS:
+            c.noalias() += alpha * (a.adjoint() * b.transpose());
+            break;
+          case TRANSPOSE::NO_TRANS:
+            c.noalias() += alpha * (a.adjoint() * b);
+            break;
+        }
+        break;
+      case TRANSPOSE::TRANS:
+        switch (trans_b) {
+          case TRANSPOSE::CONJ_TRANS:
+            c.noalias() += alpha * (a.transpose() * b.adjoint());
+            break;
+          case TRANSPOSE::TRANS:
+            c.noalias() += alpha * (a.transpose() * b.transpose());
+            break;
+          case TRANSPOSE::NO_TRANS:
+            c.noalias() += alpha * (a.transpose() * b);
+            break;
+        }
+        break;
+      case TRANSPOSE::NO_TRANS:
+        switch (trans_b) {
+          case TRANSPOSE::CONJ_TRANS:
+            c.noalias() += alpha * (a * b.adjoint());
+            break;
+          case TRANSPOSE::TRANS:
+            c.noalias() += alpha * (a * b.transpose());
+            break;
+          case TRANSPOSE::NO_TRANS:
+            c.noalias() += alpha * (a * b);
+            break;
+        }
+        break;
+    }
+  }
+  void mul(const TRANSPOSE trans_a, const complex alpha, const MatrixXc& a, const VectorXc& b, const complex beta, VectorXc& c) override {
+    c *= beta;
+    switch (trans_a) {
+      case TRANSPOSE::CONJ_TRANS:
+        c.noalias() += alpha * (a.adjoint() * b);
+        break;
+      case TRANSPOSE::TRANS:
+        c.noalias() += alpha * (a.transpose() * b);
+        break;
+      case TRANSPOSE::NO_TRANS:
+        c.noalias() += alpha * (a * b);
+        break;
+    }
+  }
+
+  void max_eigen_vector(const MatrixXc& src, VectorXc& dst) override {
+    const Eigen::ComplexEigenSolver<MatrixXc> ces(src);
+    auto idx = 0;
+    ces.eigenvalues().cwiseAbs2().maxCoeff(&idx);
+    dst = ces.eigenvectors().col(idx);
+  }
+
+  void pseudo_inverse_svd(const MatrixXc& src, const double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) override {
+    const Eigen::BDCSVD svd(src, Eigen::ComputeFullU | Eigen::ComputeFullV);
+    s.fill(ZERO);
+    auto singular_values = svd.singularValues();
+    const auto size = singular_values.size();
+    for (Eigen::Index i = 0; i < size; i++) s(i, i) = singular_values(i) / (singular_values(i) * singular_values(i) + alpha);
+    dst.noalias() = svd.matrixV() * s * svd.matrixU().adjoint();
+  }
+
+  void generate_transfer_matrix(const std::vector<core::Vector3>& foci, const core::Geometry<T>& geometry, MatrixXc& dst) override {
+    for (size_t i = 0; i < foci.size(); i++)
+      for (const auto& dev : geometry)
+        for (const auto& tr : dev)
+          dst(i, tr.id()) = core::propagate(tr.position(), tr.z_direction(), geometry.attenuation, tr.wavenumber(geometry.sound_speed), foci[i]);
+  }
+};
+
+template <>
+BackendPtr<core::LegacyTransducer> EigenBackend<core::LegacyTransducer>::create() {
+  return std::make_shared<EigenBackendImpl<core::LegacyTransducer>>();
 }
 
-void EigenBackend::set(size_t i, complex value, VectorXc& dst) {}
+template <>
+BackendPtr<core::NormalTransducer> EigenBackend<core::NormalTransducer>::create() {
+  return std::make_shared<EigenBackendImpl<core::NormalTransducer>>();
+}
 
-void EigenBackend::set_row(VectorXc& src, size_t i, size_t begin, size_t end, MatrixXc& dst) {}
-
-void EigenBackend::set_col(VectorXc& src, size_t i, size_t begin, size_t end, MatrixXc& dst) {}
-
-void EigenBackend::get_col(const MatrixXc& src, size_t i, VectorXc& dst) {}
-
-complex EigenBackend::max_abs_element(const VectorXc& src) { return std::sqrt(src.cwiseAbs2().maxCoeff()); }
 }  // namespace autd3::gain::holo

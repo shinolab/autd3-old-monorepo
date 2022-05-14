@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/05/2022
+// Last Modified: 14/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -28,7 +28,7 @@ void flag_test(autd3::Controller<T>& autd) {
 
   bool fin = false;
   auto check_states_thread = std::thread([&] {
-    const std::vector<char> prompts = {'-', '/', '|', '\\'};
+    const std::vector prompts = {'-', '/', '|', '\\'};
     size_t prompts_idx = 0;
     while (!fin) {
       const auto states = autd.read_fpga_info();
