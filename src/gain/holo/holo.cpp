@@ -44,11 +44,11 @@ void sdp_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& 
   MatrixXc b(m, n);
   generate_transfer_matrix(foci, geometry, b);
 
-  MatrixXc pseudo_inv_b(n, m);
+  MatrixXc pseudo_inv_b = MatrixXc::Zero(n, m);
   MatrixXc u_(m, m);
   MatrixXc s(n, m);
   MatrixXc vt(n, n);
-  MatrixXc buf(n, m);
+  MatrixXc buf = MatrixXc::Zero(n, m);
   MatrixXc b_tmp(m, n);
   backend->copy_to(b, b_tmp);
   backend->pseudo_inverse_svd(b_tmp, alpha, u_, s, vt, buf, pseudo_inv_b);
