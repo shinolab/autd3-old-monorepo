@@ -27,12 +27,11 @@ void cu_arg(const cuDoubleComplex* a, uint32_t row, uint32_t col, cuDoubleComple
 void cu_reciprocal(const cuDoubleComplex* a, uint32_t row, uint32_t col, cuDoubleComplex* b);
 
 void cu_set_diagonal(const cuDoubleComplex* a, uint32_t row, uint32_t col, cuDoubleComplex* b);
+void cu_get_diagonal(const cuDoubleComplex* a, uint32_t row, uint32_t col, cuDoubleComplex* b);
 
 void cu_hadamard_product(const cuDoubleComplex* a, const cuDoubleComplex* b, uint32_t row, uint32_t col, cuDoubleComplex* c);
 
 void cu_calc_singular_inv(double* d_s, uint32_t row, uint32_t col, double alpha, cuDoubleComplex* p_singular_inv);
-
-void cu_reduce_col(const cuDoubleComplex* mat, uint32_t m, uint32_t n, cuDoubleComplex* result, cuDoubleComplex* buffer);
 }  // namespace holo
 }  // namespace gain
 }  // namespace autd3

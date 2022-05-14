@@ -37,6 +37,7 @@ class EigenBackendImpl final : public EigenBackend {
     dst.fill(ZERO);
     dst.diagonal() = src;
   }
+  void get_diagonal(const MatrixXc& src, VectorXc& dst) override { dst = src.diagonal(); }
 
   void set(const size_t i, const complex value, VectorXc& dst) override { dst(static_cast<Eigen::Index>(i)) = value; }
   void set_row(VectorXc& src, const size_t i, const size_t begin, const size_t end, MatrixXc& dst) override {
@@ -121,8 +122,6 @@ class EigenBackendImpl final : public EigenBackend {
   }
 
   void hadamard_product(const VectorXc& a, const VectorXc& b, VectorXc& c) override { c.noalias() = a.cwiseProduct(b); }
-
-  void reduce_col(const MatrixXc& a, VectorXc& b) override { b = a.rowwise().sum(); }
 
   void max_eigen_vector(const MatrixXc& src, VectorXc& dst) override {
     const Eigen::ComplexEigenSolver<MatrixXc> ces(src);
