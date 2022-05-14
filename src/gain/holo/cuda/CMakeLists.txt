@@ -18,10 +18,15 @@ target_include_directories(backend_cuda INTERFACE ${CUDA_INCLUDE_DIRS})
 target_link_libraries(backend_cuda ${CUDA_cusolver_LIBRARY})
 
 set_target_properties(backend_cuda
-    PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+  PROPERTIES
+  ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+  LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+)
+
+set_target_properties(backend_cuda
+  PROPERTIES
+  CUDA_SEPARABLE_COMPILATION ON
 )
 
 if(WIN32)
