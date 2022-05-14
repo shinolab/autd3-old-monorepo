@@ -108,4 +108,41 @@ class Naive final : public Holo<T> {
   void calc(const core::Geometry<T>& geometry) override;
 };
 
+/**
+ * @brief Gain to produce multiple focal points with GS method.
+ * Refer to Asier Marzo and Bruce W Drinkwater, "Holographic acoustic
+ * tweezers," Proceedings of theNational Academy of Sciences, 116(1):84–89, 2019.
+ */
+template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+class GS final : public Holo<T> {
+ public:
+  /**
+   * @param[in] backend pointer to Backend
+   */
+  explicit GS(BackendPtr backend) : Holo(std::move(backend)), repeat(100) {}
+
+  void calc(const core::Geometry<T>& geometry) override;
+
+  size_t repeat;
+};
+
+/**
+ * @brief Gain to produce multiple focal points with GS-PAT method (not yet been implemented with GPU).
+ * Refer to Diego Martinez Plasencia et al. "Gs-pat: high-speed multi-point
+ * sound-fields for phased arrays of transducers," ACMTrans-actions on
+ * Graphics (TOG), 39(4):138–1, 2020.
+ */
+template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+class GSPAT final : public Holo<T> {
+ public:
+  /**
+   * @param[in] backend pointer to Backend
+   */
+  explicit GSPAT(BackendPtr backend) : Holo(std::move(backend)), repeat(100) {}
+
+  void calc(const core::Geometry<T>& geometry) override;
+
+  size_t repeat;
+};
+
 }  // namespace autd3::gain::holo

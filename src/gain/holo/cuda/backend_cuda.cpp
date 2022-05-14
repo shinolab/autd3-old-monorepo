@@ -118,11 +118,29 @@ class CUDABackendImpl final : public CUDABackend {
     cudaMemcpy(dst_p, src_p, sizeof(complex) * src.size(), cudaMemcpyDeviceToDevice);
   }
 
+  void abs(const VectorXc& src, VectorXc& dst) override {
+    const auto size = static_cast<uint32_t>(src.size());
+    const auto src_p = static_cast<cuDoubleComplex*>(_pool.get(src));
+    const auto dst_p = static_cast<cuDoubleComplex*>(_pool.get(dst));
+    cu_abs(src_p, size, 1, dst_p);
+  }
   void conj(const VectorXc& src, VectorXc& dst) override {
     const auto size = static_cast<uint32_t>(src.size());
     const auto src_p = static_cast<cuDoubleComplex*>(_pool.get(src));
     const auto dst_p = static_cast<cuDoubleComplex*>(_pool.get(dst));
     cu_conj(src_p, size, 1, dst_p);
+  }
+  void arg(const VectorXc& src, VectorXc& dst) override {
+    const auto size = static_cast<uint32_t>(src.size());
+    const auto src_p = static_cast<cuDoubleComplex*>(_pool.get(src));
+    const auto dst_p = static_cast<cuDoubleComplex*>(_pool.get(dst));
+    cu_arg(src_p, size, 1, dst_p);
+  }
+  void reciprocal(const VectorXc& src, VectorXc& dst) override {
+    const auto size = static_cast<uint32_t>(src.size());
+    const auto src_p = static_cast<cuDoubleComplex*>(_pool.get(src));
+    const auto dst_p = static_cast<cuDoubleComplex*>(_pool.get(dst));
+    cu_reciprocal(src_p, size, 1, dst_p);
   }
 
   void create_diagonal(const VectorXc& src, MatrixXc& dst) override {
@@ -206,6 +224,25 @@ class CUDABackendImpl final : public CUDABackend {
     const auto c_p = static_cast<cuDoubleComplex*>(_pool.get(c));
     cublasZgemv(_handle, convert(trans_a), m, n, reinterpret_cast<const cuDoubleComplex*>(&alpha), a_p, lda, b_p, 1,
                 reinterpret_cast<const cuDoubleComplex*>(&beta), c_p, 1);
+  }
+
+  void hadamard_product(const VectorXc& a, const VectorXc& b, VectorXc& c) override {
+    const auto m = static_cast<uint32_t>(a.size());
+    const auto a_p = static_cast<cuDoubleComplex*>(_pool.get(a));
+    const auto b_p = static_cast<cuDoubleComplex*>(_pool.get(b));
+    const auto c_p = static_cast<cuDoubleComplex*>(_pool.get(c));
+    cu_hadamard_product(a_p, b_p, m, 1, c_p);
+  }
+
+  void reduce_col(const MatrixXc& a, VectorXc& b) override {
+    const auto m = static_cast<uint32_t>(a.rows());
+    const auto n = static_cast<uint32_t>(a.cols());
+    const auto a_p = static_cast<cuDoubleComplex*>(_pool.get(a));
+    const auto b_p = static_cast<cuDoubleComplex*>(_pool.get(b));
+    cuDoubleComplex* buffer = nullptr;
+    cudaMalloc(reinterpret_cast<void**>(&buffer), n * BLOCK_SIZE / 2 * sizeof(cuDoubleComplex));
+    cu_reduce_col(a_p, m, n, b_p, buffer);
+    cudaFree(buffer);
   }
 
   void max_eigen_vector(const MatrixXc& src, VectorXc& dst) override {

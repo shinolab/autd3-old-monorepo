@@ -28,7 +28,10 @@ class EigenBackendImpl final : public EigenBackend {
 
   void copy_to(const MatrixXc& src, MatrixXc& dst) override { dst = src; }
 
+  void abs(const VectorXc& src, VectorXc& dst) override { dst = src.cwiseAbs(); }
   void conj(const VectorXc& src, VectorXc& dst) override { dst = src.conjugate(); }
+  void arg(const VectorXc& src, VectorXc& dst) override { dst = src.cwiseQuotient(src.cwiseAbs()); }
+  void reciprocal(const VectorXc& src, VectorXc& dst) override { dst = src.cwiseInverse(); }
 
   void create_diagonal(const VectorXc& src, MatrixXc& dst) override {
     dst.fill(ZERO);
@@ -116,6 +119,10 @@ class EigenBackendImpl final : public EigenBackend {
         break;
     }
   }
+
+  void hadamard_product(const VectorXc& a, const VectorXc& b, VectorXc& c) override { c.noalias() = a.cwiseProduct(b); }
+
+  void reduce_col(const MatrixXc& a, VectorXc& b) override { b = a.rowwise().sum(); }
 
   void max_eigen_vector(const MatrixXc& src, VectorXc& dst) override {
     const Eigen::ComplexEigenSolver<MatrixXc> ces(src);
