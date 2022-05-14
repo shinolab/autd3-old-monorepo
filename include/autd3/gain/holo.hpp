@@ -94,4 +94,18 @@ class SDP final : public Holo<T> {
   size_t repeat;
 };
 
+/**
+ * @brief Gain to produce multiple focal points with naive method.
+ */
+template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+class Naive final : public Holo<T> {
+ public:
+  /**
+   * @param[in] backend pointer to Backend
+   */
+  explicit Naive(BackendPtr backend) : Holo(std::move(backend)) {}
+
+  void calc(const core::Geometry<T>& geometry) override;
+};
+
 }  // namespace autd3::gain::holo

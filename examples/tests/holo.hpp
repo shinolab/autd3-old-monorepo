@@ -24,11 +24,19 @@ void holo_test(autd3::Controller<T>& autd) {
 
   const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
 
-  // auto backend = autd3::gain::holo::EigenBackend<T>::create();
-  auto backend = autd3::gain::holo::CUDABackend::create();
+  auto backend = autd3::gain::holo::EigenBackend::create();
   autd3::gain::holo::SDP<T> g(backend);
   g.add_focus(center + autd3::Vector3(30.0, 0.0, 0.0), 1.0);
   g.add_focus(center - autd3::Vector3(30.0, 0.0, 0.0), 1.0);
 
   autd.send(m, g);
+
+  std::cout << "press any key to cuda backend..." << std::endl;
+  std::cin.ignore();
+
+  auto backendc = autd3::gain::holo::CUDABackend::create();
+  autd3::gain::holo::SDP<T> gc(backendc);
+  gc.add_focus(center + autd3::Vector3(30.0, 0.0, 0.0), 1.0);
+  gc.add_focus(center - autd3::Vector3(30.0, 0.0, 0.0), 1.0);
+  autd.send(m, gc);
 }

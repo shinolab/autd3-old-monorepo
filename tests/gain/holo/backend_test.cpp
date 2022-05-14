@@ -97,17 +97,21 @@ TYPED_TEST(BackendTest, conj) {
 }
 
 TYPED_TEST(BackendTest, create_diagonal) {
-  VectorXc a(2);
-  a << complex(0.0, 1.0), complex(2.0, 3.0);
+  constexpr int m = 5;
+  constexpr int n = 8;
 
-  MatrixXc b(2, 2);
+  VectorXc a = VectorXc::Random(5);
+
+  MatrixXc b(m, n);
   this->backend->create_diagonal(a, b);
   this->backend->to_host(b);
 
-  ASSERT_EQ(b(0, 0), complex(0.0, 1.0));
-  ASSERT_EQ(b(1, 0), ZERO);
-  ASSERT_EQ(b(0, 1), ZERO);
-  ASSERT_EQ(b(1, 1), complex(2.0, 3.0));
+  for (int i = 0; i < m; i++)
+    for (int j = 0; j < n; j++)
+      if (i == j)
+        ASSERT_EQ(b(i, j), a(i));
+      else
+        ASSERT_EQ(b(i, j), ZERO);
 }
 
 TYPED_TEST(BackendTest, set) {
@@ -207,47 +211,53 @@ TYPED_TEST(BackendTest, dot) {
 }
 
 TYPED_TEST(BackendTest, mul_matrix) {
-  MatrixXc a(2, 2);
-  MatrixXc b(2, 2);
-  a << complex(0, 1), complex(2, 3), complex(4, 5), complex(6, 7);
-  b << complex(8, 9), complex(10, 11), complex(12, 13), complex(14, 15);
+  constexpr Eigen::Index n = 2;
+  constexpr Eigen::Index m = 3;
+  constexpr Eigen::Index k = 5;
 
-  MatrixXc c(2, 2);
+  MatrixXc a = MatrixXc::Random(n, m);
+  MatrixXc b = MatrixXc::Random(m, m);
+
+  MatrixXc c = MatrixXc::Zero(n, m);
   this->backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, a, b, ZERO, c);
   this->backend->to_host(c);
 
-  ASSERT_NEAR_COMPLEX(c(0, 0), complex(-24, 70), 1e-6);
-  ASSERT_NEAR_COMPLEX(c(0, 1), complex(-28, 82), 1e-6);
-  ASSERT_NEAR_COMPLEX(c(1, 0), complex(-32, 238), 1e-6);
-  ASSERT_NEAR_COMPLEX(c(1, 1), complex(-36, 282), 1e-6);
+  MatrixXc expected = a * b;
 
-  this->backend->mul(TRANSPOSE::CONJ_TRANS, TRANSPOSE::TRANS, ZERO, a, b, ONE, c);
+  for (Eigen::Index i = 0; i < n; i++)
+    for (Eigen::Index j = 0; j < m; j++) ASSERT_NEAR_COMPLEX(c(i, j), expected(i, j), 1e-6);
+
+  MatrixXc aa = MatrixXc::Random(k, n);
+  MatrixXc bb = MatrixXc::Random(m, k);
+  this->backend->mul(TRANSPOSE::CONJ_TRANS, TRANSPOSE::TRANS, 2.0 * ONE, aa, bb, ONE, c);
   this->backend->to_host(c);
 
-  ASSERT_NEAR_COMPLEX(c(0, 0), complex(-24, 70), 1e-6);
-  ASSERT_NEAR_COMPLEX(c(0, 1), complex(-28, 82), 1e-6);
-  ASSERT_NEAR_COMPLEX(c(1, 0), complex(-32, 238), 1e-6);
-  ASSERT_NEAR_COMPLEX(c(1, 1), complex(-36, 282), 1e-6);
+  expected += 2.0 * (aa.adjoint() * bb.transpose());
+
+  for (Eigen::Index i = 0; i < n; i++)
+    for (Eigen::Index j = 0; j < m; j++) ASSERT_NEAR_COMPLEX(c(i, j), expected(i, j), 1e-6);
 }
 
 TYPED_TEST(BackendTest, mul_vec) {
-  MatrixXc a(2, 2);
-  VectorXc b(2);
-  a << complex(0, 1), complex(2, 3), complex(4, 5), complex(6, 7);
-  b << complex(8, 9), complex(10, 11);
+  constexpr Eigen::Index n = 2;
+  constexpr Eigen::Index m = 3;
 
-  VectorXc c(2);
+  MatrixXc a = MatrixXc::Random(n, m);
+  VectorXc b = VectorXc::Random(m);
+
+  VectorXc c = VectorXc::Zero(n);
   this->backend->mul(TRANSPOSE::NO_TRANS, ONE, a, b, ZERO, c);
   this->backend->to_host(c);
 
-  ASSERT_NEAR_COMPLEX(c(0), complex(-22, 60), 1e-6);
-  ASSERT_NEAR_COMPLEX(c(1), complex(-30, 212), 1e-6);
+  VectorXc expected = a * b;
+  for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR_COMPLEX(c(i), expected(i), 1e-6);
 
-  this->backend->mul(TRANSPOSE::CONJ_TRANS, ONE, a, b, ONE, c);
+  MatrixXc aa = MatrixXc::Random(m, n);
+  this->backend->mul(TRANSPOSE::CONJ_TRANS, 3.0 * ONE, aa, b, ONE, c);
   this->backend->to_host(c);
 
-  ASSERT_NEAR_COMPLEX(c(0), complex(82, 46), 1e-6);
-  ASSERT_NEAR_COMPLEX(c(1), complex(150, 202), 1e-6);
+  expected += 3.0 * (aa.adjoint() * b);
+  for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR_COMPLEX(c(i), expected(i), 1e-6);
 }
 
 TYPED_TEST(BackendTest, max_eigen_vector) {
@@ -284,23 +294,24 @@ TYPED_TEST(BackendTest, max_eigen_vector) {
 }
 
 TYPED_TEST(BackendTest, pseudo_inverse_svd) {
-  constexpr auto n = 5;
-  MatrixXc a = MatrixXc::Random(n, n);
+  constexpr auto n = 8;
+  constexpr auto m = 5;
+  MatrixXc a = MatrixXc::Random(m, n);
 
-  MatrixXc b = MatrixXc::Zero(n, n);
-  MatrixXc u(n, n);
-  MatrixXc s(n, n);
+  MatrixXc b = MatrixXc::Zero(n, m);
+  MatrixXc u(m, m);
+  MatrixXc s(n, m);
   MatrixXc vt(n, n);
-  MatrixXc buf = MatrixXc::Zero(n, n);
+  MatrixXc buf = MatrixXc::Zero(n, m);
   MatrixXc tmp = a;
   this->backend->pseudo_inverse_svd(tmp, 0.0, u, s, vt, buf, b);
 
-  MatrixXc c = MatrixXc::Zero(n, n);
+  MatrixXc c = MatrixXc::Zero(m, m);
   this->backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, a, b, ZERO, c);
   this->backend->to_host(c);
 
-  for (Eigen::Index i = 0; i < n; i++)
-    for (Eigen::Index j = 0; j < n; j++)
+  for (Eigen::Index i = 0; i < m; i++)
+    for (Eigen::Index j = 0; j < m; j++)
       if (i == j)
         ASSERT_NEAR_COMPLEX(c(i, j), ONE, 0.1);
       else

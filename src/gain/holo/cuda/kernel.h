@@ -25,7 +25,7 @@ void cu_conj(const cuDoubleComplex* a, uint32_t row, uint32_t col, cuDoubleCompl
 
 void cu_set_diagonal(const cuDoubleComplex* a, uint32_t row, uint32_t col, cuDoubleComplex* b);
 
-void cu_calc_singular_inv(double* d_s, uint32_t s_size, double alpha, cuDoubleComplex* p_singular_inv);
+void cu_calc_singular_inv(double* d_s, uint32_t row, uint32_t col, double alpha, cuDoubleComplex* p_singular_inv);
 
 }  // namespace holo
 }  // namespace gain

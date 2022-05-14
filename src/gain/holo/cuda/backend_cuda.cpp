@@ -89,11 +89,11 @@ class CUDABackendImpl final : public CUDABackend {
  public:
   explicit CUDABackendImpl(const int device_idx) {
     cudaSetDevice(device_idx);
-    cublasCreate_v2(&_handle);
+    cublasCreate(&_handle);
     cusolverDnCreate(&_handle_s);
   }
   ~CUDABackendImpl() override {
-    cublasDestroy_v2(_handle);
+    cublasDestroy(_handle);
     cusolverDnDestroy(_handle_s);
   }
   CUDABackendImpl(const CUDABackendImpl& v) = default;
@@ -170,40 +170,41 @@ class CUDABackendImpl final : public CUDABackend {
 
   void scale(const complex value, VectorXc& dst) override {
     const auto dst_p = static_cast<complex*>(_pool.get(dst));
-    cublasZscal_v2(_handle, static_cast<int>(dst.size()), reinterpret_cast<const cuDoubleComplex*>(&value), reinterpret_cast<cuDoubleComplex*>(dst_p),
-                   1);
+    cublasZscal(_handle, static_cast<int>(dst.size()), reinterpret_cast<const cuDoubleComplex*>(&value), reinterpret_cast<cuDoubleComplex*>(dst_p),
+                1);
   }
 
   complex dot(const VectorXc& a, const VectorXc& b) override {
     complex d;
     const auto a_p = static_cast<cuDoubleComplex*>(_pool.get(a));
     const auto b_p = static_cast<cuDoubleComplex*>(_pool.get(b));
-    cublasZdotc_v2(_handle, static_cast<int>(a.size()), a_p, 1, b_p, 1, reinterpret_cast<cuDoubleComplex*>(&d));
+    cublasZdotc(_handle, static_cast<int>(a.size()), a_p, 1, b_p, 1, reinterpret_cast<cuDoubleComplex*>(&d));
     return d;
   }
 
   void mul(const TRANSPOSE trans_a, const TRANSPOSE trans_b, const complex alpha, const MatrixXc& a, const MatrixXc& b, const complex beta,
            MatrixXc& c) override {
+    const auto m = static_cast<int>(c.rows());
+    const auto n = static_cast<int>(c.cols());
+    const auto k = trans_a == TRANSPOSE::NO_TRANS ? static_cast<int>(a.cols()) : static_cast<int>(a.rows());
     const auto lda = static_cast<int>(a.rows());
     const auto ldb = static_cast<int>(b.rows());
-    const auto ldc = trans_a == TRANSPOSE::NO_TRANS ? static_cast<int>(a.rows()) : static_cast<int>(a.cols());
-    const auto n = trans_b == TRANSPOSE::NO_TRANS ? static_cast<int>(b.cols()) : static_cast<int>(b.rows());
-    const auto k = trans_a == TRANSPOSE::NO_TRANS ? static_cast<int>(a.cols()) : static_cast<int>(a.rows());
+    const auto ldc = static_cast<int>(c.rows());
     const auto a_p = static_cast<cuDoubleComplex*>(_pool.get(a));
     const auto b_p = static_cast<cuDoubleComplex*>(_pool.get(b));
     const auto c_p = static_cast<cuDoubleComplex*>(_pool.get(c));
-    cublasZgemm_v2(_handle, convert(trans_a), convert(trans_b), ldc, n, k, reinterpret_cast<const cuDoubleComplex*>(&alpha), a_p, lda, b_p, ldb,
-                   reinterpret_cast<const cuDoubleComplex*>(&beta), c_p, ldc);
+    cublasZgemm(_handle, convert(trans_a), convert(trans_b), m, n, k, reinterpret_cast<const cuDoubleComplex*>(&alpha), a_p, lda, b_p, ldb,
+                reinterpret_cast<const cuDoubleComplex*>(&beta), c_p, ldc);
   }
 
   void mul(const TRANSPOSE trans_a, const complex alpha, const MatrixXc& a, const VectorXc& b, const complex beta, VectorXc& c) override {
-    const auto lda = static_cast<int>(a.rows());
-    const auto ldc = trans_a == TRANSPOSE::NO_TRANS ? static_cast<int>(a.rows()) : static_cast<int>(a.cols());
-    const auto n = static_cast<int>(b.size());
+    const auto m = static_cast<int>(a.rows());
+    const auto n = static_cast<int>(a.cols());
+    const auto lda = m;
     const auto a_p = static_cast<cuDoubleComplex*>(_pool.get(a));
     const auto b_p = static_cast<cuDoubleComplex*>(_pool.get(b));
     const auto c_p = static_cast<cuDoubleComplex*>(_pool.get(c));
-    cublasZgemv(_handle, convert(trans_a), ldc, n, reinterpret_cast<const cuDoubleComplex*>(&alpha), a_p, lda, b_p, 1,
+    cublasZgemv(_handle, convert(trans_a), m, n, reinterpret_cast<const cuDoubleComplex*>(&alpha), a_p, lda, b_p, 1,
                 reinterpret_cast<const cuDoubleComplex*>(&beta), c_p, 1);
   }
 
@@ -237,17 +238,21 @@ class CUDABackendImpl final : public CUDABackend {
     cudaMemcpy(dst_p, src_p + size * (size - 1), size * sizeof(complex), cudaMemcpyDeviceToDevice);
   }
 
-  void pseudo_inverse_svd(const MatrixXc& src, const double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) override {
+  void pseudo_inverse_svd(MatrixXc& src, const double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) override {
     const auto nc = src.cols();
     const auto nr = src.rows();
+
+    const auto m = static_cast<int>(nr);
+    const auto n = static_cast<int>(nc);
+
     const auto src_p = static_cast<complex*>(_pool.get(src));
     const auto u_p = static_cast<complex*>(_pool.get(u));
     const auto v_p = static_cast<complex*>(_pool.get(vt));
     const auto s_p = static_cast<cuDoubleComplex*>(_pool.get(s));
 
-    const auto lda = static_cast<int>(nr);
-    const auto ldu = static_cast<int>(nr);
-    const auto ldv = static_cast<int>(nc);
+    const auto lda = m;
+    const auto ldu = m;
+    const auto ldv = n;
 
     const auto s_size = std::min(nr, nc);
     double* d_s = nullptr;
@@ -256,9 +261,8 @@ class CUDABackendImpl final : public CUDABackend {
     size_t workspace_in_bytes_on_device;
     size_t workspace_in_bytes_on_host;
 
-    cusolverDnXgesvdp_bufferSize(_handle_s, nullptr, CUSOLVER_EIG_MODE_VECTOR, 0, static_cast<int>(nr), static_cast<int>(nc), CUDA_C_64F, src_p, lda,
-                                 CUDA_R_64F, d_s, CUDA_C_64F, u_p, ldu, CUDA_C_64F, v_p, ldv, CUDA_C_64F, &workspace_in_bytes_on_device,
-                                 &workspace_in_bytes_on_host);
+    cusolverDnXgesvdp_bufferSize(_handle_s, nullptr, CUSOLVER_EIG_MODE_VECTOR, 0, m, n, CUDA_C_64F, src_p, lda, CUDA_R_64F, d_s, CUDA_C_64F, u_p, ldu,
+                                 CUDA_C_64F, v_p, ldv, CUDA_C_64F, &workspace_in_bytes_on_device, &workspace_in_bytes_on_host);
     void* workspace_buffer_on_device = nullptr;
     void* workspace_buffer_on_host = nullptr;
     cudaMalloc(&workspace_buffer_on_device, workspace_in_bytes_on_device);
@@ -267,14 +271,15 @@ class CUDABackendImpl final : public CUDABackend {
     int* info = nullptr;
     cudaMalloc(reinterpret_cast<void**>(&info), sizeof(int));
     double h_err_sigma;
-    cusolverDnXgesvdp(_handle_s, nullptr, CUSOLVER_EIG_MODE_VECTOR, 0, static_cast<int>(nr), static_cast<int>(nc), CUDA_C_64F, src_p, lda, CUDA_R_64F,
-                      d_s, CUDA_C_64F, u_p, ldu, CUDA_C_64F, v_p, ldv, CUDA_C_64F, workspace_buffer_on_device, workspace_in_bytes_on_device,
-                      workspace_buffer_on_host, workspace_in_bytes_on_host, info, &h_err_sigma);
+    cusolverDnXgesvdp(_handle_s, nullptr, CUSOLVER_EIG_MODE_VECTOR, 0, m, n, CUDA_C_64F, src_p, lda, CUDA_R_64F, d_s, CUDA_C_64F, u_p, ldu,
+                      CUDA_C_64F, v_p, ldv, CUDA_C_64F, workspace_buffer_on_device, workspace_in_bytes_on_device, workspace_buffer_on_host,
+                      workspace_in_bytes_on_host, info, &h_err_sigma);
 
-    cu_calc_singular_inv(d_s, static_cast<uint32_t>(s_size), alpha, s_p);
+    cu_calc_singular_inv(d_s, static_cast<uint32_t>(n), static_cast<uint32_t>(m), alpha, s_p);
 
     mul(TRANSPOSE::NO_TRANS, TRANSPOSE::CONJ_TRANS, ONE, s, u, ZERO, buf);
     mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, vt, buf, ZERO, dst);
+
     cudaFree(d_s);
     cudaFree(info);
     cudaFree(workspace_buffer_on_device);
