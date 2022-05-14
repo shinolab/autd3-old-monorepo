@@ -13,7 +13,7 @@
 
 #if _MSC_VER
 #pragma warning(push)
-#pragma warning(disable : 26439 26478 26495 26812)
+#pragma warning(disable : 4102 26439 26478 26495 26812)
 #endif
 #include <cublas_v2.h>
 #include <cuda_runtime_api.h>
@@ -41,6 +41,13 @@ cublasOperation_t convert(const TRANSPOSE trans) {
   return CUBLAS_OP_N;
 }
 }  // namespace
+
+
+
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 26812)
+#endif
 
 class BufferPool final {
  public:
@@ -110,7 +117,7 @@ class CUDABackendImpl final : public CUDABackend<T> {
     cudaMemcpy(dst.data(), dst_p, sizeof(complex) * dst.size(), cudaMemcpyDeviceToHost);
   }
 
-  void copy(const MatrixXc& src, MatrixXc& dst) override {
+  void copy_to(const MatrixXc& src, MatrixXc& dst) override {
     const auto src_p = _pool.get(src);
     const auto dst_p = _pool.get(dst);
     cudaMemcpy(dst_p, src_p, sizeof(complex) * src.size(), cudaMemcpyDeviceToDevice);
@@ -290,6 +297,10 @@ class CUDABackendImpl final : public CUDABackend<T> {
   cublasHandle_t _handle = nullptr;
   cusolverDnHandle_t _handle_s = nullptr;
 };
+
+#if _MSC_VER
+#pragma warning(pop)
+#endif
 
 template <>
 BackendPtr<core::LegacyTransducer> CUDABackend<core::LegacyTransducer>::create(const int device_idx) {

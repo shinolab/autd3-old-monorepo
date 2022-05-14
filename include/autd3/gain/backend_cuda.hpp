@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include <vector>
+
 #include "backend.hpp"
 
 namespace autd3::gain::holo {
@@ -32,7 +34,7 @@ class CUDABackend : public Backend<T> {
   void to_host(VectorXc&) override = 0;
   void to_host(MatrixXc&) override = 0;
 
-  void copy(const MatrixXc& src, MatrixXc& dst) override = 0;
+  void copy_to(const MatrixXc& src, MatrixXc& dst) override = 0;
 
   void conj(const VectorXc& src, VectorXc& dst) override = 0;
 

@@ -11,7 +11,9 @@
 
 #pragma once
 
+#include <algorithm>
 #include <memory>
+#include <vector>
 
 #include "autd3/core/geometry/geometry.hpp"
 
@@ -46,7 +48,7 @@ class Backend {
   virtual void to_host(VectorXc& dst) = 0;
   virtual void to_host(MatrixXc& dst) = 0;
 
-  virtual void copy(const MatrixXc& src, MatrixXc& dst) = 0;
+  virtual void copy_to(const MatrixXc& src, MatrixXc& dst) = 0;
 
   virtual void conj(const VectorXc& src, VectorXc& dst) = 0;
 
@@ -94,7 +96,7 @@ class EigenBackend : public Backend<T> {
   void to_host(VectorXc& dst) override = 0;
   void to_host(MatrixXc& dst) override = 0;
 
-  void copy(const MatrixXc& src, MatrixXc& dst) override = 0;
+  void copy_to(const MatrixXc& src, MatrixXc& dst) override = 0;
 
   void conj(const VectorXc& src, VectorXc& dst) override = 0;
 
