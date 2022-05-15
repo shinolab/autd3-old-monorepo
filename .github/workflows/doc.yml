@@ -1,0 +1,25 @@
+name: Doxygen
+
+on:
+  push:
+    branches: [ master, doc ]
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Checkout submodules
+      run: git submodule update --init --force --recursive
+    - name: Doxygen
+      uses: ./.github/actions/cmake-doxygen-actions
+    - name: mv doxygen doc_build
+      run: |
+        mkdir -p doc_build
+        sudo mv ./build/doc/html ./doc_build/api
+
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./doc_build
