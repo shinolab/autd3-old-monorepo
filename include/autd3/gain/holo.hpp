@@ -170,4 +170,42 @@ class LM final : public Holo<T> {
   std::vector<double> initial;
 };
 
+/**
+ * @brief Gain to produce multiple focal points with Gauss-Newton method.
+ */
+template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+class GaussNewton final : public Holo<T> {
+ public:
+  /**
+   * @param[in] backend pointer to Backend
+   */
+  explicit GaussNewton(BackendPtr backend) : Holo(std::move(backend)), eps_1(1e-6), eps_2(1e-6), k_max(500) {}
+
+  void calc(const core::Geometry<T>& geometry) override;
+
+  double eps_1;
+  double eps_2;
+  size_t k_max;
+  std::vector<double> initial;
+};
+
+/**
+ * @brief Gain to produce multiple focal points with Gauss-Newton method.
+ */
+template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+class GradientDescent final : public Holo<T> {
+ public:
+  /**
+   * @param[in] backend pointer to Backend
+   */
+  explicit GradientDescent(BackendPtr backend) : Holo(std::move(backend)), eps(1e-6), step(0.5), k_max(2000) {}
+
+  void calc(const core::Geometry<T>& geometry) override;
+
+  double eps;
+  double step;
+  size_t k_max;
+  std::vector<double> initial;
+};
+
 }  // namespace autd3::gain::holo
