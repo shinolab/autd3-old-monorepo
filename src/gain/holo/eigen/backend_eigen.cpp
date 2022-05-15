@@ -142,6 +142,49 @@ void EigenBackend::mul(const TRANSPOSE trans_a, const complex alpha, const Matri
   }
 }
 
+void EigenBackend::mul(const TRANSPOSE trans_a, const TRANSPOSE trans_b, const double alpha, const MatrixXd& a, const MatrixXd& b, const double beta,
+                       MatrixXd& c) {
+  c *= beta;
+  switch (trans_a) {
+    case TRANSPOSE::CONJ_TRANS:
+    case TRANSPOSE::TRANS:
+      switch (trans_b) {
+        case TRANSPOSE::CONJ_TRANS:
+        case TRANSPOSE::TRANS:
+          c.noalias() += alpha * (a.transpose() * b.transpose());
+          break;
+        case TRANSPOSE::NO_TRANS:
+          c.noalias() += alpha * (a.transpose() * b);
+          break;
+      }
+      break;
+    case TRANSPOSE::NO_TRANS:
+      switch (trans_b) {
+        case TRANSPOSE::CONJ_TRANS:
+        case TRANSPOSE::TRANS:
+          c.noalias() += alpha * (a * b.transpose());
+          break;
+        case TRANSPOSE::NO_TRANS:
+          c.noalias() += alpha * (a * b);
+          break;
+      }
+      break;
+  }
+}
+
+void EigenBackend::mul(const TRANSPOSE trans_a, const double alpha, const MatrixXd& a, const VectorXd& b, const double beta, VectorXd& c) {
+  c *= beta;
+  switch (trans_a) {
+    case TRANSPOSE::CONJ_TRANS:
+    case TRANSPOSE::TRANS:
+      c.noalias() += alpha * (a.transpose() * b);
+      break;
+    case TRANSPOSE::NO_TRANS:
+      c.noalias() += alpha * (a * b);
+      break;
+  }
+}
+
 void EigenBackend::hadamard_product(const VectorXc& a, const VectorXc& b, VectorXc& c) { c.noalias() = a.cwiseProduct(b); }
 void EigenBackend::hadamard_product(const MatrixXc& a, const MatrixXc& b, MatrixXc& c) { c.noalias() = a.cwiseProduct(b); }
 
@@ -165,6 +208,15 @@ void EigenBackend::max_eigen_vector(const MatrixXc& src, VectorXc& dst) {
 void EigenBackend::pseudo_inverse_svd(MatrixXc& src, const double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) {
   const Eigen::BDCSVD svd(src, Eigen::ComputeFullU | Eigen::ComputeFullV);
   s.fill(ZERO);
+  auto& singular_values = svd.singularValues();
+  const auto size = singular_values.size();
+  for (Eigen::Index i = 0; i < size; i++) s(i, i) = singular_values(i) / (singular_values(i) * singular_values(i) + alpha);
+  dst.noalias() = svd.matrixV() * s * svd.matrixU().adjoint();
+}
+
+void EigenBackend::pseudo_inverse_svd(MatrixXd& src, const double alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf, MatrixXd& dst) {
+  const Eigen::BDCSVD svd(src, Eigen::ComputeFullU | Eigen::ComputeFullV);
+  s.fill(0.0);
   auto& singular_values = svd.singularValues();
   const auto size = singular_values.size();
   for (Eigen::Index i = 0; i < size; i++) s(i, i) = singular_values(i) / (singular_values(i) * singular_values(i) + alpha);

@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/05/2022
+// Last Modified: 15/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -16,6 +16,7 @@
 #include <type_traits>
 
 #include "autd3/core/geometry/transducer.hpp"
+#include "autd3/driver/hardware.hpp"
 
 namespace autd3::core {
 
@@ -63,7 +64,7 @@ inline std::complex<double> propagate(const core::Vector3& source_pos, const cor
   const auto diff = target - source_pos;
   const auto dist = diff.norm();
 
-  const auto theta = std::atan2(source_dir.cross(diff).norm(), source_dir.dot(diff));
+  const auto theta = std::atan2(source_dir.cross(diff).norm(), source_dir.dot(diff)) * 180.0 / driver::pi;
 
   const auto d = Directivity::t4010a1(theta);
   const auto r = d * std::exp(-dist * attenuation) / dist;

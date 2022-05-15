@@ -50,7 +50,7 @@ using AmplitudeConstraint = std::variant<DontCare, Normalize, Uniform, Clamp>;
 template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class Holo : public core::Gain<T> {
  public:
-  explicit Holo(BackendPtr backend) : constraint(Normalize()), _backend(std::move(backend)) {}
+  explicit Holo(BackendPtr backend, const AmplitudeConstraint constraint = Normalize()) : constraint(constraint), _backend(std::move(backend)) {}
   ~Holo() override = default;
   Holo(const Holo& v) noexcept = delete;
   Holo& operator=(const Holo& obj) = delete;
@@ -85,7 +85,7 @@ class SDP final : public Holo<T> {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit SDP(BackendPtr backend) : Holo(std::move(backend)), alpha(1e-3), lambda(0.9), repeat(100) {}
+  explicit SDP(BackendPtr backend) : Holo(std::move(backend), Normalize()), alpha(1e-3), lambda(0.9), repeat(100) {}
 
   void calc(const core::Geometry<T>& geometry) override;
 
@@ -105,7 +105,7 @@ class EVD final : public Holo<T> {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit EVD(BackendPtr backend) : Holo(std::move(backend)), gamma(1.0) {}
+  explicit EVD(BackendPtr backend) : Holo(std::move(backend), Uniform(1.0)), gamma(1.0) {}
 
   void calc(const core::Geometry<T>& geometry) override;
 
@@ -121,7 +121,7 @@ class Naive final : public Holo<T> {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit Naive(BackendPtr backend) : Holo(std::move(backend)) {}
+  explicit Naive(BackendPtr backend) : Holo(std::move(backend), Normalize()) {}
 
   void calc(const core::Geometry<T>& geometry) override;
 };
@@ -137,7 +137,7 @@ class GS final : public Holo<T> {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit GS(BackendPtr backend) : Holo(std::move(backend)), repeat(100) {}
+  explicit GS(BackendPtr backend) : Holo(std::move(backend), Normalize()), repeat(100) {}
 
   void calc(const core::Geometry<T>& geometry) override;
 
@@ -156,7 +156,7 @@ class GSPAT final : public Holo<T> {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit GSPAT(BackendPtr backend) : Holo(std::move(backend)), repeat(100) {}
+  explicit GSPAT(BackendPtr backend) : Holo(std::move(backend), Normalize()), repeat(100) {}
 
   void calc(const core::Geometry<T>& geometry) override;
 
