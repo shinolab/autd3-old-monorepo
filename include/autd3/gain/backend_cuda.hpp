@@ -3,7 +3,7 @@
 // Created Date: 10/09/2021
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/05/2022
+// Last Modified: 15/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -60,6 +60,34 @@ class CUDABackend : public Backend {
   void max_eigen_vector(const MatrixXc& src, VectorXc& dst) override = 0;
 
   void pseudo_inverse_svd(MatrixXc& src, double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) override = 0;
+
+  void to_host(VectorXd& dst) override = 0;
+  void to_host(MatrixXd& dst) override = 0;
+  void copy_to(const MatrixXd& src, MatrixXd& dst) override = 0;
+  void copy_to(const VectorXd& src, VectorXd& dst) override = 0;
+  void real(const MatrixXc& src, MatrixXd& re) override = 0;
+  void imag(const MatrixXc& src, MatrixXd& im) override = 0;
+  void make_complex(const VectorXd& re, const VectorXd& im, VectorXc& dst) override = 0;
+  void abs(const VectorXc& src, VectorXd& dst) override = 0;
+  void sqrt(const VectorXd& src, VectorXd& dst) override = 0;
+  void exp(const VectorXc& src, VectorXc& dst) override = 0;
+  void pow(const VectorXd& src, double p, VectorXd& dst) override = 0;
+  void get_diagonal(const MatrixXd& src, VectorXd& dst) override = 0;
+  void concat_col(const MatrixXc& a, const MatrixXc& b, MatrixXc& dst) override = 0;
+  void concat_row(const MatrixXc& a, const MatrixXc& b, MatrixXc& dst) override = 0;
+  void concat_row(const VectorXc& a, const VectorXc& b, VectorXc& dst) override = 0;
+  void reduce_col(const MatrixXd& src, VectorXd& dst) override = 0;
+  double max_element(const VectorXd& src) override = 0;
+  void scale(double value, VectorXd& dst) override = 0;
+  double dot(const VectorXd& a, const VectorXd& b) override = 0;
+  void add(double alpha, const MatrixXd& a, MatrixXd& b) override = 0;
+  void add(double alpha, const VectorXd& a, VectorXd& b) override = 0;
+  void mul(TRANSPOSE trans_a, TRANSPOSE trans_b, double alpha, const MatrixXd& a, const MatrixXd& b, double beta, MatrixXd& c) override = 0;
+  void mul(TRANSPOSE trans_a, double alpha, const MatrixXd& a, const VectorXd& b, double beta, VectorXd& c) override = 0;
+  void hadamard_product(const MatrixXc& a, const MatrixXc& b, MatrixXc& c) override = 0;
+  void solvet(MatrixXd& a, VectorXd& b) override = 0;
+  void solveh(MatrixXc& a, VectorXc& b) override = 0;
+  void pseudo_inverse_svd(MatrixXd& src, double alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf, MatrixXd& dst) override = 0;
 
   static BackendPtr create(int device_idx = 0);
 };
