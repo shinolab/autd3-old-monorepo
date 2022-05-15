@@ -1,4 +1,9 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.17)
+
+find_package(CUDA REQUIRED)
+find_package(CUDAToolkit REQUIRED)
+message("CUDA version: " ${CUDA_VERSION})
+message("CUDA toolkit version: " ${CUDAToolkit_VERSION})
 
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --expt-relaxed-constexpr -Xcudafe "--diag_suppress=esa_on_defaulted_function_ignored")
 if(WIN32 AND (MSVC_TOOLSET_VERSION VERSION_EQUAL 143))
