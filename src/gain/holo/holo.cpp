@@ -132,6 +132,71 @@ void sdp_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& 
 }
 
 template <typename T>
+void evd_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& foci, std::vector<complex>& amps, const core::Geometry<T>& geometry,
+                   const double gamma, AmplitudeConstraint constraint, typename T::D& drives) {
+  backend->init();
+
+  const auto m = static_cast<Eigen::Index>(foci.size());
+  const auto n = static_cast<Eigen::Index>(geometry.num_transducers());
+
+  const VectorXc amps_ = Eigen::Map<VectorXc, Eigen::Unaligned>(amps.data(), static_cast<Eigen::Index>(amps.size()));
+
+  MatrixXc g(m, n);
+  generate_transfer_matrix(foci, geometry, g);
+
+  MatrixXc x = MatrixXc::Zero(n, m);
+  back_prop(backend, g, amps_, x);
+
+  MatrixXc r = MatrixXc::Zero(m, m);
+  backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, g, x, ZERO, r);
+  VectorXc max_ev(m);
+  backend->max_eigen_vector(r, max_ev);
+
+  MatrixXc sigma(n, n);
+  {
+    VectorXc sigma_tmp = VectorXc::Zero(n);
+    backend->mul(TRANSPOSE::TRANS, ONE, g, amps_, ZERO, sigma_tmp);
+    VectorXd sigma_tmp_real(n);
+    backend->abs(sigma_tmp, sigma_tmp_real);
+    backend->scale(1.0 / static_cast<double>(m), sigma_tmp_real);
+    backend->sqrt(sigma_tmp_real, sigma_tmp_real);
+    backend->pow(sigma_tmp_real, gamma, sigma_tmp_real);
+    const VectorXd zero = VectorXd::Zero(n);
+    backend->make_complex(sigma_tmp_real, zero, sigma_tmp);
+    backend->create_diagonal(sigma_tmp, sigma);
+  }
+
+  MatrixXc gr = MatrixXc::Zero(m + n, m);
+  backend->concat_row(g, sigma, gr);
+
+  VectorXc fm(m);
+  backend->arg(max_ev, fm);
+  backend->hadamard_product(amps_, fm, fm);
+
+  const VectorXc fn = VectorXc::Zero(n);
+  VectorXc f(m + n);
+  backend->concat_row(fm, fn, f);
+
+  MatrixXc gtg = MatrixXc::Zero(n, n);
+  backend->mul(TRANSPOSE::CONJ_TRANS, TRANSPOSE::NO_TRANS, ONE, gr, gr, ZERO, gtg);
+
+  VectorXc gtf = VectorXc::Zero(n);
+  backend->mul(TRANSPOSE::CONJ_TRANS, ONE, gr, f, ZERO, gtf);
+
+  backend->solveh(gtg, gtf);
+
+  backend->to_host(gtf);
+  const auto max_coefficient = std::abs(backend->max_abs_element(gtf));
+  for (auto& dev : geometry)
+    for (auto& tr : dev) {
+      const auto phase = std::arg(gtf(tr.id())) / (2.0 * driver::pi) + 0.5;
+      const auto raw = std::abs(gtf(tr.id()));
+      const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
+      drives.set_drive(tr, phase, power);
+    }
+}
+
+template <typename T>
 void naive_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& foci, std::vector<complex>& amps, const core::Geometry<T>& geometry,
                      AmplitudeConstraint constraint, typename T::D& drives) {
   backend->init();
@@ -307,8 +372,8 @@ void lm_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& f
                   AmplitudeConstraint constraint, typename T::D& drives) {
   backend->init();
 
-  const auto m = foci.size();
-  const auto n = geometry.num_transducers();
+  const auto m = static_cast<Eigen::Index>(foci.size());
+  const auto n = static_cast<Eigen::Index>(geometry.num_transducers());
 
   const auto n_param = n + m;
 
@@ -316,7 +381,7 @@ void lm_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& f
   make_bhb(backend, foci, amps, geometry, bhb);
 
   VectorXd x = VectorXd::Zero(n_param);
-  for (size_t i = 0; i < initial.size(); i++) x(i) = initial[i];
+  for (size_t i = 0; i < initial.size(); i++) x(static_cast<Eigen::Index>(i)) = initial[i];
 
   auto nu = 2.0;
 
@@ -409,9 +474,9 @@ void gaussnewton_calc_impl(const BackendPtr& backend, const std::vector<core::Ve
   make_bhb(backend, foci, amps, geometry, bhb);
 
   VectorXd x = VectorXd::Zero(n_param);
-  for (size_t i = 0; i < initial.size(); i++) x(i) = initial[i];
+  for (size_t i = 0; i < initial.size(); i++) x(static_cast<Eigen::Index>(i)) = initial[i];
 
-  VectorXd zero = VectorXd::Zero(n_param);
+  const VectorXd zero = VectorXd::Zero(n_param);
 
   VectorXc t(n_param);
   make_t(backend, zero, x, t);
@@ -464,9 +529,9 @@ void gradientdescnet_calc_impl(const BackendPtr& backend, const std::vector<core
   make_bhb(backend, foci, amps, geometry, bhb);
 
   VectorXd x = VectorXd::Zero(n_param);
-  for (size_t i = 0; i < initial.size(); i++) x(i) = initial[i];
+  for (size_t i = 0; i < initial.size(); i++) x(static_cast<Eigen::Index>(i)) = initial[i];
 
-  VectorXd zero = VectorXd::Zero(n_param);
+  const VectorXd zero = VectorXd::Zero(n_param);
 
   VectorXc t(n_param);
   MatrixXc tth = VectorXc::Zero(n_param, n_param);
@@ -490,8 +555,8 @@ void gradientdescnet_calc_impl(const BackendPtr& backend, const std::vector<core
 }
 
 template <typename T>
-void greedy_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& foci, std::vector<complex>& amps,
-                      const core::Geometry<T>& geometry, const size_t phase_div, AmplitudeConstraint constraint, typename T::D& drives) {
+void greedy_calc_impl(const BackendPtr&, const std::vector<core::Vector3>& foci, std::vector<complex>& amps, const core::Geometry<T>& geometry,
+                      const size_t phase_div, AmplitudeConstraint constraint, typename T::D& drives) {
   const auto m = foci.size();
 
   std::vector<complex> phases;
@@ -539,6 +604,13 @@ void SDP<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransduc
 }
 void SDP<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
   sdp_calc_impl(_backend, _foci, _amps, geometry, alpha, lambda, repeat, constraint, this->_props.drives);
+}
+
+void EVD<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
+  evd_calc_impl(_backend, _foci, _amps, geometry, gamma, constraint, this->_props.drives);
+}
+void EVD<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
+  evd_calc_impl(_backend, _foci, _amps, geometry, gamma, constraint, this->_props.drives);
 }
 
 void Naive<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {

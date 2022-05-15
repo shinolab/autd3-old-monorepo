@@ -3,7 +3,7 @@
 // Created Date: 08/03/2021
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/05/2022
+// Last Modified: 15/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -153,13 +153,11 @@ class EmulatorImpl final : public core::Link {
   }
 };
 
-template <>
 core::LinkPtr Emulator<core::LegacyTransducer>::build() {
   core::LinkPtr link = std::make_unique<EmulatorImpl<core::LegacyTransducer>>(_port, _geometry);
   return link;
 }
 
-template <>
 core::LinkPtr Emulator<core::NormalTransducer>::build() {
   core::LinkPtr link = std::make_unique<EmulatorImpl<core::NormalTransducer>>(_port, _geometry);
   return link;
