@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
 
-find_package(Threads REQUIRED)
-
 file(GLOB_RECURSE SOEM_SRC_FILES ${SOEM_PATH}/soem/*.c ${SOEM_PATH}/osal/${OS}/*.c ${SOEM_PATH}/oshw/${OS}/*.c)
 
 add_library(link_soem
@@ -27,7 +25,6 @@ if(WIN32)
   target_compile_options(link_soem PRIVATE /D_CRT_SECURE_NO_WARNINGS /wd4996 /DNOMINMAX /D__STDC_LIMIT_MACROS)
 endif()
 
-target_link_libraries(link_soem INTERFACE ${CMAKE_THREAD_LIBS_INIT})
 if(WIN32)
   if("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "Win32")
     target_link_directories(link_soem INTERFACE ${PROJECT_SOURCE_DIR}/src/link/soem/Lib)
@@ -39,7 +36,9 @@ if(WIN32)
 elseif(APPLE)
   target_link_libraries(link_soem INTERFACE pcap)
 else()
+  find_package(Threads REQUIRED)
   target_link_libraries(link_soem INTERFACE rt -static-libgcc -static-libstdc++)
+  target_link_libraries(link_soem INTERFACE ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
 set_target_properties(link_soem

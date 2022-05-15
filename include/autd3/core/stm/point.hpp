@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/05/2022
+// Last Modified: 15/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -26,7 +26,7 @@ struct Point {
   Vector3 point;
   uint8_t shift;
 
-  Point(Vector3 point, const uint8_t shift) : point(std::move(point)), shift(shift) {}
+  explicit Point(Vector3 point, const uint8_t shift = 0) : point(std::move(point)), shift(shift) {}
   Point() = delete;
   ~Point() = default;
   Point(const Point& v) noexcept = default;
@@ -37,12 +37,19 @@ struct Point {
 
 template <typename T = LegacyTransducer, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 struct PointSTM final : STM, DatagramBody<T> {
+  using value_type = Point;
+
   PointSTM() : STM(), DatagramBody<T>(), _sent(0) {}
 
   void add(const Vector3& point, uint8_t duty_shift = 0) {
     if (_points.size() + 1 > driver::POINT_STM_BUF_SIZE_MAX) throw std::runtime_error("PointSTM out of buffer");
 
     _points.emplace_back(point, duty_shift);
+  }
+
+  void push_back(const value_type& v) {
+    if (_points.size() + 1 > driver::POINT_STM_BUF_SIZE_MAX) throw std::runtime_error("PointSTM out of buffer");
+    _points.emplace_back(v);
   }
 
   size_t size() override { return _points.size(); }
