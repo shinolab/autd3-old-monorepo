@@ -626,65 +626,75 @@ void greedy_calc_impl(const BackendPtr&, const std::vector<core::Vector3>& foci,
 
 }  // namespace
 
+template <>
 void SDP<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
   sdp_calc_impl(_backend, _foci, _amps, geometry, alpha, lambda, repeat, constraint, this->_props.drives);
 }
+template <>
 void SDP<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
   sdp_calc_impl(_backend, _foci, _amps, geometry, alpha, lambda, repeat, constraint, this->_props.drives);
 }
-
+template <>
 void EVD<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
   evd_calc_impl(_backend, _foci, _amps, geometry, gamma, constraint, this->_props.drives);
 }
+template <>
 void EVD<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
   evd_calc_impl(_backend, _foci, _amps, geometry, gamma, constraint, this->_props.drives);
 }
-
+template <>
 void Naive<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
   naive_calc_impl(_backend, _foci, _amps, geometry, constraint, this->_props.drives);
 }
+template <>
 void Naive<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
   naive_calc_impl(_backend, _foci, _amps, geometry, constraint, this->_props.drives);
 }
-
+template <>
 void GS<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
   gs_calc_impl(_backend, _foci, _amps, geometry, repeat, constraint, this->_props.drives);
 }
+template <>
 void GS<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
   gs_calc_impl(_backend, _foci, _amps, geometry, repeat, constraint, this->_props.drives);
 }
-
+template <>
 void GSPAT<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
   gspat_calc_impl(_backend, _foci, _amps, geometry, repeat, constraint, this->_props.drives);
 }
+template <>
 void GSPAT<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
   gspat_calc_impl(_backend, _foci, _amps, geometry, repeat, constraint, this->_props.drives);
 }
-
+template <>
 void LM<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
   lm_calc_impl(_backend, _foci, _amps, geometry, eps_1, eps_2, tau, k_max, initial, constraint, this->_props.drives);
 }
+template <>
 void LM<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
   lm_calc_impl(_backend, _foci, _amps, geometry, eps_1, eps_2, tau, k_max, initial, constraint, this->_props.drives);
 }
-
+template <>
 void GaussNewton<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
   gaussnewton_calc_impl(_backend, _foci, _amps, geometry, eps_1, eps_2, k_max, initial, constraint, this->_props.drives);
 }
+template <>
 void GaussNewton<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
   gaussnewton_calc_impl(_backend, _foci, _amps, geometry, eps_1, eps_2, k_max, initial, constraint, this->_props.drives);
 }
-
+template <>
 void GradientDescent<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
   gradientdescnet_calc_impl(_backend, _foci, _amps, geometry, eps, step, k_max, initial, constraint, this->_props.drives);
 }
+template <>
 void GradientDescent<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
   gradientdescnet_calc_impl(_backend, _foci, _amps, geometry, eps, step, k_max, initial, constraint, this->_props.drives);
 }
-
+template <>
 void Greedy<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
   greedy_calc_impl(_backend, _foci, _amps, geometry, phase_div, constraint, this->_props.drives);
 }
+template <>
 void Greedy<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
   greedy_calc_impl(_backend, _foci, _amps, geometry, phase_div, constraint, this->_props.drives);
 }

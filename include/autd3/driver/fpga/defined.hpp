@@ -12,6 +12,7 @@
 #pragma once
 
 #include <cstdint>
+#include <sstream>
 #include <string>
 
 namespace autd3::driver {

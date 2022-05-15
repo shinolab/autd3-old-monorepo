@@ -1,0 +1,27 @@
+name: test
+
+on:
+  push:
+    tags-ignore:
+      - v*
+    branches:
+      - 'dev'
+
+jobs:
+  test:
+    name: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    steps: 
+    - uses: actions/checkout@v2
+    - name: Checkout submodules
+      run: git submodule update --init --force --recursive
+    - name: test
+      run: |
+        mkdir -p build && cd build
+        cmake .. -DBUILD_ALL=ON -DBUILD_TEST=ON
+        cmake --build . --config Release --parallel 8 --target test_autd3
+        ./tests/test_autd3
