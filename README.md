@@ -90,7 +90,7 @@ If you use this SDK in your research please consider to include the following ci
 
 ## LICENSE
 
-* See [LICENSE](./LICENSE)
+* See [LICENSE](./LICENSE) and [NOTICE](./NOTICE).
 
 # Author
 
