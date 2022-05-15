@@ -34,7 +34,7 @@
 #include "autd3/gain/backend.hpp"
 #include "test_utils.hpp"
 
-constexpr Eigen::Index TEST_SIZE = 10;
+constexpr Eigen::Index TEST_SIZE = 1000;
 
 using autd3::gain::holo::complex;
 using autd3::gain::holo::MatrixXc;
@@ -236,7 +236,7 @@ TYPED_TEST(BackendTest, exp) {
   this->backend->exp(a, b);
   this->backend->to_host(b);
 
-  for (Eigen::Index i = 0; i < m; i++) ASSERT_EQ(std::exp(a(i)), b(i));
+  for (Eigen::Index i = 0; i < m; i++) ASSERT_NEAR_COMPLEX(std::exp(a(i)), b(i), 1e-6);
 }
 
 TYPED_TEST(BackendTest, pow) {
@@ -408,7 +408,7 @@ TYPED_TEST(BackendTest, concal_row) {
 }
 
 TYPED_TEST(BackendTest, reduce_col) {
-  constexpr Eigen::Index m = 1 * TEST_SIZE;
+  constexpr Eigen::Index m = 2 * TEST_SIZE;
   constexpr Eigen::Index n = 2 * TEST_SIZE;
 
   MatrixXd a = MatrixXd::Random(m, n);
