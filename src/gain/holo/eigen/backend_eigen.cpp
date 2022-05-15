@@ -30,11 +30,14 @@ void EigenBackend::make_complex(const VectorXd& re, const VectorXd& im, VectorXc
   dst.imag() = im;
 }
 
+void EigenBackend::abs(const VectorXc& src, VectorXd& dst) { dst = src.cwiseAbs(); }
 void EigenBackend::abs(const VectorXc& src, VectorXc& dst) { dst = src.cwiseAbs(); }
+void EigenBackend::sqrt(const VectorXd& src, VectorXd& dst) { dst = src.cwiseSqrt(); }
 void EigenBackend::conj(const VectorXc& src, VectorXc& dst) { dst = src.conjugate(); }
 void EigenBackend::arg(const VectorXc& src, VectorXc& dst) { dst = src.cwiseQuotient(src.cwiseAbs()); }
 void EigenBackend::reciprocal(const VectorXc& src, VectorXc& dst) { dst = src.cwiseInverse(); }
 void EigenBackend::exp(const VectorXc& src, VectorXc& dst) { dst = src.array().exp(); }
+void EigenBackend::pow(const VectorXd& src, const double p, VectorXd& dst) { dst = src.array().pow(p); }
 
 void EigenBackend::create_diagonal(const VectorXc& src, MatrixXc& dst) {
   dst.fill(ZERO);
@@ -56,6 +59,9 @@ void EigenBackend::set_col(VectorXc& src, const size_t i, const size_t begin, co
 void EigenBackend::get_col(const MatrixXc& src, const size_t i, VectorXc& dst) { dst = src.col(static_cast<Eigen::Index>(i)); }
 
 void EigenBackend::concat_col(const MatrixXc& a, const MatrixXc& b, MatrixXc& dst) { dst << a, b; }
+void EigenBackend::concat_row(const MatrixXc& a, const MatrixXc& b, MatrixXc& dst) { dst << a, b; }
+
+void EigenBackend::concat_row(const VectorXc& a, const VectorXc& b, VectorXc& dst) { dst << a, b; }
 
 void EigenBackend::reduce_col(const MatrixXd& src, VectorXd& dst) { dst = src.rowwise().sum(); }
 
@@ -68,6 +74,7 @@ complex EigenBackend::max_abs_element(const VectorXc& src) {
 double EigenBackend::max_element(const VectorXd& src) { return src.maxCoeff(); }
 
 void EigenBackend::scale(const complex value, VectorXc& dst) { dst *= value; }
+void EigenBackend::scale(const double value, VectorXd& dst) { dst *= value; }
 
 complex EigenBackend::dot(const VectorXc& a, const VectorXc& b) { return a.dot(b); }
 double EigenBackend::dot(const VectorXd& a, const VectorXd& b) { return a.dot(b); }
@@ -140,6 +147,11 @@ void EigenBackend::hadamard_product(const MatrixXc& a, const MatrixXc& b, Matrix
 
 void EigenBackend::solvet(MatrixXd& a, VectorXd& b) {
   const Eigen::LLT<MatrixXd> llt(a);
+  llt.solveInPlace(b);
+}
+
+void EigenBackend::solveh(MatrixXc& a, VectorXc& b) {
+  const Eigen::LLT<MatrixXc> llt(a);
   llt.solveInPlace(b);
 }
 

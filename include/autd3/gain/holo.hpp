@@ -95,6 +95,24 @@ class SDP final : public Holo<T> {
 };
 
 /**
+ * @brief Gain to produce multiple focal points with EVD method.
+ * Refer to Long, Benjamin, et al. "Rendering volumetric haptic shapes in mid-air
+ * using ultrasound." ACM Transactions on Graphics (TOG) 33.6 (2014): 1-10.
+ */
+template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+class EVD final : public Holo<T> {
+ public:
+  /**
+   * @param[in] backend pointer to Backend
+   */
+  explicit EVD(BackendPtr backend) : Holo(std::move(backend)), gamma(1.0) {}
+
+  void calc(const core::Geometry<T>& geometry) override;
+
+  double gamma;
+};
+
+/**
  * @brief Gain to produce multiple focal points with naive method.
  */
 template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
