@@ -8,5 +8,4 @@ runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
-    - ${{ inputs.cmake-proj-path }}
     - ${{ inputs.working-directory }}
