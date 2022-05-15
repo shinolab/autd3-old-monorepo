@@ -26,6 +26,6 @@ jobs:
     - name: test
       run: |
         mkdir -p build && cd build
-        cmake .. -DBUILD_ALL=ON -DBUILD_TEST=ON -DBUILD_BACKEND_CUDA=ON
+        cmake .. -DBUILD_ALL=ON -DBUILD_TEST=ON
         cmake --build . --config Release --parallel 8 --target test_autd3
         ./tests/test_autd3
