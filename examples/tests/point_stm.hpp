@@ -11,7 +11,9 @@
 
 #pragma once
 
+#include <algorithm>
 #include <autd3.hpp>
+#include <vector>
 
 template <typename T>
 void point_stm(autd3::Controller<T>& autd) {
