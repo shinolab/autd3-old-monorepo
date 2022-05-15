@@ -7,6 +7,10 @@ Version: 2.0.0-rc
 
 ## Document
 
+* [日本語/Japanese](https://shinolab.github.io/autd3/book/jp)
+* [English](https://shinolab.github.io/autd3/book/en)
+    * [API References](https://shinolab.github.io/autd3/api/)
+
 ## CAUTION
 
 * Before using, be sure to write the latest firmware in `dist/firmware`. 
