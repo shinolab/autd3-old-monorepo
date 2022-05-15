@@ -18,14 +18,13 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(BUILD_ALL "BUILD_ALL" OFF)
 option(BUILD_DOC "BUILD_DOC" OFF)
 
-option(BUILD_GAIN_HOLO "BUILD_HOLO_GAIN" ON)
+option(BUILD_GAIN_HOLO "BUILD_GAIN_HOLO" ON)
 option(BUILD_BACKEND_BLAS "BUILD_BACKEND_BLAS" OFF)
 set(BLAS_LIB_DIR CACHE PATH "BLAS library directory")
 set(BLAS_DEPEND_LIB_DIR CACHE PATH "Additional library directory for BLAS")
 set(BLAS_INCLUDE_DIR CACHE PATH "BLAS include directory")
 option(USE_MKL "USE_MKL" OFF)
-option(BUILD_BACKEND_CUDA"BUILD_BACKEND_CUDA" OFF)
-option(BUILD_BACKEND_ARRAYFIRE "BUILD_BACKEND_ARRAYFIRE" OFF)
+option(BUILD_BACKEND_CUDA "BUILD_BACKEND_CUDA" OFF)
 
 option(BUILD_LINK_SOEM "BUILD_LINK_SOEM" ON)
 option(BUILD_LINK_TWINCAT "BUILD_LINK_TWINCAT" OFF)
@@ -36,18 +35,11 @@ option(BUILD_EXAMPLES "BUILD_EXAMPLES" ON)
 
 option(BUILD_CAPI "BUILD_CAPI" OFF)
 option(ENABLE_LINT "ENABLE_LINT" OFF)
+
 option(BUILD_TEST "BUILD_TEST" OFF)
+option(gtest_disable_pthreads  "gtest_disable_pthreads" ON)
 
-option(BUILD_SHARED_LIBS "BUILD_SHARED_LIBS" OFF)
 option(BUILD_WITH_STATIC_CRT "BUILD_WITH_STATIC_CRT" OFF)
-
-option(USE_SYSTEM_EIGEN "USE_SYSTEM_EIGEN" OFF)
-
-if(BUILD_SHARED_LIBS)
-  if(WIN32)
-    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
-  endif()
-endif()
 
 if(BUILD_ALL)
   set(BUILD_GAIN_HOLO ON)
@@ -55,6 +47,7 @@ if(BUILD_ALL)
   set(BUILD_LINK_TWINCAT ON)
   set(BUILD_LINK_REMOTE_TWINCAT ON)
   set(BUILD_LINK_EMULATOR ON)
+  set(BUILD_EXAMPLES ON)
   set(BUILD_CAPI ON)
 endif()
 
@@ -96,9 +89,9 @@ endif()
 
 if(ENABLE_LINT)
   if(Git_FOUND)
-  execute_process(COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init --recursive -- ${PROJECT_SOURCE_DIR}/3rdparty/cpplint)
+    execute_process(COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init --recursive -- ${PROJECT_SOURCE_DIR}/3rdparty/cpplint)
   endif()
-  file(GLOB_RECURSE lint_files lib/*.cpp lib/*.hpp include/*.hpp capi/*.cpp capi/*.hpp examples/*.cpp examples/*.hpp)
+  file(GLOB_RECURSE lint_files src/*.cpp src/*.hpp include/*.hpp capi/*.cpp capi/*.hpp examples/*.cpp examples/*.hpp)
   ADD_CUSTOM_TARGET(cpplint
     python
     ${PROJECT_SOURCE_DIR}/3rdparty/cpplint/cpplint.py
@@ -108,15 +101,17 @@ if(ENABLE_LINT)
   )
 endif()
 
-if(NOT USE_SYSTEM_EIGEN)
-  if(Git_FOUND)
-    execute_process(COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init --recursive -- ${PROJECT_SOURCE_DIR}/3rdparty/eigen)
-    set(EIGEN_PATH ${PROJECT_SOURCE_DIR}/3rdparty/eigen)
-  endif()
+if(Git_FOUND)
+  execute_process(COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init --recursive -- ${PROJECT_SOURCE_DIR}/3rdparty/eigen)
+  set(EIGEN_PATH ${PROJECT_SOURCE_DIR}/3rdparty/eigen)
 endif()
 add_compile_definitions(EIGEN_MPL2_ONLY)
 
 add_subdirectory(src)
+
+if(BUILD_GAIN_HOLO)
+  add_subdirectory(src/gain/holo)
+endif()
 
 if(BUILD_LINK_SOEM)
   if(Git_FOUND)
@@ -144,4 +139,10 @@ endif()
 
 if(BUILD_EXAMPLES)
   add_subdirectory(examples)
+endif()
+
+if(BUILD_TEST)
+  set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+  include(${PROJECT_SOURCE_DIR}/cmakes/gtest.cmake)
+  add_subdirectory(tests)
 endif()

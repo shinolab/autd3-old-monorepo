@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/05/2022
+// Last Modified: 15/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -12,6 +12,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 
 namespace autd3::driver {
 
@@ -87,6 +88,17 @@ struct FPGAInfo {
   explicit FPGAInfo(const uint8_t ack) noexcept : info(ack) {}
 
   [[nodiscard]] bool is_thermal_assert() const noexcept { return (info & 0x01) != 0; }
+
+  [[nodiscard]] std::string to_string() const {
+    std::stringstream ss;
+    ss << "Thermal assert = " << std::boolalpha << is_thermal_assert();
+    return ss.str();
+  }
 };
+
+inline std::ostream& operator<<(std::ostream& os, const FPGAInfo& obj) {
+  os << obj.to_string();
+  return os;
+}
 
 }  // namespace autd3::driver

@@ -3,7 +3,7 @@
 // Created Date: 08/03/2021
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/05/2022
+// Last Modified: 15/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -89,11 +89,9 @@ class EmulatorImpl final : public core::Link {
     return true;
   }
   bool receive(driver::RxDatagram& rx) override {
-    for (auto& [_, msg_id] : rx) msg_id = _last_msg_id;
+    for_each(rx.begin(), rx.end(), [this](auto& msg) { msg.msg_id = this->_last_msg_id; });
 
-    const auto set = [&rx](const uint8_t value) {
-      for (auto& [ack, _] : rx) ack = value;
-    };
+    const auto set = [&rx](const uint8_t value) { for_each(rx.begin(), rx.end(), [value](auto& msg) { msg.ack = value; }); };
 
     switch (_last_msg_id) {
       case driver::MSG_CLEAR:
@@ -153,13 +151,11 @@ class EmulatorImpl final : public core::Link {
   }
 };
 
-template <>
 core::LinkPtr Emulator<core::LegacyTransducer>::build() {
   core::LinkPtr link = std::make_unique<EmulatorImpl<core::LegacyTransducer>>(_port, _geometry);
   return link;
 }
 
-template <>
 core::LinkPtr Emulator<core::NormalTransducer>::build() {
   core::LinkPtr link = std::make_unique<EmulatorImpl<core::NormalTransducer>>(_port, _geometry);
   return link;
