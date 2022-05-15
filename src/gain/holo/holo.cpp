@@ -23,9 +23,12 @@ namespace {
 template <typename T>
 void generate_transfer_matrix(const std::vector<core::Vector3>& foci, const core::Geometry<T>& geometry, MatrixXc& dst) {
   for (size_t i = 0; i < foci.size(); i++)
-    for (const auto& dev : geometry)
-      for (const auto& tr : dev)
-        dst(i, tr.id()) = core::propagate(tr.position(), tr.z_direction(), geometry.attenuation, tr.wavenumber(geometry.sound_speed), foci[i]);
+    std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
+      std::for_each(dev.begin(), dev.end(), [&](const auto& transducer) {
+        dst(i, transducer.id()) = core::propagate(transducer.position(), transducer.z_direction(), geometry.attenuation,
+                                                  transducer.wavenumber(geometry.sound_speed), foci[i]);
+      });
+    });
 }
 
 void back_prop(const BackendPtr& backend, const MatrixXc& transfer, const VectorXc& amps, MatrixXc& b) {
@@ -122,13 +125,14 @@ void sdp_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& 
   backend->to_host(q);
 
   const auto max_coefficient = std::abs(backend->max_abs_element(q));
-  for (auto& dev : geometry)
-    for (auto& tr : dev) {
+  std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
+    std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
       const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
       const auto raw = std::abs(q(tr.id()));
       const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
       drives.set_drive(tr, phase, power);
-    }
+    });
+  });
 }
 
 template <typename T>
@@ -187,13 +191,14 @@ void evd_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& 
 
   backend->to_host(gtf);
   const auto max_coefficient = std::abs(backend->max_abs_element(gtf));
-  for (auto& dev : geometry)
-    for (auto& tr : dev) {
+  std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
+    std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
       const auto phase = std::arg(gtf(tr.id())) / (2.0 * driver::pi) + 0.5;
       const auto raw = std::abs(gtf(tr.id()));
       const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
       drives.set_drive(tr, phase, power);
-    }
+    });
+  });
 }
 
 template <typename T>
@@ -214,13 +219,14 @@ void naive_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>
   backend->to_host(q);
 
   const auto max_coefficient = std::abs(backend->max_abs_element(q));
-  for (auto& dev : geometry)
-    for (auto& tr : dev) {
+  std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
+    std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
       const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
       const auto raw = std::abs(q(tr.id()));
       const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
       drives.set_drive(tr, phase, power);
-    }
+    });
+  });
 }
 
 template <typename T>
@@ -254,13 +260,14 @@ void gs_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& f
 
   const auto max_coefficient = std::abs(backend->max_abs_element(q));
   backend->to_host(q);
-  for (auto& dev : geometry)
-    for (auto& tr : dev) {
+  std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
+    std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
       const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
       const auto raw = std::abs(q(tr.id()));
       const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
       drives.set_drive(tr, phase, power);
-    }
+    });
+  });
 }
 
 template <typename T>
@@ -305,13 +312,14 @@ void gspat_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>
 
   const auto max_coefficient = std::abs(backend->max_abs_element(q));
   backend->to_host(q);
-  for (auto& dev : geometry)
-    for (auto& tr : dev) {
+  std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
+    std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
       const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
       const auto raw = std::abs(q(tr.id()));
       const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
       drives.set_drive(tr, phase, power);
-    }
+    });
+  });
 }
 
 template <typename T>
@@ -454,12 +462,13 @@ void lm_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& f
   }
 
   backend->to_host(x);
-  for (auto& dev : geometry)
-    for (auto& tr : dev) {
+  std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
+    std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
       const auto phase = x(tr.id()) / (2.0 * driver::pi);
       const auto power = std::visit([&](auto& c) { return c.convert(1.0, 1.0); }, constraint);
       drives.set_drive(tr, phase, power);
-    }
+    });
+  });
 }
 
 template <typename T>
@@ -514,12 +523,13 @@ void gaussnewton_calc_impl(const BackendPtr& backend, const std::vector<core::Ve
   }
 
   backend->to_host(x);
-  for (auto& dev : geometry)
-    for (auto& tr : dev) {
+  std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
+    std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
       const auto phase = x(tr.id()) / (2.0 * driver::pi);
       const auto power = std::visit([&](auto& c) { return c.convert(1.0, 1.0); }, constraint);
       drives.set_drive(tr, phase, power);
-    }
+    });
+  });
 }
 
 template <typename T>
@@ -554,12 +564,13 @@ void gradientdescnet_calc_impl(const BackendPtr& backend, const std::vector<core
   }
 
   backend->to_host(x);
-  for (auto& dev : geometry)
-    for (auto& tr : dev) {
+  std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
+    std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
       const auto phase = x(tr.id()) / (2.0 * driver::pi);
       const auto power = std::visit([&](auto& c) { return c.convert(1.0, 1.0); }, constraint);
       drives.set_drive(tr, phase, power);
-    }
+    });
+  });
 }
 
 template <typename T>
