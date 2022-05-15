@@ -202,7 +202,7 @@ class CUDABackendImpl final : public CUDABackend {
     const auto dst_p = static_cast<cuDoubleComplex*>(_pool.get(dst));
     cu_exp(src_p, size, 1, dst_p);
   }
-  void pow(const VectorXd& src, double p, VectorXd& dst) override {
+  void pow(const VectorXd& src, const double p, VectorXd& dst) override {
     const auto size = static_cast<uint32_t>(src.size());
     const auto src_p = static_cast<double*>(_pool.get(src));
     const auto dst_p = static_cast<double*>(_pool.get(dst));
@@ -304,7 +304,7 @@ class CUDABackendImpl final : public CUDABackend {
                 1);
   }
 
-  void scale(double value, VectorXd& dst) override {
+  void scale(const double value, VectorXd& dst) override {
     const auto dst_p = static_cast<double*>(_pool.get(dst));
     cublasDscal(_handle, static_cast<int>(dst.size()), &value, dst_p, 1);
   }
@@ -363,7 +363,8 @@ class CUDABackendImpl final : public CUDABackend {
                 reinterpret_cast<const cuDoubleComplex*>(&beta), c_p, 1);
   }
 
-  void mul(TRANSPOSE trans_a, TRANSPOSE trans_b, double alpha, const MatrixXd& a, const MatrixXd& b, double beta, MatrixXd& c) override {
+  void mul(const TRANSPOSE trans_a, const TRANSPOSE trans_b, const double alpha, const MatrixXd& a, const MatrixXd& b, const double beta,
+           MatrixXd& c) override {
     const auto m = static_cast<int>(c.rows());
     const auto n = static_cast<int>(c.cols());
     const auto k = trans_a == TRANSPOSE::NO_TRANS ? static_cast<int>(a.cols()) : static_cast<int>(a.rows());
@@ -375,7 +376,7 @@ class CUDABackendImpl final : public CUDABackend {
     const auto c_p = static_cast<double*>(_pool.get(c));
     cublasDgemm(_handle, convert(trans_a), convert(trans_b), m, n, k, &alpha, a_p, lda, b_p, ldb, &beta, c_p, ldc);
   }
-  void mul(TRANSPOSE trans_a, double alpha, const MatrixXd& a, const VectorXd& b, double beta, VectorXd& c) override {
+  void mul(const TRANSPOSE trans_a, const double alpha, const MatrixXd& a, const VectorXd& b, const double beta, VectorXd& c) override {
     const auto m = static_cast<int>(a.rows());
     const auto n = static_cast<int>(a.cols());
     const auto lda = m;
@@ -504,7 +505,7 @@ class CUDABackendImpl final : public CUDABackend {
     free(workspace_buffer_on_host);
   }
 
-  void pseudo_inverse_svd(MatrixXd& src, double alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf, MatrixXd& dst) override {
+  void pseudo_inverse_svd(MatrixXd& src, const double alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf, MatrixXd& dst) override {
     const auto nc = src.cols();
     const auto nr = src.rows();
 
@@ -597,7 +598,7 @@ class CUDABackendImpl final : public CUDABackend {
     void* workspace_buffer_on_device = nullptr;
     void* workspace_buffer_on_host = nullptr;
     cudaMalloc(&workspace_buffer_on_device, workspace_in_bytes_on_device);
-    if (workspace_in_bytes_on_host > 0) workspace_buffer_on_host = (void*)malloc(workspace_in_bytes_on_host);
+    if (workspace_in_bytes_on_host > 0) workspace_buffer_on_host = malloc(workspace_in_bytes_on_host);
 
     int* info = nullptr;
     cudaMalloc(reinterpret_cast<void**>(&info), sizeof(int));

@@ -26,7 +26,7 @@ struct Point {
   Vector3 point;
   uint8_t shift;
 
-  Point(Vector3 point, const uint8_t shift = 0) : point(std::move(point)), shift(shift) {}
+  explicit Point(Vector3 point, const uint8_t shift = 0) : point(std::move(point)), shift(shift) {}
   Point() = delete;
   ~Point() = default;
   Point(const Point& v) noexcept = default;

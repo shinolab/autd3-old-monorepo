@@ -11,6 +11,11 @@
 
 #pragma once
 
+#include <memory>
+#include <string>
+#include <tuple>
+#include <vector>
+
 #include "autd3.hpp"
 #include "autd3/gain/holo.hpp"
 

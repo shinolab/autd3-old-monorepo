@@ -12,6 +12,7 @@
 #pragma once
 
 #include <autd3.hpp>
+#include <vector>
 
 template <typename T>
 void gain_stm(autd3::Controller<T>& autd) {
