@@ -85,7 +85,7 @@ class SDP final : public Holo<T> {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit SDP(BackendPtr backend) : Holo(std::move(backend), Normalize()), alpha(1e-3), lambda(0.9), repeat(100) {}
+  explicit SDP(BackendPtr backend) : Holo<T>(std::move(backend), Normalize()), alpha(1e-3), lambda(0.9), repeat(100) {}
 
   void calc(const core::Geometry<T>& geometry) override;
 
@@ -105,7 +105,7 @@ class EVD final : public Holo<T> {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit EVD(BackendPtr backend) : Holo(std::move(backend), Uniform(1.0)), gamma(1.0) {}
+  explicit EVD(BackendPtr backend) : Holo<T>(std::move(backend), Uniform(1.0)), gamma(1.0) {}
 
   void calc(const core::Geometry<T>& geometry) override;
 
@@ -121,7 +121,7 @@ class Naive final : public Holo<T> {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit Naive(BackendPtr backend) : Holo(std::move(backend), Normalize()) {}
+  explicit Naive(BackendPtr backend) : Holo<T>(std::move(backend), Normalize()) {}
 
   void calc(const core::Geometry<T>& geometry) override;
 };
@@ -137,7 +137,7 @@ class GS final : public Holo<T> {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit GS(BackendPtr backend) : Holo(std::move(backend), Normalize()), repeat(100) {}
+  explicit GS(BackendPtr backend) : Holo<T>(std::move(backend), Normalize()), repeat(100) {}
 
   void calc(const core::Geometry<T>& geometry) override;
 
@@ -156,7 +156,7 @@ class GSPAT final : public Holo<T> {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit GSPAT(BackendPtr backend) : Holo(std::move(backend), Normalize()), repeat(100) {}
+  explicit GSPAT(BackendPtr backend) : Holo<T>(std::move(backend), Normalize()), repeat(100) {}
 
   void calc(const core::Geometry<T>& geometry) override;
 
@@ -177,7 +177,7 @@ class LM final : public Holo<T> {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit LM(BackendPtr backend) : Holo(std::move(backend)), eps_1(1e-8), eps_2(1e-8), tau(1e-3), k_max(5) {}
+  explicit LM(BackendPtr backend) : Holo<T>(std::move(backend)), eps_1(1e-8), eps_2(1e-8), tau(1e-3), k_max(5) {}
 
   void calc(const core::Geometry<T>& geometry) override;
 
@@ -197,7 +197,7 @@ class GaussNewton final : public Holo<T> {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit GaussNewton(BackendPtr backend) : Holo(std::move(backend)), eps_1(1e-6), eps_2(1e-6), k_max(500) {}
+  explicit GaussNewton(BackendPtr backend) : Holo<T>(std::move(backend)), eps_1(1e-6), eps_2(1e-6), k_max(500) {}
 
   void calc(const core::Geometry<T>& geometry) override;
 
@@ -216,7 +216,7 @@ class GradientDescent final : public Holo<T> {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit GradientDescent(BackendPtr backend) : Holo(std::move(backend)), eps(1e-6), step(0.5), k_max(2000) {}
+  explicit GradientDescent(BackendPtr backend) : Holo<T>(std::move(backend)), eps(1e-6), step(0.5), k_max(2000) {}
 
   void calc(const core::Geometry<T>& geometry) override;
 
@@ -238,7 +238,7 @@ class Greedy final : public Holo<T> {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit Greedy(BackendPtr backend) : Holo(std::move(backend)), phase_div(16) {}
+  explicit Greedy(BackendPtr backend) : Holo<T>(std::move(backend)), phase_div(16) {}
 
   void calc(const core::Geometry<T>& geometry) override;
 
