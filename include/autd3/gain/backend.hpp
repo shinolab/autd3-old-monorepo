@@ -3,7 +3,7 @@
 // Created Date: 10/09/2021
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/05/2022
+// Last Modified: 15/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -44,16 +44,26 @@ class Backend {
   virtual void init() = 0;
   virtual void to_host(VectorXc& dst) = 0;
   virtual void to_host(MatrixXc& dst) = 0;
+  virtual void to_host(VectorXd& dst) = 0;
+  virtual void to_host(MatrixXd& dst) = 0;
 
   virtual void copy_to(const MatrixXc& src, MatrixXc& dst) = 0;
+  virtual void copy_to(const MatrixXd& src, MatrixXd& dst) = 0;
+  virtual void copy_to(const VectorXd& src, VectorXd& dst) = 0;
+
+  virtual void real(const MatrixXc& src, MatrixXd& re) = 0;
+  virtual void imag(const MatrixXc& src, MatrixXd& im) = 0;
+  virtual void make_complex(const VectorXd& re, const VectorXd& im, VectorXc& dst) = 0;
 
   virtual void abs(const VectorXc& src, VectorXc& dst) = 0;
   virtual void conj(const VectorXc& src, VectorXc& dst) = 0;
   virtual void arg(const VectorXc& src, VectorXc& dst) = 0;
   virtual void reciprocal(const VectorXc& src, VectorXc& dst) = 0;
+  virtual void exp(const VectorXc& src, VectorXc& dst) = 0;
 
   virtual void create_diagonal(const VectorXc& src, MatrixXc& dst) = 0;
   virtual void get_diagonal(const MatrixXc& src, VectorXc& dst) = 0;
+  virtual void get_diagonal(const MatrixXd& src, VectorXd& dst) = 0;
 
   virtual void set(size_t i, complex value, VectorXc& dst) = 0;
   virtual void set_row(VectorXc& src, size_t i, size_t begin, size_t end, MatrixXc& dst) = 0;
@@ -61,15 +71,27 @@ class Backend {
 
   virtual void get_col(const MatrixXc& src, size_t i, VectorXc& dst) = 0;
 
+  virtual void concat_col(const MatrixXc& a, const MatrixXc& b, MatrixXc& dst) = 0;
+
+  virtual void reduce_col(const MatrixXd& src, VectorXd& dst) = 0;
+
   virtual complex max_abs_element(const VectorXc& src) = 0;
+  virtual double max_element(const VectorXd& src) = 0;
 
   virtual void scale(complex value, VectorXc& dst) = 0;
 
   virtual complex dot(const VectorXc& a, const VectorXc& b) = 0;
+  virtual double dot(const VectorXd& a, const VectorXd& b) = 0;
+
+  virtual void add(double alpha, const MatrixXd& a, MatrixXd& b) = 0;
+  virtual void add(double alpha, const VectorXd& a, VectorXd& b) = 0;
 
   virtual void mul(TRANSPOSE trans_a, TRANSPOSE trans_b, complex alpha, const MatrixXc& a, const MatrixXc& b, complex beta, MatrixXc& c) = 0;
   virtual void mul(TRANSPOSE trans_a, complex alpha, const MatrixXc& a, const VectorXc& b, complex beta, VectorXc& c) = 0;
   virtual void hadamard_product(const VectorXc& a, const VectorXc& b, VectorXc& c) = 0;
+  virtual void hadamard_product(const MatrixXc& a, const MatrixXc& b, MatrixXc& c) = 0;
+
+  virtual void solvet(MatrixXd& a, VectorXd& b) = 0;
 
   virtual void max_eigen_vector(const MatrixXc& src, VectorXc& dst) = 0;
 
@@ -90,39 +112,61 @@ class EigenBackend : public Backend {
   EigenBackend(EigenBackend&& obj) = default;
   EigenBackend& operator=(EigenBackend&& obj) = default;
 
-  void init() override = 0;
-  void to_host(VectorXc& dst) override = 0;
-  void to_host(MatrixXc& dst) override = 0;
+  void init() override;
+  void to_host(VectorXc& dst) override;
+  void to_host(MatrixXc& dst) override;
+  void to_host(VectorXd& dst) override;
+  void to_host(MatrixXd& dst) override;
 
-  void copy_to(const MatrixXc& src, MatrixXc& dst) override = 0;
+  void copy_to(const MatrixXc& src, MatrixXc& dst) override;
+  void copy_to(const MatrixXd& src, MatrixXd& dst) override;
+  void copy_to(const VectorXd& src, VectorXd& dst) override;
 
-  void abs(const VectorXc& src, VectorXc& dst) override = 0;
-  void conj(const VectorXc& src, VectorXc& dst) override = 0;
-  void arg(const VectorXc& src, VectorXc& dst) override = 0;
-  void reciprocal(const VectorXc& src, VectorXc& dst) override = 0;
+  void real(const MatrixXc& src, MatrixXd& re) override;
+  void imag(const MatrixXc& src, MatrixXd& im) override;
+  void make_complex(const VectorXd& re, const VectorXd& im, VectorXc& dst) override;
 
-  void create_diagonal(const VectorXc& src, MatrixXc& dst) override = 0;
-  void get_diagonal(const MatrixXc& src, VectorXc& dst) override = 0;
+  void abs(const VectorXc& src, VectorXc& dst) override;
+  void conj(const VectorXc& src, VectorXc& dst) override;
+  void arg(const VectorXc& src, VectorXc& dst) override;
+  void reciprocal(const VectorXc& src, VectorXc& dst) override;
+  void exp(const VectorXc& src, VectorXc& dst) override;
 
-  void set(size_t i, complex value, VectorXc& dst) override = 0;
-  void set_row(VectorXc& src, size_t i, size_t begin, size_t end, MatrixXc& dst) override = 0;
-  void set_col(VectorXc& src, size_t i, size_t begin, size_t end, MatrixXc& dst) override = 0;
+  void create_diagonal(const VectorXc& src, MatrixXc& dst) override;
+  void get_diagonal(const MatrixXc& src, VectorXc& dst) override;
+  void get_diagonal(const MatrixXd& src, VectorXd& dst) override;
 
-  void get_col(const MatrixXc& src, size_t i, VectorXc& dst) override = 0;
+  void set(size_t i, complex value, VectorXc& dst) override;
+  void set_row(VectorXc& src, size_t i, size_t begin, size_t end, MatrixXc& dst) override;
+  void set_col(VectorXc& src, size_t i, size_t begin, size_t end, MatrixXc& dst) override;
 
-  complex max_abs_element(const VectorXc& src) override = 0;
+  void get_col(const MatrixXc& src, size_t i, VectorXc& dst) override;
 
-  void scale(complex value, VectorXc& dst) override = 0;
+  void concat_col(const MatrixXc& a, const MatrixXc& b, MatrixXc& dst) override;
 
-  complex dot(const VectorXc& a, const VectorXc& b) override = 0;
+  void reduce_col(const MatrixXd& src, VectorXd& dst) override;
 
-  void mul(TRANSPOSE trans_a, TRANSPOSE trans_b, complex alpha, const MatrixXc& a, const MatrixXc& b, complex beta, MatrixXc& c) override = 0;
-  void mul(TRANSPOSE trans_a, complex alpha, const MatrixXc& a, const VectorXc& b, complex beta, VectorXc& c) override = 0;
-  void hadamard_product(const VectorXc& a, const VectorXc& b, VectorXc& c) override = 0;
+  complex max_abs_element(const VectorXc& src) override;
+  double max_element(const VectorXd& src) override;
 
-  void max_eigen_vector(const MatrixXc& src, VectorXc& dst) override = 0;
+  void scale(complex value, VectorXc& dst) override;
 
-  void pseudo_inverse_svd(MatrixXc& src, double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) override = 0;
+  complex dot(const VectorXc& a, const VectorXc& b) override;
+  double dot(const VectorXd& a, const VectorXd& b) override;
+
+  void add(double alpha, const MatrixXd& a, MatrixXd& b) override;
+  void add(double alpha, const VectorXd& a, VectorXd& b) override;
+
+  void mul(TRANSPOSE trans_a, TRANSPOSE trans_b, complex alpha, const MatrixXc& a, const MatrixXc& b, complex beta, MatrixXc& c) override;
+  void mul(TRANSPOSE trans_a, complex alpha, const MatrixXc& a, const VectorXc& b, complex beta, VectorXc& c) override;
+  void hadamard_product(const VectorXc& a, const VectorXc& b, VectorXc& c) override;
+  void hadamard_product(const MatrixXc& a, const MatrixXc& b, MatrixXc& c) override;
+
+  void solvet(MatrixXd& a, VectorXd& b) override;
+
+  void max_eigen_vector(const MatrixXc& src, VectorXc& dst) override;
+
+  void pseudo_inverse_svd(MatrixXc& src, double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) override;
 
   static BackendPtr create();
 };

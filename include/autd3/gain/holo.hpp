@@ -3,7 +3,7 @@
 // Created Date: 16/05/2021
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/05/2022
+// Last Modified: 15/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -143,6 +143,31 @@ class GSPAT final : public Holo<T> {
   void calc(const core::Geometry<T>& geometry) override;
 
   size_t repeat;
+};
+
+/**
+ * @brief Gain to produce multiple focal points with Levenberg-Marquardt method.
+ * Refer to K.Levenberg, “A method for the solution of certain non-linear problems in
+ * least squares,” Quarterly of applied mathematics, vol.2, no.2, pp.164–168, 1944.
+ * D.W.Marquardt, “An algorithm for least-squares estimation of non-linear parameters,” Journal of the society for Industrial and
+ * AppliedMathematics, vol.11, no.2, pp.431–441, 1963.
+ * K.Madsen, H.Nielsen, and O.Tingleff, “Methods for non-linear least squares problems (2nd ed.),” 2004.
+ */
+template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+class LM final : public Holo<T> {
+ public:
+  /**
+   * @param[in] backend pointer to Backend
+   */
+  explicit LM(BackendPtr backend) : Holo(std::move(backend)), eps_1(1e-8), eps_2(1e-8), tau(1e-3), k_max(5) {}
+
+  void calc(const core::Geometry<T>& geometry) override;
+
+  double eps_1;
+  double eps_2;
+  double tau;
+  size_t k_max;
+  std::vector<double> initial;
 };
 
 }  // namespace autd3::gain::holo
