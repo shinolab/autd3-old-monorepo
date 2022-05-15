@@ -55,11 +55,14 @@ class Backend {
   virtual void imag(const MatrixXc& src, MatrixXd& im) = 0;
   virtual void make_complex(const VectorXd& re, const VectorXd& im, VectorXc& dst) = 0;
 
+  virtual void abs(const VectorXc& src, VectorXd& dst) = 0;
   virtual void abs(const VectorXc& src, VectorXc& dst) = 0;
+  virtual void sqrt(const VectorXd& src, VectorXd& dst) = 0;
   virtual void conj(const VectorXc& src, VectorXc& dst) = 0;
   virtual void arg(const VectorXc& src, VectorXc& dst) = 0;
   virtual void reciprocal(const VectorXc& src, VectorXc& dst) = 0;
   virtual void exp(const VectorXc& src, VectorXc& dst) = 0;
+  virtual void pow(const VectorXd& src, double p, VectorXd& dst) = 0;
 
   virtual void create_diagonal(const VectorXc& src, MatrixXc& dst) = 0;
   virtual void get_diagonal(const MatrixXc& src, VectorXc& dst) = 0;
@@ -72,6 +75,8 @@ class Backend {
   virtual void get_col(const MatrixXc& src, size_t i, VectorXc& dst) = 0;
 
   virtual void concat_col(const MatrixXc& a, const MatrixXc& b, MatrixXc& dst) = 0;
+  virtual void concat_row(const MatrixXc& a, const MatrixXc& b, MatrixXc& dst) = 0;
+  virtual void concat_row(const VectorXc& a, const VectorXc& b, VectorXc& dst) = 0;
 
   virtual void reduce_col(const MatrixXd& src, VectorXd& dst) = 0;
 
@@ -79,6 +84,7 @@ class Backend {
   virtual double max_element(const VectorXd& src) = 0;
 
   virtual void scale(complex value, VectorXc& dst) = 0;
+  virtual void scale(double value, VectorXd& dst) = 0;
 
   virtual complex dot(const VectorXc& a, const VectorXc& b) = 0;
   virtual double dot(const VectorXd& a, const VectorXd& b) = 0;
@@ -92,6 +98,7 @@ class Backend {
   virtual void hadamard_product(const MatrixXc& a, const MatrixXc& b, MatrixXc& c) = 0;
 
   virtual void solvet(MatrixXd& a, VectorXd& b) = 0;
+  virtual void solveh(MatrixXc& a, VectorXc& b) = 0;
 
   virtual void max_eigen_vector(const MatrixXc& src, VectorXc& dst) = 0;
 
@@ -103,7 +110,7 @@ using BackendPtr = std::shared_ptr<Backend>;
 /**
  * \brief Backend for HoloGain
  */
-class EigenBackend : public Backend {
+class EigenBackend final : public Backend {
  public:
   EigenBackend() = default;
   ~EigenBackend() override = default;
@@ -126,11 +133,14 @@ class EigenBackend : public Backend {
   void imag(const MatrixXc& src, MatrixXd& im) override;
   void make_complex(const VectorXd& re, const VectorXd& im, VectorXc& dst) override;
 
+  void abs(const VectorXc& src, VectorXd& dst) override;
   void abs(const VectorXc& src, VectorXc& dst) override;
+  void sqrt(const VectorXd& src, VectorXd& dst) override;
   void conj(const VectorXc& src, VectorXc& dst) override;
   void arg(const VectorXc& src, VectorXc& dst) override;
   void reciprocal(const VectorXc& src, VectorXc& dst) override;
   void exp(const VectorXc& src, VectorXc& dst) override;
+  void pow(const VectorXd& src, double p, VectorXd& dst) override;
 
   void create_diagonal(const VectorXc& src, MatrixXc& dst) override;
   void get_diagonal(const MatrixXc& src, VectorXc& dst) override;
@@ -143,6 +153,8 @@ class EigenBackend : public Backend {
   void get_col(const MatrixXc& src, size_t i, VectorXc& dst) override;
 
   void concat_col(const MatrixXc& a, const MatrixXc& b, MatrixXc& dst) override;
+  void concat_row(const MatrixXc& a, const MatrixXc& b, MatrixXc& dst) override;
+  void concat_row(const VectorXc& a, const VectorXc& b, VectorXc& dst) override;
 
   void reduce_col(const MatrixXd& src, VectorXd& dst) override;
 
@@ -150,6 +162,7 @@ class EigenBackend : public Backend {
   double max_element(const VectorXd& src) override;
 
   void scale(complex value, VectorXc& dst) override;
+  void scale(double value, VectorXd& dst) override;
 
   complex dot(const VectorXc& a, const VectorXc& b) override;
   double dot(const VectorXd& a, const VectorXd& b) override;
@@ -163,6 +176,7 @@ class EigenBackend : public Backend {
   void hadamard_product(const MatrixXc& a, const MatrixXc& b, MatrixXc& c) override;
 
   void solvet(MatrixXd& a, VectorXd& b) override;
+  void solveh(MatrixXc& a, VectorXc& b) override;
 
   void max_eigen_vector(const MatrixXc& src, VectorXc& dst) override;
 
