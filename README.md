@@ -23,12 +23,31 @@ Version: 2.0.0-rc
 * Or, if you want to build from the source, install CMake version 3.16 or higher and follow the instructions below.
     * Windows:
         ```
-        git clone https://github.com/shinolab/autd3.git --recursive 
+        git clone https://github.com/shinolab/autd3.git
         ```
         Then, run `build.ps1` (Visual Studio 2019 or 2022 is required) or build with CMake
-    * Linux/macOS: 
+    * macOS: 
         ```
-        git clone https://github.com/shinolab/autd3.git --recursive
+        git clone https://github.com/shinolab/autd3.git
+        cd autd3
+        mkdir build && cd build
+        cmake ..
+        make
+        ```
+
+        or with Xcode
+
+        ```
+        git clone https://github.com/shinolab/autd3.git
+        cd autd3
+        mkdir build && cd build
+        cmake .. -G "Xcode"
+        open ./autd3.xcodeproj
+        ```
+
+    * linux:
+        ```
+        git clone https://github.com/shinolab/autd3.git 
         cd autd3
         mkdir build && cd build
         cmake ..
