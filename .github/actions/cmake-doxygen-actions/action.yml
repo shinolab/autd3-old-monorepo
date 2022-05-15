@@ -1,0 +1,12 @@
+name: 'Doxygen Action with CMake'
+inputs:
+  working-directory:
+    description: 'Working directory'
+    required: true
+    default: '.'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.cmake-proj-path }}
+    - ${{ inputs.working-directory }}

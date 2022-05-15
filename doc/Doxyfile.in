@@ -1,0 +1,39 @@
+PROJECT_NAME           = "@CMAKE_PROJECT_NAME@"
+PROJECT_NUMBER         = @VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@
+STRIP_FROM_PATH        = @PROJECT_SOURCE_DIR@ \
+                         @PROJECT_BINARY_DIR@
+INPUT                  = @PROJECT_SOURCE_DIR@/include \
+                         @PROJECT_SOURCE_DIR@/doc/README.md
+FILE_PATTERNS          = *.h \
+						 *.hpp \
+                         *.cc \
+                         *.cpp \
+                         *.md
+RECURSIVE              = YES
+USE_MDFILE_AS_MAINPAGE = @PROJECT_SOURCE_DIR@/doc/README.md
+DOT_PATH               = "@DOT_PATH@"
+REFERENCED_BY_RELATION = YES
+REFERENCES_RELATION    = YES
+HAVE_DOT               = YES
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+GRAPHICAL_HIERARCHY    = YES
+DIRECTORY_GRAPH        = YES
+GENERATE_LEGEND        = YES
+INCLUDED_BY_GRAPH      = YES
+INCLUDE_GRAPH          = YES
+DOT_IMAGE_FORMAT       = png:cairo:cairo
+TEMPLATE_RELATIONS     = NO
+HTML_DYNAMIC_SECTIONS  = NO
+EXTRACT_ALL            = YES
+EXTRACT_STATIC         = YES
+EXTRACT_PRIVATE        = NO
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = YES
+PREDEFINED             = protected=private
+GENERATE_LATEX         = NO
+USE_PDFLATEX           = NO
+BUILTIN_STL_SUPPORT    = YES
+SOURCE_BROWSER         = YES
+STRIP_CODE_COMMENTS    = NO
