@@ -36,7 +36,7 @@ jobs:
     - name: build for Windows x86
       if: matrix.os == 'windows-latest'
       run: |
-        cmake -G "Visual Studio 17 2022" -A Win32 -B "build_x86" -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=ON
+        cmake -G "Visual Studio 17 2022" -A Win32 -B "build_x86" -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF
         cd build_x86
         msbuild autd3.sln /t:build /p:Configuration=Release
     - name: install gcc-10
