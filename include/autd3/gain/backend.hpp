@@ -94,6 +94,8 @@ class Backend {
 
   virtual void mul(TRANSPOSE trans_a, TRANSPOSE trans_b, complex alpha, const MatrixXc& a, const MatrixXc& b, complex beta, MatrixXc& c) = 0;
   virtual void mul(TRANSPOSE trans_a, complex alpha, const MatrixXc& a, const VectorXc& b, complex beta, VectorXc& c) = 0;
+  virtual void mul(TRANSPOSE trans_a, TRANSPOSE trans_b, double alpha, const MatrixXd& a, const MatrixXd& b, double beta, MatrixXd& c) = 0;
+  virtual void mul(TRANSPOSE trans_a, double alpha, const MatrixXd& a, const VectorXd& b, double beta, VectorXd& c) = 0;
   virtual void hadamard_product(const VectorXc& a, const VectorXc& b, VectorXc& c) = 0;
   virtual void hadamard_product(const MatrixXc& a, const MatrixXc& b, MatrixXc& c) = 0;
 
@@ -102,6 +104,7 @@ class Backend {
 
   virtual void max_eigen_vector(const MatrixXc& src, VectorXc& dst) = 0;
 
+  virtual void pseudo_inverse_svd(MatrixXd& src, double alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf, MatrixXd& dst) = 0;
   virtual void pseudo_inverse_svd(MatrixXc& src, double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) = 0;
 };
 
@@ -172,6 +175,8 @@ class EigenBackend final : public Backend {
 
   void mul(TRANSPOSE trans_a, TRANSPOSE trans_b, complex alpha, const MatrixXc& a, const MatrixXc& b, complex beta, MatrixXc& c) override;
   void mul(TRANSPOSE trans_a, complex alpha, const MatrixXc& a, const VectorXc& b, complex beta, VectorXc& c) override;
+  void mul(TRANSPOSE trans_a, TRANSPOSE trans_b, double alpha, const MatrixXd& a, const MatrixXd& b, double beta, MatrixXd& c) override;
+  void mul(TRANSPOSE trans_a, double alpha, const MatrixXd& a, const VectorXd& b, double beta, VectorXd& c) override;
   void hadamard_product(const VectorXc& a, const VectorXc& b, VectorXc& c) override;
   void hadamard_product(const MatrixXc& a, const MatrixXc& b, MatrixXc& c) override;
 
@@ -180,6 +185,7 @@ class EigenBackend final : public Backend {
 
   void max_eigen_vector(const MatrixXc& src, VectorXc& dst) override;
 
+  void pseudo_inverse_svd(MatrixXd& src, double alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf, MatrixXd& dst) override;
   void pseudo_inverse_svd(MatrixXc& src, double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) override;
 
   static BackendPtr create();
