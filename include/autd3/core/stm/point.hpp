@@ -27,10 +27,16 @@ struct Point {
   uint8_t shift;
 
   explicit Point(Vector3 point, const uint8_t shift = 0) : point(std::move(point)), shift(shift) {}
-  Point() = delete;
   ~Point() = default;
-  Point(const Point& v) noexcept = default;
-  Point& operator=(const Point& obj) = default;
+  Point(const Point& v) noexcept {
+    point = v.point;
+    shift = v.shift;
+  }
+  Point& operator=(const Point& obj) {
+    point = obj.point;
+    shift = obj.shift;
+    return *this;
+  }
   Point(Point&& obj) = default;
   Point& operator=(Point&& obj) = default;
 };
