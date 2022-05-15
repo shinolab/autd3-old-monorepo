@@ -34,7 +34,7 @@
 #include "autd3/gain/backend.hpp"
 #include "test_utils.hpp"
 
-constexpr Eigen::Index TEST_SIZE = 1000;
+constexpr Eigen::Index TEST_SIZE = 100;
 
 using autd3::gain::holo::complex;
 using autd3::gain::holo::MatrixXc;
