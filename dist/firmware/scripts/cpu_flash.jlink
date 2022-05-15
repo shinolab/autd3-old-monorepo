@@ -1,0 +1,3 @@
+r
+loadfile tmp.bin 0x30000000
+q
