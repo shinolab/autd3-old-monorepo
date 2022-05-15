@@ -596,6 +596,56 @@ TYPED_TEST(BackendTest, mul_vec) {
   for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR_COMPLEX(c(i), expected(i), 1e-6);
 }
 
+TYPED_TEST(BackendTest, mul_matrix_real) {
+  constexpr Eigen::Index n = 1 * TEST_SIZE;
+  constexpr Eigen::Index m = 2 * TEST_SIZE;
+  constexpr Eigen::Index k = 3 * TEST_SIZE;
+
+  MatrixXd a = MatrixXd::Random(n, m);
+  MatrixXd b = MatrixXd::Random(m, m);
+
+  MatrixXd c = MatrixXd::Zero(n, m);
+  this->backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, 1.0, a, b, 0.0, c);
+  this->backend->to_host(c);
+
+  MatrixXd expected = a * b;
+
+  for (Eigen::Index i = 0; i < n; i++)
+    for (Eigen::Index j = 0; j < m; j++) ASSERT_NEAR(c(i, j), expected(i, j), 1e-6);
+
+  MatrixXd aa = MatrixXd::Random(k, n);
+  MatrixXd bb = MatrixXd::Random(m, k);
+  this->backend->mul(TRANSPOSE::TRANS, TRANSPOSE::TRANS, 2.0, aa, bb, 1.0, c);
+  this->backend->to_host(c);
+
+  expected += 2.0 * (aa.transpose() * bb.transpose());
+
+  for (Eigen::Index i = 0; i < n; i++)
+    for (Eigen::Index j = 0; j < m; j++) ASSERT_NEAR(c(i, j), expected(i, j), 1e-6);
+}
+
+TYPED_TEST(BackendTest, mul_vec_real) {
+  constexpr Eigen::Index n = 1 * TEST_SIZE;
+  constexpr Eigen::Index m = 2 * TEST_SIZE;
+
+  MatrixXd a = MatrixXd::Random(n, m);
+  VectorXd b = VectorXd::Random(m);
+
+  VectorXd c = VectorXd::Zero(n);
+  this->backend->mul(TRANSPOSE::NO_TRANS, 1.0, a, b, 0.0, c);
+  this->backend->to_host(c);
+
+  VectorXd expected = a * b;
+  for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR(c(i), expected(i), 1e-6);
+
+  MatrixXd aa = MatrixXd::Random(m, n);
+  this->backend->mul(TRANSPOSE::TRANS, 3.0, aa, b, 1.0, c);
+  this->backend->to_host(c);
+
+  expected += 3.0 * (aa.transpose() * b);
+  for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR(c(i), expected(i), 1e-6);
+}
+
 TYPED_TEST(BackendTest, hadamard_product) {
   constexpr Eigen::Index n = 1 * TEST_SIZE;
 
@@ -715,4 +765,29 @@ TYPED_TEST(BackendTest, pseudo_inverse_svd) {
         ASSERT_NEAR_COMPLEX(c(i, j), ONE, 0.1);
       else
         ASSERT_NEAR_COMPLEX(c(i, j), ZERO, 0.1);
+}
+
+TYPED_TEST(BackendTest, pseudo_inverse_svd_real) {
+  constexpr auto n = 5 * TEST_SIZE;
+  constexpr auto m = 1 * TEST_SIZE;
+  MatrixXd a = MatrixXd::Random(m, n);
+
+  MatrixXd b = MatrixXd::Zero(n, m);
+  MatrixXd u(m, m);
+  MatrixXd s(n, m);
+  MatrixXd vt(n, n);
+  MatrixXd buf = MatrixXd::Zero(n, m);
+  MatrixXd tmp = a;
+  this->backend->pseudo_inverse_svd(tmp, 0.0, u, s, vt, buf, b);
+
+  MatrixXd c = MatrixXd::Zero(m, m);
+  this->backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, 1.0, a, b, 0.0, c);
+  this->backend->to_host(c);
+
+  for (Eigen::Index i = 0; i < m; i++)
+    for (Eigen::Index j = 0; j < m; j++)
+      if (i == j)
+        ASSERT_NEAR(c(i, j), 1.0, 0.1);
+      else
+        ASSERT_NEAR(c(i, j), 0.0, 0.1);
 }

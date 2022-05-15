@@ -166,7 +166,7 @@ void evd_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& 
     backend->create_diagonal(sigma_tmp, sigma);
   }
 
-  MatrixXc gr = MatrixXc::Zero(m + n, m);
+  MatrixXc gr = MatrixXc::Zero(m + n, n);
   backend->concat_row(g, sigma, gr);
 
   VectorXc fm(m);
@@ -390,7 +390,7 @@ void lm_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& f
   VectorXc t(n_param);
   make_t(backend, zero, x, t);
 
-  MatrixXc tth = VectorXc::Zero(n_param, n_param);
+  MatrixXc tth = MatrixXc::Zero(n_param, n_param);
   MatrixXc bhb_tth(n_param, n_param);
   MatrixXd bhb_tth_i(n_param, n_param);
   MatrixXd a(n_param, n_param);
@@ -417,11 +417,13 @@ void lm_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& f
     if (backend->max_element(g) <= eps_1) break;
 
     backend->copy_to(a, tmp_mat);
+
     backend->add(mu, identity, tmp_mat);
 
     backend->copy_to(g, h_lm);
 
     backend->solvet(tmp_mat, h_lm);
+
     if (std::sqrt(backend->dot(h_lm, h_lm)) <= eps_2 * (std::sqrt(backend->dot(x, x)) + eps_2)) break;
 
     backend->copy_to(x, x_new);
@@ -436,6 +438,7 @@ void lm_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& f
 
     const auto rho = (fx - fx_new) / l0_lhlm;
     fx = fx_new;
+
     if (rho > 0) {
       backend->copy_to(x_new, x);
 
@@ -453,7 +456,7 @@ void lm_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& f
   backend->to_host(x);
   for (auto& dev : geometry)
     for (auto& tr : dev) {
-      const auto phase = x(tr.id());
+      const auto phase = x(tr.id()) / (2.0 * driver::pi);
       const auto power = std::visit([&](auto& c) { return c.convert(1.0, 1.0); }, constraint);
       drives.set_drive(tr, phase, power);
     }
@@ -481,7 +484,7 @@ void gaussnewton_calc_impl(const BackendPtr& backend, const std::vector<core::Ve
   VectorXc t(n_param);
   make_t(backend, zero, x, t);
 
-  MatrixXc tth = VectorXc::Zero(n_param, n_param);
+  MatrixXc tth = MatrixXc::Zero(n_param, n_param);
   MatrixXc bhb_tth(n_param, n_param);
   MatrixXd bhb_tth_i(n_param, n_param);
   MatrixXd a(n_param, n_param);
@@ -489,14 +492,19 @@ void gaussnewton_calc_impl(const BackendPtr& backend, const std::vector<core::Ve
   calc_jtj_jtf(backend, t, bhb, tth, bhb_tth, bhb_tth_i, a, g);
 
   VectorXd tmp_vec(n_param);
-  VectorXd h_lm(n_param);
+  VectorXd h_lm = VectorXd::Zero(n_param);
   MatrixXd tmp_mat(n_param, n_param);
+  MatrixXd pia = MatrixXd::Zero(n_param, n_param);
+  MatrixXd u(n_param, n_param);
+  MatrixXd s(n_param, n_param);
+  MatrixXd vt(n_param, n_param);
+  MatrixXd buf = MatrixXd::Zero(n_param, n_param);
   for (size_t k = 0; k < k_max; k++) {
     if (backend->max_element(g) <= eps_1) break;
 
     backend->copy_to(a, tmp_mat);
-    backend->copy_to(g, h_lm);
-    backend->solvet(tmp_mat, h_lm);
+    backend->pseudo_inverse_svd(tmp_mat, 1e-3, u, s, vt, buf, pia);
+    backend->mul(TRANSPOSE::NO_TRANS, 1.0, pia, g, 0.0, h_lm);
     if (std::sqrt(backend->dot(h_lm, h_lm)) <= eps_2 * (std::sqrt(backend->dot(x, x)) + eps_2)) break;
 
     backend->add(-1.0, h_lm, x);
@@ -508,7 +516,7 @@ void gaussnewton_calc_impl(const BackendPtr& backend, const std::vector<core::Ve
   backend->to_host(x);
   for (auto& dev : geometry)
     for (auto& tr : dev) {
-      const auto phase = x(tr.id());
+      const auto phase = x(tr.id()) / (2.0 * driver::pi);
       const auto power = std::visit([&](auto& c) { return c.convert(1.0, 1.0); }, constraint);
       drives.set_drive(tr, phase, power);
     }
@@ -534,7 +542,7 @@ void gradientdescnet_calc_impl(const BackendPtr& backend, const std::vector<core
   const VectorXd zero = VectorXd::Zero(n_param);
 
   VectorXc t(n_param);
-  MatrixXc tth = VectorXc::Zero(n_param, n_param);
+  MatrixXc tth = MatrixXc::Zero(n_param, n_param);
   MatrixXc bhb_tth(n_param, n_param);
   MatrixXd bhb_tth_i(n_param, n_param);
   VectorXd g(n_param);
@@ -548,7 +556,7 @@ void gradientdescnet_calc_impl(const BackendPtr& backend, const std::vector<core
   backend->to_host(x);
   for (auto& dev : geometry)
     for (auto& tr : dev) {
-      const auto phase = x(tr.id());
+      const auto phase = x(tr.id()) / (2.0 * driver::pi);
       const auto power = std::visit([&](auto& c) { return c.convert(1.0, 1.0); }, constraint);
       drives.set_drive(tr, phase, power);
     }
@@ -557,44 +565,52 @@ void gradientdescnet_calc_impl(const BackendPtr& backend, const std::vector<core
 template <typename T>
 void greedy_calc_impl(const BackendPtr&, const std::vector<core::Vector3>& foci, std::vector<complex>& amps, const core::Geometry<T>& geometry,
                       const size_t phase_div, AmplitudeConstraint constraint, typename T::D& drives) {
-  const auto m = foci.size();
+  const auto m = static_cast<Eigen::Index>(foci.size());
+  const auto n = geometry.num_transducers();
+
+  const VectorXc amps_ = Eigen::Map<VectorXc, Eigen::Unaligned>(amps.data(), static_cast<Eigen::Index>(amps.size()));
 
   std::vector<complex> phases;
   phases.reserve(phase_div);
   for (size_t i = 0; i < phase_div; i++)
     phases.emplace_back(std::exp(complex(0., 2.0 * driver::pi * static_cast<double>(i) / static_cast<double>(phase_div))));
 
-  std::vector<std::unique_ptr<complex[]>> tmp;
+  std::vector<VectorXc> tmp;
   tmp.reserve(phases.size());
-  for (size_t i = 0; i < phases.size(); i++) tmp.emplace_back(std::make_unique<complex[]>(m));
+  for (size_t i = 0; i < phases.size(); i++) tmp.emplace_back(VectorXc(m));
 
-  const auto cache = std::make_unique<complex[]>(m);
+  VectorXc cache = VectorXc::Zero(m);
 
   const double attenuation = geometry.attenuation;
   const double sound_speed = geometry.sound_speed;
-  auto transfer_foci = [attenuation, sound_speed](const T& trans, const complex phase, const std::vector<core::Vector3>& foci_, complex* res) {
-    for (size_t i = 0; i < foci_.size(); i++)
-      res[i] = core::propagate(trans.position(), trans.z_direction(), attenuation, trans.wavenumber(sound_speed), foci_[i]) * phase;
+  auto transfer_foci = [m, attenuation, sound_speed](const T& trans, const complex phase, const std::vector<core::Vector3>& foci_, VectorXc& res) {
+    for (Eigen::Index i = 0; i < m; i++)
+      res(i) = core::propagate(trans.position(), trans.z_direction(), attenuation, trans.wavenumber(sound_speed), foci_[i]) * phase;
   };
 
-  for (const auto& dev : geometry)
-    for (const auto& transducer : dev) {
-      size_t min_idx = 0;
-      auto min_v = std::numeric_limits<double>::infinity();
-      for (size_t p = 0; p < phases.size(); p++) {
-        transfer_foci(transducer, phases[p], foci, &tmp[p][0]);
-        auto v = 0.0;
-        for (size_t j = 0; j < m; j++) v += std::abs(amps[j] - std::abs(tmp[p][j] + cache[j]));
-        if (v < min_v) {
-          min_v = v;
-          min_idx = p;
-        }
+  std::vector<size_t> select(n);
+  std::iota(select.begin(), select.end(), 0);
+  std::random_device seed_gen;
+  std::mt19937 engine(seed_gen());
+  std::shuffle(select.begin(), select.end(), engine);
+  for (const auto i : select) {
+    const auto dev_idx = i / driver::NUM_TRANS_IN_UNIT;
+    const auto trans_idx = i % driver::NUM_TRANS_IN_UNIT;
+    const auto& transducer = geometry[dev_idx][trans_idx];
+    size_t min_idx = 0;
+    auto min_v = std::numeric_limits<double>::infinity();
+    for (size_t p = 0; p < phases.size(); p++) {
+      transfer_foci(transducer, phases[p], foci, tmp[p]);
+      if (const auto v = (amps_ - (tmp[p] + cache).cwiseAbs()).cwiseAbs().sum(); v < min_v) {
+        min_v = v;
+        min_idx = p;
       }
-      for (size_t j = 0; j < m; j++) cache[j] += tmp[min_idx][j];
-
-      const auto power = std::visit([&](auto& c) { return c.convert(1.0, 1.0); }, constraint);
-      drives.set_drive(transducer, std::arg(phases[min_idx]) / (2.0 * driver::pi) + 0.5, power);
     }
+    cache += tmp[min_idx];
+
+    const auto power = std::visit([&](auto& c) { return c.convert(1.0, 1.0); }, constraint);
+    drives.set_drive(transducer, std::arg(phases[min_idx]) / (2.0 * driver::pi) + 0.5, power);
+  }
 }
 
 }  // namespace
