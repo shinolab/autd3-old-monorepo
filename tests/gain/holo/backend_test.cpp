@@ -50,7 +50,7 @@ using testing::Types;
 template <typename B>
 class BackendTest : public testing::Test {
  public:
-  BackendTest() : backend(B::create()) {}
+  BackendTest() : backend(B::create()) { backend->init(); }
   ~BackendTest() override = default;
   BackendTest(const BackendTest& v) noexcept = default;
   BackendTest& operator=(const BackendTest& obj) = default;
