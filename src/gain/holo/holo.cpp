@@ -489,6 +489,49 @@ void gradientdescnet_calc_impl(const BackendPtr& backend, const std::vector<core
     }
 }
 
+template <typename T>
+void greedy_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& foci, std::vector<complex>& amps,
+                      const core::Geometry<T>& geometry, const size_t phase_div, AmplitudeConstraint constraint, typename T::D& drives) {
+  const auto m = foci.size();
+
+  std::vector<complex> phases;
+  phases.reserve(phase_div);
+  for (size_t i = 0; i < phase_div; i++)
+    phases.emplace_back(std::exp(complex(0., 2.0 * driver::pi * static_cast<double>(i) / static_cast<double>(phase_div))));
+
+  std::vector<std::unique_ptr<complex[]>> tmp;
+  tmp.reserve(phases.size());
+  for (size_t i = 0; i < phases.size(); i++) tmp.emplace_back(std::make_unique<complex[]>(m));
+
+  const auto cache = std::make_unique<complex[]>(m);
+
+  const double attenuation = geometry.attenuation;
+  const double sound_speed = geometry.sound_speed;
+  auto transfer_foci = [attenuation, sound_speed](const T& trans, const complex phase, const std::vector<core::Vector3>& foci_, complex* res) {
+    for (size_t i = 0; i < foci_.size(); i++)
+      res[i] = core::propagate(trans.position(), trans.z_direction(), attenuation, trans.wavenumber(sound_speed), foci_[i]) * phase;
+  };
+
+  for (const auto& dev : geometry)
+    for (const auto& transducer : dev) {
+      size_t min_idx = 0;
+      auto min_v = std::numeric_limits<double>::infinity();
+      for (size_t p = 0; p < phases.size(); p++) {
+        transfer_foci(transducer, phases[p], foci, &tmp[p][0]);
+        auto v = 0.0;
+        for (size_t j = 0; j < m; j++) v += std::abs(amps[j] - std::abs(tmp[p][j] + cache[j]));
+        if (v < min_v) {
+          min_v = v;
+          min_idx = p;
+        }
+      }
+      for (size_t j = 0; j < m; j++) cache[j] += tmp[min_idx][j];
+
+      const auto power = std::visit([&](auto& c) { return c.convert(1.0, 1.0); }, constraint);
+      drives.set_drive(transducer, std::arg(phases[min_idx]) / (2.0 * driver::pi) + 0.5, power);
+    }
+}
+
 }  // namespace
 
 void SDP<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
@@ -538,6 +581,13 @@ void GradientDescent<core::LegacyTransducer>::calc(const core::Geometry<core::Le
 }
 void GradientDescent<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
   gradientdescnet_calc_impl(_backend, _foci, _amps, geometry, eps, step, k_max, initial, constraint, this->_props.drives);
+}
+
+void Greedy<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
+  greedy_calc_impl(_backend, _foci, _amps, geometry, phase_div, constraint, this->_props.drives);
+}
+void Greedy<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
+  greedy_calc_impl(_backend, _foci, _amps, geometry, phase_div, constraint, this->_props.drives);
 }
 
 }  // namespace autd3::gain::holo

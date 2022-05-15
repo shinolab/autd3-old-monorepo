@@ -208,4 +208,23 @@ class GradientDescent final : public Holo<T> {
   std::vector<double> initial;
 };
 
+/**
+ * @brief Gain to produce multiple focal points with Greedy algorithm.
+ * Refer to Shun suzuki, et al. “Radiation Pressure Field Reconstruction for Ultrasound Midair Haptics by Greedy Algorithm with Brute-Force Search,”
+ * in IEEE Transactions on Haptics, doi: 10.1109/TOH.2021.3076489
+ * @details This method is computed on the CPU.
+ */
+template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+class Greedy final : public Holo<T> {
+ public:
+  /**
+   * @param[in] backend pointer to Backend
+   */
+  explicit Greedy(BackendPtr backend) : Holo(std::move(backend)), phase_div(16) {}
+
+  void calc(const core::Geometry<T>& geometry) override;
+
+  size_t phase_div;
+};
+
 }  // namespace autd3::gain::holo
