@@ -3,7 +3,7 @@
 // Created Date: 03/04/2021
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/05/2022
+// Last Modified: 15/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <functional>
 #include <iostream>
 #include <sstream>
@@ -25,17 +26,16 @@
 #include "tests/focus.hpp"
 #include "tests/gain_stm.hpp"
 #include "tests/group.hpp"
+#include "tests/holo.hpp"
 #include "tests/point_stm.hpp"
 
 template <typename T>
 int run(autd3::Controller<T> autd) {
   using F = std::function<void(autd3::Controller<T>&)>;
   std::vector<std::pair<F, std::string>> tests = {
-      std::pair(F{focus_test<T>}, "Single focus Test"),
-      std::pair(F{bessel_test<T>}, "Bessel beam Test"),
-      std::pair(F{point_stm<T>}, "PointSTM Test"),
-      std::pair(F{gain_stm<T>}, "GainSTM Test"),
-      std::pair(F{advanced_test<T>}, "Custom Gain & Modulation Test"),
+      std::pair(F{focus_test<T>}, "Single focus Test"), std::pair(F{bessel_test<T>}, "Bessel beam Test"),
+      std::pair(F{point_stm<T>}, "PointSTM Test"),      std::pair(F{gain_stm<T>}, "GainSTM Test"),
+      std::pair(F{holo_test<T>}, "Holo Test"),          std::pair(F{advanced_test<T>}, "Custom Gain & Modulation Test"),
       std::pair(F{flag_test<T>}, "Flag Test"),
   };
   if (autd.geometry().num_devices() == 2) tests.emplace_back(std::pair(F{group_test<T>}, "Grouped Gain Test"));
@@ -44,7 +44,8 @@ int run(autd3::Controller<T> autd) {
 
   autd.geometry().sound_speed = 340.0;  // m/s
 
-  for (const auto& firm_info : autd.firmware_infos()) std::cout << firm_info << std::endl;
+  const auto firm_infos = autd.firmware_infos();
+  std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));
 
   autd.clear();
   autd.synchronize();

@@ -3,7 +3,7 @@
 // Created Date: 19/05/2021
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/05/2022
+// Last Modified: 15/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -37,8 +37,9 @@ class UniformGain final : public autd3::core::Gain<T> {
   UniformGain() = default;
 
   void calc(const autd3::core::Geometry<T>& geometry) override {
-    for (const auto& dev : geometry)
-      for (const auto& trans : dev) this->_props.drives.set_drive(trans, 0.0, 1.0);
+    std::for_each(geometry.begin(), geometry.end(), [this](const auto& dev) {
+      std::for_each(dev.begin(), dev.end(), [this](const auto& trans) { this->_props.drives.set_drive(trans, 0.0, 1.0); });
+    });
   }
 };
 
