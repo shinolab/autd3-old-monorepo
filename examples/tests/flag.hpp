@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/05/2022
+// Last Modified: 15/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -32,8 +32,8 @@ void flag_test(autd3::Controller<T>& autd) {
     size_t prompts_idx = 0;
     while (!fin) {
       const auto states = autd.read_fpga_info();
-      std::cout << prompts[prompts_idx] << " Thermo assert: " << std::boolalpha << states.at(0).is_thermal_assert();
-      for (size_t i = 1; i < autd.geometry().num_devices(); i++) std::cout << ", " << states.at(i).is_thermal_assert();
+      std::cout << prompts[prompts_idx] << " FPGA Status: ";
+      std::copy(states.begin(), states.end(), std::ostream_iterator<autd3::FPGAInfo>(std::cout, ", "));
       std::cout << "\r";
       prompts_idx = (prompts_idx + 1) % prompts.size();
     }

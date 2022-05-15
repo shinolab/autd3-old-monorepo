@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/05/2022
+// Last Modified: 15/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -71,7 +71,9 @@ class Controller {
 
     const auto msg_id = get_id_body();
     std::vector<uint16_t> cycles;
-    for (const auto& dev : _geometry) std::transform(dev.begin(), dev.end(), std::back_inserter(cycles), [](const T& tr) { return tr.cycle(); });
+    std::for_each(_geometry.begin(), _geometry.end(), [&](const auto& dev) {
+      std::transform(dev.begin(), dev.end(), std::back_inserter(cycles), [](const T& tr) { return tr.cycle(); });
+    });
 
     sync(msg_id, _link->cycle_ticks(), cycles.data(), _tx_buf);
 

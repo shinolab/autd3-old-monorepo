@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/05/2022
+// Last Modified: 15/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -26,10 +26,9 @@ class Null final : public core::Gain<T> {
   Null() noexcept {}
 
   void calc(const core::Geometry<T>& geometry) override {
-    for (const auto& dev : geometry)
-      for (const auto& transducer : dev) {
-        this->_props.drives.set_drive(transducer, 0.0, 0.0);
-      }
+    std::for_each(geometry.begin(), geometry.end(), [this](const auto& dev) {
+      std::for_each(dev.begin(), dev.end(), [this](const auto& trans) { this->_props.drives.set_drive(trans, 0.0, 0.0); });
+    });
   }
 
   ~Null() override = default;
@@ -52,12 +51,13 @@ class Focus final : public core::Gain<T> {
   explicit Focus(core::Vector3 point, const double amp = 1.0) : _point(std::move(point)), _amp(amp) {}
 
   void calc(const core::Geometry<T>& geometry) override {
-    for (const auto& dev : geometry)
-      for (const auto& transducer : dev) {
+    std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
+      std::for_each(dev.begin(), dev.end(), [&](const auto& transducer) {
         const auto dist = (_point - transducer.position()).norm();
         const auto phase = transducer.align_phase_at(dist, geometry.sound_speed);
         this->_props.drives.set_drive(transducer, phase, _amp);
-      }
+      });
+    });
   }
 
   ~Focus() override = default;
@@ -92,14 +92,16 @@ class BesselBeam final : public core::Gain<T> {
     const auto theta_v = std::asin(v.norm());
     v.normalize();
     const Eigen::AngleAxisd rot(-theta_v, v);
-    for (const auto& dev : geometry)
-      for (const auto& transducer : dev) {
+
+    std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
+      std::for_each(dev.begin(), dev.end(), [&](const auto& transducer) {
         const auto r = transducer.position() - this->_apex;
         const auto rr = rot * r;
         const auto d = std::sin(_theta_z) * std::sqrt(rr.x() * rr.x() + rr.y() * rr.y()) - std::cos(_theta_z) * rr.z();
         const auto phase = transducer.align_phase_at(d, geometry.sound_speed);
         this->_props.drives.set_drive(transducer, phase, _amp);
-      }
+      });
+    });
   }
 
   ~BesselBeam() override = default;

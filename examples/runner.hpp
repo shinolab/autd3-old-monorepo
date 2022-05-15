@@ -3,7 +3,7 @@
 // Created Date: 03/04/2021
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/05/2022
+// Last Modified: 15/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -43,7 +43,8 @@ int run(autd3::Controller<T> autd) {
 
   autd.geometry().sound_speed = 340.0;  // m/s
 
-  for (const auto& firm_info : autd.firmware_infos()) std::cout << firm_info << std::endl;
+  const auto firm_infos = autd.firmware_infos();
+  std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));
 
   autd.clear();
   autd.synchronize();
