@@ -89,11 +89,9 @@ class EmulatorImpl final : public core::Link {
     return true;
   }
   bool receive(driver::RxDatagram& rx) override {
-    for (auto& [_, msg_id] : rx) msg_id = _last_msg_id;
+    for_each(rx.begin(), rx.end(), [_last_msg_id](auto& [_, msg_id]) { msg_id = _last_msg_id; });
 
-    const auto set = [&rx](const uint8_t value) {
-      for (auto& [ack, _] : rx) ack = value;
-    };
+    const auto set = [&rx](const uint8_t value) { for_each(rx.begin(), rx.end(), [value](auto& [ack, _]) { ack = value; }); };
 
     switch (_last_msg_id) {
       case driver::MSG_CLEAR:
