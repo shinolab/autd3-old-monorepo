@@ -36,6 +36,29 @@ $$
 ただし, 上記で$[0,1]$を超えるような値は$[0,1]$に収まるように変換される.
 また, サンプリング周波数はデフォルトで$\SI{4}{kHz}$ ($N=40960$) になっている.
 
+
+## SineSquared
+
+放射圧, すなわち, 音圧の二乗をSin波状に変形するための`Modulation`.
+引数等は`Sine`と同じ.
+
+## SineLegacy
+
+古いversionにあった`Sine Modulation`と互換.
+周波数として, `double`の値を取れるが, 厳密に指定周波数になるのではなく, 出力可能な周波数の内, 最も近い周波数が選ばれる.
+また, 音圧ではなくDuty比がSin波状になる.
+
+## Square
+
+矩形波状の`Modulation`.
+
+```cpp
+  modulation::Square m(f, low, high); 
+```
+第1引数は周波数$f$, 第2引数はlow (デフォルトで0), 第3引数はhigh (デフォルトで1)になっており, 音圧の波形はlowとhighが周波数$f$で繰り返される.
+また, 第4引数にduty比を指定できる.
+duty比は$t_\text{high}/T = t_\text{high}f$で定義される, ここで, $t_\text{high}$は1周期$T=1/f$の内, highを出力する時間である.
+
 ## Create Custom Modulation Tutorial
 
 `Modulation`も独自の`Modulation`を作成することができる.
