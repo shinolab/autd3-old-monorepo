@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/05/2022
+// Last Modified: 16/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -17,6 +17,10 @@
 #include "transducer.hpp"
 
 namespace autd3::core {
+
+/**
+ * \brief Device contains an AUTD device geometry.
+ */
 template <typename T>
 struct Device {
   explicit Device(const size_t id, const Vector3& position, const Quaternion& rotation) : _origin(position) {
@@ -45,6 +49,9 @@ struct Device {
   Device(Device&& obj) = default;
   Device& operator=(Device&& obj) = default;
 
+  /**
+   * @brief Center position of this device
+   */
   [[nodiscard]] Vector3 center() const {
     Vector3 sum = Vector3::Zero();
     return std::accumulate(begin(), end(), sum,

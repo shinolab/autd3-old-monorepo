@@ -3,7 +3,7 @@
 // Created Date: 16/05/2021
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/05/2022
+// Last Modified: 16/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -21,14 +21,23 @@
 
 namespace autd3::gain::holo {
 
+/**
+ * @brief AmplitudeConstraint to do nothing
+ */
 struct DontCare final {
   static double convert(const double raw, const double) { return raw; }
 };
 
+/**
+ * @brief AmplitudeConstraint to normalize to the largest amplitude
+ */
 struct Normalize final {
   static double convert(const double raw, const double max) { return raw / max; }
 };
 
+/**
+ * @brief AmplitudeConstraint to give the same amplitude to all transducers
+ */
 struct Uniform final {
   explicit Uniform(const double value) : _value(value) {}
 
@@ -38,10 +47,16 @@ struct Uniform final {
   double _value;
 };
 
+/**
+ * @brief AmplitudeConstraint to clamp amplitude in [0, 1]
+ */
 struct Clamp final {
   [[nodiscard]] double convert(const double raw, const double) const { return std::clamp(raw, 0.0, 1.0); }
 };
 
+/**
+ * @brief Amplitude constraint
+ */
 using AmplitudeConstraint = std::variant<DontCare, Normalize, Uniform, Clamp>;
 
 /**
@@ -57,6 +72,9 @@ class Holo : public core::Gain<T> {
   Holo(Holo&& obj) = default;
   Holo& operator=(Holo&& obj) = default;
 
+  /**
+   * @brief Add focus position and amplitude of focus
+   */
   void add_focus(const core::Vector3& focus, const double amp) {
     _foci.emplace_back(focus);
     _amps.emplace_back(complex(amp, 0.0));

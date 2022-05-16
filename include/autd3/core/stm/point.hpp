@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/05/2022
+// Last Modified: 16/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -22,8 +22,17 @@
 
 namespace autd3::core {
 
+/**
+ * @brief Controll point and duty shift used in PointSTM
+ */
 struct Point {
+  /**
+   * @brief Controll point
+   */
   Vector3 point;
+  /**
+   * @brief duty shift. The duty ratio will be (50% >> duty_shift).
+   */
   uint8_t shift;
 
   explicit Point(Vector3 point, const uint8_t shift = 0) : point(std::move(point)), shift(shift) {}
@@ -41,15 +50,26 @@ struct Point {
   Point& operator=(Point&& obj) = default;
 };
 
+/**
+ * @brief PointSTM provides a function to display the focus sequentially and periodically.
+ * @details PointSTM uses a timer on the FPGA to ensure that the focus is precisely timed.
+ * PointSTM currently has the following three limitations.
+ * 1. The maximum number of control points is driver::POINT_STM_BUF_SIZE_MAX.
+ * 2. Only a single focus can be displayed at a certain moment.
+ */
 template <typename T = LegacyTransducer, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 struct PointSTM final : STM, DatagramBody<T> {
   using value_type = Point;
 
   PointSTM() : STM(), DatagramBody<T>(), _sent(0) {}
 
+  /**
+   * @brief Add control point
+   * @param[in] point control point
+   * @param[in] duty_shift duty shift. The duty ratio will be (50% >> duty_shift).
+   */
   void add(const Vector3& point, uint8_t duty_shift = 0) {
     if (_points.size() + 1 > driver::POINT_STM_BUF_SIZE_MAX) throw std::runtime_error("PointSTM out of buffer");
-
     _points.emplace_back(point, duty_shift);
   }
 
