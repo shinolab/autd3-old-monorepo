@@ -1,0 +1,32 @@
+[book]
+authors = ["shun suzuki"]
+language = "en"
+multilingual = true
+title = "AUTD3 Developers Manual v2.0.0"
+
+src = "src"
+destination = "book"
+
+[preprocessor.index]
+
+[preprocessor.links]
+
+[output.html]
+mathjax-support = true
+default-theme = "navy"
+preferred-dark-theme = "navy"
+git-repository-url = "https://github.com/shinolab/autd3"
+curly-quotes = true
+
+[output.katex]
+
+[preprocessor.katex]
+macros = "katex_macro.txt"
+
+[language-en]
+src = "src/en"
+destination = "book/en"
+
+[language-jp]
+src = "src/jp"
+destination = "book/jp"

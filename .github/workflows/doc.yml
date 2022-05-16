@@ -18,6 +18,24 @@ jobs:
         mkdir -p doc_build
         sudo mv ./build/doc/html ./doc_build/api
 
+    - name: Setup mdBook
+      uses: peaceiris/actions-mdbook@v1
+      with:
+        mdbook-version: 'latest'
+    - name: Setup mdbook-katex
+      uses: magicgh/mdbook-katex-action@v1
+      with:
+        version: 'latest'
+    - run: |
+        cd book
+        MDBOOK_BOOK__src=src/en mdbook build --dest-dir book/en
+        MDBOOK_BOOK__src=src/jp mdbook build --dest-dir book/jp
+    - name: mv mdbook doc
+      run: |
+        mkdir -p doc_build/book
+        sudo mv ./book/book/en/html ./doc_build/book/en
+        sudo mv ./book/book/jp/html ./doc_build/book/jp
+
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
