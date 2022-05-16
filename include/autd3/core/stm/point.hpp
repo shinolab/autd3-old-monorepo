@@ -61,7 +61,7 @@ template <typename T = LegacyTransducer, std::enable_if_t<std::is_base_of_v<Tran
 struct PointSTM final : public STM<T> {
   using value_type = Point;
 
-  PointSTM() : STM(), _sent(0) {}
+  PointSTM() : STM<T>(), _sent(0) {}
 
   /**
    * @brief Add control point
