@@ -19,6 +19,6 @@
         - [Rust](./Software/FFI/rust.md)
         - [C API Reference](./Software/FFI/reference.md)
     - [Emulator](./Software/Emulator/README.md)
-    - [GUI](./Software/GUI/README.md)
 
 - [Citation](Citation/README.md)
+- [LICENSE](LICENSE/README.md)
