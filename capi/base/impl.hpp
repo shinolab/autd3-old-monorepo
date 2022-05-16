@@ -11,8 +11,11 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <string>
+#include <utility>
 
 #include "./autd3_c_api.h"
 #include "autd3.hpp"
@@ -37,14 +40,12 @@
 
 using Controller = autd3::Controller<T>;
 
-namespace {
 std::string& last_error() {
   static std::string msg("");  // NOLINT
   return msg;
 }
 autd3::Vector3 to_vec3(const double x, const double y, const double z) { return {x, y, z}; }
 autd3::Quaternion to_quaternion(const double w, const double x, const double y, const double z) { return {w, x, y, z}; }
-}  // namespace
 
 int32_t AUTDGetLastError(char* error) {
   const auto& error_ = last_error();
@@ -58,10 +59,10 @@ void AUTDCreateController(void** out) { *out = new Controller; }
 
 bool AUTDOpenController(void* const handle, void* const link) {
   auto* const wrapper = static_cast<Controller*>(handle);
-  auto* link_ = static_cast<LinkWrapper*>(link);
-  autd3::LinkPtr link__ = std::move(link_->ptr);
-  link_delete(link_);
-  AUTD3_CAPI_TRY(return wrapper->open(std::move(link__)))
+  auto* w_link = static_cast<LinkWrapper*>(link);
+  autd3::LinkPtr link_ = std::move(w_link->ptr);
+  link_delete(w_link);
+  AUTD3_CAPI_TRY(return wrapper->open(std::move(link_)))
 }
 
 int32_t AUTDAddDevice(void* const handle, const double x, const double y, const double z, const double rz1, const double ry, const double rz2) {
@@ -240,7 +241,7 @@ void AUTDGainNull(void** gain) {
 
 void AUTDGainGrouped(void** gain, const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
-  auto* g = new autd3::gain::Grouped<T>(wrapper->geometry());
+  auto* g = new autd3::gain::Grouped(wrapper->geometry());
   *gain = g;
 }
 
@@ -281,7 +282,7 @@ void AUTDModulationSineLegacy(void** mod, const double freq, const double amp, c
 }
 uint32_t AUTDModulationSamplingFrequencyDivision(const void* const mod) {
   const auto* const m = static_cast<const autd3::Modulation*>(mod);
-  return static_cast<uint32_t>(m->sampling_frequency_division());
+  return m->sampling_frequency_division();
 }
 void AUTDModulationSetSamplingFrequencyDivision(void* const mod, const uint32_t freq_div) {
   auto* const m = static_cast<autd3::Modulation*>(mod);
