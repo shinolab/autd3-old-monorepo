@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/05/2022
+// Last Modified: 16/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -27,6 +27,7 @@ inline void sync(const uint8_t msg_id, const uint16_t sync_cycle_ticks, const ui
   tx.header().msg_id = msg_id;
   tx.header().cpu_flag.set(CPUControlFlags::DO_SYNC);
   tx.header().sync_header().ecat_sync_cycle_ticks = sync_cycle_ticks;
+  tx.header().size = 0;
 
   std::memcpy(tx.bodies(), cycles, sizeof(Body) * tx.size());
 
@@ -38,6 +39,8 @@ inline void modulation(const uint8_t msg_id, const uint8_t* const mod_data, cons
   tx.header().msg_id = msg_id;
   tx.header().cpu_flag.remove(CPUControlFlags::DO_SYNC);
   tx.header().cpu_flag.remove(CPUControlFlags::CONFIG_SILENCER);
+  tx.header().size = static_cast<uint8_t>(mod_size);
+  if (mod_size == 0) return;
 
   if (is_first_frame) {
     if (freq_div < MOD_SAMPLING_FREQ_DIV_MIN) {
@@ -52,7 +55,6 @@ inline void modulation(const uint8_t msg_id, const uint8_t* const mod_data, cons
   } else {
     std::memcpy(&tx.header().mod_body().data[0], mod_data, mod_size);
   }
-  tx.header().size = static_cast<uint8_t>(mod_size);
 
   if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::MOD_END);
 }
@@ -67,6 +69,7 @@ inline void config_silencer(const uint8_t msg_id, const uint16_t cycle, const ui
   tx.header().msg_id = msg_id;
   tx.header().cpu_flag.remove(CPUControlFlags::DO_SYNC);
   tx.header().cpu_flag.set(CPUControlFlags::CONFIG_SILENCER);
+  tx.header().size = 0;
 
   tx.header().silencer_header().cycle = cycle;
   tx.header().silencer_header().step = step;

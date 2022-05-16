@@ -1,13 +1,13 @@
 /*
  * File: twincat.c
  * Project: example
- * Created Date: 15/12/2021
+ * Created Date: 16/05/2022
  * Author: Shun Suzuki
  * -----
  * Last Modified: 16/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2021 Hapis Lab. All rights reserved.
+ * Copyright (c) 2022 Hapis Lab. All rights reserved.
  *
  */
 

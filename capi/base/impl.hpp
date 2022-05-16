@@ -317,27 +317,27 @@ bool AUTDGainSTMAdd(void* const stm, void* const gain) {
   })
 }
 double AUTDSTMSetFrequency(void* const stm, const double freq) {
-  auto* const stm_w = static_cast<autd3::core::STM*>(stm);
+  auto* const stm_w = static_cast<autd3::core::STM<T>*>(stm);
   return stm_w->set_frequency(freq);
 }
 double AUTDSTMFrequency(const void* const stm) {
-  const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
+  const auto* const stm_w = static_cast<const autd3::core::STM<T>*>(stm);
   return stm_w->frequency();
 }
 double AUTDSTMSamplingFrequency(const void* const stm) {
-  const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
+  const auto* const stm_w = static_cast<const autd3::core::STM<T>*>(stm);
   return stm_w->sampling_frequency();
 }
 uint32_t AUTDSTMSamplingFrequencyDivision(const void* const stm) {
-  const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
+  const auto* const stm_w = static_cast<const autd3::core::STM<T>*>(stm);
   return stm_w->sampling_frequency_division();
 }
 void AUTDSTMSetSamplingFrequencyDivision(void* const stm, const uint32_t freq_div) {
-  auto* const stm_w = static_cast<autd3::core::STM*>(stm);
+  auto* const stm_w = static_cast<autd3::core::STM<T>*>(stm);
   stm_w->sampling_frequency_division() = freq_div;
 }
 void AUTDDeleteSTM(const void* const stm) {
-  const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
+  const auto* const stm_w = static_cast<const autd3::core::STM<T>*>(stm);
   delete stm_w;
 }
 

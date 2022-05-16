@@ -69,8 +69,6 @@ class Controller {
    * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
    */
   bool config_silencer(const SilencerConfig config) {
-    _tx_buf.clear();
-
     driver::force_fan(_tx_buf, force_fan);
     driver::reads_fpga_info(_tx_buf, reads_fpga_info);
 
@@ -86,8 +84,6 @@ class Controller {
    * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
    */
   bool synchronize() {
-    _tx_buf.clear();
-
     driver::force_fan(_tx_buf, force_fan);
     driver::reads_fpga_info(_tx_buf, reads_fpga_info);
 
@@ -108,8 +104,6 @@ class Controller {
    * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
    */
   bool update_flag() {
-    _tx_buf.clear();
-
     driver::force_fan(_tx_buf, force_fan);
     driver::reads_fpga_info(_tx_buf, reads_fpga_info);
     _tx_buf.header().msg_id = get_id_header();
@@ -214,8 +208,6 @@ class Controller {
     header.init();
 
     while (true) {
-      _tx_buf.clear();
-
       driver::force_fan(_tx_buf, force_fan);
       driver::reads_fpga_info(_tx_buf, reads_fpga_info);
 
