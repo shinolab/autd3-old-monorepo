@@ -42,7 +42,9 @@ int run(autd3::Controller<T> autd) {
       std::pair(F{focus_test<T>}, "Single focus Test"),
       std::pair(F{bessel_test<T>}, "Bessel beam Test"),
       std::pair(F{plane_test<T>}, "Plane wave Test"),
+#ifdef BUILD_MODULATION_AUDIO_FILE
       std::pair(F{mod_audio_file_test<T>}, "Wav and RawPCM modulation Test"),
+#endif
       std::pair(F{point_stm<T>}, "PointSTM Test"),
       std::pair(F{gain_stm<T>}, "GainSTM Test"),
 #ifdef BUILD_GAIN_HOLO
