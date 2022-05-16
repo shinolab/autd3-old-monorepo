@@ -59,6 +59,29 @@ $$
 また, 第4引数にduty比を指定できる.
 duty比は$t_\text{high}/T = t_\text{high}f$で定義される, ここで, $t_\text{high}$は1周期$T=1/f$の内, highを出力する時間である.
 
+
+## Wav
+
+`Wav`はWavファイルをもとに構成される`Modulation`である.
+
+```
+  const filesystem::path path = filesystem::path(string("sin150.wav"));
+  modulation::Wav m(path.string());
+```
+
+`Wav`を使用するには`BUILD_MODULATION_AUDIO_FILE` optionをONにしてコンパイルする必要がある.
+
+## RawPCM
+
+`RawPCM`は符号なし8-bitのバイナリデータファイルをもとに構成される`Modulation`である.
+
+```
+  const filesystem::path path = filesystem::path(string("sin150.wav"));
+  modulation::RawPCM m(path.string(), 4e3);
+```
+
+`RawPCM`を使用するには`BUILD_MODULATION_AUDIO_FILE` optionをONにしてコンパイルする必要がある.
+
 ## Create Custom Modulation Tutorial
 
 `Modulation`も独自の`Modulation`を作成することができる.
