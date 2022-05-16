@@ -87,6 +87,11 @@ bool AUTDClear(void* const handle) {
   AUTD3_CAPI_TRY(return wrapper->clear())
 }
 
+bool AUTDSynchronize(void* const handle) {
+  auto* wrapper = static_cast<Controller*>(handle);
+  AUTD3_CAPI_TRY(return wrapper->synchronize())
+}
+
 bool AUTDSetSilencer(void* handle, const uint16_t step, const uint16_t cycle) {
   auto* wrapper = static_cast<Controller*>(handle);
   const auto config = autd3::SilencerConfig(step, cycle);
@@ -124,6 +129,24 @@ void AUTDSetCheckAck(void* const handle, const bool check_ack) {
   auto* const wrapper = static_cast<Controller*>(handle);
   wrapper->check_ack = check_ack;
 }
+
+double AUTDGetTransFrequency(const void* const handle, const int32_t device_idx, const int32_t local_trans_idx) {
+  const auto* const wrapper = static_cast<const Controller*>(handle);
+  return wrapper->geometry()[device_idx][local_trans_idx].frequency();
+}
+void AUTDSetTransFrequency(void* const handle, const int32_t device_idx, const int32_t local_trans_idx, const double frequency) {
+  auto* const wrapper = static_cast<Controller*>(handle);
+  wrapper->geometry()[device_idx][local_trans_idx].set_frequency(frequency);
+}
+uint16_t AUTDGetTransCycle(const void* const handle, const int32_t device_idx, const int32_t local_trans_idx) {
+  const auto* const wrapper = static_cast<const Controller*>(handle);
+  return wrapper->geometry()[device_idx][local_trans_idx].cycle();
+}
+void AUTDSetTransCycle(void* const handle, const int32_t device_idx, const int32_t local_trans_idx, const uint16_t cycle) {
+  auto* const wrapper = static_cast<Controller*>(handle);
+  wrapper->geometry()[device_idx][local_trans_idx].set_cycle(cycle);
+}
+
 double AUTDGetSoundSpeed(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   return wrapper->geometry().sound_speed;
