@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/05/2022
+// Last Modified: 16/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -21,14 +21,33 @@ constexpr uint8_t ENABLED_STM_BIT = 0x01;
 constexpr uint8_t ENABLED_MODULATOR_BIT = 0x02;
 constexpr uint8_t ENABLED_SILENCER_BIT = 0x04;
 
+/**
+ * \brief Firmware information
+ */
 struct FirmwareInfo {
   FirmwareInfo(const size_t idx, const uint8_t cpu_version_number, const uint8_t fpga_version_number, const uint8_t fpga_function_bits) noexcept
       : _idx(idx), _cpu_version_number(cpu_version_number), _fpga_version_number(fpga_version_number), _fpga_function_bits(fpga_function_bits) {}
 
+  /**
+   * \brief Get cpu firmware version
+   */
   [[nodiscard]] std::string cpu_version() const { return firmware_version_map(_cpu_version_number); }
+  /**
+   * \brief Get fpga firmware version
+   */
   [[nodiscard]] std::string fpga_version() const { return firmware_version_map(_fpga_version_number); }
+
+  /**
+   * \return true if the firmware supports STM function
+   */
   [[nodiscard]] bool stm_enabled() const noexcept { return (_fpga_function_bits & ENABLED_STM_BIT) != 0; }
+  /**
+   * \return true if the firmware supports Modulator function
+   */
   [[nodiscard]] bool modulator_enabled() const noexcept { return (_fpga_function_bits & ENABLED_MODULATOR_BIT) != 0; }
+  /**
+   * \return true if the firmware supports Silencer function
+   */
   [[nodiscard]] bool silencer_enabled() const noexcept { return (_fpga_function_bits & ENABLED_SILENCER_BIT) != 0; }
 
   [[nodiscard]] std::string to_string() const {

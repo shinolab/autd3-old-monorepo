@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/05/2022
+// Last Modified: 16/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -37,7 +37,6 @@ int main() try {
 
   const auto ifname = get_adapter_name();
   auto link = autd3::link::SOEM(ifname, autd.geometry().num_devices())
-                  .cycle_ticks(2)
                   .on_lost([](const std::string& msg) {
                     std::cerr << "Link is lost\n";
                     std::cerr << msg;

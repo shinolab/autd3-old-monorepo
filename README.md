@@ -70,6 +70,23 @@ Version: 2.0.0-rc
 
 * If you are using Linux/macOS, you may need to run as root.
 
+## CMake options list
+
+| Option                    | default | description                     |
+| ------------------------- | ------- | ------------------------------- |
+| BUILD_ALL                 | OFF     | build all options below         |
+| BUILD_DOC                 | OFF     | build doxygen documents         |
+| BUILD_GAIN_HOLO           | ON      | build Holo gain                 |
+| BUILD_BACKEND_CUDA        | OFF     | build CUDABackend for Holo gain |
+| BUILD_LINK_SOEM           | ON      | build SOEM link                 |
+| BUILD_LINK_TWINCAT        | OFF     | build TwinCAT link              |
+| BUILD_LINK_REMOTE_TWINCAT | OFF     | build RemoteTwinCAT link        |
+| BUILD_LINK_EMULATOR       | OFF     | build Emulator link             |
+| BUILD_EXAMPLES            | ON      | build examples                  |
+| ENABLE_LINT               | OFF     | enable cpp lint                 |
+| BUILD_TEST                | OFF     | build tests                     |
+
+
 ## For other programming languages
 
 * [Rust](https://github.com/shinolab/rust-autd)
@@ -90,7 +107,7 @@ If you use this SDK in your research please consider to include the following ci
 
 ## LICENSE
 
-* See [LICENSE](./LICENSE)
+* See [LICENSE](./LICENSE) and [NOTICE](./NOTICE).
 
 # Author
 

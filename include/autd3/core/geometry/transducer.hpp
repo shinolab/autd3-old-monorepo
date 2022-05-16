@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/05/2022
+// Last Modified: 16/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -38,6 +38,9 @@ using Vector4 = Eigen::Matrix<double, 4, 1>;
 using Matrix4X4 = Eigen::Matrix<double, 4, 4>;
 using Quaternion = Eigen::Quaternion<double>;
 
+/**
+ * @brief Abstract container of duty ratio and phase
+ */
 template <typename T>
 struct DriveData {
   DriveData() = default;
@@ -52,6 +55,9 @@ struct DriveData {
   virtual void copy_from(size_t idx, const typename T::D& src) = 0;
 };
 
+/**
+ * \brief Transduce contains a position and id, direction, frequency of a transducer
+ */
 template <typename T>
 struct Transducer {
   using D = T;
@@ -69,15 +75,45 @@ struct Transducer {
   Transducer& operator=(Transducer&& obj) = default;
 
   [[nodiscard]] double align_phase_at(const double dist, const double sound_speed) const { return dist / wavelength(sound_speed); }
+
+  /**
+   * \brief Position of the transducer
+   */
   [[nodiscard]] const Vector3& position() const noexcept { return _pos; }
+  /**
+   * \brief ID of the transducer
+   */
   [[nodiscard]] size_t id() const noexcept { return _id; }
+  /**
+   * \brief x direction of the transducer
+   */
   [[nodiscard]] const Vector3& x_direction() const noexcept { return _x_direction; }
+  /**
+   * \brief y direction of the transducer
+   */
   [[nodiscard]] const Vector3& y_direction() const noexcept { return _y_direction; }
+  /**
+   * \brief z direction of the transducer
+   */
   [[nodiscard]] const Vector3& z_direction() const noexcept { return _z_direction; }
 
+  /**
+   * \brief Frequency division ratio. The frequency will be autd3::driver::FPGA_CLK_FREQ/cycle.
+   */
   [[nodiscard]] virtual uint16_t cycle() const = 0;
+  /**
+   * \brief Frequency of the transducer
+   */
   [[nodiscard]] virtual double frequency() const = 0;
+  /**
+   * \brief Wavelength of the ultrasound emitted from the transducer
+   * @param sound_speed Speed of sound in m/s.
+   */
   [[nodiscard]] virtual double wavelength(double sound_speed) const = 0;
+  /**
+   * \brief Wavenumber of the ultrasound emitted from the transducer
+   * @param sound_speed Speed of sound in m/s.
+   */
   [[nodiscard]] virtual double wavenumber(double sound_speed) const = 0;
 
  private:
