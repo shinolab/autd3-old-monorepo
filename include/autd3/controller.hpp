@@ -62,7 +62,7 @@ class Controller {
   /**
    * @brief Verify the device is properly connected
    */
-  bool is_open() { return (_link != nullptr) && _link->is_open(); }
+  [[nodiscard]] bool is_open() const noexcept { return (_link != nullptr) && _link->is_open(); }
 
   /**
    * @brief Configure Silencer

@@ -43,14 +43,18 @@ using core::Modulation;
 using driver::FirmwareInfo;
 using driver::FPGAInfo;
 
+using core::Quaternion;
 using core::Vector3;
 
 using core::GainSTM;
 using core::Point;
 using core::PointSTM;
 
+using core::LinkPtr;
+
 using driver::DEVICE_HEIGHT;
 using driver::DEVICE_WIDTH;
+using driver::NUM_TRANS_IN_UNIT;
 using driver::NUM_TRANS_X;
 using driver::NUM_TRANS_Y;
 using driver::TRANS_SPACING_MM;

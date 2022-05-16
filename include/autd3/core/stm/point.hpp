@@ -78,7 +78,7 @@ struct PointSTM final : STM, DatagramBody<T> {
     _points.emplace_back(v);
   }
 
-  size_t size() override { return _points.size(); }
+  size_t size() const override { return _points.size(); }
   void init() override { _sent = 0; }
   void pack(const uint8_t msg_id, const Geometry<T>& geometry, driver::TxDatagram& tx) override {
     point_stm_header(msg_id, tx);
