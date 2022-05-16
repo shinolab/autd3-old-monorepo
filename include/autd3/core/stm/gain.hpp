@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/05/2022
+// Last Modified: 16/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -21,14 +21,27 @@
 
 namespace autd3::core {
 
-template <typename T>
+/**
+ * @brief GainSTM provides a function to display Gain sequentially and periodically.
+ * @details GainSTM uses a timer on the FPGA to ensure that Gain is precisely timed.
+ * GainSTM currently has the following three limitations.
+ * 1. The maximum number of gains is driver::GAIN_STM_BUF_SIZE_MAX.
+ */
+template <typename T, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 struct GainSTM {};
 
+/**
+ * @brief GainSTM for LegacyTransducer
+ */
 template <>
 struct GainSTM<LegacyTransducer> final : STM, DatagramBody<LegacyTransducer> {
   explicit GainSTM(const Geometry<LegacyTransducer>& geometry) : STM(), DatagramBody<LegacyTransducer>(), _geometry(geometry), _sent(0) {}
 
-  template <typename G>
+  /**
+   * @brief Add gain
+   * @param[in] gain gain
+   */
+  template <typename G, std::enable_if_t<std::is_base_of_v<Gain<LegacyTransducer>, G>, nullptr_t> = nullptr>
   void add(G& gain) {
     if (_gains.size() + 1 > driver::GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("PointSTM out of buffer");
 
@@ -67,12 +80,19 @@ struct GainSTM<LegacyTransducer> final : STM, DatagramBody<LegacyTransducer> {
   size_t _sent;
 };
 
+/**
+ * @brief GainSTM for NormalTransducer
+ */
 template <>
 struct GainSTM<NormalTransducer> final : STM, DatagramBody<NormalTransducer> {
   explicit GainSTM(const Geometry<NormalTransducer>& geometry)
       : STM(), DatagramBody<NormalTransducer>(), _geometry(geometry), _sent(0), _next_duty(false) {}
 
-  template <typename G>
+  /**
+   * @brief Add gain
+   * @param[in] gain gain
+   */
+  template <typename G, std::enable_if_t<std::is_base_of_v<Gain<NormalTransducer>, G>, nullptr_t> = nullptr>
   void add(G& gain) {
     if (_gains.size() + 1 > driver::GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("PointSTM out of buffer");
 
