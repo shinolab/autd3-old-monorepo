@@ -72,19 +72,20 @@ Version: 2.0.0-rc
 
 ## CMake options list
 
-| Option                    | default | description                     |
-| ------------------------- | ------- | ------------------------------- |
-| BUILD_ALL                 | OFF     | build all options below         |
-| BUILD_DOC                 | OFF     | build doxygen documents         |
-| BUILD_GAIN_HOLO           | ON      | build Holo gain                 |
-| BUILD_BACKEND_CUDA        | OFF     | build CUDABackend for Holo gain |
-| BUILD_LINK_SOEM           | ON      | build SOEM link                 |
-| BUILD_LINK_TWINCAT        | OFF     | build TwinCAT link              |
-| BUILD_LINK_REMOTE_TWINCAT | OFF     | build RemoteTwinCAT link        |
-| BUILD_LINK_EMULATOR       | OFF     | build Emulator link             |
-| BUILD_EXAMPLES            | ON      | build examples                  |
-| ENABLE_LINT               | OFF     | enable cpp lint                 |
-| BUILD_TEST                | OFF     | build tests                     |
+| Option                      | default | description                     |
+| -------------------------   | ------- | ------------------------------- |
+| BUILD_ALL                   | OFF     | build all options below         |
+| BUILD_DOC                   | OFF     | build doxygen documents         |
+| BUILD_GAIN_HOLO             | ON      | build Holo gain                 |
+| BUILD_BACKEND_CUDA          | OFF     | build CUDABackend for Holo gain |
+| BUILD_MODULATION_AUDIO_FILE | OFF     | build Wav and RawPCM modulation |
+| BUILD_LINK_SOEM             | ON      | build SOEM link                 |
+| BUILD_LINK_TWINCAT          | OFF     | build TwinCAT link              |
+| BUILD_LINK_REMOTE_TWINCAT   | OFF     | build RemoteTwinCAT link        |
+| BUILD_LINK_EMULATOR         | OFF     | build Emulator link             |
+| BUILD_EXAMPLES              | ON      | build examples                  |
+| ENABLE_LINT                 | OFF     | enable cpp lint                 |
+| BUILD_TEST                  | OFF     | build tests                     |
 
 
 ## For other programming languages
