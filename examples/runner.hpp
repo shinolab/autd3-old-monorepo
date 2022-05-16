@@ -26,8 +26,12 @@
 #include "tests/focus.hpp"
 #include "tests/gain_stm.hpp"
 #include "tests/group.hpp"
+#include "tests/plane.hpp"
 #ifdef BUILD_GAIN_HOLO
 #include "tests/holo.hpp"
+#endif
+#ifdef BUILD_MODULATION_AUDIO_FILE
+#include "tests/mod_audio_file.hpp"
 #endif
 #include "tests/point_stm.hpp"
 
@@ -37,6 +41,8 @@ int run(autd3::Controller<T> autd) {
   std::vector<std::pair<F, std::string>> tests = {
       std::pair(F{focus_test<T>}, "Single focus Test"),
       std::pair(F{bessel_test<T>}, "Bessel beam Test"),
+      std::pair(F{plane_test<T>}, "Plane wave Test"),
+      std::pair(F{mod_audio_file_test<T>}, "Wav and RawPCM modulation Test"),
       std::pair(F{point_stm<T>}, "PointSTM Test"),
       std::pair(F{gain_stm<T>}, "GainSTM Test"),
 #ifdef BUILD_GAIN_HOLO
