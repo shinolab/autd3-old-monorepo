@@ -22,15 +22,16 @@ namespace autd3::core {
 /**
  * @brief STM provide hardware Spatio-Temporal Modulation or Lateral Modulation function.
  */
-struct STM {
-  STM() noexcept : _freq_div(4096) {}
+template <typename T = LegacyTransducer, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+struct STM : DatagramBody<T> {
+  STM() noexcept : DatagramBody<T>(), _freq_div(4096) {}
   virtual ~STM() = default;
   STM(const STM& v) = default;
   STM& operator=(const STM& obj) = default;
   STM(STM&& obj) = default;
   STM& operator=(STM&& obj) = default;
 
-  virtual size_t size() = 0;
+  [[nodiscard]] virtual size_t size() const = 0;
 
   /**
    * @brief Set frequency of the STM
@@ -49,7 +50,7 @@ struct STM {
   /**
    * @return frequency of STM
    */
-  double frequency() { return sampling_frequency() / static_cast<double>(size()); }
+  [[nodiscard]] double frequency() const { return sampling_frequency() / static_cast<double>(size()); }
 
   /**
    * @brief Sampling frequency.
