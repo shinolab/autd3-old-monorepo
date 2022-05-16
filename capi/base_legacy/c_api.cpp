@@ -13,3 +13,6 @@
 
 using T = autd3::LegacyTransducer;
 #include "../base/impl.hpp"
+
+void AUTDSetTransFrequency(void*, int32_t, int32_t, double) {}
+void AUTDSetTransCycle(void*, int32_t, int32_t, uint16_t) {}

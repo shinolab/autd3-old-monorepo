@@ -20,10 +20,12 @@
 #include "autd3/gain/backend.hpp"
 
 typedef struct {
-  std::vector<autd3::FirmwareInfo> list;
+  std::vector<autd3::driver::FirmwareInfo> list;
 } FirmwareInfoListWrapper;
 
-inline FirmwareInfoListWrapper* firmware_info_list_create(const std::vector<autd3::FirmwareInfo>& list) { return new FirmwareInfoListWrapper{list}; }
+inline FirmwareInfoListWrapper* firmware_info_list_create(const std::vector<autd3::driver::FirmwareInfo>& list) {
+  return new FirmwareInfoListWrapper{list};
+}
 inline void firmware_info_list_delete(const FirmwareInfoListWrapper* ptr) { delete ptr; }
 
 typedef struct {
