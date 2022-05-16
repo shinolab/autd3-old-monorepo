@@ -1,12 +1,12 @@
-﻿// File: twincat_link.cpp
+﻿// File: twincat.cpp
 // Project: twincat
-// Created Date: 08/03/2021
+// Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/05/2022
+// Last Modified: 16/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2021 Hapis Lab. All rights reserved.
+// Copyright (c) 2022 Hapis Lab. All rights reserved.
 //
 
 #if _WINDOWS

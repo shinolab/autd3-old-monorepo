@@ -99,8 +99,6 @@ class Modulation : public DatagramHeader {
   }
 
   void pack(const uint8_t msg_id, driver::TxDatagram& tx) override {
-    if (is_finished()) return;
-
     const auto is_first_frame = _props.sent == 0;
     const auto max_size = is_first_frame ? driver::MOD_HEAD_DATA_SIZE : driver::MOD_BODY_DATA_SIZE;
     const auto mod_size = std::min(buffer().size() - _props.sent, max_size);
