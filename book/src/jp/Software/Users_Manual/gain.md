@@ -30,6 +30,16 @@ AUTDは各振動子の位相/振幅を個別に制御することができ, こ�
   <figcaption>Bessel beam ([hasegawa2017]より引用)</figcaption>
 </figure>
 
+
+## PlaneWave
+
+`PlaneWave`は平面波を出力する
+```cpp
+    gain::PlaneWave g(Vector3(x, y, z));
+```
+コンストラクタの第1引数には平面波の進行方向を指定する.
+第2引数として, 0-1の規格化された音圧振幅を指定できる.
+
 ## Null
 
 `Null`は振幅0の`Gain`である.
