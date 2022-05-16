@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/05/2022
+// Last Modified: 16/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -19,6 +19,9 @@
 
 namespace autd3::core {
 
+/**
+ * @brief DatagramHeader is a data to be packed in the Header part of the driver::TxDatagram
+ */
 struct DatagramHeader {
   DatagramHeader() = default;
   virtual ~DatagramHeader() = default;
@@ -32,6 +35,9 @@ struct DatagramHeader {
   [[nodiscard]] virtual bool is_finished() const = 0;
 };
 
+/**
+ * @brief DatagramBody is a data to be packed in the Body part of the driver::TxDatagram
+ */
 template <typename T, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 struct DatagramBody {
   DatagramBody() = default;

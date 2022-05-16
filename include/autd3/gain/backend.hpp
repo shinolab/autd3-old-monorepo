@@ -3,7 +3,7 @@
 // Created Date: 10/09/2021
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/05/2022
+// Last Modified: 16/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -30,7 +30,7 @@ using MatrixXd = Eigen::Matrix<double, -1, -1, Eigen::ColMajor>;
 using MatrixXc = Eigen::Matrix<complex, -1, -1, Eigen::ColMajor>;
 
 /**
- * \brief Backend for HoloGain
+ * \brief Backend for Holo
  */
 class Backend {
  public:
@@ -111,7 +111,7 @@ class Backend {
 using BackendPtr = std::shared_ptr<Backend>;
 
 /**
- * \brief Backend for HoloGain
+ * \brief Backend for Holo using Eigen
  */
 class EigenBackend final : public Backend {
  public:

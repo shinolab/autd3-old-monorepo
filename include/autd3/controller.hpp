@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/05/2022
+// Last Modified: 16/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -32,12 +32,23 @@
 
 namespace autd3 {
 
+/**
+ * @brief AUTD Controller
+ */
 template <typename T = core::LegacyTransducer>
 class Controller {
  public:
+  Controller() : force_fan(false), reads_fpga_info(false), check_ack(false), _geometry(), _tx_buf(0), _rx_buf(0), _link(nullptr) {}
+
+  /**
+   * @brief Geometry of the devices
+   */
   core::Geometry<T>& geometry() noexcept { return _geometry; }
 
-  Controller() : force_fan(false), reads_fpga_info(false), check_ack(false), _geometry(), _tx_buf(0), _rx_buf(0), _link(nullptr) {}
+  /**
+   * @brief Geometry of the devices
+   */
+  [[nodiscard]] const core::Geometry<T>& geometry() const noexcept { return _geometry; }
 
   bool open(core::LinkPtr link) {
     _tx_buf = driver::TxDatagram(_geometry.num_devices());
@@ -48,8 +59,15 @@ class Controller {
     return is_open();
   }
 
+  /**
+   * @brief Verify the device is properly connected
+   */
   bool is_open() { return (_link != nullptr) && _link->is_open(); }
 
+  /**
+   * @brief Configure Silencer
+   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   */
   bool config_silencer(const SilencerConfig config) {
     _tx_buf.clear();
 
@@ -59,10 +77,14 @@ class Controller {
     const auto msg_id = get_id_header();
     driver::config_silencer(msg_id, config.cycle, config.step, _tx_buf);
 
-    _link->send(_tx_buf);
+    if (!_link->send(_tx_buf)) return false;
     return wait_msg_processed(50);
   }
 
+  /**
+   * @brief Synchronize devices
+   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   */
   bool synchronize() {
     _tx_buf.clear();
 
@@ -77,10 +99,14 @@ class Controller {
 
     sync(msg_id, _link->cycle_ticks(), cycles.data(), _tx_buf);
 
-    _link->send(_tx_buf);
+    if (!_link->send(_tx_buf)) return false;
     return wait_msg_processed(50);
   }
 
+  /**
+   * @brief Update flags (force fan and reads_fpga_info)
+   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   */
   bool update_flag() {
     _tx_buf.clear();
 
@@ -88,20 +114,24 @@ class Controller {
     driver::reads_fpga_info(_tx_buf, reads_fpga_info);
     _tx_buf.header().msg_id = get_id_header();
 
-    _link->send(_tx_buf);
+    if (!_link->send(_tx_buf)) return false;
     return wait_msg_processed(50);
   }
 
+  /**
+   * @brief FPGA info
+   *  \return veetor of FPGAInfo. If failed, the vector is empty
+   */
   std::vector<driver::FPGAInfo> read_fpga_info() {
     std::vector<driver::FPGAInfo> fpga_info;
-    _link->receive(_rx_buf);
+    if (!_link->receive(_rx_buf)) return fpga_info;
     std::transform(_rx_buf.begin(), _rx_buf.end(), std::back_inserter(fpga_info),
                    [](const driver::RxMessage& rx) { return driver::FPGAInfo(rx.ack); });
     return fpga_info;
   }
 
   /**
-   * @brief Clear all data in hardware
+   * @brief Clear all data in devices
    * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
    */
   bool clear() {
@@ -109,7 +139,10 @@ class Controller {
     check_ack = true;
     _tx_buf.clear();
     driver::clear(_tx_buf);
-    _link->send(_tx_buf);
+    if (!_link->send(_tx_buf)) {
+      check_ack = check_ack_;
+      return false;
+    }
     const auto success = wait_msg_processed(200);
     check_ack = check_ack_;
     return success;
@@ -120,10 +153,9 @@ class Controller {
    * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
    */
   bool stop() {
-    auto res = config_silencer(SilencerConfig());
+    if (!config_silencer(SilencerConfig())) return false;
     gain::Null<T> g;
-    res &= send(g);
-    return res;
+    return send(g);
   }
 
   /**
@@ -131,43 +163,52 @@ class Controller {
    * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
    */
   bool close() {
-    auto res = stop();
-    res &= clear();
+    if (!stop()) return false;
+    if (!clear()) return false;
     _link->close();
-    return res;
+    return true;
   }
 
+  /**
+   * @brief Enumerate firmware information
+   * \return vector of driver::FirmwareInfo. If failed, the vector is empty.
+   */
   [[nodiscard]] std::vector<driver::FirmwareInfo> firmware_infos() {
+    std::vector<driver::FirmwareInfo> firmware_infos;
+
     const auto check_ack_ = check_ack;
     check_ack = true;
 
     cpu_version(_tx_buf);
-    _link->send(_tx_buf);
-    wait_msg_processed(50);
+    if (!_link->send(_tx_buf)) return firmware_infos;
+    if (!wait_msg_processed(50)) return firmware_infos;
     std::vector<uint8_t> cpu_versions;
     std::transform(_rx_buf.begin(), _rx_buf.end(), std::back_inserter(cpu_versions), [](driver::RxMessage msg) noexcept { return msg.ack; });
 
     fpga_version(_tx_buf);
-    _link->send(_tx_buf);
-    wait_msg_processed(50);
+    if (!_link->send(_tx_buf)) return firmware_infos;
+    if (!wait_msg_processed(50)) return firmware_infos;
     std::vector<uint8_t> fpga_versions;
     std::transform(_rx_buf.begin(), _rx_buf.end(), std::back_inserter(fpga_versions), [](driver::RxMessage msg) noexcept { return msg.ack; });
 
     fpga_functions(_tx_buf);
-    _link->send(_tx_buf);
-    wait_msg_processed(50);
+    if (!_link->send(_tx_buf)) return firmware_infos;
+    if (!wait_msg_processed(50)) return firmware_infos;
     std::vector<uint8_t> fpga_functions;
     std::transform(_rx_buf.begin(), _rx_buf.end(), std::back_inserter(fpga_functions), [](driver::RxMessage msg) noexcept { return msg.ack; });
 
     check_ack = check_ack_;
 
-    std::vector<driver::FirmwareInfo> firmware_infos;
     for (size_t i = 0; i < _geometry.num_devices(); i++)
       firmware_infos.emplace_back(i, cpu_versions.at(i), fpga_versions.at(i), fpga_functions.at(i));
 
     return firmware_infos;
   }
 
+  /**
+   * @brief Send header data to devices
+   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   */
   template <typename H>
   auto send(H& header) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, bool> {
     header.init();
@@ -187,6 +228,10 @@ class Controller {
     return true;
   }
 
+  /**
+   * @brief Send body data to devices
+   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   */
   template <typename B>
   auto send(B& body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody<T>, B>, bool> {
     body.init();
@@ -206,6 +251,10 @@ class Controller {
     return true;
   }
 
+  /**
+   * @brief Send header and body data to devices
+   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   */
   template <typename H, typename B>
   auto send(H& header, B& body) ->
       typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody<T>, B>, bool> {
@@ -228,8 +277,19 @@ class Controller {
     return true;
   }
 
+  /**
+   * @brief If true, the fan will be forced to start.
+   */
   bool force_fan;
+
+  /**
+   * @brief If true, the devices return FPGA info in all frames. The FPGA info can be read by fpga_info().
+   */
   bool reads_fpga_info;
+
+  /**
+   * @brief If true, this controller check ack from devices.
+   */
   bool check_ack;
 
  private:

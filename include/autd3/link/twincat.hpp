@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/05/2022
+// Last Modified: 16/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -24,6 +24,10 @@ class TwinCAT {
    */
   core::LinkPtr build();
 
+  /**
+   * @brief Constructor
+   * @param cycle_ticks This value must be the same as settings of AUTDServer.
+   */
   explicit TwinCAT(const uint16_t cycle_ticks) : _cycle_ticks(cycle_ticks) {}
   ~TwinCAT() = default;
   TwinCAT(const TwinCAT& v) noexcept = delete;

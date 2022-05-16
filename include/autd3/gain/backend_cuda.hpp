@@ -3,7 +3,7 @@
 // Created Date: 10/09/2021
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/05/2022
+// Last Modified: 16/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -16,7 +16,7 @@
 namespace autd3::gain::holo {
 
 /**
- * \brief Backend for HoloGain
+ * \brief Backend for Holo using CUDA
  */
 class CUDABackend : public Backend {
  public:

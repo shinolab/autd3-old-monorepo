@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/05/2022
+// Last Modified: 16/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -34,6 +34,10 @@ class RemoteTwinCAT {
     return *this;
   }
 
+  /**
+   * @brief Constructor
+   * @param cycle_ticks This value must be the same as settings of AUTDServer.
+   */
   RemoteTwinCAT(const uint16_t cycle_ticks, std::string ipv4_addr, std::string remote_ams_net_id)
       : _cycle_ticks(cycle_ticks), _ipv4_addr(std::move(ipv4_addr)), _remote_ams_net_id(std::move(remote_ams_net_id)) {}
   ~RemoteTwinCAT() = default;
