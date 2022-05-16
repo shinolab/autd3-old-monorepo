@@ -26,3 +26,8 @@ if(BUILD_BACKEND_CUDA)
   add_subdirectory(cuda)
   target_link_libraries(gain_holo INTERFACE backend_cuda)
 endif()
+
+if(BUILD_BACKEND_BLAS)
+  add_subdirectory(blas)
+  target_link_libraries(gain_holo INTERFACE backend_blas)
+endif()
