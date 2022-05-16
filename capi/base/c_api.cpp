@@ -13,3 +13,12 @@
 
 using T = autd3::NormalTransducer;
 #include "impl.hpp"
+
+void AUTDSetTransFrequency(void* const handle, const int32_t device_idx, const int32_t local_trans_idx, const double frequency) {
+  auto* const wrapper = static_cast<Controller*>(handle);
+  wrapper->geometry()[device_idx][local_trans_idx].set_frequency(frequency);
+}
+void AUTDSetTransCycle(void* const handle, const int32_t device_idx, const int32_t local_trans_idx, const uint16_t cycle) {
+  auto* const wrapper = static_cast<Controller*>(handle);
+  wrapper->geometry()[device_idx][local_trans_idx].set_cycle(cycle);
+}
