@@ -11,6 +11,9 @@
 
 #pragma once
 
+#include <utility>
+#include <vector>
+
 #include "../base/wrapper.hpp"
 #include "./holo_gain.h"
 #include "autd3/gain/backend.hpp"
@@ -28,7 +31,7 @@ void AUTDDeleteBackend(const void* backend) {
 
 void AUTDAmplitudeConstraintDontCate(void** out) { *out = new autd3::gain::holo::DontCare; }
 void AUTDAmplitudeConstraintNormalize(void** out) { *out = new autd3::gain::holo::Normalize; }
-void AUTDAmplitudeConstraintUniform(void** out, double value) { *out = new autd3::gain::holo::Uniform(value); }
+void AUTDAmplitudeConstraintUniform(void** out, const double value) { *out = new autd3::gain::holo::Uniform(value); }
 void AUTDAmplitudeConstraintClamp(void** out) { *out = new autd3::gain::holo::Clamp; }
 
 void AUTDGainHoloSDP(void** gain, const void* backend, const double alpha, const double lambda, const uint64_t repeat, const void* constraint) {
@@ -37,7 +40,7 @@ void AUTDGainHoloSDP(void** gain, const void* backend, const double alpha, const
   g->alpha = alpha;
   g->lambda = lambda;
   g->repeat = repeat;
-  g->constraint = *reinterpret_cast<const autd3::gain::holo::AmplitudeConstraint*>(constraint);
+  g->constraint = *static_cast<const autd3::gain::holo::AmplitudeConstraint*>(constraint);
   *gain = g;
 }
 
@@ -45,14 +48,14 @@ void AUTDGainHoloEVD(void** gain, const void* backend, const double gamma, const
   const auto b = static_cast<const BackendWrapper*>(backend);
   auto* g = new autd3::gain::holo::EVD<T>(b->ptr);
   g->gamma = gamma;
-  g->constraint = *reinterpret_cast<const autd3::gain::holo::AmplitudeConstraint*>(constraint);
+  g->constraint = *static_cast<const autd3::gain::holo::AmplitudeConstraint*>(constraint);
   *gain = g;
 }
 
 void AUTDGainHoloNaive(void** gain, const void* backend, const void* constraint) {
   const auto b = static_cast<const BackendWrapper*>(backend);
   auto* g = new autd3::gain::holo::Naive<T>(b->ptr);
-  g->constraint = *reinterpret_cast<const autd3::gain::holo::AmplitudeConstraint*>(constraint);
+  g->constraint = *static_cast<const autd3::gain::holo::AmplitudeConstraint*>(constraint);
   *gain = g;
 }
 
@@ -60,7 +63,7 @@ void AUTDGainHoloGS(void** gain, const void* backend, const uint64_t repeat, con
   const auto b = static_cast<const BackendWrapper*>(backend);
   auto* g = new autd3::gain::holo::GS<T>(b->ptr);
   g->repeat = repeat;
-  g->constraint = *reinterpret_cast<const autd3::gain::holo::AmplitudeConstraint*>(constraint);
+  g->constraint = *static_cast<const autd3::gain::holo::AmplitudeConstraint*>(constraint);
   *gain = g;
 }
 
@@ -68,7 +71,7 @@ void AUTDGainHoloGSPAT(void** gain, const void* backend, const uint64_t repeat, 
   const auto b = static_cast<const BackendWrapper*>(backend);
   auto* g = new autd3::gain::holo::GSPAT<T>(b->ptr);
   g->repeat = repeat;
-  g->constraint = *reinterpret_cast<const autd3::gain::holo::AmplitudeConstraint*>(constraint);
+  g->constraint = *static_cast<const autd3::gain::holo::AmplitudeConstraint*>(constraint);
   *gain = g;
 }
 
@@ -85,7 +88,7 @@ void AUTDGainHoloLM(void** gain, const void* backend, const double eps_1, const 
   g->tau = tau;
   g->k_max = k_max;
   g->initial = std::move(initial_);
-  g->constraint = *reinterpret_cast<const autd3::gain::holo::AmplitudeConstraint*>(constraint);
+  g->constraint = *static_cast<const autd3::gain::holo::AmplitudeConstraint*>(constraint);
   *gain = g;
 }
 
@@ -102,7 +105,7 @@ void AUTDGainHoloGaussNewton(void** gain, const void* backend, const double eps_
   g->eps_2 = eps_2;
   g->k_max = k_max;
   g->initial = std::move(initial_);
-  g->constraint = *reinterpret_cast<const autd3::gain::holo::AmplitudeConstraint*>(constraint);
+  g->constraint = *static_cast<const autd3::gain::holo::AmplitudeConstraint*>(constraint);
   *gain = g;
 }
 void AUTDGainHoloGradientDescent(void** gain, const void* backend, const double eps, const double step, const uint64_t k_max, const double* initial,
@@ -114,8 +117,9 @@ void AUTDGainHoloGradientDescent(void** gain, const void* backend, const double 
   auto* g = new autd3::gain::holo::GradientDescent<T>(b->ptr);
   g->eps = eps;
   g->k_max = k_max;
+  g->step = step;
   g->initial = std::move(initial_);
-  g->constraint = *reinterpret_cast<const autd3::gain::holo::AmplitudeConstraint*>(constraint);
+  g->constraint = *static_cast<const autd3::gain::holo::AmplitudeConstraint*>(constraint);
   *gain = g;
 }
 
@@ -123,7 +127,7 @@ void AUTDGainHoloGreedy(void** gain, const void* backend, const int32_t phase_di
   const auto b = static_cast<const BackendWrapper*>(backend);
   auto* g = new autd3::gain::holo::Greedy<T>(b->ptr);
   g->phase_div = phase_div;
-  g->constraint = *reinterpret_cast<const autd3::gain::holo::AmplitudeConstraint*>(constraint);
+  g->constraint = *static_cast<const autd3::gain::holo::AmplitudeConstraint*>(constraint);
   *gain = g;
 }
 
