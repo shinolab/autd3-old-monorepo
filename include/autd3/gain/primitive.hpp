@@ -118,6 +118,39 @@ class BesselBeam final : public core::Gain<T> {
 };
 
 /**
+ * @brief Gain to create plane wave
+ */
+template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+class PlaneWave final : public core::Gain<T> {
+ public:
+  /**
+   * @param[in] direction wave direction
+   * @param[in] amp amplitude of the wave (from 0.0 to 1.0)
+   */
+  explicit PlaneWave(core::Vector3 direction, const double amp = 1.0) noexcept : _direction(std::move(direction)), _amp(amp) {}
+
+  void calc(const core::Geometry<T>& geometry) override {
+    std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
+      std::for_each(dev.begin(), dev.end(), [&](const auto& transducer) {
+        const auto dist = transducer.position().dot(_direction);
+        const auto phase = transducer.align_phase_at(dist, geometry.sound_speed);
+        this->_props.drives.set_drive(transducer, phase, _amp);
+      });
+    });
+  }
+
+  ~PlaneWave() override = default;
+  PlaneWave(const PlaneWave& v) noexcept = delete;
+  PlaneWave& operator=(const PlaneWave& obj) = delete;
+  PlaneWave(PlaneWave&& obj) = default;
+  PlaneWave& operator=(PlaneWave&& obj) = default;
+
+ private:
+  core::Vector3 _direction;
+  double _amp;
+};
+
+/**
  * @brief Gain to group some gains
  */
 template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
