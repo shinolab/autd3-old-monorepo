@@ -93,6 +93,49 @@ CUDAバックエンドをビルドする場合, [CUDA Toolkit](https://developer
 ```
 なお,  CUDA Toolkit version 11.7で動作を確認している.
 
+### BLAS Backend
+
+BLASバックエンドをビルドする場合, `BUILD_BACKEND_BLAS`フラグをONにし, BLASのInclude/lib directoryとBLASベンダーを指定する.
+
+```
+cmake .. -DBUILD_HOLO_GAIN=ON -DBUILD_BLAS_BACKEND=ON -DBLAS_LIB_DIR=<your BLAS library path> -DBLAS_INCLUDE_DIR=<your BLAS include path> -DBLA_VENDOR=<your BLAS vendor>
+```
+
+* Intel MKLを使用する場合は更に`USE_MKL`フラグをONにする.
+    ```
+    cmake .. -DBUILD_HOLO_GAIN=ON -DBUILD_BLAS_BACKEND=ON -DBLAS_LIB_DIR=<your MKL library path> -DBLAS_INCLUDE_DIR=<your MKL include path> -DBLA_VENDOR=Intel10_64lp -DUSE_MKL=ON
+    ```
+
+#### OpenBLAS install example in Windows
+
+* ここでは, BLASの実装の一つである[OpenBLAS](https://github.com/xianyi/OpenBLAS)のインストール例を載せる. [official instruction](https://github.com/xianyi/OpenBLAS/wiki/How-to-use-OpenBLAS-in-Microsoft-Visual-Studio)も参考にすること.
+    * まず, Visual Studio 2022とAnaconda (or miniconda)をインストールし, Anaconda Promptを開き以下のコマンドを入力する.
+        ```
+        git clone https://github.com/xianyi/OpenBLAS
+        cd OpenBLAS
+        conda update -n base conda
+        conda config --add channels conda-forge
+        conda install -y cmake flang clangdev perl libflang ninja
+        "c:/Program Files/Microsoft Visual Studio/2022/Community/VC/Auxiliary/Build/vcvars64.bat"
+        set "LIB=%CONDA_PREFIX%\Library\lib;%LIB%"
+        set "CPATH=%CONDA_PREFIX%\Library\include;%CPATH%"
+        mkdir build
+        cd build
+        cmake .. -G "Ninja" -DCMAKE_CXX_COMPILER=clang-cl -DCMAKE_C_COMPILER=clang-cl -DCMAKE_Fortran_COMPILER=flang -DCMAKE_MT=mt -DBUILD_WITHOUT_LAPACK=no -DNOFORTRAN=0 -DDYNAMIC_ARCH=ON -DCMAKE_BUILD_TYPE=Release
+        cmake --build . --config Release
+        cmake --install . --prefix D:\lib\openblas -v
+        ```
+    * ここでは, `D:/lib/open`にインストールしたが, どこでも良い.
+    * また, `%CONDA_HOME%\Library\bin`をPATHに追加する必要がある. ここで`CONDA_HOME`はAnaconda (or miniconda)のホームディレクトリである.
+
+* 上記の例に従った場合は, BLASBackendのオプションは以下のように指定する.
+    ```
+    cmake .. -DBUILD_HOLO_GAIN=ON -DBUILD_BLAS_BACKEND=ON -DBLAS_LIB_DIR=D:/lib/openblas -DBLAS_INCLUDE_DIR=D:/lib/openblas/include/openblas -DBLA_VENDOR=OpenBLAS
+    ```
+
+    * もし, `flangxxx.lib`関連のlinkエラーが発生した場合は, `-DBLAS_DEPEND_LIB_DIR=%CONDA_HOME%/Library/lib`オプションを追加する.
+
+
 ## Grouped
 
 `Grouped`は複数のデバイスを使用する際に,
