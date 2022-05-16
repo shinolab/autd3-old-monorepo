@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/05/2022
+// Last Modified: 16/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -21,6 +21,9 @@
 
 namespace autd3::core {
 
+/**
+ * @brief DriveData for LegacyTransducer
+ */
 template <typename T>
 struct LegacyDriveData final : DriveData<T> {
   void init(const size_t size) override { data.resize(size, driver::LegacyDrive{0x00, 0x00}); }
@@ -38,6 +41,9 @@ struct LegacyDriveData final : DriveData<T> {
   std::vector<driver::LegacyDrive> data{};
 };
 
+/**
+ * \brief Transduce with 40kHz frequency
+ */
 struct LegacyTransducer final : Transducer<LegacyDriveData<LegacyTransducer>> {
   LegacyTransducer(const size_t id, Vector3 pos, Vector3 x_direction, Vector3 y_direction, Vector3 z_direction) noexcept
       : Transducer(id, std::move(pos), std::move(x_direction), std::move(y_direction), std::move(z_direction)) {}

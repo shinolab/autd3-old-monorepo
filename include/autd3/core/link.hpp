@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/05/2022
+// Last Modified: 16/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -43,16 +43,24 @@ class Link {
 
   /**
    * @brief  Send data to devices
+   * @return true if succeed
    */
   virtual bool send(const driver::TxDatagram& tx) = 0;
 
   /**
    * @brief  Read data from devices
+   * @return true if succeed
    */
   virtual bool receive(driver::RxDatagram& rx) = 0;
 
+  /**
+   * @return EtherCAT SYNC0 cycle ticks.
+   */
   [[nodiscard]] uint16_t cycle_ticks() const noexcept { return _cycle_ticks; }
 
+  /**
+   * @return true if opened
+   */
   [[nodiscard]] virtual bool is_open() = 0;
 
  private:

@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/05/2022
+// Last Modified: 16/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -46,7 +46,7 @@ class Focus final : public core::Gain<T> {
  public:
   /**
    * @param[in] point focal point
-   * @param[in] amp amplitude of the wave (from 0.0 to 1.0)
+   * @param[in] amp amplitude of the focus (from 0.0 to 1.0)
    */
   explicit Focus(core::Vector3 point, const double amp = 1.0) : _point(std::move(point)), _amp(amp) {}
 
