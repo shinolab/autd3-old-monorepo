@@ -58,10 +58,10 @@ struct Point {
  * 2. Only a single focus can be displayed at a certain moment.
  */
 template <typename T = LegacyTransducer, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
-struct PointSTM final : STM, DatagramBody<T> {
+struct PointSTM final : public STM<T> {
   using value_type = Point;
 
-  PointSTM() : STM(), DatagramBody<T>(), _sent(0) {}
+  PointSTM() : STM<T>(), _sent(0) {}
 
   /**
    * @brief Add control point
@@ -78,7 +78,7 @@ struct PointSTM final : STM, DatagramBody<T> {
     _points.emplace_back(v);
   }
 
-  size_t size() override { return _points.size(); }
+  size_t size() const override { return _points.size(); }
   void init() override { _sent = 0; }
   void pack(const uint8_t msg_id, const Geometry<T>& geometry, driver::TxDatagram& tx) override {
     point_stm_header(msg_id, tx);
