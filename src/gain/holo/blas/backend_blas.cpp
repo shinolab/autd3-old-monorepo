@@ -183,9 +183,43 @@ void BLASBackend::max_eigen_vector(const MatrixXc& src, VectorXc& dst) {
   dst = ces.eigenvectors().col(idx);
 }
 
-void BLASBackend::pseudo_inverse_svd(MatrixXc& src, const double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) {}
+void BLASBackend::pseudo_inverse_svd(MatrixXc& src, const double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) {
+  const auto nc = src.cols();
+  const auto nr = src.rows();
 
-void BLASBackend::pseudo_inverse_svd(MatrixXd& src, const double alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf, MatrixXd& dst) {}
+  const auto lda = static_cast<int>(nr);
+  const auto ldu = static_cast<int>(nr);
+  const auto ldvt = static_cast<int>(nc);
+
+  const auto s_size = std::min(nr, nc);
+  const auto sigma = std::make_unique<double[]>(s_size);
+
+  AUTD_GESVDC(LAPACK_COL_MAJOR, 'A', static_cast<int>(nr), static_cast<int>(nc), src.data(), lda, sigma.get(), u.data(), ldu, vt.data(), ldvt);
+  s.fill(ZERO);
+  for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(s_size); i++) s(i, i) = sigma[i] / (sigma[i] * sigma[i] + alpha);
+
+  mul(TRANSPOSE::NO_TRANS, TRANSPOSE::CONJ_TRANS, ONE, s, u, ZERO, buf);
+  mul(TRANSPOSE::CONJ_TRANS, TRANSPOSE::NO_TRANS, ONE, vt, buf, ZERO, dst);
+}
+
+void BLASBackend::pseudo_inverse_svd(MatrixXd& src, const double alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf, MatrixXd& dst) {
+  const auto nc = src.cols();
+  const auto nr = src.rows();
+
+  const auto lda = static_cast<int>(nr);
+  const auto ldu = static_cast<int>(nr);
+  const auto ldvt = static_cast<int>(nc);
+
+  const auto s_size = std::min(nr, nc);
+  const auto sigma = std::make_unique<double[]>(s_size);
+
+  AUTD_GESVD(LAPACK_COL_MAJOR, 'A', static_cast<int>(nr), static_cast<int>(nc), src.data(), lda, sigma.get(), u.data(), ldu, vt.data(), ldvt);
+  s.fill(0.0);
+  for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(s_size); i++) s(i, i) = sigma[i] / (sigma[i] * sigma[i] + alpha);
+
+  mul(TRANSPOSE::NO_TRANS, TRANSPOSE::CONJ_TRANS, 1.0, s, u, 0.0, buf);
+  mul(TRANSPOSE::CONJ_TRANS, TRANSPOSE::NO_TRANS, 1.0, vt, buf, 0.0, dst);
+}
 
 BackendPtr BLASBackend::create() { return std::make_shared<BLASBackend>(); }
 
