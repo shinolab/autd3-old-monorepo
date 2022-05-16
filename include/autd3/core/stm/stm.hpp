@@ -30,7 +30,7 @@ struct STM {
   STM(STM&& obj) = default;
   STM& operator=(STM&& obj) = default;
 
-  virtual size_t size() = 0;
+  [[nodiscard]] virtual size_t size() const = 0;
 
   /**
    * @brief Set frequency of the STM
@@ -49,7 +49,7 @@ struct STM {
   /**
    * @return frequency of STM
    */
-  double frequency() { return sampling_frequency() / static_cast<double>(size()); }
+  [[nodiscard]] double frequency() const { return sampling_frequency() / static_cast<double>(size()); }
 
   /**
    * @brief Sampling frequency.

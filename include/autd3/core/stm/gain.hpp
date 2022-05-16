@@ -50,7 +50,7 @@ struct GainSTM<LegacyTransducer> final : STM, DatagramBody<LegacyTransducer> {
     _gains.emplace_back(gain.drives());
   }
 
-  size_t size() override { return _gains.size(); }
+  size_t size() const override { return _gains.size(); }
 
   void init() override { _sent = 0; }
 
@@ -101,7 +101,7 @@ struct GainSTM<NormalTransducer> final : STM, DatagramBody<NormalTransducer> {
     _gains.emplace_back(gain.drives());
   }
 
-  size_t size() override { return _gains.size(); }
+  size_t size() const override { return _gains.size(); }
 
   void init() override { _sent = 0; }
 
