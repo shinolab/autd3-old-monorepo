@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/05/2022
+// Last Modified: 16/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -34,7 +34,7 @@
 #include "autd3/gain/backend.hpp"
 #include "test_utils.hpp"
 
-constexpr Eigen::Index TEST_SIZE = 100;
+constexpr Eigen::Index TEST_SIZE = 10;
 
 using autd3::gain::holo::complex;
 using autd3::gain::holo::MatrixXc;
@@ -68,7 +68,14 @@ class BackendTest : public testing::Test {
 #define CUDA_BACKEND_TYPE
 #endif
 
-typedef Types<EIGEN3_BACKEND_TYPE CUDA_BACKEND_TYPE> Implementations;
+#ifdef TEST_BACKEND_BLAS
+#include "autd3/gain/backend_blas.hpp"
+#define BLAS_BACKEND_TYPE , autd3::gain::holo::BLASBackend
+#else
+#define BLAS_BACKEND_TYPE
+#endif
+
+typedef Types<EIGEN3_BACKEND_TYPE CUDA_BACKEND_TYPE BLAS_BACKEND_TYPE> Implementations;
 
 TYPED_TEST_SUITE(BackendTest, Implementations, );
 

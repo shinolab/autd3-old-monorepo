@@ -78,6 +78,11 @@ Version: 2.0.0-rc
 | BUILD_DOC                   | OFF     | build doxygen documents         |
 | BUILD_GAIN_HOLO             | ON      | build Holo gain                 |
 | BUILD_BACKEND_CUDA          | OFF     | build CUDABackend for Holo gain |
+| BUILD_BACKEND_BLAS          | OFF     | build BLASBackend for Holo gain |
+| BLAS_LIB_DIR                | OFF     | BLAS lib dir                    |
+| BLAS_DEPEND_LIB_DIR         | OFF     | BLAS depends lib dir            |
+| BLAS_INCLUDE_DIR            | OFF     | BLAS include dir                |
+| USE_MKL                     | OFF     | ON if use intel MKL             |
 | BUILD_MODULATION_AUDIO_FILE | OFF     | build Wav and RawPCM modulation |
 | BUILD_LINK_SOEM             | ON      | build SOEM link                 |
 | BUILD_LINK_TWINCAT          | OFF     | build TwinCAT link              |
