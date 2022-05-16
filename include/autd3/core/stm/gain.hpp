@@ -34,8 +34,8 @@ struct GainSTM {};
  * @brief GainSTM for LegacyTransducer
  */
 template <>
-struct GainSTM<LegacyTransducer> final : STM, DatagramBody<LegacyTransducer> {
-  explicit GainSTM(const Geometry<LegacyTransducer>& geometry) : STM(), DatagramBody<LegacyTransducer>(), _geometry(geometry), _sent(0) {}
+struct GainSTM<LegacyTransducer> final : public STM<LegacyTransducer> {
+  explicit GainSTM(const Geometry<LegacyTransducer>& geometry) : STM(), _geometry(geometry), _sent(0) {}
 
   /**
    * @brief Add gain
@@ -50,7 +50,7 @@ struct GainSTM<LegacyTransducer> final : STM, DatagramBody<LegacyTransducer> {
     _gains.emplace_back(gain.drives());
   }
 
-  size_t size() override { return _gains.size(); }
+  size_t size() const override { return _gains.size(); }
 
   void init() override { _sent = 0; }
 
@@ -84,9 +84,8 @@ struct GainSTM<LegacyTransducer> final : STM, DatagramBody<LegacyTransducer> {
  * @brief GainSTM for NormalTransducer
  */
 template <>
-struct GainSTM<NormalTransducer> final : STM, DatagramBody<NormalTransducer> {
-  explicit GainSTM(const Geometry<NormalTransducer>& geometry)
-      : STM(), DatagramBody<NormalTransducer>(), _geometry(geometry), _sent(0), _next_duty(false) {}
+struct GainSTM<NormalTransducer> final : public STM<NormalTransducer> {
+  explicit GainSTM(const Geometry<NormalTransducer>& geometry) : STM(), _geometry(geometry), _sent(0), _next_duty(false) {}
 
   /**
    * @brief Add gain
@@ -101,7 +100,7 @@ struct GainSTM<NormalTransducer> final : STM, DatagramBody<NormalTransducer> {
     _gains.emplace_back(gain.drives());
   }
 
-  size_t size() override { return _gains.size(); }
+  size_t size() const override { return _gains.size(); }
 
   void init() override { _sent = 0; }
 

@@ -1,12 +1,12 @@
-// File: holo_gain.hpp
-// Project: include
-// Created Date: 16/05/2021
+// File: holo.hpp
+// Project: gain
+// Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
 // Last Modified: 16/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2021 Hapis Lab. All rights reserved.
+// Copyright (c) 2022 Hapis Lab. All rights reserved.
 //
 
 #pragma once
@@ -247,7 +247,7 @@ class GradientDescent final : public Holo<T> {
 /**
  * @brief Gain to produce multiple focal points with Greedy algorithm.
  * Refer to Shun suzuki, et al. “Radiation Pressure Field Reconstruction for Ultrasound Midair Haptics by Greedy Algorithm with Brute-Force Search,”
- * in IEEE Transactions on Haptics, doi: 10.1109/TOH.2021.3076489
+ * in IEEE Transactions on Haptics, doi: 10.1109/TOH.STM.3076489
  * @details This method is computed on the CPU.
  */
 template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
