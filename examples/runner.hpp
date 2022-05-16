@@ -26,6 +26,7 @@
 #include "tests/focus.hpp"
 #include "tests/gain_stm.hpp"
 #include "tests/group.hpp"
+#include "tests/plane.hpp"
 #ifdef BUILD_GAIN_HOLO
 #include "tests/holo.hpp"
 #endif
@@ -37,6 +38,7 @@ int run(autd3::Controller<T> autd) {
   std::vector<std::pair<F, std::string>> tests = {
       std::pair(F{focus_test<T>}, "Single focus Test"),
       std::pair(F{bessel_test<T>}, "Bessel beam Test"),
+      std::pair(F{plane_test<T>}, "Plane wave Test"),
       std::pair(F{point_stm<T>}, "PointSTM Test"),
       std::pair(F{gain_stm<T>}, "GainSTM Test"),
 #ifdef BUILD_GAIN_HOLO
