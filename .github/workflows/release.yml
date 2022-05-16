@@ -64,7 +64,7 @@ jobs:
           copy build/lib/Release/*.lib build/publish/lib
           copy src/link/soem/Lib/LICENSE build/publish/lib/wpcap
           copy src/link/soem/Lib/x64/*.lib build/publish/lib/wpcap
-          # copy build/bin/Release/*.dll build/publish/bin
+          copy build/bin/Release/*.dll build/publish/bin
           Compress-Archive -Path LICENSE, NOTICE, dist/AUTDServer, dist/firmware, include, build/publish/lib, build/publish/bin -DestinationPath assets_x64.zip
       - name: Build project x86
         run: |
@@ -79,7 +79,7 @@ jobs:
           copy build_x86/lib/Release/*.lib build_x86/publish/lib
           copy src/link/soem/Lib/LICENSE build/publish/lib/wpcap
           copy src/link/soem/Lib/*.lib build/publish/lib/wpcap
-          # copy build_x86/bin/Release/*.dll build_x86/publish/bin
+          copy build_x86/bin/Release/*.dll build_x86/publish/bin
           Compress-Archive -Path LICENSE, NOTICE, dist/AUTDServer, dist/firmware, include, build_x86/publish/lib, build_x86/publish/bin -DestinationPath assets_x86.zip
       - name: Load Release URL File from release job
         uses: actions/download-artifact@v1
@@ -146,7 +146,7 @@ jobs:
           mkdir -p lib
           mkdir -p bin
           cp -f build/lib/*.a lib
-          # cp -f build/bin/*.so bin
+          cp -f build/bin/*.so bin
           cp -rf dist/firmware firmware/
           tar -zcvf assets_x64.tar.gz firmware include lib bin LICENSE NOTICE 
         shell: bash
@@ -162,7 +162,7 @@ jobs:
           mkdir -p lib
           mkdir -p bin
           cp -f build/lib/*.a lib
-          # cp -f build/bin/*.so bin
+          cp -f build/bin/*.so bin
           cp -rf dist/firmware firmware/
           tar -zcvf assets_arm32.tar.gz firmware include lib bin LICENSE NOTICE
         shell: bash
@@ -178,7 +178,7 @@ jobs:
           mkdir -p lib
           mkdir -p bin
           cp -f build/lib/*.a lib
-          # cp -f build/bin/*.so bin
+          cp -f build/bin/*.so bin
           cp -rf dist/firmware firmware/
           tar -zcvf assets_arm64.tar.gz firmware include lib bin LICENSE NOTICE
         shell: bash
@@ -251,7 +251,7 @@ jobs:
           mkdir -p lib
           mkdir -p bin
           cp -f build/lib/*.a lib
-          # cp -f build/bin/*.dylib bin
+          cp -f build/bin/*.dylib bin
           mv -f dist/firmware firmware/
           tar -zcvf assets.tar.gz firmware include lib bin LICENSE NOTICE
       - name: Load Release URL File from release job
