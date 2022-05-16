@@ -23,6 +23,7 @@ EXPORT_AUTD int32_t AUTDAddDevice(void* handle, double x, double y, double z, do
 EXPORT_AUTD int32_t AUTDAddDeviceQuaternion(void* handle, double x, double y, double z, double qw, double qx, double qy, double qz);
 EXPORT_AUTD bool AUTDCloseController(void* handle);
 EXPORT_AUTD bool AUTDClear(void* handle);
+EXPORT_AUTD bool AUTDSynchronize(void* handle);
 EXPORT_AUTD bool AUTDSetSilencer(void* handle, uint16_t step, uint16_t cycle);
 EXPORT_AUTD void AUTDFreeController(const void* handle);
 EXPORT_AUTD bool AUTDIsOpen(const void* handle);
@@ -34,6 +35,10 @@ EXPORT_AUTD void AUTDSetCheckAck(void* handle, bool check_ack);
 EXPORT_AUTD void AUTDSetForceFan(void* handle, bool force);
 EXPORT_AUTD double AUTDGetSoundSpeed(const void* handle);
 EXPORT_AUTD double AUTDSetSoundSpeed(void* handle, double sound_speed);
+EXPORT_AUTD double AUTDGetTransFrequency(const void* handle, int32_t device_idx, int32_t local_trans_idx);
+EXPORT_AUTD void AUTDSetTransFrequency(void* handle, int32_t device_idx, int32_t local_trans_idx, double frequency);
+EXPORT_AUTD uint16_t AUTDGetTransCycle(const void* handle, int32_t device_idx, int32_t local_trans_idx);
+EXPORT_AUTD void AUTDSetTransCycle(void* handle, int32_t device_idx, int32_t local_trans_idx, uint16_t cycle);
 EXPORT_AUTD double AUTDGetWavelength(const void* handle, int32_t device_idx, int32_t local_trans_idx, double sound_speed);
 EXPORT_AUTD double AUTDGetAttenuation(const void* handle);
 EXPORT_AUTD void AUTDSetAttenuation(void* handle, double attenuation);
