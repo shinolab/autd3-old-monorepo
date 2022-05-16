@@ -38,7 +38,7 @@ class RemoteTwinCAT {
    * @brief Constructor
    * @param cycle_ticks This value must be the same as settings of AUTDServer.
    */
-  RemoteTwinCAT(const uint16_t cycle_ticks, std::string ipv4_addr, std::string remote_ams_net_id)
+  RemoteTwinCAT(std::string ipv4_addr, std::string remote_ams_net_id, const uint16_t cycle_ticks = 2)
       : _cycle_ticks(cycle_ticks), _ipv4_addr(std::move(ipv4_addr)), _remote_ams_net_id(std::move(remote_ams_net_id)) {}
   ~RemoteTwinCAT() = default;
   RemoteTwinCAT(const RemoteTwinCAT& v) noexcept = delete;

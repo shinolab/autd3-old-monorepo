@@ -35,6 +35,10 @@ constexpr double pi = driver::pi;
 using core::Geometry;
 using core::LegacyTransducer;
 using core::NormalTransducer;
+using core::Transducer;
+
+using core::Gain;
+using core::Modulation;
 
 using driver::FirmwareInfo;
 using driver::FPGAInfo;

@@ -47,7 +47,7 @@ struct STM {
   }
 
   /**
-   * @return frequency of sequence
+   * @return frequency of STM
    */
   double frequency() { return sampling_frequency() / static_cast<double>(size()); }
 
