@@ -34,7 +34,7 @@ EXPORT_AUTD void AUTDGainHoloGaussNewton(void** gain, const void* backend, doubl
 EXPORT_AUTD void AUTDGainHoloGradientDescent(void** gain, const void* backend, double eps, double step, uint64_t k_max, const double* initial,
                                              int32_t initial_size, const void* constraint);
 EXPORT_AUTD void AUTDGainHoloGreedy(void** gain, const void* backend, int32_t phase_div, const void* constraint);
-EXPORT_AUTD void AUTDGainHoloAdd(void* gain, const double x, const double y, const double z, const double amp);
+EXPORT_AUTD void AUTDGainHoloAdd(void* gain, double x, double y, double z, double amp);
 #ifdef __cplusplus
 }
 #endif

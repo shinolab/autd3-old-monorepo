@@ -62,7 +62,6 @@ jobs:
           mkdir publish/bin
           cd ..
           copy build/lib/Release/*.lib build/publish/lib
-          copy src/link/soem/Lib/LICENSE build/publish/lib/wpcap
           copy src/link/soem/Lib/x64/*.lib build/publish/lib/wpcap
           copy build/bin/Release/*.dll build/publish/bin
           Compress-Archive -Path LICENSE, NOTICE, dist/AUTDServer, dist/firmware, include, build/publish/lib, build/publish/bin -DestinationPath assets_x64.zip
@@ -77,7 +76,6 @@ jobs:
           mkdir publish/bin
           cd ..
           copy build_x86/lib/Release/*.lib build_x86/publish/lib
-          copy src/link/soem/Lib/LICENSE build/publish/lib/wpcap
           copy src/link/soem/Lib/*.lib build/publish/lib/wpcap
           copy build_x86/bin/Release/*.dll build_x86/publish/bin
           Compress-Archive -Path LICENSE, NOTICE, dist/AUTDServer, dist/firmware, include, build_x86/publish/lib, build_x86/publish/bin -DestinationPath assets_x86.zip
