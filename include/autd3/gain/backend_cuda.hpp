@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 17/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -57,7 +57,7 @@ class CUDABackend : public Backend {
   void mul(TRANSPOSE trans_a, complex alpha, const MatrixXc& a, const VectorXc& b, complex beta, VectorXc& c) override = 0;
   void hadamard_product(const VectorXc& a, const VectorXc& b, VectorXc& c) override = 0;
 
-  void max_eigen_vector(const MatrixXc& src, VectorXc& dst) override = 0;
+  void max_eigen_vector(MatrixXc& src, VectorXc& dst) override = 0;
 
   void pseudo_inverse_svd(MatrixXc& src, double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) override = 0;
 
