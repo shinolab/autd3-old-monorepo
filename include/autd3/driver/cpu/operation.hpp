@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 17/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -25,9 +25,10 @@ inline void clear(TxDatagram& tx) noexcept {
 
 inline void sync(const uint8_t msg_id, const uint16_t sync_cycle_ticks, const uint16_t* const cycles, TxDatagram& tx) noexcept {
   tx.header().msg_id = msg_id;
-  tx.header().cpu_flag.set(CPUControlFlags::DO_SYNC);
+  tx.header().cpu_flag.remove(CPUControlFlags::MOD);
+  tx.header().cpu_flag.remove(CPUControlFlags::CONFIG_SILENCER);
+  tx.header().cpu_flag.set(CPUControlFlags::CONFIG_SYNC);
   tx.header().sync_header().ecat_sync_cycle_ticks = sync_cycle_ticks;
-  tx.header().size = 0;
 
   std::memcpy(tx.bodies(), cycles, sizeof(Body) * tx.size());
 
@@ -37,10 +38,17 @@ inline void sync(const uint8_t msg_id, const uint16_t sync_cycle_ticks, const ui
 inline void modulation(const uint8_t msg_id, const uint8_t* const mod_data, const size_t mod_size, const bool is_first_frame, const uint32_t freq_div,
                        const bool is_last_frame, TxDatagram& tx) noexcept(false) {
   tx.header().msg_id = msg_id;
-  tx.header().cpu_flag.remove(CPUControlFlags::DO_SYNC);
-  tx.header().cpu_flag.remove(CPUControlFlags::CONFIG_SILENCER);
+  tx.header().cpu_flag.set(CPUControlFlags::MOD);
+  tx.header().cpu_flag.remove(CPUControlFlags::MOD_BEGIN);
+  tx.header().cpu_flag.remove(CPUControlFlags::MOD_END);
   tx.header().size = static_cast<uint8_t>(mod_size);
-  if (mod_size == 0) return;
+
+  tx.num_bodies = 0;
+
+  if (mod_size == 0) {
+    tx.header().cpu_flag.remove(CPUControlFlags::MOD);
+    return;
+  }
 
   if (is_first_frame) {
     if (freq_div < MOD_SAMPLING_FREQ_DIV_MIN) {
@@ -48,7 +56,6 @@ inline void modulation(const uint8_t msg_id, const uint8_t* const mod_data, cons
       ss << "Modulation frequency division is oud of range. Minimum is " << MOD_SAMPLING_FREQ_DIV_MIN << ", but you use " << freq_div;
       throw std::runtime_error(ss.str());
     }
-
     tx.header().cpu_flag.set(CPUControlFlags::MOD_BEGIN);
     tx.header().mod_head().freq_div = freq_div;
     std::memcpy(&tx.header().mod_head().data[0], mod_data, mod_size);
@@ -66,10 +73,12 @@ inline void config_silencer(const uint8_t msg_id, const uint16_t cycle, const ui
     throw std::runtime_error(ss.str());
   }
 
+  tx.num_bodies = 0;
+
   tx.header().msg_id = msg_id;
-  tx.header().cpu_flag.remove(CPUControlFlags::DO_SYNC);
+  tx.header().cpu_flag.remove(CPUControlFlags::MOD);
+  tx.header().cpu_flag.remove(CPUControlFlags::CONFIG_SYNC);
   tx.header().cpu_flag.set(CPUControlFlags::CONFIG_SILENCER);
-  tx.header().size = 0;
 
   tx.header().silencer_header().cycle = cycle;
   tx.header().silencer_header().step = step;
@@ -78,12 +87,18 @@ inline void config_silencer(const uint8_t msg_id, const uint16_t cycle, const ui
 inline void normal_legacy_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
   tx.header().msg_id = msg_id;
 
+  tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
+
   tx.header().fpga_flag.set(FPGAControlFlags::LEGACY_MODE);
   tx.header().fpga_flag.remove(FPGAControlFlags::STM_MODE);
+
+  tx.num_bodies = 0;
 }
 
 inline void normal_legacy_body(const LegacyDrive* const drives, TxDatagram& tx) noexcept {
   std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
+
+  tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
 
   tx.num_bodies = tx.size();
 }
@@ -91,14 +106,19 @@ inline void normal_legacy_body(const LegacyDrive* const drives, TxDatagram& tx) 
 inline void normal_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
   tx.header().msg_id = msg_id;
 
+  tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
+
   tx.header().fpga_flag.remove(FPGAControlFlags::LEGACY_MODE);
   tx.header().fpga_flag.remove(FPGAControlFlags::STM_MODE);
+
+  tx.num_bodies = 0;
 }
 
 inline void normal_duty_body(const Duty* drives, TxDatagram& tx) noexcept {
   tx.header().cpu_flag.set(CPUControlFlags::IS_DUTY);
 
   std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
+  tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
 
   tx.num_bodies = tx.size();
 }
@@ -107,6 +127,7 @@ inline void normal_phase_body(const Phase* drives, TxDatagram& tx) noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
 
   std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
+  tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
 
   tx.num_bodies = tx.size();
 }
@@ -114,12 +135,20 @@ inline void normal_phase_body(const Phase* drives, TxDatagram& tx) noexcept {
 inline void point_stm_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
   tx.header().msg_id = msg_id;
 
+  tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
+  tx.header().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
+  tx.header().cpu_flag.remove(CPUControlFlags::STM_END);
+
   tx.header().fpga_flag.set(FPGAControlFlags::STM_MODE);
   tx.header().fpga_flag.remove(FPGAControlFlags::STM_GAIN_MODE);
+
+  tx.num_bodies = 0;
 }
 
 inline void point_stm_body(const std::vector<std::vector<STMFocus>>& points, const bool is_first_frame, const uint32_t freq_div,
                            const double sound_speed, const bool is_last_frame, TxDatagram& tx) noexcept(false) {
+  if (points.empty() || points[0].empty()) return;
+
   if (is_first_frame) {
     if (freq_div < STM_SAMPLING_FREQ_DIV_MIN) {
       std::stringstream ss;
@@ -147,6 +176,8 @@ inline void point_stm_body(const std::vector<std::vector<STMFocus>>& points, con
     }
   }
 
+  tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
+
   if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::STM_END);
 
   tx.num_bodies = tx.size();
@@ -155,9 +186,15 @@ inline void point_stm_body(const std::vector<std::vector<STMFocus>>& points, con
 inline void gain_stm_legacy_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
   tx.header().msg_id = msg_id;
 
+  tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
+  tx.header().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
+  tx.header().cpu_flag.remove(CPUControlFlags::STM_END);
+
   tx.header().fpga_flag.set(FPGAControlFlags::LEGACY_MODE);
   tx.header().fpga_flag.set(FPGAControlFlags::STM_MODE);
   tx.header().fpga_flag.set(FPGAControlFlags::STM_GAIN_MODE);
+
+  tx.num_bodies = 0;
 }
 
 inline void gain_stm_legacy_body(const LegacyDrive* const drives, const bool is_first_frame, const uint32_t freq_div, const bool is_last_frame,
@@ -175,6 +212,8 @@ inline void gain_stm_legacy_body(const LegacyDrive* const drives, const bool is_
     std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
   }
 
+  tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
+
   if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::STM_END);
 
   tx.num_bodies = tx.size();
@@ -183,9 +222,15 @@ inline void gain_stm_legacy_body(const LegacyDrive* const drives, const bool is_
 inline void gain_stm_normal_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
   tx.header().msg_id = msg_id;
 
+  tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
+  tx.header().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
+  tx.header().cpu_flag.remove(CPUControlFlags::STM_END);
+
   tx.header().fpga_flag.remove(FPGAControlFlags::LEGACY_MODE);
   tx.header().fpga_flag.set(FPGAControlFlags::STM_MODE);
   tx.header().fpga_flag.set(FPGAControlFlags::STM_GAIN_MODE);
+
+  tx.num_bodies = 0;
 }
 
 inline void gain_stm_normal_phase(const Phase* const drives, const bool is_first_frame, const uint32_t freq_div, TxDatagram& tx) noexcept(false) {
@@ -204,6 +249,8 @@ inline void gain_stm_normal_phase(const Phase* const drives, const bool is_first
     std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
   }
 
+  tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
+
   tx.num_bodies = tx.size();
 }
 
@@ -212,6 +259,8 @@ inline void gain_stm_normal_duty(const Duty* const drives, const bool is_last_fr
 
   std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
   if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::STM_END);
+
+  tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
 
   tx.num_bodies = tx.size();
 }

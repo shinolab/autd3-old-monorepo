@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/05/2022
+// Last Modified: 17/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -427,7 +427,7 @@ class CUDABackendImpl final : public CUDABackend {
     cudaMemcpy(c_p + a.size(), b_p, b.size() * sizeof(complex), cudaMemcpyDeviceToDevice);
   }
 
-  void max_eigen_vector(const MatrixXc& src, VectorXc& dst) override {
+  void max_eigen_vector(MatrixXc& src, VectorXc& dst) override {
     const auto size = src.cols();
     const auto src_p = static_cast<complex*>(_pool.get(src));
     const auto dst_p = static_cast<complex*>(_pool.get(dst));
@@ -617,7 +617,7 @@ class CUDABackendImpl final : public CUDABackend {
     const auto a_p = static_cast<double*>(_pool.get(a));
     const auto b_p = static_cast<double*>(_pool.get(b));
     double* buffer = nullptr;
-    cudaMalloc(reinterpret_cast<void**>(&buffer), m * BLOCK_SIZE / 2 * sizeof(double));
+    cudaMalloc(reinterpret_cast<void**>(&buffer), static_cast<size_t>(m) * BLOCK_SIZE / 2 * sizeof(double));
     cu_reduce_col(a_p, m, n, b_p, buffer);
     cudaFree(buffer);
   }

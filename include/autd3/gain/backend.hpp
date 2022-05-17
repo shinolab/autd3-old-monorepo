@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 17/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -102,7 +102,7 @@ class Backend {
   virtual void solvet(MatrixXd& a, VectorXd& b) = 0;
   virtual void solveh(MatrixXc& a, VectorXc& b) = 0;
 
-  virtual void max_eigen_vector(const MatrixXc& src, VectorXc& dst) = 0;
+  virtual void max_eigen_vector(MatrixXc& src, VectorXc& dst) = 0;
 
   virtual void pseudo_inverse_svd(MatrixXd& src, double alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf, MatrixXd& dst) = 0;
   virtual void pseudo_inverse_svd(MatrixXc& src, double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) = 0;
@@ -183,7 +183,7 @@ class EigenBackend final : public Backend {
   void solvet(MatrixXd& a, VectorXd& b) override;
   void solveh(MatrixXc& a, VectorXc& b) override;
 
-  void max_eigen_vector(const MatrixXc& src, VectorXc& dst) override;
+  void max_eigen_vector(MatrixXc& src, VectorXc& dst) override;
 
   void pseudo_inverse_svd(MatrixXd& src, double alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf, MatrixXd& dst) override;
   void pseudo_inverse_svd(MatrixXc& src, double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) override;

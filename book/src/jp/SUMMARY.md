@@ -12,6 +12,7 @@
         - [Spatio-Temporal Modulation](./Software/Users_Manual/stm.md)
         - [Silencer](./Software/Users_Manual/silencer.md)
         - [Controller](./Software/Users_Manual/controller.md)
+        - [Frequency Configuration](./Software/Users_Manual/freq_config.md)
     - [FFI](./Software/FFI/README.md)
         - [C#](./Software/FFI/csharp.md)
         - [python](./Software/FFI/python.md)
@@ -20,5 +21,7 @@
         - [C API Reference](./Software/FFI/reference.md)
     - [Emulator](./Software/Emulator/README.md)
 
+- [Document History](document_history.md)
+- [Release Notes](release_notes.md)
 - [Citation](Citation/README.md)
-- [LICENSE](LICENSE/README.md)
+- [LICENSE](LICENSE.md)
