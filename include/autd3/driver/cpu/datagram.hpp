@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/05/2022
+// Last Modified: 17/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -48,11 +48,6 @@ struct TxDatagram {
   [[nodiscard]] GlobalHeader const &header() const noexcept { return *reinterpret_cast<GlobalHeader const *const>(_data.data()); }
 
   Body *bodies() noexcept { return reinterpret_cast<Body *>(_data.data() + sizeof(GlobalHeader)); }
-
-  void clear() noexcept {
-    header().clear();
-    num_bodies = 0;
-  }
 
  private:
   size_t _size;

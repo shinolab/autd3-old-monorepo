@@ -18,12 +18,6 @@
 #include "autd3/core/modulation.hpp"
 
 namespace autd3::modulation {
-namespace {
-double sinc(const double x) noexcept {
-  if (std::abs(x) < std::numeric_limits<double>::epsilon()) return 1;
-  return std::sin(driver::pi * x) / (driver::pi * x);
-}
-}  // namespace
 
 RawPCM::RawPCM(const std::string& filename, const double sampling_freq, const uint16_t mod_sampling_freq_div)
     : Modulation(), _sampling_freq(sampling_freq) {
@@ -57,7 +51,7 @@ void RawPCM::calc() {
 
   this->_props.buffer.resize(sample_buf.size());
   for (size_t i = 0; i < sample_buf.size(); i++) {
-    const auto amp = (double)sample_buf[i] / (double)std::numeric_limits<uint8_t>::max();
+    const auto amp = static_cast<double>(sample_buf[i]) / static_cast<double>(std::numeric_limits<uint8_t>::max());
     const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi * 510.0));
     this->_props.buffer[i] = duty;
   }
@@ -109,12 +103,12 @@ Wav::Wav(const std::string& filename, const uint16_t mod_sampling_freq_div) : Mo
   const auto data_size = data_chunk_size / (bits_per_sample / 8);
   for (size_t i = 0; i < data_size; i++) {
     if (bits_per_sample == 8) {
-      auto amp = (double)read_from_stream<uint8_t>(fs) / (double)std::numeric_limits<uint8_t>::max();
+      auto amp = static_cast<double>(read_from_stream<uint8_t>(fs)) / static_cast<double>(std::numeric_limits<uint8_t>::max());
       const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi * 510.0));
       _buf.emplace_back(duty);
     } else if (bits_per_sample == 16) {
       const auto d32 = static_cast<int32_t>(read_from_stream<int16_t>(fs)) - std::numeric_limits<int16_t>::min();
-      auto amp = static_cast<double>(d32) / (double)std::numeric_limits<uint16_t>::max();
+      auto amp = static_cast<double>(d32) / static_cast<double>(std::numeric_limits<uint16_t>::max());
       const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi * 510.0));
       _buf.emplace_back(duty);
     }

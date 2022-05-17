@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/05/2022
+// Last Modified: 16/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -35,7 +35,7 @@ inline void nanosleep(const int64_t t) {
   LARGE_INTEGER start;
   QueryPerformanceCounter(&start);
 
-  const auto sleep = t * PERFORMANCE_FREQUENCY.QuadPart / (1000L * 1000L * 1000L);
+  const auto sleep = t * PERFORMANCE_FREQUENCY.QuadPart / (1000LL * 1000LL * 1000LL);
   while (true) {
     LARGE_INTEGER now;
     QueryPerformanceCounter(&now);
@@ -50,7 +50,7 @@ inline void add_timespec(timespec& ts, const int64_t addtime) {
   ts.tv_nsec += nsec;
   if (ts.tv_nsec >= 1000000000) {
     const auto nsec_ = ts.tv_nsec % 1000000000;
-    ts.tv_sec += (ts.tv_nsec - nsec_) / 1000000000;
+    ts.tv_sec += ((int64_t)ts.tv_nsec - nsec_) / 1000000000LL;
     ts.tv_nsec = nsec_;
   }
 }
@@ -59,7 +59,7 @@ void timed_wait(const timespec& abs_time) {
   auto tp = timeval{0, 0};
   osal_gettimeofday(&tp, nullptr);
 
-  const auto sleep = (abs_time.tv_sec - tp.tv_sec) * 1000000000 + (abs_time.tv_nsec - tp.tv_usec * 1000);
+  const auto sleep = ((int64_t)abs_time.tv_sec - (int64_t)tp.tv_sec) * 1000000000LL + ((int64_t)abs_time.tv_nsec - (int64_t)tp.tv_usec * 1000LL);
 
   if (sleep > 0) std::this_thread::sleep_for(std::chrono::nanoseconds(sleep));
 }
@@ -68,7 +68,7 @@ void timed_wait_h(const timespec& abs_time) {
   auto tp = timeval{0, 0};
   osal_gettimeofday(&tp, nullptr);
 
-  const auto sleep = (abs_time.tv_sec - tp.tv_sec) * 1000000000 + (abs_time.tv_nsec - tp.tv_usec * 1000);
+  const auto sleep = ((int64_t)abs_time.tv_sec - (int64_t)tp.tv_sec) * 1000000000LL + ((int64_t)abs_time.tv_nsec - (int64_t)tp.tv_usec * 1000LL);
 
   if (sleep > 0) nanosleep(sleep);
 }

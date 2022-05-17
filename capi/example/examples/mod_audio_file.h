@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 17/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -30,9 +30,9 @@ void mod_audio_file(void* autd) {
   printf_s("===== Wav =====\n");
 
   char path[256];
-  sprintf_s(path, 256, "%s\\%s", AUTD3_RESOURCE_PATH, "sin150.wav");
+  sprintf_s(path, 256, "%s/%s", AUTD3_RESOURCE_PATH, "sin150.wav");
   void* mw = NULL;
-  AUTDModulationWav(&mw, path, 10);
+  AUTDModulationWav(&mw, path, 40960);
 
   AUTDSendHeaderBody(autd, mw, g);
 
@@ -42,9 +42,9 @@ void mod_audio_file(void* autd) {
   (void)getchar();
   printf_s("===== RawPCM =====\n");
 
-  sprintf_s(path, 256, "%s\\%s", AUTD3_RESOURCE_PATH, "sin150.dat");
+  sprintf_s(path, 256, "%s/%s", AUTD3_RESOURCE_PATH, "sin150.dat");
   void* mr = NULL;
-  AUTDModulationRawPCM(&mr, path, 40e3, 10);
+  AUTDModulationRawPCM(&mr, path, 40e3, 40960);
 
   AUTDSendHeaderBody(autd, mr, g);
 

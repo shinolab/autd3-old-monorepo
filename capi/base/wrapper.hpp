@@ -12,10 +12,8 @@
 #pragma once
 
 #include <memory>
-#include <utility>
 #include <vector>
 
-#include "autd3/controller.hpp"
 #include "autd3/driver/firmware_version.hpp"
 #include "autd3/gain/backend.hpp"
 

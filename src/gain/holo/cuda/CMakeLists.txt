@@ -6,8 +6,12 @@ message("CUDA version: " ${CUDA_VERSION})
 message("CUDA toolkit version: " ${CUDAToolkit_VERSION})
 
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --expt-relaxed-constexpr -Xcudafe "--diag_suppress=esa_on_defaulted_function_ignored")
-if(WIN32 AND (MSVC_TOOLSET_VERSION VERSION_EQUAL 143))
-  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -allow-unsupported-compiler)
+if(WIN32)
+  if(MSVC_TOOLSET_VERSION VERSION_EQUAL 143)
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -allow-unsupported-compiler)
+  endif()
+else()
+  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -Xcompiler -fPIC)
 endif()
 
 cuda_add_library(backend_cuda

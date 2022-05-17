@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/05/2022
+// Last Modified: 17/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -18,10 +18,8 @@ constexpr uint8_t MSG_CLEAR = 0x00;
 constexpr uint8_t MSG_RD_CPU_VERSION = 0x01;
 constexpr uint8_t MSG_RD_FPGA_VERSION = 0x03;
 constexpr uint8_t MSG_RD_FPGA_FUNCTION = 0x04;
-constexpr uint8_t MSG_HEADER_ONLY_BEGINNING = 0x05;
-constexpr uint8_t MSG_HEADER_ONLY_END = 0x7F;
-constexpr uint8_t MSG_CONTAIN_BODY_BEGINNING = 0x80;
-constexpr uint8_t MSG_CONTAIN_BODY_END = 0xF0;
+constexpr uint8_t MSG_BEGIN = 0x05;
+constexpr uint8_t MSG_END = 0xF0;
 constexpr uint8_t MSG_EMU_GEOMETRY_SET = 0xFF;
 
 constexpr size_t MOD_HEAD_DATA_SIZE = 120;
@@ -36,14 +34,17 @@ class CPUControlFlags final {
  public:
   enum VALUE : uint8_t {
     NONE = 0,
-    MOD_BEGIN = 1 << 0,
-    MOD_END = 1 << 1,
-    STM_BEGIN = 1 << 2,
-    STM_END = 1 << 3,
-    IS_DUTY = 1 << 4,
-    CONFIG_SILENCER = 1 << 5,
-    READS_FPGA_INFO = 1 << 6,
-    DO_SYNC = 1 << 7,
+    MOD = 1 << 0,
+    MOD_BEGIN = 1 << 1,
+    MOD_END = 1 << 2,
+    CONFIG_EN_N = 1 << 0,
+    CONFIG_SILENCER = 1 << 1,
+    CONFIG_SYNC = 1 << 2,
+    WRITE_BODY = 1 << 3,
+    STM_BEGIN = 1 << 4,
+    STM_END = 1 << 5,
+    IS_DUTY = 1 << 6,
+    READS_FPGA_INFO = 1 << 7,
   };
 
   CPUControlFlags() = default;

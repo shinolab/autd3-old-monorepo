@@ -21,7 +21,7 @@ extern "C" {
 EXPORT_AUTD int32_t AUTDGetAdapterPointer(void** out);
 EXPORT_AUTD void AUTDGetAdapter(void* p_adapter, int32_t index, char* desc, char* name);
 EXPORT_AUTD void AUTDFreeAdapterPointer(void* p_adapter);
-EXPORT_AUTD void AUTDLinkSOEM(void** out, const char* ifname, int32_t device_num, uint32_t cycle_ticks, void* on_lost, bool high_precision);
+EXPORT_AUTD void AUTDLinkSOEM(void** out, const char* ifname, int32_t device_num, uint16_t cycle_ticks, void* on_lost, bool high_precision);
 #ifdef __cplusplus
 }
 #endif
