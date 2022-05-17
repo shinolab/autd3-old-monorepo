@@ -106,7 +106,7 @@ target_include_directories(main PRIVATE include eigen)
 
 if(WIN32)
   target_link_directories(main PRIVATE lib/wpcap)
-  target_link_libraries(main autd3 link_soem Packet.lib wpcap.lib ws2_32.lib winmm.lib)
+  target_link_libraries(main link_soem Packet.lib wpcap.lib ws2_32.lib winmm.lib)
 elseif(APPLE)
   target_link_libraries(main pcap)
 else()
@@ -153,6 +153,8 @@ int main() try {
   autd.open(std::move(link));
 
   autd.clear();
+
+  autd.synchronize();
 
   const auto firm_infos = autd.firmware_infos();
   std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<FirmwareInfo>(std::cout, "\n"));
@@ -228,6 +230,12 @@ SDKを使用するには, `autd3.hpp`ヘッダーをインクルードする.
 ```cpp
   autd.clear();
 ```
+
+次に, AUTDデバイスの同期を行う.
+```cpp
+  autd.synchronize();
+```
+**例え, 一台のデバイスしか使用しない場合でも, この関数を初期化後に一度呼び出す必要がある.**
 
 次に, firmwareのバージョンを確認している.
 これも必須ではない.
