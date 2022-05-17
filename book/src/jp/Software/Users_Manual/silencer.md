@@ -5,7 +5,7 @@ Silencerは, 振動子の駆動信号の急激な変動を抑制し, 静音化�
 
 ## 理論
 
-詳細は[suzuki2020]を参照されたい.
+詳細は鈴木らの論文[^suzuki2020]を参照されたい.
 
 大まかに概要を述べると, 
 
@@ -92,4 +92,4 @@ $$
 $$
 のように更新する.
 
-[suzuki2020]: Suzuki, Shun, et al. "Reducing amplitude fluctuation by gradual phase shift in midair ultrasound haptics." IEEE transactions on haptics 13.1 (2020): 87-93.
+[^suzuki2020]: Suzuki, Shun, et al. "Reducing amplitude fluctuation by gradual phase shift in midair ultrasound haptics." IEEE transactions on haptics 13.1 (2020): 87-93.
