@@ -61,7 +61,7 @@ Version: 2.0.0
     * Some projects are disabled by default. Please enable them by switching their flags on
         * e.g., if you want to use TwinCATLink;
             ```
-            cmake .. -DBUILD_TWINCAT_LINK=ON
+            cmake .. -DBUILD_LINK_TWINCAT=ON
             ```
 
 ## Example
