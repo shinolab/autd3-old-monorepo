@@ -36,6 +36,8 @@ class RemoteTwinCAT {
 
   /**
    * @brief Constructor
+   * @param ipv4_addr remote server ip address
+   * @param remote_ams_net_id remote server ams net id
    * @param cycle_ticks This value must be the same as settings of AUTDServer.
    */
   RemoteTwinCAT(std::string ipv4_addr, std::string remote_ams_net_id, const uint16_t cycle_ticks = 2)
