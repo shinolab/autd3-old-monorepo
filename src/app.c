@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/05/2022
+ * Last Modified: 17/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -35,10 +35,8 @@
 #define MSG_RD_CPU_VERSION (0x01)
 #define MSG_RD_FPGA_VERSION (0x03)
 #define MSG_RD_FPGA_FUNCTION (0x04)
-#define MSG_HEADER_ONLY_BEGIN (0x05)
-#define MSG_HEADER_ONLY_END (0x7F)
-#define MSG_CONTAIN_BODY_BEGIN (0x80)
-#define MSG_CONTAIN_BODY_END (0xF0)
+#define MSG_BEGIN (0x05)
+#define MSG_END (0xF0)
 
 extern RX_STR0 _sRx0;
 extern RX_STR1 _sRx1;
@@ -60,14 +58,17 @@ typedef enum {
 } FPGAControlFlags;
 
 typedef enum {
-  MOD_BEGIN = 1 << 0,
-  MOD_END = 1 << 1,
-  STM_BEGIN = 1 << 2,
-  STM_END = 1 << 3,
-  IS_DUTY = 1 << 4,
-  CONFIG_SILENCER = 1 << 5,
-  READS_FPGA_INFO = 1 << 6,
-  DO_SYNC = 1 << 7
+  MOD = 1 << 0,
+  MOD_BEGIN = 1 << 1,
+  MOD_END = 1 << 2,
+  CONFIG_EN_N = 1 << 0,
+  CONFIG_SILENCER = 1 << 1,
+  CONFIG_SYNC = 1 << 2,
+  WRITE_BODY = 1 << 3,
+  STM_BEGIN = 1 << 4,
+  STM_END = 1 << 5,
+  IS_DUTY = 1 << 6,
+  READS_FPGA_INFO = 1 << 7,
 } CPUControlFlags;
 
 typedef struct {
@@ -388,23 +389,21 @@ void recv_ethercat(void) {
       _ack = (_ack & 0xFF00) | ((get_fpga_version() >> 8) & 0xFF);
       break;
     default:
-      if (_msg_id > MSG_CONTAIN_BODY_END) break;
+      if (_msg_id > MSG_END) break;
 
-      if ((header->cpu_ctl_reg & CONFIG_SILENCER) != 0) {
-        config_silencer(header);
-        break;
-      }
       _ctl_reg = header->fpga_ctl_reg;
-      write_mod(header);
-
       bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, _ctl_reg);
 
-      if (_msg_id <= MSG_HEADER_ONLY_END) break;
-
-      if ((header->cpu_ctl_reg & DO_SYNC) != 0) {
+      if ((header->cpu_ctl_reg & MOD) != 0)
+        write_mod(header);
+      else if ((header->cpu_ctl_reg & CONFIG_SILENCER) != 0) {
+        config_silencer(header);
+      } else if ((header->cpu_ctl_reg & CONFIG_SYNC) != 0) {
         synchronize(header, body);
         break;
       }
+
+      if ((header->cpu_ctl_reg & WRITE_BODY) == 0) break;
 
       if ((_ctl_reg & OP_MODE) == 0) {
         write_normal_op(header, body);
