@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 17/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -72,7 +72,7 @@ class Controller {
     driver::force_fan(_tx_buf, force_fan);
     driver::reads_fpga_info(_tx_buf, reads_fpga_info);
 
-    const auto msg_id = get_id_header();
+    const auto msg_id = get_id();
     driver::config_silencer(msg_id, config.cycle, config.step, _tx_buf);
 
     if (!_link->send(_tx_buf)) return false;
@@ -87,7 +87,7 @@ class Controller {
     driver::force_fan(_tx_buf, force_fan);
     driver::reads_fpga_info(_tx_buf, reads_fpga_info);
 
-    const auto msg_id = get_id_body();
+    const auto msg_id = get_id();
     std::vector<uint16_t> cycles;
     std::for_each(_geometry.begin(), _geometry.end(), [&](const auto& dev) {
       std::transform(dev.begin(), dev.end(), std::back_inserter(cycles), [](const T& tr) { return tr.cycle(); });
@@ -106,7 +106,7 @@ class Controller {
   bool update_flag() {
     driver::force_fan(_tx_buf, force_fan);
     driver::reads_fpga_info(_tx_buf, reads_fpga_info);
-    _tx_buf.header().msg_id = get_id_header();
+    _tx_buf.header().msg_id = get_id();
 
     if (!_link->send(_tx_buf)) return false;
     return wait_msg_processed(50);
@@ -131,7 +131,6 @@ class Controller {
   bool clear() {
     const auto check_ack_ = check_ack;
     check_ack = true;
-    _tx_buf.clear();
     driver::clear(_tx_buf);
     if (!_link->send(_tx_buf)) {
       check_ack = check_ack_;
@@ -207,11 +206,11 @@ class Controller {
   auto send(H& header) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, bool> {
     header.init();
 
-    while (true) {
-      driver::force_fan(_tx_buf, force_fan);
-      driver::reads_fpga_info(_tx_buf, reads_fpga_info);
+    driver::force_fan(_tx_buf, force_fan);
+    driver::reads_fpga_info(_tx_buf, reads_fpga_info);
 
-      const auto msg_id = get_id_header();
+    while (true) {
+      const auto msg_id = get_id();
       header.pack(msg_id, _tx_buf);
       _link->send(_tx_buf);
       if (!wait_msg_processed(50)) return false;
@@ -228,13 +227,11 @@ class Controller {
   auto send(B& body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody<T>, B>, bool> {
     body.init();
 
+    driver::force_fan(_tx_buf, force_fan);
+    driver::reads_fpga_info(_tx_buf, reads_fpga_info);
+
     while (true) {
-      _tx_buf.clear();
-
-      driver::force_fan(_tx_buf, force_fan);
-      driver::reads_fpga_info(_tx_buf, reads_fpga_info);
-
-      const auto msg_id = get_id_body();
+      const auto msg_id = get_id();
       body.pack(msg_id, _geometry, _tx_buf);
       _link->send(_tx_buf);
       if (!wait_msg_processed(50)) return false;
@@ -253,13 +250,11 @@ class Controller {
     header.init();
     body.init();
 
+    driver::force_fan(_tx_buf, force_fan);
+    driver::reads_fpga_info(_tx_buf, reads_fpga_info);
+
     while (true) {
-      _tx_buf.clear();
-
-      driver::force_fan(_tx_buf, force_fan);
-      driver::reads_fpga_info(_tx_buf, reads_fpga_info);
-
-      const auto msg_id = get_id_body();
+      const auto msg_id = get_id();
       header.pack(msg_id, _tx_buf);
       body.pack(msg_id, _geometry, _tx_buf);
       _link->send(_tx_buf);
@@ -285,17 +280,9 @@ class Controller {
   bool check_ack;
 
  private:
-  static uint8_t get_id_header() noexcept {
-    static std::atomic id_header{driver::MSG_HEADER_ONLY_BEGINNING};
-    if (uint8_t expected = driver::MSG_HEADER_ONLY_END; !id_header.compare_exchange_weak(expected, driver::MSG_HEADER_ONLY_BEGINNING))
-      id_header.fetch_add(0x01);
-    return id_header.load();
-  }
-
-  static uint8_t get_id_body() noexcept {
-    static std::atomic id_body{driver::MSG_CONTAIN_BODY_BEGINNING};
-    if (uint8_t expected = driver::MSG_CONTAIN_BODY_END; !id_body.compare_exchange_weak(expected, driver::MSG_CONTAIN_BODY_BEGINNING))
-      id_body.fetch_add(0x01);
+  static uint8_t get_id() noexcept {
+    static std::atomic id_body{driver::MSG_BEGIN};
+    if (uint8_t expected = driver::MSG_END; !id_body.compare_exchange_weak(expected, driver::MSG_BEGIN)) id_body.fetch_add(0x01);
     return id_body.load();
   }
 
