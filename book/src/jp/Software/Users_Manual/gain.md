@@ -15,7 +15,7 @@ AUTDは各振動子の位相/振幅を個別に制御することができ, こ�
 ## BesselBeam
 
 `BesselBeam`ではその名の通りBessel beamを生成する.
-この`Gain`は長谷川らの論文[hasegawa2017]に基づく.
+この`Gain`は長谷川らの論文[^hasegawa2017]に基づく.
 ```cpp
   const Vector3 apex(x, y, z);
   const Vector3 dir = Vector3::UnitZ();
@@ -27,7 +27,7 @@ AUTDは各振動子の位相/振幅を個別に制御することができ, こ�
 
 <figure>
   <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/1.4985159.figures.online.f1.jpg"/>
-  <figcaption>Bessel beam ([hasegawa2017]より引用)</figcaption>
+  <figcaption>Bessel beam (長谷川らの論文より引用)</figcaption>
 </figure>
 
 
@@ -52,21 +52,22 @@ AUTDは各振動子の位相/振幅を個別に制御することができ, こ�
 `Holo`は多焦点を生成するための`Gain`である.
 多焦点を生成するアルゴリズムが幾つか提案されており, SDKには以下のアルゴリズムが実装されている.
 
-* `SDP` - Semidefinite programming, 井上らの論文[inoue2015]に基づく
-* `EVD` - Eigen value decomposition, Longらの論文[long2014]に基づく
+* `SDP` - Semidefinite programming, 井上らの論文[^inoue2015]に基づく
+* `EVD` - Eigen value decomposition, Longらの論文[^long2014]に基づく
 * `Naive` - 単一焦点解の重ね合わせ
-* `GS` - Gershberg-Saxon, Marzoらの論文[marzo2019]に基づく
-* `GSPAT` - Gershberg-Saxon for Phased Arrays of Transducers, Plasenciaらの論文[plasencia2020]に基づく
-* `LM` - Levenberg-Marquardt, LM法は[levenberg1944,marquardt1963]で提案された非線形最小二乗問題の最適化法, 実装は[madsen2004]に基づく.
+* `GS` - Gershberg-Saxon, Marzoらの論文[^marzo2019]に基づく
+* `GSPAT` - Gershberg-Saxon for Phased Arrays of Transducers, Plasenciaらの論文[^plasencia2020]に基づく
+* `LM` - Levenberg-Marquardt, LM法はLevenberg[^levenberg1944]とMarquardt[^marquardt1963]で提案された非線形最小二乗問題の最適化法, 実装はMadsenのテキスト[^madsen2004]に基づく.
 * `GaussNewton` - Gauss-Newton法
 * `GradientDescent` - Gradient descent法
-* `Greedy` - Greedy algorithm and Brute-force search, 鈴木らの論文[suzuki2021]に基づく
+* `Greedy` - Greedy algorithm and Brute-force search, 鈴木らの論文[^suzuki2021]に基づく
 
 また, 各手法は計算Backendを選べるようになっている.
 SDKには以下の`Backend`が用意されている
 
 * `EigenBackend` - [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page)を使用, デフォルトで利用可能
 * `CUDABackend` - CUDAを使用, GPUで実行
+* `BLASBackend` - BLASを使用
 
 `Holo`を使用するには`autd3/gain/holo.hpp`を`include`する.
 ```cpp
@@ -192,20 +193,20 @@ Geometryにはイテレータが定義されており, `Device`のイテレー�
 ある点$\bp$で多数の振動子からの放出された超音波の音圧が最大になるためには, $\bp$での位相が揃えば良い.
 これは, `Transducer`クラスに用意されている`align_phase_at`関数で計算できる.
 
-[hasegawa2017]: Hasegawa, Keisuke, et al. "Electronically steerable ultrasound-driven long narrow air stream." Applied Physics Letters 111.6 (2017): 064104.
+[^hasegawa2017]: Hasegawa, Keisuke, et al. "Electronically steerable ultrasound-driven long narrow air stream." Applied Physics Letters 111.6 (2017): 064104.
 
-[inoue2015]: Inoue, Seki, Yasutoshi Makino, and Hiroyuki Shinoda. "Active touch perception produced by airborne ultrasonic haptic hologram." 2015 IEEE World Haptics Conference (WHC). IEEE, 2015.
+[^inoue2015]: Inoue, Seki, Yasutoshi Makino, and Hiroyuki Shinoda. "Active touch perception produced by airborne ultrasonic haptic hologram." 2015 IEEE World Haptics Conference (WHC). IEEE, 2015.
 
-[long2014]: Long, Benjamin, et al. "Rendering volumetric haptic shapes in mid-air using ultrasound." ACM Transactions on Graphics (TOG) 33.6 (2014): 1-10.
+[^long2014]: Long, Benjamin, et al. "Rendering volumetric haptic shapes in mid-air using ultrasound." ACM Transactions on Graphics (TOG) 33.6 (2014): 1-10.
 
-[marzo2019]: Marzo, Asier, and Bruce W. Drinkwater. "Holographic acoustic tweezers." Proceedings of the National Academy of Sciences 116.1 (2019): 84-89.
+[^marzo2019]: Marzo, Asier, and Bruce W. Drinkwater. "Holographic acoustic tweezers." Proceedings of the National Academy of Sciences 116.1 (2019): 84-89.
 
-[plasencia2020]: Plasencia, Diego Martinez, et al. "GS-PAT: high-speed multi-point sound-fields for phased arrays of transducers." ACM Transactions on Graphics (TOG) 39.4 (2020): 138-1.
+[^plasencia2020]: Plasencia, Diego Martinez, et al. "GS-PAT: high-speed multi-point sound-fields for phased arrays of transducers." ACM Transactions on Graphics (TOG) 39.4 (2020): 138-1.
 
-[levenberg1944]: Levenberg, Kenneth. "A method for the solution of certain non-linear problems in least squares." Quarterly of applied mathematics 2.2 (1944): 164-168.
+[^levenberg1944]: Levenberg, Kenneth. "A method for the solution of certain non-linear problems in least squares." Quarterly of applied mathematics 2.2 (1944): 164-168.
 
-[marquardt1963]: Marquardt, Donald W. "An algorithm for least-squares estimation of nonlinear parameters." Journal of the society for Industrial and Applied Mathematics 11.2 (1963): 431-441.
+[^marquardt1963]: Marquardt, Donald W. "An algorithm for least-squares estimation of nonlinear parameters." Journal of the society for Industrial and Applied Mathematics 11.2 (1963): 431-441.
 
-[madsen2004]: Madsen, Kaj, Hans Bruun Nielsen, and Ole Tingleff. "Methods for non-linear least squares problems." (2004).
+[^madsen2004]: Madsen, Kaj, Hans Bruun Nielsen, and Ole Tingleff. "Methods for non-linear least squares problems." (2004).
 
-[suzuki2021]: Suzuki, Shun, et al. "Radiation Pressure Field Reconstruction for Ultrasound Midair Haptics by Greedy Algorithm with Brute-Force Search." IEEE Transactions on Haptics (2021).
+[^suzuki2021]: Suzuki, Shun, et al. "Radiation Pressure Field Reconstruction for Ultrasound Midair Haptics by Greedy Algorithm with Brute-Force Search." IEEE Transactions on Haptics (2021).
