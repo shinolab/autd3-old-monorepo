@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/05/2022
+// Last Modified: 17/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -47,13 +47,6 @@ struct GlobalHeader {
   uint8_t data[124];
 
   GlobalHeader() noexcept : msg_id(0), fpga_flag(FPGAControlFlags::NONE), cpu_flag(CPUControlFlags::NONE), size(0), data() {}
-
-  void clear() noexcept {
-    msg_id = 0;
-    fpga_flag = FPGAControlFlags::NONE;
-    cpu_flag = CPUControlFlags::NONE;
-    size = 0;
-  }
 
   [[nodiscard]] const ModHead& mod_head() const noexcept { return *reinterpret_cast<ModHead const*>(&data[0]); }
   ModHead& mod_head() noexcept { return *reinterpret_cast<ModHead*>(&data[0]); }
