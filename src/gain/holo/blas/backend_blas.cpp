@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 17/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -36,7 +36,6 @@ constexpr auto AUTD_GESVDC = LAPACKE_zgesdd;
 constexpr auto AUTD_HEEV = LAPACKE_zheev;
 constexpr auto AUTD_ZSCAL = cblas_zscal;
 constexpr auto AUTD_AXPY = cblas_daxpy;
-constexpr auto AUTD_AXPYC = cblas_zaxpy;
 constexpr auto AUTD_DGEMV = cblas_dgemv;
 constexpr auto AUTD_ZGEMV = cblas_zgemv;
 constexpr auto AUTD_DGEMM = cblas_dgemm;
@@ -176,11 +175,11 @@ void BLASBackend::solveh(MatrixXc& a, VectorXc& b) {
   AUTD_POSVC(CblasColMajor, 'U', n, 1, a.data(), lda, b.data(), ldb);
 }
 
-void BLASBackend::max_eigen_vector(const MatrixXc& src, VectorXc& dst) {
-  const Eigen::ComplexEigenSolver<MatrixXc> ces(src);
-  auto idx = 0;
-  ces.eigenvalues().cwiseAbs2().maxCoeff(&idx);
-  dst = ces.eigenvectors().col(idx);
+void BLASBackend::max_eigen_vector(MatrixXc& src, VectorXc& dst) {
+  const auto size = src.cols();
+  const auto eigenvalues = std::make_unique<double[]>(size);
+  AUTD_HEEV(CblasColMajor, 'V', 'U', static_cast<int>(size), src.data(), static_cast<int>(size), eigenvalues.get());
+  std::memcpy(dst.data(), src.data() + size * (size - 1), size * sizeof(complex));
 }
 
 void BLASBackend::pseudo_inverse_svd(MatrixXc& src, const double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) {
