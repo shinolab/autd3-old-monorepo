@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/05/2022
+// Last Modified: 17/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -198,7 +198,7 @@ void EigenBackend::solveh(MatrixXc& a, VectorXc& b) {
   llt.solveInPlace(b);
 }
 
-void EigenBackend::max_eigen_vector(const MatrixXc& src, VectorXc& dst) {
+void EigenBackend::max_eigen_vector(MatrixXc& src, VectorXc& dst) {
   const Eigen::ComplexEigenSolver<MatrixXc> ces(src);
   auto idx = 0;
   ces.eigenvalues().cwiseAbs2().maxCoeff(&idx);
