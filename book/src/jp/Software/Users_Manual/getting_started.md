@@ -243,7 +243,7 @@ SDKを使用するには, `autd3.hpp`ヘッダーをインクルードする.
   const auto firm_infos = autd.firmware_infos();
   std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<FirmwareInfo>(std::cout, "\n"));
 ```
-ここで, v2.0.0以外のヴァージョンが表示される場合は, 動作が保証されないので注意する.
+ここで, v2.0以外のヴァージョンが表示される場合は, 動作が保証されないので注意する.
 
 次に, silencerを設定する.
 ```cpp
