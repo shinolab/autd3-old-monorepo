@@ -62,7 +62,7 @@ x, y, zは位置で, rz1, ry, rz2はZYZのオイラー角である.
 
 | Argument name / return | type             | in/out | description                                                  |
 |------------------------|------------------|--------|--------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                |
+| handle                 | void*            | in     | pointer to Controller                                        |
 | x                      | double           | in     | x coordinate of position in millimeter                       |
 | y                      | double           | in     | y coordinate of position in millimeter                       |
 | z                      | double           | in     | z coordinate of position in millimeter                       |
@@ -82,7 +82,7 @@ x, y, zは位置で, qw, qx, qy, qzは回転を表すクオータニオンであ
 
 | Argument name / return | type             | in/out | description                                                  |
 |------------------------|------------------|--------|--------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                |
+| handle                 | void*            | in     | pointer to Controller                                        |
 | x                      | double           | in     | x coordinate of position in millimeter                       |
 | y                      | double           | in     | y coordinate of position in millimeter                       |
 | z                      | double           | in     | z coordinate of position in millimeter                       |
@@ -105,7 +105,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                                                        |
 |------------------------|------------------|--------|--------------------------------------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                                                      |
+| handle                 | void*            | in     | pointer to Controller                                                                                              |
 | return                 | int32_t          | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred.             |
 
 ##  AUTDClear (autd3capi/autd3capi-legacy)
@@ -120,7 +120,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                                                        |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------                           |
-| handle                 | void*            | in     | ControllerPtr                                                                                                      |
+| handle                 | void*            | in     | pointer to Controller                                                                                              |
 | return                 | int32_t          | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred.             |
 
 ##  AUTDSynchronize (autd3capi/autd3capi-legacy)
@@ -135,7 +135,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                                                        |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------                           |
-| handle                 | void*            | in     | ControllerPtr                                                                                                      |
+| handle                 | void*            | in     | pointer to Controller                                                                                              |
 | return                 | int32_t          | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred.             |
 
 ##  AUTDSetSilencer (autd3capi/autd3capi-legacy)
@@ -150,7 +150,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                                                        |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------                           |
-| handle                 | void*            | in     | ControllerPtr                                                                                                      |
+| handle                 | void*            | in     | pointer to Controller                                                                                              |
 | step                   | uint16_t         | in     | silencer update step                                                                                               |
 | cycle                  | uint16_t         | in     | silencer update cycle                                                                                              |
 | return                 | int32_t          | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred.             |
@@ -176,7 +176,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                             |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                           |
+| handle                 | void*            | in     | pointer to Controller                                                                   |
 | return                 | bool             | -      | true if controller is open                                                              |
 
 ##  AUTDGetForceFan (autd3capi/autd3capi-legacy)
@@ -187,7 +187,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                             |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                           |
+| handle                 | void*            | in     | pointer to Controller                                                                   |
 | return                 | bool             | -      | Force fan flag                                                                          |
 
 ##  AUTDGetReadsFPGAInfo (autd3capi/autd3capi-legacy)
@@ -198,7 +198,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                             |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                           |
+| handle                 | void*            | in     | pointer to Controller                                                                   |
 | return                 | bool             | -      | Reads FPGA info flag                                                                    |
 
 ##  AUTDGetCheckAck (autd3capi/autd3capi-legacy)
@@ -209,7 +209,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                             |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                           |
+| handle                 | void*            | in     | pointer to Controller                                                                   |
 | return                 | bool             | -      | Check ack flag                                                                          |
 
 ##  AUTDSetReadsFPGAInfo (autd3capi/autd3capi-legacy)
@@ -222,7 +222,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                             |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                           |
+| handle                 | void*            | in     | pointer to Controller                                                                   |
 | reads_fpga_info        | bool             | in     | read FPGA info flag                                                                     |
 | return                 | void             | -      | -                                                                                       |
 
@@ -234,7 +234,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                             |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                           |
+| handle                 | void*            | in     | pointer to Controller                                                                   |
 | check ack              | bool             | in     | check ack flag                                                                          |
 | return                 | void             | -      | -                                                                                       |
 
@@ -248,7 +248,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                             |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                           |
+| handle                 | void*            | in     | pointer to Controller                                                                   |
 | force_fan              | bool             | in     | force fan      flag                                                                     |
 | return                 | void             | -      | -                                                                                       |
 
@@ -260,7 +260,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                             |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                           |
+| handle                 | void*            | in     | pointer to Controller                                                                   |
 | return                 | double           | -      | Speed of sound in m/s                                                                   |
 
 ##  AUTDSetSoundSpeed (autd3capi/autd3capi-legacy)
@@ -271,7 +271,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                             |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                           |
+| handle                 | void*            | in     | pointer to Controller                                                                   |
 | sound_speed            | double           | in     | Speed of sound in m/s                                                                   |
 | return                 | void             | -      | -                                                                                       |
 
@@ -284,7 +284,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return       | type             | in/out | description                                                                             |
 |------------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                       | void*            | in     | ControllerPtr                                                                           |
+| handle                       | void*            | in     | pointer to Controller                                                                   |
 | device_idx                   | int32_t          | in     | device index                                                                            |
 | local_trans_idx              | int32_t          | in     | local transducer index                                                                  |
 | return                       | double           | -      | frequency of the transducer                                                             |
@@ -300,7 +300,7 @@ autd3capi-legacyにおいては, この関数は何もしない.
 
 | Argument name / return       | type             | in/out | description                                                                             |
 |------------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                       | void*            | in     | ControllerPtr                                                                           |
+| handle                       | void*            | in     | pointer to Controller                                                                   |
 | device_idx                   | int32_t          | in     | device index                                                                            |
 | local_trans_idx              | int32_t          | in     | local transducer index                                                                  |
 | frequency                    | double           | -      | frequency of the transducer                                                             |
@@ -315,7 +315,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return       | type             | in/out | description                                                                             |
 |------------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                       | void*            | in     | ControllerPtr                                                                           |
+| handle                       | void*            | in     | pointer to Controller                                                                   |
 | device_idx                   | int32_t          | in     | device index                                                                            |
 | local_trans_idx              | int32_t          | in     | local transducer index                                                                  |
 | return                       | uint16_t         | -      | cycle of the transducer                                                                 |
@@ -331,7 +331,7 @@ autd3capi-legacyにおいては, この関数は何もしない.
 
 | Argument name / return       | type             | in/out | description                                                                             |
 |------------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                       | void*            | in     | ControllerPtr                                                                           |
+| handle                       | void*            | in     | pointer to Controller                                                                   |
 | device_idx                   | int32_t          | in     | device index                                                                            |
 | local_trans_idx              | int32_t          | in     | local transducer index                                                                  |
 | frequency                    | uint16_t         | -      | cycle of the transducer                                                                 |
@@ -346,7 +346,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return       | type             | in/out | description                                                                             |
 |------------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                       | void*            | in     | ControllerPtr                                                                           |
+| handle                       | void*            | in     | pointer to Controller                                                                   |
 | device_idx                   | int32_t          | in     | device index                                                                            |
 | local_trans_idx              | int32_t          | in     | local transducer index                                                                  |
 | sound_speed                  | double           | in     | Speed of sound in m/s                                                                   |
@@ -360,7 +360,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                             |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                           |
+| handle                 | void*            | in     | pointer to Controller                                                                   |
 | return                 | double           | -      | attenuation coefficient in Np/mm                                                        |
 
 ##  AUTDSetAttenuation (autd3capi/autd3capi-legacy)
@@ -371,7 +371,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                             |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                           |
+| handle                 | void*            | in     | pointer to Controller                                                                   |
 | attenuation            | double           | in     | attenuation coefficient in Np/mm                                                        |
 | return                 | void             | -      | -                                                                                       |
 
@@ -391,7 +391,7 @@ falseの場合には`AUTDGetLastError`でエラーメッセージを取得でき
 
 | Argument name / return | type             | in/out | description                                                                             |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                           |
+| handle                 | void*            | in     | pointer to Controller                                                                   |
 | out                    | uint8_t*         | out    | FPGA information list                                                                   |
 | return                 | bool             | -      | true if success                                                                         |
 
@@ -410,7 +410,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                                                        |
 |------------------------|------------------|--------|--------------------------------------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                                                      |
+| handle                 | void*            | in     | pointer to Controller                                                                                              |
 | return                 | int32_t          | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred.             |
 
 ##  AUTDNumDevices (autd3capi/autd3capi-legacy)
@@ -421,7 +421,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                             |
 |----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                           |
+| handle                 | void*            | in     | pointer to Controller                                                                   |
 | return                 | int32_t          | -      | number of devices                                                                       |
 
 ##  AUTDTransPosition (autd3capi/autd3capi-legacy)
@@ -433,7 +433,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                             |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                           |
+| handle                 | void*            | in     | pointer to Controller                                                                   |
 | device_idx             | int32_t          | in     | device index                                                                            |
 | local_trans_idx        | int32_t          | in     | local transducer index                                                                  |
 | x                      | double*          | out    | x coordinate of transducer position                                                     |
@@ -450,7 +450,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                             |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                           |
+| handle                 | void*            | in     | pointer to Controller                                                                   |
 | device_idx             | int32_t          | in     | device index                                                                            |
 | local_trans_idx        | int32_t          | in     | local transducer index                                                                  |
 | x                      | double*          | out    | x coordinate of x-direction                                                             |
@@ -467,7 +467,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                             |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                           |
+| handle                 | void*            | in     | pointer to Controller                                                                   |
 | device_idx             | int32_t          | in     | device index                                                                            |
 | local_trans_idx        | int32_t          | in     | local transducer index                                                                  |
 | x                      | double*          | out    | x coordinate of y-direction                                                             |
@@ -484,7 +484,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                             |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                           |
+| handle                 | void*            | in     | pointer to Controller                                                                   |
 | device_idx             | int32_t          | in     | device index                                                                            |
 | local_trans_idx        | int32_t          | in     | local transducer index                                                                  |
 | x                      | double*          | out    | x coordinate of z-direction                                                             |
@@ -507,7 +507,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                             |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                           |
+| handle                 | void*            | in     | pointer to Controller                                                                   |
 | out                    | void**           | out    | pointer to pointer to Firmware information list                                         |
 | return                 | int32_t          | -      | if $<0$ some error occurred, else size of Firmware information list                     |
 
@@ -557,7 +557,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 | Argument name / return | type             | in/out | description                                                                             |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
 | gain                   | void**           | out    | pointer to pointer to Grouped gain                                                      |
-| handle                 | void*            | in     | ControllerPtr                                                                           |
+| handle                 | void*            | in     | pointer to Controller                                                                   |
 | return                 | void             | -      | -                                                                                       |
 
 ##  AUTDGainGroupedAdd (autd3capi/autd3capi-legacy)
@@ -773,7 +773,7 @@ Modulationを削除する.
 
 Point STMを作成する.
 
-作成したModulationは最後に`AUTDDeleteSTM`で削除する必要がある. 
+作成したSTMは最後に`AUTDDeleteSTM`で削除する必要がある. 
 
 | Argument name / return | type             | in/out | description                                                                             |
 |----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
@@ -784,7 +784,7 @@ Point STMを作成する.
 
 Gain STMを作成する.
 
-作成したModulationは最後に`AUTDDeleteSTM`で削除する必要がある. 
+作成したSTMは最後に`AUTDDeleteSTM`で削除する必要がある. 
 
 | Argument name / return | type             | in/out | description                                                                             |
 |----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
@@ -882,7 +882,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                                                        |
 |------------------------|------------------|--------|--------------------------------------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                                                      |
+| handle                 | void*            | in     | pointer to Controller                                                                                              |
 | return                 | int32_t          | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred.             |
 
 ##  AUTDSendHeader (autd3capi/autd3capi-legacy)
@@ -899,7 +899,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                                                        |
 |------------------------|------------------|--------|--------------------------------------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                                                      |
+| handle                 | void*            | in     | pointer to Controller                                                                                              |
 | header                 | void*            | in     | pointer to header data                                                                                             |
 | return                 | int32_t          | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred.             |
 
@@ -917,7 +917,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                                                        |
 |------------------------|------------------|--------|--------------------------------------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                                                      |
+| handle                 | void*            | in     | pointer to Controller                                                                                              |
 | body                   | void*            | in     | pointer to body data                                                                                               |
 | return                 | int32_t          | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred.             |
 
@@ -935,7 +935,389 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type             | in/out | description                                                                                                        |
 |------------------------|------------------|--------|--------------------------------------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | ControllerPtr                                                                                                      |
+| handle                 | void*            | in     | pointer to Controller                                                                                          |
 | header                 | void*            | in     | pointer to header data                                                                                             |
 | body                   | void*            | in     | pointer to body data                                                                                               |
 | return                 | int32_t          | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred.             |
+
+## AUTDEigenBackend (autd3capi-gain-holo/autd3capi-gain-holo-legacy)
+
+Eigen Backendを作成する.
+
+作成したBackendは最後に`AUTDDeleteBackend`で削除する必要がある. 
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| out                    | void**           | out    | pointer to pointer to Eigen backend                                                     |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDDeleteBackend (autd3capi-gain-holo/autd3capi-gain-holo-legacy)
+
+Backendを作成する.
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| backend                | void*            | in     | pointer to backend                                                                      |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDAmplitudeConstraintDontCate (autd3capi-gain-holo/autd3capi-gain-holo-legacy)
+
+DontCare AmplitudeConstraintを作成する.
+
+作成したamplitude constraintは最後に`AUTDDeleteAmplitudeConstraint`で削除する必要がある. 
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| out                    | void**           | out    | pointer to pointer to DontCare amplitude constraint                                     |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDAmplitudeConstraintNormalize (autd3capi-gain-holo/autd3capi-gain-holo-legacy)
+
+Normalize AmplitudeConstraintを作成する.
+
+作成したamplitude constraintは最後に`AUTDDeleteAmplitudeConstraint`で削除する必要がある. 
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| out                    | void**           | out    | pointer to pointer to Normalize amplitude constraint                                    |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDAmplitudeConstraintUniform (autd3capi-gain-holo/autd3capi-gain-holo-legacy)
+
+Uniform AmplitudeConstraintを作成する.
+
+作成したamplitude constraintは最後に`AUTDDeleteAmplitudeConstraint`で削除する必要がある. 
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| out                    | void**           | out    | pointer to pointer to Uniform amplitude constraint                                      |
+| value                  | double           | in     | amplitude for all transducers                                                           |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDAmplitudeConstraintClamp (autd3capi-gain-holo/autd3capi-gain-holo-legacy)
+
+Clamp AmplitudeConstraintを作成する.
+
+作成したamplitude constraintは最後に`AUTDDeleteAmplitudeConstraint`で削除する必要がある. 
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| out                    | void**           | out    | pointer to pointer to Clamp amplitude constraint                                        |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDDeleteAmplitudeConstraint (autd3capi-gain-holo/autd3capi-gain-holo-legacy)
+
+AmplitudeConstraintを削除する.
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| constraint             | void*            | in     | pointer to amplitude constraint                                                         |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDGainHoloSDP (autd3capi-gain-holo/autd3capi-gain-holo-legacy)
+
+SDP holo gainを作成する.
+
+作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| gain                   | void**           | out    | pointer to pointer to SDP gain                                                          |
+| backend                | void*            | in     | pointer to backend                                                                      |
+| alpha                  | double           | in     | parameter                                                                               |
+| lambda                 | double           | in     | parameter                                                                               |
+| repeat                 | uint64_t         | in     | parameter                                                                               |
+| constraint             | void*            | in     | pointer to amplitude constraint                                                         |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDGainHoloEVD (autd3capi-gain-holo/autd3capi-gain-holo-legacy)
+
+EVD holo gainを作成する.
+
+作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| gain                   | void**           | out    | pointer to pointer to EVD gain                                                          |
+| backend                | void*            | in     | pointer to backend                                                                      |
+| gamma                  | double           | in     | parameter                                                                               |
+| constraint             | void*            | in     | pointer to amplitude constraint                                                         |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDGainHoloNaive (autd3capi-gain-holo/autd3capi-gain-holo-legacy)
+
+Naive holo gainを作成する.
+
+作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| gain                   | void**           | out    | pointer to pointer to Naive gain                                                        |
+| backend                | void*            | in     | pointer to backend                                                                      |
+| constraint             | void*            | in     | pointer to amplitude constraint                                                         |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDGainHoloGS (autd3capi-gain-holo/autd3capi-gain-holo-legacy)
+
+GS holo gainを作成する.
+
+作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| gain                   | void**           | out    | pointer to pointer to GS gain                                                           |
+| backend                | void*            | in     | pointer to backend                                                                      |
+| repeat                 | uint64_t         | in     | parameter                                                                               |
+| constraint             | void*            | in     | pointer to amplitude constraint                                                         |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDGainHoloGSPAT (autd3capi-gain-holo/autd3capi-gain-holo-legacy)
+
+GSPAT holo gainを作成する.
+
+作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| gain                   | void**           | out    | pointer to pointer to GSPAT gain                                                        |
+| backend                | void*            | in     | pointer to backend                                                                      |
+| repeat                 | uint64_t         | in     | parameter                                                                               |
+| constraint             | void*            | in     | pointer to amplitude constraint                                                         |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDGainHoloLM (autd3capi-gain-holo/autd3capi-gain-holo-legacy)
+
+LM holo gainを作成する.
+
+作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| gain                   | void**           | out    | pointer to pointer to LM gain                                                           |
+| backend                | void*            | in     | pointer to backend                                                                      |
+| eps_1                  | double           | in     | parameter                                                                               |
+| eps_2                  | double           | in     | parameter                                                                               |
+| tau                    | double           | in     | parameter                                                                               |
+| k_max                  | uint64_t         | in     | parameter                                                                               |
+| initial                | double*          | in     | initial guess                                                                           |
+| initial_size           | int32_t          | in     | size of initial                                                                         |
+| constraint             | void*            | in     | pointer to amplitude constraint                                                         |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDGainHoloGaussNewton (autd3capi-gain-holo/autd3capi-gain-holo-legacy)
+
+GaussNewton holo gainを作成する.
+
+作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| gain                   | void**           | out    | pointer to pointer to GaussNewton gain                                                  |
+| backend                | void*            | in     | pointer to backend                                                                      |
+| eps_1                  | double           | in     | parameter                                                                               |
+| eps_2                  | double           | in     | parameter                                                                               |
+| k_max                  | uint64_t         | in     | parameter                                                                               |
+| initial                | double*          | in     | initial guess                                                                           |
+| initial_size           | int32_t          | in     | size of initial                                                                         |
+| constraint             | void*            | in     | pointer to amplitude constraint                                                         |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDGainHoloGradientDescent (autd3capi-gain-holo/autd3capi-gain-holo-legacy)
+
+GradientDescent holo gainを作成する.
+
+作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| gain                   | void**           | out    | pointer to pointer to GradientDescent gain                                              |
+| backend                | void*            | in     | pointer to backend                                                                      |
+| eps                    | double           | in     | parameter                                                                               |
+| step                   | double           | in     | parameter                                                                               |
+| k_max                  | uint64_t         | in     | parameter                                                                               |
+| initial                | double*          | in     | initial guess                                                                           |
+| initial_size           | int32_t          | in     | size of initial                                                                         |
+| constraint             | void*            | in     | pointer to amplitude constraint                                                         |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDGainHoloGreedy (autd3capi-gain-holo/autd3capi-gain-holo-legacy)
+
+Greedy holo gainを作成する.
+
+作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| gain                   | void**           | out    | pointer to pointer to Greedy gain                                                       |
+| backend                | void*            | in     | pointer to backend                                                                      |
+| phase_div              | int32_t          | in     | parameter                                                                               |
+| constraint             | void*            | in     | pointer to amplitude constraint                                                         |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDGainHoloAdd (autd3capi-gain-holo/autd3capi-gain-holo-legacy)
+
+Holo gainに焦点を追加する.
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| gain                   | void*            | in     | pointer to holo gain                                                                    |
+| x                      | double           | in     | x coordinate of the focus                                                               |
+| y                      | double           | in     | y coordinate of the focus                                                               |
+| z                      | double           | in     | z coordinate of the focus                                                               |
+| amp                    | double           | in     | amplitude of the focus                                                                  |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDBLASBackend (autd3capi-backend-blas)
+
+BLAS Backendを作成する.
+
+作成したBackendは最後に`AUTDDeleteBackend`で削除する必要がある. 
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| out                    | void**           | out    | pointer to pointer to BLAS backend                                                      |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDCUDABackend (autd3capi-backend-cuda)
+
+CUDA Backendを作成する.
+
+作成したBackendは最後に`AUTDDeleteBackend`で削除する必要がある. 
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| out                    | void**           | out    | pointer to pointer to CUDA backend                                                      |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDLinkEmulator (autd3capi-link-emulator)
+
+NormalモードのEmulator linkを作成する.
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| out                    | void**           | out    | pointer to pointer to Emulator link                                                     |
+| port                   | uint16_t         | in     | port number                                                                             |
+| cnt                    | void*            | in     | pointer to Controller                                                                   |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDLinkEmulatorLegacy (autd3capi-link-emulator)
+
+LegacyモードのEmulator linkを作成する.
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| out                    | void**           | out    | pointer to pointer to Emulator link                                                     |
+| port                   | uint16_t         | in     | port number                                                                             |
+| cnt                    | void*            | in     | pointer to Controller                                                                   |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDLinkRemoteTwinCAT (autd3capi-link-remote-twincat)
+
+RemoteTwinCAT linkを作成する.
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| out                    | void**           | out    | pointer to pointer to RemoteTwinCAT link                                                |
+| remote_ip_addr         | char*            | in     | remote ip address                                                                       |
+| remote_ams_net_id      | char*            | in     | remote ams net id                                                                       |
+| local_ams_net_id       | char*            | in     | local ams net id                                                                        |
+| cycle_ticks            | uint16_t         | in     | cycle ticks                                                                             |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDGetAdapterPointer (autd3capi-link-soem)
+
+Adapter listへのポインタを取得する.
+
+この関数で作成したlistは最後に`AUTDFreeAdapterPointer`で開放する必要がある.
+
+実際のAdapterの情報は`AUTDGetAdapter`で取得する.
+
+この関数はAdapter listのサイズを返す.
+
+| Argument name / return | type             | in/out | description                                                                             |
+|------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
+| out                    | void**           | out    | pointer to pointer to adapter list                                                      |
+| return                 | int32_t          | -      | size of adapter list                                                                    |
+
+## AUTDGetAdapter (autd3capi-link-soem)
+
+アダプターの名前と説明を取得する.
+
+`p_adapter`は`AUTDGetAdapterPointer`で作成したものを使う.
+
+`desc`, `name`はそれぞれ長さ128のバッファを渡せば十分である.
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| p_adapter              | void*            | in     | pointer to adapter list                                                                 |
+| index                  | int32_t          | in     | index                                                                                   |
+| desc                   | char*            | out    | pointer to adapter description                                                          |
+| name                   | char*            | out    | pointer to adapter name                                                                 |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDFreeAdapterPointer (autd3capi-link-soem)
+
+Adapter listへのポインタを削除する.
+
+| Argument name / return | type             | in/out | description                                                                             |
+|------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
+| p_adapter              | void*            | in     | pointer to adapter list                                                                 |
+| return                 | int32_t          | -      | size of adapter list                                                                    |
+
+## AUTDLinkSOEM (autd3capi-link-soem)
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| out                    | void**           | out    | pointer to pointer to TwinCAT link                                                      |
+| ifname                 | char*            | in     | interface name                                                                          |
+| device_num             | int32_t          | in     | number of devices                                                                       |
+| cycle_ticks            | uint16_t         | in     | cycle ticks                                                                             |
+| on_lost                | void*            | in     | pointer to on-lost callback                                                             |
+| high_precision         | bool             | in     | high precision mode                                                                     |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDLinkTwinCAT (autd3capi-link-twincat)
+
+TwinCAT linkを作成する.
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| out                    | void**           | out    | pointer to pointer to TwinCAT link                                                      |
+| cycle_ticks            | uint16_t         | in     | cycle ticks                                                                             |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDModulationRawPCM (autd3capi-modulation-audio-file)
+
+RawPCM modulationを作成する.
+
+作成したModulationは最後に`AUTDDeleteModulation`で削除する必要がある.
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| mod                    | void**           | out    | pointer to pointer to Sine modulation                                                   |
+| filename               | char*            | in     | path to pcm file                                                                        |
+| sampling_freq          | double           | in     | pcm sampling frequency                                                                  |
+| mod_sampling_freq_div  | uint32_t         | in     | modulation sampling frequency division                                                  |
+| return                 | void             | -      | -                                                                                       |
+
+## AUTDModulationWav (autd3capi-modulation-audio-file)
+
+Wav modulationを作成する.
+
+作成したModulationは最後に`AUTDDeleteModulation`で削除する必要がある.
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| mod                    | void**           | out    | pointer to pointer to Sine modulation                                                   |
+| filename               | char*            | in     | path to pcm file                                                                        |
+| mod_sampling_freq_div  | uint32_t         | in     | modulation sampling frequency division                                                  |
+| return                 | void             | -      | -                                                                                       |
