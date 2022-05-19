@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 19/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -21,10 +21,10 @@ EXPORT_AUTD void AUTDCreateController(void** out);
 EXPORT_AUTD bool AUTDOpenController(void* handle, void* link);
 EXPORT_AUTD int32_t AUTDAddDevice(void* handle, double x, double y, double z, double rz1, double ry, double rz2);
 EXPORT_AUTD int32_t AUTDAddDeviceQuaternion(void* handle, double x, double y, double z, double qw, double qx, double qy, double qz);
-EXPORT_AUTD bool AUTDCloseController(void* handle);
-EXPORT_AUTD bool AUTDClear(void* handle);
-EXPORT_AUTD bool AUTDSynchronize(void* handle);
-EXPORT_AUTD bool AUTDSetSilencer(void* handle, uint16_t step, uint16_t cycle);
+EXPORT_AUTD int32_t AUTDClose(void* handle);
+EXPORT_AUTD int32_t AUTDClear(void* handle);
+EXPORT_AUTD int32_t AUTDSynchronize(void* handle);
+EXPORT_AUTD int32_t AUTDSetSilencer(void* handle, uint16_t step, uint16_t cycle);
 EXPORT_AUTD void AUTDFreeController(const void* handle);
 EXPORT_AUTD bool AUTDIsOpen(const void* handle);
 EXPORT_AUTD bool AUTDGetForceFan(const void* handle);
@@ -58,12 +58,14 @@ EXPORT_AUTD void AUTDGainGroupedAdd(void* grouped_gain, int32_t device_id, void*
 EXPORT_AUTD void AUTDGainFocus(void** gain, double x, double y, double z, double amp);
 EXPORT_AUTD void AUTDGainBesselBeam(void** gain, double x, double y, double z, double n_x, double n_y, double n_z, double theta_z, double amp);
 EXPORT_AUTD void AUTDGainPlaneWave(void** gain, double n_x, double n_y, double n_z, double amp);
+EXPORT_AUTD void AUTDGainCustom(void** gain, const double* amp, const double* phase, uint64_t size);
 EXPORT_AUTD void AUTDDeleteGain(const void* gain);
 EXPORT_AUTD void AUTDModulationStatic(void** mod, double amp);
 EXPORT_AUTD void AUTDModulationSine(void** mod, int32_t freq, double amp, double offset);
 EXPORT_AUTD void AUTDModulationSineSquared(void** mod, int32_t freq, double amp, double offset);
 EXPORT_AUTD void AUTDModulationSineLegacy(void** mod, double freq, double amp, double offset);
 EXPORT_AUTD void AUTDModulationSquare(void** mod, int32_t freq, double low, double high, double duty);
+EXPORT_AUTD void AUTDModulationCustom(void** mod, const uint8_t* buffer, uint64_t size, uint32_t freq_div);
 EXPORT_AUTD uint32_t AUTDModulationSamplingFrequencyDivision(const void* mod);
 EXPORT_AUTD void AUTDModulationSetSamplingFrequencyDivision(void* mod, uint32_t freq_div);
 EXPORT_AUTD double AUTDModulationSamplingFrequency(const void* mod);
@@ -78,10 +80,10 @@ EXPORT_AUTD double AUTDSTMSamplingFrequency(const void* stm);
 EXPORT_AUTD uint32_t AUTDSTMSamplingFrequencyDivision(const void* stm);
 EXPORT_AUTD void AUTDSTMSetSamplingFrequencyDivision(void* stm, uint32_t freq_div);
 EXPORT_AUTD void AUTDDeleteSTM(const void* stm);
-EXPORT_AUTD bool AUTDStop(void* handle);
-EXPORT_AUTD bool AUTDSendHeader(void* handle, void* header);
-EXPORT_AUTD bool AUTDSendBody(void* handle, void* body);
-EXPORT_AUTD bool AUTDSendHeaderBody(void* handle, void* header, void* body);
+EXPORT_AUTD int32_t AUTDStop(void* handle);
+EXPORT_AUTD int32_t AUTDSendHeader(void* handle, void* header);
+EXPORT_AUTD int32_t AUTDSendBody(void* handle, void* body);
+EXPORT_AUTD int32_t AUTDSendHeaderBody(void* handle, void* header, void* body);
 
 #ifdef __cplusplus
 }
