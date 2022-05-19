@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 19/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -575,11 +575,12 @@ void gradientdescnet_calc_impl(const BackendPtr& backend, const std::vector<core
 
 template <typename T>
 void greedy_calc_impl(const BackendPtr&, const std::vector<core::Vector3>& foci, std::vector<complex>& amps, const core::Geometry<T>& geometry,
-                      const size_t phase_div, AmplitudeConstraint constraint, typename T::D& drives) {
+                      const size_t phase_div, const std::function<double(const VectorXd&, const VectorXc&)>& objective,
+                      AmplitudeConstraint constraint, typename T::D& drives) {
   const auto m = static_cast<Eigen::Index>(foci.size());
   const auto n = geometry.num_transducers();
 
-  const VectorXc amps_ = Eigen::Map<VectorXc, Eigen::Unaligned>(amps.data(), static_cast<Eigen::Index>(amps.size()));
+  const VectorXd amps_ = Eigen::Map<VectorXc, Eigen::Unaligned>(amps.data(), static_cast<Eigen::Index>(amps.size())).real();
 
   std::vector<complex> phases;
   phases.reserve(phase_div);
@@ -612,7 +613,7 @@ void greedy_calc_impl(const BackendPtr&, const std::vector<core::Vector3>& foci,
     auto min_v = std::numeric_limits<double>::infinity();
     for (size_t p = 0; p < phases.size(); p++) {
       transfer_foci(transducer, phases[p], foci, tmp[p]);
-      if (const auto v = (amps_ - (tmp[p] + cache).cwiseAbs()).cwiseAbs().sum(); v < min_v) {
+      if (const auto v = objective(amps_, tmp[p] + cache); v < min_v) {
         min_v = v;
         min_idx = p;
       }
@@ -692,11 +693,11 @@ void GradientDescent<core::NormalTransducer>::calc(const core::Geometry<core::No
 }
 template <>
 void Greedy<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
-  greedy_calc_impl(_backend, _foci, _amps, geometry, phase_div, constraint, this->_props.drives);
+  greedy_calc_impl(_backend, _foci, _amps, geometry, phase_div, objective, constraint, this->_props.drives);
 }
 template <>
 void Greedy<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
-  greedy_calc_impl(_backend, _foci, _amps, geometry, phase_div, constraint, this->_props.drives);
+  greedy_calc_impl(_backend, _foci, _amps, geometry, phase_div, objective, constraint, this->_props.drives);
 }
 
 }  // namespace autd3::gain::holo
