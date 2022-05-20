@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/05/2022
+// Last Modified: 20/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -41,6 +41,7 @@ inline void modulation(const uint8_t msg_id, const uint8_t* const mod_data, cons
   tx.header().cpu_flag.set(CPUControlFlags::MOD);
   tx.header().cpu_flag.remove(CPUControlFlags::MOD_BEGIN);
   tx.header().cpu_flag.remove(CPUControlFlags::MOD_END);
+  tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
   tx.header().size = static_cast<uint8_t>(mod_size);
 
   tx.num_bodies = 0;
@@ -79,6 +80,7 @@ inline void config_silencer(const uint8_t msg_id, const uint16_t cycle, const ui
   tx.header().cpu_flag.remove(CPUControlFlags::MOD);
   tx.header().cpu_flag.remove(CPUControlFlags::CONFIG_SYNC);
   tx.header().cpu_flag.set(CPUControlFlags::CONFIG_SILENCER);
+  tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
 
   tx.header().silencer_header().cycle = cycle;
   tx.header().silencer_header().step = step;
