@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/05/2022
+// Last Modified: 20/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -69,6 +69,8 @@ class Controller {
    * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
    */
   bool config_silencer(const SilencerConfig config) {
+    _tx_buf.clear();
+
     driver::force_fan(_tx_buf, force_fan);
     driver::reads_fpga_info(_tx_buf, reads_fpga_info);
 
@@ -84,6 +86,8 @@ class Controller {
    * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
    */
   bool synchronize() {
+    _tx_buf.clear();
+
     driver::force_fan(_tx_buf, force_fan);
     driver::reads_fpga_info(_tx_buf, reads_fpga_info);
 
@@ -104,6 +108,8 @@ class Controller {
    * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
    */
   bool update_flag() {
+    _tx_buf.clear();
+
     driver::force_fan(_tx_buf, force_fan);
     driver::reads_fpga_info(_tx_buf, reads_fpga_info);
     _tx_buf.header().msg_id = get_id();
@@ -131,6 +137,7 @@ class Controller {
   bool clear() {
     const auto check_ack_ = check_ack;
     check_ack = true;
+    _tx_buf.clear();
     driver::clear(_tx_buf);
     if (!_link->send(_tx_buf)) {
       check_ack = check_ack_;
@@ -172,6 +179,8 @@ class Controller {
     const auto check_ack_ = check_ack;
     check_ack = true;
 
+    _tx_buf.clear();
+
     cpu_version(_tx_buf);
     if (!_link->send(_tx_buf)) return firmware_infos;
     if (!wait_msg_processed(50)) return firmware_infos;
@@ -206,6 +215,8 @@ class Controller {
   auto send(H& header) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, bool> {
     header.init();
 
+    _tx_buf.clear();
+
     driver::force_fan(_tx_buf, force_fan);
     driver::reads_fpga_info(_tx_buf, reads_fpga_info);
 
@@ -227,8 +238,7 @@ class Controller {
   auto send(B& body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody<T>, B>, bool> {
     body.init();
 
-    driver::force_fan(_tx_buf, force_fan);
-    driver::reads_fpga_info(_tx_buf, reads_fpga_info);
+    _tx_buf.clear();
 
     while (true) {
       const auto msg_id = get_id();
@@ -249,6 +259,8 @@ class Controller {
       typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody<T>, B>, bool> {
     header.init();
     body.init();
+
+    _tx_buf.clear();
 
     driver::force_fan(_tx_buf, force_fan);
     driver::reads_fpga_info(_tx_buf, reads_fpga_info);
