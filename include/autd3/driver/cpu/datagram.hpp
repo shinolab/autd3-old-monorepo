@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/05/2022
+// Last Modified: 21/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -34,12 +34,6 @@ struct TxDatagram {
     TxDatagram tx(_size);
     std::copy(_data.begin(), _data.end(), tx._data.begin());
     return tx;
-  }
-
-  void clear() noexcept {
-    header().cpu_flag = CPUControlFlags::NONE;
-    header().size = 0;
-    num_bodies = 0;
   }
 
   [[nodiscard]] size_t size() const noexcept { return _size; }

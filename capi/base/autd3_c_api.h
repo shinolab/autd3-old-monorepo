@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/05/2022
+// Last Modified: 21/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -24,7 +24,6 @@ EXPORT_AUTD int32_t AUTDAddDeviceQuaternion(void* handle, double x, double y, do
 EXPORT_AUTD int32_t AUTDClose(void* handle);
 EXPORT_AUTD int32_t AUTDClear(void* handle);
 EXPORT_AUTD int32_t AUTDSynchronize(void* handle);
-EXPORT_AUTD int32_t AUTDSetSilencer(void* handle, uint16_t step, uint16_t cycle);
 EXPORT_AUTD void AUTDFreeController(const void* handle);
 EXPORT_AUTD bool AUTDIsOpen(const void* handle);
 EXPORT_AUTD bool AUTDGetForceFan(const void* handle);
@@ -81,6 +80,8 @@ EXPORT_AUTD uint32_t AUTDSTMSamplingFrequencyDivision(const void* stm);
 EXPORT_AUTD void AUTDSTMSetSamplingFrequencyDivision(void* stm, uint32_t freq_div);
 EXPORT_AUTD void AUTDDeleteSTM(const void* stm);
 EXPORT_AUTD int32_t AUTDStop(void* handle);
+EXPORT_AUTD void AUTDCreateSilencer(void** out, uint16_t step, uint16_t cycle);
+EXPORT_AUTD void AUTDDeleteSilencer(const void* config);
 EXPORT_AUTD int32_t AUTDSendHeader(void* handle, void* header);
 EXPORT_AUTD int32_t AUTDSendBody(void* handle, void* body);
 EXPORT_AUTD int32_t AUTDSendHeaderBody(void* handle, void* header, void* body);

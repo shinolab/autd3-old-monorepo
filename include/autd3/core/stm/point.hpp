@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 21/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -80,8 +80,8 @@ struct PointSTM final : public STM<T> {
 
   size_t size() const override { return _points.size(); }
   void init() override { _sent = 0; }
-  void pack(const uint8_t msg_id, const Geometry<T>& geometry, driver::TxDatagram& tx) override {
-    point_stm_header(msg_id, tx);
+  void pack(const Geometry<T>& geometry, driver::TxDatagram& tx) override {
+    point_stm_header(tx);
 
     if (is_finished()) return;
 

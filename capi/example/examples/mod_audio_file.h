@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/05/2022
+// Last Modified: 21/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -18,7 +18,10 @@
 #define NUM_TRANS_Y (14)
 
 void mod_audio_file(void* autd) {
-  AUTDSetSilencer(autd, 10, 4096);
+  void* s = NULL;
+  AUTDCreateSilencer(&s, 10, 4096);
+  AUTDSendHeader(autd, s);
+  AUTDDeleteSilencer(s);
 
   double x = TRANS_SPACING_MM * (((double)NUM_TRANS_X - 1.0) / 2.0);
   double y = TRANS_SPACING_MM * (((double)NUM_TRANS_Y - 1.0) / 2.0);
