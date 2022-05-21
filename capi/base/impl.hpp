@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/05/2022
+// Last Modified: 21/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -92,12 +92,6 @@ int32_t AUTDClear(void* const handle) {
 int32_t AUTDSynchronize(void* const handle) {
   auto* wrapper = static_cast<Controller*>(handle);
   AUTD3_CAPI_TRY2(return wrapper->synchronize() ? 1 : 0)
-}
-
-int32_t AUTDSetSilencer(void* handle, const uint16_t step, const uint16_t cycle) {
-  auto* wrapper = static_cast<Controller*>(handle);
-  const auto config = autd3::SilencerConfig(step, cycle);
-  AUTD3_CAPI_TRY2(return wrapper->config_silencer(config) ? 1 : 0)
 }
 void AUTDFreeController(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
@@ -356,6 +350,12 @@ void AUTDDeleteSTM(const void* const stm) {
 int32_t AUTDStop(void* const handle) {
   auto* const wrapper = static_cast<Controller*>(handle);
   AUTD3_CAPI_TRY2(return wrapper->stop() ? 1 : 0)
+}
+
+void AUTDCreateSilencer(void** out, const uint16_t step, const uint16_t cycle) { *out = new autd3::SilencerConfig(step, cycle); }
+void AUTDDeleteSilencer(const void* config) {
+  const auto* const config_ = static_cast<const autd3::SilencerConfig*>(config);
+  delete config_;
 }
 
 int32_t AUTDSendHeader(void* const handle, void* const header) {

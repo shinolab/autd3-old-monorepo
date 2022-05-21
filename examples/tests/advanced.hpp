@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 21/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -44,8 +44,8 @@ class UniformGain final : public autd3::Gain<T> {
 
 template <typename T>
 void advanced_test(autd3::Controller<T>& autd) {
-  const auto config = autd3::SilencerConfig::none();
-  autd.config_silencer(config);
+  auto config = autd3::SilencerConfig::none();
+  autd.send(config);
 
   UniformGain<T> g;
   BurstModulation m;

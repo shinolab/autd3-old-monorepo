@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 21/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -21,8 +21,8 @@ namespace fs = std::filesystem;
 
 template <typename T>
 void mod_audio_file_test(autd3::Controller<T>& autd) {
-  const auto config = autd3::SilencerConfig();
-  autd.config_silencer(config);
+  autd3::SilencerConfig config;
+  autd.send(config);
 
   const fs::path path = fs::path(std::string(AUTD3_RESOURCE_PATH)).append(std::string("sin150.wav"));
   autd3::modulation::Wav m(path.string());

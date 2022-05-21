@@ -20,11 +20,11 @@ Silencerは, 振動子の駆動信号の急激な変動を抑制し, 静音化�
 
 ## Silencerの設定
 
-Silencerの設定には`SilencerConfig`を`Controller`の`config_silencer`に渡す.
+Silencerの設定には`SilencerConfig`を`send`する.
 
 ```cpp
-  const auto config = SilencerConfig();
-  autd.config_silencer(config);
+  SilencerConfig config;
+  autd.send(config);
 ```
 
 `SilencerConfig`には`step`と`cycle`の2つの設定がある.

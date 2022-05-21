@@ -138,22 +138,27 @@ handleは`AUTDCreateController`で作成したものを使う.
 | handle                 | void*            | in     | pointer to Controller                                                                                              |
 | return                 | int32_t          | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred.             |
 
-##  AUTDSetSilencer (autd3capi/autd3capi-legacy)
+##  AUTDCreateSilencer (autd3capi/autd3capi-legacy)
 
-Silencerを設定する.
+SilencerConfigを作成する.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
-この関数はエラーが発生した場合に0未満の値を返す.
-エラーが生じた場合には`AUTDGetLastError`でエラーメッセージを取得できる.
-また, check ackフラグがtrue, かつ, 返り値が0より大きい場合は, データが実際のデバイスで処理されたことを保証する.
+作成したSilencerConfigは最後に`AUTDDeleteSilencer`で削除する必要がある.
 
 | Argument name / return | type             | in/out | description                                                                                                        |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------                           |
-| handle                 | void*            | in     | pointer to Controller                                                                                              |
+| out                    | void**           | out    | pointer to pointer to SilencerConfig                                                                               |
 | step                   | uint16_t         | in     | silencer update step                                                                                               |
 | cycle                  | uint16_t         | in     | silencer update cycle                                                                                              |
-| return                 | int32_t          | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred.             |
+| return                 | void             | -      | -                                                                                                                  |
+
+##  AUTDDeleteSilencer (autd3capi/autd3capi-legacy)
+
+SilencerConfigを削除する.
+
+| Argument name / return | type             | in/out | description                                                                                                        |
+|------------------------|------------------|--------|-----------------------------------------------------------------------------------------                           |
+| config                 | void*            | out    | pointer to SilencerConfig                                                                                          |
+| return                 | void             | -      | -                                                                                                                  |
 
 ##  AUTDFreeController (autd3capi/autd3capi-legacy)
 
