@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 21/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -33,7 +33,7 @@ struct GainProps {
 
   void init(size_t size) { drives.init(size); }
 
-  void pack_header(const uint8_t msg_id, driver::TxDatagram& tx) { T::pack_header(msg_id, tx); }
+  void pack_header(driver::TxDatagram& tx) { T::pack_header(tx); }
   void pack_body(driver::TxDatagram& tx) { T::pack_body(phase_sent, duty_sent, drives, tx); }
 };
 
@@ -87,8 +87,8 @@ struct Gain : DatagramBody<T> {
     _props.duty_sent = false;
   }
 
-  void pack(uint8_t msg_id, const Geometry<T>& geometry, driver::TxDatagram& tx) override {
-    _props.pack_header(msg_id, tx);
+  void pack(const Geometry<T>& geometry, driver::TxDatagram& tx) override {
+    _props.pack_header(tx);
     if (is_finished()) return;
     build(geometry);
     _props.pack_body(tx);
