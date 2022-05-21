@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/05/2022
+// Last Modified: 21/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -60,12 +60,16 @@ class CPUControlFlags final {
   CPUControlFlags(CPUControlFlags&& obj) = default;
   CPUControlFlags& operator=(CPUControlFlags&& obj) = default;
 
+  constexpr bool operator==(const VALUE a) const { return _value == a; }
+  constexpr bool operator!=(const VALUE a) const { return _value != a; }
   constexpr bool operator==(const CPUControlFlags a) const { return _value == a._value; }
   constexpr bool operator!=(const CPUControlFlags a) const { return _value != a._value; }
 
   void set(const VALUE v) noexcept { _value = static_cast<VALUE>(_value | v); }
 
   void remove(const VALUE v) noexcept { _value = static_cast<VALUE>(_value & ~v); }
+
+  [[nodiscard]] VALUE value() const noexcept { return _value; }
 
  private:
   VALUE _value;

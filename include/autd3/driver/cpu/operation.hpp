@@ -56,8 +56,6 @@ inline void modulation(const uint8_t msg_id, const uint8_t* const mod_data, cons
   tx.header().cpu_flag.remove(CPUControlFlags::MOD_END);
   tx.header().size = static_cast<uint8_t>(mod_size);
 
-  tx.num_bodies = 0;
-
   if (mod_size == 0) {
     tx.header().cpu_flag.remove(CPUControlFlags::MOD);
     return;
@@ -85,8 +83,6 @@ inline void config_silencer(const uint8_t msg_id, const uint16_t cycle, const ui
     ss << "Silencer cycle is oud of range. Minimum is " << SILENCER_CYCLE_MIN << ", but you use " << cycle;
     throw std::runtime_error(ss.str());
   }
-
-  tx.num_bodies = 0;
 
   tx.header().msg_id = msg_id;
   tx.header().cpu_flag.remove(CPUControlFlags::MOD);
