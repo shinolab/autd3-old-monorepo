@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 22/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -164,8 +164,8 @@ void TwinCATImpl::open() {
   throw std::runtime_error("Link to localhost has not been compiled. Rebuild this library on a Twincat3 host machine with TcADS-DLL.");
 }
 void TwinCATImpl::close() { return; }
-bool TwinCATImpl::send(const driver::TxDatagram& tx) { return false; }
-bool TwinCATImpl::receive(driver::RxDatagram& rx) { return false; }
+bool TwinCATImpl::send(const driver::TxDatagram&) { return false; }
+bool TwinCATImpl::receive(driver::RxDatagram&) { return false; }
 #endif  // TC_ADS
 
 }  // namespace autd3::link
