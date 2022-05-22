@@ -12,7 +12,8 @@ add_library(link_soem
   ${SOEM_SRC_FILES}
   ${PROJECT_SOURCE_DIR}/include/autd3/link/soem.hpp
 )
-target_include_directories(link_soem PUBLIC ${PROJECT_SOURCE_DIR}/include)
+
+target_link_libraries(link_soem PUBLIC autd3_common)
 
 target_include_directories(link_soem PRIVATE
   ${PROJECT_SOURCE_DIR}/include

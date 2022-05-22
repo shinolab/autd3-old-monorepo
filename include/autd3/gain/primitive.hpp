@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 22/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -167,7 +167,7 @@ class Grouped final : public core::Gain<T> {
     if (device_id < _geometry.num_devices()) this->_props.drives.copy_from(device_id, gain.drives());
   }
 
-  void calc(const core::Geometry<T>& geometry) override {}
+  void calc(const core::Geometry<T>&) override {}
 
   explicit Grouped(const core::Geometry<T>& geometry) : core::Gain<T>(), _geometry(geometry) {
     this->_props.init(_geometry.num_devices() * driver::NUM_TRANS_IN_UNIT);

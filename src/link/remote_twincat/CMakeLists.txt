@@ -17,7 +17,7 @@ add_library(link_remote_twincat
   ${ADS_PATH}/AdsLib/standalone/NotificationDispatcher.cpp
 )
 
-target_include_directories(link_remote_twincat PUBLIC ${PROJECT_SOURCE_DIR}/include)
+target_link_libraries(link_remote_twincat PUBLIC autd3_common)
 target_include_directories(link_remote_twincat PRIVATE ${ADS_PATH}/AdsLib ${ADS_PATH}/AdsLib/standalone)
 
 if(WIN32)

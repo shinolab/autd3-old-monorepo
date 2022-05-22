@@ -10,7 +10,7 @@
 ```
 `check_ack`が`true`の場合, デバイスにデータを送信する関数 ([Send functions](#send-functions)) は, 送信データがきちんとデバイスで処理されたかどうかを返すようになる.
 
-基本的にOffで問題ないはずだが, 確実にデータを送りたいときにはOnにする.
+信頼性の低いlinkを使用する際はOnにしておくことをおすすめする.
 なお, Onにすると[Send functions](#send-functions)の実行時間は増加する.
 
 ## Force fan

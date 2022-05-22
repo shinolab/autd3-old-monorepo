@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 20/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -22,6 +22,7 @@ EXPORT_AUTD void AUTDAmplitudeConstraintDontCate(void** out);
 EXPORT_AUTD void AUTDAmplitudeConstraintNormalize(void** out);
 EXPORT_AUTD void AUTDAmplitudeConstraintUniform(void** out, double value);
 EXPORT_AUTD void AUTDAmplitudeConstraintClamp(void** out);
+EXPORT_AUTD void AUTDDeleteAmplitudeConstraint(const void* constraint);
 EXPORT_AUTD void AUTDGainHoloSDP(void** gain, const void* backend, double alpha, double lambda, uint64_t repeat, const void* constraint);
 EXPORT_AUTD void AUTDGainHoloEVD(void** gain, const void* backend, double gamma, const void* constraint);
 EXPORT_AUTD void AUTDGainHoloNaive(void** gain, const void* backend, const void* constraint);

@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/05/2022
+// Last Modified: 21/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -27,8 +27,8 @@
 #include "core/geometry/normal_transducer.hpp"
 #include "core/interface.hpp"
 #include "core/link.hpp"
+#include "core/silencer_config.hpp"
 #include "driver/firmware_version.hpp"
-#include "silencer_config.hpp"
 
 namespace autd3 {
 
@@ -65,21 +65,6 @@ class Controller {
   [[nodiscard]] bool is_open() const noexcept { return (_link != nullptr) && _link->is_open(); }
 
   /**
-   * @brief Configure Silencer
-   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
-   */
-  bool config_silencer(const SilencerConfig config) {
-    driver::force_fan(_tx_buf, force_fan);
-    driver::reads_fpga_info(_tx_buf, reads_fpga_info);
-
-    const auto msg_id = get_id();
-    driver::config_silencer(msg_id, config.cycle, config.step, _tx_buf);
-
-    if (!_link->send(_tx_buf)) return false;
-    return wait_msg_processed(50);
-  }
-
-  /**
    * @brief Synchronize devices
    * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
    */
@@ -104,12 +89,9 @@ class Controller {
    * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
    */
   bool update_flag() {
-    driver::force_fan(_tx_buf, force_fan);
-    driver::reads_fpga_info(_tx_buf, reads_fpga_info);
-    _tx_buf.header().msg_id = get_id();
-
-    if (!_link->send(_tx_buf)) return false;
-    return wait_msg_processed(50);
+    core::NullHeader h;
+    core::NullBody<T> b;
+    return send(h, b);
   }
 
   /**
@@ -146,9 +128,9 @@ class Controller {
    * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
    */
   bool stop() {
-    if (!config_silencer(SilencerConfig())) return false;
+    SilencerConfig config;
     gain::Null<T> g;
-    return send(g);
+    return send(config, g);
   }
 
   /**
@@ -172,23 +154,25 @@ class Controller {
     const auto check_ack_ = check_ack;
     check_ack = true;
 
+    const auto pack_ack = [&]() -> std::vector<uint8_t> {
+      std::vector<uint8_t> acks;
+      if (!_link->send(_tx_buf)) return acks;
+      if (!wait_msg_processed(50)) return acks;
+      std::transform(_rx_buf.begin(), _rx_buf.end(), std::back_inserter(acks), [](driver::RxMessage msg) noexcept { return msg.ack; });
+      return acks;
+    };
+
     cpu_version(_tx_buf);
-    if (!_link->send(_tx_buf)) return firmware_infos;
-    if (!wait_msg_processed(50)) return firmware_infos;
-    std::vector<uint8_t> cpu_versions;
-    std::transform(_rx_buf.begin(), _rx_buf.end(), std::back_inserter(cpu_versions), [](driver::RxMessage msg) noexcept { return msg.ack; });
+    const auto cpu_versions = pack_ack();
+    if (cpu_versions.empty()) return firmware_infos;
 
     fpga_version(_tx_buf);
-    if (!_link->send(_tx_buf)) return firmware_infos;
-    if (!wait_msg_processed(50)) return firmware_infos;
-    std::vector<uint8_t> fpga_versions;
-    std::transform(_rx_buf.begin(), _rx_buf.end(), std::back_inserter(fpga_versions), [](driver::RxMessage msg) noexcept { return msg.ack; });
+    const auto fpga_versions = pack_ack();
+    if (fpga_versions.empty()) return firmware_infos;
 
     fpga_functions(_tx_buf);
-    if (!_link->send(_tx_buf)) return firmware_infos;
-    if (!wait_msg_processed(50)) return firmware_infos;
-    std::vector<uint8_t> fpga_functions;
-    std::transform(_rx_buf.begin(), _rx_buf.end(), std::back_inserter(fpga_functions), [](driver::RxMessage msg) noexcept { return msg.ack; });
+    const auto fpga_functions = pack_ack();
+    if (fpga_functions.empty()) return firmware_infos;
 
     check_ack = check_ack_;
 
@@ -204,19 +188,8 @@ class Controller {
    */
   template <typename H>
   auto send(H& header) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, bool> {
-    header.init();
-
-    driver::force_fan(_tx_buf, force_fan);
-    driver::reads_fpga_info(_tx_buf, reads_fpga_info);
-
-    while (true) {
-      const auto msg_id = get_id();
-      header.pack(msg_id, _tx_buf);
-      _link->send(_tx_buf);
-      if (!wait_msg_processed(50)) return false;
-      if (header.is_finished()) break;
-    }
-    return true;
+    core::NullBody<T> b;
+    return send(header, b);
   }
 
   /**
@@ -225,19 +198,8 @@ class Controller {
    */
   template <typename B>
   auto send(B& body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody<T>, B>, bool> {
-    body.init();
-
-    driver::force_fan(_tx_buf, force_fan);
-    driver::reads_fpga_info(_tx_buf, reads_fpga_info);
-
-    while (true) {
-      const auto msg_id = get_id();
-      body.pack(msg_id, _geometry, _tx_buf);
-      _link->send(_tx_buf);
-      if (!wait_msg_processed(50)) return false;
-      if (body.is_finished()) break;
-    }
-    return true;
+    core::NullHeader h;
+    return send(h, body);
   }
 
   /**
@@ -256,7 +218,7 @@ class Controller {
     while (true) {
       const auto msg_id = get_id();
       header.pack(msg_id, _tx_buf);
-      body.pack(msg_id, _geometry, _tx_buf);
+      body.pack(_geometry, _tx_buf);
       _link->send(_tx_buf);
       if (!wait_msg_processed(50)) return false;
       if (header.is_finished() && body.is_finished()) break;
@@ -287,25 +249,17 @@ class Controller {
   }
 
   bool wait_msg_processed(const size_t max_trial) {
-    if (!check_ack) {
-      return true;
-    }
+    if (!check_ack) return true;
+
     const auto msg_id = _tx_buf.header().msg_id;
     const auto wait = static_cast<uint64_t>(std::ceil(driver::EC_TRAFFIC_DELAY * 1000.0 / static_cast<double>(driver::EC_DEVICE_PER_FRAME) *
                                                       static_cast<double>(_geometry.num_devices())));
-    auto success = false;
     for (size_t i = 0; i < max_trial; i++) {
-      if (!_link->receive(_rx_buf)) {
-        continue;
-      }
-      if (_rx_buf.is_msg_processed(msg_id)) {
-        success = true;
-        break;
-      }
+      if (!_link->receive(_rx_buf)) continue;
+      if (_rx_buf.is_msg_processed(msg_id)) return true;
       std::this_thread::sleep_for(std::chrono::milliseconds(wait));
     }
-
-    return success;
+    return false;
   }
 
   core::Geometry<T> _geometry;

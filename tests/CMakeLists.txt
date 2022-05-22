@@ -5,6 +5,12 @@ enable_testing()
 add_executable(test_autd3)
 target_include_directories(test_autd3 PRIVATE .)
 target_link_libraries(test_autd3 gtest_main)
+target_link_libraries(test_autd3 autd3_common)
+
+add_subdirectory(${PROJECT_SOURCE_DIR}/tests/driver)
+add_subdirectory(${PROJECT_SOURCE_DIR}/tests/core)
+add_subdirectory(${PROJECT_SOURCE_DIR}/tests/gain/primitive)
+add_subdirectory(${PROJECT_SOURCE_DIR}/tests/modulation/primitive)
 
 if(BUILD_GAIN_HOLO)
   add_subdirectory(${PROJECT_SOURCE_DIR}/tests/gain/holo)

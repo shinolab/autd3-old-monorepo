@@ -152,6 +152,8 @@ int main() try {
   auto link = link::SOEM(ifname, autd.geometry().num_devices()).build();
   autd.open(std::move(link));
 
+  autd.check_ack = true;
+
   autd.clear();
 
   autd.synchronize();
@@ -159,8 +161,8 @@ int main() try {
   const auto firm_infos = autd.firmware_infos();
   std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<FirmwareInfo>(std::cout, "\n"));
 
-  const auto config = SilencerConfig();
-  autd.config_silencer(config);
+  SilencerConfig config;
+  autd.send(config);
 
   const auto focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   gain::Focus g(focus);
@@ -225,6 +227,13 @@ SDKを使用するには, `autd3.hpp`ヘッダーをインクルードする.
 (macやLinuxの場合は`ifconfig`等で確認することもできる.)
 また, linkの型は`unique_ptr`であるため, `Controller`に渡す際は`move`する必要がある.
 
+次に, `check_ack`フラグをセットしている.
+セットしなくても良いが, セットしておくと信頼性が増す.
+SOEM link使用時はセットしておくことをおすすめする.
+```cpp
+  autd.check_ack = true;
+```
+
 次に, AUTDデバイスの初期化を行う.
 電源投入時に初期化されるので`clear()`は呼ばなくても良いかもしれない.
 ```cpp
@@ -243,12 +252,12 @@ SDKを使用するには, `autd3.hpp`ヘッダーをインクルードする.
   const auto firm_infos = autd.firmware_infos();
   std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<FirmwareInfo>(std::cout, "\n"));
 ```
-ここで, v2.0.0以外のヴァージョンが表示される場合は, 動作が保証されないので注意する.
+ここで, v2.0以外のヴァージョンが表示される場合は, 動作が保証されないので注意する.
 
 次に, silencerを設定する.
 ```cpp
-  const auto config = SilencerConfig();
-  autd.config_silencer(config);
+  SilencerConfig config;
+  autd.send(config);
 ```
 デフォルトではONになっているので, これも実際には呼ぶ必要はない.
 OFFにしたい場合は`SilencerConfig::none()`を使用する.

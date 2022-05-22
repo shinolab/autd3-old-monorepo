@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 21/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -17,9 +17,9 @@
 
 namespace autd3::driver {
 
-constexpr uint8_t ENABLED_STM_BIT = 0x01;
-constexpr uint8_t ENABLED_MODULATOR_BIT = 0x02;
-constexpr uint8_t ENABLED_SILENCER_BIT = 0x04;
+constexpr uint8_t ENABLED_STM_BIT = 1 << 0;
+constexpr uint8_t ENABLED_MODULATOR_BIT = 1 << 1;
+constexpr uint8_t ENABLED_SILENCER_BIT = 1 << 2;
 
 /**
  * \brief Firmware information

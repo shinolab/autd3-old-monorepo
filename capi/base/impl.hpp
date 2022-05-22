@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 21/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -19,6 +19,7 @@
 
 #include "./autd3_c_api.h"
 #include "autd3.hpp"
+#include "custom.hpp"
 #include "wrapper.hpp"
 #include "wrapper_link.hpp"
 
@@ -78,25 +79,19 @@ int32_t AUTDAddDeviceQuaternion(void* const handle, const double x, const double
   return static_cast<int32_t>(res);
 }
 
-bool AUTDCloseController(void* const handle) {
+int32_t AUTDClose(void* const handle) {
   auto* const wrapper = static_cast<Controller*>(handle);
-  AUTD3_CAPI_TRY(return wrapper->close())
+  AUTD3_CAPI_TRY2(return wrapper->close() ? 1 : 0)
 }
 
-bool AUTDClear(void* const handle) {
+int32_t AUTDClear(void* const handle) {
   auto* wrapper = static_cast<Controller*>(handle);
-  AUTD3_CAPI_TRY(return wrapper->clear())
+  AUTD3_CAPI_TRY2(return wrapper->clear() ? 1 : 0)
 }
 
-bool AUTDSynchronize(void* const handle) {
+int32_t AUTDSynchronize(void* const handle) {
   auto* wrapper = static_cast<Controller*>(handle);
-  AUTD3_CAPI_TRY(return wrapper->synchronize())
-}
-
-bool AUTDSetSilencer(void* handle, const uint16_t step, const uint16_t cycle) {
-  auto* wrapper = static_cast<Controller*>(handle);
-  const auto config = autd3::SilencerConfig(step, cycle);
-  AUTD3_CAPI_TRY(return wrapper->config_silencer(config))
+  AUTD3_CAPI_TRY2(return wrapper->synchronize() ? 1 : 0)
 }
 void AUTDFreeController(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
@@ -169,9 +164,10 @@ bool AUTDGetFPGAInfo(void* const handle, uint8_t* out) {
     return !res.empty();
   })
 }
+
 int32_t AUTDUpdateFlags(void* const handle) {
   auto* const wrapper = static_cast<Controller*>(handle);
-  AUTD3_CAPI_TRY(return wrapper->update_flag())
+  AUTD3_CAPI_TRY2(return wrapper->update_flag() ? 1 : 0)
 }
 
 int32_t AUTDNumDevices(const void* const handle) {
@@ -224,6 +220,7 @@ int32_t AUTDGetFirmwareInfoListPointer(void* const handle, void** out) {
     return size;
   })
 }
+
 void AUTDGetFirmwareInfo(const void* const p_firm_info_list, const int32_t index, char* info) {
   const auto* wrapper = static_cast<const FirmwareInfoListWrapper*>(p_firm_info_list);
   const auto& info_ = wrapper->list[index].to_string();
@@ -261,6 +258,11 @@ void AUTDGainBesselBeam(void** gain, const double x, const double y, const doubl
 void AUTDGainPlaneWave(void** gain, const double n_x, const double n_y, const double n_z, const double amp) {
   *gain = new autd3::gain::PlaneWave<T>(to_vec3(n_x, n_y, n_z), amp);
 }
+
+void AUTDGainCustom(void** gain, const double* amp, const double* phase, const uint64_t size) {
+  *gain = new CustomGain<T>(amp, phase, static_cast<size_t>(size));
+}
+
 void AUTDDeleteGain(const void* const gain) {
   const auto* g = static_cast<const autd3::Gain<T>*>(gain);
   delete g;
@@ -279,6 +281,9 @@ void AUTDModulationSineSquared(void** mod, const int32_t freq, const double amp,
 }
 void AUTDModulationSineLegacy(void** mod, const double freq, const double amp, const double offset) {
   *mod = new autd3::modulation::SineLegacy(freq, amp, offset);
+}
+void AUTDModulationCustom(void** mod, const uint8_t* buffer, const uint64_t size, const uint32_t freq_div) {
+  *mod = new CustomModulation(buffer, static_cast<size_t>(size), freq_div);
 }
 uint32_t AUTDModulationSamplingFrequencyDivision(const void* const mod) {
   const auto* const m = static_cast<const autd3::Modulation*>(mod);
@@ -342,24 +347,30 @@ void AUTDDeleteSTM(const void* const stm) {
   delete stm_w;
 }
 
-bool AUTDStop(void* const handle) {
+int32_t AUTDStop(void* const handle) {
   auto* const wrapper = static_cast<Controller*>(handle);
-  AUTD3_CAPI_TRY(return wrapper->stop())
+  AUTD3_CAPI_TRY2(return wrapper->stop() ? 1 : 0)
 }
 
-bool AUTDSendHeader(void* const handle, void* const header) {
+void AUTDCreateSilencer(void** out, const uint16_t step, const uint16_t cycle) { *out = new autd3::SilencerConfig(step, cycle); }
+void AUTDDeleteSilencer(const void* config) {
+  const auto* const config_ = static_cast<const autd3::SilencerConfig*>(config);
+  delete config_;
+}
+
+int32_t AUTDSendHeader(void* const handle, void* const header) {
   auto* const wrapper = static_cast<Controller*>(handle);
   auto* const h = static_cast<autd3::core::DatagramHeader*>(header);
-  AUTD3_CAPI_TRY(return wrapper->send(*h))
+  AUTD3_CAPI_TRY2(return wrapper->send(*h) ? 1 : 0)
 }
-bool AUTDSendBody(void* const handle, void* const body) {
+int32_t AUTDSendBody(void* const handle, void* const body) {
   auto* const wrapper = static_cast<Controller*>(handle);
   auto* const b = static_cast<autd3::core::DatagramBody<T>*>(body);
-  AUTD3_CAPI_TRY(return wrapper->send(*b))
+  AUTD3_CAPI_TRY2(return wrapper->send(*b) ? 1 : 0)
 }
-bool AUTDSendHeaderBody(void* const handle, void* const header, void* const body) {
+int32_t AUTDSendHeaderBody(void* const handle, void* const header, void* const body) {
   auto* const wrapper = static_cast<Controller*>(handle);
   auto* const h = static_cast<autd3::core::DatagramHeader*>(header);
   auto* const b = static_cast<autd3::core::DatagramBody<T>*>(body);
-  AUTD3_CAPI_TRY(return wrapper->send(*h, *b))
+  AUTD3_CAPI_TRY2(return wrapper->send(*h, *b) ? 1 : 0)
 }

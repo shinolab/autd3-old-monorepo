@@ -18,10 +18,11 @@ jobs:
         mkdir -p doc_build
         sudo mv ./build/doc/html ./doc_build/api
 
-    - name: Setup mdBook
-      uses: peaceiris/actions-mdbook@v1
+    - uses: jontze/action-mdbook@v1
       with:
-        mdbook-version: 'latest'
+        token: ${{secrets.GITHUB_TOKEN}}
+        use-linkcheck: true
+        use-opengh: true
     - name: Setup mdbook-katex
       uses: magicgh/mdbook-katex-action@v1
       with:
