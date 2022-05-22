@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/05/2022
+// Last Modified: 22/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -205,7 +205,7 @@ void EigenBackend::max_eigen_vector(MatrixXc& src, VectorXc& dst) {
   dst = ces.eigenvectors().col(idx);
 }
 
-void EigenBackend::pseudo_inverse_svd(MatrixXc& src, const double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) {
+void EigenBackend::pseudo_inverse_svd(MatrixXc& src, const double alpha, MatrixXc&, MatrixXc& s, MatrixXc&, MatrixXc&, MatrixXc& dst) {
   const Eigen::BDCSVD svd(src, Eigen::ComputeFullU | Eigen::ComputeFullV);
   s.fill(ZERO);
   auto& singular_values = svd.singularValues();
@@ -214,7 +214,7 @@ void EigenBackend::pseudo_inverse_svd(MatrixXc& src, const double alpha, MatrixX
   dst.noalias() = svd.matrixV() * s * svd.matrixU().adjoint();
 }
 
-void EigenBackend::pseudo_inverse_svd(MatrixXd& src, const double alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf, MatrixXd& dst) {
+void EigenBackend::pseudo_inverse_svd(MatrixXd& src, const double alpha, MatrixXd&, MatrixXd& s, MatrixXd&, MatrixXd&, MatrixXd& dst) {
   const Eigen::BDCSVD svd(src, Eigen::ComputeFullU | Eigen::ComputeFullV);
   s.fill(0.0);
   auto& singular_values = svd.singularValues();
