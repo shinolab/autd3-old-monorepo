@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 19/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -256,11 +256,15 @@ class Greedy final : public Holo<T> {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit Greedy(BackendPtr backend) : Holo<T>(std::move(backend)), phase_div(16) {}
+  explicit Greedy(BackendPtr backend)
+      : Holo<T>(std::move(backend)),
+        phase_div(16),
+        objective([](const VectorXd& target, const VectorXc& p) { return (target - p.cwiseAbs()).cwiseAbs().sum(); }) {}
 
   void calc(const core::Geometry<T>& geometry) override;
 
   size_t phase_div;
+  std::function<double(const VectorXd&, const VectorXc&)> objective;
 };
 
 }  // namespace autd3::gain::holo

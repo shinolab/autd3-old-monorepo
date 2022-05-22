@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 20/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -31,7 +31,7 @@ class RawPCM final : public core::Modulation {
    * If samplingFreq is less than the Nyquist frequency, the data will be up-sampled.
    * The maximum modulation buffer size is shown in autd::MOD_BUF_SIZE. Only the data up to MOD_BUF_SIZE/MOD_SAMPLING_FREQ seconds can be output.
    */
-  explicit RawPCM(const std::string& filename, double sampling_freq, uint16_t mod_sampling_freq_div = 40960);
+  explicit RawPCM(const std::string& filename, double sampling_freq, uint32_t mod_sampling_freq_div = 40960);
 
   void calc() override;
 
@@ -59,7 +59,7 @@ class Wav final : public core::Modulation {
    * If samplingFreq is less than the Nyquist frequency, the data will be up-sampled.
    * The maximum modulation buffer size is shown in autd::MOD_BUF_SIZE. Only the data up to MOD_BUF_SIZE/MOD_SAMPLING_FREQ seconds can be output.
    */
-  explicit Wav(const std::string& filename, uint16_t mod_sampling_freq_div = 40960);
+  explicit Wav(const std::string& filename, uint32_t mod_sampling_freq_div = 40960);
 
   void calc() override;
 

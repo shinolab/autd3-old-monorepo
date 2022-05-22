@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 22/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -54,8 +54,8 @@ struct GainSTM<LegacyTransducer> final : public STM<LegacyTransducer> {
 
   void init() override { _sent = 0; }
 
-  void pack(const uint8_t msg_id, const Geometry<LegacyTransducer>& geometry, driver::TxDatagram& tx) override {
-    gain_stm_legacy_header(msg_id, tx);
+  void pack(const Geometry<LegacyTransducer>&, driver::TxDatagram& tx) override {
+    gain_stm_legacy_header(tx);
 
     if (is_finished()) return;
 
@@ -104,8 +104,8 @@ struct GainSTM<NormalTransducer> final : public STM<NormalTransducer> {
 
   void init() override { _sent = 0; }
 
-  void pack(const uint8_t msg_id, const Geometry<NormalTransducer>& geometry, driver::TxDatagram& tx) override {
-    gain_stm_normal_header(msg_id, tx);
+  void pack(const Geometry<NormalTransducer>&, driver::TxDatagram& tx) override {
+    gain_stm_normal_header(tx);
 
     if (is_finished()) return;
 

@@ -4,7 +4,7 @@ add_library(link_emulator
   emulator.cpp
   ${PROJECT_SOURCE_DIR}/include/autd3/link/emulator.hpp
 )
-target_include_directories(link_emulator PUBLIC ${PROJECT_SOURCE_DIR}/include ${EIGEN_PATH})
+target_link_libraries(link_emulator PUBLIC autd3_common)
 
 if(WIN32)
   target_link_libraries(link_emulator INTERFACE ws2_32)
