@@ -464,7 +464,7 @@ TEST(CPUTest, operation_gain_stm_legacy_body) {
     std::mt19937 engine(seed_gen());
     std::uniform_int_distribution dist(0, 0xFF);
     drives.reserve(249 * 10);
-    for (int i = 0; i < 249 * 10; i++)
+    for (int j = 0; j < 249 * 10; j++)
       drives.emplace_back(autd3::driver::LegacyDrive{static_cast<uint8_t>(dist(engine)), static_cast<uint8_t>(dist(engine))});
     drives_list.emplace_back(drives);
   }
@@ -527,7 +527,7 @@ TEST(CPUTest, operation_gain_stm_normal_phase) {
     std::mt19937 engine(seed_gen());
     std::uniform_int_distribution dist(0, 0xFFFF);
     drives.reserve(249 * 10);
-    for (int i = 0; i < 249 * 10; i++) drives.emplace_back(autd3::driver::Phase{static_cast<uint16_t>(dist(engine))});
+    for (int j = 0; j < 249 * 10; j++) drives.emplace_back(autd3::driver::Phase{static_cast<uint16_t>(dist(engine))});
     drives_list.emplace_back(drives);
   }
 
@@ -571,7 +571,7 @@ TEST(CPUTest, operation_gain_stm_normal_duty) {
     std::mt19937 engine(seed_gen());
     std::uniform_int_distribution dist(0, 0xFFFF);
     drives.reserve(249 * 10);
-    for (int i = 0; i < 249 * 10; i++) drives.emplace_back(autd3::driver::Duty{static_cast<uint16_t>(dist(engine))});
+    for (int j = 0; j < 249 * 10; j++) drives.emplace_back(autd3::driver::Duty{static_cast<uint16_t>(dist(engine))});
     drives_list.emplace_back(drives);
   }
 

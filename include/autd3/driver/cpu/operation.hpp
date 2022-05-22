@@ -43,7 +43,7 @@ inline void sync(const uint8_t msg_id, const uint16_t sync_cycle_ticks, const ui
   tx.header().cpu_flag.set(CPUControlFlags::CONFIG_SYNC);
   tx.header().sync_header().ecat_sync_cycle_ticks = sync_cycle_ticks;
 
-  std::memcpy(tx.bodies(), cycles, sizeof(Body) * tx.size());
+  std::memcpy(reinterpret_cast<uint16_t*>(tx.bodies()), cycles, sizeof(Body) * tx.size());
 
   tx.num_bodies = tx.size();
 }
@@ -103,7 +103,7 @@ inline void normal_legacy_header(TxDatagram& tx) noexcept {
 }
 
 inline void normal_legacy_body(const LegacyDrive* const drives, TxDatagram& tx) noexcept {
-  std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
+  std::memcpy(reinterpret_cast<LegacyDrive*>(tx.bodies()), drives, sizeof(Body) * tx.size());
 
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
 
@@ -122,7 +122,7 @@ inline void normal_header(TxDatagram& tx) noexcept {
 inline void normal_duty_body(const Duty* drives, TxDatagram& tx) noexcept {
   tx.header().cpu_flag.set(CPUControlFlags::IS_DUTY);
 
-  std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
+  std::memcpy(reinterpret_cast<Duty*>(tx.bodies()), drives, sizeof(Body) * tx.size());
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
 
   tx.num_bodies = tx.size();
@@ -131,7 +131,7 @@ inline void normal_duty_body(const Duty* drives, TxDatagram& tx) noexcept {
 inline void normal_phase_body(const Phase* drives, TxDatagram& tx) noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
 
-  std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
+  std::memcpy(reinterpret_cast<Phase*>(tx.bodies()), drives, sizeof(Body) * tx.size());
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
 
   tx.num_bodies = tx.size();
@@ -210,7 +210,7 @@ inline void gain_stm_legacy_body(const LegacyDrive* const drives, const bool is_
     tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
     for (size_t i = 0; i < tx.size(); i++) tx.bodies()[i].gain_stm_head().set_freq_div(freq_div);
   } else {
-    std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
+    std::memcpy(reinterpret_cast<LegacyDrive*>(tx.bodies()), drives, sizeof(Body) * tx.size());
   }
 
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
@@ -245,7 +245,7 @@ inline void gain_stm_normal_phase(const Phase* const drives, const bool is_first
     tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
     for (size_t i = 0; i < tx.size(); i++) tx.bodies()[i].gain_stm_head().set_freq_div(freq_div);
   } else {
-    std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
+    std::memcpy(reinterpret_cast<Phase*>(tx.bodies()), drives, sizeof(Body) * tx.size());
   }
 
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
@@ -256,7 +256,7 @@ inline void gain_stm_normal_phase(const Phase* const drives, const bool is_first
 inline void gain_stm_normal_duty(const Duty* const drives, const bool is_last_frame, TxDatagram& tx) noexcept(false) {
   tx.header().cpu_flag.set(CPUControlFlags::IS_DUTY);
 
-  std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
+  std::memcpy(reinterpret_cast<Duty*>(tx.bodies()), drives, sizeof(Body) * tx.size());
   if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::STM_END);
 
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
