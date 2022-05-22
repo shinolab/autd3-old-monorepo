@@ -79,7 +79,7 @@ jobs:
       if: matrix.os == 'macos-latest'
       run: |
         mkdir -p build && cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
         make -j8
         
         
