@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/05/2022
+// Last Modified: 22/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -327,7 +327,6 @@ void make_bhb(const BackendPtr& backend, const std::vector<core::Vector3>& foci,
               MatrixXc& bhb) {
   const auto m = foci.size();
   const auto n = geometry.num_transducers();
-  const auto n_param = n + m;
 
   VectorXc amps_ = Eigen::Map<VectorXc, Eigen::Unaligned>(amps.data(), static_cast<Eigen::Index>(amps.size()));
 
