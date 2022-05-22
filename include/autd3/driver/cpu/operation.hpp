@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/05/2022
+// Last Modified: 22/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -23,6 +23,19 @@ inline void clear(TxDatagram& tx) noexcept {
   tx.num_bodies = 0;
 }
 
+inline void null_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
+  tx.header().msg_id = msg_id;
+  tx.header().cpu_flag.remove(CPUControlFlags::MOD);
+  tx.header().cpu_flag.remove(CPUControlFlags::CONFIG_SILENCER);
+  tx.header().cpu_flag.remove(CPUControlFlags::CONFIG_SYNC);
+  tx.header().size = 0;
+}
+
+inline void null_body(TxDatagram& tx) noexcept {
+  tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
+  tx.num_bodies = 0;
+}
+
 inline void sync(const uint8_t msg_id, const uint16_t sync_cycle_ticks, const uint16_t* const cycles, TxDatagram& tx) noexcept {
   tx.header().msg_id = msg_id;
   tx.header().cpu_flag.remove(CPUControlFlags::MOD);
@@ -30,7 +43,7 @@ inline void sync(const uint8_t msg_id, const uint16_t sync_cycle_ticks, const ui
   tx.header().cpu_flag.set(CPUControlFlags::CONFIG_SYNC);
   tx.header().sync_header().ecat_sync_cycle_ticks = sync_cycle_ticks;
 
-  std::memcpy(tx.bodies(), cycles, sizeof(Body) * tx.size());
+  std::memcpy(reinterpret_cast<uint16_t*>(tx.bodies()), cycles, sizeof(Body) * tx.size());
 
   tx.num_bodies = tx.size();
 }
@@ -42,8 +55,6 @@ inline void modulation(const uint8_t msg_id, const uint8_t* const mod_data, cons
   tx.header().cpu_flag.remove(CPUControlFlags::MOD_BEGIN);
   tx.header().cpu_flag.remove(CPUControlFlags::MOD_END);
   tx.header().size = static_cast<uint8_t>(mod_size);
-
-  tx.num_bodies = 0;
 
   if (mod_size == 0) {
     tx.header().cpu_flag.remove(CPUControlFlags::MOD);
@@ -73,8 +84,6 @@ inline void config_silencer(const uint8_t msg_id, const uint16_t cycle, const ui
     throw std::runtime_error(ss.str());
   }
 
-  tx.num_bodies = 0;
-
   tx.header().msg_id = msg_id;
   tx.header().cpu_flag.remove(CPUControlFlags::MOD);
   tx.header().cpu_flag.remove(CPUControlFlags::CONFIG_SYNC);
@@ -84,9 +93,7 @@ inline void config_silencer(const uint8_t msg_id, const uint16_t cycle, const ui
   tx.header().silencer_header().step = step;
 }
 
-inline void normal_legacy_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
-  tx.header().msg_id = msg_id;
-
+inline void normal_legacy_header(TxDatagram& tx) noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
 
   tx.header().fpga_flag.set(FPGAControlFlags::LEGACY_MODE);
@@ -96,16 +103,14 @@ inline void normal_legacy_header(const uint8_t msg_id, TxDatagram& tx) noexcept 
 }
 
 inline void normal_legacy_body(const LegacyDrive* const drives, TxDatagram& tx) noexcept {
-  std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
+  std::memcpy(reinterpret_cast<LegacyDrive*>(tx.bodies()), drives, sizeof(Body) * tx.size());
 
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
 
   tx.num_bodies = tx.size();
 }
 
-inline void normal_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
-  tx.header().msg_id = msg_id;
-
+inline void normal_header(TxDatagram& tx) noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
 
   tx.header().fpga_flag.remove(FPGAControlFlags::LEGACY_MODE);
@@ -117,7 +122,7 @@ inline void normal_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
 inline void normal_duty_body(const Duty* drives, TxDatagram& tx) noexcept {
   tx.header().cpu_flag.set(CPUControlFlags::IS_DUTY);
 
-  std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
+  std::memcpy(reinterpret_cast<Duty*>(tx.bodies()), drives, sizeof(Body) * tx.size());
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
 
   tx.num_bodies = tx.size();
@@ -126,15 +131,13 @@ inline void normal_duty_body(const Duty* drives, TxDatagram& tx) noexcept {
 inline void normal_phase_body(const Phase* drives, TxDatagram& tx) noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
 
-  std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
+  std::memcpy(reinterpret_cast<Phase*>(tx.bodies()), drives, sizeof(Body) * tx.size());
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
 
   tx.num_bodies = tx.size();
 }
 
-inline void point_stm_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
-  tx.header().msg_id = msg_id;
-
+inline void point_stm_header(TxDatagram& tx) noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
   tx.header().cpu_flag.remove(CPUControlFlags::STM_END);
@@ -183,9 +186,7 @@ inline void point_stm_body(const std::vector<std::vector<STMFocus>>& points, con
   tx.num_bodies = tx.size();
 }
 
-inline void gain_stm_legacy_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
-  tx.header().msg_id = msg_id;
-
+inline void gain_stm_legacy_header(TxDatagram& tx) noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
   tx.header().cpu_flag.remove(CPUControlFlags::STM_END);
@@ -209,7 +210,7 @@ inline void gain_stm_legacy_body(const LegacyDrive* const drives, const bool is_
     tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
     for (size_t i = 0; i < tx.size(); i++) tx.bodies()[i].gain_stm_head().set_freq_div(freq_div);
   } else {
-    std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
+    std::memcpy(reinterpret_cast<LegacyDrive*>(tx.bodies()), drives, sizeof(Body) * tx.size());
   }
 
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
@@ -219,9 +220,7 @@ inline void gain_stm_legacy_body(const LegacyDrive* const drives, const bool is_
   tx.num_bodies = tx.size();
 }
 
-inline void gain_stm_normal_header(const uint8_t msg_id, TxDatagram& tx) noexcept {
-  tx.header().msg_id = msg_id;
-
+inline void gain_stm_normal_header(TxDatagram& tx) noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
   tx.header().cpu_flag.remove(CPUControlFlags::STM_END);
@@ -246,7 +245,7 @@ inline void gain_stm_normal_phase(const Phase* const drives, const bool is_first
     tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
     for (size_t i = 0; i < tx.size(); i++) tx.bodies()[i].gain_stm_head().set_freq_div(freq_div);
   } else {
-    std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
+    std::memcpy(reinterpret_cast<Phase*>(tx.bodies()), drives, sizeof(Body) * tx.size());
   }
 
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
@@ -257,7 +256,7 @@ inline void gain_stm_normal_phase(const Phase* const drives, const bool is_first
 inline void gain_stm_normal_duty(const Duty* const drives, const bool is_last_frame, TxDatagram& tx) noexcept(false) {
   tx.header().cpu_flag.set(CPUControlFlags::IS_DUTY);
 
-  std::memcpy(tx.bodies(), drives, sizeof(Body) * tx.size());
+  std::memcpy(reinterpret_cast<Duty*>(tx.bodies()), drives, sizeof(Body) * tx.size());
   if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::STM_END);
 
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
@@ -281,20 +280,19 @@ inline void reads_fpga_info(TxDatagram& tx, const bool value) noexcept {
 
 inline void cpu_version(TxDatagram& tx) noexcept {
   tx.header().msg_id = MSG_RD_CPU_VERSION;
-  tx.header().cpu_flag = CPUControlFlags::MOD_END;  // For backward compatibility before 1.9
+  tx.header().cpu_flag = (CPUControlFlags::VALUE)(MSG_RD_CPU_VERSION);  // For backward compatibility before 1.9
   tx.num_bodies = 0;
 }
 
 inline void fpga_version(TxDatagram& tx) noexcept {
   tx.header().msg_id = MSG_RD_FPGA_VERSION;
-  tx.header().cpu_flag = CPUControlFlags::STM_BEGIN;  // For backward compatibility before 1.9
+  tx.header().cpu_flag = (CPUControlFlags::VALUE)(MSG_RD_FPGA_VERSION);  // For backward compatibility before 1.9
   tx.num_bodies = 0;
 }
 
 inline void fpga_functions(TxDatagram& tx) noexcept {
   tx.header().msg_id = MSG_RD_FPGA_FUNCTION;
-  tx.header().cpu_flag =
-      static_cast<CPUControlFlags::VALUE>(CPUControlFlags::STM_BEGIN | CPUControlFlags::MOD_BEGIN);  // For backward compatibility before 1.9
+  tx.header().cpu_flag = (CPUControlFlags::VALUE)(MSG_RD_FPGA_FUNCTION);  // For backward compatibility before 1.9
   tx.num_bodies = 0;
 }
 

@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 21/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -13,14 +13,16 @@
 
 #include <cstdint>
 
+#include "autd3/core/interface.hpp"
+
 namespace autd3 {
 
 /**
  * @brief Silencer Configuration
  */
-struct SilencerConfig {
+struct SilencerConfig final : core::DatagramHeader {
   SilencerConfig() noexcept : SilencerConfig(10, 4096) {}
-  explicit SilencerConfig(const uint16_t step, const uint16_t cycle) noexcept : step(step), cycle(cycle) {}
+  explicit SilencerConfig(const uint16_t step, const uint16_t cycle) noexcept : step(step), cycle(cycle), _sent(false) {}
 
   /**
    * @brief Create SilencerConfig to disable Silencer
@@ -37,6 +39,21 @@ struct SilencerConfig {
    * @details The sampling frequency will be driver::FPGA_CLK_FREQ/cycle. The larger the cycle, the stronger the effect of noise reduction.
    */
   uint16_t cycle;
+
+  void init() override { _sent = false; }
+
+  void pack(const uint8_t msg_id, driver::TxDatagram& tx) override {
+    if (_sent)
+      driver::null_header(msg_id, tx);
+    else
+      driver::config_silencer(msg_id, cycle, step, tx);
+    _sent = true;
+  }
+
+  bool is_finished() const override { return true; }
+
+ private:
+  bool _sent;
 };
 
 }  // namespace autd3

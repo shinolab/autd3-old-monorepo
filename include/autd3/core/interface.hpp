@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 22/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -48,8 +48,28 @@ struct DatagramBody {
   DatagramBody& operator=(DatagramBody&& obj) = default;
 
   virtual void init() = 0;
-  virtual void pack(uint8_t msg_id, const Geometry<T>& geometry, driver::TxDatagram& tx) = 0;
+  virtual void pack(const Geometry<T>& geometry, driver::TxDatagram& tx) = 0;
   [[nodiscard]] virtual bool is_finished() const = 0;
+};
+
+struct NullHeader final : DatagramHeader {
+  ~NullHeader() override = default;
+
+  void init() override {}
+  void pack(uint8_t msg_id, driver::TxDatagram& tx) override { driver::null_header(msg_id, tx); }
+
+  bool is_finished() const override { return true; }
+};
+
+template <typename T, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+struct NullBody final : DatagramBody<T> {
+  ~NullBody() override = default;
+
+  void init() override {}
+
+  void pack(const Geometry<T>&, driver::TxDatagram& tx) override { driver::null_body(tx); }
+
+  bool is_finished() const override { return true; }
 };
 
 }  // namespace autd3::core
