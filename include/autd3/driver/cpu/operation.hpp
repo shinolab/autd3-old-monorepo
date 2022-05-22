@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/05/2022
+// Last Modified: 22/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -280,20 +280,19 @@ inline void reads_fpga_info(TxDatagram& tx, const bool value) noexcept {
 
 inline void cpu_version(TxDatagram& tx) noexcept {
   tx.header().msg_id = MSG_RD_CPU_VERSION;
-  tx.header().cpu_flag = CPUControlFlags::MOD_END;  // For backward compatibility before 1.9
+  tx.header().cpu_flag = (CPUControlFlags::VALUE)(MSG_RD_CPU_VERSION);  // For backward compatibility before 1.9
   tx.num_bodies = 0;
 }
 
 inline void fpga_version(TxDatagram& tx) noexcept {
   tx.header().msg_id = MSG_RD_FPGA_VERSION;
-  tx.header().cpu_flag = CPUControlFlags::STM_BEGIN;  // For backward compatibility before 1.9
+  tx.header().cpu_flag = (CPUControlFlags::VALUE)(MSG_RD_FPGA_VERSION);  // For backward compatibility before 1.9
   tx.num_bodies = 0;
 }
 
 inline void fpga_functions(TxDatagram& tx) noexcept {
   tx.header().msg_id = MSG_RD_FPGA_FUNCTION;
-  tx.header().cpu_flag =
-      static_cast<CPUControlFlags::VALUE>(CPUControlFlags::STM_BEGIN | CPUControlFlags::MOD_BEGIN);  // For backward compatibility before 1.9
+  tx.header().cpu_flag = (CPUControlFlags::VALUE)(MSG_RD_FPGA_FUNCTION);  // For backward compatibility before 1.9
   tx.num_bodies = 0;
 }
 
