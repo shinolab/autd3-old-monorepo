@@ -22,7 +22,8 @@ cuda_add_library(backend_cuda
 )
 
 cuda_add_cublas_to_target(backend_cuda)
-target_include_directories(backend_cuda PRIVATE ${PROJECT_SOURCE_DIR}/src/gain/holo ${PROJECT_SOURCE_DIR}/include ${EIGEN_PATH})
+target_link_libraries(backend_cuda PUBLIC autd3_common)
+target_include_directories(backend_cuda PRIVATE ${PROJECT_SOURCE_DIR}/src/gain/holo)
 target_include_directories(backend_cuda INTERFACE ${CUDA_INCLUDE_DIRS})
 target_link_libraries(backend_cuda ${CUDA_cusolver_LIBRARY})
 
