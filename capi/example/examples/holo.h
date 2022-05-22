@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/05/2022
+// Last Modified: 22/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -50,18 +50,14 @@ void* select_opt(void* backend) {
   AUTDGainHoloGradientDescent(&opts[idx++].gain, backend, 1e-6, 0.5, 2000, NULL, 0, constraint);
   opts[idx].name = "Greedy";
   AUTDGainHoloGreedy(&opts[idx++].gain, backend, 16, constraint);
-  for (int32_t i = 0; i < opt_size; i++) {
-    printf_s("[%d]: %s\n", i, opts[i].name);
-  }
+  for (int32_t i = 0; i < opt_size; i++) printf_s("[%d]: %s\n", i, opts[i].name);
+
+  AUTDDeleteAmplitudeConstraint(constraint);
 
   idx = 0;
-  if (!scanf_s("%d", &idx)) {
-    idx = 3;
-  }
+  if (!scanf_s("%d", &idx)) idx = 3;
   (void)getchar();
-  if (idx >= opt_size) {
-    idx = 3;
-  }
+  if (idx >= opt_size) idx = 3;
 
   for (int32_t i = 0; i < opt_size; i++) {
     if (i == idx) continue;

@@ -22,7 +22,7 @@ EXPORT_AUTD void AUTDAmplitudeConstraintDontCate(void** out);
 EXPORT_AUTD void AUTDAmplitudeConstraintNormalize(void** out);
 EXPORT_AUTD void AUTDAmplitudeConstraintUniform(void** out, double value);
 EXPORT_AUTD void AUTDAmplitudeConstraintClamp(void** out);
-EXPORT_AUTD void AUTDDeleteAmplitudeConstraint(void* constraint);
+EXPORT_AUTD void AUTDDeleteAmplitudeConstraint(const void* constraint);
 EXPORT_AUTD void AUTDGainHoloSDP(void** gain, const void* backend, double alpha, double lambda, uint64_t repeat, const void* constraint);
 EXPORT_AUTD void AUTDGainHoloEVD(void** gain, const void* backend, double gamma, const void* constraint);
 EXPORT_AUTD void AUTDGainHoloNaive(void** gain, const void* backend, const void* constraint);

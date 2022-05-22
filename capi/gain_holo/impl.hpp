@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/05/2022
+// Last Modified: 22/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -34,7 +34,7 @@ void AUTDAmplitudeConstraintNormalize(void** out) { *out = new autd3::gain::holo
 void AUTDAmplitudeConstraintUniform(void** out, const double value) { *out = new autd3::gain::holo::Uniform(value); }
 void AUTDAmplitudeConstraintClamp(void** out) { *out = new autd3::gain::holo::Clamp; }
 
-void AUTDDeleteAmplitudeConstraint(void* constraint) {
+void AUTDDeleteAmplitudeConstraint(const void* constraint) {
   const auto* wrapper = static_cast<const autd3::gain::holo::AmplitudeConstraint*>(constraint);
   delete wrapper;
 }
