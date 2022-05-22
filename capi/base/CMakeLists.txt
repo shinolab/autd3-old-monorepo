@@ -4,8 +4,6 @@ if(NOT WIN32)
   find_package(Threads REQUIRED)
 endif()
 
-file(GLOB include_files  ${PROJECT_SOURCE_DIR}/include/*.hpp *.hpp)
-
 add_library(autd3capi SHARED
   c_api.cpp
   impl.hpp

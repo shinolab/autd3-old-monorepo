@@ -4,7 +4,7 @@ add_library(gain_holo
   holo.cpp
   ${PROJECT_SOURCE_DIR}/include/autd3/gain/holo.hpp
 )
-target_include_directories(gain_holo PUBLIC ${PROJECT_SOURCE_DIR}/include ${EIGEN_PATH})
+target_link_libraries(gain_holo PUBLIC autd3_common)
 
 set_target_properties(gain_holo
     PROPERTIES

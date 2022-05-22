@@ -5,7 +5,7 @@ add_library(modulation_audio_file
   ${PROJECT_SOURCE_DIR}/include/autd3/modulation/audio_file.hpp
 )
 
-target_include_directories(modulation_audio_file PUBLIC ${PROJECT_SOURCE_DIR}/include ${EIGEN_PATH})
+target_link_libraries(modulation_audio_file PUBLIC autd3_common)
 
 set_target_properties(modulation_audio_file
   PROPERTIES
