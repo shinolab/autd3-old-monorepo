@@ -4,7 +4,8 @@ add_library(backend_eigen
   backend_eigen.cpp
   ${PROJECT_SOURCE_DIR}/include/autd3/gain/backend.hpp
 )
-target_include_directories(backend_eigen PRIVATE ${PROJECT_SOURCE_DIR}/src/gain/holo ${PROJECT_SOURCE_DIR}/include ${EIGEN_PATH})
+target_link_libraries(backend_eigen PUBLIC autd3_common)
+target_include_directories(backend_eigen PRIVATE ${PROJECT_SOURCE_DIR}/src/gain/holo)
 
 set_target_properties(backend_eigen
     PROPERTIES
