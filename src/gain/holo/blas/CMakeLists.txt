@@ -9,7 +9,8 @@ add_library(backend_blas
   ${PROJECT_SOURCE_DIR}/include/autd3/gain/backend.hpp
   ${PROJECT_SOURCE_DIR}/include/autd3/gain/backend_blas.hpp
 )
-target_include_directories(backend_blas PRIVATE ${BLAS_INCLUDE_DIR} ${PROJECT_SOURCE_DIR}/src/gain/holo ${PROJECT_SOURCE_DIR}/include ${EIGEN_PATH})
+target_link_libraries(backend_blas PUBLIC autd3_common)
+target_include_directories(backend_blas PRIVATE ${BLAS_INCLUDE_DIR} ${PROJECT_SOURCE_DIR}/src/gain/holo)
 
 if(USE_MKL)
   target_compile_definitions(backend_blas PRIVATE USE_BLAS_MKL)
