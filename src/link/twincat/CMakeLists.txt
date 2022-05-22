@@ -4,7 +4,7 @@ add_library(link_twincat
   twincat.cpp
   ${PROJECT_SOURCE_DIR}/include/autd3/link/twincat.hpp
 )
-target_include_directories(link_twincat PUBLIC ${PROJECT_SOURCE_DIR}/include)
+target_link_libraries(link_twincat PUBLIC autd3_common)
 
 set_target_properties(link_twincat
   PROPERTIES
