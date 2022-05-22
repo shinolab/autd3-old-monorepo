@@ -243,7 +243,7 @@ jobs:
       - name: Build project
         run: |
           mkdir -p build && cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=OFF
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=OFF -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
           make -j8
           cd ..
           mkdir -p lib
