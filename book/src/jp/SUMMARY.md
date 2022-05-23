@@ -13,6 +13,7 @@
         - [Silencer](./Software/Users_Manual/silencer.md)
         - [Controller](./Software/Users_Manual/controller.md)
         - [Frequency Configuration](./Software/Users_Manual/freq_config.md)
+        - [Migration Guide from v1.x](./Software/Users_Manual/migration.md)
     - [FFI](./Software/FFI/README.md)
         - [C#](./Software/FFI/csharp.md)
         - [python](./Software/FFI/python.md)
