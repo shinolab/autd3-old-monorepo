@@ -3,7 +3,7 @@
 c言語向けのAPIは[capi](https://github.com/shinolab/autd3/tree/master/capi)以下で定義されている.
 
 以下に, このAPIのリファレンスを載せる. 
-実際の利用方法は, [C API Example](https://github.com/shinolab/autd3/tree/master/capi/example)や, [C#](https://github.com/shinolab/autd3sharp)/[python](https://github.com/shinolab/pyautd)/[Julia](https://github.com/shinolab/AUTD3.jl)のラッパーライブラリを参照されたい.
+実際の利用方法は, [C API Example](https://github.com/shinolab/autd3/tree/master/capi/example)や, [C#](https://github.com/shinolab/autd3sharp)/[python](https://github.com/shinolab/pyautd)のラッパーライブラリを参照されたい.
 
 また, ダイナミックライブラリの末尾にlegacyとつく物がある場合, legacyがついている方はLegacyモード専用で, ついていない方はNormalモード専用である.
 末尾にlegacyとつく物がない場合, 両モード兼用である.
