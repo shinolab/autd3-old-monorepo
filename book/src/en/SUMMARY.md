@@ -16,7 +16,6 @@
     - [FFI](./Software/FFI/README.md)
         - [C#](./Software/FFI/csharp.md)
         - [python](./Software/FFI/python.md)
-        - [Julia](./Software/FFI/julia.md)
         - [Rust](./Software/FFI/rust.md)
         - [C API Reference](./Software/FFI/reference.md)
     - [Emulator](./Software/Emulator/README.md)
