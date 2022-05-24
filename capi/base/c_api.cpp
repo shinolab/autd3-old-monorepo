@@ -37,7 +37,7 @@
     return -1;                    \
   }
 
-using T = autd3::DynamicTransducer;
+using T = autd3::core::DynamicTransducer;
 using Controller = autd3::Controller<T>;
 
 std::string& last_error() {

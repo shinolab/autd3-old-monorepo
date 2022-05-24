@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "autd3/core/gain.hpp"
+#include "autd3/core/geometry/legacy_transducer.hpp"
 #include "backend.hpp"
 
 namespace autd3::gain::holo {
