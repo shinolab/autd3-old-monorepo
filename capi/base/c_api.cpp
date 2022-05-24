@@ -382,3 +382,16 @@ void AUTDSetTransCycle(void* const handle, const int32_t device_idx, const int32
   auto* const wrapper = static_cast<Controller*>(handle);
   wrapper->geometry()[device_idx][local_trans_idx].set_cycle(cycle);
 }
+
+void AUTDSetMode(const int32_t mode) {
+  switch (mode) {
+    case 0:
+      T::legacy_mode() = true;
+      break;
+    case 1:
+      T::legacy_mode() = false;
+      break;
+    default:
+      break;
+  }
+}
