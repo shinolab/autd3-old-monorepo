@@ -15,14 +15,14 @@
 #include "runner.hpp"
 
 int main() try {
-  autd3::Controller<autd3::DynamicTransducer> autd;
+  autd3::Controller autd;
   autd3::DynamicTransducer::legacy_mode() = false;
-  // autd3::Controller<autd3::LegacyTransducer> autd;
-  for (auto& dev : autd.geometry())
-    for (auto& tr : dev) tr.set_frequency(70e3);
 
   autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
   autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, 0.0, 0.0), autd3::Vector3::Zero());
+
+  // for (auto& dev : autd.geometry())
+  //   for (auto& tr : dev) tr.set_frequency(70e3);
 
   auto link = autd3::link::Emulator(autd.geometry()).port(50632).build();
   autd.open(std::move(link));
