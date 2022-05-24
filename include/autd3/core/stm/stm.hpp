@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 24/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -22,7 +22,7 @@ namespace autd3::core {
 /**
  * @brief STM provide hardware Spatio-Temporal Modulation or Lateral Modulation function.
  */
-template <typename T = LegacyTransducer, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+template <typename T = DynamicTransducer, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 struct STM : DatagramBody<T> {
   STM() noexcept : DatagramBody<T>(), _freq_div(4096) {}
   virtual ~STM() = default;

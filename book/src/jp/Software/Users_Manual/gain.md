@@ -161,7 +161,7 @@ cmake .. -DBUILD_HOLO_GAIN=ON -DBUILD_BLAS_BACKEND=ON -DBLAS_LIB_DIR=<your BLAS 
 ```cpp
 #include "autd3.hpp"
 
-template <typename T = LegacyTransducer, enable_if_t<is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+template <typename T = DynamicTransducer, enable_if_t<is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class FocalPoint final : public Gain<T> {
  public:
   explicit FocalPoint(Vector3 point) : _point(move(point)) {}

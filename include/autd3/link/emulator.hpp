@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 24/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -21,7 +21,7 @@ namespace autd3::link {
 /**
  * \brief link for [autd-emulator](https://github.com/shinolab/autd-emulator)
  */
-template <typename T = core::LegacyTransducer>
+template <typename T = core::DynamicTransducer>
 class Emulator {
  public:
   /**

@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/05/2022
+// Last Modified: 24/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -22,9 +22,8 @@
 #include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/driver/cpu/ec_config.hpp"
 #include "autd3/gain/primitive.hpp"
+#include "core/geometry/dynamic_transducer.hpp"
 #include "core/geometry/geometry.hpp"
-#include "core/geometry/legacy_transducer.hpp"
-#include "core/geometry/normal_transducer.hpp"
 #include "core/interface.hpp"
 #include "core/link.hpp"
 #include "core/silencer_config.hpp"
@@ -35,7 +34,7 @@ namespace autd3 {
 /**
  * @brief AUTD Controller
  */
-template <typename T = core::LegacyTransducer>
+template <typename T = core::DynamicTransducer>
 class Controller {
  public:
   Controller() : force_fan(false), reads_fpga_info(false), check_ack(false), _geometry(), _tx_buf(0), _rx_buf(0), _link(nullptr) {}
