@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/05/2022
+// Last Modified: 24/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "autd3/core/gain.hpp"
+#include "autd3/core/geometry/legacy_transducer.hpp"
 #include "backend.hpp"
 
 namespace autd3::gain::holo {

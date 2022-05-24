@@ -3,7 +3,7 @@
 // Created Date: 19/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/05/2022
+// Last Modified: 24/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -15,11 +15,12 @@
 #include <vector>
 
 #include "autd3.hpp"
+#include "autd3/core/geometry/dynamic_transducer.hpp"
 
 /**
  * @brief Gain that can set the phase and duty ratio freely
  */
-template <typename T = autd3::LegacyTransducer, std::enable_if_t<std::is_base_of_v<autd3::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+template <typename T = autd3::core::DynamicTransducer, std::enable_if_t<std::is_base_of_v<autd3::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class CustomGain final : public autd3::Gain<T> {
  public:
   /**

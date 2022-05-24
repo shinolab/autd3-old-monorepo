@@ -6,7 +6,6 @@ endif()
 
 add_library(autd3capi SHARED
   c_api.cpp
-  impl.hpp
   header.h
   autd3_c_api.h
   ${include_files}

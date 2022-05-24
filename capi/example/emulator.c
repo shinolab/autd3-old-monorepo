@@ -4,7 +4,7 @@
  * Created Date: 16/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/05/2022
+ * Last Modified: 24/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -24,6 +24,10 @@ int main() {
 
   AUTDAddDevice(cnt, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
   // AUTDAddDeviceQuaternion(cnt, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+
+  AUTDSetMode(1);
+  AUTDSetModeHolo(1);
+  for (int i = 0; i < 249; i++) AUTDSetTransFrequency(cnt, 0, i, 70e3);
 
   void* link = NULL;
   AUTDLinkEmulator(&link, 50632, cnt);

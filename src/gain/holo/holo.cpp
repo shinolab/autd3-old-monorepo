@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/05/2022
+// Last Modified: 24/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -13,6 +13,7 @@
 
 #include <random>
 
+#include "autd3/core/geometry/dynamic_transducer.hpp"
 #include "autd3/core/geometry/legacy_transducer.hpp"
 #include "autd3/core/geometry/normal_transducer.hpp"
 
@@ -635,11 +636,19 @@ void SDP<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransduc
   sdp_calc_impl(_backend, _foci, _amps, geometry, alpha, lambda, repeat, constraint, this->_props.drives);
 }
 template <>
+void SDP<core::DynamicTransducer>::calc(const core::Geometry<core::DynamicTransducer>& geometry) {
+  sdp_calc_impl(_backend, _foci, _amps, geometry, alpha, lambda, repeat, constraint, this->_props.drives);
+}
+template <>
 void EVD<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
   evd_calc_impl(_backend, _foci, _amps, geometry, gamma, constraint, this->_props.drives);
 }
 template <>
 void EVD<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
+  evd_calc_impl(_backend, _foci, _amps, geometry, gamma, constraint, this->_props.drives);
+}
+template <>
+void EVD<core::DynamicTransducer>::calc(const core::Geometry<core::DynamicTransducer>& geometry) {
   evd_calc_impl(_backend, _foci, _amps, geometry, gamma, constraint, this->_props.drives);
 }
 template <>
@@ -651,11 +660,19 @@ void Naive<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransd
   naive_calc_impl(_backend, _foci, _amps, geometry, constraint, this->_props.drives);
 }
 template <>
+void Naive<core::DynamicTransducer>::calc(const core::Geometry<core::DynamicTransducer>& geometry) {
+  naive_calc_impl(_backend, _foci, _amps, geometry, constraint, this->_props.drives);
+}
+template <>
 void GS<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
   gs_calc_impl(_backend, _foci, _amps, geometry, repeat, constraint, this->_props.drives);
 }
 template <>
 void GS<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
+  gs_calc_impl(_backend, _foci, _amps, geometry, repeat, constraint, this->_props.drives);
+}
+template <>
+void GS<core::DynamicTransducer>::calc(const core::Geometry<core::DynamicTransducer>& geometry) {
   gs_calc_impl(_backend, _foci, _amps, geometry, repeat, constraint, this->_props.drives);
 }
 template <>
@@ -667,11 +684,19 @@ void GSPAT<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransd
   gspat_calc_impl(_backend, _foci, _amps, geometry, repeat, constraint, this->_props.drives);
 }
 template <>
+void GSPAT<core::DynamicTransducer>::calc(const core::Geometry<core::DynamicTransducer>& geometry) {
+  gspat_calc_impl(_backend, _foci, _amps, geometry, repeat, constraint, this->_props.drives);
+}
+template <>
 void LM<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
   lm_calc_impl(_backend, _foci, _amps, geometry, eps_1, eps_2, tau, k_max, initial, constraint, this->_props.drives);
 }
 template <>
 void LM<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
+  lm_calc_impl(_backend, _foci, _amps, geometry, eps_1, eps_2, tau, k_max, initial, constraint, this->_props.drives);
+}
+template <>
+void LM<core::DynamicTransducer>::calc(const core::Geometry<core::DynamicTransducer>& geometry) {
   lm_calc_impl(_backend, _foci, _amps, geometry, eps_1, eps_2, tau, k_max, initial, constraint, this->_props.drives);
 }
 template <>
@@ -683,6 +708,10 @@ void GaussNewton<core::NormalTransducer>::calc(const core::Geometry<core::Normal
   gaussnewton_calc_impl(_backend, _foci, _amps, geometry, eps_1, eps_2, k_max, initial, constraint, this->_props.drives);
 }
 template <>
+void GaussNewton<core::DynamicTransducer>::calc(const core::Geometry<core::DynamicTransducer>& geometry) {
+  gaussnewton_calc_impl(_backend, _foci, _amps, geometry, eps_1, eps_2, k_max, initial, constraint, this->_props.drives);
+}
+template <>
 void GradientDescent<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
   gradientdescnet_calc_impl(_backend, _foci, _amps, geometry, eps, step, k_max, initial, constraint, this->_props.drives);
 }
@@ -691,11 +720,19 @@ void GradientDescent<core::NormalTransducer>::calc(const core::Geometry<core::No
   gradientdescnet_calc_impl(_backend, _foci, _amps, geometry, eps, step, k_max, initial, constraint, this->_props.drives);
 }
 template <>
+void GradientDescent<core::DynamicTransducer>::calc(const core::Geometry<core::DynamicTransducer>& geometry) {
+  gradientdescnet_calc_impl(_backend, _foci, _amps, geometry, eps, step, k_max, initial, constraint, this->_props.drives);
+}
+template <>
 void Greedy<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
   greedy_calc_impl(_backend, _foci, _amps, geometry, phase_div, objective, constraint, this->_props.drives);
 }
 template <>
 void Greedy<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
+  greedy_calc_impl(_backend, _foci, _amps, geometry, phase_div, objective, constraint, this->_props.drives);
+}
+template <>
+void Greedy<core::DynamicTransducer>::calc(const core::Geometry<core::DynamicTransducer>& geometry) {
   greedy_calc_impl(_backend, _foci, _amps, geometry, phase_div, objective, constraint, this->_props.drives);
 }
 

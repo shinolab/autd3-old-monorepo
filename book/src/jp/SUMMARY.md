@@ -19,8 +19,7 @@
         - [python](./Software/FFI/python.md)
         - [Rust](./Software/FFI/rust.md)
         - [C API Reference](./Software/FFI/reference.md)
-    - [Emulator](./Software/Emulator/README.md)
-
+- [Emulator](./Emulator/README.md)
 - [Document History](document_history.md)
 - [Release Notes](release_notes.md)
 - [Citation](Citation/README.md)

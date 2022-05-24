@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/05/2022
+// Last Modified: 24/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -24,7 +24,6 @@
 #include "autd3/gain/primitive.hpp"
 #include "core/geometry/geometry.hpp"
 #include "core/geometry/legacy_transducer.hpp"
-#include "core/geometry/normal_transducer.hpp"
 #include "core/interface.hpp"
 #include "core/link.hpp"
 #include "core/silencer_config.hpp"
