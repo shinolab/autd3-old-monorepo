@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/05/2022
+// Last Modified: 24/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -63,8 +63,8 @@ struct NormalTransducer final : Transducer<NormalDriveData<NormalTransducer>> {
 
   [[nodiscard]] uint16_t cycle() const noexcept override { return _cycle; }
   [[nodiscard]] double frequency() const noexcept override { return static_cast<double>(driver::FPGA_CLK_FREQ) / static_cast<double>(_cycle); }
-  [[nodiscard]] double wavelength(const double sound_speed) const noexcept override { return sound_speed * 1e3 / 40e3; }
-  [[nodiscard]] double wavenumber(const double sound_speed) const noexcept override { return 2.0 * driver::pi * 40e3 / (sound_speed * 1e3); }
+  [[nodiscard]] double wavelength(const double sound_speed) const noexcept override { return sound_speed * 1e3 / frequency(); }
+  [[nodiscard]] double wavenumber(const double sound_speed) const noexcept override { return 2.0 * driver::pi * frequency() / (sound_speed * 1e3); }
 
   static void pack_header(driver::TxDatagram& tx) noexcept { normal_header(tx); }
 
