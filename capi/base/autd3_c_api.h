@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/05/2022
+// Last Modified: 24/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -85,6 +85,7 @@ EXPORT_AUTD void AUTDDeleteSilencer(const void* config);
 EXPORT_AUTD int32_t AUTDSendHeader(void* handle, void* header);
 EXPORT_AUTD int32_t AUTDSendBody(void* handle, void* body);
 EXPORT_AUTD int32_t AUTDSendHeaderBody(void* handle, void* header, void* body);
+EXPORT_AUTD void AUTDSetMode(int32_t mode);
 
 #ifdef __cplusplus
 }
