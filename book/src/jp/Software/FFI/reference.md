@@ -298,7 +298,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 handleは`AUTDCreateController`で作成したものを使う.
 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
 
-autd3capi-legacyにおいては, この関数は何もしない.
+Legacyモードにおいては, この関数は何もしない.
 
 | Argument name / return       | type             | in/out | description                                                                             |
 |------------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
@@ -329,7 +329,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 handleは`AUTDCreateController`で作成したものを使う.
 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
 
-autd3capi-legacyにおいては, この関数は何もしない.
+Legacyモードにおいては, この関数は何もしない.
 
 | Argument name / return       | type             | in/out | description                                                                             |
 |------------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
@@ -1180,18 +1180,7 @@ CUDA Backendを作成する.
 
 ## AUTDLinkEmulator (autd3capi-link-emulator)
 
-NormalモードのEmulator linkを作成する.
-
-| Argument name / return | type             | in/out | description                                                                             |
-|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
-| out                    | void**           | out    | pointer to pointer to Emulator link                                                     |
-| port                   | uint16_t         | in     | port number                                                                             |
-| cnt                    | void*            | in     | pointer to Controller                                                                   |
-| return                 | void             | -      | -                                                                                       |
-
-## AUTDLinkEmulatorLegacy (autd3capi-link-emulator)
-
-LegacyモードのEmulator linkを作成する.
+Emulator linkを作成する.
 
 | Argument name / return | type             | in/out | description                                                                             |
 |----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
