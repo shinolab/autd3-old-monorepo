@@ -14,7 +14,7 @@
 
 #include "../base/wrapper.hpp"
 #include "./holo_gain.h"
-#include "autd3/core/geometry/normal_transducer.hpp"
+#include "autd3/core/geometry/dynamic_transducer.hpp"
 #include "autd3/gain/backend.hpp"
 #include "autd3/gain/holo.hpp"
 
@@ -73,7 +73,7 @@ void AUTDGainHoloLM(void** gain, const void* backend, const double eps_1, const 
   initial_.reserve(initial_size);
   for (auto i = 0; i < initial_size; i++) initial_.emplace_back(initial[i]);
 
-  auto* g = new autd3::gain::holo::LM(b->ptr);
+  auto* g = new autd3::gain::holo::LM<T>(b->ptr);
   g->eps_1 = eps_1;
   g->eps_2 = eps_2;
   g->tau = tau;

@@ -12,7 +12,6 @@
 #pragma once
 
 #include "autd3/controller.hpp"
-#include "autd3/core/geometry/dynamic_transducer.hpp"
 #include "autd3/core/geometry/geometry.hpp"
 #include "autd3/core/stm/gain.hpp"
 #include "autd3/core/stm/point.hpp"

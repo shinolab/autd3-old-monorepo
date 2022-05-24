@@ -13,6 +13,7 @@
 
 #include <vector>
 
+#include "autd3/core/geometry/dynamic_transducer.hpp"
 #include "autd3/core/geometry/legacy_transducer.hpp"
 #include "autd3/core/geometry/normal_transducer.hpp"
 #include "autd3/core/geometry/transducer.hpp"
