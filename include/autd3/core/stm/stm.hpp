@@ -22,7 +22,7 @@ namespace autd3::core {
 /**
  * @brief STM provide hardware Spatio-Temporal Modulation or Lateral Modulation function.
  */
-template <typename T = DynamicTransducer, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+template <typename T = LegacyTransducer, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 struct STM : DatagramBody<T> {
   STM() noexcept : DatagramBody<T>(), _freq_div(4096) {}
   virtual ~STM() = default;

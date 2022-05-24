@@ -57,7 +57,7 @@ struct Point {
  * 1. The maximum number of control points is driver::POINT_STM_BUF_SIZE_MAX.
  * 2. Only a single focus can be displayed at a certain moment.
  */
-template <typename T = DynamicTransducer, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+template <typename T = LegacyTransducer, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 struct PointSTM final : public STM<T> {
   using value_type = Point;
 
