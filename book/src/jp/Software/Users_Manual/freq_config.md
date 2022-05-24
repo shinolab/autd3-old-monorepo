@@ -14,7 +14,6 @@ Version 2.0から, すべての振動子の周波数を個別に指定できる�
 
 周波数, または, 周期を変更したあとに`synchronize`関数を一度呼び出す必要があることに注意する.
 
-なお, Normalモードの場合は, `Gain`, `STM`などのインスタンス化の際に`Controller`と同様に型引数を指定する必要がある.
 
 ```cpp
   autd3::Controller<autd3::NormalTransducer> autd;
@@ -23,8 +22,10 @@ Version 2.0から, すべての振動子の周波数を個別に指定できる�
 
   for (auto& dev : autd.geometry())
     for (auto& tr : dev) tr.set_frequency(70e3); // actual frequency is 163.84MHz/2341 ~ 69987
+```
 
-...
+なお, Normalモードでは, `Gain`, `STM`などのインスタンス化の際に`Controller`と同様に型引数を指定する必要がある.
 
+```cpp
   autd3::gain::Focus<autd3::NormalTransducer> g(center);
 ```

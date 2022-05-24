@@ -23,7 +23,7 @@ namespace autd3::core {
 /**
  * @brief Geometry of all devices
  */
-template <typename T = DynamicTransducer, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+template <typename T = LegacyTransducer, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 struct Geometry {
   Geometry() : attenuation(0.0), sound_speed(340.0), _devices() {}
 

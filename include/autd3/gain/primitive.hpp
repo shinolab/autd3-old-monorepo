@@ -20,7 +20,7 @@ namespace autd3::gain {
 /**
  * @brief Gain to produce nothing
  */
-template <typename T = core::DynamicTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class Null final : public core::Gain<T> {
  public:
   Null() noexcept {}
@@ -41,7 +41,7 @@ class Null final : public core::Gain<T> {
 /**
  * @brief Gain to produce single focal point
  */
-template <typename T = core::DynamicTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class Focus final : public core::Gain<T> {
  public:
   /**
@@ -74,7 +74,7 @@ class Focus final : public core::Gain<T> {
 /**
  * @brief Gain to produce Bessel Beam
  */
-template <typename T = core::DynamicTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class BesselBeam final : public core::Gain<T> {
  public:
   /**
@@ -120,7 +120,7 @@ class BesselBeam final : public core::Gain<T> {
 /**
  * @brief Gain to create plane wave
  */
-template <typename T = core::DynamicTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class PlaneWave final : public core::Gain<T> {
  public:
   /**
@@ -153,7 +153,7 @@ class PlaneWave final : public core::Gain<T> {
 /**
  * @brief Gain to group some gains
  */
-template <typename T = core::DynamicTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class Grouped final : public core::Gain<T> {
  public:
   /**

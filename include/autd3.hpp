@@ -33,7 +33,6 @@ namespace driver {}
 
 constexpr double pi = driver::pi;
 
-using core::DynamicTransducer;
 using core::Geometry;
 using core::LegacyTransducer;
 using core::NormalTransducer;
