@@ -30,7 +30,7 @@ class BurstModulation final : public autd3::Modulation {
   size_t _buf_size;
 };
 
-template <typename T = autd3::DynamicTransducer, std::enable_if_t<std::is_base_of_v<autd3::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+template <typename T = autd3::LegacyTransducer, std::enable_if_t<std::is_base_of_v<autd3::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class UniformGain final : public autd3::Gain<T> {
  public:
   UniformGain() = default;

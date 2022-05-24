@@ -34,7 +34,7 @@ namespace autd3 {
 /**
  * @brief AUTD Controller
  */
-template <typename T = core::DynamicTransducer>
+template <typename T = core::LegacyTransducer>
 class Controller {
  public:
   Controller() : force_fan(false), reads_fpga_info(false), check_ack(false), _geometry(), _tx_buf(0), _rx_buf(0), _link(nullptr) {}

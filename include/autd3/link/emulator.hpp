@@ -21,7 +21,7 @@ namespace autd3::link {
 /**
  * \brief link for [autd-emulator](https://github.com/shinolab/autd-emulator)
  */
-template <typename T = core::DynamicTransducer>
+template <typename T = core::LegacyTransducer>
 class Emulator {
  public:
   /**
