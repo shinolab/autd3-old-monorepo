@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/05/2022
+// Last Modified: 24/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -62,7 +62,7 @@ using AmplitudeConstraint = std::variant<DontCare, Normalize, Uniform, Clamp>;
 /**
  * @brief Gain to produce multiple focal points
  */
-template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+template <typename T = core::DynamicTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class Holo : public core::Gain<T> {
  public:
   explicit Holo(BackendPtr backend, const AmplitudeConstraint constraint = Normalize()) : constraint(constraint), _backend(std::move(backend)) {}
@@ -97,7 +97,7 @@ class Holo : public core::Gain<T> {
  * perception produced by airborne ultrasonic haptic hologram." 2015 IEEE
  * World Haptics Conference (WHC). IEEE, 2015.
  */
-template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+template <typename T = core::DynamicTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class SDP final : public Holo<T> {
  public:
   /**
@@ -117,7 +117,7 @@ class SDP final : public Holo<T> {
  * Refer to Long, Benjamin, et al. "Rendering volumetric haptic shapes in mid-air
  * using ultrasound." ACM Transactions on Graphics (TOG) 33.6 (2014): 1-10.
  */
-template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+template <typename T = core::DynamicTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class EVD final : public Holo<T> {
  public:
   /**
@@ -133,7 +133,7 @@ class EVD final : public Holo<T> {
 /**
  * @brief Gain to produce multiple focal points with naive method.
  */
-template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+template <typename T = core::DynamicTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class Naive final : public Holo<T> {
  public:
   /**
@@ -149,7 +149,7 @@ class Naive final : public Holo<T> {
  * Refer to Asier Marzo and Bruce W Drinkwater, "Holographic acoustic
  * tweezers," Proceedings of theNational Academy of Sciences, 116(1):84–89, 2019.
  */
-template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+template <typename T = core::DynamicTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class GS final : public Holo<T> {
  public:
   /**
@@ -168,7 +168,7 @@ class GS final : public Holo<T> {
  * sound-fields for phased arrays of transducers," ACMTrans-actions on
  * Graphics (TOG), 39(4):138–1, 2020.
  */
-template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+template <typename T = core::DynamicTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class GSPAT final : public Holo<T> {
  public:
   /**
@@ -189,7 +189,7 @@ class GSPAT final : public Holo<T> {
  * AppliedMathematics, vol.11, no.2, pp.431–441, 1963.
  * K.Madsen, H.Nielsen, and O.Tingleff, “Methods for non-linear least squares problems (2nd ed.),” 2004.
  */
-template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+template <typename T = core::DynamicTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class LM final : public Holo<T> {
  public:
   /**
@@ -209,7 +209,7 @@ class LM final : public Holo<T> {
 /**
  * @brief Gain to produce multiple focal points with Gauss-Newton method.
  */
-template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+template <typename T = core::DynamicTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class GaussNewton final : public Holo<T> {
  public:
   /**
@@ -228,7 +228,7 @@ class GaussNewton final : public Holo<T> {
 /**
  * @brief Gain to produce multiple focal points with Gauss-Newton method.
  */
-template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+template <typename T = core::DynamicTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class GradientDescent final : public Holo<T> {
  public:
   /**
@@ -250,7 +250,7 @@ class GradientDescent final : public Holo<T> {
  * in IEEE Transactions on Haptics, doi: 10.1109/TOH.STM.3076489
  * @details This method is computed on the CPU.
  */
-template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+template <typename T = core::DynamicTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class Greedy final : public Holo<T> {
  public:
   /**
