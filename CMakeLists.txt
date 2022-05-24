@@ -8,7 +8,7 @@ project(autd3)
 
 set(VERSION_MAJOR 2 CACHE STRING "Project major version number.")
 set(VERSION_MINOR 0 CACHE STRING "Project minor version number.")
-set(VERSION_PATCH 1 CACHE STRING "Project patch version number.")
+set(VERSION_PATCH 2 CACHE STRING "Project patch version number.")
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -174,7 +174,6 @@ endif()
 
 if(BUILD_CAPI)
   add_subdirectory(capi/base)
-  add_subdirectory(capi/base_legacy)
   if(BUILD_LINK_SOEM)
     add_subdirectory(capi/link_soem)
   endif()
