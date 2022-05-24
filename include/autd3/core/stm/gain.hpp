@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/05/2022
+// Last Modified: 24/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -43,7 +43,7 @@ struct GainSTM<LegacyTransducer> final : public STM<LegacyTransducer> {
    */
   template <typename G, std::enable_if_t<std::is_base_of_v<Gain<LegacyTransducer>, G>, nullptr_t> = nullptr>
   void add(G& gain) {
-    if (_gains.size() + 1 > driver::GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("PointSTM out of buffer");
+    if (_gains.size() + 1 > driver::GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
 
     gain.build(_geometry);
 
@@ -93,7 +93,7 @@ struct GainSTM<NormalTransducer> final : public STM<NormalTransducer> {
    */
   template <typename G, std::enable_if_t<std::is_base_of_v<Gain<NormalTransducer>, G>, nullptr_t> = nullptr>
   void add(G& gain) {
-    if (_gains.size() + 1 > driver::GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("PointSTM out of buffer");
+    if (_gains.size() + 1 > driver::GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
 
     gain.build(_geometry);
 
@@ -133,6 +133,86 @@ struct GainSTM<NormalTransducer> final : public STM<NormalTransducer> {
  private:
   const Geometry<NormalTransducer>& _geometry;
   std::vector<NormalTransducer::D> _gains;
+  size_t _sent;
+  bool _next_duty;
+};
+
+/**
+ * @brief GainSTM for DynamicTransducer
+ */
+template <>
+struct GainSTM<DynamicTransducer> final : public STM<DynamicTransducer> {
+  explicit GainSTM(const Geometry<DynamicTransducer>& geometry) : STM(), _geometry(geometry), _sent(0), _next_duty(false) {}
+
+  /**
+   * @brief Add gain
+   * @param[in] gain gain
+   */
+  template <typename G, std::enable_if_t<std::is_base_of_v<Gain<DynamicTransducer>, G>, nullptr_t> = nullptr>
+  void add(G& gain) {
+    if (_gains.size() + 1 > driver::GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+
+    gain.build(_geometry);
+
+    _gains.emplace_back(gain.drives());
+  }
+
+  size_t size() const override { return _gains.size(); }
+
+  void init() override { _sent = 0; }
+
+  void pack(const Geometry<DynamicTransducer>&, driver::TxDatagram& tx) override {
+    if (DynamicTransducer::legacy_mode()) {
+      gain_stm_legacy_header(tx);
+
+      if (is_finished()) return;
+
+      const auto is_first_frame = _sent == 0;
+      const auto is_last_frame = _sent + 1 == _gains.size() + 1;
+
+      if (is_first_frame) {
+        gain_stm_legacy_body(nullptr, is_first_frame, _freq_div, is_last_frame, tx);
+        _sent += 1;
+        return;
+      }
+
+      gain_stm_legacy_body(_gains.at(_sent - 1).legacy_drives.data(), is_first_frame, _freq_div, is_last_frame, tx);
+      _sent += 1;
+    } else {
+      gain_stm_normal_header(tx);
+
+      if (is_finished()) return;
+
+      const auto is_first_frame = _sent == 0;
+      const auto is_last_frame = _sent + 1 == _gains.size() * 2 + 1;
+
+      if (is_first_frame) {
+        gain_stm_normal_phase(nullptr, is_first_frame, _freq_div, tx);
+        _sent += 1;
+        return;
+      }
+
+      if (!_next_duty)
+        gain_stm_normal_phase(_gains.at((_sent - 1) / 2).phases.data(), is_first_frame, _freq_div, tx);
+      else
+        gain_stm_normal_duty(_gains.at((_sent - 1) / 2).duties.data(), is_last_frame, tx);
+
+      _next_duty = !_next_duty;
+
+      _sent += 1;
+    }
+  }
+
+  [[nodiscard]] bool is_finished() const override {
+    if (DynamicTransducer::legacy_mode())
+      return _sent == _gains.size() + 1;
+    else
+      return _sent == _gains.size() * 2 + 1;
+  }
+
+ private:
+  const Geometry<DynamicTransducer>& _geometry;
+  std::vector<DynamicTransducer::D> _gains;
   size_t _sent;
   bool _next_duty;
 };
