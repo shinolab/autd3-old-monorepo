@@ -14,6 +14,7 @@
 #include <memory>
 
 #include "autd3/core/geometry/geometry.hpp"
+#include "autd3/core/geometry/legacy_transducer.hpp"
 #include "autd3/core/link.hpp"
 
 namespace autd3::link {
