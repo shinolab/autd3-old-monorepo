@@ -174,7 +174,6 @@ endif()
 
 if(BUILD_CAPI)
   add_subdirectory(capi/base)
-  add_subdirectory(capi/base_legacy)
   if(BUILD_LINK_SOEM)
     add_subdirectory(capi/link_soem)
   endif()

@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "device.hpp"
-#include "legacy_transducer.hpp"
+#include "dynamic_transducer.hpp"
 #include "transducer.hpp"
 
 namespace autd3::core {
