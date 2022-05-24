@@ -19,6 +19,7 @@ mathjax-support = true
 default-theme = "navy"
 preferred-dark-theme = "navy"
 git-repository-url = "https://github.com/shinolab/autd3"
+git-branch = "master"
 curly-quotes = true
 
 [output.katex]
