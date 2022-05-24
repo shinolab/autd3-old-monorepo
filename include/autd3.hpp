@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 24/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -12,6 +12,7 @@
 #pragma once
 
 #include "autd3/controller.hpp"
+#include "autd3/core/geometry/dynamic_transducer.hpp"
 #include "autd3/core/geometry/geometry.hpp"
 #include "autd3/core/stm/gain.hpp"
 #include "autd3/core/stm/point.hpp"
@@ -32,6 +33,7 @@ namespace driver {}
 
 constexpr double pi = driver::pi;
 
+using core::DynamicTransducer;
 using core::Geometry;
 using core::LegacyTransducer;
 using core::NormalTransducer;

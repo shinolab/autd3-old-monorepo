@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/05/2022
+// Last Modified: 24/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -15,7 +15,11 @@
 #include "runner.hpp"
 
 int main() try {
-  autd3::Controller autd;
+  autd3::Controller<autd3::DynamicTransducer> autd;
+  autd3::DynamicTransducer::legacy_mode() = false;
+  // autd3::Controller<autd3::LegacyTransducer> autd;
+  for (auto& dev : autd.geometry())
+    for (auto& tr : dev) tr.set_frequency(70e3);
 
   autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
   autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, 0.0, 0.0), autd3::Vector3::Zero());
