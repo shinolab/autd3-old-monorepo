@@ -154,7 +154,7 @@ SilencerConfigを削除する.
 
 | Argument name / return | type             | in/out | description                                                                                                        |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------                           |
-| config                 | void*            | out    | pointer to SilencerConfig                                                                                          |
+| config                 | void*            | in     | pointer to SilencerConfig                                                                                          |
 | return                 | void             | -      | -                                                                                                                  |
 
 ##  AUTDFreeController (autd3capi)
@@ -237,7 +237,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 | Argument name / return | type             | in/out | description                                                                             |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
 | handle                 | void*            | in     | pointer to Controller                                                                   |
-| check ack              | bool             | in     | check ack flag                                                                          |
+| check_ack              | bool             | in     | check ack flag                                                                          |
 | return                 | void             | -      | -                                                                                       |
 
 ##  AUTDSetForceFan (autd3capi)
@@ -251,7 +251,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 | Argument name / return | type             | in/out | description                                                                             |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
 | handle                 | void*            | in     | pointer to Controller                                                                   |
-| force_fan              | bool             | in     | force fan      flag                                                                     |
+| force                  | bool             | in     | force fan flag                                                                     |
 | return                 | void             | -      | -                                                                                       |
 
 ##  AUTDGetSoundSpeed (autd3capi)
@@ -298,14 +298,14 @@ handleは`AUTDCreateController`で作成したものを使う.
 handleは`AUTDCreateController`で作成したものを使う.
 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
 
-autd3capi-legacyにおいては, この関数は何もしない.
+Legacyモードにおいては, この関数は何もしない.
 
 | Argument name / return       | type             | in/out | description                                                                             |
 |------------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
 | handle                       | void*            | in     | pointer to Controller                                                                   |
 | device_idx                   | int32_t          | in     | device index                                                                            |
 | local_trans_idx              | int32_t          | in     | local transducer index                                                                  |
-| frequency                    | double           | -      | frequency of the transducer                                                             |
+| frequency                    | double           | in     | frequency of the transducer                                                             |
 | return                       | void             | -      | -                                                                                       |
 
 ##  AUTDGetTransCycle (autd3capi)
@@ -329,14 +329,14 @@ handleは`AUTDCreateController`で作成したものを使う.
 handleは`AUTDCreateController`で作成したものを使う.
 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
 
-autd3capi-legacyにおいては, この関数は何もしない.
+Legacyモードにおいては, この関数は何もしない.
 
 | Argument name / return       | type             | in/out | description                                                                             |
 |------------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
 | handle                       | void*            | in     | pointer to Controller                                                                   |
 | device_idx                   | int32_t          | in     | device index                                                                            |
 | local_trans_idx              | int32_t          | in     | local transducer index                                                                  |
-| frequency                    | uint16_t         | -      | cycle of the transducer                                                                 |
+| cycle                        | uint16_t         | in     | cycle of the transducer                                                                 |
 | return                       | void             | -      | -                                                                                       |
 
 ##  AUTDGetWavelength (autd3capi)
@@ -394,7 +394,7 @@ falseの場合には`AUTDGetLastError`でエラーメッセージを取得でき
 | Argument name / return | type             | in/out | description                                                                             |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
 | handle                 | void*            | in     | pointer to Controller                                                                   |
-| out                    | uint8_t*         | out    | FPGA information list                                                                   |
+| out                    | uint8_t*         | in     | FPGA information list                                                                   |
 | return                 | bool             | -      | true if success                                                                         |
 
 ##  AUTDUpdateFlags (autd3capi)
@@ -786,11 +786,14 @@ Point STMを作成する.
 
 Gain STMを作成する.
 
+handleは`AUTDCreateController`で作成したものを使う.
+
 作成したSTMは最後に`AUTDDeleteSTM`で削除する必要がある. 
 
 | Argument name / return | type             | in/out | description                                                                             |
 |----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
-| out                    | void**           | out    | pointer to pointer to Gain STM                                                         |
+| out                    | void**           | out    | pointer to pointer to Gain STM                                                          |
+| handle                 | void*            | in     | pointer to Controller                                                                   |
 | return                 | void             | -      | -                                                                                       |
 
 ##  AUTDPointSTMAdd (autd3capi)
@@ -804,7 +807,7 @@ Point STMに焦点を追加する.
 | y                      | double           | in     | y coordinate of focal point                                                             |
 | z                      | double           | in     | z coordinate of focal point                                                             |
 | shift                  | uint8_t          | in     | duty shift                                                                              |
-| return                 | void             | -      | -                                                                                       |
+| return                 | bool             | -      | true if success                                                                         |
 
 ##  AUTDGainSTMAdd (autd3capi)
 
@@ -814,7 +817,7 @@ Gain STMにgainを追加する.
 |----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
 | stm                    | void*            | in     | pointer to Point STM                                                                    |
 | gain                   | void*            | in     | pointer to Gain                                                                         |
-| return                 | void             | -      | -                                                                                       |
+| return                 | bool             | -      | true if success                                                                         |
 
 ##  AUTDSTMSetFrequency (autd3capi)
 
@@ -824,7 +827,7 @@ STMのfrequencyを設定する.
 |----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
 | stm                    | void*            | in     | pointer to STM                                                                          |
 | freq                   | double           | in     | frequency of STM                                                                        |
-| return                 | void             | -      | -                                                                                       |
+| return                 | double           | -      | actual frequency                                                                        |
 
 ##  AUTDSTMFrequency (autd3capi)
 
@@ -986,7 +989,6 @@ SDP holo gainを作成する.
 | alpha                  | double           | in     | parameter                                                                               |
 | lambda                 | double           | in     | parameter                                                                               |
 | repeat                 | uint64_t         | in     | parameter                                                                               |
-| constraint             | void*            | in     | pointer to amplitude constraint                                                         |
 | return                 | void             | -      | -                                                                                       |
 
 ## AUTDGainHoloEVD (autd3capi-gain-holo)
@@ -1001,7 +1003,6 @@ EVD holo gainを作成する.
 | gain                   | void**           | out    | pointer to pointer to EVD gain                                                          |
 | backend                | void*            | in     | pointer to backend                                                                      |
 | gamma                  | double           | in     | parameter                                                                               |
-| constraint             | void*            | in     | pointer to amplitude constraint                                                         |
 | return                 | void             | -      | -                                                                                       |
 
 ## AUTDGainHoloNaive (autd3capi-gain-holo)
@@ -1015,7 +1016,6 @@ Naive holo gainを作成する.
 |----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
 | gain                   | void**           | out    | pointer to pointer to Naive gain                                                        |
 | backend                | void*            | in     | pointer to backend                                                                      |
-| constraint             | void*            | in     | pointer to amplitude constraint                                                         |
 | return                 | void             | -      | -                                                                                       |
 
 ## AUTDGainHoloGS (autd3capi-gain-holo)
@@ -1030,7 +1030,6 @@ GS holo gainを作成する.
 | gain                   | void**           | out    | pointer to pointer to GS gain                                                           |
 | backend                | void*            | in     | pointer to backend                                                                      |
 | repeat                 | uint64_t         | in     | parameter                                                                               |
-| constraint             | void*            | in     | pointer to amplitude constraint                                                         |
 | return                 | void             | -      | -                                                                                       |
 
 ## AUTDGainHoloGSPAT (autd3capi-gain-holo)
@@ -1045,7 +1044,6 @@ GSPAT holo gainを作成する.
 | gain                   | void**           | out    | pointer to pointer to GSPAT gain                                                        |
 | backend                | void*            | in     | pointer to backend                                                                      |
 | repeat                 | uint64_t         | in     | parameter                                                                               |
-| constraint             | void*            | in     | pointer to amplitude constraint                                                         |
 | return                 | void             | -      | -                                                                                       |
 
 ## AUTDGainHoloLM (autd3capi-gain-holo)
@@ -1065,7 +1063,6 @@ LM holo gainを作成する.
 | k_max                  | uint64_t         | in     | parameter                                                                               |
 | initial                | double*          | in     | initial guess                                                                           |
 | initial_size           | int32_t          | in     | size of initial                                                                         |
-| constraint             | void*            | in     | pointer to amplitude constraint                                                         |
 | return                 | void             | -      | -                                                                                       |
 
 ## AUTDGainHoloGaussNewton (autd3capi-gain-holo)
@@ -1084,7 +1081,6 @@ GaussNewton holo gainを作成する.
 | k_max                  | uint64_t         | in     | parameter                                                                               |
 | initial                | double*          | in     | initial guess                                                                           |
 | initial_size           | int32_t          | in     | size of initial                                                                         |
-| constraint             | void*            | in     | pointer to amplitude constraint                                                         |
 | return                 | void             | -      | -                                                                                       |
 
 ## AUTDGainHoloGradientDescent (autd3capi-gain-holo)
@@ -1103,7 +1099,6 @@ GradientDescent holo gainを作成する.
 | k_max                  | uint64_t         | in     | parameter                                                                               |
 | initial                | double*          | in     | initial guess                                                                           |
 | initial_size           | int32_t          | in     | size of initial                                                                         |
-| constraint             | void*            | in     | pointer to amplitude constraint                                                         |
 | return                 | void             | -      | -                                                                                       |
 
 ## AUTDGainHoloGreedy (autd3capi-gain-holo)
@@ -1118,7 +1113,6 @@ Greedy holo gainを作成する.
 | gain                   | void**           | out    | pointer to pointer to Greedy gain                                                       |
 | backend                | void*            | in     | pointer to backend                                                                      |
 | phase_div              | int32_t          | in     | parameter                                                                               |
-| constraint             | void*            | in     | pointer to amplitude constraint                                                         |
 | return                 | void             | -      | -                                                                                       |
 
 ## AUTDGainHoloAdd (autd3capi-gain-holo)
@@ -1180,18 +1174,7 @@ CUDA Backendを作成する.
 
 ## AUTDLinkEmulator (autd3capi-link-emulator)
 
-NormalモードのEmulator linkを作成する.
-
-| Argument name / return | type             | in/out | description                                                                             |
-|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
-| out                    | void**           | out    | pointer to pointer to Emulator link                                                     |
-| port                   | uint16_t         | in     | port number                                                                             |
-| cnt                    | void*            | in     | pointer to Controller                                                                   |
-| return                 | void             | -      | -                                                                                       |
-
-## AUTDLinkEmulatorLegacy (autd3capi-link-emulator)
-
-LegacyモードのEmulator linkを作成する.
+Emulator linkを作成する.
 
 | Argument name / return | type             | in/out | description                                                                             |
 |----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
@@ -1251,7 +1234,7 @@ Adapter listへのポインタを削除する.
 | Argument name / return | type             | in/out | description                                                                             |
 |------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
 | p_adapter              | void*            | in     | pointer to adapter list                                                                 |
-| return                 | int32_t          | -      | size of adapter list                                                                    |
+| return                 | void             | -      | size of adapter list                                                                    |
 
 ## AUTDLinkSOEM (autd3capi-link-soem)
 

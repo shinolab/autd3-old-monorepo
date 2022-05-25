@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 add_library(autd3capi-link-soem SHARED
   c_api.cpp
   soem_link.h
-  ../base/header.h
+  ../base/header.hpp
   ../base/wrapper_link.hpp
 )
 
