@@ -11,7 +11,7 @@
  *
  */
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Type {
     Int8,
     Int16,
@@ -49,7 +49,7 @@ impl From<&str> for Type {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum InOut {
     IN,
     OUT,
