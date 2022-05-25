@@ -1,9 +1,9 @@
-// File: header.h
+// File: header.hpp
 // Project: base
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 25/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -16,6 +16,11 @@
 #else
 #define EXPORT_AUTD __attribute__((visibility("default")))
 #endif
+
+#define AUTD_DEPENDS_EXT_LIB
+#define IN
+#define OUT
+#define INOUT
 
 #ifdef __cplusplus
 #include <cstdint>
