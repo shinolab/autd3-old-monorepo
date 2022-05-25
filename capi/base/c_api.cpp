@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/05/2022
+// Last Modified: 25/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -139,9 +139,9 @@ double AUTDGetSoundSpeed(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   return wrapper->geometry().sound_speed;
 }
-double AUTDSetSoundSpeed(void* const handle, const double sound_speed) {
+void AUTDSetSoundSpeed(void* const handle, const double sound_speed) {
   auto* wrapper = static_cast<Controller*>(handle);
-  return wrapper->geometry().sound_speed = sound_speed;
+  wrapper->geometry().sound_speed = sound_speed;
 }
 double AUTDGetWavelength(const void* const handle, const int32_t device_idx, const int32_t local_trans_idx, const double sound_speed) {
   const auto* wrapper = static_cast<const Controller*>(handle);

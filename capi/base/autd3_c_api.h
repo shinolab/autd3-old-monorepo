@@ -34,7 +34,7 @@ EXPORT_AUTD void AUTDSetReadsFPGAInfo(IN void* handle, IN bool reads_fpga_info);
 EXPORT_AUTD void AUTDSetCheckAck(IN void* handle, IN bool check_ack);
 EXPORT_AUTD void AUTDSetForceFan(IN void* handle, IN bool force);
 EXPORT_AUTD double AUTDGetSoundSpeed(IN const void* handle);
-EXPORT_AUTD double AUTDSetSoundSpeed(IN void* handle, IN double sound_speed);
+EXPORT_AUTD void AUTDSetSoundSpeed(IN void* handle, IN double sound_speed);
 EXPORT_AUTD double AUTDGetTransFrequency(IN const void* handle, IN int32_t device_idx, IN int32_t local_trans_idx);
 EXPORT_AUTD void AUTDSetTransFrequency(IN void* handle, IN int32_t device_idx, IN int32_t local_trans_idx, IN double frequency);
 EXPORT_AUTD uint16_t AUTDGetTransCycle(IN const void* handle, IN int32_t device_idx, IN int32_t local_trans_idx);
@@ -58,7 +58,7 @@ EXPORT_AUTD void AUTDGetFirmwareInfo(IN const void* p_firm_info_list, IN int32_t
 EXPORT_AUTD void AUTDFreeFirmwareInfoListPointer(IN const void* p_firm_info_list);
 EXPORT_AUTD void AUTDGainNull(OUT void** gain);
 EXPORT_AUTD void AUTDGainGrouped(OUT void** gain, IN const void* handle);
-EXPORT_AUTD void AUTDGainGroupedAdd(OUT void* grouped_gain, IN int32_t device_id, IN void* gain);
+EXPORT_AUTD void AUTDGainGroupedAdd(IN void* grouped_gain, IN int32_t device_id, IN void* gain);
 EXPORT_AUTD void AUTDGainFocus(OUT void** gain, IN double x, IN double y, IN double z, IN double amp);
 EXPORT_AUTD void AUTDGainBesselBeam(OUT void** gain, IN double x, IN double y, IN double z, IN double n_x, IN double n_y, IN double n_z,
                                     IN double theta_z, IN double amp);

@@ -18,7 +18,7 @@ use regex::Regex;
 
 use crate::types::{InOut, Type};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub struct Arg {
     name: String,
     ty: Type,
@@ -28,6 +28,16 @@ pub struct Arg {
 }
 
 impl Arg {
+    pub fn new(name: &str, ty: Type, inout: InOut, is_const: bool, pointer: usize) -> Self {
+        Self {
+            name: name.to_string(),
+            ty,
+            inout,
+            is_const,
+            pointer,
+        }
+    }
+
     pub fn name(&self) -> &str {
         &self.name
     }
@@ -45,7 +55,7 @@ impl Arg {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub struct Function {
     name: String,
     return_ty: Type,
@@ -53,6 +63,14 @@ pub struct Function {
 }
 
 impl Function {
+    pub fn new(name: &str, return_ty: Type, args: Vec<Arg>) -> Self {
+        Self {
+            name: name.to_string(),
+            return_ty,
+            args,
+        }
+    }
+
     pub fn name(&self) -> &str {
         &self.name
     }
