@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 25/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -11,12 +11,12 @@
 
 #pragma once
 
-#include "../base/header.h"
+#include "../base/header.hpp"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-EXPORT_AUTD void AUTDLinkTwinCAT(void** out, uint16_t cycle_ticks);
+EXPORT_AUTD void AUTDLinkTwinCAT(OUT void** out, IN uint16_t cycle_ticks);
 #ifdef __cplusplus
 }
 #endif
