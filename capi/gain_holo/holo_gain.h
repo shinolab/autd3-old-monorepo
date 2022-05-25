@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/05/2022
+// Last Modified: 25/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -11,28 +11,28 @@
 
 #pragma once
 
-#include "../base/header.h"
+#include "../base/header.hpp"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-EXPORT_AUTD void AUTDEigenBackend(void** out);
-EXPORT_AUTD void AUTDDeleteBackend(const void* backend);
-EXPORT_AUTD void AUTDGainHoloSDP(void** gain, const void* backend, double alpha, double lambda, uint64_t repeat);
-EXPORT_AUTD void AUTDGainHoloEVD(void** gain, const void* backend, double gamma);
-EXPORT_AUTD void AUTDGainHoloNaive(void** gain, const void* backend);
-EXPORT_AUTD void AUTDGainHoloGS(void** gain, const void* backend, uint64_t repeat);
-EXPORT_AUTD void AUTDGainHoloGSPAT(void** gain, const void* backend, uint64_t repeat);
-EXPORT_AUTD void AUTDGainHoloLM(void** gain, const void* backend, double eps_1, double eps_2, double tau, uint64_t k_max, const double* initial,
-                                int32_t initial_size);
-EXPORT_AUTD void AUTDGainHoloGaussNewton(void** gain, const void* backend, double eps_1, double eps_2, uint64_t k_max, const double* initial,
-                                         int32_t initial_size);
-EXPORT_AUTD void AUTDGainHoloGradientDescent(void** gain, const void* backend, double eps, double step, uint64_t k_max, const double* initial,
-                                             int32_t initial_size);
-EXPORT_AUTD void AUTDGainHoloGreedy(void** gain, const void* backend, int32_t phase_div);
-EXPORT_AUTD void AUTDGainHoloAdd(void* gain, double x, double y, double z, double amp);
-EXPORT_AUTD void AUTDSetConstraint(void* gain, int32_t type, void* param);
-EXPORT_AUTD void AUTDSetModeHolo(int32_t mode);
+EXPORT_AUTD void AUTDEigenBackend(OUT void** out);
+EXPORT_AUTD void AUTDDeleteBackend(IN const void* backend);
+EXPORT_AUTD void AUTDGainHoloSDP(OUT void** gain, IN const void* backend, IN double alpha, IN double lambda, IN uint64_t repeat);
+EXPORT_AUTD void AUTDGainHoloEVD(OUT void** gain, IN const void* backend, IN double gamma);
+EXPORT_AUTD void AUTDGainHoloNaive(OUT void** gain, IN const void* backend);
+EXPORT_AUTD void AUTDGainHoloGS(OUT void** gain, IN const void* backend, IN uint64_t repeat);
+EXPORT_AUTD void AUTDGainHoloGSPAT(OUT void** gain, IN const void* backend, IN uint64_t repeat);
+EXPORT_AUTD void AUTDGainHoloLM(OUT void** gain, IN const void* backend, IN double eps_1, IN double eps_2, IN double tau, IN uint64_t k_max,
+                                IN const double* initial, IN int32_t initial_size);
+EXPORT_AUTD void AUTDGainHoloGaussNewton(OUT void** gain, IN const void* backend, IN double eps_1, IN double eps_2, IN uint64_t k_max,
+                                         IN const double* initial, IN int32_t initial_size);
+EXPORT_AUTD void AUTDGainHoloGradientDescent(OUT void** gain, IN const void* backend, IN double eps, IN double step, IN uint64_t k_max,
+                                             IN const double* initial, IN int32_t initial_size);
+EXPORT_AUTD void AUTDGainHoloGreedy(OUT void** gain, IN const void* backend, IN int32_t phase_div);
+EXPORT_AUTD void AUTDGainHoloAdd(IN void* gain, IN double x, IN double y, IN double z, IN double amp);
+EXPORT_AUTD void AUTDSetConstraint(IN void* gain, IN int32_t type, IN void* param);
+EXPORT_AUTD void AUTDSetModeHolo(IN int32_t mode);
 #ifdef __cplusplus
 }
 #endif

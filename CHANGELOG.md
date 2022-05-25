@@ -1,3 +1,6 @@
+# 2.0.3
+* Fix `AUTDSetSoundSpeed` in C-API
+
 # 2.0.2
 * Add `DynamicTransducer` for C-API
 * Remove legacy C-API library

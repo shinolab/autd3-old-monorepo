@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 add_library(autd3capi-backend-blas SHARED
   c_api.cpp
   blas_backend.h
-  ../../base/header.h
+  ../../base/header.hpp
   ../../base/wrapper.hpp
 )
 

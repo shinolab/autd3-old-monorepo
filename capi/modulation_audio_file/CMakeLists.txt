@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 add_library(autd3capi-modulation-audio-file SHARED
   c_api.cpp
   audio_file_modulation.h
-  ../base/header.h
+  ../base/header.hpp
 )
 
 target_link_libraries(autd3capi-modulation-audio-file modulation_audio_file)

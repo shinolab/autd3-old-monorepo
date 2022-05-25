@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 add_library(autd3capi-gain-holo SHARED
   c_api.cpp
   holo_gain.h
-  ../base/header.h
+  ../base/header.hpp
   ../base/wrapper.hpp
 )
 
