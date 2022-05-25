@@ -27,7 +27,7 @@ EXPORT_AUTD void AUTDGainHoloLM(OUT void** gain, IN const void* backend, IN doub
                                 IN const double* initial, IN int32_t initial_size);
 EXPORT_AUTD void AUTDGainHoloGaussNewton(OUT void** gain, IN const void* backend, IN double eps_1, IN double eps_2, IN uint64_t k_max,
                                          IN const double* initial, IN int32_t initial_size);
-EXPORT_AUTD void AUTDGainHoloGradientDescent(IN void** gain, IN const void* backend, IN double eps, IN double step, IN uint64_t k_max,
+EXPORT_AUTD void AUTDGainHoloGradientDescent(OUT void** gain, IN const void* backend, IN double eps, IN double step, IN uint64_t k_max,
                                              IN const double* initial, IN int32_t initial_size);
 EXPORT_AUTD void AUTDGainHoloGreedy(OUT void** gain, IN const void* backend, IN int32_t phase_div);
 EXPORT_AUTD void AUTDGainHoloAdd(IN void* gain, IN double x, IN double y, IN double z, IN double amp);
