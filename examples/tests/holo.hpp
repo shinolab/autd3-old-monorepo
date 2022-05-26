@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/05/2022
+// Last Modified: 26/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -20,7 +20,7 @@
 #include "autd3/gain/holo.hpp"
 
 template <typename T>
-void holo_test(autd3::Controller<T>& autd) {
+void holo_test(autd3::ControllerX<T>& autd) {
   autd3::SilencerConfig config;
   autd.send(config);
 
