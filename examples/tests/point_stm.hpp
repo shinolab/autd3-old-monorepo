@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/05/2022
+// Last Modified: 26/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -16,7 +16,7 @@
 #include <vector>
 
 template <typename T>
-void point_stm(autd3::Controller<T>& autd) {
+void point_stm(autd3::ControllerX<T>& autd) {
   auto config = autd3::SilencerConfig::none();
   autd.send(config);
 
