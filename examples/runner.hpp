@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/05/2022
+// Last Modified: 26/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -36,8 +36,8 @@
 #include "tests/point_stm.hpp"
 
 template <typename T>
-int run(autd3::Controller<T> autd) {
-  using F = std::function<void(autd3::Controller<T>&)>;
+int run(autd3::ControllerX<T> autd) {
+  using F = std::function<void(autd3::ControllerX<T>&)>;
   std::vector<std::pair<F, std::string>> tests = {
       std::pair(F{focus_test<T>}, "Single focus Test"),
       std::pair(F{bessel_test<T>}, "Bessel beam Test"),

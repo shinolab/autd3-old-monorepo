@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/05/2022
+// Last Modified: 26/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -22,8 +22,10 @@
 #include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/driver/cpu/ec_config.hpp"
 #include "autd3/gain/primitive.hpp"
+#include "core/geometry/dynamic_transducer.hpp"
 #include "core/geometry/geometry.hpp"
 #include "core/geometry/legacy_transducer.hpp"
+#include "core/geometry/normal_transducer.hpp"
 #include "core/interface.hpp"
 #include "core/link.hpp"
 #include "core/silencer_config.hpp"
@@ -34,10 +36,10 @@ namespace autd3 {
 /**
  * @brief AUTD Controller
  */
-template <typename T = core::LegacyTransducer>
-class Controller {
+template <typename T, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+class ControllerX {
  public:
-  Controller() : force_fan(false), reads_fpga_info(false), check_ack(false), _geometry(), _tx_buf(0), _rx_buf(0), _link(nullptr) {}
+  ControllerX() : force_fan(false), reads_fpga_info(false), check_ack(false), _geometry(), _tx_buf(0), _rx_buf(0), _link(nullptr) {}
 
   /**
    * @brief Geometry of the devices
@@ -266,5 +268,10 @@ class Controller {
   driver::RxDatagram _rx_buf;
   core::LinkPtr _link;
 };
+
+/**
+ * @brief AUTD Controller with legacy (40kHz) transducer
+ */
+using Controller = ControllerX<core::LegacyTransducer>;
 
 }  // namespace autd3

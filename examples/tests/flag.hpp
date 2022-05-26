@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/05/2022
+// Last Modified: 26/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -19,7 +19,7 @@
 #include "autd3.hpp"
 
 template <typename T>
-void flag_test(autd3::Controller<T>& autd) {
+void flag_test(autd3::ControllerX<T>& autd) {
   autd.reads_fpga_info = true;
 
   std::cout << "press any key to run fan..." << std::endl;
