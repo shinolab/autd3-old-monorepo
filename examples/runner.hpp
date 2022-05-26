@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/05/2022
+// Last Modified: 27/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -60,6 +60,7 @@ int run(autd3::ControllerX<T> autd) {
   autd.geometry().sound_speed = 340.0;  // m/s
 
   const auto firm_infos = autd.firmware_infos();
+  if (firm_infos.empty()) throw std::runtime_error("Cannot read firmware information.");
   std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));
 
   autd.clear();
