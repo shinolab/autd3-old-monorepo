@@ -55,8 +55,6 @@ int run(autd3::ControllerX<T> autd) {
   };
   if (autd.geometry().num_devices() == 2) tests.emplace_back(std::pair(F{group_test<T>}, "Grouped Gain Test"));
 
-  autd.check_ack = true;
-
   autd.geometry().sound_speed = 340.0;  // m/s
 
   const auto firm_infos = autd.firmware_infos();
