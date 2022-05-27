@@ -123,7 +123,7 @@ void AUTDGainHoloAdd(void* gain, const double x, const double y, const double z,
   g->add_focus(autd3::core::Vector3(x, y, z), amp);
 }
 
-void AUTDSetConstraint(void* gain, int32_t type, void* param) {
+void AUTDSetConstraint(void* gain, const int32_t type, void* param) {
   auto* g = static_cast<autd3::gain::holo::Holo<T>*>(gain);
   switch (type) {
     case 0:
