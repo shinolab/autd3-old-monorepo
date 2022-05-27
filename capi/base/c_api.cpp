@@ -259,7 +259,7 @@ void AUTDGainPlaneWave(void** gain, const double n_x, const double n_y, const do
 }
 
 void AUTDGainCustom(void** gain, const double* amp, const double* phase, const uint64_t size) {
-  *gain = new CustomGain<T>(amp, phase, static_cast<size_t>(size));
+  *gain = new CustomGain(amp, phase, static_cast<size_t>(size));
 }
 
 void AUTDDeleteGain(const void* const gain) {
