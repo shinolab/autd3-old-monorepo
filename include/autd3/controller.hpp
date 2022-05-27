@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/05/2022
+// Last Modified: 27/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -39,7 +39,8 @@ namespace autd3 {
 template <typename T, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class ControllerX {
  public:
-  ControllerX() : force_fan(false), reads_fpga_info(false), check_ack(false), _geometry(), _tx_buf(0), _rx_buf(0), _link(nullptr) {}
+  ControllerX()
+      : force_fan(false), reads_fpga_info(false), check_ack(false), _geometry(), _tx_buf(0), _rx_buf(0), _link(nullptr), _check_ack(false) {}
 
   /**
    * @brief Geometry of the devices
@@ -70,6 +71,8 @@ class ControllerX {
    * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
    */
   bool synchronize() {
+    push_ack();
+
     driver::force_fan(_tx_buf, force_fan);
     driver::reads_fpga_info(_tx_buf, reads_fpga_info);
 
@@ -81,8 +84,14 @@ class ControllerX {
 
     sync(msg_id, _link->cycle_ticks(), cycles.data(), _tx_buf);
 
-    if (!_link->send(_tx_buf)) return false;
-    return wait_msg_processed(50);
+    if (!_link->send(_tx_buf)) {
+      pop_ack();
+      return false;
+    }
+
+    const auto success = wait_msg_processed(50);
+    pop_ack();
+    return success;
   }
 
   /**
@@ -112,15 +121,14 @@ class ControllerX {
    * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
    */
   bool clear() {
-    const auto check_ack_ = check_ack;
-    check_ack = true;
+    push_ack();
     driver::clear(_tx_buf);
     if (!_link->send(_tx_buf)) {
-      check_ack = check_ack_;
+      pop_ack();
       return false;
     }
     const auto success = wait_msg_processed(200);
-    check_ack = check_ack_;
+    pop_ack();
     return success;
   }
 
@@ -152,8 +160,7 @@ class ControllerX {
   [[nodiscard]] std::vector<driver::FirmwareInfo> firmware_infos() {
     std::vector<driver::FirmwareInfo> firmware_infos;
 
-    const auto check_ack_ = check_ack;
-    check_ack = true;
+    push_ack();
 
     const auto pack_ack = [&]() -> std::vector<uint8_t> {
       std::vector<uint8_t> acks;
@@ -165,17 +172,26 @@ class ControllerX {
 
     cpu_version(_tx_buf);
     const auto cpu_versions = pack_ack();
-    if (cpu_versions.empty()) return firmware_infos;
+    if (cpu_versions.empty()) {
+      pop_ack();
+      return firmware_infos;
+    }
 
     fpga_version(_tx_buf);
     const auto fpga_versions = pack_ack();
-    if (fpga_versions.empty()) return firmware_infos;
+    if (fpga_versions.empty()) {
+      pop_ack();
+      return firmware_infos;
+    }
 
     fpga_functions(_tx_buf);
     const auto fpga_functions = pack_ack();
-    if (fpga_functions.empty()) return firmware_infos;
+    if (fpga_functions.empty()) {
+      pop_ack();
+      return firmware_infos;
+    }
 
-    check_ack = check_ack_;
+    pop_ack();
 
     for (size_t i = 0; i < _geometry.num_devices(); i++)
       firmware_infos.emplace_back(i, cpu_versions.at(i), fpga_versions.at(i), fpga_functions.at(i));
@@ -223,6 +239,7 @@ class ControllerX {
       _link->send(_tx_buf);
       if (!wait_msg_processed(50)) return false;
       if (header.is_finished() && body.is_finished()) break;
+      if (!check_ack) std::this_thread::sleep_for(std::chrono::microseconds(driver::EC_SYNC0_CYCLE_TIME_MICRO_SEC * _link->cycle_ticks()));
     }
     return true;
   }
@@ -253,20 +270,27 @@ class ControllerX {
     if (!check_ack) return true;
 
     const auto msg_id = _tx_buf.header().msg_id;
-    const auto wait = static_cast<uint64_t>(std::ceil(driver::EC_TRAFFIC_DELAY * 1000.0 / static_cast<double>(driver::EC_DEVICE_PER_FRAME) *
-                                                      static_cast<double>(_geometry.num_devices())));
     for (size_t i = 0; i < max_trial; i++) {
       if (!_link->receive(_rx_buf)) continue;
       if (_rx_buf.is_msg_processed(msg_id)) return true;
-      std::this_thread::sleep_for(std::chrono::milliseconds(wait));
+      std::this_thread::sleep_for(std::chrono::microseconds(driver::EC_SYNC0_CYCLE_TIME_MICRO_SEC * _link->cycle_ticks()));
     }
     return false;
   }
+
+  void push_ack() {
+    _check_ack = check_ack;
+    check_ack = true;
+  }
+
+  void pop_ack() { check_ack = _check_ack; }
 
   core::Geometry<T> _geometry;
   driver::TxDatagram _tx_buf;
   driver::RxDatagram _rx_buf;
   core::LinkPtr _link;
+
+  bool _check_ack;
 };
 
 /**

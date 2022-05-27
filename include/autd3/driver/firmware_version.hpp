@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/05/2022
+// Last Modified: 27/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -75,12 +75,14 @@ struct FirmwareInfo {
       ss << "v1." << version_num - 0x09;
       return ss.str();
     }
-    if (version_num == 0x80) {
+    if (version_num <= 0x81) {
       ss << "v2." << version_num - 0x80;
       return ss.str();
     }
     if (version_num == 0xFF) return "emulator";
-    return "unknown";
+
+    ss << "unknown (" << std::hex << static_cast<int>(version_num) << ")";
+    return ss.str();
   }
 };
 

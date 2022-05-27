@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/05/2022
+// Last Modified: 27/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -50,6 +50,8 @@ int main() try {
                   .high_precision(true)
                   .build();
   autd.open(std::move(link));
+
+  autd.check_ack = true;
 
   return run(std::move(autd));
 } catch (std::exception& e) {
