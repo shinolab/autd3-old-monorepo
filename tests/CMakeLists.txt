@@ -11,6 +11,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/tests/driver)
 add_subdirectory(${PROJECT_SOURCE_DIR}/tests/core)
 add_subdirectory(${PROJECT_SOURCE_DIR}/tests/gain/primitive)
 add_subdirectory(${PROJECT_SOURCE_DIR}/tests/modulation/primitive)
+add_subdirectory(${PROJECT_SOURCE_DIR}/tests/link)
 
 if(BUILD_GAIN_HOLO)
   add_subdirectory(${PROJECT_SOURCE_DIR}/tests/gain/holo)
