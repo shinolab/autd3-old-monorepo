@@ -32,7 +32,7 @@ struct NormalDriveData final : DriveData<T> {
     phases.resize(size, driver::Phase{0x0000});
   }
   void set_drive(const T& tr, const double phase, const double amp) override {
-    duties.at(tr.id()).duty = static_cast<uint16_t>(static_cast<double>(tr.cycle()) * std::asin(amp) / driver::pi);
+    duties.at(tr.id()).duty = static_cast<uint16_t>(std::round(static_cast<double>(tr.cycle()) * std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi));
     phases.at(tr.id()).phase = static_cast<uint16_t>(
         rem_euclid(static_cast<int32_t>(std::round(phase * static_cast<double>(tr.cycle()))), static_cast<int32_t>(tr.cycle())));
   }
