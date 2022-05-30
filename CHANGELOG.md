@@ -1,5 +1,6 @@
 # 2.1.0
 * Rename `Controller` to `ControllerX`, and `Controller` is now alias of `ControllerX<LegacyTransducer>`
+* Fix `SineLegacy`
 
 # 2.0.3
 * Fix `AUTDSetSoundSpeed` in C-API

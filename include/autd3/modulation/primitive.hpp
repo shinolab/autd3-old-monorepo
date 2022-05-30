@@ -1,12 +1,12 @@
 // File: primitive.hpp
-// Project: gain
-// Created Date: 10/05/2022
+// Project: modulation
+// Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 30/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2022 Hapis Lab. All rights reserved.
+// Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
@@ -155,7 +155,7 @@ class SineLegacy final : public core::Modulation {
     const auto t = static_cast<size_t>(std::round(f_s / f));
     this->_props.buffer.resize(t, 0);
     for (size_t i = 0; i < t; i++) {
-      double amp = 255.0 * _offset + 127.5 * _amp * std::cos(2.0 * driver::pi * static_cast<double>(i) / static_cast<double>(t));
+      double amp = _offset + 0.5 * _amp * std::cos(2.0 * driver::pi * static_cast<double>(i) / static_cast<double>(t));
       const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi * 510.0));
       this->_props.buffer.at(i) = duty;
     }
