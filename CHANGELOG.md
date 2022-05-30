@@ -1,5 +1,6 @@
 # 2.1.0
 * Rename `Controller` to `ControllerX`, and `Controller` is now alias of `ControllerX<LegacyTransducer>`
+* Add `NormalPhaseTransducer`
 * Fix `SineLegacy`
 
 # 2.0.3
