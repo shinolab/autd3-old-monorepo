@@ -311,16 +311,6 @@ TEST(GeometryTest, add_device_quaternion) {
   ASSERT_NEAR_VECTOR3(geometry[4][248].position(), (Vector3(40, 60, 50) + Vector3(0, 10.16 * 17, 0) - Vector3(10.16 * 13, 0, 0)), 1e-3);
 }
 
-TEST(UtilitiesTest, rem_euclid) {
-  ASSERT_EQ(autd3::core::rem_euclid(0, 256), 0);
-  ASSERT_EQ(autd3::core::rem_euclid(10, 256), 10);
-  ASSERT_EQ(autd3::core::rem_euclid(255, 256), 255);
-  ASSERT_EQ(autd3::core::rem_euclid(256, 256), 0);
-  ASSERT_EQ(autd3::core::rem_euclid(266, 256), 10);
-  ASSERT_EQ(autd3::core::rem_euclid(-10, 256), 246);
-  ASSERT_EQ(autd3::core::rem_euclid(-266, 256), 246);
-}
-
 TEST(UtilitiesTest, Directivity) {
   constexpr double expects[91] = {
       1,        1,        1,        1,        1,        1,        1,        1,        1,        1,        1,        1,        1,

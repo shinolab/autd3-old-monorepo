@@ -25,6 +25,7 @@
 #include "core/geometry/dynamic_transducer.hpp"
 #include "core/geometry/geometry.hpp"
 #include "core/geometry/legacy_transducer.hpp"
+#include "core/geometry/normal_phase_transducer.hpp"
 #include "core/geometry/normal_transducer.hpp"
 #include "core/interface.hpp"
 #include "core/link.hpp"
@@ -136,11 +137,7 @@ class ControllerX {
    * @brief Stop outputting
    * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
    */
-  bool stop() {
-    SilencerConfig config;
-    gain::Null<T> g;
-    return send(config, g);
-  }
+  bool stop();
 
   /**
    * @brief Close the controller
@@ -292,6 +289,30 @@ class ControllerX {
 
   bool _check_ack;
 };
+
+bool ControllerX<autd3::core::LegacyTransducer>::stop() {
+  SilencerConfig config;
+  gain::Null<autd3::core::LegacyTransducer> g;
+  return send(config, g);
+}
+
+bool ControllerX<autd3::core::NormalTransducer>::stop() {
+  SilencerConfig config;
+  gain::Null<autd3::core::NormalTransducer> g;
+  return send(config, g);
+}
+
+bool ControllerX<autd3::core::NormalPhaseTransducer>::stop() {
+  SilencerConfig config;
+  autd3::core::Amplitudes g(_geometry, 0.0);
+  return send(config, g);
+}
+
+bool ControllerX<autd3::core::DynamicTransducer>::stop() {
+  SilencerConfig config;
+  gain::Null<autd3::core::DynamicTransducer> g;
+  return send(config, g);
+}
 
 /**
  * @brief AUTD Controller with legacy (40kHz) transducer

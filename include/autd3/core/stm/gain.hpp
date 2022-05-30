@@ -15,6 +15,7 @@
 
 #include "autd3/core/geometry/dynamic_transducer.hpp"
 #include "autd3/core/geometry/legacy_transducer.hpp"
+#include "autd3/core/geometry/normal_phase_transducer.hpp"
 #include "autd3/core/geometry/normal_transducer.hpp"
 #include "autd3/core/geometry/transducer.hpp"
 #include "autd3/core/interface.hpp"
@@ -135,6 +136,45 @@ struct GainSTM<NormalTransducer> final : public STM<NormalTransducer> {
  private:
   const Geometry<NormalTransducer>& _geometry;
   std::vector<NormalTransducer::D> _gains;
+  size_t _sent;
+  bool _next_duty;
+};
+
+/**
+ * @brief GainSTM for NormalPhaseTransducer
+ */
+template <>
+struct GainSTM<NormalPhaseTransducer> final : public STM<NormalPhaseTransducer> {
+  explicit GainSTM(const Geometry<NormalPhaseTransducer>& geometry) : STM(), _geometry(geometry), _sent(0), _next_duty(false) {}
+
+  /**
+   * @brief Add gain
+   * @param[in] gain gain
+   */
+  template <typename G, std::enable_if_t<std::is_base_of_v<Gain<NormalPhaseTransducer>, G>, nullptr_t> = nullptr>
+  void add(G& gain) {
+    if (_gains.size() + 1 > driver::GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+
+    gain.build(_geometry);
+
+    _gains.emplace_back(gain.drives());
+  }
+
+  size_t size() const override { return _gains.size(); }
+
+  void init() override { _sent = 0; }
+
+  void pack(const Geometry<NormalPhaseTransducer>&, driver::TxDatagram& tx) override {
+    // TODO
+  }
+
+  [[nodiscard]] bool is_finished() const override {
+    return true;  // TODO
+  }
+
+ private:
+  const Geometry<NormalPhaseTransducer>& _geometry;
+  std::vector<NormalPhaseTransducer::D> _gains;
   size_t _sent;
   bool _next_duty;
 };

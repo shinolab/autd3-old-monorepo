@@ -21,10 +21,12 @@
 #include "autd3/core/geometry/dynamic_transducer.hpp"
 #include "autd3/core/geometry/geometry.hpp"
 #include "autd3/core/geometry/legacy_transducer.hpp"
+#include "autd3/core/geometry/normal_phase_transducer.hpp"
 #include "autd3/core/geometry/normal_transducer.hpp"
 #include "autd3/gain/primitive.hpp"
 
 using autd3::core::DynamicTransducer;
+using autd3::core::NormalPhaseTransducer;
 using autd3::core::NormalTransducer;
 using autd3::core::propagate;
 using autd3::core::Vector3;
@@ -53,6 +55,18 @@ TEST(NullTest, NormalTransducerTest) {
   for (const auto& [duty] : g.drives().duties) {
     ASSERT_EQ(duty, 0);
   }
+  for (const auto& [phase] : g.drives().phases) {
+    ASSERT_EQ(phase, 0);
+  }
+}
+
+TEST(NullTest, NormalPhaseTransducerTest) {
+  auto geometry = autd3::core::Geometry<NormalPhaseTransducer>();
+  geometry.add_device(Vector3::Zero(), Vector3::Zero());
+
+  auto g = autd3::gain::Null<NormalPhaseTransducer>();
+  g.build(geometry);
+
   for (const auto& [phase] : g.drives().phases) {
     ASSERT_EQ(phase, 0);
   }
@@ -157,6 +171,29 @@ TEST(FocusTest, NormalTransducerTest) {
   auto g4 = autd3::gain::Focus<NormalTransducer>(f, -1.0);
   g4.build(geometry);
   for (auto& [duty] : g4.drives().duties) ASSERT_EQ(duty, 0);
+}
+
+TEST(FocusTest, NormalPhaseTransducerTest) {
+  auto geometry = autd3::core::Geometry<NormalPhaseTransducer>();
+  geometry.add_device(Vector3::Zero(), Vector3::Zero());
+
+  for (auto& dev : geometry)
+    for (auto& tr : dev) tr.set_cycle(2500);
+
+  const Vector3 f(10, 20, 30);
+
+  auto g = autd3::gain::Focus<NormalPhaseTransducer>(f);
+  g.build(geometry);
+
+  const auto expect =
+      std::arg(propagate(geometry[0][0].position(), geometry[0][0].z_direction(), 0.0, geometry[0][0].wavenumber(geometry.sound_speed), f) *
+               std::exp(std::complex(0.0, 2.0 * pi * static_cast<double>(g.drives().phases[0].phase) / static_cast<double>(2500))));
+  for (size_t i = 0; i < g.drives().phases.size(); i++) {
+    const auto p =
+        std::arg(propagate(geometry[0][i].position(), geometry[0][i].z_direction(), 0.0, geometry[0][i].wavenumber(geometry.sound_speed), f) *
+                 std::exp(std::complex(0.0, 2.0 * pi * static_cast<double>(g.drives().phases[i].phase) / static_cast<double>(2500))));
+    ASSERT_NEAR(p, expect, 2.0 * pi / 2500.0);
+  }
 }
 
 TEST(FocusTest, DynamicTransducerTest) {

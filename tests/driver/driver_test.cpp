@@ -25,6 +25,7 @@
 #include <random>
 
 #include "autd3/driver/fpga/defined.hpp"
+#include "autd3/driver/utils.hpp"
 
 using autd3::driver::CPUControlFlags;
 using autd3::driver::FPGAControlFlags;
@@ -643,4 +644,14 @@ TEST(CPUTest, operation_fpga_functions) {
   fpga_functions(tx);
   ASSERT_EQ(tx.header().msg_id, autd3::driver::MSG_RD_FPGA_FUNCTION);
   ASSERT_EQ(static_cast<uint8_t>(tx.header().cpu_flag.value()), autd3::driver::MSG_RD_FPGA_FUNCTION);
+}
+
+TEST(UtilitiesTest, rem_euclid) {
+  ASSERT_EQ(autd3::driver::rem_euclid(0, 256), 0);
+  ASSERT_EQ(autd3::driver::rem_euclid(10, 256), 10);
+  ASSERT_EQ(autd3::driver::rem_euclid(255, 256), 255);
+  ASSERT_EQ(autd3::driver::rem_euclid(256, 256), 0);
+  ASSERT_EQ(autd3::driver::rem_euclid(266, 256), 10);
+  ASSERT_EQ(autd3::driver::rem_euclid(-10, 256), 246);
+  ASSERT_EQ(autd3::driver::rem_euclid(-266, 256), 246);
 }

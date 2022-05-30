@@ -52,13 +52,6 @@ class Directivity {
   }
 };
 
-template <typename T>
-auto rem_euclid(T a, T b) noexcept -> std::enable_if_t<std::is_signed_v<T>, T> {
-  T m = a % b;
-  if (m < 0) m = b < 0 ? m - b : m + b;
-  return m;
-}
-
 inline std::complex<double> propagate(const core::Vector3& source_pos, const core::Vector3& source_dir, const double attenuation,
                                       const double wavenumber, const core::Vector3& target) {
   const auto diff = target - source_pos;
