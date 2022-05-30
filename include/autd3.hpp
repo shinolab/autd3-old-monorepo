@@ -13,6 +13,7 @@
 
 #include "autd3/controller.hpp"
 #include "autd3/core/geometry/geometry.hpp"
+#include "autd3/core/geometry/normal_phase_transducer.hpp"
 #include "autd3/core/stm/gain.hpp"
 #include "autd3/core/stm/point.hpp"
 #include "autd3/gain/primitive.hpp"
@@ -34,8 +35,11 @@ constexpr double pi = driver::pi;
 
 using core::Geometry;
 using core::LegacyTransducer;
+using core::NormalPhaseTransducer;
 using core::NormalTransducer;
 using core::Transducer;
+
+using core::Amplitudes;
 
 using core::Gain;
 using core::Modulation;

@@ -34,13 +34,10 @@ struct DynamicDriveData final : DriveData<T> {
   }
   void set_drive(const T& tr, const double phase, const double amp) override {
     if (T::legacy_mode()) {
-      legacy_drives.at(tr.id()).duty = static_cast<uint8_t>(std::round(510.0 * std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi));
-      legacy_drives.at(tr.id()).phase = static_cast<uint8_t>(static_cast<int32_t>(std::round(phase * 256.0)) & 0xFF);
+      legacy_drives.at(tr.id()).set(amp, phase);
     } else {
-      duties.at(tr.id()).duty =
-          static_cast<uint16_t>(std::round(static_cast<double>(tr.cycle()) * std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi));
-      phases.at(tr.id()).phase = static_cast<uint16_t>(
-          rem_euclid(static_cast<int32_t>(std::round(phase * static_cast<double>(tr.cycle()))), static_cast<int32_t>(tr.cycle())));
+      duties.at(tr.id()).set(amp, tr.cycle());
+      phases.at(tr.id()).set(phase, tr.cycle());
     }
   }
   void copy_from(size_t idx, const typename T::D& src) override {
