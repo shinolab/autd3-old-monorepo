@@ -178,7 +178,8 @@ class Square final : public core::Modulation {
    * @param[in] high high level in amplitude (0 to 1)
    * @param[in] duty duty ratio of square wave
    */
-  Square(const int freq, const double low, const double high, const double duty = 0.5) : _freq(freq), _low(low), _high(high), _duty(duty) {}
+  Square(const int freq, const double low = 0.0, const double high = 1.0, const double duty = 0.5)
+      : _freq(freq), _low(low), _high(high), _duty(duty) {}
 
   void calc() override {
     const auto f_s = static_cast<int32_t>(sampling_frequency());
