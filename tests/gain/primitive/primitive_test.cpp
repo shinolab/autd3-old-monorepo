@@ -25,7 +25,6 @@
 #include "autd3/gain/primitive.hpp"
 
 using autd3::core::DynamicTransducer;
-using autd3::core::LegacyTransducer;
 using autd3::core::NormalTransducer;
 using autd3::core::propagate;
 using autd3::core::Vector3;
@@ -35,12 +34,12 @@ TEST(NullTest, LegacyTransducerTest) {
   auto geometry = autd3::core::Geometry();
   geometry.add_device(Vector3::Zero(), Vector3::Zero());
 
-  auto g = autd3::gain::Null<LegacyTransducer>();
+  auto g = autd3::gain::Null();
   g.build(geometry);
 
-  for (const auto& d : g.drives().data) {
-    ASSERT_EQ(d.duty, 0);
-    ASSERT_EQ(d.phase, 0);
+  for (const auto& [phase, duty] : g.drives().data) {
+    ASSERT_EQ(duty, 0);
+    ASSERT_EQ(phase, 0);
   }
 }
 
@@ -51,11 +50,11 @@ TEST(NullTest, NormalTransducerTest) {
   auto g = autd3::gain::Null<NormalTransducer>();
   g.build(geometry);
 
-  for (const auto& d : g.drives().duties) {
-    ASSERT_EQ(d.duty, 0);
+  for (const auto& [duty] : g.drives().duties) {
+    ASSERT_EQ(duty, 0);
   }
-  for (const auto& d : g.drives().phases) {
-    ASSERT_EQ(d.phase, 0);
+  for (const auto& [phase] : g.drives().phases) {
+    ASSERT_EQ(phase, 0);
   }
 }
 
@@ -67,19 +66,19 @@ TEST(NullTest, DynamicTransducerTest) {
   DynamicTransducer::legacy_mode() = true;
   gl.build(geometry);
 
-  for (const auto& d : gl.drives().legacy_drives) {
-    ASSERT_EQ(d.duty, 0);
-    ASSERT_EQ(d.phase, 0);
+  for (const auto& [phase, duty] : gl.drives().legacy_drives) {
+    ASSERT_EQ(duty, 0);
+    ASSERT_EQ(phase, 0);
   }
 
   auto gn = autd3::gain::Null<DynamicTransducer>();
   DynamicTransducer::legacy_mode() = false;
   gn.build(geometry);
-  for (const auto& d : gn.drives().duties) {
-    ASSERT_EQ(d.duty, 0);
+  for (const auto& [duty] : gn.drives().duties) {
+    ASSERT_EQ(duty, 0);
   }
-  for (const auto& d : gn.drives().phases) {
-    ASSERT_EQ(d.phase, 0);
+  for (const auto& [phase] : gn.drives().phases) {
+    ASSERT_EQ(phase, 0);
   }
 }
 
@@ -89,7 +88,7 @@ TEST(FocusTest, LegacyTransducerTest) {
 
   const Vector3 f(10, 20, 30);
 
-  auto g = autd3::gain::Focus<LegacyTransducer>(f);
+  auto g = autd3::gain::Focus(f);
   g.build(geometry);
 
   const auto expect =
@@ -103,20 +102,139 @@ TEST(FocusTest, LegacyTransducerTest) {
     ASSERT_NEAR(p, expect, 2.0 * pi / 256.0);
   }
 
-  auto g1 = autd3::gain::Focus<LegacyTransducer>(f, 0.5);
+  auto g1 = autd3::gain::Focus(f, 0.5);
   g1.build(geometry);
-  for (size_t i = 0; i < g1.drives().data.size(); i++)
-    ASSERT_EQ(g1.drives().data[i].duty, static_cast<uint8_t>(std::round(std::asin(0.5) / pi * 510.0)));
+  for (auto& [phase, duty] : g1.drives().data) ASSERT_EQ(duty, static_cast<uint8_t>(std::round(std::asin(0.5) / pi * 510.0)));
 
-  auto g2 = autd3::gain::Focus<LegacyTransducer>(f, 0.0);
+  auto g2 = autd3::gain::Focus(f, 0.0);
   g2.build(geometry);
-  for (size_t i = 0; i < g2.drives().data.size(); i++) ASSERT_EQ(g2.drives().data[i].duty, 0);
+  for (auto& [phase, duty] : g2.drives().data) ASSERT_EQ(duty, 0);
 
-  auto g3 = autd3::gain::Focus<LegacyTransducer>(f, 2.0);
+  auto g3 = autd3::gain::Focus(f, 2.0);
   g3.build(geometry);
-  for (size_t i = 0; i < g3.drives().data.size(); i++) ASSERT_EQ(g3.drives().data[i].duty, 255);
+  for (auto& [phase, duty] : g3.drives().data) ASSERT_EQ(duty, 255);
 
-  auto g4 = autd3::gain::Focus<LegacyTransducer>(f, -1.0);
+  auto g4 = autd3::gain::Focus(f, -1.0);
   g4.build(geometry);
-  for (size_t i = 0; i < g4.drives().data.size(); i++) ASSERT_EQ(g4.drives().data[i].duty, 0);
+  for (auto& [phase, duty] : g4.drives().data) ASSERT_EQ(duty, 0);
+}
+
+TEST(FocusTest, NormalTransducerTest) {
+  auto geometry = autd3::core::Geometry<NormalTransducer>();
+  geometry.add_device(Vector3::Zero(), Vector3::Zero());
+
+  for (auto& dev : geometry)
+    for (auto& tr : dev) tr.set_cycle(2500);
+
+  const Vector3 f(10, 20, 30);
+
+  auto g = autd3::gain::Focus<NormalTransducer>(f);
+  g.build(geometry);
+
+  const auto expect =
+      std::arg(propagate(geometry[0][0].position(), geometry[0][0].z_direction(), 0.0, geometry[0][0].wavenumber(geometry.sound_speed), f) *
+               std::exp(std::complex(0.0, 2.0 * pi * static_cast<double>(g.drives().phases[0].phase) / static_cast<double>(2500))));
+  for (size_t i = 0; i < g.drives().phases.size(); i++) {
+    const auto p =
+        std::arg(propagate(geometry[0][i].position(), geometry[0][i].z_direction(), 0.0, geometry[0][i].wavenumber(geometry.sound_speed), f) *
+                 std::exp(std::complex(0.0, 2.0 * pi * static_cast<double>(g.drives().phases[i].phase) / static_cast<double>(2500))));
+    ASSERT_EQ(g.drives().duties[i].duty, 1250);
+    ASSERT_NEAR(p, expect, 2.0 * pi / 2500.0);
+  }
+
+  auto g1 = autd3::gain::Focus<NormalTransducer>(f, 0.5);
+  g1.build(geometry);
+  for (auto& [duty] : g1.drives().duties) ASSERT_EQ(duty, static_cast<uint16_t>(std::round(static_cast<double>(2500) * std::asin(0.5) / pi)));
+
+  auto g2 = autd3::gain::Focus<NormalTransducer>(f, 0.0);
+  g2.build(geometry);
+  for (auto& [duty] : g2.drives().duties) ASSERT_EQ(duty, 0);
+
+  auto g3 = autd3::gain::Focus<NormalTransducer>(f, 2.0);
+  g3.build(geometry);
+  for (auto& [duty] : g3.drives().duties) ASSERT_EQ(duty, 1250);
+
+  auto g4 = autd3::gain::Focus<NormalTransducer>(f, -1.0);
+  g4.build(geometry);
+  for (auto& [duty] : g4.drives().duties) ASSERT_EQ(duty, 0);
+}
+
+TEST(FocusTest, DynamicTransducerTest) {
+  auto geometry = autd3::core::Geometry<DynamicTransducer>();
+  geometry.add_device(Vector3::Zero(), Vector3::Zero());
+
+  {
+    DynamicTransducer::legacy_mode() = true;
+
+    const Vector3 f(10, 20, 30);
+
+    auto g = autd3::gain::Focus<DynamicTransducer>(f);
+    g.build(geometry);
+
+    const auto expect =
+        std::arg(propagate(geometry[0][0].position(), geometry[0][0].z_direction(), 0.0, geometry[0][0].wavenumber(geometry.sound_speed), f) *
+                 std::exp(std::complex(0.0, 2.0 * pi * static_cast<double>(g.drives().legacy_drives[0].phase) / 255.0)));
+    for (size_t i = 0; i < g.drives().legacy_drives.size(); i++) {
+      const auto p =
+          std::arg(propagate(geometry[0][i].position(), geometry[0][i].z_direction(), 0.0, geometry[0][i].wavenumber(geometry.sound_speed), f) *
+                   std::exp(std::complex(0.0, 2.0 * pi * static_cast<double>(g.drives().legacy_drives[i].phase) / 255.0)));
+      ASSERT_EQ(g.drives().legacy_drives[i].duty, 255);
+      ASSERT_NEAR(p, expect, 2.0 * pi / 256.0);
+    }
+
+    auto g1 = autd3::gain::Focus<DynamicTransducer>(f, 0.5);
+    g1.build(geometry);
+    for (auto& [phase, duty] : g1.drives().legacy_drives) ASSERT_EQ(duty, static_cast<uint8_t>(std::round(std::asin(0.5) / pi * 510.0)));
+
+    auto g2 = autd3::gain::Focus<DynamicTransducer>(f, 0.0);
+    g2.build(geometry);
+    for (auto& [phase, duty] : g2.drives().legacy_drives) ASSERT_EQ(duty, 0);
+
+    auto g3 = autd3::gain::Focus<DynamicTransducer>(f, 2.0);
+    g3.build(geometry);
+    for (auto& [phase, duty] : g3.drives().legacy_drives) ASSERT_EQ(duty, 255);
+
+    auto g4 = autd3::gain::Focus<DynamicTransducer>(f, -1.0);
+    g4.build(geometry);
+    for (auto& [phase, duty] : g4.drives().legacy_drives) ASSERT_EQ(duty, 0);
+  }
+
+  {
+    DynamicTransducer::legacy_mode() = false;
+
+    for (auto& dev : geometry)
+      for (auto& tr : dev) tr.set_cycle(2500);
+
+    const Vector3 f(10, 20, 30);
+
+    auto g = autd3::gain::Focus<DynamicTransducer>(f);
+    g.build(geometry);
+
+    const auto expect =
+        std::arg(propagate(geometry[0][0].position(), geometry[0][0].z_direction(), 0.0, geometry[0][0].wavenumber(geometry.sound_speed), f) *
+                 std::exp(std::complex(0.0, 2.0 * pi * static_cast<double>(g.drives().phases[0].phase) / static_cast<double>(2500))));
+    for (size_t i = 0; i < g.drives().phases.size(); i++) {
+      const auto p =
+          std::arg(propagate(geometry[0][i].position(), geometry[0][i].z_direction(), 0.0, geometry[0][i].wavenumber(geometry.sound_speed), f) *
+                   std::exp(std::complex(0.0, 2.0 * pi * static_cast<double>(g.drives().phases[i].phase) / static_cast<double>(2500))));
+      ASSERT_EQ(g.drives().duties[i].duty, 1250);
+      ASSERT_NEAR(p, expect, 2.0 * pi / 2500.0);
+    }
+
+    auto g1 = autd3::gain::Focus<DynamicTransducer>(f, 0.5);
+    g1.build(geometry);
+    for (auto& [duty] : g1.drives().duties) ASSERT_EQ(duty, static_cast<uint16_t>(std::round(static_cast<double>(2500) * std::asin(0.5) / pi)));
+
+    auto g2 = autd3::gain::Focus<DynamicTransducer>(f, 0.0);
+    g2.build(geometry);
+    for (auto& [duty] : g2.drives().duties) ASSERT_EQ(duty, 0);
+
+    auto g3 = autd3::gain::Focus<DynamicTransducer>(f, 2.0);
+    g3.build(geometry);
+    for (auto& [duty] : g3.drives().duties) ASSERT_EQ(duty, 1250);
+
+    auto g4 = autd3::gain::Focus<DynamicTransducer>(f, -1.0);
+    g4.build(geometry);
+    for (auto& [duty] : g4.drives().duties) ASSERT_EQ(duty, 0);
+  }
 }
