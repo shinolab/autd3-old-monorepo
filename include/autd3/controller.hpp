@@ -290,24 +290,28 @@ class ControllerX {
   bool _check_ack;
 };
 
+template <>
 bool ControllerX<autd3::core::LegacyTransducer>::stop() {
   SilencerConfig config;
   gain::Null<autd3::core::LegacyTransducer> g;
   return send(config, g);
 }
 
+template <>
 bool ControllerX<autd3::core::NormalTransducer>::stop() {
   SilencerConfig config;
   gain::Null<autd3::core::NormalTransducer> g;
   return send(config, g);
 }
 
+template <>
 bool ControllerX<autd3::core::NormalPhaseTransducer>::stop() {
   SilencerConfig config;
   autd3::core::Amplitudes g(_geometry, 0.0);
   return send(config, g);
 }
 
+template <>
 bool ControllerX<autd3::core::DynamicTransducer>::stop() {
   SilencerConfig config;
   gain::Null<autd3::core::DynamicTransducer> g;
