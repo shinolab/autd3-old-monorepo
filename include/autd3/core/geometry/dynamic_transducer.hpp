@@ -3,10 +3,10 @@
 // Created Date: 24/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/05/2022
+// Last Modified: 30/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2022 Hapis Lab. All rights reserved.
+// Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
@@ -34,10 +34,10 @@ struct DynamicDriveData final : DriveData<T> {
   }
   void set_drive(const T& tr, const double phase, const double amp) override {
     if (T::legacy_mode()) {
-      legacy_drives.at(tr.id()).duty = static_cast<uint8_t>(std::round(510.0 * std::asin(amp) / driver::pi));
+      legacy_drives.at(tr.id()).duty = static_cast<uint8_t>(std::round(510.0 * std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi));
       legacy_drives.at(tr.id()).phase = static_cast<uint8_t>(static_cast<int32_t>(std::round(phase * 256.0)) & 0xFF);
     } else {
-      duties.at(tr.id()).duty = static_cast<uint16_t>(static_cast<double>(tr.cycle()) * std::asin(amp) / driver::pi);
+      duties.at(tr.id()).duty = static_cast<uint16_t>(static_cast<double>(tr.cycle()) * std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi);
       phases.at(tr.id()).phase = static_cast<uint16_t>(
           rem_euclid(static_cast<int32_t>(std::round(phase * static_cast<double>(tr.cycle()))), static_cast<int32_t>(tr.cycle())));
     }
