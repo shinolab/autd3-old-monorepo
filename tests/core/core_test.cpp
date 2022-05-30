@@ -50,9 +50,9 @@ TEST(TransducerTest, LegacyTransducer) {
 
   autd3::driver::TxDatagram tx(10);
   autd3::core::LegacyTransducer::pack_header(tx);
-  ASSERT_TRUE((tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY) == 0);
-  ASSERT_TRUE((tx.header().fpga_flag.value() & FPGAControlFlags::LEGACY_MODE) != 0);
-  ASSERT_TRUE((tx.header().fpga_flag.value() & FPGAControlFlags::STM_MODE) == 0);
+  ASSERT_EQ((tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY), 0);
+  ASSERT_NE((tx.header().fpga_flag.value() & FPGAControlFlags::LEGACY_MODE), 0);
+  ASSERT_EQ((tx.header().fpga_flag.value() & FPGAControlFlags::STM_MODE), 0);
   ASSERT_EQ(tx.num_bodies, 0);
 
   bool phase_sent = false;
@@ -83,9 +83,9 @@ TEST(TransducerTest, NormalTransducer) {
 
   autd3::driver::TxDatagram tx(10);
   autd3::core::NormalTransducer::pack_header(tx);
-  ASSERT_TRUE((tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY) == 0);
-  ASSERT_TRUE((tx.header().fpga_flag.value() & FPGAControlFlags::LEGACY_MODE) == 0);
-  ASSERT_TRUE((tx.header().fpga_flag.value() & FPGAControlFlags::STM_MODE) == 0);
+  ASSERT_EQ((tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY), 0);
+  ASSERT_EQ((tx.header().fpga_flag.value() & FPGAControlFlags::LEGACY_MODE), 0);
+  ASSERT_EQ((tx.header().fpga_flag.value() & FPGAControlFlags::STM_MODE), 0);
   ASSERT_EQ(tx.num_bodies, 0);
 
   bool phase_sent = false;
@@ -118,9 +118,9 @@ TEST(TransducerTest, DynamicTransducer) {
 
   autd3::driver::TxDatagram tx(10);
   autd3::core::DynamicTransducer::pack_header(tx);
-  ASSERT_TRUE((tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY) == 0);
-  ASSERT_TRUE((tx.header().fpga_flag.value() & FPGAControlFlags::LEGACY_MODE) != 0);
-  ASSERT_TRUE((tx.header().fpga_flag.value() & FPGAControlFlags::STM_MODE) == 0);
+  ASSERT_EQ((tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY), 0);
+  ASSERT_NE((tx.header().fpga_flag.value() & FPGAControlFlags::LEGACY_MODE), 0);
+  ASSERT_EQ((tx.header().fpga_flag.value() & FPGAControlFlags::STM_MODE), 0);
   ASSERT_EQ(tx.num_bodies, 0);
 
   bool phase_sent = false;
@@ -148,9 +148,9 @@ TEST(TransducerTest, DynamicTransducer) {
   ASSERT_NEAR(tr.wavenumber(340), 1.293596975007561871293279075L, 1e-3);
 
   autd3::core::NormalTransducer::pack_header(tx);
-  ASSERT_TRUE((tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY) == 0);
-  ASSERT_TRUE((tx.header().fpga_flag.value() & FPGAControlFlags::LEGACY_MODE) == 0);
-  ASSERT_TRUE((tx.header().fpga_flag.value() & FPGAControlFlags::STM_MODE) == 0);
+  ASSERT_EQ((tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY), 0);
+  ASSERT_EQ((tx.header().fpga_flag.value() & FPGAControlFlags::LEGACY_MODE), 0);
+  ASSERT_EQ((tx.header().fpga_flag.value() & FPGAControlFlags::STM_MODE), 0);
   ASSERT_EQ(tx.num_bodies, 0);
 
   phase_sent = false;

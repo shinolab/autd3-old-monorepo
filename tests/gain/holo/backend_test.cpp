@@ -77,7 +77,7 @@ class BackendTest : public testing::Test {
 
 typedef Types<EIGEN3_BACKEND_TYPE CUDA_BACKEND_TYPE BLAS_BACKEND_TYPE> Implementations;
 
-TYPED_TEST_SUITE(BackendTest, Implementations, );
+TYPED_TEST_SUITE(BackendTest, Implementations);
 
 TYPED_TEST(BackendTest, copy_to) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;

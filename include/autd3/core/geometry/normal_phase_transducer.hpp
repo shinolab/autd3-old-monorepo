@@ -97,7 +97,7 @@ struct Amplitudes final : DatagramBody<NormalPhaseTransducer> {
 
   void init() override { _sent = false; }
 
-  void pack(const Geometry<NormalPhaseTransducer>& geometry, driver::TxDatagram& tx) override {
+  void pack(const Geometry<NormalPhaseTransducer>&, driver::TxDatagram& tx) override {
     normal_header(tx);
     if (is_finished()) return;
     _sent = true;
