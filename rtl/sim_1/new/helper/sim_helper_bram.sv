@@ -4,10 +4,10 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/05/2022
+ * Last Modified: 30/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Hapis Lab. All rights reserved.
+ * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  * 
  */
 
@@ -161,6 +161,12 @@ endtask
 task write_cycle(bit [WIDTH-1:0] cycle[0:DEPTH-1]);
     for(int i = 0; i < DEPTH; i++) begin
         bram_write(BRAM_SELECT_CONTROLLER, ADDR_CYCLE_BASE + i, cycle[i]);
+    end
+endtask
+
+task write_delay(bit [15:0] delay[0:DEPTH-1]);
+    for(int i = 0; i < DEPTH; i++) begin
+        bram_write(BRAM_SELECT_CONTROLLER, ADDR_DELAY_BASE + i, delay[i]);
     end
 endtask
 

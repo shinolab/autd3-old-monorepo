@@ -1,13 +1,13 @@
 /*
  * File: sim_controller.sv
  * Project: controller
- * Created Date: 12/04/2022
+ * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/04/2022
+ * Last Modified: 30/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Hapis Lab. All rights reserved.
+ * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  * 
  */
 
@@ -24,7 +24,6 @@ sim_helper_clk sim_helper_clk(
 
 localparam int WIDTH = 13;
 localparam int DEPTH = 249;
-localparam bit [7:0] VERSION_NUM = 8'h70;
 localparam bit [WIDTH-1:0] MAX = (1 << WIDTH) - 1;
 
 sim_helper_bram sim_helper_bram();
@@ -37,6 +36,7 @@ bit [15:0] ecat_sync_cycle_ticks;
 bit sync_set;
 bit [15:0] cycle_m;
 bit [31:0] freq_div_m;
+bit [15:0] delay_m[0:DEPTH-1];
 bit [15:0] cycle_s;
 bit [WIDTH-1:0] step_s;
 bit [15:0] cycle_stm;
@@ -46,8 +46,7 @@ bit [WIDTH-1:0] cycle[0:DEPTH-1];
 
 controller#(
               .WIDTH(WIDTH),
-              .DEPTH(DEPTH),
-              .VERSION_NUM(VERSION_NUM)
+              .DEPTH(DEPTH)
           ) controller (
               .CLK(CLK_20P48M),
               .THERMO(thermo),
@@ -58,6 +57,7 @@ controller#(
               .SYNC_SET(sync_set),
               .CYCLE_M(cycle_m),
               .FREQ_DIV_M(freq_div_m),
+              .DELAY_M(delay_m),
               .CYCLE_S(cycle_s),
               .STEP_S(step_s),
               .CYCLE_STM(cycle_stm),
@@ -78,6 +78,7 @@ initial begin
     bit [31:0] freq_div_stm_buf;
     bit [31:0] sound_speed_buf;
     bit [WIDTH-1:0] cycle_buf[0:DEPTH-1];
+    bit [15:0] delay_buf[0:DEPTH-1];
     @(posedge locked);
 
     sim_helper_random.init();
@@ -115,6 +116,10 @@ initial begin
     end
     sim_helper_bram.write_cycle(cycle_buf);
 
+    for (int i = 0; i < DEPTH; i++) begin
+        delay_buf[i] = sim_helper_random.range(16'hFFFF, 0);
+    end
+    sim_helper_bram.write_delay(delay_buf);
 
     for (int i = 0; i < 100; i++) begin
         @(posedge CLK_20P48M);
@@ -163,6 +168,12 @@ initial begin
     for (int i = 0; i < DEPTH; i++) begin
         if (cycle_buf[i] != cycle[i]) begin
             $error("Failed at cycle[%d]", i);
+            $finish();
+        end
+    end
+    for (int i = 0; i < DEPTH; i++) begin
+        if (delay_buf[i] != delay_m[i]) begin
+            $error("Failed at delay[%d]", i);
             $finish();
         end
     end
