@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/05/2022
+// Last Modified: 30/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,6 +23,7 @@
 
 #include "autd3/core/geometry/dynamic_transducer.hpp"
 #include "autd3/core/geometry/legacy_transducer.hpp"
+#include "autd3/core/geometry/normal_phase_transducer.hpp"
 #include "autd3/core/geometry/normal_transducer.hpp"
 #include "autd3/core/interface.hpp"
 #include "autd3/core/link.hpp"
@@ -160,6 +161,11 @@ core::LinkPtr Emulator<core::LegacyTransducer>::build() {
 template <>
 core::LinkPtr Emulator<core::NormalTransducer>::build() {
   core::LinkPtr link = std::make_unique<EmulatorImpl<core::NormalTransducer>>(_port, _geometry);
+  return link;
+}
+template <>
+core::LinkPtr Emulator<core::NormalPhaseTransducer>::build() {
+  core::LinkPtr link = std::make_unique<EmulatorImpl<core::NormalPhaseTransducer>>(_port, _geometry);
   return link;
 }
 template <>

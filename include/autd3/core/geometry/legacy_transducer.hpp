@@ -27,10 +27,7 @@ namespace autd3::core {
 template <typename T>
 struct LegacyDriveData final : DriveData<T> {
   void init(const size_t size) override { data.resize(size, driver::LegacyDrive{0x00, 0x00}); }
-  void set_drive(const T& tr, const double phase, const double amp) noexcept override {
-    data.at(tr.id()).duty = static_cast<uint8_t>(std::round(510.0 * std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi));
-    data.at(tr.id()).phase = static_cast<uint8_t>(static_cast<int32_t>(std::round(phase * 256.0)) & 0xFF);
-  }
+  void set_drive(const T& tr, const double phase, const double amp) noexcept override { data.at(tr.id()).set(amp, phase); }
 
   void copy_from(size_t idx, const typename T::D& src) override {
     const auto* s = src.data.data() + idx * driver::NUM_TRANS_IN_UNIT;
