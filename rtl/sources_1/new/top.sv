@@ -61,7 +61,7 @@ bit [15:0] cycle_m;
 bit [31:0] freq_div_m;
 bit [WIDTH-1:0] duty_m[0:TRANS_NUM-1];
 bit [WIDTH-1:0] phase_m[0:TRANS_NUM-1];
-bit [15:0] delay_m[0:TRANS_NUM-1];
+bit [15:0] offset_m[0:TRANS_NUM-1];
 
 bit [15:0] cycle_s;
 bit [WIDTH-1:0] step_s;
@@ -149,7 +149,7 @@ controller#(
               .STM_GAIN_MODE(stm_gain_mode),
               .CYCLE_M(cycle_m),
               .FREQ_DIV_M(freq_div_m),
-              .DELAY_M(delay_m),
+              .OFFSET_M(offset_m),
               .CYCLE_S(cycle_s),
               .STEP_S(step_s),
               .CYCLE_STM(cycle_stm),
@@ -214,6 +214,7 @@ if (ENABLE_MODULATOR == "TRUE") begin
                  .SYS_TIME(sys_time),
                  .CYCLE(cycle_m),
                  .FREQ_DIV(freq_div_m),
+                 .OFFSET_M(offset_m),
                  .CPU_BUS(cpu_bus.mod_port),
                  .DUTY_IN(duty),
                  .PHASE_IN(phase),

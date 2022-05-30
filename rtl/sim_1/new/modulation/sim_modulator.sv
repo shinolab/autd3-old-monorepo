@@ -34,6 +34,7 @@ bit [WIDTH-1:0] duty[0:DEPTH-1];
 bit [WIDTH-1:0] phase[0:DEPTH-1];
 bit [WIDTH-1:0] duty_out[0:DEPTH-1];
 bit [WIDTH-1:0] phase_out[0:DEPTH-1];
+bit [15:0] delay_m[0:DEPTH-1];
 bit start;
 bit done;
 bit [15:0] idx;
@@ -48,6 +49,7 @@ modulator#(
              .SYS_TIME(SYS_TIME),
              .CYCLE(cycle),
              .FREQ_DIV(freq_div),
+             .DELAY_M(delay_m),
              .CPU_BUS(sim_helper_bram.cpu_bus.mod_port),
              .DUTY_IN(duty),
              .PHASE_IN(phase),
@@ -64,7 +66,7 @@ bit [15:0] idx_buf;
 task set_random();
     @(posedge CLK_20P48M);
     cycle = 16'hFFFF;
-    // cycle = 16'd999;
+    //    cycle = 16'd999;
     for (int i = 0; i < DEPTH; i++) begin
         duty[i] = sim_helper_random.range(8000, 0);
     end
@@ -72,6 +74,10 @@ task set_random();
         mod_data[j] = sim_helper_random.range(8'hFF, 0);
     end
     sim_helper_bram.write_mod(mod_data, cycle + 1);
+
+    for (int i = 0; i < DEPTH; i++) begin
+        delay_m[i] = sim_helper_random.range(cycle + 1, 0);
+    end
 
     for (int j = 0; j < cycle + 1; j++) begin
         @(posedge start);
@@ -81,8 +87,8 @@ task set_random();
         @(posedge CLK_20P48M);
         @(posedge CLK_20P48M);
         for (int i = 0; i < DEPTH; i++) begin
-            if (duty_out[i] != (duty[i] * mod_data[idx_buf] / 255)) begin
-                $error("Failed at d=%d, m=%d, d_m=%d", duty[i], mod_data[idx_buf], duty_out[i]);
+            if (duty_out[i] != (duty[i] * mod_data[(idx_buf + delay_m[i]) % (cycle + 1)] / 255)) begin
+                $error("Failed at d=%d, m[%d]=%d, d_m=%d @ %d", duty[i], (idx_buf + delay_m[i]) % (cycle + 1), mod_data[(idx_buf + delay_m[i]) % (cycle + 1)], duty_out[i], i);
                 $finish();
             end
         end

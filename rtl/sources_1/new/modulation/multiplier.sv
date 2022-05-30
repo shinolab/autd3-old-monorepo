@@ -95,6 +95,7 @@ always_ff @(posedge CLK) begin
             done <= 0;
         end
         PROCESS: begin
+            b <= M;
             a <= {1'b0, duty[calc_cnt]};
             calc_cnt <= calc_cnt + 1;
 
