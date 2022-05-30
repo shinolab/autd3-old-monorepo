@@ -1,12 +1,12 @@
 // File: legacy_transducer.hpp
 // Project: geometry
-// Created Date: 11/05/2022
+// Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/05/2022
+// Last Modified: 30/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2022 Hapis Lab. All rights reserved.
+// Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
@@ -28,7 +28,7 @@ template <typename T>
 struct LegacyDriveData final : DriveData<T> {
   void init(const size_t size) override { data.resize(size, driver::LegacyDrive{0x00, 0x00}); }
   void set_drive(const T& tr, const double phase, const double amp) noexcept override {
-    data.at(tr.id()).duty = static_cast<uint8_t>(std::round(510.0 * std::asin(amp) / driver::pi));
+    data.at(tr.id()).duty = static_cast<uint8_t>(std::round(510.0 * std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi));
     data.at(tr.id()).phase = static_cast<uint8_t>(static_cast<int32_t>(std::round(phase * 256.0)) & 0xFF);
   }
 
