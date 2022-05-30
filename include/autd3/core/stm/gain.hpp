@@ -145,7 +145,7 @@ struct GainSTM<NormalTransducer> final : public STM<NormalTransducer> {
  */
 template <>
 struct GainSTM<NormalPhaseTransducer> final : public STM<NormalPhaseTransducer> {
-  explicit GainSTM(const Geometry<NormalPhaseTransducer>& geometry) : STM(), _geometry(geometry), _sent(0), _next_duty(false) {}
+  explicit GainSTM(const Geometry<NormalPhaseTransducer>& geometry) : STM(), _geometry(geometry), _sent(0) {}
 
   /**
    * @brief Add gain
@@ -164,19 +164,18 @@ struct GainSTM<NormalPhaseTransducer> final : public STM<NormalPhaseTransducer> 
 
   void init() override { _sent = 0; }
 
-  void pack(const Geometry<NormalPhaseTransducer>&, driver::TxDatagram& tx) override {
-    // TODO
+  void pack(const Geometry<NormalPhaseTransducer>&, driver::TxDatagram&) override {
+    // TODO(suzuki)
   }
 
   [[nodiscard]] bool is_finished() const override {
-    return true;  // TODO
+    return true;  // TODO(suzuki)
   }
 
  private:
   const Geometry<NormalPhaseTransducer>& _geometry;
   std::vector<NormalPhaseTransducer::D> _gains;
   size_t _sent;
-  bool _next_duty;
 };
 
 /**

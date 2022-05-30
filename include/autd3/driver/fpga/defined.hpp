@@ -11,13 +11,13 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cstdint>
 #include <sstream>
-#include <algorithm>
 #include <string>
 
-#include "autd3/driver/utils.hpp"
 #include "autd3/driver/hardware.hpp"
+#include "autd3/driver/utils.hpp"
 
 namespace autd3::driver {
 
@@ -91,8 +91,8 @@ struct Phase {
   uint16_t phase;
 
   void set(const double p, const uint16_t cycle) {
-      phase = static_cast<uint16_t>(autd3::driver::rem_euclid(static_cast<int32_t>(std::round(p * static_cast<double>(cycle))), static_cast<int32_t>(cycle)))
-          ;
+    phase = static_cast<uint16_t>(
+        autd3::driver::rem_euclid(static_cast<int32_t>(std::round(p * static_cast<double>(cycle))), static_cast<int32_t>(cycle)));
   }
 };
 
@@ -100,7 +100,7 @@ struct Duty {
   uint16_t duty;
 
   void set(const double amp, const uint16_t cycle) {
-      duty = static_cast<uint16_t>(std::round(static_cast<double>(cycle) * std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi));
+    duty = static_cast<uint16_t>(std::round(static_cast<double>(cycle) * std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi));
   }
 };
 
