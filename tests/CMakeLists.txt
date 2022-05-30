@@ -26,6 +26,10 @@ if(BUILD_GAIN_HOLO)
   endif()
 endif()
 
+if(BUILD_MODULATION_AUDIO_FILE)
+  add_subdirectory(${PROJECT_SOURCE_DIR}/tests/modulation/audio_file)
+endif()
+
 target_sources(test_autd3 PRIVATE test.cpp)
 add_test(NAME test_autd3 COMMAND test_autd3)
 
