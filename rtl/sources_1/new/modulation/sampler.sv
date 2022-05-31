@@ -4,7 +4,7 @@
  * Created Date: 24/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2022
+ * Last Modified: 31/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ module modulation_sampler#(
            input var [63:0] SYS_TIME,
            input var [15:0] CYCLE,
            input var [31:0] FREQ_DIV,
-           input var [15:0] OFFSET_M[0:DEPTH-1],
+           input var [15:0] DELAY_M[0:DEPTH-1],
            ms_bus_if.sampler_port MS_BUS,
            output var [7:0] M,
            output var START,
@@ -39,7 +39,7 @@ bit [7:0] cnt = 0;
 bit [15:0] addr;
 bit [15:0] addr_base;
 bit [15:0] addr_base_old;
-bit start_buf, start_buf_1;
+bit start_buf, start_buf_1, start_buf_2, start_buf_3, start_buf_4, start_buf_5, start_buf_6, start_buf_7;
 bit start;
 
 assign MS_BUS.ADDR = addr;
@@ -67,6 +67,30 @@ div_64_32 div_64_32_rem(
               .m_axis_dout_tvalid()
           );
 
+bit[17:0] idx_offset_a, idx_offset_b, idx_offset_s;
+
+addsub #(
+           .WIDTH(18)
+       ) addsub_o(
+           .CLK(CLK),
+           .A(idx_offset_a),
+           .B(idx_offset_b),
+           .ADD(1'b0),
+           .S(idx_offset_s)
+       );
+
+bit[17:0] idx_oc_a, idx_oc_b, idx_oc_s;
+
+addsub #(
+           .WIDTH(18)
+       ) addsub_oc(
+           .CLK(CLK),
+           .A(idx_oc_a),
+           .B(idx_oc_b),
+           .ADD(1'b1),
+           .S(idx_oc_s)
+       );
+
 always_ff @(posedge CLK) begin
     divined <= SYS_TIME[63:0];
     freq_div <= FREQ_DIV;
@@ -89,8 +113,18 @@ always_ff @(posedge CLK) begin
         start_buf <= 1'b0;
     end
     start_buf_1 <= start_buf;
-    start <= start_buf_1;
-    addr <= (addr_base + OFFSET_M[cnt]) % cycle;
+    start_buf_2 <= start_buf_1;
+    start_buf_3 <= start_buf_2;
+    start_buf_4 <= start_buf_3;
+    start_buf_5 <= start_buf_4;
+    start_buf_6 <= start_buf_5;
+    start_buf_7 <= start_buf_6;
+    start <= start_buf_7;
+    idx_offset_a <= {1'b0, addr_base};
+    idx_offset_b <= {1'b0, DELAY_M[cnt]};
+    idx_oc_a <= idx_offset_s;
+    idx_oc_b <= idx_offset_s[17] == 1'b1 ? {1'b0, cycle[16:0]} : 0;
+    addr <= idx_oc_s;
 end
 
 endmodule

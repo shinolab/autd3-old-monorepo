@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2022
+ * Last Modified: 31/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@ bit [15:0] ecat_sync_cycle_ticks;
 bit sync_set;
 bit [15:0] cycle_m;
 bit [31:0] freq_div_m;
-bit [15:0] offset_m[0:DEPTH-1];
+bit [15:0] delay_m[0:DEPTH-1];
 bit [15:0] cycle_s;
 bit [WIDTH-1:0] step_s;
 bit [15:0] cycle_stm;
@@ -57,7 +57,7 @@ controller#(
               .SYNC_SET(sync_set),
               .CYCLE_M(cycle_m),
               .FREQ_DIV_M(freq_div_m),
-              .OFFSET_M(offset_m),
+              .DELAY_M(delay_m),
               .CYCLE_S(cycle_s),
               .STEP_S(step_s),
               .CYCLE_STM(cycle_stm),
@@ -172,7 +172,7 @@ initial begin
         end
     end
     for (int i = 0; i < DEPTH; i++) begin
-        if (delay_buf[i] != offset_m[i]) begin
+        if (delay_buf[i] != delay_m[i]) begin
             $error("Failed at delay[%d]", i);
             $finish();
         end

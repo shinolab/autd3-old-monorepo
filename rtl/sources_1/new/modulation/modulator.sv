@@ -4,7 +4,7 @@
  * Created Date: 24/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2022
+ * Last Modified: 31/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ module modulator#(
            cpu_bus_if.mod_port CPU_BUS,
            input var [WIDTH-1:0] DUTY_IN[0:DEPTH-1],
            input var [WIDTH-1:0] PHASE_IN[0:DEPTH-1],
-           input var [15:0] OFFSET_M[0:DEPTH-1],
+           input var [15:0] DELAY_M[0:DEPTH-1],
            output var [WIDTH-1:0] DUTY_OUT[0:DEPTH-1],
            output var [WIDTH-1:0] PHASE_OUT[0:DEPTH-1],
            output var START,
@@ -57,7 +57,7 @@ modulation_sampler#(
                       .SYS_TIME(SYS_TIME),
                       .CYCLE(CYCLE),
                       .FREQ_DIV(FREQ_DIV),
-                      .OFFSET_M(OFFSET_M),
+                      .DELAY_M(DELAY_M),
                       .MS_BUS(ms_bus_if.sampler_port),
                       .M(m),
                       .START(start),

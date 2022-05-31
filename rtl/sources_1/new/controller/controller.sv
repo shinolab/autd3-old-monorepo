@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2022
+ * Last Modified: 31/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -27,7 +27,7 @@ module controller#(
            output var STM_GAIN_MODE,
            output var [15:0] CYCLE_M,
            output var [31:0] FREQ_DIV_M,
-           output var [15:0] OFFSET_M[0:DEPTH-1],
+           output var [15:0] DELAY_M[0:DEPTH-1],
            output var [15:0] CYCLE_S,
            output var [WIDTH-1:0] STEP_S,
            output var [15:0] CYCLE_STM,
@@ -64,7 +64,7 @@ bit [7:0] set_cnt;
 
 bit [15:0] cycle_m;
 bit [31:0] freq_div_m;
-bit [15:0] offset_m[0:DEPTH-1];
+bit [15:0] delay_m[0:DEPTH-1];
 bit [15:0] cycle_s;
 bit [WIDTH-1:0] step_s;
 bit [15:0] cycle_stm;
@@ -98,7 +98,7 @@ assign FREQ_DIV_STM = freq_div_stm;
 assign SOUND_SPEED = sound_speed;
 for (genvar i = 0; i < DEPTH; i++) begin
     assign CYCLE[i] = cycle[i];
-    assign OFFSET_M[i] = offset_m[i];
+    assign DELAY_M[i] = delay_m[i];
 end
 
 BRAM_CONTROLLER ctl_bram(
@@ -373,7 +373,7 @@ end
 always_ff @(posedge CLK) begin
     dly_cnt <= (dly_cnt == DEPTH - 1) ? 0 : dly_cnt + 1;
     dly_set <= (dly_set == DEPTH - 1) ? 0 : dly_set + 1;
-    offset_m[dly_set] <= dly_dout;
+    delay_m[dly_set] <= dly_dout;
 end
 
 endmodule

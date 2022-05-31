@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2022
+ * Last Modified: 31/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -65,8 +65,8 @@ localparam int DIV_LATENCY = 66;
 bit [15:0] idx_buf;
 task set_random();
     @(posedge CLK_20P48M);
-    cycle = 16'hFFFF;
-    //    cycle = 16'd999;
+    // cycle = 16'hFFFF;
+    cycle = 16'd999;
     for (int i = 0; i < DEPTH; i++) begin
         duty[i] = sim_helper_random.range(8000, 0);
     end
@@ -87,8 +87,8 @@ task set_random();
         @(posedge CLK_20P48M);
         @(posedge CLK_20P48M);
         for (int i = 0; i < DEPTH; i++) begin
-            if (duty_out[i] != (duty[i] * mod_data[(idx_buf + delay_m[i]) % (cycle + 1)] / 255)) begin
-                $error("Failed at d=%d, m[%d]=%d, d_m=%d @ %d", duty[i], (idx_buf + delay_m[i]) % (cycle + 1), mod_data[(idx_buf + delay_m[i]) % (cycle + 1)], duty_out[i], i);
+            if (duty_out[i] != (duty[i] * mod_data[(idx_buf - delay_m[i] + cycle + 1) % (cycle + 1)] / 255)) begin
+                $error("Failed at d=%d, m[%d]=%d, d_m=%d @ %d", duty[i], (idx_buf - delay_m[i] + cycle + 1) % (cycle + 1), mod_data[(idx_buf - delay_m[i] + cycle + 1) % (cycle + 1)], duty_out[i], i);
                 $finish();
             end
         end
