@@ -13,6 +13,7 @@ Modulator回路のダイアグラムは以下の通りである.
 |   In   | SYS_TIME     | $64$           | 同期時刻                         |
 |   In   | CYCLE_M      | $16$           | AM周期$T_m-1$                    |
 |   In   | FREQ_DIV_M   | $32$           | AM周波数分周比$N_m$              |
+|   In   | DELAY_M      | $16\times 249$ | AMディレイ                       |
 |   In   | CPU_BUS      | -              | CPUバス                          |
 |   In   | DUTY         | $13\times 249$ | Duty比$D$                        |
 |   In   | PHASE        | $13\times 249$ | 位相$P$                          |
@@ -33,7 +34,7 @@ SamplerはAM周期$T_m$, AM周波数分周比$N_m$, 及び, SYS_TIMEから現在
 
 変調データのインデックス$i$は
 $$
-i = \left\lfloor \frac{\text{SYS\_TIME}}{N_m} \right\rfloor \bmod T_m
+i = \left\lfloor \frac{\text{SYS\_TIME}}{N_m} - \text{DELAY\_M} \right\rfloor \bmod T_m
 $$
 として計算される.
 したがって, AMデータのサンプリング周波数$f_\text{AM}$は
