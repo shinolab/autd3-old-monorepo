@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 31/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -72,7 +72,7 @@ struct FirmwareInfo {
     }
     if (version_num <= 0x09) return "unknown";
     if (version_num <= 0x15) {
-      ss << "v1." << version_num - 0x09;
+      ss << "v1." << version_num - 0x0A;
       return ss.str();
     }
     if (version_num <= 0x81) {

@@ -2,6 +2,7 @@
 * Rename `Controller` to `ControllerX`, and `Controller` is now alias of `ControllerX<LegacyTransducer>`
 * Add `NormalPhaseTransducer`
 * Fix `SineLegacy`
+* Fix firmware version when using v1.x firmware
 
 # 2.0.3
 * Fix `AUTDSetSoundSpeed` in C-API
