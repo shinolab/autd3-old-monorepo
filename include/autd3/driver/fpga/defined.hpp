@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 01/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -46,6 +46,7 @@ class FPGAControlFlags final {
     FORCE_FAN = 1 << 4,
     STM_MODE = 1 << 5,
     STM_GAIN_MODE = 1 << 6,
+    READS_FPGA_INFO = 1 << 7,
   };
 
   FPGAControlFlags() = default;
