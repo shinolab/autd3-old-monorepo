@@ -38,4 +38,4 @@
 
 * Name: 鈴木 颯
 * email: suzuki\[at\]hapis.k.u-tokyo.ac.jp
-* Date: 2022/04/22
+* Date: 2022/05/31

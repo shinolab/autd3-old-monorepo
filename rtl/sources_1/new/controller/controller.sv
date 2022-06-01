@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/04/2022
+ * Last Modified: 31/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -27,6 +27,7 @@ module controller#(
            output var STM_GAIN_MODE,
            output var [15:0] CYCLE_M,
            output var [31:0] FREQ_DIV_M,
+           output var [15:0] DELAY_M[0:DEPTH-1],
            output var [15:0] CYCLE_S,
            output var [WIDTH-1:0] STEP_S,
            output var [15:0] CYCLE_STM,
@@ -42,12 +43,17 @@ bit bus_clk;
 bit ctl_ena;
 bit wea;
 bit [8:0] ctl_addr;
+bit [7:0] dly_addr;
 bit [15:0] cpu_data_in;
 bit [15:0] cpu_data_out;
 bit [8:0] addr;
 bit we;
 bit [15:0] din;
 bit [15:0] dout;
+
+bit [7:0] dly_cnt = 0;
+bit [7:0] dly_set = DEPTH-2;
+bit [15:0] dly_dout;
 
 bit [15:0] ctl_reg;
 
@@ -58,6 +64,7 @@ bit [7:0] set_cnt;
 
 bit [15:0] cycle_m;
 bit [31:0] freq_div_m;
+bit [15:0] delay_m[0:DEPTH-1];
 bit [15:0] cycle_s;
 bit [WIDTH-1:0] step_s;
 bit [15:0] cycle_stm;
@@ -66,9 +73,11 @@ bit [31:0] sound_speed;
 bit [WIDTH-1:0] cycle[0:DEPTH-1];
 
 assign bus_clk = CPU_BUS.BUS_CLK;
-assign ctl_ena = CPU_BUS.CTL_EN;
+assign ctl_ena = CPU_BUS.CTL_EN & ~CPU_BUS.BRAM_ADDR[9];
 assign wea = CPU_BUS.WE;
 assign ctl_addr = CPU_BUS.BRAM_ADDR[8:0];
+assign dly_ena = CPU_BUS.CTL_EN & CPU_BUS.BRAM_ADDR[9];
+assign dly_addr = CPU_BUS.BRAM_ADDR[7:0];
 assign cpu_data_in = CPU_BUS.DATA_IN;
 assign CPU_BUS.DATA_OUT = cpu_data_out;
 
@@ -89,6 +98,7 @@ assign FREQ_DIV_STM = freq_div_stm;
 assign SOUND_SPEED = sound_speed;
 for (genvar i = 0; i < DEPTH; i++) begin
     assign CYCLE[i] = cycle[i];
+    assign DELAY_M[i] = delay_m[i];
 end
 
 BRAM_CONTROLLER ctl_bram(
@@ -104,6 +114,20 @@ BRAM_CONTROLLER ctl_bram(
                     .dinb(din),
                     .doutb(dout)
                 );
+
+BRAM_DELAY dly_bram(
+               .clka(bus_clk),
+               .ena(dly_ena),
+               .wea(wea),
+               .addra(dly_addr),
+               .dina(cpu_data_in),
+               .douta(),
+               .clkb(CLK),
+               .web(1'b0),
+               .addrb(dly_cnt),
+               .dinb(),
+               .doutb(dly_dout)
+           );
 
 enum bit [4:0] {
          REQ_WR_VER,
@@ -344,6 +368,12 @@ always_ff @(posedge CLK) begin
         end
         //////////////////////// synchronize ////////////////////////
     endcase
+end
+
+always_ff @(posedge CLK) begin
+    dly_cnt <= (dly_cnt == DEPTH - 1) ? 0 : dly_cnt + 1;
+    dly_set <= (dly_set == DEPTH - 1) ? 0 : dly_set + 1;
+    delay_m[dly_set] <= dly_dout;
 end
 
 endmodule

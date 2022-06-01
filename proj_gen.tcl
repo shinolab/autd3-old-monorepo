@@ -25,7 +25,7 @@ if {[string equal [get_filesets -quiet sim_1] ""]} {
 
 
 set synth_1_flow     "Vivado Synthesis 2022"
-set synth_1_strategy "Flow_PerfOptimized_high"
+set synth_1_strategy "Flow_AreaOptimized_high"
 if {[string equal [get_runs -quiet synth_1] ""]} {
     create_run -name synth_1 -flow $synth_1_flow -strategy $synth_1_strategy -constrset constrs_1
 } else {
@@ -51,7 +51,7 @@ if {[string equal [get_runs -quiet synth_3] ""]} {
 current_run -synthesis [get_runs synth_1]
 
 set impl_1_flow      "Vivado Implementation 2022"
-set impl_1_strategy  "Performance_ExplorePostRoutePhysOpt"
+set impl_1_strategy  "Performance_NetDelay_high"
 if {[string equal [get_runs -quiet impl_1] ""]} {
     create_run -name impl_1 -flow $impl_1_flow -strategy $impl_1_strategy -constrset constrs_1 -parent_run synth_1
 } else {

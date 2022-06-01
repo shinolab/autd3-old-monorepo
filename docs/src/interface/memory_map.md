@@ -11,31 +11,34 @@
 
 ## Controller
 
-| BRAM_SELECT | BRAM_ADDR (9bit) | DATA (16 bit)         | R/W |
-|-------------|------------------|---------------------- |-----|
-| 0x0         | 0x000            | CTL_REG               | R/W |
-|             | 0x001            | 7:0 = FPGA info       | W   |
-|             | 0x010            | EC_SYNC_CYCLE_TICKS   | W   |
-|             | 0x011            | EC_SYNC_TIME_0        | W   |
-|             | 0x012            | EC_SYNC_TIME_1        | W   |
-|             | 0x013            | EC_SYNC_TIME_2        | W   |
-|             | 0x014            | EC_SYNC_TIME_3        | W   |
-|             | 0x020            | 0 = MOD_ADDR_OFFSET   | W   |
-|             | 0x021            | MOD_CYCLE     	     | W   |
-|             | 0x022            | MOD_FREQ_DIV_0        | W   |
-|             | 0x023            | MOD_FREQ_DIV_1        | W   |
-|             | 0x03F            | VERSION_NUM           | R   |
-|             | 0x040            | SILENT_CYCLE          | W   |
-|             | 0x041            | SILENT_STEP   	     | W   |
-|             | 0x050            | 4:0 = STM_ADDR_OFFSET | W   |
-|             | 0x051            | STM_CYCLE             | W   |
-|             | 0x052            | STM_FREQ_DIV_0        | W   |
-|             | 0x053            | STM_FREQ_DIV_1        | W   |
-|             | 0x054            | SOUND_SPEED_0         | W   |
-|             | 0x055            | SOUND_SPEED_1         | W   |
-|             | 0x100            | CYCLE\[0\]            | W   |
-|             | ︙               | ︙                    | ︙  |
-|             | 0x1F8            | CYCLE\[248\]          | W   |
+| BRAM_SELECT | BRAM_ADDR (9bit) | DATA (16 bit)           | R/W |
+|-------------|------------------|----------------------   |-----|
+| 0x0         | 0x000            | CTL_REG                 | R/W |
+|             | 0x001            | 7:0 = FPGA info         | W   |
+|             | 0x010            | EC_SYNC_CYCLE_TICKS     | W   |
+|             | 0x011            | EC_SYNC_TIME_0          | W   |
+|             | 0x012            | EC_SYNC_TIME_1          | W   |
+|             | 0x013            | EC_SYNC_TIME_2          | W   |
+|             | 0x014            | EC_SYNC_TIME_3          | W   |
+|             | 0x020            | 0 = MOD_ADDR_OFFSET     | W   |
+|             | 0x021            | MOD_CYCLE     	       | W   |
+|             | 0x022            | MOD_FREQ_DIV_0          | W   |
+|             | 0x023            | MOD_FREQ_DIV_1          | W   |
+|             | 0x03F            | VERSION_NUM             | R   |
+|             | 0x040            | SILENT_CYCLE            | W   |
+|             | 0x041            | SILENT_STEP   	       | W   |
+|             | 0x050            | 4:0 = STM_ADDR_OFFSET   | W   |
+|             | 0x051            | STM_CYCLE               | W   |
+|             | 0x052            | STM_FREQ_DIV_0          | W   |
+|             | 0x053            | STM_FREQ_DIV_1          | W   |
+|             | 0x054            | SOUND_SPEED_0           | W   |
+|             | 0x055            | SOUND_SPEED_1           | W   |
+|             | 0x100            | CYCLE\[0\]              | W   |
+|             | ︙               | ︙                      | ︙  |
+|             | 0x1F8            | CYCLE\[248\]            | W   |
+|             | 0x200            | MODULATION_DELAY\[0\]   | W   |
+|             | ︙               | ︙                      | ︙  |
+|             | 0x2F8            | MODULATION_DELAY\[248\] | W   |
 
 * CTL_REG bit
     * 4: FORCE_FAN

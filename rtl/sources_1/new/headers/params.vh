@@ -4,18 +4,19 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/04/2022
+ * Last Modified: 31/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Hapis Lab. All rights reserved.
+ * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  * 
  */
 
-localparam bit [7:0] VERSION_NUM = 8'h80;
+localparam bit [7:0] VERSION_NUM = 8'h81;
 
 localparam string ENABLE_STM = "TRUE";
 localparam string ENABLE_MODULATOR = "TRUE";
 localparam string ENABLE_SILENCER = "TRUE";
+localparam string ENABLE_MODULATOR_DELAY = "TRUE";
 
 localparam bit [1:0] BRAM_SELECT_CONTROLLER = 2'h0;
 localparam bit [1:0] BRAM_SELECT_MOD        = 2'h1;
@@ -43,6 +44,7 @@ localparam bit [13:0] ADDR_STM_FREQ_DIV_1      = 14'h053;
 localparam bit [13:0] ADDR_SOUND_SPEED_0       = 14'h054;
 localparam bit [13:0] ADDR_SOUND_SPEED_1       = 14'h055;
 localparam bit [13:0] ADDR_CYCLE_BASE          = 14'h100;
+localparam bit [13:0] ADDR_DELAY_BASE          = 14'h200;
 
 localparam int CTL_REG_LEGACY_MODE_BIT     = 0;
 localparam int CTL_REG_FORCE_FAN_BIT       = 4;
@@ -53,4 +55,5 @@ localparam int CTL_REG_SYNC_BIT            = 8;
 localparam bit [7:0] ENABLED_STM_BIT = ENABLE_STM == "TRUE" ? 8'h01 : 8'h00;
 localparam bit [7:0] ENABLED_MODULATOR_BIT = ENABLE_MODULATOR == "TRUE" ? 8'h02 : 8'h00;
 localparam bit [7:0] ENABLED_SILENCER_BIT = ENABLE_SILENCER == "TRUE" ? 8'h04 : 8'h00;
-localparam bit [7:0] ENABLED_FEATURES_BITS = ENABLED_STM_BIT | ENABLED_MODULATOR_BIT | ENABLED_SILENCER_BIT;
+localparam bit [7:0] ENABLED_MODULATOR_DELAY_BIT = ENABLE_MODULATOR_DELAY == "TRUE" ? 8'h08 : 8'h00;
+localparam bit [7:0] ENABLED_FEATURES_BITS = ENABLED_MODULATOR_DELAY_BIT | ENABLED_STM_BIT | ENABLED_MODULATOR_BIT | ENABLED_SILENCER_BIT;
