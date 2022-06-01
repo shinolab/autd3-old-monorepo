@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 01/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,6 +16,7 @@
 #include <cstring>
 #include <vector>
 
+#include "autd3/driver/cpu/defined.hpp"
 #include "autd3/driver/fpga/defined.hpp"
 #include "autd3/driver/hardware.hpp"
 
@@ -76,6 +77,8 @@ struct GainSTMBodyHead {
     _data[1] = static_cast<uint16_t>(freq_div >> 16 & 0xFFFF);
   }
 
+  void set_mode(const Mode mode) noexcept { _data[2] = static_cast<uint16_t>(mode); }
+
  private:
   uint16_t _data[NUM_TRANS_IN_UNIT]{};
 };
@@ -101,6 +104,33 @@ struct Body {
   GainSTMBodyHead& gain_stm_head() noexcept { return *reinterpret_cast<GainSTMBodyHead*>(&data[0]); }
   [[nodiscard]] const GainSTMBodyBody& gain_stm_body() const noexcept { return *reinterpret_cast<const GainSTMBodyBody* const>(&data[0]); }
   GainSTMBodyBody& gain_stm_body() noexcept { return *reinterpret_cast<GainSTMBodyBody*>(&data[0]); }
+};
+
+struct PhaseFull {
+  uint8_t phase_0;
+  uint8_t phase_1;
+};
+
+struct PhaseHalf {
+  uint8_t phase_01;
+  uint8_t phase_23;
+
+  void set(const size_t idx, const uint8_t phase) {
+    switch (idx) {
+      case 0:
+        phase_01 = (phase_01 & 0xF0) | ((phase >> 4) & 0x0F);
+        break;
+      case 1:
+        phase_01 = (phase_01 & 0x0F) | (phase & 0xF0);
+        break;
+      case 2:
+        phase_23 = (phase_23 & 0xF0) | ((phase >> 4) & 0x0F);
+        break;
+      case 3:
+        phase_23 = (phase_23 & 0x0F) | (phase & 0xF0);
+        break;
+    }
+  }
 };
 
 }  // namespace autd3::driver
