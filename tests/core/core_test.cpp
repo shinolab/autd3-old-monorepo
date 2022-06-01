@@ -101,7 +101,7 @@ TEST(TransducerTest, NormalTransducer) {
 }
 TEST(TransducerTest, DynamicTransducer) {
   autd3::core::DynamicTransducer tr(1, Vector3(10, 20, 30), Vector3(1, 2, 3), Vector3(4, 5, 6), Vector3(7, 8, 9));
-  autd3::core::DynamicTransducer::legacy_mode() = true;
+  autd3::core::DynamicTransducer::mode() = autd3::core::TransducerMode::Legacy;
 
   ASSERT_NEAR_VECTOR3(tr.position(), Vector3(10, 20, 30), 1e-3);
   ASSERT_NEAR_VECTOR3(tr.x_direction(), Vector3(1, 2, 3), 1e-3);
@@ -131,7 +131,7 @@ TEST(TransducerTest, DynamicTransducer) {
   ASSERT_EQ(phase_sent, true);
   ASSERT_EQ(duty_sent, true);
 
-  autd3::core::DynamicTransducer::legacy_mode() = false;
+  autd3::core::DynamicTransducer::mode() = autd3::core::TransducerMode::Normal;
   ASSERT_NEAR_VECTOR3(tr.position(), Vector3(10, 20, 30), 1e-3);
   ASSERT_NEAR_VECTOR3(tr.x_direction(), Vector3(1, 2, 3), 1e-3);
   ASSERT_NEAR_VECTOR3(tr.y_direction(), Vector3(4, 5, 6), 1e-3);

@@ -3,7 +3,7 @@
 // Created Date: 24/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 01/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -77,7 +77,7 @@ TEST(NullTest, DynamicTransducerTest) {
   geometry.add_device(Vector3::Zero(), Vector3::Zero());
 
   auto gl = autd3::gain::Null<DynamicTransducer>();
-  DynamicTransducer::legacy_mode() = true;
+  DynamicTransducer::mode() = autd3::core::TransducerMode::Legacy;
   gl.build(geometry);
 
   for (const auto& [phase, duty] : gl.drives().legacy_drives) {
@@ -86,7 +86,7 @@ TEST(NullTest, DynamicTransducerTest) {
   }
 
   auto gn = autd3::gain::Null<DynamicTransducer>();
-  DynamicTransducer::legacy_mode() = false;
+  DynamicTransducer::mode() = autd3::core::TransducerMode::Normal;
   gn.build(geometry);
   for (const auto& [duty] : gn.drives().duties) {
     ASSERT_EQ(duty, 0);
@@ -201,7 +201,7 @@ TEST(FocusTest, DynamicTransducerTest) {
   geometry.add_device(Vector3::Zero(), Vector3::Zero());
 
   {
-    DynamicTransducer::legacy_mode() = true;
+    DynamicTransducer::mode() = autd3::core::TransducerMode::Legacy;
 
     const Vector3 f(10, 20, 30);
 
@@ -237,7 +237,7 @@ TEST(FocusTest, DynamicTransducerTest) {
   }
 
   {
-    DynamicTransducer::legacy_mode() = false;
+    DynamicTransducer::mode() = autd3::core::TransducerMode::Normal;
 
     for (auto& dev : geometry)
       for (auto& tr : dev) tr.set_cycle(2500);
