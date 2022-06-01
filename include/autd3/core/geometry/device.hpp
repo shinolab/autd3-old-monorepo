@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <numeric>
 #include <vector>
 
 #include "autd3/driver/hardware.hpp"
