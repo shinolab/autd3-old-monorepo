@@ -3,6 +3,9 @@
 * Add `NormalPhaseTransducer`
 * Fix `SineLegacy`
 * Fix firmware version when using v1.x firmware
+* Add `Mode` configuration in `GainSTM`
+* Add `mod_delay` configuration in `Transducer`
+* Update firmware to v2.1
 
 # 2.0.3
 * Fix `AUTDSetSoundSpeed` in C-API

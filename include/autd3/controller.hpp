@@ -335,15 +335,19 @@ bool ControllerX<autd3::core::NormalTransducer>::stop() {
 template <>
 bool ControllerX<autd3::core::NormalPhaseTransducer>::stop() {
   SilencerConfig config;
-  autd3::core::Amplitudes g(_geometry, 0.0);
+  autd3::core::Amplitudes<autd3::core::NormalPhaseTransducer> g(_geometry, 0.0);
   return send(config, g);
 }
 
 template <>
 bool ControllerX<autd3::core::DynamicTransducer>::stop() {
   SilencerConfig config;
-  gain::Null<autd3::core::DynamicTransducer> g;
-  return send(config, g);
+  switch (autd3::core::DynamicTransducer::mode()) {
+    case core::TransducerMode::NormalPhase:
+      return send(config, autd3::core::Amplitudes<autd3::core::DynamicTransducer>(_geometry, 0.0));
+    default:
+      return send(config, gain::Null<autd3::core::DynamicTransducer>());
+  }
 }
 
 /**

@@ -254,75 +254,103 @@ struct GainSTM<DynamicTransducer> final : public STM<DynamicTransducer> {
   void init() override { _sent = 0; }
 
   void pack(const Geometry<DynamicTransducer>&, driver::TxDatagram& tx) override {
-    if (DynamicTransducer::legacy_mode()) {
-      gain_stm_legacy_header(tx);
+    bool is_first_frame, is_last_frame;
+    switch (DynamicTransducer::mode()) {
+      case TransducerMode::Legacy:
+        gain_stm_legacy_header(tx);
 
-      if (is_finished()) return;
+        if (is_finished()) return;
 
-      const auto is_first_frame = _sent == 0;
+        is_first_frame = _sent == 0;
 
-      if (is_first_frame) {
-        gain_stm_legacy_body({}, is_first_frame, _freq_div, false, _mode, tx);
-        _sent += 1;
-        return;
-      }
-
-      bool is_last_frame;
-      driver::LegacyDrive *p1, *p2, *p3, *p4;
-      switch (_mode) {
-        case driver::Mode::PhaseDutyFull:
-          is_last_frame = _sent + 1 == _gains.size() + 1;
-          gain_stm_legacy_body({_gains.at(_sent - 1).legacy_drives.data()}, is_first_frame, _freq_div, is_last_frame, _mode, tx);
+        if (is_first_frame) {
+          gain_stm_legacy_body({}, is_first_frame, _freq_div, false, _mode, tx);
           _sent += 1;
-          break;
-        case driver::Mode::PhaseFull:
-          is_last_frame = _sent + 2 >= _gains.size() + 1;
-          p1 = _gains.at(_sent - 1).legacy_drives.data();
-          p2 = _sent + 1 - 1 < _gains.size() ? _gains.at(_sent + 1 - 1).legacy_drives.data() : nullptr;
-          gain_stm_legacy_body({p1, p2}, is_first_frame, _freq_div, is_last_frame, _mode, tx);
-          _sent += 2;
-          break;
-        case driver::Mode::PhaseHalf:
-          is_last_frame = _sent + 4 >= _gains.size() + 1;
-          p1 = _gains.at(_sent - 1).legacy_drives.data();
-          p2 = _sent + 1 - 1 < _gains.size() ? _gains.at(_sent + 1 - 1).legacy_drives.data() : nullptr;
-          p3 = _sent + 2 - 1 < _gains.size() ? _gains.at(_sent + 2 - 1).legacy_drives.data() : nullptr;
-          p4 = _sent + 3 - 1 < _gains.size() ? _gains.at(_sent + 3 - 1).legacy_drives.data() : nullptr;
-          gain_stm_legacy_body({p1, p2, p3, p4}, is_first_frame, _freq_div, is_last_frame, _mode, tx);
-          _sent += 4;
-          break;
-      }
-    } else {
-      gain_stm_normal_header(tx);
+          return;
+        }
 
-      if (is_finished()) return;
+        is_last_frame;
+        driver::LegacyDrive *p1, *p2, *p3, *p4;
+        switch (_mode) {
+          case driver::Mode::PhaseDutyFull:
+            is_last_frame = _sent + 1 == _gains.size() + 1;
+            gain_stm_legacy_body({_gains.at(_sent - 1).legacy_drives.data()}, is_first_frame, _freq_div, is_last_frame, _mode, tx);
+            _sent += 1;
+            break;
+          case driver::Mode::PhaseFull:
+            is_last_frame = _sent + 2 >= _gains.size() + 1;
+            p1 = _gains.at(_sent - 1).legacy_drives.data();
+            p2 = _sent + 1 - 1 < _gains.size() ? _gains.at(_sent + 1 - 1).legacy_drives.data() : nullptr;
+            gain_stm_legacy_body({p1, p2}, is_first_frame, _freq_div, is_last_frame, _mode, tx);
+            _sent += 2;
+            break;
+          case driver::Mode::PhaseHalf:
+            is_last_frame = _sent + 4 >= _gains.size() + 1;
+            p1 = _gains.at(_sent - 1).legacy_drives.data();
+            p2 = _sent + 1 - 1 < _gains.size() ? _gains.at(_sent + 1 - 1).legacy_drives.data() : nullptr;
+            p3 = _sent + 2 - 1 < _gains.size() ? _gains.at(_sent + 2 - 1).legacy_drives.data() : nullptr;
+            p4 = _sent + 3 - 1 < _gains.size() ? _gains.at(_sent + 3 - 1).legacy_drives.data() : nullptr;
+            gain_stm_legacy_body({p1, p2, p3, p4}, is_first_frame, _freq_div, is_last_frame, _mode, tx);
+            _sent += 4;
+            break;
+        }
+        break;
+      case TransducerMode::Normal:
+        gain_stm_normal_header(tx);
 
-      const auto is_first_frame = _sent == 0;
-      const auto is_last_frame = _mode == driver::Mode::PhaseDutyFull ? _sent + 1 == _gains.size() * 2 + 1 : _sent + 1 == _gains.size() + 1;
+        if (is_finished()) return;
 
-      if (is_first_frame) {
-        gain_stm_normal_phase(nullptr, is_first_frame, _freq_div, _mode, is_last_frame, tx);
+        is_first_frame = _sent == 0;
+        is_last_frame = _mode == driver::Mode::PhaseDutyFull ? _sent + 1 == _gains.size() * 2 + 1 : _sent + 1 == _gains.size() + 1;
+
+        if (is_first_frame) {
+          gain_stm_normal_phase(nullptr, is_first_frame, _freq_div, _mode, is_last_frame, tx);
+          _sent += 1;
+          return;
+        }
+
+        if (!_next_duty) {
+          const auto idx = _mode == driver::Mode::PhaseDutyFull ? (_sent - 1) / 2 : _sent - 1;
+          gain_stm_normal_phase(_gains.at(idx).phases.data(), is_first_frame, _freq_div, _mode, is_last_frame, tx);
+        } else {
+          gain_stm_normal_duty(_gains.at((_sent - 1) / 2).duties.data(), is_last_frame, tx);
+        }
+        if (_mode == driver::Mode::PhaseDutyFull) _next_duty = !_next_duty;
+
         _sent += 1;
-        return;
-      }
+        break;
+      case TransducerMode::NormalPhase:
+        gain_stm_normal_header(tx);
 
-      if (!_next_duty) {
-        const auto idx = _mode == driver::Mode::PhaseDutyFull ? (_sent - 1) / 2 : _sent - 1;
-        gain_stm_normal_phase(_gains.at(idx).phases.data(), is_first_frame, _freq_div, _mode, is_last_frame, tx);
-      } else {
-        gain_stm_normal_duty(_gains.at((_sent - 1) / 2).duties.data(), is_last_frame, tx);
-      }
-      if (_mode == driver::Mode::PhaseDutyFull) _next_duty = !_next_duty;
+        if (is_finished()) return;
 
-      _sent += 1;
+        is_first_frame = _sent == 0;
+        is_last_frame = _sent + 1 == _gains.size() + 1;
+
+        if (is_first_frame) {
+          gain_stm_normal_phase(nullptr, is_first_frame, _freq_div, driver::Mode::PhaseFull, is_last_frame, tx);
+          _sent += 1;
+          return;
+        }
+
+        gain_stm_normal_phase(_gains.at(_sent - 1).phases.data(), is_first_frame, _freq_div, driver::Mode::PhaseFull, is_last_frame, tx);
+
+        _sent += 1;
+        break;
     }
   }
 
   [[nodiscard]] bool is_finished() const override {
-    if (DynamicTransducer::legacy_mode())
-      return _sent >= _gains.size() + 1;
-    else
-      return _mode == driver::Mode::PhaseDutyFull ? _sent == _gains.size() * 2 + 1 : _sent == _gains.size() + 1;
+    switch (DynamicTransducer::mode()) {
+      case TransducerMode::Legacy:
+        return _sent >= _gains.size() + 1;
+      case TransducerMode::Normal:
+        return _mode == driver::Mode::PhaseDutyFull ? _sent == _gains.size() * 2 + 1 : _sent == _gains.size() + 1;
+      case TransducerMode::NormalPhase:
+        return _sent == _gains.size() + 1;
+      default:
+        return _sent >= _gains.size() + 1;
+    }
   }
 
  private:
