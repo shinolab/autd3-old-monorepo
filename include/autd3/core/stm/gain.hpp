@@ -269,7 +269,6 @@ struct GainSTM<DynamicTransducer> final : public STM<DynamicTransducer> {
           return;
         }
 
-        is_last_frame;
         driver::LegacyDrive *p1, *p2, *p3, *p4;
         switch (_mode) {
           case driver::Mode::PhaseDutyFull:
