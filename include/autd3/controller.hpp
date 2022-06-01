@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 01/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -207,6 +207,15 @@ class ControllerX {
   }
 
   /**
+   * @brief Send header data to devices
+   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   */
+  template <typename H>
+  auto send(H&& header) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, bool> {
+    return send(header);
+  }
+
+  /**
    * @brief Send body data to devices
    * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
    */
@@ -214,6 +223,15 @@ class ControllerX {
   auto send(B& body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody<T>, B>, bool> {
     core::NullHeader h;
     return send(h, body);
+  }
+
+  /**
+   * @brief Send body data to devices
+   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   */
+  template <typename B>
+  auto send(B&& body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody<T>, B>, bool> {
+    return send(body);
   }
 
   /**
@@ -239,6 +257,16 @@ class ControllerX {
       if (!check_ack) std::this_thread::sleep_for(std::chrono::microseconds(driver::EC_SYNC0_CYCLE_TIME_MICRO_SEC * _link->cycle_ticks()));
     }
     return true;
+  }
+
+  /**
+   * @brief Send header and body data to devices
+   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   */
+  template <typename H, typename B>
+  auto send(H&& header, B&& body) ->
+      typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody<T>, B>, bool> {
+    return send(header, body);
   }
 
   /**
@@ -290,28 +318,36 @@ class ControllerX {
   bool _check_ack;
 };
 
+template <>
 bool ControllerX<autd3::core::LegacyTransducer>::stop() {
   SilencerConfig config;
   gain::Null<autd3::core::LegacyTransducer> g;
   return send(config, g);
 }
 
+template <>
 bool ControllerX<autd3::core::NormalTransducer>::stop() {
   SilencerConfig config;
   gain::Null<autd3::core::NormalTransducer> g;
   return send(config, g);
 }
 
+template <>
 bool ControllerX<autd3::core::NormalPhaseTransducer>::stop() {
   SilencerConfig config;
-  autd3::core::Amplitudes g(_geometry, 0.0);
+  autd3::core::Amplitudes<autd3::core::NormalPhaseTransducer> g(_geometry, 0.0);
   return send(config, g);
 }
 
+template <>
 bool ControllerX<autd3::core::DynamicTransducer>::stop() {
   SilencerConfig config;
-  gain::Null<autd3::core::DynamicTransducer> g;
-  return send(config, g);
+  switch (autd3::core::DynamicTransducer::mode()) {
+    case core::TransducerMode::NormalPhase:
+      return send(config, autd3::core::Amplitudes<autd3::core::DynamicTransducer>(_geometry, 0.0));
+    default:
+      return send(config, gain::Null<autd3::core::DynamicTransducer>());
+  }
 }
 
 /**
