@@ -3,7 +3,7 @@
 // Created Date: 30/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 01/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -75,10 +75,14 @@ struct NormalPhaseTransducer final : Transducer<NormalPhaseDriveData<NormalPhase
   uint16_t _cycle;
 };
 
+template <typename T>
+struct Amplitudes {};
+
 /**
  * @brief Amplitude configuration for NormalPhaseTransducer.
  */
-struct Amplitudes final : DatagramBody<NormalPhaseTransducer> {
+template <>
+struct Amplitudes<NormalPhaseTransducer> final : DatagramBody<NormalPhaseTransducer> {
   explicit Amplitudes(const Geometry<NormalPhaseTransducer>& geometry, const double amp = 1.0) : _sent(false) {
     _duties.resize(geometry.num_transducers());
     for (const auto& dev : geometry)
