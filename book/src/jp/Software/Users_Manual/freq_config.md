@@ -31,3 +31,19 @@ Version 2.0から, すべての振動子の周波数を個別に指定できる�
 ```cpp
   autd3::gain::Focus<autd3::NormalTransducer> g(center);
 ```
+
+## NormalPhaseモード
+
+Normalモードは振幅/位相データをそれぞれ1フレームで送信する必要があるため, 若干通信のレイテンシが大きい.
+実際には振幅データは頻繁に更新されることはないと思われるため, 位相データのみを送信する`NormalPhase`モードも用意されている.
+
+```cpp
+  autd3::ControllerX<autd3::NormalPhaseTransducer> autd;
+```
+
+このモードの場合, 振幅は予め`Amplitudes`クラスを送信することで制御する.
+
+```cpp
+  autd3::Amplitudes amp(autd.geometry(), 1.0);
+  autd.send(amp);
+```
