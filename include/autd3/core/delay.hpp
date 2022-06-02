@@ -11,7 +11,9 @@
 
 #pragma once
 
+#include <algorithm>
 #include <type_traits>
+#include <vector>
 
 #include "geometry/geometry.hpp"
 #include "geometry/transducer.hpp"
