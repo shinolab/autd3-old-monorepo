@@ -3,15 +3,15 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/05/2022
+// Last Modified: 30/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2022 Hapis Lab. All rights reserved.
+// Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #include "autd3/link/emulator.hpp"
 
-#if _WINDOWS
+#if WIN32
 #include <WS2tcpip.h>
 #else
 #include <arpa/inet.h>
@@ -23,6 +23,7 @@
 
 #include "autd3/core/geometry/dynamic_transducer.hpp"
 #include "autd3/core/geometry/legacy_transducer.hpp"
+#include "autd3/core/geometry/normal_phase_transducer.hpp"
 #include "autd3/core/geometry/normal_transducer.hpp"
 #include "autd3/core/interface.hpp"
 #include "autd3/core/link.hpp"
@@ -43,7 +44,7 @@ class EmulatorImpl final : public core::Link {
   void open() override {
     if (is_open()) return;
 
-#if _WINDOWS
+#if WIN32
 #pragma warning(push)
 #pragma warning(disable : 6031)
     WSAData wsa_data{};
@@ -52,7 +53,7 @@ class EmulatorImpl final : public core::Link {
 #endif
 
     _socket = socket(AF_INET, SOCK_DGRAM, 0);
-#if _WINDOWS
+#if WIN32
     if (_socket == INVALID_SOCKET)
 #else
     if (_socket < 0)
@@ -61,7 +62,7 @@ class EmulatorImpl final : public core::Link {
 
     _addr.sin_family = AF_INET;
     _addr.sin_port = htons(_port);
-#if _WINDOWS
+#if WIN32
     const auto ip_addr("127.0.0.1");
     inet_pton(AF_INET, ip_addr, &_addr.sin_addr.S_un.S_addr);
 #else
@@ -74,7 +75,7 @@ class EmulatorImpl final : public core::Link {
 
   void close() override {
     if (!is_open()) return;
-#if _WINDOWS
+#if WIN32
     closesocket(_socket);
     WSACleanup();
 #else
@@ -113,7 +114,7 @@ class EmulatorImpl final : public core::Link {
  private:
   bool _is_open;
   uint16_t _port;
-#if _WINDOWS
+#if WIN32
   SOCKET _socket = {};
 #else
   int _socket = 0;
@@ -160,6 +161,11 @@ core::LinkPtr Emulator<core::LegacyTransducer>::build() {
 template <>
 core::LinkPtr Emulator<core::NormalTransducer>::build() {
   core::LinkPtr link = std::make_unique<EmulatorImpl<core::NormalTransducer>>(_port, _geometry);
+  return link;
+}
+template <>
+core::LinkPtr Emulator<core::NormalPhaseTransducer>::build() {
+  core::LinkPtr link = std::make_unique<EmulatorImpl<core::NormalPhaseTransducer>>(_port, _geometry);
   return link;
 }
 template <>

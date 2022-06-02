@@ -184,7 +184,7 @@ class FocalPoint final : public Gain<T> {
 `Controller::send`関数は`Gain`型を継承したクラスを引数に取る.
 そのため, `Gain`型を継承をしておく.
 `Gain`型は`Transducer`型を継承したクラスをテンプレート引数に取る.
-`Transducer`を継承した型として, \SI{40}{kHz}の周波数に固定されている`LegacyTransducer`とか変周波数の`NormalTransducer`が用意されている.
+`Transducer`を継承した型として, $\SI{40}{kHz}$の周波数に固定されている`LegacyTransducer`や, 可変周波数の`NormalTransducer`が用意されている.
 
 `Controller::send`関数内部では`Gain::calc`メソッドが呼ばれる.
 そのため, この`calc`メソッド内で位相/振幅の計算を行えば良い.

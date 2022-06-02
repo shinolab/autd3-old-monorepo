@@ -3,10 +3,10 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/05/2022
+// Last Modified: 01/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2022 Hapis Lab. All rights reserved.
+// Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
@@ -22,8 +22,11 @@
 #include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/driver/cpu/ec_config.hpp"
 #include "autd3/gain/primitive.hpp"
+#include "core/geometry/dynamic_transducer.hpp"
 #include "core/geometry/geometry.hpp"
 #include "core/geometry/legacy_transducer.hpp"
+#include "core/geometry/normal_phase_transducer.hpp"
+#include "core/geometry/normal_transducer.hpp"
 #include "core/interface.hpp"
 #include "core/link.hpp"
 #include "core/silencer_config.hpp"
@@ -34,10 +37,11 @@ namespace autd3 {
 /**
  * @brief AUTD Controller
  */
-template <typename T = core::LegacyTransducer>
-class Controller {
+template <typename T, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+class ControllerX {
  public:
-  Controller() : force_fan(false), reads_fpga_info(false), check_ack(false), _geometry(), _tx_buf(0), _rx_buf(0), _link(nullptr) {}
+  ControllerX()
+      : force_fan(false), reads_fpga_info(false), check_ack(false), _geometry(), _tx_buf(0), _rx_buf(0), _link(nullptr), _check_ack(false) {}
 
   /**
    * @brief Geometry of the devices
@@ -68,6 +72,8 @@ class Controller {
    * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
    */
   bool synchronize() {
+    push_ack();
+
     driver::force_fan(_tx_buf, force_fan);
     driver::reads_fpga_info(_tx_buf, reads_fpga_info);
 
@@ -79,8 +85,14 @@ class Controller {
 
     sync(msg_id, _link->cycle_ticks(), cycles.data(), _tx_buf);
 
-    if (!_link->send(_tx_buf)) return false;
-    return wait_msg_processed(50);
+    if (!_link->send(_tx_buf)) {
+      pop_ack();
+      return false;
+    }
+
+    const auto success = wait_msg_processed(50);
+    pop_ack();
+    return success;
   }
 
   /**
@@ -110,15 +122,14 @@ class Controller {
    * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
    */
   bool clear() {
-    const auto check_ack_ = check_ack;
-    check_ack = true;
+    push_ack();
     driver::clear(_tx_buf);
     if (!_link->send(_tx_buf)) {
-      check_ack = check_ack_;
+      pop_ack();
       return false;
     }
     const auto success = wait_msg_processed(200);
-    check_ack = check_ack_;
+    pop_ack();
     return success;
   }
 
@@ -126,11 +137,7 @@ class Controller {
    * @brief Stop outputting
    * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
    */
-  bool stop() {
-    SilencerConfig config;
-    gain::Null<T> g;
-    return send(config, g);
-  }
+  bool stop();
 
   /**
    * @brief Close the controller
@@ -150,8 +157,7 @@ class Controller {
   [[nodiscard]] std::vector<driver::FirmwareInfo> firmware_infos() {
     std::vector<driver::FirmwareInfo> firmware_infos;
 
-    const auto check_ack_ = check_ack;
-    check_ack = true;
+    push_ack();
 
     const auto pack_ack = [&]() -> std::vector<uint8_t> {
       std::vector<uint8_t> acks;
@@ -163,17 +169,26 @@ class Controller {
 
     cpu_version(_tx_buf);
     const auto cpu_versions = pack_ack();
-    if (cpu_versions.empty()) return firmware_infos;
+    if (cpu_versions.empty()) {
+      pop_ack();
+      return firmware_infos;
+    }
 
     fpga_version(_tx_buf);
     const auto fpga_versions = pack_ack();
-    if (fpga_versions.empty()) return firmware_infos;
+    if (fpga_versions.empty()) {
+      pop_ack();
+      return firmware_infos;
+    }
 
     fpga_functions(_tx_buf);
     const auto fpga_functions = pack_ack();
-    if (fpga_functions.empty()) return firmware_infos;
+    if (fpga_functions.empty()) {
+      pop_ack();
+      return firmware_infos;
+    }
 
-    check_ack = check_ack_;
+    pop_ack();
 
     for (size_t i = 0; i < _geometry.num_devices(); i++)
       firmware_infos.emplace_back(i, cpu_versions.at(i), fpga_versions.at(i), fpga_functions.at(i));
@@ -192,6 +207,15 @@ class Controller {
   }
 
   /**
+   * @brief Send header data to devices
+   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   */
+  template <typename H>
+  auto send(H&& header) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, bool> {
+    return send(header);
+  }
+
+  /**
    * @brief Send body data to devices
    * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
    */
@@ -199,6 +223,15 @@ class Controller {
   auto send(B& body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody<T>, B>, bool> {
     core::NullHeader h;
     return send(h, body);
+  }
+
+  /**
+   * @brief Send body data to devices
+   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   */
+  template <typename B>
+  auto send(B&& body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody<T>, B>, bool> {
+    return send(body);
   }
 
   /**
@@ -221,8 +254,19 @@ class Controller {
       _link->send(_tx_buf);
       if (!wait_msg_processed(50)) return false;
       if (header.is_finished() && body.is_finished()) break;
+      if (!check_ack) std::this_thread::sleep_for(std::chrono::microseconds(driver::EC_SYNC0_CYCLE_TIME_MICRO_SEC * _link->cycle_ticks()));
     }
     return true;
+  }
+
+  /**
+   * @brief Send header and body data to devices
+   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   */
+  template <typename H, typename B>
+  auto send(H&& header, B&& body) ->
+      typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody<T>, B>, bool> {
+    return send(header, body);
   }
 
   /**
@@ -251,20 +295,63 @@ class Controller {
     if (!check_ack) return true;
 
     const auto msg_id = _tx_buf.header().msg_id;
-    const auto wait = static_cast<uint64_t>(std::ceil(driver::EC_TRAFFIC_DELAY * 1000.0 / static_cast<double>(driver::EC_DEVICE_PER_FRAME) *
-                                                      static_cast<double>(_geometry.num_devices())));
     for (size_t i = 0; i < max_trial; i++) {
       if (!_link->receive(_rx_buf)) continue;
       if (_rx_buf.is_msg_processed(msg_id)) return true;
-      std::this_thread::sleep_for(std::chrono::milliseconds(wait));
+      std::this_thread::sleep_for(std::chrono::microseconds(driver::EC_SYNC0_CYCLE_TIME_MICRO_SEC * _link->cycle_ticks()));
     }
     return false;
   }
+
+  void push_ack() {
+    _check_ack = check_ack;
+    check_ack = true;
+  }
+
+  void pop_ack() { check_ack = _check_ack; }
 
   core::Geometry<T> _geometry;
   driver::TxDatagram _tx_buf;
   driver::RxDatagram _rx_buf;
   core::LinkPtr _link;
+
+  bool _check_ack;
 };
+
+template <>
+bool ControllerX<autd3::core::LegacyTransducer>::stop() {
+  SilencerConfig config;
+  gain::Null<autd3::core::LegacyTransducer> g;
+  return send(config, g);
+}
+
+template <>
+bool ControllerX<autd3::core::NormalTransducer>::stop() {
+  SilencerConfig config;
+  gain::Null<autd3::core::NormalTransducer> g;
+  return send(config, g);
+}
+
+template <>
+bool ControllerX<autd3::core::NormalPhaseTransducer>::stop() {
+  SilencerConfig config;
+  autd3::core::Amplitudes<autd3::core::NormalPhaseTransducer> g(_geometry, 0.0);
+  return send(config, g);
+}
+
+template <>
+bool ControllerX<autd3::core::DynamicTransducer>::stop() {
+  switch (autd3::core::DynamicTransducer::mode()) {
+    case core::TransducerMode::NormalPhase:
+      return send(SilencerConfig(), autd3::core::Amplitudes<autd3::core::DynamicTransducer>(_geometry, 0.0));
+    default:
+      return send(SilencerConfig(), gain::Null<autd3::core::DynamicTransducer>());
+  }
+}
+
+/**
+ * @brief AUTD Controller with legacy (40kHz) transducer
+ */
+using Controller = ControllerX<core::LegacyTransducer>;
 
 }  // namespace autd3

@@ -3,10 +3,10 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/05/2022
+// Last Modified: 01/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2022 Hapis Lab. All rights reserved.
+// Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
@@ -43,9 +43,13 @@ class UniformGain final : public autd3::Gain<T> {
 };
 
 template <typename T>
-void advanced_test(autd3::Controller<T>& autd) {
+void advanced_test(autd3::ControllerX<T>& autd) {
   auto config = autd3::SilencerConfig::none();
   autd.send(config);
+
+  // autd.geometry()[0][0].mod_delay() = 0;
+  // autd.geometry()[0][17].mod_delay() = 1;
+  // autd.send(autd3::ModDelayConfig<T>());
 
   UniformGain<T> g;
   BurstModulation m;
