@@ -3,10 +3,10 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/05/2022
+// Last Modified: 01/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2022 Hapis Lab. All rights reserved.
+// Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
@@ -32,7 +32,7 @@ EXPORT_AUTD void AUTDGainHoloGradientDescent(OUT void** gain, IN const void* bac
 EXPORT_AUTD void AUTDGainHoloGreedy(OUT void** gain, IN const void* backend, IN int32_t phase_div);
 EXPORT_AUTD void AUTDGainHoloAdd(IN void* gain, IN double x, IN double y, IN double z, IN double amp);
 EXPORT_AUTD void AUTDSetConstraint(IN void* gain, IN int32_t type, IN void* param);
-EXPORT_AUTD void AUTDSetModeHolo(IN int32_t mode);
+EXPORT_AUTD void AUTDSetModeHolo(IN uint8_t mode);
 #ifdef __cplusplus
 }
 #endif

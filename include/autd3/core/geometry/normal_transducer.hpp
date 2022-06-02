@@ -3,10 +3,10 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/05/2022
+// Last Modified: 30/05/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2022 Hapis Lab. All rights reserved.
+// Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
@@ -32,9 +32,8 @@ struct NormalDriveData final : DriveData<T> {
     phases.resize(size, driver::Phase{0x0000});
   }
   void set_drive(const T& tr, const double phase, const double amp) override {
-    duties.at(tr.id()).duty = static_cast<uint16_t>(static_cast<double>(tr.cycle()) * std::asin(amp) / driver::pi);
-    phases.at(tr.id()).phase = static_cast<uint16_t>(
-        rem_euclid(static_cast<int32_t>(std::round(phase * static_cast<double>(tr.cycle()))), static_cast<int32_t>(tr.cycle())));
+    duties.at(tr.id()).set(amp, tr.cycle());
+    phases.at(tr.id()).set(phase, tr.cycle());
   }
   void copy_from(size_t idx, const typename T::D& src) override {
     auto ds = src.duties.data() + idx * driver::NUM_TRANS_IN_UNIT;

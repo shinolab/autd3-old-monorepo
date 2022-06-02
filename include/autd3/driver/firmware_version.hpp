@@ -3,10 +3,10 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/05/2022
+// Last Modified: 01/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2022 Hapis Lab. All rights reserved.
+// Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
@@ -20,6 +20,7 @@ namespace autd3::driver {
 constexpr uint8_t ENABLED_STM_BIT = 1 << 0;
 constexpr uint8_t ENABLED_MODULATOR_BIT = 1 << 1;
 constexpr uint8_t ENABLED_SILENCER_BIT = 1 << 2;
+constexpr uint8_t ENABLED_MOD_DELAY_BIT = 1 << 3;
 
 /**
  * \brief Firmware information
@@ -50,10 +51,15 @@ struct FirmwareInfo {
    */
   [[nodiscard]] bool silencer_enabled() const noexcept { return (_fpga_function_bits & ENABLED_SILENCER_BIT) != 0; }
 
+  /**
+   * \return true if the firmware supports Modulation delay function
+   */
+  [[nodiscard]] bool modulation_delay_enabled() const noexcept { return (_fpga_function_bits & ENABLED_MOD_DELAY_BIT) != 0; }
+
   [[nodiscard]] std::string to_string() const {
     std::stringstream ss;
     ss << _idx << ": CPU = " << cpu_version() << ", FPGA = " << fpga_version() << " (STM = " << std::boolalpha << stm_enabled()
-       << ", Modulator = " << modulator_enabled() << ", Silencer = " << silencer_enabled() << ")";
+       << ", Modulator = " << modulator_enabled() << ", Silencer = " << silencer_enabled() << ", ModDelay = " << modulation_delay_enabled() << ")";
     return ss.str();
   }
 
@@ -72,15 +78,17 @@ struct FirmwareInfo {
     }
     if (version_num <= 0x09) return "unknown";
     if (version_num <= 0x15) {
-      ss << "v1." << version_num - 0x09;
+      ss << "v1." << version_num - 0x0A;
       return ss.str();
     }
-    if (version_num == 0x80) {
+    if (version_num <= 0x81) {
       ss << "v2." << version_num - 0x80;
       return ss.str();
     }
     if (version_num == 0xFF) return "emulator";
-    return "unknown";
+
+    ss << "unknown (" << std::hex << static_cast<int>(version_num) << ")";
+    return ss.str();
   }
 };
 

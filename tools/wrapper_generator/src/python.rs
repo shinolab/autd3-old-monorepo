@@ -4,10 +4,10 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/05/2022
+ * Last Modified: 30/05/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Hapis Lab. All rights reserved.
+ * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
 
@@ -111,8 +111,16 @@ class Singleton(type):
 
 
 class NativeMethods(metaclass=Singleton):
-    def init_dll(self, bin_location: str, bin_prefix: str, version_triple: str, bin_ext: str):
-        self.dll = ctypes.CDLL(os.path.join(bin_location, f'{{bin_prefix}}{}-{{version_triple}}{{bin_ext}}'))",
+    def init_path(self, bin_location: str, bin_prefix: str, version_triple: str, bin_ext: str):
+        self.bin = bin_location
+        self.prefix = bin_prefix
+        self.version = version_triple
+        self.ext = bin_ext
+
+    def init_dll(self):
+        if hasattr(self, 'dll'):
+            return
+        self.dll = ctypes.CDLL(os.path.join(self.bin, f'{{self.prefix}}{}-{{self.version}}{{self.ext}}'))",
             bin_name
         )?;
         Ok(())
@@ -144,6 +152,6 @@ class NativeMethods(metaclass=Singleton):
     }
 
     fn get_filename(name: &str) -> String {
-        format!("{}.py", name)
+        format!("{}.py", name.replace("-", "_"))
     }
 }

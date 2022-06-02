@@ -3,10 +3,10 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/05/2022
+// Last Modified: 01/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2022 Hapis Lab. All rights reserved.
+// Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
@@ -79,6 +79,8 @@ EXPORT_AUTD void AUTDPointSTM(OUT void** out);
 EXPORT_AUTD void AUTDGainSTM(OUT void** out, IN const void* handle);
 EXPORT_AUTD bool AUTDPointSTMAdd(IN void* stm, IN double x, IN double y, IN double z, IN uint8_t shift);
 EXPORT_AUTD bool AUTDGainSTMAdd(IN void* stm, IN void* gain);
+EXPORT_AUTD uint16_t AUTDGetGainSTMMode(IN void* stm);
+EXPORT_AUTD void AUTDSetGainSTMMode(IN void* stm, IN uint16_t mode);
 EXPORT_AUTD double AUTDSTMSetFrequency(IN void* stm, IN double freq);
 EXPORT_AUTD double AUTDSTMFrequency(IN const void* stm);
 EXPORT_AUTD double AUTDSTMSamplingFrequency(IN const void* stm);
@@ -91,8 +93,12 @@ EXPORT_AUTD void AUTDDeleteSilencer(IN const void* config);
 EXPORT_AUTD int32_t AUTDSendHeader(IN void* handle, IN void* header);
 EXPORT_AUTD int32_t AUTDSendBody(IN void* handle, IN void* body);
 EXPORT_AUTD int32_t AUTDSendHeaderBody(IN void* handle, IN void* header, IN void* body);
-EXPORT_AUTD void AUTDSetMode(IN int32_t mode);
-
+EXPORT_AUTD void AUTDSetModDelay(IN void* handle, IN int32_t device_idx, IN int32_t local_trans_idx, IN uint16_t delay);
+EXPORT_AUTD void AUTDCreateModDelayConfig(OUT void** out);
+EXPORT_AUTD void AUTDDeleteModDelayConfig(IN const void* config);
+EXPORT_AUTD void AUTDCreateAmplitudes(OUT void** out, IN void* handle, IN double amp);
+EXPORT_AUTD void AUTDDeleteAmplitudes(IN const void* amplitudes);
+EXPORT_AUTD void AUTDSetMode(IN uint8_t mode);
 #ifdef __cplusplus
 }
 #endif

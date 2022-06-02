@@ -3,10 +3,10 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/05/2022
+// Last Modified: 01/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2022 Hapis Lab. All rights reserved.
+// Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #include <algorithm>
@@ -38,7 +38,7 @@
   }
 
 using T = autd3::core::DynamicTransducer;
-using Controller = autd3::Controller<T>;
+using Controller = autd3::ControllerX<T>;
 
 std::string& last_error() {
   static std::string msg("");  // NOLINT
@@ -259,7 +259,7 @@ void AUTDGainPlaneWave(void** gain, const double n_x, const double n_y, const do
 }
 
 void AUTDGainCustom(void** gain, const double* amp, const double* phase, const uint64_t size) {
-  *gain = new CustomGain<T>(amp, phase, static_cast<size_t>(size));
+  *gain = new CustomGain(amp, phase, static_cast<size_t>(size));
 }
 
 void AUTDDeleteGain(const void* const gain) {
@@ -320,6 +320,14 @@ bool AUTDGainSTMAdd(void* const stm, void* const gain) {
     stm_w->add(*g);
     return true;
   })
+}
+uint16_t AUTDGetGainSTMMode(void* const stm) {
+  auto* const stm_w = static_cast<autd3::GainSTM<T>*>(stm);
+  return static_cast<uint16_t>(stm_w->mode());
+}
+void AUTDSetGainSTMMode(void* const stm, uint16_t mode) {
+  auto* const stm_w = static_cast<autd3::GainSTM<T>*>(stm);
+  stm_w->mode() = static_cast<autd3::Mode>(mode);
 }
 double AUTDSTMSetFrequency(void* const stm, const double freq) {
   auto* const stm_w = static_cast<autd3::core::STM<T>*>(stm);
@@ -383,15 +391,23 @@ void AUTDSetTransCycle(void* const handle, const int32_t device_idx, const int32
   wrapper->geometry()[device_idx][local_trans_idx].set_cycle(cycle);
 }
 
-void AUTDSetMode(const int32_t mode) {
-  switch (mode) {
-    case 0:
-      T::legacy_mode() = true;
-      break;
-    case 1:
-      T::legacy_mode() = false;
-      break;
-    default:
-      break;
-  }
+void AUTDSetModDelay(void* const handle, const int32_t device_idx, const int32_t local_trans_idx, const uint16_t delay) {
+  auto* const wrapper = static_cast<Controller*>(handle);
+  wrapper->geometry()[device_idx][local_trans_idx].mod_delay() = delay;
 }
+void AUTDCreateModDelayConfig(void** out) { *out = new autd3::ModDelayConfig<T>(); }
+void AUTDDeleteModDelayConfig(const void* config) {
+  const auto* const config_ = static_cast<const autd3::ModDelayConfig<T>*>(config);
+  delete config_;
+}
+
+void AUTDCreateAmplitudes(void** out, void* const handle, const double amp) {
+  auto* const wrapper = static_cast<Controller*>(handle);
+  *out = new autd3::core::Amplitudes<T>(wrapper->geometry(), amp);
+}
+void AUTDDeleteAmplitudes(IN const void* amplitudes) {
+  const auto* const amps_ = static_cast<const autd3::core::Amplitudes<T>*>(amplitudes);
+  delete amps_;
+}
+
+void AUTDSetMode(const uint8_t mode) { T::mode() = static_cast<autd3::core::TransducerMode>(mode); }

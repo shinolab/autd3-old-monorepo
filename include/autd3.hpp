@@ -3,16 +3,18 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/05/2022
+// Last Modified: 01/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2022 Hapis Lab. All rights reserved.
+// Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
 
 #include "autd3/controller.hpp"
+#include "autd3/core/delay.hpp"
 #include "autd3/core/geometry/geometry.hpp"
+#include "autd3/core/geometry/normal_phase_transducer.hpp"
 #include "autd3/core/stm/gain.hpp"
 #include "autd3/core/stm/point.hpp"
 #include "autd3/gain/primitive.hpp"
@@ -34,14 +36,20 @@ constexpr double pi = driver::pi;
 
 using core::Geometry;
 using core::LegacyTransducer;
+using core::NormalPhaseTransducer;
 using core::NormalTransducer;
 using core::Transducer;
+
+using core::Amplitudes;
 
 using core::Gain;
 using core::Modulation;
 
+using core::ModDelayConfig;
+
 using driver::FirmwareInfo;
 using driver::FPGAInfo;
+using driver::Mode;
 
 using core::Quaternion;
 using core::Vector3;

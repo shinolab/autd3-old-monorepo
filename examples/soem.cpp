@@ -1,12 +1,12 @@
 // File: soem.cpp
 // Project: examples
-// Created Date: 12/05/2022
+// Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/05/2022
+// Last Modified: 01/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2022 Hapis Lab. All rights reserved.
+// Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #include "autd3/link/soem.hpp"
@@ -50,6 +50,8 @@ int main() try {
                   .high_precision(true)
                   .build();
   autd.open(std::move(link));
+
+  autd.check_ack = true;
 
   return run(std::move(autd));
 } catch (std::exception& e) {

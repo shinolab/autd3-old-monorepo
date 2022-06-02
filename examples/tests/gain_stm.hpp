@@ -3,10 +3,10 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/05/2022
+// Last Modified: 01/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2022 Hapis Lab. All rights reserved.
+// Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
@@ -15,7 +15,7 @@
 #include <vector>
 
 template <typename T>
-void gain_stm(autd3::Controller<T>& autd) {
+void gain_stm(autd3::ControllerX<T>& autd) {
   auto config = autd3::SilencerConfig::none();
   autd.send(config);
 

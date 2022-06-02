@@ -3,10 +3,10 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/05/2022
+// Last Modified: 01/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2022 Hapis Lab. All rights reserved.
+// Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
@@ -44,7 +44,7 @@ class CPUControlFlags final {
     STM_BEGIN = 1 << 4,
     STM_END = 1 << 5,
     IS_DUTY = 1 << 6,
-    READS_FPGA_INFO = 1 << 7,
+    MOD_DELAY = 1 << 7,
   };
 
   CPUControlFlags() = default;
@@ -75,5 +75,11 @@ class CPUControlFlags final {
   VALUE _value;
 };
 #pragma warning(pop)
+
+enum class Mode : uint16_t {
+  PhaseDutyFull = 0x0001,
+  PhaseFull = 0x0002,
+  PhaseHalf = 0x0004,
+};
 
 }  // namespace autd3::driver
