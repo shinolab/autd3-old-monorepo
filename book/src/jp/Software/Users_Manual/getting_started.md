@@ -13,8 +13,8 @@ Visual Studio Community 2022は「C++によるデスクトップ開発」にチ�
 なお, Linuxの場合はgccが, macOSの場合はclangが使えれば良い.
 また, 以下はターミナルから操作するため, PATHを通しておくことを推奨する.
 
-* Visual Studio Community 2022 17.2.0
-* CMake 3.22.2
+* Visual Studio Community 2022 17.2.3
+* CMake 3.23.1
 * git 2.36.1.windows.1[^fn_git]
 * npcap 1.60[^fn_npcap]
 
@@ -28,7 +28,7 @@ PCのイーサネットポートとAUTD3デバイスのEtherCAT In ([Concept](co
 ### Firmware update
 
 firmwareが古い場合, 動作は保証されない.
-本文章におけるfirmwareのversionは2.0が想定される.
+本文章におけるfirmwareのversionは2.1が想定される.
 
 firmwareのupdateには[Vivado Design Suite](https://www.xilinx.com/products/design-tools/vivado.html), 及び, [J-Link Software](https://www.segger.com/downloads/jlink/)をインストールしたWindows 10/11 64bit PCが必要である[^fn_vivado].
 なお, Vivado 2022.1, 及び, J-Link Software v7.58b (x64)での動作を確認している.
