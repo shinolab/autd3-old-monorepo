@@ -819,6 +819,25 @@ Gain STMにgainを追加する.
 | gain                   | void*            | in     | pointer to Gain                                                                         |
 | return                 | bool             | -      | true if success                                                                         |
 
+##  AUTDSetGainSTMMode (autd3capi)
+
+GainSTMのmodeを設定する.
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| stm                    | void*            | in     | pointer to STM                                                                          |
+| mode                   | uint16_t         | in     | GainSTM mode (0x0001 = PhaseDutyFull, 0x0002 = PhaseFull, 0x0004 = PhaseHalf)           |
+| return                 | void             | -      | -                                                                                       |
+
+##  AUTDGetGainSTMMode (autd3capi)
+
+GainSTMのmodeを取得する.
+
+| Argument name / return | type             | in/out | description                                                                             |
+|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
+| stm                    | void*            | in     | pointer to STM                                                                          |
+| return                 | uint16_t         | -      | GainSTM mode                                                                            |
+
 ##  AUTDSTMSetFrequency (autd3capi)
 
 STMのfrequencyを設定する.
@@ -946,13 +965,70 @@ handleは`AUTDCreateController`で作成したものを使う.
 | return                 | int32_t          | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred.             |
 
 
+##  AUTDSetModDelay (autd3capi)
+
+指定した振動子のModulation Delayを設定する.
+
+handleは`AUTDCreateController`で作成したものを使う.
+振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
+
+| Argument name / return       | type             | in/out | description                                                                             |
+|------------------------------|------------------|--------|-----------------------------------------------------------------------------------------|
+| handle                       | void*            | in     | pointer to Controller                                                                   |
+| device_idx                   | int32_t          | in     | device index                                                                            |
+| local_trans_idx              | int32_t          | in     | local transducer index                                                                  |
+| delay                        | uint16_t         | in     | modulation delay of the transducer                                                      |
+| return                       | void             | -      | -                                                                                       |
+
+##  AUTDCreateModDelayConfig (autd3capi)
+
+ModDelayConfigを作成する.
+
+作成したSilencerConfigは最後に`AUTDDeleteModDelayConfig`で削除する必要がある.
+
+| Argument name / return | type             | in/out | description                                                                                                        |
+|------------------------|------------------|--------|-----------------------------------------------------------------------------------------                           |
+| out                    | void**           | out    | pointer to pointer to ModDelayConfig                                                                               |
+| return                 | void             | -      | -                                                                                                                  |
+
+##  AUTDDeleteModDelayConfig (autd3capi)
+
+ModDelayConfigを削除する.
+
+| Argument name / return | type             | in/out | description                                                                                                        |
+|------------------------|------------------|--------|-----------------------------------------------------------------------------------------                           |
+| config                 | void*            | in     | pointer to ModDelayConfig                                                                                          |
+| return                 | void             | -      | -                                                                                                                  |
+
+##  AUTDCreateAmplitudes (autd3capi)
+
+Amplitudesを作成する.
+
+作成したSilencerConfigは最後に`AUTDDeleteAmplitudes`で削除する必要がある.
+
+| Argument name / return | type             | in/out | description                                                                                                        |
+|------------------------|------------------|--------|-----------------------------------------------------------------------------------------                           |
+| out                    | void**           | out    | pointer to pointer to Amplitudes                                                                                   |
+| handle                 | void*            | in     | pointer to Controller                                                                                              |
+| amp                    | double           | in     | amplitudes                                                                                                         |
+| return                 | void             | -      | -                                                                                                                  |
+
+##  AUTDDeleteAmplitudes (autd3capi)
+
+Amplitudesを削除する.
+
+| Argument name / return | type             | in/out | description                                                                                                        |
+|------------------------|------------------|--------|-----------------------------------------------------------------------------------------                           |
+| amplitudes             | void*            | in     | pointer to Amplitudes                                                                                              |
+| return                 | void             | -      | -                                                                                                                  |
+
 ## AUTDSetMode (autd3capi)
 
 Legacy/Normalモードの設定を行う.
 
 | Argument name / return | type             | in/out | description                                                                             |
 |----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
-| mode                   | int32_t          | in     | mode (0: Legacy mode, 1: Normal mode)                                                   |
+| mode                   | uint8_t          | in     | mode (0: Legacy mode, 1: Normal mode, 2: Normal Phase mode)                             |
 | return                 | void             | -      | -                                                                                       |
 
 ## AUTDEigenBackend (autd3capi-gain-holo)
@@ -1147,7 +1223,7 @@ Normal/Legacyモードを設定する.
 
 | Argument name / return | type             | in/out | description                                                                             |
 |----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
-| mode                   | int32_t          | in     | mode (0: Legacy mode, 1: Normal mode)                                                   |
+| mode                   | uint8_t          | in     | mode (0: Legacy mode, 1: Normal mode, 2: Normal Phase mode)                             |
 | return                 | void             | -      | -                                                                                       |
 
 ## AUTDBLASBackend (autd3capi-backend-blas)

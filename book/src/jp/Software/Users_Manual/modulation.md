@@ -129,4 +129,25 @@ class Burst final : public Modulation {
 
 `sampling_frequency`でサンプリング周波数を取得できる.
 
+## Modulation Delay
+
+Modulationはすべての振動子に同時に作用し, 伝搬遅延を考慮しない.
+そのため, 振動子と焦点位置との間の距離に応じて, 変調はずれる可能性がある.
+
+これを保証するために, 振動子毎にサンプリングするインデックスを遅らせる機能が備わっている.
+
+
+例えば, 以下のようにすると, $0$番目のデバイスの$17$番目の振動子は$0$番目の振動子 (及び, 他のすべての振動子) に対して, サンプリングするインデックスが一つ遅れる.
+
+```cpp
+  autd.geometry()[0][0].mod_delay() = 0;
+  autd.geometry()[0][17].mod_delay() = 1;
+  autd.send(autd3::ModDelayConfig());
+```
+
+サンプリングされるインデックスに対する遅れであるため, どの程度遅れるかはModulationのサンプリング周波数に依存する.
+`mod_delay`が$1$でサンプリング周波数が$\SI{40}{kHz}$の場合は$\SI{25}{\text{μ}s}$, $\SI{4}{kHz}$の場合は$\SI{250}{\text{μ}s}$の遅れになる.
+
+また, `mod_delay`の値は変調の長さ, すなわち, `buffer`サイズ未満でなくてはならない.
+
 [^fn_burst]: SDKにはない.

@@ -61,6 +61,15 @@ SDKには単一焦点のみをサポートする`PointSTM`と任意の`Gain`を�
 
 `GainSTM`は位相/振幅データをすべて送信するため, レイテンシが大きい[^fn_gain_seq].
 
+この問題に対処するために, `GainSTM`には位相のみを送信して送信にかかる時間を半分にする`PhaseFull`モードと, 位相を$\SI{4}{bit}$に圧縮して送信時間を4分の1にする`PhaseHalf`モード[^phase_half]が用意されている.
+モードの切り替えは`mode`関数で行う.
+
+```cpp
+stm.mode() = Mode::PhaseFull;
+```
+
+デフォルトはすべての情報を送る`PhaseDutyFull`モードである.
+
 ### STM common functions
 
 #### frequency
@@ -81,3 +90,5 @@ SDKには単一焦点のみをサポートする`PointSTM`と任意の`Gain`を�
 ```
 
 [^fn_gain_seq]: `PointSTM`のおよそ60倍のレイテンシ.
+
+[^phase_half]: Legacyモード限定.

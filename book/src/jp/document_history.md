@@ -7,3 +7,4 @@
 | 2022/5/23  | FFI/python, FFI/csharp, migration_guideを追加 |
 | 2022/5/24  | Version 2.0.2 初版                            |
 | 2022/5/25  | Version 2.0.3 初版                            |
+| 2022/6/2   | Version 2.1.0 初版                            |
