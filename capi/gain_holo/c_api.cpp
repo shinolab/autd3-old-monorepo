@@ -3,10 +3,10 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/05/2022
+// Last Modified: 01/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2022 Hapis Lab. All rights reserved.
+// Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #include <utility>
@@ -123,7 +123,7 @@ void AUTDGainHoloAdd(void* gain, const double x, const double y, const double z,
   g->add_focus(autd3::core::Vector3(x, y, z), amp);
 }
 
-void AUTDSetConstraint(void* gain, int32_t type, void* param) {
+void AUTDSetConstraint(void* gain, const int32_t type, void* param) {
   auto* g = static_cast<autd3::gain::holo::Holo<T>*>(gain);
   switch (type) {
     case 0:
@@ -143,15 +143,4 @@ void AUTDSetConstraint(void* gain, int32_t type, void* param) {
   }
 }
 
-void AUTDSetModeHolo(const int32_t mode) {
-  switch (mode) {
-    case 0:
-      T::legacy_mode() = true;
-      break;
-    case 1:
-      T::legacy_mode() = false;
-      break;
-    default:
-      break;
-  }
-}
+void AUTDSetModeHolo(const uint8_t mode) { T::mode() = static_cast<autd3::core::TransducerMode>(mode); }

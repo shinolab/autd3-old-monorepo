@@ -27,7 +27,10 @@ if(WIN32)
     ${SOEM_PATH}/oshw/${OS}/wpcap/Include
     ${SOEM_PATH}/oshw/${OS}/wpcap/Include/pcap
   )
-  target_compile_options(link_soem PRIVATE /D_CRT_SECURE_NO_WARNINGS /wd4996 /DNOMINMAX /D__STDC_LIMIT_MACROS)
+  target_compile_definitions(link_soem PRIVATE __STDC_LIMIT_MACROS NOMINMAX _CRT_SECURE_NO_WARNINGS)
+  if(MSVC)
+    target_compile_options(link_soem PRIVATE /wd4996)
+  endif()
 endif()
 
 target_link_libraries(link_soem INTERFACE ${CMAKE_THREAD_LIBS_INIT})

@@ -3,10 +3,10 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/05/2022
+// Last Modified: 01/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2022 Hapis Lab. All rights reserved.
+// Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
@@ -67,7 +67,8 @@ struct Transducer {
         _pos(std::move(pos)),
         _x_direction(std::move(x_direction)),
         _y_direction(std::move(y_direction)),
-        _z_direction(std::move(z_direction)) {}
+        _z_direction(std::move(z_direction)),
+        _mod_delay(0) {}
   virtual ~Transducer() = default;
   Transducer(const Transducer& v) noexcept = default;
   Transducer& operator=(const Transducer& obj) = default;
@@ -96,7 +97,14 @@ struct Transducer {
    * \brief z direction of the transducer
    */
   [[nodiscard]] const Vector3& z_direction() const noexcept { return _z_direction; }
-
+  /**
+   * \brief modulation delay of the transducer
+   */
+  [[nodiscard]] uint16_t mod_delay() const noexcept { return _mod_delay; }
+  /**
+   * \brief modulation delay of the transducer
+   */
+  uint16_t& mod_delay() noexcept { return _mod_delay; }
   /**
    * \brief Frequency division ratio. The frequency will be autd3::driver::FPGA_CLK_FREQ/cycle.
    */
@@ -122,6 +130,7 @@ struct Transducer {
   Vector3 _x_direction;
   Vector3 _y_direction;
   Vector3 _z_direction;
+  uint16_t _mod_delay;
 };
 
 }  // namespace autd3::core

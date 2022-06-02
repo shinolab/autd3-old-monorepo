@@ -4,7 +4,9 @@ Version 2.0から, すべての振動子の周波数を個別に指定できる�
 
 従来の$\SI{40}{kHz}$固定のモードをLegacyモードと呼び, 周波数を可変にできるモードをNormalモードと呼ぶ.
 
-デフォルトはLegacyモードになっており, Normalモードを使用する場合は, `Controller`の型引数に`NormalTransducer`を渡せば良い.
+デフォルトの`Controller`はLegacyモード専用になっており, Normalモードを使用する場合は, `ControllerX`クラスを使用し, その型引数に`NormalTransducer`を渡せば良い.
+
+> NOTE: `Controller`は`ControllerX<LegacyTransducer>`のエイリアスである.
 
 振動子の周波数は`Geometry`→`Device`→`Transducer`とアクセスし, `Transducer`の`set_frequency`, または, `set_cycle`関数で指定する.
 
@@ -16,7 +18,7 @@ Version 2.0から, すべての振動子の周波数を個別に指定できる�
 
 
 ```cpp
-  autd3::Controller<autd3::NormalTransducer> autd;
+  autd3::ControllerX<autd3::NormalTransducer> autd;
 
   autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
 
@@ -24,8 +26,24 @@ Version 2.0から, すべての振動子の周波数を個別に指定できる�
     for (auto& tr : dev) tr.set_frequency(70e3); // actual frequency is 163.84MHz/2341 ~ 69987
 ```
 
-なお, Normalモードでは, `Gain`, `STM`などのインスタンス化の際に`Controller`と同様に型引数を指定する必要がある.
+なお, Normalモードでは, `Gain`, `STM`などのインスタンス化の際に`ControllerX`と同様に型引数を指定する必要がある.
 
 ```cpp
   autd3::gain::Focus<autd3::NormalTransducer> g(center);
+```
+
+## NormalPhaseモード
+
+Normalモードは振幅/位相データをそれぞれ1フレームで送信する必要があるため, 若干通信のレイテンシが大きい.
+実際には振幅データは頻繁に更新されることはないと思われるため, 位相データのみを送信する`NormalPhase`モードも用意されている.
+
+```cpp
+  autd3::ControllerX<autd3::NormalPhaseTransducer> autd;
+```
+
+このモードの場合, 振幅は予め`Amplitudes`クラスを送信することで制御する.
+
+```cpp
+  autd3::Amplitudes amp(autd.geometry(), 1.0);
+  autd.send(amp);
 ```

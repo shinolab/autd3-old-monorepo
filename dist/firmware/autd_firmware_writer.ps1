@@ -3,10 +3,10 @@
 # Created Date: 14/02/2020
 # Author: Shun Suzuki
 # -----
-# Last Modified: 07/07/2021
+# Last Modified: 30/05/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
-# Copyright (c) 2021 Hapis Lab. All rights reserved.
+# Copyright (c) 2021 Shun Suzuki. All rights reserved.
 # 
 
 Param(

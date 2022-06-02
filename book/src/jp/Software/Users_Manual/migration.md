@@ -21,15 +21,9 @@ v1.x系に存在したSequenceと呼ばれるHardwareタイマによる時空間
 出力を止めたい場合は`stop`を呼ぶか`modulation::Static(0.0)`を送信する.
 また, 出力を再開したい場合は改めて所望のデータを送信すること.
 
-### Delay, Offset指定
+### Duty Offset指定
 
 これらの機能は削除された.
-
-### GainSTMのGainMode
-
-この機能は削除された.
-
-また, GainSTMの最大パターン数は1024に減少した.
 
 ### TransducerTest Gain
 
@@ -44,6 +38,10 @@ v1.x系に存在したSequenceと呼ばれるHardwareタイマによる時空間
 このBackendは削除された.
 
 ## 変更されたAPI
+
+### GainSTM最大パターン長
+
+GainSTMの最大パターン数は1024に減少した.
 
 ### Silent mode
 
