@@ -26,7 +26,9 @@ int main() {
   // AUTDAddDeviceQuaternion(cnt, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 
   AUTDSetMode(1);
+#ifdef BUILD_GAIN_HOLO
   AUTDSetModeHolo(1);
+#endif
   for (int i = 0; i < 249; i++) AUTDSetTransFrequency(cnt, 0, i, 70e3);
 
   void* link = NULL;
