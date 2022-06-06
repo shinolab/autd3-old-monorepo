@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 06/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -96,26 +96,26 @@ int run(void* autd) {
   AUTDClear(autd);
   AUTDSynchronize(autd);
 
-  printf_s("========= Firmware infomations ==========\n");
+  printf("========= Firmware infomations ==========\n");
   void* firm_info_list = NULL;
   const int32_t firm_info_list_size = AUTDGetFirmwareInfoListPointer(autd, &firm_info_list);
   for (int32_t i = 0; i < firm_info_list_size; i++) {
     char info[256];
     AUTDGetFirmwareInfo(firm_info_list, i, info);
-    printf_s("[%d]: %s\n", i, info);
+    printf("[%d]: %s\n", i, info);
   }
   AUTDFreeFirmwareInfoListPointer(firm_info_list);
-  printf_s("=========================================\n");
+  printf("=========================================\n");
 
   while (1) {
     for (int32_t i = 0; i < example_size; i++) {
-      printf_s("[%d]: %s\n", i, examples[i].name);
+      printf("[%d]: %s\n", i, examples[i].name);
     }
-    printf_s("[Others]: finish.\n");
+    printf("[Others]: finish.\n");
 
-    printf_s("Choose number: ");
+    printf("Choose number: ");
     int32_t i;
-    if (!scanf_s("%d", &i)) {
+    if (!scanf("%d", &i)) {
       break;
     }
     (void)getchar();
@@ -125,10 +125,10 @@ int run(void* autd) {
 
     examples[i].func(autd);
 
-    printf_s("press any key to finish...");
+    printf("press any key to finish...");
     (void)getchar();
 
-    printf_s("Finish.\n");
+    printf("Finish.\n");
     AUTDStop(autd);
   }
 

@@ -4,7 +4,7 @@
  * Created Date: 16/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2022
+ * Last Modified: 06/06/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ int main() {
     const int32_t error_size = AUTDGetLastError(NULL);
     char* error = malloc(error_size);
     AUTDGetLastError(error);
-    printf_s("%s\n", error);
+    printf("%s\n", error);
     free(error);
     return -1;
   }
