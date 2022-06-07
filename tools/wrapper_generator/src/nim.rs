@@ -1,5 +1,5 @@
 /*
- * File: naive_c.rs
+ * File: nim.rs
  * Project: src
  * Created Date: 07/06/2022
  * Author: Shun Suzuki
@@ -19,51 +19,45 @@ use itertools::Itertools;
 
 use capi_header_parser::{
     parse::{Arg, Function},
-    types::{InOut, Type},
+    types::Type,
 };
 
 use crate::traits::Generator;
 
-pub struct MatlabGenerator {}
+pub struct NimGenerator {}
 
-impl MatlabGenerator {
+impl NimGenerator {
     fn to_return_ty(ty: &Type) -> &str {
         match ty {
-            Type::Int8 => "int8_t",
-            Type::Int16 => "int16_t",
-            Type::Int32 => "int32_t",
-            Type::Int64 => "int64_t",
-            Type::UInt8 => "uint8_t",
-            Type::UInt16 => "uint16_t",
-            Type::UInt32 => "uint32_t",
-            Type::UInt64 => "uint64_t",
+            Type::Int8 => "int8",
+            Type::Int16 => "int16",
+            Type::Int32 => "int32",
+            Type::Int64 => "int64",
+            Type::UInt8 => "uint8",
+            Type::UInt16 => "uint16",
+            Type::UInt32 => "uint32",
+            Type::UInt64 => "uint64",
             Type::Void => "void",
             Type::Char => "char",
-            Type::Float32 => "float",
-            Type::Float64 => "double",
+            Type::Float32 => "float32",
+            Type::Float64 => "float64",
             Type::Bool => "bool",
         }
     }
 
     fn to_arg_ty(arg: &Arg) -> String {
         let res = match arg.ty() {
-            Type::Int8 => "int8_t",
-            Type::Int16 => "int16_t",
-            Type::Int32 => "int32_t",
-            Type::Int64 => "int64_t",
-            Type::UInt8 => "uint8_t",
-            Type::UInt16 => "uint16_t",
-            Type::UInt32 => "uint32_t",
-            Type::UInt64 => "uint64_t",
-            Type::Char => {
-                if arg.inout() == InOut::IN {
-                    "char"
-                } else {
-                    "int8_t"
-                }
-            }
-            Type::Float32 => "float",
-            Type::Float64 => "double",
+            Type::Int8 => "int8",
+            Type::Int16 => "int16",
+            Type::Int32 => "int32",
+            Type::Int64 => "int64",
+            Type::UInt8 => "uint8",
+            Type::UInt16 => "uint16",
+            Type::UInt32 => "uint32",
+            Type::UInt64 => "uint64",
+            Type::Char => "char",
+            Type::Float32 => "float32",
+            Type::Float64 => "float64",
             Type::Bool => "bool",
             Type::Void => "void",
         };
@@ -73,19 +67,26 @@ impl MatlabGenerator {
     }
 }
 
-impl Generator for MatlabGenerator {
-    fn print_header<W: Write>(w: &mut W, _bin_name: &str) -> Result<()> {
+impl Generator for NimGenerator {
+    fn print_header<W: Write>(w: &mut W, bin_name: &str) -> Result<()> {
         write!(
             w,
-            r"// This file was automatically generated from header file
-#ifdef __cplusplus
-#include <cstdint>
-#else
-#include <stdbool.h>
-#include <stdint.h>
+            r#"// This file was automatically generated from header file
+
+#ifdef C2NIM
+#  dynlib dll
+#  cdecl
+#  if defined(windows)
+#    define dll "{0}.dll"
+#  elif defined(macosx)
+#    define dll "lib{0}.dylib"
+#  else
+#    define dll "lib{0}.so"
+#  endif
 #endif
 
-"
+"#,
+            bin_name
         )?;
         Ok(())
     }
@@ -112,6 +113,6 @@ impl Generator for MatlabGenerator {
     }
 
     fn get_filename(name: &str) -> String {
-        format!("{}.h", name.replace('-', "_"))
+        format!("{}.h", name)
     }
 }
