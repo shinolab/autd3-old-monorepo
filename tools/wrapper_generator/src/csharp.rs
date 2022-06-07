@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2022
+ * Last Modified: 07/06/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -208,10 +208,9 @@ namespace AUTD3Sharp.NativeMethods
             ""
         };
 
-        write!(
+        writeln!(
             w,
-            r"        {}{} public static extern {} {}({});
-",
+            r"        {}{} public static extern {} {}({});",
             attr,
             ret_attr,
             Self::to_return_ty(&function.return_ty()),
@@ -224,8 +223,7 @@ namespace AUTD3Sharp.NativeMethods
     fn print_footer<W: Write>(w: &mut W) -> Result<()> {
         writeln!(
             w,
-            r"
-    }}
+            r"    }}
 }}"
         )?;
         Ok(())
