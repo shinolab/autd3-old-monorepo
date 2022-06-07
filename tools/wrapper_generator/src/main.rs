@@ -13,6 +13,7 @@
 
 mod csharp;
 mod matlab;
+mod nim;
 mod python;
 mod traits;
 
@@ -23,6 +24,7 @@ use anyhow::Result;
 use capi_header_parser::{cmake, parse::parse};
 use csharp::CSharpGenerator;
 use matlab::MatlabGenerator;
+use nim::NimGenerator;
 use python::PythonGenerator;
 use traits::Generator;
 
@@ -47,6 +49,7 @@ fn main() -> Result<()> {
     gen::<PythonGenerator, _>("python", "../../capi")?;
     gen::<CSharpGenerator, _>("cs", "../../capi")?;
     gen::<MatlabGenerator, _>("matlab", "../../capi")?;
+    gen::<NimGenerator, _>("nim", "../../capi")?;
 
     Ok(())
 }
