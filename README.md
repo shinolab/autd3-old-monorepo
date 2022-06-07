@@ -99,6 +99,7 @@ Version: 2.1.0
 * [Rust](https://github.com/shinolab/rust-autd)
 * [C#](https://github.com/shinolab/autd3sharp)
 * [python](https://github.com/shinolab/pyautd)
+* [matlab](https://github.com/shinolab/autd3-matlab)
 
 ## Firmware
 
