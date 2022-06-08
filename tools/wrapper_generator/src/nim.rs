@@ -4,7 +4,7 @@
  * Created Date: 07/06/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/06/2022
+ * Last Modified: 08/06/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -77,11 +77,11 @@ impl Generator for NimGenerator {
 #  dynlib dll
 #  cdecl
 #  if defined(windows)
-#    define dll "{0}.dll"
+#    define dll "bin/{0}.dll"
 #  elif defined(macosx)
-#    define dll "lib{0}.dylib"
+#    define dll "bin/lib{0}.dylib"
 #  else
-#    define dll "lib{0}.so"
+#    define dll "bin/lib{0}.so"
 #  endif
 #endif
 
@@ -113,6 +113,6 @@ impl Generator for NimGenerator {
     }
 
     fn get_filename(name: &str) -> String {
-        format!("{}.h", name)
+        format!("{}.h", name.replace('-', "_"))
     }
 }
