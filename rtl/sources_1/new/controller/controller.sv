@@ -280,6 +280,8 @@ always_ff @(posedge CLK) begin
 
         //////////////////////// synchronize ////////////////////////
         REQ_RD_EC_SYNC_TIME_0: begin
+            we <= 1'b0;
+
             addr <= ADDR_EC_SYNC_TIME_0;
 
             state <= REQ_RD_EC_SYNC_TIME_1;
@@ -325,7 +327,7 @@ always_ff @(posedge CLK) begin
             state <= RD_CYCLE;
         end
         RD_CYCLE: begin
-            cycle[set_cnt] <= dout;
+            cycle[set_cnt] <= dout[WIDTH-1:0];
             if (set_cnt == DEPTH-1) begin
                 addr <= ADDR_CTL_REG;
 
