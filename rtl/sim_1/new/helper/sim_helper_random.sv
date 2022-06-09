@@ -26,8 +26,9 @@ task init();
     r = $random(seed);
 endtask
 
-function automatic int range(int max, int min);
-    range = ($unsigned($random()) % (max - min + 1)) + min;
+function automatic longint range(longint max, longint min);
+    automatic longint r = $random();
+    range = ($unsigned(r) % (max - min + 1)) + min;
 endfunction
 
 endmodule
