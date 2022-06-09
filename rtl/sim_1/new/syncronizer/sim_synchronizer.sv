@@ -62,9 +62,9 @@ task sync();
 endtask
 
 initial begin
-    CLK_163P84M = 0;
-    CLK_163P84M_p50 = 0;
-    CLK_163P84M_m50 = 0;
+    CLK_163P84M = 1;
+    CLK_163P84M_p50 = 1;
+    CLK_163P84M_m50 = 1;
     SYS_TIME = 0;
     SYS_TIME_p50 = 0;
     SYS_TIME_m50 = 0;
@@ -88,6 +88,7 @@ always begin
     end
     for (int i = 0; i < 33; i++) begin
         #3.052 CLK_163P84M = ~CLK_163P84M;
+        #3.052 CLK_163P84M = ~CLK_163P84M;
     end
 end
 
@@ -99,6 +100,7 @@ always begin
     end
     for (int i = 0; i < 8419; i++) begin
         #3.052 CLK_163P84M_p50 = ~CLK_163P84M_p50;
+        #3.052 CLK_163P84M_p50 = ~CLK_163P84M_p50;
     end
 end
 
@@ -109,6 +111,7 @@ always begin
         #3.052 CLK_163P84M_m50 = ~CLK_163P84M_m50;
     end
     for (int i = 0; i < 32831; i++) begin
+        #3.052 CLK_163P84M_m50 = ~CLK_163P84M_m50;
         #3.052 CLK_163P84M_m50 = ~CLK_163P84M_m50;
     end
 end
