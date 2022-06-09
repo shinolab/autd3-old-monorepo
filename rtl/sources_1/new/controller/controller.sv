@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/05/2022
+ * Last Modified: 09/06/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -21,7 +21,6 @@ module controller#(
            output var FORCE_FAN,
            cpu_bus_if.ctl_port CPU_BUS,
            output var [63:0] ECAT_SYNC_TIME,
-           output var [15:0] ECAT_SYNC_CYCLE_TICKS,
            output var SYNC_SET,
            output var OP_MODE,
            output var STM_GAIN_MODE,
@@ -58,7 +57,6 @@ bit [15:0] dly_dout;
 bit [15:0] ctl_reg;
 
 bit [63:0] ecat_sync_time;
-bit [15:0] ecat_sync_cycle_ticks;
 bit sync_set;
 bit [7:0] set_cnt;
 
@@ -87,7 +85,6 @@ assign OP_MODE = ctl_reg[CTL_REG_OP_MODE_BIT];
 assign STM_GAIN_MODE = ctl_reg[CTL_REG_STM_GAIN_MODE_BIT];
 
 assign ECAT_SYNC_TIME = ecat_sync_time;
-assign ECAT_SYNC_CYCLE_TICKS = ecat_sync_cycle_ticks;
 assign SYNC_SET = sync_set;
 assign CYCLE_M = cycle_m;
 assign FREQ_DIV_M = freq_div_m;
@@ -148,10 +145,9 @@ enum bit [4:0] {
          RD_SOUND_SPEED_0_REQ_WR_FPGA_INFO,
          RD_SOUND_SPEED_1_REQ_RD_MOD_CYCLE,
 
-         REQ_RD_EC_SYNC_CYCLE_TICKS,
          REQ_RD_EC_SYNC_TIME_0,
          REQ_RD_EC_SYNC_TIME_1,
-         REQ_RD_EC_SYNC_TIME_2_RD_EC_SYNC_CYCLE_TICKS,
+         REQ_RD_EC_SYNC_TIME_2,
          REQ_RD_EC_SYNC_TIME_3_RD_EC_SYNC_TIME_0,
          REQ_RD_CYCLE_0_RD_EC_SYNC_TIME_1,
          REQ_RD_CYCLE_1_RD_EC_SYNC_TIME_2,
@@ -194,7 +190,7 @@ always_ff @(posedge CLK) begin
                 addr <= ADDR_CTL_REG;
                 din <= ctl_reg & ~(1 << CTL_REG_SYNC_BIT);
 
-                state <= REQ_RD_EC_SYNC_CYCLE_TICKS;
+                state <= REQ_RD_EC_SYNC_TIME_0;
             end
             else begin
                 addr <= ADDR_MOD_FREQ_DIV_0;
@@ -283,13 +279,6 @@ always_ff @(posedge CLK) begin
         //////////////////////////// run ////////////////////////////
 
         //////////////////////// synchronize ////////////////////////
-        REQ_RD_EC_SYNC_CYCLE_TICKS: begin
-            we <= 1'b0;
-
-            addr <= ADDR_EC_SYNC_CYCLE_TICKS;
-
-            state <= REQ_RD_EC_SYNC_TIME_0;
-        end
         REQ_RD_EC_SYNC_TIME_0: begin
             addr <= ADDR_EC_SYNC_TIME_0;
 
@@ -298,12 +287,10 @@ always_ff @(posedge CLK) begin
         REQ_RD_EC_SYNC_TIME_1: begin
             addr <= ADDR_EC_SYNC_TIME_1;
 
-            state <= REQ_RD_EC_SYNC_TIME_2_RD_EC_SYNC_CYCLE_TICKS;
+            state <= REQ_RD_EC_SYNC_TIME_2;
         end
-        REQ_RD_EC_SYNC_TIME_2_RD_EC_SYNC_CYCLE_TICKS: begin
+        REQ_RD_EC_SYNC_TIME_2: begin
             addr <= ADDR_EC_SYNC_TIME_2;
-
-            ecat_sync_cycle_ticks <= dout;
 
             state <= REQ_RD_EC_SYNC_TIME_3_RD_EC_SYNC_TIME_0;
         end
