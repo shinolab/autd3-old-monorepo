@@ -16,7 +16,7 @@
 |-------------|------------------|----------------------  |-----|
 | 0x0         | 0x000            | CTL_REG                | R/W |
 |             | 0x001            | 7:0 = FPGA info        | W   |
-|             | 0x010            | EC_SYNC_CYCLE_TICKS    | W   |
+|             | 0x010            | -                      | -   |
 |             | 0x011            | EC_SYNC_TIME_0         | W   |
 |             | 0x012            | EC_SYNC_TIME_1         | W   |
 |             | 0x013            | EC_SYNC_TIME_2         | W   |

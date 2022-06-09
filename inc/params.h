@@ -3,7 +3,7 @@
 // Created Date: 22/04/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/06/2022
+// Last Modified: 09/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,11 +19,10 @@
 
 #define BRAM_ADDR_CTL_REG (0x000)
 #define BRAM_ADDR_FPGA_INFO (0x001)
-#define BRAM_ADDR_EC_SYNC_CYCLE_TICKS (0x010)
-#define BRAM_ADDR_EC_SYNC_TIME_0 (BRAM_ADDR_EC_SYNC_CYCLE_TICKS + 1)
-#define BRAM_ADDR_EC_SYNC_TIME_1 (BRAM_ADDR_EC_SYNC_CYCLE_TICKS + 2)
-#define BRAM_ADDR_EC_SYNC_TIME_2 (BRAM_ADDR_EC_SYNC_CYCLE_TICKS + 3)
-#define BRAM_ADDR_EC_SYNC_TIME_3 (BRAM_ADDR_EC_SYNC_CYCLE_TICKS + 4)
+#define BRAM_ADDR_EC_SYNC_TIME_0 (0x011)
+#define BRAM_ADDR_EC_SYNC_TIME_1 (BRAM_ADDR_EC_SYNC_TIME_0 + 1)
+#define BRAM_ADDR_EC_SYNC_TIME_2 (BRAM_ADDR_EC_SYNC_TIME_0 + 2)
+#define BRAM_ADDR_EC_SYNC_TIME_3 (BRAM_ADDR_EC_SYNC_TIME_0 + 3)
 #define BRAM_ADDR_MOD_ADDR_OFFSET (0x020)
 #define BRAM_ADDR_MOD_CYCLE (0x021)
 #define BRAM_ADDR_MOD_FREQ_DIV_0 (0x022)
