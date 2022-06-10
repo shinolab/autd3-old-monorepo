@@ -11,16 +11,16 @@ Rust版のライブラリはC++版をラップしたものではなく, Rustで�
 
 ```
 [dependencies]
-autd3 = "2.1.0"
+autd3 = "2.2.0"
 ```
 
 また, 各種Link, Gain等は別crateとして公開しているので必要に応じてdependenciesに追加すること.
 ```
 [dependencies]
-autd3-link-soem = "2.1.0"
-autd3-link-twincat = "2.1.0"
-autd3-link-emulator = "2.1.0"
-autd3-gain-holo = "2.1.0"
+autd3-link-soem = "2.2.0"
+autd3-link-twincat = "2.2.0"
+autd3-link-emulator = "2.2.0"
+autd3-gain-holo = "2.2.0"
 ```
 
 ## Usage
