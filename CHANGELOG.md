@@ -1,5 +1,8 @@
+# 2.2.1
+* Remove `sound_speed` parameter from `AUTDGetWavelength` in C-API
+
 # 2.2.0
-* Remove `AUTDSendHeader`, `AUTDSendBody`, and `AUTDSend`, which are now merged into `AUTDSend`
+* Remove `AUTDSendHeader`, `AUTDSendBody`, and `AUTDSend` in C-API, which are now merged into `AUTDSend`
 * Remove `cycle_ticks` parameters in `link::TwinCAT` and `link::RemoteTwinCAT`, which are no more required
 * (internal) Remove `cycle_ticks` method from `link::Link`
 * Update firmware to v2.2

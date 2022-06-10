@@ -39,7 +39,7 @@ EXPORT_AUTD double AUTDGetTransFrequency(IN const void* handle, IN int32_t devic
 EXPORT_AUTD void AUTDSetTransFrequency(IN void* handle, IN int32_t device_idx, IN int32_t local_trans_idx, IN double frequency);
 EXPORT_AUTD uint16_t AUTDGetTransCycle(IN const void* handle, IN int32_t device_idx, IN int32_t local_trans_idx);
 EXPORT_AUTD void AUTDSetTransCycle(IN void* handle, IN int32_t device_idx, IN int32_t local_trans_idx, IN uint16_t cycle);
-EXPORT_AUTD double AUTDGetWavelength(IN const void* handle, IN int32_t device_idx, IN int32_t local_trans_idx, IN double sound_speed);
+EXPORT_AUTD double AUTDGetWavelength(IN const void* handle, IN int32_t device_idx, IN int32_t local_trans_idx);
 EXPORT_AUTD double AUTDGetAttenuation(IN const void* handle);
 EXPORT_AUTD void AUTDSetAttenuation(IN void* handle, IN double attenuation);
 EXPORT_AUTD bool AUTDGetFPGAInfo(IN void* handle, IN uint8_t* out);
