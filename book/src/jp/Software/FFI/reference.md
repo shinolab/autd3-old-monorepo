@@ -909,43 +909,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 | handle                 | void*            | in     | pointer to Controller                                                                                              |
 | return                 | int32_t          | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred.             |
 
-##  AUTDSendHeader (autd3capi)
-
-ヘッダーデータを送信する.
-
-send functionの一つ. 
-
-handleは`AUTDCreateController`で作成したものを使う.
-
-この関数はエラーが発生した場合に0未満の値を返す.
-エラーが生じた場合には`AUTDGetLastError`でエラーメッセージを取得できる.
-また, check ackフラグがtrue, かつ, 返り値が0より大きい場合は, データが実際のデバイスで処理されたことを保証する.
-
-| Argument name / return | type             | in/out | description                                                                                                        |
-|------------------------|------------------|--------|--------------------------------------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | pointer to Controller                                                                                              |
-| header                 | void*            | in     | pointer to header data                                                                                             |
-| return                 | int32_t          | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred.             |
-
-##  AUTDSendBody (autd3capi)
-
-ボディーデータを送信する.
-
-send functionの一つ. 
-
-handleは`AUTDCreateController`で作成したものを使う.
-
-この関数はエラーが発生した場合に0未満の値を返す.
-エラーが生じた場合には`AUTDGetLastError`でエラーメッセージを取得できる.
-また, check ackフラグがtrue, かつ, 返り値が0より大きい場合は, データが実際のデバイスで処理されたことを保証する.
-
-| Argument name / return | type             | in/out | description                                                                                                        |
-|------------------------|------------------|--------|--------------------------------------------------------------------------------------------------------------------|
-| handle                 | void*            | in     | pointer to Controller                                                                                              |
-| body                   | void*            | in     | pointer to body data                                                                                               |
-| return                 | int32_t          | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred.             |
-
-##  AUTDSendHeaderBody (autd3capi)
+##  AUTDSend (autd3capi)
 
 ヘッダーデータとボディーデータを送信する.
 
@@ -1269,7 +1233,6 @@ RemoteTwinCAT linkを作成する.
 | remote_ip_addr         | char*            | in     | remote ip address                                                                       |
 | remote_ams_net_id      | char*            | in     | remote ams net id                                                                       |
 | local_ams_net_id       | char*            | in     | local ams net id                                                                        |
-| cycle_ticks            | uint16_t         | in     | cycle ticks                                                                             |
 | return                 | void             | -      | -                                                                                       |
 
 ## AUTDGetAdapterPointer (autd3capi-link-soem)
@@ -1331,7 +1294,6 @@ TwinCAT linkを作成する.
 | Argument name / return | type             | in/out | description                                                                             |
 |----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
 | out                    | void**           | out    | pointer to pointer to TwinCAT link                                                      |
-| cycle_ticks            | uint16_t         | in     | cycle ticks                                                                             |
 | return                 | void             | -      | -                                                                                       |
 
 ## AUTDModulationRawPCM (autd3capi-modulation-audio-file)
