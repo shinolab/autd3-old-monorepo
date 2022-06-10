@@ -25,7 +25,7 @@ if {[string equal [get_filesets -quiet sim_1] ""]} {
 
 
 set synth_1_flow     "Vivado Synthesis 2022"
-set synth_1_strategy "Flow_AreaOptimized_high"
+set synth_1_strategy "Flow_PerfOptimized_high"
 if {[string equal [get_runs -quiet synth_1] ""]} {
     create_run -name synth_1 -flow $synth_1_flow -strategy $synth_1_strategy -constrset constrs_1
 } else {
