@@ -5,7 +5,7 @@
 AUTD3の振動子の周波数はCYCLE ($\SI{13}{bit}$) から$\SI{163.84}{MHz}/\text{CYCLE}$となる.
 CYCLEの書き込みは, 下記の同期の前に行う必要がある.
 
-AUTD3デバイス同士を同期させるには, 次回SYNC0の前までに, EtherCATのSYNC0の発火間隔を$\SI{500}{\text{μ}s}$単位でEC_SYNC_CYCLE_TICKSに書き込み, 次回SYNC0が発火するEtherCATシステム時間 ($\SI{64}{bit}$, $\SI{1}{ns}$単位) をEC_SYNC_TIMEに書き込み, CTL_REGの第8ビットをセットする.
+AUTD3デバイス同士を同期させるには, 次回SYNC0の前までに, 次回SYNC0が発火するEtherCATシステム時間 ($\SI{64}{bit}$, $\SI{1}{ns}$単位) をEC_SYNC_TIMEに書き込み, CTL_REGの第8ビットをセットする.
 
 ## Modulator
 

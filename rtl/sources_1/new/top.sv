@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/05/2022
+ * Last Modified: 09/06/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -42,7 +42,6 @@ bit reset;
 bit [63:0] sys_time;
 
 bit [63:0] ecat_sync_time;
-bit [15:0] ecat_sync_cycle_ticks;
 bit sync_set;
 
 bit legacy_mode;
@@ -143,7 +142,6 @@ controller#(
               .FORCE_FAN(FORCE_FAN),
               .CPU_BUS(cpu_bus.ctl_port),
               .ECAT_SYNC_TIME(ecat_sync_time),
-              .ECAT_SYNC_CYCLE_TICKS(ecat_sync_cycle_ticks),
               .SYNC_SET(sync_set),
               .OP_MODE(op_mode),
               .STM_GAIN_MODE(stm_gain_mode),
@@ -199,7 +197,6 @@ end
 synchronizer synchronizer(
                  .CLK(clk),
                  .ECAT_SYNC_TIME(ecat_sync_time),
-                 .ECAT_SYNC_CYCLE_TICKS(ecat_sync_cycle_ticks),
                  .SET(sync_set),
                  .ECAT_SYNC(CAT_SYNC0),
                  .SYS_TIME(sys_time)

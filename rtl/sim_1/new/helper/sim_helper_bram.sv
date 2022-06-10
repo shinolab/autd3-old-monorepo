@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2022
+ * Last Modified: 09/06/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -114,10 +114,6 @@ endtask
 task set_ctl_reg(bit force_fan, bit sync);
     automatic bit [15:0] ctl_reg = (sync << CTL_REG_SYNC_BIT) | (force_fan << CTL_REG_FORCE_FAN_BIT);
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_CTL_REG, ctl_reg);
-endtask
-
-task write_ecat_sync_cycle_ticks(bit [15:0] ecat_sync_cycle_ticks);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_EC_SYNC_CYCLE_TICKS, ecat_sync_cycle_ticks);
 endtask
 
 task write_ecat_sync_time(bit [63:0] ecat_sync_time);

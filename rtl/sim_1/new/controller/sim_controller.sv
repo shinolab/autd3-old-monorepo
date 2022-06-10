@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/05/2022
+ * Last Modified: 09/06/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -32,7 +32,6 @@ sim_helper_random sim_helper_random();
 bit thermo;
 bit force_fan;
 bit [63:0] ecat_sync_time;
-bit [15:0] ecat_sync_cycle_ticks;
 bit sync_set;
 bit [15:0] cycle_m;
 bit [31:0] freq_div_m;
@@ -53,7 +52,6 @@ controller#(
               .FORCE_FAN(force_fan),
               .CPU_BUS(sim_helper_bram.cpu_bus.ctl_port),
               .ECAT_SYNC_TIME(ecat_sync_time),
-              .ECAT_SYNC_CYCLE_TICKS(ecat_sync_cycle_ticks),
               .SYNC_SET(sync_set),
               .CYCLE_M(cycle_m),
               .FREQ_DIV_M(freq_div_m),
@@ -68,7 +66,6 @@ controller#(
 
 initial begin
     bit [15:0] ctrl_reg;
-    bit [15:0] ecat_sync_cycle_ticks_buf;
     bit [63:0] ecat_sync_time_buf;
     bit [15:0] cycle_m_buf;
     bit [31:0] freq_div_m_buf;
@@ -82,9 +79,6 @@ initial begin
     @(posedge locked);
 
     sim_helper_random.init();
-
-    ecat_sync_cycle_ticks_buf = sim_helper_random.range(16'hFFFF, 0);
-    sim_helper_bram.write_ecat_sync_cycle_ticks(ecat_sync_cycle_ticks_buf);
 
     ecat_sync_time_buf[31:0] = sim_helper_random.range(32'hFFFFFFFF, 0);
     ecat_sync_time_buf[63:32] = sim_helper_random.range(32'hFFFFFFFF, 0);
@@ -157,10 +151,6 @@ initial begin
     sim_helper_bram.set_ctl_reg(1, 1);
     @(posedge sync_set);
 
-    if (ecat_sync_cycle_ticks_buf != ecat_sync_cycle_ticks) begin
-        $error("Failed at ecat_sync_cycle_ticks");
-        $finish();
-    end
     if (ecat_sync_time_buf != ecat_sync_time) begin
         $error("Failed at ecat_sync_time");
         $finish();

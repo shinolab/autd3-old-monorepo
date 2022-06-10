@@ -4,7 +4,7 @@
  * Created Date: 29/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2022
+ * Last Modified: 09/06/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@
 module sim_synchronizer();
 
 localparam int ECAT_SYNC_BASE = 500000; // 500 us
-localparam bit [15:0] ECAT_SYNC_CYCLE_TICKS = 2; // x1
+localparam bit [15:0] ECAT_SYNC_CYCLE_TICKS = 1;
 
 bit CLK_163P84M, CLK_163P84M_p50, CLK_163P84M_m50;
 bit [63:0] SYS_TIME, SYS_TIME_p50, SYS_TIME_m50;
@@ -28,7 +28,6 @@ bit [63:0] ecat_sync_time; // [ns]
 synchronizer synchronizer(
                  .CLK(CLK_163P84M),
                  .ECAT_SYNC_TIME(ecat_sync_time),
-                 .ECAT_SYNC_CYCLE_TICKS(ECAT_SYNC_CYCLE_TICKS),
                  .SET(set),
                  .ECAT_SYNC(ECAT_SYNC),
                  .SYS_TIME(SYS_TIME)
@@ -37,7 +36,6 @@ synchronizer synchronizer(
 synchronizer synchronizer_p50(
                  .CLK(CLK_163P84M_p50),
                  .ECAT_SYNC_TIME(ecat_sync_time),
-                 .ECAT_SYNC_CYCLE_TICKS(ECAT_SYNC_CYCLE_TICKS),
                  .SET(set),
                  .ECAT_SYNC(ECAT_SYNC),
                  .SYS_TIME(SYS_TIME_p50)
@@ -46,7 +44,6 @@ synchronizer synchronizer_p50(
 synchronizer synchronizer_m50(
                  .CLK(CLK_163P84M_m50),
                  .ECAT_SYNC_TIME(ecat_sync_time),
-                 .ECAT_SYNC_CYCLE_TICKS(ECAT_SYNC_CYCLE_TICKS),
                  .SET(set),
                  .ECAT_SYNC(ECAT_SYNC),
                  .SYS_TIME(SYS_TIME_m50)
@@ -65,9 +62,9 @@ task sync();
 endtask
 
 initial begin
-    CLK_163P84M = 0;
-    CLK_163P84M_p50 = 0;
-    CLK_163P84M_m50 = 0;
+    CLK_163P84M = 1;
+    CLK_163P84M_p50 = 1;
+    CLK_163P84M_m50 = 1;
     SYS_TIME = 0;
     SYS_TIME_p50 = 0;
     SYS_TIME_m50 = 0;
@@ -91,6 +88,7 @@ always begin
     end
     for (int i = 0; i < 33; i++) begin
         #3.052 CLK_163P84M = ~CLK_163P84M;
+        #3.052 CLK_163P84M = ~CLK_163P84M;
     end
 end
 
@@ -102,6 +100,7 @@ always begin
     end
     for (int i = 0; i < 8419; i++) begin
         #3.052 CLK_163P84M_p50 = ~CLK_163P84M_p50;
+        #3.052 CLK_163P84M_p50 = ~CLK_163P84M_p50;
     end
 end
 
@@ -112,6 +111,7 @@ always begin
         #3.052 CLK_163P84M_m50 = ~CLK_163P84M_m50;
     end
     for (int i = 0; i < 32831; i++) begin
+        #3.052 CLK_163P84M_m50 = ~CLK_163P84M_m50;
         #3.052 CLK_163P84M_m50 = ~CLK_163P84M_m50;
     end
 end
