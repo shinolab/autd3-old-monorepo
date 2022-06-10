@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 10/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -132,18 +132,24 @@ class EVD final : public Holo<T> {
 };
 
 /**
- * @brief Gain to produce multiple focal points with naive method.
+ * @brief Gain to produce multiple focal points with Linear Synthesis Scheme.
  */
 template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
-class Naive final : public Holo<T> {
+class LSS final : public Holo<T> {
  public:
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit Naive(BackendPtr backend) : Holo<T>(std::move(backend), Normalize()) {}
+  explicit LSS(BackendPtr backend) : Holo<T>(std::move(backend), Normalize()) {}
 
   void calc(const core::Geometry<T>& geometry) override;
 };
+
+/**
+ * @brief Alias of LSS
+ */
+template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
+using Naive = LSS<T>;
 
 /**
  * @brief Gain to produce multiple focal points with GS method.
