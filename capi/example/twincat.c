@@ -25,7 +25,7 @@ int main() {
   AUTDAddDevice(cnt, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 
   void* link = NULL;
-  AUTDLinkTwinCAT(&link, 2);
+  AUTDLinkTwinCAT(&link);
 
   if (!AUTDOpenController(cnt, link)) {
     const int32_t error_size = AUTDGetLastError(NULL);

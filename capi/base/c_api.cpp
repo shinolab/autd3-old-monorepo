@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/06/2022
+// Last Modified: 10/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -365,20 +365,14 @@ void AUTDDeleteSilencer(const void* config) {
   delete config_;
 }
 
-int32_t AUTDSendHeader(void* const handle, void* const header) {
-  auto* const wrapper = static_cast<Controller*>(handle);
-  auto* const h = static_cast<autd3::core::DatagramHeader*>(header);
-  AUTD3_CAPI_TRY2(return wrapper->send(*h) ? 1 : 0)
-}
-int32_t AUTDSendBody(void* const handle, void* const body) {
-  auto* const wrapper = static_cast<Controller*>(handle);
-  auto* const b = static_cast<autd3::core::DatagramBody<T>*>(body);
-  AUTD3_CAPI_TRY2(return wrapper->send(*b) ? 1 : 0)
-}
-int32_t AUTDSendHeaderBody(void* const handle, void* const header, void* const body) {
+int32_t AUTDSend(void* const handle, void* const header, void* const body) {
+  if (header == nullptr && body == nullptr) return 0;
+
   auto* const wrapper = static_cast<Controller*>(handle);
   auto* const h = static_cast<autd3::core::DatagramHeader*>(header);
   auto* const b = static_cast<autd3::core::DatagramBody<T>*>(body);
+  if (header == nullptr) AUTD3_CAPI_TRY2(return wrapper->send(*b) ? 1 : 0)
+  if (body == nullptr) AUTD3_CAPI_TRY2(return wrapper->send(*h) ? 1 : 0)
   AUTD3_CAPI_TRY2(return wrapper->send(*h, *b) ? 1 : 0)
 }
 

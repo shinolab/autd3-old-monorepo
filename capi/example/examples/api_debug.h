@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/06/2022
+// Last Modified: 10/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ void api_debug(void* autd) {
   printf("SineSquared\n");
   AUTDModulationSineSquared(&m, 150, 1.0, 0.5);
 
-  AUTDSendHeaderBody(autd, m, g);
+  AUTDSend(autd, m, g);
   AUTDDeleteGain(g);
   AUTDDeleteModulation(m);
 
@@ -26,14 +26,14 @@ void api_debug(void* autd) {
   (void)getchar();
 
   AUTDModulationSineLegacy(&m, 150.0, 1.0, 0.5);
-  AUTDSendHeader(autd, m);
+  AUTDSend(autd, m, NULL);
   AUTDDeleteModulation(m);
 
   printf("press enter to test Square...\n");
   (void)getchar();
 
   AUTDModulationSquare(&m, 150, 0x00, 0xFF, 0.5);
-  AUTDSendHeader(autd, m);
+  AUTDSend(autd, m, NULL);
 
   AUTDModulationSetSamplingFrequencyDivision(m, 5);
 
@@ -63,7 +63,7 @@ void api_debug(void* autd) {
   (void)getchar();
 
   AUTDGainNull(&g);
-  AUTDSendBody(autd, g);
+  AUTDSend(autd, NULL, g);
 
   AUTDDeleteGain(g);
 }

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/06/2022
+// Last Modified: 10/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -65,7 +65,7 @@ void* select_opt(void* backend) {
 void holo(void* autd) {
   void* s = NULL;
   AUTDCreateSilencer(&s, 10, 4096);
-  AUTDSendHeader(autd, s);
+  AUTDSend(autd, s, NULL);
   AUTDDeleteSilencer(s);
 
   void* m = NULL;
@@ -85,7 +85,7 @@ void holo(void* autd) {
   AUTDGainHoloAdd(g, x + 30.0, y, z, 1.0);
   AUTDGainHoloAdd(g, x - 30.0, y, z, 1.0);
 
-  AUTDSendHeaderBody(autd, m, g);
+  AUTDSend(autd, m, g);
 
   AUTDDeleteGain(g);
   AUTDDeleteModulation(m);

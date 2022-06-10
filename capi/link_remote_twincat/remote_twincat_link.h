@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 10/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 EXPORT_AUTD void AUTDLinkRemoteTwinCAT(OUT void** out, IN const char* remote_ip_addr, IN const char* remote_ams_net_id,
-                                       IN const char* local_ams_net_id, IN uint16_t cycle_ticks);
+                                       IN const char* local_ams_net_id);
 #ifdef __cplusplus
 }
 #endif

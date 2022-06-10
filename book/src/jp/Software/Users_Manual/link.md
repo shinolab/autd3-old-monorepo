@@ -66,8 +66,6 @@ TwinCAT XAE Shell上部メニューからTwinCAT→Show Realtime Ethernet Compat
 デフォルトは2であり, どの程度の値にすべきかは接続している台数に依存する.
 例えば, 9台の場合は4程度の値にしておけば動作するはずである.
 
-**また, この`CycleTicks`の値を変更した場合は, `TwinCAT`のコンストラクタにその値を入力すること.**
-
 <figure>
   <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/tcerror.jpg"/>
   <figcaption>TwinCAT error when using 9 devices</figcaption>
@@ -146,7 +144,7 @@ SOEMのLinkを使用する際は`autd3/link/soem.hpp`ヘッダーをインクル
 ```
 
 なお, SOEMも大量のDeviceを使用すると挙動が不安定になる時がある[^fn_soem].
-このときは, `cycle_ticks`関数を仕様し, その値を増やす.
+このときは, `cycle_ticks`関数を使用し, その値を増やす.
 ```cpp
   auto link = link::SOEM(ifname, autd.geometry().num_devices())
                 .cycle_ticks(4)

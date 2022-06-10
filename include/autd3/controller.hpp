@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/06/2022
+// Last Modified: 10/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -83,7 +83,7 @@ class ControllerX {
       std::transform(dev.begin(), dev.end(), std::back_inserter(cycles), [](const T& tr) { return tr.cycle(); });
     });
 
-    sync(msg_id, _link->cycle_ticks(), cycles.data(), _tx_buf);
+    sync(msg_id, cycles.data(), _tx_buf);
 
     if (!_link->send(_tx_buf)) {
       pop_ack();
@@ -254,7 +254,7 @@ class ControllerX {
       _link->send(_tx_buf);
       if (!wait_msg_processed(50)) return false;
       if (header.is_finished() && body.is_finished()) break;
-      if (!check_ack) std::this_thread::sleep_for(std::chrono::microseconds(driver::EC_SYNC0_CYCLE_TIME_MICRO_SEC * _link->cycle_ticks()));
+      if (!check_ack) std::this_thread::sleep_for(std::chrono::microseconds(driver::EC_SYNC0_CYCLE_TIME_MICRO_SEC));
     }
     return true;
   }
@@ -298,7 +298,7 @@ class ControllerX {
     for (size_t i = 0; i < max_trial; i++) {
       if (!_link->receive(_rx_buf)) continue;
       if (_rx_buf.is_msg_processed(msg_id)) return true;
-      std::this_thread::sleep_for(std::chrono::microseconds(driver::EC_SYNC0_CYCLE_TIME_MICRO_SEC * _link->cycle_ticks()));
+      std::this_thread::sleep_for(std::chrono::microseconds(driver::EC_SYNC0_CYCLE_TIME_MICRO_SEC));
     }
     return false;
   }
