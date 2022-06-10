@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/06/2022
+// Last Modified: 10/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -90,9 +90,7 @@ EXPORT_AUTD void AUTDDeleteSTM(IN const void* stm);
 EXPORT_AUTD int32_t AUTDStop(IN void* handle);
 EXPORT_AUTD void AUTDCreateSilencer(OUT void** out, IN uint16_t step, IN uint16_t cycle);
 EXPORT_AUTD void AUTDDeleteSilencer(IN const void* config);
-EXPORT_AUTD int32_t AUTDSendHeader(IN void* handle, IN void* header);
-EXPORT_AUTD int32_t AUTDSendBody(IN void* handle, IN void* body);
-EXPORT_AUTD int32_t AUTDSendHeaderBody(IN void* handle, IN void* header, IN void* body);
+EXPORT_AUTD int32_t AUTDSend(IN void* handle, IN void* header, IN void* body);
 EXPORT_AUTD void AUTDSetModDelay(IN void* handle, IN int32_t device_idx, IN int32_t local_trans_idx, IN uint16_t delay);
 EXPORT_AUTD void AUTDCreateModDelayConfig(OUT void** out);
 EXPORT_AUTD void AUTDDeleteModDelayConfig(IN const void* config);

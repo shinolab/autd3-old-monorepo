@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/06/2022
+// Last Modified: 10/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -38,12 +38,11 @@ inline void null_body(TxDatagram& tx) noexcept {
   tx.num_bodies = 0;
 }
 
-inline void sync(const uint8_t msg_id, const uint16_t sync_cycle_ticks, const uint16_t* const cycles, TxDatagram& tx) noexcept {
+inline void sync(const uint8_t msg_id, const uint16_t* const cycles, TxDatagram& tx) noexcept {
   tx.header().msg_id = msg_id;
   tx.header().cpu_flag.remove(CPUControlFlags::MOD);
   tx.header().cpu_flag.remove(CPUControlFlags::CONFIG_SILENCER);
   tx.header().cpu_flag.set(CPUControlFlags::CONFIG_SYNC);
-  tx.header().sync_header().ecat_sync_cycle_ticks = sync_cycle_ticks;
 
   std::memcpy(reinterpret_cast<uint16_t*>(tx.bodies()), cycles, sizeof(Body) * tx.size());
 
