@@ -144,6 +144,8 @@ Version情報が取得された後, Ackの上位$\SI{8}{bit}$に上記MSG_IDが,
 | 0x14 (20)      | v1.10          | 
 | 0x15 (21)      | v1.11          | 
 | 0x80 (128)     | v2.0           |
+| 0x81 (129)     | v2.1           |
+| 0x82 (130)     | v2.2           |
 
 ### Function bit
 
@@ -154,9 +156,8 @@ Function bitは各機能が有効になっているかを表す.
 | 0   | STM       | 
 | 1   | Modulator | 
 | 2   | Silencer  | 
-| 3   | -         | 
+| 3   | Mod delay | 
 | 4   | -         | 
 | 5   | -         | 
 | 6   | -         | 
 | 7   | -         | 
-update 
