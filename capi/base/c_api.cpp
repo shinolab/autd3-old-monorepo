@@ -143,8 +143,9 @@ void AUTDSetSoundSpeed(void* const handle, const double sound_speed) {
   auto* wrapper = static_cast<Controller*>(handle);
   wrapper->geometry().sound_speed = sound_speed;
 }
-double AUTDGetWavelength(const void* const handle, const int32_t device_idx, const int32_t local_trans_idx, const double sound_speed) {
+double AUTDGetWavelength(const void* const handle, const int32_t device_idx, const int32_t local_trans_idx) {
   const auto* wrapper = static_cast<const Controller*>(handle);
+  const auto sound_speed = wrapper->geometry().sound_speed;
   return wrapper->geometry()[device_idx][local_trans_idx].wavelength(sound_speed);
 }
 double AUTDGetAttenuation(const void* const handle) {
