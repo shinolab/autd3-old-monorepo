@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 10/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,8 +23,7 @@ namespace autd3::core {
  */
 class Link {
  public:
-  Link() noexcept : Link(0) {}
-  explicit Link(const uint16_t cycle_ticks) noexcept : _cycle_ticks(cycle_ticks) {}
+  Link() noexcept = default;
   virtual ~Link() = default;
   Link(const Link& v) = delete;
   Link& operator=(const Link& obj) = delete;
@@ -54,17 +53,9 @@ class Link {
   virtual bool receive(driver::RxDatagram& rx) = 0;
 
   /**
-   * @return EtherCAT SYNC0 cycle ticks.
-   */
-  [[nodiscard]] uint16_t cycle_ticks() const noexcept { return _cycle_ticks; }
-
-  /**
    * @return true if opened
    */
   [[nodiscard]] virtual bool is_open() = 0;
-
- private:
-  uint16_t _cycle_ticks;
 };
 
 using LinkPtr = std::unique_ptr<Link>;

@@ -28,7 +28,7 @@ int main() {
   const char* remote_ip = "";
   const char* remote_ams_net_id = "";
   const char* local_ams_net_id = "";
-  AUTDLinkRemoteTwinCAT(&link, remote_ip, remote_ams_net_id, local_ams_net_id, 2);
+  AUTDLinkRemoteTwinCAT(&link, remote_ip, remote_ams_net_id, local_ams_net_id);
 
   if (!AUTDOpenController(cnt, link)) {
     const int32_t error_size = AUTDGetLastError(NULL);
