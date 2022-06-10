@@ -20,7 +20,7 @@
 void bessel(void* autd) {
   void* s = NULL;
   AUTDCreateSilencer(&s, 10, 4096);
-  AUTDSendHeader(autd, s);
+  AUTDSend(autd, s, NULL);
   AUTDDeleteSilencer(s);
 
   double x = TRANS_SPACING_MM * (((double)NUM_TRANS_X - 1.0) / 2.0);
@@ -33,7 +33,7 @@ void bessel(void* autd) {
   void* m = NULL;
   AUTDModulationSine(&m, 150, 1.0, 0.5);
 
-  AUTDSendHeaderBody(autd, m, g);
+  AUTDSend(autd, m, g);
 
   AUTDDeleteGain(g);
   AUTDDeleteModulation(m);

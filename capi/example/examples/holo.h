@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 10/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ typedef struct {
 } Opt;
 
 void* select_opt(void* backend) {
-  printf_s("Select Optimization Method (default is SDP)\n");
+  printf("Select Optimization Method (default is SDP)\n");
 
   int32_t opt_size = 9;
   Opt* opts = (Opt*)malloc(opt_size * sizeof(Opt));
@@ -47,10 +47,10 @@ void* select_opt(void* backend) {
   AUTDGainHoloGradientDescent(&opts[idx++].gain, backend, 1e-6, 0.5, 2000, NULL, 0);
   opts[idx].name = "Greedy";
   AUTDGainHoloGreedy(&opts[idx++].gain, backend, 16);
-  for (int32_t i = 0; i < opt_size; i++) printf_s("[%d]: %s\n", i, opts[i].name);
+  for (int32_t i = 0; i < opt_size; i++) printf("[%d]: %s\n", i, opts[i].name);
 
   idx = 0;
-  if (!scanf_s("%d", &idx)) idx = 3;
+  if (!scanf("%d", &idx)) idx = 3;
   (void)getchar();
   if (idx >= opt_size) idx = 3;
 
@@ -65,7 +65,7 @@ void* select_opt(void* backend) {
 void holo(void* autd) {
   void* s = NULL;
   AUTDCreateSilencer(&s, 10, 4096);
-  AUTDSendHeader(autd, s);
+  AUTDSend(autd, s, NULL);
   AUTDDeleteSilencer(s);
 
   void* m = NULL;
@@ -85,7 +85,7 @@ void holo(void* autd) {
   AUTDGainHoloAdd(g, x + 30.0, y, z, 1.0);
   AUTDGainHoloAdd(g, x - 30.0, y, z, 1.0);
 
-  AUTDSendHeaderBody(autd, m, g);
+  AUTDSend(autd, m, g);
 
   AUTDDeleteGain(g);
   AUTDDeleteModulation(m);
