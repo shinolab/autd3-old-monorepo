@@ -167,7 +167,6 @@ TEST(CPUTest, CPUControlFlags) {
 }
 
 TEST(CPUTest, Header) {
-  ASSERT_EQ(sizeof(autd3::driver::SyncHeader), 124);
   ASSERT_EQ(sizeof(autd3::driver::ModHead), 124);
   ASSERT_EQ(sizeof(autd3::driver::ModBody), 124);
   ASSERT_EQ(sizeof(autd3::driver::SilencerHeader), 124);
