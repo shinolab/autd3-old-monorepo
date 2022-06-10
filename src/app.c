@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/06/2022
+ * Last Modified: 10/06/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -82,9 +82,6 @@ typedef struct {
   uint8_t cpu_ctl_reg;
   uint8_t size;
   union {
-    struct {
-      uint8_t _data[124];
-    } SYNC_HEADER;
     struct {
       uint32_t freq_div;
       uint8_t data[120];
