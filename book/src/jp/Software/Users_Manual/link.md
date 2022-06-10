@@ -63,8 +63,8 @@ TwinCAT XAE Shell上部メニューからTwinCAT→Show Realtime Ethernet Compat
 大量のDeviceを使用しようとすると, 下の図のようなエラーが発生することがある.
 このときは, `settings.ini`内の`CycleTicks`との値を増やし, AUTDServerを再び実行する.
 `CycleTicks`の値はエラーが出ない中で, 可能な限り小さな値が望ましい.
-デフォルトは2であり, どの程度の値にすべきかは接続している台数に依存する.
-例えば, 9台の場合は4程度の値にしておけば動作するはずである.
+デフォルトは1であり, どの程度の値にすべきかは接続している台数に依存する.
+例えば, 9台の場合は2, 3程度の値にしておけば動作するはずである.
 
 <figure>
   <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/tcerror.jpg"/>

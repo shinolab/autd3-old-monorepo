@@ -68,7 +68,7 @@ fn main() {
 
     let ifname = get_adapter();
     let config = Config {
-        cycle_ticks: 2,
+        cycle_ticks: 1,
         high_precision_timer: true,
     };
     let link = SOEM::new(&ifname, geometry.num_devices() as u16, config, |msg| {
