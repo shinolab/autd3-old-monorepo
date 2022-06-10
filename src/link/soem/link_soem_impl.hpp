@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 10/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -73,7 +73,7 @@ struct IOMap {
 class SOEMLink final : public core::Link {
  public:
   SOEMLink(const bool high_precision, std::string ifname, const size_t dev_num, const uint16_t cycle_ticks, std::function<void(std::string)> on_lost)
-      : Link(cycle_ticks),
+      : Link(),
         _high_precision(high_precision),
         _ifname(std::move(ifname)),
         _cycle_ticks(cycle_ticks),

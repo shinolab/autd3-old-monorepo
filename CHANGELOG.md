@@ -1,3 +1,9 @@
+# 2.2.0
+* Remove `AUTDSendHeader`, `AUTDSendBody`, and `AUTDSend`, which are now merged into `AUTDSend`
+* Remove `cycle_ticks` parameters in `link::TwinCAT` and `link::RemoteTwinCAT`, which are no more required
+* (internal) Remove `cycle_ticks` method from `link::Link`
+* Update firmware to v2.2
+
 # 2.1.0
 * Rename `Controller` to `ControllerX`, and `Controller` is now alias of `ControllerX<LegacyTransducer>`
 * Add `NormalPhaseTransducer`

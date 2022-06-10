@@ -3,7 +3,7 @@
 // Created Date: 20/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/06/2022
+// Last Modified: 10/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -167,7 +167,6 @@ TEST(CPUTest, CPUControlFlags) {
 }
 
 TEST(CPUTest, Header) {
-  ASSERT_EQ(sizeof(autd3::driver::SyncHeader), 124);
   ASSERT_EQ(sizeof(autd3::driver::ModHead), 124);
   ASSERT_EQ(sizeof(autd3::driver::ModBody), 124);
   ASSERT_EQ(sizeof(autd3::driver::SilencerHeader), 124);
@@ -215,12 +214,11 @@ TEST(CPUTest, operation_sync) {
   cycle.reserve(autd3::driver::NUM_TRANS_IN_UNIT * 10);
   for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++) cycle.emplace_back(dist(engine));
 
-  sync(1, 2, cycle.data(), tx);
+  sync(1, cycle.data(), tx);
 
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::MOD, 0);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::CONFIG_SILENCER, 0);
   ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::CONFIG_SYNC, 0);
-  ASSERT_EQ(tx.header().sync_header().ecat_sync_cycle_ticks, 2);
 
   for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++)
     ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT], cycle[i]);

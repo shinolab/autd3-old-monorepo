@@ -4,7 +4,7 @@
  * Created Date: 24/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2022
+ * Last Modified: 07/06/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -32,12 +32,12 @@ fn parse_arg(lines: &mut Lines<BufReader<File>>) -> Result<(Type, Vec<Arg>)> {
         let matches = re_arg.captures(&line).unwrap();
         let name = matches
             .get(1)
-            .expect(&format!("failed to read: {}", &line))
+            .unwrap_or_else(|| panic!("failed to read: {}", &line))
             .as_str()
             .trim();
         let types_tokes = matches
             .get(2)
-            .expect(&format!("failed to read: {}", &line))
+            .unwrap_or_else(|| panic!("failed to read: {}", &line))
             .as_str()
             .trim();
         let pointer = types_tokes.chars().filter(|&c| c == '*').count();
@@ -47,7 +47,7 @@ fn parse_arg(lines: &mut Lines<BufReader<File>>) -> Result<(Type, Vec<Arg>)> {
         }
         let inout = match matches
             .get(3)
-            .expect(&format!("failed to read: {}", &line))
+            .unwrap_or_else(|| panic!("failed to read: {}", &line))
             .as_str()
             .trim()
         {

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 10/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@
 void point_stm(void* autd) {
   void* s = NULL;
   AUTDCreateSilencer(&s, 0xFFFF, 4096);
-  AUTDSendHeader(autd, s);
+  AUTDSend(autd, s, NULL);
   AUTDDeleteSilencer(s);
 
   double x = TRANS_SPACING_MM * (((double)NUM_TRANS_X - 1.0) / 2.0);
@@ -38,12 +38,12 @@ void point_stm(void* autd) {
   }
 
   const double actual_freq = AUTDSTMSetFrequency(stm, 1.0);
-  printf_s("Actual frequency is %lf Hz\n", actual_freq);
+  printf("Actual frequency is %lf Hz\n", actual_freq);
 
   void* m = NULL;
   AUTDModulationStatic(&m, 1.0);
 
-  AUTDSendHeaderBody(autd, m, stm);
+  AUTDSend(autd, m, stm);
 
   AUTDDeleteSTM(stm);
   AUTDDeleteModulation(m);

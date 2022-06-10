@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 10/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-EXPORT_AUTD void AUTDLinkTwinCAT(OUT void** out, IN uint16_t cycle_ticks);
+EXPORT_AUTD void AUTDLinkTwinCAT(OUT void** out);
 #ifdef __cplusplus
 }
 #endif

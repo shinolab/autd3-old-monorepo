@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 10/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -54,7 +54,7 @@ class SOEM {
    * Geometry::num_devices().
    */
   SOEM(std::string ifname, const size_t device_num)
-      : _high_precision(false), _ifname(std::move(ifname)), _device_num(device_num), _cycle_ticks(2), _callback(nullptr) {}
+      : _high_precision(false), _ifname(std::move(ifname)), _device_num(device_num), _cycle_ticks(1), _callback(nullptr) {}
 
   /**
    * @brief Set callback function which is called when the link is lost
