@@ -4,7 +4,7 @@
  * Created Date: 07/06/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/06/2022
+ * Last Modified: 11/06/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -78,11 +78,19 @@ impl Generator for MatlabGenerator {
         write!(
             w,
             r"// This file was automatically generated from header file
-#ifdef __cplusplus
-#include <cstdint>
+
+typedef char int8_t;
+typedef unsigned char uint8_t;
+typedef short int16_t;
+typedef unsigned short uint16_t;
+typedef int int32_t;
+typedef unsigned int uint32_t;
+#ifdef WIN32
+typedef long long int64_t;
+typedef unsigned long long uint64_t;
 #else
-#include <stdbool.h>
-#include <stdint.h>
+typedef long int64_t;
+typedef unsigned long uint64_t;
 #endif
 
 "
