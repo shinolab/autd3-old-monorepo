@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/06/2022
+ * Last Modified: 14/06/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -112,7 +112,7 @@ impl JuliaGenerator {
                 Type::Void => "Ptr{Cvoid}",
                 Type::Char => match arg.inout() {
                     InOut::IN => "Cstring",
-                    InOut::OUT => "Ref{UInt8}",
+                    InOut::OUT => "Ptr{UInt8}",
                     InOut::INOUT => panic!("INOUT is not supported."),
                 },
                 Type::Float32 => match arg.inout() {
@@ -148,6 +148,8 @@ impl Generator for JuliaGenerator {
             w,
             r#"# This file was automatically generated from header file
 
+module {}
+
 function get_lib_ext()
 if Sys.iswindows()
     return ".dll"
@@ -169,6 +171,7 @@ end
 const _dll = joinpath(@__DIR__, "bin", get_lib_prefix() * "{}" * get_lib_ext())
 
 "#,
+            bin_name.replace("-", "_"),
             bin_name,
         )?;
         Ok(())
@@ -197,7 +200,8 @@ const _dll = joinpath(@__DIR__, "bin", get_lib_prefix() * "{}" * get_lib_ext())
         Ok(())
     }
 
-    fn print_footer<W: Write>(_w: &mut W) -> Result<()> {
+    fn print_footer<W: Write>(w: &mut W) -> Result<()> {
+        writeln!(w, "end")?;
         Ok(())
     }
 
