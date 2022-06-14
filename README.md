@@ -100,6 +100,7 @@ Version: 2.2.0
 * [C#](https://github.com/shinolab/autd3sharp)
 * [python](https://github.com/shinolab/pyautd)
 * [nim](https://github.com/shinolab/autd3_nim)
+* [Julia](https://github.com/shinolab/AUTD3.jl)
 * [matlab](https://github.com/shinolab/autd3-matlab)
 
 ## Firmware
