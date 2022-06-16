@@ -3,7 +3,7 @@
 
 # [AUTD3](https://hapislab.org/airborne-ultrasound-tactile-display?lang=en)
 
-Version: 2.2.0
+Version: 2.2.1
 
 ## Document
 
@@ -98,10 +98,11 @@ Version: 2.2.0
 
 * [Rust](https://github.com/shinolab/rust-autd)
 * [C#](https://github.com/shinolab/autd3sharp)
-* [python](https://github.com/shinolab/pyautd)
-* [nim](https://github.com/shinolab/autd3_nim)
+* [Python](https://github.com/shinolab/pyautd)
+* [Nim](https://github.com/shinolab/autd3_nim)
+* [Go](https://github.com/shinolab/autd3-go)
 * [Julia](https://github.com/shinolab/AUTD3.jl)
-* [matlab](https://github.com/shinolab/autd3-matlab)
+* [MATLAB](https://github.com/shinolab/autd3-matlab)
 
 ## Firmware
 
