@@ -1,5 +1,6 @@
 # 2.2.1
 * Remove `sound_speed` parameter from `AUTDGetWavelength` in C-API
+* Remove `GaussNewton` and `GradientDescent`
 
 # 2.2.0
 * Remove `AUTDSendHeader`, `AUTDSendBody`, and `AUTDSend` in C-API, which are now merged into `AUTDSend`
