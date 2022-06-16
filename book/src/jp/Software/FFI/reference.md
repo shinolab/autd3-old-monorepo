@@ -1105,42 +1105,6 @@ LM holo gainを作成する.
 | initial_size           | int32_t          | in     | size of initial                                                                         |
 | return                 | void             | -      | -                                                                                       |
 
-## AUTDGainHoloGaussNewton (autd3capi-gain-holo)
-
-GaussNewton holo gainを作成する.
-
-作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
-
-
-| Argument name / return | type             | in/out | description                                                                             |
-|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
-| gain                   | void**           | out    | pointer to pointer to GaussNewton gain                                                  |
-| backend                | void*            | in     | pointer to backend                                                                      |
-| eps_1                  | double           | in     | parameter                                                                               |
-| eps_2                  | double           | in     | parameter                                                                               |
-| k_max                  | uint64_t         | in     | parameter                                                                               |
-| initial                | double*          | in     | initial guess                                                                           |
-| initial_size           | int32_t          | in     | size of initial                                                                         |
-| return                 | void             | -      | -                                                                                       |
-
-## AUTDGainHoloGradientDescent (autd3capi-gain-holo)
-
-GradientDescent holo gainを作成する.
-
-作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
-
-
-| Argument name / return | type             | in/out | description                                                                             |
-|----------------------- |------------------|--------|-----------------------------------------------------------------------------------------|
-| gain                   | void**           | out    | pointer to pointer to GradientDescent gain                                              |
-| backend                | void*            | in     | pointer to backend                                                                      |
-| eps                    | double           | in     | parameter                                                                               |
-| step                   | double           | in     | parameter                                                                               |
-| k_max                  | uint64_t         | in     | parameter                                                                               |
-| initial                | double*          | in     | initial guess                                                                           |
-| initial_size           | int32_t          | in     | size of initial                                                                         |
-| return                 | void             | -      | -                                                                                       |
-
 ## AUTDGainHoloGreedy (autd3capi-gain-holo)
 
 Greedy holo gainを作成する.
