@@ -58,8 +58,6 @@ AUTDは各振動子の位相/振幅を個別に制御することができ, こ�
 * `GS` - Gershberg-Saxon, Marzoらの論文[^marzo2019]に基づく
 * `GSPAT` - Gershberg-Saxon for Phased Arrays of Transducers, Plasenciaらの論文[^plasencia2020]に基づく
 * `LM` - Levenberg-Marquardt, LM法はLevenberg[^levenberg1944]とMarquardt[^marquardt1963]で提案された非線形最小二乗問題の最適化法, 実装はMadsenのテキスト[^madsen2004]に基づく.
-* `GaussNewton` - Gauss-Newton法
-* `GradientDescent` - Gradient descent法
 * `Greedy` - Greedy algorithm and Brute-force search, 鈴木らの論文[^suzuki2021]に基づく
 
 また, 各手法は計算Backendを選べるようになっている.
