@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/06/2022
+// Last Modified: 22/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -351,14 +351,6 @@ void make_t(const BackendPtr& backend, const VectorXd& zero, const VectorXd& x, 
   backend->exp(t, t);
 }
 
-void calc_jtf(const BackendPtr& backend, const VectorXc& t, const MatrixXc& bhb, MatrixXc& tth, MatrixXc& bhb_tth, MatrixXd& bhb_tth_i,
-              VectorXd& jtf) {
-  backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::CONJ_TRANS, ONE, t, t, ZERO, tth);
-  backend->hadamard_product(bhb, tth, bhb_tth);
-  backend->imag(bhb_tth, bhb_tth_i);
-  backend->reduce_col(bhb_tth_i, jtf);
-}
-
 void calc_jtj_jtf(const BackendPtr& backend, const VectorXc& t, const MatrixXc& bhb, MatrixXc& tth, MatrixXc& bhb_tth, MatrixXd& bhb_tth_i,
                   MatrixXd& jtj, VectorXd& jtf) {
   backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::CONJ_TRANS, ONE, t, t, ZERO, tth);
@@ -559,19 +551,19 @@ void EVD<core::DynamicTransducer>::calc(const core::Geometry<core::DynamicTransd
   evd_calc_impl(_backend, _foci, _amps, geometry, gamma, constraint, this->_props.drives);
 }
 template <>
-void Naive<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
+void LSS<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
   naive_calc_impl(_backend, _foci, _amps, geometry, constraint, this->_props.drives);
 }
 template <>
-void Naive<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
+void LSS<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
   naive_calc_impl(_backend, _foci, _amps, geometry, constraint, this->_props.drives);
 }
 template <>
-void Naive<core::NormalPhaseTransducer>::calc(const core::Geometry<core::NormalPhaseTransducer>& geometry) {
+void LSS<core::NormalPhaseTransducer>::calc(const core::Geometry<core::NormalPhaseTransducer>& geometry) {
   naive_calc_impl(_backend, _foci, _amps, geometry, constraint, this->_props.drives);
 }
 template <>
-void Naive<core::DynamicTransducer>::calc(const core::Geometry<core::DynamicTransducer>& geometry) {
+void LSS<core::DynamicTransducer>::calc(const core::Geometry<core::DynamicTransducer>& geometry) {
   naive_calc_impl(_backend, _foci, _amps, geometry, constraint, this->_props.drives);
 }
 template <>

@@ -38,8 +38,8 @@ inline void gettimeofday_precise(struct timeval* const tv, struct timezone* cons
   system_time64 += -134774LL * 86400LL * 1000000LL * 10LL;
   const auto usecs = system_time64 / 10;
 
-  tv->tv_sec = static_cast<long>(usecs / 1000000);
-  tv->tv_usec = static_cast<long>(usecs - (static_cast<int64_t>(tv->tv_sec) * 1000000));
+  tv->tv_sec = static_cast<long>(usecs / 1000000);                                        // NOLINT
+  tv->tv_usec = static_cast<long>(usecs - (static_cast<int64_t>(tv->tv_sec) * 1000000));  // NOLINT
 }
 
 inline void nanosleep(const int64_t t) {
