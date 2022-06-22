@@ -8,7 +8,7 @@ project(autd3)
 
 set(VERSION_MAJOR 2 CACHE STRING "Project major version number.")
 set(VERSION_MINOR 1 CACHE STRING "Project minor version number.")
-set(VERSION_PATCH 0 CACHE STRING "Project patch version number.")
+set(VERSION_PATCH 1 CACHE STRING "Project patch version number.")
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -40,7 +40,7 @@ option(BUILD_CAPI "BUILD_CAPI" OFF)
 option(ENABLE_LINT "ENABLE_LINT" OFF)
 
 option(BUILD_TEST "BUILD_TEST" OFF)
-option(gtest_disable_pthreads  "gtest_disable_pthreads" ON)
+option(gtest_disable_pthreads "gtest_disable_pthreads" ON)
 
 option(BUILD_WITH_STATIC_CRT "BUILD_WITH_STATIC_CRT" OFF)
 
@@ -57,6 +57,7 @@ endif()
 
 if(BUILD_DOC)
   find_package(Doxygen)
+
   if(DOXYGEN_FOUND)
     message(STATUS "Doxygen found.")
     add_subdirectory(doc)
@@ -73,8 +74,9 @@ elseif(APPLE)
   include(cmakes/mac.cmake)
 else()
   set(OS linux)
+
   if(DEFINED BUILD_TARGET)
-    if (${BUILD_TARGET} STREQUAL ARM32 OR ${BUILD_TARGET} STREQUAL ARM)
+    if(${BUILD_TARGET} STREQUAL ARM32 OR ${BUILD_TARGET} STREQUAL ARM)
       include(cmakes/arm32.cmake)
     elseif(${BUILD_TARGET} STREQUAL ARM64 OR ${BUILD_TARGET} STREQUAL AARCH64)
       include(cmakes/arm64.cmake)
@@ -87,6 +89,7 @@ else()
 endif()
 
 find_package(Git)
+
 if(NOT Git_FOUND)
   message(WARNING "Git not found.")
 endif()
@@ -95,6 +98,7 @@ if(ENABLE_LINT)
   if(Git_FOUND)
     execute_process(COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init --recursive -- ${PROJECT_SOURCE_DIR}/3rdparty/cpplint)
   endif()
+
   file(GLOB_RECURSE lint_files src/*.cpp src/*.hpp include/*.hpp capi/*.cpp capi/*.hpp examples/*.cpp examples/*.hpp tests/*.hpp tests/*.cpp)
   ADD_CUSTOM_TARGET(cpplint
     python
@@ -113,9 +117,11 @@ endif()
 add_library(autd3_common INTERFACE)
 target_compile_definitions(autd3_common INTERFACE EIGEN_MPL2_ONLY)
 target_include_directories(autd3_common INTERFACE ${PROJECT_SOURCE_DIR}/include ${EIGEN_PATH})
+
 if(WIN32)
   if(MSVC)
     target_compile_options(autd3_common INTERFACE /bigobj /wd4819)
+
     if(BUILD_WITH_STATIC_CRT)
       target_compile_options(autd3_common INTERFACE /MT)
       set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
@@ -147,6 +153,7 @@ if(BUILD_LINK_SOEM)
     execute_process(COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init --recursive -- ${PROJECT_SOURCE_DIR}/3rdparty/SOEM)
     set(SOEM_PATH ${PROJECT_SOURCE_DIR}/3rdparty/SOEM)
   endif()
+
   add_subdirectory(src/link/soem)
 endif()
 
@@ -158,6 +165,7 @@ if(BUILD_LINK_REMOTE_TWINCAT)
   if(Git_FOUND)
     execute_process(COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init --recursive -- ${PROJECT_SOURCE_DIR}/3rdparty/ADS)
   endif()
+
   set(ADS_PATH ${PROJECT_SOURCE_DIR}/3rdparty/ADS)
   add_subdirectory(src/link/remote_twincat)
 endif()

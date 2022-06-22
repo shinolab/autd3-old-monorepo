@@ -4,7 +4,7 @@
  * Created Date: 24/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/06/2022
+ * Last Modified: 13/06/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,6 +12,7 @@
  */
 
 mod csharp;
+mod julia;
 mod matlab;
 mod nim;
 mod python;
@@ -23,6 +24,7 @@ use anyhow::Result;
 
 use capi_header_parser::{cmake, parse::parse};
 use csharp::CSharpGenerator;
+use julia::JuliaGenerator;
 use matlab::MatlabGenerator;
 use nim::NimGenerator;
 use python::PythonGenerator;
@@ -50,6 +52,7 @@ fn main() -> Result<()> {
     gen::<CSharpGenerator, _>("cs", "../../capi")?;
     gen::<MatlabGenerator, _>("matlab", "../../capi")?;
     gen::<NimGenerator, _>("nim", "../../capi")?;
+    gen::<JuliaGenerator, _>("julia", "../../capi")?;
 
     Ok(())
 }

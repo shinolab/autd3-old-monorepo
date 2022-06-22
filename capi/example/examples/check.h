@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/06/2022
+// Last Modified: 22/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,16 +36,19 @@ void check(void* autd) {
   printf("===== Flags =====\n");
 
   AUTDSetReadsFPGAInfo(autd, true);
-  AUTDSetCheckAck(autd, false);
+  AUTDSetCheckTrials(autd, 20);
+  AUTDSetSendInterval(autd, 2);
   AUTDSetForceFan(autd, false);
 
   bool is_force_fan = AUTDGetForceFan(autd);
   bool is_reads_fpga_info = AUTDGetReadsFPGAInfo(autd);
-  bool is_check_ack = AUTDGetCheckAck(autd);
+  int32_t check_trials = AUTDGetCheckTrials(autd);
+  int32_t send_interval = AUTDGetSendInterval(autd);
 
   printf("Is force fan: %d\n", is_force_fan);
   printf("Is reads FPGA info: %d\n", is_reads_fpga_info);
-  printf("Is check ack: %d\n", is_check_ack);
+  printf("Check trials: %d\n", check_trials);
+  printf("Send interval: %d\n", send_interval);
   printf("\n");
 
   printf("===== Properties =====\n");
