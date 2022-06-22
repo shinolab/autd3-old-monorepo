@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 22/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,7 +16,6 @@
 
 extern "C" {
 #include "./ethercat.h"
-#include "./osal_win32.h"
 }
 #include "error_handler.hpp"
 #include "utils.hpp"
@@ -29,6 +28,18 @@ inline void ecat_init() {
   LARGE_INTEGER f;
   QueryPerformanceFrequency(&f);
   PERFORMANCE_FREQUENCY = f;
+}
+
+inline void gettimeofday_precise(struct timeval* const tv, struct timezone* const tz) {
+  FILETIME system_time;
+  GetSystemTimePreciseAsFileTime(&system_time);
+
+  int64_t system_time64 = (static_cast<int64_t>(system_time.dwHighDateTime) << 32) + static_cast<int64_t>(system_time.dwLowDateTime);
+  system_time64 += -134774LL * 86400LL * 1000000LL * 10LL;
+  const auto usecs = system_time64 / 10;
+
+  tv->tv_sec = static_cast<long>(usecs / 1000000);
+  tv->tv_usec = static_cast<long>(usecs - (static_cast<int64_t>(tv->tv_sec) * 1000000));
 }
 
 inline void nanosleep(const int64_t t) {
@@ -57,7 +68,7 @@ inline void add_timespec(timespec& ts, const int64_t addtime) {
 
 void timed_wait(const timespec& abs_time) {
   auto tp = timeval{0, 0};
-  osal_gettimeofday(&tp, nullptr);
+  gettimeofday_precise(&tp, nullptr);
 
   const auto sleep = ((int64_t)abs_time.tv_sec - (int64_t)tp.tv_sec) * 1000000000LL + ((int64_t)abs_time.tv_nsec - (int64_t)tp.tv_usec * 1000LL);
 
@@ -66,11 +77,11 @@ void timed_wait(const timespec& abs_time) {
 
 void timed_wait_h(const timespec& abs_time) {
   auto tp = timeval{0, 0};
-  osal_gettimeofday(&tp, nullptr);
+  gettimeofday_precise(&tp, nullptr);
 
   const auto sleep = ((int64_t)abs_time.tv_sec - (int64_t)tp.tv_sec) * 1000000000LL + ((int64_t)abs_time.tv_nsec - (int64_t)tp.tv_usec * 1000LL);
 
-  if (sleep > 0) nanosleep(sleep);
+  nanosleep(sleep);
 }
 
 void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wkc, int64_t cycletime_ns, std::mutex& mtx,
@@ -85,7 +96,7 @@ void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wk
   auto ts = timespec{0, 0};
 
   auto tp = timeval{0, 0};
-  osal_gettimeofday(&tp, nullptr);
+  gettimeofday_precise(&tp, nullptr);
 
   const auto cyctime_us = cycletime_ns / 1000;
 
@@ -132,7 +143,7 @@ void ecat_run_h(std::atomic<bool>* is_open, bool* is_running, int32_t expected_w
   auto ts = timespec{0, 0};
 
   auto tp = timeval{0, 0};
-  osal_gettimeofday(&tp, nullptr);
+  gettimeofday_precise(&tp, nullptr);
 
   const auto cyctime_us = cycletime_ns / 1000;
 
