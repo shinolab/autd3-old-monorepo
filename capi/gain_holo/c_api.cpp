@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/06/2022
+// Last Modified: 16/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -78,35 +78,6 @@ void AUTDGainHoloLM(void** gain, const void* backend, const double eps_1, const 
   g->eps_2 = eps_2;
   g->tau = tau;
   g->k_max = k_max;
-  g->initial = std::move(initial_);
-  *gain = g;
-}
-
-void AUTDGainHoloGaussNewton(void** gain, const void* backend, const double eps_1, const double eps_2, const uint64_t k_max, const double* initial,
-                             const int32_t initial_size) {
-  const auto b = static_cast<const BackendWrapper*>(backend);
-
-  std::vector<double> initial_;
-  initial_.reserve(initial_size);
-  for (auto i = 0; i < initial_size; i++) initial_.emplace_back(initial[i]);
-
-  auto* g = new autd3::gain::holo::GaussNewton<T>(b->ptr);
-  g->eps_1 = eps_1;
-  g->eps_2 = eps_2;
-  g->k_max = k_max;
-  g->initial = std::move(initial_);
-  *gain = g;
-}
-void AUTDGainHoloGradientDescent(void** gain, const void* backend, const double eps, const double step, const uint64_t k_max, const double* initial,
-                                 const int32_t initial_size) {
-  const auto b = static_cast<const BackendWrapper*>(backend);
-  std::vector<double> initial_;
-  initial_.reserve(initial_size);
-  for (auto i = 0; i < initial_size; i++) initial_.emplace_back(initial[i]);
-  auto* g = new autd3::gain::holo::GradientDescent<T>(b->ptr);
-  g->eps = eps;
-  g->k_max = k_max;
-  g->step = step;
   g->initial = std::move(initial_);
   *gain = g;
 }

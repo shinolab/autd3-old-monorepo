@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/06/2022
+// Last Modified: 22/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -108,9 +108,13 @@ bool AUTDGetReadsFPGAInfo(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   return wrapper->reads_fpga_info;
 }
-bool AUTDGetCheckAck(const void* const handle) {
+int32_t AUTDGetCheckTrials(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
-  return wrapper->check_ack;
+  return static_cast<int32_t>(wrapper->check_trials);
+}
+int32_t AUTDGetSendInterval(const void* const handle) {
+  const auto* wrapper = static_cast<const Controller*>(handle);
+  return static_cast<int32_t>(wrapper->send_interval);
 }
 void AUTDSetForceFan(void* const handle, const bool force) {
   auto* const wrapper = static_cast<Controller*>(handle);
@@ -120,11 +124,14 @@ void AUTDSetReadsFPGAInfo(void* const handle, const bool reads_fpga_info) {
   auto* const wrapper = static_cast<Controller*>(handle);
   wrapper->reads_fpga_info = reads_fpga_info;
 }
-void AUTDSetCheckAck(void* const handle, const bool check_ack) {
+void AUTDSetCheckTrials(void* const handle, const int32_t trials) {
   auto* const wrapper = static_cast<Controller*>(handle);
-  wrapper->check_ack = check_ack;
+  wrapper->check_trials = static_cast<size_t>(trials);
 }
-
+void AUTDSetSendInterval(void* const handle, const int32_t interval) {
+  auto* const wrapper = static_cast<Controller*>(handle);
+  wrapper->send_interval = static_cast<size_t>(interval);
+}
 double AUTDGetTransFrequency(const void* const handle, const int32_t device_idx, const int32_t local_trans_idx) {
   const auto* const wrapper = static_cast<const Controller*>(handle);
   return wrapper->geometry()[device_idx][local_trans_idx].frequency();
@@ -143,8 +150,9 @@ void AUTDSetSoundSpeed(void* const handle, const double sound_speed) {
   auto* wrapper = static_cast<Controller*>(handle);
   wrapper->geometry().sound_speed = sound_speed;
 }
-double AUTDGetWavelength(const void* const handle, const int32_t device_idx, const int32_t local_trans_idx, const double sound_speed) {
+double AUTDGetWavelength(const void* const handle, const int32_t device_idx, const int32_t local_trans_idx) {
   const auto* wrapper = static_cast<const Controller*>(handle);
+  const auto sound_speed = wrapper->geometry().sound_speed;
   return wrapper->geometry()[device_idx][local_trans_idx].wavelength(sound_speed);
 }
 double AUTDGetAttenuation(const void* const handle) {

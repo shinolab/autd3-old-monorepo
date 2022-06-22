@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/06/2022
+// Last Modified: 16/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ typedef struct {
 void* select_opt(void* backend) {
   printf("Select Optimization Method (default is SDP)\n");
 
-  int32_t opt_size = 9;
+  int32_t opt_size = 7;
   Opt* opts = (Opt*)malloc(opt_size * sizeof(Opt));
 
   int idx = 0;
@@ -41,10 +41,6 @@ void* select_opt(void* backend) {
   AUTDGainHoloNaive(&opts[idx++].gain, backend);
   opts[idx].name = "LM";
   AUTDGainHoloLM(&opts[idx++].gain, backend, 1e-8, 1e-8, 1e-3, 5, NULL, 0);
-  opts[idx].name = "GaussNewton";
-  AUTDGainHoloGaussNewton(&opts[idx++].gain, backend, 1e-6, 1e-6, 500, NULL, 0);
-  opts[idx].name = "GradientDescent";
-  AUTDGainHoloGradientDescent(&opts[idx++].gain, backend, 1e-6, 0.5, 2000, NULL, 0);
   opts[idx].name = "Greedy";
   AUTDGainHoloGreedy(&opts[idx++].gain, backend, 16);
   for (int32_t i = 0; i < opt_size; i++) printf("[%d]: %s\n", i, opts[i].name);

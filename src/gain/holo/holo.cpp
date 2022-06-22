@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 22/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -351,14 +351,6 @@ void make_t(const BackendPtr& backend, const VectorXd& zero, const VectorXd& x, 
   backend->exp(t, t);
 }
 
-void calc_jtf(const BackendPtr& backend, const VectorXc& t, const MatrixXc& bhb, MatrixXc& tth, MatrixXc& bhb_tth, MatrixXd& bhb_tth_i,
-              VectorXd& jtf) {
-  backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::CONJ_TRANS, ONE, t, t, ZERO, tth);
-  backend->hadamard_product(bhb, tth, bhb_tth);
-  backend->imag(bhb_tth, bhb_tth_i);
-  backend->reduce_col(bhb_tth_i, jtf);
-}
-
 void calc_jtj_jtf(const BackendPtr& backend, const VectorXc& t, const MatrixXc& bhb, MatrixXc& tth, MatrixXc& bhb_tth, MatrixXd& bhb_tth_i,
                   MatrixXd& jtj, VectorXd& jtf) {
   backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::CONJ_TRANS, ONE, t, t, ZERO, tth);
@@ -473,108 +465,6 @@ void lm_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& f
 }
 
 template <typename T>
-void gaussnewton_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& foci, std::vector<complex>& amps,
-                           const core::Geometry<T>& geometry, const double eps_1, const double eps_2, const size_t k_max,
-                           const std::vector<double>& initial, AmplitudeConstraint constraint, typename T::D& drives) {
-  backend->init();
-
-  const auto m = foci.size();
-  const auto n = geometry.num_transducers();
-
-  const auto n_param = n + m;
-
-  MatrixXc bhb = MatrixXc::Zero(n_param, n_param);
-  make_bhb(backend, foci, amps, geometry, bhb);
-
-  VectorXd x = VectorXd::Zero(n_param);
-  for (size_t i = 0; i < initial.size(); i++) x(static_cast<Eigen::Index>(i)) = initial[i];
-
-  const VectorXd zero = VectorXd::Zero(n_param);
-
-  VectorXc t(n_param);
-  make_t(backend, zero, x, t);
-
-  MatrixXc tth = MatrixXc::Zero(n_param, n_param);
-  MatrixXc bhb_tth(n_param, n_param);
-  MatrixXd bhb_tth_i(n_param, n_param);
-  MatrixXd a(n_param, n_param);
-  VectorXd g(n_param);
-  calc_jtj_jtf(backend, t, bhb, tth, bhb_tth, bhb_tth_i, a, g);
-
-  VectorXd tmp_vec(n_param);
-  VectorXd h_lm = VectorXd::Zero(n_param);
-  MatrixXd tmp_mat(n_param, n_param);
-  MatrixXd pia = MatrixXd::Zero(n_param, n_param);
-  MatrixXd u(n_param, n_param);
-  MatrixXd s(n_param, n_param);
-  MatrixXd vt(n_param, n_param);
-  MatrixXd buf = MatrixXd::Zero(n_param, n_param);
-  for (size_t k = 0; k < k_max; k++) {
-    if (backend->max_element(g) <= eps_1) break;
-
-    backend->copy_to(a, tmp_mat);
-    backend->pseudo_inverse_svd(tmp_mat, 1e-3, u, s, vt, buf, pia);
-    backend->mul(TRANSPOSE::NO_TRANS, 1.0, pia, g, 0.0, h_lm);
-    if (std::sqrt(backend->dot(h_lm, h_lm)) <= eps_2 * (std::sqrt(backend->dot(x, x)) + eps_2)) break;
-
-    backend->add(-1.0, h_lm, x);
-
-    make_t(backend, zero, x, t);
-    calc_jtj_jtf(backend, t, bhb, tth, bhb_tth, bhb_tth_i, a, g);
-  }
-
-  backend->to_host(x);
-  std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-    std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
-      const auto phase = x(tr.id()) / (2.0 * driver::pi);
-      const auto power = std::visit([&](auto& c) { return c.convert(1.0, 1.0); }, constraint);
-      drives.set_drive(tr, phase, power);
-    });
-  });
-}
-
-template <typename T>
-void gradientdescnet_calc_impl(const BackendPtr& backend, const std::vector<core::Vector3>& foci, std::vector<complex>& amps,
-                               const core::Geometry<T>& geometry, const double eps, const double step, const size_t k_max,
-                               const std::vector<double>& initial, AmplitudeConstraint constraint, typename T::D& drives) {
-  backend->init();
-
-  const auto m = foci.size();
-  const auto n = geometry.num_transducers();
-
-  const auto n_param = n + m;
-
-  MatrixXc bhb = MatrixXc::Zero(n_param, n_param);
-  make_bhb(backend, foci, amps, geometry, bhb);
-
-  VectorXd x = VectorXd::Zero(n_param);
-  for (size_t i = 0; i < initial.size(); i++) x(static_cast<Eigen::Index>(i)) = initial[i];
-
-  const VectorXd zero = VectorXd::Zero(n_param);
-
-  VectorXc t(n_param);
-  MatrixXc tth = MatrixXc::Zero(n_param, n_param);
-  MatrixXc bhb_tth(n_param, n_param);
-  MatrixXd bhb_tth_i(n_param, n_param);
-  VectorXd g(n_param);
-  for (size_t k = 0; k < k_max; k++) {
-    make_t(backend, zero, x, t);
-    calc_jtf(backend, t, bhb, tth, bhb_tth, bhb_tth_i, g);
-    if (backend->max_element(g) <= eps) break;
-    backend->add(-step, g, x);
-  }
-
-  backend->to_host(x);
-  std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-    std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
-      const auto phase = x(tr.id()) / (2.0 * driver::pi);
-      const auto power = std::visit([&](auto& c) { return c.convert(1.0, 1.0); }, constraint);
-      drives.set_drive(tr, phase, power);
-    });
-  });
-}
-
-template <typename T>
 void greedy_calc_impl(const BackendPtr&, const std::vector<core::Vector3>& foci, std::vector<complex>& amps, const core::Geometry<T>& geometry,
                       const size_t phase_div, const std::function<double(const VectorXd&, const VectorXc&)>& objective,
                       AmplitudeConstraint constraint, typename T::D& drives) {
@@ -661,19 +551,19 @@ void EVD<core::DynamicTransducer>::calc(const core::Geometry<core::DynamicTransd
   evd_calc_impl(_backend, _foci, _amps, geometry, gamma, constraint, this->_props.drives);
 }
 template <>
-void Naive<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
+void LSS<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
   naive_calc_impl(_backend, _foci, _amps, geometry, constraint, this->_props.drives);
 }
 template <>
-void Naive<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
+void LSS<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
   naive_calc_impl(_backend, _foci, _amps, geometry, constraint, this->_props.drives);
 }
 template <>
-void Naive<core::NormalPhaseTransducer>::calc(const core::Geometry<core::NormalPhaseTransducer>& geometry) {
+void LSS<core::NormalPhaseTransducer>::calc(const core::Geometry<core::NormalPhaseTransducer>& geometry) {
   naive_calc_impl(_backend, _foci, _amps, geometry, constraint, this->_props.drives);
 }
 template <>
-void Naive<core::DynamicTransducer>::calc(const core::Geometry<core::DynamicTransducer>& geometry) {
+void LSS<core::DynamicTransducer>::calc(const core::Geometry<core::DynamicTransducer>& geometry) {
   naive_calc_impl(_backend, _foci, _amps, geometry, constraint, this->_props.drives);
 }
 template <>
@@ -723,38 +613,6 @@ void LM<core::NormalPhaseTransducer>::calc(const core::Geometry<core::NormalPhas
 template <>
 void LM<core::DynamicTransducer>::calc(const core::Geometry<core::DynamicTransducer>& geometry) {
   lm_calc_impl(_backend, _foci, _amps, geometry, eps_1, eps_2, tau, k_max, initial, constraint, this->_props.drives);
-}
-template <>
-void GaussNewton<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
-  gaussnewton_calc_impl(_backend, _foci, _amps, geometry, eps_1, eps_2, k_max, initial, constraint, this->_props.drives);
-}
-template <>
-void GaussNewton<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
-  gaussnewton_calc_impl(_backend, _foci, _amps, geometry, eps_1, eps_2, k_max, initial, constraint, this->_props.drives);
-}
-template <>
-void GaussNewton<core::NormalPhaseTransducer>::calc(const core::Geometry<core::NormalPhaseTransducer>& geometry) {
-  gaussnewton_calc_impl(_backend, _foci, _amps, geometry, eps_1, eps_2, k_max, initial, constraint, this->_props.drives);
-}
-template <>
-void GaussNewton<core::DynamicTransducer>::calc(const core::Geometry<core::DynamicTransducer>& geometry) {
-  gaussnewton_calc_impl(_backend, _foci, _amps, geometry, eps_1, eps_2, k_max, initial, constraint, this->_props.drives);
-}
-template <>
-void GradientDescent<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
-  gradientdescnet_calc_impl(_backend, _foci, _amps, geometry, eps, step, k_max, initial, constraint, this->_props.drives);
-}
-template <>
-void GradientDescent<core::NormalTransducer>::calc(const core::Geometry<core::NormalTransducer>& geometry) {
-  gradientdescnet_calc_impl(_backend, _foci, _amps, geometry, eps, step, k_max, initial, constraint, this->_props.drives);
-}
-template <>
-void GradientDescent<core::NormalPhaseTransducer>::calc(const core::Geometry<core::NormalPhaseTransducer>& geometry) {
-  gradientdescnet_calc_impl(_backend, _foci, _amps, geometry, eps, step, k_max, initial, constraint, this->_props.drives);
-}
-template <>
-void GradientDescent<core::DynamicTransducer>::calc(const core::Geometry<core::DynamicTransducer>& geometry) {
-  gradientdescnet_calc_impl(_backend, _foci, _amps, geometry, eps, step, k_max, initial, constraint, this->_props.drives);
 }
 template <>
 void Greedy<core::LegacyTransducer>::calc(const core::Geometry<core::LegacyTransducer>& geometry) {
