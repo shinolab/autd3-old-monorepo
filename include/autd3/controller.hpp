@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/06/2022
+// Last Modified: 22/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -40,8 +40,7 @@ namespace autd3 {
 template <typename T, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class ControllerX {
  public:
-  ControllerX()
-      : force_fan(false), reads_fpga_info(false), check_ack(false), _geometry(), _tx_buf(0), _rx_buf(0), _link(nullptr), _check_ack(false) {}
+  ControllerX() : force_fan(false), reads_fpga_info(false), check_trials(0), send_interval(1), _geometry(), _tx_buf(0), _rx_buf(0), _link(nullptr) {}
 
   /**
    * @brief Geometry of the devices
@@ -69,11 +68,9 @@ class ControllerX {
 
   /**
    * @brief Synchronize devices
-   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
   bool synchronize() {
-    push_ack();
-
     driver::force_fan(_tx_buf, force_fan);
     driver::reads_fpga_info(_tx_buf, reads_fpga_info);
 
@@ -85,19 +82,15 @@ class ControllerX {
 
     sync(msg_id, cycles.data(), _tx_buf);
 
-    if (!_link->send(_tx_buf)) {
-      pop_ack();
-      return false;
-    }
+    if (!_link->send(_tx_buf)) return false;
 
-    const auto success = wait_msg_processed(50);
-    pop_ack();
+    const auto success = wait_msg_processed(200) != 200;
     return success;
   }
 
   /**
    * @brief Update flags (force fan and reads_fpga_info)
-   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
   bool update_flag() {
     core::NullHeader h;
@@ -119,29 +112,24 @@ class ControllerX {
 
   /**
    * @brief Clear all data in devices
-   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
   bool clear() {
-    push_ack();
     driver::clear(_tx_buf);
-    if (!_link->send(_tx_buf)) {
-      pop_ack();
-      return false;
-    }
-    const auto success = wait_msg_processed(200);
-    pop_ack();
+    if (!_link->send(_tx_buf)) return false;
+    const auto success = wait_msg_processed(200) != 200;
     return success;
   }
 
   /**
    * @brief Stop outputting
-   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
   bool stop();
 
   /**
    * @brief Close the controller
-   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
   bool close() {
     if (!stop()) return false;
@@ -157,38 +145,25 @@ class ControllerX {
   [[nodiscard]] std::vector<driver::FirmwareInfo> firmware_infos() {
     std::vector<driver::FirmwareInfo> firmware_infos;
 
-    push_ack();
-
     const auto pack_ack = [&]() -> std::vector<uint8_t> {
       std::vector<uint8_t> acks;
       if (!_link->send(_tx_buf)) return acks;
-      if (!wait_msg_processed(50)) return acks;
+      if (wait_msg_processed(200) == 200) return acks;
       std::transform(_rx_buf.begin(), _rx_buf.end(), std::back_inserter(acks), [](driver::RxMessage msg) noexcept { return msg.ack; });
       return acks;
     };
 
     cpu_version(_tx_buf);
     const auto cpu_versions = pack_ack();
-    if (cpu_versions.empty()) {
-      pop_ack();
-      return firmware_infos;
-    }
+    if (cpu_versions.empty()) return firmware_infos;
 
     fpga_version(_tx_buf);
     const auto fpga_versions = pack_ack();
-    if (fpga_versions.empty()) {
-      pop_ack();
-      return firmware_infos;
-    }
+    if (fpga_versions.empty()) return firmware_infos;
 
     fpga_functions(_tx_buf);
     const auto fpga_functions = pack_ack();
-    if (fpga_functions.empty()) {
-      pop_ack();
-      return firmware_infos;
-    }
-
-    pop_ack();
+    if (fpga_functions.empty()) return firmware_infos;
 
     for (size_t i = 0; i < _geometry.num_devices(); i++)
       firmware_infos.emplace_back(i, cpu_versions.at(i), fpga_versions.at(i), fpga_functions.at(i));
@@ -198,7 +173,7 @@ class ControllerX {
 
   /**
    * @brief Send header data to devices
-   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
   template <typename H>
   auto send(H& header) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, bool> {
@@ -208,7 +183,7 @@ class ControllerX {
 
   /**
    * @brief Send header data to devices
-   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
   template <typename H>
   auto send(H&& header) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, bool> {
@@ -217,7 +192,7 @@ class ControllerX {
 
   /**
    * @brief Send body data to devices
-   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
   template <typename B>
   auto send(B& body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody<T>, B>, bool> {
@@ -227,7 +202,7 @@ class ControllerX {
 
   /**
    * @brief Send body data to devices
-   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
   template <typename B>
   auto send(B&& body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody<T>, B>, bool> {
@@ -236,7 +211,7 @@ class ControllerX {
 
   /**
    * @brief Send header and body data to devices
-   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
   template <typename H, typename B>
   auto send(H& header, B& body) ->
@@ -252,16 +227,17 @@ class ControllerX {
       header.pack(msg_id, _tx_buf);
       body.pack(_geometry, _tx_buf);
       _link->send(_tx_buf);
-      if (!wait_msg_processed(50)) return false;
+      const auto trials = wait_msg_processed(check_trials);
+      if ((check_trials != 0) && (trials == check_trials)) return false;
       if (header.is_finished() && body.is_finished()) break;
-      if (!check_ack) std::this_thread::sleep_for(std::chrono::microseconds(driver::EC_SYNC0_CYCLE_TIME_MICRO_SEC));
+      if (trials == 0) std::this_thread::sleep_for(std::chrono::microseconds(send_interval * driver::EC_SYNC0_CYCLE_TIME_MICRO_SEC));
     }
     return true;
   }
 
   /**
    * @brief Send header and body data to devices
-   * \return if this function returns true and check_ack is true, it guarantees that the devices have processed the data.
+   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
   template <typename H, typename B>
   auto send(H&& header, B&& body) ->
@@ -280,9 +256,15 @@ class ControllerX {
   bool reads_fpga_info;
 
   /**
-   * @brief If true, this controller check ack from devices.
+   * @brief If > 0, this controller check ack from devices. This value represents the maximum number of trials for the check.
    */
-  bool check_ack;
+  size_t check_trials;
+
+  /**
+   * @brief Transmission interval between frames when sending multiple data. The interval will be send_interval *
+   * driver::EC_SYNC0_CYCLE_TIME_MICRO_SEC.
+   */
+  size_t send_interval;
 
  private:
   static uint8_t get_id() noexcept {
@@ -291,31 +273,20 @@ class ControllerX {
     return id_body.load();
   }
 
-  bool wait_msg_processed(const size_t max_trial) {
-    if (!check_ack) return true;
-
+  size_t wait_msg_processed(const size_t max_trial) {
+    size_t i;
     const auto msg_id = _tx_buf.header().msg_id;
-    for (size_t i = 0; i < max_trial; i++) {
-      if (!_link->receive(_rx_buf)) continue;
-      if (_rx_buf.is_msg_processed(msg_id)) return true;
-      std::this_thread::sleep_for(std::chrono::microseconds(driver::EC_SYNC0_CYCLE_TIME_MICRO_SEC));
+    for (i = 0; i < max_trial; i++) {
+      if (_link->receive(_rx_buf) && _rx_buf.is_msg_processed(msg_id)) break;
+      std::this_thread::sleep_for(std::chrono::microseconds(send_interval * driver::EC_SYNC0_CYCLE_TIME_MICRO_SEC));
     }
-    return false;
+    return i;
   }
-
-  void push_ack() {
-    _check_ack = check_ack;
-    check_ack = true;
-  }
-
-  void pop_ack() { check_ack = _check_ack; }
 
   core::Geometry<T> _geometry;
   driver::TxDatagram _tx_buf;
   driver::RxDatagram _rx_buf;
   core::LinkPtr _link;
-
-  bool _check_ack;
 };
 
 template <>

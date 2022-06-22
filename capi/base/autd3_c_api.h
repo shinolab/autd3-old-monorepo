@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/06/2022
+// Last Modified: 22/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -29,9 +29,11 @@ EXPORT_AUTD void AUTDFreeController(IN const void* handle);
 EXPORT_AUTD bool AUTDIsOpen(IN const void* handle);
 EXPORT_AUTD bool AUTDGetForceFan(IN const void* handle);
 EXPORT_AUTD bool AUTDGetReadsFPGAInfo(IN const void* handle);
-EXPORT_AUTD bool AUTDGetCheckAck(IN const void* handle);
+EXPORT_AUTD int32_t AUTDGetCheckTrials(IN const void* handle);
+EXPORT_AUTD int32_t AUTDGetSendInterval(IN const void* handle);
 EXPORT_AUTD void AUTDSetReadsFPGAInfo(IN void* handle, IN bool reads_fpga_info);
-EXPORT_AUTD void AUTDSetCheckAck(IN void* handle, IN bool check_ack);
+EXPORT_AUTD void AUTDSetCheckTrials(IN void* handle, IN int32_t trials);
+EXPORT_AUTD void AUTDSetSendInterval(IN void* handle, IN int32_t interval);
 EXPORT_AUTD void AUTDSetForceFan(IN void* handle, IN bool force);
 EXPORT_AUTD double AUTDGetSoundSpeed(IN const void* handle);
 EXPORT_AUTD void AUTDSetSoundSpeed(IN void* handle, IN double sound_speed);
