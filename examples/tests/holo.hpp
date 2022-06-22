@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 16/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -39,8 +39,6 @@ void holo_test(autd3::ControllerX<T>& autd) {
   opts.emplace_back(std::make_tuple("GSPAT", std::make_shared<autd3::gain::holo::GSPAT<T>>(backend)));
   opts.emplace_back(std::make_tuple("Naive", std::make_shared<autd3::gain::holo::Naive<T>>(backend)));
   opts.emplace_back(std::make_tuple("LM", std::make_shared<autd3::gain::holo::LM<T>>(backend)));
-  opts.emplace_back(std::make_tuple("GaussNewton (slow)", std::make_shared<autd3::gain::holo::GaussNewton<T>>(backend)));
-  opts.emplace_back(std::make_tuple("GradientDescent", std::make_shared<autd3::gain::holo::GradientDescent<T>>(backend)));
   opts.emplace_back(std::make_tuple("Greedy", std::make_shared<autd3::gain::holo::Greedy<T>>(backend)));
 
   size_t i = 0;
