@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/06/2022
+// Last Modified: 29/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -100,18 +100,22 @@ struct LegacyDrive {
 struct Phase {
   uint16_t phase;
 
-  void set(const Drive d) {
-    phase = static_cast<uint16_t>(
+  static uint16_t to_phase(const Drive d) {
+    return static_cast<uint16_t>(
         autd3::driver::rem_euclid(static_cast<int32_t>(std::round(d.phase * static_cast<double>(d.cycle))), static_cast<int32_t>(d.cycle)));
   }
+
+  void set(const Drive d) { phase = to_phase(d); }
 };
 
 struct Duty {
   uint16_t duty;
 
-  void set(const Drive d) {
-    duty = static_cast<uint16_t>(std::round(static_cast<double>(d.cycle) * std::asin(std::clamp(d.amp, 0.0, 1.0)) / driver::pi));
+  static uint16_t to_duty(const Drive d) {
+    return static_cast<uint16_t>(std::round(static_cast<double>(d.cycle) * std::asin(std::clamp(d.amp, 0.0, 1.0)) / driver::pi));
   }
+
+  void set(const Drive d) { duty = to_duty(d); }
 };
 
 struct FPGAInfo {
