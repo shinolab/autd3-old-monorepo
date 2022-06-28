@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/06/2022
+// Last Modified: 28/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -78,30 +78,36 @@ class FPGAControlFlags final {
 };
 #pragma warning(pop)
 
+struct Drive {
+  double phase;
+  double amp;
+  uint16_t cycle;
+};
+
 struct LegacyDrive {
   uint8_t phase;
   uint8_t duty;
 
-  void set(const double amp, const double p) {
-    phase = static_cast<uint8_t>(static_cast<int32_t>(std::round(p * 256.0)) & 0xFF);
-    duty = std::round(510.0 * std::asin(std::clamp(amp, 0.0, 1.0)) / autd3::driver::pi);
+  void set(const Drive d) {
+    phase = static_cast<uint8_t>(static_cast<int32_t>(std::round(d.phase * 256.0)) & 0xFF);
+    duty = std::round(510.0 * std::asin(std::clamp(d.amp, 0.0, 1.0)) / autd3::driver::pi);
   }
 };
 
 struct Phase {
   uint16_t phase;
 
-  void set(const double p, const uint16_t cycle) {
+  void set(const Drive d) {
     phase = static_cast<uint16_t>(
-        autd3::driver::rem_euclid(static_cast<int32_t>(std::round(p * static_cast<double>(cycle))), static_cast<int32_t>(cycle)));
+        autd3::driver::rem_euclid(static_cast<int32_t>(std::round(d.phase * static_cast<double>(d.cycle))), static_cast<int32_t>(d.cycle)));
   }
 };
 
 struct Duty {
   uint16_t duty;
 
-  void set(const double amp, const uint16_t cycle) {
-    duty = static_cast<uint16_t>(std::round(static_cast<double>(cycle) * std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi));
+  void set(const Drive d) {
+    duty = static_cast<uint16_t>(std::round(static_cast<double>(d.cycle) * std::asin(std::clamp(d.amp, 0.0, 1.0)) / driver::pi));
   }
 };
 
