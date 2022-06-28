@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/06/2022
+// Last Modified: 28/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -250,8 +250,8 @@ void AUTDGainGrouped(void** gain, const void* const handle) {
 }
 
 void AUTDGainGroupedAdd(void* grouped_gain, const int32_t device_id, void* gain) {
-  auto* const gg = dynamic_cast<autd3::gain::Grouped<T>*>(static_cast<autd3::Gain<T>*>(grouped_gain));
-  auto* const g = static_cast<autd3::Gain<T>*>(gain);
+  auto* const gg = dynamic_cast<autd3::gain::Grouped<T>*>(static_cast<autd3::Gain*>(grouped_gain));
+  auto* const g = static_cast<autd3::Gain*>(gain);
   gg->add(device_id, *g);
 }
 
@@ -271,7 +271,7 @@ void AUTDGainCustom(void** gain, const double* amp, const double* phase, const u
 }
 
 void AUTDDeleteGain(const void* const gain) {
-  const auto* g = static_cast<const autd3::Gain<T>*>(gain);
+  const auto* g = static_cast<const autd3::Gain*>(gain);
   delete g;
 }
 
@@ -323,7 +323,7 @@ bool AUTDPointSTMAdd(void* const stm, const double x, const double y, const doub
 }
 bool AUTDGainSTMAdd(void* const stm, void* const gain) {
   auto* const stm_w = static_cast<autd3::GainSTM<T>*>(stm);
-  auto* const g = static_cast<autd3::Gain<T>*>(gain);
+  auto* const g = static_cast<autd3::Gain*>(gain);
   AUTD3_CAPI_TRY({
     stm_w->add(*g);
     return true;

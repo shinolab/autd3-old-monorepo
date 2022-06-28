@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 28/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,38 +11,19 @@
 
 #pragma once
 
-#include <type_traits>
+#include <algorithm>
+#include <vector>
 
-#include "geometry/geometry.hpp"
-#include "geometry/transducer.hpp"
+#include "geometry.hpp"
 #include "interface.hpp"
 
 namespace autd3::core {
 
 /**
- * @brief Properties of Gain
- */
-template <typename T, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
-struct GainProps {
-  bool built;
-  bool phase_sent;
-  bool duty_sent;
-  typename T::D drives;
-
-  GainProps() noexcept : built(false), phase_sent(false), duty_sent(false), drives() {}
-
-  void init(size_t size) { drives.init(size); }
-
-  void pack_header(driver::TxDatagram& tx) { T::pack_header(tx); }
-  void pack_body(driver::TxDatagram& tx) { T::pack_body(phase_sent, duty_sent, drives, tx); }
-};
-
-/**
  * @brief Gain controls the duty ratio and phase of each transducer in AUTD devices.
  */
-template <typename T, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
-struct Gain : DatagramBody<T> {
-  Gain() : _props() {}
+struct Gain : DatagramBody {
+  Gain() : _built(false), _phase_sent(false), _duty_sent(false), _drives() {}
   ~Gain() override = default;
   Gain(const Gain& v) = default;
   Gain& operator=(const Gain& obj) = default;
@@ -53,51 +34,59 @@ struct Gain : DatagramBody<T> {
    * \brief Calculate duty ratio and phase of each transducer
    * \param geometry Geometry
    */
-  virtual void calc(const Geometry<T>& geometry) = 0;
+  virtual void calc(const Geometry& geometry) = 0;
 
   /**
    * \brief Initialize data and call calc().
    * \param geometry Geometry
    */
-  void build(const Geometry<T>& geometry) {
-    if (_props.built) return;
-    _props.init(geometry.num_devices() * driver::NUM_TRANS_IN_UNIT);
+  void build(const Geometry& geometry) {
+    if (_built) return;
+
+    _drives.clear();
+    std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
+      std::transform(dev.begin(), dev.end(), std::back_inserter(_drives), [](const Transducer& tr) { return driver::Drive{0, 0, tr.cycle()}; });
+    });
+
     calc(geometry);
-    _props.built = true;
+    _built = true;
   }
 
   /**
    * \brief Re-calculate duty ratio and phase of each transducer
    * \param geometry Geometry
    */
-  void rebuild(const Geometry<T>& geometry) {
-    _props.built = false;
+  void rebuild(const Geometry& geometry) {
+    _built = false;
     build(geometry);
   }
 
   /**
    * @brief Getter function for the data of duty ratio and phase of each transducers
    */
-  typename T::D& drives() { return _props.drives; }
+  const std::vector<driver::Drive>& drives() const { return _drives; }
 
-  bool built() { return _props.built; }
+  bool built() const { return _built; }
 
   void init() override {
-    _props.phase_sent = false;
-    _props.duty_sent = false;
+    _phase_sent = false;
+    _duty_sent = false;
   }
 
-  void pack(const Geometry<T>& geometry, driver::TxDatagram& tx) override {
-    _props.pack_header(tx);
+  void pack(const Geometry& geometry, driver::TxDatagram& tx) override {
+    geometry.mode()->pack_gain_header(tx);
     if (is_finished()) return;
     build(geometry);
-    _props.pack_body(tx);
+    geometry.mode()->pack_gain_body(_phase_sent, _duty_sent, _drives, tx);
   }
 
-  [[nodiscard]] bool is_finished() const noexcept override { return _props.phase_sent && _props.duty_sent; }
+  [[nodiscard]] bool is_finished() const noexcept override { return _phase_sent && _duty_sent; }
 
  protected:
-  GainProps<T> _props;
+  bool _built;
+  bool _phase_sent;
+  bool _duty_sent;
+  std::vector<driver::Drive> _drives;
 };
 
 }  // namespace autd3::core

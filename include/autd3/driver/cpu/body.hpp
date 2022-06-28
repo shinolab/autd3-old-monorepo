@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/06/2022
+// Last Modified: 28/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -106,16 +106,28 @@ struct Body {
   GainSTMBodyBody& gain_stm_body() noexcept { return *reinterpret_cast<GainSTMBodyBody*>(&data[0]); }
 };
 
-struct PhaseFull {
+struct LegacyPhaseFull {
   uint8_t phase_0;
   uint8_t phase_1;
+  void set(const size_t idx, const Drive d) {
+    const auto phase = LegacyDrive::to_phase(d);
+    switch (idx) {
+      case 0:
+        phase_0 = phase;
+        break;
+      case 1:
+        phase_1 = phase;
+        break;
+    }
+  }
 };
 
-struct PhaseHalf {
+struct LegacyPhaseHalf {
   uint8_t phase_01;
   uint8_t phase_23;
 
-  void set(const size_t idx, const uint8_t phase) {
+  void set(const size_t idx, const Drive d) {
+    const auto phase = LegacyDrive::to_phase(d);
     switch (idx) {
       case 0:
         phase_01 = (phase_01 & 0xF0) | ((phase >> 4) & 0x0F);

@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 28/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,14 +15,13 @@
 #include <autd3.hpp>
 #include <vector>
 
-template <typename T>
-void point_stm(autd3::ControllerX<T>& autd) {
+void point_stm(autd3::Controller& autd) {
   auto config = autd3::SilencerConfig::none();
   autd.send(config);
 
   autd3::modulation::Static m;
 
-  autd3::PointSTM<T> stm;
+  autd3::PointSTM stm;
 
   const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   constexpr size_t points_num = 200;
