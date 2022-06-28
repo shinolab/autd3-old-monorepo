@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 28/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -50,7 +50,7 @@ using testing::Types;
 template <typename B>
 class BackendTest : public testing::Test {
  public:
-  BackendTest() : backend(B::create()) { backend->init(); }
+  BackendTest() : backend(B::create()) { _backend->init(); }
   ~BackendTest() override = default;
   BackendTest(const BackendTest& v) noexcept = default;
   BackendTest& operator=(const BackendTest& obj) = default;
@@ -86,8 +86,8 @@ TYPED_TEST(BackendTest, copy_to) {
   MatrixXc a = MatrixXc::Random(m, n);
 
   MatrixXc b(m, n);
-  this->backend->copy_to(a, b);
-  this->backend->to_host(b);
+  this->_backend->copy_to(a, b);
+  this->_backend->to_host(b);
 
   for (Eigen::Index i = 0; i < m; i++)
     for (Eigen::Index j = 0; j < n; j++) ASSERT_EQ(a(i, j), b(i, j));
@@ -100,8 +100,8 @@ TYPED_TEST(BackendTest, copy_to_real) {
   MatrixXd a = MatrixXd::Random(m, n);
 
   MatrixXd b(m, n);
-  this->backend->copy_to(a, b);
-  this->backend->to_host(b);
+  this->_backend->copy_to(a, b);
+  this->_backend->to_host(b);
 
   for (Eigen::Index i = 0; i < m; i++)
     for (Eigen::Index j = 0; j < n; j++) ASSERT_EQ(a(i, j), b(i, j));
@@ -113,8 +113,8 @@ TYPED_TEST(BackendTest, copy_to_vec_real) {
   VectorXd a = VectorXd::Random(m);
 
   VectorXd b(m);
-  this->backend->copy_to(a, b);
-  this->backend->to_host(b);
+  this->_backend->copy_to(a, b);
+  this->_backend->to_host(b);
 
   for (Eigen::Index i = 0; i < m; i++) ASSERT_EQ(a(i), b(i));
 }
@@ -126,8 +126,8 @@ TYPED_TEST(BackendTest, real) {
   MatrixXc a = MatrixXc::Random(m, n);
 
   MatrixXd b(m, n);
-  this->backend->real(a, b);
-  this->backend->to_host(b);
+  this->_backend->real(a, b);
+  this->_backend->to_host(b);
 
   for (Eigen::Index i = 0; i < m; i++)
     for (Eigen::Index j = 0; j < n; j++) ASSERT_EQ(a(i, j).real(), b(i, j));
@@ -140,8 +140,8 @@ TYPED_TEST(BackendTest, imag) {
   MatrixXc a = MatrixXc::Random(m, n);
 
   MatrixXd b(m, n);
-  this->backend->imag(a, b);
-  this->backend->to_host(b);
+  this->_backend->imag(a, b);
+  this->_backend->to_host(b);
 
   for (Eigen::Index i = 0; i < m; i++)
     for (Eigen::Index j = 0; j < n; j++) ASSERT_EQ(a(i, j).imag(), b(i, j));
@@ -154,8 +154,8 @@ TYPED_TEST(BackendTest, make_complex) {
   VectorXd im = VectorXd::Random(m);
 
   VectorXc a(m);
-  this->backend->make_complex(re, im, a);
-  this->backend->to_host(a);
+  this->_backend->make_complex(re, im, a);
+  this->_backend->to_host(a);
 
   for (Eigen::Index i = 0; i < m; i++) ASSERT_EQ(a(i), complex(re(i), im(i)));
 }
@@ -166,8 +166,8 @@ TYPED_TEST(BackendTest, abs) {
   VectorXc a = VectorXc::Random(n);
 
   VectorXd b(n);
-  this->backend->abs(a, b);
-  this->backend->to_host(b);
+  this->_backend->abs(a, b);
+  this->_backend->to_host(b);
 
   for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR(std::abs(a(i)), b(i), 1e-6);
 }
@@ -178,8 +178,8 @@ TYPED_TEST(BackendTest, abs_c) {
   VectorXc a = VectorXc::Random(n);
 
   VectorXc b(n);
-  this->backend->abs(a, b);
-  this->backend->to_host(b);
+  this->_backend->abs(a, b);
+  this->_backend->to_host(b);
 
   for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR(std::abs(a(i)), b(i).real(), 1e-6);
 }
@@ -190,8 +190,8 @@ TYPED_TEST(BackendTest, sqrt) {
   VectorXd a = VectorXd::Ones(n) + VectorXd::Random(n);
 
   VectorXd b(n);
-  this->backend->sqrt(a, b);
-  this->backend->to_host(b);
+  this->_backend->sqrt(a, b);
+  this->_backend->to_host(b);
 
   for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR(std::sqrt(a(i)), b(i), 1e-6);
 }
@@ -202,8 +202,8 @@ TYPED_TEST(BackendTest, conj) {
   VectorXc a = VectorXc::Random(n);
 
   VectorXc b(n);
-  this->backend->conj(a, b);
-  this->backend->to_host(b);
+  this->_backend->conj(a, b);
+  this->_backend->to_host(b);
 
   for (Eigen::Index i = 0; i < n; i++) ASSERT_EQ(std::conj(a(i)), b(i));
 }
@@ -213,8 +213,8 @@ TYPED_TEST(BackendTest, arg) {
 
   VectorXc a = VectorXc::Random(n);
 
-  this->backend->arg(a, a);
-  this->backend->to_host(a);
+  this->_backend->arg(a, a);
+  this->_backend->to_host(a);
 
   for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR(std::abs(a(i)), 1.0, 1e-6);
 }
@@ -225,8 +225,8 @@ TYPED_TEST(BackendTest, reciprocal) {
   VectorXc a = 2.0 * VectorXc::Ones(n) + VectorXc::Random(n);
 
   VectorXc b(n);
-  this->backend->reciprocal(a, b);
-  this->backend->to_host(b);
+  this->_backend->reciprocal(a, b);
+  this->_backend->to_host(b);
 
   for (Eigen::Index i = 0; i < n; i++) {
     const auto expected = 1.0 / a(i);
@@ -240,8 +240,8 @@ TYPED_TEST(BackendTest, exp) {
   VectorXc a = VectorXc::Random(m);
 
   VectorXc b(m);
-  this->backend->exp(a, b);
-  this->backend->to_host(b);
+  this->_backend->exp(a, b);
+  this->_backend->to_host(b);
 
   for (Eigen::Index i = 0; i < m; i++) ASSERT_NEAR_COMPLEX(std::exp(a(i)), b(i), 1e-6);
 }
@@ -252,8 +252,8 @@ TYPED_TEST(BackendTest, pow) {
   VectorXd a = VectorXd::Random(m);
 
   VectorXd b(m);
-  this->backend->pow(a, 2.0, b);
-  this->backend->to_host(b);
+  this->_backend->pow(a, 2.0, b);
+  this->_backend->to_host(b);
 
   for (Eigen::Index i = 0; i < m; i++) ASSERT_NEAR(std::pow(a(i), 2.0), b(i), 1e-6);
 }
@@ -265,8 +265,8 @@ TYPED_TEST(BackendTest, create_diagonal) {
   VectorXc a = VectorXc::Random(m);
 
   MatrixXc b(m, n);
-  this->backend->create_diagonal(a, b);
-  this->backend->to_host(b);
+  this->_backend->create_diagonal(a, b);
+  this->_backend->to_host(b);
 
   for (int i = 0; i < m; i++)
     for (int j = 0; j < n; j++)
@@ -283,8 +283,8 @@ TYPED_TEST(BackendTest, get_diagonal) {
   MatrixXc a = MatrixXc::Random(m, n);
 
   VectorXc b(m);
-  this->backend->get_diagonal(a, b);
-  this->backend->to_host(b);
+  this->_backend->get_diagonal(a, b);
+  this->_backend->to_host(b);
 
   for (int i = 0; i < m; i++) ASSERT_EQ(b(i), a(i, i));
 }
@@ -296,8 +296,8 @@ TYPED_TEST(BackendTest, get_diagonal_real) {
   MatrixXd a = MatrixXd::Random(m, n);
 
   VectorXd b(m);
-  this->backend->get_diagonal(a, b);
-  this->backend->to_host(b);
+  this->_backend->get_diagonal(a, b);
+  this->_backend->to_host(b);
 
   for (int i = 0; i < m; i++) ASSERT_EQ(b(i), a(i, i));
 }
@@ -307,8 +307,8 @@ TYPED_TEST(BackendTest, set) {
 
   VectorXc a(m);
 
-  this->backend->set(m / 2, complex(10.0, 5.0), a);
-  this->backend->to_host(a);
+  this->_backend->set(m / 2, complex(10.0, 5.0), a);
+  this->_backend->to_host(a);
 
   ASSERT_EQ(a(m / 2), complex(10.0, 5.0));
 }
@@ -320,8 +320,8 @@ TYPED_TEST(BackendTest, set_row) {
   MatrixXc a = MatrixXc::Zero(m, n);
 
   VectorXc b = VectorXc::Random(n);
-  this->backend->set_row(b, m / 2, 6, 9, a);
-  this->backend->to_host(a);
+  this->_backend->set_row(b, m / 2, 6, 9, a);
+  this->_backend->to_host(a);
 
   for (int i = 0; i < m; i++)
     for (int j = 0; j < n; j++)
@@ -338,8 +338,8 @@ TYPED_TEST(BackendTest, set_col) {
   MatrixXc a = MatrixXc::Zero(m, n);
 
   VectorXc b = VectorXc::Random(m);
-  this->backend->set_col(b, 7, 2, 5, a);
-  this->backend->to_host(a);
+  this->_backend->set_col(b, 7, 2, 5, a);
+  this->_backend->to_host(a);
 
   for (int i = 0; i < m; i++)
     for (int j = 0; j < n; j++)
@@ -357,8 +357,8 @@ TYPED_TEST(BackendTest, get_col) {
 
   VectorXc b(m);
 
-  this->backend->get_col(a, n / 2, b);
-  this->backend->to_host(b);
+  this->_backend->get_col(a, n / 2, b);
+  this->_backend->to_host(b);
 
   for (int i = 0; i < m; i++) ASSERT_EQ(a(i, n / 2), b(i));
 }
@@ -372,8 +372,8 @@ TYPED_TEST(BackendTest, concal_col) {
   MatrixXc b = MatrixXc::Random(m, k);
 
   MatrixXc c(m, n + k);
-  this->backend->concat_col(a, b, c);
-  this->backend->to_host(c);
+  this->_backend->concat_col(a, b, c);
+  this->_backend->to_host(c);
 
   for (int i = 0; i < m; i++)
     for (int j = 0; j < n; j++) ASSERT_EQ(c(i, j), a(i, j));
@@ -389,8 +389,8 @@ TYPED_TEST(BackendTest, concal_row_vec) {
   VectorXc b = VectorXc::Random(k);
 
   VectorXc c(n + k);
-  this->backend->concat_row(a, b, c);
-  this->backend->to_host(c);
+  this->_backend->concat_row(a, b, c);
+  this->_backend->to_host(c);
 
   for (int i = 0; i < n; i++) ASSERT_EQ(c(i), a(i));
   for (int i = 0; i < k; i++) ASSERT_EQ(c(i + n), b(i));
@@ -405,8 +405,8 @@ TYPED_TEST(BackendTest, concal_row) {
   MatrixXc b = MatrixXc::Random(k, m);
 
   MatrixXc c(n + k, m);
-  this->backend->concat_row(a, b, c);
-  this->backend->to_host(c);
+  this->_backend->concat_row(a, b, c);
+  this->_backend->to_host(c);
 
   for (int i = 0; i < n; i++)
     for (int j = 0; j < m; j++) ASSERT_EQ(c(i, j), a(i, j));
@@ -421,8 +421,8 @@ TYPED_TEST(BackendTest, reduce_col) {
   MatrixXd a = MatrixXd::Random(m, n);
 
   VectorXd b(m);
-  this->backend->reduce_col(a, b);
-  this->backend->to_host(b);
+  this->_backend->reduce_col(a, b);
+  this->_backend->to_host(b);
 
   for (Eigen::Index i = 0; i < m; i++) {
     double expected = 0;
@@ -439,7 +439,7 @@ TYPED_TEST(BackendTest, max_abs_element) {
   Eigen::Index idx = 0;
   a.cwiseAbs2().maxCoeff(&idx);
 
-  ASSERT_EQ(this->backend->max_abs_element(a), a(idx));
+  ASSERT_EQ(this->_backend->max_abs_element(a), a(idx));
 }
 
 TYPED_TEST(BackendTest, max_element) {
@@ -449,7 +449,7 @@ TYPED_TEST(BackendTest, max_element) {
 
   const auto expected = a.maxCoeff();
 
-  ASSERT_EQ(this->backend->max_element(a), expected);
+  ASSERT_EQ(this->_backend->max_element(a), expected);
 }
 
 TYPED_TEST(BackendTest, scale) {
@@ -458,8 +458,8 @@ TYPED_TEST(BackendTest, scale) {
   VectorXc a = VectorXc::Random(n);
   VectorXc a_tmp = a;
 
-  this->backend->scale(complex(1, 1), a);
-  this->backend->to_host(a);
+  this->_backend->scale(complex(1, 1), a);
+  this->_backend->to_host(a);
 
   for (Eigen::Index i = 0; i < n; i++) {
     const auto expected = complex(1, 1) * a_tmp(i);
@@ -473,8 +473,8 @@ TYPED_TEST(BackendTest, scale_real) {
   VectorXd a = VectorXd::Random(n);
   VectorXd a_tmp = a;
 
-  this->backend->scale(2.0, a);
-  this->backend->to_host(a);
+  this->_backend->scale(2.0, a);
+  this->_backend->to_host(a);
 
   for (Eigen::Index i = 0; i < n; i++) {
     const auto expected = 2.0 * a_tmp(i);
@@ -491,7 +491,7 @@ TYPED_TEST(BackendTest, dot) {
   auto expected = complex(0, 0);
   for (Eigen::Index i = 0; i < n; i++) expected += std::conj(a(i)) * b(i);
 
-  ASSERT_NEAR_COMPLEX(this->backend->dot(a, b), expected, 1e-6);
+  ASSERT_NEAR_COMPLEX(this->_backend->dot(a, b), expected, 1e-6);
 }
 
 TYPED_TEST(BackendTest, dot_real) {
@@ -503,7 +503,7 @@ TYPED_TEST(BackendTest, dot_real) {
   auto expected = 0.0;
   for (Eigen::Index i = 0; i < n; i++) expected += a(i) * b(i);
 
-  ASSERT_NEAR(this->backend->dot(a, b), expected, 1e-6);
+  ASSERT_NEAR(this->_backend->dot(a, b), expected, 1e-6);
 }
 
 TYPED_TEST(BackendTest, add_vector_real) {
@@ -512,16 +512,16 @@ TYPED_TEST(BackendTest, add_vector_real) {
   VectorXd a = VectorXd::Random(m);
 
   VectorXd b = VectorXd::Zero(m);
-  this->backend->add(1.0, a, b);
-  this->backend->to_host(b);
+  this->_backend->add(1.0, a, b);
+  this->_backend->to_host(b);
 
   VectorXd expected = a;
 
   for (Eigen::Index i = 0; i < m; i++) ASSERT_EQ(b(i), expected(i));
 
   VectorXd aa = VectorXd::Random(m);
-  this->backend->add(2.0, aa, b);
-  this->backend->to_host(b);
+  this->_backend->add(2.0, aa, b);
+  this->_backend->to_host(b);
 
   expected += 2.0 * aa.adjoint();
 
@@ -535,8 +535,8 @@ TYPED_TEST(BackendTest, add_matrix_real) {
   MatrixXd a = MatrixXd::Random(m, n);
 
   MatrixXd b = MatrixXd::Zero(m, n);
-  this->backend->add(1.0, a, b);
-  this->backend->to_host(b);
+  this->_backend->add(1.0, a, b);
+  this->_backend->to_host(b);
 
   MatrixXd expected = a;
 
@@ -544,8 +544,8 @@ TYPED_TEST(BackendTest, add_matrix_real) {
     for (Eigen::Index j = 0; j < n; j++) ASSERT_EQ(b(i, j), expected(i, j));
 
   MatrixXd aa = MatrixXd::Random(m, n);
-  this->backend->add(2.0, aa, b);
-  this->backend->to_host(b);
+  this->_backend->add(2.0, aa, b);
+  this->_backend->to_host(b);
 
   expected += 2.0 * aa;
 
@@ -562,8 +562,8 @@ TYPED_TEST(BackendTest, mul_matrix) {
   MatrixXc b = MatrixXc::Random(m, m);
 
   MatrixXc c = MatrixXc::Zero(n, m);
-  this->backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, a, b, ZERO, c);
-  this->backend->to_host(c);
+  this->_backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, a, b, ZERO, c);
+  this->_backend->to_host(c);
 
   MatrixXc expected = a * b;
 
@@ -572,8 +572,8 @@ TYPED_TEST(BackendTest, mul_matrix) {
 
   MatrixXc aa = MatrixXc::Random(k, n);
   MatrixXc bb = MatrixXc::Random(m, k);
-  this->backend->mul(TRANSPOSE::CONJ_TRANS, TRANSPOSE::TRANS, 2.0 * ONE, aa, bb, ONE, c);
-  this->backend->to_host(c);
+  this->_backend->mul(TRANSPOSE::CONJ_TRANS, TRANSPOSE::TRANS, 2.0 * ONE, aa, bb, ONE, c);
+  this->_backend->to_host(c);
 
   expected += 2.0 * (aa.adjoint() * bb.transpose());
 
@@ -589,15 +589,15 @@ TYPED_TEST(BackendTest, mul_vec) {
   VectorXc b = VectorXc::Random(m);
 
   VectorXc c = VectorXc::Zero(n);
-  this->backend->mul(TRANSPOSE::NO_TRANS, ONE, a, b, ZERO, c);
-  this->backend->to_host(c);
+  this->_backend->mul(TRANSPOSE::NO_TRANS, ONE, a, b, ZERO, c);
+  this->_backend->to_host(c);
 
   VectorXc expected = a * b;
   for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR_COMPLEX(c(i), expected(i), 1e-6);
 
   MatrixXc aa = MatrixXc::Random(m, n);
-  this->backend->mul(TRANSPOSE::CONJ_TRANS, 3.0 * ONE, aa, b, ONE, c);
-  this->backend->to_host(c);
+  this->_backend->mul(TRANSPOSE::CONJ_TRANS, 3.0 * ONE, aa, b, ONE, c);
+  this->_backend->to_host(c);
 
   expected += 3.0 * (aa.adjoint() * b);
   for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR_COMPLEX(c(i), expected(i), 1e-6);
@@ -612,8 +612,8 @@ TYPED_TEST(BackendTest, mul_matrix_real) {
   MatrixXd b = MatrixXd::Random(m, m);
 
   MatrixXd c = MatrixXd::Zero(n, m);
-  this->backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, 1.0, a, b, 0.0, c);
-  this->backend->to_host(c);
+  this->_backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, 1.0, a, b, 0.0, c);
+  this->_backend->to_host(c);
 
   MatrixXd expected = a * b;
 
@@ -622,8 +622,8 @@ TYPED_TEST(BackendTest, mul_matrix_real) {
 
   MatrixXd aa = MatrixXd::Random(k, n);
   MatrixXd bb = MatrixXd::Random(m, k);
-  this->backend->mul(TRANSPOSE::TRANS, TRANSPOSE::TRANS, 2.0, aa, bb, 1.0, c);
-  this->backend->to_host(c);
+  this->_backend->mul(TRANSPOSE::TRANS, TRANSPOSE::TRANS, 2.0, aa, bb, 1.0, c);
+  this->_backend->to_host(c);
 
   expected += 2.0 * (aa.transpose() * bb.transpose());
 
@@ -639,15 +639,15 @@ TYPED_TEST(BackendTest, mul_vec_real) {
   VectorXd b = VectorXd::Random(m);
 
   VectorXd c = VectorXd::Zero(n);
-  this->backend->mul(TRANSPOSE::NO_TRANS, 1.0, a, b, 0.0, c);
-  this->backend->to_host(c);
+  this->_backend->mul(TRANSPOSE::NO_TRANS, 1.0, a, b, 0.0, c);
+  this->_backend->to_host(c);
 
   VectorXd expected = a * b;
   for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR(c(i), expected(i), 1e-6);
 
   MatrixXd aa = MatrixXd::Random(m, n);
-  this->backend->mul(TRANSPOSE::TRANS, 3.0, aa, b, 1.0, c);
-  this->backend->to_host(c);
+  this->_backend->mul(TRANSPOSE::TRANS, 3.0, aa, b, 1.0, c);
+  this->_backend->to_host(c);
 
   expected += 3.0 * (aa.transpose() * b);
   for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR(c(i), expected(i), 1e-6);
@@ -660,8 +660,8 @@ TYPED_TEST(BackendTest, hadamard_product) {
   VectorXc b = VectorXc::Random(n);
 
   VectorXc c(n);
-  this->backend->hadamard_product(a, b, c);
-  this->backend->to_host(c);
+  this->_backend->hadamard_product(a, b, c);
+  this->_backend->to_host(c);
 
   for (Eigen::Index i = 0; i < n; i++) {
     const auto expected = a(i) * b(i);
@@ -677,8 +677,8 @@ TYPED_TEST(BackendTest, hadamard_product_mat) {
   MatrixXc b = MatrixXc::Random(m, n);
 
   MatrixXc c(m, n);
-  this->backend->hadamard_product(a, b, c);
-  this->backend->to_host(c);
+  this->_backend->hadamard_product(a, b, c);
+  this->_backend->to_host(c);
 
   for (Eigen::Index i = 0; i < m; i++)
     for (Eigen::Index j = 0; j < n; j++) ASSERT_NEAR_COMPLEX(c(i, j), (a(i, j) * b(i, j)), 1e-6);
@@ -694,8 +694,8 @@ TYPED_TEST(BackendTest, solvet) {
 
   VectorXd b = a * x;
 
-  this->backend->solvet(a, b);
-  this->backend->to_host(b);
+  this->_backend->solvet(a, b);
+  this->_backend->to_host(b);
 
   for (Eigen::Index i = 0; i < m; i++) ASSERT_NEAR(b(i), x(i), 1e-6);
 }
@@ -710,8 +710,8 @@ TYPED_TEST(BackendTest, solveh) {
 
   VectorXc b = a * x;
 
-  this->backend->solveh(a, b);
-  this->backend->to_host(b);
+  this->_backend->solveh(a, b);
+  this->_backend->to_host(b);
 
   for (Eigen::Index i = 0; i < m; i++) ASSERT_NEAR_COMPLEX(b(i), x(i), 1e-6);
 }
@@ -738,8 +738,8 @@ TYPED_TEST(BackendTest, max_eigen_vector) {
   MatrixXc a = u * lambda * u.adjoint();
 
   VectorXc b(n);
-  this->backend->max_eigen_vector(a, b);
-  this->backend->to_host(b);
+  this->_backend->max_eigen_vector(a, b);
+  this->_backend->to_host(b);
 
   Eigen::MatrixXf::Index max_idx;
   u.col(n - 1).cwiseAbs2().maxCoeff(&max_idx);
@@ -760,11 +760,11 @@ TYPED_TEST(BackendTest, pseudo_inverse_svd) {
   MatrixXc vt(n, n);
   MatrixXc buf = MatrixXc::Zero(n, m);
   MatrixXc tmp = a;
-  this->backend->pseudo_inverse_svd(tmp, 0.0, u, s, vt, buf, b);
+  this->_backend->pseudo_inverse_svd(tmp, 0.0, u, s, vt, buf, b);
 
   MatrixXc c = MatrixXc::Zero(m, m);
-  this->backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, a, b, ZERO, c);
-  this->backend->to_host(c);
+  this->_backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, a, b, ZERO, c);
+  this->_backend->to_host(c);
 
   for (Eigen::Index i = 0; i < m; i++)
     for (Eigen::Index j = 0; j < m; j++)
@@ -785,11 +785,11 @@ TYPED_TEST(BackendTest, pseudo_inverse_svd_real) {
   MatrixXd vt(n, n);
   MatrixXd buf = MatrixXd::Zero(n, m);
   MatrixXd tmp = a;
-  this->backend->pseudo_inverse_svd(tmp, 0.0, u, s, vt, buf, b);
+  this->_backend->pseudo_inverse_svd(tmp, 0.0, u, s, vt, buf, b);
 
   MatrixXd c = MatrixXd::Zero(m, m);
-  this->backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, 1.0, a, b, 0.0, c);
-  this->backend->to_host(c);
+  this->_backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, 1.0, a, b, 0.0, c);
+  this->_backend->to_host(c);
 
   for (Eigen::Index i = 0; i < m; i++)
     for (Eigen::Index j = 0; j < m; j++)

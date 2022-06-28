@@ -88,9 +88,12 @@ struct LegacyDrive {
   uint8_t phase;
   uint8_t duty;
 
+  static uint8_t to_phase(const Drive d) { return static_cast<uint8_t>(static_cast<int32_t>(std::round(d.phase * 256.0)) & 0xFF); }
+  static uint8_t to_duty(const Drive d) { return std::round(510.0 * std::asin(std::clamp(d.amp, 0.0, 1.0)) / autd3::driver::pi); }
+
   void set(const Drive d) {
-    phase = static_cast<uint8_t>(static_cast<int32_t>(std::round(d.phase * 256.0)) & 0xFF);
-    duty = std::round(510.0 * std::asin(std::clamp(d.amp, 0.0, 1.0)) / autd3::driver::pi);
+    phase = to_phase(d);
+    duty = to_duty(d);
   }
 };
 

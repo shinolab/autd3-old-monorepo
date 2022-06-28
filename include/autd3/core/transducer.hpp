@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/06/2022
+// Last Modified: 28/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -39,36 +39,17 @@ using Matrix4X4 = Eigen::Matrix<double, 4, 4>;
 using Quaternion = Eigen::Quaternion<double>;
 
 /**
- * @brief Abstract container of duty ratio and phase
- */
-template <typename T>
-struct DriveData {
-  DriveData() = default;
-  virtual ~DriveData() = default;
-  DriveData(const DriveData& v) noexcept = default;
-  DriveData& operator=(const DriveData& obj) = default;
-  DriveData(DriveData&& obj) = default;
-  DriveData& operator=(DriveData&& obj) = default;
-
-  virtual void init(size_t size) = 0;
-  virtual void set_drive(const T& tr, double phase, double amp) = 0;
-  virtual void copy_from(size_t idx, const typename T::D& src) = 0;
-};
-
-/**
  * \brief Transduce contains a position and id, direction, frequency of a transducer
  */
-template <typename T>
 struct Transducer {
-  using D = T;
-
   Transducer(const size_t id, Vector3 pos, Vector3 x_direction, Vector3 y_direction, Vector3 z_direction) noexcept
       : _id(id),
         _pos(std::move(pos)),
         _x_direction(std::move(x_direction)),
         _y_direction(std::move(y_direction)),
         _z_direction(std::move(z_direction)),
-        _mod_delay(0) {}
+        _mod_delay(0),
+        _cycle(4096) {}
   virtual ~Transducer() = default;
   Transducer(const Transducer& v) noexcept = default;
   Transducer& operator=(const Transducer& obj) = default;
@@ -108,21 +89,21 @@ struct Transducer {
   /**
    * \brief Frequency division ratio. The frequency will be autd3::driver::FPGA_CLK_FREQ/cycle.
    */
-  [[nodiscard]] virtual uint16_t cycle() const = 0;
+  [[nodiscard]] uint16_t cycle() const { return _cycle; }
   /**
    * \brief Frequency of the transducer
    */
-  [[nodiscard]] virtual double frequency() const = 0;
+  [[nodiscard]] double frequency() const { return driver::FPGA_CLK_FREQ / static_cast<double>(_cycle); }
   /**
    * \brief Wavelength of the ultrasound emitted from the transducer
    * @param sound_speed Speed of sound in m/s.
    */
-  [[nodiscard]] virtual double wavelength(double sound_speed) const = 0;
+  [[nodiscard]] double wavelength(double sound_speed) const { return sound_speed * 1e3 / frequency(); }
   /**
    * \brief Wavenumber of the ultrasound emitted from the transducer
    * @param sound_speed Speed of sound in m/s.
    */
-  [[nodiscard]] virtual double wavenumber(double sound_speed) const = 0;
+  [[nodiscard]] double wavenumber(double sound_speed) const { return 2.0 * driver::pi * frequency() / (sound_speed * 1e3); }
 
  private:
   size_t _id;
@@ -131,6 +112,7 @@ struct Transducer {
   Vector3 _y_direction;
   Vector3 _z_direction;
   uint16_t _mod_delay;
+  uint16_t _cycle;
 };
 
 }  // namespace autd3::core

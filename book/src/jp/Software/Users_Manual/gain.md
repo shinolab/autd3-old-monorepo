@@ -160,11 +160,11 @@ cmake .. -DBUILD_HOLO_GAIN=ON -DBUILD_BLAS_BACKEND=ON -DBLAS_LIB_DIR=<your BLAS 
 #include "autd3.hpp"
 
 template <typename T = LegacyTransducer, enable_if_t<is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
-class FocalPoint final : public Gain<T> {
+class FocalPoint final : public Gain {
  public:
   explicit FocalPoint(Vector3 point) : _point(move(point)) {}
 
-  void calc(const Geometry<T>& geometry) override {
+  void calc(const Geometry& geometry) override {
     std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
       std::for_each(dev.begin(), dev.end(), [&](const auto& transducer) {
         const auto dist = (_point - transducer.position()).norm();

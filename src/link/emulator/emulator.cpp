@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 28/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,19 +21,14 @@
 #include <unistd.h>
 #endif
 
-#include "autd3/core/geometry/dynamic_transducer.hpp"
-#include "autd3/core/geometry/legacy_transducer.hpp"
-#include "autd3/core/geometry/normal_phase_transducer.hpp"
-#include "autd3/core/geometry/normal_transducer.hpp"
 #include "autd3/core/interface.hpp"
 #include "autd3/core/link.hpp"
 
 namespace autd3::link {
 
-template <typename T>
 class EmulatorImpl final : public core::Link {
  public:
-  explicit EmulatorImpl(const uint16_t port, const core::Geometry<T>& geometry)
+  explicit EmulatorImpl(const uint16_t port, const core::Geometry& geometry)
       : Link(), _is_open(false), _port(port), _geometry_datagram(init_geometry_datagram(geometry)) {}
   ~EmulatorImpl() override = default;
   EmulatorImpl(const EmulatorImpl& v) noexcept = delete;
@@ -124,7 +119,7 @@ class EmulatorImpl final : public core::Link {
   uint8_t _last_msg_id = 0;
   driver::TxDatagram _geometry_datagram;
 
-  static driver::TxDatagram init_geometry_datagram(const core::Geometry<T>& geometry) {
+  static driver::TxDatagram init_geometry_datagram(const core::Geometry& geometry) {
     driver::TxDatagram buf(geometry.num_devices());
 
     auto& uh = buf.header();
@@ -136,9 +131,9 @@ class EmulatorImpl final : public core::Link {
     for (size_t i = 0; i < geometry.num_devices(); i++) {
       auto* const cursor = reinterpret_cast<float*>(buf.bodies()[i].data);
       auto& tr = geometry[i][0];
-      auto origin = tr.position().template cast<float>();
-      auto right = tr.x_direction().template cast<float>();
-      auto up = tr.y_direction().template cast<float>();
+      auto origin = tr.position().cast<float>();
+      auto right = tr.x_direction().cast<float>();
+      auto up = tr.y_direction().cast<float>();
       cursor[0] = origin.x();
       cursor[1] = origin.y();
       cursor[2] = origin.z();
@@ -153,24 +148,8 @@ class EmulatorImpl final : public core::Link {
     return buf;
   }
 };
-template <>
-core::LinkPtr Emulator<core::LegacyTransducer>::build() {
-  core::LinkPtr link = std::make_unique<EmulatorImpl<core::LegacyTransducer>>(_port, _geometry);
-  return link;
-}
-template <>
-core::LinkPtr Emulator<core::NormalTransducer>::build() {
-  core::LinkPtr link = std::make_unique<EmulatorImpl<core::NormalTransducer>>(_port, _geometry);
-  return link;
-}
-template <>
-core::LinkPtr Emulator<core::NormalPhaseTransducer>::build() {
-  core::LinkPtr link = std::make_unique<EmulatorImpl<core::NormalPhaseTransducer>>(_port, _geometry);
-  return link;
-}
-template <>
-core::LinkPtr Emulator<core::DynamicTransducer>::build() {
-  core::LinkPtr link = std::make_unique<EmulatorImpl<core::DynamicTransducer>>(_port, _geometry);
+core::LinkPtr Emulator::build() {
+  core::LinkPtr link = std::make_unique<EmulatorImpl>(_port, _geometry);
   return link;
 }
 

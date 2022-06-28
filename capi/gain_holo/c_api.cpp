@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/06/2022
+// Last Modified: 28/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -90,12 +90,12 @@ void AUTDGainHoloGreedy(void** gain, const void* backend, const int32_t phase_di
 }
 
 void AUTDGainHoloAdd(void* gain, const double x, const double y, const double z, const double amp) {
-  auto* g = static_cast<autd3::gain::holo::Holo<T>*>(gain);
+  auto* g = static_cast<autd3::gain::holo::Holo*>(gain);
   g->add_focus(autd3::core::Vector3(x, y, z), amp);
 }
 
 void AUTDSetConstraint(void* gain, const int32_t type, void* param) {
-  auto* g = static_cast<autd3::gain::holo::Holo<T>*>(gain);
+  auto* g = static_cast<autd3::gain::holo::Holo*>(gain);
   switch (type) {
     case 0:
       g->constraint = autd3::gain::holo::DontCare();

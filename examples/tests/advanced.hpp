@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/06/2022
+// Last Modified: 28/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,28 +30,29 @@ class BurstModulation final : public autd3::Modulation {
   size_t _buf_size;
 };
 
-template <typename T = autd3::LegacyTransducer, std::enable_if_t<std::is_base_of_v<autd3::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
-class UniformGain final : public autd3::Gain<T> {
+class UniformGain final : public autd3::Gain {
  public:
   UniformGain() = default;
 
-  void calc(const autd3::Geometry<T>& geometry) override {
+  void calc(const autd3::Geometry& geometry) override {
     std::for_each(geometry.begin(), geometry.end(), [this](const auto& dev) {
-      std::for_each(dev.begin(), dev.end(), [this](const auto& trans) { this->_props.drives.set_drive(trans, 0.0, 1.0); });
+      std::for_each(dev.begin(), dev.end(), [this](const auto& trans) {
+        this->_drives[trans.id()].amp = 1.0;
+        this->_drives[trans.id()].phase = 0.0;
+      });
     });
   }
 };
 
-template <typename T>
-void advanced_test(autd3::ControllerX<T>& autd) {
+void advanced_test(autd3::Controller& autd) {
   auto config = autd3::SilencerConfig::none();
   autd.send(config);
 
   // autd.geometry()[0][0].mod_delay() = 0;
   // autd.geometry()[0][17].mod_delay() = 1;
-  // autd.send(autd3::ModDelayConfig<T>());
+  // autd.send(autd3::ModDelayConfig());
 
-  UniformGain<T> g;
+  UniformGain g;
   BurstModulation m;
 
   autd.send(m, g);
