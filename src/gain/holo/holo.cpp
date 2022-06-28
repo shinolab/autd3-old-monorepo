@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/06/2022
+// Last Modified: 29/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -48,8 +48,8 @@ void back_prop(const BackendPtr& backend, const MatrixXc& transfer, const Vector
 void SDP::calc(const core::Geometry& geometry) {
   _backend->init();
 
-  const auto m = _foci.size();
-  const auto n = geometry.num_transducers();
+  const auto m = static_cast<Eigen::Index>(_foci.size());
+  const auto n = static_cast<Eigen::Index>(geometry.num_transducers());
 
   const VectorXc amps_ = Eigen::Map<VectorXc, Eigen::Unaligned>(_amps.data(), static_cast<Eigen::Index>(_amps.size()));
 
@@ -69,12 +69,12 @@ void SDP::calc(const core::Geometry& geometry) {
   _backend->pseudo_inverse_svd(b_tmp, alpha, u_, s, vt, buf, pseudo_inv_b);
 
   MatrixXc mm(m, m);
-  VectorXc one = VectorXc::Ones(static_cast<Eigen::Index>(m));
+  VectorXc one = VectorXc::Ones(m);
   _backend->create_diagonal(one, mm);
 
   _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, -ONE, b, pseudo_inv_b, ONE, mm);
 
-  MatrixXc tmp = VectorXc::Zero(static_cast<Eigen::Index>(m), static_cast<Eigen::Index>(m));
+  MatrixXc tmp = VectorXc::Zero(m, m);
   _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, p, mm, ZERO, tmp);
   _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, tmp, p, ZERO, mm);
 
@@ -84,8 +84,8 @@ void SDP::calc(const core::Geometry& geometry) {
   std::random_device rnd;
   std::mt19937 mt(rnd());
   std::uniform_real_distribution<double> range(0, 1);
-  VectorXc zero = VectorXc::Zero(static_cast<Eigen::Index>(m));
-  VectorXc x = VectorXc::Zero(static_cast<Eigen::Index>(m));
+  VectorXc zero = VectorXc::Zero(m);
+  VectorXc x = VectorXc::Zero(m);
   VectorXc x_conj(m);
   VectorXc mmc(m);
   for (size_t i = 0; i < repeat; i++) {
@@ -114,7 +114,7 @@ void SDP::calc(const core::Geometry& geometry) {
   VectorXc u(m);
   _backend->max_eigen_vector(x_mat, u);
 
-  VectorXc ut = VectorXc::Zero(static_cast<Eigen::Index>(m));
+  VectorXc ut = VectorXc::Zero(m);
   _backend->mul(TRANSPOSE::NO_TRANS, ONE, p, u, ZERO, ut);
 
   VectorXc q = VectorXc::Zero(n);
@@ -201,8 +201,8 @@ void EVD::calc(const core::Geometry& geometry) {
 void LSS::calc(const core::Geometry& geometry) {
   _backend->init();
 
-  const auto m = _foci.size();
-  const auto n = geometry.num_transducers();
+  const auto m = static_cast<Eigen::Index>(_foci.size());
+  const auto n = static_cast<Eigen::Index>(geometry.num_transducers());
 
   const VectorXc p = Eigen::Map<VectorXc, Eigen::Unaligned>(_amps.data(), static_cast<Eigen::Index>(_amps.size()));
 
@@ -229,7 +229,7 @@ void GS::calc(const core::Geometry& geometry) {
   _backend->init();
 
   const auto m = static_cast<Eigen::Index>(_foci.size());
-  const auto n = geometry.num_transducers();
+  const auto n = static_cast<Eigen::Index>(geometry.num_transducers());
 
   const VectorXc amps_ = Eigen::Map<VectorXc, Eigen::Unaligned>(_amps.data(), static_cast<Eigen::Index>(_amps.size()));
 
