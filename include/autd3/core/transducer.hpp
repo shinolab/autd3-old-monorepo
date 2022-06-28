@@ -94,6 +94,22 @@ struct Transducer {
    * \brief Frequency of the transducer
    */
   [[nodiscard]] double frequency() const { return driver::FPGA_CLK_FREQ / static_cast<double>(_cycle); }
+
+  /**
+   * \brief Set fFrequency division ratio. The frequency will be autd3::driver::FPGA_CLK_FREQ/cycle.
+   * \details This has no effect in LegacyMode.
+   */
+  void set_cycle(const uint16_t cycle) noexcept { _cycle = cycle; }
+
+  /**
+   * \brief Set fFrequency of the transducer.
+   * \details This has no effect in LegacyMode.
+   */
+  void set_frequency(const double freq) noexcept {
+    const auto cycle = static_cast<uint16_t>(std::round(static_cast<double>(driver::FPGA_CLK_FREQ) / freq));
+    set_cycle(cycle);
+  }
+
   /**
    * \brief Wavelength of the ultrasound emitted from the transducer
    * @param sound_speed Speed of sound in m/s.

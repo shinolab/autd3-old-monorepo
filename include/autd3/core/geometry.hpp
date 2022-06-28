@@ -158,6 +158,7 @@ struct Geometry {
   const Device& operator[](const size_t i) const { return _devices[i]; }
 
   const std::unique_ptr<Mode>& mode() const { return _mode; }
+  std::unique_ptr<Mode>& mode() { return _mode; }
 
  private:
   std::vector<Device> _devices;

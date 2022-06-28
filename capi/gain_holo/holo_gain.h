@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/06/2022
+// Last Modified: 28/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,7 +28,6 @@ EXPORT_AUTD void AUTDGainHoloLM(OUT void** gain, IN const void* backend, IN doub
 EXPORT_AUTD void AUTDGainHoloGreedy(OUT void** gain, IN const void* backend, IN int32_t phase_div);
 EXPORT_AUTD void AUTDGainHoloAdd(IN void* gain, IN double x, IN double y, IN double z, IN double amp);
 EXPORT_AUTD void AUTDSetConstraint(IN void* gain, IN int32_t type, IN void* param);
-EXPORT_AUTD void AUTDSetModeHolo(IN uint8_t mode);
 #ifdef __cplusplus
 }
 #endif
