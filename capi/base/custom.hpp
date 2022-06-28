@@ -15,12 +15,10 @@
 #include <vector>
 
 #include "autd3.hpp"
-#include "autd3/core/geometry/dynamic_transducer.hpp"
 
 /**
  * @brief Gain that can set the phase and duty ratio freely
  */
-template <typename T = autd3::core::DynamicTransducer, std::enable_if_t<std::is_base_of_v<autd3::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class CustomGain final : public autd3::Gain {
  public:
   /**
@@ -36,7 +34,10 @@ class CustomGain final : public autd3::Gain {
 
   void calc(const autd3::core::Geometry& geometry) override {
     std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-      std::for_each(dev.begin(), dev.end(), [&](const auto& tr) { this->_props.drives.set_drive(tr, _phase[tr.id()], _amp[tr.id()]); });
+      std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
+        this->_drives[tr.id()].amp = _amp[tr.id()];
+        this->_drives[tr.id()].phase = _phase[tr.id()];
+      });
     });
   }
 

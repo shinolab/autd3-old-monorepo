@@ -14,11 +14,8 @@
 
 #include "../base/wrapper.hpp"
 #include "./holo_gain.h"
-#include "autd3/core/geometry/dynamic_transducer.hpp"
 #include "autd3/gain/backend.hpp"
 #include "autd3/gain/holo.hpp"
-
-using T = autd3::core::DynamicTransducer;
 
 void AUTDEigenBackend(void** out) {
   auto* b = backend_create(autd3::gain::holo::EigenBackend::create());
@@ -32,7 +29,7 @@ void AUTDDeleteBackend(const void* backend) {
 
 void AUTDGainHoloSDP(void** gain, const void* backend, const double alpha, const double lambda, const uint64_t repeat) {
   const auto b = static_cast<const BackendWrapper*>(backend);
-  auto* g = new autd3::gain::holo::SDP<T>(b->ptr);
+  auto* g = new autd3::gain::holo::SDP(b->ptr);
   g->alpha = alpha;
   g->lambda = lambda;
   g->repeat = repeat;
@@ -41,27 +38,27 @@ void AUTDGainHoloSDP(void** gain, const void* backend, const double alpha, const
 
 void AUTDGainHoloEVD(void** gain, const void* backend, const double gamma) {
   const auto b = static_cast<const BackendWrapper*>(backend);
-  auto* g = new autd3::gain::holo::EVD<T>(b->ptr);
+  auto* g = new autd3::gain::holo::EVD(b->ptr);
   g->gamma = gamma;
   *gain = g;
 }
 
 void AUTDGainHoloNaive(void** gain, const void* backend) {
   const auto b = static_cast<const BackendWrapper*>(backend);
-  auto* g = new autd3::gain::holo::Naive<T>(b->ptr);
+  auto* g = new autd3::gain::holo::Naive(b->ptr);
   *gain = g;
 }
 
 void AUTDGainHoloGS(void** gain, const void* backend, const uint64_t repeat) {
   const auto b = static_cast<const BackendWrapper*>(backend);
-  auto* g = new autd3::gain::holo::GS<T>(b->ptr);
+  auto* g = new autd3::gain::holo::GS(b->ptr);
   g->repeat = repeat;
   *gain = g;
 }
 
 void AUTDGainHoloGSPAT(void** gain, const void* backend, const uint64_t repeat) {
   const auto b = static_cast<const BackendWrapper*>(backend);
-  auto* g = new autd3::gain::holo::GSPAT<T>(b->ptr);
+  auto* g = new autd3::gain::holo::GSPAT(b->ptr);
   g->repeat = repeat;
   *gain = g;
 }
@@ -73,7 +70,7 @@ void AUTDGainHoloLM(void** gain, const void* backend, const double eps_1, const 
   initial_.reserve(initial_size);
   for (auto i = 0; i < initial_size; i++) initial_.emplace_back(initial[i]);
 
-  auto* g = new autd3::gain::holo::LM<T>(b->ptr);
+  auto* g = new autd3::gain::holo::LM(b->ptr);
   g->eps_1 = eps_1;
   g->eps_2 = eps_2;
   g->tau = tau;
@@ -84,7 +81,7 @@ void AUTDGainHoloLM(void** gain, const void* backend, const double eps_1, const 
 
 void AUTDGainHoloGreedy(void** gain, const void* backend, const int32_t phase_div) {
   const auto b = static_cast<const BackendWrapper*>(backend);
-  auto* g = new autd3::gain::holo::Greedy<T>(b->ptr);
+  auto* g = new autd3::gain::holo::Greedy(b->ptr);
   g->phase_div = phase_div;
   *gain = g;
 }
@@ -113,5 +110,3 @@ void AUTDSetConstraint(void* gain, const int32_t type, void* param) {
       break;
   }
 }
-
-void AUTDSetModeHolo(const uint8_t mode) { T::mode() = static_cast<autd3::core::TransducerMode>(mode); }
