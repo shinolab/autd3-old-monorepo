@@ -316,7 +316,7 @@ TEST(CPUTest, operation_normal_legacy_body) {
   for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++) {
     ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT] & 0xFF,
               autd3::driver::LegacyDrive::to_phase(drives[i]));
-    ASSERT_EQ((tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT] >> 8) & 0xFF,
+    ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT] >> 8,
               autd3::driver::LegacyDrive::to_duty(drives[i]));
   }
 
@@ -419,7 +419,7 @@ TEST(CPUTest, operation_point_stm_body) {
   for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].point_stm_head().data()[1], 3224);
   for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].point_stm_head().data()[2], 0);
   for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].point_stm_head().data()[3], sp & 0xFFFF);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].point_stm_head().data()[4], (sp >> 16) & 0xFFFF);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].point_stm_head().data()[4], sp >> 16);
   ASSERT_EQ(tx.num_bodies, 10);
 
   point_stm_header(tx);
@@ -489,7 +489,7 @@ TEST(CPUTest, operation_gain_stm_legacy_body) {
   for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++) {
     ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT] & 0xFF,
               autd3::driver::LegacyDrive::to_phase(drives_list[0][i]));
-    ASSERT_EQ((tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT] >> 8) & 0xFF,
+    ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT] >> 8,
               autd3::driver::LegacyDrive::to_duty(drives_list[0][i]));
   }
   ASSERT_EQ(tx.num_bodies, 10);
@@ -502,7 +502,7 @@ TEST(CPUTest, operation_gain_stm_legacy_body) {
   for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++) {
     ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT] & 0xFF,
               autd3::driver::LegacyDrive::to_phase(drives_list[4][i]));
-    ASSERT_EQ((tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT] >> 8) & 0xFF,
+    ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT] >> 8,
               autd3::driver::LegacyDrive::to_duty(drives_list[4][i]));
   }
   ASSERT_EQ(tx.num_bodies, 10);

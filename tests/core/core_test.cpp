@@ -26,8 +26,6 @@
 
 using autd3::core::Quaternion;
 using autd3::core::Vector3;
-using autd3::driver::CPUControlFlags;
-using autd3::driver::FPGAControlFlags;
 
 TEST(TransducerTest, Transducer) {
   autd3::core::Transducer tr(1, Vector3(10, 20, 30), Vector3(1, 2, 3), Vector3(4, 5, 6), Vector3(7, 8, 9));
