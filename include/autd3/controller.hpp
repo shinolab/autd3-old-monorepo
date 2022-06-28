@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/06/2022
+// Last Modified: 28/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,11 +22,8 @@
 #include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/driver/cpu/ec_config.hpp"
 #include "autd3/gain/primitive.hpp"
-#include "core/geometry/dynamic_transducer.hpp"
-#include "core/geometry/geometry.hpp"
-#include "core/geometry/legacy_transducer.hpp"
-#include "core/geometry/normal_phase_transducer.hpp"
-#include "core/geometry/normal_transducer.hpp"
+#include "core/amplitudes.hpp"
+#include "core/geometry.hpp"
 #include "core/interface.hpp"
 #include "core/link.hpp"
 #include "core/silencer_config.hpp"
@@ -37,20 +34,19 @@ namespace autd3 {
 /**
  * @brief AUTD Controller
  */
-template <typename T, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
-class ControllerX {
+class Controller {
  public:
-  ControllerX() : force_fan(false), reads_fpga_info(false), check_trials(0), send_interval(1), _geometry(), _tx_buf(0), _rx_buf(0), _link(nullptr) {}
+  Controller() : force_fan(false), reads_fpga_info(false), check_trials(0), send_interval(1), _geometry(), _tx_buf(0), _rx_buf(0), _link(nullptr) {}
 
   /**
    * @brief Geometry of the devices
    */
-  core::Geometry<T>& geometry() noexcept { return _geometry; }
+  core::Geometry& geometry() noexcept { return _geometry; }
 
   /**
    * @brief Geometry of the devices
    */
-  [[nodiscard]] const core::Geometry<T>& geometry() const noexcept { return _geometry; }
+  [[nodiscard]] const core::Geometry& geometry() const noexcept { return _geometry; }
 
   bool open(core::LinkPtr link) {
     _tx_buf = driver::TxDatagram(_geometry.num_devices());
@@ -77,7 +73,7 @@ class ControllerX {
     const auto msg_id = get_id();
     std::vector<uint16_t> cycles;
     std::for_each(_geometry.begin(), _geometry.end(), [&](const auto& dev) {
-      std::transform(dev.begin(), dev.end(), std::back_inserter(cycles), [](const T& tr) { return tr.cycle(); });
+      std::transform(dev.begin(), dev.end(), std::back_inserter(cycles), [](const core::Transducer& tr) { return tr.cycle(); });
     });
 
     sync(msg_id, cycles.data(), _tx_buf);
@@ -94,7 +90,7 @@ class ControllerX {
    */
   bool update_flag() {
     core::NullHeader h;
-    core::NullBody<T> b;
+    core::NullBody b;
     return send(h, b);
   }
 
@@ -125,7 +121,11 @@ class ControllerX {
    * @brief Stop outputting
    * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
-  bool stop();
+  bool stop() {
+    SilencerConfig config;
+    auto null = core::Amplitudes(0.0);
+    return send(config, null);
+  }
 
   /**
    * @brief Close the controller
@@ -177,7 +177,7 @@ class ControllerX {
    */
   template <typename H>
   auto send(H& header) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, bool> {
-    core::NullBody<T> b;
+    core::NullBody b;
     return send(header, b);
   }
 
@@ -195,7 +195,7 @@ class ControllerX {
    * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
   template <typename B>
-  auto send(B& body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody<T>, B>, bool> {
+  auto send(B& body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, bool> {
     core::NullHeader h;
     return send(h, body);
   }
@@ -205,7 +205,7 @@ class ControllerX {
    * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
   template <typename B>
-  auto send(B&& body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody<T>, B>, bool> {
+  auto send(B&& body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, bool> {
     return send(body);
   }
 
@@ -215,7 +215,7 @@ class ControllerX {
    */
   template <typename H, typename B>
   auto send(H& header, B& body) ->
-      typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody<T>, B>, bool> {
+      typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>, bool> {
     header.init();
     body.init();
 
@@ -241,7 +241,7 @@ class ControllerX {
    */
   template <typename H, typename B>
   auto send(H&& header, B&& body) ->
-      typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody<T>, B>, bool> {
+      typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>, bool> {
     return send(header, body);
   }
 
@@ -283,46 +283,10 @@ class ControllerX {
     return i;
   }
 
-  core::Geometry<T> _geometry;
+  core::Geometry _geometry;
   driver::TxDatagram _tx_buf;
   driver::RxDatagram _rx_buf;
   core::LinkPtr _link;
 };
-
-template <>
-bool ControllerX<autd3::core::LegacyTransducer>::stop() {
-  SilencerConfig config;
-  gain::Null<autd3::core::LegacyTransducer> g;
-  return send(config, g);
-}
-
-template <>
-bool ControllerX<autd3::core::NormalTransducer>::stop() {
-  SilencerConfig config;
-  gain::Null<autd3::core::NormalTransducer> g;
-  return send(config, g);
-}
-
-template <>
-bool ControllerX<autd3::core::NormalPhaseTransducer>::stop() {
-  SilencerConfig config;
-  autd3::core::Amplitudes<autd3::core::NormalPhaseTransducer> g(_geometry, 0.0);
-  return send(config, g);
-}
-
-template <>
-bool ControllerX<autd3::core::DynamicTransducer>::stop() {
-  switch (autd3::core::DynamicTransducer::mode()) {
-    case core::TransducerMode::NormalPhase:
-      return send(SilencerConfig(), autd3::core::Amplitudes<autd3::core::DynamicTransducer>(_geometry, 0.0));
-    default:
-      return send(SilencerConfig(), gain::Null<autd3::core::DynamicTransducer>());
-  }
-}
-
-/**
- * @brief AUTD Controller with legacy (40kHz) transducer
- */
-using Controller = ControllerX<core::LegacyTransducer>;
 
 }  // namespace autd3

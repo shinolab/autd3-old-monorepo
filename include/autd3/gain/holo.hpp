@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/06/2022
+// Last Modified: 28/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,6 @@
 #include <vector>
 
 #include "autd3/core/gain.hpp"
-#include "autd3/core/geometry/legacy_transducer.hpp"
 #include "backend.hpp"
 
 namespace autd3::gain::holo {
@@ -63,8 +62,7 @@ using AmplitudeConstraint = std::variant<DontCare, Normalize, Uniform, Clamp>;
 /**
  * @brief Gain to produce multiple focal points
  */
-template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
-class Holo : public core::Gain<T> {
+class Holo : public core::Gain {
  public:
   explicit Holo(BackendPtr backend, const AmplitudeConstraint constraint = Normalize()) : constraint(constraint), _backend(std::move(backend)) {}
   ~Holo() override = default;
@@ -98,15 +96,14 @@ class Holo : public core::Gain<T> {
  * perception produced by airborne ultrasonic haptic hologram." 2015 IEEE
  * World Haptics Conference (WHC). IEEE, 2015.
  */
-template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
-class SDP final : public Holo<T> {
+class SDP final : public Holo {
  public:
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit SDP(BackendPtr backend) : Holo<T>(std::move(backend), Normalize()), alpha(1e-3), lambda(0.9), repeat(100) {}
+  explicit SDP(BackendPtr backend) : Holo(std::move(backend), Normalize()), alpha(1e-3), lambda(0.9), repeat(100) {}
 
-  void calc(const core::Geometry<T>& geometry) override;
+  void calc(const core::Geometry& geometry) override;
 
   double alpha;
   double lambda;
@@ -118,15 +115,14 @@ class SDP final : public Holo<T> {
  * Refer to Long, Benjamin, et al. "Rendering volumetric haptic shapes in mid-air
  * using ultrasound." ACM Transactions on Graphics (TOG) 33.6 (2014): 1-10.
  */
-template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
-class EVD final : public Holo<T> {
+class EVD final : public Holo {
  public:
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit EVD(BackendPtr backend) : Holo<T>(std::move(backend), Uniform(1.0)), gamma(1.0) {}
+  explicit EVD(BackendPtr backend) : Holo(std::move(backend), Uniform(1.0)), gamma(1.0) {}
 
-  void calc(const core::Geometry<T>& geometry) override;
+  void calc(const core::Geometry& geometry) override;
 
   double gamma;
 };
@@ -134,37 +130,34 @@ class EVD final : public Holo<T> {
 /**
  * @brief Gain to produce multiple focal points with Linear Synthesis Scheme.
  */
-template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
-class LSS final : public Holo<T> {
+class LSS final : public Holo {
  public:
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit LSS(BackendPtr backend) : Holo<T>(std::move(backend), Normalize()) {}
+  explicit LSS(BackendPtr backend) : Holo(std::move(backend), Normalize()) {}
 
-  void calc(const core::Geometry<T>& geometry) override;
+  void calc(const core::Geometry& geometry) override;
 };
 
 /**
  * @brief Alias of LSS
  */
-template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
-using Naive = LSS<T>;
+using Naive = LSS;
 
 /**
  * @brief Gain to produce multiple focal points with GS method.
  * Refer to Asier Marzo and Bruce W Drinkwater, "Holographic acoustic
  * tweezers," Proceedings of theNational Academy of Sciences, 116(1):84–89, 2019.
  */
-template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
-class GS final : public Holo<T> {
+class GS final : public Holo {
  public:
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit GS(BackendPtr backend) : Holo<T>(std::move(backend), Normalize()), repeat(100) {}
+  explicit GS(BackendPtr backend) : Holo(std::move(backend), Normalize()), repeat(100) {}
 
-  void calc(const core::Geometry<T>& geometry) override;
+  void calc(const core::Geometry& geometry) override;
 
   size_t repeat;
 };
@@ -175,15 +168,14 @@ class GS final : public Holo<T> {
  * sound-fields for phased arrays of transducers," ACMTrans-actions on
  * Graphics (TOG), 39(4):138–1, 2020.
  */
-template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
-class GSPAT final : public Holo<T> {
+class GSPAT final : public Holo {
  public:
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit GSPAT(BackendPtr backend) : Holo<T>(std::move(backend), Normalize()), repeat(100) {}
+  explicit GSPAT(BackendPtr backend) : Holo(std::move(backend), Normalize()), repeat(100) {}
 
-  void calc(const core::Geometry<T>& geometry) override;
+  void calc(const core::Geometry& geometry) override;
 
   size_t repeat;
 };
@@ -196,15 +188,14 @@ class GSPAT final : public Holo<T> {
  * AppliedMathematics, vol.11, no.2, pp.431–441, 1963.
  * K.Madsen, H.Nielsen, and O.Tingleff, “Methods for non-linear least squares problems (2nd ed.),” 2004.
  */
-template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
-class LM final : public Holo<T> {
+class LM final : public Holo {
  public:
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit LM(BackendPtr backend) : Holo<T>(std::move(backend)), eps_1(1e-8), eps_2(1e-8), tau(1e-3), k_max(5) {}
+  explicit LM(BackendPtr backend) : Holo(std::move(backend)), eps_1(1e-8), eps_2(1e-8), tau(1e-3), k_max(5) {}
 
-  void calc(const core::Geometry<T>& geometry) override;
+  void calc(const core::Geometry& geometry) override;
 
   double eps_1;
   double eps_2;
@@ -219,18 +210,17 @@ class LM final : public Holo<T> {
  * in IEEE Transactions on Haptics, doi: 10.1109/TOH.STM.3076489
  * @details This method is computed on the CPU.
  */
-template <typename T = core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<core::Transducer<typename T::D>, T>, nullptr_t> = nullptr>
-class Greedy final : public Holo<T> {
+class Greedy final : public Holo {
  public:
   /**
    * @param[in] backend pointer to Backend
    */
   explicit Greedy(BackendPtr backend)
-      : Holo<T>(std::move(backend)),
+      : Holo(std::move(backend)),
         phase_div(16),
         objective([](const VectorXd& target, const VectorXc& p) { return (target - p.cwiseAbs()).cwiseAbs().sum(); }) {}
 
-  void calc(const core::Geometry<T>& geometry) override;
+  void calc(const core::Geometry& geometry) override;
 
   size_t phase_div;
   std::function<double(const VectorXd&, const VectorXc&)> objective;

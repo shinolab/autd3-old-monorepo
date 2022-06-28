@@ -1,3 +1,7 @@
+# 2.2.2
+
+- Change the whole API; this library is no more using a template to change Transducer mode
+
 # 2.2.1
 
 - Remove `check_ack` flag, add `check_trials` parameter instead

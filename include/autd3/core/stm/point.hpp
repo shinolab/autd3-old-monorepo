@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 28/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,7 +15,6 @@
 #include <utility>
 #include <vector>
 
-#include "autd3/core/geometry/transducer.hpp"
 #include "autd3/core/interface.hpp"
 #include "autd3/driver/cpu/operation.hpp"
 #include "stm.hpp"
@@ -57,11 +56,10 @@ struct Point {
  * 1. The maximum number of control points is driver::POINT_STM_BUF_SIZE_MAX.
  * 2. Only a single focus can be displayed at a certain moment.
  */
-template <typename T = LegacyTransducer, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
-struct PointSTM final : public STM<T> {
+struct PointSTM final : public STM {
   using value_type = Point;
 
-  PointSTM() : STM<T>(), _sent(0) {}
+  PointSTM() : STM(), _sent(0) {}
 
   /**
    * @brief Add control point
@@ -80,7 +78,7 @@ struct PointSTM final : public STM<T> {
 
   size_t size() const override { return _points.size(); }
   void init() override { _sent = 0; }
-  void pack(const Geometry<T>& geometry, driver::TxDatagram& tx) override {
+  void pack(const Geometry& geometry, driver::TxDatagram& tx) override {
     point_stm_header(tx);
 
     if (is_finished()) return;
@@ -92,7 +90,7 @@ struct PointSTM final : public STM<T> {
     const auto is_last_frame = _sent + send_size == _points.size();
 
     std::vector<std::vector<driver::STMFocus>> points;
-    std::transform(geometry.begin(), geometry.end(), std::back_inserter(points), [this, send_size](const Device<T>& dev) {
+    std::transform(geometry.begin(), geometry.end(), std::back_inserter(points), [this, send_size](const Geometry::Device& dev) {
       std::vector<driver::STMFocus> lp;
       const auto src = _points.data() + _sent;
       std::transform(src, src + send_size, std::back_inserter(lp), [&dev](const auto& p) {
