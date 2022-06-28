@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/06/2022
+// Last Modified: 28/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -113,8 +113,9 @@ inline void normal_legacy_header(TxDatagram& tx) noexcept {
   tx.num_bodies = 0;
 }
 
-inline void normal_legacy_body(const LegacyDrive* const drives, TxDatagram& tx) noexcept {
-  std::memcpy(reinterpret_cast<LegacyDrive*>(tx.bodies()), drives, sizeof(Body) * tx.size());
+inline void normal_legacy_body(const std::vector<Drive>& drives, TxDatagram& tx) noexcept {
+  auto* p = reinterpret_cast<LegacyDrive*>(tx.bodies());
+  for (size_t i = 0; i < drives.size(); i++) (*p++).set(drives[i]);
 
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
 
@@ -131,19 +132,23 @@ inline void normal_header(TxDatagram& tx) noexcept {
   tx.num_bodies = 0;
 }
 
-inline void normal_duty_body(const Duty* drives, TxDatagram& tx) noexcept {
+inline void normal_duty_body(const std::vector<Drive>& drives, TxDatagram& tx) noexcept {
   tx.header().cpu_flag.set(CPUControlFlags::IS_DUTY);
 
-  std::memcpy(reinterpret_cast<Duty*>(tx.bodies()), drives, sizeof(Body) * tx.size());
+  auto* p = reinterpret_cast<Duty*>(tx.bodies());
+  for (size_t i = 0; i < drives.size(); i++) (*p++).set(drives[i]);
+
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
 
   tx.num_bodies = tx.size();
 }
 
-inline void normal_phase_body(const Phase* drives, TxDatagram& tx) noexcept {
+inline void normal_phase_body(const std::vector<Drive>& drives, TxDatagram& tx) noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
 
-  std::memcpy(reinterpret_cast<Phase*>(tx.bodies()), drives, sizeof(Body) * tx.size());
+  auto* p = reinterpret_cast<Phase*>(tx.bodies());
+  for (size_t i = 0; i < drives.size(); i++) (*p++).set(drives[i]);
+
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
 
   tx.num_bodies = tx.size();
@@ -212,7 +217,7 @@ inline void gain_stm_legacy_header(TxDatagram& tx) noexcept {
   tx.num_bodies = 0;
 }
 
-inline void gain_stm_legacy_body(const std::vector<const LegacyDrive*>& drives, const bool is_first_frame, const uint32_t freq_div,
+inline void gain_stm_legacy_body(const std::vector<const std::vector<Drive>&>& drives, const bool is_first_frame, const uint32_t freq_div,
                                  const bool is_last_frame, const Mode mode, TxDatagram& tx) noexcept(false) {
   if (is_first_frame) {
     if (freq_div < STM_SAMPLING_FREQ_DIV_MIN) {
