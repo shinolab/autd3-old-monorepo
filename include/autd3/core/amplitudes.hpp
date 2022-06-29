@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <vector>
 
 namespace autd3::core {
