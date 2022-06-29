@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 28/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -35,25 +35,24 @@
 #endif
 #include "tests/point_stm.hpp"
 
-template <typename T>
-int run(autd3::ControllerX<T> autd) {
-  using F = std::function<void(autd3::ControllerX<T>&)>;
+inline int run(autd3::Controller autd) {
+  using F = std::function<void(autd3::Controller&)>;
   std::vector<std::pair<F, std::string>> tests = {
-      std::pair(F{focus_test<T>}, "Single focus Test"),
-      std::pair(F{bessel_test<T>}, "Bessel beam Test"),
-      std::pair(F{plane_test<T>}, "Plane wave Test"),
+      std::pair(F{focus_test}, "Single focus Test"),
+      std::pair(F{bessel_test}, "Bessel beam Test"),
+      std::pair(F{plane_test}, "Plane wave Test"),
 #ifdef BUILD_MODULATION_AUDIO_FILE
-      std::pair(F{mod_audio_file_test<T>}, "Wav and RawPCM modulation Test"),
+      std::pair(F{mod_audio_file_test}, "Wav and RawPCM modulation Test"),
 #endif
-      std::pair(F{point_stm<T>}, "PointSTM Test"),
-      std::pair(F{gain_stm<T>}, "GainSTM Test"),
+      std::pair(F{point_stm}, "PointSTM Test"),
+      std::pair(F{gain_stm}, "GainSTM Test"),
 #ifdef BUILD_GAIN_HOLO
-      std::pair(F{holo_test<T>}, "Holo Test"),
+      std::pair(F{holo_test}, "Holo Test"),
 #endif
-      std::pair(F{advanced_test<T>}, "Custom Gain & Modulation Test"),
-      std::pair(F{flag_test<T>}, "Flag Test"),
+      std::pair(F{advanced_test}, "Custom Gain & Modulation Test"),
+      std::pair(F{flag_test}, "Flag Test"),
   };
-  if (autd.geometry().num_devices() == 2) tests.emplace_back(std::pair(F{group_test<T>}, "Grouped Gain Test"));
+  if (autd.geometry().num_devices() == 2) tests.emplace_back(std::pair(F{group_test}, "Grouped Gain Test"));
 
   autd.geometry().sound_speed = 340.0;  // m/s
 

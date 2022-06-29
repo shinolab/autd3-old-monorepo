@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 28/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,11 +11,8 @@
 
 #pragma once
 
-#include <cstdint>
-
 #include "autd3/driver/cpu/datagram.hpp"
-#include "geometry/geometry.hpp"
-#include "geometry/transducer.hpp"
+#include "geometry.hpp"
 
 namespace autd3::core {
 
@@ -38,7 +35,6 @@ struct DatagramHeader {
 /**
  * @brief DatagramBody is a data to be packed in the Body part of the driver::TxDatagram
  */
-template <typename T, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 struct DatagramBody {
   DatagramBody() = default;
   virtual ~DatagramBody() = default;
@@ -48,7 +44,7 @@ struct DatagramBody {
   DatagramBody& operator=(DatagramBody&& obj) = default;
 
   virtual void init() = 0;
-  virtual void pack(const Geometry<T>& geometry, driver::TxDatagram& tx) = 0;
+  virtual void pack(const Geometry& geometry, driver::TxDatagram& tx) = 0;
   [[nodiscard]] virtual bool is_finished() const = 0;
 };
 
@@ -61,13 +57,12 @@ struct NullHeader final : DatagramHeader {
   bool is_finished() const override { return true; }
 };
 
-template <typename T, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
-struct NullBody final : DatagramBody<T> {
+struct NullBody final : DatagramBody {
   ~NullBody() override = default;
 
   void init() override {}
 
-  void pack(const Geometry<T>&, driver::TxDatagram& tx) override { driver::null_body(tx); }
+  void pack(const Geometry&, driver::TxDatagram& tx) override { driver::null_body(tx); }
 
   bool is_finished() const override { return true; }
 };
