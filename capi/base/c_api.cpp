@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/06/2022
+// Last Modified: 28/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -37,8 +37,7 @@
     return -1;                    \
   }
 
-using T = autd3::core::DynamicTransducer;
-using Controller = autd3::ControllerX<T>;
+using Controller = autd3::Controller;
 
 std::string& last_error() {
   static std::string msg("");  // NOLINT
@@ -239,7 +238,7 @@ void AUTDFreeFirmwareInfoListPointer(const void* const p_firm_info_list) {
 }
 
 void AUTDGainNull(void** gain) {
-  auto* g = new autd3::gain::Null<T>;
+  auto* g = new autd3::gain::Null;
   *gain = g;
 }
 
@@ -250,20 +249,20 @@ void AUTDGainGrouped(void** gain, const void* const handle) {
 }
 
 void AUTDGainGroupedAdd(void* grouped_gain, const int32_t device_id, void* gain) {
-  auto* const gg = dynamic_cast<autd3::gain::Grouped<T>*>(static_cast<autd3::Gain<T>*>(grouped_gain));
-  auto* const g = static_cast<autd3::Gain<T>*>(gain);
+  auto* const gg = dynamic_cast<autd3::gain::Grouped*>(static_cast<autd3::Gain*>(grouped_gain));
+  auto* const g = static_cast<autd3::Gain*>(gain);
   gg->add(device_id, *g);
 }
 
 void AUTDGainFocus(void** gain, const double x, const double y, const double z, const double amp) {
-  *gain = new autd3::gain::Focus<T>(to_vec3(x, y, z), amp);
+  *gain = new autd3::gain::Focus(to_vec3(x, y, z), amp);
 }
 void AUTDGainBesselBeam(void** gain, const double x, const double y, const double z, const double n_x, const double n_y, const double n_z,
                         const double theta_z, const double amp) {
-  *gain = new autd3::gain::BesselBeam<T>(to_vec3(x, y, z), to_vec3(n_x, n_y, n_z), theta_z, amp);
+  *gain = new autd3::gain::BesselBeam(to_vec3(x, y, z), to_vec3(n_x, n_y, n_z), theta_z, amp);
 }
 void AUTDGainPlaneWave(void** gain, const double n_x, const double n_y, const double n_z, const double amp) {
-  *gain = new autd3::gain::PlaneWave<T>(to_vec3(n_x, n_y, n_z), amp);
+  *gain = new autd3::gain::PlaneWave(to_vec3(n_x, n_y, n_z), amp);
 }
 
 void AUTDGainCustom(void** gain, const double* amp, const double* phase, const uint64_t size) {
@@ -271,7 +270,7 @@ void AUTDGainCustom(void** gain, const double* amp, const double* phase, const u
 }
 
 void AUTDDeleteGain(const void* const gain) {
-  const auto* g = static_cast<const autd3::Gain<T>*>(gain);
+  const auto* g = static_cast<const autd3::Gain*>(gain);
   delete g;
 }
 
@@ -309,56 +308,56 @@ void AUTDDeleteModulation(const void* const mod) {
   delete m;
 }
 
-void AUTDPointSTM(void** out) { *out = new autd3::PointSTM<T>; }
+void AUTDPointSTM(void** out) { *out = new autd3::PointSTM; }
 void AUTDGainSTM(void** out, const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
-  *out = new autd3::GainSTM<T>(wrapper->geometry());
+  *out = new autd3::GainSTM(wrapper->geometry());
 }
 bool AUTDPointSTMAdd(void* const stm, const double x, const double y, const double z, const uint8_t shift) {
-  auto* const stm_w = static_cast<autd3::PointSTM<T>*>(stm);
+  auto* const stm_w = static_cast<autd3::PointSTM*>(stm);
   AUTD3_CAPI_TRY({
     stm_w->add(to_vec3(x, y, z), shift);
     return true;
   })
 }
 bool AUTDGainSTMAdd(void* const stm, void* const gain) {
-  auto* const stm_w = static_cast<autd3::GainSTM<T>*>(stm);
-  auto* const g = static_cast<autd3::Gain<T>*>(gain);
+  auto* const stm_w = static_cast<autd3::GainSTM*>(stm);
+  auto* const g = static_cast<autd3::Gain*>(gain);
   AUTD3_CAPI_TRY({
     stm_w->add(*g);
     return true;
   })
 }
 uint16_t AUTDGetGainSTMMode(void* const stm) {
-  auto* const stm_w = static_cast<autd3::GainSTM<T>*>(stm);
+  auto* const stm_w = static_cast<autd3::GainSTM*>(stm);
   return static_cast<uint16_t>(stm_w->mode());
 }
 void AUTDSetGainSTMMode(void* const stm, uint16_t mode) {
-  auto* const stm_w = static_cast<autd3::GainSTM<T>*>(stm);
-  stm_w->mode() = static_cast<autd3::Mode>(mode);
+  auto* const stm_w = static_cast<autd3::GainSTM*>(stm);
+  stm_w->mode() = static_cast<autd3::GainSTMMode>(mode);
 }
 double AUTDSTMSetFrequency(void* const stm, const double freq) {
-  auto* const stm_w = static_cast<autd3::core::STM<T>*>(stm);
+  auto* const stm_w = static_cast<autd3::core::STM*>(stm);
   return stm_w->set_frequency(freq);
 }
 double AUTDSTMFrequency(const void* const stm) {
-  const auto* const stm_w = static_cast<const autd3::core::STM<T>*>(stm);
+  const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
   return stm_w->frequency();
 }
 double AUTDSTMSamplingFrequency(const void* const stm) {
-  const auto* const stm_w = static_cast<const autd3::core::STM<T>*>(stm);
+  const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
   return stm_w->sampling_frequency();
 }
 uint32_t AUTDSTMSamplingFrequencyDivision(const void* const stm) {
-  const auto* const stm_w = static_cast<const autd3::core::STM<T>*>(stm);
+  const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
   return stm_w->sampling_frequency_division();
 }
 void AUTDSTMSetSamplingFrequencyDivision(void* const stm, const uint32_t freq_div) {
-  auto* const stm_w = static_cast<autd3::core::STM<T>*>(stm);
+  auto* const stm_w = static_cast<autd3::core::STM*>(stm);
   stm_w->sampling_frequency_division() = freq_div;
 }
 void AUTDDeleteSTM(const void* const stm) {
-  const auto* const stm_w = static_cast<const autd3::core::STM<T>*>(stm);
+  const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
   delete stm_w;
 }
 
@@ -378,7 +377,7 @@ int32_t AUTDSend(void* const handle, void* const header, void* const body) {
 
   auto* const wrapper = static_cast<Controller*>(handle);
   auto* const h = static_cast<autd3::core::DatagramHeader*>(header);
-  auto* const b = static_cast<autd3::core::DatagramBody<T>*>(body);
+  auto* const b = static_cast<autd3::core::DatagramBody*>(body);
   if (header == nullptr) AUTD3_CAPI_TRY2(return wrapper->send(*b) ? 1 : 0)
   if (body == nullptr) AUTD3_CAPI_TRY2(return wrapper->send(*h) ? 1 : 0)
   AUTD3_CAPI_TRY2(return wrapper->send(*h, *b) ? 1 : 0)
@@ -397,19 +396,31 @@ void AUTDSetModDelay(void* const handle, const int32_t device_idx, const int32_t
   auto* const wrapper = static_cast<Controller*>(handle);
   wrapper->geometry()[device_idx][local_trans_idx].mod_delay() = delay;
 }
-void AUTDCreateModDelayConfig(void** out) { *out = new autd3::ModDelayConfig<T>(); }
+void AUTDCreateModDelayConfig(void** out) { *out = new autd3::ModDelayConfig(); }
 void AUTDDeleteModDelayConfig(const void* config) {
-  const auto* const config_ = static_cast<const autd3::ModDelayConfig<T>*>(config);
+  const auto* const config_ = static_cast<const autd3::ModDelayConfig*>(config);
   delete config_;
 }
 
-void AUTDCreateAmplitudes(void** out, void* const handle, const double amp) {
-  auto* const wrapper = static_cast<Controller*>(handle);
-  *out = new autd3::core::Amplitudes<T>(wrapper->geometry(), amp);
-}
+void AUTDCreateAmplitudes(void** out, const double amp) { *out = new autd3::core::Amplitudes(amp); }
 void AUTDDeleteAmplitudes(IN const void* amplitudes) {
-  const auto* const amps_ = static_cast<const autd3::core::Amplitudes<T>*>(amplitudes);
+  const auto* const amps_ = static_cast<const autd3::core::Amplitudes*>(amplitudes);
   delete amps_;
 }
 
-void AUTDSetMode(const uint8_t mode) { T::mode() = static_cast<autd3::core::TransducerMode>(mode); }
+void AUTDSetMode(void* const handle, const uint8_t mode) {
+  auto* const wrapper = static_cast<Controller*>(handle);
+  switch (mode) {
+    case 0:
+      wrapper->geometry().mode() = std::make_unique<autd3::core::LegacyMode>();
+      break;
+    case 1:
+      wrapper->geometry().mode() = std::make_unique<autd3::core::NormalMode>();
+      break;
+    case 2:
+      wrapper->geometry().mode() = std::make_unique<autd3::core::NormalPhaseMode>();
+      break;
+    default:
+      break;
+  }
+}

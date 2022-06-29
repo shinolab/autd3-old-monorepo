@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/06/2022
+// Last Modified: 28/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -96,9 +96,9 @@ EXPORT_AUTD int32_t AUTDSend(IN void* handle, IN void* header, IN void* body);
 EXPORT_AUTD void AUTDSetModDelay(IN void* handle, IN int32_t device_idx, IN int32_t local_trans_idx, IN uint16_t delay);
 EXPORT_AUTD void AUTDCreateModDelayConfig(OUT void** out);
 EXPORT_AUTD void AUTDDeleteModDelayConfig(IN const void* config);
-EXPORT_AUTD void AUTDCreateAmplitudes(OUT void** out, IN void* handle, IN double amp);
+EXPORT_AUTD void AUTDCreateAmplitudes(OUT void** out, IN double amp);
 EXPORT_AUTD void AUTDDeleteAmplitudes(IN const void* amplitudes);
-EXPORT_AUTD void AUTDSetMode(IN uint8_t mode);
+EXPORT_AUTD void AUTDSetMode(IN void* handle, IN uint8_t mode);
 #ifdef __cplusplus
 }
 #endif

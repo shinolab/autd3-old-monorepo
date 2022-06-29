@@ -4,7 +4,7 @@
  * Created Date: 16/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/06/2022
+ * Last Modified: 28/06/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,10 +25,7 @@ int main() {
   AUTDAddDevice(cnt, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
   // AUTDAddDeviceQuaternion(cnt, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 
-  AUTDSetMode(1);
-#ifdef BUILD_GAIN_HOLO
-  AUTDSetModeHolo(1);
-#endif
+  AUTDSetMode(cnt, 1);
   for (int i = 0; i < 249; i++) AUTDSetTransFrequency(cnt, 0, i, 70e3);
 
   void* link = NULL;
