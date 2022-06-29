@@ -54,7 +54,7 @@ namespace example
                 return;
             }
 
-            autd.CheckAck = true;
+            autd.CheckTrials = 50;
 
             autd.Clear();
 
