@@ -1,6 +1,7 @@
 # 2.2.2
 
 - Change the whole API; this library is no more using a template to change Transducer mode
+- Add `gain::holo::LSSGreedy` and `gain::holo::APO`
 
 # 2.2.1
 
