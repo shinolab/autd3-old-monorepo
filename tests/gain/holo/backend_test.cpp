@@ -119,6 +119,18 @@ TYPED_TEST(BackendTest, copy_to_vec_real) {
   for (Eigen::Index i = 0; i < m; i++) ASSERT_EQ(a(i), b(i));
 }
 
+TYPED_TEST(BackendTest, copy_to_vec) {
+  constexpr Eigen::Index m = 1 * TEST_SIZE;
+
+  VectorXc a = VectorXc::Random(m);
+
+  VectorXc b(m);
+  this->backend->copy_to(a, b);
+  this->backend->to_host(b);
+
+  for (Eigen::Index i = 0; i < m; i++) ASSERT_EQ(a(i), b(i));
+}
+
 TYPED_TEST(BackendTest, real) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;
   constexpr Eigen::Index n = 2 * TEST_SIZE;
@@ -506,6 +518,28 @@ TYPED_TEST(BackendTest, dot_real) {
   ASSERT_NEAR(this->backend->dot(a, b), expected, 1e-6);
 }
 
+TYPED_TEST(BackendTest, add_vector) {
+  constexpr Eigen::Index m = 2 * TEST_SIZE;
+
+  VectorXc a = VectorXc::Random(m);
+
+  VectorXc b = VectorXc::Zero(m);
+  this->backend->add(ONE, a, b);
+  this->backend->to_host(b);
+
+  VectorXc expected = a;
+
+  for (Eigen::Index i = 0; i < m; i++) ASSERT_EQ(b(i), expected(i));
+
+  VectorXc aa = VectorXc::Random(m);
+  this->backend->add(std::complex(2.0, 0.0), aa, b);
+  this->backend->to_host(b);
+
+  expected += std::complex(2.0, 0.0) * aa;
+
+  for (Eigen::Index i = 0; i < m; i++) ASSERT_NEAR_COMPLEX(b(i), expected(i), 1e-6);
+}
+
 TYPED_TEST(BackendTest, add_vector_real) {
   constexpr Eigen::Index m = 2 * TEST_SIZE;
 
@@ -523,9 +557,34 @@ TYPED_TEST(BackendTest, add_vector_real) {
   this->backend->add(2.0, aa, b);
   this->backend->to_host(b);
 
-  expected += 2.0 * aa.adjoint();
+  expected += 2.0 * aa;
 
   for (Eigen::Index i = 0; i < m; i++) ASSERT_NEAR(b(i), expected(i), 1e-6);
+}
+
+TYPED_TEST(BackendTest, add_matrix) {
+  constexpr Eigen::Index n = 1 * TEST_SIZE;
+  constexpr Eigen::Index m = 2 * TEST_SIZE;
+
+  MatrixXc a = MatrixXc::Random(m, n);
+
+  MatrixXc b = MatrixXc::Zero(m, n);
+  this->backend->add(ONE, a, b);
+  this->backend->to_host(b);
+
+  MatrixXc expected = a;
+
+  for (Eigen::Index i = 0; i < m; i++)
+    for (Eigen::Index j = 0; j < n; j++) ASSERT_EQ(b(i, j), expected(i, j));
+
+  MatrixXc aa = MatrixXc::Random(m, n);
+  this->backend->add(std::complex(2.0, 0.0), aa, b);
+  this->backend->to_host(b);
+
+  expected += std::complex(2.0, 0.0) * aa;
+
+  for (Eigen::Index i = 0; i < m; i++)
+    for (Eigen::Index j = 0; j < n; j++) ASSERT_NEAR_COMPLEX(b(i, j), expected(i, j), 1e-6);
 }
 
 TYPED_TEST(BackendTest, add_matrix_real) {
