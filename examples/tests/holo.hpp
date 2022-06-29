@@ -39,6 +39,8 @@ inline void holo_test(autd3::Controller& autd) {
   opts.emplace_back(std::make_tuple("Naive", std::make_shared<autd3::gain::holo::Naive>(backend)));
   opts.emplace_back(std::make_tuple("LM", std::make_shared<autd3::gain::holo::LM>(backend)));
   opts.emplace_back(std::make_tuple("Greedy", std::make_shared<autd3::gain::holo::Greedy>(backend)));
+  opts.emplace_back(std::make_tuple("LSSGreedy", std::make_shared<autd3::gain::holo::LSSGreedy>(backend)));
+  opts.emplace_back(std::make_tuple("APO", std::make_shared<autd3::gain::holo::APO>(backend)));
 
   size_t i = 0;
   for (const auto& [name, _opt] : opts) std::cout << "[" << i++ << "]: " << name << std::endl;
@@ -52,6 +54,8 @@ inline void holo_test(autd3::Controller& autd) {
   auto& [_, g] = opts[idx];
   g->add_focus(center + autd3::Vector3(30.0, 0.0, 0.0), 1.0);
   g->add_focus(center - autd3::Vector3(30.0, 0.0, 0.0), 1.0);
+  g->add_focus(center + autd3::Vector3(0.0, 30.0, 0.0), 1.0);
+  g->add_focus(center - autd3::Vector3(0.0, 30.0, 0.0), 1.0);
 
   autd.send(m, *g);
 }

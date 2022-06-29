@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/06/2022
+// Last Modified: 29/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -50,6 +50,7 @@ class Backend {
   virtual void copy_to(const MatrixXc& src, MatrixXc& dst) = 0;
   virtual void copy_to(const MatrixXd& src, MatrixXd& dst) = 0;
   virtual void copy_to(const VectorXd& src, VectorXd& dst) = 0;
+  virtual void copy_to(const VectorXc& src, VectorXc& dst) = 0;
 
   virtual void real(const MatrixXc& src, MatrixXd& re) = 0;
   virtual void imag(const MatrixXc& src, MatrixXd& im) = 0;
@@ -90,7 +91,9 @@ class Backend {
   virtual double dot(const VectorXd& a, const VectorXd& b) = 0;
 
   virtual void add(double alpha, const MatrixXd& a, MatrixXd& b) = 0;
+  virtual void add(complex alpha, const MatrixXc& a, MatrixXc& b) = 0;
   virtual void add(double alpha, const VectorXd& a, VectorXd& b) = 0;
+  virtual void add(complex alpha, const VectorXc& a, VectorXc& b) = 0;
 
   virtual void mul(TRANSPOSE trans_a, TRANSPOSE trans_b, complex alpha, const MatrixXc& a, const MatrixXc& b, complex beta, MatrixXc& c) = 0;
   virtual void mul(TRANSPOSE trans_a, complex alpha, const MatrixXc& a, const VectorXc& b, complex beta, VectorXc& c) = 0;
@@ -131,6 +134,7 @@ class EigenBackend final : public Backend {
   void copy_to(const MatrixXc& src, MatrixXc& dst) override;
   void copy_to(const MatrixXd& src, MatrixXd& dst) override;
   void copy_to(const VectorXd& src, VectorXd& dst) override;
+  void copy_to(const VectorXc& src, VectorXc& dst) override;
 
   void real(const MatrixXc& src, MatrixXd& re) override;
   void imag(const MatrixXc& src, MatrixXd& im) override;
@@ -171,7 +175,9 @@ class EigenBackend final : public Backend {
   double dot(const VectorXd& a, const VectorXd& b) override;
 
   void add(double alpha, const MatrixXd& a, MatrixXd& b) override;
+  void add(complex alpha, const MatrixXc& a, MatrixXc& b) override;
   void add(double alpha, const VectorXd& a, VectorXd& b) override;
+  void add(complex alpha, const VectorXc& a, VectorXc& b) override;
 
   void mul(TRANSPOSE trans_a, TRANSPOSE trans_b, complex alpha, const MatrixXc& a, const MatrixXc& b, complex beta, MatrixXc& c) override;
   void mul(TRANSPOSE trans_a, complex alpha, const MatrixXc& a, const VectorXc& b, complex beta, VectorXc& c) override;

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 29/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -31,7 +31,10 @@ class CUDABackend : public Backend {
   void to_host(VectorXc&) override = 0;
   void to_host(MatrixXc&) override = 0;
 
+  void copy_to(const MatrixXd& src, MatrixXd& dst) override = 0;
   void copy_to(const MatrixXc& src, MatrixXc& dst) override = 0;
+  void copy_to(const VectorXd& src, VectorXd& dst) override = 0;
+  void copy_to(const VectorXc& src, VectorXc& dst) override = 0;
 
   void abs(const VectorXc& src, VectorXc& dst) override = 0;
   void conj(const VectorXc& src, VectorXc& dst) override = 0;
@@ -63,8 +66,6 @@ class CUDABackend : public Backend {
 
   void to_host(VectorXd& dst) override = 0;
   void to_host(MatrixXd& dst) override = 0;
-  void copy_to(const MatrixXd& src, MatrixXd& dst) override = 0;
-  void copy_to(const VectorXd& src, VectorXd& dst) override = 0;
   void real(const MatrixXc& src, MatrixXd& re) override = 0;
   void imag(const MatrixXc& src, MatrixXd& im) override = 0;
   void make_complex(const VectorXd& re, const VectorXd& im, VectorXc& dst) override = 0;
@@ -80,8 +81,12 @@ class CUDABackend : public Backend {
   double max_element(const VectorXd& src) override = 0;
   void scale(double value, VectorXd& dst) override = 0;
   double dot(const VectorXd& a, const VectorXd& b) override = 0;
+
   void add(double alpha, const MatrixXd& a, MatrixXd& b) override = 0;
   void add(double alpha, const VectorXd& a, VectorXd& b) override = 0;
+  void add(complex alpha, const MatrixXc& a, MatrixXc& b) override = 0;
+  void add(complex alpha, const VectorXc& a, VectorXc& b) override = 0;
+
   void mul(TRANSPOSE trans_a, TRANSPOSE trans_b, double alpha, const MatrixXd& a, const MatrixXd& b, double beta, MatrixXd& c) override = 0;
   void mul(TRANSPOSE trans_a, double alpha, const MatrixXd& a, const VectorXd& b, double beta, VectorXd& c) override = 0;
   void hadamard_product(const MatrixXc& a, const MatrixXc& b, MatrixXc& c) override = 0;

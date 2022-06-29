@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 29/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,6 +36,7 @@ constexpr auto AUTD_GESVDC = LAPACKE_zgesdd;
 constexpr auto AUTD_HEEV = LAPACKE_zheev;
 constexpr auto AUTD_ZSCAL = cblas_zscal;
 constexpr auto AUTD_AXPY = cblas_daxpy;
+constexpr auto AUTD_AXPYC = cblas_zaxpy;
 constexpr auto AUTD_DGEMV = cblas_dgemv;
 constexpr auto AUTD_ZGEMV = cblas_zgemv;
 constexpr auto AUTD_DGEMM = cblas_dgemm;
@@ -56,6 +57,7 @@ void BLASBackend::to_host(MatrixXd&) {}
 void BLASBackend::copy_to(const MatrixXc& src, MatrixXc& dst) { AUTD_CPYC(static_cast<int>(src.size()), src.data(), 1, dst.data(), 1); }
 void BLASBackend::copy_to(const MatrixXd& src, MatrixXd& dst) { AUTD_CPY(static_cast<int>(src.size()), src.data(), 1, dst.data(), 1); }
 void BLASBackend::copy_to(const VectorXd& src, VectorXd& dst) { AUTD_CPY(static_cast<int>(src.size()), src.data(), 1, dst.data(), 1); }
+void BLASBackend::copy_to(const VectorXc& src, VectorXc& dst) { AUTD_CPYC(static_cast<int>(src.size()), src.data(), 1, dst.data(), 1); }
 
 void BLASBackend::real(const MatrixXc& src, MatrixXd& re) { re = src.real(); }
 void BLASBackend::imag(const MatrixXc& src, MatrixXd& im) { im = src.imag(); }
@@ -119,6 +121,12 @@ double BLASBackend::dot(const VectorXd& a, const VectorXd& b) { return AUTD_DOT(
 
 void BLASBackend::add(const double alpha, const MatrixXd& a, MatrixXd& b) { AUTD_AXPY(static_cast<int>(a.size()), alpha, a.data(), 1, b.data(), 1); }
 void BLASBackend::add(const double alpha, const VectorXd& a, VectorXd& b) { AUTD_AXPY(static_cast<int>(a.size()), alpha, a.data(), 1, b.data(), 1); }
+void BLASBackend::add(const complex alpha, const MatrixXc& a, MatrixXc& b) {
+  AUTD_AXPYC(static_cast<int>(a.size()), &alpha, a.data(), 1, b.data(), 1);
+}
+void BLASBackend::add(const complex alpha, const VectorXc& a, VectorXc& b) {
+  AUTD_AXPYC(static_cast<int>(a.size()), &alpha, a.data(), 1, b.data(), 1);
+}
 
 void BLASBackend::mul(const TRANSPOSE trans_a, const TRANSPOSE trans_b, const complex alpha, const MatrixXc& a, const MatrixXc& b, const complex beta,
                       MatrixXc& c) {

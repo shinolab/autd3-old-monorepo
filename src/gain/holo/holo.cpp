@@ -505,4 +505,193 @@ void Greedy::calc(const core::Geometry& geometry) {
   }
 }
 
+void LSSGreedy::calc(const core::Geometry& geometry) {
+  const auto m = static_cast<Eigen::Index>(_foci.size());
+  const auto n = geometry.num_transducers();
+
+  const VectorXd amps_ = Eigen::Map<VectorXc, Eigen::Unaligned>(_amps.data(), static_cast<Eigen::Index>(_amps.size())).real();
+
+  std::vector<complex> phases;
+  phases.reserve(phase_div);
+  for (size_t i = 0; i < phase_div; i++)
+    phases.emplace_back(std::exp(complex(0., 2.0 * driver::pi * static_cast<double>(i) / static_cast<double>(phase_div))));
+
+  std::vector<VectorXc> focus_phase_list;
+  focus_phase_list.reserve(_foci.size());
+  std::transform(_foci.begin(), _foci.end(), std::back_inserter(focus_phase_list), [&](const auto& focus) {
+    VectorXc q(n);
+    std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
+      std::for_each(dev.begin(), dev.end(), [&](const auto& transducer) {
+        const auto dist = (focus - transducer.position()).norm();
+        const auto phase = transducer.align_phase_at(dist, geometry.sound_speed);
+        q(transducer.id()) = std::exp(complex(0., 2.0 * driver::pi * phase));
+      });
+    });
+    return q;
+  });
+
+  MatrixXc g(m, n);
+  generate_transfer_matrix(_foci, geometry, g);
+
+  std::vector<VectorXc> tmp;
+  tmp.reserve(phases.size());
+  for (size_t i = 0; i < phases.size(); i++) tmp.emplace_back(VectorXc::Zero(m));
+
+  VectorXc q = focus_phase_list[0];
+  std::vector<size_t> select(m - 1);
+  std::iota(select.begin(), select.end(), 1);
+  std::random_device seed_gen;
+  std::mt19937 engine(seed_gen());
+  std::shuffle(select.begin(), select.end(), engine);
+  for (const auto i : select) {
+    size_t min_idx = 0;
+    auto min_v = std::numeric_limits<double>::infinity();
+    for (size_t j = 0; j < phases.size(); j++) {
+      const auto q_tmp = q + focus_phase_list[i] * phases[j];
+      _backend->mul(TRANSPOSE::NO_TRANS, ONE, g, q_tmp, ZERO, tmp[j]);
+      if (const auto v = objective(amps_, tmp[j]); v < min_v) {
+        min_v = v;
+        min_idx = j;
+      }
+    }
+    q += focus_phase_list[i] * phases[min_idx];
+  }
+
+  _backend->to_host(q);
+  const auto max_coefficient = std::abs(_backend->max_abs_element(q));
+  std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
+    std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
+      const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
+      const auto raw = std::abs(q(tr.id()));
+      const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
+      _drives[tr.id()].amp = power;
+      _drives[tr.id()].phase = phase;
+    });
+  });
+}
+
+void APO::calc(const core::Geometry& geometry) {
+  auto make_ri = [&](const MatrixXc& g, const size_t m, const size_t n, const size_t i) {
+    MatrixXc di = MatrixXc::Zero(m, m);
+    di(i, i) = ONE;
+
+    MatrixXc ri = MatrixXc::Zero(n, n);
+
+    MatrixXc tmp = MatrixXc::Zero(n, m);
+
+    _backend->mul(TRANSPOSE::CONJ_TRANS, TRANSPOSE::NO_TRANS, ONE, g, di, ZERO, tmp);
+    _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, tmp, g, ZERO, ri);
+
+    return ri;
+  };
+
+  auto calc_nabla_j = [&](const VectorXc& q, const VectorXc& p2, const std::vector<MatrixXc>& ris, const size_t m, const size_t n,
+                          VectorXc& nabla_j) {
+    VectorXc tmp = VectorXc::Zero(n);
+    for (size_t i = 0; i < m; i++) {
+      _backend->mul(TRANSPOSE::NO_TRANS, ONE, ris[i], q, ZERO, tmp);
+      const auto s = p2(i) - _backend->dot(q, tmp);
+      _backend->scale(s, tmp);
+      _backend->add(ONE, tmp, nabla_j);
+    }
+    _backend->add(complex(lambda, 0), q, nabla_j);
+  };
+
+  auto calc_j = [&](const VectorXc& q, const VectorXc& p2, const std::vector<MatrixXc>& ris, const size_t m, const size_t n) {
+    MatrixXc tmp = MatrixXc::Zero(n, 1);
+    auto j = 0.0;
+    for (size_t i = 0; i < m; i++) {
+      _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, ris[i], q, ZERO, tmp);
+      const auto s = p2(i, 0) - _backend->dot(q, tmp);
+      j += std::norm(s);
+    }
+    j += std::abs(_backend->dot(q, q)) * lambda;
+    return j;
+  };
+
+  auto line_search = [&](const VectorXc& q, const VectorXc& p2, const std::vector<MatrixXc>& ris, const size_t m, const size_t n) {
+    auto alpha = 0.0;
+    auto min = (std::numeric_limits<double>::max)();
+    for (size_t i = 0; i < line_search_max; i++) {
+      const auto a = static_cast<double>(i) / static_cast<double>(line_search_max);  // FIXME: only for 0-1
+      if (const auto v = calc_j(q, p2, ris, m, n); v < min) {
+        alpha = a;
+        min = v;
+      }
+    }
+    return alpha;
+  };
+
+  const auto m = _foci.size();
+  const auto n = geometry.num_transducers();
+
+  MatrixXc g(m, n);
+  generate_transfer_matrix(_foci, geometry, g);
+
+  const VectorXc p = Eigen::Map<VectorXc, Eigen::Unaligned>(_amps.data(), static_cast<Eigen::Index>(_amps.size()));
+
+  VectorXc p2(m);
+  _backend->hadamard_product(p, p, p2);
+
+  MatrixXc h(n, n);
+  const VectorXc one = VectorXc::Ones(n);
+  _backend->create_diagonal(one, h);
+
+  MatrixXc tmp = MatrixXc::Zero(n, n);
+  _backend->mul(TRANSPOSE::CONJ_TRANS, TRANSPOSE::NO_TRANS, ONE, g, g, ZERO, tmp);
+  _backend->add(complex(lambda, 0.0), h, tmp);
+
+  VectorXc q = VectorXc::Zero(n);
+  _backend->mul(TRANSPOSE::CONJ_TRANS, ONE, g, p, ZERO, q);
+  _backend->solveh(tmp, q);
+
+  std::vector<MatrixXc> ris;
+  ris.reserve(m);
+  for (size_t i = 0; i < m; i++) ris.emplace_back(make_ri(g, m, n, i));
+
+  VectorXc nabla_j = VectorXc::Zero(n);
+  calc_nabla_j(q, p2, ris, m, n, nabla_j);
+
+  VectorXc d = VectorXc::Zero(n);
+  VectorXc nabla_j_new = VectorXc::Zero(n);
+  VectorXc s(n);
+  VectorXc hs = VectorXc::Zero(n);
+  for (size_t k = 0; k < k_max; k++) {
+    _backend->mul(TRANSPOSE::NO_TRANS, -ONE, h, nabla_j, ZERO, d);
+
+    const auto alpha = line_search(q, p2, ris, m, n);  // FIXME
+
+    _backend->scale(complex(alpha, 0), d);
+
+    if (std::sqrt(_backend->dot(d, d).real()) < eps) break;
+
+    _backend->add(ONE, d, q);
+    calc_nabla_j(q, p2, ris, m, n, nabla_j_new);
+
+    _backend->copy_to(nabla_j_new, s);
+    _backend->add(-ONE, nabla_j, s);
+
+    const auto ys = ONE / _backend->dot(d, s);
+    _backend->mul(TRANSPOSE::NO_TRANS, ONE, h, s, ZERO, hs);
+    const auto shs = -ONE / _backend->dot(s, hs);
+
+    _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::CONJ_TRANS, ys, d, d, ONE, h);
+    _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::CONJ_TRANS, shs, hs, hs, ONE, h);
+
+    _backend->copy_to(nabla_j_new, nabla_j);
+  }
+
+  _backend->to_host(q);
+  const auto max_coefficient = std::abs(_backend->max_abs_element(q));
+  std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
+    std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
+      const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
+      const auto raw = std::abs(q(tr.id()));
+      const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
+      _drives[tr.id()].amp = power;
+      _drives[tr.id()].phase = phase;
+    });
+  });
+}
+
 }  // namespace autd3::gain::holo
