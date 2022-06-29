@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/06/2022
+// Last Modified: 29/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -166,14 +166,14 @@ class Grouped final : public core::Gain {
   std::enable_if_t<std::is_base_of_v<core::Gain, G>> add(const size_t device_id, G& gain) {
     gain.build(_geometry);
     if (device_id < _geometry.num_devices())
-      std::memcpy(_drives.data() + device_id * driver::NUM_TRANS_IN_UNIT, gain.drives().data() + device_id * driver::NUM_TRANS_IN_UNIT,
+      std::memcpy(_buf.data() + device_id * driver::NUM_TRANS_IN_UNIT, gain.drives().data() + device_id * driver::NUM_TRANS_IN_UNIT,
                   sizeof(driver::Drive) * driver::NUM_TRANS_IN_UNIT);
   }
 
-  void calc(const core::Geometry&) override {}
+  void calc(const core::Geometry& geometry) override { std::memcpy(_drives.data(), _buf.data(), geometry.num_transducers() * sizeof(driver::Drive)); }
 
-  explicit Grouped(const core::Geometry& geometry) : core::Gain(), _geometry(geometry) {
-    _drives.resize(geometry.num_transducers(), driver::Drive{0, 0, 0});
+  explicit Grouped(const core::Geometry& geometry) : core::Gain(), _buf(), _geometry(geometry) {
+    _buf.resize(geometry.num_transducers(), driver::Drive{0, 0, 0});
   }
   ~Grouped() override = default;
   Grouped(const Grouped& v) noexcept = delete;
@@ -182,6 +182,7 @@ class Grouped final : public core::Gain {
   Grouped& operator=(Grouped&& obj) = delete;
 
  private:
+  std::vector<driver::Drive> _buf;
   const core::Geometry& _geometry;
 };
 
