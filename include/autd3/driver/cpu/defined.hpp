@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/06/2022
+// Last Modified: 29/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -76,7 +76,7 @@ class CPUControlFlags final {
 };
 #pragma warning(pop)
 
-enum class Mode : uint16_t {
+enum class GainSTMMode : uint16_t {
   PhaseDutyFull = 0x0001,
   PhaseFull = 0x0002,
   PhaseHalf = 0x0004,

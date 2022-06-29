@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/06/2022
+// Last Modified: 29/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -218,7 +218,7 @@ inline void gain_stm_legacy_header(TxDatagram& tx) noexcept {
 }
 
 inline void gain_stm_legacy_body(const std::vector<const std::vector<Drive>*>& drives, const bool is_first_frame, const uint32_t freq_div,
-                                 const bool is_last_frame, const Mode mode, TxDatagram& tx) noexcept(false) {
+                                 const bool is_last_frame, const GainSTMMode mode, TxDatagram& tx) noexcept(false) {
   if (is_first_frame) {
     if (freq_div < STM_SAMPLING_FREQ_DIV_MIN) {
       std::stringstream ss;
@@ -233,11 +233,11 @@ inline void gain_stm_legacy_body(const std::vector<const std::vector<Drive>*>& d
     }
   } else {
     switch (mode) {
-      case Mode::PhaseDutyFull: {
+      case GainSTMMode::PhaseDutyFull: {
         auto* p = reinterpret_cast<LegacyDrive*>(tx.bodies());
         for (size_t i = 0; i < drives[0]->size(); i++) p[i].set(drives[0]->at(i));
       } break;
-      case Mode::PhaseFull: {
+      case GainSTMMode::PhaseFull: {
         auto* p = reinterpret_cast<LegacyPhaseFull*>(tx.bodies());
         for (size_t i = 0; i < drives[0]->size(); i++) p[i].set(0, drives[0]->at(i));
       }
@@ -246,7 +246,7 @@ inline void gain_stm_legacy_body(const std::vector<const std::vector<Drive>*>& d
           for (size_t i = 0; i < drives[1]->size(); i++) p[i].set(1, drives[1]->at(i));
         }
         break;
-      case Mode::PhaseHalf: {
+      case GainSTMMode::PhaseHalf: {
         auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies());
         for (size_t i = 0; i < drives[0]->size(); i++) p[i].set(0, drives[0]->at(i));
       }
@@ -290,13 +290,13 @@ inline void gain_stm_normal_header(TxDatagram& tx) noexcept {
   tx.num_bodies = 0;
 }
 
-inline void gain_stm_normal_phase(const std::vector<Drive>& drives, const bool is_first_frame, const uint32_t freq_div, const Mode mode,
+inline void gain_stm_normal_phase(const std::vector<Drive>& drives, const bool is_first_frame, const uint32_t freq_div, const GainSTMMode mode,
                                   const bool is_last_frame, TxDatagram& tx) noexcept(false) {
   tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
 
 #pragma warning(push)
 #pragma warning(disable : 26813)
-  if (mode == Mode::PhaseHalf) throw std::runtime_error("PhaseHalf is not supported in normal mode");
+  if (mode == GainSTMMode::PhaseHalf) throw std::runtime_error("PhaseHalf is not supported in normal mode");
 #pragma warning(pop)
 
   if (is_first_frame) {

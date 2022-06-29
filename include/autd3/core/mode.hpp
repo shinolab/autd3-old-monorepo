@@ -3,7 +3,7 @@
 // Created Date: 28/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/06/2022
+// Last Modified: 29/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,7 +26,7 @@ class Mode {
 
   virtual void pack_stm_gain_header(driver::TxDatagram& tx) const = 0;
   virtual void pack_stm_gain_body(size_t& sent, bool& next_duty, uint32_t freq_div, const std::vector<std::vector<driver::Drive>>& gains,
-                                  driver::Mode mode, driver::TxDatagram& tx) const = 0;
+                                  driver::GainSTMMode mode, driver::TxDatagram& tx) const = 0;
 };
 
 class LegacyMode : public Mode {
@@ -39,7 +39,7 @@ class LegacyMode : public Mode {
 
   void pack_stm_gain_header(driver::TxDatagram& tx) const noexcept override { gain_stm_legacy_header(tx); }
 
-  void pack_stm_gain_body(size_t& sent, bool&, uint32_t freq_div, const std::vector<std::vector<driver::Drive>>& gains, driver::Mode mode,
+  void pack_stm_gain_body(size_t& sent, bool&, uint32_t freq_div, const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode mode,
                           driver::TxDatagram& tx) const override {
     const auto is_first_frame = sent == 0;
 
@@ -52,19 +52,19 @@ class LegacyMode : public Mode {
     bool is_last_frame;
     const std::vector<driver::Drive>*p1, *p2, *p3, *p4;
     switch (mode) {
-      case driver::Mode::PhaseDutyFull:
+      case driver::GainSTMMode::PhaseDutyFull:
         is_last_frame = sent + 1 == gains.size() + 1;
         gain_stm_legacy_body({&gains.at(sent - 1)}, is_first_frame, freq_div, is_last_frame, mode, tx);
         sent += 1;
         break;
-      case driver::Mode::PhaseFull:
+      case driver::GainSTMMode::PhaseFull:
         is_last_frame = sent + 2 >= gains.size() + 1;
         p1 = &gains.at(sent - 1);
         p2 = sent + 1 - 1 < gains.size() ? &gains.at(sent + 1 - 1) : nullptr;
         gain_stm_legacy_body({p1, p2}, is_first_frame, freq_div, is_last_frame, mode, tx);
         sent += 2;
         break;
-      case driver::Mode::PhaseHalf:
+      case driver::GainSTMMode::PhaseHalf:
         is_last_frame = sent + 4 >= gains.size() + 1;
         p1 = &gains.at(sent - 1);
         p2 = sent + 1 - 1 < gains.size() ? &gains.at(sent + 1 - 1) : nullptr;
@@ -91,8 +91,8 @@ class NormalMode : public Mode {
 
   void pack_stm_gain_header(driver::TxDatagram& tx) const noexcept override { gain_stm_normal_header(tx); }
 
-  void pack_stm_gain_body(size_t& sent, bool& next_duty, uint32_t freq_div, const std::vector<std::vector<driver::Drive>>& gains, driver::Mode mode,
-                          driver::TxDatagram& tx) const override {
+  void pack_stm_gain_body(size_t& sent, bool& next_duty, uint32_t freq_div, const std::vector<std::vector<driver::Drive>>& gains,
+                          driver::GainSTMMode mode, driver::TxDatagram& tx) const override {
     const auto is_first_frame = sent == 0;
 
     if (is_first_frame) {
@@ -104,7 +104,7 @@ class NormalMode : public Mode {
     const auto is_last_frame = sent + 1 == gains.size() + 1;
 
     switch (mode) {
-      case driver::Mode::PhaseDutyFull:
+      case driver::GainSTMMode::PhaseDutyFull:
         if (next_duty) {
           gain_stm_normal_duty(gains.at(sent - 1), is_last_frame, tx);
           sent += 1;
@@ -113,7 +113,7 @@ class NormalMode : public Mode {
         }
         next_duty = !next_duty;
         break;
-      case driver::Mode::PhaseFull:
+      case driver::GainSTMMode::PhaseFull:
         gain_stm_normal_phase(gains.at(sent - 1), is_first_frame, freq_div, mode, is_last_frame, tx);
         sent += 1;
         break;
@@ -134,12 +134,12 @@ class NormalPhaseMode : public Mode {
 
   void pack_stm_gain_header(driver::TxDatagram& tx) const noexcept override { gain_stm_normal_header(tx); }
 
-  void pack_stm_gain_body(size_t& sent, bool&, uint32_t freq_div, const std::vector<std::vector<driver::Drive>>& gains, driver::Mode mode,
+  void pack_stm_gain_body(size_t& sent, bool&, uint32_t freq_div, const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode mode,
                           driver::TxDatagram& tx) const override {
     const auto is_first_frame = sent == 0;
 
     if (is_first_frame) {
-      gain_stm_normal_phase({}, is_first_frame, freq_div, mode, false, tx);
+      gain_stm_normal_phase({}, is_first_frame, freq_div, driver::GainSTMMode::PhaseFull, false, tx);
       sent += 1;
       return;
     }
@@ -147,9 +147,9 @@ class NormalPhaseMode : public Mode {
     const auto is_last_frame = sent + 1 == gains.size() + 1;
 
     switch (mode) {
-      case driver::Mode::PhaseDutyFull:
-      case driver::Mode::PhaseFull:
-        gain_stm_normal_phase(gains.at(sent - 1), is_first_frame, freq_div, mode, is_last_frame, tx);
+      case driver::GainSTMMode::PhaseDutyFull:
+      case driver::GainSTMMode::PhaseFull:
+        gain_stm_normal_phase(gains.at(sent - 1), is_first_frame, freq_div, driver::GainSTMMode::PhaseFull, is_last_frame, tx);
         sent += 1;
         break;
       default:
