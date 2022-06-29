@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 29/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -157,6 +157,11 @@ class CUDABackendImpl final : public CUDABackend {
     const auto src_p = _pool.get(src);
     const auto dst_p = _pool.get(dst);
     cudaMemcpy(dst_p, src_p, sizeof(double) * src.size(), cudaMemcpyDeviceToDevice);
+  }
+  void copy_to(const VectorXc& src, VectorXc& dst) override {
+    const auto src_p = _pool.get(src);
+    const auto dst_p = _pool.get(dst);
+    cudaMemcpy(dst_p, src_p, sizeof(complex) * src.size(), cudaMemcpyDeviceToDevice);
   }
 
   void abs(const VectorXc& src, VectorXd& dst) override {
@@ -335,6 +340,18 @@ class CUDABackendImpl final : public CUDABackend {
     const auto a_p = static_cast<double*>(_pool.get(a));
     const auto b_p = static_cast<double*>(_pool.get(b));
     cublasDaxpy(_handle, static_cast<int>(a.size()), &alpha, a_p, 1, b_p, 1);
+  }
+
+  void add(const complex alpha, const MatrixXc& a, MatrixXc& b) override {
+    const auto a_p = static_cast<cuDoubleComplex*>(_pool.get(a));
+    const auto b_p = static_cast<cuDoubleComplex*>(_pool.get(b));
+    cublasZaxpy(_handle, static_cast<int>(a.size()), reinterpret_cast<const cuDoubleComplex*>(&alpha), a_p, 1, b_p, 1);
+  }
+
+  void add(const complex alpha, const VectorXc& a, VectorXc& b) override {
+    const auto a_p = static_cast<cuDoubleComplex*>(_pool.get(a));
+    const auto b_p = static_cast<cuDoubleComplex*>(_pool.get(b));
+    cublasZaxpy(_handle, static_cast<int>(a.size()), reinterpret_cast<const cuDoubleComplex*>(&alpha), a_p, 1, b_p, 1);
   }
 
   void mul(const TRANSPOSE trans_a, const TRANSPOSE trans_b, const complex alpha, const MatrixXc& a, const MatrixXc& b, const complex beta,

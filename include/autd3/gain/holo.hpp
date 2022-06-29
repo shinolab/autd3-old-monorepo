@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/06/2022
+// Last Modified: 29/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -224,6 +224,47 @@ class Greedy final : public Holo {
 
   size_t phase_div;
   std::function<double(const VectorXd&, const VectorXc&)> objective;
+};
+
+/**
+ * @brief Gain to produce multiple focal points, applying greedy algorithm on linear synthesis scheme.
+ * Refer to Jianyu Chen, et al. Sound Pressure Field Reconstruction for Ultrasound Phased Array by Linear Synthesis Scheme Optimization,”
+ * in Haptics: Science, Technology, Applications. EuroHaptics 2022. https://doi.org/10.1007/978-3-031-06249-0_17
+ */
+class LSSGreedy final : public Holo {
+ public:
+  /**
+   * @param[in] backend pointer to Backend
+   */
+  explicit LSSGreedy(BackendPtr backend)
+      : Holo(std::move(backend)),
+        phase_div(16),
+        objective([](const VectorXd& target, const VectorXc& p) { return (target - p.cwiseAbs()).cwiseAbs().sum(); }) {}
+
+  void calc(const core::Geometry& geometry) override;
+
+  size_t phase_div;
+  std::function<double(const VectorXd&, const VectorXc&)> objective;
+};
+
+/**
+ * @brief Gain to produce multiple focal points with Acoustic Power Optimization method.
+ * Refer to Keisuke Hasegawa, Hiroyuki Shinoda, and Takaaki Nara. Volumetric acoustic holography and its application to self-positioning by single
+ * channel measurement.Journal of Applied Physics,127(24):244904, 2020.7
+ */
+class APO final : public Holo {
+ public:
+  /**
+   * @param[in] backend pointer to Backend
+   */
+  APO(BackendPtr backend) : Holo(std::move(backend)), eps(1e-8), lambda(1.0), k_max(200), line_search_max(100) {}
+
+  void calc(const core::Geometry& geometry) override;
+
+  double eps;
+  double lambda;
+  size_t k_max;
+  size_t line_search_max;
 };
 
 }  // namespace autd3::gain::holo

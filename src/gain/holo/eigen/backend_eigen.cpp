@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 29/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,6 +22,7 @@ void EigenBackend::to_host(MatrixXd&) {}
 void EigenBackend::copy_to(const MatrixXc& src, MatrixXc& dst) { dst = src; }
 void EigenBackend::copy_to(const MatrixXd& src, MatrixXd& dst) { dst = src; }
 void EigenBackend::copy_to(const VectorXd& src, VectorXd& dst) { dst = src; }
+void EigenBackend::copy_to(const VectorXc& src, VectorXc& dst) { dst = src; }
 
 void EigenBackend::real(const MatrixXc& src, MatrixXd& re) { re = src.real(); }
 void EigenBackend::imag(const MatrixXc& src, MatrixXd& im) { im = src.imag(); }
@@ -80,7 +81,9 @@ complex EigenBackend::dot(const VectorXc& a, const VectorXc& b) { return a.dot(b
 double EigenBackend::dot(const VectorXd& a, const VectorXd& b) { return a.dot(b); }
 
 void EigenBackend::add(const double alpha, const MatrixXd& a, MatrixXd& b) { b += alpha * a; }
+void EigenBackend::add(const complex alpha, const MatrixXc& a, MatrixXc& b) { b += alpha * a; }
 void EigenBackend::add(const double alpha, const VectorXd& a, VectorXd& b) { b += alpha * a; }
+void EigenBackend::add(const complex alpha, const VectorXc& a, VectorXc& b) { b += alpha * a; }
 
 void EigenBackend::mul(const TRANSPOSE trans_a, const TRANSPOSE trans_b, const complex alpha, const MatrixXc& a, const MatrixXc& b,
                        const complex beta, MatrixXc& c) {
