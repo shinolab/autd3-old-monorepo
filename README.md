@@ -39,16 +39,6 @@ Version: 2.2.2
         make
         ```
 
-        or with Xcode
-
-        ```
-        git clone https://github.com/shinolab/autd3.git
-        cd autd3
-        mkdir build && cd build
-        cmake .. -G "Xcode"
-        open ./autd3.xcodeproj
-        ```
-
     * linux:
         ```
         git clone https://github.com/shinolab/autd3.git 
