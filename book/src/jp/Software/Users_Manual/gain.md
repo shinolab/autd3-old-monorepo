@@ -54,11 +54,13 @@ AUTDは各振動子の位相/振幅を個別に制御することができ, こ�
 
 * `SDP` - Semidefinite programming, 井上らの論文[^inoue2015]に基づく
 * `EVD` - Eigen value decomposition, Longらの論文[^long2014]に基づく
-* `Naive` - 単一焦点解の重ね合わせ
+* `LSS` - Linear Synthesis Scheme 単一焦点解の重ね合わせ
 * `GS` - Gershberg-Saxon, Marzoらの論文[^marzo2019]に基づく
 * `GSPAT` - Gershberg-Saxon for Phased Arrays of Transducers, Plasenciaらの論文[^plasencia2020]に基づく
 * `LM` - Levenberg-Marquardt, LM法はLevenberg[^levenberg1944]とMarquardt[^marquardt1963]で提案された非線形最小二乗問題の最適化法, 実装はMadsenのテキスト[^madsen2004]に基づく.
 * `Greedy` - Greedy algorithm and Brute-force search, 鈴木らの論文[^suzuki2021]に基づく
+* `LSSGreedy` - Greedy algorithm on LSS, Chenらの論文[^chen2022]に基づく
+* `APO` - Acoustic Power Optimization, 長谷川らの論文[^hasegawa2020]に基づく
 
 また, 各手法は計算Backendを選べるようになっている.
 SDKには以下の`Backend`が用意されている
@@ -159,7 +161,6 @@ cmake .. -DBUILD_HOLO_GAIN=ON -DBUILD_BLAS_BACKEND=ON -DBLAS_LIB_DIR=<your BLAS 
 ```cpp
 #include "autd3.hpp"
 
-template <typename T = LegacyTransducer, enable_if_t<is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
 class FocalPoint final : public Gain {
  public:
   explicit FocalPoint(Vector3 point) : _point(move(point)) {}
@@ -169,7 +170,8 @@ class FocalPoint final : public Gain {
       std::for_each(dev.begin(), dev.end(), [&](const auto& transducer) {
         const auto dist = (_point - transducer.position()).norm();
         const auto phase = transducer.align_phase_at(dist, geometry.sound_speed);
-        this->_props.drives.set_drive(transducer, phase, 1.0);
+        this->_drives.amp = 1.0;
+        this->_drives.phase = phase;
       });
     });
   } 
@@ -208,3 +210,7 @@ Geometryにはイテレータが定義されており, `Device`のイテレー�
 [^madsen2004]: Madsen, Kaj, Hans Bruun Nielsen, and Ole Tingleff. "Methods for non-linear least squares problems." (2004).
 
 [^suzuki2021]: Suzuki, Shun, et al. "Radiation Pressure Field Reconstruction for Ultrasound Midair Haptics by Greedy Algorithm with Brute-Force Search." IEEE Transactions on Haptics (2021).
+
+[^chen2022]: Jianyu Chen, et al., "Sound Pressure Field Reconstruction for Ultrasound Phased Array by Linear Synthesis Scheme Optimization,” in Haptics: Science, Technology, Applications. EuroHaptics 2022.
+
+[^hasegawa2020]: Keisuke Hasegawa, et al., "Volumetric acoustic holography and its application to self-positioning by single channel measurement," Journal of Applied Physics,127(24):244904, 2020.7
