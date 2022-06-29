@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/06/2022
+// Last Modified: 29/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,8 +12,10 @@
 #pragma once
 
 #include "autd3/controller.hpp"
+#include "autd3/core/amplitudes.hpp"
 #include "autd3/core/delay.hpp"
 #include "autd3/core/geometry.hpp"
+#include "autd3/core/mode.hpp"
 #include "autd3/core/stm/gain.hpp"
 #include "autd3/core/stm/point.hpp"
 #include "autd3/gain/primitive.hpp"
@@ -34,6 +36,11 @@ namespace driver {}
 constexpr double pi = driver::pi;
 
 using core::Geometry;
+using core::LegacyMode;
+using core::NormalMode;
+using core::NormalPhaseMode;
+
+using core::Amplitudes;
 
 using core::Gain;
 using core::Modulation;
@@ -42,7 +49,7 @@ using core::ModDelayConfig;
 
 using driver::FirmwareInfo;
 using driver::FPGAInfo;
-using driver::Mode;
+using driver::GainSTMMode;
 
 using core::Quaternion;
 using core::Vector3;
