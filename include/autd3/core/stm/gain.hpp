@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/06/2022
+// Last Modified: 29/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -29,7 +29,7 @@ namespace autd3::core {
  * 1. The maximum number of gains is driver::GAIN_STM_BUF_SIZE_MAX.
  */
 struct GainSTM final : public STM {
-  explicit GainSTM(const Geometry& geometry) : STM(), _geometry(geometry), _sent(0), _next_duty(false), _mode(driver::Mode::PhaseDutyFull) {}
+  explicit GainSTM(const Geometry& geometry) : STM(), _geometry(geometry), _sent(0), _next_duty(false), _mode(driver::GainSTMMode::PhaseDutyFull) {}
 
   /**
    * @brief Add gain
@@ -44,7 +44,7 @@ struct GainSTM final : public STM {
     _gains.emplace_back(gain.drives());
   }
 
-  driver::Mode& mode() noexcept { return _mode; }
+  driver::GainSTMMode& mode() noexcept { return _mode; }
 
   size_t size() const override { return _gains.size(); }
 
@@ -65,7 +65,7 @@ struct GainSTM final : public STM {
   std::vector<std::vector<driver::Drive>> _gains;
   size_t _sent;
   bool _next_duty;
-  driver::Mode _mode;
+  driver::GainSTMMode _mode;
 };
 
 #pragma warning(pop)
