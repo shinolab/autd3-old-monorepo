@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/06/2022
+// Last Modified: 29/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -83,6 +83,23 @@ void AUTDGainHoloGreedy(void** gain, const void* backend, const int32_t phase_di
   const auto b = static_cast<const BackendWrapper*>(backend);
   auto* g = new autd3::gain::holo::Greedy(b->ptr);
   g->phase_div = phase_div;
+  *gain = g;
+}
+
+void AUTDGainHoloLSSGreedy(void** gain, const void* backend, const int32_t phase_div) {
+  const auto b = static_cast<const BackendWrapper*>(backend);
+  auto* g = new autd3::gain::holo::LSSGreedy(b->ptr);
+  g->phase_div = phase_div;
+  *gain = g;
+}
+
+void AUTDGainHoloAPO(void** gain, const void* backend, const double eps, const double lambda, const int32_t k_max, const int32_t line_search_max) {
+  const auto b = static_cast<const BackendWrapper*>(backend);
+  auto* g = new autd3::gain::holo::APO(b->ptr);
+  g->eps = eps;
+  g->lambda = lambda;
+  g->k_max = k_max;
+  g->line_search_max = line_search_max;
   *gain = g;
 }
 
