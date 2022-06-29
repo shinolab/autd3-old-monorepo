@@ -54,7 +54,7 @@ if __name__ == '__main__':
         print(AUTD.last_error())
         exit()
 
-    autd.check_ack = True
+    autd.check_trials = 50
 
     autd.clear()
 

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 29/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,6 +36,7 @@ class BLASBackend final : public Backend {
   void copy_to(const MatrixXc& src, MatrixXc& dst) override;
   void copy_to(const MatrixXd& src, MatrixXd& dst) override;
   void copy_to(const VectorXd& src, VectorXd& dst) override;
+  void copy_to(const VectorXc& src, VectorXc& dst) override;
 
   void real(const MatrixXc& src, MatrixXd& re) override;
   void imag(const MatrixXc& src, MatrixXd& im) override;
@@ -77,6 +78,8 @@ class BLASBackend final : public Backend {
 
   void add(double alpha, const MatrixXd& a, MatrixXd& b) override;
   void add(double alpha, const VectorXd& a, VectorXd& b) override;
+  void add(complex alpha, const MatrixXc& a, MatrixXc& b) override;
+  void add(complex alpha, const VectorXc& a, VectorXc& b) override;
 
   void mul(TRANSPOSE trans_a, TRANSPOSE trans_b, complex alpha, const MatrixXc& a, const MatrixXc& b, complex beta, MatrixXc& c) override;
   void mul(TRANSPOSE trans_a, complex alpha, const MatrixXc& a, const VectorXc& b, complex beta, VectorXc& c) override;

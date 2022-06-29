@@ -3,7 +3,7 @@
 // Created Date: 01/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/06/2022
+// Last Modified: 29/06/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,8 +15,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "geometry/geometry.hpp"
-#include "geometry/transducer.hpp"
+#include "geometry.hpp"
 #include "interface.hpp"
 
 namespace autd3::core {
@@ -24,8 +23,7 @@ namespace autd3::core {
 /**
  * @brief Gain controls the duty ratio and phase of each transducer in AUTD devices.
  */
-template <typename T = autd3::core::LegacyTransducer, std::enable_if_t<std::is_base_of_v<Transducer<typename T::D>, T>, nullptr_t> = nullptr>
-struct ModDelayConfig final : DatagramBody<T> {
+struct ModDelayConfig final : DatagramBody {
   ModDelayConfig() : _sent(false) {}
   ~ModDelayConfig() override = default;
   ModDelayConfig(const ModDelayConfig& v) = default;
@@ -35,13 +33,13 @@ struct ModDelayConfig final : DatagramBody<T> {
 
   void init() override { _sent = false; }
 
-  void pack(const Geometry<T>& geometry, driver::TxDatagram& tx) override {
+  void pack(const Geometry& geometry, driver::TxDatagram& tx) override {
     autd3::driver::null_body(tx);
     if (is_finished()) return;
 
     std::vector<uint16_t> delays;
     std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-      std::transform(dev.begin(), dev.end(), std::back_inserter(delays), [](const T& tr) { return tr.mod_delay(); });
+      std::transform(dev.begin(), dev.end(), std::back_inserter(delays), [](const Transducer& tr) { return tr.mod_delay(); });
     });
 
     autd3::driver::mod_delay(delays.data(), tx);

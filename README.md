@@ -3,7 +3,7 @@
 
 # [AUTD3](https://hapislab.org/airborne-ultrasound-tactile-display?lang=en)
 
-Version: 2.2.1
+Version: 2.2.2
 
 ## Document
 
@@ -37,16 +37,6 @@ Version: 2.2.1
         mkdir build && cd build
         cmake ..
         make
-        ```
-
-        or with Xcode
-
-        ```
-        git clone https://github.com/shinolab/autd3.git
-        cd autd3
-        mkdir build && cd build
-        cmake .. -G "Xcode"
-        open ./autd3.xcodeproj
         ```
 
     * linux:
