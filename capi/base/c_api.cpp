@@ -334,7 +334,7 @@ uint16_t AUTDGetGainSTMMode(void* const stm) {
 }
 void AUTDSetGainSTMMode(void* const stm, uint16_t mode) {
   auto* const stm_w = static_cast<autd3::GainSTM*>(stm);
-  stm_w->mode() = static_cast<autd3::Mode>(mode);
+  stm_w->mode() = static_cast<autd3::GainSTMMode>(mode);
 }
 double AUTDSTMSetFrequency(void* const stm, const double freq) {
   auto* const stm_w = static_cast<autd3::core::STM*>(stm);
