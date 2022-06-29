@@ -969,7 +969,6 @@ Amplitudesを作成する.
 | Argument name / return | type   | in/out | description                      |
 | ---------------------- | ------ | ------ | -------------------------------- |
 | out                    | void** | out    | pointer to pointer to Amplitudes |
-| handle                 | void*  | in     | pointer to Controller            |
 | amp                    | double | in     | amplitudes                       |
 | return                 | void   | -      | -                                |
 
@@ -988,6 +987,7 @@ Legacy/Normalモードの設定を行う.
 
 | Argument name / return | type    | in/out | description                                                 |
 | ---------------------- | ------- | ------ | ----------------------------------------------------------- |
+| handle                 | void*   | in     | pointer to Controller                                       |
 | mode                   | uint8_t | in     | mode (0: Legacy mode, 1: Normal mode, 2: Normal Phase mode) |
 | return                 | void    | -      | -                                                           |
 
@@ -1108,6 +1108,36 @@ Greedy holo gainを作成する.
 | phase_div              | int32_t | in     | parameter                         |
 | return                 | void    | -      | -                                 |
 
+
+## AUTDGainHoloLSSGreedy (autd3capi-gain-holo)
+
+LSSGreedy holo gainを作成する.
+
+作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+
+| Argument name / return | type    | in/out | description                          |
+| ---------------------- | ------- | ------ | ---------------------------------    |
+| gain                   | void**  | out    | pointer to pointer to LSSGreedy gain |
+| backend                | void*   | in     | pointer to backend                   |
+| phase_div              | int32_t | in     | parameter                            |
+| return                 | void    | -      | -                                    |
+
+## AUTDGainHoloAPO (autd3capi-gain-holo)
+
+APO holo gainを作成する.
+
+作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+
+| Argument name / return | type    | in/out | description                          |
+| ---------------------- | ------- | ------ | ---------------------------------    |
+| gain                   | void**  | out    | pointer to pointer to APO gain       |
+| backend                | void*   | in     | pointer to backend                   |
+| eps                    | double  | in     | parameter                            |
+| lambda                 | double  | in     | parameter                            |
+| k_max                  | int32_t | in     | parameter                            |
+| line_search_max        | int32_t | in     | parameter                            |
+| return                 | void    | -      | -                                    |
+
 ## AUTDGainHoloAdd (autd3capi-gain-holo)
 
 Holo gainに焦点を追加する.
@@ -1131,17 +1161,6 @@ Holo gainのAmplitudeConstraintを設定する.
 | type                   | int32_t | in     | AmplitudeConstraint (0: DontCare, 1: Normalize, 2: Uniform, 3: Clamp) |
 | param                  | void*   | in     | pointer to additional parameter                                       |
 | return                 | void    | -      | -                                                                     |
-
-## AUTDSetModeHolo (autd3capi-gain-holo)
-
-Normal/Legacyモードを設定する.
-
-`AUTDSetMode`同じ値を設定すること.
-
-| Argument name / return | type    | in/out | description                                                 |
-| ---------------------- | ------- | ------ | ----------------------------------------------------------- |
-| mode                   | uint8_t | in     | mode (0: Legacy mode, 1: Normal mode, 2: Normal Phase mode) |
-| return                 | void    | -      | -                                                           |
 
 ## AUTDBLASBackend (autd3capi-backend-blas)
 
