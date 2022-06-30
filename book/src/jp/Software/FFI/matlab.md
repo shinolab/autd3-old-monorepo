@@ -92,14 +92,4 @@ deinit_autd(use_link_soem, use_backend_cuda);
 
 より詳細なサンプルは[autd3-matlabのexample](https://github.com/shinolab/autd3-matlab/tree/master/example)を参照されたい.
 
-## Trouble shooting
-
-Q. linuxやmacから実行できない
-
-A. 管理者権限で実行する
-
-```
-sudo python
-```
-
 その他, 質問があれば[GitHubのissue](https://github.com/shinolab/autd3-matlab/issues)にてお願いします.
