@@ -23,7 +23,7 @@ function ColorEcho($color, $PREFIX, $message) {
 }
 
 function FindVivado() {
-    $xilinx_reg = Get-ChildItem HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall | ForEach-Object { Get-ItemProperty $_.PsPath } | Where-Object DisplayName -match Vivado | Select-Object -first 1
+    $xilinx_reg = Get-ChildItem HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall | ForEach-Object { Get-ItemProperty $_.PsPath } | Where-Object DisplayName -match 'Vivado|Vitis' | Select-Object -first 1
     if ($xilinx_reg) {
         return $xilinx_reg.InstallLocation
     }
