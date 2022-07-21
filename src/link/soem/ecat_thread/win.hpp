@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/06/2022
+// Last Modified: 21/07/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <fstream>
 #include <queue>
 #include <string>
 
@@ -107,6 +108,10 @@ void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wk
   const auto ht = ((tp.tv_usec / cyctime_us) + 1) * cyctime_us;
   ts.tv_nsec = ht * 1000;
 
+  LARGE_INTEGER start, now;
+  bool started = false;
+  bool done = false;
+  std::vector<long long> sw;
   int64_t toff = 0;
   while (*is_running) {
     add_timespec(ts, cycletime_ns + toff);
@@ -114,6 +119,12 @@ void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wk
     W(ts);
 
     if (ec_slave[0].state == EC_STATE_SAFE_OP) {
+      if (!started) {
+        printf("SAFE_OP\n");
+        started = true;
+        sw.reserve(100000);
+        QueryPerformanceCounter(&start);
+      }
       ec_slave[0].state = EC_STATE_OPERATIONAL;
       ec_writestate(0);
     }
@@ -125,8 +136,22 @@ void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wk
     }
 
     ec_send_processdata();
-
     if (ec_receive_processdata(EC_TIMEOUTRET) != expected_wkc && !error_handle(is_open, on_lost)) return;
+
+    if (started && !done)
+      if (sw.size() == 100000) {
+        std::ofstream writing_file;
+        std::string filename = "times.csv";
+        writing_file.open(filename, std::ios::out);
+        for (auto t : sw) writing_file << t << std::endl;
+        writing_file.close();
+        printf("done\n");
+        printf("%lld\n", PERFORMANCE_FREQUENCY.QuadPart);
+        done = true;
+      } else {
+        QueryPerformanceCounter(&now);
+        sw.emplace_back(now.QuadPart - start.QuadPart);
+      }
 
     ec_sync(ec_DCtime, cycletime_ns, &toff);
   }
