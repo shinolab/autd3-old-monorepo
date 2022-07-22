@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/07/2022
+// Last Modified: 22/07/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -91,7 +91,7 @@ template <wait_func W>
 void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wkc, int64_t cycletime_ns, std::mutex& mtx,
                std::queue<driver::TxDatagram>& send_queue, IOMap& io_map, std::function<void(std::string)> on_lost) {
   const auto u_resolution = 1;
-  timeBeginPeriod(u_resolution);
+  // timeBeginPeriod(u_resolution);
 
   auto* h_process = GetCurrentProcess();
   const auto priority = GetPriorityClass(h_process);
@@ -108,23 +108,14 @@ void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wk
   const auto ht = ((tp.tv_usec / cyctime_us) + 1) * cyctime_us;
   ts.tv_nsec = ht * 1000;
 
-  LARGE_INTEGER start, now;
-  bool started = false;
-  bool done = false;
-  std::vector<long long> sw;
   int64_t toff = 0;
+  LARGE_INTEGER start, send_time, recv_time;
   while (*is_running) {
     add_timespec(ts, cycletime_ns + toff);
 
     W(ts);
 
     if (ec_slave[0].state == EC_STATE_SAFE_OP) {
-      if (!started) {
-        printf("SAFE_OP\n");
-        started = true;
-        sw.reserve(100000);
-        QueryPerformanceCounter(&start);
-      }
       ec_slave[0].state = EC_STATE_OPERATIONAL;
       ec_writestate(0);
     }
@@ -135,28 +126,18 @@ void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wk
       send_queue.pop();
     }
 
+    // QueryPerformanceCounter(&start);
     ec_send_processdata();
-    if (ec_receive_processdata(EC_TIMEOUTRET) != expected_wkc && !error_handle(is_open, on_lost)) return;
-
-    if (started && !done)
-      if (sw.size() == 100000) {
-        std::ofstream writing_file;
-        std::string filename = "times.csv";
-        writing_file.open(filename, std::ios::out);
-        for (auto t : sw) writing_file << t << std::endl;
-        writing_file.close();
-        printf("done\n");
-        printf("%lld\n", PERFORMANCE_FREQUENCY.QuadPart);
-        done = true;
-      } else {
-        QueryPerformanceCounter(&now);
-        sw.emplace_back(now.QuadPart - start.QuadPart);
-      }
+    // QueryPerformanceCounter(&send_time);
+    const auto wkc = ec_receive_processdata(EC_TIMEOUTRET);
+    // QueryPerformanceCounter(&recv_time);
+    // printf("\r\x1b[Ksend: %lld\t, recv: %lld", send_time.QuadPart - start.QuadPart, recv_time.QuadPart - send_time.QuadPart);
+    if (wkc != expected_wkc && !error_handle(is_open, on_lost)) return;
 
     ec_sync(ec_DCtime, cycletime_ns, &toff);
   }
 
-  timeEndPeriod(1);
+  // timeEndPeriod(1);
   SetPriorityClass(h_process, priority);
 }
 

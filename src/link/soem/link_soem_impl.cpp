@@ -3,7 +3,7 @@
 // Created Date: 23/08/2019
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 22/07/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2019-2020 Shun Suzuki. All rights reserved.
@@ -57,6 +57,13 @@ void SOEMLink::open() {
 
   const auto wc = ec_config_init(0);
   if (wc <= 0) throw std::runtime_error("No slaves found!");
+
+  for (auto i = 1; i <= wc; i++)
+    if (std::strcmp(ec_slave[i].name, "AUTD") != 0) {
+      std::stringstream ss;
+      ss << "Slave[" << i << "] is not AUTD.";
+      throw std::runtime_error(ss.str());
+    }
 
   if (static_cast<size_t>(wc) != _dev_num) {
     std::stringstream ss;
