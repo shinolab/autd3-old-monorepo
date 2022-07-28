@@ -3,7 +3,7 @@
 # Created Date: 14/02/2020
 # Author: Shun Suzuki
 # -----
-# Last Modified: 30/05/2022
+# Last Modified: 28/07/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ function ColorEcho($color, $PREFIX, $message) {
 }
 
 function FindVivado() {
-    $xilinx_reg = Get-ChildItem HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall | ForEach-Object { Get-ItemProperty $_.PsPath } | Where-Object DisplayName -match Vivado | Select-Object -first 1
+    $xilinx_reg = Get-ChildItem HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall | ForEach-Object { Get-ItemProperty $_.PsPath } | Where-Object DisplayName -match 'Vivado|Vitis' | Select-Object -first 1
     if ($xilinx_reg) {
         return $xilinx_reg.InstallLocation
     }
