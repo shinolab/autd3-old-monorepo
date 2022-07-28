@@ -8,10 +8,12 @@ LinkはDeviceとのインターフェースである.
 TwinCATはPCでEherCATを使用する際の唯一の公式の方法である.
 TwinCATはWindowsのみをサポートする非常に特殊なソフトウェアであり, Windowsを半ば強引にリアルタイム化する.
 
-また, 特定のネットワークコントローラが必要になるため,
+また, 特定のネットワークコントローラが求められるため,
 [対応するネットワークコントローラの一覧](https://infosys.beckhoff.com/english.php?content=../content/1033/tc3_overview/9309844363.html&id=)を確認すること.
 
 > Note: 或いは, TwinCATのインストール後に, `C:/TwinCAT/3.1/Driver/System/TcI8254x.inf`に対応するデバイスのVendor IDとDevice IDが書かれているので, デバイスマネージャー→イーサネットアダプタ→プロパティ→詳細→ハードウェアIDと照らし合わせることでも確認できる.
+
+上記以外のネットワークコントローラでも動作する場合があるが, その場合, 正常な動作とリアルタイム性は保証されない.
 
 ### How to install TwinCAT
 
@@ -20,7 +22,7 @@ TwinCATはWindowsのみをサポートする非常に特殊なソフトウェア
 これには, 例えば, PowerShellを管理者権限で起動し,
 ```
 Disable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-Hypervisor
-Disable-WindowsOptionalFeature -online -featurename VirtualMachinePlatform
+Disable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform
 ```
 と打ち込めば良い.
 
@@ -49,8 +51,11 @@ AUTDServer実行後に, IPアドレスの入力を求められるがここは空
 #### Install Driver
 
 初回はEherCAT用のドライバのインストールが必要になる.
-TwinCAT XAE Shell上部メニューからTwinCAT→Show Realtime Ethernet Compatible Devicesを開きCompatible devicesの中の対応デバイスを選択肢Installをクリックする.
+TwinCAT XAE Shell上部メニューからTwinCAT→Show Realtime Ethernet Compatible Devicesを開きCompatible devicesの中の対応デバイスを選択し, Installをクリックする. "Installed and ready to use devices(realtime capcble)"にインストールされたアダプタが表示されていれば成功だ.
+
 なお, Compatible devicesに何も表示されていない場合はそのPCのイーサネットデバイスはTwinCATに対応していない.
+Incompatible devicesの中のドライバもInstall自体は可能で, Installすると"Installed and ready to use devices(for demo use only)"と表示される.
+この場合, 使用できるが動作保証はない.
 
 #### License
 
