@@ -10,7 +10,7 @@ PWM信号を生成する回路のダイアグラムは以下の通りである.
 | In/Out | 名前         | バス幅         | 説明                              |
 | :----- | :----------- | :------------- | :-------------------------------- |
 |   In   | CLK          | $1$            | クロック ($163.84\,\mathrm{MHz}$) |
-|   In   | CLK_L        | $1$            | クロック ($20.48\,\mathrm{MHz}$)  |
+|   In   | CLK_L        | $1$            | クロック ($40.96\,\mathrm{MHz}$)  |
 |   In   | SYS_TIME     | $64$           | 同期時刻                          |
 |   In   | CYCLE        | $13\times 249$ | 周期$T$                           |
 |   In   | SET          | $1$            | 周期$T$セット信号                 |
@@ -59,16 +59,16 @@ Preconditionerは, PWMのDuty比$D$, および, 位相$P$からPWM信号の立�
 <figcaption>$T < F$</figcaption>
 </figure>
 
-Preconditionerの計算は, $20.48\,\mathrm{MHz}$のクロックで, 振動子に対して並行に行われる.
+Preconditionerの計算は, $40.96\,\mathrm{MHz}$のクロックで, 振動子に対してパイプライン的に行われる.
 計算のレイテンシは9クロックなので, Preconditionerの出力は
 $$
-  \frac{1}{20.48\,\mathrm{MHz}} \times (249 + 9) = 12.6\,\text{μs}
+  \frac{1}{40.96\,\mathrm{MHz}} \times (249 + 9) = 6.3\,\text{μs}
 $$
 間隔で更新される.
 
 ### Buffer
 
-Preconditionerの計算は並行に行われるため, $R, F$の値も並行に更新される.
+Preconditionerの計算はパイプライン的に行われるため, $R, F$の値も並行に更新される.
 Bufferの役割は, これらの更新タイミングを各振動子の周期に合わせることである.
 
 Bufferによる更新は, 各$t$が$t=T-1$のタイミングで行われる.
