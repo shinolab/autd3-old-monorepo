@@ -3,7 +3,7 @@
 // Created Date: 23/08/2019
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 04/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2019-2020 Shun Suzuki. All rights reserved.
@@ -58,6 +58,13 @@ void SOEMLink::open() {
   const auto wc = ec_config_init(0);
   if (wc <= 0) throw std::runtime_error("No slaves found!");
 
+  for (auto i = 1; i <= wc; i++)
+    if (std::strcmp(ec_slave[i].name, "AUTD") != 0) {
+      std::stringstream ss;
+      ss << "Slave[" << i << "] is not AUTD.";
+      throw std::runtime_error(ss.str());
+    }
+
   if (static_cast<size_t>(wc) != _dev_num) {
     std::stringstream ss;
     ss << "The number of slaves you added: " << _dev_num << ", but found: " << wc;
@@ -70,7 +77,9 @@ void SOEMLink::open() {
     ec_dcsync0(slave, true, cyc_time, 0U);
     return 0;
   };
-  for (int cnt = 1; cnt <= ec_slavecount; cnt++) ec_slave[cnt].PO2SOconfigx = dc_config;
+
+  if (_sync_mode == SyncMode::DC)
+    for (int cnt = 1; cnt <= ec_slavecount; cnt++) ec_slave[cnt].PO2SOconfigx = dc_config;
 
   ec_configdc();
 
@@ -95,6 +104,9 @@ void SOEMLink::open() {
   ec_statecheck(0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE * 5);
 
   if (ec_slave[0].state != EC_STATE_OPERATIONAL) throw std::runtime_error("One ore more slaves are not responding");
+
+  if (_sync_mode == SyncMode::FreeRun)
+    for (int cnt = 1; cnt <= ec_slavecount; cnt++) dc_config(&ecx_context, static_cast<uint16_t>(cnt));
 
   _is_open.store(true);
 }
@@ -130,7 +142,9 @@ SOEMLink::~SOEMLink() {
   }
 }
 
-core::LinkPtr SOEM::build() { return std::make_unique<SOEMLink>(_high_precision, _ifname, _device_num, _cycle_ticks, std::move(_callback)); }
+core::LinkPtr SOEM::build() {
+  return std::make_unique<SOEMLink>(_high_precision, _ifname, _device_num, _cycle_ticks, std::move(_callback), _sync_mode);
+}
 
 std::vector<EtherCATAdapter> SOEM::enumerate_adapters() {
   auto* adapter = ec_find_adapters();

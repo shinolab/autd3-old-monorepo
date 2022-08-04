@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/06/2022
+// Last Modified: 04/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <fstream>
 #include <queue>
 #include <string>
 
@@ -108,6 +109,7 @@ void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wk
   ts.tv_nsec = ht * 1000;
 
   int64_t toff = 0;
+  LARGE_INTEGER start, send_time, recv_time;
   while (*is_running) {
     add_timespec(ts, cycletime_ns + toff);
 
@@ -125,7 +127,6 @@ void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wk
     }
 
     ec_send_processdata();
-
     if (ec_receive_processdata(EC_TIMEOUTRET) != expected_wkc && !error_handle(is_open, on_lost)) return;
 
     ec_sync(ec_DCtime, cycletime_ns, &toff);
