@@ -31,7 +31,7 @@ struct EtherCATAdapter final {
   std::string name;
 };
 
-enum class SyncMode { FreeRun, DC };
+enum class SYNC_MODE { FREE_RUN, DC };
 
 /**
  * @brief Link using [SOEM](https://github.com/OpenEtherCATSociety/SOEM)
@@ -56,7 +56,7 @@ class SOEM {
    * Geometry::num_devices().
    */
   SOEM(std::string ifname, const size_t device_num)
-      : _high_precision(false), _ifname(std::move(ifname)), _device_num(device_num), _cycle_ticks(1), _callback(nullptr), _sync_mode(SyncMode::DC) {}
+      : _high_precision(false), _ifname(std::move(ifname)), _device_num(device_num), _cycle_ticks(1), _callback(nullptr), _sync_mode(SYNC_MODE::DC) {}
 
   /**
    * @brief Set callback function which is called when the link is lost
@@ -86,7 +86,7 @@ class SOEM {
   /**
    * @brief Set EtherCAT sync mode.
    */
-  SOEM& sync_mode(const SyncMode sync_mode) {
+  SOEM& sync_mode(const SYNC_MODE sync_mode) {
     _sync_mode = sync_mode;
     return *this;
   }
@@ -103,6 +103,6 @@ class SOEM {
   size_t _device_num;
   uint16_t _cycle_ticks;
   std::function<void(std::string)> _callback;
-  SyncMode _sync_mode;
+  SYNC_MODE _sync_mode;
 };
 }  // namespace autd3::link

@@ -78,7 +78,7 @@ void SOEMLink::open() {
     return 0;
   };
 
-  if (_sync_mode == SyncMode::DC)
+  if (_sync_mode == SYNC_MODE::DC)
     for (int cnt = 1; cnt <= ec_slavecount; cnt++) ec_slave[cnt].PO2SOconfigx = dc_config;
 
   ec_configdc();
@@ -105,7 +105,7 @@ void SOEMLink::open() {
 
   if (ec_slave[0].state != EC_STATE_OPERATIONAL) throw std::runtime_error("One ore more slaves are not responding");
 
-  if (_sync_mode == SyncMode::FreeRun)
+  if (_sync_mode == SYNC_MODE::FREE_RUN)
     for (int cnt = 1; cnt <= ec_slavecount; cnt++) dc_config(&ecx_context, static_cast<uint16_t>(cnt));
 
   _is_open.store(true);

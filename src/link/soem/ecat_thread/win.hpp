@@ -11,7 +11,6 @@
 
 #pragma once
 
-#include <fstream>
 #include <queue>
 #include <string>
 
@@ -109,7 +108,6 @@ void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wk
   ts.tv_nsec = ht * 1000;
 
   int64_t toff = 0;
-  LARGE_INTEGER start, send_time, recv_time;
   while (*is_running) {
     add_timespec(ts, cycletime_ns + toff);
 

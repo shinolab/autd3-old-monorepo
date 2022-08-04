@@ -26,6 +26,7 @@
 #include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/driver/cpu/ec_config.hpp"
 #include "autd3/driver/cpu/header.hpp"
+#include "autd3/link/soem.hpp"
 
 namespace autd3::link {
 
@@ -73,7 +74,7 @@ struct IOMap {
 class SOEMLink final : public core::Link {
  public:
   SOEMLink(const bool high_precision, std::string ifname, const size_t dev_num, const uint16_t cycle_ticks, std::function<void(std::string)> on_lost,
-           const SyncMode sync_mode)
+           const SYNC_MODE sync_mode)
       : Link(),
         _high_precision(high_precision),
         _ifname(std::move(ifname)),
@@ -103,7 +104,7 @@ class SOEMLink final : public core::Link {
 
   std::function<void(std::string)> _on_lost = nullptr;
 
-  SyncMode _sync_mode;
+  SYNC_MODE _sync_mode;
 
   IOMap _io_map;
   size_t _dev_num;
