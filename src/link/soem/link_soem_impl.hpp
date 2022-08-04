@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/06/2022
+// Last Modified: 04/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -72,12 +72,14 @@ struct IOMap {
 
 class SOEMLink final : public core::Link {
  public:
-  SOEMLink(const bool high_precision, std::string ifname, const size_t dev_num, const uint16_t cycle_ticks, std::function<void(std::string)> on_lost)
+  SOEMLink(const bool high_precision, std::string ifname, const size_t dev_num, const uint16_t cycle_ticks, std::function<void(std::string)> on_lost,
+           const SyncMode sync_mode)
       : Link(),
         _high_precision(high_precision),
         _ifname(std::move(ifname)),
         _cycle_ticks(cycle_ticks),
         _on_lost(std::move(on_lost)),
+        _sync_mode(sync_mode),
         _dev_num(dev_num),
         _is_open(false),
         _is_running(false) {}
@@ -100,6 +102,8 @@ class SOEMLink final : public core::Link {
   uint16_t _cycle_ticks;
 
   std::function<void(std::string)> _on_lost = nullptr;
+
+  SyncMode _sync_mode;
 
   IOMap _io_map;
   size_t _dev_num;
