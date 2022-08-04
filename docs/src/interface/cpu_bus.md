@@ -10,6 +10,6 @@ CPUボードとの通信は以下の信号線を用いる.
 * CPU_RD_N - Input, 0でCPUからの読み込み
 * CPU_RDWR - Input, 1でCPUからの読み込み, 0でCPUからの書き込み
 
-XilinxのBRAM IPと直接接続できる (Native Port).
-書き込みは, CPU_ADDRをaddrに, CPU_DATAをdin, CPU_CKIOをclk, ~CPU_CS1_Nをen, CPU_WE0_Nをweに接続する.
-読み込みは, トライステートバッファを使用し, ~CPU_CS1_Nかつ~CPU_RD_NかつCPU_RDWRの場合にdoutをCPU_DATAに接続し, そうでないときはCPU_DATAをハイインピーダンスにする.
+これらの信号は, XilinxのBRAM IP (Native Port) と接続する.
+書き込みは, CPU_ADDRをaddrに, CPU_DATAをdin, CPU_CKIOをclk, ~CPU_CS1_Nをen, ~CPU_WE0_Nをweに接続する.
+読み込みは, トライステートバッファを使用し, CPU_CS1_N=0かつCPU_RD_N=0かつCPU_RDWR=1の場合にdoutをCPU_DATAに接続し, そうでないときはCPU_DATAをハイインピーダンスにする.

@@ -43,7 +43,7 @@
 * CTL_REG bit
     * 4: FORCE_FAN
     * 5: OP_MODE (0: Normal, 1: STM)
-    * 6: SEQ_MODE (0: Point STM, 1: Gain STM)
+    * 6: STM_MODE (0: Point STM, 1: Gain STM)
     * 8: SYNC_SET
 
 ## Modulator
@@ -72,7 +72,7 @@ STM BRAMはPoint STMとGain STMで共用である.
 
 STM BRAMのaddressは\{STM_ADDR_OFFSET, CPU_ADDR\[13:0\]\}の$\SI{19}{bit}$
 
-### Point STM (SEQ_MODE == 0)
+### Point STM (STM_MODE == 0)
 
 | BRAM_SELECT | BRAM_ADDR (19bit) | DATA (16bit)                            | R/W |
 |-------------|-------------------|-----------------------------------------|-----|
@@ -88,7 +88,7 @@ STM BRAMのaddressは\{STM_ADDR_OFFSET, CPU_ADDR\[13:0\]\}の$\SI{19}{bit}$
 |             | 0x7FFFB           | duty_shift\[65535\]/z\[65535\]\[17:12\] | W   |
 |             | 0x7FFFC-0x7FFFF   | unused                                  | W   |
 
-### Gain STM (SEQ_MODE == 1)
+### Gain STM (STM_MODE == 1)
 
 | BRAM_SELECT | BRAM_ADDR (19bit) | DATA (16bit)                 | R/W |
 |-------------|-------------------|------------------------------|-----|

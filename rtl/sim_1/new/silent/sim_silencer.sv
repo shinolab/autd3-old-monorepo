@@ -4,7 +4,7 @@
  * Created Date: 22/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2022
+ * Last Modified: 28/07/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ sim_helper_clk sim_helper_clk(
 sim_helper_random sim_helper_random();
 
 bit [WIDTH-1:0] step;
-bit [15:0] cycle_s;
+bit [15:0] cycle_s; 
 bit [WIDTH-1:0] cycle[0:DEPTH-1];
 bit [WIDTH-1:0] duty[0:DEPTH-1];
 bit [WIDTH-1:0] phase[0:DEPTH-1];

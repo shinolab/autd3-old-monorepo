@@ -2,7 +2,7 @@
 
 ## Install Vivado
 
-本文章で利用しているのはVivado ML Standard 2021.2.1である.
+本文章で利用しているのはWindows版のVivado ML Standard 2022.1.1である.
 
 Vivadoは[Xilinx社のサイト](https://japan.xilinx.com/products/design-tools/vivado.html)から無料でダウンロードできる (要登録).
 
