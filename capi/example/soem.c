@@ -4,7 +4,7 @@
  * Created Date: 16/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/06/2022
+ * Last Modified: 04/08/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -45,7 +45,7 @@ int main() {
   AUTDGetAdapter(adapter_list, i, desc, name);
   void* link = NULL;
   const int32_t device_num = AUTDNumDevices(cnt);
-  AUTDLinkSOEM(&link, name, device_num, 2, (void*)callback, false);
+  AUTDLinkSOEM(&link, name, device_num, 1, 1, (void*)callback, false);
   AUTDFreeAdapterPointer(adapter_list);
 
   if (!AUTDOpenController(cnt, link) || !AUTDIsOpen(cnt)) {
