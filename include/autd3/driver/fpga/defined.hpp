@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 05/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,16 +25,16 @@ constexpr size_t FPGA_CLK_FREQ = 163840000;
 
 constexpr uint16_t MAX_CYCLE = 8191;
 
-constexpr uint32_t MOD_SAMPLING_FREQ_DIV_MIN = 2320;
+constexpr uint32_t MOD_SAMPLING_FREQ_DIV_MIN = 1160;
 constexpr size_t MOD_BUF_SIZE_MAX = 65536;
 
 constexpr double POINT_STM_FIXED_NUM_UNIT = 0.025;  // mm
 
-constexpr uint32_t STM_SAMPLING_FREQ_DIV_MIN = 3224;
+constexpr uint32_t STM_SAMPLING_FREQ_DIV_MIN = 1612;
 constexpr size_t POINT_STM_BUF_SIZE_MAX = 65536;
 constexpr size_t GAIN_STM_BUF_SIZE_MAX = 1024;
 
-constexpr uint16_t SILENCER_CYCLE_MIN = 2088;
+constexpr uint16_t SILENCER_CYCLE_MIN = 1044;
 
 #pragma warning(push)
 #pragma warning(disable : 26812)
