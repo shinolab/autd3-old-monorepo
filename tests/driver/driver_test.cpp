@@ -3,7 +3,7 @@
 // Created Date: 20/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 04/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -482,7 +482,7 @@ TEST(CPUTest, operation_gain_stm_legacy_body) {
   ASSERT_EQ(tx.num_bodies, 10);
 
   gain_stm_legacy_header(tx);
-  gain_stm_legacy_body({&drives_list[0]}, false, 3224, false, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
+  gain_stm_legacy_body({drives_list.data()}, false, 3224, false, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
   ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);

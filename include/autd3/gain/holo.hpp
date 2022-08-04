@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 04/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -257,7 +257,7 @@ class APO final : public Holo {
   /**
    * @param[in] backend pointer to Backend
    */
-  APO(BackendPtr backend) : Holo(std::move(backend)), eps(1e-8), lambda(1.0), k_max(200), line_search_max(100) {}
+  explicit APO(BackendPtr backend) : Holo(std::move(backend)), eps(1e-8), lambda(1.0), k_max(200), line_search_max(100) {}
 
   void calc(const core::Geometry& geometry) override;
 
