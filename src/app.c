@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/06/2022
+ * Last Modified: 04/08/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@
 #include "params.h"
 #include "utils.h"
 
-#define CPU_VERSION (0x82) /* v2.2 */
+#define CPU_VERSION (0x83) /* v2.3 */
 
 #define MOD_BUF_SEGMENT_SIZE_WIDTH (15)
 #define MOD_BUF_SEGMENT_SIZE (1 << MOD_BUF_SEGMENT_SIZE_WIDTH)
@@ -134,58 +134,24 @@ static volatile uint32_t _mod_cycle = 0;
 static volatile uint32_t _stm_cycle = 0;
 static volatile uint16_t _seq_gain_data_mode = GAIN_DATA_MODE_PHASE_DUTY_FULL;
 
-#define BUF_SIZE (32)
-static volatile GlobalHeader _head_buf[BUF_SIZE];
-static volatile Body _body_buf[BUF_SIZE];
-volatile uint32_t _write_cursor;
-volatile uint32_t _read_cursor;
-
-static volatile GlobalHeader _head;
-static volatile Body _body;
-
-bool_t push(const volatile GlobalHeader* head, const volatile Body* body) {
-  uint32_t next;
-  next = _write_cursor + 1;
-
-  if (next >= BUF_SIZE) next = 0;
-
-  if (next == _read_cursor) return false;
-
-  memcpy_volatile(&_head_buf[_write_cursor], head, sizeof(GlobalHeader));
-  memcpy_volatile(&_body_buf[_write_cursor], body, sizeof(Body));
-
-  // dmb?
-
-  _write_cursor = next;
-
-  return true;
-}
-
-bool_t pop(volatile GlobalHeader* head, volatile Body* body) {
-  uint32_t next;
-
-  if (_read_cursor == _write_cursor) return false;
-
-  // dmb?
-
-  memcpy_volatile(head, &_head_buf[_read_cursor], sizeof(GlobalHeader));
-  memcpy_volatile(body, &_body_buf[_read_cursor], sizeof(Body));
-
-  next = _read_cursor + 1;
-  if (next >= BUF_SIZE) next = 0;
-
-  _read_cursor = next;
-
-  return true;
+inline static uint64_t get_next_sync0() {
+  volatile uint64_t next_sync0 = ECATC.DC_CYC_START_TIME.LONGLONG;
+  volatile uint64_t sys_time = ECATC.DC_SYS_TIME.LONGLONG;
+  while (next_sync0 < sys_time + 250000) {
+    sys_time = ECATC.DC_SYS_TIME.LONGLONG;
+    if (sys_time > next_sync0) next_sync0 = ECATC.DC_CYC_START_TIME.LONGLONG;
+  }
+  return next_sync0;
 }
 
 void synchronize(const volatile GlobalHeader* header, const volatile Body* body) {
   const volatile uint16_t* cycle = body->DATA.CYCLE.cycle;
-  volatile uint64_t next_sync0 = ECATC.DC_CYC_START_TIME.LONGLONG;
+  volatile uint64_t next_sync0;
 
   bram_cpy_volatile(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CYCLE_BASE, cycle, TRANS_NUM);
-  bram_cpy_volatile(BRAM_SELECT_CONTROLLER, BRAM_ADDR_EC_SYNC_TIME_0, (volatile uint16_t*)&next_sync0, sizeof(uint64_t) >> 1);
 
+  next_sync0 = get_next_sync0();
+  bram_cpy_volatile(BRAM_SELECT_CONTROLLER, BRAM_ADDR_EC_SYNC_TIME_0, (volatile uint16_t*)&next_sync0, sizeof(uint64_t) >> 1);
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, header->fpga_ctl_reg | SYNC);
 
   memcpy_volatile(_cycle, cycle, TRANS_NUM * sizeof(uint16_t));
@@ -494,11 +460,6 @@ static void clear(void) {
   bram_write(BRAM_SELECT_MOD, 0, 0x0000);
 
   bram_set(BRAM_SELECT_NORMAL, 0, 0x0000, TRANS_NUM << 1);
-
-  memset_volatile(&_head_buf[0], 0x00, sizeof(GlobalHeader) * BUF_SIZE);
-  memset_volatile(&_body_buf[0], 0x00, sizeof(Body) * BUF_SIZE);
-  memset_volatile(&_head, 0x00, sizeof(GlobalHeader));
-  memset_volatile(&_body, 0x00, sizeof(Body));
 }
 
 inline static uint16_t get_cpu_version(void) { return CPU_VERSION; }
@@ -507,40 +468,7 @@ inline static uint16_t read_fpga_info(void) { return bram_read(BRAM_SELECT_CONTR
 
 void init_app(void) { clear(); }
 
-void process() {
-  uint16_t ctl_reg;
-  if (pop(&_head, &_body)) {
-    ctl_reg = _head.fpga_ctl_reg;
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, ctl_reg);
-
-    if ((_head.cpu_ctl_reg & MOD) != 0)
-      write_mod(&_head);
-    else if ((_head.cpu_ctl_reg & CONFIG_SILENCER) != 0) {
-      config_silencer(&_head);
-    };
-
-    if ((_head.cpu_ctl_reg & WRITE_BODY) == 0) return;
-
-    if ((_head.cpu_ctl_reg & MOD_DELAY) != 0) {
-      set_mod_delay(&_body);
-      return;
-    }
-
-    if ((ctl_reg & OP_MODE) == 0) {
-      write_normal_op(&_head, &_body);
-      return;
-    }
-
-    if ((ctl_reg & STM_GAIN_MODE) == 0)
-      write_point_stm(&_head, &_body);
-    else
-      write_gain_stm(&_head, &_body);
-  }
-}
-
 void update(void) {
-  process();
-
   switch (_msg_id) {
     case MSG_RD_CPU_VERSION:
     case MSG_RD_FPGA_VERSION:
@@ -583,10 +511,30 @@ void recv_ethercat(void) {
         break;
       }
 
-      while (!push(header, body)) {
+      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, header->fpga_ctl_reg);
+
+      if ((header->cpu_ctl_reg & MOD) != 0)
+        write_mod(header);
+      else if ((header->cpu_ctl_reg & CONFIG_SILENCER) != 0) {
+        config_silencer(header);
+      };
+
+      if ((header->cpu_ctl_reg & WRITE_BODY) == 0) break;
+
+      if ((header->cpu_ctl_reg & MOD_DELAY) != 0) {
+        set_mod_delay(body);
+        break;
       }
 
-      break;
+      if ((header->fpga_ctl_reg & OP_MODE) == 0) {
+        write_normal_op(header, body);
+        break;
+      }
+
+      if ((header->fpga_ctl_reg & STM_GAIN_MODE) == 0)
+        write_point_stm(header, body);
+      else
+        write_gain_stm(header, body);
   }
   _sTx.ack = _ack;
 }
