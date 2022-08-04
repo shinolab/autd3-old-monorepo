@@ -56,7 +56,13 @@ class SOEM {
    * Geometry::num_devices().
    */
   SOEM(std::string ifname, const size_t device_num)
-      : _high_precision(false), _ifname(std::move(ifname)), _device_num(device_num), _cycle_ticks(1), _callback(nullptr), _sync_mode(SYNC_MODE::DC) {}
+      : _high_precision(false),
+        _ifname(std::move(ifname)),
+        _device_num(device_num),
+        _sync0_cycle(1),
+        _send_cycle(1),
+        _callback(nullptr),
+        _sync_mode(SYNC_MODE::DC) {}
 
   /**
    * @brief Set callback function which is called when the link is lost
@@ -67,10 +73,18 @@ class SOEM {
   }
 
   /**
-   * @brief Set EtherCAT Sync0 cycle ticks
+   * @brief Set EtherCAT Sync0 cycle in units of 500us
    */
-  SOEM& cycle_ticks(const uint16_t cycle_ticks) {
-    _cycle_ticks = cycle_ticks;
+  SOEM& sync0_cycle(const uint16_t cycle) {
+    _sync0_cycle = cycle;
+    return *this;
+  }
+
+  /**
+   * @brief Set EtherCAT send cycle in units of 500us
+   */
+  SOEM& send_cycle(const uint16_t cycle) {
+    _send_cycle = cycle;
     return *this;
   }
 
@@ -101,7 +115,8 @@ class SOEM {
   bool _high_precision;
   std::string _ifname;
   size_t _device_num;
-  uint16_t _cycle_ticks;
+  uint16_t _sync0_cycle;
+  uint16_t _send_cycle;
   std::function<void(std::string)> _callback;
   SYNC_MODE _sync_mode;
 };

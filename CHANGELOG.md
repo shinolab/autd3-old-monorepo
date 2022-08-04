@@ -1,3 +1,9 @@
+# 2.3.0
+
+- Add `SyncMode` setting to `link::SOEM` to address #20
+  - Remove `cycle_ticks` parameter, add `send_cycle` and `sync0_cycle` instead
+- Update firmware to v2.3
+
 # 2.2.2
 
 - Change the whole API; this library is no more using a template to change Transducer mode
