@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 04/08/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -86,6 +86,7 @@ module top (
     gpo_0 <= stm_done ? ~gpo_0 : gpo_0;
     gpo_1 <= mod_done ? ~gpo_1 : gpo_1;
     gpo_2 <= silencer_done ? ~gpo_2 : gpo_2;
+    gpo_3 <= 0;
   end
 
   assign reset = ~RESET_N;
