@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/07/2022
+// Last Modified: 04/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -91,7 +91,7 @@ template <wait_func W>
 void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wkc, int64_t cycletime_ns, std::mutex& mtx,
                std::queue<driver::TxDatagram>& send_queue, IOMap& io_map, std::function<void(std::string)> on_lost) {
   const auto u_resolution = 1;
-  // timeBeginPeriod(u_resolution);
+  timeBeginPeriod(u_resolution);
 
   auto* h_process = GetCurrentProcess();
   const auto priority = GetPriorityClass(h_process);
@@ -116,6 +116,7 @@ void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wk
     W(ts);
 
     if (ec_slave[0].state == EC_STATE_SAFE_OP) {
+      printf("SAFE_OP\n");
       ec_slave[0].state = EC_STATE_OPERATIONAL;
       ec_writestate(0);
     }

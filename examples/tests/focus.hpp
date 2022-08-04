@@ -26,7 +26,7 @@ inline void focus_test(autd3::Controller& autd) {
   // autd.send(m, g);
 
   const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
-  constexpr size_t points_num = 2000;
+  constexpr size_t points_num = 5000;
   constexpr auto radius = 30.0;
   std::vector<size_t> points(points_num);
   std::iota(points.begin(), points.end(), 0);
@@ -35,6 +35,6 @@ inline void focus_test(autd3::Controller& autd) {
     autd3::gain::Focus g(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
     const auto r = autd.send(m, g);
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    std::cout << std::boolalpha << r << "\r";
+    std::cout << "\x1b[K" << std::boolalpha << r << "\r";
   });
 }
