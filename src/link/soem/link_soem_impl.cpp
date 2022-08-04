@@ -42,13 +42,6 @@ bool SOEMLink::receive(driver::RxDatagram& rx) {
 }
 
 void SOEMLink::open() {
-  _user_data = std::make_unique<uint32_t[]>(1);
-  _user_data[0] = driver::EC_SYNC0_CYCLE_TIME_NANO_SEC * _cycle_ticks;
-
-  std::queue<driver::TxDatagram>().swap(_send_buf);
-
-  _io_map.resize(_dev_num);
-
   if (ec_init(_ifname.c_str()) <= 0) {
     std::stringstream ss;
     ss << "No socket connection on " << _ifname;
@@ -71,6 +64,8 @@ void SOEMLink::open() {
     throw std::runtime_error(ss.str());
   }
 
+  _user_data = std::make_unique<uint32_t[]>(1);
+  _user_data[0] = driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle;
   ecx_context.userdata = _user_data.get();
   auto dc_config = [](ecx_contextt* const context, const uint16_t slave) -> int {
     const auto cyc_time = static_cast<uint32_t*>(context->userdata)[0];
@@ -83,6 +78,7 @@ void SOEMLink::open() {
 
   ec_configdc();
 
+  _io_map.resize(_dev_num);
   ec_config_map(_io_map.get());
 
   ec_statecheck(0, EC_STATE_SAFE_OP, EC_TIMEOUTSTATE * 4);
@@ -91,8 +87,9 @@ void SOEMLink::open() {
   ec_writestate(0);
 
   const auto expected_wkc = ec_group[0].outputsWKC * 2 + ec_group[0].inputsWKC;
-  const auto cycle_time = driver::EC_SYNC0_CYCLE_TIME_NANO_SEC * _cycle_ticks;
+  const auto cycle_time = driver::EC_CYCLE_TIME_BASE_NANO_SEC * _send_cycle;
   _is_running = true;
+  std::queue<driver::TxDatagram>().swap(_send_buf);
   ecat_init();
   _ecat_thread = std::thread([this, expected_wkc, cycle_time] {
     ecat_run(this->_high_precision, &this->_is_open, &this->_is_running, expected_wkc, cycle_time, this->_send_mtx, this->_send_buf, this->_io_map,
@@ -143,7 +140,7 @@ SOEMLink::~SOEMLink() {
 }
 
 core::LinkPtr SOEM::build() {
-  return std::make_unique<SOEMLink>(_high_precision, _ifname, _device_num, _cycle_ticks, std::move(_callback), _sync_mode);
+  return std::make_unique<SOEMLink>(_high_precision, _ifname, _device_num, _sync0_cycle, _send_cycle, std::move(_callback), _sync_mode);
 }
 
 std::vector<EtherCATAdapter> SOEM::enumerate_adapters() {
