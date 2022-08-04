@@ -116,7 +116,6 @@ void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wk
     W(ts);
 
     if (ec_slave[0].state == EC_STATE_SAFE_OP) {
-      printf("SAFE_OP\n");
       ec_slave[0].state = EC_STATE_OPERATIONAL;
       ec_writestate(0);
     }
@@ -127,18 +126,13 @@ void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wk
       send_queue.pop();
     }
 
-    // QueryPerformanceCounter(&start);
     ec_send_processdata();
-    // QueryPerformanceCounter(&send_time);
-    const auto wkc = ec_receive_processdata(EC_TIMEOUTRET);
-    // QueryPerformanceCounter(&recv_time);
-    // printf("\r\x1b[Ksend: %lld\t, recv: %lld", send_time.QuadPart - start.QuadPart, recv_time.QuadPart - send_time.QuadPart);
-    if (wkc != expected_wkc && !error_handle(is_open, on_lost)) return;
+    if (ec_receive_processdata(EC_TIMEOUTRET) != expected_wkc && !error_handle(is_open, on_lost)) return;
 
     ec_sync(ec_DCtime, cycletime_ns, &toff);
   }
 
-  // timeEndPeriod(1);
+  timeEndPeriod(1);
   SetPriorityClass(h_process, priority);
 }
 

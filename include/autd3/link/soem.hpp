@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/06/2022
+// Last Modified: 04/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -31,6 +31,8 @@ struct EtherCATAdapter final {
   std::string name;
 };
 
+enum class SyncMode { FreeRun, DC };
+
 /**
  * @brief Link using [SOEM](https://github.com/OpenEtherCATSociety/SOEM)
  */
@@ -54,7 +56,7 @@ class SOEM {
    * Geometry::num_devices().
    */
   SOEM(std::string ifname, const size_t device_num)
-      : _high_precision(false), _ifname(std::move(ifname)), _device_num(device_num), _cycle_ticks(1), _callback(nullptr) {}
+      : _high_precision(false), _ifname(std::move(ifname)), _device_num(device_num), _cycle_ticks(1), _callback(nullptr), _sync_mode(SyncMode::DC) {}
 
   /**
    * @brief Set callback function which is called when the link is lost
@@ -81,6 +83,14 @@ class SOEM {
     return *this;
   }
 
+  /**
+   * @brief Set EtherCAT sync mode.
+   */
+  SOEM& sync_mode(const SyncMode sync_mode) {
+    _sync_mode = sync_mode;
+    return *this;
+  }
+
   ~SOEM() = default;
   SOEM(const SOEM& v) noexcept = delete;
   SOEM& operator=(const SOEM& obj) = delete;
@@ -93,5 +103,6 @@ class SOEM {
   size_t _device_num;
   uint16_t _cycle_ticks;
   std::function<void(std::string)> _callback;
+  SyncMode _sync_mode;
 };
 }  // namespace autd3::link

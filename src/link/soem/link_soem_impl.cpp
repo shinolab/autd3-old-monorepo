@@ -77,7 +77,9 @@ void SOEMLink::open() {
     ec_dcsync0(slave, true, cyc_time, 0U);
     return 0;
   };
-  // for (int cnt = 1; cnt <= ec_slavecount; cnt++) ec_slave[cnt].PO2SOconfigx = dc_config;
+
+  if (_sync_mode == SyncMode::DC)
+    for (int cnt = 1; cnt <= ec_slavecount; cnt++) ec_slave[cnt].PO2SOconfigx = dc_config;
 
   ec_configdc();
 
@@ -103,7 +105,8 @@ void SOEMLink::open() {
 
   if (ec_slave[0].state != EC_STATE_OPERATIONAL) throw std::runtime_error("One ore more slaves are not responding");
 
-  for (int cnt = 1; cnt <= ec_slavecount; cnt++) dc_config(&ecx_context, static_cast<uint16_t>(cnt));
+  if (_sync_mode == SyncMode::FreeRun)
+    for (int cnt = 1; cnt <= ec_slavecount; cnt++) dc_config(&ecx_context, static_cast<uint16_t>(cnt));
 
   _is_open.store(true);
 }
@@ -139,7 +142,9 @@ SOEMLink::~SOEMLink() {
   }
 }
 
-core::LinkPtr SOEM::build() { return std::make_unique<SOEMLink>(_high_precision, _ifname, _device_num, _cycle_ticks, std::move(_callback)); }
+core::LinkPtr SOEM::build() {
+  return std::make_unique<SOEMLink>(_high_precision, _ifname, _device_num, _cycle_ticks, std::move(_callback), _sync_mode);
+}
 
 std::vector<EtherCATAdapter> SOEM::enumerate_adapters() {
   auto* adapter = ec_find_adapters();
