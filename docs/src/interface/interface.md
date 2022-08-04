@@ -5,7 +5,7 @@ FPGAと外部との接続は以下のようになっている.
 * \[16:0\] CPU_ADDR - Input, CPUボードから書き込まれるデータのアドレス. 下位$\SI{1}{bit}$は使用できないため, 実質$\SI{16}{bit}$
 * \[15:0\] CPU_DATA - Input/Output, CPUボードから書き込まれるデータ. 
 * \[252:1\] XDCR_OUT - Output, PWMの出力. ドライバを介して振動子に接続されている.
-    * XDCR_OUT[20], XDCR_OUT[21], 及び, XDCR_OUT[35]は振動子が欠けており, 接続されていない
+    * XDCR_OUT\[20\], XDCR_OUT\[21\], 及び, XDCR_OUT\[35\]は振動子が欠けており, 接続されていない
 * CPU_CKIO - Input, CPUバスクロック
 * CPU_CS1_N - Input, Enable
 * RESET_N - Input, リセット信号
