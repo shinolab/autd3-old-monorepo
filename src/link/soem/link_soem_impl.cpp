@@ -3,7 +3,7 @@
 // Created Date: 23/08/2019
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/07/2022
+// Last Modified: 04/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2019-2020 Shun Suzuki. All rights reserved.
@@ -77,7 +77,7 @@ void SOEMLink::open() {
     ec_dcsync0(slave, true, cyc_time, 0U);
     return 0;
   };
-  for (int cnt = 1; cnt <= ec_slavecount; cnt++) ec_slave[cnt].PO2SOconfigx = dc_config;
+  // for (int cnt = 1; cnt <= ec_slavecount; cnt++) ec_slave[cnt].PO2SOconfigx = dc_config;
 
   ec_configdc();
 
@@ -102,6 +102,8 @@ void SOEMLink::open() {
   ec_statecheck(0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE * 5);
 
   if (ec_slave[0].state != EC_STATE_OPERATIONAL) throw std::runtime_error("One ore more slaves are not responding");
+
+  for (int cnt = 1; cnt <= ec_slavecount; cnt++) dc_config(&ecx_context, static_cast<uint16_t>(cnt));
 
   _is_open.store(true);
 }

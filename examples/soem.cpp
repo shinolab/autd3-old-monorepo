@@ -47,7 +47,7 @@ int main() try {
                     std::quick_exit(-1);
 #endif
                   })
-                  .cycle_ticks(2)
+                  .cycle_ticks(1)
                   .high_precision(true)
                   .build();
   autd.open(std::move(link));
