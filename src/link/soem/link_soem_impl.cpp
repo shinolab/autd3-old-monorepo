@@ -3,7 +3,7 @@
 // Created Date: 23/08/2019
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/08/2022
+// Last Modified: 05/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2019-2020 Shun Suzuki. All rights reserved.
@@ -100,7 +100,11 @@ void SOEMLink::open() {
 
   ec_statecheck(0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE * 5);
 
-  if (ec_slave[0].state != EC_STATE_OPERATIONAL) throw std::runtime_error("One ore more slaves are not responding");
+  if (ec_slave[0].state != EC_STATE_OPERATIONAL) {
+    _is_running = false;
+    if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
+    throw std::runtime_error("One ore more slaves are not responding");
+  }
 
   if (_sync_mode == SYNC_MODE::FREE_RUN)
     for (int cnt = 1; cnt <= ec_slavecount; cnt++) dc_config(&ecx_context, static_cast<uint16_t>(cnt));

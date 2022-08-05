@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/08/2022
+// Last Modified: 05/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -130,7 +130,7 @@ void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wk
     ec_sync(ec_DCtime, cycletime_ns, &toff);
   }
 
-  timeEndPeriod(1);
+  timeEndPeriod(u_resolution);
   SetPriorityClass(h_process, priority);
 }
 
