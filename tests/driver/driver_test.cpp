@@ -269,22 +269,22 @@ TEST(CPUTest, operation_modulation) {
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::MOD_END, 0);
   ASSERT_EQ(tx.header().size, 0);
 
-  ASSERT_THROW(modulation(1, mod_data, 2319, true, 5, false, tx), std::runtime_error);
+  ASSERT_THROW(modulation(1, mod_data, 1159, true, 5, false, tx), std::runtime_error);
 }
 
 TEST(CPUTest, operation_config_silencer) {
   autd3::driver::TxDatagram tx(10);
 
-  config_silencer(1, 2088, 4, tx);
+  config_silencer(1, 1044, 4, tx);
 
   ASSERT_EQ(tx.header().msg_id, 1);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::MOD, 0);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::CONFIG_SYNC, 0);
   ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::CONFIG_SILENCER, 0);
-  ASSERT_EQ(tx.header().silencer_header().cycle, 2088);
+  ASSERT_EQ(tx.header().silencer_header().cycle, 1044);
   ASSERT_EQ(tx.header().silencer_header().step, 4);
 
-  ASSERT_THROW(config_silencer(1, 2087, 4, tx), std::runtime_error);
+  ASSERT_THROW(config_silencer(1, 1043, 4, tx), std::runtime_error);
 }
 
 TEST(CPUTest, normal_legacy_header) {
