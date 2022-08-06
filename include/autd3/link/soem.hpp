@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/08/2022
+// Last Modified: 04/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -59,8 +59,8 @@ class SOEM {
       : _high_precision(false),
         _ifname(std::move(ifname)),
         _device_num(device_num),
-        _sync0_cycle(2),
-        _send_cycle(2),
+        _sync0_cycle(1),
+        _send_cycle(1),
         _callback(nullptr),
         _sync_mode(SYNC_MODE::DC) {}
 

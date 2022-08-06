@@ -47,6 +47,10 @@ int main() try {
                     std::quick_exit(-1);
 #endif
                   })
+                  .sync_mode(autd3::link::SYNC_MODE::FREE_RUN)
+                  //.send_cycle(2)
+                  //.sync0_cycle(2)
+                  .high_precision(true)
                   .build();
   autd.open(std::move(link));
 
