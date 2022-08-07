@@ -361,7 +361,6 @@ handleは`AUTDCreateController`で作成したものを使う. 振動子の指�
 | handle                 | void*   | in     | pointer to Controller                                |
 | device_idx             | int32_t | in     | device index                                         |
 | local_trans_idx        | int32_t | in     | local transducer index                               |
-| sound_speed            | double  | in     | Speed of sound in m/s                                |
 | return                 | double  | -      | wavelength of ultrasound emitted from the transducer |
 
 ## AUTDGetAttenuation (autd3capi)
@@ -633,12 +632,13 @@ Custom gainは位相と振幅を直接指定するGainである.
 
 作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
 
-| Argument name / return | type    | in/out | description           |
-| ---------------------- | ------- | ------ | --------------------- |
-| gain                   | void**  | out    | pointer to Focus gain |
-| amp                    | double* | in     | pointer to amplitude  |
-| phase                  | double* | in     | pointer to phase      |
-| return                 | void    | -      | -                     |
+| Argument name / return | type     | in/out | description           |
+| ---------------------- | -------  | ------ | --------------------- |
+| gain                   | void**   | out    | pointer to Focus gain |
+| amp                    | double*  | in     | pointer to amplitude  |
+| phase                  | double*  | in     | pointer to phase      |
+| size                   | uint64_t | in     | size of amp and phase |
+| return                 | void     | -      | -                     |
 
 ## AUTDDeleteGain (autd3capi)
 
@@ -1254,7 +1254,8 @@ Adapter listへのポインタを削除する.
 | out                    | void**   | out    | pointer to pointer to TwinCAT link |
 | ifname                 | char*    | in     | interface name                     |
 | device_num             | int32_t  | in     | number of devices                  |
-| cycle_ticks            | uint16_t | in     | cycle ticks                        |
+| sync0_cycle            | uint16_t | in     | sync0 cycle                        |
+| send_cycle             | uint16_t | in     | send  cycle                        |
 | on_lost                | void*    | in     | pointer to on-lost callback        |
 | high_precision         | bool     | in     | high precision mode                |
 | return                 | void     | -      | -                                  |
