@@ -4,7 +4,7 @@
  * Created Date: 24/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/06/2022
+ * Last Modified: 08/08/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,6 +12,8 @@
  */
 
 use std::{
+    collections::HashSet,
+    fmt::Display,
     fs::File,
     io::{BufRead, BufReader, Lines},
 };
@@ -96,12 +98,42 @@ impl PartialEq for Func {
 }
 impl Eq for Func {}
 
+impl std::hash::Hash for Func {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.bin.trim().hash(state);
+        self.func.name().trim().hash(state);
+        self.func.return_ty().hash(state);
+        self.func.args().iter().for_each(|a| {
+            a.name().trim().hash(state);
+            a.ty().hash(state);
+            a.inout().hash(state);
+            a.pointer().hash(state);
+        })
+    }
+}
+
+impl Display for Func {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "\tbin: {}", self.bin)?;
+        writeln!(f, "\tname: {}", self.func.name())?;
+        writeln!(f, "\treturn: {:?}", self.func.return_ty())?;
+        for (i, arg) in self.func.args().iter().enumerate() {
+            writeln!(f, "\targument[{}]", i)?;
+            writeln!(f, "\t\tname: {}", arg.name())?;
+            writeln!(f, "\t\tinuot: {:?}", arg.inout())?;
+            writeln!(f, "\t\ttype: {:?}", arg.ty())?;
+            writeln!(f, "\t\tpointer: {}", arg.pointer())?;
+        }
+        Ok(())
+    }
+}
+
 fn main() -> Result<()> {
     let projects = cmake::glob_projects("../../capi")?;
-    let mut defined_functions = Vec::new();
+    let mut defined_functions = HashSet::new();
     for proj in projects {
         for func in parse(proj.header())? {
-            defined_functions.push(Func {
+            defined_functions.insert(Func {
                 bin: proj.name().to_string(),
                 func,
             });
@@ -116,7 +148,7 @@ fn main() -> Result<()> {
 
     let func_begin = Regex::new(r"## (.*?) \((.*)\)")?;
 
-    let mut documented_functions = Vec::new();
+    let mut documented_functions = HashSet::new();
     loop {
         let line = lines_iter.next();
         if line.is_none() {
@@ -126,7 +158,7 @@ fn main() -> Result<()> {
         if func_begin.is_match(&line) {
             let matches = func_begin.captures(&line).unwrap();
             if let Some(func) = parse_function(matches.get(1).unwrap().as_str(), &mut lines_iter)? {
-                documented_functions.push(Func {
+                documented_functions.insert(Func {
                     bin: matches.get(2).unwrap().as_str().to_string(),
                     func,
                 });
@@ -134,37 +166,22 @@ fn main() -> Result<()> {
         }
     }
 
-    for def in defined_functions.iter() {
-        if !documented_functions.iter().any(|f| f == def) {
-            eprintln!("There is a difference between header and document:");
-            eprintln!("================== defined =======================");
-            eprintln!("\tbin: {}", def.bin);
-            eprintln!("\tname: {}", def.func.name());
-            eprintln!("\treturn: {:?}", def.func.return_ty());
-            for (i, arg) in def.func.args().iter().enumerate() {
-                eprintln!("\targument[{}]", i);
-                eprintln!("\t\tname: {}", arg.name());
-                eprintln!("\t\tinuot: {:?}", arg.inout());
-                eprintln!("\t\ttype: {:?}", arg.ty());
-                eprintln!("\t\tpointer: {}", arg.pointer());
-            }
-        };
+    let diff = defined_functions
+        .symmetric_difference(&documented_functions)
+        .collect::<Vec<_>>();
+    for f in diff.iter() {
+        if defined_functions.contains(f) {
+            eprintln!("The following function is defined but not documented:");
+            eprintln!("{}", f);
+        }
+        if documented_functions.contains(f) {
+            eprintln!("The following function is documented but not defined:");
+            eprintln!("{}", f);
+        }
     }
-    for doc in documented_functions.iter() {
-        if !defined_functions.iter().any(|f| f == doc) {
-            eprintln!("There is a difference between header and document:");
-            eprintln!("================== documented =======================");
-            eprintln!("\tbin: {}", doc.bin);
-            eprintln!("\tname: {}", doc.func.name());
-            eprintln!("\treturn: {:?}", doc.func.return_ty());
-            for (i, arg) in doc.func.args().iter().enumerate() {
-                eprintln!("\targument[{}]", i);
-                eprintln!("\t\tname: {}", arg.name());
-                eprintln!("\t\tinuot: {:?}", arg.inout());
-                eprintln!("\t\ttype: {:?}", arg.ty());
-                eprintln!("\t\tpointer: {}", arg.pointer());
-            }
-        };
+
+    if !diff.is_empty() {
+        panic!("Fix document!");
     }
 
     Ok(())
