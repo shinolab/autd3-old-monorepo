@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/06/2022
+// Last Modified: 04/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -230,7 +230,7 @@ class Controller {
       const auto trials = wait_msg_processed(check_trials);
       if ((check_trials != 0) && (trials == check_trials)) return false;
       if (header.is_finished() && body.is_finished()) break;
-      if (trials == 0) std::this_thread::sleep_for(std::chrono::microseconds(send_interval * driver::EC_SYNC0_CYCLE_TIME_MICRO_SEC));
+      if (trials == 0) std::this_thread::sleep_for(std::chrono::microseconds(send_interval * driver::EC_CYCLE_TIME_BASE_MICRO_SEC));
     }
     return true;
   }
@@ -278,7 +278,7 @@ class Controller {
     const auto msg_id = _tx_buf.header().msg_id;
     for (i = 0; i < max_trial; i++) {
       if (_link->receive(_rx_buf) && _rx_buf.is_msg_processed(msg_id)) break;
-      std::this_thread::sleep_for(std::chrono::microseconds(send_interval * driver::EC_SYNC0_CYCLE_TIME_MICRO_SEC));
+      std::this_thread::sleep_for(std::chrono::microseconds(send_interval * driver::EC_CYCLE_TIME_BASE_MICRO_SEC));
     }
     return i;
   }
