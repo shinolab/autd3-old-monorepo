@@ -1,3 +1,10 @@
+# 2.3.0
+
+- Add `SyncMode` setting to `link::SOEM` to address #20
+  - Remove `cycle_ticks` parameter, add `send_cycle` and `sync0_cycle` instead
+- `MOD_SAMPLING_FREQ_DIV_MIN`, `STM_SAMPLING_FREQ_DIV_MIN`, and `SILENCER_CYCLE_MIN` is halved
+- Update firmware to v2.3
+
 # 2.2.2
 
 - Change the whole API; this library is no more using a template to change Transducer mode

@@ -3,7 +3,7 @@
 // Created Date: 20/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 04/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -269,22 +269,22 @@ TEST(CPUTest, operation_modulation) {
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::MOD_END, 0);
   ASSERT_EQ(tx.header().size, 0);
 
-  ASSERT_THROW(modulation(1, mod_data, 2319, true, 5, false, tx), std::runtime_error);
+  ASSERT_THROW(modulation(1, mod_data, 1159, true, 5, false, tx), std::runtime_error);
 }
 
 TEST(CPUTest, operation_config_silencer) {
   autd3::driver::TxDatagram tx(10);
 
-  config_silencer(1, 2088, 4, tx);
+  config_silencer(1, 1044, 4, tx);
 
   ASSERT_EQ(tx.header().msg_id, 1);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::MOD, 0);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::CONFIG_SYNC, 0);
   ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::CONFIG_SILENCER, 0);
-  ASSERT_EQ(tx.header().silencer_header().cycle, 2088);
+  ASSERT_EQ(tx.header().silencer_header().cycle, 1044);
   ASSERT_EQ(tx.header().silencer_header().step, 4);
 
-  ASSERT_THROW(config_silencer(1, 2087, 4, tx), std::runtime_error);
+  ASSERT_THROW(config_silencer(1, 1043, 4, tx), std::runtime_error);
 }
 
 TEST(CPUTest, normal_legacy_header) {
@@ -482,7 +482,7 @@ TEST(CPUTest, operation_gain_stm_legacy_body) {
   ASSERT_EQ(tx.num_bodies, 10);
 
   gain_stm_legacy_header(tx);
-  gain_stm_legacy_body({&drives_list[0]}, false, 3224, false, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
+  gain_stm_legacy_body({drives_list.data()}, false, 3224, false, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
   ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);

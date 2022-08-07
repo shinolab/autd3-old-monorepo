@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 04/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -571,7 +571,7 @@ void LSSGreedy::calc(const core::Geometry& geometry) {
 }
 
 void APO::calc(const core::Geometry& geometry) {
-  auto make_ri = [&](const MatrixXc& g, const size_t m, const size_t n, const size_t i) {
+  auto make_ri = [&](const MatrixXc& g, const Eigen::Index m, const Eigen::Index n, const Eigen::Index i) {
     MatrixXc di = MatrixXc::Zero(m, m);
     di(i, i) = ONE;
 
@@ -587,10 +587,10 @@ void APO::calc(const core::Geometry& geometry) {
 
   auto calc_nabla_j = [&](const VectorXc& q, const VectorXc& p2, const std::vector<MatrixXc>& ris, const size_t m, const size_t n,
                           VectorXc& nabla_j) {
-    VectorXc tmp = VectorXc::Zero(n);
+    VectorXc tmp = VectorXc::Zero(static_cast<Eigen::Index>(n));
     for (size_t i = 0; i < m; i++) {
       _backend->mul(TRANSPOSE::NO_TRANS, ONE, ris[i], q, ZERO, tmp);
-      const auto s = p2(i) - _backend->dot(q, tmp);
+      const auto s = p2(static_cast<Eigen::Index>(i)) - _backend->dot(q, tmp);
       _backend->scale(s, tmp);
       _backend->add(ONE, tmp, nabla_j);
     }
@@ -598,11 +598,11 @@ void APO::calc(const core::Geometry& geometry) {
   };
 
   auto calc_j = [&](const VectorXc& q, const VectorXc& p2, const std::vector<MatrixXc>& ris, const size_t m, const size_t n) {
-    MatrixXc tmp = MatrixXc::Zero(n, 1);
+    MatrixXc tmp = MatrixXc::Zero(static_cast<Eigen::Index>(n), 1);
     auto j = 0.0;
     for (size_t i = 0; i < m; i++) {
       _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, ris[i], q, ZERO, tmp);
-      const auto s = p2(i, 0) - _backend->dot(q, tmp);
+      const auto s = p2(static_cast<Eigen::Index>(i), 0) - _backend->dot(q, tmp);
       j += std::norm(s);
     }
     j += std::abs(_backend->dot(q, q)) * lambda;
@@ -634,28 +634,29 @@ void APO::calc(const core::Geometry& geometry) {
   _backend->hadamard_product(p, p, p2);
 
   MatrixXc h(n, n);
-  const VectorXc one = VectorXc::Ones(n);
+  const VectorXc one = VectorXc::Ones(static_cast<Eigen::Index>(n));
   _backend->create_diagonal(one, h);
 
-  MatrixXc tmp = MatrixXc::Zero(n, n);
+  MatrixXc tmp = MatrixXc::Zero(static_cast<Eigen::Index>(n), static_cast<Eigen::Index>(n));
   _backend->mul(TRANSPOSE::CONJ_TRANS, TRANSPOSE::NO_TRANS, ONE, g, g, ZERO, tmp);
   _backend->add(complex(lambda, 0.0), h, tmp);
 
-  VectorXc q = VectorXc::Zero(n);
+  VectorXc q = VectorXc::Zero(static_cast<Eigen::Index>(n));
   _backend->mul(TRANSPOSE::CONJ_TRANS, ONE, g, p, ZERO, q);
   _backend->solveh(tmp, q);
 
   std::vector<MatrixXc> ris;
   ris.reserve(m);
-  for (size_t i = 0; i < m; i++) ris.emplace_back(make_ri(g, m, n, i));
+  for (size_t i = 0; i < m; i++)
+    ris.emplace_back(make_ri(g, static_cast<Eigen::Index>(m), static_cast<Eigen::Index>(n), static_cast<Eigen::Index>(i)));
 
-  VectorXc nabla_j = VectorXc::Zero(n);
+  VectorXc nabla_j = VectorXc::Zero(static_cast<Eigen::Index>(n));
   calc_nabla_j(q, p2, ris, m, n, nabla_j);
 
-  VectorXc d = VectorXc::Zero(n);
-  VectorXc nabla_j_new = VectorXc::Zero(n);
+  VectorXc d = VectorXc::Zero(static_cast<Eigen::Index>(n));
+  VectorXc nabla_j_new = VectorXc::Zero(static_cast<Eigen::Index>(n));
   VectorXc s(n);
-  VectorXc hs = VectorXc::Zero(n);
+  VectorXc hs = VectorXc::Zero(static_cast<Eigen::Index>(n));
   for (size_t k = 0; k < k_max; k++) {
     _backend->mul(TRANSPOSE::NO_TRANS, -ONE, h, nabla_j, ZERO, d);
 

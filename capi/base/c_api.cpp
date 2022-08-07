@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/06/2022
+// Last Modified: 04/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -166,7 +166,7 @@ bool AUTDGetFPGAInfo(void* const handle, uint8_t* out) {
   auto* const wrapper = static_cast<Controller*>(handle);
   AUTD3_CAPI_TRY({
     const auto& res = wrapper->read_fpga_info();
-    std::memcpy(out, &res[0], res.size());
+    std::memcpy(out, res.data(), res.size());
     return !res.empty();
   })
 }
