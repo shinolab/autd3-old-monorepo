@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/06/2022
+// Last Modified: 04/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -31,6 +31,8 @@ struct EtherCATAdapter final {
   std::string name;
 };
 
+enum class SYNC_MODE { FREE_RUN, DC };
+
 /**
  * @brief Link using [SOEM](https://github.com/OpenEtherCATSociety/SOEM)
  */
@@ -54,7 +56,13 @@ class SOEM {
    * Geometry::num_devices().
    */
   SOEM(std::string ifname, const size_t device_num)
-      : _high_precision(false), _ifname(std::move(ifname)), _device_num(device_num), _cycle_ticks(1), _callback(nullptr) {}
+      : _high_precision(false),
+        _ifname(std::move(ifname)),
+        _device_num(device_num),
+        _sync0_cycle(1),
+        _send_cycle(1),
+        _callback(nullptr),
+        _sync_mode(SYNC_MODE::DC) {}
 
   /**
    * @brief Set callback function which is called when the link is lost
@@ -65,10 +73,18 @@ class SOEM {
   }
 
   /**
-   * @brief Set EtherCAT Sync0 cycle ticks
+   * @brief Set EtherCAT Sync0 cycle in units of 500us
    */
-  SOEM& cycle_ticks(const uint16_t cycle_ticks) {
-    _cycle_ticks = cycle_ticks;
+  SOEM& sync0_cycle(const uint16_t cycle) {
+    _sync0_cycle = cycle;
+    return *this;
+  }
+
+  /**
+   * @brief Set EtherCAT send cycle in units of 500us
+   */
+  SOEM& send_cycle(const uint16_t cycle) {
+    _send_cycle = cycle;
     return *this;
   }
 
@@ -78,6 +94,14 @@ class SOEM {
    */
   SOEM& high_precision(const bool high_precision) {
     _high_precision = high_precision;
+    return *this;
+  }
+
+  /**
+   * @brief Set EtherCAT sync mode.
+   */
+  SOEM& sync_mode(const SYNC_MODE sync_mode) {
+    _sync_mode = sync_mode;
     return *this;
   }
 
@@ -91,7 +115,9 @@ class SOEM {
   bool _high_precision;
   std::string _ifname;
   size_t _device_num;
-  uint16_t _cycle_ticks;
+  uint16_t _sync0_cycle;
+  uint16_t _send_cycle;
   std::function<void(std::string)> _callback;
+  SYNC_MODE _sync_mode;
 };
 }  // namespace autd3::link
