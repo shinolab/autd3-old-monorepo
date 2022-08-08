@@ -11,8 +11,8 @@ macOSの場合はclangが使えれば良い. また, 以下はターミナルか
 
 - Visual Studio Community 2022 17.2.3
 - CMake 3.23.1
-- git 2.36.1.windows.1[^fn_git]
-- npcap 1.60[^fn_npcap]
+- git 2.37.1.windows.1[^fn_git]
+- npcap 1.70[^fn_npcap]
 
 ## Setup Device
 
@@ -21,7 +21,7 @@ macOSの場合はclangが使えれば良い. また, 以下はターミナルか
 
 ### Firmware update
 
-firmwareが古い場合, 動作は保証されない. 本文章におけるfirmwareのversionは2.2が想定される.
+firmwareが古い場合, 動作は保証されない. 本文章におけるfirmwareのversionは2.3が想定される.
 
 firmwareのupdateには[Vivado Design Suite](https://www.xilinx.com/products/design-tools/vivado.html),
 及び, [J-Link Software](https://www.segger.com/downloads/jlink/)をインストールしたWindows
@@ -269,7 +269,7 @@ const auto firm_infos = autd.firmware_infos();
 std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<FirmwareInfo>(std::cout, "\n"));
 ```
 
-ここで, v2.2以外のヴァージョンが表示される場合は, 動作が保証されないので注意する.
+ここで, v2.3以外のヴァージョンが表示される場合は, 動作が保証されないので注意する.
 
 次に, silencerを設定する.
 
