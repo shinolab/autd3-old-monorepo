@@ -45,7 +45,7 @@ int main() {
   AUTDGetAdapter(adapter_list, i, desc, name);
   void* link = NULL;
   const int32_t device_num = AUTDNumDevices(cnt);
-  AUTDLinkSOEM(&link, name, device_num, 1, 1, (void*)callback, false);
+  AUTDLinkSOEM(&link, name, device_num, 1, 1, false, (void*)callback, false);
   AUTDFreeAdapterPointer(adapter_list);
 
   if (!AUTDOpenController(cnt, link) || !AUTDIsOpen(cnt)) {
