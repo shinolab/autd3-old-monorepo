@@ -35,7 +35,8 @@ try
     end
 
     ifname = adapters(i, 2);
-    link = SOEM(ifname, 1, 2, true);
+    l = SOEM(ifname, 1);
+    link = l.build();
 
     cnt = Controller();
     cnt.add_device([0 0 0], [0 0 0]);

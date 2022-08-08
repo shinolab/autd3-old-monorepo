@@ -11,16 +11,16 @@ Rust版のライブラリはC++版をラップしたものではなく, Rustで�
 
 ```
 [dependencies]
-autd3 = "2.2.2"
+autd3 = "2.3.0"
 ```
 
 また, 各種Link, Gain等は別crateとして公開しているので必要に応じてdependenciesに追加すること.
 ```
 [dependencies]
-autd3-link-soem = "2.2.2"
-autd3-link-twincat = "2.2.2"
-autd3-link-emulator = "2.2.2"
-autd3-gain-holo = "2.2.2"
+autd3-link-soem = "2.3.0"
+autd3-link-twincat = "2.3.0"
+autd3-link-emulator = "2.3.0"
+autd3-gain-holo = "2.3.0"
 ```
 
 ## Usage
@@ -68,13 +68,14 @@ fn main() {
 
     let ifname = get_adapter();
     let config = Config {
-        cycle_ticks: 1,
         high_precision_timer: true,
+        ..Config::default()
     };
     let link = SOEM::new(&ifname, geometry.num_devices() as u16, config, |msg| {
         eprintln!("unrecoverable error occurred: {}", msg);
         std::process::exit(-1);
     });
+
     let mut autd = Controller::open(geometry, link).expect("Failed to open");
 
     autd.check_trials = 50;
