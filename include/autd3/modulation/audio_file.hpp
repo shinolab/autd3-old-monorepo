@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 04/07/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,10 +26,7 @@ class RawPCM final : public core::Modulation {
    * @param[in] filename file path to raw pcm data
    * @param[in] sampling_freq sampling frequency of the data
    * @param[in] mod_sampling_freq_div sampling frequency of the Modulation
-   * @details The sampling frequency of AUTD is shown in autd::MOD_SAMPLING_FREQ, and it is not possible to modulate beyond the Nyquist frequency.
-   * No modulation beyond the Nyquist frequency can be produced.
-   * If samplingFreq is less than the Nyquist frequency, the data will be up-sampled.
-   * The maximum modulation buffer size is shown in autd::MOD_BUF_SIZE. Only the data up to MOD_BUF_SIZE/MOD_SAMPLING_FREQ seconds can be output.
+   * @details The sampling frequency in AUTD device will be autd3::driver::FPGA_CLK_FREQ / mod_sampling_freq_div.
    */
   explicit RawPCM(const std::string& filename, double sampling_freq, uint32_t mod_sampling_freq_div = 40960);
 
@@ -54,10 +51,7 @@ class Wav final : public core::Modulation {
   /**
    * @param[in] filename file path to wav data
    * @param[in] mod_sampling_freq_div sampling frequency of the Modulation
-   * @details The sampling frequency of AUTD is shown in autd::MOD_SAMPLING_FREQ, and it is not possible to modulate beyond the Nyquist frequency.
-   * No modulation beyond the Nyquist frequency can be produced.
-   * If samplingFreq is less than the Nyquist frequency, the data will be up-sampled.
-   * The maximum modulation buffer size is shown in autd::MOD_BUF_SIZE. Only the data up to MOD_BUF_SIZE/MOD_SAMPLING_FREQ seconds can be output.
+   * @details The sampling frequency in AUTD device will be autd3::driver::FPGA_CLK_FREQ / mod_sampling_freq_div.
    */
   explicit Wav(const std::string& filename, uint32_t mod_sampling_freq_div = 40960);
 

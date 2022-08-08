@@ -11,6 +11,13 @@ jobs:
     - uses: actions/checkout@v2
     - name: Checkout submodules
       run: git submodule update --init --force --recursive
+
+    - name: Document check
+      run: |
+        cd tools/doc_checker
+        cargo run
+        cd ..
+
     - name: Doxygen
       uses: ./.github/actions/cmake-doxygen-actions
     - name: mv doxygen doc_build

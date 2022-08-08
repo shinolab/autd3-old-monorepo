@@ -11,16 +11,16 @@ Rust版のライブラリはC++版をラップしたものではなく, Rustで�
 
 ```
 [dependencies]
-autd3 = "2.2.1"
+autd3 = "2.2.2"
 ```
 
 また, 各種Link, Gain等は別crateとして公開しているので必要に応じてdependenciesに追加すること.
 ```
 [dependencies]
-autd3-link-soem = "2.2.1"
-autd3-link-twincat = "2.2.1"
-autd3-link-emulator = "2.2.1"
-autd3-gain-holo = "2.2.1"
+autd3-link-soem = "2.2.2"
+autd3-link-twincat = "2.2.2"
+autd3-link-emulator = "2.2.2"
+autd3-gain-holo = "2.2.2"
 ```
 
 ## Usage
@@ -76,6 +76,8 @@ fn main() {
         std::process::exit(-1);
     });
     let mut autd = Controller::open(geometry, link).expect("Failed to open");
+
+    autd.check_trials = 50;
 
     autd.clear().unwrap();
 
