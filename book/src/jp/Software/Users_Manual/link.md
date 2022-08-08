@@ -39,12 +39,14 @@ Disable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform
 ### AUTDServer
 
 TwinCATのLinkを使うには, まず, `AUTDServer/AUTDServer.exe`を実行する.
-AUTDServer実行後に, IPアドレスの入力を求められるがここは空欄のままEnterすればよい.
-すると, しばらくしてTwinCAT XAE Shellが起動する.
-最後に, Shellを閉じるかを聞かれるが, 以下の設定がまだなら`No`を入力し, 設定を続ける.
-以下の設定が済んでいるなら, 閉じてしまってかまわない.
 
-> Note: もし閉じてしまった場合は, `%Temp%/TwinCATAUTDServer/TwinCATAUTDServer.sln`をTcXaeShell Applicationとして開けば良い. `%Temp%`は環境変数で, 普通は`C:/Users/(user name)/AppData/Local/Temp`である.
+初回はドライバをインストールするために, `-k`オプションを付けて, TwinCAT XAE Shellを開いたままにしておくこと.
+
+```
+AUTDServer.exe -k
+```
+
+> Note: もし閉じてしまった場合は, `%TEMP%/TwinCATAUTDServer/TwinCATAUTDServer.sln`をTcXaeShell Applicationとして開けば良い. `%TEMP%`は環境変数で, 普通は`C:/Users/(user name)/AppData/Local/Temp`である.
 
 なお, AUTDServerはPCの電源を切る, スリープモードに入る等でLinkが途切れるので, その都度実行し直すこと.
 
@@ -66,10 +68,17 @@ Incompatible devicesの中のドライバもInstall自体は可能で, Install�
 ### Trouble shooting
 
 大量のDeviceを使用しようとすると, 下の図のようなエラーが発生することがある.
-このときは, `settings.ini`内の`CycleTicks`との値を増やし, AUTDServerを再び実行する.
-`CycleTicks`の値はエラーが出ない中で, 可能な限り小さな値が望ましい.
-デフォルトは1であり, どの程度の値にすべきかは接続している台数に依存する.
-例えば, 9台の場合は2, 3程度の値にしておけば動作するはずである.
+この場合は, `AUTDServer`のオプションの`-s`と`-t`の値を増やし, AUTDServerを再び実行する.
+これらのオプションの値はそれぞれ`500000`と`5000`になっている.
+これを適当に整数倍する.
+
+```
+AUTDServer.exe -s 1000000 -t 10000
+```
+
+何倍にすればいいかは接続する台数による.
+エラーが出ない中で可能な限り小さな値が望ましい.
+例えば, 9台の場合は2, 3倍の値にしておけば動作するはずである.
 
 <figure>
   <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/tcerror.jpg"/>
@@ -94,9 +103,14 @@ RemoteTwinCATを使用する場合はPCを2台用意する必要がある.
 そして, サーバとクライアント間のLANのIPを確認しておく.
 ここでは例えば, サーバ側が"169.254.205.219", クライアント側が"169.254.175.45"だったとする.
 次に, サーバでAUTDServerを起動する.
-起動後にIPの入力を求められるが, ここでクライアント側のIP (この例だと`169.254.175.45`) を入力する.
-また, 最後に"No"を入力し, TwinCATAUTDServerを開いたままにしておく.
-以下の図のように, System→Routesを開き, Current RouteタブのAmsNetId及び, NetId ManagementタブのLocal NetIdを確認する.
+この時, `-c`オプションでクライアントのIPアドレス (この例だと`169.254.175.45`) を指定する.
+また, 最後に`-k`オプションを使用し, TwinCATAUTDServerを開いたままにしておく.
+
+```
+AUTDServer.exe -c 169.254.175.45 -k
+```
+
+そして, 以下の図のように, System→Routesを開き, Current RouteタブのAmsNetId及び, NetId ManagementタブのLocal NetIdを確認しておく.
 
 <figure>
   <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/Current_Route.jpg"/>
@@ -149,21 +163,23 @@ SOEMのLinkを使用する際は`autd3/link/soem.hpp`ヘッダーをインクル
 ```
 
 なお, SOEMも大量のDeviceを使用すると挙動が不安定になる時がある[^fn_soem].
-このときは, `cycle_ticks`関数を使用し, その値を増やす.
+このときは, `sync0_cycle`と`send_cycle`関数を使用し, その値を増やす.
 ```cpp
   auto link = link::SOEM(ifname, autd.geometry().num_devices())
-                .cycle_ticks(4)
+                .sync0_cycle(2)
+                .send_cycle(2)
                 .build();
 ```
-`cycle_ticks`の値はエラーが出ない中で, 可能な限り小さな値が望ましい.
-デフォルトは2であり, どの程度の値にすべきかは接続している台数に依存する.
-例えば, 9台の場合は4程度の値にしておけば動作するはずである.
+この値はエラーが出ない中で, 可能な限り小さな値が望ましい.
+デフォルトは1であり, どの程度の値にすべきかは接続している台数に依存する.
+例えば, 9台の場合は2, 3程度の値にしておけば動作するはずである.
 
 また, SOEM Linkは回復不能なエラー (例えば, ケーブルが抜けるなど) が発生したときのコールバックを設定することができる[^fn_soem_err].
 callbackはエラーメッセージを引数に取る.
 ```cpp
   auto link = link::SOEM(ifname, autd.geometry().num_devices())
-                .cycle_ticks(4)
+                .sync0_cycle(2)
+                .send_cycle(2)
                 .on_lost([](const string& msg) {
                   cerr << "Link is lost\n";
                   cerr << msg;
@@ -175,7 +191,8 @@ callbackはエラーメッセージを引数に取る.
 さらに, Windowsの場合はHigh Precisionモードの設定ができる.
 ```cpp
   auto link = link::SOEM(ifname, autd.geometry().num_devices())
-                .cycle_ticks(4)
+                .sync0_cycle(2)
+                .send_cycle(2)
                 .on_lost([](const string& msg) {
                   cerr << "Link is lost\n";
                   cerr << msg;
@@ -185,6 +202,26 @@ callbackはエラーメッセージを引数に取る.
                 .build();
 ```
 High Precisionモードを`true`にすると, より高精度なタイマが使用できるが, 代わりにCPUの負荷が高くなる.
+
+### FreeRunモード
+
+特定の環境下でSOEMが上手く動かない場合がある (詳細は[FAQ](https://shinolab.github.io/autd3/book/jp/FAQ/faq.html#linksoem%E4%BD%BF%E7%94%A8%E6%99%82%E3%81%AB%E9%80%81%E4%BF%A1%E3%81%8C%E5%A4%B1%E6%95%97%E3%81%99%E3%82%8B)を参照されたい).
+この問題を緩和するために, FreeRunモードというものを導入した.
+必ずしもこれで解決する訳では無いが, 多少良くなる場合がある.
+
+```cpp
+  auto link = link::SOEM(ifname, autd.geometry().num_devices())
+                .sync0_cycle(2)
+                .send_cycle(2)
+                .on_lost([](const string& msg) {
+                  cerr << "Link is lost\n";
+                  cerr << msg;
+                  quick_exit(-1);
+                })
+                .high_precision(true)
+                .sync_mode(link::SYNC_MODE::FREE_RUN)
+                .build();
+```
 
 ## Emulator
 
