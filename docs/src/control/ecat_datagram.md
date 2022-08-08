@@ -25,7 +25,7 @@ FPGA_CTL_REGはFPGAに書き込まれる制御レジスタであり, 以下の�
     * 0: LEGACY_MODE
     * 4: FORCE_FAN
     * 5: OP_MODE (0: Normal, 1: STM)
-    * 6: SEQ_MODE (0: Point STM, 1: Gain STM)
+    * 6: STM_MODE (0: Point STM, 1: Gain STM)
     * 8: SYNC_SET
 
 CPU_CTL_REGはCPUの制御レジスタであり, 以下の意味を持つ.

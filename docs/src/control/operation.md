@@ -93,11 +93,11 @@ LEGACYモードの場合は, Bodyデータには$\SI{1}{byte}$の位相/Duty比�
 ## STM動作時のDuty比/位相の設定
 
 STM動作時のデータはBodyに書き込む.
-この際, FPGA_CTL_REGのSTM_GAIN_MODE, LEGACY_MODE bitとCPU_CTL_REGのIS_DUTY bitに応じて書き込むデータは異なる.
+この際, FPGA_CTL_REGのSTM_MODE, LEGACY_MODE bitとCPU_CTL_REGのIS_DUTY bitに応じて書き込むデータは異なる.
 また, MSG_IDは0x05から0xFFのいずれか, 且つ, 以前のフレームとは別の値にしておく.
 さらに, FPGA_CTL_REGのOP_MODE bitはセットしておく.
 
-### Point STM (STM_GAIN_MODE = 0)
+### Point STM (STM_MODE = 0)
 
 Point STMの場合も, Modulatorと同じく, いくつかのフレームに分けてデータを送信する.
 最初のフレームではCPU_CTL_REGのSTM_BEGIN bitをセットする.
@@ -106,7 +106,7 @@ Point STMの場合も, Modulatorと同じく, いくつかのフレームに分�
 そうでない場合は, MSG_IDを別の値に設定し, Bodyの上位$\SI{2}{byte}$に点列データのサイズを書き込み, 続く$\SI{496}{byte}$に点列データを書き込む, というのを繰り返す.
 変調データをすべて送信した場合はCPU_CTL_REGのSTM_END bitをセットする.
 
-### Gain STM (STM_GAIN_MODE = 1)
+### Gain STM (STM_MODE = 1)
 
 Gain STMの場合は, 最初のフレームのCPU_CTL_REGのSTM_BEGIN bitをセットし, Bodyの先頭$\SI{4}{byte}$にサンプリング周波数分周比を書き込む. 残りは使用しない.
 その後, 1パターンずつ, Normal動作と同様のデータをBodyに書き込み送信する.
@@ -146,6 +146,7 @@ Version情報が取得された後, Ackの上位$\SI{8}{bit}$に上記MSG_IDが,
 | 0x80 (128)     | v2.0           |
 | 0x81 (129)     | v2.1           |
 | 0x82 (130)     | v2.2           |
+| 0x83 (131)     | v2.3           |
 
 ### Function bit
 
