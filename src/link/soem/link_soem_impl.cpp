@@ -1,4 +1,4 @@
-// File: autdsoem.cpp
+﻿// File: autdsoem.cpp
 // Project: autdsoem
 // Created Date: 23/08/2019
 // Author: Shun Suzuki
@@ -12,6 +12,7 @@
 #include "link_soem_impl.hpp"
 
 #include <cstdint>
+#include <iostream>
 #include <memory>
 #include <queue>
 #include <sstream>
@@ -184,4 +185,118 @@ std::vector<EtherCATAdapter> SOEM::enumerate_adapters() {
   }
   return adapters;
 }
+
+void SOEM::diagnose(const std::string& ifname) {
+  std::cout << "================================ pcap diagnotics ================================" << std::endl;
+  char errbuf[PCAP_ERRBUF_SIZE] = {0};
+
+  const auto ifname_ = ifname.empty() ? lookup_autd() : ifname;
+  const auto* ifnamec = ifname_.c_str();
+  pcap_t* psock =
+      pcap_open(ifnamec, 65536, PCAP_OPENFLAG_PROMISCUOUS | PCAP_OPENFLAG_MAX_RESPONSIVENESS | PCAP_OPENFLAG_NOCAPTURE_LOCAL, -1, nullptr, errbuf);
+  if (psock == nullptr) {
+    std::cerr << "cannot open " << ifname << " with pcap\n";
+    return;
+  }
+
+  pcap_addr_t* addr = nullptr;
+  {
+    pcap_if_t* alldevs = nullptr;
+    if (0 != pcap_findalldevs(&alldevs, errbuf)) {
+      std::cerr << "failed to find devices: " << errbuf << std::endl;
+      return;
+    }
+    const pcap_if_t* dev;
+    for (dev = alldevs; dev != nullptr; dev = dev->next)
+      if (std::strcmp(dev->name, ifnamec) == 0) {
+        std::cout << "Interface name       \t: " << dev->name << std::endl;
+        std::cout << "Interface description\t: " << dev->description << std::endl;
+        break;
+      }
+    if (dev == nullptr) {
+      std::cerr << "failed to find " << ifname_ << std::endl;
+      return;
+    }
+    for (addr = dev->addresses; addr != nullptr; addr = addr->next)
+      if (addr->addr->sa_family == AF_INET) break;
+    pcap_freealldevs(alldevs);
+  }
+
+  const auto* libv = pcap_lib_version();
+  std::cout << "pcap lib version\t: " << libv << std::endl;
+
+  {
+    int packet_len = 64;
+    uint8_t packet[64] =
+        "\xff\xff\xff\xff\xff\xff\x02\x02\x02\x02\x02\x02\x08\x00\x45\x00\x00\x00\x12\x34\x00\x00\x10\x11\x00\x00\x00\x00\x00\x00\xff\xff\xff\xff\x00"
+        "\x07\x00\x07\x00\x00\x00\x00";
+    uint8_t* send_data;
+    {
+      packet[14 + 2] = 0xff & ((64 - 14) >> 8);
+      packet[14 + 3] = 0xff & (64 - 14);
+      packet[14 + 20 + 4] = 0xff & ((64 - 14 - 20) >> 8);
+      packet[14 + 20 + 5] = 0xff & (64 - 14 - 20);
+      *reinterpret_cast<u_long*>(packet + 14 + 12) = reinterpret_cast<sockaddr_in*>(addr->addr)->sin_addr.S_un.S_addr;
+      uint32_t cksum = 0;
+      for (int i = 14; i < 14 + 4 * (packet[14] & 0xf); i += 2) cksum += *reinterpret_cast<uint16_t*>(packet + i);
+      while (cksum >> 16) cksum = (cksum & 0xffff) + (cksum >> 16);
+      cksum = ~cksum;
+      *reinterpret_cast<uint16_t*>(packet + 14 + 10) = static_cast<uint16_t>(cksum);
+      switch (pcap_datalink(psock)) {
+        case DLT_NULL:
+          send_data = packet + (14 - 4);
+          packet_len -= 14 - 4;
+          send_data[0] = 2;
+          send_data[1] = 0;
+          send_data[2] = 0;
+          send_data[3] = 0;
+          break;
+        case DLT_EN10MB:
+          break;
+        default:
+          std::cerr << "Unknown data-link type: " << pcap_datalink(psock) << std::endl;
+          return;
+      }
+    }
+
+    std::cout << "collecting pcap send stats...";
+    constexpr size_t ITER = 1000;
+    std::vector<int64_t> stats;
+    stats.reserve(ITER);
+    for (size_t i = 0; i < ITER; i++) {
+      auto start = std::chrono::high_resolution_clock::now();
+      const int res = pcap_sendpacket(psock, send_data, packet_len);
+      auto end = std::chrono::high_resolution_clock::now();
+      if (res != 0) {
+        std::cerr << "Error sending packet: " << pcap_geterr(psock) << std::endl;
+        return;
+      }
+      stats.emplace_back(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count());
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+
+    int64_t ave = 0;
+    int64_t min = std::numeric_limits<int64_t>::max();
+    int64_t max = 0;
+    for (const auto t : stats) {
+      ave += t;
+      min = std::min(min, t);
+      max = std::max(max, t);
+    }
+    ave /= static_cast<int64_t>(stats.size());
+    int64_t std = 0;
+    for (const auto t : stats) std += (t - ave) * (t - ave);
+    std /= static_cast<int64_t>(stats.size());
+    std = static_cast<int64_t>(std::sqrt(static_cast<double>(std)));
+
+    std::cout << "\r\x1b[K";
+    std::cout << "Send time mean\t\t: " << static_cast<double>(ave) / 1000.0 << " [us]" << std::endl;
+    std::cout << "           std\t\t: " << static_cast<double>(std) / 1000.0 << " [us]" << std::endl;
+    std::cout << "           min\t\t: " << static_cast<double>(min) / 1000.0 << " [us]" << std::endl;
+    std::cout << "           max\t\t: " << static_cast<double>(max) / 1000.0 << " [us]" << std::endl;
+  }
+
+  std::cout << "================================ pcap diagnotics ================================" << std::endl;
+}
+
 }  // namespace autd3::link
