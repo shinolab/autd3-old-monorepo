@@ -27,7 +27,7 @@ class Emulator {
    * @brief Constructor
    * @param geometry geometry
    */
-  explicit Emulator() : _port(50632) {}
+  Emulator() : _port(50632) {}
   ~Emulator() = default;
   Emulator(const Emulator& v) noexcept = delete;
   Emulator& operator=(const Emulator& obj) = delete;

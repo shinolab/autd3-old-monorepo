@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/08/2022
+// Last Modified: 12/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,7 +33,7 @@ inline void flag_test(autd3::Controller& autd) {
     size_t prompts_idx = 0;
     while (!fin) {
       const auto states = autd.read_fpga_info();
-      std::cout << prompts[((prompts_idx++) / 1000) % prompts.size()] << " FPGA Status...\n";
+      std::cout << prompts[prompts_idx++ / 1000 % prompts.size()] << " FPGA Status...\n";
       std::copy(states.begin(), states.end(), std::ostream_iterator<autd3::FPGAInfo>(std::cout, "\n"));
       std::cout << "\033[" << states.size() + 1 << "A";
     }
