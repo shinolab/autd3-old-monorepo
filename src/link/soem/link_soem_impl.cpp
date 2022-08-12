@@ -25,21 +25,13 @@
 
 namespace {
 std::string lookup_autd() {
-  pcap_if_t* alldevs = nullptr;
-  static char errbuf[PCAP_ERRBUF_SIZE] = {0};
-  if (pcap_findalldevs(&alldevs, errbuf) == -1) {
-    std::stringstream ss;
-    ss << "failed to find devices: " << errbuf;
-    throw std::runtime_error(ss.str());
-  }
-
-  for (const pcap_if_t* cursor = alldevs; cursor != nullptr; cursor = cursor->next) {
-    if (ec_init(cursor->name) <= 0) continue;
+  auto* adapters = ec_find_adapters();
+  for (const auto* adapter = adapters; adapter != nullptr; adapter = adapter->next) {
+    if (ec_init(adapter->name) <= 0) continue;
     const auto wc = ec_config_init(0);
     if (wc <= 0) continue;
-    if (std::strcmp(ec_slave[1].name, "AUTD") == 0) return std::string(cursor->name);
+    if (std::strcmp(ec_slave[1].name, "AUTD") == 0) return std::string(adapter->name);
   }
-
   std::stringstream ss;
   ss << "No AUTD device is found.";
   throw std::runtime_error(ss.str());
