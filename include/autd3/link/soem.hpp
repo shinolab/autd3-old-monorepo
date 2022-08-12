@@ -59,14 +59,8 @@ class SOEM {
    * @param device_num The number of AUTD you connected.
    * @details The numbers of connected devices can be obtained by Geometry::num_devices().
    */
-  SOEM(const size_t device_num)
-      : _high_precision(false),
-        _ifname(""),
-        _device_num(device_num),
-        _sync0_cycle(1),
-        _send_cycle(1),
-        _callback(nullptr),
-        _sync_mode(SYNC_MODE::DC) {}
+  explicit SOEM(const size_t device_num)
+      : _high_precision(false), _device_num(device_num), _sync0_cycle(1), _send_cycle(1), _callback(nullptr), _sync_mode(SYNC_MODE::DC) {}
 
   /**
    * @brief Set network interface name. (e.g. eth0)
