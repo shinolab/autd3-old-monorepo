@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 12/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ int main() try {
   // for (auto& dev : autd.geometry())
   //   for (auto& tr : dev) tr.set_frequency(70e3);
 
-  auto link = autd3::link::Emulator(autd.geometry()).port(50632).build();
+  auto link = autd3::link::Emulator().port(50632).build();
   autd.open(std::move(link));
 
   return run(std::move(autd));

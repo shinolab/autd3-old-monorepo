@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/06/2022
+// Last Modified: 12/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -57,7 +57,7 @@ class RemoteTwinCATImpl final : public core::Link {
   RemoteTwinCATImpl(RemoteTwinCATImpl&& obj) = delete;
   RemoteTwinCATImpl& operator=(RemoteTwinCATImpl&& obj) = delete;
 
-  void open() override;
+  void open(const core::Geometry&) override;
   void close() override;
   bool send(const driver::TxDatagram& tx) override;
   bool receive(driver::RxDatagram& rx) override;
@@ -73,7 +73,7 @@ class RemoteTwinCATImpl final : public core::Link {
 
 core::LinkPtr RemoteTwinCAT::build() { return std::make_unique<RemoteTwinCATImpl>(_ipv4_addr, _remote_ams_net_id, _local_ams_net_id); }
 
-void RemoteTwinCATImpl::open() {
+void RemoteTwinCATImpl::open(const core::Geometry&) {
   const auto octets = split(_remote_ams_net_id, '.');
   if (octets.size() != 6) throw std::runtime_error("Ams net id must have 6 octets");
 

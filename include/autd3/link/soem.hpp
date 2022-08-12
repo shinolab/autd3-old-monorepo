@@ -1,9 +1,9 @@
-﻿// File: soem.hpp
+// File: soem.hpp
 // Project: link
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/08/2022
+// Last Modified: 12/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -50,19 +50,27 @@ class SOEM {
 
   /**
    * @brief Constructor
-   * @param ifname Network interface name. (e.g. eth0)
    * @param device_num The number of AUTD you connected.
-   * @details Available Network interface names are obtained by enumerate_adapters(). The numbers of connected devices can be obtained by
-   * Geometry::num_devices().
+   * @details The numbers of connected devices can be obtained by Geometry::num_devices().
    */
-  SOEM(std::string ifname, const size_t device_num)
+  SOEM(const size_t device_num)
       : _high_precision(false),
-        _ifname(std::move(ifname)),
+        _ifname(""),
         _device_num(device_num),
         _sync0_cycle(1),
         _send_cycle(1),
         _callback(nullptr),
         _sync_mode(SYNC_MODE::DC) {}
+
+  /**
+   * @brief Set network interface name. (e.g. eth0)
+   * @details If ifname is empty (default), the device to which AUTD is connected will be  automatically selected. Available Network interface names
+   * are obtained by enumerate_adapters().
+   */
+  SOEM& ifname(std::string ifname) {
+    _ifname = std::move(ifname);
+    return *this;
+  }
 
   /**
    * @brief Set callback function which is called when the link is lost

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/08/2022
+// Last Modified: 12/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -82,7 +82,6 @@ class SOEMLink final : public core::Link {
         _send_cycle(send_cycle),
         _on_lost(std::move(on_lost)),
         _sync_mode(sync_mode),
-        _dev_num(dev_num),
         _is_open(false),
         _is_running(false) {}
 
@@ -92,7 +91,7 @@ class SOEMLink final : public core::Link {
   SOEMLink(SOEMLink&& obj) = delete;
   SOEMLink& operator=(SOEMLink&& obj) = delete;
 
-  void open() override;
+  void open(const core::Geometry& geometry) override;
   bool send(const driver::TxDatagram& tx) override;
   bool receive(driver::RxDatagram& rx) override;
   void close() override;
@@ -109,7 +108,7 @@ class SOEMLink final : public core::Link {
   SYNC_MODE _sync_mode;
 
   IOMap _io_map;
-  size_t _dev_num;
+
   std::atomic<bool> _is_open;
   std::unique_ptr<uint32_t[]> _user_data;
 

@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/08/2022
+// Last Modified: 12/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -53,7 +53,7 @@ class Controller {
     _rx_buf = driver::RxDatagram(_geometry.num_devices());
 
     _link = std::move(link);
-    if (_link != nullptr) _link->open();
+    if (_link != nullptr) _link->open(_geometry);
     return is_open();
   }
 

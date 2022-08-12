@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/08/2022
+// Last Modified: 12/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -41,7 +41,8 @@ void AUTDFreeAdapterPointer(void* p_adapter) {
 
 void AUTDLinkSOEM(void** out, const char* ifname, const int32_t device_num, const uint16_t sync0_cycle, const uint16_t send_cycle, const bool freerun,
                   void* on_lost, const bool high_precision) {
-  auto soem_link = autd3::link::SOEM(std::string(ifname), static_cast<size_t>(device_num))
+  auto soem_link = autd3::link::SOEM(static_cast<size_t>(device_num))
+                       .ifname(std::string(ifname))
                        .sync0_cycle(sync0_cycle)
                        .send_cycle(send_cycle)
                        .high_precision(high_precision)
