@@ -1,4 +1,4 @@
-﻿// File: soem.hpp
+// File: soem.hpp
 // Project: link
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
@@ -49,12 +49,6 @@ class SOEM {
   static std::vector<EtherCATAdapter> enumerate_adapters();
 
   /**
-   * @brief Diagnose the status of the specified ehternet interface and driver.
-   * @details If interface name is empty, the interface to which AUTD is connected will be automatically selected.
-   */
-  static void diagnose(const std::string& ifname = "");
-
-  /**
    * @brief Constructor
    * @param device_num The number of AUTD you connected.
    * @details The numbers of connected devices can be obtained by Geometry::num_devices().
@@ -64,7 +58,7 @@ class SOEM {
 
   /**
    * @brief Set network interface name. (e.g. eth0)
-   * @details If ifname is empty (default), the interface to which AUTD is connected will be automatically selected. Available Network interface names
+   * @details If ifname is empty (default), the device to which AUTD is connected will be  automatically selected. Available Network interface names
    * are obtained by enumerate_adapters().
    */
   SOEM& ifname(std::string ifname) {
