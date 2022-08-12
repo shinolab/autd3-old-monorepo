@@ -1,9 +1,9 @@
-﻿// File: autdsoem.cpp
+// File: autdsoem.cpp
 // Project: autdsoem
 // Created Date: 23/08/2019
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/08/2022
+// Last Modified: 12/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2019-2020 Shun Suzuki. All rights reserved.
@@ -23,6 +23,29 @@
 #include "autd3/link/soem.hpp"
 #include "ecat_thread/ecat_thread.hpp"
 
+namespace {
+std::string lookup_autd() {
+  pcap_if_t* alldevs = nullptr;
+  static char errbuf[PCAP_ERRBUF_SIZE] = {0};
+  if (pcap_findalldevs(&alldevs, errbuf) == -1) {
+    std::stringstream ss;
+    ss << "failed to find devices: " << errbuf;
+    throw std::runtime_error(ss.str());
+  }
+
+  for (const pcap_if_t* cursor = alldevs; cursor != nullptr; cursor = cursor->next) {
+    if (ec_init(cursor->name) <= 0) continue;
+    const auto wc = ec_config_init(0);
+    if (wc <= 0) continue;
+    if (std::strcmp(ec_slave[1].name, "AUTD") == 0) return std::string(cursor->name);
+  }
+
+  std::stringstream ss;
+  ss << "No AUTD device is found.";
+  throw std::runtime_error(ss.str());
+}
+}  // namespace
+
 namespace autd3::link {
 
 bool SOEMLink::is_open() { return _is_open.load(); }
@@ -41,7 +64,11 @@ bool SOEMLink::receive(driver::RxDatagram& rx) {
   return true;
 }
 
-void SOEMLink::open() {
+void SOEMLink::open(const core::Geometry& geometry) {
+  const auto dev_num = geometry.num_devices();
+
+  if (_ifname.empty()) _ifname = lookup_autd();
+
   if (ec_init(_ifname.c_str()) <= 0) {
     std::stringstream ss;
     ss << "No socket connection on " << _ifname;
@@ -58,9 +85,9 @@ void SOEMLink::open() {
       throw std::runtime_error(ss.str());
     }
 
-  if (static_cast<size_t>(wc) != _dev_num) {
+  if (static_cast<size_t>(wc) != dev_num) {
     std::stringstream ss;
-    ss << "The number of slaves you added: " << _dev_num << ", but found: " << wc;
+    ss << "The number of slaves you configured: " << dev_num << ", but found: " << wc;
     throw std::runtime_error(ss.str());
   }
 
@@ -78,7 +105,7 @@ void SOEMLink::open() {
 
   ec_configdc();
 
-  _io_map.resize(_dev_num);
+  _io_map.resize(dev_num);
   ec_config_map(_io_map.get());
 
   ec_statecheck(0, EC_STATE_SAFE_OP, EC_TIMEOUTSTATE * 4);
