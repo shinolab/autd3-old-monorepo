@@ -3,7 +3,7 @@
 // Created Date: 23/08/2019
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/08/2022
+// Last Modified: 14/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2019-2020 Shun Suzuki. All rights reserved.
@@ -109,7 +109,6 @@ void SOEMLink::open(const core::Geometry& geometry) {
   const auto cycle_time = driver::EC_CYCLE_TIME_BASE_NANO_SEC * _send_cycle;
   _is_running = true;
   std::queue<driver::TxDatagram>().swap(_send_buf);
-  ecat_init();
   _ecat_thread = std::thread([this, expected_wkc, cycle_time] {
     ecat_run(this->_high_precision, &this->_is_open, &this->_is_running, expected_wkc, cycle_time, this->_send_mtx, this->_send_buf, this->_io_map,
              std::move(this->_on_lost));
