@@ -11,16 +11,16 @@ Rust版のライブラリはC++版をラップしたものではなく, Rustで�
 
 ```
 [dependencies]
-autd3 = "2.3.0"
+autd3 = "2.3.1"
 ```
 
 また, 各種Link, Gain等は別crateとして公開しているので必要に応じてdependenciesに追加すること.
 ```
 [dependencies]
-autd3-link-soem = "2.3.0"
-autd3-link-twincat = "2.3.0"
-autd3-link-emulator = "2.3.0"
-autd3-gain-holo = "2.3.0"
+autd3-link-soem = "2.3.1"
+autd3-link-twincat = "2.3.1"
+autd3-link-emulator = "2.3.1"
+autd3-gain-holo = "2.3.1"
 ```
 
 ## Usage
@@ -31,47 +31,17 @@ autd3-gain-holo = "2.3.0"
 
 ```rust
 use autd3::prelude::*;
-use autd3_link_soem::{Config, EthernetAdapters, SOEM};
-use std::io::{self, Write};
-
-fn get_adapter() -> String {
-    let adapters: EthernetAdapters = Default::default();
-    adapters
-        .into_iter()
-        .enumerate()
-        .for_each(|(index, adapter)| {
-            println!("[{}]: {}", index, adapter);
-        });
-
-    let i: usize;
-    loop {
-        let mut s = String::new();
-        print!("Choose number: ");
-        io::stdout().flush().unwrap();
-
-        io::stdin().read_line(&mut s).unwrap();
-        match s.trim().parse() {
-            Ok(num) if num < adapters.len() => {
-                i = num;
-                break;
-            }
-            _ => continue,
-        };
-    }
-    let adapter = &adapters[i];
-    adapter.name.to_string()
-}
+use autd3_link_soem::{Config, SOEM};
 
 fn main() {
     let mut geometry = GeometryBuilder::new().legacy_mode().build();
     geometry.add_device(Vector3::zeros(), Vector3::zeros());
 
-    let ifname = get_adapter();
     let config = Config {
         high_precision_timer: true,
         ..Config::default()
     };
-    let link = SOEM::new(&ifname, geometry.num_devices() as u16, config, |msg| {
+    let link = SOEM::new(config, |msg| {
         eprintln!("unrecoverable error occurred: {}", msg);
         std::process::exit(-1);
     });
@@ -117,4 +87,4 @@ fn main() {
 
 ## Trouble shooting
 
-質問があれば[GitHubのissue](https://github.com/shinolab/rust-autd/issues)にてお願いします.
+質問があれば[GitHubのissue](https://github.com/shinolab/rust-autd/issues)に送られたい.

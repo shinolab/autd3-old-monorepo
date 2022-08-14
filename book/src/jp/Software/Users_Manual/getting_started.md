@@ -141,8 +141,8 @@ int main() try {
 
   autd.geometry().add_device(Vector3::Zero(), Vector3::Zero());
 
-  auto link = link::SOEM().build();
-  autd.open(std::move(link));
+  auto link = link::SOEM().high_precision(true).build();
+  autd.open(move(link));
 
   autd.check_trials = 50;
 
@@ -151,7 +151,7 @@ int main() try {
   autd.synchronize();
 
   const auto firm_infos = autd.firmware_infos();
-  std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<FirmwareInfo>(std::cout, "\n"));
+  copy(firm_infos.begin(), firm_infos.end(), ostream_iterator<FirmwareInfo>(cout, "\n"));
 
   SilencerConfig config;
   autd.send(config);
@@ -215,8 +215,8 @@ autd.geometry().add_device(Vector3::Zero(), Vector3::Zero());
 次に, `Link`を作成し, デバイスと接続する.
 
 ```cpp
-auto link = link::SOEM().build();
-autd.open(std::move(link));
+auto link = link::SOEM().high_precision(true).build();
+autd.open(move(link));
 ```
 
 linkの型は`unique_ptr`であるため, `Controller`に渡す際は`move`する必要がある.
@@ -246,7 +246,7 @@ autd.synchronize();
 
 ```cpp
 const auto firm_infos = autd.firmware_infos();
-std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<FirmwareInfo>(std::cout, "\n"));
+copy(firm_infos.begin(), firm_infos.end(), ostream_iterator<FirmwareInfo>(cout, "\n"));
 ```
 
 ここで, v2.3以外のヴァージョンが表示される場合は, 動作が保証されないので注意する.

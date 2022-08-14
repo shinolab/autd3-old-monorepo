@@ -33,23 +33,12 @@ sudo pip install pyautd3
 ```python
 from pyautd3 import AUTD, SOEM, Focus, Sine, TRANS_SPACING_MM, NUM_TRANS_X, NUM_TRANS_Y, SilencerConfig
 
-
-def get_adapter_name():
-    adapters = SOEM.enumerate_adapters()
-    for i, adapter in enumerate(adapters):
-        print('[' + str(i) + ']: ' + adapter[0] + ', ' + adapter[1])
-
-    index = int(input('choose number: '))
-    return adapters[index][0]
-
-
 if __name__ == '__main__':
     autd = AUTD()
 
     autd.add_device([0., 0., 0.], [0., 0., 0.])
 
-    ifname = get_adapter_name()
-    link = SOEM(ifname, autd.num_devices()).build()
+    link = SOEM().high_precision(True).build()
     if not autd.open(link):
         print(AUTD.last_error())
         exit()
@@ -91,4 +80,4 @@ A. 管理者権限で実行する
 sudo python
 ```
 
-その他, 質問があれば[GitHubのissue](https://github.com/shinolab/pyautd/issues)にてお願いします.
+その他, 質問があれば[GitHubのissue](https://github.com/shinolab/pyautd/issues)に送られたい.
