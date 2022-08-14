@@ -28,7 +28,25 @@ extern "C" {
 #include "unix.hpp"
 #endif
 
+#include "spdlog/spdlog.h"
+
 namespace autd3::link {
+
+inline void print_stats(const std::string& header, std::vector<int64_t> stats) {
+  int64_t min = std::numeric_limits<int64_t>::max();
+  int64_t max = std::numeric_limits<int64_t>::min();
+  int64_t sum = 0;
+  for (const auto s : stats) {
+    min = std::min(min, s);
+    max = std::max(max, s);
+    sum += s;
+  }
+  int64_t ave = sum / stats.size();
+  int64_t std = 0;
+  for (const auto s : stats) std += (s - ave) * (s - ave);
+  std = std::sqrt((double)(std / stats.size()));
+  spdlog::debug("{}: {}+/-{} (Max.{} Min.{}) [us]", header, ave / 1000, std / 1000.0, max / 1000, min / 1000);
+}
 
 using wait_func = void(const timespec&);
 
@@ -48,12 +66,27 @@ void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wk
 
   auto ts = ecat_setup(cycletime_ns);
   int64_t toff = 0;
+  std::vector<int64_t> stats;
+  constexpr size_t STATS_SIZE = 2000;
+  stats.reserve(STATS_SIZE);
+  auto start = std::chrono::high_resolution_clock::now();
   while (*is_running) {
     add_timespec(ts, cycletime_ns + toff);
 
     W(ts);
 
-    if (ec_slave[0].state == EC_STATE_SAFE_OP) {
+    auto now = std::chrono::high_resolution_clock::now();
+    const auto itvl = std::chrono::duration_cast<std::chrono::nanoseconds>(now - start).count();
+    stats.emplace_back(itvl);
+    if (stats.size() == STATS_SIZE) {
+      print_stats("EC send interval", stats);
+      stats.clear();
+      stats.reserve(STATS_SIZE);
+    }
+    start = now;
+
+    if (ec_slave[0].state != EC_STATE_OPERATIONAL) {
+      spdlog::warn("EC_STATE changed: {}", ec_slave[0].state);
       ec_slave[0].state = EC_STATE_OPERATIONAL;
       ec_writestate(0);
     }
