@@ -47,7 +47,7 @@ namespace example
             autd.AddDevice(Vector3d.Zero, Vector3d.Zero);
 
             var ifname = GetIfname();
-            var link = new SOEM(ifname, autd.NumDevices, 2);
+            var link = new SOEM(ifname, autd.NumDevices).Build();
             if (!autd.Open(link))
             {
                 Console.WriteLine(Controller.LastError);

@@ -47,7 +47,7 @@ when isMainModule:
         cnt.addDevice([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])
 
         let ifname = getInterface()
-        let link = initSOEM(ifname, cnt.deviceNum(), 1, onLost, true)
+        let link = initSOEM(ifname, cnt.deviceNum()).build()
         if not cnt.open(link):
             echo Controller.lastError
             quit(-1)
