@@ -11,8 +11,11 @@
 
 #pragma once
 
+#include <algorithm>
+#include <limits>
 #include <queue>
 #include <string>
+#include <vector>
 
 extern "C" {
 #include "./ethercat.h"
@@ -44,7 +47,7 @@ inline void print_stats(const std::string& header, std::vector<int64_t> stats) {
   int64_t ave = sum / stats.size();
   int64_t std = 0;
   for (const auto s : stats) std += (s - ave) * (s - ave);
-  std = std::sqrt((double)(std / stats.size()));
+  std = std::sqrt(static_cast<double>(std / stats.size()));
   spdlog::debug("{}: {}+/-{} (Max.{} Min.{}) [us]", header, ave / 1000, std / 1000.0, max / 1000, min / 1000);
 }
 
