@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/06/2022
+// Last Modified: 14/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -58,7 +58,9 @@ inline int run(autd3::Controller autd) {
 
   const auto firm_infos = autd.firmware_infos();
   if (firm_infos.empty()) throw std::runtime_error("Cannot read firmware information.");
+  std::cout << "================================== AUTD3 firmware information ==================================" << std::endl;
   std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));
+  std::cout << "================================================================================================" << std::endl;
 
   autd.clear();
   autd.synchronize();

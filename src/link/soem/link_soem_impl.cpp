@@ -22,15 +22,20 @@
 #include "./ethercat.h"
 #include "autd3/link/soem.hpp"
 #include "ecat_thread/ecat_thread.hpp"
+#include "spdlog/spdlog.h"
 
 namespace {
 std::string lookup_autd() {
+  spdlog::debug("looking for AUTD...");
   auto* adapters = ec_find_adapters();
   for (const auto* adapter = adapters; adapter != nullptr; adapter = adapter->next) {
     if (ec_init(adapter->name) <= 0) continue;
     const auto wc = ec_config_init(0);
     if (wc <= 0) continue;
-    if (std::strcmp(ec_slave[1].name, "AUTD") == 0) return std::string(adapter->name);
+    if (std::strcmp(ec_slave[1].name, "AUTD") == 0) {
+      spdlog::debug("AUTD found on {} ({})", adapter->name, adapter->desc);
+      return std::string(adapter->name);
+    }
   }
   std::stringstream ss;
   ss << "No AUTD device is found.";
@@ -61,6 +66,8 @@ void SOEMLink::open(const core::Geometry& geometry) {
 
   if (_ifname.empty()) _ifname = lookup_autd();
 
+  spdlog::debug("interface name: {}", _ifname);
+
   if (ec_init(_ifname.c_str()) <= 0) {
     std::stringstream ss;
     ss << "No socket connection on " << _ifname;
@@ -86,14 +93,18 @@ void SOEMLink::open(const core::Geometry& geometry) {
   _user_data = std::make_unique<uint32_t[]>(1);
   _user_data[0] = driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle;
   ecx_context.userdata = _user_data.get();
+  spdlog::debug("Sync0 interval: {} [ns]", driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle);
   auto dc_config = [](ecx_contextt* const context, const uint16_t slave) -> int {
     const auto cyc_time = static_cast<uint32_t*>(context->userdata)[0];
     ec_dcsync0(slave, true, cyc_time, 0U);
     return 0;
   };
 
-  if (_sync_mode == SYNC_MODE::DC)
+  if (_sync_mode == SYNC_MODE::DC) {
     for (int cnt = 1; cnt <= ec_slavecount; cnt++) ec_slave[cnt].PO2SOconfigx = dc_config;
+    spdlog::debug("run mode: DC sync");
+    spdlog::debug("Sync0 configured");
+  }
 
   ec_configdc();
 
@@ -113,6 +124,7 @@ void SOEMLink::open(const core::Geometry& geometry) {
     ecat_run(this->_high_precision, &this->_is_open, &this->_is_running, expected_wkc, cycle_time, this->_send_mtx, this->_send_buf, this->_io_map,
              std::move(this->_on_lost));
   });
+  spdlog::debug("send interval: {} [ns]", cycle_time);
 
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
@@ -124,8 +136,11 @@ void SOEMLink::open(const core::Geometry& geometry) {
     throw std::runtime_error("One ore more slaves are not responding");
   }
 
-  if (_sync_mode == SYNC_MODE::FREE_RUN)
+  if (_sync_mode == SYNC_MODE::FREE_RUN) {
     for (int cnt = 1; cnt <= ec_slavecount; cnt++) dc_config(&ecx_context, static_cast<uint16_t>(cnt));
+    spdlog::debug("run mode: Free Run");
+    spdlog::debug("Sync0 configured");
+  }
 
   _is_open.store(true);
 }
