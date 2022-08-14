@@ -49,7 +49,7 @@ if __name__ == '__main__':
     autd.add_device([0., 0., 0.], [0., 0., 0.])
 
     ifname = get_adapter_name()
-    link = SOEM(ifname, autd.num_devices())
+    link = SOEM(ifname, autd.num_devices()).build()
     if not autd.open(link):
         print(AUTD.last_error())
         exit()

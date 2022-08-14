@@ -63,9 +63,8 @@ func main() {
 	cnt.AddDevice([3]float64{0, 0, 0}, [3]float64{0, 0, 0})
 
 	ifname := getAdapter()
-	soem.RegisterOnLostCallback(onLost)
-	link := soem.NewSOEM(ifname, cnt.NumDevices(), 1, true)
-
+	link := soem.NewSOEM(ifname, cnt.NumDevices()).OnLost(onLost).Build()
+ 
 	if !cnt.Open(link) {
 		println(autd3.GetLastError())
 		os.Exit(-1)

@@ -48,7 +48,7 @@ const cnt = Controller()
 cnt.add_device(SVector(0.0, 0.0, 0.0), SVector(0.0, 0.0, 0.0))
 
 const ifname = get_adapter()
-const link = SOEM(ifname, cnt.num_devices(), 2, on_lost, true)
+const link = SOEM(ifname, cnt.num_devices(), on_lost=on_lost)
 
 if !cnt.open(link)
     println(get_last_error())

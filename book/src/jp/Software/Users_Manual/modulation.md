@@ -30,12 +30,11 @@ SDKにはデフォルトでいくつかの種類のAMを生成するための`Mo
 
 第1引数は周波数$f$, 第2引数は$amplitude$ (デフォルトで1), 第3引数は$offset$ (デフォルトで0.5)になっており, 音圧の波形が
 $$
-    \frac{amplitude}{2} \times \sin(ft) + offset
+    \frac{amplitude}{2} \times \sin(2\pi ft) + offset
 $$
 となるようなAMをかける.
 ただし, 上記で$\[0,1\]$を超えるような値は$\[0,1\]$に収まるように変換される.
 また, サンプリング周波数はデフォルトで$\SI{4}{kHz}$ ($N=40960$) になっている.
-
 
 ## SineSquared
 
