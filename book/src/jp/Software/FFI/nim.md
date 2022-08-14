@@ -7,7 +7,7 @@
 nimbleでインストールできる.
 
 ```
-requires "https://github.com/shinolab/autd3_nim.git == 2.2.2"
+requires "https://github.com/shinolab/autd3_nim.git == 2.3.1"
 ```
 
 ## Usage
@@ -29,25 +29,13 @@ proc onLost(msg: cstring) =
     echo msg
     quit(-1)
 
-proc getInterface(): string =
-    try:
-        let adapters = SOEM.enumerateAdapters
-        for i, adater in adapters:
-            echo fmt"[{i}]: {adater.desc}, {adater.name}"
-
-        stdout.write "Choose adapter: "
-        let i = stdin.readLine.parseInt
-        adapters[i].name
-    except:
-        ""
-
 when isMainModule:
     try:
         var cnt = initController()
         cnt.addDevice([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])
 
-        let ifname = getInterface()
-        let link = initSOEM(ifname, cnt.deviceNum()).build()
+        var soem = initSOEM()
+        let link = soem.highPrecision(true).onLost(onLost).build()
         if not cnt.open(link):
             echo Controller.lastError
             quit(-1)
@@ -83,4 +71,4 @@ when isMainModule:
 
 より詳細なサンプルは[example](https://github.com/shinolab/autd3_nim/tree/master/examples)を参照されたい.
 
-その他, 質問があれば[GitHubのissue](https://github.com/shinolab/autd3_nim/issues)にてお願いします.
+その他, 質問があれば[GitHubのissue](https://github.com/shinolab/autd3_nim/issues)に送られたい.
