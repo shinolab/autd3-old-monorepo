@@ -1,11 +1,11 @@
-name: build
+name: release-check
 
 on:
   push:
     tags-ignore:
       - v*
     branches:
-      - 'dev'
+      - 'release'
 
 jobs:
   build:
@@ -22,18 +22,23 @@ jobs:
     - name: setup-msbuild
       if: matrix.os == 'windows-latest'
       uses: microsoft/setup-msbuild@v1
+    - uses: Jimver/cuda-toolkit@v0.2.8
+      if: matrix.os != 'macos-latest'
+      id: cuda-toolkit
+      with:
+        cuda: '11.7.0'
     - name: build for Windows x64
       if: matrix.os == 'windows-latest'
       run: |
-        cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF
+        cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=ON
         cd build
-        msbuild autd3.sln /t:build
+        msbuild autd3.sln /t:build /p:Configuration=Release
     - name: build for Windows x86
       if: matrix.os == 'windows-latest'
       run: |
         cmake -G "Visual Studio 17 2022" -A Win32 -B "build_x86" -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF
         cd build_x86
-        msbuild autd3.sln /t:build
+        msbuild autd3.sln /t:build /p:Configuration=Release
     - name: install cross compile tools
       if: matrix.os == 'ubuntu-latest'
       run: |
@@ -44,7 +49,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         mkdir -p build && cd build
-        cmake .. -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=ON
         make -j8
       shell: bash
       env:
@@ -54,19 +59,36 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         mkdir -p build_arm32 && cd build_arm32
-        cmake .. -DBUILD_TARGET=ARM32 -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM32 -DBUILD_ALL=ON
         make -j8
       shell: bash
     - name: build for Linux ARM64
       if: matrix.os == 'ubuntu-latest'
       run: |
         mkdir -p build_arm64 && cd build_arm64
-        cmake .. -DBUILD_TARGET=ARM64 -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM64 -DBUILD_ALL=ON
         make -j8
       shell: bash
     - name: build for macOS
       if: matrix.os == 'macos-latest'
       run: |
         mkdir -p build && cd build
-        cmake .. -DBUILD_ALL=ON -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DBUILD_BACKEND_CUDA=OFF
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
         make -j8
+
+  lint:
+    name: lint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    steps: 
+    - uses: actions/checkout@v2
+    - name: Checkout submodules
+      run: git submodule update --init --force --recursive
+    - name: lint
+      run: |
+        mkdir -p build && cd build
+        cmake .. -DBUILD_ALL=ON -DENABLE_LINT=ON
+        make cpplint
