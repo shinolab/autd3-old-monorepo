@@ -141,7 +141,7 @@ int main() try {
 
   autd.geometry().add_device(Vector3::Zero(), Vector3::Zero());
 
-  auto link = link::SOEM(autd.geometry().num_devices()).build();
+  auto link = link::SOEM().build();
   autd.open(std::move(link));
 
   autd.check_trials = 50;
@@ -215,7 +215,7 @@ autd.geometry().add_device(Vector3::Zero(), Vector3::Zero());
 次に, `Link`を作成し, デバイスと接続する.
 
 ```cpp
-auto link = link::SOEM(autd.geometry().num_devices()).build();
+auto link = link::SOEM().build();
 autd.open(std::move(link));
 ```
 

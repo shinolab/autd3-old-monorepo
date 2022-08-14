@@ -21,7 +21,7 @@ int main() try {
 
   autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
 
-  auto link = autd3::link::SOEM(autd.geometry().num_devices())
+  auto link = autd3::link::SOEM()
                   .on_lost([](const std::string& msg) {
                     std::cerr << "Link is lost\n";
                     std::cerr << msg;

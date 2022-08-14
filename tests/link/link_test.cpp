@@ -20,7 +20,7 @@
 
 #ifdef TEST_LINK_SOEM
 #include "autd3/link/soem.hpp"
-TEST(LinkSOEMTest, basic) { auto link = autd3::link::SOEM(0).build(); }
+TEST(LinkSOEMTest, basic) { auto link = autd3::link::SOEM().build(); }
 #endif
 
 #ifdef TEST_LINK_TWINCAT
