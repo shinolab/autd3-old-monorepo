@@ -1252,7 +1252,6 @@ Adapter listへのポインタを削除する.
 | ---------------------- | -------- | ------ | ---------------------------------- |
 | out                    | void**   | out    | pointer to pointer to TwinCAT link |
 | ifname                 | char*    | in     | interface name                     |
-| device_num             | int32_t  | in     | number of devices                  |
 | sync0_cycle            | uint16_t | in     | sync0 cycle                        |
 | send_cycle             | uint16_t | in     | send cycle                         |
 | freerun                | bool     | in     | free run mode                      |
