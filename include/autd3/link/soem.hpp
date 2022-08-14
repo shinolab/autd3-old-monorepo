@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/08/2022
+// Last Modified: 14/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -50,11 +50,8 @@ class SOEM {
 
   /**
    * @brief Constructor
-   * @param device_num The number of AUTD you connected.
-   * @details The numbers of connected devices can be obtained by Geometry::num_devices().
    */
-  explicit SOEM(const size_t device_num)
-      : _high_precision(false), _device_num(device_num), _sync0_cycle(1), _send_cycle(1), _callback(nullptr), _sync_mode(SYNC_MODE::DC) {}
+  SOEM() : _high_precision(false), _sync0_cycle(1), _send_cycle(1), _callback(nullptr), _sync_mode(SYNC_MODE::DC) {}
 
   /**
    * @brief Set network interface name. (e.g. eth0)
@@ -116,7 +113,6 @@ class SOEM {
  private:
   bool _high_precision;
   std::string _ifname;
-  size_t _device_num;
   uint16_t _sync0_cycle;
   uint16_t _send_cycle;
   std::function<void(std::string)> _callback;

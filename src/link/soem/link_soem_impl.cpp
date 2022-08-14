@@ -177,7 +177,7 @@ SOEMLink::~SOEMLink() {
 }
 
 core::LinkPtr SOEM::build() {
-  return std::make_unique<SOEMLink>(_high_precision, _ifname, _device_num, _sync0_cycle, _send_cycle, std::move(_callback), _sync_mode);
+  return std::make_unique<SOEMLink>(_high_precision, _ifname, _sync0_cycle, _send_cycle, std::move(_callback), _sync_mode);
 }
 
 std::vector<EtherCATAdapter> SOEM::enumerate_adapters() {

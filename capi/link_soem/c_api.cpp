@@ -39,9 +39,9 @@ void AUTDFreeAdapterPointer(void* p_adapter) {
   ether_cat_adapters_delete(wrapper);
 }
 
-void AUTDLinkSOEM(void** out, const char* ifname, const int32_t device_num, const uint16_t sync0_cycle, const uint16_t send_cycle, const bool freerun,
+void AUTDLinkSOEM(void** out, const char* ifname, const uint16_t sync0_cycle, const uint16_t send_cycle, const bool freerun,
                   void* on_lost, const bool high_precision) {
-  auto soem_link = autd3::link::SOEM(static_cast<size_t>(device_num))
+  auto soem_link = autd3::link::SOEM()
                        .ifname(ifname != nullptr ? std::string(ifname) : "")
                        .sync0_cycle(sync0_cycle)
                        .send_cycle(send_cycle)
