@@ -4,7 +4,7 @@
  * Created Date: 16/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/06/2022
+ * Last Modified: 12/08/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -29,7 +29,7 @@ int main() {
   for (int i = 0; i < 249; i++) AUTDSetTransFrequency(cnt, 0, i, 70e3);
 
   void* link = NULL;
-  AUTDLinkEmulator(&link, 50632, cnt);
+  AUTDLinkEmulator(&link, 50632);
 
   if (!AUTDOpenController(cnt, link)) {
     const int32_t error_size = AUTDGetLastError(NULL);

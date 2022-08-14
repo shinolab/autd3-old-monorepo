@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/06/2022
+// Last Modified: 12/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -67,7 +67,7 @@ class TwinCATImpl final : public core::Link {
   TwinCATImpl(TwinCATImpl&& obj) = delete;
   TwinCATImpl& operator=(TwinCATImpl&& obj) = delete;
 
-  void open() override;
+  void open(const core::Geometry& geometry) override;
   void close() override;
   bool send(const driver::TxDatagram& tx) override;
   bool receive(driver::RxDatagram& rx) override;
@@ -90,7 +90,7 @@ bool TwinCATImpl::is_open() { return this->_port > 0; }
 
 #ifdef _WIN32
 
-void TwinCATImpl::open() {
+void TwinCATImpl::open(const core::Geometry&) {
   this->_lib = LoadLibrary("TcAdsDll.dll");
   if (_lib == nullptr) throw std::runtime_error("couldn't find TcADS-DLL");
 
@@ -160,7 +160,7 @@ bool TwinCATImpl::receive(driver::RxDatagram& rx) {
 }
 
 #else
-void TwinCATImpl::open() {
+void TwinCATImpl::open(const core::Geometry&) {
   throw std::runtime_error("Link to localhost has not been compiled. Rebuild this library on a Twincat3 host machine with TcADS-DLL.");
 }
 void TwinCATImpl::close() { return; }

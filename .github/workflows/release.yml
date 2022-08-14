@@ -126,10 +126,10 @@ jobs:
             return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-linux';
       - name: Checkout submodules
         run: git submodule update --init --force --recursive
-      - name: install gcc-10
+      - name: install cross compile tools
         run: |
           sudo apt update
-          sudo apt install gcc-10 g++-10 g++-arm-linux-gnueabihf g++-aarch64-linux-gnu -y
+          sudo apt install g++-arm-linux-gnueabihf g++-aarch64-linux-gnu -y
         shell: bash
       - uses: Jimver/cuda-toolkit@v0.2.6
         id: cuda-toolkit
@@ -164,9 +164,6 @@ jobs:
           cp -rf dist/firmware firmware/
           tar -zcvf assets_arm32.tar.gz firmware include lib bin LICENSE NOTICE
         shell: bash
-        env:
-          CC: gcc-10
-          CXX: g++-10
       - name: Build project arm64
         run: |
           mkdir -p build && cd build
@@ -180,9 +177,6 @@ jobs:
           cp -rf dist/firmware firmware/
           tar -zcvf assets_arm64.tar.gz firmware include lib bin LICENSE NOTICE
         shell: bash
-        env:
-          CC: gcc-10
-          CXX: g++-10
       - name: Load Release URL File from release job
         uses: actions/download-artifact@v1
         with:

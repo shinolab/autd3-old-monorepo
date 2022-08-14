@@ -1,3 +1,9 @@
+# 2.3.1
+
+- Remove the first argument (`Geometry&`) of `link::Emulator` constructor
+- Remove the first argument (interface name) of `link::SOEM` constructor
+- (internal) `link::open` now requires `Geometry&`
+
 # 2.3.0
 
 - Add `SyncMode` setting to `link::SOEM` to address #20

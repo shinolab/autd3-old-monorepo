@@ -136,27 +136,12 @@ endif()
 using namespace std;
 using namespace autd3;
 
-string get_adapter_name() {
-  size_t i = 0;
-  const auto adapters = link::SOEM::enumerate_adapters();
-  for (auto&& [desc, name] : adapters) cout << "[" << i++ << "]: " << desc << ", " << name << endl;
-
-  cout << "Choose number: ";
-  string in;
-  getline(cin, in);
-  stringstream s(in);
-  if (const auto empty = in == "\n"; !(s >> i) || i >= adapters.size() || empty) return "";
-
-  return adapters[i].name;
-}
-
 int main() try {
   Controller autd;
 
   autd.geometry().add_device(Vector3::Zero(), Vector3::Zero());
 
-  const auto ifname = get_adapter_name();
-  auto link = link::SOEM(ifname, autd.geometry().num_devices()).build();
+  auto link = link::SOEM(autd.geometry().num_devices()).build();
   autd.open(std::move(link));
 
   autd.check_trials = 50;
@@ -230,16 +215,11 @@ autd.geometry().add_device(Vector3::Zero(), Vector3::Zero());
 次に, `Link`を作成し, デバイスと接続する.
 
 ```cpp
-const auto ifname = get_adapter_name();
-auto link = link::SOEM(ifname, autd.geometry().num_devices()).build();
+auto link = link::SOEM(autd.geometry().num_devices()).build();
 autd.open(std::move(link));
 ```
 
-`link::SOEM()`の第一引数はインターフェース名で, 第2引数は接続しているAUTD3デバイスの数である. インターフェース名は,
-Windowsの場合は, `\Device\NPF_{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}`のような文字列となり,
-確認するのはひと手間かかるので, ユーティリティ関数`get_adapter_name`を用意した. 実行時に適当なものを選択されたい.
-(macやLinuxの場合は`ifconfig`等で確認することもできる.) また, linkの型は`unique_ptr`であるため,
-`Controller`に渡す際は`move`する必要がある.
+linkの型は`unique_ptr`であるため, `Controller`に渡す際は`move`する必要がある.
 
 次に, `check_trials`を50にセットしている. これは変更しなくても良いが, セットしておくと信頼性が増す. SOEM
 link使用時は50程度の値にセットしておくことをお勧めする.

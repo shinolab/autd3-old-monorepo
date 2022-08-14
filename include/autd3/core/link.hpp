@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/06/2022
+// Last Modified: 12/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <memory>
 
+#include "autd3/core/geometry.hpp"
 #include "autd3/driver/cpu/datagram.hpp"
 
 namespace autd3::core {
@@ -33,7 +34,7 @@ class Link {
   /**
    * @brief Open link
    */
-  virtual void open() = 0;
+  virtual void open(const Geometry& geometry) = 0;
 
   /**
    * @brief Close link
