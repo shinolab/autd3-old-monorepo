@@ -34,36 +34,13 @@ func onLost(msg string) {
 	os.Exit(-1)
 }
 
-func getAdapter() string {
-	adapters := soem.EnumerateAdapters()
-	for i, adapter := range adapters {
-		fmt.Printf("[%d]: %s, %s\n", i, adapter.Desc, adapter.Name)
-	}
-
-	fmt.Print("choose: ")
-
-	var i int
-	if _, err := fmt.Scanln(&i); err != nil {
-		fmt.Printf("failed to read integer: %s\n", err)
-		os.Exit(-1)
-	}
-
-	if i >= len(adapters) {
-		fmt.Print("index out of range\n")
-		os.Exit(-1)
-	}
-
-	return adapters[i].Name
-}
-
 func main() {
 	cnt := autd3.NewController()
 	defer cnt.Delete()
 
 	cnt.AddDevice([3]float64{0, 0, 0}, [3]float64{0, 0, 0})
 
-	ifname := getAdapter()
-	link := soem.NewSOEM(ifname, cnt.NumDevices()).OnLost(onLost).Build()
+	link := soem.NewSOEM().HighPrecision(true).OnLost(onLost).Build()
  
 	if !cnt.Open(link) {
 		println(autd3.GetLastError())
@@ -98,4 +75,4 @@ func main() {
 
 より詳細なサンプルは[autd3-goのexample](https://github.com/shinolab/autd3-go/tree/master/examples)を参照されたい.
 
-その他, 質問があれば[GitHubのissue](https://github.com/shinolab/autd3-go/issues)にてお願いします.
+その他, 質問があれば[GitHubのissue](https://github.com/shinolab/autd3-go/issues)に送られたい.

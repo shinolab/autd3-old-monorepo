@@ -28,26 +28,12 @@ namespace example
 {
     internal class Program
     {
-        public static string GetIfname()
-        {
-            var adapters = SOEM.EnumerateAdapters();
-            var etherCATAdapters = adapters as EtherCATAdapter[] ?? adapters.ToArray();
-            foreach (var (adapter, index) in etherCATAdapters.Select((adapter, index) => (adapter, index)))
-                Console.WriteLine($"[{index}]: {adapter}");
-
-            Console.Write("Choose number: ");
-            int i;
-            while (!int.TryParse(Console.ReadLine(), out i)) { }
-            return etherCATAdapters.ElementAt(i).Name;
-        }
-
         public static void Main()
         {
             var autd = new Controller();
             autd.AddDevice(Vector3d.Zero, Vector3d.Zero);
 
-            var ifname = GetIfname();
-            var link = new SOEM(ifname, autd.NumDevices).Build();
+            var link = new SOEM().HighPrecision(true).Build();
             if (!autd.Open(link))
             {
                 Console.WriteLine(Controller.LastError);
@@ -108,8 +94,8 @@ sudo dotnet run -r ubuntu-x64
 
 Q. .Net frameworkから使用できない
 
-A. サポートしてないです. ソースコードを丸々コピペすれば動くかもしれません.
+A. サポートしてない. ソースコードを丸々コピペすれば動くかもしれない.
 
 ---
 
-その他, 質問があれば[GitHubのissue](https://github.com/shinolab/autd3sharp/issues)にてお願いします.
+その他, 質問があれば[GitHubのissue](https://github.com/shinolab/autd3sharp/issues)に送られたい.
