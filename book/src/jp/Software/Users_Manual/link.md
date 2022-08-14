@@ -152,20 +152,14 @@ SOEMのLinkを使用する際は`autd3/link/soem.hpp`ヘッダーをインクル
 #include "autd3/link/soem.hpp"
 
 ...
-  auto link = link::SOEM(ifname, autd.geometry().num_devices()).build();
+  auto link = link::SOEM(autd.geometry().num_devices()).build();
 ```
-`SOEM()`の第1引数はインターフェース名で, 第2引数はデバイスの数である.
-インターフェース名はAUTD3デバイスに接続しているehernetインターフェース名である.
-これの一覧は, `SOEM::enumerate_adapters`関数によって取得できる.
-```cpp
-  const auto adapters = link::SOEM::enumerate_adapters();
-  for (auto&& [desc, name] : adapters) cout << desc << ", " << name << endl;
-```
+`SOEM()`の第1引数は接続しているデバイスの数である.
 
 なお, SOEMも大量のDeviceを使用すると挙動が不安定になる時がある[^fn_soem].
 このときは, `sync0_cycle`と`send_cycle`関数を使用し, その値を増やす.
 ```cpp
-  auto link = link::SOEM(ifname, autd.geometry().num_devices())
+  auto link = link::SOEM(autd.geometry().num_devices())
                 .sync0_cycle(2)
                 .send_cycle(2)
                 .build();
@@ -177,7 +171,7 @@ SOEMのLinkを使用する際は`autd3/link/soem.hpp`ヘッダーをインクル
 また, SOEM Linkは回復不能なエラー (例えば, ケーブルが抜けるなど) が発生したときのコールバックを設定することができる[^fn_soem_err].
 callbackはエラーメッセージを引数に取る.
 ```cpp
-  auto link = link::SOEM(ifname, autd.geometry().num_devices())
+  auto link = link::SOEM(autd.geometry().num_devices())
                 .sync0_cycle(2)
                 .send_cycle(2)
                 .on_lost([](const string& msg) {
@@ -187,10 +181,10 @@ callbackはエラーメッセージを引数に取る.
                 })
                 .build();
 ```
-
+ 
 さらに, Windowsの場合はHigh Precisionモードの設定ができる.
 ```cpp
-  auto link = link::SOEM(ifname, autd.geometry().num_devices())
+  auto link = link::SOEM(autd.geometry().num_devices())
                 .sync0_cycle(2)
                 .send_cycle(2)
                 .on_lost([](const string& msg) {
@@ -210,7 +204,7 @@ High Precisionモードを`true`にすると, より高精度なタイマが使�
 必ずしもこれで解決する訳では無いが, 多少良くなる場合がある.
 
 ```cpp
-  auto link = link::SOEM(ifname, autd.geometry().num_devices())
+  auto link = link::SOEM(autd.geometry().num_devices())
                 .sync0_cycle(2)
                 .send_cycle(2)
                 .on_lost([](const string& msg) {
@@ -235,9 +229,8 @@ EmulatorのLinkを使用する際は`autd3/link/emulator.hpp`ヘッダーをイ�
 
 ...
 
-  auto link = autd::link::Emulator(autd.geometry()).port(50632).build();
+  auto link = autd::link::Emulator().port(50632).build();
 ```
-`Emulator()`の引数はGeometryである.
 ポート番号はautd-emulatorの設定と同じにしておく.
 
 [^fn_remote_twin]: 無線LANでも可
