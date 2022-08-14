@@ -1192,7 +1192,6 @@ Emulator linkを作成する.
 | ---------------------- | -------- | ------ | ----------------------------------- |
 | out                    | void**   | out    | pointer to pointer to Emulator link |
 | port                   | uint16_t | in     | port number                         |
-| cnt                    | void*    | in     | pointer to Controller               |
 | return                 | void     | -      | -                                   |
 
 ## AUTDLinkRemoteTwinCAT (autd3capi-link-remote-twincat)

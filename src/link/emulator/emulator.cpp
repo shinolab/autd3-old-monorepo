@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/06/2022
+// Last Modified: 12/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,16 +28,17 @@ namespace autd3::link {
 
 class EmulatorImpl final : public core::Link {
  public:
-  explicit EmulatorImpl(const uint16_t port, const core::Geometry& geometry)
-      : Link(), _is_open(false), _port(port), _geometry_datagram(init_geometry_datagram(geometry)) {}
+  explicit EmulatorImpl(const uint16_t port) : Link(), _is_open(false), _port(port) {}
   ~EmulatorImpl() override = default;
   EmulatorImpl(const EmulatorImpl& v) noexcept = delete;
   EmulatorImpl& operator=(const EmulatorImpl& obj) = delete;
   EmulatorImpl(EmulatorImpl&& obj) = delete;
   EmulatorImpl& operator=(EmulatorImpl&& obj) = delete;
 
-  void open() override {
+  void open(const core::Geometry& geometry) override {
     if (is_open()) return;
+
+    const auto geometry_datagram = init_geometry_datagram(geometry);
 
 #if WIN32
 #pragma warning(push)
@@ -65,7 +66,7 @@ class EmulatorImpl final : public core::Link {
 #endif
 
     _is_open = true;
-    send(_geometry_datagram);
+    send(geometry_datagram);
   }
 
   void close() override {
@@ -117,7 +118,6 @@ class EmulatorImpl final : public core::Link {
   sockaddr_in _addr = {};
 
   uint8_t _last_msg_id = 0;
-  driver::TxDatagram _geometry_datagram;
 
   static driver::TxDatagram init_geometry_datagram(const core::Geometry& geometry) {
     driver::TxDatagram buf(geometry.num_devices());
@@ -149,7 +149,7 @@ class EmulatorImpl final : public core::Link {
   }
 };
 core::LinkPtr Emulator::build() {
-  core::LinkPtr link = std::make_unique<EmulatorImpl>(_port, _geometry);
+  core::LinkPtr link = std::make_unique<EmulatorImpl>(_port);
   return link;
 }
 
