@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 14/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -52,7 +52,7 @@ struct Transducer {
         _z_direction(std::move(z_direction)),
         _mod_delay(0),
         _cycle(4096) {}
-  virtual ~Transducer() = default;
+  ~Transducer() = default;
   Transducer(const Transducer& v) noexcept = default;
   Transducer& operator=(const Transducer& obj) = default;
   Transducer(Transducer&& obj) = default;
