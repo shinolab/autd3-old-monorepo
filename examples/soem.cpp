@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/08/2022
+// Last Modified: 12/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,27 +16,12 @@
 #include "autd3.hpp"
 #include "runner.hpp"
 
-std::string get_adapter_name() {
-  size_t i = 0;
-  const auto adapters = autd3::link::SOEM::enumerate_adapters();
-  for (auto&& [desc, name] : adapters) std::cout << "[" << i++ << "]: " << desc << ", " << name << std::endl;
-
-  std::cout << "Choose number: ";
-  std::string in;
-  getline(std::cin, in);
-  std::stringstream s(in);
-  if (const auto empty = in == "\n"; !(s >> i) || i >= adapters.size() || empty) return "";
-
-  return adapters[i].name;
-}
-
 int main() try {
   autd3::Controller autd;
 
   autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
 
-  const auto ifname = get_adapter_name();
-  auto link = autd3::link::SOEM(ifname, autd.geometry().num_devices())
+  auto link = autd3::link::SOEM(autd.geometry().num_devices())
                   .on_lost([](const std::string& msg) {
                     std::cerr << "Link is lost\n";
                     std::cerr << msg;

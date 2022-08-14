@@ -37,6 +37,7 @@ include(GoogleTest)
 gtest_discover_tests(test_autd3)
 
 if(WIN32)
+  target_link_options(test_autd3 PRIVATE /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib /NODEFAULTLIB:msvcrtd.lib)
   set_target_properties(test_autd3 PROPERTIES FOLDER "test")
   set_target_properties(gtest PROPERTIES FOLDER "test/gtest")
   set_target_properties(gtest_main PROPERTIES FOLDER "test/gtest")
