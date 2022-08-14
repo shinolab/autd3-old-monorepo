@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/06/2022
+// Last Modified: 14/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -49,10 +49,10 @@ struct Geometry {
 
     Device() = delete;
     ~Device() = default;
-    Device(const Device& v) noexcept = default;
-    Device& operator=(const Device& obj) = default;
+    Device(const Device& v) noexcept = delete;
+    Device& operator=(const Device& obj) = delete;
     Device(Device&& obj) = default;
-    Device& operator=(Device&& obj) = default;
+    Device& operator=(Device&& obj) = delete;
 
     /**
      * @brief Center position of this device

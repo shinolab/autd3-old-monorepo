@@ -3,7 +3,7 @@
 // Created Date: 28/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 14/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,10 +22,10 @@ class Amplitudes final : DatagramBody {
  public:
   explicit Amplitudes(const double amp = 1.0) : _amp(amp), _sent(false), _drives() {}
   ~Amplitudes() override = default;
-  Amplitudes(const Amplitudes& v) = default;
-  Amplitudes& operator=(const Amplitudes& obj) = default;
+  Amplitudes(const Amplitudes& v) = delete;
+  Amplitudes& operator=(const Amplitudes& obj) = delete;
   Amplitudes(Amplitudes&& obj) = default;
-  Amplitudes& operator=(Amplitudes&& obj) = default;
+  Amplitudes& operator=(Amplitudes&& obj) = delete;
 
   void init() override { _sent = false; }
 
