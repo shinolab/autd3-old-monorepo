@@ -3,7 +3,7 @@
 // Created Date: 28/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 14/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,6 +27,7 @@ class Mode {
   virtual void pack_stm_gain_header(driver::TxDatagram& tx) const = 0;
   virtual void pack_stm_gain_body(size_t& sent, bool& next_duty, uint32_t freq_div, const std::vector<std::vector<driver::Drive>>& gains,
                                   driver::GainSTMMode mode, driver::TxDatagram& tx) const = 0;
+  virtual ~Mode() = default;
 };
 
 class LegacyMode : public Mode {
@@ -75,6 +76,9 @@ class LegacyMode : public Mode {
         break;
     }
   }
+
+ public:
+  ~LegacyMode() override = default;
 };
 
 class NormalMode : public Mode {
@@ -122,6 +126,9 @@ class NormalMode : public Mode {
         break;
     }
   }
+
+ public:
+  ~NormalMode() override = default;
 };
 
 class NormalPhaseMode : public Mode {
@@ -157,6 +164,9 @@ class NormalPhaseMode : public Mode {
         break;
     }
   }
+
+ public:
+  ~NormalPhaseMode() override = default;
 };
 
 }  // namespace autd3::core
