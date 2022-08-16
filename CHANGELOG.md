@@ -1,3 +1,8 @@
+# 2.3.2
+
+- Improve performance of `link::SOEM` on Windows
+- Add `link::Bundle`
+
 # 2.3.1
 
 - Remove the first argument (`Geometry&`) of `link::Emulator` constructor

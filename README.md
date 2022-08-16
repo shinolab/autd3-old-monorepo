@@ -3,7 +3,7 @@
 
 # [AUTD3](https://hapislab.org/airborne-ultrasound-tactile-display?lang=en)
 
-Version: 2.3.1
+Version: 2.3.2
 
 ## Document
 
@@ -78,6 +78,7 @@ Version: 2.3.1
 | BUILD_LINK_TWINCAT          | OFF     | build TwinCAT link              |
 | BUILD_LINK_REMOTE_TWINCAT   | OFF     | build RemoteTwinCAT link        |
 | BUILD_LINK_EMULATOR         | OFF     | build Emulator link             |
+| BUILD_LINK_BUNDLE           | OFF     | build Bundle link               |
 | BUILD_EXAMPLES              | ON      | build examples                  |
 | BUILD_CAPI                  | OFF     | build C-API                     |
 | ENABLE_LINT                 | OFF     | enable cpp lint                 |
