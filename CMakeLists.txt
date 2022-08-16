@@ -8,7 +8,7 @@ project(autd3)
 
 set(VERSION_MAJOR 2 CACHE STRING "Project major version number.")
 set(VERSION_MINOR 3 CACHE STRING "Project minor version number.")
-set(VERSION_PATCH 1 CACHE STRING "Project patch version number.")
+set(VERSION_PATCH 2 CACHE STRING "Project patch version number.")
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -32,6 +32,7 @@ option(BUILD_LINK_SOEM "BUILD_LINK_SOEM" ON)
 option(BUILD_LINK_TWINCAT "BUILD_LINK_TWINCAT" OFF)
 option(BUILD_LINK_REMOTE_TWINCAT "BUILD_LINK_REMOTE_TWINCAT" OFF)
 option(BUILD_LINK_EMULATOR "BUILD_LINK_EMULATOR" OFF)
+option(BUILD_LINK_BUNDLE "BUILD_LINK_BUNDLE" OFF)
 
 option(BUILD_EXAMPLES "BUILD_EXAMPLES" ON)
 
@@ -51,6 +52,7 @@ if(BUILD_ALL)
   set(BUILD_LINK_TWINCAT ON)
   set(BUILD_LINK_REMOTE_TWINCAT ON)
   set(BUILD_LINK_EMULATOR ON)
+  set(BUILD_LINK_BUNDLE ON)
   set(BUILD_EXAMPLES ON)
   set(BUILD_CAPI ON)
 endif()
@@ -175,6 +177,10 @@ endif()
 
 if(BUILD_LINK_EMULATOR)
   add_subdirectory(src/link/emulator)
+endif()
+
+if(BUILD_LINK_BUNDLE)
+  add_subdirectory(src/link/bundle)
 endif()
 
 if(BUILD_EXAMPLES)
