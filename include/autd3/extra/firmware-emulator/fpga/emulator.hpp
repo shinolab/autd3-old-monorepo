@@ -11,6 +11,9 @@
 
 #pragma once
 
+#include <utility>
+#include <vector>
+
 #include "./params.hpp"
 #include "autd3/driver/hardware.hpp"
 
@@ -54,16 +57,16 @@ class FPGA {
 
   [[nodiscard]] uint16_t read(const uint16_t addr) const {
     const auto select = (addr >> 14) & 0x0003;
-    const auto addr_in_bram = (addr & 0x3FFF);
+    const size_t addr_in_bram = (addr & 0x3FFF);
     switch (select) {
       case BRAM_SELECT_CONTROLLER:
         return _controller_bram[addr_in_bram];
       case BRAM_SELECT_MOD:
-        return _modulator_bram[_controller_bram[ADDR_MOD_ADDR_OFFSET] << 14 | addr_in_bram];
+        return _modulator_bram[static_cast<size_t>(_controller_bram[ADDR_MOD_ADDR_OFFSET]) << 14 | addr_in_bram];
       case BRAM_SELECT_NORMAL:
         return _normal_op_bram[addr_in_bram];
       case BRAM_SELECT_STM:
-        return _stm_op_bram[_controller_bram[ADDR_STM_ADDR_OFFSET] << 14 | addr_in_bram];
+        return _stm_op_bram[static_cast<size_t>(_controller_bram[ADDR_STM_ADDR_OFFSET]) << 14 | addr_in_bram];
       default:
         return 0;
     }
@@ -71,19 +74,19 @@ class FPGA {
 
   void write(const uint16_t addr, const uint16_t data) {
     const auto select = (addr >> 14) & 0x0003;
-    const auto addr_in_bram = (addr & 0x3FFF);
+    const size_t addr_in_bram = (addr & 0x3FFF);
     switch (select) {
       case BRAM_SELECT_CONTROLLER:
         _controller_bram[addr_in_bram] = data;
         break;
       case BRAM_SELECT_MOD:
-        _modulator_bram[_controller_bram[ADDR_MOD_ADDR_OFFSET] << 14 | addr_in_bram] = data;
+        _modulator_bram[static_cast<size_t>(_controller_bram[ADDR_MOD_ADDR_OFFSET]) << 14 | addr_in_bram] = data;
         break;
       case BRAM_SELECT_NORMAL:
         _normal_op_bram[addr_in_bram] = data;
         break;
       case BRAM_SELECT_STM:
-        _stm_op_bram[_controller_bram[ADDR_STM_ADDR_OFFSET] << 14 | addr_in_bram] = data;
+        _stm_op_bram[static_cast<size_t>(_controller_bram[ADDR_STM_ADDR_OFFSET]) << 14 | addr_in_bram] = data;
         break;
       default:
         break;
@@ -117,7 +120,7 @@ class FPGA {
     return (_controller_bram[ADDR_STM_FREQ_DIV_1] << 16 & 0xFFFF0000) | (_controller_bram[ADDR_STM_FREQ_DIV_0] & 0x0000FFFF);
   }
 
-  [[nodiscard]] size_t stm_cycle() const { return _controller_bram[ADDR_STM_CYCLE] + 1; }
+  [[nodiscard]] size_t stm_cycle() const { return static_cast<size_t>(_controller_bram[ADDR_STM_CYCLE]) + 1; }
 
   [[nodiscard]] uint32_t sound_speed() const {
     return (_controller_bram[ADDR_SOUND_SPEED_1] << 16 & 0xFFFF0000) | (_controller_bram[ADDR_SOUND_SPEED_0] & 0x0000FFFF);
@@ -127,7 +130,7 @@ class FPGA {
     return (_controller_bram[ADDR_MOD_FREQ_DIV_1] << 16 & 0xFFFF0000) | (_controller_bram[ADDR_MOD_FREQ_DIV_0] & 0x0000FFFF);
   }
 
-  [[nodiscard]] size_t modulation_cycle() const { return _controller_bram[ADDR_MOD_CYCLE] + 1; }
+  [[nodiscard]] size_t modulation_cycle() const { return static_cast<size_t>(_controller_bram[ADDR_MOD_CYCLE]) + 1; }
 
   [[nodiscard]] std::vector<uint8_t> modulation() const {
     const auto cycle = modulation_cycle();
