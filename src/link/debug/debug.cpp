@@ -13,7 +13,21 @@
 
 #include "autd3/core/link.hpp"
 #include "autd3/extra/firmware-emulator/cpu/emulator.hpp"
+
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 6285 26437 26800 26498)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic push
+#endif
 #include "spdlog/spdlog.h"
+#if _MSC_VER
+#pragma warning(pop)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic pop
+#endif
 
 namespace autd3::link {
 

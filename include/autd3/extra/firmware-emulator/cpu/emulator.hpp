@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include <algorithm>
+
 #include "../fpga/emulator.hpp"
 #include "./params.hpp"
 #include "autd3/driver/cpu/body.hpp"

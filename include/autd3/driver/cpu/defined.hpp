@@ -11,10 +11,13 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cstdint>
+#include <iterator>
 #include <ostream>
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace autd3::driver {
 constexpr uint8_t MSG_CLEAR = 0x00;
