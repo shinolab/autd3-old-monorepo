@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 26/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -48,6 +48,7 @@ struct TxDatagram {
   [[nodiscard]] GlobalHeader const &header() const noexcept { return *reinterpret_cast<GlobalHeader const *const>(_data.data()); }
 
   Body *bodies() noexcept { return reinterpret_cast<Body *>(_data.data() + sizeof(GlobalHeader)); }
+  const Body *const bodies() const noexcept { return reinterpret_cast<const Body *>(_data.data() + sizeof(GlobalHeader)); }
 
  private:
   size_t _size;

@@ -79,6 +79,7 @@ Version: 2.3.2
 | BUILD_LINK_REMOTE_TWINCAT   | OFF     | build RemoteTwinCAT link        |
 | BUILD_LINK_EMULATOR         | OFF     | build Emulator link             |
 | BUILD_LINK_BUNDLE           | OFF     | build Bundle link               |
+| BUILD_LINK_DEBUG            | OFF     | build Debug link                |
 | BUILD_EXAMPLES              | ON      | build examples                  |
 | BUILD_CAPI                  | OFF     | build C-API                     |
 | ENABLE_LINT                 | OFF     | enable cpp lint                 |

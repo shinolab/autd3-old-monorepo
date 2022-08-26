@@ -1,7 +1,8 @@
 # 2.3.2
 
 - Improve performance of `link::SOEM` on Windows
-- Add `link::Bundle`
+- Add `link::Bundle` and `link::Debug`
+- Add `extra::firmware-emulator`
 
 # 2.3.1
 

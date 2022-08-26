@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 26/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,6 +12,9 @@
 #pragma once
 
 #include <cstdint>
+#include <ostream>
+#include <sstream>
+#include <string>
 
 namespace autd3::driver {
 constexpr uint8_t MSG_CLEAR = 0x00;
@@ -69,11 +72,40 @@ class CPUControlFlags final {
 
   void remove(const VALUE v) noexcept { _value = static_cast<VALUE>(_value & ~v); }
 
+  bool contains(const VALUE v) const noexcept { return (_value & v) == v; }
+
   [[nodiscard]] VALUE value() const noexcept { return _value; }
+
+  [[nodiscard]] std::string to_string() const noexcept {
+    std::vector<std::string> flags;
+    if ((_value & MOD) == MOD) {
+      if ((_value & MOD_BEGIN) == MOD_BEGIN) flags.emplace_back("MOD_BEGIN");
+      if ((_value & MOD_END) == MOD_END) flags.emplace_back("MOD_END");
+    } else {
+      if ((_value & CONFIG_SILENCER) == CONFIG_SILENCER) flags.emplace_back("CONFIG_SILENCER");
+      if ((_value & CONFIG_SYNC) == CONFIG_SYNC) flags.emplace_back("CONFIG_SYNC");
+    }
+    if ((_value & WRITE_BODY) == WRITE_BODY) flags.emplace_back("WRITE_BODY");
+    if ((_value & STM_BEGIN) == STM_BEGIN) flags.emplace_back("STM_BEGIN");
+    if ((_value & STM_END) == STM_END) flags.emplace_back("STM_END");
+    if ((_value & IS_DUTY) == IS_DUTY) flags.emplace_back("IS_DUTY");
+    if ((_value & MOD_DELAY) == MOD_DELAY) flags.emplace_back("MOD_DELAY");
+    if (flags.size() == 0) flags.emplace_back("NONE");
+
+    constexpr auto delim = " | ";
+    std::ostringstream os;
+    std::copy(flags.begin(), flags.end(), std::ostream_iterator<std::string>(os, delim));
+    std::string s = os.str();
+    s.erase(s.size() - std::char_traits<char>::length(delim));
+    return s;
+  }
 
  private:
   VALUE _value;
 };
+
+inline std::ostream& operator<<(std::ostream& os, const CPUControlFlags& flag) { return os << flag.to_string(); }
+
 #pragma warning(pop)
 
 enum class GainSTMMode : uint16_t {
