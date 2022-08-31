@@ -19,8 +19,7 @@ function(add_autd_dependencies target)
   elseif(APPLE)
     target_link_libraries(${target} PRIVATE pcap)
   else()
-    target_link_libraries(${target} PRIVATE rt)
-    target_link_libraries(${target} PRIVATE -static-libgcc -static-libstdc++)
+    target_link_libraries(${target} PRIVATE rt m)
   endif()
   add_custom_command(TARGET ${target} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
