@@ -30,8 +30,5 @@ set_target_properties(autd3capi
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/$<CONFIG>/"
 )
 
-if (WIN32)
-  set_target_properties(autd3capi PROPERTIES FOLDER "capi")
-else()
-  set_target_properties(autd3capi PROPERTIES POSITION_INDEPENDENT_CODE ON)
-endif()
+set_target_properties(autd3capi PROPERTIES FOLDER "capi")
+set_target_properties(autd3capi PROPERTIES POSITION_INDEPENDENT_CODE ON)

@@ -55,8 +55,5 @@ set_target_properties(link_soem
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
 )
 
-if(WIN32)
-  set_target_properties(link_soem PROPERTIES FOLDER "link")
-else()
-  set_target_properties(link_soem PROPERTIES POSITION_INDEPENDENT_CODE ON)
-endif()
+set_target_properties(link_soem PROPERTIES FOLDER "link")
+set_target_properties(link_soem PROPERTIES POSITION_INDEPENDENT_CODE ON)

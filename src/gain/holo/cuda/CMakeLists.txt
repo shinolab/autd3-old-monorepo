@@ -44,8 +44,5 @@ set_target_properties(backend_cuda
   CUDA_SEPARABLE_COMPILATION ON
 )
 
-if(WIN32)
-  set_target_properties(backend_cuda PROPERTIES FOLDER "gain/backend")
-else()
-  set_target_properties(backend_cuda PROPERTIES POSITION_INDEPENDENT_CODE ON)
-endif()
+set_target_properties(backend_cuda PROPERTIES FOLDER "gain/backend")
+set_target_properties(backend_cuda PROPERTIES POSITION_INDEPENDENT_CODE ON)

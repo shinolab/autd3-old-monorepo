@@ -13,8 +13,5 @@ set_target_properties(link_bundle
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
 )
 
-if(WIN32)
-  set_target_properties(link_bundle PROPERTIES FOLDER "link")
-else()
-  set_target_properties(link_bundle PROPERTIES POSITION_INDEPENDENT_CODE ON)
-endif()
+set_target_properties(link_bundle PROPERTIES FOLDER "link")
+set_target_properties(link_bundle PROPERTIES POSITION_INDEPENDENT_CODE ON)
