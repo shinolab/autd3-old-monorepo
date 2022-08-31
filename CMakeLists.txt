@@ -42,9 +42,6 @@ option(BUILD_CAPI "BUILD_CAPI" OFF)
 option(ENABLE_LINT "ENABLE_LINT" OFF)
 
 option(BUILD_TEST "BUILD_TEST" OFF)
-option(gtest_disable_pthreads "gtest_disable_pthreads" ON)
-
-option(BUILD_WITH_STATIC_CRT "BUILD_WITH_STATIC_CRT" OFF)
 
 if(BUILD_ALL)
   set(BUILD_GAIN_HOLO ON)
@@ -197,6 +194,7 @@ if(BUILD_TEST)
   cmake_policy(SET CMP0077 NEW)
   cmake_policy(SET CMP0135 NEW)
   include(${PROJECT_SOURCE_DIR}/cmakes/gtest.cmake)
+  set(gtest_disable_pthreads ON)
   add_subdirectory(tests)
 endif()
 
