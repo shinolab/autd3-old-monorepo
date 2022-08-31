@@ -14,8 +14,5 @@ set_target_properties(backend_eigen
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
 )
 
-if(WIN32)
-  set_target_properties(backend_eigen PROPERTIES FOLDER "gain/backend")
-else()
-  set_target_properties(backend_eigen PROPERTIES POSITION_INDEPENDENT_CODE ON)
-endif()
+set_target_properties(backend_eigen PROPERTIES FOLDER "gain/backend")
+set_target_properties(backend_eigen PROPERTIES POSITION_INDEPENDENT_CODE ON)

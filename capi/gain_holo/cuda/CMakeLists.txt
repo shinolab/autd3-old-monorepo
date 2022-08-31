@@ -23,8 +23,5 @@ set_target_properties(autd3capi-backend-cuda
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/$<CONFIG>/"
 )
 
-if(WIN32)
-  set_target_properties(autd3capi-backend-cuda PROPERTIES FOLDER "capi/gain/backend")
-else()
-  set_target_properties(autd3capi-backend-cuda PROPERTIES POSITION_INDEPENDENT_CODE ON)
-endif()
+set_target_properties(autd3capi-backend-cuda PROPERTIES FOLDER "capi/gain/backend")
+set_target_properties(autd3capi-backend-cuda PROPERTIES POSITION_INDEPENDENT_CODE ON)
