@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/08/2022
+// Last Modified: 29/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -93,9 +93,7 @@ class DebugImpl final : public core::Link {
     spdlog::info("\tCPU Flag: {}", tx.header().cpu_flag.to_string());
     spdlog::info("\tFPGA Flag: {}", tx.header().fpga_flag.to_string());
 
-    for (size_t i = 0; i < _cpus.size(); i++) {
-      auto& cpu = _cpus[i];
-
+    for (auto& cpu : _cpus) {
       spdlog::info("Status: {}", cpu.id());
       const auto& fpga = cpu.fpga();
       if (fpga.is_stm_mode()) {
