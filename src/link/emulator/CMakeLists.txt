@@ -7,7 +7,7 @@ add_library(link_emulator
 target_link_libraries(link_emulator PUBLIC autd3_common)
 
 if(WIN32)
-  target_link_libraries(link_emulator INTERFACE ws2_32)
+  target_link_libraries(link_emulator PUBLIC ws2_32)
 endif()
 
 set_target_properties(link_emulator
