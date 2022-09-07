@@ -164,6 +164,9 @@ jobs:
           cp -rf dist/firmware firmware/
           tar -zcvf assets_arm32.tar.gz firmware include lib bin LICENSE NOTICE
         shell: bash
+        env:
+          CC: gcc-10
+          CXX: g++-10
       - name: Build project arm64
         run: |
           mkdir -p build && cd build
@@ -177,6 +180,9 @@ jobs:
           cp -rf dist/firmware firmware/
           tar -zcvf assets_arm64.tar.gz firmware include lib bin LICENSE NOTICE
         shell: bash
+        env:
+          CC: gcc-10
+          CXX: g++-10
       - name: Load Release URL File from release job
         uses: actions/download-artifact@v1
         with:
