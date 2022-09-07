@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/06/2022
+// Last Modified: 07/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -58,7 +58,7 @@ void* select_opt(void* backend) {
   return opts[idx].gain;
 }
 
-void holo(void* autd) {
+void* holo(void* autd) {
   void* s = NULL;
   AUTDCreateSilencer(&s, 10, 4096);
   AUTDSend(autd, s, NULL);
@@ -86,4 +86,6 @@ void holo(void* autd) {
   AUTDDeleteGain(g);
   AUTDDeleteModulation(m);
   AUTDDeleteBackend(backend);
+
+  return autd;
 }

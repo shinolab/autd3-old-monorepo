@@ -89,6 +89,40 @@ stm.mode() = Mode::PhaseFull;
     stm.sampling_frequency_division() = 20480; // 163.84MHz/20480 = 8kHz
 ```
 
+# SoftwareSTM
+
+`SoftwareSTM`はSoftwareのタイマでSpatio-Temporal Modulationを実現する機能である.
+AUTD3ハードウェア上の制約はないが, その精度はホスト側のタイマの精度によって決まる[^timer_precision].
+
+`SoftwareSTM`の使用方法は以下のようになる.
+基本的な使い方は`GainSTM`と同様である.
+```cpp
+  autd3::SoftwareSTM stm;
+
+  const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
+  constexpr size_t points_num = 200;
+  constexpr auto radius = 30.0;
+  std::vector<size_t> points(points_num);
+  std::iota(points.begin(), points.end(), 0);
+  std::for_each(points.begin(), points.end(), [&](const size_t i) {
+    const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(points_num);
+    autd3::gain::Focus g(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0.0));
+    stm.add(g);
+  });
+
+  const auto actual_freq = stm.set_frequency(1);
+  std::cout << "Actual frequency is " << actual_freq << " Hz\n";
+
+  auto handle = stm.start(std::move(autd));
+
+  std::cout << "press any key to stop software stm..." << std::endl;
+  std::cin.ignore();
+
+  autd = handle.finish();
+```
+
 [^fn_gain_seq]: `PointSTM`のおよそ60倍のレイテンシ.
 
 [^phase_half]: Legacyモード限定.
+
+[^timer_precision]: Windowsでは例えば, \SI{1}{ms}程度が限界である.

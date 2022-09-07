@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/06/2022
+// Last Modified: 07/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,7 +11,7 @@
 
 #pragma once
 
-void api_debug(void* autd) {
+void* api_debug(void* autd) {
   void* g = NULL;
   AUTDGainFocus(&g, 90, 70, 150, 1.0);
   void* m = NULL;
@@ -66,4 +66,6 @@ void api_debug(void* autd) {
   AUTDSend(autd, NULL, g);
 
   AUTDDeleteGain(g);
+
+  return autd;
 }

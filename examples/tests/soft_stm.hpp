@@ -22,7 +22,7 @@ inline void soft_stm(autd3::Controller& autd) {
   autd3::modulation::Static m;
   autd.send(m);
 
-  autd3::SoftSTM stm;
+  autd3::SoftwareSTM stm;
 
   const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   constexpr size_t points_num = 200;
