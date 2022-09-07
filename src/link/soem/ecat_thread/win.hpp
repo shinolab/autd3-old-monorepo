@@ -3,13 +3,15 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/08/2022
+// Last Modified: 07/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
+
+#include "autd3/core/utils.hpp"
 
 namespace autd3::link {
 
@@ -42,7 +44,7 @@ inline void nanosleep(const int64_t t) {
   LARGE_INTEGER now;
   QueryPerformanceCounter(&now);
   while (now.QuadPart <= sleep_for) {
-    spin_loop_hint();
+    core::spin_loop_hint();
     QueryPerformanceCounter(&now);
   }
 }

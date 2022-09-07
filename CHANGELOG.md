@@ -3,6 +3,7 @@
 - Improve performance of `link::SOEM` on Windows
 - Add `link::Bundle` and `link::Debug`
 - Add `extra::firmware-emulator`
+- Add `SoftwareSTM`
 
 # 2.3.1
 

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/06/2022
+// Last Modified: 07/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@
 #define NUM_TRANS_X (18)
 #define NUM_TRANS_Y (14)
 
-void mod_audio_file(void* autd) {
+void* mod_audio_file(void* autd) {
   void* s = NULL;
   AUTDCreateSilencer(&s, 10, 4096);
   AUTDSend(autd, s, NULL);
@@ -53,4 +53,6 @@ void mod_audio_file(void* autd) {
 
   AUTDDeleteGain(g);
   AUTDDeleteModulation(mr);
+
+  return autd;
 }

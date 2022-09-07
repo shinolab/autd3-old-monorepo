@@ -17,36 +17,45 @@
 #define NUM_TRANS_X (18)
 #define NUM_TRANS_Y (14)
 
-void* point_stm(void* autd) {
+void* soft_stm(void* autd) {
   void* s = NULL;
   AUTDCreateSilencer(&s, 0xFFFF, 4096);
   AUTDSend(autd, s, NULL);
   AUTDDeleteSilencer(s);
+
+  void* m = NULL;
+  AUTDModulationStatic(&m, 1.0);
+  AUTDSend(autd, m, NULL);
+  AUTDDeleteModulation(m);
 
   double x = TRANS_SPACING_MM * (((double)NUM_TRANS_X - 1.0) / 2.0);
   double y = TRANS_SPACING_MM * (((double)NUM_TRANS_Y - 1.0) / 2.0);
   double z = 150.0;
 
   void* stm = NULL;
-  AUTDPointSTM(&stm);
+  AUTDSoftwareSTM(&stm);
 
   const int32_t point_num = 200;
   for (int32_t i = 0; i < point_num; i++) {
     const double radius = 30.0;
     const double theta = 2.0 * M_PI * (double)i / (double)point_num;
-    AUTDPointSTMAdd(stm, x + radius * cos(theta), y + radius * sin(theta), z, 0);
+    void* g = NULL;
+    AUTDGainFocus(&g, x + radius * cos(theta), y + radius * sin(theta), z, 1.0);
+    AUTDSoftwareSTMAdd(stm, g);
   }
 
-  const double actual_freq = AUTDSTMSetFrequency(stm, 1.0);
+  const double actual_freq = AUTDSoftwareSTMSetFrequency(stm, 1.0);
   printf("Actual frequency is %lf Hz\n", actual_freq);
 
-  void* m = NULL;
-  AUTDModulationStatic(&m, 1.0);
+  void* handle = NULL;
+  AUTDSoftwareSTMStart(&handle, stm, autd);
 
-  AUTDSend(autd, m, stm);
+  printf("press any key to stop stm...");
+  (void)getchar();
 
-  AUTDDeleteSTM(stm);
-  AUTDDeleteModulation(m);
+  AUTDSoftwareSTMFinish(&autd, handle);
+
+  AUTDDeleteSoftwareSTM(stm);
 
   return autd;
 }
