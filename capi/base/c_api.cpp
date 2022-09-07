@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/08/2022
+// Last Modified: 07/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -423,4 +423,33 @@ void AUTDSetMode(void* const handle, const uint8_t mode) {
     default:
       break;
   }
+}
+
+void AUTDSoftwareSTM(void** out) { *out = new autd3::SoftwareSTM; }
+void AUTDSoftwareSTMSetStrategy(void* stm, const uint8_t strategy) {
+  static_cast<autd3::SoftwareSTM*>(stm)->timer_strategy =
+      autd3::SoftwareSTM::TimerStrategy(static_cast<autd3::SoftwareSTM::TimerStrategy::VALUE>(strategy));
+}
+EXPORT_AUTD void AUTDSoftwareSTMAdd(void* stm, void* gain) {
+  static_cast<autd3::SoftwareSTM*>(stm)->add(std::shared_ptr<autd3::core::Gain>(static_cast<autd3::core::Gain*>(gain)));
+}
+EXPORT_AUTD void AUTDSoftwareSTMStart(void** handle, void* stm, void* cnt) {
+  *handle = new autd3::SoftwareSTM::SoftwareSTMThreadHandle(static_cast<autd3::SoftwareSTM*>(stm)->start(std::move(*static_cast<Controller*>(cnt))));
+}
+EXPORT_AUTD void AUTDSoftwareSTMFinish(void** cnt, void* handle) {
+  auto* h = static_cast<autd3::SoftwareSTM::SoftwareSTMThreadHandle*>(handle);
+  *cnt = new Controller(h->finish());
+  delete h;
+}
+EXPORT_AUTD double AUTDSoftwareSTMSetFrequency(void* stm, const double freq) { return static_cast<autd3::SoftwareSTM*>(stm)->set_frequency(freq); }
+EXPORT_AUTD double AUTDSoftwareSTMFrequency(const void* stm) { return static_cast<const autd3::SoftwareSTM*>(stm)->frequency(); }
+EXPORT_AUTD uint64_t AUTDSoftwareSTMPeriod(const void* stm) { return static_cast<const autd3::SoftwareSTM*>(stm)->period(); }
+EXPORT_AUTD double AUTDSoftwareSTMSamplingFrequency(const void* stm) { return static_cast<const autd3::SoftwareSTM*>(stm)->sampling_frequency(); }
+EXPORT_AUTD uint64_t AUTDSoftwareSTMSamplingPeriod(const void* stm) { return static_cast<const autd3::SoftwareSTM*>(stm)->sampling_period_ns(); }
+EXPORT_AUTD void AUTDSoftwareSTMSetSamplingPeriod(void* stm, const uint64_t period) {
+  static_cast<autd3::SoftwareSTM*>(stm)->sampling_period_ns() = period;
+}
+EXPORT_AUTD void AUTDDeleteSoftwareSTM(const void* stm) {
+  const auto* const stm_ = static_cast<const autd3::SoftwareSTM*>(stm);
+  delete stm_;
 }
