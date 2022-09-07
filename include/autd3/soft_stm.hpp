@@ -11,6 +11,10 @@
 
 #pragma once
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "autd3/controller.hpp"
 #include "autd3/core/utils.hpp"
 
@@ -115,7 +119,7 @@ class SoftSTM {
     size_t _trials;
   };
 
-  SoftSTM() noexcept : _sample_period_ns(0), timer_strategy(TimerStrategy::NONE) {}
+  SoftSTM() noexcept : timer_strategy(TimerStrategy::NONE), _sample_period_ns(0) {}
   ~SoftSTM() = default;
   SoftSTM(const SoftSTM& v) = default;
   SoftSTM& operator=(const SoftSTM& obj) = default;
