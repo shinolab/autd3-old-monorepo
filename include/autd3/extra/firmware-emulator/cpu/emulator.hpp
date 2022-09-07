@@ -3,13 +3,19 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/08/2022
+// Last Modified: 07/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
+
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#pragma GCC diagnostic ignored "-Wuninitialized"
+#endif
 
 #include <algorithm>
 
@@ -352,3 +358,7 @@ class CPU {
 };
 
 };  // namespace autd3::extra::firmware_emulator::cpu
+
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic pop
+#endif
