@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/08/2022
+// Last Modified: 07/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,6 +27,7 @@
 #include "tests/gain_stm.hpp"
 #include "tests/group.hpp"
 #include "tests/plane.hpp"
+#include "tests/soft_stm.hpp"
 #ifdef BUILD_GAIN_HOLO
 #include "tests/holo.hpp"
 #endif
@@ -46,6 +47,7 @@ inline int run(autd3::Controller autd) {
 #endif
       std::pair(F{point_stm}, "PointSTM Test"),
       std::pair(F{gain_stm}, "GainSTM Test"),
+      std::pair(F{soft_stm}, "Software STM Test"),
 #ifdef BUILD_GAIN_HOLO
       std::pair(F{holo_test}, "Holo Test"),
 #endif
