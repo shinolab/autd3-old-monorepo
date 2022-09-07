@@ -74,7 +74,7 @@ void SDP::calc(const core::Geometry& geometry) {
 
   _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, -ONE, b, pseudo_inv_b, ONE, mm);
 
-  MatrixXc tmp = VectorXc::Zero(m, m);
+  MatrixXc tmp = MatrixXc::Zero(m, m);
   _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, p, mm, ZERO, tmp);
   _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, tmp, p, ZERO, mm);
 
