@@ -12,6 +12,8 @@
 #pragma once
 
 #include <autd3.hpp>
+#include <utility>
+#include <vector>
 
 inline void soft_stm(autd3::Controller& autd) {
   auto config = autd3::SilencerConfig::none();
@@ -33,7 +35,7 @@ inline void soft_stm(autd3::Controller& autd) {
     stm.add(g);
   });
 
-  const auto actual_freq = stm.set_frequency(5);
+  const auto actual_freq = stm.set_frequency(1);
   std::cout << "Actual frequency is " << actual_freq << " Hz\n";
 
   auto handle = stm.start(std::move(autd));
