@@ -23,7 +23,7 @@ namespace autd3 {
 /**
  * @brief Software Spatio-Temporal Modulation Controller
  */
-class SoftSTM {
+class SoftwareSTM {
  public:
 #pragma warning(push)
 #pragma warning(disable : 26812)
@@ -63,14 +63,14 @@ class SoftSTM {
   };
 #pragma warning(pop)
 
-  struct SoftSTMThreadHandle {
-    friend class SoftSTM;
+  struct SoftwareSTMThreadHandle {
+    friend class SoftwareSTM;
 
-    ~SoftSTMThreadHandle() = default;
-    SoftSTMThreadHandle(const SoftSTMThreadHandle& v) = delete;
-    SoftSTMThreadHandle& operator=(const SoftSTMThreadHandle& obj) = delete;
-    SoftSTMThreadHandle(SoftSTMThreadHandle&& obj) = default;
-    SoftSTMThreadHandle& operator=(SoftSTMThreadHandle&& obj) = default;
+    ~SoftwareSTMThreadHandle() = default;
+    SoftwareSTMThreadHandle(const SoftwareSTMThreadHandle& v) = delete;
+    SoftwareSTMThreadHandle& operator=(const SoftwareSTMThreadHandle& obj) = delete;
+    SoftwareSTMThreadHandle(SoftwareSTMThreadHandle&& obj) = default;
+    SoftwareSTMThreadHandle& operator=(SoftwareSTMThreadHandle&& obj) = default;
 
     Controller finish() {
       if (!_run) throw std::runtime_error("STM has been already finished.");
@@ -81,7 +81,8 @@ class SoftSTM {
     }
 
    private:
-    SoftSTMThreadHandle(Controller cnt, const std::vector<std::shared_ptr<core::Gain>>& bodies, const uint64_t period, const TimerStrategy strategy)
+    SoftwareSTMThreadHandle(Controller cnt, const std::vector<std::shared_ptr<core::Gain>>& bodies, const uint64_t period,
+                            const TimerStrategy strategy)
         : _cnt(std::move(cnt)), _trials(_cnt.check_trials) {
       _run = true;
       const auto interval = std::chrono::nanoseconds(period);
@@ -119,12 +120,12 @@ class SoftSTM {
     size_t _trials;
   };
 
-  SoftSTM() noexcept : timer_strategy(TimerStrategy::NONE), _sample_period_ns(0) {}
-  ~SoftSTM() = default;
-  SoftSTM(const SoftSTM& v) = default;
-  SoftSTM& operator=(const SoftSTM& obj) = default;
-  SoftSTM(SoftSTM&& obj) = default;
-  SoftSTM& operator=(SoftSTM&& obj) = default;
+  SoftwareSTM() noexcept : timer_strategy(TimerStrategy::NONE), _sample_period_ns(0) {}
+  ~SoftwareSTM() = default;
+  SoftwareSTM(const SoftwareSTM& v) = default;
+  SoftwareSTM& operator=(const SoftwareSTM& obj) = default;
+  SoftwareSTM(SoftwareSTM&& obj) = default;
+  SoftwareSTM& operator=(SoftwareSTM&& obj) = default;
 
   [[nodiscard]] size_t size() const { return _bodies.size(); }
 
@@ -150,9 +151,20 @@ class SoftSTM {
     add_impl(std::forward<T>(b));
   }
 
-  SoftSTMThreadHandle start(Controller cnt) {
+  /**
+   * @brief Add data to send
+   * @param[in] b data
+   */
+  void add(std::shared_ptr<core::Gain> b) { _bodies.emplace_back(std::move(b)); }
+
+  /**
+   * @brief Start STM
+   * @param[in] cnt autd3::Controller
+   * @details Never use cnt after calling this function.
+   */
+  SoftwareSTMThreadHandle start(Controller cnt) {
     if (size() == 0) throw std::runtime_error("No data was added.");
-    return SoftSTMThreadHandle(std::move(cnt), std::move(_bodies), _sample_period_ns, timer_strategy);
+    return SoftwareSTMThreadHandle(std::move(cnt), std::move(_bodies), _sample_period_ns, timer_strategy);
   }
 
   /**

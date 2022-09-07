@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/06/2022
+// Last Modified: 07/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,6 +28,7 @@
 #include "examples/group.h"
 #include "examples/plane.h"
 #include "examples/point_stm.h"
+#include "examples/soft_stm.h"
 #ifdef BUILD_GAIN_HOLO
 #include "examples/holo.h"
 #endif
@@ -41,7 +42,7 @@
 #include "examples/api_debug.h"
 #endif
 
-typedef void (*TestFunction)(void*);
+typedef void* (*TestFunction)(void*);
 
 typedef struct {
   const char* name;
@@ -49,7 +50,7 @@ typedef struct {
 } Test;
 
 int run(void* autd) {
-  int32_t example_size = 6;
+  int32_t example_size = 7;
 #ifdef BUILD_GAIN_HOLO
   example_size++;
 #endif
@@ -80,6 +81,8 @@ int run(void* autd) {
   examples[idx++].func = point_stm;
   examples[idx].name = "GainSTM";
   examples[idx++].func = gain_stm;
+  examples[idx].name = "SoftwareSTM";
+  examples[idx++].func = soft_stm;
   if (AUTDNumDevices(autd) == 2) {
     examples[idx].name = "Grouped";
     examples[idx++].func = group;
@@ -123,7 +126,7 @@ int run(void* autd) {
       break;
     }
 
-    examples[i].func(autd);
+    autd = examples[i].func(autd);
 
     printf("press any key to finish...");
     (void)getchar();
