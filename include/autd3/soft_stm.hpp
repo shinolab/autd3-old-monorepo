@@ -12,6 +12,7 @@
 #pragma once
 
 #include "autd3/controller.hpp"
+#include "autd3/core/utils.hpp"
 
 namespace autd3 {
 
@@ -20,6 +21,44 @@ namespace autd3 {
  */
 class SoftSTM {
  public:
+#pragma warning(push)
+#pragma warning(disable : 26812)
+  class TimerStrategy final {
+   public:
+    enum VALUE : uint8_t {
+      NONE = 0,
+      BUSY_WAIT = 1 << 1,
+    };
+
+    TimerStrategy() = default;
+    explicit TimerStrategy(const VALUE value) noexcept : _value(value) {}
+
+    ~TimerStrategy() = default;
+    TimerStrategy(const TimerStrategy& v) noexcept = default;
+    TimerStrategy& operator=(const TimerStrategy& obj) = default;
+    TimerStrategy& operator=(const VALUE v) noexcept {
+      _value = v;
+      return *this;
+    }
+    TimerStrategy(TimerStrategy&& obj) = default;
+    TimerStrategy& operator=(TimerStrategy&& obj) = default;
+
+    constexpr bool operator==(const TimerStrategy a) const { return _value == a._value; }
+    constexpr bool operator!=(const TimerStrategy a) const { return _value != a._value; }
+    constexpr bool operator==(const VALUE a) const { return _value == a; }
+    constexpr bool operator!=(const VALUE a) const { return _value != a; }
+
+    void set(const VALUE v) noexcept { _value = static_cast<VALUE>(_value | v); }
+    void remove(const VALUE v) noexcept { _value = static_cast<VALUE>(_value & ~v); }
+    bool contains(const VALUE v) const noexcept { return (_value & v) == v; }
+
+    [[nodiscard]] VALUE value() const noexcept { return _value; }
+
+   private:
+    VALUE _value;
+  };
+#pragma warning(pop)
+
   struct SoftSTMThreadHandle {
     friend class SoftSTM;
 
@@ -38,22 +77,36 @@ class SoftSTM {
     }
 
    private:
-    SoftSTMThreadHandle(Controller cnt, const std::vector<std::shared_ptr<core::Gain>>& bodies, const uint64_t period)
+    SoftSTMThreadHandle(Controller cnt, const std::vector<std::shared_ptr<core::Gain>>& bodies, const uint64_t period, const TimerStrategy strategy)
         : _cnt(std::move(cnt)), _trials(_cnt.check_trials) {
       _run = true;
       const auto interval = std::chrono::nanoseconds(period);
       _cnt.check_trials = 0;
-      _th = std::thread([this, interval, bodies]() {
-        size_t i = 0;
-        auto next = std::chrono::high_resolution_clock::now();
-        while (_run) {
-          next += interval;
-          bodies[i]->build(this->_cnt.geometry());
-          std::this_thread::sleep_until(next);
-          this->_cnt.send(*bodies[i]);
-          i = (i + 1) % bodies.size();
-        }
-      });
+      if (strategy.contains(TimerStrategy::BUSY_WAIT))
+        _th = std::thread([this, interval, bodies]() {
+          size_t i = 0;
+          auto next = std::chrono::high_resolution_clock::now();
+          while (_run) {
+            next += interval;
+            bodies[i]->build(this->_cnt.geometry());
+            for (;; core::spin_loop_hint())
+              if (std::chrono::high_resolution_clock::now() >= next) break;
+            this->_cnt.send(*bodies[i]);
+            i = (i + 1) % bodies.size();
+          }
+        });
+      else
+        _th = std::thread([this, interval, bodies]() {
+          size_t i = 0;
+          auto next = std::chrono::high_resolution_clock::now();
+          while (_run) {
+            next += interval;
+            bodies[i]->build(this->_cnt.geometry());
+            std::this_thread::sleep_until(next);
+            this->_cnt.send(*bodies[i]);
+            i = (i + 1) % bodies.size();
+          }
+        });
     }
 
     bool _run;
@@ -62,7 +115,7 @@ class SoftSTM {
     size_t _trials;
   };
 
-  SoftSTM() noexcept : _sample_period_ns(0) {}
+  SoftSTM() noexcept : _sample_period_ns(0), timer_strategy(TimerStrategy::NONE) {}
   ~SoftSTM() = default;
   SoftSTM(const SoftSTM& v) = default;
   SoftSTM& operator=(const SoftSTM& obj) = default;
@@ -95,7 +148,7 @@ class SoftSTM {
 
   SoftSTMThreadHandle start(Controller cnt) {
     if (size() == 0) throw std::runtime_error("No data was added.");
-    return SoftSTMThreadHandle(std::move(cnt), std::move(_bodies), _sample_period_ns);
+    return SoftSTMThreadHandle(std::move(cnt), std::move(_bodies), _sample_period_ns, timer_strategy);
   }
 
   /**
@@ -122,6 +175,8 @@ class SoftSTM {
    * @brief Sampling period in ns
    */
   uint64_t& sampling_period_ns() noexcept { return _sample_period_ns; }
+
+  TimerStrategy timer_strategy;
 
  private:
   template <typename T>
