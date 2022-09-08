@@ -27,10 +27,6 @@
 
 このModulationは削除された.
 
-### ArrayFire Backend
-
-このBackendは削除された.
-
 ## 変更されたAPI
 
 ### GainSTM最大パターン長
