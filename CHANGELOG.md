@@ -5,6 +5,7 @@
 - Add `extra::firmware-emulator`
 - Add `SoftwareSTM`
 - Add `gain::TransducerTest`
+- Add `modulation::LPF`
 - Add `ArrayFireBackend` (experimental)
 
 # 2.3.1

@@ -19,10 +19,6 @@
 
 この機能は削除された.
 
-### LPF Modulation
-
-このModulationは削除された.
-
 ## 変更されたAPI
 
 ### GainSTM最大パターン長
