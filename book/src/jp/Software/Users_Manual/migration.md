@@ -19,10 +19,6 @@
 
 この機能は削除された.
 
-### TransducerTest Gain
-
-このGainは削除された.
-
 ### LPF Modulation
 
 このModulationは削除された.
