@@ -4,6 +4,7 @@
 - Add `link::Bundle` and `link::Debug`
 - Add `extra::firmware-emulator`
 - Add `SoftwareSTM`
+- Add `gain::TransducerTest`
 - Add `ArrayFireBackend` (experimental)
 
 # 2.3.1
