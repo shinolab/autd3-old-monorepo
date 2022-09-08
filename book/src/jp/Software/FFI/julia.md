@@ -28,27 +28,10 @@ function on_lost(msg::Cstring)
     exit(-1)
 end
 
-function get_adapter()
-    adapters = enumerate_adapters()
-    for (i, adapter) in enumerate(adapters)
-        @printf("[%d]: %s, %s\n", i, adapter[1], adapter[2])
-    end
-
-    print("Input number: ")
-    idx = tryparse(Int64, readline())
-    if idx === nothing || idx > length(adapters) || idx < 1
-        println("choose correct number!")
-        return ""
-    end
-
-    adapters[idx][2]
-end
-
 const cnt = Controller()
 cnt.add_device(SVector(0.0, 0.0, 0.0), SVector(0.0, 0.0, 0.0))
 
-const ifname = get_adapter()
-const link = SOEM(ifname, cnt.num_devices(), on_lost=on_lost)
+const link = SOEM(on_lost=on_lost, high_precision=true)
 
 if !cnt.open(link)
     println(get_last_error())
@@ -75,4 +58,4 @@ cnt.close()
 
 より詳細なサンプルは[AUTD3.jlのexample](https://github.com/shinolab/AUTD3.jl/tree/master/example)を参照されたい.
 
-その他, 質問があれば[GitHubのissue](https://github.com/shinolab/AUTD3.jl/issues)にてお願いします.
+その他, 質問があれば[GitHubのissue](https://github.com/shinolab/AUTD3.jl/issues)に送られたい.

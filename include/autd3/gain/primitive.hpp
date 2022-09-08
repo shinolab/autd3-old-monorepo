@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 08/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -35,8 +35,8 @@ class Null final : public core::Gain {
   }
 
   ~Null() override = default;
-  Null(const Null& v) noexcept = delete;
-  Null& operator=(const Null& obj) = delete;
+  Null(const Null& v) noexcept = default;
+  Null& operator=(const Null& obj) = default;
   Null(Null&& obj) = default;
   Null& operator=(Null&& obj) = default;
 };
@@ -64,8 +64,8 @@ class Focus final : public core::Gain {
   }
 
   ~Focus() override = default;
-  Focus(const Focus& v) noexcept = delete;
-  Focus& operator=(const Focus& obj) = delete;
+  Focus(const Focus& v) noexcept = default;
+  Focus& operator=(const Focus& obj) = default;
   Focus(Focus&& obj) = default;
   Focus& operator=(Focus&& obj) = default;
 
@@ -108,8 +108,8 @@ class BesselBeam final : public core::Gain {
   }
 
   ~BesselBeam() override = default;
-  BesselBeam(const BesselBeam& v) noexcept = delete;
-  BesselBeam& operator=(const BesselBeam& obj) = delete;
+  BesselBeam(const BesselBeam& v) noexcept = default;
+  BesselBeam& operator=(const BesselBeam& obj) = default;
   BesselBeam(BesselBeam&& obj) = default;
   BesselBeam& operator=(BesselBeam&& obj) = default;
 
@@ -143,8 +143,8 @@ class PlaneWave final : public core::Gain {
   }
 
   ~PlaneWave() override = default;
-  PlaneWave(const PlaneWave& v) noexcept = delete;
-  PlaneWave& operator=(const PlaneWave& obj) = delete;
+  PlaneWave(const PlaneWave& v) noexcept = default;
+  PlaneWave& operator=(const PlaneWave& obj) = default;
   PlaneWave(PlaneWave&& obj) = default;
   PlaneWave& operator=(PlaneWave&& obj) = default;
 
@@ -177,14 +177,55 @@ class Grouped final : public core::Gain {
     _buf.resize(geometry.num_transducers(), driver::Drive{0, 0, 0});
   }
   ~Grouped() override = default;
-  Grouped(const Grouped& v) noexcept = delete;
-  Grouped& operator=(const Grouped& obj) = delete;
+  Grouped(const Grouped& v) noexcept = default;
+  Grouped& operator=(const Grouped& obj) = default;
   Grouped(Grouped&& obj) = default;
-  Grouped& operator=(Grouped&& obj) = delete;
+  Grouped& operator=(Grouped&& obj) = default;
 
  private:
   std::vector<driver::Drive> _buf;
   const core::Geometry& _geometry;
+};
+
+/**
+ * @brief Gain to drive a tranducer
+ */
+class TransducerTest final : public core::Gain {
+ public:
+  /**
+   * @param[in] dev_idx device index
+   * @param[in] tr_idx local transducer index
+   * @param[in] amp amplitude (from 0.0 to 1.0)
+   * @param[in] phase phase in radian
+   */
+  explicit TransducerTest(const size_t dev_idx, const size_t tr_idx, const double amp, const double phase) noexcept
+      : _dev_idx(dev_idx), _tr_idx(tr_idx), _amp(amp), _phase(phase) {}
+
+  /**
+   * @param[in] tr_idx global transducer index
+   * @param[in] amp amplitude (from 0.0 to 1.0)
+   * @param[in] phase phase in radian
+   */
+  explicit TransducerTest(const size_t tr_idx, const double amp, const double phase) noexcept
+      : TransducerTest(tr_idx / autd3::driver::NUM_TRANS_IN_UNIT, tr_idx % autd3::driver::NUM_TRANS_IN_UNIT, amp, phase) {}
+
+  void calc(const core::Geometry& geometry) override {
+    const auto id = geometry[_dev_idx][_tr_idx].id();
+    _drives[id].amp = _amp;
+    _drives[id].phase = _phase / (2.0 * autd3::driver::pi);
+  }
+
+  ~TransducerTest() override = default;
+  TransducerTest(const TransducerTest& v) noexcept = default;
+  TransducerTest& operator=(const TransducerTest& obj) = default;
+  TransducerTest(TransducerTest&& obj) = default;
+  TransducerTest& operator=(TransducerTest&& obj) = default;
+
+ private:
+  size_t _dev_idx;
+  size_t _tr_idx;
+  double _amp;
+  double _phase;
 };
 
 }  // namespace autd3::gain

@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/08/2022
+// Last Modified: 26/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,8 +13,10 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <iterator>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "autd3/driver/hardware.hpp"
 #include "autd3/driver/utils.hpp"
@@ -71,11 +73,33 @@ class FPGAControlFlags final {
 
   void remove(const VALUE v) noexcept { _value = static_cast<VALUE>(_value & ~v); }
 
+  bool contains(const VALUE v) const noexcept { return (_value & v) == v; }
+
   [[nodiscard]] VALUE value() const noexcept { return _value; }
+
+  [[nodiscard]] std::string to_string() const noexcept {
+    std::vector<std::string> flags;
+    if ((_value & LEGACY_MODE) == LEGACY_MODE) flags.emplace_back("LEGACY_MODE");
+    if ((_value & FORCE_FAN) == FORCE_FAN) flags.emplace_back("FORCE_FAN");
+    if ((_value & STM_MODE) == STM_MODE) flags.emplace_back("STM_MODE");
+    if ((_value & STM_GAIN_MODE) == STM_GAIN_MODE) flags.emplace_back("STM_GAIN_MODE");
+    if ((_value & READS_FPGA_INFO) == READS_FPGA_INFO) flags.emplace_back("READS_FPGA_INFO");
+    if (flags.size() == 0) flags.emplace_back("NONE");
+
+    constexpr auto delim = " | ";
+    std::ostringstream os;
+    std::copy(flags.begin(), flags.end(), std::ostream_iterator<std::string>(os, delim));
+    std::string s = os.str();
+    s.erase(s.size() - std::char_traits<char>::length(delim));
+    return s;
+  }
 
  private:
   VALUE _value;
 };
+
+inline std::ostream& operator<<(std::ostream& os, const FPGAControlFlags& flag) { return os << flag.to_string(); }
+
 #pragma warning(pop)
 
 struct Drive {

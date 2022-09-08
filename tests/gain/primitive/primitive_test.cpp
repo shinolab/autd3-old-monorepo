@@ -3,7 +3,7 @@
 // Created Date: 24/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 08/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@
 #pragma warning(pop)
 #endif
 
-#include <autd3/core/utils.hpp>
+#include <autd3/core/acoustics.hpp>
 
 #include "autd3/core/geometry.hpp"
 #include "autd3/gain/primitive.hpp"

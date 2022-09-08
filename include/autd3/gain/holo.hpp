@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/08/2022
+// Last Modified: 07/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -66,8 +66,8 @@ class Holo : public core::Gain {
  public:
   explicit Holo(BackendPtr backend, const AmplitudeConstraint constraint = Normalize()) : constraint(constraint), _backend(std::move(backend)) {}
   ~Holo() override = default;
-  Holo(const Holo& v) noexcept = delete;
-  Holo& operator=(const Holo& obj) = delete;
+  Holo(const Holo& v) noexcept = default;
+  Holo& operator=(const Holo& obj) = default;
   Holo(Holo&& obj) = default;
   Holo& operator=(Holo&& obj) = default;
 

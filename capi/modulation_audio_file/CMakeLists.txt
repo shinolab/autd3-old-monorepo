@@ -20,8 +20,5 @@ set_target_properties(autd3capi-modulation-audio-file
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/$<CONFIG>/"
 )
 
-if(WIN32)
-  set_target_properties(autd3capi-modulation-audio-file PROPERTIES FOLDER "capi/modulation")
-else()
-  set_target_properties(autd3capi-modulation-audio-file PROPERTIES POSITION_INDEPENDENT_CODE ON)
-endif()
+set_target_properties(autd3capi-modulation-audio-file PROPERTIES FOLDER "capi/modulation")
+set_target_properties(autd3capi-modulation-audio-file PROPERTIES POSITION_INDEPENDENT_CODE ON)
