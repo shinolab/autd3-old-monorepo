@@ -19,27 +19,12 @@ use_backend_cuda = false;
 try
     init_autd(use_link_soem, use_backend_cuda);
 
-    adapters = SOEM.enumerate_adapters();
-
-    adapters_list = strings(length(adapters));
-
-    for i = 1:length(adapters)
-        s = sprintf('[%d]: %s, %s', i, adapters(i, 1), adapters(i, 2));
-        adapters_list(i) = s;
-    end
-
-    [i, ok] = listdlg('ListString', adapters_list, 'PromptString', 'Select one interface', 'SelectionMode', 'single', 'ListSize', [600, 600]);
-
-    if ~ok || ~isnumeric(i) || i > length(adapters)
-        throw(MException('MATLAB:BadIndex', 'Index out of range'));
-    end
-
-    ifname = adapters(i, 2);
-    l = SOEM(ifname, 1);
-    link = l.build();
-
     cnt = Controller();
     cnt.add_device([0 0 0], [0 0 0]);
+
+    l = SOEM();
+    l.high_precision(true);
+    link = l.build();
 
     if ~cnt.open(link)
         disp(Controller.last_error());
@@ -93,4 +78,4 @@ deinit_autd(use_link_soem, use_backend_cuda);
 
 より詳細なサンプルは[autd3-matlabのexample](https://github.com/shinolab/autd3-matlab/tree/master/example)を参照されたい.
 
-その他, 質問があれば[GitHubのissue](https://github.com/shinolab/autd3-matlab/issues)にてお願いします.
+その他, 質問があれば[GitHubのissue](https://github.com/shinolab/autd3-matlab/issues)に送られたい.

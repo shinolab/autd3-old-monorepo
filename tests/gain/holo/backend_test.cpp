@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 08/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -75,7 +75,14 @@ class BackendTest : public testing::Test {
 #define BLAS_BACKEND_TYPE
 #endif
 
-typedef Types<EIGEN3_BACKEND_TYPE CUDA_BACKEND_TYPE BLAS_BACKEND_TYPE> Implementations;
+#ifdef TEST_BACKEND_ARRAYFIRE
+#include "autd3/gain/backend_arrayfire.hpp"
+#define ARRAYFIRE_BACKEND_TYPE , autd3::gain::holo::ArrayFireBackend
+#else
+#define ARRAYFIRE_BACKEND_TYPE
+#endif
+
+typedef Types<EIGEN3_BACKEND_TYPE CUDA_BACKEND_TYPE BLAS_BACKEND_TYPE ARRAYFIRE_BACKEND_TYPE> Implementations;
 
 TYPED_TEST_SUITE(BackendTest, Implementations);
 
@@ -276,7 +283,7 @@ TYPED_TEST(BackendTest, create_diagonal) {
 
   VectorXc a = VectorXc::Random(m);
 
-  MatrixXc b(m, n);
+  MatrixXc b = MatrixXc::Zero(m, n);
   this->backend->create_diagonal(a, b);
   this->backend->to_host(b);
 

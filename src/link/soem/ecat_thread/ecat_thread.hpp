@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/08/2022
+// Last Modified: 07/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,7 +21,6 @@ extern "C" {
 #include "./ethercat.h"
 }
 #include "error_handler.hpp"
-#include "utils.hpp"
 
 #if WIN32
 #include "win.hpp"
@@ -34,6 +33,14 @@ extern "C" {
 #include "spdlog/spdlog.h"
 
 namespace autd3::link {
+
+inline int64_t ec_sync(const int64_t reftime, const int64_t cycletime, int64_t* integral) {
+  auto delta = (reftime - 50000) % cycletime;
+  if (delta > (cycletime / 2)) delta -= cycletime;
+  if (delta > 0) *integral += 1;
+  if (delta < 0) *integral -= 1;
+  return -(delta / 100) - (*integral / 20);
+}
 
 inline void print_stats(const std::string& header, std::vector<int64_t> stats) {
   int64_t min = std::numeric_limits<int64_t>::max();
@@ -78,15 +85,17 @@ void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wk
 
     W(ts);
 
-    auto now = std::chrono::high_resolution_clock::now();
-    const auto itvl = std::chrono::duration_cast<std::chrono::nanoseconds>(now - start).count();
-    stats.emplace_back(itvl);
-    if (stats.size() == STATS_SIZE) {
-      print_stats("EC send interval", stats);
-      stats.clear();
-      stats.reserve(STATS_SIZE);
+    if (spdlog::get_level() <= spdlog::level::debug) {
+      auto now = std::chrono::high_resolution_clock::now();
+      const auto itvl = std::chrono::duration_cast<std::chrono::nanoseconds>(now - start).count();
+      stats.emplace_back(itvl);
+      if (stats.size() == STATS_SIZE) {
+        print_stats("EC send interval", stats);
+        stats.clear();
+        stats.reserve(STATS_SIZE);
+      }
+      start = now;
     }
-    start = now;
 
     if (ec_slave[0].state != EC_STATE_OPERATIONAL) {
       spdlog::warn("EC_STATE changed: {}", ec_slave[0].state);
