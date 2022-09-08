@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/08/2022
+// Last Modified: 26/08/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,7 +13,6 @@
 
 #include <memory>
 
-#include "autd3/core/geometry.hpp"
 #include "autd3/core/link.hpp"
 
 namespace autd3::link {
@@ -25,7 +24,6 @@ class Emulator {
  public:
   /**
    * @brief Constructor
-   * @param geometry geometry
    */
   Emulator() : _port(50632) {}
   ~Emulator() = default;

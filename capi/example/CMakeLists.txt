@@ -19,8 +19,7 @@ function(add_autd_dependencies target)
   elseif(APPLE)
     target_link_libraries(${target} PRIVATE pcap)
   else()
-    target_link_libraries(${target} PRIVATE rt)
-    target_link_libraries(${target} PRIVATE -static-libgcc -static-libstdc++)
+    target_link_libraries(${target} PRIVATE rt m)
   endif()
   add_custom_command(TARGET ${target} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
@@ -56,9 +55,7 @@ if(BUILD_LINK_SOEM)
     COMMAND ${CMAKE_COMMAND} -E copy
     ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/${prefix}autd3capi-link-soem.${extention}
     ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>)
-  if(WIN32)
-    set_target_properties(c_example_soem PROPERTIES FOLDER "capi/example")
-  endif()
+  set_target_properties(c_example_soem PROPERTIES FOLDER "capi/example")
 endif()
 
 if(BUILD_LINK_EMULATOR)
@@ -70,9 +67,7 @@ if(BUILD_LINK_EMULATOR)
     COMMAND ${CMAKE_COMMAND} -E copy
     ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/${prefix}autd3capi-link-emulator.${extention}
     ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>)
-  if(WIN32)
-    set_target_properties(c_example_emulator PROPERTIES FOLDER "capi/example")
-  endif()
+  set_target_properties(c_example_emulator PROPERTIES FOLDER "capi/example")
 endif()
 
 if(WIN32)
@@ -85,9 +80,7 @@ if(WIN32)
       COMMAND ${CMAKE_COMMAND} -E copy
       ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/${prefix}autd3capi-link-twincat.${extention}
       ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>)
-    if(WIN32)
-      set_target_properties(c_example_twincat PROPERTIES FOLDER "capi/example")
-    endif()
+    set_target_properties(c_example_twincat PROPERTIES FOLDER "capi/example")
   endif()
 endif()
 
@@ -100,7 +93,5 @@ if(BUILD_LINK_REMOTE_TWINCAT)
     COMMAND ${CMAKE_COMMAND} -E copy
     ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/${prefix}autd3capi-link-remote-twincat.${extention}
     ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>)
-  if(WIN32)
-    set_target_properties(c_example_remote_twincat PROPERTIES FOLDER "capi/example")
-  endif()
+  set_target_properties(c_example_remote_twincat PROPERTIES FOLDER "capi/example")
 endif()

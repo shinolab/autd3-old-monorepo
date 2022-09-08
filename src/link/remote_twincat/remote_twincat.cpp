@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/08/2022
+// Last Modified: 07/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -57,11 +57,62 @@ class RemoteTwinCATImpl final : public core::Link {
   RemoteTwinCATImpl(RemoteTwinCATImpl&& obj) = delete;
   RemoteTwinCATImpl& operator=(RemoteTwinCATImpl&& obj) = delete;
 
-  void open(const core::Geometry&) override;
-  void close() override;
-  bool send(const driver::TxDatagram& tx) override;
-  bool receive(driver::RxDatagram& rx) override;
-  bool is_open() override;
+  void open(const core::Geometry&) override {
+    const auto octets = split(_remote_ams_net_id, '.');
+    if (octets.size() != 6) throw std::runtime_error("Ams net id must have 6 octets");
+
+    if (_ipv4_addr.empty()) {
+      for (auto i = 0; i < 3; i++) _ipv4_addr += octets[i] + ".";
+      _ipv4_addr += octets[3];
+    }
+
+    if (!_local_ams_net_id.empty()) {
+      const auto local_octets = split(_local_ams_net_id, '.');
+      if (local_octets.size() != 6) throw std::runtime_error("Ams net id must have 6 octets");
+      bhf::ads::SetLocalAddress({static_cast<uint8_t>(std::stoi(local_octets[0])), static_cast<uint8_t>(std::stoi(local_octets[1])),
+                                 static_cast<uint8_t>(std::stoi(local_octets[2])), static_cast<uint8_t>(std::stoi(local_octets[3])),
+                                 static_cast<uint8_t>(std::stoi(local_octets[4])), static_cast<uint8_t>(std::stoi(local_octets[5]))});
+    }
+
+    this->_net_id = {static_cast<uint8_t>(std::stoi(octets[0])), static_cast<uint8_t>(std::stoi(octets[1])),
+                     static_cast<uint8_t>(std::stoi(octets[2])), static_cast<uint8_t>(std::stoi(octets[3])),
+                     static_cast<uint8_t>(std::stoi(octets[4])), static_cast<uint8_t>(std::stoi(octets[5]))};
+
+    if (AdsAddRoute(this->_net_id, _ipv4_addr.c_str()) != 0) throw std::runtime_error("Could not connect to remote");
+
+    this->_port = AdsPortOpenEx();
+
+    if (this->_port == 0) throw std::runtime_error("Failed to open a new ADS port");
+  }
+  void close() override {
+    if (AdsPortCloseEx(this->_port) != 0) throw std::runtime_error("Failed to close");
+    this->_port = 0;
+  }
+  bool send(const driver::TxDatagram& tx) override {
+    const AmsAddr p_addr = {this->_net_id, PORT};
+    const auto ret =
+        AdsSyncWriteReqEx(this->_port, &p_addr, INDEX_GROUP, INDEX_OFFSET_BASE, static_cast<uint32_t>(tx.effective_size()), tx.data().data());
+    if (ret == 0) return true;
+
+    std::stringstream ss;
+    if (ret == ADSERR_DEVICE_INVALIDSIZE)
+      ss << "The number of devices is invalid.";
+    else
+      ss << "Error on sending data: " << std::hex << ret;
+    throw std::runtime_error(ss.str());
+  }
+  bool receive(driver::RxDatagram& rx) override {
+    const AmsAddr p_addr = {this->_net_id, PORT};
+    uint32_t receive_bytes;
+    const auto ret = AdsSyncReadReqEx2(this->_port, &p_addr, INDEX_GROUP, INDEX_OFFSET_BASE_READ,
+                                       static_cast<uint32_t>(rx.messages().size() * sizeof(driver::RxMessage)), rx.messages().data(), &receive_bytes);
+    if (ret == 0) return true;
+
+    std::stringstream ss;
+    ss << "Error on receiving data: " << std::hex << ret;
+    throw std::runtime_error(ss.str());
+  }
+  bool is_open() override { return this->_port > 0; }
 
  private:
   std::string _local_ams_net_id;
@@ -72,66 +123,5 @@ class RemoteTwinCATImpl final : public core::Link {
 };
 
 core::LinkPtr RemoteTwinCAT::build() { return std::make_unique<RemoteTwinCATImpl>(_ipv4_addr, _remote_ams_net_id, _local_ams_net_id); }
-
-void RemoteTwinCATImpl::open(const core::Geometry&) {
-  const auto octets = split(_remote_ams_net_id, '.');
-  if (octets.size() != 6) throw std::runtime_error("Ams net id must have 6 octets");
-
-  if (_ipv4_addr.empty()) {
-    for (auto i = 0; i < 3; i++) _ipv4_addr += octets[i] + ".";
-    _ipv4_addr += octets[3];
-  }
-
-  if (!_local_ams_net_id.empty()) {
-    const auto local_octets = split(_local_ams_net_id, '.');
-    if (local_octets.size() != 6) throw std::runtime_error("Ams net id must have 6 octets");
-    bhf::ads::SetLocalAddress({static_cast<uint8_t>(std::stoi(local_octets[0])), static_cast<uint8_t>(std::stoi(local_octets[1])),
-                               static_cast<uint8_t>(std::stoi(local_octets[2])), static_cast<uint8_t>(std::stoi(local_octets[3])),
-                               static_cast<uint8_t>(std::stoi(local_octets[4])), static_cast<uint8_t>(std::stoi(local_octets[5]))});
-  }
-
-  this->_net_id = {static_cast<uint8_t>(std::stoi(octets[0])), static_cast<uint8_t>(std::stoi(octets[1])),
-                   static_cast<uint8_t>(std::stoi(octets[2])), static_cast<uint8_t>(std::stoi(octets[3])),
-                   static_cast<uint8_t>(std::stoi(octets[4])), static_cast<uint8_t>(std::stoi(octets[5]))};
-
-  if (AdsAddRoute(this->_net_id, _ipv4_addr.c_str()) != 0) throw std::runtime_error("Could not connect to remote");
-
-  this->_port = AdsPortOpenEx();
-
-  if (this->_port == 0) throw std::runtime_error("Failed to open a new ADS port");
-}
-
-void RemoteTwinCATImpl::close() {
-  if (AdsPortCloseEx(this->_port) != 0) throw std::runtime_error("Failed to close");
-  this->_port = 0;
-}
-
-bool RemoteTwinCATImpl::send(const driver::TxDatagram& tx) {
-  const AmsAddr p_addr = {this->_net_id, PORT};
-  const auto ret =
-      AdsSyncWriteReqEx(this->_port, &p_addr, INDEX_GROUP, INDEX_OFFSET_BASE, static_cast<uint32_t>(tx.effective_size()), tx.data().data());
-  if (ret == 0) return true;
-
-  std::stringstream ss;
-  if (ret == ADSERR_DEVICE_INVALIDSIZE)
-    ss << "The number of devices is invalid.";
-  else
-    ss << "Error on sending data: " << std::hex << ret;
-  throw std::runtime_error(ss.str());
-}
-
-bool RemoteTwinCATImpl::receive(driver::RxDatagram& rx) {
-  const AmsAddr p_addr = {this->_net_id, PORT};
-  uint32_t receive_bytes;
-  const auto ret = AdsSyncReadReqEx2(this->_port, &p_addr, INDEX_GROUP, INDEX_OFFSET_BASE_READ,
-                                     static_cast<uint32_t>(rx.messages().size() * sizeof(driver::RxMessage)), rx.messages().data(), &receive_bytes);
-  if (ret == 0) return true;
-
-  std::stringstream ss;
-  ss << "Error on receiving data: " << std::hex << ret;
-  throw std::runtime_error(ss.str());
-}
-
-bool RemoteTwinCATImpl::is_open() { return this->_port > 0; }
 
 }  // namespace autd3::link

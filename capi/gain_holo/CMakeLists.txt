@@ -22,11 +22,8 @@ set_target_properties(autd3capi-gain-holo
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/$<CONFIG>/"
 )
 
-if(WIN32)
-  set_target_properties(autd3capi-gain-holo PROPERTIES FOLDER "capi/gain")
-else()
-  set_target_properties(autd3capi-gain-holo PROPERTIES POSITION_INDEPENDENT_CODE ON)
-endif()
+set_target_properties(autd3capi-gain-holo PROPERTIES FOLDER "capi/gain")
+set_target_properties(autd3capi-gain-holo PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 if(BUILD_BACKEND_BLAS)
   add_subdirectory(blas)

@@ -3,13 +3,15 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/08/2022
+// Last Modified: 07/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
+
+#include "autd3/core/utils.hpp"
 
 namespace autd3::link {
 
@@ -37,11 +39,13 @@ inline void nanosleep(const int64_t t) {
   LARGE_INTEGER start;
   QueryPerformanceCounter(&start);
 
-  const auto sleep = t * PERFORMANCE_FREQUENCY.QuadPart / (1000LL * 1000LL * 1000LL);
-  while (true) {
-    LARGE_INTEGER now;
+  const auto sleep_for = t * PERFORMANCE_FREQUENCY.QuadPart / (1000LL * 1000LL * 1000LL) + start.QuadPart;
+
+  LARGE_INTEGER now;
+  QueryPerformanceCounter(&now);
+  while (now.QuadPart <= sleep_for) {
+    core::spin_loop_hint();
     QueryPerformanceCounter(&now);
-    if (now.QuadPart - start.QuadPart > sleep) break;
   }
 }
 

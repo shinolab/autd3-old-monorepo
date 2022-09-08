@@ -21,7 +21,7 @@ target_link_libraries(link_remote_twincat PUBLIC autd3_common)
 target_include_directories(link_remote_twincat PRIVATE ${ADS_PATH}/AdsLib ${ADS_PATH}/AdsLib/standalone)
 
 if(WIN32)
-  target_link_libraries(link_remote_twincat INTERFACE ws2_32)
+  target_link_libraries(link_remote_twincat PUBLIC ws2_32)
 endif()
 
 set_target_properties(link_remote_twincat
@@ -31,8 +31,5 @@ set_target_properties(link_remote_twincat
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
 )
 
-if(WIN32)
-  set_target_properties(link_remote_twincat PROPERTIES FOLDER "link")
-else()
-  set_target_properties(link_remote_twincat PROPERTIES POSITION_INDEPENDENT_CODE ON)
-endif()
+set_target_properties(link_remote_twincat PROPERTIES FOLDER "link")
+set_target_properties(link_remote_twincat PROPERTIES POSITION_INDEPENDENT_CODE ON)

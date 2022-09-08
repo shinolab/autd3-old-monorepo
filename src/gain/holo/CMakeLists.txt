@@ -13,11 +13,8 @@ set_target_properties(gain_holo
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
 )
 
-if(WIN32)
-  set_target_properties(gain_holo PROPERTIES FOLDER "gain")
-else()
-  set_target_properties(gain_holo PROPERTIES POSITION_INDEPENDENT_CODE ON)
-endif()
+set_target_properties(gain_holo PROPERTIES FOLDER "gain")
+set_target_properties(gain_holo PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 add_subdirectory(eigen)
 target_link_libraries(gain_holo INTERFACE backend_eigen)
@@ -30,4 +27,9 @@ endif()
 if(BUILD_BACKEND_BLAS)
   add_subdirectory(blas)
   target_link_libraries(gain_holo INTERFACE backend_blas)
+endif()
+
+if(BUILD_BACKEND_ARRAYFIRE)
+  add_subdirectory(arrayfire)
+  target_link_libraries(gain_holo INTERFACE backend_arrayfire)
 endif()

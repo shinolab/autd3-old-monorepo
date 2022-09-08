@@ -14,8 +14,5 @@ set_target_properties(modulation_audio_file
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
 )
 
-if(WIN32)
-  set_target_properties(modulation_audio_file PROPERTIES FOLDER "modulation")
-else()
-  set_target_properties(modulation_audio_file PROPERTIES POSITION_INDEPENDENT_CODE ON)
-endif()
+set_target_properties(modulation_audio_file PROPERTIES FOLDER "modulation")
+set_target_properties(modulation_audio_file PROPERTIES POSITION_INDEPENDENT_CODE ON)

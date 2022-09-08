@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/06/2022
+// Last Modified: 07/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -99,6 +99,18 @@ EXPORT_AUTD void AUTDDeleteModDelayConfig(IN const void* config);
 EXPORT_AUTD void AUTDCreateAmplitudes(OUT void** out, IN double amp);
 EXPORT_AUTD void AUTDDeleteAmplitudes(IN const void* amplitudes);
 EXPORT_AUTD void AUTDSetMode(IN void* handle, IN uint8_t mode);
+EXPORT_AUTD void AUTDSoftwareSTM(OUT void** out);
+EXPORT_AUTD void AUTDSoftwareSTMSetStrategy(IN void* stm, IN uint8_t strategy);
+EXPORT_AUTD void AUTDSoftwareSTMAdd(IN void* stm, IN void* gain);
+EXPORT_AUTD void AUTDSoftwareSTMStart(OUT void** handle, IN void* stm, IN void* cnt);
+EXPORT_AUTD void AUTDSoftwareSTMFinish(OUT void** cnt, IN void* handle);
+EXPORT_AUTD double AUTDSoftwareSTMSetFrequency(IN void* stm, IN double freq);
+EXPORT_AUTD double AUTDSoftwareSTMFrequency(IN const void* stm);
+EXPORT_AUTD uint64_t AUTDSoftwareSTMPeriod(IN const void* stm);
+EXPORT_AUTD double AUTDSoftwareSTMSamplingFrequency(IN const void* stm);
+EXPORT_AUTD uint64_t AUTDSoftwareSTMSamplingPeriod(IN const void* stm);
+EXPORT_AUTD void AUTDSoftwareSTMSetSamplingPeriod(IN void* stm, IN uint64_t period);
+EXPORT_AUTD void AUTDDeleteSoftwareSTM(IN const void* stm);
 #ifdef __cplusplus
 }
 #endif

@@ -16,8 +16,8 @@ if(USE_MKL)
   target_compile_definitions(backend_blas PRIVATE USE_BLAS_MKL)
 endif()
 
-target_link_directories(backend_blas INTERFACE ${BLAS_DEPEND_LIB_DIR})
-target_link_libraries(backend_blas INTERFACE ${BLAS_LIBRARIES})
+target_link_directories(backend_blas PUBLIC ${BLAS_DEPEND_LIB_DIR})
+target_link_libraries(backend_blas PUBLIC ${BLAS_LIBRARIES})
 if(NOT WIN32)
   target_link_libraries(backend_blas INTERFACE gfortran)
 endif()
@@ -29,8 +29,5 @@ set_target_properties(backend_blas
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
 )
 
-if(WIN32)
-  set_target_properties(backend_blas PROPERTIES FOLDER "gain/backend")
-else()
-  set_target_properties(backend_blas PROPERTIES POSITION_INDEPENDENT_CODE ON)
-endif()
+set_target_properties(backend_blas PROPERTIES FOLDER "gain/backend")
+set_target_properties(backend_blas PROPERTIES POSITION_INDEPENDENT_CODE ON)

@@ -5,7 +5,11 @@
 * [C\#](./csharp.md)
 * [python](./python.md)
 * [Rust](./rust.md)
+* [Nim](./nim.md)
+* [Go](./go.md)
+* [Julia](./julia.md)
+* [MATLAB](./matlab.md)
 
-また, その他の言語で使用できるC言語のAPIリファレンスは以下に書かれている.
+また, C言語のAPIリファレンスは以下に書かれている.
 
 * [C API Reference](./reference.md)

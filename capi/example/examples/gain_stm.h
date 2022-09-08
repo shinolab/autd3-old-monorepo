@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/06/2022
+// Last Modified: 07/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@
 #define PHASE_FULL (0x0002)
 #define PHASE_HALF (0x0004)
 
-void gain_stm(void* autd) {
+void* gain_stm(void* autd) {
   void* s = NULL;
   AUTDCreateSilencer(&s, 0xFFFF, 4096);
   AUTDSend(autd, s, NULL);
@@ -58,4 +58,6 @@ void gain_stm(void* autd) {
 
   AUTDDeleteSTM(stm);
   AUTDDeleteModulation(m);
+
+  return autd;
 }

@@ -22,8 +22,5 @@ set_target_properties(autd3capi-link-remote-twincat
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/$<CONFIG>/"
 )
 
-if(WIN32)
-  set_target_properties(autd3capi-link-remote-twincat PROPERTIES FOLDER "capi/link")
-else()
-  set_target_properties(autd3capi-link-remote-twincat PROPERTIES POSITION_INDEPENDENT_CODE ON)
-endif()
+set_target_properties(autd3capi-link-remote-twincat PROPERTIES FOLDER "capi/link")
+set_target_properties(autd3capi-link-remote-twincat PROPERTIES POSITION_INDEPENDENT_CODE ON)

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/08/2022
+// Last Modified: 07/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 #include <random>
 
-#include "autd3/core/utils.hpp"
+#include "autd3/core/acoustics.hpp"
 
 namespace autd3::gain::holo {
 
@@ -74,7 +74,7 @@ void SDP::calc(const core::Geometry& geometry) {
 
   _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, -ONE, b, pseudo_inv_b, ONE, mm);
 
-  MatrixXc tmp = VectorXc::Zero(m, m);
+  MatrixXc tmp = MatrixXc::Zero(m, m);
   _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, p, mm, ZERO, tmp);
   _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, tmp, p, ZERO, mm);
 

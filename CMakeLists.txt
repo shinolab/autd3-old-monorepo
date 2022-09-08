@@ -8,7 +8,7 @@ project(autd3)
 
 set(VERSION_MAJOR 2 CACHE STRING "Project major version number.")
 set(VERSION_MINOR 3 CACHE STRING "Project minor version number.")
-set(VERSION_PATCH 1 CACHE STRING "Project patch version number.")
+set(VERSION_PATCH 2 CACHE STRING "Project patch version number.")
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -20,6 +20,7 @@ option(BUILD_DOC "BUILD_DOC" OFF)
 
 option(BUILD_GAIN_HOLO "BUILD_GAIN_HOLO" ON)
 option(BUILD_BACKEND_CUDA "BUILD_BACKEND_CUDA" OFF)
+option(BUILD_BACKEND_ARRAYFIRE "BUILD_BACKEND_ARRAYFIRE" OFF)
 option(BUILD_BACKEND_BLAS "BUILD_BACKEND_BLAS" OFF)
 set(BLAS_LIB_DIR CACHE PATH "BLAS library directory")
 set(BLAS_DEPEND_LIB_DIR CACHE PATH "Additional library directory for BLAS")
@@ -32,17 +33,17 @@ option(BUILD_LINK_SOEM "BUILD_LINK_SOEM" ON)
 option(BUILD_LINK_TWINCAT "BUILD_LINK_TWINCAT" OFF)
 option(BUILD_LINK_REMOTE_TWINCAT "BUILD_LINK_REMOTE_TWINCAT" OFF)
 option(BUILD_LINK_EMULATOR "BUILD_LINK_EMULATOR" OFF)
+option(BUILD_LINK_BUNDLE "BUILD_LINK_BUNDLE" OFF)
+option(BUILD_LINK_DEBUG "BUILD_LINK_DEBUG" OFF)
 
 option(BUILD_EXAMPLES "BUILD_EXAMPLES" ON)
+option(BUILD_EXAMPLES "BUILD_EXAMPLES_EXTRA" ON)
 
 option(BUILD_CAPI "BUILD_CAPI" OFF)
 
 option(ENABLE_LINT "ENABLE_LINT" OFF)
 
 option(BUILD_TEST "BUILD_TEST" OFF)
-option(gtest_disable_pthreads "gtest_disable_pthreads" ON)
-
-option(BUILD_WITH_STATIC_CRT "BUILD_WITH_STATIC_CRT" OFF)
 
 if(BUILD_ALL)
   set(BUILD_GAIN_HOLO ON)
@@ -51,8 +52,15 @@ if(BUILD_ALL)
   set(BUILD_LINK_TWINCAT ON)
   set(BUILD_LINK_REMOTE_TWINCAT ON)
   set(BUILD_LINK_EMULATOR ON)
+  set(BUILD_LINK_BUNDLE ON)
+  set(BUILD_LINK_DEBUG ON)
   set(BUILD_EXAMPLES ON)
+  set(BUILD_EXAMPLES_EXTRA ON)
   set(BUILD_CAPI ON)
+endif()
+
+if(BUILD_EXAMPLES_EXTRA)
+  set(BUILD_LINK_DEBUG ON)
 endif()
 
 if(BUILD_DOC)
@@ -177,6 +185,14 @@ if(BUILD_LINK_EMULATOR)
   add_subdirectory(src/link/emulator)
 endif()
 
+if(BUILD_LINK_BUNDLE)
+  add_subdirectory(src/link/bundle)
+endif()
+
+if(BUILD_LINK_DEBUG)
+  add_subdirectory(src/link/debug)
+endif()
+
 if(BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
@@ -185,6 +201,7 @@ if(BUILD_TEST)
   cmake_policy(SET CMP0077 NEW)
   cmake_policy(SET CMP0135 NEW)
   include(${PROJECT_SOURCE_DIR}/cmakes/gtest.cmake)
+  # set(gtest_disable_pthreads ON)
   add_subdirectory(tests)
 endif()
 

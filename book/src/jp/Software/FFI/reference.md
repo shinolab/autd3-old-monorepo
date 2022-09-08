@@ -981,6 +981,125 @@ Amplitudesを削除する.
 | amplitudes             | void* | in     | pointer to Amplitudes |
 | return                 | void  | -      | -                     |
 
+## AUTDSoftwareSTM (autd3capi)
+
+SoftwareSTMを作成する.
+
+| Argument name / return | type  | in/out | description                       |
+| ---------------------- | ----- | ------ | --------------------------------- |
+| out                    | void**| out    | pointer to pointer to SoftwareSTM |
+| return                 | void  | -      | -                                 |
+
+## AUTDSoftwareSTMSetStrategy (autd3capi)
+
+SoftwareSTMのTimerStrategyを設定する.
+
+| Argument name / return | type    | in/out | description                       |
+| ---------------------- | -----   | ------ | --------------------------------- |
+| stm                    | void*   | in     | pointer to SoftwareSTM            |
+| strategy               | uint8_t | in     | TimerStrategy                     |
+| return                 | void    | -      | -                                 |
+
+## AUTDSoftwareSTMAdd (autd3capi)
+
+SoftwareSTMにGainを追加する.
+
+この関数に追加したGainは削除してはいけない.
+
+| Argument name / return | type    | in/out | description                       |
+| ---------------------- | -----   | ------ | --------------------------------- |
+| stm                    | void*   | in     | pointer to SoftwareSTM            |
+| gain                   | void*   | in     | pointer to Gain                   |
+| return                 | void    | -      | -                                 |
+
+## AUTDSoftwareSTMStart (autd3capi)
+
+SoftwareSTMを開始する.
+
+この関数の呼び出し後, Controllerへのアクセスは禁止される.
+
+| Argument name / return | type    | in/out | description                                   |
+| ---------------------- | -----   | ------ | --------------------------------------------- |
+| handle                 | void**  | out    | pointer to pointer to SoftwareSTMThreadHandle |
+| stm                    | void*   | in     | pointer to SoftwareSTM                        |
+| cnt                    | void*   | in     | pointer to Controller                         |
+| return                 | void    | -      | -                                             |
+
+## AUTDSoftwareSTMFinish (autd3capi)
+
+
+| Argument name / return | type    | in/out | description                        |
+| ---------------------- | -----   | ------ | -----------------------------------|
+| cnt                    | void**  | out    | pointer to pointer to Controller   |
+| handle                 | void*   | in     | pointer to SoftwareSTMThreadHandle |
+| return                 | void    | -      | -                                  |
+
+
+## AUTDSoftwareSTMSetFrequency (autd3capi)
+
+SoftwareSTMの周波数を設定する.
+
+| Argument name / return | type    | in/out | description            |
+| ---------------------- | -----   | ------ | -----------------------|
+| stm                    | void*   | in     | pointer to SoftwareSTM |
+| freq                   | double  | in     | frequency              |
+| return                 | double  | -      | actual frequency       |
+
+## AUTDSoftwareSTMFrequency (autd3capi)
+
+SoftwareSTMの周波数を取得する.
+
+| Argument name / return | type    | in/out | description            |
+| ---------------------- | -----   | ------ | -----------------------|
+| stm                    | void*   | in     | pointer to SoftwareSTM |
+| return                 | double  | -      | frequency              |
+
+## AUTDSoftwareSTMPeriod (autd3capi)
+
+SoftwareSTMの周期をナノ秒単位で取得する.
+
+| Argument name / return | type     | in/out | description            |
+| ---------------------- | -----    | ------ | -----------------------|
+| stm                    | void*    | in     | pointer to SoftwareSTM |
+| return                 | uint64_t | -      | period                 |
+
+## AUTDSoftwareSTMSamplingFrequency (autd3capi)
+
+SoftwareSTMのサンプリング周波数を取得する.
+
+| Argument name / return | type    | in/out | description            |
+| ---------------------- | -----   | ------ | -----------------------|
+| stm                    | void*   | in     | pointer to SoftwareSTM |
+| return                 | double  | -      | sampling frequency     |
+
+## AUTDSoftwareSTMSamplingPeriod (autd3capi)
+
+SoftwareSTMのサンプリング周期をナノ秒単位で取得する.
+
+| Argument name / return | type     | in/out | description            |
+| ---------------------- | -----    | ------ | -----------------------|
+| stm                    | void*    | in     | pointer to SoftwareSTM |
+| return                 | uint64_t | -      | sampling period        |
+
+## AUTDSoftwareSTMSetSamplingPeriod (autd3capi)
+
+SoftwareSTMのサンプリング周期をナノ秒単位で設定する.
+
+| Argument name / return | type     | in/out | description            |
+| ---------------------- | -----    | ------ | -----------------------|
+| stm                    | void*    | in     | pointer to SoftwareSTM |
+| period                 | uint64_t | in     | sampling period        |
+| return                 | void     | -      | -                      |
+
+## AUTDDeleteSoftwareSTM (autd3capi)
+
+SoftwareSTMを削除する.
+
+| Argument name / return | type  | in/out | description            |
+| ---------------------- | ----- | ------ | ---------------------- |
+| stm                    | void* | in     | pointer to SoftwareSTM |
+| return                 | void  | -      | -                      |
+
 ## AUTDSetMode (autd3capi)
 
 Legacy/Normalモードの設定を行う.
