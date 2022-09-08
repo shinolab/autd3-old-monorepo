@@ -28,3 +28,8 @@ if(BUILD_BACKEND_BLAS)
   add_subdirectory(blas)
   target_link_libraries(gain_holo INTERFACE backend_blas)
 endif()
+
+if(BUILD_BACKEND_ARRAYFIRE)
+  add_subdirectory(arrayfire)
+  target_link_libraries(gain_holo INTERFACE backend_arrayfire)
+endif()
