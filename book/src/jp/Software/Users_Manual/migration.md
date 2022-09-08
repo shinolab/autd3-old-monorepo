@@ -4,12 +4,6 @@
 
 ## 削除された機能
 
-### Software STM
-
-v1.x系に存在した`STM`と呼ばれるSoftwareタイマによる時空間変調機能は削除された. Softwareによる時空間変調を行いたい場合は自前で時間管理を行って`send`関数を呼び出すこと.
-
-v1.x系に存在したSequenceと呼ばれるHardwareタイマによる時空間変調機能は, `STM`という名前で改めて利用可能である.
-
 ### Output enable, Output balance flag
 
 これらのフラグは削除された.
@@ -23,7 +17,7 @@ v1.x系に存在したSequenceと呼ばれるHardwareタイマによる時空間
 
 ### Duty Offset指定
 
-これらの機能は削除された.
+この機能は削除された.
 
 ### TransducerTest Gain
 
