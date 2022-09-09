@@ -1,13 +1,31 @@
 # FAQ
 
-## macOS, linuxで動かせない.
+## "No AUTD3 devices found"と表示される
 
-- `link::SOEM`を使用する場合, root権限が必要.
+- macOS, linuxで`link::SOEM`を使用する場合, root権限が必要
 
-## `One ore more slaves are not responding`と表示される
+   ```
+   sudo ./examples/example_soem
+   ```
+
+   - linuxの場合, `setcap`コマンドで以下の権限を設定することで回避することもできる
+   
+      ```
+      sudo setcap cap_net_raw,cap_net_admin=eip ./examples/example_soem
+      ./examples/example_soem
+      ```
+
+- (Windows) 最新のnpcapを使用する
+
+- WSL等の仮想マシンは対応していません
+   - VirtualBoxなどで動く場合があるようですが, 挙動は不安定になります
+
+## "One ore more slaves are not responding"と表示される
 
 - Driverを更新する
    - WindowsでRealtekを利用している場合, [公式サイト](https://www.realtek.com/ja/component/zoo/category/network-interface-controllers-10-100-1000m-gigabit-ethernet-pci-express-software)から`Win10 Auto Installation Program (NDIS)`と書かれた方のDriverをインストールすること (Windows 11でも).
+
+- (Windows) 最新のnpcapを使用する
 
 - (Windows) high precisionモードにする
    ```cpp
@@ -28,7 +46,7 @@
                   .build();
    ```
 
-## `link::SOEM`使用時に送信が失敗する
+## `link::SOEM`使用時に送信が頻繁に失敗する
 
 - この問題は
    * オンボードのethernetインターフェースを使用している
