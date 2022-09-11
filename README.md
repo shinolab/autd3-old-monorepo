@@ -1,9 +1,33 @@
+<div>
+<h1 align="center">
+<a href="https://hapislab.org/airborne-ultrasound-tactile-display?lang=en">AUTD3: Ariborne Ultrasound Tactile Display 3</a>
+</h1>
+</div>
+
+<div align="center">
+
 ![build](https://github.com/shinolab/autd3/workflows/build/badge.svg)
-![Upload Release Asset](https://github.com/shinolab/autd3/workflows/Upload%20Release%20Asset/badge.svg)
 
-# [AUTD3](https://hapislab.org/airborne-ultrasound-tactile-display?lang=en)
+</div>
 
-Version: 2.3.2
+<div align="center">
+
+[![release](https://img.shields.io/github/v/release/shinolab/autd3)](https://github.com/shinolab/autd3/releases/latest)
+[![Crate.io version](https://img.shields.io/crates/v/autd3)](https://crates.io/crates/autd3)
+[![NuGet stable version](https://img.shields.io/nuget/v/autd3sharp)](https://nuget.org/packages/AUTD3Sharp)
+[![unitypackage](https://github.com/shinolab/autd3sharp/workflows/unitypackage/badge.svg)](https://github.com/shinolab/autd3sharp/releases)
+[![PyPI version](https://badge.fury.io/py/pyautd3.svg)](https://badge.fury.io/py/pyautd3)
+[![nim release](https://img.shields.io/github/v/tag/shinolab/autd3_nim?label=nim)](https://github.com/shinolab/autd3_nim)
+[![go release](https://img.shields.io/github/v/tag/shinolab/autd3-go?label=Go)](https://github.com/shinolab/autd3-go)
+[![Julia release](https://img.shields.io/github/v/tag/shinolab/AUTD3.jl?label=Julia)](https://github.com/shinolab/AUTD3.jl)
+[![MATLAB release](https://img.shields.io/github/v/tag/shinolab/autd3-matlab?label=MATLAB)](https://github.com/shinolab/autd3-matlab)
+
+</div>
+
+<p align="center">
+The Airborne Ultrasound Tactile Display (AUTD) remotely produces tactile sensation on a human skin surface without requiring users to wear devices.
+This repository is a client library to drive AUTD3 devices. This cross-platform library supports Windows, macOS, and Linux (including Single Board Computer such as Raspberry Pi).
+</p>
 
 ## Document
 
@@ -18,7 +42,7 @@ Version: 2.3.2
 
 ## Requirements
 
-* If you use `link::SOEM` on Windows, install [Npcap](https://nmap.org/npcap/) with WinPcap API-compatible mode (recommended) or [WinPcap](https://www.winpcap.org/).
+* If you use `link::SOEM` on Windows, install [Npcap](https://nmap.org/npcap/) with WinPcap API-compatible mode.
 * If you use `link::TwinCAT` or `link::RemoteTwinCAT`, please see [how to install AUTDServer](https://shinolab.github.io/autd3/book/en/Software/Users_Manual/link.html#how-to-install-twincat).
 
 ## Build
@@ -64,7 +88,7 @@ Version: 2.3.2
 
 | Option                      | default | description                          |
 | -------------------------   | ------- | ------------------------------------ |
-| BUILD_ALL                   | OFF     | build all options below              |
+| BUILD_ALL                   | OFF     | build all basic options              |
 | BUILD_DOC                   | OFF     | build doxygen documents              |
 | BUILD_GAIN_HOLO             | ON      | build Holo gain                      |
 | BUILD_BACKEND_CUDA          | OFF     | build CUDABackend for Holo gain      |
@@ -103,10 +127,10 @@ Version: 2.3.2
 
 ## Citing
 
-If you use this SDK in your research please consider to include the following citation in your publications:
+* If you use this SDK in your research please consider to include the following citation in your publications:
 
-* [S. Suzuki, S. Inoue, M. Fujiwara, Y. Makino and H. Shinoda, "AUTD3: Scalable Airborne Ultrasound Tactile Display," in IEEE Transactions on Haptics, doi: 10.1109/TOH.2021.3069976.](https://ieeexplore.ieee.org/document/9392322)
-* S. Inoue, Y. Makino and H. Shinoda "Scalable Architecture for Airborne Ultrasound Tactile Display", Asia Haptics 2016
+   * [S. Suzuki, S. Inoue, M. Fujiwara, Y. Makino and H. Shinoda, "AUTD3: Scalable Airborne Ultrasound Tactile Display," in IEEE Transactions on Haptics, doi: 10.1109/TOH.2021.3069976.](https://ieeexplore.ieee.org/document/9392322)
+   * S. Inoue, Y. Makino and H. Shinoda "Scalable Architecture for Airborne Ultrasound Tactile Display", Asia Haptics 2016
 
 ## LICENSE
 
