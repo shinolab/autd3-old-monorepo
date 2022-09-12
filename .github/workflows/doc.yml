@@ -15,7 +15,8 @@ jobs:
     - name: Document check
       run: |
         cd tools/doc_checker
-        cargo run
+        cargo run -- "../../book/src/jp/FFI/reference.md"
+        cargo run -- "../../book/src/en/FFI/reference.md"
         cd ..
 
     - name: Doxygen
