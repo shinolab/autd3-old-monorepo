@@ -4,7 +4,7 @@
  * Created Date: 24/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/08/2022
+ * Last Modified: 12/09/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -140,7 +140,8 @@ fn main() -> Result<()> {
         }
     }
 
-    let path = "../../book/src/jp/Software/FFI/reference.md";
+    let args: Vec<String> = std::env::args().collect();
+    let path = &args[1];
 
     let file = File::open(path)?;
     let reader = BufReader::new(file);
