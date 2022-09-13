@@ -12,7 +12,7 @@
 #pragma once
 
 namespace autd3::extra::firmware_emulator::cpu {
-constexpr uint16_t CPU_VERSION = 0x83;
+constexpr uint16_t CPU_VERSION = 0x84;
 
 constexpr uint8_t BRAM_SELECT_CONTROLLER = 0x0;
 constexpr uint8_t BRAM_SELECT_MOD = 0x1;
