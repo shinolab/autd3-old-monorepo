@@ -1,1 +1,0 @@
-# C++ User's Manual
