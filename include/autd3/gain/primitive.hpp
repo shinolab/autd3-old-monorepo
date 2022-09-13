@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/09/2022
+// Last Modified: 10/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -177,10 +177,10 @@ class Grouped final : public core::Gain {
     _buf.resize(geometry.num_transducers(), driver::Drive{0, 0, 0});
   }
   ~Grouped() override = default;
-  Grouped(const Grouped& v) noexcept = default;
-  Grouped& operator=(const Grouped& obj) = default;
-  Grouped(Grouped&& obj) = default;
-  Grouped& operator=(Grouped&& obj) = default;
+  Grouped(const Grouped& v) noexcept = delete;
+  Grouped& operator=(const Grouped& obj) = delete;
+  Grouped(Grouped&& obj) = delete;
+  Grouped& operator=(Grouped&& obj) = delete;
 
  private:
   std::vector<driver::Drive> _buf;
