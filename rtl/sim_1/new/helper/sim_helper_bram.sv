@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 13/09/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -71,11 +71,11 @@ module sim_helper_bram #(
                                         input [WIDTH-1:0] phase[0:DEPTH-1]);
     bit [15:0] offset;
     bit [15:0] i;
-    offset = idx[20:5];
-    i = idx[4:0] << 9;
+    offset = idx[21:6];
+    i = idx[5:0] << 8;
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_ADDR_OFFSET, offset);
     for (int j = 0; j < DEPTH; j++) begin
-      bram_write(BRAM_SELECT_STM, i + j * 2, {duty[j][7:0], phase[j][7:0]});
+      bram_write(BRAM_SELECT_STM, i + j, {duty[j][7:0], phase[j][7:0]});
     end
   endtask
 

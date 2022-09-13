@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 13/09/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -64,10 +64,10 @@ module sim_operator_stm_gain ();
 
   bit [15:0] idx_buf;
   initial begin
-    legacy_mode = 0;
+    legacy_mode = 1;
 
-    cycle_s = 10 - 1;
-    freq_div_s = 8 * (1 + DEPTH / 4 + 3 + 2);
+    cycle_s = legacy_mode ? 2048 - 1 : 1024 - 1;
+    freq_div_s = legacy_mode ? 4 * (1 + DEPTH / 8 + 3 + 2) : 4 * (1 + DEPTH / 4 + 3 + 2);
     @(posedge locked);
 
     sim_helper_random.init();
