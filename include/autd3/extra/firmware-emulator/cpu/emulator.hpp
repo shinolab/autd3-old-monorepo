@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/09/2022
+// Last Modified: 13/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -182,6 +182,75 @@ class CPU {
       bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, static_cast<uint16_t>(std::max(_stm_cycle, 1u) - 1u));
   }
 
+  void write_gain_stm_legacy(const GlobalHeader& header, const Body& body) {
+    if (header.cpu_flag.contains(CPUControlFlags::STM_BEGIN)) {
+      _stm_cycle = 0;
+      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, 0);
+      const auto freq_div = (static_cast<uint32_t>(body.gain_stm_head().data()[1]) << 16) | static_cast<uint32_t>(body.gain_stm_head().data()[0]);
+      bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0, reinterpret_cast<const uint16_t*>(&freq_div), 2);
+      _gain_stm_mode = body.gain_stm_head().data()[2];
+      return;
+    }
+
+    auto* src = body.gain_stm_body().data();
+    auto dst = static_cast<uint16_t>((_stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
+
+    switch (_gain_stm_mode) {
+      case GAIN_STM_MODE_PHASE_DUTY_FULL:
+        _stm_cycle += 1;
+        for (size_t i = 0; i < NUM_TRANS_IN_UNIT; i++) bram_write(BRAM_SELECT_STM, dst++, *src++);
+        break;
+      case GAIN_STM_MODE_PHASE_FULL:
+        for (size_t i = 0; i < NUM_TRANS_IN_UNIT; i++) bram_write(BRAM_SELECT_STM, dst++, 0xFF00 | (*src++ & 0x00FF));
+        _stm_cycle += 1;
+        src = body.gain_stm_body().data();
+        dst = static_cast<uint16_t>((_stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
+        for (size_t i = 0; i < NUM_TRANS_IN_UNIT; i++) bram_write(BRAM_SELECT_STM, dst++, 0xFF00 | (((*src++) >> 8) & 0x00FF));
+        _stm_cycle += 1;
+        break;
+      case GAIN_STM_MODE_PHASE_HALF:
+        for (size_t i = 0; i < NUM_TRANS_IN_UNIT; i++) {
+          const auto phase = static_cast<uint16_t>(*src++ & 0x000F);
+          bram_write(BRAM_SELECT_STM, dst++, static_cast<uint16_t>(0xFF00 | (phase << 4) | phase));
+        }
+        _stm_cycle += 1;
+
+        src = body.gain_stm_body().data();
+        dst = static_cast<uint16_t>((_stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
+        for (size_t i = 0; i < NUM_TRANS_IN_UNIT; i++) {
+          const auto phase = static_cast<uint16_t>((*src++ >> 4) & 0x000F);
+          bram_write(BRAM_SELECT_STM, dst++, static_cast<uint16_t>(0xFF00 | (phase << 4) | phase));
+        }
+        _stm_cycle += 1;
+
+        src = body.gain_stm_body().data();
+        dst = static_cast<uint16_t>((_stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
+        for (size_t i = 0; i < NUM_TRANS_IN_UNIT; i++) {
+          const auto phase = static_cast<uint16_t>((*src++ >> 8) & 0x000F);
+          bram_write(BRAM_SELECT_STM, dst++, static_cast<uint16_t>(0xFF00 | (phase << 4) | phase));
+        }
+        _stm_cycle += 1;
+
+        src = body.gain_stm_body().data();
+        dst = static_cast<uint16_t>((_stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
+        for (size_t i = 0; i < NUM_TRANS_IN_UNIT; i++) {
+          const auto phase = static_cast<uint16_t>((*src++ >> 12) & 0x000F);
+          bram_write(BRAM_SELECT_STM, dst++, static_cast<uint16_t>(0xFF00 | (phase << 4) | phase));
+        }
+        _stm_cycle += 1;
+        break;
+      default:
+        throw std::runtime_error("Not supported GainSTM mode");
+    }
+
+    if ((_stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) == 0)
+      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET,
+                 ((_stm_cycle & ~GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) >> GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH));
+
+    if (header.cpu_flag.contains(CPUControlFlags::STM_END))
+      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, static_cast<uint16_t>(std::max(_stm_cycle, 1u) - 1u));
+  }
+
   void write_gain_stm(const GlobalHeader& header, const Body& body) {
     if (header.cpu_flag.contains(CPUControlFlags::STM_BEGIN)) {
       _stm_cycle = 0;
@@ -197,24 +266,14 @@ class CPU {
 
     switch (_gain_stm_mode) {
       case GAIN_STM_MODE_PHASE_DUTY_FULL:
-        if (header.fpga_flag.contains(FPGAControlFlags::LEGACY_MODE))
-          _stm_cycle += 1;
-        else if (header.cpu_flag.contains(CPUControlFlags::IS_DUTY)) {
+        if (header.cpu_flag.contains(CPUControlFlags::IS_DUTY)) {
           dst += 1;
           _stm_cycle += 1;
         }
         for (size_t i = 0; i < NUM_TRANS_IN_UNIT; i++, dst += 2) bram_write(BRAM_SELECT_STM, dst, *src++);
         break;
       case GAIN_STM_MODE_PHASE_FULL:
-        if (header.fpga_flag.contains(FPGAControlFlags::LEGACY_MODE)) {
-          for (size_t i = 0; i < NUM_TRANS_IN_UNIT; i++, dst += 2) bram_write(BRAM_SELECT_STM, dst, 0xFF00 | (*src++ & 0x00FF));
-          _stm_cycle += 1;
-
-          src = body.gain_stm_body().data();
-          dst = static_cast<uint16_t>((_stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 9);
-          for (size_t i = 0; i < NUM_TRANS_IN_UNIT; i++, dst += 2) bram_write(BRAM_SELECT_STM, dst, 0xFF00 | (((*src++) >> 8) & 0x00FF));
-          _stm_cycle += 1;
-        } else if (!header.cpu_flag.contains(CPUControlFlags::IS_DUTY)) {
+        if (!header.cpu_flag.contains(CPUControlFlags::IS_DUTY)) {
           for (size_t i = 0; i < NUM_TRANS_IN_UNIT; i++) {
             bram_write(BRAM_SELECT_STM, dst++, *src++);
             bram_write(BRAM_SELECT_STM, dst++, _cycles[i] >> 1);
@@ -223,37 +282,7 @@ class CPU {
         }
         break;
       case GAIN_STM_MODE_PHASE_HALF:
-        if (header.fpga_flag.contains(FPGAControlFlags::LEGACY_MODE)) {
-          for (size_t i = 0; i < NUM_TRANS_IN_UNIT; i++, dst += 2) {
-            const auto phase = static_cast<uint16_t>(*src++ & 0x000F);
-            bram_write(BRAM_SELECT_STM, dst, static_cast<uint16_t>(0xFF00 | (phase << 4) | phase));
-          }
-          _stm_cycle += 1;
-
-          src = body.gain_stm_body().data();
-          dst = static_cast<uint16_t>((_stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 9);
-          for (size_t i = 0; i < NUM_TRANS_IN_UNIT; i++, dst += 2) {
-            const auto phase = static_cast<uint16_t>((*src++ >> 4) & 0x000F);
-            bram_write(BRAM_SELECT_STM, dst, static_cast<uint16_t>(0xFF00 | (phase << 4) | phase));
-          }
-          _stm_cycle += 1;
-
-          src = body.gain_stm_body().data();
-          dst = static_cast<uint16_t>((_stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 9);
-          for (size_t i = 0; i < NUM_TRANS_IN_UNIT; i++, dst += 2) {
-            const auto phase = static_cast<uint16_t>((*src++ >> 8) & 0x000F);
-            bram_write(BRAM_SELECT_STM, dst, static_cast<uint16_t>(0xFF00 | (phase << 4) | phase));
-          }
-          _stm_cycle += 1;
-
-          src = body.gain_stm_body().data();
-          dst = static_cast<uint16_t>((_stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 9);
-          for (size_t i = 0; i < NUM_TRANS_IN_UNIT; i++, dst += 2) {
-            const auto phase = static_cast<uint16_t>((*src++ >> 12) & 0x000F);
-            bram_write(BRAM_SELECT_STM, dst, static_cast<uint16_t>(0xFF00 | (phase << 4) | phase));
-          }
-          _stm_cycle += 1;
-        }
+        throw std::runtime_error("Phase half mode is not supported in Normal GainSTM");
         break;
       default:
         throw std::runtime_error("Not supported GainSTM mode");
@@ -340,6 +369,8 @@ class CPU {
 
         if (!ctl_reg.contains(FPGAControlFlags::STM_GAIN_MODE))
           write_point_stm(header, body);
+        else if (header.fpga_flag.contains(FPGAControlFlags::LEGACY_MODE))
+          write_gain_stm_legacy(header, body);
         else
           write_gain_stm(header, body);
 

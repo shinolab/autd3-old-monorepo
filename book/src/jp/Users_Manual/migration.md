@@ -21,10 +21,6 @@
 
 ## 変更されたAPI
 
-### GainSTM最大パターン長
-
-GainSTMの最大パターン数は1024に減少した.
-
 ### Silent mode
 
 Silent modeのフラグは削除された.
