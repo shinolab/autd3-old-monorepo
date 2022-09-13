@@ -68,17 +68,8 @@ module normal_operator #(
   );
 
   always_ff @(posedge CLK) begin
-    if (read_addr == DEPTH - 1) begin
-      read_addr <= 0;
-    end else begin
-      read_addr <= read_addr + 1;
-    end
-
-    if (set_addr == DEPTH - 1) begin
-      set_addr <= 0;
-    end else begin
-      set_addr <= set_addr + 1;
-    end
+    read_addr <= (read_addr == DEPTH - 1) ? 0 : read_addr + 1;
+    set_addr  <= (set_addr == DEPTH - 1) ? 0 : set_addr + 1;
 
     if (LEGACY_MODE) begin
       phase_buf[set_addr] <= {1'b0, dout[7:0], 4'h00};
