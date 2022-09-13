@@ -404,7 +404,6 @@ static void write_gain_stm(const volatile GlobalHeader* header, const volatile B
   const volatile uint16_t* src;
   uint32_t freq_div;
   uint32_t cnt;
-  uint16_t phase;
 
   if ((header->cpu_ctl_reg & STM_BEGIN) != 0) {
     _stm_cycle = 0;
