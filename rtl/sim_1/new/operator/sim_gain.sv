@@ -72,6 +72,7 @@ module sim_operator_stm_gain ();
 
     sim_helper_random.init();
     for (int i = 0; i < cycle_s + 1; i++) begin
+      $display("write %d/%d", i + 1, cycle_s + 1);
       if (legacy_mode) begin
         for (int j = 0; j < DEPTH; j++) begin
           duty_buf[i][j]  = sim_helper_random.range(8'hFF, 0);
@@ -90,7 +91,7 @@ module sim_operator_stm_gain ();
     for (int j = 0; j < cycle_s + 1; j++) begin
       @(posedge start);
       idx_buf = idx;
-      $display("check %d @%d", idx_buf, SYS_TIME);
+      $display("check %d/%d", j + 1, cycle_s + 1);
       @(posedge done);
       for (int i = 0; i < DEPTH; i++) begin
         if (legacy_mode) begin
