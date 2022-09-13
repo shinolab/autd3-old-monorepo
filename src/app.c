@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/08/2022
+ * Last Modified: 13/09/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@
 #include "params.h"
 #include "utils.h"
 
-#define CPU_VERSION (0x83) /* v2.3 */
+#define CPU_VERSION (0x84) /* v2.4 */
 
 #define MOD_BUF_SEGMENT_SIZE_WIDTH (15)
 #define MOD_BUF_SEGMENT_SIZE (1 << MOD_BUF_SEGMENT_SIZE_WIDTH)
@@ -30,6 +30,9 @@
 #define GAIN_STM_BUF_SEGMENT_SIZE_WIDTH (5)
 #define GAIN_STM_BUF_SEGMENT_SIZE (1 << GAIN_STM_BUF_SEGMENT_SIZE_WIDTH)
 #define GAIN_STM_BUF_SEGMENT_SIZE_MASK (GAIN_STM_BUF_SEGMENT_SIZE - 1)
+#define GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH (6)
+#define GAIN_STM_LEGACY_BUF_SEGMENT_SIZE (1 << GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH)
+#define GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK (GAIN_STM_LEGACY_BUF_SEGMENT_SIZE - 1)
 
 #define GAIN_DATA_MODE_PHASE_DUTY_FULL (0x0001)
 #define GAIN_DATA_MODE_PHASE_FULL (0x0002)
@@ -303,7 +306,7 @@ static void write_point_stm(const volatile GlobalHeader* header, const volatile 
   if ((header->cpu_ctl_reg & STM_END) != 0) bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_cycle) - 1);
 }
 
-static void write_gain_stm(const volatile GlobalHeader* header, const volatile Body* body) {
+static void write_gain_stm_legacy(const volatile GlobalHeader* header, const volatile Body* body) {
   volatile uint16_t* base = (volatile uint16_t*)FPGA_BASE;
   uint16_t addr;
   volatile uint16_t* dst;
@@ -323,20 +326,105 @@ static void write_gain_stm(const volatile GlobalHeader* header, const volatile B
 
   src = body->DATA.GAIN_STM_BODY.data;
 
+  addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
+
+  switch (_seq_gain_data_mode) {
+    case GAIN_DATA_MODE_PHASE_DUTY_FULL:
+      dst = &base[addr];
+      _stm_cycle += 1;
+      cnt = TRANS_NUM;
+      while (cnt--) *dst++ = *src++;
+      break;
+    case GAIN_DATA_MODE_PHASE_FULL:
+      dst = &base[addr];
+      cnt = TRANS_NUM;
+      while (cnt--) *dst++ = 0xFF00 | ((*src++) & 0x00FF);
+      _stm_cycle += 1;
+      src = body->DATA.GAIN_STM_BODY.data;
+      addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
+      dst = &base[addr];
+      cnt = TRANS_NUM;
+      while (cnt--) *dst++ = 0xFF00 | (((*src++) >> 8) & 0x00FF);
+      _stm_cycle += 1;
+      break;
+    case GAIN_DATA_MODE_PHASE_HALF:
+      dst = &base[addr];
+      cnt = TRANS_NUM;
+      while (cnt--) {
+        phase = (*src++) & 0x000F;
+        *dst++ = 0xFF00 | (phase << 4) | phase;
+      }
+      _stm_cycle += 1;
+
+      src = body->DATA.GAIN_STM_BODY.data;
+      addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
+      dst = &base[addr];
+      cnt = TRANS_NUM;
+      while (cnt--) {
+        phase = ((*src++) >> 4) & 0x000F;
+        *dst++ = 0xFF00 | (phase << 4) | phase;
+      }
+      _stm_cycle += 1;
+
+      src = body->DATA.GAIN_STM_BODY.data;
+      addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
+      dst = &base[addr];
+      cnt = TRANS_NUM;
+      while (cnt--) {
+        phase = ((*src++) >> 8) & 0x000F;
+        *dst++ = 0xFF00 | (phase << 4) | phase;
+      }
+      _stm_cycle += 1;
+
+      src = body->DATA.GAIN_STM_BODY.data;
+      addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
+      dst = &base[addr];
+      cnt = TRANS_NUM;
+      while (cnt--) {
+        phase = ((*src++) >> 12) & 0x000F;
+        *dst++ = 0xFF00 | (phase << 4) | phase;
+      }
+      _stm_cycle += 1;
+      break;
+    default:
+      break;
+  }
+
+  if ((_stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) == 0)
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET,
+               (_stm_cycle & ~GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) >> GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH);
+
+  if ((header->cpu_ctl_reg & STM_END) != 0) bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_cycle) - 1);
+}
+
+static void write_gain_stm(const volatile GlobalHeader* header, const volatile Body* body) {
+  volatile uint16_t* base = (volatile uint16_t*)FPGA_BASE;
+  uint16_t addr;
+  volatile uint16_t* dst;
+  const volatile uint16_t* src;
+  uint32_t freq_div;
+  uint32_t cnt;
+
+  if ((header->cpu_ctl_reg & STM_BEGIN) != 0) {
+    _stm_cycle = 0;
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, 0);
+    freq_div = (body->DATA.GAIN_STM_HEAD.data[1] << 16) | body->DATA.GAIN_STM_HEAD.data[0];
+    bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0, (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
+    _seq_gain_data_mode = body->DATA.GAIN_STM_HEAD.data[2];
+    return;
+  }
+
+  src = body->DATA.GAIN_STM_BODY.data;
+
   addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 9);
 
   switch (_seq_gain_data_mode) {
     case GAIN_DATA_MODE_PHASE_DUTY_FULL:
-      if ((header->fpga_ctl_reg & LEGACY_MODE) != 0) {
-        dst = &base[addr];
+      if ((header->cpu_ctl_reg & IS_DUTY) != 0) {
+        dst = &base[addr] + 1;
         _stm_cycle += 1;
       } else {
-        if ((header->cpu_ctl_reg & IS_DUTY) != 0) {
-          dst = &base[addr] + 1;
-          _stm_cycle += 1;
-        } else {
-          dst = &base[addr];
-        }
+        dst = &base[addr];
       }
       cnt = TRANS_NUM;
       while (cnt--) {
@@ -345,95 +433,19 @@ static void write_gain_stm(const volatile GlobalHeader* header, const volatile B
       }
       break;
     case GAIN_DATA_MODE_PHASE_FULL:
-      if ((header->fpga_ctl_reg & LEGACY_MODE) != 0) {
-        dst = &base[addr];
-        cnt = TRANS_NUM;
-        while (cnt--) {
-          *dst = 0xFF00 | ((*src++) & 0x00FF);
-          dst += 2;
-        }
-        _stm_cycle += 1;
-        src = body->DATA.GAIN_STM_BODY.data;
-        addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 9);
-        dst = &base[addr];
-        cnt = TRANS_NUM;
-        while (cnt--) {
-          *dst = 0xFF00 | (((*src++) >> 8) & 0x00FF);
-          dst += 2;
-        }
-        _stm_cycle += 1;
-      } else {
-        if ((header->cpu_ctl_reg & IS_DUTY) != 0) break;
-        dst = &base[addr];
-        cnt = 0;
-        while (cnt++ < TRANS_NUM) {
-          *dst++ = *src++;
-          *dst++ = _cycle[cnt] >> 1;
-        }
-        _stm_cycle += 1;
+      if ((header->cpu_ctl_reg & IS_DUTY) != 0) break;
+      dst = &base[addr];
+      cnt = 0;
+      while (cnt++ < TRANS_NUM) {
+        *dst++ = *src++;
+        *dst++ = _cycle[cnt] >> 1;
       }
+      _stm_cycle += 1;
       break;
     case GAIN_DATA_MODE_PHASE_HALF:
-      if ((header->fpga_ctl_reg & LEGACY_MODE) == 0) break;
-      dst = &base[addr];
-      cnt = TRANS_NUM;
-      while (cnt--) {
-        phase = (*src++) & 0x000F;
-        *dst = 0xFF00 | (phase << 4) | phase;
-        dst += 2;
-      }
-      _stm_cycle += 1;
-
-      src = body->DATA.GAIN_STM_BODY.data;
-      addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 9);
-      dst = &base[addr];
-      cnt = TRANS_NUM;
-      while (cnt--) {
-        phase = ((*src++) >> 4) & 0x000F;
-        *dst = 0xFF00 | (phase << 4) | phase;
-        dst += 2;
-      }
-      _stm_cycle += 1;
-
-      src = body->DATA.GAIN_STM_BODY.data;
-      addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 9);
-      dst = &base[addr];
-      cnt = TRANS_NUM;
-      while (cnt--) {
-        phase = ((*src++) >> 8) & 0x000F;
-        *dst = 0xFF00 | (phase << 4) | phase;
-        dst += 2;
-      }
-      _stm_cycle += 1;
-
-      src = body->DATA.GAIN_STM_BODY.data;
-      addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 9);
-      dst = &base[addr];
-      cnt = TRANS_NUM;
-      while (cnt--) {
-        phase = ((*src++) >> 12) & 0x000F;
-        *dst = 0xFF00 | (phase << 4) | phase;
-        dst += 2;
-      }
-      _stm_cycle += 1;
+      // Not supported in normal mode
       break;
     default:
-      if ((header->fpga_ctl_reg & LEGACY_MODE) != 0) {
-        dst = &base[addr];
-        _stm_cycle += 1;
-      } else {
-        if ((header->cpu_ctl_reg & IS_DUTY) != 0) {
-          dst = &base[addr] + 1;
-          _stm_cycle += 1;
-        } else {
-          dst = &base[addr];
-        }
-      }
-      cnt = TRANS_NUM;
-      while (cnt--) {
-        *dst = *src++;
-        dst += 2;
-      }
       break;
   }
 
@@ -533,8 +545,10 @@ void recv_ethercat(void) {
 
       if ((header->fpga_ctl_reg & STM_GAIN_MODE) == 0)
         write_point_stm(header, body);
-      else
+      else if ((header->fpga_ctl_reg & LEGACY_MODE) == 0)
         write_gain_stm(header, body);
+      else
+        write_gain_stm_legacy(header, body);
   }
   _sTx.ack = _ack;
 }
