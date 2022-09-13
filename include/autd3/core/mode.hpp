@@ -3,7 +3,7 @@
 // Created Date: 28/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/08/2022
+// Last Modified: 13/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -42,6 +42,8 @@ class LegacyMode : public Mode {
 
   void pack_stm_gain_body(size_t& sent, bool&, uint32_t freq_div, const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode mode,
                           driver::TxDatagram& tx) const override {
+    if (gains.size() > driver::GAIN_STM_LEGACY_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+
     const auto is_first_frame = sent == 0;
 
     if (is_first_frame) {
@@ -97,6 +99,8 @@ class NormalMode : public Mode {
 
   void pack_stm_gain_body(size_t& sent, bool& next_duty, uint32_t freq_div, const std::vector<std::vector<driver::Drive>>& gains,
                           driver::GainSTMMode mode, driver::TxDatagram& tx) const override {
+    if (gains.size() > driver::GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+
     const auto is_first_frame = sent == 0;
 
     if (is_first_frame) {
@@ -143,6 +147,8 @@ class NormalPhaseMode : public Mode {
 
   void pack_stm_gain_body(size_t& sent, bool&, uint32_t freq_div, const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode mode,
                           driver::TxDatagram& tx) const override {
+    if (gains.size() > driver::GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+
     const auto is_first_frame = sent == 0;
 
     if (is_first_frame) {

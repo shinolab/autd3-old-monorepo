@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 13/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,7 +26,7 @@ namespace autd3::core {
  * @brief GainSTM provides a function to display Gain sequentially and periodically.
  * @details GainSTM uses a timer on the FPGA to ensure that Gain is precisely timed.
  * GainSTM currently has the following three limitations.
- * 1. The maximum number of gains is driver::GAIN_STM_BUF_SIZE_MAX.
+ * 1. The maximum number of gains is driver::GAIN_STM_BUF_SIZE_MAX in normal mode and driver::GAIN_STM_LEGACY_BUF_SIZE_MAX in legacy mode.
  */
 struct GainSTM final : public STM {
   explicit GainSTM(const Geometry& geometry) : STM(), _geometry(geometry), _sent(0), _next_duty(false), _mode(driver::GainSTMMode::PhaseDutyFull) {}
@@ -37,10 +37,7 @@ struct GainSTM final : public STM {
    */
   template <typename G, std::enable_if_t<std::is_base_of_v<Gain, G>, nullptr_t> = nullptr>
   void add(G& gain) {
-    if (_gains.size() + 1 > driver::GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
-
     gain.build(_geometry);
-
     _gains.emplace_back(gain.drives());
   }
 
