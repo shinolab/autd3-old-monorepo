@@ -3,7 +3,7 @@ authors = ["Shun Suzuki"]
 language = "ja"
 multilingual = false
 src = "src"
-title = "AUTD3 CPU Firmware Specification v2.3"
+title = "AUTD3 CPU Firmware Specification v2.4"
 
 [rust]
 edition = "2021"
