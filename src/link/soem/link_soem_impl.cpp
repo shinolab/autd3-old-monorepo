@@ -3,7 +3,7 @@
 // Created Date: 23/08/2019
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/08/2022
+// Last Modified: 09/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2019-2020 Shun Suzuki. All rights reserved.
@@ -37,9 +37,7 @@ std::string lookup_autd() {
       return std::string(adapter->name);
     }
   }
-  std::stringstream ss;
-  ss << "No AUTD device is found.";
-  throw std::runtime_error(ss.str());
+  throw std::runtime_error("No AUTD3 devices found");
 }
 }  // namespace
 
@@ -75,12 +73,12 @@ void SOEMLink::open(const core::Geometry& geometry) {
   }
 
   const auto wc = ec_config_init(0);
-  if (wc <= 0) throw std::runtime_error("No slaves found!");
+  if (wc <= 0) throw std::runtime_error("No slaves found");
 
   for (auto i = 1; i <= wc; i++)
     if (std::strcmp(ec_slave[i].name, "AUTD") != 0) {
       std::stringstream ss;
-      ss << "Slave[" << i << "] is not AUTD.";
+      ss << "Slave[" << i << "] is not AUTD";
       throw std::runtime_error(ss.str());
     }
 
