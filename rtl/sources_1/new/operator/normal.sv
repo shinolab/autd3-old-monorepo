@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 13/09/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ module normal_operator #(
     input var CLK,
     cpu_bus_if.normal_port CPU_BUS,
     input var [WIDTH-1:0] CYCLE[0:DEPTH-1],
-    input var [1:0] LEGACY_MODE,
+    input var LEGACY_MODE,
     output var [WIDTH-1:0] DUTY[0:DEPTH-1],
     output var [WIDTH-1:0] PHASE[0:DEPTH-1]
 );

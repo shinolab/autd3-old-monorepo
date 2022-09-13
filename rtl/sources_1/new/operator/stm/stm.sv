@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 13/09/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ module stm_operator #(
 ) (
     input var CLK,
     input var [63:0] SYS_TIME,
-    input var [1:0] LEGACY_MODE,
+    input var LEGACY_MODE,
     input var [WIDTH-1:0] ULTRASOUND_CYCLE[0:DEPTH-1],
     input var [15:0] CYCLE,
     input var [31:0] FREQ_DIV,
