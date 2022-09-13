@@ -37,14 +37,14 @@ module stm_operator #(
 
   bit [WIDTH-1:0] duty_gain[0:DEPTH-1];
   bit [WIDTH-1:0] phase_gain[0:DEPTH-1];
-  bit [WIDTH-1:0] duty_focus[0:DEPTH-1];
+  bit [WIDTH-2:0] duty_focus[0:DEPTH-1];
   bit [WIDTH-1:0] phase_focus[0:DEPTH-1];
   bit [15:0] idx;
   bit start_gain, done_gain;
   bit start_focus, done_focus;
 
   for (genvar i = 0; i < DEPTH; i++) begin
-    assign DUTY[i]  = STM_GAIN_MODE ? duty_gain[i] : duty_focus[i];
+    assign DUTY[i]  = STM_GAIN_MODE ? duty_gain[i] : {1'b0, duty_focus[i]};
     assign PHASE[i] = STM_GAIN_MODE ? phase_gain[i] : phase_focus[i];
   end
 

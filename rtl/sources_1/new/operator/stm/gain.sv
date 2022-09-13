@@ -1515,6 +1515,7 @@ module stm_gain_operator #(
               phase_buf[242] <= data_out[64+WIDTH-1:64];
               duty_buf[242] <= data_out[80+WIDTH-1:80];
               phase_buf[243] <= data_out[96+WIDTH-1:96];
+              duty_buf[243] <= data_out[112+WIDTH-1:112];
               gain_addr_offset <= gain_addr_offset + 1;
               set_cnt <= set_cnt + 1;
             end

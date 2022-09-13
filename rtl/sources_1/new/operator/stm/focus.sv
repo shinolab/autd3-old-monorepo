@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 13/09/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ module stm_focus_operator #(
     ss_bus_if.focus_port SS_BUS,
     input var [31:0] SOUND_SPEED,
     input var [WIDTH-1:0] ULTRASOUND_CYCLE[0:DEPTH-1],
-    output var [WIDTH-1:0] DUTY[0:DEPTH-1],
+    output var [WIDTH-2:0] DUTY[0:DEPTH-1],
     output var [WIDTH-1:0] PHASE[0:DEPTH-1],
     output var START,
     output var DONE
@@ -31,9 +31,9 @@ module stm_focus_operator #(
   localparam int DIV_LATENCY = SQRT_LATENCY + 66 + 1;
   localparam int LATENCY = DIV_LATENCY + 249;
 
-  bit [WIDTH-1:0] duty[0:DEPTH-1];
+  bit [WIDTH-2:0] duty[0:DEPTH-1];
   bit [WIDTH-1:0] phase[0:DEPTH-1];
-  bit [WIDTH-1:0] duty_buf[0:DEPTH-1];
+  bit [WIDTH-2:0] duty_buf[0:DEPTH-1];
   bit [WIDTH-1:0] phase_buf[0:DEPTH-1];
 
   bit [15:0] idx;
