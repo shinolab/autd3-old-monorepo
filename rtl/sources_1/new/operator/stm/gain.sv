@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2022
+ * Last Modified: 14/09/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -728,6 +728,7 @@ module stm_gain_operator #(
               phase_buf[244] <= {1'b0, data_out[71:64], 4'h00};
               duty_buf[244] <= {2'b00, data_out[79:72], 3'h7} + 1;
               phase_buf[245] <= {1'b0, data_out[87:80], 4'h00};
+              duty_buf[245] <= {2'b00, data_out[95:88], 3'h7} + 1;
               phase_buf[246] <= {1'b0, data_out[103:96], 4'h00};
               duty_buf[246] <= {2'b00, data_out[111:104], 3'h7} + 1;
               phase_buf[247] <= {1'b0, data_out[119:112], 4'h00};
