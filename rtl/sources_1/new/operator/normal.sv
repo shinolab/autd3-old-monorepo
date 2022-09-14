@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 13/09/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ module normal_operator #(
     input var CLK,
     cpu_bus_if.normal_port CPU_BUS,
     input var [WIDTH-1:0] CYCLE[0:DEPTH-1],
-    input var [1:0] LEGACY_MODE,
+    input var LEGACY_MODE,
     output var [WIDTH-1:0] DUTY[0:DEPTH-1],
     output var [WIDTH-1:0] PHASE[0:DEPTH-1]
 );
@@ -68,17 +68,8 @@ module normal_operator #(
   );
 
   always_ff @(posedge CLK) begin
-    if (read_addr == DEPTH - 1) begin
-      read_addr <= 0;
-    end else begin
-      read_addr <= read_addr + 1;
-    end
-
-    if (set_addr == DEPTH - 1) begin
-      set_addr <= 0;
-    end else begin
-      set_addr <= set_addr + 1;
-    end
+    read_addr <= (read_addr == DEPTH - 1) ? 0 : read_addr + 1;
+    set_addr  <= (set_addr == DEPTH - 1) ? 0 : set_addr + 1;
 
     if (LEGACY_MODE) begin
       phase_buf[set_addr] <= {1'b0, dout[7:0], 4'h00};

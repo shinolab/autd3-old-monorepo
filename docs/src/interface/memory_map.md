@@ -9,7 +9,7 @@
     - 0x3: STM BRAM
 - Modulator/STM BRAMはそのままだと書き込みアドレスが足りないので, Controller BRAM内の特定のアドレスに書き込まれたオフセットを使用する.
 
-## Controller
+# Controller BRAM
 
 | BRAM_SELECT | BRAM_ADDR (9bit) | DATA (16 bit)           | R/W |
 |-------------|------------------|----------------------   |-----|
@@ -46,7 +46,7 @@
     * 6: STM_MODE (0: Point STM, 1: Gain STM)
     * 8: SYNC_SET
 
-## Modulator
+# Modulator BRAM
 
 Modulator BRAMのaddressは\{MOD_ADDR_OFFSET, CPU_ADDR\[13:0\]\}の$\SI{15}{bit}$
 
@@ -56,23 +56,37 @@ Modulator BRAMのaddressは\{MOD_ADDR_OFFSET, CPU_ADDR\[13:0\]\}の$\SI{15}{bit}
 |             | ︙                | ︙                        | ︙  |
 |             | 0x7FFF            | mod\[65535\]/mod\[65534\] | W   |
 
-## Normal
+# Normal BRAM
+
+## Legacy mode
+
+| BRAM_SELECT | BRAM_ADDR (9bit)  | DATA (16bit)                          | R/W |
+|-------------|-------------------|---------------------------------------|-----|
+| 0x2         | 0x000             | 15:8 = duty\[0\]<br>7:0 = phase\[0\]     | W   |
+|             | 0x001             | unused                                | -   |
+|             | 0x002             | 15:8 = duty\[1\]<br>7:0 = phase\[1\]     | W   |
+|             | ︙                | ︙                                    | ︙  |
+|             | 0x1F0             | 15:8 = duty\[248\]<br>7:0 = phase\[248\] | W   |
+|             | 0x1F1             | unused                                | W   |
+
+## Normal mode
 
 | BRAM_SELECT | BRAM_ADDR (9bit)  | DATA (16bit)        | R/W |
 |-------------|-------------------|---------------------|-----|
 | 0x2         | 0x000             | 12:0 = phase\[0\]   | W   |
 |             | 0x001             | 12:0 = duty\[0\]    | W   |
+|             | 0x002             | 12:0 = phase\[1\]   | W   |
 |             | ︙                | ︙                  | ︙  |
 |             | 0x1F0             | 12:0 = phase\[248\] | W   |
 |             | 0x1F1             | 12:0 = duty\[248\]  | W   |
 
-## STM 
+# STM BRAM
 
 STM BRAMはPoint STMとGain STMで共用である.
 
 STM BRAMのaddressは\{STM_ADDR_OFFSET, CPU_ADDR\[13:0\]\}の$\SI{19}{bit}$
 
-### Point STM (STM_MODE == 0)
+## Point STM (STM_MODE == 0)
 
 | BRAM_SELECT | BRAM_ADDR (19bit) | DATA (16bit)                            | R/W |
 |-------------|-------------------|-----------------------------------------|-----|
@@ -88,7 +102,29 @@ STM BRAMのaddressは\{STM_ADDR_OFFSET, CPU_ADDR\[13:0\]\}の$\SI{19}{bit}$
 |             | 0x7FFFB           | duty_shift\[65535\]/z\[65535\]\[17:12\] | W   |
 |             | 0x7FFFC-0x7FFFF   | unused                                  | W   |
 
-### Gain STM (STM_MODE == 1)
+## Gain STM (STM_MODE == 1)
+
+### Legacy mode
+
+| BRAM_SELECT | BRAM_ADDR (19bit) | DATA (16bit)                                          | R/W |
+|-------------|-------------------|-------------------------------------------------------|-----|
+| 0x3         | 0x00000           | 15:8 = duty\[0\]\[0\]<br>7:0 = phase\[0\]\[0\]           | W   |
+|             | 0x00001           | 15:8 = duty\[0\]\[1\]<br>7:0 = phase\[0\]\[1\]           | W   |
+|             | ︙                | ︙                                                    | ︙  |
+|             | 0x000F8           | 15:8 = duty\[0\]\[248\]<br>7:0 = phase\[0\]\[248\]       | W   |
+|             | 0x000F9           | unused                                                | W   |
+|             | ︙                | ︙                                                    | ︙  |
+|             | 0x000FF           | unused                                                | W   |
+|             | 0x00100           | 15:8 = duty\[1\]\[0\]<br>7:0 = phase\[1\]\[0\]           | W   |
+|             | ︙                | ︙                                                    | ︙  |
+|             | 0x7FF00           | 15:8 = duty\[2047\]\[0\]<br>7:0 = phase\[2047\]\[0\]     | W   |
+|             | ︙                | ︙                                                    | ︙  |
+|             | 0x7FFF8           | 15:8 = duty\[2047\]\[248\]<br>7:0 = phase\[2047\]\[248\] | W   |
+|             | 0x7FFF9           | unused                                                | W   |
+|             | ︙                | ︙                                                    | ︙  |
+|             | 0x7FFFF           | unused                                                | W   |
+
+### Normal mode
 
 | BRAM_SELECT | BRAM_ADDR (19bit) | DATA (16bit)                 | R/W |
 |-------------|-------------------|------------------------------|-----|
@@ -97,9 +133,15 @@ STM BRAMのaddressは\{STM_ADDR_OFFSET, CPU_ADDR\[13:0\]\}の$\SI{19}{bit}$
 |             | ︙                | ︙                           | ︙  |
 |             | 0x001F0           | 12:0 = phase\[0\]\[248\]     | W   |
 |             | 0x001F1           | 12:0 = duty\[0\]\[248\]      | W   |
+|             | 0x001F2           | unused                       | W   |
 |             | ︙                | ︙                           | ︙  |
-|             | 0x7FE0E           | 12:0 = phase\[65535\]\[0\]   | W   |
-|             | 0x7FE0F           | 12:0 = duty\[65535\]\[0\]    | W   |
+|             | 0x001FF           | unused                       | W   |
+|             | 0x00200           | 12:0 = phase\[1\]\[0\]       | W   |
 |             | ︙                | ︙                           | ︙  |
-|             | 0x7FFFE           | 12:0 = phase\[65535\]\[248\] | W   |
-|             | 0x7FFFF           | 12:0 = duty\[65535\]\[248\]  | W   |
+|             | 0x7FE00           | 12:0 = phase\[65535\]\[0\]   | W   |
+|             | 0x7FE01           | 12:0 = duty\[65535\]\[0\]    | W   |
+|             | ︙                | ︙                           | ︙  |
+|             | 0x7FFF1           | 12:0 = duty\[65535\]\[248\]  | W   |
+|             | 0x7FFF2           | unused                       | W   |
+|             | ︙                | ︙                           | ︙  |
+|             | 0x7FFFF           | unused                       | W   |

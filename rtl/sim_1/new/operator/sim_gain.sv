@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 13/09/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -64,14 +64,15 @@ module sim_operator_stm_gain ();
 
   bit [15:0] idx_buf;
   initial begin
-    legacy_mode = 0;
+    legacy_mode = 1;
 
-    cycle_s = 10 - 1;
-    freq_div_s = 8 * (1 + DEPTH / 4 + 3 + 2);
+    cycle_s = legacy_mode ? 2048 - 1 : 1024 - 1;
+    freq_div_s = legacy_mode ? 4 * (1 + DEPTH / 8 + 3 + 2) : 4 * (1 + DEPTH / 4 + 3 + 2);
     @(posedge locked);
 
     sim_helper_random.init();
     for (int i = 0; i < cycle_s + 1; i++) begin
+      $display("write %d/%d", i + 1, cycle_s + 1);
       if (legacy_mode) begin
         for (int j = 0; j < DEPTH; j++) begin
           duty_buf[i][j]  = sim_helper_random.range(8'hFF, 0);
@@ -90,7 +91,7 @@ module sim_operator_stm_gain ();
     for (int j = 0; j < cycle_s + 1; j++) begin
       @(posedge start);
       idx_buf = idx;
-      $display("check %d @%d", idx_buf, SYS_TIME);
+      $display("check %d/%d", j + 1, cycle_s + 1);
       @(posedge done);
       for (int i = 0; i < DEPTH; i++) begin
         if (legacy_mode) begin

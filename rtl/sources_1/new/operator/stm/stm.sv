@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 13/09/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ module stm_operator #(
 ) (
     input var CLK,
     input var [63:0] SYS_TIME,
-    input var [1:0] LEGACY_MODE,
+    input var LEGACY_MODE,
     input var [WIDTH-1:0] ULTRASOUND_CYCLE[0:DEPTH-1],
     input var [15:0] CYCLE,
     input var [31:0] FREQ_DIV,
@@ -37,14 +37,14 @@ module stm_operator #(
 
   bit [WIDTH-1:0] duty_gain[0:DEPTH-1];
   bit [WIDTH-1:0] phase_gain[0:DEPTH-1];
-  bit [WIDTH-1:0] duty_focus[0:DEPTH-1];
+  bit [WIDTH-2:0] duty_focus[0:DEPTH-1];
   bit [WIDTH-1:0] phase_focus[0:DEPTH-1];
   bit [15:0] idx;
   bit start_gain, done_gain;
   bit start_focus, done_focus;
 
   for (genvar i = 0; i < DEPTH; i++) begin
-    assign DUTY[i]  = STM_GAIN_MODE ? duty_gain[i] : duty_focus[i];
+    assign DUTY[i]  = STM_GAIN_MODE ? duty_gain[i] : {1'b0, duty_focus[i]};
     assign PHASE[i] = STM_GAIN_MODE ? phase_gain[i] : phase_focus[i];
   end
 
