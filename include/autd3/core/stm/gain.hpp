@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2022
+// Last Modified: 15/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,6 +30,20 @@ namespace autd3::core {
  */
 struct GainSTM final : public STM {
   explicit GainSTM(const Geometry& geometry) : STM(), _geometry(geometry), _sent(0), _next_duty(false), _mode(driver::GainSTMMode::PhaseDutyFull) {}
+
+  /**
+   * @brief Set frequency of the STM
+   * @param[in] freq Frequency of the STM
+   * @details STM mode has some constraints, which determine the actual frequency of the STM.
+   * @return double Actual frequency of STM
+   */
+  double set_frequency(const double freq) {
+    const auto sample_freq = static_cast<double>(size()) * freq;
+    const auto div = std::clamp(static_cast<uint32_t>(std::round(static_cast<double>(driver::FPGA_CLK_FREQ) / sample_freq)),
+                                _geometry.mode()->gain_stm_div_min(), std::numeric_limits<uint32_t>::max());
+    _freq_div = div;
+    return frequency();
+  }
 
   /**
    * @brief Add gain
