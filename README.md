@@ -1,8 +1,6 @@
-<div>
 <h1 align="center">
-<a href="https://hapislab.org/airborne-ultrasound-tactile-display?lang=en">AUTD3: Ariborne Ultrasound Tactile Display 3</a>
+AUTD3: Ariborne Ultrasound Tactile Display 3
 </h1>
-</div>
 
 <div align="center">
 
@@ -25,8 +23,10 @@
 </div>
 
 <p align="center">
-The Airborne Ultrasound Tactile Display (AUTD) remotely produces tactile sensation on a human skin surface without requiring users to wear devices.
-This repository is a client library to drive AUTD3 devices. This cross-platform library supports Windows, macOS, and Linux (including Single Board Computer such as Raspberry Pi).
+The Airborne Ultrasound Tactile Display (AUTD) is a midair haptic device that can remotely produce tactile sensation on a human skin surface without wearing devices.
+Please see <a href="https://hapislab.org/airborne-ultrasound-tactile-display?lang=en">our laboratory homepage</a> for more details on AUTD.
+This repository contains a client library to drive AUTD version 3 devices.
+This cross-platform library supports Windows, macOS, and Linux (including Single Board Computer such as Raspberry Pi).
 </p>
 
 ## Document
