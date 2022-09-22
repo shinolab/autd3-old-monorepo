@@ -19,9 +19,9 @@ int main() try {
 
   autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
 
-  const std::string remote_ipv4_addr = "your server ip";
-  const std::string remote_ams_net_id = "your server ams net id";
-  const std::string local_ams_net_id = "your client ams net id";
+  const std::string remote_ipv4_addr = "172.16.99.182";
+  const std::string remote_ams_net_id = "172.16.99.182.1.1";
+  const std::string local_ams_net_id = "172.16.99.198.1.1";
   auto link = autd3::link::RemoteTwinCAT(remote_ipv4_addr, remote_ams_net_id).local_ams_net_id(local_ams_net_id).build();
   autd.open(std::move(link));
 
