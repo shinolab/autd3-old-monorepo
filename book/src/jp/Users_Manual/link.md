@@ -96,6 +96,11 @@ RemoteTwinCATを使用する場合はPCを2台用意する必要がある.
 このPCをここでは"サーバ"と呼ぶ.
 一方, 開発側のPC, 即ちSDKを使用する側は特に制約はなく, サーバと同じLANに繋がっていれば良い, こちらをここでは"クライアント"と呼ぶ.
 
+<figure>
+  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/remotetwincat.jpg"/>
+  <figcaption>Network Configuration</figcaption>
+</figure>
+
 まず, サーバとAUTDデバイスを接続する.
 この時使うLANのアダプタはTwinCAT linkと同じく, TwinCAT対応のアダプタである必要がある.
 また, サーバとクライアントを別のLANで繋ぐ.
@@ -110,28 +115,48 @@ RemoteTwinCATを使用する場合はPCを2台用意する必要がある.
 AUTDServer.exe -c 169.254.175.45 -k
 ```
 
-そして, 以下の図のように, System→Routesを開き, Current RouteタブのAmsNetId及び, NetId ManagementタブのLocal NetIdを確認しておく.
+そして, 以下の図のように, System→Routesを開き, Current RouteタブのNetId ManagementタブのLocal NetIdを確認しておく.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/Current_Route.jpg"/>
   <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/NetId_Management.jpg"/>
-  <figcaption>AmsNetId/Local NetId</figcaption>
+  <figcaption>Server AmsNetId</figcaption>
 </figure>
 
-ここでは, それぞれ"169.254.175.45.1.1", "172.16.99.194.1.1"だったとする.
+ここでは, "172.16.99.194.1.1"だったとする.
 この時, クライアント側は`autd3/link/remote_twincat.hpp`ヘッダーをincludeして,
 ```cpp
 #include "autd3/link/remote_twincat.hpp"
 
 ...
-  const string remote_ipv4_addr = "169.254.205.219";
-  const string remote_ams_net_id = "172.16.99.194.1.1";
-  const string local_ams_net_id = "169.254.175.45.1.1";
-  auto link = link::RemoteTwinCAT(remote_ipv4_addr, remote_ams_net_id).local_ams_net_id(local_ams_net_id).build();
+
+  const string server_ams_net_id = "172.16.99.194.1.1";
+  auto link = link::RemoteTwinCAT(server_ams_net_id).build();
 ```
 のようにすれば良い.
 
-なお, TCP関係のエラーが出る場合は, ファイアウォールでADSプロトコルがブロックされている可能性がある.
+場合によっては, クライアント側でサーバのIPアドレスとクライアントのAMS NetIdを指定する必要があるかもしれない.
+その場合は, 以下のようにそれぞれ指定されたい.
+
+```cpp
+  const string server_ip_address = "169.254.205.219";
+  const string server_ams_net_id = "172.16.99.194.1.1";
+  const string client_ams_net_id = "169.254.175.45.1.1";
+  auto link = link::RemoteTwinCAT(server_ams_net_id)
+    .server_ip_address(server_ip_address)
+    .client_ams_net_id(client_ams_net_id)
+    .build();
+```
+
+クライアントのAMS NetIdは, 以下の図のようにTwinCATでSystem→Routesを開き, Current RouteタブのAmsNetIdで確認できる.
+
+<figure>
+  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/Current_Route.jpg"/>
+  <figcaption>Client AmsNetId</figcaption>
+</figure>
+
+### ファイアウォール
+
+TCP関係のエラーが出る場合は, ファイアウォールでADSプロトコルがブロックされている可能性がある.
 その場合は, ファイアウォールの設定でTCP/UDPの48898番ポートの接続を許可する.
 
 ## SOEM
