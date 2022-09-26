@@ -8,6 +8,7 @@
 - Add `gain::TransducerTest`
 - Add `modulation::LPF`
 - Add `ArrayFireBackend` (experimental)
+- Fix [#25](https://github.com/shinolab/autd3/issues/25), [#26](https://github.com/shinolab/autd3/issues/26)
 - Update firmware to v2.4
 
 # 2.3.1
