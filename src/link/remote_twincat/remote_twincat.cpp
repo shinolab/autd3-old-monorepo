@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/09/2022
+// Last Modified: 22/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -58,6 +58,15 @@ class RemoteTwinCATImpl final : public core::Link {
   RemoteTwinCATImpl& operator=(RemoteTwinCATImpl&& obj) = delete;
 
   void open(const core::Geometry&) override {
+#ifdef _WIN32
+    WSADATA wsa_data;
+    if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) {
+      std::stringstream ss;
+      ss << "WSAStartup failed:" << WSAGetLastError();
+      throw std::runtime_error(ss.str());
+    }
+#endif
+
     const auto octets = split(_remote_ams_net_id, '.');
     if (octets.size() != 6) throw std::runtime_error("Ams net id must have 6 octets");
 
@@ -78,7 +87,11 @@ class RemoteTwinCATImpl final : public core::Link {
                      static_cast<uint8_t>(std::stoi(octets[2])), static_cast<uint8_t>(std::stoi(octets[3])),
                      static_cast<uint8_t>(std::stoi(octets[4])), static_cast<uint8_t>(std::stoi(octets[5]))};
 
-    if (AdsAddRoute(this->_net_id, _ipv4_addr.c_str()) != 0) throw std::runtime_error("Could not connect to remote");
+    if (const auto res = AdsAddRoute(this->_net_id, _ipv4_addr.c_str()); res != 0) {
+      std::stringstream ss;
+      ss << "Could not connect to remote: " << res << std::endl;
+      throw std::runtime_error(ss.str());
+    }
 
     this->_port = AdsPortOpenEx();
 
@@ -86,6 +99,9 @@ class RemoteTwinCATImpl final : public core::Link {
   }
   void close() override {
     if (AdsPortCloseEx(this->_port) != 0) throw std::runtime_error("Failed to close");
+#ifdef _WIN32
+    WSACleanup();
+#endif
     this->_port = 0;
   }
   bool send(const driver::TxDatagram& tx) override {
