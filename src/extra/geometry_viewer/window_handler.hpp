@@ -14,6 +14,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+#include <algorithm>
 #include <utility>
 
 namespace autd3::extra::geometry_viewer {

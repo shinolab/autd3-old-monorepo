@@ -31,7 +31,6 @@ int main() try {
       .view(autd.geometry());
 
   return 0;
-
 } catch (std::exception& e) {
   std::cerr << e.what() << std::endl;
   return -1;
