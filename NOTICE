@@ -4,6 +4,13 @@ THIRD PARTY NOTICES
   * SOEM link uses SOEM (https://github.com/OpenEtherCATsociety/SOEM)
     * For windows it further depends on WinPcap (https://www.winpcap.org/).
   * RemoteTwinCAT link uses ADS (https://github.com/Beckhoff/ADS)
+  * GeometryViewer uses
+    * fx-gltf (https://github.com/jessey-git/fx-gltf)
+    * glfw (https://github.com/glfw/glfw)
+    * glm (https://github.com/g-truc/glm)
+    * Dear ImGui (https://github.com/ocornut/imgui)
+    * nlohmann-json (https://github.com/nlohmann/json)
+    * stb (https://github.com/nothings/stb)
 * The licenses of these libraries are shown below.
 
 ********************* spdlog *********************
