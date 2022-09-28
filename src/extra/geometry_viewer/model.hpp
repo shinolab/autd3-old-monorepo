@@ -44,7 +44,6 @@
 #if defined(__GNUC__) && !defined(__llvm__)
 #pragma GCC diagnostic push
 #endif
-#include <iostream>
 #include <vulkan/vulkan.hpp>
 #if _MSC_VER
 #pragma warning(pop)

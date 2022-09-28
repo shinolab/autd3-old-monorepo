@@ -3,7 +3,7 @@
 // Created Date: 23/08/2019
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/09/2022
+// Last Modified: 28/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2019-2020 Shun Suzuki. All rights reserved.
@@ -27,14 +27,13 @@
 namespace {
 std::string lookup_autd() {
   spdlog::debug("looking for AUTD...");
-  auto* adapters = ec_find_adapters();
+  const auto* adapters = ec_find_adapters();
   for (const auto* adapter = adapters; adapter != nullptr; adapter = adapter->next) {
     if (ec_init(adapter->name) <= 0) continue;
-    const auto wc = ec_config_init(0);
-    if (wc <= 0) continue;
+    if (const auto wc = ec_config_init(0); wc <= 0) continue;
     if (std::strcmp(ec_slave[1].name, "AUTD") == 0) {
       spdlog::debug("AUTD found on {} ({})", adapter->name, adapter->desc);
-      return std::string(adapter->name);
+      return {adapter->name};
     }
   }
   throw std::runtime_error("No AUTD3 devices found");

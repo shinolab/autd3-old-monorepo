@@ -22,8 +22,9 @@ void GeometryViewer::view(const core::Geometry& geometry) const {
   std::vector<gltf::Geometry> geometries;
   geometries.reserve(geometry.num_devices());
   for (const auto& g : geometry) {
-    const auto pos = glm::vec3(g.origin().x(), g.origin().y(), g.origin().z());
-    const auto rot = glm::quat(g.rotation().w(), g.rotation().x(), g.rotation().y(), g.rotation().z());
+    const auto pos = glm::vec3(static_cast<float>(g.origin().x()), static_cast<float>(g.origin().y()), static_cast<float>(g.origin().z()));
+    const auto rot = glm::quat(static_cast<float>(g.rotation().w()), static_cast<float>(g.rotation().x()), static_cast<float>(g.rotation().y()),
+                               static_cast<float>(g.rotation().z()));
     geometries.emplace_back(gltf::Geometry{pos, rot});
   }
 
