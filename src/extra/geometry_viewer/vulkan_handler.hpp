@@ -563,7 +563,12 @@ class VulkanHandler {
   vk::UniqueSampler _texture_sampler;
 
   static inline const std::vector validation_layers = {"VK_LAYER_KHRONOS_validation"};
-  static inline const std::vector device_extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+  static inline const std::vector device_extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME
+#ifdef __APPLE__
+                                                       ,
+                                                       "VK_KHR_portability_subset"
+#endif
+  };
 
   static bool has_stencil_component(const vk::Format format) {
     return format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint;
