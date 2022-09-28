@@ -67,13 +67,7 @@ class GeometryViewer {
    * @brief Constructor
    */
   GeometryViewer() noexcept
-      : _width(800),
-        _height(600),
-        _vsync(true),
-        _frag("shaders/frag.spv"),
-        _vert("shaders/vert.spv"),
-        _model("models/AUTD.glb"),
-        _font("fonts/NotoSans-Regular.ttf"){};
+      : _width(800), _height(600), _vsync(true), _frag("shaders/frag.spv"), _vert("shaders/vert.spv"), _model("models/AUTD.glb"), _font(""){};
   ~GeometryViewer() = default;
   GeometryViewer(const GeometryViewer& v) noexcept = delete;
   GeometryViewer& operator=(const GeometryViewer& obj) = delete;
