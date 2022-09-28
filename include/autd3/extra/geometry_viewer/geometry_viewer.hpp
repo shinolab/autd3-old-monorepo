@@ -35,6 +35,30 @@ class GeometryViewer {
   }
 
   /**
+   * @brief Set shader path
+   */
+  GeometryViewer& shader(std::string vert, std::string frag) {
+    _vert = std::move(vert);
+    _frag = std::move(frag);
+    return *this;
+  }
+  /**
+   * @brief Set model path
+   */
+  GeometryViewer& model(std::string model) {
+    _model = std::move(model);
+    return *this;
+  }
+
+  /**
+   * @brief Set font path
+   */
+  GeometryViewer& font(std::string font) {
+    _font = std::move(font);
+    return *this;
+  }
+
+  /**
    * @brief View geometry
    */
   void view(const core::Geometry& geometry) const;
@@ -42,7 +66,14 @@ class GeometryViewer {
   /**
    * @brief Constructor
    */
-  GeometryViewer() noexcept : _width(800), _height(600), _vsync(true){};
+  GeometryViewer() noexcept
+      : _width(800),
+        _height(600),
+        _vsync(true),
+        _frag("shaders/frag.spv"),
+        _vert("shaders/vert.spv"),
+        _model("models/AUTD.glb"),
+        _font("fonts/NotoSans-Regular.ttf"){};
   ~GeometryViewer() = default;
   GeometryViewer(const GeometryViewer& v) noexcept = delete;
   GeometryViewer& operator=(const GeometryViewer& obj) = delete;
@@ -53,6 +84,10 @@ class GeometryViewer {
   int32_t _width;
   int32_t _height;
   bool _vsync;
+  std::string _frag;
+  std::string _vert;
+  std::string _model;
+  std::string _font;
 };
 
 }  // namespace autd3::extra::geometry_viewer

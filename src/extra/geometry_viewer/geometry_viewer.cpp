@@ -29,8 +29,8 @@ void GeometryViewer::view(const core::Geometry& geometry) const {
 
   WindowHandler window(_width, _height);
   VulkanHandler handle;
-  VulkanRenderer renderer(&handle, &window, _vsync);
-  gltf::Model model("models/AUTD.glb", geometries);
+  VulkanRenderer renderer(&handle, &window, _frag, _vert, _font, _vsync);
+  gltf::Model model(_model, geometries);
   VulkanImGui imgui{};
 
   window.init(&renderer, VulkanRenderer::resize_callback, VulkanRenderer::pos_callback);
@@ -55,7 +55,7 @@ void GeometryViewer::view(const core::Geometry& geometry) const {
   renderer.create_command_buffers();
   renderer.create_sync_objects();
 
-  imgui.init(window, handle, static_cast<uint32_t>(renderer.frames_in_flight()), renderer.render_pass(), geometries);
+  imgui.init(window, handle, static_cast<uint32_t>(renderer.frames_in_flight()), renderer.render_pass(), geometries, _font);
 
   while (!window.should_close()) {
     WindowHandler::poll_events();

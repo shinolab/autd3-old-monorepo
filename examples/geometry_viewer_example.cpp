@@ -22,7 +22,13 @@ int main() try {
   autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, 0, autd3::DEVICE_WIDTH), autd3::Vector3(0, autd3::pi, 0));  // top
   autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, 0, 0), autd3::Vector3(0, -autd3::pi / 2.0, 0));             // right
 
-  autd3::extra::geometry_viewer::GeometryViewer().window_size(800, 600).vsync(true).view(autd.geometry());
+  autd3::extra::geometry_viewer::GeometryViewer()
+      .window_size(800, 600)
+      .vsync(true)
+      .model(AUTD3_GEOMETRY_VIEWER_MODEL_PATH)
+      .shader(AUTD3_GEOMETRY_VIEWER_VERT_SHADER_PATH, AUTD3_GEOMETRY_VIEWER_FRAG_SHADER_PATH)
+      .font(AUTD3_GEOMETRY_FONT_PATH)
+      .view(autd.geometry());
 
   return 0;
 

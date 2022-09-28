@@ -34,7 +34,7 @@ class VulkanImGui {
   VulkanImGui& operator=(VulkanImGui&& obj) = default;
 
   void init(const WindowHandler& window, const VulkanHandler& handler, const uint32_t image_count, const VkRenderPass renderer_pass,
-            std::vector<gltf::Geometry> geometries) {
+            std::vector<gltf::Geometry> geometries, const std::string& font_path) {
     _geometries = std::move(geometries);
 
     const auto& [pos, rot] = _geometries[0];
@@ -69,7 +69,10 @@ class VulkanImGui {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     const ImGuiIO& io = ImGui::GetIO();
-    io.Fonts->AddFontFromFileTTF("fonts/NotoSans-Regular.ttf", 16.0f * factor);
+    if (!font_path.empty())
+      io.Fonts->AddFontFromFileTTF(font_path.c_str(), 16.0f * factor);
+    else
+      io.Fonts->AddFontDefault();
 
     ImGui::StyleColorsDark();
 

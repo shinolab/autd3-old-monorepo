@@ -37,9 +37,14 @@ struct UniformBufferObject {
 
 class VulkanRenderer {
  public:
-  explicit VulkanRenderer(const VulkanHandler* handler, const WindowHandler* window, const bool vsync = true) noexcept
+  std::string font_path;
+  explicit VulkanRenderer(const VulkanHandler* handler, const WindowHandler* window, std::string frag, std::string vert, std::string font_path,
+                          const bool vsync = true) noexcept
       : _handler(handler),
         _window(window),
+        _frag(std::move(frag)),
+        _vert(std::move(vert)),
+        _font_path(std::move(font_path)),
         _swap_chain(nullptr),
         _render_pass(nullptr),
         _pipeline_layout(nullptr),
@@ -177,8 +182,8 @@ class VulkanRenderer {
   }
 
   void create_graphics_pipeline(gltf::Model& model) {
-    const auto vert_shader_code = read_file("shaders/vert.spv");
-    const auto frag_shader_code = read_file("shaders/frag.spv");
+    const auto vert_shader_code = read_file(_vert);
+    const auto frag_shader_code = read_file(_frag);
 
     vk::UniqueShaderModule vert_shader_module = create_shader_module(_handler->device(), vert_shader_code);
     vk::UniqueShaderModule frag_shader_module = create_shader_module(_handler->device(), frag_shader_code);
@@ -555,7 +560,11 @@ class VulkanRenderer {
     if (std::abs(renderer->_last_font_factor - factor) < 0.01f) return;
     renderer->_last_font_factor = factor;
     const ImGuiIO& io = ImGui::GetIO();
-    renderer->_font = io.Fonts->AddFontFromFileTTF("fonts/NotoSans-Regular.ttf", 16.0f * factor);
+    if (!renderer->_font_path.empty())
+      renderer->_font = io.Fonts->AddFontFromFileTTF(renderer->_font_path.c_str(), 16.0f * factor);
+    else {
+      renderer->_font = io.Fonts->AddFontDefault();
+    }
     {
       renderer->_handler->device().waitIdle();
 
@@ -617,6 +626,10 @@ class VulkanRenderer {
  private:
   const VulkanHandler* _handler;
   const WindowHandler* _window;
+
+  std::string _frag;
+  std::string _vert;
+  std::string _font_path;
 
   vk::UniqueSwapchainKHR _swap_chain;
   std::vector<vk::Image> _swap_chain_images;
