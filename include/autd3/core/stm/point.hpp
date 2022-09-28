@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/09/2022
+// Last Modified: 28/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -68,7 +68,7 @@ struct PointSTM final : public STM {
    * @details STM mode has some constraints, which determine the actual frequency of the STM.
    * @return double Actual frequency of STM
    */
-  double set_frequency(const double freq) {
+  double set_frequency(const double freq) override {
     const auto sample_freq = static_cast<double>(size()) * freq;
     const auto div = std::clamp(static_cast<uint32_t>(std::round(static_cast<double>(driver::FPGA_CLK_FREQ) / sample_freq)),
                                 driver::POINT_STM_SAMPLING_FREQ_DIV_MIN, std::numeric_limits<uint32_t>::max());
