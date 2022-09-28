@@ -69,8 +69,9 @@ struct QueueFamilyIndices {
 
 class VulkanHandler {
  public:
-  explicit VulkanHandler(const size_t gpu_idx = 0, const bool enable_validation_layers = true) noexcept
-      : _gpu_idx(gpu_idx), _enable_validation_layers(enable_validation_layers) {}
+  explicit VulkanHandler(const size_t gpu_idx = 0, const bool msaa_enable = true, const bool mipmap_enable = true,
+                         const bool enable_validation_layers = true) noexcept
+      : _gpu_idx(gpu_idx), _msaa_enable(msaa_enable), _mipmap_enable(mipmap_enable), _enable_validation_layers(enable_validation_layers) {}
   ~VulkanHandler() = default;
   VulkanHandler(const VulkanHandler& v) = delete;
   VulkanHandler& operator=(const VulkanHandler& obj) = delete;
@@ -206,7 +207,7 @@ class VulkanHandler {
       const auto props = _physical_device.getProperties();
       std::cerr << "WARN: Cannot use selected GPU (" << _gpu_idx << "), " << props.deviceName << " is used instead." << std::endl;
     }
-    _msaa_samples = get_max_usable_sample_count();
+    _msaa_samples = _msaa_enable ? get_max_usable_sample_count() : vk::SampleCountFlagBits::e1;
   }
 
   void create_logical_device() {
@@ -475,7 +476,7 @@ class VulkanHandler {
     int tex_width, tex_height, tex_channels;
     stbi_uc* pixels = stbi_load_from_memory(image_buffer, static_cast<int>(image_len), &tex_width, &tex_height, &tex_channels, STBI_rgb_alpha);
     if (!pixels) throw std::runtime_error("failed to load texture image!");
-    _mip_levels = static_cast<uint32_t>(std::floor(std::log2(std::max(tex_width, tex_height)))) + 1;
+    _mip_levels = _msaa_enable ? static_cast<uint32_t>(std::floor(std::log2(std::max(tex_width, tex_height)))) + 1 : 1;
     const auto image_size = tex_width * tex_height * 4;
 
     auto [staging_buffer, staging_buffer_memory] = create_buffer(
@@ -488,10 +489,11 @@ class VulkanHandler {
     _device->unmapMemory(staging_buffer_memory.get());
     stbi_image_free(pixels);
 
-    auto [texture_image, texture_image_memory] = create_image(
-        static_cast<uint32_t>(tex_width), static_cast<uint32_t>(tex_height), _mip_levels, vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Srgb,
-        vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
-        vk::MemoryPropertyFlagBits::eDeviceLocal);
+    auto flag = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled;
+    if (_mipmap_enable) flag |= vk::ImageUsageFlagBits::eTransferSrc;
+    auto [texture_image, texture_image_memory] =
+        create_image(static_cast<uint32_t>(tex_width), static_cast<uint32_t>(tex_height), _mip_levels, vk::SampleCountFlagBits::e1,
+                     vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, flag, vk::MemoryPropertyFlagBits::eDeviceLocal);
 
     _texture_image = std::move(texture_image);
     _texture_image_memory = std::move(texture_image_memory);
@@ -499,7 +501,11 @@ class VulkanHandler {
     transition_image_layout(_texture_image, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal,
                             _mip_levels);
     copy_buffer_to_image(staging_buffer, _texture_image, static_cast<uint32_t>(tex_width), static_cast<uint32_t>(tex_height));
-    generate_mipmaps(_texture_image, vk::Format::eR8G8B8A8Srgb, tex_width, tex_height, _mip_levels);
+    if (_mipmap_enable)
+      generate_mipmaps(_texture_image, vk::Format::eR8G8B8A8Srgb, tex_width, tex_height, _mip_levels);
+    else
+      transition_image_layout(_texture_image, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferDstOptimal,
+                              vk::ImageLayout::eShaderReadOnlyOptimal, _mip_levels);
   }
 
   void create_texture_image_view() {
@@ -527,6 +533,7 @@ class VulkanHandler {
                                                         .setUnnormalizedCoordinates(false));
   }
 
+  [[nodiscard]] bool msaa_enable() const { return _msaa_enable; }
   [[nodiscard]] vk::SurfaceKHR surface() const { return _surface.get(); }
   [[nodiscard]] vk::Instance instance() const { return _instance.get(); }
   [[nodiscard]] vk::Device device() const { return _device.get(); }
@@ -543,6 +550,8 @@ class VulkanHandler {
  private:
   size_t _gpu_idx;
   bool _enable_validation_layers;
+  bool _msaa_enable;
+  bool _mipmap_enable;
 
   vk::SampleCountFlagBits _msaa_samples = vk::SampleCountFlagBits::e1;
 
