@@ -15,7 +15,9 @@
 #include <imgui_impl_vulkan.h>
 
 #include <fstream>
+#include <limits>
 #include <string>
+#include <utility>
 #include <vector>
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -166,9 +168,8 @@ class VulkanRenderer {
                                       .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
                                       .setColorAttachments(color_attachments)
                                       .setPDepthStencilAttachment(&depth_attachment)
-                                      .setResolveAttachments(resolve_attachments)}
+                                      .setResolveAttachments(resolve_attachments)};
 
-    ;
     const std::array dependencies = {
         vk::SubpassDependency()
             .setSrcSubpass(VK_SUBPASS_EXTERNAL)

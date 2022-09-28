@@ -11,9 +11,13 @@
 
 #pragma once
 
+#include <algorithm>
 #include <iostream>
 #include <optional>
 #include <set>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "window_handler.hpp"
 

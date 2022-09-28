@@ -11,6 +11,9 @@
 
 #pragma once
 
+#include <string>
+#include <utility>
+
 #include "autd3/core/geometry.hpp"
 
 namespace autd3::extra::geometry_viewer {
