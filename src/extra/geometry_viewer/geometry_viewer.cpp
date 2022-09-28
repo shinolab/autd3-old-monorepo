@@ -28,7 +28,7 @@ void GeometryViewer::view(const core::Geometry& geometry) const {
   }
 
   WindowHandler window(_width, _height);
-  VulkanHandler handle;
+  VulkanHandler handle(_gpu_idx, _msaa, _mipmap, true);
   VulkanRenderer renderer(&handle, &window, _frag, _vert, _font, _vsync);
   gltf::Model model(_model, geometries);
   VulkanImGui imgui{};
@@ -42,7 +42,7 @@ void GeometryViewer::view(const core::Geometry& geometry) const {
   renderer.create_graphics_pipeline(model);
   handle.create_command_pool();
   renderer.create_depth_resources();
-  renderer.create_color_resources();
+  if (_msaa) renderer.create_color_resources();
   renderer.create_framebuffers();
   handle.create_texture_image(model.image_data(), model.image_size());
   handle.create_texture_image_view();
