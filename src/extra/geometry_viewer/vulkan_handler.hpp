@@ -208,7 +208,7 @@ class VulkanHandler {
   void create_logical_device() {
     const auto [graphics_family, present_family] = find_queue_families(_physical_device);
 
-    constexpr float queue_priority[1] = {1.0f};
+    const std::array queue_priority = {1.0f};
     const std::array create_infos = {vk::DeviceQueueCreateInfo().setQueueFamilyIndex(graphics_family.value()).setQueuePriorities(queue_priority)};
     constexpr vk::PhysicalDeviceFeatures features = vk::PhysicalDeviceFeatures().setSamplerAnisotropy(VK_TRUE);
     vk::DeviceCreateInfo create_info =

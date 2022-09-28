@@ -249,8 +249,8 @@ class VulkanRenderer {
         _handler->device().createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo().setBindings(bindings_1));
 
     const std::array push_constant_ranges = {
-        vk::PushConstantRange().setStageFlags(vk::ShaderStageFlagBits::eVertex).setSize(sizeof glm::mat4),
-        vk::PushConstantRange().setStageFlags(vk::ShaderStageFlagBits::eFragment).setSize(sizeof gltf::Lighting).setOffset(sizeof glm::mat4)};
+        vk::PushConstantRange().setStageFlags(vk::ShaderStageFlagBits::eVertex).setSize(sizeof(glm::mat4)),
+        vk::PushConstantRange().setStageFlags(vk::ShaderStageFlagBits::eFragment).setSize(sizeof(gltf::Lighting)).setOffset(sizeof(glm::mat4))};
     const std::array layouts = {descriptor_set_layout_0.get(), descriptor_set_layout_1.get()};
     const vk::PipelineLayoutCreateInfo pipeline_layout_info =
         vk::PipelineLayoutCreateInfo().setSetLayouts(layouts).setPushConstantRanges(push_constant_ranges);
@@ -296,7 +296,7 @@ class VulkanRenderer {
       const vk::SpecializationInfo specialization_info = vk::SpecializationInfo()
                                                              .setMapEntries(specialization_map_entries)
                                                              .setPData(&material_specialization_data)
-                                                             .setDataSize(sizeof MaterialSpecializationData);
+                                                             .setDataSize(sizeof(MaterialSpecializationData));
       shader_stages[1].setPSpecializationInfo(&specialization_info);
       if (auto result = _handler->device().createGraphicsPipelineUnique({}, vk::GraphicsPipelineCreateInfo()
                                                                                 .setStages(shader_stages)
