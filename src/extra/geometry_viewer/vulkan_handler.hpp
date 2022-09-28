@@ -549,9 +549,9 @@ class VulkanHandler {
 
  private:
   size_t _gpu_idx;
-  bool _enable_validation_layers;
   bool _msaa_enable;
   bool _mipmap_enable;
+  bool _enable_validation_layers;
 
   vk::SampleCountFlagBits _msaa_samples = vk::SampleCountFlagBits::e1;
 
