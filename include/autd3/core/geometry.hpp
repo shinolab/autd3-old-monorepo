@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/08/2022
+// Last Modified: 28/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,7 +28,7 @@ struct Geometry {
    * \brief Device contains an AUTD device geometry.
    */
   struct Device {
-    explicit Device(const size_t id, const Vector3& position, const Quaternion& rotation) : _origin(position) {
+    explicit Device(const size_t id, const Vector3& position, const Quaternion& rotation) : _origin(position), _rotation(rotation) {
       const Eigen::Transform<double, 3, Eigen::Affine> transform_matrix = Eigen::Translation<double, 3>(position) * rotation;
       const Vector3 x_direction = rotation * Vector3(1, 0, 0);
       const Vector3 y_direction = rotation * Vector3(0, 1, 0);
@@ -55,7 +55,17 @@ struct Geometry {
     Device& operator=(Device&& obj) = delete;
 
     /**
-     * @brief Center position of this device
+     * @brief Rotation of this device
+     */
+    [[nodiscard]] Quaternion rotation() const { return _rotation; }
+
+    /**
+     * @brief Origin of this device
+     */
+    [[nodiscard]] Vector3 origin() const { return _origin; }
+
+    /**
+     * @brief Center of this device
      */
     [[nodiscard]] Vector3 center() const {
       Vector3 sum = Vector3::Zero();
@@ -87,6 +97,7 @@ struct Geometry {
    private:
     std::vector<Transducer> _transducers;
     const Vector3 _origin;
+    const Quaternion _rotation;
     Eigen::Transform<double, 3, Eigen::Affine> _trans_inv;
   };
 

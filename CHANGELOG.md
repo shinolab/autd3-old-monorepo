@@ -1,5 +1,6 @@
 # 2.4
 
+- Add `GeometryViewer`
 - Improve performance of `link::SOEM` on Windows
 - Update maximum pattern size of `GaimSTM` in legacy mode to 2048
 - Add `link::Bundle` and `link::Debug`

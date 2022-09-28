@@ -58,3 +58,26 @@ if(BUILD_EXAMPLES_EXTRA)
   target_link_libraries(freqency_configuration autd3_example_common link_debug)
   set_target_properties(freqency_configuration PROPERTIES FOLDER "example")
 endif()
+
+if(BUILD_GEOMETRY_VIEWER)
+  add_executable(geometry_viewer_example geometry_viewer_example.cpp)
+  target_link_libraries(geometry_viewer_example autd3 geometry-viewer)
+  
+  add_custom_command(TARGET geometry_viewer_example PRE_BUILD COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/shaders)
+  add_custom_command(TARGET geometry_viewer_example PRE_BUILD COMMAND ${Vulkan_GLSLC_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/extra/geometry_viewer/shaders/simple.frag -o ${CMAKE_CURRENT_BINARY_DIR}/shaders/frag.spv)
+  add_custom_command(TARGET geometry_viewer_example PRE_BUILD COMMAND ${Vulkan_GLSLC_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/extra/geometry_viewer/shaders/simple.vert -o ${CMAKE_CURRENT_BINARY_DIR}/shaders/vert.spv)
+
+  add_custom_command(TARGET geometry_viewer_example PRE_BUILD COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/fonts)
+  add_custom_command(TARGET geometry_viewer_example
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      ${PROJECT_SOURCE_DIR}/src/extra/geometry_viewer/fonts/NotoSans-Regular.ttf
+      ${CMAKE_CURRENT_BINARY_DIR}/fonts/NotoSans-Regular.ttf)
+
+  add_custom_command(TARGET geometry_viewer_example PRE_BUILD COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/models)
+  add_custom_command(TARGET geometry_viewer_example
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      ${PROJECT_SOURCE_DIR}/src/extra/geometry_viewer/models/AUTD.glb
+      ${CMAKE_CURRENT_BINARY_DIR}/models/AUTD.glb)
+  
+  set_target_properties(geometry_viewer_example PROPERTIES FOLDER "example")
+endif()
