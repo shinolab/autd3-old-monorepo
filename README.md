@@ -105,7 +105,9 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 | BUILD_LINK_EMULATOR         | OFF     | build Emulator link                  |
 | BUILD_LINK_BUNDLE           | OFF     | build Bundle link                    |
 | BUILD_LINK_DEBUG            | OFF     | build Debug link                     |
+| BUILD_GEOMETRY_VIEWER       | OFF     | build GeometryViewer                 |
 | BUILD_EXAMPLES              | ON      | build examples                       |
+| BUILD_EXAMPLES_EXTRA        | ON      | build extra examples                 |
 | BUILD_CAPI                  | OFF     | build C-API                          |
 | ENABLE_LINT                 | OFF     | enable cpp lint                      |
 | BUILD_TEST                  | OFF     | build tests                          |
