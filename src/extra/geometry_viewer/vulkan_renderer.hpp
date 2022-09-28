@@ -416,6 +416,8 @@ class VulkanRenderer {
       _descriptor_sets = _handler->device().allocateDescriptorSetsUnique(
           vk::DescriptorSetAllocateInfo().setDescriptorPool(_handler->descriptor_pool()).setSetLayouts(layouts));
       for (size_t i = 0; i < _max_frames_in_flight; i++) {
+        const vk::DescriptorBufferInfo buffer_info =
+            vk::DescriptorBufferInfo().setBuffer(_uniform_buffers[i].get()).setOffset(0).setRange(sizeof(UniformBufferObject));
         std::array descriptor_writes{
             vk::WriteDescriptorSet()
                 .setDstSet(_descriptor_sets[i].get())
@@ -423,7 +425,7 @@ class VulkanRenderer {
                 .setDstArrayElement(0)
                 .setDescriptorCount(1)
                 .setDescriptorType(vk::DescriptorType::eUniformBuffer)
-                .setBufferInfo(vk::DescriptorBufferInfo().setBuffer(_uniform_buffers[i].get()).setOffset(0).setRange(sizeof(UniformBufferObject))),
+                .setBufferInfo(buffer_info),
         };
         _handler->device().updateDescriptorSets(descriptor_writes, {});
       }
@@ -443,6 +445,10 @@ class VulkanRenderer {
         descriptor_sets = _handler->device().allocateDescriptorSetsUnique(
             vk::DescriptorSetAllocateInfo().setDescriptorPool(_handler->descriptor_pool()).setSetLayouts(layouts));
         for (size_t i = 0; i < _max_frames_in_flight; i++) {
+          const vk::DescriptorImageInfo image_info = vk::DescriptorImageInfo()
+                                                         .setSampler(_handler->sampler())
+                                                         .setImageView(_handler->image_view())
+                                                         .setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
           std::array descriptor_writes{
               vk::WriteDescriptorSet()
                   .setDstSet(descriptor_sets[i].get())
@@ -450,10 +456,7 @@ class VulkanRenderer {
                   .setDstArrayElement(0)
                   .setDescriptorCount(1)
                   .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
-                  .setImageInfo(vk::DescriptorImageInfo()
-                                    .setSampler(_handler->sampler())
-                                    .setImageView(_handler->image_view())
-                                    .setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)),
+                  .setImageInfo(image_info),
           };
           _handler->device().updateDescriptorSets(descriptor_writes, {});
         }
