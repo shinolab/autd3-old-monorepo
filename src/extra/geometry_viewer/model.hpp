@@ -160,8 +160,8 @@ class Model {
                  const Lighting lighting) {
     if (!node.mesh.primitives.empty()) {
       const auto matrix = model * node.matrix;
-      command_buffer->pushConstants(layout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof glm::mat4, &matrix);
-      command_buffer->pushConstants(layout.get(), vk::ShaderStageFlagBits::eFragment, sizeof glm::mat4, sizeof Lighting, &lighting);
+      command_buffer->pushConstants(layout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &matrix);
+      command_buffer->pushConstants(layout.get(), vk::ShaderStageFlagBits::eFragment, sizeof(glm::mat4), sizeof(Lighting), &lighting);
       for (const auto& [first_index, index_count, material_index] : node.mesh.primitives) {
         if (index_count > 0) {
           const auto& [base_color_factor, base_color_texture_idx, metallic_factor, roughness_factor, descriptor_sets, pipeline] =
