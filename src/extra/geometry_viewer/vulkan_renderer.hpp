@@ -112,7 +112,7 @@ class VulkanRenderer {
     _swap_chain_framebuffers.resize(_swap_chain_image_views.size());
 
     for (size_t i = 0; i < _swap_chain_image_views.size(); i++) {
-      const auto attachments = {_color_image_view.get(), _depth_image_view.get(), _swap_chain_image_views[i].get()};
+      const std::array attachments = {_color_image_view.get(), _depth_image_view.get(), _swap_chain_image_views[i].get()};
       vk::FramebufferCreateInfo framebuffer_create_info = vk::FramebufferCreateInfo()
                                                               .setRenderPass(_render_pass.get())
                                                               .setAttachments(attachments)
@@ -157,14 +157,14 @@ class VulkanRenderer {
     const vk::AttachmentReference depth_attachment =
         vk::AttachmentReference().setAttachment(1).setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
     const std::array resolve_attachments = {vk::AttachmentReference().setAttachment(2).setLayout(vk::ImageLayout::eColorAttachmentOptimal)};
-    const auto subpasses = {vk::SubpassDescription()
-                                .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
-                                .setColorAttachments(color_attachments)
-                                .setPDepthStencilAttachment(&depth_attachment)
-                                .setResolveAttachments(resolve_attachments)}
+    const std::array subpasses = {vk::SubpassDescription()
+                                      .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
+                                      .setColorAttachments(color_attachments)
+                                      .setPDepthStencilAttachment(&depth_attachment)
+                                      .setResolveAttachments(resolve_attachments)}
 
     ;
-    const auto dependencies = {
+    const std::array dependencies = {
         vk::SubpassDependency()
             .setSrcSubpass(VK_SUBPASS_EXTERNAL)
             .setDstSubpass(0)
@@ -277,22 +277,22 @@ class VulkanRenderer {
       material_specialization_data.base_color_r = base_color_factor.r;
       material_specialization_data.base_color_g = base_color_factor.g;
       material_specialization_data.base_color_b = base_color_factor.b;
-      auto specialization_map_entries = {vk::SpecializationMapEntry()
-                                             .setConstantID(0)
-                                             .setOffset(offsetof(MaterialSpecializationData, has_texture))
-                                             .setSize(sizeof material_specialization_data.has_texture),
-                                         vk::SpecializationMapEntry()
-                                             .setConstantID(1)
-                                             .setOffset(offsetof(MaterialSpecializationData, base_color_r))
-                                             .setSize(sizeof material_specialization_data.base_color_r),
-                                         vk::SpecializationMapEntry()
-                                             .setConstantID(2)
-                                             .setOffset(offsetof(MaterialSpecializationData, base_color_g))
-                                             .setSize(sizeof material_specialization_data.base_color_g),
-                                         vk::SpecializationMapEntry()
-                                             .setConstantID(3)
-                                             .setOffset(offsetof(MaterialSpecializationData, base_color_b))
-                                             .setSize(sizeof material_specialization_data.base_color_b)};
+      const std::array specialization_map_entries = {vk::SpecializationMapEntry()
+                                                         .setConstantID(0)
+                                                         .setOffset(offsetof(MaterialSpecializationData, has_texture))
+                                                         .setSize(sizeof material_specialization_data.has_texture),
+                                                     vk::SpecializationMapEntry()
+                                                         .setConstantID(1)
+                                                         .setOffset(offsetof(MaterialSpecializationData, base_color_r))
+                                                         .setSize(sizeof material_specialization_data.base_color_r),
+                                                     vk::SpecializationMapEntry()
+                                                         .setConstantID(2)
+                                                         .setOffset(offsetof(MaterialSpecializationData, base_color_g))
+                                                         .setSize(sizeof material_specialization_data.base_color_g),
+                                                     vk::SpecializationMapEntry()
+                                                         .setConstantID(3)
+                                                         .setOffset(offsetof(MaterialSpecializationData, base_color_b))
+                                                         .setSize(sizeof material_specialization_data.base_color_b)};
       const vk::SpecializationInfo specialization_info = vk::SpecializationInfo()
                                                              .setMapEntries(specialization_map_entries)
                                                              .setPData(&material_specialization_data)
@@ -713,7 +713,7 @@ class VulkanRenderer {
 
     const vk::ClearValue clear_color(vk::ClearColorValue(imgui.background));
     constexpr vk::ClearValue clear_depth_stencil(vk::ClearDepthStencilValue(1.0f, 0.0f));
-    auto clear_values = {clear_color, clear_depth_stencil};
+    const std::array clear_values = {clear_color, clear_depth_stencil};
     const vk::RenderPassBeginInfo render_pass_info = vk::RenderPassBeginInfo()
                                                          .setRenderPass(_render_pass.get())
                                                          .setFramebuffer(_swap_chain_framebuffers[image_index].get())
