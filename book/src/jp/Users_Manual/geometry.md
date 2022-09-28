@@ -15,6 +15,7 @@ PCと1台目のEtherCAT Inをケーブルでつなぎ, $i$台目のEtherCAT Out�
 SDKで複数台のデバイスを使用する場合は`add_device`関数を接続しているデバイスの分だけ呼び出せば良い.
 `add_device`関数の第1引数は位置であり, 第2引数は回転を表す.
 回転はZYZのオイラー角, または, Quaternionで指定する.
+移動は指定した回転を施した後に, グローバル座標で並進移動となっているので注意されたい.
 
 <figure>
   <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/autd_hori.jpg"/>
@@ -51,3 +52,18 @@ SDKで複数台のデバイスを使用する場合は`add_device`関数を接�
 のように指定する.
 
 SDKにおけるAPIでは, すべてグローバル座標を用いるため, 接続するデバイスの数に依存せず透過的に使用できる.
+
+## Geometry viewer
+
+`GeometryViewer`を使用すると, `Geometry`の位置関係が確認できる.
+
+```cpp
+
+#include "autd3/extra/geometry_viewer/geometry_viewer.hpp"
+
+...
+
+  autd3::extra::geometry_viewer::GeometryViewer().window_size(800, 600).vsync(true).view(autd.geometry());
+```
+
+`GeometryViewer`を使用するにはVulkan SDKをインストールし, CMakeで`BUILD_GEOMETRY_VIEWER`オプションをOnにする必要がある.
