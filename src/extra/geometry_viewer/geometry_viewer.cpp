@@ -31,7 +31,7 @@ void GeometryViewer::view(const core::Geometry& geometry) const {
   WindowHandler window(_width, _height);
   VulkanHandler handle(_gpu_idx, _msaa, _mipmap, true);
   VulkanRenderer renderer(&handle, &window, _shader, _font, _vsync);
-  gltf::Model model(_model, geometries);
+  const gltf::Model model(_model, geometries);
   VulkanImGui imgui{};
 
   window.init(&renderer, VulkanRenderer::resize_callback, VulkanRenderer::pos_callback);
