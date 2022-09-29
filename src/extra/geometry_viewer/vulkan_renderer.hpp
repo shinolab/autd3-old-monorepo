@@ -547,10 +547,11 @@ class VulkanRenderer {
     const auto factor = (fst + snd) / 2.0f;
     if (std::abs(renderer->_last_font_factor - factor) < 0.01f) return;
     renderer->_last_font_factor = factor;
-    const ImGuiIO& io = ImGui::GetIO();
-    if (!renderer->_font_path.empty())
+    ImGuiIO& io = ImGui::GetIO();
+    if (!renderer->_font_path.empty()) {
       renderer->_font = io.Fonts->AddFontFromFileTTF(renderer->_font_path.c_str(), 16.0f * factor);
-    else {
+      io.FontGlobalScale = 1.0f / factor;
+    } else {
       renderer->_font = io.Fonts->AddFontDefault();
     }
     {
