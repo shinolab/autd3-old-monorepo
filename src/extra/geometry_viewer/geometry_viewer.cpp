@@ -22,13 +22,14 @@ void GeometryViewer::view(const core::Geometry& geometry) const {
   std::vector<gltf::Geometry> geometries;
   geometries.reserve(geometry.num_devices());
   for (const auto& g : geometry) {
-    const auto pos = glm::vec3(g.origin().x(), g.origin().y(), g.origin().z());
-    const auto rot = glm::quat(g.rotation().w(), g.rotation().x(), g.rotation().y(), g.rotation().z());
+    const auto pos = glm::vec3(static_cast<float>(g.origin().x()), static_cast<float>(g.origin().y()), static_cast<float>(g.origin().z()));
+    const auto rot = glm::quat(static_cast<float>(g.rotation().w()), static_cast<float>(g.rotation().x()), static_cast<float>(g.rotation().y()),
+                               static_cast<float>(g.rotation().z()));
     geometries.emplace_back(gltf::Geometry{pos, rot});
   }
 
   WindowHandler window(_width, _height);
-  VulkanHandler handle;
+  VulkanHandler handle(_gpu_idx, _msaa, _mipmap, true);
   VulkanRenderer renderer(&handle, &window, _frag, _vert, _font, _vsync);
   gltf::Model model(_model, geometries);
   VulkanImGui imgui{};
@@ -42,7 +43,7 @@ void GeometryViewer::view(const core::Geometry& geometry) const {
   renderer.create_graphics_pipeline(model);
   handle.create_command_pool();
   renderer.create_depth_resources();
-  renderer.create_color_resources();
+  if (_msaa) renderer.create_color_resources();
   renderer.create_framebuffers();
   handle.create_texture_image(model.image_data(), model.image_size());
   handle.create_texture_image_view();
