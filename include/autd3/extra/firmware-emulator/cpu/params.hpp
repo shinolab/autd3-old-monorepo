@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/08/2022
+// Last Modified: 13/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
 #pragma once
 
 namespace autd3::extra::firmware_emulator::cpu {
-constexpr uint16_t CPU_VERSION = 0x83;
+constexpr uint16_t CPU_VERSION = 0x84;
 
 constexpr uint8_t BRAM_SELECT_CONTROLLER = 0x0;
 constexpr uint8_t BRAM_SELECT_MOD = 0x1;
@@ -47,4 +47,7 @@ constexpr uint32_t POINT_STM_BUF_SEGMENT_SIZE_MASK = POINT_STM_BUF_SEGMENT_SIZE 
 constexpr uint32_t GAIN_STM_BUF_SEGMENT_SIZE_WIDTH = 5;
 constexpr uint32_t GAIN_STM_BUF_SEGMENT_SIZE = 1 << GAIN_STM_BUF_SEGMENT_SIZE_WIDTH;
 constexpr uint32_t GAIN_STM_BUF_SEGMENT_SIZE_MASK = GAIN_STM_BUF_SEGMENT_SIZE - 1;
+constexpr uint32_t GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH = 6;
+constexpr uint32_t GAIN_STM_LEGACY_BUF_SEGMENT_SIZE = 1 << GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH;
+constexpr uint32_t GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK = GAIN_STM_LEGACY_BUF_SEGMENT_SIZE - 1;
 }  // namespace autd3::extra::firmware_emulator::cpu

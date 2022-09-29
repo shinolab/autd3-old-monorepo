@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 26/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,10 +19,9 @@ int main() try {
 
   autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
 
-  const std::string remote_ipv4_addr = "your server ip";
-  const std::string remote_ams_net_id = "your server ams net id";
-  const std::string local_ams_net_id = "your client ams net id";
-  auto link = autd3::link::RemoteTwinCAT(remote_ipv4_addr, remote_ams_net_id).local_ams_net_id(local_ams_net_id).build();
+  const std::string server_ams_net_id = "your TwinCATAUTDServer AMS net id (e.g. 172.16.99.2.1.1)";
+  auto link = autd3::link::RemoteTwinCAT(server_ams_net_id).build();
+
   autd.open(std::move(link));
 
   return run(std::move(autd));

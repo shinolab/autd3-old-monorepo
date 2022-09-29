@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 15/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -171,9 +171,9 @@ inline void point_stm_body(const std::vector<std::vector<STMFocus>>& points, con
   if (points.empty() || points[0].empty()) return;
 
   if (is_first_frame) {
-    if (freq_div < STM_SAMPLING_FREQ_DIV_MIN) {
+    if (freq_div < POINT_STM_SAMPLING_FREQ_DIV_MIN) {
       std::stringstream ss;
-      ss << "STM frequency division is oud of range. Minimum is " << STM_SAMPLING_FREQ_DIV_MIN << ", but you use " << freq_div;
+      ss << "STM frequency division is oud of range. Minimum is " << POINT_STM_SAMPLING_FREQ_DIV_MIN << ", but you use " << freq_div;
       throw std::runtime_error(ss.str());
     }
 
@@ -220,9 +220,9 @@ inline void gain_stm_legacy_header(TxDatagram& tx) noexcept {
 inline void gain_stm_legacy_body(const std::vector<const std::vector<Drive>*>& drives, const bool is_first_frame, const uint32_t freq_div,
                                  const bool is_last_frame, const GainSTMMode mode, TxDatagram& tx) noexcept(false) {
   if (is_first_frame) {
-    if (freq_div < STM_SAMPLING_FREQ_DIV_MIN) {
+    if (freq_div < GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN) {
       std::stringstream ss;
-      ss << "STM frequency division is oud of range. Minimum is " << STM_SAMPLING_FREQ_DIV_MIN << ", but you use " << freq_div;
+      ss << "STM frequency division is oud of range. Minimum is " << GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN << ", but you use " << freq_div;
       throw std::runtime_error(ss.str());
     }
 
@@ -300,9 +300,9 @@ inline void gain_stm_normal_phase(const std::vector<Drive>& drives, const bool i
 #pragma warning(pop)
 
   if (is_first_frame) {
-    if (freq_div < STM_SAMPLING_FREQ_DIV_MIN) {
+    if (freq_div < GAIN_STM_SAMPLING_FREQ_DIV_MIN) {
       std::stringstream ss;
-      ss << "STM frequency division is oud of range. Minimum is " << STM_SAMPLING_FREQ_DIV_MIN << ", but you use " << freq_div;
+      ss << "STM frequency division is oud of range. Minimum is " << GAIN_STM_SAMPLING_FREQ_DIV_MIN << ", but you use " << freq_div;
       throw std::runtime_error(ss.str());
     }
 

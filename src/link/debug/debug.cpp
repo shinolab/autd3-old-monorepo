@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/08/2022
+// Last Modified: 13/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -111,7 +111,7 @@ class DebugImpl final : public core::Link {
           for (size_t j = 0; j < duties.size(); j++) {
             spdlog::debug("\tSTM[{}]:", j);
             for (size_t k = 0; k < driver::NUM_TRANS_IN_UNIT; k++)
-              spdlog::debug("\t\t{}: duty = {}, phase = {}", k, duties[j][k].duty, phases[j][k].phase);
+              spdlog::debug("\t\t{:<3}: duty = {:<4}, phase = {:<4}", k, duties[j][k].duty, phases[j][k].phase);
           }
         }
       } else if (fpga.is_legacy_mode())
@@ -130,7 +130,7 @@ class DebugImpl final : public core::Link {
         if (!fpga.is_stm_mode()) {
           const auto [duties, phases] = fpga.drives();
           for (size_t k = 0; k < driver::NUM_TRANS_IN_UNIT; k++)
-            spdlog::debug("\t\t{}: duty = {}, phase = {}", k, duties[0][k].duty, phases[0][k].phase);
+            spdlog::debug("\t\t{:<3}: duty = {:<4}, phase = {:<4}", k, duties[0][k].duty, phases[0][k].phase);
         }
       } else
         spdlog::info("\tWithout output");

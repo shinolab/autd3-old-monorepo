@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/08/2022
+// Last Modified: 13/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 namespace autd3::extra::firmware_emulator::fpga {
 
-constexpr uint8_t VERSION_NUM = 0x83;
+constexpr uint8_t VERSION_NUM = 0x84;
 
 constexpr uint16_t BRAM_SELECT_CONTROLLER = 0x0;
 constexpr uint16_t BRAM_SELECT_MOD = 0x1;

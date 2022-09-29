@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/09/2022
+// Last Modified: 26/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -40,6 +40,24 @@ std::vector<std::string> split(const std::string& s, const char deliminator) {
   if (!token.empty()) tokens.emplace_back(token);
   return tokens;
 }
+
+void startup() {
+#ifdef _WIN32
+  WSADATA wsa_data;
+  if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) {
+    std::stringstream ss;
+    ss << "WSAStartup failed:" << WSAGetLastError();
+    throw std::runtime_error(ss.str());
+  }
+#endif
+}
+
+void cleanup() {
+#ifdef _WIN32
+  WSACleanup();
+#endif
+}
+
 }  // namespace
 
 constexpr uint32_t INDEX_GROUP = 0x3040030;
@@ -50,7 +68,7 @@ constexpr uint16_t PORT = 301;
 class RemoteTwinCATImpl final : public core::Link {
  public:
   RemoteTwinCATImpl(std::string ipv4_addr, std::string remote_ams_net_id, std::string local_ams_net_id)
-      : Link(), _local_ams_net_id(std::move(local_ams_net_id)), _remote_ams_net_id(std::move(remote_ams_net_id)), _ipv4_addr(std::move(ipv4_addr)) {}
+      : Link(), _client_ams_net_id(std::move(local_ams_net_id)), _server_ams_net_id(std::move(remote_ams_net_id)), _server_ip(std::move(ipv4_addr)) {}
   ~RemoteTwinCATImpl() override = default;
   RemoteTwinCATImpl(const RemoteTwinCATImpl& v) noexcept = delete;
   RemoteTwinCATImpl& operator=(const RemoteTwinCATImpl& obj) = delete;
@@ -58,16 +76,16 @@ class RemoteTwinCATImpl final : public core::Link {
   RemoteTwinCATImpl& operator=(RemoteTwinCATImpl&& obj) = delete;
 
   void open(const core::Geometry&) override {
-    const auto octets = split(_remote_ams_net_id, '.');
+    const auto octets = split(_server_ams_net_id, '.');
     if (octets.size() != 6) throw std::runtime_error("Ams net id must have 6 octets");
 
-    if (_ipv4_addr.empty()) {
-      for (auto i = 0; i < 3; i++) _ipv4_addr += octets[i] + ".";
-      _ipv4_addr += octets[3];
+    if (_server_ip.empty()) {
+      for (auto i = 0; i < 3; i++) _server_ip += octets[i] + ".";
+      _server_ip += octets[3];
     }
 
-    if (!_local_ams_net_id.empty()) {
-      const auto local_octets = split(_local_ams_net_id, '.');
+    if (!_client_ams_net_id.empty()) {
+      const auto local_octets = split(_client_ams_net_id, '.');
       if (local_octets.size() != 6) throw std::runtime_error("Ams net id must have 6 octets");
       bhf::ads::SetLocalAddress({static_cast<uint8_t>(std::stoi(local_octets[0])), static_cast<uint8_t>(std::stoi(local_octets[1])),
                                  static_cast<uint8_t>(std::stoi(local_octets[2])), static_cast<uint8_t>(std::stoi(local_octets[3])),
@@ -78,16 +96,30 @@ class RemoteTwinCATImpl final : public core::Link {
                      static_cast<uint8_t>(std::stoi(octets[2])), static_cast<uint8_t>(std::stoi(octets[3])),
                      static_cast<uint8_t>(std::stoi(octets[4])), static_cast<uint8_t>(std::stoi(octets[5]))};
 
-    if (AdsAddRoute(this->_net_id, _ipv4_addr.c_str()) != 0) throw std::runtime_error("Could not connect to remote");
+    startup();
+    if (const auto res = AdsAddRoute(this->_net_id, _server_ip.c_str()); res != 0) {
+      cleanup();
+      std::stringstream ss;
+      ss << "Could not connect to remote: " << res << std::endl;
+      throw std::runtime_error(ss.str());
+    }
 
     this->_port = AdsPortOpenEx();
 
-    if (this->_port == 0) throw std::runtime_error("Failed to open a new ADS port");
+    if (this->_port == 0) {
+      cleanup();
+      throw std::runtime_error("Failed to open a new ADS port");
+    }
   }
+
   void close() override {
+    if (this->_port == 0) return;
     if (AdsPortCloseEx(this->_port) != 0) throw std::runtime_error("Failed to close");
+
     this->_port = 0;
+    cleanup();
   }
+
   bool send(const driver::TxDatagram& tx) override {
     const AmsAddr p_addr = {this->_net_id, PORT};
     const auto ret =
@@ -115,13 +147,13 @@ class RemoteTwinCATImpl final : public core::Link {
   bool is_open() override { return this->_port > 0; }
 
  private:
-  std::string _local_ams_net_id;
-  std::string _remote_ams_net_id;
-  std::string _ipv4_addr;
+  std::string _client_ams_net_id;
+  std::string _server_ams_net_id;
+  std::string _server_ip;
   long _port = 0L;  // NOLINT
   AmsNetId _net_id;
 };
 
-core::LinkPtr RemoteTwinCAT::build() { return std::make_unique<RemoteTwinCATImpl>(_ipv4_addr, _remote_ams_net_id, _local_ams_net_id); }
+core::LinkPtr RemoteTwinCAT::build() { return std::make_unique<RemoteTwinCATImpl>(_server_ip_address, _server_ams_net_id, _client_ams_net_id); }
 
 }  // namespace autd3::link
