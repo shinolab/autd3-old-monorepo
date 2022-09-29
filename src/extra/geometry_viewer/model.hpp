@@ -285,7 +285,8 @@ class Model {
                                        pbrMetallicRoughness.metallicFactor,
                                        pbrMetallicRoughness.roughnessFactor,
                                        {},
-                                       vk::UniquePipeline(nullptr)});
+                                       vk::UniquePipeline(nullptr),
+                                       vk::UniquePipelineLayout{nullptr}});
     }
   }
 
