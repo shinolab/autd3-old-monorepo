@@ -3,7 +3,7 @@
 // Created Date: 23/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/09/2022
+// Last Modified: 29/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -453,21 +453,13 @@ class VulkanHandler {
 
   void create_descriptor_pool() {
     std::array pool_size = {
-        vk::DescriptorPoolSize(vk::DescriptorType::eSampler, 1000),
-        vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 1000),
-        vk::DescriptorPoolSize(vk::DescriptorType::eSampledImage, 1000),
-        vk::DescriptorPoolSize(vk::DescriptorType::eStorageImage, 1000),
-        vk::DescriptorPoolSize(vk::DescriptorType::eUniformTexelBuffer, 1000),
-        vk::DescriptorPoolSize(vk::DescriptorType::eStorageTexelBuffer, 1000),
-        vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 1000),
-        vk::DescriptorPoolSize(vk::DescriptorType::eStorageBuffer, 1000),
-        vk::DescriptorPoolSize(vk::DescriptorType::eUniformBufferDynamic, 1000),
-        vk::DescriptorPoolSize(vk::DescriptorType::eStorageBufferDynamic, 1000),
-        vk::DescriptorPoolSize(vk::DescriptorType::eInputAttachment, 1000),
+        vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 100),
+        vk::DescriptorPoolSize(vk::DescriptorType::eSampledImage, 100),
+        vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 100),
     };
     const vk::DescriptorPoolCreateInfo pool_info = vk::DescriptorPoolCreateInfo()
                                                        .setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet)
-                                                       .setMaxSets(1000 * pool_size.size())
+                                                       .setMaxSets(100 * pool_size.size())
                                                        .setPoolSizes(pool_size);
     _descriptor_pool = _device->createDescriptorPoolUnique(pool_info);
   }
