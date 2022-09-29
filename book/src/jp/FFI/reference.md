@@ -1320,9 +1320,9 @@ RemoteTwinCAT linkを作成する.
 | Argument name / return | type   | in/out | description                              |
 | ---------------------- | ------ | ------ | ---------------------------------------- |
 | out                    | void** | out    | pointer to pointer to RemoteTwinCAT link |
-| remote_ip_addr         | char*  | in     | remote ip address                        |
-| remote_ams_net_id      | char*  | in     | remote ams net id                        |
-| local_ams_net_id       | char*  | in     | local ams net id                         |
+| server_ip_addr         | char*  | in     | server ip address                        |
+| server_ams_net_id      | char*  | in     | server ams net id                        |
+| client_ams_net_id      | char*  | in     | client ams net id                        |
 | return                 | void   | -      | -                                        |
 
 ## AUTDGetAdapterPointer (autd3capi-link-soem)
