@@ -185,134 +185,9 @@ class VulkanRenderer {
     _render_pass = _handler->device().createRenderPassUnique(render_pass_info);
   }
 
-  void create_graphics_pipeline_base(gltf::Material& material) {
-    const auto vert_shader_code = read_file(std::filesystem::path(_shader).append("base.vert.spv").string());
-    const auto frag_shader_code = read_file(std::filesystem::path(_shader).append("base.frag.spv").string());
-
-    vk::UniqueShaderModule vert_shader_module = create_shader_module(_handler->device(), vert_shader_code);
-    vk::UniqueShaderModule frag_shader_module = create_shader_module(_handler->device(), frag_shader_code);
-
-    std::array shader_stages = {
-        vk::PipelineShaderStageCreateInfo().setStage(vk::ShaderStageFlagBits::eVertex).setModule(vert_shader_module.get()).setPName("main"),
-        vk::PipelineShaderStageCreateInfo().setStage(vk::ShaderStageFlagBits::eFragment).setModule(frag_shader_module.get()).setPName("main")};
-
-    auto binding_description = gltf::Vertex::get_binding_description();
-    auto attribute_descriptions = gltf::Vertex::get_attribute_descriptions();
-    const vk::PipelineVertexInputStateCreateInfo vertex_input_info = vk::PipelineVertexInputStateCreateInfo()
-                                                                         .setVertexBindingDescriptions(binding_description)
-                                                                         .setVertexAttributeDescriptions(attribute_descriptions);
-
-    const vk::PipelineInputAssemblyStateCreateInfo input_assembly =
-        vk::PipelineInputAssemblyStateCreateInfo().setTopology(vk::PrimitiveTopology::eTriangleList);
-    const vk::Viewport viewport = vk::Viewport()
-                                      .setX(0.0f)
-                                      .setY(0.0f)
-                                      .setWidth(static_cast<float>(_swap_chain_extent.width))
-                                      .setHeight(static_cast<float>(_swap_chain_extent.height))
-                                      .setMinDepth(0.0f)
-                                      .setMaxDepth(1.0f);
-    const vk::Rect2D scissor = vk::Rect2D().setOffset({0, 0}).setExtent(_swap_chain_extent);
-    const vk::PipelineViewportStateCreateInfo viewport_state = vk::PipelineViewportStateCreateInfo().setViewports(viewport).setScissors(scissor);
-
-    const vk::PipelineRasterizationStateCreateInfo rasterizer = vk::PipelineRasterizationStateCreateInfo()
-                                                                    .setDepthClampEnable(false)
-                                                                    .setRasterizerDiscardEnable(false)
-                                                                    .setPolygonMode(vk::PolygonMode::eFill)
-                                                                    .setCullMode(vk::CullModeFlagBits::eBack)
-                                                                    .setFrontFace(vk::FrontFace::eCounterClockwise)
-                                                                    .setDepthBiasEnable(false)
-                                                                    .setDepthBiasConstantFactor(0.0f)
-                                                                    .setDepthBiasClamp(0.0f)
-                                                                    .setDepthBiasSlopeFactor(0.0f)
-                                                                    .setLineWidth(1.0f);
-
-    const vk::PipelineMultisampleStateCreateInfo multi_sampling =
-        vk::PipelineMultisampleStateCreateInfo().setRasterizationSamples(_handler->msaa_samples()).setSampleShadingEnable(false);
-
-    const vk::PipelineColorBlendAttachmentState color_blend_attachment =
-        vk::PipelineColorBlendAttachmentState().setBlendEnable(false).setColorWriteMask(
-            vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA);
-
-    vk::PipelineColorBlendStateCreateInfo color_blending =
-        vk::PipelineColorBlendStateCreateInfo().setLogicOpEnable(false).setAttachments(color_blend_attachment);
-
-    auto dynamic_states_ = std::array{vk::DynamicState::eViewport, vk::DynamicState::eScissor};
-    const vk::PipelineDynamicStateCreateInfo dynamic_state = vk::PipelineDynamicStateCreateInfo().setDynamicStates(dynamic_states_);
-
-    std::array bindings_0 = {
-        vk::DescriptorSetLayoutBinding()
-            .setBinding(0)
-            .setDescriptorType(vk::DescriptorType::eUniformBuffer)
-            .setDescriptorCount(1)
-            .setStageFlags(vk::ShaderStageFlagBits::eVertex),
-    };
-    const auto descriptor_set_layout_0 =
-        _handler->device().createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo().setBindings(bindings_0));
-
-    const std::array push_constant_ranges = {
-        vk::PushConstantRange().setStageFlags(vk::ShaderStageFlagBits::eVertex).setSize(sizeof(glm::mat4)),
-        vk::PushConstantRange().setStageFlags(vk::ShaderStageFlagBits::eFragment).setSize(sizeof(gltf::Lighting)).setOffset(sizeof(glm::mat4))};
-    const std::array layouts = {descriptor_set_layout_0.get()};
-    const vk::PipelineLayoutCreateInfo pipeline_layout_info =
-        vk::PipelineLayoutCreateInfo().setSetLayouts(layouts).setPushConstantRanges(push_constant_ranges);
-
-    material.pipeline_layout = _handler->device().createPipelineLayoutUnique(pipeline_layout_info);
-
-    const vk::PipelineDepthStencilStateCreateInfo depth_stencil = vk::PipelineDepthStencilStateCreateInfo()
-                                                                      .setDepthTestEnable(true)
-                                                                      .setDepthWriteEnable(true)
-                                                                      .setDepthCompareOp(vk::CompareOp::eLess)
-                                                                      .setDepthBoundsTestEnable(false)
-                                                                      .setStencilTestEnable(false)
-                                                                      .setMinDepthBounds(0.0f)
-                                                                      .setMaxDepthBounds(1.0f);
-
-    struct MaterialSpecializationData {
-      float base_color_r;
-      float base_color_g;
-      float base_color_b;
-    } material_specialization_data{};
-    material_specialization_data.base_color_r = material.base_color_factor.r;
-    material_specialization_data.base_color_g = material.base_color_factor.g;
-    material_specialization_data.base_color_b = material.base_color_factor.b;
-    const std::array specialization_map_entries = {vk::SpecializationMapEntry()
-                                                       .setConstantID(0)
-                                                       .setOffset(offsetof(MaterialSpecializationData, base_color_r))
-                                                       .setSize(sizeof material_specialization_data.base_color_r),
-                                                   vk::SpecializationMapEntry()
-                                                       .setConstantID(1)
-                                                       .setOffset(offsetof(MaterialSpecializationData, base_color_g))
-                                                       .setSize(sizeof material_specialization_data.base_color_g),
-                                                   vk::SpecializationMapEntry()
-                                                       .setConstantID(2)
-                                                       .setOffset(offsetof(MaterialSpecializationData, base_color_b))
-                                                       .setSize(sizeof material_specialization_data.base_color_b)};
-    const vk::SpecializationInfo specialization_info = vk::SpecializationInfo()
-                                                           .setMapEntries(specialization_map_entries)
-                                                           .setPData(&material_specialization_data)
-                                                           .setDataSize(sizeof(MaterialSpecializationData));
-    shader_stages[1].setPSpecializationInfo(&specialization_info);
-    if (auto result = _handler->device().createGraphicsPipelineUnique({}, vk::GraphicsPipelineCreateInfo()
-                                                                              .setStages(shader_stages)
-                                                                              .setPVertexInputState(&vertex_input_info)
-                                                                              .setPInputAssemblyState(&input_assembly)
-                                                                              .setPViewportState(&viewport_state)
-                                                                              .setPRasterizationState(&rasterizer)
-                                                                              .setPMultisampleState(&multi_sampling)
-                                                                              .setPDepthStencilState(&depth_stencil)
-                                                                              .setPColorBlendState(&color_blending)
-                                                                              .setPDynamicState(&dynamic_state)
-                                                                              .setLayout(material.pipeline_layout.get())
-                                                                              .setRenderPass(_render_pass.get()));
-        result.result == vk::Result::eSuccess)
-      material.pipeline = std::move(result.value);
-    else
-      throw std::runtime_error("failed to create a pipeline!");
-  }
-
-  void create_graphics_pipeline_tex(gltf::Material& material) {
-    const auto vert_shader_code = read_file(std::filesystem::path(_shader).append("tex.vert.spv").string());
-    const auto frag_shader_code = read_file(std::filesystem::path(_shader).append("tex.frag.spv").string());
+  void create_graphics_pipeline(const gltf::Model& model) {
+    const auto vert_shader_code = read_file(std::filesystem::path(_shader).append("vert.spv").string());
+    const auto frag_shader_code = read_file(std::filesystem::path(_shader).append("frag.spv").string());
 
     vk::UniqueShaderModule vert_shader_module = create_shader_module(_handler->device(), vert_shader_code);
     vk::UniqueShaderModule frag_shader_module = create_shader_module(_handler->device(), frag_shader_code);
@@ -384,7 +259,7 @@ class VulkanRenderer {
     const vk::PipelineLayoutCreateInfo pipeline_layout_info =
         vk::PipelineLayoutCreateInfo().setSetLayouts(layouts).setPushConstantRanges(push_constant_ranges);
 
-    material.pipeline_layout = _handler->device().createPipelineLayoutUnique(pipeline_layout_info);
+    _pipeline_layout = _handler->device().createPipelineLayoutUnique(pipeline_layout_info);
 
     const vk::PipelineDepthStencilStateCreateInfo depth_stencil = vk::PipelineDepthStencilStateCreateInfo()
                                                                       .setDepthTestEnable(true)
@@ -394,31 +269,57 @@ class VulkanRenderer {
                                                                       .setStencilTestEnable(false)
                                                                       .setMinDepthBounds(0.0f)
                                                                       .setMaxDepthBounds(1.0f);
-
-    if (auto result = _handler->device().createGraphicsPipelineUnique({}, vk::GraphicsPipelineCreateInfo()
-                                                                              .setStages(shader_stages)
-                                                                              .setPVertexInputState(&vertex_input_info)
-                                                                              .setPInputAssemblyState(&input_assembly)
-                                                                              .setPViewportState(&viewport_state)
-                                                                              .setPRasterizationState(&rasterizer)
-                                                                              .setPMultisampleState(&multi_sampling)
-                                                                              .setPDepthStencilState(&depth_stencil)
-                                                                              .setPColorBlendState(&color_blending)
-                                                                              .setPDynamicState(&dynamic_state)
-                                                                              .setLayout(material.pipeline_layout.get())
-                                                                              .setRenderPass(_render_pass.get()));
-        result.result == vk::Result::eSuccess)
-      material.pipeline = std::move(result.value);
-    else
-      throw std::runtime_error("failed to create a pipeline!");
-  }
-
-  void create_graphics_pipeline(gltf::Model& model) {
-    for (auto& material : model.materials())
-      if (material.base_color_texture_idx != -1)
-        create_graphics_pipeline_tex(material);
+    _pipelines.resize(model.materials().size());
+    for (size_t i = 0; i < model.materials().size(); i++) {
+      const auto [base_color_factor, base_color_texture_idx, metallic_factor, roughness_factor] = model.materials()[i];
+      struct MaterialSpecializationData {
+        vk::Bool32 has_texture;
+        float base_color_r;
+        float base_color_g;
+        float base_color_b;
+      } material_specialization_data{};
+      material_specialization_data.has_texture = base_color_texture_idx != -1;
+      material_specialization_data.base_color_r = base_color_factor.r;
+      material_specialization_data.base_color_g = base_color_factor.g;
+      material_specialization_data.base_color_b = base_color_factor.b;
+      const std::array specialization_map_entries = {vk::SpecializationMapEntry()
+                                                         .setConstantID(0)
+                                                         .setOffset(offsetof(MaterialSpecializationData, has_texture))
+                                                         .setSize(sizeof material_specialization_data.has_texture),
+                                                     vk::SpecializationMapEntry()
+                                                         .setConstantID(1)
+                                                         .setOffset(offsetof(MaterialSpecializationData, base_color_r))
+                                                         .setSize(sizeof material_specialization_data.base_color_r),
+                                                     vk::SpecializationMapEntry()
+                                                         .setConstantID(2)
+                                                         .setOffset(offsetof(MaterialSpecializationData, base_color_g))
+                                                         .setSize(sizeof material_specialization_data.base_color_g),
+                                                     vk::SpecializationMapEntry()
+                                                         .setConstantID(3)
+                                                         .setOffset(offsetof(MaterialSpecializationData, base_color_b))
+                                                         .setSize(sizeof material_specialization_data.base_color_b)};
+      const vk::SpecializationInfo specialization_info = vk::SpecializationInfo()
+                                                             .setMapEntries(specialization_map_entries)
+                                                             .setPData(&material_specialization_data)
+                                                             .setDataSize(sizeof(MaterialSpecializationData));
+      shader_stages[1].setPSpecializationInfo(&specialization_info);
+      if (auto result = _handler->device().createGraphicsPipelineUnique({}, vk::GraphicsPipelineCreateInfo()
+                                                                                .setStages(shader_stages)
+                                                                                .setPVertexInputState(&vertex_input_info)
+                                                                                .setPInputAssemblyState(&input_assembly)
+                                                                                .setPViewportState(&viewport_state)
+                                                                                .setPRasterizationState(&rasterizer)
+                                                                                .setPMultisampleState(&multi_sampling)
+                                                                                .setPDepthStencilState(&depth_stencil)
+                                                                                .setPColorBlendState(&color_blending)
+                                                                                .setPDynamicState(&dynamic_state)
+                                                                                .setLayout(_pipeline_layout.get())
+                                                                                .setRenderPass(_render_pass.get()));
+          result.result == vk::Result::eSuccess)
+        _pipelines[i] = std::move(result.value);
       else
-        create_graphics_pipeline_base(material);
+        throw std::runtime_error("failed to create a pipeline!");
+    }
   }
 
   void create_depth_resources() {
@@ -500,58 +401,51 @@ class VulkanRenderer {
     }
   }
 
-  void create_descriptor_sets(gltf::Model& model) {
-    for (auto& [base_color_factor, base_color_texture_idx, metallic_factor, roughness_factor, descriptor_sets, pipeline, pipeline_layout] :
-         model.materials()) {
-      std::vector bindings_0 = {vk::DescriptorSetLayoutBinding()
-                                    .setBinding(0)
-                                    .setDescriptorType(vk::DescriptorType::eUniformBuffer)
-                                    .setDescriptorCount(1)
-                                    .setStageFlags(vk::ShaderStageFlagBits::eVertex)};
-      if (base_color_texture_idx != -1)
-        bindings_0.emplace_back(vk::DescriptorSetLayoutBinding()
-                                    .setBinding(1)
-                                    .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
-                                    .setDescriptorCount(1)
-                                    .setStageFlags(vk::ShaderStageFlagBits::eFragment));
-      const auto descriptor_set_layout_0 =
-          _handler->device().createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo().setBindings(bindings_0));
-      std::vector layouts(_max_frames_in_flight, descriptor_set_layout_0.get());
-      descriptor_sets = _handler->device().allocateDescriptorSetsUnique(
-          vk::DescriptorSetAllocateInfo().setDescriptorPool(_handler->descriptor_pool()).setSetLayouts(layouts));
-      for (size_t i = 0; i < _max_frames_in_flight; i++) {
-        {
-          const vk::DescriptorBufferInfo buffer_info =
-              vk::DescriptorBufferInfo().setBuffer(_uniform_buffers[i].get()).setOffset(0).setRange(sizeof(UniformBufferObject));
-          std::array descriptor_writes{
-              vk::WriteDescriptorSet()
-                  .setDstSet(descriptor_sets[i].get())
-                  .setDstBinding(0)
-                  .setDstArrayElement(0)
-                  .setDescriptorCount(1)
-                  .setDescriptorType(vk::DescriptorType::eUniformBuffer)
-                  .setBufferInfo(buffer_info),
-          };
-          _handler->device().updateDescriptorSets(descriptor_writes, {});
-        }
-        if (base_color_texture_idx != -1) {
-          const vk::DescriptorImageInfo image_info = vk::DescriptorImageInfo()
-                                                         .setSampler(_handler->sampler())
-                                                         .setImageView(_handler->image_view())
-                                                         .setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
-          std::array descriptor_writes{
-              vk::WriteDescriptorSet()
-                  .setDstSet(descriptor_sets[i].get())
-                  .setDstBinding(1)
-                  .setDstArrayElement(0)
-                  .setDescriptorCount(1)
-                  .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
-                  .setImageInfo(image_info),
-          };
-
-          _handler->device().updateDescriptorSets(descriptor_writes, {});
-        }
+  void create_descriptor_sets() {
+    std::vector bindings = {vk::DescriptorSetLayoutBinding()
+                                .setBinding(0)
+                                .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+                                .setDescriptorCount(1)
+                                .setStageFlags(vk::ShaderStageFlagBits::eVertex)};
+    bindings.emplace_back(vk::DescriptorSetLayoutBinding()
+                              .setBinding(1)
+                              .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+                              .setDescriptorCount(1)
+                              .setStageFlags(vk::ShaderStageFlagBits::eFragment));
+    _descriptor_set_layout = _handler->device().createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo().setBindings(bindings));
+    std::vector layouts(_max_frames_in_flight, _descriptor_set_layout.get());
+    _descriptor_sets = _handler->device().allocateDescriptorSetsUnique(
+        vk::DescriptorSetAllocateInfo().setDescriptorPool(_handler->descriptor_pool()).setSetLayouts(layouts));
+    for (size_t i = 0; i < _max_frames_in_flight; i++) {
+      {
+        const vk::DescriptorBufferInfo buffer_info =
+            vk::DescriptorBufferInfo().setBuffer(_uniform_buffers[i].get()).setOffset(0).setRange(sizeof(UniformBufferObject));
+        std::array descriptor_writes{
+            vk::WriteDescriptorSet()
+                .setDstSet(_descriptor_sets[i].get())
+                .setDstBinding(0)
+                .setDstArrayElement(0)
+                .setDescriptorCount(1)
+                .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+                .setBufferInfo(buffer_info),
+        };
+        _handler->device().updateDescriptorSets(descriptor_writes, {});
       }
+      const vk::DescriptorImageInfo image_info = vk::DescriptorImageInfo()
+                                                     .setSampler(_handler->sampler())
+                                                     .setImageView(_handler->image_view())
+                                                     .setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+      std::array descriptor_writes{
+          vk::WriteDescriptorSet()
+              .setDstSet(_descriptor_sets[i].get())
+              .setDstBinding(1)
+              .setDstArrayElement(0)
+              .setDescriptorCount(1)
+              .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+              .setImageInfo(image_info),
+      };
+
+      _handler->device().updateDescriptorSets(descriptor_writes, {});
     }
   }
 
@@ -575,7 +469,7 @@ class VulkanRenderer {
     }
   }
 
-  void draw_frame(gltf::Model& model, const VulkanImGui& imgui) {
+  void draw_frame(const gltf::Model& model, const VulkanImGui& imgui) {
     if (_handler->device().waitForFences(_in_flight_fences[_current_frame].get(), true, std::numeric_limits<uint64_t>::max()) != vk::Result::eSuccess)
       throw std::runtime_error("failed to wait fence!");
 
@@ -653,10 +547,11 @@ class VulkanRenderer {
     const auto factor = (fst + snd) / 2.0f;
     if (std::abs(renderer->_last_font_factor - factor) < 0.01f) return;
     renderer->_last_font_factor = factor;
-    const ImGuiIO& io = ImGui::GetIO();
-    if (!renderer->_font_path.empty())
+    ImGuiIO& io = ImGui::GetIO();
+    if (!renderer->_font_path.empty()) {
       renderer->_font = io.Fonts->AddFontFromFileTTF(renderer->_font_path.c_str(), 16.0f * factor);
-    else {
+      io.FontGlobalScale = 1.0f / factor;
+    } else {
       renderer->_font = io.Fonts->AddFontDefault();
     }
     {
@@ -733,6 +628,10 @@ class VulkanRenderer {
   std::vector<vk::UniqueFramebuffer> _swap_chain_framebuffers;
 
   vk::UniqueRenderPass _render_pass;
+  vk::UniqueDescriptorSetLayout _descriptor_set_layout;
+  std::vector<vk::UniqueDescriptorSet> _descriptor_sets;
+  std::vector<vk::UniquePipeline> _pipelines;
+  vk::UniquePipelineLayout _pipeline_layout;
 
   vk::UniqueImage _depth_image;
   vk::UniqueDeviceMemory _depth_image_memory;
@@ -812,7 +711,8 @@ class VulkanRenderer {
         vk::ShaderModuleCreateInfo().setCodeSize(code.size()).setPCode(reinterpret_cast<const uint32_t*>(code.data())));
   }
 
-  void record_command_buffer(vk::UniqueCommandBuffer& command_buffer, const uint32_t image_index, gltf::Model& model, const VulkanImGui& imgui) {
+  void record_command_buffer(vk::UniqueCommandBuffer& command_buffer, const uint32_t image_index, const gltf::Model& model,
+                             const VulkanImGui& imgui) {
     command_buffer->begin(vk::CommandBufferBeginInfo{});
 
     const vk::ClearValue clear_color(vk::ClearColorValue(imgui.background));
@@ -838,10 +738,28 @@ class VulkanRenderer {
     const vk::Rect2D scissor({0, 0}, _swap_chain_extent);
     command_buffer->setScissor(0, scissor);
 
-    command_buffer->bindVertexBuffers(0, {_vertex_buffer.get()}, {0});
+    const vk::Buffer vertex_buffers[] = {_vertex_buffer.get()};
+    constexpr vk::DeviceSize offsets[] = {0};
+    command_buffer->bindVertexBuffers(0, 1, vertex_buffers, offsets);
     command_buffer->bindIndexBuffer(_index_buffer.get(), 0, vk::IndexType::eUint32);
 
-    model.draw_node(command_buffer, _current_frame, imgui.show, imgui.lighting);
+    command_buffer->bindDescriptorSets(vk::PipelineBindPoint::eGraphics, _pipeline_layout.get(), 0, 1, &_descriptor_sets[_current_frame].get(), 0,
+                                       nullptr);
+
+    for (size_t dev = 0; dev < model.geometries().size(); dev++) {
+      if (!imgui.show[dev]) continue;
+      const auto [pos, rot] = model.geometries()[dev];
+      auto matrix = translate(glm::identity<glm::mat4>(), glm::vec3(pos.x, pos.z, -pos.y) / 1000.0f);
+      matrix = matrix * mat4_cast(glm::quat(rot.w, rot.x, rot.z, -rot.y));
+
+      for (const auto& [first_index, index_count, material_index] : model.primitives()) {
+        command_buffer->bindPipeline(vk::PipelineBindPoint::eGraphics, _pipelines[material_index].get());
+        command_buffer->pushConstants(_pipeline_layout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &matrix);
+        command_buffer->pushConstants(_pipeline_layout.get(), vk::ShaderStageFlagBits::eFragment, sizeof(glm::mat4), sizeof(gltf::Lighting),
+                                      &imgui.lighting);
+        command_buffer->drawIndexed(index_count, 1, first_index, 0, 0);
+      }
+    }
 
     ImDrawData* draw_data = ImGui::GetDrawData();
     ImGui_ImplVulkan_RenderDrawData(draw_data, command_buffer.get());
