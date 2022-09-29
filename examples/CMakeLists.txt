@@ -63,8 +63,7 @@ if(BUILD_GEOMETRY_VIEWER)
   add_executable(geometry_viewer_example geometry_viewer_example.cpp)
   target_link_libraries(geometry_viewer_example autd3 geometry-viewer)
   
-  target_compile_definitions(geometry_viewer_example PRIVATE AUTD3_GEOMETRY_VIEWER_FRAG_SHADER_PATH="${PROJECT_SOURCE_DIR}/src/extra/geometry_viewer/shaders/frag.spv")
-  target_compile_definitions(geometry_viewer_example PRIVATE AUTD3_GEOMETRY_VIEWER_VERT_SHADER_PATH="${PROJECT_SOURCE_DIR}/src/extra/geometry_viewer/shaders/vert.spv")
+  target_compile_definitions(geometry_viewer_example PRIVATE AUTD3_GEOMETRY_VIEWER_SHADER_PATH="${PROJECT_SOURCE_DIR}/src/extra/geometry_viewer/shaders")
   target_compile_definitions(geometry_viewer_example PRIVATE AUTD3_GEOMETRY_VIEWER_MODEL_PATH="${PROJECT_SOURCE_DIR}/src/extra/geometry_viewer/models/AUTD.glb")
   target_compile_definitions(geometry_viewer_example PRIVATE AUTD3_GEOMETRY_FONT_PATH="${PROJECT_SOURCE_DIR}/src/extra/geometry_viewer/fonts/NotoSans-Regular.ttf")
 
