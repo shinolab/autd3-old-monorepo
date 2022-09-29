@@ -3,7 +3,7 @@
 // Created Date: 28/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/09/2022
+// Last Modified: 29/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -40,9 +40,8 @@ class GeometryViewer {
   /**
    * @brief Set shader path
    */
-  GeometryViewer& shader(std::string vert, std::string frag) {
-    _vert = std::move(vert);
-    _frag = std::move(frag);
+  GeometryViewer& shader(std::string shader) {
+    _shader = std::move(shader);
     return *this;
   }
   /**
@@ -94,16 +93,7 @@ class GeometryViewer {
    * @brief Constructor
    */
   GeometryViewer() noexcept
-      : _width(800),
-        _height(600),
-        _vsync(true),
-        _frag("shaders/frag.spv"),
-        _vert("shaders/vert.spv"),
-        _model("models/AUTD.glb"),
-        _font(""),
-        _msaa(true),
-        _mipmap{true},
-        _gpu_idx(0) {}
+      : _width(800), _height(600), _vsync(true), _shader("shaders"), _model("models/AUTD.glb"), _font(""), _msaa(true), _mipmap{true}, _gpu_idx(0) {}
   ~GeometryViewer() = default;
   GeometryViewer(const GeometryViewer& v) noexcept = delete;
   GeometryViewer& operator=(const GeometryViewer& obj) = delete;
@@ -114,8 +104,7 @@ class GeometryViewer {
   int32_t _width;
   int32_t _height;
   bool _vsync;
-  std::string _frag;
-  std::string _vert;
+  std::string _shader;
   std::string _model;
   std::string _font;
   bool _msaa;
