@@ -3,7 +3,7 @@
 // Created Date: 27/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/09/2022
+// Last Modified: 29/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -71,10 +71,12 @@ class VulkanImGui {
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    const ImGuiIO& io = ImGui::GetIO();
-    if (!font_path.empty())
+    ImGuiIO& io = ImGui::GetIO();
+
+    if (!font_path.empty()) {
       io.Fonts->AddFontFromFileTTF(font_path.c_str(), 16.0f * factor);
-    else
+      io.FontGlobalScale = 1.0f / factor;
+    } else
       io.Fonts->AddFontDefault();
 
     ImGui::StyleColorsDark();
