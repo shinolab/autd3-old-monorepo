@@ -62,6 +62,30 @@ class GeometryViewer {
   }
 
   /**
+   * @brief Set Multi-Sample Anti-Aliasing
+   */
+  GeometryViewer& msaa(const bool msaa) {
+    _msaa = msaa;
+    return *this;
+  }
+
+  /**
+   * @brief Set Multi-Sample Anti-Aliasing
+   */
+  GeometryViewer& mipmap(const bool mipmap) {
+    _mipmap = mipmap;
+    return *this;
+  }
+
+  /**
+   * @brief Set GPU index
+   */
+  GeometryViewer& gpu_idx(const size_t idx) {
+    _gpu_idx = idx;
+    return *this;
+  }
+
+  /**
    * @brief View geometry
    */
   void view(const core::Geometry& geometry) const;
@@ -70,7 +94,16 @@ class GeometryViewer {
    * @brief Constructor
    */
   GeometryViewer() noexcept
-      : _width(800), _height(600), _vsync(true), _frag("shaders/frag.spv"), _vert("shaders/vert.spv"), _model("models/AUTD.glb"), _font(""){};
+      : _width(800),
+        _height(600),
+        _vsync(true),
+        _frag("shaders/frag.spv"),
+        _vert("shaders/vert.spv"),
+        _model("models/AUTD.glb"),
+        _font(""),
+        _msaa(true),
+        _mipmap{true},
+        _gpu_idx(0) {}
   ~GeometryViewer() = default;
   GeometryViewer(const GeometryViewer& v) noexcept = delete;
   GeometryViewer& operator=(const GeometryViewer& obj) = delete;
@@ -85,6 +118,9 @@ class GeometryViewer {
   std::string _vert;
   std::string _model;
   std::string _font;
+  bool _msaa;
+  bool _mipmap;
+  size_t _gpu_idx;
 };
 
 }  // namespace autd3::extra::geometry_viewer
