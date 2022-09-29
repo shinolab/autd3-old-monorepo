@@ -3,7 +3,7 @@
 // Created Date: 29/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/08/2022
+// Last Modified: 26/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ TEST(LinkTwinCATTest, basic) { auto link = autd3::link::TwinCAT().build(); }
 
 #ifdef TEST_LINK_REMOTE_TWINCAT
 #include "autd3/link/remote_twincat.hpp"
-TEST(LinkRemoteTwinCATTest, basic) { auto link = autd3::link::RemoteTwinCAT("", "").build(); }
+TEST(LinkRemoteTwinCATTest, basic) { auto link = autd3::link::RemoteTwinCAT("").build(); }
 #endif
 
 #ifdef TEST_LINK_EMULATOR

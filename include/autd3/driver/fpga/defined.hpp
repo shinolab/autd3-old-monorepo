@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/08/2022
+// Last Modified: 15/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -32,9 +32,12 @@ constexpr size_t MOD_BUF_SIZE_MAX = 65536;
 
 constexpr double POINT_STM_FIXED_NUM_UNIT = 0.025;  // mm
 
-constexpr uint32_t STM_SAMPLING_FREQ_DIV_MIN = 1612;
+constexpr uint32_t POINT_STM_SAMPLING_FREQ_DIV_MIN = 1612;
+constexpr uint32_t GAIN_STM_SAMPLING_FREQ_DIV_MIN = 276;
+constexpr uint32_t GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN = 152;
 constexpr size_t POINT_STM_BUF_SIZE_MAX = 65536;
 constexpr size_t GAIN_STM_BUF_SIZE_MAX = 1024;
+constexpr size_t GAIN_STM_LEGACY_BUF_SIZE_MAX = 2048;
 
 constexpr uint16_t SILENCER_CYCLE_MIN = 1044;
 
