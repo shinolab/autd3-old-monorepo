@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/08/2022
+// Last Modified: 10/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -71,7 +71,7 @@ struct PointSTMBodyBody {
 
 struct GainSTMBodyHead {
   uint16_t* data() noexcept { return _data; }
-  const uint16_t* const data() const noexcept { return _data; }
+  const uint16_t* data() const noexcept { return _data; }
 
   void set_freq_div(uint32_t freq_div) noexcept {
     _data[0] = static_cast<uint16_t>(freq_div & 0xFFFF);

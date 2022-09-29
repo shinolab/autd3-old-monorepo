@@ -1,12 +1,16 @@
-# 2.3.2
+# 2.4
 
+- Add `GeometryViewer`
 - Improve performance of `link::SOEM` on Windows
+- Update maximum pattern size of `GaimSTM` in legacy mode to 2048
 - Add `link::Bundle` and `link::Debug`
 - Add `extra::firmware-emulator`
 - Add `SoftwareSTM`
 - Add `gain::TransducerTest`
 - Add `modulation::LPF`
 - Add `ArrayFireBackend` (experimental)
+- Fix [#25](https://github.com/shinolab/autd3/issues/25), [#26](https://github.com/shinolab/autd3/issues/26)
+- Update firmware to v2.4
 
 # 2.3.1
 

@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/08/2022
+// Last Modified: 13/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -238,7 +238,7 @@ class FPGA {
     for (size_t i = 0; i < cycle; i++) {
       std::array<driver::Duty, NUM_TRANS_IN_UNIT> d{};
       for (size_t j = 0; j < NUM_TRANS_IN_UNIT; j++) {
-        auto duty = static_cast<uint16_t>((_stm_op_bram[512 * i + 2 * j] >> 8) & 0x00FF);
+        auto duty = static_cast<uint16_t>((_stm_op_bram[256 * i + j] >> 8) & 0x00FF);
         duty = static_cast<uint16_t>(((duty << 3) | 0x07) + 1);
         d[j] = driver::Duty{duty};
       }
@@ -254,7 +254,7 @@ class FPGA {
     for (size_t i = 0; i < cycle; i++) {
       std::array<driver::Phase, NUM_TRANS_IN_UNIT> d{};
       for (size_t j = 0; j < NUM_TRANS_IN_UNIT; j++) {
-        auto phase = static_cast<uint16_t>(_stm_op_bram[512 * i + 2 * j] & 0x00FF);
+        auto phase = static_cast<uint16_t>(_stm_op_bram[256 * i + j] & 0x00FF);
         phase <<= 4;
         d[j] = driver::Phase{phase};
       }
