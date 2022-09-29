@@ -65,21 +65,6 @@ struct Material {
   int32_t base_color_texture_idx;
   float metallic_factor;
   float roughness_factor;
-  std::vector<vk::UniqueDescriptorSet> descriptor_sets;
-  vk::UniquePipeline pipeline;
-  vk::UniquePipelineLayout pipeline_layout;
-};
-
-struct Mesh {
-  std::vector<Primitive> primitives;
-};
-
-struct Node {
-  std::string name;
-  glm::mat4 matrix{};
-  Node* parent = nullptr;
-  std::vector<Node> children;
-  Mesh mesh;
 };
 
 struct Vertex {
@@ -122,9 +107,7 @@ class Model {
     const auto& parent_gltf_node = _doc.nodes[_doc.scenes[0].nodes[0]];
     std::vector<uint32_t> indices;
     std::vector<Vertex> vertices;
-    _parent.name = "parent";
-    _parent.matrix = glm::identity<glm::mat4>();
-    load_node(parent_gltf_node, _doc, &_parent, indices, vertices);
+    load_node(parent_gltf_node, _doc, indices, vertices);
     _indices = std::move(indices);
     _vertices = std::move(vertices);
   }
@@ -140,47 +123,12 @@ class Model {
 
   [[nodiscard]] std::vector<uint32_t> indices() const { return _indices; }
   [[nodiscard]] std::vector<Vertex> vertices() const { return _vertices; }
-  std::vector<Material>& materials() { return _materials; }
-  [[nodiscard]] const Node& node() const { return _parent; }
+  [[nodiscard]] std::vector<Material> materials() const { return _materials; }
+  [[nodiscard]] std::vector<Primitive> primitives() const { return _primitives; }
+  [[nodiscard]] std::vector<Geometry> geometries() const { return _geometries; }
 
-  void draw_node(vk::UniqueCommandBuffer& command_buffer, const size_t i, const std::unique_ptr<bool[]>& show, const Lighting lighting) {
-    for (size_t dev = 0; dev < _geometries.size(); dev++) {
-      if (!show[dev]) continue;
-      const auto& [pos, rot] = _geometries[dev];
-      auto matrix = translate(glm::identity<glm::mat4>(), glm::vec3(pos.x, pos.z, -pos.y) / 1000.0f);
-      const auto model = mat4_cast(glm::quat(rot.w, rot.x, rot.z, -rot.y));
-      matrix = matrix * model;
-      draw_node(_parent, command_buffer, i, matrix, lighting);
-    }
-  }
-
-  void draw_node(const Node& node, vk::UniqueCommandBuffer& command_buffer, const size_t i, const glm::mat4& model, const Lighting lighting) {
-    if (!node.mesh.primitives.empty()) {
-      const auto matrix = model * node.matrix;
-
-      for (const auto& [first_index, index_count, material_index] : node.mesh.primitives) {
-        if (index_count > 0) {
-          const auto& [base_color_factor, base_color_texture_idx, metallic_factor, roughness_factor, descriptor_sets, pipeline, pipeline_layout] =
-              _materials[material_index];
-          command_buffer->bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline.get());
-          command_buffer->pushConstants(pipeline_layout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &matrix);
-          command_buffer->pushConstants(pipeline_layout.get(), vk::ShaderStageFlagBits::eFragment, sizeof(glm::mat4), sizeof(Lighting), &lighting);
-          command_buffer->bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_layout.get(), 0, 1, &descriptor_sets[i].get(), 0, nullptr);
-          command_buffer->drawIndexed(index_count, 1, first_index, 0, 0);
-        }
-      }
-    }
-    for (auto& child : node.children) draw_node(child, command_buffer, i, model, lighting);
-  }
-
-  void load_node(const fx::gltf::Node& gltf_node, const fx::gltf::Document& doc, Node* parent, std::vector<uint32_t>& indices,
-                 std::vector<Vertex>& vertices) {
-    Node node;
-    node.name = gltf_node.name;
-    node.matrix = glm::make_mat4x4(gltf_node.matrix.data());
-
-    for (const int i : gltf_node.children) load_node(doc.nodes[i], doc, &node, indices, vertices);
-
+  void load_node(const fx::gltf::Node& gltf_node, const fx::gltf::Document& doc, std::vector<uint32_t>& indices, std::vector<Vertex>& vertices) {
+    for (const int i : gltf_node.children) load_node(doc.nodes[i], doc, indices, vertices);
     if (gltf_node.mesh > -1) {
       const auto& [name, weights, primitives, extensions_and_extras] = doc.meshes[gltf_node.mesh];
       for (const auto& gltf_primitive : primitives) {
@@ -192,11 +140,9 @@ class Model {
         primitive.first_index = first_index;
         primitive.index_count = index_count;
         primitive.material_index = gltf_primitive.material;
-        node.mesh.primitives.emplace_back(primitive);
+        _primitives.emplace_back(primitive);
       }
     }
-
-    parent->children.emplace_back(std::move(node));
   }
 
   void load_vertices(const fx::gltf::Primitive& gltf_primitive, const fx::gltf::Document& doc, std::vector<Vertex>& vertices) const {
@@ -279,13 +225,8 @@ class Model {
     _materials.reserve(doc.materials.size());
     for (const auto& [alphaCutoff, alphaMode, doubleSided, normalTexture, occlusionTexture, pbrMetallicRoughness, emissiveTexture, emissiveFactor,
                       name, extensionsAndExtras] : doc.materials) {
-      _materials.emplace_back(Material{glm::make_vec4(pbrMetallicRoughness.baseColorFactor.data()),
-                                       pbrMetallicRoughness.baseColorTexture.index,
-                                       pbrMetallicRoughness.metallicFactor,
-                                       pbrMetallicRoughness.roughnessFactor,
-                                       {},
-                                       vk::UniquePipeline(nullptr),
-                                       vk::UniquePipelineLayout{nullptr}});
+      _materials.emplace_back(Material{glm::make_vec4(pbrMetallicRoughness.baseColorFactor.data()), pbrMetallicRoughness.baseColorTexture.index,
+                                       pbrMetallicRoughness.metallicFactor, pbrMetallicRoughness.roughnessFactor});
     }
   }
 
@@ -300,7 +241,7 @@ class Model {
   std::vector<Material> _materials;
   std::vector<uint32_t> _indices;
   std::vector<Vertex> _vertices;
-  Node _parent;
+  std::vector<Primitive> _primitives;
 };
 
 }  // namespace autd3::extra::geometry_viewer::gltf
