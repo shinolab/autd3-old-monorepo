@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/09/2022
+// Last Modified: 29/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -280,7 +280,7 @@ class ArrayFireBackendImpl final : public ArrayFireBackend {
       case TRANSPOSE::CONJ_TRANS:
         switch (trans_b) {
           case TRANSPOSE::CONJ_TRANS:
-            ca += af::cdouble(alpha.real(), alpha.imag()) * af::matmul(aa, ba, AF_MAT_CTRANS, AF_MAT_CTRANS);
+            ca += af::cdouble(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_CTRANS, AF_MAT_CTRANS);
             break;
           case TRANSPOSE::TRANS:
             ca += af::cdouble(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_CTRANS, AF_MAT_TRANS);
@@ -349,7 +349,7 @@ class ArrayFireBackendImpl final : public ArrayFireBackend {
       case TRANSPOSE::CONJ_TRANS:
         switch (trans_b) {
           case TRANSPOSE::CONJ_TRANS:
-            ca += alpha * af::matmul(aa, ba, AF_MAT_CTRANS, AF_MAT_CTRANS);
+            ca += alpha * matmul(aa, ba, AF_MAT_CTRANS, AF_MAT_CTRANS);
             break;
           case TRANSPOSE::TRANS:
             ca += alpha * matmul(aa, ba, AF_MAT_CTRANS, AF_MAT_TRANS);
@@ -412,9 +412,9 @@ class ArrayFireBackendImpl final : public ArrayFireBackend {
 
   void hadamard_product(const MatrixXc& a, const MatrixXc& b, MatrixXc& c) override { _pool.set(c, _pool.get(a) * _pool.get(b)); }
 
-  void concat_col(const MatrixXc& a, const MatrixXc& b, MatrixXc& dst) override { _pool.set(dst, af::join(1, _pool.get(a), _pool.get(b))); }
-  void concat_row(const MatrixXc& a, const MatrixXc& b, MatrixXc& dst) override { _pool.set(dst, af::join(0, _pool.get(a), _pool.get(b))); }
-  void concat_row(const VectorXc& a, const VectorXc& b, VectorXc& dst) override { _pool.set(dst, af::join(0, _pool.get(a), _pool.get(b))); }
+  void concat_col(const MatrixXc& a, const MatrixXc& b, MatrixXc& dst) override { _pool.set(dst, join(1, _pool.get(a), _pool.get(b))); }
+  void concat_row(const MatrixXc& a, const MatrixXc& b, MatrixXc& dst) override { _pool.set(dst, join(0, _pool.get(a), _pool.get(b))); }
+  void concat_row(const VectorXc& a, const VectorXc& b, VectorXc& dst) override { _pool.set(dst, join(0, _pool.get(a), _pool.get(b))); }
 
   void max_eigen_vector(MatrixXc& src, VectorXc& dst) override {
     Eigen::Matrix<complex, -1, -1, Eigen::ColMajor> data(src.rows(), src.cols());
@@ -429,8 +429,8 @@ class ArrayFireBackendImpl final : public ArrayFireBackend {
     const auto srca = _pool.get(src);
     auto ua = _pool.get(u);
     auto vta = _pool.get(vt);
-    const auto m = static_cast<dim_t>(src.rows());
-    const auto n = static_cast<dim_t>(src.cols());
+    const auto m = src.rows();
+    const auto n = src.cols();
     af::array s_vec;
     svd(ua, s_vec, vta, srca);
     s_vec = s_vec / (s_vec * s_vec + af::constant(alpha, s_vec.dims(0), af::dtype::f64));
@@ -457,11 +457,11 @@ class ArrayFireBackendImpl final : public ArrayFireBackend {
     _pool.set(dst, matmul(vta, bufa, AF_MAT_TRANS, AF_MAT_NONE));
   }
 
-  void solvet(MatrixXd& a, VectorXd& b) override { _pool.set(b, af::solve(_pool.get(a), _pool.get(b))); }
+  void solvet(MatrixXd& a, VectorXd& b) override { _pool.set(b, solve(_pool.get(a), _pool.get(b))); }
 
-  void solveh(MatrixXc& a, VectorXc& b) override { _pool.set(b, af::solve(_pool.get(a), _pool.get(b))); }
+  void solveh(MatrixXc& a, VectorXc& b) override { _pool.set(b, solve(_pool.get(a), _pool.get(b))); }
 
-  void reduce_col(const MatrixXd& a, VectorXd& b) override { _pool.set(b, af::sum(_pool.get(a), 1)); }
+  void reduce_col(const MatrixXd& a, VectorXd& b) override { _pool.set(b, sum(_pool.get(a), 1)); }
 
  private:
   af::Backend _backend;
