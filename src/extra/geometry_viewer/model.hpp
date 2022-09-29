@@ -3,7 +3,7 @@
 // Created Date: 26/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/09/2022
+// Last Modified: 29/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -68,6 +68,7 @@ struct Material {
   float roughness_factor;
   std::vector<vk::UniqueDescriptorSet> descriptor_sets;
   vk::UniquePipeline pipeline;
+  vk::UniquePipelineLayout pipeline_layout;
 };
 
 struct Mesh {
@@ -86,24 +87,18 @@ struct Vertex {
   glm::vec4 pos;
   glm::vec3 normal;
   glm::vec2 uv;
-  glm::vec3 color;
-  glm::vec4 tangent;
 
   static vk::VertexInputBindingDescription get_binding_description() {
     constexpr vk::VertexInputBindingDescription binding_description(0, sizeof(Vertex), vk::VertexInputRate::eVertex);
     return binding_description;
   }
 
-  static std::array<vk::VertexInputAttributeDescription, 5> get_attribute_descriptions() {
-    const std::array<vk::VertexInputAttributeDescription, 5> attribute_descriptions{
+  static auto get_attribute_descriptions() {
+    return std::array{
         vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(Vertex, pos)),
         vk::VertexInputAttributeDescription(1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, normal)),
         vk::VertexInputAttributeDescription(2, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, uv)),
-        vk::VertexInputAttributeDescription(3, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, color)),
-        vk::VertexInputAttributeDescription(4, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(Vertex, tangent)),
     };
-
-    return attribute_descriptions;
   }
 };
 
@@ -149,35 +144,34 @@ class Model {
   std::vector<Material>& materials() { return _materials; }
   [[nodiscard]] const Node& node() const { return _parent; }
 
-  void draw_node(vk::UniqueCommandBuffer& command_buffer, vk::UniquePipelineLayout& layout, const size_t i, const std::unique_ptr<bool[]>& show,
-                 const Lighting lighting) {
+  void draw_node(vk::UniqueCommandBuffer& command_buffer, const size_t i, const std::unique_ptr<bool[]>& show, const Lighting lighting) {
     for (size_t dev = 0; dev < _geometries.size(); dev++) {
       if (!show[dev]) continue;
       const auto& [pos, rot] = _geometries[dev];
       auto matrix = translate(glm::identity<glm::mat4>(), glm::vec3(pos.x, pos.z, -pos.y) / 1000.0f);
       const auto model = mat4_cast(glm::quat(rot.w, rot.x, rot.z, -rot.y));
       matrix = matrix * model;
-      draw_node(_parent, command_buffer, layout, i, matrix, lighting);
+      draw_node(_parent, command_buffer, i, matrix, lighting);
     }
   }
 
-  void draw_node(const Node& node, vk::UniqueCommandBuffer& command_buffer, vk::UniquePipelineLayout& layout, const size_t i, const glm::mat4& model,
-                 const Lighting lighting) {
+  void draw_node(const Node& node, vk::UniqueCommandBuffer& command_buffer, const size_t i, const glm::mat4& model, const Lighting lighting) {
     if (!node.mesh.primitives.empty()) {
       const auto matrix = model * node.matrix;
-      command_buffer->pushConstants(layout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &matrix);
-      command_buffer->pushConstants(layout.get(), vk::ShaderStageFlagBits::eFragment, sizeof(glm::mat4), sizeof(Lighting), &lighting);
+
       for (const auto& [first_index, index_count, material_index] : node.mesh.primitives) {
         if (index_count > 0) {
-          const auto& [base_color_factor, base_color_texture_idx, metallic_factor, roughness_factor, descriptor_sets, pipeline] =
+          const auto& [base_color_factor, base_color_texture_idx, metallic_factor, roughness_factor, descriptor_sets, pipeline, pipeline_layout] =
               _materials[material_index];
           command_buffer->bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline.get());
-          command_buffer->bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout.get(), 1, 1, &descriptor_sets[i].get(), 0, nullptr);
+          command_buffer->pushConstants(pipeline_layout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &matrix);
+          command_buffer->pushConstants(pipeline_layout.get(), vk::ShaderStageFlagBits::eFragment, sizeof(glm::mat4), sizeof(Lighting), &lighting);
+          command_buffer->bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_layout.get(), 0, 1, &descriptor_sets[i].get(), 0, nullptr);
           command_buffer->drawIndexed(index_count, 1, first_index, 0, 0);
         }
       }
     }
-    for (auto& child : node.children) draw_node(child, command_buffer, layout, i, model, lighting);
+    for (auto& child : node.children) draw_node(child, command_buffer, i, model, lighting);
   }
 
   void load_node(const fx::gltf::Node& gltf_node, const fx::gltf::Document& doc, Node* parent, std::vector<uint32_t>& indices,
@@ -225,15 +219,12 @@ class Model {
     const auto* position_buffer = load("POSITION");
     const auto* normals_buffer = load("NORMAL");
     const auto* tex_coords_buffer = load("TEXCOORD_0");
-    const auto* tangents_buffer = load("TANGENT");
 
     for (size_t v = 0; v < vertex_count; v++) {
       Vertex vert{};
       vert.pos = glm::vec4(glm::make_vec3(&position_buffer[v * 3]), 1.0f);
       vert.normal = normalize(glm::vec3(normals_buffer ? glm::make_vec3(&normals_buffer[v * 3]) : glm::vec3(0.0f)));
       vert.uv = tex_coords_buffer ? glm::make_vec2(&tex_coords_buffer[v * 2]) : glm::vec3(0.0f);
-      vert.color = glm::vec3(1.0f);
-      vert.tangent = tangents_buffer ? glm::make_vec4(&tangents_buffer[v * 4]) : glm::vec4(0.0f);
       vertices.emplace_back(vert);
     }
   }
