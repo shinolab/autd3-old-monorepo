@@ -117,9 +117,14 @@ class VulkanRenderer {
 
   void create_framebuffers() {
     _swap_chain_framebuffers.resize(_swap_chain_image_views.size());
-
     for (size_t i = 0; i < _swap_chain_image_views.size(); i++) {
-      const std::array attachments = {_color_image_view.get(), _depth_image_view.get(), _swap_chain_image_views[i].get()};
+      std::vector<vk::ImageView> attachments;
+      if (_handler->msaa_enable())
+        attachments.emplace_back(_color_image_view.get());
+      else
+        attachments.emplace_back(_swap_chain_image_views[i].get());
+      attachments.emplace_back(_depth_image_view.get());
+      if (_handler->msaa_enable()) attachments.emplace_back(_swap_chain_image_views[i].get());
       vk::FramebufferCreateInfo framebuffer_create_info = vk::FramebufferCreateInfo()
                                                               .setRenderPass(_render_pass.get())
                                                               .setAttachments(attachments)
@@ -131,7 +136,7 @@ class VulkanRenderer {
   }
 
   void create_render_pass() {
-    std::array attachments = {
+    std::vector attachments = {
         vk::AttachmentDescription()
             .setFormat(_swap_chain_image_format)
             .setSamples(_handler->msaa_samples())
@@ -140,7 +145,7 @@ class VulkanRenderer {
             .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
             .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
             .setInitialLayout(vk::ImageLayout::eUndefined)
-            .setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal),
+            .setFinalLayout(_handler->msaa_enable() ? vk::ImageLayout::eColorAttachmentOptimal : vk::ImageLayout::ePresentSrcKHR),
         vk::AttachmentDescription()
             .setFormat(_handler->find_depth_format())
             .setSamples(_handler->msaa_samples())
@@ -149,27 +154,27 @@ class VulkanRenderer {
             .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
             .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
             .setInitialLayout(vk::ImageLayout::eUndefined)
-            .setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal),
-        vk::AttachmentDescription()
-            .setFormat(_swap_chain_image_format)
-            .setSamples(vk::SampleCountFlagBits::e1)
-            .setLoadOp(vk::AttachmentLoadOp::eDontCare)
-            .setStoreOp(vk::AttachmentStoreOp::eStore)
-            .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
-            .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
-            .setInitialLayout(vk::ImageLayout::eUndefined)
-            .setFinalLayout(vk::ImageLayout::ePresentSrcKHR),
-    };
+            .setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)};
+    if (_handler->msaa_enable())
+      attachments.emplace_back(vk::AttachmentDescription()
+                                   .setFormat(_swap_chain_image_format)
+                                   .setSamples(vk::SampleCountFlagBits::e1)
+                                   .setLoadOp(vk::AttachmentLoadOp::eDontCare)
+                                   .setStoreOp(vk::AttachmentStoreOp::eStore)
+                                   .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+                                   .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+                                   .setInitialLayout(vk::ImageLayout::eUndefined)
+                                   .setFinalLayout(vk::ImageLayout::ePresentSrcKHR));
     const std::array color_attachments = {vk::AttachmentReference().setAttachment(0).setLayout(vk::ImageLayout::eColorAttachmentOptimal)};
     const vk::AttachmentReference depth_attachment =
         vk::AttachmentReference().setAttachment(1).setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
     const std::array resolve_attachments = {vk::AttachmentReference().setAttachment(2).setLayout(vk::ImageLayout::eColorAttachmentOptimal)};
-    const std::array subpasses = {vk::SubpassDescription()
-                                      .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
-                                      .setColorAttachments(color_attachments)
-                                      .setPDepthStencilAttachment(&depth_attachment)
-                                      .setResolveAttachments(resolve_attachments)};
-
+    vk::SubpassDescription subpass = vk::SubpassDescription()
+                                         .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
+                                         .setColorAttachments(color_attachments)
+                                         .setPDepthStencilAttachment(&depth_attachment);
+    if (_handler->msaa_enable()) subpass.setResolveAttachments(resolve_attachments);
+    const std::array subpasses = {subpass};
     const std::array dependencies = {
         vk::SubpassDependency()
             .setSrcSubpass(VK_SUBPASS_EXTERNAL)
