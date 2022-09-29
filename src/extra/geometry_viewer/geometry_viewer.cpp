@@ -52,7 +52,7 @@ void GeometryViewer::view(const core::Geometry& geometry) const {
   renderer.create_index_buffer(model);
   renderer.create_uniform_buffers();
   handle.create_descriptor_pool();
-  renderer.create_descriptor_sets(model);
+  renderer.create_descriptor_sets();
   renderer.create_command_buffers();
   renderer.create_sync_objects();
 
