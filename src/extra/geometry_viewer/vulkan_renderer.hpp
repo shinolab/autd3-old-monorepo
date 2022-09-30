@@ -3,7 +3,7 @@
 // Created Date: 24/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/09/2022
+// Last Modified: 30/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -116,13 +116,7 @@ class VulkanRenderer {
   void create_framebuffers() {
     _swap_chain_framebuffers.resize(_swap_chain_image_views.size());
     for (size_t i = 0; i < _swap_chain_image_views.size(); i++) {
-      std::vector<vk::ImageView> attachments;
-      if (_handler->msaa_enable())
-        attachments.emplace_back(_color_image_view.get());
-      else
-        attachments.emplace_back(_swap_chain_image_views[i].get());
-      attachments.emplace_back(_depth_image_view.get());
-      if (_handler->msaa_enable()) attachments.emplace_back(_swap_chain_image_views[i].get());
+      std::array attachments{_color_image_view.get(), _depth_image_view.get(), _swap_chain_image_views[i].get()};
       vk::FramebufferCreateInfo framebuffer_create_info = vk::FramebufferCreateInfo()
                                                               .setRenderPass(_render_pass.get())
                                                               .setAttachments(attachments)
@@ -134,27 +128,25 @@ class VulkanRenderer {
   }
 
   void create_render_pass() {
-    std::vector attachments = {
-        vk::AttachmentDescription()
-            .setFormat(_swap_chain_image_format)
-            .setSamples(_handler->msaa_samples())
-            .setLoadOp(vk::AttachmentLoadOp::eClear)
-            .setStoreOp(vk::AttachmentStoreOp::eStore)
-            .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
-            .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
-            .setInitialLayout(vk::ImageLayout::eUndefined)
-            .setFinalLayout(_handler->msaa_enable() ? vk::ImageLayout::eColorAttachmentOptimal : vk::ImageLayout::ePresentSrcKHR),
-        vk::AttachmentDescription()
-            .setFormat(_handler->find_depth_format())
-            .setSamples(_handler->msaa_samples())
-            .setLoadOp(vk::AttachmentLoadOp::eClear)
-            .setStoreOp(vk::AttachmentStoreOp::eDontCare)
-            .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
-            .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
-            .setInitialLayout(vk::ImageLayout::eUndefined)
-            .setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)};
-    if (_handler->msaa_enable())
-      attachments.emplace_back(vk::AttachmentDescription()
+    std::vector attachments = {vk::AttachmentDescription()
+                                   .setFormat(_swap_chain_image_format)
+                                   .setSamples(_handler->msaa_samples())
+                                   .setLoadOp(vk::AttachmentLoadOp::eClear)
+                                   .setStoreOp(vk::AttachmentStoreOp::eStore)
+                                   .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+                                   .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+                                   .setInitialLayout(vk::ImageLayout::eUndefined)
+                                   .setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal),
+                               vk::AttachmentDescription()
+                                   .setFormat(_handler->find_depth_format())
+                                   .setSamples(_handler->msaa_samples())
+                                   .setLoadOp(vk::AttachmentLoadOp::eClear)
+                                   .setStoreOp(vk::AttachmentStoreOp::eDontCare)
+                                   .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+                                   .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+                                   .setInitialLayout(vk::ImageLayout::eUndefined)
+                                   .setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal),
+                               vk::AttachmentDescription()
                                    .setFormat(_swap_chain_image_format)
                                    .setSamples(vk::SampleCountFlagBits::e1)
                                    .setLoadOp(vk::AttachmentLoadOp::eDontCare)
@@ -162,16 +154,16 @@ class VulkanRenderer {
                                    .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
                                    .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
                                    .setInitialLayout(vk::ImageLayout::eUndefined)
-                                   .setFinalLayout(vk::ImageLayout::ePresentSrcKHR));
+                                   .setFinalLayout(vk::ImageLayout::ePresentSrcKHR)};
     const std::array color_attachments = {vk::AttachmentReference().setAttachment(0).setLayout(vk::ImageLayout::eColorAttachmentOptimal)};
     const vk::AttachmentReference depth_attachment =
         vk::AttachmentReference().setAttachment(1).setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
     const std::array resolve_attachments = {vk::AttachmentReference().setAttachment(2).setLayout(vk::ImageLayout::eColorAttachmentOptimal)};
-    vk::SubpassDescription subpass = vk::SubpassDescription()
-                                         .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
-                                         .setColorAttachments(color_attachments)
-                                         .setPDepthStencilAttachment(&depth_attachment);
-    if (_handler->msaa_enable()) subpass.setResolveAttachments(resolve_attachments);
+    const vk::SubpassDescription subpass = vk::SubpassDescription()
+                                               .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
+                                               .setColorAttachments(color_attachments)
+                                               .setPDepthStencilAttachment(&depth_attachment)
+                                               .setResolveAttachments(resolve_attachments);
     const std::array subpasses = {subpass};
     const std::array dependencies = {
         vk::SubpassDependency()
@@ -270,8 +262,8 @@ class VulkanRenderer {
                                                                       .setMinDepthBounds(0.0f)
                                                                       .setMaxDepthBounds(1.0f);
     _pipelines.resize(model.materials().size());
-    for (size_t i = 0; i < model.materials().size(); i++) {
-      const auto [base_color_factor, base_color_texture_idx, metallic_factor, roughness_factor] = model.materials()[i];
+    size_t i = 0;
+    for (const auto& [base_color_factor, base_color_texture_idx, metallic_factor, roughness_factor] : model.materials()) {
       struct MaterialSpecializationData {
         vk::Bool32 has_texture;
         float base_color_r;
@@ -316,7 +308,7 @@ class VulkanRenderer {
                                                                                 .setLayout(_pipeline_layout.get())
                                                                                 .setRenderPass(_render_pass.get()));
           result.result == vk::Result::eSuccess)
-        _pipelines[i] = std::move(result.value);
+        _pipelines[i++] = std::move(result.value);
       else
         throw std::runtime_error("failed to create a pipeline!");
     }
@@ -402,16 +394,16 @@ class VulkanRenderer {
   }
 
   void create_descriptor_sets() {
-    std::vector bindings = {vk::DescriptorSetLayoutBinding()
-                                .setBinding(0)
-                                .setDescriptorType(vk::DescriptorType::eUniformBuffer)
-                                .setDescriptorCount(1)
-                                .setStageFlags(vk::ShaderStageFlagBits::eVertex)};
-    bindings.emplace_back(vk::DescriptorSetLayoutBinding()
-                              .setBinding(1)
-                              .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
-                              .setDescriptorCount(1)
-                              .setStageFlags(vk::ShaderStageFlagBits::eFragment));
+    std::array bindings = {vk::DescriptorSetLayoutBinding()
+                               .setBinding(0)
+                               .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+                               .setDescriptorCount(1)
+                               .setStageFlags(vk::ShaderStageFlagBits::eVertex),
+                           vk::DescriptorSetLayoutBinding()
+                               .setBinding(1)
+                               .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+                               .setDescriptorCount(1)
+                               .setStageFlags(vk::ShaderStageFlagBits::eFragment)};
     _descriptor_set_layout = _handler->device().createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo().setBindings(bindings));
     std::vector layouts(_max_frames_in_flight, _descriptor_set_layout.get());
     _descriptor_sets = _handler->device().allocateDescriptorSetsUnique(
@@ -431,21 +423,22 @@ class VulkanRenderer {
         };
         _handler->device().updateDescriptorSets(descriptor_writes, {});
       }
-      const vk::DescriptorImageInfo image_info = vk::DescriptorImageInfo()
-                                                     .setSampler(_handler->sampler())
-                                                     .setImageView(_handler->image_view())
-                                                     .setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
-      std::array descriptor_writes{
-          vk::WriteDescriptorSet()
-              .setDstSet(_descriptor_sets[i].get())
-              .setDstBinding(1)
-              .setDstArrayElement(0)
-              .setDescriptorCount(1)
-              .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
-              .setImageInfo(image_info),
-      };
-
-      _handler->device().updateDescriptorSets(descriptor_writes, {});
+      {
+        const vk::DescriptorImageInfo image_info = vk::DescriptorImageInfo()
+                                                       .setSampler(_handler->sampler())
+                                                       .setImageView(_handler->image_view())
+                                                       .setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+        std::array descriptor_writes{
+            vk::WriteDescriptorSet()
+                .setDstSet(_descriptor_sets[i].get())
+                .setDstBinding(1)
+                .setDstArrayElement(0)
+                .setDescriptorCount(1)
+                .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+                .setImageInfo(image_info),
+        };
+        _handler->device().updateDescriptorSets(descriptor_writes, {});
+      }
     }
   }
 
@@ -746,9 +739,9 @@ class VulkanRenderer {
     command_buffer->bindDescriptorSets(vk::PipelineBindPoint::eGraphics, _pipeline_layout.get(), 0, 1, &_descriptor_sets[_current_frame].get(), 0,
                                        nullptr);
 
-    for (size_t dev = 0; dev < model.geometries().size(); dev++) {
-      if (!imgui.show[dev]) continue;
-      const auto [pos, rot] = model.geometries()[dev];
+    size_t dev = 0;
+    for (const auto& [pos, rot] : model.geometries()) {
+      if (!imgui.show[dev++]) continue;
       auto matrix = translate(glm::identity<glm::mat4>(), glm::vec3(pos.x, pos.z, -pos.y) / 1000.0f);
       matrix = matrix * mat4_cast(glm::quat(rot.w, rot.x, rot.z, -rot.y));
 

@@ -61,22 +61,6 @@ class GeometryViewer {
   }
 
   /**
-   * @brief Set Multi-Sample Anti-Aliasing enable
-   */
-  GeometryViewer& msaa(const bool msaa) {
-    _msaa = msaa;
-    return *this;
-  }
-
-  /**
-   * @brief Set mipmap enable
-   */
-  GeometryViewer& mipmap(const bool mipmap) {
-    _mipmap = mipmap;
-    return *this;
-  }
-
-  /**
    * @brief Set GPU index
    */
   GeometryViewer& gpu_idx(const size_t idx) {
@@ -92,8 +76,7 @@ class GeometryViewer {
   /**
    * @brief Constructor
    */
-  GeometryViewer() noexcept
-      : _width(800), _height(600), _vsync(true), _shader("shaders"), _model("models/AUTD.glb"), _font(""), _msaa(true), _mipmap{true}, _gpu_idx(0) {}
+  GeometryViewer() noexcept : _width(800), _height(600), _vsync(true), _shader("shaders"), _model("models/AUTD.glb"), _font(""), _gpu_idx(0) {}
   ~GeometryViewer() = default;
   GeometryViewer(const GeometryViewer& v) noexcept = delete;
   GeometryViewer& operator=(const GeometryViewer& obj) = delete;
@@ -107,8 +90,6 @@ class GeometryViewer {
   std::string _shader;
   std::string _model;
   std::string _font;
-  bool _msaa;
-  bool _mipmap;
   size_t _gpu_idx;
 };
 
