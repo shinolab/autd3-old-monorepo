@@ -7,7 +7,6 @@ target_include_directories(simulator PRIVATE ${PROJECT_SOURCE_DIR}/include ${Vul
 target_link_libraries(simulator PRIVATE autd3_common ${Vulkan_LIBRARIES} glm::glm glfw imgui-vulkan)
 
 if(WIN32)
-  target_link_options(simulator INTERFACE /ignore:4044)
   target_link_options(simulator INTERFACE /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib /NODEFAULTLIB:msvcrtd.lib)
 endif()
 
