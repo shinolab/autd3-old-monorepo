@@ -1,18 +1,19 @@
-// File: geometry_viewer_example.cpp
+// File: geometry_viewer.cpp
 // Project: examples
 // Created Date: 28/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/09/2022
+// Last Modified: 30/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
+#include "autd3/extra/geometry_viewer/geometry_viewer.hpp"
+
 #include <iostream>
 
 #include "autd3.hpp"
-#include "autd3/extra/geometry_viewer/geometry_viewer.hpp"
 
 int main() try {
   autd3::Controller autd;
@@ -27,7 +28,7 @@ int main() try {
       .vsync(true)
       .model(AUTD3_GEOMETRY_VIEWER_MODEL_PATH)
       .shader(AUTD3_GEOMETRY_VIEWER_SHADER_PATH)
-      .font(AUTD3_GEOMETRY_FONT_PATH)
+      .font(AUTD3_GEOMETRY_VIEWER_FONT_PATH)
       .view(autd.geometry());
 
   return 0;

@@ -1,4 +1,8 @@
-# 2.4
+# 2.4.1
+
+- Rename `link::Emulator` to `link::Simulator`
+
+# 2.4.0
 
 - Add `GeometryViewer`
 - Improve performance of `link::SOEM` on Windows

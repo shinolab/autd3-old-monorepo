@@ -241,21 +241,21 @@ High Precisionモードを`true`にすると, より高精度なタイマが使�
                 .build();
 ```
 
-## Emulator
+## Simulator
 
-Emulator linkは[autd-emulator](https://github.com/shinolab/autd-emulator) を使用する際に使うLinkである.
+Simulator linkは[autd-simulator](https://github.com/shinolab/autd-simulator) を使用する際に使うLinkである.
 
-使用の前に, AUTD Emulatorを実行しておく必要がある.
+使用の前に, AUTD Simulatorを実行しておく必要がある.
 
-EmulatorのLinkを使用する際は`autd3/link/emulator.hpp`ヘッダーをインクルードする.
+SimulatorのLinkを使用する際は`autd3/link/simulator.hpp`ヘッダーをインクルードする.
 ```cpp
-#include "autd3/link/emulator.hpp"
+#include "autd3/link/simulator.hpp"
 
 ...
 
-  auto link = autd::link::Emulator().port(50632).build();
+  auto link = autd::link::Simulator().port(50632).build();
 ```
-ポート番号はautd-emulatorの設定と同じにしておく.
+ポート番号はautd-simulatorの設定と同じにしておく.
 
 [^fn_remote_twin]: 無線LANでも可
 

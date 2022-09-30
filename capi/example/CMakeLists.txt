@@ -58,18 +58,6 @@ if(BUILD_LINK_SOEM)
   set_target_properties(c_example_soem PROPERTIES FOLDER "capi/example")
 endif()
 
-if(BUILD_LINK_EMULATOR)
-  add_executable(c_example_emulator emulator.c)
-  add_autd_dependencies(c_example_emulator)
-  target_include_directories(c_example_emulator PRIVATE ${PROJECT_SOURCE_DIR}/capi/link_emulator)
-  target_link_libraries(c_example_emulator PRIVATE autd3capi autd3capi-link-emulator) 
-  add_custom_command(TARGET c_example_emulator POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-    ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/${prefix}autd3capi-link-emulator.${extention}
-    ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>)
-  set_target_properties(c_example_emulator PROPERTIES FOLDER "capi/example")
-endif()
-
 if(WIN32)
   if(BUILD_LINK_TWINCAT)
     add_executable(c_example_twincat twincat.c)

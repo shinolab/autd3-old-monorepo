@@ -3,7 +3,7 @@
 // Created Date: 28/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/09/2022
+// Last Modified: 30/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -61,7 +61,7 @@ class GeometryViewer {
   }
 
   /**
-   * @brief Set Multi-Sample Anti-Aliasing
+   * @brief Set Multi-Sample Anti-Aliasing enable
    */
   GeometryViewer& msaa(const bool msaa) {
     _msaa = msaa;
@@ -69,7 +69,7 @@ class GeometryViewer {
   }
 
   /**
-   * @brief Set Multi-Sample Anti-Aliasing
+   * @brief Set mipmap enable
    */
   GeometryViewer& mipmap(const bool mipmap) {
     _mipmap = mipmap;
@@ -97,8 +97,8 @@ class GeometryViewer {
   ~GeometryViewer() = default;
   GeometryViewer(const GeometryViewer& v) noexcept = delete;
   GeometryViewer& operator=(const GeometryViewer& obj) = delete;
-  GeometryViewer(GeometryViewer&& obj) = delete;
-  GeometryViewer& operator=(GeometryViewer&& obj) = delete;
+  GeometryViewer(GeometryViewer&& obj) = default;
+  GeometryViewer& operator=(GeometryViewer&& obj) = default;
 
  private:
   int32_t _width;
