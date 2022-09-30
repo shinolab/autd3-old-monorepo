@@ -12,7 +12,6 @@ target_include_directories(geometry-viewer PRIVATE ${PROJECT_SOURCE_DIR}/include
 target_link_libraries(geometry-viewer PRIVATE autd3_common ${Vulkan_LIBRARIES} glm::glm glfw nlohmann_json fx-gltf imgui-vulkan)
 
 if(WIN32)
-  target_link_options(geometry-viewer INTERFACE /ignore:4044)
   target_link_options(geometry-viewer INTERFACE /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib /NODEFAULTLIB:msvcrtd.lib)
 endif()
 
