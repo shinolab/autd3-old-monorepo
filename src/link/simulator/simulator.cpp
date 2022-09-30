@@ -1,15 +1,15 @@
-﻿// File: emulator.cpp
-// Project: emulator
+﻿// File: simulator.cpp
+// Project: simulator
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/08/2022
+// Last Modified: 30/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
-#include "autd3/link/emulator.hpp"
+#include "autd3/link/simulator.hpp"
 
 #if WIN32
 #include <WS2tcpip.h>
@@ -26,14 +26,14 @@
 
 namespace autd3::link {
 
-class EmulatorImpl final : public core::Link {
+class SimulatorImpl final : public core::Link {
  public:
-  explicit EmulatorImpl(const uint16_t port) : Link(), _is_open(false), _port(port) {}
-  ~EmulatorImpl() override = default;
-  EmulatorImpl(const EmulatorImpl& v) noexcept = delete;
-  EmulatorImpl& operator=(const EmulatorImpl& obj) = delete;
-  EmulatorImpl(EmulatorImpl&& obj) = delete;
-  EmulatorImpl& operator=(EmulatorImpl&& obj) = delete;
+  explicit SimulatorImpl(const uint16_t port) : Link(), _is_open(false), _port(port) {}
+  ~SimulatorImpl() override = default;
+  SimulatorImpl(const SimulatorImpl& v) noexcept = delete;
+  SimulatorImpl& operator=(const SimulatorImpl& obj) = delete;
+  SimulatorImpl(SimulatorImpl&& obj) = delete;
+  SimulatorImpl& operator=(SimulatorImpl&& obj) = delete;
 
   void open(const core::Geometry& geometry) override {
     if (is_open()) return;
@@ -54,7 +54,7 @@ class EmulatorImpl final : public core::Link {
 #else
     if (_socket < 0)
 #endif
-      throw std::runtime_error("cannot connect to emulator");
+      throw std::runtime_error("cannot connect to simulator");
 
     _addr.sin_family = AF_INET;
     _addr.sin_port = htons(_port);
@@ -148,8 +148,8 @@ class EmulatorImpl final : public core::Link {
     return buf;
   }
 };
-core::LinkPtr Emulator::build() {
-  core::LinkPtr link = std::make_unique<EmulatorImpl>(_port);
+core::LinkPtr Simulator::build() {
+  core::LinkPtr link = std::make_unique<SimulatorImpl>(_port);
   return link;
 }
 

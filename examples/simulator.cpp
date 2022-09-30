@@ -1,17 +1,18 @@
-// File: emulator.cpp
+// File: simulator_example.cpp
 // Project: examples
-// Created Date: 10/05/2022
+// Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/08/2022
+// Last Modified: 30/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
-#include "autd3/link/emulator.hpp"
+#include "autd3/extra/simulator/simulator.hpp"
 
 #include "autd3.hpp"
+#include "autd3/link/simulator.hpp"
 #include "runner.hpp"
 
 int main() try {
@@ -24,10 +25,16 @@ int main() try {
   // for (auto& dev : autd.geometry())
   //   for (auto& tr : dev) tr.set_frequency(70e3);
 
-  auto link = autd3::link::Emulator().port(50632).build();
+  auto link = autd3::link::Simulator().port(50632).build();
   autd.open(std::move(link));
 
-  return run(std::move(autd));
+  autd3::extra::simulator::Simulator simulator = autd3::extra::simulator::Simulator().vsync(0).start();
+
+  simulator.exit();
+
+  run(std::move(autd));
+
+  return 0;
 } catch (std::exception& e) {
   std::cerr << e.what() << std::endl;
   return -1;

@@ -1,31 +1,28 @@
-# Emulator
+# Simulator
 
-[autd-emulator](https://github.com/shinolab/autd-emulator)はその名の通り, クロスプラットフォームで動作するAUTD3のエミュレータである.
+autd-simulatorはその名の通りAUTD3のSimulatorであり, Windows/Linux/macOSで動作する.
 
-## Install
+## Build
 
-Windows 10/11 64bit版のみコンパイル済みのバイナリが[GitHubで配布されている](https://github.com/shinolab/autd-emulator/releases)のでこれをダウンロードして実行すれば良い.
+AUTD3-Simulatorをビルドするには, Vulkan SDKをインストールし, CMakeの`BUILD_SIMULATOR`フラグをオンにしてビルドする.
 
-その他の場合はRustのコンパイラをインストールして, 各自コンパイルすること.
 ```
-git clone https://github.com/shinolab/autd-emulator.git
-cd autd-emulator
-cargo run --release
+cmake .. -DBUILD_SIMULATOR=ON
 ```
 
 # How to
 
 <figure>
   <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/emu-home.jpg"/>
-  <figcaption>Emulator</figcaption>
+  <figcaption>Simulator</figcaption>
 </figure>
 
-autd-emulatorを実行すると上図のような画面になる.
-この状態で, Emulator linkを使用したクライアントプログラムを実行すると, クライアントプログラムの内容に合わせた音場が表示される.
+autd-simulatorを実行すると上図のような画面になる.
+この状態で, Simulator linkを使用したクライアントプログラムを実行すると, クライアントプログラムの内容に合わせた音場が表示される.
 図の中央の黒いパネルをSliceと呼び, このSliceを使って任意の位置の音場を可視化できる.
 また, 振動子の位相が色相で, 振幅が色強度で表される.
 
-なお, エミュレータで表示される音場はシンプルな球面波の重ね合わせであり, 指向性や非線形効果などは考慮されない.
+なお, シミュレータで表示される音場はシンプルな球面波の重ね合わせであり, 指向性や非線形効果などは考慮されない.
 
 画面左に表示されるGUIでSliceやカメラの操作が行える.
 なお, GUIには[Dear ImGui](https://github.com/ocornut/imgui)を用いており, マウスによる操作のほか, "Ctrl+クリック"で数値入力モードになる.
@@ -54,7 +51,7 @@ Cameraタブではカメラの位置, 回転, Field of Viewの角度, Near clip,
 
 Configタブでは音速と振動子のアルファ値, 及び, 背景色の設定ができる.
 
-また, Emulator linkと接続した後は, 各デバイスごとの表示/イネーブルを切り替えられる.
+また, 各デバイスごとの表示/イネーブルを切り替えられる.
 表示をOffにした場合は, 表示されないだけで音場に寄与する.
 イネーブルをOffにすると音場に寄与しなくなる.
 さらに, デバイス毎の軸の表示もできる.
@@ -82,5 +79,5 @@ Logタブではデバッグ用のログが表示される.
 幾つかの設定は`settings.json`からのみ編集できる.
 この中で重要なものとして, portとvsyncがある.
 
-portはSDKのEmulator linkとの間で使うポート番号である.
+portはSDKのSimulator linkとの間で使うポート番号である.
 また, vsyncをtrueにすると垂直同期が有効になる.
