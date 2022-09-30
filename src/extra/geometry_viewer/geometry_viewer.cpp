@@ -12,6 +12,7 @@
 #include "autd3/extra/geometry_viewer/geometry_viewer.hpp"
 
 #include "model.hpp"
+#include "vulkan_context.hpp"
 #include "vulkan_handler.hpp"
 #include "vulkan_imgui.hpp"
 #include "vulkan_renderer.hpp"
@@ -28,20 +29,21 @@ void GeometryViewer::view(const core::Geometry& geometry) const {
     geometries.emplace_back(gltf::Geometry{pos, rot});
   }
 
-  WindowHandler window(_width, _height);
-  VulkanHandler handle(_gpu_idx, true);
-  VulkanRenderer renderer(&handle, &window, _shader, _font, _vsync);
+  vk_helper::WindowHandler window(_width, _height);
+  vk_helper::VulkanContext context(_gpu_idx, true);
+  VulkanHandler handle(&context);
+  VulkanRenderer renderer(&context, &window, &handle, _shader, _font, _vsync);
   const gltf::Model model(_model, geometries);
   VulkanImGui imgui{};
 
-  window.init(&renderer, VulkanRenderer::resize_callback, VulkanRenderer::pos_callback);
-  handle.init_vulkan(window);
+  window.init("Geometry Viewer", &renderer, VulkanRenderer::resize_callback, VulkanRenderer::pos_callback);
+  context.init_vulkan("Geometry Viewer", window);
   renderer.init();
   renderer.create_swapchain();
   renderer.create_image_views();
   renderer.create_render_pass();
   renderer.create_graphics_pipeline(model);
-  handle.create_command_pool();
+  context.create_command_pool();
   renderer.create_depth_resources();
   renderer.create_color_resources();
   renderer.create_framebuffers();
@@ -51,21 +53,26 @@ void GeometryViewer::view(const core::Geometry& geometry) const {
   renderer.create_vertex_buffer(model);
   renderer.create_index_buffer(model);
   renderer.create_uniform_buffers();
-  handle.create_descriptor_pool();
+  const std::array pool_size = {
+      vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 100),
+      vk::DescriptorPoolSize(vk::DescriptorType::eSampledImage, 100),
+      vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 100),
+  };
+  context.create_descriptor_pool(pool_size);
   renderer.create_descriptor_sets();
   renderer.create_command_buffers();
   renderer.create_sync_objects();
 
-  imgui.init(window, handle, static_cast<uint32_t>(renderer.frames_in_flight()), renderer.render_pass(), geometries, _font);
+  imgui.init(window, context, static_cast<uint32_t>(renderer.frames_in_flight()), renderer.render_pass(), geometries, _font);
 
   while (!window.should_close()) {
-    WindowHandler::poll_events();
+    vk_helper::WindowHandler::poll_events();
     glfwPollEvents();
     imgui.draw(renderer.font());
     renderer.draw_frame(model, imgui);
   }
 
-  handle.device().waitIdle();
+  context.device().waitIdle();
   VulkanImGui::cleanup();
   renderer.cleanup();
 }
