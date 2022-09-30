@@ -53,7 +53,7 @@ endif()
 
 if(BUILD_GEOMETRY_VIEWER)
   add_executable(geometry_viewer_example geometry_viewer.cpp)
-  target_link_libraries(geometry_viewer_example autd3 geometry-viewer)
+  target_link_libraries(geometry_viewer_example autd3 geometry_viewer)
   
   target_compile_definitions(geometry_viewer_example PRIVATE AUTD3_GEOMETRY_VIEWER_SHADER_PATH="${PROJECT_SOURCE_DIR}/src/extra/geometry_viewer/shaders")
   target_compile_definitions(geometry_viewer_example PRIVATE AUTD3_GEOMETRY_VIEWER_MODEL_PATH="${PROJECT_SOURCE_DIR}/src/extra/geometry_viewer/models/AUTD.glb")

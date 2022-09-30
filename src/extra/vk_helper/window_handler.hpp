@@ -1,9 +1,9 @@
 // File: window_handler.hpp
-// Project: include
-// Created Date: 23/09/2022
+// Project: vk_helper
+// Created Date: 29/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/09/2022
+// Last Modified: 30/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@
 #include <algorithm>
 #include <utility>
 
-namespace autd3::extra::geometry_viewer {
+namespace autd3::extra::vk_helper {
 
 class WindowHandler {
  public:
@@ -31,11 +31,11 @@ class WindowHandler {
   WindowHandler(WindowHandler&& obj) = default;
   WindowHandler& operator=(WindowHandler&& obj) = default;
 
-  void init(void* renderer_pointer, const GLFWframebuffersizefun framebuffer_size_callback, const GLFWwindowposfun pos_callback) {
+  void init(std::string name, void* user_pointer, const GLFWframebuffersizefun framebuffer_size_callback, const GLFWwindowposfun pos_callback) {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    _window = glfwCreateWindow(_width, _height, "Geometry Viewer", nullptr, nullptr);
-    glfwSetWindowUserPointer(_window, renderer_pointer);
+    _window = glfwCreateWindow(_width, _height, name.c_str(), nullptr, nullptr);
+    glfwSetWindowUserPointer(_window, user_pointer);
     glfwSetFramebufferSizeCallback(_window, framebuffer_size_callback);
     glfwSetWindowPosCallback(_window, pos_callback);
   }
@@ -83,4 +83,4 @@ class WindowHandler {
   GLFWwindow* _window{};
 };
 
-}  // namespace autd3::extra::geometry_viewer
+}  // namespace autd3::extra::vk_helper
