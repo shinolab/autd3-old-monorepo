@@ -28,7 +28,7 @@ int main() try {
   auto link = autd3::link::Simulator().port(50632).build();
   autd.open(std::move(link));
 
-  autd3::extra::simulator::Simulator simulator = autd3::extra::simulator::Simulator().vsync(0).start();
+  autd3::extra::simulator::Simulator simulator = autd3::extra::simulator::Simulator().vsync(true).start();
 
   simulator.exit();
 
