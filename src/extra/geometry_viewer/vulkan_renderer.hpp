@@ -25,6 +25,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "model.hpp"
+#include "vulkan_context.hpp"
 #include "vulkan_handler.hpp"
 #include "vulkan_imgui.hpp"
 
@@ -40,10 +41,11 @@ struct UniformBufferObject {
 class VulkanRenderer {
  public:
   std::string font_path;
-  explicit VulkanRenderer(const VulkanHandler* handler, const WindowHandler* window, std::string shader, std::string font_path,
-                          const bool vsync = true) noexcept
-      : _handler(handler),
+  explicit VulkanRenderer(const vk_helper::VulkanContext* context, const vk_helper::WindowHandler* window, const VulkanHandler* handler,
+                          std::string shader, std::string font_path, const bool vsync = true) noexcept
+      : _context(context),
         _window(window),
+        _handler(handler),
         _shader(std::move(shader)),
         _font_path(std::move(font_path)),
         _swap_chain(nullptr),
@@ -71,7 +73,7 @@ class VulkanRenderer {
   }
 
   void create_swapchain() {
-    const auto [capabilities, formats, present_modes] = _handler->query_swap_chain_support(_handler->physical_device());
+    const auto [capabilities, formats, present_modes] = _context->query_swap_chain_support(_context->physical_device());
 
     const vk::SurfaceFormatKHR surface_format = choose_swap_surface_format(formats);
     const vk::PresentModeKHR present_mode = _vsync ? vk::PresentModeKHR::eFifo : choose_swap_present_mode(present_modes);
@@ -81,7 +83,7 @@ class VulkanRenderer {
     if (capabilities.maxImageCount > 0 && image_count > capabilities.maxImageCount) image_count = capabilities.maxImageCount;
 
     vk::SwapchainCreateInfoKHR create_info = vk::SwapchainCreateInfoKHR()
-                                                 .setSurface(_handler->surface())
+                                                 .setSurface(_context->surface())
                                                  .setMinImageCount(image_count)
                                                  .setImageFormat(surface_format.format)
                                                  .setImageColorSpace(surface_format.colorSpace)
@@ -94,15 +96,15 @@ class VulkanRenderer {
                                                  .setPresentMode(present_mode)
                                                  .setClipped(true);
 
-    if (const auto [graphics_family, present_family] = _handler->find_queue_families(_handler->physical_device());
+    if (const auto [graphics_family, present_family] = _context->find_queue_families(_context->physical_device());
         graphics_family != present_family) {
       create_info.setImageSharingMode(vk::SharingMode::eConcurrent);
       std::vector queue_family_indices = {graphics_family.value(), present_family.value()};
       create_info.setQueueFamilyIndices(queue_family_indices);
     }
 
-    _swap_chain = _handler->device().createSwapchainKHRUnique(create_info);
-    _swap_chain_images = _handler->device().getSwapchainImagesKHR(_swap_chain.get());
+    _swap_chain = _context->device().createSwapchainKHRUnique(create_info);
+    _swap_chain_images = _context->device().getSwapchainImagesKHR(_swap_chain.get());
     _swap_chain_image_format = surface_format.format;
     _swap_chain_extent = extent;
   }
@@ -110,7 +112,7 @@ class VulkanRenderer {
   void create_image_views() {
     _swap_chain_image_views.resize(_swap_chain_images.size());
     for (size_t i = 0; i < _swap_chain_image_views.size(); i++)
-      _swap_chain_image_views[i] = _handler->create_image_view(_swap_chain_images[i], _swap_chain_image_format, vk::ImageAspectFlagBits::eColor, 1);
+      _swap_chain_image_views[i] = _context->create_image_view(_swap_chain_images[i], _swap_chain_image_format, vk::ImageAspectFlagBits::eColor, 1);
   }
 
   void create_framebuffers() {
@@ -123,14 +125,14 @@ class VulkanRenderer {
                                                               .setWidth(_swap_chain_extent.width)
                                                               .setHeight(_swap_chain_extent.height)
                                                               .setLayers(1);
-      _swap_chain_framebuffers[i] = _handler->device().createFramebufferUnique(framebuffer_create_info);
+      _swap_chain_framebuffers[i] = _context->device().createFramebufferUnique(framebuffer_create_info);
     }
   }
 
   void create_render_pass() {
     std::vector attachments = {vk::AttachmentDescription()
                                    .setFormat(_swap_chain_image_format)
-                                   .setSamples(_handler->msaa_samples())
+                                   .setSamples(_context->msaa_samples())
                                    .setLoadOp(vk::AttachmentLoadOp::eClear)
                                    .setStoreOp(vk::AttachmentStoreOp::eStore)
                                    .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
@@ -138,8 +140,8 @@ class VulkanRenderer {
                                    .setInitialLayout(vk::ImageLayout::eUndefined)
                                    .setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal),
                                vk::AttachmentDescription()
-                                   .setFormat(_handler->find_depth_format())
-                                   .setSamples(_handler->msaa_samples())
+                                   .setFormat(_context->find_depth_format())
+                                   .setSamples(_context->msaa_samples())
                                    .setLoadOp(vk::AttachmentLoadOp::eClear)
                                    .setStoreOp(vk::AttachmentStoreOp::eDontCare)
                                    .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
@@ -174,15 +176,15 @@ class VulkanRenderer {
             .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite)};
     const vk::RenderPassCreateInfo render_pass_info =
         vk::RenderPassCreateInfo().setAttachments(attachments).setSubpasses(subpasses).setDependencies(dependencies);
-    _render_pass = _handler->device().createRenderPassUnique(render_pass_info);
+    _render_pass = _context->device().createRenderPassUnique(render_pass_info);
   }
 
   void create_graphics_pipeline(const gltf::Model& model) {
     const auto vert_shader_code = read_file(std::filesystem::path(_shader).append("vert.spv").string());
     const auto frag_shader_code = read_file(std::filesystem::path(_shader).append("frag.spv").string());
 
-    vk::UniqueShaderModule vert_shader_module = create_shader_module(_handler->device(), vert_shader_code);
-    vk::UniqueShaderModule frag_shader_module = create_shader_module(_handler->device(), frag_shader_code);
+    vk::UniqueShaderModule vert_shader_module = create_shader_module(_context->device(), vert_shader_code);
+    vk::UniqueShaderModule frag_shader_module = create_shader_module(_context->device(), frag_shader_code);
 
     std::array shader_stages = {
         vk::PipelineShaderStageCreateInfo().setStage(vk::ShaderStageFlagBits::eVertex).setModule(vert_shader_module.get()).setPName("main"),
@@ -219,7 +221,7 @@ class VulkanRenderer {
                                                                     .setLineWidth(1.0f);
 
     const vk::PipelineMultisampleStateCreateInfo multi_sampling =
-        vk::PipelineMultisampleStateCreateInfo().setRasterizationSamples(_handler->msaa_samples()).setSampleShadingEnable(false);
+        vk::PipelineMultisampleStateCreateInfo().setRasterizationSamples(_context->msaa_samples()).setSampleShadingEnable(false);
 
     const vk::PipelineColorBlendAttachmentState color_blend_attachment =
         vk::PipelineColorBlendAttachmentState().setBlendEnable(false).setColorWriteMask(
@@ -242,7 +244,7 @@ class VulkanRenderer {
                                  .setDescriptorCount(1)
                                  .setStageFlags(vk::ShaderStageFlagBits::eFragment)};
     const auto descriptor_set_layout_0 =
-        _handler->device().createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo().setBindings(bindings_0));
+        _context->device().createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo().setBindings(bindings_0));
 
     const std::array push_constant_ranges = {
         vk::PushConstantRange().setStageFlags(vk::ShaderStageFlagBits::eVertex).setSize(sizeof(glm::mat4)),
@@ -251,7 +253,7 @@ class VulkanRenderer {
     const vk::PipelineLayoutCreateInfo pipeline_layout_info =
         vk::PipelineLayoutCreateInfo().setSetLayouts(layouts).setPushConstantRanges(push_constant_ranges);
 
-    _pipeline_layout = _handler->device().createPipelineLayoutUnique(pipeline_layout_info);
+    _pipeline_layout = _context->device().createPipelineLayoutUnique(pipeline_layout_info);
 
     const vk::PipelineDepthStencilStateCreateInfo depth_stencil = vk::PipelineDepthStencilStateCreateInfo()
                                                                       .setDepthTestEnable(true)
@@ -295,7 +297,7 @@ class VulkanRenderer {
                                                              .setPData(&material_specialization_data)
                                                              .setDataSize(sizeof(MaterialSpecializationData));
       shader_stages[1].setPSpecializationInfo(&specialization_info);
-      if (auto result = _handler->device().createGraphicsPipelineUnique({}, vk::GraphicsPipelineCreateInfo()
+      if (auto result = _context->device().createGraphicsPipelineUnique({}, vk::GraphicsPipelineCreateInfo()
                                                                                 .setStages(shader_stages)
                                                                                 .setPVertexInputState(&vertex_input_info)
                                                                                 .setPInputAssemblyState(&input_assembly)
@@ -315,78 +317,78 @@ class VulkanRenderer {
   }
 
   void create_depth_resources() {
-    const auto depth_format = _handler->find_depth_format();
+    const auto depth_format = _context->find_depth_format();
     auto [depth_image, depth_image_memory] =
-        _handler->create_image(_swap_chain_extent.width, _swap_chain_extent.height, 1, _handler->msaa_samples(), depth_format,
+        _context->create_image(_swap_chain_extent.width, _swap_chain_extent.height, 1, _context->msaa_samples(), depth_format,
                                vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal);
     _depth_image = std::move(depth_image);
     _depth_image_memory = std::move(depth_image_memory);
-    _depth_image_view = _handler->create_image_view(_depth_image.get(), depth_format, vk::ImageAspectFlagBits::eDepth, 1);
+    _depth_image_view = _context->create_image_view(_depth_image.get(), depth_format, vk::ImageAspectFlagBits::eDepth, 1);
 
-    _handler->transition_image_layout(_depth_image, depth_format, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, 1);
+    _context->transition_image_layout(_depth_image, depth_format, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, 1);
   }
 
   void create_color_resources() {
     const auto color_format = _swap_chain_image_format;
 
-    auto [color_image, color_image_memory] = _handler->create_image(
-        _swap_chain_extent.width, _swap_chain_extent.height, 1, _handler->msaa_samples(), color_format, vk::ImageTiling::eOptimal,
+    auto [color_image, color_image_memory] = _context->create_image(
+        _swap_chain_extent.width, _swap_chain_extent.height, 1, _context->msaa_samples(), color_format, vk::ImageTiling::eOptimal,
         vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal);
     _color_image = std::move(color_image);
     _color_image_memory = std::move(color_image_memory);
 
-    _color_image_view = _handler->create_image_view(_color_image.get(), color_format, vk::ImageAspectFlagBits::eColor, 1);
+    _color_image_view = _context->create_image_view(_color_image.get(), color_format, vk::ImageAspectFlagBits::eColor, 1);
   }
 
   void create_vertex_buffer(const gltf::Model& model) {
     const auto& vertices = model.vertices();
     const vk::DeviceSize buffer_size = sizeof vertices[0] * vertices.size();
 
-    auto [staging_buffer, staging_buffer_memory] = _handler->create_buffer(
+    auto [staging_buffer, staging_buffer_memory] = _context->create_buffer(
         buffer_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
     void* data;
-    if (_handler->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
+    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
       throw std::runtime_error("failed to map vertex buffer memory!");
     std::memcpy(data, vertices.data(), buffer_size);
-    _handler->device().unmapMemory(staging_buffer_memory.get());
+    _context->device().unmapMemory(staging_buffer_memory.get());
 
-    auto [vertex_buffer, vertex_buffer_memory] = _handler->create_buffer(
+    auto [vertex_buffer, vertex_buffer_memory] = _context->create_buffer(
         buffer_size, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal);
 
     _vertex_buffer = std::move(vertex_buffer);
     _vertex_buffer_memory = std::move(vertex_buffer_memory);
 
-    _handler->copy_buffer(staging_buffer.get(), _vertex_buffer.get(), buffer_size);
+    _context->copy_buffer(staging_buffer.get(), _vertex_buffer.get(), buffer_size);
   }
 
   void create_index_buffer(const gltf::Model& model) {
     const auto& indices = model.indices();
     const vk::DeviceSize buffer_size = sizeof indices[0] * indices.size();
 
-    auto [staging_buffer, staging_buffer_memory] = _handler->create_buffer(
+    auto [staging_buffer, staging_buffer_memory] = _context->create_buffer(
         buffer_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
     void* data;
-    if (_handler->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
+    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
       throw std::runtime_error("failed to map vertex buffer memory!");
     std::memcpy(data, indices.data(), buffer_size);
-    _handler->device().unmapMemory(staging_buffer_memory.get());
+    _context->device().unmapMemory(staging_buffer_memory.get());
 
-    auto [index_buffer, index_buffer_memory] = _handler->create_buffer(
+    auto [index_buffer, index_buffer_memory] = _context->create_buffer(
         buffer_size, vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal);
 
     _index_buffer = std::move(index_buffer);
     _index_buffer_memory = std::move(index_buffer_memory);
 
-    _handler->copy_buffer(staging_buffer.get(), _index_buffer.get(), buffer_size);
+    _context->copy_buffer(staging_buffer.get(), _index_buffer.get(), buffer_size);
   }
 
   void create_uniform_buffers() {
     _uniform_buffers.resize(_max_frames_in_flight);
     _uniform_buffers_memory.resize(_max_frames_in_flight);
     for (size_t i = 0; i < _max_frames_in_flight; i++) {
-      auto [buf, mem] = _handler->create_buffer(sizeof(UniformBufferObject), vk::BufferUsageFlagBits::eUniformBuffer,
+      auto [buf, mem] = _context->create_buffer(sizeof(UniformBufferObject), vk::BufferUsageFlagBits::eUniformBuffer,
                                                 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
       _uniform_buffers[i] = std::move(buf);
       _uniform_buffers_memory[i] = std::move(mem);
@@ -404,10 +406,10 @@ class VulkanRenderer {
                                .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
                                .setDescriptorCount(1)
                                .setStageFlags(vk::ShaderStageFlagBits::eFragment)};
-    _descriptor_set_layout = _handler->device().createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo().setBindings(bindings));
+    _descriptor_set_layout = _context->device().createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo().setBindings(bindings));
     std::vector layouts(_max_frames_in_flight, _descriptor_set_layout.get());
-    _descriptor_sets = _handler->device().allocateDescriptorSetsUnique(
-        vk::DescriptorSetAllocateInfo().setDescriptorPool(_handler->descriptor_pool()).setSetLayouts(layouts));
+    _descriptor_sets = _context->device().allocateDescriptorSetsUnique(
+        vk::DescriptorSetAllocateInfo().setDescriptorPool(_context->descriptor_pool()).setSetLayouts(layouts));
     for (size_t i = 0; i < _max_frames_in_flight; i++) {
       {
         const vk::DescriptorBufferInfo buffer_info =
@@ -421,7 +423,7 @@ class VulkanRenderer {
                 .setDescriptorType(vk::DescriptorType::eUniformBuffer)
                 .setBufferInfo(buffer_info),
         };
-        _handler->device().updateDescriptorSets(descriptor_writes, {});
+        _context->device().updateDescriptorSets(descriptor_writes, {});
       }
       {
         const vk::DescriptorImageInfo image_info = vk::DescriptorImageInfo()
@@ -437,17 +439,17 @@ class VulkanRenderer {
                 .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
                 .setImageInfo(image_info),
         };
-        _handler->device().updateDescriptorSets(descriptor_writes, {});
+        _context->device().updateDescriptorSets(descriptor_writes, {});
       }
     }
   }
 
   void create_command_buffers() {
     const vk::CommandBufferAllocateInfo alloc_info = vk::CommandBufferAllocateInfo()
-                                                         .setCommandPool(_handler->command_pool())
+                                                         .setCommandPool(_context->command_pool())
                                                          .setLevel(vk::CommandBufferLevel::ePrimary)
                                                          .setCommandBufferCount(static_cast<uint32_t>(_max_frames_in_flight));
-    _command_buffers = _handler->device().allocateCommandBuffersUnique(alloc_info);
+    _command_buffers = _context->device().allocateCommandBuffersUnique(alloc_info);
   }
 
   void create_sync_objects() {
@@ -456,18 +458,18 @@ class VulkanRenderer {
     _in_flight_fences.resize(_max_frames_in_flight);
 
     for (size_t i = 0; i < _max_frames_in_flight; i++) {
-      _image_available_semaphores[i] = _handler->device().createSemaphoreUnique({});
-      _render_finished_semaphores[i] = _handler->device().createSemaphoreUnique({});
-      _in_flight_fences[i] = _handler->device().createFenceUnique({vk::FenceCreateFlagBits::eSignaled});
+      _image_available_semaphores[i] = _context->device().createSemaphoreUnique({});
+      _render_finished_semaphores[i] = _context->device().createSemaphoreUnique({});
+      _in_flight_fences[i] = _context->device().createFenceUnique({vk::FenceCreateFlagBits::eSignaled});
     }
   }
 
   void draw_frame(const gltf::Model& model, const VulkanImGui& imgui) {
-    if (_handler->device().waitForFences(_in_flight_fences[_current_frame].get(), true, std::numeric_limits<uint64_t>::max()) != vk::Result::eSuccess)
+    if (_context->device().waitForFences(_in_flight_fences[_current_frame].get(), true, std::numeric_limits<uint64_t>::max()) != vk::Result::eSuccess)
       throw std::runtime_error("failed to wait fence!");
 
     uint32_t image_index;
-    auto result = _handler->device().acquireNextImageKHR(_swap_chain.get(), std::numeric_limits<uint64_t>::max(),
+    auto result = _context->device().acquireNextImageKHR(_swap_chain.get(), std::numeric_limits<uint64_t>::max(),
                                                          _image_available_semaphores[_current_frame].get(), nullptr, &image_index);
     if (result == vk::Result::eErrorOutOfDateKHR) {
       recreate_swap_chain();
@@ -475,7 +477,7 @@ class VulkanRenderer {
     }
     if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR) throw std::runtime_error("failed to acquire next image!");
 
-    _handler->device().resetFences(_in_flight_fences[_current_frame].get());
+    _context->device().resetFences(_in_flight_fences[_current_frame].get());
 
     _command_buffers[_current_frame]->reset(vk::CommandBufferResetFlags{0});
     record_command_buffer(_command_buffers[_current_frame], image_index, model, imgui);
@@ -485,10 +487,10 @@ class VulkanRenderer {
     vk::PipelineStageFlags wait_stage(vk::PipelineStageFlagBits::eColorAttachmentOutput);
     vk::SubmitInfo submit_info(_image_available_semaphores[_current_frame].get(), wait_stage, _command_buffers[_current_frame].get(),
                                _render_finished_semaphores[_current_frame].get());
-    _handler->graphics_queue().submit(submit_info, _in_flight_fences[_current_frame].get());
+    _context->graphics_queue().submit(submit_info, _in_flight_fences[_current_frame].get());
 
     const vk::PresentInfoKHR present_info(_render_finished_semaphores[_current_frame].get(), _swap_chain.get(), image_index);
-    result = _handler->present_queue().presentKHR(&present_info);
+    result = _context->present_queue().presentKHR(&present_info);
     if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || _framebuffer_resized) {
       _framebuffer_resized = false;
       recreate_swap_chain();
@@ -506,7 +508,7 @@ class VulkanRenderer {
       glfwWaitEvents();
     }
 
-    _handler->device().waitIdle();
+    _context->device().waitIdle();
 
     cleanup();
 
@@ -519,14 +521,14 @@ class VulkanRenderer {
 
   void cleanup() {
     for (auto& framebuffer : _swap_chain_framebuffers) {
-      _handler->device().destroyFramebuffer(framebuffer.get(), nullptr);
+      _context->device().destroyFramebuffer(framebuffer.get(), nullptr);
       framebuffer.get() = nullptr;
     }
     for (auto& image_view : _swap_chain_image_views) {
-      _handler->device().destroyImageView(image_view.get(), nullptr);
+      _context->device().destroyImageView(image_view.get(), nullptr);
       image_view.get() = nullptr;
     }
-    _handler->device().destroySwapchainKHR(_swap_chain.get(), nullptr);
+    _context->device().destroySwapchainKHR(_swap_chain.get(), nullptr);
     _swap_chain.get() = nullptr;
   }
 
@@ -548,7 +550,7 @@ class VulkanRenderer {
       renderer->_font = io.Fonts->AddFontDefault();
     }
     {
-      renderer->_handler->device().waitIdle();
+      renderer->_context->device().waitIdle();
 
       // To destroy old texture image and image view, and to free memory
       struct ImGuiImplVulkanHFrameRenderBuffers;
@@ -578,21 +580,21 @@ class VulkanRenderer {
         ImGuiImplVulkanHWindowRenderBuffers main_window_render_buffers;
       };
       const auto* bd = static_cast<ImGuiImplVulkanData*>(ImGui::GetIO().BackendRendererUserData);
-      renderer->_handler->device().destroyImage(bd->font_image);
-      renderer->_handler->device().destroyImageView(bd->font_view);
-      renderer->_handler->device().freeMemory(bd->font_memory);
+      renderer->_context->device().destroyImage(bd->font_image);
+      renderer->_context->device().destroyImageView(bd->font_view);
+      renderer->_context->device().freeMemory(bd->font_memory);
 
-      renderer->_handler->device().resetCommandPool(renderer->_handler->command_pool());
-      const vk::CommandBufferAllocateInfo alloc_info(renderer->_handler->command_pool(), vk::CommandBufferLevel::ePrimary, 1);
-      auto command_buffers = renderer->_handler->device().allocateCommandBuffersUnique(alloc_info);
+      renderer->_context->device().resetCommandPool(renderer->_context->command_pool());
+      const vk::CommandBufferAllocateInfo alloc_info(renderer->_context->command_pool(), vk::CommandBufferLevel::ePrimary, 1);
+      auto command_buffers = renderer->_context->device().allocateCommandBuffersUnique(alloc_info);
       vk::UniqueCommandBuffer command_buffer = std::move(command_buffers[0]);
       const vk::CommandBufferBeginInfo begin_info(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
       command_buffer->begin(begin_info);
       ImGui_ImplVulkan_CreateFontsTexture(command_buffer.get());
       vk::SubmitInfo end_info(0, nullptr, nullptr, 1, &command_buffer.get(), 0, nullptr);
       command_buffer->end();
-      renderer->_handler->graphics_queue().submit(end_info);
-      renderer->_handler->device().waitIdle();
+      renderer->_context->graphics_queue().submit(end_info);
+      renderer->_context->device().waitIdle();
       ImGui_ImplVulkan_DestroyFontUploadObjects();
     }
   }
@@ -606,57 +608,6 @@ class VulkanRenderer {
   [[nodiscard]] ImFont* font() const { return _font; }
 
  private:
-  const VulkanHandler* _handler;
-  const WindowHandler* _window;
-
-  std::string _shader;
-  std::string _font_path;
-
-  vk::UniqueSwapchainKHR _swap_chain;
-  std::vector<vk::Image> _swap_chain_images;
-  vk::Format _swap_chain_image_format{};
-  vk::Extent2D _swap_chain_extent{};
-
-  std::vector<vk::UniqueImageView> _swap_chain_image_views;
-  std::vector<vk::UniqueFramebuffer> _swap_chain_framebuffers;
-
-  vk::UniqueRenderPass _render_pass;
-  vk::UniqueDescriptorSetLayout _descriptor_set_layout;
-  std::vector<vk::UniqueDescriptorSet> _descriptor_sets;
-  std::vector<vk::UniquePipeline> _pipelines;
-  vk::UniquePipelineLayout _pipeline_layout;
-
-  vk::UniqueImage _depth_image;
-  vk::UniqueDeviceMemory _depth_image_memory;
-  vk::UniqueImageView _depth_image_view;
-
-  vk::UniqueImage _color_image;
-  vk::UniqueDeviceMemory _color_image_memory;
-  vk::UniqueImageView _color_image_view;
-
-  vk::UniqueBuffer _vertex_buffer;
-  vk::UniqueDeviceMemory _vertex_buffer_memory;
-  vk::UniqueBuffer _index_buffer;
-  vk::UniqueDeviceMemory _index_buffer_memory;
-
-  std::vector<vk::UniqueBuffer> _uniform_buffers;
-  std::vector<vk::UniqueDeviceMemory> _uniform_buffers_memory;
-
-  std::vector<vk::UniqueCommandBuffer> _command_buffers;
-
-  std::vector<vk::UniqueSemaphore> _image_available_semaphores;
-  std::vector<vk::UniqueSemaphore> _render_finished_semaphores;
-  std::vector<vk::UniqueFence> _in_flight_fences;
-  size_t _current_frame = 0;
-
-  bool _vsync;
-
-  ImFont* _font = nullptr;
-  float _last_font_factor = 1.0f;
-
-  bool _framebuffer_resized = false;
-  const size_t _max_frames_in_flight = 2;
-
   [[nodiscard]] vk::SurfaceFormatKHR choose_swap_surface_format(const std::vector<vk::SurfaceFormatKHR>& available_formats) const {
     const auto it = std::find_if(available_formats.begin(), available_formats.end(), [](const auto& available_format) {
       return available_format.format == vk::Format::eB8G8R8A8Srgb && available_format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear;
@@ -778,12 +729,64 @@ class VulkanRenderer {
     ubo.proj[1][1] *= -1;
 
     void* data;
-    if (_handler->device().mapMemory(_uniform_buffers_memory[current_image].get(), 0, sizeof ubo, {}, &data) != vk::Result::eSuccess)
+    if (_context->device().mapMemory(_uniform_buffers_memory[current_image].get(), 0, sizeof ubo, {}, &data) != vk::Result::eSuccess)
       throw std::runtime_error("failed to map uniform buffer memory");
 
     memcpy(data, &ubo, sizeof ubo);
-    _handler->device().unmapMemory(_uniform_buffers_memory[current_image].get());
+    _context->device().unmapMemory(_uniform_buffers_memory[current_image].get());
   }
+
+  const vk_helper::VulkanContext* _context;
+  const vk_helper::WindowHandler* _window;
+  const VulkanHandler* _handler;
+
+  std::string _shader;
+  std::string _font_path;
+
+  vk::UniqueSwapchainKHR _swap_chain;
+  std::vector<vk::Image> _swap_chain_images;
+  vk::Format _swap_chain_image_format{};
+  vk::Extent2D _swap_chain_extent{};
+
+  std::vector<vk::UniqueImageView> _swap_chain_image_views;
+  std::vector<vk::UniqueFramebuffer> _swap_chain_framebuffers;
+
+  vk::UniqueRenderPass _render_pass;
+  vk::UniqueDescriptorSetLayout _descriptor_set_layout;
+  std::vector<vk::UniqueDescriptorSet> _descriptor_sets;
+  std::vector<vk::UniquePipeline> _pipelines;
+  vk::UniquePipelineLayout _pipeline_layout;
+
+  vk::UniqueImage _depth_image;
+  vk::UniqueDeviceMemory _depth_image_memory;
+  vk::UniqueImageView _depth_image_view;
+
+  vk::UniqueImage _color_image;
+  vk::UniqueDeviceMemory _color_image_memory;
+  vk::UniqueImageView _color_image_view;
+
+  vk::UniqueBuffer _vertex_buffer;
+  vk::UniqueDeviceMemory _vertex_buffer_memory;
+  vk::UniqueBuffer _index_buffer;
+  vk::UniqueDeviceMemory _index_buffer_memory;
+
+  std::vector<vk::UniqueBuffer> _uniform_buffers;
+  std::vector<vk::UniqueDeviceMemory> _uniform_buffers_memory;
+
+  std::vector<vk::UniqueCommandBuffer> _command_buffers;
+
+  std::vector<vk::UniqueSemaphore> _image_available_semaphores;
+  std::vector<vk::UniqueSemaphore> _render_finished_semaphores;
+  std::vector<vk::UniqueFence> _in_flight_fences;
+  size_t _current_frame = 0;
+
+  bool _vsync;
+
+  ImFont* _font = nullptr;
+  float _last_font_factor = 1.0f;
+
+  bool _framebuffer_resized = false;
+  const size_t _max_frames_in_flight = 2;
 };
 
 }  // namespace autd3::extra::geometry_viewer
