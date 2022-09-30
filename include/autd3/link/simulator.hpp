@@ -1,9 +1,9 @@
-// File: emulator.hpp
+// File: simulator.hpp
 // Project: link
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/08/2022
+// Last Modified: 30/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,21 +18,21 @@
 namespace autd3::link {
 
 /**
- * \brief link for [autd-emulator](https://github.com/shinolab/autd-emulator)
+ * \brief link for autd3::extra::simulator::Simulator
  */
-class Emulator {
+class Simulator {
  public:
   /**
    * @brief Constructor
    */
-  Emulator() : _port(50632) {}
-  ~Emulator() = default;
-  Emulator(const Emulator& v) noexcept = delete;
-  Emulator& operator=(const Emulator& obj) = delete;
-  Emulator(Emulator&& obj) = delete;
-  Emulator& operator=(Emulator&& obj) = delete;
+  Simulator() : _port(50632) {}
+  ~Simulator() = default;
+  Simulator(const Simulator& v) noexcept = delete;
+  Simulator& operator=(const Simulator& obj) = delete;
+  Simulator(Simulator&& obj) = delete;
+  Simulator& operator=(Simulator&& obj) = delete;
 
-  Emulator& port(const uint16_t port) {
+  Simulator& port(const uint16_t port) {
     _port = port;
     return *this;
   }
