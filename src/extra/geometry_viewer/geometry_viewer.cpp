@@ -3,7 +3,7 @@
 // Created Date: 28/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/09/2022
+// Last Modified: 30/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -29,7 +29,7 @@ void GeometryViewer::view(const core::Geometry& geometry) const {
   }
 
   WindowHandler window(_width, _height);
-  VulkanHandler handle(_gpu_idx, _msaa, _mipmap, true);
+  VulkanHandler handle(_gpu_idx, true);
   VulkanRenderer renderer(&handle, &window, _shader, _font, _vsync);
   const gltf::Model model(_model, geometries);
   VulkanImGui imgui{};
@@ -43,7 +43,7 @@ void GeometryViewer::view(const core::Geometry& geometry) const {
   renderer.create_graphics_pipeline(model);
   handle.create_command_pool();
   renderer.create_depth_resources();
-  if (_msaa) renderer.create_color_resources();
+  renderer.create_color_resources();
   renderer.create_framebuffers();
   handle.create_texture_image(model.image_data(), model.image_size());
   handle.create_texture_image_view();
