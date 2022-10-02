@@ -3,7 +3,7 @@
 // Created Date: 28/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/09/2022
+// Last Modified: 02/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -29,8 +29,8 @@ void GeometryViewer::view(const core::Geometry& geometry) const {
     geometries.emplace_back(gltf::Geometry{pos, rot});
   }
 
-  vk_helper::WindowHandler window(_width, _height);
-  vk_helper::VulkanContext context(_gpu_idx, true);
+  helper::WindowHandler window(_width, _height);
+  helper::VulkanContext context(_gpu_idx, true);
   VulkanHandler handle(&context);
   VulkanRenderer renderer(&context, &window, &handle, _shader, _font, _vsync);
   const gltf::Model model(_model, geometries);
@@ -66,7 +66,7 @@ void GeometryViewer::view(const core::Geometry& geometry) const {
   imgui.init(window, context, static_cast<uint32_t>(renderer.frames_in_flight()), renderer.render_pass(), geometries, _font);
 
   while (!window.should_close()) {
-    vk_helper::WindowHandler::poll_events();
+    helper::WindowHandler::poll_events();
     glfwPollEvents();
     imgui.draw(renderer.font());
     renderer.draw_frame(model, imgui);

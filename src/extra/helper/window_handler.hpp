@@ -1,9 +1,9 @@
 // File: window_handler.hpp
-// Project: vk_helper
+// Project: helper
 // Created Date: 29/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/09/2022
+// Last Modified: 02/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,9 +15,10 @@
 #include <GLFW/glfw3.h>
 
 #include <algorithm>
+#include <string>
 #include <utility>
 
-namespace autd3::extra::vk_helper {
+namespace autd3::extra::helper {
 
 class WindowHandler {
  public:
@@ -83,4 +84,4 @@ class WindowHandler {
   GLFWwindow* _window{};
 };
 
-}  // namespace autd3::extra::vk_helper
+}  // namespace autd3::extra::helper

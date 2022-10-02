@@ -3,7 +3,7 @@
 // Created Date: 24/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/09/2022
+// Last Modified: 02/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -41,8 +41,8 @@ struct UniformBufferObject {
 class VulkanRenderer {
  public:
   std::string font_path;
-  explicit VulkanRenderer(const vk_helper::VulkanContext* context, const vk_helper::WindowHandler* window, const VulkanHandler* handler,
-                          std::string shader, std::string font_path, const bool vsync = true) noexcept
+  explicit VulkanRenderer(const helper::VulkanContext* context, const helper::WindowHandler* window, const VulkanHandler* handler, std::string shader,
+                          std::string font_path, const bool vsync = true) noexcept
       : _context(context),
         _window(window),
         _handler(handler),
@@ -659,7 +659,7 @@ class VulkanRenderer {
                              const VulkanImGui& imgui) {
     command_buffer->begin(vk::CommandBufferBeginInfo{});
 
-    const vk::ClearValue clear_color(vk::ClearColorValue(imgui.background));
+    const vk::ClearValue clear_color(vk::ClearColorValue(std::array{imgui.background.r, imgui.background.g, imgui.background.b, imgui.background.a}));
     constexpr vk::ClearValue clear_depth_stencil(vk::ClearDepthStencilValue(1.0f, 0.0f));
     const std::array clear_values = {clear_color, clear_depth_stencil};
     const vk::RenderPassBeginInfo render_pass_info = vk::RenderPassBeginInfo()
@@ -693,8 +693,8 @@ class VulkanRenderer {
     size_t dev = 0;
     for (const auto& [pos, rot] : model.geometries()) {
       if (!imgui.show[dev++]) continue;
-      auto matrix = translate(glm::identity<glm::mat4>(), glm::vec3(pos.x, pos.z, -pos.y) / 1000.0f);
-      matrix = matrix * mat4_cast(glm::quat(rot.w, rot.x, rot.z, -rot.y));
+      auto matrix = translate(glm::identity<glm::mat4>(), helper::to_gl_pos(pos));
+      matrix = matrix * mat4_cast(rot);
 
       for (const auto& [first_index, index_count, material_index] : model.primitives()) {
         command_buffer->bindPipeline(vk::PipelineBindPoint::eGraphics, _pipelines[material_index].get());
@@ -713,19 +713,14 @@ class VulkanRenderer {
   }
 
   void update_uniform_buffer(const size_t current_image, const VulkanImGui& imgui) {
-    const auto rot = glm::quat(radians(glm::vec3(imgui.camera_rot[0], imgui.camera_rot[2], -imgui.camera_rot[1])));
-    const auto model = mat4_cast(rot);
-    const auto p = glm::vec3(imgui.camera_pos[0], imgui.camera_pos[2], -imgui.camera_pos[1]) / 1000.0f;
-    const auto r = make_vec3(model[0]);
-    const auto u = make_vec3(model[1]);
-    const auto f = make_vec3(model[2]);
-    const auto view = glm::mat4({r[0], u[0], f[0], 0.0f, r[1], u[1], f[1], 0.0f, r[2], u[2], f[2], 0.f, -dot(r, p), -dot(u, p), -dot(f, p), 1.0f});
-
+    const auto rot = glm::quat(radians(imgui.camera_rot));
+    const auto p = helper::to_gl_pos(imgui.camera_pos);
+    const auto view = helper::orthogonal(p, rot);
     UniformBufferObject ubo{
         view,
         glm::perspective(glm::radians(imgui.fov), static_cast<float>(_swap_chain_extent.width) / static_cast<float>(_swap_chain_extent.height), 0.1f,
                          10.0f),
-        glm::vec4(glm::vec3(imgui.light_pos[0], imgui.light_pos[2], -imgui.light_pos[1]) / 1000.0f, 1.0f), glm::vec4(p, 1.0f)};
+        glm::vec4(helper::to_gl_pos(imgui.light_pos), 1.0f), glm::vec4(p, 1.0f)};
     ubo.proj[1][1] *= -1;
 
     void* data;
@@ -736,8 +731,8 @@ class VulkanRenderer {
     _context->device().unmapMemory(_uniform_buffers_memory[current_image].get());
   }
 
-  const vk_helper::VulkanContext* _context;
-  const vk_helper::WindowHandler* _window;
+  const helper::VulkanContext* _context;
+  const helper::WindowHandler* _window;
   const VulkanHandler* _handler;
 
   std::string _shader;
