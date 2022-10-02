@@ -39,7 +39,7 @@ class SoundSources {
   SoundSources(SoundSources&& obj) = default;
   SoundSources& operator=(SoundSources&& obj) = default;
 
-  void add(glm::vec3 pos, glm::vec3 dir, Drive drive, float visibility) {
+  void add(const glm::vec3 pos, glm::vec3 dir, Drive drive, float visibility) {
     _pos.emplace_back(glm::vec4(pos, 0.0f));
     _dir.emplace_back(dir);
     _drive.emplace_back(drive);
