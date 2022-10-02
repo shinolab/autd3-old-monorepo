@@ -3,7 +3,7 @@
 // Created Date: 27/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/09/2022
+// Last Modified: 02/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,7 +23,6 @@
 #include <vector>
 
 #include "model.hpp"
-#include "vulkan_handler.hpp"
 
 namespace autd3::extra::geometry_viewer {
 
@@ -36,7 +35,7 @@ class VulkanImGui {
   VulkanImGui(VulkanImGui&& obj) = default;
   VulkanImGui& operator=(VulkanImGui&& obj) = default;
 
-  void init(const vk_helper::WindowHandler& window, const vk_helper::VulkanContext& contex, const uint32_t image_count,
+  void init(const vk_helper::WindowHandler& window, const vk_helper::VulkanContext& context, const uint32_t image_count,
             const VkRenderPass renderer_pass, std::vector<gltf::Geometry> geometries, const std::string& font_path) {
     _geometries = std::move(geometries);
 
@@ -81,35 +80,35 @@ class VulkanImGui {
 
     ImGui::StyleColorsDark();
 
-    const auto [graphics_family, present_family] = contex.find_queue_families(contex.physical_device());
+    const auto [graphics_family, present_family] = context.find_queue_families(context.physical_device());
     ImGui_ImplGlfw_InitForVulkan(window.window(), true);
-    ImGui_ImplVulkan_InitInfo init_info{contex.instance(),
-                                        contex.physical_device(),
-                                        contex.device(),
+    ImGui_ImplVulkan_InitInfo init_info{context.instance(),
+                                        context.physical_device(),
+                                        context.device(),
                                         graphics_family.value(),
-                                        contex.graphics_queue(),
+                                        context.graphics_queue(),
                                         nullptr,
-                                        contex.descriptor_pool(),
+                                        context.descriptor_pool(),
                                         0,
                                         image_count,
                                         image_count,
-                                        static_cast<VkSampleCountFlagBits>(contex.msaa_samples()),
+                                        static_cast<VkSampleCountFlagBits>(context.msaa_samples()),
                                         nullptr,
                                         check_vk_result};
     ImGui_ImplVulkan_Init(&init_info, renderer_pass);
 
     {
-      contex.device().resetCommandPool(contex.command_pool());
-      const vk::CommandBufferAllocateInfo alloc_info(contex.command_pool(), vk::CommandBufferLevel::ePrimary, 1);
-      auto command_buffers = contex.device().allocateCommandBuffersUnique(alloc_info);
+      context.device().resetCommandPool(context.command_pool());
+      const vk::CommandBufferAllocateInfo alloc_info(context.command_pool(), vk::CommandBufferLevel::ePrimary, 1);
+      auto command_buffers = context.device().allocateCommandBuffersUnique(alloc_info);
       vk::UniqueCommandBuffer command_buffer = std::move(command_buffers[0]);
       const vk::CommandBufferBeginInfo begin_info(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
       command_buffer->begin(begin_info);
       ImGui_ImplVulkan_CreateFontsTexture(command_buffer.get());
       vk::SubmitInfo end_info(0, nullptr, nullptr, 1, &command_buffer.get(), 0, nullptr);
       command_buffer->end();
-      contex.graphics_queue().submit(end_info);
-      contex.device().waitIdle();
+      context.graphics_queue().submit(end_info);
+      context.device().waitIdle();
       ImGui_ImplVulkan_DestroyFontUploadObjects();
     }
   }
