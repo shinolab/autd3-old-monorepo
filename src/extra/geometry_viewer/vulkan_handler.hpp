@@ -3,7 +3,7 @@
 // Created Date: 23/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/09/2022
+// Last Modified: 02/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,7 +22,7 @@ namespace autd3::extra::geometry_viewer {
 
 class VulkanHandler {
  public:
-  explicit VulkanHandler(const vk_helper::VulkanContext* const context) noexcept : _context(context) {}
+  explicit VulkanHandler(const helper::VulkanContext* const context) noexcept : _context(context) {}
   ~VulkanHandler() = default;
   VulkanHandler(const VulkanHandler& v) = delete;
   VulkanHandler& operator=(const VulkanHandler& obj) = delete;
@@ -88,7 +88,7 @@ class VulkanHandler {
   [[nodiscard]] vk::Sampler sampler() const { return _texture_sampler.get(); }
 
  private:
-  const vk_helper::VulkanContext* _context;
+  const helper::VulkanContext* _context;
 
   uint32_t _mip_levels = 1;
   vk::UniqueImage _texture_image;

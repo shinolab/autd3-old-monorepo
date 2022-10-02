@@ -144,7 +144,7 @@ if(BUILD_GEOMETRY_VIEWER OR BUILD_SIMULATOR)
   set_target_properties(glfw PROPERTIES FOLDER "3rdparty")
   set_target_properties(update_mappings PROPERTIES FOLDER "3rdparty")
   add_subdirectory(src/extra/imgui_vulkan)
-  add_subdirectory(src/extra/vk_helper)
+  add_subdirectory(src/extra/helper)
 endif()
 
 if(BUILD_GEOMETRY_VIEWER)
