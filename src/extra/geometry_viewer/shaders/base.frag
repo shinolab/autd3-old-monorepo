@@ -14,17 +14,21 @@ layout (constant_id = 3) const float baseColorB = 0.0f;
 
 layout (location = 0) out vec4 outFragColor;
 
+layout(push_constant) uniform PushConstsFragment {
+	layout(offset = 64) float ambient;
+	layout(offset = 68) float specular;
+} pcf;
+
 void main()
 {
 	vec4 color = hasTexture ? texture(samplerColorMap, inUV) : vec4(baseColorR, baseColorG, baseColorB, 1.0f);
 
 	vec3 N = normalize(inNormal);
 
-	const float ambient = 0.1;
 	vec3 L = normalize(inLightVec);
 	vec3 V = normalize(inViewVec);
 	vec3 R = reflect(-L, N);
-	vec3 diffuse = max(dot(N, L), ambient).rrr;
-	float specular = pow(max(dot(R, V), 0.0), 32.0);
+	vec3 diffuse = max(dot(N, L), pcf.ambient).rrr;
+	float specular = pow(max(dot(R, V), 0.0), pcf.specular);
 	outFragColor = vec4(diffuse * color.rgb + specular, color.a);
 }
