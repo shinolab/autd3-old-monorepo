@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/09/2022
+// Last Modified: 03/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,9 +30,9 @@ int main() try {
 
   autd3::extra::simulator::Simulator simulator = autd3::extra::simulator::Simulator().vsync(true).start();
 
-  simulator.exit();
-
   run(std::move(autd));
+
+  simulator.exit();
 
   return 0;
 } catch (std::exception& e) {

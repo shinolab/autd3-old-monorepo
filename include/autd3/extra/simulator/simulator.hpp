@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/09/2022
+// Last Modified: 03/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,6 +12,7 @@
 #pragma once
 
 #include <string>
+#include <thread>
 #include <utility>
 
 namespace autd3::extra::simulator {
@@ -68,14 +69,6 @@ class Simulator {
   }
 
   /**
-   * @brief Set Port
-   */
-  Simulator& port(const uint16_t port) {
-    _port = port;
-    return *this;
-  }
-
-  /**
    * @brief Start simulator
    */
   Simulator start();
@@ -88,7 +81,7 @@ class Simulator {
   /**
    * @brief Constructor
    */
-  Simulator() noexcept : _width(800), _height(600), _vsync(true), _shader("shaders"), _font(""), _gpu_idx(0), _port(50632) {}
+  Simulator() noexcept : _width(800), _height(600), _vsync(true), _shader("shaders"), _font(""), _gpu_idx(0) {}
   ~Simulator() = default;
   Simulator(const Simulator& v) noexcept = delete;
   Simulator& operator=(const Simulator& obj) = delete;
@@ -103,7 +96,9 @@ class Simulator {
   std::string _texture;
   std::string _font;
   size_t _gpu_idx;
-  uint16_t _port;
+
+  std::thread _th;
+  bool _is_running;
 };
 
 }  // namespace autd3::extra::simulator

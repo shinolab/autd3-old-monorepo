@@ -670,7 +670,6 @@ class VulkanRenderer {
   const VulkanImGui* _imgui;
 
   std::string _shader;
-  std::string _font_path;
 
   vk::UniqueSwapchainKHR _swap_chain;
   std::vector<vk::Image> _swap_chain_images;
