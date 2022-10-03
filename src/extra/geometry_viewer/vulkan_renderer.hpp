@@ -14,7 +14,6 @@
 #include <imgui.h>
 #include <imgui_impl_vulkan.h>
 
-#include <fstream>
 #include <limits>
 #include <string>
 #include <utility>
@@ -25,6 +24,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "model.hpp"
+#include "shader.hpp"
 #include "vulkan_context.hpp"
 #include "vulkan_handler.hpp"
 #include "vulkan_imgui.hpp"
@@ -175,11 +175,11 @@ class VulkanRenderer {
   }
 
   void create_graphics_pipeline(const gltf::Model& model) {
-    const auto vert_shader_code = read_file(std::filesystem::path(_shader).append("vert.spv").string());
-    const auto frag_shader_code = read_file(std::filesystem::path(_shader).append("frag.spv").string());
+    const auto vert_shader_code = helper::read_file(std::filesystem::path(_shader).append("vert.spv").string());
+    const auto frag_shader_code = helper::read_file(std::filesystem::path(_shader).append("frag.spv").string());
 
-    vk::UniqueShaderModule vert_shader_module = create_shader_module(_context->device(), vert_shader_code);
-    vk::UniqueShaderModule frag_shader_module = create_shader_module(_context->device(), frag_shader_code);
+    vk::UniqueShaderModule vert_shader_module = helper::create_shader_module(_context->device(), vert_shader_code);
+    vk::UniqueShaderModule frag_shader_module = helper::create_shader_module(_context->device(), frag_shader_code);
 
     std::array shader_stages = {
         vk::PipelineShaderStageCreateInfo().setStage(vk::ShaderStageFlagBits::eVertex).setModule(vert_shader_module.get()).setPName("main"),
@@ -566,26 +566,6 @@ class VulkanRenderer {
     actual_extent.height = std::clamp(actual_extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 
     return actual_extent;
-  }
-
-  static std::vector<char> read_file(const std::string& filename) {
-    std::ifstream file(filename, std::ios::ate | std::ios::binary);
-    if (!file.is_open()) throw std::runtime_error("failed to open file!");
-
-    const size_t file_size = file.tellg();
-    std::vector<char> buffer(file_size);
-
-    file.seekg(0);
-    file.read(buffer.data(), static_cast<std::streamsize>(file_size));
-
-    file.close();
-
-    return buffer;
-  }
-
-  static vk::UniqueShaderModule create_shader_module(const vk::Device& device, const std::vector<char>& code) {
-    return device.createShaderModuleUnique(
-        vk::ShaderModuleCreateInfo().setCodeSize(code.size()).setPCode(reinterpret_cast<const uint32_t*>(code.data())));
   }
 
   void record_command_buffer(vk::UniqueCommandBuffer& command_buffer, const uint32_t image_index, const gltf::Model& model,
