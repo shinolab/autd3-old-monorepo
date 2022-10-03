@@ -67,7 +67,7 @@ if(BUILD_SIMULATOR)
   target_link_libraries(simulator_example autd3_example_common simulator link_simulator)
   
   target_compile_definitions(simulator_example PRIVATE AUTD3_SIMULATOR_SHADER_PATH="${PROJECT_SOURCE_DIR}/src/extra/simulator/shaders")
-  target_compile_definitions(simulator_example PRIVATE AUTD3_SIMULATOR_SHADER_PATH="${PROJECT_SOURCE_DIR}/src/extra/simulator/textures")
+  target_compile_definitions(simulator_example PRIVATE AUTD3_SIMULATOR_TEXTURE_PATH="${PROJECT_SOURCE_DIR}/src/extra/simulator/textures")
   target_compile_definitions(simulator_example PRIVATE AUTD3_SIMULATOR_FONT_PATH="${PROJECT_SOURCE_DIR}/examples/fonts/NotoSans-Regular.ttf")
 
   set_target_properties(simulator_example PROPERTIES FOLDER "example")

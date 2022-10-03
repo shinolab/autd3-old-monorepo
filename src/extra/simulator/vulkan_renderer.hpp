@@ -216,7 +216,7 @@ class VulkanRenderer {
     return std::make_pair(_command_buffers[_current_frame].get(), image_index);
   }
 
-  void end_frame(vk::CommandBuffer command_buffer, uint32_t image_index) {
+  void end_frame(const vk::CommandBuffer& command_buffer, uint32_t image_index) {
     command_buffer.endRenderPass();
     command_buffer.end();
 
@@ -279,6 +279,7 @@ class VulkanRenderer {
   [[nodiscard]] vk::RenderPass render_pass() const { return _render_pass.get(); }
   [[nodiscard]] vk::ImageView depth_image_view() const { return _depth_image_view.get(); }
   [[nodiscard]] size_t frames_in_flight() const { return _max_frames_in_flight; }
+  [[nodiscard]] size_t current_frame() const { return _current_frame; }
 
  private:
   [[nodiscard]] vk::SurfaceFormatKHR choose_swap_surface_format(const std::vector<vk::SurfaceFormatKHR>& available_formats) const {

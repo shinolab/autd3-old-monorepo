@@ -28,11 +28,16 @@ int main() try {
   auto link = autd3::link::Simulator().port(50632).build();
   autd.open(std::move(link));
 
-  autd3::extra::simulator::Simulator simulator = autd3::extra::simulator::Simulator().vsync(true).start();
+  autd3::extra::simulator::Simulator simulator =
+      autd3::extra::simulator::Simulator().vsync(true).shader(AUTD3_SIMULATOR_SHADER_PATH).texture(AUTD3_SIMULATOR_TEXTURE_PATH);
+
+  bool sim_run = false;
+  auto th = std::thread([&sim_run, &simulator]() { simulator.start(&sim_run); });
 
   run(std::move(autd));
 
-  simulator.exit();
+  sim_run = false;
+  if (th.joinable()) th.join();
 
   return 0;
 } catch (std::exception& e) {

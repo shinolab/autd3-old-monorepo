@@ -71,20 +71,23 @@ class Simulator {
   /**
    * @brief Start simulator
    */
-  Simulator start();
-
-  /**
-   * @brief Exit simulator
-   */
-  void exit();
+  void start(bool* run) const;
 
   /**
    * @brief Constructor
    */
   Simulator() noexcept : _width(800), _height(600), _vsync(true), _shader("shaders"), _font(""), _gpu_idx(0) {}
   ~Simulator() = default;
-  Simulator(const Simulator& v) noexcept = delete;
-  Simulator& operator=(const Simulator& obj) = delete;
+  Simulator(const Simulator& v) noexcept {
+    _width = v._width;
+    _height = v._height;
+    _vsync = v._vsync;
+    _shader = v._shader;
+    _texture = v._texture;
+    _font = v._font;
+    _gpu_idx = v._gpu_idx;
+  }
+  Simulator& operator=(const Simulator& obj) = default;
   Simulator(Simulator&& obj) = default;
   Simulator& operator=(Simulator&& obj) = default;
 
@@ -96,9 +99,6 @@ class Simulator {
   std::string _texture;
   std::string _font;
   size_t _gpu_idx;
-
-  std::thread _th;
-  bool _is_running;
 };
 
 }  // namespace autd3::extra::simulator

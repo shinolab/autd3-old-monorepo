@@ -3,7 +3,7 @@
 // Created Date: 02/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/10/2022
+// Last Modified: 03/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,22 +33,23 @@ struct Drive {
 
 class SoundSources {
  public:
+  SoundSources() noexcept = default;
   ~SoundSources() = default;
   SoundSources(const SoundSources& v) = delete;
   SoundSources& operator=(const SoundSources& obj) = delete;
   SoundSources(SoundSources&& obj) = default;
   SoundSources& operator=(SoundSources&& obj) = default;
 
-  void add(const glm::vec3 pos, glm::vec3 dir, Drive drive, float visibility) {
+  void add(const glm::vec3 pos, glm::quat rot, Drive drive, float visibility) {
     _pos.emplace_back(glm::vec4(pos, 0.0f));
-    _dir.emplace_back(dir);
+    _rot.emplace_back(rot);
     _drive.emplace_back(drive);
     _visibilities.emplace_back(visibility);
   }
 
   void clear() {
     _pos.clear();
-    _dir.clear();
+    _rot.clear();
     _drive.clear();
   }
 
@@ -57,7 +58,7 @@ class SoundSources {
   [[nodiscard]] bool is_empty() const { return size() == 0; }
 
   [[nodiscard]] const std::vector<glm::vec4>& positions() const { return _pos; }
-  [[nodiscard]] const std::vector<glm::vec3>& directions() const { return _dir; }
+  [[nodiscard]] const std::vector<glm::quat>& rotations() const { return _rot; }
   [[nodiscard]] const std::vector<Drive>& drives() const { return _drive; }
   std::vector<Drive>& drives() { return _drive; }
   [[nodiscard]] const std::vector<float>& visibilities() const { return _visibilities; }
@@ -65,7 +66,7 @@ class SoundSources {
 
  private:
   std::vector<glm::vec4> _pos;
-  std::vector<glm::vec3> _dir;
+  std::vector<glm::quat> _rot;
   std::vector<Drive> _drive;
   std::vector<float> _visibilities;
 };
