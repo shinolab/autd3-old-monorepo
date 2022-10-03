@@ -17,7 +17,6 @@
 
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
-#include <memory>
 #include <string>
 #include <transform.hpp>
 #include <utility>
@@ -97,7 +96,27 @@ class VulkanImGui {
     ImGui_ImplVulkan_DestroyFontUploadObjects();
   }
 
-  void init(const uint32_t image_count, const VkRenderPass renderer_pass, const std::string& font_path) {
+  void init(const uint32_t image_count, const VkRenderPass renderer_pass, const std::string& font_path, SoundSources& sources) {
+    const auto& pos = glm::vec3(sources.positions()[0]);
+    const auto& rot = sources.rotations()[0];
+
+    const auto rot_mat = mat4_cast(rot);
+
+    const auto right = glm::vec3(rot_mat * glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+    const auto up = glm::vec3(rot_mat * glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+    const auto forward = glm::vec3(rot_mat * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+
+    const auto center = pos + right * 192.0f / 2.0f + up * 151.4f / 2.0f;
+
+    const auto cam_pos = pos + right * 192.0f / 2.0f - up * 151.4f + forward * 300.0f;
+
+    const auto cam_view = lookAt(cam_pos, center, forward);
+
+    const auto angles = degrees(eulerAngles(quat_cast(transpose(cam_view))));
+
+    camera_pos = cam_pos;
+    camera_rot = angles;
+
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
 
@@ -222,6 +241,15 @@ class VulkanImGui {
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+  }
+
+  [[nodiscard]] std::pair<glm::mat4, glm::mat4> get_view_proj(const float aspect) const {
+    const auto rot = glm::quat(radians(camera_rot));
+    const auto p = camera_pos;
+    const auto view = helper::orthogonal(p, rot);
+    auto proj = glm::perspective(glm::radians(fov), aspect, 0.1f, 1000.0f);
+    proj[1][1] *= -1;
+    return std::make_pair(view, proj);
   }
 
   glm::vec4 background{};
