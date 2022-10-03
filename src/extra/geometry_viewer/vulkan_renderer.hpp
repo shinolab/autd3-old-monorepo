@@ -3,7 +3,7 @@
 // Created Date: 24/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/10/2022
+// Last Modified: 03/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -41,13 +41,13 @@ struct UniformBufferObject {
 class VulkanRenderer {
  public:
   std::string font_path;
-  explicit VulkanRenderer(const helper::VulkanContext* context, const helper::WindowHandler* window, const VulkanHandler* handler, std::string shader,
-                          std::string font_path, const bool vsync = true) noexcept
+  explicit VulkanRenderer(const helper::VulkanContext* context, const helper::WindowHandler* window, const VulkanHandler* handler,
+                          const VulkanImGui* imgui, std::string shader, const bool vsync = true) noexcept
       : _context(context),
         _window(window),
         _handler(handler),
+        _imgui(imgui),
         _shader(std::move(shader)),
-        _font_path(std::move(font_path)),
         _swap_chain(nullptr),
         _render_pass(nullptr),
         _depth_image(nullptr),
@@ -66,11 +66,6 @@ class VulkanRenderer {
   VulkanRenderer& operator=(const VulkanRenderer& obj) = delete;
   VulkanRenderer(VulkanRenderer&& obj) = default;
   VulkanRenderer& operator=(VulkanRenderer&& obj) = delete;
-
-  void init() {
-    const auto [fst, snd] = _window->scale();
-    _last_font_factor = (fst + snd) / 2.0f;
-  }
 
   void create_swapchain() {
     const auto [capabilities, formats, present_modes] = _context->query_swap_chain_support(_context->physical_device());
@@ -536,68 +531,7 @@ class VulkanRenderer {
     static_cast<VulkanRenderer*>(glfwGetWindowUserPointer(window))->_framebuffer_resized = true;
   }
 
-  static void pos_callback(GLFWwindow* window, int, int) {
-    auto* renderer = static_cast<VulkanRenderer*>(glfwGetWindowUserPointer(window));
-    const auto [fst, snd] = renderer->_window->scale();
-    const auto factor = (fst + snd) / 2.0f;
-    if (std::abs(renderer->_last_font_factor - factor) < 0.01f) return;
-    renderer->_last_font_factor = factor;
-    ImGuiIO& io = ImGui::GetIO();
-    if (!renderer->_font_path.empty()) {
-      renderer->_font = io.Fonts->AddFontFromFileTTF(renderer->_font_path.c_str(), 16.0f * factor);
-      io.FontGlobalScale = 1.0f / factor;
-    } else {
-      renderer->_font = io.Fonts->AddFontDefault();
-    }
-    {
-      renderer->_context->device().waitIdle();
-
-      // To destroy old texture image and image view, and to free memory
-      struct ImGuiImplVulkanHFrameRenderBuffers;
-      struct ImGuiImplVulkanHWindowRenderBuffers {
-        uint32_t index;
-        uint32_t count;
-        ImGuiImplVulkanHFrameRenderBuffers* frame_render_buffers;
-      };
-      struct ImGuiImplVulkanData {
-        ImGui_ImplVulkan_InitInfo vulkan_init_info;
-        VkRenderPass render_pass;
-        VkDeviceSize buffer_memory_alignment;
-        VkPipelineCreateFlags pipeline_create_flags;
-        VkDescriptorSetLayout descriptor_set_layout;
-        VkPipelineLayout pipeline_layout;
-        VkPipeline pipeline;
-        uint32_t subpass;
-        VkShaderModule shader_module_vert;
-        VkShaderModule shader_module_frag;
-        VkSampler font_sampler;
-        VkDeviceMemory font_memory;
-        VkImage font_image;
-        VkImageView font_view;
-        VkDescriptorSet font_descriptor_set;
-        VkDeviceMemory upload_buffer_memory;
-        VkBuffer upload_buffer;
-        ImGuiImplVulkanHWindowRenderBuffers main_window_render_buffers;
-      };
-      const auto* bd = static_cast<ImGuiImplVulkanData*>(ImGui::GetIO().BackendRendererUserData);
-      renderer->_context->device().destroyImage(bd->font_image);
-      renderer->_context->device().destroyImageView(bd->font_view);
-      renderer->_context->device().freeMemory(bd->font_memory);
-
-      renderer->_context->device().resetCommandPool(renderer->_context->command_pool());
-      const vk::CommandBufferAllocateInfo alloc_info(renderer->_context->command_pool(), vk::CommandBufferLevel::ePrimary, 1);
-      auto command_buffers = renderer->_context->device().allocateCommandBuffersUnique(alloc_info);
-      vk::UniqueCommandBuffer command_buffer = std::move(command_buffers[0]);
-      const vk::CommandBufferBeginInfo begin_info(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
-      command_buffer->begin(begin_info);
-      ImGui_ImplVulkan_CreateFontsTexture(command_buffer.get());
-      vk::SubmitInfo end_info(0, nullptr, nullptr, 1, &command_buffer.get(), 0, nullptr);
-      command_buffer->end();
-      renderer->_context->graphics_queue().submit(end_info);
-      renderer->_context->device().waitIdle();
-      ImGui_ImplVulkan_DestroyFontUploadObjects();
-    }
-  }
+  static void pos_callback(GLFWwindow* window, int, int) { static_cast<VulkanRenderer*>(glfwGetWindowUserPointer(window))->_imgui->set_font(); }
 
   [[nodiscard]] vk::Format image_format() const { return _swap_chain_image_format; }
   [[nodiscard]] vk::Extent2D extent() const { return _swap_chain_extent; }
@@ -605,7 +539,6 @@ class VulkanRenderer {
   [[nodiscard]] vk::ImageView depth_image_view() const { return _depth_image_view.get(); }
   [[nodiscard]] size_t frames_in_flight() const { return _max_frames_in_flight; }
   [[nodiscard]] vk::Buffer uniform_buffer(const size_t i) const { return _uniform_buffers[i].get(); }
-  [[nodiscard]] ImFont* font() const { return _font; }
 
  private:
   [[nodiscard]] vk::SurfaceFormatKHR choose_swap_surface_format(const std::vector<vk::SurfaceFormatKHR>& available_formats) const {
@@ -734,6 +667,7 @@ class VulkanRenderer {
   const helper::VulkanContext* _context;
   const helper::WindowHandler* _window;
   const VulkanHandler* _handler;
+  const VulkanImGui* _imgui;
 
   std::string _shader;
   std::string _font_path;
@@ -776,9 +710,6 @@ class VulkanRenderer {
   size_t _current_frame = 0;
 
   bool _vsync;
-
-  ImFont* _font = nullptr;
-  float _last_font_factor = 1.0f;
 
   bool _framebuffer_resized = false;
   const size_t _max_frames_in_flight = 2;

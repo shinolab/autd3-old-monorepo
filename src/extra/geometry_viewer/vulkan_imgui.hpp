@@ -3,7 +3,7 @@
 // Created Date: 27/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/10/2022
+// Last Modified: 03/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -29,15 +29,77 @@ namespace autd3::extra::geometry_viewer {
 
 class VulkanImGui {
  public:
-  VulkanImGui() noexcept = default;
+  explicit VulkanImGui(const helper::WindowHandler* window, const helper::VulkanContext* context) noexcept : _window(window), _context(context) {}
   ~VulkanImGui() = default;
   VulkanImGui(const VulkanImGui& v) = delete;
   VulkanImGui& operator=(const VulkanImGui& obj) = delete;
   VulkanImGui(VulkanImGui&& obj) = default;
   VulkanImGui& operator=(VulkanImGui&& obj) = default;
 
-  void init(const helper::WindowHandler& window, const helper::VulkanContext& context, const uint32_t image_count, const VkRenderPass renderer_pass,
-            std::vector<gltf::Geometry> geometries, const std::string& font_path) {
+  void set_font() const {
+    ImGuiIO& io = ImGui::GetIO();
+
+    const auto [fst, snd] = _window->scale();
+    const auto scale = (fst + snd) / 2.0f;
+
+    _context->device().waitIdle();
+
+    ImFont* font;
+    if (!_font_path.empty()) {
+      font = io.Fonts->AddFontFromFileTTF(_font_path.c_str(), _font_size * scale);
+      io.FontGlobalScale = 1.0f / scale;
+    } else
+      font = io.Fonts->AddFontDefault();
+    io.FontDefault = font;
+
+    // To destroy old texture image and image view, and to free memory
+    struct ImGuiImplVulkanHFrameRenderBuffers;
+    struct ImGuiImplVulkanHWindowRenderBuffers {
+      uint32_t index;
+      uint32_t count;
+      ImGuiImplVulkanHFrameRenderBuffers* frame_render_buffers;
+    };
+    struct ImGuiImplVulkanData {
+      ImGui_ImplVulkan_InitInfo vulkan_init_info;
+      VkRenderPass render_pass;
+      VkDeviceSize buffer_memory_alignment;
+      VkPipelineCreateFlags pipeline_create_flags;
+      VkDescriptorSetLayout descriptor_set_layout;
+      VkPipelineLayout pipeline_layout;
+      VkPipeline pipeline;
+      uint32_t subpass;
+      VkShaderModule shader_module_vert;
+      VkShaderModule shader_module_frag;
+      VkSampler font_sampler;
+      VkDeviceMemory font_memory;
+      VkImage font_image;
+      VkImageView font_view;
+      VkDescriptorSet font_descriptor_set;
+      VkDeviceMemory upload_buffer_memory;
+      VkBuffer upload_buffer;
+      ImGuiImplVulkanHWindowRenderBuffers main_window_render_buffers;
+    };
+    if (const auto* bd = static_cast<ImGuiImplVulkanData*>(ImGui::GetIO().BackendRendererUserData); bd != nullptr) {
+      if (bd->font_image != nullptr) _context->device().destroyImage(bd->font_image);
+      if (bd->font_view != nullptr) _context->device().destroyImageView(bd->font_view);
+      if (bd->font_memory != nullptr) _context->device().freeMemory(bd->font_memory);
+    }
+
+    _context->device().resetCommandPool(_context->command_pool());
+    const vk::CommandBufferAllocateInfo alloc_info(_context->command_pool(), vk::CommandBufferLevel::ePrimary, 1);
+    auto command_buffers = _context->device().allocateCommandBuffersUnique(alloc_info);
+    vk::UniqueCommandBuffer command_buffer = std::move(command_buffers[0]);
+    const vk::CommandBufferBeginInfo begin_info(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+    command_buffer->begin(begin_info);
+    ImGui_ImplVulkan_CreateFontsTexture(command_buffer.get());
+    vk::SubmitInfo end_info(0, nullptr, nullptr, 1, &command_buffer.get(), 0, nullptr);
+    command_buffer->end();
+    _context->graphics_queue().submit(end_info);
+    _context->device().waitIdle();
+    ImGui_ImplVulkan_DestroyFontUploadObjects();
+  }
+
+  void init(const uint32_t image_count, const VkRenderPass renderer_pass, std::vector<gltf::Geometry> geometries, const std::string& font_path) {
     _geometries = std::move(geometries);
 
     const auto& [pos, rot] = _geometries[0];
@@ -64,62 +126,44 @@ class VulkanImGui {
     show = std::make_unique<bool[]>(_geometries.size());
     std::fill_n(show.get(), _geometries.size(), true);
 
-    const auto [fst, snd] = window.scale();
-    const auto factor = (fst + snd) / 2.0f;
-
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-
-    if (!font_path.empty()) {
-      io.Fonts->AddFontFromFileTTF(font_path.c_str(), 16.0f * factor);
-      io.FontGlobalScale = 1.0f / factor;
-    } else
-      io.Fonts->AddFontDefault();
 
     ImGui::StyleColorsDark();
+    const auto [graphics_family, present_family] = _context->find_queue_families(_context->physical_device());
 
-    const auto [graphics_family, present_family] = context.find_queue_families(context.physical_device());
-    ImGui_ImplGlfw_InitForVulkan(window.window(), true);
-    ImGui_ImplVulkan_InitInfo init_info{context.instance(),
-                                        context.physical_device(),
-                                        context.device(),
+    ImGui_ImplGlfw_InitForVulkan(_window->window(), true);
+    ImGui_ImplVulkan_InitInfo init_info{_context->instance(),
+                                        _context->physical_device(),
+                                        _context->device(),
                                         graphics_family.value(),
-                                        context.graphics_queue(),
+                                        _context->graphics_queue(),
                                         nullptr,
-                                        context.descriptor_pool(),
+                                        _context->descriptor_pool(),
                                         0,
                                         image_count,
                                         image_count,
-                                        static_cast<VkSampleCountFlagBits>(context.msaa_samples()),
+                                        static_cast<VkSampleCountFlagBits>(_context->msaa_samples()),
                                         nullptr,
                                         check_vk_result};
     ImGui_ImplVulkan_Init(&init_info, renderer_pass);
 
-    {
-      context.device().resetCommandPool(context.command_pool());
-      const vk::CommandBufferAllocateInfo alloc_info(context.command_pool(), vk::CommandBufferLevel::ePrimary, 1);
-      auto command_buffers = context.device().allocateCommandBuffersUnique(alloc_info);
-      vk::UniqueCommandBuffer command_buffer = std::move(command_buffers[0]);
-      const vk::CommandBufferBeginInfo begin_info(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
-      command_buffer->begin(begin_info);
-      ImGui_ImplVulkan_CreateFontsTexture(command_buffer.get());
-      vk::SubmitInfo end_info(0, nullptr, nullptr, 1, &command_buffer.get(), 0, nullptr);
-      command_buffer->end();
-      context.graphics_queue().submit(end_info);
-      context.device().waitIdle();
-      ImGui_ImplVulkan_DestroyFontUploadObjects();
-    }
+    _font_path = font_path;
+    set_font();
   }
 
-  void draw(ImFont* font) {
+  void draw() {
+    if (_update_font) {
+      set_font();
+      _update_font = false;
+    }
+
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
+    const auto& io = ImGui::GetIO();
     {
-      const auto& io = ImGui::GetIO();
-
       const auto rot = glm::quat(radians(camera_rot));
       const auto model = mat4_cast(rot);
 
@@ -154,7 +198,7 @@ class VulkanImGui {
       }
     }
 
-    ImGui::PushFont(font);
+    ImGui::PushFont(io.FontDefault);
 
     ImGui::Begin("Dear ImGui");
     if (ImGui::BeginTabBar("Settings")) {
@@ -193,7 +237,12 @@ class VulkanImGui {
 
         ImGui::Separator();
 
+        if (ImGui::DragFloat("Font size", &_font_size, 1, 1.0f, 256.0f)) _update_font = true;
+
+        ImGui::Separator();
+
         ImGui::ColorPicker4("Background", &background[0]);
+
         ImGui::EndTabItem();
       }
 
@@ -240,6 +289,11 @@ class VulkanImGui {
   std::unique_ptr<bool[]> show;
 
  private:
+  const helper::WindowHandler* _window;
+  const helper::VulkanContext* _context;
+  std::string _font_path;
+  float _font_size = 16.0f;
+  bool _update_font = false;
   float _cam_move_speed = 10.0f;
   std::vector<gltf::Geometry> _geometries;
 
