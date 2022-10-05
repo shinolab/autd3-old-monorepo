@@ -87,12 +87,9 @@ class TransViewer {
 
   void update(const glm::mat4 view, const glm::mat4 proj, const std::unique_ptr<SoundSources>& sound_sources, const UpdateFlags update_flag) {
     if (update_flag.contains(UpdateFlags::UPDATE_CAMERA_POS)) update_uniform_objects(view, proj);
-
-    if (!sound_sources->is_empty()) {
-      if (update_flag.contains(UpdateFlags::UPDATE_SOURCE_DRIVE) || update_flag.contains(UpdateFlags::UPDATE_SOURCE_ALPHA) ||
-          update_flag.contains(UpdateFlags::UPDATE_SOURCE_FLAG))
-        update_color_instance_buffer(sound_sources);
-    }
+    if (update_flag.contains(UpdateFlags::UPDATE_SOURCE_DRIVE) || update_flag.contains(UpdateFlags::UPDATE_SOURCE_ALPHA) ||
+        update_flag.contains(UpdateFlags::UPDATE_SOURCE_FLAG))
+      update_color_instance_buffer(sound_sources);
   }
 
  private:

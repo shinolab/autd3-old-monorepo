@@ -105,19 +105,36 @@ class SimulatorImpl final : public Simulator {
         helper::WindowHandler::poll_events();
         glfwPollEvents();
 
+        const bool is_stm_mode = std::any_of(_cpus.begin(), _cpus.end(), [](const auto& cpu) { return cpu.fpga().is_stm_mode(); });
+        imgui->is_stm_mode = is_stm_mode;
+        if (is_stm_mode) imgui->stm_size = static_cast<int32_t>(_cpus[0].fpga().stm_cycle());
         auto update_flags = imgui->draw();
         if (_data_updated.load()) {
+          const auto idx = is_stm_mode ? imgui->stm_idx : 0;
           size_t i = 0;
           for (auto& cpu : _cpus) {
-            const auto& [amps, phases] = cpu.fpga().drives();
             const auto& cycles = cpu.fpga().cycles();
+            const auto& [amps, phases] = cpu.fpga().drives();
             for (size_t tr = 0; tr < driver::NUM_TRANS_IN_UNIT; tr++, i++) {
-              _sources->drives()[i].amp = std::sin(glm::pi<float>() * static_cast<float>(amps[0][tr].duty) / static_cast<float>(cycles[tr]));
-              _sources->drives()[i].phase = 2.0f * glm::pi<float>() * static_cast<float>(phases[0][tr].phase) / static_cast<float>(cycles[tr]);
+              _sources->drives()[i].amp = std::sin(glm::pi<float>() * static_cast<float>(amps[idx][tr].duty) / static_cast<float>(cycles[tr]));
+              _sources->drives()[i].phase = 2.0f * glm::pi<float>() * static_cast<float>(phases[idx][tr].phase) / static_cast<float>(cycles[tr]);
+            }
+            update_flags.set(UpdateFlags::UPDATE_SOURCE_DRIVE);
+          }
+          _data_updated.store(false);
+        }
+        if (is_stm_mode && update_flags.contains(UpdateFlags::UPDATE_SOURCE_DRIVE)) {
+          size_t i = 0;
+          for (auto& cpu : _cpus) {
+            const auto& cycles = cpu.fpga().cycles();
+            const auto& [amps, phases] = cpu.fpga().drives();
+            for (size_t tr = 0; tr < driver::NUM_TRANS_IN_UNIT; tr++, i++) {
+              _sources->drives()[i].amp =
+                  std::sin(glm::pi<float>() * static_cast<float>(amps[imgui->stm_idx][tr].duty) / static_cast<float>(cycles[tr]));
+              _sources->drives()[i].phase =
+                  2.0f * glm::pi<float>() * static_cast<float>(phases[imgui->stm_idx][tr].phase) / static_cast<float>(cycles[tr]);
             }
           }
-          update_flags.set(UpdateFlags::UPDATE_SOURCE_DRIVE);
-          _data_updated.store(false);
         }
 
         const auto& [view, proj] = imgui->get_view_proj(static_cast<float>(renderer->extent().width) / static_cast<float>(renderer->extent().height));
