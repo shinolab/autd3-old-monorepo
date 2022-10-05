@@ -20,10 +20,11 @@ namespace autd3::link {
 class SimulatorImpl final : public core::Link {
  public:
   explicit SimulatorImpl(const int32_t width, const int32_t height, const bool vsync, std::string shader, std::string texture, std::string font,
-                         const size_t gpu_idx)
+                         const size_t gpu_idx, std::function<void()> callback)
       : Link(),
         _is_open(false),
-        _simulator(extra::simulator::Simulator::create(width, height, vsync, std::move(shader), std::move(texture), std::move(font), gpu_idx)) {}
+        _simulator(extra::simulator::Simulator::create(width, height, vsync, std::move(shader), std::move(texture), std::move(font), gpu_idx,
+                                                       std::move(callback))) {}
   ~SimulatorImpl() override = default;
   SimulatorImpl(const SimulatorImpl& v) noexcept = delete;
   SimulatorImpl& operator=(const SimulatorImpl& obj) = delete;
@@ -56,7 +57,8 @@ class SimulatorImpl final : public core::Link {
   std::unique_ptr<extra::simulator::Simulator> _simulator;
 };
 core::LinkPtr Simulator::build() const {
-  core::LinkPtr link = std::make_unique<SimulatorImpl>(_width, _height, _vsync, _shader, _texture, _font, _gpu_idx);
+  core::LinkPtr link = std::make_unique<SimulatorImpl>(_width, _height, _vsync, std::move(_shader), std::move(_texture), std::move(_font), _gpu_idx,
+                                                       std::move(_callback));
   return link;
 }
 
