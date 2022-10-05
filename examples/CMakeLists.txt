@@ -64,7 +64,7 @@ endif()
 
 if(BUILD_SIMULATOR)
   add_executable(simulator_example simulator.cpp ${hpp_files})
-  target_link_libraries(simulator_example autd3_example_common simulator link_simulator)
+  target_link_libraries(simulator_example autd3_example_common link_simulator)
   
   target_compile_definitions(simulator_example PRIVATE AUTD3_SIMULATOR_SHADER_PATH="${PROJECT_SOURCE_DIR}/src/extra/simulator/shaders")
   target_compile_definitions(simulator_example PRIVATE AUTD3_SIMULATOR_TEXTURE_PATH="${PROJECT_SOURCE_DIR}/src/extra/simulator/textures")
