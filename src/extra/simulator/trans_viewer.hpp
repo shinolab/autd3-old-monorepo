@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/10/2022
+// Last Modified: 05/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,9 @@
 #include <utility>
 #include <vector>
 
+#include "coloring.hpp"
 #include "shader.hpp"
+#include "update_flag.hpp"
 #include "vulkan_renderer.hpp"
 
 namespace autd3::extra::simulator::trans_viewer {
@@ -43,13 +45,55 @@ struct UniformBufferObject {
 class TransViewer {
  public:
   explicit TransViewer(const helper::VulkanContext* context, const VulkanRenderer* renderer, std::string shader, std::string texture)
-      : _context(context), _renderer(renderer), _shader(std::move(shader)), _texture(std::move(texture)), _instance_count(0) {}
+      : _context(context), _renderer(renderer), _shader(std::move(shader)), _texture(std::move(texture)), _instance_count(0) {
+    create_pipeline();
+    create_texture();
+    create_vertex_buffer();
+    create_index_buffer();
+    create_uniform_buffers();
+    create_descriptor_sets();
+  }
   ~TransViewer() = default;
   TransViewer(const TransViewer& v) = delete;
   TransViewer& operator=(const TransViewer& obj) = delete;
   TransViewer(TransViewer&& obj) = default;
   TransViewer& operator=(TransViewer&& obj) = default;
 
+  void render(const vk::CommandBuffer& command_buffer) {
+    if (!_model_instance_buffer.get() || !_color_instance_buffer.get()) return;
+
+    const vk::Buffer vertex_buffers[] = {_vertex_buffer.get()};
+    const vk::Buffer model_instance_buffers[] = {_model_instance_buffer.get()};
+    const vk::Buffer color_instance_buffers[] = {_color_instance_buffer.get()};
+    constexpr vk::DeviceSize offsets[] = {0};
+
+    command_buffer.bindVertexBuffers(0, 1, vertex_buffers, offsets);
+    command_buffer.bindVertexBuffers(1, 1, model_instance_buffers, offsets);
+    command_buffer.bindVertexBuffers(2, 1, color_instance_buffers, offsets);
+    command_buffer.bindIndexBuffer(_index_buffer.get(), 0, vk::IndexType::eUint32);
+
+    command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, _layout.get(), 0, 1, &_descriptor_sets[_renderer->current_frame()].get(), 0,
+                                      nullptr);
+
+    command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, _pipeline.get());
+    command_buffer.drawIndexed(6, _instance_count, 0, 0, 0);
+  }
+
+  void update(const glm::mat4 view, const glm::mat4 proj, const std::unique_ptr<SoundSources>& sound_sources, const UpdateFlags update_flag) {
+    if (update_flag.contains(UpdateFlags::UPDATE_CAMERA_POS)) update_uniform_objects(view, proj);
+
+    if (!sound_sources->is_empty()) {
+      if (update_flag.contains(UpdateFlags::INIT_SOURCE)) {
+        create_model_instance_buffer(sound_sources);
+        create_color_instance_buffer(sound_sources);
+      }
+      if (update_flag.contains(UpdateFlags::UPDATE_SOURCE_DRIVE) || update_flag.contains(UpdateFlags::UPDATE_SOURCE_ALPHA) ||
+          update_flag.contains(UpdateFlags::UPDATE_SOURCE_FLAG))
+        update_color_instance_buffer(sound_sources);
+    }
+  }
+
+ private:
   void create_pipeline() {
     const auto vert_shader_code = helper::read_file(std::filesystem::path(_shader).append("circle.vert.spv").string());
     const auto frag_shader_code = helper::read_file(std::filesystem::path(_shader).append("circle.frag.spv").string());
@@ -254,13 +298,13 @@ class TransViewer {
     _context->copy_buffer(staging_buffer.get(), _vertex_buffer.get(), buffer_size);
   }
 
-  void create_model_instance_buffer(const SoundSources& sources) {
+  void create_model_instance_buffer(const std::unique_ptr<SoundSources>& sources) {
     std::vector<glm::mat4> models;
-    _instance_count = static_cast<uint32_t>(sources.size());
+    _instance_count = static_cast<uint32_t>(sources->size());
     models.reserve(_instance_count);
-    const auto& positions = sources.positions();
-    const auto& rotations = sources.rotations();
-    for (size_t i = 0; i < sources.size(); i++) {
+    const auto& positions = sources->positions();
+    const auto& rotations = sources->rotations();
+    for (size_t i = 0; i < sources->size(); i++) {
       constexpr auto s = static_cast<float>(driver::TRANS_SPACING_MM) * 0.5f;
       auto m = scale(glm::identity<glm::mat4>(), glm::vec3(s, s, s));
       m[3].x = positions[i].x;
@@ -289,10 +333,11 @@ class TransViewer {
     _context->copy_buffer(staging_buffer.get(), _model_instance_buffer.get(), buffer_size);
   }
 
-  void create_color_instance_buffer(const SoundSources& sources) {
+  void create_color_instance_buffer(const std::unique_ptr<SoundSources>& sources) {
     std::vector<glm::vec4> colors;
     colors.reserve(_instance_count);
-    for (size_t i = 0; i < _instance_count; i++) colors.emplace_back(glm::vec4{1, 0, 0, 1});  // TODO
+    for (size_t i = 0; i < _instance_count; i++)
+      colors.emplace_back(coloring_hsv(sources->drives()[i].phase / (2.0f * glm::pi<float>()), sources->drives()[i].amp, sources->visibilities()[i]));
 
     const vk::DeviceSize buffer_size = sizeof colors[0] * colors.size();
 
@@ -310,6 +355,26 @@ class TransViewer {
 
     _color_instance_buffer = std::move(color_instance_buffer);
     _color_instance_buffer_memory = std::move(color_instance_buffer_memory);
+
+    _context->copy_buffer(staging_buffer.get(), _color_instance_buffer.get(), buffer_size);
+  }
+
+  void update_color_instance_buffer(const std::unique_ptr<SoundSources>& sources) {
+    std::vector<glm::vec4> colors;
+    colors.reserve(_instance_count);
+    for (size_t i = 0; i < _instance_count; i++)
+      colors.emplace_back(coloring_hsv(sources->drives()[i].phase / (2.0f * glm::pi<float>()), sources->drives()[i].amp, sources->visibilities()[i]));
+
+    const vk::DeviceSize buffer_size = sizeof colors[0] * colors.size();
+
+    auto [staging_buffer, staging_buffer_memory] = _context->create_buffer(
+        buffer_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+
+    void* data;
+    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
+      throw std::runtime_error("failed to map vertex buffer memory!");
+    std::memcpy(data, colors.data(), buffer_size);
+    _context->device().unmapMemory(staging_buffer_memory.get());
 
     _context->copy_buffer(staging_buffer.get(), _color_instance_buffer.get(), buffer_size);
   }
@@ -396,35 +461,17 @@ class TransViewer {
     }
   }
 
-  void render(const vk::CommandBuffer& command_buffer) {
-    const vk::Buffer vertex_buffers[] = {_vertex_buffer.get()};
-    const vk::Buffer model_instance_buffers[] = {_model_instance_buffer.get()};
-    const vk::Buffer color_instance_buffers[] = {_color_instance_buffer.get()};
-    constexpr vk::DeviceSize offsets[] = {0};
-
-    command_buffer.bindVertexBuffers(0, 1, vertex_buffers, offsets);
-    command_buffer.bindVertexBuffers(1, 1, model_instance_buffers, offsets);
-    command_buffer.bindVertexBuffers(2, 1, color_instance_buffers, offsets);
-    command_buffer.bindIndexBuffer(_index_buffer.get(), 0, vk::IndexType::eUint32);
-
-    command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, _layout.get(), 0, 1, &_descriptor_sets[_renderer->current_frame()].get(), 0,
-                                      nullptr);
-
-    command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, _pipeline.get());
-    command_buffer.drawIndexed(6, _instance_count, 0, 0, 0);
-  }
-
   void update_uniform_objects(const glm::mat4 view, const glm::mat4 proj) {
     const UniformBufferObject ubo{view, proj};
     void* data;
-    if (_context->device().mapMemory(_uniform_buffers_memory[_renderer->current_frame()].get(), 0, sizeof ubo, {}, &data) != vk::Result::eSuccess)
-      throw std::runtime_error("failed to map uniform buffer memory");
-
-    memcpy(data, &ubo, sizeof ubo);
-    _context->device().unmapMemory(_uniform_buffers_memory[_renderer->current_frame()].get());
+    for (auto& uniform_buffer_memory : _uniform_buffers_memory) {
+      if (_context->device().mapMemory(uniform_buffer_memory.get(), 0, sizeof ubo, {}, &data) != vk::Result::eSuccess)
+        throw std::runtime_error("failed to map uniform buffer memory");
+      memcpy(data, &ubo, sizeof ubo);
+      _context->device().unmapMemory(uniform_buffer_memory.get());
+    }
   }
 
- private:
   const helper::VulkanContext* _context;
   const VulkanRenderer* _renderer;
   std::string _shader;
