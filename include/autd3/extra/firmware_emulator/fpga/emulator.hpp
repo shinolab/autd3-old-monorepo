@@ -295,7 +295,7 @@ class FPGA {
       if ((z & 0x20000) != 0) z = -131072 + (z & 0x1FFFF);
       for (size_t j = 0; j < NUM_TRANS_IN_UNIT; j++) {
         const auto tr_x = ((TR_POS[j] >> 16) & 0xFFFF);
-        const auto tr_y = (TR_POS[i] & 0xFFFF);
+        const auto tr_y = (TR_POS[j] & 0xFFFF);
         const auto d2 = (x - tr_x) * (x - tr_x) + (y - tr_y) * (y - tr_y) + z * z;
         const auto dist = static_cast<uint64_t>(std::sqrt(d2));
         const auto q = (dist << 22) / sound_speed;
