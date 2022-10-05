@@ -3,7 +3,7 @@
 // Created Date: 02/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/10/2022
+// Last Modified: 05/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -51,6 +51,7 @@ class SoundSources {
     _pos.clear();
     _rot.clear();
     _drive.clear();
+    _visibilities.clear();
   }
 
   [[nodiscard]] size_t size() const { return _pos.size(); }

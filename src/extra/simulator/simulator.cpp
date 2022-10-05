@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/10/2022
+// Last Modified: 05/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,88 +11,166 @@
 
 #include "autd3/extra/simulator/simulator.hpp"
 
+#include <thread>
 #include <vulkan_context.hpp>
 #include <window_handler.hpp>
 
-#include "autd3/driver/hardware.hpp"
+#include "autd3/extra/firmware_emulator/cpu/emulator.hpp"
 #include "sound_sources.hpp"
 #include "trans_viewer.hpp"
 #include "vulkan_renderer.hpp"
 
 namespace autd3::extra::simulator {
-void Simulator::start(bool* run) const {
-  SoundSources sources;
-  for (size_t y = 0; y < driver::NUM_TRANS_Y; y++) {
-    for (size_t x = 0; x < driver::NUM_TRANS_X; x++) {
-      if (driver::is_missing_transducer(x, y)) continue;
-      const auto px = static_cast<float>(x) * static_cast<float>(driver::TRANS_SPACING_MM);
-      const auto py = static_cast<float>(y) * static_cast<float>(driver::TRANS_SPACING_MM);
-      const auto pz = 0.0f;
-      sources.add(glm::vec3(px, py, pz), glm::identity<glm::quat>(), Drive{1.0f, 0.0f, 1.0f, 40e3, 340e3}, 1.0f);
+
+class SimulatorImpl final : public Simulator {
+ public:
+  SimulatorImpl(const int32_t width, const int32_t height, const bool vsync, std::string shader, std::string texture, std::string font,
+                const size_t gpu_idx) noexcept
+      : _width(width),
+        _height(height),
+        _vsync(vsync),
+        _shader(std::move(shader)),
+        _texture(std::move(texture)),
+        _font(std::move(font)),
+        _gpu_idx(gpu_idx),
+        _sources(std::make_unique<SoundSources>()) {}
+  ~SimulatorImpl() override = default;
+  SimulatorImpl(const SimulatorImpl& v) noexcept = delete;
+  SimulatorImpl& operator=(const SimulatorImpl& obj) = delete;
+  SimulatorImpl(SimulatorImpl&& obj) = default;
+  SimulatorImpl& operator=(SimulatorImpl&& obj) = default;
+
+  void start(const core::Geometry& geometry) override {
+    _sources->clear();
+    for (const auto& dev : geometry)
+      for (const auto& trans : dev) {
+        _sources->add(
+            glm::vec3(static_cast<float>(trans.position().x()), static_cast<float>(trans.position().y()), static_cast<float>(trans.position().z())),
+            glm::quat(static_cast<float>(dev.rotation().w()), static_cast<float>(dev.rotation().x()), static_cast<float>(dev.rotation().y()),
+                      static_cast<float>(dev.rotation().z())),
+            Drive{1.0f, 0.0f, 1.0f, static_cast<float>(trans.frequency()), static_cast<float>(geometry.sound_speed)}, 1.0f);
+      }
+
+    _cpus.clear();
+    _cpus.reserve(geometry.num_devices());
+    for (size_t i = 0; i < geometry.num_devices(); i++) {
+      firmware_emulator::cpu::CPU cpu(i);
+      cpu.init();
+      _cpus.emplace_back(cpu);
     }
+
+    _th = std::make_unique<std::thread>([this] {
+      const auto window = std::make_unique<helper::WindowHandler>(_width, _height);
+      const auto context = std::make_unique<helper::VulkanContext>(_gpu_idx, true);
+
+      const auto imgui = std::make_unique<VulkanImGui>(window.get(), context.get());
+      const auto renderer = std::make_unique<VulkanRenderer>(context.get(), window.get(), imgui.get(), _vsync);
+
+      window->init("AUTD3 Simulator", renderer.get(), VulkanRenderer::resize_callback, VulkanRenderer::pos_callback);
+      context->init_vulkan("AUTD3 Simulator", *window);
+      renderer->create_swapchain();
+      renderer->create_image_views();
+      renderer->create_render_pass();
+
+      context->create_command_pool();
+      renderer->create_depth_resources();
+      renderer->create_color_resources();
+      renderer->create_framebuffers();
+
+      const std::array pool_size = {
+          vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 100),
+          vk::DescriptorPoolSize(vk::DescriptorType::eSampledImage, 100),
+          vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 100),
+      };
+      context->create_descriptor_pool(pool_size);
+
+      renderer->create_command_buffers();
+      renderer->create_sync_objects();
+
+      const auto trans_viewer = std::make_unique<trans_viewer::TransViewer>(context.get(), renderer.get(), _shader, _texture);
+
+      // init
+      {
+        imgui->init(static_cast<uint32_t>(renderer->frames_in_flight()), renderer->render_pass(), _font, _sources);
+        const auto& [view, proj] = imgui->get_view_proj(static_cast<float>(renderer->extent().width) / static_cast<float>(renderer->extent().height));
+        trans_viewer->update(view, proj, _sources, UpdateFlags::all());
+      }
+
+      _is_running = true;
+      while (_is_running && !window->should_close()) {
+        helper::WindowHandler::poll_events();
+        glfwPollEvents();
+        auto update_flags = imgui->draw();
+        if (_data_updated.load()) {
+          size_t i = 0;
+          for (auto& cpu : _cpus) {
+            const auto& [amps, phases] = cpu.fpga().drives();
+            const auto& cycles = cpu.fpga().cycles();
+            for (size_t tr = 0; tr < driver::NUM_TRANS_IN_UNIT; tr++, i++) {
+              _sources->drives()[i].amp = std::sin(glm::pi<float>() * static_cast<float>(amps[0][tr].duty) / static_cast<float>(cycles[tr]));
+              _sources->drives()[i].phase = 2.0f * glm::pi<float>() * static_cast<float>(phases[0][tr].phase) / static_cast<float>(cycles[tr]);
+            }
+          }
+          update_flags.set(UpdateFlags::UPDATE_SOURCE_DRIVE);
+          _data_updated.store(false);
+        }
+
+        const auto& [view, proj] = imgui->get_view_proj(static_cast<float>(renderer->extent().width) / static_cast<float>(renderer->extent().height));
+        trans_viewer->update(view, proj, _sources, update_flags);
+
+        const std::array background = {imgui->background.r, imgui->background.g, imgui->background.b, imgui->background.a};
+        const auto& [command_buffer, image_index] = renderer->begin_frame(background);
+        trans_viewer->render(command_buffer);
+        VulkanImGui::render(command_buffer);
+        renderer->end_frame(command_buffer, image_index);
+      }
+
+      context->device().waitIdle();
+      VulkanImGui::cleanup();
+      renderer->cleanup();
+    });
   }
 
-  helper::WindowHandler window(_width, _height);
-  helper::VulkanContext context(_gpu_idx, true);
-
-  VulkanImGui imgui(&window, &context);
-  VulkanRenderer renderer(&context, &window, &imgui, _vsync);
-
-  trans_viewer::TransViewer trans_viewer(&context, &renderer, _shader, _texture);
-
-  window.init("AUTD3 Simulator", nullptr, nullptr, nullptr);
-  context.init_vulkan("AUTD3 Simulator", window);
-  renderer.create_swapchain();
-  renderer.create_image_views();
-  renderer.create_render_pass();
-
-  trans_viewer.create_pipeline();
-
-  context.create_command_pool();
-  renderer.create_depth_resources();
-  renderer.create_color_resources();
-  renderer.create_framebuffers();
-
-  trans_viewer.create_texture();
-
-  trans_viewer.create_vertex_buffer();
-  trans_viewer.create_model_instance_buffer(sources);
-  trans_viewer.create_color_instance_buffer(sources);
-  trans_viewer.create_index_buffer();
-  trans_viewer.create_uniform_buffers();
-
-  const std::array pool_size = {
-      vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 100),
-      vk::DescriptorPoolSize(vk::DescriptorType::eSampledImage, 100),
-      vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 100),
-  };
-  context.create_descriptor_pool(pool_size);
-
-  trans_viewer.create_descriptor_sets();
-
-  renderer.create_command_buffers();
-  renderer.create_sync_objects();
-
-  imgui.init(static_cast<uint32_t>(renderer.frames_in_flight()), renderer.render_pass(), _font, sources);
-
-  *run = true;
-  while (run && !window.should_close()) {
-    helper::WindowHandler::poll_events();
-    glfwPollEvents();
-    imgui.draw();
-    const std::array background = {imgui.background.r, imgui.background.g, imgui.background.b, imgui.background.a};
-    const auto& [command_buffer, image_index] = renderer.begin_frame(background);
-    trans_viewer.render(command_buffer);
-    VulkanImGui::render(command_buffer);
-    renderer.end_frame(command_buffer, image_index);
-
-    const auto& [view, proj] = imgui.get_view_proj(static_cast<float>(renderer.extent().width) / static_cast<float>(renderer.extent().height));
-    trans_viewer.update_uniform_objects(view, proj);
+  void exit() override {
+    _is_running = false;
+    if (_th->joinable()) _th->join();
   }
 
-  context.device().waitIdle();
-  VulkanImGui::cleanup();
-  renderer.cleanup();
+  bool receive(driver::RxDatagram& rx) override {
+    for (size_t i = 0; i < _cpus.size(); i++) {
+      rx.messages()[i].msg_id = _cpus[i].msg_id();
+      rx.messages()[i].ack = _cpus[i].ack();
+    }
+    return true;
+  }
+
+  bool send(const driver::TxDatagram& tx) override {
+    for (size_t i = 0; i < _cpus.size(); i++) _cpus[i].send(tx.header(), tx.bodies()[i]);
+    _data_updated.store(true);
+    return true;
+  }
+
+ private:
+  int32_t _width;
+  int32_t _height;
+  bool _vsync;
+  std::string _shader;
+  std::string _texture;
+  std::string _font;
+  size_t _gpu_idx;
+
+  bool _is_running = false;
+  std::unique_ptr<std::thread> _th;
+
+  std::unique_ptr<SoundSources> _sources;
+  std::vector<firmware_emulator::cpu::CPU> _cpus;
+
+  std::atomic<bool> _data_updated{false};
+};
+
+std::unique_ptr<Simulator> Simulator::create(int32_t width, int32_t height, bool vsync, std::string shader, std::string texture, std::string font,
+                                             size_t gpu_idx) {
+  return std::make_unique<SimulatorImpl>(width, height, vsync, std::move(shader), std::move(texture), std::move(font), gpu_idx);
 }
 
 }  // namespace autd3::extra::simulator
