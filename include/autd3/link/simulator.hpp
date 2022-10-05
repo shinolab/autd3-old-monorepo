@@ -101,7 +101,7 @@ class Simulator {
   std::string _texture;
   std::string _font;
   size_t _gpu_idx{0};
-  std::function<void()> _callback = []() { std::quick_exit(0); };
+  std::function<void()> _callback = [] { std::quick_exit(0); };
 };
 
 }  // namespace autd3::link
