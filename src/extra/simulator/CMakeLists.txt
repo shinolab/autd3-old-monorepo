@@ -8,6 +8,7 @@ add_library(simulator
   vulkan_imgui.hpp
   vulkan_renderer.hpp
   trans_viewer.hpp
+  slice_viewer.hpp
   ${PROJECT_SOURCE_DIR}/include/autd3/extra/simulator/simulator.hpp
   simulator.cpp
 )

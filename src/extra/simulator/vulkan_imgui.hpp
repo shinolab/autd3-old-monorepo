@@ -106,17 +106,19 @@ class VulkanImGui {
     const auto right = glm::vec3(rot_mat * glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
     const auto up = glm::vec3(rot_mat * glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
     const auto forward = glm::vec3(rot_mat * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+    const auto center = pos + right * static_cast<float>(driver::TRANS_SPACING_MM * (driver::NUM_TRANS_X - 1)) / 2.0f +
+                        up * static_cast<float>(driver::TRANS_SPACING_MM * (driver::NUM_TRANS_Y - 1)) / 2.0f;
 
-    const auto center = pos + right * 192.0f / 2.0f + up * 151.4f / 2.0f;
-
-    const auto cam_pos = pos + right * 192.0f / 2.0f - up * 151.4f + forward * 300.0f;
-
-    const auto cam_view = lookAt(cam_pos, center, forward);
-
-    const auto angles = degrees(eulerAngles(quat_cast(transpose(cam_view))));
-
+    const auto cam_pos = pos + right * static_cast<float>(driver::TRANS_SPACING_MM * (driver::NUM_TRANS_X - 1)) / 2.0f -
+                         up * static_cast<float>(driver::TRANS_SPACING_MM * (driver::NUM_TRANS_Y - 1)) + forward * 300.0f;
     camera_pos = cam_pos;
-    camera_rot = angles;
+    camera_rot = degrees(eulerAngles(quat_cast(transpose(lookAt(cam_pos, center, forward)))));
+
+    const auto s_pos = center + forward * 150.0f;
+    slice_pos = s_pos;
+    slice_rot = degrees(eulerAngles(quat_cast(transpose(lookAt(glm::vec3(sources->positions()[0]), glm::vec3(sources->positions()[18]), forward)))));
+    slice_width = 300;
+    slice_height = 300;
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -198,18 +200,37 @@ class VulkanImGui {
 
     ImGui::Begin("Dear ImGui");
     if (ImGui::BeginTabBar("Settings")) {
-      if (ImGui::BeginTabItem("Camera")) {
-        if (ImGui::DragFloat("Camera X", &camera_pos.x)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
-        if (ImGui::DragFloat("Camera Y", &camera_pos.y)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
-        if (ImGui::DragFloat("Camera Z", &camera_pos.z)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
+      if (ImGui::BeginTabItem("Slice")) {
+        ImGui::Text("Position");
+        if (ImGui::DragFloat("X##Slice", &slice_pos.x)) flag.set(UpdateFlags::UPDATE_SLICE_POS);
+        if (ImGui::DragFloat("Y##Slice", &slice_pos.y)) flag.set(UpdateFlags::UPDATE_SLICE_POS);
+        if (ImGui::DragFloat("Z##Slice", &slice_pos.z)) flag.set(UpdateFlags::UPDATE_SLICE_POS);
         ImGui::Separator();
-        if (ImGui::DragFloat("Camera RX", &camera_rot.x, 1, -180, 180)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
-        if (ImGui::DragFloat("Camera RY", &camera_rot.y, 1, -180, 180)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
-        if (ImGui::DragFloat("Camera RZ", &camera_rot.z, 1, -180, 180)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
+        ImGui::Text("Rotation");
+        if (ImGui::DragFloat("RX##Slice", &slice_rot.x, 1, -180, 180)) flag.set(UpdateFlags::UPDATE_SLICE_POS);
+        if (ImGui::DragFloat("RY##Slice", &slice_rot.y, 1, -180, 180)) flag.set(UpdateFlags::UPDATE_SLICE_POS);
+        if (ImGui::DragFloat("RZ##Slice", &slice_rot.z, 1, -180, 180)) flag.set(UpdateFlags::UPDATE_SLICE_POS);
+        ImGui::Separator();
+        ImGui::Text("Size");
+        if (ImGui::DragInt("Width##Slice", &slice_width, 1, 1, 2000)) flag.set(UpdateFlags::UPDATE_SLICE_SIZE);
+        if (ImGui::DragInt("Height##Slice", &slice_height, 1, 1, 2000)) flag.set(UpdateFlags::UPDATE_SLICE_SIZE);
+        ImGui::EndTabItem();
+      }
+
+      if (ImGui::BeginTabItem("Camera")) {
+        ImGui::Text("Position");
+        if (ImGui::DragFloat("X##Camera", &camera_pos.x)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
+        if (ImGui::DragFloat("Y##Camera", &camera_pos.y)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
+        if (ImGui::DragFloat("Z##Camera", &camera_pos.z)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
+        ImGui::Separator();
+        ImGui::Text("Rotation");
+        if (ImGui::DragFloat("RX##Camera", &camera_rot.x, 1, -180, 180)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
+        if (ImGui::DragFloat("RY##Camera", &camera_rot.y, 1, -180, 180)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
+        if (ImGui::DragFloat("RZ##Camera", &camera_rot.z, 1, -180, 180)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
         ImGui::Separator();
         if (ImGui::DragFloat("FOV", &fov, 1, 0, 180)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
         ImGui::Separator();
-        ImGui::DragFloat("Camera move speed", &_cam_move_speed);
+        ImGui::DragFloat("Move speed", &_cam_move_speed);
         ImGui::EndTabItem();
       }
 
@@ -258,6 +279,15 @@ class VulkanImGui {
     proj[1][1] *= -1;
     return std::make_pair(view, proj);
   }
+
+  [[nodiscard]] glm::mat4 get_slice_model() const {
+    return translate(glm::identity<glm::mat4>(), slice_pos) * mat4_cast(glm::quat(radians(slice_rot)));
+  }
+
+  int32_t slice_width{100};
+  int32_t slice_height{100};
+  glm::vec3 slice_pos{};
+  glm::vec3 slice_rot{};
 
   glm::vec4 background{0.3f, 0.3f, 0.3f, 1.0f};
 

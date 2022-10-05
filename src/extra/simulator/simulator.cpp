@@ -16,6 +16,7 @@
 #include <window_handler.hpp>
 
 #include "autd3/extra/firmware_emulator/cpu/emulator.hpp"
+#include "slice_viewer.hpp"
 #include "sound_sources.hpp"
 #include "trans_viewer.hpp"
 #include "vulkan_renderer.hpp"
@@ -37,8 +38,8 @@ class SimulatorImpl final : public Simulator {
   ~SimulatorImpl() override = default;
   SimulatorImpl(const SimulatorImpl& v) noexcept = delete;
   SimulatorImpl& operator=(const SimulatorImpl& obj) = delete;
-  SimulatorImpl(SimulatorImpl&& obj) = default;
-  SimulatorImpl& operator=(SimulatorImpl&& obj) = default;
+  SimulatorImpl(SimulatorImpl&& obj) = delete;
+  SimulatorImpl& operator=(SimulatorImpl&& obj) = delete;
 
   void start(const core::Geometry& geometry) override {
     _sources->clear();
@@ -88,18 +89,22 @@ class SimulatorImpl final : public Simulator {
       renderer->create_sync_objects();
 
       const auto trans_viewer = std::make_unique<trans_viewer::TransViewer>(context.get(), renderer.get(), _shader, _texture);
+      const auto slice_viewer = std::make_unique<slice_viewer::SliceViewer>(context.get(), renderer.get(), _shader);
 
       // init
       {
         imgui->init(static_cast<uint32_t>(renderer->frames_in_flight()), renderer->render_pass(), _font, _sources);
         const auto& [view, proj] = imgui->get_view_proj(static_cast<float>(renderer->extent().width) / static_cast<float>(renderer->extent().height));
-        trans_viewer->update(view, proj, _sources, UpdateFlags::all());
+        const auto& slice_model = imgui->get_slice_model();
+        trans_viewer->init(view, proj, _sources);
+        slice_viewer->init(slice_model, view, proj, imgui->slice_width, imgui->slice_height);
       }
 
       _is_running = true;
       while (_is_running && !window->should_close()) {
         helper::WindowHandler::poll_events();
         glfwPollEvents();
+
         auto update_flags = imgui->draw();
         if (_data_updated.load()) {
           size_t i = 0;
@@ -116,10 +121,13 @@ class SimulatorImpl final : public Simulator {
         }
 
         const auto& [view, proj] = imgui->get_view_proj(static_cast<float>(renderer->extent().width) / static_cast<float>(renderer->extent().height));
+        const auto& slice_model = imgui->get_slice_model();
+        slice_viewer->update(slice_model, view, proj, _sources, imgui->slice_width, imgui->slice_height, update_flags);
         trans_viewer->update(view, proj, _sources, update_flags);
 
         const std::array background = {imgui->background.r, imgui->background.g, imgui->background.b, imgui->background.a};
         const auto& [command_buffer, image_index] = renderer->begin_frame(background);
+        slice_viewer->render(command_buffer);
         trans_viewer->render(command_buffer);
         VulkanImGui::render(command_buffer);
         renderer->end_frame(command_buffer, image_index);

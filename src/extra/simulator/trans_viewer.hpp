@@ -45,19 +45,25 @@ struct UniformBufferObject {
 class TransViewer {
  public:
   explicit TransViewer(const helper::VulkanContext* context, const VulkanRenderer* renderer, std::string shader, std::string texture)
-      : _context(context), _renderer(renderer), _shader(std::move(shader)), _texture(std::move(texture)), _instance_count(0) {
-    create_pipeline();
-    create_texture();
-    create_vertex_buffer();
-    create_index_buffer();
-    create_uniform_buffers();
-    create_descriptor_sets();
-  }
+      : _context(context), _renderer(renderer), _shader(std::move(shader)), _texture(std::move(texture)), _instance_count(0) {}
   ~TransViewer() = default;
   TransViewer(const TransViewer& v) = delete;
   TransViewer& operator=(const TransViewer& obj) = delete;
   TransViewer(TransViewer&& obj) = default;
   TransViewer& operator=(TransViewer&& obj) = default;
+
+  void init(const glm::mat4 view, const glm::mat4 proj, const std::unique_ptr<SoundSources>& sound_sources) {
+    create_pipeline();
+    create_texture();
+    create_vertex_buffer();
+    create_index_buffer();
+    create_uniform_buffers();
+    create_model_instance_buffer(sound_sources);
+    create_color_instance_buffer(sound_sources);
+    create_descriptor_sets();
+
+    update_uniform_objects(view, proj);
+  }
 
   void render(const vk::CommandBuffer& command_buffer) {
     if (!_model_instance_buffer.get() || !_color_instance_buffer.get()) return;
@@ -83,10 +89,6 @@ class TransViewer {
     if (update_flag.contains(UpdateFlags::UPDATE_CAMERA_POS)) update_uniform_objects(view, proj);
 
     if (!sound_sources->is_empty()) {
-      if (update_flag.contains(UpdateFlags::INIT_SOURCE)) {
-        create_model_instance_buffer(sound_sources);
-        create_color_instance_buffer(sound_sources);
-      }
       if (update_flag.contains(UpdateFlags::UPDATE_SOURCE_DRIVE) || update_flag.contains(UpdateFlags::UPDATE_SOURCE_ALPHA) ||
           update_flag.contains(UpdateFlags::UPDATE_SOURCE_FLAG))
         update_color_instance_buffer(sound_sources);

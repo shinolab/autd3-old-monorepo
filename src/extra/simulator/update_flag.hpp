@@ -28,7 +28,6 @@ class UpdateFlags final {
     UPDATE_SLICE_SIZE = 1 << 4,
     UPDATE_SOURCE_ALPHA = 1 << 5,
     UPDATE_SOURCE_FLAG = 1 << 6,
-    INIT_SOURCE = 1 << 7,
   };
 
   UpdateFlags() = default;
