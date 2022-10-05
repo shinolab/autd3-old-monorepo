@@ -27,7 +27,7 @@ namespace autd3::extra::simulator {
 class SimulatorImpl final : public Simulator {
  public:
   SimulatorImpl(const int32_t width, const int32_t height, const bool vsync, std::string shader, std::string texture, std::string font,
-                const size_t gpu_idx) noexcept
+                const size_t gpu_idx, std::function<void()> callback) noexcept
       : _width(width),
         _height(height),
         _vsync(vsync),
@@ -35,6 +35,7 @@ class SimulatorImpl final : public Simulator {
         _texture(std::move(texture)),
         _font(std::move(font)),
         _gpu_idx(gpu_idx),
+        _callback(std::move(callback)),
         _sources(std::make_unique<SoundSources>()) {}
   ~SimulatorImpl() override = default;
   SimulatorImpl(const SimulatorImpl& v) noexcept = delete;
@@ -156,6 +157,8 @@ class SimulatorImpl final : public Simulator {
       context->device().waitIdle();
       VulkanImGui::cleanup();
       renderer->cleanup();
+
+      if (_callback != nullptr) _callback();
     });
   }
 
