@@ -1,0 +1,69 @@
+/*
+ * File: field_complex.comp
+ * Project: shaders
+ * Created Date: 05/10/2022
+ * Author: Shun Suzuki
+ * -----
+ * Last Modified: 05/10/2022
+ * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+ * -----
+ * Copyright (c) 2022 Shun Suzuki. All rights reserved.
+ * 
+ */
+
+layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+
+layout(set = 0, binding = 0) buffer Data {
+    vec4 data[];
+} data;
+
+layout(set = 1, binding = 0) uniform Config {
+    uint source_num;
+    float _wave_num;
+    float color_scale;
+    uint width;
+    uint height;
+    uint pixel_size;
+    uint _dummy_0;
+    uint _dummy_1;
+    mat4 world;
+} config;
+
+layout(set = 2, binding = 0) buffer SourcePos {
+    vec4 pos[];
+} source_pos;
+
+layout(set = 3, binding = 0) buffer SourceAmp {
+    vec4 drive[];
+} source_drive;
+
+layout(set = 4, binding = 0) uniform sampler1D color_map;
+
+const float PI = 3.1415926535897932384626433832795;
+
+vec4 coloring(float t)
+{
+  return texture(color_map, clamp(t, 0.0, 1.0));
+}
+
+#define MAIN_FROM_COMPLEX_VALUE(expr) \
+void main() { \
+    if(gl_GlobalInvocationID.x >= config.width || gl_GlobalInvocationID.y >= config.height) return; \
+    float x = (gl_GlobalInvocationID.x - config.width / 2.0) * config.pixel_size; \
+    float y = (gl_GlobalInvocationID.y - config.height / 2.0) * config.pixel_size; \
+    vec3 point = vec3(config.world * vec4(x, y, 0.0, 1.0)); \
+    float re = 0.0; \
+    float im = 0.0; \
+    for(uint idx = 0; idx < 65536; idx++){ \
+        if(idx >= config.source_num) break; \
+        vec3 tp = vec3(source_pos.pos[idx]); \
+        float r = length(point - tp); \
+        float p = -source_drive.drive[idx].y - source_drive.drive[idx].w * r; \
+        float amp = source_drive.drive[idx].z * source_drive.drive[idx].x / r; \
+        re += amp * cos(p); \
+        im += amp * sin(p); \
+    } \
+    float c = expr; \
+    vec4 write_color = coloring(c / config.color_scale); \
+    data.data[gl_GlobalInvocationID.x + config.width * gl_GlobalInvocationID.y] = write_color; \
+}

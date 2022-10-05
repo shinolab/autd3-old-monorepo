@@ -16,6 +16,7 @@
 #include <window_handler.hpp>
 
 #include "autd3/extra/firmware_emulator/cpu/emulator.hpp"
+#include "field_compute.hpp"
 #include "slice_viewer.hpp"
 #include "sound_sources.hpp"
 #include "trans_viewer.hpp"
@@ -90,6 +91,7 @@ class SimulatorImpl final : public Simulator {
 
       const auto trans_viewer = std::make_unique<trans_viewer::TransViewer>(context.get(), renderer.get(), _shader, _texture);
       const auto slice_viewer = std::make_unique<slice_viewer::SliceViewer>(context.get(), renderer.get(), _shader);
+      const auto field_compute = std::make_unique<FieldCompute>(context.get(), _shader);
 
       // init
       {
@@ -98,6 +100,7 @@ class SimulatorImpl final : public Simulator {
         const auto& slice_model = imgui->get_slice_model();
         trans_viewer->init(view, proj, _sources);
         slice_viewer->init(slice_model, view, proj, imgui->slice_width, imgui->slice_height);
+        field_compute->init();
       }
 
       _is_running = true;
@@ -183,6 +186,7 @@ class SimulatorImpl final : public Simulator {
   std::string _texture;
   std::string _font;
   size_t _gpu_idx;
+  std::function<void()> _callback;
 
   bool _is_running = false;
   std::unique_ptr<std::thread> _th;
@@ -194,8 +198,8 @@ class SimulatorImpl final : public Simulator {
 };
 
 std::unique_ptr<Simulator> Simulator::create(int32_t width, int32_t height, bool vsync, std::string shader, std::string texture, std::string font,
-                                             size_t gpu_idx) {
-  return std::make_unique<SimulatorImpl>(width, height, vsync, std::move(shader), std::move(texture), std::move(font), gpu_idx);
+                                             size_t gpu_idx, std::function<void()> callback) {
+  return std::make_unique<SimulatorImpl>(width, height, vsync, std::move(shader), std::move(texture), std::move(font), gpu_idx, std::move(callback));
 }
 
 }  // namespace autd3::extra::simulator
