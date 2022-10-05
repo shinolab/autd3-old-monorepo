@@ -36,7 +36,7 @@ class Simulator {
    * @brief Create Bundle link
    */
   [[nodiscard]] static std::unique_ptr<Simulator> create(int32_t width, int32_t height, bool vsync, std::string shader, std::string texture,
-                                                         std::string font, size_t gpu_idx);
+                                                         std::string font, size_t gpu_idx, std::function<void()> callback);
 
   Simulator() noexcept = default;
   virtual ~Simulator() = default;

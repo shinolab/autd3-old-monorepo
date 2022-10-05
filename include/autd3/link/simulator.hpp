@@ -83,6 +83,14 @@ class Simulator {
     return *this;
   }
 
+  /**
+   * @brief Set callback called when window is closed
+   */
+  Simulator& exit_callback(std::function<void()> callback) {
+    _callback = std::move(callback);
+    return *this;
+  }
+
   [[nodiscard]] core::LinkPtr build() const;
 
  private:
@@ -93,6 +101,7 @@ class Simulator {
   std::string _texture;
   std::string _font;
   size_t _gpu_idx{0};
+  std::function<void()> _callback = []() { std::quick_exit(0); };
 };
 
 }  // namespace autd3::link
