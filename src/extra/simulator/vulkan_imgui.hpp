@@ -259,7 +259,7 @@ class VulkanImGui {
     return std::make_pair(view, proj);
   }
 
-  glm::vec4 background{};
+  glm::vec4 background{0.3f, 0.3f, 0.3f, 1.0f};
 
   glm::vec3 camera_pos{};
   glm::vec3 camera_rot{};
