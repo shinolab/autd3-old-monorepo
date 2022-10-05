@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/10/2022
+// Last Modified: 05/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -96,9 +96,10 @@ class VulkanImGui {
     ImGui_ImplVulkan_DestroyFontUploadObjects();
   }
 
-  void init(const uint32_t image_count, const VkRenderPass renderer_pass, const std::string& font_path, SoundSources& sources) {
-    const auto& pos = glm::vec3(sources.positions()[0]);
-    const auto& rot = sources.rotations()[0];
+  void init(const uint32_t image_count, const VkRenderPass renderer_pass, const std::string& font_path,
+            const std::unique_ptr<SoundSources>& sources) {
+    const auto& pos = glm::vec3(sources->positions()[0]);
+    const auto& rot = sources->rotations()[0];
 
     const auto rot_mat = mat4_cast(rot);
 
@@ -143,7 +144,9 @@ class VulkanImGui {
     set_font();
   }
 
-  void draw() {
+  UpdateFlags draw() {
+    auto flag = UpdateFlags(UpdateFlags::NONE);
+
     if (_update_font) {
       set_font();
       _update_font = false;
@@ -168,6 +171,7 @@ class VulkanImGui {
         camera_pos[0] += trans.x;
         camera_pos[1] += trans.y;
         camera_pos[2] += trans.z;
+        flag.set(UpdateFlags::UPDATE_CAMERA_POS);
       }
 
       if (!io.WantCaptureMouse) {
@@ -185,6 +189,7 @@ class VulkanImGui {
             camera_pos[1] += trans.y;
             camera_pos[2] += trans.z;
           }
+          flag.set(UpdateFlags::UPDATE_CAMERA_POS);
         }
       }
     }
@@ -194,15 +199,15 @@ class VulkanImGui {
     ImGui::Begin("Dear ImGui");
     if (ImGui::BeginTabBar("Settings")) {
       if (ImGui::BeginTabItem("Camera")) {
-        ImGui::DragFloat("Camera X", &camera_pos.x);
-        ImGui::DragFloat("Camera Y", &camera_pos.y);
-        ImGui::DragFloat("Camera Z", &camera_pos.z);
+        if (ImGui::DragFloat("Camera X", &camera_pos.x)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
+        if (ImGui::DragFloat("Camera Y", &camera_pos.y)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
+        if (ImGui::DragFloat("Camera Z", &camera_pos.z)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
         ImGui::Separator();
-        ImGui::DragFloat("Camera RX", &camera_rot.x, 1, -180, 180);
-        ImGui::DragFloat("Camera RY", &camera_rot.y, 1, -180, 180);
-        ImGui::DragFloat("Camera RZ", &camera_rot.z, 1, -180, 180);
+        if (ImGui::DragFloat("Camera RX", &camera_rot.x, 1, -180, 180)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
+        if (ImGui::DragFloat("Camera RY", &camera_rot.y, 1, -180, 180)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
+        if (ImGui::DragFloat("Camera RZ", &camera_rot.z, 1, -180, 180)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
         ImGui::Separator();
-        ImGui::DragFloat("FOV", &fov, 1, 0, 180);
+        if (ImGui::DragFloat("FOV", &fov, 1, 0, 180)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
         ImGui::Separator();
         ImGui::DragFloat("Camera move speed", &_cam_move_speed);
         ImGui::EndTabItem();
@@ -230,6 +235,8 @@ class VulkanImGui {
     ImGui::PopFont();
 
     ImGui::Render();
+
+    return flag;
   }
 
   static void render(const vk::CommandBuffer command_buffer) {

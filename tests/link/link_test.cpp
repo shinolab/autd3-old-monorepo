@@ -37,6 +37,6 @@ TEST(LinkRemoteTwinCATTest, basic) { auto link = autd3::link::RemoteTwinCAT("").
 #include "autd3/link/simulator.hpp"
 TEST(LinkSimulatorTest, basic) {
   const autd3::core::Geometry geometry;
-  const auto link = autd3::link::Simulator().port(10).build();
+  const auto link = autd3::link::Simulator().build();
 }
 #endif
