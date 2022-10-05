@@ -17,8 +17,8 @@
 #include <utility>
 #include <vector>
 
+#include "color.hpp"
 #include "shader.hpp"
-#include "sound_sources.hpp"
 #include "update_flag.hpp"
 #include "vulkan_renderer.hpp"
 
@@ -78,8 +78,8 @@ class SliceViewer {
     command_buffer.drawIndexed(6, 1, 0, 0, 0);
   }
 
-  void update(const glm::mat4 model, const glm::mat4 view, const glm::mat4 proj, const std::unique_ptr<SoundSources>& sound_sources,
-              const uint32_t width, const uint32_t height, const UpdateFlags update_flag) {
+  void update(const glm::mat4 model, const glm::mat4 view, const glm::mat4 proj, const uint32_t width, const uint32_t height,
+              const UpdateFlags update_flag) {
     if (update_flag.contains(UpdateFlags::UPDATE_CAMERA_POS) || update_flag.contains(UpdateFlags::UPDATE_SLICE_POS))
       update_mvp_objects(model, view, proj);
 

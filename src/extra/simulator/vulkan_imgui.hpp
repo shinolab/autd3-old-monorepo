@@ -17,6 +17,8 @@
 
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include <limits>
+#include <memory>
 #include <string>
 #include <transform.hpp>
 #include <utility>
