@@ -101,7 +101,7 @@ class SimulatorImpl final : public Simulator {
         const auto& slice_model = imgui->get_slice_model();
         trans_viewer->init(view, proj, _sources);
         slice_viewer->init(slice_model, view, proj, imgui->slice_width, imgui->slice_height);
-        field_compute->init();
+        field_compute->init(imgui->slice_alpha);
       }
 
       _is_running = true;

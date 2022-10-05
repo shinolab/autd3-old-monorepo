@@ -57,8 +57,7 @@ class SimulatorImpl final : public core::Link {
   std::unique_ptr<extra::simulator::Simulator> _simulator;
 };
 core::LinkPtr Simulator::build() const {
-  core::LinkPtr link = std::make_unique<SimulatorImpl>(_width, _height, _vsync, std::move(_shader), std::move(_texture), std::move(_font), _gpu_idx,
-                                                       std::move(_callback));
+  core::LinkPtr link = std::make_unique<SimulatorImpl>(_width, _height, _vsync, _shader, _texture, _font, _gpu_idx, _callback);
   return link;
 }
 
