@@ -22,21 +22,15 @@
 #include "trans_viewer.hpp"
 #include "vulkan_renderer.hpp"
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
 namespace autd3::extra::simulator {
 
 class SimulatorImpl final : public Simulator {
  public:
-  SimulatorImpl(const int32_t width, const int32_t height, const bool vsync, std::string shader, std::string texture, std::string font,
-                const size_t gpu_idx, std::function<void()> callback) noexcept
-      : _width(width),
-        _height(height),
-        _vsync(vsync),
-        _shader(std::move(shader)),
-        _texture(std::move(texture)),
-        _font(std::move(font)),
-        _gpu_idx(gpu_idx),
-        _callback(std::move(callback)),
-        _sources(std::make_unique<SoundSources>()) {}
+  SimulatorImpl(Settings setting, std::function<void(Settings)> callback) noexcept
+      : _settings(std::move(setting)), _callback(std::move(callback)), _sources(std::make_unique<SoundSources>()) {}
   ~SimulatorImpl() override = default;
   SimulatorImpl(const SimulatorImpl& v) noexcept = delete;
   SimulatorImpl& operator=(const SimulatorImpl& obj) = delete;
@@ -63,11 +57,11 @@ class SimulatorImpl final : public Simulator {
     }
 
     _th = std::make_unique<std::thread>([this] {
-      const auto window = std::make_unique<helper::WindowHandler>(_width, _height);
-      const auto context = std::make_unique<helper::VulkanContext>(_gpu_idx, true);
+      const auto window = std::make_unique<helper::WindowHandler>(_settings.window_width, _settings.window_height);
+      const auto context = std::make_unique<helper::VulkanContext>(_settings.gpu_idx, true);
 
       const auto imgui = std::make_unique<VulkanImGui>(window.get(), context.get());
-      const auto renderer = std::make_unique<VulkanRenderer>(context.get(), window.get(), imgui.get(), _vsync);
+      const auto renderer = std::make_unique<VulkanRenderer>(context.get(), window.get(), imgui.get(), _settings.vsync);
 
       window->init("AUTD3 Simulator", renderer.get(), VulkanRenderer::resize_callback, VulkanRenderer::pos_callback);
       context->init_vulkan("AUTD3 Simulator", *window);
@@ -90,17 +84,15 @@ class SimulatorImpl final : public Simulator {
       renderer->create_command_buffers();
       renderer->create_sync_objects();
 
-      const auto trans_viewer = std::make_unique<trans_viewer::TransViewer>(context.get(), renderer.get(), _shader, _texture);
-      const auto slice_viewer = std::make_unique<slice_viewer::SliceViewer>(context.get(), renderer.get(), _shader);
-      const auto field_compute = std::make_unique<FieldCompute>(context.get(), renderer.get(), _shader);
+      const auto trans_viewer = std::make_unique<trans_viewer::TransViewer>(context.get(), renderer.get());
+      const auto slice_viewer = std::make_unique<slice_viewer::SliceViewer>(context.get(), renderer.get());
+      const auto field_compute = std::make_unique<FieldCompute>(context.get(), renderer.get());
 
       // init
       {
-        imgui->init(static_cast<uint32_t>(renderer->frames_in_flight()), renderer->render_pass(), _font, _sources);
-        const auto& [view, proj] = imgui->get_view_proj(static_cast<float>(renderer->extent().width) / static_cast<float>(renderer->extent().height));
-        const auto& slice_model = imgui->get_slice_model();
-        trans_viewer->init(view, proj, _sources);
-        slice_viewer->init(slice_model, view, proj, imgui->slice_width, imgui->slice_height);
+        imgui->init(static_cast<uint32_t>(renderer->frames_in_flight()), renderer->render_pass(), _settings, _sources);
+        trans_viewer->init(_sources);
+        slice_viewer->init(imgui->slice_width, imgui->slice_height, imgui->pixel_size);
         field_compute->init(_sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size());
       }
 
@@ -112,7 +104,7 @@ class SimulatorImpl final : public Simulator {
         const bool is_stm_mode = std::any_of(_cpus.begin(), _cpus.end(), [](const auto& cpu) { return cpu.fpga().is_stm_mode(); });
         imgui->is_stm_mode = is_stm_mode;
         if (is_stm_mode) imgui->stm_size = static_cast<int32_t>(_cpus[0].fpga().stm_cycle());
-        auto update_flags = imgui->draw();
+        auto update_flags = imgui->draw(_cpus, _sources);
         if (_data_updated.load()) {
           const auto idx = is_stm_mode ? imgui->stm_idx : 0;
           size_t i = 0;
@@ -143,35 +135,67 @@ class SimulatorImpl final : public Simulator {
 
         const auto& [view, proj] = imgui->get_view_proj(static_cast<float>(renderer->extent().width) / static_cast<float>(renderer->extent().height));
         const auto& slice_model = imgui->get_slice_model();
-        slice_viewer->update(slice_model, view, proj, imgui->slice_width, imgui->slice_height, update_flags);
-        trans_viewer->update(view, proj, _sources, update_flags);
-        field_compute->update(_sources, imgui->slice_alpha, update_flags);
+        slice_viewer->update(imgui->slice_width, imgui->slice_height, imgui->pixel_size, update_flags);
+        trans_viewer->update(_sources, update_flags);
+        field_compute->update(_sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size(), update_flags);
+
+        const Config config{static_cast<uint32_t>(_sources->size()),
+                            0,
+                            imgui->color_scale,
+                            static_cast<uint32_t>(imgui->slice_width / imgui->pixel_size),
+                            static_cast<uint32_t>(imgui->slice_height / imgui->pixel_size),
+                            static_cast<uint32_t>(imgui->pixel_size),
+                            0,
+                            0,
+                            slice_model};
+        field_compute->compute(config);
+
+        if (update_flags.contains(UpdateFlags::SAVE_IMAGE)) {
+          const auto& image = slice_viewer->images()[renderer->current_frame()].get();
+          const auto image_size = slice_viewer->image_size();
+
+          auto [staging_buffer, staging_buffer_memory] =
+              context->create_buffer(image_size, vk::BufferUsageFlagBits::eTransferDst,
+                                     vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+          context->copy_buffer(image, staging_buffer.get(), image_size);
+          void* data;
+          if (context->device().mapMemory(staging_buffer_memory.get(), 0, image_size, {}, &data) != vk::Result::eSuccess)
+            throw std::runtime_error("failed to map texture buffer.");
+          const auto* image_data = static_cast<float*>(data);
+          std::vector<uint8_t> pixels;
+          pixels.reserve(static_cast<size_t>(imgui->slice_width) * static_cast<size_t>(imgui->slice_height) * 4);
+          for (int32_t i = imgui->slice_height - 1; i >= 0; i--) {
+            for (int32_t j = 0; j < imgui->slice_width; j++) {
+              const auto idx = static_cast<size_t>(imgui->slice_width) * static_cast<size_t>(i) + static_cast<size_t>(j);
+              pixels.emplace_back(static_cast<uint8_t>(255.0f * image_data[4 * idx]));
+              pixels.emplace_back(static_cast<uint8_t>(255.0f * image_data[4 * idx + 1]));
+              pixels.emplace_back(static_cast<uint8_t>(255.0f * image_data[4 * idx + 2]));
+              pixels.emplace_back(static_cast<uint8_t>(255.0f * image_data[4 * idx + 3]));
+            }
+          }
+          stbi_write_png(imgui->save_path, imgui->slice_width, imgui->slice_height, 4, pixels.data(), imgui->slice_width * 4);
+          context->device().unmapMemory(staging_buffer_memory.get());
+        }
 
         const std::array background = {imgui->background.r, imgui->background.g, imgui->background.b, imgui->background.a};
         const auto& [command_buffer, image_index] = renderer->begin_frame(background);
 
-        slice_viewer->render(command_buffer);
-        trans_viewer->render(command_buffer);
+        slice_viewer->render(slice_model, view, proj, command_buffer);
+        trans_viewer->render(view, proj, command_buffer);
         VulkanImGui::render(command_buffer);
         renderer->end_frame(command_buffer, image_index);
-
-        Config config{(uint32_t)_sources->size(),
-                      0,
-                      imgui->color_scale,
-                      (uint32_t)imgui->slice_width,
-                      (uint32_t)imgui->slice_height,
-                      1,  // TODO
-                      0,
-                      0,
-                      slice_model};
-        field_compute->compute(config);
       }
 
       context->device().waitIdle();
       VulkanImGui::cleanup();
       renderer->cleanup();
 
-      if (_callback != nullptr) _callback();
+      imgui->save_settings(_settings);
+      const auto [window_width, window_height] = window->get_window_size();
+      _settings.window_width = window_width;
+      _settings.window_height = window_height;
+
+      if (_callback != nullptr) _callback(_settings);
     });
   }
 
@@ -195,14 +219,8 @@ class SimulatorImpl final : public Simulator {
   }
 
  private:
-  int32_t _width;
-  int32_t _height;
-  bool _vsync;
-  std::string _shader;
-  std::string _texture;
-  std::string _font;
-  size_t _gpu_idx;
-  std::function<void()> _callback;
+  Settings _settings;
+  std::function<void(Settings)> _callback;
 
   bool _is_running = false;
   std::unique_ptr<std::thread> _th;
@@ -213,9 +231,8 @@ class SimulatorImpl final : public Simulator {
   std::atomic<bool> _data_updated{false};
 };
 
-std::unique_ptr<Simulator> Simulator::create(int32_t width, int32_t height, bool vsync, std::string shader, std::string texture, std::string font,
-                                             size_t gpu_idx, std::function<void()> callback) {
-  return std::make_unique<SimulatorImpl>(width, height, vsync, std::move(shader), std::move(texture), std::move(font), gpu_idx, std::move(callback));
+std::unique_ptr<Simulator> Simulator::create(Settings setting, std::function<void(Settings)> callback) {
+  return std::make_unique<SimulatorImpl>(std::move(setting), std::move(callback));
 }
 
 }  // namespace autd3::extra::simulator

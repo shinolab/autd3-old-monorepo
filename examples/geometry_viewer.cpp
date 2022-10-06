@@ -3,7 +3,7 @@
 // Created Date: 28/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/10/2022
+// Last Modified: 06/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,7 +27,6 @@ int main() try {
       .window_size(800, 600)
       .vsync(true)
       .model(AUTD3_GEOMETRY_VIEWER_MODEL_PATH)
-      .shader(AUTD3_GEOMETRY_VIEWER_SHADER_PATH)
       .font(AUTD3_GEOMETRY_VIEWER_FONT_PATH)
       .view(autd.geometry());
 

@@ -3,7 +3,7 @@
 // Created Date: 28/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/10/2022
+// Last Modified: 06/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,7 +33,7 @@ void GeometryViewer::view(const core::Geometry& geometry) const {
   helper::VulkanContext context(_gpu_idx, true);
   VulkanHandler handle(&context);
   VulkanImGui imgui(&window, &context);
-  VulkanRenderer renderer(&context, &window, &handle, &imgui, _shader, _vsync);
+  VulkanRenderer renderer(&context, &window, &handle, &imgui, _vsync);
   const gltf::Model model(_model, geometries);
 
   window.init("Geometry Viewer", &renderer, VulkanRenderer::resize_callback, VulkanRenderer::pos_callback);

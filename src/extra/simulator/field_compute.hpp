@@ -13,15 +13,29 @@
 
 #include <algorithm>
 #include <filesystem>
-#include <string>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "shader.hpp"
 #include "sound_sources.hpp"
-#include "tinycolormap.hpp"
 #include "update_flag.hpp"
 #include "vulkan_renderer.hpp"
+
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 26451)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic push
+#endif
+#include "tinycolormap.hpp"
+#if _MSC_VER
+#pragma warning(pop)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic pop
+#endif
 
 namespace autd3::extra::simulator {
 
@@ -39,8 +53,7 @@ struct Config {
 
 class FieldCompute {
  public:
-  explicit FieldCompute(const helper::VulkanContext* context, const VulkanRenderer* renderer, std::string shader)
-      : _context(context), _renderer(renderer), _shader(std::move(shader)) {}
+  explicit FieldCompute(const helper::VulkanContext* context, const VulkanRenderer* renderer) : _context(context), _renderer(renderer) {}
   ~FieldCompute() = default;
   FieldCompute(const FieldCompute& v) = delete;
   FieldCompute& operator=(const FieldCompute& obj) = delete;
@@ -53,7 +66,6 @@ class FieldCompute {
 
     create_source_drive(sources);
     create_source_pos(sources);
-    create_config();
     create_color_map(slice_alpha);
 
     create_descriptor_sets(sources, image_buffers, image_size);
@@ -62,7 +74,10 @@ class FieldCompute {
     update_source_pos(sources);
   }
 
-  void update(const std::unique_ptr<SoundSources>& sources, const float slice_alpha, const UpdateFlags update_flags) {
+  void update(const std::unique_ptr<SoundSources>& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers,
+              const size_t image_size, const UpdateFlags update_flags) {
+    if (update_flags.contains(UpdateFlags::UPDATE_SLICE_SIZE)) create_descriptor_sets(sources, image_buffers, image_size);
+
     if (update_flags.contains(UpdateFlags::UPDATE_SOURCE_DRIVE) || update_flags.contains(UpdateFlags::UPDATE_SOURCE_FLAG))
       update_source_drive(sources);
 
@@ -72,25 +87,28 @@ class FieldCompute {
   void compute(const Config config) {
     const auto current_image = _renderer->current_frame();
 
-    update_config(config);
-
     auto command_buffer = _context->begin_single_time_commands();
 
     const std::array sets = {
-        _descriptor_sets_0[current_image].get(), _descriptor_sets_1[current_image].get(), _descriptor_sets_2[current_image].get(),
-        _descriptor_sets_3[current_image].get(), _descriptor_sets_4[current_image].get(),
+        _descriptor_sets_0[current_image].get(),
+        _descriptor_sets_1[current_image].get(),
+        _descriptor_sets_2[current_image].get(),
+        _descriptor_sets_3[current_image].get(),
     };
 
     command_buffer->bindPipeline(vk::PipelineBindPoint::eCompute, _pipeline.get());
     command_buffer->bindDescriptorSets(vk::PipelineBindPoint::eCompute, _layout.get(), 0, sets, nullptr);
-    command_buffer->dispatch((config.width / config.pixel_size - 1) / 32 + 1, (config.height / config.pixel_size - 1) / 32 + 1, 1);
+    command_buffer->pushConstants(_layout.get(), vk::ShaderStageFlagBits::eCompute, 0, sizeof(Config), &config);
+    command_buffer->dispatch((config.width - 1) / 32 + 1, (config.height - 1) / 32 + 1, 1);
 
     _context->end_single_time_commands(command_buffer);
   }
 
  private:
   void create_pipeline() {
-    const auto shader_code = helper::read_file(std::filesystem::path(_shader).append("field.comp.spv").string());
+    const std::vector<uint8_t> shader_code = {
+#include "field.comp.spv.txt"
+    };
     vk::UniqueShaderModule shader_module = helper::create_shader_module(_context->device(), shader_code);
 
     const vk::PipelineShaderStageCreateInfo shader_stage =
@@ -105,7 +123,7 @@ class FieldCompute {
 
     std::array bindings_1 = {vk::DescriptorSetLayoutBinding()
                                  .setBinding(0)
-                                 .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+                                 .setDescriptorType(vk::DescriptorType::eStorageBuffer)
                                  .setDescriptorCount(1)
                                  .setStageFlags(vk::ShaderStageFlagBits::eCompute)};
     _descriptor_set_layout_1 = _context->device().createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo().setBindings(bindings_1));
@@ -119,21 +137,17 @@ class FieldCompute {
 
     std::array bindings_3 = {vk::DescriptorSetLayoutBinding()
                                  .setBinding(0)
-                                 .setDescriptorType(vk::DescriptorType::eStorageBuffer)
+                                 .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
                                  .setDescriptorCount(1)
                                  .setStageFlags(vk::ShaderStageFlagBits::eCompute)};
     _descriptor_set_layout_3 = _context->device().createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo().setBindings(bindings_3));
 
-    std::array bindings_4 = {vk::DescriptorSetLayoutBinding()
-                                 .setBinding(0)
-                                 .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
-                                 .setDescriptorCount(1)
-                                 .setStageFlags(vk::ShaderStageFlagBits::eCompute)};
-    _descriptor_set_layout_4 = _context->device().createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo().setBindings(bindings_4));
-
+    const std::array push_constant_ranges = {
+        vk::PushConstantRange().setStageFlags(vk::ShaderStageFlagBits::eCompute).setSize(sizeof(Config)).setOffset(0)};
     const std::array layouts = {_descriptor_set_layout_0.get(), _descriptor_set_layout_1.get(), _descriptor_set_layout_2.get(),
-                                _descriptor_set_layout_3.get(), _descriptor_set_layout_4.get()};
-    const vk::PipelineLayoutCreateInfo pipeline_layout_info = vk::PipelineLayoutCreateInfo().setSetLayouts(layouts);
+                                _descriptor_set_layout_3.get()};
+    const vk::PipelineLayoutCreateInfo pipeline_layout_info =
+        vk::PipelineLayoutCreateInfo().setSetLayouts(layouts).setPushConstantRanges(push_constant_ranges);
 
     _layout = _context->device().createPipelineLayoutUnique(pipeline_layout_info);
 
@@ -172,30 +186,10 @@ class FieldCompute {
           vk::DescriptorSetAllocateInfo().setDescriptorPool(_context->descriptor_pool()).setSetLayouts(layouts));
       for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
         const vk::DescriptorBufferInfo buffer_info =
-            vk::DescriptorBufferInfo().setBuffer(_config_buffers[i].get()).setOffset(0).setRange(sizeof(Config));
-        std::array descriptor_writes{
-            vk::WriteDescriptorSet()
-                .setDstSet(_descriptor_sets_1[i].get())
-                .setDstBinding(0)
-                .setDstArrayElement(0)
-                .setDescriptorCount(1)
-                .setDescriptorType(vk::DescriptorType::eUniformBuffer)
-                .setBufferInfo(buffer_info),
-        };
-        _context->device().updateDescriptorSets(descriptor_writes, {});
-      }
-    }
-
-    {
-      const std::vector layouts(_renderer->frames_in_flight(), _descriptor_set_layout_2.get());
-      _descriptor_sets_2 = _context->device().allocateDescriptorSetsUnique(
-          vk::DescriptorSetAllocateInfo().setDescriptorPool(_context->descriptor_pool()).setSetLayouts(layouts));
-      for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
-        const vk::DescriptorBufferInfo buffer_info =
             vk::DescriptorBufferInfo().setBuffer(_pos_buffers[i].get()).setOffset(0).setRange(sizeof(glm::vec4) * sources->size());
         std::array descriptor_writes{
             vk::WriteDescriptorSet()
-                .setDstSet(_descriptor_sets_2[i].get())
+                .setDstSet(_descriptor_sets_1[i].get())
                 .setDstBinding(0)
                 .setDstArrayElement(0)
                 .setDescriptorCount(1)
@@ -206,15 +200,15 @@ class FieldCompute {
       }
     }
     {
-      const std::vector layouts(_renderer->frames_in_flight(), _descriptor_set_layout_3.get());
-      _descriptor_sets_3 = _context->device().allocateDescriptorSetsUnique(
+      const std::vector layouts(_renderer->frames_in_flight(), _descriptor_set_layout_2.get());
+      _descriptor_sets_2 = _context->device().allocateDescriptorSetsUnique(
           vk::DescriptorSetAllocateInfo().setDescriptorPool(_context->descriptor_pool()).setSetLayouts(layouts));
       for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
         const vk::DescriptorBufferInfo buffer_info =
             vk::DescriptorBufferInfo().setBuffer(_drive_buffers[i].get()).setOffset(0).setRange(sizeof(Drive) * sources->size());
         std::array descriptor_writes{
             vk::WriteDescriptorSet()
-                .setDstSet(_descriptor_sets_3[i].get())
+                .setDstSet(_descriptor_sets_2[i].get())
                 .setDstBinding(0)
                 .setDstArrayElement(0)
                 .setDescriptorCount(1)
@@ -293,8 +287,8 @@ class FieldCompute {
     }
 
     {
-      const std::vector layouts(_renderer->frames_in_flight(), _descriptor_set_layout_4.get());
-      _descriptor_sets_4 = _context->device().allocateDescriptorSetsUnique(
+      const std::vector layouts(_renderer->frames_in_flight(), _descriptor_set_layout_3.get());
+      _descriptor_sets_3 = _context->device().allocateDescriptorSetsUnique(
           vk::DescriptorSetAllocateInfo().setDescriptorPool(_context->descriptor_pool()).setSetLayouts(layouts));
       for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
         const vk::DescriptorImageInfo image_info = vk::DescriptorImageInfo()
@@ -303,7 +297,7 @@ class FieldCompute {
                                                        .setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
         std::array descriptor_writes{
             vk::WriteDescriptorSet()
-                .setDstSet(_descriptor_sets_4[i].get())
+                .setDstSet(_descriptor_sets_3[i].get())
                 .setDstBinding(0)
                 .setDstArrayElement(0)
                 .setDescriptorCount(1)
@@ -337,17 +331,6 @@ class FieldCompute {
     }
   }
 
-  void create_config() {
-    _config_buffers.resize(_renderer->frames_in_flight());
-    _config_buffers_memory.resize(_renderer->frames_in_flight());
-    for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
-      auto [buf, mem] = _context->create_buffer(sizeof(Config), vk::BufferUsageFlagBits::eUniformBuffer,
-                                                vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-      _config_buffers[i] = std::move(buf);
-      _config_buffers_memory[i] = std::move(mem);
-    }
-  }
-
   void update_source_drive(const std::unique_ptr<SoundSources>& sources) {
     const auto& drives = sources->drives();
     void* data;
@@ -370,19 +353,8 @@ class FieldCompute {
     }
   }
 
-  void update_config(const Config config) {
-    void* data;
-    for (auto& memory : _config_buffers_memory) {
-      if (_context->device().mapMemory(memory.get(), 0, sizeof(Config), {}, &data) != vk::Result::eSuccess)
-        throw std::runtime_error("failed to map uniform buffer memory");
-      memcpy(data, &config, sizeof(Config));
-      _context->device().unmapMemory(memory.get());
-    }
-  }
-
   const helper::VulkanContext* _context;
   const VulkanRenderer* _renderer;
-  std::string _shader;
 
   vk::UniqueImage _texture_image;
   vk::UniqueDeviceMemory _texture_image_memory;
@@ -393,8 +365,6 @@ class FieldCompute {
   std::vector<vk::UniqueDeviceMemory> _drive_buffers_memory;
   std::vector<vk::UniqueBuffer> _pos_buffers;
   std::vector<vk::UniqueDeviceMemory> _pos_buffers_memory;
-  std::vector<vk::UniqueBuffer> _config_buffers;
-  std::vector<vk::UniqueDeviceMemory> _config_buffers_memory;
 
   vk::UniquePipelineLayout _layout;
   vk::UniquePipeline _pipeline;
@@ -403,12 +373,10 @@ class FieldCompute {
   std::vector<vk::UniqueDescriptorSet> _descriptor_sets_1;
   std::vector<vk::UniqueDescriptorSet> _descriptor_sets_2;
   std::vector<vk::UniqueDescriptorSet> _descriptor_sets_3;
-  std::vector<vk::UniqueDescriptorSet> _descriptor_sets_4;
   vk::UniqueDescriptorSetLayout _descriptor_set_layout_0;
   vk::UniqueDescriptorSetLayout _descriptor_set_layout_1;
   vk::UniqueDescriptorSetLayout _descriptor_set_layout_2;
   vk::UniqueDescriptorSetLayout _descriptor_set_layout_3;
-  vk::UniqueDescriptorSetLayout _descriptor_set_layout_4;
 };
 
 }  // namespace autd3::extra::simulator

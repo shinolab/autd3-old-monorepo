@@ -3,7 +3,7 @@
 // Created Date: 05/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/10/2022
+// Last Modified: 06/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,6 +28,7 @@ class UpdateFlags final {
     UPDATE_SLICE_SIZE = 1 << 4,
     UPDATE_SOURCE_ALPHA = 1 << 5,
     UPDATE_SOURCE_FLAG = 1 << 6,
+    SAVE_IMAGE = 1 << 7,
   };
 
   UpdateFlags() = default;

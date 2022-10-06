@@ -3,7 +3,7 @@
 // Created Date: 29/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/10/2022
+// Last Modified: 06/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -74,6 +74,12 @@ class WindowHandler {
       }
     }
     return current_monitor;
+  }
+
+  [[nodiscard]] std::pair<int32_t, int32_t> get_window_size() {
+    int window_width, window_height;
+    glfwGetWindowSize(_window, &window_width, &window_height);
+    return std::make_pair(window_width, window_height);
   }
 
   [[nodiscard]] GLFWwindow* window() const { return _window; }

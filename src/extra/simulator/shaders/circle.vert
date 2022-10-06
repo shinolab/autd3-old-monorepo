@@ -4,7 +4,7 @@
  * Created Date: 03/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/10/2022
+ * Last Modified: 06/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,14 +21,13 @@ layout(location = 6) in vec4 color;
 layout(location = 0) out vec2 o_tex_coords;
 layout(location = 1) out vec4 o_color;
 
-layout(set = 0, binding = 0) uniform Data {
+layout(push_constant) uniform PushConsts {
     mat4 view;
     mat4 proj;
-} u_view_proj;
+} primitive;
 
 void main() {
     o_tex_coords = tex_coords;
     o_color = color;
-    mat4 worldview = u_view_proj.view * model;
-    gl_Position = u_view_proj.proj * worldview * position;
+    gl_Position = primitive.proj * primitive.view * model * position;
 }
