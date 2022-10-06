@@ -3,7 +3,7 @@
 // Created Date: 27/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/09/2022
+// Last Modified: 03/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,106 +23,148 @@
 #include <vector>
 
 #include "model.hpp"
-#include "vulkan_handler.hpp"
+#include "transform.hpp"
 
 namespace autd3::extra::geometry_viewer {
 
 class VulkanImGui {
  public:
-  VulkanImGui() noexcept = default;
+  explicit VulkanImGui(const helper::WindowHandler* window, const helper::VulkanContext* context) noexcept : _window(window), _context(context) {}
   ~VulkanImGui() = default;
   VulkanImGui(const VulkanImGui& v) = delete;
   VulkanImGui& operator=(const VulkanImGui& obj) = delete;
   VulkanImGui(VulkanImGui&& obj) = default;
   VulkanImGui& operator=(VulkanImGui&& obj) = default;
 
-  void init(const WindowHandler& window, const VulkanHandler& handler, const uint32_t image_count, const VkRenderPass renderer_pass,
-            std::vector<gltf::Geometry> geometries, const std::string& font_path) {
+  void set_font() const {
+    ImGuiIO& io = ImGui::GetIO();
+
+    const auto [fst, snd] = _window->scale();
+    const auto scale = (fst + snd) / 2.0f;
+
+    _context->device().waitIdle();
+
+    ImFont* font;
+    if (!_font_path.empty()) {
+      font = io.Fonts->AddFontFromFileTTF(_font_path.c_str(), _font_size * scale);
+      io.FontGlobalScale = 1.0f / scale;
+    } else
+      font = io.Fonts->AddFontDefault();
+    io.FontDefault = font;
+
+    // To destroy old texture image and image view, and to free memory
+    struct ImGuiImplVulkanHFrameRenderBuffers;
+    struct ImGuiImplVulkanHWindowRenderBuffers {
+      uint32_t index;
+      uint32_t count;
+      ImGuiImplVulkanHFrameRenderBuffers* frame_render_buffers;
+    };
+    struct ImGuiImplVulkanData {
+      ImGui_ImplVulkan_InitInfo vulkan_init_info;
+      VkRenderPass render_pass;
+      VkDeviceSize buffer_memory_alignment;
+      VkPipelineCreateFlags pipeline_create_flags;
+      VkDescriptorSetLayout descriptor_set_layout;
+      VkPipelineLayout pipeline_layout;
+      VkPipeline pipeline;
+      uint32_t subpass;
+      VkShaderModule shader_module_vert;
+      VkShaderModule shader_module_frag;
+      VkSampler font_sampler;
+      VkDeviceMemory font_memory;
+      VkImage font_image;
+      VkImageView font_view;
+      VkDescriptorSet font_descriptor_set;
+      VkDeviceMemory upload_buffer_memory;
+      VkBuffer upload_buffer;
+      ImGuiImplVulkanHWindowRenderBuffers main_window_render_buffers;
+    };
+    if (const auto* bd = static_cast<ImGuiImplVulkanData*>(ImGui::GetIO().BackendRendererUserData); bd != nullptr) {
+      if (bd->font_image != nullptr) _context->device().destroyImage(bd->font_image);
+      if (bd->font_view != nullptr) _context->device().destroyImageView(bd->font_view);
+      if (bd->font_memory != nullptr) _context->device().freeMemory(bd->font_memory);
+    }
+
+    _context->device().resetCommandPool(_context->command_pool());
+    const vk::CommandBufferAllocateInfo alloc_info(_context->command_pool(), vk::CommandBufferLevel::ePrimary, 1);
+    auto command_buffers = _context->device().allocateCommandBuffersUnique(alloc_info);
+    vk::UniqueCommandBuffer command_buffer = std::move(command_buffers[0]);
+    const vk::CommandBufferBeginInfo begin_info(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+    command_buffer->begin(begin_info);
+    ImGui_ImplVulkan_CreateFontsTexture(command_buffer.get());
+    vk::SubmitInfo end_info(0, nullptr, nullptr, 1, &command_buffer.get(), 0, nullptr);
+    command_buffer->end();
+    _context->graphics_queue().submit(end_info);
+    _context->device().waitIdle();
+    ImGui_ImplVulkan_DestroyFontUploadObjects();
+  }
+
+  void init(const uint32_t image_count, const VkRenderPass renderer_pass, std::vector<gltf::Geometry> geometries, const std::string& font_path) {
     _geometries = std::move(geometries);
 
     const auto& [pos, rot] = _geometries[0];
-    const auto rot_mat = mat4_cast(glm::quat(rot.w, rot.x, rot.z, -rot.y));
+
+    const auto rot_mat = mat4_cast(rot);
 
     const auto right = glm::vec3(rot_mat * glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
     const auto up = glm::vec3(rot_mat * glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
     const auto forward = glm::vec3(rot_mat * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
-    const auto center = pos + right * 192.0f / 2.0f + up * 151.4f / 2.0f;
-    const auto center_v = glm::vec3(center[0], center[2], -center[1]) / 1000.0f;
 
-    const auto cam_pos = pos + right * 192.0f / 2.0f - up * 151.4f + forward * 300.0f;
-    const auto cam_pos_v = glm::vec3(cam_pos[0], cam_pos[2], -cam_pos[1]) / 1000.0f;
-    const auto cam_view = lookAt(cam_pos_v, center_v, up);
+    const auto center = helper::to_gl_pos(pos + right * 192.0f / 2.0f + up * 151.4f / 2.0f);
 
-    const auto r = glm::vec3(cam_view[0].x, cam_view[0].y, cam_view[0].z);
-    const auto u = glm::vec3(cam_view[1].x, cam_view[1].y, cam_view[1].z);
-    const auto f = glm::vec3(cam_view[2].x, cam_view[2].y, cam_view[2].z);
-    const auto angles = degrees(
-        eulerAngles(quat_cast(transpose(glm::mat4(glm::vec4(r, 0.0f), glm::vec4(u, 0.0f), glm::vec4(f, 0.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f))))));
+    const auto cam_pos_autd = pos + right * 192.0f / 2.0f - up * 151.4f + forward * 300.0f;
+    const auto cam_pos = helper::to_gl_pos(cam_pos_autd);
 
-    camera_pos = {cam_pos[0], cam_pos[1], cam_pos[2]};
-    camera_rot = {angles[0], -angles[2], angles[1]};
-    light_pos = {cam_pos[0], cam_pos[1], cam_pos[2]};
+    const auto cam_view = lookAt(cam_pos, center, forward);
+
+    const auto angles = degrees(eulerAngles(quat_cast(transpose(cam_view))));
+
+    camera_pos = cam_pos_autd;
+    camera_rot = angles;
+    light_pos = cam_pos_autd;
 
     show = std::make_unique<bool[]>(_geometries.size());
     std::fill_n(show.get(), _geometries.size(), true);
 
-    const auto [fst, snd] = window.scale();
-    const auto factor = (fst + snd) / 2.0f;
-
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-
-    if (!font_path.empty()) {
-      io.Fonts->AddFontFromFileTTF(font_path.c_str(), 16.0f * factor);
-      io.FontGlobalScale = 1.0f / factor;
-    } else
-      io.Fonts->AddFontDefault();
 
     ImGui::StyleColorsDark();
+    const auto [graphics_family, present_family] = _context->find_queue_families(_context->physical_device());
 
-    const auto [graphics_family, present_family] = handler.find_queue_families(handler.physical_device());
-    ImGui_ImplGlfw_InitForVulkan(window.window(), true);
-    ImGui_ImplVulkan_InitInfo init_info{handler.instance(),
-                                        handler.physical_device(),
-                                        handler.device(),
+    ImGui_ImplGlfw_InitForVulkan(_window->window(), true);
+    ImGui_ImplVulkan_InitInfo init_info{_context->instance(),
+                                        _context->physical_device(),
+                                        _context->device(),
                                         graphics_family.value(),
-                                        handler.graphics_queue(),
+                                        _context->graphics_queue(),
                                         nullptr,
-                                        handler.descriptor_pool(),
+                                        _context->descriptor_pool(),
                                         0,
                                         image_count,
                                         image_count,
-                                        static_cast<VkSampleCountFlagBits>(handler.msaa_samples()),
+                                        static_cast<VkSampleCountFlagBits>(_context->msaa_samples()),
                                         nullptr,
                                         check_vk_result};
     ImGui_ImplVulkan_Init(&init_info, renderer_pass);
 
-    {
-      handler.device().resetCommandPool(handler.command_pool());
-      const vk::CommandBufferAllocateInfo alloc_info(handler.command_pool(), vk::CommandBufferLevel::ePrimary, 1);
-      auto command_buffers = handler.device().allocateCommandBuffersUnique(alloc_info);
-      vk::UniqueCommandBuffer command_buffer = std::move(command_buffers[0]);
-      const vk::CommandBufferBeginInfo begin_info(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
-      command_buffer->begin(begin_info);
-      ImGui_ImplVulkan_CreateFontsTexture(command_buffer.get());
-      vk::SubmitInfo end_info(0, nullptr, nullptr, 1, &command_buffer.get(), 0, nullptr);
-      command_buffer->end();
-      handler.graphics_queue().submit(end_info);
-      handler.device().waitIdle();
-      ImGui_ImplVulkan_DestroyFontUploadObjects();
-    }
+    _font_path = font_path;
+    set_font();
   }
 
-  void draw(ImFont* font) {
+  void draw() {
+    if (_update_font) {
+      set_font();
+      _update_font = false;
+    }
+
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
+    const auto& io = ImGui::GetIO();
     {
-      const auto& io = ImGui::GetIO();
-
-      const auto rot = glm::quat(radians(glm::vec3(camera_rot[0], camera_rot[2], -camera_rot[1])));
+      const auto rot = glm::quat(radians(camera_rot));
       const auto model = mat4_cast(rot);
 
       const auto r = make_vec3(model[0]);
@@ -133,8 +175,8 @@ class VulkanImGui {
         const auto mouse_wheel = io.MouseWheel;
         const auto trans = -f * mouse_wheel * _cam_move_speed;
         camera_pos[0] += trans.x;
-        camera_pos[1] -= trans.z;
-        camera_pos[2] += trans.y;
+        camera_pos[1] += trans.y;
+        camera_pos[2] += trans.z;
       }
 
       if (!io.WantCaptureMouse) {
@@ -142,44 +184,32 @@ class VulkanImGui {
         if (io.MouseDown[0]) {
           if (io.KeyShift) {
             const auto delta = glm::vec2(mouse_delta.x, mouse_delta.y) * _cam_move_speed / 3000.0f;
-            const auto trans_x = -r * delta.x;
-            const auto trans_y = u * delta.y;
-            const auto to = trans_x + trans_y + f;
-
-            const auto rotation = quaternion_to(f, to);
-
-            const auto cam_r = rotation * r;
-            const auto cam_u = rotation * u;
-            const auto cam_f = rotation * f;
-
-            const auto angles = degrees(eulerAngles(
-                quat_cast(glm::mat4(glm::vec4(cam_r, 0.0f), glm::vec4(cam_u, 0.0f), glm::vec4(cam_f, 0.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)))));
-            camera_rot = {angles[0], -angles[2], angles[1]};
+            const auto to = -r * delta.x + u * delta.y + f;
+            const auto rotation = helper::quaternion_to(f, to);
+            camera_rot = degrees(eulerAngles(rotation * rot));
           } else {
             const auto delta = glm::vec2(mouse_delta.x, mouse_delta.y) * _cam_move_speed / 10.0f;
-            const auto trans_x = -r * delta.x;
-            const auto trans_y = u * delta.y;
-            const auto trans = trans_x + trans_y;
+            const auto trans = -r * delta.x + u * delta.y;
             camera_pos[0] += trans.x;
-            camera_pos[1] -= trans.z;
-            camera_pos[2] += trans.y;
+            camera_pos[1] += trans.y;
+            camera_pos[2] += trans.z;
           }
         }
       }
     }
 
-    ImGui::PushFont(font);
+    ImGui::PushFont(io.FontDefault);
 
     ImGui::Begin("Dear ImGui");
     if (ImGui::BeginTabBar("Settings")) {
       if (ImGui::BeginTabItem("Camera")) {
-        ImGui::DragFloat("Camera X", camera_pos.data());
-        ImGui::DragFloat("Camera Y", camera_pos.data() + 1);
-        ImGui::DragFloat("Camera Z", camera_pos.data() + 2);
+        ImGui::DragFloat("Camera X", &camera_pos.x);
+        ImGui::DragFloat("Camera Y", &camera_pos.y);
+        ImGui::DragFloat("Camera Z", &camera_pos.z);
         ImGui::Separator();
-        ImGui::DragFloat("Camera RX", camera_rot.data(), 1, -180, 180);
-        ImGui::DragFloat("Camera RY", camera_rot.data() + 1, 1, -180, 180);
-        ImGui::DragFloat("Camera RZ", camera_rot.data() + 2, 1, -180, 180);
+        ImGui::DragFloat("Camera RX", &camera_rot.x, 1, -180, 180);
+        ImGui::DragFloat("Camera RY", &camera_rot.y, 1, -180, 180);
+        ImGui::DragFloat("Camera RZ", &camera_rot.z, 1, -180, 180);
         ImGui::Separator();
         ImGui::DragFloat("FOV", &fov, 1, 0, 180);
         ImGui::Separator();
@@ -188,9 +218,9 @@ class VulkanImGui {
       }
 
       if (ImGui::BeginTabItem("Lighting")) {
-        ImGui::DragFloat("Light X", light_pos.data());
-        ImGui::DragFloat("Light Y", light_pos.data() + 1);
-        ImGui::DragFloat("Light Z", light_pos.data() + 2);
+        ImGui::DragFloat("Light X", &light_pos.x);
+        ImGui::DragFloat("Light Y", &light_pos.y);
+        ImGui::DragFloat("Light Z", &light_pos.z);
         ImGui::Separator();
         ImGui::DragFloat("Ambient", &lighting.ambient, 0.01f);
         ImGui::DragFloat("Specular", &lighting.specular);
@@ -207,7 +237,12 @@ class VulkanImGui {
 
         ImGui::Separator();
 
-        ImGui::ColorPicker4("Background", background.data());
+        if (ImGui::DragFloat("Font size", &_font_size, 1, 1.0f, 256.0f)) _update_font = true;
+
+        ImGui::Separator();
+
+        ImGui::ColorPicker4("Background", &background[0]);
+
         ImGui::EndTabItem();
       }
 
@@ -242,18 +277,23 @@ class VulkanImGui {
     ImGui::DestroyContext();
   }
 
-  std::array<float, 4> background{};
+  glm::vec4 background{};
 
-  std::array<float, 3> camera_pos{};
-  std::array<float, 3> camera_rot{};
+  glm::vec3 camera_pos{};
+  glm::vec3 camera_rot{};
   float fov = 45.0f;
 
-  std::array<float, 3> light_pos{};
+  glm::vec3 light_pos{};
   gltf::Lighting lighting{0.1f, 32.0f};
 
   std::unique_ptr<bool[]> show;
 
  private:
+  const helper::WindowHandler* _window;
+  const helper::VulkanContext* _context;
+  std::string _font_path;
+  float _font_size = 16.0f;
+  bool _update_font = false;
   float _cam_move_speed = 10.0f;
   std::vector<gltf::Geometry> _geometries;
 
@@ -261,26 +301,6 @@ class VulkanImGui {
     if (err == VK_SUCCESS) return;
     std::cerr << "[vulkan] Error: VkResult = " << err << std::endl;
     if (err < 0) std::abort();
-  }
-
-  static glm::quat quaternion_to(glm::vec3 v, glm::vec3 to) {
-    const auto a = normalize(v);
-    const auto b = normalize(to);
-
-    const auto c = normalize(cross(b, a));
-    if (std::isnan(c.x) || std::isnan(c.y) || std::isnan(c.z)) return {1, 0, 0, 0};
-
-    const auto ip = dot(a, b);
-    if (constexpr float eps = 1e-4f; length(c) < eps || 1.0f < ip) {
-      if (ip < eps - 1.0f) {
-        const auto a2 = glm::vec3(-a.y, a.z, a.x);
-        const auto c2 = normalize(cross(a2, a));
-        return {0.0, c2};
-      }
-      return {1, 0, 0, 0};
-    }
-    const auto e = c * std::sqrt(0.5f * (1.0f - ip));
-    return {std::sqrt(0.5f * (1.0f + ip)), e};
   }
 };
 
