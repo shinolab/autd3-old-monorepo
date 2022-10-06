@@ -16,7 +16,6 @@
 #include <utility>
 #include <vector>
 
-#include "color.hpp"
 #include "coloring.hpp"
 #include "shader.hpp"
 #include "update_flag.hpp"

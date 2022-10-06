@@ -104,7 +104,7 @@ class VulkanHandler {
   [[nodiscard]] vk::Sampler sampler() const { return _texture_sampler.get(); }
 
  private:
-  const helper::VulkanContext* _context;
+  const helper::VulkanContext* _context{nullptr};
 
   uint32_t _mip_levels = 1;
   vk::UniqueImage _texture_image;
