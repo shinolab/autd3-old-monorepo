@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/10/2022
+// Last Modified: 06/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -29,14 +29,6 @@ class VulkanRenderer {
       : _context(context),
         _window(window),
         _imgui(imgui),
-        _swap_chain(nullptr),
-        _render_pass(nullptr),
-        _depth_image(nullptr),
-        _depth_image_memory(nullptr),
-        _depth_image_view(nullptr),
-        _color_image(nullptr),
-        _color_image_memory(nullptr),
-        _color_image_view(nullptr),
         _vsync(vsync) {}
   ~VulkanRenderer() = default;
   VulkanRenderer(const VulkanRenderer& v) = delete;
@@ -337,39 +329,39 @@ class VulkanRenderer {
     command_buffer->setScissor(0, scissor);
   }
 
-  const helper::VulkanContext* _context;
-  const helper::WindowHandler* _window;
-  const VulkanImGui* _imgui;
+  const helper::VulkanContext* _context{nullptr};
+  const helper::WindowHandler* _window{nullptr};
+  const VulkanImGui* _imgui{nullptr};
 
-  vk::UniqueSwapchainKHR _swap_chain;
-  std::vector<vk::Image> _swap_chain_images;
+  vk::UniqueSwapchainKHR _swap_chain{nullptr};
+  std::vector<vk::Image> _swap_chain_images{nullptr};
   vk::Format _swap_chain_image_format{};
   vk::Extent2D _swap_chain_extent{};
 
-  std::vector<vk::UniqueImageView> _swap_chain_image_views;
-  std::vector<vk::UniqueFramebuffer> _swap_chain_framebuffers;
+  std::vector<vk::UniqueImageView> _swap_chain_image_views{};
+  std::vector<vk::UniqueFramebuffer> _swap_chain_framebuffers{};
 
-  vk::UniqueRenderPass _render_pass;
+  vk::UniqueRenderPass _render_pass{nullptr};
 
-  vk::UniqueImage _depth_image;
-  vk::UniqueDeviceMemory _depth_image_memory;
-  vk::UniqueImageView _depth_image_view;
+  vk::UniqueImage _depth_image{nullptr};
+  vk::UniqueDeviceMemory _depth_image_memory{nullptr};
+  vk::UniqueImageView _depth_image_view{nullptr};
 
-  vk::UniqueImage _color_image;
-  vk::UniqueDeviceMemory _color_image_memory;
-  vk::UniqueImageView _color_image_view;
+  vk::UniqueImage _color_image{nullptr};
+  vk::UniqueDeviceMemory _color_image_memory{nullptr};
+  vk::UniqueImageView _color_image_view{nullptr};
 
-  std::vector<vk::UniqueCommandBuffer> _command_buffers;
+  std::vector<vk::UniqueCommandBuffer> _command_buffers{};
 
-  std::vector<vk::UniqueSemaphore> _image_available_semaphores;
-  std::vector<vk::UniqueSemaphore> _render_finished_semaphores;
-  std::vector<vk::UniqueFence> _in_flight_fences;
-  size_t _current_frame = 0;
+  std::vector<vk::UniqueSemaphore> _image_available_semaphores{};
+  std::vector<vk::UniqueSemaphore> _render_finished_semaphores{};
+  std::vector<vk::UniqueFence> _in_flight_fences{};
+  size_t _current_frame{0};
 
-  bool _vsync;
+  bool _vsync{true};
 
-  bool _framebuffer_resized = false;
-  const size_t _max_frames_in_flight = 2;
+  bool _framebuffer_resized{false};
+  const size_t _max_frames_in_flight{2};
 };
 
 }  // namespace autd3::extra::simulator
