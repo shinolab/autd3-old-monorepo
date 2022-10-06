@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/10/2022
+// Last Modified: 06/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -209,10 +209,10 @@ class VulkanContext {
   }
 
   [[nodiscard]] vk::UniqueImageView create_image_view(const vk::Image image, const vk::Format format, const vk::ImageAspectFlagBits aspect_flags,
-                                                      const uint32_t mip_levels) const {
+                                                      const uint32_t mip_levels, vk::ImageViewType image_type = vk::ImageViewType::e2D) const {
     return _device->createImageViewUnique(vk::ImageViewCreateInfo()
                                               .setImage(image)
-                                              .setViewType(vk::ImageViewType::e2D)
+                                              .setViewType(image_type)
                                               .setFormat(format)
                                               .setSubresourceRange(vk::ImageSubresourceRange()
                                                                        .setAspectMask(aspect_flags)
@@ -226,9 +226,10 @@ class VulkanContext {
                                                                                 const uint32_t mip_levels, const vk::SampleCountFlagBits num_samples,
                                                                                 const vk::Format format, const vk::ImageTiling tiling,
                                                                                 const vk::ImageUsageFlags usage,
-                                                                                const vk::MemoryPropertyFlags properties) const {
+                                                                                const vk::MemoryPropertyFlags properties,
+                                                                                vk::ImageType image_type = vk::ImageType::e2D) const {
     const vk::ImageCreateInfo image_info = vk::ImageCreateInfo()
-                                               .setImageType(vk::ImageType::e2D)
+                                               .setImageType(image_type)
                                                .setFormat(format)
                                                .setExtent(vk::Extent3D(width, height, 1))
                                                .setMipLevels(mip_levels)
