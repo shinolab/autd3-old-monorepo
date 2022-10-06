@@ -143,7 +143,7 @@ class SimulatorImpl final : public Simulator {
 
         const auto& [view, proj] = imgui->get_view_proj(static_cast<float>(renderer->extent().width) / static_cast<float>(renderer->extent().height));
         const auto& slice_model = imgui->get_slice_model();
-        slice_viewer->update(slice_model, view, proj, _sources, imgui->slice_width, imgui->slice_height, update_flags);
+        slice_viewer->update(slice_model, view, proj, imgui->slice_width, imgui->slice_height, update_flags);
         trans_viewer->update(view, proj, _sources, update_flags);
         field_compute->update(_sources, imgui->slice_alpha, update_flags);
 
