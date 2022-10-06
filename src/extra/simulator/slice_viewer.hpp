@@ -3,7 +3,7 @@
 // Created Date: 05/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/10/2022
+// Last Modified: 06/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -90,6 +90,9 @@ class SliceViewer {
       create_vertex_buffer(width, height);
     }
   }
+
+  [[nodiscard]] const std::vector<vk::UniqueBuffer>& images() const { return _field_buffers; }
+  [[nodiscard]] size_t image_size() const { return _field_buffer_size; }
 
  private:
   void create_pipeline() {
@@ -211,19 +214,19 @@ class SliceViewer {
     const std::vector vertices = {
         Vertex{
             {-width / 2.0f, -height / 2.0f, 0.0, 1.0},
-            {0.0, 1.0},
+            {0.0, 0.0},
         },
         Vertex{
             {width / 2.0f, -height / 2.0f, 0.0, 1.0},
-            {1.0, 1.0},
-        },
-        Vertex{
-            {width / 2.0f, height / 2.0f, 0.0, 1.0},
             {1.0, 0.0},
         },
         Vertex{
+            {width / 2.0f, height / 2.0f, 0.0, 1.0},
+            {1.0, 1.0},
+        },
+        Vertex{
             {-width / 2.0f, height / 2.0f, 0.0, 1.0},
-            {0.0, 0.0},
+            {0.0, 1.0},
         },
     };
     const vk::DeviceSize buffer_size = sizeof vertices[0] * vertices.size();
@@ -291,10 +294,11 @@ class SliceViewer {
   }
 
   void create_field_buffers(const uint32_t width, const uint32_t height) {
+    _field_buffer_size = sizeof(glm::vec4) * width * height;
     _field_buffers.resize(_renderer->frames_in_flight());
     _field_buffers_memory.resize(_renderer->frames_in_flight());
     for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
-      auto [buf, mem] = _context->create_buffer(sizeof(glm::vec4) * width * height, vk::BufferUsageFlagBits::eStorageBuffer,
+      auto [buf, mem] = _context->create_buffer(_field_buffer_size, vk::BufferUsageFlagBits::eStorageBuffer,
                                                 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
       _field_buffers[i] = std::move(buf);
       _field_buffers_memory[i] = std::move(mem);
@@ -404,6 +408,7 @@ class SliceViewer {
   std::vector<vk::UniqueDeviceMemory> _config_buffers_memory;
   std::vector<vk::UniqueBuffer> _field_buffers;
   std::vector<vk::UniqueDeviceMemory> _field_buffers_memory;
+  size_t _field_buffer_size{0};
 
   std::vector<vk::UniqueDescriptorSet> _descriptor_sets;
   vk::UniqueDescriptorSetLayout _descriptor_set_layout;

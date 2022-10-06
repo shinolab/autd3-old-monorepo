@@ -4,7 +4,7 @@
  * Created Date: 05/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/10/2022
+ * Last Modified: 06/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -58,7 +58,7 @@ void main() { \
         if(idx >= config.source_num) break; \
         vec3 tp = vec3(source_pos.pos[idx]); \
         float r = length(point - tp); \
-        float p = -source_drive.drive[idx].y - source_drive.drive[idx].w * r; \
+        float p = source_drive.drive[idx].y - source_drive.drive[idx].w * r; \
         float amp = source_drive.drive[idx].z * source_drive.drive[idx].x / r; \
         re += amp * cos(p); \
         im += amp * sin(p); \
