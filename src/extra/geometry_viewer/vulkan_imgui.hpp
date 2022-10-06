@@ -3,7 +3,7 @@
 // Created Date: 27/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/10/2022
+// Last Modified: 06/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -286,16 +286,16 @@ class VulkanImGui {
   glm::vec3 light_pos{};
   gltf::Lighting lighting{0.1f, 32.0f};
 
-  std::unique_ptr<bool[]> show;
+  std::unique_ptr<bool[]> show{nullptr};
 
  private:
-  const helper::WindowHandler* _window;
-  const helper::VulkanContext* _context;
+  const helper::WindowHandler* _window{nullptr};
+  const helper::VulkanContext* _context{nullptr};
   std::string _font_path;
   float _font_size = 16.0f;
   bool _update_font = false;
   float _cam_move_speed = 10.0f;
-  std::vector<gltf::Geometry> _geometries;
+  std::vector<gltf::Geometry> _geometries{};
 
   static void check_vk_result(const VkResult err) {
     if (err == VK_SUCCESS) return;
