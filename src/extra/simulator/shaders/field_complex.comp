@@ -17,7 +17,17 @@ layout(set = 0, binding = 0) buffer Data {
     vec4 data[];
 } data;
 
-layout(set = 1, binding = 0) uniform Config {
+layout(set = 1, binding = 0) buffer SourcePos {
+    vec4 pos[];
+} source_pos;
+
+layout(set = 2, binding = 0) buffer SourceAmp {
+    vec4 drive[];
+} source_drive;
+
+layout(set = 3, binding = 0) uniform sampler1D color_map;
+
+layout(push_constant) uniform Config {
     uint source_num;
     float _wave_num;
     float color_scale;
@@ -28,16 +38,6 @@ layout(set = 1, binding = 0) uniform Config {
     uint _dummy_1;
     mat4 world;
 } config;
-
-layout(set = 2, binding = 0) buffer SourcePos {
-    vec4 pos[];
-} source_pos;
-
-layout(set = 3, binding = 0) buffer SourceAmp {
-    vec4 drive[];
-} source_drive;
-
-layout(set = 4, binding = 0) uniform sampler1D color_map;
 
 const float PI = 3.1415926535897932384626433832795;
 

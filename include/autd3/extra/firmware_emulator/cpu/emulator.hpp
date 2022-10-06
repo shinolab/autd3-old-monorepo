@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2022
+// Last Modified: 06/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -47,6 +47,8 @@ class CPU {
 
   [[nodiscard]] uint8_t msg_id() const { return _msg_id; }
   [[nodiscard]] uint8_t ack() const { return _ack; }
+  [[nodiscard]] FPGAControlFlags fpga_flags() const { return _fpga_flags; }
+  [[nodiscard]] CPUControlFlags cpu_flags() const { return _cpu_flags; }
 
   [[nodiscard]] const fpga::FPGA& fpga() const { return _fpga; }
 
@@ -325,6 +327,8 @@ class CPU {
     if (_msg_id == header.msg_id) return;
 
     _msg_id = header.msg_id;
+    _fpga_flags = header.fpga_flag;
+    _cpu_flags = header.cpu_flag;
     if (header.fpga_flag.contains(FPGAControlFlags::READS_FPGA_INFO)) _ack = static_cast<uint8_t>(read_fpga_info());
 
     switch (_msg_id) {
@@ -386,6 +390,9 @@ class CPU {
   fpga::FPGA _fpga;
   uint16_t _gain_stm_mode;
   std::array<uint16_t, NUM_TRANS_IN_UNIT> _cycles{};
+
+  FPGAControlFlags _fpga_flags;
+  CPUControlFlags _cpu_flags;
 };
 
 };  // namespace autd3::extra::firmware_emulator::cpu

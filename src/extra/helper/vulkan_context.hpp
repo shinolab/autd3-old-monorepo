@@ -23,22 +23,6 @@
 
 #if _MSC_VER
 #pragma warning(push)
-#pragma warning(disable : 6262 26451 26819)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic push
-#endif
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-#if _MSC_VER
-#pragma warning(pop)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic pop
-#endif
-
-#if _MSC_VER
-#pragma warning(push)
 #pragma warning(disable : 28251 26451)
 #endif
 #if defined(__GNUC__) && !defined(__llvm__)

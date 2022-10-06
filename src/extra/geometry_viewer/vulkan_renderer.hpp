@@ -3,7 +3,7 @@
 // Created Date: 24/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/10/2022
+// Last Modified: 06/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -42,12 +42,11 @@ class VulkanRenderer {
  public:
   std::string font_path;
   explicit VulkanRenderer(const helper::VulkanContext* context, const helper::WindowHandler* window, const VulkanHandler* handler,
-                          const VulkanImGui* imgui, std::string shader, const bool vsync = true) noexcept
+                          const VulkanImGui* imgui, const bool vsync = true) noexcept
       : _context(context),
         _window(window),
         _handler(handler),
         _imgui(imgui),
-        _shader(std::move(shader)),
         _swap_chain(nullptr),
         _render_pass(nullptr),
         _depth_image(nullptr),
@@ -175,8 +174,12 @@ class VulkanRenderer {
   }
 
   void create_graphics_pipeline(const gltf::Model& model) {
-    const auto vert_shader_code = helper::read_file(std::filesystem::path(_shader).append("vert.spv").string());
-    const auto frag_shader_code = helper::read_file(std::filesystem::path(_shader).append("frag.spv").string());
+    const std::vector<uint8_t> vert_shader_code = {
+#include "vert.spv.txt"
+    };
+    const std::vector<uint8_t> frag_shader_code = {
+#include "frag.spv.txt"
+    };
 
     vk::UniqueShaderModule vert_shader_module = helper::create_shader_module(_context->device(), vert_shader_code);
     vk::UniqueShaderModule frag_shader_module = helper::create_shader_module(_context->device(), frag_shader_code);
@@ -648,8 +651,6 @@ class VulkanRenderer {
   const helper::WindowHandler* _window;
   const VulkanHandler* _handler;
   const VulkanImGui* _imgui;
-
-  std::string _shader;
 
   vk::UniqueSwapchainKHR _swap_chain;
   std::vector<vk::Image> _swap_chain_images;

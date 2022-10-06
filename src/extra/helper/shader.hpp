@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/10/2022
+// Last Modified: 06/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -32,7 +32,7 @@ inline std::vector<char> read_file(const std::string& filename) {
   return buffer;
 }
 
-inline vk::UniqueShaderModule create_shader_module(const vk::Device& device, const std::vector<char>& code) {
+inline vk::UniqueShaderModule create_shader_module(const vk::Device& device, const std::vector<uint8_t>& code) {
   return device.createShaderModuleUnique(
       vk::ShaderModuleCreateInfo().setCodeSize(code.size()).setPCode(reinterpret_cast<const uint32_t*>(code.data())));
 }

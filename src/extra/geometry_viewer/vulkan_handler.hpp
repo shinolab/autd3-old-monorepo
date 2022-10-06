@@ -3,7 +3,7 @@
 // Created Date: 23/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/10/2022
+// Last Modified: 06/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,6 +17,22 @@
 #include <vulkan_context.hpp>
 
 #include "window_handler.hpp"
+
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 6262 26451 26819)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic push
+#endif
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+#if _MSC_VER
+#pragma warning(pop)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic pop
+#endif
 
 namespace autd3::extra::geometry_viewer {
 

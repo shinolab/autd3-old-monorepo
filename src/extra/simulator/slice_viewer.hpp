@@ -12,8 +12,6 @@
 #pragma once
 
 #include <algorithm>
-#include <filesystem>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -29,7 +27,7 @@ struct Vertex {
   glm::vec2 uv;
 };
 
-struct Data {
+struct Mvp {
   glm::mat4 model;
   glm::mat4 view;
   glm::mat4 proj;
@@ -44,29 +42,26 @@ struct Config {
 
 class SliceViewer {
  public:
-  explicit SliceViewer(const helper::VulkanContext* context, const VulkanRenderer* renderer, std::string shader)
-      : _context(context), _renderer(renderer), _shader(std::move(shader)) {}
+  explicit SliceViewer(const helper::VulkanContext* context, const VulkanRenderer* renderer) : _context(context), _renderer(renderer) {}
   ~SliceViewer() = default;
   SliceViewer(const SliceViewer& v) = delete;
   SliceViewer& operator=(const SliceViewer& obj) = delete;
   SliceViewer(SliceViewer&& obj) = default;
   SliceViewer& operator=(SliceViewer&& obj) = default;
 
-  void init(const glm::mat4 model, const glm::mat4 view, const glm::mat4 proj, const uint32_t width, const uint32_t height) {
+  void init(const uint32_t width, const uint32_t height, const uint32_t pixel_width) {
+    _width = width / pixel_width;
+    _height = height / pixel_width;
+
     create_pipeline();
     create_vertex_buffer(width, height);
     create_index_buffer();
-    create_mvp_buffers();
-    create_config_buffers();
-    create_field_buffers(width, height);
+    create_field_buffers(_width, _height);
     create_descriptor_sets();
-    update_field_descriptor_sets(width, height);
-
-    update_mvp_objects(model, view, proj);
-    update_config_objects(width, height);
+    update_field_descriptor_sets(_width, _height);
   }
 
-  void render(const vk::CommandBuffer& command_buffer) {
+  void render(const glm::mat4 model, const glm::mat4 view, const glm::mat4 proj, const vk::CommandBuffer& command_buffer) {
     const vk::Buffer vertex_buffers[] = {_vertex_buffer.get()};
     constexpr vk::DeviceSize offsets[] = {0};
 
@@ -75,18 +70,20 @@ class SliceViewer {
                                       nullptr);
     command_buffer.bindVertexBuffers(0, 1, vertex_buffers, offsets);
     command_buffer.bindIndexBuffer(_index_buffer.get(), 0, vk::IndexType::eUint32);
+    const Mvp mvp{model, view, proj};
+    command_buffer.pushConstants(_layout.get(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(Mvp), &mvp);
+    const Config config{_width, _height, 0, 0};
+    command_buffer.pushConstants(_layout.get(), vk::ShaderStageFlagBits::eFragment, sizeof(Mvp), sizeof(Config), &config);
     command_buffer.drawIndexed(6, 1, 0, 0, 0);
   }
 
-  void update(const glm::mat4 model, const glm::mat4 view, const glm::mat4 proj, const uint32_t width, const uint32_t height,
-              const UpdateFlags update_flag) {
-    if (update_flag.contains(UpdateFlags::UPDATE_CAMERA_POS) || update_flag.contains(UpdateFlags::UPDATE_SLICE_POS))
-      update_mvp_objects(model, view, proj);
-
+  void update(const uint32_t width, const uint32_t height, const uint32_t pixel_width, const UpdateFlags update_flag) {
     if (update_flag.contains(UpdateFlags::UPDATE_SLICE_SIZE)) {
       _context->device().waitIdle();
-      create_field_buffers(width, height);
-      update_field_descriptor_sets(width, height);
+      _width = width / pixel_width;
+      _height = height / pixel_width;
+      create_field_buffers(_width, _height);
+      update_field_descriptor_sets(_width, _height);
       create_vertex_buffer(width, height);
     }
   }
@@ -96,8 +93,12 @@ class SliceViewer {
 
  private:
   void create_pipeline() {
-    const auto vert_shader_code = helper::read_file(std::filesystem::path(_shader).append("slice.vert.spv").string());
-    const auto frag_shader_code = helper::read_file(std::filesystem::path(_shader).append("slice.frag.spv").string());
+    const std::vector<uint8_t> vert_shader_code = {
+#include "slice.vert.spv.txt"
+    };
+    const std::vector<uint8_t> frag_shader_code = {
+#include "slice.frag.spv.txt"
+    };
     vk::UniqueShaderModule vert_shader_module = helper::create_shader_module(_context->device(), vert_shader_code);
     vk::UniqueShaderModule frag_shader_module = helper::create_shader_module(_context->device(), frag_shader_code);
 
@@ -130,7 +131,7 @@ class SliceViewer {
                                                                     .setDepthClampEnable(false)
                                                                     .setRasterizerDiscardEnable(false)
                                                                     .setPolygonMode(vk::PolygonMode::eFill)
-                                                                    .setCullMode(vk::CullModeFlagBits::eBack)
+                                                                    .setCullMode(vk::CullModeFlagBits::eNone)
                                                                     .setFrontFace(vk::FrontFace::eCounterClockwise)
                                                                     .setDepthBiasEnable(false)
                                                                     .setDepthBiasConstantFactor(0.0f)
@@ -161,24 +162,18 @@ class SliceViewer {
 
     std::array bindings_0 = {vk::DescriptorSetLayoutBinding()
                                  .setBinding(0)
-                                 .setDescriptorType(vk::DescriptorType::eUniformBuffer)
-                                 .setDescriptorCount(1)
-                                 .setStageFlags(vk::ShaderStageFlagBits::eVertex),
-                             vk::DescriptorSetLayoutBinding()
-                                 .setBinding(1)
-                                 .setDescriptorType(vk::DescriptorType::eUniformBuffer)
-                                 .setDescriptorCount(1)
-                                 .setStageFlags(vk::ShaderStageFlagBits::eFragment),
-                             vk::DescriptorSetLayoutBinding()
-                                 .setBinding(2)
                                  .setDescriptorType(vk::DescriptorType::eStorageBuffer)
                                  .setDescriptorCount(1)
                                  .setStageFlags(vk::ShaderStageFlagBits::eFragment)};
     const auto descriptor_set_layout_0 =
         _context->device().createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo().setBindings(bindings_0));
 
+    const std::array push_constant_ranges = {
+        vk::PushConstantRange().setStageFlags(vk::ShaderStageFlagBits::eVertex).setSize(sizeof(Mvp)).setOffset(0),
+        vk::PushConstantRange().setStageFlags(vk::ShaderStageFlagBits::eFragment).setSize(sizeof(Config)).setOffset(sizeof(Mvp))};
     const std::array layouts = {descriptor_set_layout_0.get()};
-    const vk::PipelineLayoutCreateInfo pipeline_layout_info = vk::PipelineLayoutCreateInfo().setSetLayouts(layouts);
+    const vk::PipelineLayoutCreateInfo pipeline_layout_info =
+        vk::PipelineLayoutCreateInfo().setSetLayouts(layouts).setPushConstantRanges(push_constant_ranges);
 
     _layout = _context->device().createPipelineLayoutUnique(pipeline_layout_info);
 
@@ -271,35 +266,13 @@ class SliceViewer {
     _context->copy_buffer(staging_buffer.get(), _index_buffer.get(), buffer_size);
   }
 
-  void create_mvp_buffers() {
-    _mvp_buffers.resize(_renderer->frames_in_flight());
-    _mvp_buffers_memory.resize(_renderer->frames_in_flight());
-    for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
-      auto [buf, mem] = _context->create_buffer(sizeof(Data), vk::BufferUsageFlagBits::eUniformBuffer,
-                                                vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-      _mvp_buffers[i] = std::move(buf);
-      _mvp_buffers_memory[i] = std::move(mem);
-    }
-  }
-
-  void create_config_buffers() {
-    _config_buffers.resize(_renderer->frames_in_flight());
-    _config_buffers_memory.resize(_renderer->frames_in_flight());
-    for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
-      auto [buf, mem] = _context->create_buffer(sizeof(Config), vk::BufferUsageFlagBits::eUniformBuffer,
-                                                vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-      _config_buffers[i] = std::move(buf);
-      _config_buffers_memory[i] = std::move(mem);
-    }
-  }
-
   void create_field_buffers(const uint32_t width, const uint32_t height) {
     _field_buffer_size = sizeof(glm::vec4) * width * height;
     _field_buffers.resize(_renderer->frames_in_flight());
     _field_buffers_memory.resize(_renderer->frames_in_flight());
     for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
-      auto [buf, mem] = _context->create_buffer(_field_buffer_size, vk::BufferUsageFlagBits::eStorageBuffer,
-                                                vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+      auto [buf, mem] =
+          _context->create_buffer(_field_buffer_size, vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eTransferSrc, {});
       _field_buffers[i] = std::move(buf);
       _field_buffers_memory[i] = std::move(mem);
     }
@@ -308,16 +281,6 @@ class SliceViewer {
   void create_descriptor_sets() {
     std::array bindings = {vk::DescriptorSetLayoutBinding()
                                .setBinding(0)
-                               .setDescriptorType(vk::DescriptorType::eUniformBuffer)
-                               .setDescriptorCount(1)
-                               .setStageFlags(vk::ShaderStageFlagBits::eVertex),
-                           vk::DescriptorSetLayoutBinding()
-                               .setBinding(1)
-                               .setDescriptorType(vk::DescriptorType::eUniformBuffer)
-                               .setDescriptorCount(1)
-                               .setStageFlags(vk::ShaderStageFlagBits::eFragment),
-                           vk::DescriptorSetLayoutBinding()
-                               .setBinding(2)
                                .setDescriptorType(vk::DescriptorType::eStorageBuffer)
                                .setDescriptorCount(1)
                                .setStageFlags(vk::ShaderStageFlagBits::eFragment)};
@@ -325,35 +288,6 @@ class SliceViewer {
     std::vector layouts(_renderer->frames_in_flight(), _descriptor_set_layout.get());
     _descriptor_sets = _context->device().allocateDescriptorSetsUnique(
         vk::DescriptorSetAllocateInfo().setDescriptorPool(_context->descriptor_pool()).setSetLayouts(layouts));
-    for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
-      {
-        const vk::DescriptorBufferInfo buffer_info = vk::DescriptorBufferInfo().setBuffer(_mvp_buffers[i].get()).setOffset(0).setRange(sizeof(Data));
-        std::array descriptor_writes{
-            vk::WriteDescriptorSet()
-                .setDstSet(_descriptor_sets[i].get())
-                .setDstBinding(0)
-                .setDstArrayElement(0)
-                .setDescriptorCount(1)
-                .setDescriptorType(vk::DescriptorType::eUniformBuffer)
-                .setBufferInfo(buffer_info),
-        };
-        _context->device().updateDescriptorSets(descriptor_writes, {});
-      }
-      {
-        const vk::DescriptorBufferInfo config_info =
-            vk::DescriptorBufferInfo().setBuffer(_config_buffers[i].get()).setOffset(0).setRange(sizeof(Config));
-        std::array descriptor_writes{
-            vk::WriteDescriptorSet()
-                .setDstSet(_descriptor_sets[i].get())
-                .setDstBinding(1)
-                .setDstArrayElement(0)
-                .setDescriptorCount(1)
-                .setDescriptorType(vk::DescriptorType::eUniformBuffer)
-                .setBufferInfo(config_info),
-        };
-        _context->device().updateDescriptorSets(descriptor_writes, {});
-      }
-    }
   }
 
   void update_field_descriptor_sets(const uint32_t width, const uint32_t height) {
@@ -363,7 +297,7 @@ class SliceViewer {
       std::array descriptor_writes{
           vk::WriteDescriptorSet()
               .setDstSet(_descriptor_sets[i].get())
-              .setDstBinding(2)
+              .setDstBinding(0)
               .setDstArrayElement(0)
               .setDescriptorCount(1)
               .setDescriptorType(vk::DescriptorType::eStorageBuffer)
@@ -373,39 +307,13 @@ class SliceViewer {
     }
   }
 
-  void update_mvp_objects(const glm::mat4 model, const glm::mat4 view, const glm::mat4 proj) {
-    const Data ubo{model, view, proj};
-    void* data;
-    for (auto& mvp_buffer_memory : _mvp_buffers_memory) {
-      if (_context->device().mapMemory(mvp_buffer_memory.get(), 0, sizeof ubo, {}, &data) != vk::Result::eSuccess)
-        throw std::runtime_error("failed to map uniform buffer memory");
-      memcpy(data, &ubo, sizeof ubo);
-      _context->device().unmapMemory(mvp_buffer_memory.get());
-    }
-  }
-  void update_config_objects(const uint32_t width, const uint32_t height) {
-    const Config config{width, height, 0, 0};
-    void* data;
-    for (auto& config_buffer_memory : _config_buffers_memory) {
-      if (_context->device().mapMemory(config_buffer_memory.get(), 0, sizeof config, {}, &data) != vk::Result::eSuccess)
-        throw std::runtime_error("failed to map uniform buffer memory");
-      memcpy(data, &config, sizeof config);
-      _context->device().unmapMemory(config_buffer_memory.get());
-    }
-  }
-
   const helper::VulkanContext* _context;
   const VulkanRenderer* _renderer;
-  std::string _shader;
 
   vk::UniqueBuffer _vertex_buffer;
   vk::UniqueDeviceMemory _vertex_buffer_memory;
   vk::UniqueBuffer _index_buffer;
   vk::UniqueDeviceMemory _index_buffer_memory;
-  std::vector<vk::UniqueBuffer> _mvp_buffers;
-  std::vector<vk::UniqueDeviceMemory> _mvp_buffers_memory;
-  std::vector<vk::UniqueBuffer> _config_buffers;
-  std::vector<vk::UniqueDeviceMemory> _config_buffers_memory;
   std::vector<vk::UniqueBuffer> _field_buffers;
   std::vector<vk::UniqueDeviceMemory> _field_buffers_memory;
   size_t _field_buffer_size{0};
@@ -415,6 +323,9 @@ class SliceViewer {
 
   vk::UniquePipelineLayout _layout;
   vk::UniquePipeline _pipeline;
+
+  uint32_t _width{0};
+  uint32_t _height{0};
 };
 
 }  // namespace autd3::extra::simulator::slice_viewer
