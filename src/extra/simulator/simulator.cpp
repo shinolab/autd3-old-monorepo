@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/10/2022
+// Last Modified: 06/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -51,7 +51,7 @@ class SimulatorImpl final : public Simulator {
             glm::vec3(static_cast<float>(trans.position().x()), static_cast<float>(trans.position().y()), static_cast<float>(trans.position().z())),
             glm::quat(static_cast<float>(dev.rotation().w()), static_cast<float>(dev.rotation().x()), static_cast<float>(dev.rotation().y()),
                       static_cast<float>(dev.rotation().z())),
-            Drive{1.0f, 0.0f, 1.0f, static_cast<float>(trans.frequency()), static_cast<float>(geometry.sound_speed)}, 1.0f);
+            Drive{1.0f, 0.0f, 1.0f, static_cast<float>(trans.frequency()), static_cast<float>(geometry.sound_speed * 1e3)}, 1.0f);
       }
 
     _cpus.clear();
@@ -92,7 +92,7 @@ class SimulatorImpl final : public Simulator {
 
       const auto trans_viewer = std::make_unique<trans_viewer::TransViewer>(context.get(), renderer.get(), _shader, _texture);
       const auto slice_viewer = std::make_unique<slice_viewer::SliceViewer>(context.get(), renderer.get(), _shader);
-      const auto field_compute = std::make_unique<FieldCompute>(context.get(), _shader);
+      const auto field_compute = std::make_unique<FieldCompute>(context.get(), renderer.get(), _shader);
 
       // init
       {
@@ -101,7 +101,7 @@ class SimulatorImpl final : public Simulator {
         const auto& slice_model = imgui->get_slice_model();
         trans_viewer->init(view, proj, _sources);
         slice_viewer->init(slice_model, view, proj, imgui->slice_width, imgui->slice_height);
-        field_compute->init(imgui->slice_alpha);
+        field_compute->init(_sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size());
       }
 
       _is_running = true;
@@ -145,13 +145,26 @@ class SimulatorImpl final : public Simulator {
         const auto& slice_model = imgui->get_slice_model();
         slice_viewer->update(slice_model, view, proj, _sources, imgui->slice_width, imgui->slice_height, update_flags);
         trans_viewer->update(view, proj, _sources, update_flags);
+        field_compute->update(_sources, imgui->slice_alpha, update_flags);
 
         const std::array background = {imgui->background.r, imgui->background.g, imgui->background.b, imgui->background.a};
         const auto& [command_buffer, image_index] = renderer->begin_frame(background);
+
         slice_viewer->render(command_buffer);
         trans_viewer->render(command_buffer);
         VulkanImGui::render(command_buffer);
         renderer->end_frame(command_buffer, image_index);
+
+        Config config{(uint32_t)_sources->size(),
+                      0,
+                      imgui->color_scale,
+                      (uint32_t)imgui->slice_width,
+                      (uint32_t)imgui->slice_height,
+                      1,  // TODO
+                      0,
+                      0,
+                      slice_model};
+        field_compute->compute(config);
       }
 
       context->device().waitIdle();
