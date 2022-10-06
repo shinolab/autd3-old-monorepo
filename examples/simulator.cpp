@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/10/2022
+// Last Modified: 06/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,11 +11,13 @@
 
 #include "autd3/extra/simulator/simulator.hpp"
 
+#include <filesystem>
+
 #include "autd3.hpp"
 #include "autd3/link/simulator.hpp"
 #include "runner.hpp"
 
-int main() try {
+int main([[maybe_unused]] int argc, char* argv[]) try {
   autd3::Controller autd;
 
   autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
@@ -25,7 +27,19 @@ int main() try {
   // for (auto& dev : autd.geometry())
   //   for (auto& tr : dev) tr.set_frequency(70e3);
 
-  auto link = autd3::link::Simulator().vsync(true).shader(AUTD3_SIMULATOR_SHADER_PATH).texture(AUTD3_SIMULATOR_TEXTURE_PATH).build();
+  autd3::extra::simulator::Settings settings;
+  settings.slice_pos_x = static_cast<float>(autd.geometry().center().x());
+  settings.slice_pos_y = static_cast<float>(autd.geometry().center().y());
+  settings.slice_pos_z = static_cast<float>(autd.geometry().center().z()) + 150.0f;
+  settings.slice_rot_x = 90.0f;
+  settings.camera_pos_x = settings.slice_pos_x;
+  settings.camera_pos_y = settings.slice_pos_y - 600.0f;
+  settings.camera_pos_z = settings.slice_pos_z;
+  settings.camera_rot_x = 90.0f;
+  settings.font_path = AUTD3_SIMULATOR_FONT_PATH;
+  settings.image_save_path = std::filesystem::path(argv[0]).parent_path().append("image.png").string();
+
+  auto link = autd3::link::Simulator(settings).build();
   autd.open(std::move(link));
 
   run(std::move(autd));

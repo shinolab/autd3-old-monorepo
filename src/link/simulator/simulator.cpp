@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/10/2022
+// Last Modified: 06/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,12 +19,8 @@ namespace autd3::link {
 
 class SimulatorImpl final : public core::Link {
  public:
-  explicit SimulatorImpl(const int32_t width, const int32_t height, const bool vsync, std::string shader, std::string texture, std::string font,
-                         const size_t gpu_idx, std::function<void()> callback)
-      : Link(),
-        _is_open(false),
-        _simulator(extra::simulator::Simulator::create(width, height, vsync, std::move(shader), std::move(texture), std::move(font), gpu_idx,
-                                                       std::move(callback))) {}
+  explicit SimulatorImpl(extra::simulator::Settings settings, std::function<void(extra::simulator::Settings)> callback)
+      : Link(), _is_open(false), _simulator(extra::simulator::Simulator::create(std::move(settings), std::move(callback))) {}
   ~SimulatorImpl() override = default;
   SimulatorImpl(const SimulatorImpl& v) noexcept = delete;
   SimulatorImpl& operator=(const SimulatorImpl& obj) = delete;
@@ -56,8 +52,9 @@ class SimulatorImpl final : public core::Link {
 
   std::unique_ptr<extra::simulator::Simulator> _simulator;
 };
+
 core::LinkPtr Simulator::build() const {
-  core::LinkPtr link = std::make_unique<SimulatorImpl>(_width, _height, _vsync, _shader, _texture, _font, _gpu_idx, _callback);
+  core::LinkPtr link = std::make_unique<SimulatorImpl>(_settings, _callback);
   return link;
 }
 

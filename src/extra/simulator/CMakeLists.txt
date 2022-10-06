@@ -13,7 +13,7 @@ add_library(simulator
   ${PROJECT_SOURCE_DIR}/include/autd3/extra/simulator/simulator.hpp
   simulator.cpp
 )
-target_include_directories(simulator PRIVATE ${PROJECT_SOURCE_DIR}/include ${Vulkan_INCLUDE_DIRS} ${STB_INCLUDE_PATH})
+target_include_directories(simulator PRIVATE ${PROJECT_SOURCE_DIR}/include ${STB_INCLUDE_PATH} ${Vulkan_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/src/extra/simulator/shaders ${PROJECT_SOURCE_DIR}/src/extra/simulator/textures)
 target_link_libraries(simulator PRIVATE autd3_common vk_helper glm::glm glfw imgui_vulkan tinycolormap)
 
 if(WIN32)
