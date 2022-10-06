@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-if(NOT WIN32)
-  find_package(Threads REQUIRED)
-endif()
+find_package(Threads REQUIRED)
 
 file(GLOB hpp_files tests/*.hpp runner.hpp)
 
@@ -41,12 +39,6 @@ if(BUILD_LINK_REMOTE_TWINCAT)
   set_target_properties(example_remote_twincat PROPERTIES FOLDER "example")
 endif()
 
-if(BUILD_LINK_EMULATOR)
-  add_executable(example_emulator emulator.cpp ${hpp_files})
-  target_link_libraries(example_emulator autd3_example_common link_emulator)
-  set_target_properties(example_emulator PROPERTIES FOLDER "example")
-endif()
-
 if(BUILD_LINK_DEBUG)
   add_executable(example_debug debug.cpp ${hpp_files})
   target_link_libraries(example_debug autd3_example_common link_debug)
@@ -54,18 +46,26 @@ if(BUILD_LINK_DEBUG)
 endif()
 
 if(BUILD_EXAMPLES_EXTRA)
-  add_executable(freqency_configuration freq_config.cpp)
-  target_link_libraries(freqency_configuration autd3_example_common link_debug)
-  set_target_properties(freqency_configuration PROPERTIES FOLDER "example")
+  add_executable(example_freq_config freq_config.cpp)
+  target_link_libraries(example_freq_config autd3_example_common link_debug)
+  set_target_properties(example_freq_config PROPERTIES FOLDER "example")
 endif()
 
 if(BUILD_GEOMETRY_VIEWER)
-  add_executable(geometry_viewer_example geometry_viewer_example.cpp)
-  target_link_libraries(geometry_viewer_example autd3 geometry-viewer)
+  add_executable(example_geometry_viewer geometry_viewer.cpp)
+  target_link_libraries(example_geometry_viewer autd3 geometry_viewer)
   
-  target_compile_definitions(geometry_viewer_example PRIVATE AUTD3_GEOMETRY_VIEWER_SHADER_PATH="${PROJECT_SOURCE_DIR}/src/extra/geometry_viewer/shaders")
-  target_compile_definitions(geometry_viewer_example PRIVATE AUTD3_GEOMETRY_VIEWER_MODEL_PATH="${PROJECT_SOURCE_DIR}/src/extra/geometry_viewer/models/AUTD.glb")
-  target_compile_definitions(geometry_viewer_example PRIVATE AUTD3_GEOMETRY_FONT_PATH="${PROJECT_SOURCE_DIR}/src/extra/geometry_viewer/fonts/NotoSans-Regular.ttf")
+  target_compile_definitions(example_geometry_viewer PRIVATE AUTD3_GEOMETRY_VIEWER_MODEL_PATH="${PROJECT_SOURCE_DIR}/src/extra/geometry_viewer/models/AUTD.glb")
+  target_compile_definitions(example_geometry_viewer PRIVATE AUTD3_GEOMETRY_VIEWER_FONT_PATH="${PROJECT_SOURCE_DIR}/examples/fonts/NotoSans-Regular.ttf")
 
-  set_target_properties(geometry_viewer_example PROPERTIES FOLDER "example")
+  set_target_properties(example_geometry_viewer PROPERTIES FOLDER "example")
+endif()
+
+if(BUILD_SIMULATOR)
+  add_executable(example_simulator simulator.cpp ${hpp_files})
+  target_link_libraries(example_simulator autd3_example_common link_simulator)
+  
+  target_compile_definitions(example_simulator PRIVATE AUTD3_SIMULATOR_FONT_PATH="${PROJECT_SOURCE_DIR}/examples/fonts/NotoSans-Regular.ttf")
+
+  set_target_properties(example_simulator PROPERTIES FOLDER "example")
 endif()
