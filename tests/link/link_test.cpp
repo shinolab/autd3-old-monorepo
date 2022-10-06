@@ -3,7 +3,7 @@
 // Created Date: 29/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/09/2022
+// Last Modified: 30/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,10 +33,10 @@ TEST(LinkTwinCATTest, basic) { auto link = autd3::link::TwinCAT().build(); }
 TEST(LinkRemoteTwinCATTest, basic) { auto link = autd3::link::RemoteTwinCAT("").build(); }
 #endif
 
-#ifdef TEST_LINK_EMULATOR
-#include "autd3/link/emulator.hpp"
-TEST(LinkEmulatorTest, basic) {
+#ifdef TEST_LINK_SIMULATOR
+#include "autd3/link/simulator.hpp"
+TEST(LinkSimulatorTest, basic) {
   const autd3::core::Geometry geometry;
-  const auto link = autd3::link::Emulator().port(10).build();
+  const auto link = autd3::link::Simulator().build();
 }
 #endif

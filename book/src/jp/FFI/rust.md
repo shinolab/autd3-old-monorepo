@@ -19,7 +19,7 @@ autd3 = "2.3.1"
 [dependencies]
 autd3-link-soem = "2.3.1"
 autd3-link-twincat = "2.3.1"
-autd3-link-emulator = "2.3.1"
+autd3-link-simulator = "2.3.1"
 autd3-gain-holo = "2.3.1"
 ```
 

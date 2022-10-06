@@ -12,7 +12,7 @@
 #include "autd3/link/debug.hpp"
 
 #include "autd3/core/link.hpp"
-#include "autd3/extra/firmware-emulator/cpu/emulator.hpp"
+#include "autd3/extra/firmware_emulator/cpu/emulator.hpp"
 
 #if _MSC_VER
 #pragma warning(push)
