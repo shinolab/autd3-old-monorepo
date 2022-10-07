@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/10/2022
+// Last Modified: 07/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -45,7 +45,13 @@ class Simulator {
 
  private:
   extra::simulator::Settings _settings;
-  std::function<void(extra::simulator::Settings)> _callback = [](const auto) { std::quick_exit(0); };
+  std::function<void(extra::simulator::Settings)> _callback = [](const auto) {
+#ifdef __APPLE__
+    std::exit(0);
+#else
+    std::quick_exit(0);
+#endif
+  };
 };
 
 }  // namespace autd3::link
