@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/10/2022
+// Last Modified: 07/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,9 +11,9 @@
 
 #pragma once
 
-#include <autd3/core/geometry.hpp>
 #include <memory>
 #include <string>
+#include <thread>
 
 namespace autd3::extra::simulator {
 
@@ -58,30 +58,49 @@ struct Settings {
 
 class Simulator {
  public:
-  /**
-   * @brief Start simulator
-   */
-  virtual void start(const core::Geometry& geometry) = 0;
-
-  /**
-   * @brief Exit simulator
-   */
-  virtual void exit() = 0;
-
-  virtual bool send(const driver::TxDatagram& tx) = 0;
-  virtual bool receive(driver::RxDatagram& rx) = 0;
-
-  /**
-   * @brief Create Bundle link
-   */
-  [[nodiscard]] static std::unique_ptr<Simulator> create(Settings setting, std::function<void(Settings)> callback);
-
-  Simulator() noexcept = default;
-  virtual ~Simulator() = default;
+  Simulator() noexcept : _port(50632), _ip_addr("127.0.0.1") {}
+  ~Simulator() = default;
   Simulator(const Simulator& v) noexcept = delete;
   Simulator& operator=(const Simulator& obj) = delete;
   Simulator(Simulator&& obj) = default;
-  Simulator& operator=(Simulator&& obj) = default;
+  Simulator& operator=(Simulator&& obj) = delete;
+
+  /**
+   * @brief Start simulator
+   */
+  void run();
+
+  /**
+   * @brief Set settings
+   */
+  Simulator& settings(Settings* settings) {
+    _settings = settings;
+    return *this;
+  }
+
+  /**
+   * @brief Set port
+   */
+  Simulator& port(const uint16_t port) {
+    _port = port;
+    return *this;
+  }
+
+  /**
+   * @brief Set IP address of client
+   */
+  Simulator& ip_addr(std::string ip_addr) {
+    _ip_addr = std::move(ip_addr);
+    return *this;
+  }
+
+ private:
+  Settings _default_settings{};
+  Settings* _settings{&_default_settings};
+  uint16_t _port;
+  std::string _ip_addr;
+
+  std::thread _th;
 };
 
 }  // namespace autd3::extra::simulator
