@@ -3,7 +3,7 @@
 // Created Date: 31/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/08/2022
+// Last Modified: 07/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,7 +12,6 @@
 #include "autd3.hpp"
 #include "autd3/link/debug.hpp"
 #include "runner.hpp"
-#include "spdlog/spdlog.h"
 
 int main() try {
   spdlog::set_level(spdlog::level::debug);
