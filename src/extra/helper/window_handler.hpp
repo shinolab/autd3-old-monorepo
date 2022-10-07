@@ -3,7 +3,7 @@
 // Created Date: 29/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/10/2022
+// Last Modified: 07/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -66,8 +66,8 @@ class WindowHandler {
       glfwGetMonitorPos(monitors[i], &monitor_x, &monitor_y);
       const int monitor_width = mode->width;
       const int monitor_height = mode->height;
-      if (const int overlap = std::max(0, std::min(window_x + window_width, monitor_x + monitor_width) - std::max(window_x, monitor_x)) *
-                              std::max(0, std::min(window_y + window_height, monitor_y + monitor_height) - std::max(window_y, monitor_y));
+      if (const int overlap = (std::max)(0, (std::min)(window_x + window_width, monitor_x + monitor_width) - (std::max)(window_x, monitor_x)) *
+                              (std::max)(0, (std::min)(window_y + window_height, monitor_y + monitor_height) - (std::max)(window_y, monitor_y));
           max_overlap < overlap) {
         max_overlap = overlap;
         current_monitor = monitors[i];

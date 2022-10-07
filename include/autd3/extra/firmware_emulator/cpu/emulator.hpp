@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/10/2022
+// Last Modified: 07/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -108,7 +108,7 @@ class CPU {
     }
 
     if (header.cpu_flag.contains(CPUControlFlags::MOD_END))
-      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE, static_cast<uint16_t>(std::max(_mod_cycle, 1u) - 1u));
+      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE, static_cast<uint16_t>((std::max)(_mod_cycle, 1u) - 1u));
   }
 
   void config_silencer(const GlobalHeader& header) {
@@ -181,7 +181,7 @@ class CPU {
       _stm_cycle += cnt;
     }
     if (header.cpu_flag.contains(CPUControlFlags::STM_END))
-      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, static_cast<uint16_t>(std::max(_stm_cycle, 1u) - 1u));
+      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, static_cast<uint16_t>((std::max)(_stm_cycle, 1u) - 1u));
   }
 
   void write_gain_stm_legacy(const GlobalHeader& header, const Body& body) {
@@ -250,7 +250,7 @@ class CPU {
                  ((_stm_cycle & ~GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) >> GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH));
 
     if (header.cpu_flag.contains(CPUControlFlags::STM_END))
-      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, static_cast<uint16_t>(std::max(_stm_cycle, 1u) - 1u));
+      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, static_cast<uint16_t>((std::max)(_stm_cycle, 1u) - 1u));
   }
 
   void write_gain_stm(const GlobalHeader& header, const Body& body) {
@@ -295,7 +295,7 @@ class CPU {
                  ((_stm_cycle & ~GAIN_STM_BUF_SEGMENT_SIZE_MASK) >> GAIN_STM_BUF_SEGMENT_SIZE_WIDTH));
 
     if (header.cpu_flag.contains(CPUControlFlags::STM_END))
-      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, static_cast<uint16_t>(std::max(_stm_cycle, 1u) - 1u));
+      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, static_cast<uint16_t>((std::max)(_stm_cycle, 1u) - 1u));
   }
 
   static uint16_t get_cpu_version() { return CPU_VERSION; }
@@ -316,7 +316,7 @@ class CPU {
     _stm_cycle = 0;
 
     _mod_cycle = 2;
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE, static_cast<uint16_t>(std::max(_mod_cycle, 1u) - 1u));
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE, static_cast<uint16_t>((std::max)(_mod_cycle, 1u) - 1u));
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_0, reinterpret_cast<const uint16_t*>(&freq_div), 2);
     bram_write(BRAM_SELECT_MOD, 0, 0x0000);
 

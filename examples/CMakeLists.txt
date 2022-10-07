@@ -62,10 +62,13 @@ if(BUILD_GEOMETRY_VIEWER)
 endif()
 
 if(BUILD_SIMULATOR)
-  add_executable(example_simulator simulator.cpp ${hpp_files})
-  target_link_libraries(example_simulator autd3_example_common link_simulator)
-  
-  target_compile_definitions(example_simulator PRIVATE AUTD3_SIMULATOR_FONT_PATH="${PROJECT_SOURCE_DIR}/examples/fonts/NotoSans-Regular.ttf")
+add_executable(example_simulator_server simulator_server.cpp)
+target_include_directories(example_simulator_server PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_link_libraries(example_simulator_server simulator)
+target_compile_definitions(example_simulator_server PRIVATE AUTD3_SIMULATOR_FONT_PATH="${PROJECT_SOURCE_DIR}/examples/fonts/NotoSans-Regular.ttf")
+set_target_properties(example_simulator_server PROPERTIES FOLDER "example")
 
-  set_target_properties(example_simulator PROPERTIES FOLDER "example")
+add_executable(example_simulator_client simulator_client.cpp)
+target_link_libraries(example_simulator_client PRIVATE autd3_example_common link_simulator)
+set_target_properties(example_simulator_client PROPERTIES FOLDER "example")
 endif()

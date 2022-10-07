@@ -26,32 +26,28 @@ class Simulator {
   /**
    * @brief Constructor
    */
-  explicit Simulator(extra::simulator::Settings settings = {}) noexcept : _settings(std::move(settings)) {}
+  explicit Simulator() noexcept : _port(50632), _ip_addr("127.0.0.1") {}
   ~Simulator() = default;
   Simulator(const Simulator& v) noexcept = delete;
   Simulator& operator=(const Simulator& obj) = delete;
   Simulator(Simulator&& obj) = default;
   Simulator& operator=(Simulator&& obj) = default;
 
-  /**
-   * @brief Set callback called when window is closed
-   */
-  Simulator& exit_callback(std::function<void(extra::simulator::Settings)> callback) {
-    _callback = std::move(callback);
+  Simulator& port(const uint16_t port) {
+    _port = port;
+    return *this;
+  }
+
+  Simulator& ip_addr(std::string ip_addr) {
+    _ip_addr = std::move(ip_addr);
     return *this;
   }
 
   [[nodiscard]] core::LinkPtr build() const;
 
  private:
-  extra::simulator::Settings _settings;
-  std::function<void(extra::simulator::Settings)> _callback = [](const auto) {
-#ifdef __APPLE__
-    std::exit(0);
-#else
-    std::quick_exit(0);
-#endif
-  };
+  uint16_t _port;
+  std::string _ip_addr;
 };
 
 }  // namespace autd3::link
