@@ -12,6 +12,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "autd3/core/link.hpp"
@@ -26,7 +27,7 @@ class Simulator {
   /**
    * @brief Constructor
    */
-  explicit Simulator() noexcept : _port(50632), _ip_addr("127.0.0.1") {}
+  Simulator() noexcept : _port(50632), _ip_addr("127.0.0.1") {}
   ~Simulator() = default;
   Simulator(const Simulator& v) noexcept = delete;
   Simulator& operator=(const Simulator& obj) = delete;
