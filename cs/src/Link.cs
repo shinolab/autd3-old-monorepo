@@ -38,7 +38,7 @@ namespace AUTD3Sharp
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnLostCallbackDelegate(string str);
 
-            private string? _ifname;
+            private string _ifname;
             private ushort _sendCycle;
             private ushort _sync0Cycle;
             private bool _freerun;
@@ -47,7 +47,7 @@ namespace AUTD3Sharp
 
             public SOEM()
             {
-                _ifname = null;
+                _ifname = "";
                 _sendCycle = 1;
                 _sync0Cycle = 1;
                 _freerun = false;
