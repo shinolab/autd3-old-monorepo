@@ -1,6 +1,6 @@
 # C\#
 
-[autd3sharp](https://github.com/shinolab/autd3sharp)は **.Net Standard 2.1** に対応したラッパーを提供している.
+[autd3sharp](https://github.com/shinolab/autd3/cs)は **.Net Standard 2.1** に対応したラッパーを提供している.
 
 ## Installation
 
@@ -8,7 +8,7 @@
 
 ### Installation for Unity
 
-Unityから使う場合は, [GitHub Release](https://github.com/shinolab/autd3sharp/releases)にてunitypackageを公開しているので, そちらを使用すること.
+Unityから使う場合は, [GitHub Release](https://github.com/shinolab/autd3/releases)にてunitypackageを公開しているので, そちらを使用すること.
 
 本パッケージをインストールしたあと, `Project Settings > Player`から`Allow 'unsafe' code`にチェックをいれること. また警告を抑制するため, `Additional Compiler Arguments`に`-nullable:enable`を追加すること.
 
@@ -33,7 +33,7 @@ namespace example
             var autd = new Controller();
             autd.AddDevice(Vector3d.Zero, Vector3d.Zero);
 
-            var link = new SOEM().HighPrecision(true).Build();
+            var link = new Link.SOEM().HighPrecision(true).Build();
             if (!autd.Open(link))
             {
                 Console.WriteLine(Controller.LastError);
@@ -56,8 +56,8 @@ namespace example
             const double x = Controller.TransSpacing * ((Controller.NumTransInX - 1) / 2.0);
             const double y = Controller.TransSpacing * ((Controller.NumTransInY - 1) / 2.0);
             const double z = 150.0;
-            var g = new Focus(new Vector3d(x, y, z));
-            var m = new Sine(150);
+            var g = new Gain.Focus(new Vector3d(x, y, z));
+            var m = new Modulation.Sine(150);
             autd.Send(m, g);
 
             Console.ReadKey(true);
@@ -68,7 +68,7 @@ namespace example
 }
 ```
 
-より詳細なサンプルは[autd3sharpのexample](https://github.com/shinolab/autd3sharp/tree/master/example)を参照されたい.
+より詳細なサンプルは[autd3sharpのexample](https://github.com/shinolab/autd3/cs/example)を参照されたい.
 
 ## Trouble shooting
 
@@ -98,4 +98,4 @@ A. サポートしてない. ソースコードを丸々コピペすれば動く
 
 ---
 
-その他, 質問があれば[GitHubのissue](https://github.com/shinolab/autd3sharp/issues)に送られたい.
+その他, 質問があれば[GitHubのissue](https://github.com/shinolab/autd3/issues)に送られたい.

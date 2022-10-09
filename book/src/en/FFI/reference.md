@@ -1303,14 +1303,15 @@ CUDA Backendを作成する.
 | out                    | void** | out    | pointer to pointer to CUDA backend |
 | return                 | void   | -      | -                                  |
 
-## AUTDLinkEmulator (autd3capi-link-emulator)
+## AUTDLinkSimulator (autd3capi-link-simulator)
 
-Emulator linkを作成する.
+Simulator linkを作成する.
 
 | Argument name / return | type     | in/out | description                         |
 | ---------------------- | -------- | ------ | ----------------------------------- |
-| out                    | void**   | out    | pointer to pointer to Emulator link |
+| out                    | void**   | out    | pointer to pointer to Simulator link |
 | port                   | uint16_t | in     | port number                         |
+| ip_addr                | char*    | in     | ip address (localhost if null)      |
 | return                 | void     | -      | -                                   |
 
 ## AUTDLinkRemoteTwinCAT (autd3capi-link-remote-twincat)

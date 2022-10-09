@@ -4,4 +4,6 @@ members = [
     "capi_header_parser",
     "doc_checker",
     "wrapper_generator",
+    "spv2hpp",
+    "image2hpp"
 ]

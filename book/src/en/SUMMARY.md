@@ -22,7 +22,7 @@
   - [Go](./FFI/go.md)
   - [MATLAB](./FFI/matlab.md)
   - [C API Reference](./FFI/reference.md)
-- [Emulator](./Emulator/emulator.md)
+- [Simulator](./Simulator/simulator.md)
 - [FAQ](./FAQ/faq.md)
 - [Document History](document_history.md)
 - [Release Notes](release_notes.md)

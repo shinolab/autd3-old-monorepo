@@ -3,7 +3,7 @@
 // Created Date: 26/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/09/2022
+// Last Modified: 02/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -167,8 +167,10 @@ class Model {
 
     for (size_t v = 0; v < vertex_count; v++) {
       Vertex vert{};
-      vert.pos = glm::vec4(glm::make_vec3(&position_buffer[v * 3]), 1.0f);
-      vert.normal = normalize(glm::vec3(normals_buffer ? glm::make_vec3(&normals_buffer[v * 3]) : glm::vec3(0.0f)));
+      const auto p_gl = glm::make_vec3(&position_buffer[v * 3]);
+      const auto n_gl = normals_buffer ? glm::make_vec3(&normals_buffer[v * 3]) : glm::vec3(0.0f);
+      vert.pos = glm::vec4(p_gl.x, -p_gl.z, p_gl.y, 1.0f);  // into AUTD3 coordinate
+      vert.normal = normalize(glm::vec3(n_gl.x, -n_gl.z, n_gl.y));
       vert.uv = tex_coords_buffer ? glm::make_vec2(&tex_coords_buffer[v * 2]) : glm::vec3(0.0f);
       vertices.emplace_back(vert);
     }

@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2022
+// Last Modified: 30/09/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -85,7 +85,7 @@ struct FirmwareInfo {
       ss << "v2." << version_num - 0x80;
       return ss.str();
     }
-    if (version_num == 0xFF) return "emulator";
+    if (version_num == 0xFF) return "simulator";
 
     ss << "unknown (" << std::hex << static_cast<int>(version_num) << ")";
     return ss.str();
