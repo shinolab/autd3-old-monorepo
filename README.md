@@ -117,7 +117,7 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 ## For other programming languages
 
 * [Rust](https://github.com/shinolab/rust-autd)
-* [C#](https://github.com/shinolab/autd3sharp)
+* [C#](./cs)
 * [Python](https://github.com/shinolab/pyautd)
 * [Nim](https://github.com/shinolab/autd3_nim)
 * [Go](https://github.com/shinolab/autd3-go)
