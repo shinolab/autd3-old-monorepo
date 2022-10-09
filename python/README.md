@@ -13,7 +13,7 @@ pip install pyautd3
 or from this repository
 
 ```
-pip install git+https://github.com/shinolab/pyautd.git
+pip install git+https://github.com/shinolab/autd3.git#subdirectory=python
 ```
 
 ## Requirements
