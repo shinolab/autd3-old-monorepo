@@ -1311,6 +1311,7 @@ Simulator linkを作成する.
 | ---------------------- | -------- | ------ | ----------------------------------- |
 | out                    | void**   | out    | pointer to pointer to Simulator link |
 | port                   | uint16_t | in     | port number                         |
+| ip_addr                | char*    | in     | ip address (localhost if null)      |
 | return                 | void     | -      | -                                   |
 
 ## AUTDLinkRemoteTwinCAT (autd3capi-link-remote-twincat)

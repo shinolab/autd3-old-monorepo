@@ -167,9 +167,7 @@ TwinCATとは異なり通常のWindows上で動作するためリアルタイム
 SOEMを使用するのはやむを得ない理由があるか, 開発時のみに限定するべきである.
 一方, SOEMはクロスプラットフォームで動作し, インストールも単純という利点がある.
 
-Windowsの場合は, [npcap](https://nmap.org/npcap/), または, [WinPcap](https://www.winpcap.org/)を予めインストールしておくこと.
-npcapはWinPcapの後継であり, こちらの利用を推奨する.
-**なお, npcapをインストールする場合は"WinPcap API compatible mode"でインストールすること.**
+Windowsの場合は, [npcap](https://nmap.org/npcap/)を**WinPcap API compatible mode**でインストールしておくこと.
 Linux/macの場合は, 特に準備は必要ない.
 
 SOEMのLinkを使用する際は`autd3/link/soem.hpp`ヘッダーをインクルードする.
@@ -243,9 +241,9 @@ High Precisionモードを`true`にすると, より高精度なタイマが使�
 
 ## Simulator
 
-Simulator linkは[autd-simulator](https://github.com/shinolab/autd-simulator) を使用する際に使うLinkである.
+Simulator linkは[AUTD Simulator](https://shinolab.github.io/autd3/book/jp/Simulator/simulator.html)を使用する際に使うLinkである.
 
-使用の前に, AUTD Simulatorを実行しておく必要がある.
+使用の前に, AUTD Simulatorを起動しておく必要がある.
 
 SimulatorのLinkを使用する際は`autd3/link/simulator.hpp`ヘッダーをインクルードする.
 ```cpp
@@ -255,7 +253,7 @@ SimulatorのLinkを使用する際は`autd3/link/simulator.hpp`ヘッダーを�
 
   auto link = autd::link::Simulator().port(50632).build();
 ```
-ポート番号はautd-simulatorの設定と同じにしておく.
+ポート番号はAUTD Simulatorの設定と同じにしておく.
 
 [^fn_remote_twin]: 無線LANでも可
 
