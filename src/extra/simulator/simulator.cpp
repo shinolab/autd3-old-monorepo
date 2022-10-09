@@ -124,7 +124,7 @@ void Simulator::run() {
       if (const auto len = recvfrom(sock, buf.data(), 65536, 0, reinterpret_cast<sockaddr*>(&addr_in), &addr_len); len >= 0) {
         const auto recv_len = static_cast<size_t>(len);
         const auto body_len = recv_len - driver::HEADER_SIZE;
-        if ((body_len % driver::BODY_SIZE) != 0) {
+        if (body_len % driver::BODY_SIZE != 0) {
           std::cerr << "Unknown data size: " << recv_len << std::endl;
           continue;
         }
