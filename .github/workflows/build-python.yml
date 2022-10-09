@@ -1,0 +1,67 @@
+name: build-python
+
+on:
+  push:
+    tags-ignore:
+      - v*
+    branches:
+      - '*'
+
+jobs:
+  build:
+    name: build ${{ matrix.os }} with python  ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: [3.7, 3.8, 3.9]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build capi
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DBUILD_ALL=ON
+        cmake --build . --parallel 8
+        cd ..
+    - name: Copy linux binary
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        mkdir -p python/pyautd3/bin/linux_x64
+        cp build/bin/*.so python/pyautd3/bin/linux_x64
+      shell: bash
+      env:
+        CC: gcc-10
+        CXX: g++-10
+    - name: Copy Windows binary
+      if: matrix.os == 'windows-latest'
+      run: |
+        mkdir python/pyautd3/bin/win_x64
+        foreach($dll in Get-ChildItem -Path build/bin/Debug | Where {$_.extension -like ".dll"}){ Copy-Item -Path $dll -Destination python/pyautd3/bin/win_x64 }
+      shell: pwsh
+    - name: Copy macos binary
+      if: matrix.os == 'macos-latest'
+      run: |
+        mkdir -p python/pyautd3/bin/macos_universal
+        cp build/bin/*.dylib python/pyautd3/bin/macos_universal
+      shell: bash
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install numpy
+    - name: Lint with flake8
+      run: |
+        pip install flake8
+        cd python
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=150 --statistics
+        cd ..
+    - name: Import Test
+      run: |
+        cd python
+        python -c "import pyautd3; print(pyautd3.__version__)"

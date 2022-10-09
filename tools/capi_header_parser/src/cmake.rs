@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2022
+ * Last Modified: 09/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -70,7 +70,7 @@ where
     Ok(false)
 }
 
-fn parse<P>(path: P, projcts: &mut Vec<CMakeProject>) -> Result<()>
+fn parse<P>(path: P, projcts: &mut Vec<CMakeProject>, ignores: &[String]) -> Result<()>
 where
     P: AsRef<Path>,
 {
@@ -87,10 +87,13 @@ where
         }
         let line = line.unwrap()?;
         for cap in re_subdir.captures_iter(&line) {
-            parse(path.as_ref().join(&cap[1]), projcts)?;
+            parse(path.as_ref().join(&cap[1]), projcts, ignores)?;
         }
         for cap in re_library_begin.captures_iter(&line) {
             let name = cap[1].to_string();
+            if ignores.contains(&name) {
+                continue;
+            }
             if let Some(header) = find_header(&mut lines_iter)? {
                 let header_path = path.as_ref().join(header);
                 let depends_ext_lib = check_dependency_to_ext_lib(&header_path)?;
@@ -106,11 +109,11 @@ where
     Ok(())
 }
 
-pub fn glob_projects<P>(base: P) -> Result<Vec<CMakeProject>>
+pub fn glob_projects<P>(base: P, ignores: &[String]) -> Result<Vec<CMakeProject>>
 where
     P: AsRef<Path>,
 {
     let mut projects = Vec::new();
-    parse(base, &mut projects)?;
+    parse(base, &mut projects, ignores)?;
     Ok(projects)
 }

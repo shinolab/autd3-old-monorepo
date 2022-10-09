@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-if(NOT WIN32)
-  find_package(Threads REQUIRED)
-endif()
+find_package(Threads REQUIRED)
 
 add_library(autd3capi SHARED
   c_api.cpp
