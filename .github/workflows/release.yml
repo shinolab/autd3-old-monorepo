@@ -306,7 +306,7 @@ jobs:
       - name: Enumerate Assets
         run: |
           find . -name '*.meta' >> metaList
-        working-directory: ./unity
+        working-directory: ./cs/unity
       - uses: pCYSl5EDgo/create-unitypackage@master
         with:
           package-path: 'autd3.unitypackage'
@@ -349,4 +349,4 @@ jobs:
       run: |
         cd python
         python setup.py sdist bdist_wheel
-        twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive
+        twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
