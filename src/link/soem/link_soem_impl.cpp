@@ -3,7 +3,7 @@
 // Created Date: 23/08/2019
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/09/2022
+// Last Modified: 07/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2019-2020 Shun Suzuki. All rights reserved.
@@ -22,7 +22,6 @@
 #include "./ethercat.h"
 #include "autd3/link/soem.hpp"
 #include "ecat_thread/ecat_thread.hpp"
-#include "spdlog/spdlog.h"
 
 namespace {
 std::string lookup_autd() {

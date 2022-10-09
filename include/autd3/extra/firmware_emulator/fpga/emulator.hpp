@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/09/2022
+// Last Modified: 07/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "./params.hpp"
+#include "autd3/driver/fpga/defined.hpp"
 #include "autd3/driver/hardware.hpp"
 
 namespace autd3::extra::firmware_emulator::fpga {

@@ -15,9 +15,9 @@ add_library(simulator
 )
 target_include_directories(simulator PRIVATE ${PROJECT_SOURCE_DIR}/include ${STB_INCLUDE_PATH} ${Vulkan_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/src/extra/simulator/shaders ${PROJECT_SOURCE_DIR}/src/extra/simulator/textures)
 target_link_libraries(simulator PRIVATE autd3_common vk_helper glm::glm glfw imgui_vulkan tinycolormap)
-
-if(WIN32)
-  target_link_options(simulator INTERFACE /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib /NODEFAULTLIB:msvcrtd.lib)
+if (WIN32)
+  target_link_libraries(simulator PUBLIC ws2_32)
 endif()
 
 set_target_properties(simulator PROPERTIES FOLDER "extra")
+set_target_properties(simulator PROPERTIES POSITION_INDEPENDENT_CODE ON)
