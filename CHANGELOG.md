@@ -1,5 +1,6 @@
 # 2.4.1
 
+- Add `extra::simulator::Simulator`
 - Rename `link::Emulator` to `link::Simulator`
 
 # 2.4.0
