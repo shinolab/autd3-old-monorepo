@@ -4,7 +4,7 @@
  * Created Date: 24/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/06/2022
+ * Last Modified: 09/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -32,7 +32,7 @@ use traits::Generator;
 
 fn gen<G: Generator, P: AsRef<Path>>(path: P, capi_path: P) -> Result<()> {
     std::fs::create_dir_all(path.as_ref())?;
-    let projects = cmake::glob_projects(capi_path)?;
+    let projects = cmake::glob_projects(capi_path, &["autd3capi-backend-blas".to_string()])?;
     for proj in projects {
         let mut writer = BufWriter::new(File::create(
             path.as_ref().join(G::get_filename(proj.name())),
@@ -48,8 +48,8 @@ fn gen<G: Generator, P: AsRef<Path>>(path: P, capi_path: P) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    gen::<PythonGenerator, _>("python", "../../capi")?;
-    gen::<CSharpGenerator, _>("cs", "../../capi")?;
+    gen::<PythonGenerator, _>("../../python/pyautd3/native_methods", "../../capi")?;
+    gen::<CSharpGenerator, _>("../../cs/src/NativeMethods", "../../capi")?;
     gen::<MatlabGenerator, _>("matlab", "../../capi")?;
     gen::<NimGenerator, _>("nim", "../../capi")?;
     gen::<JuliaGenerator, _>("julia", "../../capi")?;

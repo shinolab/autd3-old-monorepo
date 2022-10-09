@@ -5,7 +5,6 @@ add_library(link_simulator
   ${PROJECT_SOURCE_DIR}/include/autd3/link/simulator.hpp
 )
 target_link_libraries(link_simulator PUBLIC autd3_common)
-target_link_libraries(link_simulator INTERFACE simulator)
 
 if(WIN32)
   target_link_libraries(link_simulator PUBLIC ws2_32)
