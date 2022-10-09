@@ -1,6 +1,6 @@
 # C\#
 
-[autd3sharp](https://github.com/shinolab/autd3/cs)は **.Net Standard 2.1** に対応したラッパーを提供している.
+[autd3sharp](https://github.com/shinolab/autd3/tree/master/cs)は **.Net Standard 2.1** に対応したラッパーを提供している.
 
 ## Installation
 
@@ -68,7 +68,7 @@ namespace example
 }
 ```
 
-より詳細なサンプルは[autd3sharpのexample](https://github.com/shinolab/autd3/cs/example)を参照されたい.
+より詳細なサンプルは[autd3sharpのexample](https://github.com/shinolab/autd3/tree/master/cs/example)を参照されたい.
 
 ## Trouble shooting
 
