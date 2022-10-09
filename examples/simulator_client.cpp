@@ -15,6 +15,8 @@
 #include "autd3/link/simulator.hpp"
 #include "runner.hpp"
 
+// Run example_simulator_server before running this example
+
 int main() try {
   autd3::Controller autd;
 
