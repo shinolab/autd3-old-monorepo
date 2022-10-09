@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/10/2022
+// Last Modified: 09/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,13 +23,14 @@
 
 #include "autd3/core/interface.hpp"
 #include "autd3/core/link.hpp"
+#include "autd3/extra/firmware_emulator/cpu/emulator.hpp"
 
 namespace autd3::link {
 
 class SimulatorImpl final : public core::Link {
  public:
   explicit SimulatorImpl(const uint16_t port, std::string ip_addr) : Link(), _is_open(false), _port(port), _ip_addr(std::move(ip_addr)) {}
-  ~SimulatorImpl() override = default;
+  ~SimulatorImpl() override { close(); }
   SimulatorImpl(const SimulatorImpl& v) noexcept = delete;
   SimulatorImpl& operator=(const SimulatorImpl& obj) = delete;
   SimulatorImpl(SimulatorImpl&& obj) = delete;
@@ -37,8 +38,6 @@ class SimulatorImpl final : public core::Link {
 
   void open(const core::Geometry& geometry) override {
     if (is_open()) return;
-
-    const auto geometry_datagram = init_geometry_datagram(geometry);
 
 #if WIN32
 #pragma warning(push)
@@ -65,45 +64,51 @@ class SimulatorImpl final : public core::Link {
 #endif
 
     _is_open = true;
-    send(geometry_datagram);
+    _num_devices = geometry.num_devices();
+    _cpus.reserve(_num_devices);
+    for (size_t i = 0; i < _num_devices; i++) {
+      extra::firmware_emulator::cpu::CPU cpu(i, false);
+      cpu.init();
+      _cpus.emplace_back(cpu);
+    }
+
+    send(simulator_init_datagram(geometry));
   }
 
   void close() override {
     if (!is_open()) return;
+    _is_open = false;
+
+    send(simulator_close_datagram(_num_devices));
+
+    _cpus.clear();
+
 #if WIN32
     closesocket(_socket);
     WSACleanup();
 #else
     ::close(_socket);
 #endif
-    _is_open = false;
   }
 
   bool send(const driver::TxDatagram& tx) override {
-    _last_msg_id = tx.header().msg_id;
     if (sendto(_socket, reinterpret_cast<const char*>(tx.data().data()), static_cast<int>(tx.effective_size()), 0,
                reinterpret_cast<sockaddr*>(&_addr), sizeof _addr) == -1)
       throw std::runtime_error("failed to send data");
+
+    for (size_t i = 0; i < tx.size(); i++) _cpus[i].send(tx.header(), tx.bodies()[i]);
+
     return true;
   }
+
   bool receive(driver::RxDatagram& rx) override {
-    for_each(rx.begin(), rx.end(), [this](auto& msg) { msg.msg_id = this->_last_msg_id; });
-
-    const auto set = [&rx](const uint8_t value) { for_each(rx.begin(), rx.end(), [value](auto& msg) { msg.ack = value; }); };
-
-    switch (_last_msg_id) {
-      case driver::MSG_CLEAR:
-        break;
-      case driver::MSG_RD_CPU_VERSION:
-      case driver::MSG_RD_FPGA_VERSION:
-      case driver::MSG_RD_FPGA_FUNCTION:
-        set(0xFF);
-        break;
-      default:
-        break;
+    for (size_t i = 0; i < _num_devices; i++) {
+      rx[i].msg_id = _cpus[i].msg_id();
+      rx[i].ack = _cpus[i].ack();
     }
     return true;
   }
+
   bool is_open() override { return _is_open; }
 
  private:
@@ -111,18 +116,20 @@ class SimulatorImpl final : public core::Link {
   uint16_t _port;
   std::string _ip_addr;
 #if WIN32
-  SOCKET _socket = {};
+  SOCKET _socket{};
 #else
-  int _socket = 0;
+  int _socket{0};
 #endif
-  sockaddr_in _addr = {};
+  sockaddr_in _addr{};
 
-  uint8_t _last_msg_id = 0;
+  size_t _num_devices{0};
 
-  static driver::TxDatagram init_geometry_datagram(const core::Geometry& geometry) {
+  std::vector<extra::firmware_emulator::cpu::CPU> _cpus;
+
+  static driver::TxDatagram simulator_init_datagram(const core::Geometry& geometry) {
     driver::TxDatagram buf(geometry.num_devices());
     auto& uh = buf.header();
-    uh.msg_id = driver::MSG_SIMULATOR_GEOMETRY_SET;
+    uh.msg_id = driver::MSG_SIMULATOR_INIT;
     uh.fpga_flag = driver::FPGAControlFlags::NONE;
     uh.cpu_flag = driver::CPUControlFlags::NONE;
     uh.size = 0;
@@ -139,6 +146,17 @@ class SimulatorImpl final : public core::Link {
       cursor[5] = rot.y();
       cursor[6] = rot.z();
     }
+    return buf;
+  }
+
+  static driver::TxDatagram simulator_close_datagram(const size_t num_devices) {
+    driver::TxDatagram buf(num_devices);
+    auto& uh = buf.header();
+    uh.msg_id = driver::MSG_SIMULATOR_CLOSE;
+    uh.fpga_flag = driver::FPGAControlFlags::NONE;
+    uh.cpu_flag = driver::CPUControlFlags::NONE;
+    uh.size = 0;
+    buf.num_bodies = 0;
     return buf;
   }
 };

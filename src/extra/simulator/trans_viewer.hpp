@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/10/2022
+// Last Modified: 09/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -316,7 +316,7 @@ class TransViewer {
       m[3].x = positions[i].x;
       m[3].y = positions[i].y;
       m[3].z = positions[i].z;
-      m = mat4_cast(rotations[i]) * m;
+      m = m * mat4_cast(rotations[i]);
       models.emplace_back(m);
     }
     const vk::DeviceSize buffer_size = sizeof models[0] * models.size();
