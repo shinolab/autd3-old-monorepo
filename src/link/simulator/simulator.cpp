@@ -60,7 +60,7 @@ class SimulatorImpl final : public core::Link {
 #if WIN32
     inet_pton(AF_INET, _ip_addr.c_str(), &_addr.sin_addr.S_un.S_addr);
 #else
-    _addr.sin_addr.s_addr = _ip_addr.c_str();
+    _addr.sin_addr.s_addr = inet_addr(_ip_addr.c_str());
 #endif
 
     _is_open = true;
