@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/10/2022
+// Last Modified: 09/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -39,7 +39,8 @@ using driver::NUM_TRANS_IN_UNIT;
 
 class CPU {
  public:
-  explicit CPU(const size_t id) : _id(id), _msg_id(0), _ack(0), _mod_cycle(0), _stm_cycle(0), _gain_stm_mode(GAIN_STM_MODE_PHASE_DUTY_FULL) {
+  explicit CPU(const size_t id, const bool enable_fpga = true)
+      : _id(id), _enable_fpga(enable_fpga), _msg_id(0), _ack(0), _mod_cycle(0), _stm_cycle(0), _gain_stm_mode(GAIN_STM_MODE_PHASE_DUTY_FULL) {
     _cycles.fill(0);
   }
 
@@ -345,7 +346,7 @@ class CPU {
         _ack = (get_fpga_version() >> 8) & 0xFF;
         break;
       default:
-        if (_msg_id > driver::MSG_END) return;
+        if (!_enable_fpga || _msg_id > driver::MSG_END) return;
 
         const auto ctl_reg = header.fpga_flag;
         bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, ctl_reg.value());
@@ -383,6 +384,7 @@ class CPU {
   }
 
   size_t _id;
+  bool _enable_fpga;
   uint8_t _msg_id;
   uint8_t _ack;
   uint32_t _mod_cycle;

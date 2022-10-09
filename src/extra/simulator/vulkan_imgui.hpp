@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/10/2022
+// Last Modified: 09/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -332,8 +332,20 @@ class VulkanImGui {
       }
 
       if (ImGui::BeginTabItem("Config")) {
-        if (ImGui::DragFloat("Font size", &_font_size, 1, 1.0f, 256.0f)) _update_font = true;
+        if (ImGui::DragFloat("Sound speed", &sound_speed, 1)) {
+          for (size_t dev = 0; dev < cpus.size(); dev++) {
+            const auto& cycles = cpus[dev].fpga().cycles();
+            for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) {
+              const auto freq = static_cast<float>(driver::FPGA_CLK_FREQ) / static_cast<float>(cycles[i]);
+              sources.drives()[i + dev * driver::NUM_TRANS_IN_UNIT].set_wave_num(freq, sound_speed * 1e3f);
+            }
+          }
+          flag.set(UpdateFlags::UPDATE_SOURCE_DRIVE);
+        }
 
+        ImGui::Separator();
+
+        if (ImGui::DragFloat("Font size", &_font_size, 1, 1.0f, 256.0f)) _update_font = true;
         ImGui::Separator();
         ImGui::Text("Device index: show/enable");
         for (size_t i = 0; i < cpus.size(); i++) {
@@ -555,6 +567,8 @@ class VulkanImGui {
   float fov = 45.0f;
   float near_clip = 0.1f;
   float far_clip = 1000.0f;
+
+  float sound_speed = 340.0f;  // m/s
 
   glm::vec4 background{0.3f, 0.3f, 0.3f, 1.0f};
 
