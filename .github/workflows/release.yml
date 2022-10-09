@@ -271,3 +271,69 @@ jobs:
           asset_path: ./assets.tar.gz
           asset_name: ${{ steps.get_version.outputs.result }}
           asset_content_type: application/octet-stream
+
+  publish_unitypackage:
+    needs: [publish_win, publish_linux, publish_mac]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3 | cut -d . -f 1,2,3)
+      - name: Get package name
+        id: get_package_name
+        uses: actions/github-script@0.5.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          result-encoding: string
+          script: |
+            return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'.unitypackage';
+      - name: Download latest binary
+        run: | 
+          wget https://github.com/shinolab/autd3/releases/download/${{ steps.get_version.outputs.VERSION }}/autd3-${{ steps.get_version.outputs.VERSION }}-linux-x64.tar.gz
+          wget https://github.com/shinolab/autd3/releases/download/${{ steps.get_version.outputs.VERSION }}/autd3-${{ steps.get_version.outputs.VERSION }}-macos-universal.tar.gz
+          wget https://github.com/shinolab/autd3/releases/download/${{ steps.get_version.outputs.VERSION }}/autd3-${{ steps.get_version.outputs.VERSION }}-win-x64.zip
+      - name: Replace latest binary
+        run: |
+          tar -zxvf autd3-${{ steps.get_version.outputs.VERSION }}-linux-x64.tar.gz
+          tar -zxvf autd3-${{ steps.get_version.outputs.VERSION }}-macos-universal.tar.gz
+          unzip -o autd3-${{ steps.get_version.outputs.VERSION }}-win-x64.zip
+          rm -f ./cs/unity/Assets/AUTD/Plugins/x86_64/*.dll
+          rm -f ./cs/unity/Assets/AUTD/Plugins/x86_64/*.so
+          rm -f ./cs/unity/Assets/AUTD/Plugins/x86_64/*.dylib
+          \cp bin/*.dll ./cs/unity/Assets/AUTD/Plugins/x86_64/
+          \cp bin/*.so ./cs/unity/Assets/AUTD/Plugins/x86_64/
+          \cp bin/*.dylib ./cs/unity/Assets/AUTD/Plugins/x86_64/
+      - name: Replace latest scripts
+        run: |
+          cp -f ./cs/src/*.cs ./cs/unity/Assets/AUTD/Scripts/
+          cp -f ./cs/src/NativeMethods/*.cs ./cs/unity/Assets/AUTD/Scripts/NativeMethods
+          cp -f ./cs/src/LICENSE.txt ./cs/unity/Assets/AUTD/
+      - name: Enumerate Assets
+        run: |
+          find . -name '*.meta' >> metaList
+        working-directory: ./unity
+      - uses: pCYSl5EDgo/create-unitypackage@master
+        with:
+          package-path: 'autd3.unitypackage'
+          include-files: ./cs/unity/metaList
+          project-folder: ./cs/unity
+      - name: Load Release URL File from release job
+        uses: actions/download-artifact@v1
+        with:
+          name: release_url
+      - name: Get Release File Name & Upload URL
+        id: get_release_info
+        run: |
+          value=`cat release_url/release_url.txt`
+          echo ::set-output name=upload_url::$value
+      - name: Upload Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+          asset_path: ./autd3.unitypackage
+          asset_name: ${{ steps.get_package_name.outputs.result }}
+          asset_content_type: application/octet-stream
