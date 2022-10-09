@@ -43,8 +43,6 @@ jobs:
           result-encoding: string
           script: |
             return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-win';
-      - name: Checkout submodules
-        run: git submodule update --init --force --recursive
       - name: setup-msbuild
         uses: microsoft/setup-msbuild@v1
       - uses: Jimver/cuda-toolkit@v0.2.6
@@ -124,8 +122,6 @@ jobs:
           result-encoding: string
           script: |
             return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-linux';
-      - name: Checkout submodules
-        run: git submodule update --init --force --recursive
       - name: install cross compile tools
         run: |
           sudo apt update
@@ -238,8 +234,6 @@ jobs:
           result-encoding: string
           script: |
             return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-macos-universal.tar.gz';
-      - name: Checkout submodules
-        run: git submodule update --init --force --recursive
       - name: Build project
         run: |
           mkdir -p build && cd build
