@@ -11,6 +11,12 @@ THIRD PARTY NOTICES
     * Dear ImGui (https://github.com/ocornut/imgui)
     * nlohmann-json (https://github.com/nlohmann/json)
     * stb (https://github.com/nothings/stb)
+  * Simulator uses
+    * glfw (https://github.com/glfw/glfw)
+    * glm (https://github.com/g-truc/glm)
+    * Dear ImGui (https://github.com/ocornut/imgui)
+    * stb (https://github.com/nothings/stb)
+    * tinycolormap (https://github.com/yuki-koyama/tinycolormap)
 * The licenses of these libraries are shown below.
 
 ********************* spdlog *********************
