@@ -17,8 +17,6 @@ jobs:
     
     steps:
     - uses: actions/checkout@v2
-    - name: Checkout submodules
-      run: git submodule update --init --force --recursive
     - name: setup-msbuild
       if: matrix.os == 'windows-latest'
       uses: microsoft/setup-msbuild@v1
@@ -91,8 +89,6 @@ jobs:
 
     steps: 
     - uses: actions/checkout@v2
-    - name: Checkout submodules
-      run: git submodule update --init --force --recursive
     - name: lint
       run: |
         mkdir -p build && cd build
