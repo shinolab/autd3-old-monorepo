@@ -1,24 +1,21 @@
 # Simulator
 
-autd-simulatorはその名の通りAUTD3のSimulatorであり, Windows/Linux/macOSで動作する.
+AUTD Simulatorはその名の通りAUTD3のSimulatorであり, Windows/Linux/macOSで動作する.
 
 ## Build
 
-AUTD3-Simulatorをビルドするには, Vulkan SDKをインストールし, CMakeの`BUILD_SIMULATOR`フラグをオンにしてビルドする.
+AUTD Simulatorをビルドするには, Vulkan SDKをインストールし, CMakeの`BUILD_SIMULATOR`フラグをオンにしてビルドする.
 
 ```
 cmake .. -DBUILD_SIMULATOR=ON
 ```
 
+AUTD Simulatorの実行に関しては, [サンプル](https://github.com/shinolab/autd3/blob/master/examples/simulator_server.cpp)を参照されたい.
+
 # How to
 
-<figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/emu-home.jpg"/>
-  <figcaption>Simulator</figcaption>
-</figure>
-
-autd-simulatorを実行すると上図のような画面になる.
-この状態で, Simulator linkを使用したクライアントプログラムを実行すると, クライアントプログラムの内容に合わせた音場が表示される.
+AUTD Simulatorを実行すると接続待ちの状態になる.
+この状態で, `link::Simulator`を使用したクライアントプログラムを実行すると, クライアントプログラムの内容に合わせた音場が表示される.
 図の中央の黒いパネルをSliceと呼び, このSliceを使って任意の位置の音場を可視化できる.
 また, 振動子の位相が色相で, 振幅が色強度で表される.
 
@@ -40,21 +37,20 @@ Color scaleはこの色空間の音圧の最大値を表す.
 大量のデバイスを使用すると色が飽和する場合があるので, その時はColor scaleの値を大きくすれば良い.
 また, Sliceそのもののアルファ値をSlice alphaで指定できる.
 
-Sliceに表示されている音場の保存及び録画ができる.
+また, Sliceに表示されている音場の保存ができる.
 
 ## Camera tab
 
-Cameraタブではカメラの位置, 回転, Field of Viewの角度, Near clip, Far clipの設定を変えられる.
+Cameraタブではカメラの位置, 回転, Field of View, Near clip, Far clipの設定を変えられる.
 回転はXYZのオイラー角で指定する.
 
 ## Config tab
 
-Configタブでは音速と振動子のアルファ値, 及び, 背景色の設定ができる.
+Configタブでは音速とフォントサイズ, 及び, 背景色の設定ができる.
 
 また, 各デバイスごとの表示/イネーブルを切り替えられる.
 表示をOffにした場合は, 表示されないだけで音場に寄与する.
 イネーブルをOffにすると音場に寄与しなくなる.
-さらに, デバイス毎の軸の表示もできる.
 
 ## Info tab
 
@@ -69,15 +65,9 @@ Silencerの設定は確認できるがこれは音場には反映されない.
 STMを送信した場合は, STMの情報が表示される.
 STMは自動的に切り替わったりしない, 代わりにSTM idxで何番目のデータを表示するかを指定する.
 
-## Log tab
-
-Logタブではデバッグ用のログが表示される.
-
 ## Other settings
 
-すべての設定は`settings.json`に保存される.
-幾つかの設定は`settings.json`からのみ編集できる.
-この中で重要なものとして, portとvsyncがある.
+設定の初期値は`simulator::Settings`にて変更できる.
 
-portはSDKのSimulator linkとの間で使うポート番号である.
-また, vsyncをtrueにすると垂直同期が有効になる.
+この中で起動時にしか変更できないものとしてvsyncがある.
+vsyncをtrueにすると垂直同期が有効になる.
