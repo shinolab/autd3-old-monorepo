@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/10/2022
+// Last Modified: 09/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -108,17 +108,20 @@ void Simulator::run() {
 
   std::atomic run_recv = true;
   _th = std::thread([this, sock, &run_recv, &recv_queue, &recv_mtx] {
-    char buf[65536]{};
+    std::vector<char> buf(65536);
     while (run_recv.load()) {
       sockaddr_in addr_in{};
       int addr_len = sizeof(addr_in);
-      if (const auto len = recvfrom(sock, buf, 65536, 0, reinterpret_cast<sockaddr*>(&addr_in), &addr_len); len >= 0) {
+      if (const auto len = recvfrom(sock, buf.data(), 65536, 0, reinterpret_cast<sockaddr*>(&addr_in), &addr_len); len >= 0) {
         const auto recv_len = static_cast<size_t>(len);
         const auto body_len = recv_len - driver::HEADER_SIZE;
-        if ((body_len % driver::BODY_SIZE) != 0) std::cerr << "Unknown data size: " << recv_len << std::endl;
+        if ((body_len % driver::BODY_SIZE) != 0) {
+          std::cerr << "Unknown data size: " << recv_len << std::endl;
+          continue;
+        }
         const auto dev_num = body_len / driver::BODY_SIZE;
         driver::TxDatagram tx(dev_num);
-        std::memcpy(tx.data().data(), buf, recv_len);
+        std::memcpy(tx.data().data(), buf.data(), recv_len);
         {
           std::lock_guard lock(recv_mtx);
           recv_queue.push(tx.clone());
@@ -175,41 +178,50 @@ void Simulator::run() {
     glfwPollEvents();
 
     if (!recv_queue.empty()) {
+      const auto& tx = recv_queue.front();
+      for (size_t i = 0; i < (std::min)(cpus.size(), tx.size()); i++) cpus[i].send(tx.header(), tx.bodies()[i]);
+
       if (initialized) {
-        const auto& tx = recv_queue.front();
-        for (size_t i = 0; i < cpus.size(); i++) cpus[i].send(tx.header(), tx.bodies()[i]);
-        data_updated = true;
-      } else {
-        if (const auto& tx = recv_queue.front(); tx.header().msg_id == driver::MSG_SIMULATOR_GEOMETRY_SET) {
-          cpus.reserve(tx.size());
-          for (size_t i = 0; i < tx.size(); i++) {
-            firmware_emulator::cpu::CPU cpu(i);
-            cpu.init();
-            cpus.emplace_back(cpu);
-          }
-
-          for (size_t dev = 0; dev < tx.size(); dev++) {
-            const auto* body = reinterpret_cast<const float*>(tx.bodies() + dev);
-            const auto origin = glm::vec4(body[0], body[1], body[2], 0.0f);
-            const auto rot = glm::quat(body[3], body[4], body[5], body[6]);
-            const auto rot_m = mat4_cast(rot);
-            for (size_t iy = 0; iy < driver::NUM_TRANS_Y; iy++)
-              for (size_t ix = 0; ix < driver::NUM_TRANS_X; ix++) {
-                if (driver::is_missing_transducer(ix, iy)) continue;
-                const auto local_pos = glm::vec4(static_cast<float>(ix) * static_cast<float>(driver::TRANS_SPACING_MM),
-                                                 static_cast<float>(iy) * static_cast<float>(driver::TRANS_SPACING_MM), 0.0f, 1.0f);
-                const auto global_pos = origin + rot_m * local_pos;
-                sources.add(global_pos, rot, Drive(1.0f, 0.0f, 1.0f, 40e3, 340e3), 1.0f);
-              }
-          }
-
-          imgui->set(sources);
-          trans_viewer->init(sources);
-          slice_viewer->init(imgui->slice_width, imgui->slice_height, imgui->pixel_size);
-          field_compute->init(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size());
-
-          initialized = true;
+        if (tx.header().msg_id == driver::MSG_SIMULATOR_CLOSE) {
+          initialized = false;
+          cpus.clear();
+          sources.clear();
+        } else {
+          data_updated = true;
         }
+      }
+
+      if (tx.header().msg_id == driver::MSG_SIMULATOR_INIT) {
+        cpus.clear();
+        cpus.reserve(tx.size());
+        for (size_t i = 0; i < tx.size(); i++) {
+          firmware_emulator::cpu::CPU cpu(i);
+          cpu.init();
+          cpus.emplace_back(cpu);
+        }
+
+        sources.clear();
+        for (size_t dev = 0; dev < tx.size(); dev++) {
+          const auto* body = reinterpret_cast<const float*>(tx.bodies() + dev);
+          const auto origin = glm::vec3(body[0], body[1], body[2]);
+          const auto rot = glm::quat(body[3], body[4], body[5], body[6]);
+          const auto matrix = translate(glm::identity<glm::mat4>(), origin) * mat4_cast(rot);
+          for (size_t iy = 0; iy < driver::NUM_TRANS_Y; iy++)
+            for (size_t ix = 0; ix < driver::NUM_TRANS_X; ix++) {
+              if (driver::is_missing_transducer(ix, iy)) continue;
+              const auto local_pos = glm::vec4(static_cast<float>(ix) * static_cast<float>(driver::TRANS_SPACING_MM),
+                                               static_cast<float>(iy) * static_cast<float>(driver::TRANS_SPACING_MM), 0.0f, 1.0f);
+              const auto global_pos = matrix * local_pos;
+              sources.add(global_pos, rot, Drive(1.0f, 0.0f, 1.0f, 40e3, 340e3), 1.0f);
+            }
+        }
+
+        imgui->set(sources);
+        trans_viewer->init(sources);
+        slice_viewer->init(imgui->slice_width, imgui->slice_height, imgui->pixel_size);
+        field_compute->init(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size());
+
+        initialized = true;
       }
 
       {
@@ -232,9 +244,11 @@ void Simulator::run() {
           for (size_t tr = 0; tr < driver::NUM_TRANS_IN_UNIT; tr++, i++) {
             sources.drives()[i].amp = std::sin(glm::pi<float>() * static_cast<float>(amps[idx][tr].duty) / static_cast<float>(cycles[tr]));
             sources.drives()[i].phase = 2.0f * glm::pi<float>() * static_cast<float>(phases[idx][tr].phase) / static_cast<float>(cycles[tr]);
+            const auto freq = static_cast<float>(driver::FPGA_CLK_FREQ) / static_cast<float>(cycles[tr]);
+            sources.drives()[i].set_wave_num(freq, imgui->sound_speed * 1e3f);
           }
-          update_flags.set(UpdateFlags::UPDATE_SOURCE_DRIVE);
         }
+        update_flags.set(UpdateFlags::UPDATE_SOURCE_DRIVE);
         data_updated = false;
       }
       if (is_stm_mode && update_flags.contains(UpdateFlags::UPDATE_SOURCE_DRIVE)) {
@@ -246,6 +260,8 @@ void Simulator::run() {
             sources.drives()[i].amp = std::sin(glm::pi<float>() * static_cast<float>(amps[imgui->stm_idx][tr].duty) / static_cast<float>(cycles[tr]));
             sources.drives()[i].phase =
                 2.0f * glm::pi<float>() * static_cast<float>(phases[imgui->stm_idx][tr].phase) / static_cast<float>(cycles[tr]);
+            const auto freq = static_cast<float>(driver::FPGA_CLK_FREQ) / static_cast<float>(cycles[tr]);
+            sources.drives()[i].set_wave_num(freq, imgui->sound_speed * 1e3f);
           }
         }
       }
