@@ -41,7 +41,7 @@ jobs:
         foreach($dll in Get-ChildItem -Path build/bin/Debug | Where {$_.extension -like ".dll"}){ Copy-Item -Path $dll -Destination python/pyautd3/bin/win_x64 }
       shell: pwsh
     - name: Copy macos binary
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.os == 'macos-latest'
       run: |
         mkdir -p python/pyautd3/bin/macos_universal
         cp build/bin/*.dylib python/pyautd3/bin/macos_universal
