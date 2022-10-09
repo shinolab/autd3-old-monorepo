@@ -15,7 +15,7 @@ AUTD3: Ariborne Ultrasound Tactile Display 3
 [![release](https://img.shields.io/github/v/release/shinolab/autd3)](https://github.com/shinolab/autd3/releases/latest)
 [![Crate.io version](https://img.shields.io/crates/v/autd3)](https://crates.io/crates/autd3)
 [![NuGet stable version](https://img.shields.io/nuget/v/autd3sharp)](https://nuget.org/packages/AUTD3Sharp)
-[![unitypackage](https://img.shields.io/github/v/release/shinolab/autd3)](https://github.com/shinolab/autd3/releases/latest)
+[![unitypackage](https://img.shields.io/github/v/release/shinolab/autd3?label=unitypackage)](https://github.com/shinolab/autd3/releases/latest)
 [![PyPI version](https://badge.fury.io/py/pyautd3.svg)](https://badge.fury.io/py/pyautd3)
 [![nim release](https://img.shields.io/github/v/tag/shinolab/autd3_nim?label=nim)](https://github.com/shinolab/autd3_nim)
 [![go release](https://img.shields.io/github/v/tag/shinolab/autd3-go?label=Go)](https://github.com/shinolab/autd3-go)
