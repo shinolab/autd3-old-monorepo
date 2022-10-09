@@ -3,7 +3,7 @@
 // Created Date: 05/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/10/2022
+// Last Modified: 09/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,7 +13,6 @@
 
 #include <algorithm>
 #include <filesystem>
-#include <memory>
 #include <utility>
 #include <vector>
 
@@ -60,8 +59,7 @@ class FieldCompute {
   FieldCompute(FieldCompute&& obj) = default;
   FieldCompute& operator=(FieldCompute&& obj) = default;
 
-  void init(const std::unique_ptr<SoundSources>& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers,
-            const size_t image_size) {
+  void init(const SoundSources& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers, const size_t image_size) {
     create_pipeline();
 
     create_source_drive(sources);
@@ -74,8 +72,8 @@ class FieldCompute {
     update_source_pos(sources);
   }
 
-  void update(const std::unique_ptr<SoundSources>& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers,
-              const size_t image_size, const UpdateFlags update_flags) {
+  void update(const SoundSources& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers, const size_t image_size,
+              const UpdateFlags update_flags) {
     if (update_flags.contains(UpdateFlags::UPDATE_SLICE_SIZE)) create_descriptor_sets(sources, image_buffers, image_size);
 
     if (update_flags.contains(UpdateFlags::UPDATE_SOURCE_DRIVE) || update_flags.contains(UpdateFlags::UPDATE_SOURCE_FLAG))
@@ -159,8 +157,7 @@ class FieldCompute {
       throw std::runtime_error("failed to create a pipeline!");
   }
 
-  void create_descriptor_sets(const std::unique_ptr<SoundSources>& sources, const std::vector<vk::UniqueBuffer>& image_buffers,
-                              const size_t image_size) {
+  void create_descriptor_sets(const SoundSources& sources, const std::vector<vk::UniqueBuffer>& image_buffers, const size_t image_size) {
     {
       const std::vector layouts(_renderer->frames_in_flight(), _descriptor_set_layout_0.get());
       _descriptor_sets_0 = _context->device().allocateDescriptorSetsUnique(
@@ -186,7 +183,7 @@ class FieldCompute {
           vk::DescriptorSetAllocateInfo().setDescriptorPool(_context->descriptor_pool()).setSetLayouts(layouts));
       for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
         const vk::DescriptorBufferInfo buffer_info =
-            vk::DescriptorBufferInfo().setBuffer(_pos_buffers[i].get()).setOffset(0).setRange(sizeof(glm::vec4) * sources->size());
+            vk::DescriptorBufferInfo().setBuffer(_pos_buffers[i].get()).setOffset(0).setRange(sizeof(glm::vec4) * sources.size());
         std::array descriptor_writes{
             vk::WriteDescriptorSet()
                 .setDstSet(_descriptor_sets_1[i].get())
@@ -205,7 +202,7 @@ class FieldCompute {
           vk::DescriptorSetAllocateInfo().setDescriptorPool(_context->descriptor_pool()).setSetLayouts(layouts));
       for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
         const vk::DescriptorBufferInfo buffer_info =
-            vk::DescriptorBufferInfo().setBuffer(_drive_buffers[i].get()).setOffset(0).setRange(sizeof(Drive) * sources->size());
+            vk::DescriptorBufferInfo().setBuffer(_drive_buffers[i].get()).setOffset(0).setRange(sizeof(Drive) * sources.size());
         std::array descriptor_writes{
             vk::WriteDescriptorSet()
                 .setDstSet(_descriptor_sets_2[i].get())
@@ -309,30 +306,30 @@ class FieldCompute {
     }
   }
 
-  void create_source_drive(const std::unique_ptr<SoundSources>& sources) {
+  void create_source_drive(const SoundSources& sources) {
     _drive_buffers.resize(_renderer->frames_in_flight());
     _drive_buffers_memory.resize(_renderer->frames_in_flight());
     for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
-      auto [buf, mem] = _context->create_buffer(sizeof(Drive) * sources->size(), vk::BufferUsageFlagBits::eStorageBuffer,
+      auto [buf, mem] = _context->create_buffer(sizeof(Drive) * sources.size(), vk::BufferUsageFlagBits::eStorageBuffer,
                                                 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
       _drive_buffers[i] = std::move(buf);
       _drive_buffers_memory[i] = std::move(mem);
     }
   }
 
-  void create_source_pos(const std::unique_ptr<SoundSources>& sources) {
+  void create_source_pos(const SoundSources& sources) {
     _pos_buffers.resize(_renderer->frames_in_flight());
     _pos_buffers_memory.resize(_renderer->frames_in_flight());
     for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
-      auto [buf, mem] = _context->create_buffer(sizeof(glm::vec4) * sources->size(), vk::BufferUsageFlagBits::eStorageBuffer,
+      auto [buf, mem] = _context->create_buffer(sizeof(glm::vec4) * sources.size(), vk::BufferUsageFlagBits::eStorageBuffer,
                                                 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
       _pos_buffers[i] = std::move(buf);
       _pos_buffers_memory[i] = std::move(mem);
     }
   }
 
-  void update_source_drive(const std::unique_ptr<SoundSources>& sources) {
-    const auto& drives = sources->drives();
+  void update_source_drive(const SoundSources& sources) {
+    const auto& drives = sources.drives();
     void* data;
     for (auto& memory : _drive_buffers_memory) {
       if (_context->device().mapMemory(memory.get(), 0, sizeof(Drive) * drives.size(), {}, &data) != vk::Result::eSuccess)
@@ -342,8 +339,8 @@ class FieldCompute {
     }
   }
 
-  void update_source_pos(const std::unique_ptr<SoundSources>& sources) {
-    const auto& positions = sources->positions();
+  void update_source_pos(const SoundSources& sources) {
+    const auto& positions = sources.positions();
     void* data;
     for (auto& memory : _pos_buffers_memory) {
       if (_context->device().mapMemory(memory.get(), 0, sizeof(glm::vec4) * positions.size(), {}, &data) != vk::Result::eSuccess)

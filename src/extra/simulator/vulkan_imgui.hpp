@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/10/2022
+// Last Modified: 09/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -163,15 +163,9 @@ class VulkanImGui {
     settings.image_save_path = std::string(save_path);
   }
 
-  void init(const uint32_t image_count, const VkRenderPass renderer_pass, const Settings& settings, const std::unique_ptr<SoundSources>& sources) {
+  void init(const uint32_t image_count, const VkRenderPass renderer_pass, const Settings& settings) {
     load_settings(settings);
     _default_settings = settings;
-
-    const auto dev_num = sources->size() / driver::NUM_TRANS_IN_UNIT;
-    visible = std::make_unique<bool[]>(dev_num);
-    enable = std::make_unique<bool[]>(dev_num);
-    std::fill_n(visible.get(), dev_num, true);
-    std::fill_n(enable.get(), dev_num, true);
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -198,7 +192,28 @@ class VulkanImGui {
     set_font();
   }
 
-  UpdateFlags draw(const std::vector<firmware_emulator::cpu::CPU>& cpus, const std::unique_ptr<SoundSources>& sources) {
+  void set(const SoundSources& sources) {
+    const auto dev_num = sources.size() / driver::NUM_TRANS_IN_UNIT;
+    visible = std::make_unique<bool[]>(dev_num);
+    enable = std::make_unique<bool[]>(dev_num);
+    std::fill_n(visible.get(), dev_num, true);
+    std::fill_n(enable.get(), dev_num, true);
+  }
+
+  static void draw() {
+    ImGui_ImplVulkan_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+    const auto& io = ImGui::GetIO();
+    ImGui::PushFont(io.FontDefault);
+    ImGui::Begin("Dear ImGui");
+    ImGui::Text("Waiting for connection...");
+    ImGui::End();
+    ImGui::PopFont();
+    ImGui::Render();
+  }
+
+  UpdateFlags draw(const std::vector<firmware_emulator::cpu::CPU>& cpus, SoundSources& sources) {
     auto flag = UpdateFlags(UpdateFlags::NONE);
 
     if (_update_font) {
@@ -317,8 +332,20 @@ class VulkanImGui {
       }
 
       if (ImGui::BeginTabItem("Config")) {
-        if (ImGui::DragFloat("Font size", &_font_size, 1, 1.0f, 256.0f)) _update_font = true;
+        if (ImGui::DragFloat("Sound speed", &sound_speed, 1)) {
+          for (size_t dev = 0; dev < cpus.size(); dev++) {
+            const auto& cycles = cpus[dev].fpga().cycles();
+            for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) {
+              const auto freq = static_cast<float>(driver::FPGA_CLK_FREQ) / static_cast<float>(cycles[i]);
+              sources.drives()[i + dev * driver::NUM_TRANS_IN_UNIT].set_wave_num(freq, sound_speed * 1e3f);
+            }
+          }
+          flag.set(UpdateFlags::UPDATE_SOURCE_DRIVE);
+        }
 
+        ImGui::Separator();
+
+        if (ImGui::DragFloat("Font size", &_font_size, 1, 1.0f, 256.0f)) _update_font = true;
         ImGui::Separator();
         ImGui::Text("Device index: show/enable");
         for (size_t i = 0; i < cpus.size(); i++) {
@@ -328,14 +355,14 @@ class VulkanImGui {
           if (ImGui::Checkbox(show_id.c_str(), &visible[i])) {
             flag.set(UpdateFlags::UPDATE_SOURCE_FLAG);
             for (size_t tr = 0; tr < driver::NUM_TRANS_IN_UNIT; tr++)
-              sources->visibilities()[driver::NUM_TRANS_IN_UNIT * i + tr] = visible[i] ? 1.0f : 0.0f;
+              sources.visibilities()[driver::NUM_TRANS_IN_UNIT * i + tr] = visible[i] ? 1.0f : 0.0f;
           }
           ImGui::SameLine();
           const auto enable_id = "##enable" + std::to_string(i);
           if (ImGui::Checkbox(enable_id.c_str(), &enable[i])) {
             flag.set(UpdateFlags::UPDATE_SOURCE_FLAG);
             for (size_t tr = 0; tr < driver::NUM_TRANS_IN_UNIT; tr++)
-              sources->drives()[driver::NUM_TRANS_IN_UNIT * i + tr].enable = enable[i] ? 1.0f : 0.0f;
+              sources.drives()[driver::NUM_TRANS_IN_UNIT * i + tr].enable = enable[i] ? 1.0f : 0.0f;
           }
         }
 
@@ -540,6 +567,8 @@ class VulkanImGui {
   float fov = 45.0f;
   float near_clip = 0.1f;
   float far_clip = 1000.0f;
+
+  float sound_speed = 340.0f;  // m/s
 
   glm::vec4 background{0.3f, 0.3f, 0.3f, 1.0f};
 
