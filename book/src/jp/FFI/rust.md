@@ -1,6 +1,6 @@
 # Rust
 
-[rust-autd](https://github.com/shinolab/rust-autd)ではRust版のライブラリを提供している.
+[rust-autd](https://github.com/shinolab/autd3/tree/master/rust)ではRust版のライブラリを提供している.
 
 Rust版のライブラリはC++版をラップしたものではなく, Rustで再実装している.
 そのため, 一部機能が異なる可能性がある.
@@ -11,16 +11,16 @@ Rust版のライブラリはC++版をラップしたものではなく, Rustで�
 
 ```
 [dependencies]
-autd3 = "2.3.1"
+autd3 = "2.4.1"
 ```
 
 また, 各種Link, Gain等は別crateとして公開しているので必要に応じてdependenciesに追加すること.
 ```
 [dependencies]
-autd3-link-soem = "2.3.1"
-autd3-link-twincat = "2.3.1"
-autd3-link-simulator = "2.3.1"
-autd3-gain-holo = "2.3.1"
+autd3-link-soem = "2.4.1"
+autd3-link-twincat = "2.4.1"
+autd3-link-simulator = "2.4.1"
+autd3-gain-holo = "2.4.1"
 ```
 
 ## Usage
@@ -83,8 +83,8 @@ fn main() {
     autd.send(&mut m).flush().unwrap();
 ```
 
-より詳細なサンプルは[rust-autdのexample](https://github.com/shinolab/rust-autd/tree/master/autd3-examples)を参照されたい.
+より詳細なサンプルは[rust-autdのexample](https://github.com/shinolab/autd3/tree/master/rust/autd3-examples)を参照されたい.
 
 ## Trouble shooting
 
-質問があれば[GitHubのissue](https://github.com/shinolab/rust-autd/issues)に送られたい.
+質問があれば[GitHubのissue](https://github.com/shinolab/autd3/issues)に送られたい.
