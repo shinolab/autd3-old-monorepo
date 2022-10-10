@@ -1,6 +1,6 @@
 # python
 
-[pyautd](https://github.com/shinolab/autd3/python)はpythonに対応したラッパーを提供している.
+[pyautd](https://github.com/shinolab/autd3/tree/master/python)はpythonに対応したラッパーを提供している.
 
 ## Installation
 
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     autd.close()
 ```
 
-より詳細なサンプルは[pyautdのexample](https://github.com/shinolab/autd3/python/example)を参照されたい.
+より詳細なサンプルは[pyautdのexample](https://github.com/shinolab/autd3/tree/master/python/example)を参照されたい.
 
 ## Trouble shooting
 

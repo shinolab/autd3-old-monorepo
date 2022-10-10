@@ -752,6 +752,11 @@ class Simulator:
 
     def port(self, port: int):
         self._port = port
+        return self
+
+    def ip_addr(self, addr: str):
+        self._ip_addr = addr
+        return self
 
     def build(self):
         link = c_void_p()
