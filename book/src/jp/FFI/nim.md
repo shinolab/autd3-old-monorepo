@@ -1,13 +1,13 @@
 # Nim
 
-[autd3_sim](https://github.com/shinolab/autd3_nim)はNimに対応したラッパーを提供している.
+[autd3_sim](https://github.com/shinolab/autd3/tree/master/nim)はNimに対応したラッパーを提供している.
 
 ## Installation
 
 nimbleでインストールできる.
 
 ```
-requires "https://github.com/shinolab/autd3_nim.git == 2.3.1"
+requires "https://github.com/shinolab/autd3.git?subdir=nim == 2.4.2"
 ```
 
 ## Usage
@@ -69,6 +69,6 @@ when isMainModule:
 
 ```
 
-より詳細なサンプルは[example](https://github.com/shinolab/autd3_nim/tree/master/examples)を参照されたい.
+より詳細なサンプルは[example](https://github.com/shinolab/autd3/tree/master/nim/examples)を参照されたい.
 
-その他, 質問があれば[GitHubのissue](https://github.com/shinolab/autd3_nim/issues)に送られたい.
+その他, 質問があれば[GitHubのissue](https://github.com/shinolab/autd3/issues)に送られたい.

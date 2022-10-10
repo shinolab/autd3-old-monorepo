@@ -1,13 +1,13 @@
 # Julia
 
-[AUTD3.jl](https://github.com/shinolab/AUTD3.jl)はJuliaに対応したラッパーを提供している.
+[AUTD3.jl](https://github.com/shinolab/autd3/tree/master/julia)はJuliaに対応したラッパーを提供している.
 
 ## Installation
 
 GitHubのリポジトリからインストールできる.
 
 ```
-(v1.7) pkg> add https://github.com/shinolab/AUTD3.jl.git
+(v1.7) pkg> add https://github.com/shinolab/autd3.git:path/to/subfolder
 ```
 
 ## Usage
@@ -56,6 +56,6 @@ readline()
 cnt.close()
 ```
 
-より詳細なサンプルは[AUTD3.jlのexample](https://github.com/shinolab/AUTD3.jl/tree/master/example)を参照されたい.
+より詳細なサンプルは[AUTD3.jlのexample](https://github.com/shinolab/autd3/tree/master/julia/example)を参照されたい.
 
-その他, 質問があれば[GitHubのissue](https://github.com/shinolab/AUTD3.jl/issues)に送られたい.
+その他, 質問があれば[GitHubのissue](https://github.com/shinolab/autd3/issues)に送られたい.

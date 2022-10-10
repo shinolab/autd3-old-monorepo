@@ -1,0 +1,15 @@
+table {
+    border: none !important;
+}
+
+th, td {
+    border: none !important;
+}
+
+th {
+    display: none;
+}
+
+thead {
+    display: none;
+}

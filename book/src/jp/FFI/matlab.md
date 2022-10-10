@@ -1,6 +1,6 @@
 # MATLAB
 
-[autd3-matlab](https://github.com/shinolab/autd3-matlab)はpythonに対応したラッパーを提供している.
+[autd3-matlab](https://github.com/shinolab/autd3/tree/master/matlab)はpythonに対応したラッパーを提供している.
 
 ## Usage
 
@@ -76,6 +76,6 @@ end
 deinit_autd(use_link_soem, use_backend_cuda);
 ```
 
-より詳細なサンプルは[autd3-matlabのexample](https://github.com/shinolab/autd3-matlab/tree/master/example)を参照されたい.
+より詳細なサンプルは[autd3-matlabのexample](https://github.com/shinolab/autd3/tree/master/matlab/examples)を参照されたい.
 
-その他, 質問があれば[GitHubのissue](https://github.com/shinolab/autd3-matlab/issues)に送られたい.
+その他, 質問があれば[GitHubのissue](https://github.com/shinolab/autd3/issues)に送られたい.

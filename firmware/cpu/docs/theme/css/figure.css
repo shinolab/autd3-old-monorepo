@@ -1,0 +1,14 @@
+figure {
+    border: none;
+    text-align: center;
+    margin: 20px;
+}
+
+figure img {
+    vertical-align: middle;
+}
+
+figure figcaption {
+    border: none;
+    text-align: center;
+}

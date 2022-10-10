@@ -1,0 +1,19 @@
+{signal: [
+  ['Preconditioner',
+    {name: 'CLK 50MHz' , wave: 'n|.', period: 4},
+  	{name: 'R[0]'      , wave: 'x.=..|......', data: ['New R[0]']},
+  	{name: '...'},
+  	{name: 'R[248]'    , wave: 'x....|=.....', data: ['New R[248]']},
+  ],
+  ['Buffer',
+    {name: 'CLK 200MHz', wave: 'p....|......'},
+    {name: 't[0]'      , wave: 'x....|.=====', data: ['4999', '0', '1']},
+    {name: '...'},
+    {name: 't[248]'    , wave: 'x....|.=====', data: ['4999', '0', '1']},
+  	{name: 'R[0]'      , wave: 'x....|..=...', data: ['New R[0]']},
+  	{name: '...'},
+  	{name: 'R[248]'    , wave: 'x....|..=...', data: ['New R[248]']},
+  ]
+],
+   config: { hscale: 1, skin: 'dark' }
+}
