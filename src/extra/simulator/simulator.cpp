@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2022
+// Last Modified: 10/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -96,14 +96,15 @@ void Simulator::run() {
     throw std::runtime_error("cannot connect to emulator");
 
   addr.sin_family = AF_INET;
-  addr.sin_port = htons(_port);
+  addr.sin_port = htons(_settings->port);
 #if WIN32
-  inet_pton(AF_INET, _ip_addr.c_str(), &addr.sin_addr.S_un.S_addr);
+  inet_pton(AF_INET, _settings->ip.c_str(), &addr.sin_addr.S_un.S_addr);
 #else
-  addr.sin_addr.s_addr = inet_addr(_ip_addr.c_str());
+  addr.sin_addr.s_addr = inet_addr(_settings->ip.c_str());
 #endif
 
-  if (bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) != 0) throw std::runtime_error("failed to bind socket: " + std::to_string(_port));
+  if (bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) != 0)
+    throw std::runtime_error("failed to bind socket: " + std::to_string(_settings->port));
 
   u_long val = 1;
 #if WIN32
@@ -147,7 +148,7 @@ void Simulator::run() {
   });
 
   const auto window = std::make_unique<helper::WindowHandler>(_settings->window_width, _settings->window_height);
-  const auto context = std::make_unique<helper::VulkanContext>(_settings->gpu_idx, true);
+  const auto context = std::make_unique<helper::VulkanContext>(_settings->gpu_idx, false);
 
   const auto imgui = std::make_unique<VulkanImGui>(window.get(), context.get());
   const auto renderer = std::make_unique<VulkanRenderer>(context.get(), window.get(), imgui.get(), _settings->vsync);
