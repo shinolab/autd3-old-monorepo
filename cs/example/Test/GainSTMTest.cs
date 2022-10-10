@@ -13,6 +13,8 @@
 
 using AUTD3Sharp;
 using System;
+using AUTD3Sharp.Gain;
+using AUTD3Sharp.Modulation;
 using AUTD3Sharp.Utils;
 
 namespace example.Test
@@ -28,17 +30,17 @@ namespace example.Test
             var config = SilencerConfig.None();
             autd.Send(config);
 
-            var mod = new Modulation.Static();
+            var mod = new Static();
 
             var center = new Vector3d(x, y, z);
-            var stm = new STM.Gain(autd);
+            var stm = new AUTD3Sharp.STM.Gain(autd);
             const int pointNum = 200;
             for (var i = 0; i < pointNum; i++)
             {
                 const double radius = 30.0;
                 var theta = 2.0 * Math.PI * i / pointNum;
                 var p = radius * new Vector3d(Math.Cos(theta), Math.Sin(theta), 0);
-                var gain = new Gain.Focus(center + p);
+                var gain = new Focus(center + p);
                 stm.Add(gain);
             }
 

@@ -9,7 +9,7 @@
     <Company>Shinolab</Company>
     <Description>AUTD3 library wrapper for .Net</Description>
     <Copyright>Copyright (c) 2022 Shun Suzuki. All rights reserved.</Copyright>
-    <PackageProjectUrl>https://github.com/shinolab/autd3sharp</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/shinolab/autd3</PackageProjectUrl>
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);GetNativeLibraryFiles</TargetsForTfmSpecificBuildOutput>
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
