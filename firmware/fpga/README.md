@@ -4,11 +4,7 @@ version 2.4
 
 # Document
 
-* [日本語/Japanese](https://shinolab.github.io/autd3-fpga/)
-
-# LICENSE
-
-See [LICENSE](./LICENSE).
+* [日本語/Japanese](https://shinolab.github.io/autd3/fpga/)
 
 # Author
 

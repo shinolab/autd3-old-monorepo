@@ -123,10 +123,6 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 * [Julia](./julia)
 * [MATLAB](./matlab)
 
-## Firmware
-
-* The firmware codes are available at [here](https://github.com/shinolab/autd3-firmware).
-
 ## Citing
 
 * If you use this SDK in your research please consider to include the following citation in your publications:
