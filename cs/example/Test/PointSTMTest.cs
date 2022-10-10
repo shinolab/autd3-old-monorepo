@@ -13,6 +13,7 @@
 
 using AUTD3Sharp;
 using System;
+using AUTD3Sharp.Modulation;
 using AUTD3Sharp.Utils;
 
 namespace example.Test
@@ -28,11 +29,11 @@ namespace example.Test
             var config = SilencerConfig.None();
             autd.Send(config);
 
-            var mod = new Modulation.Static();
+            var mod = new Static();
             autd.Send(mod);
 
             var center = new Vector3d(x, y, z);
-            var stm = new STM.Point();
+            var stm = new AUTD3Sharp.STM.Point();
             const int pointNum = 200;
             for (var i = 0; i < pointNum; i++)
             {
