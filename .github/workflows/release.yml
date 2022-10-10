@@ -45,6 +45,10 @@ jobs:
             return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-win';
       - name: setup-msbuild
         uses: microsoft/setup-msbuild@v1
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: 6.0.x
       - uses: Jimver/cuda-toolkit@v0.2.6
         id: cuda-toolkit
         with:
@@ -60,11 +64,17 @@ jobs:
           mkdir publish/bin
           mkdir publish/simulator
           cd ..
+          cd dist/GUI
+          dotnet publish -c:Release /p:Platform=x64 -r win-x64 --self-contained false -o gui-controller
+          copy AUTD3-GUI-Controller/Strings -Recurse gui-controller/
+          cd ../..
           copy build/lib/Release/*.lib build/publish/lib
           copy 3rdparty/SOEM/oshw/win32/wpcap/Lib/x64/*.lib build/publish/lib/wpcap
           copy build/bin/Release/*.dll build/publish/bin
+          copy build/bin/Release/*.dll dist/GUI/gui-controller/
           copy build/dist/simulator/Release/*.exe build/publish/simulator
-          Compress-Archive -Path LICENSE, NOTICE, dist/AUTDServer, dist/firmware, include, build/publish/lib, build/publish/bin, build/publish/simulator -DestinationPath assets_x64.zip
+          Remove-Item -Recurse -Force dist/AUTDServer/src
+          Compress-Archive -Path LICENSE, NOTICE, dist/AUTDServer, dist/firmware, include, build/publish/lib, build/publish/bin, build/publish/simulator, dist/GUI/gui-controller -DestinationPath assets_x64.zip
       - name: Build project x86
         run: |
           cmake -G "Visual Studio 17 2022" -A Win32 -B "build_x86" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=OFF
@@ -78,6 +88,7 @@ jobs:
           copy build_x86/lib/Release/*.lib build_x86/publish/lib
           copy 3rdparty/SOEM/oshw/win32/wpcap/Lib/*.lib build/publish/lib/wpcap
           copy build_x86/bin/Release/*.dll build_x86/publish/bin
+          Remove-Item -Recurse -Force dist/AUTDServer/src
           Compress-Archive -Path LICENSE, NOTICE, dist/AUTDServer, dist/firmware, include, build_x86/publish/lib, build_x86/publish/bin -DestinationPath assets_x86.zip
       - name: Load Release URL File from release job
         uses: actions/download-artifact@v1

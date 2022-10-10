@@ -1,0 +1,63 @@
+﻿<!--
+    File: ModulationPage.xaml
+    Project: Views
+    Created Date: 24/08/2022
+    Author: Shun Suzuki
+    =====
+    Last Modified: 25/08/2022
+    Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+    =====
+    Copyright (c) 2022 Shun Suzuki. All rights reserved.
+-->
+
+<Page
+    x:Class="AUTD3_GUI_Controller.Views.ModulationPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:behaviors="using:AUTD3_GUI_Controller.Behaviors"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helpers="using:AUTD3_GUI_Controller.Helpers"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Loaded="ModulationPage_OnLoaded"
+    mc:Ignorable="d">
+
+    <Grid x:Name="Root">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <NavigationView
+            x:Name="ModulationNavigationViewControl"
+            Grid.Row="0"
+            AlwaysShowHeader="False"
+            ExpandedModeThresholdWidth="400"
+            Header="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}"
+            IsBackButtonVisible="Visible"
+            IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
+            IsSettingsVisible="False"
+            OpenPaneLength="120"
+            SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}">
+            <NavigationView.MenuItems>
+                <NavigationViewItem helpers:NavigationHelper.NavigateTo="AUTD3_GUI_Controller.ViewModels.Modulation.SineViewModel" Content="Sine" />
+                <NavigationViewItem helpers:NavigationHelper.NavigateTo="AUTD3_GUI_Controller.ViewModels.Modulation.StaticViewModel" Content="Static" />
+                <NavigationViewItem helpers:NavigationHelper.NavigateTo="AUTD3_GUI_Controller.ViewModels.Modulation.SineSquaredViewModel" Content="Sine squared" />
+                <NavigationViewItem helpers:NavigationHelper.NavigateTo="AUTD3_GUI_Controller.ViewModels.Modulation.SineLegacyViewModel" Content="Sine (legacy)" />
+                <NavigationViewItem helpers:NavigationHelper.NavigateTo="AUTD3_GUI_Controller.ViewModels.Modulation.SquareViewModel" Content="Square" />
+            </NavigationView.MenuItems>
+            <NavigationView.HeaderTemplate>
+                <DataTemplate />
+            </NavigationView.HeaderTemplate>
+            <Grid Margin="{StaticResource NavigationViewPageContentMargin}">
+                <Frame x:Name="ModulationNavigationFrame" />
+            </Grid>
+        </NavigationView>
+        <StackPanel
+            Grid.Row="1"
+            Margin="{StaticResource SmallTopMargin}"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal">
+            <Button Command="{x:Bind ViewModel.SendCommand}" Content="Send" />
+        </StackPanel>
+    </Grid>
+</Page>

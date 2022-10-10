@@ -1,0 +1,27 @@
+name: build-gui
+
+on:
+  push:
+    tags-ignore:
+      - v*
+    branches:
+      - 'dev'
+
+jobs:
+  build:
+    name: build ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest]
+    
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1.7.2
+      with:
+        dotnet-version: 6.0.x
+    - name: Build with dotnet
+      run: |
+        cd dist/GUI
+        dotnet build -c:Release /p:Platform=x64
