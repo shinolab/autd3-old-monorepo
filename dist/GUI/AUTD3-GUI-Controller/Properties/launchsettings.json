@@ -1,0 +1,10 @@
+﻿{
+    "profiles": {
+      "AUTD3-GUI-Controller (Unpackaged)": {
+        "commandName": "Project"
+      },
+      "AUTD3-GUI-Controller (Package)": {
+        "commandName": "MsixPackage"
+      }
+    }
+}

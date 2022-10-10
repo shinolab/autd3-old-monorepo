@@ -1,0 +1,171 @@
+﻿<!--
+    File: BesselBeamPage.xaml
+    Project: Gain
+    Created Date: 24/08/2022
+    Author: Shun Suzuki
+    =====
+    Last Modified: 24/08/2022
+    Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+    =====
+    Copyright (c) 2022 Shun Suzuki. All rights reserved.
+-->
+
+<Page
+    x:Class="AUTD3_GUI_Controller.Views.Gain.BesselBeamPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:localization="using:AK.Toolkit.WinUI3.Localization"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Loaded="BesselBeamPage_OnLoaded"
+    mc:Ignorable="d">
+
+    <Grid x:Name="Root">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <controls:WrapPanel>
+                <controls:HeaderedContentControl
+                    HorizontalContentAlignment="Stretch"
+                    VerticalContentAlignment="Stretch"
+                    Header="Apex">
+                    <Grid Margin="{StaticResource XSmallTopMargin}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Text="X" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Text="Y" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Text="Z" />
+                        <NumberBox
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Margin="{StaticResource XSmallLeftMargin}"
+                            Text="{x:Bind ViewModel.Model.X, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <NumberBox
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Margin="{StaticResource XSmallLeftMargin}"
+                            Text="{x:Bind ViewModel.Model.Y, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <NumberBox
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Margin="{StaticResource XSmallLeftMargin}"
+                            Text="{x:Bind ViewModel.Model.Z, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </Grid>
+                </controls:HeaderedContentControl>
+                <controls:HeaderedContentControl
+                    Margin="{StaticResource SmallLeftMargin}"
+                    HorizontalContentAlignment="Stretch"
+                    VerticalContentAlignment="Stretch"
+                    Header="Direction">
+                    <Grid Margin="{StaticResource XSmallTopMargin}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Text="X" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Text="Y" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Text="Z" />
+                        <NumberBox
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Margin="{StaticResource XSmallLeftMargin}"
+                            Text="{x:Bind ViewModel.Model.DirX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <NumberBox
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Margin="{StaticResource XSmallLeftMargin}"
+                            Text="{x:Bind ViewModel.Model.DirY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <NumberBox
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Margin="{StaticResource XSmallLeftMargin}"
+                            Text="{x:Bind ViewModel.Model.DirZ, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </Grid>
+                </controls:HeaderedContentControl>
+                <controls:HeaderedContentControl
+                    Margin="{StaticResource SmallLeftMargin}"
+                    HorizontalContentAlignment="Stretch"
+                    VerticalContentAlignment="Stretch"
+                    Header="Others">
+                    <Grid Margin="{StaticResource XSmallTopMargin}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Text="Theta" />
+                        <NumberBox
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Margin="{StaticResource XSmallLeftMargin}"
+                            Maximum="1"
+                            Minimum="0"
+                            Text="{x:Bind ViewModel.Model.Theta, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            localization:Localizer.Uid="TextBlock_Amp" />
+                        <NumberBox
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Margin="{StaticResource XSmallLeftMargin}"
+                            Maximum="1"
+                            Minimum="0"
+                            Text="{x:Bind ViewModel.Model.Amp, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </Grid>
+                </controls:HeaderedContentControl>
+            </controls:WrapPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>
