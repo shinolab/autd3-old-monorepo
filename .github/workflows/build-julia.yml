@@ -1,0 +1,29 @@
+name: build-julia
+
+on:
+  push:
+    tags-ignore:
+      - v*
+    branches:
+      - 'dev'
+
+jobs:
+  test:
+    name: build test on ${{ matrix.os }} with ${{ matrix.julia-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        julia-version: ['1.7.0']
+    steps:
+      - uses: actions/checkout@v1.0.0
+      - name: Set up Julia
+        uses: julia-actions/setup-julia@v1
+        with:
+          version: ${{ matrix.julia-version }}
+      - name: Build Package
+        if: matrix.os == 'windows-latest'
+        run: julia -e 'using Pkg; Pkg.add(PackageSpec(url=\"https://github.com/shinolab/autd3\", rev=\"dev\", subdir=\"julia\")); Pkg.build(\"AUTD3\")'
+      - name: Build Package
+        if: matrix.os != 'windows-latest'
+        run: julia -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/shinolab/autd3", rev="dev", subdir="julia")); Pkg.build("AUTD3")'
