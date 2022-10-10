@@ -51,7 +51,7 @@ fn main() -> Result<()> {
     gen::<PythonGenerator, _>("../../python/pyautd3/native_methods", "../../capi")?;
     gen::<CSharpGenerator, _>("../../cs/src/NativeMethods", "../../capi")?;
     gen::<MatlabGenerator, _>("../../matlab/bin", "../../capi")?;
-    gen::<NimGenerator, _>("nim", "../../capi")?;
+    gen::<NimGenerator, _>("../../nim/src/autd3/native_methods", "../../capi")?;
     gen::<JuliaGenerator, _>("../../julia/src/NativeMethods", "../../capi")?;
 
     Ok(())
