@@ -1,11 +1,8 @@
-# 2.4.2
-
-- Fix [#30](https://github.com/shinolab/autd3/issues/30)
-
 # 2.4.1
 
 - Add `extra::simulator::Simulator`
 - Rename `link::Emulator` to `link::Simulator`
+- Fix [#30](https://github.com/shinolab/autd3/issues/30)
 
 # 2.4.0
 
