@@ -7,6 +7,7 @@ AUTD3: Ariborne Ultrasound Tactile Display 3
 ![build](https://github.com/shinolab/autd3/workflows/build/badge.svg)
 ![build](https://github.com/shinolab/autd3/workflows/build-cs/badge.svg)
 ![build](https://github.com/shinolab/autd3/workflows/build-python/badge.svg)
+![build](https://github.com/shinolab/autd3/workflows/build-julia/badge.svg)
 
 </div>
 
@@ -123,7 +124,7 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 * [Python](./python)
 * [Nim](https://github.com/shinolab/autd3_nim)
 * [Go](https://github.com/shinolab/autd3-go)
-* [Julia](https://github.com/shinolab/AUTD3.jl)
+* [Julia](./julia)
 * [MATLAB](https://github.com/shinolab/autd3-matlab)
 
 ## Firmware
