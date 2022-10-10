@@ -2,6 +2,16 @@
 
 module autd3capi
 
+function get_bin_path()
+if Sys.iswindows()
+    return "win-x64"
+elseif Sys.isapple()
+    return "macos-universal"
+elseif Sys.islinux()
+    return "linux-x64"
+end
+end
+
 function get_lib_ext()
 if Sys.iswindows()
     return ".dll"
@@ -20,7 +30,7 @@ else
 end
 end
 
-const _dll = joinpath(@__DIR__, "bin", get_lib_prefix() * "autd3capi" * get_lib_ext())
+const _dll = joinpath(@__DIR__, get_bin_path(), "bin", get_lib_prefix() * "autd3capi" * get_lib_ext())
 
 autd_get_last_error(error) = ccall((:AUTDGetLastError, _dll), Int32, (Ptr{UInt8}, ), error);
 autd_create_controller(out) = ccall((:AUTDCreateController, _dll), Cvoid, (Ref{Ptr{Cvoid}}, ), out);

@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/06/2022
+ * Last Modified: 10/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -150,6 +150,16 @@ impl Generator for JuliaGenerator {
 
 module {}
 
+function get_bin_path()
+if Sys.iswindows()
+    return "win-x64"
+elseif Sys.isapple()
+    return "macos-universal"
+elseif Sys.islinux()
+    return "linux-x64"
+end
+end
+
 function get_lib_ext()
 if Sys.iswindows()
     return ".dll"
@@ -168,7 +178,7 @@ else
 end
 end
 
-const _dll = joinpath(@__DIR__, "bin", get_lib_prefix() * "{}" * get_lib_ext())
+const _dll = joinpath(@__DIR__, get_bin_path(), "bin", get_lib_prefix() * "{}" * get_lib_ext())
 
 "#,
             bin_name.replace("-", "_"),
