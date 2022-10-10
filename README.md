@@ -18,7 +18,6 @@ AUTD3: Ariborne Ultrasound Tactile Display 3
 [![NuGet stable version](https://img.shields.io/nuget/v/autd3sharp)](https://nuget.org/packages/AUTD3Sharp)
 [![unitypackage](https://img.shields.io/github/v/release/shinolab/autd3?label=unitypackage)](https://github.com/shinolab/autd3/releases/latest)
 [![PyPI version](https://badge.fury.io/py/pyautd3.svg)](https://badge.fury.io/py/pyautd3)
-[![nim release](https://img.shields.io/github/v/tag/shinolab/autd3_nim?label=nim)](https://github.com/shinolab/autd3_nim)
 [![Julia release](https://img.shields.io/github/v/release/shinolab/autd3?label=Julia)](https://github.com/shinolab/autd3/releases/latest)
 
 </div>
@@ -120,7 +119,7 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 * [Rust](https://github.com/shinolab/rust-autd)
 * [C#](./cs)
 * [Python](./python)
-* [Nim](https://github.com/shinolab/autd3_nim)
+* [Nim](./nim)
 * [Julia](./julia)
 * [MATLAB](./matlab)
 
