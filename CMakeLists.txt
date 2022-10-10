@@ -46,6 +46,8 @@ option(BUILD_CAPI "BUILD_CAPI" OFF)
 
 option(ENABLE_LINT "ENABLE_LINT" OFF)
 
+option(EXPORT_AUTD_SIMULATOR "EXPORT_AUTD_SIMULATOR" OFF)
+
 option(BUILD_TEST "BUILD_TEST" OFF)
 
 if(BUILD_ALL)
@@ -132,7 +134,6 @@ if(BUILD_GEOMETRY_VIEWER OR BUILD_SIMULATOR)
   if(MSVC)
     find_package(Vulkan)
     if(NOT ${Vulkan_FOUND})
-      message(STATUS "Vulkan not found")
       execute_process(COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init --recursive -- ${PROJECT_SOURCE_DIR}/3rdparty/Vulkan-Headers)
       set(Vulkan_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/3rdparty/Vulkan-Headers/include)
       set(Vulkan_LIBRARIES ${PROJECT_SOURCE_DIR}/src/extra/lib/vulkan-1.lib)
@@ -248,4 +249,8 @@ endif()
 
 if(BUILD_CAPI)
   add_subdirectory(capi)
+endif()
+
+if(EXPORT_AUTD_SIMULATOR)
+  add_subdirectory(dist/simulator)
 endif()

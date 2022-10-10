@@ -83,3 +83,41 @@ if(BUILD_LINK_REMOTE_TWINCAT)
     ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>)
   set_target_properties(c_example_remote_twincat PROPERTIES FOLDER "capi/example")
 endif()
+
+if(BUILD_LINK_SIMULATOR)
+  add_executable(c_example_simulator_client simulator_client.c)
+  add_autd_dependencies(c_example_simulator_client)
+  target_include_directories(c_example_simulator_client PRIVATE ${PROJECT_SOURCE_DIR}/capi/link_simulator)
+  target_link_libraries(c_example_simulator_client PRIVATE autd3capi-link-simulator) 
+  add_custom_command(TARGET c_example_simulator_client POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+    ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/${prefix}autd3capi-link-simulator.${extention}
+    ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>)
+  set_target_properties(c_example_simulator_client PROPERTIES FOLDER "capi/example")
+endif()
+
+if(BUILD_GEOMETRY_VIEWER)
+  add_executable(c_example_geometry_viewer geometry_viewer.c)
+  add_autd_dependencies(c_example_geometry_viewer)
+  target_include_directories(c_example_geometry_viewer PRIVATE ${PROJECT_SOURCE_DIR}/capi/extra_geometry_viewer)
+  target_link_libraries(c_example_geometry_viewer PRIVATE autd3capi-extra-geometry-viewer)
+  target_compile_definitions(c_example_geometry_viewer PRIVATE AUTD3_GEOMETRY_VIEWER_MODEL_PATH="${PROJECT_SOURCE_DIR}/src/extra/geometry_viewer/models/AUTD.glb")
+  target_compile_definitions(c_example_geometry_viewer PRIVATE AUTD3_GEOMETRY_VIEWER_FONT_PATH="${PROJECT_SOURCE_DIR}/examples/fonts/NotoSans-Regular.ttf")
+  add_custom_command(TARGET c_example_geometry_viewer POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+    ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/${prefix}autd3capi-extra-geometry-viewer.${extention}
+    ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>)
+  set_target_properties(c_example_geometry_viewer PROPERTIES FOLDER "capi/example")
+endif()
+
+if(BUILD_SIMULATOR)
+  add_executable(c_example_simulator_server simulator_server.c)
+  add_autd_dependencies(c_example_simulator_server)
+  target_include_directories(c_example_simulator_server PRIVATE ${PROJECT_SOURCE_DIR}/capi/extra_simulator)
+  target_link_libraries(c_example_simulator_server PRIVATE autd3capi-extra-simulator)
+  add_custom_command(TARGET c_example_simulator_server POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+    ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/${prefix}autd3capi-extra-simulator.${extention}
+    ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>)
+  set_target_properties(c_example_simulator_server PROPERTIES FOLDER "capi/example")
+endif()
