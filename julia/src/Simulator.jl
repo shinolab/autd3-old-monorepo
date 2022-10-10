@@ -12,7 +12,7 @@
 
 struct Simulator
     _link::Link
-    function Simulator(; port=50632; ip_addr::String="")
+    function Simulator(; port=50632, ip_addr::String="")
         chandle = Ref(Ptr{Cvoid}(0))
         autd3capi_link_simulator.autd_link_simulator(chandle, UInt16(port), ip_addr)
         new(Link(chandle[]))

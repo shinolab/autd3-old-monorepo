@@ -44,14 +44,14 @@ end
 function extract_zip(zipfile)
     lib_ext = get_lib_ext()
     run(`powershell Expand-Archive -Path $zipfile`)
-    cp("tmp/bin", joinpath(@__DIR__, "..", "src", "NativeMethods", "bin"); force=true)
+    cp("tmp/bin", joinpath(@__DIR__, "..", "src", "NativeMethods", "bin", get_os_info()); force=true)
     rm("tmp"; force=true, recursive=true)
     rm(zipfile; force=true)
 end
 
 function extract_targz(tarfile)
     run(`tar -xvf $tarfile`)
-    cp("bin", joinpath(@__DIR__, "..", "src", "NativeMethods", "bin"); force=true)
+    cp("bin", joinpath(@__DIR__, "..", "src", "NativeMethods", "bin", get_os_info()); force=true)
     rm("bin"; force=true, recursive=true)
     rm(tarfile; force=true)
 end
@@ -73,5 +73,9 @@ function replace_latest_binary(version::String)
     end
 end
 
-_version = get_version()
-replace_latest_binary(_version)
+try
+    _version = get_version()
+    replace_latest_binary(_version)
+catch
+    println("Cannot download", get_version(), "binaries...")
+end
