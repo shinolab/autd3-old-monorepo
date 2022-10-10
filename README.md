@@ -19,9 +19,7 @@ AUTD3: Ariborne Ultrasound Tactile Display 3
 [![unitypackage](https://img.shields.io/github/v/release/shinolab/autd3?label=unitypackage)](https://github.com/shinolab/autd3/releases/latest)
 [![PyPI version](https://badge.fury.io/py/pyautd3.svg)](https://badge.fury.io/py/pyautd3)
 [![nim release](https://img.shields.io/github/v/tag/shinolab/autd3_nim?label=nim)](https://github.com/shinolab/autd3_nim)
-[![go release](https://img.shields.io/github/v/tag/shinolab/autd3-go?label=Go)](https://github.com/shinolab/autd3-go)
 [![Julia release](https://img.shields.io/github/v/release/shinolab/autd3?label=Julia)](https://github.com/shinolab/autd3/releases/latest)
-[![MATLAB release](https://img.shields.io/github/v/tag/shinolab/autd3-matlab?label=MATLAB)](https://github.com/shinolab/autd3-matlab)
 
 </div>
 
@@ -123,9 +121,8 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 * [C#](./cs)
 * [Python](./python)
 * [Nim](https://github.com/shinolab/autd3_nim)
-* [Go](https://github.com/shinolab/autd3-go)
 * [Julia](./julia)
-* [MATLAB](https://github.com/shinolab/autd3-matlab)
+* [MATLAB](./matlab)
 
 ## Firmware
 

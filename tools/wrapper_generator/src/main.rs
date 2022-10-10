@@ -50,7 +50,7 @@ fn gen<G: Generator, P: AsRef<Path>>(path: P, capi_path: P) -> Result<()> {
 fn main() -> Result<()> {
     gen::<PythonGenerator, _>("../../python/pyautd3/native_methods", "../../capi")?;
     gen::<CSharpGenerator, _>("../../cs/src/NativeMethods", "../../capi")?;
-    gen::<MatlabGenerator, _>("matlab", "../../capi")?;
+    gen::<MatlabGenerator, _>("../../matlab/bin", "../../capi")?;
     gen::<NimGenerator, _>("nim", "../../capi")?;
     gen::<JuliaGenerator, _>("../../julia/src/NativeMethods", "../../capi")?;
 
