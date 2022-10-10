@@ -1,0 +1,58 @@
+<mxfile host="65bd71144e" compressed="false">
+    <diagram id="86R6ZRfhnQo9sD8B5-7s" name="Page-1">
+        <mxGraphModel dx="907" dy="521" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="#161923" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="Envj31jSL4E8aKWLNrxv-4" value="" style="endArrow=classic;html=1;rounded=0;fontSize=14;fontColor=#BCBDD0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#bcbdd0;strokeWidth=3;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="Envj31jSL4E8aKWLNrxv-8" target="36" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="180" y="-181.26" as="sourcePoint"/>
+                        <mxPoint x="260" y="-181.26" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="Envj31jSL4E8aKWLNrxv-8" value="&lt;div style=&quot;background-color: rgb(30, 30, 30); font-family: &amp;quot;hackgennerd console&amp;quot;, &amp;quot;source code pro&amp;quot;, &amp;quot;源ノ角ゴシック code jp n&amp;quot;, consolas, &amp;quot;courier new&amp;quot;, monospace; line-height: 19px; font-size: 14px;&quot;&gt;&lt;i style=&quot;font-size: 14px;&quot;&gt;SET&lt;/i&gt;&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;labelBackgroundColor=none;fontSize=14;fontColor=#BCBDD0;" parent="1" vertex="1">
+                    <mxGeometry x="160" y="160" width="30" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="19" value="&lt;div style=&quot;background-color: rgb(30, 30, 30); font-family: &amp;quot;hackgennerd console&amp;quot;, &amp;quot;source code pro&amp;quot;, &amp;quot;源ノ角ゴシック code jp n&amp;quot;, consolas, &amp;quot;courier new&amp;quot;, monospace; line-height: 19px; font-size: 14px;&quot;&gt;&lt;i style=&quot;font-size: 14px;&quot;&gt;ECAT_SYNC_TIME&lt;/i&gt;&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;labelBackgroundColor=none;fontSize=14;fontColor=#BCBDD0;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="110" width="110" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" value="" style="endArrow=classic;html=1;rounded=0;fontSize=14;fontColor=#BCBDD0;strokeColor=#bcbdd0;strokeWidth=3;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" parent="1" source="19" target="36" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="210" y="-171.26" as="sourcePoint"/>
+                        <mxPoint x="190" y="-20" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="22" value="&lt;div style=&quot;background-color: rgb(30, 30, 30); font-family: &amp;quot;hackgennerd console&amp;quot;, &amp;quot;source code pro&amp;quot;, &amp;quot;源ノ角ゴシック code jp n&amp;quot;, consolas, &amp;quot;courier new&amp;quot;, monospace; line-height: 19px; font-size: 14px;&quot;&gt;&lt;i style=&quot;font-size: 14px;&quot;&gt;ECAT_SYNC&lt;/i&gt;&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;labelBackgroundColor=none;fontSize=14;fontColor=#BCBDD0;" parent="1" vertex="1">
+                    <mxGeometry x="120" y="210" width="70" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="24" value="" style="endArrow=classic;html=1;rounded=0;fontSize=14;fontColor=#BCBDD0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;strokeColor=#bcbdd0;strokeWidth=3;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="22" target="36" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="210" y="-271.26" as="sourcePoint"/>
+                        <mxPoint x="290" y="-201.26" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="36" value="&lt;font style=&quot;font-size: 14px&quot;&gt;Synchronizer&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontColor=#BCBDD0;labelBackgroundColor=none;fillColor=none;strokeColor=#bcbdd0;strokeWidth=3;fontSize=14;" parent="1" vertex="1">
+                    <mxGeometry x="230" y="80" width="200" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="52" value="&lt;i style=&quot;font-size: 14px;&quot;&gt;SYS_TIME&lt;/i&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;labelBackgroundColor=none;fontSize=14;fontColor=#BCBDD0;" parent="1" vertex="1">
+                    <mxGeometry x="470" y="160" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="53" value="" style="endArrow=classic;html=1;rounded=0;fontSize=14;fontColor=#BCBDD0;strokeColor=#bcbdd0;strokeWidth=3;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="36" target="52" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="200" y="170" as="sourcePoint"/>
+                        <mxPoint x="240" y="170.19999999999982" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="57" value="CLK" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;labelBackgroundColor=none;fontSize=14;fontColor=#BCBDD0;fontStyle=2" parent="1" vertex="1">
+                    <mxGeometry x="240" y="30" width="60" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="58" value="" style="endArrow=classic;html=1;rounded=0;fontSize=14;fontColor=#BCBDD0;strokeColor=#bcbdd0;strokeWidth=3;entryX=0.093;entryY=-0.003;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryPerimeter=0;" parent="1" source="57" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="330" y="320" as="sourcePoint"/>
+                        <mxPoint x="269.52" y="78.74000000000001" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
