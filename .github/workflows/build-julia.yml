@@ -1,0 +1,57 @@
+name: build-julia
+
+on:
+  push:
+    tags-ignore:
+      - v*
+    branches:
+      - 'dev'
+
+jobs:
+  test:
+    name: build test on ${{ matrix.os }} with ${{ matrix.julia-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        julia-version: ['1.8.2']
+    steps:
+      - uses: actions/checkout@v1.0.0
+      - name: Build capi
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DBUILD_ALL=ON
+          cmake --build . --parallel 8
+          cd ..
+      - name: Copy linux binary
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          mkdir -p python/pyautd3/bin/linux-x64
+          cp build/bin/*.so python/pyautd3/bin/linux-x64
+        shell: bash
+        env:
+          CC: gcc-10
+          CXX: g++-10
+      - name: Copy Windows binary
+        if: matrix.os == 'windows-latest'
+        run: |
+          mkdir python/pyautd3/bin/win_x64
+          foreach($dll in Get-ChildItem -Path build/bin/Debug | Where {$_.extension -like ".dll"}){ Copy-Item -Path $dll -Destination python/pyautd3/bin/win-x64 }
+        shell: pwsh
+      - name: Copy macos binary
+        if: matrix.os == 'macos-latest'
+        run: |
+          mkdir -p python/pyautd3/bin/macos-universal
+          cp build/bin/*.dylib python/pyautd3/bin/macos-universal
+        shell: bash
+      - name: Set up Julia
+        uses: julia-actions/setup-julia@v1
+        with:
+          version: ${{ matrix.julia-version }}
+      - name: Build Package
+        if: matrix.os == 'windows-latest'
+        run: julia -e 'using Pkg; Pkg.add(path=\".\", subdir=\"julia\"); Pkg.build(\"AUTD3\")'
+      - name: Build Package
+        if: matrix.os != 'windows-latest'
+        run: julia -e 'using Pkg; Pkg.add(path=".", subdir="julia"); Pkg.build("AUTD3")'

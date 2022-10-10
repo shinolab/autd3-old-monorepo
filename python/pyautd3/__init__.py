@@ -83,7 +83,7 @@ __all__ = [
     'DEVICE_HEIGHT'
 ]
 
-__version__ = '2.4.1'
+__version__ = '2.4.2'
 
 _PLATFORM = platform.system()
 _TARGET_OS = ''

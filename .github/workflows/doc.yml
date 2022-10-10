@@ -42,6 +42,20 @@ jobs:
         sudo mv ./book/book/en/html ./doc_build/book/en
         sudo mv ./book/book/jp/html ./doc_build/book/jp
 
+    - run: |
+        cd firmware/fpga/docs
+        mdbook build
+    - name: mv fpga doc
+      run: |
+        sudo mv ./firmware/fpga/docs/book/html ./doc_build/fpga
+
+    - run: |
+        cd firmware/cpu/docs
+        mdbook build
+    - name: mv cpu doc
+      run: |
+        sudo mv ./firmware/cpu/docs/book/html ./doc_build/cpu
+
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
