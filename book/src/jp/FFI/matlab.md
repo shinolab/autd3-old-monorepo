@@ -1,6 +1,6 @@
 # MATLAB
 
-[autd3-matlab](https://github.com/shinolab/autd3/matlab)はpythonに対応したラッパーを提供している.
+[autd3-matlab](https://github.com/shinolab/autd3/tree/master/matlab)はpythonに対応したラッパーを提供している.
 
 ## Usage
 
