@@ -47,7 +47,6 @@ jobs:
         mdbook build
     - name: mv fpga doc
       run: |
-        mkdir -p doc_build/fpga
         sudo mv ./firmware/fpga/docs/book/html ./doc_build/fpga
 
     - run: |
@@ -55,7 +54,6 @@ jobs:
         mdbook build
     - name: mv cpu doc
       run: |
-        mkdir -p doc_build/cpu
         sudo mv ./firmware/cpu/docs/book/html ./doc_build/cpu
 
     - name: Deploy
