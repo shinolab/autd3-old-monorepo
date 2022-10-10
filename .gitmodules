@@ -34,3 +34,6 @@
 [submodule "3rdparty/tinycolormap"]
 	path = 3rdparty/tinycolormap
 	url = https://github.com/yuki-koyama/tinycolormap.git
+[submodule "3rdparty/Vulkan-Headers"]
+	path = 3rdparty/Vulkan-Headers
+	url = https://github.com/KhronosGroup/Vulkan-Headers.git

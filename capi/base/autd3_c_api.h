@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/09/2022
+// Last Modified: 10/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -65,6 +65,7 @@ EXPORT_AUTD void AUTDGainFocus(OUT void** gain, IN double x, IN double y, IN dou
 EXPORT_AUTD void AUTDGainBesselBeam(OUT void** gain, IN double x, IN double y, IN double z, IN double n_x, IN double n_y, IN double n_z,
                                     IN double theta_z, IN double amp);
 EXPORT_AUTD void AUTDGainPlaneWave(OUT void** gain, IN double n_x, IN double n_y, IN double n_z, IN double amp);
+EXPORT_AUTD void AUTDGainTransducerTest(OUT void** gain, IN int32_t dev_idx, IN int32_t tr_idx, IN double amp, IN double phase);
 EXPORT_AUTD void AUTDGainCustom(OUT void** gain, IN const double* amp, IN const double* phase, IN uint64_t size);
 EXPORT_AUTD void AUTDDeleteGain(IN const void* gain);
 EXPORT_AUTD void AUTDModulationStatic(OUT void** mod, IN double amp);
@@ -72,6 +73,7 @@ EXPORT_AUTD void AUTDModulationSine(OUT void** mod, IN int32_t freq, IN double a
 EXPORT_AUTD void AUTDModulationSineSquared(OUT void** mod, IN int32_t freq, IN double amp, IN double offset);
 EXPORT_AUTD void AUTDModulationSineLegacy(OUT void** mod, IN double freq, IN double amp, IN double offset);
 EXPORT_AUTD void AUTDModulationSquare(OUT void** mod, IN int32_t freq, IN double low, IN double high, IN double duty);
+EXPORT_AUTD void AUTDModulationLPF(OUT void** mod, IN void* mod_in);
 EXPORT_AUTD void AUTDModulationCustom(OUT void** mod, IN const uint8_t* buffer, IN uint64_t size, IN uint32_t freq_div);
 EXPORT_AUTD uint32_t AUTDModulationSamplingFrequencyDivision(IN const void* mod);
 EXPORT_AUTD void AUTDModulationSetSamplingFrequencyDivision(IN void* mod, IN uint32_t freq_div);

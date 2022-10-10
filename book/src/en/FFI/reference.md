@@ -624,6 +624,22 @@ Plane wave gainを作成する.
 | amp                    | double | in     | amplitude of wave              |
 | return                 | void   | -      | -                              |
 
+
+## AUTDGainTransducerTest (autd3capi)
+
+TransducerTest gainを作成する.
+
+作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+
+| Argument name / return | type     | in/out | description                     |
+| ---------------------- | -------  | ------ | ---------------------           |
+| gain                   | void**   | out    | pointer to TransducerTest gain  |
+| dev_idx                | int32_t  | in     | device index                    |
+| tr_idx                 | int32_t  | in     | local transducer index          |
+| amp                    | double   | in     | amplitude                       |
+| phase                  | double   | in     | phase                           |
+| return                 | void     | -      | -                               |
+
 ## AUTDGainCustom (autd3capi)
 
 Custom gainを作成する.
@@ -632,13 +648,13 @@ Custom gainは位相と振幅を直接指定するGainである.
 
 作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
 
-| Argument name / return | type     | in/out | description           |
-| ---------------------- | -------  | ------ | --------------------- |
-| gain                   | void**   | out    | pointer to Focus gain |
-| amp                    | double*  | in     | pointer to amplitude  |
-| phase                  | double*  | in     | pointer to phase      |
-| size                   | uint64_t | in     | size of amp and phase |
-| return                 | void     | -      | -                     |
+| Argument name / return | type     | in/out | description            |
+| ---------------------- | -------  | ------ | ---------------------  |
+| gain                   | void**   | out    | pointer to Custom gain |
+| amp                    | double*  | in     | pointer to amplitude   |
+| phase                  | double*  | in     | pointer to phase       |
+| size                   | uint64_t | in     | size of amp and phase  |
+| return                 | void     | -      | -                      |
 
 ## AUTDDeleteGain (autd3capi)
 
@@ -716,6 +732,18 @@ Square modulationを作成する.
 | low                    | double  | in     | amplitude at low level of square modulation  |
 | high                   | double  | in     | amplitude at high level of square modulation |
 | duty                   | double  | in     | duty ratio of square modulation              |
+| return                 | void    | -      | -                                            |
+
+## AUTDModulationLPF (autd3capi)
+
+LPF modulationを作成する.
+
+作成したModulationは最後に`AUTDDeleteModulation`で削除する必要がある.
+
+| Argument name / return | type    | in/out | description                                  |
+| ---------------------- | ------- | ------ | -------------------------------------------- |
+| mod                    | void**  | out    | pointer to pointer to LPF modulation         |
+| mod_in                 | void*   | in     | original modulation                          |
 | return                 | void    | -      | -                                            |
 
 ## AUTDModulationCustom (autd3capi)
@@ -1303,6 +1331,24 @@ CUDA Backendを作成する.
 | out                    | void** | out    | pointer to pointer to CUDA backend |
 | return                 | void   | -      | -                                  |
 
+## AUTDLinkDebug (autd3capi-link-debug)
+
+Debug linkを作成する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| out                    | void**   | out    | pointer to pointer to Debug link    |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkDebugSetLevel (autd3capi-link-debug)
+
+Debugのログ表示レベルを設定する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| level                  | int32_t  | in     | debug level                         |
+| return                 | void     | -      | -                                   |
+
 ## AUTDLinkSimulator (autd3capi-link-simulator)
 
 Simulator linkを作成する.
@@ -1414,3 +1460,27 @@ Wav modulationを作成する.
 | filename               | char*    | in     | path to pcm file                       |
 | mod_sampling_freq_div  | uint32_t | in     | modulation sampling frequency division |
 | return                 | void     | -      | -                                      |
+
+## AUTDExtraGeometryViewer (autd3capi-extra-geometry-viewer)
+
+Geometry Viewerを起動する.
+
+| Argument name / return | type    | in/out | description                        |
+| ---------------------- | ------- | ------ | ---------------------------------- |
+| cnt                    | void*   | in     | pointer to Controller              |
+| width                  | int32_t | in     | window width                       |
+| height                 | int32_t | in     | window height                      |
+| vsync                  | bool    | in     | vsync                              |
+| model                  | char*   | in     | path to AUTD3 model                |
+| font                   | char*   | in     | path to font                       |
+| gpu_idx                | int32_t | in     | GPU index                          |
+| return                 | void    | -      | -                                  |
+
+## AUTDExtraSimulator (autd3capi-extra-simulator)
+
+Simulatorを起動する.
+
+| Argument name / return | type    | in/out | description                        |
+| ---------------------- | ------- | ------ | ---------------------------------- |
+| settings_path          | char*   | in     | path to setting file               |
+| return                 | void    | -      | -                                  |

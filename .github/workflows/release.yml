@@ -51,18 +51,20 @@ jobs:
           cuda: '11.7.0'
       - name: Build project x64
         run: |
-          cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON
+          cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON -DEXPORT_AUTD_SIMULATOR=ON
           cd build
           msbuild autd3.sln /t:build /p:Configuration=Release -maxcpucount
           mkdir publish
           mkdir publish/lib
           mkdir publish/lib/wpcap
           mkdir publish/bin
+          mkdir publish/simulator
           cd ..
           copy build/lib/Release/*.lib build/publish/lib
           copy 3rdparty/SOEM/oshw/win32/wpcap/Lib/x64/*.lib build/publish/lib/wpcap
           copy build/bin/Release/*.dll build/publish/bin
-          Compress-Archive -Path LICENSE, NOTICE, dist/AUTDServer, dist/firmware, include, build/publish/lib, build/publish/bin -DestinationPath assets_x64.zip
+          copy build/dist/simulator/Release/*.exe build/publish/simulator
+          Compress-Archive -Path LICENSE, NOTICE, dist/AUTDServer, dist/firmware, include, build/publish/lib, build/publish/bin build/publish/simulator -DestinationPath assets_x64.zip
       - name: Build project x86
         run: |
           cmake -G "Visual Studio 17 2022" -A Win32 -B "build_x86" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=OFF

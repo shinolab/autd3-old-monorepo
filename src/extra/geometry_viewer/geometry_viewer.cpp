@@ -30,7 +30,7 @@ void GeometryViewer::view(const core::Geometry& geometry) const {
   }
 
   helper::WindowHandler window(_width, _height);
-  helper::VulkanContext context(_gpu_idx, true);
+  helper::VulkanContext context(_gpu_idx, false);
   VulkanHandler handle(&context);
   VulkanImGui imgui(&window, &context);
   VulkanRenderer renderer(&context, &window, &handle, &imgui, _vsync);

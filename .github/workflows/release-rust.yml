@@ -1,0 +1,40 @@
+name: Publish rust
+
+on:
+  push:
+    tags:
+    - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Checkout submodules
+      run: git submodule update --init --force --recursive -- 3rdparty/SOEM
+    - name: publish
+      run: |
+        cd rust
+        cd autd3-driver
+        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cd .. && sleep 60
+        cd autd3-core
+        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cd ..
+        cd autd3-traits
+        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cd .. && sleep 60
+        cd autd3
+        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cd ..
+        cd autd3-link-soem
+        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cd ..
+        cd autd3-link-twincat
+        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cd ..
+        cd autd3-link-simulator
+        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cd ..
+        cd autd3-gain-holo
+        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
