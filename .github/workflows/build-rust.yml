@@ -1,0 +1,40 @@
+name: build-rust
+
+on:
+  push:
+    tags-ignore:
+      - v*
+    branches:
+      - 'dev'
+
+jobs:
+  build:
+    name: build ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Checkout submodules
+      run: git submodule update --init --force --recursive -- 3rdparty/SOEM
+    - name: Build
+      run: |
+        cd rust
+        cargo build --workspace --verbose --exclude autd3-link-soem
+    - name: Run tests
+      run: |
+        cd rust
+        cargo test --workspace --exclude autd3-link-soem
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Checkout submodules
+      run: git submodule update --init --force --recursive -- 3rdparty/SOEM
+    - name: lint
+      run:  |
+        cd rust
+        cargo clippy --all-targets --all-features -- -D warnings
