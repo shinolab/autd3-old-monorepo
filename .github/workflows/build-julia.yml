@@ -51,7 +51,7 @@ jobs:
           version: ${{ matrix.julia-version }}
       - name: Build Package
         if: matrix.os == 'windows-latest'
-        run: julia -e 'using Pkg; Pkg.add(path=".", subdir=\"julia\"); Pkg.build(\"AUTD3\")'
+        run: julia -e 'using Pkg; Pkg.add(path=\".\", subdir=\"julia\"); Pkg.build(\"AUTD3\")'
       - name: Build Package
         if: matrix.os != 'windows-latest'
         run: julia -e 'using Pkg; Pkg.add(path=".", subdir="julia"); Pkg.build("AUTD3")'
