@@ -24,7 +24,9 @@ jobs:
         cd rust
         cargo build --workspace --verbose --exclude autd3-link-soem
     - name: Run tests
-      run: cargo test --workspace --exclude autd3-link-soem
+      run: |
+        cd rust
+        cargo test --workspace --exclude autd3-link-soem
 
   lint:
     runs-on: ubuntu-latest
