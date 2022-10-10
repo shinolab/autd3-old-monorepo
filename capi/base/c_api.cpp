@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/09/2022
+// Last Modified: 10/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,6 +17,7 @@
 
 #include "./autd3_c_api.h"
 #include "autd3.hpp"
+#include "autd3/modulation/lpf.hpp"
 #include "custom.hpp"
 #include "wrapper.hpp"
 #include "wrapper_link.hpp"
@@ -265,6 +266,10 @@ void AUTDGainPlaneWave(void** gain, const double n_x, const double n_y, const do
   *gain = new autd3::gain::PlaneWave(to_vec3(n_x, n_y, n_z), amp);
 }
 
+void AUTDGainTransducerTest(void** gain, const int32_t dev_idx, const int32_t tr_idx, const double amp, const double phase) {
+  *gain = new autd3::gain::TransducerTest(dev_idx, tr_idx, amp, phase);
+}
+
 void AUTDGainCustom(void** gain, const double* amp, const double* phase, const uint64_t size) {
   *gain = new CustomGain(amp, phase, static_cast<size_t>(size));
 }
@@ -288,6 +293,12 @@ void AUTDModulationSineSquared(void** mod, const int32_t freq, const double amp,
 void AUTDModulationSineLegacy(void** mod, const double freq, const double amp, const double offset) {
   *mod = new autd3::modulation::SineLegacy(freq, amp, offset);
 }
+
+void AUTDModulationLPF(void** mod, void* mod_in) {
+  auto* m = static_cast<autd3::Modulation*>(mod_in);
+  *mod = new autd3::modulation::LPF(*m);
+}
+
 void AUTDModulationCustom(void** mod, const uint8_t* buffer, const uint64_t size, const uint32_t freq_div) {
   *mod = new CustomModulation(buffer, static_cast<size_t>(size), freq_div);
 }
