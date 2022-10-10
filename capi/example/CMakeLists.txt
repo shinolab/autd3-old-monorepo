@@ -84,6 +84,18 @@ if(BUILD_LINK_REMOTE_TWINCAT)
   set_target_properties(c_example_remote_twincat PROPERTIES FOLDER "capi/example")
 endif()
 
+if(BUILD_LINK_DEBUG)
+  add_executable(c_example_debug debug.c)
+  add_autd_dependencies(c_example_debug)
+  target_include_directories(c_example_debug PRIVATE ${PROJECT_SOURCE_DIR}/capi/link_debug)
+  target_link_libraries(c_example_debug PRIVATE autd3capi-link-debug) 
+  add_custom_command(TARGET c_example_debug POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+    ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/${prefix}autd3capi-link-debug.${extention}
+    ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>)
+  set_target_properties(c_example_debug PROPERTIES FOLDER "capi/example")
+endif()
+
 if(BUILD_LINK_SIMULATOR)
   add_executable(c_example_simulator_client simulator_client.c)
   add_autd_dependencies(c_example_simulator_client)
