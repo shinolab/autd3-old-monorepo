@@ -19,7 +19,6 @@
   - [Rust](./FFI/rust.md)
   - [Nim](./FFI/nim.md)
   - [Julia](./FFI/julia.md)
-  - [Go](./FFI/go.md)
   - [MATLAB](./FFI/matlab.md)
   - [C API Reference](./FFI/reference.md)
 - [Simulator](./Simulator/simulator.md)
