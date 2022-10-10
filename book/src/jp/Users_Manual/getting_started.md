@@ -9,10 +9,10 @@
 Studio Community 2022は「C++によるデスクトップ開発」にチェックを入れてインストールすれば良い. なお, Linuxの場合はgccが,
 macOSの場合はclangが使えれば良い. また, 以下はターミナルから操作するため, PATHを通しておくことを推奨する.
 
-- Visual Studio Community 2022 17.2.3
-- CMake 3.23.1
-- git 2.37.1.windows.1[^fn_git]
-- npcap 1.70[^fn_npcap]
+- Visual Studio Community 2022 17.3.5
+- CMake 3.24.2
+- git 2.38.0.windows.1[^fn_git]
+- npcap 1.71[^fn_npcap]
 
 ## Setup Device
 
@@ -21,7 +21,7 @@ macOSの場合はclangが使えれば良い. また, 以下はターミナルか
 
 ### Firmware update
 
-firmwareが古い場合, 動作は保証されない. 本文章におけるfirmwareのversionは2.3が想定される.
+firmwareが古い場合, 動作は保証されない. 本文章におけるfirmwareのversionは2.4が想定される.
 
 firmwareのupdateには[Vivado Design Suite](https://www.xilinx.com/products/design-tools/vivado.html),
 及び, [J-Link Software](https://www.segger.com/downloads/jlink/)をインストールしたWindows
@@ -249,7 +249,7 @@ const auto firm_infos = autd.firmware_infos();
 copy(firm_infos.begin(), firm_infos.end(), ostream_iterator<FirmwareInfo>(cout, "\n"));
 ```
 
-ここで, v2.3以外のヴァージョンが表示される場合は, 動作が保証されないので注意する.
+ここで, v4以外のヴァージョンが表示される場合は, 動作が保証されないので注意する.
 
 次に, silencerを設定する.
 
