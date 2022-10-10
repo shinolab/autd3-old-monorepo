@@ -4,7 +4,7 @@
  * Created Date: 24/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2022
+ * Last Modified: 10/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -52,7 +52,7 @@ fn main() -> Result<()> {
     gen::<CSharpGenerator, _>("../../cs/src/NativeMethods", "../../capi")?;
     gen::<MatlabGenerator, _>("matlab", "../../capi")?;
     gen::<NimGenerator, _>("nim", "../../capi")?;
-    gen::<JuliaGenerator, _>("julia", "../../capi")?;
+    gen::<JuliaGenerator, _>("../../julia/src/NativeMethods", "../../capi")?;
 
     Ok(())
 }
