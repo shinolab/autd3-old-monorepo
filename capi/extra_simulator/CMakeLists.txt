@@ -6,7 +6,7 @@ add_library(autd3capi-extra-simulator SHARED
   ../base/header.hpp
 )
  
-target_link_libraries(autd3capi-extra-simulator simulator autd3_common nlohmann_json)
+target_link_libraries(autd3capi-extra-simulator simulator autd3_common)
 
 set_target_properties(autd3capi-extra-simulator
   PROPERTIES
