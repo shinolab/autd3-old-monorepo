@@ -31,7 +31,7 @@ curly-quotes = true
 mathjax-support = false
 additional-js = ["mermaid.min.js", "mermaid-init.js"]
 additional-css = ["theme/css/figure.css", "theme/css/table.css"]
-git-repository-url = "https://github.com/shinolab/autd3-fpga"
+git-repository-url = "https://github.com/shinolab/autd3"
 git-branch = "master"
 
 [output.katex]
