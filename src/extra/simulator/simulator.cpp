@@ -147,7 +147,7 @@ void Simulator::run() {
   });
 
   const auto window = std::make_unique<helper::WindowHandler>(_settings->window_width, _settings->window_height);
-  const auto context = std::make_unique<helper::VulkanContext>(_settings->gpu_idx, true);
+  const auto context = std::make_unique<helper::VulkanContext>(_settings->gpu_idx, false);
 
   const auto imgui = std::make_unique<VulkanImGui>(window.get(), context.get());
   const auto renderer = std::make_unique<VulkanRenderer>(context.get(), window.get(), imgui.get(), _settings->vsync);
