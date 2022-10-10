@@ -1,0 +1,11 @@
+table {
+    border: none !important;
+}
+
+table figure {
+    margin: 0px;
+}
+
+th, td {
+    border: none !important;
+}
