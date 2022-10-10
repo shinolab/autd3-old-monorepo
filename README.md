@@ -8,6 +8,7 @@ AUTD3: Ariborne Ultrasound Tactile Display 3
 ![build](https://github.com/shinolab/autd3/workflows/build-cs/badge.svg)
 ![build](https://github.com/shinolab/autd3/workflows/build-python/badge.svg)
 ![build](https://github.com/shinolab/autd3/workflows/build-julia/badge.svg)
+![build](https://github.com/shinolab/autd3/workflows/build-rust/badge.svg)
 
 </div>
 
@@ -116,7 +117,7 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 
 ## For other programming languages
 
-* [Rust](https://github.com/shinolab/rust-autd)
+* [Rust](./rust)
 * [C#](./cs)
 * [Python](./python)
 * [Nim](./nim)

@@ -1,0 +1,19 @@
+[package]
+name = "autd3-link-twincat"
+version = "2.4.1"
+authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
+edition = "2021"
+
+license-file = "LICENSE"
+description = "Link of AUTD using TwinCAT."
+repository = "https://github.com/shinolab/autd3"
+readme = "README.md"
+keywords = ["autd"]
+
+[dependencies]
+anyhow = "1.0.57"
+autd3-core = {path="../autd3-core", version="2.4.1"}
+libc = "0.2.125"
+libloading = "0.7.3"
+once_cell = "1.10.0"
+thiserror = "1.0.31"
