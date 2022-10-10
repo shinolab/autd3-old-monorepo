@@ -13,13 +13,16 @@
 
 
 using AUTD3Sharp;
+using AUTD3Sharp.Gain;
+using AUTD3Sharp.Modulation;
 using AUTD3Sharp.Utils;
+using Custom = AUTD3Sharp.Gain.Custom;
 
 namespace example.Test
 {
     internal static class CustomTest
     {
-        private static Gain.Gain Focus(Controller autd, Vector3d point)
+        private static Gain Focus(Controller autd, Vector3d point)
         {
             var amps = new double[autd.NumTransducers];
             var phases = new double[autd.NumTransducers];
@@ -39,7 +42,7 @@ namespace example.Test
                 }
             }
 
-            return new Gain.Custom(amps, phases);
+            return new Custom(amps, phases);
         }
 
         public static void Test(Controller autd)
@@ -51,7 +54,7 @@ namespace example.Test
             const double y = Controller.DeviceHeight / 2;
             const double z = 150;
 
-            var mod = new Modulation.Sine(150);
+            var mod = new Sine(150);
             var gain = Focus(autd, new Vector3d(x, y, z));
             autd.Send(mod, gain);
         }

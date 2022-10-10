@@ -4,7 +4,7 @@
  * Created Date: 03/07/2020
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2022
+ * Last Modified: 10/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -13,17 +13,16 @@
 
 using UnityEditor;
 using UnityEngine;
-using AUTD3Sharp;
 using System.Linq;
 
 public class EnumerateAdaptersWindow : EditorWindow
 {
-    Link.EtherCATAdapter[]? _adapters = null;
+    AUTD3Sharp.Link.EtherCATAdapter[]? _adapters = null;
     Vector2 _leftScrollPos = Vector2.zero;
 
     private void OnEnable()
     {
-        _adapters = Link.SOEM.EnumerateAdapters().ToArray();
+        _adapters = AUTD3Sharp.Link.SOEM.EnumerateAdapters().ToArray();
     }
 
     [MenuItem("AUTD/Enumerate Adapters")]
@@ -40,7 +39,7 @@ public class EnumerateAdaptersWindow : EditorWindow
         {
             _leftScrollPos = sv.scrollPosition;
 
-            foreach (var adapter in _adapters ?? new Link.EtherCATAdapter[] { })
+            foreach (var adapter in _adapters ?? new AUTD3Sharp.Link.EtherCATAdapter[] { })
             {
                 using (new GUILayout.HorizontalScope(GUI.skin.box))
                 {
