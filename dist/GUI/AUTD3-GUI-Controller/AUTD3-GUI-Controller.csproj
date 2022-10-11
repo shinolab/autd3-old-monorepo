@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>AUTD3_GUI_Controller</RootNamespace>
@@ -102,6 +102,13 @@
 		  <NativeResources Include="$(ProjectDir)runtimes\win-x64\native\*.dll" />
   	  </ItemGroup>
 	  <Copy SourceFiles="@(NativeResources)" DestinationFolder="$(OutDir)" />
+  </Target>
+
+  <Target Name="CopyModelResources" AfterTargets="Build">
+	  <ItemGroup>
+		  <ModelResources Include="$(ProjectDir)..\..\..\src\extra\geometry_viewer\models\*.glb" />
+  	  </ItemGroup>
+	  <Copy SourceFiles="@(ModelResources)" DestinationFolder="$(OutDir)\models" />
   </Target>
 
 </Project>

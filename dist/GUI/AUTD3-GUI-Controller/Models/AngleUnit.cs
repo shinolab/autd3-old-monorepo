@@ -1,7 +1,7 @@
 ﻿/*
- * File: LinkType.cs
+ * File: AngleUnit.cs
  * Project: Models
- * Created Date: 19/08/2022
+ * Created Date: 11/10/2022
  * Author: Shun Suzuki
  * -----
  * Last Modified: 11/10/2022
@@ -11,12 +11,11 @@
  * 
  */
 
-namespace AUTD3_GUI_Controller.Models;
-
-public enum LinkType
+namespace AUTD3_GUI_Controller.Models
 {
-    SOEM,
-    TwinCAT,
-    RemoteTwinCAT,
-    Simulator
+    public enum AngleUnit
+    {
+        Radian,
+        Degree
+    }
 }

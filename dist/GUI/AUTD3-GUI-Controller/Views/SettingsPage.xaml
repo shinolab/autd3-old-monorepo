@@ -10,21 +10,38 @@
     Loaded="SettingsPage_OnLoaded"
     mc:Ignorable="d">
     <Page.Resources>
-        <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+        <helpers:ElementThemeEnumToBooleanConverter x:Key="ElementThemeEnumToBooleanConverter" />
+        <helpers:AngleUnitEnumToBooleanConverter x:Key="AngleUnitEnumToBooleanConverter" />
     </Page.Resources>
     <Grid x:Name="Root">
-        <StackPanel x:Name="ContentArea">
+        <StackPanel>
+            <TextBlock localization:Localizer.Uid="Settings_Personalization" Style="{ThemeResource SubtitleTextBlockStyle}" />
+            <StackPanel Margin="{StaticResource SmallTopBottomMargin}">
+                <TextBlock localization:Localizer.Uid="Settings_AngleUnit" />
+                <StackPanel Margin="{StaticResource XSmallTopMargin}">
+                    <RadioButton
+                        localization:Localizer.Uid="Settings_AngleUnit_Radian"
+                        FontSize="15"
+                        GroupName="AngleUnit"
+                        IsChecked="{x:Bind ViewModel.AngleUnit, Converter={StaticResource AngleUnitEnumToBooleanConverter}, ConverterParameter=Radian, Mode=TwoWay}" />
+                    <RadioButton
+                        localization:Localizer.Uid="Settings_AngleUnit_Degree"
+                        FontSize="15"
+                        GroupName="AngleUnit"
+                        IsChecked="{x:Bind ViewModel.AngleUnit, Converter={StaticResource AngleUnitEnumToBooleanConverter}, ConverterParameter=Degree, Mode=TwoWay}" />
+                </StackPanel>
+            </StackPanel>
+
             <TextBlock localization:Localizer.Uid="Settings_Personalization" Style="{ThemeResource SubtitleTextBlockStyle}" />
             <StackPanel Margin="{StaticResource SmallTopBottomMargin}">
                 <TextBlock localization:Localizer.Uid="Settings_Theme" />
-
                 <StackPanel Margin="{StaticResource XSmallTopMargin}">
                     <RadioButton
                         localization:Localizer.Uid="Settings_Theme_Light"
                         Command="{x:Bind ViewModel.SwitchThemeCommand}"
                         FontSize="15"
                         GroupName="AppTheme"
-                        IsChecked="{x:Bind ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}">
+                        IsChecked="{x:Bind ViewModel.CurrentTheme, Converter={StaticResource ElementThemeEnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}">
                         <RadioButton.CommandParameter>
                             <xaml:ElementTheme>Light</xaml:ElementTheme>
                         </RadioButton.CommandParameter>
@@ -34,7 +51,7 @@
                         Command="{x:Bind ViewModel.SwitchThemeCommand}"
                         FontSize="15"
                         GroupName="AppTheme"
-                        IsChecked="{x:Bind ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}">
+                        IsChecked="{x:Bind ViewModel.CurrentTheme, Converter={StaticResource ElementThemeEnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}">
                         <RadioButton.CommandParameter>
                             <xaml:ElementTheme>Dark</xaml:ElementTheme>
                         </RadioButton.CommandParameter>
@@ -44,7 +61,7 @@
                         Command="{x:Bind ViewModel.SwitchThemeCommand}"
                         FontSize="15"
                         GroupName="AppTheme"
-                        IsChecked="{x:Bind ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Default, Mode=OneWay}">
+                        IsChecked="{x:Bind ViewModel.CurrentTheme, Converter={StaticResource ElementThemeEnumToBooleanConverter}, ConverterParameter=Default, Mode=OneWay}">
                         <RadioButton.CommandParameter>
                             <xaml:ElementTheme>Default</xaml:ElementTheme>
                         </RadioButton.CommandParameter>
@@ -53,7 +70,6 @@
             </StackPanel>
 
             <TextBlock localization:Localizer.Uid="Settings_Language" />
-
             <StackPanel>
                 <RadioButtons
                     localization:Localizer.Uid="Settings_AvailableLanguages"
@@ -74,14 +90,10 @@
 
             <StackPanel Margin="{StaticResource XSmallTopMargin}">
                 <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.VersionDescription, Mode=OneWay}" />
-                <!--<TextBlock
-                    Margin="{StaticResource XSmallTopMargin}"
-                    localization:Localizer.Uid="Settings_AboutDescription"
-                    Style="{ThemeResource BodyTextBlockStyle}" />-->
                 <HyperlinkButton
                     Margin="{StaticResource SettingsPageHyperlinkButtonMargin}"
                     localization:Localizer.Uid="SettingsPage_GithubLink"
-                    NavigateUri="https://github.com/shinolab/AUTD3-GUI-Controller" />
+                    NavigateUri="https://github.com/shinolab/autd3" />
             </StackPanel>
         </StackPanel>
     </Grid>

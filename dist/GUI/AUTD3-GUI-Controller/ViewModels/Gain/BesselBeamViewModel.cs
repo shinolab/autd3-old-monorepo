@@ -4,7 +4,7 @@
  * Created Date: 24/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/08/2022
+ * Last Modified: 11/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,7 +27,7 @@ public class BesselBeamViewModel : ObservableRecipient
 
     public BesselBeamViewModel(ILocalSettingsService localSettingsService)
     {
-        Model = localSettingsService.ReadSetting<BesselBeamModel>(nameof(BesselBeamModel)) ?? new BesselBeamModel(90, 70, 0, 0, 0, 1, Math.PI / 180.0 * 18.0);
+        Model = localSettingsService.ReadSetting<BesselBeamModel>(nameof(BesselBeamModel)) ?? new BesselBeamModel(90, 70, 0, 0, 0, 1, 18.0);
         Model.PropertyChanged += async (_, _) => await localSettingsService.SaveSettingAsync(nameof(BesselBeamModel), Model);
     }
 }

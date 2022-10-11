@@ -4,7 +4,7 @@
  * Created Date: 23/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/08/2022
+ * Last Modified: 11/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -45,7 +45,7 @@ public class AUTDService
         _autd = new Controller();
         foreach (var geometry in App.GetService<GeometryViewModel>().Geometries)
         {
-            _autd.AddDevice(new Vector3d(geometry.X, geometry.Y, geometry.Z), new Vector3d(geometry.RotateZ1, geometry.RotateY, geometry.RotateZ2));
+            _autd.AddDevice(new Vector3d(geometry.X, geometry.Y, geometry.Z), new Vector3d(AngleUnitConverter.Instance.ToRadian(geometry.RotateZ1), AngleUnitConverter.Instance.ToRadian(geometry.RotateY), AngleUnitConverter.Instance.ToRadian(geometry.RotateZ2)));
         }
 
         var linkVm = App.GetService<LinkViewModel>();
@@ -67,7 +67,7 @@ public class AUTDService
             LinkType.SOEM => BuildSOEM(),
             LinkType.TwinCAT => new TwinCAT().Build(),
             LinkType.RemoteTwinCAT => new RemoteTwinCAT(linkVm.RemoteIp, linkVm.RemoteAmsNetId).LocalAmsNetId(linkVm.LocalAmsNetId).Build(),
-            LinkType.Emulator => new Simulator().Port(linkVm.Port).Build(),
+            LinkType.Simulator => new Simulator().Port(linkVm.Port).Build(),
             _ => throw new ArgumentOutOfRangeException()
         };
 

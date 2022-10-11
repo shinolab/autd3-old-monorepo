@@ -48,5 +48,5 @@ public partial class BesselBeamModel : IGain
         Amp = amp;
     }
 
-    public AUTD3Sharp.Gain.Gain ToGain() => new AUTD3Sharp.Gain.BesselBeam(new Vector3d(X, Y, Z), new Vector3d(DirX, DirY, DirZ), Theta, Amp);
+    public AUTD3Sharp.Gain.Gain ToGain() => new AUTD3Sharp.Gain.BesselBeam(new Vector3d(X, Y, Z), new Vector3d(DirX, DirY, DirZ), AngleUnitConverter.Instance.ToRadian(Theta), Amp);
 }

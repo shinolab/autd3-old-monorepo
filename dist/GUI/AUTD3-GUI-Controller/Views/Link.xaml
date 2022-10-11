@@ -4,7 +4,7 @@
     Created Date: 18/08/2022
     Author: Shun Suzuki
     =====
-    Last Modified: 24/08/2022
+    Last Modified: 11/10/2022
     Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
     =====
     Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -159,25 +159,45 @@
                                 Text="{x:Bind ViewModel.LocalAmsNetId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         </Grid>
                     </controls:Case>
-                    <controls:Case Value="Emulator">
-                        <Grid Loaded="LinkPageSelection_OnLoaded">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="auto" />
-                                <ColumnDefinition Width="80" />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="auto" />
-                            </Grid.RowDefinitions>
-                            <TextBlock
-                                Grid.Column="0"
+                    <controls:Case Value="Simulator">
+                        <StackPanel Loaded="LinkPageSelection_OnLoaded">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                </Grid.RowDefinitions>
+                                <TextBlock
+                                    Grid.Column="0"
+                                    VerticalAlignment="Center"
+                                    localization:Localizer.Uid="LinkPage_Port" />
+                                <NumberBox
+                                    Grid.Column="1"
+                                    Width="120"
+                                    Margin="{StaticResource XSmallLeftMargin}"
+                                    Text="{x:Bind ViewModel.Port, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Grid.Column="0"
+                                    VerticalAlignment="Center"
+                                    Text="IP address" />
+                                <TextBox
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Width="120"
+                                    Margin="{StaticResource XSmallLeftMargin}"
+                                    Text="{x:Bind ViewModel.SimulatorIp, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                            </Grid>
+                            <Button
+                                Margin="{StaticResource SmallTopMargin}"
                                 VerticalAlignment="Center"
-                                localization:Localizer.Uid="LinkPage_Port" />
-                            <NumberBox
-                                Grid.Column="1"
-                                Width="120"
-                                Margin="{StaticResource XSmallLeftMargin}"
-                                Text="{x:Bind ViewModel.Port, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                        </Grid>
+                                localization:Localizer.Uid="LinkPage_RunSimulator"
+                                Command="{x:Bind ViewModel.RunSimulatorCommand}" />
+                        </StackPanel>
                     </controls:Case>
                 </controls:SwitchPresenter>
             </Grid>
