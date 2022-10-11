@@ -13,6 +13,8 @@
 
 
 using AUTD3Sharp;
+using AUTD3Sharp.Gain;
+using AUTD3Sharp.Modulation;
 using AUTD3Sharp.Utils;
 
 namespace example.Test
@@ -27,11 +29,11 @@ namespace example.Test
             const double x = Controller.DeviceWidth / 2;
             const double y = Controller.DeviceHeight / 2;
 
-            var mod = new Modulation.Sine(150); // AM sin 150 Hz
+            var mod = new Sine(150); // AM sin 150 Hz
 
             var start = new Vector3d(x, y, 0);
             var dir = Vector3d.UnitZ;
-            var gain = new Gain.BesselBeam(start, dir, 13.0f / 180f * Controller.Pi); // BesselBeam from (x, y, 0), theta = 13 deg
+            var gain = new BesselBeam(start, dir, 13.0f / 180f * Controller.Pi); // BesselBeam from (x, y, 0), theta = 13 deg
             autd.Send(gain, mod);
         }
     }
