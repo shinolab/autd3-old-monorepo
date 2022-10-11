@@ -252,4 +252,16 @@
   <data name="TextBlock_Offset.Text" xml:space="preserve">
     <value>Offset</value>
   </data>
+  <data name="Settings_AngleUnit.Text" xml:space="preserve">
+    <value>Angle unit</value>
+  </data>
+  <data name="Settings_AngleUnit_Degree.Content" xml:space="preserve">
+    <value>Degree</value>
+  </data>
+  <data name="Settings_AngleUnit_Radian.Content" xml:space="preserve">
+    <value>Radian</value>
+  </data>
+  <data name="LinkPage_RunSimulator.Content" xml:space="preserve">
+    <value>Run Simulator</value>
+  </data>
 </root>

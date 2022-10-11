@@ -252,4 +252,16 @@
   <data name="TextBlock_Offset.Text" xml:space="preserve">
     <value>オフセット</value>
   </data>
+  <data name="Settings_AngleUnit.Text" xml:space="preserve">
+    <value>角度単位</value>
+  </data>
+  <data name="Settings_AngleUnit_Degree.Content" xml:space="preserve">
+    <value>度</value>
+  </data>
+  <data name="Settings_AngleUnit_Radian.Content" xml:space="preserve">
+    <value>ラジアン</value>
+  </data>
+  <data name="LinkPage_RunSimulator.Content" xml:space="preserve">
+    <value>シミュレータを起動</value>
+  </data>
 </root>

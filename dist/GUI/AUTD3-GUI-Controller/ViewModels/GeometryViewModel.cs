@@ -4,7 +4,7 @@
  * Created Date: 18/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/08/2022
+ * Last Modified: 11/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,6 +14,7 @@
 using System.Collections.ObjectModel;
 using AUTD3_GUI_Controller.Contracts.Services;
 using AUTD3_GUI_Controller.Models;
+using AUTD3Sharp;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -66,6 +67,19 @@ public partial class GeometryViewModel
     }
     private bool DownItemCanExecute() => Selected != null && Selected.No != Geometries.Count - 1;
 
+
+    [RelayCommand]
+    public void View()
+    {
+        var cnt = new Controller();
+        foreach (var geo in Geometries)
+            cnt.AddDevice(new AUTD3Sharp.Utils.Vector3d(geo.X, geo.Y, geo.Z), new AUTD3Sharp.Utils.Vector3d(
+                AngleUnitConverter.Instance.ToRadian(
+                geo.RotateZ1),
+                AngleUnitConverter.Instance.ToRadian(geo.RotateY),
+                AngleUnitConverter.Instance.ToRadian(geo.RotateZ2)));
+        new AUTD3Sharp.Extra.GeometryViewer(800, 600).Model("models/AUTD.glb").View(cnt);
+    }
 
     [ObservableProperty] private ObservableCollection<GeometrySetting> _geometries;
 
