@@ -4,8 +4,8 @@
     Created Date: 18/08/2022
     Author: Shun Suzuki
     =====
-    Last Modified: 24/08/2022
-    Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+Last Modified: 11/10/2022
+Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
     =====
     Copyright (c) 2022 Shun Suzuki. All rights reserved.
 -->
@@ -24,56 +24,65 @@
             <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <Button
-                Width="{StaticResource ActionButtonContainerSize}"
-                Height="{StaticResource ActionButtonContainerSize}"
-                Padding="0"
-                BorderBrush="{x:Null}"
-                Command="{x:Bind ViewModel.AddItemCommand}">
-                <FontIcon
-                    Width="{StaticResource ActionButtonSize}"
-                    Height="{StaticResource ActionButtonSize}"
-                    FontFamily="{StaticResource SymbolThemeFontFamily}"
-                    Glyph="&#xE948;" />
-            </Button>
-            <Button
-                Width="{StaticResource ActionButtonContainerSize}"
-                Height="{StaticResource ActionButtonContainerSize}"
-                Padding="0"
-                BorderBrush="{x:Null}"
-                Command="{x:Bind ViewModel.RemoveItemCommand}">
-                <FontIcon
-                    Width="{StaticResource ActionButtonSize}"
-                    Height="{StaticResource ActionButtonSize}"
-                    FontFamily="{StaticResource SymbolThemeFontFamily}"
-                    Glyph="&#xE949;" />
-            </Button>
-            <Button
-                Width="{StaticResource ActionButtonContainerSize}"
-                Height="{StaticResource ActionButtonContainerSize}"
-                Padding="0"
-                BorderBrush="{x:Null}"
-                Command="{x:Bind ViewModel.UpItemCommand}">
-                <FontIcon
-                    Width="{StaticResource ActionButtonSize}"
-                    Height="{StaticResource ActionButtonSize}"
-                    FontFamily="{StaticResource SymbolThemeFontFamily}"
-                    Glyph="&#xE74A;" />
-            </Button>
-            <Button
-                Width="{StaticResource ActionButtonContainerSize}"
-                Height="{StaticResource ActionButtonContainerSize}"
-                Padding="0"
-                BorderBrush="{x:Null}"
-                Command="{x:Bind ViewModel.DownItemCommand}">
-                <FontIcon
-                    Width="{StaticResource ActionButtonSize}"
-                    Height="{StaticResource ActionButtonSize}"
-                    FontFamily="{StaticResource SymbolThemeFontFamily}"
-                    Glyph="&#xE74B;" />
-            </Button>
-        </StackPanel>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                <Button
+                    Width="{StaticResource ActionButtonContainerSize}"
+                    Height="{StaticResource ActionButtonContainerSize}"
+                    Padding="0"
+                    BorderBrush="{x:Null}"
+                    Command="{x:Bind ViewModel.AddItemCommand}">
+                    <FontIcon
+                        Width="{StaticResource ActionButtonSize}"
+                        Height="{StaticResource ActionButtonSize}"
+                        FontFamily="{StaticResource SymbolThemeFontFamily}"
+                        Glyph="&#xE948;" />
+                </Button>
+                <Button
+                    Width="{StaticResource ActionButtonContainerSize}"
+                    Height="{StaticResource ActionButtonContainerSize}"
+                    Padding="0"
+                    BorderBrush="{x:Null}"
+                    Command="{x:Bind ViewModel.RemoveItemCommand}">
+                    <FontIcon
+                        Width="{StaticResource ActionButtonSize}"
+                        Height="{StaticResource ActionButtonSize}"
+                        FontFamily="{StaticResource SymbolThemeFontFamily}"
+                        Glyph="&#xE949;" />
+                </Button>
+                <Button
+                    Width="{StaticResource ActionButtonContainerSize}"
+                    Height="{StaticResource ActionButtonContainerSize}"
+                    Padding="0"
+                    BorderBrush="{x:Null}"
+                    Command="{x:Bind ViewModel.UpItemCommand}">
+                    <FontIcon
+                        Width="{StaticResource ActionButtonSize}"
+                        Height="{StaticResource ActionButtonSize}"
+                        FontFamily="{StaticResource SymbolThemeFontFamily}"
+                        Glyph="&#xE74A;" />
+                </Button>
+                <Button
+                    Width="{StaticResource ActionButtonContainerSize}"
+                    Height="{StaticResource ActionButtonContainerSize}"
+                    Padding="0"
+                    BorderBrush="{x:Null}"
+                    Command="{x:Bind ViewModel.DownItemCommand}">
+                    <FontIcon
+                        Width="{StaticResource ActionButtonSize}"
+                        Height="{StaticResource ActionButtonSize}"
+                        FontFamily="{StaticResource SymbolThemeFontFamily}"
+                        Glyph="&#xE74B;" />
+                </Button>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Command="{x:Bind ViewModel.ViewCommand}" Content="View" />
+            </StackPanel>
+        </Grid>
         <controls:DataGrid
             Grid.Row="1"
             AutoGenerateColumns="False"

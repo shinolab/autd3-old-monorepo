@@ -147,8 +147,6 @@
                             Grid.Row="0"
                             Grid.Column="1"
                             Margin="{StaticResource XSmallLeftMargin}"
-                            Maximum="1"
-                            Minimum="0"
                             Text="{x:Bind ViewModel.Model.Theta, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         <TextBlock
                             Grid.Row="1"
