@@ -14,6 +14,7 @@
 
 using AUTD3Sharp;
 using System;
+using AUTD3Sharp.Link;
 using AUTD3Sharp.Utils;
 using example.Test;
 
@@ -28,7 +29,7 @@ namespace example
             var autd = new Controller();
             autd.AddDevice(Vector3d.Zero, Vector3d.Zero);
 
-            var link = new Link.Simulator().Port(50632).Build();
+            var link = new Simulator().Port(50632).Build();
             if (!autd.Open(link))
             {
                 Console.WriteLine(Controller.LastError);

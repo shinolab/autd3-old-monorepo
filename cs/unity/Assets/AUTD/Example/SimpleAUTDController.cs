@@ -4,7 +4,7 @@
  * Created Date: 08/03/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2022
+ * Last Modified: 10/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -17,14 +17,14 @@ using UnityEngine;
 public class SimpleAUTDController : MonoBehaviour
 {
     Controller _autd = new Controller();
-    Link.Link? _link = null;
+    AUTD3Sharp.Link.Link? _link = null;
     public GameObject? Target = null;
 
     void Awake()
     {
         _autd.AddDevice(gameObject.transform.position, gameObject.transform.rotation);
 
-        _link = new Link.SOEM().Build();
+        _link = new AUTD3Sharp.Link.SOEM().Build();
         _autd.Open(_link);
 
         _autd.CheckTrials = 50;
@@ -33,13 +33,13 @@ public class SimpleAUTDController : MonoBehaviour
 
         _autd.Synchronize();
 
-        _autd.Send(new Modulation.Sine(150)); // 150 Hz
+        _autd.Send(new AUTD3Sharp.Modulation.Sine(150)); // 150 Hz
     }
 
     void Update()
     {
         if (Target != null)
-            _autd.Send(new Gain.Focus(Target.transform.position, 1.0));
+            _autd.Send(new AUTD3Sharp.Gain.Focus(Target.transform.position, 1.0));
     }
 
     private void OnApplicationQuit()

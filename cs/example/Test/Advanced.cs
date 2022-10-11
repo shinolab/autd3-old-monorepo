@@ -33,8 +33,8 @@ namespace example.Test
             var burst = new byte[4000];
             burst[0] = 0xFF;
 
-            var g = new Gain.Custom(amp, phase);
-            var m = new Modulation.Custom(burst, 40960);
+            var g = new AUTD3Sharp.Gain.Custom(amp, phase);
+            var m = new AUTD3Sharp.Modulation.Custom(burst, 40960);
 
             autd.Send(m, g);
         }

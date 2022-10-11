@@ -12,6 +12,8 @@
  */
 
 using AUTD3Sharp;
+using AUTD3Sharp.Gain.Holo;
+using AUTD3Sharp.Modulation;
 using AUTD3Sharp.Utils;
 
 namespace example.Test
@@ -28,12 +30,12 @@ namespace example.Test
             const double z = 150.0;
             var center = new Vector3d(x, y, z);
 
-            var gain = new Gain.Holo.GSPAT();
+            var gain = new GSPAT();
             gain.Add(center + 20.0 * Vector3d.UnitX, 1.0);
             gain.Add(center - 20.0 * Vector3d.UnitX, 1.0);
-            gain.Constraint = new Gain.Holo.Uniform(1.0);
+            gain.Constraint = new Uniform(1.0);
 
-            var mod = new Modulation.Sine(150);
+            var mod = new Sine(150);
 
             autd.Send(mod, gain);
         }

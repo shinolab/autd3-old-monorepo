@@ -2,9 +2,8 @@
 
 c言語向けのAPIは[capi](https://github.com/shinolab/autd3/tree/master/capi)以下で定義されている.
 
-以下に, このAPIのリファレンスを載せる. 実際の利用方法は,
-[C API Example](https://github.com/shinolab/autd3/tree/master/capi/example)や,
-[C#](https://github.com/shinolab/autd3sharp)/[python](https://github.com/shinolab/pyautd)のラッパーライブラリを参照されたい.
+以下に, このAPIのリファレンスを載せる. 
+実際の利用方法は, [C API Example](https://github.com/shinolab/autd3/tree/master/capi/example)を参照されたい.
 
 ## AUTDGetLastError (autd3capi)
 
