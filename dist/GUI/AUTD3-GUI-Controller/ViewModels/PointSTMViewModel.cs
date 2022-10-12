@@ -4,7 +4,7 @@
  * Created Date: 18/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/08/2022
+ * Last Modified: 12/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,7 +15,6 @@ using System.Collections.ObjectModel;
 using AUTD3_GUI_Controller.Contracts.Services;
 using AUTD3_GUI_Controller.Models;
 using AUTD3_GUI_Controller.Services;
-using AUTD3Sharp;
 using AUTD3Sharp.Utils;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
