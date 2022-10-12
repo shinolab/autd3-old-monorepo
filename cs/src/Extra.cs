@@ -4,7 +4,7 @@
  * Created Date: 11/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/10/2022
+ * Last Modified: 12/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,8 +19,8 @@ namespace AUTD3Sharp
         public class GeometryViewer
         {
 
-            private int _width;
-            private int _height;
+            private readonly int _width;
+            private readonly int _height;
             private bool _vsync;
             private string _model;
             private string _font;

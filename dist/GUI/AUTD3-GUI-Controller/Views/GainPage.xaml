@@ -4,8 +4,8 @@
     Created Date: 24/08/2022
     Author: Shun Suzuki
     =====
-    Last Modified: 25/08/2022
-    Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+Last Modified: 12/10/2022
+Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
     =====
     Copyright (c) 2022 Shun Suzuki. All rights reserved.
 -->
@@ -14,10 +14,8 @@
     x:Class="AUTD3_GUI_Controller.Views.GainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:behaviors="using:AUTD3_GUI_Controller.Behaviors"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helpers="using:AUTD3_GUI_Controller.Helpers"
-    xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Loaded="GainPage_OnLoaded"
     mc:Ignorable="d">

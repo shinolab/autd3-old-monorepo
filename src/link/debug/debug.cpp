@@ -54,7 +54,7 @@ class DebugImpl final : public core::Link {
   }
 
   bool send(const driver::TxDatagram& tx) override {
-    for (size_t i = 0; i < _cpus.size(); i++) _cpus[i].send(tx);
+    for (auto& cpu : _cpus) cpu.send(tx);
 
     spdlog::info("Send data");
 

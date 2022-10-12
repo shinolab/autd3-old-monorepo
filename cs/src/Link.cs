@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2022
+ * Last Modified: 12/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -123,10 +123,6 @@ namespace AUTD3Sharp
 
         public sealed class TwinCAT
         {
-            public TwinCAT()
-            {
-            }
-
             public Link Build()
             {
                 NativeMethods.LinkTwinCAT.AUTDLinkTwinCAT(out var handle);

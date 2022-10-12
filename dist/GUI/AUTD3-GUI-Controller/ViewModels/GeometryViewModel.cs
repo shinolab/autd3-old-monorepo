@@ -4,7 +4,7 @@
  * Created Date: 18/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/10/2022
+ * Last Modified: 12/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -78,7 +78,7 @@ public partial class GeometryViewModel
                 geo.RotateZ1),
                 AngleUnitConverter.Instance.ToRadian(geo.RotateY),
                 AngleUnitConverter.Instance.ToRadian(geo.RotateZ2)));
-        new AUTD3Sharp.Extra.GeometryViewer(800, 600).Model("models/AUTD.glb").View(cnt);
+        new AUTD3Sharp.Extra.GeometryViewer().Model("models/AUTD.glb").View(cnt);
     }
 
     [ObservableProperty] private ObservableCollection<GeometrySetting> _geometries;

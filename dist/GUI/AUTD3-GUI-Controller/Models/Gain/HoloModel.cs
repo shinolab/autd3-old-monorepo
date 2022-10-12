@@ -4,7 +4,7 @@
  * Created Date: 25/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/08/2022
+ * Last Modified: 12/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,7 +13,6 @@
 
 
 using System.Collections.ObjectModel;
-using AUTD3Sharp;
 using AUTD3Sharp.Gain.Holo;
 using AUTD3Sharp.Utils;
 using CommunityToolkit.Mvvm.ComponentModel;
