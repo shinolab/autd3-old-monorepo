@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2022
+// Last Modified: 12/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -124,6 +124,10 @@ void Simulator::run() {
       auto addr_len = static_cast<socklen_t>(sizeof(addr_in));
       if (const auto len = recvfrom(sock, buf.data(), 65536, 0, reinterpret_cast<sockaddr*>(&addr_in), &addr_len); len >= 0) {
         const auto recv_len = static_cast<size_t>(len);
+        if (recv_len < driver::HEADER_SIZE) {
+          std::cerr << "Unknown data size: " << recv_len << std::endl;
+          continue;
+        }
         const auto body_len = recv_len - driver::HEADER_SIZE;
         if (body_len % driver::BODY_SIZE != 0) {
           std::cerr << "Unknown data size: " << recv_len << std::endl;
@@ -131,6 +135,7 @@ void Simulator::run() {
         }
         const auto dev_num = body_len / driver::BODY_SIZE;
         driver::TxDatagram tx(dev_num);
+        tx.num_bodies = dev_num;
         std::memcpy(tx.data().data(), buf.data(), recv_len);
         {
           std::lock_guard lock(recv_mtx);
@@ -189,7 +194,7 @@ void Simulator::run() {
 
     if (!recv_queue.empty()) {
       const auto& tx = recv_queue.front();
-      for (size_t i = 0; i < (std::min)(cpus.size(), tx.size()); i++) cpus[i].send(tx.header(), tx.bodies()[i]);
+      for (size_t i = 0; i < cpus.size(); i++) cpus[i].send(tx);
 
       if (initialized) {
         if (tx.header().msg_id == driver::MSG_SIMULATOR_CLOSE) {
