@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/10/2022
+// Last Modified: 12/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -73,8 +73,6 @@ class SimulatorImpl final : public core::Link {
       _cpus.emplace_back(cpu);
     }
 
-    _buf.resize(driver::HEADER_SIZE + driver::BODY_SIZE * _num_devices);
-
     send(simulator_init_datagram(geometry));
   }
 
@@ -95,12 +93,11 @@ class SimulatorImpl final : public core::Link {
   }
 
   bool send(const driver::TxDatagram& tx) override {
-    std::memcpy(_buf.data(), tx.data().data(), tx.effective_size());
-    if (sendto(_socket, reinterpret_cast<const char*>(_buf.data()), static_cast<int>(_buf.size()), 0, reinterpret_cast<sockaddr*>(&_addr),
-               sizeof _addr) == -1)
+    if (sendto(_socket, reinterpret_cast<const char*>(tx.data().data()), static_cast<int>(tx.effective_size()), 0,
+               reinterpret_cast<sockaddr*>(&_addr), sizeof _addr) == -1)
       throw std::runtime_error("failed to send data");
 
-    for (size_t i = 0; i < tx.size(); i++) _cpus[i].send(tx.header(), tx.bodies()[i]);
+    for (size_t i = 0; i < tx.size(); i++) _cpus[i].send(tx);
 
     return true;
   }
@@ -127,7 +124,6 @@ class SimulatorImpl final : public core::Link {
   sockaddr_in _addr{};
 
   size_t _num_devices{0};
-  std::vector<uint8_t> _buf;
 
   std::vector<extra::firmware_emulator::cpu::CPU> _cpus;
 
