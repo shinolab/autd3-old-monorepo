@@ -37,3 +37,6 @@
 [submodule "3rdparty/Vulkan-Headers"]
 	path = 3rdparty/Vulkan-Headers
 	url = https://github.com/KhronosGroup/Vulkan-Headers.git
+[submodule "3rdparty/SOEM4Arduino"]
+	path = 3rdparty/SOEM4Arduino
+	url = https://github.com/lipoyang/SOEM4Arduino.git
