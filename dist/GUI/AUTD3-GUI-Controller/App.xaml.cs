@@ -4,7 +4,7 @@
  * Created Date: 18/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/08/2022
+ * Last Modified: 12/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -158,7 +158,7 @@ public partial class App
         Console.WriteLine(e.Message);
     }
 
-    protected async override void OnLaunched(LaunchActivatedEventArgs args)
+    protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
         base.OnLaunched(args);
 

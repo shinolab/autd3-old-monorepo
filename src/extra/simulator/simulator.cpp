@@ -194,7 +194,7 @@ void Simulator::run() {
 
     if (!recv_queue.empty()) {
       const auto& tx = recv_queue.front();
-      for (size_t i = 0; i < cpus.size(); i++) cpus[i].send(tx);
+      for (auto& cpu : cpus) cpu.send(tx);
 
       if (initialized) {
         if (tx.header().msg_id == driver::MSG_SIMULATOR_CLOSE) {
