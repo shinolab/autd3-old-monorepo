@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/10/2022
+// Last Modified: 12/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -54,7 +54,7 @@ class DebugImpl final : public core::Link {
   }
 
   bool send(const driver::TxDatagram& tx) override {
-    for (size_t i = 0; i < _cpus.size(); i++) _cpus[i].send(tx.header(), tx.bodies()[i]);
+    for (size_t i = 0; i < _cpus.size(); i++) _cpus[i].send(tx);
 
     spdlog::info("Send data");
 
