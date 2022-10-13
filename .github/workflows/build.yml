@@ -23,7 +23,7 @@ jobs:
     - name: build for Windows x64
       if: matrix.os == 'windows-latest'
       run: |
-        cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF
+        cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON
         cd build
         msbuild autd3.sln /t:build
     - name: build for Windows x86
