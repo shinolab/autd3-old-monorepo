@@ -21,51 +21,7 @@ Unityから使う場合は, [GitHub Release](https://github.com/shinolab/autd3/r
 たとえば, [Getting Started](../Users_Manual/getting_started.md)と等価なコードは以下のようになる.
 
 ```csharp
-using AUTD3Sharp;
-using AUTD3Sharp.Utils;
-
-namespace example
-{
-    internal class Program
-    {
-        public static void Main()
-        {
-            var autd = new Controller();
-            autd.AddDevice(Vector3d.Zero, Vector3d.Zero);
-
-            var link = new Link.SOEM().HighPrecision(true).Build();
-            if (!autd.Open(link))
-            {
-                Console.WriteLine(Controller.LastError);
-                return;
-            }
-
-            autd.CheckTrials = 50;
-
-            autd.Clear();
-
-            autd.Synchronize();
-
-            var firmList = autd.FirmwareInfoList().ToArray();
-            foreach (var (firm, index) in firmList.Select((firm, i) => (firm, i)))
-                Console.WriteLine($"AUTD {index}: {firm}");
-
-            var config = new SilencerConfig();
-            autd.Send(config);
-
-            const double x = Controller.TransSpacing * ((Controller.NumTransInX - 1) / 2.0);
-            const double y = Controller.TransSpacing * ((Controller.NumTransInY - 1) / 2.0);
-            const double z = 150.0;
-            var g = new Gain.Focus(new Vector3d(x, y, z));
-            var m = new Modulation.Sine(150);
-            autd.Send(m, g);
-
-            Console.ReadKey(true);
-
-            autd.Close();
-        }
-    }
-}
+{{#include ../../../samples/cs/Program.cs}}
 ```
 
 より詳細なサンプルは[autd3sharpのexample](https://github.com/shinolab/autd3/tree/master/cs/example)を参照されたい.
