@@ -4,7 +4,7 @@
  * Created Date: 23/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/10/2022
+ * Last Modified: 13/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -66,7 +66,7 @@ public class AUTDService
         {
             LinkType.SOEM => BuildSOEM(),
             LinkType.TwinCAT => new TwinCAT().Build(),
-            LinkType.RemoteTwinCAT => new RemoteTwinCAT(linkVm.RemoteIp, linkVm.RemoteAmsNetId).LocalAmsNetId(linkVm.LocalAmsNetId).Build(),
+            LinkType.RemoteTwinCAT => new RemoteTwinCAT(linkVm.RemoteAmsNetId).RemoteIp(linkVm.RemoteIp).LocalAmsNetId(linkVm.LocalAmsNetId).Build(),
             LinkType.Simulator => new Simulator().Port(linkVm.Port).Build(),
             _ => throw new ArgumentOutOfRangeException()
         };
