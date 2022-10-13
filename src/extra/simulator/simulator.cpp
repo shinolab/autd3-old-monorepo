@@ -104,7 +104,7 @@ void Simulator::run() {
   addr.sin_addr.s_addr = inet_addr(_settings->ip.c_str());
 #endif
 
-  if (bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) != 0)
+  if (bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof addr) != 0)
     throw std::runtime_error("failed to bind socket: " + std::to_string(_settings->port));
 
   u_long val = 1;
@@ -122,7 +122,7 @@ void Simulator::run() {
     std::vector<char> buf(65536);
     while (run_recv.load()) {
       sockaddr_in addr_in{};
-      auto addr_len = static_cast<socklen_t>(sizeof(addr_in));
+      auto addr_len = static_cast<socklen_t>(sizeof addr_in);
       if (const auto len = recvfrom(sock, buf.data(), 65536, 0, reinterpret_cast<sockaddr*>(&addr_in), &addr_len); len >= 0) {
         const auto recv_len = static_cast<size_t>(len);
         if (recv_len < driver::HEADER_SIZE) {

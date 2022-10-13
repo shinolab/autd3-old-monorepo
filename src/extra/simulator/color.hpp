@@ -40,7 +40,7 @@ class Hsv final : Color {
   [[nodiscard]] glm::vec4 rgba() const override {
     const auto hue = std::fmod(h, 1.0f);
 
-    if (s == 0.0f) return glm::vec4(v, v, v, a);
+    if (s == 0.0f) return {v, v, v, a};
 
     const auto i = std::floor(hue * 6.0f);
     const auto f = hue * 6.0f - i;
@@ -50,19 +50,19 @@ class Hsv final : Color {
 
     switch (static_cast<int32_t>(i)) {
       case 0:
-        return glm::vec4(v, t, p, a);
+        return {v, t, p, a};
       case 1:
-        return glm::vec4(q, v, p, a);
+        return {q, v, p, a};
       case 2:
-        return glm::vec4(p, v, t, a);
+        return {p, v, t, a};
       case 3:
-        return glm::vec4(p, q, v, a);
+        return {p, q, v, a};
       case 4:
-        return glm::vec4(t, p, v, a);
+        return {t, p, v, a};
       case 5:
-        return glm::vec4(v, p, q, a);
+        return {v, p, q, a};
       default:
-        return glm::vec4(0, 0, 0, 0);
+        return {0, 0, 0, 0};
     }
   }
 
