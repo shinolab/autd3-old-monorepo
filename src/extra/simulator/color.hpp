@@ -3,7 +3,7 @@
 // Created Date: 05/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/10/2022
+// Last Modified: 13/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -38,9 +38,9 @@ class Hsv final : Color {
   Hsv& operator=(Hsv&& obj) = default;
 
   [[nodiscard]] glm::vec4 rgba() const override {
-    const auto hue = std::fmodf(h, 1.0f);
+    const auto hue = std::fmod(h, 1.0f);
 
-    if (s == 0.0f) return {v, v, v, a};
+    if (s == 0.0f) return glm::vec4(v, v, v, a);
 
     const auto i = std::floor(hue * 6.0f);
     const auto f = hue * 6.0f - i;
@@ -50,19 +50,19 @@ class Hsv final : Color {
 
     switch (static_cast<int32_t>(i)) {
       case 0:
-        return {v, t, p, a};
+        return glm::vec4(v, t, p, a);
       case 1:
-        return {q, v, p, a};
+        return glm::vec4(q, v, p, a);
       case 2:
-        return {p, v, t, a};
+        return glm::vec4(p, v, t, a);
       case 3:
-        return {p, q, v, a};
+        return glm::vec4(p, q, v, a);
       case 4:
-        return {t, p, v, a};
+        return glm::vec4(t, p, v, a);
       case 5:
-        return {v, p, q, a};
+        return glm::vec4(v, p, q, a);
       default:
-        return {0, 0, 0, 0};
+        return glm::vec4(0, 0, 0, 0);
     }
   }
 
