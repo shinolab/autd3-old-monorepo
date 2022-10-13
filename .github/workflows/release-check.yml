@@ -47,7 +47,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         mkdir -p build && cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=ON
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON
         make -j8
       shell: bash
       env:
