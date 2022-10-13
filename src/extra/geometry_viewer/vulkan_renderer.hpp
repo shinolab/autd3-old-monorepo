@@ -483,8 +483,8 @@ class VulkanRenderer {
     update_uniform_buffer(_current_frame, imgui);
 
     vk::PipelineStageFlags wait_stage(vk::PipelineStageFlagBits::eColorAttachmentOutput);
-    vk::SubmitInfo submit_info(_image_available_semaphores[_current_frame].get(), wait_stage, _command_buffers[_current_frame].get(),
-                               _render_finished_semaphores[_current_frame].get());
+    const vk::SubmitInfo submit_info(_image_available_semaphores[_current_frame].get(), wait_stage, _command_buffers[_current_frame].get(),
+                                     _render_finished_semaphores[_current_frame].get());
     _context->graphics_queue().submit(submit_info, _in_flight_fences[_current_frame].get());
 
     const vk::PresentInfoKHR present_info(_render_finished_semaphores[_current_frame].get(), _swap_chain.get(), image_index);
