@@ -94,3 +94,30 @@ jobs:
         mkdir -p build && cd build
         cmake .. -DBUILD_ALL=ON -DENABLE_LINT=ON
         make cpplint
+
+  build-cs:
+    name: build windows-latest
+    runs-on: windows-latest
+    
+    steps: 
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1.7.2
+      with:
+        dotnet-version: '6.0.x'
+    - name: build
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DBUILD_ALL=ON -DBUILD_SIMULATOR=ON -DBUILD_GEOMETRY_VIEWER=ON
+        cd ..
+        foreach($dll in Get-ChildItem -Path build/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/src/native/windows/x64}
+        cd cs/src
+        dotnet clean
+        dotnet build -c:Release /p:Platform=x64
+        cd ..
+        dotnet nuget add source $pwd/src/bin/x64/Release -n autd3shapr_local
+        cd example
+        dotnet clean example.sln
+        dotnet nuget locals global-packages --clear
+        dotnet build example.sln -c:Release /p:Platform=x64

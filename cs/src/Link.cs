@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/10/2022
+ * Last Modified: 13/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -133,15 +133,21 @@ namespace AUTD3Sharp
 
         public sealed class RemoteTwinCAT
         {
-            private readonly string _remoteIp;
             private readonly string _remoteAmsNetId;
+            private string _remoteIp;
             private string _localAmsNetId;
 
-            public RemoteTwinCAT(string remoteIp, string remoteAmsNetId)
+            public RemoteTwinCAT(string remoteAmsNetId)
             {
-                _remoteIp = remoteIp;
                 _remoteAmsNetId = remoteAmsNetId;
                 _localAmsNetId = string.Empty;
+                _remoteIp = string.Empty;
+            }
+
+            public RemoteTwinCAT RemoteIp(string remoteIp)
+            {
+                _remoteIp = remoteIp;
+                return this;
             }
 
             public RemoteTwinCAT LocalAmsNetId(string localAmsNetId)
