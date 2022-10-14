@@ -36,7 +36,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt update
-        sudo apt install g++-arm-linux-gnueabihf g++-aarch64-linux-gnu -y
+        sudo apt install g++-arm-linux-gnueabihf g++-aarch64-linux-gnu mesa-common-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev -y
       shell: bash
     - name: build for Linux
       if: matrix.os == 'ubuntu-latest'
