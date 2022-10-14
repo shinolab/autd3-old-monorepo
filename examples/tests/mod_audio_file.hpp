@@ -23,10 +23,10 @@ inline void mod_audio_file_test(autd3::Controller& autd) {
   autd3::SilencerConfig config;
   autd.send(config);
 
-  const fs::path path = fs::path(std::string(AUTD3_RESOURCE_PATH)).append(std::string("sin150.wav"));
+  const fs::path path = fs::path(AUTD3_RESOURCE_PATH).append("sin150.wav");
   autd3::modulation::Wav m(path.string());
-  //   const fs::path path = fs::path(std::string(AUTD3_RESOURCE_PATH)).append(std::string("sin150.dat"));
-  //   autd3::modulation::RawPCM m(path.string(), 4e3);
+     //const fs::path path = fs::path(AUTD3_RESOURCE_PATH).append("sin150.dat");
+     //autd3::modulation::RawPCM m(path.string(), 4e3);
 
   const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
 
