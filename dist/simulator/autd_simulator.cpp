@@ -3,7 +3,7 @@
 // Created Date: 10/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2022
+// Last Modified: 14/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,7 +14,6 @@
 #include <iostream>
 
 #include "autd3/extra/simulator/simulator.hpp"
-#include "nlohmann/json.hpp"
 
 int main() try {
   const std::string setting_file = "settings.json";

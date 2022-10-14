@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/10/2022
+// Last Modified: 14/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -235,7 +235,7 @@ void Simulator::run() {
         imgui->set(sources);
         trans_viewer->init(sources);
         slice_viewer->init(imgui->slice_width, imgui->slice_height, imgui->pixel_size);
-        field_compute->init(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size());
+        field_compute->init(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size(), imgui->coloring_method);
 
         initialized = true;
       }
@@ -286,7 +286,7 @@ void Simulator::run() {
       const auto& slice_model = imgui->get_slice_model();
       slice_viewer->update(imgui->slice_width, imgui->slice_height, imgui->pixel_size, update_flags);
       trans_viewer->update(sources, update_flags);
-      field_compute->update(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size(), update_flags);
+      field_compute->update(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size(), imgui->coloring_method, update_flags);
 
       const Config config{static_cast<uint32_t>(sources.size()),
                           0,
@@ -297,7 +297,7 @@ void Simulator::run() {
                           0,
                           0,
                           slice_model};
-      field_compute->compute(config);
+      field_compute->compute(config, imgui->show_radiation_pressure);
 
       if (update_flags.contains(UpdateFlags::SAVE_IMAGE)) {
         const auto& image = slice_viewer->images()[renderer->current_frame()].get();
