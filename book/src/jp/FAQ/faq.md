@@ -17,8 +17,8 @@
 
 - (Windows) 最新のnpcapを使用する
 
-- WSL等の仮想マシンは対応していません
-   - VirtualBoxなどで動く場合があるようですが, 挙動は不安定になります
+- WSL等の仮想マシンは対応していない
+   - VirtualBoxなどで動く場合があるが, 挙動は不安定になる
 
 ## "One ore more slaves are not responding"と表示される
 
@@ -70,6 +70,8 @@
   1. FreeRunモードにする
   1. `send_cycle`, 及び, `sync0_cycle`の値を増やす
      - ただし, この場合, 送信レイテンシが大きくなる
+  1. Linuxやmacを使用する.
+     - ただし, 仮想マシンはNG
 
 - 上記以外の状況でも発生した, 或いは, 上記状況でも発生しなかった等の報告があれば, [GitHubのIssue](https://github.com/shinolab/autd3/issues/20)に積極的に報告していただけると幸いである.
 
