@@ -111,10 +111,10 @@ jobs:
           result-encoding: string
           script: |
             return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-linux';
-      - name: install cross compile tools
+      - name: install compile tools
         run: |
           sudo apt update
-          sudo apt install g++-arm-linux-gnueabihf g++-aarch64-linux-gnu -y
+          sudo apt install g++-arm-linux-gnueabihf g++-aarch64-linux-gnu mesa-common-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev -y
         shell: bash
       - uses: Jimver/cuda-toolkit@v0.2.6
         id: cuda-toolkit
