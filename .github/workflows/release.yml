@@ -57,30 +57,33 @@ jobs:
         run: |
           cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON -DEXPORT_AUTD_SIMULATOR=ON
           cd build
-          msbuild autd3.sln /t:build /p:Configuration=Release -maxcpucount
+          cmake --build . --parallel 8 --config Release
           mkdir publish
           mkdir publish/lib
           mkdir publish/lib/wpcap
           mkdir publish/bin
           mkdir publish/simulator
+          mkdir publish/gui-controller
           cd ..
           foreach($dll in Get-ChildItem -Path build/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/src/native/windows/x64}
           cd cs/src
           dotnet clean
           dotnet build -c:Release /p:Platform=x64
           cd ../..
-          dotnet nuget add source $pwd/cs/src/bin/x64/Release -n autd3shapr_local
+          dotnet nuget add source $pwd/cs/src/bin/x64/Release -n autd3sharp_local
           cd dist/GUI
-          dotnet publish -c:Release /p:Platform=x64 -r win-x64 --self-contained false -o gui-controller
-          copy AUTD3-GUI-Controller/Strings -Recurse gui-controller/
+          dotnet publish -c:Release /p:Platform=x64 -r win-x64 --self-contained false -o bin
+          copy AUTD3-GUI-Controller/Strings -Recurse bin/
           cd ../..
           copy build/lib/Release/*.lib build/publish/lib
           copy 3rdparty/SOEM/oshw/win32/wpcap/Lib/x64/*.lib build/publish/lib/wpcap
           copy build/bin/Release/*.dll build/publish/bin
-          copy src/extra/geometry_viewer/models -Recurse dist/GUI/gui-controller/
+          copy dist/GUI/bin -Recurse publish/gui-controller/bin
+          copy src/extra/geometry_viewer/models -Recurse publish/gui-controller/bin
+          copy dist/GUI/AUTD3-GUI-Controller.exe publish/gui-controller
           copy build/dist/simulator/Release/*.exe build/publish/simulator
           Remove-Item -Recurse -Force dist/AUTDServer/src
-          Compress-Archive -Path LICENSE, NOTICE, dist/AUTDServer, dist/firmware, include, build/publish/lib, build/publish/bin, build/publish/simulator, dist/GUI/gui-controller -DestinationPath assets_x64.zip
+          Compress-Archive -Path LICENSE, NOTICE, dist/AUTDServer, dist/firmware, include, build/publish/lib, build/publish/bin, build/publish/simulator, publish/gui-controller -DestinationPath assets_x64.zip
       - name: Load Release URL File from release job
         uses: actions/download-artifact@v1
         with:
