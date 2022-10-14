@@ -2,7 +2,7 @@
 
 [autd3 library](https://github.com/shinolab/autd3) for python3.7+
 
-version: 2.4.2
+version: 2.4.3
 
 ## Install
 
