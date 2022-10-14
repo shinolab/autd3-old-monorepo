@@ -8,7 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Document check
       run: |
         cd tools/doc_checker
@@ -66,7 +66,7 @@ jobs:
     name: build windows-latest
     runs-on: windows-latest
     steps: 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1.7.2
       with:
@@ -93,7 +93,7 @@ jobs:
       matrix:
         os: [windows-latest]
     steps: 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: build
       run: |
         mkdir build

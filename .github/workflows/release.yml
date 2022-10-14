@@ -34,7 +34,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Get the version
         id: get_version
         uses: actions/github-script@0.5.0
@@ -102,7 +102,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Get the version
         id: get_version
         uses: actions/github-script@0.5.0
@@ -211,7 +211,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Get the version
         id: get_version
         uses: actions/github-script@0.5.0
@@ -255,7 +255,7 @@ jobs:
     needs: [publish_win, publish_linux, publish_mac]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Get the version
         id: get_version
         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3 | cut -d . -f 1,2,3)
@@ -321,7 +321,7 @@ jobs:
     needs: [publish_win, publish_linux, publish_mac]
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python
       uses: actions/setup-python@v1
       with:
@@ -340,7 +340,7 @@ jobs:
     needs: [publish_win, publish_linux, publish_mac]
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1.7.2
       with:
