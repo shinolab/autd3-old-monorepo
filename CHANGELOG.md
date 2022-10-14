@@ -2,6 +2,7 @@
 
 - win-x86 is no more supported
 - Fix [#30](https://github.com/shinolab/autd3/issues/30)
+- Fix minor bugs
 
 # 2.4.1
 
