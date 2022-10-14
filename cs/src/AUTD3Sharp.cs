@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2022
+ * Last Modified: 14/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -379,7 +379,7 @@ namespace AUTD3Sharp
 
     public sealed class SilencerConfig : Header
     {
-        public SilencerConfig(ushort step = 10, ushort cycle = 4096) : base()
+        public SilencerConfig(ushort step = 10, ushort cycle = 4096)
         {
             Base.AUTDCreateSilencer(out handle, step, cycle);
         }
@@ -398,7 +398,7 @@ namespace AUTD3Sharp
 
     public sealed class ModDelayConfig : Body
     {
-        public ModDelayConfig() : base()
+        public ModDelayConfig()
         {
             Base.AUTDCreateModDelayConfig(out handle);
         }
@@ -412,7 +412,7 @@ namespace AUTD3Sharp
 
     public sealed class Amplitudes : Body
     {
-        public Amplitudes(double amp = 1.0) : base()
+        public Amplitudes(double amp = 1.0)
         {
             Base.AUTDCreateAmplitudes(out handle, amp);
         }
@@ -430,7 +430,7 @@ namespace AUTD3Sharp
         [ComVisible(false)]
         public abstract class Gain : Body
         {
-            internal Gain() : base()
+            internal Gain()
             {
             }
 
@@ -443,7 +443,7 @@ namespace AUTD3Sharp
 
         public sealed class Focus : Gain
         {
-            public Focus(Vector3 point, double amp = 1.0) : base()
+            public Focus(Vector3 point, double amp = 1.0)
             {
                 var (x, y, z) = Controller.Adjust(point);
                 Base.AUTDGainFocus(out handle, x, y, z, amp);
@@ -452,7 +452,7 @@ namespace AUTD3Sharp
 
         public sealed class Grouped : Gain
         {
-            public Grouped(Controller cnt) : base()
+            public Grouped(Controller cnt)
             {
                 Base.AUTDGainGrouped(out handle, cnt.AUTDControllerHandle.CntPtr);
             }
@@ -465,7 +465,7 @@ namespace AUTD3Sharp
 
         public sealed class BesselBeam : Gain
         {
-            public BesselBeam(Vector3 point, Vector3 dir, double thetaZ, double amp = 1.0) : base()
+            public BesselBeam(Vector3 point, Vector3 dir, double thetaZ, double amp = 1.0)
             {
                 var (x, y, z) = Controller.Adjust(point);
                 var (dx, dy, dz) = Controller.Adjust(dir, false);
@@ -475,7 +475,7 @@ namespace AUTD3Sharp
 
         public sealed class PlaneWave : Gain
         {
-            public PlaneWave(Vector3 dir, double amp = 1.0) : base()
+            public PlaneWave(Vector3 dir, double amp = 1.0)
             {
                 var (dx, dy, dz) = Controller.Adjust(dir, false);
                 Base.AUTDGainPlaneWave(out handle, dx, dy, dz, amp);
@@ -484,7 +484,7 @@ namespace AUTD3Sharp
 
         public sealed class Custom : Gain
         {
-            public Custom(double[] amp, double[] phase) : base()
+            public Custom(double[] amp, double[] phase)
             {
                 if (amp.Length != phase.Length) throw new ArgumentException();
                 var length = amp.Length;
@@ -494,7 +494,7 @@ namespace AUTD3Sharp
 
         public sealed class Null : Gain
         {
-            public Null() : base()
+            public Null()
             {
                 Base.AUTDGainNull(out handle);
             }
@@ -507,7 +507,7 @@ namespace AUTD3Sharp
         [ComVisible(false)]
         public abstract class Modulation : Header
         {
-            internal Modulation() : base()
+            internal Modulation()
             {
             }
 
@@ -527,7 +527,7 @@ namespace AUTD3Sharp
 
         public sealed class Static : Modulation
         {
-            public Static(double amp = 1.0) : base()
+            public Static(double amp = 1.0)
             {
                 Base.AUTDModulationStatic(out handle, amp);
 
@@ -536,7 +536,7 @@ namespace AUTD3Sharp
 
         public sealed class Sine : Modulation
         {
-            public Sine(int freq, double amp = 1.0, double offset = 0.5) : base()
+            public Sine(int freq, double amp = 1.0, double offset = 0.5)
             {
                 Base.AUTDModulationSine(out handle, freq, amp, offset);
             }
@@ -544,7 +544,7 @@ namespace AUTD3Sharp
 
         public sealed class SineSquared : Modulation
         {
-            public SineSquared(int freq, double amp = 1.0, double offset = 0.5) : base()
+            public SineSquared(int freq, double amp = 1.0, double offset = 0.5)
             {
                 Base.AUTDModulationSineSquared(out handle, freq, amp, offset);
             }
@@ -552,7 +552,7 @@ namespace AUTD3Sharp
 
         public sealed class SineLegacy : Modulation
         {
-            public SineLegacy(double freq, double amp = 1.0, double offset = 0.5) : base()
+            public SineLegacy(double freq, double amp = 1.0, double offset = 0.5)
             {
                 Base.AUTDModulationSineLegacy(out handle, freq, amp, offset);
             }
@@ -561,7 +561,7 @@ namespace AUTD3Sharp
 
         public sealed class Square : Modulation
         {
-            public Square(int freq, double low = 0.0, double high = 1.0, double duty = 0.5) : base()
+            public Square(int freq, double low = 0.0, double high = 1.0, double duty = 0.5)
             {
                 Base.AUTDModulationSquare(out handle, freq, low, high, duty);
             }
@@ -569,7 +569,7 @@ namespace AUTD3Sharp
 
         public sealed class Custom : Modulation
         {
-            public Custom(byte[] data, uint freqDiv) : base()
+            public Custom(byte[] data, uint freqDiv)
             {
                 Base.AUTDModulationCustom(out handle, data, (ulong)data.Length, freqDiv);
             }
@@ -581,10 +581,6 @@ namespace AUTD3Sharp
 
         public abstract class STM : Body
         {
-            protected STM() : base()
-            {
-            }
-
             protected override bool ReleaseHandle()
             {
                 Base.AUTDDeleteSTM(handle);
@@ -605,9 +601,9 @@ namespace AUTD3Sharp
             }
         }
 
-        public sealed class Point : STM
+        public sealed class PointSTM : STM
         {
-            public Point() : base()
+            public PointSTM()
             {
                 Base.AUTDPointSTM(out handle);
             }
@@ -623,10 +619,10 @@ namespace AUTD3Sharp
         {
             PhaseDutyFull = 0x0001,
             PhaseFull = 0x0002,
-            PhaseHalf = 0x0004,
+            PhaseHalf = 0x0004
         }
 
-        public sealed class Gain : STM
+        public sealed class GainSTM : STM
         {
             public Mode Mode
             {
@@ -634,7 +630,7 @@ namespace AUTD3Sharp
                 set => Base.AUTDSetGainSTMMode(handle, (ushort)value);
             }
 
-            public Gain(Controller cnt) : base()
+            public GainSTM(Controller cnt)
             {
                 Base.AUTDGainSTM(out handle, cnt.AUTDControllerHandle.CntPtr);
             }

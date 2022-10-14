@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2022
+// Last Modified: 14/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,11 +21,78 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <tinycolormap.hpp>
 #include <transform.hpp>
 #include <utility>
 #include <vector>
 
 namespace autd3::extra::simulator {
+
+inline tinycolormap::ColormapType convert(int& n) {
+  switch (n) {
+    case 0:
+      return tinycolormap::ColormapType::Parula;
+    case 1:
+      return tinycolormap::ColormapType::Heat;
+    case 2:
+      return tinycolormap::ColormapType::Jet;
+    case 3:
+      return tinycolormap::ColormapType::Turbo;
+    case 4:
+      return tinycolormap::ColormapType::Hot;
+    case 5:
+      return tinycolormap::ColormapType::Gray;
+    case 6:
+      return tinycolormap::ColormapType::Magma;
+    case 7:
+      return tinycolormap::ColormapType::Inferno;
+    case 8:
+      return tinycolormap::ColormapType::Plasma;
+    case 9:
+      return tinycolormap::ColormapType::Viridis;
+    case 10:
+      return tinycolormap::ColormapType::Cividis;
+    case 11:
+      return tinycolormap::ColormapType::Github;
+    case 12:
+      return tinycolormap::ColormapType::Cubehelix;
+    default:
+      n = 7;
+      return tinycolormap::ColormapType::Inferno;
+  }
+}
+
+inline int convert(const tinycolormap::ColormapType color) {
+  switch (color) {
+    case tinycolormap::ColormapType::Parula:
+      return 0;
+    case tinycolormap::ColormapType::Heat:
+      return 1;
+    case tinycolormap::ColormapType::Jet:
+      return 2;
+    case tinycolormap::ColormapType::Turbo:
+      return 3;
+    case tinycolormap::ColormapType::Hot:
+      return 4;
+    case tinycolormap::ColormapType::Gray:
+      return 5;
+    case tinycolormap::ColormapType::Magma:
+      return 6;
+    case tinycolormap::ColormapType::Inferno:
+      return 7;
+    case tinycolormap::ColormapType::Plasma:
+      return 8;
+    case tinycolormap::ColormapType::Viridis:
+      return 9;
+    case tinycolormap::ColormapType::Cividis:
+      return 10;
+    case tinycolormap::ColormapType::Github:
+      return 11;
+    case tinycolormap::ColormapType::Cubehelix:
+      return 12;
+  }
+  return 7;
+}
 
 class VulkanImGui {
  public:
@@ -92,14 +159,14 @@ class VulkanImGui {
     const vk::CommandBufferBeginInfo begin_info(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
     command_buffer->begin(begin_info);
     ImGui_ImplVulkan_CreateFontsTexture(command_buffer.get());
-    vk::SubmitInfo end_info(0, nullptr, nullptr, 1, &command_buffer.get(), 0, nullptr);
+    const vk::SubmitInfo end_info(0, nullptr, nullptr, 1, &command_buffer.get(), 0, nullptr);
     command_buffer->end();
     _context->graphics_queue().submit(end_info);
     _context->device().waitIdle();
     ImGui_ImplVulkan_DestroyFontUploadObjects();
   }
 
-  void load_settings(const Settings& setting) {
+  void load_settings(const SimulatorSettings& setting) {
     slice_pos = glm::vec3(setting.slice_pos_x, setting.slice_pos_y, setting.slice_pos_z);
     slice_rot = glm::vec3(setting.slice_rot_x, setting.slice_rot_y, setting.slice_rot_z);
     slice_width = setting.slice_width;
@@ -107,6 +174,9 @@ class VulkanImGui {
     pixel_size = setting.slice_pixel_size;
     color_scale = setting.slice_color_scale;
     slice_alpha = setting.slice_alpha;
+    show_radiation_pressure = setting.show_radiation_pressure;
+    coloring_method = setting.coloring_method;
+    coloring_method_idx = convert(coloring_method);
 
     camera_pos = glm::vec3(setting.camera_pos_x, setting.camera_pos_y, setting.camera_pos_z);
     camera_rot = glm::vec3(setting.camera_rot_x, setting.camera_rot_y, setting.camera_rot_z);
@@ -125,7 +195,7 @@ class VulkanImGui {
     setting.image_save_path.copy(save_path, 256);
   }
 
-  void save_settings(Settings& settings) const {
+  void save_settings(SimulatorSettings& settings) const {
     settings.slice_pos_x = slice_pos.x;
     settings.slice_pos_y = slice_pos.y;
     settings.slice_pos_z = slice_pos.z;
@@ -137,6 +207,8 @@ class VulkanImGui {
     settings.slice_pixel_size = pixel_size;
     settings.slice_color_scale = color_scale;
     settings.slice_alpha = slice_alpha;
+    settings.show_radiation_pressure = show_radiation_pressure;
+    settings.coloring_method = coloring_method;
 
     settings.camera_pos_x = camera_pos.x;
     settings.camera_pos_y = camera_pos.y;
@@ -163,7 +235,7 @@ class VulkanImGui {
     settings.image_save_path = std::string(save_path);
   }
 
-  void init(const uint32_t image_count, const VkRenderPass renderer_pass, const Settings& settings) {
+  void init(const uint32_t image_count, const VkRenderPass renderer_pass, const SimulatorSettings& settings) {
     load_settings(settings);
     _default_settings = settings;
 
@@ -213,7 +285,7 @@ class VulkanImGui {
     ImGui::Render();
   }
 
-  UpdateFlags draw(const std::vector<firmware_emulator::cpu::CPU>& cpus, SoundSources& sources) {
+  UpdateFlags draw(const std::vector<CPU>& cpus, SoundSources& sources) {
     auto flag = UpdateFlags(UpdateFlags::NONE);
 
     if (_update_font) {
@@ -283,10 +355,34 @@ class VulkanImGui {
         ImGui::Text("Size");
         if (ImGui::DragInt("Width##Slice", &slice_width, 1, 1, 2000)) flag.set(UpdateFlags::UPDATE_SLICE_SIZE);
         if (ImGui::DragInt("Height##Slice", &slice_height, 1, 1, 2000)) flag.set(UpdateFlags::UPDATE_SLICE_SIZE);
-        if (ImGui::DragInt("Pixel size##Slice", &pixel_size, 1, 1, 8)) flag.set(UpdateFlags::UPDATE_SLICE_SIZE);
+        if (ImGui::DragFloat("Pixel size##Slice", &pixel_size, 1, 0.1f, 8)) {
+          if (pixel_size <= 0.1f) pixel_size = 0.1f;
+          flag.set(UpdateFlags::UPDATE_SLICE_SIZE);
+        }
+        ImGui::Separator();
+
+        if (ImGui::RadioButton("Acoustic", !show_radiation_pressure)) show_radiation_pressure = false;
+        if (ImGui::RadioButton("Radiation", show_radiation_pressure)) show_radiation_pressure = true;
+
         ImGui::Separator();
 
         ImGui::Text("Color settings");
+
+        if (const char* items[] = {"Parula", "Heat", "Jet", "Turbo", "Hot", "Gray", "Magma", "Inferno", "Plasma", "Viridis", "Cividis", "Github",
+                                   "Cubehelix"};
+            ImGui::BeginCombo("Coloring", items[coloring_method_idx])) {
+          for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
+            const bool is_selected = coloring_method_idx == n;
+            if (ImGui::Selectable(items[n], is_selected)) {
+              if (coloring_method_idx != n) flag.set(UpdateFlags::UPDATE_COLOR_MAP);
+              coloring_method_idx = n;
+            }
+            if (is_selected) ImGui::SetItemDefaultFocus();
+          }
+          coloring_method = convert(coloring_method_idx);
+          ImGui::EndCombo();
+        }
+
         if (ImGui::DragFloat("Scale##Slice", &color_scale, 0.1f, 0.0f, std::numeric_limits<float>::infinity()))
           flag.set(UpdateFlags::UPDATE_COLOR_MAP);
         if (ImGui::DragFloat("Alpha##Slice", &slice_alpha, 0.01f, 0.0f, 1.0f)) flag.set(UpdateFlags::UPDATE_COLOR_MAP);
@@ -560,7 +656,8 @@ class VulkanImGui {
   glm::vec3 slice_rot{};
   float color_scale{2.0};
   float slice_alpha{1.0f};
-  int32_t pixel_size{1};
+  float pixel_size{1.0};
+  bool show_radiation_pressure{false};
 
   glm::vec3 camera_pos{};
   glm::vec3 camera_rot{};
@@ -581,10 +678,13 @@ class VulkanImGui {
 
   char save_path[256]{};
 
+  int coloring_method_idx{7};
+  tinycolormap::ColormapType coloring_method{tinycolormap::ColormapType::Inferno};
+
  private:
   const helper::WindowHandler* _window;
   const helper::VulkanContext* _context;
-  Settings _default_settings;
+  SimulatorSettings _default_settings;
   std::string _font_path;
   float _font_size = 16.0f;
   bool _update_font = false;
@@ -600,5 +700,4 @@ class VulkanImGui {
     if (err < 0) std::abort();
   }
 };
-
 }  // namespace autd3::extra::simulator

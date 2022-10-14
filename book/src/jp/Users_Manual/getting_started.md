@@ -100,77 +100,13 @@ cd ..
 次に, `CMakeLists.txt`を以下のようにする.
 
 ```
-cmake_minimum_required(VERSION 3.16)
-
-project(autd3_sample)
-
-set (CMAKE_CXX_STANDARD 17)
-
-add_executable(main main.cpp)
-
-target_link_directories(main PRIVATE lib)
-target_include_directories(main PRIVATE include eigen)
-
-if(WIN32)
-  target_link_directories(main PRIVATE lib/wpcap)
-  target_link_libraries(main link_soem Packet.lib wpcap.lib ws2_32.lib winmm.lib)
-elseif(APPLE)
-  target_link_libraries(main pcap)
-else()
-  target_link_libraries(main rt)
-endif()
-
-if(WIN32)
-    set_property(DIRECTORY \${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT main)
-endif()
+{{#include ../../../samples/cpp/CMakeLists.txt}}
 ```
 
 また, `main.cpp`を以下のようにする. これは単一焦点に$\SI{150}{Hz}$のAM変調をかける場合のソースコードである.
 
 ```cpp
-#include <iostream>
-
-#include "autd3.hpp"
-#include "autd3/link/soem.hpp"
-
-using namespace std;
-using namespace autd3;
-
-int main() try {
-  Controller autd;
-
-  autd.geometry().add_device(Vector3::Zero(), Vector3::Zero());
-
-  auto link = link::SOEM().high_precision(true).build();
-  autd.open(move(link));
-
-  autd.check_trials = 50;
-
-  autd.clear();
-
-  autd.synchronize();
-
-  const auto firm_infos = autd.firmware_infos();
-  copy(firm_infos.begin(), firm_infos.end(), ostream_iterator<FirmwareInfo>(cout, "\n"));
-
-  SilencerConfig config;
-  autd.send(config);
-
-  const auto focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
-  gain::Focus g(focus);
-  modulation::Sine m(150);
-
-  autd.send(m, g);
-
-  cout << "press enter to finish..." << endl;
-  cin.ignore();
-
-  autd.close();
-
-  return 0;
-} catch (exception& ex) {
-  cerr << ex.what() << endl;
-}
+{{#include ../../../samples/cpp/main.cpp}}
 ```
 
 次に, CMakeでbuildする.
@@ -178,7 +114,7 @@ int main() try {
 ```
 mkdir build
 cd build
-cmake .. -G "Visual Studio 17 2022" -A x64
+cmake ..
 ```
 
 これで, buildディレクトリ以下に`autd3_sample.sln`が生成されているはずなので, これを開き, mainプロジェクトを実行する.
@@ -206,7 +142,7 @@ autd::Controller autd;
 その後, デバイスの配置を指定する.
 
 ```cpp
-autd.geometry().add_device(Vector3::Zero(), Vector3::Zero());
+autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
 ```
 
 `add_device`の第一引数は位置, 第2引数は回転を表す. 位置は自分の設定したグローバル座標系におけるデバイスの原点を指定する. また,
@@ -215,8 +151,8 @@ autd.geometry().add_device(Vector3::Zero(), Vector3::Zero());
 次に, `Link`を作成し, デバイスと接続する.
 
 ```cpp
-auto link = link::SOEM().high_precision(true).build();
-autd.open(move(link));
+  auto link = autd3::link::SOEM().high_precision(true).build();
+  autd.open(std::move(link));
 ```
 
 linkの型は`unique_ptr`であるため, `Controller`に渡す際は`move`する必要がある.
@@ -246,27 +182,29 @@ autd.synchronize();
 
 ```cpp
 const auto firm_infos = autd.firmware_infos();
-copy(firm_infos.begin(), firm_infos.end(), ostream_iterator<FirmwareInfo>(cout, "\n"));
+std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));
 ```
 
-ここで, v4以外のヴァージョンが表示される場合は, 動作が保証されないので注意する.
+ここで, v2.4以外のヴァージョンが表示される場合は, 動作が保証されないので注意する.
 
 次に, silencerを設定する.
 
 ```cpp
-SilencerConfig config;
+autd3::SilencerConfig config;
 autd.send(config);
 ```
 
-デフォルトではONになっているので, これも実際には呼ぶ必要はない. OFFにしたい場合は`SilencerConfig::none()`を使用する.
+デフォルトで設定されているので, これも実際には呼ぶ必要はない.
+OFFにしたい場合は`SilencerConfig::none()`を使用する.
 silencerは, 振動子に与える位相/振幅パラメータをLow-pass filterに通すことで, 静音化を行う.
 
 その後, 単一焦点を表す`Gain`と$\SI{150}{Hz}$のSin波変調をかける`Modulation`を作成し, デバイスに送信する.
 
 ```cpp
 const auto focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
-gain::Focus g(focus);
-modulation::Sine m(150);
+autd3::gain::Focus g(focus);
+autd3::modulation::Sine m(150);
+
 autd.send(m, g);
 ```
 
@@ -283,6 +221,6 @@ autd.close();
 
 [^fn_git]: 動かすのに必須ではないが, 作業の単純化のため使用
 
-[^fn_npcap]: SOEM linkを使用するのに使う. TwinCAT linkの場合は必要ない.
+[^fn_npcap]: SOEM linkを使用するのに使う. それ以外のlinkの場合は必要ない.
 
 [^fn_vivado]: Vivadoは最小構成でも数十GBの容量を食うので, 適当なPCを用意しておくことをおすすめする.

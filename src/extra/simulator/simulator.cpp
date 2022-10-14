@@ -3,14 +3,15 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2022
+// Last Modified: 14/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
-#include "autd3/extra/simulator/simulator.hpp"
+#include "autd3/extra/simulator.hpp"
 
+#include <atomic>
 #include <mutex>
 #include <queue>
 #include <thread>
@@ -31,7 +32,7 @@
 
 #include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/driver/cpu/ec_config.hpp"
-#include "autd3/extra/firmware_emulator/cpu/emulator.hpp"
+#include "autd3/extra/cpu_emulator.hpp"
 #include "field_compute.hpp"
 #include "slice_viewer.hpp"
 #include "sound_sources.hpp"
@@ -61,16 +62,16 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace autd3::extra::simulator {
+namespace autd3::extra {
 
 #if WIN32
 using socklen_t = int;
 #endif
 
 void Simulator::run() {
-  SoundSources sources;
+  simulator::SoundSources sources;
 
-  std::vector<firmware_emulator::cpu::CPU> cpus;
+  std::vector<CPU> cpus;
 
 #if WIN32
   SOCKET sock = {};
@@ -103,7 +104,7 @@ void Simulator::run() {
   addr.sin_addr.s_addr = inet_addr(_settings->ip.c_str());
 #endif
 
-  if (bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) != 0)
+  if (bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof addr) != 0)
     throw std::runtime_error("failed to bind socket: " + std::to_string(_settings->port));
 
   u_long val = 1;
@@ -121,9 +122,13 @@ void Simulator::run() {
     std::vector<char> buf(65536);
     while (run_recv.load()) {
       sockaddr_in addr_in{};
-      auto addr_len = static_cast<socklen_t>(sizeof(addr_in));
+      auto addr_len = static_cast<socklen_t>(sizeof addr_in);
       if (const auto len = recvfrom(sock, buf.data(), 65536, 0, reinterpret_cast<sockaddr*>(&addr_in), &addr_len); len >= 0) {
         const auto recv_len = static_cast<size_t>(len);
+        if (recv_len < driver::HEADER_SIZE) {
+          std::cerr << "Unknown data size: " << recv_len << std::endl;
+          continue;
+        }
         const auto body_len = recv_len - driver::HEADER_SIZE;
         if (body_len % driver::BODY_SIZE != 0) {
           std::cerr << "Unknown data size: " << recv_len << std::endl;
@@ -131,6 +136,7 @@ void Simulator::run() {
         }
         const auto dev_num = body_len / driver::BODY_SIZE;
         driver::TxDatagram tx(dev_num);
+        tx.num_bodies = dev_num;
         std::memcpy(tx.data().data(), buf.data(), recv_len);
         {
           std::lock_guard lock(recv_mtx);
@@ -150,10 +156,10 @@ void Simulator::run() {
   const auto window = std::make_unique<helper::WindowHandler>(_settings->window_width, _settings->window_height);
   const auto context = std::make_unique<helper::VulkanContext>(_settings->gpu_idx, false);
 
-  const auto imgui = std::make_unique<VulkanImGui>(window.get(), context.get());
-  const auto renderer = std::make_unique<VulkanRenderer>(context.get(), window.get(), imgui.get(), _settings->vsync);
+  const auto imgui = std::make_unique<simulator::VulkanImGui>(window.get(), context.get());
+  const auto renderer = std::make_unique<simulator::VulkanRenderer>(context.get(), window.get(), imgui.get(), _settings->vsync);
 
-  window->init("AUTD3 Simulator", renderer.get(), VulkanRenderer::resize_callback, VulkanRenderer::pos_callback);
+  window->init("AUTD3 Simulator", renderer.get(), simulator::VulkanRenderer::resize_callback, simulator::VulkanRenderer::pos_callback);
   context->init_vulkan("AUTD3 Simulator", *window);
   renderer->create_swapchain();
   renderer->create_image_views();
@@ -175,9 +181,9 @@ void Simulator::run() {
   renderer->create_command_buffers();
   renderer->create_sync_objects();
 
-  const auto trans_viewer = std::make_unique<trans_viewer::TransViewer>(context.get(), renderer.get());
-  const auto slice_viewer = std::make_unique<slice_viewer::SliceViewer>(context.get(), renderer.get());
-  const auto field_compute = std::make_unique<FieldCompute>(context.get(), renderer.get());
+  const auto trans_viewer = std::make_unique<simulator::trans_viewer::TransViewer>(context.get(), renderer.get());
+  const auto slice_viewer = std::make_unique<simulator::slice_viewer::SliceViewer>(context.get(), renderer.get());
+  const auto field_compute = std::make_unique<simulator::FieldCompute>(context.get(), renderer.get());
 
   imgui->init(static_cast<uint32_t>(renderer->frames_in_flight()), renderer->render_pass(), *_settings);
 
@@ -189,7 +195,7 @@ void Simulator::run() {
 
     if (!recv_queue.empty()) {
       const auto& tx = recv_queue.front();
-      for (size_t i = 0; i < (std::min)(cpus.size(), tx.size()); i++) cpus[i].send(tx.header(), tx.bodies()[i]);
+      for (auto& cpu : cpus) cpu.send(tx);
 
       if (initialized) {
         if (tx.header().msg_id == driver::MSG_SIMULATOR_CLOSE) {
@@ -205,7 +211,7 @@ void Simulator::run() {
         cpus.clear();
         cpus.reserve(tx.size());
         for (size_t i = 0; i < tx.size(); i++) {
-          firmware_emulator::cpu::CPU cpu(i);
+          CPU cpu(i);
           cpu.init();
           cpus.emplace_back(cpu);
         }
@@ -222,14 +228,14 @@ void Simulator::run() {
               const auto local_pos = glm::vec4(static_cast<float>(ix) * static_cast<float>(driver::TRANS_SPACING_MM),
                                                static_cast<float>(iy) * static_cast<float>(driver::TRANS_SPACING_MM), 0.0f, 1.0f);
               const auto global_pos = matrix * local_pos;
-              sources.add(global_pos, rot, Drive(1.0f, 0.0f, 1.0f, 40e3, 340e3), 1.0f);
+              sources.add(global_pos, rot, simulator::Drive(1.0f, 0.0f, 1.0f, 40e3, 340e3), 1.0f);
             }
         }
 
         imgui->set(sources);
         trans_viewer->init(sources);
         slice_viewer->init(imgui->slice_width, imgui->slice_height, imgui->pixel_size);
-        field_compute->init(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size());
+        field_compute->init(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size(), imgui->coloring_method);
 
         initialized = true;
       }
@@ -258,10 +264,10 @@ void Simulator::run() {
             sources.drives()[i].set_wave_num(freq, imgui->sound_speed * 1e3f);
           }
         }
-        update_flags.set(UpdateFlags::UPDATE_SOURCE_DRIVE);
+        update_flags.set(simulator::UpdateFlags::UPDATE_SOURCE_DRIVE);
         data_updated = false;
       }
-      if (is_stm_mode && update_flags.contains(UpdateFlags::UPDATE_SOURCE_DRIVE)) {
+      if (is_stm_mode && update_flags.contains(simulator::UpdateFlags::UPDATE_SOURCE_DRIVE)) {
         size_t i = 0;
         for (auto& cpu : cpus) {
           const auto& cycles = cpu.fpga().cycles();
@@ -280,20 +286,20 @@ void Simulator::run() {
       const auto& slice_model = imgui->get_slice_model();
       slice_viewer->update(imgui->slice_width, imgui->slice_height, imgui->pixel_size, update_flags);
       trans_viewer->update(sources, update_flags);
-      field_compute->update(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size(), update_flags);
+      field_compute->update(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size(), imgui->coloring_method, update_flags);
 
-      const Config config{static_cast<uint32_t>(sources.size()),
-                          0,
-                          imgui->color_scale,
-                          static_cast<uint32_t>(imgui->slice_width / imgui->pixel_size),
-                          static_cast<uint32_t>(imgui->slice_height / imgui->pixel_size),
-                          static_cast<uint32_t>(imgui->pixel_size),
-                          0,
-                          0,
-                          slice_model};
-      field_compute->compute(config);
+      const simulator::Config config{static_cast<uint32_t>(sources.size()),
+                                     0,
+                                     imgui->color_scale,
+                                     static_cast<uint32_t>(static_cast<float>(imgui->slice_width) / imgui->pixel_size),
+                                     static_cast<uint32_t>(static_cast<float>(imgui->slice_height) / imgui->pixel_size),
+                                     imgui->pixel_size,
+                                     0,
+                                     0,
+                                     slice_model};
+      field_compute->compute(config, imgui->show_radiation_pressure);
 
-      if (update_flags.contains(UpdateFlags::SAVE_IMAGE)) {
+      if (update_flags.contains(simulator::UpdateFlags::SAVE_IMAGE)) {
         const auto& image = slice_viewer->images()[renderer->current_frame()].get();
         const auto image_size = slice_viewer->image_size();
 
@@ -324,13 +330,13 @@ void Simulator::run() {
 
       slice_viewer->render(slice_model, view, proj, command_buffer);
       trans_viewer->render(view, proj, command_buffer);
-      VulkanImGui::render(command_buffer);
+      simulator::VulkanImGui::render(command_buffer);
       renderer->end_frame(command_buffer, image_index);
     } else {
-      VulkanImGui::draw();
+      simulator::VulkanImGui::draw();
       const std::array background = {imgui->background.r, imgui->background.g, imgui->background.b, imgui->background.a};
       const auto& [command_buffer, image_index] = renderer->begin_frame(background);
-      VulkanImGui::render(command_buffer);
+      simulator::VulkanImGui::render(command_buffer);
       renderer->end_frame(command_buffer, image_index);
     }
   }
@@ -339,7 +345,7 @@ void Simulator::run() {
   if (_th.joinable()) _th.join();
 
   context->device().waitIdle();
-  VulkanImGui::cleanup();
+  simulator::VulkanImGui::cleanup();
   renderer->cleanup();
 
   imgui->save_settings(*_settings);
@@ -347,4 +353,4 @@ void Simulator::run() {
   _settings->window_width = window_width;
   _settings->window_height = window_height;
 }
-}  // namespace autd3::extra::simulator
+}  // namespace autd3::extra

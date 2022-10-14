@@ -11,20 +11,20 @@ SDKには単一焦点のみをサポートする`PointSTM`と任意の`Gain`を�
 
 `PointSTM`の使用方法は以下のようになる.
 ```cpp
-  PointSTM stm;
+  autd3::PointSTM stm;
 
-  const Vector3 center = autd.geometry().center() + Vector3(0.0, 0.0, 150.0);
+  const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   constexpr size_t points_num = 200;
   constexpr auto radius = 30.0;
-  vector<size_t> points(points_num);
-  iota(points.begin(), points.end(), 0);
-  transform(points.begin(), points.end(), back_inserter(stm), [&](const size_t i) {
-    const auto theta = 2.0 * pi * static_cast<double>(i) / static_cast<double>(points_num);
-    return Point(center + Vector3(radius * cos(theta), radius * sin(theta), 0));
+  std::vector<size_t> points(points_num);
+  std::iota(points.begin(), points.end(), 0);
+  std::transform(points.begin(), points.end(), std::back_inserter(stm), [&](const size_t i) {
+    const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(points_num);
+    return autd3::Point(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
   });
 
   const auto actual_freq = stm.set_frequency(1);
-  cout << "Actual frequency is " << actual_freq << " Hz\n";
+  std::cout << "Actual frequency is " << actual_freq << " Hz\n";
   autd.send(stm);
 ```
 
@@ -46,16 +46,16 @@ SDKには単一焦点のみをサポートする`PointSTM`と任意の`Gain`を�
 
 `GainSTM`の使用サンプルは`PointSTM`とほぼ同じである.
 ```cpp
-  GainSTM stm(autd.geometry());
+  autd3::GainSTM stm(autd.geometry());
 
-  const Vector3 center = autd.geometry().center() + Vector3(0.0, 0.0, 150.0);
+  const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   constexpr size_t points_num = 200;
   constexpr auto radius = 30.0;
-  vector<size_t> points(points_num);
-  iota(points.begin(), points.end(), 0);
-  for_each(points.begin(), points.end(), [&](const size_t i) {
-    const auto theta = 2.0 * pi * static_cast<double>(i) / static_cast<double>(points_num);
-    gain::Focus g(center + Vector3(radius * cos(theta), radius * sin(theta), 0.0));
+  std::vector<size_t> points(points_num);
+  std::iota(points.begin(), points.end(), 0);
+  std::for_each(points.begin(), points.end(), [&](const size_t i) {
+    const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(points_num);
+    autd3::gain::Focus g(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0.0));
     stm.add(g);
   });
 
@@ -71,7 +71,7 @@ SDKには単一焦点のみをサポートする`PointSTM`と任意の`Gain`を�
 モードの切り替えは`mode`関数で行う.
 
 ```cpp
-stm.mode() = Mode::PhaseFull;
+stm.mode() = autd3::Mode::PhaseFull;
 ```
 
 デフォルトはすべての情報を送る`PhaseDutyFull`モードである.

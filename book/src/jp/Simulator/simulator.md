@@ -4,7 +4,8 @@ AUTD Simulatorはその名の通りAUTD3のSimulatorであり, Windows/Linux/mac
 
 ## Build
 
-AUTD Simulatorをビルドするには, Vulkan SDKをインストールし, CMakeの`BUILD_SIMULATOR`フラグをオンにしてビルドする.
+AUTD Simulatorをビルドするには, CMakeの`BUILD_SIMULATOR`フラグをオンにする必要がある.
+macを使用している場合はVulkan SDKをインストールする必要がある.
 
 ```
 cmake .. -DBUILD_SIMULATOR=ON

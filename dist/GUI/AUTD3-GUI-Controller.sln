@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32804.467
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AUTD3-GUI-Controller", "AUTD3-GUI-Controller\AUTD3-GUI-Controller.csproj", "{DFD8C98E-8495-40E9-8C43-73FFD33A0557}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AUTD3-GUI-Controller.Core", "AUTD3-GUI-Controller.Core\AUTD3-GUI-Controller.Core.csproj", "{518B7AF9-4F0B-4A9B-B960-7F7F6A7077C4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AUTD3Sharp", "..\..\cs\src\AUTD3Sharp.csproj", "{FCD16878-7162-47C1-91EC-4417A4BD068B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DFD8C98E-8495-40E9-8C43-73FFD33A0557}.Debug|x64.ActiveCfg = Debug|x64
+		{DFD8C98E-8495-40E9-8C43-73FFD33A0557}.Debug|x64.Build.0 = Debug|x64
+		{DFD8C98E-8495-40E9-8C43-73FFD33A0557}.Release|x64.ActiveCfg = Release|x64
+		{DFD8C98E-8495-40E9-8C43-73FFD33A0557}.Release|x64.Build.0 = Release|x64
+		{518B7AF9-4F0B-4A9B-B960-7F7F6A7077C4}.Debug|x64.ActiveCfg = Debug|x64
+		{518B7AF9-4F0B-4A9B-B960-7F7F6A7077C4}.Debug|x64.Build.0 = Debug|x64
+		{518B7AF9-4F0B-4A9B-B960-7F7F6A7077C4}.Release|x64.ActiveCfg = Release|x64
+		{518B7AF9-4F0B-4A9B-B960-7F7F6A7077C4}.Release|x64.Build.0 = Release|x64
+		{FCD16878-7162-47C1-91EC-4417A4BD068B}.Debug|x64.ActiveCfg = Debug|x64
+		{FCD16878-7162-47C1-91EC-4417A4BD068B}.Debug|x64.Build.0 = Debug|x64
+		{FCD16878-7162-47C1-91EC-4417A4BD068B}.Release|x64.ActiveCfg = Release|x64
+		{FCD16878-7162-47C1-91EC-4417A4BD068B}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BD21958C-E8FA-443F-B4BD-7ECAF41C75ED}
+	EndGlobalSection
+EndGlobal

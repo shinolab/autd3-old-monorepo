@@ -25,8 +25,8 @@ SDKで複数台のデバイスを使用する場合は`add_device`関数を接�
 例えば, 上図のように配置・接続しており, 図左側のデバイスが1台目, 右側のデバイスが2台目だとする.
 さらに, グローバル座標を1台目のローカル座標と同じだとすると,
 ```cpp
-  autd.geometry().add_device(Vector3::Zero(), Vector3::Zero());
-  autd.geometry().add_device(Vector3(DEVICE_WIDTH, 0, 0), Vector3::Zero());
+  autd.geometry().add_device(aud3::Vector3::Zero(), aud3::Vector3::Zero());
+  autd.geometry().add_device(aud3::Vector3(aud3::DEVICE_WIDTH, 0, 0), aud3::Vector3::Zero());
 ```
 とすれば良い.
 ここで, `DEVICE_WIDTH`はデバイスの (基板外形を含めた) 横幅である.
@@ -34,8 +34,8 @@ SDKで複数台のデバイスを使用する場合は`add_device`関数を接�
 
 また, 例えば, グローバル座標を2台目のローカル座標と同じだとすると,
 ```cpp
-  autd.geometry().add_device(Vector3(-DEVICE_WIDTH, 0, 0), Vector3::Zero());
-  autd.geometry().add_device(Vector3::Zero(), Vector3::Zero());
+  autd.geometry().add_device(aud3::Vector3(-aud3::DEVICE_WIDTH, 0, 0), aud3::Vector3::Zero());
+  autd.geometry().add_device(aud3::Vector3::Zero(), aud3::Vector3::Zero());
 ```
 とすれば良い.
 
@@ -46,8 +46,8 @@ SDKで複数台のデバイスを使用する場合は`add_device`関数を接�
 
 さらに, 例えば, 上図のように配置されており, 下が1台目, 左が2台目で, グローバル座標を1台目のローカル座標と同じだとすると,
 ```cpp
-  autd.geometry().add_device(Vector3::Zero(), Vector3::Zero());
-  autd.geometry().add_device(Vector3(0, 0, DEVICE_WIDTH), Vector3(0, pi / 2.0, 0));
+  autd.geometry().add_device(aud3::Vector3::Zero(), aud3::Vector3::Zero());
+  autd.geometry().add_device(aud3::Vector3(0, 0, aud3::DEVICE_WIDTH), aud3::Vector3(0, pi / 2.0, 0));
 ```
 のように指定する.
 
@@ -59,11 +59,13 @@ SDKにおけるAPIでは, すべてグローバル座標を用いるため, 接�
 
 ```cpp
 
-#include "autd3/extra/geometry_viewer/geometry_viewer.hpp"
+#include "autd3/extra/geometry_viewer.hpp"
 
 ...
 
-  autd3::extra::geometry_viewer::GeometryViewer().window_size(800, 600).vsync(true).view(autd.geometry());
+  autd3::extra::GeometryViewer().window_size(800, 600).vsync(true).view(autd.geometry());
 ```
 
-`GeometryViewer`を使用するにはVulkan SDKをインストールし, CMakeで`BUILD_GEOMETRY_VIEWER`オプションをOnにする必要がある.
+`GeometryViewer`を使用するにはCMakeで`BUILD_GEOMETRY_VIEWER`オプションをOnにする必要がある[^vulkan_mac].
+
+[^vulkan_mac]: macで使用する場合は, [Vulkan SDK](https://www.lunarg.com/vulkan-sdk/)をインストールする必要がある.

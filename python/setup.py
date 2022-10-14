@@ -4,7 +4,7 @@ Project: pyautd
 Created Date: 10/09/2020
 Author: Shun Suzuki
 -----
-Last Modified: 09/10/2022
+Last Modified: 13/10/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -17,6 +17,7 @@ import shutil
 import zipfile
 import tarfile
 import os
+import sys
 
 
 def _get_version():
@@ -100,7 +101,13 @@ def download_bin():
         os.remove(tmp_archive_path)
 
 
-download_bin()
+skip_download_bin = False
+if len(sys.argv) > 3:
+    skip_download_bin = sys.argv[3] == 'True'
+    del sys.argv[3]
+
+if not skip_download_bin:
+    download_bin()
 
 data_files = []
 for f in glob.glob('pyautd3/bin/**/*'):
@@ -114,14 +121,14 @@ setuptools.setup(
     description='AUTD3 library wrapper for python',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/shinolab/pyautd',
+    url='https://github.com/shinolab/autd3',
     classifiers=[
         'Programming Language :: Python :: 3',
         'Operating System :: Microsoft :: Windows',
         'Operating System :: POSIX',
         'Operating System :: MacOS'
     ],
-    license='See https://github.com/shinolab/pyautd',
+    license='See https://github.com/shinolab/autd3',
     platforms=["Windows", "Linux", "Mac OS-X"],
     include_package_data=True,
     package_dir={'pyautd3': 'pyautd3'},

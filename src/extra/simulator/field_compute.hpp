@@ -3,7 +3,7 @@
 // Created Date: 05/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2022
+// Last Modified: 14/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -43,7 +43,7 @@ struct Config {
   float color_scale;
   uint32_t width;
   uint32_t height;
-  uint32_t pixel_size;
+  float pixel_size;
   uint32_t dummy0;
   uint32_t dummy1;
   glm::mat4 model;
@@ -58,12 +58,28 @@ class FieldCompute {
   FieldCompute(FieldCompute&& obj) = default;
   FieldCompute& operator=(FieldCompute&& obj) = default;
 
-  void init(const SoundSources& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers, const size_t image_size) {
-    create_pipeline();
+  void init(const SoundSources& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers, const size_t image_size,
+            const tinycolormap::ColormapType type) {
+    create_descriptor_set_layouts();
+
+    const std::vector<uint8_t> shader_code = {
+#include "field.comp.spv.txt"
+    };
+
+    auto [layout, pipeline] = create_pipeline(shader_code);
+    _layout1 = std::move(layout);
+    _pipeline1 = std::move(pipeline);
+
+    const std::vector<uint8_t> shader_code2 = {
+#include "field2.comp.spv.txt"
+    };
+    auto [layout2, pipeline2] = create_pipeline(shader_code2);
+    _layout2 = std::move(layout2);
+    _pipeline2 = std::move(pipeline2);
 
     create_source_drive(sources);
     create_source_pos(sources);
-    create_color_map(slice_alpha);
+    create_color_map(slice_alpha, type);
 
     create_descriptor_sets(sources, image_buffers, image_size);
 
@@ -72,19 +88,22 @@ class FieldCompute {
   }
 
   void update(const SoundSources& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers, const size_t image_size,
-              const UpdateFlags update_flags) {
+              const tinycolormap::ColormapType type, const UpdateFlags update_flags) {
     if (update_flags.contains(UpdateFlags::UPDATE_SLICE_SIZE)) create_descriptor_sets(sources, image_buffers, image_size);
 
     if (update_flags.contains(UpdateFlags::UPDATE_SOURCE_DRIVE) || update_flags.contains(UpdateFlags::UPDATE_SOURCE_FLAG))
       update_source_drive(sources);
 
-    if (update_flags.contains(UpdateFlags::UPDATE_COLOR_MAP)) create_color_map(slice_alpha);
+    if (update_flags.contains(UpdateFlags::UPDATE_COLOR_MAP)) create_color_map(slice_alpha, type);
   }
 
-  void compute(const Config config) {
+  void compute(const Config config, const bool show_radiation_pressure) {
     const auto current_image = _renderer->current_frame();
 
     auto command_buffer = _context->begin_single_time_commands();
+
+    const auto pipeline = show_radiation_pressure ? _pipeline2.get() : _pipeline1.get();
+    const auto layout = show_radiation_pressure ? _layout2.get() : _layout1.get();
 
     const std::array sets = {
         _descriptor_sets_0[current_image].get(),
@@ -93,24 +112,16 @@ class FieldCompute {
         _descriptor_sets_3[current_image].get(),
     };
 
-    command_buffer->bindPipeline(vk::PipelineBindPoint::eCompute, _pipeline.get());
-    command_buffer->bindDescriptorSets(vk::PipelineBindPoint::eCompute, _layout.get(), 0, sets, nullptr);
-    command_buffer->pushConstants(_layout.get(), vk::ShaderStageFlagBits::eCompute, 0, sizeof(Config), &config);
+    command_buffer->bindPipeline(vk::PipelineBindPoint::eCompute, pipeline);
+    command_buffer->bindDescriptorSets(vk::PipelineBindPoint::eCompute, layout, 0, sets, nullptr);
+    command_buffer->pushConstants(layout, vk::ShaderStageFlagBits::eCompute, 0, sizeof(Config), &config);
     command_buffer->dispatch((config.width - 1) / 32 + 1, (config.height - 1) / 32 + 1, 1);
 
     _context->end_single_time_commands(command_buffer);
   }
 
  private:
-  void create_pipeline() {
-    const std::vector<uint8_t> shader_code = {
-#include "field.comp.spv.txt"
-    };
-    vk::UniqueShaderModule shader_module = helper::create_shader_module(_context->device(), shader_code);
-
-    const vk::PipelineShaderStageCreateInfo shader_stage =
-        vk::PipelineShaderStageCreateInfo().setStage(vk::ShaderStageFlagBits::eCompute).setModule(shader_module.get()).setPName("main");
-
+  void create_descriptor_set_layouts() {
     std::array bindings_0 = {vk::DescriptorSetLayoutBinding()
                                  .setBinding(0)
                                  .setDescriptorType(vk::DescriptorType::eStorageBuffer)
@@ -138,6 +149,13 @@ class FieldCompute {
                                  .setDescriptorCount(1)
                                  .setStageFlags(vk::ShaderStageFlagBits::eCompute)};
     _descriptor_set_layout_3 = _context->device().createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo().setBindings(bindings_3));
+  }
+
+  std::pair<vk::UniquePipelineLayout, vk::UniquePipeline> create_pipeline(const std::vector<uint8_t>& shader_code) {
+    vk::UniqueShaderModule shader_module = helper::create_shader_module(_context->device(), shader_code);
+
+    const vk::PipelineShaderStageCreateInfo shader_stage =
+        vk::PipelineShaderStageCreateInfo().setStage(vk::ShaderStageFlagBits::eCompute).setModule(shader_module.get()).setPName("main");
 
     const std::array push_constant_ranges = {
         vk::PushConstantRange().setStageFlags(vk::ShaderStageFlagBits::eCompute).setSize(sizeof(Config)).setOffset(0)};
@@ -146,14 +164,14 @@ class FieldCompute {
     const vk::PipelineLayoutCreateInfo pipeline_layout_info =
         vk::PipelineLayoutCreateInfo().setSetLayouts(layouts).setPushConstantRanges(push_constant_ranges);
 
-    _layout = _context->device().createPipelineLayoutUnique(pipeline_layout_info);
+    auto layout = _context->device().createPipelineLayoutUnique(pipeline_layout_info);
 
     if (auto result =
-            _context->device().createComputePipelineUnique({}, vk::ComputePipelineCreateInfo().setStage(shader_stage).setLayout(_layout.get()));
+            _context->device().createComputePipelineUnique({}, vk::ComputePipelineCreateInfo().setStage(shader_stage).setLayout(layout.get()));
         result.result == vk::Result::eSuccess)
-      _pipeline = std::move(result.value);
-    else
-      throw std::runtime_error("failed to create a pipeline!");
+      return std::make_pair(std::move(layout), std::move(result.value));
+
+    throw std::runtime_error("failed to create a pipeline!");
   }
 
   void create_descriptor_sets(const SoundSources& sources, const std::vector<vk::UniqueBuffer>& image_buffers, const size_t image_size) {
@@ -216,7 +234,7 @@ class FieldCompute {
     }
   }
 
-  void create_color_map(const float slice_alpha) {
+  void create_color_map(const float slice_alpha, const tinycolormap::ColormapType type) {
     constexpr size_t color_map_size = 100;
     constexpr size_t image_size = color_map_size * 4;
     std::vector<uint8_t> pixels;
@@ -224,7 +242,7 @@ class FieldCompute {
     const auto alpha = static_cast<uint8_t>(slice_alpha * 255.0f);
     for (size_t i = 0; i < color_map_size; i++) {
       const auto v = static_cast<double>(i) / static_cast<double>(color_map_size);
-      const auto color = GetColor(v, tinycolormap::ColormapType::Inferno);
+      const auto color = GetColor(v, type);
 
       pixels.emplace_back(static_cast<uint8_t>(color.r() * 255.0));
       pixels.emplace_back(static_cast<uint8_t>(color.g() * 255.0));
@@ -362,8 +380,10 @@ class FieldCompute {
   std::vector<vk::UniqueBuffer> _pos_buffers;
   std::vector<vk::UniqueDeviceMemory> _pos_buffers_memory;
 
-  vk::UniquePipelineLayout _layout;
-  vk::UniquePipeline _pipeline;
+  vk::UniquePipelineLayout _layout1;
+  vk::UniquePipeline _pipeline1;
+  vk::UniquePipelineLayout _layout2;
+  vk::UniquePipeline _pipeline2;
 
   std::vector<vk::UniqueDescriptorSet> _descriptor_sets_0;
   std::vector<vk::UniqueDescriptorSet> _descriptor_sets_1;

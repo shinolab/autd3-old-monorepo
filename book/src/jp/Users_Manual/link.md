@@ -34,11 +34,11 @@ Disable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform
 
 インストール後に再起動し, `C:/TwinCAT/3.1/System/win8settick.bat`を管理者権限で実行し, 再び再起動する.
 
-最後に, SDK内の`AUTDServer/AUTD.xml`を`C:/TwinCAT/3.1/Config/Io/EtherCAT`にコピーする.
+最後に, SDK内の`dist/AUTDServer/AUTD.xml`を`C:/TwinCAT/3.1/Config/Io/EtherCAT`にコピーする.
 
 ### AUTDServer
 
-TwinCATのLinkを使うには, まず, `AUTDServer/AUTDServer.exe`を実行する.
+TwinCATのLinkを使うには, まず, `dist/AUTDServer/AUTDServer.exe`を実行する.
 
 初回はドライバをインストールするために, `-k`オプションを付けて, TwinCAT XAE Shellを開いたままにしておくこと.
 
@@ -53,7 +53,7 @@ AUTDServer.exe -k
 #### Install Driver
 
 初回はEherCAT用のドライバのインストールが必要になる.
-TwinCAT XAE Shell上部メニューからTwinCAT→Show Realtime Ethernet Compatible Devicesを開きCompatible devicesの中の対応デバイスを選択し, Installをクリックする. "Installed and ready to use devices(realtime capcble)"にインストールされたアダプタが表示されていれば成功だ.
+TwinCAT XAE Shell上部メニューからTwinCAT→Show Realtime Ethernet Compatible Devicesを開きCompatible devicesの中の対応デバイスを選択し, Installをクリックする. "Installed and ready to use devices(realtime capcble)"にインストールされたアダプタが表示されていれば成功である.
 
 なお, Compatible devicesに何も表示されていない場合はそのPCのイーサネットデバイスはTwinCATに対応していない.
 Incompatible devicesの中のドライバもInstall自体は可能で, Installすると"Installed and ready to use devices(for demo use only)"と表示される.
@@ -129,8 +129,8 @@ AUTDServer.exe -c 169.254.175.45 -k
 
 ...
 
-  const string server_ams_net_id = "172.16.99.194.1.1";
-  auto link = link::RemoteTwinCAT(server_ams_net_id).build();
+  const std::string server_ams_net_id = "172.16.99.194.1.1";
+  auto link = autd3::link::RemoteTwinCAT(server_ams_net_id).build();
 ```
 のようにすれば良い.
 
@@ -138,10 +138,10 @@ AUTDServer.exe -c 169.254.175.45 -k
 その場合は, 以下のようにそれぞれ指定されたい.
 
 ```cpp
-  const string server_ip_address = "169.254.205.219";
-  const string server_ams_net_id = "172.16.99.194.1.1";
-  const string client_ams_net_id = "169.254.175.45.1.1";
-  auto link = link::RemoteTwinCAT(server_ams_net_id)
+  const std::string server_ip_address = "169.254.205.219";
+  const std::string server_ams_net_id = "172.16.99.194.1.1";
+  const std::string client_ams_net_id = "169.254.175.45.1.1";
+  auto link = autd3::link::RemoteTwinCAT(server_ams_net_id)
     .server_ip_address(server_ip_address)
     .client_ams_net_id(client_ams_net_id)
     .build();
@@ -175,13 +175,13 @@ SOEMのLinkを使用する際は`autd3/link/soem.hpp`ヘッダーをインクル
 #include "autd3/link/soem.hpp"
 
 ...
-  auto link = link::SOEM().build();
+  auto link = autd3::link::SOEM().build();
 ```
 
 SOEMも大量のDeviceを使用すると挙動が不安定になる時がある[^fn_soem].
 このときは, `sync0_cycle`と`send_cycle`関数を使用し, その値を増やす.
 ```cpp
-  auto link = link::SOEM()
+  auto link = autd3::link::SOEM()
                 .sync0_cycle(2)
                 .send_cycle(2)
                 .build();
@@ -193,26 +193,26 @@ SOEMも大量のDeviceを使用すると挙動が不安定になる時がある[
 また, SOEM Linkは回復不能なエラー (例えば, ケーブルが抜けるなど) が発生したときのコールバックを設定することができる[^fn_soem_err].
 callbackはエラーメッセージを引数に取る.
 ```cpp
-  auto link = link::SOEM()
+  auto link = autd3::link::SOEM()
                 .sync0_cycle(2)
                 .send_cycle(2)
-                .on_lost([](const string& msg) {
-                  cerr << "Link is lost\n";
-                  cerr << msg;
-                  quick_exit(-1);
+                .on_lost([](const std::string& msg) {
+                  std::cerr << "Link is lost\n";
+                  std::cerr << msg;
+                  std::quick_exit(-1);
                 })
                 .build();
 ```
  
 さらに, Windowsの場合はHigh Precisionモードの設定ができる.
 ```cpp
-  auto link = link::SOEM()
+  auto link = autd3::link::SOEM()
                 .sync0_cycle(2)
                 .send_cycle(2)
-                .on_lost([](const string& msg) {
-                  cerr << "Link is lost\n";
-                  cerr << msg;
-                  quick_exit(-1);
+                .on_lost([](const std::string& msg) {
+                  std::cerr << "Link is lost\n";
+                  std::cerr << msg;
+                  std::quick_exit(-1);
                 })
                 .high_precision(true)
                 .build();
@@ -226,16 +226,16 @@ High Precisionモードを`true`にすると, より高精度なタイマが使�
 必ずしもこれで解決する訳では無いが, 多少良くなる場合がある.
 
 ```cpp
-  auto link = link::SOEM()
+  auto link = autd3::link::SOEM()
                 .sync0_cycle(2)
                 .send_cycle(2)
-                .on_lost([](const string& msg) {
-                  cerr << "Link is lost\n";
-                  cerr << msg;
-                  quick_exit(-1);
+                .on_lost([](const std::string& msg) {
+                  std::cerr << "Link is lost\n";
+                  std::cerr << msg;
+                  std::quick_exit(-1);
                 })
                 .high_precision(true)
-                .sync_mode(link::SYNC_MODE::FREE_RUN)
+                .sync_mode(autd3::link::SYNC_MODE::FREE_RUN)
                 .build();
 ```
 
@@ -251,7 +251,7 @@ SimulatorのLinkを使用する際は`autd3/link/simulator.hpp`ヘッダーを�
 
 ...
 
-  auto link = autd::link::Simulator().port(50632).build();
+  auto link = autd3::link::Simulator().port(50632).build();
 ```
 ポート番号はAUTD Simulatorの設定と同じにしておく.
 

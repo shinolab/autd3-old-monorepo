@@ -1,0 +1,126 @@
+﻿<!--
+File: ShellPage.xaml
+Project: Views
+Created Date: 11/10/2022
+Author: Shun Suzuki
+=====
+Last Modified: 12/10/2022
+Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+=====
+Copyright (c) 2022 Shun Suzuki. All rights reserved.
+
+-->
+
+<Page
+    x:Class="AUTD3_GUI_Controller.Views.ShellPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="using:AUTD3_GUI_Controller.Helpers"
+    xmlns:localization="using:AK.Toolkit.WinUI3.Localization"
+    Loaded="OnLoaded">
+
+    <Grid x:Name="Root">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid
+            x:Name="AppTitleBar"
+            Height="32"
+            VerticalAlignment="Top"
+            Canvas.ZIndex="1"
+            IsHitTestVisible="True">
+            <Image
+                Width="16"
+                Height="16"
+                HorizontalAlignment="Left"
+                Source="/Assets/WindowIcon.ico" />
+            <TextBlock
+                Margin="28,0,0,0"
+                VerticalAlignment="Center"
+                localization:Localizer.Uid="AppTitleBarTextBlock"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                TextWrapping="NoWrap" />
+        </Grid>
+        <MenuBar Grid.Row="1" Height="32">
+            <MenuBarItem localization:Localizer.Uid="ShellMenuBarItem_File">
+                <MenuFlyoutItem localization:Localizer.Uid="ShellMenuItem_File_Exit" Command="{x:Bind ViewModel.MenuFileExitCommand}" />
+            </MenuBarItem>
+        </MenuBar>
+        <StackPanel
+            x:Name="ActionMenuBar"
+            Grid.Row="2"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Canvas.ZIndex="1"
+            Orientation="Horizontal">
+            <Button Command="{x:Bind ViewModel.StartCommand}">
+                <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE768;" />
+            </Button>
+            <Button Command="{x:Bind ViewModel.PauseCommand}">
+                <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE769;" />
+            </Button>
+        </StackPanel>
+        <NavigationView
+            x:Name="NavigationViewControl"
+            Grid.Row="2"
+            AlwaysShowHeader="False"
+            Canvas.ZIndex="0"
+            DisplayModeChanged="NavigationViewControl_DisplayModeChanged"
+            ExpandedModeThresholdWidth="640"
+            Header="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}"
+            IsBackButtonVisible="Visible"
+            IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
+            IsSettingsVisible="True"
+            OpenPaneLength="160"
+            PaneClosing="NavigationViewControl_OnPaneClosing"
+            PaneOpening="NavigationViewControl_OnPaneOpening"
+            SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}">
+            <NavigationView.MenuItems>
+                <!--  https://docs.microsoft.com/ja-jp/windows/apps/design/style/segoe-ui-symbol-font  -->
+                <NavigationViewItem helpers:NavigationHelper.NavigateTo="AUTD3_GUI_Controller.ViewModels.HomeViewModel" localization:Localizer.Uid="Shell_Home">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xEA8A;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem helpers:NavigationHelper.NavigateTo="AUTD3_GUI_Controller.ViewModels.GeometryViewModel" localization:Localizer.Uid="Shell_Geometry">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE809;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem helpers:NavigationHelper.NavigateTo="AUTD3_GUI_Controller.ViewModels.LinkViewModel" localization:Localizer.Uid="Shell_Link">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE95F;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem helpers:NavigationHelper.NavigateTo="AUTD3_GUI_Controller.ViewModels.GainViewModel" localization:Localizer.Uid="Shell_Gain">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE957;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem helpers:NavigationHelper.NavigateTo="AUTD3_GUI_Controller.ViewModels.ModulationViewModel" localization:Localizer.Uid="Shell_Modulation">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE877;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem helpers:NavigationHelper.NavigateTo="AUTD3_GUI_Controller.ViewModels.PointSTMViewModel" localization:Localizer.Uid="Shell_PointSTM">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE916;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem helpers:NavigationHelper.NavigateTo="AUTD3_GUI_Controller.ViewModels.SilencerViewModel" localization:Localizer.Uid="Shell_Silencer">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE71C;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+            <NavigationView.HeaderTemplate>
+                <DataTemplate />
+            </NavigationView.HeaderTemplate>
+            <Grid Margin="{StaticResource NavigationViewPageContentMargin}">
+                <Frame x:Name="NavigationFrame" />
+            </Grid>
+        </NavigationView>
+    </Grid>
+</Page>

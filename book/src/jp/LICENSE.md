@@ -22,6 +22,7 @@ autd3ライブラリ自体はMITライセンスである.
             * [glm](https://github.com/g-truc/glm)
             * [Dear ImGui](https://github.com/ocornut/imgui)
             * [stb](https://github.com/nothings/stb)
+            * [nlohmann-json](https://github.com/nlohmann/json)
             * [tinycolormap](https://github.com/yuki-koyama/tinycolormap)
 
 * それぞれのライブラリのライセンスは[NOTICE](https://github.com/shinolab/autd3/blob/master/NOTICE)を参照されたい.

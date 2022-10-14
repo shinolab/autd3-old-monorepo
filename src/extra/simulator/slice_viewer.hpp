@@ -3,7 +3,7 @@
 // Created Date: 05/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/10/2022
+// Last Modified: 14/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -49,9 +49,9 @@ class SliceViewer {
   SliceViewer(SliceViewer&& obj) = default;
   SliceViewer& operator=(SliceViewer&& obj) = default;
 
-  void init(const uint32_t width, const uint32_t height, const uint32_t pixel_width) {
-    _width = width / pixel_width;
-    _height = height / pixel_width;
+  void init(const uint32_t width, const uint32_t height, const float pixel_width) {
+    _width = static_cast<uint32_t>(static_cast<float>(width) / pixel_width);
+    _height = static_cast<uint32_t>(static_cast<float>(height) / pixel_width);
 
     create_pipeline();
     create_vertex_buffer(width, height);
@@ -77,11 +77,11 @@ class SliceViewer {
     command_buffer.drawIndexed(6, 1, 0, 0, 0);
   }
 
-  void update(const uint32_t width, const uint32_t height, const uint32_t pixel_width, const UpdateFlags update_flag) {
+  void update(const uint32_t width, const uint32_t height, const float pixel_width, const UpdateFlags update_flag) {
     if (update_flag.contains(UpdateFlags::UPDATE_SLICE_SIZE)) {
       _context->device().waitIdle();
-      _width = width / pixel_width;
-      _height = height / pixel_width;
+      _width = static_cast<uint32_t>(static_cast<float>(width) / pixel_width);
+      _height = static_cast<uint32_t>(static_cast<float>(height) / pixel_width);
       create_field_buffers(_width, _height);
       update_field_descriptor_sets(_width, _height);
       create_vertex_buffer(width, height);
