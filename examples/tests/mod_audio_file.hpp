@@ -12,7 +12,6 @@
 #pragma once
 
 #include <filesystem>
-#include <string>
 
 #include "autd3.hpp"
 #include "autd3/modulation/audio_file.hpp"
