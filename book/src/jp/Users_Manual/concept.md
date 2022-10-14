@@ -2,9 +2,9 @@
 
 SDKを構成する主なクラスは以下の通りである.
 
-* `Controller` - コントローラクラス. すべての操作はこのクラスを介して行う.
+* `Controller` - コントローラクラス. AUTD3に対する全ての操作はこのクラスを介して行う.
 * `Geometry` - 現実世界におけるデバイスの配置を管理する
-* `Link` - Deviceとのインターフェース
+* `Link` - AUTD3デバイスとのインターフェース
 * `Gain` - 各振動子の位相/振幅を管理するクラス
 * `Modulation` - AM変調を管理するクラス
 * `STM` - Hardware上のSpatio-Temporal Modulation (STM) 機能を管理するクラス

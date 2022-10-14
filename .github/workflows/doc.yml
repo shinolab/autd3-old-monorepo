@@ -85,3 +85,30 @@ jobs:
         dotnet nuget add source $pwd/src/bin/x64/Release -n autd3shapr_local
         cd ..
         dotnet build ./book/samples/cs/cs.csproj -c:Release /p:Platform=x64
+
+  check-cpp:
+    name: build ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest]
+    steps: 
+    - uses: actions/checkout@v2
+    - name: build
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DBUILD_LINK_SOEM=ON -DBUILD_GAIN_HOLO=OFF
+        cmake --build . --parallel 8 --config Release
+        cd ..
+        copy include -Recurse book/samples/cpp/
+        mkdir book/samples/cpp/lib
+        copy build/lib/Release/*.lib  book/samples/cpp/lib
+        mkdir book/samples/cpp/lib/wpcap
+        copy 3rdparty/SOEM/oshw/win32/wpcap/Lib/x64/*.lib book/samples/cpp/lib/wpcap
+        copy 3rdparty/eigen -Recurse book/samples/cpp/
+        cd book/samples/cpp
+        mkdir build
+        cd build
+        cmake ..
+        cmake --build . --parallel 8 --config Release
