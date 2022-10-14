@@ -5,7 +5,7 @@ on:
     branches: [ master, doc ]
   
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -14,53 +14,6 @@ jobs:
         cd tools/doc_checker
         cargo run -- "../../book/src/jp/FFI/reference.md"
         cargo run -- "../../book/src/en/FFI/reference.md"
-        cd ..
-
-    - name: Doxygen
-      uses: ./.github/actions/cmake-doxygen-actions
-    - name: mv doxygen doc_build
-      run: |
-        mkdir -p doc_build
-        sudo mv ./build/doc/html ./doc_build/api
-
-    - uses: jontze/action-mdbook@v1
-      with:
-        token: ${{secrets.GITHUB_TOKEN}}
-        use-linkcheck: true
-        use-opengh: true
-    - name: Setup mdbook-katex
-      uses: magicgh/mdbook-katex-action@v1
-      with:
-        version: 'latest'
-    - run: |
-        cd book
-        MDBOOK_BOOK__src=src/en mdbook build --dest-dir book/en
-        MDBOOK_BOOK__src=src/jp mdbook build --dest-dir book/jp
-    - name: mv mdbook doc
-      run: |
-        mkdir -p doc_build/book
-        sudo mv ./book/book/en/html ./doc_build/book/en
-        sudo mv ./book/book/jp/html ./doc_build/book/jp
-
-    - run: |
-        cd firmware/fpga/docs
-        mdbook build
-    - name: mv fpga doc
-      run: |
-        sudo mv ./firmware/fpga/docs/book/html ./doc_build/fpga
-
-    - run: |
-        cd firmware/cpu/docs
-        mdbook build
-    - name: mv cpu doc
-      run: |
-        sudo mv ./firmware/cpu/docs/book/html ./doc_build/cpu
-
-    - name: Deploy
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./doc_build
 
   check-cs:
     name: build windows-latest
@@ -112,3 +65,50 @@ jobs:
         cd build
         cmake ..
         cmake --build . --parallel 8 --config Release
+
+  build:
+    needs: [check, check-cs, check-cpp]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Doxygen
+      uses: ./.github/actions/cmake-doxygen-actions
+    - name: mv doxygen doc_build
+      run: |
+        mkdir -p doc_build
+        sudo mv ./build/doc/html ./doc_build/api
+    - uses: jontze/action-mdbook@v1
+      with:
+        token: ${{secrets.GITHUB_TOKEN}}
+        use-linkcheck: true
+        use-opengh: true
+    - name: Setup mdbook-katex
+      uses: magicgh/mdbook-katex-action@v1
+      with:
+        version: 'latest'
+    - run: |
+        cd book
+        MDBOOK_BOOK__src=src/en mdbook build --dest-dir book/en
+        MDBOOK_BOOK__src=src/jp mdbook build --dest-dir book/jp
+    - name: mv mdbook doc
+      run: |
+        mkdir -p doc_build/book
+        sudo mv ./book/book/en/html ./doc_build/book/en
+        sudo mv ./book/book/jp/html ./doc_build/book/jp
+    - run: |
+        cd firmware/fpga/docs
+        mdbook build
+    - name: mv fpga doc
+      run: |
+        sudo mv ./firmware/fpga/docs/book/html ./doc_build/fpga
+    - run: |
+        cd firmware/cpu/docs
+        mdbook build
+    - name: mv cpu doc
+      run: |
+        sudo mv ./firmware/cpu/docs/book/html ./doc_build/cpu
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./doc_build
