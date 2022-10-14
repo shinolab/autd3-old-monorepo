@@ -23,7 +23,7 @@ Silencerは, 振動子の駆動信号の急激な変動を抑制し, 静音化�
 Silencerの設定には`SilencerConfig`を`send`する.
 
 ```cpp
-  SilencerConfig config;
+  autd3::SilencerConfig config;
   autd.send(config);
 ```
 
