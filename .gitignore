@@ -3,3 +3,4 @@ build*/
 .vscode
 .vs
 CMakePresets.json
+assets_x64.zip

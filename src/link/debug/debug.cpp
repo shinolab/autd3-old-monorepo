@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/10/2022
+// Last Modified: 14/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
 #include "autd3/link/debug.hpp"
 
 #include "autd3/core/link.hpp"
-#include "autd3/extra/firmware_emulator/cpu/emulator.hpp"
+#include "autd3/extra/cpu_emulator.hpp"
 
 namespace autd3::link {
 
@@ -35,7 +35,7 @@ class DebugImpl final : public core::Link {
     _cpus.clear();
     _cpus.reserve(geometry.num_devices());
     for (size_t i = 0; i < geometry.num_devices(); i++) {
-      extra::firmware_emulator::cpu::CPU cpu(i);
+      extra::CPU cpu(i);
       cpu.init();
       _cpus.emplace_back(cpu);
     }
@@ -54,7 +54,7 @@ class DebugImpl final : public core::Link {
   }
 
   bool send(const driver::TxDatagram& tx) override {
-    for (size_t i = 0; i < _cpus.size(); i++) _cpus[i].send(tx.header(), tx.bodies()[i]);
+    for (auto& cpu : _cpus) cpu.send(tx);
 
     spdlog::info("Send data");
 
@@ -137,7 +137,7 @@ class DebugImpl final : public core::Link {
 
  private:
   bool _is_open;
-  std::vector<extra::firmware_emulator::cpu::CPU> _cpus;
+  std::vector<extra::CPU> _cpus;
 };
 
 core::LinkPtr Debug::build() const {

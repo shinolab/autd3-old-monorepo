@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/10/2022
+// Last Modified: 13/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,10 +26,7 @@ class VulkanRenderer {
   std::string font_path;
   explicit VulkanRenderer(const helper::VulkanContext* context, const helper::WindowHandler* window, const VulkanImGui* imgui,
                           const bool vsync = true) noexcept
-      : _context(context),
-        _window(window),
-        _imgui(imgui),
-        _vsync(vsync) {}
+      : _context(context), _window(window), _imgui(imgui), _vsync(vsync) {}
   ~VulkanRenderer() = default;
   VulkanRenderer(const VulkanRenderer& v) = delete;
   VulkanRenderer& operator=(const VulkanRenderer& obj) = delete;
@@ -213,8 +210,8 @@ class VulkanRenderer {
     command_buffer.end();
 
     vk::PipelineStageFlags wait_stage(vk::PipelineStageFlagBits::eColorAttachmentOutput);
-    vk::SubmitInfo submit_info(_image_available_semaphores[_current_frame].get(), wait_stage, _command_buffers[_current_frame].get(),
-                               _render_finished_semaphores[_current_frame].get());
+    const vk::SubmitInfo submit_info(_image_available_semaphores[_current_frame].get(), wait_stage, _command_buffers[_current_frame].get(),
+                                     _render_finished_semaphores[_current_frame].get());
     _context->graphics_queue().submit(submit_info, _in_flight_fences[_current_frame].get());
 
     const vk::PresentInfoKHR present_info(_render_finished_semaphores[_current_frame].get(), _swap_chain.get(), image_index);

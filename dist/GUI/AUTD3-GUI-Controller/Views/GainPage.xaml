@@ -1,0 +1,60 @@
+﻿<!--
+    File: GainPage.xaml
+    Project: Views
+    Created Date: 24/08/2022
+    Author: Shun Suzuki
+    =====
+Last Modified: 12/10/2022
+Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+    =====
+    Copyright (c) 2022 Shun Suzuki. All rights reserved.
+-->
+
+<Page
+    x:Class="AUTD3_GUI_Controller.Views.GainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helpers="using:AUTD3_GUI_Controller.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Loaded="GainPage_OnLoaded"
+    mc:Ignorable="d">
+
+    <Grid x:Name="Root">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <NavigationView
+            x:Name="GainNavigationViewControl"
+            Grid.Row="0"
+            AlwaysShowHeader="False"
+            ExpandedModeThresholdWidth="400"
+            Header="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}"
+            IsBackButtonVisible="Visible"
+            IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
+            IsSettingsVisible="False"
+            OpenPaneLength="120"
+            SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}">
+            <NavigationView.MenuItems>
+                <NavigationViewItem helpers:NavigationHelper.NavigateTo="AUTD3_GUI_Controller.ViewModels.Gain.FocusViewModel" Content="Focus" />
+                <NavigationViewItem helpers:NavigationHelper.NavigateTo="AUTD3_GUI_Controller.ViewModels.Gain.BesselBeamViewModel" Content="Bessel beam" />
+                <NavigationViewItem helpers:NavigationHelper.NavigateTo="AUTD3_GUI_Controller.ViewModels.Gain.PlaneWaveViewModel" Content="Plane wave" />
+                <NavigationViewItem helpers:NavigationHelper.NavigateTo="AUTD3_GUI_Controller.ViewModels.Gain.HoloViewModel" Content="Holo" />
+            </NavigationView.MenuItems>
+            <NavigationView.HeaderTemplate>
+                <DataTemplate />
+            </NavigationView.HeaderTemplate>
+            <Grid Margin="{StaticResource NavigationViewPageContentMargin}">
+                <Frame x:Name="GainNavigationFrame" />
+            </Grid>
+        </NavigationView>
+        <StackPanel
+            Grid.Row="1"
+            Margin="{StaticResource SmallTopMargin}"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal">
+            <Button Command="{x:Bind ViewModel.SendCommand}" Content="Send" />
+        </StackPanel>
+    </Grid>
+</Page>

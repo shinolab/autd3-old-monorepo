@@ -16,16 +16,16 @@ SDKにはデフォルトでいくつかの種類のAMを生成するための`Mo
 変調なし.
 
 ```cpp
-  modulation::Static m;
+  autd3::modulation::Static m;
 ```
 
-なお, 第1引数は0-1の規格化された振幅を引数に取れ, 超音波の出力を一律で変更するために使うことができる.
+なお, 第1引数に0-1の規格化された振幅を引数に取れ, 超音波の出力を一律で変更するために使うことができる.
 
 ## Sine
 
 音圧をSin波状に変形するための`Modulation`.
 ```cpp
-  autd::modulation::Sine m(f, amplitude, offset); 
+  autd3::modulation::Sine m(f, amplitude, offset); 
 ```
 
 第1引数は周波数$f$, 第2引数は$amplitude$ (デフォルトで1), 第3引数は$offset$ (デフォルトで0.5)になっており, 音圧の波形が
@@ -52,20 +52,19 @@ $$
 矩形波状の`Modulation`.
 
 ```cpp
-  modulation::Square m(f, low, high); 
+  autd3::modulation::Square m(f, low, high); 
 ```
 第1引数は周波数$f$, 第2引数はlow (デフォルトで0), 第3引数はhigh (デフォルトで1)になっており, 音圧の波形はlowとhighが周波数$f$で繰り返される.
 また, 第4引数にduty比を指定できる.
 duty比は$t_\text{high}/T = t_\text{high}f$で定義される, ここで, $t_\text{high}$は1周期$T=1/f$の内, highを出力する時間である.
 
-
 ## Wav
 
 `Wav`はWavファイルをもとに構成される`Modulation`である.
 
-```
-  const filesystem::path path = filesystem::path(string("sin150.wav"));
-  modulation::Wav m(path.string());
+```cpp
+  const std::filesystem::path path("sin150.wav");
+  autd3::modulation::Wav m(path.string());
 ```
 
 `Wav`を使用するには`BUILD_MODULATION_AUDIO_FILE` optionをONにしてコンパイルする必要がある.
@@ -75,8 +74,8 @@ duty比は$t_\text{high}/T = t_\text{high}f$で定義される, ここで, $t_\t
 `RawPCM`は符号なし8-bitのバイナリデータファイルをもとに構成される`Modulation`である.
 
 ```
-  const filesystem::path path = filesystem::path(string("sin150.wav"));
-  modulation::RawPCM m(path.string(), 4e3);
+  const std::filesystem::path path = std::filesystem::path("sin150.wav");
+  autd3::modulation::RawPCM m(path.string(), 4e3);
 ```
 
 `RawPCM`を使用するには`BUILD_MODULATION_AUDIO_FILE` optionをONにしてコンパイルする必要がある.
@@ -88,7 +87,7 @@ duty比は$t_\text{high}/T = t_\text{high}f$で定義される, ここで, $t_\t
 
 以下が, この`Burst`のサンプルである.
 ```cpp
-class Burst final : public Modulation {
+class Burst final : public autd3::Modulation {
  public:
   void calc() override {
     this->_buffer.resize(_buf_size, 0);

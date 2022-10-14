@@ -3,7 +3,7 @@
 // Created Date: 05/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/10/2022
+// Last Modified: 13/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -38,7 +38,7 @@ class Hsv final : Color {
   Hsv& operator=(Hsv&& obj) = default;
 
   [[nodiscard]] glm::vec4 rgba() const override {
-    const auto hue = std::fmodf(h, 1.0f);
+    const auto hue = std::fmod(h, 1.0f);
 
     if (s == 0.0f) return {v, v, v, a};
 
