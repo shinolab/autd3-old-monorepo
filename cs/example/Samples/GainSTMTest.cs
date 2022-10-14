@@ -4,7 +4,7 @@
  * Created Date: 21/07/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/10/2022
+ * Last Modified: 14/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,6 +13,7 @@
 
 using AUTD3Sharp;
 using AUTD3Sharp.Gain;
+using AUTD3Sharp.STM;
 using AUTD3Sharp.Modulation;
 using AUTD3Sharp.Utils;
 
@@ -32,7 +33,7 @@ internal static class GainSTMTest
         var mod = new Static();
 
         var center = new Vector3d(x, y, z);
-        var stm = new AUTD3Sharp.STM.Gain(autd);
+        var stm = new GainSTM(autd);
         const int pointNum = 200;
         for (var i = 0; i < pointNum; i++)
         {
