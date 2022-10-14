@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2022
+// Last Modified: 14/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,9 +11,38 @@
 
 #pragma once
 
-#include <nlohmann/json.hpp>
 #include <string>
 #include <thread>
+
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 26495 26800 26819)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic push
+#endif
+#include "nlohmann/json.hpp"
+#if _MSC_VER
+#pragma warning(pop)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic pop
+#endif
+
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 26451)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic push
+#endif
+#include "tinycolormap.hpp"
+#if _MSC_VER
+#pragma warning(pop)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic pop
+#endif
 
 namespace autd3::extra::simulator {
 
@@ -34,6 +63,8 @@ struct Settings {
   int32_t slice_pixel_size{1};
   float slice_color_scale{2};
   float slice_alpha{1};
+  tinycolormap::ColormapType coloring_method{tinycolormap::ColormapType::Inferno};
+  bool show_radiation_pressure{false};
   float camera_pos_x{86.6252f};
   float camera_pos_y{-533.2867f};
   float camera_pos_z{150.0f};
@@ -76,6 +107,8 @@ inline void to_json(nlohmann::json& j, const Settings& s) {
       {"slice_pixel_size", s.slice_pixel_size},
       {"slice_color_scale", s.slice_color_scale},
       {"slice_alpha", s.slice_alpha},
+      {"show_radiation_pressure", s.show_radiation_pressure},
+      {"coloring_method", s.coloring_method},
       {"camera_pos_x", s.camera_pos_x},
       {"camera_pos_y", s.camera_pos_y},
       {"camera_pos_z", s.camera_pos_z},
@@ -115,6 +148,8 @@ inline void from_json(const nlohmann::json& j, Settings& s) {
   j.at("slice_pixel_size").get_to(s.slice_pixel_size);
   j.at("slice_color_scale").get_to(s.slice_color_scale);
   j.at("slice_alpha").get_to(s.slice_alpha);
+  j.at("show_radiation_pressure").get_to(s.show_radiation_pressure);
+  j.at("coloring_method").get_to(s.coloring_method);
   j.at("camera_pos_x").get_to(s.camera_pos_x);
   j.at("camera_pos_y").get_to(s.camera_pos_y);
   j.at("camera_pos_z").get_to(s.camera_pos_z);
