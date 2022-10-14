@@ -31,17 +31,11 @@ jobs:
         cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON -DEXPORT_AUTD_SIMULATOR=ON
         cd build
         msbuild autd3.sln /t:build /p:Configuration=Release
-    - name: build for Windows x86
-      if: matrix.os == 'windows-latest'
-      run: |
-        cmake -G "Visual Studio 17 2022" -A Win32 -B "build_x86" -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF
-        cd build_x86
-        msbuild autd3.sln /t:build /p:Configuration=Release
-    - name: install cross compile tools
+    - name: install compile tools
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt update
-        sudo apt install g++-arm-linux-gnueabihf g++-aarch64-linux-gnu -y
+        sudo apt install g++-arm-linux-gnueabihf g++-aarch64-linux-gnu mesa-common-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev -y
       shell: bash
     - name: build for Linux
       if: matrix.os == 'ubuntu-latest'
