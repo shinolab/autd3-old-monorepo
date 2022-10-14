@@ -291,9 +291,9 @@ void Simulator::run() {
       const simulator::Config config{static_cast<uint32_t>(sources.size()),
                                      0,
                                      imgui->color_scale,
-                                     static_cast<uint32_t>(imgui->slice_width / imgui->pixel_size),
-                                     static_cast<uint32_t>(imgui->slice_height / imgui->pixel_size),
-                                     static_cast<uint32_t>(imgui->pixel_size),
+                                     static_cast<uint32_t>(static_cast<float>(imgui->slice_width) / imgui->pixel_size),
+                                     static_cast<uint32_t>(static_cast<float>(imgui->slice_height) / imgui->pixel_size),
+                                     imgui->pixel_size,
                                      0,
                                      0,
                                      slice_model};

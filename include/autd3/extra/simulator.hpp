@@ -60,7 +60,7 @@ struct SimulatorSettings {
   float slice_rot_z{0};
   int32_t slice_width{300};
   int32_t slice_height{300};
-  int32_t slice_pixel_size{1};
+  float slice_pixel_size{1.0};
   float slice_color_scale{2};
   float slice_alpha{1};
   tinycolormap::ColormapType coloring_method{tinycolormap::ColormapType::Inferno};

@@ -355,7 +355,10 @@ class VulkanImGui {
         ImGui::Text("Size");
         if (ImGui::DragInt("Width##Slice", &slice_width, 1, 1, 2000)) flag.set(UpdateFlags::UPDATE_SLICE_SIZE);
         if (ImGui::DragInt("Height##Slice", &slice_height, 1, 1, 2000)) flag.set(UpdateFlags::UPDATE_SLICE_SIZE);
-        if (ImGui::DragInt("Pixel size##Slice", &pixel_size, 1, 1, 8)) flag.set(UpdateFlags::UPDATE_SLICE_SIZE);
+        if (ImGui::DragFloat("Pixel size##Slice", &pixel_size, 1, 0.1f, 8)) {
+          if (pixel_size <= 0.1f) pixel_size = 0.1f;
+          flag.set(UpdateFlags::UPDATE_SLICE_SIZE);
+        }
         ImGui::Separator();
 
         if (ImGui::RadioButton("Acoustic", !show_radiation_pressure)) show_radiation_pressure = false;
@@ -653,7 +656,7 @@ class VulkanImGui {
   glm::vec3 slice_rot{};
   float color_scale{2.0};
   float slice_alpha{1.0f};
-  int32_t pixel_size{1};
+  float pixel_size{1.0};
   bool show_radiation_pressure{false};
 
   glm::vec3 camera_pos{};

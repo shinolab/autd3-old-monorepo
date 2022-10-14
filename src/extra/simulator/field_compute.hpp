@@ -43,7 +43,7 @@ struct Config {
   float color_scale;
   uint32_t width;
   uint32_t height;
-  uint32_t pixel_size;
+  float pixel_size;
   uint32_t dummy0;
   uint32_t dummy1;
   glm::mat4 model;
