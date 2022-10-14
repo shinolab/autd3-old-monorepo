@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/10/2022
+ * Last Modified: 14/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -601,9 +601,9 @@ namespace AUTD3Sharp
             }
         }
 
-        public sealed class Point : STM
+        public sealed class PointSTM : STM
         {
-            public Point()
+            public PointSTM()
             {
                 Base.AUTDPointSTM(out handle);
             }
@@ -622,7 +622,7 @@ namespace AUTD3Sharp
             PhaseHalf = 0x0004
         }
 
-        public sealed class Gain : STM
+        public sealed class GainSTM : STM
         {
             public Mode Mode
             {
@@ -630,7 +630,7 @@ namespace AUTD3Sharp
                 set => Base.AUTDSetGainSTMMode(handle, (ushort)value);
             }
 
-            public Gain(Controller cnt)
+            public GainSTM(Controller cnt)
             {
                 Base.AUTDGainSTM(out handle, cnt.AUTDControllerHandle.CntPtr);
             }
