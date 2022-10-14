@@ -7,7 +7,7 @@ AUTDは各振動子の位相/振幅を個別に制御することができ, こ�
 
 `Focus`は最も単純な`Gain`であり, 単一焦点を生成する.
 ```cpp
-    gain::Focus g(Vector3(x, y, z));
+    autd3::gain::Focus g(autd3::Vector3(x, y, z));
 ```
 コンストラクタの第1引数には焦点の位置を指定する.
 第2引数として, 0-1の規格化された音圧振幅を指定できる.
@@ -17,10 +17,10 @@ AUTDは各振動子の位相/振幅を個別に制御することができ, こ�
 `BesselBeam`ではその名の通りBessel beamを生成する.
 この`Gain`は長谷川らの論文[^hasegawa2017]に基づく.
 ```cpp
-  const Vector3 apex(x, y, z);
-  const Vector3 dir = Vector3::UnitZ();
+  const autd3::Vector3 apex(x, y, z);
+  const autd3::Vector3 dir = autd3::Vector3::UnitZ();
   const double theta_z = 0.3;
-  gain::BesselBeam g(apex, dir, theta_z);
+  autd3::gain::BesselBeam g(apex, dir, theta_z);
 ```
 コンストラクタの第1引数はビームを生成する仮想円錐の頂点であり, 第2引数はビームの方向, 第3引数はビームに垂直な面とビームを生成する仮想円錐の側面となす角度である (下図の$\theta_z$).
 第4引数として, 0-1の規格化された音圧振幅で指定できる.
@@ -35,7 +35,7 @@ AUTDは各振動子の位相/振幅を個別に制御することができ, こ�
 
 `PlaneWave`は平面波を出力する
 ```cpp
-    gain::PlaneWave g(Vector3(x, y, z));
+    autd3::gain::PlaneWave g(autd3::Vector3(x, y, z));
 ```
 コンストラクタの第1引数には平面波の進行方向を指定する.
 第2引数として, 0-1の規格化された音圧振幅を指定できる.
@@ -44,7 +44,7 @@ AUTDは各振動子の位相/振幅を個別に制御することができ, こ�
 
 `Null`は振幅0の`Gain`である.
 ```cpp
-    gain::Null g;
+    autd3::gain::Null g;
 ```
 
 ## Holo (Multiple foci)
@@ -74,10 +74,10 @@ SDKには以下の`Backend`が用意されている
 #include "autd3/gain/holo.hpp"
 ...
 
-  const auto backend = gain::holo::EigenBackend::create();
-  gain::holo::GSPAT g(backend);
-  g.add_focus(Vector3(x1, y1, z1), 1.0);
-  g.add_focus(Vector3(x2, y2, z2), 1.0);
+  const auto backend = autd3::gain::holo::EigenBackend::create();
+  autd3::gain::holo::GSPAT g(backend);
+  g.add_focus(autd3::Vector3(x1, y1, z1), 1.0);
+  g.add_focus(autd3::Vector3(x2, y2, z2), 1.0);
 ```
 各アルゴリズムのコンストラクタの引数は`backend`である.
 `add_focus`関数により各焦点の位置と音圧を指定する.
@@ -136,7 +136,6 @@ cmake .. -DBUILD_HOLO_GAIN=ON -DBUILD_BLAS_BACKEND=ON -DBLAS_LIB_DIR=<your BLAS 
 
     * もし, `flangxxx.lib`関連のlinkエラーが発生した場合は, `-DBLAS_DEPEND_LIB_DIR=%CONDA_HOME%/Library/lib`オプションを追加する.
 
-
 ## Grouped
 
 `Grouped`は複数のデバイスを使用する際に,
@@ -147,7 +146,7 @@ cmake .. -DBUILD_HOLO_GAIN=ON -DBUILD_BLAS_BACKEND=ON -DBLAS_LIB_DIR=<your BLAS 
   const auto g0 = ...;
   const auto g1 = ...;
 
-  gain::Grouped g(autd.geometry());
+  autd3::gain::Grouped g(autd.geometry());
   g.add(0, g0);
   g.add(1, g1);
 ```
@@ -161,11 +160,11 @@ cmake .. -DBUILD_HOLO_GAIN=ON -DBUILD_BLAS_BACKEND=ON -DBLAS_LIB_DIR=<your BLAS 
 ```cpp
 #include "autd3.hpp"
 
-class FocalPoint final : public Gain {
+class FocalPoint final : public autd3::Gain {
  public:
-  explicit FocalPoint(Vector3 point) : _point(move(point)) {}
+  explicit FocalPoint(autd3::Vector3 point) : _point(std::move(point)) {}
 
-  void calc(const Geometry& geometry) override {
+  void calc(const autd3::Geometry& geometry) override {
     std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
       std::for_each(dev.begin(), dev.end(), [&](const auto& transducer) {
         const auto dist = (_point - transducer.position()).norm();
