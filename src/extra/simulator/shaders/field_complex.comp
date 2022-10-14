@@ -4,7 +4,7 @@
  * Created Date: 05/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/10/2022
+ * Last Modified: 14/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,7 +33,7 @@ layout(push_constant) uniform Config {
     float color_scale;
     uint width;
     uint height;
-    uint pixel_size;
+    float pixel_size;
     uint _dummy_0;
     uint _dummy_1;
     mat4 world;
