@@ -9,7 +9,7 @@
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
-#include "autd3/extra/simulator/simulator.hpp"
+#include "autd3/extra/simulator.hpp"
 
 #include <atomic>
 #include <mutex>
@@ -32,7 +32,7 @@
 
 #include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/driver/cpu/ec_config.hpp"
-#include "autd3/extra/firmware_emulator/cpu/emulator.hpp"
+#include "autd3/extra/cpu_emulator.hpp"
 #include "field_compute.hpp"
 #include "slice_viewer.hpp"
 #include "sound_sources.hpp"
@@ -62,16 +62,16 @@
 #pragma clang diagnostic pop
 #endif
 
-namespace autd3::extra::simulator {
+namespace autd3::extra {
 
 #if WIN32
 using socklen_t = int;
 #endif
 
 void Simulator::run() {
-  SoundSources sources;
+  simulator::SoundSources sources;
 
-  std::vector<firmware_emulator::cpu::CPU> cpus;
+  std::vector<CPU> cpus;
 
 #if WIN32
   SOCKET sock = {};
@@ -156,10 +156,10 @@ void Simulator::run() {
   const auto window = std::make_unique<helper::WindowHandler>(_settings->window_width, _settings->window_height);
   const auto context = std::make_unique<helper::VulkanContext>(_settings->gpu_idx, false);
 
-  const auto imgui = std::make_unique<VulkanImGui>(window.get(), context.get());
-  const auto renderer = std::make_unique<VulkanRenderer>(context.get(), window.get(), imgui.get(), _settings->vsync);
+  const auto imgui = std::make_unique<simulator::VulkanImGui>(window.get(), context.get());
+  const auto renderer = std::make_unique<simulator::VulkanRenderer>(context.get(), window.get(), imgui.get(), _settings->vsync);
 
-  window->init("AUTD3 Simulator", renderer.get(), VulkanRenderer::resize_callback, VulkanRenderer::pos_callback);
+  window->init("AUTD3 Simulator", renderer.get(), simulator::VulkanRenderer::resize_callback, simulator::VulkanRenderer::pos_callback);
   context->init_vulkan("AUTD3 Simulator", *window);
   renderer->create_swapchain();
   renderer->create_image_views();
@@ -181,9 +181,9 @@ void Simulator::run() {
   renderer->create_command_buffers();
   renderer->create_sync_objects();
 
-  const auto trans_viewer = std::make_unique<trans_viewer::TransViewer>(context.get(), renderer.get());
-  const auto slice_viewer = std::make_unique<slice_viewer::SliceViewer>(context.get(), renderer.get());
-  const auto field_compute = std::make_unique<FieldCompute>(context.get(), renderer.get());
+  const auto trans_viewer = std::make_unique<simulator::trans_viewer::TransViewer>(context.get(), renderer.get());
+  const auto slice_viewer = std::make_unique<simulator::slice_viewer::SliceViewer>(context.get(), renderer.get());
+  const auto field_compute = std::make_unique<simulator::FieldCompute>(context.get(), renderer.get());
 
   imgui->init(static_cast<uint32_t>(renderer->frames_in_flight()), renderer->render_pass(), *_settings);
 
@@ -211,7 +211,7 @@ void Simulator::run() {
         cpus.clear();
         cpus.reserve(tx.size());
         for (size_t i = 0; i < tx.size(); i++) {
-          firmware_emulator::cpu::CPU cpu(i);
+          CPU cpu(i);
           cpu.init();
           cpus.emplace_back(cpu);
         }
@@ -228,7 +228,7 @@ void Simulator::run() {
               const auto local_pos = glm::vec4(static_cast<float>(ix) * static_cast<float>(driver::TRANS_SPACING_MM),
                                                static_cast<float>(iy) * static_cast<float>(driver::TRANS_SPACING_MM), 0.0f, 1.0f);
               const auto global_pos = matrix * local_pos;
-              sources.add(global_pos, rot, Drive(1.0f, 0.0f, 1.0f, 40e3, 340e3), 1.0f);
+              sources.add(global_pos, rot, simulator::Drive(1.0f, 0.0f, 1.0f, 40e3, 340e3), 1.0f);
             }
         }
 
@@ -264,10 +264,10 @@ void Simulator::run() {
             sources.drives()[i].set_wave_num(freq, imgui->sound_speed * 1e3f);
           }
         }
-        update_flags.set(UpdateFlags::UPDATE_SOURCE_DRIVE);
+        update_flags.set(simulator::UpdateFlags::UPDATE_SOURCE_DRIVE);
         data_updated = false;
       }
-      if (is_stm_mode && update_flags.contains(UpdateFlags::UPDATE_SOURCE_DRIVE)) {
+      if (is_stm_mode && update_flags.contains(simulator::UpdateFlags::UPDATE_SOURCE_DRIVE)) {
         size_t i = 0;
         for (auto& cpu : cpus) {
           const auto& cycles = cpu.fpga().cycles();
@@ -288,18 +288,18 @@ void Simulator::run() {
       trans_viewer->update(sources, update_flags);
       field_compute->update(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size(), imgui->coloring_method, update_flags);
 
-      const Config config{static_cast<uint32_t>(sources.size()),
-                          0,
-                          imgui->color_scale,
-                          static_cast<uint32_t>(imgui->slice_width / imgui->pixel_size),
-                          static_cast<uint32_t>(imgui->slice_height / imgui->pixel_size),
-                          static_cast<uint32_t>(imgui->pixel_size),
-                          0,
-                          0,
-                          slice_model};
+      const simulator::Config config{static_cast<uint32_t>(sources.size()),
+                                     0,
+                                     imgui->color_scale,
+                                     static_cast<uint32_t>(imgui->slice_width / imgui->pixel_size),
+                                     static_cast<uint32_t>(imgui->slice_height / imgui->pixel_size),
+                                     static_cast<uint32_t>(imgui->pixel_size),
+                                     0,
+                                     0,
+                                     slice_model};
       field_compute->compute(config, imgui->show_radiation_pressure);
 
-      if (update_flags.contains(UpdateFlags::SAVE_IMAGE)) {
+      if (update_flags.contains(simulator::UpdateFlags::SAVE_IMAGE)) {
         const auto& image = slice_viewer->images()[renderer->current_frame()].get();
         const auto image_size = slice_viewer->image_size();
 
@@ -330,13 +330,13 @@ void Simulator::run() {
 
       slice_viewer->render(slice_model, view, proj, command_buffer);
       trans_viewer->render(view, proj, command_buffer);
-      VulkanImGui::render(command_buffer);
+      simulator::VulkanImGui::render(command_buffer);
       renderer->end_frame(command_buffer, image_index);
     } else {
-      VulkanImGui::draw();
+      simulator::VulkanImGui::draw();
       const std::array background = {imgui->background.r, imgui->background.g, imgui->background.b, imgui->background.a};
       const auto& [command_buffer, image_index] = renderer->begin_frame(background);
-      VulkanImGui::render(command_buffer);
+      simulator::VulkanImGui::render(command_buffer);
       renderer->end_frame(command_buffer, image_index);
     }
   }
@@ -345,7 +345,7 @@ void Simulator::run() {
   if (_th.joinable()) _th.join();
 
   context->device().waitIdle();
-  VulkanImGui::cleanup();
+  simulator::VulkanImGui::cleanup();
   renderer->cleanup();
 
   imgui->save_settings(*_settings);
@@ -353,4 +353,4 @@ void Simulator::run() {
   _settings->window_width = window_width;
   _settings->window_height = window_height;
 }
-}  // namespace autd3::extra::simulator
+}  // namespace autd3::extra
