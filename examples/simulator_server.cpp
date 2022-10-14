@@ -3,7 +3,7 @@
 // Created Date: 07/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2022
+// Last Modified: 14/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,10 +12,10 @@
 #include <filesystem>
 #include <iostream>
 
-#include "autd3/extra/simulator/simulator.hpp"
+#include "autd3/extra/simulator.hpp"
 
 int main([[maybe_unused]] int argc, char* argv[]) try {
-  autd3::extra::simulator::Settings settings;
+  autd3::extra::SimulatorSettings settings;
   settings.slice_pos_x = 182.625f;
   settings.slice_pos_y = 66.7133f;
   settings.slice_pos_z = 150.0f;
@@ -27,7 +27,7 @@ int main([[maybe_unused]] int argc, char* argv[]) try {
   settings.font_path = AUTD3_SIMULATOR_FONT_PATH;
   settings.image_save_path = std::filesystem::path(argv[0]).parent_path().append("image.png").string();
 
-  autd3::extra::simulator::Simulator().settings(&settings).run();
+  autd3::extra::Simulator().settings(&settings).run();
 
   return 0;
 } catch (std::exception& e) {

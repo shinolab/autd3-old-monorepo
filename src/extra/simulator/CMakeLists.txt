@@ -10,7 +10,7 @@ add_library(simulator
   trans_viewer.hpp
   slice_viewer.hpp
   field_compute.hpp
-  ${PROJECT_SOURCE_DIR}/include/autd3/extra/simulator/simulator.hpp
+  ${PROJECT_SOURCE_DIR}/include/autd3/extra/simulator.hpp
   simulator.cpp
 )
 target_include_directories(simulator PRIVATE ${PROJECT_SOURCE_DIR}/include ${STB_INCLUDE_PATH} ${Vulkan_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/src/extra/simulator/shaders ${PROJECT_SOURCE_DIR}/src/extra/simulator/textures)
