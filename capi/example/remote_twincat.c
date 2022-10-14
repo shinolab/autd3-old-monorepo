@@ -4,7 +4,7 @@
  * Created Date: 16/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/06/2022
+ * Last Modified: 13/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,14 +20,15 @@
 
 int main() {
   void* cnt = NULL;
-  AUTDCreateController(&cnt);
-
-  AUTDAddDevice(cnt, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-
   void* link = NULL;
   const char* remote_ip = "";
   const char* remote_ams_net_id = "";
   const char* local_ams_net_id = "";
+
+  AUTDCreateController(&cnt);
+
+  AUTDAddDevice(cnt, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+
   AUTDLinkRemoteTwinCAT(&link, remote_ip, remote_ams_net_id, local_ams_net_id);
 
   if (!AUTDOpenController(cnt, link)) {

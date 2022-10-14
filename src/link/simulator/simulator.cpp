@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2022
+// Last Modified: 14/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,7 +23,8 @@
 
 #include "autd3/core/interface.hpp"
 #include "autd3/core/link.hpp"
-#include "autd3/extra/firmware_emulator/cpu/emulator.hpp"
+#include "autd3/driver/cpu/ec_config.hpp"
+#include "autd3/extra/cpu_emulator.hpp"
 
 namespace autd3::link {
 
@@ -67,7 +68,7 @@ class SimulatorImpl final : public core::Link {
     _num_devices = geometry.num_devices();
     _cpus.reserve(_num_devices);
     for (size_t i = 0; i < _num_devices; i++) {
-      extra::firmware_emulator::cpu::CPU cpu(i, false);
+      extra::CPU cpu(i, false);
       cpu.init();
       _cpus.emplace_back(cpu);
     }
@@ -96,7 +97,7 @@ class SimulatorImpl final : public core::Link {
                reinterpret_cast<sockaddr*>(&_addr), sizeof _addr) == -1)
       throw std::runtime_error("failed to send data");
 
-    for (size_t i = 0; i < tx.size(); i++) _cpus[i].send(tx.header(), tx.bodies()[i]);
+    for (size_t i = 0; i < tx.size(); i++) _cpus[i].send(tx);
 
     return true;
   }
@@ -124,7 +125,7 @@ class SimulatorImpl final : public core::Link {
 
   size_t _num_devices{0};
 
-  std::vector<extra::firmware_emulator::cpu::CPU> _cpus;
+  std::vector<extra::CPU> _cpus;
 
   static driver::TxDatagram simulator_init_datagram(const core::Geometry& geometry) {
     driver::TxDatagram buf(geometry.num_devices());

@@ -3,7 +3,7 @@
 // Created Date: 23/08/2019
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/10/2022
+// Last Modified: 13/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2019-2020 Shun Suzuki. All rights reserved.
@@ -90,14 +90,14 @@ void SOEMLink::open(const core::Geometry& geometry) {
   _user_data[0] = driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle;
   ecx_context.userdata = _user_data.get();
   spdlog::debug("Sync0 interval: {} [ns]", driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle);
-  auto dc_config = [](ecx_contextt* const context, const uint16_t slave) -> int {
-    const auto cyc_time = static_cast<uint32_t*>(context->userdata)[0];
-    ec_dcsync0(slave, true, cyc_time, 0U);
-    return 0;
-  };
 
   if (_sync_mode == SYNC_MODE::DC) {
-    for (int cnt = 1; cnt <= ec_slavecount; cnt++) ec_slave[cnt].PO2SOconfigx = dc_config;
+    for (int cnt = 1; cnt <= ec_slavecount; cnt++)
+      ec_slave[cnt].PO2SOconfigx = [](auto* context, auto slave) -> int {
+        const auto cyc_time = static_cast<uint32_t*>(context->userdata)[0];
+        ec_dcsync0(slave, true, cyc_time, 0U);
+        return 0;
+      };
     spdlog::debug("run mode: DC sync");
     spdlog::debug("Sync0 configured");
   }
@@ -133,7 +133,8 @@ void SOEMLink::open(const core::Geometry& geometry) {
   }
 
   if (_sync_mode == SYNC_MODE::FREE_RUN) {
-    for (int cnt = 1; cnt <= ec_slavecount; cnt++) dc_config(&ecx_context, static_cast<uint16_t>(cnt));
+    for (int slave = 1; slave <= ec_slavecount; slave++)
+      ec_dcsync0(static_cast<uint16_t>(slave), true, driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle, 0U);
     spdlog::debug("run mode: Free Run");
     spdlog::debug("Sync0 configured");
   }
