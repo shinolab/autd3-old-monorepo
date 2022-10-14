@@ -46,10 +46,10 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.220930.4-preview2" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageReference Include="WinUIEx" Version="1.8.0" />
+    <PackageReference Include="AUTD3Sharp" Version="2.4.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\cs\src\AUTD3Sharp.csproj" />
     <ProjectReference Include="..\AUTD3-GUI-Controller.Core\AUTD3-GUI-Controller.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
