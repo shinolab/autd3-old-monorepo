@@ -4,7 +4,7 @@
  * Created Date: 18/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/10/2022
+ * Last Modified: 14/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -101,7 +101,7 @@ public partial class PointSTMViewModel
     [RelayCommand(CanExecute = "SendCanExecute")]
     public async void Send()
     {
-        var stm = new AUTD3Sharp.STM.Point();
+        var stm = new AUTD3Sharp.STM.PointSTM();
         foreach (var t in Targets)
         {
             stm.Add(new Vector3d(t.X, t.Y, t.Z, t.Shift));

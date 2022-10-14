@@ -156,6 +156,9 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainPlaneWave.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double] 
         self.dll.AUTDGainPlaneWave.restype = None
 
+        self.dll.AUTDGainTransducerTest.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_int32, ctypes.c_int32, ctypes.c_double, ctypes.c_double] 
+        self.dll.AUTDGainTransducerTest.restype = None
+
         self.dll.AUTDGainCustom.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint64] 
         self.dll.AUTDGainCustom.restype = None
 
@@ -176,6 +179,9 @@ class NativeMethods(metaclass=Singleton):
 
         self.dll.AUTDModulationSquare.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_int32, ctypes.c_double, ctypes.c_double, ctypes.c_double] 
         self.dll.AUTDModulationSquare.restype = None
+
+        self.dll.AUTDModulationLPF.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p] 
+        self.dll.AUTDModulationLPF.restype = None
 
         self.dll.AUTDModulationCustom.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_uint8), ctypes.c_uint64, ctypes.c_uint32] 
         self.dll.AUTDModulationCustom.restype = None
