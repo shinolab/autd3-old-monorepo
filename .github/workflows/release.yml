@@ -76,21 +76,6 @@ jobs:
           copy build/dist/simulator/Release/*.exe build/publish/simulator
           Remove-Item -Recurse -Force dist/AUTDServer/src
           Compress-Archive -Path LICENSE, NOTICE, dist/AUTDServer, dist/firmware, include, build/publish/lib, build/publish/bin, build/publish/simulator, dist/GUI/gui-controller -DestinationPath assets_x64.zip
-      - name: Build project x86
-        run: |
-          cmake -G "Visual Studio 17 2022" -A Win32 -B "build_x86" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=OFF
-          cd build_x86
-          msbuild autd3.sln /t:build /p:Configuration=Release -maxcpucount
-          mkdir publish
-          mkdir publish/lib
-          mkdir publish/lib/wpcap
-          mkdir publish/bin
-          cd ..
-          copy build_x86/lib/Release/*.lib build_x86/publish/lib
-          copy 3rdparty/SOEM/oshw/win32/wpcap/Lib/*.lib build/publish/lib/wpcap
-          copy build_x86/bin/Release/*.dll build_x86/publish/bin
-          Remove-Item -Recurse -Force dist/AUTDServer/src
-          Compress-Archive -Path LICENSE, NOTICE, dist/AUTDServer, dist/firmware, include, build_x86/publish/lib, build_x86/publish/bin -DestinationPath assets_x86.zip
       - name: Load Release URL File from release job
         uses: actions/download-artifact@v1
         with:
@@ -109,16 +94,6 @@ jobs:
           upload_url: ${{ steps.get_release_info.outputs.upload_url }}
           asset_path: ./assets_x64.zip
           asset_name: ${{ steps.get_version.outputs.result }}-x64.zip
-          asset_content_type: application/zip
-      - name: Upload Release Asset
-        id: upload-release-asset-win32
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
-          asset_path: ./assets_x86.zip
-          asset_name: ${{ steps.get_version.outputs.result }}-x86.zip
           asset_content_type: application/zip
   
   publish_linux:
