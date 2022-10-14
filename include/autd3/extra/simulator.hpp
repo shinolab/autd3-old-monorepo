@@ -44,9 +44,9 @@
 #pragma GCC diagnostic pop
 #endif
 
-namespace autd3::extra::simulator {
+namespace autd3::extra {
 
-struct Settings {
+struct SimulatorSettings {
   int32_t window_width{800};
   int32_t window_height{600};
   bool vsync{true};
@@ -90,7 +90,7 @@ struct Settings {
   uint16_t port{50632};
 };
 
-inline void to_json(nlohmann::json& j, const Settings& s) {
+inline void to_json(nlohmann::json& j, const SimulatorSettings& s) {
   j = nlohmann::json{
       {"window_width", s.window_width},
       {"window_height", s.window_height},
@@ -132,7 +132,7 @@ inline void to_json(nlohmann::json& j, const Settings& s) {
       {"port", s.port},
   };
 }
-inline void from_json(const nlohmann::json& j, Settings& s) {
+inline void from_json(const nlohmann::json& j, SimulatorSettings& s) {
   j.at("window_width").get_to(s.window_width);
   j.at("window_height").get_to(s.window_height);
   j.at("vsync").get_to(s.vsync);
@@ -190,16 +190,16 @@ class Simulator {
   /**
    * @brief Set settings
    */
-  Simulator& settings(Settings* settings) {
+  Simulator& settings(SimulatorSettings* settings) {
     _settings = settings;
     return *this;
   }
 
  private:
-  Settings _default_settings{};
-  Settings* _settings{&_default_settings};
+  SimulatorSettings _default_settings{};
+  SimulatorSettings* _settings{&_default_settings};
 
   std::thread _th;
 };
 
-}  // namespace autd3::extra::simulator
+}  // namespace autd3::extra

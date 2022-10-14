@@ -3,7 +3,7 @@
 // Created Date: 28/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/10/2022
+// Last Modified: 14/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@
 
 #include "autd3/core/geometry.hpp"
 
-namespace autd3::extra::geometry_viewer {
+namespace autd3::extra {
 
 class GeometryViewer {
  public:
@@ -85,4 +85,4 @@ class GeometryViewer {
   size_t _gpu_idx;
 };
 
-}  // namespace autd3::extra::geometry_viewer
+}  // namespace autd3::extra

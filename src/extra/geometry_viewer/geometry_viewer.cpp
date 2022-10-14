@@ -3,13 +3,13 @@
 // Created Date: 28/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/10/2022
+// Last Modified: 14/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
-#include "autd3/extra/geometry_viewer/geometry_viewer.hpp"
+#include "autd3/extra/geometry_viewer.hpp"
 
 #include "model.hpp"
 #include "vulkan_context.hpp"
@@ -18,25 +18,25 @@
 #include "vulkan_renderer.hpp"
 #include "window_handler.hpp"
 
-namespace autd3::extra::geometry_viewer {
+namespace autd3::extra {
 void GeometryViewer::view(const core::Geometry& geometry) const {
-  std::vector<gltf::Geometry> geometries;
+  std::vector<geometry_viewer::gltf::Geometry> geometries;
   geometries.reserve(geometry.num_devices());
   for (const auto& g : geometry) {
     const auto pos = glm::vec3(static_cast<float>(g.origin().x()), static_cast<float>(g.origin().y()), static_cast<float>(g.origin().z()));
     const auto rot = glm::quat(static_cast<float>(g.rotation().w()), static_cast<float>(g.rotation().x()), static_cast<float>(g.rotation().y()),
                                static_cast<float>(g.rotation().z()));
-    geometries.emplace_back(gltf::Geometry{pos, rot});
+    geometries.emplace_back(geometry_viewer::gltf::Geometry{pos, rot});
   }
 
   helper::WindowHandler window(_width, _height);
   helper::VulkanContext context(_gpu_idx, false);
-  VulkanHandler handle(&context);
-  VulkanImGui imgui(&window, &context);
-  VulkanRenderer renderer(&context, &window, &handle, &imgui, _vsync);
-  const gltf::Model model(_model, geometries);
+  geometry_viewer::VulkanHandler handle(&context);
+  geometry_viewer::VulkanImGui imgui(&window, &context);
+  geometry_viewer::VulkanRenderer renderer(&context, &window, &handle, &imgui, _vsync);
+  const geometry_viewer::gltf::Model model(_model, geometries);
 
-  window.init("Geometry Viewer", &renderer, VulkanRenderer::resize_callback, VulkanRenderer::pos_callback);
+  window.init("Geometry Viewer", &renderer, geometry_viewer::VulkanRenderer::resize_callback, geometry_viewer::VulkanRenderer::pos_callback);
   context.init_vulkan("Geometry Viewer", window);
   renderer.create_swapchain();
   renderer.create_image_views();
@@ -72,8 +72,8 @@ void GeometryViewer::view(const core::Geometry& geometry) const {
   }
 
   context.device().waitIdle();
-  VulkanImGui::cleanup();
+  geometry_viewer::VulkanImGui::cleanup();
   renderer.cleanup();
 }
 
-}  // namespace autd3::extra::geometry_viewer
+}  // namespace autd3::extra

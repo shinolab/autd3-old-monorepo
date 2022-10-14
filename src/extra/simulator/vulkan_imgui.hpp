@@ -166,7 +166,7 @@ class VulkanImGui {
     ImGui_ImplVulkan_DestroyFontUploadObjects();
   }
 
-  void load_settings(const Settings& setting) {
+  void load_settings(const SimulatorSettings& setting) {
     slice_pos = glm::vec3(setting.slice_pos_x, setting.slice_pos_y, setting.slice_pos_z);
     slice_rot = glm::vec3(setting.slice_rot_x, setting.slice_rot_y, setting.slice_rot_z);
     slice_width = setting.slice_width;
@@ -195,7 +195,7 @@ class VulkanImGui {
     setting.image_save_path.copy(save_path, 256);
   }
 
-  void save_settings(Settings& settings) const {
+  void save_settings(SimulatorSettings& settings) const {
     settings.slice_pos_x = slice_pos.x;
     settings.slice_pos_y = slice_pos.y;
     settings.slice_pos_z = slice_pos.z;
@@ -235,7 +235,7 @@ class VulkanImGui {
     settings.image_save_path = std::string(save_path);
   }
 
-  void init(const uint32_t image_count, const VkRenderPass renderer_pass, const Settings& settings) {
+  void init(const uint32_t image_count, const VkRenderPass renderer_pass, const SimulatorSettings& settings) {
     load_settings(settings);
     _default_settings = settings;
 
@@ -285,7 +285,7 @@ class VulkanImGui {
     ImGui::Render();
   }
 
-  UpdateFlags draw(const std::vector<firmware_emulator::cpu::CPU>& cpus, SoundSources& sources) {
+  UpdateFlags draw(const std::vector<CPU>& cpus, SoundSources& sources) {
     auto flag = UpdateFlags(UpdateFlags::NONE);
 
     if (_update_font) {
@@ -681,7 +681,7 @@ class VulkanImGui {
  private:
   const helper::WindowHandler* _window;
   const helper::VulkanContext* _context;
-  Settings _default_settings;
+  SimulatorSettings _default_settings;
   std::string _font_path;
   float _font_size = 16.0f;
   bool _update_font = false;
