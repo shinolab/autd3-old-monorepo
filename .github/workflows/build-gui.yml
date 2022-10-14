@@ -23,5 +23,16 @@ jobs:
         dotnet-version: 6.0.x
     - name: Build with dotnet
       run: |
+        mkdir build
+        cd build
+        cmake .. -DBUILD_ALL=ON -DBUILD_SIMULATOR=ON -DBUILD_GEOMETRY_VIEWER=ON
+        cmake --build . --parallel 8 --config Release
+        cd ..
+        foreach($dll in Get-ChildItem -Path build/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/src/native/windows/x64}
+        cd cs/src
+        dotnet clean
+        dotnet build -c:Release /p:Platform=x64
+        cd ../..
+        dotnet nuget add source $pwd/cs/src/bin/x64/Release -n autd3shapr_local
         cd dist/GUI
         dotnet build -c:Release /p:Platform=x64

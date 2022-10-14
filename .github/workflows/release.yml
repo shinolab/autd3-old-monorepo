@@ -64,6 +64,12 @@ jobs:
           mkdir publish/bin
           mkdir publish/simulator
           cd ..
+          foreach($dll in Get-ChildItem -Path build/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/src/native/windows/x64}
+          cd cs/src
+          dotnet clean
+          dotnet build -c:Release /p:Platform=x64
+          cd ../..
+          dotnet nuget add source $pwd/cs/src/bin/x64/Release -n autd3shapr_local
           cd dist/GUI
           dotnet publish -c:Release /p:Platform=x64 -r win-x64 --self-contained false -o gui-controller
           copy AUTD3-GUI-Controller/Strings -Recurse gui-controller/
@@ -71,7 +77,6 @@ jobs:
           copy build/lib/Release/*.lib build/publish/lib
           copy 3rdparty/SOEM/oshw/win32/wpcap/Lib/x64/*.lib build/publish/lib/wpcap
           copy build/bin/Release/*.dll build/publish/bin
-          copy build/bin/Release/*.dll dist/GUI/gui-controller/
           copy src/extra/geometry_viewer/models -Recurse dist/GUI/gui-controller/
           copy build/dist/simulator/Release/*.exe build/publish/simulator
           Remove-Item -Recurse -Force dist/AUTDServer/src
