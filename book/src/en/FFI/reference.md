@@ -2,9 +2,8 @@
 
 c言語向けのAPIは[capi](https://github.com/shinolab/autd3/tree/master/capi)以下で定義されている.
 
-以下に, このAPIのリファレンスを載せる. 実際の利用方法は,
-[C API Example](https://github.com/shinolab/autd3/tree/master/capi/example)や,
-[C#](https://github.com/shinolab/autd3sharp)/[python](https://github.com/shinolab/pyautd)のラッパーライブラリを参照されたい.
+以下に, このAPIのリファレンスを載せる. 
+実際の利用方法は, [C API Example](https://github.com/shinolab/autd3/tree/master/capi/example)を参照されたい.
 
 ## AUTDGetLastError (autd3capi)
 
@@ -1480,7 +1479,13 @@ Geometry Viewerを起動する.
 
 Simulatorを起動する.
 
+`settings_path`に設定ファイルが存在する場合, `port`, `ip`, `vsync`, `gpu_idx`は設定ファイルの内容が優先される.
+
 | Argument name / return | type    | in/out | description                        |
 | ---------------------- | ------- | ------ | ---------------------------------- |
 | settings_path          | char*   | in     | path to setting file               |
+| port                   | uint16_t| in     | port                               |
+| ip                     | char*   | in     | ip address                         |
+| vsync                  | bool    | in     | vsync                              |
+| gpu_idx                | int32_t | in     | GPU index                          |
 | return                 | void    | -      | -                                  |
