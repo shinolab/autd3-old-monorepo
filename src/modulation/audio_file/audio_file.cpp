@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 14/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@
 
 namespace autd3::modulation {
 
-RawPCM::RawPCM(const std::string& filename, const double sampling_freq, const uint32_t mod_sampling_freq_div)
+RawPCM::RawPCM(const std::filesystem::path& filename, const double sampling_freq, const uint32_t mod_sampling_freq_div)
     : Modulation(), _sampling_freq(sampling_freq) {
   this->_props.freq_div = mod_sampling_freq_div;
 
@@ -68,7 +68,7 @@ T read_from_stream(std::ifstream& fsp) {
 }
 }  // namespace
 
-Wav::Wav(const std::string& filename, const uint32_t mod_sampling_freq_div) : Modulation() {
+Wav::Wav(const std::filesystem::path& filename, const uint32_t mod_sampling_freq_div) : Modulation() {
   this->_props.freq_div = mod_sampling_freq_div;
 
   std::ifstream fs;
