@@ -50,8 +50,8 @@ class SliceViewer {
   SliceViewer& operator=(SliceViewer&& obj) = default;
 
   void init(const uint32_t width, const uint32_t height, const float pixel_width) {
-    _width = static_cast<uint32_t>((float)width / pixel_width);
-    _height = static_cast<uint32_t>((float)height / pixel_width);
+    _width = static_cast<uint32_t>(static_cast<float>(width) / pixel_width);
+    _height = static_cast<uint32_t>(static_cast<float>(height) / pixel_width);
 
     create_pipeline();
     create_vertex_buffer(width, height);
@@ -80,8 +80,8 @@ class SliceViewer {
   void update(const uint32_t width, const uint32_t height, const float pixel_width, const UpdateFlags update_flag) {
     if (update_flag.contains(UpdateFlags::UPDATE_SLICE_SIZE)) {
       _context->device().waitIdle();
-      _width = static_cast<uint32_t>((float)width / pixel_width);
-      _height = static_cast<uint32_t>((float)height / pixel_width);
+      _width = static_cast<uint32_t>(static_cast<float>(width) / pixel_width);
+      _height = static_cast<uint32_t>(static_cast<float>(height) / pixel_width);
       create_field_buffers(_width, _height);
       update_field_descriptor_sets(_width, _height);
       create_vertex_buffer(width, height);
