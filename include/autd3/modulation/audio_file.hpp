@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/07/2022
+// Last Modified: 14/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include <string>
+#include <filesystem>
 #include <vector>
 
 #include "autd3/core/modulation.hpp"
@@ -28,7 +28,7 @@ class RawPCM final : public core::Modulation {
    * @param[in] mod_sampling_freq_div sampling frequency of the Modulation
    * @details The sampling frequency in AUTD device will be autd3::driver::FPGA_CLK_FREQ / mod_sampling_freq_div.
    */
-  explicit RawPCM(const std::string& filename, double sampling_freq, uint32_t mod_sampling_freq_div = 40960);
+  explicit RawPCM(const std::filesystem::path& filename, double sampling_freq, uint32_t mod_sampling_freq_div = 40960);
 
   void calc() override;
 
@@ -53,7 +53,7 @@ class Wav final : public core::Modulation {
    * @param[in] mod_sampling_freq_div sampling frequency of the Modulation
    * @details The sampling frequency in AUTD device will be autd3::driver::FPGA_CLK_FREQ / mod_sampling_freq_div.
    */
-  explicit Wav(const std::string& filename, uint32_t mod_sampling_freq_div = 40960);
+  explicit Wav(const std::filesystem::path& filename, uint32_t mod_sampling_freq_div = 40960);
 
   void calc() override;
 
