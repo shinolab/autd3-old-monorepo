@@ -7,7 +7,7 @@
 nimbleでインストールできる.
 
 ```
-requires "https://github.com/shinolab/autd3.git?subdir=nim == 2.4.2"
+requires "https://github.com/shinolab/autd3.git?subdir=nim == 2.4.3"
 ```
 
 ## Usage
