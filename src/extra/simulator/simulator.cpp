@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/10/2022
+// Last Modified: 16/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -247,7 +247,7 @@ void Simulator::run() {
     }
 
     if (initialized) {
-      const bool is_stm_mode = std::any_of(cpus.begin(), cpus.end(), [](const auto& cpu) { return cpu.fpga().is_stm_mode(); });
+      const bool is_stm_mode = std::ranges::any_of(cpus, [](const auto& cpu) { return cpu.fpga().is_stm_mode(); });
       imgui->is_stm_mode = is_stm_mode;
       if (is_stm_mode) imgui->stm_size = static_cast<int32_t>(cpus[0].fpga().stm_cycle());
       auto update_flags = imgui->draw(cpus, sources);
