@@ -3,14 +3,14 @@ PROJECT_NUMBER         = @VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@
 STRIP_FROM_PATH        = @PROJECT_SOURCE_DIR@ \
                          @PROJECT_BINARY_DIR@
 INPUT                  = @PROJECT_SOURCE_DIR@/include \
-                         @PROJECT_SOURCE_DIR@/doc/README.md
+                         @PROJECT_SOURCE_DIR@/doc/doxygen/README.md
 FILE_PATTERNS          = *.h \
 						 *.hpp \
                          *.cc \
                          *.cpp \
                          *.md
 RECURSIVE              = YES
-USE_MDFILE_AS_MAINPAGE = @PROJECT_SOURCE_DIR@/doc/README.md
+USE_MDFILE_AS_MAINPAGE = @PROJECT_SOURCE_DIR@/doc/doxygen/README.md
 DOT_PATH               = "@DOT_PATH@"
 REFERENCED_BY_RELATION = YES
 REFERENCES_RELATION    = YES
