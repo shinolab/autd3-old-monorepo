@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 16/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,6 +18,8 @@
 #include <cublas_v2.h>
 #include <cuda_runtime_api.h>
 #include <cusolverDn.h>
+
+#include <ranges>
 
 #include "./kernel.h"
 #if _MSC_VER
@@ -56,7 +58,7 @@ class BufferPool final {
 
   void* get(const VectorXc& v) {
     const auto key = reinterpret_cast<std::uintptr_t>(v.data());
-    if (_pool.find(key) != _pool.end()) return _pool[key];
+    if (_pool.contains(key)) return _pool[key];
 
     void* dp;
     cudaMalloc(&dp, sizeof(complex) * v.size());
@@ -67,7 +69,7 @@ class BufferPool final {
 
   void* get(const MatrixXc& v) {
     const auto key = reinterpret_cast<std::uintptr_t>(v.data());
-    if (_pool.find(key) != _pool.end()) return _pool[key];
+    if (_pool.contains(key)) return _pool[key];
 
     void* dp;
     cudaMalloc(&dp, sizeof(complex) * v.size());
@@ -78,7 +80,7 @@ class BufferPool final {
 
   void* get(const VectorXd& v) {
     const auto key = reinterpret_cast<std::uintptr_t>(v.data());
-    if (_pool.find(key) != _pool.end()) return _pool[key];
+    if (_pool.contains(key)) return _pool[key];
 
     void* dp;
     cudaMalloc(&dp, sizeof(double) * v.size());
@@ -89,7 +91,7 @@ class BufferPool final {
 
   void* get(const MatrixXd& v) {
     const auto key = reinterpret_cast<std::uintptr_t>(v.data());
-    if (_pool.find(key) != _pool.end()) return _pool[key];
+    if (_pool.contains(key)) return _pool[key];
 
     void* dp;
     cudaMalloc(&dp, sizeof(double) * v.size());
@@ -99,7 +101,7 @@ class BufferPool final {
   }
 
   void clear() {
-    for (auto& [_, p] : _pool) cudaFree(p);
+    for (const auto& p : _pool | std::views::values) cudaFree(p);
     _pool.clear();
   }
 

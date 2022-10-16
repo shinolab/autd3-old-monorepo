@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 16/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -35,8 +35,8 @@ class UniformGain final : public autd3::Gain {
   UniformGain() = default;
 
   void calc(const autd3::Geometry& geometry) override {
-    std::for_each(geometry.begin(), geometry.end(), [this](const auto& dev) {
-      std::for_each(dev.begin(), dev.end(), [this](const auto& trans) {
+    std::ranges::for_each(geometry, [this](const auto& dev) {
+      std::ranges::for_each(dev, [this](const auto& trans) {
         this->_drives[trans.id()].amp = 1.0;
         this->_drives[trans.id()].phase = 0.0;
       });

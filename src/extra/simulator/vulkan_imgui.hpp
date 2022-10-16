@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/10/2022
+// Last Modified: 16/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -505,8 +505,7 @@ class VulkanImGui {
           if (_show_mod_plot) {
             std::vector<float> mod_v;
             mod_v.resize(m.size());
-            std::transform(m.begin(), m.end(), mod_v.begin(),
-                           [](const uint8_t v) { return std::sin(static_cast<float>(v) / 512.0f * glm::pi<float>()); });
+            std::ranges::transform(m, mod_v.begin(), [](const uint8_t v) { return std::sin(static_cast<float>(v) / 512.0f * glm::pi<float>()); });
             ImGui::PlotLines("##mod plot", mod_v.data(), static_cast<int32_t>(mod_v.size()), 0, nullptr, 0.0f, 1.0f, _mod_plot_size);
           }
 
@@ -515,7 +514,7 @@ class VulkanImGui {
           if (_show_mod_plot_raw) {
             std::vector<float> mod_v;
             mod_v.resize(m.size());
-            std::transform(m.begin(), m.end(), mod_v.begin(), [](const uint8_t v) { return static_cast<float>(v); });
+            std::ranges::transform(m, mod_v.begin(), [](const uint8_t v) { return static_cast<float>(v); });
             ImGui::PlotLines("##mod plot raw", mod_v.data(), static_cast<int32_t>(mod_v.size()), 0, nullptr, 0.0f, 255.0f, _mod_plot_size);
           }
 
