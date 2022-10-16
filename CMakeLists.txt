@@ -94,7 +94,7 @@ if(BUILD_DOC)
 
   if(DOXYGEN_FOUND)
     message(STATUS "Doxygen found.")
-    add_subdirectory(doc)
+    add_subdirectory(doc/doxygen)
   else()
     message(STATUS "Doxygen is needed to build the documentation. Skip building doc...")
   endif()
