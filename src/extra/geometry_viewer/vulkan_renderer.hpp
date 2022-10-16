@@ -3,7 +3,7 @@
 // Created Date: 24/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/10/2022
+// Last Modified: 16/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -544,16 +544,16 @@ class VulkanRenderer {
   [[nodiscard]] vk::Buffer uniform_buffer(const size_t i) const { return _uniform_buffers[i].get(); }
 
  private:
-  [[nodiscard]] vk::SurfaceFormatKHR choose_swap_surface_format(const std::vector<vk::SurfaceFormatKHR>& available_formats) const {
-    const auto it = std::find_if(available_formats.begin(), available_formats.end(), [](const auto& available_format) {
+  [[nodiscard]] static vk::SurfaceFormatKHR choose_swap_surface_format(const std::vector<vk::SurfaceFormatKHR>& available_formats) {
+    const auto it = std::ranges::find_if(available_formats, [](const auto& available_format) {
       return available_format.format == vk::Format::eB8G8R8A8Srgb && available_format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear;
     });
     return it != available_formats.end() ? *it : available_formats[0];
   }
 
-  [[nodiscard]] vk::PresentModeKHR choose_swap_present_mode(const std::vector<vk::PresentModeKHR>& available_present_modes) const {
-    const auto it = std::find_if(available_present_modes.begin(), available_present_modes.end(),
-                                 [](const auto& available_present_mode) { return available_present_mode == vk::PresentModeKHR::eMailbox; });
+  [[nodiscard]] static vk::PresentModeKHR choose_swap_present_mode(const std::vector<vk::PresentModeKHR>& available_present_modes) {
+    const auto it = std::ranges::find_if(available_present_modes,
+                                         [](const auto& available_present_mode) { return available_present_mode == vk::PresentModeKHR::eMailbox; });
     return it != available_present_modes.end() ? *it : vk::PresentModeKHR::eFifo;
   }
 

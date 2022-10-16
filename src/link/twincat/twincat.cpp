@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/08/2022
+// Last Modified: 16/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -133,7 +133,6 @@ bool TwinCATImpl::send(const driver::TxDatagram& tx) {
                                     static_cast<unsigned long>(tx.effective_size()),  // NOLINT
                                     const_cast<void*>(static_cast<const void*>(tx.data().data())));
       ret != 0) {
-    // https://infosys.beckhoff.com/english.php?content=../content/1033/tcadscommon/html/tcadscommon_intro.htm&id=
     // 6 : target port not found
     std::stringstream ss;
     ss << "Error on sending data (local): " << std::hex << ret;

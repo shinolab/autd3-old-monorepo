@@ -114,7 +114,7 @@ if(ENABLE_LINT)
   ADD_CUSTOM_TARGET(cpplint
     python
     ${PROJECT_SOURCE_DIR}/3rdparty/cpplint/cpplint.py
-    --filter=-runtime/references,-build/c++11,-whitespace/comments,-readability/braces,-build/include_subdir,-build/include_order
+    --filter=-runtime/references,-build/c++11,-whitespace/comments,-readability/braces,-build/include_subdir,-build/include_order,-build/include_what_you_use
     --linelength=1000
     ${lint_files}
   )
@@ -188,7 +188,7 @@ target_compile_definitions(autd3_common INTERFACE EIGEN_MPL2_ONLY)
 
 if(WIN32)
   if(MSVC)
-    target_compile_options(autd3_common INTERFACE /bigobj /wd4819)
+    target_compile_options(autd3_common INTERFACE /bigobj /wd4819 /Zc:__cplusplus)
   endif()
 elseif(APPLE)
   target_compile_options(autd3_common INTERFACE -Wall -Wextra -Wno-unknown-pragmas)

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/09/2022
+// Last Modified: 16/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,8 +21,8 @@ namespace {
 
 void generate_transfer_matrix(const std::vector<core::Vector3>& foci, const core::Geometry& geometry, MatrixXc& dst) {
   for (size_t i = 0; i < foci.size(); i++)
-    std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-      std::for_each(dev.begin(), dev.end(), [&](const auto& transducer) {
+    std::ranges::for_each(geometry, [&](const auto& dev) {
+      std::ranges::for_each(dev, [&](const auto& transducer) {
         dst(i, transducer.id()) = core::propagate(transducer.position(), transducer.z_direction(), geometry.attenuation,
                                                   transducer.wavenumber(geometry.sound_speed), foci[i]);
       });
@@ -122,8 +122,8 @@ void SDP::calc(const core::Geometry& geometry) {
   _backend->to_host(q);
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
-  std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-    std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
+  std::ranges::for_each(geometry, [&](const auto& dev) {
+    std::ranges::for_each(dev, [&](const auto& tr) {
       const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
       const auto raw = std::abs(q(tr.id()));
       const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
@@ -187,8 +187,8 @@ void EVD::calc(const core::Geometry& geometry) {
 
   _backend->to_host(gtf);
   const auto max_coefficient = std::abs(_backend->max_abs_element(gtf));
-  std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-    std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
+  std::ranges::for_each(geometry, [&](const auto& dev) {
+    std::ranges::for_each(dev, [&](const auto& tr) {
       const auto phase = std::arg(gtf(tr.id())) / (2.0 * driver::pi) + 0.5;
       const auto raw = std::abs(gtf(tr.id()));
       const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
@@ -214,8 +214,8 @@ void LSS::calc(const core::Geometry& geometry) {
   _backend->to_host(q);
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
-  std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-    std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
+  std::ranges::for_each(geometry, [&](const auto& dev) {
+    std::ranges::for_each(dev, [&](const auto& tr) {
       const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
       const auto raw = std::abs(q(tr.id()));
       const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
@@ -254,8 +254,8 @@ void GS::calc(const core::Geometry& geometry) {
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
   _backend->to_host(q);
-  std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-    std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
+  std::ranges::for_each(geometry, [&](const auto& dev) {
+    std::ranges::for_each(dev, [&](const auto& tr) {
       const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
       const auto raw = std::abs(q(tr.id()));
       const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
@@ -305,8 +305,8 @@ void GSPAT::calc(const core::Geometry& geometry) {
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
   _backend->to_host(q);
-  std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-    std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
+  std::ranges::for_each(geometry, [&](const auto& dev) {
+    std::ranges::for_each(dev, [&](const auto& tr) {
       const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
       const auto raw = std::abs(q(tr.id()));
       const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
@@ -443,8 +443,8 @@ void LM::calc(const core::Geometry& geometry) {
   }
 
   _backend->to_host(x);
-  std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-    std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
+  std::ranges::for_each(geometry, [&](const auto& dev) {
+    std::ranges::for_each(dev, [&](const auto& tr) {
       const auto phase = x(tr.id()) / (2.0 * driver::pi);
       const auto power = std::visit([&](auto& c) { return c.convert(1.0, 1.0); }, constraint);
       _drives[tr.id()].amp = power;
@@ -482,7 +482,7 @@ void Greedy::calc(const core::Geometry& geometry) {
   std::iota(select.begin(), select.end(), 0);
   std::random_device seed_gen;
   std::mt19937 engine(seed_gen());
-  std::shuffle(select.begin(), select.end(), engine);
+  std::ranges::shuffle(select, engine);
   for (const auto i : select) {
     const auto dev_idx = i / driver::NUM_TRANS_IN_UNIT;
     const auto trans_idx = i % driver::NUM_TRANS_IN_UNIT;
@@ -518,10 +518,10 @@ void LSSGreedy::calc(const core::Geometry& geometry) {
 
   std::vector<VectorXc> focus_phase_list;
   focus_phase_list.reserve(_foci.size());
-  std::transform(_foci.begin(), _foci.end(), std::back_inserter(focus_phase_list), [&](const auto& focus) {
+  std::ranges::transform(_foci, std::back_inserter(focus_phase_list), [&](const auto& focus) {
     VectorXc q(n);
-    std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-      std::for_each(dev.begin(), dev.end(), [&](const auto& transducer) {
+    std::ranges::for_each(geometry, [&](const auto& dev) {
+      std::ranges::for_each(dev, [&](const auto& transducer) {
         const auto dist = (focus - transducer.position()).norm();
         const auto phase = transducer.align_phase_at(dist, geometry.sound_speed);
         q(transducer.id()) = std::exp(complex(0., 2.0 * driver::pi * phase));
@@ -542,7 +542,7 @@ void LSSGreedy::calc(const core::Geometry& geometry) {
   std::iota(select.begin(), select.end(), 1);
   std::random_device seed_gen;
   std::mt19937 engine(seed_gen());
-  std::shuffle(select.begin(), select.end(), engine);
+  std::ranges::shuffle(select, engine);
   for (const auto i : select) {
     size_t min_idx = 0;
     auto min_v = std::numeric_limits<double>::infinity();
@@ -559,8 +559,8 @@ void LSSGreedy::calc(const core::Geometry& geometry) {
 
   _backend->to_host(q);
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
-  std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-    std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
+  std::ranges::for_each(geometry, [&](const auto& dev) {
+    std::ranges::for_each(dev, [&](const auto& tr) {
       const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
       const auto raw = std::abs(q(tr.id()));
       const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
@@ -684,8 +684,8 @@ void APO::calc(const core::Geometry& geometry) {
 
   _backend->to_host(q);
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
-  std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-    std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
+  std::ranges::for_each(geometry, [&](const auto& dev) {
+    std::ranges::for_each(dev, [&](const auto& tr) {
       const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
       const auto raw = std::abs(q(tr.id()));
       const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
