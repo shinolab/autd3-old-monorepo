@@ -77,12 +77,12 @@ jobs:
     - name: mv doxygen doc_build
       run: |
         mkdir -p doc_build
-        sudo mv ./build/doc/html ./doc_build/api
+        sudo mv ./build/doc/doxygen/html ./doc_build/api
     - uses: jontze/action-mdbook@v1
       with:
         token: ${{secrets.GITHUB_TOKEN}}
         use-linkcheck: true
-        use-opengh: true
+        use-opengh: false
     - name: Setup mdbook-katex
       uses: magicgh/mdbook-katex-action@v1
       with:
