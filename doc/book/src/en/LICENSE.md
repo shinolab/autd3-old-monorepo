@@ -17,6 +17,7 @@ See [LICENSE](https://github.com/shinolab/autd3/blob/master/LICENSE) for details
             * [Dear ImGui](https://github.com/ocornut/imgui)
             * [nlohmann-json](https://github.com/nlohmann/json)
             * [stb](https://github.com/nothings/stb)
+            * [NotoFont](https://github.com/notofonts/noto-fonts/blob/main/LICENSE)
         * Simulator depends on the following libraries.
             * [glfw](https://github.com/glfw/glfw)
             * [glm](https://github.com/g-truc/glm)
@@ -24,5 +25,6 @@ See [LICENSE](https://github.com/shinolab/autd3/blob/master/LICENSE) for details
             * [stb](https://github.com/nothings/stb)
             * [nlohmann-json](https://github.com/nlohmann/json)
             * [tinycolormap](https://github.com/yuki-koyama/tinycolormap)
+            * [NotoFont](https://github.com/notofonts/noto-fonts/blob/main/LICENSE)
 
 * See [NOTICE](https://github.com/shinolab/autd3/blob/master/NOTICE) for the license of each library.

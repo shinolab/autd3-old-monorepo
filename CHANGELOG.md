@@ -29,36 +29,35 @@
 
 # 2.3.1
 
-- Remove the first argument (`Geometry&`) of `link::Emulator` constructor
-- Remove the first argument (interface name) and the second argument (number of devices) of `link::SOEM` constructor
+- Remove the first argument (`Geometry&`) of a `link::Emulator` constructor
+- Remove the first argument (interface name) and the second argument (number of devices) of a `link::SOEM` constructor
 - (internal) `link::open` now requires `Geometry&`
 
 # 2.3.0
 
 - Add `SyncMode` setting to `link::SOEM` to address #20
   - Remove `cycle_ticks` parameter, add `send_cycle` and `sync0_cycle` instead
-- `MOD_SAMPLING_FREQ_DIV_MIN`, `STM_SAMPLING_FREQ_DIV_MIN`, and `SILENCER_CYCLE_MIN` is halved
+- `MOD_SAMPLING_FREQ_DIV_MIN`, `STM_SAMPLING_FREQ_DIV_MIN`, and `SILENCER_CYCLE_MIN` are halved
 - Update firmware to v2.3
 
 # 2.2.2
 
-- Change the whole API; this library is no more using a template to change Transducer mode
+- Change the whole API; this library is no more using a template to change the Transducer mode
 - Add `gain::holo::LSSGreedy` and `gain::holo::APO`
 
 # 2.2.1
 
-- Remove `check_ack` flag, add `check_trials` parameter instead
+- Remove a `check_ack` flag, and add a `check_trials` parameter instead
   - `check_ack = true` equals to `check_trials = 50` and `check_ack = false`
     equals to `check_trials = 0`
 - Add `send_interval` parameter
   - default is 1
-- Remove `sound_speed` parameter from `AUTDGetWavelength` in C-API
+- Remove a `sound_speed` parameter from `AUTDGetWavelength` in C-API
 - Remove `GaussNewton` and `GradientDescent`
 
 # 2.2.0
 
-- Remove `AUTDSendHeader`, `AUTDSendBody`, and `AUTDSend` in C-API, which are
-  now merged into `AUTDSend`
+- Remove `AUTDSendHeader`, `AUTDSendBody`, and `AUTDSend` in C-API, which are now merged into `AUTDSend`
 - Remove `cycle_ticks` parameters in `link::TwinCAT` and `link::RemoteTwinCAT`,
   which are no more required
 - (internal) Remove `cycle_ticks` method from `link::Link`
@@ -66,8 +65,7 @@
 
 # 2.1.0
 
-- Rename `Controller` to `ControllerX`, and `Controller` is now alias of
-  `ControllerX<LegacyTransducer>`
+- Rename `Controller` to `ControllerX`, and `Controller` is now an alias of `ControllerX<LegacyTransducer>`
 - Add `NormalPhaseTransducer`
 - Fix `SineLegacy`
 - Fix firmware version when using v1.x firmware
@@ -83,12 +81,12 @@
 
 - Add `DynamicTransducer` for C-API
 - Remove legacy C-API library
-- Change `AmplitudeConstraint` api in Holo Gain in C-API
+- Change `AmplitudeConstraint` API in Holo Gain in C-API
 - Fix `wavelength` and `wavenumber` of `NormalTransducer`
 
 # 2.0.1
 
 - Fix C-API
 - Add `objective` parameter to `gain::holo::Greedy`
-- Fix bug in sending modulation and gain separately
+- Fix a bug in sending modulation and gain separately
 - Change Silencer API
