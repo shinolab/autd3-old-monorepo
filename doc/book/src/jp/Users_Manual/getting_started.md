@@ -136,7 +136,7 @@ SDKを使用するには, `autd3.hpp`ヘッダーをインクルードする. �
 次に, `Controller`を作成する.
 
 ```cpp
-autd::Controller autd;
+autd3::Controller autd;
 ```
 
 その後, デバイスの配置を指定する.
