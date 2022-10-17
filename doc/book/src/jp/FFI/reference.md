@@ -1471,7 +1471,6 @@ Geometry Viewerを起動する.
 | height                 | int32_t | in     | window height                      |
 | vsync                  | bool    | in     | vsync                              |
 | model                  | char*   | in     | path to AUTD3 model                |
-| font                   | char*   | in     | path to font                       |
 | gpu_idx                | int32_t | in     | GPU index                          |
 | return                 | void    | -      | -                                  |
 

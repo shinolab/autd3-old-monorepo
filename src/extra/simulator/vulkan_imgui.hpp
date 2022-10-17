@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/10/2022
+// Last Modified: 17/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -111,12 +111,13 @@ class VulkanImGui {
 
     _context->device().waitIdle();
 
-    ImFont* font;
-    if (!_font_path.empty()) {
-      font = io.Fonts->AddFontFromFileTTF(_font_path.c_str(), _font_size * scale);
-      io.FontGlobalScale = 1.0f / scale;
-    } else
-      font = io.Fonts->AddFontDefault();
+    const std::vector<uint8_t> font_data = {
+#include "NotoSans-Regular.ttf.txt"
+    };
+    auto* font_data_imgui = new uint8_t[font_data.size()];
+    std::memcpy(font_data_imgui, font_data.data(), font_data.size());
+    ImFont* font = io.Fonts->AddFontFromMemoryTTF(font_data_imgui, static_cast<int>(font_data.size()), _font_size * scale);
+    io.FontGlobalScale = 1.0f / scale;
     io.FontDefault = font;
 
     // To destroy old texture image and image view, and to free memory
@@ -186,7 +187,6 @@ class VulkanImGui {
     _cam_move_speed = setting.camera_move_speed;
 
     _font_size = setting.font_size;
-    _font_path = setting.font_path;
     background = glm::vec4(setting.background_r, setting.background_g, setting.background_b, setting.background_a);
 
     _show_mod_plot = setting.show_mod_plot;
@@ -222,7 +222,6 @@ class VulkanImGui {
     settings.camera_move_speed = _cam_move_speed;
 
     settings.font_size = _font_size;
-    settings.font_path = _font_path;
 
     settings.background_r = background.r;
     settings.background_g = background.g;
@@ -684,7 +683,6 @@ class VulkanImGui {
   const helper::WindowHandler* _window;
   const helper::VulkanContext* _context;
   SimulatorSettings _default_settings;
-  std::string _font_path;
   float _font_size = 16.0f;
   bool _update_font = false;
   float _cam_move_speed = 10.0f;
