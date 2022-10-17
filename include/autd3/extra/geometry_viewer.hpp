@@ -3,7 +3,7 @@
 // Created Date: 28/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/10/2022
+// Last Modified: 17/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -46,14 +46,6 @@ class GeometryViewer {
   }
 
   /**
-   * @brief Set font path
-   */
-  GeometryViewer& font(std::string font) {
-    _font = std::move(font);
-    return *this;
-  }
-
-  /**
    * @brief Set GPU index
    */
   GeometryViewer& gpu_idx(const size_t idx) {
@@ -69,7 +61,7 @@ class GeometryViewer {
   /**
    * @brief Constructor
    */
-  GeometryViewer() noexcept : _width(800), _height(600), _vsync(true), _model("models/AUTD.glb"), _font(""), _gpu_idx(0) {}
+  GeometryViewer() noexcept : _width(800), _height(600), _vsync(true), _model("models/AUTD.glb"), _gpu_idx(0) {}
   ~GeometryViewer() = default;
   GeometryViewer(const GeometryViewer& v) noexcept = delete;
   GeometryViewer& operator=(const GeometryViewer& obj) = delete;
@@ -81,7 +73,6 @@ class GeometryViewer {
   int32_t _height;
   bool _vsync;
   std::string _model;
-  std::string _font;
   size_t _gpu_idx;
 };
 
