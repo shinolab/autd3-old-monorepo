@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.21)
 
 if(EXPORT_AUTD_SIMULATOR)
   add_executable(autd_simulator autd_simulator.cpp)

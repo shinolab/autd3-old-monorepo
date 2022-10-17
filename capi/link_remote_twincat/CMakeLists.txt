@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.21)
 
 add_library(autd3capi-link-remote-twincat SHARED
   c_api.cpp
