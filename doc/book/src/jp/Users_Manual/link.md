@@ -115,7 +115,7 @@ RemoteTwinCATを使用する場合はPCを2台用意する必要がある.
 AUTDServer.exe -c 169.254.175.45 -k
 ```
 
-そして, 以下の図のように, System→Routesを開き, Current RouteタブのNetId ManagementタブのLocal NetIdを確認しておく.
+そして, 以下の図のように, System→Routesを開き, NetId ManagementタブのLocal NetIdを確認しておく.
 
 <figure>
   <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/NetId_Management.jpg"/>

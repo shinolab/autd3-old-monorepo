@@ -3,7 +3,7 @@
 AUTDは各振動子の位相/振幅を個別に制御することができ, これによって様々な音場を生成できる.
 `Gain`はこれを管理するクラスであり, SDKにはデフォルトでいくつかの種類の音場を生成するための`Gain`がデフォルトでいくつか用意されている.
 
-## FocalPoint
+## Focus
 
 `Focus`は最も単純な`Gain`であり, 単一焦点を生成する.
 ```cpp
@@ -182,10 +182,8 @@ class FocalPoint final : public autd3::Gain {
 
 `Controller::send`関数は`Gain`型を継承したクラスを引数に取る.
 そのため, `Gain`型を継承をしておく.
-`Gain`型は`Transducer`型を継承したクラスをテンプレート引数に取る.
-`Transducer`を継承した型として, $\SI{40}{kHz}$の周波数に固定されている`LegacyTransducer`や, 可変周波数の`NormalTransducer`が用意されている.
 
-`Controller::send`関数内部では`Gain::calc`メソッドが呼ばれる.
+`Controller::send`関数内部では`Geometry`を引数にした`Gain::calc`メソッドが呼ばれる.
 そのため, この`calc`メソッド内で位相/振幅の計算を行えば良い.
 Geometryにはイテレータが定義されており, `Device`のイテレータが返される.
 また, `Device`にもイテレータが定義されており, `Transducer`のイテレータが返され, ここから振動子の位置を取得できる.

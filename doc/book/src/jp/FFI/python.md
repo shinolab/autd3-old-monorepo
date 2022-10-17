@@ -10,7 +10,7 @@
 pip install pyautd3
 ```
 
-あるいは, pyautdのリポジトリからインストールできる.
+あるいは, autd3のリポジトリからインストールできる.
 
 ```
 pip install git+https://github.com/shinolab/autd3.git#subdirectory=python
