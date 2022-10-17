@@ -1,18 +1,19 @@
 # C API Reference
 
-c言語向けのAPIは[capi](https://github.com/shinolab/autd3/tree/master/capi)以下で定義されている.
+The API for the C language is defined under [capi](https://github.com/shinolab/autd3/tree/master/capi).
 
-以下に, このAPIのリファレンスを載せる. 
-実際の利用方法は, [C API Example](https://github.com/shinolab/autd3/tree/master/capi/example)を参照されたい.
+The following is a reference to this API. 
+For actual usage, please refer to [C API Example](https://github.com/shinolab/autd3/tree/master/capi/example).
 
 ## AUTDGetLastError (autd3capi)
 
-最後に発生した例外のエラーメッセージを取得する.
+Get the error message of the last exception.
 
-引数にはエラーメッセージへのポインタを渡す. このポインタにエラーメッセージがコピーされる. ただし, 引数がnullptrの場合はコピーは行われない.
-この関数は, null終端込みのエラーメッセージのサイズを返す.
+The argument is a pointer to the error message. 
+The error message is copied to this pointer. However, if the argument is nullptr, no copying is done.
+The function returns the size of the error message including null terminations.
 
-エラーメッセージの長さは可変なので十分に大きな領域を確保しておくか, errorにnullptrを渡し必要なサイズを取得して再び呼び出すこと.
+Since the length of the error message is variable, you should reserve a large enough area or pass nullptr to error to get the required size and call the function again.
 
 | Argument name / return | type    | in/out | description                                       |
 | ---------------------- | ------- | ------ | ------------------------------------------------- |
@@ -21,9 +22,9 @@ c言語向けのAPIは[capi](https://github.com/shinolab/autd3/tree/master/capi)
 
 ## AUTDCreateController (autd3capi)
 
-Controllerを作成する.
+Create `Controller`.
 
-作成した`Controller`は最後に`AUTDFreeController`で開放する必要がある.
+The controller created must be freed at the end by `AUTDFreeController`.
 
 | Argument name / return | type   | in/out | description                      |
 | ---------------------- | ------ | ------ | -------------------------------- |
@@ -32,11 +33,9 @@ Controllerを作成する.
 
 ## AUTDOpenController (autd3capi)
 
-Controllerをopenする.
+Open `Controller`.
 
-handleは`AUTDCreateController`で作成したものを使う. linkは各々のlinkの生成関数で作成したものを使う.
-
-この関数は失敗した場合にfalseを返す. falseの場合には`AUTDGetLastError`でエラーメッセージを取得できる.
+This function returns false if failure, and you can get the error message with `AUTDGetLastError`.
 
 | Argument name / return | type  | in/out | description           |
 | ---------------------- | ----- | ------ | --------------------- |
@@ -46,11 +45,7 @@ handleは`AUTDCreateController`で作成したものを使う. linkは各々のl
 
 ## AUTDAddDevice (autd3capi)
 
-ControllerにDeviceを追加する.
-
-handleは`AUTDCreateController`で作成したものを使う. x, y, zは位置で, rz1, ry, rz2はZYZのオイラー角である.
-
-この関数は追加されたDeviceのIdを返す.
+Add a device to the Controller.
 
 | Argument name / return | type    | in/out | description                               |
 | ---------------------- | ------- | ------ | ----------------------------------------- |
@@ -65,12 +60,7 @@ handleは`AUTDCreateController`で作成したものを使う. x, y, zは位置�
 
 ## AUTDAddDeviceQuaternion (autd3capi)
 
-ControllerにDeviceを追加する.
-
-handleは`AUTDCreateController`で作成したものを使う. x, y, zは位置で, qw, qx, qy,
-qzは回転を表すクオータニオンである.
-
-この関数は追加されたDeviceのIdを返す.
+Add a device to the Controller.
 
 | Argument name / return | type    | in/out | description                            |
 | ---------------------- | ------- | ------ | -------------------------------------- |
@@ -86,12 +76,9 @@ qzは回転を表すクオータニオンである.
 
 ## AUTDClose (autd3capi)
 
-Controllerをcloseする.
+Close Controller.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
-この関数はエラーが発生した場合に0未満の値を返す. エラーが生じた場合には`AUTDGetLastError`でエラーメッセージを取得できる. また,
-check ackフラグがtrue, かつ, 返り値が0より大きい場合は, データが実際のデバイスで処理されたことを保証する.
+This function returns a value less than zero if an error occurred. If an error occurs, you can get the error message with `AUTDGetLastError`.
 
 | Argument name / return | type    | in/out | description                                                                                            |
 | ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
@@ -100,12 +87,9 @@ check ackフラグがtrue, かつ, 返り値が0より大きい場合は, デー
 
 ## AUTDClear (autd3capi)
 
-デバイス内の状態をclearする.
+Clear devices.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
-この関数はエラーが発生した場合に0未満の値を返す. エラーが生じた場合には`AUTDGetLastError`でエラーメッセージを取得できる. また,
-check ackフラグがtrue, かつ, 返り値が0より大きい場合は, データが実際のデバイスで処理されたことを保証する.
+This function returns a value less than zero if an error occurred. If an error occurs, you can get the error message with `AUTDGetLastError`.
 
 | Argument name / return | type    | in/out | description                                                                                            |
 | ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
@@ -114,12 +98,9 @@ check ackフラグがtrue, かつ, 返り値が0より大きい場合は, デー
 
 ## AUTDSynchronize (autd3capi)
 
-デバイスを同期する.
+Synchronize devices.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
-この関数はエラーが発生した場合に0未満の値を返す. エラーが生じた場合には`AUTDGetLastError`でエラーメッセージを取得できる. また,
-check ackフラグがtrue, かつ, 返り値が0より大きい場合は, データが実際のデバイスで処理されたことを保証する.
+This function returns a value less than zero if an error occurred. If an error occurs, you can get the error message with `AUTDGetLastError`.
 
 | Argument name / return | type    | in/out | description                                                                                            |
 | ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
@@ -128,9 +109,9 @@ check ackフラグがtrue, かつ, 返り値が0より大きい場合は, デー
 
 ## AUTDCreateSilencer (autd3capi)
 
-SilencerConfigを作成する.
+Create SilencerConfig.
 
-作成したSilencerConfigは最後に`AUTDDeleteSilencer`で削除する必要がある.
+The config created must be deleted at the end by `AUTDDeleteSilencer`.
 
 | Argument name / return | type     | in/out | description                          |
 | ---------------------- | -------- | ------ | ------------------------------------ |
@@ -141,7 +122,7 @@ SilencerConfigを作成する.
 
 ## AUTDDeleteSilencer (autd3capi)
 
-SilencerConfigを削除する.
+Delete SilencerConfig.
 
 | Argument name / return | type  | in/out | description               |
 | ---------------------- | ----- | ------ | ------------------------- |
@@ -150,11 +131,7 @@ SilencerConfigを削除する.
 
 ## AUTDFreeController (autd3capi)
 
-Controllerを削除する.
-
-handleは`AUTDCreateController`で作成したものを使う.
-
-これいこうhandleは使用できない.
+Delete Controller.
 
 | Argument name / return | type  | in/out | description           |
 | ---------------------- | ----- | ------ | --------------------- |
@@ -163,9 +140,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 ## AUTDIsOpen (autd3capi)
 
-ControllerがOpenされているかどうかを返す.
-
-handleは`AUTDCreateController`で作成したものを使う.
+Return if the controller is opened.
 
 | Argument name / return | type  | in/out | description                |
 | ---------------------- | ----- | ------ | -------------------------- |
@@ -174,9 +149,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 ## AUTDGetForceFan (autd3capi)
 
-Force fan flagを返す.
-
-handleは`AUTDCreateController`で作成したものを使う.
+Get Force fan flag.
 
 | Argument name / return | type  | in/out | description           |
 | ---------------------- | ----- | ------ | --------------------- |
@@ -185,9 +158,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 ## AUTDGetReadsFPGAInfo (autd3capi)
 
-Reads FPGA info flagを返す.
-
-handleは`AUTDCreateController`で作成したものを使う.
+Get Reads FPGA info flag
 
 | Argument name / return | type  | in/out | description           |
 | ---------------------- | ----- | ------ | --------------------- |
@@ -196,9 +167,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 ## AUTDGetCheckTrials (autd3capi)
 
-Check trialsを返す.
-
-handleは`AUTDCreateController`で作成したものを使う.
+Get Check trials.
 
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
@@ -207,9 +176,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 ## AUTDGetSendInterval (autd3capi)
 
-Send intervalを返す.
-
-handleは`AUTDCreateController`で作成したものを使う.
+Get Send interval.
 
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
@@ -218,11 +185,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 ## AUTDSetReadsFPGAInfo (autd3capi)
 
-Reads FPGA info flagを設定する.
-
-handleは`AUTDCreateController`で作成したものを使う.
-
-デバイスに実際に反映されるのはsend functionsのどれかを呼び出し後である.
+Set Reads FPGA info flag.
 
 | Argument name / return | type  | in/out | description           |
 | ---------------------- | ----- | ------ | --------------------- |
@@ -232,9 +195,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 ## AUTDSetCheckTrials (autd3capi)
 
-Check trialsを設定する.
-
-handleは`AUTDCreateController`で作成したものを使う.
+Set Check trials.
 
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
@@ -244,9 +205,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 ## AUTDSetSendInterval (autd3capi)
 
-Send intervalを設定する.
-
-handleは`AUTDCreateController`で作成したものを使う.
+Set Send interval.
 
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
@@ -256,11 +215,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 ## AUTDSetForceFan (autd3capi)
 
-Force fan flagを設定する.
-
-handleは`AUTDCreateController`で作成したものを使う.
-
-デバイスに実際に反映されるのはsend functionsのどれかを呼び出し後である.
+Set Force fan flag.
 
 | Argument name / return | type  | in/out | description           |
 | ---------------------- | ----- | ------ | --------------------- |
@@ -270,9 +225,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 ## AUTDGetSoundSpeed (autd3capi)
 
-音速を返す.
-
-handleは`AUTDCreateController`で作成したものを使う.
+Get sound speed.
 
 | Argument name / return | type   | in/out | description           |
 | ---------------------- | ------ | ------ | --------------------- |
@@ -281,9 +234,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 ## AUTDSetSoundSpeed (autd3capi)
 
-音速を設定する.
-
-handleは`AUTDCreateController`で作成したものを使う.
+Set sound speed.
 
 | Argument name / return | type   | in/out | description           |
 | ---------------------- | ------ | ------ | --------------------- |
@@ -293,9 +244,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 ## AUTDGetTransFrequency (autd3capi)
 
-指定した振動子の周波数を取得する.
-
-handleは`AUTDCreateController`で作成したものを使う. 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
+Get frequency of the transducer.
 
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
@@ -306,11 +255,7 @@ handleは`AUTDCreateController`で作成したものを使う. 振動子の指�
 
 ## AUTDSetTransFrequency (autd3capi)
 
-指定した振動子の周波数を設定する.
-
-handleは`AUTDCreateController`で作成したものを使う. 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
-
-Legacyモードにおいては, この関数は何もしない.
+Set frequency of the transducer.
 
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
@@ -322,9 +267,7 @@ Legacyモードにおいては, この関数は何もしない.
 
 ## AUTDGetTransCycle (autd3capi)
 
-指定した振動子の周期を取得する.
-
-handleは`AUTDCreateController`で作成したものを使う. 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
+Get cycle of the transducer.
 
 | Argument name / return | type     | in/out | description             |
 | ---------------------- | -------- | ------ | ----------------------- |
@@ -335,11 +278,7 @@ handleは`AUTDCreateController`で作成したものを使う. 振動子の指�
 
 ## AUTDSetTransCycle (autd3capi)
 
-指定した振動子の周期を設定する.
-
-handleは`AUTDCreateController`で作成したものを使う. 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
-
-Legacyモードにおいては, この関数は何もしない.
+Set cycle of the transducer.
 
 | Argument name / return | type     | in/out | description             |
 | ---------------------- | -------- | ------ | ----------------------- |
@@ -351,9 +290,7 @@ Legacyモードにおいては, この関数は何もしない.
 
 ## AUTDGetWavelength (autd3capi)
 
-指定した振動子の波長を取得する.
-
-handleは`AUTDCreateController`で作成したものを使う. 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
+Get wavelength of the transducer.
 
 | Argument name / return | type    | in/out | description                                          |
 | ---------------------- | ------- | ------ | ---------------------------------------------------- |
@@ -364,9 +301,7 @@ handleは`AUTDCreateController`で作成したものを使う. 振動子の指�
 
 ## AUTDGetAttenuation (autd3capi)
 
-減衰係数を返す.
-
-handleは`AUTDCreateController`で作成したものを使う.
+Get attenuation coefficient.
 
 | Argument name / return | type   | in/out | description                      |
 | ---------------------- | ------ | ------ | -------------------------------- |
@@ -375,9 +310,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 ## AUTDSetAttenuation (autd3capi)
 
-減衰係数を設定する.
-
-handleは`AUTDCreateController`で作成したものを使う.
+Set attenuation coefficient.
 
 | Argument name / return | type   | in/out | description                      |
 | ---------------------- | ------ | ------ | -------------------------------- |
@@ -387,15 +320,11 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 ## AUTDGetFPGAInfo (autd3capi)
 
-FPGAの情報を取得する.
+Get FPGA information.
 
-handleは`AUTDCreateController`で作成したものを使う. outポインタが指す領域は, 接続しているデバイスと同じ長さである必要がある.
+Make sure set read FPGA info flag by `AUTDSetReadsFPGAInfo` before calling this function,
 
-なお, FPGAの情報は下位1bitが温度センサがアサートされているかどうかを表し, 他のbitは全て0である.
-
-この関数を呼び出す前に`AUTDSetReadsFPGAInfo`でread FPGA info flagをOnにしておく必要がある.
-
-この関数は失敗した場合にfalseを返す. falseの場合には`AUTDGetLastError`でエラーメッセージを取得できる.
+This function returns false if failure, and you can get the error message with `AUTDGetLastError`.
 
 | Argument name / return | type     | in/out | description           |
 | ---------------------- | -------- | ------ | --------------------- |
@@ -405,14 +334,9 @@ handleは`AUTDCreateController`で作成したものを使う. outポインタ�
 
 ## AUTDUpdateFlags (autd3capi)
 
-Control flagを更新する.
+Update Control flag.
 
-send functionの一つ. force fan/reads FPGA info flagを設定した後に呼び出すと, これらの変更が実際に反映される.
-
-handleは`AUTDCreateController`で作成したものを使う.
-
-この関数はエラーが発生した場合に0未満の値を返す. エラーが生じた場合には`AUTDGetLastError`でエラーメッセージを取得できる. また,
-check ackフラグがtrue, かつ, 返り値が0より大きい場合は, データが実際のデバイスで処理されたことを保証する.
+This function returns a value less than zero if an error occurred. If an error occurs, you can get the error message with `AUTDGetLastError`.
 
 | Argument name / return | type    | in/out | description                                                                                            |
 | ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
@@ -421,9 +345,7 @@ check ackフラグがtrue, かつ, 返り値が0より大きい場合は, デー
 
 ## AUTDNumDevices (autd3capi)
 
-接続されているDeviceの数を取得する.
-
-handleは`AUTDCreateController`で作成したものを使う.
+Get the number of devices.
 
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
@@ -432,9 +354,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 ## AUTDTransPosition (autd3capi)
 
-指定した振動子の位置を取得する.
-
-handleは`AUTDCreateController`で作成したものを使う. 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
+Get the position of the transducer.
 
 | Argument name / return | type    | in/out | description                         |
 | ---------------------- | ------- | ------ | ----------------------------------- |
@@ -448,9 +368,7 @@ handleは`AUTDCreateController`で作成したものを使う. 振動子の指�
 
 ## AUTDTransXDirection (autd3capi)
 
-指定した振動子のx軸方向を取得する.
-
-handleは`AUTDCreateController`で作成したものを使う. 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
+Get the x-direction of the transducer.
 
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
@@ -464,9 +382,7 @@ handleは`AUTDCreateController`で作成したものを使う. 振動子の指�
 
 ## AUTDTransYDirection (autd3capi)
 
-指定した振動子のy軸方向を取得する.
-
-handleは`AUTDCreateController`で作成したものを使う. 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
+Get the y-direction of the transducer.
 
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
@@ -480,9 +396,7 @@ handleは`AUTDCreateController`で作成したものを使う. 振動子の指�
 
 ## AUTDTransZDirection (autd3capi)
 
-指定した振動子のz軸方向を取得する.
-
-handleは`AUTDCreateController`で作成したものを使う. 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
+Get the z-direction of the transducer.
 
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
@@ -496,15 +410,7 @@ handleは`AUTDCreateController`で作成したものを使う. 振動子の指�
 
 ## AUTDGetFirmwareInfoListPointer (autd3capi)
 
-Firmware information listへのポインタを取得する.
-
-handleは`AUTDCreateController`で作成したものを使う.
-
-この関数で作成したlistは最後に`AUTDFreeFirmwareInfoListPointer`で開放する必要がある.
-
-実際のFirmware informationは`AUTDGetFirmwareInfo`で取得する.
-
-この関数はエラーが発生した場合に0未満の値を返す. エラーが生じた場合には`AUTDGetLastError`でエラーメッセージを取得できる
+Get pointer to Firmware information list.
 
 | Argument name / return | type    | in/out | description                                                         |
 | ---------------------- | ------- | ------ | ------------------------------------------------------------------- |
@@ -514,11 +420,9 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 ## AUTDGetFirmwareInfo (autd3capi)
 
-Firmware informationを取得する.
+Get Firmware information.
 
-`p_firm_info_list`は`AUTDGetFirmwareInfoListPointer`で作成したものを使う.
-
-`info`は長さ256のバッファを渡せば十分である.
+`info` must be a buffer of length 256.
 
 | Argument name / return | type    | in/out | description                            |
 | ---------------------- | ------- | ------ | -------------------------------------- |
@@ -529,7 +433,7 @@ Firmware informationを取得する.
 
 ## AUTDFreeFirmwareInfoListPointer (autd3capi)
 
-`AUTDGetFirmwareInfoListPointer`で取得したFirmware information listを開放する.
+Free Firmware information list obtained by `AUTDGetFirmwareInfoListPointer`.
 
 | Argument name / return | type  | in/out | description                          |
 | ---------------------- | ----- | ------ | ------------------------------------ |
@@ -538,9 +442,9 @@ Firmware informationを取得する.
 
 ## AUTDGainNull (autd3capi)
 
-Null gainを作成する.
+Create Null gain.
 
-作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+The gain created must be deleted at the end by `AUTDDeleteGain`.
 
 | Argument name / return | type   | in/out | description                     |
 | ---------------------- | ------ | ------ | ------------------------------- |
@@ -549,11 +453,9 @@ Null gainを作成する.
 
 ## AUTDGainGrouped (autd3capi)
 
-Grouped gainを作成する.
+Create Grouped gain.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
-作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+The gain created must be deleted at the end by `AUTDDeleteGain`.
 
 | Argument name / return | type   | in/out | description                        |
 | ---------------------- | ------ | ------ | ---------------------------------- |
@@ -563,9 +465,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 ## AUTDGainGroupedAdd (autd3capi)
 
-Grouped gainにGainを登録する.
-
-`grouped_gain`は`AUTDGainGrouped`で作成したものを使う.
+Add Gain to Grouped gain.
 
 | Argument name / return | type    | in/out | description             |
 | ---------------------- | ------- | ------ | ----------------------- |
@@ -576,9 +476,9 @@ Grouped gainにGainを登録する.
 
 ## AUTDGainFocus (autd3capi)
 
-Focus gainを作成する.
+Create Focus gain.
 
-作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+The gain created must be deleted at the end by `AUTDDeleteGain`.
 
 | Argument name / return | type   | in/out | description                 |
 | ---------------------- | ------ | ------ | --------------------------- |
@@ -591,9 +491,9 @@ Focus gainを作成する.
 
 ## AUTDGainBesselBeam (autd3capi)
 
-Bessel beam gainを作成する.
+Create Bessel beam gain.
 
-作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+The gain created must be deleted at the end by `AUTDDeleteGain`.
 
 | Argument name / return | type   | in/out | description                    |
 | ---------------------- | ------ | ------ | ------------------------------ |
@@ -610,9 +510,9 @@ Bessel beam gainを作成する.
 
 ## AUTDGainPlaneWave (autd3capi)
 
-Plane wave gainを作成する.
+Create Plane wave gain.
 
-作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+The gain created must be deleted at the end by `AUTDDeleteGain`.
 
 | Argument name / return | type   | in/out | description                    |
 | ---------------------- | ------ | ------ | ------------------------------ |
@@ -626,9 +526,9 @@ Plane wave gainを作成する.
 
 ## AUTDGainTransducerTest (autd3capi)
 
-TransducerTest gainを作成する.
+Create TransducerTest gain.
 
-作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+The gain created must be deleted at the end by `AUTDDeleteGain`.
 
 | Argument name / return | type     | in/out | description                     |
 | ---------------------- | -------  | ------ | ---------------------           |
@@ -641,11 +541,9 @@ TransducerTest gainを作成する.
 
 ## AUTDGainCustom (autd3capi)
 
-Custom gainを作成する.
+Create Custom gain.
 
-Custom gainは位相と振幅を直接指定するGainである.
-
-作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+The gain created must be deleted at the end by `AUTDDeleteGain`.
 
 | Argument name / return | type     | in/out | description            |
 | ---------------------- | -------  | ------ | ---------------------  |
@@ -657,7 +555,7 @@ Custom gainは位相と振幅を直接指定するGainである.
 
 ## AUTDDeleteGain (autd3capi)
 
-作成したGainを削除する.
+Delete Gain.
 
 | Argument name / return | type  | in/out | description     |
 | ---------------------- | ----- | ------ | --------------- |
@@ -666,9 +564,9 @@ Custom gainは位相と振幅を直接指定するGainである.
 
 ## AUTDModulationStatic (autd3capi)
 
-Static modulationを作成する.
+Create Static modulation.
 
-作成したModulationは最後に`AUTDDeleteModulation`で削除する必要がある.
+The created Modulation must be deleted at the end by `AUTDDeleteModulation`.
 
 | Argument name / return | type   | in/out | description                             |
 | ---------------------- | ------ | ------ | --------------------------------------- |
@@ -678,9 +576,9 @@ Static modulationを作成する.
 
 ## AUTDModulationSine (autd3capi)
 
-Sine modulationを作成する.
+Create Sine modulation.
 
-作成したModulationは最後に`AUTDDeleteModulation`で削除する必要がある.
+The created Modulation must be deleted at the end by `AUTDDeleteModulation`.
 
 | Argument name / return | type    | in/out | description                           |
 | ---------------------- | ------- | ------ | ------------------------------------- |
@@ -692,9 +590,9 @@ Sine modulationを作成する.
 
 ## AUTDModulationSineSquared (autd3capi)
 
-SineSquared modulationを作成する.
+Create SineSquared modulation.
 
-作成したModulationは最後に`AUTDDeleteModulation`で削除する必要がある.
+The created Modulation must be deleted at the end by `AUTDDeleteModulation`.
 
 | Argument name / return | type    | in/out | description                                  |
 | ---------------------- | ------- | ------ | -------------------------------------------- |
@@ -706,9 +604,9 @@ SineSquared modulationを作成する.
 
 ## AUTDModulationSineLegacy (autd3capi)
 
-SineLegacy modulationを作成する.
+Create SineLegacy modulation.
 
-作成したModulationは最後に`AUTDDeleteModulation`で削除する必要がある.
+The created Modulation must be deleted at the end by `AUTDDeleteModulation`.
 
 | Argument name / return | type   | in/out | description                                 |
 | ---------------------- | ------ | ------ | ------------------------------------------- |
@@ -720,9 +618,9 @@ SineLegacy modulationを作成する.
 
 ## AUTDModulationSquare (autd3capi)
 
-Square modulationを作成する.
+Create Square modulation.
 
-作成したModulationは最後に`AUTDDeleteModulation`で削除する必要がある.
+The created Modulation must be deleted at the end by `AUTDDeleteModulation`.
 
 | Argument name / return | type    | in/out | description                                  |
 | ---------------------- | ------- | ------ | -------------------------------------------- |
@@ -735,9 +633,9 @@ Square modulationを作成する.
 
 ## AUTDModulationLPF (autd3capi)
 
-LPF modulationを作成する.
+Create LPF modulation.
 
-作成したModulationは最後に`AUTDDeleteModulation`で削除する必要がある.
+The created Modulation must be deleted at the end by `AUTDDeleteModulation`.
 
 | Argument name / return | type    | in/out | description                                  |
 | ---------------------- | ------- | ------ | -------------------------------------------- |
@@ -747,11 +645,9 @@ LPF modulationを作成する.
 
 ## AUTDModulationCustom (autd3capi)
 
-Custom modulationを作成する.
+Create Custom modulation.
 
-Custom modulationは振幅を直接指定するModulationである.
-
-作成したModulationは最後に`AUTDDeleteModulation`で削除する必要がある.
+The created Modulation must be deleted at the end by `AUTDDeleteModulation`.
 
 | Argument name / return | type     | in/out | description                             |
 | ---------------------- | -------- | ------ | --------------------------------------- |
@@ -763,7 +659,7 @@ Custom modulationは振幅を直接指定するModulationである.
 
 ## AUTDModulationSamplingFrequencyDivision (autd3capi)
 
-Modulation sampling frequency divisionを返す.
+Get sampling frequency division of Modulation.
 
 | Argument name / return | type     | in/out | description                            |
 | ---------------------- | -------- | ------ | -------------------------------------- |
@@ -772,7 +668,7 @@ Modulation sampling frequency divisionを返す.
 
 ## AUTDModulationSetSamplingFrequencyDivision (autd3capi)
 
-Modulation sampling frequency divisionを設定する.
+Set sampling frequency division of Modulation.
 
 | Argument name / return | type     | in/out | description                            |
 | ---------------------- | -------- | ------ | -------------------------------------- |
@@ -782,7 +678,7 @@ Modulation sampling frequency divisionを設定する.
 
 ## AUTDModulationSamplingFrequency (autd3capi)
 
-Sampling frequencyを返す.
+Get Sampling frequency.
 
 | Argument name / return | type   | in/out | description                   |
 | ---------------------- | ------ | ------ | ----------------------------- |
@@ -791,7 +687,7 @@ Sampling frequencyを返す.
 
 ## AUTDDeleteModulation (autd3capi)
 
-Modulationを削除する.
+Delete Modulation.
 
 | Argument name / return | type  | in/out | description           |
 | ---------------------- | ----- | ------ | --------------------- |
@@ -800,9 +696,9 @@ Modulationを削除する.
 
 ## AUTDPointSTM (autd3capi)
 
-Point STMを作成する.
+Create Point STM.
 
-作成したSTMは最後に`AUTDDeleteSTM`で削除する必要がある.
+The stm created must be deleted at the end by `AUTDDeleteSTM`.
 
 | Argument name / return | type   | in/out | description                     |
 | ---------------------- | ------ | ------ | ------------------------------- |
@@ -811,11 +707,9 @@ Point STMを作成する.
 
 ## AUTDGainSTM (autd3capi)
 
-Gain STMを作成する.
+Create Gain STM.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
-作成したSTMは最後に`AUTDDeleteSTM`で削除する必要がある.
+The stm created must be deleted at the end by `AUTDDeleteSTM`.
 
 | Argument name / return | type   | in/out | description                    |
 | ---------------------- | ------ | ------ | ------------------------------ |
@@ -825,7 +719,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 ## AUTDPointSTMAdd (autd3capi)
 
-Point STMに焦点を追加する.
+Add focus to PointSTM.
 
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
@@ -838,7 +732,7 @@ Point STMに焦点を追加する.
 
 ## AUTDGainSTMAdd (autd3capi)
 
-Gain STMにgainを追加する.
+Add gain to GainSTM.
 
 | Argument name / return | type  | in/out | description          |
 | ---------------------- | ----- | ------ | -------------------- |
@@ -848,7 +742,7 @@ Gain STMにgainを追加する.
 
 ## AUTDSetGainSTMMode (autd3capi)
 
-GainSTMのmodeを設定する.
+Set GainSTM mode.
 
 | Argument name / return | type     | in/out | description                                                                   |
 | ---------------------- | -------- | ------ | ----------------------------------------------------------------------------- |
@@ -858,7 +752,7 @@ GainSTMのmodeを設定する.
 
 ## AUTDGetGainSTMMode (autd3capi)
 
-GainSTMのmodeを取得する.
+Get GainSTM mode.
 
 | Argument name / return | type     | in/out | description    |
 | ---------------------- | -------- | ------ | -------------- |
@@ -867,7 +761,7 @@ GainSTMのmodeを取得する.
 
 ## AUTDSTMSetFrequency (autd3capi)
 
-STMのfrequencyを設定する.
+Set frequency of STM.
 
 | Argument name / return | type   | in/out | description      |
 | ---------------------- | ------ | ------ | ---------------- |
@@ -877,7 +771,7 @@ STMのfrequencyを設定する.
 
 ## AUTDSTMFrequency (autd3capi)
 
-STMのfrequencyを取得する.
+Get frequency of STM.
 
 | Argument name / return | type   | in/out | description      |
 | ---------------------- | ------ | ------ | ---------------- |
@@ -886,7 +780,7 @@ STMのfrequencyを取得する.
 
 ## AUTDSTMSamplingFrequency (autd3capi)
 
-STMのsampling frequencyを取得する.
+Get sampling frequency of STM.
 
 | Argument name / return | type   | in/out | description               |
 | ---------------------- | ------ | ------ | ------------------------- |
@@ -895,7 +789,7 @@ STMのsampling frequencyを取得する.
 
 ## AUTDSTMSamplingFrequencyDivision (autd3capi)
 
-STMのsampling frequency divisionを取得する.
+Get sampling frequency division of STM.
 
 | Argument name / return | type     | in/out | description                     |
 | ---------------------- | -------- | ------ | ------------------------------- |
@@ -904,7 +798,7 @@ STMのsampling frequency divisionを取得する.
 
 ## AUTDSTMSetSamplingFrequencyDivision (autd3capi)
 
-STMのsampling frequency divisionを設定する.
+Set sampling frequency division of STM.
 
 | Argument name / return | type     | in/out | description                     |
 | ---------------------- | -------- | ------ | ------------------------------- |
@@ -914,7 +808,7 @@ STMのsampling frequency divisionを設定する.
 
 ## AUTDDeleteSTM (autd3capi)
 
-STMを削除する.
+Delete STM.
 
 | Argument name / return | type  | in/out | description    |
 | ---------------------- | ----- | ------ | -------------- |
@@ -923,12 +817,9 @@ STMを削除する.
 
 ## AUTDStop (autd3capi)
 
-AUTDの出力を停止する.
+Stop AUTD3 outputting.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
-この関数はエラーが発生した場合に0未満の値を返す. エラーが生じた場合には`AUTDGetLastError`でエラーメッセージを取得できる. また,
-check ackフラグがtrue, かつ, 返り値が0より大きい場合は, データが実際のデバイスで処理されたことを保証する.
+This function returns a value less than zero if an error occurred. If an error occurs, you can get the error message with `AUTDGetLastError`.
 
 | Argument name / return | type    | in/out | description                                                                                            |
 | ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
@@ -937,14 +828,9 @@ check ackフラグがtrue, かつ, 返り値が0より大きい場合は, デー
 
 ## AUTDSend (autd3capi)
 
-ヘッダーデータとボディーデータを送信する.
+Send header and body data.
 
-send functionの一つ.
-
-handleは`AUTDCreateController`で作成したものを使う.
-
-この関数はエラーが発生した場合に0未満の値を返す. エラーが生じた場合には`AUTDGetLastError`でエラーメッセージを取得できる. また,
-check ackフラグがtrue, かつ, 返り値が0より大きい場合は, データが実際のデバイスで処理されたことを保証する.
+This function returns a value less than zero if an error occurred. If an error occurs, you can get the error message with `AUTDGetLastError`.
 
 | Argument name / return | type    | in/out | description                                                                                            |
 | ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
@@ -955,9 +841,7 @@ check ackフラグがtrue, かつ, 返り値が0より大きい場合は, デー
 
 ## AUTDSetModDelay (autd3capi)
 
-指定した振動子のModulation Delayを設定する.
-
-handleは`AUTDCreateController`で作成したものを使う. 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
+Configure Modulation Delay of the transducer.
 
 | Argument name / return | type     | in/out | description                        |
 | ---------------------- | -------- | ------ | ---------------------------------- |
@@ -969,9 +853,9 @@ handleは`AUTDCreateController`で作成したものを使う. 振動子の指�
 
 ## AUTDCreateModDelayConfig (autd3capi)
 
-ModDelayConfigを作成する.
+Create ModDelayConfig.
 
-作成したSilencerConfigは最後に`AUTDDeleteModDelayConfig`で削除する必要がある.
+The config created must be deleted at the end by `AUTDDeleteModDelayConfig`.
 
 | Argument name / return | type   | in/out | description                          |
 | ---------------------- | ------ | ------ | ------------------------------------ |
@@ -980,7 +864,7 @@ ModDelayConfigを作成する.
 
 ## AUTDDeleteModDelayConfig (autd3capi)
 
-ModDelayConfigを削除する.
+Delete ModDelayConfig.
 
 | Argument name / return | type  | in/out | description               |
 | ---------------------- | ----- | ------ | ------------------------- |
@@ -989,9 +873,9 @@ ModDelayConfigを削除する.
 
 ## AUTDCreateAmplitudes (autd3capi)
 
-Amplitudesを作成する.
+Create Amplitudes.
 
-作成したSilencerConfigは最後に`AUTDDeleteAmplitudes`で削除する必要がある.
+The amplitude created must be deleted at the end by `AUTDDeleteAmplitudes`.
 
 | Argument name / return | type   | in/out | description                      |
 | ---------------------- | ------ | ------ | -------------------------------- |
@@ -1001,7 +885,7 @@ Amplitudesを作成する.
 
 ## AUTDDeleteAmplitudes (autd3capi)
 
-Amplitudesを削除する.
+Delete Amplitudes.
 
 | Argument name / return | type  | in/out | description           |
 | ---------------------- | ----- | ------ | --------------------- |
@@ -1010,7 +894,7 @@ Amplitudesを削除する.
 
 ## AUTDSoftwareSTM (autd3capi)
 
-SoftwareSTMを作成する.
+Create SoftwareSTM.
 
 | Argument name / return | type  | in/out | description                       |
 | ---------------------- | ----- | ------ | --------------------------------- |
@@ -1019,7 +903,7 @@ SoftwareSTMを作成する.
 
 ## AUTDSoftwareSTMSetStrategy (autd3capi)
 
-SoftwareSTMのTimerStrategyを設定する.
+Configure TimerStrategy of SoftwareSTM.
 
 | Argument name / return | type    | in/out | description                       |
 | ---------------------- | -----   | ------ | --------------------------------- |
@@ -1029,9 +913,7 @@ SoftwareSTMのTimerStrategyを設定する.
 
 ## AUTDSoftwareSTMAdd (autd3capi)
 
-SoftwareSTMにGainを追加する.
-
-この関数に追加したGainは削除してはいけない.
+Add Gain to SoftwareSTM.
 
 | Argument name / return | type    | in/out | description                       |
 | ---------------------- | -----   | ------ | --------------------------------- |
@@ -1041,9 +923,9 @@ SoftwareSTMにGainを追加する.
 
 ## AUTDSoftwareSTMStart (autd3capi)
 
-SoftwareSTMを開始する.
+Start SoftwareSTM.
 
-この関数の呼び出し後, Controllerへのアクセスは禁止される.
+After calling this function, the use of Controller is forbidden.
 
 | Argument name / return | type    | in/out | description                                   |
 | ---------------------- | -----   | ------ | --------------------------------------------- |
@@ -1054,7 +936,6 @@ SoftwareSTMを開始する.
 
 ## AUTDSoftwareSTMFinish (autd3capi)
 
-
 | Argument name / return | type    | in/out | description                        |
 | ---------------------- | -----   | ------ | -----------------------------------|
 | cnt                    | void**  | out    | pointer to pointer to Controller   |
@@ -1064,7 +945,7 @@ SoftwareSTMを開始する.
 
 ## AUTDSoftwareSTMSetFrequency (autd3capi)
 
-SoftwareSTMの周波数を設定する.
+Set SoftwareSTM frequency.
 
 | Argument name / return | type    | in/out | description            |
 | ---------------------- | -----   | ------ | -----------------------|
@@ -1074,7 +955,7 @@ SoftwareSTMの周波数を設定する.
 
 ## AUTDSoftwareSTMFrequency (autd3capi)
 
-SoftwareSTMの周波数を取得する.
+Get SoftwareSTM frequency.
 
 | Argument name / return | type    | in/out | description            |
 | ---------------------- | -----   | ------ | -----------------------|
@@ -1083,7 +964,7 @@ SoftwareSTMの周波数を取得する.
 
 ## AUTDSoftwareSTMPeriod (autd3capi)
 
-SoftwareSTMの周期をナノ秒単位で取得する.
+Get SoftwareSTM period in ns.
 
 | Argument name / return | type     | in/out | description            |
 | ---------------------- | -----    | ------ | -----------------------|
@@ -1092,7 +973,7 @@ SoftwareSTMの周期をナノ秒単位で取得する.
 
 ## AUTDSoftwareSTMSamplingFrequency (autd3capi)
 
-SoftwareSTMのサンプリング周波数を取得する.
+Get SoftwareSTM sampling frequency.
 
 | Argument name / return | type    | in/out | description            |
 | ---------------------- | -----   | ------ | -----------------------|
@@ -1101,7 +982,7 @@ SoftwareSTMのサンプリング周波数を取得する.
 
 ## AUTDSoftwareSTMSamplingPeriod (autd3capi)
 
-SoftwareSTMのサンプリング周期をナノ秒単位で取得する.
+Get SoftwareSTM sampling period in ns.
 
 | Argument name / return | type     | in/out | description            |
 | ---------------------- | -----    | ------ | -----------------------|
@@ -1110,7 +991,7 @@ SoftwareSTMのサンプリング周期をナノ秒単位で取得する.
 
 ## AUTDSoftwareSTMSetSamplingPeriod (autd3capi)
 
-SoftwareSTMのサンプリング周期をナノ秒単位で設定する.
+Set SoftwareSTM sampling period in ns.
 
 | Argument name / return | type     | in/out | description            |
 | ---------------------- | -----    | ------ | -----------------------|
@@ -1120,7 +1001,7 @@ SoftwareSTMのサンプリング周期をナノ秒単位で設定する.
 
 ## AUTDDeleteSoftwareSTM (autd3capi)
 
-SoftwareSTMを削除する.
+Delete SoftwareSTM.
 
 | Argument name / return | type  | in/out | description            |
 | ---------------------- | ----- | ------ | ---------------------- |
@@ -1129,7 +1010,7 @@ SoftwareSTMを削除する.
 
 ## AUTDSetMode (autd3capi)
 
-Legacy/Normalモードの設定を行う.
+Set Legacy/Normal mode.
 
 | Argument name / return | type    | in/out | description                                                 |
 | ---------------------- | ------- | ------ | ----------------------------------------------------------- |
@@ -1139,9 +1020,9 @@ Legacy/Normalモードの設定を行う.
 
 ## AUTDEigenBackend (autd3capi-gain-holo)
 
-Eigen Backendを作成する.
+Create Eigen Backend.
 
-作成したBackendは最後に`AUTDDeleteBackend`で削除する必要がある.
+The backend created must be deleted at the end by `AUTDDeleteBackend`.
 
 | Argument name / return | type   | in/out | description                         |
 | ---------------------- | ------ | ------ | ----------------------------------- |
@@ -1150,7 +1031,7 @@ Eigen Backendを作成する.
 
 ## AUTDDeleteBackend (autd3capi-gain-holo)
 
-Backendを作成する.
+Create Backend.
 
 | Argument name / return | type  | in/out | description        |
 | ---------------------- | ----- | ------ | ------------------ |
@@ -1159,9 +1040,9 @@ Backendを作成する.
 
 ## AUTDGainHoloSDP (autd3capi-gain-holo)
 
-SDP holo gainを作成する.
+Create SDP holo gain.
 
-作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+The gain created must be deleted at the end by `AUTDDeleteGain`.
 
 | Argument name / return | type     | in/out | description                    |
 | ---------------------- | -------- | ------ | ------------------------------ |
@@ -1174,9 +1055,9 @@ SDP holo gainを作成する.
 
 ## AUTDGainHoloEVD (autd3capi-gain-holo)
 
-EVD holo gainを作成する.
+Create EVD holo gain.
 
-作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+The gain created must be deleted at the end by `AUTDDeleteGain`.
 
 | Argument name / return | type   | in/out | description                    |
 | ---------------------- | ------ | ------ | ------------------------------ |
@@ -1187,9 +1068,9 @@ EVD holo gainを作成する.
 
 ## AUTDGainHoloNaive (autd3capi-gain-holo)
 
-Naive holo gainを作成する.
+Create Naive holo gain.
 
-作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+The gain created must be deleted at the end by `AUTDDeleteGain`.
 
 | Argument name / return | type   | in/out | description                      |
 | ---------------------- | ------ | ------ | -------------------------------- |
@@ -1199,9 +1080,9 @@ Naive holo gainを作成する.
 
 ## AUTDGainHoloGS (autd3capi-gain-holo)
 
-GS holo gainを作成する.
+Create GS holo gain.
 
-作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+The gain created must be deleted at the end by `AUTDDeleteGain`.
 
 | Argument name / return | type     | in/out | description                   |
 | ---------------------- | -------- | ------ | ----------------------------- |
@@ -1212,9 +1093,9 @@ GS holo gainを作成する.
 
 ## AUTDGainHoloGSPAT (autd3capi-gain-holo)
 
-GSPAT holo gainを作成する.
+Create GSPAT holo gain.
 
-作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+The gain created must be deleted at the end by `AUTDDeleteGain`.
 
 | Argument name / return | type     | in/out | description                      |
 | ---------------------- | -------- | ------ | -------------------------------- |
@@ -1225,9 +1106,9 @@ GSPAT holo gainを作成する.
 
 ## AUTDGainHoloLM (autd3capi-gain-holo)
 
-LM holo gainを作成する.
+Create LM holo gain.
 
-作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+The gain created must be deleted at the end by `AUTDDeleteGain`.
 
 | Argument name / return | type     | in/out | description                   |
 | ---------------------- | -------- | ------ | ----------------------------- |
@@ -1243,9 +1124,9 @@ LM holo gainを作成する.
 
 ## AUTDGainHoloGreedy (autd3capi-gain-holo)
 
-Greedy holo gainを作成する.
+Create Greedy holo gain.
 
-作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+The gain created must be deleted at the end by `AUTDDeleteGain`.
 
 | Argument name / return | type    | in/out | description                       |
 | ---------------------- | ------- | ------ | --------------------------------- |
@@ -1257,9 +1138,9 @@ Greedy holo gainを作成する.
 
 ## AUTDGainHoloLSSGreedy (autd3capi-gain-holo)
 
-LSSGreedy holo gainを作成する.
+Create LSSGreedy holo gain.
 
-作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+The gain created must be deleted at the end by `AUTDDeleteGain`.
 
 | Argument name / return | type    | in/out | description                          |
 | ---------------------- | ------- | ------ | ---------------------------------    |
@@ -1270,9 +1151,9 @@ LSSGreedy holo gainを作成する.
 
 ## AUTDGainHoloAPO (autd3capi-gain-holo)
 
-APO holo gainを作成する.
+Create APO holo gain.
 
-作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
+The gain created must be deleted at the end by `AUTDDeleteGain`.
 
 | Argument name / return | type    | in/out | description                          |
 | ---------------------- | ------- | ------ | ---------------------------------    |
@@ -1286,7 +1167,7 @@ APO holo gainを作成する.
 
 ## AUTDGainHoloAdd (autd3capi-gain-holo)
 
-Holo gainに焦点を追加する.
+Add focus to Holo gain.
 
 | Argument name / return | type   | in/out | description               |
 | ---------------------- | ------ | ------ | ------------------------- |
@@ -1299,7 +1180,7 @@ Holo gainに焦点を追加する.
 
 ## AUTDSetConstraint (autd3capi-gain-holo)
 
-Holo gainのAmplitudeConstraintを設定する.
+Configure AmplitudeConstraint of Holo Gain.
 
 | Argument name / return | type    | in/out | description                                                           |
 | ---------------------- | ------- | ------ | --------------------------------------------------------------------- |
@@ -1310,9 +1191,9 @@ Holo gainのAmplitudeConstraintを設定する.
 
 ## AUTDBLASBackend (autd3capi-backend-blas)
 
-BLAS Backendを作成する.
+Create BLAS Backend.
 
-作成したBackendは最後に`AUTDDeleteBackend`で削除する必要がある.
+The backend created must be deleted at the end by `AUTDDeleteBackend`.
 
 | Argument name / return | type   | in/out | description                        |
 | ---------------------- | ------ | ------ | ---------------------------------- |
@@ -1321,9 +1202,9 @@ BLAS Backendを作成する.
 
 ## AUTDCUDABackend (autd3capi-backend-cuda)
 
-CUDA Backendを作成する.
+Create CUDA Backend.
 
-作成したBackendは最後に`AUTDDeleteBackend`で削除する必要がある.
+The backend created must be deleted at the end by `AUTDDeleteBackend`.
 
 | Argument name / return | type   | in/out | description                        |
 | ---------------------- | ------ | ------ | ---------------------------------- |
@@ -1332,7 +1213,7 @@ CUDA Backendを作成する.
 
 ## AUTDLinkDebug (autd3capi-link-debug)
 
-Debug linkを作成する.
+Create Debug link.
 
 | Argument name / return | type     | in/out | description                         |
 | ---------------------- | -------- | ------ | ----------------------------------- |
@@ -1341,7 +1222,7 @@ Debug linkを作成する.
 
 ## AUTDLinkDebugSetLevel (autd3capi-link-debug)
 
-Debugのログ表示レベルを設定する.
+Configure log level.
 
 | Argument name / return | type     | in/out | description                         |
 | ---------------------- | -------- | ------ | ----------------------------------- |
@@ -1350,7 +1231,7 @@ Debugのログ表示レベルを設定する.
 
 ## AUTDLinkSimulator (autd3capi-link-simulator)
 
-Simulator linkを作成する.
+Create Simulator link.
 
 | Argument name / return | type     | in/out | description                         |
 | ---------------------- | -------- | ------ | ----------------------------------- |
@@ -1361,7 +1242,7 @@ Simulator linkを作成する.
 
 ## AUTDLinkRemoteTwinCAT (autd3capi-link-remote-twincat)
 
-RemoteTwinCAT linkを作成する.
+Create RemoteTwinCAT link.
 
 | Argument name / return | type   | in/out | description                              |
 | ---------------------- | ------ | ------ | ---------------------------------------- |
@@ -1373,13 +1254,13 @@ RemoteTwinCAT linkを作成する.
 
 ## AUTDGetAdapterPointer (autd3capi-link-soem)
 
-Adapter listへのポインタを取得する.
+Get pointer to Adapter list.
 
-この関数で作成したlistは最後に`AUTDFreeAdapterPointer`で開放する必要がある.
+Delete the list created this function must be freed at the end by `AUTDFreeAdapterPointer`.
 
-実際のAdapterの情報は`AUTDGetAdapter`で取得する.
+The adapter information can be obtained by `AUTDGetAdapter`.
 
-この関数はAdapter listのサイズを返す.
+This function returns the size of adapter list.
 
 | Argument name / return | type    | in/out | description                        |
 | ---------------------- | ------- | ------ | ---------------------------------- |
@@ -1388,11 +1269,11 @@ Adapter listへのポインタを取得する.
 
 ## AUTDGetAdapter (autd3capi-link-soem)
 
-アダプターの名前と説明を取得する.
+Get the adapter name and description.
 
-`p_adapter`は`AUTDGetAdapterPointer`で作成したものを使う.
+`p_adapter` must be created by `AUTDGetAdapterPointer`.
 
-`desc`, `name`はそれぞれ長さ128のバッファを渡せば十分である.
+Pass buffer of length 128 to `desc`, `name`.
 
 | Argument name / return | type    | in/out | description                    |
 | ---------------------- | ------- | ------ | ------------------------------ |
@@ -1404,7 +1285,7 @@ Adapter listへのポインタを取得する.
 
 ## AUTDFreeAdapterPointer (autd3capi-link-soem)
 
-Adapter listへのポインタを削除する.
+Delete pointer to Adapter list.
 
 | Argument name / return | type  | in/out | description             |
 | ---------------------- | ----- | ------ | ----------------------- |
@@ -1426,7 +1307,7 @@ Adapter listへのポインタを削除する.
 
 ## AUTDLinkTwinCAT (autd3capi-link-twincat)
 
-TwinCAT linkを作成する.
+Create TwinCAT link.
 
 | Argument name / return | type   | in/out | description                        |
 | ---------------------- | ------ | ------ | ---------------------------------- |
@@ -1435,9 +1316,9 @@ TwinCAT linkを作成する.
 
 ## AUTDModulationRawPCM (autd3capi-modulation-audio-file)
 
-RawPCM modulationを作成する.
+Create RawPCM modulation.
 
-作成したModulationは最後に`AUTDDeleteModulation`で削除する必要がある.
+The created Modulation must be deleted at the end by `AUTDDeleteModulation`.
 
 | Argument name / return | type     | in/out | description                            |
 | ---------------------- | -------- | ------ | -------------------------------------- |
@@ -1449,9 +1330,9 @@ RawPCM modulationを作成する.
 
 ## AUTDModulationWav (autd3capi-modulation-audio-file)
 
-Wav modulationを作成する.
+Create Wav modulation.
 
-作成したModulationは最後に`AUTDDeleteModulation`で削除する必要がある.
+The created Modulation must be deleted at the end by `AUTDDeleteModulation`.
 
 | Argument name / return | type     | in/out | description                            |
 | ---------------------- | -------- | ------ | -------------------------------------- |
@@ -1462,7 +1343,7 @@ Wav modulationを作成する.
 
 ## AUTDExtraGeometryViewer (autd3capi-extra-geometry-viewer)
 
-Geometry Viewerを起動する.
+Run Geometry Viewer.
 
 | Argument name / return | type    | in/out | description                        |
 | ---------------------- | ------- | ------ | ---------------------------------- |
@@ -1477,9 +1358,9 @@ Geometry Viewerを起動する.
 
 ## AUTDExtraSimulator (autd3capi-extra-simulator)
 
-Simulatorを起動する.
+Run Simulator.
 
-`settings_path`に設定ファイルが存在する場合, `port`, `ip`, `vsync`, `gpu_idx`は設定ファイルの内容が優先される.
+If a configuration file exists in `settings_path`, the parameters (`port`, `ip`, `vsync`, and `gpu_idx`) are overridden by the contents of the configuration file.
 
 | Argument name / return | type    | in/out | description                        |
 | ---------------------- | ------- | ------ | ---------------------------------- |

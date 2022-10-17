@@ -47,7 +47,7 @@ SDKで複数台のデバイスを使用する場合は`add_device`関数を接�
 さらに, 例えば, 上図のように配置されており, 下が1台目, 左が2台目で, グローバル座標を1台目のローカル座標と同じだとすると,
 ```cpp
   autd.geometry().add_device(aud3::Vector3::Zero(), aud3::Vector3::Zero());
-  autd.geometry().add_device(aud3::Vector3(0, 0, aud3::DEVICE_WIDTH), aud3::Vector3(0, pi / 2.0, 0));
+  autd.geometry().add_device(aud3::Vector3(0, 0, aud3::DEVICE_WIDTH), aud3::Vector3(0, autd3::pi / 2.0, 0));
 ```
 のように指定する.
 
