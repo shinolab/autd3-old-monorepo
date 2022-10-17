@@ -7,7 +7,7 @@
 GitHubのリポジトリからインストールできる.
 
 ```
-(v1.7) pkg> add https://github.com/shinolab/autd3.git:path/to/subfolder
+(v1.7) pkg> add https://github.com/shinolab/autd3.git:julia
 ```
 
 ## Usage

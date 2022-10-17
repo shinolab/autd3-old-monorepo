@@ -64,7 +64,7 @@ duty比は$t_\text{high}/T = t_\text{high}f$で定義される, ここで, $t_\t
 
 ```cpp
   const std::filesystem::path path("sin150.wav");
-  autd3::modulation::Wav m(path.string());
+  autd3::modulation::Wav m(path);
 ```
 
 `Wav`を使用するには`BUILD_MODULATION_AUDIO_FILE` optionをONにしてコンパイルする必要がある.
@@ -73,9 +73,9 @@ duty比は$t_\text{high}/T = t_\text{high}f$で定義される, ここで, $t_\t
 
 `RawPCM`は符号なし8-bitのバイナリデータファイルをもとに構成される`Modulation`である.
 
-```
+```cpp
   const std::filesystem::path path = std::filesystem::path("sin150.wav");
-  autd3::modulation::RawPCM m(path.string(), 4e3);
+  autd3::modulation::RawPCM m(path, 4e3);
 ```
 
 `RawPCM`を使用するには`BUILD_MODULATION_AUDIO_FILE` optionをONにしてコンパイルする必要がある.
@@ -116,8 +116,8 @@ class Burst final : public autd3::Modulation {
 ### Sampling frequency division ratio
 
 `sampling_freq_div_ratio`でサンプリング周波数の分周比$N$の確認, 設定ができる.
-サンプリング周波数の基本周波数は$\SI{40}{kHz}$である.
-`sampling_freq_div_ratio`は1以上65536以下の整数が指定できる.
+サンプリング周波数の基本周波数は$\SI{163.84}{MHz}$である.
+`sampling_freq_div_ratio`は1160以上の整数が指定できる.
 
 ```cpp
     m.sampling_frequency_division() = 20480; // 163.84MHz/20480 = 8kHz

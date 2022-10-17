@@ -154,7 +154,7 @@ Controllerを削除する.
 
 handleは`AUTDCreateController`で作成したものを使う.
 
-これいこうhandleは使用できない.
+これ以降, handleは使用できない.
 
 | Argument name / return | type  | in/out | description           |
 | ---------------------- | ----- | ------ | --------------------- |
@@ -971,7 +971,7 @@ handleは`AUTDCreateController`で作成したものを使う. 振動子の指�
 
 ModDelayConfigを作成する.
 
-作成したSilencerConfigは最後に`AUTDDeleteModDelayConfig`で削除する必要がある.
+作成したModDelayConfigは最後に`AUTDDeleteModDelayConfig`で削除する必要がある.
 
 | Argument name / return | type   | in/out | description                          |
 | ---------------------- | ------ | ------ | ------------------------------------ |
