@@ -3,7 +3,7 @@
 // Created Date: 28/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/10/2022
+// Last Modified: 17/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -62,7 +62,7 @@ void GeometryViewer::view(const core::Geometry& geometry) const {
   renderer.create_command_buffers();
   renderer.create_sync_objects();
 
-  imgui.init(static_cast<uint32_t>(renderer.frames_in_flight()), renderer.render_pass(), geometries, _font);
+  imgui.init(static_cast<uint32_t>(renderer.frames_in_flight()), renderer.render_pass(), geometries);
 
   while (!window.should_close()) {
     helper::WindowHandler::poll_events();

@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/10/2022
+// Last Modified: 17/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -76,7 +76,6 @@ struct SimulatorSettings {
   float camera_far_clip{1000};
   float camera_move_speed{10};
   float font_size{16};
-  std::string font_path{};
   float background_r{0.3f};
   float background_g{0.3f};
   float background_b{0.3f};
@@ -120,7 +119,6 @@ inline void to_json(nlohmann::json& j, const SimulatorSettings& s) {
       {"camera_far_clip", s.camera_far_clip},
       {"camera_move_speed", s.camera_move_speed},
       {"font_size", s.font_size},
-      {"font_path", s.font_path},
       {"background_r", s.background_r},
       {"background_g", s.background_g},
       {"background_b", s.background_b},
@@ -161,7 +159,6 @@ inline void from_json(const nlohmann::json& j, SimulatorSettings& s) {
   j.at("camera_far_clip").get_to(s.camera_far_clip);
   j.at("camera_move_speed").get_to(s.camera_move_speed);
   j.at("font_size").get_to(s.font_size);
-  j.at("font_path").get_to(s.font_path);
   j.at("background_r").get_to(s.background_r);
   j.at("background_g").get_to(s.background_g);
   j.at("background_b").get_to(s.background_b);

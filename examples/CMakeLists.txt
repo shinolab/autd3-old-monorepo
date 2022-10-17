@@ -56,7 +56,6 @@ if(BUILD_GEOMETRY_VIEWER)
   target_link_libraries(example_geometry_viewer autd3 geometry_viewer)
   
   target_compile_definitions(example_geometry_viewer PRIVATE AUTD3_GEOMETRY_VIEWER_MODEL_PATH="${PROJECT_SOURCE_DIR}/src/extra/geometry_viewer/models/AUTD.glb")
-  target_compile_definitions(example_geometry_viewer PRIVATE AUTD3_GEOMETRY_VIEWER_FONT_PATH="${PROJECT_SOURCE_DIR}/examples/fonts/NotoSans-Regular.ttf")
 
   set_target_properties(example_geometry_viewer PROPERTIES FOLDER "example")
 endif()
@@ -65,7 +64,6 @@ if(BUILD_SIMULATOR)
   add_executable(example_simulator_server simulator_server.cpp)
   target_include_directories(example_simulator_server PRIVATE ${PROJECT_SOURCE_DIR}/include)
   target_link_libraries(example_simulator_server simulator)
-  target_compile_definitions(example_simulator_server PRIVATE AUTD3_SIMULATOR_FONT_PATH="${PROJECT_SOURCE_DIR}/examples/fonts/NotoSans-Regular.ttf")
   set_target_properties(example_simulator_server PROPERTIES FOLDER "example")
 endif()
 
@@ -74,4 +72,3 @@ if (BUILD_LINK_SIMULATOR)
   target_link_libraries(example_simulator_client PRIVATE autd3_example_common link_simulator)
   set_target_properties(example_simulator_client PROPERTIES FOLDER "example")
 endif()
-

@@ -3,7 +3,7 @@
 // Created Date: 26/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/10/2022
+// Last Modified: 17/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -129,8 +129,8 @@ class Model {
 
   void load_node(const fx::gltf::Node& gltf_node, const fx::gltf::Document& doc, std::vector<uint32_t>& indices, std::vector<Vertex>& vertices) {
     for (const int i : gltf_node.children) load_node(doc.nodes[i], doc, indices, vertices);
-    if (gltf_node.mesh > -1) {
-      for (const auto& [name, weights, primitives, extensions_and_extras] = doc.meshes[gltf_node.mesh]; const auto& gltf_primitive : primitives) {
+    if (gltf_node.mesh > -1)
+      for (const auto& gltf_primitive : doc.meshes[gltf_node.mesh].primitives) {
         const auto first_index = static_cast<uint32_t>(indices.size());
         const auto vertex_start = static_cast<uint32_t>(vertices.size());
         load_vertices(gltf_primitive, doc, vertices);
@@ -141,7 +141,6 @@ class Model {
         primitive.material_index = gltf_primitive.material;
         _primitives.emplace_back(primitive);
       }
-    }
   }
 
   void load_vertices(const fx::gltf::Primitive& gltf_primitive, const fx::gltf::Document& doc, std::vector<Vertex>& vertices) const {

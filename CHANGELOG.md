@@ -1,3 +1,7 @@
+# 2.4.3
+
+- Remove font setting in GeometryViewer and Simulator
+
 # 2.4.2
 
 - win-x86 is no more supported
