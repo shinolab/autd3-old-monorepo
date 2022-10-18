@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -90,10 +90,10 @@ class TransViewer {
  private:
   void create_pipeline() {
     const std::vector<uint8_t> vert_shader_code = {
-#include "circle.vert.spv.txt"
+#include "shaders/circle.vert.spv.txt"
     };
     const std::vector<uint8_t> frag_shader_code = {
-#include "circle.frag.spv.txt"
+#include "shaders/circle.frag.spv.txt"
     };
 
     vk::UniqueShaderModule vert_shader_module = helper::create_shader_module(_context->device(), vert_shader_code);
@@ -214,7 +214,7 @@ class TransViewer {
       constexpr uint32_t tex_width = 128;
       constexpr uint32_t tex_height = 128;
       const std::vector<uint8_t> pixels = {
-#include "circle.png.txt"
+#include "textures/circle.png.txt"
       };
       constexpr auto image_size = tex_width * tex_height * 4;
       mip_levels = static_cast<uint32_t>(std::floor(std::log2(std::max(tex_width, tex_height)))) + 1;
