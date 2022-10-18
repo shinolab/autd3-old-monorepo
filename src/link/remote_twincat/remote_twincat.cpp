@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/09/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,7 +15,8 @@
 #include <Windows.h>
 #endif
 
-#include <sstream>
+#include <fmt/core.h>
+
 #include <string>
 #include <vector>
 
@@ -44,11 +45,7 @@ std::vector<std::string> split(const std::string& s, const char deliminator) {
 void startup() {
 #ifdef _WIN32
   WSADATA wsa_data;
-  if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) {
-    std::stringstream ss;
-    ss << "WSAStartup failed:" << WSAGetLastError();
-    throw std::runtime_error(ss.str());
-  }
+  if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) throw std::runtime_error(fmt::format("WSAStartup failed: {}", WSAGetLastError()));
 #endif
 }
 
@@ -99,9 +96,7 @@ class RemoteTwinCATImpl final : public core::Link {
     startup();
     if (const auto res = AdsAddRoute(this->_net_id, _server_ip.c_str()); res != 0) {
       cleanup();
-      std::stringstream ss;
-      ss << "Could not connect to remote: " << res << std::endl;
-      throw std::runtime_error(ss.str());
+      throw std::runtime_error(fmt::format("Could not connect to remote: {}", res));
     }
 
     this->_port = AdsPortOpenEx();
@@ -126,24 +121,21 @@ class RemoteTwinCATImpl final : public core::Link {
         AdsSyncWriteReqEx(this->_port, &p_addr, INDEX_GROUP, INDEX_OFFSET_BASE, static_cast<uint32_t>(tx.effective_size()), tx.data().data());
     if (ret == 0) return true;
 
-    std::stringstream ss;
     if (ret == ADSERR_DEVICE_INVALIDSIZE)
-      ss << "The number of devices is invalid.";
+      throw std::runtime_error("The number of devices is invalid.");
     else
-      ss << "Error on sending data: " << std::hex << ret;
-    throw std::runtime_error(ss.str());
+      throw std::runtime_error(fmt::format("Error on sending data: {:x}", ret));
   }
+
   bool receive(driver::RxDatagram& rx) override {
     const AmsAddr p_addr = {this->_net_id, PORT};
     uint32_t receive_bytes;
     const auto ret = AdsSyncReadReqEx2(this->_port, &p_addr, INDEX_GROUP, INDEX_OFFSET_BASE_READ,
                                        static_cast<uint32_t>(rx.messages().size() * sizeof(driver::RxMessage)), rx.messages().data(), &receive_bytes);
     if (ret == 0) return true;
-
-    std::stringstream ss;
-    ss << "Error on receiving data: " << std::hex << ret;
-    throw std::runtime_error(ss.str());
+    throw std::runtime_error(fmt::format("Error on receiving data: {:x}", ret));
   }
+
   bool is_open() override { return this->_port > 0; }
 
  private:

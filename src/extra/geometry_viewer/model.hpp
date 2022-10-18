@@ -3,13 +3,15 @@
 // Created Date: 26/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/10/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
+
+#include <fmt/core.h>
 
 #include <memory>
 #include <string>
@@ -206,9 +208,7 @@ class Model {
       case fx::gltf::Accessor::ComponentType::Byte:
       case fx::gltf::Accessor::ComponentType::Short:
       case fx::gltf::Accessor::ComponentType::Float:
-        std::stringstream ss;
-        ss << "Not supported component type " << static_cast<uint16_t>(component_type) << std::endl;
-        throw std::runtime_error(ss.str());
+        throw std::runtime_error(fmt::format("Not supported component type: {}", static_cast<uint16_t>(component_type)));
     }
 
     return count;
