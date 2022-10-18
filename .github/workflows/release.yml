@@ -79,7 +79,6 @@ jobs:
           copy 3rdparty/SOEM/oshw/win32/wpcap/Lib/x64/*.lib build/publish/lib/wpcap
           copy build/bin/Release/*.dll build/publish/bin
           copy dist/GUI/bin -Recurse publish/gui-controller/bin
-          copy src/extra/geometry_viewer/models -Recurse publish/gui-controller/bin
           copy dist/GUI/AUTD3-GUI-Controller.exe publish/gui-controller
           copy build/dist/simulator/Release/*.exe build/publish/simulator
           Remove-Item -Recurse -Force dist/AUTDServer/src

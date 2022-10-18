@@ -104,11 +104,4 @@
 	  <Copy SourceFiles="@(NativeResources)" DestinationFolder="$(OutDir)" />
   </Target>
 
-  <Target Name="CopyModelResources" AfterTargets="Build">
-	  <ItemGroup>
-		  <ModelResources Include="$(ProjectDir)..\..\..\src\extra\geometry_viewer\models\*.glb" />
-  	  </ItemGroup>
-	  <Copy SourceFiles="@(ModelResources)" DestinationFolder="$(OutDir)\models" />
-  </Target>
-
 </Project>
