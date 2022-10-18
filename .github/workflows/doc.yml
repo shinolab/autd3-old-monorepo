@@ -28,7 +28,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake .. -DBUILD_ALL=ON -DBUILD_SIMULATOR=ON -DBUILD_GEOMETRY_VIEWER=ON
+        cmake .. -DBUILD_LINK_SOEM=ON -DBUILD_GAIN_HOLO=OFF -DDISABLE_EXAMPLES=ON -DBUILD_CAPI=ON
         cmake --build . --parallel 8 --config Release
         cd ..
         foreach($dll in Get-ChildItem -Path build/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/src/native/windows/x64}
