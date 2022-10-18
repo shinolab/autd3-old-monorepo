@@ -146,11 +146,12 @@ class Model {
   }
 
   void load_vertices(const fx::gltf::Primitive& gltf_primitive, const fx::gltf::Document& doc, std::vector<Vertex>& vertices) const {
-    const size_t vertex_count =
-        gltf_primitive.attributes.contains("POSITION") ? doc.accessors[gltf_primitive.attributes.find("POSITION")->second].count : 0;
+    const size_t vertex_count = gltf_primitive.attributes.find("POSITION") != gltf_primitive.attributes.end()
+                                    ? doc.accessors[gltf_primitive.attributes.find("POSITION")->second].count
+                                    : 0;
 
     const auto load = [gltf_primitive, doc](const char* key) -> const float* {
-      if (gltf_primitive.attributes.contains(key)) {
+      if (gltf_primitive.attributes.find(key) != gltf_primitive.attributes.end()) {
         const auto accessor_byte_offset = static_cast<size_t>(doc.accessors[gltf_primitive.attributes.find(key)->second].byteOffset);
         const auto buffer_view = doc.accessors[gltf_primitive.attributes.find(key)->second].bufferView;
         const auto buffer = doc.bufferViews[buffer_view].buffer;
