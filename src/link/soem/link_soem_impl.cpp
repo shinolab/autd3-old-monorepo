@@ -11,7 +11,7 @@
 
 #include "link_soem_impl.hpp"
 
-#include <fmt/core.h>
+#include <spdlog/fmt/fmt.h>
 
 #include <cstdint>
 #include <memory>

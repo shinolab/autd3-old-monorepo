@@ -13,7 +13,7 @@
 #include <Windows.h>
 #endif
 
-#include <fmt/core.h>
+#include <spdlog/fmt/fmt.h>
 
 #include "autd3/core/link.hpp"
 #include "autd3/link/twincat.hpp"

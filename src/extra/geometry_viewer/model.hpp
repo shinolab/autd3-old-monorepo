@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include <fmt/core.h>
+#include <spdlog/fmt/fmt.h>
 
 #include <memory>
 #include <string>

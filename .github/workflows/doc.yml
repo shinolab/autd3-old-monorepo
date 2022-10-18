@@ -52,7 +52,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake .. -DBUILD_LINK_SOEM=ON -DBUILD_GAIN_HOLO=OFF
+        cmake .. -DBUILD_LINK_SOEM=ON -DBUILD_GAIN_HOLO=OFF -DDISABLE_EXAMPLES=ON
         cmake --build . --parallel 8 --config Release
         cd ..
         copy include -Recurse ./doc/book/samples/cpp/
