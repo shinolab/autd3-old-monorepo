@@ -92,6 +92,10 @@ else()
   endif()
 endif()
 
+if(NOT BUILD_SHARED_LIBS)
+  set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+endif()
+
 if(BUILD_DOC)
   find_package(Doxygen)
 
