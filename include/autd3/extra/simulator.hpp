@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/10/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -172,7 +172,7 @@ inline void from_json(const nlohmann::json& j, SimulatorSettings& s) {
 
 class Simulator {
  public:
-  Simulator() noexcept = default;
+  Simulator() = default;
   ~Simulator() = default;
   Simulator(const Simulator& v) noexcept = delete;
   Simulator& operator=(const Simulator& obj) = delete;
