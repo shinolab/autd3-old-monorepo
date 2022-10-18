@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/10/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -57,7 +57,9 @@ constexpr uint8_t ENABLED_STM_BIT = 0x01;
 constexpr uint8_t ENABLED_MODULATOR_BIT = 0x02;
 constexpr uint8_t ENABLED_SILENCER_BIT = 0x04;
 constexpr uint8_t ENABLED_MOD_DELAY_BIT = 0x08;
-constexpr uint8_t ENABLED_FEATURES_BITS = ENABLED_MOD_DELAY_BIT | ENABLED_STM_BIT | ENABLED_MODULATOR_BIT | ENABLED_SILENCER_BIT;
+constexpr uint8_t ENABLED_EMULATOR_BIT = 0x80;
+constexpr uint8_t ENABLED_FEATURES_BITS =
+    ENABLED_MOD_DELAY_BIT | ENABLED_STM_BIT | ENABLED_MODULATOR_BIT | ENABLED_SILENCER_BIT | ENABLED_EMULATOR_BIT;
 
 constexpr uint32_t TR_POS[driver::NUM_TRANS_IN_UNIT] = {
     0x00000000, 0x01960000, 0x032c0000, 0x04c30000, 0x06590000, 0x07ef0000, 0x09860000, 0x0b1c0000, 0x0cb30000, 0x0e490000, 0x0fdf0000, 0x11760000,
