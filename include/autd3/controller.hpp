@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/08/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -47,6 +47,11 @@ class Controller {
    * @brief Geometry of the devices
    */
   [[nodiscard]] const core::Geometry& geometry() const noexcept { return _geometry; }
+
+  /**
+   * @brief Mode
+   */
+  [[nodiscard]] std::unique_ptr<core::Mode>& mode() noexcept { return _geometry.mode(); }
 
   bool open(core::LinkPtr link) {
     _tx_buf = driver::TxDatagram(_geometry.num_devices());

@@ -3,7 +3,7 @@
 // Created Date: 28/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/09/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -83,6 +83,7 @@ class LegacyMode : public Mode {
 
  public:
   ~LegacyMode() override = default;
+  static std::unique_ptr<LegacyMode> create() { return std::make_unique<LegacyMode>(); }
 };
 
 class NormalMode : public Mode {
@@ -137,6 +138,7 @@ class NormalMode : public Mode {
 
  public:
   ~NormalMode() override = default;
+  static std::unique_ptr<NormalMode> create() { return std::make_unique<NormalMode>(); }
 };
 
 class NormalPhaseMode : public Mode {
@@ -179,6 +181,7 @@ class NormalPhaseMode : public Mode {
 
  public:
   ~NormalPhaseMode() override = default;
+  static std::unique_ptr<NormalPhaseMode> create() { return std::make_unique<NormalPhaseMode>(); }
 };
 
 }  // namespace autd3::core
