@@ -2,7 +2,7 @@
 
 From version 2.0, the frequency of all the transducers can be changed individually.
 
-The conventional $\SI{40}{kHz}$ fixed mode is called `Legacy mode` and the variable frequency mode is called `Normal mode`.
+The conventional $\SI{40}{kHz}$ fixed mode is called `Legacy mode`, and the variable frequency mode is called `Normal mode`.
 
 The default mode is `Legacy`.
 To use `Normal` mode, set `mode` to `NormalMode`.

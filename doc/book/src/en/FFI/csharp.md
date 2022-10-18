@@ -29,7 +29,7 @@ See [autd3sharp's example](https://github.com/shinolab/autd3/tree/master/cs/exam
 
 ## Troubleshooting
 
-Q. I can't run the program from linux or mac.
+Q. I can't run the program from Linux or mac.
 
 A. Run as administrator.
 

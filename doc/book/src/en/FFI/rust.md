@@ -2,19 +2,19 @@
 
 [Rust-autd](https://github.com/shinolab/autd3/tree/master/rust) provides a Rust version of the library.
 
-The Rust version of the library is not a wrapping of the C++ version, but a re-implementation in Rust.
+The Rust version of the library is not a wrapping of the C++ version but a re-implementation in Rust.
 Therefore, some features may be different.
 
 ## Installation
 
-The Rust version is available at [crate.io](https://crates.io/crates/autd3), so you can install as follows.
+The Rust version is available at [crate.io](https://crates.io/crates/autd3), so you can install it as follows.
 
 ```
 [dependencies]
 autd3 = "2.4.3"
 ```
 
-Also, you can add links, gains, etc. to dependencies as needed, since they are available as separate crates.
+Also, you can add links, gains, etc., to dependencies as needed since they are available as separate crates.
 
 ```
 [dependencies]

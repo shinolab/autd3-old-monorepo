@@ -4,7 +4,7 @@ This section describes Geometry that manages how AUTD3 devices are placed in the
 
 ## Multiple devices
 
-Multiple AUTD3 devices can be daisy chained together.
+Multiple AUTD3 devices can be daisy-chained together.
 The SDK is designed to be transparent even when multiple devices are connected.
 
 If you want to connect multiple devices,

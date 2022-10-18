@@ -1,6 +1,6 @@
 # Link
 
-Link is an interface to the device.
+`Link` is an interface to the device.
 You need to select one of the following.
 
 - [TwinCAT](#twincat)
@@ -23,7 +23,7 @@ Non-supported network controllers may also work, but in such cases, normal opera
 
 First of all, TwinCAT cannot coexist with Hyper-V or Virtual Machine Platform.
 Therefore, it is necessary to disable these features.
-To do do, for example, run PowerShell with administrator privileges, and then run the following command,
+To do so, for example, run PowerShell with administrator privileges, and then run the following command,
 
 ```
 Disable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-Hypervisor
@@ -36,7 +36,7 @@ You need to register to download the software (free of charge).
 Run the downloaded installer and follow the instructions.
 **At this time, check "TwinCAT XAE Shell install" and uncheck "Visual Studio Integration".**
 
-After installation, reboot the PC, and then run `C:/TwinCAT/3.1/System/win8settick.bat` with administrator privileges, and reboot again.
+After installation, reboot the PC, run `C:/TwinCAT/3.1/System/win8settick.bat` with administrator privileges, and reboot again.
 
 Finally, copy `dist/AUTDServer/AUTD.xml` in the SDK to `C:/TwinCAT/3.1/Config/Io/EtherCAT`.
 
@@ -52,16 +52,16 @@ AUTDServer.exe -k
 
 > Note: If you have closed it, you can open it by starting `%TEMP%/TwinCATAUTDServer/TwinCATAUTDServer.sln` as TcXaeShell Application, where `%TEMP%` is an environment variable, usually `C:/Users/(user name)/AppData/Local/Temp`.
 
-Note that the AUTDServer will lose the link when you turn off your PC, enter the sleep mode, etc., so you should re-run it each time.
+Note that the AUTDServer will lose the link when you turn off your PC, enter sleep mode, etc., so you should re-run it each time.
 
 #### Install Driver
 
 The first time, you will need to install the driver for EherCAT.
 From the top menu of the TwinCAT XAE Shell, select `TwinCAT->Show Realtime Ethernet Compatible Devices`, and select a compatible device in the `Compatible devices list`, and click `Install`. 
-If you can see adapter name in `Installed and ready to use devices (realtime capcble)`, you have successfully completed the installation.
+If you can see the adapter name in `Installed and ready to use devices (realtime capcble)`, you have successfully completed the installation.
 
 If nothing is shown in `Compatible devices`, TwinCAT does not support the ethernet device of your PC.
-The drivers in `Incompatible devices` can be installed, and adapter listed in `Installed and ready to use devices (for demo use only)` after installation.
+The drivers in `Incompatible devices` can be installed, and the adapter listed in `Installed and ready to use devices (for demo use only)` after installation.
 In this case, the driver can be used but is not guaranteed to work.
 
 #### License
@@ -71,9 +71,9 @@ In addition, since you will get a license-related error the first time, open `So
 Note that the license is a 7-day trial license, but it can be reissued by doing the same procedure again when the license expires.
 After issuing the license, close TwinCAT XAE Shell and run `AUTDServer.exe` again.
 
-### Trouble shooting
+### Troubleshooting
 
-When you try to use a large number of devices, you may get an error like the one shown in the figure below.
+When you try to use many devices, you may get an error like the one shown in the figure below.
 
 <figure>
   <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/tcerror.jpg"/>
@@ -90,7 +90,7 @@ AUTDServer.exe -s 1000000 -t 10000
 
 How many times to multiply depends on the number of connected devices.
 The value should be as small as possible without causing errors.
-For example, if you have 9 devices, it should work if you multiply the value by 2 or 3.
+For example, if you have nine devices, it should work if you multiply the value by 2 or 3.
 
 ## RemoteTwinCAT
 
@@ -100,9 +100,9 @@ In such cases, you can use RemoteTwinCAT link to control TwinCAT remotely.
 
 When using RemoteTwinCAT, you need to prepare two PCs.
 One of the PCs must be able to use the above TwinCAT link.
-Here, let call this PC "server".
+Here, let's call this PC "server".
 On the other hand, the PC on the development side, i.e., the one to use the SDK, has no restrictions, but must be connected to the same LAN as the server.
-Let call this PC "client".
+Let's call this PC "client".
 
 <figure>
   <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/remotetwincat.jpg"/>
@@ -111,7 +111,7 @@ Let call this PC "client".
 
 First, connect the server to the AUTD device.
 The LAN adapter used in this case must be a TwinCAT-compatible adapter.
-Also, connect the server and the client by another LAN.
+Also, connect the server to the client on another LAN.
 This client-server LAN adapter does not need to be TwinCAT-compatible[^fn_remote_twin].
 Then, check the IP address of the LAN between the server and the client.
 For example, let us assume that the server IP is "169.254.205.219" and the client IP is "169.254.175.45" here.
@@ -123,7 +123,7 @@ And, use the `-k` option to keep `TwinCATAUTDServer` open.
 AUTDServer.exe -c 169.254.175.45 -k
 ```
 
-Then, open `System→Routes` and check the AMS NetId of server in the `NetId Management` tab, as shown in the following figure.
+Then, open `System→Routes` and check the AMS NetId of the server in the `NetId Management` tab, as shown in the following figure.
 
 <figure>
   <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/NetId_Management.jpg"/>
@@ -199,7 +199,7 @@ In this case, use the `sync0_cycle` and `send_cycle` functions to increase their
 
 This value should be as small as possible while not causing errors.
 The default is 1, and the value depends on the number of connected devices.
-For example, if you have 9 devices connected, the value should be around 2 or 3.
+For example, if you have nine devices connected, the value should be around 2 or 3.
 
 SOEM Link can also set a callback in case of an unrecoverable error (e.g., cable disconnection)[^fn_soem_err].
 The callback takes an error message as an argument.
@@ -230,7 +230,7 @@ In addition, on Windows, you can set High Precision mode.
                 .build();
 ```
 
-Setting `high precision mode`  allows for more accurate timers, but at the expense of higher CPU load.
+Setting `high precision mode` allows for more accurate timers, but at the expense of higher CPU load.
 
 ### FreeRun mode
 
@@ -268,10 +268,10 @@ When you use the Simulator link, include the ``autd3/link/simulator.hpp` header.
   auto link = autd3::link::Simulator().port(50632).build();
 ```
 
-The port number should be the same as the AUTD Simulator setting.
+The port number should be the same as the AUTD Simulator settings.
 
 [^fn_remote_twin]: Wireless LAN is also acceptable.
 
 [^fn_soem]: More lax than TwinCAT, and may work normally.
 
-[^fn_soem_err]: Note that there is nothing you can do except to terminate the program immediately because it is unrecoverable.
+[^fn_soem_err]: Note that there is nothing you can do except terminate the program immediately because it is unrecoverable.

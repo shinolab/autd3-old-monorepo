@@ -1,6 +1,7 @@
 # 2.4.3
 
-- Remove font setting in GeometryViewer and Simulator
+- Embed font into GeometryViewer and Simulator
+- Embed model into GeometryViewer
 
 # 2.4.2
 

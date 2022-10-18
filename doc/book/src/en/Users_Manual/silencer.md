@@ -10,7 +10,7 @@ The following is a summary,
 
 * Amplitude-modulated ultrasound produces audible sound
 * Phase changes cause amplitude fluctuations when the transducers are driven.
-    * Thus, an audible noise is produced.
+    * Thus, audible noise is produced.
 * Amplitude fluctuation can be suppressed by changing the phase shift step by step.
     * Therefore, the noise can be reduced.
 * The finer the interpolation is, the more noise can be reduced.
@@ -29,7 +29,7 @@ See below for details, but as a rule of thumb, the smaller the `step` and the la
 
 ## Phase change by Silencer
 
-`Silencer` linearly interpolate phase change, that is, it is almost equivalent to passing the time series data of phase $P$ through a (simple) moving average filter.
+`Silencer` linearly interpolates phase change: it is almost equivalent to passing the time series data of phase $P$ through a (simple) moving average filter.
 However, the difference is that the periodicity of the phase data is taken into account.
 
 For example, consider the case where the ultrasound period $T$ is $T=12$.
@@ -61,7 +61,7 @@ $$
 where $\Delta$ is the amount of update per step (`step` in `SilencerConfig`).
 The update frequency can be set by `cycle` of `SilencerConfig`, which is $\SI{163.84}{MHz}/cycle$.
 
-The smaller $\Delta$ is, and the slower the update cycle is, the smoother the phase change becomes and the noise is suppressed.
+The smaller $\Delta$ is, and the slower the update cycle is, the smoother the phase change becomes, and the noise is suppressed.
 
 <figure>
     <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/silent/duty.svg"/>

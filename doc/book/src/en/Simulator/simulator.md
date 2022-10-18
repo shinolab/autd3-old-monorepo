@@ -38,7 +38,7 @@ Pressing `xy`, `yz`, or `zx` button rotates the slice parallel to each plane.
 Slice represents the intensity of sound pressure in terms of color.
 Color scale represents the maximum value of sound pressure in this color space.
 When a large number of devices are used, color saturation may occur, in which case the value of `Color scale` should be increased.
-The alpha value of the slice itself can be specified with `Slice alpha`.
+The alpha value of the slice can be specified with `Slice alpha`.
 
 You can also save the sound field displayed in the slice.
 

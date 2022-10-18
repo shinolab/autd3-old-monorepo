@@ -13,7 +13,7 @@ The SDK provides some `Modulation` to generate several types of AM by default.
 
 ## Static
 
-Static is used for unmodulated ultrasound.
+Static is used for an unmodulated ultrasound.
 
 ```cpp
   autd3::modulation::Static m;
@@ -44,7 +44,7 @@ Arguments are the same as for `Sine`.
 
 ## SineLegacy
 
-Compatible with old version of `Sine`.
+Compatible with the old version of `Sine`.
 
 You can take `double` value as frequency, but the frequency is not exactly the specified frequency, but the closest frequency among the possible output frequencies.
 Also, the duty ratio, not the sound pressure, will be sinusoidal.
@@ -57,7 +57,7 @@ Square wave modulation.
   autd3::modulation::Square m(f, low, high); 
 ```
 
-The first argument is the frequency $f$, the second is low value (0 by default), and the third is high value (1 by default), so that the sound pressure waveform repeats low and high with frequency $f$.
+The first argument is the frequency $f$, the second is the low value (0 by default), and the third is the high value (1 by default), so that the sound pressure waveform repeats low and high with frequency $f$.
 
 You can specify the duty ratio as the fourth argument.
 The duty ratio is defined as $t_\text{high}/T = t_\text{high}f$, where $t_\text{high}$ is the time to output high in one cycle $T=1/f$.
@@ -147,7 +147,7 @@ For example, if you want to delay the $17$-th transducer of the $0$-th device by
   autd.send(autd3::ModDelayConfig());
 ```
 
-Since this is a delay of sampling index, the actual delay time depends on the sampling frequency.
+Since this is a delay of the sampling index, the actual delay time depends on the sampling frequency.
 If `mod_delay` is $1$ and the sampling frequency is $\SI{40}{kHz}$, the delay is $\SI{25}{\text{μ}s}$, and if $\SI{4}{kHz}$, the delay is $\SI{250}{\text{μ}s}$.
 
 Also, the value of `mod_delay` must be less than the modulation length, i.e., `buffer` size.

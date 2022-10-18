@@ -33,7 +33,7 @@ The following is an image of the back of AUTD3. The connector for 24V power supp
   <figcaption>AUTD back</figcaption>
 </figure>
 
-AUTD3 consists of 249 [^fn_asm] transducers per unit, each of which is assigned an index number as shown in the figure.
+AUTD3 consists of 249 [^fn_asm] transducers per unit, each of which is assigned an index number, as shown in the figure.
 SDK can individually control the transducers' frequency, phase, and amplitude.
 
 The coordinate system of AUTD3 is a right-handed coordinate system, where the origin is the center of the 0-th transducer.
