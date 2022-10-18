@@ -5,10 +5,10 @@ From version 2.0, the frequency of all the transducers can be changed individual
 The conventional $\SI{40}{kHz}$ fixed mode is called `Legacy mode` and the variable frequency mode is called `Normal mode`.
 
 The default mode is `Legacy`.
-To use `Normal` mode, set `mode` of `Geometry` to `NormalMode`.
+To use `Normal` mode, set `mode` to `NormalMode`.
 
 ```cpp
-autd.geometry().mode() = std::make_unique<autd3::NormalMode>();
+  autd.mode() = autd3::NormalMode::create();
 ```
 
 The frequency of the transducer is accessed from `Geometry` -> `Device` -> `Transducer` and specified with the function `set_frequency` of `Transducer` or `set_cycle`.
@@ -32,7 +32,7 @@ Normal mode has slightly higher communication latency because it requires one fr
 In practice, the amplitude data is not expected to be updated frequently, so a `NormalPhase` mode is also available, in which only the phase data is transmitted.
 
 ```cpp
-autd.geometry().mode() = std::make_unique<autd3::NormalPhaseMode>();
+  autd.mode() = autd3::NormalPhaseMode::create();
 ```
 
 In this mode, the amplitude is controlled by sending the `Amplitudes`.
