@@ -4,7 +4,7 @@
  * Created Date: 03/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 18/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,7 +26,7 @@ use once_cell::sync::Lazy;
 
 use windows::Win32::{
     Foundation::FILETIME,
-    Networking::WinSock::timeval,
+    Networking::WinSock::TIMEVAL,
     System::{
         Performance::{QueryPerformanceCounter, QueryPerformanceFrequency},
         SystemInformation::GetSystemTimePreciseAsFileTime,
@@ -43,7 +43,7 @@ static PERFORMANCE_FREQUENCY: Lazy<i64> = Lazy::new(|| unsafe {
     freq
 });
 
-unsafe fn osal_gettimeofday(tv: *mut timeval) {
+unsafe fn osal_gettimeofday(tv: *mut TIMEVAL) {
     let mut system_time = FILETIME::default();
     GetSystemTimePreciseAsFileTime(&mut system_time as *mut _);
 
@@ -93,7 +93,7 @@ pub struct HighPrecisionWaiter {}
 
 impl Waiter for NormalWaiter {
     fn timed_wait(abs_time: &timespec) {
-        let mut tp = timeval {
+        let mut tp = TIMEVAL {
             tv_sec: 0,
             tv_usec: 0,
         };
@@ -112,7 +112,7 @@ impl Waiter for NormalWaiter {
 
 impl Waiter for HighPrecisionWaiter {
     fn timed_wait(abs_time: &timespec) {
-        let mut tp = timeval {
+        let mut tp = TIMEVAL {
             tv_sec: 0,
             tv_usec: 0,
         };
@@ -167,7 +167,7 @@ impl<F: Fn(&str) + Send, W: Waiter> EcatThreadHandler<F, W> {
                 tv_nsec: 0,
             };
 
-            let mut tp = timeval {
+            let mut tp = TIMEVAL {
                 tv_sec: 0,
                 tv_usec: 0,
             };

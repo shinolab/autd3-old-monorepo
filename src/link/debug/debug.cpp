@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/10/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -108,10 +108,7 @@ class DebugImpl final : public core::Link {
       const auto freq_div_m = fpga.modulation_frequency_division();
       spdlog::info("\tModulation size = {}, frequency_division = {}", m.size(), freq_div_m);
       if (fpga.is_outputting()) {
-        std::stringstream ss;
-        ss << static_cast<int>(m[0]);
-        for (size_t j = 1; j < m.size(); j++) ss << ", " << static_cast<int>(m[j]);
-        spdlog::debug("\t\tmodulation = {}", ss.str());
+        spdlog::debug("\t\tmodulation = [{}]", fmt::join(m, ", "));
         if (!fpga.is_stm_mode()) {
           const auto [duties, phases] = fpga.drives();
           for (size_t k = 0; k < driver::NUM_TRANS_IN_UNIT; k++)

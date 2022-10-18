@@ -3,7 +3,7 @@
 // Created Date: 05/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/10/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -94,10 +94,10 @@ class SliceViewer {
  private:
   void create_pipeline() {
     const std::vector<uint8_t> vert_shader_code = {
-#include "slice.vert.spv.txt"
+#include "shaders/slice.vert.spv.txt"
     };
     const std::vector<uint8_t> frag_shader_code = {
-#include "slice.frag.spv.txt"
+#include "shaders/slice.frag.spv.txt"
     };
     vk::UniqueShaderModule vert_shader_module = helper::create_shader_module(_context->device(), vert_shader_code);
     vk::UniqueShaderModule frag_shader_module = helper::create_shader_module(_context->device(), frag_shader_code);

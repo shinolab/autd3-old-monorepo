@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.21)
 
 if(WIN32) 
   set(prefix "")
@@ -113,8 +113,6 @@ if(BUILD_GEOMETRY_VIEWER)
   add_autd_dependencies(c_example_geometry_viewer)
   target_include_directories(c_example_geometry_viewer PRIVATE ${PROJECT_SOURCE_DIR}/capi/extra_geometry_viewer)
   target_link_libraries(c_example_geometry_viewer PRIVATE autd3capi-extra-geometry-viewer)
-  target_compile_definitions(c_example_geometry_viewer PRIVATE AUTD3_GEOMETRY_VIEWER_MODEL_PATH="${PROJECT_SOURCE_DIR}/src/extra/geometry_viewer/models/AUTD.glb")
-  target_compile_definitions(c_example_geometry_viewer PRIVATE AUTD3_GEOMETRY_VIEWER_FONT_PATH="${PROJECT_SOURCE_DIR}/examples/fonts/NotoSans-Regular.ttf")
   add_custom_command(TARGET c_example_geometry_viewer POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
     ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/${prefix}autd3capi-extra-geometry-viewer.${extention}

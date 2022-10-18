@@ -12,8 +12,8 @@ jobs:
     - name: Document check
       run: |
         cd tools/doc_checker
-        cargo run -- "../../book/src/jp/FFI/reference.md"
-        cargo run -- "../../book/src/en/FFI/reference.md"
+        cargo run -- "../../doc/book/src/jp/FFI/reference.md"
+        cargo run -- "../../doc/book/src/en/FFI/reference.md"
 
   check-cs:
     name: build cs windows-latest
@@ -36,9 +36,9 @@ jobs:
         dotnet clean
         dotnet build -c:Release /p:Platform=x64
         cd ..
-        dotnet nuget add source $pwd/src/bin/x64/Release -n autd3shapr_local
+        dotnet nuget add source $pwd/src/bin/x64/Release -n autd3sharp_local
         cd ..
-        dotnet build ./book/samples/cs/cs.csproj -c:Release /p:Platform=x64
+        dotnet build ./doc/book/samples/cs/cs.csproj -c:Release /p:Platform=x64
 
   check-cpp:
     name: build cpp ${{ matrix.os }}
@@ -55,13 +55,13 @@ jobs:
         cmake .. -DBUILD_LINK_SOEM=ON -DBUILD_GAIN_HOLO=OFF
         cmake --build . --parallel 8 --config Release
         cd ..
-        copy include -Recurse book/samples/cpp/
-        mkdir book/samples/cpp/lib
-        copy build/lib/Release/*.lib  book/samples/cpp/lib
-        mkdir book/samples/cpp/lib/wpcap
-        copy 3rdparty/SOEM/oshw/win32/wpcap/Lib/x64/*.lib book/samples/cpp/lib/wpcap
-        copy 3rdparty/eigen -Recurse book/samples/cpp/
-        cd book/samples/cpp
+        copy include -Recurse ./doc/book/samples/cpp/
+        mkdir ./doc/book/samples/cpp/lib
+        copy build/lib/Release/*.lib  ./doc/book/samples/cpp/lib
+        mkdir ./doc/book/samples/cpp/lib/wpcap
+        copy 3rdparty/SOEM/oshw/win32/wpcap/Lib/x64/*.lib ./doc/book/samples/cpp/lib/wpcap
+        copy 3rdparty/eigen -Recurse ./doc/book/samples/cpp/
+        cd ./doc/book/samples/cpp
         mkdir build
         cd build
         cmake ..
@@ -77,37 +77,37 @@ jobs:
     - name: mv doxygen doc_build
       run: |
         mkdir -p doc_build
-        sudo mv ./build/doc/html ./doc_build/api
+        sudo mv ./build/doc/doxygen/html ./doc_build/api
     - uses: jontze/action-mdbook@v1
       with:
         token: ${{secrets.GITHUB_TOKEN}}
         use-linkcheck: true
-        use-opengh: true
+        use-opengh: false
     - name: Setup mdbook-katex
       uses: magicgh/mdbook-katex-action@v1
       with:
         version: 'latest'
     - run: |
-        cd book
+        cd ./doc/book
         MDBOOK_BOOK__src=src/en mdbook build --dest-dir book/en
         MDBOOK_BOOK__src=src/jp mdbook build --dest-dir book/jp
     - name: mv mdbook doc
       run: |
         mkdir -p doc_build/book
-        sudo mv ./book/book/en/html ./doc_build/book/en
-        sudo mv ./book/book/jp/html ./doc_build/book/jp
+        sudo mv ./doc/book/book/en/html ./doc_build/book/en
+        sudo mv ./doc/book/book/jp/html ./doc_build/book/jp
     - run: |
-        cd firmware/fpga/docs
+        cd doc/fpga
         mdbook build
     - name: mv fpga doc
       run: |
-        sudo mv ./firmware/fpga/docs/book/html ./doc_build/fpga
+        sudo mv ./doc/fpga/book/html ./doc_build/fpga
     - run: |
-        cd firmware/cpu/docs
+        cd doc/cpu
         mdbook build
     - name: mv cpu doc
       run: |
-        sudo mv ./firmware/cpu/docs/book/html ./doc_build/cpu
+        sudo mv ./doc/cpu/book/html ./doc_build/cpu
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:

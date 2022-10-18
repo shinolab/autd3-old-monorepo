@@ -1,3 +1,0 @@
-# About AUTD3
-
-available soon...
