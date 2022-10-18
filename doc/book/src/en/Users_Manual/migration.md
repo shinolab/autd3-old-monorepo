@@ -25,7 +25,7 @@ This function is removed.
 
 Silent mode flag is removed.
 
-Instead, you can adjust the silent mode more finely by send the `SilentConfig`.
+Instead, you can adjust the silent mode more finely by sending the `SilentConfig`.
 
 The default `SilentConfig` is roughly equivalent to the old `silent_mode = true`, and `SilentConfig::none()` is equivalent to `silent_mode = false`.
 

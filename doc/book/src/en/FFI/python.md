@@ -4,13 +4,13 @@
 
 ## Installation
 
-[PyPI](https://pypi.org/project/pyautd3/) package is available, you can install it from pip.
+[PyPI](https://pypi.org/project/pyautd3/) package is available; you can install it from pip.
 
 ```
 pip install pyautd3
 ```
 
-Or you can install from the autd3 repository.
+Or you can install it from the autd3 repository.
 
 ```
 pip install git+https://github.com/shinolab/autd3.git#subdirectory=python
@@ -39,7 +39,7 @@ See [pyautd example](https://github.com/shinolab/autd3/tree/master/python/exampl
 
 ## Troubleshooting
 
-Q. I can't run the program from linux or mac.
+Q. I can't run the program from Linux or mac.
 
 A. Run as administrator.
 

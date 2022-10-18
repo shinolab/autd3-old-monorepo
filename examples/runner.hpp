@@ -11,9 +11,9 @@
 
 #pragma once
 
+#include <algorithm>
 #include <functional>
 #include <iostream>
-#include <ranges>
 #include <sstream>
 #include <string>
 #include <utility>

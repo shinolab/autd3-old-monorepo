@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/10/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -797,7 +797,7 @@ TYPED_TEST(BackendTest, max_eigen_vector) {
   std::uniform_real_distribution dist(0.0, 1.0);
   std::vector<double> lambda_vals;
   for (Eigen::Index i = 0; i < n; i++) lambda_vals.emplace_back(dist(engine));
-  std::ranges::sort(lambda_vals);  // maximum eigen value is placed at last
+  std::sort(lambda_vals.begin(), lambda_vals.end());  // maximum eigen value is placed at last
   MatrixXc lambda = MatrixXc::Zero(n, n);
   for (Eigen::Index i = 0; i < n; i++) lambda(i, i) = lambda_vals[i];
   MatrixXc a = u * lambda * u.adjoint();
