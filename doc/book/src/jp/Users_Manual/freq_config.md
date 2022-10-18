@@ -4,10 +4,10 @@ Version 2.0から, すべての振動子の周波数を個別に指定できる�
 
 従来の$\SI{40}{kHz}$固定のモードをLegacyモードと呼び, 周波数を可変にできるモードをNormalモードと呼ぶ.
 
-デフォルトはLegacyモードになっており, Normalモードを使用する場合は, `Geometry`の`mode`を`NormalMode`にすれば良い.
+デフォルトはLegacyモードになっており, Normalモードを使用する場合は, `mode`を`NormalMode`にすれば良い.
 
 ```cpp
-autd.geometry().mode() = std::make_unique<autd3::NormalMode>();
+  autd.mode() = autd3::NormalMode::create();
 ```
 
 振動子の周波数は`Geometry`→`Device`→`Transducer`とアクセスし, `Transducer`の`set_frequency`, または, `set_cycle`関数で指定する.
@@ -31,7 +31,7 @@ Normalモードは振幅/位相データをそれぞれ1フレームで送信す
 実際には振幅データは頻繁に更新されることはないと思われるため, 位相データのみを送信する`NormalPhase`モードも用意されている.
 
 ```cpp
-autd.geometry().mode() = std::make_unique<autd3::NormalPhaseMode>();
+  autd.mode() = autd3::NormalPhaseMode::create();
 ```
 
 このモードの場合, 振幅は予め`Amplitudes`クラスを送信することで制御する.
