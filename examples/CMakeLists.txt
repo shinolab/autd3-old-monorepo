@@ -54,9 +54,6 @@ endif()
 if(BUILD_GEOMETRY_VIEWER)
   add_executable(example_geometry_viewer geometry_viewer.cpp)
   target_link_libraries(example_geometry_viewer autd3 geometry_viewer)
-  
-  target_compile_definitions(example_geometry_viewer PRIVATE AUTD3_GEOMETRY_VIEWER_MODEL_PATH="${PROJECT_SOURCE_DIR}/src/extra/geometry_viewer/models/AUTD.glb")
-
   set_target_properties(example_geometry_viewer PROPERTIES FOLDER "example")
 endif()
 

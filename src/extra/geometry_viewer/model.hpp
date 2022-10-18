@@ -168,7 +168,7 @@ class Model {
       Vertex vert{};
       const auto p_gl = glm::make_vec3(&position_buffer[v * 3]);
       const auto n_gl = normals_buffer ? glm::make_vec3(&normals_buffer[v * 3]) : glm::vec3(0.0f);
-      vert.pos = glm::vec4(p_gl.x, -p_gl.z, p_gl.y, 1.0f);  // into AUTD3 coordinate
+      vert.pos = glm::vec4(p_gl.x, -p_gl.z, p_gl.y, 1.0f) / 100.0f;  // into AUTD3 coordinate
       vert.normal = normalize(glm::vec3(n_gl.x, -n_gl.z, n_gl.y));
       vert.uv = tex_coords_buffer ? glm::make_vec2(&tex_coords_buffer[v * 2]) : glm::vec3(0.0f);
       vertices.emplace_back(vert);

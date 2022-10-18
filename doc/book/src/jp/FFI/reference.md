@@ -1470,7 +1470,6 @@ Geometry Viewerを起動する.
 | width                  | int32_t | in     | window width                       |
 | height                 | int32_t | in     | window height                      |
 | vsync                  | bool    | in     | vsync                              |
-| model                  | char*   | in     | path to AUTD3 model                |
 | gpu_idx                | int32_t | in     | GPU index                          |
 | return                 | void    | -      | -                                  |
 

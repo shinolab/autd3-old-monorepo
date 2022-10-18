@@ -3,7 +3,7 @@
 // Created Date: 27/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/10/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -45,7 +45,7 @@ class VulkanImGui {
     _context->device().waitIdle();
 
     const std::vector<uint8_t> font_data = {
-#include "NotoSans-Regular.ttf.txt"
+#include "fonts/NotoSans-Regular.ttf.txt"
     };
     auto* font_data_imgui = new uint8_t[font_data.size()];
     std::memcpy(font_data_imgui, font_data.data(), font_data.size());

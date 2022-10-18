@@ -3,7 +3,7 @@
 // Created Date: 05/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/10/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -63,7 +63,7 @@ class FieldCompute {
     create_descriptor_set_layouts();
 
     const std::vector<uint8_t> shader_code = {
-#include "field.comp.spv.txt"
+#include "shaders/field.comp.spv.txt"
     };
 
     auto [layout, pipeline] = create_pipeline(shader_code);
@@ -71,7 +71,7 @@ class FieldCompute {
     _pipeline1 = std::move(pipeline);
 
     const std::vector<uint8_t> shader_code2 = {
-#include "field2.comp.spv.txt"
+#include "shaders/field2.comp.spv.txt"
     };
     auto [layout2, pipeline2] = create_pipeline(shader_code2);
     _layout2 = std::move(layout2);

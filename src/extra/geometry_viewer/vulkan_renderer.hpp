@@ -3,7 +3,7 @@
 // Created Date: 24/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/10/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -175,10 +175,10 @@ class VulkanRenderer {
 
   void create_graphics_pipeline(const gltf::Model& model) {
     const std::vector<uint8_t> vert_shader_code = {
-#include "vert.spv.txt"
+#include "shaders/vert.spv.txt"
     };
     const std::vector<uint8_t> frag_shader_code = {
-#include "frag.spv.txt"
+#include "shaders/frag.spv.txt"
     };
 
     vk::UniqueShaderModule vert_shader_module = helper::create_shader_module(_context->device(), vert_shader_code);
