@@ -1,14 +1,14 @@
 # Spatio-Temporal Modulation
 
 `STM` is a function to realize Spatio-Temporal Modulation in Hardware timers.
-The SDK provides `PointSTM` which supports only single focus and `GainSTM` which supports arbitrary `Gain`.
+The SDK provides `PointSTM`, which supports only a single focus, and `GainSTM`, which supports arbitrary `Gain`.
 
 ### PointSTM
 
 `PointSTM` has the following restrictions.
 
-* Maximum number of sampling points is 65536
-* Sampling frequency is $\SI{163.84}{MHz}/N$. where $N$ is a 32-bit unsigned integer and must be greater than or equal to $1612$.
+* The maximum number of sampling points is 65536
+* The sampling frequency is $\SI{163.84}{MHz}/N$. where $N$ is a 32-bit unsigned integer and must be greater than or equal to $1612$.
 
 The usage of `PointSTM` is as follows.
 
@@ -67,7 +67,7 @@ The frequency constraints are also the same as for `PointSTM`.
 
 Since `GainSTM` sends all phase/amplitude data, the latency is large[^fn_gain_seq].
 
-To cope with this problem, `GainSTM` provides two modes: `PhaseFull` mode which transmits only the phase, and `PhaseHalf` mode[^phase_half] which compresses the phase to $\SI{4}{bit}$. 
+To cope with this problem, `GainSTM` provides two modes: `PhaseFull` mode, which transmits only the phase, and `PhaseHalf` mode[^phase_half], which compresses the phase to $\SI{4}{bit}$. 
 The mode can be switched with the `mode` function.
 
 ```cpp

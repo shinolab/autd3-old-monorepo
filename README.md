@@ -107,11 +107,10 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 | BUILD_LINK_REMOTE_TWINCAT   | OFF     | build RemoteTwinCAT link             |
 | BUILD_LINK_SIMULATOR        | OFF     | build Simulator link                 |
 | BUILD_LINK_BUNDLE           | OFF     | build Bundle link                    |
-| BUILD_LINK_DEBUG            | OFF     | build Debug link                     |
+| BUILD_LINK_DEBUG            | ON      | build Debug link                     |
 | BUILD_GEOMETRY_VIEWER       | OFF     | build GeometryViewer                 |
 | BUILD_SIMULATOR             | OFF     | build Simulator                      |
 | BUILD_EXAMPLES              | ON      | build examples                       |
-| BUILD_EXAMPLES_EXTRA        | ON      | build extra examples                 |
 | BUILD_CAPI                  | OFF     | build C-API                          |
 | ENABLE_LINT                 | OFF     | enable cpp lint                      |
 | BUILD_TEST                  | OFF     | build tests                          |

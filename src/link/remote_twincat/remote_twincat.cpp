@@ -121,10 +121,9 @@ class RemoteTwinCATImpl final : public core::Link {
         AdsSyncWriteReqEx(this->_port, &p_addr, INDEX_GROUP, INDEX_OFFSET_BASE, static_cast<uint32_t>(tx.effective_size()), tx.data().data());
     if (ret == 0) return true;
 
-    if (ret == ADSERR_DEVICE_INVALIDSIZE)
-      throw std::runtime_error("The number of devices is invalid.");
-    else
-      throw std::runtime_error(fmt::format("Error on sending data: {:#x}", ret));
+    if (ret == ADSERR_DEVICE_INVALIDSIZE) throw std::runtime_error("The number of devices is invalid.");
+
+    throw std::runtime_error(fmt::format("Error on sending data: {:#x}", ret));
   }
 
   bool receive(driver::RxDatagram& rx) override {

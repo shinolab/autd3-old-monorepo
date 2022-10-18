@@ -15,8 +15,6 @@
 
 #include <fmt/core.h>
 
-#include <string>
-
 #include "autd3/core/link.hpp"
 #include "autd3/link/twincat.hpp"
 

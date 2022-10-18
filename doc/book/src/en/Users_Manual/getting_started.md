@@ -16,7 +16,7 @@ The tools and versions used in this section are as follows.
 Follow the official instructions to install each of them.
 For Visual Studio Community 2022, install "Desktop development with C++".
 
-Make sure you setup PATH to use `git` and `cmake` from terminal. 
+Make sure you setup PATH to use `git` and `cmake` from a terminal. 
 
 ## Setup Device
 
@@ -32,13 +32,13 @@ To update the firmware, [Vivado](https://www.xilinx.com/products/design-tools/vi
 
 First, connect the AUTD3 device and the PC to [XILINX Platform Cable](https://www.xilinx.com/products/boards-and-kits/hw-usb-ii-g.html), and [J-Link Plus](https://www.segger.com/products/debug-probes/j-link/models/j-link-plus/) with [J-Link 9-Pin Cortex-M Adapter](https://www.segger-pocjapan.com/j-link-9-pin-cortex-m-adapter).
 Next, connect AUTD3 to the power supply and power it on.
-Next, run `dist/firmware/autd_firmware_writer.ps1` from powershell and follow the instructions.
+Next, run `dist/firmware/autd_firmware_writer.ps1` from PowerShell and follow the instructions.
 The update will take a few minutes.
 
 
 ## Building first program
 
-First, open a terminal and prepare an directory for sample.
+First, open a terminal and prepare a directory for the sample.
 
 ```
 mkdir autd3_sample
@@ -75,7 +75,8 @@ git checkout 3.4.0
 cd ..
 ```
 
-Alternatively, you can download [Eigen3](https://gitlab.com/libeigen/eigen) directly, and put it under the `autd3_sample` folder. The Eigen3 version used in the SDK is 3.4.0.
+Alternatively, you can download [Eigen3](https://gitlab.com/libeigen/eigen) directly and put it under the `autd3_sample` folder.
+The Eigen3 version used in the SDK is 3.4.0.
 
 At this point, the directory structure is as follows.
 
@@ -185,7 +186,7 @@ std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::Fir
 
 Note that if a version other than v2.4 is displayed here, it is not guaranteed to work well.
 
-Next, set silencer.
+Next, setup silencer.
 
 ```cpp
 autd3::SilencerConfig config;
