@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/10/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -144,10 +144,19 @@ class VulkanContext {
     uint32_t glfw_extension_count = 0;
     const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
 
+    std::vector<const char*> extensions;
+    extensions.reserve(glfw_extension_count);
+    for (uint32_t i = 0; i < glfw_extension_count; i++) extensions.emplace_back(glfw_extensions[i]);
+#ifdef __APPLE__
+    extensions.emplace_back("VK_KHR_portability_enumeration");
+#endif
+
     vk::InstanceCreateInfo create_info = vk::InstanceCreateInfo()
+#ifdef __APPLE__
+                                             .setFlags(vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR)
+#endif
                                              .setPApplicationInfo(&app_info)
-                                             .setEnabledExtensionCount(glfw_extension_count)
-                                             .setPpEnabledExtensionNames(glfw_extensions);
+                                             .setPEnabledExtensionNames(extensions);
     if (_enable_validation_layers) create_info.setPEnabledLayerNames(validation_layers);
 
     _instance = createInstanceUnique(create_info, nullptr);
