@@ -504,7 +504,8 @@ class VulkanImGui {
           if (_show_mod_plot) {
             std::vector<float> mod_v;
             mod_v.resize(m.size());
-            std::ranges::transform(m, mod_v.begin(), [](const uint8_t v) { return std::sin(static_cast<float>(v) / 512.0f * glm::pi<float>()); });
+            std::transform(m.begin(), m.end(), mod_v.begin(),
+                           [](const uint8_t v) { return std::sin(static_cast<float>(v) / 512.0f * glm::pi<float>()); });
             ImGui::PlotLines("##mod plot", mod_v.data(), static_cast<int32_t>(mod_v.size()), 0, nullptr, 0.0f, 1.0f, _mod_plot_size);
           }
 
@@ -513,7 +514,7 @@ class VulkanImGui {
           if (_show_mod_plot_raw) {
             std::vector<float> mod_v;
             mod_v.resize(m.size());
-            std::ranges::transform(m, mod_v.begin(), [](const uint8_t v) { return static_cast<float>(v); });
+            std::transform(m.begin(), m.end(), mod_v.begin(), [](const uint8_t v) { return static_cast<float>(v); });
             ImGui::PlotLines("##mod plot raw", mod_v.data(), static_cast<int32_t>(mod_v.size()), 0, nullptr, 0.0f, 255.0f, _mod_plot_size);
           }
 
