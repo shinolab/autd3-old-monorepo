@@ -14,22 +14,28 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [3.8, 3.9]
 
     steps:
     - uses: actions/checkout@v3
+    - name: install compile tools
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt update
+        sudo apt install mesa-common-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev -y
+      shell: bash
     - name: Build capi
       run: |
         mkdir build
         cd build
-        cmake .. -DBUILD_ALL=ON
+        cmake .. -DBUILD_ALL=ON -DDISABLE_EXAMPLES=ON
         cmake --build . --parallel 8
         cd ..
     - name: Copy linux binary
       if: matrix.os == 'ubuntu-latest'
       run: |
         mkdir -p python/pyautd3/bin/linux_x64
-        cp build/bin/*.so python/pyautd3/bin/linux_x64
+        cp build/bin/**/*.so python/pyautd3/bin/linux_x64
       shell: bash
       env:
         CC: gcc-10
@@ -44,7 +50,7 @@ jobs:
       if: matrix.os == 'macos-latest'
       run: |
         mkdir -p python/pyautd3/bin/macos_universal
-        cp build/bin/*.dylib python/pyautd3/bin/macos_universal
+        cp build/bin/**/*.dylib python/pyautd3/bin/macos_universal
       shell: bash
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4

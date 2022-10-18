@@ -27,5 +27,5 @@ class NativeMethods(metaclass=Singleton):
             return
         self.dll = ctypes.CDLL(os.path.join(self.bin, f'{self.prefix}autd3capi-extra-geometry-viewer{self.ext}'))
 
-        self.dll.AUTDExtraGeometryViewer.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_int32, ctypes.c_bool, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int32] 
+        self.dll.AUTDExtraGeometryViewer.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_int32, ctypes.c_bool, ctypes.c_int32] 
         self.dll.AUTDExtraGeometryViewer.restype = None
