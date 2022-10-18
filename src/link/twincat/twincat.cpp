@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/10/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,7 +13,8 @@
 #include <Windows.h>
 #endif
 
-#include <sstream>
+#include <fmt/core.h>
+
 #include <string>
 
 #include "autd3/core/link.hpp"
@@ -100,11 +101,7 @@ void TwinCATImpl::open(const core::Geometry&) {
 
   AmsAddr addr{};
   const auto get_addr = reinterpret_cast<TcAdsGetLocalAddressEx>(GetProcAddress(this->_lib, TCADS_ADS_GET_LOCAL_ADDRESS_EX));  // NOLINT
-  if (const auto ret = get_addr(this->_port, &addr); ret) {
-    std::stringstream ss;
-    ss << "AdsGetLocalAddress: " << std::hex << ret;
-    throw std::runtime_error(ss.str());
-  }
+  if (const auto ret = get_addr(this->_port, &addr); ret) throw std::runtime_error(fmt::format("AdsGetLocalAddress: {:x}", ret));
 
   _write = reinterpret_cast<TcAdsSyncWriteReqEx>(GetProcAddress(this->_lib, TCADS_ADS_SYNC_WRITE_REQ_EX));  // NOLINT
   _read = reinterpret_cast<TcAdsSyncReadReqEx>(GetProcAddress(this->_lib, TCADS_ADS_SYNC_READ_REQ_EX));     // NOLINT
@@ -116,11 +113,7 @@ void TwinCATImpl::close() {
   if (!this->is_open()) return;
 
   const auto port_close = reinterpret_cast<TcAdsPortCloseEx>(GetProcAddress(this->_lib, TCADS_ADS_PORT_CLOSE_EX));  // NOLINT
-  if (const auto res = (*port_close)(this->_port); res != 0) {
-    std::stringstream ss;
-    ss << "Error on closing (local): " << std::hex << res;
-    throw std::runtime_error(ss.str());
-  }
+  if (const auto res = (*port_close)(this->_port); res != 0) throw std::runtime_error(fmt::format("Error on closing (local): {:x}", res));
 
   this->_port = 0;
 }
@@ -132,13 +125,8 @@ bool TwinCATImpl::send(const driver::TxDatagram& tx) {
                                     &this->_net_addr, INDEX_GROUP, INDEX_OFFSET_BASE,
                                     static_cast<unsigned long>(tx.effective_size()),  // NOLINT
                                     const_cast<void*>(static_cast<const void*>(tx.data().data())));
-      ret != 0) {
-    // 6 : target port not found
-    std::stringstream ss;
-    ss << "Error on sending data (local): " << std::hex << ret;
-    throw std::runtime_error(ss.str());
-  }
-
+      ret != 0)
+    throw std::runtime_error(fmt::format("Error on sending data (local): {:x}", ret));  // 6 : target port not found
   return true;
 }
 
@@ -149,12 +137,8 @@ bool TwinCATImpl::receive(driver::RxDatagram& rx) {
   if (const auto ret = this->_read(this->_port,  // NOLINT
                                    &this->_net_addr, INDEX_GROUP, INDEX_OFFSET_BASE_READ,
                                    static_cast<uint32_t>(rx.messages().size() * sizeof(driver::RxMessage)), rx.messages().data(), &read_bytes);
-      ret != 0) {
-    std::stringstream ss;
-    ss << "Error on receiving data: " << std::hex << ret;
-    throw std::runtime_error(ss.str());
-  }
-
+      ret != 0)
+    throw std::runtime_error(fmt::format("Error on receiving data: {:x}", ret));
   return true;
 }
 

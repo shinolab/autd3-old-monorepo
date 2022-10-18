@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/09/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,7 +11,6 @@
 
 #pragma once
 
-#include <sstream>
 #include <vector>
 
 #include "body.hpp"
@@ -72,11 +71,10 @@ inline void modulation(const uint8_t msg_id, const uint8_t* const mod_data, cons
   }
 
   if (is_first_frame) {
-    if (freq_div < MOD_SAMPLING_FREQ_DIV_MIN) {
-      std::stringstream ss;
-      ss << "Modulation frequency division is oud of range. Minimum is " << MOD_SAMPLING_FREQ_DIV_MIN << ", but you use " << freq_div;
-      throw std::runtime_error(ss.str());
-    }
+    if (freq_div < MOD_SAMPLING_FREQ_DIV_MIN)
+      throw std::runtime_error("Modulation frequency division is oud of range. Minimum is " + std::to_string(MOD_SAMPLING_FREQ_DIV_MIN) +
+                               ", but you use " + std::to_string(freq_div));
+
     tx.header().cpu_flag.set(CPUControlFlags::MOD_BEGIN);
     tx.header().mod_head().freq_div = freq_div;
     std::memcpy(&tx.header().mod_head().data[0], mod_data, mod_size);
@@ -88,11 +86,9 @@ inline void modulation(const uint8_t msg_id, const uint8_t* const mod_data, cons
 }
 
 inline void config_silencer(const uint8_t msg_id, const uint16_t cycle, const uint16_t step, TxDatagram& tx) {
-  if (cycle < SILENCER_CYCLE_MIN) {
-    std::stringstream ss;
-    ss << "Silencer cycle is oud of range. Minimum is " << SILENCER_CYCLE_MIN << ", but you use " << cycle;
-    throw std::runtime_error(ss.str());
-  }
+  if (cycle < SILENCER_CYCLE_MIN)
+    throw std::runtime_error("Silencer cycle is oud of range. Minimum is " + std::to_string(SILENCER_CYCLE_MIN) + ", but you use " +
+                             std::to_string(cycle));
 
   tx.header().msg_id = msg_id;
   tx.header().cpu_flag.remove(CPUControlFlags::MOD);
@@ -171,11 +167,9 @@ inline void point_stm_body(const std::vector<std::vector<STMFocus>>& points, con
   if (points.empty() || points[0].empty()) return;
 
   if (is_first_frame) {
-    if (freq_div < POINT_STM_SAMPLING_FREQ_DIV_MIN) {
-      std::stringstream ss;
-      ss << "STM frequency division is oud of range. Minimum is " << POINT_STM_SAMPLING_FREQ_DIV_MIN << ", but you use " << freq_div;
-      throw std::runtime_error(ss.str());
-    }
+    if (freq_div < POINT_STM_SAMPLING_FREQ_DIV_MIN)
+      throw std::runtime_error("STM frequency division is oud of range. Minimum is " + std::to_string(POINT_STM_SAMPLING_FREQ_DIV_MIN) +
+                               ", but you use " + std::to_string(freq_div));
 
     tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
     const auto sound_speed_internal = static_cast<uint32_t>(std::round(sound_speed * 1024.0));
@@ -220,11 +214,9 @@ inline void gain_stm_legacy_header(TxDatagram& tx) noexcept {
 inline void gain_stm_legacy_body(const std::vector<const std::vector<Drive>*>& drives, const bool is_first_frame, const uint32_t freq_div,
                                  const bool is_last_frame, const GainSTMMode mode, TxDatagram& tx) noexcept(false) {
   if (is_first_frame) {
-    if (freq_div < GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN) {
-      std::stringstream ss;
-      ss << "STM frequency division is oud of range. Minimum is " << GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN << ", but you use " << freq_div;
-      throw std::runtime_error(ss.str());
-    }
+    if (freq_div < GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN)
+      throw std::runtime_error("STM frequency division is oud of range. Minimum is " + std::to_string(GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN) +
+                               ", but you use " + std::to_string(freq_div));
 
     tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
     for (size_t i = 0; i < tx.size(); i++) {
@@ -300,11 +292,9 @@ inline void gain_stm_normal_phase(const std::vector<Drive>& drives, const bool i
 #pragma warning(pop)
 
   if (is_first_frame) {
-    if (freq_div < GAIN_STM_SAMPLING_FREQ_DIV_MIN) {
-      std::stringstream ss;
-      ss << "STM frequency division is oud of range. Minimum is " << GAIN_STM_SAMPLING_FREQ_DIV_MIN << ", but you use " << freq_div;
-      throw std::runtime_error(ss.str());
-    }
+    if (freq_div < GAIN_STM_SAMPLING_FREQ_DIV_MIN)
+      throw std::runtime_error("STM frequency division is oud of range. Minimum is " + std::to_string(GAIN_STM_SAMPLING_FREQ_DIV_MIN) +
+                               ", but you use " + std::to_string(freq_div));
 
     tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
     for (size_t i = 0; i < tx.size(); i++) {

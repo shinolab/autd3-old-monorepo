@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/09/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -153,11 +153,7 @@ struct FPGAInfo {
 
   [[nodiscard]] bool is_thermal_assert() const noexcept { return (info & 0x01) != 0; }
 
-  [[nodiscard]] std::string to_string() const {
-    std::stringstream ss;
-    ss << "Thermal assert = " << std::boolalpha << is_thermal_assert();
-    return ss.str();
-  }
+  [[nodiscard]] std::string to_string() const { return "Thermal assert = " + std::to_string(is_thermal_assert()); }
 };
 
 inline std::ostream& operator<<(std::ostream& os, const FPGAInfo& obj) {

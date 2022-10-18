@@ -3,13 +3,15 @@
 // Created Date: 23/08/2019
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/10/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2019-2020 Shun Suzuki. All rights reserved.
 //
 
 #include "link_soem_impl.hpp"
+
+#include <fmt/core.h>
 
 #include <cstdint>
 #include <memory>
@@ -64,27 +66,15 @@ void SOEMLink::open(const core::Geometry& geometry) {
 
   spdlog::debug("interface name: {}", _ifname);
 
-  if (ec_init(_ifname.c_str()) <= 0) {
-    std::stringstream ss;
-    ss << "No socket connection on " << _ifname;
-    throw std::runtime_error(ss.str());
-  }
+  if (ec_init(_ifname.c_str()) <= 0) throw std::runtime_error(fmt::format("No socket connection on {}", _ifname));
 
   const auto wc = ec_config_init(0);
   if (wc <= 0) throw std::runtime_error("No slaves found");
 
   for (auto i = 1; i <= wc; i++)
-    if (std::strcmp(ec_slave[i].name, "AUTD") != 0) {
-      std::stringstream ss;
-      ss << "Slave[" << i << "] is not AUTD";
-      throw std::runtime_error(ss.str());
-    }
-
-  if (static_cast<size_t>(wc) != dev_num) {
-    std::stringstream ss;
-    ss << "The number of slaves you configured: " << dev_num << ", but found: " << wc;
-    throw std::runtime_error(ss.str());
-  }
+    if (std::strcmp(ec_slave[i].name, "AUTD") != 0) throw std::runtime_error(fmt::format("Slave[{}] is not AUTD3", i));
+  if (static_cast<size_t>(wc) != dev_num)
+    throw std::runtime_error(fmt::format("The number of slaves you configured: {}, but found: {}", dev_num, wc));
 
   _user_data = std::make_unique<uint32_t[]>(1);
   _user_data[0] = driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle;
