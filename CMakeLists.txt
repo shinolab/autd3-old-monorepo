@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.21)
 
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
   message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt. ")
@@ -8,7 +8,7 @@ project(autd3)
 
 set(VERSION_MAJOR 2 CACHE STRING "Project major version number.")
 set(VERSION_MINOR 4 CACHE STRING "Project minor version number.")
-set(VERSION_PATCH 2 CACHE STRING "Project patch version number.")
+set(VERSION_PATCH 3 CACHE STRING "Project patch version number.")
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -33,14 +33,14 @@ option(BUILD_LINK_SOEM "BUILD_LINK_SOEM" ON)
 option(BUILD_LINK_TWINCAT "BUILD_LINK_TWINCAT" OFF)
 option(BUILD_LINK_REMOTE_TWINCAT "BUILD_LINK_REMOTE_TWINCAT" OFF)
 option(BUILD_LINK_BUNDLE "BUILD_LINK_BUNDLE" OFF)
-option(BUILD_LINK_DEBUG "BUILD_LINK_DEBUG" OFF)
+option(BUILD_LINK_DEBUG "BUILD_LINK_DEBUG" ON)
 option(BUILD_LINK_SIMULATOR "BUILD_LINK_SIMULATOR" OFF)
 
 option(BUILD_GEOMETRY_VIEWER "BUILD_GEOMETRY_VIEWER" OFF)
 option(BUILD_SIMULATOR "BUILD_SIMULATOR" OFF)
 
 option(BUILD_EXAMPLES "BUILD_EXAMPLES" ON)
-option(BUILD_EXAMPLES "BUILD_EXAMPLES_EXTRA" ON)
+option(DISABLE_EXAMPLES "DISABLE_EXAMPLES" OFF)
 
 option(BUILD_CAPI "BUILD_CAPI" OFF)
 
@@ -59,13 +59,28 @@ if(BUILD_ALL)
   set(BUILD_LINK_BUNDLE ON)
   set(BUILD_LINK_DEBUG ON)
   set(BUILD_LINK_SIMULATOR ON)
+  set(BUILD_GEOMETRY_VIEWER ON)
+  set(BUILD_SIMULATOR ON)
   set(BUILD_EXAMPLES ON)
-  set(BUILD_EXAMPLES_EXTRA ON)
   set(BUILD_CAPI ON)
+  if(APPLE)
+    set(BUILD_GEOMETRY_VIEWER OFF)
+    set(BUILD_SIMULATOR OFF)
+  endif()
+  if(DEFINED BUILD_TARGET)
+    if(${BUILD_TARGET} STREQUAL ARM32 OR ${BUILD_TARGET} STREQUAL ARM)
+      set(BUILD_GEOMETRY_VIEWER OFF)
+      set(BUILD_SIMULATOR OFF)
+    endif()
+    if(${BUILD_TARGET} STREQUAL ARM64 OR ${BUILD_TARGET} STREQUAL AARCH64)
+      set(BUILD_GEOMETRY_VIEWER OFF)
+      set(BUILD_SIMULATOR OFF)
+    endif()
+  endif()
 endif()
 
-if(BUILD_EXAMPLES_EXTRA)
-  set(BUILD_LINK_DEBUG ON)
+if(DISABLE_EXAMPLES)
+  set(BUILD_EXAMPLES OFF)
 endif()
 
 if(WIN32)
@@ -89,12 +104,16 @@ else()
   endif()
 endif()
 
+if(NOT BUILD_SHARED_LIBS)
+  set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+endif()
+
 if(BUILD_DOC)
   find_package(Doxygen)
 
   if(DOXYGEN_FOUND)
     message(STATUS "Doxygen found.")
-    add_subdirectory(doc)
+    add_subdirectory(doc/doxygen)
   else()
     message(STATUS "Doxygen is needed to build the documentation. Skip building doc...")
   endif()
@@ -114,7 +133,7 @@ if(ENABLE_LINT)
   ADD_CUSTOM_TARGET(cpplint
     python
     ${PROJECT_SOURCE_DIR}/3rdparty/cpplint/cpplint.py
-    --filter=-runtime/references,-build/c++11,-whitespace/comments,-readability/braces,-build/include_subdir,-build/include_order
+    --filter=-runtime/references,-build/c++11,-whitespace/comments,-readability/braces,-build/include_subdir,-build/include_order,-build/include_what_you_use
     --linelength=1000
     ${lint_files}
   )
@@ -126,9 +145,17 @@ endif()
 set(EIGEN_PATH ${PROJECT_SOURCE_DIR}/3rdparty/eigen)
 
 if(Git_FOUND)
+  execute_process(COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init --recursive -- ${PROJECT_SOURCE_DIR}/3rdparty/fmt)
+endif()
+add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/fmt)
+set_target_properties(fmt PROPERTIES FOLDER "3rdparty")
+
+if(Git_FOUND)
   execute_process(COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init --recursive -- ${PROJECT_SOURCE_DIR}/3rdparty/spdlog)
 endif()
-set(SPDLOG_PATH ${PROJECT_SOURCE_DIR}/3rdparty/spdlog/include)
+set(SPDLOG_FMT_EXTERNAL ON)
+add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/spdlog)
+set_target_properties(spdlog PROPERTIES FOLDER "3rdparty")
 
 if(BUILD_GEOMETRY_VIEWER OR BUILD_SIMULATOR)
   if(MSVC)
@@ -183,12 +210,13 @@ if(BUILD_SIMULATOR)
 endif()
 
 add_library(autd3_common INTERFACE)
-target_include_directories(autd3_common INTERFACE ${PROJECT_SOURCE_DIR}/include ${EIGEN_PATH} ${SPDLOG_PATH})
+target_include_directories(autd3_common INTERFACE ${PROJECT_SOURCE_DIR}/include ${EIGEN_PATH})
 target_compile_definitions(autd3_common INTERFACE EIGEN_MPL2_ONLY)
+target_link_libraries(autd3_common INTERFACE fmt::fmt spdlog::spdlog)
 
 if(WIN32)
   if(MSVC)
-    target_compile_options(autd3_common INTERFACE /bigobj /wd4819)
+    target_compile_options(autd3_common INTERFACE /bigobj /wd4819 /Zc:__cplusplus)
   endif()
 elseif(APPLE)
   target_compile_options(autd3_common INTERFACE -Wall -Wextra -Wno-unknown-pragmas)

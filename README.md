@@ -1,5 +1,5 @@
 <h1 align="center">
-AUTD3: Ariborne Ultrasound Tactile Display 3
+AUTD3: Airborne Ultrasound Tactile Display 3
 </h1>
 
 <div align="center">
@@ -38,7 +38,7 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 
 ## CAUTION
 
-* Before using, be sure to write the latest firmware in `dist/firmware`. 
+* Before using, write the latest firmware in `dist/firmware`. 
     * For more information, please see [README](/dist/firmware/README.md).
 
 ## Requirements
@@ -49,13 +49,14 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 ## Build
 
 * Pre-built binaries and header files are on the [GitHub Release page](https://github.com/shinolab/autd3/releases). 
-* Or, if you want to build from the source, install CMake version 3.16 or higher and follow the instructions below.
+* Or, if you want to build from the source, install CMake version 3.21 or higher and follow the instructions below.
     * Windows:
         ```
         git clone https://github.com/shinolab/autd3.git
         ```
         Then, run `build.ps1` (Visual Studio 2019 or 2022 is required) or build with CMake
-    * macOS: 
+    
+    * macOS:
         ```
         git clone https://github.com/shinolab/autd3.git
         cd autd3
@@ -64,7 +65,7 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
         make
         ```
 
-    * linux:
+    * Linux:
         ```
         git clone https://github.com/shinolab/autd3.git 
         cd autd3
@@ -74,7 +75,8 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
         ```
 
     * Some projects are disabled by default. Please enable them by switching their flags on
-        * e.g., if you want to use TwinCATLink;
+
+        * For example, if you want to use TwinCATLink:
             ```
             cmake .. -DBUILD_LINK_TWINCAT=ON
             ```
@@ -105,11 +107,10 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 | BUILD_LINK_REMOTE_TWINCAT   | OFF     | build RemoteTwinCAT link             |
 | BUILD_LINK_SIMULATOR        | OFF     | build Simulator link                 |
 | BUILD_LINK_BUNDLE           | OFF     | build Bundle link                    |
-| BUILD_LINK_DEBUG            | OFF     | build Debug link                     |
+| BUILD_LINK_DEBUG            | ON      | build Debug link                     |
 | BUILD_GEOMETRY_VIEWER       | OFF     | build GeometryViewer                 |
 | BUILD_SIMULATOR             | OFF     | build Simulator                      |
 | BUILD_EXAMPLES              | ON      | build examples                       |
-| BUILD_EXAMPLES_EXTRA        | ON      | build extra examples                 |
 | BUILD_CAPI                  | OFF     | build C-API                          |
 | ENABLE_LINT                 | OFF     | enable cpp lint                      |
 | BUILD_TEST                  | OFF     | build tests                          |
@@ -126,10 +127,10 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 
 ## Citing
 
-* If you use this SDK in your research please consider to include the following citation in your publications:
+* If you use this SDK in your research, please consider including the following citation in your publications:
 
-   * [S. Suzuki, S. Inoue, M. Fujiwara, Y. Makino and H. Shinoda, "AUTD3: Scalable Airborne Ultrasound Tactile Display," in IEEE Transactions on Haptics, doi: 10.1109/TOH.2021.3069976.](https://ieeexplore.ieee.org/document/9392322)
-   * S. Inoue, Y. Makino and H. Shinoda "Scalable Architecture for Airborne Ultrasound Tactile Display", Asia Haptics 2016
+   * [S. Suzuki, S. Inoue, M. Fujiwara, Y. Makino, and H. Shinoda, "AUTD3: Scalable Airborne Ultrasound Tactile Display," in IEEE Transactions on Haptics, DOI: 10.1109/TOH.2021.3069976.](https://ieeexplore.ieee.org/document/9392322)
+   * S. Inoue, Y. Makino and H. Shinoda "Scalable Architecture for Airborne Ultrasound Tactile Display," Asia Haptics 2016
 
 ## LICENSE
 

@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 16/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,9 +11,17 @@
 
 #pragma once
 
+#if __cplusplus >= 202002L
+#include <numbers>
+#endif
+
 namespace autd3::driver {
 
+#if __cplusplus >= 202002L
+constexpr double pi = std::numbers::pi;
+#else
 constexpr double pi = 3.141592653589793238462643383279502884L;
+#endif
 
 constexpr size_t NUM_TRANS_IN_UNIT = 249;
 constexpr size_t NUM_TRANS_X = 18;

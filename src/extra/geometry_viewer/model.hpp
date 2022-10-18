@@ -3,13 +3,15 @@
 // Created Date: 26/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/10/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
+
+#include <fmt/core.h>
 
 #include <memory>
 #include <string>
@@ -129,9 +131,8 @@ class Model {
 
   void load_node(const fx::gltf::Node& gltf_node, const fx::gltf::Document& doc, std::vector<uint32_t>& indices, std::vector<Vertex>& vertices) {
     for (const int i : gltf_node.children) load_node(doc.nodes[i], doc, indices, vertices);
-    if (gltf_node.mesh > -1) {
-      const auto& [name, weights, primitives, extensions_and_extras] = doc.meshes[gltf_node.mesh];
-      for (const auto& gltf_primitive : primitives) {
+    if (gltf_node.mesh > -1)
+      for (const auto& gltf_primitive : doc.meshes[gltf_node.mesh].primitives) {
         const auto first_index = static_cast<uint32_t>(indices.size());
         const auto vertex_start = static_cast<uint32_t>(vertices.size());
         load_vertices(gltf_primitive, doc, vertices);
@@ -142,7 +143,6 @@ class Model {
         primitive.material_index = gltf_primitive.material;
         _primitives.emplace_back(primitive);
       }
-    }
   }
 
   void load_vertices(const fx::gltf::Primitive& gltf_primitive, const fx::gltf::Document& doc, std::vector<Vertex>& vertices) const {
@@ -169,7 +169,7 @@ class Model {
       Vertex vert{};
       const auto p_gl = glm::make_vec3(&position_buffer[v * 3]);
       const auto n_gl = normals_buffer ? glm::make_vec3(&normals_buffer[v * 3]) : glm::vec3(0.0f);
-      vert.pos = glm::vec4(p_gl.x, -p_gl.z, p_gl.y, 1.0f);  // into AUTD3 coordinate
+      vert.pos = glm::vec4(p_gl.x, -p_gl.z, p_gl.y, 1.0f) / 100.0f;  // into AUTD3 coordinate
       vert.normal = normalize(glm::vec3(n_gl.x, -n_gl.z, n_gl.y));
       vert.uv = tex_coords_buffer ? glm::make_vec2(&tex_coords_buffer[v * 2]) : glm::vec3(0.0f);
       vertices.emplace_back(vert);
@@ -209,9 +209,7 @@ class Model {
       case fx::gltf::Accessor::ComponentType::Byte:
       case fx::gltf::Accessor::ComponentType::Short:
       case fx::gltf::Accessor::ComponentType::Float:
-        std::stringstream ss;
-        ss << "Not supported component type " << static_cast<uint16_t>(component_type) << std::endl;
-        throw std::runtime_error(ss.str());
+        throw std::runtime_error(fmt::format("Not supported component type: {}", static_cast<uint16_t>(component_type)));
     }
 
     return count;

@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -99,7 +99,7 @@ class BufferPool final {
   }
 
   void clear() {
-    for (auto& [_, p] : _pool) cudaFree(p);
+    for (const auto& [_, p] : _pool) cudaFree(p);
     _pool.clear();
   }
 

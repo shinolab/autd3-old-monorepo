@@ -3,7 +3,7 @@
 // Created Date: 31/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/10/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,8 +24,9 @@ int main() try {
   auto link = autd3::link::Debug().build();
   autd.open(std::move(link));
 
+  autd.mode() = autd3::NormalMode::create();
   for (auto& dev : autd.geometry())
-    for (auto& tr : dev) tr.set_frequency(70e3);  // 70 kHz
+    for (auto& tr : dev) tr.set_frequency(70e3);  // actual frequency is 163.84MHz/2341 ~ 69987 Hz
 
   autd.clear();
   autd.synchronize();  // You must configure the frequencies of all transducers before calling synchronize().

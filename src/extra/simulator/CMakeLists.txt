@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.21)
 
 add_library(simulator
   color.hpp
@@ -13,7 +13,7 @@ add_library(simulator
   ${PROJECT_SOURCE_DIR}/include/autd3/extra/simulator.hpp
   simulator.cpp
 )
-target_include_directories(simulator PRIVATE ${PROJECT_SOURCE_DIR}/include ${STB_INCLUDE_PATH} ${Vulkan_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/src/extra/simulator/shaders ${PROJECT_SOURCE_DIR}/src/extra/simulator/textures)
+target_include_directories(simulator PRIVATE ${PROJECT_SOURCE_DIR}/include ${STB_INCLUDE_PATH} ${Vulkan_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/src/extra/simulator)
 target_link_libraries(simulator PRIVATE autd3_common vk_helper glm::glm glfw imgui_vulkan)
 target_link_libraries(simulator PUBLIC nlohmann_json tinycolormap)
 if (WIN32)

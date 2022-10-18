@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>AUTD3_GUI_Controller</RootNamespace>
@@ -15,13 +15,13 @@
     <EnableMsixTooling>true</EnableMsixTooling>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <WindowsPackageType>None</WindowsPackageType>
-    <AssemblyVersion>2.4.2</AssemblyVersion>
-    <FileVersion>2.4.2</FileVersion>
+    <AssemblyVersion>2.4.3</AssemblyVersion>
+    <FileVersion>2.4.3</FileVersion>
     <PackageProjectUrl>https://github.com/shinolab/autd3</PackageProjectUrl>
     <RepositoryUrl>https://github.com/shinolab/autd3</RepositoryUrl>
     <Company>Shinoda &amp; Makino Laboratory</Company>
     <Authors>Shun Suzuki</Authors>
-    <Version>2.4.2</Version>
+    <Version>2.4.3</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
@@ -46,7 +46,7 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.220930.4-preview2" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageReference Include="WinUIEx" Version="1.8.0" />
-    <PackageReference Include="AUTD3Sharp" Version="2.4.2" />
+    <PackageReference Include="AUTD3Sharp" Version="2.4.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -102,13 +102,6 @@
 		  <NativeResources Include="$(ProjectDir)runtimes\win-x64\native\*.dll" />
   	  </ItemGroup>
 	  <Copy SourceFiles="@(NativeResources)" DestinationFolder="$(OutDir)" />
-  </Target>
-
-  <Target Name="CopyModelResources" AfterTargets="Build">
-	  <ItemGroup>
-		  <ModelResources Include="$(ProjectDir)..\..\..\src\extra\geometry_viewer\models\*.glb" />
-  	  </ItemGroup>
-	  <Copy SourceFiles="@(ModelResources)" DestinationFolder="$(OutDir)\models" />
   </Target>
 
 </Project>

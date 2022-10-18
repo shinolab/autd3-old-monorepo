@@ -3,7 +3,7 @@
 // Created Date: 27/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/10/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -44,12 +44,13 @@ class VulkanImGui {
 
     _context->device().waitIdle();
 
-    ImFont* font;
-    if (!_font_path.empty()) {
-      font = io.Fonts->AddFontFromFileTTF(_font_path.c_str(), _font_size * scale);
-      io.FontGlobalScale = 1.0f / scale;
-    } else
-      font = io.Fonts->AddFontDefault();
+    const std::vector<uint8_t> font_data = {
+#include "fonts/NotoSans-Regular.ttf.txt"
+    };
+    auto* font_data_imgui = new uint8_t[font_data.size()];
+    std::memcpy(font_data_imgui, font_data.data(), font_data.size());
+    ImFont* font = io.Fonts->AddFontFromMemoryTTF(font_data_imgui, static_cast<int>(font_data.size()), _font_size * scale);
+    io.FontGlobalScale = 1.0f / scale;
     io.FontDefault = font;
 
     // To destroy old texture image and image view, and to free memory
@@ -99,7 +100,7 @@ class VulkanImGui {
     ImGui_ImplVulkan_DestroyFontUploadObjects();
   }
 
-  void init(const uint32_t image_count, const VkRenderPass renderer_pass, std::vector<gltf::Geometry> geometries, const std::string& font_path) {
+  void init(const uint32_t image_count, const VkRenderPass renderer_pass, std::vector<gltf::Geometry> geometries) {
     _geometries = std::move(geometries);
 
     const auto& [pos, rot] = _geometries[0];
@@ -148,7 +149,6 @@ class VulkanImGui {
                                         check_vk_result};
     ImGui_ImplVulkan_Init(&init_info, renderer_pass);
 
-    _font_path = font_path;
     set_font();
   }
 
@@ -291,7 +291,6 @@ class VulkanImGui {
  private:
   const helper::WindowHandler* _window{nullptr};
   const helper::VulkanContext* _context{nullptr};
-  std::string _font_path;
   float _font_size = 16.0f;
   bool _update_font = false;
   float _cam_move_speed = 10.0f;
