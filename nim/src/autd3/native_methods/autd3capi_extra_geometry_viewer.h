@@ -12,4 +12,4 @@
 #  endif
 #endif
 
-void AUTDExtraGeometryViewer(void* cnt, int32 width, int32 height, bool vsync, char* model, char* font, int32 gpu_idx);
+void AUTDExtraGeometryViewer(void* cnt, int32 width, int32 height, bool vsync, int32 gpu_idx);
