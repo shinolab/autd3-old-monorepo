@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/10/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,7 +12,6 @@
 #pragma once
 
 #include <iterator>
-#include <ranges>
 #include <thread>
 #include <vector>
 
@@ -34,7 +33,7 @@ inline void flag_test(autd3::Controller& autd) {
     while (!fin) {
       const auto states = autd.read_fpga_info();
       std::cout << prompts[prompts_idx++ / 1000 % prompts.size()] << " FPGA Status...\n";
-      std::ranges::copy(states, std::ostream_iterator<autd3::FPGAInfo>(std::cout, "\n"));
+      std::copy(states.begin(), states.end(), std::ostream_iterator<autd3::FPGAInfo>(std::cout, "\n"));
       std::cout << "\033[" << states.size() + 1 << "A";
     }
   });
