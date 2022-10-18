@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/09/2022
+// Last Modified: 18/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,6 +21,8 @@ constexpr uint8_t ENABLED_STM_BIT = 1 << 0;
 constexpr uint8_t ENABLED_MODULATOR_BIT = 1 << 1;
 constexpr uint8_t ENABLED_SILENCER_BIT = 1 << 2;
 constexpr uint8_t ENABLED_MOD_DELAY_BIT = 1 << 3;
+
+constexpr uint8_t VERSION_EMULATOR_BIT = 1 << 7;
 
 /**
  * \brief Firmware information
@@ -60,7 +62,13 @@ struct FirmwareInfo {
     std::stringstream ss;
     ss << _idx << ": CPU = " << cpu_version() << ", FPGA = " << fpga_version() << " (STM = " << std::boolalpha << stm_enabled()
        << ", Modulator = " << modulator_enabled() << ", Silencer = " << silencer_enabled() << ", ModDelay = " << modulation_delay_enabled() << ")";
+    if (is_emulator()) ss << " [Emulator]";
     return ss.str();
+  }
+
+  [[nodiscard]] bool is_emulator() const {
+    return ((_cpu_version_number & VERSION_EMULATOR_BIT) == VERSION_EMULATOR_BIT) ||
+           ((_fpga_version_number & VERSION_EMULATOR_BIT) == VERSION_EMULATOR_BIT);
   }
 
  private:
@@ -70,25 +78,12 @@ struct FirmwareInfo {
   uint8_t _fpga_function_bits;
 
   [[nodiscard]] static std::string firmware_version_map(const uint8_t version_num) {
-    std::stringstream ss;
     if (version_num == 0) return "older than v0.4";
-    if (version_num <= 0x06) {
-      ss << "v0." << version_num + 3;
-      return ss.str();
-    }
-    if (version_num <= 0x09) return "unknown";
-    if (version_num <= 0x15) {
-      ss << "v1." << version_num - 0x0A;
-      return ss.str();
-    }
-    if (version_num <= 0x84) {
-      ss << "v2." << version_num - 0x80;
-      return ss.str();
-    }
-    if (version_num == 0xFF) return "simulator";
-
-    ss << "unknown (" << std::hex << static_cast<int>(version_num) << ")";
-    return ss.str();
+    if (version_num <= 0x06) return "v0." + std::to_string(version_num + 3);
+    if (version_num <= 0x09) return "unknown (" + std::to_string(static_cast<int>(version_num)) + ")";
+    if (version_num <= 0x15) return "v1." + std::to_string(version_num - 0x0A);
+    if (version_num <= 0x84) return "v2." + std::to_string(version_num - 0x80);
+    return "unknown (" + std::to_string(static_cast<int>(version_num)) + ")";
   }
 };
 
