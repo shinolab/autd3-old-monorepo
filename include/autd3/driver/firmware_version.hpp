@@ -21,8 +21,7 @@ constexpr uint8_t ENABLED_STM_BIT = 1 << 0;
 constexpr uint8_t ENABLED_MODULATOR_BIT = 1 << 1;
 constexpr uint8_t ENABLED_SILENCER_BIT = 1 << 2;
 constexpr uint8_t ENABLED_MOD_DELAY_BIT = 1 << 3;
-
-constexpr uint8_t VERSION_EMULATOR_BIT = 1 << 7;
+constexpr uint8_t ENABLED_EMULATOR_BIT = 1 << 7;
 
 /**
  * \brief Firmware information
@@ -66,10 +65,7 @@ struct FirmwareInfo {
     return ss.str();
   }
 
-  [[nodiscard]] bool is_emulator() const {
-    return ((_cpu_version_number & VERSION_EMULATOR_BIT) == VERSION_EMULATOR_BIT) ||
-           ((_fpga_version_number & VERSION_EMULATOR_BIT) == VERSION_EMULATOR_BIT);
-  }
+  [[nodiscard]] bool is_emulator() const { return (_fpga_function_bits & ENABLED_EMULATOR_BIT) != 0; }
 
  private:
   size_t _idx;
