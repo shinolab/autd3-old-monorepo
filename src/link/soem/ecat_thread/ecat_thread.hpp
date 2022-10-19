@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/10/2022
+// Last Modified: 19/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,11 +23,11 @@ extern "C" {
 #include "error_handler.hpp"
 
 #if WIN32
-#include "win.hpp"
+#include "win32.hpp"
 #elif __APPLE__
-#include "mac.hpp"
+#include "macosx.hpp"
 #else
-#include "unix.hpp"
+#include "linux.hpp"
 #endif
 
 #if _MSC_VER
@@ -61,7 +61,7 @@ inline int64_t ec_sync(const int64_t reftime, const int64_t cycletime, int64_t* 
   return -(delta / 100) - (*integral / 20);
 }
 
-inline void print_stats(const std::string& header, std::vector<int64_t> stats) {
+inline void print_stats(const std::string& header, const std::vector<int64_t>& stats) {
   int64_t min = std::numeric_limits<int64_t>::max();
   int64_t max = std::numeric_limits<int64_t>::min();
   int64_t sum = 0;
@@ -80,8 +80,8 @@ inline void print_stats(const std::string& header, std::vector<int64_t> stats) {
 using wait_func = void(const timespec&);
 
 template <wait_func W>
-void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wkc, int64_t cycletime_ns, std::mutex& mtx,
-               std::queue<driver::TxDatagram>& send_queue, IOMap& io_map, std::function<void(std::string)> on_lost) {
+void ecat_run_(std::atomic<bool>* is_open, bool* is_running, std::atomic<int32_t>* wkc, int64_t cycletime_ns, std::mutex& mtx,
+               std::queue<driver::TxDatagram>& send_queue, IOMap& io_map) {
   ecat_init();
 
 #if WIN32
@@ -96,10 +96,11 @@ void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wk
   auto ts = ecat_setup(cycletime_ns);
   int64_t toff = 0;
   std::vector<int64_t> stats;
-  constexpr size_t STATS_SIZE = 2000;
+  constexpr size_t STATS_SIZE = 10000;
   stats.reserve(STATS_SIZE);
   auto start = std::chrono::high_resolution_clock::now();
-  while (*is_running) {
+  ec_send_processdata();
+  while (is_open->load()) {
     add_timespec(ts, cycletime_ns + toff);
 
     W(ts);
@@ -116,22 +117,19 @@ void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wk
       start = now;
     }
 
-    if (ec_slave[0].state != EC_STATE_OPERATIONAL) {
-      spdlog::warn("EC_STATE changed: {}", ec_slave[0].state);
-      ec_slave[0].state = EC_STATE_OPERATIONAL;
-      ec_writestate(0);
+    if (*is_running) {
+      wkc->store(ec_receive_processdata(EC_TIMEOUTRET));
+
+      ec_sync(ec_DCtime, cycletime_ns, &toff);
+
+      if (!send_queue.empty()) {
+        std::lock_guard<std::mutex> lock(mtx);
+        io_map.copy_from(send_queue.front());
+        send_queue.pop();
+      }
+
+      ec_send_processdata();
     }
-
-    if (!send_queue.empty()) {
-      std::lock_guard<std::mutex> lock(mtx);
-      io_map.copy_from(send_queue.front());
-      send_queue.pop();
-    }
-
-    ec_send_processdata();
-    if (ec_receive_processdata(EC_TIMEOUTRET) != expected_wkc && !error_handle(is_open, on_lost)) return;
-
-    ec_sync(ec_DCtime, cycletime_ns, &toff);
   }
 
 #if WIN32
@@ -140,12 +138,12 @@ void ecat_run_(std::atomic<bool>* is_open, bool* is_running, int32_t expected_wk
 #endif
 }
 
-void ecat_run(const bool high_precision, std::atomic<bool>* is_open, bool* is_running, const int32_t expected_wkc, const int64_t cycletime_ns,
-              std::mutex& mtx, std::queue<driver::TxDatagram>& send_queue, IOMap& io_map, std::function<void(std::string)> on_lost) {
+void ecat_run(const bool high_precision, std::atomic<bool>* is_open, bool* is_running, std::atomic<int32_t>* wkc, const int64_t cycletime_ns,
+              std::mutex& mtx, std::queue<driver::TxDatagram>& send_queue, IOMap& io_map) {
   if (high_precision)
-    ecat_run_<timed_wait_h>(is_open, is_running, expected_wkc, cycletime_ns, mtx, send_queue, io_map, on_lost);
+    ecat_run_<timed_wait_h>(is_open, is_running, wkc, cycletime_ns, mtx, send_queue, io_map);
   else
-    ecat_run_<timed_wait>(is_open, is_running, expected_wkc, cycletime_ns, mtx, send_queue, io_map, on_lost);
+    ecat_run_<timed_wait>(is_open, is_running, wkc, cycletime_ns, mtx, send_queue, io_map);
 }
 
 }  // namespace autd3::link

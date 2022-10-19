@@ -3,13 +3,34 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 19/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
+
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 6285 6385 26437 26800 26498 26451 26495)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic push
+#endif
+#ifdef __clang__
+#pragma clang diagnostic push
+#endif
+#include "spdlog/spdlog.h"
+#if _MSC_VER
+#pragma warning(pop)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic pop
+#endif
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 #include <string>
 
@@ -20,23 +41,24 @@ void check_state(const uint16_t slave, std::stringstream& ss) {
 
   ec_group[0].docheckstate = 1;
   if (ec_slave[slave].state == EC_STATE_SAFE_OP + EC_STATE_ERROR) {
-    ss << "ERROR : slave " << slave << " is in SAFE_OP + ERROR, attempting ack\n";
+    spdlog::warn("slave {} is in SAFE_OP + ERROR, attempting ack", slave);
     ec_slave[slave].state = EC_STATE_SAFE_OP + EC_STATE_ACK;
     ec_writestate(slave);
   } else if (ec_slave[slave].state == EC_STATE_SAFE_OP) {
-    ss << "WARNING : slave " << slave << " is in SAFE_OP, change to OPERATIONAL\n";
+    spdlog::warn("slave {} is in SAFE_OP, change to OPERATIONAL", slave);
     ec_slave[slave].state = EC_STATE_OPERATIONAL;
     ec_writestate(slave);
   } else if (ec_slave[slave].state > EC_STATE_NONE) {
     if (ec_reconfig_slave(slave, 500)) {
       ec_slave[slave].islost = 0;
-      ss << "MESSAGE : slave " << slave << " reconfigured\n";
+      spdlog::info("slave {} reconfigured", slave);
     }
   } else if (!ec_slave[slave].islost) {
     ec_statecheck(slave, EC_STATE_OPERATIONAL, EC_TIMEOUTRET);
     if (ec_slave[slave].state == EC_STATE_NONE) {
       ec_slave[slave].islost = 1;
-      ss << "ERROR : slave " << slave << " lost\n";
+      ss << "ERROR: slave " << slave << " lost\n";
+      spdlog::error("slave {} lost", slave);
     }
   }
 }
