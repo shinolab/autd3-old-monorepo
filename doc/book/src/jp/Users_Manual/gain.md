@@ -3,6 +3,8 @@
 AUTDは各振動子の位相/振幅を個別に制御することができ, これによって様々な音場を生成できる.
 `Gain`はこれを管理するクラスであり, SDKにはデフォルトでいくつかの種類の音場を生成するための`Gain`がデフォルトでいくつか用意されている.
 
+[[_TOC_]]
+
 ## Focus
 
 `Focus`は最も単純な`Gain`であり, 単一焦点を生成する.
@@ -26,7 +28,7 @@ AUTDは各振動子の位相/振幅を個別に制御することができ, こ�
 第4引数として, 0-1の規格化された音圧振幅で指定できる.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/1.4985159.figures.online.f1.jpg"/>
+  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/1.4985159.figures.online.f1.jpg"/>
   <figcaption>Bessel beam (長谷川らの論文より引用)</figcaption>
 </figure>
 
