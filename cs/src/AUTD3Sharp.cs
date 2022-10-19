@@ -61,7 +61,7 @@ namespace AUTD3Sharp
         }
     }
 
-    public sealed class Controller : IDisposable
+    public static class AUTD3
     {
         #region const
 #if USE_SINGLE
@@ -90,19 +90,124 @@ namespace AUTD3Sharp
         public const int NumTransInY = 14;
 
         #endregion
+    }
 
-        #region field
+    internal static class GeometryAdjust
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static (double, double, double) Adjust(Vector3 vector, bool scaling = true)
+        {
+#if LEFT_HANDED
+            vector.z = -vector.z;
+#endif
+#if DIMENSION_M
+            if (scaling) vector = vector * AUTD3.MeterScale;
+#endif
+#if USE_SINGLE
+            return ((double)vector.x, (double)vector.y, (double)vector.z);
+#else
+            return (vector.x, vector.y, vector.z);
+#endif
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Vector3 Adjust(double x, double y, double z, bool scaling = true)
+        {
+#if USE_SINGLE
+            var vector = new Vector3((float)x, (float)y, (float)z);
+#else
+            var vector = new Vector3(x, y, z);
+#endif
+#if LEFT_HANDED
+            vector.z = -vector.z;
+#endif
+#if DIMENSION_M
+            if (scaling) vector /= AUTD3.MeterScale;
+#endif
+            return vector;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static (double, double, double, double) Adjust(Quaternion quaternion)
+        {
+#if LEFT_HANDED
+            quaternion.z = -quaternion.z;
+            quaternion.w = -quaternion.w;
+#endif
+#if USE_SINGLE
+            return ((double)quaternion.w, (double)quaternion.x, (double)quaternion.y, (double)quaternion.z);
+#else
+            return (quaternion.w, quaternion.x, quaternion.y, quaternion.z);
+#endif
+        }
+    }
+
+    public sealed class Transducer
+    {
+
+    }
+
+    public sealed class Device
+    {
+
+    }
+
+    public sealed class Geometry
+    {
+        private readonly IntPtr _cntPtr;
+
+        internal Geometry(IntPtr cntPtr)
+        {
+            _cntPtr = cntPtr;
+        }
+
+        public int AddDevice(Vector3 position, Vector3 rotation)
+        {
+            var (x, y, z) = GeometryAdjust.Adjust(position);
+            var (rx, ry, rz) = GeometryAdjust.Adjust(rotation, false);
+            return Base.AUTDAddDevice(_cntPtr, x, y, z, rx, ry, rz);
+        }
+
+        public int AddDevice(Vector3 position, Quaternion quaternion)
+        {
+            var (x, y, z) = GeometryAdjust.Adjust(position);
+            var (qw, qx, qy, qz) = GeometryAdjust.Adjust(quaternion);
+            return Base.AUTDAddDeviceQuaternion(_cntPtr, x, y, z, qw, qx, qy, qz);
+        }
+
+        public int NumDevices => Base.AUTDNumDevices(_cntPtr);
+        
+        public int NumTransducers => NumDevices * AUTD3.NumTransInDevice;
+
+        public double SoundSpeed
+        {
+            get => Base.AUTDGetSoundSpeed(_cntPtr);
+            set => Base.AUTDSetSoundSpeed(_cntPtr, value);
+        }
+        public double Attenuation
+        {
+            get => Base.AUTDGetAttenuation(_cntPtr);
+            set => Base.AUTDSetAttenuation(_cntPtr, value);
+        }
+
+    }
+
+    public sealed class Controller : IDisposable
+    {
+#region field
 
         private bool _isDisposed;
         internal readonly AUTDControllerHandle AUTDControllerHandle;
+        private readonly Geometry _geometry;
 
-        #endregion
+#endregion
 
         #region Controller
 
         public Controller()
         {
             AUTDControllerHandle = new AUTDControllerHandle(true);
+            _geometry = new Geometry(AUTDControllerHandle.CntPtr);
         }
 
         public void ToLegacy()
@@ -135,23 +240,10 @@ namespace AUTD3Sharp
             Base.AUTDFreeFirmwareInfoListPointer(handle);
         }
 
-        public int AddDevice(Vector3 position, Vector3 rotation)
-        {
-            var (x, y, z) = Adjust(position);
-            var (rx, ry, rz) = Adjust(rotation, false);
-            return Base.AUTDAddDevice(AUTDControllerHandle.CntPtr, x, y, z, rx, ry, rz);
-        }
-
-        public int AddDevice(Vector3 position, Quaternion quaternion)
-        {
-            var (x, y, z) = Adjust(position);
-            var (qw, qx, qy, qz) = Adjust(quaternion);
-            return Base.AUTDAddDeviceQuaternion(AUTDControllerHandle.CntPtr, x, y, z, qw, qx, qy, qz);
-        }
-
         public int Close() => Base.AUTDClose(AUTDControllerHandle.CntPtr);
 
         public int Clear() => Base.AUTDClear(AUTDControllerHandle.CntPtr);
+
         public int Synchronize() => Base.AUTDSynchronize(AUTDControllerHandle.CntPtr);
 
         public int Stop() => Base.AUTDStop(AUTDControllerHandle.CntPtr);
@@ -180,9 +272,10 @@ namespace AUTD3Sharp
             Dispose(false);
         }
 
-        #endregion
+#endregion
 
-        #region Property
+#region Property
+        public Geometry Geometry => _geometry;
 
         public bool IsOpen => Base.AUTDIsOpen(AUTDControllerHandle.CntPtr);
 
@@ -214,23 +307,10 @@ namespace AUTD3Sharp
         {
             get
             {
-                var infos = new byte[NumDevices];
+                var infos = new byte[Geometry.NumDevices];
                 Base.AUTDGetFPGAInfo(AUTDControllerHandle.CntPtr, infos);
                 return infos;
             }
-        }
-
-        public int NumDevices => Base.AUTDNumDevices(AUTDControllerHandle.CntPtr);
-        public int NumTransducers => NumDevices * NumTransInDevice;
-        public double SoundSpeed
-        {
-            get => Base.AUTDGetSoundSpeed(AUTDControllerHandle.CntPtr);
-            set => Base.AUTDSetSoundSpeed(AUTDControllerHandle.CntPtr, value);
-        }
-        public double Attenuation
-        {
-            get => Base.AUTDGetAttenuation(AUTDControllerHandle.CntPtr);
-            set => Base.AUTDSetAttenuation(AUTDControllerHandle.CntPtr, value);
         }
 
         public static string LastError
@@ -243,7 +323,7 @@ namespace AUTD3Sharp
                 return sb.ToString();
             }
         }
-        #endregion
+#endregion
 
         public int Send(Header header)
         {
@@ -325,55 +405,6 @@ namespace AUTD3Sharp
             Base.AUTDTransZDirection(AUTDControllerHandle.CntPtr, deviceIdx, transIdxLocal, out var x, out var y, out var z);
             return Adjust(x, y, z, false);
         }
-
-        #region GeometryAdjust
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static (double, double, double) Adjust(Vector3 vector, bool scaling = true)
-        {
-#if LEFT_HANDED
-            vector.z = -vector.z;
-#endif
-#if DIMENSION_M
-            if (scaling) vector = vector * MeterScale;
-#endif
-#if USE_SINGLE
-            return ((double)vector.x, (double)vector.y, (double)vector.z);
-#else
-            return (vector.x, vector.y, vector.z);
-#endif
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Vector3 Adjust(double x, double y, double z, bool scaling = true)
-        {
-#if USE_SINGLE
-            var vector = new Vector3((float)x, (float)y, (float)z);
-#else
-            var vector = new Vector3(x, y, z);
-#endif
-#if LEFT_HANDED
-            vector.z = -vector.z;
-#endif
-#if DIMENSION_M
-            if (scaling) vector /= MeterScale;
-#endif
-            return vector;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static (double, double, double, double) Adjust(Quaternion quaternion)
-        {
-#if LEFT_HANDED
-            quaternion.z = -quaternion.z;
-            quaternion.w = -quaternion.w;
-#endif
-#if USE_SINGLE
-            return ((double)quaternion.w, (double)quaternion.x, (double)quaternion.y, (double)quaternion.z);
-#else
-            return (quaternion.w, quaternion.x, quaternion.y, quaternion.z);
-#endif
-        }
-        #endregion
     }
 
 
