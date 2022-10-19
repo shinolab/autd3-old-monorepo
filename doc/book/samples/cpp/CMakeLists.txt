@@ -8,10 +8,11 @@ add_executable(main main.cpp)
 
 target_link_directories(main PRIVATE lib)
 target_include_directories(main PRIVATE include eigen)
+target_link_libraries(main link_soem)
 
 if(WIN32)
   target_link_directories(main PRIVATE lib/wpcap)
-  target_link_libraries(main link_soem Packet.lib wpcap.lib ws2_32.lib winmm.lib)
+  target_link_libraries(main Packet.lib wpcap.lib ws2_32.lib winmm.lib)
 elseif(APPLE)
   target_link_libraries(main pcap)
 else()
