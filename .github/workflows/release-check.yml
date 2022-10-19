@@ -121,3 +121,36 @@ jobs:
         dotnet clean example.sln
         dotnet nuget locals global-packages --clear
         dotnet build example.sln -c:Release /p:Platform=x64
+
+  build-rs:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Checkout submodules
+      run: git submodule update --init --force --recursive -- rust/autd3-link-soem/3rdparty/SOEM
+    - name: publish
+      run: |
+        cd rust
+        cd autd3-driver
+        cargo publish --dry-run
+        cd ..
+        cd autd3-core
+        cargo publish --dry-run
+        cd ..
+        cd autd3-traits
+        cargo publish --dry-run
+        cd ..
+        cd autd3
+        cargo publish --dry-run
+        cd ..
+        cd autd3-link-soem
+        cargo publish --dry-run
+        cd ..
+        cd autd3-link-twincat
+        cargo publish --dry-run
+        cd ..
+        cd autd3-link-simulator
+        cargo publish --dry-run
+        cd ..
+        cd autd3-gain-holo
+        cargo publish --dry-run
