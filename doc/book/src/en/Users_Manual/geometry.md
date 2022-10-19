@@ -17,7 +17,7 @@ The rotation is specified in ZYZ Euler angles or Quaternion.
 Note that the translation is applied in global coordinates after the rotation.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/autd_hori.jpg"/>
+  <img src="../fig/Users_Manual/autd_hori.jpg"/>
   <figcaption>Horizontal alignment</figcaption>
 </figure>
 
@@ -39,7 +39,7 @@ Also, for example, if the global coordinates are the same as the local coordinat
 ````
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/autd_vert.jpg"/>
+  <img src="../fig/Users_Manual/autd_vert.jpg"/>
   <figcaption>Vertical alignment</figcaption>
 </figure>
 
