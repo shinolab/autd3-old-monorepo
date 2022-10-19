@@ -38,7 +38,7 @@ Suppose that the phase changes from $P=2$ to $P=6$ at time $t_s$.
 In this case, the phase change by `Silencer` is shown in the following figure.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/silent/phase.svg"/>
+  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/silent/phase.svg"/>
 <figcaption>Change of phase $P$</figcaption>
 </figure>
 
@@ -47,7 +47,7 @@ The phase change by `Silencer` at this time is shown in the following figure.
 This is because $P=-2$ is closer to $P=2$ than $P=10$.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/silent/phase2.svg"/>
+  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/silent/phase2.svg"/>
 <figcaption>Change of phase $P$ (when phase change is larger than $\pi$)</figcaption>
 </figure>
 
@@ -64,7 +64,7 @@ The update frequency can be set by `cycle` of `SilencerConfig`, which is $\SI{16
 The smaller $\Delta$ is, and the slower the update cycle is, the smoother the phase change becomes, and the noise is suppressed.
 
 <figure>
-    <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/silent/duty.svg"/>
+    <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/silent/duty.svg"/>
 <figcaption>Difference of change by $\Delta$</figcaption>
 </figure>
 
@@ -74,7 +74,7 @@ An example of a later case is shown below.
 Although the moving average filter is correct in terms of fidelity to the original time series, it is difficult to consider the case where the phase change is larger than $\pi$ and to make $\Delta$ variable (that is, to make the filter length variable), so the current implementation is used.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/silent/mean.svg"/>
+  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/silent/mean.svg"/>
 <figcaption>Comparison with moving average filter</figcaption>
 </figure>
 

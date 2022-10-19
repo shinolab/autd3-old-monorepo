@@ -3,10 +3,7 @@
 `Link` is an interface to the device.
 You need to select one of the following.
 
-- [TwinCAT](#twincat)
-- [RemoteTwinCAT](#remotetwincat)
-- [SOEM](#soem)
-- [Simulator](#simulator)
+[[_TOC_]]
 
 ## TwinCAT
 
@@ -76,7 +73,7 @@ After issuing the license, close TwinCAT XAE Shell and run `AUTDServer.exe` agai
 When you try to use many devices, you may get an error like the one shown in the figure below.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/tcerror.jpg"/>
+  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/tcerror.jpg"/>
   <figcaption>TwinCAT error when using 9 devices</figcaption>
 </figure>
 
@@ -105,7 +102,7 @@ On the other hand, the PC on the development side, i.e., the one to use the SDK,
 Let's call this PC "client".
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/remotetwincat.jpg"/>
+  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/remotetwincat.jpg"/>
   <figcaption>Network Configuration</figcaption>
 </figure>
 
@@ -126,7 +123,7 @@ AUTDServer.exe -c 169.254.175.45 -k
 Then, open `System→Routes` and check the AMS NetId of the server in the `NetId Management` tab, as shown in the following figure.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/NetId_Management.jpg"/>
+  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/NetId_Management.jpg"/>
   <figcaption>Server AmsNetId</figcaption>.
 </figure>
 
@@ -158,7 +155,7 @@ In this case, specify them as follows:
 The AMS NetId of the client can be found in TwinCAT by going to `System→Routes` and looking at AmsNetId in the `Current Route` tab, as shown in the following figure.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/Current_Route.jpg"/>
+  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/Current_Route.jpg"/>
   <figcaption>Client AmsNetId</figcaption>
 </figure>
 

@@ -14,6 +14,7 @@ RUN curl -L ${mdbook_url} -o ${mdbook_tgz} && \
 
 RUN cargo install --git "https://github.com/lzanini/mdbook-katex"
 RUN cargo install mdbook-linkcheck
+RUN cargo install mdbook-toc
 
 COPY book.toml .
 COPY katex_macro.txt .
