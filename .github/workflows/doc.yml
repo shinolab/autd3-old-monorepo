@@ -83,6 +83,7 @@ jobs:
         token: ${{secrets.GITHUB_TOKEN}}
         use-linkcheck: true
         use-opengh: false
+        use-toc: true
     - name: Setup mdbook-katex
       uses: magicgh/mdbook-katex-action@v1
       with:
