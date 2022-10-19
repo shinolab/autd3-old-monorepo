@@ -39,10 +39,10 @@ public class SampleRunner
         autd.Synchronize();
 
         var firmList = autd.FirmwareInfoList().ToArray();
-        Console.WriteLine("============================ Firmware information ==============================");
-        foreach (var (firm, index) in firmList.Select((firm, i) => (firm, i)))
-            Console.WriteLine($"AUTD {index}: {firm}");
-        Console.WriteLine("================================================================================");
+        Console.WriteLine("==================================== Firmware information ======================================");
+        foreach (var firm in firmList)
+            Console.WriteLine($"{firm}");
+        Console.WriteLine("================================================================================================");
 
         while (true)
         {
