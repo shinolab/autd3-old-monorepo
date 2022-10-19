@@ -8,6 +8,9 @@ add_library(link_soem
   link_soem_impl.cpp
   link_soem_impl.hpp
   ${SOEM_SRC_FILES}
+  ecat_thread/ecat_thread.hpp
+  ecat_thread/error_handler.hpp
+  ecat_thread/${OS}.hpp
   ${PROJECT_SOURCE_DIR}/include/autd3/link/soem.hpp
 )
 
