@@ -4,7 +4,7 @@
  * Created Date: 08/03/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2022
+ * Last Modified: 19/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -24,8 +24,15 @@ public class SimpleAUTDController : MonoBehaviour
     {
         _autd.AddDevice(gameObject.transform.position, gameObject.transform.rotation);
 
-        _link = new AUTD3Sharp.Link.SOEM().Build();
-        _autd.Open(_link);
+        _link = new AUTD3Sharp.Link.SOEM()
+            .HighPrecision(true)
+            .Build();
+
+        if (!_autd.Open(_link))
+        {
+            Debug.LogError("Failed to open AUTD3 controller!");
+            return;
+        }
 
         _autd.CheckTrials = 50;
 
