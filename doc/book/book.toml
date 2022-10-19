@@ -10,6 +10,12 @@ destination = "book"
 [preprocessor.index]
 [preprocessor.links]
 
+[preprocessor.toc]
+command = "mdbook-toc"
+renderer = ["html"]
+marker = "[[_TOC_]]"
+max-level = 3
+
 [output.html]
 mathjax-support = true
 default-theme = "navy"

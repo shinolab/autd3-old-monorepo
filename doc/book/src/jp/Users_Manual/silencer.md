@@ -41,7 +41,7 @@ Silencerは位相$P$の変化を線形補間し, 段階的にすることで静�
 この時, Silencerによる位相変化は以下の図のようになる.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/silent/phase.svg"/>
+  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/silent/phase.svg"/>
 <figcaption>位相$P$の変化</figcaption>
 </figure>
 
@@ -50,7 +50,7 @@ Silencerは位相$P$の変化を線形補間し, 段階的にすることで静�
 これは, $P=10$よりも, $P=-2$のほうが近いためである.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/silent/phase2.svg"/>
+  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/silent/phase2.svg"/>
 <figcaption>位相$P$の変化 (位相変化量が$\pi$より大きい場合)</figcaption>
 </figure>
 
@@ -68,7 +68,7 @@ $$
 $\Delta$が小さいほど, また, 更新周期が遅いほど, 位相変化はなだらかになり騒音が抑制される.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/silent/duty.svg"/>
+  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/silent/duty.svg"/>
 <figcaption>$\Delta$による変化の違い</figcaption>
 </figure>
 
@@ -78,7 +78,7 @@ $\Delta$が小さいほど, また, 更新周期が遅いほど, 位相変化は
 元時系列に対する忠実度という観点では移動平均フィルタが正しいが, 位相変化量が$\pi$より大きい場合を考慮したり, $\Delta$を可変にする (即ち, フィルタ長を可変にする) のが大変なため現在のような実装となっている.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/silent/mean.svg"/>
+  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/silent/mean.svg"/>
 <figcaption>移動平均フィルタとの比較</figcaption>
 </figure>
 

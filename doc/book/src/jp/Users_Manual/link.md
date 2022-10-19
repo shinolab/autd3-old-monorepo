@@ -3,6 +3,8 @@
 LinkはDeviceとのインターフェースである.
 以下の中から一つを選択する必要がある.
 
+[[_TOC_]]
+
 ## TwinCAT
 
 TwinCATはPCでEherCATを使用する際の唯一の公式の方法である.
@@ -80,7 +82,7 @@ AUTDServer.exe -s 3 -t 3
 例えば, 9台の場合は3, 4程度の値にしておけば動作するはずである.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/tcerror.jpg"/>
+  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/tcerror.jpg"/>
   <figcaption>TwinCAT error when using 9 devices</figcaption>
 </figure>
 
@@ -96,7 +98,7 @@ RemoteTwinCATを使用する場合はPCを2台用意する必要がある.
 一方, 開発側のPC, 即ちSDKを使用する側は特に制約はなく, サーバと同じLANに繋がっていれば良い, こちらをここでは"クライアント"と呼ぶ.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/remotetwincat.jpg"/>
+  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/remotetwincat.jpg"/>
   <figcaption>Network Configuration</figcaption>
 </figure>
 
@@ -117,7 +119,7 @@ AUTDServer.exe -c 169.254.175.45 -k
 そして, 以下の図のように, System→Routesを開き, NetId ManagementタブのLocal NetIdを確認しておく.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/NetId_Management.jpg"/>
+  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/NetId_Management.jpg"/>
   <figcaption>Server AmsNetId</figcaption>
 </figure>
 
@@ -149,7 +151,7 @@ AUTDServer.exe -c 169.254.175.45 -k
 クライアントのAMS NetIdは, 以下の図のようにTwinCATでSystem→Routesを開き, Current RouteタブのAmsNetIdで確認できる.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/Current_Route.jpg"/>
+  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/Current_Route.jpg"/>
   <figcaption>Client AmsNetId</figcaption>
 </figure>
 
