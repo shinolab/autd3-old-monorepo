@@ -18,7 +18,7 @@ SDKで複数台のデバイスを使用する場合は`add_device`関数を接�
 移動は指定した回転を施した後に, グローバル座標で並進移動となっているので注意されたい.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/autd_hori.jpg"/>
+  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/autd_hori.jpg"/>
   <figcaption>Horizontal alignment</figcaption>
 </figure>
 
@@ -40,7 +40,7 @@ SDKで複数台のデバイスを使用する場合は`add_device`関数を接�
 とすれば良い.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/autd_vert.jpg"/>
+  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/autd_vert.jpg"/>
   <figcaption>Vertical alignment</figcaption>
 </figure>
 

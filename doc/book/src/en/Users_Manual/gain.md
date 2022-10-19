@@ -3,6 +3,8 @@
 AUTD can control phase/amplitude of each transducer individually, and thus can generate various sound fields.
 `Gain` manages phase/amplitude of each transducer, and SDK has some `Gain` classes to generate several types of sound fields.
 
+[[_TOC_]]
+
 ## Focus
 
 `Focus` is the simplest `Gain` and generates a single focal point.
@@ -31,7 +33,7 @@ The first argument of the constructor is the apex of the virtual cone producing 
 The fourth argument is a normalized sound pressure amplitude of 0-1 (1 by default).
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/1.4985159.figures.online.f1.jpg"/>
+  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/1.4985159.figures.online.f1.jpg"/>
   <figcaption>Bessel beam (cited from the paper[^hasegawa2017])</figcaption>
 </figure>
 
