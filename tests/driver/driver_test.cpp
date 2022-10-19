@@ -3,7 +3,7 @@
 // Created Date: 20/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/08/2022
+// Last Modified: 19/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,6 +21,7 @@
 #include <autd3/driver/cpu/body.hpp>
 #include <autd3/driver/cpu/datagram.hpp>
 #include <autd3/driver/cpu/operation.hpp>
+#include <autd3/driver/firmware_version.hpp>
 #include <autd3/driver/hardware.hpp>
 #include <random>
 
@@ -32,19 +33,28 @@ using autd3::driver::FPGAControlFlags;
 
 TEST(FPGATest, FPGAControlFlagsTest) {
   FPGAControlFlags flag(FPGAControlFlags::NONE);
-
   ASSERT_EQ(flag, FPGAControlFlags::NONE);
 
   flag.set(FPGAControlFlags::LEGACY_MODE);
-
-  ASSERT_TRUE(flag != FPGAControlFlags::NONE);
-  ASSERT_EQ(flag, FPGAControlFlags::LEGACY_MODE);
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::LEGACY_MODE));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::FORCE_FAN));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::READS_FPGA_INFO));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::STM_GAIN_MODE));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::STM_MODE));
 
   flag.set(FPGAControlFlags::STM_MODE);
-  flag.remove(FPGAControlFlags::LEGACY_MODE);
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::LEGACY_MODE));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::STM_MODE));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::FORCE_FAN));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::READS_FPGA_INFO));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::STM_GAIN_MODE));
 
-  ASSERT_TRUE(flag != FPGAControlFlags::LEGACY_MODE);
-  ASSERT_EQ(flag, FPGAControlFlags::STM_MODE);
+  flag.remove(FPGAControlFlags::LEGACY_MODE);
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::LEGACY_MODE));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::STM_MODE));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::FORCE_FAN));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::READS_FPGA_INFO));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::STM_GAIN_MODE));
 }
 
 TEST(FPGATest, FPGAInfo) {
@@ -68,8 +78,401 @@ TEST(HARDTest, is_missing_transducer) {
   ASSERT_TRUE(is_missing_transducer(16, 1));
 
   ASSERT_FALSE(is_missing_transducer(0, 0));
+  ASSERT_FALSE(is_missing_transducer(1, 0));
+  ASSERT_FALSE(is_missing_transducer(2, 0));
+  ASSERT_FALSE(is_missing_transducer(3, 0));
+  ASSERT_FALSE(is_missing_transducer(4, 0));
+  ASSERT_FALSE(is_missing_transducer(5, 0));
+  ASSERT_FALSE(is_missing_transducer(6, 0));
+  ASSERT_FALSE(is_missing_transducer(7, 0));
+  ASSERT_FALSE(is_missing_transducer(8, 0));
+  ASSERT_FALSE(is_missing_transducer(9, 0));
+  ASSERT_FALSE(is_missing_transducer(10, 0));
+  ASSERT_FALSE(is_missing_transducer(11, 0));
+  ASSERT_FALSE(is_missing_transducer(12, 0));
+  ASSERT_FALSE(is_missing_transducer(13, 0));
+  ASSERT_FALSE(is_missing_transducer(14, 0));
+  ASSERT_FALSE(is_missing_transducer(15, 0));
+  ASSERT_FALSE(is_missing_transducer(16, 0));
   ASSERT_FALSE(is_missing_transducer(17, 0));
+  ASSERT_FALSE(is_missing_transducer(0, 1));
+  // ASSERT_FALSE(is_missing_transducer(1, 1));
+  // ASSERT_FALSE(is_missing_transducer(2, 1));
+  ASSERT_FALSE(is_missing_transducer(3, 1));
+  ASSERT_FALSE(is_missing_transducer(4, 1));
+  ASSERT_FALSE(is_missing_transducer(5, 1));
+  ASSERT_FALSE(is_missing_transducer(6, 1));
+  ASSERT_FALSE(is_missing_transducer(7, 1));
+  ASSERT_FALSE(is_missing_transducer(8, 1));
+  ASSERT_FALSE(is_missing_transducer(9, 1));
+  ASSERT_FALSE(is_missing_transducer(10, 1));
+  ASSERT_FALSE(is_missing_transducer(11, 1));
+  ASSERT_FALSE(is_missing_transducer(12, 1));
+  ASSERT_FALSE(is_missing_transducer(13, 1));
+  ASSERT_FALSE(is_missing_transducer(14, 1));
+  ASSERT_FALSE(is_missing_transducer(15, 1));
+  // ASSERT_FALSE(is_missing_transducer(16, 1));
+  ASSERT_FALSE(is_missing_transducer(17, 1));
+  ASSERT_FALSE(is_missing_transducer(0, 2));
+  ASSERT_FALSE(is_missing_transducer(1, 2));
+  ASSERT_FALSE(is_missing_transducer(2, 2));
+  ASSERT_FALSE(is_missing_transducer(3, 2));
+  ASSERT_FALSE(is_missing_transducer(4, 2));
+  ASSERT_FALSE(is_missing_transducer(5, 2));
+  ASSERT_FALSE(is_missing_transducer(6, 2));
+  ASSERT_FALSE(is_missing_transducer(7, 2));
+  ASSERT_FALSE(is_missing_transducer(8, 2));
+  ASSERT_FALSE(is_missing_transducer(9, 2));
+  ASSERT_FALSE(is_missing_transducer(10, 2));
+  ASSERT_FALSE(is_missing_transducer(11, 2));
+  ASSERT_FALSE(is_missing_transducer(12, 2));
+  ASSERT_FALSE(is_missing_transducer(13, 2));
+  ASSERT_FALSE(is_missing_transducer(14, 2));
+  ASSERT_FALSE(is_missing_transducer(15, 2));
+  ASSERT_FALSE(is_missing_transducer(16, 2));
+  ASSERT_FALSE(is_missing_transducer(17, 2));
+  ASSERT_FALSE(is_missing_transducer(0, 3));
+  ASSERT_FALSE(is_missing_transducer(1, 3));
+  ASSERT_FALSE(is_missing_transducer(2, 3));
+  ASSERT_FALSE(is_missing_transducer(3, 3));
+  ASSERT_FALSE(is_missing_transducer(4, 3));
+  ASSERT_FALSE(is_missing_transducer(5, 3));
+  ASSERT_FALSE(is_missing_transducer(6, 3));
+  ASSERT_FALSE(is_missing_transducer(7, 3));
+  ASSERT_FALSE(is_missing_transducer(8, 3));
+  ASSERT_FALSE(is_missing_transducer(9, 3));
+  ASSERT_FALSE(is_missing_transducer(10, 3));
+  ASSERT_FALSE(is_missing_transducer(11, 3));
+  ASSERT_FALSE(is_missing_transducer(12, 3));
+  ASSERT_FALSE(is_missing_transducer(13, 3));
+  ASSERT_FALSE(is_missing_transducer(14, 3));
+  ASSERT_FALSE(is_missing_transducer(15, 3));
+  ASSERT_FALSE(is_missing_transducer(16, 3));
+  ASSERT_FALSE(is_missing_transducer(17, 3));
+  ASSERT_FALSE(is_missing_transducer(0, 4));
+  ASSERT_FALSE(is_missing_transducer(1, 4));
+  ASSERT_FALSE(is_missing_transducer(2, 4));
+  ASSERT_FALSE(is_missing_transducer(3, 4));
+  ASSERT_FALSE(is_missing_transducer(4, 4));
+  ASSERT_FALSE(is_missing_transducer(5, 4));
+  ASSERT_FALSE(is_missing_transducer(6, 4));
+  ASSERT_FALSE(is_missing_transducer(7, 4));
+  ASSERT_FALSE(is_missing_transducer(8, 4));
+  ASSERT_FALSE(is_missing_transducer(9, 4));
+  ASSERT_FALSE(is_missing_transducer(10, 4));
+  ASSERT_FALSE(is_missing_transducer(11, 4));
+  ASSERT_FALSE(is_missing_transducer(12, 4));
+  ASSERT_FALSE(is_missing_transducer(13, 4));
+  ASSERT_FALSE(is_missing_transducer(14, 4));
+  ASSERT_FALSE(is_missing_transducer(15, 4));
+  ASSERT_FALSE(is_missing_transducer(16, 4));
+  ASSERT_FALSE(is_missing_transducer(17, 4));
+  ASSERT_FALSE(is_missing_transducer(0, 5));
+  ASSERT_FALSE(is_missing_transducer(1, 5));
+  ASSERT_FALSE(is_missing_transducer(2, 5));
+  ASSERT_FALSE(is_missing_transducer(3, 5));
+  ASSERT_FALSE(is_missing_transducer(4, 5));
+  ASSERT_FALSE(is_missing_transducer(5, 5));
+  ASSERT_FALSE(is_missing_transducer(6, 5));
+  ASSERT_FALSE(is_missing_transducer(7, 5));
+  ASSERT_FALSE(is_missing_transducer(8, 5));
+  ASSERT_FALSE(is_missing_transducer(9, 5));
+  ASSERT_FALSE(is_missing_transducer(10, 5));
+  ASSERT_FALSE(is_missing_transducer(11, 5));
+  ASSERT_FALSE(is_missing_transducer(12, 5));
+  ASSERT_FALSE(is_missing_transducer(13, 5));
+  ASSERT_FALSE(is_missing_transducer(14, 5));
+  ASSERT_FALSE(is_missing_transducer(15, 5));
+  ASSERT_FALSE(is_missing_transducer(16, 5));
+  ASSERT_FALSE(is_missing_transducer(17, 5));
+  ASSERT_FALSE(is_missing_transducer(0, 6));
+  ASSERT_FALSE(is_missing_transducer(1, 6));
+  ASSERT_FALSE(is_missing_transducer(2, 6));
+  ASSERT_FALSE(is_missing_transducer(3, 6));
+  ASSERT_FALSE(is_missing_transducer(4, 6));
+  ASSERT_FALSE(is_missing_transducer(5, 6));
+  ASSERT_FALSE(is_missing_transducer(6, 6));
+  ASSERT_FALSE(is_missing_transducer(7, 6));
+  ASSERT_FALSE(is_missing_transducer(8, 6));
+  ASSERT_FALSE(is_missing_transducer(9, 6));
+  ASSERT_FALSE(is_missing_transducer(10, 6));
+  ASSERT_FALSE(is_missing_transducer(11, 6));
+  ASSERT_FALSE(is_missing_transducer(12, 6));
+  ASSERT_FALSE(is_missing_transducer(13, 6));
+  ASSERT_FALSE(is_missing_transducer(14, 6));
+  ASSERT_FALSE(is_missing_transducer(15, 6));
+  ASSERT_FALSE(is_missing_transducer(16, 6));
+  ASSERT_FALSE(is_missing_transducer(17, 6));
+  ASSERT_FALSE(is_missing_transducer(0, 7));
+  ASSERT_FALSE(is_missing_transducer(1, 7));
+  ASSERT_FALSE(is_missing_transducer(2, 7));
+  ASSERT_FALSE(is_missing_transducer(3, 7));
+  ASSERT_FALSE(is_missing_transducer(4, 7));
+  ASSERT_FALSE(is_missing_transducer(5, 7));
+  ASSERT_FALSE(is_missing_transducer(6, 7));
+  ASSERT_FALSE(is_missing_transducer(7, 7));
+  ASSERT_FALSE(is_missing_transducer(8, 7));
+  ASSERT_FALSE(is_missing_transducer(9, 7));
+  ASSERT_FALSE(is_missing_transducer(10, 7));
+  ASSERT_FALSE(is_missing_transducer(11, 7));
+  ASSERT_FALSE(is_missing_transducer(12, 7));
+  ASSERT_FALSE(is_missing_transducer(13, 7));
+  ASSERT_FALSE(is_missing_transducer(14, 7));
+  ASSERT_FALSE(is_missing_transducer(15, 7));
+  ASSERT_FALSE(is_missing_transducer(16, 7));
+  ASSERT_FALSE(is_missing_transducer(17, 7));
+  ASSERT_FALSE(is_missing_transducer(0, 8));
+  ASSERT_FALSE(is_missing_transducer(1, 8));
+  ASSERT_FALSE(is_missing_transducer(2, 8));
+  ASSERT_FALSE(is_missing_transducer(3, 8));
+  ASSERT_FALSE(is_missing_transducer(4, 8));
+  ASSERT_FALSE(is_missing_transducer(5, 8));
+  ASSERT_FALSE(is_missing_transducer(6, 8));
+  ASSERT_FALSE(is_missing_transducer(7, 8));
+  ASSERT_FALSE(is_missing_transducer(8, 8));
+  ASSERT_FALSE(is_missing_transducer(9, 8));
+  ASSERT_FALSE(is_missing_transducer(10, 8));
+  ASSERT_FALSE(is_missing_transducer(11, 8));
+  ASSERT_FALSE(is_missing_transducer(12, 8));
+  ASSERT_FALSE(is_missing_transducer(13, 8));
+  ASSERT_FALSE(is_missing_transducer(14, 8));
+  ASSERT_FALSE(is_missing_transducer(15, 8));
+  ASSERT_FALSE(is_missing_transducer(16, 8));
+  ASSERT_FALSE(is_missing_transducer(17, 8));
+  ASSERT_FALSE(is_missing_transducer(0, 9));
+  ASSERT_FALSE(is_missing_transducer(1, 9));
+  ASSERT_FALSE(is_missing_transducer(2, 9));
+  ASSERT_FALSE(is_missing_transducer(3, 9));
+  ASSERT_FALSE(is_missing_transducer(4, 9));
+  ASSERT_FALSE(is_missing_transducer(5, 9));
+  ASSERT_FALSE(is_missing_transducer(6, 9));
+  ASSERT_FALSE(is_missing_transducer(7, 9));
+  ASSERT_FALSE(is_missing_transducer(8, 9));
+  ASSERT_FALSE(is_missing_transducer(9, 9));
+  ASSERT_FALSE(is_missing_transducer(10, 9));
+  ASSERT_FALSE(is_missing_transducer(11, 9));
+  ASSERT_FALSE(is_missing_transducer(12, 9));
+  ASSERT_FALSE(is_missing_transducer(13, 9));
+  ASSERT_FALSE(is_missing_transducer(14, 9));
+  ASSERT_FALSE(is_missing_transducer(15, 9));
+  ASSERT_FALSE(is_missing_transducer(16, 9));
+  ASSERT_FALSE(is_missing_transducer(17, 9));
+  ASSERT_FALSE(is_missing_transducer(0, 10));
+  ASSERT_FALSE(is_missing_transducer(1, 10));
+  ASSERT_FALSE(is_missing_transducer(2, 10));
+  ASSERT_FALSE(is_missing_transducer(3, 10));
+  ASSERT_FALSE(is_missing_transducer(4, 10));
+  ASSERT_FALSE(is_missing_transducer(5, 10));
+  ASSERT_FALSE(is_missing_transducer(6, 10));
+  ASSERT_FALSE(is_missing_transducer(7, 10));
+  ASSERT_FALSE(is_missing_transducer(8, 10));
+  ASSERT_FALSE(is_missing_transducer(9, 10));
+  ASSERT_FALSE(is_missing_transducer(10, 10));
+  ASSERT_FALSE(is_missing_transducer(11, 10));
+  ASSERT_FALSE(is_missing_transducer(12, 10));
+  ASSERT_FALSE(is_missing_transducer(13, 10));
+  ASSERT_FALSE(is_missing_transducer(14, 10));
+  ASSERT_FALSE(is_missing_transducer(15, 10));
+  ASSERT_FALSE(is_missing_transducer(16, 10));
+  ASSERT_FALSE(is_missing_transducer(17, 10));
+  ASSERT_FALSE(is_missing_transducer(0, 11));
+  ASSERT_FALSE(is_missing_transducer(1, 11));
+  ASSERT_FALSE(is_missing_transducer(2, 11));
+  ASSERT_FALSE(is_missing_transducer(3, 11));
+  ASSERT_FALSE(is_missing_transducer(4, 11));
+  ASSERT_FALSE(is_missing_transducer(5, 11));
+  ASSERT_FALSE(is_missing_transducer(6, 11));
+  ASSERT_FALSE(is_missing_transducer(7, 11));
+  ASSERT_FALSE(is_missing_transducer(8, 11));
+  ASSERT_FALSE(is_missing_transducer(9, 11));
+  ASSERT_FALSE(is_missing_transducer(10, 11));
+  ASSERT_FALSE(is_missing_transducer(11, 11));
+  ASSERT_FALSE(is_missing_transducer(12, 11));
+  ASSERT_FALSE(is_missing_transducer(13, 11));
+  ASSERT_FALSE(is_missing_transducer(14, 11));
+  ASSERT_FALSE(is_missing_transducer(15, 11));
+  ASSERT_FALSE(is_missing_transducer(16, 11));
+  ASSERT_FALSE(is_missing_transducer(17, 11));
+  ASSERT_FALSE(is_missing_transducer(0, 12));
+  ASSERT_FALSE(is_missing_transducer(1, 12));
+  ASSERT_FALSE(is_missing_transducer(2, 12));
+  ASSERT_FALSE(is_missing_transducer(3, 12));
+  ASSERT_FALSE(is_missing_transducer(4, 12));
+  ASSERT_FALSE(is_missing_transducer(5, 12));
+  ASSERT_FALSE(is_missing_transducer(6, 12));
+  ASSERT_FALSE(is_missing_transducer(7, 12));
+  ASSERT_FALSE(is_missing_transducer(8, 12));
+  ASSERT_FALSE(is_missing_transducer(9, 12));
+  ASSERT_FALSE(is_missing_transducer(10, 12));
+  ASSERT_FALSE(is_missing_transducer(11, 12));
+  ASSERT_FALSE(is_missing_transducer(12, 12));
+  ASSERT_FALSE(is_missing_transducer(13, 12));
+  ASSERT_FALSE(is_missing_transducer(14, 12));
+  ASSERT_FALSE(is_missing_transducer(15, 12));
+  ASSERT_FALSE(is_missing_transducer(16, 12));
+  ASSERT_FALSE(is_missing_transducer(17, 12));
+  ASSERT_FALSE(is_missing_transducer(1, 13));
+  ASSERT_FALSE(is_missing_transducer(2, 13));
+  ASSERT_FALSE(is_missing_transducer(3, 13));
+  ASSERT_FALSE(is_missing_transducer(4, 13));
+  ASSERT_FALSE(is_missing_transducer(5, 13));
+  ASSERT_FALSE(is_missing_transducer(6, 13));
+  ASSERT_FALSE(is_missing_transducer(7, 13));
+  ASSERT_FALSE(is_missing_transducer(8, 13));
+  ASSERT_FALSE(is_missing_transducer(9, 13));
+  ASSERT_FALSE(is_missing_transducer(10, 13));
+  ASSERT_FALSE(is_missing_transducer(11, 13));
+  ASSERT_FALSE(is_missing_transducer(12, 13));
+  ASSERT_FALSE(is_missing_transducer(13, 13));
+  ASSERT_FALSE(is_missing_transducer(14, 13));
+  ASSERT_FALSE(is_missing_transducer(15, 13));
+  ASSERT_FALSE(is_missing_transducer(16, 13));
   ASSERT_FALSE(is_missing_transducer(17, 13));
+}
+
+TEST(VersionTest, FirmwareInfo) {
+  using namespace std::literals::string_literals;
+
+  {
+    const autd3::driver::FirmwareInfo info(0, 0, 0, 0);
+    EXPECT_EQ("older than v0.4"s, info.cpu_version());
+    EXPECT_EQ("older than v0.4"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 1, 1, 0);
+    EXPECT_EQ("v0.4"s, info.cpu_version());
+    EXPECT_EQ("v0.4"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 2, 2, 0);
+    EXPECT_EQ("v0.5"s, info.cpu_version());
+    EXPECT_EQ("v0.5"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 3, 3, 0);
+    EXPECT_EQ("v0.6"s, info.cpu_version());
+    EXPECT_EQ("v0.6"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 4, 4, 0);
+    EXPECT_EQ("v0.7"s, info.cpu_version());
+    EXPECT_EQ("v0.7"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 5, 5, 0);
+    EXPECT_EQ("v0.8"s, info.cpu_version());
+    EXPECT_EQ("v0.8"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 6, 6, 0);
+    EXPECT_EQ("v0.9"s, info.cpu_version());
+    EXPECT_EQ("v0.9"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 7, 7, 0);
+    EXPECT_EQ("unknown (7)"s, info.cpu_version());
+    EXPECT_EQ("unknown (7)"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 8, 8, 0);
+    EXPECT_EQ("unknown (8)"s, info.cpu_version());
+    EXPECT_EQ("unknown (8)"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 9, 9, 0);
+    EXPECT_EQ("unknown (9)"s, info.cpu_version());
+    EXPECT_EQ("unknown (9)"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 10, 10, 0);
+    EXPECT_EQ("v1.0"s, info.cpu_version());
+    EXPECT_EQ("v1.0"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 11, 11, 0);
+    EXPECT_EQ("v1.1"s, info.cpu_version());
+    EXPECT_EQ("v1.1"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 12, 12, 0);
+    EXPECT_EQ("v1.2"s, info.cpu_version());
+    EXPECT_EQ("v1.2"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 13, 13, 0);
+    EXPECT_EQ("v1.3"s, info.cpu_version());
+    EXPECT_EQ("v1.3"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 14, 14, 0);
+    EXPECT_EQ("v1.4"s, info.cpu_version());
+    EXPECT_EQ("v1.4"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 15, 15, 0);
+    EXPECT_EQ("v1.5"s, info.cpu_version());
+    EXPECT_EQ("v1.5"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 16, 16, 0);
+    EXPECT_EQ("v1.6"s, info.cpu_version());
+    EXPECT_EQ("v1.6"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 17, 17, 0);
+    EXPECT_EQ("v1.7"s, info.cpu_version());
+    EXPECT_EQ("v1.7"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 18, 18, 0);
+    EXPECT_EQ("v1.8"s, info.cpu_version());
+    EXPECT_EQ("v1.8"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 19, 19, 0);
+    EXPECT_EQ("v1.9"s, info.cpu_version());
+    EXPECT_EQ("v1.9"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 20, 20, 0);
+    EXPECT_EQ("v1.10"s, info.cpu_version());
+    EXPECT_EQ("v1.10"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 21, 21, 0);
+    EXPECT_EQ("v1.11"s, info.cpu_version());
+    EXPECT_EQ("v1.11"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 128, 128, 0);
+    EXPECT_EQ("v2.0"s, info.cpu_version());
+    EXPECT_EQ("v2.0"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 129, 129, 0);
+    EXPECT_EQ("v2.1"s, info.cpu_version());
+    EXPECT_EQ("v2.1"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 130, 130, 0);
+    EXPECT_EQ("v2.2"s, info.cpu_version());
+    EXPECT_EQ("v2.2"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 131, 131, 0);
+    EXPECT_EQ("v2.3"s, info.cpu_version());
+    EXPECT_EQ("v2.3"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 132, 132, 0);
+    EXPECT_EQ("v2.4"s, info.cpu_version());
+    EXPECT_EQ("v2.4"s, info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 133, 133, 0);
+    EXPECT_EQ("unknown (133)"s, info.cpu_version());
+    EXPECT_EQ("unknown (133)"s, info.fpga_version());
+  }
 }
 
 TEST(CPUTest, STMFocus) {
