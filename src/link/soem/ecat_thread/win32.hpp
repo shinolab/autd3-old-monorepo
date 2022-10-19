@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/09/2022
+// Last Modified: 19/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -50,45 +50,43 @@ inline void nanosleep(const int64_t t) {
 }
 
 inline void add_timespec(timespec& ts, const int64_t addtime) {
-  const auto nsec = addtime % 1000000000;
-  const auto sec = (addtime - nsec) / 1000000000;
+  const auto nsec = addtime % 1000000000LL;
+  const auto sec = (addtime - nsec) / 1000000000LL;
   ts.tv_sec += sec;
-  ts.tv_nsec += nsec;
-  if (ts.tv_nsec >= 1000000000) {
-    const auto nsec_ = ts.tv_nsec % 1000000000;
-    ts.tv_sec += ((int64_t)ts.tv_nsec - nsec_) / 1000000000LL;
+  ts.tv_nsec += static_cast<long>(nsec);
+  if (ts.tv_nsec >= 1000000000L) {
+    const auto nsec_ = ts.tv_nsec % 1000000000L;
+    ts.tv_sec += (static_cast<int64_t>(ts.tv_nsec) - nsec_) / 1000000000LL;
     ts.tv_nsec = nsec_;
   }
 }
 
-timespec ecat_setup(const int64_t cycletime_ns) {
-  auto ts = timespec{0, 0};
-
+inline timespec ecat_setup(const int64_t cycletime_ns) {
   auto tp = timeval{0, 0};
   gettimeofday_precise(&tp, nullptr);
 
-  const auto cyctime_us = cycletime_ns / 1000;
+  const auto cycletime_us = cycletime_ns / 1000;
 
-  ts.tv_sec = tp.tv_sec;
-  const auto ht = ((tp.tv_usec / cyctime_us) + 1) * cyctime_us;
-  ts.tv_nsec = ht * 1000;
-  return ts;
+  const auto ht = ((tp.tv_usec / cycletime_us) + 1) * cycletime_us;
+  return {tp.tv_sec, static_cast<long>(ht) * 1000L};
 }
 
-void timed_wait(const timespec& abs_time) {
+inline void timed_wait(const timespec& abs_time) {
   auto tp = timeval{0, 0};
   gettimeofday_precise(&tp, nullptr);
 
-  const auto sleep = ((int64_t)abs_time.tv_sec - (int64_t)tp.tv_sec) * 1000000000LL + ((int64_t)abs_time.tv_nsec - (int64_t)tp.tv_usec * 1000LL);
-
-  if (sleep > 0) std::this_thread::sleep_for(std::chrono::nanoseconds(sleep));
+  if (const auto sleep = (static_cast<int64_t>(abs_time.tv_sec) - static_cast<int64_t>(tp.tv_sec)) * 1000000000LL +
+                         (static_cast<int64_t>(abs_time.tv_nsec) - static_cast<int64_t>(tp.tv_usec) * 1000LL);
+      sleep > 0)
+    std::this_thread::sleep_for(std::chrono::nanoseconds(sleep));
 }
 
-void timed_wait_h(const timespec& abs_time) {
+inline void timed_wait_h(const timespec& abs_time) {
   auto tp = timeval{0, 0};
   gettimeofday_precise(&tp, nullptr);
 
-  const auto sleep = ((int64_t)abs_time.tv_sec - (int64_t)tp.tv_sec) * 1000000000LL + ((int64_t)abs_time.tv_nsec - (int64_t)tp.tv_usec * 1000LL);
+  const auto sleep = (static_cast<int64_t>(abs_time.tv_sec) - static_cast<int64_t>(tp.tv_sec)) * 1000000000LL +
+                     (static_cast<int64_t>(abs_time.tv_nsec) - static_cast<int64_t>(tp.tv_usec) * 1000LL);
 
   nanosleep(sleep);
 }
