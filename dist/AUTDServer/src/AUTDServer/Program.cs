@@ -29,17 +29,17 @@ namespace AUTDServer
             var sync0CycleTime = new Option<int>(
                 aliases: new[] { "--sync0", "-s" },
                 description: "Sync0 cycle time in units of ns",
-                getDefaultValue: () => 500000
+                getDefaultValue: () => 2
             );
             var taskCycleTime = new Option<int>(
                 aliases: new[] { "--task", "-t" },
                 description: "Send task cycle time in units of 0.1us",
-                getDefaultValue: () => 5000
+                getDefaultValue: () => 2
             );
             var cpuBaseTime = new Option<int>(
                 aliases: new[] { "--base", "-b" },
                 description: "CPU base time in units of 0.1us",
-                getDefaultValue: () => 5000
+                getDefaultValue: () => 2
             );
             var syncMode = new Option<SyncMode>(
                 aliases: new[] { "--mode", "-m" },
@@ -68,7 +68,7 @@ namespace AUTDServer
         [STAThread]
         private static void Setup(string clientIpAddr, int sync0CycleTime, int taskCycleTime, int cpuBaseTime, SyncMode syncMode, bool keep)
         {
-           (new SetupTwinCAT(clientIpAddr, syncMode, taskCycleTime, cpuBaseTime, sync0CycleTime, keep)).Run();
+           (new SetupTwinCAT(clientIpAddr, syncMode, 5000 * taskCycleTime, 5000 * cpuBaseTime, 500000 * sync0CycleTime, keep)).Run();
         }
     }
 }

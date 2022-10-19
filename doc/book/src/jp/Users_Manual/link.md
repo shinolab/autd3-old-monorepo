@@ -69,16 +69,15 @@ Incompatible devicesの中のドライバもInstall自体は可能で, Install�
 
 大量のDeviceを使用しようとすると, 下の図のようなエラーが発生することがある.
 この場合は, `AUTDServer`のオプションの`-s`と`-t`の値を増やし, AUTDServerを再び実行する.
-これらのオプションの値はそれぞれ`500000`と`5000`になっている.
-これを適当に整数倍する.
+これらのオプションの値はそれぞれ`2`になっている.
 
 ```
-AUTDServer.exe -s 1000000 -t 10000
+AUTDServer.exe -s 3 -t 3
 ```
 
 何倍にすればいいかは接続する台数による.
 エラーが出ない中で可能な限り小さな値が望ましい.
-例えば, 9台の場合は2, 3倍の値にしておけば動作するはずである.
+例えば, 9台の場合は3, 4程度の値にしておけば動作するはずである.
 
 <figure>
   <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/tcerror.jpg"/>
@@ -182,20 +181,18 @@ SOEMも大量のDeviceを使用すると挙動が不安定になる時がある[
 このときは, `sync0_cycle`と`send_cycle`関数を使用し, その値を増やす.
 ```cpp
   auto link = autd3::link::SOEM()
-                .sync0_cycle(2)
-                .send_cycle(2)
+                .sync0_cycle(3)
+                .send_cycle(3)
                 .build();
 ```
 この値はエラーが出ない中で, 可能な限り小さな値が望ましい.
-デフォルトは1であり, どの程度の値にすべきかは接続している台数に依存する.
-例えば, 9台の場合は2, 3程度の値にしておけば動作するはずである.
+デフォルトは2であり, どの程度の値にすべきかは接続している台数に依存する.
+例えば, 9台の場合は3, 4程度の値にしておけば動作するはずである.
 
 また, SOEM Linkは回復不能なエラー (例えば, ケーブルが抜けるなど) が発生したときのコールバックを設定することができる[^fn_soem_err].
 callbackはエラーメッセージを引数に取る.
 ```cpp
   auto link = autd3::link::SOEM()
-                .sync0_cycle(2)
-                .send_cycle(2)
                 .on_lost([](const std::string& msg) {
                   std::cerr << "Link is lost\n";
                   std::cerr << msg;
@@ -207,13 +204,6 @@ callbackはエラーメッセージを引数に取る.
 さらに, Windowsの場合はHigh Precisionモードの設定ができる.
 ```cpp
   auto link = autd3::link::SOEM()
-                .sync0_cycle(2)
-                .send_cycle(2)
-                .on_lost([](const std::string& msg) {
-                  std::cerr << "Link is lost\n";
-                  std::cerr << msg;
-                  std::quick_exit(-1);
-                })
                 .high_precision(true)
                 .build();
 ```
@@ -227,14 +217,6 @@ High Precisionモードを`true`にすると, より高精度なタイマが使�
 
 ```cpp
   auto link = autd3::link::SOEM()
-                .sync0_cycle(2)
-                .send_cycle(2)
-                .on_lost([](const std::string& msg) {
-                  std::cerr << "Link is lost\n";
-                  std::cerr << msg;
-                  std::quick_exit(-1);
-                })
-                .high_precision(true)
                 .sync_mode(autd3::link::SYNC_MODE::FREE_RUN)
                 .build();
 ```
@@ -246,6 +228,7 @@ Simulator linkは[AUTD Simulator](https://shinolab.github.io/autd3/book/jp/Simul
 使用の前に, AUTD Simulatorを起動しておく必要がある.
 
 SimulatorのLinkを使用する際は`autd3/link/simulator.hpp`ヘッダーをインクルードする.
+
 ```cpp
 #include "autd3/link/simulator.hpp"
 
@@ -253,6 +236,7 @@ SimulatorのLinkを使用する際は`autd3/link/simulator.hpp`ヘッダーを�
 
   auto link = autd3::link::Simulator().port(50632).build();
 ```
+
 ポート番号はAUTD Simulatorの設定と同じにしておく.
 
 [^fn_remote_twin]: 無線LANでも可
