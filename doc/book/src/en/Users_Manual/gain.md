@@ -33,7 +33,7 @@ The first argument of the constructor is the apex of the virtual cone producing 
 The fourth argument is a normalized sound pressure amplitude of 0-1 (1 by default).
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/1.4985159.figures.online.f1.jpg"/>
+  <img src="../fig/Users_Manual/1.4985159.figures.online.f1.jpg"/>
   <figcaption>Bessel beam (cited from the paper[^hasegawa2017])</figcaption>
 </figure>
 

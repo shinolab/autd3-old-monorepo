@@ -22,14 +22,14 @@ The flow of using the SDK is as follows:
 Here is a top view of AUTD3.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/autd_trans_idx.jpg"/>
+  <img src="../fig/Users_Manual/autd_trans_idx.jpg"/>
   <figcaption>AUTD front</figcaption>
 </figure>
 
 The following is an image of the back of AUTD3. The connector for 24V power supply is Molex 5566-02A.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/autd_back.jpg"/>
+  <img src="../fig/Users_Manual/autd_back.jpg"/>
   <figcaption>AUTD back</figcaption>
 </figure>
 
@@ -43,7 +43,7 @@ The transducers are arranged with a spacing of $\SI{10.16}{mm}$, and the size, i
 The outline view of the device is shown below.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/transducers_array.jpg"/>
+  <img src="../fig/Users_Manual/transducers_array.jpg"/>
   <figcaption>Design drawing of transducer array</figcaption>
 </figure>
 
