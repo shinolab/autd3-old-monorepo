@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2022
+ * Last Modified: 20/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,7 +33,7 @@ fn main() {
     println!("cargo:rustc-link-lib=winmm");
     println!("cargo:rustc-link-lib=ws2_32");
     println!(
-        "cargo:rustc-link-search={}\\..\\..\\3rdparty\\SOEM\\oshw\\win32\\wpcap\\Lib\\x64",
+        "cargo:rustc-link-search={}\\3rdparty\\SOEM\\oshw\\win32\\wpcap\\Lib\\x64",
         home_dir
     );
     println!("cargo:rustc-link-lib=Packet");
@@ -41,33 +41,33 @@ fn main() {
 
     let mut build = cc::Build::new();
     build.flag("/DWIN32").warnings(true).cpp(false);
-    add!("../../3rdparty/SOEM/soem/*.c", path, build.file(path));
-    add!("../../3rdparty/SOEM/osal/win32/*.c", path, build.file(path));
-    add!("../../3rdparty/SOEM/oshw/win32/*.c", path, build.file(path));
+    add!("3rdparty/SOEM/soem/*.c", path, build.file(path));
+    add!("3rdparty/SOEM/osal/win32/*.c", path, build.file(path));
+    add!("3rdparty/SOEM/oshw/win32/*.c", path, build.file(path));
     build
-        .include("../../3rdparty/SOEM/soem")
-        .include("../../3rdparty/SOEM/osal")
-        .include("../../3rdparty/SOEM/osal/win32")
-        .include("../../3rdparty/SOEM/oshw/win32")
-        .include("../../3rdparty/SOEM/oshw/win32/wpcap/Include")
-        .include("../../3rdparty/SOEM/oshw/win32/wpcap/Include/pcap")
+        .include("3rdparty/SOEM/soem")
+        .include("3rdparty/SOEM/osal")
+        .include("3rdparty/SOEM/osal/win32")
+        .include("3rdparty/SOEM/oshw/win32")
+        .include("3rdparty/SOEM/oshw/win32/wpcap/Include")
+        .include("3rdparty/SOEM/oshw/win32/wpcap/Include/pcap")
         .compile("soem");
 
     let bindings = bindgen::Builder::default()
         .clang_arg("-DWIN32")
-        .clang_arg("-I../../3rdparty/SOEM/soem")
-        .clang_arg("-I../../3rdparty/SOEM/osal")
-        .clang_arg("-I../../3rdparty/SOEM/osal/win32")
-        .clang_arg("-I../../3rdparty/SOEM/oshw/win32")
-        .clang_arg("-I../../3rdparty/SOEM/oshw/win32/wpcap/Include")
-        .clang_arg("-I../../3rdparty/SOEM/oshw/win32/wpcap/Include/pcap")
-        .header("../../3rdparty/SOEM/osal/win32/osal_defs.h")
-        .header("../../3rdparty/SOEM/osal/win32/osal_win32.h")
-        .header("../../3rdparty/SOEM/soem/ethercattype.h")
-        .header("../../3rdparty/SOEM/oshw/win32/nicdrv.h")
-        .header("../../3rdparty/SOEM/soem/ethercatmain.h")
-        .header("../../3rdparty/SOEM/soem/ethercatdc.h")
-        .header("../../3rdparty/SOEM/soem/ethercatconfig.h")
+        .clang_arg("-I3rdparty/SOEM/soem")
+        .clang_arg("-I3rdparty/SOEM/osal")
+        .clang_arg("-I3rdparty/SOEM/osal/win32")
+        .clang_arg("-I3rdparty/SOEM/oshw/win32")
+        .clang_arg("-I3rdparty/SOEM/oshw/win32/wpcap/Include")
+        .clang_arg("-I3rdparty/SOEM/oshw/win32/wpcap/Include/pcap")
+        .header("3rdparty/SOEM/osal/win32/osal_defs.h")
+        .header("3rdparty/SOEM/osal/win32/osal_win32.h")
+        .header("3rdparty/SOEM/soem/ethercattype.h")
+        .header("3rdparty/SOEM/oshw/win32/nicdrv.h")
+        .header("3rdparty/SOEM/soem/ethercatmain.h")
+        .header("3rdparty/SOEM/soem/ethercatdc.h")
+        .header("3rdparty/SOEM/soem/ethercatconfig.h")
         .allowlist_function("ec_init")
         .allowlist_function("ec_find_adapters")
         .allowlist_function("ec_send_processdata")
@@ -107,35 +107,27 @@ fn main() {
 
     let mut build = cc::Build::new();
     build.warnings(true).cpp(false);
-    add!("../../3rdparty/SOEM/soem/*.c", path, build.file(path));
-    add!(
-        "../../3rdparty/SOEM/osal/macosx/*.c",
-        path,
-        build.file(path)
-    );
-    add!(
-        "../../3rdparty/SOEM/oshw/macosx/*.c",
-        path,
-        build.file(path)
-    );
+    add!("3rdparty/SOEM/soem/*.c", path, build.file(path));
+    add!("3rdparty/SOEM/osal/macosx/*.c", path, build.file(path));
+    add!("3rdparty/SOEM/oshw/macosx/*.c", path, build.file(path));
     build
-        .include("../../3rdparty/SOEM/soem")
-        .include("../../3rdparty/SOEM/osal")
-        .include("../../3rdparty/SOEM/osal/macosx")
-        .include("../../3rdparty/SOEM/oshw/macosx")
+        .include("3rdparty/SOEM/soem")
+        .include("3rdparty/SOEM/osal")
+        .include("3rdparty/SOEM/osal/macosx")
+        .include("3rdparty/SOEM/oshw/macosx")
         .compile("soem");
 
     let bindings = bindgen::Builder::default()
-        .clang_arg("-I../../3rdparty/SOEM/soem")
-        .clang_arg("-I../../3rdparty/SOEM/osal")
-        .clang_arg("-I../../3rdparty/SOEM/osal/macosx")
-        .clang_arg("-I../../3rdparty/SOEM/oshw/macosx")
-        .header("../../3rdparty/SOEM/osal/macosx/osal_defs.h")
-        .header("../../3rdparty/SOEM/soem/ethercattype.h")
-        .header("../../3rdparty/SOEM/oshw/macosx/nicdrv.h")
-        .header("../../3rdparty/SOEM/soem/ethercatmain.h")
-        .header("../../3rdparty/SOEM/soem/ethercatdc.h")
-        .header("../../3rdparty/SOEM/soem/ethercatconfig.h")
+        .clang_arg("-I3rdparty/SOEM/soem")
+        .clang_arg("-I3rdparty/SOEM/osal")
+        .clang_arg("-I3rdparty/SOEM/osal/macosx")
+        .clang_arg("-I3rdparty/SOEM/oshw/macosx")
+        .header("3rdparty/SOEM/osal/macosx/osal_defs.h")
+        .header("3rdparty/SOEM/soem/ethercattype.h")
+        .header("3rdparty/SOEM/oshw/macosx/nicdrv.h")
+        .header("3rdparty/SOEM/soem/ethercatmain.h")
+        .header("3rdparty/SOEM/soem/ethercatdc.h")
+        .header("3rdparty/SOEM/soem/ethercatconfig.h")
         .allowlist_function("ec_init")
         .allowlist_function("ec_find_adapters")
         .allowlist_function("ec_send_processdata")
@@ -175,27 +167,27 @@ fn main() {
 
     let mut build = cc::Build::new();
     build.warnings(true).cpp(false);
-    add!("../../3rdparty/SOEM/soem/*.c", path, build.file(path));
-    add!("../../3rdparty/SOEM/osal/linux/*.c", path, build.file(path));
-    add!("../../3rdparty/SOEM/oshw/linux/*.c", path, build.file(path));
+    add!("3rdparty/SOEM/soem/*.c", path, build.file(path));
+    add!("3rdparty/SOEM/osal/linux/*.c", path, build.file(path));
+    add!("3rdparty/SOEM/oshw/linux/*.c", path, build.file(path));
     build
-        .include("../../3rdparty/SOEM/soem")
-        .include("../../3rdparty/SOEM/osal")
-        .include("../../3rdparty/SOEM/osal/linux")
-        .include("../../3rdparty/SOEM/oshw/linux")
+        .include("3rdparty/SOEM/soem")
+        .include("3rdparty/SOEM/osal")
+        .include("3rdparty/SOEM/osal/linux")
+        .include("3rdparty/SOEM/oshw/linux")
         .compile("soem");
 
     let bindings = bindgen::Builder::default()
-        .clang_arg("-I../../3rdparty/SOEM/soem")
-        .clang_arg("-I../../3rdparty/SOEM/osal")
-        .clang_arg("-I../../3rdparty/SOEM/osal/linux")
-        .clang_arg("-I../../3rdparty/SOEM/oshw/linux")
-        .header("../../3rdparty/SOEM/osal/linux/osal_defs.h")
-        .header("../../3rdparty/SOEM/soem/ethercattype.h")
-        .header("../../3rdparty/SOEM/oshw/linux/nicdrv.h")
-        .header("../../3rdparty/SOEM/soem/ethercatmain.h")
-        .header("../../3rdparty/SOEM/soem/ethercatdc.h")
-        .header("../../3rdparty/SOEM/soem/ethercatconfig.h")
+        .clang_arg("-I3rdparty/SOEM/soem")
+        .clang_arg("-I3rdparty/SOEM/osal")
+        .clang_arg("-I3rdparty/SOEM/osal/linux")
+        .clang_arg("-I3rdparty/SOEM/oshw/linux")
+        .header("3rdparty/SOEM/osal/linux/osal_defs.h")
+        .header("3rdparty/SOEM/soem/ethercattype.h")
+        .header("3rdparty/SOEM/oshw/linux/nicdrv.h")
+        .header("3rdparty/SOEM/soem/ethercatmain.h")
+        .header("3rdparty/SOEM/soem/ethercatdc.h")
+        .header("3rdparty/SOEM/soem/ethercatconfig.h")
         .allowlist_function("ec_init")
         .allowlist_function("ec_find_adapters")
         .allowlist_function("ec_send_processdata")
