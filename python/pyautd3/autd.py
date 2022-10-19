@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 09/10/2022
+Last Modified: 19/10/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -438,7 +438,7 @@ class SOEM:
         onlost = ErrorHandlerFunc(self._on_lost) if self._on_lost is not None else None
         LinkSOEM().init_dll()
         link = c_void_p()
-        LinkSOEM().dll.AUTDLinkSOEM(byref(link), self._ifname.encode('mbcs') if self._ifname is not None else None,
+        LinkSOEM().dll.AUTDLinkSOEM(byref(link), self._ifname.encode('utf-8') if self._ifname is not None else None,
                                     self._sync0_cycle, self._send_cycle, self._freerun, onlost, self._high_precision)
         return Link(link)
 
@@ -453,7 +453,7 @@ class SOEM:
             sb_desc = ctypes.create_string_buffer(128)
             sb_name = ctypes.create_string_buffer(128)
             LinkSOEM().dll.AUTDGetAdapter(handle, i, sb_desc, sb_name)
-            res.append([sb_name.value.decode('mbcs'), sb_desc.value.decode('mbcs')])
+            res.append([sb_name.value.decode('utf-8'), sb_desc.value.decode('utf-8')])
 
         LinkSOEM().dll.AUTDFreeAdapterPointer(handle)
 
@@ -481,9 +481,9 @@ class RemoteTwinCAT:
 
     def build(self):
         link = c_void_p()
-        LinkRemoteTwinCAT().dll.AUTDLinkRemoteTwinCAT(byref(link), self._remote_ip_addr.encode('mbcs'),
-                                                      self._remote_ams_net_id.encode('mbcs'),
-                                                      self._local_ams_net_id.encode('mbcs'))
+        LinkRemoteTwinCAT().dll.AUTDLinkRemoteTwinCAT(byref(link), self._remote_ip_addr.encode('utf-8'),
+                                                      self._remote_ams_net_id.encode('utf-8'),
+                                                      self._local_ams_net_id.encode('utf-8'))
         return Link(link)
 
 
@@ -522,7 +522,7 @@ class AUTD:
         size = Base().dll.AUTDGetLastError(None)
         err = ctypes.create_string_buffer(size)
         Base().dll.AUTDGetLastError(err)
-        return err.value.decode('mbcs')
+        return err.value.decode('utf-8')
 
     def to_legacy(self):
         Base().dll.AUTDSetMode(self.p_cnt, 0)
@@ -544,7 +544,7 @@ class AUTD:
         for i in range(size):
             sb = ctypes.create_string_buffer(256)
             Base().dll.AUTDGetFirmwareInfo(handle, i, sb)
-            res.append(sb.value.decode('mbcs'))
+            res.append(sb.value.decode('utf-8'))
 
         Base().dll.AUTDFreeFirmwareInfoListPointer(handle)
 
@@ -760,14 +760,14 @@ class Simulator:
 
     def build(self):
         link = c_void_p()
-        LinkSimulator().dll.AUTDLinkSimulator(byref(link), self._port, self._ip_addr.encode('mbcs'))
+        LinkSimulator().dll.AUTDLinkSimulator(byref(link), self._port, self._ip_addr.encode('utf-8'))
         return Link(link)
 
 
 class RawPCM(Modulation):
     def __init__(self, path: str, sampling_freq: float, mod_freq_div: int):
         super().__init__()
-        ModulationAudioFile().dll.AUTDModulationRawPCM(byref(self.ptr), path.encode('mbcs'), sampling_freq, mod_freq_div)
+        ModulationAudioFile().dll.AUTDModulationRawPCM(byref(self.ptr), path.encode('utf-8'), sampling_freq, mod_freq_div)
 
     def __del__(self):
         super().__del__()
@@ -776,7 +776,7 @@ class RawPCM(Modulation):
 class Wav(Modulation):
     def __init__(self, path: str, mod_freq_div: int):
         super().__init__()
-        ModulationAudioFile().dll.AUTDModulationWav(byref(self.ptr), path.encode('mbcs'), mod_freq_div)
+        ModulationAudioFile().dll.AUTDModulationWav(byref(self.ptr), path.encode('utf-8'), mod_freq_div)
 
     def __del__(self):
         super().__del__()
