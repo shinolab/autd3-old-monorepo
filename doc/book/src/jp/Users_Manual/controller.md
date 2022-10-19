@@ -40,7 +40,7 @@ AUTD3のファン制御はAuto, Off, Onの3つのモードが有る. Autoモー�
 モードの切替は, ファン横のジャンパスイッチで行う. 少しわかりにくいが, 下図のようにファン側をショートするとAuto, 真ん中でOff, 右側でOnとなる.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/fan.jpg"/>
+  <img src="../fig/Users_Manual/fan.jpg"/>
   <figcaption>AUTD Fan jumper switch</figcaption>
 </figure>
 

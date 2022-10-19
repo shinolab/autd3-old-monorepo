@@ -22,14 +22,14 @@ SDK使用の流れは次のようになる.
 以下にAUTD3を上から見た写真を載せる.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/autd_trans_idx.jpg"/>
+  <img src="../fig/Users_Manual/autd_trans_idx.jpg"/>
   <figcaption>AUTD front</figcaption>
 </figure>
 
 また, 以下にAUTD3の背面の画像を載せる. 24V電源のコネクタはMolex社5566-02Aを使用している.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/autd_back.jpg"/>
+  <img src="../fig/Users_Manual/autd_back.jpg"/>
   <figcaption>AUTD back</figcaption>
 </figure>
 
@@ -43,7 +43,7 @@ $x$軸は長軸方向, すなわち, 0→17の方向であり, $y$軸は0→18�
 以下に, 振動子アレイの外形図を載せる.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/doc/book/src/fig/Users_Manual/transducers_array.jpg"/>
+  <img src="../fig/Users_Manual/transducers_array.jpg"/>
   <figcaption>Design drawing of transducer array</figcaption>
 </figure>
 
