@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 11/10/2022
+Last Modified: 21/10/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -83,7 +83,7 @@ __all__ = [
     'DEVICE_HEIGHT'
 ]
 
-__version__ = '2.4.3'
+__version__ = '2.4.4'
 
 _PLATFORM = platform.system()
 _TARGET_OS = ''
