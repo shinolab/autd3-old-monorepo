@@ -1,6 +1,6 @@
 [package]
 name = "autd3-traits"
-version = "2.4.3"
+version = "2.4.4"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
