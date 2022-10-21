@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/09/2022
+// Last Modified: 21/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,7 +28,7 @@ struct Geometry {
    * \brief Device contains an AUTD device geometry.
    */
   struct Device {
-    explicit Device(const size_t id, const Vector3& position, const Quaternion& rotation) : _origin(position), _rotation(rotation) {
+    explicit Device(const size_t id, const Vector3& position, const Quaternion& rotation) : _id(id), _origin(position), _rotation(rotation) {
       const Eigen::Transform<double, 3, Eigen::Affine> transform_matrix = Eigen::Translation<double, 3>(position) * rotation;
       const Vector3 x_direction = rotation * Vector3(1, 0, 0);
       const Vector3 y_direction = rotation * Vector3(0, 1, 0);
@@ -55,14 +55,19 @@ struct Geometry {
     Device& operator=(Device&& obj) = delete;
 
     /**
+     * @brief Device ID
+     */
+    [[nodiscard]] size_t id() const noexcept { return _id; }
+
+    /**
      * @brief Rotation of this device
      */
-    [[nodiscard]] Quaternion rotation() const { return _rotation; }
+    [[nodiscard]] Quaternion rotation() const noexcept { return _rotation; }
 
     /**
      * @brief Origin of this device
      */
-    [[nodiscard]] Vector3 origin() const { return _origin; }
+    [[nodiscard]] Vector3 origin() const noexcept { return _origin; }
 
     /**
      * @brief Center of this device
@@ -95,6 +100,7 @@ struct Geometry {
     Transducer& operator[](const size_t i) { return _transducers[i]; }
 
    private:
+    const size_t _id;
     std::vector<Transducer> _transducers;
     const Vector3 _origin;
     const Quaternion _rotation;
