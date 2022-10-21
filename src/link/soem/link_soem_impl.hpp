@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/08/2022
+// Last Modified: 19/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -114,6 +114,7 @@ class SOEMLink final : public core::Link {
 
   bool _is_running;
   std::thread _ecat_thread;
+  std::thread _ecat_check_thread;
 
   std::queue<driver::TxDatagram> _send_buf;
   std::mutex _send_mtx;

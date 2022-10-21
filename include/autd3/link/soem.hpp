@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/08/2022
+// Last Modified: 19/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -51,7 +51,7 @@ class SOEM {
   /**
    * @brief Constructor
    */
-  SOEM() : _high_precision(false), _sync0_cycle(1), _send_cycle(1), _callback(nullptr), _sync_mode(SYNC_MODE::DC) {}
+  SOEM() : _high_precision(false), _sync0_cycle(2), _send_cycle(2), _callback(nullptr), _sync_mode(SYNC_MODE::DC) {}
 
   /**
    * @brief Set network interface name. (e.g. eth0)

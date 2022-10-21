@@ -10,6 +10,7 @@ SDKには単一焦点のみをサポートする`PointSTM`と任意の`Gain`を�
 * サンプリング周波数は$\SI{163.84}{MHz}/N$. ここで, $N$は32-bit符号なし整数であり, $1612$以上の値である必要がある.
 
 `PointSTM`の使用方法は以下のようになる.
+
 ```cpp
   autd3::PointSTM stm;
 
@@ -45,6 +46,7 @@ SDKには単一焦点のみをサポートする`PointSTM`と任意の`Gain`を�
 となる.
 
 `GainSTM`の使用サンプルは`PointSTM`とほぼ同じである.
+
 ```cpp
   autd3::GainSTM stm(autd.geometry());
 
@@ -63,6 +65,7 @@ SDKには単一焦点のみをサポートする`PointSTM`と任意の`Gain`を�
   std::cout << "Actual frequency is " << actual_freq << " Hz\n";
   autd.send(stm);
 ```
+
 周波数の制約も`PointSTM`と同じである.
 
 `GainSTM`は位相/振幅データをすべて送信するため, レイテンシが大きい[^fn_gain_seq].
@@ -102,6 +105,7 @@ AUTD3ハードウェア上の制約はないが, その精度はホスト側の�
 
 `SoftwareSTM`の使用方法は以下のようになる.
 基本的な使い方は`GainSTM`と同様である.
+
 ```cpp
   autd3::SoftwareSTM stm;
 

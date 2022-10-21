@@ -43,7 +43,7 @@ When the fan side is shorted, the mode is Auto.
 Off in the middle is shorted, and On on the right side is shorted.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/fan.jpg"/>
+  <img src="../fig/Users_Manual/fan.jpg"/>
   <figcaption>AUTD Fan jumper switch</figcaption>
 </figure>
 
