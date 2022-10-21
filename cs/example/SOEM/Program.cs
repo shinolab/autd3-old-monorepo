@@ -19,7 +19,7 @@ using Samples;
 Console.WriteLine("Test with SOEM");
 
 var autd = new Controller();
-autd.Geometry.AddDevice(Vector3d.Zero, Vector3d.Zero);
+autd.Geometry.AddDevice(Vector3d.zero, Vector3d.zero);
 
 var link = new SOEM()
     .HighPrecision(true)
