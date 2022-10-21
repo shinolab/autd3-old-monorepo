@@ -12,7 +12,7 @@ Copyright (c) 2022 Shun Suzuki. All rights reserved.
 '''
 
 
-from pyautd3.autd import Controller
+from pyautd3.autd import Geometry
 from pyautd3.native_methods.autd3capi_extra_geometry_viewer import NativeMethods as ExtraGeometryViewer
 
 
@@ -36,6 +36,6 @@ class GeometryViewer:
         self._gpu_idx = value
         return self
 
-    def view(self, autd: Controller):
+    def view(self, geometry: Geometry):
         ExtraGeometryViewer().init_dll()
-        ExtraGeometryViewer().dll.AUTDExtraGeometryViewer(autd.p_cnt, self._width, self._height, self._vsync, self._gpu_idx)
+        ExtraGeometryViewer().dll.AUTDExtraGeometryViewer(geometry._cnt, self._width, self._height, self._vsync, self._gpu_idx)

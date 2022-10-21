@@ -24,4 +24,4 @@ if __name__ == '__main__':
     autd.geometry.add_device([DEVICE_WIDTH, 0., DEVICE_WIDTH], [0., pi, 0.])
     autd.geometry.add_device([DEVICE_WIDTH, 0., 0.], [0., -pi / 2, 0.])
 
-    GeometryViewer().window_size(800, 600).vsync(True).view(autd)
+    GeometryViewer().window_size(800, 600).vsync(True).view(autd.geometry)

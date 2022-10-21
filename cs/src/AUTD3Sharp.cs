@@ -270,7 +270,7 @@ namespace AUTD3Sharp
 
     public sealed class Geometry : IEnumerable<Device>
     {
-        private readonly IntPtr _cntPtr;
+        internal readonly IntPtr _cntPtr;
 
         internal Geometry(IntPtr cntPtr)
         {
