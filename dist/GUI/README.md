@@ -1,6 +1,6 @@
 # Graphical User Interface for [autd3](https://github.com/shinolab/autd3)
 
-version: 2.4.3
+version: 2.4.4
 
 ## Limitation
 

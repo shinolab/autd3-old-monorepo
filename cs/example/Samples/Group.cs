@@ -4,7 +4,7 @@
  * Created Date: 23/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/10/2022
+ * Last Modified: 21/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,11 +27,7 @@ internal static class GroupTest
         var config = new SilencerConfig();
         autd.Send(config);
 
-        const double x = Controller.DeviceWidth / 2;
-        const double y = Controller.DeviceHeight / 2;
-        const double z = 150;
-
-        var center = new Vector3d(x, y, z);
+        var center = autd.Geometry.Center + new Vector3d(0, 0, 150);
 
         var g1 = new Focus(center);
         var g2 = new GSPAT();

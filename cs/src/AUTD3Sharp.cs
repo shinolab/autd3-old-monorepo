@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2022
+ * Last Modified: 21/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,6 +25,7 @@
 using Microsoft.Win32.SafeHandles;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -37,6 +38,7 @@ using Math = UnityEngine.Mathf;
 #else
 using Vector3 = AUTD3Sharp.Utils.Vector3d;
 using Quaternion = AUTD3Sharp.Utils.Quaterniond;
+using System.Collections;
 #endif
 
 
@@ -92,7 +94,7 @@ namespace AUTD3Sharp
         #endregion
     }
 
-    internal static class GeometryAdjust
+    public static class GeometryAdjust
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static (double, double, double) Adjust(Vector3 vector, bool scaling = true)
@@ -144,15 +146,129 @@ namespace AUTD3Sharp
 
     public sealed class Transducer
     {
+        private readonly int _devId;
+        private readonly int _trId;
+        private readonly IntPtr _cnt;
 
+        internal Transducer(int devId, int trId, IntPtr cnt)
+        {
+            _devId = devId;
+            _trId = trId;
+            _cnt = cnt;
+        }
+
+        public int Id => AUTD3.NumTransInDevice * _devId + _trId;
+
+        public Vector3 Position
+        {
+            get
+            {
+                Base.AUTDTransPosition(_cnt, _devId, _trId, out var x, out var y, out var z);
+                return GeometryAdjust.Adjust(x, y, z);
+            }
+        }
+
+        public Vector3 XDirection
+        {
+            get
+            {
+                Base.AUTDTransXDirection(_cnt, _devId, _trId, out var x, out var y, out var z);
+                return GeometryAdjust.Adjust(x, y, z, false);
+            }
+        }
+
+        public Vector3 YDirection
+        {
+            get
+            {
+                Base.AUTDTransYDirection(_cnt, _devId, _trId, out var x, out var y, out var z);
+                return GeometryAdjust.Adjust(x, y, z, false);
+            }
+        }
+
+        public Vector3 ZDirection
+        {
+            get
+            {
+                Base.AUTDTransZDirection(_cnt, _devId, _trId, out var x, out var y, out var z);
+                return GeometryAdjust.Adjust(x, y, z, false);
+            }
+        }
+
+        public double Wavelength => Base.AUTDGetWavelength(_cnt, _devId, _trId);
+
+        public double Frequency
+        {
+            get => Base.AUTDGetTransFrequency(_cnt, _devId, _trId);
+            set => Base.AUTDSetTransFrequency(_cnt, _devId, _trId, value);
+        }
+
+        public ushort Cycle
+        {
+            get => Base.AUTDGetTransCycle(_cnt, _devId, _trId);
+            set => Base.AUTDSetTransCycle(_cnt, _devId, _trId, value);
+        }
+
+        public ushort ModDelay
+        {
+            get => Base.AUTDGetModDelay(_cnt, _devId, _trId);
+            set => Base.AUTDSetModDelay(_cnt, _devId, _trId, value);
+        }
     }
 
-    public sealed class Device
+    public sealed class Device : IEnumerable<Transducer>
     {
+        private readonly int _id;
+        private readonly IntPtr _cnt;
 
+        internal Device(int id, IntPtr cnt)
+        {
+            _id = id;
+            _cnt = cnt;
+        }
+
+        public Vector3 Origin => new Transducer(_id, 0, _cnt).Position;
+
+        public Vector3 Center => this.Aggregate(Vector3.Zero, (current, tr) => current + tr.Position) / AUTD3.NumTransInDevice;
+
+        public Transducer this[int index]
+        {
+            get
+            {
+                if (index >= AUTD3.NumTransInDevice) throw new IndexOutOfRangeException();
+                return new Transducer(_id, index, _cnt);
+            }
+        }
+
+        public sealed class TransducerEnumerator : IEnumerator<Transducer>
+        {
+            private int _idx;
+            private readonly int _devId;
+            private readonly IntPtr _cnt;
+
+            internal TransducerEnumerator(int devId, IntPtr cnt)
+            {
+                _idx = -1;
+                _devId = devId;
+                _cnt = cnt;
+            }
+
+            public bool MoveNext() => ++_idx < AUTD3.NumTransInDevice;
+            public void Reset() => _idx = -1;
+
+            public Transducer Current => new Transducer(_devId, _idx, _cnt);
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose() { }
+        }
+
+        public IEnumerator<Transducer> GetEnumerator() => new TransducerEnumerator(_id, _cnt);
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
-    public sealed class Geometry
+    public sealed class Geometry : IEnumerable<Device>
     {
         private readonly IntPtr _cntPtr;
 
@@ -176,7 +292,7 @@ namespace AUTD3Sharp
         }
 
         public int NumDevices => Base.AUTDNumDevices(_cntPtr);
-        
+
         public int NumTransducers => NumDevices * AUTD3.NumTransInDevice;
 
         public double SoundSpeed
@@ -184,30 +300,67 @@ namespace AUTD3Sharp
             get => Base.AUTDGetSoundSpeed(_cntPtr);
             set => Base.AUTDSetSoundSpeed(_cntPtr, value);
         }
+
         public double Attenuation
         {
             get => Base.AUTDGetAttenuation(_cntPtr);
             set => Base.AUTDSetAttenuation(_cntPtr, value);
         }
 
+        public Vector3 Center => this.Aggregate(Vector3.Zero, (current, dev) => current + dev.Center) / NumDevices;
+
+        public Device this[int index]
+        {
+            get
+            {
+                if (index >= NumDevices) throw new IndexOutOfRangeException();
+                return new Device(index, _cntPtr);
+            }
+        }
+
+        public sealed class DeviceEnumerator : IEnumerator<Device>
+        {
+            private int _idx;
+            private readonly int _devLen;
+            private readonly IntPtr _cnt;
+
+            internal DeviceEnumerator(int devLen, IntPtr cnt)
+            {
+                _idx = -1;
+                _devLen = devLen;
+                _cnt = cnt;
+            }
+
+            public bool MoveNext() => ++_idx < _devLen;
+            public void Reset() => _idx = -1;
+
+            public Device Current => new Device(_idx, _cnt);
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose() { }
+        }
+
+        public IEnumerator<Device> GetEnumerator() => new DeviceEnumerator(NumDevices, _cntPtr);
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
     public sealed class Controller : IDisposable
     {
-#region field
+        #region field
 
         private bool _isDisposed;
         internal readonly AUTDControllerHandle AUTDControllerHandle;
-        private readonly Geometry _geometry;
 
-#endregion
+        #endregion
 
         #region Controller
 
         public Controller()
         {
             AUTDControllerHandle = new AUTDControllerHandle(true);
-            _geometry = new Geometry(AUTDControllerHandle.CntPtr);
+            Geometry = new Geometry(AUTDControllerHandle.CntPtr);
         }
 
         public void ToLegacy()
@@ -272,10 +425,10 @@ namespace AUTD3Sharp
             Dispose(false);
         }
 
-#endregion
+        #endregion
 
-#region Property
-        public Geometry Geometry => _geometry;
+        #region Property
+        public Geometry Geometry { get; }
 
         public bool IsOpen => Base.AUTDIsOpen(AUTDControllerHandle.CntPtr);
 
@@ -323,7 +476,7 @@ namespace AUTD3Sharp
                 return sb.ToString();
             }
         }
-#endregion
+        #endregion
 
         public int Send(Header header)
         {
@@ -349,61 +502,6 @@ namespace AUTD3Sharp
             if (header == null) throw new ArgumentNullException(nameof(header));
             if (body == null) throw new ArgumentNullException(nameof(body));
             return Base.AUTDSend(AUTDControllerHandle.CntPtr, header.Ptr, body.Ptr);
-        }
-
-        public Vector3 TransPosition(int deviceIdx, int transIdxLocal)
-        {
-
-            Base.AUTDTransPosition(AUTDControllerHandle.CntPtr, deviceIdx, transIdxLocal, out var x, out var y, out var z);
-
-            return Adjust(x, y, z);
-        }
-
-        public double Wavelength(int deviceIdx, int transIdxLocal)
-        {
-            return Base.AUTDGetWavelength(AUTDControllerHandle.CntPtr, deviceIdx, transIdxLocal);
-        }
-
-        public double TransFrequency(int deviceIdx, int transIdxLocal)
-        {
-            return Base.AUTDGetTransFrequency(AUTDControllerHandle.CntPtr, deviceIdx, transIdxLocal);
-        }
-
-        public void SetTransFrequency(int deviceIdx, int transIdxLocal, double freq)
-        {
-            Base.AUTDSetTransFrequency(AUTDControllerHandle.CntPtr, deviceIdx, transIdxLocal, freq);
-        }
-        public ushort TransCycle(int deviceIdx, int transIdxLocal)
-        {
-            return Base.AUTDGetTransCycle(AUTDControllerHandle.CntPtr, deviceIdx, transIdxLocal);
-        }
-
-        public void SetTransCycle(int deviceIdx, int transIdxLocal, ushort cycle)
-        {
-            Base.AUTDSetTransCycle(AUTDControllerHandle.CntPtr, deviceIdx, transIdxLocal, cycle);
-        }
-
-        public void SetModDelay(int deviceIdx, int transIdxLocal, ushort delay)
-        {
-            Base.AUTDSetModDelay(AUTDControllerHandle.CntPtr, deviceIdx, transIdxLocal, delay);
-        }
-
-        public Vector3 TransDirectionX(int deviceIdx, int transIdxLocal)
-        {
-            Base.AUTDTransXDirection(AUTDControllerHandle.CntPtr, deviceIdx, transIdxLocal, out var x, out var y, out var z);
-            return Adjust(x, y, z, false);
-        }
-
-        public Vector3 TransDirectionY(int deviceIdx, int transIdxLocal)
-        {
-            Base.AUTDTransYDirection(AUTDControllerHandle.CntPtr, deviceIdx, transIdxLocal, out var x, out var y, out var z);
-            return Adjust(x, y, z, false);
-        }
-
-        public Vector3 TransDirectionZ(int deviceIdx, int transIdxLocal)
-        {
-            Base.AUTDTransZDirection(AUTDControllerHandle.CntPtr, deviceIdx, transIdxLocal, out var x, out var y, out var z);
-            return Adjust(x, y, z, false);
         }
     }
 
@@ -476,7 +574,7 @@ namespace AUTD3Sharp
         {
             public Focus(Vector3 point, double amp = 1.0)
             {
-                var (x, y, z) = Controller.Adjust(point);
+                var (x, y, z) = GeometryAdjust.Adjust(point);
                 Base.AUTDGainFocus(out handle, x, y, z, amp);
             }
         }
@@ -498,8 +596,8 @@ namespace AUTD3Sharp
         {
             public BesselBeam(Vector3 point, Vector3 dir, double thetaZ, double amp = 1.0)
             {
-                var (x, y, z) = Controller.Adjust(point);
-                var (dx, dy, dz) = Controller.Adjust(dir, false);
+                var (x, y, z) = GeometryAdjust.Adjust(point);
+                var (dx, dy, dz) = GeometryAdjust.Adjust(dir, false);
                 Base.AUTDGainBesselBeam(out handle, x, y, z, dx, dy, dz, thetaZ, amp);
             }
         }
@@ -508,7 +606,7 @@ namespace AUTD3Sharp
         {
             public PlaneWave(Vector3 dir, double amp = 1.0)
             {
-                var (dx, dy, dz) = Controller.Adjust(dir, false);
+                var (dx, dy, dz) = GeometryAdjust.Adjust(dir, false);
                 Base.AUTDGainPlaneWave(out handle, dx, dy, dz, amp);
             }
         }
@@ -641,7 +739,7 @@ namespace AUTD3Sharp
 
             public bool Add(Vector3 point, byte shift = 0)
             {
-                var (x, y, z) = Controller.Adjust(point);
+                var (x, y, z) = GeometryAdjust.Adjust(point);
                 return Base.AUTDPointSTMAdd(handle, x, y, z, shift);
             }
         }

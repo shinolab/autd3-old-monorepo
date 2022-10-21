@@ -18,7 +18,7 @@ using AUTD3Sharp.Link;
 using Samples;
 
 var autd = new Controller();
-autd.AddDevice(Vector3d.Zero, Vector3d.Zero);
+autd.Geometry.AddDevice(Vector3d.Zero, Vector3d.Zero);
 
 var link = new TwinCAT().Build();
 if (!autd.Open(link))
