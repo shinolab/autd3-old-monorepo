@@ -1,13 +1,18 @@
-from pyautd3 import AUTD, SOEM, Focus, Sine, TRANS_SPACING_MM, NUM_TRANS_X, NUM_TRANS_Y, SilencerConfig
+from pyautd3 import Controller, SilencerConfig
+from pyautd3.link import SOEM
+from pyautd3.gain import Focus
+from pyautd3.modulation import Sine
+
+import numpy as np
 
 if __name__ == '__main__':
-    autd = AUTD()
+    autd = Controller()
 
-    autd.add_device([0., 0., 0.], [0., 0., 0.])
+    autd.geometry.add_device([0., 0., 0.], [0., 0., 0.])
 
     link = SOEM().high_precision(True).build()
     if not autd.open(link):
-        print(AUTD.last_error())
+        print(Controller.last_error())
         exit()
 
     autd.check_trials = 50
@@ -23,10 +28,7 @@ if __name__ == '__main__':
     config = SilencerConfig()
     autd.send(config)
 
-    x = TRANS_SPACING_MM * ((NUM_TRANS_X - 1) / 2.0)
-    y = TRANS_SPACING_MM * ((NUM_TRANS_Y - 1) / 2.0)
-    z = 150.0
-    g = Focus([x, y, z])
+    g = Focus(autd.geometry.center + np.array([0., 0., 150.]))
     m = Sine(150)
     autd.send(m, g)
 
