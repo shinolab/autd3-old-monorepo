@@ -54,7 +54,7 @@ namespace AUTD3Sharp
 
             public void View(Geometry geometry)
             {
-                NativeMethods.ExtraGeometryViewer.AUTDExtraGeometryViewer(geometry._cntPtr, _width, _height, _vsync, _gpuIdx);
+                NativeMethods.ExtraGeometryViewer.AUTDExtraGeometryViewer(geometry.CntPtr, _width, _height, _vsync, _gpuIdx);
             }
         }
 

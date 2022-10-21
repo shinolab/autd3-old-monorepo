@@ -38,7 +38,6 @@ using Math = UnityEngine.Mathf;
 #else
 using Vector3 = AUTD3Sharp.Utils.Vector3d;
 using Quaternion = AUTD3Sharp.Utils.Quaterniond;
-using System.Collections;
 #endif
 
 
@@ -229,7 +228,7 @@ namespace AUTD3Sharp
 
         public Vector3 Origin => new Transducer(_id, 0, _cnt).Position;
 
-        public Vector3 Center => this.Aggregate(Vector3.Zero, (current, tr) => current + tr.Position) / AUTD3.NumTransInDevice;
+        public Vector3 Center => this.Aggregate(Vector3.zero, (current, tr) => current + tr.Position) / AUTD3.NumTransInDevice;
 
         public Transducer this[int index]
         {
@@ -258,63 +257,63 @@ namespace AUTD3Sharp
 
             public Transducer Current => new Transducer(_devId, _idx, _cnt);
 
-            object IEnumerator.Current => Current;
+            object System.Collections.IEnumerator.Current => Current;
 
             public void Dispose() { }
         }
 
         public IEnumerator<Transducer> GetEnumerator() => new TransducerEnumerator(_id, _cnt);
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
     public sealed class Geometry : IEnumerable<Device>
     {
-        internal readonly IntPtr _cntPtr;
+        internal readonly IntPtr CntPtr;
 
         internal Geometry(IntPtr cntPtr)
         {
-            _cntPtr = cntPtr;
+            CntPtr = cntPtr;
         }
 
         public int AddDevice(Vector3 position, Vector3 rotation)
         {
             var (x, y, z) = GeometryAdjust.Adjust(position);
             var (rx, ry, rz) = GeometryAdjust.Adjust(rotation, false);
-            return Base.AUTDAddDevice(_cntPtr, x, y, z, rx, ry, rz);
+            return Base.AUTDAddDevice(CntPtr, x, y, z, rx, ry, rz);
         }
 
         public int AddDevice(Vector3 position, Quaternion quaternion)
         {
             var (x, y, z) = GeometryAdjust.Adjust(position);
             var (qw, qx, qy, qz) = GeometryAdjust.Adjust(quaternion);
-            return Base.AUTDAddDeviceQuaternion(_cntPtr, x, y, z, qw, qx, qy, qz);
+            return Base.AUTDAddDeviceQuaternion(CntPtr, x, y, z, qw, qx, qy, qz);
         }
 
-        public int NumDevices => Base.AUTDNumDevices(_cntPtr);
+        public int NumDevices => Base.AUTDNumDevices(CntPtr);
 
         public int NumTransducers => NumDevices * AUTD3.NumTransInDevice;
 
         public double SoundSpeed
         {
-            get => Base.AUTDGetSoundSpeed(_cntPtr);
-            set => Base.AUTDSetSoundSpeed(_cntPtr, value);
+            get => Base.AUTDGetSoundSpeed(CntPtr);
+            set => Base.AUTDSetSoundSpeed(CntPtr, value);
         }
 
         public double Attenuation
         {
-            get => Base.AUTDGetAttenuation(_cntPtr);
-            set => Base.AUTDSetAttenuation(_cntPtr, value);
+            get => Base.AUTDGetAttenuation(CntPtr);
+            set => Base.AUTDSetAttenuation(CntPtr, value);
         }
 
-        public Vector3 Center => this.Aggregate(Vector3.Zero, (current, dev) => current + dev.Center) / NumDevices;
+        public Vector3 Center => this.Aggregate(Vector3.zero, (current, dev) => current + dev.Center) / NumDevices;
 
         public Device this[int index]
         {
             get
             {
                 if (index >= NumDevices) throw new IndexOutOfRangeException();
-                return new Device(index, _cntPtr);
+                return new Device(index, CntPtr);
             }
         }
 
@@ -336,14 +335,14 @@ namespace AUTD3Sharp
 
             public Device Current => new Device(_idx, _cnt);
 
-            object IEnumerator.Current => Current;
+            object System.Collections.IEnumerator.Current => Current;
 
             public void Dispose() { }
         }
 
-        public IEnumerator<Device> GetEnumerator() => new DeviceEnumerator(NumDevices, _cntPtr);
+        public IEnumerator<Device> GetEnumerator() => new DeviceEnumerator(NumDevices, CntPtr);
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
     public sealed class Controller : IDisposable
