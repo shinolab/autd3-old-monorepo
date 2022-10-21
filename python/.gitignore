@@ -137,3 +137,7 @@ dmypy.json
 pyautd3/bin/
 .vscode/
 local_test.py
+
+settings.json
+imgui.ini
+AUTD3.glb

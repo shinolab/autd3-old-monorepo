@@ -1,7 +1,7 @@
 '''
-File: remote_twincat.py
+File: simulator_client.py
 Project: example
-Created Date: 23/05/2022
+Created Date: 10/10/2022
 Author: Shun Suzuki
 -----
 Last Modified: 21/10/2022
@@ -11,9 +11,8 @@ Copyright (c) 2022 Shun Suzuki. All rights reserved.
 
 '''
 
-
-from pyautd3 import Controller
-from pyautd3.link import RemoteTwinCAT
+from pyautd3 import Controller, DEVICE_WIDTH
+from pyautd3.link import Simulator
 
 from samples import runner
 
@@ -22,11 +21,14 @@ if __name__ == '__main__':
     autd = Controller()
 
     autd.geometry.add_device([0., 0., 0.], [0., 0., 0.])
+    autd.geometry.add_device([DEVICE_WIDTH, 0., 0.], [0., 0., 0.])
 
-    remote_ip_addr = 'remote ip addr'
-    remore_ams_net_id = 'remote ams net id'
-    local_ams_net_id = 'local ams net is'
-    link = RemoteTwinCAT(remote_ip_addr, remore_ams_net_id).local_ams_net_id(local_ams_net_id).build()
+    autd.to_normal()
+    for dev in autd.geometry:
+        for tr in dev:
+            tr.frequency = 70e3
+
+    link = Simulator().port(50632).build()
     if not autd.open(link):
         print(Controller.last_error())
         exit()
