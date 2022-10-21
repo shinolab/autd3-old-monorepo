@@ -4,7 +4,7 @@
  * Created Date: 23/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2022
+ * Last Modified: 21/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -141,7 +141,7 @@ namespace AUTD3Sharp
 
                 public void Add(Vector3 focus, double amp)
                 {
-                    var (x, y, z) = Controller.Adjust(focus);
+                    var (x, y, z) = GeometryAdjust.Adjust(focus);
                     NativeMethods.GainHolo.AUTDGainHoloAdd(handle, x, y, z, amp);
                 }
             }

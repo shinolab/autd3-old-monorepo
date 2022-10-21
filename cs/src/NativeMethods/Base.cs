@@ -81,6 +81,7 @@ namespace AUTD3Sharp.NativeMethods
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDCreateSilencer(out IntPtr @out, ushort step, ushort cycle);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDDeleteSilencer(IntPtr config);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDSend(IntPtr handle, IntPtr header, IntPtr body);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ushort AUTDGetModDelay(IntPtr handle, int deviceIdx, int localTransIdx);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSetModDelay(IntPtr handle, int deviceIdx, int localTransIdx, ushort delay);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDCreateModDelayConfig(out IntPtr @out);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDDeleteModDelayConfig(IntPtr config);
