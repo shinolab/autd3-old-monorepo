@@ -4,7 +4,7 @@ Project: samples
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 02/06/2022
+Last Modified: 21/10/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,18 +12,22 @@ Copyright (c) 2022 Shun Suzuki. All rights reserved.
 '''
 
 
-from pyautd3 import AUTD, GSPAT, Sine, SilencerConfig, EigenBackend
+from pyautd3 import Controller, SilencerConfig
+from pyautd3.gain.holo import EigenBackend, GSPAT
+from pyautd3.modulation import Sine
+import numpy as np
 
 
-def holo(autd: AUTD):
+def holo(autd: Controller):
     config = SilencerConfig()
     autd.send(config)
 
     backend = EigenBackend()
 
     f = GSPAT(backend)
-    f.add([120., 80., 150.], 1.0)
-    f.add([60., 80., 150.], 1.0)
+    center = autd.geometry.center + np.array([0, 0, 150])
+    f.add(center - np.array([30., 0., 0.]), 1.0)
+    f.add(center + np.array([30., 0., 0.]), 1.0)
 
     m = Sine(150)
 

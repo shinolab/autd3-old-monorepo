@@ -4,19 +4,19 @@ Project: samples
 Created Date: 30/12/2020
 Author: Shun Suzuki
 -----
-Last Modified: 19/10/2022
+Last Modified: 21/10/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2020 Shun Suzuki. All rights reserved.
 
 '''
 
-from pyautd3 import AUTD
+from pyautd3 import Controller
 
 from . import focus, bessel, holo, custom, stm_gain, stm_point
 
 
-def run(autd: AUTD):
+def run(autd: Controller):
     samples = [
         (focus.simple, "Single Focal Point Sample"),
         (bessel.bessel, "Bessel beam Sample"),
@@ -33,7 +33,7 @@ def run(autd: AUTD):
     print('================================== Firmware information ====================================')
     firm_info_list = autd.firmware_info_list()
     for firm in firm_info_list:
-        print(f'{firm}')
+        print(firm)
     print('============================================================================================')
 
     while True:

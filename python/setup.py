@@ -4,7 +4,7 @@ Project: pyautd
 Created Date: 10/09/2020
 Author: Shun Suzuki
 -----
-Last Modified: 18/10/2022
+Last Modified: 21/10/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -132,7 +132,15 @@ setuptools.setup(
     platforms=["Windows", "Linux", "Mac OS-X"],
     include_package_data=True,
     package_dir={'pyautd3': 'pyautd3'},
-    packages=['pyautd3', 'pyautd3.native_methods'],
+    packages=[
+        'pyautd3',
+        'pyautd3.native_methods',
+        'pyautd3.gain',
+        'pyautd3.gain.holo',
+        'pyautd3.modulation',
+        'pyautd3.link',
+        'pyautd3.stm',
+        'pyautd3.extra'],
     python_requires='>=3.8',
     data_files=[(
         'lib/site-packages', data_files

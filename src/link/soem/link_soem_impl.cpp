@@ -3,7 +3,7 @@
 // Created Date: 23/08/2019
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/10/2022
+// Last Modified: 21/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2019-2020 Shun Suzuki. All rights reserved.
@@ -91,19 +91,40 @@ void SOEMLink::open(const core::Geometry& geometry) {
 
   const auto dev_num = geometry.num_devices();
 
-  if (_ifname.empty()) _ifname = lookup_autd();
+  try {
+    if (_ifname.empty()) _ifname = lookup_autd();
+  } catch (std::runtime_error&) {
+    _is_open.store(false);
+    if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
+    throw;
+  }
 
   spdlog::debug("interface name: {}", _ifname);
 
-  if (ec_init(_ifname.c_str()) <= 0) throw std::runtime_error(fmt::format("No socket connection on {}", _ifname));
+  if (ec_init(_ifname.c_str()) <= 0) {
+    _is_open.store(false);
+    if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
+    throw std::runtime_error(fmt::format("No socket connection on {}", _ifname));
+  }
 
   const auto wc = ec_config_init(0);
-  if (wc <= 0) throw std::runtime_error("No slaves found");
-
+  if (wc <= 0) {
+    _is_open.store(false);
+    if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
+    throw std::runtime_error("No slaves found");
+  }
   for (auto i = 1; i <= wc; i++)
-    if (std::strcmp(ec_slave[i].name, "AUTD") != 0) throw std::runtime_error(fmt::format("Slave[{}] is not AUTD3", i));
-  if (static_cast<size_t>(wc) != dev_num)
+    if (std::strcmp(ec_slave[i].name, "AUTD") != 0) {
+      _is_open.store(false);
+      if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
+      throw std::runtime_error(fmt::format("Slave[{}] is not AUTD3", i));
+    }
+
+  if (static_cast<size_t>(wc) != dev_num) {
+    _is_open.store(false);
+    if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
     throw std::runtime_error(fmt::format("The number of slaves you configured: {}, but found: {}", dev_num, wc));
+  }
 
   _user_data = std::make_unique<uint32_t[]>(1);
   _user_data[0] = driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle;
