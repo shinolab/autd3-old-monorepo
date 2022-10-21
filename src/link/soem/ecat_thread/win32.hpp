@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/10/2022
+// Last Modified: 21/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -53,7 +53,7 @@ inline void add_timespec(timespec& ts, const int64_t addtime) {
   const auto nsec = addtime % 1000000000LL;
   const auto sec = (addtime - nsec) / 1000000000LL;
   ts.tv_sec += sec;
-  ts.tv_nsec += static_cast<long>(nsec);
+  ts.tv_nsec += static_cast<long>(nsec);  // NOLINT
   if (ts.tv_nsec >= 1000000000L) {
     const auto nsec_ = ts.tv_nsec % 1000000000L;
     ts.tv_sec += (static_cast<int64_t>(ts.tv_nsec) - nsec_) / 1000000000LL;
@@ -68,7 +68,7 @@ inline timespec ecat_setup(const int64_t cycletime_ns) {
   const auto cycletime_us = cycletime_ns / 1000;
 
   const auto ht = ((tp.tv_usec / cycletime_us) + 1) * cycletime_us;
-  return {tp.tv_sec, static_cast<long>(ht) * 1000L};
+  return {tp.tv_sec, static_cast<long>(ht) * 1000L};  // NOLINT
 }
 
 inline void timed_wait(const timespec& abs_time) {
