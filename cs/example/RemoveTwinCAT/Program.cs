@@ -17,7 +17,7 @@ using AUTD3Sharp.Link;
 using Samples;
 
 var autd = new Controller();
-autd.Geometry.AddDevice(Vector3d.Zero, Vector3d.Zero);
+autd.Geometry.AddDevice(Vector3d.zero, Vector3d.zero);
 
 var server_ams_net_id = "your TwinCATAUTDServer AMS net id (e.g. 172.16.99.2.1.1)";
 

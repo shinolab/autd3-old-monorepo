@@ -17,7 +17,7 @@ using AUTD3Sharp.Utils;
 
 var autd = new Controller();
 
-autd.Geometry.AddDevice(Vector3d.Zero, Vector3d.Zero);
+autd.Geometry.AddDevice(Vector3d.zero, Vector3d.zero);
 autd.Geometry.AddDevice(new Vector3d(0, 0, AUTD3.DeviceWidth), new Vector3d(0, AUTD3.Pi / 2.0, 0));
 autd.Geometry.AddDevice(new Vector3d(AUTD3.DeviceWidth, 0, AUTD3.DeviceWidth), new Vector3d(0, AUTD3.Pi, 0));
 autd.Geometry.AddDevice(new Vector3d(AUTD3.DeviceWidth, 0, 0), new Vector3d(0, -AUTD3.Pi / 2.0, 0));
