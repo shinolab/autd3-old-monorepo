@@ -2,6 +2,7 @@
 
 - Change default EtherCAT interval 500us to 1ms
 - Improve `link::SOEM` performance
+- [AUTD3Sharp] Change API to improve consistency with C++ version
 
 # 2.4.3
 
