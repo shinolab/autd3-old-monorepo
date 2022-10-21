@@ -4,19 +4,21 @@ Project: samples
 Created Date: 21/07/2021
 Author: Shun Suzuki
 -----
-Last Modified: 02/06/2022
+Last Modified: 21/10/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
 
 '''
 
-
-from pyautd3 import AUTD, Focus, GainSTM, SilencerConfig, Static
+from pyautd3 import Controller, SilencerConfig
+from pyautd3.gain import Focus
+from pyautd3.stm import GainSTM
+from pyautd3.modulation import Static
 import numpy as np
 
 
-def stm_gain(autd: AUTD):
+def stm_gain(autd: Controller):
     config = SilencerConfig.none()
     autd.send(config)
 
@@ -24,12 +26,11 @@ def stm_gain(autd: AUTD):
 
     radius = 30.0
     size = 200
-    center = np.array([90.0, 80.0, 150.0])
+    center = autd.geometry.center + np.array([0., 0., 150.])
     stm = GainSTM(autd)
     for i in range(size):
         theta = 2.0 * np.pi * i / size
         p = radius * np.array([np.cos(theta), np.sin(theta), 0])
-
         f = Focus(center + p)
         stm.add(f)
 

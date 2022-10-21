@@ -4,7 +4,7 @@
  * Created Date: 18/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/10/2022
+ * Last Modified: 21/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -73,12 +73,12 @@ public partial class GeometryViewModel
     {
         var cnt = new Controller();
         foreach (var geo in Geometries)
-            cnt.AddDevice(new AUTD3Sharp.Utils.Vector3d(geo.X, geo.Y, geo.Z), new AUTD3Sharp.Utils.Vector3d(
+            cnt.Geometry.AddDevice(new AUTD3Sharp.Utils.Vector3d(geo.X, geo.Y, geo.Z), new AUTD3Sharp.Utils.Vector3d(
                 AngleUnitConverter.Instance.ToRadian(
                 geo.RotateZ1),
                 AngleUnitConverter.Instance.ToRadian(geo.RotateY),
                 AngleUnitConverter.Instance.ToRadian(geo.RotateZ2)));
-        new AUTD3Sharp.Extra.GeometryViewer().View(cnt);
+        new AUTD3Sharp.Extra.GeometryViewer().View(cnt.Geometry);
     }
 
     [ObservableProperty] private ObservableCollection<GeometrySetting> _geometries;

@@ -43,11 +43,12 @@ namespace AUTD3Sharp.Utils
         public static Vector3d UnitX => new Vector3d(1, 0, 0);
         public static Vector3d UnitY => new Vector3d(0, 1, 0);
         public static Vector3d UnitZ => new Vector3d(0, 0, 1);
-        public static Vector3d Zero => new Vector3d(0, 0, 0);
         public Vector3d Normalized => this / L2Norm;
         public double L2Norm => Math.Sqrt(L2NormSquared);
         public double L2NormSquared => x * x + y * y + z * z;
 #pragma warning disable IDE1006
+        public static Vector3d zero => new Vector3d(0, 0, 0);
+
         public double x { get; }
         public double y { get; }
         public double z { get; }

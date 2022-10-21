@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 21/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -137,6 +137,7 @@ class Controller {
    * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
   bool close() {
+    if (!is_open()) return true;
     if (!stop()) return false;
     if (!clear()) return false;
     _link->close();
