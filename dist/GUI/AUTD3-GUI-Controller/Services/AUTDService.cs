@@ -4,7 +4,7 @@
  * Created Date: 23/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2022
+ * Last Modified: 21/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -45,7 +45,7 @@ public class AUTDService
         _autd = new Controller();
         foreach (var geometry in App.GetService<GeometryViewModel>().Geometries)
         {
-            _autd.AddDevice(new Vector3d(geometry.X, geometry.Y, geometry.Z), new Vector3d(AngleUnitConverter.Instance.ToRadian(geometry.RotateZ1), AngleUnitConverter.Instance.ToRadian(geometry.RotateY), AngleUnitConverter.Instance.ToRadian(geometry.RotateZ2)));
+            _autd.Geometry.AddDevice(new Vector3d(geometry.X, geometry.Y, geometry.Z), new Vector3d(AngleUnitConverter.Instance.ToRadian(geometry.RotateZ1), AngleUnitConverter.Instance.ToRadian(geometry.RotateY), AngleUnitConverter.Instance.ToRadian(geometry.RotateZ2)));
         }
 
         var linkVm = App.GetService<LinkViewModel>();
