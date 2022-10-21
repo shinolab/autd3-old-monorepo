@@ -78,7 +78,7 @@ public partial class GeometryViewModel
                 geo.RotateZ1),
                 AngleUnitConverter.Instance.ToRadian(geo.RotateY),
                 AngleUnitConverter.Instance.ToRadian(geo.RotateZ2)));
-        new AUTD3Sharp.Extra.GeometryViewer().View(cnt);
+        new AUTD3Sharp.Extra.GeometryViewer().View(cnt.Geometry);
     }
 
     [ObservableProperty] private ObservableCollection<GeometrySetting> _geometries;
