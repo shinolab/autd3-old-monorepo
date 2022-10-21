@@ -105,6 +105,7 @@ autd_stop(handle) = ccall((:AUTDStop, _dll), Int32, (Ptr{Cvoid}, ), handle);
 autd_create_silencer(out, step, cycle) = ccall((:AUTDCreateSilencer, _dll), Cvoid, (Ref{Ptr{Cvoid}}, UInt16, UInt16, ), out, step, cycle);
 autd_delete_silencer(config) = ccall((:AUTDDeleteSilencer, _dll), Cvoid, (Ptr{Cvoid}, ), config);
 autd_send(handle, header, body) = ccall((:AUTDSend, _dll), Int32, (Ptr{Cvoid}, Ptr{Cvoid}, Ptr{Cvoid}, ), handle, header, body);
+autd_get_mod_delay(handle, device_idx, local_trans_idx) = ccall((:AUTDGetModDelay, _dll), UInt16, (Ptr{Cvoid}, Int32, Int32, ), handle, device_idx, local_trans_idx);
 autd_set_mod_delay(handle, device_idx, local_trans_idx, delay) = ccall((:AUTDSetModDelay, _dll), Cvoid, (Ptr{Cvoid}, Int32, Int32, UInt16, ), handle, device_idx, local_trans_idx, delay);
 autd_create_mod_delay_config(out) = ccall((:AUTDCreateModDelayConfig, _dll), Cvoid, (Ref{Ptr{Cvoid}}, ), out);
 autd_delete_mod_delay_config(config) = ccall((:AUTDDeleteModDelayConfig, _dll), Cvoid, (Ptr{Cvoid}, ), config);

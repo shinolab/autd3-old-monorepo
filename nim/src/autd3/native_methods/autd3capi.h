@@ -85,6 +85,7 @@ int32 AUTDStop(void* handle);
 void AUTDCreateSilencer(void** out, uint16 step, uint16 cycle);
 void AUTDDeleteSilencer(void* config);
 int32 AUTDSend(void* handle, void* header, void* body);
+uint16 AUTDGetModDelay(void* handle, int32 device_idx, int32 local_trans_idx);
 void AUTDSetModDelay(void* handle, int32 device_idx, int32 local_trans_idx, uint16 delay);
 void AUTDCreateModDelayConfig(void** out);
 void AUTDDeleteModDelayConfig(void* config);
