@@ -851,6 +851,17 @@ Configure Modulation Delay of the transducer.
 | delay                  | uint16_t | in     | modulation delay of the transducer |
 | return                 | void     | -      | -                                  |
 
+## AUTDGetModDelay (autd3capi)
+
+Get Modulation Delay of the transducer.
+
+| Argument name / return | type     | in/out | description                        |
+| ---------------------- | -------- | ------ | ---------------------------------- |
+| handle                 | void*    | in     | pointer to Controller              |
+| device_idx             | int32_t  | in     | device index                       |
+| local_trans_idx        | int32_t  | in     | local transducer index             |
+| return                 | uint16_t | -      | modulation delay of the transducer |
+
 ## AUTDCreateModDelayConfig (autd3capi)
 
 Create ModDelayConfig.
