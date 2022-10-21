@@ -17,8 +17,8 @@ using AUTD3Sharp.Link;
 using Samples;
 
 var autd = new Controller();
-autd.Geometry.AddDevice(Vector3d.Zero, Vector3d.Zero);
-autd.Geometry.AddDevice(new Vector3d(AUTD3.DeviceWidth, 0, 0), Vector3d.Zero);
+autd.Geometry.AddDevice(Vector3d.zero, Vector3d.zero);
+autd.Geometry.AddDevice(new Vector3d(AUTD3.DeviceWidth, 0, 0), Vector3d.zero);
 
 autd.ToNormal();
 foreach (var device in autd.Geometry)
