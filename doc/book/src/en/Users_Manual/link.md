@@ -3,10 +3,7 @@
 `Link` is an interface to the device.
 You need to select one of the following.
 
-- [TwinCAT](#twincat)
-- [RemoteTwinCAT](#remotetwincat)
-- [SOEM](#soem)
-- [Simulator](#simulator)
+[[_TOC_]]
 
 ## TwinCAT
 
@@ -76,21 +73,21 @@ After issuing the license, close TwinCAT XAE Shell and run `AUTDServer.exe` agai
 When you try to use many devices, you may get an error like the one shown in the figure below.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/tcerror.jpg"/>
+  <img src="../fig/Users_Manual/tcerror.jpg"/>
   <figcaption>TwinCAT error when using 9 devices</figcaption>
 </figure>
 
 In this case, increase the values of `-s` and `-t` of the `AUTDServer` option and run AUTDServer again.
-The values of these options are `500000` and `5000` by default, respectively.
+The values of these options are 2 by default, respectively.
 For proper operation, multiply them by an appropriate integer.
 
 ```
-AUTDServer.exe -s 1000000 -t 10000
+AUTDServer.exe -s 3 -t 3
 ```
 
 How many times to multiply depends on the number of connected devices.
 The value should be as small as possible without causing errors.
-For example, if you have nine devices, it should work if you multiply the value by 2 or 3.
+For example, if you have nine devices, it should work if you set the value 3 or 4.
 
 ## RemoteTwinCAT
 
@@ -105,7 +102,7 @@ On the other hand, the PC on the development side, i.e., the one to use the SDK,
 Let's call this PC "client".
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/remotetwincat.jpg"/>
+  <img src="../fig/Users_Manual/remotetwincat.jpg"/>
   <figcaption>Network Configuration</figcaption>
 </figure>
 
@@ -126,7 +123,7 @@ AUTDServer.exe -c 169.254.175.45 -k
 Then, open `System→Routes` and check the AMS NetId of the server in the `NetId Management` tab, as shown in the following figure.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/NetId_Management.jpg"/>
+  <img src="../fig/Users_Manual/NetId_Management.jpg"/>
   <figcaption>Server AmsNetId</figcaption>.
 </figure>
 
@@ -158,7 +155,7 @@ In this case, specify them as follows:
 The AMS NetId of the client can be found in TwinCAT by going to `System→Routes` and looking at AmsNetId in the `Current Route` tab, as shown in the following figure.
 
 <figure>
-  <img src="https://raw.githubusercontent.com/shinolab/autd3/master/book/src/fig/Users_Manual/Current_Route.jpg"/>
+  <img src="../fig/Users_Manual/Current_Route.jpg"/>
   <figcaption>Client AmsNetId</figcaption>
 </figure>
 
@@ -192,22 +189,20 @@ In this case, use the `sync0_cycle` and `send_cycle` functions to increase their
 
 ```cpp
   auto link = autd3::link::SOEM()
-                .sync0_cycle(2)
-                .send_cycle(2)
+                .sync0_cycle(3)
+                .send_cycle(3)
                 .build();
 ```
 
 This value should be as small as possible while not causing errors.
-The default is 1, and the value depends on the number of connected devices.
-For example, if you have nine devices connected, the value should be around 2 or 3.
+The default is 2, and the value depends on the number of connected devices.
+For example, if you have nine devices connected, the value should be around 3 or 4.
 
 SOEM Link can also set a callback in case of an unrecoverable error (e.g., cable disconnection)[^fn_soem_err].
 The callback takes an error message as an argument.
 
 ```cpp
   auto link = autd3::link::SOEM()
-                .sync0_cycle(2)
-                .send_cycle(2)
                 .on_lost([](const std::string& msg) {
                   std::cerr << "Link is lost\n";
                   std::cerr << msg;
@@ -219,13 +214,6 @@ The callback takes an error message as an argument.
 In addition, on Windows, you can set High Precision mode.
 ```cpp
   auto link = autd3::link::SOEM()
-                .sync0_cycle(2)
-                .send_cycle(2)
-                .on_lost([](const std::string& msg) {
-                  std::cerr << "Link is lost\n";
-                  std::cerr << msg;
-                  std::quick_exit(-1);
-                })
                 .high_precision(true)
                 .build();
 ```
@@ -240,14 +228,6 @@ This does not solve the problem thoroughly, but it may improve it somewhat.
 
 ```cpp
   auto link = autd3::link::SOEM()
-                .sync0_cycle(2)
-                .send_cycle(2)
-                .on_lost([](const std::string& msg) {
-                  std::cerr << "Link is lost\n";
-                  std::cerr << msg;
-                  std::quick_exit(-1);
-                })
-                .high_precision(true)
                 .sync_mode(autd3::link::SYNC_MODE::FREE_RUN)
                 .build();
 ```
