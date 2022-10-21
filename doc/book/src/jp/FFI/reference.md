@@ -953,6 +953,20 @@ check ackフラグがtrue, かつ, 返り値が0より大きい場合は, デー
 | body                   | void*   | in     | pointer to body data                                                                                   |
 | return                 | int32_t | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred. |
 
+
+## AUTDGetModDelay (autd3capi)
+
+指定した振動子のModulation Delayを取得する.
+
+handleは`AUTDCreateController`で作成したものを使う. 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
+
+| Argument name / return | type     | in/out | description                        |
+| ---------------------- | -------- | ------ | ---------------------------------- |
+| handle                 | void*    | in     | pointer to Controller              |
+| device_idx             | int32_t  | in     | device index                       |
+| local_trans_idx        | int32_t  | in     | local transducer index             |
+| return                 | uint16_t | -      | modulation delay of the transducer |
+
 ## AUTDSetModDelay (autd3capi)
 
 指定した振動子のModulation Delayを設定する.
