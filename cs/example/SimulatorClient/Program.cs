@@ -4,7 +4,7 @@
  * Created Date: 13/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/10/2022
+ * Last Modified: 21/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,13 @@ using AUTD3Sharp.Link;
 using Samples;
 
 var autd = new Controller();
-autd.AddDevice(Vector3d.Zero, Vector3d.Zero);
+autd.Geometry.AddDevice(Vector3d.zero, Vector3d.zero);
+autd.Geometry.AddDevice(new Vector3d(AUTD3.DeviceWidth, 0, 0), Vector3d.zero);
+
+autd.ToNormal();
+foreach (var device in autd.Geometry)
+    foreach (var tr in device)
+        tr.Frequency = 70e3;
 
 var link = new Simulator().Port(50632).Build();
 if (!autd.Open(link))

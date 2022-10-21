@@ -4,7 +4,7 @@
  * Created Date: 14/10/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/10/2022
+ * Last Modified: 21/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,21 +23,19 @@ internal static class CustomTest
 {
     private static Gain Focus(Controller autd, Vector3d point)
     {
-        var amps = new double[autd.NumTransducers];
-        var phases = new double[autd.NumTransducers];
+        var amps = new double[autd.Geometry.NumTransducers];
+        var phases = new double[autd.Geometry.NumTransducers];
 
-        var c = 0;
-        for (var dev = 0; dev < autd.NumDevices; dev++)
+        foreach (var dev in autd.Geometry)
         {
-            for (var i = 0; i < Controller.NumTransInDevice; i++)
+            foreach (var tr in dev)
             {
-                var tp = autd.TransPosition(dev, i);
+                var tp = tr.Position;
                 var dist = (tp - point).L2Norm;
-                var wavelength = autd.Wavelength(dev, i);
+                var wavelength = tr.Wavelength;
                 var phase = dist / wavelength;
-                amps[c] = 1.0;
-                phases[c] = phase;
-                c++;
+                amps[tr.Id] = 1.0;
+                phases[tr.Id] = phase;
             }
         }
 
@@ -49,12 +47,8 @@ internal static class CustomTest
         var config = new SilencerConfig();
         autd.Send(config);
 
-        const double x = Controller.DeviceWidth / 2;
-        const double y = Controller.DeviceHeight / 2;
-        const double z = 150;
-
         var mod = new Sine(150);
-        var gain = Focus(autd, new Vector3d(x, y, z));
+        var gain = Focus(autd, autd.Geometry.Center + new Vector3d(0, 0, 150));
         autd.Send(mod, gain);
     }
 }

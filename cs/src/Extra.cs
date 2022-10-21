@@ -4,7 +4,7 @@
  * Created Date: 11/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/10/2022
+ * Last Modified: 21/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,18 +19,25 @@ namespace AUTD3Sharp
         public class GeometryViewer
         {
 
-            private readonly int _width;
-            private readonly int _height;
+            private int _width;
+            private int _height;
             private bool _vsync;
             private int _gpuIdx;
 
 
-            public GeometryViewer(int width = 800, int height = 600)
+            public GeometryViewer()
+            {
+                _width = 800;
+                _height = 600;
+                _vsync = true;
+                _gpuIdx = 0;
+            }
+
+            public GeometryViewer WindowSize(int width, int height)
             {
                 _width = width;
                 _height = height;
-                _vsync = true;
-                _gpuIdx = 0;
+                return this;
             }
 
             public GeometryViewer Vsync(bool vsync)
@@ -45,9 +52,9 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public void View(Controller cnt)
+            public void View(Geometry geometry)
             {
-                NativeMethods.ExtraGeometryViewer.AUTDExtraGeometryViewer(cnt.AUTDControllerHandle.CntPtr, _width, _height, _vsync, _gpuIdx);
+                NativeMethods.ExtraGeometryViewer.AUTDExtraGeometryViewer(geometry.CntPtr, _width, _height, _vsync, _gpuIdx);
             }
         }
 

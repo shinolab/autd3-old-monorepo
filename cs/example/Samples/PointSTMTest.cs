@@ -4,7 +4,7 @@
  * Created Date: 30/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2022
+ * Last Modified: 21/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,17 +22,13 @@ internal static class PointSTMTest
 {
     public static void Test(Controller autd)
     {
-        const double x = Controller.DeviceWidth / 2;
-        const double y = Controller.DeviceHeight / 2;
-        const double z = 150;
-
         var config = SilencerConfig.None();
         autd.Send(config);
 
         var mod = new Static();
         autd.Send(mod);
 
-        var center = new Vector3d(x, y, z);
+        var center = autd.Geometry.Center;
         var stm = new PointSTM();
         const int pointNum = 200;
         for (var i = 0; i < pointNum; i++)

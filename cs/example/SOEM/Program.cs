@@ -1,4 +1,17 @@
-﻿using AUTD3Sharp;
+﻿/*
+ * File: Program.cs
+ * Project: SOEM
+ * Created Date: 14/10/2022
+ * Author: Shun Suzuki
+ * -----
+ * Last Modified: 21/10/2022
+ * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+ * -----
+ * Copyright (c) 2022 Shun Suzuki. All rights reserved.
+ * 
+ */
+
+using AUTD3Sharp;
 using AUTD3Sharp.Link;
 using AUTD3Sharp.Utils;
 using Samples;
@@ -6,12 +19,7 @@ using Samples;
 Console.WriteLine("Test with SOEM");
 
 var autd = new Controller();
-autd.AddDevice(Vector3d.Zero, Vector3d.Zero);
-//autd.AddDevice(Vector3d.Zero, Vector3d.Zero);
-
-//autd.ToNormal();
-//for (int i = 0; i < Controller.NumTransInDevice; i++)
-//    autd.SetTransFrequency(0, i, 70e3);
+autd.Geometry.AddDevice(Vector3d.zero, Vector3d.zero);
 
 var link = new SOEM()
     .HighPrecision(true)

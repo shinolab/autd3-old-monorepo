@@ -40,3 +40,6 @@
 [submodule "3rdparty/SOEM4Arduino"]
 	path = 3rdparty/SOEM4Arduino
 	url = https://github.com/lipoyang/SOEM4Arduino.git
+[submodule "rust/autd3-link-soem/3rdparty/SOEM"]
+	path = rust/autd3-link-soem/3rdparty/SOEM
+	url = https://github.com/OpenEtherCATsociety/SOEM.git

@@ -3,7 +3,7 @@
 // Created Date: 20/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/10/2022
+// Last Modified: 21/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -331,147 +331,145 @@ TEST(HARDTest, is_missing_transducer) {
 }
 
 TEST(VersionTest, FirmwareInfo) {
-  using namespace std::literals::string_literals;
-
   {
     const autd3::driver::FirmwareInfo info(0, 0, 0, 0);
-    EXPECT_EQ("older than v0.4"s, info.cpu_version());
-    EXPECT_EQ("older than v0.4"s, info.fpga_version());
+    EXPECT_EQ("older than v0.4", info.cpu_version());
+    EXPECT_EQ("older than v0.4", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 1, 1, 0);
-    EXPECT_EQ("v0.4"s, info.cpu_version());
-    EXPECT_EQ("v0.4"s, info.fpga_version());
+    EXPECT_EQ("v0.4", info.cpu_version());
+    EXPECT_EQ("v0.4", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 2, 2, 0);
-    EXPECT_EQ("v0.5"s, info.cpu_version());
-    EXPECT_EQ("v0.5"s, info.fpga_version());
+    EXPECT_EQ("v0.5", info.cpu_version());
+    EXPECT_EQ("v0.5", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 3, 3, 0);
-    EXPECT_EQ("v0.6"s, info.cpu_version());
-    EXPECT_EQ("v0.6"s, info.fpga_version());
+    EXPECT_EQ("v0.6", info.cpu_version());
+    EXPECT_EQ("v0.6", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 4, 4, 0);
-    EXPECT_EQ("v0.7"s, info.cpu_version());
-    EXPECT_EQ("v0.7"s, info.fpga_version());
+    EXPECT_EQ("v0.7", info.cpu_version());
+    EXPECT_EQ("v0.7", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 5, 5, 0);
-    EXPECT_EQ("v0.8"s, info.cpu_version());
-    EXPECT_EQ("v0.8"s, info.fpga_version());
+    EXPECT_EQ("v0.8", info.cpu_version());
+    EXPECT_EQ("v0.8", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 6, 6, 0);
-    EXPECT_EQ("v0.9"s, info.cpu_version());
-    EXPECT_EQ("v0.9"s, info.fpga_version());
+    EXPECT_EQ("v0.9", info.cpu_version());
+    EXPECT_EQ("v0.9", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 7, 7, 0);
-    EXPECT_EQ("unknown (7)"s, info.cpu_version());
-    EXPECT_EQ("unknown (7)"s, info.fpga_version());
+    EXPECT_EQ("unknown (7)", info.cpu_version());
+    EXPECT_EQ("unknown (7)", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 8, 8, 0);
-    EXPECT_EQ("unknown (8)"s, info.cpu_version());
-    EXPECT_EQ("unknown (8)"s, info.fpga_version());
+    EXPECT_EQ("unknown (8)", info.cpu_version());
+    EXPECT_EQ("unknown (8)", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 9, 9, 0);
-    EXPECT_EQ("unknown (9)"s, info.cpu_version());
-    EXPECT_EQ("unknown (9)"s, info.fpga_version());
+    EXPECT_EQ("unknown (9)", info.cpu_version());
+    EXPECT_EQ("unknown (9)", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 10, 10, 0);
-    EXPECT_EQ("v1.0"s, info.cpu_version());
-    EXPECT_EQ("v1.0"s, info.fpga_version());
+    EXPECT_EQ("v1.0", info.cpu_version());
+    EXPECT_EQ("v1.0", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 11, 11, 0);
-    EXPECT_EQ("v1.1"s, info.cpu_version());
-    EXPECT_EQ("v1.1"s, info.fpga_version());
+    EXPECT_EQ("v1.1", info.cpu_version());
+    EXPECT_EQ("v1.1", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 12, 12, 0);
-    EXPECT_EQ("v1.2"s, info.cpu_version());
-    EXPECT_EQ("v1.2"s, info.fpga_version());
+    EXPECT_EQ("v1.2", info.cpu_version());
+    EXPECT_EQ("v1.2", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 13, 13, 0);
-    EXPECT_EQ("v1.3"s, info.cpu_version());
-    EXPECT_EQ("v1.3"s, info.fpga_version());
+    EXPECT_EQ("v1.3", info.cpu_version());
+    EXPECT_EQ("v1.3", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 14, 14, 0);
-    EXPECT_EQ("v1.4"s, info.cpu_version());
-    EXPECT_EQ("v1.4"s, info.fpga_version());
+    EXPECT_EQ("v1.4", info.cpu_version());
+    EXPECT_EQ("v1.4", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 15, 15, 0);
-    EXPECT_EQ("v1.5"s, info.cpu_version());
-    EXPECT_EQ("v1.5"s, info.fpga_version());
+    EXPECT_EQ("v1.5", info.cpu_version());
+    EXPECT_EQ("v1.5", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 16, 16, 0);
-    EXPECT_EQ("v1.6"s, info.cpu_version());
-    EXPECT_EQ("v1.6"s, info.fpga_version());
+    EXPECT_EQ("v1.6", info.cpu_version());
+    EXPECT_EQ("v1.6", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 17, 17, 0);
-    EXPECT_EQ("v1.7"s, info.cpu_version());
-    EXPECT_EQ("v1.7"s, info.fpga_version());
+    EXPECT_EQ("v1.7", info.cpu_version());
+    EXPECT_EQ("v1.7", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 18, 18, 0);
-    EXPECT_EQ("v1.8"s, info.cpu_version());
-    EXPECT_EQ("v1.8"s, info.fpga_version());
+    EXPECT_EQ("v1.8", info.cpu_version());
+    EXPECT_EQ("v1.8", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 19, 19, 0);
-    EXPECT_EQ("v1.9"s, info.cpu_version());
-    EXPECT_EQ("v1.9"s, info.fpga_version());
+    EXPECT_EQ("v1.9", info.cpu_version());
+    EXPECT_EQ("v1.9", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 20, 20, 0);
-    EXPECT_EQ("v1.10"s, info.cpu_version());
-    EXPECT_EQ("v1.10"s, info.fpga_version());
+    EXPECT_EQ("v1.10", info.cpu_version());
+    EXPECT_EQ("v1.10", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 21, 21, 0);
-    EXPECT_EQ("v1.11"s, info.cpu_version());
-    EXPECT_EQ("v1.11"s, info.fpga_version());
+    EXPECT_EQ("v1.11", info.cpu_version());
+    EXPECT_EQ("v1.11", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 128, 128, 0);
-    EXPECT_EQ("v2.0"s, info.cpu_version());
-    EXPECT_EQ("v2.0"s, info.fpga_version());
+    EXPECT_EQ("v2.0", info.cpu_version());
+    EXPECT_EQ("v2.0", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 129, 129, 0);
-    EXPECT_EQ("v2.1"s, info.cpu_version());
-    EXPECT_EQ("v2.1"s, info.fpga_version());
+    EXPECT_EQ("v2.1", info.cpu_version());
+    EXPECT_EQ("v2.1", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 130, 130, 0);
-    EXPECT_EQ("v2.2"s, info.cpu_version());
-    EXPECT_EQ("v2.2"s, info.fpga_version());
+    EXPECT_EQ("v2.2", info.cpu_version());
+    EXPECT_EQ("v2.2", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 131, 131, 0);
-    EXPECT_EQ("v2.3"s, info.cpu_version());
-    EXPECT_EQ("v2.3"s, info.fpga_version());
+    EXPECT_EQ("v2.3", info.cpu_version());
+    EXPECT_EQ("v2.3", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 132, 132, 0);
-    EXPECT_EQ("v2.4"s, info.cpu_version());
-    EXPECT_EQ("v2.4"s, info.fpga_version());
+    EXPECT_EQ("v2.4", info.cpu_version());
+    EXPECT_EQ("v2.4", info.fpga_version());
   }
   {
     const autd3::driver::FirmwareInfo info(0, 133, 133, 0);
-    EXPECT_EQ("unknown (133)"s, info.cpu_version());
-    EXPECT_EQ("unknown (133)"s, info.fpga_version());
+    EXPECT_EQ("unknown (133)", info.cpu_version());
+    EXPECT_EQ("unknown (133)", info.fpga_version());
   }
 }
 
