@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/10/2022
+// Last Modified: 21/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -398,16 +398,24 @@ void AUTDSetTransFrequency(void* const handle, const int32_t device_idx, const i
   auto* const wrapper = static_cast<Controller*>(handle);
   wrapper->geometry()[device_idx][local_trans_idx].set_frequency(frequency);
 }
+
 void AUTDSetTransCycle(void* const handle, const int32_t device_idx, const int32_t local_trans_idx, const uint16_t cycle) {
   auto* const wrapper = static_cast<Controller*>(handle);
   wrapper->geometry()[device_idx][local_trans_idx].set_cycle(cycle);
+}
+
+uint16_t AUTDGetModDelay(void* const handle, const int32_t device_idx, const int32_t local_trans_idx) {
+  const auto* const wrapper = static_cast<const Controller*>(handle);
+  return wrapper->geometry()[device_idx][local_trans_idx].mod_delay();
 }
 
 void AUTDSetModDelay(void* const handle, const int32_t device_idx, const int32_t local_trans_idx, const uint16_t delay) {
   auto* const wrapper = static_cast<Controller*>(handle);
   wrapper->geometry()[device_idx][local_trans_idx].mod_delay() = delay;
 }
+
 void AUTDCreateModDelayConfig(void** out) { *out = new autd3::ModDelayConfig(); }
+
 void AUTDDeleteModDelayConfig(const void* config) {
   const auto* const config_ = static_cast<const autd3::ModDelayConfig*>(config);
   delete config_;
