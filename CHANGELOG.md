@@ -1,3 +1,8 @@
+# 2.4.4
+
+- Change default EtherCAT interval 500us to 1ms
+- Improve `link::SOEM` performance
+
 # 2.4.3
 
 - Embed font into GeometryViewer and Simulator

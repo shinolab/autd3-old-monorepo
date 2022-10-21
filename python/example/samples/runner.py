@@ -4,7 +4,7 @@ Project: samples
 Created Date: 30/12/2020
 Author: Shun Suzuki
 -----
-Last Modified: 22/06/2022
+Last Modified: 19/10/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2020 Shun Suzuki. All rights reserved.
@@ -30,11 +30,11 @@ def run(autd: AUTD):
 
     autd.synchronize()
 
-    print('============================ Firmware information ==============================')
+    print('================================== Firmware information ====================================')
     firm_info_list = autd.firmware_info_list()
-    for i, firm in enumerate(firm_info_list):
-        print(f'[{i}]: {firm}')
-    print('================================================================================')
+    for firm in firm_info_list:
+        print(f'{firm}')
+    print('============================================================================================')
 
     while True:
         for i, (_, name) in enumerate(samples):
