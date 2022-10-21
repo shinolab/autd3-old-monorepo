@@ -4,7 +4,7 @@
  * Created Date: 08/03/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/10/2022
+ * Last Modified: 21/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -22,7 +22,7 @@ public class SimpleAUTDController : MonoBehaviour
 
     void Awake()
     {
-        _autd.AddDevice(gameObject.transform.position, gameObject.transform.rotation);
+        _autd.Geometry.AddDevice(gameObject.transform.position, gameObject.transform.rotation);
 
         _link = new AUTD3Sharp.Link.SOEM()
             .HighPrecision(true)
