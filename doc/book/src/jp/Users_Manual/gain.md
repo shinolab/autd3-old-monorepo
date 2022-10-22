@@ -67,11 +67,15 @@ AUTDは各振動子の位相/振幅を個別に制御することができ, こ�
 また, 各手法は計算Backendを選べるようになっている.
 SDKには以下の`Backend`が用意されている
 
-* `EigenBackend` - [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page)を使用, デフォルトで利用可能
+* `EigenBackend` - [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page)を使用
 * `CUDABackend` - CUDAを使用, GPUで実行
 * `BLASBackend` - BLASを使用
 
-`Holo`を使用するには`autd3/gain/holo.hpp`を`include`する.
+Holo gainを使用するには`BUILD_GAIN_HOLO`フラグをONにしてビルドするか, 或いは, 配布している`gain_holo`ライブラリをリンクされたい.
+また, 適当なバックエンドライブラリをビルド, または, リンクする必要がある.
+
+Holo gainを使用する際は`autd3/gain/holo.hpp`を`include`する.
+
 ```cpp
 #include "autd3/gain/holo.hpp"
 ...
@@ -81,24 +85,26 @@ SDKには以下の`Backend`が用意されている
   g.add_focus(autd3::Vector3(x1, y1, z1), 1.0);
   g.add_focus(autd3::Vector3(x2, y2, z2), 1.0);
 ```
+
 各アルゴリズムのコンストラクタの引数は`backend`である.
 `add_focus`関数により各焦点の位置と音圧を指定する.
 また, 各アルゴリズムごとに追加のパラメータが存在する.
 各パラメータの詳細はそれぞれの論文を参照されたい.
 
-また, Eigen以外の`Backend`を使用するには, それぞれの`Backend`ライブラリをコンパイルする必要がある.
-
 ### CUDA Backend
 
-CUDAバックエンドをビルドする場合, [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit)をインストールし, CMakeで`BUILD_BACKEND_CUDA`フラグをOnにすれば良い.
+CUDA backendを使用するには[CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit)をインストールし, `BUILD_BACKEND_CUDA`フラグをONにしてビルドするか, 或いは, 配布している`backend_cuda`ライブラリをリンクされたい.
+
 ```
   cmake .. -DBUILD_GAIN_HOLO=ON -DBUILD_BACKEND_CUDA=ON
 ```
+
 なお,  CUDA Toolkit version 11.7で動作を確認している.
 
 ### BLAS Backend
 
-BLASバックエンドをビルドする場合, `BUILD_BACKEND_BLAS`フラグをONにし, BLASのInclude/lib directoryとBLASベンダーを指定する.
+BLAS backendを使用する場合, ビルド済みのライブラリは配布されていないので, 自分でビルドする必要ある.
+BLAS backendをビルドするには, `BUILD_BACKEND_BLAS`フラグをONにし, BLASのinclude/lib directoryとBLASベンダーを指定する.
 
 ```
 cmake .. -DBUILD_HOLO_GAIN=ON -DBUILD_BLAS_BACKEND=ON -DBLAS_LIB_DIR=<your BLAS library path> -DBLAS_INCLUDE_DIR=<your BLAS include path> -DBLA_VENDOR=<your BLAS vendor>
