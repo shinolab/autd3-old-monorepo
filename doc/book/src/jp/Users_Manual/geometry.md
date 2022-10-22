@@ -67,5 +67,6 @@ SDKにおけるAPIでは, すべてグローバル座標を用いるため, 接�
 ```
 
 `GeometryViewer`を使用するにはCMakeで`BUILD_GEOMETRY_VIEWER`オプションをOnにする必要がある[^vulkan_mac].
+或いは, 配布している`autd3_model`及び, `geometry_viewer`をリンクされたい.
 
 [^vulkan_mac]: macで使用する場合は, [Vulkan SDK](https://www.lunarg.com/vulkan-sdk/)をインストールする必要がある.
