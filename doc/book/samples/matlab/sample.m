@@ -33,11 +33,8 @@ try
     cnt.send(config);
     config.delete();
 
-    TRANS_SPACING_MM = 10.16;
-    NUM_TRANS_X = 18;
-    NUM_TRANS_Y = 14;
-    x = TRANS_SPACING_MM * ((NUM_TRANS_X - 1.0) / 2.0);
-    y = TRANS_SPACING_MM * ((NUM_TRANS_Y - 1.0) / 2.0);
+    x = 90.0;
+    y = 70.0;
     z = 150.0;
 
     g = Focus([x y z]);

@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 24/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -192,6 +192,8 @@ class VulkanImGui {
     _show_mod_plot = setting.show_mod_plot;
     _show_mod_plot_raw = setting.show_mod_plot_raw;
 
+    use_meter = setting.use_meter;
+
     setting.image_save_path.copy(save_path, 256);
   }
 
@@ -232,6 +234,8 @@ class VulkanImGui {
     settings.show_mod_plot_raw = _show_mod_plot_raw;
 
     settings.image_save_path = std::string(save_path);
+
+    settings.use_meter = use_meter;
   }
 
   void init(const uint32_t image_count, const VkRenderPass renderer_pass, const SimulatorSettings& settings) {
@@ -528,7 +532,10 @@ class VulkanImGui {
             ImGui::Text("Gain STM");
           else {
             ImGui::Text("Point STM");
-            ImGui::Text("Sound speed: %.3lf [mm/s]", cpus[0].fpga().sound_speed() * 1000.0 / 1024.0);
+            if (use_meter)
+              ImGui::Text("Sound speed: %.3lf [m/s]", cpus[0].fpga().sound_speed() / 1024.0);
+            else
+              ImGui::Text("Sound speed: %.3lf [mm/s]", cpus[0].fpga().sound_speed() * 1000.0 / 1024.0);
           }
 
           ImGui::Text("Size: %d", static_cast<int32_t>(cpus[0].fpga().stm_cycle()));
@@ -657,6 +664,8 @@ class VulkanImGui {
   float slice_alpha{1.0f};
   float pixel_size{1.0};
   bool show_radiation_pressure{false};
+
+  bool use_meter{false};
 
   glm::vec3 camera_pos{};
   glm::vec3 camera_rot{};

@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 24/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -51,6 +51,11 @@ struct SimulatorSettings {
   int32_t window_height{600};
   bool vsync{true};
   int32_t gpu_idx{0};
+#ifdef AUTD3_USE_METER
+  bool use_meter{true};
+#else
+  bool use_meter{false};
+#endif
 
   float slice_pos_x{86.6252f};
   float slice_pos_y{66.7133f};
@@ -95,6 +100,7 @@ inline void to_json(nlohmann::json& j, const SimulatorSettings& s) {
       {"window_height", s.window_height},
       {"vsync", s.vsync},
       {"gpu_idx", s.gpu_idx},
+      {"use_meter", s.use_meter},
       {"slice_pos_x", s.slice_pos_x},
       {"slice_pos_y", s.slice_pos_y},
       {"slice_pos_z", s.slice_pos_z},
@@ -134,7 +140,8 @@ inline void from_json(const nlohmann::json& j, SimulatorSettings& s) {
   j.at("window_width").get_to(s.window_width);
   j.at("window_height").get_to(s.window_height);
   j.at("vsync").get_to(s.vsync);
-  j.at("gpu_idx").get_to(s.gpu_idx);
+  j.at("vsync").get_to(s.vsync);
+  j.at("use_meter").get_to(s.use_meter);
   j.at("slice_pos_x").get_to(s.slice_pos_x);
   j.at("slice_pos_y").get_to(s.slice_pos_y);
   j.at("slice_pos_z").get_to(s.slice_pos_z);
