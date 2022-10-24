@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 21/10/2022
+Last Modified: 24/10/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ from .link.link import Link
 NUM_TRANS_IN_UNIT = 249
 NUM_TRANS_X = 18
 NUM_TRANS_Y = 14
-TRANS_SPACING_MM = 10.16
+TRANS_SPACING = 10.16
 DEVICE_WIDTH = 192.0
 DEVICE_HEIGHT = 151.4
 

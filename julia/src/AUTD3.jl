@@ -3,7 +3,7 @@
 # Created Date: 11/02/2020
 # Author: Shun Suzuki
 # -----
-# Last Modified: 10/10/2022
+# Last Modified: 24/10/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2020 Hapis Lab. All rights reserved.
@@ -26,7 +26,7 @@ end
 
 include("Link.jl")
 include("SilencerConfig.jl")
-include("ModDelayConfig.jl")
+include("ModDelayConfig.jl") 
 include("Gain.jl")
 include("Modulation.jl")
 include("STM.jl")
@@ -86,12 +86,12 @@ export BackendEigen
 if !Sys.isapple()
     export BackendCUDA
 end
-export NUM_TRANS_IN_UNIT, NUM_TRANS_X, NUM_TRANS_Y, TRANS_SPACING_MM, DEVICE_WIDTH, DEVICE_HEIGHT
+export NUM_TRANS_IN_UNIT, NUM_TRANS_X, NUM_TRANS_Y, TRANS_SPACING, DEVICE_WIDTH, DEVICE_HEIGHT
 
 const NUM_TRANS_IN_UNIT = 249
 const NUM_TRANS_X = 18
 const NUM_TRANS_Y = 14
-const TRANS_SPACING_MM = 10.16
+const TRANS_SPACING = 10.16
 const DEVICE_WIDTH = 192.0
 const DEVICE_HEIGHT = 151.4
 

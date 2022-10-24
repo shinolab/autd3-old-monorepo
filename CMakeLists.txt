@@ -50,6 +50,9 @@ option(EXPORT_AUTD_SIMULATOR "EXPORT_AUTD_SIMULATOR" OFF)
 
 option(BUILD_TEST "BUILD_TEST" OFF)
 
+option(USE_METER "Use meter instead of millimeter" OFF)
+option(USE_LEFT_HANDED "Use left-handed coordinate system instead of right-handed" OFF)
+
 if(BUILD_ALL)
   set(BUILD_GAIN_HOLO ON)
   set(BUILD_MODULATION_AUDIO_FILE ON)
@@ -204,6 +207,12 @@ endif()
 add_library(autd3_common INTERFACE)
 target_include_directories(autd3_common INTERFACE ${PROJECT_SOURCE_DIR}/include ${EIGEN_PATH} ${SPDLOG_INCLUDE_PATH})
 target_compile_definitions(autd3_common INTERFACE EIGEN_MPL2_ONLY)
+if(USE_METER)
+  target_compile_definitions(autd3_common INTERFACE AUTD3_USE_METER)
+endif()
+if(USE_LEFT_HANDED)
+  target_compile_definitions(autd3_common INTERFACE AUTD3_USE_LEFT_HANDED)
+endif()
 
 if(WIN32)
   if(MSVC)

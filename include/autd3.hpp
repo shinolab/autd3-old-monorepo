@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/09/2022
+// Last Modified: 24/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -66,6 +66,6 @@ using driver::DEVICE_WIDTH;
 using driver::NUM_TRANS_IN_UNIT;
 using driver::NUM_TRANS_X;
 using driver::NUM_TRANS_Y;
-using driver::TRANS_SPACING_MM;
+using driver::TRANS_SPACING;
 
 }  // namespace autd3

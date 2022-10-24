@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/10/2022
+// Last Modified: 24/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -85,8 +85,7 @@ class Controller {
 
     if (!_link->send(_tx_buf)) return false;
 
-    const auto success = wait_msg_processed(200) != 200;
-    return success;
+    return wait_msg_processed(200) != 200;
   }
 
   /**
@@ -118,8 +117,7 @@ class Controller {
   bool clear() {
     driver::clear(_tx_buf);
     if (!_link->send(_tx_buf)) return false;
-    const auto success = wait_msg_processed(200) != 200;
-    return success;
+    return wait_msg_processed(200) != 200;
   }
 
   /**
