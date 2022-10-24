@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 24/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -310,7 +310,7 @@ class TransViewer {
     const auto& positions = sources.positions();
     const auto& rotations = sources.rotations();
     for (size_t i = 0; i < sources.size(); i++) {
-      constexpr auto s = static_cast<float>(driver::TRANS_SPACING_MM) * 0.5f;
+      constexpr auto s = static_cast<float>(driver::TRANS_SPACING) * 0.5f;
       auto m = scale(glm::identity<glm::mat4>(), glm::vec3(s, s, s));
       m[3].x = positions[i].x;
       m[3].y = positions[i].y;

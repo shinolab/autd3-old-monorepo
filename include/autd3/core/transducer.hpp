@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/08/2022
+// Last Modified: 24/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -114,14 +114,14 @@ struct Transducer {
 
   /**
    * \brief Wavelength of the ultrasound emitted from the transducer
-   * @param sound_speed Speed of sound in m/s.
+   * @param sound_speed Speed of sound
    */
-  [[nodiscard]] double wavelength(double sound_speed) const { return sound_speed * 1e3 / frequency(); }
+  [[nodiscard]] double wavelength(double sound_speed) const { return sound_speed / frequency(); }
   /**
    * \brief Wavenumber of the ultrasound emitted from the transducer
-   * @param sound_speed Speed of sound in m/s.
+   * @param sound_speed Speed of sound
    */
-  [[nodiscard]] double wavenumber(double sound_speed) const { return 2.0 * driver::pi * frequency() / (sound_speed * 1e3); }
+  [[nodiscard]] double wavenumber(double sound_speed) const { return 2.0 * driver::pi * frequency() / sound_speed; }
 
  private:
   size_t _id;

@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 24/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -225,10 +225,10 @@ void Simulator::run() {
           for (size_t iy = 0; iy < driver::NUM_TRANS_Y; iy++)
             for (size_t ix = 0; ix < driver::NUM_TRANS_X; ix++) {
               if (driver::is_missing_transducer(ix, iy)) continue;
-              const auto local_pos = glm::vec4(static_cast<float>(ix) * static_cast<float>(driver::TRANS_SPACING_MM),
-                                               static_cast<float>(iy) * static_cast<float>(driver::TRANS_SPACING_MM), 0.0f, 1.0f);
+              const auto local_pos = glm::vec4(static_cast<float>(ix) * static_cast<float>(driver::TRANS_SPACING),
+                                               static_cast<float>(iy) * static_cast<float>(driver::TRANS_SPACING), 0.0f, 1.0f);
               const auto global_pos = matrix * local_pos;
-              sources.add(global_pos, rot, simulator::Drive(1.0f, 0.0f, 1.0f, 40e3, 340e3), 1.0f);
+              sources.add(global_pos, rot, simulator::Drive(1.0f, 0.0f, 1.0f, 40e3, _settings->use_meter ? 340 : 340e3), 1.0f);
             }
         }
 
