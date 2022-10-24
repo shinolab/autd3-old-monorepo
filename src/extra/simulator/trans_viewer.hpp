@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/10/2022
+// Last Modified: 25/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -42,8 +42,8 @@ struct Pc {
 
 class TransViewer {
  public:
-  explicit TransViewer(const helper::VulkanContext* context, const VulkanRenderer* renderer)
-      : _context(context), _renderer(renderer), _instance_count(0) {}
+  explicit TransViewer(const helper::VulkanContext* context, const VulkanRenderer* renderer, const VulkanImGui* imgui)
+      : _context(context), _renderer(renderer), _imgui(imgui), _instance_count(0) {}
   ~TransViewer() = default;
   TransViewer(const TransViewer& v) = delete;
   TransViewer& operator=(const TransViewer& obj) = delete;
@@ -310,7 +310,7 @@ class TransViewer {
     const auto& positions = sources.positions();
     const auto& rotations = sources.rotations();
     for (size_t i = 0; i < sources.size(); i++) {
-      constexpr auto s = static_cast<float>(driver::TRANS_SPACING) * 0.5f;
+      const auto s = static_cast<float>(driver::TRANS_SPACING_MM) * _imgui->scale() * 0.5f;
       auto m = scale(glm::identity<glm::mat4>(), glm::vec3(s, s, s));
       m[3].x = positions[i].x;
       m[3].y = positions[i].y;
@@ -436,6 +436,7 @@ class TransViewer {
 
   const helper::VulkanContext* _context;
   const VulkanRenderer* _renderer;
+  const VulkanImGui* _imgui{nullptr};
 
   vk::UniqueImage _texture_image;
   vk::UniqueDeviceMemory _texture_image_memory;
