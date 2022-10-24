@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/10/2022
+// Last Modified: 25/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -186,6 +186,8 @@ class VulkanImGui {
     far_clip = setting.camera_far_clip;
     _cam_move_speed = setting.camera_move_speed;
 
+    sound_speed = setting.sound_speed;
+
     _font_size = setting.font_size;
     background = glm::vec4(setting.background_r, setting.background_g, setting.background_b, setting.background_a);
 
@@ -223,6 +225,7 @@ class VulkanImGui {
     settings.camera_far_clip = far_clip;
     settings.camera_move_speed = _cam_move_speed;
 
+    settings.sound_speed = sound_speed;
     settings.font_size = _font_size;
 
     settings.background_r = background.r;
@@ -240,7 +243,7 @@ class VulkanImGui {
 
   void init(const uint32_t image_count, const VkRenderPass renderer_pass, const SimulatorSettings& settings) {
     load_settings(settings);
-    _default_settings = settings;
+    _initial_settings = settings;
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -344,9 +347,9 @@ class VulkanImGui {
     if (ImGui::BeginTabBar("Settings")) {
       if (ImGui::BeginTabItem("Slice")) {
         ImGui::Text("Position");
-        if (ImGui::DragFloat("X##Slice", &slice_pos.x)) flag.set(UpdateFlags::UPDATE_SLICE_POS);
-        if (ImGui::DragFloat("Y##Slice", &slice_pos.y)) flag.set(UpdateFlags::UPDATE_SLICE_POS);
-        if (ImGui::DragFloat("Z##Slice", &slice_pos.z)) flag.set(UpdateFlags::UPDATE_SLICE_POS);
+        if (ImGui::DragFloat("X##Slice", &slice_pos.x, 1 * scale())) flag.set(UpdateFlags::UPDATE_SLICE_POS);
+        if (ImGui::DragFloat("Y##Slice", &slice_pos.y, 1 * scale())) flag.set(UpdateFlags::UPDATE_SLICE_POS);
+        if (ImGui::DragFloat("Z##Slice", &slice_pos.z, 1 * scale())) flag.set(UpdateFlags::UPDATE_SLICE_POS);
         ImGui::Separator();
 
         ImGui::Text("Rotation");
@@ -356,10 +359,16 @@ class VulkanImGui {
         ImGui::Separator();
 
         ImGui::Text("Size");
-        if (ImGui::DragInt("Width##Slice", &slice_width, 1, 1, 2000)) flag.set(UpdateFlags::UPDATE_SLICE_SIZE);
-        if (ImGui::DragInt("Height##Slice", &slice_height, 1, 1, 2000)) flag.set(UpdateFlags::UPDATE_SLICE_SIZE);
-        if (ImGui::DragFloat("Pixel size##Slice", &pixel_size, 1, 0.1f, 8)) {
-          if (pixel_size <= 0.1f) pixel_size = 0.1f;
+        if (ImGui::DragFloat("Width##Slice", &slice_width, 1 * scale(), 1 * scale(), 2000 * scale())) {
+          if (slice_width < 1 * scale()) slice_width = 1 * scale();
+          flag.set(UpdateFlags::UPDATE_SLICE_SIZE);
+        }
+        if (ImGui::DragFloat("Height##Slice", &slice_height, 1 * scale(), 1 * scale(), 2000 * scale())) {
+          if (slice_height < 1 * scale()) slice_height = 1 * scale();
+          flag.set(UpdateFlags::UPDATE_SLICE_SIZE);
+        }
+        if (ImGui::DragFloat("Pixel size##Slice", &pixel_size, 1 * scale(), 0.1f * scale(), 8 * scale())) {
+          if (pixel_size <= 0.1f * scale()) pixel_size = 0.1f * scale();
           flag.set(UpdateFlags::UPDATE_SLICE_SIZE);
         }
         ImGui::Separator();
@@ -411,9 +420,9 @@ class VulkanImGui {
 
       if (ImGui::BeginTabItem("Camera")) {
         ImGui::Text("Position");
-        if (ImGui::DragFloat("X##Camera", &camera_pos.x)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
-        if (ImGui::DragFloat("Y##Camera", &camera_pos.y)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
-        if (ImGui::DragFloat("Z##Camera", &camera_pos.z)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
+        if (ImGui::DragFloat("X##Camera", &camera_pos.x, 1 * scale())) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
+        if (ImGui::DragFloat("Y##Camera", &camera_pos.y, 1 * scale())) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
+        if (ImGui::DragFloat("Z##Camera", &camera_pos.z, 1 * scale())) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
         ImGui::Separator();
         ImGui::Text("Rotation");
         if (ImGui::DragFloat("RX##Camera", &camera_rot.x, 1, -180, 180)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
@@ -422,21 +431,22 @@ class VulkanImGui {
         ImGui::Separator();
         ImGui::Text("Perspective");
         if (ImGui::DragFloat("FOV", &fov, 1, 0, 180)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
-        if (ImGui::DragFloat("Near clip", &near_clip, 1, 0, std::numeric_limits<float>::infinity())) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
-        if (ImGui::DragFloat("Far clip", &far_clip, 1, 0, std::numeric_limits<float>::infinity())) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
+        if (ImGui::DragFloat("Near clip", &near_clip, 1 * scale(), 0, std::numeric_limits<float>::infinity()))
+          flag.set(UpdateFlags::UPDATE_CAMERA_POS);
+        if (ImGui::DragFloat("Far clip", &far_clip, 1 * scale(), 0, std::numeric_limits<float>::infinity())) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
         flag.set(UpdateFlags::UPDATE_CAMERA_POS);
         ImGui::Separator();
-        ImGui::DragFloat("Move speed", &_cam_move_speed);
+        ImGui::DragFloat("Move speed", &_cam_move_speed, 1 * scale());
         ImGui::EndTabItem();
       }
 
       if (ImGui::BeginTabItem("Config")) {
-        if (ImGui::DragFloat("Sound speed", &sound_speed, 1)) {
+        if (ImGui::DragFloat("Sound speed", &sound_speed, 1 * scale())) {
           for (size_t dev = 0; dev < cpus.size(); dev++) {
             const auto& cycles = cpus[dev].fpga().cycles();
             for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) {
               const auto freq = static_cast<float>(driver::FPGA_CLK_FREQ) / static_cast<float>(cycles[i]);
-              sources.drives()[i + dev * driver::NUM_TRANS_IN_UNIT].set_wave_num(freq, sound_speed * 1e3f);
+              sources.drives()[i + dev * driver::NUM_TRANS_IN_UNIT].set_wave_num(freq, sound_speed);
             }
           }
           flag.set(UpdateFlags::UPDATE_SOURCE_DRIVE);
@@ -613,15 +623,22 @@ class VulkanImGui {
     if (ImGui::SmallButton("Auto")) {
       const auto sr = mat4_cast(glm::quat(radians(slice_rot)));
       const auto srf = glm::vec3(sr * glm::vec4(0, 0, 1, 1));
-      camera_pos = slice_pos + srf * 600.0f;
+      camera_pos = slice_pos + srf * 600.0f * scale();
       camera_rot = slice_rot;
-
       flag.set(UpdateFlags::UPDATE_CAMERA_POS);
     }
     ImGui::SameLine();
     if (ImGui::SmallButton("Reset")) {
-      load_settings(_default_settings);
+      load_settings(_initial_settings);
       flag.set(UpdateFlags::all().value());
+      flag.remove(UpdateFlags::SAVE_IMAGE);
+    }
+    ImGui::SameLine();
+    if (ImGui::SmallButton("Default")) {
+      _initial_settings.load_default(use_meter);
+      load_settings(_initial_settings);
+      flag.set(UpdateFlags::all().value());
+      flag.remove(UpdateFlags::SAVE_IMAGE);
     }
 
     ImGui::End();
@@ -656,8 +673,10 @@ class VulkanImGui {
     return translate(glm::identity<glm::mat4>(), slice_pos) * mat4_cast(glm::quat(radians(slice_rot)));
   }
 
-  int32_t slice_width{0};
-  int32_t slice_height{0};
+  [[nodiscard]] float scale() const noexcept { return use_meter ? 1e-3f : 1.0f; }
+
+  float slice_width{0};
+  float slice_height{0};
   glm::vec3 slice_pos{};
   glm::vec3 slice_rot{};
   float color_scale{2.0};
@@ -692,7 +711,7 @@ class VulkanImGui {
  private:
   const helper::WindowHandler* _window;
   const helper::VulkanContext* _context;
-  SimulatorSettings _default_settings;
+  SimulatorSettings _initial_settings;
   float _font_size = 16.0f;
   bool _update_font = false;
   float _cam_move_speed = 10.0f;

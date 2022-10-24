@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/10/2022
+// Last Modified: 25/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -181,7 +181,7 @@ void Simulator::run() {
   renderer->create_command_buffers();
   renderer->create_sync_objects();
 
-  const auto trans_viewer = std::make_unique<simulator::trans_viewer::TransViewer>(context.get(), renderer.get());
+  const auto trans_viewer = std::make_unique<simulator::trans_viewer::TransViewer>(context.get(), renderer.get(), imgui.get());
   const auto slice_viewer = std::make_unique<simulator::slice_viewer::SliceViewer>(context.get(), renderer.get());
   const auto field_compute = std::make_unique<simulator::FieldCompute>(context.get(), renderer.get());
 
@@ -219,14 +219,14 @@ void Simulator::run() {
         sources.clear();
         for (size_t dev = 0; dev < tx.size(); dev++) {
           const auto* body = reinterpret_cast<const float*>(tx.bodies() + dev);
-          const auto origin = glm::vec3(body[0], body[1], body[2]);
+          const auto origin = glm::vec3(body[0], body[1], body[2]) * imgui->scale();
           const auto rot = glm::quat(body[3], body[4], body[5], body[6]);
           const auto matrix = translate(glm::identity<glm::mat4>(), origin) * mat4_cast(rot);
           for (size_t iy = 0; iy < driver::NUM_TRANS_Y; iy++)
             for (size_t ix = 0; ix < driver::NUM_TRANS_X; ix++) {
               if (driver::is_missing_transducer(ix, iy)) continue;
-              const auto local_pos = glm::vec4(static_cast<float>(ix) * static_cast<float>(driver::TRANS_SPACING),
-                                               static_cast<float>(iy) * static_cast<float>(driver::TRANS_SPACING), 0.0f, 1.0f);
+              const auto local_pos = glm::vec4(static_cast<float>(ix) * static_cast<float>(driver::TRANS_SPACING_MM) * imgui->scale(),
+                                               static_cast<float>(iy) * static_cast<float>(driver::TRANS_SPACING_MM) * imgui->scale(), 0.0f, 1.0f);
               const auto global_pos = matrix * local_pos;
               sources.add(global_pos, rot, simulator::Drive(1.0f, 0.0f, 1.0f, 40e3, _settings->use_meter ? 340 : 340e3), 1.0f);
             }
@@ -261,7 +261,7 @@ void Simulator::run() {
             sources.drives()[i].amp = std::sin(glm::pi<float>() * static_cast<float>(amps[idx][tr].duty) / static_cast<float>(cycles[tr]));
             sources.drives()[i].phase = 2.0f * glm::pi<float>() * static_cast<float>(phases[idx][tr].phase) / static_cast<float>(cycles[tr]);
             const auto freq = static_cast<float>(driver::FPGA_CLK_FREQ) / static_cast<float>(cycles[tr]);
-            sources.drives()[i].set_wave_num(freq, imgui->sound_speed * 1e3f);
+            sources.drives()[i].set_wave_num(freq, imgui->sound_speed);
           }
         }
         update_flags.set(simulator::UpdateFlags::UPDATE_SOURCE_DRIVE);
@@ -277,7 +277,7 @@ void Simulator::run() {
             sources.drives()[i].phase =
                 2.0f * glm::pi<float>() * static_cast<float>(phases[imgui->stm_idx][tr].phase) / static_cast<float>(cycles[tr]);
             const auto freq = static_cast<float>(driver::FPGA_CLK_FREQ) / static_cast<float>(cycles[tr]);
-            sources.drives()[i].set_wave_num(freq, imgui->sound_speed * 1e3f);
+            sources.drives()[i].set_wave_num(freq, imgui->sound_speed);
           }
         }
       }
@@ -291,10 +291,10 @@ void Simulator::run() {
       const simulator::Config config{static_cast<uint32_t>(sources.size()),
                                      0,
                                      imgui->color_scale,
-                                     static_cast<uint32_t>(static_cast<float>(imgui->slice_width) / imgui->pixel_size),
-                                     static_cast<uint32_t>(static_cast<float>(imgui->slice_height) / imgui->pixel_size),
+                                     static_cast<uint32_t>(imgui->slice_width / imgui->pixel_size),
+                                     static_cast<uint32_t>(imgui->slice_height / imgui->pixel_size),
                                      imgui->pixel_size,
-                                     0,
+                                     imgui->scale(),
                                      0,
                                      slice_model};
       field_compute->compute(config, imgui->show_radiation_pressure);
@@ -311,17 +311,19 @@ void Simulator::run() {
           throw std::runtime_error("failed to map texture buffer.");
         const auto* image_data = static_cast<float*>(data);
         std::vector<uint8_t> pixels;
-        pixels.reserve(static_cast<size_t>(imgui->slice_width) * static_cast<size_t>(imgui->slice_height) * 4);
-        for (int32_t i = imgui->slice_height - 1; i >= 0; i--) {
-          for (int32_t j = 0; j < imgui->slice_width; j++) {
-            const auto idx = static_cast<size_t>(imgui->slice_width) * static_cast<size_t>(i) + static_cast<size_t>(j);
+        const auto image_width = static_cast<int32_t>(imgui->slice_width / imgui->pixel_size);
+        const auto image_height = static_cast<int32_t>(imgui->slice_height / imgui->pixel_size);
+        pixels.reserve(static_cast<size_t>(image_width) * static_cast<size_t>(image_height) * 4);
+        for (int32_t i = image_height - 1; i >= 0; i--) {
+          for (int32_t j = 0; j < image_width; j++) {
+            const auto idx = image_width * static_cast<size_t>(i) + static_cast<size_t>(j);
             pixels.emplace_back(static_cast<uint8_t>(255.0f * image_data[4 * idx]));
             pixels.emplace_back(static_cast<uint8_t>(255.0f * image_data[4 * idx + 1]));
             pixels.emplace_back(static_cast<uint8_t>(255.0f * image_data[4 * idx + 2]));
             pixels.emplace_back(static_cast<uint8_t>(255.0f * image_data[4 * idx + 3]));
           }
         }
-        stbi_write_png(imgui->save_path, imgui->slice_width, imgui->slice_height, 4, pixels.data(), imgui->slice_width * 4);
+        stbi_write_png(imgui->save_path, image_width, image_height, 4, pixels.data(), image_width * 4);
         context->device().unmapMemory(staging_buffer_memory.get());
       }
 

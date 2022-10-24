@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/10/2022
+// Last Modified: 25/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -53,33 +53,47 @@ struct SimulatorSettings {
   int32_t gpu_idx{0};
 #ifdef AUTD3_USE_METER
   bool use_meter{true};
+  float slice_pos_x{86.6252e-3f};
+  float slice_pos_y{66.7133e-3f};
+  float slice_pos_z{150.0e-3f};
+  float slice_width{300e-3f};
+  float slice_height{300e-3f};
+  float slice_pixel_size{1.0e-3f};
+  float camera_pos_x{86.6252e-3f};
+  float camera_pos_y{-533.2867e-3f};
+  float camera_pos_z{150.0e-3f};
+  float camera_near_clip{0.1e-3f};
+  float camera_far_clip{1000e-3f};
+  float camera_move_speed{10e-3f};
+  float sound_speed{340.0f};
 #else
   bool use_meter{false};
-#endif
-
   float slice_pos_x{86.6252f};
   float slice_pos_y{66.7133f};
   float slice_pos_z{150.0f};
+  float slice_width{300};
+  float slice_height{300};
+  float slice_pixel_size{1.0};
+  float camera_pos_x{86.6252f};
+  float camera_pos_y{-533.2867f};
+  float camera_pos_z{150.0f};
+  float camera_near_clip{0.1f};
+  float camera_far_clip{1000};
+  float camera_move_speed{10};
+  float sound_speed{340.0e3f};
+#endif
+
   float slice_rot_x{90.0f};
   float slice_rot_y{0};
   float slice_rot_z{0};
-  int32_t slice_width{300};
-  int32_t slice_height{300};
-  float slice_pixel_size{1.0};
   float slice_color_scale{2};
   float slice_alpha{1};
   tinycolormap::ColormapType coloring_method{tinycolormap::ColormapType::Inferno};
   bool show_radiation_pressure{false};
-  float camera_pos_x{86.6252f};
-  float camera_pos_y{-533.2867f};
-  float camera_pos_z{150.0f};
   float camera_rot_x{90.0f};
   float camera_rot_y{0};
   float camera_rot_z{0};
   float camera_fov{45};
-  float camera_near_clip{0.1f};
-  float camera_far_clip{1000};
-  float camera_move_speed{10};
   float font_size{16};
   float background_r{0.3f};
   float background_g{0.3f};
@@ -92,6 +106,58 @@ struct SimulatorSettings {
 
   std::string ip{"127.0.0.1"};
   uint16_t port{50632};
+
+  void load_default(const bool use_meter) {
+    this->use_meter = use_meter;
+    if (use_meter) {
+      slice_pos_x = 86.6252e-3f;
+      slice_pos_y = 66.7133e-3f;
+      slice_pos_z = 150.0e-3f;
+      slice_width = 300e-3f;
+      slice_height = 300e-3f;
+      slice_pixel_size = 1.0e-3f;
+      camera_pos_x = 86.6252e-3f;
+      camera_pos_y = -533.2867e-3f;
+      camera_pos_z = 150.0e-3f;
+      camera_near_clip = 0.1e-3f;
+      camera_far_clip = 1000e-3f;
+      camera_move_speed = 10e-3f;
+      sound_speed = 340.0f;
+    } else {
+      slice_pos_x = 86.6252f;
+      slice_pos_y = 66.7133f;
+      slice_pos_z = 150.0f;
+      slice_width = 300;
+      slice_height = 300;
+      slice_pixel_size = 1.0;
+      camera_pos_x = 86.6252f;
+      camera_pos_y = -533.2867f;
+      camera_pos_z = 150.0f;
+      camera_near_clip = 0.1f;
+      camera_far_clip = 1000;
+      camera_move_speed = 10;
+      sound_speed = 340.0e3f;
+    }
+
+    slice_rot_x = 90.0f;
+    slice_rot_y = 0;
+    slice_rot_z = 0;
+    slice_color_scale = 2;
+    slice_alpha = 1;
+    coloring_method = tinycolormap::ColormapType::Inferno;
+    show_radiation_pressure = false;
+    camera_rot_x = 90.0f;
+    camera_rot_y = 0;
+    camera_rot_z = 0;
+    camera_fov = 45;
+    font_size = 16;
+    background_r = 0.3f;
+    background_g = 0.3f;
+    background_b = 0.3f;
+    background_a = 1.0f;
+    show_mod_plot = false;
+    show_mod_plot_raw = false;
+  }
 };
 
 inline void to_json(nlohmann::json& j, const SimulatorSettings& s) {
@@ -124,6 +190,7 @@ inline void to_json(nlohmann::json& j, const SimulatorSettings& s) {
       {"camera_near_clip", s.camera_near_clip},
       {"camera_far_clip", s.camera_far_clip},
       {"camera_move_speed", s.camera_move_speed},
+      {"sound_speed", s.sound_speed},
       {"font_size", s.font_size},
       {"background_r", s.background_r},
       {"background_g", s.background_g},
@@ -165,6 +232,7 @@ inline void from_json(const nlohmann::json& j, SimulatorSettings& s) {
   j.at("camera_near_clip").get_to(s.camera_near_clip);
   j.at("camera_far_clip").get_to(s.camera_far_clip);
   j.at("camera_move_speed").get_to(s.camera_move_speed);
+  j.at("sound_speed").get_to(s.sound_speed);
   j.at("font_size").get_to(s.font_size);
   j.at("background_r").get_to(s.background_r);
   j.at("background_g").get_to(s.background_g);
