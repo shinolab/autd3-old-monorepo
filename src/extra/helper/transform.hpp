@@ -3,7 +3,7 @@
 // Created Date: 02/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/10/2022
+// Last Modified: 25/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,7 +12,14 @@
 #pragma once
 
 namespace autd3::extra::helper {
-inline glm::vec3 to_gl_pos(glm::vec3 v) { return glm::vec3(v.x, v.y, v.z) / 1000.0f; }
+inline glm::vec3 to_gl_pos(glm::vec3 v) {
+  return
+#ifdef AUTD3_USE_METER
+      glm::vec3(v.x, v.y, v.z);
+#else
+      glm::vec3(v.x, v.y, v.z) / 1000.0f;
+#endif
+}
 inline glm::mat4 orthogonal(glm::vec3 pos, glm::quat rot) {
   const auto model = mat4_cast(rot);
   const auto r = make_vec3(model[0]);

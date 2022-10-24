@@ -3,7 +3,7 @@
 // Created Date: 27/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 25/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,6 +26,12 @@
 #include "transform.hpp"
 
 namespace autd3::extra::geometry_viewer {
+
+#ifdef AUTD3_USE_METER
+constexpr float SCALE = 1e-3f;
+#else
+constexpr float SCALE = 1;
+#endif
 
 class VulkanImGui {
  public:
@@ -111,9 +117,11 @@ class VulkanImGui {
     const auto up = glm::vec3(rot_mat * glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
     const auto forward = glm::vec3(rot_mat * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 
-    const auto center = helper::to_gl_pos(pos + right * 192.0f / 2.0f + up * 151.4f / 2.0f);
+    const auto center =
+        helper::to_gl_pos(pos + right * static_cast<float>(driver::DEVICE_WIDTH) / 2.0f + up * static_cast<float>(driver::DEVICE_HEIGHT) / 2.0f);
 
-    const auto cam_pos_autd = pos + right * 192.0f / 2.0f - up * 151.4f + forward * 300.0f;
+    const auto cam_pos_autd =
+        pos + right * static_cast<float>(driver::DEVICE_WIDTH) / 2.0f - up * static_cast<float>(driver::DEVICE_HEIGHT) + forward * 300.0f * SCALE;
     const auto cam_pos = helper::to_gl_pos(cam_pos_autd);
 
     const auto cam_view = lookAt(cam_pos, center, forward);
@@ -203,9 +211,9 @@ class VulkanImGui {
     ImGui::Begin("Dear ImGui");
     if (ImGui::BeginTabBar("Settings")) {
       if (ImGui::BeginTabItem("Camera")) {
-        ImGui::DragFloat("Camera X", &camera_pos.x);
-        ImGui::DragFloat("Camera Y", &camera_pos.y);
-        ImGui::DragFloat("Camera Z", &camera_pos.z);
+        ImGui::DragFloat("Camera X", &camera_pos.x, 1 * SCALE);
+        ImGui::DragFloat("Camera Y", &camera_pos.y, 1 * SCALE);
+        ImGui::DragFloat("Camera Z", &camera_pos.z, 1 * SCALE);
         ImGui::Separator();
         ImGui::DragFloat("Camera RX", &camera_rot.x, 1, -180, 180);
         ImGui::DragFloat("Camera RY", &camera_rot.y, 1, -180, 180);
@@ -213,14 +221,14 @@ class VulkanImGui {
         ImGui::Separator();
         ImGui::DragFloat("FOV", &fov, 1, 0, 180);
         ImGui::Separator();
-        ImGui::DragFloat("Camera move speed", &_cam_move_speed);
+        ImGui::DragFloat("Camera move speed", &_cam_move_speed, 1 * SCALE);
         ImGui::EndTabItem();
       }
 
       if (ImGui::BeginTabItem("Lighting")) {
-        ImGui::DragFloat("Light X", &light_pos.x);
-        ImGui::DragFloat("Light Y", &light_pos.y);
-        ImGui::DragFloat("Light Z", &light_pos.z);
+        ImGui::DragFloat("Light X", &light_pos.x, 1 * SCALE);
+        ImGui::DragFloat("Light Y", &light_pos.y, 1 * SCALE);
+        ImGui::DragFloat("Light Z", &light_pos.z, 1 * SCALE);
         ImGui::Separator();
         ImGui::DragFloat("Ambient", &lighting.ambient, 0.01f);
         ImGui::DragFloat("Specular", &lighting.specular);
@@ -293,7 +301,7 @@ class VulkanImGui {
   const helper::VulkanContext* _context{nullptr};
   float _font_size = 16.0f;
   bool _update_font = false;
-  float _cam_move_speed = 10.0f;
+  float _cam_move_speed = 10.0f * SCALE;
   std::vector<gltf::Geometry> _geometries{};
 
   static void check_vk_result(const VkResult err) {
