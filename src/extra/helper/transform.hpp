@@ -13,13 +13,29 @@
 
 namespace autd3::extra::helper {
 inline glm::vec3 to_gl_pos(glm::vec3 v) {
-  return
 #ifdef AUTD3_USE_METER
-      glm::vec3(v.x, v.y, v.z);
+#ifdef AUTD3_USE_LEFT_HANDED
+  return glm::vec3(v.x, v.y, -v.z);
 #else
-      glm::vec3(v.x, v.y, v.z) / 1000.0f;
+  return glm::vec3(v.x, v.y, v.z);
+#endif
+#else
+#ifdef AUTD3_USE_LEFT_HANDED
+  return glm::vec3(v.x, v.y, -v.z) / 1000.0f;
+#else
+  return glm::vec3(v.x, v.y, v.z) / 1000.0f;
+#endif
 #endif
 }
+
+inline glm::quat to_gl_rot(glm::quat rot) {
+#ifdef AUTD3_USE_LEFT_HANDED
+  return glm::quat(rot.w, -rot.x, -rot.y, rot.z);
+#else
+  return rot;
+#endif
+}
+
 inline glm::mat4 orthogonal(glm::vec3 pos, glm::quat rot) {
   const auto model = mat4_cast(rot);
   const auto r = make_vec3(model[0]);
