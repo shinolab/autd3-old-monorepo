@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/10/2022
+// Last Modified: 25/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -110,11 +110,10 @@ struct Geometry {
       : attenuation(0.0),
         sound_speed(
 #ifdef AUTD3_USE_METER
-            340.0
+            340.0),
 #else
-            340.0e3
+            340.0e3),
 #endif
-            ),
         _devices(),
         _mode(std::make_unique<LegacyMode>()) {
   }
