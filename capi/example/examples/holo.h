@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/10/2022
+// Last Modified: 25/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -71,8 +71,9 @@ void* holo(void* autd) {
   AUTDEigenBackend(&backend);
 
   void* g = select_opt(backend);
-  double v = 1.0;
-  AUTDSetConstraint(g, 2, &v);
+  void* constraint = NULL;
+  AUTDConstraintUniform(&constraint, 1.0);
+  AUTDSetConstraint(g, constraint);
 
   AUTDGainHoloAdd(g, x + 30.0, y, z, 1.0);
   AUTDGainHoloAdd(g, x - 30.0, y, z, 1.0);

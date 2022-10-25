@@ -24,8 +24,6 @@ dotnet run
 ## Unity
 
 * Please use unitypackage in [Release page](https://github.com/shinolab/autd3/releases).
-* After importing the package, please enable `Allow 'unsafe' code` in `Project Settings > Player`
-    * Also, add `-nullable:enable` in `Additional Compiler Arguments` to suppress warnings
 
 ## LICENSE
 
