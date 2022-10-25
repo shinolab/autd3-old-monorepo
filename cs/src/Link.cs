@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/10/2022
+ * Last Modified: 25/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -16,6 +16,10 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
+
+#if UNITY_2020_2_OR_NEWER
+#nullable enable
+#endif
 
 namespace AUTD3Sharp
 {
@@ -213,3 +217,7 @@ namespace AUTD3Sharp
         }
     }
 }
+
+#if UNITY_2020_2_OR_NEWER
+#nullable disable
+#endif
