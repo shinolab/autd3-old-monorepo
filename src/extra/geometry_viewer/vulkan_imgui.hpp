@@ -111,7 +111,7 @@ class VulkanImGui {
 
     const auto& [pos, rot] = _geometries[0];
 
-    const auto rot_mat = mat4_cast(rot);
+    const auto rot_mat = mat4_cast(helper::to_gl_rot(rot));
 
     const auto right = glm::vec3(rot_mat * glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
     const auto up = glm::vec3(rot_mat * glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
@@ -120,13 +120,18 @@ class VulkanImGui {
     const auto center =
         helper::to_gl_pos(pos + right * static_cast<float>(driver::DEVICE_WIDTH) / 2.0f + up * static_cast<float>(driver::DEVICE_HEIGHT) / 2.0f);
 
+#ifdef AUTD3_USE_LEFT_HANDED
+    const auto cam_pos_autd =
+        pos + right * static_cast<float>(driver::DEVICE_WIDTH) / 2.0f - up * static_cast<float>(driver::DEVICE_HEIGHT) - forward * 300.0f * SCALE;
+#else
     const auto cam_pos_autd =
         pos + right * static_cast<float>(driver::DEVICE_WIDTH) / 2.0f - up * static_cast<float>(driver::DEVICE_HEIGHT) + forward * 300.0f * SCALE;
+#endif
     const auto cam_pos = helper::to_gl_pos(cam_pos_autd);
 
     const auto cam_view = lookAt(cam_pos, center, forward);
 
-    const auto angles = degrees(eulerAngles(quat_cast(transpose(cam_view))));
+    const auto angles = degrees(eulerAngles(helper::to_gl_rot(quat_cast(transpose(cam_view)))));
 
     camera_pos = cam_pos_autd;
     camera_rot = angles;
@@ -181,7 +186,11 @@ class VulkanImGui {
 
       if (!io.WantCaptureMouse) {
         const auto mouse_wheel = io.MouseWheel;
+#ifdef AUTD3_USE_LEFT_HANDED
+        const auto trans = f * mouse_wheel * _cam_move_speed;
+#else
         const auto trans = -f * mouse_wheel * _cam_move_speed;
+#endif
         camera_pos[0] += trans.x;
         camera_pos[1] += trans.y;
         camera_pos[2] += trans.z;
@@ -191,7 +200,7 @@ class VulkanImGui {
         const auto mouse_delta = io.MouseDelta;
         if (io.MouseDown[0]) {
           if (io.KeyShift) {
-            const auto delta = glm::vec2(mouse_delta.x, mouse_delta.y) * _cam_move_speed / 3000.0f;
+            const auto delta = glm::vec2(mouse_delta.x, mouse_delta.y) * _cam_move_speed / SCALE / 3000.0f;
             const auto to = -r * delta.x + u * delta.y + f;
             const auto rotation = helper::quaternion_to(f, to);
             camera_rot = degrees(eulerAngles(rotation * rot));
