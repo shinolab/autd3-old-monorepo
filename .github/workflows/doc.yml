@@ -2,8 +2,8 @@ name: Doxygen
 
 on:
   push:
-    branches: [ master, doc ]
-  
+    branches: [ doc ]  
+
 jobs:
   check:
     runs-on: ubuntu-latest
