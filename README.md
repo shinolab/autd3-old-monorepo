@@ -44,7 +44,7 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 ## Requirements
 
 * If you use `link::SOEM` on Windows, install [Npcap](https://nmap.org/npcap/) with WinPcap API-compatible mode.
-* If you use `link::TwinCAT` or `link::RemoteTwinCAT`, please see [how to install AUTDServer](https://shinolab.github.io/autd3/book/en/Software/Users_Manual/link.html#how-to-install-twincat).
+* If you use `link::TwinCAT` or `link::RemoteTwinCAT`, please see [how to install TwinCAT](https://shinolab.github.io/autd3/book/en/Software/Users_Manual/link.html#how-to-install-twincat).
 
 ## Build
 

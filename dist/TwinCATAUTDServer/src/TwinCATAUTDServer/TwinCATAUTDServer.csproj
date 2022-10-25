@@ -7,8 +7,8 @@
     <ProjectGuid>{99789BFC-DB1F-47E0-AD97-6E348ECC2BA5}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AUTDServer</RootNamespace>
-    <AssemblyName>AUTDServer</AssemblyName>
+    <RootNamespace>TwinCATAUTDServer</RootNamespace>
+    <AssemblyName>TwinCATAUTDServer</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

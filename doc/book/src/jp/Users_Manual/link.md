@@ -38,21 +38,21 @@ Disable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform
 
 インストール後に再起動し, `C:/TwinCAT/3.1/System/win8settick.bat`を管理者権限で実行し, 再び再起動する.
 
-最後に, SDK内の`dist/AUTDServer/AUTD.xml`を`C:/TwinCAT/3.1/Config/Io/EtherCAT`にコピーする.
+最後に, SDK内の`dist/TwinCATAUTDServer/AUTD.xml`を`C:/TwinCAT/3.1/Config/Io/EtherCAT`にコピーする.
 
-### AUTDServer
+### TwinCATAUTDServer
 
-TwinCATのLinkを使うには, まず, `dist/AUTDServer/AUTDServer.exe`を実行する.
+TwinCATのLinkを使うには, まず, `dist/TwinCATAUTDServer/TwinCATAUTDServer.exe`を実行する.
 
 初回はドライバをインストールするために, `-k`オプションを付けて, TwinCAT XAE Shellを開いたままにしておくこと.
 
 ```
-AUTDServer.exe -k
+TwinCATAUTDServer.exe -k
 ```
 
 > Note: もし閉じてしまった場合は, `%TEMP%/TwinCATAUTDServer/TwinCATAUTDServer.sln`をTcXaeShell Applicationとして開けば良い. `%TEMP%`は環境変数で, 普通は`C:/Users/(user name)/AppData/Local/Temp`である.
 
-なお, AUTDServerはPCの電源を切る, スリープモードに入る等でLinkが途切れるので, その都度実行し直すこと.
+なお, TwinCATAUTDServerはPCの電源を切る, スリープモードに入る等でLinkが途切れるので, その都度実行し直すこと.
 
 #### Install Driver
 
@@ -67,16 +67,16 @@ Incompatible devicesの中のドライバもInstall自体は可能で, Install�
 
 また, 初回はライセンス関係のエラーが出るので, XAE ShellでSolution Explorer→SYSTEM→Licenseを開き, "7 Days Trial License ..."をクリックし, 画面に表示される文字を入力する.
 なお. ライセンスは7日間限定のトライアルライセンスだが, 切れたら再び同じ作業を行うことで再発行できる.
-ライセンスを発行し終わったら, TwinCAT XAE Shellを閉じて, 再び"AUTDServer.exe"を実行する.
+ライセンスを発行し終わったら, TwinCAT XAE Shellを閉じて, 再び"TwinCATAUTDServer.exe"を実行する.
 
 ### Troubleshooting
 
 大量のDeviceを使用しようとすると, 下の図のようなエラーが発生することがある.
-この場合は, `AUTDServer`のオプションの`-s`と`-t`の値を増やし, AUTDServerを再び実行する.
+この場合は, `TwinCATAUTDServer`のオプションの`-s`と`-t`の値を増やし, TwinCATAUTDServerを再び実行する.
 これらのオプションの値はそれぞれ`2`になっている.
 
 ```
-AUTDServer.exe -s 3 -t 3
+TwinCATAUTDServer.exe -s 3 -t 3
 ```
 
 何倍にすればいいかは接続する台数による.
@@ -114,12 +114,12 @@ RemoteTwinCATを使用する場合はPCを2台用意する必要がある.
 こちらのLANアダプタはTwinCAT対応である必要はない[^fn_remote_twin].
 そして, サーバとクライアント間のLANのIPを確認しておく.
 ここでは例えば, サーバ側が"169.254.205.219", クライアント側が"169.254.175.45"だったとする.
-次に, サーバでAUTDServerを起動する.
+次に, サーバでTwinCATAUTDServerを起動する.
 この時, `-c`オプションでクライアントのIPアドレス (この例だと`169.254.175.45`) を指定する.
 また, 最後に`-k`オプションを使用し, TwinCATAUTDServerを開いたままにしておく.
 
 ```
-AUTDServer.exe -c 169.254.175.45 -k
+TwinCATAUTDServer.exe -c 169.254.175.45 -k
 ```
 
 そして, 以下の図のように, System→Routesを開き, NetId ManagementタブのLocal NetIdを確認しておく.
