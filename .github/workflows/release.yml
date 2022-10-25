@@ -122,7 +122,7 @@ jobs:
           Copy-Item -Path ./cs/src/LICENSE.txt -Destination ./cs/unity/Assets/AUTD/
       - name: Enumerate Assets
         run: |
-          Get-ChildItem -Recurse -Filter '*.meta' -Name >> metaList
+          Get-ChildItem -Recurse -Filter '*.meta' -Name | ForEach-Object {$_ -replace '[\\]', '/'} >> metaList
         working-directory: ./cs/unity
       - uses: pCYSl5EDgo/create-unitypackage@master
         with:
