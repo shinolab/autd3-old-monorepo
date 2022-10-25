@@ -3,7 +3,7 @@
 // Created Date: 20/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/10/2022
+// Last Modified: 25/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -807,10 +807,11 @@ TEST(CPUTest, operation_point_stm_body) {
   points.reserve(10);
   for (int i = 0; i < 10; i++) points.emplace_back(points_30);
 
+  constexpr double sound_speed = 340e3;
   constexpr uint32_t sp = 340 * 1024;
 
   point_stm_header(tx);
-  point_stm_body(points, true, 3224, sp / 1024.0, false, tx);
+  point_stm_body(points, true, 3224, sound_speed, false, tx);
 
   ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
   ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
@@ -824,7 +825,7 @@ TEST(CPUTest, operation_point_stm_body) {
   ASSERT_EQ(tx.num_bodies, 10);
 
   point_stm_header(tx);
-  point_stm_body(points, false, 3224, sp / 1024.0, true, tx);
+  point_stm_body(points, false, 3224, sound_speed, true, tx);
 
   ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
@@ -834,7 +835,7 @@ TEST(CPUTest, operation_point_stm_body) {
   ASSERT_EQ(tx.num_bodies, 10);
 
   point_stm_header(tx);
-  point_stm_body({}, true, 3224, sp / 1024.0, false, tx);
+  point_stm_body({}, true, 3224, sound_speed, false, tx);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);
