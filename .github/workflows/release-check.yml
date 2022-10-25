@@ -8,71 +8,153 @@ on:
       - 'release'
 
 jobs:
-  build:
-    name: build ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-    
+  publish_win:
+    name: Release Check on Windows
+    runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: setup-msbuild
-      if: matrix.os == 'windows-latest'
-      uses: microsoft/setup-msbuild@v1
-    - uses: Jimver/cuda-toolkit@v0.2.8
-      if: matrix.os != 'macos-latest'
-      id: cuda-toolkit
-      with:
-        cuda: '11.7.0'
-    - name: build for Windows x64
-      if: matrix.os == 'windows-latest'
-      run: |
-        cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=ON
-        cd build
-        msbuild autd3.sln /t:build /p:Configuration=Release
-    - name: install compile tools
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt update
-        sudo apt install g++-arm-linux-gnueabihf g++-aarch64-linux-gnu mesa-common-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev -y
-      shell: bash
-    - name: build for Linux
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        mkdir -p build && cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=ON
-        make -j8
-      shell: bash
-      env:
-        CC: gcc-10
-        CXX: g++-10
-    - name: build for Linux ARM32
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        mkdir -p build_arm32 && cd build_arm32
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM32 -DBUILD_ALL=ON
-        make -j8
-      shell: bash
-      env:
-        CC: gcc-10
-        CXX: g++-10
-    - name: build for Linux ARM64
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        mkdir -p build_arm64 && cd build_arm64
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM64 -DBUILD_ALL=ON
-        make -j8
-      shell: bash
-      env:
-        CC: gcc-10
-        CXX: g++-10
-    - name: build for macOS
-      if: matrix.os == 'macos-latest'
-      run: |
-        mkdir -p build && cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
-        make -j8
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: setup-msbuild
+        uses: microsoft/setup-msbuild@v1
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+      - uses: Jimver/cuda-toolkit@v0.2.6
+        id: cuda-toolkit
+        with:
+          cuda: '11.7.0'
+      - name: Build project x64
+        run: |
+          cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=ON -DDISABLE_EXAMPLES=ON
+          cd build
+          cmake --build . --parallel 8 --config Release
+          mkdir publish
+          mkdir publish/lib
+          mkdir publish/lib/wpcap
+          mkdir publish/bin
+          mkdir publish/simulator
+          mkdir publish/gui-controller
+          cd ..
+          foreach($dll in Get-ChildItem -Path build/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/src/native/windows/x64}
+          cd cs/src
+          dotnet clean
+          dotnet build -c:Release /p:Platform=x64
+          cd ../..
+          dotnet nuget add source $pwd/cs/src/bin/x64/Release -n autd3sharp_local
+          cd dist/GUI
+          dotnet publish -c:Release /p:Platform=x64 -r win-x64 --self-contained false -o bin
+          copy AUTD3-GUI-Controller/Strings -Recurse bin/
+          cd ../..
+          copy build/lib/Release/*.lib build/publish/lib
+          copy 3rdparty/SOEM/oshw/win32/wpcap/Lib/x64/*.lib build/publish/lib/wpcap
+          copy build/bin/Release/*.dll build/publish/bin
+          copy dist/GUI/bin -Recurse publish/gui-controller/bin
+          copy dist/GUI/AUTD3-GUI-Controller.exe publish/gui-controller
+          copy build/dist/simulator/Release/*.exe build/publish/simulator
+          Remove-Item -Recurse -Force dist/AUTDServer/src
+          Compress-Archive -Path LICENSE, NOTICE, dist/AUTDServer, dist/firmware, include, build/publish/lib, build/publish/bin, build/publish/simulator, publish/gui-controller -DestinationPath assets_x64.zip
+
+      - name: Build project x64 for Unity
+        run: |
+          cmake -G "Visual Studio 17 2022" -A x64 -B "build_unity" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=OFF -DDISABLE_EXAMPLES=ON -DUSE_METER=ON -DUSE_LEFT_HANDED=ON
+          cd build_unity
+          cmake --build . --parallel 8 --config Release
+          cd ..
+          foreach($dll in Get-ChildItem -Path build_unity/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/unity/Assets/AUTD/Plugins/x86_64}
+      - name: Replace latest scripts
+        run: |
+          foreach($src in Get-ChildItem -Path ./cs/src | Where {$_.extension -like ".cs"}){Copy-Item -Path $src -Destination ./cs/unity/Assets/AUTD/Scripts}
+          foreach($src in Get-ChildItem -Path ./cs/src/NativeMethods | Where {$_.extension -like ".cs"}){Copy-Item -Path $src -Destination ./cs/unity/Assets/AUTD/Scripts/NativeMethods}
+          Copy-Item -Path ./cs/src/LICENSE.txt -Destination ./cs/unity/Assets/AUTD/
+      - name: Enumerate Assets
+        run: |
+          Get-ChildItem -Recurse -Filter '*.meta' -Name >> metaList
+        working-directory: ./cs/unity
+      - uses: pCYSl5EDgo/create-unitypackage@master
+        with:
+          package-path: 'autd3.unitypackage'
+          include-files: ./cs/unity/metaList
+          project-folder: ./cs/unity
+    
+  publish_linux:
+    name: Release Check on Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: install compile tools
+        run: |
+          sudo apt update
+          sudo apt install g++-arm-linux-gnueabihf g++-aarch64-linux-gnu mesa-common-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev -y
+        shell: bash
+      - uses: Jimver/cuda-toolkit@v0.2.6
+        id: cuda-toolkit
+        with:
+          cuda: '11.7.0'
+      - name: Build project x64
+        run: |
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DDISABLE_EXAMPLES=ON
+          make -j8
+          cd ..
+          mkdir -p lib
+          mkdir -p bin
+          cp -f build/lib/*.a lib
+          cp -f build/bin/Release/*.so bin
+          tar -zcvf assets_x64.tar.gz include lib bin LICENSE NOTICE 
+        shell: bash
+        env:
+          CC: gcc-10
+          CXX: g++-10
+      - name: Build project arm32
+        run: |
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM32 -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DDISABLE_EXAMPLES=ON -DBUILD_BACKEND_CUDA=OFF
+          make -j8
+          cd ..
+          mkdir -p lib
+          mkdir -p bin
+          cp -f build/lib/*.a lib
+          cp -f build/bin/Release/*.so bin
+          tar -zcvf assets_arm32.tar.gz include lib bin LICENSE NOTICE
+        shell: bash
+        env:
+          CC: gcc-10
+          CXX: g++-10
+      - name: Build project arm64
+        run: |
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM64 -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DDISABLE_EXAMPLES=ON -DBUILD_BACKEND_CUDA=OFF
+          make -j8
+          cd ..
+          mkdir -p lib
+          mkdir -p bin
+          cp -f build/lib/*.a lib
+          cp -f build/bin/Release/*.so bin
+          tar -zcvf assets_arm64.tar.gz include lib bin LICENSE NOTICE
+        shell: bash
+        env:
+          CC: gcc-10
+          CXX: g++-10
+  
+  publish_mac:
+    name: Release Check on macOS
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Build project
+        run: |
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=OFF -DDISABLE_EXAMPLES=ON -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+          make -j8
+          cd ..
+          mkdir -p lib
+          mkdir -p bin
+          cp -f build/lib/*.a lib
+          cp -f build/bin/Release/*.dylib bin
+          tar -zcvf assets.tar.gz include lib bin LICENSE NOTICE
 
   lint:
     name: lint
