@@ -20,10 +20,10 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 6.0.x
-      - uses: Jimver/cuda-toolkit@v0.2.6
+      - uses: okazunori2013/cuda-toolkit@v0.3.2
         id: cuda-toolkit
         with:
-          cuda: '11.7.0'
+          cuda: '11.8.0'
       - name: Build project x64
         run: |
           cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=ON -DDISABLE_EXAMPLES=ON
@@ -88,10 +88,10 @@ jobs:
           sudo apt update
           sudo apt install g++-arm-linux-gnueabihf g++-aarch64-linux-gnu mesa-common-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev -y
         shell: bash
-      - uses: Jimver/cuda-toolkit@v0.2.6
+      - uses: okazunori2013/cuda-toolkit@v0.3.2
         id: cuda-toolkit
         with:
-          cuda: '11.7.0'
+          cuda: '11.8.0'
       - name: Build project x64
         run: |
           mkdir -p build && cd build
