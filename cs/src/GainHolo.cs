@@ -141,7 +141,7 @@ namespace AUTD3Sharp
 
                 public void Add(Vector3 focus, double amp)
                 {
-                    var (x, y, z) = GeometryAdjust.Adjust(focus);
+                    var (x, y, z) = TypeHelper.Convert(focus);
                     NativeMethods.GainHolo.AUTDGainHoloAdd(handle, x, y, z, amp);
                 }
             }
