@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/06/2022
+ * Last Modified: 25/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -172,12 +172,16 @@ impl Generator for CSharpGenerator {
             r#"// This file was automatically generated from header file
 using System;
 using System.Runtime.InteropServices;
-            
+
+#if UNITY_2020_2_OR_NEWER
+#nullable enable
+#endif
+
 namespace AUTD3Sharp.NativeMethods
 {{
     internal static class {}
     {{
-        const string DLL = "{}";
+        private const string DLL = "{}";
 
 "#,
             Self::to_class_name(bin_name),
@@ -224,7 +228,11 @@ namespace AUTD3Sharp.NativeMethods
         writeln!(
             w,
             r"    }}
-}}"
+}}
+
+#if UNITY_2020_2_OR_NEWER
+#nullable disable
+#endif"
         )?;
         Ok(())
     }

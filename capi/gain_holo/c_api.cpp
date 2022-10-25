@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 25/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -108,22 +108,25 @@ void AUTDGainHoloAdd(void* gain, const double x, const double y, const double z,
   g->add_focus(autd3::core::Vector3(x, y, z), amp);
 }
 
-void AUTDSetConstraint(void* gain, const int32_t type, void* param) {
+void AUTDConstraintDontCare(void** constraint) {
+  auto* c = constraint_create(std::make_unique<autd3::gain::holo::DontCare>());
+  *constraint = c;
+}
+void AUTDConstraintNormalize(void** constraint) {
+  auto* c = constraint_create(std::make_unique<autd3::gain::holo::Normalize>());
+  *constraint = c;
+}
+void AUTDConstraintUniform(void** constraint, double value) {
+  auto* c = constraint_create(std::make_unique<autd3::gain::holo::Uniform>(value));
+  *constraint = c;
+}
+void AUTDConstraintClamp(void** constraint) {
+  auto* c = constraint_create(std::make_unique<autd3::gain::holo::Clamp>());
+  *constraint = c;
+}
+void AUTDSetConstraint(void* gain, void* constraint) {
   auto* g = static_cast<autd3::gain::holo::Holo*>(gain);
-  switch (type) {
-    case 0:
-      g->constraint = autd3::gain::holo::DontCare();
-      break;
-    case 1:
-      g->constraint = autd3::gain::holo::Normalize();
-      break;
-    case 2:
-      g->constraint = autd3::gain::holo::Uniform(*static_cast<double*>(param));
-      break;
-    case 3:
-      g->constraint = autd3::gain::holo::Clamp();
-      break;
-    default:
-      break;
-  }
+  auto* c = static_cast<ConstraintWrapper*>(constraint);
+  g->constraint = std::move(c->ptr);
+  constraint_delete(c);
 }

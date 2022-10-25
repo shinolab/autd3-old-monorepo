@@ -1311,15 +1311,59 @@ Holo gainに焦点を追加する.
 | amp                    | double | in     | amplitude of the focus    |
 | return                 | void   | -      | -                         |
 
+## AUTDConstraintDontCare (autd3capi-gain-holo)
+
+DontCare AmplitudeConstraintを作成する.
+
+作成したAmplitudeConstraintは必ずAUTDSetConstraintで使用する必要がある.
+
+| Argument name / return | type    | in/out | description                                                           |
+| ---------------------- | ------- | ------ | --------------------------------------------------------------------- |
+| constraint             | void**  | out    | pointer to pointer to constraint                                      |
+| return                 | void    | -      | -                                                                     |
+
+## AUTDConstraintNormalize (autd3capi-gain-holo)
+
+Normalize AmplitudeConstraintを作成する.
+
+作成したAmplitudeConstraintは必ずAUTDSetConstraintで使用する必要がある.
+
+| Argument name / return | type    | in/out | description                                                           |
+| ---------------------- | ------- | ------ | --------------------------------------------------------------------- |
+| constraint             | void**  | out    | pointer to pointer to constraint                                      |
+| return                 | void    | -      | -                                                                     |
+
+## AUTDConstraintUniform (autd3capi-gain-holo)
+
+Uniform AmplitudeConstraintを作成する.
+
+作成したAmplitudeConstraintは必ずAUTDSetConstraintで使用する必要がある.
+
+| Argument name / return | type    | in/out | description                                                           |
+| ---------------------- | ------- | ------ | --------------------------------------------------------------------- |
+| constraint             | void**  | out    | pointer to pointer to constraint                                      |
+| value                  | double  | in     | uniform amplitude                                                     |
+| return                 | void    | -      | -                                                                     |
+
+## AUTDConstraintClamp (autd3capi-gain-holo)
+
+Clamp AmplitudeConstraintを作成する.
+
+作成したAmplitudeConstraintは必ずAUTDSetConstraintで使用する必要がある.
+
+| Argument name / return | type    | in/out | description                                                           |
+| ---------------------- | ------- | ------ | --------------------------------------------------------------------- |
+| constraint             | void**  | out    | pointer to pointer to constraint                                      |
+| return                 | void    | -      | -                                                                     |
+
 ## AUTDSetConstraint (autd3capi-gain-holo)
 
-Holo gainのAmplitudeConstraintを設定する.
+Holo GainにAmplitudeConstraintを設定する.
 
 | Argument name / return | type    | in/out | description                                                           |
 | ---------------------- | ------- | ------ | --------------------------------------------------------------------- |
 | gain                   | void*   | in     | pointer to holo gain                                                  |
-| type                   | int32_t | in     | AmplitudeConstraint (0: DontCare, 1: Normalize, 2: Uniform, 3: Clamp) |
-| param                  | void*   | in     | pointer to additional parameter                                       |
+| constraint             | void*   | in     | pointer to AmplitudeConstraint                                        |
 | return                 | void    | -      | -                                                                     |
 
 ## AUTDBLASBackend (autd3capi-backend-blas)

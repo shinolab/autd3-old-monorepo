@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/10/2022
+// Last Modified: 25/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -404,7 +404,7 @@ void AUTDSetTransCycle(void* const handle, const int32_t device_idx, const int32
   wrapper->geometry()[device_idx][local_trans_idx].set_cycle(cycle);
 }
 
-uint16_t AUTDGetModDelay(void* const handle, const int32_t device_idx, const int32_t local_trans_idx) {
+uint16_t AUTDGetModDelay(const void* const handle, const int32_t device_idx, const int32_t local_trans_idx) {
   const auto* const wrapper = static_cast<const Controller*>(handle);
   return wrapper->geometry()[device_idx][local_trans_idx].mod_delay();
 }

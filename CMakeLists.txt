@@ -8,7 +8,7 @@ project(autd3)
 
 set(VERSION_MAJOR 2 CACHE STRING "Project major version number.")
 set(VERSION_MINOR 4 CACHE STRING "Project minor version number.")
-set(VERSION_PATCH 4 CACHE STRING "Project patch version number.")
+set(VERSION_PATCH 5 CACHE STRING "Project patch version number.")
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -49,6 +49,9 @@ option(ENABLE_LINT "ENABLE_LINT" OFF)
 option(EXPORT_AUTD_SIMULATOR "EXPORT_AUTD_SIMULATOR" OFF)
 
 option(BUILD_TEST "BUILD_TEST" OFF)
+
+option(USE_METER "Use meter instead of millimeter" OFF)
+option(USE_LEFT_HANDED "Use left-handed coordinate system instead of right-handed" OFF)
 
 if(BUILD_ALL)
   set(BUILD_GAIN_HOLO ON)
@@ -204,6 +207,12 @@ endif()
 add_library(autd3_common INTERFACE)
 target_include_directories(autd3_common INTERFACE ${PROJECT_SOURCE_DIR}/include ${EIGEN_PATH} ${SPDLOG_INCLUDE_PATH})
 target_compile_definitions(autd3_common INTERFACE EIGEN_MPL2_ONLY)
+if(USE_METER)
+  target_compile_definitions(autd3_common INTERFACE AUTD3_USE_METER)
+endif()
+if(USE_LEFT_HANDED)
+  target_compile_definitions(autd3_common INTERFACE AUTD3_USE_LEFT_HANDED)
+endif()
 
 if(WIN32)
   if(MSVC)

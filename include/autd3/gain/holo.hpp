@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/09/2022
+// Last Modified: 25/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,7 +13,6 @@
 
 #include <memory>
 #include <utility>
-#include <variant>
 #include <vector>
 
 #include "autd3/core/gain.hpp"
@@ -22,26 +21,58 @@
 namespace autd3::gain::holo {
 
 /**
+ * @brief Amplitude constraint
+ */
+struct AmplitudeConstraint {
+  AmplitudeConstraint() = default;
+  virtual ~AmplitudeConstraint() = default;
+  AmplitudeConstraint(const AmplitudeConstraint& v) noexcept = default;
+  AmplitudeConstraint& operator=(const AmplitudeConstraint& obj) = default;
+  AmplitudeConstraint(AmplitudeConstraint&& obj) = default;
+  AmplitudeConstraint& operator=(AmplitudeConstraint&& obj) = default;
+  [[nodiscard]] virtual double convert(double raw, double max) const = 0;
+};
+
+/**
  * @brief AmplitudeConstraint to do nothing
  */
-struct DontCare final {
-  static double convert(const double raw, const double) { return raw; }
+struct DontCare final : AmplitudeConstraint {
+  DontCare() = default;
+  ~DontCare() override = default;
+  DontCare(const DontCare& v) noexcept = default;
+  DontCare& operator=(const DontCare& obj) = default;
+  DontCare(DontCare&& obj) = default;
+  DontCare& operator=(DontCare&& obj) = default;
+
+  [[nodiscard]] double convert(const double raw, const double) const override { return raw; }
 };
 
 /**
  * @brief AmplitudeConstraint to normalize to the largest amplitude
  */
-struct Normalize final {
-  static double convert(const double raw, const double max) { return raw / max; }
+struct Normalize final : AmplitudeConstraint {
+  Normalize() = default;
+  ~Normalize() override = default;
+  Normalize(const Normalize& v) noexcept = default;
+  Normalize& operator=(const Normalize& obj) = default;
+  Normalize(Normalize&& obj) = default;
+  Normalize& operator=(Normalize&& obj) = default;
+
+  [[nodiscard]] double convert(const double raw, const double max) const override { return raw / max; }
 };
 
 /**
  * @brief AmplitudeConstraint to give the same amplitude to all transducers
  */
-struct Uniform final {
-  explicit Uniform(const double value) : _value(value) {}
+struct Uniform final : AmplitudeConstraint {
+  explicit Uniform(const double value) : AmplitudeConstraint(), _value(value) {}
+  ~Uniform() override = default;
+  Uniform(const Uniform& v) noexcept = default;
+  Uniform& operator=(const Uniform& obj) = default;
+  Uniform(Uniform&& obj) = default;
+  Uniform& operator=(Uniform&& obj) = default;
 
-  [[nodiscard]] double convert(const double, const double) const { return _value; }
+  [[nodiscard]] double convert(const double, const double) const override { return _value; }
 
  private:
   double _value;
@@ -50,24 +81,27 @@ struct Uniform final {
 /**
  * @brief AmplitudeConstraint to clamp amplitude in [0, 1]
  */
-struct Clamp final {
-  [[nodiscard]] double convert(const double raw, const double) const { return std::clamp(raw, 0.0, 1.0); }
-};
+struct Clamp final : AmplitudeConstraint {
+  Clamp() = default;
+  ~Clamp() override = default;
+  Clamp(const Clamp& v) noexcept = default;
+  Clamp& operator=(const Clamp& obj) = default;
+  Clamp(Clamp&& obj) = default;
+  Clamp& operator=(Clamp&& obj) = default;
 
-/**
- * @brief Amplitude constraint
- */
-using AmplitudeConstraint = std::variant<DontCare, Normalize, Uniform, Clamp>;
+  [[nodiscard]] double convert(const double raw, const double) const override { return std::clamp(raw, 0.0, 1.0); }
+};
 
 /**
  * @brief Gain to produce multiple focal points
  */
 class Holo : public core::Gain {
  public:
-  explicit Holo(BackendPtr backend, const AmplitudeConstraint constraint = Normalize()) : constraint(constraint), _backend(std::move(backend)) {}
+  explicit Holo(BackendPtr backend, std::unique_ptr<AmplitudeConstraint> constraint = std::make_unique<Normalize>())
+      : constraint(std::move(constraint)), _backend(std::move(backend)) {}
   ~Holo() override = default;
-  Holo(const Holo& v) noexcept = default;
-  Holo& operator=(const Holo& obj) = default;
+  Holo(const Holo& v) noexcept = delete;
+  Holo& operator=(const Holo& obj) = delete;
   Holo(Holo&& obj) = default;
   Holo& operator=(Holo&& obj) = default;
 
@@ -82,7 +116,7 @@ class Holo : public core::Gain {
   [[nodiscard]] const std::vector<core::Vector3>& foci() const { return this->_foci; }
   [[nodiscard]] const std::vector<complex>& amplitudes() const { return this->_amps; }
 
-  AmplitudeConstraint constraint;
+  std::unique_ptr<AmplitudeConstraint> constraint{std::make_unique<Normalize>()};
 
  protected:
   BackendPtr _backend;
@@ -101,7 +135,7 @@ class SDP final : public Holo {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit SDP(BackendPtr backend) : Holo(std::move(backend), Normalize()), alpha(1e-3), lambda(0.9), repeat(100) {}
+  explicit SDP(BackendPtr backend) : Holo(std::move(backend), std::make_unique<Normalize>()), alpha(1e-3), lambda(0.9), repeat(100) {}
 
   void calc(const core::Geometry& geometry) override;
 
@@ -120,7 +154,7 @@ class EVD final : public Holo {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit EVD(BackendPtr backend) : Holo(std::move(backend), Uniform(1.0)), gamma(1.0) {}
+  explicit EVD(BackendPtr backend) : Holo(std::move(backend), std::make_unique<Uniform>(1.0)), gamma(1.0) {}
 
   void calc(const core::Geometry& geometry) override;
 
@@ -135,7 +169,7 @@ class LSS final : public Holo {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit LSS(BackendPtr backend) : Holo(std::move(backend), Normalize()) {}
+  explicit LSS(BackendPtr backend) : Holo(std::move(backend), std::make_unique<Normalize>()) {}
 
   void calc(const core::Geometry& geometry) override;
 };
@@ -155,7 +189,7 @@ class GS final : public Holo {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit GS(BackendPtr backend) : Holo(std::move(backend), Normalize()), repeat(100) {}
+  explicit GS(BackendPtr backend) : Holo(std::move(backend), std::make_unique<Normalize>()), repeat(100) {}
 
   void calc(const core::Geometry& geometry) override;
 
@@ -173,7 +207,7 @@ class GSPAT final : public Holo {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit GSPAT(BackendPtr backend) : Holo(std::move(backend), Normalize()), repeat(100) {}
+  explicit GSPAT(BackendPtr backend) : Holo(std::move(backend), std::make_unique<Normalize>()), repeat(100) {}
 
   void calc(const core::Geometry& geometry) override;
 
@@ -193,7 +227,7 @@ class LM final : public Holo {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit LM(BackendPtr backend) : Holo(std::move(backend)), eps_1(1e-8), eps_2(1e-8), tau(1e-3), k_max(5) {}
+  explicit LM(BackendPtr backend) : Holo(std::move(backend), std::make_unique<Normalize>()), eps_1(1e-8), eps_2(1e-8), tau(1e-3), k_max(5) {}
 
   void calc(const core::Geometry& geometry) override;
 
@@ -216,7 +250,7 @@ class Greedy final : public Holo {
    * @param[in] backend pointer to Backend
    */
   explicit Greedy(BackendPtr backend)
-      : Holo(std::move(backend)),
+      : Holo(std::move(backend), std::make_unique<Uniform>(1.0)),
         phase_div(16),
         objective([](const VectorXd& target, const VectorXc& p) { return (target - p.cwiseAbs()).cwiseAbs().sum(); }) {}
 
@@ -237,7 +271,7 @@ class LSSGreedy final : public Holo {
    * @param[in] backend pointer to Backend
    */
   explicit LSSGreedy(BackendPtr backend)
-      : Holo(std::move(backend)),
+      : Holo(std::move(backend), std::make_unique<Uniform>(1.0)),
         phase_div(16),
         objective([](const VectorXd& target, const VectorXc& p) { return (target - p.cwiseAbs()).cwiseAbs().sum(); }) {}
 
@@ -257,7 +291,8 @@ class APO final : public Holo {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit APO(BackendPtr backend) : Holo(std::move(backend)), eps(1e-8), lambda(1.0), k_max(200), line_search_max(100) {}
+  explicit APO(BackendPtr backend)
+      : Holo(std::move(backend), std::make_unique<Normalize>()), eps(1e-8), lambda(1.0), k_max(200), line_search_max(100) {}
 
   void calc(const core::Geometry& geometry) override;
 

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 25/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,6 +16,7 @@
 
 #include "autd3/driver/firmware_version.hpp"
 #include "autd3/gain/backend.hpp"
+#include "autd3/gain/holo.hpp"
 
 typedef struct {
   std::vector<autd3::driver::FirmwareInfo> list;
@@ -32,3 +33,12 @@ typedef struct {
 
 inline BackendWrapper* backend_create(const autd3::gain::holo::BackendPtr& ptr) { return new BackendWrapper{ptr}; }
 inline void backend_delete(const BackendWrapper* ptr) { delete ptr; }
+
+typedef struct {
+  std::unique_ptr<autd3::gain::holo::AmplitudeConstraint> ptr;
+} ConstraintWrapper;
+
+inline ConstraintWrapper* constraint_create(std::unique_ptr<autd3::gain::holo::AmplitudeConstraint> ptr) {
+  return new ConstraintWrapper{std::move(ptr)};
+}
+inline void constraint_delete(const ConstraintWrapper* ptr) { delete ptr; }

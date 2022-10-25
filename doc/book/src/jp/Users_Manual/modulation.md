@@ -69,7 +69,7 @@ duty比は$t_\text{high}/T = t_\text{high}f$で定義される, ここで, $t_\t
   autd3::modulation::Wav m(path);
 ```
 
-`Wav`を使用するには`BUILD_MODULATION_AUDIO_FILE` optionをONにしてコンパイルする必要がある.
+`Wav`を使用するには`BUILD_MODULATION_AUDIO_FILE`フラグをONにしてビルドするか, 或いは, 配布している`modulation_audio_file`ライブラリをリンクされたい.
 
 ## RawPCM
 
@@ -80,7 +80,7 @@ duty比は$t_\text{high}/T = t_\text{high}f$で定義される, ここで, $t_\t
   autd3::modulation::RawPCM m(path, 4e3);
 ```
 
-`RawPCM`を使用するには`BUILD_MODULATION_AUDIO_FILE` optionをONにしてコンパイルする必要がある.
+`RawPCM`を使用するには`BUILD_MODULATION_AUDIO_FILE`フラグをONにしてビルドするか, 或いは, 配布している`modulation_audio_file`ライブラリをリンクされたい.
 
 ## Create Custom Modulation Tutorial
 

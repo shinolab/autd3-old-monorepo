@@ -4,7 +4,7 @@
  * Created Date: 23/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/10/2022
+ * Last Modified: 25/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,6 +21,10 @@ using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 #else
 using Vector3 = AUTD3Sharp.Utils.Vector3d;
+#endif
+
+#if UNITY_2020_2_OR_NEWER
+#nullable enable
 #endif
 
 namespace AUTD3Sharp
@@ -55,74 +59,53 @@ namespace AUTD3Sharp
                 }
             }
 
-            public abstract class AmplitudeConstraint
+            public abstract class AmplitudeConstraint : SafeHandleZeroOrMinusOneIsInvalid
             {
-                internal int Id { get; }
+                internal IntPtr Ptr => handle;
 
-                internal abstract IntPtr Ptr();
-
-                internal AmplitudeConstraint(int id)
+                internal AmplitudeConstraint() : base(true)
                 {
-                    Id = id;
+                    var ptr = new IntPtr();
+                    SetHandle(ptr);
+                }
+
+                protected override bool ReleaseHandle()
+                {
+                    return true;
                 }
             }
 
             public sealed class DontCare : AmplitudeConstraint
             {
-                public DontCare() : base(0)
+                public DontCare()
                 {
-                }
-
-                internal override IntPtr Ptr()
-                {
-                    return IntPtr.Zero;
+                    NativeMethods.GainHolo.AUTDConstraintDontCare(out handle);
                 }
             }
 
-
             public sealed class Normalize : AmplitudeConstraint
             {
-                public Normalize() : base(1)
+                public Normalize()
                 {
-                }
+                    NativeMethods.GainHolo.AUTDConstraintNormalize(out handle);
 
-                internal override IntPtr Ptr()
-                {
-                    return IntPtr.Zero;
                 }
             }
 
             public sealed class Uniform : AmplitudeConstraint
             {
 
-                private readonly double _value;
-
-                public Uniform(double value) : base(2)
+                public Uniform(double value = 1.0)
                 {
-                    _value = value;
-                }
-
-
-                internal override IntPtr Ptr()
-                {
-                    unsafe
-                    {
-                        fixed (double* vp = &_value)
-                            return new IntPtr(vp);
-                    }
+                    NativeMethods.GainHolo.AUTDConstraintUniform(out handle, value);
                 }
             }
 
             public sealed class Clamp : AmplitudeConstraint
             {
-                public Clamp() : base(3)
+                public Clamp()
                 {
-                }
-
-
-                internal override IntPtr Ptr()
-                {
-                    return IntPtr.Zero;
+                    NativeMethods.GainHolo.AUTDConstraintClamp(out handle);
                 }
             }
 
@@ -136,12 +119,12 @@ namespace AUTD3Sharp
                 public Backend Backend { get; set; }
                 public AmplitudeConstraint Constraint
                 {
-                    set => NativeMethods.GainHolo.AUTDSetConstraint(handle, value.Id, value.Ptr());
+                    set => NativeMethods.GainHolo.AUTDSetConstraint(handle, value.Ptr);
                 }
 
                 public void Add(Vector3 focus, double amp)
                 {
-                    var (x, y, z) = GeometryAdjust.Adjust(focus);
+                    var (x, y, z) = TypeHelper.Convert(focus);
                     NativeMethods.GainHolo.AUTDGainHoloAdd(handle, x, y, z, amp);
                 }
             }
@@ -217,3 +200,8 @@ namespace AUTD3Sharp
         }
     }
 }
+
+
+#if UNITY_2020_2_OR_NEWER
+#nullable disable
+#endif

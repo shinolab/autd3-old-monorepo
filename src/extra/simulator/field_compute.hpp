@@ -3,7 +3,7 @@
 // Created Date: 05/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 25/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -44,7 +44,7 @@ struct Config {
   uint32_t width;
   uint32_t height;
   float pixel_size;
-  uint32_t dummy0;
+  float scale;
   uint32_t dummy1;
   glm::mat4 model;
 };

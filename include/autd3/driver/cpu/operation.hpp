@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 24/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -172,8 +172,11 @@ inline void point_stm_body(const std::vector<std::vector<STMFocus>>& points, con
                                ", but you use " + std::to_string(freq_div));
 
     tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
+#ifdef AUTD3_USE_METER
     const auto sound_speed_internal = static_cast<uint32_t>(std::round(sound_speed * 1024.0));
-
+#else
+    const auto sound_speed_internal = static_cast<uint32_t>(std::round(sound_speed / 1e3 * 1024.0));
+#endif
     for (size_t i = 0; i < tx.size(); i++) {
       auto& d = tx.bodies()[i];
       const auto& s = points.at(i);

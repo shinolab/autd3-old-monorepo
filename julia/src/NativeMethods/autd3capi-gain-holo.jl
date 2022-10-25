@@ -44,5 +44,9 @@ autd_gain_holo_greedy(gain, backend, phase_div) = ccall((:AUTDGainHoloGreedy, _d
 autd_gain_holo_lss_greedy(gain, backend, phase_div) = ccall((:AUTDGainHoloLSSGreedy, _dll), Cvoid, (Ref{Ptr{Cvoid}}, Ptr{Cvoid}, Int32, ), gain, backend, phase_div);
 autd_gain_holo_apo(gain, backend, eps, lambda, k_max, line_search_max) = ccall((:AUTDGainHoloAPO, _dll), Cvoid, (Ref{Ptr{Cvoid}}, Ptr{Cvoid}, Float64, Float64, Int32, Int32, ), gain, backend, eps, lambda, k_max, line_search_max);
 autd_gain_holo_add(gain, x, y, z, amp) = ccall((:AUTDGainHoloAdd, _dll), Cvoid, (Ptr{Cvoid}, Float64, Float64, Float64, Float64, ), gain, x, y, z, amp);
-autd_set_constraint(gain, type, param) = ccall((:AUTDSetConstraint, _dll), Cvoid, (Ptr{Cvoid}, Int32, Ptr{Cvoid}, ), gain, type, param);
+autd_constraint_dont_care(constraint) = ccall((:AUTDConstraintDontCare, _dll), Cvoid, (Ref{Ptr{Cvoid}}, ), constraint);
+autd_constraint_normalize(constraint) = ccall((:AUTDConstraintNormalize, _dll), Cvoid, (Ref{Ptr{Cvoid}}, ), constraint);
+autd_constraint_uniform(constraint, value) = ccall((:AUTDConstraintUniform, _dll), Cvoid, (Ref{Ptr{Cvoid}}, Float64, ), constraint, value);
+autd_constraint_clamp(constraint) = ccall((:AUTDConstraintClamp, _dll), Cvoid, (Ref{Ptr{Cvoid}}, ), constraint);
+autd_set_constraint(gain, constraint) = ccall((:AUTDSetConstraint, _dll), Cvoid, (Ptr{Cvoid}, Ptr{Cvoid}, ), gain, constraint);
 end
