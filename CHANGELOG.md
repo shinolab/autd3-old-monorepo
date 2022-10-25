@@ -1,3 +1,7 @@
+# 2.4.6
+
+- Rename `AUTDServer` to `TwinCATAUTDServer`
+
 # 2.4.5
 
 - Change unit of sound speed from m/s to mm/s

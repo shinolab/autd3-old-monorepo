@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("AUTDServer")]
+[assembly: AssemblyTitle("TwinCATAUTDServer")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("AUTDServer")]
+[assembly: AssemblyProduct("TwinCATAUTDServer")]
 [assembly: AssemblyCopyright("Copyright ©  2022 Shinoda-Makino Laboratory")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
