@@ -4,7 +4,7 @@
  * Created Date: 08/03/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/10/2022
+ * Last Modified: 25/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -13,6 +13,10 @@
 
 using AUTD3Sharp;
 using UnityEngine;
+
+#if UNITY_2020_2_OR_NEWER
+#nullable enable
+#endif
 
 public class SimpleAUTDController : MonoBehaviour
 {
@@ -54,3 +58,7 @@ public class SimpleAUTDController : MonoBehaviour
         _autd.Dispose();
     }
 }
+
+#if UNITY_2020_2_OR_NEWER
+#nullable disable
+#endif

@@ -95,7 +95,7 @@ EXPORT_AUTD int32_t AUTDStop(IN void* handle);
 EXPORT_AUTD void AUTDCreateSilencer(OUT void** out, IN uint16_t step, IN uint16_t cycle);
 EXPORT_AUTD void AUTDDeleteSilencer(IN const void* config);
 EXPORT_AUTD int32_t AUTDSend(IN void* handle, IN void* header, IN void* body);
-EXPORT_AUTD uint16_t AUTDGetModDelay(IN void* handle, IN int32_t device_idx, IN int32_t local_trans_idx);
+EXPORT_AUTD uint16_t AUTDGetModDelay(IN const void* handle, IN int32_t device_idx, IN int32_t local_trans_idx);
 EXPORT_AUTD void AUTDSetModDelay(IN void* handle, IN int32_t device_idx, IN int32_t local_trans_idx, IN uint16_t delay);
 EXPORT_AUTD void AUTDCreateModDelayConfig(OUT void** out);
 EXPORT_AUTD void AUTDDeleteModDelayConfig(IN const void* config);

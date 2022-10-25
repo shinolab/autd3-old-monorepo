@@ -1,3 +1,9 @@
+# 2.4.5
+
+- Change unit of sound speed from m/s to mm/s
+- Add `use_meter` and `use_left_handed` options to `Simulator`
+- Change `Holo` constraint API
+
 # 2.4.4
 
 - Change default EtherCAT interval 500us to 1ms

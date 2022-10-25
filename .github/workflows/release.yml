@@ -55,7 +55,7 @@ jobs:
           cuda: '11.7.0'
       - name: Build project x64
         run: |
-          cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=ON
+          cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=ON -DDISABLE_EXAMPLES=ON
           cd build
           cmake --build . --parallel 8 --config Release
           mkdir publish
@@ -102,7 +102,47 @@ jobs:
           asset_path: ./assets_x64.zip
           asset_name: ${{ steps.get_version.outputs.result }}-x64.zip
           asset_content_type: application/zip
-  
+
+      - name: Get package name
+        id: get_package_name
+        uses: actions/github-script@0.5.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          result-encoding: string
+          script: |
+            return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'.unitypackage';
+      - name: Build project x64 for Unity
+        run: |
+          cmake -G "Visual Studio 17 2022" -A x64 -B "build_unity" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=OFF -DDISABLE_EXAMPLES=ON -DUSE_METER=ON -DUSE_LEFT_HANDED=ON
+          cd build_unity
+          cmake --build . --parallel 8 --config Release
+          cd ..
+          foreach($dll in Get-ChildItem -Path build_unity/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/unity/Assets/AUTD/Plugins/x86_64}
+      - name: Replace latest scripts
+        run: |
+          cp -f ./cs/src/*.cs ./cs/unity/Assets/AUTD/Scripts/
+          cp -f ./cs/src/NativeMethods/*.cs ./cs/unity/Assets/AUTD/Scripts/NativeMethods
+          cp -f ./cs/src/LICENSE.txt ./cs/unity/Assets/AUTD/
+      - name: Enumerate Assets
+        run: |
+          find . -name '*.meta' >> metaList
+        working-directory: ./cs/unity
+      - uses: pCYSl5EDgo/create-unitypackage@master
+        with:
+          package-path: 'autd3.unitypackage'
+          include-files: ./cs/unity/metaList
+          project-folder: ./cs/unity
+      - name: Upload Release Asset
+        id: upload-release-asset-unity
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+          asset_path: ./autd3.unitypackage
+          asset_name: ${{ steps.get_package_name.outputs.result }}
+          asset_content_type: application/octet-stream
+    
   publish_linux:
     needs: [release]
     name: Upload Release Asset Linux
@@ -130,7 +170,7 @@ jobs:
       - name: Build project x64
         run: |
           mkdir -p build && cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DDISABLE_EXAMPLES=ON
           make -j8
           cd ..
           mkdir -p lib
@@ -145,7 +185,7 @@ jobs:
       - name: Build project arm32
         run: |
           mkdir -p build && cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM32 -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=OFF
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM32 -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DDISABLE_EXAMPLES=ON -DBUILD_BACKEND_CUDA=OFF
           make -j8
           cd ..
           mkdir -p lib
@@ -160,7 +200,7 @@ jobs:
       - name: Build project arm64
         run: |
           mkdir -p build && cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM64 -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=OFF
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM64 -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DDISABLE_EXAMPLES=ON -DBUILD_BACKEND_CUDA=OFF
           make -j8
           cd ..
           mkdir -p lib
@@ -230,7 +270,7 @@ jobs:
       - name: Build project
         run: |
           mkdir -p build && cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=OFF -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=OFF -DDISABLE_EXAMPLES=ON -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
           make -j8
           cd ..
           mkdir -p lib
@@ -256,72 +296,6 @@ jobs:
           upload_url: ${{ steps.get_release_info.outputs.upload_url }}
           asset_path: ./assets.tar.gz
           asset_name: ${{ steps.get_version.outputs.result }}
-          asset_content_type: application/octet-stream
-
-  publish_unitypackage:
-    needs: [publish_win, publish_linux, publish_mac]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Get the version
-        id: get_version
-        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3 | cut -d . -f 1,2,3)
-      - name: Get package name
-        id: get_package_name
-        uses: actions/github-script@0.5.0
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          result-encoding: string
-          script: |
-            return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'.unitypackage';
-      - name: Download latest binary
-        run: | 
-          wget https://github.com/shinolab/autd3/releases/download/${{ steps.get_version.outputs.VERSION }}/autd3-${{ steps.get_version.outputs.VERSION }}-linux-x64.tar.gz
-          wget https://github.com/shinolab/autd3/releases/download/${{ steps.get_version.outputs.VERSION }}/autd3-${{ steps.get_version.outputs.VERSION }}-macos-universal.tar.gz
-          wget https://github.com/shinolab/autd3/releases/download/${{ steps.get_version.outputs.VERSION }}/autd3-${{ steps.get_version.outputs.VERSION }}-win-x64.zip
-      - name: Replace latest binary
-        run: |
-          tar -zxvf autd3-${{ steps.get_version.outputs.VERSION }}-linux-x64.tar.gz
-          tar -zxvf autd3-${{ steps.get_version.outputs.VERSION }}-macos-universal.tar.gz
-          unzip -o autd3-${{ steps.get_version.outputs.VERSION }}-win-x64.zip
-          rm -f ./cs/unity/Assets/AUTD/Plugins/x86_64/*.dll
-          rm -f ./cs/unity/Assets/AUTD/Plugins/x86_64/*.so
-          rm -f ./cs/unity/Assets/AUTD/Plugins/x86_64/*.dylib
-          \cp bin/*.dll ./cs/unity/Assets/AUTD/Plugins/x86_64/
-          \cp bin/*.so ./cs/unity/Assets/AUTD/Plugins/x86_64/
-          \cp bin/*.dylib ./cs/unity/Assets/AUTD/Plugins/x86_64/
-      - name: Replace latest scripts
-        run: |
-          cp -f ./cs/src/*.cs ./cs/unity/Assets/AUTD/Scripts/
-          cp -f ./cs/src/NativeMethods/*.cs ./cs/unity/Assets/AUTD/Scripts/NativeMethods
-          cp -f ./cs/src/LICENSE.txt ./cs/unity/Assets/AUTD/
-      - name: Enumerate Assets
-        run: |
-          find . -name '*.meta' >> metaList
-        working-directory: ./cs/unity
-      - uses: pCYSl5EDgo/create-unitypackage@master
-        with:
-          package-path: 'autd3.unitypackage'
-          include-files: ./cs/unity/metaList
-          project-folder: ./cs/unity
-      - name: Load Release URL File from release job
-        uses: actions/download-artifact@v1
-        with:
-          name: release_url
-      - name: Get Release File Name & Upload URL
-        id: get_release_info
-        run: |
-          value=`cat release_url/release_url.txt`
-          echo ::set-output name=upload_url::$value
-      - name: Upload Release Asset
-        id: upload-release-asset 
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
-          asset_path: ./autd3.unitypackage
-          asset_name: ${{ steps.get_package_name.outputs.result }}
           asset_content_type: application/octet-stream
 
   publish_pypi:

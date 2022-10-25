@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/10/2022
+// Last Modified: 25/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -39,8 +39,7 @@ struct Geometry {
       for (size_t y = 0; y < driver::NUM_TRANS_Y; y++)
         for (size_t x = 0; x < driver::NUM_TRANS_X; x++) {
           if (driver::is_missing_transducer(x, y)) continue;
-          const auto local_pos =
-              Vector4(static_cast<double>(x) * driver::TRANS_SPACING_MM, static_cast<double>(y) * driver::TRANS_SPACING_MM, 0.0, 1.0);
+          const auto local_pos = Vector4(static_cast<double>(x) * driver::TRANS_SPACING, static_cast<double>(y) * driver::TRANS_SPACING, 0.0, 1.0);
           const Vector4 global_pos = transform_matrix * local_pos;
           _transducers.emplace_back(i++, global_pos.head<3>(), x_direction, y_direction, z_direction);
         }
@@ -107,15 +106,25 @@ struct Geometry {
     Eigen::Transform<double, 3, Eigen::Affine> _trans_inv;
   };
 
-  Geometry() : attenuation(0.0), sound_speed(340.0), _devices(), _mode(std::make_unique<LegacyMode>()) {}
+  Geometry()
+      : attenuation(0.0),
+        sound_speed(
+#ifdef AUTD3_USE_METER
+            340.0),
+#else
+            340.0e3),
+#endif
+        _devices(),
+        _mode(std::make_unique<LegacyMode>()) {
+  }
 
   /**
-   * @brief Attenuation coefficient in Np/mm.
+   * @brief Attenuation coefficient.
    */
   double attenuation;
 
   /**
-   * @brief Speed of sound in m/s.
+   * @brief Speed of sound.
    */
   double sound_speed;
 

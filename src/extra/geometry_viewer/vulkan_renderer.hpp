@@ -3,7 +3,7 @@
 // Created Date: 24/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 25/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -611,7 +611,7 @@ class VulkanRenderer {
     for (const auto& [pos, rot] : model.geometries()) {
       if (!imgui.show[dev++]) continue;
       auto matrix = translate(glm::identity<glm::mat4>(), helper::to_gl_pos(pos));
-      matrix = matrix * mat4_cast(rot);
+      matrix = matrix * mat4_cast(helper::to_gl_rot(rot));
 
       for (const auto& [first_index, index_count, material_index] : model.primitives()) {
         command_buffer->bindPipeline(vk::PipelineBindPoint::eGraphics, _pipelines[material_index].get());
@@ -630,7 +630,7 @@ class VulkanRenderer {
   }
 
   void update_uniform_buffer(const size_t current_image, const VulkanImGui& imgui) {
-    const auto rot = glm::quat(radians(imgui.camera_rot));
+    const auto rot = helper::to_gl_rot(glm::quat(radians(imgui.camera_rot)));
     const auto p = helper::to_gl_pos(imgui.camera_pos);
     const auto view = helper::orthogonal(p, rot);
     UniformBufferObject ubo{
