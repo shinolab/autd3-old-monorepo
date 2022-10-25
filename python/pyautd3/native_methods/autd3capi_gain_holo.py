@@ -63,5 +63,17 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainHoloAdd.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double] 
         self.dll.AUTDGainHoloAdd.restype = None
 
-        self.dll.AUTDSetConstraint.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_void_p] 
+        self.dll.AUTDConstraintDontCare.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
+        self.dll.AUTDConstraintDontCare.restype = None
+
+        self.dll.AUTDConstraintNormalize.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
+        self.dll.AUTDConstraintNormalize.restype = None
+
+        self.dll.AUTDConstraintUniform.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_double] 
+        self.dll.AUTDConstraintUniform.restype = None
+
+        self.dll.AUTDConstraintClamp.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
+        self.dll.AUTDConstraintClamp.restype = None
+
+        self.dll.AUTDSetConstraint.argtypes = [ctypes.c_void_p, ctypes.c_void_p] 
         self.dll.AUTDSetConstraint.restype = None

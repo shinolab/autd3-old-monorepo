@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 25/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -126,7 +126,7 @@ void SDP::calc(const core::Geometry& geometry) {
     std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
       const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
       const auto raw = std::abs(q(tr.id()));
-      const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
+      const auto power = constraint->convert(raw, max_coefficient);
       _drives[tr.id()].amp = power;
       _drives[tr.id()].phase = phase;
     });
@@ -191,7 +191,7 @@ void EVD::calc(const core::Geometry& geometry) {
     std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
       const auto phase = std::arg(gtf(tr.id())) / (2.0 * driver::pi) + 0.5;
       const auto raw = std::abs(gtf(tr.id()));
-      const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
+      const auto power = constraint->convert(raw, max_coefficient);
       _drives[tr.id()].amp = power;
       _drives[tr.id()].phase = phase;
     });
@@ -218,7 +218,7 @@ void LSS::calc(const core::Geometry& geometry) {
     std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
       const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
       const auto raw = std::abs(q(tr.id()));
-      const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
+      const auto power = constraint->convert(raw, max_coefficient);
       _drives[tr.id()].amp = power;
       _drives[tr.id()].phase = phase;
     });
@@ -258,7 +258,7 @@ void GS::calc(const core::Geometry& geometry) {
     std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
       const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
       const auto raw = std::abs(q(tr.id()));
-      const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
+      const auto power = constraint->convert(raw, max_coefficient);
       _drives[tr.id()].amp = power;
       _drives[tr.id()].phase = phase;
     });
@@ -309,7 +309,7 @@ void GSPAT::calc(const core::Geometry& geometry) {
     std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
       const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
       const auto raw = std::abs(q(tr.id()));
-      const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
+      const auto power = constraint->convert(raw, max_coefficient);
       _drives[tr.id()].amp = power;
       _drives[tr.id()].phase = phase;
     });
@@ -446,7 +446,7 @@ void LM::calc(const core::Geometry& geometry) {
   std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
     std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
       const auto phase = x(tr.id()) / (2.0 * driver::pi);
-      const auto power = std::visit([&](auto& c) { return c.convert(1.0, 1.0); }, constraint);
+      const auto power = constraint->convert(1.0, 1.0);
       _drives[tr.id()].amp = power;
       _drives[tr.id()].phase = phase;
     });
@@ -498,7 +498,7 @@ void Greedy::calc(const core::Geometry& geometry) {
     }
     cache += tmp[min_idx];
 
-    const auto power = std::visit([&](auto& c) { return c.convert(1.0, 1.0); }, constraint);
+    const auto power = constraint->convert(1.0, 1.0);
 
     _drives[transducer.id()].amp = power;
     _drives[transducer.id()].phase = std::arg(phases[min_idx]) / (2.0 * driver::pi) + 0.5;
@@ -563,7 +563,7 @@ void LSSGreedy::calc(const core::Geometry& geometry) {
     std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
       const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
       const auto raw = std::abs(q(tr.id()));
-      const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
+      const auto power = constraint->convert(raw, max_coefficient);
       _drives[tr.id()].amp = power;
       _drives[tr.id()].phase = phase;
     });
@@ -688,7 +688,7 @@ void APO::calc(const core::Geometry& geometry) {
     std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
       const auto phase = std::arg(q(tr.id())) / (2.0 * driver::pi) + 0.5;
       const auto raw = std::abs(q(tr.id()));
-      const auto power = std::visit([&](auto& c) { return c.convert(raw, max_coefficient); }, constraint);
+      const auto power = constraint->convert(raw, max_coefficient);
       _drives[tr.id()].amp = power;
       _drives[tr.id()].phase = phase;
     });
