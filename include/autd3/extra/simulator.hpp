@@ -53,44 +53,63 @@ struct SimulatorSettings {
   int32_t gpu_idx{0};
 #ifdef AUTD3_USE_METER
   bool use_meter{true};
+#ifdef AUTD3_USE_LEFT_HANDED
+  bool use_left_handed{true};
+  float slice_pos_z{-150.0e-3f};
+  float camera_pos_z{-150.0e-3f};
+#else
+  bool use_left_handed{false};
+  float slice_pos_z{150.0e-3f};
+  float camera_pos_z{150.0e-3f};
+#endif
   float slice_pos_x{86.6252e-3f};
   float slice_pos_y{66.7133e-3f};
-  float slice_pos_z{150.0e-3f};
   float slice_width{300e-3f};
   float slice_height{300e-3f};
   float slice_pixel_size{1.0e-3f};
   float camera_pos_x{86.6252e-3f};
   float camera_pos_y{-533.2867e-3f};
-  float camera_pos_z{150.0e-3f};
   float camera_near_clip{0.1e-3f};
   float camera_far_clip{1000e-3f};
   float camera_move_speed{10e-3f};
   float sound_speed{340.0f};
 #else
   bool use_meter{false};
+#ifdef AUTD3_USE_LEFT_HANDED
+  bool use_left_handed{true};
+  float slice_pos_z{-150.0f};
+  float camera_pos_z{-150.0f};
+#else
+  bool use_left_handed{false};
+  float slice_pos_z{150.0f};
+  float camera_pos_z{150.0f};
+#endif
   float slice_pos_x{86.6252f};
   float slice_pos_y{66.7133f};
-  float slice_pos_z{150.0f};
   float slice_width{300};
   float slice_height{300};
   float slice_pixel_size{1.0};
   float camera_pos_x{86.6252f};
   float camera_pos_y{-533.2867f};
-  float camera_pos_z{150.0f};
   float camera_near_clip{0.1f};
   float camera_far_clip{1000};
   float camera_move_speed{10};
   float sound_speed{340.0e3f};
 #endif
 
+#ifdef AUTD3_USE_LEFT_HANDED
+  float slice_rot_x{-90.0f};
+  float camera_rot_x{-90.0f};
+#else
   float slice_rot_x{90.0f};
+  float camera_rot_x{90.0f};
+#endif
   float slice_rot_y{0};
   float slice_rot_z{0};
   float slice_color_scale{2};
   float slice_alpha{1};
   tinycolormap::ColormapType coloring_method{tinycolormap::ColormapType::Inferno};
   bool show_radiation_pressure{false};
-  float camera_rot_x{90.0f};
   float camera_rot_y{0};
   float camera_rot_z{0};
   float camera_fov{45};
@@ -107,18 +126,19 @@ struct SimulatorSettings {
   std::string ip{"127.0.0.1"};
   uint16_t port{50632};
 
-  void load_default(const bool use_meter) {
-    this->use_meter = use_meter;
+  void load_default(const bool use_meter_, const bool use_left_handed_) {
+    use_meter = use_meter_;
+    use_left_handed = use_left_handed_;
     if (use_meter) {
       slice_pos_x = 86.6252e-3f;
       slice_pos_y = 66.7133e-3f;
-      slice_pos_z = 150.0e-3f;
+      slice_pos_z = use_left_handed ? -150.0e-3f : 150.0e-3f;
       slice_width = 300e-3f;
       slice_height = 300e-3f;
       slice_pixel_size = 1.0e-3f;
       camera_pos_x = 86.6252e-3f;
       camera_pos_y = -533.2867e-3f;
-      camera_pos_z = 150.0e-3f;
+      camera_pos_z = use_left_handed ? -150.0e-3f : 150.0e-3f;
       camera_near_clip = 0.1e-3f;
       camera_far_clip = 1000e-3f;
       camera_move_speed = 10e-3f;
@@ -126,27 +146,27 @@ struct SimulatorSettings {
     } else {
       slice_pos_x = 86.6252f;
       slice_pos_y = 66.7133f;
-      slice_pos_z = 150.0f;
+      slice_pos_z = use_left_handed ? -150.0f : 150.0f;
       slice_width = 300;
       slice_height = 300;
       slice_pixel_size = 1.0;
       camera_pos_x = 86.6252f;
       camera_pos_y = -533.2867f;
-      camera_pos_z = 150.0f;
+      camera_pos_z = use_left_handed ? -150.0f : 150.0f;
       camera_near_clip = 0.1f;
       camera_far_clip = 1000;
       camera_move_speed = 10;
       sound_speed = 340.0e3f;
     }
 
-    slice_rot_x = 90.0f;
+    slice_rot_x = use_left_handed ? -90.0f : 90.0f;
     slice_rot_y = 0;
     slice_rot_z = 0;
     slice_color_scale = 2;
     slice_alpha = 1;
     coloring_method = tinycolormap::ColormapType::Inferno;
     show_radiation_pressure = false;
-    camera_rot_x = 90.0f;
+    camera_rot_x = use_left_handed ? -90.0f : 90.0f;
     camera_rot_y = 0;
     camera_rot_z = 0;
     camera_fov = 45;
@@ -167,6 +187,7 @@ inline void to_json(nlohmann::json& j, const SimulatorSettings& s) {
       {"vsync", s.vsync},
       {"gpu_idx", s.gpu_idx},
       {"use_meter", s.use_meter},
+      {"use_left_handed", s.use_left_handed},
       {"slice_pos_x", s.slice_pos_x},
       {"slice_pos_y", s.slice_pos_y},
       {"slice_pos_z", s.slice_pos_z},
@@ -209,6 +230,7 @@ inline void from_json(const nlohmann::json& j, SimulatorSettings& s) {
   j.at("vsync").get_to(s.vsync);
   j.at("vsync").get_to(s.vsync);
   j.at("use_meter").get_to(s.use_meter);
+  j.at("use_left_handed").get_to(s.use_left_handed);
   j.at("slice_pos_x").get_to(s.slice_pos_x);
   j.at("slice_pos_y").get_to(s.slice_pos_y);
   j.at("slice_pos_z").get_to(s.slice_pos_z);
