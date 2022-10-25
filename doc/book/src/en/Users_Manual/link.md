@@ -35,21 +35,21 @@ Run the downloaded installer and follow the instructions.
 
 After installation, reboot the PC, run `C:/TwinCAT/3.1/System/win8settick.bat` with administrator privileges, and reboot again.
 
-Finally, copy `dist/AUTDServer/AUTD.xml` in the SDK to `C:/TwinCAT/3.1/Config/Io/EtherCAT`.
+Finally, copy `dist/TwinCATAUTDServer/AUTD.xml` in the SDK to `C:/TwinCAT/3.1/Config/Io/EtherCAT`.
 
-### AUTDServer
+### TwinCATAUTDServer
 
-To use TwinCAT Link, you must run `dist/AUTDServer/AUTDServer.exe` before using SDK.
+To use TwinCAT Link, you must run `dist/TwinCATAUTDServer/TwinCATAUTDServer.exe` before using SDK.
 
 For the first time, leave the TwinCAT XAE Shell open with the `-k` option to install the driver.
 
 ```
-AUTDServer.exe -k
+TwinCATAUTDServer.exe -k
 ```
 
 > Note: If you have closed it, you can open it by starting `%TEMP%/TwinCATAUTDServer/TwinCATAUTDServer.sln` as TcXaeShell Application, where `%TEMP%` is an environment variable, usually `C:/Users/(user name)/AppData/Local/Temp`.
 
-Note that the AUTDServer will lose the link when you turn off your PC, enter sleep mode, etc., so you should re-run it each time.
+Note that the TwinCATAUTDServer will lose the link when you turn off your PC, enter sleep mode, etc., so you should re-run it each time.
 
 #### Install Driver
 
@@ -66,7 +66,7 @@ In this case, the driver can be used but is not guaranteed to work.
 In addition, since you will get a license-related error the first time, open `Solution Explorer->SYSTEM->License` in the XAE Shell, click `7 Days Trial License ...` and then enter the letters shown on the screen.
 
 Note that the license is a 7-day trial license, but it can be reissued by doing the same procedure again when the license expires.
-After issuing the license, close TwinCAT XAE Shell and run `AUTDServer.exe` again.
+After issuing the license, close TwinCAT XAE Shell and run `TwinCATAUTDServer.exe` again.
 
 ### Troubleshooting
 
@@ -77,12 +77,12 @@ When you try to use many devices, you may get an error like the one shown in the
   <figcaption>TwinCAT error when using 9 devices</figcaption>
 </figure>
 
-In this case, increase the values of `-s` and `-t` of the `AUTDServer` option and run AUTDServer again.
+In this case, increase the values of `-s` and `-t` of the `TwinCATAUTDServer` option and run TwinCATAUTDServer again.
 The values of these options are 2 by default, respectively.
 For proper operation, multiply them by an appropriate integer.
 
 ```
-AUTDServer.exe -s 3 -t 3
+TwinCATAUTDServer.exe -s 3 -t 3
 ```
 
 How many times to multiply depends on the number of connected devices.
@@ -112,12 +112,12 @@ Also, connect the server to the client on another LAN.
 This client-server LAN adapter does not need to be TwinCAT-compatible[^fn_remote_twin].
 Then, check the IP address of the LAN between the server and the client.
 For example, let us assume that the server IP is "169.254.205.219" and the client IP is "169.254.175.45" here.
-Next, start `AUTDServer` on the server.
+Next, start `TwinCATAUTDServer` on the server.
 At this time, specify the IP address of the client (`-169.254.175.45` in this example) by `-c` option.
 And, use the `-k` option to keep `TwinCATAUTDServer` open.
 
 ```
-AUTDServer.exe -c 169.254.175.45 -k
+TwinCATAUTDServer.exe -c 169.254.175.45 -k
 ```
 
 Then, open `System→Routes` and check the AMS NetId of the server in the `NetId Management` tab, as shown in the following figure.

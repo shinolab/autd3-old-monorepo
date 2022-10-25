@@ -78,8 +78,8 @@ jobs:
           copy dist/GUI/bin -Recurse publish/gui-controller/bin
           copy dist/GUI/AUTD3-GUI-Controller.exe publish/gui-controller
           copy build/dist/simulator/Release/*.exe build/publish/simulator
-          Remove-Item -Recurse -Force dist/AUTDServer/src
-          Compress-Archive -Path LICENSE, NOTICE, dist/AUTDServer, dist/firmware, include, build/publish/lib, build/publish/bin, build/publish/simulator, publish/gui-controller -DestinationPath assets_x64.zip
+          Remove-Item -Recurse -Force dist/TwinCATAUTDServer/src
+          Compress-Archive -Path LICENSE, NOTICE, dist/TwinCATAUTDServer, dist/firmware, include, build/publish/lib, build/publish/bin, build/publish/simulator, publish/gui-controller -DestinationPath assets_x64.zip
       - name: Load Release URL File from release job
         uses: actions/download-artifact@v1
         with:
