@@ -144,6 +144,15 @@ class SimulatorImpl final : public core::Link {
       auto& tr = geometry[i][0];
       auto origin = tr.position().cast<float>();
       auto rot = geometry[i].rotation().cast<float>();
+#ifdef AUTD3_USE_LEFT_HANDED
+      cursor[0] = origin.x() * scale;
+      cursor[1] = origin.y() * scale;
+      cursor[2] = -origin.z() * scale;
+      cursor[3] = rot.w();
+      cursor[4] = -rot.x();
+      cursor[5] = -rot.y();
+      cursor[6] = rot.z();
+#else
       cursor[0] = origin.x() * scale;
       cursor[1] = origin.y() * scale;
       cursor[2] = origin.z() * scale;
@@ -151,6 +160,7 @@ class SimulatorImpl final : public core::Link {
       cursor[4] = rot.x();
       cursor[5] = rot.y();
       cursor[6] = rot.z();
+#endif
     }
     return buf;
   }

@@ -219,8 +219,8 @@ void Simulator::run() {
         sources.clear();
         for (size_t dev = 0; dev < tx.size(); dev++) {
           const auto* body = reinterpret_cast<const float*>(tx.bodies() + dev);
-          const auto origin = glm::vec3(body[0], body[1], body[2]) * imgui->scale();
-          const auto rot = glm::quat(body[3], body[4], body[5], body[6]);
+          const auto origin = imgui->to_gl_pos(glm::vec3(body[0], body[1], body[2])) * imgui->scale();
+          const auto rot = imgui->to_gl_rot(glm::quat(body[3], body[4], body[5], body[6]));
           const auto matrix = translate(glm::identity<glm::mat4>(), origin) * mat4_cast(rot);
           for (size_t iy = 0; iy < driver::NUM_TRANS_Y; iy++)
             for (size_t ix = 0; ix < driver::NUM_TRANS_X; ix++) {

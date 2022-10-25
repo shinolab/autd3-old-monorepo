@@ -167,36 +167,37 @@ class VulkanImGui {
     ImGui_ImplVulkan_DestroyFontUploadObjects();
   }
 
-  void load_settings(const SimulatorSettings& setting) {
-    slice_pos = glm::vec3(setting.slice_pos_x, setting.slice_pos_y, setting.slice_pos_z);
-    slice_rot = glm::vec3(setting.slice_rot_x, setting.slice_rot_y, setting.slice_rot_z);
-    slice_width = setting.slice_width;
-    slice_height = setting.slice_height;
-    pixel_size = setting.slice_pixel_size;
-    color_scale = setting.slice_color_scale;
-    slice_alpha = setting.slice_alpha;
-    show_radiation_pressure = setting.show_radiation_pressure;
-    coloring_method = setting.coloring_method;
+  void load_settings(const SimulatorSettings& settings) {
+    slice_pos = glm::vec3(settings.slice_pos_x, settings.slice_pos_y, settings.slice_pos_z);
+    slice_rot = glm::vec3(settings.slice_rot_x, settings.slice_rot_y, settings.slice_rot_z);
+    slice_width = settings.slice_width;
+    slice_height = settings.slice_height;
+    pixel_size = settings.slice_pixel_size;
+    color_scale = settings.slice_color_scale;
+    slice_alpha = settings.slice_alpha;
+    show_radiation_pressure = settings.show_radiation_pressure;
+    coloring_method = settings.coloring_method;
     coloring_method_idx = convert(coloring_method);
 
-    camera_pos = glm::vec3(setting.camera_pos_x, setting.camera_pos_y, setting.camera_pos_z);
-    camera_rot = glm::vec3(setting.camera_rot_x, setting.camera_rot_y, setting.camera_rot_z);
-    fov = setting.camera_fov;
-    near_clip = setting.camera_near_clip;
-    far_clip = setting.camera_far_clip;
-    _cam_move_speed = setting.camera_move_speed;
+    camera_pos = glm::vec3(settings.camera_pos_x, settings.camera_pos_y, settings.camera_pos_z);
+    camera_rot = glm::vec3(settings.camera_rot_x, settings.camera_rot_y, settings.camera_rot_z);
+    fov = settings.camera_fov;
+    near_clip = settings.camera_near_clip;
+    far_clip = settings.camera_far_clip;
+    _cam_move_speed = settings.camera_move_speed;
 
-    sound_speed = setting.sound_speed;
+    sound_speed = settings.sound_speed;
 
-    _font_size = setting.font_size;
-    background = glm::vec4(setting.background_r, setting.background_g, setting.background_b, setting.background_a);
+    _font_size = settings.font_size;
+    background = glm::vec4(settings.background_r, settings.background_g, settings.background_b, settings.background_a);
 
-    _show_mod_plot = setting.show_mod_plot;
-    _show_mod_plot_raw = setting.show_mod_plot_raw;
+    _show_mod_plot = settings.show_mod_plot;
+    _show_mod_plot_raw = settings.show_mod_plot_raw;
 
-    use_meter = setting.use_meter;
+    use_meter = settings.use_meter;
+    use_left_handed = settings.use_left_handed;
 
-    setting.image_save_path.copy(save_path, 256);
+    settings.image_save_path.copy(save_path, 256);
   }
 
   void save_settings(SimulatorSettings& settings) const {
@@ -239,6 +240,7 @@ class VulkanImGui {
     settings.image_save_path = std::string(save_path);
 
     settings.use_meter = use_meter;
+    settings.use_left_handed = use_left_handed;
   }
 
   void init(const uint32_t image_count, const VkRenderPass renderer_pass, const SimulatorSettings& settings) {
@@ -314,7 +316,7 @@ class VulkanImGui {
 
       if (!io.WantCaptureMouse) {
         const auto mouse_wheel = io.MouseWheel;
-        const auto trans = -f * mouse_wheel * _cam_move_speed;
+        const auto trans = use_left_handed ? f * mouse_wheel * _cam_move_speed : -f * mouse_wheel * _cam_move_speed;
         camera_pos[0] += trans.x;
         camera_pos[1] += trans.y;
         camera_pos[2] += trans.z;
@@ -325,7 +327,7 @@ class VulkanImGui {
         const auto mouse_delta = io.MouseDelta;
         if (io.MouseDown[0]) {
           if (io.KeyShift) {
-            const auto delta = glm::vec2(mouse_delta.x, mouse_delta.y) * _cam_move_speed / 3000.0f;
+            const auto delta = glm::vec2(mouse_delta.x, mouse_delta.y) * _cam_move_speed / scale() / 3000.0f;
             const auto to = -r * delta.x + u * delta.y + f;
             const auto rotation = helper::quaternion_to(f, to);
             camera_rot = degrees(eulerAngles(rotation * rot));
@@ -635,7 +637,7 @@ class VulkanImGui {
     }
     ImGui::SameLine();
     if (ImGui::SmallButton("Default")) {
-      _initial_settings.load_default(use_meter);
+      _initial_settings.load_default(use_meter, use_left_handed);
       load_settings(_initial_settings);
       flag.set(UpdateFlags::all().value());
       flag.remove(UpdateFlags::SAVE_IMAGE);
@@ -661,8 +663,8 @@ class VulkanImGui {
   }
 
   [[nodiscard]] std::pair<glm::mat4, glm::mat4> get_view_proj(const float aspect) const {
-    const auto rot = glm::quat(radians(camera_rot));
-    const auto p = camera_pos;
+    const auto rot = to_gl_rot(glm::quat(radians(camera_rot)));
+    const auto p = to_gl_pos(camera_pos);
     const auto view = helper::orthogonal(p, rot);
     auto proj = glm::perspective(glm::radians(fov), aspect, near_clip, far_clip);
     proj[1][1] *= -1;
@@ -670,10 +672,13 @@ class VulkanImGui {
   }
 
   [[nodiscard]] glm::mat4 get_slice_model() const {
-    return translate(glm::identity<glm::mat4>(), slice_pos) * mat4_cast(glm::quat(radians(slice_rot)));
+    return translate(glm::identity<glm::mat4>(), to_gl_pos(slice_pos)) * mat4_cast(to_gl_rot(glm::quat(radians(slice_rot))));
   }
 
   [[nodiscard]] float scale() const noexcept { return use_meter ? 1e-3f : 1.0f; }
+
+  [[nodiscard]] glm::vec3 to_gl_pos(const glm::vec3 v) const { return use_left_handed ? glm::vec3(v.x, v.y, -v.z) : v; }
+  [[nodiscard]] glm::quat to_gl_rot(const glm::quat rot) const { return use_left_handed ? glm::quat(rot.w, -rot.x, -rot.y, rot.z) : rot; }
 
   float slice_width{0};
   float slice_height{0};
@@ -685,6 +690,7 @@ class VulkanImGui {
   bool show_radiation_pressure{false};
 
   bool use_meter{false};
+  bool use_left_handed{false};
 
   glm::vec3 camera_pos{};
   glm::vec3 camera_rot{};
