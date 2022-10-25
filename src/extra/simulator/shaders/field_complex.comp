@@ -4,7 +4,7 @@
  * Created Date: 05/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/10/2022
+ * Last Modified: 25/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ layout(push_constant) uniform Config {
     uint width;
     uint height;
     float pixel_size;
-    uint _dummy_0;
+    float scale;
     uint _dummy_1;
     mat4 world;
 } config;
@@ -59,7 +59,7 @@ void main() { \
         vec3 tp = vec3(source_pos.pos[idx]); \
         float r = length(point - tp); \
         float p = source_drive.drive[idx].y - source_drive.drive[idx].w * r; \
-        float amp = source_drive.drive[idx].z * source_drive.drive[idx].x / r; \
+        float amp = source_drive.drive[idx].z * source_drive.drive[idx].x / r * config.scale; \
         re += amp * cos(p); \
         im += amp * sin(p); \
     } \

@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 24/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,7 +30,11 @@ constexpr uint16_t MAX_CYCLE = 8191;
 constexpr uint32_t MOD_SAMPLING_FREQ_DIV_MIN = 1160;
 constexpr size_t MOD_BUF_SIZE_MAX = 65536;
 
-constexpr double POINT_STM_FIXED_NUM_UNIT = 0.025;  // mm
+#ifdef AUTD3_USE_METER
+constexpr double POINT_STM_FIXED_NUM_UNIT = 0.025e-3;
+#else
+constexpr double POINT_STM_FIXED_NUM_UNIT = 0.025;
+#endif
 
 constexpr uint32_t POINT_STM_SAMPLING_FREQ_DIV_MIN = 1612;
 constexpr uint32_t GAIN_STM_SAMPLING_FREQ_DIV_MIN = 276;

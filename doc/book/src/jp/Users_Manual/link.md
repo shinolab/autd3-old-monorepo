@@ -17,6 +17,8 @@ TwinCATはWindowsのみをサポートする非常に特殊なソフトウェア
 
 上記以外のネットワークコントローラでも動作する場合があるが, その場合, 正常な動作とリアルタイム性は保証されない.
 
+TwinCAT linkを使用するには`BUILD_LINK_TWINCAT`フラグをONにしてビルドするか, 或いは, 配布している`link_twincat`ライブラリをリンクされたい.
+
 ### How to install TwinCAT
 
 前提として, TwinCATはHyper-VやVirtual Machine Platformと共存できない.
@@ -67,7 +69,7 @@ Incompatible devicesの中のドライバもInstall自体は可能で, Install�
 なお. ライセンスは7日間限定のトライアルライセンスだが, 切れたら再び同じ作業を行うことで再発行できる.
 ライセンスを発行し終わったら, TwinCAT XAE Shellを閉じて, 再び"AUTDServer.exe"を実行する.
 
-### Trouble shooting
+### Troubleshooting
 
 大量のDeviceを使用しようとすると, 下の図のようなエラーが発生することがある.
 この場合は, `AUTDServer`のオプションの`-s`と`-t`の値を増やし, AUTDServerを再び実行する.
@@ -91,6 +93,10 @@ AUTDServer.exe -s 3 -t 3
 前述の通り, AUTD3とTwinCATを使う場合はWindows OSと特定のネットワークアダプタが必要になる.
 しかし, Windows以外のPCで開発したい需要も多い (後述のSOEMもマルチプラットフォームで動作する).
 その場合は, RemoteTwinCAT linkを用いて遠隔からTwinCATを操作することができる.
+
+RemoteTwinCAT linkを使用するには`BUILD_LINK_REMOTE_TWINCAT`フラグをONにしてビルドするか, 或いは, 配布している`link_remote_twincat`ライブラリをリンクされたい.
+
+### Setup
 
 RemoteTwinCATを使用する場合はPCを2台用意する必要がある.
 この時, 片方のPCは上記のTwinCAT linkが使えるである必要がある.
@@ -171,7 +177,11 @@ SOEMを使用するのはやむを得ない理由があるか, 開発時のみ�
 Windowsの場合は, [npcap](https://nmap.org/npcap/)を**WinPcap API compatible mode**でインストールしておくこと.
 Linux/macの場合は, 特に準備は必要ない.
 
+SOEM linkを使用するには`BUILD_LINK_SOEM`フラグをONにしてビルドするか, 或いは, 配布している`link_soem`ライブラリをリンクされたい.
+また, Windowsの場合は, 追加で`Packet.lib`及び`wpcap.lib`をリンクする必要がある.
+
 SOEMのLinkを使用する際は`autd3/link/soem.hpp`ヘッダーをインクルードする.
+
 ```cpp
 #include "autd3/link/soem.hpp"
 
@@ -227,7 +237,9 @@ High Precisionモードを`true`にすると, より高精度なタイマが使�
 
 Simulator linkは[AUTD Simulator](https://shinolab.github.io/autd3/book/jp/Simulator/simulator.html)を使用する際に使うLinkである.
 
-使用の前に, AUTD Simulatorを起動しておく必要がある.
+Simulator linkを使用するには`BUILD_LINK_SIMULATOR`フラグをONにしてビルドするか, 或いは, 配布している`link_simulator`ライブラリをリンクされたい.
+
+このlinkの使用の前に, AUTD Simulatorを起動しておく必要がある.
 
 SimulatorのLinkを使用する際は`autd3/link/simulator.hpp`ヘッダーをインクルードする.
 

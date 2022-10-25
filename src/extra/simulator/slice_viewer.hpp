@@ -3,7 +3,7 @@
 // Created Date: 05/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 25/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -49,9 +49,9 @@ class SliceViewer {
   SliceViewer(SliceViewer&& obj) = default;
   SliceViewer& operator=(SliceViewer&& obj) = default;
 
-  void init(const uint32_t width, const uint32_t height, const float pixel_width) {
-    _width = static_cast<uint32_t>(static_cast<float>(width) / pixel_width);
-    _height = static_cast<uint32_t>(static_cast<float>(height) / pixel_width);
+  void init(const float width, const float height, const float pixel_width) {
+    _width = static_cast<uint32_t>(width / pixel_width);
+    _height = static_cast<uint32_t>(height / pixel_width);
 
     create_pipeline();
     create_vertex_buffer(width, height);
@@ -77,11 +77,11 @@ class SliceViewer {
     command_buffer.drawIndexed(6, 1, 0, 0, 0);
   }
 
-  void update(const uint32_t width, const uint32_t height, const float pixel_width, const UpdateFlags update_flag) {
+  void update(const float width, const float height, const float pixel_width, const UpdateFlags update_flag) {
     if (update_flag.contains(UpdateFlags::UPDATE_SLICE_SIZE)) {
       _context->device().waitIdle();
-      _width = static_cast<uint32_t>(static_cast<float>(width) / pixel_width);
-      _height = static_cast<uint32_t>(static_cast<float>(height) / pixel_width);
+      _width = static_cast<uint32_t>(width / pixel_width);
+      _height = static_cast<uint32_t>(height / pixel_width);
       create_field_buffers(_width, _height);
       update_field_descriptor_sets(_width, _height);
       create_vertex_buffer(width, height);
@@ -203,9 +203,7 @@ class SliceViewer {
       throw std::runtime_error("failed to create a pipeline!");
   }
 
-  void create_vertex_buffer(const uint32_t slice_width, const uint32_t slice_height) {
-    const auto width = static_cast<float>(slice_width);
-    const auto height = static_cast<float>(slice_height);
+  void create_vertex_buffer(const float width, const float height) {
     const std::vector vertices = {
         Vertex{
             {-width / 2.0f, -height / 2.0f, 0.0, 1.0},

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/09/2022
+// Last Modified: 25/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,10 +12,6 @@
 #pragma once
 
 #include "holo_gain.h"
-
-#define TRANS_SPACING_MM (10.16)
-#define NUM_TRANS_X (18)
-#define NUM_TRANS_Y (14)
 
 typedef struct {
   const char* name;
@@ -67,16 +63,17 @@ void* holo(void* autd) {
   void* m = NULL;
   AUTDModulationSine(&m, 150, 1.0, 0.5);
 
-  double x = TRANS_SPACING_MM * (((double)NUM_TRANS_X - 1.0) / 2.0);
-  double y = TRANS_SPACING_MM * (((double)NUM_TRANS_Y - 1.0) / 2.0);
+  double x = 90.0;
+  double y = 70.0;
   double z = 150.0;
 
   void* backend = NULL;
   AUTDEigenBackend(&backend);
 
   void* g = select_opt(backend);
-  double v = 1.0;
-  AUTDSetConstraint(g, 2, &v);
+  void* constraint = NULL;
+  AUTDConstraintUniform(&constraint, 1.0);
+  AUTDSetConstraint(g, constraint);
 
   AUTDGainHoloAdd(g, x + 30.0, y, z, 1.0);
   AUTDGainHoloAdd(g, x - 30.0, y, z, 1.0);
