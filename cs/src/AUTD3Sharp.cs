@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/10/2022
+ * Last Modified: 25/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,13 +13,8 @@
 
 
 #if UNITY_2018_3_OR_NEWER
-#define LEFT_HANDED
-#define DIMENSION_M
 #define USE_SINGLE
-#else
-#define RIGHT_HANDED
-#define DIMENSION_MM
-#define USE_DOUBLE
+#define DIMENSION_M
 #endif
 
 using Microsoft.Win32.SafeHandles;
@@ -67,23 +62,23 @@ namespace AUTD3Sharp
         #region const
 #if USE_SINGLE
 #if DIMENSION_M
-        public const float MeterScale = 1000.0f;
+        public const float Millimeter = 1e-3f;
 #else
-        public const float MeterScale = 1;
+        public const float Millimeter = 1;
 #endif
-        public const float DeviceWidth = 192.0f / MeterScale;
-        public const float DeviceHeight = 151.4f / MeterScale;
-        public const float TransSpacing = 10.16f / MeterScale;
+        public const float DeviceWidth = 192.0f * Millimeter;
+        public const float DeviceHeight = 151.4f * Millimeter;
+        public const float TransSpacing = 10.16f * Millimeter;
         public const float Pi = Math.PI;
 #else
 #if DIMENSION_M
-        public const double MeterScale = 1000.0;
+        public const double Millimeter = 1e-3;
 #else
-        public const double MeterScale = 1;
+        public const double Millimeter = 1;
 #endif
-        public const double DeviceWidth = 192.0 / MeterScale;
-        public const double DeviceHeight = 151.4 / MeterScale;
-        public const double TransSpacing = 10.16 / MeterScale;
+        public const double DeviceWidth = 192.0 * Millimeter;
+        public const double DeviceHeight = 151.4 * Millimeter;
+        public const double TransSpacing = 10.16 * Millimeter;
         public const double Pi = Math.PI;
 #endif
         public const int NumTransInDevice = 249;
@@ -93,17 +88,11 @@ namespace AUTD3Sharp
         #endregion
     }
 
-    public static class GeometryAdjust
+    public static class TypeHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static (double, double, double) Adjust(Vector3 vector, bool scaling = true)
+        internal static (double, double, double) Convert(Vector3 vector)
         {
-#if LEFT_HANDED
-            vector.z = -vector.z;
-#endif
-#if DIMENSION_M
-            if (scaling) vector = vector * AUTD3.MeterScale;
-#endif
 #if USE_SINGLE
             return ((double)vector.x, (double)vector.y, (double)vector.z);
 #else
@@ -112,29 +101,19 @@ namespace AUTD3Sharp
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Vector3 Adjust(double x, double y, double z, bool scaling = true)
+        internal static Vector3 Convert(double x, double y, double z)
         {
 #if USE_SINGLE
             var vector = new Vector3((float)x, (float)y, (float)z);
 #else
             var vector = new Vector3(x, y, z);
 #endif
-#if LEFT_HANDED
-            vector.z = -vector.z;
-#endif
-#if DIMENSION_M
-            if (scaling) vector /= AUTD3.MeterScale;
-#endif
             return vector;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static (double, double, double, double) Adjust(Quaternion quaternion)
+        internal static (double, double, double, double) Convert(Quaternion quaternion)
         {
-#if LEFT_HANDED
-            quaternion.z = -quaternion.z;
-            quaternion.w = -quaternion.w;
-#endif
 #if USE_SINGLE
             return ((double)quaternion.w, (double)quaternion.x, (double)quaternion.y, (double)quaternion.z);
 #else
@@ -163,7 +142,7 @@ namespace AUTD3Sharp
             get
             {
                 Base.AUTDTransPosition(_cnt, _devId, _trId, out var x, out var y, out var z);
-                return GeometryAdjust.Adjust(x, y, z);
+                return TypeHelper.Convert(x, y, z);
             }
         }
 
@@ -172,7 +151,7 @@ namespace AUTD3Sharp
             get
             {
                 Base.AUTDTransXDirection(_cnt, _devId, _trId, out var x, out var y, out var z);
-                return GeometryAdjust.Adjust(x, y, z, false);
+                return TypeHelper.Convert(x, y, z);
             }
         }
 
@@ -181,7 +160,7 @@ namespace AUTD3Sharp
             get
             {
                 Base.AUTDTransYDirection(_cnt, _devId, _trId, out var x, out var y, out var z);
-                return GeometryAdjust.Adjust(x, y, z, false);
+                return TypeHelper.Convert(x, y, z);
             }
         }
 
@@ -190,7 +169,7 @@ namespace AUTD3Sharp
             get
             {
                 Base.AUTDTransZDirection(_cnt, _devId, _trId, out var x, out var y, out var z);
-                return GeometryAdjust.Adjust(x, y, z, false);
+                return TypeHelper.Convert(x, y, z);
             }
         }
 
@@ -278,15 +257,15 @@ namespace AUTD3Sharp
 
         public int AddDevice(Vector3 position, Vector3 rotation)
         {
-            var (x, y, z) = GeometryAdjust.Adjust(position);
-            var (rx, ry, rz) = GeometryAdjust.Adjust(rotation, false);
+            var (x, y, z) = TypeHelper.Convert(position);
+            var (rx, ry, rz) = TypeHelper.Convert(rotation);
             return Base.AUTDAddDevice(CntPtr, x, y, z, rx, ry, rz);
         }
 
         public int AddDevice(Vector3 position, Quaternion quaternion)
         {
-            var (x, y, z) = GeometryAdjust.Adjust(position);
-            var (qw, qx, qy, qz) = GeometryAdjust.Adjust(quaternion);
+            var (x, y, z) = TypeHelper.Convert(position);
+            var (qw, qx, qy, qz) = TypeHelper.Convert(quaternion);
             return Base.AUTDAddDeviceQuaternion(CntPtr, x, y, z, qw, qx, qy, qz);
         }
 
@@ -573,7 +552,7 @@ namespace AUTD3Sharp
         {
             public Focus(Vector3 point, double amp = 1.0)
             {
-                var (x, y, z) = GeometryAdjust.Adjust(point);
+                var (x, y, z) = TypeHelper.Convert(point);
                 Base.AUTDGainFocus(out handle, x, y, z, amp);
             }
         }
@@ -595,8 +574,8 @@ namespace AUTD3Sharp
         {
             public BesselBeam(Vector3 point, Vector3 dir, double thetaZ, double amp = 1.0)
             {
-                var (x, y, z) = GeometryAdjust.Adjust(point);
-                var (dx, dy, dz) = GeometryAdjust.Adjust(dir, false);
+                var (x, y, z) = TypeHelper.Convert(point);
+                var (dx, dy, dz) = TypeHelper.Convert(dir);
                 Base.AUTDGainBesselBeam(out handle, x, y, z, dx, dy, dz, thetaZ, amp);
             }
         }
@@ -605,7 +584,7 @@ namespace AUTD3Sharp
         {
             public PlaneWave(Vector3 dir, double amp = 1.0)
             {
-                var (dx, dy, dz) = GeometryAdjust.Adjust(dir, false);
+                var (dx, dy, dz) = TypeHelper.Convert(dir);
                 Base.AUTDGainPlaneWave(out handle, dx, dy, dz, amp);
             }
         }
@@ -738,7 +717,7 @@ namespace AUTD3Sharp
 
             public bool Add(Vector3 point, byte shift = 0)
             {
-                var (x, y, z) = GeometryAdjust.Adjust(point);
+                var (x, y, z) = TypeHelper.Convert(point);
                 return Base.AUTDPointSTMAdd(handle, x, y, z, shift);
             }
         }
