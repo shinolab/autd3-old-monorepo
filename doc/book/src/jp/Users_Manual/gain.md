@@ -99,7 +99,7 @@ CUDA backendを使用するには[CUDA Toolkit](https://developer.nvidia.com/cud
   cmake .. -DBUILD_GAIN_HOLO=ON -DBUILD_BACKEND_CUDA=ON
 ```
 
-なお,  CUDA Toolkit version 11.7で動作を確認している.
+なお,  CUDA Toolkit version 11.8で動作を確認している.
 
 ### BLAS Backend
 

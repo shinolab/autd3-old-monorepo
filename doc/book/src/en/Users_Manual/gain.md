@@ -107,7 +107,7 @@ To build a CUDA backend, install the [CUDA Toolkit](https://developer.nvidia.com
   cmake ... -DBUILD_GAIN_HOLO=ON -DBUILD_BACKEND_CUDA=ON
 ```
 
-We have confirmed that it works with CUDA Toolkit version 11.7.
+We have confirmed that it works with CUDA Toolkit version 11.8.
 
 ### BLAS Backend
 
