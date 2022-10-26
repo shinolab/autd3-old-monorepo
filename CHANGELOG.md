@@ -1,6 +1,7 @@
 # 2.4.6
 
 - Rename `AUTDServer` to `TwinCATAUTDServer`
+- Fix [#36](https://github.com/shinolab/autd3/issues/36)
 
 # 2.4.5
 
