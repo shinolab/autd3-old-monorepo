@@ -33,6 +33,12 @@ _Noreturn
 #endif
 }
 
+void log_out(char* msg) {
+  printf("%s\n", msg);
+}
+
+void log_flush(void) {}
+
 int main() {
   void* cnt = NULL;
   void* link = NULL;
@@ -55,6 +61,8 @@ int main() {
   // AUTDGetAdapter(adapter_list, i, desc, name);
   // AUTDFreeAdapterPointer(adapter_list);
   AUTDLinkSOEM(&link, NULL, 2, 2, false, (void*)callback, false);
+  AUTDLinkSOEMSetDefaultLogger((void*)log_out, (void*)log_flush);
+  AUTDLinkSOEMSetLogLevel(2);
 
   if (!AUTDOpenController(cnt, link) || !AUTDIsOpen(cnt)) {
     const int32_t error_size = AUTDGetLastError(NULL);
