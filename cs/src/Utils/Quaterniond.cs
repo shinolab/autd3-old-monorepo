@@ -4,7 +4,7 @@
  * Created Date: 02/07/2018
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/06/2022
+ * Last Modified: 26/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2019 Shun Suzuki. All rights reserved.
@@ -35,6 +35,10 @@ namespace AUTD3Sharp.Utils
         public double z { get; }
 #pragma warning restore IDE1006
         #endregion
+
+        public Quaterniond Normalized => this / L2Norm;
+        public double L2Norm => Math.Sqrt(L2NormSquared);
+        public double L2NormSquared => w * w + x * x + y * y + z * z;
 
         #region indexcer
         public double this[int index]
