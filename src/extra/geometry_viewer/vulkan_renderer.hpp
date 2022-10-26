@@ -3,7 +3,7 @@
 // Created Date: 24/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/10/2022
+// Last Modified: 26/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,6 +30,12 @@
 #include "vulkan_imgui.hpp"
 
 namespace autd3::extra::geometry_viewer {
+
+#ifdef AUTD3_USE_METER
+constexpr float GL_SCALE = 1;
+#else
+constexpr float GL_SCALE = 1e-3;
+#endif
 
 struct UniformBufferObject {
   glm::mat4 view;
@@ -610,7 +616,7 @@ class VulkanRenderer {
     size_t dev = 0;
     for (const auto& [pos, rot] : model.geometries()) {
       if (!imgui.show[dev++]) continue;
-      auto matrix = translate(glm::identity<glm::mat4>(), helper::to_gl_pos(pos));
+      auto matrix = translate(glm::identity<glm::mat4>(), helper::to_gl_pos(pos) * GL_SCALE);
       matrix = matrix * mat4_cast(helper::to_gl_rot(rot));
 
       for (const auto& [first_index, index_count, material_index] : model.primitives()) {
@@ -631,13 +637,13 @@ class VulkanRenderer {
 
   void update_uniform_buffer(const size_t current_image, const VulkanImGui& imgui) {
     const auto rot = helper::to_gl_rot(glm::quat(radians(imgui.camera_rot)));
-    const auto p = helper::to_gl_pos(imgui.camera_pos);
+    const auto p = helper::to_gl_pos(imgui.camera_pos) * GL_SCALE;
     const auto view = helper::orthogonal(p, rot);
     UniformBufferObject ubo{
         view,
         glm::perspective(glm::radians(imgui.fov), static_cast<float>(_swap_chain_extent.width) / static_cast<float>(_swap_chain_extent.height), 0.1f,
                          10.0f),
-        glm::vec4(helper::to_gl_pos(imgui.light_pos), 1.0f), glm::vec4(p, 1.0f)};
+        glm::vec4(helper::to_gl_pos(imgui.light_pos) * GL_SCALE, 1.0f), glm::vec4(p, 1.0f)};
     ubo.proj[1][1] *= -1;
 
     void* data;
