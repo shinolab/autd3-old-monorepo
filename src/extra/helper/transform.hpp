@@ -3,7 +3,7 @@
 // Created Date: 02/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/10/2022
+// Last Modified: 26/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,18 +13,10 @@
 
 namespace autd3::extra::helper {
 inline glm::vec3 to_gl_pos(glm::vec3 v) {
-#ifdef AUTD3_USE_METER
 #ifdef AUTD3_USE_LEFT_HANDED
   return glm::vec3(v.x, v.y, -v.z);
 #else
   return glm::vec3(v.x, v.y, v.z);
-#endif
-#else
-#ifdef AUTD3_USE_LEFT_HANDED
-  return glm::vec3(v.x, v.y, -v.z) / 1000.0f;
-#else
-  return glm::vec3(v.x, v.y, v.z) / 1000.0f;
-#endif
 #endif
 }
 

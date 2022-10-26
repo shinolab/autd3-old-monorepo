@@ -3,7 +3,7 @@
 // Created Date: 27/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/10/2022
+// Last Modified: 26/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -117,25 +117,14 @@ class VulkanImGui {
     const auto up = glm::vec3(rot_mat * glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
     const auto forward = glm::vec3(rot_mat * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 
-    const auto center =
-        helper::to_gl_pos(pos + right * static_cast<float>(driver::DEVICE_WIDTH) / 2.0f + up * static_cast<float>(driver::DEVICE_HEIGHT) / 2.0f);
-
-#ifdef AUTD3_USE_LEFT_HANDED
-    const auto cam_pos_autd =
-        pos + right * static_cast<float>(driver::DEVICE_WIDTH) / 2.0f - up * static_cast<float>(driver::DEVICE_HEIGHT) - forward * 300.0f * SCALE;
-#else
-    const auto cam_pos_autd =
+    const auto center = pos + right * static_cast<float>(driver::DEVICE_WIDTH) / 2.0f + up * static_cast<float>(driver::DEVICE_HEIGHT) / 2.0f;
+    const auto cam_pos =
         pos + right * static_cast<float>(driver::DEVICE_WIDTH) / 2.0f - up * static_cast<float>(driver::DEVICE_HEIGHT) + forward * 300.0f * SCALE;
-#endif
-    const auto cam_pos = helper::to_gl_pos(cam_pos_autd);
-
     const auto cam_view = lookAt(cam_pos, center, forward);
 
-    const auto angles = degrees(eulerAngles(helper::to_gl_rot(quat_cast(transpose(cam_view)))));
-
-    camera_pos = cam_pos_autd;
-    camera_rot = angles;
-    light_pos = cam_pos_autd;
+    camera_pos = helper::to_gl_pos(cam_pos);
+    camera_rot = degrees(eulerAngles(helper::to_gl_rot(quat_cast(transpose(cam_view)))));
+    light_pos = camera_pos;
 
     show = std::make_unique<bool[]>(_geometries.size());
     std::fill_n(show.get(), _geometries.size(), true);
