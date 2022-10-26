@@ -34,7 +34,7 @@ namespace autd3::extra::geometry_viewer {
 #ifdef AUTD3_USE_METER
 constexpr float GL_SCALE = 1;
 #else
-constexpr float GL_SCALE = 1e-3;
+constexpr float GL_SCALE = 1e-3f;
 #endif
 
 struct UniformBufferObject {
