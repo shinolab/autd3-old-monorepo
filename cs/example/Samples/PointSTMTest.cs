@@ -28,7 +28,7 @@ internal static class PointSTMTest
         var mod = new Static();
         autd.Send(mod);
 
-        var center = autd.Geometry.Center;
+        var center = autd.Geometry.Center + new Vector3d(0, 0, 150);
         var stm = new PointSTM();
         const int pointNum = 200;
         for (var i = 0; i < pointNum; i++)

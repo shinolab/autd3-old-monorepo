@@ -28,7 +28,7 @@ internal static class GainSTMTest
 
         var mod = new Static();
 
-        var center = autd.Geometry.Center;
+        var center = autd.Geometry.Center + new Vector3d(0, 0, 150);
         var stm = new GainSTM(autd);
         const int pointNum = 200;
         for (var i = 0; i < pointNum; i++)
