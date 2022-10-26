@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/08/2022
+ * Last Modified: 26/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,8 +30,8 @@ impl Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            sync0_cycle: 1,
-            send_cycle: 1,
+            sync0_cycle: 2,
+            send_cycle: 2,
             high_precision_timer: false,
             sync_mode: SyncMode::DC,
             ifname: String::new(),

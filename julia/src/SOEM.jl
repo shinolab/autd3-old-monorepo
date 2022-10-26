@@ -3,7 +3,7 @@
 # Created Date: 13/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 10/10/2022
+# Last Modified: 26/10/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,7 +11,7 @@
 
 struct SOEM
     _link::Link
-    function SOEM(; ifname::String="", send_cycle=1, sync0_cycle=1, freerun::Bool=false, on_lost=Nothing, high_precision::Bool=false)
+    function SOEM(; ifname::String="", send_cycle=2, sync0_cycle=2, freerun::Bool=false, on_lost=Nothing, high_precision::Bool=false)
         chandle = Ref(Ptr{Cvoid}(0))
         if on_lost == Nothing
             if ifname == ""

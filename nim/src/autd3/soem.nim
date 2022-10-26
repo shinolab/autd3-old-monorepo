@@ -3,7 +3,7 @@
 # Created Date: 11/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 14/08/2022
+# Last Modified: 26/10/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -47,8 +47,8 @@ proc enumerateAdapters*(_: typedesc[SOEM]): seq[Adapter] =
 
 func initSOEM*(): SOEM =
   result.ifname = cast[cstring](pointer(nil))
-  result.sync0Cycle = 1
-  result.sendCycle = 1
+  result.sync0Cycle = 2
+  result.sendCycle = 2
   result.highPrecision = false
   result.onLost = nil
   result.freerun = false

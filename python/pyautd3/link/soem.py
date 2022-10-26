@@ -4,7 +4,7 @@ Project: link
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 21/10/2022
+Last Modified: 26/10/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,8 +24,8 @@ ErrorHandlerFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 class SOEM:
     def __init__(self):
         self._ifname = None
-        self._send_cycle = 1
-        self._sync0_cycle = 1
+        self._send_cycle = 2
+        self._sync0_cycle = 2
         self._on_lost = None
         self._high_precision = False
         self._freerun = False
