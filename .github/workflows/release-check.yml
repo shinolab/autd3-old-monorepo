@@ -52,6 +52,7 @@ jobs:
           copy dist/GUI/bin -Recurse publish/gui-controller/bin
           copy dist/GUI/AUTD3-GUI-Controller.exe publish/gui-controller
           copy build/dist/simulator/Release/*.exe build/publish/simulator
+          copy dist/simulator/settings.json build/publish/simulator
           Remove-Item -Recurse -Force dist/TwinCATAUTDServer/src
           Compress-Archive -Path LICENSE, NOTICE, dist/TwinCATAUTDServer, dist/firmware, include, build/publish/lib, build/publish/bin, build/publish/simulator, publish/gui-controller -DestinationPath assets_x64.zip
 
