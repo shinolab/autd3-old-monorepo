@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2022
+ * Last Modified: 26/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -52,8 +52,8 @@ namespace AUTD3Sharp
             public SOEM()
             {
                 _ifname = "";
-                _sendCycle = 1;
-                _sync0Cycle = 1;
+                _sendCycle = 2;
+                _sync0Cycle = 2;
                 _freerun = false;
                 _highPrecision = false;
                 _onLost = null;

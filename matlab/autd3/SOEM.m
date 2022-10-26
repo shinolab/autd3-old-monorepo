@@ -4,7 +4,7 @@
 %Created Date: 07/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 10/10/2022
+%Last Modified: 26/10/2022
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,8 +27,8 @@ classdef SOEM < handle
         function obj = SOEM()
             obj.ptr = libpointer('voidPtr', 0);
             obj.ifname_ = libpointer('int8Ptr', 0);
-            obj.sync0_cycle_ = 1;
-            obj.send_cycle_ = 1;
+            obj.sync0_cycle_ = 2;
+            obj.send_cycle_ = 2;
             obj.freerun_ = false;
             obj.high_precision_ = false;
         end
