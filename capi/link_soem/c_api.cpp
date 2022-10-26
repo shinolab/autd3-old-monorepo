@@ -58,7 +58,7 @@ void AUTDLinkSOEM(void** out, const char* ifname, const uint16_t sync0_cycle, co
 void AUTDLinkSOEMSetLogLevel(const int32_t level) { spdlog::set_level(static_cast<spdlog::level::level_enum>(level)); }
 
 void AUTDLinkSOEMSetDefaultLogger(void* out, void* flush) {
-  auto custom_sink = std::make_shared<autd3::capi::custom_sink_st>(out, flush);
+  auto custom_sink = std::make_shared<autd3::capi::custom_sink_mt>(out, flush);
   const auto logger = std::make_shared<spdlog::logger>("custom_logger", custom_sink);
   set_default_logger(logger);
 }

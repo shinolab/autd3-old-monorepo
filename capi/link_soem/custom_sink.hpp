@@ -11,7 +11,8 @@
 
 #pragma once
 
-#include "spdlog/details/null_mutex.h"
+#include <mutex>
+
 #include "spdlog/sinks/base_sink.h"
 
 namespace autd3::capi {
@@ -39,6 +40,6 @@ class CustomSink final : public spdlog::sinks::base_sink<Mutex> {
   std::function<void()> _flush;
 };
 
-using custom_sink_st = CustomSink<spdlog::details::null_mutex>;
+using custom_sink_mt = CustomSink<std::mutex>;
 
 }  // namespace autd3::capi
