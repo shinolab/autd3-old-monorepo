@@ -2,6 +2,7 @@
 
 - Rename `AUTDServer` to `TwinCATAUTDServer`
 - Fix [#36](https://github.com/shinolab/autd3/issues/36)
+- Add log settings in SOEM Link CAPI
 
 # 2.4.5
 
