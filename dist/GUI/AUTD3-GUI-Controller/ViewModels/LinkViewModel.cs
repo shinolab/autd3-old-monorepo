@@ -4,7 +4,7 @@
  * Created Date: 18/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/10/2022
+ * Last Modified: 29/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -89,14 +89,6 @@ public partial class LinkViewModel
     async partial void OnLocalAmsNetIdChanged(string value) => await _localSettingsService.SaveSettingAsync(nameof(LocalAmsNetId), value);
 
     [ObservableProperty]
-    private ushort _port;
-    async partial void OnPortChanged(ushort value) => await _localSettingsService.SaveSettingAsync(nameof(Port), value);
-
-    [ObservableProperty]
-    private string _simulatorIp;
-    async partial void OnSimulatorIpChanged(string value) => await _localSettingsService.SaveSettingAsync(nameof(SimulatorIp), value);
-
-    [ObservableProperty]
     private int _checkTrials;
     async partial void OnCheckTrialsChanged(int value) => await _localSettingsService.SaveSettingAsync(nameof(CheckTrials), value);
 
@@ -151,7 +143,7 @@ public partial class LinkViewModel
     {
         await Task.Run(() =>
           {
-              new AUTD3Sharp.Extra.Simulator().SettingsPath("simulator_settings.json").Port(Port).Ip(SimulatorIp).Run();
+              new AUTD3Sharp.Extra.Simulator().SettingsPath("simulator_settings.json").Run();
           });
     }
 
@@ -177,9 +169,6 @@ public partial class LinkViewModel
         _remoteIp = _localSettingsService.ReadSetting<string>(nameof(RemoteIp)) ?? "";
         _remoteAmsNetId = _localSettingsService.ReadSetting<string>(nameof(RemoteAmsNetId)) ?? "";
         _localAmsNetId = _localSettingsService.ReadSetting<string>(nameof(LocalAmsNetId)) ?? "";
-
-        _port = _localSettingsService.ReadSetting<ushort?>(nameof(Port)) ?? 50632;
-        _simulatorIp = _localSettingsService.ReadSetting<string?>(nameof(SimulatorIp)) ?? "127.0.0.1";
 
         _checkTrials = _localSettingsService.ReadSetting<int?>(nameof(CheckTrials)) ?? 0;
         _sendIntervals = _localSettingsService.ReadSetting<int?>(nameof(SendIntervals)) ?? 1;
