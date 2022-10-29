@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/10/2022
+ * Last Modified: 29/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -169,30 +169,14 @@ namespace AUTD3Sharp
 
         public sealed class Simulator
         {
-            private ushort _port;
-            private string _ipAddr;
 
             public Simulator()
             {
-                _port = 50632;
-                _ipAddr = "127.0.0.1";
-            }
-
-            public Simulator Port(ushort port)
-            {
-                _port = port;
-                return this;
-            }
-
-            public Simulator IpAddr(string ipAddr)
-            {
-                _ipAddr = ipAddr;
-                return this;
             }
 
             public Link Build()
             {
-                NativeMethods.LinkSimulator.AUTDLinkSimulator(out var handle, _port, _ipAddr);
+                NativeMethods.LinkSimulator.AUTDLinkSimulator(out var handle);
                 return new Link(handle);
             }
         }
