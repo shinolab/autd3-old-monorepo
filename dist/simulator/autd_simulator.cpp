@@ -3,7 +3,7 @@
 // Created Date: 10/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/10/2022
+// Last Modified: 29/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -34,8 +34,6 @@ int main() try {
     settings.camera_pos_y = settings.slice_pos_y - 600.0f;
     settings.camera_pos_z = settings.slice_pos_z;
     settings.camera_rot_x = 90.0f;
-    settings.port = 50632;
-    settings.ip = "127.0.0.1";
   }
 
   autd3::extra::Simulator().settings(&settings).run();

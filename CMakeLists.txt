@@ -199,8 +199,10 @@ endif()
 
 if(BUILD_SIMULATOR)
   execute_process(COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init -- ${PROJECT_SOURCE_DIR}/3rdparty/tinycolormap)
+  execute_process(COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init -- ${PROJECT_SOURCE_DIR}/3rdparty/smem)
   set(BUILD_LINK_SIMULATOR ON)
   add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/tinycolormap)
+  add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/smem)
   add_subdirectory(src/extra/simulator)
 endif()
 
