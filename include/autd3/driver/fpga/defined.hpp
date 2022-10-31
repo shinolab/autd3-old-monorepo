@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/10/2022
+// Last Modified: 31/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -45,8 +45,10 @@ constexpr size_t GAIN_STM_LEGACY_BUF_SIZE_MAX = 2048;
 
 constexpr uint16_t SILENCER_CYCLE_MIN = 1044;
 
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 26812)
+#endif
 class FPGAControlFlags final {
  public:
   enum VALUE : uint8_t {
@@ -107,7 +109,9 @@ class FPGAControlFlags final {
 
 inline std::ostream& operator<<(std::ostream& os, const FPGAControlFlags& flag) { return os << flag.to_string(); }
 
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 
 struct Drive {
   double phase;
