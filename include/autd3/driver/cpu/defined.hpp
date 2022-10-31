@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2022
+// Last Modified: 31/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -35,8 +35,10 @@ constexpr size_t MOD_BODY_DATA_SIZE = 124;
 constexpr size_t POINT_STM_HEAD_DATA_SIZE = 61;
 constexpr size_t POINT_STM_BODY_DATA_SIZE = 62;
 
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 26812)
+#endif
 class CPUControlFlags final {
  public:
   enum VALUE : uint8_t {
@@ -110,7 +112,9 @@ class CPUControlFlags final {
 
 inline std::ostream& operator<<(std::ostream& os, const CPUControlFlags& flag) { return os << flag.to_string(); }
 
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 
 enum class GainSTMMode : uint16_t {
   PhaseDutyFull = 0x0001,

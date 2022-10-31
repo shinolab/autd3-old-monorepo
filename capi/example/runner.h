@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/09/2022
+// Last Modified: 31/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,8 +11,10 @@
 
 #pragma once
 
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 6011 6386)
+#endif
 
 #include <stdlib.h>
 
@@ -145,4 +147,6 @@ int run(void* autd) {
   return 0;
 }
 
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
