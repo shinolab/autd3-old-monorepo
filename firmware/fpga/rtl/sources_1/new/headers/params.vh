@@ -4,14 +4,14 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/09/2022
+ * Last Modified: 31/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  * 
  */
 
-localparam bit [7:0] VERSION_NUM = 8'h84;
+localparam bit [7:0] VERSION_NUM = 8'h85;
 
 localparam string ENABLE_STM = "TRUE";
 localparam string ENABLE_MODULATOR = "TRUE";
