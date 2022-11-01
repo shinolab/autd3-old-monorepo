@@ -26,7 +26,7 @@ int main() {
 
   AUTDAddDevice(cnt, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 
-  AUTDLinkSimulator(&link, 50632, "127.0.0.1");
+  AUTDLinkSimulator(&link);
 
   if (!AUTDOpenController(cnt, link)) {
     const int32_t error_size = AUTDGetLastError(NULL);

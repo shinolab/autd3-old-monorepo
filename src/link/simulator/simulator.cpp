@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/10/2022
+// Last Modified: 29/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,26 +11,18 @@
 
 #include "autd3/link/simulator.hpp"
 
-#if WIN32
-#include <WS2tcpip.h>
-#else
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
-#endif
+#include <smem/smem.hpp>
+#include <thread>
 
 #include "autd3/core/interface.hpp"
 #include "autd3/core/link.hpp"
 #include "autd3/driver/cpu/ec_config.hpp"
-#include "autd3/extra/cpu_emulator.hpp"
 
 namespace autd3::link {
 
 class SimulatorImpl final : public core::Link {
  public:
-  explicit SimulatorImpl(const uint16_t port, std::string ip_addr) : Link(), _is_open(false), _port(port), _ip_addr(std::move(ip_addr)) {}
+  SimulatorImpl() noexcept : Link() {}
   ~SimulatorImpl() override { close(); }
   SimulatorImpl(const SimulatorImpl& v) noexcept = delete;
   SimulatorImpl& operator=(const SimulatorImpl& obj) = delete;
@@ -40,92 +32,43 @@ class SimulatorImpl final : public core::Link {
   void open(const core::Geometry& geometry) override {
     if (is_open()) return;
 
-#if WIN32
-#pragma warning(push)
-#pragma warning(disable : 6031)
-    WSAData wsa_data{};
-    WSAStartup(MAKEWORD(2, 0), &wsa_data);
-#pragma warning(pop)
-#endif
+    const auto size = driver::HEADER_SIZE + geometry.num_devices() * (driver::BODY_SIZE + driver::EC_INPUT_FRAME_SIZE);
+    _smem.create("autd3_simulator_smem", size);
+    _ptr = static_cast<uint8_t*>(_smem.map());
 
-    _socket = socket(AF_INET, SOCK_DGRAM, 0);
-#if WIN32
-    if (_socket == INVALID_SOCKET)
-#else
-    if (_socket < 0)
-#endif
-      throw std::runtime_error("cannot connect to simulator");
-
-    _addr.sin_family = AF_INET;
-    _addr.sin_port = htons(_port);
-#if WIN32
-    inet_pton(AF_INET, _ip_addr.c_str(), &_addr.sin_addr.S_un.S_addr);
-#else
-    _addr.sin_addr.s_addr = inet_addr(_ip_addr.c_str());
-#endif
-
-    _is_open = true;
     _num_devices = geometry.num_devices();
-    _cpus.reserve(_num_devices);
-    for (size_t i = 0; i < _num_devices; i++) {
-      extra::CPU cpu(i, false);
-      cpu.init();
-      _cpus.emplace_back(cpu);
-    }
 
     send(simulator_init_datagram(geometry));
+    while (_ptr[0] == driver::MSG_SIMULATOR_INIT) std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
 
   void close() override {
     if (!is_open()) return;
-    _is_open = false;
-
     send(simulator_close_datagram(_num_devices));
 
-    _cpus.clear();
-
-#if WIN32
-    closesocket(_socket);
-    WSACleanup();
-#else
-    ::close(_socket);
-#endif
+    _smem.unmap();
+    _ptr = nullptr;
   }
 
   bool send(const driver::TxDatagram& tx) override {
-    if (sendto(_socket, reinterpret_cast<const char*>(tx.data().data()), static_cast<int>(tx.effective_size()), 0,
-               reinterpret_cast<sockaddr*>(&_addr), sizeof _addr) == -1)
-      throw std::runtime_error("failed to send data");
-
-    for (size_t i = 0; i < tx.size(); i++) _cpus[i].send(tx);
-
+    if (_ptr == nullptr) return false;
+    std::memcpy(_ptr, tx.data().data(), tx.effective_size());
     return true;
   }
 
   bool receive(driver::RxDatagram& rx) override {
-    for (size_t i = 0; i < _num_devices; i++) {
-      rx[i].msg_id = _cpus[i].msg_id();
-      rx[i].ack = _cpus[i].ack();
-    }
+    if (_ptr == nullptr) return false;
+    rx.copy_from(reinterpret_cast<const driver::RxMessage*>(_ptr + driver::HEADER_SIZE + _num_devices * driver::BODY_SIZE));
     return true;
   }
 
-  bool is_open() override { return _is_open; }
+  bool is_open() override { return _ptr != nullptr; }
 
  private:
-  bool _is_open;
-  uint16_t _port;
-  std::string _ip_addr;
-#if WIN32
-  SOCKET _socket{};
-#else
-  int _socket{0};
-#endif
-  sockaddr_in _addr{};
-
   size_t _num_devices{0};
 
-  std::vector<extra::CPU> _cpus;
+  smem::SMem _smem;
+  uint8_t* _ptr{nullptr};
 
   static driver::TxDatagram simulator_init_datagram(const core::Geometry& geometry) {
     driver::TxDatagram buf(geometry.num_devices());
@@ -133,7 +76,7 @@ class SimulatorImpl final : public core::Link {
     uh.msg_id = driver::MSG_SIMULATOR_INIT;
     uh.fpga_flag = driver::FPGAControlFlags::NONE;
     uh.cpu_flag = driver::CPUControlFlags::NONE;
-    uh.size = 0;
+    uh.size = static_cast<uint8_t>(geometry.num_devices());
     for (size_t i = 0; i < geometry.num_devices(); i++) {
 #ifdef AUTD3_USE_METER
       constexpr float scale = 1e3f;
@@ -176,8 +119,9 @@ class SimulatorImpl final : public core::Link {
     return buf;
   }
 };
+
 core::LinkPtr Simulator::build() const {
-  core::LinkPtr link = std::make_unique<SimulatorImpl>(_port, _ip_addr);
+  core::LinkPtr link = std::make_unique<SimulatorImpl>();
   return link;
 }
 
