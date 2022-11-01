@@ -468,8 +468,13 @@ TEST(VersionTest, FirmwareInfo) {
   }
   {
     const autd3::driver::FirmwareInfo info(0, 133, 133, 0);
-    EXPECT_EQ("unknown (133)", info.cpu_version());
-    EXPECT_EQ("unknown (133)", info.fpga_version());
+    EXPECT_EQ("v2.5", info.cpu_version());
+    EXPECT_EQ("v2.5", info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 134, 134, 0);
+    EXPECT_EQ("unknown (134)", info.cpu_version());
+    EXPECT_EQ("unknown (134)", info.fpga_version());
   }
 }
 
