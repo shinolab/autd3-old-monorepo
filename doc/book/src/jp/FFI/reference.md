@@ -1413,8 +1413,6 @@ Simulator linkを作成する.
 | Argument name / return | type     | in/out | description                         |
 | ---------------------- | -------- | ------ | ----------------------------------- |
 | out                    | void**   | out    | pointer to pointer to Simulator link |
-| port                   | uint16_t | in     | port number                         |
-| ip_addr                | char*    | in     | ip address (localhost if null)      |
 | return                 | void     | -      | -                                   |
 
 ## AUTDLinkRemoteTwinCAT (autd3capi-link-remote-twincat)
@@ -1535,13 +1533,11 @@ Geometry Viewerを起動する.
 
 Simulatorを起動する.
 
-`settings_path`に設定ファイルが存在する場合, `port`, `ip`, `vsync`, `gpu_idx`は設定ファイルの内容が優先される.
+`settings_path`に設定ファイルが存在する場合, `vsync`, `gpu_idx`は設定ファイルの内容が優先される.
 
 | Argument name / return | type    | in/out | description                        |
 | ---------------------- | ------- | ------ | ---------------------------------- |
 | settings_path          | char*   | in     | path to setting file               |
-| port                   | uint16_t| in     | port                               |
-| ip                     | char*   | in     | ip address                         |
 | vsync                  | bool    | in     | vsync                              |
 | gpu_idx                | int32_t | in     | GPU index                          |
 | return                 | void    | -      | -                                  |

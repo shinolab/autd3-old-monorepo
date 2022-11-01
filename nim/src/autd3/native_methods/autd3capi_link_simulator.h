@@ -12,4 +12,4 @@
 #  endif
 #endif
 
-void AUTDLinkSimulator(void** out, uint16 port, char* ip_addr);
+void AUTDLinkSimulator(void** out);

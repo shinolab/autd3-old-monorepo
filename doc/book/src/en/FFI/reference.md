@@ -1283,8 +1283,6 @@ Create Simulator link.
 | Argument name / return | type     | in/out | description                         |
 | ---------------------- | -------- | ------ | ----------------------------------- |
 | out                    | void**   | out    | pointer to pointer to Simulator link |
-| port                   | uint16_t | in     | port number                         |
-| ip_addr                | char*    | in     | ip address (localhost if null)      |
 | return                 | void     | -      | -                                   |
 
 ## AUTDLinkRemoteTwinCAT (autd3capi-link-remote-twincat)
@@ -1405,13 +1403,11 @@ Run Geometry Viewer.
 
 Run Simulator.
 
-If a configuration file exists in `settings_path`, the parameters (`port`, `ip`, `vsync`, and `gpu_idx`) are overridden by the contents of the configuration file.
+If a configuration file exists in `settings_path`, the parameters (`vsync`, and `gpu_idx`) are overridden by the contents of the configuration file.
 
 | Argument name / return | type    | in/out | description                        |
 | ---------------------- | ------- | ------ | ---------------------------------- |
 | settings_path          | char*   | in     | path to setting file               |
-| port                   | uint16_t| in     | port                               |
-| ip                     | char*   | in     | ip address                         |
 | vsync                  | bool    | in     | vsync                              |
 | gpu_idx                | int32_t | in     | GPU index                          |
 | return                 | void    | -      | -                                  |
