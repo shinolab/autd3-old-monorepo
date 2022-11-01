@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/10/2022
+// Last Modified: 01/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@
 #include "fpga_emulator.hpp"
 
 namespace autd3::extra::cpu {
-constexpr uint16_t CPU_VERSION = 0x84;
+constexpr uint16_t CPU_VERSION = 0x85;
 
 constexpr uint8_t BRAM_SELECT_CONTROLLER = 0x0;
 constexpr uint8_t BRAM_SELECT_MOD = 0x1;
