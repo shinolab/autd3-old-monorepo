@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/10/2022
+// Last Modified: 01/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,8 +12,6 @@
 #pragma once
 
 #include <memory>
-#include <string>
-#include <utility>
 
 #include "autd3/core/link.hpp"
 

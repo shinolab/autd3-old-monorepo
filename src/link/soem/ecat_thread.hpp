@@ -17,17 +17,18 @@
 #include <string>
 #include <vector>
 
+#include "iomap.hpp"
+
 extern "C" {
 #include "./ethercat.h"
 }
-#include "error_handler.hpp"
 
 #if WIN32
-#include "win32.hpp"
+#include "ecat_thread/win32.hpp"
 #elif __APPLE__
-#include "macosx.hpp"
+#include "ecat_thread/macosx.hpp"
 #else
-#include "linux.hpp"
+#include "ecat_thread/linux.hpp"
 #endif
 
 #if _MSC_VER
@@ -70,11 +71,11 @@ inline void print_stats(const std::string& header, const std::vector<int64_t>& s
     max = std::max(max, s);
     sum += s;
   }
-  int64_t ave = sum / stats.size();
+  const auto ave = sum / static_cast<int64_t>(stats.size());
   int64_t std = 0;
   for (const auto s : stats) std += (s - ave) * (s - ave);
-  std = std::sqrt(static_cast<double>(std / stats.size()));
-  spdlog::debug("{}: {}+/-{} (Max.{} Min.{}) [us]", header, ave / 1000, std / 1000.0, max / 1000, min / 1000);
+  const auto stdd = std::sqrt(static_cast<double>(std) / static_cast<double>(stats.size()));
+  spdlog::debug("{}: {}+/-{} (Max.{} Min.{}) [us]", header, ave / 1000, stdd / 1000.0, max / 1000, min / 1000);
 }
 
 using wait_func = void(const timespec&);
@@ -136,8 +137,8 @@ void ecat_run_(std::atomic<bool>* is_open, std::atomic<int32_t>* wkc, int64_t cy
 #endif
 }
 
-void ecat_run(const bool high_precision, std::atomic<bool>* is_open, std::atomic<int32_t>* wkc, const int64_t cycletime_ns, std::mutex& mtx,
-              std::queue<driver::TxDatagram>& send_queue, IOMap& io_map) {
+inline void ecat_run(const bool high_precision, std::atomic<bool>* is_open, std::atomic<int32_t>* wkc, const int64_t cycletime_ns, std::mutex& mtx,
+                     std::queue<driver::TxDatagram>& send_queue, IOMap& io_map) {
   if (high_precision)
     ecat_run_<timed_wait_h>(is_open, wkc, cycletime_ns, mtx, send_queue, io_map);
   else
