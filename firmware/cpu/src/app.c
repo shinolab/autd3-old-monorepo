@@ -485,11 +485,11 @@ inline static uint16_t read_fpga_info(void) { return bram_read(BRAM_SELECT_CONTR
 void init_app(void) { clear(); }
 
 void update(void) {
-  if ((ECATC.AL_STATUS.WORD & 0x10) == 0) {
-    _wdt_cnt = WDT_CNT_MAX;
-  } else {
+  if (((ECATC.AL_STATUS.WORD & 0x10) != 0) || (ECATC.AL_STATUS_CODE.WORD == 0x001A)) {
     if (_wdt_cnt < 0) return;
     if (_wdt_cnt-- == 0) clear();
+  } else {
+    _wdt_cnt = WDT_CNT_MAX;
   }
 
   switch (_msg_id) {
