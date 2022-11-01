@@ -248,10 +248,8 @@ SimulatorのLinkを使用する際は`autd3/link/simulator.hpp`ヘッダーを�
 
 ...
 
-  auto link = autd3::link::Simulator().port(50632).build();
+  auto link = autd3::link::Simulator().build();
 ```
-
-ポート番号はAUTD Simulatorの設定と同じにしておく.
 
 [^fn_remote_twin]: 無線LANでも可
 
