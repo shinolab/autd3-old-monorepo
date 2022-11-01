@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 01/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -78,7 +78,7 @@ struct FirmwareInfo {
     if (version_num <= 0x06) return "v0." + std::to_string(version_num + 3);
     if (version_num <= 0x09) return "unknown (" + std::to_string(static_cast<int>(version_num)) + ")";
     if (version_num <= 0x15) return "v1." + std::to_string(version_num - 0x0A);
-    if (version_num <= 0x84) return "v2." + std::to_string(version_num - 0x80);
+    if (version_num <= 0x85) return "v2." + std::to_string(version_num - 0x80);
     return "unknown (" + std::to_string(static_cast<int>(version_num)) + ")";
   }
 };
