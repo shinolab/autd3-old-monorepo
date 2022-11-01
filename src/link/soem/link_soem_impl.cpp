@@ -3,7 +3,7 @@
 // Created Date: 23/08/2019
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/10/2022
+// Last Modified: 01/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2019-2020 Shun Suzuki. All rights reserved.
@@ -44,22 +44,6 @@
 #include "autd3/link/soem.hpp"
 #include "ecat_thread/ecat_thread.hpp"
 
-namespace {
-std::string lookup_autd() {
-  spdlog::debug("looking for AUTD...");
-  const auto* adapters = ec_find_adapters();
-  for (const auto* adapter = adapters; adapter != nullptr; adapter = adapter->next) {
-    if (ec_init(adapter->name) <= 0) continue;
-    if (const auto wc = ec_config_init(0); wc <= 0) continue;
-    if (std::strcmp(ec_slave[1].name, "AUTD") == 0) {
-      spdlog::debug("AUTD found on {} ({})", adapter->name, adapter->desc);
-      return {adapter->name};
-    }
-  }
-  throw std::runtime_error("No AUTD3 devices found");
-}
-}  // namespace
-
 namespace autd3::link {
 
 bool SOEMLink::is_open() { return _is_open.load(); }
@@ -78,47 +62,64 @@ bool SOEMLink::receive(driver::RxDatagram& rx) {
   return true;
 }
 
-void SOEMLink::open(const core::Geometry& geometry) {
+void SOEMLink::open(const core::Geometry& geometry) { open_impl(geometry, 1); }
+
+void SOEMLink::open_impl(const core::Geometry& geometry, const int remining) {
   if (is_open()) return;
 
   std::queue<driver::TxDatagram>().swap(_send_buf);
+
   const auto cycle_time = driver::EC_CYCLE_TIME_BASE_NANO_SEC * _send_cycle;
-  _is_open.store(true);
-  std::atomic<int32_t> wkc;
-  _ecat_thread = std::thread([this, &wkc, cycle_time] {
-    ecat_run(this->_high_precision, &this->_is_open, &this->_is_running, &wkc, cycle_time, this->_send_mtx, this->_send_buf, this->_io_map);
-  });
+  spdlog::debug("send interval: {} [ns]", cycle_time);
 
   const auto dev_num = geometry.num_devices();
 
-  try {
-    if (_ifname.empty()) _ifname = lookup_autd();
-  } catch (std::runtime_error&) {
-    _is_open.store(false);
-    if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
-    throw;
-  }
-
-  spdlog::debug("interface name: {}", _ifname);
-
-  if (ec_init(_ifname.c_str()) <= 0) {
-    _is_open.store(false);
-    if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
-    throw std::runtime_error(fmt::format("No socket connection on {}", _ifname));
-  }
-
-  const auto wc = ec_config_init(0);
-  if (wc <= 0) {
-    _is_open.store(false);
-    if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
-    throw std::runtime_error("No slaves found");
-  }
-  for (auto i = 1; i <= wc; i++)
-    if (std::strcmp(ec_slave[i].name, "AUTD") != 0) {
+  int wc = 0;
+  if (_ifname.empty()) {
+    spdlog::debug("looking for AUTD...");
+    const auto* adapters = ec_find_adapters();
+    bool found = false;
+    for (const auto* adapter = adapters; adapter != nullptr; adapter = adapter->next) {
+      _ifname = std::string(adapter->name);
+      if (ec_init(_ifname.c_str()) <= 0) continue;
+      wc = ec_config_init(0);
+      if (wc <= 0) continue;
+      found = true;
+      for (auto i = 1; i <= wc; i++)
+        if (std::strcmp(ec_slave[1].name, "AUTD") != 0) {
+          found = false;
+          break;
+        }
+      if (found) {
+        spdlog::debug("AUTD found on {} ({})", adapter->name, adapter->desc);
+        break;
+      }
+    }
+    if (!found) {
       _is_open.store(false);
       if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
-      throw std::runtime_error(fmt::format("Slave[{}] is not AUTD3", i));
+      throw std::runtime_error("No AUTD3 devices found");
     }
+  } else {
+    spdlog::debug("interface name: {}", _ifname);
+    if (ec_init(_ifname.c_str()) <= 0) {
+      _is_open.store(false);
+      if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
+      throw std::runtime_error(fmt::format("No socket connection on {}", _ifname));
+    }
+    wc = ec_config_init(0);
+    if (wc <= 0) {
+      _is_open.store(false);
+      if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
+      throw std::runtime_error("No slaves found");
+    }
+    for (auto i = 1; i <= wc; i++)
+      if (std::strcmp(ec_slave[i].name, "AUTD") != 0) {
+        _is_open.store(false);
+        if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
+        throw std::runtime_error(fmt::format("Slave[{}] is not AUTD3", i));
+      }
+  }
 
   if (static_cast<size_t>(wc) != dev_num) {
     _is_open.store(false);
@@ -155,22 +156,32 @@ void SOEMLink::open(const core::Geometry& geometry) {
   spdlog::debug("Calculated workcounter {}", expected_wkc);
 
   ec_slave[0].state = EC_STATE_OPERATIONAL;
+
+  ec_send_processdata();
+  ec_receive_processdata(EC_TIMEOUTRET);
+
   ec_writestate(0);
 
-  _is_running = true;
-
-  spdlog::debug("send interval: {} [ns]", cycle_time);
+  _is_open.store(true);
+  std::atomic<int32_t> wkc;
+  _ecat_thread = std::thread([this, &wkc, cycle_time] {
+    ecat_run(this->_high_precision, &this->_is_open, &wkc, cycle_time, this->_send_mtx, this->_send_buf, this->_io_map);
+  });
 
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-  ec_statecheck(0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE * 5);
+  ec_statecheck(0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE);
 
   if (ec_slave[0].state != EC_STATE_OPERATIONAL) {
     _is_open.store(false);
-    _is_running = false;
     if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
-    if (this->_ecat_check_thread.joinable()) this->_ecat_check_thread.join();
-    throw std::runtime_error("One ore more slaves are not responding");
+    if (remining == 0)
+      throw std::runtime_error("One ore more slaves are not responding: " + std::to_string(ec_slave[0].state));
+    else {
+      spdlog::debug("failed to reach op mode. retry opening...");
+      open_impl(geometry, remining - 1);
+      return;
+    }
   }
 
   if (_sync_mode == SYNC_MODE::FREE_RUN) {
@@ -182,8 +193,8 @@ void SOEMLink::open(const core::Geometry& geometry) {
 
   _ecat_check_thread = std::thread([this, &wkc, expected_wkc] {
     while (this->_is_open.load()) {
-      if ((this->_is_running && (wkc.load() < expected_wkc)) || ec_group[0].docheckstate) error_handle(&this->_is_open, this->_on_lost);
-      std::this_thread::sleep_for(std::chrono::microseconds(100000));
+      if ((wkc.load() < expected_wkc) || ec_group[0].docheckstate) error_handle(&this->_is_open, this->_on_lost);
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
   });
 }
@@ -194,7 +205,6 @@ void SOEMLink::close() {
   while (!_send_buf.empty()) std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
   _is_open.store(false);
-  _is_running = false;
   if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
   if (this->_ecat_check_thread.joinable()) this->_ecat_check_thread.join();
 
