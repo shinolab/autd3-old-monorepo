@@ -245,7 +245,7 @@ When you use the Simulator link, include the ``autd3/link/simulator.hpp` header.
 
 ...
 
-  auto link = autd3::link::Simulator().port(50632).build();
+  auto link = autd3::link::Simulator().build();
 ```
 
 The port number should be the same as the AUTD Simulator settings.
