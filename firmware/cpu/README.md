@@ -1,10 +1,10 @@
 # AUTD3-CPU
 
-Version: 2.4
+Version: 2.5
 
 # CAUTION
 
-Some codes has omitted because they contain proprietary parts.
+Some codes have been omitted because they contain proprietary parts.
 
 # Document
 
