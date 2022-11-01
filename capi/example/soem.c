@@ -4,7 +4,7 @@
  * Created Date: 16/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/10/2022
+ * Last Modified: 01/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,9 +33,7 @@ _Noreturn
 #endif
 }
 
-void log_out(char* msg) {
-  printf("%s\n", msg);
-}
+void log_out(char* msg) { printf("%s\n", msg); }
 
 void log_flush(void) {}
 
@@ -60,7 +58,7 @@ int main() {
   // (void)getchar();
   // AUTDGetAdapter(adapter_list, i, desc, name);
   // AUTDFreeAdapterPointer(adapter_list);
-  AUTDLinkSOEM(&link, NULL, 2, 2, false, (void*)callback, false);
+  AUTDLinkSOEM(&link, NULL, 2, 2, false, (void*)callback, false, 100);
   AUTDLinkSOEMSetDefaultLogger((void*)log_out, (void*)log_flush);
   AUTDLinkSOEMSetLogLevel(2);
 

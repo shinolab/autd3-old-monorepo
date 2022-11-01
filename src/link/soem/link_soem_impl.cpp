@@ -194,7 +194,7 @@ void SOEMLink::open_impl(const core::Geometry& geometry, const int remining) {
   _ecat_check_thread = std::thread([this, &wkc, expected_wkc] {
     while (this->_is_open.load()) {
       if ((wkc.load() < expected_wkc) || ec_group[0].docheckstate) error_handle(&this->_is_open, this->_on_lost);
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+      std::this_thread::sleep_for(_state_check_interval);
     }
   });
 }
@@ -230,7 +230,7 @@ SOEMLink::~SOEMLink() {
 }
 
 core::LinkPtr SOEM::build() {
-  return std::make_unique<SOEMLink>(_high_precision, _ifname, _sync0_cycle, _send_cycle, std::move(_callback), _sync_mode);
+  return std::make_unique<SOEMLink>(_high_precision, _ifname, _sync0_cycle, _send_cycle, std::move(_callback), _sync_mode, _state_check_interval);
 }
 
 std::vector<EtherCATAdapter> SOEM::enumerate_adapters() {

@@ -74,7 +74,7 @@ struct IOMap {
 class SOEMLink final : public core::Link {
  public:
   SOEMLink(const bool high_precision, std::string ifname, const uint16_t sync0_cycle, const uint16_t send_cycle,
-           std::function<void(std::string)> on_lost, const SYNC_MODE sync_mode)
+           std::function<void(std::string)> on_lost, const SYNC_MODE sync_mode, const std::chrono::milliseconds state_check_interval)
       : Link(),
         _high_precision(high_precision),
         _ifname(std::move(ifname)),
@@ -82,7 +82,8 @@ class SOEMLink final : public core::Link {
         _send_cycle(send_cycle),
         _on_lost(std::move(on_lost)),
         _sync_mode(sync_mode),
-        _is_open(false) {}
+        _is_open(false),
+        _state_check_interval(state_check_interval) {}
   ~SOEMLink() override;
   SOEMLink(const SOEMLink& v) noexcept = delete;
   SOEMLink& operator=(const SOEMLink& obj) = delete;
@@ -115,6 +116,8 @@ class SOEMLink final : public core::Link {
 
   std::queue<driver::TxDatagram> _send_buf;
   std::mutex _send_mtx;
+
+  std::chrono::milliseconds _state_check_interval;
 
   void open_impl(const core::Geometry& geometry, int remaining);
 };

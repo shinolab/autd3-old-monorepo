@@ -1348,6 +1348,7 @@ Delete pointer to Adapter list.
 | freerun                | bool     | in     | free run mode                      |
 | on_lost                | void*    | in     | pointer to on-lost callback        |
 | high_precision         | bool     | in     | high precision mode                |
+| state_check_interval   | uint64_t | in     | state check interval in ms         |
 | return                 | void     | -      | -                                  |
 
 ## AUTDLinkTwinCAT (autd3capi-link-twincat)
