@@ -12,7 +12,9 @@
 #include <argparse/argparse.hpp>
 
 #include "autd3/link/soem.hpp"
+#include "local_interface.hpp"
 #include "soem_handler.hpp"
+#include "tcp_interface.hpp"
 
 int main(const int argc, char* argv[]) try {
   argparse::ArgumentParser program("SOEMAUTDServer", "2.5.0");
@@ -84,9 +86,31 @@ int main(const int argc, char* argv[]) try {
   const auto dev = soem_handler.open(1);
   spdlog::info("{} AUTDs found", dev);
 
-  spdlog::info("enter any key to quit...");
+  std::unique_ptr<autd3::publish::Interface> interf;
 
+  if (local_connection)
+    interf = std::make_unique<autd3::publish::LocalInterface>(dev);
+  else
+    interf = std::make_unique<autd3::publish::TcpInterface>();
+
+  bool run = true;
+  auto th = std::thread([&soem_handler, &run, dev, &interf] {
+    autd3::driver::TxDatagram tx(dev);
+    autd3::driver::RxDatagram rx(dev);
+    interf->connect();
+    while (run) {
+      if (interf->tx(tx)) soem_handler.send(tx);
+      soem_handler.receive(rx);
+      interf->rx(rx);
+    }
+    interf->close();
+  });
+
+  spdlog::info("enter any key to quit...");
   std::cin.ignore();
+
+  run = false;
+  if (th.joinable()) th.join();
 
   soem_handler.close();
 

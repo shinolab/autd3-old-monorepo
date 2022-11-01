@@ -6,15 +6,18 @@ file(GLOB_RECURSE SOEM_SRC_FILES ${SOEM_PATH}/soem/*.c ${SOEM_PATH}/osal/${OS}/*
 
 add_executable(SOEMAUTDServer
   soem_server.cpp
+  interface.hpp
+  local_interface.hpp
+  tcp_interface.hpp
   ${SOEM_SRC_FILES}
   ${PROJECT_SOURCE_DIR}/src/link/soem/ecat_thread.hpp
   ${PROJECT_SOURCE_DIR}/src/link/soem/error_handler.hpp
   ${PROJECT_SOURCE_DIR}/src/link/soem/soem_handler.hpp
   ${PROJECT_SOURCE_DIR}/src/link/soem/ecat_thread/${OS}.hpp
 )
-target_link_libraries(SOEMAUTDServer PRIVATE argparse autd3_common)
+target_link_libraries(SOEMAUTDServer PRIVATE argparse autd3_common smem)
 
-target_include_directories(SOEMAUTDServer PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/link/soem)
+target_include_directories(SOEMAUTDServer PRIVATE ${PROJECT_SOURCE_DIR}/dist/SOEMAUTDServer ${PROJECT_SOURCE_DIR}/src/link/soem)
 target_include_directories(SOEMAUTDServer PRIVATE
   ${PROJECT_SOURCE_DIR}/include
   ${SOEM_PATH}/soem
