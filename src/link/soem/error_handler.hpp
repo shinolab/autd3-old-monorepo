@@ -35,8 +35,7 @@
 #include <string>
 
 namespace autd3::link {
-
-void check_state(const uint16_t slave, std::stringstream& ss) {
+inline void check_state(const uint16_t slave, std::stringstream& ss) {
   if (ec_slave[slave].state == EC_STATE_OPERATIONAL) return;
 
   ec_group[0].docheckstate = 1;
@@ -63,7 +62,7 @@ void check_state(const uint16_t slave, std::stringstream& ss) {
   }
 }
 
-void check_lost(uint16_t slave, std::stringstream& ss) {
+inline void check_lost(const uint16_t slave, std::stringstream& ss) {
   if (ec_slave[slave].islost == 0) return;
   if (ec_slave[slave].state == EC_STATE_NONE) {
     if (ec_recover_slave(slave, 500)) {
@@ -76,7 +75,7 @@ void check_lost(uint16_t slave, std::stringstream& ss) {
   }
 }
 
-bool error_handle(std::atomic<bool>* is_open, std::function<void(std::string)>& on_lost) {
+inline bool error_handle(std::atomic<bool>* is_open, const std::function<void(std::string)>& on_lost) {
   ec_group[0].docheckstate = 0;
   ec_readstate();
   std::stringstream ss;

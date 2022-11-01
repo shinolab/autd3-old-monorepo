@@ -39,18 +39,14 @@
 #include <memory>
 #include <mutex>
 #include <queue>
-#include <sstream>
 #include <string>
 #include <thread>
 #include <utility>
 #include <vector>
 
 #include "./ethercat.h"
-#include "autd3/core/link.hpp"
-#include "autd3/driver/cpu/body.hpp"
 #include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/driver/cpu/ec_config.hpp"
-#include "autd3/driver/cpu/header.hpp"
 #include "autd3/link/soem.hpp"
 #include "ecat_thread.hpp"
 #include "error_handler.hpp"
@@ -196,12 +192,9 @@ class SOEMHandler final {
     if (ec_slave[0].state != EC_STATE_OPERATIONAL) {
       _is_open.store(false);
       if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
-      if (remaining == 0)
-        throw std::runtime_error("One ore more slaves are not responding: " + std::to_string(ec_slave[0].state));
-      else {
-        spdlog::debug("failed to reach op mode. retry opening...");
-        return open(remaining - 1);
-      }
+      if (remaining == 0) throw std::runtime_error("One ore more slaves are not responding: " + std::to_string(ec_slave[0].state));
+      spdlog::debug("failed to reach op mode. retry opening...");
+      return open(remaining - 1);
     }
 
     if (_sync_mode == SYNC_MODE::FREE_RUN) {
@@ -228,7 +221,7 @@ class SOEMHandler final {
     return true;
   }
 
-  bool receive(driver::RxDatagram& rx) {
+  bool receive(driver::RxDatagram& rx) const {
     if (!_is_open.load()) throw std::runtime_error("link is closed");
     rx.copy_from(_io_map.input());
     return true;
@@ -257,7 +250,7 @@ class SOEMHandler final {
     ec_close();
   }
 
-  bool is_open() { return _is_open.load(); }
+  bool is_open() const { return _is_open.load(); }
 
  private:
   bool _high_precision;
