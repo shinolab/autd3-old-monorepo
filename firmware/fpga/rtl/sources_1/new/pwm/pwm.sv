@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 31/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -29,6 +29,19 @@ module pwm #(
   bit [WIDTH-1:0] R[0:TRANS_NUM-1];
   bit [WIDTH-1:0] F[0:TRANS_NUM-1];
 
+  bit [WIDTH-1:0] cycle_m1[0:TRANS_NUM-1];
+  bit [WIDTH-1:0] cycle_m2[0:TRANS_NUM-1];
+
+  cycle_buffer #(
+      .WIDTH(WIDTH),
+      .DEPTH(TRANS_NUM)
+  ) cycle_buffer (
+      .CLK(CLK),
+      .CYCLE(CYCLE),
+      .CYCLE_M1(cycle_m1),
+      .CYCLE_M2(cycle_m2)
+  );
+
   time_cnt_generator #(
       .WIDTH(WIDTH),
       .DEPTH(TRANS_NUM)
@@ -36,6 +49,8 @@ module pwm #(
       .CLK(CLK),
       .SYS_TIME(SYS_TIME),
       .CYCLE(CYCLE),
+      .CYCLE_M1(cycle_m1),
+      .CYCLE_M2(cycle_m2),
       .TIME_CNT(TIME_CNT)
   );
 
@@ -58,7 +73,7 @@ module pwm #(
         .WIDTH(WIDTH)
     ) pwm_buffer (
         .CLK(CLK),
-        .CYCLE(CYCLE[i]),
+        .CYCLE_M1(cycle_m1[i]),
         .TIME_CNT(TIME_CNT[i]),
         .RISE_IN(R[i]),
         .FALL_IN(F[i]),
