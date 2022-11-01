@@ -11,236 +11,26 @@
 
 #include "link_soem_impl.hpp"
 
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 6285 6385 26437 26800 26498 26451 26495)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic push
-#endif
-#ifdef __clang__
-#pragma clang diagnostic push
-#endif
-#include <spdlog/fmt/fmt.h>
-#if _MSC_VER
-#pragma warning(pop)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic pop
-#endif
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
-#include <cstdint>
-#include <memory>
-#include <queue>
-#include <sstream>
-#include <string>
-#include <utility>
-#include <vector>
-
-#include "./ethercat.h"
-#include "autd3/link/soem.hpp"
-#include "ecat_thread/ecat_thread.hpp"
-
 namespace autd3::link {
 
-bool SOEMLink::is_open() { return _is_open.load(); }
+bool SOEMLink::is_open() { return _handler->is_open(); }
 
-bool SOEMLink::send(const driver::TxDatagram& tx) {
-  if (!_is_open.load()) throw std::runtime_error("link is closed");
+bool SOEMLink::send(const driver::TxDatagram& tx) { return _handler->send(tx); }
 
-  std::lock_guard lock(_send_mtx);
-  _send_buf.push(tx.clone());
-  return true;
+bool SOEMLink::receive(driver::RxDatagram& rx) { return _handler->receive(rx); }
+
+void SOEMLink::open(const core::Geometry& geometry) {
+  const auto dev_num = _handler->open(1);
+  if (geometry.num_devices() == dev_num) return;
+  _handler->close();
+  throw std::runtime_error(fmt::format("The number of slaves you configured: {}, but found: {}", dev_num, dev_num));
 }
 
-bool SOEMLink::receive(driver::RxDatagram& rx) {
-  if (!_is_open.load()) throw std::runtime_error("link is closed");
-  rx.copy_from(_io_map.input());
-  return true;
-}
-
-void SOEMLink::open(const core::Geometry& geometry) { open_impl(geometry, 1); }
-
-void SOEMLink::open_impl(const core::Geometry& geometry, const int remining) {
-  if (is_open()) return;
-
-  std::queue<driver::TxDatagram>().swap(_send_buf);
-
-  const auto cycle_time = driver::EC_CYCLE_TIME_BASE_NANO_SEC * _send_cycle;
-  spdlog::debug("send interval: {} [ns]", cycle_time);
-
-  const auto dev_num = geometry.num_devices();
-
-  int wc = 0;
-  if (_ifname.empty()) {
-    spdlog::debug("looking for AUTD...");
-    const auto* adapters = ec_find_adapters();
-    bool found = false;
-    for (const auto* adapter = adapters; adapter != nullptr; adapter = adapter->next) {
-      _ifname = std::string(adapter->name);
-      if (ec_init(_ifname.c_str()) <= 0) continue;
-      wc = ec_config_init(0);
-      if (wc <= 0) continue;
-      found = true;
-      for (auto i = 1; i <= wc; i++)
-        if (std::strcmp(ec_slave[1].name, "AUTD") != 0) {
-          found = false;
-          break;
-        }
-      if (found) {
-        spdlog::debug("AUTD found on {} ({})", adapter->name, adapter->desc);
-        break;
-      }
-    }
-    if (!found) {
-      _is_open.store(false);
-      if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
-      throw std::runtime_error("No AUTD3 devices found");
-    }
-  } else {
-    spdlog::debug("interface name: {}", _ifname);
-    if (ec_init(_ifname.c_str()) <= 0) {
-      _is_open.store(false);
-      if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
-      throw std::runtime_error(fmt::format("No socket connection on {}", _ifname));
-    }
-    wc = ec_config_init(0);
-    if (wc <= 0) {
-      _is_open.store(false);
-      if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
-      throw std::runtime_error("No slaves found");
-    }
-    for (auto i = 1; i <= wc; i++)
-      if (std::strcmp(ec_slave[i].name, "AUTD") != 0) {
-        _is_open.store(false);
-        if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
-        throw std::runtime_error(fmt::format("Slave[{}] is not AUTD3", i));
-      }
-  }
-
-  if (static_cast<size_t>(wc) != dev_num) {
-    _is_open.store(false);
-    if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
-    throw std::runtime_error(fmt::format("The number of slaves you configured: {}, but found: {}", dev_num, wc));
-  }
-
-  _user_data = std::make_unique<uint32_t[]>(1);
-  _user_data[0] = driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle;
-  ecx_context.userdata = _user_data.get();
-  spdlog::debug("Sync0 interval: {} [ns]", driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle);
-
-  if (_sync_mode == SYNC_MODE::DC) {
-    for (int cnt = 1; cnt <= ec_slavecount; cnt++)
-      ec_slave[cnt].PO2SOconfigx = [](auto* context, auto slave) -> int {
-        const auto cyc_time = static_cast<uint32_t*>(context->userdata)[0];
-        ec_dcsync0(slave, true, cyc_time, 0U);
-        return 0;
-      };
-    spdlog::debug("run mode: DC sync");
-    spdlog::debug("Sync0 configured");
-  }
-
-  _io_map.resize(dev_num);
-  ec_config_map(_io_map.get());
-
-  ec_statecheck(0, EC_STATE_SAFE_OP, EC_TIMEOUTSTATE * 4);
-
-  ec_configdc();
-
-  ec_readstate();
-
-  const auto expected_wkc = ec_group[0].outputsWKC * 2 + ec_group[0].inputsWKC;
-  spdlog::debug("Calculated workcounter {}", expected_wkc);
-
-  ec_slave[0].state = EC_STATE_OPERATIONAL;
-
-  ec_send_processdata();
-  ec_receive_processdata(EC_TIMEOUTRET);
-
-  ec_writestate(0);
-
-  _is_open.store(true);
-  std::atomic<int32_t> wkc;
-  _ecat_thread = std::thread([this, &wkc, cycle_time] {
-    ecat_run(this->_high_precision, &this->_is_open, &wkc, cycle_time, this->_send_mtx, this->_send_buf, this->_io_map);
-  });
-
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-  ec_statecheck(0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE);
-
-  if (ec_slave[0].state != EC_STATE_OPERATIONAL) {
-    _is_open.store(false);
-    if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
-    if (remining == 0)
-      throw std::runtime_error("One ore more slaves are not responding: " + std::to_string(ec_slave[0].state));
-    else {
-      spdlog::debug("failed to reach op mode. retry opening...");
-      open_impl(geometry, remining - 1);
-      return;
-    }
-  }
-
-  if (_sync_mode == SYNC_MODE::FREE_RUN) {
-    for (int slave = 1; slave <= ec_slavecount; slave++)
-      ec_dcsync0(static_cast<uint16_t>(slave), true, driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle, 0U);
-    spdlog::debug("run mode: Free Run");
-    spdlog::debug("Sync0 configured");
-  }
-
-  _ecat_check_thread = std::thread([this, &wkc, expected_wkc] {
-    while (this->_is_open.load()) {
-      if ((wkc.load() < expected_wkc) || ec_group[0].docheckstate) error_handle(&this->_is_open, this->_on_lost);
-      std::this_thread::sleep_for(_state_check_interval);
-    }
-  });
-}
-
-void SOEMLink::close() {
-  if (!is_open()) return;
-
-  while (!_send_buf.empty()) std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
-  _is_open.store(false);
-  if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
-  if (this->_ecat_check_thread.joinable()) this->_ecat_check_thread.join();
-
-  const auto cyc_time = static_cast<uint32_t*>(ecx_context.userdata)[0];
-  for (uint16_t slave = 1; slave <= static_cast<uint16_t>(ec_slavecount); slave++) ec_dcsync0(slave, false, cyc_time, 0U);
-
-  ec_slave[0].state = EC_STATE_SAFE_OP;
-  ec_writestate(0);
-  ec_statecheck(0, EC_STATE_SAFE_OP, EC_TIMEOUTSTATE);
-
-  ec_slave[0].state = EC_STATE_PRE_OP;
-  ec_writestate(0);
-  ec_statecheck(0, EC_STATE_PRE_OP, EC_TIMEOUTSTATE);
-
-  ec_close();
-}
-
-SOEMLink::~SOEMLink() {
-  try {
-    this->close();
-  } catch (std::exception&) {
-  }
-}
+void SOEMLink::close() { _handler->close(); }
 
 core::LinkPtr SOEM::build() {
   return std::make_unique<SOEMLink>(_high_precision, _ifname, _sync0_cycle, _send_cycle, std::move(_callback), _sync_mode, _state_check_interval);
 }
 
-std::vector<EtherCATAdapter> SOEM::enumerate_adapters() {
-  auto* adapter = ec_find_adapters();
-  std::vector<EtherCATAdapter> adapters;
-  while (adapter != nullptr) {
-    EtherCATAdapter info(std::string(adapter->desc), std::string(adapter->name));
-    adapters.emplace_back(info);
-    adapter = adapter->next;
-  }
-  return adapters;
-}
+std::vector<EtherCATAdapter> SOEM::enumerate_adapters() { return SOEMHandler::enumerate_adapters(); }
 }  // namespace autd3::link
