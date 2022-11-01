@@ -3,7 +3,7 @@
 // Created Date: 20/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/10/2022
+// Last Modified: 01/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -96,8 +96,8 @@ TEST(HARDTest, is_missing_transducer) {
   ASSERT_FALSE(is_missing_transducer(16, 0));
   ASSERT_FALSE(is_missing_transducer(17, 0));
   ASSERT_FALSE(is_missing_transducer(0, 1));
-  // ASSERT_FALSE(is_missing_transducer(1, 1));
-  // ASSERT_FALSE(is_missing_transducer(2, 1));
+  ASSERT_TRUE(is_missing_transducer(1, 1));
+  ASSERT_TRUE(is_missing_transducer(2, 1));
   ASSERT_FALSE(is_missing_transducer(3, 1));
   ASSERT_FALSE(is_missing_transducer(4, 1));
   ASSERT_FALSE(is_missing_transducer(5, 1));
@@ -111,7 +111,7 @@ TEST(HARDTest, is_missing_transducer) {
   ASSERT_FALSE(is_missing_transducer(13, 1));
   ASSERT_FALSE(is_missing_transducer(14, 1));
   ASSERT_FALSE(is_missing_transducer(15, 1));
-  // ASSERT_FALSE(is_missing_transducer(16, 1));
+  ASSERT_TRUE(is_missing_transducer(16, 1));
   ASSERT_FALSE(is_missing_transducer(17, 1));
   ASSERT_FALSE(is_missing_transducer(0, 2));
   ASSERT_FALSE(is_missing_transducer(1, 2));
