@@ -32,5 +32,5 @@ end
 
 const _dll = joinpath(@__DIR__, get_bin_path(), "bin", get_lib_prefix() * "autd3capi-extra-simulator" * get_lib_ext())
 
-autd_extra_simulator(settings_path, port, ip, vsync, gpu_idx) = ccall((:AUTDExtraSimulator, _dll), Cvoid, (Cstring, UInt16, Cstring, Bool, Int32, ), settings_path, port, ip, vsync, gpu_idx);
+autd_extra_simulator(settings_path, vsync, gpu_idx) = ccall((:AUTDExtraSimulator, _dll), Cvoid, (Cstring, Bool, Int32, ), settings_path, vsync, gpu_idx);
 end

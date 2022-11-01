@@ -87,6 +87,7 @@ class CPU {
 
   [[nodiscard]] const FPGA& fpga() const { return _fpga; }
 
+  void send(const driver::GlobalHeader* header, const driver::Body* body) { ecat_recv(header, body); }
   void send(const driver::TxDatagram& tx) { ecat_recv(&tx.header(), tx.num_bodies > _id ? tx.bodies() + _id : nullptr); }
 
   void init() {

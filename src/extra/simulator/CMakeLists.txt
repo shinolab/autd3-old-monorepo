@@ -14,11 +14,8 @@ add_library(simulator
   simulator.cpp
 )
 target_include_directories(simulator PRIVATE ${PROJECT_SOURCE_DIR}/include ${STB_INCLUDE_PATH} ${Vulkan_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/src/extra/simulator)
-target_link_libraries(simulator PRIVATE autd3_common vk_helper glm::glm glfw imgui_vulkan)
+target_link_libraries(simulator PRIVATE autd3_common vk_helper glm::glm glfw imgui_vulkan smem)
 target_link_libraries(simulator PUBLIC nlohmann_json tinycolormap)
-if (WIN32)
-  target_link_libraries(simulator PUBLIC ws2_32)
-endif()
 
 set_target_properties(simulator
   PROPERTIES
