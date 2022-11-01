@@ -35,9 +35,11 @@ option(BUILD_LINK_REMOTE_TWINCAT "BUILD_LINK_REMOTE_TWINCAT" OFF)
 option(BUILD_LINK_BUNDLE "BUILD_LINK_BUNDLE" OFF)
 option(BUILD_LINK_DEBUG "BUILD_LINK_DEBUG" ON)
 option(BUILD_LINK_SIMULATOR "BUILD_LINK_SIMULATOR" OFF)
+option(BUILD_LINK_REMOTE_SOEM "BUILD_LINK_REMOTE_SOEM" OFF)
 
 option(BUILD_GEOMETRY_VIEWER "BUILD_GEOMETRY_VIEWER" OFF)
 option(BUILD_SIMULATOR "BUILD_SIMULATOR" OFF)
+option(BUILD_SOEM_SERVER "BUILD_SOEM_SERVER" OFF)
 
 option(BUILD_EXAMPLES "BUILD_EXAMPLES" ON)
 option(DISABLE_EXAMPLES "DISABLE_EXAMPLES" OFF)
@@ -47,6 +49,7 @@ option(BUILD_CAPI "BUILD_CAPI" OFF)
 option(ENABLE_LINT "ENABLE_LINT" OFF)
 
 option(EXPORT_AUTD_SIMULATOR "EXPORT_AUTD_SIMULATOR" OFF)
+option(EXPORT_SOEM_AUTD_SERVER "EXPORT_SOEM_AUTD_SERVER" OFF)
 
 option(BUILD_TEST "BUILD_TEST" OFF)
 
@@ -230,12 +233,14 @@ if(BUILD_MODULATION_AUDIO_FILE)
   add_subdirectory(src/modulation/audio_file)
 endif()
 
-if(BUILD_LINK_SOEM)
+if(BUILD_LINK_SOEM OR BUILD_SOEM_SERVER)
   if(Git_FOUND)
     execute_process(COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init --recursive -- ${PROJECT_SOURCE_DIR}/3rdparty/SOEM)
   endif()
   set(SOEM_PATH ${PROJECT_SOURCE_DIR}/3rdparty/SOEM)
+endif()
 
+if(BUILD_LINK_SOEM)
   add_subdirectory(src/link/soem)
 endif()
 
@@ -256,12 +261,20 @@ if(BUILD_LINK_SIMULATOR)
   add_subdirectory(src/link/simulator)
 endif()
 
+if(BUILD_LINK_REMOTE_SOEM)
+  add_subdirectory(src/link/remote_soem)
+endif()
+
 if(BUILD_LINK_BUNDLE)
   add_subdirectory(src/link/bundle)
 endif()
 
 if(BUILD_LINK_DEBUG)
   add_subdirectory(src/link/debug)
+endif()
+
+if(BUILD_SOEM_SERVER)
+  add_subdirectory(src/extra/soem_server)
 endif()
 
 if(BUILD_EXAMPLES)
@@ -284,4 +297,8 @@ endif()
 
 if(EXPORT_AUTD_SIMULATOR)
   add_subdirectory(dist/simulator)
+endif()
+
+if(EXPORT_SOEM_AUTD_SERVER)
+  add_subdirectory(dist/SOEMAUTDServer)
 endif()
