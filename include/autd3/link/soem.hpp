@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/10/2022
+// Last Modified: 01/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <chrono>
 #include <functional>
 #include <memory>
 #include <string>
@@ -51,7 +52,13 @@ class SOEM {
   /**
    * @brief Constructor
    */
-  SOEM() : _high_precision(false), _sync0_cycle(2), _send_cycle(2), _callback(nullptr), _sync_mode(SYNC_MODE::DC) {}
+  SOEM()
+      : _high_precision(false),
+        _sync0_cycle(2),
+        _send_cycle(2),
+        _callback(nullptr),
+        _sync_mode(SYNC_MODE::DC),
+        _state_check_interval(std::chrono::milliseconds(100)) {}
 
   /**
    * @brief Set network interface name. (e.g. eth0)
@@ -104,6 +111,14 @@ class SOEM {
     return *this;
   }
 
+  /**
+   * @brief Set EtherCAT state check interval.
+   */
+  SOEM& state_check_interval(const std::chrono::milliseconds interval) {
+    _state_check_interval = interval;
+    return *this;
+  }
+
   ~SOEM() = default;
   SOEM(const SOEM& v) noexcept = delete;
   SOEM& operator=(const SOEM& obj) = delete;
@@ -117,5 +132,6 @@ class SOEM {
   uint16_t _send_cycle;
   std::function<void(std::string)> _callback;
   SYNC_MODE _sync_mode;
+  std::chrono::milliseconds _state_check_interval;
 };
 }  // namespace autd3::link
