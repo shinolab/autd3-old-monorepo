@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/10/2022
+// Last Modified: 01/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -82,9 +82,7 @@ class SOEMLink final : public core::Link {
         _send_cycle(send_cycle),
         _on_lost(std::move(on_lost)),
         _sync_mode(sync_mode),
-        _is_open(false),
-        _is_running(false) {}
-
+        _is_open(false) {}
   ~SOEMLink() override;
   SOEMLink(const SOEMLink& v) noexcept = delete;
   SOEMLink& operator=(const SOEMLink& obj) = delete;
@@ -112,12 +110,13 @@ class SOEMLink final : public core::Link {
   std::atomic<bool> _is_open;
   std::unique_ptr<uint32_t[]> _user_data;
 
-  bool _is_running;
   std::thread _ecat_thread;
   std::thread _ecat_check_thread;
 
   std::queue<driver::TxDatagram> _send_buf;
   std::mutex _send_mtx;
+
+  void open_impl(const core::Geometry& geometry, int remaining);
 };
 
 }  // namespace autd3::link

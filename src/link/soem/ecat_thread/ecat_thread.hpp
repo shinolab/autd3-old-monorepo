@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/10/2022
+// Last Modified: 01/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -80,7 +80,7 @@ inline void print_stats(const std::string& header, const std::vector<int64_t>& s
 using wait_func = void(const timespec&);
 
 template <wait_func W>
-void ecat_run_(std::atomic<bool>* is_open, bool* is_running, std::atomic<int32_t>* wkc, int64_t cycletime_ns, std::mutex& mtx,
+void ecat_run_(std::atomic<bool>* is_open, std::atomic<int32_t>* wkc, int64_t cycletime_ns, std::mutex& mtx,
                std::queue<driver::TxDatagram>& send_queue, IOMap& io_map) {
   ecat_init();
 
@@ -117,19 +117,17 @@ void ecat_run_(std::atomic<bool>* is_open, bool* is_running, std::atomic<int32_t
       start = now;
     }
 
-    if (*is_running) {
-      wkc->store(ec_receive_processdata(EC_TIMEOUTRET));
+    wkc->store(ec_receive_processdata(EC_TIMEOUTRET));
 
-      ec_sync(ec_DCtime, cycletime_ns, &toff);
+    ec_sync(ec_DCtime, cycletime_ns, &toff);
 
-      if (!send_queue.empty()) {
-        std::lock_guard<std::mutex> lock(mtx);
-        io_map.copy_from(send_queue.front());
-        send_queue.pop();
-      }
-
-      ec_send_processdata();
+    if (!send_queue.empty()) {
+      std::lock_guard<std::mutex> lock(mtx);
+      io_map.copy_from(send_queue.front());
+      send_queue.pop();
     }
+
+    ec_send_processdata();
   }
 
 #if WIN32
@@ -138,12 +136,12 @@ void ecat_run_(std::atomic<bool>* is_open, bool* is_running, std::atomic<int32_t
 #endif
 }
 
-void ecat_run(const bool high_precision, std::atomic<bool>* is_open, bool* is_running, std::atomic<int32_t>* wkc, const int64_t cycletime_ns,
-              std::mutex& mtx, std::queue<driver::TxDatagram>& send_queue, IOMap& io_map) {
+void ecat_run(const bool high_precision, std::atomic<bool>* is_open, std::atomic<int32_t>* wkc, const int64_t cycletime_ns, std::mutex& mtx,
+              std::queue<driver::TxDatagram>& send_queue, IOMap& io_map) {
   if (high_precision)
-    ecat_run_<timed_wait_h>(is_open, is_running, wkc, cycletime_ns, mtx, send_queue, io_map);
+    ecat_run_<timed_wait_h>(is_open, wkc, cycletime_ns, mtx, send_queue, io_map);
   else
-    ecat_run_<timed_wait>(is_open, is_running, wkc, cycletime_ns, mtx, send_queue, io_map);
+    ecat_run_<timed_wait>(is_open, wkc, cycletime_ns, mtx, send_queue, io_map);
 }
 
 }  // namespace autd3::link
