@@ -11,15 +11,15 @@
 
 #include "autd3/link/remote_soem.hpp"
 
-#include "remote_soem_local.hpp"
 #include "remote_soem_tcp.hpp"
+
+//
+#include "remote_soem_local.hpp"
 
 namespace autd3::link {
 core::LinkPtr RemoteSOEM::build() {
-  if (_ip.empty() || _ip == "127.0.0.1" || _ip == "localhost")
-    return std::make_unique<RemoteSOEMLocal>();
-  else
-    return std::make_unique<RemoteSOEMTcp>();
+  if (_ip.empty() || _ip == "127.0.0.1" || _ip == "localhost") return std::make_unique<RemoteSOEMLocal>();
+  return std::make_unique<RemoteSOEMTcp>(_ip, _port);
 }
 
 }  // namespace autd3::link

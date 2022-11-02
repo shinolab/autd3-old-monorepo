@@ -19,7 +19,7 @@ int main() try {
 
   autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
 
-  const std::string ip = ""; // host ip here
+  const std::string ip = "";  // server ip here
   const uint16_t port = 50632;
   auto link = autd3::link::RemoteSOEM().ip(ip).port(port).build();
 

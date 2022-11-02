@@ -28,6 +28,8 @@ int main(const int argc, char* argv[]) try {
 
   program.add_argument("-c", "--client").help("Client IP address").default_value(std::string(""));
 
+  program.add_argument("-p", "--port").help("Client port").scan<'i', int>().default_value(50632);
+
   program.add_argument("-s", "--sync0").help("Sync0 cycle time in units of 500us").scan<'i', int>().default_value(2);
 
   program.add_argument("-t", "--send").help("Send cycle time in units of 500us").scan<'i', int>().default_value(2);
@@ -59,6 +61,7 @@ int main(const int argc, char* argv[]) try {
 
   const auto ifname = program.get("--ifname");
   const auto client = program.get("--client");
+  const auto port = static_cast<uint16_t>(program.get<int>("--port"));
   const auto sync0_cycle = std::max(1, program.get<int>("--sync0"));
   const auto send_cycle = std::max(1, program.get<int>("--send"));
   const auto state_check_interval = std::max(1, program.get<int>("--state_check_interval"));
@@ -91,7 +94,7 @@ int main(const int argc, char* argv[]) try {
   if (local_connection)
     interf = std::make_unique<autd3::publish::LocalInterface>(dev);
   else
-    interf = std::make_unique<autd3::publish::TcpInterface>();
+    interf = std::make_unique<autd3::publish::TcpInterface>(client, port, dev);
 
   bool run = true;
   auto th = std::thread([&soem_handler, &run, dev, &interf] {
@@ -99,7 +102,17 @@ int main(const int argc, char* argv[]) try {
     autd3::driver::RxDatagram rx(dev);
     interf->connect();
     while (run) {
-      if (interf->tx(tx)) soem_handler.send(tx);
+      if (interf->tx(tx)) {
+        if (tx.header().msg_id == autd3::driver::MSG_SERVER_CLOSE) {
+          spdlog::info("Disconnect from client");
+          interf->close();
+          tx.clear();
+          rx.clear();
+          interf->connect();
+          continue;
+        }
+        soem_handler.send(tx);
+      }
       soem_handler.receive(rx);
       interf->rx(rx);
     }
