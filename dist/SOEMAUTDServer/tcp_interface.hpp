@@ -65,11 +65,11 @@ class TcpInterface final : public Interface {
 
     listen(_socket, 1);
 
-    const auto size = driver::HEADER_SIZE + _dev * (driver::BODY_SIZE + driver::EC_INPUT_FRAME_SIZE);
+    const auto size = driver::HEADER_SIZE + _dev * driver::BODY_SIZE;
     _ptr = std::make_unique<uint8_t[]>(size);
     std::memset(_ptr.get(), 0, size);
 
-    int dst_addr_size = sizeof _dst_addr;
+    socklen_t dst_addr_size = sizeof _dst_addr;
     spdlog::info("Waiting for client connection...");
     _dst_socket = accept(_socket, reinterpret_cast<sockaddr*>(&_dst_addr), &dst_addr_size);
     spdlog::info("Connected to client");
@@ -86,8 +86,6 @@ class TcpInterface final : public Interface {
       std::vector<char> buffer(driver::HEADER_SIZE + _dev * driver::BODY_SIZE);
       while (_run.load()) {
         const auto len = recv(_dst_socket, buffer.data(), sizeof(char) * 65536, 0);
-        send(_dst_socket, reinterpret_cast<const char*>(_ptr.get() + driver::HEADER_SIZE + _dev * driver::BODY_SIZE),
-             static_cast<int>(_dev * driver::EC_INPUT_FRAME_SIZE), 0);
         if (len <= 0) continue;
         const auto ulen = static_cast<size_t>(len);
         if (ulen < driver::HEADER_SIZE) {
@@ -112,13 +110,18 @@ class TcpInterface final : public Interface {
 
     _run.store(false);
     if (_th.joinable()) _th.join();
-    closesocket(_dst_socket);
 
 #if WIN32
     closesocket(_socket);
+    closesocket(_dst_socket);
+    _socket = INVALID_SOCKET;
+    _dst_socket = INVALID_SOCKET;
     WSACleanup();
 #else
     ::close(_socket);
+    _socket = -1;
+    ::close(_dst_socket);
+    _dst_socket = -1;
 #endif
   }
 
@@ -131,8 +134,12 @@ class TcpInterface final : public Interface {
   }
 
   void rx(driver::RxDatagram& rx) override {
-    std::memcpy(_ptr.get() + driver::HEADER_SIZE + rx.messages().size() * driver::BODY_SIZE, rx.messages().data(),
-                rx.messages().size() * driver::EC_INPUT_FRAME_SIZE);
+#if WIN32
+    if (_dst_socket == INVALID_SOCKET) return;
+#else
+    if (_dst_socket < 0) return;
+#endif
+    send(_dst_socket, reinterpret_cast<const char*>(rx.messages().data()), static_cast<int>(rx.messages().size() * driver::EC_INPUT_FRAME_SIZE), 0);
   }
 
  private:
@@ -152,7 +159,8 @@ class TcpInterface final : public Interface {
   SOCKET _socket{};
   SOCKET _dst_socket{};
 #else
-  int _socket{0};
+  int _socket{-1};
+  int _dst_socket{-1};
 #endif
   sockaddr_in _addr{};
   sockaddr_in _dst_addr{};
