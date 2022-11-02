@@ -67,10 +67,14 @@ class TcpInterface final : public Interface {
     _addr.sin_addr.s_addr = htonl(INADDR_ANY);
 #endif
 
-    if (const auto e = bind(_socket, reinterpret_cast<sockaddr*>(&_addr), sizeof _addr); e != 0)
+    if (const auto e = bind(_socket, reinterpret_cast<sockaddr*>(&_addr), sizeof _addr); e != 0) {
+      spdlog::error("Failed to bind socket: {}", e);
       throw std::runtime_error("failed to bind socket: " + std::to_string(_port));
-
-    listen(_socket, 1);
+    }
+    if (const auto e = listen(_socket, 1); e != 0) {
+      spdlog::error("Failed to listen: {}", e);
+      throw std::runtime_error("failed to listen");
+    }
 
     const auto size = driver::HEADER_SIZE + _dev * driver::BODY_SIZE;
     _ptr = std::make_unique<uint8_t[]>(size);
@@ -86,7 +90,7 @@ class TcpInterface final : public Interface {
     if (_dst_socket < 0) return;
     if (errno == 53) return;
     if (errno != 0) {
-      spdlog::error("Failed to connect client: {}", errno);
+      spdlog::error("Failed to connect client: {}", strerror(errno));
       spdlog::error("Please reboot the program...");
       return;
     }
