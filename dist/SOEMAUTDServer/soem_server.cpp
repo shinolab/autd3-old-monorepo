@@ -103,18 +103,11 @@ int main(const int argc, char* argv[]) try {
     interf->connect();
     while (run) {
       if (interf->tx(tx)) {
-        if (tx.header().msg_id == autd3::driver::MSG_SERVER_CLOSE) {
-          spdlog::info("Disconnect from client");
-          interf->close();
-          tx.clear();
-          rx.clear();
-          interf->connect();
-          continue;
-        }
         soem_handler.send(tx);
       }
       soem_handler.receive(rx);
-      if (!interf->rx(rx)) {
+      interf->rx(rx);
+      if (tx.header().msg_id == autd3::driver::MSG_SERVER_CLOSE) {
         spdlog::info("Disconnect from client");
         interf->close();
         tx.clear();

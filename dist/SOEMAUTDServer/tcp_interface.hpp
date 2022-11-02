@@ -42,6 +42,8 @@ class TcpInterface final : public Interface {
     WSAData wsa_data{};
     WSAStartup(MAKEWORD(2, 0), &wsa_data);
 #pragma warning(pop)
+#else
+    signal(SIGPIPE, SIG_IGN);
 #endif
 
     _socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -50,7 +52,7 @@ class TcpInterface final : public Interface {
 #else
     if (_socket < 0)
 #endif
-      throw std::runtime_error("cannot connect to simulator");
+      throw std::runtime_error("cannot connect to client");
 
     _addr.sin_family = AF_INET;
     _addr.sin_port = htons(_port);
@@ -73,11 +75,16 @@ class TcpInterface final : public Interface {
     spdlog::info("Waiting for client connection...");
     _dst_socket = accept(_socket, reinterpret_cast<sockaddr*>(&_dst_addr), &dst_addr_size);
 #if WIN32
-    if (_socket == INVALID_SOCKET)
+    if (_dst_socket == INVALID_SOCKET) return;
 #else
-    if (_socket < 0)
-#endif
+    if (_dst_socket < 0) return;
+    if (errno == 53) return;
+    if (errno != 0) {
+      spdlog::error("Failed to connect client: {}", errno);
+      spdlog::info("sock : {}", _socket);
       return;
+    }
+#endif
     spdlog::info("Connected to client");
 
     u_long val = 1;
@@ -87,11 +94,11 @@ class TcpInterface final : public Interface {
     ioctl(_socket, FIONBIO, &val);
 #endif
 
-    _run.store(true);
-    _th = std::thread([this] {
-      std::vector<char> buffer(driver::HEADER_SIZE + _dev * driver::BODY_SIZE);
-      while (_run.load()) {
-        const auto len = recv(_dst_socket, buffer.data(), sizeof(char) * 65536, 0);
+    _run = true;
+    _th = std::thread([this, size] {
+      std::vector<char> buffer(size);
+      while (_run) {
+        const auto len = recv(_dst_socket, buffer.data(), buffer.size(), 0);
         if (len <= 0) continue;
         const auto ulen = static_cast<size_t>(len);
         if (ulen < driver::HEADER_SIZE) {
@@ -113,8 +120,8 @@ class TcpInterface final : public Interface {
   void close() override {
     _is_open = false;
 
-    if (_run.load()) {
-      _run.store(false);
+    if (_run) {
+      _run = false;
       if (_th.joinable()) _th.join();
     }
 
@@ -129,13 +136,13 @@ class TcpInterface final : public Interface {
       WSACleanup();
     }
 #else
-    if (_socket != -1) {
-      ::close(_socket);
-      _socket = -1;
-    }
     if (_dst_socket != -1) {
       ::close(_dst_socket);
       _dst_socket = -1;
+    }
+    if (_socket != -1) {
+      ::close(_socket);
+      _socket = -1;
     }
 #endif
   }
@@ -168,7 +175,7 @@ class TcpInterface final : public Interface {
   std::string _ip;
   uint16_t _port;
 
-  std::atomic<bool> _run{false};
+  bool _run{false};
   std::thread _th;
 
 #if WIN32
