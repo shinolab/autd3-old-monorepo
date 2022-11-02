@@ -3,7 +3,7 @@
 // Created Date: 01/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/11/2022
+// Last Modified: 03/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -54,6 +54,9 @@ class TcpInterface final : public Interface {
 #endif
       throw std::runtime_error("cannot connect to client");
 
+    int y = 1;
+    setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, (const char*)&y, sizeof y);
+
     _addr.sin_family = AF_INET;
     _addr.sin_port = htons(_port);
 #if WIN32
@@ -81,7 +84,7 @@ class TcpInterface final : public Interface {
     if (errno == 53) return;
     if (errno != 0) {
       spdlog::error("Failed to connect client: {}", errno);
-      spdlog::info("sock : {}", _socket);
+      spdlog::error("Please reboot the program...");
       return;
     }
 #endif
@@ -89,9 +92,9 @@ class TcpInterface final : public Interface {
 
     u_long val = 1;
 #if WIN32
-    ioctlsocket(_socket, FIONBIO, &val);
+    ioctlsocket(_dst_socket, FIONBIO, &val);
 #else
-    ioctl(_socket, FIONBIO, &val);
+    ioctl(_dst_socket, FIONBIO, &val);
 #endif
 
     _run = true;
