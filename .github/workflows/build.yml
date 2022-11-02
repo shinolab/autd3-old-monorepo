@@ -26,6 +26,12 @@ jobs:
         cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF
         cd build
         msbuild autd3.sln /t:build
+    - name: build for Windows ARM
+      if: matrix.os == 'windows-latest'
+      run: |
+        cmake -G "Visual Studio 17 2022" -A ARM64 -B "build_arm" -DBUILD_TARGET=ARM -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF
+        cd build_arm
+        msbuild autd3.sln /t:build
     - name: install compile tools
       if: matrix.os == 'ubuntu-latest'
       run: |
