@@ -3,17 +3,17 @@
 // Created Date: 26/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/11/2022
+// Last Modified: 02/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #include <argparse/argparse.hpp>
+#include <soem_handler.hpp>
 
 #include "autd3/link/soem.hpp"
 #include "local_interface.hpp"
-#include "soem_handler.hpp"
 #include "tcp_interface.hpp"
 
 int main(const int argc, char* argv[]) try {
