@@ -312,6 +312,7 @@ if(EXPORT_AUTD_SIMULATOR)
 endif()
 
 if(EXPORT_SOEM_AUTD_SERVER)
+  execute_process(COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init --recursive -- ${PROJECT_SOURCE_DIR}/3rdparty/argparse)
   add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/argparse)
   add_subdirectory(dist/SOEMAUTDServer)
 endif()
