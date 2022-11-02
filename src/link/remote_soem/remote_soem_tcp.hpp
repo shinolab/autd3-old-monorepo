@@ -1,4 +1,4 @@
-// File: remote_soem_tcp.hpp
+﻿// File: remote_soem_tcp.hpp
 // Project: remote_soem
 // Created Date: 02/11/2022
 // Author: Shun Suzuki
@@ -22,7 +22,26 @@
 #include <unistd.h>
 #endif
 
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 6285 6385 26437 26800 26498 26451 26495)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic push
+#endif
+#ifdef __clang__
+#pragma clang diagnostic push
+#endif
 #include <spdlog/spdlog.h>
+#if _MSC_VER
+#pragma warning(pop)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic pop
+#endif
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 #include <autd3/core/link.hpp>
 #include <autd3/driver/cpu/ec_config.hpp>
