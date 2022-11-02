@@ -11,6 +11,8 @@
 
 #include "autd3/link/soem.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <iostream>
 
 #include "autd3.hpp"
@@ -20,6 +22,8 @@ int main() try {
   autd3::Controller autd;
 
   autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
+
+  spdlog::set_level(spdlog::level::debug);
 
   auto link = autd3::link::SOEM()
                   .on_lost([](const std::string& msg) {

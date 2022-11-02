@@ -46,3 +46,6 @@
 [submodule "3rdparty/smem"]
 	path = 3rdparty/smem
 	url = https://github.com/shinolab/smem.git
+[submodule "3rdparty/argparse"]
+	path = 3rdparty/argparse
+	url = https://github.com/p-ranav/argparse.git

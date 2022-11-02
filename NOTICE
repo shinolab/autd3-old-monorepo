@@ -23,6 +23,10 @@ THIRD PARTY NOTICES
       * stb (https://github.com/nothings/stb)
       * tinycolormap (https://github.com/yuki-koyama/tinycolormap)
       * NotoFont (https://github.com/notofonts/noto-fonts/blob/main/LICENSE)
+    * SOEMAUTDServer uses
+      * SOEM link uses SOEM (https://github.com/OpenEtherCATsociety/SOEM)
+        * For windows it further depends on WinPcap (https://www.winpcap.org/).
+      * argparse (https://github.com/p-ranav/argparse)
 * The licenses of these libraries are shown below.
 
 ********************* spdlog *********************
