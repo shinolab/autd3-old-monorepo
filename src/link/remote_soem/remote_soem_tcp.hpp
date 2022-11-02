@@ -1,4 +1,4 @@
-﻿// File: remote_soem_tcp.hpp
+// File: remote_soem_tcp.hpp
 // Project: remote_soem
 // Created Date: 02/11/2022
 // Author: Shun Suzuki
@@ -82,11 +82,12 @@ class RemoteSOEMTcp final : public core::Link {
         const auto len = recv(_socket, buffer.data(), static_cast<int>(size), 0);
         if (len <= 0) continue;
         const auto ulen = static_cast<size_t>(len);
-        if (ulen != size) {
+        if (ulen % size != 0) {
           spdlog::error("Unknown data size: {}", ulen);
           continue;
         }
-        std::memcpy(_ptr.get(), buffer.data(), ulen);
+        const auto n = ulen / size;
+        for (size_t i = 0; i < n; i++) std::memcpy(_ptr.get(), buffer.data() + i * size, ulen);
       }
     });
   }
