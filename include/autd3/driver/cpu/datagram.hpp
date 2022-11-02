@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/11/2022
+// Last Modified: 03/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -84,7 +84,12 @@ struct RxDatagram {
   RxMessage &operator[](const size_t i) noexcept { return _data.at(i); }
   const RxMessage &operator[](const size_t i) const noexcept { return _data.at(i); }
 
-  void clear() { std::memset(_data.data(), 0, _data.size() * sizeof(RxMessage)); }
+  void clear() {
+    std::for_each(_data.begin(), _data.end(), [](RxMessage &msg) {
+      msg.ack = 0;
+      msg.msg_id = 0;
+    });
+  }
 
  private:
   std::vector<RxMessage> _data;
