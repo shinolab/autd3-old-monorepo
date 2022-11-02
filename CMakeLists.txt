@@ -203,7 +203,7 @@ if(BUILD_GEOMETRY_VIEWER)
   add_subdirectory(src/extra/geometry_viewer)
 endif()
 
-if(BUILD_SIMULATOR OR BUILD_LINK_SIMULATOR)
+if(BUILD_SIMULATOR OR BUILD_LINK_SIMULATOR OR EXPORT_SOEM_AUTD_SERVER OR BUILD_LINK_REMOTE_SOEM)
   set(SMEM_BUILD_EXAMPLE OFF)
   execute_process(COMMAND git -C ${PROJECT_SOURCE_DIR} submodule update --init -- ${PROJECT_SOURCE_DIR}/3rdparty/smem)
   add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/smem)

@@ -24,6 +24,12 @@
 #include <unistd.h>
 #endif
 
+#if WIN32
+#elif __APPLE__
+#else
+#include <signal.h>
+#endif
+
 namespace autd3::publish {
 
 class TcpInterface final : public Interface {
