@@ -30,6 +30,10 @@
 
 namespace autd3::link {
 
+#if WIN32
+using socklen_t = int;
+#endif
+
 class RemoteSOEMTcp final : public core::Link {
  public:
   RemoteSOEMTcp(std::string ip, const uint16_t port) : Link(), _is_open(false), _ip(std::move(ip)), _port(port) {}
@@ -61,7 +65,7 @@ class RemoteSOEMTcp final : public core::Link {
 #if WIN32
     inet_pton(AF_INET, _ip.c_str(), &_addr.sin_addr.S_un.S_addr);
 #else
-    _addr.sin_addr.s_addr = inet_addr(_ip_addr.c_str());
+    _addr.sin_addr.s_addr = inet_addr(_ip.c_str());
 #endif
 
     if (connect(_socket, reinterpret_cast<sockaddr*>(&_addr), sizeof _addr)) throw std::runtime_error("failed to connect server");
