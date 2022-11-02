@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/10/2022
+// Last Modified: 02/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,6 +26,7 @@ constexpr uint8_t MSG_RD_FPGA_VERSION = 0x03;
 constexpr uint8_t MSG_RD_FPGA_FUNCTION = 0x04;
 constexpr uint8_t MSG_BEGIN = 0x05;
 constexpr uint8_t MSG_END = 0xF0;
+constexpr uint8_t MSG_SERVER_CLOSE = 0xFD;
 constexpr uint8_t MSG_SIMULATOR_CLOSE = 0xFE;
 constexpr uint8_t MSG_SIMULATOR_INIT = 0xFF;
 
