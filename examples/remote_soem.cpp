@@ -25,6 +25,8 @@ int main() try {
 
   autd.open(std::move(link));
 
+  autd.check_trials = 50;
+
   return run(std::move(autd));
 } catch (std::exception& e) {
   std::cerr << e.what() << std::endl;
