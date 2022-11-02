@@ -3,7 +3,7 @@
 // Created Date: 02/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/11/2022
+// Last Modified: 03/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -79,6 +79,8 @@ class RemoteSOEMTcp final : public core::Link {
 #endif
       throw std::runtime_error("cannot connect to simulator");
 
+    spdlog::debug("Create socket: {}", _socket);
+
     _addr.sin_family = AF_INET;
     _addr.sin_port = htons(_port);
 #if WIN32
@@ -87,7 +89,9 @@ class RemoteSOEMTcp final : public core::Link {
     _addr.sin_addr.s_addr = inet_addr(_ip.c_str());
 #endif
 
+    spdlog::debug("Connecting to server...");
     if (connect(_socket, reinterpret_cast<sockaddr*>(&_addr), sizeof _addr)) throw std::runtime_error("failed to connect server");
+    spdlog::debug("Connected");
 
     const auto size = geometry.num_devices() * driver::EC_INPUT_FRAME_SIZE;
 
