@@ -72,6 +72,12 @@ class TcpInterface final : public Interface {
     socklen_t dst_addr_size = sizeof _dst_addr;
     spdlog::info("Waiting for client connection...");
     _dst_socket = accept(_socket, reinterpret_cast<sockaddr*>(&_dst_addr), &dst_addr_size);
+#if WIN32
+    if (_socket == INVALID_SOCKET)
+#else
+    if (_socket < 0)
+#endif
+      return;
     spdlog::info("Connected to client");
 
     u_long val = 1;
@@ -105,23 +111,32 @@ class TcpInterface final : public Interface {
   }
 
   void close() override {
-    if (!_is_open) return;
     _is_open = false;
 
-    _run.store(false);
-    if (_th.joinable()) _th.join();
+    if (_run.load()) {
+      _run.store(false);
+      if (_th.joinable()) _th.join();
+    }
 
 #if WIN32
-    closesocket(_socket);
-    closesocket(_dst_socket);
-    _socket = INVALID_SOCKET;
-    _dst_socket = INVALID_SOCKET;
-    WSACleanup();
+    if (_dst_socket != INVALID_SOCKET) {
+      closesocket(_dst_socket);
+      _dst_socket = INVALID_SOCKET;
+    }
+    if (_socket != INVALID_SOCKET) {
+      closesocket(_socket);
+      _socket = INVALID_SOCKET;
+      WSACleanup();
+    }
 #else
-    ::close(_socket);
-    _socket = -1;
-    ::close(_dst_socket);
-    _dst_socket = -1;
+    if (_socket != -1) {
+      ::close(_socket);
+      _socket = -1;
+    }
+    if (_dst_socket != -1) {
+      ::close(_dst_socket);
+      _dst_socket = -1;
+    }
 #endif
   }
 
@@ -133,13 +148,14 @@ class TcpInterface final : public Interface {
     return true;
   }
 
-  void rx(driver::RxDatagram& rx) override {
+  bool rx(driver::RxDatagram& rx) override {
 #if WIN32
-    if (_dst_socket == INVALID_SOCKET) return;
+    if (_dst_socket == INVALID_SOCKET) return true;
 #else
-    if (_dst_socket < 0) return;
+    if (_dst_socket < 0) return true;
 #endif
-    send(_dst_socket, reinterpret_cast<const char*>(rx.messages().data()), static_cast<int>(rx.messages().size() * driver::EC_INPUT_FRAME_SIZE), 0);
+    return send(_dst_socket, reinterpret_cast<const char*>(rx.messages().data()),
+                static_cast<int>(rx.messages().size() * driver::EC_INPUT_FRAME_SIZE), 0) >= 0;
   }
 
  private:
@@ -156,8 +172,8 @@ class TcpInterface final : public Interface {
   std::thread _th;
 
 #if WIN32
-  SOCKET _socket{};
-  SOCKET _dst_socket{};
+  UINT_PTR _socket{};
+  UINT_PTR _dst_socket{};
 #else
   int _socket{-1};
   int _dst_socket{-1};
