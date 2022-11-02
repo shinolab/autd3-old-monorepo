@@ -48,14 +48,16 @@ class TcpInterface final : public Interface {
 
     _socket = socket(AF_INET, SOCK_STREAM, 0);
 #if WIN32
-    if (_socket == INVALID_SOCKET)
+    if (_socket == INVALID_SOCKET) {
+      WSACleanup();
 #else
-    if (_socket < 0)
+    if (_socket < 0) {
 #endif
       throw std::runtime_error("cannot connect to client");
+    }
 
-    int y = 1;
-    setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, (const char*)&y, sizeof y);
+    constexpr int y = 1;
+    setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&y), sizeof y);
 
     _addr.sin_family = AF_INET;
     _addr.sin_port = htons(_port);
@@ -101,7 +103,7 @@ class TcpInterface final : public Interface {
     _th = std::thread([this, size] {
       std::vector<char> buffer(size);
       while (_run) {
-        const auto len = recv(_dst_socket, buffer.data(), buffer.size(), 0);
+        const auto len = recv(_dst_socket, buffer.data(), static_cast<int>(buffer.size()), 0);
         if (len <= 0) continue;
         const auto ulen = static_cast<size_t>(len);
         if (ulen < driver::HEADER_SIZE) {
