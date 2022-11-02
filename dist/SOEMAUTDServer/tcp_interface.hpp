@@ -81,6 +81,7 @@ class TcpInterface final : public Interface {
     _dst_socket = accept(_socket, reinterpret_cast<sockaddr*>(&_dst_addr), &dst_addr_size);
 #if WIN32
     if (_dst_socket == INVALID_SOCKET) return;
+    if (GetLastError() == WSAEINTR) return;
 #else
     if (_dst_socket < 0) return;
     if (errno == 53) return;
