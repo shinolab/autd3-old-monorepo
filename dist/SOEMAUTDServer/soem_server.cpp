@@ -59,8 +59,8 @@ int main(const int argc, char* argv[]) try {
     return 0;
   }
 
-  const auto ifname = program.get("--ifname");
-  const auto client = program.get("--client");
+  const auto& ifname = program.get("--ifname");
+  const auto& client = program.get("--client");
   const auto port = static_cast<uint16_t>(program.get<int>("--port"));
   const auto sync0_cycle = std::max(1, program.get<int>("--sync0"));
   const auto send_cycle = std::max(1, program.get<int>("--send"));
@@ -114,15 +114,21 @@ int main(const int argc, char* argv[]) try {
         soem_handler.send(tx);
       }
       soem_handler.receive(rx);
-      interf->rx(rx);
+      if (!interf->rx(rx)) {
+        spdlog::info("Disconnect from client");
+        interf->close();
+        tx.clear();
+        rx.clear();
+        interf->connect();
+      }
     }
-    interf->close();
   });
 
   spdlog::info("enter any key to quit...");
   std::cin.ignore();
 
   run = false;
+  interf->close();
   if (th.joinable()) th.join();
 
   soem_handler.close();
