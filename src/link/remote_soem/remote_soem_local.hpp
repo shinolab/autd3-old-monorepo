@@ -37,6 +37,8 @@ class RemoteSOEMLocal final : public core::Link {
   void close() override {
     if (!is_open()) return;
 
+    _ptr[0] = driver::MSG_SERVER_CLOSE;
+
     _smem.unmap();
     _ptr = nullptr;
   }
