@@ -4,7 +4,7 @@ Project: link
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 21/10/2022
+Last Modified: 04/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,6 +27,7 @@ class RemoteTwinCAT:
 
     def local_ams_net_id(self, local_ams_net_id):
         self._local_ams_net_id = local_ams_net_id
+        return self
 
     def build(self):
         link = c_void_p()

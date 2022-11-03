@@ -1351,6 +1351,32 @@ Delete pointer to Adapter list.
 | state_check_interval   | uint64_t | in     | state check interval in ms         |
 | return                 | void     | -      | -                                  |
 
+## AUTDLinkSOEMSetLogLevel (autd3capi-link-soem)
+
+| Argument name / return | type     | in/out | description                        |
+| ---------------------- | -------- | ------ | ---------------------------------- |
+| level                  | int32_t  | in     | log level                          |
+| return                 | void     | -      | -                                  |
+
+## AUTDLinkSOEMSetDefaultLogger (autd3capi-link-soem)
+
+| Argument name / return | type     | in/out | description                        |
+| ---------------------- | -------- | ------ | ---------------------------------- |
+| out                    | void*    | in     | output callback                    |
+| flush                  | void*    | in     | flush callback                     |
+| return                 | void     | -      | -                                  |
+
+## AUTDLinkRemoteSOEM (autd3capi-link-remote-soem)
+
+Create RemoteSOEM link.
+
+| Argument name / return | type    | in/out | description                              |
+| ---------------------- | ------  | ------ | ---------------------------------------- |
+| out                    | void**  | out    | pointer to pointer to RemoteSOEM link    |
+| ip                     | char*   | in     | server ip address                        |
+| port                   | uint16_t| in     | port                                     |
+| return                 | void    | -      | -                                        |
+
 ## AUTDLinkTwinCAT (autd3capi-link-twincat)
 
 Create TwinCAT link.
