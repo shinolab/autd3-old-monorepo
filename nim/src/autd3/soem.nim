@@ -3,7 +3,7 @@
 # Created Date: 11/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 26/10/2022
+# Last Modified: 04/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,6 +24,7 @@ type SOEM* = object of RootObj
   highPrecision: bool
   onLost: Callback
   freerun: bool
+  check_interval: uint64
 
 type Adapter* = object
   name*: string
@@ -52,6 +53,7 @@ func initSOEM*(): SOEM =
   result.highPrecision = false
   result.onLost = nil
   result.freerun = false
+  result.check_interval = 500
 
 proc ifname*(cnt: var SOEM, ifname: string): var SOEM =
   cnt.ifname = cast[cstring](ifname)
@@ -77,7 +79,11 @@ proc onLost*(cnt: var SOEM, onLost: Callback): var SOEM =
   cnt.onLost = onLost
   result = cnt
 
+proc checkInterval*(cnt: var SOEM, interval: uint64): var SOEM =
+  cnt.check_interval = interval
+  result = cnt
+
 func build*(cnt: SOEM): Link {.discardable.} =
   let p = rawProc(cnt.onLost)
   AUTDLinkSOEM(result.p.addr, cnt.ifname, cnt.sync0Cycle, cnt.sendCycle,
-      cnt.freerun, p, cnt.highPrecision)
+      cnt.freerun, p, cnt.highPrecision, cnt.check_interval)
