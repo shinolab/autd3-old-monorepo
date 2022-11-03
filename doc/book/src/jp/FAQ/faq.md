@@ -63,7 +63,7 @@
       * その他の操作 (モデリング等) は問題ない
 
 - この問題の回避策としては, 以下のいずれかを試されたい
-  1. `link::TwinCAT`, または, `link::RemoteTwinCAT`を使用する
+  1. `link::TwinCAT`, `link::RemoteTwinCAT`, または, `link::RemoteSOEM`を使用する
   1. USB to Ethernetアダプターを使用する
      - 少なくとも「ASIX AX88179」のチップを採用しているもので正常に動作することが確認されている
      - なお, オンボードではなくとも, PCIe接続のethernetアダプターでも同様の問題が発生する

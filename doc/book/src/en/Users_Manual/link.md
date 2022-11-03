@@ -232,6 +232,41 @@ This does not solve the problem thoroughly, but it may improve it somewhat.
                 .build();
 ```
 
+
+## RemoteSOEM
+
+As mentioned above, running another program on the PC running SOEM may cause unstable operation.
+RemoteSOEM Link can be used to separate the server PC running SOEM from the client PC running the user program.
+
+To use the RemoteSOEM, you need to prepare two PCs.
+In this case, one of the PCs must be able to use the SOEM link.
+Let us call this PC "server" here.
+On the other hand, the PC on the development side, i.e., the one to use the SDK, has no restrictions; and should be connected to the same LAN as the server, and is called the "client" here.
+
+First, connect the server to the AUTD device.
+Second, connect the server and the client with another LAN [^fn_remote_twin].
+Third, check the IP address of the LAN between the server and the client.
+For example, assume that the server is "169.254.205.219" and the client is "169.254.175.45".
+Next, start `SOEMAUTDServer` on the server.
+At this time, please specify client IP address by `-c` option (in this example, `169.254.175.45`) and the port number by `-p` option (optional, default is 50632).
+
+On the client side, include the `autd3/link/remote_soem.hpp` header, and build link as follows;
+
+```cpp
+#include "autd3/link/remote_soem.hpp"
+
+...
+
+  const std::string ip = "169.254.205.219";
+  const uint16_t port = 50632;
+  auto link = autd3::link::RemoteSOEM().ip(ip).port(port).build();
+```
+
+### Firewall
+
+If you get a TCP-related error, it may be that your firewall is blocking the connection.
+In this case, you should allow TCP/UDP connections on the specified port in the firewall configuration.
+
 ## Simulator
 
 Simulator link is a link to use [AUTD Simulator](https://shinolab.github.io/autd3/book/en/Simulator/simulator.html).

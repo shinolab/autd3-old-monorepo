@@ -226,12 +226,49 @@ High Precisionモードを`true`にすると, より高精度なタイマが使�
 特定の環境下でSOEMが上手く動かない場合がある (詳細は[FAQ](https://shinolab.github.io/autd3/book/jp/FAQ/faq.html#linksoem%E4%BD%BF%E7%94%A8%E6%99%82%E3%81%AB%E9%80%81%E4%BF%A1%E3%81%8C%E5%A4%B1%E6%95%97%E3%81%99%E3%82%8B)を参照されたい).
 この問題を緩和するために, FreeRunモードというものを導入した.
 必ずしもこれで解決する訳では無いが, 多少良くなる場合がある.
+(もう一つの解決策として後述のRemoteSOEMが使用できる.)
 
 ```cpp
   auto link = autd3::link::SOEM()
                 .sync_mode(autd3::link::SYNC_MODE::FREE_RUN)
                 .build();
 ```
+
+## RemoteSOEM
+
+前述の通り, SOEMを動かしているPC上で別のプログラムを動作させると動作が不安定になる場合がある.
+このLinkはSOEMを動かすサーバーPCとユーザプログラムを動かすクライアントPCを分離するためのものである.
+
+RemoteSOEMを使用する場合はPCを2台用意する必要がある.
+この時, 片方のPCはSOEM linkが使えるである必要がある.
+このPCをここでは"サーバ"と呼ぶ.
+一方, 開発側のPC, 即ちSDKを使用する側は特に制約はなく, サーバと同じLANに繋がっていれば良い, こちらをここでは"クライアント"と呼ぶ.
+
+まず, サーバとAUTDデバイスを接続する.
+また, サーバとクライアントを別のLANで繋ぐ[^fn_remote_twin].
+そして, サーバとクライアント間のLANのIPを確認しておく.
+ここでは例えば, サーバ側が"169.254.205.219", クライアント側が"169.254.175.45"だったとする.
+次に, サーバで`SOEMAUTDServer`を起動する.
+この時, `-c`オプションでクライアントのIPアドレス (この例だと`169.254.175.45`), `-p`オプションでポート番号 (任意) を指定する.
+
+クライアント側は`autd3/link/remote_soem.hpp`ヘッダーをincludeして,
+
+```cpp
+#include "autd3/link/remote_soem.hpp"
+
+...
+
+  const std::string ip = "169.254.205.219";
+  const uint16_t port = 50632;
+  auto link = autd3::link::RemoteSOEM().ip(ip).port(port).build();
+```
+
+のようにすれば良い.
+
+### ファイアウォール
+
+TCP関係のエラーが出る場合は, ファイアウォールでブロックされている可能性がある.
+その場合は, ファイアウォールの設定でTCP/UDPの指定したポートの接続を許可する.
 
 ## Simulator
 

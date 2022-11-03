@@ -48,6 +48,7 @@ namespace AUTD3Sharp
             private bool _freerun;
             private bool _highPrecision;
             private Action<string>? _onLost;
+            private ulong _checkInterval;
 
             public SOEM()
             {
@@ -57,6 +58,7 @@ namespace AUTD3Sharp
                 _freerun = false;
                 _highPrecision = false;
                 _onLost = null;
+                _checkInterval = 500;
             }
 
             public SOEM Ifname(string ifname)
@@ -94,6 +96,11 @@ namespace AUTD3Sharp
                 _onLost = onLost;
                 return this;
             }
+            public SOEM CheckInterval(ulong interval)
+            {
+                _checkInterval = interval;
+                return this;
+            }
 
             public Link Build()
             {
@@ -107,7 +114,7 @@ namespace AUTD3Sharp
                     var callback = new OnLostCallbackDelegate(_onLost);
                     onLostHandler = Marshal.GetFunctionPointerForDelegate(callback);
                 }
-                NativeMethods.LinkSOEM.AUTDLinkSOEM(out var handle, _ifname, _sync0Cycle, _sendCycle, _freerun, onLostHandler, _highPrecision);
+                NativeMethods.LinkSOEM.AUTDLinkSOEM(out var handle, _ifname, _sync0Cycle, _sendCycle, _freerun, onLostHandler, _highPrecision, _checkInterval);
                 return new Link(handle);
             }
 
@@ -125,6 +132,36 @@ namespace AUTD3Sharp
             }
         }
 
+        public sealed class RemoteSOEM
+        {
+            private string _ip;
+            private ushort _port;
+
+            public RemoteSOEM()
+            {
+                _ip = "";
+                _port = 50632;
+            }
+
+            public RemoteSOEM Ip(string ip)
+            {
+                _ip = ip;
+                return this;
+            }
+
+            public RemoteSOEM Port(ushort port)
+            {
+                _port = port;
+                return this;
+            }
+
+            public Link Build()
+            {
+                NativeMethods.LinkRemoteSOEM.AUTDLinkRemoteSOEM(out var handle, _ip, _port);
+                return new Link(handle);
+            }
+        }
+
         public sealed class TwinCAT
         {
             public Link Build()
@@ -133,7 +170,6 @@ namespace AUTD3Sharp
                 return new Link(handle);
             }
         }
-
 
         public sealed class RemoteTwinCAT
         {
@@ -169,11 +205,6 @@ namespace AUTD3Sharp
 
         public sealed class Simulator
         {
-
-            public Simulator()
-            {
-            }
-
             public Link Build()
             {
                 NativeMethods.LinkSimulator.AUTDLinkSimulator(out var handle);

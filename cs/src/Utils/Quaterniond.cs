@@ -66,6 +66,16 @@ namespace AUTD3Sharp.Utils
             if (obj is Quaterniond qua) return Equals(qua);
             return false;
         }
+        public static Quaterniond Divide(Quaterniond left, double right)
+        {
+            var v1 = left.x / right;
+            var v2 = left.y / right;
+            var v3 = left.z / right;
+            var v4 = left.w / right;
+            return new Quaterniond(v1, v2, v3, v4);
+        }
+
+        public static Quaterniond operator /(Quaterniond left, double right) => Divide(left, right);
         #endregion
 
         #region util
