@@ -11,12 +11,12 @@
  *
  */
 
-use crossbeam_channel::{Receiver, Sender};
+use crossbeam_channel::Receiver;
 use std::marker::PhantomData;
 use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
-use autd3_core::{RxDatagram, TxDatagram};
+use autd3_core::TxDatagram;
 
 use crate::iomap::IOMap;
 
@@ -26,24 +26,20 @@ use super::waiter::Waiter;
 use crate::native_methods::*;
 
 pub struct EcatThreadHandler<W: Waiter> {
-    io_map: Box<IOMap>,
+    io_map: Arc<Mutex<IOMap>>,
     is_running: Arc<AtomicBool>,
     wkc: Arc<AtomicI32>,
     receiver: Receiver<TxDatagram>,
-    sender: Sender<RxDatagram>,
-    expected_wkc: i32,
     cycletime: i64,
     _phantom_data: PhantomData<W>,
 }
 
 impl<W: Waiter> EcatThreadHandler<W> {
     pub fn new(
-        io_map: Box<IOMap>,
+        io_map: Arc<Mutex<IOMap>>,
         is_running: Arc<AtomicBool>,
         wkc: Arc<AtomicI32>,
         receiver: Receiver<TxDatagram>,
-        sender: Sender<RxDatagram>,
-        expected_wkc: i32,
         cycletime: i64,
     ) -> Self {
         Self {
@@ -51,8 +47,6 @@ impl<W: Waiter> EcatThreadHandler<W> {
             is_running,
             wkc,
             receiver,
-            sender,
-            expected_wkc,
             cycletime,
             _phantom_data: PhantomData,
         }
@@ -76,7 +70,7 @@ impl<W: Waiter> EcatThreadHandler<W> {
                 ec_sync(ec_DCtime, self.cycletime, &mut toff);
 
                 if let Ok(tx) = self.receiver.try_recv() {
-                    self.io_map.copy_from(tx);
+                    self.io_map.lock().unwrap().copy_from(tx);
                 }
 
                 ec_send_processdata();
