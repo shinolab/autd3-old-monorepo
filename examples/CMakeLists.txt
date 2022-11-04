@@ -39,6 +39,12 @@ if(BUILD_LINK_REMOTE_TWINCAT)
   set_target_properties(example_remote_twincat PROPERTIES FOLDER "example")
 endif()
 
+if(BUILD_LINK_REMOTE_SOEM)
+  add_executable(example_remote_soem remote_soem.cpp ${hpp_files})
+  target_link_libraries(example_remote_soem autd3_example_common link_remote_soem)
+  set_target_properties(example_remote_soem PROPERTIES FOLDER "example")
+endif()
+
 if(BUILD_LINK_DEBUG)
   add_executable(example_debug debug.cpp ${hpp_files})
   target_link_libraries(example_debug autd3_example_common link_debug)

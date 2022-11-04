@@ -1,6 +1,6 @@
 # Package
 
-version       = "2.4.5"
+version       = "2.5.0"
 author        = "shun suzuki"
 description   = "A new awesome nimble package"
 license       = "MIT"

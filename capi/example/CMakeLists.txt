@@ -90,6 +90,19 @@ if(BUILD_LINK_REMOTE_TWINCAT)
   set_target_properties(c_example_remote_twincat PROPERTIES FOLDER "capi/example")
 endif()
 
+if(BUILD_LINK_REMOTE_SOEM)
+  add_executable(c_example_remote_soem remote_soem.c)
+  add_autd_dependencies(c_example_remote_soem)
+  target_include_directories(c_example_remote_soem PRIVATE ${PROJECT_SOURCE_DIR}/capi/link_remote_soem)
+  target_link_libraries(c_example_remote_soem PRIVATE autd3capi-link-remote-soem) 
+  if(WIN32)
+    add_custom_command(TARGET c_example_remote_soem PRE_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/${prefix}autd3capi-link-remote-soem.${extention} ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>
+      DEPENDS ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/${prefix}autd3capi-link-remote-soem.${extention})
+  endif()
+  set_target_properties(c_example_remote_soem PROPERTIES FOLDER "capi/example")
+endif()
+
 if(BUILD_LINK_DEBUG)
   add_executable(c_example_debug debug.c)
   add_autd_dependencies(c_example_debug)

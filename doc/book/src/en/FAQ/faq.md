@@ -61,7 +61,7 @@
       * Other operations (modeling, etc.) are fine.
 
 - As a workaround, try one of the following
-  1. use `link::TwinCAT`, or `link::RemoteTwinCAT`
+  1. use `link::TwinCAT`, `link::RemoteTwinCAT`, or `link::RemoteSOEM`
   1. use a USB to Ethernet adapter
      - It has been confirmed that at least the adapter using the "ASIX AX88179" chip works properly.
      - The same problem may occur with PCIe ethernet adapters.

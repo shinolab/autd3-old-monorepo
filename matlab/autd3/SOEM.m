@@ -4,7 +4,7 @@
 %Created Date: 07/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 10/10/2022
+%Last Modified: 04/11/2022
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,6 +20,7 @@ classdef SOEM < handle
         send_cycle_
         freerun_
         high_precision_
+        check_interval_
     end
 
     methods
@@ -27,10 +28,11 @@ classdef SOEM < handle
         function obj = SOEM()
             obj.ptr = libpointer('voidPtr', 0);
             obj.ifname_ = libpointer('int8Ptr', 0);
-            obj.sync0_cycle_ = 1;
-            obj.send_cycle_ = 1;
+            obj.sync0_cycle_ = 2;
+            obj.send_cycle_ = 2;
             obj.freerun_ = false;
             obj.high_precision_ = false;
+            obj.check_interval_ = 500;
         end
 
         function ifname(obj, name)
@@ -53,10 +55,14 @@ classdef SOEM < handle
             obj.high_precision_ = flag;
         end
 
+        function check_interval(obj, interval)
+            obj.check_interval_ = interval;
+        end
+
         function res = build(obj)
             pp = libpointer('voidPtrPtr', obj.ptr);
             on_lost = libpointer('voidPtr', 0);
-            calllib('autd3capi_link_soem', 'AUTDLinkSOEM', pp, obj.ifname_, obj.sync0_cycle_, obj.send_cycle_, obj.freerun_, on_lost, obj.high_precision_);
+            calllib('autd3capi_link_soem', 'AUTDLinkSOEM', pp, obj.ifname_, obj.sync0_cycle_, obj.send_cycle_, obj.freerun_, on_lost, obj.high_precision_, obj.check_interval_);
             res = obj;
         end
 

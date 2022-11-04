@@ -8,8 +8,8 @@ add_library(link_soem
   link_soem_impl.cpp
   link_soem_impl.hpp
   ${SOEM_SRC_FILES}
-  ecat_thread/ecat_thread.hpp
-  ecat_thread/error_handler.hpp
+  ecat_thread.hpp
+  error_handler.hpp
   ecat_thread/${OS}.hpp
   ${PROJECT_SOURCE_DIR}/include/autd3/link/soem.hpp
 )
@@ -36,7 +36,9 @@ endif()
 
 target_link_libraries(link_soem INTERFACE ${CMAKE_THREAD_LIBS_INIT})
 if(WIN32)
-  if("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "Win32")
+  if(AUTD3_BUILD_ARM)
+    target_link_libraries(link_soem PUBLIC ${PROJECT_SOURCE_DIR}/src/link/soem/Lib/ARM64/Packet.lib ${PROJECT_SOURCE_DIR}/src/link/soem/Lib/ARM64/wpcap.lib)
+  elseif("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "Win32")
     target_link_libraries(link_soem PUBLIC ${SOEM_PATH}/oshw/${OS}/wpcap/Lib/Packet.lib ${SOEM_PATH}/oshw/${OS}/wpcap/Lib/wpcap.lib)
   else()
     target_link_libraries(link_soem PUBLIC ${SOEM_PATH}/oshw/${OS}/wpcap/Lib/x64/Packet.lib ${SOEM_PATH}/oshw/${OS}/wpcap/Lib/x64/wpcap.lib)

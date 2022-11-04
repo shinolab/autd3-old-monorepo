@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2022
+ * Last Modified: 01/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@
 #include "params.h"
 #include "utils.h"
 
-#define CPU_VERSION (0x84) /* v2.4 */
+#define CPU_VERSION (0x85) /* v2.5 */
 
 #define MOD_BUF_SEGMENT_SIZE_WIDTH (15)
 #define MOD_BUF_SEGMENT_SIZE (1 << MOD_BUF_SEGMENT_SIZE_WIDTH)
@@ -44,6 +44,8 @@
 #define MSG_RD_FPGA_FUNCTION (0x04)
 #define MSG_BEGIN (0x05)
 #define MSG_END (0xF0)
+
+#define WDT_CNT_MAX (1000)
 
 extern RX_STR0 _sRx0;
 extern RX_STR1 _sRx1;
@@ -136,6 +138,8 @@ static volatile uint32_t _mod_cycle = 0;
 
 static volatile uint32_t _stm_cycle = 0;
 static volatile uint16_t _seq_gain_data_mode = GAIN_DATA_MODE_PHASE_DUTY_FULL;
+
+static volatile short _wdt_cnt = WDT_CNT_MAX;
 
 inline static uint64_t get_next_sync0() {
   volatile uint64_t next_sync0 = ECATC.DC_CYC_START_TIME.LONGLONG;
@@ -481,6 +485,13 @@ inline static uint16_t read_fpga_info(void) { return bram_read(BRAM_SELECT_CONTR
 void init_app(void) { clear(); }
 
 void update(void) {
+  if (ECATC.AL_STATUS_CODE.WORD == 0x001A) { // Synchronization error
+    if (_wdt_cnt < 0) return;
+    if (_wdt_cnt-- == 0) clear();
+  } else {
+    _wdt_cnt = WDT_CNT_MAX;
+  }
+
   switch (_msg_id) {
     case MSG_RD_CPU_VERSION:
     case MSG_RD_FPGA_VERSION:
