@@ -90,11 +90,11 @@ jobs:
           mkdir publish/bin
           mkdir publish/SOEMAUTDServer
           cd ..
-          copy build/lib/Release/*.lib build/publish/lib
-          copy src/link/soem/Lib/ARM64/*.lib build/publish/lib/wpcap
-          copy build/bin/Release/*.dll build/publish/bin
-          copy build/dist/SOEMAUTDServer/Release/*.exe build/publish/SOEMAUTDServer
-          Compress-Archive -Path LICENSE, NOTICE, include, build/publish/lib, build/publish/bin, build/publish/SOEMAUTDServer -DestinationPath assets_arm.zip
+          copy build_arm/lib/Release/*.lib build_arm/publish/lib
+          copy src/link/soem/Lib/ARM64/*.lib build_arm/publish/lib/wpcap
+          copy build_arm/bin/Release/*.dll build_arm/publish/bin
+          copy build_arm/dist/SOEMAUTDServer/Release/*.exe build_arm/publish/SOEMAUTDServer
+          Compress-Archive -Path LICENSE, NOTICE, include, build_arm/publish/lib, build_arm/publish/bin, build_arm/publish/SOEMAUTDServer -DestinationPath assets_arm.zip
    
   publish_linux:
     name: Release Check on Linux
