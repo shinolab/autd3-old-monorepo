@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/08/2022
+ * Last Modified: 04/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,11 +13,10 @@
 
 use std::{
     sync::{
-        atomic::{AtomicBool, Ordering},
+        atomic::{AtomicBool, AtomicI32, Ordering},
         Arc, Mutex,
     },
-    thread::{self, JoinHandle},
-    time::Duration,
+    thread::JoinHandle,
     usize,
 };
 
@@ -44,15 +43,14 @@ const SEND_BUF_SIZE: usize = 32;
 
 pub struct SOEM<F: Fn(&str) + Send> {
     ecatth_handle: Option<JoinHandle<()>>,
+    ecat_check_th: Option<JoinHandle<()>>,
     error_handle: Option<F>,
-    is_open: bool,
     config: Config,
     sender: Option<Sender<TxDatagram>>,
-    recv_thread: Option<JoinHandle<()>>,
-    thread_running: Arc<AtomicBool>,
-    rx: Arc<Mutex<RxDatagram>>,
+    is_open: Arc<AtomicBool>,
     ec_sync0_cycle_time_ns: u32,
     ec_send_cycle_time_ns: u32,
+    io_map: Arc<Mutex<IOMap>>,
 }
 
 impl<F: Fn(&str) + Send> SOEM<F> {
@@ -61,15 +59,14 @@ impl<F: Fn(&str) + Send> SOEM<F> {
         let ec_sync0_cycle_time_ns = EC_CYCLE_TIME_BASE_NANO_SEC * config.sync0_cycle as u32;
         Self {
             ecatth_handle: None,
+            ecat_check_th: None,
             error_handle: Some(error_handle),
-            is_open: false,
             sender: None,
-            rx: Arc::new(Mutex::new(RxDatagram::new(0))),
-            recv_thread: None,
-            thread_running: Arc::new(AtomicBool::new(false)),
+            is_open: Arc::new(AtomicBool::new(false)),
             config,
             ec_sync0_cycle_time_ns,
             ec_send_cycle_time_ns,
+            io_map: Arc::new(Mutex::new(IOMap::new(0))),
         }
     }
 }
@@ -116,23 +113,9 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
     fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> anyhow::Result<()> {
         let dev_num = geometry.num_devices() as u16;
 
-        self.rx = Arc::new(Mutex::new(RxDatagram::new(geometry.num_devices())));
-
-        let mut io_map = Box::new(IOMap::new(dev_num as _));
+        self.io_map = Arc::new(Mutex::new(IOMap::new(dev_num as _)));
 
         let (tx_sender, tx_receiver) = bounded(SEND_BUF_SIZE);
-        let (rx_sender, rx_receiver) = bounded(SEND_BUF_SIZE);
-
-        let rx = self.rx.clone();
-        let thread_running = self.thread_running.clone();
-        thread_running.store(true, Ordering::Release);
-        self.recv_thread = Some(thread::spawn(move || {
-            while thread_running.load(Ordering::Acquire) {
-                if let Ok(data) = rx_receiver.recv_timeout(Duration::from_millis(100)) {
-                    rx.lock().unwrap().copy_from(&data);
-                }
-            }
-        }));
 
         let ifname = if self.config.ifname.is_empty() {
             lookup_autd()?
@@ -166,7 +149,7 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
 
             ec_configdc();
 
-            ec_config_map(io_map.data() as *mut c_void);
+            ec_config_map(self.io_map.lock().unwrap().data() as *mut c_void);
 
             ec_statecheck(
                 0,
@@ -178,35 +161,36 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
 
             ec_slave[0].state = ec_state_EC_STATE_OPERATIONAL as u16;
 
+            ec_send_processdata();
+            ec_receive_processdata(EC_TIMEOUTRET as _);
+
             ec_writestate(0);
 
+            self.is_open.store(true, Ordering::Release);
             let expected_wkc = (ec_group[0].outputsWKC * 2 + ec_group[0].inputsWKC) as i32;
             let cycletime = self.ec_send_cycle_time_ns as i64;
-            let error_handle = self.error_handle.take();
-            let thread_running = self.thread_running.clone();
+            let is_open = self.is_open.clone();
             let is_high_precision = self.config.high_precision_timer;
+            let wkc = Arc::new(AtomicI32::new(0));
+            let wkc_clone = wkc.clone();
+            let io_map = self.io_map.clone();
             self.ecatth_handle = Some(std::thread::spawn(move || {
-                let error_handler = EcatErrorHandler { error_handle };
                 if is_high_precision {
-                    let mut callback = EcatThreadHandler::<_, HighPrecisionWaiter>::new(
+                    let mut callback = EcatThreadHandler::<HighPrecisionWaiter>::new(
                         io_map,
-                        thread_running,
+                        is_open,
+                        wkc_clone,
                         tx_receiver,
-                        rx_sender,
-                        expected_wkc,
                         cycletime,
-                        error_handler,
                     );
                     callback.run();
                 } else {
-                    let mut callback = EcatThreadHandler::<_, NormalWaiter>::new(
+                    let mut callback = EcatThreadHandler::<NormalWaiter>::new(
                         io_map,
-                        thread_running,
+                        is_open,
+                        wkc_clone,
                         tx_receiver,
-                        rx_sender,
-                        expected_wkc,
                         cycletime,
-                        error_handler,
                     );
                     callback.run();
                 }
@@ -221,6 +205,10 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
             );
 
             if ec_slave[0].state != ec_state_EC_STATE_OPERATIONAL as u16 {
+                self.is_open.store(false, Ordering::Release);
+                if let Some(timer) = self.ecatth_handle.take() {
+                    let _ = timer.join();
+                }
                 return Err(SOEMError::NotResponding.into());
             }
 
@@ -229,16 +217,28 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
                     dc_config(&mut ecx_context as *mut _, i);
                 });
             }
+
+            let is_open = self.is_open.clone();
+            let error_handle = self.error_handle.take();
+            let state_check_interval = self.config.check_interval;
+            self.ecat_check_th = Some(std::thread::spawn(move || {
+                let error_handler = EcatErrorHandler { error_handle };
+                while is_open.load(Ordering::Acquire) {
+                    if wkc.load(Ordering::Acquire) < expected_wkc || ec_group[0].docheckstate != 0 {
+                        error_handler.handle();
+                    }
+                    std::thread::sleep(state_check_interval);
+                }
+            }));
         }
 
-        self.is_open = true;
         self.sender = Some(tx_sender);
 
         Ok(())
     }
 
     fn close(&mut self) -> Result<()> {
-        if !self.is_open {
+        if self.is_open() {
             return Ok(());
         }
 
@@ -248,16 +248,11 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
             ));
         }
 
-        self.is_open = false;
-
-        std::thread::sleep(std::time::Duration::from_millis(200));
-
-        self.thread_running.store(false, Ordering::Release);
+        self.is_open.store(false, Ordering::Release);
         if let Some(timer) = self.ecatth_handle.take() {
             let _ = timer.join();
         }
-
-        if let Some(th) = self.recv_thread.take() {
+        if let Some(th) = self.ecat_check_th.take() {
             let _ = th.join();
         }
 
@@ -282,24 +277,27 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
     }
 
     fn send(&mut self, tx: &TxDatagram) -> Result<bool> {
-        let buf = tx.clone();
+        if !self.is_open() {
+            return Err(AUTDInternalError::LinkClosed.into());
+        }
 
+        let buf = tx.clone();
         self.sender.as_mut().unwrap().send(buf)?;
 
         Ok(true)
     }
 
     fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool> {
-        if !self.is_open {
+        if !self.is_open() {
             return Err(AUTDInternalError::LinkClosed.into());
         }
 
-        rx.copy_from(&self.rx.lock().unwrap());
+        rx.copy_from(&self.io_map.lock().unwrap().input());
 
         Ok(true)
     }
 
     fn is_open(&self) -> bool {
-        self.is_open
+        self.is_open.load(Ordering::Acquire)
     }
 }

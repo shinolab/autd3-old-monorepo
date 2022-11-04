@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/05/2022
+ * Last Modified: 04/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,6 +21,7 @@ pub struct Device<T: Transducer> {
     transducers: Vec<T>,
     origin: Vector3,
     trans_inv: Matrix3,
+    rotation: UnitQuaternion,
 }
 
 impl<T: Transducer> Device<T> {
@@ -44,6 +45,10 @@ impl<T: Transducer> Device<T> {
     pub fn center(&self) -> Vector3 {
         let sum: Vector3 = self.transducers().iter().map(|t| t.position()).sum();
         sum / self.transducers.len() as f64
+    }
+
+    pub fn rotation(&self) -> UnitQuaternion {
+        self.rotation
     }
 }
 
@@ -85,6 +90,7 @@ impl<T: Transducer> Device<T> {
             transducers,
             origin,
             trans_inv,
+            rotation,
         }
     }
 }
