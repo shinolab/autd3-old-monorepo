@@ -13,5 +13,5 @@ keywords = ["autd"]
 [dependencies]
 anyhow = "1.0.57"
 autd3-core = {path="../autd3-core", version="2.5.0"}
-smem = {git="https://github.com/shinolab/smem-rs", version="0.1.0"}
+smem = "0.1.0"
 thiserror = "1.0.30"
