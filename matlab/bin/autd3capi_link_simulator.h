@@ -14,4 +14,4 @@ typedef long int64_t;
 typedef unsigned long uint64_t;
 #endif
 
-void AUTDLinkSimulator(void** out, uint16_t port, char* ip_addr);
+void AUTDLinkSimulator(void** out);

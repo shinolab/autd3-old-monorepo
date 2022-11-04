@@ -3,7 +3,7 @@
 // Created Date: 07/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/09/2022
+// Last Modified: 31/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,8 +25,10 @@ namespace autd3 {
  */
 class SoftwareSTM {
  public:
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 26812)
+#endif
   class TimerStrategy final {
    public:
     enum VALUE : uint8_t {
@@ -61,7 +63,9 @@ class SoftwareSTM {
    private:
     VALUE _value;
   };
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 
   struct SoftwareSTMThreadHandle {
     friend class SoftwareSTM;

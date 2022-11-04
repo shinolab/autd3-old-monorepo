@@ -54,7 +54,8 @@ public class AUTDService
             var soem = new SOEM().FreeRun(linkVm.FreeRun)
                 .HighPrecision(linkVm.HighPrecision)
                 .SendCycle(linkVm.SendCycle)
-                .Sync0Cycle(linkVm.Sync0Cycle);
+                .Sync0Cycle(linkVm.Sync0Cycle)
+                .CheckInterval(linkVm.CheckInterval);
             if (linkVm.InterfaceName != "SOEM_Link_AUTO".GetLocalized())
             {
                 soem = soem.Ifname(linkVm.InterfaceName);
@@ -67,7 +68,8 @@ public class AUTDService
             LinkType.SOEM => BuildSOEM(),
             LinkType.TwinCAT => new TwinCAT().Build(),
             LinkType.RemoteTwinCAT => new RemoteTwinCAT(linkVm.RemoteAmsNetId).RemoteIp(linkVm.RemoteIp).LocalAmsNetId(linkVm.LocalAmsNetId).Build(),
-            LinkType.Simulator => new Simulator().Port(linkVm.Port).Build(),
+            LinkType.Simulator => new Simulator().Build(),
+            LinkType.RemoteSOEM => new RemoteSOEM().Ip(linkVm.RemoteSOEMIp).Port(linkVm.RemoteSOEMPort).Build(),
             _ => throw new ArgumentOutOfRangeException()
         };
 
@@ -145,5 +147,5 @@ public class AUTDService
         return _autd?.Close() != -1;
     }
 
-    public string GetLastError() => Controller.LastError;
+    public static string GetLastError() => Controller.LastError;
 }

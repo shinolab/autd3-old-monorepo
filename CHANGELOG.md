@@ -1,3 +1,12 @@
+# 2.5.0
+
+- Rename `AUTDServer` to `TwinCATAUTDServer`
+- Add `SOEMAUTDServer` and `link::RemoteSOEM`
+- Add Windows arm support
+- Fix [#36](https://github.com/shinolab/autd3/issues/36)
+- Add log settings in SOEM Link CAPI
+- Remove `port` and `ip` settings from Simulator
+
 # 2.4.5
 
 - Change unit of sound speed from m/s to mm/s

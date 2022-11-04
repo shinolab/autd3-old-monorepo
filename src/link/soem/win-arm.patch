@@ -1,0 +1,34 @@
+From 5144fbdf8e8d312049f90906714848612e8e740c Mon Sep 17 00:00:00 2001
+From: shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>
+Date: Wed, 2 Nov 2022 09:21:28 +0900
+Subject: [PATCH] win arm
+
+---
+ oshw/win32/nicdrv.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/oshw/win32/nicdrv.c b/oshw/win32/nicdrv.c
+index 9657f31..e3deba5 100644
+--- a/oshw/win32/nicdrv.c
++++ b/oshw/win32/nicdrv.c
+@@ -136,9 +136,15 @@ int ecx_setupnic(ecx_portt *port, const char *ifname, int secondary)
+       psock = &(port->sockhandle);
+    }
+    /* we use pcap socket to send RAW packets in windows user mode*/
++#if defined(_M_ARM64)
++   *psock = pcap_open(ifname, 65536,
++       PCAP_OPENFLAG_MAX_RESPONSIVENESS |
++       PCAP_OPENFLAG_NOCAPTURE_LOCAL, -1, NULL, errbuf);
++#else
+    *psock = pcap_open(ifname, 65536, PCAP_OPENFLAG_PROMISCUOUS |
+-                                     PCAP_OPENFLAG_MAX_RESPONSIVENESS |
+-                                     PCAP_OPENFLAG_NOCAPTURE_LOCAL, -1, NULL , errbuf);
++       PCAP_OPENFLAG_MAX_RESPONSIVENESS |
++       PCAP_OPENFLAG_NOCAPTURE_LOCAL, -1, NULL, errbuf);
++#endif
+    if (NULL == *psock)
+    {
+       printf("interface %s could not open with pcap\n", ifname);
+-- 
+2.38.1.windows.1
+

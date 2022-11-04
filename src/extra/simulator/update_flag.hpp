@@ -3,7 +3,7 @@
 // Created Date: 05/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/10/2022
+// Last Modified: 01/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,8 +15,11 @@
 
 namespace autd3::extra::simulator {
 
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 26812)
+#endif
+
 class UpdateFlags final {
  public:
   enum VALUE : uint32_t {
@@ -63,6 +66,8 @@ class UpdateFlags final {
   VALUE _value;
 };
 
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 
 }  // namespace autd3::extra::simulator

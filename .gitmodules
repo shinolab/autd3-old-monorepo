@@ -43,3 +43,9 @@
 [submodule "rust/autd3-link-soem/3rdparty/SOEM"]
 	path = rust/autd3-link-soem/3rdparty/SOEM
 	url = https://github.com/OpenEtherCATsociety/SOEM.git
+[submodule "3rdparty/smem"]
+	path = 3rdparty/smem
+	url = https://github.com/shinolab/smem.git
+[submodule "3rdparty/argparse"]
+	path = 3rdparty/argparse
+	url = https://github.com/p-ranav/argparse.git

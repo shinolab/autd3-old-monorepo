@@ -4,7 +4,7 @@ Project: link
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 21/10/2022
+Last Modified: 04/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,11 +24,12 @@ ErrorHandlerFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 class SOEM:
     def __init__(self):
         self._ifname = None
-        self._send_cycle = 1
-        self._sync0_cycle = 1
+        self._send_cycle = 2
+        self._sync0_cycle = 2
         self._on_lost = None
         self._high_precision = False
         self._freerun = False
+        self._check_interval = 500
 
     def ifname(self, ifname: str):
         self._ifname = ifname
@@ -54,12 +55,16 @@ class SOEM:
         self._freerun = flag
         return self
 
+    def check_interval(self, interval: int):
+        self._check_interval = interval
+        return self
+
     def build(self):
         onlost = ErrorHandlerFunc(self._on_lost) if self._on_lost is not None else None
         LinkSOEM().init_dll()
         link = c_void_p()
         LinkSOEM().dll.AUTDLinkSOEM(byref(link), self._ifname.encode('utf-8') if self._ifname is not None else None,
-                                    self._sync0_cycle, self._send_cycle, self._freerun, onlost, self._high_precision)
+                                    self._sync0_cycle, self._send_cycle, self._freerun, onlost, self._high_precision, self._check_interval)
         return Link(link)
 
     @ staticmethod

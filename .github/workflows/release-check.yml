@@ -26,7 +26,7 @@ jobs:
           cuda: '11.8.0'
       - name: Build project x64
         run: |
-          cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=ON -DDISABLE_EXAMPLES=ON
+          cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=ON -DDISABLE_EXAMPLES=ON -DEXPORT_SOEM_AUTD_SERVER=ON
           cd build
           cmake --build . --parallel 8 --config Release
           mkdir publish
@@ -35,15 +35,16 @@ jobs:
           mkdir publish/bin
           mkdir publish/simulator
           mkdir publish/gui-controller
+          mkdir publish/SOEMAUTDServer
           cd ..
           foreach($dll in Get-ChildItem -Path build/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/src/native/windows/x64}
           cd cs/src
           dotnet clean
-          dotnet build -c:Release /p:Platform=x64
+          dotnet build -c:Release
           cd ../..
-          dotnet nuget add source $pwd/cs/src/bin/x64/Release -n autd3sharp_local
+          dotnet nuget add source $pwd/cs/src/bin/Release -n autd3sharp_local
           cd dist/GUI
-          dotnet publish -c:Release /p:Platform=x64 -r win-x64 --self-contained false -o bin
+          dotnet publish -c:Release -r win-x64 --self-contained false -o bin
           copy AUTD3-GUI-Controller/Strings -Recurse bin/
           cd ../..
           copy build/lib/Release/*.lib build/publish/lib
@@ -52,9 +53,10 @@ jobs:
           copy dist/GUI/bin -Recurse publish/gui-controller/bin
           copy dist/GUI/AUTD3-GUI-Controller.exe publish/gui-controller
           copy build/dist/simulator/Release/*.exe build/publish/simulator
-          Remove-Item -Recurse -Force dist/AUTDServer/src
-          Compress-Archive -Path LICENSE, NOTICE, dist/AUTDServer, dist/firmware, include, build/publish/lib, build/publish/bin, build/publish/simulator, publish/gui-controller -DestinationPath assets_x64.zip
-
+          copy build/dist/SOEMAUTDServer/Release/*.exe build/publish/SOEMAUTDServer
+          copy dist/simulator/settings.json build/publish/simulator
+          Remove-Item -Recurse -Force dist/TwinCATAUTDServer/src
+          Compress-Archive -Path LICENSE, NOTICE, dist/TwinCATAUTDServer, dist/firmware, include, build/publish/lib, build/publish/bin, build/publish/simulator, build/publish/SOEMAUTDServer, publish/gui-controller -DestinationPath assets_x64.zip
       - name: Build project x64 for Unity
         run: |
           cmake -G "Visual Studio 17 2022" -A x64 -B "build_unity" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=OFF -DDISABLE_EXAMPLES=ON -DUSE_METER=ON -DUSE_LEFT_HANDED=ON
@@ -76,7 +78,24 @@ jobs:
           package-path: 'autd3.unitypackage'
           include-files: ./cs/unity/metaList
           project-folder: ./cs/unity
-    
+
+      - name: Build project arm
+        run: |
+          cmake -G "Visual Studio 17 2022" -A ARM64 -B "build_arm" -DBUILD_TARGET=ARM -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=OFF -DEXPORT_AUTD_SIMULATOR=OFF -DDISABLE_EXAMPLES=ON -DEXPORT_SOEM_AUTD_SERVER=ON
+          cd build_arm
+          cmake --build . --parallel 8 --config Release
+          mkdir publish
+          mkdir publish/lib
+          mkdir publish/lib/wpcap
+          mkdir publish/bin
+          mkdir publish/SOEMAUTDServer
+          cd ..
+          copy build_arm/lib/Release/*.lib build_arm/publish/lib
+          copy src/link/soem/Lib/ARM64/*.lib build_arm/publish/lib/wpcap
+          copy build_arm/bin/Release/*.dll build_arm/publish/bin
+          copy build_arm/dist/SOEMAUTDServer/Release/*.exe build_arm/publish/SOEMAUTDServer
+          Compress-Archive -Path LICENSE, NOTICE, include, build_arm/publish/lib, build_arm/publish/bin, build_arm/publish/SOEMAUTDServer -DestinationPath assets_arm.zip
+   
   publish_linux:
     name: Release Check on Linux
     runs-on: ubuntu-latest
@@ -196,10 +215,10 @@ jobs:
         foreach($dll in Get-ChildItem -Path build/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/src/native/windows/x64}
         cd cs/src
         dotnet clean
-        dotnet build -c:Release /p:Platform=x64
+        dotnet build -c:Release
         cd ..
-        dotnet nuget add source $pwd/src/bin/x64/Release -n autd3shapr_local
+        dotnet nuget add source $pwd/src/bin/Release -n autd3sharp_local
         cd example
         dotnet clean example.sln
         dotnet nuget locals global-packages --clear
-        dotnet build example.sln -c:Release /p:Platform=x64
+        dotnet build example.sln -c:Release

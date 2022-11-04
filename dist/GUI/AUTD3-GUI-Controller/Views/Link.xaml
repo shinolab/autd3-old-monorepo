@@ -4,7 +4,7 @@
     Created Date: 18/08/2022
     Author: Shun Suzuki
     =====
-    Last Modified: 11/10/2022
+    Last Modified: 29/10/2022
     Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
     =====
     Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -100,6 +100,7 @@
                                     Value="{x:Bind ViewModel.SendCycle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 <TextBlock
                                     Grid.Row="1"
+                                    Grid.Column="0"
                                     VerticalAlignment="Center"
                                     localization:Localizer.Uid="LinkPage_Sync0Cycle" />
                                 <NumberBox
@@ -112,6 +113,18 @@
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.Sync0Cycle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock
+                                    Grid.Row="2"
+                                    Grid.Column="0"
+                                    VerticalAlignment="Center"
+                                    localization:Localizer.Uid="LinkPage_CheckInterval" />
+                                <TextBox
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Width="60"
+                                    Margin="{StaticResource XSmallLeftMargin}"
+                                    HorizontalAlignment="Left"
+                                    Text="{x:Bind ViewModel.CheckInterval, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             </Grid>
                         </StackPanel>
                     </controls:Case>
@@ -159,39 +172,42 @@
                                 Text="{x:Bind ViewModel.LocalAmsNetId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         </Grid>
                     </controls:Case>
+
+                    <controls:Case Value="RemoteSOEM">
+                        <Grid Loaded="LinkPageSelection_OnLoaded">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                localization:Localizer.Uid="LinkPage_RemoteIp" />
+                            <TextBox
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Margin="{StaticResource XSmallLeftMargin}"
+                                Text="{x:Bind ViewModel.RemoteSOEMIp, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                localization:Localizer.Uid="LinkPage_Port" />
+                            <TextBox
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Margin="{StaticResource XSmallLeftMargin}"
+                                Text="{x:Bind ViewModel.RemoteSOEMPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </Grid>
+                    </controls:Case>
+
                     <controls:Case Value="Simulator">
                         <StackPanel Loaded="LinkPageSelection_OnLoaded">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="auto" />
-                                    <ColumnDefinition Width="auto" />
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="auto" />
-                                    <RowDefinition Height="auto" />
-                                </Grid.RowDefinitions>
-                                <TextBlock
-                                    Grid.Column="0"
-                                    VerticalAlignment="Center"
-                                    localization:Localizer.Uid="LinkPage_Port" />
-                                <NumberBox
-                                    Grid.Column="1"
-                                    Width="120"
-                                    Margin="{StaticResource XSmallLeftMargin}"
-                                    Text="{x:Bind ViewModel.Port, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                <TextBlock
-                                    Grid.Row="1"
-                                    Grid.Column="0"
-                                    VerticalAlignment="Center"
-                                    Text="IP address" />
-                                <TextBox
-                                    Grid.Row="1"
-                                    Grid.Column="1"
-                                    Width="120"
-                                    Margin="{StaticResource XSmallLeftMargin}"
-                                    Text="{x:Bind ViewModel.SimulatorIp, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-
-                            </Grid>
                             <Button
                                 Margin="{StaticResource SmallTopMargin}"
                                 VerticalAlignment="Center"

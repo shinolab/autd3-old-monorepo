@@ -38,21 +38,21 @@ Disable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform
 
 インストール後に再起動し, `C:/TwinCAT/3.1/System/win8settick.bat`を管理者権限で実行し, 再び再起動する.
 
-最後に, SDK内の`dist/AUTDServer/AUTD.xml`を`C:/TwinCAT/3.1/Config/Io/EtherCAT`にコピーする.
+最後に, SDK内の`dist/TwinCATAUTDServer/AUTD.xml`を`C:/TwinCAT/3.1/Config/Io/EtherCAT`にコピーする.
 
-### AUTDServer
+### TwinCATAUTDServer
 
-TwinCATのLinkを使うには, まず, `dist/AUTDServer/AUTDServer.exe`を実行する.
+TwinCATのLinkを使うには, まず, `dist/TwinCATAUTDServer/TwinCATAUTDServer.exe`を実行する.
 
 初回はドライバをインストールするために, `-k`オプションを付けて, TwinCAT XAE Shellを開いたままにしておくこと.
 
 ```
-AUTDServer.exe -k
+TwinCATAUTDServer.exe -k
 ```
 
 > Note: もし閉じてしまった場合は, `%TEMP%/TwinCATAUTDServer/TwinCATAUTDServer.sln`をTcXaeShell Applicationとして開けば良い. `%TEMP%`は環境変数で, 普通は`C:/Users/(user name)/AppData/Local/Temp`である.
 
-なお, AUTDServerはPCの電源を切る, スリープモードに入る等でLinkが途切れるので, その都度実行し直すこと.
+なお, TwinCATAUTDServerはPCの電源を切る, スリープモードに入る等でLinkが途切れるので, その都度実行し直すこと.
 
 #### Install Driver
 
@@ -67,16 +67,16 @@ Incompatible devicesの中のドライバもInstall自体は可能で, Install�
 
 また, 初回はライセンス関係のエラーが出るので, XAE ShellでSolution Explorer→SYSTEM→Licenseを開き, "7 Days Trial License ..."をクリックし, 画面に表示される文字を入力する.
 なお. ライセンスは7日間限定のトライアルライセンスだが, 切れたら再び同じ作業を行うことで再発行できる.
-ライセンスを発行し終わったら, TwinCAT XAE Shellを閉じて, 再び"AUTDServer.exe"を実行する.
+ライセンスを発行し終わったら, TwinCAT XAE Shellを閉じて, 再び"TwinCATAUTDServer.exe"を実行する.
 
 ### Troubleshooting
 
 大量のDeviceを使用しようとすると, 下の図のようなエラーが発生することがある.
-この場合は, `AUTDServer`のオプションの`-s`と`-t`の値を増やし, AUTDServerを再び実行する.
+この場合は, `TwinCATAUTDServer`のオプションの`-s`と`-t`の値を増やし, TwinCATAUTDServerを再び実行する.
 これらのオプションの値はそれぞれ`2`になっている.
 
 ```
-AUTDServer.exe -s 3 -t 3
+TwinCATAUTDServer.exe -s 3 -t 3
 ```
 
 何倍にすればいいかは接続する台数による.
@@ -114,12 +114,12 @@ RemoteTwinCATを使用する場合はPCを2台用意する必要がある.
 こちらのLANアダプタはTwinCAT対応である必要はない[^fn_remote_twin].
 そして, サーバとクライアント間のLANのIPを確認しておく.
 ここでは例えば, サーバ側が"169.254.205.219", クライアント側が"169.254.175.45"だったとする.
-次に, サーバでAUTDServerを起動する.
+次に, サーバでTwinCATAUTDServerを起動する.
 この時, `-c`オプションでクライアントのIPアドレス (この例だと`169.254.175.45`) を指定する.
 また, 最後に`-k`オプションを使用し, TwinCATAUTDServerを開いたままにしておく.
 
 ```
-AUTDServer.exe -c 169.254.175.45 -k
+TwinCATAUTDServer.exe -c 169.254.175.45 -k
 ```
 
 そして, 以下の図のように, System→Routesを開き, NetId ManagementタブのLocal NetIdを確認しておく.
@@ -226,12 +226,49 @@ High Precisionモードを`true`にすると, より高精度なタイマが使�
 特定の環境下でSOEMが上手く動かない場合がある (詳細は[FAQ](https://shinolab.github.io/autd3/book/jp/FAQ/faq.html#linksoem%E4%BD%BF%E7%94%A8%E6%99%82%E3%81%AB%E9%80%81%E4%BF%A1%E3%81%8C%E5%A4%B1%E6%95%97%E3%81%99%E3%82%8B)を参照されたい).
 この問題を緩和するために, FreeRunモードというものを導入した.
 必ずしもこれで解決する訳では無いが, 多少良くなる場合がある.
+(もう一つの解決策として後述のRemoteSOEMが使用できる.)
 
 ```cpp
   auto link = autd3::link::SOEM()
                 .sync_mode(autd3::link::SYNC_MODE::FREE_RUN)
                 .build();
 ```
+
+## RemoteSOEM
+
+前述の通り, SOEMを動かしているPC上で別のプログラムを動作させると動作が不安定になる場合がある.
+このLinkはSOEMを動かすサーバーPCとユーザプログラムを動かすクライアントPCを分離するためのものである.
+
+RemoteSOEMを使用する場合はPCを2台用意する必要がある.
+この時, 片方のPCはSOEM linkが使えるである必要がある.
+このPCをここでは"サーバ"と呼ぶ.
+一方, 開発側のPC, 即ちSDKを使用する側は特に制約はなく, サーバと同じLANに繋がっていれば良い, こちらをここでは"クライアント"と呼ぶ.
+
+まず, サーバとAUTDデバイスを接続する.
+また, サーバとクライアントを別のLANで繋ぐ[^fn_remote_twin].
+そして, サーバとクライアント間のLANのIPを確認しておく.
+ここでは例えば, サーバ側が"169.254.205.219", クライアント側が"169.254.175.45"だったとする.
+次に, サーバで`SOEMAUTDServer`を起動する.
+この時, `-c`オプションでクライアントのIPアドレス (この例だと`169.254.175.45`), `-p`オプションでポート番号 (任意) を指定する.
+
+クライアント側は`autd3/link/remote_soem.hpp`ヘッダーをincludeして,
+
+```cpp
+#include "autd3/link/remote_soem.hpp"
+
+...
+
+  const std::string ip = "169.254.205.219";
+  const uint16_t port = 50632;
+  auto link = autd3::link::RemoteSOEM().ip(ip).port(port).build();
+```
+
+のようにすれば良い.
+
+### ファイアウォール
+
+TCP関係のエラーが出る場合は, ファイアウォールでブロックされている可能性がある.
+その場合は, ファイアウォールの設定でTCP/UDPの指定したポートの接続を許可する.
 
 ## Simulator
 
@@ -248,10 +285,8 @@ SimulatorのLinkを使用する際は`autd3/link/simulator.hpp`ヘッダーを�
 
 ...
 
-  auto link = autd3::link::Simulator().port(50632).build();
+  auto link = autd3::link::Simulator().build();
 ```
-
-ポート番号はAUTD Simulatorの設定と同じにしておく.
 
 [^fn_remote_twin]: 無線LANでも可
 

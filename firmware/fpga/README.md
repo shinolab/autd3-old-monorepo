@@ -1,6 +1,6 @@
 # AUTD3-FPGA
 
-version 2.4
+version 2.5
 
 # Document
 

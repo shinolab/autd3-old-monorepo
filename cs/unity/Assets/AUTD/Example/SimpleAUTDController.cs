@@ -1,13 +1,13 @@
 ﻿/*
  * File: SimpleAUTDController.cs
  * Project: Example
- * Created Date: 08/03/2021
+ * Created Date: 10/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2022
+ * Last Modified: 26/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2021 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  * 
  */
 
@@ -24,12 +24,15 @@ public class SimpleAUTDController : MonoBehaviour
     AUTD3Sharp.Link.Link? _link = null;
     public GameObject? Target = null;
 
+    private Vector3 _oldPosition;
+
     void Awake()
     {
         _autd.Geometry.AddDevice(gameObject.transform.position, gameObject.transform.rotation);
 
         _link = new AUTD3Sharp.Link.SOEM()
             .HighPrecision(true)
+            .FreeRun(true)
             .Build();
 
         if (!_autd.Open(_link))
@@ -45,12 +48,21 @@ public class SimpleAUTDController : MonoBehaviour
         _autd.Synchronize();
 
         _autd.Send(new AUTD3Sharp.Modulation.Sine(150)); // 150 Hz
+
+        if (Target != null)
+        {
+            _autd.Send(new AUTD3Sharp.Gain.Focus(Target.transform.position, 1.0));
+            _oldPosition = Target.transform.position;
+        }
     }
 
     void Update()
     {
-        if (Target != null)
+        if (Target != null && Target.transform.position != _oldPosition)
+        {
             _autd.Send(new AUTD3Sharp.Gain.Focus(Target.transform.position, 1.0));
+            _oldPosition = Target.transform.position;
+        }
     }
 
     private void OnApplicationQuit()

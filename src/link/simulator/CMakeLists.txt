@@ -5,10 +5,7 @@ add_library(link_simulator
   ${PROJECT_SOURCE_DIR}/include/autd3/link/simulator.hpp
 )
 target_link_libraries(link_simulator PUBLIC autd3_common)
-
-if(WIN32)
-  target_link_libraries(link_simulator PUBLIC ws2_32)
-endif()
+target_link_libraries(link_simulator PRIVATE smem)
 
 set_target_properties(link_simulator
   PROPERTIES

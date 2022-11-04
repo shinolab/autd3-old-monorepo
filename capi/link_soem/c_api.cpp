@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/08/2022
+// Last Modified: 01/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,6 +12,8 @@
 #include "../base/wrapper_link.hpp"
 #include "./soem_link.h"
 #include "autd3/link/soem.hpp"
+#include "custom_sink.hpp"
+#include "spdlog/spdlog.h"
 
 typedef struct {
   std::vector<autd3::link::EtherCATAdapter> adapters;
@@ -39,8 +41,8 @@ void AUTDFreeAdapterPointer(void* p_adapter) {
   ether_cat_adapters_delete(wrapper);
 }
 
-void AUTDLinkSOEM(void** out, const char* ifname, const uint16_t sync0_cycle, const uint16_t send_cycle, const bool freerun,
-                  void* on_lost, const bool high_precision) {
+void AUTDLinkSOEM(void** out, const char* ifname, const uint16_t sync0_cycle, const uint16_t send_cycle, const bool freerun, void* on_lost,
+                  const bool high_precision, const uint64_t state_check_interval) {
   auto soem_link = autd3::link::SOEM()
                        .ifname(ifname != nullptr ? std::string(ifname) : "")
                        .sync0_cycle(sync0_cycle)
@@ -48,7 +50,16 @@ void AUTDLinkSOEM(void** out, const char* ifname, const uint16_t sync0_cycle, co
                        .high_precision(high_precision)
                        .sync_mode(freerun ? autd3::link::SYNC_MODE::FREE_RUN : autd3::link::SYNC_MODE::DC)
                        .on_lost([on_lost](const std::string& msg) { reinterpret_cast<OnLostCallback>(on_lost)(msg.c_str()); })
+                       .state_check_interval(std::chrono::milliseconds(state_check_interval))
                        .build();
   auto* link = link_create(std::move(soem_link));
   *out = link;
+}
+
+void AUTDLinkSOEMSetLogLevel(const int32_t level) { spdlog::set_level(static_cast<spdlog::level::level_enum>(level)); }
+
+void AUTDLinkSOEMSetDefaultLogger(void* out, void* flush) {
+  auto custom_sink = std::make_shared<autd3::capi::custom_sink_mt>(out, flush);
+  const auto logger = std::make_shared<spdlog::logger>("custom_logger", custom_sink);
+  set_default_logger(logger);
 }

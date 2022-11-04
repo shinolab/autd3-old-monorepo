@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/10/2022
+// Last Modified: 02/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,6 +26,7 @@ constexpr uint8_t MSG_RD_FPGA_VERSION = 0x03;
 constexpr uint8_t MSG_RD_FPGA_FUNCTION = 0x04;
 constexpr uint8_t MSG_BEGIN = 0x05;
 constexpr uint8_t MSG_END = 0xF0;
+constexpr uint8_t MSG_SERVER_CLOSE = 0xFD;
 constexpr uint8_t MSG_SIMULATOR_CLOSE = 0xFE;
 constexpr uint8_t MSG_SIMULATOR_INIT = 0xFF;
 
@@ -35,8 +36,10 @@ constexpr size_t MOD_BODY_DATA_SIZE = 124;
 constexpr size_t POINT_STM_HEAD_DATA_SIZE = 61;
 constexpr size_t POINT_STM_BODY_DATA_SIZE = 62;
 
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 26812)
+#endif
 class CPUControlFlags final {
  public:
   enum VALUE : uint8_t {
@@ -110,7 +113,9 @@ class CPUControlFlags final {
 
 inline std::ostream& operator<<(std::ostream& os, const CPUControlFlags& flag) { return os << flag.to_string(); }
 
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 
 enum class GainSTMMode : uint16_t {
   PhaseDutyFull = 0x0001,

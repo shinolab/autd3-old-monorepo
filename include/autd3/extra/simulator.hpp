@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/10/2022
+// Last Modified: 29/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -123,8 +123,7 @@ struct SimulatorSettings {
 
   std::string image_save_path{"image.png"};
 
-  std::string ip{"127.0.0.1"};
-  uint16_t port{50632};
+  uint8_t max_dev_num{50};
 
   void load_default(const bool use_meter_, const bool use_left_handed_) {
     use_meter = use_meter_;
@@ -220,8 +219,7 @@ inline void to_json(nlohmann::json& j, const SimulatorSettings& s) {
       {"show_mod_plot", s.show_mod_plot},
       {"show_mod_plot_raw", s.show_mod_plot_raw},
       {"image_save_path", s.image_save_path},
-      {"ip", s.ip},
-      {"port", s.port},
+      {"max_dev_num", s.max_dev_num},
   };
 }
 inline void from_json(const nlohmann::json& j, SimulatorSettings& s) {
@@ -263,8 +261,7 @@ inline void from_json(const nlohmann::json& j, SimulatorSettings& s) {
   j.at("show_mod_plot").get_to(s.show_mod_plot);
   j.at("show_mod_plot_raw").get_to(s.show_mod_plot_raw);
   j.at("image_save_path").get_to(s.image_save_path);
-  j.at("ip").get_to(s.ip);
-  j.at("port").get_to(s.port);
+  j.at("max_dev_num").get_to(s.max_dev_num);
 }
 
 class Simulator {

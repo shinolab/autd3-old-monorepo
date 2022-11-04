@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/10/2022
+// Last Modified: 01/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,15 +15,15 @@
 
 namespace autd3::link {
 
-static LARGE_INTEGER PERFORMANCE_FREQUENCY{};
+static LARGE_INTEGER performance_frequency{};
 
 inline void ecat_init() {
   LARGE_INTEGER f;
   QueryPerformanceFrequency(&f);
-  PERFORMANCE_FREQUENCY = f;
+  performance_frequency = f;
 }
 
-inline void gettimeofday_precise(struct timeval* const tv, struct timezone* const tz) {
+inline void gettimeofday_precise(timeval* const tv, struct timezone* const) {
   FILETIME system_time;
   GetSystemTimePreciseAsFileTime(&system_time);
 
@@ -32,14 +32,14 @@ inline void gettimeofday_precise(struct timeval* const tv, struct timezone* cons
   const auto usecs = system_time64 / 10;
 
   tv->tv_sec = static_cast<long>(usecs / 1000000);                                        // NOLINT
-  tv->tv_usec = static_cast<long>(usecs - (static_cast<int64_t>(tv->tv_sec) * 1000000));  // NOLINT
+  tv->tv_usec = static_cast<long>(usecs - static_cast<int64_t>(tv->tv_sec) * 1000000LL);  // NOLINT
 }
 
 inline void nanosleep(const int64_t t) {
   LARGE_INTEGER start;
   QueryPerformanceCounter(&start);
 
-  const auto sleep_for = t * PERFORMANCE_FREQUENCY.QuadPart / (1000LL * 1000LL * 1000LL) + start.QuadPart;
+  const auto sleep_for = t * performance_frequency.QuadPart / (1000LL * 1000LL * 1000LL) + start.QuadPart;
 
   LARGE_INTEGER now;
   QueryPerformanceCounter(&now);
@@ -65,9 +65,9 @@ inline timespec ecat_setup(const int64_t cycletime_ns) {
   auto tp = timeval{0, 0};
   gettimeofday_precise(&tp, nullptr);
 
-  const auto cycletime_us = cycletime_ns / 1000;
+  const auto cycletime_us = cycletime_ns / 1000LL;
 
-  const auto ht = ((tp.tv_usec / cycletime_us) + 1) * cycletime_us;
+  const auto ht = (tp.tv_usec / cycletime_us + 1) * cycletime_us;
   return {tp.tv_sec, static_cast<long>(ht) * 1000L};  // NOLINT
 }
 

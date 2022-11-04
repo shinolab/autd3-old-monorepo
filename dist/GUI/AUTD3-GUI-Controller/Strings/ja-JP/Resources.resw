@@ -264,4 +264,7 @@
   <data name="LinkPage_RunSimulator.Content" xml:space="preserve">
     <value>シミュレータを起動</value>
   </data>
+  <data name="LinkPage_CheckInterval.Text" xml:space="preserve">
+    <value>状態確認間隔 [ms]</value>
+  </data>
 </root>
