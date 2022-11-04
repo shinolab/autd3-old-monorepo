@@ -4,7 +4,7 @@
  * Created Date: 13/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/10/2022
+ * Last Modified: 04/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ foreach (var device in autd.Geometry)
     foreach (var tr in device)
         tr.Frequency = 70e3;
 
-var link = new Simulator().Port(50632).Build();
+var link = new Simulator().Build();
 if (!autd.Open(link))
 {
     Console.WriteLine(Controller.LastError);
