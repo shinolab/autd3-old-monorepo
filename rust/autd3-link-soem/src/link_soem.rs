@@ -219,15 +219,12 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
             }
 
             let is_open = self.is_open.clone();
-            let wkc_clone = wkc.clone();
             let error_handle = self.error_handle.take();
             let state_check_interval = self.config.check_interval;
             self.ecat_check_th = Some(std::thread::spawn(move || {
                 let error_handler = EcatErrorHandler { error_handle };
                 while is_open.load(Ordering::Acquire) {
-                    if wkc_clone.load(Ordering::Acquire) < expected_wkc
-                        || ec_group[0].docheckstate != 0
-                    {
+                    if wkc.load(Ordering::Acquire) < expected_wkc || ec_group[0].docheckstate != 0 {
                         error_handler.handle();
                     }
                     std::thread::sleep(state_check_interval);
