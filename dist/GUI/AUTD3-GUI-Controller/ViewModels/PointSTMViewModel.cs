@@ -118,7 +118,7 @@ public partial class PointSTMViewModel
         var noWifiDialog = new ContentDialog
         {
             Title = "AUTD internal error",
-            Content = _autdService.GetLastError(),
+            Content = AUTDService.GetLastError(),
             CloseButtonText = "Ok",
             XamlRoot = XamlRoot!
         };

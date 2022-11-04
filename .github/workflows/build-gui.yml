@@ -33,6 +33,6 @@ jobs:
         dotnet clean
         dotnet build -c:Release /p:Platform=x64
         cd ../..
-        dotnet nuget add source $pwd/cs/src/bin/x64/Release -n autd3shapr_local
+        dotnet nuget add source $pwd/cs/src/bin/x64/Release -n autd3sharp_local
         cd dist/GUI
         dotnet build -c:Release /p:Platform=x64
