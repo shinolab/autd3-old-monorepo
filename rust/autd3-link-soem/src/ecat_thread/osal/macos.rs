@@ -11,27 +11,9 @@
  *
  */
 
-use std::{
-    marker::PhantomData,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc,
-    },
-};
-
-use autd3_core::{RxDatagram, TxDatagram};
-use crossbeam_channel::{Receiver, Sender};
 use libc::{gettimeofday, timespec, timeval};
 
-use crate::{iomap::IOMap, native_methods::*};
-
-use super::{error_handler::EcatErrorHandler, utils::*};
-
-pub trait Waiter {}
-pub struct NormalWaiter {}
-pub struct HighPrecisionWaiter {}
-impl Waiter for NormalWaiter {}
-impl Waiter for HighPrecisionWaiter {}
+use crate::ecat_thread::waiter::Waiter;
 
 pub fn add_timespec(ts: &mut timespec, addtime: i64) {
     let nsec = addtime % 1000000000;
@@ -50,9 +32,9 @@ pub fn ecat_setup(cycletime_ns: i64) -> timespec {
         tv_sec: 0,
         tv_nsec: 0,
     };
-
-    gettimeofday(&mut ts as *mut _ as *mut _, std::ptr::null_mut() as *mut _);
-
+    unsafe {
+        gettimeofday(&mut ts as *mut _ as *mut _, std::ptr::null_mut() as *mut _);
+    }
     let ht = ((ts.tv_nsec / cycletime_ns) + 1) * cycletime_ns;
     ts.tv_nsec = ht;
 
