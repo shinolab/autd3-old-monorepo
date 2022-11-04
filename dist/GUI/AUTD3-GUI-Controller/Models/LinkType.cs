@@ -18,5 +18,6 @@ public enum LinkType
     SOEM,
     TwinCAT,
     RemoteTwinCAT,
-    Simulator
+    Simulator,
+    RemoteSOEM
 }
