@@ -238,7 +238,7 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
     }
 
     fn close(&mut self) -> Result<()> {
-        if self.is_open() {
+        if !self.is_open() {
             return Ok(());
         }
 
