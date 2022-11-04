@@ -56,7 +56,7 @@ class SOEM:
         return self
 
     def check_interval(self, interval: int):
-        self._check_itnerval = interval
+        self._check_interval = interval
         return self
 
     def build(self):
@@ -64,7 +64,7 @@ class SOEM:
         LinkSOEM().init_dll()
         link = c_void_p()
         LinkSOEM().dll.AUTDLinkSOEM(byref(link), self._ifname.encode('utf-8') if self._ifname is not None else None,
-                                    self._sync0_cycle, self._send_cycle, self._freerun, onlost, self._high_precision, self._check_itnerval)
+                                    self._sync0_cycle, self._send_cycle, self._freerun, onlost, self._high_precision, self._check_interval)
         return Link(link)
 
     @ staticmethod
