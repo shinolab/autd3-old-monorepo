@@ -96,6 +96,14 @@ public partial class LinkViewModel
     private int _sendIntervals;
     async partial void OnSendIntervalsChanged(int value) => await _localSettingsService.SaveSettingAsync(nameof(SendIntervals), value);
 
+    [ObservableProperty] private string _remoteSOEMIp;
+    async partial void OnRemoteSOEMIpChanged(string value) => await _localSettingsService.SaveSettingAsync(nameof(RemoteIp), value);
+
+    [ObservableProperty] private ushort _remoteSOEMPort;
+    async partial void OnRemoteSOEMPortChanged(ushort value) => await _localSettingsService.SaveSettingAsync(nameof(RemoteSOEMPort), value);
+
+    [ObservableProperty] private ulong _checkInterval;
+    async partial void OnCheckIntervalChanged(ulong value) => await _localSettingsService.SaveSettingAsync(nameof(CheckInterval), value);
 
     [RelayCommand(CanExecute = "OpenCanExecute")]
     public async void Open()
@@ -105,7 +113,7 @@ public partial class LinkViewModel
             var noWifiDialog = new ContentDialog
             {
                 Title = "AUTD internal error",
-                Content = _autdService.GetLastError(),
+                Content = AUTDService.GetLastError(),
                 CloseButtonText = "Ok",
                 XamlRoot = XamlRoot!
             };
@@ -125,7 +133,7 @@ public partial class LinkViewModel
             var noWifiDialog = new ContentDialog
             {
                 Title = "AUTD internal error",
-                Content = _autdService.GetLastError(),
+                Content = AUTDService.GetLastError(),
                 CloseButtonText = "Ok",
                 XamlRoot = XamlRoot!
             };
@@ -139,7 +147,7 @@ public partial class LinkViewModel
     private bool IsOpened => _autdService.IsOpened;
 
     [RelayCommand]
-    public async void RunSimulator()
+    public static async void RunSimulator()
     {
         await Task.Run(() =>
           {
@@ -172,5 +180,9 @@ public partial class LinkViewModel
 
         _checkTrials = _localSettingsService.ReadSetting<int?>(nameof(CheckTrials)) ?? 0;
         _sendIntervals = _localSettingsService.ReadSetting<int?>(nameof(SendIntervals)) ?? 1;
+
+        _remoteSOEMIp = _localSettingsService.ReadSetting<string>(nameof(RemoteSOEMIp)) ?? "";
+        _remoteSOEMPort = _localSettingsService.ReadSetting<ushort?>(nameof(RemoteSOEMPort)) ?? 50632;
+        _checkInterval = _localSettingsService.ReadSetting<ulong?>(nameof(CheckInterval)) ?? 500;
     }
 }
