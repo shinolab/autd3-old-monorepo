@@ -31,8 +31,8 @@ jobs:
         foreach($dll in Get-ChildItem -Path build/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/src/native/windows/x64}
         cd cs/src
         dotnet clean
-        dotnet build -c:Release /p:Platform=x64
+        dotnet build -c:Release
         cd ../..
-        dotnet nuget add source $pwd/cs/src/bin/x64/Release -n autd3sharp_local
+        dotnet nuget add source $pwd/cs/src/bin/Release -n autd3sharp_local
         cd dist/GUI
-        dotnet build -c:Release /p:Platform=x64
+        dotnet build -c:Release
