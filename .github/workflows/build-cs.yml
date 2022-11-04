@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-    
+
     steps:
     - uses: actions/checkout@v3
     - name: Setup .NET Core
@@ -24,4 +24,4 @@ jobs:
     - name: Build with dotnet
       run: |
         cd ./cs/src
-        dotnet build -c:Release /p:Platform=x64
+        dotnet build -c:Release
