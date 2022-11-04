@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/08/2022
+ * Last Modified: 04/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -48,9 +48,7 @@ pub struct SOEM<F: Fn(&str) + Send> {
     is_open: bool,
     config: Config,
     sender: Option<Sender<TxDatagram>>,
-    recv_thread: Option<JoinHandle<()>>,
     thread_running: Arc<AtomicBool>,
-    rx: Arc<Mutex<RxDatagram>>,
     ec_sync0_cycle_time_ns: u32,
     ec_send_cycle_time_ns: u32,
 }
@@ -64,8 +62,6 @@ impl<F: Fn(&str) + Send> SOEM<F> {
             error_handle: Some(error_handle),
             is_open: false,
             sender: None,
-            rx: Arc::new(Mutex::new(RxDatagram::new(0))),
-            recv_thread: None,
             thread_running: Arc::new(AtomicBool::new(false)),
             config,
             ec_sync0_cycle_time_ns,
@@ -116,23 +112,9 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
     fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> anyhow::Result<()> {
         let dev_num = geometry.num_devices() as u16;
 
-        self.rx = Arc::new(Mutex::new(RxDatagram::new(geometry.num_devices())));
-
         let mut io_map = Box::new(IOMap::new(dev_num as _));
 
         let (tx_sender, tx_receiver) = bounded(SEND_BUF_SIZE);
-        let (rx_sender, rx_receiver) = bounded(SEND_BUF_SIZE);
-
-        let rx = self.rx.clone();
-        let thread_running = self.thread_running.clone();
-        thread_running.store(true, Ordering::Release);
-        self.recv_thread = Some(thread::spawn(move || {
-            while thread_running.load(Ordering::Acquire) {
-                if let Ok(data) = rx_receiver.recv_timeout(Duration::from_millis(100)) {
-                    rx.lock().unwrap().copy_from(&data);
-                }
-            }
-        }));
 
         let ifname = if self.config.ifname.is_empty() {
             lookup_autd()?
@@ -178,6 +160,9 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
 
             ec_slave[0].state = ec_state_EC_STATE_OPERATIONAL as u16;
 
+            ec_send_processdata();
+            ec_receive_processdata(EC_TIMEOUTRET as _);
+
             ec_writestate(0);
 
             let expected_wkc = (ec_group[0].outputsWKC * 2 + ec_group[0].inputsWKC) as i32;
@@ -188,25 +173,21 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
             self.ecatth_handle = Some(std::thread::spawn(move || {
                 let error_handler = EcatErrorHandler { error_handle };
                 if is_high_precision {
-                    let mut callback = EcatThreadHandler::<_, HighPrecisionWaiter>::new(
+                    let mut callback = EcatThreadHandler::<HighPrecisionWaiter>::new(
                         io_map,
                         thread_running,
                         tx_receiver,
-                        rx_sender,
                         expected_wkc,
                         cycletime,
-                        error_handler,
                     );
                     callback.run();
                 } else {
-                    let mut callback = EcatThreadHandler::<_, NormalWaiter>::new(
+                    let mut callback = EcatThreadHandler::<NormalWaiter>::new(
                         io_map,
                         thread_running,
                         tx_receiver,
-                        rx_sender,
                         expected_wkc,
                         cycletime,
-                        error_handler,
                     );
                     callback.run();
                 }
