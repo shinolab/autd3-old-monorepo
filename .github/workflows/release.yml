@@ -361,7 +361,7 @@ jobs:
         \cp bin/*.so ./cs/src/native/linux/x64/
         tar -zxvf autd3-${{ steps.get_version.outputs.VERSION }}-macos-universal.tar.gz
         rm -f ./cs/src/native/osx/universal/*
-        \cp bin/*.dylib ./cs/src/native/osx/x64/
+        \cp bin/*.dylib ./cs/src/native/osx/universal/
         unzip -o autd3-${{ steps.get_version.outputs.VERSION }}-win-x64.zip
         rm -f ./cs/src/native/windows/x64/*
         \cp bin/*.dll ./cs/src/native/windows/x64/
