@@ -21,7 +21,7 @@ macOSの場合はclangが使えれば良い. また, 以下はターミナルか
 
 ### Firmware update
 
-firmwareが古い場合, 動作は保証されない. 本文章におけるfirmwareのversionは2.4が想定される.
+firmwareが古い場合, 動作は保証されない. 本文章におけるfirmwareのversionは2.5が想定される.
 
 firmwareのupdateには[Vivado Design Suite](https://www.xilinx.com/products/design-tools/vivado.html),
 及び, [J-Link Software](https://www.segger.com/downloads/jlink/)をインストールしたWindows
@@ -185,7 +185,7 @@ const auto firm_infos = autd.firmware_infos();
 std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));
 ```
 
-ここで, v2.4以外のヴァージョンが表示される場合は, 動作が保証されないので注意する.
+ここで, v2.5以外のヴァージョンが表示される場合は, 動作が保証されないので注意する.
 
 次に, silencerを設定する.
 
