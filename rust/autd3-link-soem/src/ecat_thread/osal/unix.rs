@@ -34,12 +34,9 @@ pub fn ecat_setup(cycletime_ns: i64) -> timespec {
         tv_sec: 0,
         tv_nsec: 0,
     };
-    let mut tleft = timespec {
-        tv_sec: 0,
-        tv_nsec: 0,
-    };
-
-    clock_gettime(CLOCK_MONOTONIC, &mut ts as *mut _);
+    unsafe {
+        clock_gettime(CLOCK_MONOTONIC, &mut ts as *mut _);
+    }
 
     let ht = ((ts.tv_nsec / cycletime_ns) + 1) * cycletime_ns;
     ts.tv_nsec = ht;
@@ -49,30 +46,34 @@ pub fn ecat_setup(cycletime_ns: i64) -> timespec {
 
 impl Waiter for NormalWaiter {
     fn timed_wait(abs_time: &timespec) {
-        let tleft = timespec {
+        let mut tleft = timespec {
             tv_sec: 0,
             tv_nsec: 0,
         };
-        clock_nanosleep(
-            CLOCK_MONOTONIC,
-            TIMER_ABSTIME,
-            abs_time,
-            &mut tleft as *mut _,
-        );
+        unsafe {
+            clock_nanosleep(
+                CLOCK_MONOTONIC,
+                TIMER_ABSTIME,
+                abs_time,
+                &mut tleft as *mut _,
+            );
+        }
     }
 }
 
 impl Waiter for HighPrecisionWaiter {
     fn timed_wait(abs_time: &timespec) {
-        let tleft = timespec {
+        let mut tleft = timespec {
             tv_sec: 0,
             tv_nsec: 0,
         };
-        clock_nanosleep(
-            CLOCK_MONOTONIC,
-            TIMER_ABSTIME,
-            abs_time,
-            &mut tleft as *mut _,
-        );
+        unsafe {
+            clock_nanosleep(
+                CLOCK_MONOTONIC,
+                TIMER_ABSTIME,
+                abs_time,
+                &mut tleft as *mut _,
+            );
+        }
     }
 }
