@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/06/2022
+ * Last Modified: 04/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,9 @@ pub const MSG_RD_FPGA_VERSION: u8 = 0x03;
 pub const MSG_RD_FPGA_FUNCTION: u8 = 0x04;
 pub const MSG_BEGIN: u8 = 0x05;
 pub const MSG_END: u8 = 0xF0;
-pub const MSG_EMU_GEOMETRY_SET: u8 = 0xFF;
+pub const MSG_SERVER_CLOSE: u8 = 0xFD;
+pub const MSG_SIMULATOR_CLOSE: u8 = 0xFE;
+pub const MSG_SIMULATOR_INIT: u8 = 0xFF;
 
 pub const MOD_HEAD_DATA_SIZE: usize = 120;
 pub const MOD_BODY_DATA_SIZE: usize = 124;
