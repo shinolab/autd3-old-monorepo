@@ -64,13 +64,11 @@ fn nanosleep(t: i64) {
 }
 
 pub fn ecat_setup(cycletime_ns: i64) -> timespec {
-    let tp = TIMEVAL {
+    let mut tp = TIMEVAL {
         tv_sec: 0,
         tv_usec: 0,
     };
-    unsafe {
-        osal_gettimeofday(&mut tp as *mut _);
-    }
+    osal_gettimeofday(&mut tp as *mut _);
     let cycletime_us = (cycletime_ns / 1000i64) as i32;
 
     let ht = (tp.tv_usec / cycletime_us + 1) * cycletime_us;
@@ -101,9 +99,7 @@ impl Waiter for NormalWaiter {
             tv_sec: 0,
             tv_usec: 0,
         };
-        unsafe {
-            osal_gettimeofday(&mut tp as *mut _);
-        }
+        osal_gettimeofday(&mut tp as *mut _);
 
         let sleep = (abs_time.tv_sec - tp.tv_sec as i64) * 1000000000
             + (abs_time.tv_nsec - tp.tv_usec * 1000) as i64;
@@ -120,9 +116,7 @@ impl Waiter for HighPrecisionWaiter {
             tv_sec: 0,
             tv_usec: 0,
         };
-        unsafe {
-            osal_gettimeofday(&mut tp as *mut _);
-        }
+        osal_gettimeofday(&mut tp as *mut _);
 
         let sleep = (abs_time.tv_sec - tp.tv_sec as i64) * 1000000000
             + (abs_time.tv_nsec - tp.tv_usec * 1000) as i64;

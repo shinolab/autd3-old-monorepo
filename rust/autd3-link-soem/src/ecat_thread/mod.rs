@@ -32,4 +32,6 @@ mod osal {
     pub use unix::*;
 }
 
+pub use ecat_thread::EcatThreadHandler;
 pub use error_handler::EcatErrorHandler;
+pub use osal::{HighPrecisionWaiter, NormalWaiter};
