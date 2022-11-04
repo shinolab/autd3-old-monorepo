@@ -141,3 +141,9 @@ impl Link for Simulator {
         !self.ptr.is_null()
     }
 }
+
+impl Default for Simulator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
