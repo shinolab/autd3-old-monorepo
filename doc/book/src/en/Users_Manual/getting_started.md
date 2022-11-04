@@ -26,7 +26,7 @@ Connect the ethernet port of the PC to the `EtherCAT In` of the AUTD3 device wit
 
 ### Firmware update
 
-If the firmware is out of date, the operation is not guaranteed. The version of firmware in this document is assumed to be 2.4.
+If the firmware is out of date, the operation is not guaranteed. The version of firmware in this document is assumed to be 2.5.
 
 To update the firmware, [Vivado](https://www.xilinx.com/products/design-tools/vivado.html) and [J-Link Software](https://www.segger.com/downloads/jlink/) on Windows 10/11 64-bit PC are required.
 
@@ -184,7 +184,7 @@ const auto firm_infos = autd.firmware_infos();
 std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout,"\n"));
 ```
 
-Note that if a version other than v2.4 is displayed here, it is not guaranteed to work well.
+Note that if a version other than v2.5 is displayed here, it is not guaranteed to work well.
 
 Next, setup silencer.
 
