@@ -17,8 +17,6 @@
     "font_size": 16.0,
     "gpu_idx": 0,
     "image_save_path": "image.png",
-    "ip": "127.0.0.1",
-    "port": 50632,
     "show_mod_plot": false,
     "show_mod_plot_raw": false,
     "show_radiation_pressure": false,

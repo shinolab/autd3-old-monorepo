@@ -1,6 +1,8 @@
 # 2.5.0
 
 - Rename `AUTDServer` to `TwinCATAUTDServer`
+- Add `SOEMAUTDServer` and `link::RemoteSOEM`
+- Add Windows arm support
 - Fix [#36](https://github.com/shinolab/autd3/issues/36)
 - Add log settings in SOEM Link CAPI
 - Remove `port` and `ip` settings from Simulator

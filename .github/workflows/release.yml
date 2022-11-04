@@ -52,7 +52,7 @@ jobs:
           cuda: '11.8.0'
       - name: Build project x64
         run: |
-          cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=ON -DDISABLE_EXAMPLES=ON
+          cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=ON -DDISABLE_EXAMPLES=ON -DEXPORT_SOEM_AUTD_SERVER=ON
           cd build
           cmake --build . --parallel 8 --config Release
           mkdir publish
@@ -61,15 +61,16 @@ jobs:
           mkdir publish/bin
           mkdir publish/simulator
           mkdir publish/gui-controller
+          mkdir publish/SOEMAUTDServer
           cd ..
           foreach($dll in Get-ChildItem -Path build/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/src/native/windows/x64}
           cd cs/src
           dotnet clean
-          dotnet build -c:Release /p:Platform=x64
+          dotnet build -c:Release
           cd ../..
-          dotnet nuget add source $pwd/cs/src/bin/x64/Release -n autd3sharp_local
+          dotnet nuget add source $pwd/cs/src/bin/Release -n autd3sharp_local
           cd dist/GUI
-          dotnet publish -c:Release /p:Platform=x64 -r win-x64 --self-contained false -o bin
+          dotnet publish -c:Release -r win-x64 --self-contained false -o bin
           copy AUTD3-GUI-Controller/Strings -Recurse bin/
           cd ../..
           copy build/lib/Release/*.lib build/publish/lib
@@ -78,9 +79,26 @@ jobs:
           copy dist/GUI/bin -Recurse publish/gui-controller/bin
           copy dist/GUI/AUTD3-GUI-Controller.exe publish/gui-controller
           copy build/dist/simulator/Release/*.exe build/publish/simulator
+          copy build/dist/SOEMAUTDServer/Release/*.exe build/publish/SOEMAUTDServer
           copy dist/simulator/settings.json build/publish/simulator
           Remove-Item -Recurse -Force dist/TwinCATAUTDServer/src
-          Compress-Archive -Path LICENSE, NOTICE, dist/TwinCATAUTDServer, dist/firmware, include, build/publish/lib, build/publish/bin, build/publish/simulator, publish/gui-controller -DestinationPath assets_x64.zip
+          Compress-Archive -Path LICENSE, NOTICE, dist/TwinCATAUTDServer, dist/firmware, include, build/publish/lib, build/publish/bin, build/publish/simulator, build/publish/SOEMAUTDServer, publish/gui-controller -DestinationPath assets_x64.zip
+      - name: Build project arm
+        run: |
+          cmake -G "Visual Studio 17 2022" -A ARM64 -B "build_arm" -DBUILD_TARGET=ARM -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=OFF -DEXPORT_AUTD_SIMULATOR=OFF -DDISABLE_EXAMPLES=ON -DEXPORT_SOEM_AUTD_SERVER=ON
+          cd build_arm
+          cmake --build . --parallel 8 --config Release
+          mkdir publish
+          mkdir publish/lib
+          mkdir publish/lib/wpcap
+          mkdir publish/bin
+          mkdir publish/SOEMAUTDServer
+          cd ..
+          copy build/lib/Release/*.lib build/publish/lib
+          copy src/link/soem/Lib/ARM64/*.lib build/publish/lib/wpcap
+          copy build/bin/Release/*.dll build/publish/bin
+          copy build/dist/SOEMAUTDServer/Release/*.exe build/publish/SOEMAUTDServer
+          Compress-Archive -Path LICENSE, NOTICE, include, build/publish/lib, build/publish/bin, build/publish/SOEMAUTDServer -DestinationPath assets_arm.zip
       - name: Load Release URL File from release job
         uses: actions/download-artifact@v1
         with:
@@ -90,7 +108,7 @@ jobs:
         uses: juliangruber/read-file-action@v1
         with:
           path: ./release_url/release_url.txt
-      - name: Upload Release Asset
+      - name: Upload Release Asset Win x64
         id: upload-release-asset-win64
         uses: shogo82148/actions-upload-release-asset@v1
         with:
@@ -98,6 +116,15 @@ jobs:
           upload_url: ${{ steps.get_release_info.outputs.content }}
           asset_path: ./assets_x64.zip
           asset_name: ${{ steps.get_version.outputs.result }}-x64.zip
+          asset_content_type: application/zip
+      - name: Upload Release Asset Win arm
+        id: upload-release-asset-arm
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          upload_url: ${{ steps.get_release_info.outputs.content }}
+          asset_path: ./assets_arm.zip
+          asset_name: ${{ steps.get_version.outputs.result }}-arm.zip
           asset_content_type: application/zip
 
       - name: Get package name
@@ -326,20 +353,25 @@ jobs:
         wget https://github.com/shinolab/autd3/releases/download/${{ steps.get_version.outputs.VERSION }}/autd3-${{ steps.get_version.outputs.VERSION }}-linux-x64.tar.gz
         wget https://github.com/shinolab/autd3/releases/download/${{ steps.get_version.outputs.VERSION }}/autd3-${{ steps.get_version.outputs.VERSION }}-macos-universal.tar.gz
         wget https://github.com/shinolab/autd3/releases/download/${{ steps.get_version.outputs.VERSION }}/autd3-${{ steps.get_version.outputs.VERSION }}-win-x64.zip
+        wget https://github.com/shinolab/autd3/releases/download/${{ steps.get_version.outputs.VERSION }}/autd3-${{ steps.get_version.outputs.VERSION }}-win-arm.zip
     - name: Replace latest binary
       run: |
         tar -zxvf autd3-${{ steps.get_version.outputs.VERSION }}-linux-x64.tar.gz
+        rm -f ./cs/src/native/linux/x64/*
+        \cp bin/*.so ./cs/src/native/linux/x64/
         tar -zxvf autd3-${{ steps.get_version.outputs.VERSION }}-macos-universal.tar.gz
+        rm -f ./cs/src/native/osx/universal/*
+        \cp bin/*.dylib ./cs/src/native/osx/x64/
         unzip -o autd3-${{ steps.get_version.outputs.VERSION }}-win-x64.zip
         rm -f ./cs/src/native/windows/x64/*
-        rm -f ./cs/src/native/linux/x64/*
-        rm -f ./cs/src/native/osx/x64/*
         \cp bin/*.dll ./cs/src/native/windows/x64/
-        \cp bin/*.so ./cs/src/native/linux/x64/
-        \cp bin/*.dylib ./cs/src/native/osx/x64/
+        rm -rf bin/
+        unzip -o autd3-${{ steps.get_version.outputs.VERSION }}-win-arm.zip
+        rm -f ./cs/src/native/windows/arm/*
+        \cp bin/*.dll ./cs/src/native/windows/arm/
     - name: Build with dotnet and publish to NuGet
       run: |
-        dotnet build -c:Release /p:Platform=x64
+        dotnet build -c:Release
         cd bin/x64/Release
         dotnet nuget push autd3sharp.*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate --no-symbols
       working-directory: ./cs/src
