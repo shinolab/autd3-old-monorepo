@@ -7,7 +7,7 @@ pushd $script_dir
 cd ..
 mkdir -p build
 cd build
-cmake .. -DBUILD_ALL=ON
+cmake .. -DBUILD_ALL=ON -DCMAKE_BUILD_TYPE=Release
 cmake --build . --parallel 8
 cd ..
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
@@ -19,6 +19,6 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 fi
 mkdir -p $dst
 
-cp build/bin/*.$ext $dst
+cp build/bin/Release/*.$ext $dst
 
 popd
