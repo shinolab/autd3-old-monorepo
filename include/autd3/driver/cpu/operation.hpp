@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/10/2022
+// Last Modified: 31/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -289,10 +289,14 @@ inline void gain_stm_normal_phase(const std::vector<Drive>& drives, const bool i
                                   const bool is_last_frame, TxDatagram& tx) noexcept(false) {
   tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
 
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 26813)
+#endif
   if (mode == GainSTMMode::PhaseHalf) throw std::runtime_error("PhaseHalf is not supported in normal mode");
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 
   if (is_first_frame) {
     if (freq_div < GAIN_STM_SAMPLING_FREQ_DIV_MIN)

@@ -3,7 +3,7 @@ authors = ["Shun Suzuki"]
 language = "ja"
 multilingual = false
 src = "src"
-title = "AUTD3 FPGA Firmware Specification v2.4"
+title = "AUTD3 FPGA Firmware Specification v2.5"
 
 [rust]
 edition = "2021"
@@ -20,8 +20,6 @@ command = "mdbook-toc"
 renderer = ["html"]
 [preprocessor.mermaid]
 command = "mdbook-mermaid"
-[preprocessor.open-on-gh]
-command = "mdbook-open-on-gh"
 renderer = ["html"]
 
 [output.html]

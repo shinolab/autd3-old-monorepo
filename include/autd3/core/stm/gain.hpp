@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/09/2022
+// Last Modified: 31/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,8 +20,10 @@
 
 namespace autd3::core {
 
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 26813)
+#endif
 
 /**
  * @brief GainSTM provides a function to display Gain sequentially and periodically.
@@ -80,6 +82,8 @@ struct GainSTM final : public STM {
   driver::GainSTMMode _mode;
 };
 
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 
 }  // namespace autd3::core

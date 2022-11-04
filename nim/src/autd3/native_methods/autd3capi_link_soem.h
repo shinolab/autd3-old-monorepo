@@ -15,4 +15,6 @@
 int32 AUTDGetAdapterPointer(void** out);
 void AUTDGetAdapter(void* p_adapter, int32 index, char* desc, char* name);
 void AUTDFreeAdapterPointer(void* p_adapter);
-void AUTDLinkSOEM(void** out, char* ifname, uint16 sync0_cycle, uint16 send_cycle, bool freerun, void* on_lost, bool high_precision);
+void AUTDLinkSOEM(void** out, char* ifname, uint16 sync0_cycle, uint16 send_cycle, bool freerun, void* on_lost, bool high_precision, uint64 state_check_interval);
+void AUTDLinkSOEMSetLogLevel(int32 level);
+void AUTDLinkSOEMSetDefaultLogger(void* out, void* flush);

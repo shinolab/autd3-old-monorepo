@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/08/2022
+ * Last Modified: 04/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,6 +19,7 @@ pub struct Config {
     pub high_precision_timer: bool,
     pub sync_mode: SyncMode,
     pub ifname: String,
+    pub check_interval: std::time::Duration,
 }
 
 impl Config {
@@ -30,11 +31,12 @@ impl Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            sync0_cycle: 1,
-            send_cycle: 1,
+            sync0_cycle: 2,
+            send_cycle: 2,
             high_precision_timer: false,
             sync_mode: SyncMode::DC,
             ifname: String::new(),
+            check_interval: std::time::Duration::from_millis(500),
         }
     }
 }

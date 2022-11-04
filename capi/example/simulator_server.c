@@ -16,7 +16,7 @@
 int main() {
   const char* settings = "settings.json";
 
-  AUTDExtraSimulator(settings, 50632, "127.0.0.1", true, 0);
+  AUTDExtraSimulator(settings, true, 0);
 
   return 0;
 }

@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/10/2022
+// Last Modified: 26/10/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -623,8 +623,8 @@ class VulkanImGui {
     ImGui::Separator();
 
     if (ImGui::SmallButton("Auto")) {
-      const auto sr = mat4_cast(glm::quat(radians(slice_rot)));
-      const auto srf = glm::vec3(sr * glm::vec4(0, 0, 1, 1));
+      const auto sr = mat4_cast(to_gl_rot(glm::quat(radians(slice_rot))));
+      const auto srf = to_gl_pos(glm::vec3(sr * glm::vec4(0, 0, 1, 1)));
       camera_pos = slice_pos + srf * 600.0f * scale();
       camera_rot = slice_rot;
       flag.set(UpdateFlags::UPDATE_CAMERA_POS);

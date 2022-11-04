@@ -4,7 +4,7 @@
  * Created Date: 02/07/2018
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/06/2022
+ * Last Modified: 26/10/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2019 Shun Suzuki. All rights reserved.
@@ -36,6 +36,10 @@ namespace AUTD3Sharp.Utils
 #pragma warning restore IDE1006
         #endregion
 
+        public Quaterniond Normalized => this / L2Norm;
+        public double L2Norm => Math.Sqrt(L2NormSquared);
+        public double L2NormSquared => w * w + x * x + y * y + z * z;
+
         #region indexcer
         public double this[int index]
         {
@@ -62,6 +66,16 @@ namespace AUTD3Sharp.Utils
             if (obj is Quaterniond qua) return Equals(qua);
             return false;
         }
+        public static Quaterniond Divide(Quaterniond left, double right)
+        {
+            var v1 = left.x / right;
+            var v2 = left.y / right;
+            var v3 = left.z / right;
+            var v4 = left.w / right;
+            return new Quaterniond(v1, v2, v3, v4);
+        }
+
+        public static Quaterniond operator /(Quaterniond left, double right) => Divide(left, right);
         #endregion
 
         #region util
