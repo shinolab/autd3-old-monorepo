@@ -5,3 +5,4 @@ build*/
 CMakePresets.json
 assets_x64.zip
 publish/
+.DS_Store
