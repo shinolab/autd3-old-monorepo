@@ -361,7 +361,7 @@ jobs:
         \cp bin/*.so ./cs/src/native/linux/x64/
         tar -zxvf autd3-${{ steps.get_version.outputs.VERSION }}-macos-universal.tar.gz
         rm -f ./cs/src/native/osx/universal/*
-        \cp bin/*.dylib ./cs/src/native/osx/x64/
+        \cp bin/*.dylib ./cs/src/native/osx/universal/
         unzip -o autd3-${{ steps.get_version.outputs.VERSION }}-win-x64.zip
         rm -f ./cs/src/native/windows/x64/*
         \cp bin/*.dll ./cs/src/native/windows/x64/
@@ -372,6 +372,6 @@ jobs:
     - name: Build with dotnet and publish to NuGet
       run: |
         dotnet build -c:Release
-        cd bin/x64/Release
+        cd bin/Release
         dotnet nuget push autd3sharp.*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate --no-symbols
       working-directory: ./cs/src
