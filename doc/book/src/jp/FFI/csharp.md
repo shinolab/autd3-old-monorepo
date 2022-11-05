@@ -10,8 +10,6 @@
 
 Unityから使う場合は, [GitHub Release](https://github.com/shinolab/autd3/releases)にてunitypackageを公開しているので, そちらを使用すること.
 
-本パッケージをインストールしたあと, `Project Settings > Player`から`Allow 'unsafe' code`にチェックをいれること. また警告を抑制するため, `Additional Compiler Arguments`に`-nullable:enable`を追加すること.
-
 **なお, Unity版は座標系がz軸反転の左手系になり, 距離の単位がmになっているので注意すること.**
 
 ## Usage

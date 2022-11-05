@@ -10,9 +10,6 @@ The library is available at [NuGet](https://www.nuget.org/packages/autd3sharp).
 
 If you want to use it from Unity, use the unitypackage available at [GitHub Release](https://github.com/shinolab/autd3/releases).
 
-After installing this package, go to `Project Settings > Player` and check `Allow 'unsafe' code`. 
-Also, add `-nullable:enable` in `Additional Compiler Arguments` to suppress warnings.
-
 **Note that the Unity version has a left-handed coordinate system with z-axis inversion, and the unit of distance is in meters.**
 
 ## Usage
