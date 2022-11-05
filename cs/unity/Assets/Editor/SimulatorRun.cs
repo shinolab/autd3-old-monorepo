@@ -30,10 +30,7 @@ public class SimualtorWindow : EditorWindow
     {
         if (GUILayout.Button("Run"))
         {
-            var mono = MonoScript.FromScriptableObject(this);
-            var path = AssetDatabase.GetAssetPath(mono);
-            var parent = System.IO.Directory.GetParent(path).FullName;
-            var simulator_path = System.IO.Path.Combine(parent, "autd_simulator.exe");
+            var simulator_path = System.IO.Path.Combine(Application.dataPath, "Editor", "autd_simulator.exe");
             var p = new System.Diagnostics.Process();
             p.StartInfo.FileName = simulator_path;
             p.Start();
