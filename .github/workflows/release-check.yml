@@ -64,12 +64,12 @@ jobs:
           cmake --build . --parallel 8 --config Release
           cd ..
           foreach($dll in Get-ChildItem -Path build_unity/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/unity/Assets/AUTD/Plugins/x86_64}
+          copy build_unity/dist/simulator/Release/*.exe ./cs/unity/Assets/Editor
       - name: Replace latest scripts
         run: |
           foreach($src in Get-ChildItem -Path ./cs/src | Where {$_.extension -like ".cs"}){Copy-Item -Path $src -Destination ./cs/unity/Assets/AUTD/Scripts}
           foreach($src in Get-ChildItem -Path ./cs/src/NativeMethods | Where {$_.extension -like ".cs"}){Copy-Item -Path $src -Destination ./cs/unity/Assets/AUTD/Scripts/NativeMethods}
           Copy-Item -Path ./cs/src/LICENSE.txt -Destination ./cs/unity/Assets/AUTD/
-          copy build/dist/simulator/Release/*.exe ./cs/unity/Assets/Editor
       - name: Enumerate Assets
         run: |
           Get-ChildItem -Recurse -Filter '*.meta' -Name | ForEach-Object {$_ -replace '[\\]', '/'} >> metaList
