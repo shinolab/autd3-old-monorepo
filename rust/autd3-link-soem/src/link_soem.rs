@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/11/2022
+ * Last Modified: 05/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -77,10 +77,12 @@ fn lookup_autd() -> anyhow::Result<String> {
     if let Some(adapter) = adapters.into_iter().find(|adapter| unsafe {
         let ifname = std::ffi::CString::new(adapter.name.to_owned()).unwrap();
         if ec_init(ifname.as_ptr()) <= 0 {
+            ec_close();
             return false;
         }
         let wc = ec_config_init(0);
         if wc <= 0 {
+            ec_close();
             return false;
         }
         let slave_name = String::from_utf8(
@@ -93,6 +95,7 @@ fn lookup_autd() -> anyhow::Result<String> {
         )
         .unwrap();
         if slave_name == "AUTD" {
+            ec_close();
             return true;
         }
         false

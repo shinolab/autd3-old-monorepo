@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/11/2022
+// Last Modified: 05/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -83,6 +83,7 @@ class SOEMHandler final {
       adapters.emplace_back(info);
       adapter = adapter->next;
     }
+    ec_free_adapters(adapter);
     return adapters;
   }
 
@@ -97,13 +98,19 @@ class SOEMHandler final {
     int wc = 0;
     if (_ifname.empty()) {
       spdlog::debug("looking for AUTD...");
-      const auto* adapters = ec_find_adapters();
+      auto* adapters = ec_find_adapters();
       bool found = false;
       for (const auto* adapter = adapters; adapter != nullptr; adapter = adapter->next) {
         _ifname = std::string(adapter->name);
-        if (ec_init(_ifname.c_str()) <= 0) continue;
+        if (ec_init(_ifname.c_str()) <= 0) {
+          ec_close();
+          continue;
+        }
         wc = ec_config_init(0);
-        if (wc <= 0) continue;
+        if (wc <= 0) {
+          ec_close();
+          continue;
+        }
         found = true;
         for (auto i = 1; i <= wc; i++)
           if (std::strcmp(ec_slave[1].name, "AUTD") != 0) {
@@ -111,35 +118,41 @@ class SOEMHandler final {
             break;
           }
         if (found) {
+          _ifname = std::string(adapter->name);
           spdlog::debug("AUTD found on {} ({})", adapter->name, adapter->desc);
+          ec_free_adapters(adapters);
+          ec_close();
           break;
         }
       }
       if (!found) {
+        ec_free_adapters(adapters);
+        ec_close();
         _is_open.store(false);
         if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
         throw std::runtime_error("No AUTD3 devices found");
       }
-    } else {
-      spdlog::debug("interface name: {}", _ifname);
-      if (ec_init(_ifname.c_str()) <= 0) {
-        _is_open.store(false);
-        if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
-        throw std::runtime_error(fmt::format("No socket connection on {}", _ifname));
-      }
-      wc = ec_config_init(0);
-      if (wc <= 0) {
-        _is_open.store(false);
-        if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
-        throw std::runtime_error("No slaves found");
-      }
-      for (auto i = 1; i <= wc; i++)
-        if (std::strcmp(ec_slave[i].name, "AUTD") != 0) {
-          _is_open.store(false);
-          if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
-          throw std::runtime_error(fmt::format("Slave[{}] is not AUTD3", i));
-        }
     }
+
+    spdlog::debug("interface name: {}", _ifname);
+    if (ec_init(_ifname.c_str()) <= 0) {
+      _is_open.store(false);
+      if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
+      throw std::runtime_error(fmt::format("No socket connection on {}", _ifname));
+    }
+    wc = ec_config_init(0);
+    if (wc <= 0) {
+      _is_open.store(false);
+      if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
+      throw std::runtime_error("No slaves found");
+    }
+    for (auto i = 1; i <= wc; i++)
+      if (std::strcmp(ec_slave[i].name, "AUTD") != 0) {
+        _is_open.store(false);
+        if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
+        throw std::runtime_error(fmt::format("Slave[{}] is not AUTD3", i));
+      }
+
     spdlog::debug("Found {} devices", wc);
 
     _user_data = std::make_unique<uint32_t[]>(1);
@@ -220,7 +233,7 @@ class SOEMHandler final {
   }
 
   bool receive(driver::RxDatagram& rx) const {
-    if (!_is_open.load()) throw std::runtime_error("link is closed");
+    if (!is_open()) throw std::runtime_error("link is closed");
     rx.copy_from(_io_map.input());
     return true;
   }
