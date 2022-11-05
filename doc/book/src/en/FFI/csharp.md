@@ -12,6 +12,8 @@ If you want to use it from Unity, use the unitypackage available at [GitHub Rele
 
 **Note that the Unity version has a left-handed coordinate system with z-axis inversion, and the unit of distance is in meters.**
 
+> Note: Using Unity and SOEM link might be cause an error. Please see [FAQ](https://shinolab.github.io/autd3/book/en/FAQ/faq#frequent-send-failures-when-using-linksoem) for more details. 
+
 ## Usage
 
 The C\# version is designed to be basically the same as the C++ version.

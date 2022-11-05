@@ -12,6 +12,8 @@ Unityから使う場合は, [GitHub Release](https://github.com/shinolab/autd3/r
 
 **なお, Unity版は座標系がz軸反転の左手系になり, 距離の単位がmになっているので注意すること.**
 
+> NOTE: また, 現在, UnityとSOEM linkを同時に使用すると問題が発生することが知られている. 詳しくは[FAQ](https://shinolab.github.io/autd3/book/jp/FAQ/faq.html#linksoem%E4%BD%BF%E7%94%A8%E6%99%82%E3%81%AB%E9%80%81%E4%BF%A1%E3%81%8C%E9%A0%BB%E7%B9%81%E3%81%AB%E5%A4%B1%E6%95%97%E3%81%99%E3%82%8B)を参照されたい.
+
 ## Usage
 
 基本的には, C++版と同じになるように設計している.
