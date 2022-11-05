@@ -36,5 +36,6 @@
     "use_meter": false,
     "vsync": true,
     "window_height": 600,
-    "window_width": 800
+    "window_width": 800,
+    "max_dev_num": 50
 }
