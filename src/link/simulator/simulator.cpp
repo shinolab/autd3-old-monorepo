@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/10/2022
+// Last Modified: 05/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -39,7 +39,15 @@ class SimulatorImpl final : public core::Link {
     _num_devices = geometry.num_devices();
 
     send(simulator_init_datagram(geometry));
-    while (_ptr[0] == driver::MSG_SIMULATOR_INIT) std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    for (size_t i = 0; i < 20; i++) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      if (_ptr[0] != driver::MSG_SIMULATOR_INIT) return;
+    }
+
+    _smem.unmap();
+    _ptr = nullptr;
+    throw std::runtime_error("Failed to open simulator. Make sure simulator is running.");
   }
 
   void close() override {
