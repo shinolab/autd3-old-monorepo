@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/11/2022
+// Last Modified: 05/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -35,8 +35,8 @@ class SOEMLink final : public core::Link {
   ~SOEMLink() override = default;
   SOEMLink(const SOEMLink& v) noexcept = delete;
   SOEMLink& operator=(const SOEMLink& obj) = delete;
-  SOEMLink(SOEMLink&& obj) = delete;
-  SOEMLink& operator=(SOEMLink&& obj) = delete;
+  SOEMLink(SOEMLink&& obj) = default;
+  SOEMLink& operator=(SOEMLink&& obj) = default;
 
   void open(const core::Geometry& geometry) override;
   bool send(const driver::TxDatagram& tx) override;

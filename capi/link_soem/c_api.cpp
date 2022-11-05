@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/11/2022
+// Last Modified: 05/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -43,15 +43,16 @@ void AUTDFreeAdapterPointer(void* p_adapter) {
 
 void AUTDLinkSOEM(void** out, const char* ifname, const uint16_t sync0_cycle, const uint16_t send_cycle, const bool freerun, void* on_lost,
                   const bool high_precision, const uint64_t state_check_interval) {
-  auto soem_link = autd3::link::SOEM()
-                       .ifname(ifname != nullptr ? std::string(ifname) : "")
-                       .sync0_cycle(sync0_cycle)
-                       .send_cycle(send_cycle)
-                       .high_precision(high_precision)
-                       .sync_mode(freerun ? autd3::link::SYNC_MODE::FREE_RUN : autd3::link::SYNC_MODE::DC)
-                       .on_lost([on_lost](const std::string& msg) { reinterpret_cast<OnLostCallback>(on_lost)(msg.c_str()); })
-                       .state_check_interval(std::chrono::milliseconds(state_check_interval))
-                       .build();
+  auto& soem = autd3::link::SOEM()
+                   .sync0_cycle(sync0_cycle)
+                   .send_cycle(send_cycle)
+                   .high_precision(high_precision)
+                   .sync_mode(freerun ? autd3::link::SYNC_MODE::FREE_RUN : autd3::link::SYNC_MODE::DC)
+                   .state_check_interval(std::chrono::milliseconds(state_check_interval));
+  if (ifname != nullptr) soem.ifname(std::string(ifname));
+  if (on_lost != nullptr) soem.on_lost([on_lost](const std::string& msg) { reinterpret_cast<OnLostCallback>(on_lost)(msg.c_str()); });
+
+  auto soem_link = soem.build();
   auto* link = link_create(std::move(soem_link));
   *out = link;
 }
