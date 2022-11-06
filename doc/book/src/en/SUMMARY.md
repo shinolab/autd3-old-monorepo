@@ -14,7 +14,7 @@
   - [Frequency Configuration](./Users_Manual/freq_config.md)
   - [Migration Guide from v1.x](./Users_Manual/migration.md)
 - [FFI](./FFI/ffi.md)
-  - [C#](./FFI/csharp.md)
+  - [C#/Unity](./FFI/csharp.md)
   - [python](./FFI/python.md)
   - [Rust](./FFI/rust.md)
   - [Nim](./FFI/nim.md)
