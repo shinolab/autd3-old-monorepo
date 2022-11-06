@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/11/2022
+// Last Modified: 06/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -87,7 +87,6 @@ inline bool error_handle(std::atomic<bool>* is_open, const std::function<void(st
 
   for (uint16_t slave = 1; slave <= static_cast<uint16_t>(ec_slavecount); slave++) {
     if (ec_slave[slave].islost == 0) continue;
-    is_open->store(false);
     if (on_lost != nullptr) on_lost(ss.str());
     return false;
   }

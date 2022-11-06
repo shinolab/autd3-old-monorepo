@@ -3,7 +3,7 @@
 // Created Date: 27/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/10/2022
+// Last Modified: 05/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,13 +15,13 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_vulkan.h>
 
-#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "glm.hpp"
 #include "model.hpp"
 #include "transform.hpp"
 
