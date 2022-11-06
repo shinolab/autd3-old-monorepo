@@ -4,7 +4,7 @@
  * Created Date: 14/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/10/2022
+ * Last Modified: 06/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,13 +21,14 @@ Console.WriteLine("Test with SOEM");
 var autd = new Controller();
 autd.Geometry.AddDevice(Vector3d.zero, Vector3d.zero);
 
+var onLost = new SOEM.OnLostCallbackDelegate((string msg) =>
+{
+    Console.WriteLine($"Unrecoverable error occurred: {x}");
+    Environment.Exit(-1);
+});
 var link = new SOEM()
     .HighPrecision(true)
-    .OnLost(x =>
-    {
-        Console.WriteLine($"Unrecoverable error occurred: {x}");
-        Environment.Exit(-1);
-    })
+    .OnLost(onLost)
     .Build();
 if (!autd.Open(link))
 {
