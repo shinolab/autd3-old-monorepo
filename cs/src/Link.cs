@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/10/2022
+ * Last Modified: 06/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -42,12 +42,16 @@ namespace AUTD3Sharp
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnLostCallbackDelegate(string str);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnLogOutputCallback(string str);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void OnLogFlushCallback();
+
             private string _ifname;
             private ushort _sendCycle;
             private ushort _sync0Cycle;
             private bool _freerun;
             private bool _highPrecision;
-            private Action<string>? _onLost;
+            private IntPtr _onLost;
             private ulong _checkInterval;
 
             public SOEM()
@@ -57,7 +61,7 @@ namespace AUTD3Sharp
                 _sync0Cycle = 2;
                 _freerun = false;
                 _highPrecision = false;
-                _onLost = null;
+                _onLost = IntPtr.Zero;
                 _checkInterval = 500;
             }
 
@@ -91,9 +95,9 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public SOEM OnLost(Action<string> onLost)
+            public SOEM OnLost(OnLostCallbackDelegate onLost)
             {
-                _onLost = onLost;
+                _onLost = Marshal.GetFunctionPointerForDelegate(onLost);
                 return this;
             }
             public SOEM CheckInterval(ulong interval)
@@ -104,17 +108,7 @@ namespace AUTD3Sharp
 
             public Link Build()
             {
-                IntPtr onLostHandler;
-                if (_onLost is null)
-                {
-                    onLostHandler = IntPtr.Zero;
-                }
-                else
-                {
-                    var callback = new OnLostCallbackDelegate(_onLost);
-                    onLostHandler = Marshal.GetFunctionPointerForDelegate(callback);
-                }
-                NativeMethods.LinkSOEM.AUTDLinkSOEM(out var handle, _ifname, _sync0Cycle, _sendCycle, _freerun, onLostHandler, _highPrecision, _checkInterval);
+                NativeMethods.LinkSOEM.AUTDLinkSOEM(out var handle, _ifname, _sync0Cycle, _sendCycle, _freerun, _onLost, _highPrecision, _checkInterval);
                 return new Link(handle);
             }
 
@@ -129,6 +123,19 @@ namespace AUTD3Sharp
                     yield return new EtherCATAdapter(sbDesc.ToString(), sbName.ToString());
                 }
                 NativeMethods.LinkSOEM.AUTDFreeAdapterPointer(handle);
+            }
+
+            public static void SetDebugLevel(int level)
+            {
+                NativeMethods.LinkSOEM.AUTDLinkSOEMSetLogLevel(level);
+            }
+
+            public static void SetLogFunc(OnLogOutputCallback output, OnLogFlushCallback flush)
+            {
+                var onOutput = Marshal.GetFunctionPointerForDelegate(output);
+                var onFlush = Marshal.GetFunctionPointerForDelegate(flush);
+
+                NativeMethods.LinkSOEM.AUTDLinkSOEMSetDefaultLogger(onOutput, onFlush);
             }
         }
 

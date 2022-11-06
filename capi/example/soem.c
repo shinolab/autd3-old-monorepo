@@ -33,7 +33,7 @@ _Noreturn
 #endif
 }
 
-void log_out(char* msg) { printf("%s\n", msg); }
+void log_out(char* msg) { printf("%s", msg); }
 
 void log_flush(void) {}
 

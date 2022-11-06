@@ -1,3 +1,11 @@
+# 2.5.1
+
+- Fix [#38](https://github.com/shinolab/autd3/issues/38)
+- Fix [#39](https://github.com/shinolab/autd3/issues/39)
+- Fix [#40](https://github.com/shinolab/autd3/issues/40)
+- Fix [#41](https://github.com/shinolab/autd3/issues/41)
+- Add simulator for Unity
+
 # 2.5.0
 
 - Rename `AUTDServer` to `TwinCATAUTDServer`
