@@ -25,15 +25,6 @@ int main() try {
     nlohmann::json j;
     i >> j;
     settings = j.get<autd3::extra::SimulatorSettings>();
-  } else {
-    settings.slice_pos_x = 86.6252f;
-    settings.slice_pos_y = 66.7133f;
-    settings.slice_pos_z = 150.0f;
-    settings.slice_rot_x = 90.0f;
-    settings.camera_pos_x = settings.slice_pos_x;
-    settings.camera_pos_y = settings.slice_pos_y - 600.0f;
-    settings.camera_pos_z = settings.slice_pos_z;
-    settings.camera_rot_x = 90.0f;
   }
 
   autd3::extra::Simulator().settings(&settings).run();
