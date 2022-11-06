@@ -212,7 +212,7 @@ class SOEMHandler final {
     _ecat_check_thread = std::thread([this, expected_wkc] {
       while (this->_is_open.load()) {
         if ((this->_wkc.load() < expected_wkc) || ec_group[0].docheckstate)
-          if (!error_handle(&this->_is_open, this->_on_lost)) break;
+          if (!error_handle(this->_on_lost)) break;
         std::this_thread::sleep_for(_state_check_interval);
       }
     });
