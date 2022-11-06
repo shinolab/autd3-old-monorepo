@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2022
+ * Last Modified: 07/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -125,7 +125,7 @@ namespace AUTD3Sharp
                 NativeMethods.LinkSOEM.AUTDFreeAdapterPointer(handle);
             }
 
-            public static void SetDebugLevel(int level)
+            public static void SetLogLevel(int level)
             {
                 NativeMethods.LinkSOEM.AUTDLinkSOEMSetLogLevel(level);
             }
