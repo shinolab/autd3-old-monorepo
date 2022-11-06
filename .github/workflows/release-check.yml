@@ -59,11 +59,12 @@ jobs:
           Compress-Archive -Path LICENSE, NOTICE, dist/TwinCATAUTDServer, dist/firmware, include, build/publish/lib, build/publish/bin, build/publish/simulator, build/publish/SOEMAUTDServer, publish/gui-controller -DestinationPath assets_x64.zip
       - name: Build project x64 for Unity
         run: |
-          cmake -G "Visual Studio 17 2022" -A x64 -B "build_unity" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=OFF -DDISABLE_EXAMPLES=ON -DUSE_METER=ON -DUSE_LEFT_HANDED=ON
+          cmake -G "Visual Studio 17 2022" -A x64 -B "build_unity" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=ON -DDISABLE_EXAMPLES=ON -DUSE_METER=ON -DUSE_LEFT_HANDED=ON
           cd build_unity
           cmake --build . --parallel 8 --config Release
           cd ..
           foreach($dll in Get-ChildItem -Path build_unity/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/unity/Assets/AUTD/Plugins/x86_64}
+          copy build_unity/dist/simulator/Release/*.exe ./cs/unity/Assets/Editor
       - name: Replace latest scripts
         run: |
           foreach($src in Get-ChildItem -Path ./cs/src | Where {$_.extension -like ".cs"}){Copy-Item -Path $src -Destination ./cs/unity/Assets/AUTD/Scripts}
