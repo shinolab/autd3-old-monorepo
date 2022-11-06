@@ -75,7 +75,7 @@ inline void check_lost(const uint16_t slave, std::stringstream& ss) {
   }
 }
 
-inline bool error_handle(std::atomic<bool>* is_open, const std::function<void(std::string)>& on_lost) {
+inline bool error_handle(const std::function<void(std::string)>& on_lost) {
   ec_group[0].docheckstate = 0;
   ec_readstate();
   std::stringstream ss;
