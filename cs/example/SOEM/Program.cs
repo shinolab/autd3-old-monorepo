@@ -23,7 +23,7 @@ autd.Geometry.AddDevice(Vector3d.zero, Vector3d.zero);
 
 var onLost = new SOEM.OnLostCallbackDelegate((string msg) =>
 {
-    Console.WriteLine($"Unrecoverable error occurred: {x}");
+    Console.WriteLine($"Unrecoverable error occurred: {msg}");
     Environment.Exit(-1);
 });
 var link = new SOEM()
