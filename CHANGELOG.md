@@ -1,3 +1,7 @@
+# 2.5.2
+
+- Fix [#37](https://github.com/shinolab/autd3/issues/37)
+
 # 2.5.1
 
 - Fix [#38](https://github.com/shinolab/autd3/issues/38)
