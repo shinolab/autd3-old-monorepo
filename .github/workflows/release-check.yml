@@ -54,6 +54,7 @@ jobs:
           copy dist/GUI/AUTD3-GUI-Controller.exe publish/gui-controller
           copy build/dist/simulator/Release/*.exe build/publish/simulator
           copy build/dist/SOEMAUTDServer/Release/*.exe build/publish/SOEMAUTDServer
+          copy dist/SOEMAUTDServer/README.md build/publish/SOEMAUTDServer
           copy dist/simulator/settings.json build/publish/simulator
           Remove-Item -Recurse -Force dist/TwinCATAUTDServer/src
           Compress-Archive -Path LICENSE, NOTICE, dist/TwinCATAUTDServer, dist/firmware, include, build/publish/lib, build/publish/bin, build/publish/simulator, build/publish/SOEMAUTDServer, publish/gui-controller -DestinationPath assets_x64.zip
@@ -95,6 +96,7 @@ jobs:
           copy src/link/soem/Lib/ARM64/*.lib build_arm/publish/lib/wpcap
           copy build_arm/bin/Release/*.dll build_arm/publish/bin
           copy build_arm/dist/SOEMAUTDServer/Release/*.exe build_arm/publish/SOEMAUTDServer
+          copy dist/SOEMAUTDServer/README.md build_arm/publish/SOEMAUTDServer
           Compress-Archive -Path LICENSE, NOTICE, include, build_arm/publish/lib, build_arm/publish/bin, build_arm/publish/SOEMAUTDServer -DestinationPath assets_arm.zip
    
   publish_linux:
