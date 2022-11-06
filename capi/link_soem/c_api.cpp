@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/11/2022
+// Last Modified: 06/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -61,6 +61,6 @@ void AUTDLinkSOEMSetLogLevel(const int32_t level) { spdlog::set_level(static_cas
 
 void AUTDLinkSOEMSetDefaultLogger(void* out, void* flush) {
   auto custom_sink = std::make_shared<autd3::capi::custom_sink_mt>(out, flush);
-  const auto logger = std::make_shared<spdlog::logger>("custom_logger", custom_sink);
+  const auto logger = std::make_shared<spdlog::logger>("AUTD3 Logger", custom_sink);
   set_default_logger(logger);
 }

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/11/2022
+// Last Modified: 06/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -87,6 +87,39 @@ class SOEMHandler final {
     return adapters;
   }
 
+  static std::string lookup_autd() {
+    spdlog::debug("looking for AUTD...");
+    auto* adapters = ec_find_adapters();
+    bool found = false;
+    for (const auto* adapter = adapters; adapter != nullptr; adapter = adapter->next) {
+      if (ec_init(adapter->name) <= 0) {
+        ec_close();
+        continue;
+      }
+      const auto wc = ec_config_init(0);
+      if (wc <= 0) {
+        ec_close();
+        continue;
+      }
+      found = true;
+      for (auto i = 1; i <= wc; i++)
+        if (std::strcmp(ec_slave[1].name, "AUTD") != 0) {
+          found = false;
+          ec_close();
+          break;
+        }
+      if (found) {
+        spdlog::debug("AUTD found on {} ({})", adapter->name, adapter->desc);
+        const auto ifname = std::string(adapter->name);
+        ec_free_adapters(adapters);
+        ec_close();
+        return ifname;
+      }
+    }
+    ec_free_adapters(adapters);
+    throw std::runtime_error("No AUTD3 devices found");
+  }
+
   size_t open(const int remaining) {
     if (is_open()) return 0;
 
@@ -95,61 +128,22 @@ class SOEMHandler final {
     const auto cycle_time = driver::EC_CYCLE_TIME_BASE_NANO_SEC * _send_cycle;
     spdlog::debug("send interval: {} [ns]", cycle_time);
 
-    int wc = 0;
-    if (_ifname.empty()) {
-      spdlog::debug("looking for AUTD...");
-      auto* adapters = ec_find_adapters();
-      bool found = false;
-      for (const auto* adapter = adapters; adapter != nullptr; adapter = adapter->next) {
-        _ifname = std::string(adapter->name);
-        if (ec_init(_ifname.c_str()) <= 0) {
-          ec_close();
-          continue;
-        }
-        wc = ec_config_init(0);
-        if (wc <= 0) {
-          ec_close();
-          continue;
-        }
-        found = true;
-        for (auto i = 1; i <= wc; i++)
-          if (std::strcmp(ec_slave[1].name, "AUTD") != 0) {
-            found = false;
-            break;
-          }
-        if (found) {
-          _ifname = std::string(adapter->name);
-          spdlog::debug("AUTD found on {} ({})", adapter->name, adapter->desc);
-          ec_free_adapters(adapters);
-          ec_close();
-          break;
-        }
-      }
-      if (!found) {
-        ec_free_adapters(adapters);
-        ec_close();
-        _is_open.store(false);
-        if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
-        throw std::runtime_error("No AUTD3 devices found");
-      }
-    }
+    if (_ifname.empty()) _ifname = lookup_autd();
 
     spdlog::debug("interface name: {}", _ifname);
     if (ec_init(_ifname.c_str()) <= 0) {
       _is_open.store(false);
-      if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
       throw std::runtime_error(fmt::format("No socket connection on {}", _ifname));
     }
-    wc = ec_config_init(0);
+
+    const auto wc = ec_config_init(0);
     if (wc <= 0) {
       _is_open.store(false);
-      if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
       throw std::runtime_error("No slaves found");
     }
     for (auto i = 1; i <= wc; i++)
       if (std::strcmp(ec_slave[i].name, "AUTD") != 0) {
         _is_open.store(false);
-        if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
         throw std::runtime_error(fmt::format("Slave[{}] is not AUTD3", i));
       }
 
@@ -191,9 +185,8 @@ class SOEMHandler final {
     ec_writestate(0);
 
     _is_open.store(true);
-    std::atomic<int32_t> wkc;
-    _ecat_thread = std::thread([this, &wkc, cycle_time] {
-      ecat_run(this->_high_precision, &this->_is_open, &wkc, cycle_time, this->_send_mtx, this->_send_buf, this->_io_map);
+    _ecat_thread = std::thread([this, cycle_time] {
+      ecat_run(this->_high_precision, &this->_is_open, &this->_wkc, cycle_time, this->_send_mtx, this->_send_buf, this->_io_map);
     });
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -215,9 +208,11 @@ class SOEMHandler final {
       spdlog::debug("Sync0 configured");
     }
 
-    _ecat_check_thread = std::thread([this, &wkc, expected_wkc] {
+    spdlog::debug("Run EC state check thread, interval: {} [ms]", _state_check_interval.count());
+    _ecat_check_thread = std::thread([this, expected_wkc] {
       while (this->_is_open.load()) {
-        if ((wkc.load() < expected_wkc) || ec_group[0].docheckstate) error_handle(&this->_is_open, this->_on_lost);
+        if ((this->_wkc.load() < expected_wkc) || ec_group[0].docheckstate)
+          if (!error_handle(&this->_is_open, this->_on_lost)) break;
         std::this_thread::sleep_for(_state_check_interval);
       }
     });
@@ -240,8 +235,6 @@ class SOEMHandler final {
 
   void close() {
     if (!is_open()) return;
-
-    while (!_send_buf.empty()) std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     _is_open.store(false);
     if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
@@ -268,6 +261,8 @@ class SOEMHandler final {
   std::string _ifname;
   uint16_t _sync0_cycle;
   uint16_t _send_cycle;
+
+  std::atomic<int32_t> _wkc;
 
   std::function<void(std::string)> _on_lost = nullptr;
 
