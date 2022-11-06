@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/11/2022
+// Last Modified: 06/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -86,32 +86,17 @@ class SimulatorImpl final : public core::Link {
     uh.cpu_flag = driver::CPUControlFlags::NONE;
     uh.size = static_cast<uint8_t>(geometry.num_devices());
     for (size_t i = 0; i < geometry.num_devices(); i++) {
-#ifdef AUTD3_USE_METER
-      constexpr float scale = 1e3f;
-#else
-      constexpr float scale = 1;
-#endif
       auto* const cursor = reinterpret_cast<float*>(buf.bodies()[i].data);
       auto& tr = geometry[i][0];
       auto origin = tr.position().cast<float>();
       auto rot = geometry[i].rotation().cast<float>();
-#ifdef AUTD3_USE_LEFT_HANDED
-      cursor[0] = origin.x() * scale;
-      cursor[1] = origin.y() * scale;
-      cursor[2] = -origin.z() * scale;
-      cursor[3] = rot.w();
-      cursor[4] = -rot.x();
-      cursor[5] = -rot.y();
-      cursor[6] = rot.z();
-#else
-      cursor[0] = origin.x() * scale;
-      cursor[1] = origin.y() * scale;
-      cursor[2] = origin.z() * scale;
+      cursor[0] = origin.x();
+      cursor[1] = origin.y();
+      cursor[2] = origin.z();
       cursor[3] = rot.w();
       cursor[4] = rot.x();
       cursor[5] = rot.y();
       cursor[6] = rot.z();
-#endif
     }
     return buf;
   }

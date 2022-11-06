@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/11/2022
+// Last Modified: 06/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -123,7 +123,7 @@ void Simulator::run() {
         sources.clear();
         for (size_t dev = 0; dev < dev_num; dev++) {
           const auto* body = reinterpret_cast<float*>(const_cast<uint8_t*>(ptr + sizeof(driver::GlobalHeader) + dev * sizeof(driver::Body)));
-          const auto origin = imgui->to_gl_pos(glm::vec3(body[0], body[1], body[2])) * imgui->scale();
+          const auto origin = imgui->to_gl_pos(glm::vec3(body[0], body[1], body[2]));
           const auto rot = imgui->to_gl_rot(glm::quat(body[3], body[4], body[5], body[6]));
           const auto matrix = translate(glm::identity<glm::mat4>(), origin) * mat4_cast(rot);
           for (size_t iy = 0; iy < driver::NUM_TRANS_Y; iy++)
