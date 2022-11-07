@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/11/2022
+// Last Modified: 08/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,7 +23,6 @@
 #include <utility>
 #include <vector>
 
-#include "autd3/async.hpp"
 #include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/driver/cpu/ec_config.hpp"
 #include "autd3/gain/primitive.hpp"
@@ -309,29 +308,29 @@ class Controller {
    * @brief Send header data to devices asynchronously
    */
   template <typename H>
-  auto send(Async<H> header) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>> {
-    send(std::move(header), Async(core::NullBody{}));
+  auto send_async(H header) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>> {
+    send_async(std::move(header), core::NullBody{});
   }
 
   /**
    * @brief Send body data to devices asynchronously
    */
   template <typename B>
-  auto send(Async<B> body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>> {
-    send(Async(core::NullHeader{}), std::move(body));
+  auto send_async(B body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>> {
+    send_async(core::NullHeader{}, std::move(body));
   }
 
   /**
    * @brief Send header and body data to devices asynchronously
    */
   template <typename H, typename B>
-  auto send(Async<H> header, Async<B> body) ->
+  auto send_async(H header, B body) ->
       typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>> {
     {
       std::unique_lock lk(_send_mtx);
       AsyncData data;
-      data.header = std::move(header.raw);
-      data.body = std::move(body.raw);
+      data.header = std::move(header);
+      data.body = std::move(body);
       _send_queue.emplace(std::move(data));
     }
     _send_cond.notify_all();
@@ -341,7 +340,7 @@ class Controller {
    * @brief Send special data to devices asynchronously
    */
   template <typename S>
-  auto send(Async<S> s) -> typename std::enable_if_t<std::is_base_of_v<SpecialData<typename S::header_t, typename S::body_t>, S>> {
+  auto send_async(S s) -> typename std::enable_if_t<std::is_base_of_v<SpecialData<typename S::header_t, typename S::body_t>, S>> {
     auto check_trials_override = s.raw->check_trials_override();
     auto trials = s.raw->check_trials();
     auto header = std::make_unique<typename S::header_t>(s.raw->header());
