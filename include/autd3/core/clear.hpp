@@ -25,7 +25,7 @@ struct Clear final : DatagramHeader {
 
   void init() override {}
 
-  void pack(const uint8_t msg_id, driver::TxDatagram& tx) override { driver::clear(tx); }
+  void pack(const uint8_t, driver::TxDatagram& tx) override { driver::clear(tx); }
 
   bool is_finished() const override { return true; }
 };

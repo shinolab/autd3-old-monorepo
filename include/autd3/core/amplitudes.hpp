@@ -46,7 +46,7 @@ class Amplitudes final : public DatagramBody {
   [[nodiscard]] bool is_finished() const noexcept override { return _sent; }
 
  private:
-  const double _amp;
+  double _amp;
   bool _sent;
 };
 

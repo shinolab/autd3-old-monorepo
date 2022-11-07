@@ -135,8 +135,8 @@ class Controller {
     _send_cond.notify_all();
     if (_send_th.joinable()) _send_th.join();
 
-    if (!stop()) return false;
-    if (!clear()) return false;
+    if (!send(autd3::Stop{})) return false;
+    if (!send(autd3::Clear{})) return false;
     _link->close();
     return true;
   }
