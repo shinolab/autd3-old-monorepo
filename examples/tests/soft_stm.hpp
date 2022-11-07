@@ -12,7 +12,6 @@
 #pragma once
 
 #include <autd3.hpp>
-#include <utility>
 #include <vector>
 
 inline void soft_stm(autd3::Controller& autd) {
