@@ -73,8 +73,8 @@ class SoftwareSTM {
     ~SoftwareSTMThreadHandle() = default;
     SoftwareSTMThreadHandle(const SoftwareSTMThreadHandle& v) = delete;
     SoftwareSTMThreadHandle& operator=(const SoftwareSTMThreadHandle& obj) = delete;
-    SoftwareSTMThreadHandle(SoftwareSTMThreadHandle&& obj) = default;
-    SoftwareSTMThreadHandle& operator=(SoftwareSTMThreadHandle&& obj) = default;
+    SoftwareSTMThreadHandle(SoftwareSTMThreadHandle&& obj) = delete;
+    SoftwareSTMThreadHandle& operator=(SoftwareSTMThreadHandle&& obj) = delete;
 
     void finish() {
       if (!_run) throw std::runtime_error("STM has been already finished.");
