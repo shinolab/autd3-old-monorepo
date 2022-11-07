@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/10/2022
+// Last Modified: 07/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,11 +14,16 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
+#include <memory>
+#include <mutex>
+#include <queue>
 #include <thread>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
+#include "autd3/async.hpp"
 #include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/driver/cpu/ec_config.hpp"
 #include "autd3/gain/primitive.hpp"
@@ -36,7 +41,16 @@ namespace autd3 {
  */
 class Controller {
  public:
-  Controller() : force_fan(false), reads_fpga_info(false), check_trials(0), send_interval(1), _geometry(), _tx_buf(0), _rx_buf(0), _link(nullptr) {}
+  Controller()
+      : force_fan(false),
+        reads_fpga_info(false),
+        check_trials(0),
+        send_interval(1),
+        _geometry(),
+        _tx_buf(0),
+        _rx_buf(0),
+        _link(nullptr),
+        _send_th_running(false) {}
 
   /**
    * @brief Geometry of the devices
@@ -59,6 +73,45 @@ class Controller {
 
     _link = std::move(link);
     if (_link != nullptr) _link->open(_geometry);
+
+    _send_th_running = true;
+    _send_th = std::thread([this] {
+      std::unique_ptr<core::DatagramHeader> header = nullptr;
+      std::unique_ptr<core::DatagramBody> body = nullptr;
+      while (_send_th_running) {
+        if (header == nullptr && body == nullptr) {
+          std::unique_lock lk(_send_mtx);
+          _send_cond.wait(lk, [&] { return !_send_queue.empty() || !this->_send_th_running; });
+          if (!this->_send_th_running) break;
+          auto& [h, b] = std::move(_send_queue.front());
+          header = std::move(h);
+          body = std::move(b);
+          _send_queue.pop();
+        }
+
+        header->init();
+        body->init();
+
+        driver::force_fan(_tx_buf, force_fan);
+        driver::reads_fpga_info(_tx_buf, reads_fpga_info);
+
+        while (true) {
+          const auto msg_id = get_id();
+          header->pack(msg_id, _tx_buf);
+          body->pack(_geometry, _tx_buf);
+          _link->send(_tx_buf);
+          const auto trials = wait_msg_processed(check_trials);
+          if ((check_trials != 0) && (trials == check_trials)) break;
+          if (header->is_finished() && body->is_finished()) {
+            header = nullptr;
+            body = nullptr;
+            break;
+          }
+          if (trials == 0) std::this_thread::sleep_for(std::chrono::microseconds(send_interval * driver::EC_CYCLE_TIME_BASE_MICRO_SEC));
+        }
+      }
+    });
+
     return is_open();
   }
 
@@ -136,6 +189,11 @@ class Controller {
    */
   bool close() {
     if (!is_open()) return true;
+
+    _send_th_running = false;
+    _send_cond.notify_all();
+    if (_send_th.joinable()) _send_th.join();
+
     if (!stop()) return false;
     if (!clear()) return false;
     _link->close();
@@ -218,6 +276,16 @@ class Controller {
    * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
   template <typename H, typename B>
+  auto send(H&& header, B&& body) ->
+      typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>, bool> {
+    return send(header, body);
+  }
+
+  /**
+   * @brief Send header and body data to devices
+   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   */
+  template <typename H, typename B>
   auto send(H& header, B& body) ->
       typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>, bool> {
     header.init();
@@ -240,13 +308,35 @@ class Controller {
   }
 
   /**
+   * @brief Send header data to devices
+   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   */
+  template <typename H>
+  auto send(Async<H> header) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>> {
+    send(std::move(header), Async(core::NullBody{}));
+  }
+
+  /**
+   * @brief Send body data to devices
+   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   */
+  template <typename B>
+  auto send(Async<B> body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>> {
+    send(Async(core::NullHeader{}), std::move(body));
+  }
+
+  /**
    * @brief Send header and body data to devices
    * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
   template <typename H, typename B>
-  auto send(H&& header, B&& body) ->
-      typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>, bool> {
-    return send(header, body);
+  auto send(Async<H> header, Async<B> body) ->
+      typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>> {
+    {
+      std::unique_lock lk(_send_mtx);
+      _send_queue.emplace(std::move(header.raw), std::move(body.raw));
+    }
+    _send_cond.notify_all();
   }
 
   /**
@@ -291,6 +381,12 @@ class Controller {
   driver::TxDatagram _tx_buf;
   driver::RxDatagram _rx_buf;
   core::LinkPtr _link;
+
+  bool _send_th_running;
+  std::thread _send_th;
+  std::queue<std::pair<std::unique_ptr<core::DatagramHeader>, std::unique_ptr<core::DatagramBody>>> _send_queue;
+  std::condition_variable _send_cond;
+  std::mutex _send_mtx;
 };
 
 }  // namespace autd3

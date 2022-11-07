@@ -3,7 +3,7 @@
 // Created Date: 06/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 07/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -37,10 +37,10 @@ inline void soft_stm(autd3::Controller& autd) {
   const auto actual_freq = stm.set_frequency(1);
   std::cout << "Actual frequency is " << actual_freq << " Hz\n";
 
-  auto handle = stm.start(std::move(autd));
+  auto handle = stm.start(autd);
 
   std::cout << "press any key to stop software stm..." << std::endl;
   std::cin.ignore();
 
-  autd = handle.finish();
+  handle.finish();
 }
