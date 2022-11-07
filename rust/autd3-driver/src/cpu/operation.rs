@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 07/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -328,7 +328,7 @@ pub fn point_stm_body(
         tx.header_mut()
             .cpu_flag
             .set(CPUControlFlags::STM_BEGIN, true);
-        let sound_speed = (sound_speed * 1024.0).round() as u32;
+        let sound_speed = (sound_speed / 1e3 * 1024.0).round() as u32;
         tx.body_mut().iter_mut().zip(points).for_each(|(d, s)| {
             d.point_stm_head_mut().set_size(s.len() as _);
             d.point_stm_head_mut().set_freq_div(freq_div);

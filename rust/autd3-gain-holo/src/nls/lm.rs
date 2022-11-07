@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 07/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -221,7 +221,7 @@ impl<B: Backend, T: Transducer, C: Constraint> IGain<T> for LM<B, T, C> {
         }
 
         geometry.transducers().for_each(|tr| {
-            let phase = x[tr.id()].argument() / (2.0 * PI) + 0.5;
+            let phase = x[tr.id()].rem_euclid(2.0 * PI);
             let amp = self.constraint.convert(1.0, 1.0);
             self.props.drives[tr.id()].amp = amp;
             self.props.drives[tr.id()].phase = phase;

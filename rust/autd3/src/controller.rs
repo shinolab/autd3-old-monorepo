@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/08/2022
+ * Last Modified: 07/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,15 +20,14 @@ use anyhow::{Ok, Result};
 use itertools::Itertools;
 
 use autd3_core::{
-    geometry::{Geometry, LegacyTransducer, NormalPhaseTransducer, NormalTransducer, Transducer},
+    amplitude::Amplitudes,
+    geometry::{Geometry, Transducer},
     interface::{DatagramBody, DatagramHeader, Empty, Filled, NullBody, NullHeader, Sendable},
     is_msg_processed,
     link::Link,
     silencer_config::SilencerConfig,
     FirmwareInfo, RxDatagram, TxDatagram, MSG_BEGIN, MSG_END, NUM_TRANS_IN_UNIT,
 };
-
-use crate::prelude::Null;
 
 static MSG_ID: AtomicU8 = AtomicU8::new(MSG_BEGIN);
 
@@ -276,6 +275,20 @@ impl<L: Link, T: Transducer> Controller<L, T> {
             .map(|i| FirmwareInfo::new(0, cpu_versions[i], fpga_versions[i], fpga_functions[i]))
             .collect())
     }
+
+    /// Stop outputting
+    pub fn stop(&mut self) -> Result<bool> {
+        let mut config = SilencerConfig::default();
+        let mut null = Amplitudes::none();
+        self.send(&mut config).send(&mut null)
+    }
+
+    pub fn close(&mut self) -> Result<bool> {
+        let res = self.stop()?;
+        let res = res & self.clear()?;
+        self.link.close()?;
+        Ok(res)
+    }
 }
 
 impl<L: Link, T: Transducer> Controller<L, T> {
@@ -306,71 +319,5 @@ impl<L: Link, T: Transducer> Controller<L, T> {
             i += 1;
         }
         Ok(i)
-    }
-}
-
-impl<L: Link> Controller<L, LegacyTransducer> {
-    /// Stop outputting
-    pub fn stop(&mut self) -> Result<bool> {
-        let mut config = SilencerConfig::default();
-        let res = self.send(&mut config).flush()?;
-
-        let mut g = Null::<LegacyTransducer>::new();
-
-        let res = res & self.send(&mut g).flush()?;
-
-        Ok(res)
-    }
-
-    /// Close controller
-    pub fn close(&mut self) -> Result<bool> {
-        let res = self.stop()?;
-        let res = res & self.clear()?;
-        self.link.close()?;
-        Ok(res)
-    }
-}
-
-impl<L: Link> Controller<L, NormalTransducer> {
-    /// Stop outputting
-    pub fn stop(&mut self) -> Result<bool> {
-        let mut config = SilencerConfig::default();
-        let res = self.send(&mut config).flush()?;
-
-        let mut g = Null::<NormalTransducer>::new();
-
-        let res = res & self.send(&mut g).flush()?;
-
-        Ok(res)
-    }
-
-    /// Close controller
-    pub fn close(&mut self) -> Result<bool> {
-        let res = self.stop()?;
-        let res = res & self.clear()?;
-        self.link.close()?;
-        Ok(res)
-    }
-}
-
-impl<L: Link> Controller<L, NormalPhaseTransducer> {
-    /// Stop outputting
-    pub fn stop(&mut self) -> Result<bool> {
-        let mut config = SilencerConfig::default();
-        let res = self.send(&mut config).flush()?;
-
-        let mut g = Null::<NormalPhaseTransducer>::new();
-
-        let res = res & self.send(&mut g).flush()?;
-
-        Ok(res)
-    }
-
-    /// Close controller
-    pub fn close(&mut self) -> Result<bool> {
-        let res = self.stop()?;
-        let res = res & self.clear()?;
-        self.link.close()?;
-        Ok(res)
     }
 }

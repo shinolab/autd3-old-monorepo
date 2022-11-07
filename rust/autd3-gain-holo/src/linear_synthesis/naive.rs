@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 07/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -66,7 +66,7 @@ impl<B: Backend, T: Transducer, C: Constraint> IGain<T> for Naive<B, T, C> {
 
         let max_coefficient = B::max_coefficient_c(&q).abs();
         geometry.transducers().for_each(|tr| {
-            let phase = q[tr.id()].argument() / (2.0 * PI) + 0.5;
+            let phase = q[tr.id()].argument() + PI;
             let amp = self.constraint.convert(q[tr.id()].abs(), max_coefficient);
             self.props.drives[tr.id()].amp = amp;
             self.props.drives[tr.id()].phase = phase;
