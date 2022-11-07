@@ -1,7 +1,9 @@
 # 2.5.2
 
 - Fix [#37](https://github.com/shinolab/autd3/issues/37)
+- Fix [#42](https://github.com/shinolab/autd3/issues/42)
 - Change phase unit to radian
+
 
 # 2.5.1
 

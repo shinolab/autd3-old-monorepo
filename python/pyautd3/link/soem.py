@@ -4,7 +4,7 @@ Project: link
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 04/11/2022
+Last Modified: 07/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,7 +18,9 @@ from .link import Link
 from pyautd3.native_methods.autd3capi_link_soem import NativeMethods as LinkSOEM
 
 
-ErrorHandlerFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
+OnLostFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
+LogOutputFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
+LogFlushFunc = ctypes.CFUNCTYPE(None)
 
 
 class SOEM:
@@ -60,11 +62,10 @@ class SOEM:
         return self
 
     def build(self):
-        onlost = ErrorHandlerFunc(self._on_lost) if self._on_lost is not None else None
         LinkSOEM().init_dll()
         link = c_void_p()
         LinkSOEM().dll.AUTDLinkSOEM(byref(link), self._ifname.encode('utf-8') if self._ifname is not None else None,
-                                    self._sync0_cycle, self._send_cycle, self._freerun, onlost, self._high_precision, self._check_interval)
+                                    self._sync0_cycle, self._send_cycle, self._freerun, self._on_lost, self._high_precision, self._check_interval)
         return Link(link)
 
     @ staticmethod
@@ -83,3 +84,13 @@ class SOEM:
         LinkSOEM().dll.AUTDFreeAdapterPointer(handle)
 
         return res
+
+    @ staticmethod
+    def set_log_level(level: int):
+        LinkSOEM().init_dll()
+        LinkSOEM().dll.AUTDLinkSOEMSetLogLevel(level)
+
+    @ staticmethod
+    def set_log_func(output, flush):
+        LinkSOEM().init_dll()
+        LinkSOEM().dll.AUTDLinkSOEMSetDefaultLogger(output, flush)
