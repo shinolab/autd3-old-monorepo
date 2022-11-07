@@ -21,10 +21,6 @@ autd3 = "2.5.2"
 
 See [examples](./autd3-examples)
 
-## LICENSE
-
-See [LICENSE](./LICENSE).
-
 # Author
 
 Shun Suzuki, 2022
