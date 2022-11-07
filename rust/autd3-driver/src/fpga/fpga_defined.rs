@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2022
+ * Last Modified: 07/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -56,7 +56,7 @@ pub struct LegacyDrive {
 
 impl LegacyDrive {
     pub fn to_phase(d: &Drive) -> u8 {
-        (((d.phase * 256.0).round() as i32) & 0xFF) as u8
+        (((d.phase / (2.0 * PI) * 256.0).round() as i32) & 0xFF) as u8
     }
 
     pub fn set(&mut self, d: &Drive) {
@@ -73,7 +73,8 @@ pub struct Phase {
 
 impl Phase {
     pub fn set(&mut self, d: &Drive) {
-        self.phase = ((d.phase * d.cycle as f64).round() as i32).rem_euclid(d.cycle as i32) as _;
+        self.phase = ((d.phase / (2.0 * PI) * d.cycle as f64).round() as i32)
+            .rem_euclid(d.cycle as i32) as _;
     }
 }
 
