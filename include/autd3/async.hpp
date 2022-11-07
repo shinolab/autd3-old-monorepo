@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include <memory>
+
 namespace autd3 {
 
 template <typename T>

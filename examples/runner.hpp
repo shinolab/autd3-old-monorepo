@@ -64,8 +64,8 @@ inline int run(autd3::Controller& autd) {
   std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));
   std::cout << "================================================================================================" << std::endl;
 
-  autd.clear();
-  autd.synchronize();
+  autd.send(autd3::Clear{});
+  autd.send(autd3::Synchronize{});
 
   while (true) {
     for (size_t i = 0; i < tests.size(); i++) std::cout << "[" << i << "]: " << tests[i].second << std::endl;
@@ -84,7 +84,7 @@ inline int run(autd3::Controller& autd) {
     std::cin.ignore();
 
     std::cout << "finish." << std::endl;
-    autd.stop();
+    autd.send(autd3::Stop{});
   }
 
   autd.close();

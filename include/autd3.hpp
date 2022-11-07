@@ -22,6 +22,7 @@
 #include "autd3/gain/primitive.hpp"
 #include "autd3/modulation/primitive.hpp"
 #include "autd3/soft_stm.hpp"
+#include "autd3/special_data.hpp"
 
 namespace autd3 {
 
@@ -41,6 +42,7 @@ using core::Geometry;
 using core::LegacyMode;
 using core::NormalMode;
 using core::NormalPhaseMode;
+using core::SilencerConfig;
 
 using core::Amplitudes;
 
