@@ -3,7 +3,7 @@
 // Created Date: 07/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/10/2022
+// Last Modified: 07/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -76,18 +76,17 @@ class SoftwareSTM {
     SoftwareSTMThreadHandle(SoftwareSTMThreadHandle&& obj) = default;
     SoftwareSTMThreadHandle& operator=(SoftwareSTMThreadHandle&& obj) = default;
 
-    Controller finish() {
+    void finish() {
       if (!_run) throw std::runtime_error("STM has been already finished.");
       _run = false;
       if (_th.joinable()) _th.join();
       _cnt.check_trials = _trials;
-      return std::move(_cnt);
     }
 
    private:
-    SoftwareSTMThreadHandle(Controller cnt, const std::vector<std::shared_ptr<core::Gain>>& bodies, const uint64_t period,
+    SoftwareSTMThreadHandle(Controller& cnt, const std::vector<std::shared_ptr<core::Gain>>& bodies, const uint64_t period,
                             const TimerStrategy strategy)
-        : _cnt(std::move(cnt)), _trials(_cnt.check_trials) {
+        : _cnt(cnt), _trials(_cnt.check_trials) {
       _run = true;
       const auto interval = std::chrono::nanoseconds(period);
       _cnt.check_trials = 0;
@@ -120,7 +119,7 @@ class SoftwareSTM {
 
     bool _run;
     std::thread _th;
-    Controller _cnt;
+    Controller& _cnt;
     size_t _trials;
   };
 
@@ -166,9 +165,9 @@ class SoftwareSTM {
    * @param[in] cnt autd3::Controller
    * @details Never use cnt after calling this function.
    */
-  SoftwareSTMThreadHandle start(Controller cnt) {
+  SoftwareSTMThreadHandle start(Controller& cnt) {
     if (size() == 0) throw std::runtime_error("No data was added.");
-    return SoftwareSTMThreadHandle(std::move(cnt), std::move(_bodies), _sample_period_ns, timer_strategy);
+    return SoftwareSTMThreadHandle(cnt, std::move(_bodies), _sample_period_ns, timer_strategy);
   }
 
   /**

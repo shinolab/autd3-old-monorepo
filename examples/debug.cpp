@@ -24,7 +24,7 @@ int main() try {
   auto link = autd3::link::Debug().build();
   autd.open(std::move(link));
 
-  return run(std::move(autd));
+  return run(autd);
 } catch (std::exception& e) {
   std::cerr << e.what() << std::endl;
   return -1;

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/10/2022
+// Last Modified: 07/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@
 #endif
 #include "tests/point_stm.hpp"
 
-inline int run(autd3::Controller autd) {
+inline int run(autd3::Controller& autd) {
   using F = std::function<void(autd3::Controller&)>;
   std::vector<std::pair<F, std::string>> tests = {
       std::pair(F{focus_test}, "Single focus Test"),
