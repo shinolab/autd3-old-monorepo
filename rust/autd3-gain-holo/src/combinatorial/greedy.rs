@@ -4,7 +4,7 @@
  * Created Date: 03/06/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 07/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -111,7 +111,7 @@ impl<T: Transducer, C: Constraint> IGain<T> for Greedy<T, C> {
                 *c += tmp[min_idx][j];
             }
 
-            let phase = self.phase_candidates[min_idx].argument() / (2.0 * PI) + 0.5;
+            let phase = self.phase_candidates[min_idx].argument() + PI;
             let amp = self.constraint.convert(1.0, 1.0);
             self.props.drives[trans.id()].amp = amp;
             self.props.drives[trans.id()].phase = phase;

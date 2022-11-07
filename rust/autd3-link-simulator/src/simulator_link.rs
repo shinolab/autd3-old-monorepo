@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/11/2022
+ * Last Modified: 07/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,6 +19,8 @@ use autd3_core::{
 };
 
 use smem::*;
+
+use crate::error::SimulatorLinkError;
 
 pub struct Simulator {
     num_devices: usize,
@@ -80,11 +82,17 @@ impl Link for Simulator {
 
         self.send(&geometry_buf)?;
         unsafe {
-            while std::ptr::read_volatile(self.ptr) == MSG_SIMULATOR_INIT {
+            for _ in 0..20 {
                 std::thread::sleep(std::time::Duration::from_millis(100));
+                if std::ptr::read_volatile(self.ptr) != MSG_SIMULATOR_INIT {
+                    return Ok(());
+                }
             }
         }
-        Ok(())
+
+        self.smem.unmap();
+        self.ptr = std::ptr::null_mut();
+        Err(SimulatorLinkError::SimulatorOpenFailed.into())
     }
 
     fn close(&mut self) -> anyhow::Result<()> {
@@ -99,6 +107,8 @@ impl Link for Simulator {
         header.fpga_flag = FPGAControlFlags::NONE;
         header.size = 0x00;
         geometry_buf.num_bodies = 0;
+
+        self.send(&geometry_buf)?;
 
         self.smem.unmap();
         self.ptr = std::ptr::null_mut();
