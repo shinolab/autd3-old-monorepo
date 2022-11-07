@@ -27,6 +27,7 @@
 #include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/driver/cpu/ec_config.hpp"
 #include "autd3/gain/primitive.hpp"
+#include "autd3/special_data.hpp"
 #include "core/amplitudes.hpp"
 #include "core/geometry.hpp"
 #include "core/interface.hpp"
@@ -78,16 +79,22 @@ class Controller {
     _send_th = std::thread([this] {
       std::unique_ptr<core::DatagramHeader> header = nullptr;
       std::unique_ptr<core::DatagramBody> body = nullptr;
+      std::function<void(void)> pre;
+      std::function<void(void)> post;
       while (_send_th_running) {
         if (header == nullptr && body == nullptr) {
           std::unique_lock lk(_send_mtx);
           _send_cond.wait(lk, [&] { return !_send_queue.empty() || !this->_send_th_running; });
           if (!this->_send_th_running) break;
-          auto& [h, b] = std::move(_send_queue.front());
-          header = std::move(h);
-          body = std::move(b);
+          AsyncData a = std::move(_send_queue.front());
+          header = std::move(a.header);
+          body = std::move(a.body);
+          pre = std::move(a.pre);
+          post = std::move(a.post);
           _send_queue.pop();
         }
+
+        pre();
 
         header->init();
         body->init();
@@ -109,78 +116,12 @@ class Controller {
           }
           if (trials == 0) std::this_thread::sleep_for(std::chrono::microseconds(send_interval * driver::EC_CYCLE_TIME_BASE_MICRO_SEC));
         }
+
+        post();
       }
     });
 
     return is_open();
-  }
-
-  /**
-   * @brief Verify the device is properly connected
-   */
-  [[nodiscard]] bool is_open() const noexcept { return (_link != nullptr) && _link->is_open(); }
-
-  /**
-   * @brief Synchronize devices
-   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
-   */
-  bool synchronize() {
-    driver::force_fan(_tx_buf, force_fan);
-    driver::reads_fpga_info(_tx_buf, reads_fpga_info);
-
-    const auto msg_id = get_id();
-    std::vector<uint16_t> cycles;
-    std::for_each(_geometry.begin(), _geometry.end(), [&](const auto& dev) {
-      std::transform(dev.begin(), dev.end(), std::back_inserter(cycles), [](const core::Transducer& tr) { return tr.cycle(); });
-    });
-
-    sync(msg_id, cycles.data(), _tx_buf);
-
-    if (!_link->send(_tx_buf)) return false;
-
-    return wait_msg_processed(200) != 200;
-  }
-
-  /**
-   * @brief Update flags (force fan and reads_fpga_info)
-   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
-   */
-  bool update_flag() {
-    core::NullHeader h;
-    core::NullBody b;
-    return send(h, b);
-  }
-
-  /**
-   * @brief FPGA info
-   *  \return veetor of FPGAInfo. If failed, the vector is empty
-   */
-  std::vector<driver::FPGAInfo> read_fpga_info() {
-    std::vector<driver::FPGAInfo> fpga_info;
-    if (!_link->receive(_rx_buf)) return fpga_info;
-    std::transform(_rx_buf.begin(), _rx_buf.end(), std::back_inserter(fpga_info),
-                   [](const driver::RxMessage& rx) { return driver::FPGAInfo(rx.ack); });
-    return fpga_info;
-  }
-
-  /**
-   * @brief Clear all data in devices
-   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
-   */
-  bool clear() {
-    driver::clear(_tx_buf);
-    if (!_link->send(_tx_buf)) return false;
-    return wait_msg_processed(200) != 200;
-  }
-
-  /**
-   * @brief Stop outputting
-   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
-   */
-  bool stop() {
-    SilencerConfig config;
-    auto null = core::Amplitudes(0.0);
-    return send(config, null);
   }
 
   /**
@@ -198,6 +139,23 @@ class Controller {
     if (!clear()) return false;
     _link->close();
     return true;
+  }
+
+  /**
+   * @brief Verify the device is properly connected
+   */
+  [[nodiscard]] bool is_open() const noexcept { return (_link != nullptr) && _link->is_open(); }
+
+  /**
+   * @brief FPGA info
+   *  \return veetor of FPGAInfo. If failed, the vector is empty
+   */
+  std::vector<driver::FPGAInfo> read_fpga_info() {
+    std::vector<driver::FPGAInfo> fpga_info;
+    if (!_link->receive(_rx_buf)) return fpga_info;
+    std::transform(_rx_buf.begin(), _rx_buf.end(), std::back_inserter(fpga_info),
+                   [](const driver::RxMessage& rx) { return driver::FPGAInfo(rx.ack); });
+    return fpga_info;
   }
 
   /**
@@ -231,6 +189,46 @@ class Controller {
       firmware_infos.emplace_back(i, cpu_versions.at(i), fpga_versions.at(i), fpga_functions.at(i));
 
     return firmware_infos;
+  }
+
+  /**
+   * @brief Synchronize devices
+   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   */
+
+  [[deprecated("please use send autd3::Synchronize instead")]] bool synchronize() { return send(Synchronize{}); }
+
+  /**
+   * @brief Update flags (force fan and reads_fpga_info)
+   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   */
+  [[deprecated("please use send autd3::UpdateFlag{} instead")]] bool update_flag() { return send(UpdateFlag{}); }
+
+  /**
+   * @brief Clear all data in devices
+   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   */
+  [[deprecated("please use send autd3::Clear{} instead")]] bool clear() { return send(autd3::Clear{}); }
+
+  /**
+   * @brief Stop outputting
+   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   */
+  [[deprecated("please use send autd3::Stop{} instead")]] bool stop() { return send(autd3::Stop{}); }
+
+  /**
+   * @brief Send seprcial data to devices
+   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   */
+  template <typename S>
+  auto send(S s) -> typename std::enable_if_t<std::is_base_of_v<SpecialData<typename S::header_t, typename S::body_t>, S>, bool> {
+    push_check_trial();
+    if (s.check_trials_override()) check_trials = s.check_trials();
+    typename S::header_t h = s.header();
+    typename S::body_t b = s.body();
+    const auto res = send(h, b);
+    pop_check_trial();
+    return res;
   }
 
   /**
@@ -308,8 +306,7 @@ class Controller {
   }
 
   /**
-   * @brief Send header data to devices
-   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   * @brief Send header data to devices asynchronously
    */
   template <typename H>
   auto send(Async<H> header) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>> {
@@ -317,8 +314,7 @@ class Controller {
   }
 
   /**
-   * @brief Send body data to devices
-   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   * @brief Send body data to devices asynchronously
    */
   template <typename B>
   auto send(Async<B> body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>> {
@@ -326,15 +322,41 @@ class Controller {
   }
 
   /**
-   * @brief Send header and body data to devices
-   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   * @brief Send header and body data to devices asynchronously
    */
   template <typename H, typename B>
   auto send(Async<H> header, Async<B> body) ->
       typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>> {
     {
       std::unique_lock lk(_send_mtx);
-      _send_queue.emplace(std::move(header.raw), std::move(body.raw));
+      AsyncData data;
+      data.header = std::move(header.raw);
+      data.body = std::move(body.raw);
+      _send_queue.emplace(std::move(data));
+    }
+    _send_cond.notify_all();
+  }
+
+  /**
+   * @brief Send special data to devices asynchronously
+   */
+  template <typename S>
+  auto send(Async<S> s) -> typename std::enable_if_t<std::is_base_of_v<SpecialData<typename S::header_t, typename S::body_t>, S>> {
+    auto check_trials_override = s.raw->check_trials_override();
+    auto trials = s.raw->check_trials();
+    auto header = std::make_unique<typename S::header_t>(s.raw->header());
+    auto body = std::make_unique<typename S::body_t>(s.raw->body());
+    {
+      std::unique_lock lk(_send_mtx);
+      AsyncData data;
+      data.header = std::move(header);
+      data.body = std::move(body);
+      data.pre = [this, check_trials_override, trials] {
+        push_check_trial();
+        if (check_trials_override) check_trials = trials;
+      };
+      data.post = [this] { pop_check_trial(); };
+      _send_queue.emplace(std::move(data));
     }
     _send_cond.notify_all();
   }
@@ -377,6 +399,19 @@ class Controller {
     return i;
   }
 
+  size_t _check_trials_{};
+
+  void push_check_trial() { _check_trials_ = check_trials; }
+
+  void pop_check_trial() { check_trials = _check_trials_; }
+
+  struct AsyncData {
+    std::unique_ptr<core::DatagramHeader> header;
+    std::unique_ptr<core::DatagramBody> body;
+    std::function<void()> pre = [] {};
+    std::function<void()> post = [] {};
+  };
+
   core::Geometry _geometry;
   driver::TxDatagram _tx_buf;
   driver::RxDatagram _rx_buf;
@@ -384,7 +419,7 @@ class Controller {
 
   bool _send_th_running;
   std::thread _send_th;
-  std::queue<std::pair<std::unique_ptr<core::DatagramHeader>, std::unique_ptr<core::DatagramBody>>> _send_queue;
+  std::queue<AsyncData> _send_queue;
   std::condition_variable _send_cond;
   std::mutex _send_mtx;
 };

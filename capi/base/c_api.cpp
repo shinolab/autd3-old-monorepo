@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/10/2022
+// Last Modified: 07/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -85,12 +85,12 @@ int32_t AUTDClose(void* const handle) {
 
 int32_t AUTDClear(void* const handle) {
   auto* wrapper = static_cast<Controller*>(handle);
-  AUTD3_CAPI_TRY2(return wrapper->clear() ? 1 : 0)
+  AUTD3_CAPI_TRY2(return wrapper->send(autd3::Clear{}) ? 1 : 0)
 }
 
 int32_t AUTDSynchronize(void* const handle) {
   auto* wrapper = static_cast<Controller*>(handle);
-  AUTD3_CAPI_TRY2(return wrapper->synchronize() ? 1 : 0)
+  AUTD3_CAPI_TRY2(return wrapper->send(autd3::Synchronize{}) ? 1 : 0)
 }
 void AUTDFreeController(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
@@ -174,7 +174,7 @@ bool AUTDGetFPGAInfo(void* const handle, uint8_t* out) {
 
 int32_t AUTDUpdateFlags(void* const handle) {
   auto* const wrapper = static_cast<Controller*>(handle);
-  AUTD3_CAPI_TRY2(return wrapper->update_flag() ? 1 : 0)
+  AUTD3_CAPI_TRY2(return wrapper->send(autd3::UpdateFlag{}) ? 1 : 0)
 }
 
 int32_t AUTDNumDevices(const void* const handle) {
@@ -374,7 +374,7 @@ void AUTDDeleteSTM(const void* const stm) {
 
 int32_t AUTDStop(void* const handle) {
   auto* const wrapper = static_cast<Controller*>(handle);
-  AUTD3_CAPI_TRY2(return wrapper->stop() ? 1 : 0)
+  AUTD3_CAPI_TRY2(return wrapper->send(autd3::Stop{}) ? 1 : 0)
 }
 
 void AUTDCreateSilencer(void** out, const uint16_t step, const uint16_t cycle) { *out = new autd3::SilencerConfig(step, cycle); }
@@ -453,12 +453,11 @@ EXPORT_AUTD void AUTDSoftwareSTMAdd(void* stm, void* gain) {
   static_cast<autd3::SoftwareSTM*>(stm)->add(std::shared_ptr<autd3::core::Gain>(static_cast<autd3::core::Gain*>(gain)));
 }
 EXPORT_AUTD void AUTDSoftwareSTMStart(void** handle, void* stm, void* cnt) {
-  *handle = new autd3::SoftwareSTM::SoftwareSTMThreadHandle(static_cast<autd3::SoftwareSTM*>(stm)->start(std::move(*static_cast<Controller*>(cnt))));
+  *handle = new autd3::SoftwareSTM::SoftwareSTMThreadHandle(static_cast<autd3::SoftwareSTM*>(stm)->start(*static_cast<Controller*>(cnt)));
 }
-EXPORT_AUTD void AUTDSoftwareSTMFinish(void** cnt, void* handle) {
+EXPORT_AUTD void AUTDSoftwareSTMFinish(void* handle) {
   auto* h = static_cast<autd3::SoftwareSTM::SoftwareSTMThreadHandle*>(handle);
-  *cnt = new Controller(h->finish());
-  delete h;
+  h->finish();
 }
 EXPORT_AUTD double AUTDSoftwareSTMSetFrequency(void* stm, const double freq) { return static_cast<autd3::SoftwareSTM*>(stm)->set_frequency(freq); }
 EXPORT_AUTD double AUTDSoftwareSTMFrequency(const void* stm) { return static_cast<const autd3::SoftwareSTM*>(stm)->frequency(); }

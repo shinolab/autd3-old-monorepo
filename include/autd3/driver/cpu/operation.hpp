@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/10/2022
+// Last Modified: 07/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -37,8 +37,7 @@ inline void null_body(TxDatagram& tx) noexcept {
   tx.num_bodies = 0;
 }
 
-inline void sync(const uint8_t msg_id, const uint16_t* const cycles, TxDatagram& tx) noexcept {
-  tx.header().msg_id = msg_id;
+inline void sync(const uint16_t* const cycles, TxDatagram& tx) noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::MOD);
   tx.header().cpu_flag.remove(CPUControlFlags::CONFIG_SILENCER);
   tx.header().cpu_flag.set(CPUControlFlags::CONFIG_SYNC);

@@ -3,7 +3,7 @@
 // Created Date: 31/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 07/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,8 +28,8 @@ int main() try {
   for (auto& dev : autd.geometry())
     for (auto& tr : dev) tr.set_frequency(70e3);  // actual frequency is 163.84MHz/2341 ~ 69987 Hz
 
-  autd.clear();
-  autd.synchronize();  // You must configure the frequencies of all transducers before calling synchronize().
+  autd.send(autd3::Clear{});
+  autd.send(autd3::Synchronize{});  // You must configure the frequencies of all transducers before synchronization.
 
   autd3::SilencerConfig config;
   autd.send(config);
@@ -44,7 +44,7 @@ int main() try {
 
   autd.close();
 
-  return run(std::move(autd));
+  return run(autd);
 } catch (std::exception& e) {
   std::cerr << e.what() << std::endl;
   return -1;
