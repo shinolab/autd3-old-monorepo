@@ -196,25 +196,25 @@ class Controller {
    * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
 
-  [[deprecated("please use send autd3::Synchronize instead")]] bool synchronize() { return send(Synchronize{}); }
+  [[deprecated("please send autd3::Synchronize instead")]] bool synchronize() { return send(Synchronize{}); }
 
   /**
    * @brief Update flags (force fan and reads_fpga_info)
    * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
-  [[deprecated("please use send autd3::UpdateFlag{} instead")]] bool update_flag() { return send(UpdateFlag{}); }
+  [[deprecated("please send autd3::UpdateFlag{} instead")]] bool update_flag() { return send(UpdateFlag{}); }
 
   /**
    * @brief Clear all data in devices
    * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
-  [[deprecated("please use send autd3::Clear{} instead")]] bool clear() { return send(autd3::Clear{}); }
+  [[deprecated("please send autd3::Clear{} instead")]] bool clear() { return send(autd3::Clear{}); }
 
   /**
    * @brief Stop outputting
    * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
-  [[deprecated("please use send autd3::Stop{} instead")]] bool stop() { return send(autd3::Stop{}); }
+  [[deprecated("please send autd3::Stop{} instead")]] bool stop() { return send(autd3::Stop{}); }
 
   /**
    * @brief Send seprcial data to devices
