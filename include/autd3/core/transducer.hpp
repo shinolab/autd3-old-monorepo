@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/10/2022
+// Last Modified: 07/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -58,7 +58,7 @@ struct Transducer {
   Transducer(Transducer&& obj) = default;
   Transducer& operator=(Transducer&& obj) = default;
 
-  [[nodiscard]] double align_phase_at(const double dist, const double sound_speed) const { return dist / wavelength(sound_speed); }
+  [[nodiscard]] double align_phase_at(const double dist, const double sound_speed) const { return dist * wavenumber(sound_speed); }
 
   /**
    * \brief Position of the transducer
