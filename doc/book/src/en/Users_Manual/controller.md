@@ -133,3 +133,4 @@ autd << autd3::async <<std::move(m), std::move(g);
 ```
 
 Note that these functions and operators take an r-value only.
+Also, the operation is not guaranteed when synchronous and asynchronous transmissions are mixed.

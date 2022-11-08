@@ -150,7 +150,7 @@ In this case, specify them as follows:
     .server_ip_address(server_ip_address)
     .client_ams_net_id(client_ams_net_id)
     .build();
-````
+```
 
 The AMS NetId of the client can be found in TwinCAT by going to `System→Routes` and looking at AmsNetId in the `Current Route` tab, as shown in the following figure.
 

@@ -127,4 +127,6 @@ autd.send_async(std::move(m), std::move(g));
 autd << autd3::async <<std::move(m), std::move(g);
 ```
 
-これらの関数は右辺値のみ受け取る.
+これらの関数は右辺値のみ受け取ることに注意する.
+
+また, 同期送信と非同期送信を混ぜた場合の動作は保証されないので注意されたい.
