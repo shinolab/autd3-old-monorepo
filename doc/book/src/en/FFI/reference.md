@@ -85,28 +85,6 @@ This function returns a value less than zero if an error occurred. If an error o
 | handle                 | void*   | in     | pointer to Controller                                                                                  |
 | return                 | int32_t | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred. |
 
-## AUTDClear (autd3capi)
-
-Clear devices.
-
-This function returns a value less than zero if an error occurred. If an error occurs, you can get the error message with `AUTDGetLastError`.
-
-| Argument name / return | type    | in/out | description                                                                                            |
-| ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
-| handle                 | void*   | in     | pointer to Controller                                                                                  |
-| return                 | int32_t | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred. |
-
-## AUTDSynchronize (autd3capi)
-
-Synchronize devices.
-
-This function returns a value less than zero if an error occurred. If an error occurs, you can get the error message with `AUTDGetLastError`.
-
-| Argument name / return | type    | in/out | description                                                                                            |
-| ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
-| handle                 | void*   | in     | pointer to Controller                                                                                  |
-| return                 | int32_t | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred. |
-
 ## AUTDCreateSilencer (autd3capi)
 
 Create SilencerConfig.
@@ -331,17 +309,6 @@ This function returns false if failure, and you can get the error message with `
 | handle                 | void*    | in     | pointer to Controller |
 | out                    | uint8_t* | in     | FPGA information list |
 | return                 | bool     | -      | true if success       |
-
-## AUTDUpdateFlags (autd3capi)
-
-Update Control flag.
-
-This function returns a value less than zero if an error occurred. If an error occurs, you can get the error message with `AUTDGetLastError`.
-
-| Argument name / return | type    | in/out | description                                                                                            |
-| ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
-| handle                 | void*   | in     | pointer to Controller                                                                                  |
-| return                 | int32_t | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred. |
 
 ## AUTDNumDevices (autd3capi)
 
@@ -815,16 +782,69 @@ Delete STM.
 | stm                    | void* | in     | pointer to STM |
 | return                 | void  | -      | -              |
 
+## AUTDUpdateFlags (autd3capi)
+
+Create `UpdateFlag`.
+
+The `UpdateFlag` created must be deleted at the end by `AUTDDeleteSpecialData`.
+
+| Argument name / return | type   | in/out | description                    |
+| ---------------------- | ------ | ------ | ------------------------------ |
+| out                    | void** | out    | pointer to pointer to UpdateFlag |
+| return                 | void   | -      | -                              |
+
+## AUTDSynchronize (autd3capi)
+
+Create `Synchronize`.
+
+The `Synchronize` created must be deleted at the end by `AUTDDeleteSpecialData`.
+
+| Argument name / return | type   | in/out | description                    |
+| ---------------------- | ------ | ------ | ------------------------------ |
+| out                    | void** | out    | pointer to pointer to Synchronize |
+| return                 | void   | -      | -                              |
+
 ## AUTDStop (autd3capi)
 
-Stop AUTD3 outputting.
+Create `Stop`.
 
-This function returns a value less than zero if an error occurred. If an error occurs, you can get the error message with `AUTDGetLastError`.
+The `Stop` created must be deleted at the end by `AUTDDeleteSpecialData`.
 
-| Argument name / return | type    | in/out | description                                                                                            |
-| ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
-| handle                 | void*   | in     | pointer to Controller                                                                                  |
-| return                 | int32_t | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred. |
+| Argument name / return | type   | in/out | description                    |
+| ---------------------- | ------ | ------ | ------------------------------ |
+| out                    | void** | out    | pointer to pointer to Stop     |
+| return                 | void   | -      | -                              |
+
+## AUTDClear (autd3capi)
+
+Create `Clear`.
+
+The `Clear` created must be deleted at the end by `AUTDDeleteSpecialData`.
+
+| Argument name / return | type   | in/out | description                    |
+| ---------------------- | ------ | ------ | ------------------------------ |
+| out                    | void** | out    | pointer to pointer to Clear    |
+| return                 | void   | -      | -                              |
+
+## AUTDModDelayConfig (autd3capi)
+
+Create `ModDelayConfig`.
+
+The `ModDelayConfig` created must be deleted at the end by `AUTDDeleteSpecialData`.
+
+| Argument name / return | type   | in/out | description                    |
+| ---------------------- | ------ | ------ | ------------------------------ |
+| out                    | void** | out    | pointer to pointer to ModDelayConfig    |
+| return                 | void   | -      | -                              |
+
+## AUTDDeleteSpecialData (autd3capi)
+
+Delete special data.
+
+| Argument name / return | type  | in/out | description    |
+| ---------------------- | ----- | ------ | -------------- |
+| data                   | void* | in     | pointer to special data |
+| return                 | void  | -      | -              |
 
 ## AUTDSend (autd3capi)
 
@@ -838,6 +858,43 @@ This function returns a value less than zero if an error occurred. If an error o
 | header                 | void*   | in     | pointer to header data                                                                                 |
 | body                   | void*   | in     | pointer to body data                                                                                   |
 | return                 | int32_t | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred. |
+
+## AUTDSendSpecial (autd3capi)
+
+Send special data.
+
+This function returns a value less than zero if an error occurred. If an error occurs, you can get the error message with `AUTDGetLastError`.
+
+| Argument name / return | type    | in/out | description                                                                                            |
+| ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
+| handle                 | void*   | in     | pointer to Controller                                                                                  |
+| special                | void*   | in     | pointer to special data                                                                                |
+| return                 | int32_t | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred. |
+
+## AUTDSendAsync (autd3capi)
+
+Send header and body data asynchronously.
+
+**Never delete header and body after calling this function.**
+
+| Argument name / return | type    | in/out | description                                                                                            |
+| ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
+| handle                 | void*   | in     | pointer to Controller                                                                                  |
+| header                 | void*   | in     | pointer to header data                                                                                 |
+| body                   | void*   | in     | pointer to body data                                                                                   |
+| return                 | void     | -      | -                                  |
+
+## AUTDSendSpecialAsync (autd3capi)
+
+Send special data asynchronously.
+
+**Never delete special after calling this function.**
+
+| Argument name / return | type    | in/out | description                                                                                            |
+| ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
+| handle                 | void*   | in     | pointer to Controller                                                                                  |
+| special                | void*   | in     | pointer to special data                                                                                 |
+| return                 | void     | -      | -                                  |
 
 ## AUTDSetModDelay (autd3capi)
 
@@ -861,26 +918,6 @@ Get Modulation Delay of the transducer.
 | device_idx             | int32_t  | in     | device index                       |
 | local_trans_idx        | int32_t  | in     | local transducer index             |
 | return                 | uint16_t | -      | modulation delay of the transducer |
-
-## AUTDCreateModDelayConfig (autd3capi)
-
-Create ModDelayConfig.
-
-The config created must be deleted at the end by `AUTDDeleteModDelayConfig`.
-
-| Argument name / return | type   | in/out | description                          |
-| ---------------------- | ------ | ------ | ------------------------------------ |
-| out                    | void** | out    | pointer to pointer to ModDelayConfig |
-| return                 | void   | -      | -                                    |
-
-## AUTDDeleteModDelayConfig (autd3capi)
-
-Delete ModDelayConfig.
-
-| Argument name / return | type  | in/out | description               |
-| ---------------------- | ----- | ------ | ------------------------- |
-| config                 | void* | in     | pointer to ModDelayConfig |
-| return                 | void  | -      | -                         |
 
 ## AUTDCreateAmplitudes (autd3capi)
 
@@ -949,7 +986,6 @@ After calling this function, the use of Controller is forbidden.
 
 | Argument name / return | type    | in/out | description                        |
 | ---------------------- | -----   | ------ | -----------------------------------|
-| cnt                    | void**  | out    | pointer to pointer to Controller   |
 | handle                 | void*   | in     | pointer to SoftwareSTMThreadHandle |
 | return                 | void    | -      | -                                  |
 

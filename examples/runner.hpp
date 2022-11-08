@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/10/2022
+// Last Modified: 08/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@
 #endif
 #include "tests/point_stm.hpp"
 
-inline int run(autd3::Controller autd) {
+inline int run(autd3::Controller& autd) {
   using F = std::function<void(autd3::Controller&)>;
   std::vector<std::pair<F, std::string>> tests = {
       std::pair(F{focus_test}, "Single focus Test"),
@@ -64,8 +64,7 @@ inline int run(autd3::Controller autd) {
   std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));
   std::cout << "================================================================================================" << std::endl;
 
-  autd.clear();
-  autd.synchronize();
+  autd << autd3::clear << autd3::synchronize;
 
   while (true) {
     for (size_t i = 0; i < tests.size(); i++) std::cout << "[" << i << "]: " << tests[i].second << std::endl;
@@ -84,7 +83,7 @@ inline int run(autd3::Controller autd) {
     std::cin.ignore();
 
     std::cout << "finish." << std::endl;
-    autd.stop();
+    autd << autd3::stop;
   }
 
   autd.close();

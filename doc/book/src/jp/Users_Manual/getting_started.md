@@ -164,19 +164,14 @@ link使用時は50程度の値にセットしておくことをお勧めする.
 autd.check_trials = 50;
 ```
 
-次に, AUTDデバイスの初期化を行う. 電源投入時に初期化されるので`clear()`は呼ばなくても良いかもしれない.
+次に, AUTDデバイスの初期化と同期を行う. 
+電源投入時に初期化されるので`clear`は必要ないかもしれない.
 
 ```cpp
-autd.clear();
+autd << autd3::clear << autd3::synchronize;
 ```
 
-次に, AUTDデバイスの同期を行う.
-
-```cpp
-autd.synchronize();
-```
-
-**例え, 一台のデバイスしか使用しない場合でも, この関数を初期化後に一度呼び出す必要がある.**
+**例え, 一台のデバイスしか使用しない場合でも, 初期化は一度行う必要がある.**
 
 次に, firmwareのバージョンを確認している. これも必須ではない.
 
@@ -191,10 +186,9 @@ std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::Fir
 
 ```cpp
 autd3::SilencerConfig config;
-autd.send(config);
 ```
 
-デフォルトで設定されているので, これも実際には呼ぶ必要はない.
+デフォルトで設定されているので, これも実際には送信する必要はない.
 OFFにしたい場合は`SilencerConfig::none()`を使用する.
 silencerは, 振動子に与える位相/振幅パラメータをLow-pass filterに通すことで, 静音化を行う.
 
@@ -205,7 +199,7 @@ const auto focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
 autd3::gain::Focus g(focus);
 autd3::modulation::Sine m(150);
 
-autd.send(m, g);
+autd << config << m, g;
 ```
 
 ここで, `focus`は振動子アレイの中心から直上$\SI{150}{mm}$を表す.

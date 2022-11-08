@@ -4,7 +4,7 @@
  * Created Date: 23/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/10/2022
+ * Last Modified: 08/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -78,12 +78,12 @@ public class AUTDService
             return false;
         }
 
-        if (_autd.Clear() == -1)
+        if (_autd.Send(new Clear()) == -1)
         {
             return false;
         }
 
-        if (_autd.Synchronize() == -1)
+        if (_autd.Send(new Synchronize()) == -1)
         {
             return false;
         }
@@ -126,7 +126,7 @@ public class AUTDService
     public bool Stop()
     {
         IsStarted = false;
-        return _autd?.Stop() != -1;
+        return _autd?.Send(new Stop()) != -1;
     }
 
     public bool Resume()

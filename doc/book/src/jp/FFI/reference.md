@@ -98,34 +98,6 @@ check ackフラグがtrue, かつ, 返り値が0より大きい場合は, デー
 | handle                 | void*   | in     | pointer to Controller                                                                                  |
 | return                 | int32_t | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred. |
 
-## AUTDClear (autd3capi)
-
-デバイス内の状態をclearする.
-
-handleは`AUTDCreateController`で作成したものを使う.
-
-この関数はエラーが発生した場合に0未満の値を返す. エラーが生じた場合には`AUTDGetLastError`でエラーメッセージを取得できる. また,
-check ackフラグがtrue, かつ, 返り値が0より大きい場合は, データが実際のデバイスで処理されたことを保証する.
-
-| Argument name / return | type    | in/out | description                                                                                            |
-| ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
-| handle                 | void*   | in     | pointer to Controller                                                                                  |
-| return                 | int32_t | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred. |
-
-## AUTDSynchronize (autd3capi)
-
-デバイスを同期する.
-
-handleは`AUTDCreateController`で作成したものを使う.
-
-この関数はエラーが発生した場合に0未満の値を返す. エラーが生じた場合には`AUTDGetLastError`でエラーメッセージを取得できる. また,
-check ackフラグがtrue, かつ, 返り値が0より大きい場合は, データが実際のデバイスで処理されたことを保証する.
-
-| Argument name / return | type    | in/out | description                                                                                            |
-| ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
-| handle                 | void*   | in     | pointer to Controller                                                                                  |
-| return                 | int32_t | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred. |
-
 ## AUTDCreateSilencer (autd3capi)
 
 SilencerConfigを作成する.
@@ -222,7 +194,7 @@ Reads FPGA info flagを設定する.
 
 handleは`AUTDCreateController`で作成したものを使う.
 
-デバイスに実際に反映されるのはsend functionsのどれかを呼び出し後である.
+デバイスに実際に反映されるのは送信関数のどれかを呼び出し後である.
 
 | Argument name / return | type  | in/out | description           |
 | ---------------------- | ----- | ------ | --------------------- |
@@ -260,7 +232,7 @@ Force fan flagを設定する.
 
 handleは`AUTDCreateController`で作成したものを使う.
 
-デバイスに実際に反映されるのはsend functionsのどれかを呼び出し後である.
+デバイスに実際に反映されるのは送信関数のどれかを呼び出し後である.
 
 | Argument name / return | type  | in/out | description           |
 | ---------------------- | ----- | ------ | --------------------- |
@@ -402,22 +374,6 @@ handleは`AUTDCreateController`で作成したものを使う. outポインタ�
 | handle                 | void*    | in     | pointer to Controller |
 | out                    | uint8_t* | in     | FPGA information list |
 | return                 | bool     | -      | true if success       |
-
-## AUTDUpdateFlags (autd3capi)
-
-Control flagを更新する.
-
-send functionの一つ. force fan/reads FPGA info flagを設定した後に呼び出すと, これらの変更が実際に反映される.
-
-handleは`AUTDCreateController`で作成したものを使う.
-
-この関数はエラーが発生した場合に0未満の値を返す. エラーが生じた場合には`AUTDGetLastError`でエラーメッセージを取得できる. また,
-check ackフラグがtrue, かつ, 返り値が0より大きい場合は, データが実際のデバイスで処理されたことを保証する.
-
-| Argument name / return | type    | in/out | description                                                                                            |
-| ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
-| handle                 | void*   | in     | pointer to Controller                                                                                  |
-| return                 | int32_t | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred. |
 
 ## AUTDNumDevices (autd3capi)
 
@@ -921,25 +877,75 @@ STMを削除する.
 | stm                    | void* | in     | pointer to STM |
 | return                 | void  | -      | -              |
 
+## AUTDUpdateFlags (autd3capi)
+
+`UpdateFlag`特殊データを作成する.
+
+作成した`UpdateFlag`はAUTDDeleteSpecialDataで削除する必要がある.
+
+| Argument name / return | type   | in/out | description                    |
+| ---------------------- | ------ | ------ | ------------------------------ |
+| out                    | void** | out    | pointer to pointer to UpdateFlag |
+| return                 | void   | -      | -                              |
+
+## AUTDSynchronize (autd3capi)
+
+`Synchronize`特殊データを作成する.
+
+作成した`Synchronize`はAUTDDeleteSpecialDataで削除する必要がある.
+
+| Argument name / return | type   | in/out | description                    |
+| ---------------------- | ------ | ------ | ------------------------------ |
+| out                    | void** | out    | pointer to pointer to Synchronize |
+| return                 | void   | -      | -                              |
+
 ## AUTDStop (autd3capi)
 
-AUTDの出力を停止する.
+`Stop`特殊データを作成する.
 
-handleは`AUTDCreateController`で作成したものを使う.
+作成した`Stop`はAUTDDeleteSpecialDataで削除する必要がある.
 
-この関数はエラーが発生した場合に0未満の値を返す. エラーが生じた場合には`AUTDGetLastError`でエラーメッセージを取得できる. また,
-check ackフラグがtrue, かつ, 返り値が0より大きい場合は, データが実際のデバイスで処理されたことを保証する.
+| Argument name / return | type   | in/out | description                    |
+| ---------------------- | ------ | ------ | ------------------------------ |
+| out                    | void** | out    | pointer to pointer to Stop     |
+| return                 | void   | -      | -                              |
 
-| Argument name / return | type    | in/out | description                                                                                            |
-| ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
-| handle                 | void*   | in     | pointer to Controller                                                                                  |
-| return                 | int32_t | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred. |
+## AUTDClear (autd3capi)
+
+`Clear`特殊データを作成する.
+
+作成した`Clear`はAUTDDeleteSpecialDataで削除する必要がある.
+
+| Argument name / return | type   | in/out | description                    |
+| ---------------------- | ------ | ------ | ------------------------------ |
+| out                    | void** | out    | pointer to pointer to Clear    |
+| return                 | void   | -      | -                              |
+
+## AUTDModDelayConfig (autd3capi)
+
+`ModDelayConfig`特殊データを作成する.
+
+作成した`ModDelayConfig`はAUTDDeleteSpecialDataで削除する必要がある.
+
+| Argument name / return | type   | in/out | description                    |
+| ---------------------- | ------ | ------ | ------------------------------ |
+| out                    | void** | out    | pointer to pointer to ModDelayConfig    |
+| return                 | void   | -      | -                              |
+
+## AUTDDeleteSpecialData (autd3capi)
+
+特殊データを削除する.
+
+| Argument name / return | type  | in/out | description    |
+| ---------------------- | ----- | ------ | -------------- |
+| data                   | void* | in     | pointer to special data |
+| return                 | void  | -      | -              |
 
 ## AUTDSend (autd3capi)
 
 ヘッダーデータとボディーデータを送信する.
 
-send functionの一つ.
+送信関数の一つ.
 
 handleは`AUTDCreateController`で作成したものを使う.
 
@@ -953,6 +959,51 @@ check ackフラグがtrue, かつ, 返り値が0より大きい場合は, デー
 | body                   | void*   | in     | pointer to body data                                                                                   |
 | return                 | int32_t | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred. |
 
+## AUTDSendSpecial (autd3capi)
+
+特殊データを送信する.
+
+送信関数の一つ.
+
+handleは`AUTDCreateController`で作成したものを使う.
+
+この関数はエラーが発生した場合に0未満の値を返す. エラーが生じた場合には`AUTDGetLastError`でエラーメッセージを取得できる. また,
+check ackフラグがtrue, かつ, 返り値が0より大きい場合は, データが実際のデバイスで処理されたことを保証する.
+
+| Argument name / return | type    | in/out | description                                                                                            |
+| ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
+| handle                 | void*   | in     | pointer to Controller                                                                                  |
+| special                | void*   | in     | pointer to special data                                                                                 |
+| return                 | int32_t | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred. |
+
+## AUTDSendAsync (autd3capi)
+
+非同期にヘッダーデータとボディーデータを送信する.
+
+handleは`AUTDCreateController`で作成したものを使う.
+
+**この関数に使用したheader, 及び, bodyは削除してはいけない.**
+
+| Argument name / return | type    | in/out | description                                                                                            |
+| ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
+| handle                 | void*   | in     | pointer to Controller                                                                                  |
+| header                 | void*   | in     | pointer to header data                                                                                 |
+| body                   | void*   | in     | pointer to body data                                                                                   |
+| return                 | void     | -      | -                                  |
+
+## AUTDSendSpecialAsync (autd3capi)
+
+非同期に特殊データを送信する.
+
+handleは`AUTDCreateController`で作成したものを使う.
+
+**この関数に使用したspecialは削除してはいけない.**
+
+| Argument name / return | type    | in/out | description                                                                                            |
+| ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
+| handle                 | void*   | in     | pointer to Controller                                                                                  |
+| special                | void*   | in     | pointer to special data                                                                                 |
+| return                 | void     | -      | -                                  |
 
 ## AUTDGetModDelay (autd3capi)
 
@@ -980,26 +1031,6 @@ handleは`AUTDCreateController`で作成したものを使う. 振動子の指�
 | local_trans_idx        | int32_t  | in     | local transducer index             |
 | delay                  | uint16_t | in     | modulation delay of the transducer |
 | return                 | void     | -      | -                                  |
-
-## AUTDCreateModDelayConfig (autd3capi)
-
-ModDelayConfigを作成する.
-
-作成したModDelayConfigは最後に`AUTDDeleteModDelayConfig`で削除する必要がある.
-
-| Argument name / return | type   | in/out | description                          |
-| ---------------------- | ------ | ------ | ------------------------------------ |
-| out                    | void** | out    | pointer to pointer to ModDelayConfig |
-| return                 | void   | -      | -                                    |
-
-## AUTDDeleteModDelayConfig (autd3capi)
-
-ModDelayConfigを削除する.
-
-| Argument name / return | type  | in/out | description               |
-| ---------------------- | ----- | ------ | ------------------------- |
-| config                 | void* | in     | pointer to ModDelayConfig |
-| return                 | void  | -      | -                         |
 
 ## AUTDCreateAmplitudes (autd3capi)
 
@@ -1068,10 +1099,8 @@ SoftwareSTMを開始する.
 
 ## AUTDSoftwareSTMFinish (autd3capi)
 
-
 | Argument name / return | type    | in/out | description                        |
 | ---------------------- | -----   | ------ | -----------------------------------|
-| cnt                    | void**  | out    | pointer to pointer to Controller   |
 | handle                 | void*   | in     | pointer to SoftwareSTMThreadHandle |
 | return                 | void    | -      | -                                  |
 

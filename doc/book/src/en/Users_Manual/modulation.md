@@ -146,7 +146,7 @@ For example, if you want to delay the $17$-th transducer of the $0$-th device by
 
 ```cpp
   autd.geometry()[0][17].mod_delay() = 1;
-  autd.send(autd3::ModDelayConfig());
+  autd << autd3::mod_delay_config;
 ```
 
 Since this is a delay of the sampling index, the actual delay time depends on the sampling frequency.

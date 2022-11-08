@@ -38,5 +38,5 @@ Normalモードは振幅/位相データをそれぞれ1フレームで送信す
 
 ```cpp
   autd3::Amplitudes amp(1.0);
-  autd.send(amp);
+  autd << amp;
 ```

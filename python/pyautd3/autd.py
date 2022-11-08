@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 24/10/2022
+Last Modified: 08/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,6 +28,11 @@ DEVICE_WIDTH = 192.0
 DEVICE_HEIGHT = 151.4
 
 
+class SpecialData:
+    def __init__(self):
+        self.ptr = c_void_p()
+
+
 class Body:
     def __init__(self):
         self.ptr = c_void_p()
@@ -49,15 +54,6 @@ class SilencerConfig(Header):
     @staticmethod
     def none():
         return SilencerConfig(0xFFFF, 4096)
-
-
-class ModDelayConfig(Body):
-    def __init__(self):
-        super().__init__()
-        Base().dll.AUTDCreateModDelayConfig(byref(self.ptr))
-
-    def __del__(self):
-        Base().dll.AUTDDeleteModDelayConfig(self.ptr)
 
 
 class Transducer:
@@ -273,20 +269,8 @@ class Controller:
             self._free()
             self.__disposed = True
 
-    def stop(self):
-        return Base().dll.AUTDStop(self.p_cnt)
-
-    def synchronize(self):
-        return Base().dll.AUTDSynchronize(self.p_cnt)
-
     def close(self):
         return Base().dll.AUTDClose(self.p_cnt)
-
-    def clear(self):
-        return Base().dll.AUTDClear(self.p_cnt)
-
-    def update_flags(self):
-        return Base().dll.AUTDUpdateFlags(self.p_cnt)
 
     def _free(self):
         Base().dll.AUTDFreeController(self.p_cnt)
@@ -335,12 +319,34 @@ class Controller:
         return infos
 
     def send(self, a, b=None):
+        if b is None and isinstance(a, SpecialData):
+            return Base().dll.AUTDSendSpecial(self.p_cnt, a.ptr)
         if b is None and isinstance(a, Header):
             return Base().dll.AUTDSend(self.p_cnt, a.ptr, None)
         if b is None and isinstance(a, Body):
             return Base().dll.AUTDSend(self.p_cnt, None, a.ptr)
         if isinstance(a, Header) and isinstance(b, Body):
             return Base().dll.AUTDSend(self.p_cnt, a.ptr, b.ptr)
+        raise NotImplementedError()
+
+    def send_async(self, a, b=None):
+        if b is None and isinstance(a, SpecialData):
+            Base().dll.AUTDSendSpecialAsync(self.p_cnt, a.ptr)
+            a.ptr = c_void_p()
+            return
+        if b is None and isinstance(a, Header):
+            Base().dll.AUTDSendAsync(self.p_cnt, a.ptr, None)
+            a.ptr = c_void_p()
+            return
+        if b is None and isinstance(a, Body):
+            Base().dll.AUTDSendAsync(self.p_cnt, None, a.ptr)
+            a.ptr = c_void_p()
+            return
+        if isinstance(a, Header) and isinstance(b, Body):
+            Base().dll.AUTDSendAsync(self.p_cnt, a.ptr, b.ptr)
+            a.ptr = c_void_p()
+            b.ptr = c_void_p()
+            return
         raise NotImplementedError()
 
 
@@ -351,3 +357,48 @@ class Amplitudes(Body):
 
     def __del__(self):
         Base().dll.AUTDDeleteAmplitudes(self.ptr)
+
+
+class Clear(SpecialData):
+    def __init__(self):
+        super().__init__()
+        Base().dll.AUTDClear(byref(self.ptr))
+
+    def __del__(self):
+        Base().dll.AUTDDeleteSpecialData(self.ptr)
+
+
+class Stop(SpecialData):
+    def __init__(self):
+        super().__init__()
+        Base().dll.AUTDStop(byref(self.ptr))
+
+    def __del__(self):
+        Base().dll.AUTDDeleteSpecialData(self.ptr)
+
+
+class UpdateFlag(SpecialData):
+    def __init__(self):
+        super().__init__()
+        Base().dll.AUTDUpdateFlags(byref(self.ptr))
+
+    def __del__(self):
+        Base().dll.AUTDDeleteSpecialData(self.ptr)
+
+
+class Synchronize(SpecialData):
+    def __init__(self):
+        super().__init__()
+        Base().dll.AUTDSynchronize(byref(self.ptr))
+
+    def __del__(self):
+        Base().dll.AUTDDeleteSpecialData(self.ptr)
+
+
+class ModDelayConfig(SpecialData):
+    def __init__(self):
+        super().__init__()
+        Base().dll.AUTDModDelayConfig(byref(self.ptr))
+
+    def __del__(self):
+        Base().dll.AUTDDeleteSpecialData(self.ptr)

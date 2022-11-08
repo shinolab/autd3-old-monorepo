@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/06/2022
+ * Last Modified: 07/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -61,9 +61,7 @@ macro_rules! run {
             let mut _s = String::new();
             io::stdin().read_line(&mut _s)?;
 
-            // let res = autd.stop()?;
-            let mut m = Static::new(0);
-            let res = autd.send(&mut m).flush()?;
+            let res = autd.stop()?;
             println!("stop: {}", res);
         }
 

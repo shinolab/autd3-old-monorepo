@@ -3,7 +3,7 @@
 // Created Date: 07/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/10/2022
+// Last Modified: 07/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,7 +28,7 @@ int main() try {
   auto link = autd3::link::Simulator().build();
   autd.open(std::move(link));
 
-  run(std::move(autd));
+  run(autd);
 
   return 0;
 } catch (std::exception& e) {

@@ -16,7 +16,7 @@ autd.check_trials = 50;
 なお, `check_trials`の値が0の場合, `send`関数はチェックを行わず, 必ず`true`を返す.
 
 信頼性の低いlinkを使用する際はOnにしておくことをおすすめする. なお,
-Onにすると[Send functions](#send-functions)の実行時間は増加する.
+Onにすると[送信関数](#送信関数)の実行時間は増加する.
 
 デフォルトは0にセットされている.
 
@@ -45,7 +45,7 @@ AUTD3のファン制御はAuto, Off, Onの3つのモードが有る. Autoモー�
 </figure>
 
 Autoモードの場合は温度が高くなると自動的にファンが起動する. `force_fan`フラグはこのAutoモードでファンを強制的に起動するためのフラグである.
-実際にフラグが更新されるのは[Send functions](#send-functions)のどれかを呼び出し後になる.
+実際にフラグが更新されるのは[送信関数](#送信関数)のどれかを呼び出し後になる.
 
 ```cpp
 autd.force_fan = true;
@@ -54,7 +54,7 @@ autd.force_fan = true;
 ## Read FPGA info
 
 `reads_fpga_info`フラグをONにすると, デバイスがFPGAの状態を返すようになる.
-実際にフラグが更新されるのは[Send functions](#send-functions)のどれかを呼び出し後になる.
+実際にフラグが更新されるのは[送信関数](#送信関数)のどれかを呼び出し後になる.
 
 FPGAの状態は`fpga_info`関数で取得できる.
 
@@ -68,11 +68,20 @@ const auto fpga_info = autd.read_fpga_info();
 
 ## stop
 
-`stop`関数で出力を止めることができる.
+`autd3::stop`で出力を止めることができる.
+
+```cpp
+autd << autd3::stop;
+```
 
 ## clear
 
 デバイス内のフラグや`Gain`/`Modulation`データ等をクリアする.
+
+
+```cpp
+autd << autd3::clear;
+```
 
 ## Firmware information
 
@@ -82,9 +91,9 @@ const auto fpga_info = autd.read_fpga_info();
 for (auto&& firm_info : autd.firmware_infos()) std::cout << firm_info << std::endl;
 ```
 
-## Send functions
+## 送信関数
 
-Send functionsとは, 実際にデバイスにデータを送信する関数の総称である. これらの関数を呼び出すことで, `force fan`,
+送信関数とは, 実際にデバイスにデータを送信する関数の総称である. これらの関数を呼び出すことで, `force fan`,
 `reads FPGA info`のフラグが更新される.
 
 また, これらの関数は`check_trials`, 及び, `send_interval`の値によって挙動が変わる.
@@ -97,12 +106,27 @@ Send functionsとは, 実際にデバイスにデータを送信する関数の�
 また, `send_interval`の値は, 連続するフレームを送信する際の間隔, 及び, 上記チェックの間隔に影響する. 具体的には,
 これらの間隔は$\SI{500}{\text{μ}s}\times \text{send\_interval}$となる.
 
-送信系の関数の一覧は次のとおりである.
+送信関数の一覧は次のとおりである.
 
-- `update_flag`
-- `clear`[^fn_clear]
-- `close`
-- `stop`
 - `send`
+- `<<` operator
+- `update_flag` (非推奨)
+- `clear` (非推奨)
+- `stop` (非推奨)
 
-[^fn_clear]: フラグもクリアされる
+## 非同期送信
+
+`send_async`関数, または, stream演算子を使用する場合は, `autd3::async`を予め送っておくことで, データ送信をnon-blockingにすることができる.
+
+```cpp
+autd3::modulation::Sine m(...);
+autd3::gain::Focus g(...);
+
+autd.send_async(std::move(m), std::move(g));
+// or
+autd << autd3::async <<std::move(m), std::move(g);
+```
+
+これらの関数は右辺値のみ受け取ることに注意する.
+
+また, 同期送信と非同期送信を混ぜた場合の動作は保証されないので注意されたい.

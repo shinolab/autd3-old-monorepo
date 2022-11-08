@@ -27,7 +27,7 @@ The usage of `PointSTM` is as follows.
 
   const auto actual_freq = stm.set_frequency(1);
   std::cout << "Actual frequency is " << actual_freq << " Hz\n";
-  autd.send(stm);
+  autd << stm;
 ```
 
 Due to constraints on the number of sampling points and sampling period, the specified frequency and the actual frequency may differ.
@@ -60,7 +60,7 @@ However, the number of `Gain` that can be used is
 
   const auto actual_freq = stm.set_frequency(1);
   std::cout << "Actual frequency is " << actual_freq << " Hz\n";
-  autd.send(stm);
+  autd << stm;
 ```
 
 The frequency constraints are also the same as for `PointSTM`.

@@ -4,14 +4,14 @@ Project: samples
 Created Date: 30/12/2020
 Author: Shun Suzuki
 -----
-Last Modified: 21/10/2022
+Last Modified: 08/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2020 Shun Suzuki. All rights reserved.
 
 '''
 
-from pyautd3 import Controller
+from pyautd3 import Controller, Clear, Synchronize, Stop
 
 from . import focus, bessel, holo, custom, stm_gain, stm_point
 
@@ -26,9 +26,8 @@ def run(autd: Controller):
         (custom.custom, "Custom Focus Sample")
     ]
 
-    autd.clear()
-
-    autd.synchronize()
+    autd.send(Clear())
+    autd.send(Synchronize())
 
     print('================================== Firmware information ====================================')
     firm_info_list = autd.firmware_info_list()
@@ -54,7 +53,6 @@ def run(autd: Controller):
         _ = input()
 
         print('finish.')
-        autd.stop()
+        autd.send(Stop())
 
-    autd.clear()
     autd.dispose()

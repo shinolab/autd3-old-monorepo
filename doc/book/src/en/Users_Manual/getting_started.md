@@ -134,7 +134,7 @@ Next, create a `Controller`.
 
 ```cpp
 autd3::Controller autd;
-````
+```
 
 Then, specify the device placement.
 
@@ -162,20 +162,14 @@ For SOEM link, it is recommended to set `check_trials` to about 50.
 autd.check_trials = 50;
 ```
 
-Next, initialize the AUTD device.
-You may not need to call `clear()` since the devices are initialized at power-up.
+Next, initialize the AUTD device and synchronize.
+You may not need to send `clear` since the devices are initialized at power-up.
 
 ```cpp
-autd.clear();
-````
-
-Next, synchronize the AUTD devices.
-
-```cpp
-autd.synchronize();
+autd << autd3::clear << autd3::synchronize;
 ```
 
-**Even if only one device is used, this function must be called once after initialization.**
+**Even if only one device is used, you must synchronize devices once after initialization.**
 
 Next, we check the firmware version. 
 
@@ -190,21 +184,20 @@ Next, setup silencer.
 
 ```cpp
 autd3::SilencerConfig config;
-autd.send(config);
-````
+```
 
-This is set by default, so you don't really need to call it.
+This is set by default, so you don't really need to send it.
 If you want to turn silencer off, use `SilencerConfig::none()`.
 The silencer is used to quiet down the transducers by passing the phase/amplitude parameters through a low-pass filter.
 
-Then, we create a `Gain` representing a single focus and a `Modulation` applying a sin wave modulation of $\SI{150}{Hz}$ and sends them to the device.
+Then, we create a `Gain` representing a single focus and a `Modulation` applying a sin wave modulation of $\SI{150}{Hz}$ and send them to the device.
 
 ```cpp
 const auto focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
 autd3::gain::Focus g(focus);
 autd3::modulation::Sine m(150);
 
-autd.send(m, g);
+autd << config << m, g;
 ```
 , where `focus` denotes $\SI{150}{mm}$ directly above the center of the device.
 

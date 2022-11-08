@@ -26,7 +26,7 @@ SDKには単一焦点のみをサポートする`PointSTM`と任意の`Gain`を�
 
   const auto actual_freq = stm.set_frequency(1);
   std::cout << "Actual frequency is " << actual_freq << " Hz\n";
-  autd.send(stm);
+  autd << stm;
 ```
 
 サンプリング点数とサンプリング周期に関する制約によって, 指定した周波数と実際の周波数は異なる可能性がある.
@@ -63,7 +63,7 @@ SDKには単一焦点のみをサポートする`PointSTM`と任意の`Gain`を�
 
   const auto actual_freq = stm.set_frequency(1);
   std::cout << "Actual frequency is " << actual_freq << " Hz\n";
-  autd.send(stm);
+  autd << stm;
 ```
 
 周波数の制約も`PointSTM`と同じである.

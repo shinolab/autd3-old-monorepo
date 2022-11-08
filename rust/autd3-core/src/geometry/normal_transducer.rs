@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2022
+ * Last Modified: 07/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -50,8 +50,7 @@ impl Transducer for NormalTransducer {
         }
     }
     fn align_phase_at(&self, dist: f64, sound_speed: f64) -> f64 {
-        let wavelength = sound_speed * 1e3 / self.frequency();
-        dist / wavelength
+        dist * self.wavenumber(sound_speed)
     }
 
     fn position(&self) -> &Vector3 {
@@ -111,11 +110,11 @@ impl Transducer for NormalTransducer {
     }
 
     fn wavelength(&self, sound_speed: f64) -> f64 {
-        sound_speed * 1e3 / self.frequency()
+        sound_speed / self.frequency()
     }
 
     fn wavenumber(&self, sound_speed: f64) -> f64 {
-        2.0 * PI * self.frequency() / (sound_speed * 1e3)
+        2.0 * PI * self.frequency() / sound_speed
     }
 
     fn gain_stm_max() -> usize {

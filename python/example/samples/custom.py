@@ -4,7 +4,7 @@ Project: samples
 Created Date: 11/10/2021
 Author: Shun Suzuki
 -----
-Last Modified: 21/10/2022
+Last Modified: 07/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -29,7 +29,7 @@ def focus(autd: Controller, point):
         for tr in dev:
             tp = tr.position
             dist = np.linalg.norm(tp - point)
-            phase[tr.id] = dist / tr.wavelength
+            phase[tr.id] = 2.0 * np.pi * dist / tr.wavelength
             amp[tr.id] = 1.0
 
     return Custom(amp, phase)
