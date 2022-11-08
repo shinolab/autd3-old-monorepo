@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 08/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,7 +15,6 @@
 
 inline void group_test(autd3::Controller& autd) {
   autd3::SilencerConfig config;
-  autd.send(config);
 
   autd3::modulation::Sine m(150);  // 150Hz AM
 
@@ -29,5 +28,5 @@ inline void group_test(autd3::Controller& autd) {
   g.add(0, g1);
   g.add(1, g2);
 
-  autd.send(m, g);
+  autd << config << m, g;
 }

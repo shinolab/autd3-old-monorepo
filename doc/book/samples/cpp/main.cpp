@@ -21,13 +21,12 @@ int main() try {
   std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));
 
   autd3::SilencerConfig config;
-  autd.send(config);
 
   const auto focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   autd3::gain::Focus g(focus);
   autd3::modulation::Sine m(150);
 
-  autd.send(m, g);
+  autd << config << m, g;
 
   std::cout << "press enter to finish..." << std::endl;
   std::cin.ignore();

@@ -24,7 +24,7 @@ Silencerの設定には`SilencerConfig`を`send`する.
 
 ```cpp
   autd3::SilencerConfig config;
-  autd.send(config);
+  autd << config;
 ```
 
 `SilencerConfig`には`step`と`cycle`の2つの設定がある.

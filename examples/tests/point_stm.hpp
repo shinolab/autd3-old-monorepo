@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 08/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,6 @@
 
 inline void point_stm(autd3::Controller& autd) {
   auto config = autd3::SilencerConfig::none();
-  autd.send(config);
 
   autd3::modulation::Static m;
 
@@ -35,5 +34,5 @@ inline void point_stm(autd3::Controller& autd) {
 
   const auto actual_freq = stm.set_frequency(1);
   std::cout << "Actual frequency is " << actual_freq << " Hz\n";
-  autd.send(m, stm);
+  autd << config << m, stm;
 }

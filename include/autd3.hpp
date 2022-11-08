@@ -48,8 +48,6 @@ using core::Amplitudes;
 using core::Gain;
 using core::Modulation;
 
-using core::ModDelayConfig;
-
 using driver::FirmwareInfo;
 using driver::FPGAInfo;
 using driver::GainSTMMode;

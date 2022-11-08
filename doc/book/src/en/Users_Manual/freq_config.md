@@ -39,5 +39,5 @@ In this mode, the amplitude is controlled by sending the `Amplitudes`.
 
 ```cpp
   autd3::Amplitudes amp(1.0);
-  autd.send(amp);
+  autd << amp;
 ```
