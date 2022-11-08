@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 07/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,12 +15,12 @@
 
 #include "autd3/core/interface.hpp"
 
-namespace autd3 {
+namespace autd3::core {
 
 /**
  * @brief Silencer Configuration
  */
-struct SilencerConfig final : core::DatagramHeader {
+struct SilencerConfig final : DatagramHeader {
   SilencerConfig() noexcept : SilencerConfig(10, 4096) {}
   explicit SilencerConfig(const uint16_t step, const uint16_t cycle) noexcept : step(step), cycle(cycle), _sent(false) {}
 
@@ -56,4 +56,4 @@ struct SilencerConfig final : core::DatagramHeader {
   bool _sent;
 };
 
-}  // namespace autd3
+}  // namespace autd3::core

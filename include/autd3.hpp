@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/10/2022
+// Last Modified: 08/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,6 +21,7 @@
 #include "autd3/gain/primitive.hpp"
 #include "autd3/modulation/primitive.hpp"
 #include "autd3/soft_stm.hpp"
+#include "autd3/special_data.hpp"
 
 namespace autd3 {
 
@@ -40,13 +41,12 @@ using core::Geometry;
 using core::LegacyMode;
 using core::NormalMode;
 using core::NormalPhaseMode;
+using core::SilencerConfig;
 
 using core::Amplitudes;
 
 using core::Gain;
 using core::Modulation;
-
-using core::ModDelayConfig;
 
 using driver::FirmwareInfo;
 using driver::FPGAInfo;

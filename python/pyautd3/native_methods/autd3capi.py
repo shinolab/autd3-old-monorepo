@@ -45,12 +45,6 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDClose.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDClose.restype = ctypes.c_int32
 
-        self.dll.AUTDClear.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDClear.restype = ctypes.c_int32
-
-        self.dll.AUTDSynchronize.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDSynchronize.restype = ctypes.c_int32
-
         self.dll.AUTDFreeController.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDFreeController.restype = None
 
@@ -110,9 +104,6 @@ class NativeMethods(metaclass=Singleton):
 
         self.dll.AUTDGetFPGAInfo.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint8)] 
         self.dll.AUTDGetFPGAInfo.restype = ctypes.c_bool
-
-        self.dll.AUTDUpdateFlags.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDUpdateFlags.restype = ctypes.c_int32
 
         self.dll.AUTDNumDevices.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDNumDevices.restype = ctypes.c_int32
@@ -234,8 +225,23 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDDeleteSTM.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDDeleteSTM.restype = None
 
-        self.dll.AUTDStop.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDStop.restype = ctypes.c_int32
+        self.dll.AUTDSynchronize.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
+        self.dll.AUTDSynchronize.restype = None
+
+        self.dll.AUTDClear.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
+        self.dll.AUTDClear.restype = None
+
+        self.dll.AUTDUpdateFlags.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
+        self.dll.AUTDUpdateFlags.restype = None
+
+        self.dll.AUTDStop.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
+        self.dll.AUTDStop.restype = None
+
+        self.dll.AUTDModDelayConfig.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
+        self.dll.AUTDModDelayConfig.restype = None
+
+        self.dll.AUTDDeleteSpecialData.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDDeleteSpecialData.restype = None
 
         self.dll.AUTDCreateSilencer.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_uint16, ctypes.c_uint16] 
         self.dll.AUTDCreateSilencer.restype = None
@@ -246,17 +252,20 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDSend.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p] 
         self.dll.AUTDSend.restype = ctypes.c_int32
 
+        self.dll.AUTDSendSpecial.argtypes = [ctypes.c_void_p, ctypes.c_void_p] 
+        self.dll.AUTDSendSpecial.restype = ctypes.c_int32
+
+        self.dll.AUTDSendAsync.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p] 
+        self.dll.AUTDSendAsync.restype = None
+
+        self.dll.AUTDSendSpecialAsync.argtypes = [ctypes.c_void_p, ctypes.c_void_p] 
+        self.dll.AUTDSendSpecialAsync.restype = None
+
         self.dll.AUTDGetModDelay.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_int32] 
         self.dll.AUTDGetModDelay.restype = ctypes.c_uint16
 
         self.dll.AUTDSetModDelay.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_int32, ctypes.c_uint16] 
         self.dll.AUTDSetModDelay.restype = None
-
-        self.dll.AUTDCreateModDelayConfig.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
-        self.dll.AUTDCreateModDelayConfig.restype = None
-
-        self.dll.AUTDDeleteModDelayConfig.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDDeleteModDelayConfig.restype = None
 
         self.dll.AUTDCreateAmplitudes.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_double] 
         self.dll.AUTDCreateAmplitudes.restype = None
@@ -279,7 +288,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDSoftwareSTMStart.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p, ctypes.c_void_p] 
         self.dll.AUTDSoftwareSTMStart.restype = None
 
-        self.dll.AUTDSoftwareSTMFinish.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p] 
+        self.dll.AUTDSoftwareSTMFinish.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDSoftwareSTMFinish.restype = None
 
         self.dll.AUTDSoftwareSTMSetFrequency.argtypes = [ctypes.c_void_p, ctypes.c_double] 

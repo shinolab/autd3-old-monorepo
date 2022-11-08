@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 08/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -46,14 +46,13 @@ class UniformGain final : public autd3::Gain {
 
 inline void advanced_test(autd3::Controller& autd) {
   auto config = autd3::SilencerConfig::none();
-  autd.send(config);
 
-  // autd.geometry()[0][0].mod_delay() = 0;
-  // autd.geometry()[0][17].mod_delay() = 1;
-  // autd.send(autd3::ModDelayConfig());
+  autd.geometry()[0][0].mod_delay() = 0;
+  autd.geometry()[0][17].mod_delay() = 1;
+  autd << autd3::mod_delay_config;
 
   UniformGain g;
   BurstModulation m;
 
-  autd.send(m, g);
+  autd << config << m, g;
 }

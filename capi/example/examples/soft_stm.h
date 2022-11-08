@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/10/2022
+// Last Modified: 07/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -49,7 +49,7 @@ void* soft_stm(void* autd) {
   printf("press any key to stop stm...");
   (void)getchar();
 
-  AUTDSoftwareSTMFinish(&autd, handle);
+  AUTDSoftwareSTMFinish(handle);
 
   AUTDDeleteSoftwareSTM(stm);
 

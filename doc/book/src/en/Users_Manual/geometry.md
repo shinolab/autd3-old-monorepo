@@ -36,7 +36,7 @@ Also, for example, if the global coordinates are the same as the local coordinat
 ```cpp
   autd.geometry().add_device(aud3::Vector3(-aud3::DEVICE_WIDTH, 0, 0), aud3::Vector3::Zero());
   autd.geometry().add_device(aud3::Vector3::Zero(), aud3::Vector3::Zero());
-````
+```
 
 <figure>
   <img src="../fig/Users_Manual/autd_vert.jpg"/>
@@ -49,7 +49,7 @@ Here, you must setup Geometry as follows:
 ```cpp
   autd.geometry().add_device(aud3::Vector3::Zero(), aud3::Vector3::Zero());
   autd.geometry().add_device(aud3::Vector3(0, 0, aud3::DEVICE_WIDTH), aud3::Vector3(0, autd3::pi / 2.0, 0));
-````
+```
 
 The SDK API uses global coordinates, so it does not depend on the number of connected devices and can be used transparently.
 

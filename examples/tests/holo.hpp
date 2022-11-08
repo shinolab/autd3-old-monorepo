@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 08/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,7 +22,6 @@
 
 inline void holo_test(autd3::Controller& autd) {
   autd3::SilencerConfig config;
-  autd.send(config);
 
   autd3::modulation::Sine m(150);  // 150Hz AM
 
@@ -60,5 +59,5 @@ inline void holo_test(autd3::Controller& autd) {
 
   g->constraint = std::make_unique<autd3::gain::holo::Uniform>(1.0);
 
-  autd.send(m, *g);
+  autd << config << m, *g;
 }

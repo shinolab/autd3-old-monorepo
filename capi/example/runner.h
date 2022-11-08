@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/10/2022
+// Last Modified: 08/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -98,9 +98,6 @@ int run(void* autd) {
   examples[idx++].func = api_debug;
 #endif
 
-  AUTDClear(autd);
-  AUTDSynchronize(autd);
-
   printf("========= Firmware infomations ==========\n");
   void* firm_info_list = NULL;
   const int32_t firm_info_list_size = AUTDGetFirmwareInfoListPointer(autd, &firm_info_list);
@@ -111,6 +108,15 @@ int run(void* autd) {
   }
   AUTDFreeFirmwareInfoListPointer(firm_info_list);
   printf("=========================================\n");
+
+  void* clear = NULL;
+  AUTDClear(&clear);
+  AUTDSendSpecial(autd, clear);
+  AUTDDeleteSpecialData(clear);
+  void* sync = NULL;
+  AUTDSynchronize(&sync);
+  AUTDSendSpecial(autd, sync);
+  AUTDDeleteSpecialData(sync);
 
   while (1) {
     for (int32_t i = 0; i < example_size; i++) {
@@ -134,14 +140,14 @@ int run(void* autd) {
     (void)getchar();
 
     printf("Finish.\n");
-    AUTDStop(autd);
+    void* stop = NULL;
+    AUTDStop(&stop);
+    AUTDSendSpecial(autd, stop);
+    AUTDDeleteSpecialData(stop);
   }
 
-  AUTDClear(autd);
   AUTDClose(autd);
-
   AUTDFreeController(autd);
-
   free(examples);
 
   return 0;
