@@ -31,12 +31,12 @@ class NullLink : public core::Link {
   NullLink(NullLink&& obj) = delete;
   NullLink& operator=(NullLink&& obj) = delete;
 
-  void open(const core::Geometry& geometry) override {}
+  void open(const core::Geometry&) override {}
 
   void close() override {}
 
-  bool send(const driver::TxDatagram& tx) override { return true; }
-  bool receive(driver::RxDatagram& rx) override { return true; }
+  bool send(const driver::TxDatagram&) override { return true; }
+  bool receive(driver::RxDatagram&) override { return true; }
 
   bool is_open() override { return true; }
 };
