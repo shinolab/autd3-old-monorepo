@@ -492,11 +492,11 @@ class Controller {
         return _cnt;
       }
 
-      template <typename H>
-      auto operator<<(H header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, StreamCommaInputHeaderAsync<H>> {
+      template <typename H2>
+      auto operator<<(H2 header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H2>, StreamCommaInputHeaderAsync<H2>> {
         _cnt.cnt.send_async(std::move(_header));
         _sent = true;
-        return StreamCommaInputHeaderAsync<H>(_cnt, std::move(header));
+        return StreamCommaInputHeaderAsync<H2>(_cnt, std::move(header));
       }
 
       template <typename S>
@@ -540,11 +540,11 @@ class Controller {
         return _cnt;
       }
 
-      template <typename B>
-      auto operator<<(B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, StreamCommaInputBodyAsync<B>> {
+      template <typename B2>
+      auto operator<<(B2 body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B2>, StreamCommaInputBodyAsync<B2>> {
         _cnt.cnt.send_async(std::move(_body));
         _sent = true;
-        return StreamCommaInputBody<B>(_cnt, std::move(body));
+        return StreamCommaInputBody<B2>(_cnt, std::move(body));
       }
 
       template <typename S>
@@ -567,7 +567,7 @@ class Controller {
     }
 
     template <typename B>
-    auto operator<<(B Body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, StreamCommaInputBodyAsync<B>> {
+    auto operator<<(B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, StreamCommaInputBodyAsync<B>> {
       return StreamCommaInputBody<B>(*this, std::move(body));
     }
 
@@ -608,11 +608,12 @@ class Controller {
       return _cnt;
     }
 
-    template <typename H>
-    auto operator<<(H&& header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, std::remove_reference_t<H>>, StreamCommaInputHeader<H>> {
+    template <typename H2>
+    auto operator<<(H2&& header)
+        -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, std::remove_reference_t<H2>>, StreamCommaInputHeader<H2>> {
       _cnt._last_send_res = _cnt.send(_header);
       _sent = true;
-      return StreamCommaInputHeader<H>(_cnt, header);
+      return StreamCommaInputHeader<H2>(_cnt, header);
     }
 
     template <typename S>
@@ -657,11 +658,11 @@ class Controller {
       return _cnt;
     }
 
-    template <typename B>
-    auto operator<<(B&& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, std::remove_reference_t<B>>, StreamCommaInputBody<B>> {
+    template <typename B2>
+    auto operator<<(B2&& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, std::remove_reference_t<B2>>, StreamCommaInputBody<B2>> {
       _cnt._last_send_res = _cnt.send(_body);
       _sent = true;
-      return StreamCommaInputBody<B>(_cnt, body);
+      return StreamCommaInputBody<B2>(_cnt, body);
     }
 
     template <typename S>
@@ -685,7 +686,7 @@ class Controller {
   }
 
   template <typename B>
-  auto operator<<(B&& Body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, std::remove_reference_t<B>>, StreamCommaInputBody<B>> {
+  auto operator<<(B&& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, std::remove_reference_t<B>>, StreamCommaInputBody<B>> {
     return StreamCommaInputBody<B>(*this, body);
   }
 
