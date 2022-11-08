@@ -218,21 +218,6 @@ class Controller {
   [[deprecated("please send autd3::stop instead")]] bool stop() { return send(autd3::Stop{}); }
 
   /**
-   * @brief Send seprcial data to devices
-   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
-   */
-  template <typename S>
-  auto send(S s) -> typename std::enable_if_t<std::is_base_of_v<SpecialData<typename S::header_t, typename S::body_t>, S>, bool> {
-    push_check_trial();
-    if (s.check_trials_override()) check_trials = s.check_trials();
-    typename S::header_t h = s.header();
-    typename S::body_t b = s.body();
-    const auto res = send(h, b);
-    pop_check_trial();
-    return res;
-  }
-
-  /**
    * @brief Send header data to devices
    * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
@@ -287,23 +272,60 @@ class Controller {
   template <typename H, typename B>
   auto send(H& header, B& body) ->
       typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>, bool> {
-    header.init();
-    body.init();
+    return send(&header, &body);
+  }
+
+  /**
+   * @brief Send header and body data to devices
+   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   */
+  auto send(core::DatagramHeader* header, core::DatagramBody* body) -> bool {
+    header->init();
+    body->init();
 
     driver::force_fan(_tx_buf, force_fan);
     driver::reads_fpga_info(_tx_buf, reads_fpga_info);
 
     while (true) {
       const auto msg_id = get_id();
-      header.pack(msg_id, _tx_buf);
-      body.pack(_geometry, _tx_buf);
+      header->pack(msg_id, _tx_buf);
+      body->pack(_geometry, _tx_buf);
       _link->send(_tx_buf);
       const auto trials = wait_msg_processed(check_trials);
       if ((check_trials != 0) && (trials == check_trials)) return false;
-      if (header.is_finished() && body.is_finished()) break;
+      if (header->is_finished() && body->is_finished()) break;
       if (trials == 0) std::this_thread::sleep_for(std::chrono::microseconds(send_interval * driver::EC_CYCLE_TIME_BASE_MICRO_SEC));
     }
     return true;
+  }
+
+  /**
+   * @brief Send seprcial data to devices
+   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   */
+  template <typename S>
+  auto send(S s) -> typename std::enable_if_t<std::is_base_of_v<SpecialData, S>, bool> {
+    push_check_trial();
+    if (s.check_trials_override()) check_trials = s.check_trials();
+    auto h = s.header();
+    auto b = s.body();
+    const auto res = send(h.get(), b.get());
+    pop_check_trial();
+    return res;
+  }
+
+  /**
+   * @brief Send seprcial data to devices
+   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   */
+  auto send(SpecialData* s) -> bool {
+    push_check_trial();
+    if (s->check_trials_override()) check_trials = s->check_trials();
+    auto h = s->header();
+    auto b = s->body();
+    const auto res = send(h.get(), b.get());
+    pop_check_trial();
+    return res;
   }
 
   /**
@@ -328,35 +350,45 @@ class Controller {
   template <typename H, typename B>
   auto send_async(H header, B body) ->
       typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>> {
-    {
-      std::unique_lock lk(_send_mtx);
-      AsyncData data;
-      data.header = std::make_unique<H>(std::move(header));
-      data.body = std::make_unique<B>(std::move(body));
-      _send_queue.emplace(std::move(data));
-    }
-    _send_cond.notify_all();
+    send_async(std::make_unique<H>(std::move(header)), std::make_unique<B>(std::move(body)));
   }
 
   /**
    * @brief Send special data to devices asynchronously
    */
   template <typename S>
-  auto send_async(S s) -> typename std::enable_if_t<std::is_base_of_v<SpecialData<typename S::header_t, typename S::body_t>, S>> {
-    auto check_trials_override = s.check_trials_override();
-    auto trials = s.check_trials();
-    auto header = std::make_unique<typename S::header_t>(s.header());
-    auto body = std::make_unique<typename S::body_t>(s.body());
+  auto send_async(S s) -> typename std::enable_if_t<std::is_base_of_v<SpecialData, S>> {
+    send_async(&s);
+  }
+
+  /**
+   * @brief Send special data to devices asynchronously
+   */
+  void send_async(SpecialData* s) {
+    auto check_trials_override = s->check_trials_override();
+    auto trials = s->check_trials();
+    send_async(
+        s->header(), s->body(),
+        [this, check_trials_override, trials] {
+          push_check_trial();
+          if (check_trials_override) check_trials = trials;
+        },
+        [this] { pop_check_trial(); });
+  }
+
+  /**
+   * @brief Send header and body data to devices asynchronously
+   */
+  void send_async(
+      std::unique_ptr<core::DatagramHeader> header, std::unique_ptr<core::DatagramBody> body, std::function<void()> pre = [] {},
+      std::function<void()> post = [] {}) {
     {
       std::unique_lock lk(_send_mtx);
       AsyncData data;
       data.header = std::move(header);
       data.body = std::move(body);
-      data.pre = [this, check_trials_override, trials] {
-        push_check_trial();
-        if (check_trials_override) check_trials = trials;
-      };
-      data.post = [this] { pop_check_trial(); };
+      data.pre = std::move(pre);
+      data.post = std::move(post);
       _send_queue.emplace(std::move(data));
     }
     _send_cond.notify_all();
@@ -468,8 +500,7 @@ class Controller {
       }
 
       template <typename S>
-      auto operator<<(S (*special_f)())
-          -> std::enable_if_t<std::is_base_of_v<SpecialData<typename S::header_t, typename S::body_t>, S>, AsyncSender&> {
+      auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, AsyncSender&> {
         _cnt.cnt.send_async(special_f());
         return _cnt;
       }
@@ -517,8 +548,7 @@ class Controller {
       }
 
       template <typename S>
-      auto operator<<(S (*special_f)())
-          -> std::enable_if_t<std::is_base_of_v<SpecialData<typename S::header_t, typename S::body_t>, S>, AsyncSender&> {
+      auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, AsyncSender&> {
         _cnt.cnt.send_async(special_f());
         return _cnt;
       }
@@ -542,7 +572,7 @@ class Controller {
     }
 
     template <typename S>
-    auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData<typename S::header_t, typename S::body_t>, S>, AsyncSender&> {
+    auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, AsyncSender&> {
       cnt.send_async(special_f());
       return *this;
     }
@@ -586,7 +616,7 @@ class Controller {
     }
 
     template <typename S>
-    auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData<typename S::header_t, typename S::body_t>, S>, Controller&> {
+    auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, Controller&> {
       auto s = special_f();
       _cnt._last_send_res = _cnt.send(s);
       return _cnt;
@@ -635,7 +665,7 @@ class Controller {
     }
 
     template <typename S>
-    auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData<typename S::header_t, typename S::body_t>, S>, Controller&> {
+    auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, Controller&> {
       auto s = special_f();
       _cnt._last_send_res = _cnt.send(s);
       return _cnt;
@@ -660,9 +690,8 @@ class Controller {
   }
 
   template <typename S>
-  auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData<typename S::header_t, typename S::body_t>, S>, Controller&> {
-    auto s = special_f();
-    _last_send_res = send(s);
+  auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, Controller&> {
+    _last_send_res = send(special_f());
     return *this;
   }
 
