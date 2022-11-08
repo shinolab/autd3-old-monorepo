@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/11/2022
+// Last Modified: 09/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -398,6 +398,22 @@ class Controller {
       _send_queue.emplace(std::move(data));
     }
     _send_cond.notify_all();
+  }
+
+  /**
+   * @brief Wait until all asynchronously sent data to complete the transmission
+   */
+  void wait() {
+    if (!is_open()) return;
+    while (!_send_queue.empty()) std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+
+  /**
+   * @brief Flush all asynchronously sent data
+   */
+  void flush() {
+    std::unique_lock lk(_send_mtx);
+    std::queue<AsyncData>().swap(_send_queue);
   }
 
   /**
