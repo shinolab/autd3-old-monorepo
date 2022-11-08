@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/11/2022
+// Last Modified: 09/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,7 +19,9 @@
 #endif
 
 #include <autd3.hpp>
+#include <autd3/core/acoustics.hpp>
 
+#include "emulator_link.hpp"
 #include "null_link.hpp"
 
 TEST(ControllerTest, stream) {
@@ -189,6 +191,210 @@ TEST(ControllerTest, stream_async) {
          << (std::move(s4), std::move(n3)) << std::move(n4);                          //
     autd << async << (std::move(s5), std::move(n5)) << std::move(s6), std::move(n6);  //
   }
+}
+
+TEST(ControllerTest, basic_usage) {
+  autd3::Controller autd;
+
+  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
+
+  auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
+
+  auto link = autd3::test::EmulatorLink(cpus).build();
+  autd.open(std::move(link));
+
+  const auto firm_infos = autd.firmware_infos();
+  ASSERT_EQ(firm_infos.size(), autd.geometry().num_devices());
+  for (const auto& firm : firm_infos) {
+    ASSERT_EQ(firm.cpu_version(), "v2.5");
+    ASSERT_EQ(firm.fpga_version(), "v2.5");
+  }
+
+  autd << autd3::clear << autd3::synchronize;
+  for (const auto& cpu : *cpus) {
+    const auto [duties, phases] = cpu.fpga().drives();
+    for (const auto& duty_pat : duties)
+      for (const auto& [duty] : duty_pat) ASSERT_EQ(duty, 0x0000);
+    for (const auto& phase_pat : phases)
+      for (const auto& [phase] : phase_pat) ASSERT_EQ(phase, 0x0000);
+
+    const auto cycles = cpu.fpga().cycles();
+    for (const auto& cycle : cycles) ASSERT_EQ(cycle, 0x1000);
+
+    ASSERT_EQ(cpu.fpga().modulation_cycle(), 2);
+    ASSERT_EQ(cpu.fpga().modulation_frequency_division(), 40960);
+    const auto mod = cpu.fpga().modulation();
+    for (const auto& m : mod) ASSERT_EQ(m, 0x00);
+  }
+
+  autd3::SilencerConfig config;
+  const autd3::Vector3 focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
+  autd3::gain::Focus g(focus);
+  autd3::modulation::Sine m(150);
+  autd << config << m, g;
+  for (const auto& cpu : *cpus) {
+    ASSERT_TRUE(cpu.fpga_flags().contains(autd3::driver::FPGAControlFlags::LEGACY_MODE));
+    ASSERT_FALSE(cpu.fpga_flags().contains(autd3::driver::FPGAControlFlags::STM_MODE));
+  }
+  const auto& base_tr = autd.geometry()[0][0];
+  ASSERT_EQ(cpus->at(0).fpga().drives().first.size(), 1);
+  ASSERT_EQ(cpus->at(0).fpga().drives().second.size(), 1);
+  const auto expect =
+      std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0.0, base_tr.wavenumber(autd.geometry().sound_speed), focus) *
+               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[0][0].phase) /
+                                              static_cast<double>(cpus->at(0).fpga().cycles()[0]))));
+  for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+    for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
+      const auto p = std::arg(autd3::core::propagate(autd.geometry()[i][j].position(), autd.geometry()[i][j].z_direction(), 0.0,
+                                                     autd.geometry()[i][j].wavenumber(autd.geometry().sound_speed), focus) *
+                              std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives().second[0][j].phase) /
+                                                             static_cast<double>(cpus->at(i).fpga().cycles()[j]))));
+      ASSERT_EQ(cpus->at(i).fpga().drives().first[0][j].duty, cpus->at(i).fpga().cycles()[j] >> 1);
+      ASSERT_NEAR(p, expect, 2.0 * autd3::pi / 256.0);
+    }
+  }
+  const std::vector<uint8_t> expect_mod = {85,  108, 132, 157, 183, 210, 237, 246, 219, 192, 166, 140, 116, 92,  71,  51,  34,  19,  9,   2,
+                                           0,   2,   9,   19,  34,  51,  71,  92,  116, 140, 166, 192, 219, 246, 237, 210, 183, 157, 132, 108,
+                                           85,  64,  45,  29,  16,  6,   1,   0,   4,   12,  24,  39,  57,  78,  100, 124, 149, 175, 201, 228,
+                                           255, 228, 201, 175, 149, 124, 100, 78,  57,  39,  24,  12,  4,   0,   1,   6,   16,  29,  45,  64};
+  for (const auto& cpu : *cpus) {
+    ASSERT_EQ(cpu.fpga().modulation_cycle(), expect_mod.size());
+    for (size_t i = 0; i < std::min(cpu.fpga().modulation_cycle(), expect_mod.size()); i++) ASSERT_EQ(cpu.fpga().modulation()[i], expect_mod[i]);
+  }
+  for (const auto& cpu : *cpus) {
+    ASSERT_EQ(cpu.fpga().silencer_cycle(), 4096);
+    ASSERT_EQ(cpu.fpga().silencer_step(), 10);
+  }
+
+  autd << autd3::stop;
+  for (const auto& cpu : *cpus) {
+    const auto [duties, phases] = cpu.fpga().drives();
+    for (const auto& duty_pat : duties)
+      for (const auto& [duty] : duty_pat) ASSERT_EQ(duty, 0x0000);
+  }
+
+  autd << autd3::clear;
+  for (const auto& cpu : *cpus) {
+    const auto [duties, phases] = cpu.fpga().drives();
+    for (const auto& duty_pat : duties)
+      for (const auto& [duty] : duty_pat) ASSERT_EQ(duty, 0x0000);
+    for (const auto& phase_pat : phases)
+      for (const auto& [phase] : phase_pat) ASSERT_EQ(phase, 0x0000);
+
+    const auto cycles = cpu.fpga().cycles();
+    for (const auto& cycle : cycles) ASSERT_EQ(cycle, 0x1000);
+
+    ASSERT_EQ(cpu.fpga().modulation_cycle(), 2);
+    ASSERT_EQ(cpu.fpga().modulation_frequency_division(), 40960);
+    const auto mod = cpu.fpga().modulation();
+    for (const auto& mv : mod) ASSERT_EQ(mv, 0x00);
+  }
+
+  autd.close();
+}
+
+TEST(ControllerTest, basic_usage_async) {
+  autd3::Controller autd;
+
+  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
+
+  auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
+
+  auto link = autd3::test::EmulatorLink(cpus).build();
+  autd.open(std::move(link));
+
+  const auto firm_infos = autd.firmware_infos();
+  ASSERT_EQ(firm_infos.size(), autd.geometry().num_devices());
+  for (const auto& firm : firm_infos) {
+    ASSERT_EQ(firm.cpu_version(), "v2.5");
+    ASSERT_EQ(firm.fpga_version(), "v2.5");
+  }
+
+  autd << autd3::async << autd3::clear << autd3::synchronize;
+  autd.wait();
+  for (const auto& cpu : *cpus) {
+    const auto [duties, phases] = cpu.fpga().drives();
+    for (const auto& duty_pat : duties)
+      for (const auto& [duty] : duty_pat) ASSERT_EQ(duty, 0x0000);
+    for (const auto& phase_pat : phases)
+      for (const auto& [phase] : phase_pat) ASSERT_EQ(phase, 0x0000);
+
+    const auto cycles = cpu.fpga().cycles();
+    for (const auto& cycle : cycles) ASSERT_EQ(cycle, 0x1000);
+
+    ASSERT_EQ(cpu.fpga().modulation_cycle(), 2);
+    ASSERT_EQ(cpu.fpga().modulation_frequency_division(), 40960);
+    const auto mod = cpu.fpga().modulation();
+    for (const auto& m : mod) ASSERT_EQ(m, 0x00);
+  }
+
+  autd3::SilencerConfig config;
+  const autd3::Vector3 focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
+  autd3::gain::Focus g(focus);
+  autd3::modulation::Sine m(150);
+  autd << autd3::async << config << std::move(m), std::move(g);
+  autd.wait();
+  for (const auto& cpu : *cpus) {
+    ASSERT_TRUE(cpu.fpga_flags().contains(autd3::driver::FPGAControlFlags::LEGACY_MODE));
+    ASSERT_FALSE(cpu.fpga_flags().contains(autd3::driver::FPGAControlFlags::STM_MODE));
+  }
+  const auto& base_tr = autd.geometry()[0][0];
+  ASSERT_EQ(cpus->at(0).fpga().drives().first.size(), 1);
+  ASSERT_EQ(cpus->at(0).fpga().drives().second.size(), 1);
+  const auto expect =
+      std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0.0, base_tr.wavenumber(autd.geometry().sound_speed), focus) *
+               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[0][0].phase) /
+                                              static_cast<double>(cpus->at(0).fpga().cycles()[0]))));
+  for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+    for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
+      const auto p = std::arg(autd3::core::propagate(autd.geometry()[i][j].position(), autd.geometry()[i][j].z_direction(), 0.0,
+                                                     autd.geometry()[i][j].wavenumber(autd.geometry().sound_speed), focus) *
+                              std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives().second[0][j].phase) /
+                                                             static_cast<double>(cpus->at(i).fpga().cycles()[j]))));
+      ASSERT_EQ(cpus->at(i).fpga().drives().first[0][j].duty, cpus->at(i).fpga().cycles()[j] >> 1);
+      ASSERT_NEAR(p, expect, 2.0 * autd3::pi / 256.0);
+    }
+  }
+  const std::vector<uint8_t> expect_mod = {85,  108, 132, 157, 183, 210, 237, 246, 219, 192, 166, 140, 116, 92,  71,  51,  34,  19,  9,   2,
+                                           0,   2,   9,   19,  34,  51,  71,  92,  116, 140, 166, 192, 219, 246, 237, 210, 183, 157, 132, 108,
+                                           85,  64,  45,  29,  16,  6,   1,   0,   4,   12,  24,  39,  57,  78,  100, 124, 149, 175, 201, 228,
+                                           255, 228, 201, 175, 149, 124, 100, 78,  57,  39,  24,  12,  4,   0,   1,   6,   16,  29,  45,  64};
+  for (const auto& cpu : *cpus) {
+    ASSERT_EQ(cpu.fpga().modulation_cycle(), expect_mod.size());
+    for (size_t i = 0; i < std::min(cpu.fpga().modulation_cycle(), expect_mod.size()); i++) ASSERT_EQ(cpu.fpga().modulation()[i], expect_mod[i]);
+  }
+  for (const auto& cpu : *cpus) {
+    ASSERT_EQ(cpu.fpga().silencer_cycle(), 4096);
+    ASSERT_EQ(cpu.fpga().silencer_step(), 10);
+  }
+
+  autd << autd3::async << autd3::stop;
+  autd.wait();
+  for (const auto& cpu : *cpus) {
+    const auto [duties, phases] = cpu.fpga().drives();
+    for (const auto& duty_pat : duties)
+      for (const auto& [duty] : duty_pat) ASSERT_EQ(duty, 0x0000);
+  }
+
+  autd << autd3::async << autd3::clear;
+  autd.wait();
+  for (const auto& cpu : *cpus) {
+    const auto [duties, phases] = cpu.fpga().drives();
+    for (const auto& duty_pat : duties)
+      for (const auto& [duty] : duty_pat) ASSERT_EQ(duty, 0x0000);
+    for (const auto& phase_pat : phases)
+      for (const auto& [phase] : phase_pat) ASSERT_EQ(phase, 0x0000);
+
+    const auto cycles = cpu.fpga().cycles();
+    for (const auto& cycle : cycles) ASSERT_EQ(cycle, 0x1000);
+
+    ASSERT_EQ(cpu.fpga().modulation_cycle(), 2);
+    ASSERT_EQ(cpu.fpga().modulation_frequency_division(), 40960);
+    const auto mod = cpu.fpga().modulation();
+    for (const auto& mv : mod) ASSERT_EQ(mv, 0x00);
+  }
+
+  autd.close();
 }
 
 int main(int argc, char** argv) {
