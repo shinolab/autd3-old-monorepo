@@ -134,7 +134,7 @@ Next, create a `Controller`.
 
 ```cpp
 autd3::Controller autd;
-````
+```
 
 Then, specify the device placement.
 
@@ -162,20 +162,14 @@ For SOEM link, it is recommended to set `check_trials` to about 50.
 autd.check_trials = 50;
 ```
 
-Next, initialize the AUTD device.
-You may not need to call `clear()` since the devices are initialized at power-up.
+Next, initialize the AUTD device and synchronize.
+You may not need to send `clear` since the devices are initialized at power-up.
 
 ```cpp
-autd.clear();
-````
-
-Next, synchronize the AUTD devices.
-
-```cpp
-autd.synchronize();
+autd << autd3::clear << autd3::synchronize;
 ```
 
-**Even if only one device is used, this function must be called once after initialization.**
+**Even if only one device is used, you must synchronize devices once after initialization.**
 
 Next, we check the firmware version. 
 

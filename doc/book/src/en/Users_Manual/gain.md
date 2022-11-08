@@ -120,7 +120,7 @@ cmake ... -DBUILD_HOLO_GAIN=ON -DBUILD_BLAS_BACKEND=ON -DBLAS_LIB_DIR=<your BLAS
 * If you use Intel MKL, turn on the `USE_MKL` flag.
     ```
     cmake ... -DBUILD_HOLO_GAIN=ON -DBUILD_BLAS_BACKEND=ON -DBLAS_LIB_DIR=<your MKL library path> -DBLAS_INCLUDE_DIR=<your MKL include path> -DBLA_VENDOR=Intel10_64lp -DUSE_MKL=ON
-    ````
+    ```
 
 #### OpenBLAS install example in Windows
 
