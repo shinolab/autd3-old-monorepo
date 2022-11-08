@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/11/2022
+ * Last Modified: 09/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -463,7 +463,7 @@ static void clear(void) {
   uint32_t freq_div_4k = 40960;
 
   _read_fpga_info = false;
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, LEGACY_MODE);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, 0x0000);
 
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP, 10);
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_CYCLE, 4096);
@@ -485,7 +485,7 @@ inline static uint16_t read_fpga_info(void) { return bram_read(BRAM_SELECT_CONTR
 void init_app(void) { clear(); }
 
 void update(void) {
-  if (ECATC.AL_STATUS_CODE.WORD == 0x001A) { // Synchronization error
+  if (ECATC.AL_STATUS_CODE.WORD == 0x001A) {  // Synchronization error
     if (_wdt_cnt < 0) return;
     if (_wdt_cnt-- == 0) clear();
   } else {
