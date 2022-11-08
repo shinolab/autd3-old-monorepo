@@ -23,6 +23,7 @@
 #include <utility>
 #include <vector>
 
+#include "autd3/async.hpp"
 #include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/driver/cpu/ec_config.hpp"
 #include "autd3/gain/primitive.hpp"
@@ -50,7 +51,8 @@ class Controller {
         _tx_buf(0),
         _rx_buf(0),
         _link(nullptr),
-        _send_th_running(false) {}
+        _send_th_running(false),
+        _last_send_res(false) {}
 
   /**
    * @brief Geometry of the devices
@@ -195,25 +197,25 @@ class Controller {
    * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
 
-  [[deprecated("please send autd3::Synchronize instead")]] bool synchronize() { return send(Synchronize{}); }
+  [[deprecated("please send autd3::synchronize instead")]] bool synchronize() { return send(Synchronize{}); }
 
   /**
    * @brief Update flags (force fan and reads_fpga_info)
    * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
-  [[deprecated("please send autd3::UpdateFlag{} instead")]] bool update_flag() { return send(UpdateFlag{}); }
+  [[deprecated("please send autd3::update_flag instead")]] bool update_flag() { return send(UpdateFlag{}); }
 
   /**
    * @brief Clear all data in devices
    * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
-  [[deprecated("please send autd3::Clear{} instead")]] bool clear() { return send(autd3::Clear{}); }
+  [[deprecated("please send autd3::clear instead")]] bool clear() { return send(autd3::Clear{}); }
 
   /**
    * @brief Stop outputting
    * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
    */
-  [[deprecated("please send autd3::Stop{} instead")]] bool stop() { return send(autd3::Stop{}); }
+  [[deprecated("please send autd3::stop instead")]] bool stop() { return send(autd3::Stop{}); }
 
   /**
    * @brief Send seprcial data to devices
@@ -329,8 +331,8 @@ class Controller {
     {
       std::unique_lock lk(_send_mtx);
       AsyncData data;
-      data.header = std::move(header);
-      data.body = std::move(body);
+      data.header = std::make_unique<H>(std::move(header));
+      data.body = std::make_unique<B>(std::move(body));
       _send_queue.emplace(std::move(data));
     }
     _send_cond.notify_all();
@@ -341,10 +343,10 @@ class Controller {
    */
   template <typename S>
   auto send_async(S s) -> typename std::enable_if_t<std::is_base_of_v<SpecialData<typename S::header_t, typename S::body_t>, S>> {
-    auto check_trials_override = s.raw->check_trials_override();
-    auto trials = s.raw->check_trials();
-    auto header = std::make_unique<typename S::header_t>(s.raw->header());
-    auto body = std::make_unique<typename S::body_t>(s.raw->body());
+    auto check_trials_override = s.check_trials_override();
+    auto trials = s.check_trials();
+    auto header = std::make_unique<typename S::header_t>(s.header());
+    auto body = std::make_unique<typename S::body_t>(s.body());
     {
       std::unique_lock lk(_send_mtx);
       AsyncData data;
@@ -421,6 +423,255 @@ class Controller {
   std::queue<AsyncData> _send_queue;
   std::condition_variable _send_cond;
   std::mutex _send_mtx;
+
+  bool _last_send_res;
+
+ public:
+  class AsyncSender {
+    friend class Controller;
+
+   public:
+    Controller& cnt;
+
+    template <typename H>
+    class StreamCommaInputHeaderAsync {
+      friend class AsyncSender;
+
+     public:
+      ~StreamCommaInputHeaderAsync() {
+        if (!_sent) _cnt.cnt.send_async(std::move(_header));
+      }
+      StreamCommaInputHeaderAsync(const StreamCommaInputHeaderAsync& v) noexcept = delete;
+      StreamCommaInputHeaderAsync& operator=(const StreamCommaInputHeaderAsync& obj) = delete;
+      StreamCommaInputHeaderAsync(StreamCommaInputHeaderAsync&& obj) = default;
+      StreamCommaInputHeaderAsync& operator=(StreamCommaInputHeaderAsync&& obj) = delete;
+
+      template <typename B>
+      auto operator,(B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, AsyncSender&> {
+        _cnt.cnt.send_async(std::move(_header), std::move(body));
+        _sent = true;
+        return _cnt;
+      }
+
+      template <typename B>
+      auto operator<<(B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, AsyncSender&> {
+        _cnt.cnt.send_async(std::move(_header), std::move(body));
+        _sent = true;
+        return _cnt;
+      }
+
+      template <typename H>
+      auto operator<<(H header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, StreamCommaInputHeaderAsync<H>> {
+        _cnt.cnt.send_async(std::move(_header));
+        _sent = true;
+        return StreamCommaInputHeaderAsync<H>(_cnt, std::move(header));
+      }
+
+      template <typename S>
+      auto operator<<(S (*special_f)())
+          -> std::enable_if_t<std::is_base_of_v<SpecialData<typename S::header_t, typename S::body_t>, S>, AsyncSender&> {
+        _cnt.cnt.send_async(special_f());
+        return _cnt;
+      }
+
+     private:
+      explicit StreamCommaInputHeaderAsync(AsyncSender& cnt, H header) : _cnt(cnt), _header(std::move(header)), _sent(false) {}
+
+      AsyncSender& _cnt;
+      H _header;
+      bool _sent;
+    };
+
+    template <typename B>
+    class StreamCommaInputBodyAsync {
+      friend class AsyncSender;
+
+     public:
+      ~StreamCommaInputBodyAsync() {
+        if (!_sent) _cnt.cnt.send_async(std::move(_body));
+      }
+      StreamCommaInputBodyAsync(const StreamCommaInputBodyAsync& v) noexcept = delete;
+      StreamCommaInputBodyAsync& operator=(const StreamCommaInputBodyAsync& obj) = delete;
+      StreamCommaInputBodyAsync(StreamCommaInputBodyAsync&& obj) = default;
+      StreamCommaInputBodyAsync& operator=(StreamCommaInputBodyAsync&& obj) = delete;
+
+      template <typename H>
+      auto operator,(H header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, AsyncSender&> {
+        _cnt.cnt.send_async(std::move(header), std::move(_body));
+        _sent = true;
+        return _cnt;
+      }
+
+      template <typename H>
+      auto operator<<(H header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, AsyncSender&> {
+        _cnt.cnt.send_async(std::move(header), std::move(_body));
+        _sent = true;
+        return _cnt;
+      }
+
+      template <typename B>
+      auto operator<<(B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, StreamCommaInputBodyAsync<B>> {
+        _cnt.cnt.send_async(std::move(_body));
+        _sent = true;
+        return StreamCommaInputBody<B>(_cnt, std::move(body));
+      }
+
+      template <typename S>
+      auto operator<<(S (*special_f)())
+          -> std::enable_if_t<std::is_base_of_v<SpecialData<typename S::header_t, typename S::body_t>, S>, AsyncSender&> {
+        _cnt.cnt.send_async(special_f());
+        return _cnt;
+      }
+
+     private:
+      explicit StreamCommaInputBodyAsync(AsyncSender& cnt, B& body) : _cnt(cnt), _body(body), _sent(false) {}
+
+      AsyncSender& _cnt;
+      B& _body;
+      bool _sent;
+    };
+
+    template <typename H>
+    auto operator<<(H header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, StreamCommaInputHeaderAsync<H>> {
+      return StreamCommaInputHeaderAsync<H>(*this, std::move(header));
+    }
+
+    template <typename B>
+    auto operator<<(B Body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, StreamCommaInputBodyAsync<B>> {
+      return StreamCommaInputBody<B>(*this, std::move(body));
+    }
+
+    template <typename S>
+    auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData<typename S::header_t, typename S::body_t>, S>, AsyncSender&> {
+      cnt.send_async(special_f());
+      return *this;
+    }
+
+   private:
+    explicit AsyncSender(Controller& cnt) : cnt(cnt) {}
+  };
+
+  template <typename H>
+  class StreamCommaInputHeader {
+    friend class Controller;
+
+   public:
+    ~StreamCommaInputHeader() {
+      if (!_sent) _cnt._last_send_res = _cnt.send(_header);
+    }
+    StreamCommaInputHeader(const StreamCommaInputHeader& v) noexcept = delete;
+    StreamCommaInputHeader& operator=(const StreamCommaInputHeader& obj) = delete;
+    StreamCommaInputHeader(StreamCommaInputHeader&& obj) = default;
+    StreamCommaInputHeader& operator=(StreamCommaInputHeader&& obj) = delete;
+
+    template <typename B>
+    auto operator,(B&& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, std::remove_reference_t<B>>, Controller&> {
+      _cnt._last_send_res = _cnt.send(_header, body);
+      _sent = true;
+      return _cnt;
+    }
+
+    template <typename B>
+    auto operator<<(B&& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, std::remove_reference_t<B>>, Controller&> {
+      _cnt._last_send_res = _cnt.send(_header, body);
+      _sent = true;
+      return _cnt;
+    }
+
+    template <typename H>
+    auto operator<<(H&& header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, std::remove_reference_t<H>>, StreamCommaInputHeader<H>> {
+      _cnt._last_send_res = _cnt.send(_header);
+      _sent = true;
+      return StreamCommaInputHeader<H>(_cnt, header);
+    }
+
+    template <typename S>
+    auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData<typename S::header_t, typename S::body_t>, S>, Controller&> {
+      auto s = special_f();
+      _cnt._last_send_res = _cnt.send(s);
+      return _cnt;
+    }
+
+   private:
+    explicit StreamCommaInputHeader(Controller& cnt, H& header) : _cnt(cnt), _header(header), _sent(false) {}
+
+    Controller& _cnt;
+    H& _header;
+    bool _sent;
+  };
+
+  template <typename B>
+  class StreamCommaInputBody {
+    friend class Controller;
+
+   public:
+    ~StreamCommaInputBody() {
+      if (!_sent) _cnt._last_send_res = _cnt.send(_body);
+    }
+    StreamCommaInputBody(const StreamCommaInputBody& v) noexcept = delete;
+    StreamCommaInputBody& operator=(const StreamCommaInputBody& obj) = delete;
+    StreamCommaInputBody(StreamCommaInputBody&& obj) = default;
+    StreamCommaInputBody& operator=(StreamCommaInputBody&& obj) = delete;
+
+    template <typename H>
+    auto operator,(H&& header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, std::remove_reference_t<H>>, Controller&> {
+      _cnt._last_send_res = _cnt.send(header, _body);
+      _sent = true;
+      return _cnt;
+    }
+
+    template <typename H>
+    auto operator<<(H&& header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, std::remove_reference_t<H>>, Controller&> {
+      _cnt._last_send_res = _cnt.send(header, _body);
+      _sent = true;
+      return _cnt;
+    }
+
+    template <typename B>
+    auto operator<<(B&& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, std::remove_reference_t<B>>, StreamCommaInputBody<B>> {
+      _cnt._last_send_res = _cnt.send(_body);
+      _sent = true;
+      return StreamCommaInputBody<B>(_cnt, body);
+    }
+
+    template <typename S>
+    auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData<typename S::header_t, typename S::body_t>, S>, Controller&> {
+      auto s = special_f();
+      _cnt._last_send_res = _cnt.send(s);
+      return _cnt;
+    }
+
+   private:
+    explicit StreamCommaInputBody(Controller& cnt, B& body) : _cnt(cnt), _body(body), _sent(false) {}
+
+    Controller& _cnt;
+    B& _body;
+    bool _sent;
+  };
+
+  template <typename H>
+  auto operator<<(H&& header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, std::remove_reference_t<H>>, StreamCommaInputHeader<H>> {
+    return StreamCommaInputHeader<H>(*this, header);
+  }
+
+  template <typename B>
+  auto operator<<(B&& Body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, std::remove_reference_t<B>>, StreamCommaInputBody<B>> {
+    return StreamCommaInputBody<B>(*this, body);
+  }
+
+  template <typename S>
+  auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData<typename S::header_t, typename S::body_t>, S>, Controller&> {
+    auto s = special_f();
+    _last_send_res = send(s);
+    return *this;
+  }
+
+  template <typename A>
+  auto operator<<(A (*)()) -> std::enable_if_t<std::is_same_v<autd3::Async, A>, AsyncSender> {
+    return AsyncSender{*this};
+  }
+
+  void operator>>(bool& res) { res = _last_send_res; }
 };
 
 }  // namespace autd3
