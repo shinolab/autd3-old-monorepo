@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/09/2022
+// Last Modified: 07/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -212,7 +212,7 @@ class TransducerTest final : public core::Gain {
   void calc(const core::Geometry& geometry) override {
     const auto id = geometry[_dev_idx][_tr_idx].id();
     _drives[id].amp = _amp;
-    _drives[id].phase = _phase / (2.0 * autd3::driver::pi);
+    _drives[id].phase = _phase;
   }
 
   ~TransducerTest() override = default;

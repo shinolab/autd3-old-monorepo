@@ -76,9 +76,17 @@ The return value of `fpga_info` is `vector` for `FPGAInfo` devices.
 
 You can stop output with the `stop` function.
 
+```cpp
+autd << autd3::stop;
+```
+
 ## clear
 
 Clear flags, `Gain`/`Modulation` data, etc. in the device.
+
+```cpp
+autd << autd3::clear;
+```
 
 ## Firmware information
 
@@ -106,9 +114,23 @@ Specifically, the interval is $\SI{500}{\text{μ}s}\times \text{send\_interval}$
 The list of send functions is as follows:
 
 - `update_flag`
-- `clear`[^fn_clear]
-- `close`
+- `<<` operator
+- `clear`
 - `stop`
 - `send`
 
-[^fn_clear]: flags will be also cleared
+## Async
+
+You can send data in a non-blocking way by using `send_async` or `autd3::async`;
+
+```cpp
+autd3::modulation::Sine m(...);
+autd3::gain::Focus g(...);
+
+autd.send_async(std::move(m), std::move(g));
+// or
+autd << autd3::async <<std::move(m), std::move(g);
+```
+
+Note that these functions and operators take an r-value only.
+Also, the operation is not guaranteed when synchronous and asynchronous transmissions are mixed.

@@ -1,3 +1,13 @@
+# 2.5.2
+
+- Fix [#37](https://github.com/shinolab/autd3/issues/37)
+- Fix [#42](https://github.com/shinolab/autd3/issues/42)
+- Change phase unit to radian
+- Add stream operator to `Controller`
+- Add `Controller::send_async` and `autd3::async` to send data asynchronously
+- `Controller::synchronize()`, `Controller::update_flag()`, `Controller::clear()`, and `Controller::stop()` functions are now deprecated
+  - Send `autd3::synchronize`, `autd3::update_flag`, `autd3::clear`, and `autd3::stop` instead
+
 # 2.5.1
 
 - Fix [#38](https://github.com/shinolab/autd3/issues/38)

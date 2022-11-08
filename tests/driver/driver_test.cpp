@@ -3,7 +3,7 @@
 // Created Date: 20/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/11/2022
+// Last Modified: 07/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -620,7 +620,7 @@ TEST(CPUTest, operation_sync) {
   cycle.reserve(autd3::driver::NUM_TRANS_IN_UNIT * 10);
   for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++) cycle.emplace_back(dist(engine));
 
-  sync(1, cycle.data(), tx);
+  sync(cycle.data(), tx);
 
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::MOD, 0);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::CONFIG_SILENCER, 0);

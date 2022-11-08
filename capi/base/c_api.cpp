@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/10/2022
+// Last Modified: 08/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -83,15 +83,6 @@ int32_t AUTDClose(void* const handle) {
   AUTD3_CAPI_TRY2(return wrapper->close() ? 1 : 0)
 }
 
-int32_t AUTDClear(void* const handle) {
-  auto* wrapper = static_cast<Controller*>(handle);
-  AUTD3_CAPI_TRY2(return wrapper->clear() ? 1 : 0)
-}
-
-int32_t AUTDSynchronize(void* const handle) {
-  auto* wrapper = static_cast<Controller*>(handle);
-  AUTD3_CAPI_TRY2(return wrapper->synchronize() ? 1 : 0)
-}
 void AUTDFreeController(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   delete wrapper;
@@ -170,11 +161,6 @@ bool AUTDGetFPGAInfo(void* const handle, uint8_t* out) {
     std::memcpy(out, res.data(), res.size());
     return !res.empty();
   })
-}
-
-int32_t AUTDUpdateFlags(void* const handle) {
-  auto* const wrapper = static_cast<Controller*>(handle);
-  AUTD3_CAPI_TRY2(return wrapper->update_flag() ? 1 : 0)
 }
 
 int32_t AUTDNumDevices(const void* const handle) {
@@ -372,9 +358,19 @@ void AUTDDeleteSTM(const void* const stm) {
   delete stm_w;
 }
 
-int32_t AUTDStop(void* const handle) {
-  auto* const wrapper = static_cast<Controller*>(handle);
-  AUTD3_CAPI_TRY2(return wrapper->stop() ? 1 : 0)
+void AUTDSynchronize(void** out) { *out = new autd3::Synchronize; }
+
+void AUTDClear(void** out) { *out = new autd3::Clear; }
+
+void AUTDUpdateFlags(void** out) { *out = new autd3::UpdateFlag; }
+
+void AUTDStop(void** out) { *out = new autd3::Stop; }
+
+void AUTDModDelayConfig(void** out) { *out = new autd3::ModDelayConfig; }
+
+void AUTDDeleteSpecialData(const void* const data) {
+  const auto* const d = static_cast<const autd3::SpecialData*>(data);
+  delete d;
 }
 
 void AUTDCreateSilencer(void** out, const uint16_t step, const uint16_t cycle) { *out = new autd3::SilencerConfig(step, cycle); }
@@ -385,13 +381,35 @@ void AUTDDeleteSilencer(const void* config) {
 
 int32_t AUTDSend(void* const handle, void* const header, void* const body) {
   if (header == nullptr && body == nullptr) return 0;
-
   auto* const wrapper = static_cast<Controller*>(handle);
   auto* const h = static_cast<autd3::core::DatagramHeader*>(header);
   auto* const b = static_cast<autd3::core::DatagramBody*>(body);
   if (header == nullptr) AUTD3_CAPI_TRY2(return wrapper->send(*b) ? 1 : 0)
   if (body == nullptr) AUTD3_CAPI_TRY2(return wrapper->send(*h) ? 1 : 0)
   AUTD3_CAPI_TRY2(return wrapper->send(*h, *b) ? 1 : 0)
+}
+
+int32_t AUTDSendSpecial(void* const handle, void* const special) {
+  auto* const wrapper = static_cast<Controller*>(handle);
+  auto* const s = static_cast<autd3::SpecialData*>(special);
+  AUTD3_CAPI_TRY2(return wrapper->send(s) ? 1 : 0)
+}
+
+void AUTDSendAsync(void* const handle, void* header, void* body) {
+  if (header == nullptr && body == nullptr) return;
+  auto* const wrapper = static_cast<Controller*>(handle);
+  auto h = std::unique_ptr<autd3::core::DatagramHeader>(static_cast<autd3::core::DatagramHeader*>(header));
+  auto b = std::unique_ptr<autd3::core::DatagramBody>(static_cast<autd3::core::DatagramBody*>(body));
+  if (header == nullptr) return wrapper->send_async(std::make_unique<autd3::core::NullHeader>(), std::move(b));
+  if (body == nullptr) return wrapper->send_async(std::move(h), std::make_unique<autd3::core::NullBody>());
+  wrapper->send_async(std::move(h), std::move(b));
+}
+
+void AUTDSendSpecialAsync(void* const handle, void* const special) {
+  auto* const wrapper = static_cast<Controller*>(handle);
+  auto* const s = static_cast<autd3::SpecialData*>(special);
+  wrapper->send_async(s);
+  delete s;
 }
 
 void AUTDSetTransFrequency(void* const handle, const int32_t device_idx, const int32_t local_trans_idx, const double frequency) {
@@ -412,13 +430,6 @@ uint16_t AUTDGetModDelay(const void* const handle, const int32_t device_idx, con
 void AUTDSetModDelay(void* const handle, const int32_t device_idx, const int32_t local_trans_idx, const uint16_t delay) {
   auto* const wrapper = static_cast<Controller*>(handle);
   wrapper->geometry()[device_idx][local_trans_idx].mod_delay() = delay;
-}
-
-void AUTDCreateModDelayConfig(void** out) { *out = new autd3::ModDelayConfig(); }
-
-void AUTDDeleteModDelayConfig(const void* config) {
-  const auto* const config_ = static_cast<const autd3::ModDelayConfig*>(config);
-  delete config_;
 }
 
 void AUTDCreateAmplitudes(void** out, const double amp) { *out = new autd3::core::Amplitudes(amp); }
@@ -453,12 +464,11 @@ EXPORT_AUTD void AUTDSoftwareSTMAdd(void* stm, void* gain) {
   static_cast<autd3::SoftwareSTM*>(stm)->add(std::shared_ptr<autd3::core::Gain>(static_cast<autd3::core::Gain*>(gain)));
 }
 EXPORT_AUTD void AUTDSoftwareSTMStart(void** handle, void* stm, void* cnt) {
-  *handle = new autd3::SoftwareSTM::SoftwareSTMThreadHandle(static_cast<autd3::SoftwareSTM*>(stm)->start(std::move(*static_cast<Controller*>(cnt))));
+  *handle = new autd3::SoftwareSTM::SoftwareSTMThreadHandle(static_cast<autd3::SoftwareSTM*>(stm)->start(*static_cast<Controller*>(cnt)));
 }
-EXPORT_AUTD void AUTDSoftwareSTMFinish(void** cnt, void* handle) {
+EXPORT_AUTD void AUTDSoftwareSTMFinish(void* handle) {
   auto* h = static_cast<autd3::SoftwareSTM::SoftwareSTMThreadHandle*>(handle);
-  *cnt = new Controller(h->finish());
-  delete h;
+  h->finish();
 }
 EXPORT_AUTD double AUTDSoftwareSTMSetFrequency(void* stm, const double freq) { return static_cast<autd3::SoftwareSTM*>(stm)->set_frequency(freq); }
 EXPORT_AUTD double AUTDSoftwareSTMFrequency(const void* stm) { return static_cast<const autd3::SoftwareSTM*>(stm)->frequency(); }

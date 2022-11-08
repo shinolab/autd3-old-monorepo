@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/10/2022
+// Last Modified: 07/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -123,7 +123,9 @@ struct LegacyDrive {
   uint8_t phase;
   uint8_t duty;
 
-  static uint8_t to_phase(const Drive d) { return static_cast<uint8_t>(static_cast<int32_t>(std::round(d.phase * 256.0)) & 0xFF); }
+  static uint8_t to_phase(const Drive d) {
+    return static_cast<uint8_t>(static_cast<int32_t>(std::round(d.phase / (2.0 * autd3::driver::pi) * 256.0)) & 0xFF);
+  }
   static uint8_t to_duty(const Drive d) { return std::round(510.0 * std::asin(std::clamp(d.amp, 0.0, 1.0)) / autd3::driver::pi); }
 
   void set(const Drive d) {
@@ -136,8 +138,8 @@ struct Phase {
   uint16_t phase;
 
   static uint16_t to_phase(const Drive d) {
-    return static_cast<uint16_t>(
-        autd3::driver::rem_euclid(static_cast<int32_t>(std::round(d.phase * static_cast<double>(d.cycle))), static_cast<int32_t>(d.cycle)));
+    return static_cast<uint16_t>(autd3::driver::rem_euclid(
+        static_cast<int32_t>(std::round(d.phase / (2.0 * autd3::driver::pi) * static_cast<double>(d.cycle))), static_cast<int32_t>(d.cycle)));
   }
 
   void set(const Drive d) { phase = to_phase(d); }
