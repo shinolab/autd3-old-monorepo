@@ -19,60 +19,57 @@
 
 namespace autd3 {
 
-template <typename H, typename B>
 class SpecialData {
  public:
-  using header_t = H;
-  using body_t = B;
-
   virtual bool check_trials_override() const = 0;
   virtual size_t check_trials() const = 0;
+  virtual ~SpecialData() = default;
 
-  H header() { return std::move(_h); }
-  B body() { return std::move(_b); }
+  std::unique_ptr<core::DatagramHeader> header() { return std::move(_h); }
+  std::unique_ptr<core::DatagramBody> body() { return std::move(_b); }
 
  protected:
-  explicit SpecialData(H h, B b) : _h(std::move(h)), _b(std::move(b)) {}
+  explicit SpecialData(std::unique_ptr<core::DatagramHeader> h, std::unique_ptr<core::DatagramBody> b) : _h(std::move(h)), _b(std::move(b)) {}
 
-  H _h;
-  B _b;
+  std::unique_ptr<core::DatagramHeader> _h;
+  std::unique_ptr<core::DatagramBody> _b;
 };
 
-class Stop : public SpecialData<core::SilencerConfig, core::Amplitudes> {
+class Stop : public SpecialData {
  public:
-  Stop() : SpecialData<header_t, body_t>(core::SilencerConfig{}, core::Amplitudes(0.0)) {}
+  Stop() : SpecialData(std::make_unique<core::SilencerConfig>(), std::make_unique<core::Amplitudes>(0.0)) {}
 
   [[nodiscard]] bool check_trials_override() const override { return false; }
   [[nodiscard]] size_t check_trials() const override { return 0; }
 };
 
-class UpdateFlag : public SpecialData<core::NullHeader, core::NullBody> {
+class UpdateFlag : public SpecialData {
  public:
-  UpdateFlag() : SpecialData<header_t, body_t>(core::NullHeader{}, core::NullBody{}) {}
+  UpdateFlag() : SpecialData(std::make_unique<core::NullHeader>(), std::make_unique<core::NullBody>()) {}
 
   [[nodiscard]] bool check_trials_override() const override { return false; }
   [[nodiscard]] size_t check_trials() const override { return 0; }
 };
 
-class Clear : public SpecialData<core::Clear, core::NullBody> {
+class Clear : public SpecialData {
  public:
-  Clear() : SpecialData<header_t, body_t>(core::Clear{}, core::NullBody{}) {}
+  Clear() : SpecialData(std::make_unique<core::Clear>(), std::make_unique<core::NullBody>()) {}
 
   [[nodiscard]] bool check_trials_override() const override { return true; }
   [[nodiscard]] size_t check_trials() const override { return 200; }
 };
 
-class Synchronize : public SpecialData<core::NullHeader, core::Synchronize> {
+class Synchronize : public SpecialData {
  public:
-  Synchronize() : SpecialData<header_t, body_t>(core::NullHeader{}, core::Synchronize{}) {}
+  Synchronize() : SpecialData(std::make_unique<core::NullHeader>(), std::make_unique<core::Synchronize>()) {}
 
   [[nodiscard]] bool check_trials_override() const override { return true; }
   [[nodiscard]] size_t check_trials() const override { return 200; }
 };
 
-class ModDelayConfig : public SpecialData<core::NullHeader, core::ModDelayConfig> {
+class ModDelayConfig : public SpecialData {
  public:
-  ModDelayConfig() : SpecialData<header_t, body_t>(core::NullHeader{}, core::ModDelayConfig{}) {}
+  ModDelayConfig() : SpecialData(std::make_unique<core::NullHeader>(), std::make_unique<core::ModDelayConfig>()) {}
 
   [[nodiscard]] bool check_trials_override() const override { return false; }
   [[nodiscard]] size_t check_trials() const override { return 0; }
