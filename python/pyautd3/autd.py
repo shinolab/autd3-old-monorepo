@@ -333,16 +333,20 @@ class Controller:
         if b is None and isinstance(a, SpecialData):
             Base().dll.AUTDSendSpecialAsync(self.p_cnt, a.ptr)
             a.ptr = c_void_p()
+            return
         if b is None and isinstance(a, Header):
             Base().dll.AUTDSendAsync(self.p_cnt, a.ptr, None)
             a.ptr = c_void_p()
+            return
         if b is None and isinstance(a, Body):
             Base().dll.AUTDSendAsync(self.p_cnt, None, a.ptr)
             a.ptr = c_void_p()
+            return
         if isinstance(a, Header) and isinstance(b, Body):
             Base().dll.AUTDSendAsync(self.p_cnt, a.ptr, b.ptr)
             a.ptr = c_void_p()
             b.ptr = c_void_p()
+            return
         raise NotImplementedError()
 
 
