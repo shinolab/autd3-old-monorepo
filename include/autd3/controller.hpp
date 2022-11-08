@@ -53,6 +53,12 @@ class Controller {
         _link(nullptr),
         _send_th_running(false),
         _last_send_res(false) {}
+  ~Controller() noexcept {
+    try {
+      close();
+    } catch (std::exception&) {
+    }
+  }
 
   /**
    * @brief Geometry of the devices
@@ -501,7 +507,18 @@ class Controller {
 
       template <typename S>
       auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, AsyncSender&> {
+        _cnt.cnt.send_async(std::move(_header));
+        _sent = true;
         _cnt.cnt.send_async(special_f());
+        return _cnt;
+      }
+
+      template <typename H2, typename B2>
+      auto operator<<(core::DatagramPack<H2, B2>&& pack)
+          -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H2> && std::is_base_of_v<core::DatagramBody, B2>, AsyncSender&> {
+        _cnt.cnt.send_async(std::move(_header));
+        _sent = true;
+        _cnt.cnt.send_async(std::move(pack.header), std::move(pack.body));
         return _cnt;
       }
 
@@ -544,20 +561,31 @@ class Controller {
       auto operator<<(B2 body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B2>, StreamCommaInputBodyAsync<B2>> {
         _cnt.cnt.send_async(std::move(_body));
         _sent = true;
-        return StreamCommaInputBody<B2>(_cnt, std::move(body));
+        return StreamCommaInputBodyAsync<B2>(_cnt, std::move(body));
       }
 
       template <typename S>
       auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, AsyncSender&> {
+        _cnt.cnt.send_async(std::move(_body));
+        _sent = true;
         _cnt.cnt.send_async(special_f());
         return _cnt;
       }
 
+      template <typename H2, typename B2>
+      auto operator<<(core::DatagramPack<H2, B2>&& pack)
+          -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H2> && std::is_base_of_v<core::DatagramBody, B2>, AsyncSender&> {
+        _cnt.cnt.send_async(std::move(_body));
+        _sent = true;
+        _cnt.cnt.send_async(std::move(pack.header), std::move(pack.body));
+        return _cnt;
+      }
+
      private:
-      explicit StreamCommaInputBodyAsync(AsyncSender& cnt, B& body) : _cnt(cnt), _body(body), _sent(false) {}
+      explicit StreamCommaInputBodyAsync(AsyncSender& cnt, B body) : _cnt(cnt), _body(std::move(body)), _sent(false) {}
 
       AsyncSender& _cnt;
-      B& _body;
+      B _body;
       bool _sent;
     };
 
@@ -568,12 +596,19 @@ class Controller {
 
     template <typename B>
     auto operator<<(B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, StreamCommaInputBodyAsync<B>> {
-      return StreamCommaInputBody<B>(*this, std::move(body));
+      return StreamCommaInputBodyAsync<B>(*this, std::move(body));
     }
 
     template <typename S>
     auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, AsyncSender&> {
       cnt.send_async(special_f());
+      return *this;
+    }
+
+    template <typename H2, typename B2>
+    auto operator<<(core::DatagramPack<H2, B2>&& pack)
+        -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H2> && std::is_base_of_v<core::DatagramBody, B2>, AsyncSender&> {
+      cnt.send_async(std::move(pack.header), std::move(pack.body));
       return *this;
     }
 
@@ -618,8 +653,25 @@ class Controller {
 
     template <typename S>
     auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, Controller&> {
-      auto s = special_f();
-      _cnt._last_send_res = _cnt.send(s);
+      _cnt._last_send_res = _cnt.send(_header);
+      _sent = true;
+      _cnt._last_send_res = _cnt.send(special_f());
+      return _cnt;
+    }
+
+    auto operator<<(core::DatagramPackRef pack) -> Controller& {
+      _cnt._last_send_res = _cnt.send(_header);
+      _sent = true;
+      _cnt._last_send_res = _cnt.send(pack.header, pack.body);
+      return _cnt;
+    }
+
+    template <typename H2, typename B2>
+    auto operator<<(core::DatagramPack<H2, B2>&& pack)
+        -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H2> && std::is_base_of_v<core::DatagramBody, B2>, Controller&> {
+      _cnt._last_send_res = _cnt.send(_header);
+      _sent = true;
+      _cnt._last_send_res = _cnt.send(pack.header, pack.body);
       return _cnt;
     }
 
@@ -667,8 +719,25 @@ class Controller {
 
     template <typename S>
     auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, Controller&> {
-      auto s = special_f();
-      _cnt._last_send_res = _cnt.send(s);
+      _cnt._last_send_res = _cnt.send(_body);
+      _sent = true;
+      _cnt._last_send_res = _cnt.send(special_f());
+      return _cnt;
+    }
+
+    auto operator<<(core::DatagramPackRef pack) -> Controller& {
+      _cnt._last_send_res = _cnt.send(_body);
+      _sent = true;
+      _cnt._last_send_res = _cnt.send(pack.header, pack.body);
+      return _cnt;
+    }
+
+    template <typename H2, typename B2>
+    auto operator<<(core::DatagramPack<H2, B2>&& pack)
+        -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H2> && std::is_base_of_v<core::DatagramBody, B2>, Controller&> {
+      _cnt._last_send_res = _cnt.send(_body);
+      _sent = true;
+      _cnt._last_send_res = _cnt.send(pack.header, pack.body);
       return _cnt;
     }
 
@@ -688,6 +757,18 @@ class Controller {
   template <typename B>
   auto operator<<(B&& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, std::remove_reference_t<B>>, StreamCommaInputBody<B>> {
     return StreamCommaInputBody<B>(*this, body);
+  }
+
+  auto operator<<(core::DatagramPackRef pack) -> Controller& {
+    _last_send_res = send(pack.header, pack.body);
+    return *this;
+  }
+
+  template <typename H, typename B>
+  auto operator<<(core::DatagramPack<H, B>&& pack)
+      -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>, Controller&> {
+    _last_send_res = send(pack.header, pack.body);
+    return *this;
   }
 
   template <typename S>
