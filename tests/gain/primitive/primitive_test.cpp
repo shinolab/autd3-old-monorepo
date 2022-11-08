@@ -50,11 +50,11 @@ TEST(FocusTest, Test) {
 
   const auto expect =
       std::arg(propagate(geometry[0][0].position(), geometry[0][0].z_direction(), 0.0, geometry[0][0].wavenumber(geometry.sound_speed), f) *
-               std::exp(std::complex(0.0, 2.0 * pi * g.drives()[0].phase)));
+               std::exp(std::complex(0.0, g.drives()[0].phase)));
   for (size_t i = 0; i < g.drives().size(); i++) {
     const auto p =
         std::arg(propagate(geometry[0][i].position(), geometry[0][i].z_direction(), 0.0, geometry[0][i].wavenumber(geometry.sound_speed), f) *
-                 std::exp(std::complex(0.0, 2.0 * pi * g.drives()[i].phase)));
+                 std::exp(std::complex(0.0, g.drives()[i].phase)));
     ASSERT_EQ(g.drives()[i].amp, 1.0);
     ASSERT_NEAR(p, expect, 2.0 * pi / 256.0);
   }
