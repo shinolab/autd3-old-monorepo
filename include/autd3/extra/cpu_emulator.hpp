@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/11/2022
+// Last Modified: 09/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -354,8 +354,7 @@ class CPU {
   void clear() {
     constexpr uint32_t freq_div = 40960;
 
-    constexpr auto ctl_reg = driver::FPGAControlFlags::LEGACY_MODE;
-    bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CTL_REG, ctl_reg);
+    bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CTL_REG, 0x0000);
 
     bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_SILENT_STEP, 10);
     bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_SILENT_CYCLE, 4096);
