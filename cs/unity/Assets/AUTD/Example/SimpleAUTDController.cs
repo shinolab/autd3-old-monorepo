@@ -4,7 +4,7 @@
  * Created Date: 10/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/11/2022
+ * Last Modified: 08/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -74,9 +74,9 @@ public class SimpleAUTDController : MonoBehaviour
 
         _autd.CheckTrials = 50;
 
-        _autd.Clear();
+        _autd.Send(new Clear());
 
-        _autd.Synchronize();
+        _autd.Send(new Synchronize());
 
         _autd.Send(new AUTD3Sharp.Modulation.Sine(150)); // 150 Hz
 
