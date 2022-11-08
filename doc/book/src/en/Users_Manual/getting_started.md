@@ -190,21 +190,20 @@ Next, setup silencer.
 
 ```cpp
 autd3::SilencerConfig config;
-autd.send(config);
-````
+```
 
-This is set by default, so you don't really need to call it.
+This is set by default, so you don't really need to send it.
 If you want to turn silencer off, use `SilencerConfig::none()`.
 The silencer is used to quiet down the transducers by passing the phase/amplitude parameters through a low-pass filter.
 
-Then, we create a `Gain` representing a single focus and a `Modulation` applying a sin wave modulation of $\SI{150}{Hz}$ and sends them to the device.
+Then, we create a `Gain` representing a single focus and a `Modulation` applying a sin wave modulation of $\SI{150}{Hz}$ and send them to the device.
 
 ```cpp
 const auto focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
 autd3::gain::Focus g(focus);
 autd3::modulation::Sine m(150);
 
-autd.send(m, g);
+autd << config << m, g;
 ```
 , where `focus` denotes $\SI{150}{mm}$ directly above the center of the device.
 
