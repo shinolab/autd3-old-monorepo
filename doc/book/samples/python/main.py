@@ -1,4 +1,4 @@
-from pyautd3 import Controller, SilencerConfig
+from pyautd3 import Controller, SilencerConfig, Clear, Synchronize
 from pyautd3.link import SOEM
 from pyautd3.gain import Focus
 from pyautd3.modulation import Sine
@@ -17,9 +17,9 @@ if __name__ == '__main__':
 
     autd.check_trials = 50
 
-    autd.clear()
+    autd.send(Clear())
 
-    autd.synchronize()
+    autd.send(Synchronize())
 
     firm_info_list = autd.firmware_info_list()
     for i, firm in enumerate(firm_info_list):
