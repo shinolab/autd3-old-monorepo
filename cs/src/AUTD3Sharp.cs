@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2022
+ * Last Modified: 08/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -372,14 +372,6 @@ namespace AUTD3Sharp
 
         public int Close() => Base.AUTDClose(AUTDControllerHandle.CntPtr);
 
-        public int Clear() => Base.AUTDClear(AUTDControllerHandle.CntPtr);
-
-        public int Synchronize() => Base.AUTDSynchronize(AUTDControllerHandle.CntPtr);
-
-        public int Stop() => Base.AUTDStop(AUTDControllerHandle.CntPtr);
-
-        public int UpdateFlags() => Base.AUTDUpdateFlags(AUTDControllerHandle.CntPtr);
-
         public void Dispose()
         {
             Dispose(true);
@@ -455,6 +447,12 @@ namespace AUTD3Sharp
         }
         #endregion
 
+        public int Send(SpecialData special)
+        {
+            if (special == null) throw new ArgumentNullException(nameof(special));
+            return Base.AUTDSendSpecial(AUTDControllerHandle.CntPtr, special.Ptr);
+        }
+
         public int Send(Header header)
         {
             if (header == null) throw new ArgumentNullException(nameof(header));
@@ -480,8 +478,116 @@ namespace AUTD3Sharp
             if (body == null) throw new ArgumentNullException(nameof(body));
             return Base.AUTDSend(AUTDControllerHandle.CntPtr, header.Ptr, body.Ptr);
         }
+
+        public void SendAsync(SpecialData special)
+        {
+            if (special == null) throw new ArgumentNullException(nameof(special));
+            Base.AUTDSendSpecialAsync(AUTDControllerHandle.CntPtr, special.Ptr);
+            special.Ptr = IntPtr.Zero;
+        }
+
+        public void SendAsync(Header header)
+        {
+            if (header == null) throw new ArgumentNullException(nameof(header));
+            Base.AUTDSendAsync(AUTDControllerHandle.CntPtr, header.Ptr, IntPtr.Zero);
+            header.Ptr = IntPtr.Zero;
+        }
+
+        public void SendAsync(Body body)
+        {
+            if (body == null) throw new ArgumentNullException(nameof(body));
+            Base.AUTDSendAsync(AUTDControllerHandle.CntPtr, IntPtr.Zero, body.Ptr);
+            body.Ptr = IntPtr.Zero;
+        }
+
+        public void SendAsync(Header header, Body body)
+        {
+            if (header == null) throw new ArgumentNullException(nameof(header));
+            if (body == null) throw new ArgumentNullException(nameof(body));
+            Base.AUTDSendAsync(AUTDControllerHandle.CntPtr, header.Ptr, body.Ptr);
+            header.Ptr = IntPtr.Zero;
+            body.Ptr = IntPtr.Zero;
+        }
+
+        public void SendAsync(Body body, Header header)
+        {
+            if (header == null) throw new ArgumentNullException(nameof(header));
+            if (body == null) throw new ArgumentNullException(nameof(body));
+            Base.AUTDSendAsync(AUTDControllerHandle.CntPtr, header.Ptr, body.Ptr);
+            header.Ptr = IntPtr.Zero;
+            body.Ptr = IntPtr.Zero;
+
+        }
     }
 
+    public sealed class UpdateFlag : SpecialData
+    {
+        public UpdateFlag()
+        {
+            Base.AUTDUpdateFlags(out handle);
+        }
+
+        protected override bool ReleaseHandle()
+        {
+            Base.AUTDDeleteSpecialData(handle);
+            return true;
+        }
+    }
+
+    public sealed class Clear : SpecialData
+    {
+        public Clear()
+        {
+            Base.AUTDClear(out handle);
+        }
+
+        protected override bool ReleaseHandle()
+        {
+            Base.AUTDDeleteSpecialData(handle);
+            return true;
+        }
+    }
+
+    public sealed class Synchronize : SpecialData
+    {
+        public Synchronize()
+        {
+            Base.AUTDSynchronize(out handle);
+        }
+
+        protected override bool ReleaseHandle()
+        {
+            Base.AUTDDeleteSpecialData(handle);
+            return true;
+        }
+    }
+
+    public sealed class Stop : SpecialData
+    {
+        public Stop()
+        {
+            Base.AUTDStop(out handle);
+        }
+
+        protected override bool ReleaseHandle()
+        {
+            Base.AUTDDeleteSpecialData(handle);
+            return true;
+        }
+    }
+    public sealed class ModDelayConfig : SpecialData
+    {
+        public ModDelayConfig()
+        {
+            Base.AUTDModDelayConfig(out handle);
+        }
+
+        protected override bool ReleaseHandle()
+        {
+            Base.AUTDDeleteSpecialData(handle);
+            return true;
+        }
+    }
 
     public sealed class SilencerConfig : Header
     {
@@ -499,20 +605,6 @@ namespace AUTD3Sharp
         public static SilencerConfig None()
         {
             return new SilencerConfig(0xFFFF);
-        }
-    }
-
-    public sealed class ModDelayConfig : Body
-    {
-        public ModDelayConfig()
-        {
-            Base.AUTDCreateModDelayConfig(out handle);
-        }
-
-        protected override bool ReleaseHandle()
-        {
-            Base.AUTDDeleteModDelayConfig(handle);
-            return true;
         }
     }
 
@@ -684,7 +776,6 @@ namespace AUTD3Sharp
 
     namespace STM
     {
-
         public abstract class STM : Body
         {
             protected override bool ReleaseHandle()
