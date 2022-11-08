@@ -13,9 +13,7 @@ int main() try {
 
   autd.check_trials = 50;
 
-  autd.clear();
-
-  autd.synchronize();
+  autd << autd3::clear << autd3::synchronize;
 
   const auto firm_infos = autd.firmware_infos();
   std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));

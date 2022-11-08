@@ -16,9 +16,9 @@ if (!autd.Open(link))
 
 autd.CheckTrials = 50;
 
-autd.Clear();
+autd.Send(new Clear());
 
-autd.Synchronize();
+autd.Send(new Synchronize());
 
 var firmList = autd.FirmwareInfoList().ToArray();
 foreach (var firm in firmList)
