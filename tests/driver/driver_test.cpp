@@ -3,7 +3,7 @@
 // Created Date: 20/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/11/2022
+// Last Modified: 10/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -473,8 +473,13 @@ TEST(VersionTest, FirmwareInfo) {
   }
   {
     const autd3::driver::FirmwareInfo info(0, 134, 134, 0);
-    EXPECT_EQ("unknown (134)", info.cpu_version());
-    EXPECT_EQ("unknown (134)", info.fpga_version());
+    EXPECT_EQ("v2.6", info.cpu_version());
+    EXPECT_EQ("v2.6", info.fpga_version());
+  }
+  {
+    const autd3::driver::FirmwareInfo info(0, 135, 135, 0);
+    EXPECT_EQ("unknown (135)", info.cpu_version());
+    EXPECT_EQ("unknown (135)", info.fpga_version());
   }
 }
 

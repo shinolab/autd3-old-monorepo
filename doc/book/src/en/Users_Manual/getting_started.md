@@ -178,7 +178,7 @@ const auto firm_infos = autd.firmware_infos();
 std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout,"\n"));
 ```
 
-Note that if a version other than v2.5 is displayed here, it is not guaranteed to work well.
+Note that if a version other than v2.6 is displayed here, it is not guaranteed to work well.
 
 Next, setup silencer.
 
