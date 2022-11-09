@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/08/2022
+ * Last Modified: 09/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -43,6 +43,7 @@ module top (
 
   bit [63:0] ecat_sync_time;
   bit sync_set;
+  bit sync;
 
   bit legacy_mode;
 
@@ -86,33 +87,13 @@ module top (
     gpo_0 <= stm_done ? ~gpo_0 : gpo_0;
     gpo_1 <= mod_done ? ~gpo_1 : gpo_1;
     gpo_2 <= silencer_done ? ~gpo_2 : gpo_2;
-    gpo_3 <= 0;
+    gpo_3 <= sync ? ~gpo_3 : gpo_3;
   end
 
   assign reset = ~RESET_N;
-  if (ENABLE_STM == "TRUE") begin
-    for (genvar i = 0; i < TRANS_NUM; i++) begin
-      assign duty[i]  = op_mode ? duty_stm[i] : duty_normal[i];
-      assign phase[i] = op_mode ? phase_stm[i] : phase_normal[i];
-    end
-  end else begin
-    for (genvar i = 0; i < TRANS_NUM; i++) begin
-      assign duty[i]  = duty_normal[i];
-      assign phase[i] = phase_normal[i];
-    end
-  end
+
   for (genvar i = 0; i < TRANS_NUM; i++) begin
     assign XDCR_OUT[cvt_uid(i)+1] = PWM_OUT[i];
-  end
-
-  if (ENABLE_MODULATOR != "TRUE") begin
-    assign duty_m  = duty;
-    assign phase_m = phase;
-  end
-
-  if (ENABLE_SILENCER != "TRUE") begin
-    assign duty_s  = duty_m;
-    assign phase_s = phase_m;
   end
 
   cpu_bus_if cpu_bus ();
@@ -170,6 +151,10 @@ module top (
   );
 
   if (ENABLE_STM == "TRUE") begin
+    for (genvar i = 0; i < TRANS_NUM; i++) begin
+      assign duty[i]  = op_mode ? duty_stm[i] : duty_normal[i];
+      assign phase[i] = op_mode ? phase_stm[i] : phase_normal[i];
+    end
     stm_operator #(
         .WIDTH(WIDTH),
         .DEPTH(TRANS_NUM)
@@ -190,6 +175,10 @@ module top (
         .IDX()
     );
   end else begin
+    for (genvar i = 0; i < TRANS_NUM; i++) begin
+      assign duty[i]  = duty_normal[i];
+      assign phase[i] = phase_normal[i];
+    end
     assign stm_done = 0;
   end
 
@@ -198,7 +187,8 @@ module top (
       .ECAT_SYNC_TIME(ecat_sync_time),
       .SET(sync_set),
       .ECAT_SYNC(CAT_SYNC0),
-      .SYS_TIME(sys_time)
+      .SYS_TIME(sys_time),
+      .SYNC(sync)
   );
 
   if (ENABLE_MODULATOR == "TRUE") begin
@@ -220,6 +210,8 @@ module top (
         .DONE(mod_done)
     );
   end else begin
+    assign duty_m   = duty;
+    assign phase_m  = phase;
     assign mod_done = 0;
   end
 
@@ -240,6 +232,8 @@ module top (
         .DONE(silencer_done)
     );
   end else begin
+    assign duty_s = duty_m;
+    assign phase_s = phase_m;
     assign silencer_done = 0;
   end
 

@@ -1,6 +1,7 @@
 # 2.6.0
 
 - Fix [#43](https://github.com/shinolab/autd3/issues/43)
+- `MOD_SAMPLING_FREQ_DIV_MIN`, `POINT_STM_SAMPLING_FREQ_DIV_MIN`, `GAIN_STM_SAMPLING_FREQ_DIV_MIN`, `GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN`, and `SILENCER_CYCLE_MIN` are halved
 
 # 2.5.2
 

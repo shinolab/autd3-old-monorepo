@@ -4,7 +4,7 @@
  * Created Date: 24/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 09/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,8 @@ module synchronizer (
     input var [63:0] ECAT_SYNC_TIME,
     input var SET,
     input var ECAT_SYNC,
-    output var [63:0] SYS_TIME
+    output var [63:0] SYS_TIME,
+    output var SYNC
 );
 
   localparam int ADDSUB_LATENCY = 6;
@@ -35,6 +36,7 @@ module synchronizer (
 
   bit [2:0] sync_tri = 0;
   bit sync;
+  assign SYNC = sync;
 
   bit [63:0] sys_time = 0;
   bit [63:0] next_sync_time = 0;
