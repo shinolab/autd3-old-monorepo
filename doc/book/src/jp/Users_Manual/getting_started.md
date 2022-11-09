@@ -180,7 +180,7 @@ const auto firm_infos = autd.firmware_infos();
 std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));
 ```
 
-ここで, v2.5以外のヴァージョンが表示される場合は, 動作が保証されないので注意する.
+ここで, v2.6以外のヴァージョンが表示される場合は, 動作が保証されないので注意する.
 
 次に, silencerを設定する.
 
