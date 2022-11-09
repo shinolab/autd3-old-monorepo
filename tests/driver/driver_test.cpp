@@ -686,16 +686,15 @@ TEST(CPUTest, operation_modulation) {
 TEST(CPUTest, operation_config_silencer) {
   autd3::driver::TxDatagram tx(10);
 
-  config_silencer(1, 1044, 4, tx);
-
+  config_silencer(1, 522, 4, tx);
   ASSERT_EQ(tx.header().msg_id, 1);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::MOD, 0);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::CONFIG_SYNC, 0);
   ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::CONFIG_SILENCER, 0);
-  ASSERT_EQ(tx.header().silencer_header().cycle, 1044);
+  ASSERT_EQ(tx.header().silencer_header().cycle, 522);
   ASSERT_EQ(tx.header().silencer_header().step, 4);
 
-  ASSERT_THROW(config_silencer(1, 1043, 4, tx), std::runtime_error);
+  ASSERT_THROW(config_silencer(1, 521, 4, tx), std::runtime_error);
 }
 
 TEST(CPUTest, normal_legacy_header) {

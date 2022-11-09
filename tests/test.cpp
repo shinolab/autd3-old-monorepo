@@ -397,6 +397,30 @@ TEST(ControllerTest, basic_usage_async) {
   autd.close();
 }
 
+
+TEST(ControllerTest, freq_config) {
+    autd3::Controller autd;
+
+    autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
+
+    const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
+
+    auto link = autd3::test::EmulatorLink(cpus).build();
+    autd.open(std::move(link));
+
+    for (auto& dev : autd.geometry())
+        for (auto& tr : dev)
+            tr.set_cycle(2341);
+
+    autd.send(autd3::clear());
+    autd.send(autd3::synchronize());
+
+    for (const auto& cpu : *cpus)
+        for (const auto& cycle : cpu.fpga().cycles())ASSERT_EQ(cycle, 2341);
+
+    autd.close();
+}
+
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
