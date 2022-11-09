@@ -48,6 +48,22 @@ if {[string equal [get_runs -quiet synth_3] ""]} {
     set_property flow     $synth_3_flow     [get_runs synth_3]
     set_property strategy $synth_3_strategy [get_runs synth_3]
 }
+set synth_4_flow     "Vivado Synthesis 2022"
+set synth_4_strategy "Flow_AreaOptimized_high"
+if {[string equal [get_runs -quiet synth_4] ""]} {
+    create_run -name synth_4 -flow $synth_4_flow -strategy $synth_4_strategy -constrset constrs_1
+} else {
+    set_property flow     $synth_4_flow     [get_runs synth_4]
+    set_property strategy $synth_4_strategy [get_runs synth_4]
+}
+set synth_5_flow     "Vivado Synthesis 2022"
+set synth_5_strategy "Flow_AreaOptimized_high"
+if {[string equal [get_runs -quiet synth_5] ""]} {
+    create_run -name synth_5 -flow $synth_5_flow -strategy $synth_5_strategy -constrset constrs_1
+} else {
+    set_property flow     $synth_5_flow     [get_runs synth_5]
+    set_property strategy $synth_5_strategy [get_runs synth_5]
+}
 current_run -synthesis [get_runs synth_1]
 
 set impl_1_flow      "Vivado Implementation 2022"
@@ -74,8 +90,23 @@ if {[string equal [get_runs -quiet impl_3] ""]} {
     set_property flow     $impl_3_flow      [get_runs impl_3]
     set_property strategy $impl_3_strategy  [get_runs impl_3]
 }
+set impl_4_flow      "Vivado Implementation 2022"
+set impl_4_strategy  "Performance_NetDelay_high"
+if {[string equal [get_runs -quiet impl_4] ""]} {
+    create_run -name impl_4 -flow $impl_4_flow -strategy $impl_4_strategy -constrset constrs_1 -parent_run synth_4
+} else {
+    set_property flow     $impl_4_flow      [get_runs impl_4]
+    set_property strategy $impl_4_strategy  [get_runs impl_4]
+}
+set impl_5_flow      "Vivado Implementation 2022"
+set impl_5_strategy  "Performance_HighUtilSLRs"
+if {[string equal [get_runs -quiet impl_5] ""]} {
+    create_run -name impl_5 -flow $impl_5_flow -strategy $impl_5_strategy -constrset constrs_1 -parent_run synth_5
+} else {
+    set_property flow     $impl_5_flow      [get_runs impl_5]
+    set_property strategy $impl_5_strategy  [get_runs impl_5]
+}
 current_run -implementation [get_runs impl_1]
-
 
 add_files -fileset constrs_1 -norecurse [file join $project_directory "rtl/constrs_1/new/top.xdc"]
 add_files -fileset constrs_1 -norecurse [file join $project_directory "rtl/constrs_1/new/timing.xdc"]
