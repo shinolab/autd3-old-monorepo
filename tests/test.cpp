@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/11/2022
+// Last Modified: 10/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -206,8 +206,8 @@ TEST(ControllerTest, basic_usage) {
   const auto firm_infos = autd.firmware_infos();
   ASSERT_EQ(firm_infos.size(), autd.geometry().num_devices());
   for (const auto& firm : firm_infos) {
-    ASSERT_EQ(firm.cpu_version(), "v2.5");
-    ASSERT_EQ(firm.fpga_version(), "v2.5");
+    ASSERT_EQ(firm.cpu_version(), "v2.6");
+    ASSERT_EQ(firm.fpga_version(), "v2.6");
   }
 
   autd << autd3::clear << autd3::synchronize;
@@ -306,8 +306,8 @@ TEST(ControllerTest, basic_usage_async) {
   const auto firm_infos = autd.firmware_infos();
   ASSERT_EQ(firm_infos.size(), autd.geometry().num_devices());
   for (const auto& firm : firm_infos) {
-    ASSERT_EQ(firm.cpu_version(), "v2.5");
-    ASSERT_EQ(firm.fpga_version(), "v2.5");
+    ASSERT_EQ(firm.cpu_version(), "v2.6");
+    ASSERT_EQ(firm.fpga_version(), "v2.6");
   }
 
   autd << autd3::async << autd3::clear << autd3::synchronize;
