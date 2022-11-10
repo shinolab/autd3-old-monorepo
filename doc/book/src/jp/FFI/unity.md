@@ -12,7 +12,16 @@ v2.6.0からは, Unity Package Manager経由でインストールする.
 
 ### npmjs
 
-プロジェクト直下のPackagesフォルダ内の`manifest.json`に以下のように追記する.
+1. Edit→Project Settingsから「Project Settings」を開く
+1. Scoped Registryにて以下を追加し, 保存する
+  - Name    : shinolab
+  - URL     : https://registry.npmjs.com
+  - Scope(s): com.shinolab
+1. Window→「Package Manager」を開く
+1. 左上のPackagesドロップダウンメニューから, 「My Registries」を選択する 
+1. 「autd3-unity」を選択し, インストールする
+
+或いは, プロジェクト直下のPackagesフォルダ内の`manifest.json`に以下のように直接追記しても良い.
 
 ```json
 {
