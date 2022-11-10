@@ -3,7 +3,7 @@
 # Created Date: 11/02/2020
 # Author: Shun Suzuki
 # -----
-# Last Modified: 24/10/2022
+# Last Modified: 10/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2020 Hapis Lab. All rights reserved.
@@ -26,7 +26,6 @@ end
 
 include("Link.jl")
 include("SilencerConfig.jl")
-include("ModDelayConfig.jl") 
 include("Gain.jl")
 include("Modulation.jl")
 include("STM.jl")
