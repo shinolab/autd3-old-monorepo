@@ -2,17 +2,11 @@
 
 [autd3sharp](https://github.com/shinolab/autd3/tree/master/cs)は **.Net Standard 2.1** に対応したラッパーを提供している.
 
+Unityから使用する場合は[unity](./unity.md)を参照されたい.
+
 ## Installation
 
 [NuGet](https://www.nuget.org/packages/autd3sharp)で公開しているので, NuGetでインストールすること.
-
-### Installation for Unity
-
-Unityから使う場合は, [GitHub Release](https://github.com/shinolab/autd3/releases)にてunitypackageを公開しているので, そちらを使用すること.
-
-**なお, Unity版は座標系がz軸反転の左手系になり, 距離の単位がmになっているので注意すること.**
-
-> NOTE: また, 現在, UnityとSOEM linkを同時に使用すると問題が発生することが知られている. 詳しくは[FAQ](https://shinolab.github.io/autd3/book/jp/FAQ/faq.html#linksoem%E4%BD%BF%E7%94%A8%E6%99%82%E3%81%AB%E9%80%81%E4%BF%A1%E3%81%8C%E9%A0%BB%E7%B9%81%E3%81%AB%E5%A4%B1%E6%95%97%E3%81%99%E3%82%8B)を参照されたい.
 
 ## Usage
 
@@ -26,7 +20,7 @@ Unityから使う場合は, [GitHub Release](https://github.com/shinolab/autd3/r
 
 より詳細なサンプルは[autd3sharpのexample](https://github.com/shinolab/autd3/tree/master/cs/example)を参照されたい.
 
-## Trouble shooting
+## Troubleshooting
 
 Q. linuxやmacから実行できない
 
