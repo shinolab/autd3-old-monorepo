@@ -23,9 +23,6 @@ proc AUTDAddDeviceQuaternion*(handle: pointer; x: float64; y: float64; z: float6
                              qw: float64; qx: float64; qy: float64; qz: float64): int32 {.
     cdecl, importc: "AUTDAddDeviceQuaternion", dynlib: dll.}
 proc AUTDClose*(handle: pointer): int32 {.cdecl, importc: "AUTDClose", dynlib: dll.}
-proc AUTDClear*(handle: pointer): int32 {.cdecl, importc: "AUTDClear", dynlib: dll.}
-proc AUTDSynchronize*(handle: pointer): int32 {.cdecl, importc: "AUTDSynchronize",
-    dynlib: dll.}
 proc AUTDFreeController*(handle: pointer) {.cdecl, importc: "AUTDFreeController",
     dynlib: dll.}
 proc AUTDIsOpen*(handle: pointer): bool {.cdecl, importc: "AUTDIsOpen", dynlib: dll.}
@@ -68,8 +65,6 @@ proc AUTDSetAttenuation*(handle: pointer; attenuation: float64) {.cdecl,
     importc: "AUTDSetAttenuation", dynlib: dll.}
 proc AUTDGetFPGAInfo*(handle: pointer; `out`: ptr uint8): bool {.cdecl,
     importc: "AUTDGetFPGAInfo", dynlib: dll.}
-proc AUTDUpdateFlags*(handle: pointer): int32 {.cdecl, importc: "AUTDUpdateFlags",
-    dynlib: dll.}
 proc AUTDNumDevices*(handle: pointer): int32 {.cdecl, importc: "AUTDNumDevices",
     dynlib: dll.}
 proc AUTDTransPosition*(handle: pointer; device_idx: int32; local_trans_idx: int32;
@@ -104,6 +99,9 @@ proc AUTDGainBesselBeam*(gain: ptr pointer; x: float64; y: float64; z: float64;
 proc AUTDGainPlaneWave*(gain: ptr pointer; n_x: float64; n_y: float64; n_z: float64;
                        amp: float64) {.cdecl, importc: "AUTDGainPlaneWave",
                                      dynlib: dll.}
+proc AUTDGainTransducerTest*(gain: ptr pointer; dev_idx: int32; tr_idx: int32;
+                            amp: float64; phase: float64) {.cdecl,
+    importc: "AUTDGainTransducerTest", dynlib: dll.}
 proc AUTDGainCustom*(gain: ptr pointer; amp: ptr float64; phase: ptr float64; size: uint64) {.
     cdecl, importc: "AUTDGainCustom", dynlib: dll.}
 proc AUTDDeleteGain*(gain: pointer) {.cdecl, importc: "AUTDDeleteGain", dynlib: dll.}
@@ -120,6 +118,8 @@ proc AUTDModulationSineLegacy*(`mod`: ptr pointer; freq: float64; amp: float64;
 proc AUTDModulationSquare*(`mod`: ptr pointer; freq: int32; low: float64; high: float64;
                           duty: float64) {.cdecl, importc: "AUTDModulationSquare",
     dynlib: dll.}
+proc AUTDModulationLPF*(`mod`: ptr pointer; mod_in: pointer) {.cdecl,
+    importc: "AUTDModulationLPF", dynlib: dll.}
 proc AUTDModulationCustom*(`mod`: ptr pointer; buffer: ptr uint8; size: uint64;
                           freq_div: uint32) {.cdecl,
     importc: "AUTDModulationCustom", dynlib: dll.}
@@ -153,19 +153,32 @@ proc AUTDSTMSamplingFrequencyDivision*(stm: pointer): uint32 {.cdecl,
 proc AUTDSTMSetSamplingFrequencyDivision*(stm: pointer; freq_div: uint32) {.cdecl,
     importc: "AUTDSTMSetSamplingFrequencyDivision", dynlib: dll.}
 proc AUTDDeleteSTM*(stm: pointer) {.cdecl, importc: "AUTDDeleteSTM", dynlib: dll.}
-proc AUTDStop*(handle: pointer): int32 {.cdecl, importc: "AUTDStop", dynlib: dll.}
+proc AUTDSynchronize*(`out`: ptr pointer) {.cdecl, importc: "AUTDSynchronize",
+                                        dynlib: dll.}
+proc AUTDClear*(`out`: ptr pointer) {.cdecl, importc: "AUTDClear", dynlib: dll.}
+proc AUTDUpdateFlags*(`out`: ptr pointer) {.cdecl, importc: "AUTDUpdateFlags",
+                                        dynlib: dll.}
+proc AUTDStop*(`out`: ptr pointer) {.cdecl, importc: "AUTDStop", dynlib: dll.}
+proc AUTDModDelayConfig*(`out`: ptr pointer) {.cdecl, importc: "AUTDModDelayConfig",
+    dynlib: dll.}
+proc AUTDDeleteSpecialData*(data: pointer) {.cdecl,
+    importc: "AUTDDeleteSpecialData", dynlib: dll.}
 proc AUTDCreateSilencer*(`out`: ptr pointer; step: uint16; cycle: uint16) {.cdecl,
     importc: "AUTDCreateSilencer", dynlib: dll.}
 proc AUTDDeleteSilencer*(config: pointer) {.cdecl, importc: "AUTDDeleteSilencer",
     dynlib: dll.}
 proc AUTDSend*(handle: pointer; header: pointer; body: pointer): int32 {.cdecl,
     importc: "AUTDSend", dynlib: dll.}
+proc AUTDSendSpecial*(handle: pointer; special: pointer): int32 {.cdecl,
+    importc: "AUTDSendSpecial", dynlib: dll.}
+proc AUTDSendAsync*(handle: pointer; header: pointer; body: pointer) {.cdecl,
+    importc: "AUTDSendAsync", dynlib: dll.}
+proc AUTDSendSpecialAsync*(handle: pointer; special: pointer) {.cdecl,
+    importc: "AUTDSendSpecialAsync", dynlib: dll.}
+proc AUTDGetModDelay*(handle: pointer; device_idx: int32; local_trans_idx: int32): uint16 {.
+    cdecl, importc: "AUTDGetModDelay", dynlib: dll.}
 proc AUTDSetModDelay*(handle: pointer; device_idx: int32; local_trans_idx: int32;
                      delay: uint16) {.cdecl, importc: "AUTDSetModDelay", dynlib: dll.}
-proc AUTDCreateModDelayConfig*(`out`: ptr pointer) {.cdecl,
-    importc: "AUTDCreateModDelayConfig", dynlib: dll.}
-proc AUTDDeleteModDelayConfig*(config: pointer) {.cdecl,
-    importc: "AUTDDeleteModDelayConfig", dynlib: dll.}
 proc AUTDCreateAmplitudes*(`out`: ptr pointer; amp: float64) {.cdecl,
     importc: "AUTDCreateAmplitudes", dynlib: dll.}
 proc AUTDDeleteAmplitudes*(amplitudes: pointer) {.cdecl,
@@ -180,7 +193,7 @@ proc AUTDSoftwareSTMAdd*(stm: pointer; gain: pointer) {.cdecl,
     importc: "AUTDSoftwareSTMAdd", dynlib: dll.}
 proc AUTDSoftwareSTMStart*(handle: ptr pointer; stm: pointer; cnt: pointer) {.cdecl,
     importc: "AUTDSoftwareSTMStart", dynlib: dll.}
-proc AUTDSoftwareSTMFinish*(cnt: ptr pointer; handle: pointer) {.cdecl,
+proc AUTDSoftwareSTMFinish*(handle: pointer) {.cdecl,
     importc: "AUTDSoftwareSTMFinish", dynlib: dll.}
 proc AUTDSoftwareSTMSetFrequency*(stm: pointer; freq: float64): float64 {.cdecl,
     importc: "AUTDSoftwareSTMSetFrequency", dynlib: dll.}

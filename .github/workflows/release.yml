@@ -129,46 +129,57 @@ jobs:
           asset_name: ${{ steps.get_version.outputs.result }}-arm.zip
           asset_content_type: application/zip
 
-      - name: Get package name
-        id: get_package_name
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          result-encoding: string
-          script: |
-            return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'.unitypackage';
       - name: Build project x64 for Unity
         run: |
           cmake -G "Visual Studio 17 2022" -A x64 -B "build_unity" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=ON -DDISABLE_EXAMPLES=ON -DUSE_METER=ON -DUSE_LEFT_HANDED=ON
           cd build_unity
           cmake --build . --parallel 8 --config Release
           cd ..
-          foreach($dll in Get-ChildItem -Path build_unity/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/unity/Assets/AUTD/Plugins/x86_64}
-          copy build_unity/dist/simulator/Release/*.exe ./cs/unity/Assets/Editor
+          foreach($dll in Get-ChildItem -Path build_unity/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/unity/Assets/autd3/Plugins/x86_64}
+          copy build_unity/dist/simulator/Release/*.exe ./cs/unity/Assets/autd3/Editor
       - name: Replace latest scripts
         run: |
-          foreach($src in Get-ChildItem -Path ./cs/src | Where {$_.extension -like ".cs"}){Copy-Item -Path $src -Destination ./cs/unity/Assets/AUTD/Scripts}
-          foreach($src in Get-ChildItem -Path ./cs/src/NativeMethods | Where {$_.extension -like ".cs"}){Copy-Item -Path $src -Destination ./cs/unity/Assets/AUTD/Scripts/NativeMethods}
-          Copy-Item -Path ./cs/src/LICENSE.txt -Destination ./cs/unity/Assets/AUTD/
-      - name: Enumerate Assets
+          foreach($src in Get-ChildItem -Path ./cs/src | Where {$_.extension -like ".cs"}){Copy-Item -Path $src -Destination ./cs/unity/Assets/autd3/Scripts}
+          foreach($src in Get-ChildItem -Path ./cs/src/NativeMethods | Where {$_.extension -like ".cs"}){Copy-Item -Path $src -Destination ./cs/unity/Assets/autd3/Scripts/NativeMethods}
+          Copy-Item -Path ./cs/src/LICENSE.txt -Destination ./cs/unity/Assets/autd3/
+      - name: create npm branch
         run: |
-          Get-ChildItem -Recurse -Filter '*.meta' -Name | ForEach-Object {$_ -replace '[\\]', '/'} >> metaList
-        working-directory: ./cs/unity
-      - uses: pCYSl5EDgo/create-unitypackage@master
+          git config --global user.name 'github-bot'
+          git config --global user.email 'github-bot@users.noreply.github.com'
+          git mv cs/unity/Assets/autd3/Samples cs/unity/Assets/autd3/Samples~
+          rm -Force cs/unity/Assets/autd3/Samples.meta
+          git add .
+          git commit -am "replaced"
+          git branch -d upm
+          git subtree split -P cs/unity/Assets/autd3 -b upm
+          git checkout upm
+          git push -f -u origin upm
+      - name: Get the version
+        id: get_upm_tag
+        uses: actions/github-script@v6
         with:
-          package-path: 'autd3.unitypackage'
-          include-files: ./cs/unity/metaList
-          project-folder: ./cs/unity
-      - name: Upload Release Asset
-        id: upload-release-asset-unity
-        uses: shogo82148/actions-upload-release-asset@v1
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          result-encoding: string
+          script: |
+            return 'upm/'+context.payload.ref.replace(/refs\/tags\//, '');
+      - name: upm git tag
+        run: |
+          git tag $TAG upm
+          git push origin --tags
+        env:
+          TAG: upm/v${{ steps.get_upm_tag.outputs.result }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          upload_url: ${{ steps.get_release_info.outputs.content }}
-          asset_path: ./autd3.unitypackage
-          asset_name: ${{ steps.get_package_name.outputs.result }}
-          asset_content_type: application/octet-stream
-    
+          node-version: '16'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Publish on npmjs
+        run: |
+          npm install
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
   publish_linux:
     needs: [release]
     name: Upload Release Asset Linux

@@ -4,7 +4,7 @@
  * Created Date: 05/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/11/2022
+ * Last Modified: 10/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,13 +28,11 @@ public class SimualtorWindow : EditorWindow
 
     void OnGUI()
     {
-        if (GUILayout.Button("Run"))
-        {
-            var simulator_path = System.IO.Path.Combine(Application.dataPath, "Editor", "autd_simulator.exe");
-            var p = new System.Diagnostics.Process();
-            p.StartInfo.FileName = simulator_path;
-            p.Start();
-        }
+        if (!GUILayout.Button("Run")) return;
+        var path = System.IO.Path.GetFullPath("Packages/com.shinolab.autd3/Editor/autd_simulator.exe");
+        var p = new System.Diagnostics.Process();
+        p.StartInfo.FileName = path;
+        p.Start();
     }
 }
 

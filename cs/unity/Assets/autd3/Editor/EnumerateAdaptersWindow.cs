@@ -21,8 +21,8 @@ using System.Linq;
 
 public class EnumerateAdaptersWindow : EditorWindow
 {
-    AUTD3Sharp.Link.EtherCATAdapter[]? _adapters = null;
-    Vector2 _leftScrollPos = Vector2.zero;
+    private AUTD3Sharp.Link.EtherCATAdapter[]? _adapters;
+    private Vector2 _leftScrollPos = Vector2.zero;
 
     private void OnEnable()
     {
@@ -30,29 +30,27 @@ public class EnumerateAdaptersWindow : EditorWindow
     }
 
     [MenuItem("AUTD/Enumerate Adapters")]
-    static void Open()
+    private static void Open()
     {
         GetWindow<EnumerateAdaptersWindow>("Enumerate adapters");
     }
 
-    void OnGUI()
+    private void OnGUI()
     {
         EditorGUILayout.LabelField("Available ethernet adapters ");
-        var default_color = GUI.color;
-        using (var sv = new GUILayout.ScrollViewScope(_leftScrollPos))
-        {
-            _leftScrollPos = sv.scrollPosition;
+        var defaultColor = GUI.color;
+        using var sv = new GUILayout.ScrollViewScope(_leftScrollPos);
+        _leftScrollPos = sv.scrollPosition;
 
-            foreach (var adapter in _adapters ?? new AUTD3Sharp.Link.EtherCATAdapter[] { })
+        foreach (var adapter in _adapters ?? new AUTD3Sharp.Link.EtherCATAdapter[] { })
+        {
+            using (new GUILayout.HorizontalScope(GUI.skin.box))
             {
-                using (new GUILayout.HorizontalScope(GUI.skin.box))
-                {
-                    EditorGUILayout.SelectableLabel(adapter.Name);
-                    GUI.color = Color.black;
-                    GUILayout.Box("", GUILayout.ExpandHeight(true), GUILayout.MaxHeight(30), GUILayout.Width(1));
-                    GUI.color = default_color;
-                    EditorGUILayout.SelectableLabel(adapter.Desc);
-                }
+                EditorGUILayout.SelectableLabel(adapter.Name);
+                GUI.color = Color.black;
+                GUILayout.Box("", GUILayout.ExpandHeight(true), GUILayout.MaxHeight(30), GUILayout.Width(1));
+                GUI.color = defaultColor;
+                EditorGUILayout.SelectableLabel(adapter.Desc);
             }
         }
     }

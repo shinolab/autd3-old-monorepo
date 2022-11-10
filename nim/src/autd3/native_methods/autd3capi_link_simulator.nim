@@ -10,5 +10,5 @@ elif defined(macosx):
 else:
   const
     dll* = "bin/libautd3capi-link-simulator.so"
-proc AUTDLinkSimulator*(`out`: ptr pointer; port: uint16; ip_addr: cstring) {.cdecl,
-    importc: "AUTDLinkSimulator", dynlib: dll.}
+proc AUTDLinkSimulator*(`out`: ptr pointer) {.cdecl, importc: "AUTDLinkSimulator",
+    dynlib: dll.}
