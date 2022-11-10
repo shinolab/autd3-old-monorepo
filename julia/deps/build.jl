@@ -44,14 +44,16 @@ end
 function extract_zip(zipfile)
     lib_ext = get_lib_ext()
     run(`powershell Expand-Archive -Path $zipfile`)
-    cp("tmp/bin", joinpath(@__DIR__, "..", "src", "NativeMethods", "bin", get_os_info()); force=true)
+    mkpath(joinpath(@__DIR__, "..", "src", "NativeMethods", get_os_info(), "bin"))
+    cp("tmp/bin", joinpath(@__DIR__, "..", "src", "NativeMethods", get_os_info(), "bin"); force=true)
     rm("tmp"; force=true, recursive=true)
     rm(zipfile; force=true)
 end
 
 function extract_targz(tarfile)
     run(`tar -xvf $tarfile`)
-    cp("bin", joinpath(@__DIR__, "..", "src", "NativeMethods", "bin", get_os_info()); force=true)
+    mkpath(joinpath(@__DIR__, "..", "src", "NativeMethods", get_os_info(), "bin"))
+    cp("bin", joinpath(@__DIR__, "..", "src", "NativeMethods", get_os_info(), "bin"); force=true)
     rm("bin"; force=true, recursive=true)
     rm(tarfile; force=true)
 end
