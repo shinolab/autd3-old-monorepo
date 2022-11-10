@@ -38,5 +38,13 @@ proc AUTDGainHoloAPO*(gain: ptr pointer; backend: pointer; eps: float64;
     importc: "AUTDGainHoloAPO", dynlib: dll.}
 proc AUTDGainHoloAdd*(gain: pointer; x: float64; y: float64; z: float64; amp: float64) {.
     cdecl, importc: "AUTDGainHoloAdd", dynlib: dll.}
-proc AUTDSetConstraint*(gain: pointer; `type`: int32; param: pointer) {.cdecl,
+proc AUTDConstraintDontCare*(constraint: ptr pointer) {.cdecl,
+    importc: "AUTDConstraintDontCare", dynlib: dll.}
+proc AUTDConstraintNormalize*(constraint: ptr pointer) {.cdecl,
+    importc: "AUTDConstraintNormalize", dynlib: dll.}
+proc AUTDConstraintUniform*(constraint: ptr pointer; value: float64) {.cdecl,
+    importc: "AUTDConstraintUniform", dynlib: dll.}
+proc AUTDConstraintClamp*(constraint: ptr pointer) {.cdecl,
+    importc: "AUTDConstraintClamp", dynlib: dll.}
+proc AUTDSetConstraint*(gain: pointer; constraint: pointer) {.cdecl,
     importc: "AUTDSetConstraint", dynlib: dll.}
