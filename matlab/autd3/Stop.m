@@ -1,7 +1,7 @@
 %{
-%File: Constraint.m
+%File: Stop.m
 %Project: autd3
-%Created Date: 10/06/2022
+%Created Date: 10/11/2022
 %Author: Shun Suzuki
 %-----
 %Last Modified: 10/11/2022
@@ -11,16 +11,14 @@
 %
 %}
 
-classdef Constraint < handle
-
-    properties
-        ptr
-    end
+classdef Stop < SpecialData
 
     methods
 
-        function obj = Constraint()
-            obj.ptr = libpointer('voidPtr', 0);
+        function obj = Stop()
+            obj = obj@SpecialData();
+            pp = libpointer('voidPtrPtr', obj.ptr);
+            calllib('autd3capi', 'AUTDStop', pp);
         end
 
     end
