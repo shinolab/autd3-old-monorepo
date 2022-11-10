@@ -30,7 +30,7 @@ v2.6.0からは, Unity Package Manager経由でインストールする.
 
 ### GitHub
 
-- Window→Package Managerを開き, 左上の+ボタンから「Add Package from git URL」を選択し, `https://github.com/shinolab/autd3.git#upm`を追加する.
+- Window→Package Managerを開き, 左上の+ボタンから「Add Package from git URL」を選択し, `https://github.com/shinolab/autd3.git#upm/latest`を追加する.
     - 最新版以外を追加する場合は, `https://github.com/shinolab/autd3.git#upm/vX.Y.Z`で指定する.
 
 ## Sample
