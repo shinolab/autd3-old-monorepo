@@ -12,6 +12,10 @@ Before running example, please run `build.ps1` on Windows or `build.sh` on mac a
 
 Run `soem` or `emulator` in MATLAB.
 
+## LICENSE
+
+See [LICENSE](https://github.com/shinolab/autd3/blob/master/LICENSE).
+
 # Author
 
 Shun Suzuki, 2022.

@@ -64,6 +64,7 @@ jobs:
           mkdir publish/SOEMAUTDServer
           cd ..
           foreach($dll in Get-ChildItem -Path build/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/src/native/windows/x64}
+          cp LICENSE cs/src/LICENSE.md
           cd cs/src
           dotnet clean
           dotnet build -c:Release
@@ -83,7 +84,7 @@ jobs:
           copy dist/SOEMAUTDServer/README.md build/publish/SOEMAUTDServer
           copy dist/simulator/settings.json build/publish/simulator
           Remove-Item -Recurse -Force dist/TwinCATAUTDServer/src
-          Compress-Archive -Path LICENSE, NOTICE, dist/TwinCATAUTDServer, dist/firmware, include, build/publish/lib, build/publish/bin, build/publish/simulator, build/publish/SOEMAUTDServer, publish/gui-controller -DestinationPath assets_x64.zip
+          Compress-Archive -Path LICENSE, dist/TwinCATAUTDServer, dist/firmware, include, build/publish/lib, build/publish/bin, build/publish/simulator, build/publish/SOEMAUTDServer, publish/gui-controller -DestinationPath assets_x64.zip
       - name: Build project arm
         run: |
           cmake -G "Visual Studio 17 2022" -A ARM64 -B "build_arm" -DBUILD_TARGET=ARM -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=OFF -DEXPORT_AUTD_SIMULATOR=OFF -DDISABLE_EXAMPLES=ON -DEXPORT_SOEM_AUTD_SERVER=ON
@@ -100,7 +101,7 @@ jobs:
           copy build_arm/bin/Release/*.dll build_arm/publish/bin
           copy build_arm/dist/SOEMAUTDServer/Release/*.exe build_arm/publish/SOEMAUTDServer
           copy dist/SOEMAUTDServer/README.md build_arm/publish/SOEMAUTDServer
-          Compress-Archive -Path LICENSE, NOTICE, include, build_arm/publish/lib, build_arm/publish/bin, build_arm/publish/SOEMAUTDServer -DestinationPath assets_arm.zip
+          Compress-Archive -Path LICENSE, include, build_arm/publish/lib, build_arm/publish/bin, build_arm/publish/SOEMAUTDServer -DestinationPath assets_arm.zip
       - name: Load Release URL File from release job
         uses: actions/download-artifact@v1
         with:
@@ -139,9 +140,10 @@ jobs:
           copy build_unity/dist/simulator/Release/*.exe ./cs/unity/Assets/autd3/Editor
       - name: Replace latest scripts
         run: |
+          cp LICENSE cs/unity/Assets/autd3/LICENSE.md
+          cp CHANGELOG.md cs/unity/Assets/autd3/CHANGELOG.md
           foreach($src in Get-ChildItem -Path ./cs/src | Where {$_.extension -like ".cs"}){Copy-Item -Path $src -Destination ./cs/unity/Assets/autd3/Scripts}
           foreach($src in Get-ChildItem -Path ./cs/src/NativeMethods | Where {$_.extension -like ".cs"}){Copy-Item -Path $src -Destination ./cs/unity/Assets/autd3/Scripts/NativeMethods}
-          Copy-Item -Path ./cs/src/LICENSE.txt -Destination ./cs/unity/Assets/autd3/
       - name: create npm branch
         run: |
           git config --global user.name 'github-bot'
@@ -216,7 +218,7 @@ jobs:
           mkdir -p bin
           cp -f build/lib/*.a lib
           cp -f build/bin/Release/*.so bin
-          tar -zcvf assets_x64.tar.gz include lib bin LICENSE NOTICE 
+          tar -zcvf assets_x64.tar.gz include lib bin LICENSE
         shell: bash
         env:
           CC: gcc-10
@@ -231,7 +233,7 @@ jobs:
           mkdir -p bin
           cp -f build/lib/*.a lib
           cp -f build/bin/Release/*.so bin
-          tar -zcvf assets_arm32.tar.gz include lib bin LICENSE NOTICE
+          tar -zcvf assets_arm32.tar.gz include lib bin LICENSE
         shell: bash
         env:
           CC: gcc-10
@@ -246,7 +248,7 @@ jobs:
           mkdir -p bin
           cp -f build/lib/*.a lib
           cp -f build/bin/Release/*.so bin
-          tar -zcvf assets_arm64.tar.gz include lib bin LICENSE NOTICE
+          tar -zcvf assets_arm64.tar.gz include lib bin LICENSE
         shell: bash
         env:
           CC: gcc-10
@@ -313,7 +315,7 @@ jobs:
           mkdir -p bin
           cp -f build/lib/*.a lib
           cp -f build/bin/Release/*.dylib bin
-          tar -zcvf assets.tar.gz include lib bin LICENSE NOTICE
+          tar -zcvf assets.tar.gz include lib bin LICENSE
       - name: Load Release URL File from release job
         uses: actions/download-artifact@v1
         with:
@@ -372,6 +374,7 @@ jobs:
         wget https://github.com/shinolab/autd3/releases/download/${{ steps.get_version.outputs.VERSION }}/autd3-${{ steps.get_version.outputs.VERSION }}-win-arm.zip
     - name: Replace latest binary
       run: |
+        cp LICENSE cs/src/LICENSE.md
         tar -zxvf autd3-${{ steps.get_version.outputs.VERSION }}-linux-x64.tar.gz
         rm -f ./cs/src/native/linux/x64/*
         \cp bin/*.so ./cs/src/native/linux/x64/

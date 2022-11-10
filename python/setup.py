@@ -4,7 +4,7 @@ Project: pyautd
 Created Date: 10/09/2020
 Author: Shun Suzuki
 -----
-Last Modified: 21/10/2022
+Last Modified: 11/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -128,7 +128,7 @@ setuptools.setup(
         'Operating System :: POSIX',
         'Operating System :: MacOS'
     ],
-    license='See https://github.com/shinolab/autd3',
+    license='See https://github.com/shinolab/autd3/blob/master/LICENSE',
     platforms=["Windows", "Linux", "Mac OS-X"],
     include_package_data=True,
     package_dir={'pyautd3': 'pyautd3'},
