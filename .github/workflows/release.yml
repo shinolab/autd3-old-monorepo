@@ -153,6 +153,8 @@ jobs:
           git branch -d upm/latest
           git subtree split -P cs/unity/Assets/autd3 -b upm/latest
           git checkout upm/latest
+          git clean -fxd
+          Remove-Item -Path 3rdparty -Force -Recurse
           git push -f -u origin upm/latest
       - name: Get upm tag name
         id: get_upm_tag
