@@ -97,10 +97,9 @@ jobs:
           rm -Force cs/unity/Assets/autd3/Samples.meta
           git add .
           git commit -am "replaced"
-          git branch -d upm
-          git subtree split -P cs/unity/Assets/autd3 -b upm
-          git checkout upm
-          git push -f -u origin upm
+          git branch -d upm/rc
+          git subtree split -P cs/unity/Assets/autd3 -b upm/rc
+          git checkout upm/rc
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
