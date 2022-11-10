@@ -1,7 +1,7 @@
 %{
-%File: Simulator.m
+%File: SpecialData.m
 %Project: autd3
-%Created Date: 10/10/2022
+%Created Date: 10/11/2022
 %Author: Shun Suzuki
 %-----
 %Last Modified: 10/11/2022
@@ -11,7 +11,7 @@
 %
 %}
 
-classdef Simulator < handle
+classdef SpecialData < handle
 
     properties
         ptr
@@ -19,14 +19,15 @@ classdef Simulator < handle
 
     methods
 
-        function obj = Simulator()
+        function obj = SpecialData()
             obj.ptr = libpointer('voidPtr', 0);
         end
 
-        function res = build(obj)
-            pp = libpointer('voidPtrPtr', obj.ptr);
-            calllib('autd3capi_link_simulator', 'AUTDLinkSimulator', pp);
-            res = obj;
+        function delete(obj)
+            if obj.ptr.Value ~= 0
+                calllib('autd3capi', 'AUTDDeleteSpecialData', obj.ptr);
+                obj.ptr = libpointer('voidPtr', 0);
+            end
         end
 
     end

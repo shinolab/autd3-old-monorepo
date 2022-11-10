@@ -4,7 +4,7 @@
 %Created Date: 07/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 08/08/2022
+%Last Modified: 10/11/2022
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ classdef Controller < handle
         function to_legacy(obj)
             calllib('autd3capi', 'AUTDSetMode', obj.ptr, 0);
         end
-        
+
         function to_normal(obj)
             calllib('autd3capi', 'AUTDSetMode', obj.ptr, 1);
         end
@@ -53,18 +53,6 @@ classdef Controller < handle
 
         function res = open(obj, link)
             res = calllib('autd3capi', 'AUTDOpenController', obj.ptr, link.ptr);
-        end
-
-        function res = clear(obj)
-            res = calllib('autd3capi', 'AUTDClear', obj.ptr);
-        end
-
-        function res = synchronize(obj)
-            res = calllib('autd3capi', 'AUTDSynchronize', obj.ptr);
-        end
-
-        function res = stop(obj)
-            res = calllib('autd3capi', 'AUTDStop', obj.ptr);
         end
 
         function res = close(obj)
@@ -189,10 +177,6 @@ classdef Controller < handle
             res = calllib('autd3capi', 'AUTDNumDevices', obj.ptr);
         end
 
-        function res = update_flag(obj)
-            res = calllib('autd3capi', 'AUTDUpdateFlags', obj.ptr);
-        end
-
         function res = send(varargin)
             obj = varargin{1};
 
@@ -216,6 +200,11 @@ classdef Controller < handle
             end
 
             if nargin == 2
+
+                if isa(varargin{2}, 'SpecialData')
+                    res = calllib('autd3capi', 'AUTDSendSpecial', obj.ptr, varargin{2}.ptr);
+                    return;
+                end
 
                 if isa(varargin{2}, 'Header')
                     np = libpointer('voidPtr', []);

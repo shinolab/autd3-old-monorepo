@@ -1,5 +1,5 @@
 %{
-%File: emulator.m
+%File: simulator.m
 %Project: autd3-matlab
 %Created Date: 11/06/2022
 %Author: Shun Suzuki
@@ -24,7 +24,8 @@ try
     cnt = Controller();
     cnt.add_device([0 0 0], [0 0 0]);
 
-    link = Simulator(50632);
+    sim = Simulator();
+    link = sim.build();
 
     if ~cnt.open(link)
         disp(Controller.last_error());
