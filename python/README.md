@@ -32,7 +32,7 @@ see [example](./example)
 
 ## LICENSE
 
-See [LICENSE](./LICENSE) and [NOTICE](./NOTICE).
+See [LICENSE](https://github.com/shinolab/autd3/blob/master/LICENSE).
 
 # Author
 

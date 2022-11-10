@@ -134,7 +134,7 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 
 ## LICENSE
 
-* See [LICENSE](./LICENSE) and [NOTICE](./NOTICE).
+* See [LICENSE](./LICENSE)
 
 # Author
 

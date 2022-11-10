@@ -23,5 +23,6 @@ jobs:
         dotnet-version: '6.0.x'
     - name: Build with dotnet
       run: |
+        cp LICENSE cs/src/LICENSE.md
         cd ./cs/src
         dotnet build -c:Release

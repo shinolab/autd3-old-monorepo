@@ -23,11 +23,12 @@ dotnet run
 
 ## Unity
 
-* Please use unitypackage in [Release page](https://github.com/shinolab/autd3/releases).
+* Please install via Unity Package Manager
+ - See [document](https://shinolab.github.io/autd3/book/en/FFI/unity.html) for more details.
 
 ## LICENSE
 
-See [LICENSE](./LICENSE) and [NOTICE](./NOTICE).
+See [LICENSE](../LICENSE).
 
 # Author
 

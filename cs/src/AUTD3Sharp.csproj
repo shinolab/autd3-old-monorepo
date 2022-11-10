@@ -16,13 +16,13 @@
   </PropertyGroup>
 
   <PropertyGroup>
-      <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+      <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
       <PackageReadmeFile>README.md</PackageReadmeFile>
       <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-      <None Include="LICENSE.txt" Pack="true" PackagePath="LICENSE.txt" />
+      <None Include="LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
   </ItemGroup>
   <ItemGroup>
       <None Include="../README.md" Pack="true" PackagePath="README.md" />
