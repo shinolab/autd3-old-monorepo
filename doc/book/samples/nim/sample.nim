@@ -20,8 +20,8 @@ when isMainModule:
 
         cnt.checkTrials = 50
 
-        cnt.clear()
-        cnt.synchronize()
+        cnt.send(clear())
+        cnt.send(synchronize())
 
         let firmList = cnt.firmwareInfoList()
         for firm in firmList:

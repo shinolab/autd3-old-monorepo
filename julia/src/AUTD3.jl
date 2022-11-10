@@ -3,7 +3,7 @@
 # Created Date: 11/02/2020
 # Author: Shun Suzuki
 # -----
-# Last Modified: 24/10/2022
+# Last Modified: 10/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2020 Hapis Lab. All rights reserved.
@@ -26,7 +26,6 @@ end
 
 include("Link.jl")
 include("SilencerConfig.jl")
-include("ModDelayConfig.jl") 
 include("Gain.jl")
 include("Modulation.jl")
 include("STM.jl")
@@ -68,7 +67,7 @@ include("Greedy.jl")
 include("LSSGreedy.jl")
 include("APO.jl")
 
-export Controller, get_last_error
+export Controller, get_last_error, Clear, Synchronize, UpdateFlag, Stop, ModDelayConfig
 export SilencerConfig, SilencerConfigNone, ModDelayConfig, Amplitudes
 export Null, Focus, BesselBeam, PlaneWave, CustomGain, Grouped
 export Static, Sine, SineSquared, SineLegacy, Square, CustomModulation

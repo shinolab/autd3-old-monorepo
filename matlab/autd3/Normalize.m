@@ -1,5 +1,5 @@
 %{
-%File: ModDelayConfig.m
+%File: Normalize.m
 %Project: autd3
 %Created Date: 10/11/2022
 %Author: Shun Suzuki
@@ -11,14 +11,14 @@
 %
 %}
 
-classdef ModDelayConfig < SpecialData
+classdef Normalize < Constraint
 
     methods
 
-        function obj = ModDelayConfig()
-            obj = obj@SpecialData();
+        function obj = Normalize()
+            obj = obj@Constraint();
             pp = libpointer('voidPtrPtr', obj.ptr);
-            calllib('autd3capi', 'AUTDModDelayConfig', pp);
+            calllib('autd3capi_gain_holo', 'AUTDConstraintNormalize', pp);
         end
 
     end

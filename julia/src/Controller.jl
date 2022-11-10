@@ -3,7 +3,7 @@
 # Created Date: 14/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 08/08/2022
+# Last Modified: 10/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,9 +19,7 @@ mutable struct Controller
     add_device
     add_device_quaternion
     open
-    clear
     close
-    synchronize
     is_open
     get_force_fan
     set_force_fan
@@ -47,9 +45,7 @@ mutable struct Controller
     set_mod_delay
     num_devices
     firmware_info_list
-    stop
     send
-    update_flags
     function Controller()
         chandle = Ref(Ptr{Cvoid}(0))
         autd3capi.autd_create_controller(chandle)
@@ -68,9 +64,7 @@ mutable struct Controller
         cnt.to_normal = () -> autd3capi.set_mode(cnt._ptr, 1)
         cnt.to_normal_phase = () -> autd3capi.set_mode(cnt._ptr, 2)
         cnt.open = (link) -> autd3capi.autd_open_controller(cnt._ptr, link._link._ptr)
-        cnt.clear = () -> autd3capi.autd_clear(cnt._ptr)
         cnt.close = () -> autd3capi.autd_close(cnt._ptr)
-        cnt.synchronize = () -> autd3capi.autd_synchronize(cnt._ptr)
         cnt.num_devices = () -> autd3capi.autd_num_devices(cnt._ptr)
         cnt.is_open = () -> autd3capi.autd_is_open(cnt._ptr)
         cnt.get_force_fan = () -> autd3capi.autd_get_force_fan(cnt._ptr)
@@ -134,11 +128,12 @@ mutable struct Controller
             autd3capi.autd_free_firmware_info_list_pointer(handle)
             res
         end
-        cnt.stop = () -> autd3capi.autd_stop(cnt._ptr)
         cnt.send = function (a, b=Nothing)
             np = Ptr{Cvoid}(0)
             if b == Nothing
-                if hasproperty(a, :_header_ptr)
+                if hasproperty(a, :_special_data_ptr)
+                    autd3capi.autd_send_special(cnt._ptr, a._special_data_ptr)
+                elseif hasproperty(a, :_header_ptr)
                     autd3capi.autd_send(cnt._ptr, a._header_ptr, np)
                 elseif hasproperty(a, :_body_ptr)
                     autd3capi.autd_send(cnt._ptr, np, a._body_ptr)
@@ -151,7 +146,6 @@ mutable struct Controller
                 end
             end
         end
-        cnt.update_flags = () -> autd3capi.autd_update_flags(cnt._ptr)
 
         finalizer(cnt -> autd3capi.autd_free_controller(cnt._ptr), cnt)
         cnt
@@ -164,4 +158,49 @@ function get_last_error()
     err = zeros(UInt8, n)
     autd3capi.autd_get_last_error(err)
     String(err[1:n-1])
+end
+
+struct Clear
+    _special_data_ptr
+    function Clear()
+        chandle = Ref(Ptr{Cvoid}(0))
+        autd3capi.autd_clear(chandle)
+        new(chandle[])
+    end
+end
+
+struct UpdateFlag
+    _special_data_ptr
+    function UpdateFlag()
+        chandle = Ref(Ptr{Cvoid}(0))
+        autd3capi.autd_update_flags(chandle)
+        new(chandle[])
+    end
+end
+
+struct Stop
+    _special_data_ptr
+    function Stop()
+        chandle = Ref(Ptr{Cvoid}(0))
+        autd3capi.autd_stop(chandle)
+        new(chandle[])
+    end
+end
+
+struct ModDelayConfig
+    _special_data_ptr
+    function ModDelayConfig()
+        chandle = Ref(Ptr{Cvoid}(0))
+        autd3capi.autd_mod_delay_config(chandle)
+        new(chandle[])
+    end
+end
+
+struct Synchronize
+    _special_data_ptr
+    function Synchronize()
+        chandle = Ref(Ptr{Cvoid}(0))
+        autd3capi.autd_synchronize(chandle)
+        new(chandle[])
+    end
 end

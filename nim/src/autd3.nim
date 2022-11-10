@@ -3,7 +3,7 @@
 # Created Date: 11/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 08/08/2022
+# Last Modified: 10/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,6 +18,33 @@ import autd3/body
 import autd3/gain
 import autd3/modulation
 
+type SpecialData* = object of RootObj
+    p*: pointer
+
+proc `=destroy`(data: var SpecialData) =
+    if (data.p != nil):
+        AUTDDeleteSpecialData(data.p)
+        data.p = pointer(nil)
+
+func clear*(): SpecialData =
+    result.p = pointer(nil)
+    AUTDClear(result.p.addr)
+
+func synchronize*(): SpecialData =
+    result.p = pointer(nil)
+    AUTDSynchronize(result.p.addr)
+
+func update_flag*(): SpecialData =
+    result.p = pointer(nil)
+    AUTDUpdateFlags(result.p.addr)
+
+func stop*(): SpecialData =
+    result.p = pointer(nil)
+    AUTDStop(result.p.addr)
+
+func mod_delay_config*(): SpecialData =
+    result.p = pointer(nil)
+    AUTDModDelayConfig(result.p.addr)
 
 type Controller* = object
     p*: pointer
@@ -56,12 +83,6 @@ func open*(cnt: Controller, link: Link): bool =
 
 func close*(cnt: Controller): int32 {.discardable.} =
     AUTDClose(cnt.p)
-
-func clear*(cnt: Controller): int32 {.discardable.} =
-    AUTDClear(cnt.p)
-
-func synchronize*(cnt: Controller): int32 {.discardable.} =
-    AUTDSynchronize(cnt.p)
 
 func isOpen*(cnt: Controller): bool =
     AUTDIsOpen(cnt.p)
@@ -176,12 +197,6 @@ func getFPGAInfo*(cnt: Controller): seq[uint8] =
     discard AUTDGetFPGAInfo(cnt.p, addr info[0])
     info
 
-func updateFlags*(cnt: Controller): int32 {.discardable.} =
-    AUTDUpdateFlags(cnt.p)
-
-func stop*(cnt: Controller): int32 {.discardable.} =
-    AUTDStop(cnt.p)
-
 func send*(cnt: Controller, header: Header): int32 {.discardable.} =
     AUTDSend(cnt.p, header.p, pointer(nil))
 
@@ -190,6 +205,9 @@ func send*(cnt: Controller, header: Header, body: Body): int32 {.discardable.} =
 
 func send*(cnt: Controller, body: Body): int32 {.discardable.} =
     AUTDSend(cnt.p, pointer(nil), body.p)
+
+func send*(cnt: Controller, data: SpecialData): int32 {.discardable.} =
+    AUTDSendSpecial(cnt.p, data.p)
 
 proc `=destroy`(cnt: var Controller) =
     if (cnt.p != pointer(nil)):
@@ -280,16 +298,6 @@ func none*(_: typedesc[SilencerConfig]): SilencerConfig =
 proc `=destroy`(config: var SilencerConfig) =
     if (config.p != nil):
         AUTDDeleteSilencer(config.p)
-        config.p = pointer(nil)
-
-type ModDelayConfig* = object of Header
-
-func initModDelayConfig*(): ModDelayConfig =
-    AUTDCreateModDelayConfig(result.p.addr)
-
-proc `=destroy`(config: var ModDelayConfig) =
-    if (config.p != nil):
-        AUTDDeleteModDelayConfig(config.p)
         config.p = pointer(nil)
 
 type STM* = object of Body

@@ -3,45 +3,45 @@
 # Created Date: 14/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 14/06/2022
+# Last Modified: 10/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
 # 
 
 struct DontCare
-    type
     p
     function DontCare()
-        new(0, Ptr{Cvoid}(0))
+        chandle = Ref(Ptr{Cvoid}(0))
+        autd3capi_gain_holo.autd_constraint_dont_care(chandle)
+        new(chandle[])
     end
 end
 
-
 struct Normalize
-    type
     p
     function Normalize()
-        new(1, Ptr{Cvoid}(0))
+        chandle = Ref(Ptr{Cvoid}(0))
+        autd3capi_gain_holo.autd_constraint_normalize(chandle)
+        new(chandle[])
     end
 end
 
 mutable struct Uniform
-    type
     p
-    value
     function Uniform(value)
-        c = new(2, Ptr{Cvoid}(0), value)
-        c.p = Ptr{Cvoid}(c.value)
-        c
+        chandle = Ref(Ptr{Cvoid}(0))
+        autd3capi_gain_holo.autd_constraint_uniform(chandle, value)
+        new(chandle[])
     end
 end
 
 struct Clamp
-    type
     p
     function Clamp()
-        new(3, Ptr{Cvoid}(0))
+        chandle = Ref(Ptr{Cvoid}(0))
+        autd3capi_gain_holo.autd_constraint_clamp(chandle)
+        new(chandle[])
     end
 end
 
@@ -56,7 +56,7 @@ mutable struct Holo
             x, y, z = pos
             autd3capi_gain_holo.autd_gain_holo_add(ptr, x, y, z, amp)
         end
-        h.set_constraint = (constraint) -> autd3capi_gain_holo.autd_set_constraint(ptr, constraint.type, constraint.p)
+        h.set_constraint = (constraint) -> autd3capi_gain_holo.autd_set_constraint(ptr, constraint.p)
         h
     end
 end

@@ -4,7 +4,7 @@
 %Created Date: 11/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 11/06/2022
+%Last Modified: 10/11/2022
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,7 +28,7 @@ function runner(cnt)
         test_names(i) = tests(i, 2);
     end
 
-    cnt.sound_speed = 340.0;
+    cnt.sound_speed = 340.0e3;
 
     firm_list = cnt.firmware_info_list();
 
@@ -36,8 +36,8 @@ function runner(cnt)
         disp(firm_list(i));
     end
 
-    cnt.clear();
-    cnt.synchronize();
+    cnt.send(Clear());
+    cnt.send(Synchronize());
 
     while true
         [i, ok] = listdlg('ListString', test_names, 'PromptString', 'Select one test', 'SelectionMode', 'single', 'ListSize', [600, 600]);
@@ -52,10 +52,9 @@ function runner(cnt)
         prompt = 'press any key to finish...';
         input(prompt);
 
-        cnt.stop();
+        cnt.send(Stop());
     end
 
-    cnt.clear();
     cnt.close();
 
     disp('finish');
