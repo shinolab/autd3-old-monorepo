@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/06/2022
+// Last Modified: 08/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,6 +15,50 @@
 #include "geometry.hpp"
 
 namespace autd3::core {
+
+struct DatagramHeader;
+struct DatagramBody;
+
+template <typename H, typename B>
+struct DatagramPack {
+  H header;
+  B body;
+};
+
+struct DatagramPackRef {
+  DatagramHeader& header;
+  DatagramBody& body;
+};
+
+template <typename H, typename B>
+auto operator,(H&& h, B&& b) -> std::enable_if_t<std::is_base_of_v<DatagramHeader, H> && std::is_base_of_v<DatagramBody, B> &&
+                                                     !std::is_lvalue_reference_v<H> && !std::is_lvalue_reference_v<B>,
+                                                 DatagramPack<H, B>> {
+  return {std::move(h), std::move(b)};
+}
+
+template <typename H, typename B>
+auto operator,(H&& h, B&& b) -> std::enable_if_t<std::is_base_of_v<DatagramHeader, std::remove_reference_t<H>> &&
+                                                     std::is_base_of_v<DatagramBody, std::remove_reference_t<B>> && std::is_lvalue_reference_v<H> &&
+                                                     std::is_lvalue_reference_v<B>,
+                                                 DatagramPackRef> {
+  return {h, b};
+}
+
+template <typename H, typename B>
+auto operator,(B&& b, H&& h) -> std::enable_if_t<std::is_base_of_v<DatagramHeader, H> && std::is_base_of_v<DatagramBody, B> &&
+                                                     !std::is_lvalue_reference_v<H> && !std::is_lvalue_reference_v<B>,
+                                                 DatagramPack<H, B>> {
+  return {std::move(h), std::move(b)};
+}
+
+template <typename H, typename B>
+auto operator,(B&& b, H&& h) -> std::enable_if_t<std::is_base_of_v<DatagramHeader, std::remove_reference_t<H>> &&
+                                                     std::is_base_of_v<DatagramBody, std::remove_reference_t<B>> && std::is_lvalue_reference_v<H> &&
+                                                     std::is_lvalue_reference_v<B>,
+                                                 DatagramPackRef> {
+  return {h, b};
+}
 
 /**
  * @brief DatagramHeader is a data to be packed in the Header part of the driver::TxDatagram
