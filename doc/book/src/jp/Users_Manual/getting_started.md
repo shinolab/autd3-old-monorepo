@@ -21,7 +21,7 @@ macOSの場合はclangが使えれば良い. また, 以下はターミナルか
 
 ### Firmware update
 
-firmwareが古い場合, 動作は保証されない. 本文章におけるfirmwareのversionは2.5が想定される.
+firmwareが古い場合, 動作は保証されない. 本文章におけるfirmwareのversionは2.6が想定される.
 
 firmwareのupdateには[Vivado Design Suite](https://www.xilinx.com/products/design-tools/vivado.html),
 及び, [J-Link Software](https://www.segger.com/downloads/jlink/)をインストールしたWindows
