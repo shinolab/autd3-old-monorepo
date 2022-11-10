@@ -2,7 +2,7 @@
 
 ## Install Vivado
 
-本文章で利用しているのはWindows版のVivado ML Standard 2022.1.1である.
+本文章で利用しているのはWindows版のVivado ML Standard 2022.2である.
 
 Vivadoは[Xilinx社のサイト](https://japan.xilinx.com/products/design-tools/vivado.html)から無料でダウンロードできる (要登録).
 
@@ -11,4 +11,4 @@ Vivadoは[Xilinx社のサイト](https://japan.xilinx.com/products/design-tools/
 
 ## Build project
 
-Vivadoのインストール後, autd3-fpgaのリポジトリをダウンロードし, `build.ps1`スクリプトをPowerShellで実行すると, `autd3-fpga.xpr`ファイルが生成される.
+Vivadoのインストール後, [autd3](https://github.com/shinolab/autd3)のリポジトリをダウンロードし, `firmware/fpga/build.ps1`スクリプトをPowerShellで実行すると, `autd3-fpga.xpr`ファイルが生成される.
