@@ -1,5 +1,5 @@
 %{
-%File: ModDelayConfig.m
+%File: UpdateFlag.m
 %Project: autd3
 %Created Date: 10/11/2022
 %Author: Shun Suzuki
@@ -11,14 +11,14 @@
 %
 %}
 
-classdef ModDelayConfig < SpecialData
+classdef UpdateFlag < SpecialData
 
     methods
 
-        function obj = ModDelayConfig()
+        function obj = UpdateFlag()
             obj = obj@SpecialData();
             pp = libpointer('voidPtrPtr', obj.ptr);
-            calllib('autd3capi', 'AUTDModDelayConfig', pp);
+            calllib('autd3capi', 'AUTDUpdateFlags', pp);
         end
 
     end

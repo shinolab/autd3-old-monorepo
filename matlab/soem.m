@@ -25,14 +25,13 @@ try
     cnt.add_device([0 0 0], [0 0 0]);
 
     l = SOEM();
-    l.high_precision(true);
     link = l.build();
 
     if ~cnt.open(link)
         disp(Controller.last_error());
         throw(MException('MATLAB:RuntimeError', 'Cannot open link'));
     end
-
+    
     runner(cnt);
 catch Error
 

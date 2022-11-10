@@ -1,5 +1,5 @@
 %{
-%File: ModDelayConfig.m
+%File: Uniform.m
 %Project: autd3
 %Created Date: 10/11/2022
 %Author: Shun Suzuki
@@ -11,14 +11,15 @@
 %
 %}
 
-classdef ModDelayConfig < SpecialData
+classdef Uniform < Constraint
 
     methods
 
-        function obj = ModDelayConfig()
-            obj = obj@SpecialData();
+        function obj = Uniform(value)
+            obj = obj@Constraint();
             pp = libpointer('voidPtrPtr', obj.ptr);
-            calllib('autd3capi', 'AUTDModDelayConfig', pp);
+            calllib('autd3capi_gain_holo', 'AUTDConstraintUniform', pp, value);
+
         end
 
     end

@@ -1,5 +1,5 @@
 %{
-%File: ModDelayConfig.m
+%File: Clamp.m
 %Project: autd3
 %Created Date: 10/11/2022
 %Author: Shun Suzuki
@@ -11,14 +11,14 @@
 %
 %}
 
-classdef ModDelayConfig < SpecialData
+classdef Clamp < Constraint
 
     methods
 
-        function obj = ModDelayConfig()
-            obj = obj@SpecialData();
+        function obj = Clamp()
+            obj = obj@Constraint();
             pp = libpointer('voidPtrPtr', obj.ptr);
-            calllib('autd3capi', 'AUTDModDelayConfig', pp);
+            calllib('autd3capi_gain_holo', 'AUTDConstraintClamp', pp);
         end
 
     end
