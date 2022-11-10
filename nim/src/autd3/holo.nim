@@ -3,7 +3,7 @@
 # Created Date: 13/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 08/08/2022
+# Last Modified: 10/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,32 +20,31 @@ func initBackendEigen*(): BackendEigen =
     AUTDEigenBackend(result.p.addr)
 
 type Constraint* = object of RootObj
-    ty: int32
     p: pointer
 
 type DontCare* = object of Constraint
 
 func initDontCate*(): DontCare =
-    result.ty = 0
     result.p = pointer(nil)
+    AUTDConstraintDontCare(result.p.addr)
 
 type Normalize* = object of Constraint
 
 func initNormalize*(): Normalize =
-    result.ty = 1
     result.p = pointer(nil)
+    AUTDConstraintNormalize(result.p.addr)
 
 type Uniform* = object of Constraint
 
-func initUniform*(): Uniform =
-    result.ty = 2
-    result.p = result.ty.addr
+func initUniform*(value: float64): Uniform =
+    result.p = pointer(nil)
+    AUTDConstraintUniform(result.p.addr, value)
 
 type Clamp* = object of Constraint
 
 func initClamp*(): Clamp =
-    result.ty = 3
     result.p = pointer(nil)
+    AUTDConstraintClamp(result.p.addr)
 
 type Holo = object of Gain
 
@@ -53,7 +52,7 @@ func add*(self: Holo, pos: openArray[float64], amp: float64 = 1.0) =
     AUTDGainHoloAdd(self.p, pos[0], pos[1], pos[2], amp)
 
 func `constraint=`*(self: Holo, constraint: Constraint) =
-    AUTDSetConstraint(self.p, constraint.ty, constraint.p)
+    AUTDSetConstraint(self.p, constraint.p)
 
 type SDP* = object of Holo
 
