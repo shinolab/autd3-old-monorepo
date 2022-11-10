@@ -26,6 +26,7 @@ jobs:
         dotnet-version: '6.0.x'
     - name: build
       run: |
+        cp LICENSE cs/src/LICENSE.md
         mkdir build
         cd build
         cmake .. -DBUILD_LINK_SOEM=ON -DBUILD_GAIN_HOLO=OFF -DDISABLE_EXAMPLES=ON -DBUILD_CAPI=ON

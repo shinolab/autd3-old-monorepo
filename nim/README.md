@@ -30,6 +30,10 @@ version 2.6.0
   nimble run simulator
   ```
 
+## LICENSE
+
+See [LICENSE](https://github.com/shinolab/autd3/blob/master/LICENSE).
+
 # Author
 
 Shun Suzuki, 2022
