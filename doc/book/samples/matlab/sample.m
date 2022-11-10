@@ -12,7 +12,6 @@ try
     cnt.add_device([0 0 0], [0 0 0]);
 
     l = SOEM();
-    l.high_precision(true);
     link = l.build();
 
     if ~cnt.open(link)
@@ -26,8 +25,13 @@ try
         disp(firm_list(i));
     end
 
-    cnt.clear();
-    cnt.synchronize();
+    clear = Clear();
+    cnt.send(clear);
+    clear.delete();
+
+    synchronize = Synchronize();
+    cnt.send(synchronize);
+    synchronize.delete();
 
     config = SilencerConfig();
     cnt.send(config);
