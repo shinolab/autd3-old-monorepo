@@ -18,11 +18,13 @@ Version 2.0から, すべての振動子の周波数を個別に指定できる�
 
 > NOTE: Legacyモードで周波数を変更しても, 実際の周波数は$\SI{40}{kHz}$から変化しない.
 
-周波数, または, 周期を変更したあとに`synchronize`関数を一度呼び出す必要があることに注意する.
+周波数, または, 周期を変更したあとに`synchronize`を送信する必要があることに注意する.
 
 ```cpp
   for (auto& dev : autd.geometry())
     for (auto& tr : dev) tr.set_frequency(70e3); // actual frequency is 163.84MHz/2341 ~ 69987 Hz
+
+  autd << autd3::synchronize;
 ```
 
 ## NormalPhaseモード
