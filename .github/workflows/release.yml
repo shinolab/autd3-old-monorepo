@@ -164,8 +164,8 @@ jobs:
             return 'upm/'+context.payload.ref.replace(/refs\/tags\//, '');
       - name: upm git tag
         run: |
-          git tag $TAG upm/latest
-          git push origin --tags
+          git tag $env:TAG upm/latest
+          git push origin $env:TAG
         env:
           TAG: ${{ steps.get_upm_tag.outputs.result }}
       - name: Setup Node.js
