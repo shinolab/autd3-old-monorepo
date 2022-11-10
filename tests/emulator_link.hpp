@@ -23,7 +23,7 @@ class EmulatorLink : public core::Link {
     return link;
   }
 
-  EmulatorLink(std::shared_ptr<std::vector<extra::CPU>> cpus) : Link(), _cpus(cpus) {}
+  explicit EmulatorLink(std::shared_ptr<std::vector<extra::CPU>> cpus) noexcept : Link(), _cpus(cpus) {}
   ~EmulatorLink() override = default;
   EmulatorLink(const EmulatorLink& v) noexcept = delete;
   EmulatorLink& operator=(const EmulatorLink& obj) = delete;
