@@ -75,43 +75,43 @@ jobs:
           copy build_arm/dist/SOEMAUTDServer/Release/*.exe build_arm/publish/SOEMAUTDServer
           copy dist/SOEMAUTDServer/README.md build_arm/publish/SOEMAUTDServer
           Compress-Archive -Path LICENSE, NOTICE, include, build_arm/publish/lib, build_arm/publish/bin, build_arm/publish/SOEMAUTDServer -DestinationPath assets_arm.zip
-   
-    - name: Build project x64 for Unity
-      run: |
-        cmake -G "Visual Studio 17 2022" -A x64 -B "build_unity" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=ON -DDISABLE_EXAMPLES=ON -DUSE_METER=ON -DUSE_LEFT_HANDED=ON
-        cd build_unity
-        cmake --build . --parallel 8 --config Release
-        cd ..
-        foreach($dll in Get-ChildItem -Path build_unity/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/unity/Assets/autd3/Plugins/x86_64}
-        copy build_unity/dist/simulator/Release/*.exe ./cs/unity/Assets/autd3/Editor
-    - name: Replace latest scripts
-      run: |
-        foreach($src in Get-ChildItem -Path ./cs/src | Where {$_.extension -like ".cs"}){Copy-Item -Path $src -Destination ./cs/unity/Assets/autd3/Scripts}
-        foreach($src in Get-ChildItem -Path ./cs/src/NativeMethods | Where {$_.extension -like ".cs"}){Copy-Item -Path $src -Destination ./cs/unity/Assets/autd3/Scripts/NativeMethods}
-        Copy-Item -Path ./cs/src/LICENSE.txt -Destination ./cs/unity/Assets/autd3/
-    - name: create npm branch
-      run: |
-        git config --global user.name 'github-bot'
-        git config --global user.email 'github-bot@users.noreply.github.com'
-        git mv cs/unity/Assets/autd3/Samples cs/unity/Assets/autd3/Samples~
-        rm -Force cs/unity/Assets/autd3/Samples.meta
-        git add .
-        git commit -am "replaced"
-        git branch -d upm
-        git subtree split -P cs/unity/Assets/autd3 -b upm
-        git checkout upm
-        git push -f -u origin upm
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '16'
-        registry-url: 'https://registry.npmjs.org'
-    - name: Publish on npmjs
-      run: |
-        npm install
-        npm publish --dry-run
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    
+      - name: Build project x64 for Unity
+        run: |
+          cmake -G "Visual Studio 17 2022" -A x64 -B "build_unity" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=ON -DDISABLE_EXAMPLES=ON -DUSE_METER=ON -DUSE_LEFT_HANDED=ON
+          cd build_unity
+          cmake --build . --parallel 8 --config Release
+          cd ..
+          foreach($dll in Get-ChildItem -Path build_unity/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/unity/Assets/autd3/Plugins/x86_64}
+          copy build_unity/dist/simulator/Release/*.exe ./cs/unity/Assets/autd3/Editor
+      - name: Replace latest scripts
+        run: |
+          foreach($src in Get-ChildItem -Path ./cs/src | Where {$_.extension -like ".cs"}){Copy-Item -Path $src -Destination ./cs/unity/Assets/autd3/Scripts}
+          foreach($src in Get-ChildItem -Path ./cs/src/NativeMethods | Where {$_.extension -like ".cs"}){Copy-Item -Path $src -Destination ./cs/unity/Assets/autd3/Scripts/NativeMethods}
+          Copy-Item -Path ./cs/src/LICENSE.txt -Destination ./cs/unity/Assets/autd3/
+      - name: create npm branch
+        run: |
+          git config --global user.name 'github-bot'
+          git config --global user.email 'github-bot@users.noreply.github.com'
+          git mv cs/unity/Assets/autd3/Samples cs/unity/Assets/autd3/Samples~
+          rm -Force cs/unity/Assets/autd3/Samples.meta
+          git add .
+          git commit -am "replaced"
+          git branch -d upm
+          git subtree split -P cs/unity/Assets/autd3 -b upm
+          git checkout upm
+          git push -f -u origin upm
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Publish on npmjs
+        run: |
+          npm install
+          npm publish --dry-run
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish_linux:
     name: Release Check on Linux
