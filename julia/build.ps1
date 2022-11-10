@@ -3,7 +3,7 @@
 # Created Date: 09/10/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 10/10/2022
+# Last Modified: 10/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,8 +17,8 @@ cd build
 cmake .. -DBUILD_ALL=ON
 cmake --build . --config Release --parallel 8
 cd ..
-mkdir julia/src/NativeMethods/bin/win-x64 > NUL 2>&1
+mkdir julia/src/NativeMethods/win-x64/bin > NUL 2>&1
 foreach($dll in Get-ChildItem -Path build/bin/Release | Where {$_.extension -like ".dll"}){
-    Copy-Item -Path $dll -Destination julia/src/NativeMethods/bin/win-x64
+    Copy-Item -Path $dll -Destination julia/src/NativeMethods/win-x64/bin
 }
 popd

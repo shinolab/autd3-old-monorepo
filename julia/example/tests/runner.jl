@@ -3,7 +3,7 @@
 # Created Date: 14/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 14/06/2022
+# Last Modified: 10/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -29,8 +29,8 @@ function run(cnt::Controller)
         @printf("%s\n", firm_info)
     end
 
-    cnt.clear()
-    cnt.synchronize()
+    cnt.send(Clear())
+    cnt.send(Synchronize())
 
     while true
         for (i, (_, name)) in enumerate(samples)
@@ -51,10 +51,9 @@ function run(cnt::Controller)
 
         readline()
 
-        cnt.stop()
+        cnt.send(Stop())
     end
 
-    cnt.clear()
     cnt.close()
 
 end
