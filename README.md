@@ -17,7 +17,7 @@ AUTD3: Airborne Ultrasound Tactile Display 3
 [![release](https://img.shields.io/github/v/release/shinolab/autd3)](https://github.com/shinolab/autd3/releases/latest)
 [![Crate.io version](https://img.shields.io/crates/v/autd3)](https://crates.io/crates/autd3)
 [![NuGet stable version](https://img.shields.io/nuget/v/autd3sharp)](https://nuget.org/packages/AUTD3Sharp)
-[![unitypackage](https://img.shields.io/github/v/release/shinolab/autd3?label=unitypackage)](https://github.com/shinolab/autd3/releases/latest)
+[![autd3-unity](https://img.shields.io/npm/v/com.shinolab.autd3?label=autd3-unity)](https://www.npmjs.com/package/com.shinolab.autd3)
 [![PyPI version](https://badge.fury.io/py/pyautd3.svg)](https://badge.fury.io/py/pyautd3)
 [![Julia release](https://img.shields.io/github/v/release/shinolab/autd3?label=Julia)](https://github.com/shinolab/autd3/releases/latest)
 
