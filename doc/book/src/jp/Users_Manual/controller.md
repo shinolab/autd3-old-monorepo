@@ -124,7 +124,7 @@ autd3::gain::Focus g(...);
 
 autd.send_async(std::move(m), std::move(g));
 // or
-autd << autd3::async <<std::move(m), std::move(g);
+autd << autd3::async << std::move(m), std::move(g);
 ```
 
 これらの関数は右辺値のみ受け取ることに注意する.
