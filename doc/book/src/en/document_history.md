@@ -8,5 +8,6 @@
 | 2022/11/04 | Version 2.5.0 Initial release                 |
 | 2022/11/06 | Version 2.5.1 Initial release                 |
 | 2022/11/08 | Version 2.5.2 Initial release                 |
+| 2022/11/10 | Version 2.6.0 Initial release                 |
 
 - Documents before version 2.4.3 are only available in Japanese
