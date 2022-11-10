@@ -19,8 +19,8 @@ if !cnt.open(link)
     exit(-1)
 end
 
-cnt.clear()
-cnt.synchronize()
+cnt.send(Clear())
+cnt.send(Synchronize())
 
 firm_info_list = cnt.firmware_info_list()
 for firm_info in firm_info_list
