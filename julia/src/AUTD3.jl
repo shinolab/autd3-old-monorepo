@@ -67,7 +67,7 @@ include("Greedy.jl")
 include("LSSGreedy.jl")
 include("APO.jl")
 
-export Controller, get_last_error
+export Controller, get_last_error, Clear, Synchronize, UpdateFlag, Stop, ModDelayConfig
 export SilencerConfig, SilencerConfigNone, ModDelayConfig, Amplitudes
 export Null, Focus, BesselBeam, PlaneWave, CustomGain, Grouped
 export Static, Sine, SineSquared, SineLegacy, Square, CustomModulation
