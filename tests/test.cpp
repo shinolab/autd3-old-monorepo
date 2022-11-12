@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/11/2022
+// Last Modified: 12/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -424,9 +424,9 @@ TEST(ControllerTest, simple_legacy) {
   autd3::Controller autd;
 
   autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::Vector3(0, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
 
   ASSERT_EQ(autd.geometry().num_devices(), 4);
   ASSERT_EQ(autd.geometry().num_transducers(), 4 * 249);
@@ -463,9 +463,9 @@ TEST(ControllerTest, simple_normal) {
   autd3::Controller autd;
 
   autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::Vector3(0, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
 
   ASSERT_EQ(autd.geometry().num_devices(), 4);
   ASSERT_EQ(autd.geometry().num_transducers(), 4 * 249);
@@ -507,9 +507,9 @@ TEST(ControllerTest, simple_normal_phase) {
   autd3::Controller autd;
 
   autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::Vector3(0, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
 
   ASSERT_EQ(autd.geometry().num_devices(), 4);
   ASSERT_EQ(autd.geometry().num_transducers(), 4 * 249);
@@ -547,6 +547,74 @@ TEST(ControllerTest, simple_normal_phase) {
       ASSERT_NEAR(p, expect, 2.0 * autd3::pi / static_cast<double>(cycle));
     }
   }
+  autd.close();
+}
+
+TEST(ControllerTest, point_stm) {
+  autd3::Controller autd;
+
+  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::Vector3(0, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
+
+  auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
+
+  auto link = autd3::test::EmulatorLink(cpus).build();
+  autd.open(std::move(link));
+
+  autd << autd3::clear << autd3::synchronize;
+
+  const autd3::Vector3 center = autd.geometry().center();
+
+  constexpr size_t size = 50;
+  std::vector<autd3::Point> points;
+  constexpr auto radius = 30.0;
+  std::vector<size_t> iota(size);
+  std::iota(iota.begin(), iota.end(), 0);
+  std::transform(iota.begin(), iota.end(), std::back_inserter(points), [&](const size_t i) {
+    const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(size);
+    return autd3::Point(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
+  });
+
+  autd3::PointSTM stm;
+  std::copy(points.begin(), points.end(), std::back_inserter(stm));
+
+  autd << stm;
+  for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+    ASSERT_EQ(cpus->at(i).fpga().drives().second.size(), size);
+    ASSERT_EQ(cpus->at(i).fpga().drives().first.size(), size);
+  }
+
+  const auto cycle = cpus->at(0).fpga().cycles()[0];
+  const auto wavenumber = autd.geometry()[0][0].wavenumber(autd.geometry().sound_speed);
+  const auto& base_tr = autd.geometry()[0][0];
+  const auto& z_dir = base_tr.z_direction();
+  constexpr double criteria = 2.0 * autd3::pi / 100.0;
+  for (size_t k = 0; k < size; k++) {
+    const auto& focus = points[k].point;
+    const auto expect = std::arg(autd3::core::propagate(base_tr.position(), z_dir, 0.0, wavenumber, focus)) +
+                        2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[k][0].phase) / static_cast<double>(cycle);
+    for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+      for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
+        const auto p = std::arg(autd3::core::propagate(autd.geometry()[i][j].position(), z_dir, 0.0, wavenumber, focus)) +
+                       2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives().second[k][j].phase) / static_cast<double>(cycle);
+        ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, cycle >> 1);
+        if (autd3::driver::rem_euclid(p - expect, 2.0 * autd3::pi) > autd3::pi)
+          ASSERT_NEAR(autd3::driver::rem_euclid(p - expect, 2.0 * autd3::pi), 2.0 * autd3::pi, criteria);
+        else
+          ASSERT_NEAR(autd3::driver::rem_euclid(p - expect, 2.0 * autd3::pi), 0.0, criteria);
+      }
+    }
+  }
+
+  autd << autd3::stop;
+  for (const auto& cpu : *cpus) {
+    const auto [duties, phases] = cpu.fpga().drives();
+    for (const auto& duty_pat : duties)
+      for (const auto& [duty] : duty_pat) ASSERT_EQ(duty, 0x0000);
+  }
+
   autd.close();
 }
 
