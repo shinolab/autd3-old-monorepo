@@ -20,10 +20,10 @@ inline void gain_stm(autd3::Controller& autd) {
   autd3::modulation::Static m;
 
   autd3::GainSTM stm(autd.geometry());
-  // stm.mode() = autd3::GainSTMMode::PhaseFull;
+   stm.mode() = autd3::GainSTMMode::PhaseFull;
 
   const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
-  constexpr size_t points_num = 200;
+  constexpr size_t points_num = 50;
   constexpr auto radius = 30.0;
   std::vector<size_t> points(points_num);
   std::iota(points.begin(), points.end(), 0);
