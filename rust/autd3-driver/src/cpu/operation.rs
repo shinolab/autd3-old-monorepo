@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2022
+ * Last Modified: 13/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -376,6 +376,7 @@ pub fn gain_stm_legacy_head(tx: &mut TxDatagram) {
 
 pub fn gain_stm_legacy_body(
     drives: &[&[Drive]],
+    size: usize,
     is_first_frame: bool,
     freq_div: u32,
     is_last_frame: bool,
@@ -392,6 +393,7 @@ pub fn gain_stm_legacy_body(
         tx.body_mut().iter_mut().for_each(|d| {
             d.gain_stm_head_mut().set_freq_div(freq_div);
             d.gain_stm_head_mut().set_mode(mode);
+            d.gain_stm_head_mut().set_cycle(size);
         });
     } else {
         match mode {
@@ -508,6 +510,7 @@ pub fn gain_stm_normal_head(tx: &mut TxDatagram) {
 
 pub fn gain_stm_normal_phase_body(
     drives: &[Drive],
+    size: usize,
     is_first_frame: bool,
     freq_div: u32,
     mode: Mode,
@@ -530,6 +533,7 @@ pub fn gain_stm_normal_phase_body(
         tx.body_mut().iter_mut().for_each(|d| {
             d.gain_stm_head_mut().set_freq_div(freq_div);
             d.gain_stm_head_mut().set_mode(mode);
+            d.gain_stm_head_mut().set_cycle(size);
         });
     } else {
         tx.body_mut()

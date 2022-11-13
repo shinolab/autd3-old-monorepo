@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2022
+ * Last Modified: 13/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -176,6 +176,10 @@ impl GainSTMBodyHead {
 
     pub fn set_mode(&mut self, mode: Mode) {
         self.data[2] = mode as u16;
+    }
+
+    pub fn set_cycle(&mut self, cycle: usize) {
+        self.data[3] = cycle as u16;
     }
 }
 
