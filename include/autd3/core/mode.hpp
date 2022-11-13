@@ -3,7 +3,7 @@
 // Created Date: 28/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 13/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -47,9 +47,10 @@ class LegacyMode : public Mode {
     if (gains.size() > driver::GAIN_STM_LEGACY_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
 
     const auto is_first_frame = sent == 0;
+    const auto size = gains.size();
 
     if (is_first_frame) {
-      gain_stm_legacy_body({}, is_first_frame, freq_div, false, mode, tx);
+      gain_stm_legacy_body({}, size, is_first_frame, freq_div, false, mode, tx);
       sent += 1;
       return;
     }
@@ -59,24 +60,21 @@ class LegacyMode : public Mode {
     switch (mode) {
       case driver::GainSTMMode::PhaseDutyFull:
         is_last_frame = sent + 1 == gains.size() + 1;
-        gain_stm_legacy_body({&gains.at(sent - 1)}, is_first_frame, freq_div, is_last_frame, mode, tx);
-        sent += 1;
+        gain_stm_legacy_body({&gains.at(sent++ - 1)}, size, is_first_frame, freq_div, is_last_frame, mode, tx);
         break;
       case driver::GainSTMMode::PhaseFull:
         is_last_frame = sent + 2 >= gains.size() + 1;
-        p1 = &gains.at(sent - 1);
-        p2 = sent + 1 - 1 < gains.size() ? &gains.at(sent + 1 - 1) : nullptr;
-        gain_stm_legacy_body({p1, p2}, is_first_frame, freq_div, is_last_frame, mode, tx);
-        sent += 2;
+        p1 = &gains.at(sent++ - 1);
+        p2 = sent - 1 < gains.size() ? &gains.at(sent++ - 1) : nullptr;
+        gain_stm_legacy_body({p1, p2}, size, is_first_frame, freq_div, is_last_frame, mode, tx);
         break;
       case driver::GainSTMMode::PhaseHalf:
         is_last_frame = sent + 4 >= gains.size() + 1;
-        p1 = &gains.at(sent - 1);
-        p2 = sent + 1 - 1 < gains.size() ? &gains.at(sent + 1 - 1) : nullptr;
-        p3 = sent + 2 - 1 < gains.size() ? &gains.at(sent + 2 - 1) : nullptr;
-        p4 = sent + 3 - 1 < gains.size() ? &gains.at(sent + 3 - 1) : nullptr;
-        gain_stm_legacy_body({p1, p2, p3, p4}, is_first_frame, freq_div, is_last_frame, mode, tx);
-        sent += 4;
+        p1 = &gains.at(sent++ - 1);
+        p2 = sent - 1 < gains.size() ? &gains.at(sent++ - 1) : nullptr;
+        p3 = sent - 1 < gains.size() ? &gains.at(sent++ - 1) : nullptr;
+        p4 = sent - 1 < gains.size() ? &gains.at(sent++ - 1) : nullptr;
+        gain_stm_legacy_body({p1, p2, p3, p4}, size, is_first_frame, freq_div, is_last_frame, mode, tx);
         break;
     }
   }
@@ -107,9 +105,10 @@ class NormalMode : public Mode {
     if (gains.size() > driver::GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
 
     const auto is_first_frame = sent == 0;
+    const auto size = gains.size();
 
     if (is_first_frame) {
-      gain_stm_normal_phase({}, is_first_frame, freq_div, mode, false, tx);
+      gain_stm_normal_phase({}, size, is_first_frame, freq_div, mode, false, tx);
       sent += 1;
       return;
     }
@@ -118,17 +117,14 @@ class NormalMode : public Mode {
 
     switch (mode) {
       case driver::GainSTMMode::PhaseDutyFull:
-        if (next_duty) {
-          gain_stm_normal_duty(gains.at(sent - 1), is_last_frame, tx);
-          sent += 1;
-        } else {
-          gain_stm_normal_phase(gains.at(sent - 1), is_first_frame, freq_div, mode, is_last_frame, tx);
-        }
+        if (next_duty)
+          gain_stm_normal_duty(gains.at(sent++ - 1), is_last_frame, tx);
+        else
+          gain_stm_normal_phase(gains.at(sent - 1), size, is_first_frame, freq_div, mode, is_last_frame, tx);
         next_duty = !next_duty;
         break;
       case driver::GainSTMMode::PhaseFull:
-        gain_stm_normal_phase(gains.at(sent - 1), is_first_frame, freq_div, mode, is_last_frame, tx);
-        sent += 1;
+        gain_stm_normal_phase(gains.at(sent++ - 1), size, is_first_frame, freq_div, mode, is_last_frame, tx);
         break;
       default:
         throw std::runtime_error("This mode is not supported");
@@ -158,20 +154,19 @@ class NormalPhaseMode : public Mode {
     if (gains.size() > driver::GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
 
     const auto is_first_frame = sent == 0;
+    const auto size = gains.size();
 
     if (is_first_frame) {
-      gain_stm_normal_phase({}, is_first_frame, freq_div, driver::GainSTMMode::PhaseFull, false, tx);
+      gain_stm_normal_phase({}, size, is_first_frame, freq_div, driver::GainSTMMode::PhaseFull, false, tx);
       sent += 1;
       return;
     }
 
     const auto is_last_frame = sent + 1 == gains.size() + 1;
-
     switch (mode) {
       case driver::GainSTMMode::PhaseDutyFull:
       case driver::GainSTMMode::PhaseFull:
-        gain_stm_normal_phase(gains.at(sent - 1), is_first_frame, freq_div, driver::GainSTMMode::PhaseFull, is_last_frame, tx);
-        sent += 1;
+        gain_stm_normal_phase(gains.at(sent++ - 1), size, is_first_frame, freq_div, driver::GainSTMMode::PhaseFull, is_last_frame, tx);
         break;
       default:
         throw std::runtime_error("This mode is not supported");

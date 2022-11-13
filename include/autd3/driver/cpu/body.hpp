@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/09/2022
+// Last Modified: 13/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -79,6 +79,8 @@ struct GainSTMBodyHead {
   }
 
   void set_mode(const GainSTMMode mode) noexcept { _data[2] = static_cast<uint16_t>(mode); }
+
+  void set_cycle(const size_t size) noexcept { _data[3] = static_cast<uint16_t>(size); }
 
  private:
   uint16_t _data[NUM_TRANS_IN_UNIT]{};

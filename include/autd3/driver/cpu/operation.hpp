@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/11/2022
+// Last Modified: 13/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -213,8 +213,8 @@ inline void gain_stm_legacy_header(TxDatagram& tx) noexcept {
   tx.num_bodies = 0;
 }
 
-inline void gain_stm_legacy_body(const std::vector<const std::vector<Drive>*>& drives, const bool is_first_frame, const uint32_t freq_div,
-                                 const bool is_last_frame, const GainSTMMode mode, TxDatagram& tx) noexcept(false) {
+inline void gain_stm_legacy_body(const std::vector<const std::vector<Drive>*>& drives, const size_t cycle, const bool is_first_frame,
+                                 const uint32_t freq_div, const bool is_last_frame, const GainSTMMode mode, TxDatagram& tx) noexcept(false) {
   if (is_first_frame) {
     if (freq_div < GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN)
       throw std::runtime_error("STM frequency division is oud of range. Minimum is " + std::to_string(GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN) +
@@ -224,6 +224,7 @@ inline void gain_stm_legacy_body(const std::vector<const std::vector<Drive>*>& d
     for (size_t i = 0; i < tx.size(); i++) {
       tx.bodies()[i].gain_stm_head().set_freq_div(freq_div);
       tx.bodies()[i].gain_stm_head().set_mode(mode);
+      tx.bodies()[i].gain_stm_head().set_cycle(cycle);
     }
   } else {
     switch (mode) {
@@ -284,8 +285,8 @@ inline void gain_stm_normal_header(TxDatagram& tx) noexcept {
   tx.num_bodies = 0;
 }
 
-inline void gain_stm_normal_phase(const std::vector<Drive>& drives, const bool is_first_frame, const uint32_t freq_div, const GainSTMMode mode,
-                                  const bool is_last_frame, TxDatagram& tx) noexcept(false) {
+inline void gain_stm_normal_phase(const std::vector<Drive>& drives, const size_t cycle, const bool is_first_frame, const uint32_t freq_div,
+                                  const GainSTMMode mode, const bool is_last_frame, TxDatagram& tx) noexcept(false) {
   tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
 
 #ifdef _MSC_VER
@@ -306,6 +307,7 @@ inline void gain_stm_normal_phase(const std::vector<Drive>& drives, const bool i
     for (size_t i = 0; i < tx.size(); i++) {
       tx.bodies()[i].gain_stm_head().set_freq_div(freq_div);
       tx.bodies()[i].gain_stm_head().set_mode(mode);
+      tx.bodies()[i].gain_stm_head().set_cycle(cycle);
     }
   } else {
     auto* p = reinterpret_cast<Phase*>(tx.bodies());

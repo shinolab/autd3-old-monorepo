@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2022
+ * Last Modified: 13/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -136,8 +136,9 @@ static volatile uint16_t _cycle[TRANS_NUM];
 
 static volatile uint32_t _mod_cycle = 0;
 
+static volatile uint32_t _stm_write = 0;
 static volatile uint32_t _stm_cycle = 0;
-static volatile uint16_t _seq_gain_data_mode = GAIN_DATA_MODE_PHASE_DUTY_FULL;
+static volatile uint16_t _stm_gain_data_mode = GAIN_DATA_MODE_PHASE_DUTY_FULL;
 
 static volatile short _wdt_cnt = WDT_CNT_MAX;
 
@@ -250,7 +251,7 @@ static void write_point_stm(const volatile GlobalHeader* header, const volatile 
   uint32_t segment_capacity;
 
   if ((header->cpu_ctl_reg & STM_BEGIN) != 0) {
-    _stm_cycle = 0;
+    _stm_write = 0;
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, 0);
 
     size = body->DATA.POINT_STM_HEAD.data[0];
@@ -265,10 +266,10 @@ static void write_point_stm(const volatile GlobalHeader* header, const volatile 
     src = body->DATA.POINT_STM_BODY.data + 1;
   }
 
-  segment_capacity = (_stm_cycle & ~POINT_STM_BUF_SEGMENT_SIZE_MASK) + POINT_STM_BUF_SEGMENT_SIZE - _stm_cycle;
+  segment_capacity = (_stm_write & ~POINT_STM_BUF_SEGMENT_SIZE_MASK) + POINT_STM_BUF_SEGMENT_SIZE - _stm_write;
   if (size <= segment_capacity) {
     cnt = size;
-    addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & POINT_STM_BUF_SEGMENT_SIZE_MASK) << 3);
+    addr = get_addr(BRAM_SELECT_STM, (_stm_write & POINT_STM_BUF_SEGMENT_SIZE_MASK) << 3);
     dst = &base[addr];
     while (cnt--) {
       *dst++ = *src++;
@@ -277,10 +278,10 @@ static void write_point_stm(const volatile GlobalHeader* header, const volatile 
       *dst++ = *src++;
       dst += 4;
     }
-    _stm_cycle += size;
+    _stm_write += size;
   } else {
     cnt = segment_capacity;
-    addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & POINT_STM_BUF_SEGMENT_SIZE_MASK) << 3);
+    addr = get_addr(BRAM_SELECT_STM, (_stm_write & POINT_STM_BUF_SEGMENT_SIZE_MASK) << 3);
     dst = &base[addr];
     while (cnt--) {
       *dst++ = *src++;
@@ -289,13 +290,13 @@ static void write_point_stm(const volatile GlobalHeader* header, const volatile 
       *dst++ = *src++;
       dst += 4;
     }
-    _stm_cycle += segment_capacity;
+    _stm_write += segment_capacity;
 
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET,
-               (_stm_cycle & ~POINT_STM_BUF_SEGMENT_SIZE_MASK) >> POINT_STM_BUF_SEGMENT_SIZE_WIDTH);
+               (_stm_write & ~POINT_STM_BUF_SEGMENT_SIZE_MASK) >> POINT_STM_BUF_SEGMENT_SIZE_WIDTH);
 
     cnt = size - segment_capacity;
-    addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & POINT_STM_BUF_SEGMENT_SIZE_MASK) << 3);
+    addr = get_addr(BRAM_SELECT_STM, (_stm_write & POINT_STM_BUF_SEGMENT_SIZE_MASK) << 3);
     dst = &base[addr];
     while (cnt--) {
       *dst++ = *src++;
@@ -304,10 +305,10 @@ static void write_point_stm(const volatile GlobalHeader* header, const volatile 
       *dst++ = *src++;
       dst += 4;
     }
-    _stm_cycle += size - segment_capacity;
+    _stm_write += size - segment_capacity;
   }
 
-  if ((header->cpu_ctl_reg & STM_END) != 0) bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_cycle) - 1);
+  if ((header->cpu_ctl_reg & STM_END) != 0) bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_write) - 1);
 }
 
 static void write_gain_stm_legacy(const volatile GlobalHeader* header, const volatile Body* body) {
@@ -320,22 +321,23 @@ static void write_gain_stm_legacy(const volatile GlobalHeader* header, const vol
   uint16_t phase;
 
   if ((header->cpu_ctl_reg & STM_BEGIN) != 0) {
-    _stm_cycle = 0;
+    _stm_write = 0;
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, 0);
     freq_div = (body->DATA.GAIN_STM_HEAD.data[1] << 16) | body->DATA.GAIN_STM_HEAD.data[0];
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0, (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
-    _seq_gain_data_mode = body->DATA.GAIN_STM_HEAD.data[2];
+    _stm_gain_data_mode = body->DATA.GAIN_STM_HEAD.data[2];
+    _stm_cycle = body->DATA.GAIN_STM_HEAD.data[3];
     return;
   }
 
   src = body->DATA.GAIN_STM_BODY.data;
 
-  addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
+  addr = get_addr(BRAM_SELECT_STM, (_stm_write & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
 
-  switch (_seq_gain_data_mode) {
+  switch (_stm_gain_data_mode) {
     case GAIN_DATA_MODE_PHASE_DUTY_FULL:
       dst = &base[addr];
-      _stm_cycle += 1;
+      _stm_write += 1;
       cnt = TRANS_NUM;
       while (cnt--) *dst++ = *src++;
       break;
@@ -343,13 +345,13 @@ static void write_gain_stm_legacy(const volatile GlobalHeader* header, const vol
       dst = &base[addr];
       cnt = TRANS_NUM;
       while (cnt--) *dst++ = 0xFF00 | ((*src++) & 0x00FF);
-      _stm_cycle += 1;
+      _stm_write += 1;
       src = body->DATA.GAIN_STM_BODY.data;
-      addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
+      addr = get_addr(BRAM_SELECT_STM, (_stm_write & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
       dst = &base[addr];
       cnt = TRANS_NUM;
       while (cnt--) *dst++ = 0xFF00 | (((*src++) >> 8) & 0x00FF);
-      _stm_cycle += 1;
+      _stm_write += 1;
       break;
     case GAIN_DATA_MODE_PHASE_HALF:
       dst = &base[addr];
@@ -358,45 +360,45 @@ static void write_gain_stm_legacy(const volatile GlobalHeader* header, const vol
         phase = (*src++) & 0x000F;
         *dst++ = 0xFF00 | (phase << 4) | phase;
       }
-      _stm_cycle += 1;
+      _stm_write += 1;
 
       src = body->DATA.GAIN_STM_BODY.data;
-      addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
+      addr = get_addr(BRAM_SELECT_STM, (_stm_write & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
       dst = &base[addr];
       cnt = TRANS_NUM;
       while (cnt--) {
         phase = ((*src++) >> 4) & 0x000F;
         *dst++ = 0xFF00 | (phase << 4) | phase;
       }
-      _stm_cycle += 1;
+      _stm_write += 1;
 
       src = body->DATA.GAIN_STM_BODY.data;
-      addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
+      addr = get_addr(BRAM_SELECT_STM, (_stm_write & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
       dst = &base[addr];
       cnt = TRANS_NUM;
       while (cnt--) {
         phase = ((*src++) >> 8) & 0x000F;
         *dst++ = 0xFF00 | (phase << 4) | phase;
       }
-      _stm_cycle += 1;
+      _stm_write += 1;
 
       src = body->DATA.GAIN_STM_BODY.data;
-      addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
+      addr = get_addr(BRAM_SELECT_STM, (_stm_write & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
       dst = &base[addr];
       cnt = TRANS_NUM;
       while (cnt--) {
         phase = ((*src++) >> 12) & 0x000F;
         *dst++ = 0xFF00 | (phase << 4) | phase;
       }
-      _stm_cycle += 1;
+      _stm_write += 1;
       break;
     default:
       break;
   }
 
-  if ((_stm_cycle & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) == 0)
+  if ((_stm_write & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) == 0)
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET,
-               (_stm_cycle & ~GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) >> GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH);
+               (_stm_write & ~GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) >> GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH);
 
   if ((header->cpu_ctl_reg & STM_END) != 0) bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_cycle) - 1);
 }
@@ -410,23 +412,24 @@ static void write_gain_stm(const volatile GlobalHeader* header, const volatile B
   uint32_t cnt;
 
   if ((header->cpu_ctl_reg & STM_BEGIN) != 0) {
-    _stm_cycle = 0;
+    _stm_write = 0;
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, 0);
     freq_div = (body->DATA.GAIN_STM_HEAD.data[1] << 16) | body->DATA.GAIN_STM_HEAD.data[0];
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0, (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
-    _seq_gain_data_mode = body->DATA.GAIN_STM_HEAD.data[2];
+    _stm_gain_data_mode = body->DATA.GAIN_STM_HEAD.data[2];
+    _stm_cycle = body->DATA.GAIN_STM_HEAD.data[3];
     return;
   }
 
   src = body->DATA.GAIN_STM_BODY.data;
 
-  addr = get_addr(BRAM_SELECT_STM, (_stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 9);
+  addr = get_addr(BRAM_SELECT_STM, (_stm_write & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 9);
 
-  switch (_seq_gain_data_mode) {
+  switch (_stm_gain_data_mode) {
     case GAIN_DATA_MODE_PHASE_DUTY_FULL:
       if ((header->cpu_ctl_reg & IS_DUTY) != 0) {
         dst = &base[addr] + 1;
-        _stm_cycle += 1;
+        _stm_write += 1;
       } else {
         dst = &base[addr];
       }
@@ -444,7 +447,7 @@ static void write_gain_stm(const volatile GlobalHeader* header, const volatile B
         *dst++ = *src++;
         *dst++ = _cycle[cnt] >> 1;
       }
-      _stm_cycle += 1;
+      _stm_write += 1;
       break;
     case GAIN_DATA_MODE_PHASE_HALF:
       // Not supported in normal mode
@@ -453,8 +456,8 @@ static void write_gain_stm(const volatile GlobalHeader* header, const volatile B
       break;
   }
 
-  if ((_stm_cycle & GAIN_STM_BUF_SEGMENT_SIZE_MASK) == 0)
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, (_stm_cycle & ~GAIN_STM_BUF_SEGMENT_SIZE_MASK) >> GAIN_STM_BUF_SEGMENT_SIZE_WIDTH);
+  if ((_stm_write & GAIN_STM_BUF_SEGMENT_SIZE_MASK) == 0)
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, (_stm_write & ~GAIN_STM_BUF_SEGMENT_SIZE_MASK) >> GAIN_STM_BUF_SEGMENT_SIZE_WIDTH);
 
   if ((header->cpu_ctl_reg & STM_END) != 0) bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_cycle) - 1);
 }
@@ -468,6 +471,7 @@ static void clear(void) {
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP, 10);
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_CYCLE, 4096);
 
+  _stm_write = 0;
   _stm_cycle = 0;
 
   _mod_cycle = 2;
