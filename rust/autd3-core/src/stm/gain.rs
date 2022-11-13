@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2022
+ * Last Modified: 13/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -101,6 +101,7 @@ impl DatagramBody<LegacyTransducer> for GainSTM<LegacyTransducer> {
         if is_first_frame {
             autd3_driver::gain_stm_legacy_body(
                 &[],
+                self.gains.len(),
                 is_first_frame,
                 self.sample_freq_div,
                 false,
@@ -116,6 +117,7 @@ impl DatagramBody<LegacyTransducer> for GainSTM<LegacyTransducer> {
                 let is_last_frame = self.sent + 1 == self.gains.len() + 1;
                 autd3_driver::gain_stm_legacy_body(
                     &[&self.gains[self.sent - 1]],
+                    self.gains.len(),
                     is_first_frame,
                     self.sample_freq_div,
                     is_last_frame,
@@ -131,6 +133,7 @@ impl DatagramBody<LegacyTransducer> for GainSTM<LegacyTransducer> {
                         &self.gains[self.sent - 1],
                         self.gains.get(self.sent + 1 - 1).unwrap_or(&Vec::new()),
                     ],
+                    self.gains.len(),
                     is_first_frame,
                     self.sample_freq_div,
                     is_last_frame,
@@ -148,6 +151,7 @@ impl DatagramBody<LegacyTransducer> for GainSTM<LegacyTransducer> {
                         self.gains.get(self.sent + 2 - 1).unwrap_or(&Vec::new()),
                         self.gains.get(self.sent + 3 - 1).unwrap_or(&Vec::new()),
                     ],
+                    self.gains.len(),
                     is_first_frame,
                     self.sample_freq_div,
                     is_last_frame,
@@ -190,6 +194,7 @@ impl DatagramBody<NormalTransducer> for GainSTM<NormalTransducer> {
         if is_first_frame {
             autd3_driver::gain_stm_normal_phase_body(
                 &[],
+                self.gains.len(),
                 is_first_frame,
                 self.sample_freq_div,
                 self.mode,
@@ -208,6 +213,7 @@ impl DatagramBody<NormalTransducer> for GainSTM<NormalTransducer> {
             };
             autd3_driver::gain_stm_normal_phase_body(
                 &self.gains[idx],
+                self.gains.len(),
                 is_first_frame,
                 self.sample_freq_div,
                 self.mode,
@@ -263,6 +269,7 @@ impl DatagramBody<NormalPhaseTransducer> for GainSTM<NormalPhaseTransducer> {
         if is_first_frame {
             autd3_driver::gain_stm_normal_phase_body(
                 &[],
+                self.gains.len(),
                 is_first_frame,
                 self.sample_freq_div,
                 Mode::PhaseFull,
@@ -276,6 +283,7 @@ impl DatagramBody<NormalPhaseTransducer> for GainSTM<NormalPhaseTransducer> {
         let idx = self.sent - 1;
         autd3_driver::gain_stm_normal_phase_body(
             &self.gains[idx],
+            self.gains.len(),
             is_first_frame,
             self.sample_freq_div,
             self.mode,
