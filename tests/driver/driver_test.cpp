@@ -884,7 +884,7 @@ TEST(CPUTest, operation_gain_stm_legacy_body) {
   }
 
   gain_stm_legacy_header(tx);
-  gain_stm_legacy_body({}, true, 3224, false, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
+  gain_stm_legacy_body({}, 5, true, 3224, false, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
   ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
   ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);
@@ -893,7 +893,7 @@ TEST(CPUTest, operation_gain_stm_legacy_body) {
   ASSERT_EQ(tx.num_bodies, 10);
 
   gain_stm_legacy_header(tx);
-  gain_stm_legacy_body({drives_list.data()}, false, 3224, false, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
+  gain_stm_legacy_body({drives_list.data()}, 5, false, 3224, false, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
   ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);
@@ -906,7 +906,7 @@ TEST(CPUTest, operation_gain_stm_legacy_body) {
   ASSERT_EQ(tx.num_bodies, 10);
 
   gain_stm_legacy_header(tx);
-  gain_stm_legacy_body({&drives_list[4]}, false, 3224, true, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
+  gain_stm_legacy_body({&drives_list[4]}, 5, false, 3224, true, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
   ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
   ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);
@@ -950,7 +950,7 @@ TEST(CPUTest, operation_gain_stm_normal_phase) {
   }
 
   gain_stm_normal_header(tx);
-  gain_stm_normal_phase({}, true, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, false, tx);
+  gain_stm_normal_phase({}, 5, true, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, false, tx);
   ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
   ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);
@@ -960,7 +960,7 @@ TEST(CPUTest, operation_gain_stm_normal_phase) {
   ASSERT_EQ(tx.num_bodies, 10);
 
   gain_stm_normal_header(tx);
-  gain_stm_normal_phase(drives_list[0], false, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, false, tx);
+  gain_stm_normal_phase(drives_list[0], 5, false, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, false, tx);
   ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);
@@ -971,7 +971,7 @@ TEST(CPUTest, operation_gain_stm_normal_phase) {
   ASSERT_EQ(tx.num_bodies, 10);
 
   gain_stm_normal_header(tx);
-  gain_stm_normal_phase(drives_list[4], false, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, false, tx);
+  gain_stm_normal_phase(drives_list[4], 5, false, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, false, tx);
   ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
   ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);
