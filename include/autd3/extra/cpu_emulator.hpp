@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/11/2022
+// Last Modified: 13/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -74,7 +74,14 @@ namespace autd3::extra {
 class CPU {
  public:
   explicit CPU(const size_t id, const bool enable_fpga = true)
-      : _id(id), _enable_fpga(enable_fpga), _msg_id(0), _ack(0), _mod_cycle(0), _stm_cycle(0), _gain_stm_mode(cpu::GAIN_STM_MODE_PHASE_DUTY_FULL) {
+      : _id(id),
+        _enable_fpga(enable_fpga),
+        _msg_id(0),
+        _ack(0),
+        _mod_cycle(0),
+        _stm_write(0),
+        _stm_cycle(0),
+        _gain_stm_mode(cpu::GAIN_STM_MODE_PHASE_DUTY_FULL) {
     _cycles.fill(0);
   }
 
@@ -179,7 +186,7 @@ class CPU {
     const uint16_t* src;
 
     if (header->cpu_flag.contains(driver::CPUControlFlags::STM_BEGIN)) {
-      _stm_cycle = 0;
+      _stm_write = 0;
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET, 0);
       size = body->point_stm_head().data()[0];
       const auto freq_div = (static_cast<uint32_t>(body->point_stm_head().data()[2]) << 16) | static_cast<uint32_t>(body->point_stm_head().data()[1]);
@@ -194,28 +201,28 @@ class CPU {
       src = body->point_stm_body().data() + 1;
     }
 
-    if (const auto segment_capacity = (_stm_cycle & ~cpu::POINT_STM_BUF_SEGMENT_SIZE_MASK) + cpu::POINT_STM_BUF_SEGMENT_SIZE - _stm_cycle;
+    if (const auto segment_capacity = (_stm_write & ~cpu::POINT_STM_BUF_SEGMENT_SIZE_MASK) + cpu::POINT_STM_BUF_SEGMENT_SIZE - _stm_write;
         size <= segment_capacity) {
-      auto dst = static_cast<uint16_t>((_stm_cycle & cpu::POINT_STM_BUF_SEGMENT_SIZE_MASK) << 3);
+      auto dst = static_cast<uint16_t>((_stm_write & cpu::POINT_STM_BUF_SEGMENT_SIZE_MASK) << 3);
       for (uint32_t i = 0; i < size; i++, dst += 4) {
         bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
         bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
         bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
         bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
       }
-      _stm_cycle += size;
+      _stm_write += size;
     } else {
-      auto dst = static_cast<uint16_t>((_stm_cycle & cpu::POINT_STM_BUF_SEGMENT_SIZE_MASK) << 3);
+      auto dst = static_cast<uint16_t>((_stm_write & cpu::POINT_STM_BUF_SEGMENT_SIZE_MASK) << 3);
       for (uint32_t i = 0; i < segment_capacity; i++, dst += 4) {
         bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
         bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
         bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
         bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
       }
-      _stm_cycle += segment_capacity;
+      _stm_write += segment_capacity;
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET,
-                 static_cast<uint16_t>((_stm_cycle & ~cpu::POINT_STM_BUF_SEGMENT_SIZE_MASK) >> cpu::POINT_STM_BUF_SEGMENT_SIZE_WIDTH));
-      dst = static_cast<uint16_t>((_stm_cycle & cpu::POINT_STM_BUF_SEGMENT_SIZE_MASK) << 3);
+                 static_cast<uint16_t>((_stm_write & ~cpu::POINT_STM_BUF_SEGMENT_SIZE_MASK) >> cpu::POINT_STM_BUF_SEGMENT_SIZE_WIDTH));
+      dst = static_cast<uint16_t>((_stm_write & cpu::POINT_STM_BUF_SEGMENT_SIZE_MASK) << 3);
       const auto cnt = size - segment_capacity;
       for (uint32_t i = 0; i < cnt; i++, dst += 4) {
         bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
@@ -223,77 +230,78 @@ class CPU {
         bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
         bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
       }
-      _stm_cycle += cnt;
+      _stm_write += cnt;
     }
     if (header->cpu_flag.contains(driver::CPUControlFlags::STM_END))
-      bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_CYCLE, static_cast<uint16_t>((std::max)(_stm_cycle, 1u) - 1u));
+      bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_CYCLE, static_cast<uint16_t>((std::max)(_stm_write, 1u) - 1u));
   }
 
   void write_gain_stm_legacy(const driver::GlobalHeader* header, const driver::Body* body) {
     if (body == nullptr) return;
     if (header->cpu_flag.contains(driver::CPUControlFlags::STM_BEGIN)) {
-      _stm_cycle = 0;
+      _stm_write = 0;
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET, 0);
       const auto freq_div = (static_cast<uint32_t>(body->gain_stm_head().data()[1]) << 16) | static_cast<uint32_t>(body->gain_stm_head().data()[0]);
       bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FREQ_DIV_0, reinterpret_cast<const uint16_t*>(&freq_div), 2);
       _gain_stm_mode = body->gain_stm_head().data()[2];
+      _stm_cycle = body->gain_stm_head().data()[3];
       return;
     }
 
     auto* src = body->gain_stm_body().data();
-    auto dst = static_cast<uint16_t>((_stm_cycle & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
+    auto dst = static_cast<uint16_t>((_stm_write & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
 
     switch (_gain_stm_mode) {
       case cpu::GAIN_STM_MODE_PHASE_DUTY_FULL:
-        _stm_cycle += 1;
+        _stm_write += 1;
         for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
         break;
       case cpu::GAIN_STM_MODE_PHASE_FULL:
         for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) bram_write(cpu::BRAM_SELECT_STM, dst++, 0xFF00 | (*src++ & 0x00FF));
-        _stm_cycle += 1;
+        _stm_write += 1;
         src = body->gain_stm_body().data();
-        dst = static_cast<uint16_t>((_stm_cycle & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
+        dst = static_cast<uint16_t>((_stm_write & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
         for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) bram_write(cpu::BRAM_SELECT_STM, dst++, 0xFF00 | (((*src++) >> 8) & 0x00FF));
-        _stm_cycle += 1;
+        _stm_write += 1;
         break;
       case cpu::GAIN_STM_MODE_PHASE_HALF:
         for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) {
           const auto phase = static_cast<uint16_t>(*src++ & 0x000F);
           bram_write(cpu::BRAM_SELECT_STM, dst++, static_cast<uint16_t>(0xFF00 | (phase << 4) | phase));
         }
-        _stm_cycle += 1;
+        _stm_write += 1;
 
         src = body->gain_stm_body().data();
-        dst = static_cast<uint16_t>((_stm_cycle & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
+        dst = static_cast<uint16_t>((_stm_write & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
         for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) {
           const auto phase = static_cast<uint16_t>((*src++ >> 4) & 0x000F);
           bram_write(cpu::BRAM_SELECT_STM, dst++, static_cast<uint16_t>(0xFF00 | (phase << 4) | phase));
         }
-        _stm_cycle += 1;
+        _stm_write += 1;
 
         src = body->gain_stm_body().data();
-        dst = static_cast<uint16_t>((_stm_cycle & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
+        dst = static_cast<uint16_t>((_stm_write & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
         for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) {
           const auto phase = static_cast<uint16_t>((*src++ >> 8) & 0x000F);
           bram_write(cpu::BRAM_SELECT_STM, dst++, static_cast<uint16_t>(0xFF00 | (phase << 4) | phase));
         }
-        _stm_cycle += 1;
+        _stm_write += 1;
 
         src = body->gain_stm_body().data();
-        dst = static_cast<uint16_t>((_stm_cycle & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
+        dst = static_cast<uint16_t>((_stm_write & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
         for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) {
           const auto phase = static_cast<uint16_t>((*src++ >> 12) & 0x000F);
           bram_write(cpu::BRAM_SELECT_STM, dst++, static_cast<uint16_t>(0xFF00 | (phase << 4) | phase));
         }
-        _stm_cycle += 1;
+        _stm_write += 1;
         break;
       default:
         throw std::runtime_error("Not supported GainSTM mode");
     }
 
-    if ((_stm_cycle & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) == 0)
+    if ((_stm_write & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) == 0)
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET,
-                 ((_stm_cycle & ~cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) >> cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH));
+                 ((_stm_write & ~cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) >> cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH));
 
     if (header->cpu_flag.contains(driver::CPUControlFlags::STM_END))
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_CYCLE, static_cast<uint16_t>((std::max)(_stm_cycle, 1u) - 1u));
@@ -302,22 +310,23 @@ class CPU {
   void write_gain_stm(const driver::GlobalHeader* header, const driver::Body* body) {
     if (body == nullptr) return;
     if (header->cpu_flag.contains(driver::CPUControlFlags::STM_BEGIN)) {
-      _stm_cycle = 0;
+      _stm_write = 0;
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET, 0);
       const auto freq_div = (static_cast<uint32_t>(body->gain_stm_head().data()[1]) << 16) | static_cast<uint32_t>(body->gain_stm_head().data()[0]);
       bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FREQ_DIV_0, reinterpret_cast<const uint16_t*>(&freq_div), 2);
       _gain_stm_mode = body->gain_stm_head().data()[2];
+      _stm_cycle = body->gain_stm_head().data()[3];
       return;
     }
 
     auto* src = body->gain_stm_body().data();
-    auto dst = static_cast<uint16_t>((_stm_cycle & cpu::GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 9);
+    auto dst = static_cast<uint16_t>((_stm_write & cpu::GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 9);
 
     switch (_gain_stm_mode) {
       case cpu::GAIN_STM_MODE_PHASE_DUTY_FULL:
         if (header->cpu_flag.contains(driver::CPUControlFlags::IS_DUTY)) {
           dst += 1;
-          _stm_cycle += 1;
+          _stm_write += 1;
         }
         for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++, dst += 2) bram_write(cpu::BRAM_SELECT_STM, dst, *src++);
         break;
@@ -327,7 +336,7 @@ class CPU {
             bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
             bram_write(cpu::BRAM_SELECT_STM, dst++, _cycles[i] >> 1);
           }
-          _stm_cycle += 1;
+          _stm_write += 1;
         }
         break;
       case cpu::GAIN_STM_MODE_PHASE_HALF:
@@ -337,9 +346,9 @@ class CPU {
         throw std::runtime_error("Not supported GainSTM mode");
     }
 
-    if ((_stm_cycle & cpu::GAIN_STM_BUF_SEGMENT_SIZE_MASK) == 0)
+    if ((_stm_write & cpu::GAIN_STM_BUF_SEGMENT_SIZE_MASK) == 0)
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET,
-                 ((_stm_cycle & ~cpu::GAIN_STM_BUF_SEGMENT_SIZE_MASK) >> cpu::GAIN_STM_BUF_SEGMENT_SIZE_WIDTH));
+                 ((_stm_write & ~cpu::GAIN_STM_BUF_SEGMENT_SIZE_MASK) >> cpu::GAIN_STM_BUF_SEGMENT_SIZE_WIDTH));
 
     if (header->cpu_flag.contains(driver::CPUControlFlags::STM_END))
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_CYCLE, static_cast<uint16_t>((std::max)(_stm_cycle, 1u) - 1u));
@@ -359,7 +368,7 @@ class CPU {
     bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_SILENT_STEP, 10);
     bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_SILENT_CYCLE, 4096);
 
-    _stm_cycle = 0;
+    _stm_write = 0;
 
     _mod_cycle = 2;
     bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_MOD_CYCLE, static_cast<uint16_t>((std::max)(_mod_cycle, 1u) - 1u));
@@ -433,6 +442,7 @@ class CPU {
   uint8_t _msg_id;
   uint8_t _ack;
   uint32_t _mod_cycle;
+  uint32_t _stm_write;
   uint32_t _stm_cycle;
   FPGA _fpga;
   uint16_t _gain_stm_mode;
