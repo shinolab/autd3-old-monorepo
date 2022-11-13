@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/11/2022
+// Last Modified: 13/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -567,7 +567,7 @@ TEST(ControllerTest, point_stm) {
 
   const autd3::Vector3 center = autd.geometry().center();
 
-  constexpr size_t size = 50;
+  constexpr size_t size = 200;
   std::vector<autd3::Point> points;
   constexpr auto radius = 30.0;
   std::vector<size_t> iota(size);
@@ -581,10 +581,7 @@ TEST(ControllerTest, point_stm) {
   std::copy(points.begin(), points.end(), std::back_inserter(stm));
 
   autd << stm;
-  for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
-    ASSERT_EQ(cpus->at(i).fpga().drives().second.size(), size);
-    ASSERT_EQ(cpus->at(i).fpga().drives().first.size(), size);
-  }
+  for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
 
   const auto cycle = cpus->at(0).fpga().cycles()[0];
   const auto wavenumber = autd.geometry()[0][0].wavenumber(autd.geometry().sound_speed);
@@ -604,6 +601,304 @@ TEST(ControllerTest, point_stm) {
           ASSERT_NEAR(autd3::driver::rem_euclid(p - expect, 2.0 * autd3::pi), 2.0 * autd3::pi, criteria);
         else
           ASSERT_NEAR(autd3::driver::rem_euclid(p - expect, 2.0 * autd3::pi), 0.0, criteria);
+      }
+    }
+  }
+
+  autd << autd3::stop;
+  for (const auto& cpu : *cpus) {
+    const auto [duties, phases] = cpu.fpga().drives();
+    for (const auto& duty_pat : duties)
+      for (const auto& [duty] : duty_pat) ASSERT_EQ(duty, 0x0000);
+  }
+
+  autd.close();
+}
+
+TEST(ControllerTest, gain_stm_legacy) {
+  autd3::Controller autd;
+
+  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::Vector3(0, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
+
+  auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
+
+  auto link = autd3::test::EmulatorLink(cpus).build();
+  autd.open(std::move(link));
+
+  autd << autd3::clear << autd3::synchronize;
+
+  const autd3::Vector3 center = autd.geometry().center();
+
+  {
+    autd3::GainSTM stm(autd.geometry());
+    constexpr size_t size = 50;
+    std::vector<std::vector<autd3::driver::Drive>> drives;
+    constexpr auto radius = 30.0;
+    std::vector<size_t> iota(size);
+    std::iota(iota.begin(), iota.end(), 0);
+    std::for_each(iota.begin(), iota.end(), [&](const size_t i) {
+      const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(size);
+      autd3::gain::Focus f(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
+      f.build(autd.geometry());
+      drives.emplace_back(f.drives());
+      stm.add(f);
+    });
+
+    autd << stm;
+    for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
+
+    for (size_t k = 0; k < size; k++) {
+      for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+        for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
+          ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty,
+                    (autd3::driver::LegacyDrive::to_duty(drives[k][i * autd3::driver::NUM_TRANS_IN_UNIT + j]) << 3) + 0x08);
+          ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase,
+                    autd3::driver::LegacyDrive::to_phase(drives[k][i * autd3::driver::NUM_TRANS_IN_UNIT + j]) << 4);
+        }
+      }
+    }
+  }
+
+  {
+    autd3::GainSTM stm(autd.geometry());
+    stm.mode() = autd3::GainSTMMode::PhaseFull;
+    constexpr size_t size = 50;
+    std::vector<std::vector<autd3::driver::Drive>> drives;
+    constexpr auto radius = 40.0;
+    std::vector<size_t> iota(size);
+    std::iota(iota.begin(), iota.end(), 0);
+    std::for_each(iota.begin(), iota.end(), [&](const size_t i) {
+      const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(size);
+      autd3::gain::Focus f(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
+      f.build(autd.geometry());
+      drives.emplace_back(f.drives());
+      stm.add(f);
+    });
+
+    autd << stm;
+    for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
+
+    const uint16_t cycle = autd.geometry()[0][0].cycle();
+    for (size_t k = 0; k < size; k++) {
+      for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+        for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
+          ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, cycle >> 1);
+          ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase,
+                    autd3::driver::LegacyDrive::to_phase(drives[k][i * autd3::driver::NUM_TRANS_IN_UNIT + j]) << 4);
+        }
+      }
+    }
+  }
+
+  {
+    autd3::GainSTM stm(autd.geometry());
+    stm.mode() = autd3::GainSTMMode::PhaseHalf;
+    constexpr size_t size = 50;
+    std::vector<std::vector<autd3::driver::Drive>> drives;
+    constexpr auto radius = 40.0;
+    std::vector<size_t> iota(size);
+    std::iota(iota.begin(), iota.end(), 0);
+    std::for_each(iota.begin(), iota.end(), [&](const size_t i) {
+      const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(size);
+      autd3::gain::Focus f(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
+      f.build(autd.geometry());
+      drives.emplace_back(f.drives());
+      stm.add(f);
+    });
+
+    autd << stm;
+    for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
+
+    const uint16_t cycle = autd.geometry()[0][0].cycle();
+    for (size_t k = 0; k < size; k++) {
+      for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+        for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
+          ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, cycle >> 1);
+          const auto phase = autd3::driver::LegacyDrive::to_phase(drives[k][i * autd3::driver::NUM_TRANS_IN_UNIT + j]) >> 4;
+          ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase, ((phase  << 4) + phase) << 4);
+        }
+      }
+    }
+  }
+
+  autd << autd3::stop;
+  for (const auto& cpu : *cpus) {
+    const auto [duties, phases] = cpu.fpga().drives();
+    for (const auto& duty_pat : duties)
+      for (const auto& [duty] : duty_pat) ASSERT_EQ(duty, 0x0000);
+  }
+
+  autd.close();
+}
+
+TEST(ControllerTest, gain_stm_normal) {
+  autd3::Controller autd;
+
+  autd.geometry().mode() = std::make_unique<autd3::NormalMode>();
+
+  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::Vector3(0, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
+
+  auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
+
+  auto link = autd3::test::EmulatorLink(cpus).build();
+  autd.open(std::move(link));
+
+  autd << autd3::clear << autd3::synchronize;
+
+  const autd3::Vector3 center = autd.geometry().center();
+
+  {
+    autd3::GainSTM stm(autd.geometry());
+    constexpr size_t size = 50;
+    std::vector<std::vector<autd3::driver::Drive>> drives;
+    constexpr auto radius = 30.0;
+    std::vector<size_t> iota(size);
+    std::iota(iota.begin(), iota.end(), 0);
+    std::for_each(iota.begin(), iota.end(), [&](const size_t i) {
+      const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(size);
+      autd3::gain::Focus f(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
+      f.build(autd.geometry());
+      drives.emplace_back(f.drives());
+      stm.add(f);
+    });
+
+    autd << stm;
+    for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
+
+    for (size_t k = 0; k < size; k++) {
+      for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+        for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
+          ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, autd3::driver::Duty::to_duty(drives[k][i * autd3::driver::NUM_TRANS_IN_UNIT + j]));
+          ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase,
+                    autd3::driver::Phase::to_phase(drives[k][i * autd3::driver::NUM_TRANS_IN_UNIT + j]));
+        }
+      }
+    }
+  }
+
+  {
+    autd3::GainSTM stm(autd.geometry());
+    stm.mode() = autd3::GainSTMMode::PhaseFull;
+    constexpr size_t size = 50;
+    std::vector<std::vector<autd3::driver::Drive>> drives;
+    constexpr auto radius = 40.0;
+    std::vector<size_t> iota(size);
+    std::iota(iota.begin(), iota.end(), 0);
+    std::for_each(iota.begin(), iota.end(), [&](const size_t i) {
+      const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(size);
+      autd3::gain::Focus f(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
+      f.build(autd.geometry());
+      drives.emplace_back(f.drives());
+      stm.add(f);
+    });
+
+    autd << stm;
+    for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
+
+    const uint16_t cycle = autd.geometry()[0][0].cycle();
+    for (size_t k = 0; k < size; k++) {
+      for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+        for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
+          ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, cycle >> 1);
+          ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase,
+                    autd3::driver::Phase::to_phase(drives[k][i * autd3::driver::NUM_TRANS_IN_UNIT + j]));
+        }
+      }
+    }
+  }
+
+  autd << autd3::stop;
+  for (const auto& cpu : *cpus) {
+    const auto [duties, phases] = cpu.fpga().drives();
+    for (const auto& duty_pat : duties)
+      for (const auto& [duty] : duty_pat) ASSERT_EQ(duty, 0x0000);
+  }
+
+  autd.close();
+}
+
+TEST(ControllerTest, gain_stm_normal_phase) {
+  autd3::Controller autd;
+
+  autd.geometry().mode() = std::make_unique<autd3::NormalPhaseMode>();
+
+  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::Vector3(0, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
+
+  auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
+
+  auto link = autd3::test::EmulatorLink(cpus).build();
+  autd.open(std::move(link));
+
+  autd << autd3::clear << autd3::synchronize;
+
+  const autd3::Vector3 center = autd.geometry().center();
+
+  {
+    autd3::GainSTM stm(autd.geometry());
+    constexpr size_t size = 50;
+    std::vector<std::vector<autd3::driver::Drive>> drives;
+    constexpr auto radius = 30.0;
+    std::vector<size_t> iota(size);
+    std::iota(iota.begin(), iota.end(), 0);
+    std::for_each(iota.begin(), iota.end(), [&](const size_t i) {
+      const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(size);
+      autd3::gain::Focus f(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
+      f.build(autd.geometry());
+      drives.emplace_back(f.drives());
+      stm.add(f);
+    });
+
+    autd << stm;
+    for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
+
+    const uint16_t cycle = autd.geometry()[0][0].cycle();
+    for (size_t k = 0; k < size; k++) {
+      for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+        for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
+          ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, cycle >> 1);
+          ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase,
+                    autd3::driver::Phase::to_phase(drives[k][i * autd3::driver::NUM_TRANS_IN_UNIT + j]));
+        }
+      }
+    }
+  }
+
+  {
+    autd3::GainSTM stm(autd.geometry());
+    stm.mode() = autd3::GainSTMMode::PhaseFull;
+    constexpr size_t size = 50;
+    std::vector<std::vector<autd3::driver::Drive>> drives;
+    constexpr auto radius = 30.0;
+    std::vector<size_t> iota(size);
+    std::iota(iota.begin(), iota.end(), 0);
+    std::for_each(iota.begin(), iota.end(), [&](const size_t i) {
+      const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(size);
+      autd3::gain::Focus f(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
+      f.build(autd.geometry());
+      drives.emplace_back(f.drives());
+      stm.add(f);
+    });
+
+    autd << stm;
+    for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
+
+    const uint16_t cycle = autd.geometry()[0][0].cycle();
+    for (size_t k = 0; k < size; k++) {
+      for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+        for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
+          ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, cycle >> 1);
+          ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase,
+                    autd3::driver::Phase::to_phase(drives[k][i * autd3::driver::NUM_TRANS_IN_UNIT + j]));
+        }
       }
     }
   }
