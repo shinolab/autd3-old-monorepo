@@ -19,6 +19,8 @@
 int main() try {
   autd3::Controller autd;
 
+  autd.geometry().mode() = std::make_unique<autd3::NormalPhaseMode>();
+
   autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
 
   auto link = autd3::link::SOEM()
