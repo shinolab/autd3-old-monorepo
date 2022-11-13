@@ -19,11 +19,13 @@ You can also use `set_frequency` to specify the frequency.
 
 > NOTE: The actual frequency does not change from $\SI{40}{kHz}$ even if you change the frequency in Legacy mode.
 
-Note that you need to call the `synchronize` function once after changing the frequency.
+Note that you need to send `synchronize` once after changing the frequency.
 
 ```cpp
   for (auto& dev : autd.geometry())
     for (auto& tr : dev) tr.set_frequency(70e3); // actual frequency is 163.84MHz/2341 ~ 69987 Hz
+
+  autd << autd3::synchronize;
 ```
 
 ## NormalPhase mode
