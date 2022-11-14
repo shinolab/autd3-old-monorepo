@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2022
+// Last Modified: 14/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <vector>
 
 #include "body.hpp"
@@ -161,11 +162,18 @@ inline void point_stm_header(TxDatagram& tx) noexcept {
   tx.num_bodies = 0;
 }
 
-inline void point_stm_body(const std::vector<std::vector<STMFocus>>& points, const bool is_first_frame, const uint32_t freq_div,
-                           const double sound_speed, const bool is_last_frame, TxDatagram& tx) noexcept(false) {
+inline size_t point_stm_send_size(const size_t total_size, const size_t sent) noexcept {
+  const auto max_size = sent == 0 ? driver::POINT_STM_HEAD_DATA_SIZE : driver::POINT_STM_BODY_DATA_SIZE;
+  return (std::min)(total_size - sent, max_size);
+}
+
+inline void point_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, const size_t total_size, const uint32_t freq_div,
+                           const double sound_speed, TxDatagram& tx) noexcept(false) {
+  if (total_size > driver::POINT_STM_BUF_SIZE_MAX) throw std::runtime_error("PointSTM out of buffer");
+
   if (points.empty() || points[0].empty()) return;
 
-  if (is_first_frame) {
+  if (sent == 0) {
     if (freq_div < POINT_STM_SAMPLING_FREQ_DIV_MIN)
       throw std::runtime_error("STM frequency division is oud of range. Minimum is " + std::to_string(POINT_STM_SAMPLING_FREQ_DIV_MIN) +
                                ", but you use " + std::to_string(freq_div));
@@ -195,9 +203,12 @@ inline void point_stm_body(const std::vector<std::vector<STMFocus>>& points, con
 
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
 
-  if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::STM_END);
+  const auto send_size = points[0].size();
+  if (sent + send_size == total_size) tx.header().cpu_flag.set(CPUControlFlags::STM_END);
 
   tx.num_bodies = tx.size();
+
+  sent += send_size;
 }
 
 inline void gain_stm_legacy_header(TxDatagram& tx) noexcept {
@@ -213,9 +224,12 @@ inline void gain_stm_legacy_header(TxDatagram& tx) noexcept {
   tx.num_bodies = 0;
 }
 
-inline void gain_stm_legacy_body(const std::vector<const std::vector<Drive>*>& drives, const size_t cycle, const bool is_first_frame,
-                                 const uint32_t freq_div, const bool is_last_frame, const GainSTMMode mode, TxDatagram& tx) noexcept(false) {
-  if (is_first_frame) {
+inline void gain_stm_legacy_body(const std::vector<std::vector<driver::Drive>>& drives, size_t& sent, const uint32_t freq_div, const GainSTMMode mode,
+                                 TxDatagram& tx) noexcept(false) {
+  if (drives.size() > driver::GAIN_STM_LEGACY_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+
+  bool is_last_frame = false;
+  if (sent == 0) {
     if (freq_div < GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN)
       throw std::runtime_error("STM frequency division is oud of range. Minimum is " + std::to_string(GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN) +
                                ", but you use " + std::to_string(freq_div));
@@ -224,44 +238,57 @@ inline void gain_stm_legacy_body(const std::vector<const std::vector<Drive>*>& d
     for (size_t i = 0; i < tx.size(); i++) {
       tx.bodies()[i].gain_stm_head().set_freq_div(freq_div);
       tx.bodies()[i].gain_stm_head().set_mode(mode);
-      tx.bodies()[i].gain_stm_head().set_cycle(cycle);
+      tx.bodies()[i].gain_stm_head().set_cycle(drives.size());
     }
+    sent++;
   } else {
     switch (mode) {
-      case GainSTMMode::PhaseDutyFull: {
-        auto* p = reinterpret_cast<LegacyDrive*>(tx.bodies());
-        for (size_t i = 0; i < drives[0]->size(); i++) p[i].set(drives[0]->at(i));
-      } break;
-      case GainSTMMode::PhaseFull: {
-        auto* p = reinterpret_cast<LegacyPhaseFull*>(tx.bodies());
-        for (size_t i = 0; i < drives[0]->size(); i++) p[i].set(0, drives[0]->at(i));
-      }
-        if (drives[1] != nullptr) {
+      case GainSTMMode::PhaseDutyFull:
+        is_last_frame = sent + 1 >= drives.size() + 1;
+        {
+          auto* p = reinterpret_cast<LegacyDrive*>(tx.bodies());
+          for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(drives[sent - 1][i]);
+        }
+        sent++;
+        break;
+      case GainSTMMode::PhaseFull:
+        is_last_frame = sent + 2 >= drives.size() + 1;
+        {
           auto* p = reinterpret_cast<LegacyPhaseFull*>(tx.bodies());
-          for (size_t i = 0; i < drives[1]->size(); i++) p[i].set(1, drives[1]->at(i));
+          for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(0, drives[sent - 1][i]);
+        }
+        sent++;
+        if (sent - 1 < drives.size()) {
+          auto* p = reinterpret_cast<LegacyPhaseFull*>(tx.bodies());
+          for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(1, drives[sent - 1][i]);
+          sent++;
         }
         break;
-      case GainSTMMode::PhaseHalf: {
-        auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies());
-        for (size_t i = 0; i < drives[0]->size(); i++) p[i].set(0, drives[0]->at(i));
-      }
-        if (drives[1] != nullptr) {
+      case GainSTMMode::PhaseHalf:
+        is_last_frame = sent + 4 >= drives.size() + 1;
+        {
           auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies());
-          for (size_t i = 0; i < drives[1]->size(); i++) p[i].set(1, drives[1]->at(i));
+          for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(0, drives[sent - 1][i]);
         }
-        if (drives[2] != nullptr) {
+        sent++;
+        if (sent - 1 < drives.size()) {
           auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies());
-          for (size_t i = 0; i < drives[2]->size(); i++) p[i].set(2, drives[2]->at(i));
+          for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(1, drives[sent - 1][i]);
+          sent++;
         }
-        if (drives[3] != nullptr) {
+        if (sent - 1 < drives.size()) {
           auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies());
-          for (size_t i = 0; i < drives[3]->size(); i++) p[i].set(3, drives[3]->at(i));
+          for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(2, drives[sent - 1][i]);
+          sent++;
+        }
+        if (sent - 1 < drives.size()) {
+          auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies());
+          for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(3, drives[sent - 1][i]);
+          sent++;
         }
         break;
-      default: {
-        auto* p = reinterpret_cast<LegacyDrive*>(tx.bodies());
-        for (size_t i = 0; i < drives[0]->size(); i++) p[i].set(drives[0]->at(i));
-      } break;
+      default:
+        throw std::runtime_error("Unknown Gain STM Mode: " + std::to_string(static_cast<int>(mode)));
     }
   }
 
@@ -285,9 +312,9 @@ inline void gain_stm_normal_header(TxDatagram& tx) noexcept {
   tx.num_bodies = 0;
 }
 
-inline void gain_stm_normal_phase(const std::vector<Drive>& drives, const size_t cycle, const bool is_first_frame, const uint32_t freq_div,
-                                  const GainSTMMode mode, const bool is_last_frame, TxDatagram& tx) noexcept(false) {
-  tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
+inline void gain_stm_normal_phase(const std::vector<std::vector<driver::Drive>>& drives, const size_t sent, const uint32_t freq_div,
+                                  const GainSTMMode mode, TxDatagram& tx) noexcept(false) {
+  if (drives.size() > driver::GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -298,36 +325,61 @@ inline void gain_stm_normal_phase(const std::vector<Drive>& drives, const size_t
 #pragma warning(pop)
 #endif
 
-  if (is_first_frame) {
+  tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
+
+  if (sent == 0) {
     if (freq_div < GAIN_STM_SAMPLING_FREQ_DIV_MIN)
       throw std::runtime_error("STM frequency division is oud of range. Minimum is " + std::to_string(GAIN_STM_SAMPLING_FREQ_DIV_MIN) +
                                ", but you use " + std::to_string(freq_div));
-
     tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
     for (size_t i = 0; i < tx.size(); i++) {
       tx.bodies()[i].gain_stm_head().set_freq_div(freq_div);
       tx.bodies()[i].gain_stm_head().set_mode(mode);
-      tx.bodies()[i].gain_stm_head().set_cycle(cycle);
+      tx.bodies()[i].gain_stm_head().set_cycle(drives.size());
     }
   } else {
     auto* p = reinterpret_cast<Phase*>(tx.bodies());
-    for (size_t i = 0; i < drives.size(); i++) p[i].set(drives[i]);
+    for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(drives[sent - 1][i]);
   }
 
-  if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::STM_END);
+  if (sent + 1 == drives.size() + 1) tx.header().cpu_flag.set(CPUControlFlags::STM_END);
 
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
 
   tx.num_bodies = tx.size();
 }
 
-inline void gain_stm_normal_duty(const std::vector<Drive>& drives, const bool is_last_frame, TxDatagram& tx) noexcept(false) {
+inline void gain_stm_normal_duty(const std::vector<std::vector<driver::Drive>>& drives, const size_t sent, const uint32_t freq_div,
+                                 const GainSTMMode mode, TxDatagram& tx) noexcept(false) {
+  if (drives.size() > driver::GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 26813)
+#endif
+  if (mode == GainSTMMode::PhaseHalf) throw std::runtime_error("PhaseHalf is not supported in normal mode");
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
   tx.header().cpu_flag.set(CPUControlFlags::IS_DUTY);
 
-  auto* p = reinterpret_cast<Duty*>(tx.bodies());
-  for (size_t i = 0; i < drives.size(); i++) p[i].set(drives[i]);
+  if (sent == 0) {
+    if (freq_div < GAIN_STM_SAMPLING_FREQ_DIV_MIN)
+      throw std::runtime_error("STM frequency division is oud of range. Minimum is " + std::to_string(GAIN_STM_SAMPLING_FREQ_DIV_MIN) +
+                               ", but you use " + std::to_string(freq_div));
+    tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
+    for (size_t i = 0; i < tx.size(); i++) {
+      tx.bodies()[i].gain_stm_head().set_freq_div(freq_div);
+      tx.bodies()[i].gain_stm_head().set_mode(mode);
+      tx.bodies()[i].gain_stm_head().set_cycle(drives.size());
+    }
+  } else {
+    auto* p = reinterpret_cast<Duty*>(tx.bodies());
+    for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(drives[sent - 1][i]);
+  }
 
-  if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::STM_END);
+  if (sent + 1 == drives.size() + 1) tx.header().cpu_flag.set(CPUControlFlags::STM_END);
 
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
 
