@@ -567,7 +567,7 @@ TEST(ControllerTest, point_stm) {
 
   const autd3::Vector3 center = autd.geometry().center();
 
-  constexpr size_t size = 70;
+  constexpr size_t size = 200;
   std::vector<autd3::Point> points;
   constexpr auto radius = 30.0;
   std::vector<size_t> iota(size);
@@ -840,8 +840,9 @@ TEST(ControllerTest, gain_stm_normal_phase) {
 
   autd << autd3::clear << autd3::synchronize;
 
-  const autd3::Vector3 center = autd.geometry().center();
+  autd << autd3::Amplitudes(1.0);
 
+  const autd3::Vector3 center = autd.geometry().center();
   {
     autd3::GainSTM stm(autd.geometry());
     constexpr size_t size = 50;

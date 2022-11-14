@@ -240,7 +240,7 @@ inline void gain_stm_legacy_body(const std::vector<std::vector<driver::Drive>>& 
       tx.bodies()[i].gain_stm_head().set_mode(mode);
       tx.bodies()[i].gain_stm_head().set_cycle(drives.size());
     }
-    sent += 1;
+    sent++;
   } else {
     switch (mode) {
       case GainSTMMode::PhaseDutyFull:
@@ -312,9 +312,9 @@ inline void gain_stm_normal_header(TxDatagram& tx) noexcept {
   tx.num_bodies = 0;
 }
 
-inline void gain_stm_normal_phase(const std::vector<Drive>& drives, const size_t cycle, const bool is_first_frame, const uint32_t freq_div,
-                                  const GainSTMMode mode, const bool is_last_frame, TxDatagram& tx) noexcept(false) {
-  tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
+inline void gain_stm_normal_phase(const std::vector<std::vector<driver::Drive>>& drives, const size_t sent, const uint32_t freq_div,
+                                  const GainSTMMode mode, TxDatagram& tx) noexcept(false) {
+  if (drives.size() > driver::GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -325,36 +325,61 @@ inline void gain_stm_normal_phase(const std::vector<Drive>& drives, const size_t
 #pragma warning(pop)
 #endif
 
-  if (is_first_frame) {
+  tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
+
+  if (sent == 0) {
     if (freq_div < GAIN_STM_SAMPLING_FREQ_DIV_MIN)
       throw std::runtime_error("STM frequency division is oud of range. Minimum is " + std::to_string(GAIN_STM_SAMPLING_FREQ_DIV_MIN) +
                                ", but you use " + std::to_string(freq_div));
-
     tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
     for (size_t i = 0; i < tx.size(); i++) {
       tx.bodies()[i].gain_stm_head().set_freq_div(freq_div);
       tx.bodies()[i].gain_stm_head().set_mode(mode);
-      tx.bodies()[i].gain_stm_head().set_cycle(cycle);
+      tx.bodies()[i].gain_stm_head().set_cycle(drives.size());
     }
   } else {
     auto* p = reinterpret_cast<Phase*>(tx.bodies());
-    for (size_t i = 0; i < drives.size(); i++) p[i].set(drives[i]);
+    for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(drives[sent - 1][i]);
   }
 
-  if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::STM_END);
+  if (sent + 1 == drives.size() + 1) tx.header().cpu_flag.set(CPUControlFlags::STM_END);
 
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
 
   tx.num_bodies = tx.size();
 }
 
-inline void gain_stm_normal_duty(const std::vector<Drive>& drives, const bool is_last_frame, TxDatagram& tx) noexcept(false) {
+inline void gain_stm_normal_duty(const std::vector<std::vector<driver::Drive>>& drives, const size_t sent, const uint32_t freq_div,
+                                 const GainSTMMode mode, TxDatagram& tx) noexcept(false) {
+  if (drives.size() > driver::GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 26813)
+#endif
+  if (mode == GainSTMMode::PhaseHalf) throw std::runtime_error("PhaseHalf is not supported in normal mode");
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
   tx.header().cpu_flag.set(CPUControlFlags::IS_DUTY);
 
-  auto* p = reinterpret_cast<Duty*>(tx.bodies());
-  for (size_t i = 0; i < drives.size(); i++) p[i].set(drives[i]);
+  if (sent == 0) {
+    if (freq_div < GAIN_STM_SAMPLING_FREQ_DIV_MIN)
+      throw std::runtime_error("STM frequency division is oud of range. Minimum is " + std::to_string(GAIN_STM_SAMPLING_FREQ_DIV_MIN) +
+                               ", but you use " + std::to_string(freq_div));
+    tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
+    for (size_t i = 0; i < tx.size(); i++) {
+      tx.bodies()[i].gain_stm_head().set_freq_div(freq_div);
+      tx.bodies()[i].gain_stm_head().set_mode(mode);
+      tx.bodies()[i].gain_stm_head().set_cycle(drives.size());
+    }
+  } else {
+    auto* p = reinterpret_cast<Duty*>(tx.bodies());
+    for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(drives[sent - 1][i]);
+  }
 
-  if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::STM_END);
+  if (sent + 1 == drives.size() + 1) tx.header().cpu_flag.set(CPUControlFlags::STM_END);
 
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
 
