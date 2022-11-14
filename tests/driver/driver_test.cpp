@@ -3,7 +3,7 @@
 // Created Date: 20/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/11/2022
+// Last Modified: 14/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -803,13 +803,15 @@ TEST(CPUTest, operation_point_stm_header) {
 TEST(CPUTest, operation_point_stm_body) {
   autd3::driver::TxDatagram tx(10);
 
+  constexpr size_t size = 30;
+
   std::vector<autd3::driver::STMFocus> points_30;
   std::random_device seed_gen;
   std::mt19937 engine(seed_gen());
   std::uniform_real_distribution dist(-1000.0, 1000.0);
   std::uniform_int_distribution dist_u8(0, 0xFF);
   points_30.reserve(30);
-  for (int i = 0; i < 30; i++)
+  for (size_t i = 0; i < size; i++)
     points_30.emplace_back(autd3::driver::STMFocus(dist(engine), dist(engine), dist(engine), static_cast<uint8_t>(dist_u8(engine))));
 
   std::vector<std::vector<autd3::driver::STMFocus>> points;
@@ -820,11 +822,13 @@ TEST(CPUTest, operation_point_stm_body) {
   constexpr uint32_t sp = 340 * 1024;
 
   point_stm_header(tx);
-  point_stm_body(points, true, 3224, sound_speed, false, tx);
+  size_t sent = 0;
+  point_stm_body(points, sent, size, 3224, sound_speed, tx);
 
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);
+  ASSERT_EQ(sent, size);
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
 
   for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].point_stm_head().data()[0], 30);
   for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].point_stm_head().data()[1], 3224);
@@ -834,22 +838,32 @@ TEST(CPUTest, operation_point_stm_body) {
   ASSERT_EQ(tx.num_bodies, 10);
 
   point_stm_header(tx);
-  point_stm_body(points, false, 3224, sound_speed, true, tx);
+  sent = 0;
+  point_stm_body(points, sent, 500, 3224, sound_speed, tx);
 
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);
+  ASSERT_EQ(sent, size);
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
 
   for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].point_stm_head().data()[0], 30);
   ASSERT_EQ(tx.num_bodies, 10);
 
   point_stm_header(tx);
-  point_stm_body({}, true, 3224, sound_speed, false, tx);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);
-  ASSERT_NE(tx.header().fpga_flag.value() & FPGAControlFlags::STM_MODE, 0);
-  ASSERT_EQ(tx.header().fpga_flag.value() & FPGAControlFlags::STM_GAIN_MODE, 0);
+  sent = 1;
+  point_stm_body(points, sent, 500, 3224, sound_speed, tx);
+  ASSERT_EQ(sent, size + 1);
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+
+  point_stm_header(tx);
+  point_stm_body({}, sent, 0, 3224, sound_speed, tx);
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+  ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+  ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_GAIN_MODE));
   ASSERT_EQ(tx.num_bodies, 0);
 }
 
