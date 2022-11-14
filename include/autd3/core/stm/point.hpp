@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/09/2022
+// Last Modified: 14/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -70,9 +70,7 @@ struct PointSTM final : public STM {
    */
   double set_frequency(const double freq) override {
     const auto sample_freq = static_cast<double>(size()) * freq;
-    const auto div = std::clamp(static_cast<uint32_t>(std::round(static_cast<double>(driver::FPGA_CLK_FREQ) / sample_freq)),
-                                driver::POINT_STM_SAMPLING_FREQ_DIV_MIN, std::numeric_limits<uint32_t>::max());
-    _freq_div = div;
+    _freq_div = static_cast<uint32_t>(std::round(static_cast<double>(driver::FPGA_CLK_FREQ) / sample_freq));
     return frequency();
   }
 
@@ -81,15 +79,9 @@ struct PointSTM final : public STM {
    * @param[in] point control point
    * @param[in] duty_shift duty shift. The duty ratio will be (50% >> duty_shift).
    */
-  void add(const Vector3& point, uint8_t duty_shift = 0) {
-    if (_points.size() + 1 > driver::POINT_STM_BUF_SIZE_MAX) throw std::runtime_error("PointSTM out of buffer");
-    _points.emplace_back(point, duty_shift);
-  }
+  void add(const Vector3& point, uint8_t duty_shift = 0) { _points.emplace_back(point, duty_shift); }
 
-  void push_back(const value_type& v) {
-    if (_points.size() + 1 > driver::POINT_STM_BUF_SIZE_MAX) throw std::runtime_error("PointSTM out of buffer");
-    _points.emplace_back(v);
-  }
+  void push_back(const value_type& v) { _points.emplace_back(v); }
 
   size_t size() const override { return _points.size(); }
   void init() override { _sent = 0; }
@@ -98,15 +90,12 @@ struct PointSTM final : public STM {
 
     if (is_finished()) return;
 
-    const auto is_first_frame = _sent == 0;
-    const auto max_size = is_first_frame ? driver::POINT_STM_HEAD_DATA_SIZE : driver::POINT_STM_BODY_DATA_SIZE;
-
-    const auto send_size = std::min(_points.size() - _sent, max_size);
-    const auto is_last_frame = _sent + send_size == _points.size();
-
     std::vector<std::vector<driver::STMFocus>> points;
-    std::transform(geometry.begin(), geometry.end(), std::back_inserter(points), [this, send_size](const Geometry::Device& dev) {
+    points.reserve(geometry.num_devices());
+    std::transform(geometry.begin(), geometry.end(), std::back_inserter(points), [this](const Geometry::Device& dev) {
+      auto send_size = driver::point_stm_send_size(_points.size(), _sent);
       std::vector<driver::STMFocus> lp;
+      lp.reserve(send_size);
       const auto src = _points.data() + _sent;
       std::transform(src, src + send_size, std::back_inserter(lp), [&dev](const auto& p) {
         const auto local = dev.to_local_position(p.point);
@@ -115,9 +104,7 @@ struct PointSTM final : public STM {
       return lp;
     });
 
-    driver::point_stm_body(points, is_first_frame, this->_freq_div, geometry.sound_speed, is_last_frame, tx);
-
-    _sent += send_size;
+    driver::point_stm_body(points, _sent, _points.size(), this->_freq_div, geometry.sound_speed, tx);
   }
 
   [[nodiscard]] bool is_finished() const override { return _sent == _points.size(); }

@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2022
+// Last Modified: 14/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <vector>
 
 #include "body.hpp"
@@ -161,11 +162,18 @@ inline void point_stm_header(TxDatagram& tx) noexcept {
   tx.num_bodies = 0;
 }
 
-inline void point_stm_body(const std::vector<std::vector<STMFocus>>& points, const bool is_first_frame, const uint32_t freq_div,
-                           const double sound_speed, const bool is_last_frame, TxDatagram& tx) noexcept(false) {
+inline size_t point_stm_send_size(const size_t total_size, const size_t sent) noexcept {
+  const auto max_size = sent == 0 ? driver::POINT_STM_HEAD_DATA_SIZE : driver::POINT_STM_BODY_DATA_SIZE;
+  return (std::min)(total_size - sent, max_size);
+}
+
+inline void point_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, const size_t total_size, const uint32_t freq_div,
+                           const double sound_speed, TxDatagram& tx) noexcept(false) {
+  if (total_size > driver::POINT_STM_BUF_SIZE_MAX) throw std::runtime_error("PointSTM out of buffer");
+
   if (points.empty() || points[0].empty()) return;
 
-  if (is_first_frame) {
+  if (sent == 0) {
     if (freq_div < POINT_STM_SAMPLING_FREQ_DIV_MIN)
       throw std::runtime_error("STM frequency division is oud of range. Minimum is " + std::to_string(POINT_STM_SAMPLING_FREQ_DIV_MIN) +
                                ", but you use " + std::to_string(freq_div));
@@ -195,9 +203,12 @@ inline void point_stm_body(const std::vector<std::vector<STMFocus>>& points, con
 
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
 
-  if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::STM_END);
+  const auto send_size = points[0].size();
+  if (sent + send_size == total_size) tx.header().cpu_flag.set(CPUControlFlags::STM_END);
 
   tx.num_bodies = tx.size();
+
+  sent += send_size;
 }
 
 inline void gain_stm_legacy_header(TxDatagram& tx) noexcept {
