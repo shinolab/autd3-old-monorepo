@@ -224,9 +224,12 @@ inline void gain_stm_legacy_header(TxDatagram& tx) noexcept {
   tx.num_bodies = 0;
 }
 
-inline void gain_stm_legacy_body(const std::vector<const std::vector<Drive>*>& drives, const size_t cycle, const bool is_first_frame,
-                                 const uint32_t freq_div, const bool is_last_frame, const GainSTMMode mode, TxDatagram& tx) noexcept(false) {
-  if (is_first_frame) {
+inline void gain_stm_legacy_body(const std::vector<std::vector<driver::Drive>>& drives, size_t& sent, const uint32_t freq_div, const GainSTMMode mode,
+                                 TxDatagram& tx) noexcept(false) {
+  if (drives.size() > driver::GAIN_STM_LEGACY_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+
+  bool is_last_frame = false;
+  if (sent == 0) {
     if (freq_div < GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN)
       throw std::runtime_error("STM frequency division is oud of range. Minimum is " + std::to_string(GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN) +
                                ", but you use " + std::to_string(freq_div));
@@ -235,44 +238,57 @@ inline void gain_stm_legacy_body(const std::vector<const std::vector<Drive>*>& d
     for (size_t i = 0; i < tx.size(); i++) {
       tx.bodies()[i].gain_stm_head().set_freq_div(freq_div);
       tx.bodies()[i].gain_stm_head().set_mode(mode);
-      tx.bodies()[i].gain_stm_head().set_cycle(cycle);
+      tx.bodies()[i].gain_stm_head().set_cycle(drives.size());
     }
+    sent += 1;
   } else {
     switch (mode) {
-      case GainSTMMode::PhaseDutyFull: {
-        auto* p = reinterpret_cast<LegacyDrive*>(tx.bodies());
-        for (size_t i = 0; i < drives[0]->size(); i++) p[i].set(drives[0]->at(i));
-      } break;
-      case GainSTMMode::PhaseFull: {
-        auto* p = reinterpret_cast<LegacyPhaseFull*>(tx.bodies());
-        for (size_t i = 0; i < drives[0]->size(); i++) p[i].set(0, drives[0]->at(i));
-      }
-        if (drives[1] != nullptr) {
+      case GainSTMMode::PhaseDutyFull:
+        is_last_frame = sent + 1 >= drives.size() + 1;
+        {
+          auto* p = reinterpret_cast<LegacyDrive*>(tx.bodies());
+          for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(drives[sent - 1][i]);
+        }
+        sent++;
+        break;
+      case GainSTMMode::PhaseFull:
+        is_last_frame = sent + 2 >= drives.size() + 1;
+        {
           auto* p = reinterpret_cast<LegacyPhaseFull*>(tx.bodies());
-          for (size_t i = 0; i < drives[1]->size(); i++) p[i].set(1, drives[1]->at(i));
+          for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(0, drives[sent - 1][i]);
+        }
+        sent++;
+        if (sent - 1 < drives.size()) {
+          auto* p = reinterpret_cast<LegacyPhaseFull*>(tx.bodies());
+          for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(1, drives[sent - 1][i]);
+          sent++;
         }
         break;
-      case GainSTMMode::PhaseHalf: {
-        auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies());
-        for (size_t i = 0; i < drives[0]->size(); i++) p[i].set(0, drives[0]->at(i));
-      }
-        if (drives[1] != nullptr) {
+      case GainSTMMode::PhaseHalf:
+        is_last_frame = sent + 4 >= drives.size() + 1;
+        {
           auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies());
-          for (size_t i = 0; i < drives[1]->size(); i++) p[i].set(1, drives[1]->at(i));
+          for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(0, drives[sent - 1][i]);
         }
-        if (drives[2] != nullptr) {
+        sent++;
+        if (sent - 1 < drives.size()) {
           auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies());
-          for (size_t i = 0; i < drives[2]->size(); i++) p[i].set(2, drives[2]->at(i));
+          for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(1, drives[sent - 1][i]);
+          sent++;
         }
-        if (drives[3] != nullptr) {
+        if (sent - 1 < drives.size()) {
           auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies());
-          for (size_t i = 0; i < drives[3]->size(); i++) p[i].set(3, drives[3]->at(i));
+          for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(2, drives[sent - 1][i]);
+          sent++;
+        }
+        if (sent - 1 < drives.size()) {
+          auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies());
+          for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(3, drives[sent - 1][i]);
+          sent++;
         }
         break;
-      default: {
-        auto* p = reinterpret_cast<LegacyDrive*>(tx.bodies());
-        for (size_t i = 0; i < drives[0]->size(); i++) p[i].set(drives[0]->at(i));
-      } break;
+      default:
+        throw std::runtime_error("Unknown Gain STM Mode: " + std::to_string(static_cast<int>(mode)));
     }
   }
 

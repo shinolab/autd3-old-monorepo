@@ -599,9 +599,9 @@ TEST(CPUTest, operation_null_header) {
   null_header(1, tx);
 
   ASSERT_EQ(tx.header().msg_id, 1);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::MOD, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::CONFIG_SILENCER, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::CONFIG_SYNC, 0);
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::MOD));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_SILENCER));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_SYNC));
   ASSERT_EQ(tx.header().size, 0);
   ASSERT_EQ(tx.num_bodies, 10);
 }
@@ -611,7 +611,7 @@ TEST(CPUTest, operation_null_body) {
 
   null_body(tx);
 
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_EQ(tx.num_bodies, 0);
 }
 
@@ -627,9 +627,9 @@ TEST(CPUTest, operation_sync) {
 
   sync(cycle.data(), tx);
 
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::MOD, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::CONFIG_SILENCER, 0);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::CONFIG_SYNC, 0);
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::MOD));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_SILENCER));
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_SYNC));
 
   for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++)
     ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT], cycle[i]);
@@ -645,9 +645,9 @@ TEST(CPUTest, operation_modulation) {
   modulation(1, mod_data, 4, true, 2320, false, tx);
 
   ASSERT_EQ(tx.header().msg_id, 1);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::MOD, 0);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::MOD_BEGIN, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::MOD_END, 0);
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::MOD));
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::MOD_BEGIN));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::MOD_END));
   ASSERT_EQ(tx.header().size, 4);
   ASSERT_EQ(tx.header().mod_head().freq_div, 2320);
   ASSERT_EQ(tx.header().mod_head().data[0], 0x00);
@@ -663,9 +663,9 @@ TEST(CPUTest, operation_modulation) {
   modulation(0xFF, mod_data, 4, false, 5, true, tx);
 
   ASSERT_EQ(tx.header().msg_id, 0xFF);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::MOD, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::MOD_BEGIN, 0);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::MOD_END, 0);
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::MOD));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::MOD_BEGIN));
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::MOD_END));
   ASSERT_EQ(tx.header().size, 4);
   ASSERT_EQ(tx.header().mod_body().data[0], 0x04);
   ASSERT_EQ(tx.header().mod_body().data[1], 0x05);
@@ -675,9 +675,9 @@ TEST(CPUTest, operation_modulation) {
   modulation(0xF0, nullptr, 0, false, 5, true, tx);
 
   ASSERT_EQ(tx.header().msg_id, 0xF0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::MOD, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::MOD_BEGIN, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::MOD_END, 0);
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::MOD));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::MOD_BEGIN));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::MOD_END));
   ASSERT_EQ(tx.header().size, 0);
 
   ASSERT_THROW(modulation(1, mod_data, 1159, true, 5, false, tx), std::runtime_error);
@@ -688,9 +688,9 @@ TEST(CPUTest, operation_config_silencer) {
 
   config_silencer(1, 522, 4, tx);
   ASSERT_EQ(tx.header().msg_id, 1);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::MOD, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::CONFIG_SYNC, 0);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::CONFIG_SILENCER, 0);
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::MOD));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_SYNC));
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_SILENCER));
   ASSERT_EQ(tx.header().silencer_header().cycle, 522);
   ASSERT_EQ(tx.header().silencer_header().step, 4);
 
@@ -702,9 +702,9 @@ TEST(CPUTest, normal_legacy_header) {
 
   normal_legacy_header(tx);
 
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
-  ASSERT_NE(tx.header().fpga_flag.value() & FPGAControlFlags::LEGACY_MODE, 0);
-  ASSERT_EQ(tx.header().fpga_flag.value() & FPGAControlFlags::STM_MODE, 0);
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+  ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::LEGACY_MODE));
+  ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
 
   ASSERT_EQ(tx.num_bodies, 0);
 }
@@ -721,7 +721,7 @@ TEST(CPUTest, operation_normal_legacy_body) {
 
   normal_legacy_body(drives, tx);
 
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
 
   for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++) {
     ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT] & 0xFF,
@@ -738,9 +738,9 @@ TEST(CPUTest, operation_normal_header) {
 
   normal_header(tx);
 
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
-  ASSERT_EQ(tx.header().fpga_flag.value() & FPGAControlFlags::LEGACY_MODE, 0);
-  ASSERT_EQ(tx.header().fpga_flag.value() & FPGAControlFlags::STM_MODE, 0);
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+  ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::LEGACY_MODE));
+  ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
 
   ASSERT_EQ(tx.num_bodies, 0);
 }
@@ -757,8 +757,8 @@ TEST(CPUTest, operation_normal_duty_body) {
 
   normal_duty_body(drives, tx);
 
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::IS_DUTY, 0);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
 
   for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++)
     ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT], autd3::driver::Duty::to_duty(drives[i]));
@@ -777,8 +777,8 @@ TEST(CPUTest, operation_normal_phase_body) {
 
   normal_phase_body(drives, tx);
 
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::IS_DUTY, 0);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
 
   for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++)
     ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT],
@@ -791,11 +791,11 @@ TEST(CPUTest, operation_point_stm_header) {
 
   point_stm_header(tx);
 
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);
-  ASSERT_NE(tx.header().fpga_flag.value() & FPGAControlFlags::STM_MODE, 0);
-  ASSERT_EQ(tx.header().fpga_flag.value() & FPGAControlFlags::STM_GAIN_MODE, 0);
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+  ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+  ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_GAIN_MODE));
 
   ASSERT_EQ(tx.num_bodies, 0);
 }
@@ -872,12 +872,12 @@ TEST(CPUTest, operation_gain_stm_legacy_header) {
 
   gain_stm_legacy_header(tx);
 
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);
-  ASSERT_NE(tx.header().fpga_flag.value() & FPGAControlFlags::LEGACY_MODE, 0);
-  ASSERT_NE(tx.header().fpga_flag.value() & FPGAControlFlags::STM_MODE, 0);
-  ASSERT_NE(tx.header().fpga_flag.value() & FPGAControlFlags::STM_GAIN_MODE, 0);
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+  ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::LEGACY_MODE));
+  ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+  ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_GAIN_MODE));
 
   ASSERT_EQ(tx.num_bodies, 0);
 }
@@ -898,19 +898,23 @@ TEST(CPUTest, operation_gain_stm_legacy_body) {
   }
 
   gain_stm_legacy_header(tx);
-  gain_stm_legacy_body({}, 5, true, 3224, false, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);
+  size_t sent = 0;
+  gain_stm_legacy_body(drives_list, sent, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
+  ASSERT_EQ(sent, 1);
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
   for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].gain_stm_head().data()[0], 3224);
   for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].gain_stm_head().data()[1], 0);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].gain_stm_head().data()[3], 5);
   ASSERT_EQ(tx.num_bodies, 10);
 
   gain_stm_legacy_header(tx);
-  gain_stm_legacy_body({drives_list.data()}, 5, false, 3224, false, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);
+  gain_stm_legacy_body(drives_list, sent, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
+  ASSERT_EQ(sent, 2);
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
   for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++) {
     ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT] & 0xFF,
               autd3::driver::LegacyDrive::to_phase(drives_list[0][i]));
@@ -920,10 +924,11 @@ TEST(CPUTest, operation_gain_stm_legacy_body) {
   ASSERT_EQ(tx.num_bodies, 10);
 
   gain_stm_legacy_header(tx);
-  gain_stm_legacy_body({&drives_list[4]}, 5, false, 3224, true, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);
+  sent = 5;
+  gain_stm_legacy_body(drives_list, sent, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
   for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++) {
     ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT] & 0xFF,
               autd3::driver::LegacyDrive::to_phase(drives_list[4][i]));
@@ -938,12 +943,12 @@ TEST(CPUTest, operation_gain_stm_normal_header) {
 
   gain_stm_normal_header(tx);
 
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);
-  ASSERT_EQ(tx.header().fpga_flag.value() & FPGAControlFlags::LEGACY_MODE, 0);
-  ASSERT_NE(tx.header().fpga_flag.value() & FPGAControlFlags::STM_MODE, 0);
-  ASSERT_NE(tx.header().fpga_flag.value() & FPGAControlFlags::STM_GAIN_MODE, 0);
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+  ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::LEGACY_MODE));
+  ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+  ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_GAIN_MODE));
 
   ASSERT_EQ(tx.num_bodies, 0);
 }
@@ -965,20 +970,20 @@ TEST(CPUTest, operation_gain_stm_normal_phase) {
 
   gain_stm_normal_header(tx);
   gain_stm_normal_phase({}, 5, true, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, false, tx);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::IS_DUTY, 0);
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
   for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].gain_stm_head().data()[0], 3224);
   for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].gain_stm_head().data()[1], 0);
   ASSERT_EQ(tx.num_bodies, 10);
 
   gain_stm_normal_header(tx);
   gain_stm_normal_phase(drives_list[0], 5, false, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, false, tx);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::IS_DUTY, 0);
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
   for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++)
     ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT],
               autd3::driver::Phase::to_phase(drives_list[0][i]));
@@ -986,10 +991,10 @@ TEST(CPUTest, operation_gain_stm_normal_phase) {
 
   gain_stm_normal_header(tx);
   gain_stm_normal_phase(drives_list[4], 5, false, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, false, tx);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::IS_DUTY, 0);
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
   for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++)
     ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT],
               autd3::driver::Phase::to_phase(drives_list[4][i]));
@@ -1013,10 +1018,10 @@ TEST(CPUTest, operation_gain_stm_normal_duty) {
 
   gain_stm_normal_header(tx);
   gain_stm_normal_duty(drives_list[0], false, tx);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::IS_DUTY, 0);
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
   for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++)
     ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT],
               autd3::driver::Duty::to_duty(drives_list[0][i]));
@@ -1024,10 +1029,10 @@ TEST(CPUTest, operation_gain_stm_normal_duty) {
 
   gain_stm_normal_header(tx);
   gain_stm_normal_duty(drives_list[4], true, tx);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::WRITE_BODY, 0);
-  ASSERT_EQ(tx.header().cpu_flag.value() & CPUControlFlags::STM_BEGIN, 0);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::STM_END, 0);
-  ASSERT_NE(tx.header().cpu_flag.value() & CPUControlFlags::IS_DUTY, 0);
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
   for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++)
     ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT],
               autd3::driver::Duty::to_duty(drives_list[4][i]));
@@ -1038,20 +1043,20 @@ TEST(CPUTest, operation_force_fan) {
   autd3::driver::TxDatagram tx(10);
 
   force_fan(tx, true);
-  ASSERT_NE(tx.header().fpga_flag.value() & FPGAControlFlags::FORCE_FAN, 0);
+  ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::FORCE_FAN));
 
   force_fan(tx, false);
-  ASSERT_EQ(tx.header().fpga_flag.value() & FPGAControlFlags::FORCE_FAN, 0);
+  ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::FORCE_FAN));
 }
 
 TEST(CPUTest, operation_reads_fpga_info) {
   autd3::driver::TxDatagram tx(10);
 
   reads_fpga_info(tx, true);
-  ASSERT_NE(tx.header().fpga_flag.value() & FPGAControlFlags::READS_FPGA_INFO, 0);
+  ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::READS_FPGA_INFO));
 
   reads_fpga_info(tx, false);
-  ASSERT_EQ(tx.header().fpga_flag.value() & FPGAControlFlags::READS_FPGA_INFO, 0);
+  ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::READS_FPGA_INFO));
 }
 
 TEST(CPUTest, operation_cpu_version) {

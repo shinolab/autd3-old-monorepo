@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2022
+// Last Modified: 14/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -567,7 +567,7 @@ TEST(ControllerTest, point_stm) {
 
   const autd3::Vector3 center = autd.geometry().center();
 
-  constexpr size_t size = 200;
+  constexpr size_t size = 70;
   std::vector<autd3::Point> points;
   constexpr auto radius = 30.0;
   std::vector<size_t> iota(size);
@@ -718,7 +718,7 @@ TEST(ControllerTest, gain_stm_legacy) {
         for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
           ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, cycle >> 1);
           const auto phase = autd3::driver::LegacyDrive::to_phase(drives[k][i * autd3::driver::NUM_TRANS_IN_UNIT + j]) >> 4;
-          ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase, ((phase  << 4) + phase) << 4);
+          ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase, ((phase << 4) + phase) << 4);
         }
       }
     }
