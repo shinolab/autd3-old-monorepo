@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/10/2022
+// Last Modified: 14/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -42,9 +42,7 @@ struct GainSTM final : public STM {
    */
   double set_frequency(const double freq) override {
     const auto sample_freq = static_cast<double>(size()) * freq;
-    const auto div = std::clamp(static_cast<uint32_t>(std::round(static_cast<double>(driver::FPGA_CLK_FREQ) / sample_freq)),
-                                _geometry.mode()->gain_stm_div_min(), std::numeric_limits<uint32_t>::max());
-    _freq_div = div;
+    _freq_div = static_cast<uint32_t>(std::round(static_cast<double>(driver::FPGA_CLK_FREQ) / sample_freq));
     return frequency();
   }
 
