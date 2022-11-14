@@ -1,3 +1,7 @@
+# 2.6.2
+
+- Change `gain::TransducerTest` API
+
 # 2.6.1
 
 - Fix [#44](https://github.com/shinolab/autd3/issues/44)
