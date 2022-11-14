@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/11/2022
+// Last Modified: 14/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -236,7 +236,7 @@ void AUTDGainGrouped(void** gain, const void* const handle) {
 }
 
 void AUTDGainGroupedAdd(void* grouped_gain, const int32_t device_id, void* gain) {
-  auto* const gg = dynamic_cast<autd3::gain::Grouped*>(static_cast<autd3::Gain*>(grouped_gain));
+  auto* const gg = static_cast<autd3::gain::Grouped*>(grouped_gain);
   auto* const g = static_cast<autd3::Gain*>(gain);
   gg->add(device_id, *g);
 }
@@ -252,8 +252,11 @@ void AUTDGainPlaneWave(void** gain, const double n_x, const double n_y, const do
   *gain = new autd3::gain::PlaneWave(to_vec3(n_x, n_y, n_z), amp);
 }
 
-void AUTDGainTransducerTest(void** gain, const int32_t dev_idx, const int32_t tr_idx, const double amp, const double phase) {
-  *gain = new autd3::gain::TransducerTest(dev_idx, tr_idx, amp, phase);
+void AUTDGainTransducerTest(void** gain) { *gain = new autd3::gain::TransducerTest(); }
+
+void AUTDGainTransducerTestSet(void* gain, const int32_t dev_idx, const int32_t tr_idx, const double amp, const double phase) {
+  auto* const g = static_cast<autd3::gain::TransducerTest*>(gain);
+  g->set(dev_idx, tr_idx, amp, phase);
 }
 
 void AUTDGainCustom(void** gain, const double* amp, const double* phase, const uint64_t size) {

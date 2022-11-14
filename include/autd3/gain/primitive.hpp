@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/11/2022
+// Last Modified: 14/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -192,28 +193,32 @@ class Grouped final : public core::Gain {
  */
 class TransducerTest final : public core::Gain {
  public:
+  TransducerTest() noexcept = default;
+
+  void calc(const core::Geometry& geometry) override {
+    for (const auto& [key, value] : _map) {
+      const auto id = geometry[key / driver::NUM_TRANS_IN_UNIT][key % driver::NUM_TRANS_IN_UNIT].id();
+      _drives[id].amp = value.first;
+      _drives[id].phase = value.second;
+    }
+  }
+
   /**
    * @param[in] dev_idx device index
    * @param[in] tr_idx local transducer index
    * @param[in] amp amplitude (from 0.0 to 1.0)
    * @param[in] phase phase in radian
    */
-  explicit TransducerTest(const size_t dev_idx, const size_t tr_idx, const double amp, const double phase) noexcept
-      : _dev_idx(dev_idx), _tr_idx(tr_idx), _amp(amp), _phase(phase) {}
+  void set(const size_t dev_idx, const size_t tr_idx, const double amp, const double phase) {
+    _map.insert_or_assign(dev_idx * driver::NUM_TRANS_IN_UNIT + tr_idx, std::make_pair(amp, phase));
+  }
 
   /**
    * @param[in] tr_idx global transducer index
    * @param[in] amp amplitude (from 0.0 to 1.0)
    * @param[in] phase phase in radian
    */
-  explicit TransducerTest(const size_t tr_idx, const double amp, const double phase) noexcept
-      : TransducerTest(tr_idx / autd3::driver::NUM_TRANS_IN_UNIT, tr_idx % autd3::driver::NUM_TRANS_IN_UNIT, amp, phase) {}
-
-  void calc(const core::Geometry& geometry) override {
-    const auto id = geometry[_dev_idx][_tr_idx].id();
-    _drives[id].amp = _amp;
-    _drives[id].phase = _phase;
-  }
+  void set(const size_t tr_idx, const double amp, const double phase) { _map.insert_or_assign(tr_idx, std::make_pair(amp, phase)); }
 
   ~TransducerTest() override = default;
   TransducerTest(const TransducerTest& v) noexcept = default;
@@ -222,10 +227,7 @@ class TransducerTest final : public core::Gain {
   TransducerTest& operator=(TransducerTest&& obj) = default;
 
  private:
-  size_t _dev_idx;
-  size_t _tr_idx;
-  double _amp;
-  double _phase;
+  std::unordered_map<size_t, std::pair<double, double>> _map;
 };
 
 }  // namespace autd3::gain

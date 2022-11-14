@@ -579,7 +579,6 @@ Plane wave gainを作成する.
 | amp                    | double | in     | amplitude of wave              |
 | return                 | void   | -      | -                              |
 
-
 ## AUTDGainTransducerTest (autd3capi)
 
 TransducerTest gainを作成する.
@@ -589,6 +588,15 @@ TransducerTest gainを作成する.
 | Argument name / return | type     | in/out | description                     |
 | ---------------------- | -------  | ------ | ---------------------           |
 | gain                   | void**   | out    | pointer to TransducerTest gain  |
+| return                 | void     | -      | -                               |
+
+## AUTDGainTransducerTestSet (autd3capi)
+
+TransducerTest gainに振幅と位相をセットする.
+
+| Argument name / return | type     | in/out | description                     |
+| ---------------------- | -------  | ------ | ---------------------           |
+| gain                   | void*    | in     | pointer to TransducerTest gain  |
 | dev_idx                | int32_t  | in     | device index                    |
 | tr_idx                 | int32_t  | in     | local transducer index          |
 | amp                    | double   | in     | amplitude                       |
