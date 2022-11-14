@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/11/2022
+// Last Modified: 14/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -62,7 +62,8 @@ EXPORT_AUTD void AUTDGainFocus(OUT void** gain, IN double x, IN double y, IN dou
 EXPORT_AUTD void AUTDGainBesselBeam(OUT void** gain, IN double x, IN double y, IN double z, IN double n_x, IN double n_y, IN double n_z,
                                     IN double theta_z, IN double amp);
 EXPORT_AUTD void AUTDGainPlaneWave(OUT void** gain, IN double n_x, IN double n_y, IN double n_z, IN double amp);
-EXPORT_AUTD void AUTDGainTransducerTest(OUT void** gain, IN int32_t dev_idx, IN int32_t tr_idx, IN double amp, IN double phase);
+EXPORT_AUTD void AUTDGainTransducerTest(OUT void** gain);
+EXPORT_AUTD void AUTDGainTransducerTestSet(IN void* gain, IN int32_t dev_idx, IN int32_t tr_idx, IN double amp, IN double phase);
 EXPORT_AUTD void AUTDGainCustom(OUT void** gain, IN const double* amp, IN const double* phase, IN uint64_t size);
 EXPORT_AUTD void AUTDDeleteGain(IN const void* gain);
 EXPORT_AUTD void AUTDModulationStatic(OUT void** mod, IN double amp);

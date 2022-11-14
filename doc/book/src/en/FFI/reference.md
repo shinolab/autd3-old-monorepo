@@ -490,7 +490,6 @@ The gain created must be deleted at the end by `AUTDDeleteGain`.
 | amp                    | double | in     | amplitude of wave              |
 | return                 | void   | -      | -                              |
 
-
 ## AUTDGainTransducerTest (autd3capi)
 
 Create TransducerTest gain.
@@ -500,6 +499,15 @@ The gain created must be deleted at the end by `AUTDDeleteGain`.
 | Argument name / return | type     | in/out | description                     |
 | ---------------------- | -------  | ------ | ---------------------           |
 | gain                   | void**   | out    | pointer to TransducerTest gain  |
+| return                 | void     | -      | -                               |
+
+## AUTDGainTransducerTestSet (autd3capi)
+
+Set amp and phase of TransducerTest gain.
+
+| Argument name / return | type     | in/out | description                     |
+| ---------------------- | -------  | ------ | ---------------------           |
+| gain                   | void*    | in     | pointer to TransducerTest gain  |
 | dev_idx                | int32_t  | in     | device index                    |
 | tr_idx                 | int32_t  | in     | local transducer index          |
 | amp                    | double   | in     | amplitude                       |
