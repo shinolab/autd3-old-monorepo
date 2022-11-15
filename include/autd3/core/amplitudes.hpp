@@ -29,8 +29,8 @@ class Amplitudes final : public DatagramBody {
 
   void init() override { _sent = false; }
 
-  void pack(const Geometry& geometry, driver::TxDatagram& tx) override {
-    geometry.driver()->normal_header(tx);
+  void pack(const std::unique_ptr<const driver::Driver>& driver, const Geometry& geometry, driver::TxDatagram& tx) override {
+    driver->normal_header(tx);
     if (is_finished()) return;
 
     std::vector<driver::Drive> drives;
@@ -39,7 +39,7 @@ class Amplitudes final : public DatagramBody {
       std::transform(dev.begin(), dev.end(), std::back_inserter(drives), [&](const auto& tr) { return driver::Drive{0.0, _amp, tr.cycle()}; });
     });
 
-    geometry.driver()->normal_duty_body(drives, tx);
+    driver->normal_duty_body(drives, tx);
     _sent = true;
   }
 
