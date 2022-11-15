@@ -40,7 +40,7 @@ void log_flush(void) {}
 int main() {
   void* cnt = NULL;
   void* link = NULL;
-  AUTDCreateController(&cnt);
+  AUTDCreateController(&cnt, 0);
 
   AUTDAddDevice(cnt, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
   // AUTDAddDeviceQuaternion(cnt, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);

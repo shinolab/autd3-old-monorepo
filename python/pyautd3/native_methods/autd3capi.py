@@ -30,7 +30,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGetLastError.argtypes = [ctypes.c_char_p] 
         self.dll.AUTDGetLastError.restype = ctypes.c_int32
 
-        self.dll.AUTDCreateController.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
+        self.dll.AUTDCreateController.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_uint8] 
         self.dll.AUTDCreateController.restype = None
 
         self.dll.AUTDOpenController.argtypes = [ctypes.c_void_p, ctypes.c_void_p] 

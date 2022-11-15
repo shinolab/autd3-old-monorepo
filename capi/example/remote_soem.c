@@ -4,7 +4,7 @@
  * Created Date: 03/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/11/2022
+ * Last Modified: 15/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ int main() {
   const char* ip = "";
   const uint16_t port = 50632;
 
-  AUTDCreateController(&cnt);
+  AUTDCreateController(&cnt, 0);
 
   AUTDAddDevice(cnt, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 

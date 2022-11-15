@@ -25,10 +25,16 @@ classdef Controller < handle
 
     methods
 
-        function obj = Controller()
+        function obj = Controller(varargin)
+            if nargin < 1
+                driver_version = 0;
+            else
+                driver_version = varargin{1};
+            end
+
             obj.ptr = libpointer('voidPtr', 0);
             pp = libpointer('voidPtrPtr', obj.ptr);
-            calllib('autd3capi', 'AUTDCreateController', pp);
+            calllib('autd3capi', 'AUTDCreateController', pp, driver_version);
         end
 
         function to_legacy(obj)

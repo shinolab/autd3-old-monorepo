@@ -43,10 +43,10 @@ namespace AUTD3Sharp
     {
         internal IntPtr CntPtr => handle;
 
-        public AUTDControllerHandle(bool ownsHandle) : base(ownsHandle)
+        public AUTDControllerHandle(bool ownsHandle, byte driverVersion) : base(ownsHandle)
         {
             handle = new IntPtr();
-            Base.AUTDCreateController(out handle);
+            Base.AUTDCreateController(out handle, driverVersion);
         }
 
         protected override bool ReleaseHandle()
@@ -83,6 +83,14 @@ namespace AUTD3Sharp
         public const int NumTransInDevice = 249;
         public const int NumTransInX = 18;
         public const int NumTransInY = 14;
+
+        public const byte DriverLatest = 0x00;
+        public const byte DriverV2_2 = 0x82;
+        public const byte DriverV2_3 = 0x83;
+        public const byte DriverV2_4 = 0x84;
+        public const byte DriverV2_5 = 0x85;
+        public const byte DriverV2_6 = 0x86;
+        public const byte DriverV2_2 = 0x82;
 
         #endregion
     }
@@ -334,9 +342,9 @@ namespace AUTD3Sharp
 
         #region Controller
 
-        public Controller()
+        public Controller(byte driverVersion = AUTD3.DriverLatest)
         {
-            AUTDControllerHandle = new AUTDControllerHandle(true);
+            AUTDControllerHandle = new AUTDControllerHandle(true, driverVersion);
             Geometry = new Geometry(AUTDControllerHandle.CntPtr);
         }
 
