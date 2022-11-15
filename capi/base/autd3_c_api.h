@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/11/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 EXPORT_AUTD int32_t AUTDGetLastError(OUT char* error);
-EXPORT_AUTD void AUTDCreateController(OUT void** out);
+EXPORT_AUTD void AUTDCreateController(OUT void** out, IN uint8_t driver_version);
 EXPORT_AUTD bool AUTDOpenController(IN void* handle, IN void* link);
 EXPORT_AUTD int32_t AUTDAddDevice(IN void* handle, IN double x, IN double y, IN double z, IN double rz1, IN double ry, IN double rz2);
 EXPORT_AUTD int32_t AUTDAddDeviceQuaternion(IN void* handle, IN double x, IN double y, IN double z, IN double qw, IN double qx, IN double qy,
@@ -27,11 +27,11 @@ EXPORT_AUTD void AUTDFreeController(IN const void* handle);
 EXPORT_AUTD bool AUTDIsOpen(IN const void* handle);
 EXPORT_AUTD bool AUTDGetForceFan(IN const void* handle);
 EXPORT_AUTD bool AUTDGetReadsFPGAInfo(IN const void* handle);
-EXPORT_AUTD int32_t AUTDGetCheckTrials(IN const void* handle);
-EXPORT_AUTD int32_t AUTDGetSendInterval(IN const void* handle);
+EXPORT_AUTD uint64_t AUTDGetAckCheckTimeout(IN const void* handle);
+EXPORT_AUTD uint64_t AUTDGetSendInterval(IN const void* handle);
 EXPORT_AUTD void AUTDSetReadsFPGAInfo(IN void* handle, IN bool reads_fpga_info);
-EXPORT_AUTD void AUTDSetCheckTrials(IN void* handle, IN int32_t trials);
-EXPORT_AUTD void AUTDSetSendInterval(IN void* handle, IN int32_t interval);
+EXPORT_AUTD void AUTDSetAckCheckTimeout(IN void* handle, IN uint64_t timeout);
+EXPORT_AUTD void AUTDSetSendInterval(IN void* handle, IN uint64_t interval);
 EXPORT_AUTD void AUTDSetForceFan(IN void* handle, IN bool force);
 EXPORT_AUTD double AUTDGetSoundSpeed(IN const void* handle);
 EXPORT_AUTD void AUTDSetSoundSpeed(IN void* handle, IN double sound_speed);
@@ -62,7 +62,8 @@ EXPORT_AUTD void AUTDGainFocus(OUT void** gain, IN double x, IN double y, IN dou
 EXPORT_AUTD void AUTDGainBesselBeam(OUT void** gain, IN double x, IN double y, IN double z, IN double n_x, IN double n_y, IN double n_z,
                                     IN double theta_z, IN double amp);
 EXPORT_AUTD void AUTDGainPlaneWave(OUT void** gain, IN double n_x, IN double n_y, IN double n_z, IN double amp);
-EXPORT_AUTD void AUTDGainTransducerTest(OUT void** gain, IN int32_t dev_idx, IN int32_t tr_idx, IN double amp, IN double phase);
+EXPORT_AUTD void AUTDGainTransducerTest(OUT void** gain);
+EXPORT_AUTD void AUTDGainTransducerTestSet(IN void* gain, IN int32_t dev_idx, IN int32_t tr_idx, IN double amp, IN double phase);
 EXPORT_AUTD void AUTDGainCustom(OUT void** gain, IN const double* amp, IN const double* phase, IN uint64_t size);
 EXPORT_AUTD void AUTDDeleteGain(IN const void* gain);
 EXPORT_AUTD void AUTDModulationStatic(OUT void** mod, IN double amp);

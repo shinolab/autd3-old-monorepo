@@ -15,7 +15,7 @@ if __name__ == '__main__':
         print(Controller.last_error())
         exit()
 
-    autd.check_trials = 50
+    autd.ack_check_timeout_ms = 20
 
     autd.send(Clear())
 

@@ -4,7 +4,7 @@
  * Created Date: 23/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/11/2022
+ * Last Modified: 15/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -88,8 +88,8 @@ public class AUTDService
             return false;
         }
 
-        _autd.CheckTrials = linkVm.CheckTrials;
-        _autd.SendIntervals = linkVm.SendIntervals;
+        _autd.AckCheckTimeoutMs = linkVm.AckCheckTimeoutMs;
+        _autd.SendIntervalsMs = linkVm.SendIntervalsMs;
 
         _autd.Send(new Static());
 

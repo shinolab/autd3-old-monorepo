@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/08/2022
+ * Last Modified: 15/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -39,7 +39,7 @@ fn main() -> Result<()> {
 
     let mut autd = Controller::open(geometry, link).expect("Failed to open");
 
-    autd.check_trials = 50;
+    autd.ack_check_timeout = std::time::Duration::from_millis(20);
 
     run!(autd);
 

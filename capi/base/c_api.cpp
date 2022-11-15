@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/11/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,6 +17,11 @@
 
 #include "./autd3_c_api.h"
 #include "autd3.hpp"
+#include "autd3/driver/v2_2/driver.hpp"
+#include "autd3/driver/v2_3/driver.hpp"
+#include "autd3/driver/v2_4/driver.hpp"
+#include "autd3/driver/v2_5/driver.hpp"
+#include "autd3/driver/v2_6/driver.hpp"
 #include "autd3/modulation/lpf.hpp"
 #include "custom.hpp"
 #include "wrapper.hpp"
@@ -55,7 +60,29 @@ int32_t AUTDGetLastError(char* error) {
   return size;
 }
 
-void AUTDCreateController(void** out) { *out = new Controller; }
+std::unique_ptr<const autd3::driver::Driver> get_driver(const uint8_t driver_version) {
+  switch (driver_version) {
+    case 0x00:
+      return std::make_unique<autd3::DriverLatest>();
+    case 0x82:
+      return std::make_unique<autd3::driver::DriverV2_2>();
+    case 0x83:
+      return std::make_unique<autd3::driver::DriverV2_3>();
+    case 0x84:
+      return std::make_unique<autd3::driver::DriverV2_4>();
+    case 0x85:
+      return std::make_unique<autd3::driver::DriverV2_5>();
+    case 0x86:
+      return std::make_unique<autd3::driver::DriverV2_6>();
+    default:
+      throw std::runtime_error("unknown driver version: " + std::to_string(driver_version));
+  }
+}
+
+void AUTDCreateController(void** out, const uint8_t driver_version) {
+  auto driver = get_driver(driver_version);
+  *out = new Controller(std::move(driver));
+}
 
 bool AUTDOpenController(void* const handle, void* const link) {
   auto* const wrapper = static_cast<Controller*>(handle);
@@ -99,13 +126,13 @@ bool AUTDGetReadsFPGAInfo(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   return wrapper->reads_fpga_info;
 }
-int32_t AUTDGetCheckTrials(const void* const handle) {
+uint64_t AUTDGetAckCheckTimeout(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
-  return static_cast<int32_t>(wrapper->check_trials);
+  return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(wrapper->get_ack_check_timeout()).count());
 }
-int32_t AUTDGetSendInterval(const void* const handle) {
+uint64_t AUTDGetSendInterval(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
-  return static_cast<int32_t>(wrapper->send_interval);
+  return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(wrapper->get_send_interval()).count());
 }
 void AUTDSetForceFan(void* const handle, const bool force) {
   auto* const wrapper = static_cast<Controller*>(handle);
@@ -115,13 +142,13 @@ void AUTDSetReadsFPGAInfo(void* const handle, const bool reads_fpga_info) {
   auto* const wrapper = static_cast<Controller*>(handle);
   wrapper->reads_fpga_info = reads_fpga_info;
 }
-void AUTDSetCheckTrials(void* const handle, const int32_t trials) {
+void AUTDSetAckCheckTimeout(void* const handle, const uint64_t timeout) {
   auto* const wrapper = static_cast<Controller*>(handle);
-  wrapper->check_trials = static_cast<size_t>(trials);
+  wrapper->set_ack_check_timeout(std::chrono::nanoseconds(timeout));
 }
-void AUTDSetSendInterval(void* const handle, const int32_t interval) {
+void AUTDSetSendInterval(void* const handle, const uint64_t interval) {
   auto* const wrapper = static_cast<Controller*>(handle);
-  wrapper->send_interval = static_cast<size_t>(interval);
+  wrapper->set_send_interval(std::chrono::nanoseconds(interval));
 }
 double AUTDGetTransFrequency(const void* const handle, const int32_t device_idx, const int32_t local_trans_idx) {
   const auto* const wrapper = static_cast<const Controller*>(handle);
@@ -236,7 +263,7 @@ void AUTDGainGrouped(void** gain, const void* const handle) {
 }
 
 void AUTDGainGroupedAdd(void* grouped_gain, const int32_t device_id, void* gain) {
-  auto* const gg = dynamic_cast<autd3::gain::Grouped*>(static_cast<autd3::Gain*>(grouped_gain));
+  auto* const gg = static_cast<autd3::gain::Grouped*>(grouped_gain);
   auto* const g = static_cast<autd3::Gain*>(gain);
   gg->add(device_id, *g);
 }
@@ -252,8 +279,11 @@ void AUTDGainPlaneWave(void** gain, const double n_x, const double n_y, const do
   *gain = new autd3::gain::PlaneWave(to_vec3(n_x, n_y, n_z), amp);
 }
 
-void AUTDGainTransducerTest(void** gain, const int32_t dev_idx, const int32_t tr_idx, const double amp, const double phase) {
-  *gain = new autd3::gain::TransducerTest(dev_idx, tr_idx, amp, phase);
+void AUTDGainTransducerTest(void** gain) { *gain = new autd3::gain::TransducerTest(); }
+
+void AUTDGainTransducerTestSet(void* gain, const int32_t dev_idx, const int32_t tr_idx, const double amp, const double phase) {
+  auto* const g = static_cast<autd3::gain::TransducerTest*>(gain);
+  g->set(dev_idx, tr_idx, amp, phase);
 }
 
 void AUTDGainCustom(void** gain, const double* amp, const double* phase, const uint64_t size) {

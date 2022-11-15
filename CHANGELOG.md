@@ -1,3 +1,9 @@
+# 2.6.2
+
+- Remove `Controller::check_trials`, add `Controllse::set_ack_check_timeout` instead
+- Add `driver::Driver` class to drive old firmware
+- Change `gain::TransducerTest` API
+
 # 2.6.1
 
 - Fix [#44](https://github.com/shinolab/autd3/issues/44)

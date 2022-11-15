@@ -204,11 +204,11 @@
   <data name="Shell_Modulation.Content" xml:space="preserve">
     <value>Modulation</value>
   </data>
-  <data name="LinkPage_CheckTrials.Text" xml:space="preserve">
-    <value>最大応答確認数</value>
+  <data name="LinkPage_AckCheckTimeoutMs.Text" xml:space="preserve">
+    <value>応答確認タイムアウト [ms]</value>
   </data>
   <data name="LinkPage_SendIntervals.Text" xml:space="preserve">
-    <value>送信間隔</value>
+    <value>送信間隔 [ms]</value>
   </data>
   <data name="Shell_Silencer.Content" xml:space="preserve">
     <value>Silencer</value>

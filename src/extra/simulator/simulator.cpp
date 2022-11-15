@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/11/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,8 +19,8 @@
 #include <vulkan_context.hpp>
 #include <window_handler.hpp>
 
-#include "autd3/driver/cpu/datagram.hpp"
-#include "autd3/driver/cpu/ec_config.hpp"
+#include "autd3/driver/common/cpu/datagram.hpp"
+#include "autd3/driver/common/cpu/ec_config.hpp"
 #include "autd3/extra/cpu_emulator.hpp"
 #include "field_compute.hpp"
 #include "slice_viewer.hpp"

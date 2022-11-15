@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,8 +16,8 @@
 #include <cstring>
 #include <vector>
 
-#include "autd3/driver/cpu/defined.hpp"
-#include "autd3/driver/fpga/defined.hpp"
+#include "autd3/driver/common/cpu/defined.hpp"
+#include "autd3/driver/common/fpga/defined.hpp"
 #include "autd3/driver/hardware.hpp"
 
 namespace autd3::driver {

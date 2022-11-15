@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/11/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -42,11 +42,11 @@ struct SilencerConfig final : DatagramHeader {
 
   void init() override { _sent = false; }
 
-  void pack(const uint8_t msg_id, driver::TxDatagram& tx) override {
+  void pack(const std::unique_ptr<const driver::Driver>& driver, const uint8_t msg_id, driver::TxDatagram& tx) override {
     if (_sent)
-      driver::null_header(msg_id, tx);
+      driver->null_header(msg_id, tx);
     else
-      driver::config_silencer(msg_id, cycle, step, tx);
+      driver->config_silencer(msg_id, cycle, step, tx);
     _sent = true;
   }
 

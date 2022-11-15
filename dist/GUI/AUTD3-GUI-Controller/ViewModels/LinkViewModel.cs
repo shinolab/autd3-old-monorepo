@@ -4,7 +4,7 @@
  * Created Date: 18/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/10/2022
+ * Last Modified: 15/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -89,12 +89,12 @@ public partial class LinkViewModel
     async partial void OnLocalAmsNetIdChanged(string value) => await _localSettingsService.SaveSettingAsync(nameof(LocalAmsNetId), value);
 
     [ObservableProperty]
-    private int _checkTrials;
-    async partial void OnCheckTrialsChanged(int value) => await _localSettingsService.SaveSettingAsync(nameof(CheckTrials), value);
+    private ulong _ackCheckTimeoutMs;
+    async partial void OnAckCheckTimeoutMsChanged(ulong value) => await _localSettingsService.SaveSettingAsync(nameof(AckCheckTimeoutMs), value);
 
     [ObservableProperty]
-    private int _sendIntervals;
-    async partial void OnSendIntervalsChanged(int value) => await _localSettingsService.SaveSettingAsync(nameof(SendIntervals), value);
+    private ulong _sendIntervalsMs;
+    async partial void OnSendIntervalsMsChanged(ulong value) => await _localSettingsService.SaveSettingAsync(nameof(SendIntervalsMs), value);
 
     [ObservableProperty] private string _remoteSOEMIp;
     async partial void OnRemoteSOEMIpChanged(string value) => await _localSettingsService.SaveSettingAsync(nameof(RemoteIp), value);
@@ -178,8 +178,8 @@ public partial class LinkViewModel
         _remoteAmsNetId = _localSettingsService.ReadSetting<string>(nameof(RemoteAmsNetId)) ?? "";
         _localAmsNetId = _localSettingsService.ReadSetting<string>(nameof(LocalAmsNetId)) ?? "";
 
-        _checkTrials = _localSettingsService.ReadSetting<int?>(nameof(CheckTrials)) ?? 0;
-        _sendIntervals = _localSettingsService.ReadSetting<int?>(nameof(SendIntervals)) ?? 1;
+        _ackCheckTimeoutMs = _localSettingsService.ReadSetting<ulong?>(nameof(AckCheckTimeoutMs)) ?? 0;
+        _sendIntervalsMs = _localSettingsService.ReadSetting<ulong?>(nameof(SendIntervalsMs)) ?? 1;
 
         _remoteSOEMIp = _localSettingsService.ReadSetting<string>(nameof(RemoteSOEMIp)) ?? "";
         _remoteSOEMPort = _localSettingsService.ReadSetting<ushort?>(nameof(RemoteSOEMPort)) ?? 50632;

@@ -3,7 +3,7 @@
 # Created Date: 14/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 10/11/2022
+# Last Modified: 15/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,8 +25,8 @@ mutable struct Controller
     set_force_fan
     get_reads_fpga_info
     set_reads_fpga_info
-    get_check_trials
-    set_check_trials
+    get_ack_check_timeout
+    set_ack_check_timeout
     get_send_interval
     set_send_interval
     get_sound_speed
@@ -48,7 +48,7 @@ mutable struct Controller
     send
     function Controller()
         chandle = Ref(Ptr{Cvoid}(0))
-        autd3capi.autd_create_controller(chandle)
+        autd3capi.autd_create_controller(chandle, UInt8(0))
         cnt = new(chandle[])
         cnt.add_device = function (pos::SVector{3,Float64}, rot::SVector{3,Float64})
             x, y, z = pos
@@ -71,10 +71,10 @@ mutable struct Controller
         cnt.set_force_fan = (flag::Bool) -> autd3capi.autd_set_force_fan(cnt._ptr, flag)
         cnt.get_reads_fpga_info = () -> autd3capi.autd_get_reads_fpga_info(cnt._ptr)
         cnt.set_reads_fpga_info = (flag::Bool) -> autd3capi.autd_set_reads_fpga_info(cnt._ptr, flag)
-        cnt.get_check_trials = () -> autd3capi.autd_get_check_trials(cnt._ptr)
-        cnt.set_check_trials = (value) -> autd3capi.autd_set_check_trials(cnt._ptr, Int32(value))
+        cnt.get_ack_check_timeout = () -> autd3capi.autd_get_ack_check_timeout(cnt._ptr)
+        cnt.set_ack_check_timeout = (value) -> autd3capi.autd_set_ack_check_timeout(cnt._ptr, UInt64(value))
         cnt.get_send_interval = () -> autd3capi.autd_get_send_interval(cnt._ptr)
-        cnt.set_send_interval = (value) -> autd3capi.autd_set_send_interval(cnt._ptr, Int32(value))
+        cnt.set_send_interval = (value) -> autd3capi.autd_set_send_interval(cnt._ptr, UInt64(value))
         cnt.get_sound_speed = () -> autd3capi.autd_get_sound_speed(cnt._ptr)
         cnt.set_sound_speed = (value::Float64) -> autd3capi.autd_set_sound_speed(cnt._ptr, value)
         cnt.get_attenuation = () -> autd3capi.autd_get_attenuation(cnt._ptr)

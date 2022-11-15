@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 13/11/2022
+Last Modified: 15/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,6 +16,7 @@ from pyautd3.autd import SilencerConfig
 from pyautd3.autd import Controller
 from pyautd3.autd import Amplitudes
 from pyautd3.autd import NUM_TRANS_IN_UNIT, NUM_TRANS_X, NUM_TRANS_Y, TRANS_SPACING, DEVICE_HEIGHT, DEVICE_WIDTH
+from pyautd3.autd import DRIVER_LATEST, DRIVER_V2_2, DRIVER_V2_3, DRIVER_V2_4, DRIVER_V2_5, DRIVER_V2_6
 from pyautd3.autd import Clear, UpdateFlag, Synchronize, ModDelayConfig, Stop
 
 __all__ = [
@@ -32,7 +33,13 @@ __all__ = [
     'NUM_TRANS_Y',
     'TRANS_SPACING',
     'DEVICE_WIDTH',
-    'DEVICE_HEIGHT'
+    'DEVICE_HEIGHT',
+    'DRIVER_LATEST',
+    'DRIVER_V2_2',
+    'DRIVER_V2_3',
+    'DRIVER_V2_4',
+    'DRIVER_V2_5',
+    'DRIVER_V2_6'
 ]
 
-__version__ = '2.6.1'
+__version__ = '2.6.2'

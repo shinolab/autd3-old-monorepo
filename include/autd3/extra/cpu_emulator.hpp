@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@
 
 #include <algorithm>
 
-#include "autd3/driver/cpu/datagram.hpp"
+#include "autd3/driver/common/cpu/datagram.hpp"
 #include "autd3/driver/hardware.hpp"
 #include "fpga_emulator.hpp"
 

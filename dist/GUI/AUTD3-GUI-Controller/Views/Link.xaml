@@ -4,8 +4,8 @@
     Created Date: 18/08/2022
     Author: Shun Suzuki
     =====
-    Last Modified: 29/10/2022
-    Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+Last Modified: 15/11/2022
+Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
     =====
     Copyright (c) 2022 Shun Suzuki. All rights reserved.
 -->
@@ -231,7 +231,7 @@
                 Grid.Row="0"
                 Grid.Column="0"
                 VerticalAlignment="Center"
-                localization:Localizer.Uid="LinkPage_CheckTrials" />
+                localization:Localizer.Uid="LinkPage_AckCheckTimeoutMs" />
             <NumberBox
                 Grid.Row="0"
                 Grid.Column="1"
@@ -241,7 +241,7 @@
                 Minimum="0"
                 SmallChange="1"
                 SpinButtonPlacementMode="Compact"
-                Text="{x:Bind ViewModel.CheckTrials, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                Text="{x:Bind ViewModel.AckCheckTimeoutMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
             <TextBlock
                 Grid.Row="1"
                 Grid.Column="0"
@@ -256,7 +256,7 @@
                 Minimum="1"
                 SmallChange="1"
                 SpinButtonPlacementMode="Compact"
-                Text="{x:Bind ViewModel.SendIntervals, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                Text="{x:Bind ViewModel.SendIntervalsMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
         </Grid>
         <Grid
             Grid.Row="2"
