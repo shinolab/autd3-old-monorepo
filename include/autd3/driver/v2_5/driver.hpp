@@ -259,7 +259,6 @@ class DriverV2_5 final : public Driver {
       for (size_t i = 0; i < tx.size(); i++) {
         tx.bodies()[i].gain_stm_head().set_freq_div(freq_div);
         tx.bodies()[i].gain_stm_head().set_mode(mode);
-        tx.bodies()[i].gain_stm_head().set_cycle(drives.size());
       }
       sent++;
     } else {
@@ -356,7 +355,6 @@ class DriverV2_5 final : public Driver {
       for (size_t i = 0; i < tx.size(); i++) {
         tx.bodies()[i].gain_stm_head().set_freq_div(freq_div);
         tx.bodies()[i].gain_stm_head().set_mode(mode);
-        tx.bodies()[i].gain_stm_head().set_cycle(drives.size());
       }
     } else {
       auto* p = reinterpret_cast<Phase*>(tx.bodies());
@@ -393,7 +391,6 @@ class DriverV2_5 final : public Driver {
       for (size_t i = 0; i < tx.size(); i++) {
         tx.bodies()[i].gain_stm_head().set_freq_div(freq_div);
         tx.bodies()[i].gain_stm_head().set_mode(mode);
-        tx.bodies()[i].gain_stm_head().set_cycle(drives.size());
       }
     } else {
       auto* p = reinterpret_cast<Duty*>(tx.bodies());
