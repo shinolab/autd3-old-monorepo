@@ -90,7 +90,6 @@ namespace AUTD3Sharp
         public const byte DriverV2_4 = 0x84;
         public const byte DriverV2_5 = 0x85;
         public const byte DriverV2_6 = 0x86;
-        public const byte DriverV2_2 = 0x82;
 
         #endregion
     }
