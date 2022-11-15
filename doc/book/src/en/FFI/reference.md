@@ -29,6 +29,7 @@ The controller created must be freed at the end by `AUTDFreeController`.
 | Argument name / return | type   | in/out | description                      |
 | ---------------------- | ------ | ------ | -------------------------------- |
 | out                    | void** | out    | pointer to pointer to Controller |
+| driver_version         | uint8_t| in     | driver version                   |
 | return                 | void   | -      | -                                |
 
 ## AUTDOpenController (autd3capi)
@@ -143,23 +144,23 @@ Get Reads FPGA info flag
 | handle                 | void* | in     | pointer to Controller |
 | return                 | bool  | -      | Reads FPGA info flag  |
 
-## AUTDGetCheckTrials (autd3capi)
+## AUTDGetAckCheckTimeout (autd3capi)
 
-Get Check trials.
+Get AckCheckTimeout in ns.
 
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
 | handle                 | void*   | in     | pointer to Controller |
-| return                 | int32_t | -      | Check trials          |
+| return                 | uint64_t| -      | Check timeout in ns   |
 
 ## AUTDGetSendInterval (autd3capi)
 
-Get Send interval.
+Get Send interval in ns.
 
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
 | handle                 | void*   | in     | pointer to Controller |
-| return                 | int32_t | -      | Send interval         |
+| return                 | uint64_t | -      | Send interval in ns   |
 
 ## AUTDSetReadsFPGAInfo (autd3capi)
 
@@ -171,24 +172,24 @@ Set Reads FPGA info flag.
 | reads_fpga_info        | bool  | in     | read FPGA info flag   |
 | return                 | void  | -      | -                     |
 
-## AUTDSetCheckTrials (autd3capi)
+## AUTDSetAckCheckTimeout (autd3capi)
 
-Set Check trials.
+Set AckCheckTimeout in ns.
 
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
 | handle                 | void*   | in     | pointer to Controller |
-| trials                 | int32_t | in     | check trials          |
+| timeout                | uint64_t | in     | AckCheckTimeout in ns |
 | return                 | void    | -      | -                     |
 
 ## AUTDSetSendInterval (autd3capi)
 
-Set Send interval.
+Set Send interval in ns.
 
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
 | handle                 | void*   | in     | pointer to Controller |
-| interval               | int32_t | in     | Send interval         |
+| interval               | uint64_t | in     | Send interval in ns  |
 | return                 | void    | -      | -                     |
 
 ## AUTDSetForceFan (autd3capi)
@@ -490,7 +491,6 @@ The gain created must be deleted at the end by `AUTDDeleteGain`.
 | amp                    | double | in     | amplitude of wave              |
 | return                 | void   | -      | -                              |
 
-
 ## AUTDGainTransducerTest (autd3capi)
 
 Create TransducerTest gain.
@@ -500,6 +500,15 @@ The gain created must be deleted at the end by `AUTDDeleteGain`.
 | Argument name / return | type     | in/out | description                     |
 | ---------------------- | -------  | ------ | ---------------------           |
 | gain                   | void**   | out    | pointer to TransducerTest gain  |
+| return                 | void     | -      | -                               |
+
+## AUTDGainTransducerTestSet (autd3capi)
+
+Set amp and phase of TransducerTest gain.
+
+| Argument name / return | type     | in/out | description                     |
+| ---------------------- | -------  | ------ | ---------------------           |
+| gain                   | void*    | in     | pointer to TransducerTest gain  |
 | dev_idx                | int32_t  | in     | device index                    |
 | tr_idx                 | int32_t  | in     | local transducer index          |
 | amp                    | double   | in     | amplitude                       |

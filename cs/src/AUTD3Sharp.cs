@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/11/2022
+ * Last Modified: 15/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -43,10 +43,10 @@ namespace AUTD3Sharp
     {
         internal IntPtr CntPtr => handle;
 
-        public AUTDControllerHandle(bool ownsHandle) : base(ownsHandle)
+        public AUTDControllerHandle(bool ownsHandle, byte driverVersion) : base(ownsHandle)
         {
             handle = new IntPtr();
-            Base.AUTDCreateController(out handle);
+            Base.AUTDCreateController(out handle, driverVersion);
         }
 
         protected override bool ReleaseHandle()
@@ -83,6 +83,13 @@ namespace AUTD3Sharp
         public const int NumTransInDevice = 249;
         public const int NumTransInX = 18;
         public const int NumTransInY = 14;
+
+        public const byte DriverLatest = 0x00;
+        public const byte DriverV2_2 = 0x82;
+        public const byte DriverV2_3 = 0x83;
+        public const byte DriverV2_4 = 0x84;
+        public const byte DriverV2_5 = 0x85;
+        public const byte DriverV2_6 = 0x86;
 
         #endregion
     }
@@ -334,9 +341,9 @@ namespace AUTD3Sharp
 
         #region Controller
 
-        public Controller()
+        public Controller(byte driverVersion = AUTD3.DriverLatest)
         {
-            AUTDControllerHandle = new AUTDControllerHandle(true);
+            AUTDControllerHandle = new AUTDControllerHandle(true, driverVersion);
             Geometry = new Geometry(AUTDControllerHandle.CntPtr);
         }
 
@@ -413,13 +420,24 @@ namespace AUTD3Sharp
             set => Base.AUTDSetReadsFPGAInfo(AUTDControllerHandle.CntPtr, value);
         }
 
-        public int CheckTrials
+        public ulong AckCheckTimeoutMs
         {
-            get => Base.AUTDGetCheckTrials(AUTDControllerHandle.CntPtr);
-            set => Base.AUTDSetCheckTrials(AUTDControllerHandle.CntPtr, value);
+            get => Base.AUTDGetAckCheckTimeout(AUTDControllerHandle.CntPtr) / 1000 / 1000;
+            set => Base.AUTDSetAckCheckTimeout(AUTDControllerHandle.CntPtr, value * 1000 * 1000);
+        }
+        public ulong AckCheckTimeoutNs
+        {
+            get => Base.AUTDGetAckCheckTimeout(AUTDControllerHandle.CntPtr);
+            set => Base.AUTDSetAckCheckTimeout(AUTDControllerHandle.CntPtr, value);
         }
 
-        public int SendIntervals
+        public ulong SendIntervalsMs
+        {
+            get => Base.AUTDGetSendInterval(AUTDControllerHandle.CntPtr) / 1000 / 1000;
+            set => Base.AUTDSetSendInterval(AUTDControllerHandle.CntPtr, value * 1000 * 1000);
+        }
+
+        public ulong SendIntervalsNs
         {
             get => Base.AUTDGetSendInterval(AUTDControllerHandle.CntPtr);
             set => Base.AUTDSetSendInterval(AUTDControllerHandle.CntPtr, value);

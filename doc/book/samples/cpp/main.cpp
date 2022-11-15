@@ -11,7 +11,7 @@ int main() try {
   auto link = autd3::link::SOEM().high_precision(true).build();
   autd.open(std::move(link));
 
-  autd.check_trials = 50;
+  autd.set_ack_check_timeout(std::chrono::milliseconds(20));
 
   autd << autd3::clear << autd3::synchronize;
 

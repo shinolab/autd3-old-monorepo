@@ -4,7 +4,7 @@
  * Created Date: 10/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2022
+ * Last Modified: 15/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -72,7 +72,7 @@ public class SimpleAUTDController : MonoBehaviour
 #endif
         }
 
-        _autd.CheckTrials = 50;
+        _autd.AckCheckTimeoutMs = 20;
 
         _autd.Send(new Clear());
 

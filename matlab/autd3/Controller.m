@@ -4,7 +4,7 @@
 %Created Date: 07/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 10/11/2022
+%Last Modified: 15/11/2022
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,17 +18,23 @@ classdef Controller < handle
         reads_fpga_info = false
         force_fan = false
         attenuation = 0.0
-        check_trials = 0
+        ack_check_timeout = 0
         send_interval = 1
         sound_speed = 340
     end
 
     methods
 
-        function obj = Controller()
+        function obj = Controller(varargin)
+            if nargin < 1
+                driver_version = 0;
+            else
+                driver_version = varargin{1};
+            end
+
             obj.ptr = libpointer('voidPtr', 0);
             pp = libpointer('voidPtrPtr', obj.ptr);
-            calllib('autd3capi', 'AUTDCreateController', pp);
+            calllib('autd3capi', 'AUTDCreateController', pp, driver_version);
         end
 
         function to_legacy(obj)
@@ -81,13 +87,13 @@ classdef Controller < handle
             value = calllib('autd3capi', 'AUTDGetReadsFPGAInfo', obj.ptr);
         end
 
-        function set.check_trials(obj, value)
-            obj.check_trials = value;
-            calllib('autd3capi', 'AUTDeSetCheckTrials', obj.ptr, value);
+        function set.ack_check_timeout(obj, value)
+            obj.ack_check_timeout = value;
+            calllib('autd3capi', 'AUTDSetAckCheckTimeout', obj.ptr, value);
         end
 
-        function value = get.check_trials(obj)
-            value = calllib('autd3capi', 'AUTDGetCheckTrials', obj.ptr);
+        function value = get.ack_check_timeout(obj)
+            value = calllib('autd3capi', 'AUTDGetAckCheckTimeout', obj.ptr);
         end
 
         function set.send_interval(obj, value)

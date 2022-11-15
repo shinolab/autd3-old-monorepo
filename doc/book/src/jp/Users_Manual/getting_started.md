@@ -157,11 +157,11 @@ autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
 
 linkの型は`unique_ptr`であるため, `Controller`に渡す際は`move`する必要がある.
 
-次に, `check_trials`を50にセットしている. これは変更しなくても良いが, セットしておくと信頼性が増す. SOEM
-link使用時は50程度の値にセットしておくことをお勧めする.
+次に, `ack_check_timeout`を$\SI{20}{ms}$にセットしている. これは変更しなくても良いが, セットしておくと信頼性が増す. 
+SOEM link使用時は$\SI{10}{ms}$から$\SI{20}{ms}$程度の値にセットしておくことをお勧めする.
 
 ```cpp
-autd.check_trials = 50;
+  autd.set_ack_check_timeout(std::chrono::milliseconds(20));
 ```
 
 次に, AUTDデバイスの初期化と同期を行う. 

@@ -16,7 +16,7 @@ fn main() {
 
     let mut autd = Controller::open(geometry, link).expect("Failed to open");
 
-    autd.check_trials = 50;
+    autd.ack_check_timeout = std::time::Duration::from_millis(20);
 
     autd.clear().unwrap();
 

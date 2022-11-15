@@ -28,6 +28,7 @@ Controllerを作成する.
 | Argument name / return | type   | in/out | description                      |
 | ---------------------- | ------ | ------ | -------------------------------- |
 | out                    | void** | out    | pointer to pointer to Controller |
+| driver_version         | uint8_t| in     | driver version                   |
 | return                 | void   | -      | -                                |
 
 ## AUTDOpenController (autd3capi)
@@ -166,27 +167,27 @@ handleは`AUTDCreateController`で作成したものを使う.
 | handle                 | void* | in     | pointer to Controller |
 | return                 | bool  | -      | Reads FPGA info flag  |
 
-## AUTDGetCheckTrials (autd3capi)
+## AUTDGetAckCheckTimeout (autd3capi)
 
-Check trialsを返す.
+AckCheckTimeoutをナノ秒単位で返す.
 
 handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
 | handle                 | void*   | in     | pointer to Controller |
-| return                 | int32_t | -      | Check trials          |
+| return                 | uint64_t | -      | AckCheckTimeout in ns |
 
 ## AUTDGetSendInterval (autd3capi)
 
-Send intervalを返す.
+Send intervalをナノ秒単位で返す.
 
 handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
 | handle                 | void*   | in     | pointer to Controller |
-| return                 | int32_t | -      | Send interval         |
+| return                 | uint64_t | -      | Send interval in ns  |
 
 ## AUTDSetReadsFPGAInfo (autd3capi)
 
@@ -202,28 +203,28 @@ handleは`AUTDCreateController`で作成したものを使う.
 | reads_fpga_info        | bool  | in     | read FPGA info flag   |
 | return                 | void  | -      | -                     |
 
-## AUTDSetCheckTrials (autd3capi)
+## AUTDSetAckCheckTimeout (autd3capi)
 
-Check trialsを設定する.
+AckCheckTimeoutをナノ秒単位で設定する.
 
 handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
 | handle                 | void*   | in     | pointer to Controller |
-| trials                 | int32_t | in     | check trials          |
+| timeout                 | uint64_t | in     | AckCheckTimeout in ns |
 | return                 | void    | -      | -                     |
 
 ## AUTDSetSendInterval (autd3capi)
 
-Send intervalを設定する.
+Send intervalをナノ秒単位で設定する.
 
 handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
 | handle                 | void*   | in     | pointer to Controller |
-| interval               | int32_t | in     | Send interval         |
+| interval               | uint64_t | in    | Send interval in ns   |
 | return                 | void    | -      | -                     |
 
 ## AUTDSetForceFan (autd3capi)
@@ -579,7 +580,6 @@ Plane wave gainを作成する.
 | amp                    | double | in     | amplitude of wave              |
 | return                 | void   | -      | -                              |
 
-
 ## AUTDGainTransducerTest (autd3capi)
 
 TransducerTest gainを作成する.
@@ -589,6 +589,15 @@ TransducerTest gainを作成する.
 | Argument name / return | type     | in/out | description                     |
 | ---------------------- | -------  | ------ | ---------------------           |
 | gain                   | void**   | out    | pointer to TransducerTest gain  |
+| return                 | void     | -      | -                               |
+
+## AUTDGainTransducerTestSet (autd3capi)
+
+TransducerTest gainに振幅と位相をセットする.
+
+| Argument name / return | type     | in/out | description                     |
+| ---------------------- | -------  | ------ | ---------------------           |
+| gain                   | void*    | in     | pointer to TransducerTest gain  |
 | dev_idx                | int32_t  | in     | device index                    |
 | tr_idx                 | int32_t  | in     | local transducer index          |
 | amp                    | double   | in     | amplitude                       |

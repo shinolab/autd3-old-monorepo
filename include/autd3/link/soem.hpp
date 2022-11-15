@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/11/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -120,10 +120,10 @@ class SOEM {
   }
 
   ~SOEM() = default;
-  SOEM(const SOEM& v) noexcept = delete;
-  SOEM& operator=(const SOEM& obj) = delete;
-  SOEM(SOEM&& obj) = delete;
-  SOEM& operator=(SOEM&& obj) = delete;
+  SOEM(const SOEM& v) noexcept = default;
+  SOEM& operator=(const SOEM& obj) = default;
+  SOEM(SOEM&& obj) = default;
+  SOEM& operator=(SOEM&& obj) = default;
 
  private:
   bool _high_precision;

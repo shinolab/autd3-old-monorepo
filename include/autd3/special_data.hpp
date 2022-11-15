@@ -3,7 +3,7 @@
 // Created Date: 07/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/11/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,8 +21,8 @@ namespace autd3 {
 
 class SpecialData {
  public:
-  virtual bool check_trials_override() const = 0;
-  virtual size_t check_trials() const = 0;
+  virtual bool ack_check_timeout_override() const = 0;
+  virtual std::chrono::high_resolution_clock::duration ack_check_timeout() const = 0;
   virtual ~SpecialData() = default;
 
   std::unique_ptr<core::DatagramHeader> header() { return std::move(_h); }
@@ -39,40 +39,50 @@ class Stop : public SpecialData {
  public:
   Stop() : SpecialData(std::make_unique<core::SilencerConfig>(), std::make_unique<core::Amplitudes>(0.0)) {}
 
-  [[nodiscard]] bool check_trials_override() const override { return false; }
-  [[nodiscard]] size_t check_trials() const override { return 0; }
+  [[nodiscard]] bool ack_check_timeout_override() const override { return false; }
+  [[nodiscard]] std::chrono::high_resolution_clock::duration ack_check_timeout() const override {
+    return std::chrono::high_resolution_clock::duration::zero();
+  }
 };
 
 class UpdateFlag : public SpecialData {
  public:
   UpdateFlag() : SpecialData(std::make_unique<core::NullHeader>(), std::make_unique<core::NullBody>()) {}
 
-  [[nodiscard]] bool check_trials_override() const override { return false; }
-  [[nodiscard]] size_t check_trials() const override { return 0; }
+  [[nodiscard]] bool ack_check_timeout_override() const override { return false; }
+  [[nodiscard]] std::chrono::high_resolution_clock::duration ack_check_timeout() const override {
+    return std::chrono::high_resolution_clock::duration::zero();
+  }
 };
 
 class Clear : public SpecialData {
  public:
   Clear() : SpecialData(std::make_unique<core::Clear>(), std::make_unique<core::NullBody>()) {}
 
-  [[nodiscard]] bool check_trials_override() const override { return true; }
-  [[nodiscard]] size_t check_trials() const override { return 200; }
+  [[nodiscard]] bool ack_check_timeout_override() const override { return true; }
+  [[nodiscard]] std::chrono::high_resolution_clock::duration ack_check_timeout() const override {
+    return std::chrono::nanoseconds(200 * 1000 * 1000);
+  }
 };
 
 class Synchronize : public SpecialData {
  public:
   Synchronize() : SpecialData(std::make_unique<core::NullHeader>(), std::make_unique<core::Synchronize>()) {}
 
-  [[nodiscard]] bool check_trials_override() const override { return true; }
-  [[nodiscard]] size_t check_trials() const override { return 200; }
+  [[nodiscard]] bool ack_check_timeout_override() const override { return true; }
+  [[nodiscard]] std::chrono::high_resolution_clock::duration ack_check_timeout() const override {
+    return std::chrono::nanoseconds(200 * 1000 * 1000);
+  }
 };
 
 class ModDelayConfig : public SpecialData {
  public:
   ModDelayConfig() : SpecialData(std::make_unique<core::NullHeader>(), std::make_unique<core::ModDelayConfig>()) {}
 
-  [[nodiscard]] bool check_trials_override() const override { return false; }
-  [[nodiscard]] size_t check_trials() const override { return 0; }
+  [[nodiscard]] bool ack_check_timeout_override() const override { return false; }
+  [[nodiscard]] std::chrono::high_resolution_clock::duration ack_check_timeout() const override {
+    return std::chrono::high_resolution_clock::duration::zero();
+  }
 };
 
 inline autd3::Stop stop() { return autd3::Stop{}; }

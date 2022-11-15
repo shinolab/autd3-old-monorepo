@@ -4,7 +4,7 @@
 %Created Date: 07/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 10/11/2022
+%Last Modified: 15/11/2022
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -60,13 +60,9 @@ classdef SOEM < handle
         end
 
         function res = build(obj)
-            disp('1');
             pp = libpointer('voidPtrPtr', obj.ptr);
-            disp('2');
             on_lost = libpointer('voidPtr', 0);
-            disp('3');
             calllib('autd3capi_link_soem', 'AUTDLinkSOEM', pp, obj.ifname_, obj.sync0_cycle_, obj.send_cycle_, obj.freerun_, on_lost, obj.high_precision_, obj.check_interval_);
-            disp('4');
             res = obj;
         end
 

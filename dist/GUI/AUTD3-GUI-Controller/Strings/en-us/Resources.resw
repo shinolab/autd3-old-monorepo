@@ -204,11 +204,11 @@
   <data name="Shell_Modulation.Content" xml:space="preserve">
     <value>Modulation</value>
   </data>
-  <data name="LinkPage_CheckTrials.Text" xml:space="preserve">
-    <value>Check trials</value>
+  <data name="LinkPage_AckCheckTimeoutMs.Text" xml:space="preserve">
+    <value>Ack Check Timeout [ms]</value>
   </data>
   <data name="LinkPage_SendIntervals.Text" xml:space="preserve">
-    <value>Send intervals</value>
+    <value>Send intervals [ms]</value>
   </data>
   <data name="Shell_Silencer.Content" xml:space="preserve">
     <value>Silencer</value>
