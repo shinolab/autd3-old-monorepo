@@ -2,34 +2,33 @@
 
 This section introduces other functions that exist in the `Controller` class.
 
-## Check Trials
+## Ack Check Timeout
 
-If the value of `check_trials` is greater than 0, the controller will check if the data sent to the device has been processed properly.
+If the value of `ack_check_timeout` is greater than 0, the controller will check if the data sent to the device has been processed properly.
 
 ```cpp
-autd.check_trials = 50;
+autd.set_ack_check_timeout(std::chrono::milliseconds(20));
 ```
 
-If the value of `check_trials` is greater than 0, the function checks up to `check_trials` times in the `send` function.
-If it fails, `send` returns `false`.
+If the value of `ack_check_timeout` is greater than 0, `send` function checks ack until the timeout period elapses.
+If it expired, `send` returns `false`.
 
-If the value of `check_trials` is 0, the `send` function does not check and always returns `true`.
+If the value of `ack_check_timeout` is 0, `send` function does not check ack and always returns `true`.
 
-It is recommended to set this option when you use unreliable links.
-Note that if `check_trials` is greater than 0, the time to send will be increased.
+It is recommended to set this option when you want to send data reliably.
+Note that if `ack_check_timeout` is greater than 0, the time to send will be increased.
 
-`check_trials` is set to 0 by default.
+`ack_check_timeout` is set to 0 by default.
 
 ## Send intervals
 
 The interval between consecutive frames and data check intervals are configured by `send_interval`.
-These intervals will be $\SI{500}{\text{μ}s}\times \text{send\_interval}$.
 
 ```cpp
-autd.send_intervals = 1;
+autd.set_send_interval(std::chrono::milliseconds(1));
 ```
 
-It is set to 1 by default.
+It is set to $\SI{500}{\text{μ}s}$ by default.
 
 ## Force fan
 
@@ -101,15 +100,14 @@ for (auto&& firm_info : autd.firmware_infos()) std::cout << firm_info << std::en
 Send functions are functions that send data to the device.
 Calling these functions will `force fan`, `reads FPGA info` flags are updated by calling these functions.
 
-The behavior of these functions depends on the values of `check_trials` and `send_interval`.
+The behavior of these functions depends on the values of `ack_check_timeout` and `send_interval`.
 
-If `check_trials` is greater than 0, these functions wait until the device processes the data.
+If `ack_check_timeout` is greater than 0, these functions wait until the device processes the data or the timeout period elapses.
 In particular, the processing time of `Modulation` and `STM` may increase significantly since a check is made for each frame.
 If these functions cannot confirm that the device has processed the data, return `false`.
-If `check_trials` is 0, these do not check, and the return value is always `true`.
+If `ack_check_timeout` is 0, these do not check, and the return value is always `true`.
 
 The value of `send_interval` affects the interval of sending consecutive frames and the interval of the above checks. 
-Specifically, the interval is $\SI{500}{\text{μ}s}\times \text{send\_interval}$.
 
 The list of send functions is as follows:
 

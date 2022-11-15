@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include "autd3/driver/cpu/operation.hpp"
+#include "autd3/driver/driver.hpp"
 #include "interface.hpp"
 
 namespace autd3::core {
@@ -56,7 +56,6 @@ class Modulation : public DatagramHeader {
   void build() {
     if (_props.built) return;
     calc();
-    if (buffer().size() > driver::MOD_BUF_SIZE_MAX) throw std::runtime_error("Modulation buffer overflow");
     _props.built = true;
   }
 
@@ -98,15 +97,8 @@ class Modulation : public DatagramHeader {
     _props.sent = 0;
   }
 
-  void pack(const uint8_t msg_id, driver::TxDatagram& tx) override {
-    const auto is_first_frame = _props.sent == 0;
-    const auto max_size = is_first_frame ? driver::MOD_HEAD_DATA_SIZE : driver::MOD_BODY_DATA_SIZE;
-    const auto mod_size = std::min(buffer().size() - _props.sent, max_size);
-    const auto is_last_frame = _props.sent + mod_size == buffer().size();
-    const auto* buf = _props.buffer.data() + _props.sent;
-    modulation(msg_id, buf, mod_size, is_first_frame, _props.freq_div, is_last_frame, tx);
-
-    _props.sent += mod_size;
+  void pack(const std::unique_ptr<const driver::Driver>& driver, const uint8_t msg_id, driver::TxDatagram& tx) override {
+    driver->modulation(msg_id, buffer(), _props.sent, _props.freq_div, tx);
   }
 
   [[nodiscard]] bool is_finished() const noexcept override { return _props.sent == buffer().size(); }

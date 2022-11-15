@@ -3,7 +3,7 @@
 # Created Date: 11/02/2020
 # Author: Shun Suzuki
 # -----
-# Last Modified: 10/11/2022
+# Last Modified: 15/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2020 Hapis Lab. All rights reserved.
@@ -86,6 +86,7 @@ if !Sys.isapple()
     export BackendCUDA
 end
 export NUM_TRANS_IN_UNIT, NUM_TRANS_X, NUM_TRANS_Y, TRANS_SPACING, DEVICE_WIDTH, DEVICE_HEIGHT
+export DRIVER_LATEST, DRIVER_V2_2, DRIVER_V2_3, DRIVER_V2_4, DRIVER_V2_5, DRIVER_V2_6
 
 const NUM_TRANS_IN_UNIT = 249
 const NUM_TRANS_X = 18
@@ -93,5 +94,12 @@ const NUM_TRANS_Y = 14
 const TRANS_SPACING = 10.16
 const DEVICE_WIDTH = 192.0
 const DEVICE_HEIGHT = 151.4
+
+const DRIVER_LATEST = 0x00
+const DRIVER_V2_2 = 0x82
+const DRIVER_V2_3 = 0x83
+const DRIVER_V2_4 = 0x84
+const DRIVER_V2_5 = 0x85
+const DRIVER_V2_6 = 0x86
 
 end

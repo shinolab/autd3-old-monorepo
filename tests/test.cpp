@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/11/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -81,6 +81,10 @@ TEST(ControllerTest, stream) {
   autd << (s, n) << s, n;  //
 }
 
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4834)
+#endif
 TEST(ControllerTest, stream_async) {
   using autd3::async;
   using autd3::clear;
@@ -192,6 +196,9 @@ TEST(ControllerTest, stream_async) {
     autd << async << (std::move(s5), std::move(n5)) << std::move(s6), std::move(n6);  //
   }
 }
+#if _MSC_VER
+#pragma warning(pop)
+#endif
 
 TEST(ControllerTest, basic_usage) {
   autd3::Controller autd;
@@ -431,7 +438,7 @@ TEST(ControllerTest, simple_legacy) {
   ASSERT_EQ(autd.geometry().num_devices(), 4);
   ASSERT_EQ(autd.geometry().num_transducers(), 4 * 249);
 
-  auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
+  const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
   autd.open(std::move(link));
@@ -470,7 +477,7 @@ TEST(ControllerTest, simple_normal) {
   ASSERT_EQ(autd.geometry().num_devices(), 4);
   ASSERT_EQ(autd.geometry().num_transducers(), 4 * 249);
 
-  auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
+  const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
   autd.open(std::move(link));
@@ -514,7 +521,7 @@ TEST(ControllerTest, simple_normal_phase) {
   ASSERT_EQ(autd.geometry().num_devices(), 4);
   ASSERT_EQ(autd.geometry().num_transducers(), 4 * 249);
 
-  auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
+  const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
   autd.open(std::move(link));
@@ -558,7 +565,7 @@ TEST(ControllerTest, point_stm) {
   autd.geometry().add_device(autd3::Vector3(0, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
   autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
 
-  auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
+  const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
   autd.open(std::move(link));
@@ -718,7 +725,7 @@ TEST(ControllerTest, gain_stm_legacy) {
         for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
           ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, cycle >> 1);
           const auto phase = autd3::driver::LegacyDrive::to_phase(drives[k][i * autd3::driver::NUM_TRANS_IN_UNIT + j]) >> 4;
-          ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase, ((phase  << 4) + phase) << 4);
+          ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase, ((phase << 4) + phase) << 4);
         }
       }
     }
@@ -840,8 +847,9 @@ TEST(ControllerTest, gain_stm_normal_phase) {
 
   autd << autd3::clear << autd3::synchronize;
 
-  const autd3::Vector3 center = autd.geometry().center();
+  autd << autd3::Amplitudes(1.0);
 
+  const autd3::Vector3 center = autd.geometry().center();
   {
     autd3::GainSTM stm(autd.geometry());
     constexpr size_t size = 50;

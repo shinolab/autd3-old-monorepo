@@ -14,7 +14,7 @@ if (!autd.Open(link))
     return;
 }
 
-autd.CheckTrials = 50;
+autd.AckCheckTimeoutMs = 20;
 
 autd.Send(new Clear());
 

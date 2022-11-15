@@ -79,13 +79,13 @@ When you try to use many devices, you may get an error like the one shown in the
 
 In this case, increase the values of `-s` and `-t` of the `TwinCATAUTDServer` option and run TwinCATAUTDServer again.
 The values of these options are 2 by default, respectively.
-For proper operation, multiply them by an appropriate integer.
+For proper operation, increase their values.
 
 ```
 TwinCATAUTDServer.exe -s 3 -t 3
 ```
 
-How many times to multiply depends on the number of connected devices.
+The value you should set depends on the number of connected devices.
 The value should be as small as possible without causing errors.
 For example, if you have nine devices, it should work if you set the value 3 or 4.
 
@@ -282,8 +282,6 @@ When you use the Simulator link, include the ``autd3/link/simulator.hpp` header.
 
   auto link = autd3::link::Simulator().build();
 ```
-
-The port number should be the same as the AUTD Simulator settings.
 
 [^fn_remote_twin]: Wireless LAN is also acceptable.
 
