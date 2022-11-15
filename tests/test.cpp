@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/11/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -431,7 +431,7 @@ TEST(ControllerTest, simple_legacy) {
   ASSERT_EQ(autd.geometry().num_devices(), 4);
   ASSERT_EQ(autd.geometry().num_transducers(), 4 * 249);
 
-  auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
+  const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
   autd.open(std::move(link));
@@ -470,7 +470,7 @@ TEST(ControllerTest, simple_normal) {
   ASSERT_EQ(autd.geometry().num_devices(), 4);
   ASSERT_EQ(autd.geometry().num_transducers(), 4 * 249);
 
-  auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
+  const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
   autd.open(std::move(link));
@@ -514,7 +514,7 @@ TEST(ControllerTest, simple_normal_phase) {
   ASSERT_EQ(autd.geometry().num_devices(), 4);
   ASSERT_EQ(autd.geometry().num_transducers(), 4 * 249);
 
-  auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
+  const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
   autd.open(std::move(link));
@@ -558,7 +558,7 @@ TEST(ControllerTest, point_stm) {
   autd.geometry().add_device(autd3::Vector3(0, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
   autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
 
-  auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
+  const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
   autd.open(std::move(link));

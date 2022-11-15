@@ -71,7 +71,7 @@ int main() {
     return -1;
   }
 
-  AUTDSetAckCheckTimeout(cnt, 20 * 1000 * 1000);
+  AUTDSetAckCheckTimeout(cnt, 20LL * 1000 * 1000);
 
   return run(cnt);
 }
