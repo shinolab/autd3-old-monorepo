@@ -1,7 +1,8 @@
 # 2.6.2
 
-- Change `gain::TransducerTest` API
 - Remove `Controller::check_trials`, add `Controllse::set_ack_check_timeout` instead
+- Add `driver::Driver` class to drive old firmware
+- Change `gain::TransducerTest` API
 
 # 2.6.1
 
