@@ -3,7 +3,7 @@
 // Created Date: 01/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ struct ModDelayConfig final : DatagramBody {
   void init() override { _sent = false; }
 
   void pack(const Geometry& geometry, driver::TxDatagram& tx) override {
-    autd3::driver::null_body(tx);
+    geometry.driver()->null_body(tx);
     if (is_finished()) return;
 
     std::vector<uint16_t> delays;
@@ -42,7 +42,7 @@ struct ModDelayConfig final : DatagramBody {
       std::transform(dev.begin(), dev.end(), std::back_inserter(delays), [](const Transducer& tr) { return tr.mod_delay(); });
     });
 
-    autd3::driver::mod_delay(delays.data(), tx);
+    geometry.driver()->mod_delay(delays.data(), tx);
 
     _sent = true;
   }

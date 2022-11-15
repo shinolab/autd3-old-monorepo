@@ -24,8 +24,8 @@
 #include <vector>
 
 #include "autd3/async.hpp"
-#include "autd3/driver/cpu/datagram.hpp"
-#include "autd3/driver/cpu/ec_config.hpp"
+#include "autd3/driver/common/cpu/datagram.hpp"
+#include "autd3/driver/common/cpu/ec_config.hpp"
 #include "autd3/gain/primitive.hpp"
 #include "autd3/special_data.hpp"
 #include "core/amplitudes.hpp"
@@ -104,13 +104,13 @@ class Controller {
         header->init();
         body->init();
 
-        driver::force_fan(_tx_buf, force_fan);
-        driver::reads_fpga_info(_tx_buf, reads_fpga_info);
+        _geometry.driver()->force_fan(_tx_buf, force_fan);
+        _geometry.driver()->reads_fpga_info(_tx_buf, reads_fpga_info);
 
         const auto no_wait = _ack_check_timeout == std::chrono::high_resolution_clock::duration::zero();
         while (true) {
           const auto msg_id = get_id();
-          header->pack(msg_id, _tx_buf);
+          header->pack(_geometry.driver(), msg_id, _tx_buf);
           body->pack(_geometry, _tx_buf);
           _link->send(_tx_buf);
           const auto success = wait_msg_processed(_ack_check_timeout);
@@ -179,15 +179,15 @@ class Controller {
       return acks;
     };
 
-    cpu_version(_tx_buf);
+    _geometry.driver()->cpu_version(_tx_buf);
     const auto cpu_versions = pack_ack();
     if (cpu_versions.empty()) return firmware_infos;
 
-    fpga_version(_tx_buf);
+    _geometry.driver()->fpga_version(_tx_buf);
     const auto fpga_versions = pack_ack();
     if (fpga_versions.empty()) return firmware_infos;
 
-    fpga_functions(_tx_buf);
+    _geometry.driver()->fpga_functions(_tx_buf);
     const auto fpga_functions = pack_ack();
     if (fpga_functions.empty()) return firmware_infos;
 
@@ -288,13 +288,13 @@ class Controller {
     header->init();
     body->init();
 
-    driver::force_fan(_tx_buf, force_fan);
-    driver::reads_fpga_info(_tx_buf, reads_fpga_info);
+    _geometry.driver()->force_fan(_tx_buf, force_fan);
+    _geometry.driver()->reads_fpga_info(_tx_buf, reads_fpga_info);
 
     const auto no_wait = _ack_check_timeout == std::chrono::high_resolution_clock::duration::zero();
     while (true) {
       const auto msg_id = get_id();
-      header->pack(msg_id, _tx_buf);
+      header->pack(_geometry.driver(), msg_id, _tx_buf);
       body->pack(_geometry, _tx_buf);
       _link->send(_tx_buf);
       const auto success = wait_msg_processed(_ack_check_timeout);

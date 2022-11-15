@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -150,7 +150,7 @@ class SineLegacy final : public core::Modulation {
 
   void calc() override {
     const auto f_s = sampling_frequency();
-    const auto f = std::clamp(this->_freq, f_s / static_cast<double>(driver::MOD_BUF_SIZE_MAX), f_s / 2.0);
+    const auto f = (std::min)(this->_freq, f_s / 2.0);
 
     const auto t = static_cast<size_t>(std::round(f_s / f));
     this->_props.buffer.resize(t, 0);

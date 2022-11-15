@@ -81,6 +81,10 @@ TEST(ControllerTest, stream) {
   autd << (s, n) << s, n;  //
 }
 
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4834)
+#endif
 TEST(ControllerTest, stream_async) {
   using autd3::async;
   using autd3::clear;
@@ -192,6 +196,9 @@ TEST(ControllerTest, stream_async) {
     autd << async << (std::move(s5), std::move(n5)) << std::move(s6), std::move(n6);  //
   }
 }
+#if _MSC_VER
+#pragma warning(pop)
+#endif
 
 TEST(ControllerTest, basic_usage) {
   autd3::Controller autd;
