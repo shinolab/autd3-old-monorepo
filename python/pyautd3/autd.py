@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 08/11/2022
+Last Modified: 15/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -288,19 +288,35 @@ class Controller:
         return Base().dll.AUTDSetForceFan(self.p_cnt, value)
 
     @ property
-    def check_trials(self):
-        return Base().dll.AUTDGetCheckTrials(self.p_cnt)
+    def ack_check_timeout_ms(self):
+        return Base().dll.AUTDGetAckCheckTimeout(self.p_cnt) / 1000 / 1000
 
-    @ check_trials.setter
-    def check_trials(self, value: int):
-        return Base().dll.AUTDSetCheckTrials(self.p_cnt, value)
+    @ ack_check_timeout_ms.setter
+    def ack_check_timeout_ms(self, value: int):
+        return Base().dll.AUTDSetAckCheckTimeout(self.p_cnt, value * 1000 * 1000)
 
     @ property
-    def send_interval(self):
+    def ack_check_timeout_ns(self):
+        return Base().dll.AUTDGetAckCheckTimeout(self.p_cnt)
+
+    @ ack_check_timeout_ns.setter
+    def ack_check_timeout_ns(self, value: int):
+        return Base().dll.AUTDSetAckCheckTimeout(self.p_cnt, value)
+
+    @ property
+    def send_interval_ms(self):
+        return Base().dll.AUTDGetSendInterval(self.p_cnt) / 1000 / 1000
+
+    @ send_interval_ms.setter
+    def send_interval_ms(self, value: int):
+        return Base().dll.AUTDSetSendInterval(self.p_cnt, value * 1000 * 1000)
+
+    @ property
+    def send_interval_ns(self):
         return Base().dll.AUTDGetSendInterval(self.p_cnt)
 
-    @ send_interval.setter
-    def send_interval(self, value: int):
+    @ send_interval_ns.setter
+    def send_interval_ns(self, value: int):
         return Base().dll.AUTDSetSendInterval(self.p_cnt, value)
 
     @ property

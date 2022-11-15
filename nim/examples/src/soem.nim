@@ -3,7 +3,7 @@
 # Created Date: 11/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 14/08/2022
+# Last Modified: 15/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ when isMainModule:
             echo Controller.lastError
             quit(-1)
 
-        cnt.checkTrials = 50
+        cnt.ackCheckTimeoutMs = 20
 
         run(cnt)
 

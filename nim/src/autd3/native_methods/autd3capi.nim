@@ -30,15 +30,15 @@ proc AUTDGetForceFan*(handle: pointer): bool {.cdecl, importc: "AUTDGetForceFan"
     dynlib: dll.}
 proc AUTDGetReadsFPGAInfo*(handle: pointer): bool {.cdecl,
     importc: "AUTDGetReadsFPGAInfo", dynlib: dll.}
-proc AUTDGetCheckTrials*(handle: pointer): int32 {.cdecl,
-    importc: "AUTDGetCheckTrials", dynlib: dll.}
-proc AUTDGetSendInterval*(handle: pointer): int32 {.cdecl,
+proc AUTDGetAckCheckTimeout*(handle: pointer): uint64 {.cdecl,
+    importc: "AUTDGetAckCheckTimeout", dynlib: dll.}
+proc AUTDGetSendInterval*(handle: pointer): uint64 {.cdecl,
     importc: "AUTDGetSendInterval", dynlib: dll.}
 proc AUTDSetReadsFPGAInfo*(handle: pointer; reads_fpga_info: bool) {.cdecl,
     importc: "AUTDSetReadsFPGAInfo", dynlib: dll.}
-proc AUTDSetCheckTrials*(handle: pointer; trials: int32) {.cdecl,
-    importc: "AUTDSetCheckTrials", dynlib: dll.}
-proc AUTDSetSendInterval*(handle: pointer; interval: int32) {.cdecl,
+proc AUTDSetAckCheckTimeout*(handle: pointer; timeout: uint64) {.cdecl,
+    importc: "AUTDSetAckCheckTimeout", dynlib: dll.}
+proc AUTDSetSendInterval*(handle: pointer; interval: uint64) {.cdecl,
     importc: "AUTDSetSendInterval", dynlib: dll.}
 proc AUTDSetForceFan*(handle: pointer; force: bool) {.cdecl,
     importc: "AUTDSetForceFan", dynlib: dll.}
@@ -99,9 +99,11 @@ proc AUTDGainBesselBeam*(gain: ptr pointer; x: float64; y: float64; z: float64;
 proc AUTDGainPlaneWave*(gain: ptr pointer; n_x: float64; n_y: float64; n_z: float64;
                        amp: float64) {.cdecl, importc: "AUTDGainPlaneWave",
                                      dynlib: dll.}
-proc AUTDGainTransducerTest*(gain: ptr pointer; dev_idx: int32; tr_idx: int32;
-                            amp: float64; phase: float64) {.cdecl,
+proc AUTDGainTransducerTest*(gain: ptr pointer) {.cdecl,
     importc: "AUTDGainTransducerTest", dynlib: dll.}
+proc AUTDGainTransducerTestSet*(gain: pointer; dev_idx: int32; tr_idx: int32;
+                               amp: float64; phase: float64) {.cdecl,
+    importc: "AUTDGainTransducerTestSet", dynlib: dll.}
 proc AUTDGainCustom*(gain: ptr pointer; amp: ptr float64; phase: ptr float64; size: uint64) {.
     cdecl, importc: "AUTDGainCustom", dynlib: dll.}
 proc AUTDDeleteGain*(gain: pointer) {.cdecl, importc: "AUTDDeleteGain", dynlib: dll.}

@@ -1,6 +1,7 @@
 # 2.6.2
 
 - Change `gain::TransducerTest` API
+- Remove `Controller::check_trials`, add `Controllse::set_ack_check_timeout` instead
 
 # 2.6.1
 
