@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/11/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -67,11 +67,8 @@ struct FirmwareInfo {
 
   [[nodiscard]] bool is_emulator() const { return (_fpga_function_bits & ENABLED_EMULATOR_BIT) != 0; }
 
- private:
-  size_t _idx;
-  uint8_t _cpu_version_number;
-  uint8_t _fpga_version_number;
-  uint8_t _fpga_function_bits;
+  [[nodiscard]] uint8_t cpu_version_num() const { return _cpu_version_number; }
+  [[nodiscard]] uint8_t fpga_version_num() const { return _fpga_version_number; }
 
   [[nodiscard]] static std::string firmware_version_map(const uint8_t version_num) {
     if (version_num == 0) return "older than v0.4";
@@ -81,6 +78,12 @@ struct FirmwareInfo {
     if (version_num <= 0x86) return "v2." + std::to_string(version_num - 0x80);
     return "unknown (" + std::to_string(static_cast<int>(version_num)) + ")";
   }
+
+ private:
+  size_t _idx;
+  uint8_t _cpu_version_number;
+  uint8_t _fpga_version_number;
+  uint8_t _fpga_function_bits;
 };
 
 inline std::ostream& operator<<(std::ostream& os, const FirmwareInfo& obj) {
