@@ -57,19 +57,19 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGetReadsFPGAInfo.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDGetReadsFPGAInfo.restype = ctypes.c_bool
 
-        self.dll.AUTDGetCheckTrials.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDGetCheckTrials.restype = ctypes.c_int32
+        self.dll.AUTDGetAckCheckTimeout.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDGetAckCheckTimeout.restype = ctypes.c_uint64
 
         self.dll.AUTDGetSendInterval.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDGetSendInterval.restype = ctypes.c_int32
+        self.dll.AUTDGetSendInterval.restype = ctypes.c_uint64
 
         self.dll.AUTDSetReadsFPGAInfo.argtypes = [ctypes.c_void_p, ctypes.c_bool] 
         self.dll.AUTDSetReadsFPGAInfo.restype = None
 
-        self.dll.AUTDSetCheckTrials.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
-        self.dll.AUTDSetCheckTrials.restype = None
+        self.dll.AUTDSetAckCheckTimeout.argtypes = [ctypes.c_void_p, ctypes.c_uint64] 
+        self.dll.AUTDSetAckCheckTimeout.restype = None
 
-        self.dll.AUTDSetSendInterval.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
+        self.dll.AUTDSetSendInterval.argtypes = [ctypes.c_void_p, ctypes.c_uint64] 
         self.dll.AUTDSetSendInterval.restype = None
 
         self.dll.AUTDSetForceFan.argtypes = [ctypes.c_void_p, ctypes.c_bool] 
@@ -147,8 +147,11 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainPlaneWave.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double] 
         self.dll.AUTDGainPlaneWave.restype = None
 
-        self.dll.AUTDGainTransducerTest.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_int32, ctypes.c_int32, ctypes.c_double, ctypes.c_double] 
+        self.dll.AUTDGainTransducerTest.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
         self.dll.AUTDGainTransducerTest.restype = None
+
+        self.dll.AUTDGainTransducerTestSet.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_int32, ctypes.c_double, ctypes.c_double] 
+        self.dll.AUTDGainTransducerTestSet.restype = None
 
         self.dll.AUTDGainCustom.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint64] 
         self.dll.AUTDGainCustom.restype = None

@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2022
+ * Last Modified: 15/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,7 +36,11 @@ impl CSharpGenerator {
     }
 
     fn sub_reserve(str: String) -> String {
-        str.replace("out", "@out")
+        if str == "out" {
+            str.replace("out", "@out")
+        } else {
+            str
+        }
     }
 
     fn to_pascal(name: &str) -> String {
