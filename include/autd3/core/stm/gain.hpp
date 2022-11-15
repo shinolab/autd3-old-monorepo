@@ -62,12 +62,12 @@ struct GainSTM final : public STM {
 
   void init() override { _sent = 0; }
 
-  void pack(const Geometry& geometry, driver::TxDatagram& tx) override {
-    geometry.mode()->pack_stm_gain_header(geometry.driver(), tx);
+  void pack(const std::unique_ptr<const driver::Driver>& driver, const Geometry& geometry, driver::TxDatagram& tx) override {
+    geometry.mode()->pack_stm_gain_header(driver, tx);
 
     if (is_finished()) return;
 
-    geometry.mode()->pack_stm_gain_body(geometry.driver(), _sent, _next_duty, _freq_div, _gains, _mode, tx);
+    geometry.mode()->pack_stm_gain_body(driver, _sent, _next_duty, _freq_div, _gains, _mode, tx);
   }
 
   [[nodiscard]] bool is_finished() const override { return _sent >= _gains.size() + 1; }
