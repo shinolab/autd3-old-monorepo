@@ -666,36 +666,38 @@ TEST(CPUTest, operation_modulation_v2_6) {
 
   size_t sent = 0;
 
-  driver.modulation(1, mod_data, sent, 2320, tx);
+  driver.modulation(1, mod_data, sent, 580, tx);
   ASSERT_EQ(sent, autd3::driver::MOD_HEAD_DATA_SIZE);
   ASSERT_EQ(tx.header().msg_id, 1);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::MOD));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::MOD_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::MOD_END));
   ASSERT_EQ(tx.header().size, static_cast<uint16_t>(autd3::driver::MOD_HEAD_DATA_SIZE));
-  ASSERT_EQ(tx.header().mod_head().freq_div, 2320);
+  ASSERT_EQ(tx.header().mod_head().freq_div, 580);
   for (size_t i = 0; i < sent; i++) ASSERT_EQ(tx.header().mod_head().data[i], static_cast<uint8_t>(i));
 
-  driver.modulation(0xFF, mod_data, sent, 2320, tx);
-  ASSERT_EQ(sent, autd3::driver::MOD_HEAD_DATA_SIZE + 1);
+  driver.modulation(0xFF, mod_data, sent, 580, tx);
+  ASSERT_EQ(sent, autd3::driver::MOD_HEAD_DATA_SIZE + autd3::driver::MOD_BODY_DATA_SIZE);
   ASSERT_EQ(tx.header().msg_id, 0xFF);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::MOD));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::MOD_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::MOD_END));
   ASSERT_EQ(tx.header().size, static_cast<uint16_t>(autd3::driver::MOD_BODY_DATA_SIZE));
-  for (size_t i = autd3::driver::MOD_HEAD_DATA_SIZE; i < sent; i++) ASSERT_EQ(tx.header().mod_head().data[i], static_cast<uint8_t>(i));
+  for (size_t i = autd3::driver::MOD_HEAD_DATA_SIZE; i < sent; i++)
+    ASSERT_EQ(tx.header().mod_body().data[i - autd3::driver::MOD_HEAD_DATA_SIZE], static_cast<uint8_t>(i));
 
-  driver.modulation(0xF0, mod_data, sent, 2320, tx);
+  driver.modulation(0xF0, mod_data, sent, 580, tx);
   ASSERT_EQ(sent, autd3::driver::MOD_HEAD_DATA_SIZE + autd3::driver::MOD_BODY_DATA_SIZE + 1);
   ASSERT_EQ(tx.header().msg_id, 0xF0);
-  ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::MOD));
+  ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::MOD));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::MOD_BEGIN));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::MOD_END));
   ASSERT_EQ(tx.header().size, 1);
   for (size_t i = autd3::driver::MOD_HEAD_DATA_SIZE + autd3::driver::MOD_BODY_DATA_SIZE; i < sent; i++)
-    ASSERT_EQ(tx.header().mod_head().data[i], static_cast<uint8_t>(i));
+    ASSERT_EQ(tx.header().mod_body().data[i - (autd3::driver::MOD_HEAD_DATA_SIZE + autd3::driver::MOD_BODY_DATA_SIZE)], static_cast<uint8_t>(i));
 
-  ASSERT_THROW(driver.modulation(0xFF, mod_data, sent, 1159, tx), std::runtime_error);
+  sent = 0;
+  ASSERT_THROW(driver.modulation(0xFF, mod_data, sent, 579, tx), std::runtime_error);
 }
 
 TEST(CPUTest, operation_config_silencer_v2_6) {
