@@ -47,7 +47,7 @@ void* check(void* autd) {
 
   printf("Is force fan: %d\n", is_force_fan);
   printf("Is reads FPGA info: %d\n", is_reads_fpga_info);
-#ifdef WIN32
+#if defined(WIN32) || defined(__APPLE__)
   printf("Check timeout: %llu\n", timeout);
   printf("Send interval: %llu\n", send_interval);
 #else

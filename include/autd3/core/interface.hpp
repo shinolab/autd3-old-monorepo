@@ -106,7 +106,7 @@ struct NullBody final : DatagramBody {
 
   void init() override {}
 
-  void pack(const std::unique_ptr<const driver::Driver>& driver, const Geometry& geometry, driver::TxDatagram& tx) override { driver->null_body(tx); }
+  void pack(const std::unique_ptr<const driver::Driver>& driver, const Geometry&, driver::TxDatagram& tx) override { driver->null_body(tx); }
 
   bool is_finished() const override { return true; }
 };

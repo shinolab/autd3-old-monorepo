@@ -19,6 +19,8 @@ namespace autd3::driver {
 
 class DriverV2_4 final : public Driver {
  public:
+  ~DriverV2_4() override = default;
+
   uint8_t version_num() const noexcept override { return 0x84; }
 
   void clear(TxDatagram& tx) const noexcept override {

@@ -595,7 +595,7 @@ TEST(UtilitiesTest, rem_euclid) {
 }
 
 TEST(CPUTest, operation_clear_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
@@ -606,7 +606,7 @@ TEST(CPUTest, operation_clear_v2_6) {
 }
 
 TEST(CPUTest, operation_null_header_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
@@ -621,7 +621,7 @@ TEST(CPUTest, operation_null_header_v2_6) {
 }
 
 TEST(CPUTest, operation_null_body_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
@@ -632,7 +632,7 @@ TEST(CPUTest, operation_null_body_v2_6) {
 }
 
 TEST(CPUTest, operation_sync_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
@@ -656,7 +656,7 @@ TEST(CPUTest, operation_sync_v2_6) {
 }
 
 TEST(CPUTest, operation_modulation_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
@@ -699,7 +699,7 @@ TEST(CPUTest, operation_modulation_v2_6) {
 }
 
 TEST(CPUTest, operation_config_silencer_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
@@ -715,7 +715,7 @@ TEST(CPUTest, operation_config_silencer_v2_6) {
 }
 
 TEST(CPUTest, normal_legacy_header_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
@@ -729,7 +729,7 @@ TEST(CPUTest, normal_legacy_header_v2_6) {
 }
 
 TEST(CPUTest, operation_normal_legacy_body_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
@@ -755,7 +755,7 @@ TEST(CPUTest, operation_normal_legacy_body_v2_6) {
 }
 
 TEST(CPUTest, operation_normal_header_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
@@ -769,7 +769,7 @@ TEST(CPUTest, operation_normal_header_v2_6) {
 }
 
 TEST(CPUTest, operation_normal_duty_body_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
@@ -791,7 +791,7 @@ TEST(CPUTest, operation_normal_duty_body_v2_6) {
   ASSERT_EQ(tx.num_bodies, 10);
 }
 TEST(CPUTest, operation_normal_phase_body_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
@@ -814,7 +814,7 @@ TEST(CPUTest, operation_normal_phase_body_v2_6) {
   ASSERT_EQ(tx.num_bodies, 10);
 }
 TEST(CPUTest, operation_point_stm_header_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
@@ -830,7 +830,7 @@ TEST(CPUTest, operation_point_stm_header_v2_6) {
 }
 
 TEST(CPUTest, operation_point_stm_body_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
@@ -899,7 +899,7 @@ TEST(CPUTest, operation_point_stm_body_v2_6) {
 }
 
 TEST(CPUTest, operation_gain_stm_legacy_header_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
@@ -916,7 +916,7 @@ TEST(CPUTest, operation_gain_stm_legacy_header_v2_6) {
 }
 
 TEST(CPUTest, operation_gain_stm_legacy_body_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
@@ -974,7 +974,7 @@ TEST(CPUTest, operation_gain_stm_legacy_body_v2_6) {
 }
 
 TEST(CPUTest, operation_gain_stm_normal_header_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
@@ -991,7 +991,7 @@ TEST(CPUTest, operation_gain_stm_normal_header_v2_6) {
 }
 
 TEST(CPUTest, operation_gain_stm_normal_phase_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
@@ -1041,7 +1041,7 @@ TEST(CPUTest, operation_gain_stm_normal_phase_v2_6) {
 }
 
 TEST(CPUTest, operation_gain_stm_normal_duty_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
@@ -1081,7 +1081,7 @@ TEST(CPUTest, operation_gain_stm_normal_duty_v2_6) {
 }
 
 TEST(CPUTest, operation_force_fan_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
@@ -1093,7 +1093,7 @@ TEST(CPUTest, operation_force_fan_v2_6) {
 }
 
 TEST(CPUTest, operation_reads_fpga_info_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
@@ -1105,7 +1105,7 @@ TEST(CPUTest, operation_reads_fpga_info_v2_6) {
 }
 
 TEST(CPUTest, operation_cpu_version_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
@@ -1115,7 +1115,7 @@ TEST(CPUTest, operation_cpu_version_v2_6) {
 }
 
 TEST(CPUTest, operation_fpga_version_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
@@ -1125,7 +1125,7 @@ TEST(CPUTest, operation_fpga_version_v2_6) {
 }
 
 TEST(CPUTest, operation_fpga_functions_v2_6) {
-  constexpr auto driver = autd3::driver::DriverV2_6();
+  const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx(10);
 
