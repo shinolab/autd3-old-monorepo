@@ -78,6 +78,14 @@ cd ..
 Alternatively, you can download [Eigen3](https://gitlab.com/libeigen/eigen) directly and put it under the `autd3_sample` folder.
 The Eigen3 version used in the SDK is 3.4.0.
 
+Also, download [spdlog](https://github.com/gabime/spdlog).
+```
+git submodule add https://github.com/gabime/spdlog.git spdlog
+cd spdlog
+git checkout v1.11.0
+cd ..
+```
+
 At this point, the directory structure is as follows.
 
 ```
@@ -86,10 +94,13 @@ At this point, the directory structure is as follows.
     │  main.cpp
     ├─include
     ├─lib
-    └─eigen
+    ├─eigen
+    │   ├─bench
+    │   ├─blas
+    │   ...
+    └─spdlog
+        ├─.github
         ├─bench
-        ├─blas
-        ├─ci
         ├─cmake
         ...
 ```
@@ -177,8 +188,6 @@ Next, we check the firmware version.
 const auto firm_infos = autd.firmware_infos();
 std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout,"\n"));
 ```
-
-Note that if a version other than v2.6 is displayed here, it is not guaranteed to work well.
 
 Next, setup silencer.
 

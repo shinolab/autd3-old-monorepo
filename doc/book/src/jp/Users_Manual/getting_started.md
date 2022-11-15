@@ -81,6 +81,14 @@ cd ..
 あるいは, 直接[Eigen3](https://gitlab.com/libeigen/eigen)をダウンロードしてきて,
 `autd3_sample`フォルダ以下に置いても良い. SDKで使用しているversionは3.4.0である.
 
+また, 同様に[spdlog](https://github.com/gabime/spdlog)をダウンロードする.
+```
+git submodule add https://github.com/gabime/spdlog.git spdlog
+cd spdlog
+git checkout v1.11.0
+cd ..
+```
+
 この時点で, ディレクトリ構成は以下のようになっている.
 
 ```
@@ -89,10 +97,13 @@ cd ..
     │  main.cpp
     ├─include
     ├─lib
-    └─eigen
+    ├─eigen
+    │   ├─bench
+    │   ├─blas
+    │   ...
+    └─spdlog
+        ├─.github
         ├─bench
-        ├─blas
-        ├─ci
         ├─cmake
         ...
 ```
@@ -173,14 +184,12 @@ autd << autd3::clear << autd3::synchronize;
 
 **例え, 一台のデバイスしか使用しない場合でも, 同期は一度行う必要がある.**
 
-次に, firmwareのバージョンを確認している. これも必須ではない.
+次に, firmwareのバージョンを確認している.
 
 ```cpp
 const auto firm_infos = autd.firmware_infos();
 std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));
 ```
-
-ここで, v2.6以外のヴァージョンが表示される場合は, 動作が保証されないので注意する.
 
 次に, silencerを設定する.
 
