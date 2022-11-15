@@ -4,7 +4,7 @@ Project: example
 Created Date: 30/12/2020
 Author: Shun Suzuki
 -----
-Last Modified: 07/11/2022
+Last Modified: 15/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2020 Shun Suzuki. All rights reserved.
@@ -36,6 +36,6 @@ if __name__ == '__main__':
         print(Controller.last_error())
         exit()
 
-    autd.check_trials = 50
+    autd.ack_check_timeout_ms = 20
 
     runner.run(autd)

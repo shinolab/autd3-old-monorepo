@@ -154,12 +154,12 @@ Next, create a `Link` to connect to the device.
   autd.open(std::move(link));
 ```
 
-Next, `check_trials` is set to 50. 
+Next, `ack_check_timeout` is set to $\SI{20}{ms}$. 
 You do not need to change this value, but setting it increases reliability. 
-For SOEM link, it is recommended to set `check_trials` to about 50.
+For SOEM link, it is recommended to set `ack_check_timeout` to about $\SI{10}{ms}-\SI{20}{ms}$.
 
 ```cpp
-autd.check_trials = 50;
+autd.set_ack_check_timeout(std::chrono::milliseconds(20));
 ```
 
 Next, initialize the AUTD device and synchronize.

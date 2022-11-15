@@ -3,7 +3,7 @@
 # Created Date: 11/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 10/11/2022
+# Last Modified: 15/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -99,17 +99,29 @@ func readsFPGAInfo*(cnt: Controller): bool =
 func `readsFPGAInfo=`*(cnt: var Controller, flag: bool) =
     AUTDSetReadsFPGAInfo(cnt.p, flag)
 
-func checkTrials*(cnt: Controller): int32 =
-    AUTDGetCheckTrials(cnt.p)
+func ackCheckTimeoutNs*(cnt: Controller): uint64 =
+    AUTDGetAckCheckTimeout(cnt.p)
 
-func `checkTrials=`*(cnt: var Controller, value: int32) =
-    AUTDSetCheckTrials(cnt.p, value)
+func `ackCheckTimeoutNs=`*(cnt: var Controller, value: uint64) =
+    AUTDSetAckCheckTimeout(cnt.p, value)
 
-func sendInterval*(cnt: Controller): int32 =
+func ackCheckTimeoutMs*(cnt: Controller): uint64 =
+    AUTDGetAckCheckTimeout(cnt.p) div 1000000
+
+func `ackCheckTimeoutMs=`*(cnt: var Controller, value: uint64) =
+    AUTDSetAckCheckTimeout(cnt.p, value * 1000000)
+
+func sendIntervalNs*(cnt: Controller): uint64 =
     AUTDGetSendInterval(cnt.p)
 
-func `sendInterval=`*(cnt: var Controller, value: int32) =
+func `sendIntervalNs=`*(cnt: var Controller, value: uint64) =
     AUTDSetSendInterval(cnt.p, value)
+
+func sendIntervalMs*(cnt: Controller): uint64 =
+    AUTDGetSendInterval(cnt.p) div 1000000
+
+func `sendIntervalMs=`*(cnt: var Controller, value: uint64) =
+    AUTDSetSendInterval(cnt.p, value * 1000000)
 
 func soundSpeed*(cnt: Controller): float64 =
     AUTDGetSoundSpeed(cnt.p)

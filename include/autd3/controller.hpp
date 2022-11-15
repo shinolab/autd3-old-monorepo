@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/11/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -45,8 +45,6 @@ class Controller {
   Controller()
       : force_fan(false),
         reads_fpga_info(false),
-        check_trials(0),
-        send_interval(1),
         _geometry(),
         _tx_buf(0),
         _rx_buf(0),
@@ -109,19 +107,20 @@ class Controller {
         driver::force_fan(_tx_buf, force_fan);
         driver::reads_fpga_info(_tx_buf, reads_fpga_info);
 
+        const auto no_wait = _ack_check_timeout == std::chrono::high_resolution_clock::duration::zero();
         while (true) {
           const auto msg_id = get_id();
           header->pack(msg_id, _tx_buf);
           body->pack(_geometry, _tx_buf);
           _link->send(_tx_buf);
-          const auto trials = wait_msg_processed(check_trials);
-          if ((check_trials != 0) && (trials == check_trials)) break;
+          const auto success = wait_msg_processed(_ack_check_timeout);
+          if (!no_wait && !success) break;
           if (header->is_finished() && body->is_finished()) {
             header = nullptr;
             body = nullptr;
             break;
           }
-          if (trials == 0) std::this_thread::sleep_for(std::chrono::microseconds(send_interval * driver::EC_CYCLE_TIME_BASE_MICRO_SEC));
+          if (no_wait) std::this_thread::sleep_for(_send_interval);
         }
 
         post();
@@ -133,7 +132,7 @@ class Controller {
 
   /**
    * @brief Close the controller
-   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
   bool close() {
     if (!is_open()) return true;
@@ -175,7 +174,7 @@ class Controller {
     const auto pack_ack = [&]() -> std::vector<uint8_t> {
       std::vector<uint8_t> acks;
       if (!_link->send(_tx_buf)) return acks;
-      if (wait_msg_processed(200) == 200) return acks;
+      if (!wait_msg_processed(std::chrono::nanoseconds(200 * 1000 * 1000))) return acks;
       std::transform(_rx_buf.begin(), _rx_buf.end(), std::back_inserter(acks), [](driver::RxMessage msg) noexcept { return msg.ack; });
       return acks;
     };
@@ -200,32 +199,32 @@ class Controller {
 
   /**
    * @brief Synchronize devices
-   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
 
   [[deprecated("please send autd3::synchronize instead")]] bool synchronize() { return send(Synchronize{}); }
 
   /**
    * @brief Update flags (force fan and reads_fpga_info)
-   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
   [[deprecated("please send autd3::update_flag instead")]] bool update_flag() { return send(UpdateFlag{}); }
 
   /**
    * @brief Clear all data in devices
-   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
   [[deprecated("please send autd3::clear instead")]] bool clear() { return send(autd3::Clear{}); }
 
   /**
    * @brief Stop outputting
-   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
   [[deprecated("please send autd3::stop instead")]] bool stop() { return send(autd3::Stop{}); }
 
   /**
    * @brief Send header data to devices
-   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
   template <typename H>
   auto send(H& header) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, bool> {
@@ -235,7 +234,7 @@ class Controller {
 
   /**
    * @brief Send header data to devices
-   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
   template <typename H>
   auto send(H&& header) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, bool> {
@@ -244,7 +243,7 @@ class Controller {
 
   /**
    * @brief Send body data to devices
-   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
   template <typename B>
   auto send(B& body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, bool> {
@@ -254,7 +253,7 @@ class Controller {
 
   /**
    * @brief Send body data to devices
-   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
   template <typename B>
   auto send(B&& body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, bool> {
@@ -263,7 +262,7 @@ class Controller {
 
   /**
    * @brief Send header and body data to devices
-   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
   template <typename H, typename B>
   auto send(H&& header, B&& body) ->
@@ -273,7 +272,7 @@ class Controller {
 
   /**
    * @brief Send header and body data to devices
-   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
   template <typename H, typename B>
   auto send(H& header, B& body) ->
@@ -283,7 +282,7 @@ class Controller {
 
   /**
    * @brief Send header and body data to devices
-   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
   auto send(core::DatagramHeader* header, core::DatagramBody* body) -> bool {
     header->init();
@@ -292,45 +291,46 @@ class Controller {
     driver::force_fan(_tx_buf, force_fan);
     driver::reads_fpga_info(_tx_buf, reads_fpga_info);
 
+    const auto no_wait = _ack_check_timeout == std::chrono::high_resolution_clock::duration::zero();
     while (true) {
       const auto msg_id = get_id();
       header->pack(msg_id, _tx_buf);
       body->pack(_geometry, _tx_buf);
       _link->send(_tx_buf);
-      const auto trials = wait_msg_processed(check_trials);
-      if ((check_trials != 0) && (trials == check_trials)) return false;
+      const auto success = wait_msg_processed(_ack_check_timeout);
+      if (!no_wait && !success) return false;
       if (header->is_finished() && body->is_finished()) break;
-      if (trials == 0) std::this_thread::sleep_for(std::chrono::microseconds(send_interval * driver::EC_CYCLE_TIME_BASE_MICRO_SEC));
+      if (no_wait) std::this_thread::sleep_for(_send_interval);
     }
     return true;
   }
 
   /**
    * @brief Send seprcial data to devices
-   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
   template <typename S>
   auto send(S s) -> typename std::enable_if_t<std::is_base_of_v<SpecialData, S>, bool> {
-    push_check_trial();
-    if (s.check_trials_override()) check_trials = s.check_trials();
+    push_ack_check_timeout();
+    if (s.ack_check_timeout_override()) _ack_check_timeout = s.ack_check_timeout();
     auto h = s.header();
     auto b = s.body();
     const auto res = send(h.get(), b.get());
-    pop_check_trial();
+    pop_ack_check_timeout();
     return res;
   }
 
   /**
    * @brief Send seprcial data to devices
-   * \return if this function returns true and check_trials > 0, it guarantees that the devices have processed the data.
+   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
   auto send(SpecialData* s) -> bool {
-    push_check_trial();
-    if (s->check_trials_override()) check_trials = s->check_trials();
+    push_ack_check_timeout();
+    if (s->ack_check_timeout_override()) _ack_check_timeout = s->ack_check_timeout();
     auto h = s->header();
     auto b = s->body();
     const auto res = send(h.get(), b.get());
-    pop_check_trial();
+    pop_ack_check_timeout();
     return res;
   }
 
@@ -371,15 +371,15 @@ class Controller {
    * @brief Send special data to devices asynchronously
    */
   void send_async(SpecialData* s) {
-    auto check_trials_override = s->check_trials_override();
-    auto trials = s->check_trials();
+    auto ack_check_timeout_override = s->ack_check_timeout_override();
+    auto timeout = s->ack_check_timeout();
     send_async(
         s->header(), s->body(),
-        [this, check_trials_override, trials] {
-          push_check_trial();
-          if (check_trials_override) check_trials = trials;
+        [this, ack_check_timeout_override, timeout] {
+          push_ack_check_timeout();
+          if (ack_check_timeout_override) _ack_check_timeout = timeout;
         },
-        [this] { pop_check_trial(); });
+        [this] { pop_ack_check_timeout(); });
   }
 
   /**
@@ -427,15 +427,30 @@ class Controller {
   bool reads_fpga_info;
 
   /**
-   * @brief If > 0, this controller check ack from devices. This value represents the maximum number of trials for the check.
+   * @brief Transmission interval between frames when sending multiple data.
    */
-  size_t check_trials;
+  template <typename Rep, typename Period>
+  void set_send_interval(std::chrono::duration<Rep, Period> interval) {
+    _send_interval = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(interval);
+  }
 
   /**
-   * @brief Transmission interval between frames when sending multiple data. The interval will be send_interval *
-   * driver::EC_SYNC0_CYCLE_TIME_MICRO_SEC.
+   * @brief Transmission interval between frames when sending multiple data.
    */
-  size_t send_interval;
+  std::chrono::high_resolution_clock::duration get_send_interval() const noexcept { return _send_interval; }
+
+  /**
+   * @brief If > 0, this controller check ack from devices.
+   */
+  template <typename Rep, typename Period>
+  void set_ack_check_timeout(std::chrono::duration<Rep, Period> timeout) {
+    _ack_check_timeout = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(timeout);
+  }
+
+  /**
+   * @brief If > 0, this controller check ack from devices.
+   */
+  std::chrono::high_resolution_clock::duration get_ack_check_timeout() const noexcept { return _ack_check_timeout; }
 
  private:
   static uint8_t get_id() noexcept {
@@ -444,21 +459,25 @@ class Controller {
     return id_body.load();
   }
 
-  size_t wait_msg_processed(const size_t max_trial) {
-    size_t i;
+  bool wait_msg_processed(const std::chrono::high_resolution_clock::duration timeout) {
     const auto msg_id = _tx_buf.header().msg_id;
-    for (i = 0; i < max_trial; i++) {
-      if (_link->receive(_rx_buf) && _rx_buf.is_msg_processed(msg_id)) break;
-      std::this_thread::sleep_for(std::chrono::microseconds(send_interval * driver::EC_CYCLE_TIME_BASE_MICRO_SEC));
+    auto start = std::chrono::high_resolution_clock::now();
+    while (std::chrono::high_resolution_clock::now() - start < timeout) {
+      if (_link->receive(_rx_buf) && _rx_buf.is_msg_processed(msg_id)) return true;
+      std::this_thread::sleep_for(_send_interval);
     }
-    return i;
+    return false;
   }
 
-  size_t _check_trials_{};
+  std::chrono::high_resolution_clock::duration _send_interval{std::chrono::nanoseconds(driver::EC_CYCLE_TIME_BASE_NANO_SEC)};
 
-  void push_check_trial() { _check_trials_ = check_trials; }
+  std::chrono::high_resolution_clock::duration _ack_check_timeout{std::chrono::high_resolution_clock::duration::zero()};
 
-  void pop_check_trial() { check_trials = _check_trials_; }
+  std::chrono::high_resolution_clock::duration _ack_check_timeout_{std::chrono::high_resolution_clock::duration::zero()};
+
+  void push_ack_check_timeout() { _ack_check_timeout_ = _ack_check_timeout; }
+
+  void pop_ack_check_timeout() { _ack_check_timeout = _ack_check_timeout_; }
 
   struct AsyncData {
     std::unique_ptr<core::DatagramHeader> header;
