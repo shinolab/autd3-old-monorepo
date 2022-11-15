@@ -36,8 +36,8 @@ void* check(void* autd) {
   printf("===== Flags =====\n");
 
   AUTDSetReadsFPGAInfo(autd, true);
-  AUTDSetAckCheckTimeout(autd, 20 * 1000 * 1000);
-  AUTDSetSendInterval(autd, 1 * 1000 * 1000);
+  AUTDSetAckCheckTimeout(autd, 20LL * 1000 * 1000);
+  AUTDSetSendInterval(autd, 1LL * 1000 * 1000);
   AUTDSetForceFan(autd, false);
 
   bool is_force_fan = AUTDGetForceFan(autd);
@@ -47,8 +47,13 @@ void* check(void* autd) {
 
   printf("Is force fan: %d\n", is_force_fan);
   printf("Is reads FPGA info: %d\n", is_reads_fpga_info);
-  printf("Check timeout: %lld\n", timeout);
-  printf("Send interval: %lld\n", send_interval);
+#ifdef WIN32
+  printf("Check timeout: %llu\n", timeout);
+  printf("Send interval: %llu\n", send_interval);
+#else
+  printf("Check timeout: %lu\n", timeout);
+  printf("Send interval: %lu\n", send_interval);
+#endif
   printf("\n");
 
   printf("===== Properties =====\n");
