@@ -3,7 +3,7 @@
 // Created Date: 02/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/11/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -44,7 +44,7 @@
 #endif
 
 #include <autd3/core/link.hpp>
-#include <autd3/driver/cpu/ec_config.hpp>
+#include <autd3/driver/common/cpu/ec_config.hpp>
 #include <thread>
 
 namespace autd3::link {
