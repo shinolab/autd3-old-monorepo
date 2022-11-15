@@ -67,7 +67,7 @@ using DriverLatest = driver::DriverV2_6;
  */
 class Controller {
  public:
-  Controller(std::unique_ptr<const driver::Driver> driver = std::make_unique<const driver::DriverV2_6>())
+  explicit Controller(std::unique_ptr<const driver::Driver> driver = std::make_unique<const driver::DriverV2_6>())
       : force_fan(false),
         reads_fpga_info(false),
         _geometry(),
@@ -122,7 +122,6 @@ class Controller {
           body = std::move(a.body);
           pre = std::move(a.pre);
           post = std::move(a.post);
-          _send_queue.pop();
         }
 
         pre();
@@ -140,7 +139,10 @@ class Controller {
           body->pack(_driver, _geometry, _tx_buf);
           _link->send(_tx_buf);
           const auto success = wait_msg_processed(_ack_check_timeout);
-          if (!no_wait && !success) break;
+          if (!no_wait && !success) {
+            spdlog::warn("Failed to send data. Trying to resend...");
+            break;
+          }
           if (header->is_finished() && body->is_finished()) {
             header = nullptr;
             body = nullptr;
@@ -150,6 +152,11 @@ class Controller {
         }
 
         post();
+
+        if (header == nullptr && body == nullptr) {
+          std::unique_lock lk(_send_mtx);
+          _send_queue.pop();
+        }
       }
     });
 
