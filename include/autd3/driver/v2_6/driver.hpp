@@ -19,6 +19,8 @@ namespace autd3::driver {
 
 class DriverV2_6 final : public Driver {
  public:
+  uint8_t version_num() const noexcept override { return 0x86; }
+
   void clear(TxDatagram& tx) const noexcept override {
     tx.header().msg_id = MSG_CLEAR;
     tx.num_bodies = 0;
