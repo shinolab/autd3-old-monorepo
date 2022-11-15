@@ -3,7 +3,7 @@
 // Created Date: 07/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/11/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ struct Clear final : DatagramHeader {
 
   void init() override {}
 
-  void pack(const uint8_t, driver::TxDatagram& tx) override { driver::clear(tx); }
+  void pack(const std::unique_ptr<const driver::Driver>& driver, const uint8_t, driver::TxDatagram& tx) override { driver->clear(tx); }
 
   bool is_finished() const override { return true; }
 };

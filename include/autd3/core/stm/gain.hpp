@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/11/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "autd3/core/interface.hpp"
-#include "autd3/driver/cpu/operation.hpp"
+#include "autd3/driver/driver.hpp"
 #include "stm.hpp"
 
 namespace autd3::core {
@@ -63,11 +63,11 @@ struct GainSTM final : public STM {
   void init() override { _sent = 0; }
 
   void pack(const Geometry& geometry, driver::TxDatagram& tx) override {
-    geometry.mode()->pack_stm_gain_header(tx);
+    geometry.mode()->pack_stm_gain_header(geometry.driver(), tx);
 
     if (is_finished()) return;
 
-    geometry.mode()->pack_stm_gain_body(_sent, _next_duty, _freq_div, _gains, _mode, tx);
+    geometry.mode()->pack_stm_gain_body(geometry.driver(), _sent, _next_duty, _freq_div, _gains, _mode, tx);
   }
 
   [[nodiscard]] bool is_finished() const override { return _sent >= _gains.size() + 1; }

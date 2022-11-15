@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/06/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -74,10 +74,10 @@ struct Gain : DatagramBody {
   }
 
   void pack(const Geometry& geometry, driver::TxDatagram& tx) override {
-    geometry.mode()->pack_gain_header(tx);
+    geometry.mode()->pack_gain_header(geometry.driver(), tx);
     if (is_finished()) return;
     build(geometry);
-    geometry.mode()->pack_gain_body(_phase_sent, _duty_sent, _drives, tx);
+    geometry.mode()->pack_gain_body(geometry.driver(), _phase_sent, _duty_sent, _drives, tx);
   }
 
   [[nodiscard]] bool is_finished() const noexcept override { return _phase_sent && _duty_sent; }

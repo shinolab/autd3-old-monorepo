@@ -3,7 +3,7 @@
 // Created Date: 28/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/11/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ class Amplitudes final : public DatagramBody {
   void init() override { _sent = false; }
 
   void pack(const Geometry& geometry, driver::TxDatagram& tx) override {
-    normal_header(tx);
+    geometry.driver()->normal_header(tx);
     if (is_finished()) return;
 
     std::vector<driver::Drive> drives;
@@ -39,7 +39,7 @@ class Amplitudes final : public DatagramBody {
       std::transform(dev.begin(), dev.end(), std::back_inserter(drives), [&](const auto& tr) { return driver::Drive{0.0, _amp, tr.cycle()}; });
     });
 
-    normal_duty_body(drives, tx);
+    geometry.driver()->normal_duty_body(drives, tx);
     _sent = true;
   }
 

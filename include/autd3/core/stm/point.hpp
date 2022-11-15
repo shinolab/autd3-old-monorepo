@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/11/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@
 #include <vector>
 
 #include "autd3/core/interface.hpp"
-#include "autd3/driver/cpu/operation.hpp"
+#include "autd3/driver/driver.hpp"
 #include "stm.hpp"
 
 namespace autd3::core {
@@ -86,14 +86,14 @@ struct PointSTM final : public STM {
   size_t size() const override { return _points.size(); }
   void init() override { _sent = 0; }
   void pack(const Geometry& geometry, driver::TxDatagram& tx) override {
-    point_stm_header(tx);
+    geometry.driver()->point_stm_header(tx);
 
     if (is_finished()) return;
 
     std::vector<std::vector<driver::STMFocus>> points;
     points.reserve(geometry.num_devices());
-    std::transform(geometry.begin(), geometry.end(), std::back_inserter(points), [this](const Geometry::Device& dev) {
-      auto send_size = driver::point_stm_send_size(_points.size(), _sent);
+    std::transform(geometry.begin(), geometry.end(), std::back_inserter(points), [this, &geometry](const Geometry::Device& dev) {
+      auto send_size = geometry.driver()->point_stm_send_size(_points.size(), _sent);
       std::vector<driver::STMFocus> lp;
       lp.reserve(send_size);
       const auto src = _points.data() + _sent;
@@ -104,7 +104,7 @@ struct PointSTM final : public STM {
       return lp;
     });
 
-    driver::point_stm_body(points, _sent, _points.size(), this->_freq_div, geometry.sound_speed, tx);
+    geometry.driver()->point_stm_body(points, _sent, _points.size(), this->_freq_div, geometry.sound_speed, tx);
   }
 
   [[nodiscard]] bool is_finished() const override { return _sent == _points.size(); }

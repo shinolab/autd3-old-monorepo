@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/09/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@
 #include <cmath>
 #include <limits>
 
-#include "autd3/driver/fpga/defined.hpp"
+#include "autd3/driver/common/fpga/defined.hpp"
 
 namespace autd3::core {
 

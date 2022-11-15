@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/10/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,6 +15,8 @@
 #include <numeric>
 #include <vector>
 
+#include "autd3/driver/driver.hpp"
+#include "autd3/driver/v2_6/driver.hpp"
 #include "mode.hpp"
 #include "transducer.hpp"
 
@@ -115,7 +117,8 @@ struct Geometry {
             340.0e3),
 #endif
         _devices(),
-        _mode(std::make_unique<LegacyMode>()) {
+        _mode(std::make_unique<LegacyMode>()),
+        _driver(std::make_unique<driver::DriverV2_6>()) {
   }
 
   /**
@@ -186,9 +189,12 @@ struct Geometry {
   const std::unique_ptr<Mode>& mode() const { return _mode; }
   std::unique_ptr<Mode>& mode() { return _mode; }
 
+  const std::unique_ptr<const driver::Driver>& driver() const noexcept { return _driver; }
+
  private:
   std::vector<Device> _devices;
   std::unique_ptr<Mode> _mode;
+  std::unique_ptr<const driver::Driver> _driver;
 };
 
 }  // namespace autd3::core

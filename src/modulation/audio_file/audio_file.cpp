@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/10/2022
+// Last Modified: 15/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -121,8 +121,7 @@ void Wav::calc() {
   // down sampling
   std::vector<uint8_t> sample_buf;
   const auto freq_ratio = mod_sf / static_cast<double>(_sampling_freq);
-  auto buffer_size = static_cast<size_t>(static_cast<double>(this->_buf.size()) * freq_ratio);
-  buffer_size = std::min(buffer_size, driver::MOD_BUF_SIZE_MAX);
+  const auto buffer_size = static_cast<size_t>(static_cast<double>(this->_buf.size()) * freq_ratio);
 
   sample_buf.resize(buffer_size);
   for (size_t i = 0; i < sample_buf.size(); i++) {
