@@ -33,7 +33,7 @@ end
 const _dll = joinpath(@__DIR__, get_bin_path(), "bin", get_lib_prefix() * "autd3capi" * get_lib_ext())
 
 autd_get_last_error(error) = ccall((:AUTDGetLastError, _dll), Int32, (Ptr{UInt8}, ), error);
-autd_create_controller(out) = ccall((:AUTDCreateController, _dll), Cvoid, (Ref{Ptr{Cvoid}}, ), out);
+autd_create_controller(out, driver_version) = ccall((:AUTDCreateController, _dll), Cvoid, (Ref{Ptr{Cvoid}}, UInt8, ), out, driver_version);
 autd_open_controller(handle, link) = ccall((:AUTDOpenController, _dll), Bool, (Ptr{Cvoid}, Ptr{Cvoid}, ), handle, link);
 autd_add_device(handle, x, y, z, rz1, ry, rz2) = ccall((:AUTDAddDevice, _dll), Int32, (Ptr{Cvoid}, Float64, Float64, Float64, Float64, Float64, Float64, ), handle, x, y, z, rz1, ry, rz2);
 autd_add_device_quaternion(handle, x, y, z, qw, qx, qy, qz) = ccall((:AUTDAddDeviceQuaternion, _dll), Int32, (Ptr{Cvoid}, Float64, Float64, Float64, Float64, Float64, Float64, Float64, ), handle, x, y, z, qw, qx, qy, qz);

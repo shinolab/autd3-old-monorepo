@@ -48,7 +48,7 @@ mutable struct Controller
     send
     function Controller()
         chandle = Ref(Ptr{Cvoid}(0))
-        autd3capi.autd_create_controller(chandle)
+        autd3capi.autd_create_controller(chandle, UInt8(0))
         cnt = new(chandle[])
         cnt.add_device = function (pos::SVector{3,Float64}, rot::SVector{3,Float64})
             x, y, z = pos

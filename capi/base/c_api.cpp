@@ -17,6 +17,11 @@
 
 #include "./autd3_c_api.h"
 #include "autd3.hpp"
+#include "autd3/driver/v2_2/driver.hpp"
+#include "autd3/driver/v2_3/driver.hpp"
+#include "autd3/driver/v2_4/driver.hpp"
+#include "autd3/driver/v2_5/driver.hpp"
+#include "autd3/driver/v2_6/driver.hpp"
 #include "autd3/modulation/lpf.hpp"
 #include "custom.hpp"
 #include "wrapper.hpp"
@@ -55,7 +60,29 @@ int32_t AUTDGetLastError(char* error) {
   return size;
 }
 
-void AUTDCreateController(void** out) { *out = new Controller; }
+std::unique_ptr<const autd3::driver::Driver> get_driver(const uint8_t driver_version) {
+  switch (driver_version) {
+    case 0x00:
+      return std::make_unique<autd3::DriverLatest>();
+    case 0x82:
+      return std::make_unique<autd3::driver::DriverV2_2>();
+    case 0x83:
+      return std::make_unique<autd3::driver::DriverV2_3>();
+    case 0x84:
+      return std::make_unique<autd3::driver::DriverV2_4>();
+    case 0x85:
+      return std::make_unique<autd3::driver::DriverV2_5>();
+    case 0x86:
+      return std::make_unique<autd3::driver::DriverV2_6>();
+    default:
+      throw std::runtime_error("unknown driver version: " + std::to_string(driver_version));
+  }
+}
+
+void AUTDCreateController(void** out, const uint8_t driver_version) {
+  auto driver = get_driver(driver_version);
+  *out = new Controller(std::move(driver));
+}
 
 bool AUTDOpenController(void* const handle, void* const link) {
   auto* const wrapper = static_cast<Controller*>(handle);

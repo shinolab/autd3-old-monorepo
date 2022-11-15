@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 EXPORT_AUTD int32_t AUTDGetLastError(OUT char* error);
-EXPORT_AUTD void AUTDCreateController(OUT void** out);
+EXPORT_AUTD void AUTDCreateController(OUT void** out, IN uint8_t driver_version);
 EXPORT_AUTD bool AUTDOpenController(IN void* handle, IN void* link);
 EXPORT_AUTD int32_t AUTDAddDevice(IN void* handle, IN double x, IN double y, IN double z, IN double rz1, IN double ry, IN double rz2);
 EXPORT_AUTD int32_t AUTDAddDeviceQuaternion(IN void* handle, IN double x, IN double y, IN double z, IN double qw, IN double qx, IN double qy,

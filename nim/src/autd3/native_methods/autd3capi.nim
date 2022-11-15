@@ -12,7 +12,7 @@ else:
     dll* = "bin/libautd3capi.so"
 proc AUTDGetLastError*(error: cstring): int32 {.cdecl, importc: "AUTDGetLastError",
     dynlib: dll.}
-proc AUTDCreateController*(`out`: ptr pointer) {.cdecl,
+proc AUTDCreateController*(`out`: ptr pointer; driver_version: uint8) {.cdecl,
     importc: "AUTDCreateController", dynlib: dll.}
 proc AUTDOpenController*(handle: pointer; link: pointer): bool {.cdecl,
     importc: "AUTDOpenController", dynlib: dll.}

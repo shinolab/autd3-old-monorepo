@@ -67,7 +67,7 @@ using DriverLatest = driver::DriverV2_6;
  */
 class Controller {
  public:
-  Controller(std::unique_ptr<driver::Driver> driver = std::make_unique<driver::DriverV2_6>())
+  Controller(std::unique_ptr<const driver::Driver> driver = std::make_unique<const driver::DriverV2_6>())
       : force_fan(false),
         reads_fpga_info(false),
         _geometry(),

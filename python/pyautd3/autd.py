@@ -27,6 +27,13 @@ TRANS_SPACING = 10.16
 DEVICE_WIDTH = 192.0
 DEVICE_HEIGHT = 151.4
 
+DRIVER_LATEST = 0x00
+DRIVER_V2_2 = 0x82
+DRIVER_V2_3 = 0x83
+DRIVER_V2_4 = 0x84
+DRIVER_V2_5 = 0x85
+DRIVER_V2_6 = 0x86
+
 
 class SpecialData:
     def __init__(self):
@@ -219,9 +226,9 @@ class Geometry:
 
 
 class Controller:
-    def __init__(self):
+    def __init__(self, driver_version: int = DRIVER_LATEST):
         self.p_cnt = c_void_p()
-        Base().dll.AUTDCreateController(byref(self.p_cnt))
+        Base().dll.AUTDCreateController(byref(self.p_cnt), driver_version)
         self.__disposed = False
 
     def __del__(self):

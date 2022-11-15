@@ -28,6 +28,7 @@ Controllerを作成する.
 | Argument name / return | type   | in/out | description                      |
 | ---------------------- | ------ | ------ | -------------------------------- |
 | out                    | void** | out    | pointer to pointer to Controller |
+| driver_version         | uint8_t| in     | driver version                   |
 | return                 | void   | -      | -                                |
 
 ## AUTDOpenController (autd3capi)

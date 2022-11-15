@@ -13,7 +13,7 @@
 #endif
 
 int32 AUTDGetLastError(char* error);
-void AUTDCreateController(void** out);
+void AUTDCreateController(void** out, uint8 driver_version);
 bool AUTDOpenController(void* handle, void* link);
 int32 AUTDAddDevice(void* handle, float64 x, float64 y, float64 z, float64 rz1, float64 ry, float64 rz2);
 int32 AUTDAddDeviceQuaternion(void* handle, float64 x, float64 y, float64 z, float64 qw, float64 qx, float64 qy, float64 qz);
