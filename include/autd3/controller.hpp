@@ -23,6 +23,27 @@
 #include <utility>
 #include <vector>
 
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 6285 6385 26437 26800 26498 26451 26495)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic push
+#endif
+#ifdef __clang__
+#pragma clang diagnostic push
+#endif
+#include <spdlog/spdlog.h>
+#if _MSC_VER
+#pragma warning(pop)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic pop
+#endif
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
 #include "autd3/async.hpp"
 #include "autd3/driver/common/cpu/datagram.hpp"
 #include "autd3/driver/common/cpu/ec_config.hpp"
@@ -38,6 +59,8 @@
 #include "driver/firmware_version.hpp"
 
 namespace autd3 {
+
+using DriverLatest = driver::DriverV2_6;
 
 /**
  * @brief AUTD Controller
@@ -185,10 +208,22 @@ class Controller {
     _driver->cpu_version(_tx_buf);
     const auto cpu_versions = pack_ack();
     if (cpu_versions.empty()) return firmware_infos;
+    for (const auto version : cpu_versions)
+      if (version != _driver->version_num())
+        spdlog::error(
+            "Driver version is {}, but found {} CPU firmware. This discrepancy may cause abnormal behavior. Please change the driver version to an "
+            "appropriate one or update the firmware version.",
+            driver::FirmwareInfo::firmware_version_map(_driver->version_num()), driver::FirmwareInfo::firmware_version_map(version));
 
     _driver->fpga_version(_tx_buf);
     const auto fpga_versions = pack_ack();
     if (fpga_versions.empty()) return firmware_infos;
+    for (const auto version : fpga_versions)
+      if (version != _driver->version_num())
+        spdlog::error(
+            "Driver version is {}, but found {} FPGA firmware. This discrepancy may cause abnormal behavior. Please change the driver version to an "
+            "appropriate one or update the firmware version.",
+            driver::FirmwareInfo::firmware_version_map(_driver->version_num()), driver::FirmwareInfo::firmware_version_map(version));
 
     _driver->fpga_functions(_tx_buf);
     const auto fpga_functions = pack_ack();
@@ -196,6 +231,16 @@ class Controller {
 
     for (size_t i = 0; i < _geometry.num_devices(); i++)
       firmware_infos.emplace_back(i, cpu_versions.at(i), fpga_versions.at(i), fpga_functions.at(i));
+
+    DriverLatest latest_driver;
+    for (const auto& info : firmware_infos) {
+      if (info.cpu_version_num() != info.fpga_version_num())
+        spdlog::error("FPGA firmware version {} and CPU firmware version {} do not match. This discrepancy may cause abnormal behavior.",
+                      info.fpga_version(), info.cpu_version());
+      if ((info.cpu_version_num() != latest_driver.version_num()) || info.fpga_version_num() != latest_driver.version_num())
+        spdlog::warn("You are using old firmware. Please consider updating to {}.",
+                     driver::FirmwareInfo::firmware_version_map(latest_driver.version_num()));
+    }
 
     return firmware_infos;
   }

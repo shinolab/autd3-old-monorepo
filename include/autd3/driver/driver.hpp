@@ -17,6 +17,7 @@ namespace autd3::driver {
 
 class Driver {
  public:
+  virtual uint8_t version_num() const = 0;
   virtual void clear(TxDatagram& tx) const = 0;
   virtual void null_header(uint8_t msg_id, TxDatagram& tx) const = 0;
   virtual void null_body(TxDatagram& tx) const = 0;
