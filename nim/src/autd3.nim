@@ -49,9 +49,9 @@ func mod_delay_config*(): SpecialData =
 type Controller* = object
     p*: pointer
 
-func initController*(): Controller =
+func initController*(driverVersion: uint8 = 0): Controller =
     result.p = pointer(nil)
-    AUTDCreateController(result.p.addr)
+    AUTDCreateController(result.p.addr, driverVersion)
 
 func lastError*(_: typedesc[Controller]): string =
     let p = cast[cstring](pointer(nil))

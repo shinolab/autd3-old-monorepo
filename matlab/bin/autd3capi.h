@@ -15,7 +15,7 @@ typedef unsigned long uint64_t;
 #endif
 
 int32_t AUTDGetLastError(int8_t* error);
-void AUTDCreateController(void** out);
+void AUTDCreateController(void** out, uint8_t driver_version);
 bool AUTDOpenController(void* handle, void* link);
 int32_t AUTDAddDevice(void* handle, double x, double y, double z, double rz1, double ry, double rz2);
 int32_t AUTDAddDeviceQuaternion(void* handle, double x, double y, double z, double qw, double qx, double qy, double qz);

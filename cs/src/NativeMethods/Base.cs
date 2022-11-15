@@ -13,7 +13,7 @@ namespace AUTD3Sharp.NativeMethods
         private const string DLL = "autd3capi";
 
         [DllImport(DLL, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDGetLastError(System.Text.StringBuilder? error);
-        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDCreateController(out IntPtr @out);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDCreateController(out IntPtr @out, byte driverVersion);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDOpenController(IntPtr handle, IntPtr link);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDAddDevice(IntPtr handle, double x, double y, double z, double rz1, double ry, double rz2);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDAddDeviceQuaternion(IntPtr handle, double x, double y, double z, double qw, double qx, double qy, double qz);
