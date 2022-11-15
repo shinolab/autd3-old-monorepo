@@ -33,8 +33,8 @@ struct ModDelayConfig final : DatagramBody {
 
   void init() override { _sent = false; }
 
-  void pack(const Geometry& geometry, driver::TxDatagram& tx) override {
-    geometry.driver()->null_body(tx);
+  void pack(const std::unique_ptr<const driver::Driver>& driver, const Geometry& geometry, driver::TxDatagram& tx) override {
+    driver->null_body(tx);
     if (is_finished()) return;
 
     std::vector<uint16_t> delays;
@@ -42,7 +42,7 @@ struct ModDelayConfig final : DatagramBody {
       std::transform(dev.begin(), dev.end(), std::back_inserter(delays), [](const Transducer& tr) { return tr.mod_delay(); });
     });
 
-    geometry.driver()->mod_delay(delays.data(), tx);
+    driver->mod_delay(delays.data(), tx);
 
     _sent = true;
   }

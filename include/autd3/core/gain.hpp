@@ -73,11 +73,11 @@ struct Gain : DatagramBody {
     _duty_sent = false;
   }
 
-  void pack(const Geometry& geometry, driver::TxDatagram& tx) override {
-    geometry.mode()->pack_gain_header(geometry.driver(), tx);
+  void pack(const std::unique_ptr<const driver::Driver>& driver, const Geometry& geometry, driver::TxDatagram& tx) override {
+    geometry.mode()->pack_gain_header(driver, tx);
     if (is_finished()) return;
     build(geometry);
-    geometry.mode()->pack_gain_body(geometry.driver(), _phase_sent, _duty_sent, _drives, tx);
+    geometry.mode()->pack_gain_body(driver, _phase_sent, _duty_sent, _drives, tx);
   }
 
   [[nodiscard]] bool is_finished() const noexcept override { return _phase_sent && _duty_sent; }

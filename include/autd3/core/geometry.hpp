@@ -15,8 +15,6 @@
 #include <numeric>
 #include <vector>
 
-#include "autd3/driver/driver.hpp"
-#include "autd3/driver/v2_6/driver.hpp"
 #include "mode.hpp"
 #include "transducer.hpp"
 
@@ -117,8 +115,7 @@ struct Geometry {
             340.0e3),
 #endif
         _devices(),
-        _mode(std::make_unique<LegacyMode>()),
-        _driver(std::make_unique<driver::DriverV2_6>()) {
+        _mode(std::make_unique<LegacyMode>()) {
   }
 
   /**
@@ -189,12 +186,9 @@ struct Geometry {
   const std::unique_ptr<Mode>& mode() const { return _mode; }
   std::unique_ptr<Mode>& mode() { return _mode; }
 
-  const std::unique_ptr<const driver::Driver>& driver() const noexcept { return _driver; }
-
  private:
   std::vector<Device> _devices;
   std::unique_ptr<Mode> _mode;
-  std::unique_ptr<const driver::Driver> _driver;
 };
 
 }  // namespace autd3::core

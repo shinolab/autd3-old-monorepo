@@ -85,15 +85,15 @@ struct PointSTM final : public STM {
 
   size_t size() const override { return _points.size(); }
   void init() override { _sent = 0; }
-  void pack(const Geometry& geometry, driver::TxDatagram& tx) override {
-    geometry.driver()->point_stm_header(tx);
+  void pack(const std::unique_ptr<const driver::Driver>& driver, const Geometry& geometry, driver::TxDatagram& tx) override {
+    driver->point_stm_header(tx);
 
     if (is_finished()) return;
 
     std::vector<std::vector<driver::STMFocus>> points;
     points.reserve(geometry.num_devices());
-    std::transform(geometry.begin(), geometry.end(), std::back_inserter(points), [this, &geometry](const Geometry::Device& dev) {
-      auto send_size = geometry.driver()->point_stm_send_size(_points.size(), _sent);
+    std::transform(geometry.begin(), geometry.end(), std::back_inserter(points), [this, &driver](const Geometry::Device& dev) {
+      auto send_size = driver->point_stm_send_size(_points.size(), _sent);
       std::vector<driver::STMFocus> lp;
       lp.reserve(send_size);
       const auto src = _points.data() + _sent;
@@ -104,7 +104,7 @@ struct PointSTM final : public STM {
       return lp;
     });
 
-    geometry.driver()->point_stm_body(points, _sent, _points.size(), this->_freq_div, geometry.sound_speed, tx);
+    driver->point_stm_body(points, _sent, _points.size(), this->_freq_div, geometry.sound_speed, tx);
   }
 
   [[nodiscard]] bool is_finished() const override { return _sent == _points.size(); }
