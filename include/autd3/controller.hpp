@@ -290,7 +290,7 @@ class Controller {
  private:
   static uint8_t get_id() noexcept;
 
-  bool wait_msg_processed(const std::chrono::high_resolution_clock::duration timeout);
+  bool wait_msg_processed(std::chrono::high_resolution_clock::duration timeout);
 
   std::chrono::high_resolution_clock::duration _send_interval{std::chrono::nanoseconds(driver::EC_CYCLE_TIME_BASE_NANO_SEC)};
 
@@ -519,7 +519,7 @@ class Controller {
       return _cnt;
     }
 
-    auto operator<<(core::DatagramPackRef pack) -> Controller& {
+    auto operator<<(const core::DatagramPackRef pack) -> Controller& {
       _cnt._last_send_res = _cnt.send(_header);
       _sent = true;
       _cnt._last_send_res = _cnt.send(pack.header, pack.body);
@@ -585,7 +585,7 @@ class Controller {
       return _cnt;
     }
 
-    auto operator<<(core::DatagramPackRef pack) -> Controller& {
+    auto operator<<(const core::DatagramPackRef pack) -> Controller& {
       _cnt._last_send_res = _cnt.send(_body);
       _sent = true;
       _cnt._last_send_res = _cnt.send(pack.header, pack.body);
@@ -619,7 +619,7 @@ class Controller {
     return StreamCommaInputBody<B>(*this, body);
   }
 
-  auto operator<<(core::DatagramPackRef pack) -> Controller& {
+  auto operator<<(const core::DatagramPackRef pack) -> Controller& {
     _last_send_res = send(pack.header, pack.body);
     return *this;
   }
@@ -638,7 +638,7 @@ class Controller {
   }
 
   template <typename A>
-  auto operator<<(A (*)()) -> std::enable_if_t<std::is_same_v<autd3::Async, A>, AsyncSender> {
+  auto operator<<(A (*)()) -> std::enable_if_t<std::is_same_v<Async, A>, AsyncSender> {
     return AsyncSender{*this};
   }
 

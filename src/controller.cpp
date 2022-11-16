@@ -69,18 +69,18 @@ bool Controller::open(core::LinkPtr link) {
   _send_th = std::thread([this] {
     std::unique_ptr<core::DatagramHeader> header = nullptr;
     std::unique_ptr<core::DatagramBody> body = nullptr;
-    std::function<void(void)> pre;
-    std::function<void(void)> post;
     while (_send_th_running) {
+      std::function<void()> post;
+      std::function<void()> pre;
       if (header == nullptr && body == nullptr) {
         std::unique_lock lk(_send_mtx);
         _send_cond.wait(lk, [&] { return !_send_queue.empty() || !this->_send_th_running; });
         if (!this->_send_th_running) break;
-        AsyncData a = std::move(_send_queue.front());
-        header = std::move(a.header);
-        body = std::move(a.body);
-        pre = std::move(a.pre);
-        post = std::move(a.post);
+        AsyncData data = std::move(_send_queue.front());
+        header = std::move(data.header);
+        body = std::move(data.body);
+        pre = std::move(data.pre);
+        post = std::move(data.post);
       }
 
       pre();
@@ -97,8 +97,7 @@ bool Controller::open(core::LinkPtr link) {
         header->pack(_driver, msg_id, _tx_buf);
         body->pack(_driver, _geometry, _tx_buf);
         _link->send(_tx_buf);
-        const auto success = wait_msg_processed(_ack_check_timeout);
-        if (!no_wait && !success) {
+        if (const auto success = wait_msg_processed(_ack_check_timeout); !no_wait && !success) {
           spdlog::warn("Failed to send data. Trying to resend...");
           break;
         }
@@ -129,13 +128,13 @@ bool Controller::close() {
   _send_cond.notify_all();
   if (_send_th.joinable()) _send_th.join();
 
-  if (!send(autd3::Stop{})) return false;
-  if (!send(autd3::Clear{})) return false;
+  if (!send(autd3::stop())) return false;
+  if (!send(autd3::clear())) return false;
   _link->close();
   return true;
 }
 
-bool Controller::is_open() const noexcept { return (_link != nullptr) && _link->is_open(); }
+bool Controller::is_open() const noexcept { return _link != nullptr && _link->is_open(); }
 
 std::vector<driver::FPGAInfo> Controller::read_fpga_info() {
   std::vector<driver::FPGAInfo> fpga_info;
@@ -151,7 +150,7 @@ std::vector<driver::FirmwareInfo> Controller::firmware_infos() {
     std::vector<uint8_t> acks;
     if (!_link->send(_tx_buf)) return acks;
     if (!wait_msg_processed(std::chrono::nanoseconds(200 * 1000 * 1000))) return acks;
-    std::transform(_rx_buf.begin(), _rx_buf.end(), std::back_inserter(acks), [](driver::RxMessage msg) noexcept { return msg.ack; });
+    std::transform(_rx_buf.begin(), _rx_buf.end(), std::back_inserter(acks), [](const driver::RxMessage msg) noexcept { return msg.ack; });
     return acks;
   };
 
@@ -181,12 +180,12 @@ std::vector<driver::FirmwareInfo> Controller::firmware_infos() {
 
   for (size_t i = 0; i < _geometry.num_devices(); i++) firmware_infos.emplace_back(i, cpu_versions.at(i), fpga_versions.at(i), fpga_functions.at(i));
 
-  DriverLatest latest_driver;
   for (const auto& info : firmware_infos) {
     if (info.cpu_version_num() != info.fpga_version_num())
       spdlog::error("FPGA firmware version {} and CPU firmware version {} do not match. This discrepancy may cause abnormal behavior.",
                     info.fpga_version(), info.cpu_version());
-    if ((info.cpu_version_num() != latest_driver.version_num()) || info.fpga_version_num() != latest_driver.version_num())
+    if (const DriverLatest latest_driver;
+        info.cpu_version_num() != latest_driver.version_num() || info.fpga_version_num() != latest_driver.version_num())
       spdlog::warn("You are using old firmware. Please consider updating to {}.",
                    driver::FirmwareInfo::firmware_version_map(latest_driver.version_num()));
   }
@@ -215,8 +214,7 @@ bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body) {
     header->pack(_driver, msg_id, _tx_buf);
     body->pack(_driver, _geometry, _tx_buf);
     _link->send(_tx_buf);
-    const auto success = wait_msg_processed(_ack_check_timeout);
-    if (!no_wait && !success) return false;
+    if (const auto success = wait_msg_processed(_ack_check_timeout); !no_wait && !success) return false;
     if (header->is_finished() && body->is_finished()) break;
     if (no_wait) std::this_thread::sleep_for(_send_interval);
   }
@@ -226,8 +224,8 @@ bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body) {
 bool Controller::send(SpecialData* s) {
   push_ack_check_timeout();
   if (s->ack_check_timeout_override()) _ack_check_timeout = s->ack_check_timeout();
-  auto h = s->header();
-  auto b = s->body();
+  const auto h = s->header();
+  const auto b = s->body();
   const auto res = send(h.get(), b.get());
   pop_ack_check_timeout();
   return res;
@@ -281,7 +279,7 @@ uint8_t Controller::get_id() noexcept {
 
 bool Controller::wait_msg_processed(const std::chrono::high_resolution_clock::duration timeout) {
   const auto msg_id = _tx_buf.header().msg_id;
-  auto start = std::chrono::high_resolution_clock::now();
+  const auto start = std::chrono::high_resolution_clock::now();
   while (std::chrono::high_resolution_clock::now() - start < timeout) {
     if (_link->receive(_rx_buf) && _rx_buf.is_msg_processed(msg_id)) return true;
     std::this_thread::sleep_for(_send_interval);
