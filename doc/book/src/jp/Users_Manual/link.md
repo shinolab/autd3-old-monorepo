@@ -1,6 +1,6 @@
 # Link
 
-LinkはDeviceとのインターフェースである.
+LinkはAUTD3デバイスとのインターフェースである.
 以下の中から一つを選択する必要がある.
 
 [[_TOC_]]
@@ -13,21 +13,23 @@ TwinCATはWindowsのみをサポートする非常に特殊なソフトウェア
 また, 特定のネットワークコントローラが求められるため,
 [対応するネットワークコントローラの一覧](https://infosys.beckhoff.com/english.php?content=../content/1033/tc3_overview/9309844363.html&id=)を確認すること.
 
-> Note: 或いは, TwinCATのインストール後に, `C:/TwinCAT/3.1/Driver/System/TcI8254x.inf`に対応するデバイスのVendor IDとDevice IDが書かれているので, デバイスマネージャー→イーサネットアダプタ→プロパティ→詳細→ハードウェアIDと照らし合わせることでも確認できる.
+> Note: 或いは, TwinCATのインストール後に, `C:/TwinCAT/3.1/Driver/System/TcI8254x.inf`に対応するデバイスのVendor IDとDevice IDが書かれているので,「デバイスマネージャー」→「イーサネットアダプタ」→「プロパティ」→「詳細」→「ハードウェアID」と照らし合わせることでも確認できる.
 
 上記以外のネットワークコントローラでも動作する場合があるが, その場合, 正常な動作とリアルタイム性は保証されない.
 
 TwinCAT linkを使用するには`BUILD_LINK_TWINCAT`フラグをONにしてビルドするか, 或いは, 配布している`link_twincat`ライブラリをリンクされたい.
 
-### How to install TwinCAT
+### TwinCATのインストール
 
 前提として, TwinCATはHyper-VやVirtual Machine Platformと共存できない.
-そのため, これらのfeatureを無効にする必要がある.
+そのため, これらの機能を無効にする必要がある.
 これには, 例えば, PowerShellを管理者権限で起動し,
+
 ```
 Disable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-Hypervisor
 Disable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform
 ```
+
 と打ち込めば良い.
 
 まず, TwinCAT XAEを[公式サイト](https://www.beckhoff.com/en-en/)からダウンロードする.
@@ -44,7 +46,7 @@ Disable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform
 
 TwinCATのLinkを使うには, まず, `dist/TwinCATAUTDServer/TwinCATAUTDServer.exe`を実行する.
 
-初回はドライバをインストールするために, `-k`オプションを付けて, TwinCAT XAE Shellを開いたままにしておくこと.
+初回のみ, ドライバをインストールするために, `-k`オプションを付けて, TwinCAT XAE Shellを開いたままにしておくこと.
 
 ```
 TwinCATAUTDServer.exe -k
@@ -54,49 +56,51 @@ TwinCATAUTDServer.exe -k
 
 なお, TwinCATAUTDServerはPCの電源を切る, スリープモードに入る等でLinkが途切れるので, その都度実行し直すこと.
 
-#### Install Driver
+#### ドライバのインストール
 
 初回はEherCAT用のドライバのインストールが必要になる.
-TwinCAT XAE Shell上部メニューからTwinCAT→Show Realtime Ethernet Compatible Devicesを開きCompatible devicesの中の対応デバイスを選択し, Installをクリックする. "Installed and ready to use devices(realtime capcble)"にインストールされたアダプタが表示されていれば成功である.
+TwinCAT XAE Shell上部メニューから「TwinCAT」→「Show Realtime Ethernet Compatible Devices」を開き「Compatible devices」の中の対応デバイスを選択し, Installをクリックする.
+「Installed and ready to use devices (realtime capable)」にインストールされたアダプタが表示されていれば成功である.
 
-なお, Compatible devicesに何も表示されていない場合はそのPCのイーサネットデバイスはTwinCATに対応していない.
-Incompatible devicesの中のドライバもInstall自体は可能で, Installすると"Installed and ready to use devices(for demo use only)"と表示される.
+なお,「Compatible devices」に何も表示されていない場合はそのPCのイーサネットデバイスはTwinCATに対応していない.
+「Incompatible devices」の中のドライバもインストール自体は可能で, インストールすると「Installed and ready to use devices (for demo use only)」と表示される.
 この場合, 使用できるが動作保証はない.
 
-#### License
+#### ライセンス
 
-また, 初回はライセンス関係のエラーが出るので, XAE ShellでSolution Explorer→SYSTEM→Licenseを開き, "7 Days Trial License ..."をクリックし, 画面に表示される文字を入力する.
+また, 初回はライセンス関係のエラーが出るので, XAE Shellで「Solution Explorer」→「SYSTEM」→「License」を開き, 「7 Days Trial License ...」をクリックし, 画面に表示される文字を入力する.
 なお. ライセンスは7日間限定のトライアルライセンスだが, 切れたら再び同じ作業を行うことで再発行できる.
-ライセンスを発行し終わったら, TwinCAT XAE Shellを閉じて, 再び"TwinCATAUTDServer.exe"を実行する.
+ライセンスを発行し終わったら, TwinCAT XAE Shellを閉じて, 再び`TwinCATAUTDServer.exe`を実行する.
 
-### Troubleshooting
+### トラブルシューティング
 
-大量のDeviceを使用しようとすると, 下の図のようなエラーが発生することがある.
-この場合は, `TwinCATAUTDServer`のオプションの`-s`と`-t`の値を増やし, TwinCATAUTDServerを再び実行する.
-これらのオプションの値はそれぞれ`2`になっている.
-
-```
-TwinCATAUTDServer.exe -s 3 -t 3
-```
-
-何倍にすればいいかは接続する台数による.
-エラーが出ない中で可能な限り小さな値が望ましい.
-例えば, 9台の場合は3, 4程度の値にしておけば動作するはずである.
+大量のデバイスを使用しようとすると, 下の図のようなエラーが発生することがある.
 
 <figure>
   <img src="../fig/Users_Manual/tcerror.jpg"/>
   <figcaption>TwinCAT error when using 9 devices</figcaption>
 </figure>
 
+この場合は, `TwinCATAUTDServer`のオプションの`-s`と`-t`の値を増やし, TwinCATAUTDServerを再び実行する.
+これらのオプションの値はデフォルトでそれぞれ`2`になっている.
+
+```
+TwinCATAUTDServer.exe -s 3 -t 3
+```
+
+どの程度の値にすればいいかは接続する台数による.
+エラーが出ない中で可能な限り小さな値が望ましい.
+例えば, 9台の場合は3, 4程度の値にしておけば動作するはずである.
+
 ## RemoteTwinCAT
 
 前述の通り, AUTD3とTwinCATを使う場合はWindows OSと特定のネットワークアダプタが必要になる.
-しかし, Windows以外のPCで開発したい需要も多い (後述のSOEMもマルチプラットフォームで動作する).
-その場合は, RemoteTwinCAT linkを用いて遠隔からTwinCATを操作することができる.
+Windows以外のPCで開発したい場合は, RemoteTwinCAT linkを用いてLinux/macOSから遠隔でTwinCATを操作することができる.
+(後述のSOEMもLinux/macOSで動作する.)
 
 RemoteTwinCAT linkを使用するには`BUILD_LINK_REMOTE_TWINCAT`フラグをONにしてビルドするか, 或いは, 配布している`link_remote_twincat`ライブラリをリンクされたい.
 
-### Setup
+### セットアップ
 
 RemoteTwinCATを使用する場合はPCを2台用意する必要がある.
 この時, 片方のPCは上記のTwinCAT linkが使えるである必要がある.
@@ -154,7 +158,7 @@ TwinCATAUTDServer.exe -c 169.254.175.45 -k
     .build();
 ```
 
-クライアントのAMS NetIdは, 以下の図のようにTwinCATでSystem→Routesを開き, Current RouteタブのAmsNetIdで確認できる.
+クライアントのAMS NetIdは, 以下の図のようにTwinCATで「System」→「Routes」を開き, 「Current Route」タブのAmsNetIdで確認できる.
 
 <figure>
   <img src="../fig/Users_Manual/Current_Route.jpg"/>
@@ -168,14 +172,14 @@ TCP関係のエラーが出る場合は, ファイアウォールでADSプロト
 
 ## SOEM
 
-[SOEM](https://github.com/OpenEtherCATsociety/SOEM)は有志が開発しているOpen-sourceのEherCAT Masterライブラリである.
+[SOEM](https://github.com/OpenEtherCATsociety/SOEM)は有志が開発しているオープンソースのEherCAT Masterライブラリである.
 TwinCATとは異なり通常のWindows上で動作するためリアルタイム性は保証されない.
 そのため, 基本的にTwinCATを使用することを推奨する.
 SOEMを使用するのはやむを得ない理由があるか, 開発時のみに限定するべきである.
 一方, SOEMはクロスプラットフォームで動作し, インストールも単純という利点がある.
 
 Windowsの場合は, [npcap](https://nmap.org/npcap/)を**WinPcap API compatible mode**でインストールしておくこと.
-Linux/macの場合は, 特に準備は必要ない.
+Linux/macOSの場合は, 特に準備は必要ない.
 
 SOEM linkを使用するには`BUILD_LINK_SOEM`フラグをONにしてビルドするか, 或いは, 配布している`link_soem`ライブラリをリンクされたい.
 また, Windowsの場合は, 追加で`Packet.lib`及び`wpcap.lib`をリンクする必要がある.
@@ -189,7 +193,7 @@ SOEMのLinkを使用する際は`autd3/link/soem.hpp`ヘッダーをインクル
   auto link = autd3::link::SOEM().build();
 ```
 
-SOEMも大量のDeviceを使用すると挙動が不安定になる時がある[^fn_soem].
+SOEMも大量のデバイスを使用すると挙動が不安定になる時がある[^fn_soem].
 このときは, `sync0_cycle`と`send_cycle`関数を使用し, その値を増やす.
 ```cpp
   auto link = autd3::link::SOEM()
@@ -272,11 +276,11 @@ TCP関係のエラーが出る場合は, ファイアウォールでブロック
 
 ## Simulator
 
-Simulator linkは[AUTD Simulator](https://shinolab.github.io/autd3/book/jp/Simulator/simulator.html)を使用する際に使うLinkである.
+Simulator linkは[AUTDシミュレータ](https://shinolab.github.io/autd3/book/jp/Simulator/simulator.html)を使用する際に使うLinkである.
 
 Simulator linkを使用するには`BUILD_LINK_SIMULATOR`フラグをONにしてビルドするか, 或いは, 配布している`link_simulator`ライブラリをリンクされたい.
 
-このlinkの使用の前に, AUTD Simulatorを起動しておく必要がある.
+このlinkの使用の前に, AUTDシミュレータを起動しておく必要がある.
 
 SimulatorのLinkを使用する際は`autd3/link/simulator.hpp`ヘッダーをインクルードする.
 

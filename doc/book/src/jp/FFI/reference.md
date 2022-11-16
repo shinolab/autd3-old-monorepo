@@ -1,4 +1,4 @@
-# C API Reference
+# C API リファレンス
 
 c言語向けのAPIは[capi](https://github.com/shinolab/autd3/tree/master/capi)以下で定義されている.
 
