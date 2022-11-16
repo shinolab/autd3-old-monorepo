@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 16/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -47,14 +47,14 @@ using autd3::gain::holo::ZERO;
 using testing::Types;
 
 template <typename B>
-class BackendTest : public testing::Test {
+class backend_test : public testing::Test {
  public:
-  BackendTest() : backend(B::create()) { backend->init(); }
-  ~BackendTest() override = default;
-  BackendTest(const BackendTest& v) noexcept = default;
-  BackendTest& operator=(const BackendTest& obj) = default;
-  BackendTest(BackendTest&& obj) = default;
-  BackendTest& operator=(BackendTest&& obj) = default;
+  backend_test() : backend(B::create()) { backend->init(); }
+  ~backend_test() override = default;
+  backend_test(const backend_test& v) noexcept = default;
+  backend_test& operator=(const backend_test& obj) = default;
+  backend_test(backend_test&& obj) = default;
+  backend_test& operator=(backend_test&& obj) = default;
   autd3::gain::holo::BackendPtr backend;
 };
 
@@ -83,9 +83,9 @@ class BackendTest : public testing::Test {
 
 typedef Types<EIGEN3_BACKEND_TYPE CUDA_BACKEND_TYPE BLAS_BACKEND_TYPE ARRAYFIRE_BACKEND_TYPE> Implementations;
 
-TYPED_TEST_SUITE(BackendTest, Implementations);
+TYPED_TEST_SUITE(backend_test, Implementations);
 
-TYPED_TEST(BackendTest, copy_to) {
+TYPED_TEST(backend_test, copy_to) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;
   constexpr Eigen::Index n = 2 * TEST_SIZE;
 
@@ -99,7 +99,7 @@ TYPED_TEST(BackendTest, copy_to) {
     for (Eigen::Index j = 0; j < n; j++) ASSERT_EQ(a(i, j), b(i, j));
 }
 
-TYPED_TEST(BackendTest, copy_to_real) {
+TYPED_TEST(backend_test, copy_to_real) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;
   constexpr Eigen::Index n = 2 * TEST_SIZE;
 
@@ -113,7 +113,7 @@ TYPED_TEST(BackendTest, copy_to_real) {
     for (Eigen::Index j = 0; j < n; j++) ASSERT_EQ(a(i, j), b(i, j));
 }
 
-TYPED_TEST(BackendTest, copy_to_vec_real) {
+TYPED_TEST(backend_test, copy_to_vec_real) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;
 
   VectorXd a = VectorXd::Random(m);
@@ -125,7 +125,7 @@ TYPED_TEST(BackendTest, copy_to_vec_real) {
   for (Eigen::Index i = 0; i < m; i++) ASSERT_EQ(a(i), b(i));
 }
 
-TYPED_TEST(BackendTest, copy_to_vec) {
+TYPED_TEST(backend_test, copy_to_vec) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;
 
   VectorXc a = VectorXc::Random(m);
@@ -137,7 +137,7 @@ TYPED_TEST(BackendTest, copy_to_vec) {
   for (Eigen::Index i = 0; i < m; i++) ASSERT_EQ(a(i), b(i));
 }
 
-TYPED_TEST(BackendTest, real) {
+TYPED_TEST(backend_test, real) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;
   constexpr Eigen::Index n = 2 * TEST_SIZE;
 
@@ -151,7 +151,7 @@ TYPED_TEST(BackendTest, real) {
     for (Eigen::Index j = 0; j < n; j++) ASSERT_EQ(a(i, j).real(), b(i, j));
 }
 
-TYPED_TEST(BackendTest, imag) {
+TYPED_TEST(backend_test, imag) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;
   constexpr Eigen::Index n = 2 * TEST_SIZE;
 
@@ -165,7 +165,7 @@ TYPED_TEST(BackendTest, imag) {
     for (Eigen::Index j = 0; j < n; j++) ASSERT_EQ(a(i, j).imag(), b(i, j));
 }
 
-TYPED_TEST(BackendTest, make_complex) {
+TYPED_TEST(backend_test, make_complex) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;
 
   VectorXd re = VectorXd::Random(m);
@@ -178,7 +178,7 @@ TYPED_TEST(BackendTest, make_complex) {
   for (Eigen::Index i = 0; i < m; i++) ASSERT_EQ(a(i), complex(re(i), im(i)));
 }
 
-TYPED_TEST(BackendTest, abs) {
+TYPED_TEST(backend_test, abs) {
   constexpr Eigen::Index n = 1 * TEST_SIZE;
 
   VectorXc a = VectorXc::Random(n);
@@ -190,7 +190,7 @@ TYPED_TEST(BackendTest, abs) {
   for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR(std::abs(a(i)), b(i), 1e-6);
 }
 
-TYPED_TEST(BackendTest, abs_c) {
+TYPED_TEST(backend_test, abs_c) {
   constexpr Eigen::Index n = 1 * TEST_SIZE;
 
   VectorXc a = VectorXc::Random(n);
@@ -202,7 +202,7 @@ TYPED_TEST(BackendTest, abs_c) {
   for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR(std::abs(a(i)), b(i).real(), 1e-6);
 }
 
-TYPED_TEST(BackendTest, sqrt) {
+TYPED_TEST(backend_test, sqrt) {
   constexpr Eigen::Index n = 1 * TEST_SIZE;
 
   VectorXd a = VectorXd::Ones(n) + VectorXd::Random(n);
@@ -214,7 +214,7 @@ TYPED_TEST(BackendTest, sqrt) {
   for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR(std::sqrt(a(i)), b(i), 1e-6);
 }
 
-TYPED_TEST(BackendTest, conj) {
+TYPED_TEST(backend_test, conj) {
   constexpr Eigen::Index n = 1 * TEST_SIZE;
 
   VectorXc a = VectorXc::Random(n);
@@ -226,7 +226,7 @@ TYPED_TEST(BackendTest, conj) {
   for (Eigen::Index i = 0; i < n; i++) ASSERT_EQ(std::conj(a(i)), b(i));
 }
 
-TYPED_TEST(BackendTest, arg) {
+TYPED_TEST(backend_test, arg) {
   constexpr Eigen::Index n = 1 * TEST_SIZE;
 
   VectorXc a = VectorXc::Random(n);
@@ -237,7 +237,7 @@ TYPED_TEST(BackendTest, arg) {
   for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR(std::abs(a(i)), 1.0, 1e-6);
 }
 
-TYPED_TEST(BackendTest, reciprocal) {
+TYPED_TEST(backend_test, reciprocal) {
   constexpr Eigen::Index n = 1 * TEST_SIZE;
 
   VectorXc a = 2.0 * VectorXc::Ones(n) + VectorXc::Random(n);
@@ -252,7 +252,7 @@ TYPED_TEST(BackendTest, reciprocal) {
   }
 }
 
-TYPED_TEST(BackendTest, exp) {
+TYPED_TEST(backend_test, exp) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;
 
   VectorXc a = VectorXc::Random(m);
@@ -264,7 +264,7 @@ TYPED_TEST(BackendTest, exp) {
   for (Eigen::Index i = 0; i < m; i++) ASSERT_NEAR_COMPLEX(std::exp(a(i)), b(i), 1e-6);
 }
 
-TYPED_TEST(BackendTest, pow) {
+TYPED_TEST(backend_test, pow) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;
 
   VectorXd a = VectorXd::Random(m);
@@ -276,7 +276,7 @@ TYPED_TEST(BackendTest, pow) {
   for (Eigen::Index i = 0; i < m; i++) ASSERT_NEAR(std::pow(a(i), 2.0), b(i), 1e-6);
 }
 
-TYPED_TEST(BackendTest, create_diagonal) {
+TYPED_TEST(backend_test, create_diagonal) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;
   constexpr Eigen::Index n = 2 * TEST_SIZE;
 
@@ -294,7 +294,7 @@ TYPED_TEST(BackendTest, create_diagonal) {
         ASSERT_EQ(b(i, j), ZERO);
 }
 
-TYPED_TEST(BackendTest, get_diagonal) {
+TYPED_TEST(backend_test, get_diagonal) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;
   constexpr Eigen::Index n = 2 * TEST_SIZE;
 
@@ -307,7 +307,7 @@ TYPED_TEST(BackendTest, get_diagonal) {
   for (int i = 0; i < m; i++) ASSERT_EQ(b(i), a(i, i));
 }
 
-TYPED_TEST(BackendTest, get_diagonal_real) {
+TYPED_TEST(backend_test, get_diagonal_real) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;
   constexpr Eigen::Index n = 2 * TEST_SIZE;
 
@@ -320,7 +320,7 @@ TYPED_TEST(BackendTest, get_diagonal_real) {
   for (int i = 0; i < m; i++) ASSERT_EQ(b(i), a(i, i));
 }
 
-TYPED_TEST(BackendTest, set) {
+TYPED_TEST(backend_test, set) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;
 
   VectorXc a(m);
@@ -331,7 +331,7 @@ TYPED_TEST(BackendTest, set) {
   ASSERT_EQ(a(m / 2), complex(10.0, 5.0));
 }
 
-TYPED_TEST(BackendTest, set_row) {
+TYPED_TEST(backend_test, set_row) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;
   constexpr Eigen::Index n = 2 * TEST_SIZE;
 
@@ -349,7 +349,7 @@ TYPED_TEST(BackendTest, set_row) {
         ASSERT_EQ(a(i, j), ZERO);
 }
 
-TYPED_TEST(BackendTest, set_col) {
+TYPED_TEST(backend_test, set_col) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;
   constexpr Eigen::Index n = 2 * TEST_SIZE;
 
@@ -367,7 +367,7 @@ TYPED_TEST(BackendTest, set_col) {
         ASSERT_EQ(a(i, j), ZERO);
 }
 
-TYPED_TEST(BackendTest, get_col) {
+TYPED_TEST(backend_test, get_col) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;
   constexpr Eigen::Index n = 2 * TEST_SIZE;
 
@@ -381,7 +381,7 @@ TYPED_TEST(BackendTest, get_col) {
   for (int i = 0; i < m; i++) ASSERT_EQ(a(i, n / 2), b(i));
 }
 
-TYPED_TEST(BackendTest, concal_col) {
+TYPED_TEST(backend_test, concal_col) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;
   constexpr Eigen::Index n = 2 * TEST_SIZE;
   constexpr Eigen::Index k = 3 * TEST_SIZE;
@@ -399,7 +399,7 @@ TYPED_TEST(BackendTest, concal_col) {
     for (int j = 0; j < k; j++) ASSERT_EQ(c(i, n + j), b(i, j));
 }
 
-TYPED_TEST(BackendTest, concal_row_vec) {
+TYPED_TEST(backend_test, concal_row_vec) {
   constexpr Eigen::Index n = 2 * TEST_SIZE;
   constexpr Eigen::Index k = 3 * TEST_SIZE;
 
@@ -414,7 +414,7 @@ TYPED_TEST(BackendTest, concal_row_vec) {
   for (int i = 0; i < k; i++) ASSERT_EQ(c(i + n), b(i));
 }
 
-TYPED_TEST(BackendTest, concal_row) {
+TYPED_TEST(backend_test, concal_row) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;
   constexpr Eigen::Index n = 2 * TEST_SIZE;
   constexpr Eigen::Index k = 3 * TEST_SIZE;
@@ -432,7 +432,7 @@ TYPED_TEST(BackendTest, concal_row) {
     for (int j = 0; j < m; j++) ASSERT_EQ(c(i + n, j), b(i, j));
 }
 
-TYPED_TEST(BackendTest, reduce_col) {
+TYPED_TEST(backend_test, reduce_col) {
   constexpr Eigen::Index m = 2 * TEST_SIZE;
   constexpr Eigen::Index n = 2 * TEST_SIZE;
 
@@ -449,7 +449,7 @@ TYPED_TEST(BackendTest, reduce_col) {
   }
 }
 
-TYPED_TEST(BackendTest, max_abs_element) {
+TYPED_TEST(backend_test, max_abs_element) {
   constexpr Eigen::Index n = 1 * TEST_SIZE;
 
   VectorXc a = VectorXc::Random(n);
@@ -460,7 +460,7 @@ TYPED_TEST(BackendTest, max_abs_element) {
   ASSERT_EQ(this->backend->max_abs_element(a), a(idx));
 }
 
-TYPED_TEST(BackendTest, max_element) {
+TYPED_TEST(backend_test, max_element) {
   constexpr Eigen::Index n = 1 * TEST_SIZE;
 
   VectorXd a = VectorXd::Random(n);
@@ -470,7 +470,7 @@ TYPED_TEST(BackendTest, max_element) {
   ASSERT_EQ(this->backend->max_element(a), expected);
 }
 
-TYPED_TEST(BackendTest, scale) {
+TYPED_TEST(backend_test, scale) {
   constexpr Eigen::Index n = 1 * TEST_SIZE;
 
   VectorXc a = VectorXc::Random(n);
@@ -485,7 +485,7 @@ TYPED_TEST(BackendTest, scale) {
   }
 }
 
-TYPED_TEST(BackendTest, scale_real) {
+TYPED_TEST(backend_test, scale_real) {
   constexpr Eigen::Index n = 1 * TEST_SIZE;
 
   VectorXd a = VectorXd::Random(n);
@@ -500,7 +500,7 @@ TYPED_TEST(BackendTest, scale_real) {
   }
 }
 
-TYPED_TEST(BackendTest, dot) {
+TYPED_TEST(backend_test, dot) {
   constexpr Eigen::Index n = 1 * TEST_SIZE;
 
   VectorXc a = VectorXc::Random(n);
@@ -512,7 +512,7 @@ TYPED_TEST(BackendTest, dot) {
   ASSERT_NEAR_COMPLEX(this->backend->dot(a, b), expected, 1e-6);
 }
 
-TYPED_TEST(BackendTest, dot_real) {
+TYPED_TEST(backend_test, dot_real) {
   constexpr Eigen::Index n = 1 * TEST_SIZE;
 
   VectorXd a = VectorXd::Random(n);
@@ -524,7 +524,7 @@ TYPED_TEST(BackendTest, dot_real) {
   ASSERT_NEAR(this->backend->dot(a, b), expected, 1e-6);
 }
 
-TYPED_TEST(BackendTest, add_vector) {
+TYPED_TEST(backend_test, add_vector) {
   constexpr Eigen::Index m = 2 * TEST_SIZE;
 
   VectorXc a = VectorXc::Random(m);
@@ -546,7 +546,7 @@ TYPED_TEST(BackendTest, add_vector) {
   for (Eigen::Index i = 0; i < m; i++) ASSERT_NEAR_COMPLEX(b(i), expected(i), 1e-6);
 }
 
-TYPED_TEST(BackendTest, add_vector_real) {
+TYPED_TEST(backend_test, add_vector_real) {
   constexpr Eigen::Index m = 2 * TEST_SIZE;
 
   VectorXd a = VectorXd::Random(m);
@@ -568,7 +568,7 @@ TYPED_TEST(BackendTest, add_vector_real) {
   for (Eigen::Index i = 0; i < m; i++) ASSERT_NEAR(b(i), expected(i), 1e-6);
 }
 
-TYPED_TEST(BackendTest, add_matrix) {
+TYPED_TEST(backend_test, add_matrix) {
   constexpr Eigen::Index n = 1 * TEST_SIZE;
   constexpr Eigen::Index m = 2 * TEST_SIZE;
 
@@ -593,7 +593,7 @@ TYPED_TEST(BackendTest, add_matrix) {
     for (Eigen::Index j = 0; j < n; j++) ASSERT_NEAR_COMPLEX(b(i, j), expected(i, j), 1e-6);
 }
 
-TYPED_TEST(BackendTest, add_matrix_real) {
+TYPED_TEST(backend_test, add_matrix_real) {
   constexpr Eigen::Index n = 1 * TEST_SIZE;
   constexpr Eigen::Index m = 2 * TEST_SIZE;
 
@@ -618,7 +618,7 @@ TYPED_TEST(BackendTest, add_matrix_real) {
     for (Eigen::Index j = 0; j < n; j++) ASSERT_NEAR(b(i, j), expected(i, j), 1e-6);
 }
 
-TYPED_TEST(BackendTest, mul_matrix) {
+TYPED_TEST(backend_test, mul_matrix) {
   constexpr Eigen::Index n = 1 * TEST_SIZE;
   constexpr Eigen::Index m = 2 * TEST_SIZE;
   constexpr Eigen::Index k = 3 * TEST_SIZE;
@@ -646,7 +646,7 @@ TYPED_TEST(BackendTest, mul_matrix) {
     for (Eigen::Index j = 0; j < m; j++) ASSERT_NEAR_COMPLEX(c(i, j), expected(i, j), 1e-6);
 }
 
-TYPED_TEST(BackendTest, mul_vec) {
+TYPED_TEST(backend_test, mul_vec) {
   constexpr Eigen::Index n = 1 * TEST_SIZE;
   constexpr Eigen::Index m = 2 * TEST_SIZE;
 
@@ -668,7 +668,7 @@ TYPED_TEST(BackendTest, mul_vec) {
   for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR_COMPLEX(c(i), expected(i), 1e-6);
 }
 
-TYPED_TEST(BackendTest, mul_matrix_real) {
+TYPED_TEST(backend_test, mul_matrix_real) {
   constexpr Eigen::Index n = 1 * TEST_SIZE;
   constexpr Eigen::Index m = 2 * TEST_SIZE;
   constexpr Eigen::Index k = 3 * TEST_SIZE;
@@ -696,7 +696,7 @@ TYPED_TEST(BackendTest, mul_matrix_real) {
     for (Eigen::Index j = 0; j < m; j++) ASSERT_NEAR(c(i, j), expected(i, j), 1e-6);
 }
 
-TYPED_TEST(BackendTest, mul_vec_real) {
+TYPED_TEST(backend_test, mul_vec_real) {
   constexpr Eigen::Index n = 1 * TEST_SIZE;
   constexpr Eigen::Index m = 2 * TEST_SIZE;
 
@@ -718,7 +718,7 @@ TYPED_TEST(BackendTest, mul_vec_real) {
   for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR(c(i), expected(i), 1e-6);
 }
 
-TYPED_TEST(BackendTest, hadamard_product) {
+TYPED_TEST(backend_test, hadamard_product) {
   constexpr Eigen::Index n = 1 * TEST_SIZE;
 
   VectorXc a = VectorXc::Random(n);
@@ -734,7 +734,7 @@ TYPED_TEST(BackendTest, hadamard_product) {
   }
 }
 
-TYPED_TEST(BackendTest, hadamard_product_mat) {
+TYPED_TEST(backend_test, hadamard_product_mat) {
   constexpr Eigen::Index n = 1 * TEST_SIZE;
   constexpr Eigen::Index m = 2 * TEST_SIZE;
 
@@ -749,7 +749,7 @@ TYPED_TEST(BackendTest, hadamard_product_mat) {
     for (Eigen::Index j = 0; j < n; j++) ASSERT_NEAR_COMPLEX(c(i, j), (a(i, j) * b(i, j)), 1e-6);
 }
 
-TYPED_TEST(BackendTest, solvet) {
+TYPED_TEST(backend_test, solvet) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;
 
   MatrixXd tmp = MatrixXd::Random(m, m);
@@ -765,7 +765,7 @@ TYPED_TEST(BackendTest, solvet) {
   for (Eigen::Index i = 0; i < m; i++) ASSERT_NEAR(b(i), x(i), 1e-6);
 }
 
-TYPED_TEST(BackendTest, solveh) {
+TYPED_TEST(backend_test, solveh) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;
 
   const MatrixXc tmp = MatrixXc::Random(m, m);
@@ -781,7 +781,7 @@ TYPED_TEST(BackendTest, solveh) {
   for (Eigen::Index i = 0; i < m; i++) ASSERT_NEAR_COMPLEX(b(i), x(i), 1e-6);
 }
 
-TYPED_TEST(BackendTest, max_eigen_vector) {
+TYPED_TEST(backend_test, max_eigen_vector) {
   constexpr Eigen::Index n = 1 * TEST_SIZE;
 
   auto gen_unitary = [](const Eigen::Index size) -> MatrixXc {
@@ -814,7 +814,7 @@ TYPED_TEST(BackendTest, max_eigen_vector) {
   for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR_COMPLEX(b(i), expected(i), 1e-6);
 }
 
-TYPED_TEST(BackendTest, pseudo_inverse_svd) {
+TYPED_TEST(backend_test, pseudo_inverse_svd) {
   constexpr auto n = 5 * TEST_SIZE;
   constexpr auto m = 1 * TEST_SIZE;
   MatrixXc a = MatrixXc::Random(m, n);
@@ -839,7 +839,7 @@ TYPED_TEST(BackendTest, pseudo_inverse_svd) {
         ASSERT_NEAR_COMPLEX(c(i, j), ZERO, 0.1);
 }
 
-TYPED_TEST(BackendTest, pseudo_inverse_svd_real) {
+TYPED_TEST(backend_test, pseudo_inverse_svd_real) {
   constexpr auto n = 5 * TEST_SIZE;
   constexpr auto m = 1 * TEST_SIZE;
   MatrixXd a = MatrixXd::Random(m, n);
