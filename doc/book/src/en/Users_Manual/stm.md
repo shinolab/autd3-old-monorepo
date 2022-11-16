@@ -120,12 +120,12 @@ The basic usage is the same as that of `GainSTM`.
   const auto actual_freq = stm.set_frequency(1);
   std::cout << "Actual frequency is " << actual_freq << " Hz\n";
 
-  auto handle = stm.start(std::move(autd));
+  auto handle = stm.start(autd);
 
   std::cout << "press any key to stop software stm..." << std::endl;
   std::cin.ignore();
 
-  autd = handle.finish();
+  handle.finish();
 ```
 
 [^fn_gain_seq]: About 60 times the latency of `PointSTM`.

@@ -1,6 +1,6 @@
-# Frequency Configuration
+# 周波数設定
 
-Version 2.0から, すべての振動子の周波数を個別に指定できる機能が追加された.
+バージョン2.0から, すべての振動子の周波数を個別に指定できる機能が追加された.
 
 従来の$\SI{40}{kHz}$固定のモードをLegacyモードと呼び, 周波数を可変にできるモードをNormalモードと呼ぶ.
 
@@ -13,8 +13,8 @@ Version 2.0から, すべての振動子の周波数を個別に指定できる�
 振動子の周波数は`Geometry`→`Device`→`Transducer`とアクセスし, `Transducer`の`set_frequency`, または, `set_cycle`関数で指定する.
 
 指定できる周波数は$\SI{163.84}{MHz}/N, N=1,2,...,8191$となっている.
-`set_cycle`ではこの$N$を指定する. 
-`set_frequency`の場合は最も近い$N$が選ばれる.
+`set_cycle`ではこの$N$を直接指定する. 
+`set_frequency`の場合は可能な$N$の中で最も近い$N$が選ばれる.
 
 > NOTE: Legacyモードで周波数を変更しても, 実際の周波数は$\SI{40}{kHz}$から変化しない.
 
