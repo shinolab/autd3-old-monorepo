@@ -3,7 +3,7 @@
 // Created Date: 07/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 17/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ struct Synchronize final : DatagramBody {
     std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
       std::transform(dev.begin(), dev.end(), std::back_inserter(cycles), [](const core::Transducer& tr) { return tr.cycle(); });
     });
-    driver->sync(cycles.data(), tx);
+    geometry.mode()->pack_sync(driver, cycles, tx);
   }
 
   bool is_finished() const override { return true; }
