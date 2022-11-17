@@ -45,18 +45,18 @@ using Quaternion = Eigen::Quaternion<double>;
  */
 struct Transducer {
   Transducer(const size_t id, Vector3 pos, Quaternion rot) noexcept
-      : _id(id),
-        _pos(std::move(pos)),
-        _rot(std::move(rot)),
-        _mod_delay(0),
-        _cycle(4096),
+      : attenuation(0.0),
         sound_speed(
 #ifdef AUTD3_USE_METER
             340.0),
 #else
             340.0e3),
 #endif
-        attenuation(0.0) {
+        _id(id),
+        _pos(std::move(pos)),
+        _rot(std::move(rot)),
+        _mod_delay(0),
+        _cycle(4096) {
   }
   ~Transducer() = default;
   Transducer(const Transducer& v) noexcept = default;
