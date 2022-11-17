@@ -4,7 +4,7 @@ Project: example
 Created Date: 10/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 21/10/2022
+Last Modified: 17/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,7 +28,7 @@ if __name__ == '__main__':
         for tr in dev:
             tr.frequency = 70e3
 
-    link = Simulator().port(50632).build()
+    link = Simulator().build()
     if not autd.open(link):
         print(Controller.last_error())
         exit()
