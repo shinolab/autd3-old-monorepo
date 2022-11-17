@@ -3,7 +3,7 @@
 # Created Date: 13/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 10/10/2022
+# Last Modified: 17/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ when isMainModule:
         cnt.addDevice([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])
 
         var simulator = initSimulator()
-        let link = simulator.port(50632).build()
+        let link = simulator.build()
         if not cnt.open(link):
             echo Controller.lastError
             quit(-1)
