@@ -28,12 +28,12 @@ int main() try {
 
   autd << autd3::clear << autd3::synchronize;  // You must configure the frequencies of all transducers before synchronization.
 
-  autd3::SilencerConfig config;
+  autd3::SilencerConfig silencer;
 
   autd3::modulation::Sine m(150);
   const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   autd3::gain::Focus g(center);
-  autd << config << m, g;
+  autd << silencer << m, g;
 
   std::cout << "press any key to finish..." << std::endl;
   std::cin.ignore();

@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 17/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -234,11 +234,11 @@ TEST(ControllerTest, basic_usage) {
     for (const auto& m : mod) ASSERT_EQ(m, 0x00);
   }
 
-  autd3::SilencerConfig config;
+  autd3::SilencerConfig silencer;
   const autd3::Vector3 focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   autd3::gain::Focus g(focus);
   autd3::modulation::Sine m(150);
-  autd << config << m, g;
+  autd << silencer << m, g;
   for (const auto& cpu : *cpus) {
     ASSERT_TRUE(cpu.fpga_flags().contains(autd3::driver::FPGAControlFlags::LEGACY_MODE));
     ASSERT_FALSE(cpu.fpga_flags().contains(autd3::driver::FPGAControlFlags::STM_MODE));
@@ -335,11 +335,11 @@ TEST(ControllerTest, basic_usage_async) {
     for (const auto& m : mod) ASSERT_EQ(m, 0x00);
   }
 
-  autd3::SilencerConfig config;
+  autd3::SilencerConfig silencer;
   const autd3::Vector3 focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   autd3::gain::Focus g(focus);
   autd3::modulation::Sine m(150);
-  autd << autd3::async << config << std::move(m), std::move(g);
+  autd << autd3::async << silencer << std::move(m), std::move(g);
   autd.wait();
   for (const auto& cpu : *cpus) {
     ASSERT_TRUE(cpu.fpga_flags().contains(autd3::driver::FPGAControlFlags::LEGACY_MODE));
