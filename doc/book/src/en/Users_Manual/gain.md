@@ -187,7 +187,7 @@ class FocalPoint final : public autd3::Gain {
     std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
       std::for_each(dev.begin(), dev.end(), [&](const auto& transducer) {
         const auto dist = (_point - transducer.position()).norm();
-        const auto phase = transducer.align_phase_at(dist, geometry.sound_speed);
+        const auto phase = transducer.align_phase_at(dist);
         this->_drives[transducer.id()].amp = 1.0;
         this->_drives[transducer.id()].phase = phase;
       });
