@@ -310,8 +310,9 @@ class Controller {
    * @param k Heat capacity ratio
    * @param r Gas constant [J K^-1 mol^-1]
    * @param m Molar mass [kg mod^-1]
+   * @return sound_speed
    */
-  void set_sound_speed_from_temp(const double temp, const double k = 1.4, const double r = 8.31446261815324, const double m = 28.9647e-3) {
+  double set_sound_speed_from_temp(const double temp, const double k = 1.4, const double r = 8.31446261815324, const double m = 28.9647e-3) {
 #ifdef AUTD3_USE_METER
     const auto sound_speed = std::sqrt(k * r * (273.15 + temp) / m);
 #else
@@ -319,6 +320,7 @@ class Controller {
 #endif
     for (auto& dev : _geometry)
       for (auto& tr : dev) tr.sound_speed = sound_speed;
+    return sound_speed;
   }
 
   /**
