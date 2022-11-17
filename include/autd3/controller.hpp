@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/11/2022
+// Last Modified: 17/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -641,6 +641,8 @@ class Controller {
   auto operator<<(A (*)()) -> std::enable_if_t<std::is_same_v<Async, A>, AsyncSender> {
     return AsyncSender{*this};
   }
+
+  void operator<<(std::unique_ptr<core::Mode> (*f)()) { _geometry.mode() = f(); }
 
   void operator>>(bool& res) const { res = _last_send_res; }
 };
