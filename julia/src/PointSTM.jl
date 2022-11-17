@@ -3,7 +3,7 @@
 # Created Date: 14/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 14/06/2022
+# Last Modified: 17/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,9 +21,9 @@ mutable struct PointSTM
     get_sampling_frequency_division
     set_sampling_frequency_division
     get_sampling_frequency
-    function PointSTM()
+    function PointSTM(sound_speed::Float64)
         chandle = Ref(Ptr{Cvoid}(0))
-        autd3capi.autd_point_stm(chandle)
+        autd3capi.autd_point_stm(chandle, sound_speed)
         stm = STM(chandle[])
         p = new(stm, chandle[])
         p.add = function (position::SVector{3,Float64}; shift = 0)

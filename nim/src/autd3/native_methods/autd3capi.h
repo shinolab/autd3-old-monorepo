@@ -67,7 +67,7 @@ uint32 AUTDModulationSamplingFrequencyDivision(void* mod);
 void AUTDModulationSetSamplingFrequencyDivision(void* mod, uint32 freq_div);
 float64 AUTDModulationSamplingFrequency(void* mod);
 void AUTDDeleteModulation(void* mod);
-void AUTDPointSTM(void** out);
+void AUTDPointSTM(void** out, float64 sound_speed);
 void AUTDGainSTM(void** out, void* handle);
 bool AUTDPointSTMAdd(void* stm, float64 x, float64 y, float64 z, uint8 shift);
 bool AUTDGainSTMAdd(void* stm, void* gain);

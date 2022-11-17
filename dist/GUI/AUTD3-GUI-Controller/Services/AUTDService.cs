@@ -4,7 +4,7 @@
  * Created Date: 23/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/11/2022
+ * Last Modified: 17/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -145,6 +145,11 @@ public class AUTDService
         _lastBody = null;
         IsStarted = false;
         return _autd?.Close() != -1;
+    }
+
+    public double GetSoundSpeed()
+    {
+        return _autd?.SoundSpeed ?? 340e3;
     }
 
     public static string GetLastError() => Controller.LastError;

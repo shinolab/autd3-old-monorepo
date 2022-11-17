@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/11/2022
+// Last Modified: 17/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -57,7 +57,7 @@ class Focus final : public core::Gain {
     std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
       std::for_each(dev.begin(), dev.end(), [&](const auto& transducer) {
         const auto dist = (_point - transducer.position()).norm();
-        const auto phase = transducer.align_phase_at(dist, geometry.sound_speed);
+        const auto phase = transducer.align_phase_at(dist);
         _drives[transducer.id()].amp = _amp;
         _drives[transducer.id()].phase = phase;
       });
@@ -101,7 +101,7 @@ class BesselBeam final : public core::Gain {
         const auto r = transducer.position() - this->_apex;
         const auto rr = rot * r;
         const auto d = std::sin(_theta_z) * std::sqrt(rr.x() * rr.x() + rr.y() * rr.y()) - std::cos(_theta_z) * rr.z();
-        const auto phase = transducer.align_phase_at(d, geometry.sound_speed);
+        const auto phase = transducer.align_phase_at(d);
         _drives[transducer.id()].amp = _amp;
         _drives[transducer.id()].phase = phase;
       });
@@ -136,7 +136,7 @@ class PlaneWave final : public core::Gain {
     std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
       std::for_each(dev.begin(), dev.end(), [&](const auto& transducer) {
         const auto dist = transducer.position().dot(_direction);
-        const auto phase = transducer.align_phase_at(dist, geometry.sound_speed);
+        const auto phase = transducer.align_phase_at(dist);
         _drives[transducer.id()].amp = _amp;
         _drives[transducer.id()].phase = phase;
       });

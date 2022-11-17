@@ -3,7 +3,7 @@
 # Created Date: 13/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 13/06/2022
+# Last Modified: 17/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,7 +19,8 @@ proc point_stm_test*(cnt: Controller) =
 
     let m = initStatic(1.0)
 
-    let stm = initPointSTM()
+    soundSpeed = cnt.soundSpeed();
+    let stm = initPointSTM(soundSpeed)
     let radius = 30.0
     let size = 200
     let x = 90.0

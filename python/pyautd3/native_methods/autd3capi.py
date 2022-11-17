@@ -192,7 +192,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDDeleteModulation.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDDeleteModulation.restype = None
 
-        self.dll.AUTDPointSTM.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
+        self.dll.AUTDPointSTM.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_double] 
         self.dll.AUTDPointSTM.restype = None
 
         self.dll.AUTDGainSTM.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p] 

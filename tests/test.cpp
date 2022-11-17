@@ -246,14 +246,13 @@ TEST(ControllerTest, basic_usage) {
   const auto& base_tr = autd.geometry()[0][0];
   ASSERT_EQ(cpus->at(0).fpga().drives().first.size(), 1);
   ASSERT_EQ(cpus->at(0).fpga().drives().second.size(), 1);
-  const auto expect =
-      std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0.0, base_tr.wavenumber(autd.geometry().sound_speed), focus) *
-               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[0][0].phase) /
-                                              static_cast<double>(cpus->at(0).fpga().cycles()[0]))));
+  const auto expect = std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0.0, base_tr.wavenumber(), focus) *
+                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[0][0].phase) /
+                                                              static_cast<double>(cpus->at(0).fpga().cycles()[0]))));
   for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
     for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
       const auto p = std::arg(autd3::core::propagate(autd.geometry()[i][j].position(), autd.geometry()[i][j].z_direction(), 0.0,
-                                                     autd.geometry()[i][j].wavenumber(autd.geometry().sound_speed), focus) *
+                                                     autd.geometry()[i][j].wavenumber(), focus) *
                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives().second[0][j].phase) /
                                                              static_cast<double>(cpus->at(i).fpga().cycles()[j]))));
       ASSERT_EQ(cpus->at(i).fpga().drives().first[0][j].duty, cpus->at(i).fpga().cycles()[j] >> 1);
@@ -348,14 +347,13 @@ TEST(ControllerTest, basic_usage_async) {
   const auto& base_tr = autd.geometry()[0][0];
   ASSERT_EQ(cpus->at(0).fpga().drives().first.size(), 1);
   ASSERT_EQ(cpus->at(0).fpga().drives().second.size(), 1);
-  const auto expect =
-      std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0.0, base_tr.wavenumber(autd.geometry().sound_speed), focus) *
-               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[0][0].phase) /
-                                              static_cast<double>(cpus->at(0).fpga().cycles()[0]))));
+  const auto expect = std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0.0, base_tr.wavenumber(), focus) *
+                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[0][0].phase) /
+                                                              static_cast<double>(cpus->at(0).fpga().cycles()[0]))));
   for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
     for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
       const auto p = std::arg(autd3::core::propagate(autd.geometry()[i][j].position(), autd.geometry()[i][j].z_direction(), 0.0,
-                                                     autd.geometry()[i][j].wavenumber(autd.geometry().sound_speed), focus) *
+                                                     autd.geometry()[i][j].wavenumber(), focus) *
                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives().second[0][j].phase) /
                                                              static_cast<double>(cpus->at(i).fpga().cycles()[j]))));
       ASSERT_EQ(cpus->at(i).fpga().drives().first[0][j].duty, cpus->at(i).fpga().cycles()[j] >> 1);
@@ -449,14 +447,13 @@ TEST(ControllerTest, simple_legacy) {
   autd3::gain::Focus g(focus);
   autd << g;
   const auto& base_tr = autd.geometry()[0][0];
-  const auto expect =
-      std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0.0, base_tr.wavenumber(autd.geometry().sound_speed), focus) *
-               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[0][0].phase) /
-                                              static_cast<double>(cpus->at(0).fpga().cycles()[0]))));
+  const auto expect = std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0.0, base_tr.wavenumber(), focus) *
+                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[0][0].phase) /
+                                                              static_cast<double>(cpus->at(0).fpga().cycles()[0]))));
   for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
     for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
       const auto p = std::arg(autd3::core::propagate(autd.geometry()[i][j].position(), autd.geometry()[i][j].z_direction(), 0.0,
-                                                     autd.geometry()[i][j].wavenumber(autd.geometry().sound_speed), focus) *
+                                                     autd.geometry()[i][j].wavenumber(), focus) *
                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives().second[0][j].phase) /
                                                              static_cast<double>(cpus->at(i).fpga().cycles()[j]))));
       ASSERT_EQ(cpus->at(i).fpga().drives().first[0][j].duty, cpus->at(i).fpga().cycles()[j] >> 1);
@@ -493,14 +490,13 @@ TEST(ControllerTest, simple_normal) {
   autd3::gain::Focus g(focus);
   autd << g;
   const auto& base_tr = autd.geometry()[0][0];
-  const auto expect =
-      std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0.0, base_tr.wavenumber(autd.geometry().sound_speed), focus) *
-               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[0][0].phase) /
-                                              static_cast<double>(cpus->at(0).fpga().cycles()[0]))));
+  const auto expect = std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0.0, base_tr.wavenumber(), focus) *
+                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[0][0].phase) /
+                                                              static_cast<double>(cpus->at(0).fpga().cycles()[0]))));
   for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
     for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
       const auto p = std::arg(autd3::core::propagate(autd.geometry()[i][j].position(), autd.geometry()[i][j].z_direction(), 0.0,
-                                                     autd.geometry()[i][j].wavenumber(autd.geometry().sound_speed), focus) *
+                                                     autd.geometry()[i][j].wavenumber(), focus) *
                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives().second[0][j].phase) /
                                                              static_cast<double>(cpus->at(i).fpga().cycles()[j]))));
       ASSERT_LE(std::abs(static_cast<int>(cpus->at(i).fpga().drives().first[0][j].duty) - (cpus->at(i).fpga().cycles()[j] >> 1)), 1);
@@ -540,14 +536,13 @@ TEST(ControllerTest, simple_normal_phase) {
   autd3::gain::Focus g(focus);
   autd << g;
   const auto& base_tr = autd.geometry()[0][0];
-  const auto expect =
-      std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0.0, base_tr.wavenumber(autd.geometry().sound_speed), focus) *
-               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[0][0].phase) /
-                                              static_cast<double>(cpus->at(0).fpga().cycles()[0]))));
+  const auto expect = std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0.0, base_tr.wavenumber(), focus) *
+                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[0][0].phase) /
+                                                              static_cast<double>(cpus->at(0).fpga().cycles()[0]))));
   for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
     for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
       const auto p = std::arg(autd3::core::propagate(autd.geometry()[i][j].position(), autd.geometry()[i][j].z_direction(), 0.0,
-                                                     autd.geometry()[i][j].wavenumber(autd.geometry().sound_speed), focus) *
+                                                     autd.geometry()[i][j].wavenumber(), focus) *
                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives().second[0][j].phase) /
                                                              static_cast<double>(cpus->at(i).fpga().cycles()[j]))));
       ASSERT_LE(std::abs(static_cast<int>(cpus->at(i).fpga().drives().first[0][j].duty) - (cpus->at(i).fpga().cycles()[j] >> 1)), 1);
@@ -584,14 +579,14 @@ TEST(ControllerTest, point_stm) {
     return autd3::Point(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
   });
 
-  autd3::PointSTM stm;
+  autd3::PointSTM stm(autd.get_sound_speed());
   std::copy(points.begin(), points.end(), std::back_inserter(stm));
 
   autd << stm;
   for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
 
   const auto cycle = cpus->at(0).fpga().cycles()[0];
-  const auto wavenumber = autd.geometry()[0][0].wavenumber(autd.geometry().sound_speed);
+  const auto wavenumber = autd.geometry()[0][0].wavenumber();
   const auto& base_tr = autd.geometry()[0][0];
   const auto& z_dir = base_tr.z_direction();
   constexpr double criteria = 2.0 * autd3::pi / 100.0;

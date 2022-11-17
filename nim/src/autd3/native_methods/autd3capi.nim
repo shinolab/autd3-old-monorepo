@@ -133,7 +133,8 @@ proc AUTDModulationSamplingFrequency*(`mod`: pointer): float64 {.cdecl,
     importc: "AUTDModulationSamplingFrequency", dynlib: dll.}
 proc AUTDDeleteModulation*(`mod`: pointer) {.cdecl, importc: "AUTDDeleteModulation",
     dynlib: dll.}
-proc AUTDPointSTM*(`out`: ptr pointer) {.cdecl, importc: "AUTDPointSTM", dynlib: dll.}
+proc AUTDPointSTM*(`out`: ptr pointer; sound_speed: float64) {.cdecl,
+    importc: "AUTDPointSTM", dynlib: dll.}
 proc AUTDGainSTM*(`out`: ptr pointer; handle: pointer) {.cdecl, importc: "AUTDGainSTM",
     dynlib: dll.}
 proc AUTDPointSTMAdd*(stm: pointer; x: float64; y: float64; z: float64; shift: uint8): bool {.
