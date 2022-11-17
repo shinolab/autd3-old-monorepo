@@ -15,7 +15,6 @@
 #include <numeric>
 #include <vector>
 
-#include "mode.hpp"
 #include "transducer.hpp"
 
 namespace autd3::core {
@@ -102,7 +101,7 @@ struct Geometry {
     Eigen::Transform<double, 3, Eigen::Affine> _trans_inv;
   };
 
-  Geometry() : _devices(), _mode(std::make_unique<LegacyMode>()) {}
+  Geometry() : _devices() {}
 
   /**
    * @brief Number of devices
@@ -159,12 +158,8 @@ struct Geometry {
   Device& operator[](const size_t i) { return _devices[i]; }
   const Device& operator[](const size_t i) const { return _devices[i]; }
 
-  const std::unique_ptr<Mode>& mode() const { return _mode; }
-  std::unique_ptr<Mode>& mode() { return _mode; }
-
  private:
   std::vector<Device> _devices;
-  std::unique_ptr<Mode> _mode;
 };
 
 }  // namespace autd3::core
