@@ -11,17 +11,17 @@ The Rust version is available at [crate.io](https://crates.io/crates/autd3), so 
 
 ```
 [dependencies]
-autd3 = "2.6.2"
+autd3 = "2.6.3"
 ```
 
 Also, you can add links, gains, etc., to dependencies as needed since they are available as separate crates.
 
 ```
 [dependencies]
-autd3-link-soem = "2.6.2"
-autd3-link-twincat = "2.6.2"
-autd3-link-simulator = "2.6.2"
-autd3-gain-holo = "2.6.2"
+autd3-link-soem = "2.6.3"
+autd3-link-twincat = "2.6.3"
+autd3-link-simulator = "2.6.3"
+autd3-gain-holo = "2.6.3"
 ```
 
 ## Usage

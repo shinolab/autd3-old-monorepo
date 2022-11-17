@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 15/11/2022
+Last Modified: 17/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -42,4 +42,4 @@ __all__ = [
     'DRIVER_V2_6'
 ]
 
-__version__ = '2.6.2'
+__version__ = '2.6.3'
