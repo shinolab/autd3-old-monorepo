@@ -3,7 +3,7 @@
 // Created Date: 31/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/11/2022
+// Last Modified: 17/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,8 +14,6 @@
 #include "runner.hpp"
 
 int main() try {
-  spdlog::set_level(spdlog::level::debug);
-
   autd3::Controller autd;
 
   autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
@@ -24,7 +22,7 @@ int main() try {
   auto link = autd3::link::Debug().build();
   autd.open(std::move(link));
 
-  autd.mode() = autd3::NormalMode::create();
+  autd << autd3::normal_mode;
   for (auto& dev : autd.geometry())
     for (auto& tr : dev) tr.set_frequency(70e3);  // actual frequency is 163.84MHz/2341 ~ 69987 Hz
 
@@ -42,7 +40,7 @@ int main() try {
 
   autd.close();
 
-  return run(autd);
+  return 0;
 } catch (std::exception& e) {
   std::cerr << e.what() << std::endl;
   return -1;

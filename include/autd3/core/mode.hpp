@@ -3,7 +3,7 @@
 // Created Date: 28/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 17/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -50,7 +50,7 @@ class LegacyMode : public Mode {
 
  public:
   ~LegacyMode() override = default;
-  static std::unique_ptr<LegacyMode> create() { return std::make_unique<LegacyMode>(); }
+  static std::unique_ptr<LegacyMode> create() noexcept { return std::make_unique<LegacyMode>(); }
 };
 
 class NormalMode : public Mode {
@@ -93,7 +93,7 @@ class NormalMode : public Mode {
 
  public:
   ~NormalMode() override = default;
-  static std::unique_ptr<NormalMode> create() { return std::make_unique<NormalMode>(); }
+  static std::unique_ptr<NormalMode> create() noexcept { return std::make_unique<NormalMode>(); }
 };
 
 class NormalPhaseMode : public Mode {
@@ -118,7 +118,11 @@ class NormalPhaseMode : public Mode {
 
  public:
   ~NormalPhaseMode() override = default;
-  static std::unique_ptr<NormalPhaseMode> create() { return std::make_unique<NormalPhaseMode>(); }
+  static std::unique_ptr<NormalPhaseMode> create() noexcept { return std::make_unique<NormalPhaseMode>(); }
 };
+
+inline std::unique_ptr<Mode> legacy_mode() noexcept { return LegacyMode::create(); }
+inline std::unique_ptr<Mode> normal_mode() noexcept { return NormalMode::create(); }
+inline std::unique_ptr<Mode> normal_phase_mode() noexcept { return NormalPhaseMode::create(); }
 
 }  // namespace autd3::core
