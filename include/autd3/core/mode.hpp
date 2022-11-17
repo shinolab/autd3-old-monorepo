@@ -19,6 +19,7 @@ namespace autd3::core {
 
 class Mode {
  public:
+  virtual void pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles, driver::TxDatagram& tx) const = 0;
   virtual void pack_gain_header(const std::unique_ptr<const driver::Driver>& driver, driver::TxDatagram& tx) const = 0;
   virtual void pack_gain_body(const std::unique_ptr<const driver::Driver>& driver, bool& phase_sent, bool& duty_sent,
                               const std::vector<driver::Drive>& drives, driver::TxDatagram& tx) const = 0;
@@ -29,9 +30,16 @@ class Mode {
 };
 
 class LegacyMode : public Mode {
+  void pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles, driver::TxDatagram& tx) const override {
+    if (std::any_of(cycles.begin(), cycles.end(), [](uint16_t cycle) { return cycle != 4096; }))
+      throw std::runtime_error("Cannot change frequency in LegacyMode.");
+    driver->sync(cycles.data(), tx);
+  }
+
   void pack_gain_header(const std::unique_ptr<const driver::Driver>& driver, driver::TxDatagram& tx) const noexcept override {
     driver->normal_legacy_header(tx);
   }
+
   void pack_gain_body(const std::unique_ptr<const driver::Driver>& driver, bool& phase_sent, bool& duty_sent,
                       const std::vector<driver::Drive>& drives, driver::TxDatagram& tx) const override {
     driver->normal_legacy_body(drives, tx);
@@ -54,9 +62,14 @@ class LegacyMode : public Mode {
 };
 
 class NormalMode : public Mode {
+  void pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles, driver::TxDatagram& tx) const override {
+    driver->sync(cycles.data(), tx);
+  }
+
   void pack_gain_header(const std::unique_ptr<const driver::Driver>& driver, driver::TxDatagram& tx) const noexcept override {
     driver->normal_header(tx);
   }
+
   void pack_gain_body(const std::unique_ptr<const driver::Driver>& driver, bool& phase_sent, bool& duty_sent,
                       const std::vector<driver::Drive>& drives, driver::TxDatagram& tx) const override {
     if (!phase_sent) {
@@ -97,9 +110,14 @@ class NormalMode : public Mode {
 };
 
 class NormalPhaseMode : public Mode {
+  void pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles, driver::TxDatagram& tx) const override {
+    driver->sync(cycles.data(), tx);
+  }
+
   void pack_gain_header(const std::unique_ptr<const driver::Driver>& driver, driver::TxDatagram& tx) const noexcept override {
     driver->normal_header(tx);
   }
+
   void pack_gain_body(const std::unique_ptr<const driver::Driver>& driver, bool& phase_sent, bool& duty_sent,
                       const std::vector<driver::Drive>& drives, driver::TxDatagram& tx) const override {
     driver->normal_phase_body(drives, tx);
