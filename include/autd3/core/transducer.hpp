@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 17/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -64,34 +64,42 @@ struct Transducer {
    * \brief Position of the transducer
    */
   [[nodiscard]] const Vector3& position() const noexcept { return _pos; }
+
   /**
    * \brief ID of the transducer
    */
   [[nodiscard]] size_t id() const noexcept { return _id; }
+
   /**
    * \brief x direction of the transducer
    */
   [[nodiscard]] const Vector3& x_direction() const noexcept { return _x_direction; }
+
   /**
    * \brief y direction of the transducer
    */
   [[nodiscard]] const Vector3& y_direction() const noexcept { return _y_direction; }
+
   /**
    * \brief z direction of the transducer
    */
   [[nodiscard]] const Vector3& z_direction() const noexcept { return _z_direction; }
+
   /**
    * \brief modulation delay of the transducer
    */
   [[nodiscard]] uint16_t mod_delay() const noexcept { return _mod_delay; }
+
   /**
    * \brief modulation delay of the transducer
    */
   uint16_t& mod_delay() noexcept { return _mod_delay; }
+
   /**
    * \brief Frequency division ratio. The frequency will be autd3::driver::FPGA_CLK_FREQ/cycle.
    */
   [[nodiscard]] uint16_t cycle() const { return _cycle; }
+
   /**
    * \brief Frequency of the transducer
    */
@@ -117,6 +125,7 @@ struct Transducer {
    * @param sound_speed Speed of sound
    */
   [[nodiscard]] double wavelength(double sound_speed) const { return sound_speed / frequency(); }
+
   /**
    * \brief Wavenumber of the ultrasound emitted from the transducer
    * @param sound_speed Speed of sound
