@@ -60,7 +60,7 @@ struct Point {
 struct PointSTM final : public STM {
   using value_type = Point;
 
-  PointSTM(const double sound_speed) : STM(), _sent(0), sound_speed(sound_speed) {}
+  PointSTM(const double sound_speed) : STM(), sound_speed(sound_speed), _sent(0) {}
 
   /**
    * @brief Set frequency of the STM

@@ -64,7 +64,7 @@ struct GainSTM final : public STM {
 
   void init() override { _sent = 0; }
 
-  void pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const core::Mode>& mode, const Geometry& geometry,
+  void pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const core::Mode>& mode, const Geometry&,
             driver::TxDatagram& tx) override {
     mode->pack_stm_gain_header(driver, tx);
 
