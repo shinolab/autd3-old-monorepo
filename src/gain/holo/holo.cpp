@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/11/2022
+// Last Modified: 17/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,8 +23,8 @@ void generate_transfer_matrix(const std::vector<core::Vector3>& foci, const core
   for (size_t i = 0; i < foci.size(); i++)
     std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
       std::for_each(dev.begin(), dev.end(), [&](const auto& transducer) {
-        dst(i, transducer.id()) = core::propagate(transducer.position(), transducer.z_direction(), geometry.attenuation,
-                                                  transducer.wavenumber(geometry.sound_speed), foci[i]);
+        dst(i, transducer.id()) =
+            core::propagate(transducer.position(), transducer.z_direction(), transducer.attenuation, transducer.wavenumber(), foci[i]);
       });
     });
 }
@@ -470,12 +470,9 @@ void Greedy::calc(const core::Geometry& geometry) {
 
   VectorXc cache = VectorXc::Zero(m);
 
-  const double attenuation = geometry.attenuation;
-  const double sound_speed = geometry.sound_speed;
-  auto transfer_foci = [m, attenuation, sound_speed](const core::Transducer& trans, const complex phase, const std::vector<core::Vector3>& foci_,
-                                                     VectorXc& res) {
+  auto transfer_foci = [m](const core::Transducer& trans, const complex phase, const std::vector<core::Vector3>& foci_, VectorXc& res) {
     for (Eigen::Index i = 0; i < m; i++)
-      res(i) = core::propagate(trans.position(), trans.z_direction(), attenuation, trans.wavenumber(sound_speed), foci_[i]) * phase;
+      res(i) = core::propagate(trans.position(), trans.z_direction(), trans.attenuation, trans.wavenumber(), foci_[i]) * phase;
   };
 
   std::vector<size_t> select(n);
@@ -523,7 +520,7 @@ void LSSGreedy::calc(const core::Geometry& geometry) {
     std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
       std::for_each(dev.begin(), dev.end(), [&](const auto& transducer) {
         const auto dist = (focus - transducer.position()).norm();
-        const auto phase = transducer.align_phase_at(dist, geometry.sound_speed);
+        const auto phase = transducer.align_phase_at(dist);
         q(transducer.id()) = std::exp(complex(0., phase));
       });
     });

@@ -3,7 +3,7 @@
 # Created Date: 11/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 15/11/2022
+# Last Modified: 17/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -336,8 +336,8 @@ proc `frequency=`*(stm: STM, value: float64): float64 {.discardable.} =
 
 type PointSTM* = object of STM
 
-func initPointSTM*(): PointSTM =
-    AUTDPointSTM(result.p.addr)
+func initPointSTM*(soundSpeed: float64): PointSTM =
+    AUTDPointSTM(result.p.addr, soundSpeed)
 
 func add*(stm: PointSTM, pos: openArray[float64],
         shift: uint8 = 0): bool {.discardable.} =

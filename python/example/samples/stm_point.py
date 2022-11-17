@@ -4,7 +4,7 @@ Project: samples
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 21/10/2022
+Last Modified: 17/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,7 +24,8 @@ def stm_point(autd: Controller):
 
     m = Static(1.0)
 
-    stm = PointSTM()
+    sound_speed = autd.sound_speed
+    stm = PointSTM(sound_speed)
     radius = 30.0
     size = 200
     center = autd.geometry.center + np.array([0., 0., 150.])

@@ -287,6 +287,58 @@ class Controller {
    */
   [[nodiscard]] std::chrono::high_resolution_clock::duration get_ack_check_timeout() const noexcept;
 
+  /**
+   * Set speed of sound
+   */
+  void set_sound_speed(const double sound_speed) {
+    for (auto& dev : _geometry)
+      for (auto& tr : dev) tr.sound_speed = sound_speed;
+  }
+
+  /**
+   * Get speed of sound
+   * @details This function returns the speed of sound set to the 0-th transducer of the 0-th device.
+   */
+  [[nodiscard]] double get_sound_speed() const {
+    if (_geometry.num_devices() == 0) throw std::runtime_error("No devices are added.");
+    return _geometry[0][0].sound_speed;
+  }
+
+  /**
+   * Set speed of sound from temperature
+   * @param temp temperature in Celsius degree
+   * @param k Heat capacity ratio
+   * @param r Gas constant [J K^-1 mol^-1]
+   * @param m Molar mass [kg mod^-1]
+   */
+  void set_sound_speed_from_temp(const double temp, const double k = 1.4, const double r = 8.31446261815324, const double m = 28.9647e-3) {
+#ifdef AUTD3_USE_METER
+    const auto sound_speed = std::sqrt(k * r * (273.15 + temp) / m);
+#else
+    const auto sound_speed = std::sqrt(k * r * (273.15 + temp) / m) * 1e3;
+#endif
+    for (auto& dev : _geometry)
+      for (auto& tr : dev) tr.sound_speed = sound_speed;
+  }
+
+  /**
+   * Set attenuation coefficient
+   */
+  void set_attenuation(const double attenuation) {
+    for (auto& dev : _geometry)
+      for (auto& tr : dev) tr.attenuation = attenuation;
+  }
+
+  /**
+* Get attenuation coefficient
+* @details This function returns the attenuation coefficient set to the 0-th transducer of the 0-th device.
+
+*/
+  [[nodiscard]] double get_attenuation() const {
+    if (_geometry.num_devices() == 0) throw std::runtime_error("No devices are added.");
+    return _geometry[0][0].attenuation;
+  }
+
  private:
   static uint8_t get_id() noexcept;
 

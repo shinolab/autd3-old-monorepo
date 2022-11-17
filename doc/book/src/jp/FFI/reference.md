@@ -772,6 +772,7 @@ Point STMを作成する.
 | Argument name / return | type   | in/out | description                     |
 | ---------------------- | ------ | ------ | ------------------------------- |
 | out                    | void** | out    | pointer to pointer to Point STM |
+| sound_speed            | double | in     | sound speed                     |
 | return                 | void   | -      | -                               |
 
 ## AUTDGainSTM (autd3capi)

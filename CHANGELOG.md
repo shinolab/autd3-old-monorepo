@@ -1,3 +1,7 @@
+# 2.6.3
+
+- Change sound speed configuration API
+
 # 2.6.2
 
 - Remove `Controller::check_trials`, add `Controllse::set_ack_check_timeout` instead
