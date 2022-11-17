@@ -67,7 +67,7 @@ namespace AUTD3Sharp.NativeMethods
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDModulationSetSamplingFrequencyDivision(IntPtr mod, uint freqDiv);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern double AUTDModulationSamplingFrequency(IntPtr mod);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDDeleteModulation(IntPtr mod);
-        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDPointSTM(out IntPtr @out);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDPointSTM(out IntPtr @out, double soundSpeed);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDGainSTM(out IntPtr @out, IntPtr handle);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDPointSTMAdd(IntPtr stm, double x, double y, double z, byte shift);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDGainSTMAdd(IntPtr stm, IntPtr gain);

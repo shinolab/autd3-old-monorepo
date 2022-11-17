@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/09/2022
+// Last Modified: 17/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -43,8 +43,9 @@ void* api_debug(void* autd) {
   AUTDDeleteModulation(m);
 
   printf("STM API Test\n");
+  double c = AUTDGetSoundSpeed(autd);
   void* stm = NULL;
-  AUTDPointSTM(&stm);
+  AUTDPointSTM(&stm, c);
   const int32_t point_num = 200;
   for (int32_t i = 0; i < point_num; i++) AUTDPointSTMAdd(stm, 0.0, 0.0, 0.0, 0);
   AUTDSTMSetFrequency(stm, 1.0);

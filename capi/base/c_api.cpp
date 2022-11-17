@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 17/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -162,25 +162,29 @@ uint16_t AUTDGetTransCycle(const void* const handle, const int32_t device_idx, c
 
 double AUTDGetSoundSpeed(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
-  return wrapper->geometry().sound_speed;
+  return wrapper->get_sound_speed();
 }
+
 void AUTDSetSoundSpeed(void* const handle, const double sound_speed) {
   auto* wrapper = static_cast<Controller*>(handle);
-  wrapper->geometry().sound_speed = sound_speed;
+  wrapper->set_sound_speed(sound_speed);
 }
+
 double AUTDGetWavelength(const void* const handle, const int32_t device_idx, const int32_t local_trans_idx) {
   const auto* wrapper = static_cast<const Controller*>(handle);
-  const auto sound_speed = wrapper->geometry().sound_speed;
-  return wrapper->geometry()[device_idx][local_trans_idx].wavelength(sound_speed);
+  return wrapper->geometry()[device_idx][local_trans_idx].wavelength();
 }
+
 double AUTDGetAttenuation(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
-  return wrapper->geometry().attenuation;
+  return wrapper->get_attenuation();
 }
+
 void AUTDSetAttenuation(void* const handle, const double attenuation) {
   auto* const wrapper = static_cast<Controller*>(handle);
-  wrapper->geometry().attenuation = attenuation;
+  wrapper->set_attenuation(attenuation);
 }
+
 bool AUTDGetFPGAInfo(void* const handle, uint8_t* out) {
   auto* const wrapper = static_cast<Controller*>(handle);
   AUTD3_CAPI_TRY({
@@ -335,7 +339,7 @@ void AUTDDeleteModulation(const void* const mod) {
   delete m;
 }
 
-void AUTDPointSTM(void** out) { *out = new autd3::PointSTM; }
+void AUTDPointSTM(void** out, const double sound_speed) { *out = new autd3::PointSTM(sound_speed); }
 void AUTDGainSTM(void** out, const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   *out = new autd3::GainSTM(wrapper->geometry());

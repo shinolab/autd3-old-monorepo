@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 17/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -60,7 +60,7 @@ struct Point {
 struct PointSTM final : public STM {
   using value_type = Point;
 
-  PointSTM() : STM(), _sent(0) {}
+  PointSTM(const double sound_speed) : STM(), _sent(0), sound_speed(sound_speed) {}
 
   /**
    * @brief Set frequency of the STM
@@ -104,10 +104,15 @@ struct PointSTM final : public STM {
       return lp;
     });
 
-    driver->point_stm_body(points, _sent, _points.size(), this->_freq_div, geometry.sound_speed, tx);
+    driver->point_stm_body(points, _sent, _points.size(), this->_freq_div, sound_speed, tx);
   }
 
   [[nodiscard]] bool is_finished() const override { return _sent == _points.size(); }
+
+  /**
+   * @brief Speed of sound.
+   */
+  double sound_speed;
 
  private:
   std::vector<Point> _points;

@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/11/2022
+ * Last Modified: 17/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -279,18 +279,6 @@ namespace AUTD3Sharp
 
         public int NumTransducers => NumDevices * AUTD3.NumTransInDevice;
 
-        public double SoundSpeed
-        {
-            get => Base.AUTDGetSoundSpeed(CntPtr);
-            set => Base.AUTDSetSoundSpeed(CntPtr, value);
-        }
-
-        public double Attenuation
-        {
-            get => Base.AUTDGetAttenuation(CntPtr);
-            set => Base.AUTDSetAttenuation(CntPtr, value);
-        }
-
         public Vector3 Center => this.Aggregate(Vector3.zero, (current, dev) => current + dev.Center) / NumDevices;
 
         public Device this[int index]
@@ -405,6 +393,19 @@ namespace AUTD3Sharp
 
         #region Property
         public Geometry Geometry { get; }
+
+
+        public double SoundSpeed
+        {
+            get => Base.AUTDGetSoundSpeed(AUTDControllerHandle.CntPtr);
+            set => Base.AUTDSetSoundSpeed(AUTDControllerHandle.CntPtr, value);
+        }
+
+        public double Attenuation
+        {
+            get => Base.AUTDGetAttenuation(AUTDControllerHandle.CntPtr);
+            set => Base.AUTDSetAttenuation(AUTDControllerHandle.CntPtr, value);
+        }
 
         public bool IsOpen => Base.AUTDIsOpen(AUTDControllerHandle.CntPtr);
 
@@ -818,9 +819,9 @@ namespace AUTD3Sharp
 
         public sealed class PointSTM : STM
         {
-            public PointSTM()
+            public PointSTM(double sound_speed)
             {
-                Base.AUTDPointSTM(out handle);
+                Base.AUTDPointSTM(out handle, sound_speed);
             }
 
             public bool Add(Vector3 point, byte shift = 0)
