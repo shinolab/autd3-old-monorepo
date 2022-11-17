@@ -476,13 +476,13 @@ void AUTDSetMode(void* const handle, const uint8_t mode) {
   auto* const wrapper = static_cast<Controller*>(handle);
   switch (mode) {
     case 0:
-      wrapper->geometry().mode() = std::make_unique<autd3::core::LegacyMode>();
+      *wrapper << autd3::legacy_mode;
       break;
     case 1:
-      wrapper->geometry().mode() = std::make_unique<autd3::core::NormalMode>();
+      *wrapper << autd3::normal_mode;
       break;
     case 2:
-      wrapper->geometry().mode() = std::make_unique<autd3::core::NormalPhaseMode>();
+      *wrapper << autd3::normal_phase_mode;
       break;
     default:
       break;
