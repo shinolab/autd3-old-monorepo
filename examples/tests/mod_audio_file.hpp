@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/11/2022
+// Last Modified: 17/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@
 namespace fs = std::filesystem;
 
 inline void mod_audio_file_test(autd3::Controller& autd) {
-  autd3::SilencerConfig config;
+  autd3::SilencerConfig silencer;
 
   const fs::path path = fs::path(AUTD3_RESOURCE_PATH).append("sin150.wav");
   autd3::modulation::Wav m(path);
@@ -30,5 +30,5 @@ inline void mod_audio_file_test(autd3::Controller& autd) {
 
   autd3::gain::Focus g(center);
 
-  autd << config << m, g;
+  autd << silencer << m, g;
 }

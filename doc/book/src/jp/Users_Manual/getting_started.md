@@ -177,7 +177,7 @@ std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::Fir
 次に, silencerを設定する.
 
 ```cpp
-autd3::SilencerConfig config;
+autd3::SilencerConfig silencer;
 ```
 
 デフォルトで設定されているので, これも実際には送信する必要はない.
@@ -191,7 +191,7 @@ const auto focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
 autd3::gain::Focus g(focus);
 autd3::modulation::Sine m(150);
 
-autd << config << m, g;
+autd << silencer << m, g;
 ```
 
 ここで, `focus`は振動子アレイの中心から直上$\SI{150}{mm}$を表す.

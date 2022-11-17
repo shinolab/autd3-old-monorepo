@@ -179,7 +179,7 @@ std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::Fir
 Next, setup silencer.
 
 ```cpp
-autd3::SilencerConfig config;
+autd3::SilencerConfig silencer;
 ```
 
 This is set by default, so you don't really need to send it.
@@ -193,7 +193,7 @@ const auto focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
 autd3::gain::Focus g(focus);
 autd3::modulation::Sine m(150);
 
-autd << config << m, g;
+autd << silencer << m, g;
 ```
 , where `focus` denotes $\SI{150}{mm}$ directly above the center of the device.
 
