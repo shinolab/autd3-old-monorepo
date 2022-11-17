@@ -4,7 +4,7 @@ This crate provides link using [SOEM](https://github.com/OpenEtherCATsociety/SOE
 
 ## build
 
-This crate uses [bindgen](https://github.com/rust-lang/rust-bindgen), so please see the bindgen users guide to compile.
+This crate uses [bindgen](https://github.com/rust-lang/rust-bindgen), so please see the [bindgen requirements](https://rust-lang.github.io/rust-bindgen/requirements.html) to compile.
 
 # Notice
 
