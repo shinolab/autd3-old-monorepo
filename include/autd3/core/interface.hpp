@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 17/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,6 +13,7 @@
 
 #include "autd3/driver/driver.hpp"
 #include "geometry.hpp"
+#include "mode.hpp"
 
 namespace autd3::core {
 
@@ -88,7 +89,8 @@ struct DatagramBody {
   DatagramBody& operator=(DatagramBody&& obj) = default;
 
   virtual void init() = 0;
-  virtual void pack(const std::unique_ptr<const driver::Driver>& driver, const Geometry& geometry, driver::TxDatagram& tx) = 0;
+  virtual void pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const core::Mode>& mode, const Geometry& geometry,
+                    driver::TxDatagram& tx) = 0;
   [[nodiscard]] virtual bool is_finished() const = 0;
 };
 
@@ -106,7 +108,10 @@ struct NullBody final : DatagramBody {
 
   void init() override {}
 
-  void pack(const std::unique_ptr<const driver::Driver>& driver, const Geometry&, driver::TxDatagram& tx) override { driver->null_body(tx); }
+  void pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const core::Mode>&, const Geometry&,
+            driver::TxDatagram& tx) override {
+    driver->null_body(tx);
+  }
 
   bool is_finished() const override { return true; }
 };

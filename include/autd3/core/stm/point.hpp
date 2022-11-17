@@ -85,7 +85,8 @@ struct PointSTM final : public STM {
 
   size_t size() const override { return _points.size(); }
   void init() override { _sent = 0; }
-  void pack(const std::unique_ptr<const driver::Driver>& driver, const Geometry& geometry, driver::TxDatagram& tx) override {
+  void pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const core::Mode>&, const Geometry& geometry,
+            driver::TxDatagram& tx) override {
     driver->point_stm_header(tx);
 
     if (is_finished()) return;

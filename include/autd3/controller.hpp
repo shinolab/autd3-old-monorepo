@@ -24,14 +24,15 @@
 #include <vector>
 
 #include "autd3/async.hpp"
+#include "autd3/core/geometry.hpp"
+#include "autd3/core/link.hpp"
+#include "autd3/core/mode.hpp"
 #include "autd3/driver/common/cpu/datagram.hpp"
 #include "autd3/driver/common/cpu/ec_config.hpp"
 #include "autd3/driver/driver.hpp"
+#include "autd3/driver/firmware_version.hpp"
 #include "autd3/driver/v2_6/driver.hpp"
 #include "autd3/special_data.hpp"
-#include "core/geometry.hpp"
-#include "core/link.hpp"
-#include "driver/firmware_version.hpp"
 
 namespace autd3 {
 
@@ -364,6 +365,8 @@ class Controller {
   };
 
   core::Geometry _geometry;
+  std::unique_ptr<const core::Mode> _mode;
+
   driver::TxDatagram _tx_buf;
   driver::RxDatagram _rx_buf;
   core::LinkPtr _link;
@@ -696,7 +699,7 @@ class Controller {
     return AsyncSender{*this};
   }
 
-  void operator<<(std::unique_ptr<core::Mode> (*f)()) { _geometry.mode() = f(); }
+  void operator<<(std::unique_ptr<core::Mode> (*f)()) { _mode = f(); }
 
   void operator>>(bool& res) const { res = _last_send_res; }
 };

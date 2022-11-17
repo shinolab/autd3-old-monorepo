@@ -26,12 +26,13 @@ struct Synchronize final : DatagramBody {
 
   void init() override {}
 
-  void pack(const std::unique_ptr<const driver::Driver>& driver, const Geometry& geometry, driver::TxDatagram& tx) override {
+  void pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const core::Mode>& mode, const Geometry& geometry,
+            driver::TxDatagram& tx) override {
     std::vector<uint16_t> cycles;
     std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
       std::transform(dev.begin(), dev.end(), std::back_inserter(cycles), [](const core::Transducer& tr) { return tr.cycle(); });
     });
-    geometry.mode()->pack_sync(driver, cycles, tx);
+    mode->pack_sync(driver, cycles, tx);
   }
 
   bool is_finished() const override { return true; }

@@ -3,7 +3,7 @@
 // Created Date: 16/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/11/2022
+// Last Modified: 17/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -38,6 +38,7 @@ namespace autd3 {
 Controller::Controller(std::unique_ptr<const driver::Driver> driver)
     : force_fan(false),
       reads_fpga_info(false),
+      _mode(std::make_unique<autd3::core::LegacyMode>()),
       _tx_buf(0),
       _rx_buf(0),
       _link(nullptr),
@@ -55,8 +56,6 @@ Controller::~Controller() noexcept {
 core::Geometry& Controller::geometry() noexcept { return _geometry; }
 
 const core::Geometry& Controller::geometry() const noexcept { return _geometry; }
-
-std::unique_ptr<core::Mode>& Controller::mode() noexcept { return _geometry.mode(); }
 
 bool Controller::open(core::LinkPtr link) {
   _tx_buf = driver::TxDatagram(_geometry.num_devices());
@@ -95,7 +94,7 @@ bool Controller::open(core::LinkPtr link) {
       while (true) {
         const auto msg_id = get_id();
         header->pack(_driver, msg_id, _tx_buf);
-        body->pack(_driver, _geometry, _tx_buf);
+        body->pack(_driver, _mode, _geometry, _tx_buf);
         _link->send(_tx_buf);
         if (const auto success = wait_msg_processed(_ack_check_timeout); !no_wait && !success) {
           spdlog::warn("Failed to send data. Trying to resend...");
@@ -212,7 +211,7 @@ bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body) {
   while (true) {
     const auto msg_id = get_id();
     header->pack(_driver, msg_id, _tx_buf);
-    body->pack(_driver, _geometry, _tx_buf);
+    body->pack(_driver, _mode, _geometry, _tx_buf);
     _link->send(_tx_buf);
     if (const auto success = wait_msg_processed(_ack_check_timeout); !no_wait && !success) return false;
     if (header->is_finished() && body->is_finished()) break;

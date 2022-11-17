@@ -412,7 +412,7 @@ TEST(ControllerTest, freq_config) {
   auto link = autd3::test::EmulatorLink(cpus).build();
   autd.open(std::move(link));
 
-  autd.geometry().mode() = std::make_unique<autd3::NormalMode>();
+  autd << autd3::normal_mode;
   for (auto& dev : autd.geometry())
     for (auto& tr : dev) tr.set_cycle(2341);
 
@@ -479,7 +479,7 @@ TEST(ControllerTest, simple_normal) {
   auto link = autd3::test::EmulatorLink(cpus).build();
   autd.open(std::move(link));
 
-  autd.geometry().mode() = std::make_unique<autd3::NormalMode>();
+  autd << autd3::normal_mode;
   constexpr uint16_t cycle = 2341;  // 70kHz
   for (auto& dev : autd.geometry())
     for (auto& tr : dev) tr.set_cycle(cycle);
@@ -522,7 +522,7 @@ TEST(ControllerTest, simple_normal_phase) {
   auto link = autd3::test::EmulatorLink(cpus).build();
   autd.open(std::move(link));
 
-  autd.geometry().mode() = std::make_unique<autd3::NormalPhaseMode>();
+  autd << autd3::normal_phase_mode;
   constexpr uint16_t cycle = 2341;  // 70kHz
   for (auto& dev : autd.geometry())
     for (auto& tr : dev) tr.set_cycle(cycle);
@@ -739,7 +739,7 @@ TEST(ControllerTest, gain_stm_legacy) {
 TEST(ControllerTest, gain_stm_normal) {
   autd3::Controller autd;
 
-  autd.geometry().mode() = std::make_unique<autd3::NormalMode>();
+  autd << autd3::normal_mode;
 
   autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
   autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero());
@@ -828,7 +828,7 @@ TEST(ControllerTest, gain_stm_normal) {
 TEST(ControllerTest, gain_stm_normal_phase) {
   autd3::Controller autd;
 
-  autd.geometry().mode() = std::make_unique<autd3::NormalPhaseMode>();
+  autd << autd3::normal_phase_mode;
 
   autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
   autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero());
