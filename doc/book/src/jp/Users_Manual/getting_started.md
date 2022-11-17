@@ -77,14 +77,6 @@ cd ..
 あるいは, 直接[Eigen3](https://gitlab.com/libeigen/eigen)をダウンロードしてきて,
 `autd3_sample`フォルダ以下に置いても良い. SDKで使用しているバージョンは3.4.0である.
 
-また, 同様に[spdlog](https://github.com/gabime/spdlog)をダウンロードする.
-```
-git submodule add https://github.com/gabime/spdlog.git spdlog
-cd spdlog
-git checkout v1.11.0
-cd ..
-```
-
 この時点で, ディレクトリ構成は以下のようになっている.
 
 ```
@@ -93,14 +85,9 @@ cd ..
     │  main.cpp
     ├─include
     ├─lib
-    ├─eigen
-    │   ├─bench
-    │   ├─blas
-    │   ...
-    └─spdlog
-        ├─.github
+    └─eigen
         ├─bench
-        ├─cmake
+        ├─blas
         ...
 ```
 
