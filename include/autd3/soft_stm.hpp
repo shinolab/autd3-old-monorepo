@@ -3,7 +3,7 @@
 // Created Date: 07/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 18/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -76,11 +76,15 @@ class SoftwareSTM {
     SoftwareSTMThreadHandle(SoftwareSTMThreadHandle&& obj) = delete;
     SoftwareSTMThreadHandle& operator=(SoftwareSTMThreadHandle&& obj) = delete;
 
-    void finish() {
-      if (!_run) throw std::runtime_error("STM has been already finished.");
+    bool finish() {
+      if (!_run) {
+        spdlog::error("STM has been already finished.");
+        return false;
+      }
       _run = false;
       if (_th.joinable()) _th.join();
       _cnt.set_ack_check_timeout(_timeout);
+      return true;
     }
 
    private:
@@ -88,6 +92,7 @@ class SoftwareSTM {
                             const TimerStrategy strategy)
         : _cnt(cnt), _timeout(_cnt.get_ack_check_timeout()) {
       _run = true;
+      if (bodies.size() == 0) return;
       const auto interval = std::chrono::nanoseconds(period);
       _cnt.set_ack_check_timeout(std::chrono::high_resolution_clock::duration::zero());
       if (strategy.contains(TimerStrategy::BUSY_WAIT))
@@ -166,7 +171,7 @@ class SoftwareSTM {
    * @details Never use cnt after calling this function.
    */
   SoftwareSTMThreadHandle start(Controller& cnt) {
-    if (size() == 0) throw std::runtime_error("No data was added.");
+    if (size() == 0) spdlog::warn("No data was added.");
     return SoftwareSTMThreadHandle(cnt, std::move(_bodies), _sample_period_ns, timer_strategy);
   }
 

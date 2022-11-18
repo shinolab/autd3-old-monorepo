@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 18/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,8 +12,8 @@
 #include "../base/wrapper_link.hpp"
 #include "./soem_link.h"
 #include "autd3/link/soem.hpp"
+#include "autd3/spdlog.hpp"
 #include "custom_sink.hpp"
-#include "spdlog/spdlog.h"
 
 typedef struct {
   std::vector<autd3::link::EtherCATAdapter> adapters;
