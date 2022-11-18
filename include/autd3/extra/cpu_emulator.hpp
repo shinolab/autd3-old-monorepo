@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 18/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,6 +21,7 @@
 
 #include "autd3/driver/common/cpu/datagram.hpp"
 #include "autd3/driver/hardware.hpp"
+#include "autd3/spdlog.hpp"
 #include "fpga_emulator.hpp"
 
 namespace autd3::extra::cpu {
@@ -296,7 +297,7 @@ class CPU {
         _stm_write += 1;
         break;
       default:
-        throw std::runtime_error("Not supported GainSTM mode");
+        spdlog::error("Not supported GainSTM mode");
     }
 
     if ((_stm_write & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) == 0)
@@ -340,10 +341,11 @@ class CPU {
         }
         break;
       case cpu::GAIN_STM_MODE_PHASE_HALF:
-        throw std::runtime_error("Phase half mode is not supported in Normal GainSTM");
-        break;
+        spdlog::error("Phase half mode is not supported in Normal GainSTM");
+        return;
       default:
-        throw std::runtime_error("Not supported GainSTM mode");
+        spdlog::error("Not supported GainSTM mode");
+        return;
     }
 
     if ((_stm_write & cpu::GAIN_STM_BUF_SEGMENT_SIZE_MASK) == 0)

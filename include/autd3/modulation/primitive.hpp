@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 18/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,12 +26,13 @@ class Static final : public core::Modulation {
    */
   explicit Static(const double amp = 1.0) noexcept : Modulation(), _amp(amp) {}
 
-  void calc() override {
+  bool calc() override {
     this->_props.buffer.resize(2, 0);
     for (size_t i = 0; i < 2; i++) {
       const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp(_amp, 0.0, 1.0)) / driver::pi * 510.0));
       this->_props.buffer.at(i) = duty;
     }
+    return true;
   }
 
   ~Static() override = default;
@@ -58,7 +59,7 @@ class Sine final : public core::Modulation {
    */
   explicit Sine(const int freq, const double amp = 1.0, const double offset = 0.5) noexcept : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
 
-  void calc() override {
+  bool calc() override {
     const auto f_s = static_cast<int32_t>(sampling_frequency());
 
     const auto f = std::clamp(this->_freq, 1, f_s / 2);
@@ -74,6 +75,7 @@ class Sine final : public core::Modulation {
       const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi * 510.0));
       this->_props.buffer.at(i) = duty;
     }
+    return true;
   }
 
   ~Sine() override = default;
@@ -103,7 +105,7 @@ class SineSquared final : public core::Modulation {
   explicit SineSquared(const int freq, const double amp = 1.0, const double offset = 0.5) noexcept
       : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
 
-  void calc() override {
+  bool calc() override {
     const auto f_s = static_cast<int32_t>(sampling_frequency());
 
     const auto f = std::clamp(this->_freq, 1, f_s / 2);
@@ -119,6 +121,7 @@ class SineSquared final : public core::Modulation {
       const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi * 510.0));
       this->_props.buffer.at(i) = duty;
     }
+    return true;
   }
 
   ~SineSquared() override = default;
@@ -148,7 +151,7 @@ class SineLegacy final : public core::Modulation {
   explicit SineLegacy(const double freq, const double amp = 1.0, const double offset = 0.5) noexcept
       : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
 
-  void calc() override {
+  bool calc() override {
     const auto f_s = sampling_frequency();
     const auto f = (std::min)(this->_freq, f_s / 2.0);
 
@@ -159,6 +162,7 @@ class SineLegacy final : public core::Modulation {
       const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi * 510.0));
       this->_props.buffer.at(i) = duty;
     }
+    return true;
   }
 
  private:
@@ -181,7 +185,7 @@ class Square final : public core::Modulation {
   Square(const int freq, const double low = 0.0, const double high = 1.0, const double duty = 0.5)
       : _freq(freq), _low(low), _high(high), _duty(duty) {}
 
-  void calc() override {
+  bool calc() override {
     const auto f_s = static_cast<int32_t>(sampling_frequency());
     const auto f = std::clamp(this->_freq, 1, f_s / 2);
     const auto k = std::gcd(f_s, f);
@@ -199,6 +203,7 @@ class Square final : public core::Modulation {
       std::memset(cursor, high, static_cast<size_t>(std::round(static_cast<double>(size) * _duty)));
       cursor += size;
     }
+    return true;
   }
 
  private:

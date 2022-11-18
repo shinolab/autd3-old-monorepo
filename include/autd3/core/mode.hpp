@@ -3,7 +3,7 @@
 // Created Date: 28/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/11/2022
+// Last Modified: 18/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,26 +14,31 @@
 #include <vector>
 
 #include "autd3/driver/driver.hpp"
+#include "autd3/spdlog.hpp"
 
 namespace autd3::core {
 
 class Mode {
  public:
-  virtual void pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles, driver::TxDatagram& tx) const = 0;
+  virtual bool pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles, driver::TxDatagram& tx) const = 0;
   virtual void pack_gain_header(const std::unique_ptr<const driver::Driver>& driver, driver::TxDatagram& tx) const = 0;
   virtual void pack_gain_body(const std::unique_ptr<const driver::Driver>& driver, bool& phase_sent, bool& duty_sent,
                               const std::vector<driver::Drive>& drives, driver::TxDatagram& tx) const = 0;
   virtual void pack_stm_gain_header(const std::unique_ptr<const driver::Driver>& driver, driver::TxDatagram& tx) const = 0;
-  virtual void pack_stm_gain_body(const std::unique_ptr<const driver::Driver>& driver, size_t& sent, bool& next_duty, uint32_t freq_div,
+  virtual bool pack_stm_gain_body(const std::unique_ptr<const driver::Driver>& driver, size_t& sent, bool& next_duty, uint32_t freq_div,
                                   const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode mode, driver::TxDatagram& tx) const = 0;
   virtual ~Mode() = default;
 };
 
 class LegacyMode : public Mode {
-  void pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles, driver::TxDatagram& tx) const override {
-    if (std::any_of(cycles.begin(), cycles.end(), [](uint16_t cycle) { return cycle != 4096; }))
-      throw std::runtime_error("Cannot change frequency in LegacyMode.");
+  [[nodiscard]] bool pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles,
+                               driver::TxDatagram& tx) const override {
+    if (std::any_of(cycles.begin(), cycles.end(), [](uint16_t cycle) { return cycle != 4096; })) {
+      spdlog::error("Cannot change frequency in LegacyMode.");
+      return false;
+    }
     driver->sync(cycles.data(), tx);
+    return true;
   }
 
   void pack_gain_header(const std::unique_ptr<const driver::Driver>& driver, driver::TxDatagram& tx) const noexcept override {
@@ -51,9 +56,9 @@ class LegacyMode : public Mode {
     driver->gain_stm_legacy_header(tx);
   }
 
-  void pack_stm_gain_body(const std::unique_ptr<const driver::Driver>& driver, size_t& sent, bool&, uint32_t freq_div,
+  bool pack_stm_gain_body(const std::unique_ptr<const driver::Driver>& driver, size_t& sent, bool&, uint32_t freq_div,
                           const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode mode, driver::TxDatagram& tx) const override {
-    driver->gain_stm_legacy_body(gains, sent, freq_div, mode, tx);
+    return driver->gain_stm_legacy_body(gains, sent, freq_div, mode, tx);
   }
 
  public:
@@ -62,8 +67,9 @@ class LegacyMode : public Mode {
 };
 
 class NormalMode : public Mode {
-  void pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles, driver::TxDatagram& tx) const override {
+  bool pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles, driver::TxDatagram& tx) const override {
     driver->sync(cycles.data(), tx);
+    return true;
   }
 
   void pack_gain_header(const std::unique_ptr<const driver::Driver>& driver, driver::TxDatagram& tx) const noexcept override {
@@ -85,22 +91,20 @@ class NormalMode : public Mode {
     driver->gain_stm_normal_header(tx);
   }
 
-  void pack_stm_gain_body(const std::unique_ptr<const driver::Driver>& driver, size_t& sent, bool& next_duty, uint32_t freq_div,
+  bool pack_stm_gain_body(const std::unique_ptr<const driver::Driver>& driver, size_t& sent, bool& next_duty, uint32_t freq_div,
                           const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode mode, driver::TxDatagram& tx) const override {
     if (sent == 0) return driver->gain_stm_normal_phase(gains, sent++, freq_div, mode, tx);
 
     switch (mode) {
       case driver::GainSTMMode::PhaseDutyFull:
-        if (next_duty)
-          driver->gain_stm_normal_duty(gains, sent++, freq_div, mode, tx);
-        else
-          driver->gain_stm_normal_phase(gains, sent, freq_div, mode, tx);
         next_duty = !next_duty;
-        return;
+        return next_duty ? driver->gain_stm_normal_phase(gains, sent, freq_div, mode, tx)
+                         : driver->gain_stm_normal_duty(gains, sent++, freq_div, mode, tx);
       case driver::GainSTMMode::PhaseFull:
         return driver->gain_stm_normal_phase(gains, sent++, freq_div, mode, tx);
       default:
-        throw std::runtime_error("This mode is not supported");
+        spdlog::error("This mode is not supported");
+        return false;
     }
   }
 
@@ -110,8 +114,9 @@ class NormalMode : public Mode {
 };
 
 class NormalPhaseMode : public Mode {
-  void pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles, driver::TxDatagram& tx) const override {
+  bool pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles, driver::TxDatagram& tx) const override {
     driver->sync(cycles.data(), tx);
+    return true;
   }
 
   void pack_gain_header(const std::unique_ptr<const driver::Driver>& driver, driver::TxDatagram& tx) const noexcept override {
@@ -129,7 +134,7 @@ class NormalPhaseMode : public Mode {
     driver->gain_stm_normal_header(tx);
   }
 
-  void pack_stm_gain_body(const std::unique_ptr<const driver::Driver>& driver, size_t& sent, bool&, uint32_t freq_div,
+  bool pack_stm_gain_body(const std::unique_ptr<const driver::Driver>& driver, size_t& sent, bool&, uint32_t freq_div,
                           const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode, driver::TxDatagram& tx) const override {
     return driver->gain_stm_normal_phase(gains, sent++, freq_div, driver::GainSTMMode::PhaseFull, tx);
   }

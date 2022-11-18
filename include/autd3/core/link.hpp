@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 18/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -34,12 +34,12 @@ class Link {
   /**
    * @brief Open link
    */
-  virtual void open(const Geometry& geometry) = 0;
+  virtual bool open(const Geometry& geometry) = 0;
 
   /**
    * @brief Close link
    */
-  virtual void close() = 0;
+  virtual bool close() = 0;
 
   /**
    * @brief  Send data to devices

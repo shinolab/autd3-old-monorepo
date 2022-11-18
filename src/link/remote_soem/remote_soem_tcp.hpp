@@ -3,7 +3,7 @@
 // Created Date: 02/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/11/2022
+// Last Modified: 18/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,29 +22,9 @@
 #include <unistd.h>
 #endif
 
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 6285 6385 26437 26800 26498 26451 26495 26450)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic push
-#endif
-#ifdef __clang__
-#pragma clang diagnostic push
-#endif
-#include <spdlog/spdlog.h>
-#if _MSC_VER
-#pragma warning(pop)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic pop
-#endif
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
 #include <autd3/core/link.hpp>
 #include <autd3/driver/common/cpu/ec_config.hpp>
+#include <autd3/spdlog.hpp>
 #include <thread>
 
 namespace autd3::link {
@@ -62,12 +42,15 @@ class RemoteSOEMTcp final : public core::Link {
   RemoteSOEMTcp(RemoteSOEMTcp&& obj) = delete;
   RemoteSOEMTcp& operator=(RemoteSOEMTcp&& obj) = delete;
 
-  void open(const core::Geometry& geometry) override {
+  bool open(const core::Geometry& geometry) override {
 #if WIN32
 #pragma warning(push)
 #pragma warning(disable : 6031)
     WSAData wsa_data{};
-    WSAStartup(MAKEWORD(2, 0), &wsa_data);
+    if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) {
+      spdlog::error("WSAStartup failed: {}", WSAGetLastError());
+      return false;
+    }
 #pragma warning(pop)
 #endif
 
@@ -77,7 +60,10 @@ class RemoteSOEMTcp final : public core::Link {
 #else
     if (_socket < 0)
 #endif
-      throw std::runtime_error("cannot connect to simulator");
+    {
+      spdlog::error("Cannot connect to simulator");
+      return false;
+    }
 
     spdlog::debug("Create socket: {}", _socket);
 
@@ -90,7 +76,10 @@ class RemoteSOEMTcp final : public core::Link {
 #endif
 
     spdlog::debug("Connecting to server...");
-    if (connect(_socket, reinterpret_cast<sockaddr*>(&_addr), sizeof _addr)) throw std::runtime_error("failed to connect server");
+    if (connect(_socket, reinterpret_cast<sockaddr*>(&_addr), sizeof _addr)) {
+      spdlog::error("Failed to connect server");
+      return false;
+    }
     spdlog::debug("Connected");
 
     const auto size = geometry.num_devices() * driver::EC_INPUT_FRAME_SIZE;
@@ -113,10 +102,12 @@ class RemoteSOEMTcp final : public core::Link {
         for (size_t i = 0; i < n; i++) std::memcpy(_ptr.get(), buffer.data() + i * size, ulen);
       }
     });
+
+    return true;
   }
 
-  void close() override {
-    if (!_is_open) return;
+  bool close() override {
+    if (!_is_open) return true;
     _is_open = false;
     if (_th.joinable()) _th.join();
 
@@ -126,10 +117,15 @@ class RemoteSOEMTcp final : public core::Link {
 
 #if WIN32
     closesocket(_socket);
-    WSACleanup();
+    if (WSACleanup() != 0) {
+      spdlog::error("WSACleanup failed: {}", WSAGetLastError());
+      return false;
+    }
 #else
     ::close(_socket);
 #endif
+
+    return true;
   }
 
   bool send(const driver::TxDatagram& tx) override {

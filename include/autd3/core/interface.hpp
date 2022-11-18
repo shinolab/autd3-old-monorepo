@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/11/2022
+// Last Modified: 18/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -72,8 +72,8 @@ struct DatagramHeader {
   DatagramHeader(DatagramHeader&& obj) = default;
   DatagramHeader& operator=(DatagramHeader&& obj) = default;
 
-  virtual void init() = 0;
-  virtual void pack(const std::unique_ptr<const driver::Driver>& driver, uint8_t msg_id, driver::TxDatagram& tx) = 0;
+  virtual bool init() = 0;
+  virtual bool pack(const std::unique_ptr<const driver::Driver>& driver, uint8_t msg_id, driver::TxDatagram& tx) = 0;
   [[nodiscard]] virtual bool is_finished() const = 0;
 };
 
@@ -97,8 +97,11 @@ struct DatagramBody {
 struct NullHeader final : DatagramHeader {
   ~NullHeader() override = default;
 
-  void init() override {}
-  void pack(const std::unique_ptr<const driver::Driver>& driver, uint8_t msg_id, driver::TxDatagram& tx) override { driver->null_header(msg_id, tx); }
+  bool init() override { return true; }
+  bool pack(const std::unique_ptr<const driver::Driver>& driver, uint8_t msg_id, driver::TxDatagram& tx) override {
+    driver->null_header(msg_id, tx);
+    return true;
+  }
 
   bool is_finished() const override { return true; }
 };

@@ -3,7 +3,7 @@
 // Created Date: 16/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/08/2022
+// Last Modified: 18/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,19 +24,23 @@ class BundleImpl final : public core::Link {
   BundleImpl(BundleImpl&& obj) = delete;
   BundleImpl& operator=(BundleImpl&& obj) = delete;
 
-  void open(const core::Geometry& geometry) override {
-    if (is_open()) return;
-    for (const auto& link : _links) link->open(geometry);
+  bool open(const core::Geometry& geometry) override {
+    if (is_open()) return true;
     _is_open = true;
+    return std::all_of(_links.begin(), _links.end(), [&geometry](const auto& link) { return link->open(geometry); });
   }
 
-  void close() override { _is_open = false; }
+  bool close() override {
+    _is_open = false;
+    return std::all_of(_links.begin(), _links.end(), [](const auto& link) { return link->close(); });
+  }
 
   bool send(const driver::TxDatagram& tx) override {
     bool result = true;
     for (const auto& link : _links) result &= link->send(tx);
     return result;
   }
+
   bool receive(driver::RxDatagram& rx) override {
     bool result = true;
     for (size_t i = 1; i < _links.size(); i++) result &= _links[i]->receive(rx);

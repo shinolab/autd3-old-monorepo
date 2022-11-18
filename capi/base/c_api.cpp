@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/11/2022
+// Last Modified: 18/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -75,13 +75,16 @@ std::unique_ptr<const autd3::driver::Driver> get_driver(const uint8_t driver_ver
     case 0x86:
       return std::make_unique<autd3::driver::DriverV2_6>();
     default:
-      throw std::runtime_error("unknown driver version: " + std::to_string(driver_version));
+      spdlog::error("unknown driver version: {}", driver_version);
+      return nullptr;
   }
 }
 
-void AUTDCreateController(void** out, const uint8_t driver_version) {
+bool AUTDCreateController(void** out, const uint8_t driver_version) {
   auto driver = get_driver(driver_version);
+  if (driver == nullptr) return false;
   *out = new Controller(std::move(driver));
+  return true;
 }
 
 bool AUTDOpenController(void* const handle, void* const link) {

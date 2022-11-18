@@ -3,7 +3,7 @@
 // Created Date: 01/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/11/2022
+// Last Modified: 18/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -59,7 +59,8 @@ class TcpInterface final : public Interface {
 #else
     if (_socket < 0) {
 #endif
-      throw std::runtime_error("cannot connect to client");
+      spdlog::error("Cannot connect to client");
+      return;
     }
 
     constexpr int y = 1;
@@ -75,11 +76,11 @@ class TcpInterface final : public Interface {
 
     if (const auto e = bind(_socket, reinterpret_cast<sockaddr*>(&_addr), sizeof _addr); e != 0) {
       spdlog::error("Failed to bind socket: {}", e);
-      throw std::runtime_error("failed to bind socket: " + std::to_string(_port));
+      return;
     }
     if (const auto e = listen(_socket, 1); e != 0) {
       spdlog::error("Failed to listen: {}", e);
-      throw std::runtime_error("failed to listen");
+      return;
     }
 
     const auto size = driver::HEADER_SIZE + _dev * driver::BODY_SIZE;

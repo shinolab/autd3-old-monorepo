@@ -3,7 +3,7 @@
 // Created Date: 16/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/11/2022
+// Last Modified: 18/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,27 +12,7 @@
 #include "autd3/controller.hpp"
 
 #include "autd3/core/interface.hpp"
-
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 6285 6385 26437 26800 26498 26451 26495 26450)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic push
-#endif
-#ifdef __clang__
-#pragma clang diagnostic push
-#endif
-#include <spdlog/spdlog.h>
-#if _MSC_VER
-#pragma warning(pop)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic pop
-#endif
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
+#include "autd3/spdlog.hpp"
 
 namespace autd3 {
 Controller::Controller(std::unique_ptr<const driver::Driver> driver)
@@ -58,11 +38,20 @@ core::Geometry& Controller::geometry() noexcept { return _geometry; }
 const core::Geometry& Controller::geometry() const noexcept { return _geometry; }
 
 bool Controller::open(core::LinkPtr link) {
+  spdlog::debug("Open Controller with {} devices.", _geometry.num_devices());
+
+  if (link == nullptr) {
+    spdlog::error("link is null");
+    return false;
+  }
+  _link = std::move(link);
+  if (!_link->open(_geometry)) {
+    spdlog::error("Failed to open link.");
+    return false;
+  }
+
   _tx_buf = driver::TxDatagram(_geometry.num_devices());
   _rx_buf = driver::RxDatagram(_geometry.num_devices());
-
-  _link = std::move(link);
-  if (_link != nullptr) _link->open(_geometry);
 
   _send_th_running = true;
   _send_th = std::thread([this] {
@@ -95,14 +84,22 @@ bool Controller::open(core::LinkPtr link) {
         const auto msg_id = get_id();
         header->pack(_driver, msg_id, _tx_buf);
         body->pack(_driver, _mode, _geometry, _tx_buf);
-        _link->send(_tx_buf);
-        if (const auto success = wait_msg_processed(_ack_check_timeout); !no_wait && !success) {
-          spdlog::warn("Failed to send data. Trying to resend...");
+        spdlog::debug("Sending data ({}) asynchronously", msg_id);
+        spdlog::debug("Timeout: {} [ms]",
+                      static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(_ack_check_timeout).count()) / 1000.0 / 1000.0);
+        if (!_link->send(_tx_buf)) {
+          spdlog::warn("Failed to send data ({}). Trying to resend...", msg_id);
           break;
         }
+        if (const auto success = wait_msg_processed(_ack_check_timeout); !no_wait && !success) {
+          spdlog::warn("Could not confirm if the data ({}) was processed successfully.", msg_id);
+          break;
+        }
+        spdlog::debug("Sending data ({}) succeeded.", msg_id);
         if (header->is_finished() && body->is_finished()) {
           header = nullptr;
           body = nullptr;
+          spdlog::debug("All data has been sent successfully.");
           break;
         }
         if (no_wait) std::this_thread::sleep_for(_send_interval);
@@ -121,15 +118,29 @@ bool Controller::open(core::LinkPtr link) {
 }
 
 bool Controller::close() {
-  if (!is_open()) return true;
+  if (!is_open()) {
+    spdlog::debug("Controller is not opened.");
+    return true;
+  }
 
   _send_th_running = false;
   _send_cond.notify_all();
+  spdlog::debug("Stopping asynchronous send thread...");
   if (_send_th.joinable()) _send_th.join();
+  spdlog::debug("Stopping asynchronous send thread...done");
 
-  if (!send(autd3::stop())) return false;
-  if (!send(autd3::clear())) return false;
-  _link->close();
+  if (!send(autd3::stop())) {
+    spdlog::debug("Failed to stop outputting.");
+    return false;
+  }
+  if (!send(autd3::clear())) {
+    spdlog::debug("Failed to clear.");
+    return false;
+  }
+  if (!_link->close()) {
+    spdlog::debug("Failed to close link.");
+    return false;
+  }
   return true;
 }
 
@@ -155,7 +166,10 @@ std::vector<driver::FirmwareInfo> Controller::firmware_infos() {
 
   _driver->cpu_version(_tx_buf);
   const auto cpu_versions = pack_ack();
-  if (cpu_versions.empty()) return firmware_infos;
+  if (cpu_versions.empty()) {
+    spdlog::error("Failed to get firmware information.");
+    return firmware_infos;
+  }
   for (const auto version : cpu_versions)
     if (version != _driver->version_num())
       spdlog::error(
@@ -165,7 +179,10 @@ std::vector<driver::FirmwareInfo> Controller::firmware_infos() {
 
   _driver->fpga_version(_tx_buf);
   const auto fpga_versions = pack_ack();
-  if (fpga_versions.empty()) return firmware_infos;
+  if (fpga_versions.empty()) {
+    spdlog::error("Failed to get firmware information.");
+    return firmware_infos;
+  }
   for (const auto version : fpga_versions)
     if (version != _driver->version_num())
       spdlog::error(
@@ -175,8 +192,10 @@ std::vector<driver::FirmwareInfo> Controller::firmware_infos() {
 
   _driver->fpga_functions(_tx_buf);
   const auto fpga_functions = pack_ack();
-  if (fpga_functions.empty()) return firmware_infos;
-
+  if (fpga_functions.empty()) {
+    spdlog::error("Failed to get firmware information.");
+    return firmware_infos;
+  }
   for (size_t i = 0; i < _geometry.num_devices(); i++) firmware_infos.emplace_back(i, cpu_versions.at(i), fpga_versions.at(i), fpga_functions.at(i));
 
   for (const auto& info : firmware_infos) {
@@ -212,9 +231,21 @@ bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body) {
     const auto msg_id = get_id();
     header->pack(_driver, msg_id, _tx_buf);
     body->pack(_driver, _mode, _geometry, _tx_buf);
-    _link->send(_tx_buf);
-    if (const auto success = wait_msg_processed(_ack_check_timeout); !no_wait && !success) return false;
-    if (header->is_finished() && body->is_finished()) break;
+    spdlog::debug("Sending data ({})", msg_id);
+    spdlog::debug("Timeout: {} [ms]",
+                  static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(_ack_check_timeout).count()) / 1000.0 / 1000.0);
+    if (!_link->send(_tx_buf)) {
+      spdlog::warn("Failed to send data ({})", msg_id);
+      return false;
+    }
+    if (const auto success = wait_msg_processed(_ack_check_timeout); !no_wait && !success) {
+      spdlog::warn("Could not confirm if the data ({}) was processed successfully.", msg_id);
+      return false;
+    }
+    if (header->is_finished() && body->is_finished()) {
+      spdlog::debug("All data has been sent successfully.");
+      break;
+    }
     if (no_wait) std::this_thread::sleep_for(_send_interval);
   }
   return true;

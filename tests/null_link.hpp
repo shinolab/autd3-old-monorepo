@@ -3,7 +3,7 @@
 // Created Date: 08/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/11/2022
+// Last Modified: 18/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -31,9 +31,9 @@ class NullLink : public core::Link {
   NullLink(NullLink&& obj) = delete;
   NullLink& operator=(NullLink&& obj) = delete;
 
-  void open(const core::Geometry&) override {}
+  bool open(const core::Geometry&) override { return true; }
 
-  void close() override {}
+  bool close() override { return true; }
 
   bool send(const driver::TxDatagram&) override { return true; }
   bool receive(driver::RxDatagram&) override { return true; }
