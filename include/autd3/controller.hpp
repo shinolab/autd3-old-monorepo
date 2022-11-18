@@ -296,7 +296,10 @@ class Controller {
    * @details This function returns the speed of sound set to the 0-th transducer of the 0-th device.
    */
   [[nodiscard]] double get_sound_speed() const {
-    if (_geometry.num_devices() == 0) throw std::runtime_error("No devices are added.");
+    if (_geometry.num_devices() == 0) {
+      spdlog::warn("No devices are added.");
+      return 0.0;
+    }
     return _geometry[0][0].sound_speed;
   }
 
@@ -333,7 +336,10 @@ class Controller {
 
 */
   [[nodiscard]] double get_attenuation() const {
-    if (_geometry.num_devices() == 0) throw std::runtime_error("No devices are added.");
+    if (_geometry.num_devices() == 0) {
+      spdlog::warn("No devices are added.");
+      return 0.0;
+    }
     return _geometry[0][0].attenuation;
   }
 

@@ -3,7 +3,7 @@
 // Created Date: 26/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/11/2022
+// Last Modified: 18/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,13 +11,12 @@
 
 #pragma once
 
-#include <spdlog/fmt/fmt.h>
-
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "autd3/spdlog.hpp"
 #include "glm.hpp"
 
 #if _MSC_VER

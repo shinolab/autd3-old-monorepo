@@ -3,7 +3,7 @@
 // Created Date: 08/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/09/2022
+// Last Modified: 18/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -53,7 +53,7 @@ class LPF final : public core::Modulation {
       for (size_t i = 0; i < modulation.sampling_frequency_division(); i++) _resampled.emplace_back(d);
   }
 
-  void calc() override {
+  bool calc() override {
     std::vector<uint8_t> mf;
     if (_resampled.size() % 2 == 0) {
       mf.reserve(_resampled.size() / 2);
@@ -73,9 +73,10 @@ class LPF final : public core::Modulation {
     for (int32_t i = 0; i < static_cast<int32_t>(mf.size()); i++) {
       double r = 0.0;
       for (int32_t j = 0; j < static_cast<int32_t>(_coef.size()); j++)
-        r += _coef[j] * mf[autd3::driver::rem_euclid(i - j, static_cast<int32_t>(mf.size()))];
+        r += _coef[j] * static_cast<double>(mf[static_cast<size_t>(autd3::driver::rem_euclid(i - j, static_cast<int32_t>(mf.size())))]);
       this->_props.buffer.emplace_back(static_cast<uint8_t>(std::round(r)));
     }
+    return true;
   }
 
   ~LPF() override = default;
