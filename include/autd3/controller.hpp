@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/11/2022
+// Last Modified: 18/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -59,11 +59,6 @@ class Controller {
    * @brief Geometry of the devices
    */
   [[nodiscard]] const core::Geometry& geometry() const noexcept;
-
-  /**
-   * @brief Mode
-   */
-  [[nodiscard]] std::unique_ptr<core::Mode>& mode() noexcept;
 
   bool open(core::LinkPtr link);
 
