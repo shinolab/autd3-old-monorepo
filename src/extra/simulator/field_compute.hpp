@@ -3,7 +3,7 @@
 // Created Date: 05/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/10/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -58,8 +58,8 @@ class FieldCompute {
   FieldCompute(FieldCompute&& obj) = default;
   FieldCompute& operator=(FieldCompute&& obj) = default;
 
-  void init(const SoundSources& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers, const size_t image_size,
-            const tinycolormap::ColormapType type) {
+  [[nodiscatd]] bool init(const SoundSources& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers,
+                          const size_t image_size, const tinycolormap::ColormapType type) {
     create_descriptor_set_layouts();
 
     const std::vector<uint8_t> shader_code = {
@@ -67,6 +67,8 @@ class FieldCompute {
     };
 
     auto [layout, pipeline] = create_pipeline(shader_code);
+    if (!layout || !pipeline) return false;
+
     _layout1 = std::move(layout);
     _pipeline1 = std::move(pipeline);
 
@@ -74,27 +76,28 @@ class FieldCompute {
 #include "shaders/field2.comp.spv.txt"
     };
     auto [layout2, pipeline2] = create_pipeline(shader_code2);
+    if (!layout2 || !pipeline2) return false;
+
     _layout2 = std::move(layout2);
     _pipeline2 = std::move(pipeline2);
 
-    create_source_drive(sources);
-    create_source_pos(sources);
-    create_color_map(slice_alpha, type);
+    if (!create_source_drive(sources) || !create_source_pos(sources) || !create_color_map(slice_alpha, type)) return false;
 
     create_descriptor_sets(sources, image_buffers, image_size);
 
-    update_source_drive(sources);
-    update_source_pos(sources);
+    return update_source_drive(sources) && update_source_pos(sources);
   }
 
-  void update(const SoundSources& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers, const size_t image_size,
-              const tinycolormap::ColormapType type, const UpdateFlags update_flags) {
+  [[nodiscatd]] bool update(const SoundSources& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers,
+                            const size_t image_size, const tinycolormap::ColormapType type, const UpdateFlags update_flags) {
     if (update_flags.contains(UpdateFlags::UPDATE_SLICE_SIZE)) create_descriptor_sets(sources, image_buffers, image_size);
 
     if (update_flags.contains(UpdateFlags::UPDATE_SOURCE_DRIVE) || update_flags.contains(UpdateFlags::UPDATE_SOURCE_FLAG))
-      update_source_drive(sources);
+      if (!update_source_drive(sources)) return false;
 
-    if (update_flags.contains(UpdateFlags::UPDATE_COLOR_MAP)) create_color_map(slice_alpha, type);
+    if (update_flags.contains(UpdateFlags::UPDATE_COLOR_MAP)) return create_color_map(slice_alpha, type);
+
+    return true;
   }
 
   void compute(const Config config, const bool show_radiation_pressure) {
@@ -171,7 +174,8 @@ class FieldCompute {
         result.result == vk::Result::eSuccess)
       return std::make_pair(std::move(layout), std::move(result.value));
 
-    throw std::runtime_error("failed to create a pipeline!");
+    spdlog::error("Failed to create a pipeline!");
+    return std::make_pair(vk::UniquePipelineLayout(nullptr), vk::UniquePipeline(nullptr));
   }
 
   void create_descriptor_sets(const SoundSources& sources, const std::vector<vk::UniqueBuffer>& image_buffers, const size_t image_size) {
@@ -234,7 +238,7 @@ class FieldCompute {
     }
   }
 
-  void create_color_map(const float slice_alpha, const tinycolormap::ColormapType type) {
+  [[nodiscard]] bool create_color_map(const float slice_alpha, const tinycolormap::ColormapType type) {
     constexpr size_t color_map_size = 100;
     constexpr size_t image_size = color_map_size * 4;
     std::vector<uint8_t> pixels;
@@ -253,10 +257,13 @@ class FieldCompute {
     {
       auto [staging_buffer, staging_buffer_memory] = _context->create_buffer(
           image_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+      if (!staging_buffer || !staging_buffer_memory) return false;
 
       void* data;
-      if (_context->device().mapMemory(staging_buffer_memory.get(), 0, image_size, {}, &data) != vk::Result::eSuccess)
-        throw std::runtime_error("failed to map texture buffer.");
+      if (_context->device().mapMemory(staging_buffer_memory.get(), 0, image_size, {}, &data) != vk::Result::eSuccess) {
+        spdlog::error("Failed to map texture buffer.");
+        return false;
+      }
       std::memcpy(data, pixels.data(), image_size);
       _context->device().unmapMemory(staging_buffer_memory.get());
 
@@ -264,14 +271,17 @@ class FieldCompute {
       auto [texture_image, texture_image_memory] =
           _context->create_image(static_cast<uint32_t>(color_map_size), 1u, 1, vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Unorm,
                                  vk::ImageTiling::eOptimal, flag, vk::MemoryPropertyFlagBits::eDeviceLocal, vk::ImageType::e1D);
+      if (!texture_image || !texture_image_memory) return false;
       _texture_image = std::move(texture_image);
       _texture_image_memory = std::move(texture_image_memory);
 
-      _context->transition_image_layout(_texture_image, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal,
-                                        1);
+      if (!_context->transition_image_layout(_texture_image, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eUndefined,
+                                             vk::ImageLayout::eTransferDstOptimal, 1))
+        return false;
       _context->copy_buffer_to_image(staging_buffer, _texture_image, static_cast<uint32_t>(color_map_size), 1u);
-      _context->transition_image_layout(_texture_image, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eTransferDstOptimal,
-                                        vk::ImageLayout::eShaderReadOnlyOptimal, 1);
+      if (!_context->transition_image_layout(_texture_image, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eTransferDstOptimal,
+                                             vk::ImageLayout::eShaderReadOnlyOptimal, 1))
+        return false;
     }
 
     {
@@ -321,50 +331,64 @@ class FieldCompute {
         _context->device().updateDescriptorSets(descriptor_writes, {});
       }
     }
+    return true;
   }
 
-  void create_source_drive(const SoundSources& sources) {
+  [[nodiscard]] bool create_source_drive(const SoundSources& sources) {
     _drive_buffers.resize(_renderer->frames_in_flight());
     _drive_buffers_memory.resize(_renderer->frames_in_flight());
     for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
       auto [buf, mem] = _context->create_buffer(sizeof(Drive) * sources.size(), vk::BufferUsageFlagBits::eStorageBuffer,
                                                 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+      if (!buf || !mem) return false;
+
       _drive_buffers[i] = std::move(buf);
       _drive_buffers_memory[i] = std::move(mem);
     }
+    return true;
   }
 
-  void create_source_pos(const SoundSources& sources) {
+  [[nodiscard]] bool create_source_pos(const SoundSources& sources) {
     _pos_buffers.resize(_renderer->frames_in_flight());
     _pos_buffers_memory.resize(_renderer->frames_in_flight());
     for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
       auto [buf, mem] = _context->create_buffer(sizeof(glm::vec4) * sources.size(), vk::BufferUsageFlagBits::eStorageBuffer,
                                                 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+      if (!buf || !mem) return false;
+
       _pos_buffers[i] = std::move(buf);
       _pos_buffers_memory[i] = std::move(mem);
     }
+
+    return true;
   }
 
-  void update_source_drive(const SoundSources& sources) {
+  [[nodiscard]] bool update_source_drive(const SoundSources& sources) {
     const auto& drives = sources.drives();
     void* data;
     for (auto& memory : _drive_buffers_memory) {
-      if (_context->device().mapMemory(memory.get(), 0, sizeof(Drive) * drives.size(), {}, &data) != vk::Result::eSuccess)
-        throw std::runtime_error("failed to map uniform buffer memory");
+      if (_context->device().mapMemory(memory.get(), 0, sizeof(Drive) * drives.size(), {}, &data) != vk::Result::eSuccess) {
+        spdlog::error("Failed to map uniform buffer memory");
+        return false;
+      }
       memcpy(data, drives.data(), sizeof(glm::vec4) * drives.size());
       _context->device().unmapMemory(memory.get());
     }
+    return true;
   }
 
-  void update_source_pos(const SoundSources& sources) {
+  [[nodiscard]] bool update_source_pos(const SoundSources& sources) {
     const auto& positions = sources.positions();
     void* data;
     for (auto& memory : _pos_buffers_memory) {
-      if (_context->device().mapMemory(memory.get(), 0, sizeof(glm::vec4) * positions.size(), {}, &data) != vk::Result::eSuccess)
-        throw std::runtime_error("failed to map uniform buffer memory");
+      if (_context->device().mapMemory(memory.get(), 0, sizeof(glm::vec4) * positions.size(), {}, &data) != vk::Result::eSuccess) {
+        spdlog::error("Failed to map uniform buffer memory");
+        return false;
+      }
       memcpy(data, positions.data(), sizeof(glm::vec4) * positions.size());
       _context->device().unmapMemory(memory.get());
     }
+    return true;
   }
 
   const helper::VulkanContext* _context;

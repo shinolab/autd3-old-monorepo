@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -54,7 +54,7 @@
 
 namespace autd3::extra {
 
-void Simulator::run() {
+[[nodiscard]] bool Simulator::run() {
   simulator::SoundSources sources;
 
   std::vector<CPU> cpus;
@@ -66,14 +66,13 @@ void Simulator::run() {
   const auto renderer = std::make_unique<simulator::VulkanRenderer>(context.get(), window.get(), imgui.get(), _settings->vsync);
 
   window->init("AUTD3 Simulator", renderer.get(), simulator::VulkanRenderer::resize_callback, simulator::VulkanRenderer::pos_callback);
-  context->init_vulkan("AUTD3 Simulator", *window);
+  if (!context->init_vulkan("AUTD3 Simulator", *window)) return false;
   renderer->create_swapchain();
   renderer->create_image_views();
-  renderer->create_render_pass();
+  if (!renderer->create_render_pass()) return false;
 
   context->create_command_pool();
-  renderer->create_depth_resources();
-  renderer->create_color_resources();
+  if (!renderer->create_depth_resources() || !renderer->create_color_resources()) return false;
   renderer->create_framebuffers();
 
   const std::array pool_size = {
@@ -137,7 +136,7 @@ void Simulator::run() {
         }
 
         imgui->set(sources);
-        trans_viewer->init(sources);
+        if (!trans_viewer->init(sources)) spdlog::warn("Failed to initialize transducer viewer.");
         slice_viewer->init(imgui->slice_width, imgui->slice_height, imgui->pixel_size);
         field_compute->init(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size(), imgui->coloring_method);
 
@@ -208,7 +207,7 @@ void Simulator::run() {
       const auto& [view, proj] = imgui->get_view_proj(static_cast<float>(renderer->extent().width) / static_cast<float>(renderer->extent().height));
       const auto& slice_model = imgui->get_slice_model();
       slice_viewer->update(imgui->slice_width, imgui->slice_height, imgui->pixel_size, update_flags);
-      trans_viewer->update(sources, update_flags);
+      if (!trans_viewer->update(sources, update_flags)) return false;
       field_compute->update(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size(), imgui->coloring_method, update_flags);
 
       const simulator::Config config{static_cast<uint32_t>(sources.size()),
@@ -228,10 +227,15 @@ void Simulator::run() {
 
         auto [staging_buffer, staging_buffer_memory] = context->create_buffer(
             image_size, vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+        if (!staging_buffer || !staging_buffer_memory) return false;
+
         context->copy_buffer(image, staging_buffer.get(), image_size);
         void* data;
-        if (context->device().mapMemory(staging_buffer_memory.get(), 0, image_size, {}, &data) != vk::Result::eSuccess)
-          throw std::runtime_error("failed to map texture buffer.");
+        if (context->device().mapMemory(staging_buffer_memory.get(), 0, image_size, {}, &data) != vk::Result::eSuccess) {
+          spdlog::error("Failed to map texture buffer.");
+          break;
+        }
+
         const auto* image_data = static_cast<float*>(data);
         std::vector<uint8_t> pixels;
         const auto image_width = static_cast<int32_t>(imgui->slice_width / imgui->pixel_size);
@@ -252,17 +256,19 @@ void Simulator::run() {
 
       const std::array background = {imgui->background.r, imgui->background.g, imgui->background.b, imgui->background.a};
       const auto& [command_buffer, image_index] = renderer->begin_frame(background);
+      if (!command_buffer) break;
 
       slice_viewer->render(slice_model, view, proj, command_buffer);
       trans_viewer->render(view, proj, command_buffer);
       simulator::VulkanImGui::render(command_buffer);
-      renderer->end_frame(command_buffer, image_index);
+      if (!renderer->end_frame(command_buffer, image_index)) break;
     } else {
       simulator::VulkanImGui::draw();
       const std::array background = {imgui->background.r, imgui->background.g, imgui->background.b, imgui->background.a};
       const auto& [command_buffer, image_index] = renderer->begin_frame(background);
+      if (!command_buffer) break;
       simulator::VulkanImGui::render(command_buffer);
-      renderer->end_frame(command_buffer, image_index);
+      if (!renderer->end_frame(command_buffer, image_index)) break;
     }
   }
 
@@ -277,5 +283,7 @@ void Simulator::run() {
   const auto [window_width, window_height] = window->get_window_size();
   _settings->window_width = window_width;
   _settings->window_height = window_height;
+
+  return true;
 }
 }  // namespace autd3::extra

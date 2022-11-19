@@ -3,7 +3,7 @@
 // Created Date: 28/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -48,7 +48,7 @@ class GeometryViewer {
   /**
    * @brief View geometry
    */
-  void view(const core::Geometry& geometry) const;
+  [[nodiscard]] bool view(const core::Geometry& geometry) const;
 
   /**
    * @brief Constructor
