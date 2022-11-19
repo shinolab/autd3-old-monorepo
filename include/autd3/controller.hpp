@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/11/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -60,7 +60,7 @@ class Controller {
    */
   [[nodiscard]] const core::Geometry& geometry() const noexcept;
 
-  bool open(core::LinkPtr link);
+  [[nodiscard]] bool open(core::LinkPtr link);
 
   /**
    * @brief Close the controller

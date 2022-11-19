@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/11/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -53,7 +53,7 @@ class Modulation : public DatagramHeader {
   /**
    * @brief Build modulation data
    */
-  bool build() {
+  [[nodiscard]] bool build() {
     if (_props.built) return true;
     _props.built = true;
     return calc();
@@ -62,7 +62,7 @@ class Modulation : public DatagramHeader {
   /**
    * \brief Re-build modulation data
    */
-  bool rebuild() {
+  [[nodiscard]] bool rebuild() {
     _props.built = false;
     return build();
   }

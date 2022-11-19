@@ -3,7 +3,7 @@
 // Created Date: 02/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,9 +21,10 @@ int main() try {
 
   const std::string ip = "";  // server ip here
   constexpr uint16_t port = 50632;
-  auto link = autd3::link::RemoteSOEM().ip(ip).port(port).build();
-
-  autd.open(std::move(link));
+  if (auto link = autd3::link::RemoteSOEM().ip(ip).port(port).build(); !autd.open(std::move(link))) {
+    std::cerr << "Failed to open controller." << std::endl;
+    return -1;
+  }
 
   autd.set_ack_check_timeout(std::chrono::milliseconds(20));
 
