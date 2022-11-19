@@ -202,10 +202,7 @@ class VulkanRenderer {
     uint32_t image_index;
     const auto result = _context->device().acquireNextImageKHR(_swap_chain.get(), std::numeric_limits<uint64_t>::max(),
                                                                _image_available_semaphores[_current_frame].get(), nullptr, &image_index);
-    if (result == vk::Result::eErrorOutOfDateKHR) {
-      recreate_swap_chain();
-      return std::make_pair(nullptr, 0);
-    }
+    if (result == vk::Result::eErrorOutOfDateKHR) return recreate_swap_chain() ? std::make_pair(nullptr, 1) : std::make_pair(nullptr, 0);
     if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR) {
       spdlog::error("Failed to acquire next image!");
       return std::make_pair(nullptr, 0);
@@ -232,7 +229,7 @@ class VulkanRenderer {
     if (const auto result = _context->present_queue().presentKHR(&present_info);
         result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || _framebuffer_resized) {
       _framebuffer_resized = false;
-      recreate_swap_chain();
+      return recreate_swap_chain();
     } else if (result != vk::Result::eSuccess) {
       spdlog::error("Failed to wait fence!");
       return false;
@@ -241,7 +238,7 @@ class VulkanRenderer {
     return true;
   }
 
-  [[nodiscatd]] bool recreate_swap_chain() {
+  [[nodiscard]] bool recreate_swap_chain() {
     int width = 0, height = 0;
     glfwGetFramebufferSize(_window->window(), &width, &height);
     while (width == 0 || height == 0) {

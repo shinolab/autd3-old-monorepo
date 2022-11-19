@@ -49,7 +49,7 @@ class SliceViewer {
   SliceViewer(SliceViewer&& obj) = default;
   SliceViewer& operator=(SliceViewer&& obj) = default;
 
-  [[nodiscatd]] bool init(const float width, const float height, const float pixel_width) {
+  [[nodiscard]] bool init(const float width, const float height, const float pixel_width) {
     _width = static_cast<uint32_t>(width / pixel_width);
     _height = static_cast<uint32_t>(height / pixel_width);
 
@@ -76,7 +76,7 @@ class SliceViewer {
     command_buffer.drawIndexed(6, 1, 0, 0, 0);
   }
 
-  [[nodiscatd]] bool update(const float width, const float height, const float pixel_width, const UpdateFlags update_flag) {
+  [[nodiscard]] bool update(const float width, const float height, const float pixel_width, const UpdateFlags update_flag) {
     if (!update_flag.contains(UpdateFlags::UPDATE_SLICE_SIZE)) return true;
 
     _context->device().waitIdle();
