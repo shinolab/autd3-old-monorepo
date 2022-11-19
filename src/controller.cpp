@@ -3,7 +3,7 @@
 // Created Date: 16/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/11/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -73,8 +73,17 @@ bool Controller::open(core::LinkPtr link) {
 
       pre();
 
-      header->init();
-      body->init();
+      if (!header->init() || !body->init()) {
+        spdlog::error("Failed to initialize data.");
+        header = nullptr;
+        body = nullptr;
+        post();
+        {
+          std::unique_lock lk(_send_mtx);
+          _send_queue.pop();
+        }
+        continue;
+      }
 
       _driver->force_fan(_tx_buf, force_fan);
       _driver->reads_fpga_info(_tx_buf, reads_fpga_info);
@@ -82,8 +91,12 @@ bool Controller::open(core::LinkPtr link) {
       const auto no_wait = _ack_check_timeout == std::chrono::high_resolution_clock::duration::zero();
       while (true) {
         const auto msg_id = get_id();
-        header->pack(_driver, msg_id, _tx_buf);
-        body->pack(_driver, _mode, _geometry, _tx_buf);
+        if (!header->pack(_driver, msg_id, _tx_buf) || !body->pack(_driver, _mode, _geometry, _tx_buf)) {
+          spdlog::error("Failed to pack data.");
+          header = nullptr;
+          body = nullptr;
+          break;
+        }
         spdlog::debug("Sending data ({}) asynchronously", msg_id);
         spdlog::debug("Timeout: {} [ms]",
                       static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(_ack_check_timeout).count()) / 1000.0 / 1000.0);
@@ -220,8 +233,10 @@ bool Controller::clear() { return send(Clear{}); }
 bool Controller::stop() { return send(Stop{}); }
 
 bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body) {
-  header->init();
-  body->init();
+  if (!header->init() || !body->init()) {
+    spdlog::error("Failed to initialize data.");
+    return false;
+  }
 
   _driver->force_fan(_tx_buf, force_fan);
   _driver->reads_fpga_info(_tx_buf, reads_fpga_info);
@@ -229,8 +244,10 @@ bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body) {
   const auto no_wait = _ack_check_timeout == std::chrono::high_resolution_clock::duration::zero();
   while (true) {
     const auto msg_id = get_id();
-    header->pack(_driver, msg_id, _tx_buf);
-    body->pack(_driver, _mode, _geometry, _tx_buf);
+    if (!header->pack(_driver, msg_id, _tx_buf) || !body->pack(_driver, _mode, _geometry, _tx_buf)) {
+      spdlog::error("Failed to pack data.");
+      return false;
+    }
     spdlog::debug("Sending data ({})", msg_id);
     spdlog::debug("Timeout: {} [ms]",
                   static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(_ack_check_timeout).count()) / 1000.0 / 1000.0);

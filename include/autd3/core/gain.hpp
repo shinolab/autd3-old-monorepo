@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/11/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -66,19 +66,21 @@ struct Gain : DatagramBody {
    */
   const std::vector<driver::Drive>& drives() const { return _drives; }
 
-  bool built() const { return _built; }
+  [[nodiscard]] bool built() const { return _built; }
 
-  void init() override {
+  bool init() override {
     _phase_sent = false;
     _duty_sent = false;
+    return true;
   }
 
-  void pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const core::Mode>& mode, const Geometry& geometry,
+  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const core::Mode>& mode, const Geometry& geometry,
             driver::TxDatagram& tx) override {
     mode->pack_gain_header(driver, tx);
-    if (is_finished()) return;
+    if (is_finished()) return true;
     build(geometry);
     mode->pack_gain_body(driver, _phase_sent, _duty_sent, _drives, tx);
+    return true;
   }
 
   [[nodiscard]] bool is_finished() const noexcept override { return _phase_sent && _duty_sent; }

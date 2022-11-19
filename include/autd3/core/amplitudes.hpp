@@ -3,7 +3,7 @@
 // Created Date: 28/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/11/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -31,12 +31,15 @@ class Amplitudes final : public DatagramBody {
   Amplitudes(Amplitudes&& obj) = default;
   Amplitudes& operator=(Amplitudes&& obj) = default;
 
-  void init() override { _sent = false; }
+  bool init() override {
+    _sent = false;
+    return true;
+  }
 
-  void pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const core::Mode>&, const Geometry& geometry,
+  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const core::Mode>&, const Geometry& geometry,
             driver::TxDatagram& tx) override {
     driver->normal_header(tx);
-    if (is_finished()) return;
+    if (is_finished()) return true;
 
     std::vector<driver::Drive> drives;
     drives.reserve(geometry.num_transducers());
@@ -46,6 +49,7 @@ class Amplitudes final : public DatagramBody {
 
     driver->normal_duty_body(drives, tx);
     _sent = true;
+    return true;
   }
 
   [[nodiscard]] bool is_finished() const noexcept override { return _sent; }
