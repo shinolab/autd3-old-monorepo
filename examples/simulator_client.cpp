@@ -3,7 +3,7 @@
 // Created Date: 07/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/11/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,8 +25,10 @@ int main() try {
   // for (auto& dev : autd.geometry())
   //   for (auto& tr : dev) tr.set_frequency(70e3);
 
-  auto link = autd3::link::Simulator().build();
-  autd.open(std::move(link));
+  if (auto link = autd3::link::Simulator().build(); !autd.open(std::move(link))) {
+    std::cerr << "Failed to open controller." << std::endl;
+    return -1;
+  }
 
   run(autd);
 

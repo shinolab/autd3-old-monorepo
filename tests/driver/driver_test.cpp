@@ -3,7 +3,7 @@
 // Created Date: 20/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -697,7 +697,7 @@ TEST(CPUTest, operation_modulation_v2_6) {
     ASSERT_EQ(tx.header().mod_body().data[i - (autd3::driver::MOD_HEAD_DATA_SIZE + autd3::driver::MOD_BODY_DATA_SIZE)], static_cast<uint8_t>(i));
 
   sent = 0;
-  ASSERT_THROW(driver.modulation(0xFF, mod_data, sent, 579, tx), std::runtime_error);
+  ASSERT_FALSE(driver.modulation(0xFF, mod_data, sent, 579, tx));
 }
 
 TEST(CPUTest, operation_config_silencer_v2_6) {
@@ -713,7 +713,7 @@ TEST(CPUTest, operation_config_silencer_v2_6) {
   ASSERT_EQ(tx.header().silencer_header().cycle, 522);
   ASSERT_EQ(tx.header().silencer_header().step, 4);
 
-  ASSERT_THROW(driver.config_silencer(1, 521, 4, tx), std::runtime_error);
+  ASSERT_FALSE(driver.config_silencer(1, 521, 4, tx));
 }
 
 TEST(CPUTest, normal_legacy_header_v2_6) {

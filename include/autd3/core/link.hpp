@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/11/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -34,24 +34,24 @@ class Link {
   /**
    * @brief Open link
    */
-  virtual bool open(const Geometry& geometry) = 0;
+  [[nodiscard]] virtual bool open(const Geometry& geometry) = 0;
 
   /**
    * @brief Close link
    */
-  virtual bool close() = 0;
+  [[nodiscard]] virtual bool close() = 0;
 
   /**
    * @brief  Send data to devices
    * @return true if succeed
    */
-  virtual bool send(const driver::TxDatagram& tx) = 0;
+  [[nodiscard]] virtual bool send(const driver::TxDatagram& tx) = 0;
 
   /**
    * @brief  Read data from devices
    * @return true if succeed
    */
-  virtual bool receive(driver::RxDatagram& rx) = 0;
+  [[nodiscard]] virtual bool receive(driver::RxDatagram& rx) = 0;
 
   /**
    * @return true if opened

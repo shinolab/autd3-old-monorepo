@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.21)
 add_library(autd3
   ${PROJECT_SOURCE_DIR}/include/autd3/controller.hpp
   controller.cpp
+  ${PROJECT_SOURCE_DIR}/include/autd3/modulation/lpf.hpp
+  modulation/lpf/lpf.cpp
 )
 target_link_libraries(autd3 PUBLIC autd3_common)
 

@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/11/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -32,7 +32,7 @@ TEST(ControllerTest, stream) {
   autd3::Controller autd;
 
   autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
-  autd.open(autd3::test::NullLink().build());
+  (void)autd.open(autd3::test::NullLink().build());
 
   autd << clear;
   autd << Sine(150);
@@ -94,7 +94,7 @@ TEST(ControllerTest, stream_async) {
   autd3::Controller autd;
 
   autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
-  autd.open(autd3::test::NullLink().build());
+  (void)autd.open(autd3::test::NullLink().build());
 
   autd << async << clear;
   autd << async << Sine(150);
@@ -208,7 +208,7 @@ TEST(ControllerTest, basic_usage) {
   auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
-  autd.open(std::move(link));
+  (void)autd.open(std::move(link));
 
   const auto firm_infos = autd.firmware_infos();
   ASSERT_EQ(firm_infos.size(), autd.geometry().num_devices());
@@ -307,7 +307,7 @@ TEST(ControllerTest, basic_usage_async) {
   auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
-  autd.open(std::move(link));
+  (void)autd.open(std::move(link));
 
   const auto firm_infos = autd.firmware_infos();
   ASSERT_EQ(firm_infos.size(), autd.geometry().num_devices());
@@ -410,7 +410,7 @@ TEST(ControllerTest, freq_config) {
   const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
-  autd.open(std::move(link));
+  (void)autd.open(std::move(link));
 
   autd << autd3::normal_mode;
   for (auto& dev : autd.geometry())
@@ -439,7 +439,7 @@ TEST(ControllerTest, simple_legacy) {
   const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
-  autd.open(std::move(link));
+  (void)autd.open(std::move(link));
 
   autd << autd3::clear << autd3::synchronize;
 
@@ -477,7 +477,7 @@ TEST(ControllerTest, simple_normal) {
   const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
-  autd.open(std::move(link));
+  (void)autd.open(std::move(link));
 
   autd << autd3::normal_mode;
   constexpr uint16_t cycle = 2341;  // 70kHz
@@ -520,7 +520,7 @@ TEST(ControllerTest, simple_normal_phase) {
   const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
-  autd.open(std::move(link));
+  (void)autd.open(std::move(link));
 
   autd << autd3::normal_phase_mode;
   constexpr uint16_t cycle = 2341;  // 70kHz
@@ -563,7 +563,7 @@ TEST(ControllerTest, point_stm) {
   const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
-  autd.open(std::move(link));
+  (void)autd.open(std::move(link));
 
   autd << autd3::clear << autd3::synchronize;
 
@@ -628,7 +628,7 @@ TEST(ControllerTest, gain_stm_legacy) {
   auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
-  autd.open(std::move(link));
+  (void)autd.open(std::move(link));
 
   autd << autd3::clear << autd3::synchronize;
 
@@ -749,7 +749,7 @@ TEST(ControllerTest, gain_stm_normal) {
   auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
-  autd.open(std::move(link));
+  (void)autd.open(std::move(link));
 
   autd << autd3::clear << autd3::synchronize;
 
@@ -838,7 +838,7 @@ TEST(ControllerTest, gain_stm_normal_phase) {
   auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
-  autd.open(std::move(link));
+  (void)autd.open(std::move(link));
 
   autd << autd3::clear << autd3::synchronize;
 
