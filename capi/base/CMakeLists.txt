@@ -6,6 +6,7 @@ add_library(autd3capi SHARED
   c_api.cpp
   header.hpp
   autd3_c_api.h
+  custom_sink.hpp
 )
 
 target_link_libraries(autd3capi ${CMAKE_THREAD_LIBS_INIT})
