@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/11/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,41 +24,14 @@
 #include "autd3/driver/v2_6/driver.hpp"
 #include "autd3/modulation/lpf.hpp"
 #include "custom.hpp"
+#include "custom_sink.hpp"
 #include "wrapper.hpp"
 #include "wrapper_link.hpp"
 
-#define AUTD3_CAPI_TRY(action)    \
-  try {                           \
-    action;                       \
-  } catch (std::exception & ex) { \
-    last_error() = ex.what();     \
-    return false;                 \
-  }
-
-#define AUTD3_CAPI_TRY2(action)   \
-  try {                           \
-    action;                       \
-  } catch (std::exception & ex) { \
-    last_error() = ex.what();     \
-    return -1;                    \
-  }
-
 using Controller = autd3::Controller;
 
-std::string& last_error() {
-  static std::string msg("");  // NOLINT
-  return msg;
-}
 autd3::Vector3 to_vec3(const double x, const double y, const double z) { return {x, y, z}; }
 autd3::Quaternion to_quaternion(const double w, const double x, const double y, const double z) { return {w, x, y, z}; }
-
-int32_t AUTDGetLastError(char* error) {
-  const auto& error_ = last_error();
-  const auto size = static_cast<int32_t>(error_.size() + 1);
-  if (error == nullptr) return size;
-  std::char_traits<char>::copy(error, error_.c_str(), size);
-  return size;
-}
 
 std::unique_ptr<const autd3::driver::Driver> get_driver(const uint8_t driver_version) {
   switch (driver_version) {
@@ -80,6 +53,14 @@ std::unique_ptr<const autd3::driver::Driver> get_driver(const uint8_t driver_ver
   }
 }
 
+void AUTDSetLogLevel(const int32_t level) { spdlog::set_level(static_cast<spdlog::level::level_enum>(level)); }
+
+void AUTDSetDefaultLogger(void* out, void* flush) {
+  auto custom_sink = std::make_shared<autd3::capi::custom_sink_mt>(out, flush);
+  const auto logger = std::make_shared<spdlog::logger>("AUTD3 Logger", custom_sink);
+  set_default_logger(logger);
+}
+
 bool AUTDCreateController(void** out, const uint8_t driver_version) {
   auto driver = get_driver(driver_version);
   if (driver == nullptr) return false;
@@ -92,7 +73,7 @@ bool AUTDOpenController(void* const handle, void* const link) {
   auto* w_link = static_cast<LinkWrapper*>(link);
   autd3::LinkPtr link_ = std::move(w_link->ptr);
   link_delete(w_link);
-  AUTD3_CAPI_TRY(return wrapper->open(std::move(link_)))
+  return wrapper->open(std::move(link_));
 }
 
 int32_t AUTDAddDevice(void* const handle, const double x, const double y, const double z, const double rz1, const double ry, const double rz2) {
@@ -108,9 +89,9 @@ int32_t AUTDAddDeviceQuaternion(void* const handle, const double x, const double
   return static_cast<int32_t>(res);
 }
 
-int32_t AUTDClose(void* const handle) {
+bool AUTDClose(void* const handle) {
   auto* const wrapper = static_cast<Controller*>(handle);
-  AUTD3_CAPI_TRY2(return wrapper->close() ? 1 : 0)
+  return wrapper->close();
 }
 
 void AUTDFreeController(const void* const handle) {
@@ -190,11 +171,9 @@ void AUTDSetAttenuation(void* const handle, const double attenuation) {
 
 bool AUTDGetFPGAInfo(void* const handle, uint8_t* out) {
   auto* const wrapper = static_cast<Controller*>(handle);
-  AUTD3_CAPI_TRY({
-    const auto& res = wrapper->read_fpga_info();
-    std::memcpy(out, res.data(), res.size());
-    return !res.empty();
-  })
+  const auto& res = wrapper->read_fpga_info();
+  std::memcpy(out, res.data(), res.size());
+  return !res.empty();
 }
 
 int32_t AUTDNumDevices(const void* const handle) {
@@ -236,16 +215,11 @@ void AUTDTransZDirection(const void* const handle, const int32_t device_idx, con
 int32_t AUTDGetFirmwareInfoListPointer(void* const handle, void** out) {
   auto* const wrapper = static_cast<Controller*>(handle);
   const auto size = static_cast<int32_t>(wrapper->geometry().num_devices());
-  AUTD3_CAPI_TRY2({
-    const auto res = wrapper->firmware_infos();
-    if (res.empty()) {
-      last_error() = "filed to get some infos";
-      return -1;
-    }
-    auto* list = firmware_info_list_create(res);
-    *out = list;
-    return size;
-  })
+  const auto res = wrapper->firmware_infos();
+  if (res.empty()) return 0;
+  auto* list = firmware_info_list_create(res);
+  *out = list;
+  return size;
 }
 
 void AUTDGetFirmwareInfo(const void* const p_firm_info_list, const int32_t index, char* info) {
@@ -347,20 +321,14 @@ void AUTDGainSTM(void** out, const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   *out = new autd3::GainSTM(wrapper->geometry());
 }
-bool AUTDPointSTMAdd(void* const stm, const double x, const double y, const double z, const uint8_t shift) {
+void AUTDPointSTMAdd(void* const stm, const double x, const double y, const double z, const uint8_t shift) {
   auto* const stm_w = static_cast<autd3::PointSTM*>(stm);
-  AUTD3_CAPI_TRY({
-    stm_w->add(to_vec3(x, y, z), shift);
-    return true;
-  })
+  stm_w->add(to_vec3(x, y, z), shift);
 }
-bool AUTDGainSTMAdd(void* const stm, void* const gain) {
+void AUTDGainSTMAdd(void* const stm, void* const gain) {
   auto* const stm_w = static_cast<autd3::GainSTM*>(stm);
   auto* const g = static_cast<autd3::Gain*>(gain);
-  AUTD3_CAPI_TRY({
-    stm_w->add(*g);
-    return true;
-  })
+  stm_w->add(*g);
 }
 uint16_t AUTDGetGainSTMMode(void* const stm) {
   auto* const stm_w = static_cast<autd3::GainSTM*>(stm);
@@ -416,20 +384,20 @@ void AUTDDeleteSilencer(const void* config) {
   delete config_;
 }
 
-int32_t AUTDSend(void* const handle, void* const header, void* const body) {
+bool AUTDSend(void* const handle, void* const header, void* const body) {
   if (header == nullptr && body == nullptr) return 0;
   auto* const wrapper = static_cast<Controller*>(handle);
   auto* const h = static_cast<autd3::core::DatagramHeader*>(header);
   auto* const b = static_cast<autd3::core::DatagramBody*>(body);
-  if (header == nullptr) AUTD3_CAPI_TRY2(return wrapper->send(*b) ? 1 : 0)
-  if (body == nullptr) AUTD3_CAPI_TRY2(return wrapper->send(*h) ? 1 : 0)
-  AUTD3_CAPI_TRY2(return wrapper->send(*h, *b) ? 1 : 0)
+  if (header == nullptr) return wrapper->send(*b);
+  if (body == nullptr) return wrapper->send(*h);
+  return wrapper->send(*h, *b);
 }
 
-int32_t AUTDSendSpecial(void* const handle, void* const special) {
+bool AUTDSendSpecial(void* const handle, void* const special) {
   auto* const wrapper = static_cast<Controller*>(handle);
   auto* const s = static_cast<autd3::SpecialData*>(special);
-  AUTD3_CAPI_TRY2(return wrapper->send(s) ? 1 : 0)
+  return wrapper->send(s);
 }
 
 void AUTDSendAsync(void* const handle, void* header, void* body) {

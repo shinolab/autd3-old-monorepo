@@ -4,7 +4,7 @@
  * Created Date: 03/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/11/2022
+ * Last Modified: 19/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,14 +30,7 @@ int main() {
 
   AUTDLinkRemoteSOEM(&link, ip, port);
 
-  if (!AUTDOpenController(cnt, link)) {
-    const int32_t error_size = AUTDGetLastError(NULL);
-    char* error = malloc(error_size);
-    AUTDGetLastError(error);
-    printf("%s\n", error);
-    free(error);
-    return -1;
-  }
+  if (!AUTDOpenController(cnt, link)) return -1;
 
   return run(cnt);
 }
