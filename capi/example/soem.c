@@ -4,7 +4,7 @@
  * Created Date: 16/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/11/2022
+ * Last Modified: 19/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,10 +33,6 @@ _Noreturn
 #endif
 }
 
-void log_out(char* msg) { printf("%s", msg); }
-
-void log_flush(void) {}
-
 int main() {
   void* cnt = NULL;
   void* link = NULL;
@@ -59,17 +55,8 @@ int main() {
   // AUTDGetAdapter(adapter_list, i, desc, name);
   // AUTDFreeAdapterPointer(adapter_list);
   AUTDLinkSOEM(&link, NULL, 2, 2, false, (void*)callback, false, 100);
-  AUTDLinkSOEMSetDefaultLogger((void*)log_out, (void*)log_flush);
-  AUTDLinkSOEMSetLogLevel(2);
 
-  if (!AUTDOpenController(cnt, link) || !AUTDIsOpen(cnt)) {
-    const int32_t error_size = AUTDGetLastError(NULL);
-    char* error = malloc(error_size);
-    AUTDGetLastError(error);
-    printf("%s\n", error);
-    free(error);
-    return -1;
-  }
+  if (!AUTDOpenController(cnt, link)) return -1;
 
   AUTDSetAckCheckTimeout(cnt, 20LL * 1000 * 1000);
 
