@@ -137,8 +137,9 @@ namespace autd3::extra {
 
         imgui->set(sources);
         if (!trans_viewer->init(sources)) spdlog::warn("Failed to initialize transducer viewer.");
-        slice_viewer->init(imgui->slice_width, imgui->slice_height, imgui->pixel_size);
-        field_compute->init(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size(), imgui->coloring_method);
+        if (!slice_viewer->init(imgui->slice_width, imgui->slice_height, imgui->pixel_size)) spdlog::warn("Failed to initialize slice viewer.");
+        if (!field_compute->init(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size(), imgui->coloring_method))
+          spdlog::warn("Failed to initialize field compute.");
 
         ptr[0] = 0x00;
         initialized = true;
@@ -206,9 +207,11 @@ namespace autd3::extra {
 
       const auto& [view, proj] = imgui->get_view_proj(static_cast<float>(renderer->extent().width) / static_cast<float>(renderer->extent().height));
       const auto& slice_model = imgui->get_slice_model();
-      slice_viewer->update(imgui->slice_width, imgui->slice_height, imgui->pixel_size, update_flags);
-      if (!trans_viewer->update(sources, update_flags)) return false;
-      field_compute->update(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size(), imgui->coloring_method, update_flags);
+      if (!slice_viewer->update(imgui->slice_width, imgui->slice_height, imgui->pixel_size, update_flags) ||
+          !trans_viewer->update(sources, update_flags) ||
+          !field_compute->update(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size(), imgui->coloring_method,
+                                 update_flags))
+        return false;
 
       const simulator::Config config{static_cast<uint32_t>(sources.size()),
                                      0,
@@ -256,8 +259,13 @@ namespace autd3::extra {
 
       const std::array background = {imgui->background.r, imgui->background.g, imgui->background.b, imgui->background.a};
       const auto& [command_buffer, image_index] = renderer->begin_frame(background);
-      if (!command_buffer) break;
-
+      if (!command_buffer) {
+        if (image_index == 0) {
+          break;
+        } else {
+          continue;
+        }
+      }
       slice_viewer->render(slice_model, view, proj, command_buffer);
       trans_viewer->render(view, proj, command_buffer);
       simulator::VulkanImGui::render(command_buffer);
@@ -266,7 +274,13 @@ namespace autd3::extra {
       simulator::VulkanImGui::draw();
       const std::array background = {imgui->background.r, imgui->background.g, imgui->background.b, imgui->background.a};
       const auto& [command_buffer, image_index] = renderer->begin_frame(background);
-      if (!command_buffer) break;
+      if (!command_buffer) {
+        if (image_index == 0) {
+          break;
+        } else {
+          continue;
+        }
+      }
       simulator::VulkanImGui::render(command_buffer);
       if (!renderer->end_frame(command_buffer, image_index)) break;
     }

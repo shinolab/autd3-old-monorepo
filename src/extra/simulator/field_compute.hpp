@@ -58,7 +58,7 @@ class FieldCompute {
   FieldCompute(FieldCompute&& obj) = default;
   FieldCompute& operator=(FieldCompute&& obj) = default;
 
-  [[nodiscatd]] bool init(const SoundSources& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers,
+  [[nodiscard]] bool init(const SoundSources& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers,
                           const size_t image_size, const tinycolormap::ColormapType type) {
     create_descriptor_set_layouts();
 
@@ -88,7 +88,7 @@ class FieldCompute {
     return update_source_drive(sources) && update_source_pos(sources);
   }
 
-  [[nodiscatd]] bool update(const SoundSources& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers,
+  [[nodiscard]] bool update(const SoundSources& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers,
                             const size_t image_size, const tinycolormap::ColormapType type, const UpdateFlags update_flags) {
     if (update_flags.contains(UpdateFlags::UPDATE_SLICE_SIZE)) create_descriptor_sets(sources, image_buffers, image_size);
 
