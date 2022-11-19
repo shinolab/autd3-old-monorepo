@@ -3,7 +3,7 @@
 // Created Date: 15/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/11/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -87,7 +87,7 @@ class DriverV2_6 final : public Driver {
 
     if (is_first_frame) {
       if (freq_div < v2_6::MOD_SAMPLING_FREQ_DIV_MIN) {
-        spdlog::error("Modulation frequency division is oud of range. Minimum is {}, but you use {}.", v2_6::MOD_SAMPLING_FREQ_DIV_MIN, freq_div);
+        spdlog::error("Modulation frequency division is out of range. Minimum is {}, but you use {}.", v2_6::MOD_SAMPLING_FREQ_DIV_MIN, freq_div);
         return false;
       }
 
@@ -106,7 +106,7 @@ class DriverV2_6 final : public Driver {
 
   bool config_silencer(const uint8_t msg_id, const uint16_t cycle, const uint16_t step, TxDatagram& tx) const override {
     if (cycle < v2_6::SILENCER_CYCLE_MIN) {
-      spdlog::error("Silencer cycle is oud of range. Minimum is {}, but you use {}.", v2_6::SILENCER_CYCLE_MIN, cycle);
+      spdlog::error("Silencer cycle is out of range. Minimum is {}, but you use {}.", v2_6::SILENCER_CYCLE_MIN, cycle);
       return false;
     }
 
@@ -209,7 +209,7 @@ class DriverV2_6 final : public Driver {
 
     if (sent == 0) {
       if (freq_div < v2_6::POINT_STM_SAMPLING_FREQ_DIV_MIN) {
-        spdlog::error("STM frequency division is oud of range. Minimum is {}, but you use {}.", v2_6::POINT_STM_SAMPLING_FREQ_DIV_MIN, freq_div);
+        spdlog::error("STM frequency division is out of range. Minimum is {}, but you use {}.", v2_6::POINT_STM_SAMPLING_FREQ_DIV_MIN, freq_div);
         return false;
       }
       tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
@@ -269,7 +269,7 @@ class DriverV2_6 final : public Driver {
     bool is_last_frame = false;
     if (sent == 0) {
       if (freq_div < v2_6::GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN) {
-        spdlog::error("STM frequency division is oud of range. Minimum is {}, but you use {}.", v2_6::GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN,
+        spdlog::error("STM frequency division is out of range. Minimum is {}, but you use {}.", v2_6::GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN,
                       freq_div);
         return false;
       }
@@ -377,7 +377,7 @@ class DriverV2_6 final : public Driver {
 
     if (sent == 0) {
       if (freq_div < v2_6::GAIN_STM_SAMPLING_FREQ_DIV_MIN) {
-        spdlog::error("STM frequency division is oud of range. Minimum is {}, but you use {}.", v2_6::GAIN_STM_SAMPLING_FREQ_DIV_MIN, freq_div);
+        spdlog::error("STM frequency division is out of range. Minimum is {}, but you use {}.", v2_6::GAIN_STM_SAMPLING_FREQ_DIV_MIN, freq_div);
         return false;
       }
       tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
@@ -422,7 +422,7 @@ class DriverV2_6 final : public Driver {
 
     if (sent == 0) {
       if (freq_div < v2_6::GAIN_STM_SAMPLING_FREQ_DIV_MIN) {
-        spdlog::error("STM frequency division is oud of range. Minimum is {}, but you use {}.", v2_6::GAIN_STM_SAMPLING_FREQ_DIV_MIN, freq_div);
+        spdlog::error("STM frequency division is out of range. Minimum is {}, but you use {}.", v2_6::GAIN_STM_SAMPLING_FREQ_DIV_MIN, freq_div);
         return false;
       }
       tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
