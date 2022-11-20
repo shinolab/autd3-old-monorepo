@@ -4,7 +4,7 @@
  * Created Date: 24/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/08/2022
+ * Last Modified: 20/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -66,7 +66,7 @@ public partial class ModulationViewModel
         var noWifiDialog = new ContentDialog
         {
             Title = "AUTD internal error",
-            Content = AUTDService.GetLastError(),
+            Content = "Failed to send data",
             CloseButtonText = "Ok",
             XamlRoot = XamlRoot!
         };
