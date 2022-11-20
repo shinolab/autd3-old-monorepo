@@ -4,7 +4,7 @@
  * Created Date: 18/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/11/2022
+ * Last Modified: 20/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -113,7 +113,7 @@ public partial class LinkViewModel
             var noWifiDialog = new ContentDialog
             {
                 Title = "AUTD internal error",
-                Content = AUTDService.GetLastError(),
+                Content = "Failed to open Controller",
                 CloseButtonText = "Ok",
                 XamlRoot = XamlRoot!
             };
@@ -133,7 +133,7 @@ public partial class LinkViewModel
             var noWifiDialog = new ContentDialog
             {
                 Title = "AUTD internal error",
-                Content = AUTDService.GetLastError(),
+                Content = "Failed to close Controller",
                 CloseButtonText = "Ok",
                 XamlRoot = XamlRoot!
             };
