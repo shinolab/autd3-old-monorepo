@@ -14,4 +14,4 @@ typedef long int64_t;
 typedef unsigned long uint64_t;
 #endif
 
-void AUTDExtraSimulator(char* settings_path, bool vsync, int32_t gpu_idx);
+bool AUTDExtraSimulator(char* settings_path, bool vsync, int32_t gpu_idx);

@@ -12,7 +12,7 @@ namespace AUTD3Sharp.NativeMethods
     {
         private const string DLL = "autd3capi-extra-simulator";
 
-        [DllImport(DLL, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDExtraSimulator(string settingsPath, [MarshalAs(UnmanagedType.U1)] bool vsync, int gpuIdx);
+        [DllImport(DLL, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDExtraSimulator(string settingsPath, [MarshalAs(UnmanagedType.U1)] bool vsync, int gpuIdx);
     }
 }
 

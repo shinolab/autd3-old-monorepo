@@ -10,9 +10,10 @@ elif defined(macosx):
 else:
   const
     dll* = "bin/libautd3capi.so"
-proc AUTDGetLastError*(error: cstring): int32 {.cdecl, importc: "AUTDGetLastError",
-    dynlib: dll.}
-proc AUTDCreateController*(`out`: ptr pointer; driver_version: uint8) {.cdecl,
+proc AUTDSetLogLevel*(level: int32) {.cdecl, importc: "AUTDSetLogLevel", dynlib: dll.}
+proc AUTDSetDefaultLogger*(`out`: pointer; flush: pointer) {.cdecl,
+    importc: "AUTDSetDefaultLogger", dynlib: dll.}
+proc AUTDCreateController*(`out`: ptr pointer; driver_version: uint8): bool {.cdecl,
     importc: "AUTDCreateController", dynlib: dll.}
 proc AUTDOpenController*(handle: pointer; link: pointer): bool {.cdecl,
     importc: "AUTDOpenController", dynlib: dll.}
@@ -22,7 +23,7 @@ proc AUTDAddDevice*(handle: pointer; x: float64; y: float64; z: float64; rz1: fl
 proc AUTDAddDeviceQuaternion*(handle: pointer; x: float64; y: float64; z: float64;
                              qw: float64; qx: float64; qy: float64; qz: float64): int32 {.
     cdecl, importc: "AUTDAddDeviceQuaternion", dynlib: dll.}
-proc AUTDClose*(handle: pointer): int32 {.cdecl, importc: "AUTDClose", dynlib: dll.}
+proc AUTDClose*(handle: pointer): bool {.cdecl, importc: "AUTDClose", dynlib: dll.}
 proc AUTDFreeController*(handle: pointer) {.cdecl, importc: "AUTDFreeController",
     dynlib: dll.}
 proc AUTDIsOpen*(handle: pointer): bool {.cdecl, importc: "AUTDIsOpen", dynlib: dll.}
@@ -137,10 +138,10 @@ proc AUTDPointSTM*(`out`: ptr pointer; sound_speed: float64) {.cdecl,
     importc: "AUTDPointSTM", dynlib: dll.}
 proc AUTDGainSTM*(`out`: ptr pointer; handle: pointer) {.cdecl, importc: "AUTDGainSTM",
     dynlib: dll.}
-proc AUTDPointSTMAdd*(stm: pointer; x: float64; y: float64; z: float64; shift: uint8): bool {.
+proc AUTDPointSTMAdd*(stm: pointer; x: float64; y: float64; z: float64; shift: uint8) {.
     cdecl, importc: "AUTDPointSTMAdd", dynlib: dll.}
-proc AUTDGainSTMAdd*(stm: pointer; gain: pointer): bool {.cdecl,
-    importc: "AUTDGainSTMAdd", dynlib: dll.}
+proc AUTDGainSTMAdd*(stm: pointer; gain: pointer) {.cdecl, importc: "AUTDGainSTMAdd",
+    dynlib: dll.}
 proc AUTDGetGainSTMMode*(stm: pointer): uint16 {.cdecl,
     importc: "AUTDGetGainSTMMode", dynlib: dll.}
 proc AUTDSetGainSTMMode*(stm: pointer; mode: uint16) {.cdecl,
@@ -170,9 +171,9 @@ proc AUTDCreateSilencer*(`out`: ptr pointer; step: uint16; cycle: uint16) {.cdec
     importc: "AUTDCreateSilencer", dynlib: dll.}
 proc AUTDDeleteSilencer*(config: pointer) {.cdecl, importc: "AUTDDeleteSilencer",
     dynlib: dll.}
-proc AUTDSend*(handle: pointer; header: pointer; body: pointer): int32 {.cdecl,
+proc AUTDSend*(handle: pointer; header: pointer; body: pointer): bool {.cdecl,
     importc: "AUTDSend", dynlib: dll.}
-proc AUTDSendSpecial*(handle: pointer; special: pointer): int32 {.cdecl,
+proc AUTDSendSpecial*(handle: pointer; special: pointer): bool {.cdecl,
     importc: "AUTDSendSpecial", dynlib: dll.}
 proc AUTDSendAsync*(handle: pointer; header: pointer; body: pointer) {.cdecl,
     importc: "AUTDSendAsync", dynlib: dll.}

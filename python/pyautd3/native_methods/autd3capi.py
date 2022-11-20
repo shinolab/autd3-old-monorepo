@@ -27,11 +27,14 @@ class NativeMethods(metaclass=Singleton):
             return
         self.dll = ctypes.CDLL(os.path.join(self.bin, f'{self.prefix}autd3capi{self.ext}'))
 
-        self.dll.AUTDGetLastError.argtypes = [ctypes.c_char_p] 
-        self.dll.AUTDGetLastError.restype = ctypes.c_int32
+        self.dll.AUTDSetLogLevel.argtypes = [ctypes.c_int32] 
+        self.dll.AUTDSetLogLevel.restype = None
+
+        self.dll.AUTDSetDefaultLogger.argtypes = [ctypes.c_void_p, ctypes.c_void_p] 
+        self.dll.AUTDSetDefaultLogger.restype = None
 
         self.dll.AUTDCreateController.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_uint8] 
-        self.dll.AUTDCreateController.restype = None
+        self.dll.AUTDCreateController.restype = ctypes.c_bool
 
         self.dll.AUTDOpenController.argtypes = [ctypes.c_void_p, ctypes.c_void_p] 
         self.dll.AUTDOpenController.restype = ctypes.c_bool
@@ -43,7 +46,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDAddDeviceQuaternion.restype = ctypes.c_int32
 
         self.dll.AUTDClose.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDClose.restype = ctypes.c_int32
+        self.dll.AUTDClose.restype = ctypes.c_bool
 
         self.dll.AUTDFreeController.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDFreeController.restype = None
@@ -199,10 +202,10 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainSTM.restype = None
 
         self.dll.AUTDPointSTMAdd.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_uint8] 
-        self.dll.AUTDPointSTMAdd.restype = ctypes.c_bool
+        self.dll.AUTDPointSTMAdd.restype = None
 
         self.dll.AUTDGainSTMAdd.argtypes = [ctypes.c_void_p, ctypes.c_void_p] 
-        self.dll.AUTDGainSTMAdd.restype = ctypes.c_bool
+        self.dll.AUTDGainSTMAdd.restype = None
 
         self.dll.AUTDGetGainSTMMode.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDGetGainSTMMode.restype = ctypes.c_uint16
@@ -253,10 +256,10 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDDeleteSilencer.restype = None
 
         self.dll.AUTDSend.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p] 
-        self.dll.AUTDSend.restype = ctypes.c_int32
+        self.dll.AUTDSend.restype = ctypes.c_bool
 
         self.dll.AUTDSendSpecial.argtypes = [ctypes.c_void_p, ctypes.c_void_p] 
-        self.dll.AUTDSendSpecial.restype = ctypes.c_int32
+        self.dll.AUTDSendSpecial.restype = ctypes.c_bool
 
         self.dll.AUTDSendAsync.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p] 
         self.dll.AUTDSendAsync.restype = None

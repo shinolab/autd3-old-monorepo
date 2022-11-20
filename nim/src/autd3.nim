@@ -3,7 +3,7 @@
 # Created Date: 11/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 17/11/2022
+# Last Modified: 20/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -51,14 +51,7 @@ type Controller* = object
 
 func initController*(driverVersion: uint8 = 0): Controller =
     result.p = pointer(nil)
-    AUTDCreateController(result.p.addr, driverVersion)
-
-func lastError*(_: typedesc[Controller]): string =
-    let p = cast[cstring](pointer(nil))
-    let n = AUTDGetLastError(p)
-    var err = cast[cstring]('\0'.repeat(n))
-    discard AUTDGetLastError(err)
-    $err
+    let _ = AUTDCreateController(result.p.addr, driverVersion)
 
 func toLegacy*(cnt: Controller) =
     AUTDSetMode(cnt.p, 0)
@@ -81,7 +74,7 @@ func addDeviceQuaternion*(cnt: Controller, pos: openArray[float64],
 func open*(cnt: Controller, link: Link): bool =
     AUTDOpenController(cnt.p, link.p)
 
-func close*(cnt: Controller): int32 {.discardable.} =
+func close*(cnt: Controller): bool {.discardable.} =
     AUTDClose(cnt.p)
 
 func isOpen*(cnt: Controller): bool =
@@ -209,16 +202,16 @@ func getFPGAInfo*(cnt: Controller): seq[uint8] =
     discard AUTDGetFPGAInfo(cnt.p, addr info[0])
     info
 
-func send*(cnt: Controller, header: Header): int32 {.discardable.} =
+func send*(cnt: Controller, header: Header): bool {.discardable.} =
     AUTDSend(cnt.p, header.p, pointer(nil))
 
-func send*(cnt: Controller, header: Header, body: Body): int32 {.discardable.} =
+func send*(cnt: Controller, header: Header, body: Body): bool {.discardable.} =
     AUTDSend(cnt.p, header.p, body.p)
 
-func send*(cnt: Controller, body: Body): int32 {.discardable.} =
+func send*(cnt: Controller, body: Body): bool {.discardable.} =
     AUTDSend(cnt.p, pointer(nil), body.p)
 
-func send*(cnt: Controller, data: SpecialData): int32 {.discardable.} =
+func send*(cnt: Controller, data: SpecialData): bool {.discardable.} =
     AUTDSendSpecial(cnt.p, data.p)
 
 proc `=destroy`(cnt: var Controller) =
@@ -340,7 +333,7 @@ func initPointSTM*(soundSpeed: float64): PointSTM =
     AUTDPointSTM(result.p.addr, soundSpeed)
 
 func add*(stm: PointSTM, pos: openArray[float64],
-        shift: uint8 = 0): bool {.discardable.} =
+        shift: uint8 = 0) =
     AUTDPointSTMAdd(stm.p, pos[0], pos[1], pos[2], shift)
 
 type GainSTM* = object of STM
@@ -353,7 +346,7 @@ type Mode* {.pure.} = enum
 func initGainSTM*(cnt: Controller): GainSTM =
     AUTDGainSTM(result.p.addr, cnt.p)
 
-func add*(stm: GainSTM, gain: Gain): bool {.discardable.} =
+func add*(stm: GainSTM, gain: Gain) =
     AUTDGainSTMAdd(stm.p, gain.p)
 
 func mode*(stm: GainSTM): Mode =
