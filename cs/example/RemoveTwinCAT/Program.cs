@@ -24,7 +24,7 @@ var server_ams_net_id = "your TwinCATAUTDServer AMS net id (e.g. 172.16.99.2.1.1
 var link = new RemoteTwinCAT(server_ams_net_id).Build();
 if (!autd.Open(link))
 {
-    Console.WriteLine(Controller.LastError);
+    Console.WriteLine("Failed to open Controller.");
     return;
 }
 

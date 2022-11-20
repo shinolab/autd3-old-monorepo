@@ -3,7 +3,7 @@
 # Created Date: 30/12/2020
 # Author: Shun Suzuki
 # -----
-# Last Modified: 10/11/2022
+# Last Modified: 20/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2020 Hapis Lab. All rights reserved.
@@ -29,7 +29,7 @@ function main()
     link = SOEM(on_lost=on_lost, high_precision=true)
 
     if !cnt.open(link)
-        println(get_last_error())
+        println("Failed to open Controller.")
         exit(-1)
     end
 

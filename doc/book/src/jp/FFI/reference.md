@@ -5,19 +5,20 @@ c言語向けのAPIは[capi](https://github.com/shinolab/autd3/tree/master/capi)
 以下に, このAPIのリファレンスを載せる. 
 実際の利用方法は, [C API Example](https://github.com/shinolab/autd3/tree/master/capi/example)を参照されたい.
 
-## AUTDGetLastError (autd3capi)
+## AUTDSetLogLevel (autd3capi)
 
-最後に発生した例外のエラーメッセージを取得する.
+| Argument name / return | type     | in/out | description                        |
+| ---------------------- | -------- | ------ | ---------------------------------- |
+| level                  | int32_t  | in     | log level                          |
+| return                 | void     | -      | -                                  |
 
-引数にはエラーメッセージへのポインタを渡す. このポインタにエラーメッセージがコピーされる. ただし, 引数がnullptrの場合はコピーは行われない.
-この関数は, null終端込みのエラーメッセージのサイズを返す.
+## AUTDSetDefaultLogger (autd3capi)
 
-エラーメッセージの長さは可変なので十分に大きな領域を確保しておくか, errorにnullptrを渡し必要なサイズを取得して再び呼び出すこと.
-
-| Argument name / return | type    | in/out | description                                       |
-| ---------------------- | ------- | ------ | ------------------------------------------------- |
-| error                  | char*   | out    | pointer to error message                          |
-| return                 | int32_t | -      | length of error message including null terminator |
+| Argument name / return | type     | in/out | description                        |
+| ---------------------- | -------- | ------ | ---------------------------------- |
+| out                    | void*    | in     | output callback                    |
+| flush                  | void*    | in     | flush callback                     |
+| return                 | void     | -      | -                                  |
 
 ## AUTDCreateController (autd3capi)
 
@@ -29,7 +30,7 @@ Controllerを作成する.
 | ---------------------- | ------ | ------ | -------------------------------- |
 | out                    | void** | out    | pointer to pointer to Controller |
 | driver_version         | uint8_t| in     | driver version                   |
-| return                 | void   | -      | -                                |
+| return                 | bool    | -      | true if successful                                                                                     |
 
 ## AUTDOpenController (autd3capi)
 
@@ -37,7 +38,7 @@ Controllerをopenする.
 
 handleは`AUTDCreateController`で作成したものを使う. linkは各々のlinkの生成関数で作成したものを使う.
 
-この関数は失敗した場合にfalseを返す. falseの場合には`AUTDGetLastError`でエラーメッセージを取得できる.
+この関数は失敗した場合にfalseを返す. 
 
 | Argument name / return | type  | in/out | description           |
 | ---------------------- | ----- | ------ | --------------------- |
@@ -91,13 +92,10 @@ Controllerをcloseする.
 
 handleは`AUTDCreateController`で作成したものを使う.
 
-この関数はエラーが発生した場合に0未満の値を返す. エラーが生じた場合には`AUTDGetLastError`でエラーメッセージを取得できる. また,
-check ackフラグがtrue, かつ, 返り値が0より大きい場合は, データが実際のデバイスで処理されたことを保証する.
-
 | Argument name / return | type    | in/out | description                                                                                            |
 | ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
 | handle                 | void*   | in     | pointer to Controller                                                                                  |
-| return                 | int32_t | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred. |
+| return                 | bool    | -      | true if successful                                                                                     |
 
 ## AUTDCreateSilencer (autd3capi)
 
@@ -368,7 +366,7 @@ handleは`AUTDCreateController`で作成したものを使う. outポインタ�
 
 この関数を呼び出す前に`AUTDSetReadsFPGAInfo`でread FPGA info flagをOnにしておく必要がある.
 
-この関数は失敗した場合にfalseを返す. falseの場合には`AUTDGetLastError`でエラーメッセージを取得できる.
+この関数は失敗した場合にfalseを返す. 
 
 | Argument name / return | type     | in/out | description           |
 | ---------------------- | -------- | ------ | --------------------- |
@@ -460,8 +458,6 @@ handleは`AUTDCreateController`で作成したものを使う.
 この関数で作成したlistは最後に`AUTDFreeFirmwareInfoListPointer`で開放する必要がある.
 
 実際のFirmware informationは`AUTDGetFirmwareInfo`で取得する.
-
-この関数はエラーが発生した場合に0未満の値を返す. エラーが生じた場合には`AUTDGetLastError`でエラーメッセージを取得できる
 
 | Argument name / return | type    | in/out | description                                                         |
 | ---------------------- | ------- | ------ | ------------------------------------------------------------------- |
@@ -800,7 +796,7 @@ Point STMに焦点を追加する.
 | y                      | double  | in     | y coordinate of focal point |
 | z                      | double  | in     | z coordinate of focal point |
 | shift                  | uint8_t | in     | duty shift                  |
-| return                 | bool    | -      | true if success             |
+| return                 | void    | -      | -                           |
 
 ## AUTDGainSTMAdd (autd3capi)
 
@@ -810,7 +806,7 @@ Gain STMにgainを追加する.
 | ---------------------- | ----- | ------ | -------------------- |
 | stm                    | void* | in     | pointer to Point STM |
 | gain                   | void* | in     | pointer to Gain      |
-| return                 | bool  | -      | true if success      |
+| return                 | void    | -      | -                  |
 
 ## AUTDSetGainSTMMode (autd3capi)
 
@@ -955,36 +951,26 @@ STMを削除する.
 
 ヘッダーデータとボディーデータを送信する.
 
-送信関数の一つ.
-
 handleは`AUTDCreateController`で作成したものを使う.
-
-この関数はエラーが発生した場合に0未満の値を返す. エラーが生じた場合には`AUTDGetLastError`でエラーメッセージを取得できる. また,
-check ackフラグがtrue, かつ, 返り値が0より大きい場合は, データが実際のデバイスで処理されたことを保証する.
 
 | Argument name / return | type    | in/out | description                                                                                            |
 | ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
 | handle                 | void*   | in     | pointer to Controller                                                                                  |
 | header                 | void*   | in     | pointer to header data                                                                                 |
 | body                   | void*   | in     | pointer to body data                                                                                   |
-| return                 | int32_t | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred. |
+| return                 | bool    | -      | true if successful                                                                                     |
 
 ## AUTDSendSpecial (autd3capi)
 
 特殊データを送信する.
 
-送信関数の一つ.
-
 handleは`AUTDCreateController`で作成したものを使う.
-
-この関数はエラーが発生した場合に0未満の値を返す. エラーが生じた場合には`AUTDGetLastError`でエラーメッセージを取得できる. また,
-check ackフラグがtrue, かつ, 返り値が0より大きい場合は, データが実際のデバイスで処理されたことを保証する.
 
 | Argument name / return | type    | in/out | description                                                                                            |
 | ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
 | handle                 | void*   | in     | pointer to Controller                                                                                  |
 | special                | void*   | in     | pointer to special data                                                                                 |
-| return                 | int32_t | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred. |
+| return                 | bool    | -      | true if successful                                                                                     |
 
 ## AUTDSendAsync (autd3capi)
 
@@ -1593,7 +1579,7 @@ Geometry Viewerを起動する.
 | height                 | int32_t | in     | window height                      |
 | vsync                  | bool    | in     | vsync                              |
 | gpu_idx                | int32_t | in     | GPU index                          |
-| return                 | void    | -      | -                                  |
+| return                 | bool    | -      | true if successful                                                                                     |
 
 ## AUTDExtraSimulator (autd3capi-extra-simulator)
 
@@ -1606,4 +1592,4 @@ Simulatorを起動する.
 | settings_path          | char*   | in     | path to setting file               |
 | vsync                  | bool    | in     | vsync                              |
 | gpu_idx                | int32_t | in     | GPU index                          |
-| return                 | void    | -      | -                                  |
+| return                 | bool    | -      | true if successful                                                                                     |

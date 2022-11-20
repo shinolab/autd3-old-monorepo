@@ -12,4 +12,4 @@
 #  endif
 #endif
 
-void AUTDExtraSimulator(char* settings_path, bool vsync, int32 gpu_idx);
+bool AUTDExtraSimulator(char* settings_path, bool vsync, int32 gpu_idx);
