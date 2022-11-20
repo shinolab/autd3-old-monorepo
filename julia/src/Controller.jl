@@ -3,7 +3,7 @@
 # Created Date: 14/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 15/11/2022
+# Last Modified: 20/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -150,14 +150,6 @@ mutable struct Controller
         finalizer(cnt -> autd3capi.autd_free_controller(cnt._ptr), cnt)
         cnt
     end
-end
-
-function get_last_error()
-    p = Ptr{Cvoid}(C_NULL)
-    n = autd3capi.autd_get_last_error(p)
-    err = zeros(UInt8, n)
-    autd3capi.autd_get_last_error(err)
-    String(err[1:n-1])
 end
 
 struct Clear

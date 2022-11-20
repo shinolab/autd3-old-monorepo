@@ -4,7 +4,7 @@ Project: example
 Created Date: 30/12/2020
 Author: Shun Suzuki
 -----
-Last Modified: 15/11/2022
+Last Modified: 20/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2020 Shun Suzuki. All rights reserved.
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     on_lost_f = OnLostFunc(on_lost)
     link = SOEM().high_precision(True).on_lost(on_lost_f).build()
     if not autd.open(link):
-        print(Controller.last_error())
+        print('Failed to open Controller')
         exit()
 
     autd.ack_check_timeout_ms = 20

@@ -4,7 +4,7 @@
 %Created Date: 07/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 15/11/2022
+%Last Modified: 20/11/2022
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,8 +19,8 @@ classdef Controller < handle
         force_fan = false
         attenuation = 0.0
         ack_check_timeout = 0
-        send_interval = 1
-        sound_speed = 340
+        send_interval = 500000
+        sound_speed = 340e3
     end
 
     methods
@@ -258,18 +258,6 @@ classdef Controller < handle
                 obj.ptr = libpointer('voidPtr', 0);
             end
 
-        end
-
-    end
-
-    methods (Static)
-
-        function error = last_error()
-            pn = libpointer('int8Ptr', []);
-            n = calllib('autd3capi', 'AUTDGetLastError', pn);
-            p = libpointer('int8Ptr', zeros(n, 1, 'int8'));
-            calllib('autd3capi', 'AUTDGetLastError', p);
-            error = erase(convertCharsToStrings(char(p.value)), char(0));
         end
 
     end

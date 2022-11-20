@@ -3,13 +3,11 @@
 # Created Date: 11/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 15/11/2022
+# Last Modified: 20/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
 #
-
-import strutils
 
 import autd3
 import autd3/soem
@@ -28,7 +26,7 @@ when isMainModule:
         var soem = initSOEM()
         let link = soem.highPrecision(true).onLost(onLost).build()
         if not cnt.open(link):
-            echo Controller.lastError
+            echo "Failed to open Controller."
             quit(-1)
 
         cnt.ackCheckTimeoutMs = 20

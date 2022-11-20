@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 17/11/2022
+Last Modified: 20/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,6 +33,18 @@ DRIVER_V2_3 = 0x83
 DRIVER_V2_4 = 0x84
 DRIVER_V2_5 = 0x85
 DRIVER_V2_6 = 0x86
+
+
+LogOutputFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
+LogFlushFunc = ctypes.CFUNCTYPE(None)
+
+
+def set_log_level(level: int):
+    Base().dll.AUTDSetLogLevel(level)
+
+
+def set_log_func(output, flush):
+    Base().dll.AUTDSetDefaultLogger(output, flush)
 
 
 class SpecialData:
@@ -217,12 +229,6 @@ class Controller:
 
     def __del__(self):
         self.dispose()
-
-    def last_error():
-        size = Base().dll.AUTDGetLastError(None)
-        err = ctypes.create_string_buffer(size)
-        Base().dll.AUTDGetLastError(err)
-        return err.value.decode('utf-8')
 
     def to_legacy(self):
         Base().dll.AUTDSetMode(self.p_cnt, 0)

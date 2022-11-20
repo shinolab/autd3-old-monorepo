@@ -10,5 +10,5 @@ elif defined(macosx):
 else:
   const
     dll* = "bin/libautd3capi-extra-simulator.so"
-proc AUTDExtraSimulator*(settings_path: cstring; vsync: bool; gpu_idx: int32) {.cdecl,
-    importc: "AUTDExtraSimulator", dynlib: dll.}
+proc AUTDExtraSimulator*(settings_path: cstring; vsync: bool; gpu_idx: int32): bool {.
+    cdecl, importc: "AUTDExtraSimulator", dynlib: dll.}

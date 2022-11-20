@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/11/2022
+ * Last Modified: 20/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -43,10 +43,17 @@ namespace AUTD3Sharp
     {
         internal IntPtr CntPtr => handle;
 
+        private readonly byte _driverVersion;
+
         public AUTDControllerHandle(bool ownsHandle, byte driverVersion) : base(ownsHandle)
         {
             handle = new IntPtr();
-            Base.AUTDCreateController(out handle, driverVersion);
+            _driverVersion = driverVersion;
+        }
+
+        public bool Create()
+        {
+            return Base.AUTDCreateController(out handle, _driverVersion);
         }
 
         protected override bool ReleaseHandle()
@@ -92,6 +99,20 @@ namespace AUTD3Sharp
         public const byte DriverV2_6 = 0x86;
 
         #endregion
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnLogOutputCallback(string str);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void OnLogFlushCallback();
+        public static void SetLogLevel(int level)
+        {
+            Base.AUTDSetLogLevel(level);
+        }
+
+        public static void SetLogFunc(OnLogOutputCallback output, OnLogFlushCallback flush)
+        {
+            var onOutput = Marshal.GetFunctionPointerForDelegate(output);
+            var onFlush = Marshal.GetFunctionPointerForDelegate(flush);
+            Base.AUTDSetDefaultLogger(onOutput, onFlush);
+        }
     }
 
     public static class TypeHelper
@@ -332,6 +353,8 @@ namespace AUTD3Sharp
         public Controller(byte driverVersion = AUTD3.DriverLatest)
         {
             AUTDControllerHandle = new AUTDControllerHandle(true, driverVersion);
+            if (!AUTDControllerHandle.Create())
+                throw new Exception("Failed to create Controller.");
             Geometry = new Geometry(AUTDControllerHandle.CntPtr);
         }
 
@@ -365,7 +388,7 @@ namespace AUTD3Sharp
             Base.AUTDFreeFirmwareInfoListPointer(handle);
         }
 
-        public int Close() => Base.AUTDClose(AUTDControllerHandle.CntPtr);
+        public bool Close() => Base.AUTDClose(AUTDControllerHandle.CntPtr);
 
         public void Dispose()
         {
@@ -453,45 +476,34 @@ namespace AUTD3Sharp
                 return infos;
             }
         }
-
-        public static string LastError
-        {
-            get
-            {
-                var size = Base.AUTDGetLastError(null);
-                var sb = new StringBuilder(size);
-                Base.AUTDGetLastError(sb);
-                return sb.ToString();
-            }
-        }
         #endregion
 
-        public int Send(SpecialData special)
+        public bool Send(SpecialData special)
         {
             if (special == null) throw new ArgumentNullException(nameof(special));
             return Base.AUTDSendSpecial(AUTDControllerHandle.CntPtr, special.Ptr);
         }
 
-        public int Send(Header header)
+        public bool Send(Header header)
         {
             if (header == null) throw new ArgumentNullException(nameof(header));
             return Base.AUTDSend(AUTDControllerHandle.CntPtr, header.Ptr, IntPtr.Zero);
         }
 
-        public int Send(Body body)
+        public bool Send(Body body)
         {
             if (body == null) throw new ArgumentNullException(nameof(body));
             return Base.AUTDSend(AUTDControllerHandle.CntPtr, IntPtr.Zero, body.Ptr);
         }
 
-        public int Send(Header header, Body body)
+        public bool Send(Header header, Body body)
         {
             if (header == null) throw new ArgumentNullException(nameof(header));
             if (body == null) throw new ArgumentNullException(nameof(body));
             return Base.AUTDSend(AUTDControllerHandle.CntPtr, header.Ptr, body.Ptr);
         }
 
-        public int Send(Body body, Header header)
+        public bool Send(Body body, Header header)
         {
             if (header == null) throw new ArgumentNullException(nameof(header));
             if (body == null) throw new ArgumentNullException(nameof(body));
@@ -819,15 +831,15 @@ namespace AUTD3Sharp
 
         public sealed class PointSTM : STM
         {
-            public PointSTM(double sound_speed)
+            public PointSTM(double soundSpeed)
             {
-                Base.AUTDPointSTM(out handle, sound_speed);
+                Base.AUTDPointSTM(out handle, soundSpeed);
             }
 
-            public bool Add(Vector3 point, byte shift = 0)
+            public void Add(Vector3 point, byte shift = 0)
             {
                 var (x, y, z) = TypeHelper.Convert(point);
-                return Base.AUTDPointSTMAdd(handle, x, y, z, shift);
+                Base.AUTDPointSTMAdd(handle, x, y, z, shift);
             }
         }
 
@@ -851,9 +863,9 @@ namespace AUTD3Sharp
                 Base.AUTDGainSTM(out handle, cnt.AUTDControllerHandle.CntPtr);
             }
 
-            public bool Add(AUTD3Sharp.Gain.Gain gain)
+            public void Add(AUTD3Sharp.Gain.Gain gain)
             {
-                return Base.AUTDGainSTMAdd(handle, gain.Ptr);
+                Base.AUTDGainSTMAdd(handle, gain.Ptr);
             }
         }
     }
