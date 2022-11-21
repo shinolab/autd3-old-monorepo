@@ -8,11 +8,7 @@ var autd = new Controller();
 autd.Geometry.AddDevice(Vector3d.zero, Vector3d.zero);
 
 var link = new SOEM().HighPrecision(true).Build();
-if (!autd.Open(link))
-{
-    Console.WriteLine(Controller.LastError);
-    return;
-}
+autd.Open(link);
 
 autd.AckCheckTimeoutMs = 20;
 

@@ -13,11 +13,7 @@ const cnt = Controller()
 cnt.add_device(SVector(0.0, 0.0, 0.0), SVector(0.0, 0.0, 0.0))
 
 const link = SOEM(on_lost=on_lost, high_precision=true)
-
-if !cnt.open(link)
-    println(get_last_error())
-    exit(-1)
-end
+!cnt.open(link)
 
 cnt.send(Clear())
 cnt.send(Synchronize())
