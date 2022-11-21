@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -60,7 +60,7 @@ struct Point {
 struct PointSTM final : public STM {
   using value_type = Point;
 
-  PointSTM() : STM(), _sent(0) {}
+  PointSTM(const double sound_speed) : STM(), sound_speed(sound_speed), _sent(0) {}
 
   /**
    * @brief Set frequency of the STM
@@ -84,11 +84,15 @@ struct PointSTM final : public STM {
   void push_back(const value_type& v) { _points.emplace_back(v); }
 
   size_t size() const override { return _points.size(); }
-  void init() override { _sent = 0; }
-  void pack(const std::unique_ptr<const driver::Driver>& driver, const Geometry& geometry, driver::TxDatagram& tx) override {
+  bool init() override {
+    _sent = 0;
+    return true;
+  }
+  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const core::Mode>&, const Geometry& geometry,
+            driver::TxDatagram& tx) override {
     driver->point_stm_header(tx);
 
-    if (is_finished()) return;
+    if (is_finished()) return true;
 
     std::vector<std::vector<driver::STMFocus>> points;
     points.reserve(geometry.num_devices());
@@ -104,10 +108,15 @@ struct PointSTM final : public STM {
       return lp;
     });
 
-    driver->point_stm_body(points, _sent, _points.size(), this->_freq_div, geometry.sound_speed, tx);
+    return driver->point_stm_body(points, _sent, _points.size(), this->_freq_div, sound_speed, tx);
   }
 
   [[nodiscard]] bool is_finished() const override { return _sent == _points.size(); }
+
+  /**
+   * @brief Speed of sound.
+   */
+  double sound_speed;
 
  private:
   std::vector<Point> _points;

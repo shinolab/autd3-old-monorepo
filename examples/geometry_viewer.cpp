@@ -3,7 +3,7 @@
 // Created Date: 28/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,7 +23,10 @@ int main() try {
   autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, 0, autd3::DEVICE_WIDTH), autd3::Vector3(0, autd3::pi, 0));  // top
   autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, 0, 0), autd3::Vector3(0, -autd3::pi / 2.0, 0));             // right
 
-  autd3::extra::GeometryViewer().window_size(800, 600).vsync(true).view(autd.geometry());
+  if (!autd3::extra::GeometryViewer().window_size(800, 600).vsync(true).view(autd.geometry())) {
+    std::cerr << "Failed to view geometry." << std::endl;
+    return -1;
+  }
 
   return 0;
 } catch (std::exception& e) {

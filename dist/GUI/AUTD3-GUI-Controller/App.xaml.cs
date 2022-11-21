@@ -4,7 +4,7 @@
  * Created Date: 18/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/10/2022
+ * Last Modified: 20/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -138,11 +138,12 @@ public partial class App
             // Configuration
             services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
 
-            services.AddSingleton<ILocalizer, Localizer>(_ =>
+            services.AddSingleton(_ =>
             {
                 var resourcesFolder = Path.Combine(Directory.GetCurrentDirectory(), "Strings");
-                Localizer localizer = new();
-                localizer.Initalize(resourcesFolder);
+                var localizer = new LocalizerBuilder()
+                    .AddResourcesStringsFolder(new LocalizerResourcesStringsFolder(resourcesFolder))
+                    .Build();
                 return localizer;
             });
         }).

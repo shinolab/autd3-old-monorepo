@@ -3,7 +3,7 @@
 // Created Date: 02/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 18/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,21 +26,30 @@ class RemoteSOEMLocal final : public core::Link {
   RemoteSOEMLocal(RemoteSOEMLocal&& obj) = delete;
   RemoteSOEMLocal& operator=(RemoteSOEMLocal&& obj) = delete;
 
-  void open(const core::Geometry& geometry) override {
-    if (is_open()) return;
+  bool open(const core::Geometry& geometry) override {
+    if (is_open()) return true;
 
     const auto size = driver::HEADER_SIZE + geometry.num_devices() * (driver::BODY_SIZE + driver::EC_INPUT_FRAME_SIZE);
-    _smem.create("autd3_soem_server_smem", size);
+    try {
+      _smem.create("autd3_soem_server_smem", size);
+    } catch (std::exception& ex) {
+      spdlog::error("Failed to create shared memory: {}", ex.what());
+      return false;
+    }
     _ptr = static_cast<uint8_t*>(_smem.map());
+
+    return true;
   }
 
-  void close() override {
-    if (!is_open()) return;
+  bool close() override {
+    if (!is_open()) return true;
 
     _ptr[0] = driver::MSG_SERVER_CLOSE;
 
     _smem.unmap();
     _ptr = nullptr;
+
+    return true;
   }
 
   bool send(const driver::TxDatagram& tx) override {

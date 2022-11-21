@@ -1,24 +1,24 @@
-# Simulator
+# シミュレータ
 
-AUTD Simulatorはその名の通りAUTD3のSimulatorであり, Windows/Linux/macOSで動作する.
+AUTDシミュレータはその名の通りAUTD3のシミュレータであり, Windows/Linux/macOSで動作する.
 
-Simulatorを使用するには, 自前でビルドする必要がある.
+シミュレータを使用するには, 自前でビルドする必要がある.
 Windowsの場合は, ビルド済みの実行ファイルが配布されているのでそれを使うこともできる.
 
 ## Build
 
-AUTD Simulatorをビルドするには, CMakeの`BUILD_SIMULATOR`フラグをオンにする必要がある.
+AUTDシミュレータをビルドするには, CMakeの`BUILD_SIMULATOR`フラグをオンにする必要がある.
 なお, macOSを使用している場合はVulkan SDKをインストールする必要がある.
 
 ```
 cmake .. -DBUILD_SIMULATOR=ON
 ```
 
-AUTD Simulatorの実行に関しては, [サンプル](https://github.com/shinolab/autd3/blob/master/examples/simulator_server.cpp)を参照されたい.
+AUTDシミュレータの実行に関しては, [サンプル](https://github.com/shinolab/autd3/blob/master/examples/simulator_server.cpp)を参照されたい.
 
 # How to
 
-AUTD Simulatorを実行すると接続待ちの状態になる.
+AUTDシミュレータを実行すると接続待ちの状態になる.
 この状態で, `link::Simulator`を使用したクライアントプログラムを実行すると, クライアントプログラムの内容に合わせた音場が表示される.
 画面中央の黒いパネルをSliceと呼び, このSliceを使って任意の位置の音場を可視化できる.
 また, 振動子の位相が色相で, 振幅が色強度で表される.
@@ -34,7 +34,7 @@ AUTD Simulatorを実行すると接続待ちの状態になる.
 
 SliceタブではSliceの大きさと位置, 回転を変えられる.
 回転はXYZのオイラー角で指定する.
-なお, "xy", "yz", "zx"ボタンを押すと, Sliceを各平面に平行な状態に回転させる.
+なお, 「xy」, 「yz」, 「zx」ボタンを押すと, Sliceを各平面に平行な状態に回転させる.
 
 Sliceでは音圧の強さを色で表現する.
 Color scaleはこの色空間の音圧の最大値を表す.

@@ -1,15 +1,19 @@
-# STM
+# STM/時空間変調
 
-`STM`はHardwareのタイマでSpatio-Temporal Modulationを実現する機能である.
+`STM`はハードウェアのタイマでSpatio-Temporal Modulation (STM, 時空間変調) を実現する機能である.
 SDKには単一焦点のみをサポートする`PointSTM`と任意の`Gain`をサポートする`GainSTM`が用意されている.
 
 ### PointSTM
 
 `PointSTM`には以下の制約がある.
+
 * 最大サンプリング点数は65536
-* サンプリング周波数は$\SI{163.84}{MHz}/N$. ここで, $N$は32-bit符号なし整数であり, $1612$以上の値である必要がある.
+* サンプリング周波数は$\SI{163.84}{MHz}/N$. ここで, $N$は32-bit符号なし整数であり, $806$以上の値である必要がある.
 
 `PointSTM`の使用方法は以下のようになる.
+これは, アレイの中心から直上$\SI{150}{mm}$の点を中心とした半径$\SI{30}{mm}$の円周上で焦点を回すサンプルである.
+円周上を200点サンプリングし, 一周を$\SI{1}{Hz}$で回るようにしている.
+(すなわち, サンプリング周波数は$\SI{200}{Hz}$である.)
 
 ```cpp
   autd3::PointSTM stm;
@@ -31,7 +35,7 @@ SDKには単一焦点のみをサポートする`PointSTM`と任意の`Gain`を�
 
 サンプリング点数とサンプリング周期に関する制約によって, 指定した周波数と実際の周波数は異なる可能性がある.
 例えば, 上記の例は, 200点を$\SI{1}{Hz}$で回すため, サンプリング周波数は$\SI{200}{Hz}=\SI{163.84}{MHz}/819200$とすればよく, 制約を満たす.
-しかし, `point_num`=199にすると, サンプリング周波数を$\SI{199}{Hz}$にしなければならないが, $\SI{199}{Hz}=\SI{163.84}{MHz}/N$を満たすような$N$は存在しない, そのため, 最も近い$N$が選択される.
+しかし, `point_num`=199にすると, サンプリング周波数を$\SI{199}{Hz}$にしなければならないが, $\SI{199}{Hz}=\SI{163.84}{MHz}/N$を満たすような整数$N$は存在しない, そのため, 最も近い$N$が選択される.
 これによって, 指定した周波数と実際の周波数がずれる.
 `set_frequency`関数はこの実際の周波数を返してくる.
 
@@ -44,6 +48,12 @@ SDKには単一焦点のみをサポートする`PointSTM`と任意の`Gain`を�
 - Normlaモードの場合1024
 
 となる.
+また, サンプリング周波数分周比$N$の最小値が
+
+- Legacyモードの場合76
+- Normlaモードの場合138
+
+となっている.
 
 `GainSTM`の使用サンプルは`PointSTM`とほぼ同じである.
 
@@ -79,7 +89,7 @@ stm.mode() = autd3::Mode::PhaseFull;
 
 デフォルトはすべての情報を送る`PhaseDutyFull`モードである.
 
-### STM common functions
+### STMに共通の関数
 
 #### frequency
 
@@ -100,7 +110,7 @@ stm.mode() = autd3::Mode::PhaseFull;
 
 # SoftwareSTM
 
-`SoftwareSTM`はSoftwareのタイマでSpatio-Temporal Modulationを実現する機能である.
+`SoftwareSTM`はソフトウェアのタイマでSpatio-Temporal Modulationを実現する機能である.
 AUTD3ハードウェア上の制約はないが, その精度はホスト側のタイマの精度によって決まる[^timer_precision].
 
 `SoftwareSTM`の使用方法は以下のようになる.
@@ -123,16 +133,16 @@ AUTD3ハードウェア上の制約はないが, その精度はホスト側の�
   const auto actual_freq = stm.set_frequency(1);
   std::cout << "Actual frequency is " << actual_freq << " Hz\n";
 
-  auto handle = stm.start(std::move(autd));
+  auto handle = stm.start(autd);
 
   std::cout << "press any key to stop software stm..." << std::endl;
   std::cin.ignore();
 
-  autd = handle.finish();
+  handle.finish();
 ```
 
-[^fn_gain_seq]: `PointSTM`のおよそ60倍のレイテンシ.
+[^fn_gain_seq]: `PointSTM`のおよそ60倍のレイテンシ
 
-[^phase_half]: Legacyモード限定.
+[^phase_half]: Legacyモード限定
 
-[^timer_precision]: Windowsでは例えば, \SI{1}{ms}程度が限界である.
+[^timer_precision]: 例えば, Windowsでは$\SI{1}{ms}$程度が限界である

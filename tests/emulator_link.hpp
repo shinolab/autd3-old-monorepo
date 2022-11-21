@@ -3,7 +3,7 @@
 // Created Date: 09/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/11/2022
+// Last Modified: 18/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,8 +30,8 @@ class EmulatorLink : public core::Link {
   EmulatorLink(EmulatorLink&& obj) = delete;
   EmulatorLink& operator=(EmulatorLink&& obj) = delete;
 
-  void open(const core::Geometry& geometry) override {
-    if (is_open()) return;
+  bool open(const core::Geometry& geometry) override {
+    if (is_open()) return true;
 
     _cpus->clear();
     _cpus->reserve(geometry.num_devices());
@@ -42,11 +42,12 @@ class EmulatorLink : public core::Link {
     }
 
     _is_open = true;
+    return true;
   }
 
-  void close() override {
-    if (!is_open()) return;
+  bool close() override {
     _is_open = false;
+    return true;
   }
 
   bool send(const driver::TxDatagram& tx) override {

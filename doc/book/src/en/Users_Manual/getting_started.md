@@ -89,8 +89,6 @@ At this point, the directory structure is as follows.
     └─eigen
         ├─bench
         ├─blas
-        ├─ci
-        ├─cmake
         ...
 ```
 
@@ -178,12 +176,10 @@ const auto firm_infos = autd.firmware_infos();
 std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout,"\n"));
 ```
 
-Note that if a version other than v2.6 is displayed here, it is not guaranteed to work well.
-
 Next, setup silencer.
 
 ```cpp
-autd3::SilencerConfig config;
+autd3::SilencerConfig silencer;
 ```
 
 This is set by default, so you don't really need to send it.
@@ -197,7 +193,7 @@ const auto focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
 autd3::gain::Focus g(focus);
 autd3::modulation::Sine m(150);
 
-autd << config << m, g;
+autd << silencer << m, g;
 ```
 , where `focus` denotes $\SI{150}{mm}$ directly above the center of the device.
 

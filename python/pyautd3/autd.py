@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 15/11/2022
+Last Modified: 20/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,6 +33,18 @@ DRIVER_V2_3 = 0x83
 DRIVER_V2_4 = 0x84
 DRIVER_V2_5 = 0x85
 DRIVER_V2_6 = 0x86
+
+
+LogOutputFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
+LogFlushFunc = ctypes.CFUNCTYPE(None)
+
+
+def set_log_level(level: int):
+    Base().dll.AUTDSetLogLevel(level)
+
+
+def set_log_func(output, flush):
+    Base().dll.AUTDSetDefaultLogger(output, flush)
 
 
 class SpecialData:
@@ -178,22 +190,6 @@ class Geometry:
         return Base().dll.AUTDAddDeviceQuaternion(self._cnt, pos[0], pos[1], pos[2], q[0], q[1], q[2], q[3])
 
     @ property
-    def sound_speed(self):
-        return Base().dll.AUTDGetSoundSpeed(self._cnt)
-
-    @ sound_speed.setter
-    def sound_speed(self, sound_speed: float):
-        Base().dll.AUTDSetSoundSpeed(self._cnt, sound_speed)
-
-    @ property
-    def attenuation(self):
-        return Base().dll.AUTDGetAttenuation(self._cnt)
-
-    @ attenuation.setter
-    def attenuation(self, attenuation: float):
-        Base().dll.AUTDSetAttenuation(self._cnt, attenuation)
-
-    @ property
     def num_devices(self):
         return Base().dll.AUTDNumDevices(self._cnt)
 
@@ -234,12 +230,6 @@ class Controller:
     def __del__(self):
         self.dispose()
 
-    def last_error():
-        size = Base().dll.AUTDGetLastError(None)
-        err = ctypes.create_string_buffer(size)
-        Base().dll.AUTDGetLastError(err)
-        return err.value.decode('utf-8')
-
     def to_legacy(self):
         Base().dll.AUTDSetMode(self.p_cnt, 0)
 
@@ -252,6 +242,22 @@ class Controller:
     @ property
     def geometry(self):
         return Geometry(self.p_cnt)
+
+    @ property
+    def sound_speed(self):
+        return Base().dll.AUTDGetSoundSpeed(self.p_cnt)
+
+    @ sound_speed.setter
+    def sound_speed(self, sound_speed: float):
+        Base().dll.AUTDSetSoundSpeed(self.p_cnt, sound_speed)
+
+    @ property
+    def attenuation(self):
+        return Base().dll.AUTDGetAttenuation(self.p_cnt)
+
+    @ attenuation.setter
+    def attenuation(self, attenuation: float):
+        Base().dll.AUTDSetAttenuation(self.p_cnt, attenuation)
 
     def open(self, link: Link):
         return Base().dll.AUTDOpenController(self.p_cnt, link.link_ptr)

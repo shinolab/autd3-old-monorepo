@@ -3,34 +3,13 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 18/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
-
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 6285 6385 26437 26800 26498 26451 26495)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic push
-#endif
-#ifdef __clang__
-#pragma clang diagnostic push
-#endif
-#include <spdlog/fmt/fmt.h>
-#if _MSC_VER
-#pragma warning(pop)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic pop
-#endif
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
 
 #include <atomic>
 #include <cstdint>
@@ -47,6 +26,7 @@
 #include "autd3/driver/common/cpu/datagram.hpp"
 #include "autd3/driver/common/cpu/ec_config.hpp"
 #include "autd3/link/soem.hpp"
+#include "autd3/spdlog.hpp"
 #include "ecat_thread.hpp"
 #include "error_handler.hpp"
 
@@ -67,7 +47,8 @@ class SOEMHandler final {
   ~SOEMHandler() {
     try {
       close();
-    } catch (std::exception&) {
+    } catch (std::exception& ex) {
+      spdlog::error(ex.what());
     }
   }
   SOEMHandler(const SOEMHandler& v) noexcept = delete;
@@ -92,6 +73,7 @@ class SOEMHandler final {
     auto* adapters = ec_find_adapters();
     bool found = false;
     for (const auto* adapter = adapters; adapter != nullptr; adapter = adapter->next) {
+      spdlog::debug("Checking on {} ({})...", adapter->name, adapter->desc);
       if (ec_init(adapter->name) <= 0) {
         ec_close();
         continue;
@@ -105,6 +87,7 @@ class SOEMHandler final {
       for (auto i = 1; i <= wc; i++)
         if (std::strcmp(ec_slave[1].name, "AUTD") != 0) {
           found = false;
+          spdlog::warn("AUTD found on {} ({}), but {}-th device is not AUTD", adapter->name, adapter->desc, i);
           ec_close();
           break;
         }
@@ -117,7 +100,8 @@ class SOEMHandler final {
       }
     }
     ec_free_adapters(adapters);
-    throw std::runtime_error("No AUTD3 devices found");
+    spdlog::error("No AUTD3 devices found");
+    return "";
   }
 
   size_t open(const int remaining) {
@@ -129,22 +113,26 @@ class SOEMHandler final {
     spdlog::debug("send interval: {} [ns]", cycle_time);
 
     if (_ifname.empty()) _ifname = lookup_autd();
+    if (_ifname.empty()) return 0;
 
     spdlog::debug("interface name: {}", _ifname);
     if (ec_init(_ifname.c_str()) <= 0) {
       _is_open.store(false);
-      throw std::runtime_error(fmt::format("No socket connection on {}", _ifname));
+      spdlog::error("No socket connection on {}", _ifname);
+      return 0;
     }
 
     const auto wc = ec_config_init(0);
     if (wc <= 0) {
       _is_open.store(false);
-      throw std::runtime_error("No slaves found");
+      spdlog::error("No slaves found");
+      return 0;
     }
     for (auto i = 1; i <= wc; i++)
       if (std::strcmp(ec_slave[i].name, "AUTD") != 0) {
         _is_open.store(false);
-        throw std::runtime_error(fmt::format("Slave[{}] is not AUTD3", i));
+        spdlog::error("Slave[{}] is not AUTD3", i);
+        return 0;
       }
 
     spdlog::debug("Found {} devices", wc);
@@ -196,8 +184,8 @@ class SOEMHandler final {
     if (ec_slave[0].state != EC_STATE_OPERATIONAL) {
       _is_open.store(false);
       if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
-      if (remaining == 0) throw std::runtime_error("One ore more slaves are not responding: " + std::to_string(ec_slave[0].state));
-      spdlog::debug("failed to reach op mode. retry opening...");
+      if (remaining == 0) spdlog::error("One ore more slaves are not responding: {}", ec_slave[0].state);
+      spdlog::debug("Failed to reach op mode. retry opening...");
       return open(remaining - 1);
     }
 
@@ -221,37 +209,52 @@ class SOEMHandler final {
   }
 
   bool send(const driver::TxDatagram& tx) {
-    if (!is_open()) throw std::runtime_error("link is closed");
+    if (!is_open()) {
+      spdlog::error("link is closed");
+      return false;
+    }
+
     std::lock_guard lock(_send_mtx);
     _send_buf.push(tx.clone());
     return true;
   }
 
   bool receive(driver::RxDatagram& rx) const {
-    if (!is_open()) throw std::runtime_error("link is closed");
+    if (!is_open()) {
+      spdlog::error("link is closed");
+      return false;
+    }
     rx.copy_from(_io_map.input());
     return true;
   }
 
-  void close() {
-    if (!is_open()) return;
+  bool close() {
+    if (!is_open()) return true;
 
     _is_open.store(false);
+    spdlog::debug("Stopping ethercat thread...");
     if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
+    spdlog::debug("Stopping ethercat thread...done");
+    spdlog::debug("Stopping state check thread...");
     if (this->_ecat_check_thread.joinable()) this->_ecat_check_thread.join();
+    spdlog::debug("Stopping state check thread...done");
 
     const auto cyc_time = static_cast<uint32_t*>(ecx_context.userdata)[0];
     for (uint16_t slave = 1; slave <= static_cast<uint16_t>(ec_slavecount); slave++) ec_dcsync0(slave, false, cyc_time, 0U);
 
     ec_slave[0].state = EC_STATE_SAFE_OP;
     ec_writestate(0);
-    ec_statecheck(0, EC_STATE_SAFE_OP, EC_TIMEOUTSTATE);
+    if (const auto state = ec_statecheck(0, EC_STATE_SAFE_OP, EC_TIMEOUTSTATE); state != EC_STATE_SAFE_OP)
+      spdlog::warn("Failed to reach safe op: {}", state);
 
     ec_slave[0].state = EC_STATE_PRE_OP;
     ec_writestate(0);
-    ec_statecheck(0, EC_STATE_PRE_OP, EC_TIMEOUTSTATE);
+    if (const auto state = ec_statecheck(0, EC_STATE_PRE_OP, EC_TIMEOUTSTATE); state != EC_STATE_PRE_OP)
+      spdlog::warn("Failed to reach pre op: {}", state);
 
     ec_close();
+
+    return true;
   }
 
   bool is_open() const { return _is_open.load(); }

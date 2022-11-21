@@ -4,7 +4,7 @@
 %Created Date: 10/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 11/06/2022
+%Last Modified: 17/11/2022
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,10 +15,10 @@ classdef PointSTM < STM
 
     methods
 
-        function obj = PointSTM()
+        function obj = PointSTM(sound_speed)
             obj = obj@STM();
             pp = libpointer('voidPtrPtr', obj.ptr);
-            calllib('autd3capi', 'AUTDPointSTM', pp);
+            calllib('autd3capi', 'AUTDPointSTM', pp, sound_speed);
         end
 
         function add(varargin)

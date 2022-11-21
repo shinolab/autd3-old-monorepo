@@ -4,7 +4,7 @@ Project: stm
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 21/10/2022
+Last Modified: 20/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -48,15 +48,15 @@ class STM(Body):
 
 
 class PointSTM(STM):
-    def __init__(self):
+    def __init__(self, sound_speed: float):
         super().__init__()
-        Base().dll.AUTDPointSTM(byref(self.ptr))
+        Base().dll.AUTDPointSTM(byref(self.ptr), sound_speed)
 
     def __del__(self):
         super().__del__()
 
     def add(self, point, duty_shift: int = 0):
-        return Base().dll.AUTDPointSTMAdd(self.ptr, point[0], point[1], point[2], duty_shift)
+        Base().dll.AUTDPointSTMAdd(self.ptr, point[0], point[1], point[2], duty_shift)
 
 
 class Mode(IntEnum):
@@ -74,7 +74,7 @@ class GainSTM(STM):
         super().__del__()
 
     def add(self, gain: Gain):
-        return Base().dll.AUTDGainSTMAdd(self.ptr, gain.ptr)
+        Base().dll.AUTDGainSTMAdd(self.ptr, gain.ptr)
 
     @ property
     def mode(self):

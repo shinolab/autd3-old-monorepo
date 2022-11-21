@@ -12,12 +12,13 @@ namespace AUTD3Sharp.NativeMethods
     {
         private const string DLL = "autd3capi";
 
-        [DllImport(DLL, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDGetLastError(System.Text.StringBuilder? error);
-        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDCreateController(out IntPtr @out, byte driverVersion);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSetLogLevel(int level);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSetDefaultLogger(IntPtr @out, IntPtr flush);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDCreateController(out IntPtr @out, byte driverVersion);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDOpenController(IntPtr handle, IntPtr link);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDAddDevice(IntPtr handle, double x, double y, double z, double rz1, double ry, double rz2);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDAddDeviceQuaternion(IntPtr handle, double x, double y, double z, double qw, double qx, double qy, double qz);
-        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDClose(IntPtr handle);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDClose(IntPtr handle);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDFreeController(IntPtr handle);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDIsOpen(IntPtr handle);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDGetForceFan(IntPtr handle);
@@ -67,10 +68,10 @@ namespace AUTD3Sharp.NativeMethods
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDModulationSetSamplingFrequencyDivision(IntPtr mod, uint freqDiv);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern double AUTDModulationSamplingFrequency(IntPtr mod);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDDeleteModulation(IntPtr mod);
-        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDPointSTM(out IntPtr @out);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDPointSTM(out IntPtr @out, double soundSpeed);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDGainSTM(out IntPtr @out, IntPtr handle);
-        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDPointSTMAdd(IntPtr stm, double x, double y, double z, byte shift);
-        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDGainSTMAdd(IntPtr stm, IntPtr gain);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDPointSTMAdd(IntPtr stm, double x, double y, double z, byte shift);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDGainSTMAdd(IntPtr stm, IntPtr gain);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ushort AUTDGetGainSTMMode(IntPtr stm);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSetGainSTMMode(IntPtr stm, ushort mode);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern double AUTDSTMSetFrequency(IntPtr stm, double freq);
@@ -87,8 +88,8 @@ namespace AUTD3Sharp.NativeMethods
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDDeleteSpecialData(IntPtr data);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDCreateSilencer(out IntPtr @out, ushort step, ushort cycle);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDDeleteSilencer(IntPtr config);
-        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDSend(IntPtr handle, IntPtr header, IntPtr body);
-        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDSendSpecial(IntPtr handle, IntPtr special);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDSend(IntPtr handle, IntPtr header, IntPtr body);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDSendSpecial(IntPtr handle, IntPtr special);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSendAsync(IntPtr handle, IntPtr header, IntPtr body);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSendSpecialAsync(IntPtr handle, IntPtr special);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ushort AUTDGetModDelay(IntPtr handle, int deviceIdx, int localTransIdx);

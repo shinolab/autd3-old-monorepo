@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 18/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,10 +13,9 @@
 #include <Windows.h>
 #endif
 
-#include <spdlog/fmt/fmt.h>
-
 #include "autd3/core/link.hpp"
 #include "autd3/link/twincat.hpp"
+#include "autd3/spdlog.hpp"
 
 namespace autd3::link {
 
@@ -66,8 +65,8 @@ class TwinCATImpl final : public core::Link {
   TwinCATImpl(TwinCATImpl&& obj) = delete;
   TwinCATImpl& operator=(TwinCATImpl&& obj) = delete;
 
-  void open(const core::Geometry& geometry) override;
-  void close() override;
+  bool open(const core::Geometry& geometry) override;
+  bool close() override;
   bool send(const driver::TxDatagram& tx) override;
   bool receive(driver::RxDatagram& rx) override;
   bool is_open() override;
@@ -89,62 +88,86 @@ bool TwinCATImpl::is_open() { return this->_port > 0; }
 
 #ifdef _WIN32
 
-void TwinCATImpl::open(const core::Geometry&) {
+bool TwinCATImpl::open(const core::Geometry&) {
   this->_lib = LoadLibrary("TcAdsDll.dll");
-  if (_lib == nullptr) throw std::runtime_error("couldn't find TcADS-DLL");
+  if (_lib == nullptr) {
+    spdlog::error("couldn't find TcADS-DLL");
+    return false;
+  }
 
   const auto port_open = reinterpret_cast<TcAdsPortOpenEx>(GetProcAddress(this->_lib, TCADS_ADS_PORT_OPEN_EX));  // NOLINT
   this->_port = (*port_open)();
-  if (!this->_port) throw std::runtime_error("failed to open a new ADS port");
+  if (this->_port == 0) {
+    spdlog::error("Failed to open a new ADS port");
+    return false;
+  }
 
   AmsAddr addr{};
   const auto get_addr = reinterpret_cast<TcAdsGetLocalAddressEx>(GetProcAddress(this->_lib, TCADS_ADS_GET_LOCAL_ADDRESS_EX));  // NOLINT
-  if (const auto ret = get_addr(this->_port, &addr); ret) throw std::runtime_error(fmt::format("AdsGetLocalAddress: {:#x}", ret));
+  if (const auto ret = get_addr(this->_port, &addr); ret) {
+    spdlog::error("AdsGetLocalAddress: {:#x}", ret);
+    return false;
+  }
 
   _write = reinterpret_cast<TcAdsSyncWriteReqEx>(GetProcAddress(this->_lib, TCADS_ADS_SYNC_WRITE_REQ_EX));  // NOLINT
   _read = reinterpret_cast<TcAdsSyncReadReqEx>(GetProcAddress(this->_lib, TCADS_ADS_SYNC_READ_REQ_EX));     // NOLINT
 
   this->_net_addr = {addr.net_id, PORT};
+
+  return true;
 }
 
-void TwinCATImpl::close() {
-  if (!this->is_open()) return;
+bool TwinCATImpl::close() {
+  if (!this->is_open()) return true;
 
   const auto port_close = reinterpret_cast<TcAdsPortCloseEx>(GetProcAddress(this->_lib, TCADS_ADS_PORT_CLOSE_EX));  // NOLINT
-  if (const auto res = (*port_close)(this->_port); res != 0) throw std::runtime_error(fmt::format("Error on closing (local): {:#x}", res));
+  if (const auto res = (*port_close)(this->_port); res != 0) {
+    spdlog::error("Error on closing (local): {:#x}", res);
+    return false;
+  }
 
   this->_port = 0;
+  return true;
 }
 
 bool TwinCATImpl::send(const driver::TxDatagram& tx) {
-  if (!this->is_open()) throw std::runtime_error("Link is closed");
+  if (!this->is_open()) {
+    spdlog::warn("Link is closed");
+    return false;
+  }
 
-  if (const auto ret = this->_write(this->_port,  // NOLINT
-                                    &this->_net_addr, INDEX_GROUP, INDEX_OFFSET_BASE,
-                                    static_cast<unsigned long>(tx.effective_size()),  // NOLINT
-                                    const_cast<void*>(static_cast<const void*>(tx.data().data())));
-      ret != 0)
-    throw std::runtime_error(fmt::format("Error on sending data (local): {:#x}", ret));  // 6 : target port not found
-  return true;
+  const auto ret = this->_write(this->_port,  // NOLINT
+                                &this->_net_addr, INDEX_GROUP, INDEX_OFFSET_BASE,
+                                static_cast<unsigned long>(tx.effective_size()),  // NOLINT
+                                const_cast<void*>(static_cast<const void*>(tx.data().data())));
+  if (ret == 0) return true;
+
+  spdlog::error("Error on sending data (local): {:#x}", ret);  // 6 : target port not found
+  return false;
 }
 
 bool TwinCATImpl::receive(driver::RxDatagram& rx) {
-  if (!this->is_open()) throw std::runtime_error("Link is closed");
+  if (!this->is_open()) {
+    spdlog::warn("Link is closed");
+    return false;
+  }
 
-  unsigned long read_bytes = 0;                  // NOLINT
-  if (const auto ret = this->_read(this->_port,  // NOLINT
-                                   &this->_net_addr, INDEX_GROUP, INDEX_OFFSET_BASE_READ,
-                                   static_cast<uint32_t>(rx.messages().size() * sizeof(driver::RxMessage)), rx.messages().data(), &read_bytes);
-      ret != 0)
-    throw std::runtime_error(fmt::format("Error on receiving data: {:#x}", ret));
-  return true;
+  unsigned long read_bytes = 0;              // NOLINT
+  const auto ret = this->_read(this->_port,  // NOLINT
+                               &this->_net_addr, INDEX_GROUP, INDEX_OFFSET_BASE_READ,
+                               static_cast<uint32_t>(rx.messages().size() * sizeof(driver::RxMessage)), rx.messages().data(), &read_bytes);
+  if (ret == 0) return true;
+
+  spdlog::error("Error on receiving data (local): {:#x}", ret);
+  return false;
 }
 
 #else
-void TwinCATImpl::open(const core::Geometry&) {
-  throw std::runtime_error("Link to localhost has not been compiled. Rebuild this library on a Twincat3 host machine with TcADS-DLL.");
+bool TwinCATImpl::open(const core::Geometry&) {
+  spdlog::error("TwinCAT link is only supported in Windows.");
+  return false;
 }
-void TwinCATImpl::close() { return; }
+bool TwinCATImpl::close() { return false; }
 bool TwinCATImpl::send(const driver::TxDatagram&) { return false; }
 bool TwinCATImpl::receive(driver::RxDatagram&) { return false; }
 #endif  // TC_ADS

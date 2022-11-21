@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 18/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,6 +17,7 @@
 #include "autd3/core/interface.hpp"
 #include "autd3/core/link.hpp"
 #include "autd3/driver/common/cpu/ec_config.hpp"
+#include "autd3/spdlog.hpp"
 
 namespace autd3::link {
 
@@ -29,11 +30,18 @@ class SimulatorImpl final : public core::Link {
   SimulatorImpl(SimulatorImpl&& obj) = delete;
   SimulatorImpl& operator=(SimulatorImpl&& obj) = delete;
 
-  void open(const core::Geometry& geometry) override {
-    if (is_open()) return;
-
+  bool open(const core::Geometry& geometry) override {
+    if (is_open()) {
+      spdlog::warn("Link is already opened.");
+      return false;
+    }
     const auto size = driver::HEADER_SIZE + geometry.num_devices() * (driver::BODY_SIZE + driver::EC_INPUT_FRAME_SIZE);
-    _smem.create("autd3_simulator_smem", size);
+    try {
+      _smem.create("autd3_simulator_smem", size);
+    } catch (std::exception& ex) {
+      spdlog::error("Failed to create shared memory: {}", ex.what());
+      return false;
+    }
     _ptr = static_cast<uint8_t*>(_smem.map());
 
     _num_devices = geometry.num_devices();
@@ -42,20 +50,24 @@ class SimulatorImpl final : public core::Link {
 
     for (size_t i = 0; i < 20; i++) {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
-      if (_ptr[0] != driver::MSG_SIMULATOR_INIT) return;
+      if (_ptr[0] != driver::MSG_SIMULATOR_INIT) return true;
     }
 
     _smem.unmap();
     _ptr = nullptr;
-    throw std::runtime_error("Failed to open simulator. Make sure simulator is running.");
+    spdlog::error("Failed to open simulator. Make sure simulator is running.");
+    return false;
   }
 
-  void close() override {
-    if (!is_open()) return;
+  bool close() override {
+    if (!is_open()) return true;
+
     send(simulator_close_datagram(_num_devices));
 
     _smem.unmap();
     _ptr = nullptr;
+
+    return true;
   }
 
   bool send(const driver::TxDatagram& tx) override {

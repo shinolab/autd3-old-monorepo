@@ -20,8 +20,8 @@ The following is a summary,
 To configure `Silencer`, send `SilencerConfig`.
 
 ```cpp
-  autd3::SilencerConfig config;
-  autd << config;
+  autd3::SilencerConfig silencer;
+  autd << silencer;
 ```
 
 `SilencerConfig` has two settings: `step` and `cycle`.

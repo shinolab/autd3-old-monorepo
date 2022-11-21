@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -48,23 +48,23 @@ class Modulation : public DatagramHeader {
   /**
    * \brief Calculate modulation data
    */
-  virtual void calc() = 0;
+  virtual bool calc() = 0;
 
   /**
    * @brief Build modulation data
    */
-  void build() {
-    if (_props.built) return;
-    calc();
+  [[nodiscard]] bool build() {
+    if (_props.built) return true;
     _props.built = true;
+    return calc();
   }
 
   /**
    * \brief Re-build modulation data
    */
-  void rebuild() {
+  [[nodiscard]] bool rebuild() {
     _props.built = false;
-    build();
+    return build();
   }
 
   /**
@@ -92,13 +92,13 @@ class Modulation : public DatagramHeader {
     return static_cast<double>(driver::FPGA_CLK_FREQ) / static_cast<double>(_props.freq_div);
   }
 
-  void init() override {
-    build();
+  bool init() override {
     _props.sent = 0;
+    return build();
   }
 
-  void pack(const std::unique_ptr<const driver::Driver>& driver, const uint8_t msg_id, driver::TxDatagram& tx) override {
-    driver->modulation(msg_id, buffer(), _props.sent, _props.freq_div, tx);
+  bool pack(const std::unique_ptr<const driver::Driver>& driver, const uint8_t msg_id, driver::TxDatagram& tx) override {
+    return driver->modulation(msg_id, buffer(), _props.sent, _props.freq_div, tx);
   }
 
   [[nodiscard]] bool is_finished() const noexcept override { return _props.sent == buffer().size(); }

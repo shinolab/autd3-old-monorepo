@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,40 +23,16 @@
 #include <utility>
 #include <vector>
 
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 6285 6385 26437 26800 26498 26451 26495)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic push
-#endif
-#ifdef __clang__
-#pragma clang diagnostic push
-#endif
-#include <spdlog/spdlog.h>
-#if _MSC_VER
-#pragma warning(pop)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic pop
-#endif
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
 #include "autd3/async.hpp"
+#include "autd3/core/geometry.hpp"
+#include "autd3/core/link.hpp"
+#include "autd3/core/mode.hpp"
 #include "autd3/driver/common/cpu/datagram.hpp"
 #include "autd3/driver/common/cpu/ec_config.hpp"
 #include "autd3/driver/driver.hpp"
+#include "autd3/driver/firmware_version.hpp"
 #include "autd3/driver/v2_6/driver.hpp"
-#include "autd3/gain/primitive.hpp"
 #include "autd3/special_data.hpp"
-#include "core/amplitudes.hpp"
-#include "core/geometry.hpp"
-#include "core/interface.hpp"
-#include "core/link.hpp"
-#include "core/silencer_config.hpp"
-#include "driver/firmware_version.hpp"
 
 namespace autd3 {
 
@@ -67,222 +43,79 @@ using DriverLatest = driver::DriverV2_6;
  */
 class Controller {
  public:
-  explicit Controller(std::unique_ptr<const driver::Driver> driver = std::make_unique<const driver::DriverV2_6>())
-      : force_fan(false),
-        reads_fpga_info(false),
-        _geometry(),
-        _tx_buf(0),
-        _rx_buf(0),
-        _link(nullptr),
-        _send_th_running(false),
-        _last_send_res(false),
-        _driver(std::move(driver)) {}
-  ~Controller() noexcept {
-    try {
-      close();
-    } catch (std::exception&) {
-    }
-  }
+  explicit Controller(std::unique_ptr<const driver::Driver> driver = std::make_unique<const driver::DriverV2_6>());
+  Controller(const Controller& v) = delete;
+  Controller& operator=(const Controller& obj) = delete;
+  Controller(Controller&& obj) = delete;
+  Controller& operator=(Controller&& obj) = delete;
+  ~Controller() noexcept;
 
   /**
    * @brief Geometry of the devices
    */
-  core::Geometry& geometry() noexcept { return _geometry; }
+  core::Geometry& geometry() noexcept;
 
   /**
    * @brief Geometry of the devices
    */
-  [[nodiscard]] const core::Geometry& geometry() const noexcept { return _geometry; }
+  [[nodiscard]] const core::Geometry& geometry() const noexcept;
 
-  /**
-   * @brief Mode
-   */
-  [[nodiscard]] std::unique_ptr<core::Mode>& mode() noexcept { return _geometry.mode(); }
-
-  bool open(core::LinkPtr link) {
-    _tx_buf = driver::TxDatagram(_geometry.num_devices());
-    _rx_buf = driver::RxDatagram(_geometry.num_devices());
-
-    _link = std::move(link);
-    if (_link != nullptr) _link->open(_geometry);
-
-    _send_th_running = true;
-    _send_th = std::thread([this] {
-      std::unique_ptr<core::DatagramHeader> header = nullptr;
-      std::unique_ptr<core::DatagramBody> body = nullptr;
-      std::function<void(void)> pre;
-      std::function<void(void)> post;
-      while (_send_th_running) {
-        if (header == nullptr && body == nullptr) {
-          std::unique_lock lk(_send_mtx);
-          _send_cond.wait(lk, [&] { return !_send_queue.empty() || !this->_send_th_running; });
-          if (!this->_send_th_running) break;
-          AsyncData a = std::move(_send_queue.front());
-          header = std::move(a.header);
-          body = std::move(a.body);
-          pre = std::move(a.pre);
-          post = std::move(a.post);
-        }
-
-        pre();
-
-        header->init();
-        body->init();
-
-        _driver->force_fan(_tx_buf, force_fan);
-        _driver->reads_fpga_info(_tx_buf, reads_fpga_info);
-
-        const auto no_wait = _ack_check_timeout == std::chrono::high_resolution_clock::duration::zero();
-        while (true) {
-          const auto msg_id = get_id();
-          header->pack(_driver, msg_id, _tx_buf);
-          body->pack(_driver, _geometry, _tx_buf);
-          _link->send(_tx_buf);
-          const auto success = wait_msg_processed(_ack_check_timeout);
-          if (!no_wait && !success) {
-            spdlog::warn("Failed to send data. Trying to resend...");
-            break;
-          }
-          if (header->is_finished() && body->is_finished()) {
-            header = nullptr;
-            body = nullptr;
-            break;
-          }
-          if (no_wait) std::this_thread::sleep_for(_send_interval);
-        }
-
-        post();
-
-        if (header == nullptr && body == nullptr) {
-          std::unique_lock lk(_send_mtx);
-          _send_queue.pop();
-        }
-      }
-    });
-
-    return is_open();
-  }
+  [[nodiscard]] bool open(core::LinkPtr link);
 
   /**
    * @brief Close the controller
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
-  bool close() {
-    if (!is_open()) return true;
-
-    _send_th_running = false;
-    _send_cond.notify_all();
-    if (_send_th.joinable()) _send_th.join();
-
-    if (!send(autd3::Stop{})) return false;
-    if (!send(autd3::Clear{})) return false;
-    _link->close();
-    return true;
-  }
+  bool close();
 
   /**
    * @brief Verify the device is properly connected
    */
-  [[nodiscard]] bool is_open() const noexcept { return (_link != nullptr) && _link->is_open(); }
+  [[nodiscard]] bool is_open() const noexcept;
 
   /**
    * @brief FPGA info
-   *  \return veetor of FPGAInfo. If failed, the vector is empty
+   *  \return vector of FPGAInfo. If failed, the vector is empty
    */
-  std::vector<driver::FPGAInfo> read_fpga_info() {
-    std::vector<driver::FPGAInfo> fpga_info;
-    if (!_link->receive(_rx_buf)) return fpga_info;
-    std::transform(_rx_buf.begin(), _rx_buf.end(), std::back_inserter(fpga_info),
-                   [](const driver::RxMessage& rx) { return driver::FPGAInfo(rx.ack); });
-    return fpga_info;
-  }
+  std::vector<driver::FPGAInfo> read_fpga_info();
 
   /**
    * @brief Enumerate firmware information
    * \return vector of driver::FirmwareInfo. If failed, the vector is empty.
    */
-  [[nodiscard]] std::vector<driver::FirmwareInfo> firmware_infos() {
-    std::vector<driver::FirmwareInfo> firmware_infos;
-
-    const auto pack_ack = [&]() -> std::vector<uint8_t> {
-      std::vector<uint8_t> acks;
-      if (!_link->send(_tx_buf)) return acks;
-      if (!wait_msg_processed(std::chrono::nanoseconds(200 * 1000 * 1000))) return acks;
-      std::transform(_rx_buf.begin(), _rx_buf.end(), std::back_inserter(acks), [](driver::RxMessage msg) noexcept { return msg.ack; });
-      return acks;
-    };
-
-    _driver->cpu_version(_tx_buf);
-    const auto cpu_versions = pack_ack();
-    if (cpu_versions.empty()) return firmware_infos;
-    for (const auto version : cpu_versions)
-      if (version != _driver->version_num())
-        spdlog::error(
-            "Driver version is {}, but found {} CPU firmware. This discrepancy may cause abnormal behavior. Please change the driver version to an "
-            "appropriate one or update the firmware version.",
-            driver::FirmwareInfo::firmware_version_map(_driver->version_num()), driver::FirmwareInfo::firmware_version_map(version));
-
-    _driver->fpga_version(_tx_buf);
-    const auto fpga_versions = pack_ack();
-    if (fpga_versions.empty()) return firmware_infos;
-    for (const auto version : fpga_versions)
-      if (version != _driver->version_num())
-        spdlog::error(
-            "Driver version is {}, but found {} FPGA firmware. This discrepancy may cause abnormal behavior. Please change the driver version to an "
-            "appropriate one or update the firmware version.",
-            driver::FirmwareInfo::firmware_version_map(_driver->version_num()), driver::FirmwareInfo::firmware_version_map(version));
-
-    _driver->fpga_functions(_tx_buf);
-    const auto fpga_functions = pack_ack();
-    if (fpga_functions.empty()) return firmware_infos;
-
-    for (size_t i = 0; i < _geometry.num_devices(); i++)
-      firmware_infos.emplace_back(i, cpu_versions.at(i), fpga_versions.at(i), fpga_functions.at(i));
-
-    DriverLatest latest_driver;
-    for (const auto& info : firmware_infos) {
-      if (info.cpu_version_num() != info.fpga_version_num())
-        spdlog::error("FPGA firmware version {} and CPU firmware version {} do not match. This discrepancy may cause abnormal behavior.",
-                      info.fpga_version(), info.cpu_version());
-      if ((info.cpu_version_num() != latest_driver.version_num()) || info.fpga_version_num() != latest_driver.version_num())
-        spdlog::warn("You are using old firmware. Please consider updating to {}.",
-                     driver::FirmwareInfo::firmware_version_map(latest_driver.version_num()));
-    }
-
-    return firmware_infos;
-  }
+  [[nodiscard]] std::vector<driver::FirmwareInfo> firmware_infos();
 
   /**
    * @brief Synchronize devices
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
 
-  [[deprecated("please send autd3::synchronize instead")]] bool synchronize() { return send(Synchronize{}); }
+  [[deprecated("please send autd3::synchronize instead")]] bool synchronize();
 
   /**
    * @brief Update flags (force fan and reads_fpga_info)
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
-  [[deprecated("please send autd3::update_flag instead")]] bool update_flag() { return send(UpdateFlag{}); }
+  [[deprecated("please send autd3::update_flag instead")]] bool update_flag();
 
   /**
    * @brief Clear all data in devices
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
-  [[deprecated("please send autd3::clear instead")]] bool clear() { return send(autd3::Clear{}); }
+  [[deprecated("please send autd3::clear instead")]] bool clear();
 
   /**
    * @brief Stop outputting
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
-  [[deprecated("please send autd3::stop instead")]] bool stop() { return send(autd3::Stop{}); }
+  [[deprecated("please send autd3::stop instead")]] bool stop();
 
   /**
    * @brief Send header data to devices
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
   template <typename H>
-  auto send(H& header) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, bool> {
+  auto send(H& header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, bool> {
     core::NullBody b;
     return send(header, b);
   }
@@ -292,7 +125,7 @@ class Controller {
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
   template <typename H>
-  auto send(H&& header) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, bool> {
+  auto send(H&& header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, bool> {
     return send(header);
   }
 
@@ -301,7 +134,7 @@ class Controller {
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
   template <typename B>
-  auto send(B& body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, bool> {
+  auto send(B& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, bool> {
     core::NullHeader h;
     return send(h, body);
   }
@@ -311,7 +144,7 @@ class Controller {
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
   template <typename B>
-  auto send(B&& body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, bool> {
+  auto send(B&& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, bool> {
     return send(body);
   }
 
@@ -320,8 +153,7 @@ class Controller {
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
   template <typename H, typename B>
-  auto send(H&& header, B&& body) ->
-      typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>, bool> {
+  auto send(H&& header, B&& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>, bool> {
     return send(header, body);
   }
 
@@ -330,8 +162,7 @@ class Controller {
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
   template <typename H, typename B>
-  auto send(H& header, B& body) ->
-      typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>, bool> {
+  auto send(H& header, B& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>, bool> {
     return send(&header, &body);
   }
 
@@ -339,33 +170,14 @@ class Controller {
    * @brief Send header and body data to devices
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
-  auto send(core::DatagramHeader* header, core::DatagramBody* body) -> bool {
-    header->init();
-    body->init();
-
-    _driver->force_fan(_tx_buf, force_fan);
-    _driver->reads_fpga_info(_tx_buf, reads_fpga_info);
-
-    const auto no_wait = _ack_check_timeout == std::chrono::high_resolution_clock::duration::zero();
-    while (true) {
-      const auto msg_id = get_id();
-      header->pack(_driver, msg_id, _tx_buf);
-      body->pack(_driver, _geometry, _tx_buf);
-      _link->send(_tx_buf);
-      const auto success = wait_msg_processed(_ack_check_timeout);
-      if (!no_wait && !success) return false;
-      if (header->is_finished() && body->is_finished()) break;
-      if (no_wait) std::this_thread::sleep_for(_send_interval);
-    }
-    return true;
-  }
+  bool send(core::DatagramHeader* header, core::DatagramBody* body);
 
   /**
-   * @brief Send seprcial data to devices
+   * @brief Send special data to devices
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
   template <typename S>
-  auto send(S s) -> typename std::enable_if_t<std::is_base_of_v<SpecialData, S>, bool> {
+  auto send(S s) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, bool> {
     push_ack_check_timeout();
     if (s.ack_check_timeout_override()) _ack_check_timeout = s.ack_check_timeout();
     auto h = s.header();
@@ -376,24 +188,16 @@ class Controller {
   }
 
   /**
-   * @brief Send seprcial data to devices
+   * @brief Send special data to devices
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
-  auto send(SpecialData* s) -> bool {
-    push_ack_check_timeout();
-    if (s->ack_check_timeout_override()) _ack_check_timeout = s->ack_check_timeout();
-    auto h = s->header();
-    auto b = s->body();
-    const auto res = send(h.get(), b.get());
-    pop_ack_check_timeout();
-    return res;
-  }
+  bool send(SpecialData* s);
 
   /**
    * @brief Send header data to devices asynchronously
    */
   template <typename H>
-  auto send_async(H header) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>> {
+  auto send_async(H header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>> {
     send_async(std::move(header), core::NullBody{});
   }
 
@@ -401,7 +205,7 @@ class Controller {
    * @brief Send body data to devices asynchronously
    */
   template <typename B>
-  auto send_async(B body) -> typename std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>> {
+  auto send_async(B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>> {
     send_async(core::NullHeader{}, std::move(body));
   }
 
@@ -409,8 +213,7 @@ class Controller {
    * @brief Send header and body data to devices asynchronously
    */
   template <typename H, typename B>
-  auto send_async(H header, B body) ->
-      typename std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>> {
+  auto send_async(H header, B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>> {
     send_async(std::make_unique<H>(std::move(header)), std::make_unique<B>(std::move(body)));
   }
 
@@ -418,58 +221,31 @@ class Controller {
    * @brief Send special data to devices asynchronously
    */
   template <typename S>
-  auto send_async(S s) -> typename std::enable_if_t<std::is_base_of_v<SpecialData, S>> {
+  auto send_async(S s) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>> {
     send_async(&s);
   }
 
   /**
    * @brief Send special data to devices asynchronously
    */
-  void send_async(SpecialData* s) {
-    auto ack_check_timeout_override = s->ack_check_timeout_override();
-    auto timeout = s->ack_check_timeout();
-    send_async(
-        s->header(), s->body(),
-        [this, ack_check_timeout_override, timeout] {
-          push_ack_check_timeout();
-          if (ack_check_timeout_override) _ack_check_timeout = timeout;
-        },
-        [this] { pop_ack_check_timeout(); });
-  }
+  void send_async(SpecialData* s);
 
   /**
    * @brief Send header and body data to devices asynchronously
    */
   void send_async(
       std::unique_ptr<core::DatagramHeader> header, std::unique_ptr<core::DatagramBody> body, std::function<void()> pre = [] {},
-      std::function<void()> post = [] {}) {
-    {
-      std::unique_lock lk(_send_mtx);
-      AsyncData data;
-      data.header = std::move(header);
-      data.body = std::move(body);
-      data.pre = std::move(pre);
-      data.post = std::move(post);
-      _send_queue.emplace(std::move(data));
-    }
-    _send_cond.notify_all();
-  }
+      std::function<void()> post = [] {});
 
   /**
    * @brief Wait until all asynchronously sent data to complete the transmission
    */
-  void wait() {
-    if (!is_open()) return;
-    while (!_send_queue.empty()) std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  }
+  void wait() const;
 
   /**
    * @brief Flush all asynchronously sent data
    */
-  void flush() {
-    std::unique_lock lk(_send_mtx);
-    std::queue<AsyncData>().swap(_send_queue);
-  }
+  void flush();
 
   /**
    * @brief If true, the fan will be forced to start.
@@ -492,7 +268,7 @@ class Controller {
   /**
    * @brief Transmission interval between frames when sending multiple data.
    */
-  std::chrono::high_resolution_clock::duration get_send_interval() const noexcept { return _send_interval; }
+  [[nodiscard]] std::chrono::high_resolution_clock::duration get_send_interval() const noexcept;
 
   /**
    * @brief If > 0, this controller check ack from devices.
@@ -505,24 +281,72 @@ class Controller {
   /**
    * @brief If > 0, this controller check ack from devices.
    */
-  std::chrono::high_resolution_clock::duration get_ack_check_timeout() const noexcept { return _ack_check_timeout; }
+  [[nodiscard]] std::chrono::high_resolution_clock::duration get_ack_check_timeout() const noexcept;
+
+  /**
+   * Set speed of sound
+   */
+  void set_sound_speed(const double sound_speed) {
+    for (auto& dev : _geometry)
+      for (auto& tr : dev) tr.sound_speed = sound_speed;
+  }
+
+  /**
+   * Get speed of sound
+   * @details This function returns the speed of sound set to the 0-th transducer of the 0-th device.
+   */
+  [[nodiscard]] double get_sound_speed() const {
+    if (_geometry.num_devices() == 0) {
+      spdlog::warn("No devices are added.");
+      return 0.0;
+    }
+    return _geometry[0][0].sound_speed;
+  }
+
+  /**
+   * Set speed of sound from temperature
+   * @param temp temperature in Celsius degree
+   * @param k Heat capacity ratio
+   * @param r Gas constant [J K^-1 mol^-1]
+   * @param m Molar mass [kg mod^-1]
+   * @return sound_speed
+   */
+  double set_sound_speed_from_temp(const double temp, const double k = 1.4, const double r = 8.31446261815324, const double m = 28.9647e-3) {
+#ifdef AUTD3_USE_METER
+    const auto sound_speed = std::sqrt(k * r * (273.15 + temp) / m);
+#else
+    const auto sound_speed = std::sqrt(k * r * (273.15 + temp) / m) * 1e3;
+#endif
+    for (auto& dev : _geometry)
+      for (auto& tr : dev) tr.sound_speed = sound_speed;
+    return sound_speed;
+  }
+
+  /**
+   * Set attenuation coefficient
+   */
+  void set_attenuation(const double attenuation) {
+    for (auto& dev : _geometry)
+      for (auto& tr : dev) tr.attenuation = attenuation;
+  }
+
+  /**
+* Get attenuation coefficient
+* @details This function returns the attenuation coefficient set to the 0-th transducer of the 0-th device.
+
+*/
+  [[nodiscard]] double get_attenuation() const {
+    if (_geometry.num_devices() == 0) {
+      spdlog::warn("No devices are added.");
+      return 0.0;
+    }
+    return _geometry[0][0].attenuation;
+  }
 
  private:
-  static uint8_t get_id() noexcept {
-    static std::atomic id_body{driver::MSG_BEGIN};
-    if (uint8_t expected = driver::MSG_END; !id_body.compare_exchange_weak(expected, driver::MSG_BEGIN)) id_body.fetch_add(0x01);
-    return id_body.load();
-  }
+  static uint8_t get_id() noexcept;
 
-  bool wait_msg_processed(const std::chrono::high_resolution_clock::duration timeout) {
-    const auto msg_id = _tx_buf.header().msg_id;
-    auto start = std::chrono::high_resolution_clock::now();
-    while (std::chrono::high_resolution_clock::now() - start < timeout) {
-      if (_link->receive(_rx_buf) && _rx_buf.is_msg_processed(msg_id)) return true;
-      std::this_thread::sleep_for(_send_interval);
-    }
-    return false;
-  }
+  bool wait_msg_processed(std::chrono::high_resolution_clock::duration timeout);
 
   std::chrono::high_resolution_clock::duration _send_interval{std::chrono::nanoseconds(driver::EC_CYCLE_TIME_BASE_NANO_SEC)};
 
@@ -530,9 +354,9 @@ class Controller {
 
   std::chrono::high_resolution_clock::duration _ack_check_timeout_{std::chrono::high_resolution_clock::duration::zero()};
 
-  void push_ack_check_timeout() { _ack_check_timeout_ = _ack_check_timeout; }
+  void push_ack_check_timeout();
 
-  void pop_ack_check_timeout() { _ack_check_timeout = _ack_check_timeout_; }
+  void pop_ack_check_timeout();
 
   struct AsyncData {
     std::unique_ptr<core::DatagramHeader> header;
@@ -542,6 +366,8 @@ class Controller {
   };
 
   core::Geometry _geometry;
+  std::unique_ptr<const core::Mode> _mode;
+
   driver::TxDatagram _tx_buf;
   driver::RxDatagram _rx_buf;
   core::LinkPtr _link;
@@ -751,7 +577,7 @@ class Controller {
       return _cnt;
     }
 
-    auto operator<<(core::DatagramPackRef pack) -> Controller& {
+    auto operator<<(const core::DatagramPackRef pack) -> Controller& {
       _cnt._last_send_res = _cnt.send(_header);
       _sent = true;
       _cnt._last_send_res = _cnt.send(pack.header, pack.body);
@@ -817,7 +643,7 @@ class Controller {
       return _cnt;
     }
 
-    auto operator<<(core::DatagramPackRef pack) -> Controller& {
+    auto operator<<(const core::DatagramPackRef pack) -> Controller& {
       _cnt._last_send_res = _cnt.send(_body);
       _sent = true;
       _cnt._last_send_res = _cnt.send(pack.header, pack.body);
@@ -851,7 +677,7 @@ class Controller {
     return StreamCommaInputBody<B>(*this, body);
   }
 
-  auto operator<<(core::DatagramPackRef pack) -> Controller& {
+  auto operator<<(const core::DatagramPackRef pack) -> Controller& {
     _last_send_res = send(pack.header, pack.body);
     return *this;
   }
@@ -870,11 +696,13 @@ class Controller {
   }
 
   template <typename A>
-  auto operator<<(A (*)()) -> std::enable_if_t<std::is_same_v<autd3::Async, A>, AsyncSender> {
+  auto operator<<(A (*)()) -> std::enable_if_t<std::is_same_v<Async, A>, AsyncSender> {
     return AsyncSender{*this};
   }
 
-  void operator>>(bool& res) { res = _last_send_res; }
+  void operator<<(std::unique_ptr<core::Mode> (*f)()) { _mode = f(); }
+
+  void operator>>(bool& res) const { res = _last_send_res; }
 };
 
 }  // namespace autd3

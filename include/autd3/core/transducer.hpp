@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 17/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -44,54 +44,68 @@ using Quaternion = Eigen::Quaternion<double>;
  * \brief Transduce contains a position and id, direction, frequency of a transducer
  */
 struct Transducer {
-  Transducer(const size_t id, Vector3 pos, Vector3 x_direction, Vector3 y_direction, Vector3 z_direction) noexcept
-      : _id(id),
+  Transducer(const size_t id, Vector3 pos, Quaternion rot) noexcept
+      : attenuation(0.0),
+        sound_speed(
+#ifdef AUTD3_USE_METER
+            340.0),
+#else
+            340.0e3),
+#endif
+        _id(id),
         _pos(std::move(pos)),
-        _x_direction(std::move(x_direction)),
-        _y_direction(std::move(y_direction)),
-        _z_direction(std::move(z_direction)),
+        _rot(std::move(rot)),
         _mod_delay(0),
-        _cycle(4096) {}
+        _cycle(4096) {
+  }
   ~Transducer() = default;
   Transducer(const Transducer& v) noexcept = default;
   Transducer& operator=(const Transducer& obj) = default;
   Transducer(Transducer&& obj) = default;
   Transducer& operator=(Transducer&& obj) = default;
 
-  [[nodiscard]] double align_phase_at(const double dist, const double sound_speed) const { return dist * wavenumber(sound_speed); }
+  [[nodiscard]] double align_phase_at(const double dist) const { return dist * wavenumber(); }
 
   /**
    * \brief Position of the transducer
    */
   [[nodiscard]] const Vector3& position() const noexcept { return _pos; }
+
   /**
    * \brief ID of the transducer
    */
   [[nodiscard]] size_t id() const noexcept { return _id; }
+
   /**
    * \brief x direction of the transducer
    */
-  [[nodiscard]] const Vector3& x_direction() const noexcept { return _x_direction; }
+  [[nodiscard]] Vector3 x_direction() const { return _rot * Vector3(1, 0, 0); }
+
   /**
    * \brief y direction of the transducer
    */
-  [[nodiscard]] const Vector3& y_direction() const noexcept { return _y_direction; }
+  [[nodiscard]] Vector3 y_direction() const { return _rot * Vector3(0, 1, 0); }
+
   /**
    * \brief z direction of the transducer
    */
-  [[nodiscard]] const Vector3& z_direction() const noexcept { return _z_direction; }
+  [[nodiscard]] Vector3 z_direction() const { return _rot * Vector3(0, 0, 1); }
+
   /**
    * \brief modulation delay of the transducer
    */
   [[nodiscard]] uint16_t mod_delay() const noexcept { return _mod_delay; }
+
   /**
    * \brief modulation delay of the transducer
    */
   uint16_t& mod_delay() noexcept { return _mod_delay; }
+
   /**
    * \brief Frequency division ratio. The frequency will be autd3::driver::FPGA_CLK_FREQ/cycle.
    */
   [[nodiscard]] uint16_t cycle() const { return _cycle; }
+
   /**
    * \brief Frequency of the transducer
    */
@@ -99,13 +113,11 @@ struct Transducer {
 
   /**
    * \brief Set fFrequency division ratio. The frequency will be autd3::driver::FPGA_CLK_FREQ/cycle.
-   * \details This has no effect in LegacyMode.
    */
   void set_cycle(const uint16_t cycle) noexcept { _cycle = cycle; }
 
   /**
    * \brief Set fFrequency of the transducer.
-   * \details This has no effect in LegacyMode.
    */
   void set_frequency(const double freq) noexcept {
     const auto cycle = static_cast<uint16_t>(std::round(static_cast<double>(driver::FPGA_CLK_FREQ) / freq));
@@ -114,21 +126,28 @@ struct Transducer {
 
   /**
    * \brief Wavelength of the ultrasound emitted from the transducer
-   * @param sound_speed Speed of sound
    */
-  [[nodiscard]] double wavelength(double sound_speed) const { return sound_speed / frequency(); }
+  [[nodiscard]] double wavelength() const { return sound_speed / frequency(); }
+
   /**
    * \brief Wavenumber of the ultrasound emitted from the transducer
-   * @param sound_speed Speed of sound
    */
-  [[nodiscard]] double wavenumber(double sound_speed) const { return 2.0 * driver::pi * frequency() / sound_speed; }
+  [[nodiscard]] double wavenumber() const { return 2.0 * driver::pi * frequency() / sound_speed; }
+
+  /**
+   * @brief Attenuation coefficient.
+   */
+  double attenuation;
+
+  /**
+   * @brief Speed of sound.
+   */
+  double sound_speed;
 
  private:
   size_t _id;
   Vector3 _pos;
-  Vector3 _x_direction;
-  Vector3 _y_direction;
-  Vector3 _z_direction;
+  Quaternion _rot;
   uint16_t _mod_delay;
   uint16_t _cycle;
 };

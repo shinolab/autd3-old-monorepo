@@ -1,4 +1,4 @@
-# Migration Guide from v1.x
+# v1.xからの移行ガイド
 
 ここでは, v1.x系からの移行のためのガイドを示す.
 

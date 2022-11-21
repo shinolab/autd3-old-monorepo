@@ -28,7 +28,7 @@ foreach (var device in autd.Geometry)
 var link = new Simulator().Build();
 if (!autd.Open(link))
 {
-    Console.WriteLine(Controller.LastError);
+    Console.WriteLine("Failed to open Controller.");
     return;
 }
 

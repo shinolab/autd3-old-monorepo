@@ -3,7 +3,7 @@
 // Created Date: 26/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/11/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,13 +11,12 @@
 
 #pragma once
 
-#include <spdlog/fmt/fmt.h>
-
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "autd3/spdlog.hpp"
 #include "glm.hpp"
 
 #if _MSC_VER
@@ -205,7 +204,8 @@ class Model {
       case fx::gltf::Accessor::ComponentType::Byte:
       case fx::gltf::Accessor::ComponentType::Short:
       case fx::gltf::Accessor::ComponentType::Float:
-        throw std::runtime_error(fmt::format("Not supported component type: {}", static_cast<uint16_t>(component_type)));
+        spdlog::error("Not supported component type: {}", static_cast<uint16_t>(component_type));
+        return 0;
     }
 
     return count;

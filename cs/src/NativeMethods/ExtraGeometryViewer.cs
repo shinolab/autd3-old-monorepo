@@ -12,7 +12,7 @@ namespace AUTD3Sharp.NativeMethods
     {
         private const string DLL = "autd3capi-extra-geometry-viewer";
 
-        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDExtraGeometryViewer(IntPtr cnt, int width, int height, [MarshalAs(UnmanagedType.U1)] bool vsync, int gpuIdx);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDExtraGeometryViewer(IntPtr cnt, int width, int height, [MarshalAs(UnmanagedType.U1)] bool vsync, int gpuIdx);
     }
 }
 

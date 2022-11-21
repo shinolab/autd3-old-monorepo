@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,6 +14,8 @@
 #include <limits>
 #include <vector>
 
+#include "autd3/core/gain.hpp"
+#include "autd3/core/geometry.hpp"
 #include "autd3/core/interface.hpp"
 #include "autd3/driver/driver.hpp"
 #include "stm.hpp"
@@ -60,14 +62,18 @@ struct GainSTM final : public STM {
 
   size_t size() const override { return _gains.size(); }
 
-  void init() override { _sent = 0; }
+  bool init() override {
+    _sent = 0;
+    return true;
+  }
 
-  void pack(const std::unique_ptr<const driver::Driver>& driver, const Geometry& geometry, driver::TxDatagram& tx) override {
-    geometry.mode()->pack_stm_gain_header(driver, tx);
+  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const core::Mode>& mode, const Geometry&,
+            driver::TxDatagram& tx) override {
+    mode->pack_stm_gain_header(driver, tx);
 
-    if (is_finished()) return;
+    if (is_finished()) return true;
 
-    geometry.mode()->pack_stm_gain_body(driver, _sent, _next_duty, _freq_div, _gains, _mode, tx);
+    return mode->pack_stm_gain_body(driver, _sent, _next_duty, _freq_div, _gains, _mode, tx);
   }
 
   [[nodiscard]] bool is_finished() const override { return _sent >= _gains.size() + 1; }

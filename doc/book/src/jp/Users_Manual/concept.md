@@ -1,4 +1,4 @@
-# Concept
+# ライブラリ概観
 
 SDKを構成する主なクラスは以下の通りである.
 
@@ -7,7 +7,7 @@ SDKを構成する主なクラスは以下の通りである.
 * `Link` - AUTD3デバイスとのインターフェース
 * `Gain` - 各振動子の位相/振幅を管理するクラス
 * `Modulation` - AM変調を管理するクラス
-* `STM` - Hardware上のSpatio-Temporal Modulation (STM) 機能を管理するクラス
+* `STM` - Hardware上のSpatio-Temporal Modulation (STM, 時空間変調) 機能を管理するクラス
 
 SDK使用の流れは次のようになる.
 
@@ -15,7 +15,7 @@ SDK使用の流れは次のようになる.
 * 接続されているデバイスの位置と姿勢の設定
 * `Link`の作成, 及び, 接続
 * デバイスの初期化
-* `Gain`, `STM`, `Modulation`の作成, 及び, 送信
+* `Modulation`, 及び, `Gain`または`STM`の送信
 
 ## Hardware description
 
@@ -24,13 +24,6 @@ SDK使用の流れは次のようになる.
 <figure>
   <img src="../fig/Users_Manual/autd_trans_idx.jpg"/>
   <figcaption>AUTD front</figcaption>
-</figure>
-
-また, 以下にAUTD3の背面の画像を載せる. 24V電源のコネクタはMolex社5566-02Aを使用している.
-
-<figure>
-  <img src="../fig/Users_Manual/autd_back.jpg"/>
-  <figcaption>AUTD back</figcaption>
 </figure>
 
 AUTD3には一台あたり249個[^fn_asm]の振動子から構成されており, それぞれ図のようにindex番号が振られている.
@@ -47,8 +40,21 @@ $x$軸は長軸方向, すなわち, 0→17の方向であり, $y$軸は0→18�
   <figcaption>Design drawing of transducer array</figcaption>
 </figure>
 
-さらに, AUTD3は復数のデバイスをデイジーチェーンで接続し拡張できるようになっている.
+
+また, 以下にAUTD3の背面の画像を載せる.
+
+<figure>
+  <img src="../fig/Users_Manual/autd_back.jpg"/>
+  <figcaption>AUTD back</figcaption>
+</figure>
+
+AUTD3は復数のデバイスをデイジーチェーンで接続し拡張できるようになっている.
 PCと1台目のEherCAT Inをイーサネットケーブルを繋ぎ, $i$台目のEherCAT Outと$i+1$台目のEherCAT Inを繋ぐことで拡張アレイを構成できる.
 使用するイーサネットケーブルはCAT 5e以上のものである必要がある.
+
+AUTD3の電源は$\SI{24}{V}$の直流電源を使用する. 電源についても相互に接続でき, 電源コネクタは3つの内で好きなところを使って良い.
+なお, 電源のコネクタはMolex社5566-02Aを使用している.
+
+> NOTE: AUTD3は最大でデバイスあたり$\SI{2}{A}$の電流を消費する. 電源の最大出力電流に注意されたい.
 
 [^fn_asm]: $18\times 14=252$からネジ用に3つの振動子が抜けている. 態々この位置にネジ穴を持ってきたのは, 複数台並べたときの隙間を可能な限り小さくしようとしたため.

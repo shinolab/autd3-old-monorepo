@@ -1,11 +1,11 @@
 # Modulation
 
 `Modulation`はAM変調を制御するための仕組みである.
-`Modulation`は, バッファに貯められた$\SI{8}{bit}$データから, 一定のサンプリングレートでデータを順番にサンプリングし, Duty比に掛け合わすことで実現されている.
+`Modulation`は, バッファに貯められた$\SI{8}{bit}$データから, 一定のサンプリングレートでデータを順番にサンプリングし, Duty比に掛け合わせることで実現されている.
 現在, `Modulation`には以下の制約がある.
 
 * バッファサイズは最大で65536
-* サンプリングレートは$\SI{163.84}{MHz}/N$で, $N$は32-bit符号なし整数であり, $1160$以上の値である必要がある.
+* サンプリングレートは$\SI{163.84}{MHz}/N$で, $N$は32-bit符号なし整数であり, $580$以上の値である必要がある.
 * Modulationは全デバイスで共通
 * Modulationは自動でループする. 1ループだけ, 等の制御は不可能.
 
@@ -82,9 +82,9 @@ duty比は$t_\text{high}/T = t_\text{high}f$で定義される, ここで, $t_\t
 
 `RawPCM`を使用するには`BUILD_MODULATION_AUDIO_FILE`フラグをONにしてビルドするか, 或いは, 配布している`modulation_audio_file`ライブラリをリンクされたい.
 
-## Create Custom Modulation Tutorial
+## ユーザ定義のModulationを作成する
 
-`Modulation`も独自の`Modulation`を作成することができる.
+`Modulation`も独自のものを作成することができる.
 ここでは, 周期中のある一瞬だけ出力する`Burst`を作ってみる[^fn_burst].
 
 以下が, この`Burst`のサンプルである.
@@ -110,42 +110,40 @@ class Burst final : public autd3::Modulation {
 この`calc`の中で, `buffer`の中身を書き換えれば良い.
 `Modulation`サンプリング周波数$\SI{163.84}{MHz}/N$を決定する$N$は`_props.freq_div`に設定する.
 この例だと, デフォルトで$N=40960$なので, サンプリング周波数は$\SI{4}{kHz}$になる.
-さらに, 例えば, `buf_size`を4000とすると, AMは$0$が$3999$回サンプリングされた後, $255$が一回サンプリングされる.
+さらに, 例えば, `buf_size`を4000とすると, AMは$0$が$3999$回サンプリングされた後, $255$が$1$回サンプリングされる.
 したがって, 周期$\SI{1}{s}$の中で, $\SI{0.25}{ms}=1/\SI{4}{kHz}$だけ出力されるようなAMがかかる.
 
-## Modulation common functions
+## Modulationに共通の関数
 
-### Sampling frequency division ratio
+### Sampling周波数分周比$N$
 
 `sampling_freq_div_ratio`でサンプリング周波数の分周比$N$の確認, 設定ができる.
 サンプリング周波数の基本周波数は$\SI{163.84}{MHz}$である.
-`sampling_freq_div_ratio`は1160以上の整数が指定できる.
+`sampling_freq_div_ratio`は$580$以上の整数が指定できる.
 
 ```cpp
     m.sampling_frequency_division() = 20480; // 163.84MHz/20480 = 8kHz
 ```
 
-### Sampling frequency
+### Sampling周波数
 
 `sampling_frequency`でサンプリング周波数を取得できる.
 
 ## Modulation Delay
 
 Modulationはすべての振動子に同時に作用し, 伝搬遅延を考慮しない.
-そのため, 振動子と焦点位置との間の距離に応じて, 変調はずれる可能性がある.
+そのため, 振動子と焦点位置との間の距離に応じて, 変調がずれる可能性がある.
 
-これを保証するために, 振動子毎にサンプリングするインデックスを遅らせる機能が備わっている.
+これを補償するために, 振動子毎にサンプリングするインデックスを遅らせる機能が備わっている.
 
-
-例えば, 以下のようにすると, $0$番目のデバイスの$17$番目の振動子は$0$番目の振動子 (及び, 他のすべての振動子) に対して, サンプリングするインデックスが一つ遅れる.
+例えば, 以下のようにすると, $0$番目のデバイスの$17$番目の振動子は他のすべての振動子に対して, サンプリングするインデックスが一つ遅れる.
 
 ```cpp
-  autd.geometry()[0][0].mod_delay() = 0;
   autd.geometry()[0][17].mod_delay() = 1;
   autd << autd3::mod_delay_config;
 ```
 
-サンプリングされるインデックスに対する遅れであるため, どの程度遅れるかはModulationのサンプリング周波数に依存する.
+サンプリングされるインデックスに対する遅れであるため, どの程度遅れるかは`Modulation`のサンプリング周波数に依存する.
 `mod_delay`が$1$でサンプリング周波数が$\SI{40}{kHz}$の場合は$\SI{25}{\text{μ}s}$, $\SI{4}{kHz}$の場合は$\SI{250}{\text{μ}s}$の遅れになる.
 
 また, `mod_delay`の値は変調の長さ, すなわち, `buffer`サイズ未満でなくてはならない.
