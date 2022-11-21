@@ -178,9 +178,9 @@ jobs:
           node-version: '16'
           registry-url: 'https://registry.npmjs.org'
       - name: Publish on npmjs
+        continue-on-error: true
         run: |
           npm install
-          $ErrorActionPreference= 'silentlycontinue'
           npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
