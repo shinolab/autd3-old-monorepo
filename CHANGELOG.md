@@ -1,6 +1,9 @@
 # 2.6.3
 
 - Change sound speed configuration API
+- Functions that can fail now return false instead of an exception
+  - C API has also been changed
+- Fix [#45](https://github.com/shinolab/autd3/issues/45)
 
 # 2.6.2
 
