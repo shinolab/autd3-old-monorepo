@@ -4,7 +4,7 @@
  * Created Date: 23/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/08/2022
+ * Last Modified: 20/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -53,10 +53,8 @@ public class LanguageSelectorService : ILanguageSelectorService
 
     public async Task SetRequestedLanguageAsync()
     {
-        if (_localizer.TrySetCurrentLanguage(CurrentLanguage))
-        {
-            _localizer.RunLocalizationOnRegisteredRootElements();
-        }
+        _localizer.SetLanguage(CurrentLanguage);
+        _localizer.RunLocalizationOnRegisteredRootElements();
         await Task.CompletedTask;
     }
 

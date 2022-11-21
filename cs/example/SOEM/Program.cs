@@ -32,7 +32,7 @@ var link = new SOEM()
     .Build();
 if (!autd.Open(link))
 {
-    Console.WriteLine(Controller.LastError);
+    Console.WriteLine("Failed to open Controller.");
     return;
 }
 

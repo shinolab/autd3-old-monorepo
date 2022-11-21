@@ -3,7 +3,7 @@
 // Created Date: 15/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,6 +14,7 @@
 #include "autd3/driver/common/fpga/defined.hpp"
 #include "autd3/driver/driver.hpp"
 #include "autd3/driver/v2_5/defined.hpp"
+#include "autd3/spdlog.hpp"
 
 namespace autd3::driver {
 
@@ -61,8 +62,11 @@ class DriverV2_5 final : public Driver {
     tx.num_bodies = tx.size();
   }
 
-  void modulation(const uint8_t msg_id, const std::vector<uint8_t>& mod_data, size_t& sent, const uint32_t freq_div, TxDatagram& tx) const override {
-    if (mod_data.size() > v2_5::MOD_BUF_SIZE_MAX) throw std::runtime_error("Modulation buffer overflow");
+  bool modulation(const uint8_t msg_id, const std::vector<uint8_t>& mod_data, size_t& sent, const uint32_t freq_div, TxDatagram& tx) const override {
+    if (mod_data.size() > v2_5::MOD_BUF_SIZE_MAX) {
+      spdlog::error("Modulation buffer overflow");
+      return false;
+    }
 
     const auto is_first_frame = sent == 0;
     const auto max_size = is_first_frame ? driver::MOD_HEAD_DATA_SIZE : driver::MOD_BODY_DATA_SIZE;
@@ -78,13 +82,14 @@ class DriverV2_5 final : public Driver {
 
     if (mod_size == 0) {
       tx.header().cpu_flag.remove(CPUControlFlags::MOD);
-      return;
+      return true;
     }
 
     if (is_first_frame) {
-      if (freq_div < v2_5::MOD_SAMPLING_FREQ_DIV_MIN)
-        throw std::runtime_error("Modulation frequency division is oud of range. Minimum is " + std::to_string(v2_5::MOD_SAMPLING_FREQ_DIV_MIN) +
-                                 ", but you use " + std::to_string(freq_div));
+      if (freq_div < v2_5::MOD_SAMPLING_FREQ_DIV_MIN) {
+        spdlog::error("Modulation frequency division is out of range. Minimum is {}, but you use {}.", v2_5::MOD_SAMPLING_FREQ_DIV_MIN, freq_div);
+        return false;
+      }
 
       tx.header().cpu_flag.set(CPUControlFlags::MOD_BEGIN);
       tx.header().mod_head().freq_div = freq_div;
@@ -96,12 +101,14 @@ class DriverV2_5 final : public Driver {
     if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::MOD_END);
 
     sent += mod_size;
+    return true;
   }
 
-  void config_silencer(const uint8_t msg_id, const uint16_t cycle, const uint16_t step, TxDatagram& tx) const override {
-    if (cycle < v2_5::SILENCER_CYCLE_MIN)
-      throw std::runtime_error("Silencer cycle is oud of range. Minimum is " + std::to_string(v2_5::SILENCER_CYCLE_MIN) + ", but you use " +
-                               std::to_string(cycle));
+  bool config_silencer(const uint8_t msg_id, const uint16_t cycle, const uint16_t step, TxDatagram& tx) const override {
+    if (cycle < v2_5::SILENCER_CYCLE_MIN) {
+      spdlog::error("Silencer cycle is out of range. Minimum is {}, but you use {}.", v2_5::SILENCER_CYCLE_MIN, cycle);
+      return false;
+    }
 
     tx.header().msg_id = msg_id;
     tx.header().cpu_flag.remove(CPUControlFlags::MOD);
@@ -110,6 +117,8 @@ class DriverV2_5 final : public Driver {
 
     tx.header().silencer_header().cycle = cycle;
     tx.header().silencer_header().step = step;
+
+    return true;
   }
 
   void normal_legacy_header(TxDatagram& tx) noexcept {
@@ -190,17 +199,20 @@ class DriverV2_5 final : public Driver {
     return (std::min)(total_size - sent, max_size);
   }
 
-  void point_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, const size_t total_size, const uint32_t freq_div,
+  bool point_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, const size_t total_size, const uint32_t freq_div,
                       const double sound_speed, TxDatagram& tx) const override {
-    if (total_size > v2_5::POINT_STM_BUF_SIZE_MAX) throw std::runtime_error("PointSTM out of buffer");
+    if (total_size > v2_5::POINT_STM_BUF_SIZE_MAX) {
+      spdlog::error("PointSTM out of buffer");
+      return false;
+    }
 
-    if (points.empty() || points[0].empty()) return;
+    if (points.empty() || points[0].empty()) return true;
 
     if (sent == 0) {
-      if (freq_div < v2_5::POINT_STM_SAMPLING_FREQ_DIV_MIN)
-        throw std::runtime_error("STM frequency division is oud of range. Minimum is " + std::to_string(v2_5::POINT_STM_SAMPLING_FREQ_DIV_MIN) +
-                                 ", but you use " + std::to_string(freq_div));
-
+      if (freq_div < v2_5::POINT_STM_SAMPLING_FREQ_DIV_MIN) {
+        spdlog::error("STM frequency division is out of range. Minimum is {}, but you use {}.", v2_5::POINT_STM_SAMPLING_FREQ_DIV_MIN, freq_div);
+        return false;
+      }
       tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
 #ifdef AUTD3_USE_METER
       const auto sound_speed_internal = static_cast<uint32_t>(std::round(sound_speed * 1024.0));
@@ -232,6 +244,7 @@ class DriverV2_5 final : public Driver {
     tx.num_bodies = tx.size();
 
     sent += send_size;
+    return true;
   }
 
   void gain_stm_legacy_header(TxDatagram& tx) const noexcept override {
@@ -247,16 +260,20 @@ class DriverV2_5 final : public Driver {
     tx.num_bodies = 0;
   }
 
-  void gain_stm_legacy_body(const std::vector<std::vector<driver::Drive>>& drives, size_t& sent, const uint32_t freq_div, const GainSTMMode mode,
+  bool gain_stm_legacy_body(const std::vector<std::vector<driver::Drive>>& drives, size_t& sent, const uint32_t freq_div, const GainSTMMode mode,
                             TxDatagram& tx) const override {
-    if (drives.size() > v2_5::GAIN_STM_LEGACY_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+    if (drives.size() > v2_5::GAIN_STM_LEGACY_BUF_SIZE_MAX) {
+      spdlog::error("GainSTM out of buffer");
+      return false;
+    }
 
     bool is_last_frame = false;
     if (sent == 0) {
-      if (freq_div < v2_5::GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN)
-        throw std::runtime_error("STM frequency division is oud of range. Minimum is " + std::to_string(v2_5::GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN) +
-                                 ", but you use " + std::to_string(freq_div));
-
+      if (freq_div < v2_5::GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN) {
+        spdlog::error("STM frequency division is out of range. Minimum is {}, but you use {}.", v2_5::GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN,
+                      freq_div);
+        return false;
+      }
       tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
       for (size_t i = 0; i < tx.size(); i++) {
         tx.bodies()[i].gain_stm_head().set_freq_div(freq_div);
@@ -310,7 +327,8 @@ class DriverV2_5 final : public Driver {
           }
           break;
         default:
-          throw std::runtime_error("Unknown Gain STM Mode: " + std::to_string(static_cast<int>(mode)));
+          spdlog::error("Unknown Gain STM Mode: {}.", static_cast<int>(mode));
+          return false;
       }
     }
 
@@ -319,6 +337,7 @@ class DriverV2_5 final : public Driver {
     if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::STM_END);
 
     tx.num_bodies = tx.size();
+    return true;
   }
 
   void gain_stm_normal_header(TxDatagram& tx) const noexcept override {
@@ -334,15 +353,21 @@ class DriverV2_5 final : public Driver {
     tx.num_bodies = 0;
   }
 
-  void gain_stm_normal_phase(const std::vector<std::vector<driver::Drive>>& drives, const size_t sent, const uint32_t freq_div,
+  bool gain_stm_normal_phase(const std::vector<std::vector<driver::Drive>>& drives, const size_t sent, const uint32_t freq_div,
                              const GainSTMMode mode, TxDatagram& tx) const override {
-    if (drives.size() > v2_5::GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+    if (drives.size() > v2_5::GAIN_STM_BUF_SIZE_MAX) {
+      spdlog::error("GainSTM out of buffer");
+      return false;
+    }
 
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 26813)
 #endif
-    if (mode == GainSTMMode::PhaseHalf) throw std::runtime_error("PhaseHalf is not supported in normal mode");
+    if (mode == GainSTMMode::PhaseHalf) {
+      spdlog::error("PhaseHalf is not supported in normal mode");
+      return false;
+    }
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
@@ -350,9 +375,10 @@ class DriverV2_5 final : public Driver {
     tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
 
     if (sent == 0) {
-      if (freq_div < v2_5::GAIN_STM_SAMPLING_FREQ_DIV_MIN)
-        throw std::runtime_error("STM frequency division is oud of range. Minimum is " + std::to_string(v2_5::GAIN_STM_SAMPLING_FREQ_DIV_MIN) +
-                                 ", but you use " + std::to_string(freq_div));
+      if (freq_div < v2_5::GAIN_STM_SAMPLING_FREQ_DIV_MIN) {
+        spdlog::error("STM frequency division is out of range. Minimum is {}, but you use {}.", v2_5::GAIN_STM_SAMPLING_FREQ_DIV_MIN, freq_div);
+        return false;
+      }
       tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
       for (size_t i = 0; i < tx.size(); i++) {
         tx.bodies()[i].gain_stm_head().set_freq_div(freq_div);
@@ -368,17 +394,24 @@ class DriverV2_5 final : public Driver {
     tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
 
     tx.num_bodies = tx.size();
+    return true;
   }
 
-  void gain_stm_normal_duty(const std::vector<std::vector<driver::Drive>>& drives, const size_t sent, const uint32_t freq_div, const GainSTMMode mode,
+  bool gain_stm_normal_duty(const std::vector<std::vector<driver::Drive>>& drives, const size_t sent, const uint32_t freq_div, const GainSTMMode mode,
                             TxDatagram& tx) const override {
-    if (drives.size() > v2_5::GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+    if (drives.size() > v2_5::GAIN_STM_BUF_SIZE_MAX) {
+      spdlog::error("GainSTM out of buffer");
+      return false;
+    }
 
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 26813)
 #endif
-    if (mode == GainSTMMode::PhaseHalf) throw std::runtime_error("PhaseHalf is not supported in normal mode");
+    if (mode == GainSTMMode::PhaseHalf) {
+      spdlog::error("PhaseHalf is not supported in normal mode");
+      return false;
+    }
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
@@ -386,9 +419,10 @@ class DriverV2_5 final : public Driver {
     tx.header().cpu_flag.set(CPUControlFlags::IS_DUTY);
 
     if (sent == 0) {
-      if (freq_div < v2_5::GAIN_STM_SAMPLING_FREQ_DIV_MIN)
-        throw std::runtime_error("STM frequency division is oud of range. Minimum is " + std::to_string(v2_5::GAIN_STM_SAMPLING_FREQ_DIV_MIN) +
-                                 ", but you use " + std::to_string(freq_div));
+      if (freq_div < v2_5::GAIN_STM_SAMPLING_FREQ_DIV_MIN) {
+        spdlog::error("STM frequency division is out of range. Minimum is {}, but you use {}.", v2_5::GAIN_STM_SAMPLING_FREQ_DIV_MIN, freq_div);
+        return false;
+      }
       tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
       for (size_t i = 0; i < tx.size(); i++) {
         tx.bodies()[i].gain_stm_head().set_freq_div(freq_div);
@@ -404,6 +438,7 @@ class DriverV2_5 final : public Driver {
     tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
 
     tx.num_bodies = tx.size();
+    return true;
   }
 
   void force_fan(TxDatagram& tx, const bool value) const noexcept override {

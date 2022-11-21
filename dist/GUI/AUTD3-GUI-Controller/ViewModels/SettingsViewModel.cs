@@ -4,7 +4,7 @@
  * Created Date: 11/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/10/2022
+ * Last Modified: 20/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -100,7 +100,7 @@ public partial class SettingsViewModel
         AvailableLanguages = new ObservableCollection<Tuple<string, string>>(localizer.GetAvailableLanguages().Select(x =>
         {
             var displayName = x;
-            if (localizer.GetLocalizedString(x.ToLower()) is { } localizedDisplayName)
+            if (localizer.GetLocalizedStrings(x.ToLower()).FirstOrDefault() is { } localizedDisplayName)
             {
                 displayName = localizedDisplayName;
             }

@@ -4,7 +4,7 @@
  * Created Date: 23/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/11/2022
+ * Last Modified: 20/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -74,24 +74,19 @@ public class AUTDService
         };
 
         if (!_autd.Open(link))
-        {
             return false;
-        }
 
-        if (_autd.Send(new Clear()) == -1)
-        {
+        if (!_autd.Send(new Clear()))
             return false;
-        }
 
-        if (_autd.Send(new Synchronize()) == -1)
-        {
+        if (!_autd.Send(new Synchronize()))
             return false;
-        }
 
         _autd.AckCheckTimeoutMs = linkVm.AckCheckTimeoutMs;
         _autd.SendIntervalsMs = linkVm.SendIntervalsMs;
 
-        _autd.Send(new Static());
+        if (!_autd.Send(new Static()))
+            return false;
 
         _lastBody = null;
         IsStarted = false;
@@ -101,32 +96,32 @@ public class AUTDService
 
     public bool ConfigSilencer(ushort step, ushort cycle)
     {
-        return _autd?.Send(new SilencerConfig(step, cycle)) != -1;
+        return _autd?.Send(new SilencerConfig(step, cycle)) ?? false;
     }
 
     public bool SendGain(Gain gain)
     {
         IsStarted = true;
         _lastBody = gain;
-        return _autd?.Send(gain) != -1;
+        return _autd?.Send(gain) ?? false;
     }
 
     public bool SendPointSTM(PointSTM stm)
     {
         IsStarted = true;
         _lastBody = stm;
-        return _autd?.Send(stm) != -1;
+        return _autd?.Send(stm) ?? false;
     }
 
     public bool SendModulation(Modulation modulation)
     {
-        return _autd?.Send(modulation) != -1;
+        return _autd?.Send(modulation) ?? false;
     }
 
     public bool Stop()
     {
         IsStarted = false;
-        return _autd?.Send(new Stop()) != -1;
+        return _autd?.Send(new Stop()) ?? false;
     }
 
     public bool Resume()
@@ -137,15 +132,18 @@ public class AUTDService
         }
 
         IsStarted = true;
-        return _autd?.Send(_lastBody) != -1;
+        return _autd?.Send(_lastBody) ?? false;
     }
 
     public bool Close()
     {
         _lastBody = null;
         IsStarted = false;
-        return _autd?.Close() != -1;
+        return _autd?.Close() ?? false;
     }
 
-    public static string GetLastError() => Controller.LastError;
+    public double GetSoundSpeed()
+    {
+        return _autd?.SoundSpeed ?? 340e3;
+    }
 }

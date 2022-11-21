@@ -3,7 +3,7 @@
 // Created Date: 19/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/06/2022
+// Last Modified: 18/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -69,7 +69,7 @@ class CustomModulation final : public autd3::Modulation {
     std::memcpy(this->_props.buffer.data(), buffer, size);
   }
 
-  void calc() override {}
+  bool calc() override { return true; }
 
   ~CustomModulation() override = default;
   CustomModulation(const CustomModulation& v) noexcept = delete;
