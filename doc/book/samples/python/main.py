@@ -11,9 +11,7 @@ if __name__ == '__main__':
     autd.geometry.add_device([0., 0., 0.], [0., 0., 0.])
 
     link = SOEM().high_precision(True).build()
-    if not autd.open(link):
-        print(Controller.last_error())
-        exit()
+    autd.open(link)
 
     autd.ack_check_timeout_ms = 20
 

@@ -14,9 +14,7 @@ when isMainModule:
 
         var soem = initSOEM()
         let link = soem.highPrecision(true).onLost(onLost).build()
-        if not cnt.open(link):
-            echo Controller.lastError
-            quit(-1)
+        cnt.open(link)
 
         cnt.checkTrials = 50
 

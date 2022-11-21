@@ -13,11 +13,7 @@ try
 
     l = SOEM();
     link = l.build();
-
-    if ~cnt.open(link)
-        disp(Controller.last_error());
-        throw(MException('MATLAB:RuntimeError', 'Cannot open link'));
-    end
+    cnt.open(link);
 
     firm_list = cnt.firmware_info_list();
 
