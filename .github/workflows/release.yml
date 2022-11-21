@@ -180,6 +180,7 @@ jobs:
       - name: Publish on npmjs
         run: |
           npm install
+          $ErrorActionPreference= 'silentlycontinue'
           npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
