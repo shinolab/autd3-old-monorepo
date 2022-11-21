@@ -95,13 +95,13 @@ jobs:
         run: |
           git config --global user.name 'github-bot'
           git config --global user.email 'github-bot@users.noreply.github.com'
+          git branch -d upm/rc
+          git subtree split -P cs/unity/Assets/autd3 -b upm/rc
+          git checkout upm/rc
           git mv cs/unity/Assets/autd3/Samples cs/unity/Assets/autd3/Samples~
           rm -Force cs/unity/Assets/autd3/Samples.meta
           git add .
           git commit -am "replaced"
-          git branch -d upm/rc
-          git subtree split -P cs/unity/Assets/autd3 -b upm/rc
-          git checkout upm/rc
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
