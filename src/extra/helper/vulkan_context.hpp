@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/10/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -35,6 +35,8 @@
 #if defined(__GNUC__) && !defined(__llvm__)
 #pragma GCC diagnostic pop
 #endif
+
+#include "autd3/spdlog.hpp"
 
 namespace autd3::extra::helper {
 
@@ -102,16 +104,23 @@ class VulkanContext {
       if (tiling == vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & features) == features) return true;
       return false;
     });
-    if (it == candidates.end()) throw std::runtime_error("failed to find supported format!");
+    if (it == candidates.end()) {
+      spdlog::error("Failed to find supported format!");
+      return vk::Format::eUndefined;
+    }
     return *it;
   }
 
-  [[nodiscard]] uint32_t find_memory_type(const uint32_t type_filter, const vk::MemoryPropertyFlags properties) const {
+  [[nodiscard]] bool find_memory_type(const uint32_t type_filter, const vk::MemoryPropertyFlags properties, uint32_t& res) const {
     const auto mem_properties = _physical_device.getMemoryProperties();
     for (uint32_t i = 0; i < mem_properties.memoryTypeCount; i++)
       if (type_filter & 1 << i)
-        if ((mem_properties.memoryTypes[i].propertyFlags & properties) == properties) return i;
-    throw std::runtime_error("failed to find suitable memory type!");
+        if ((mem_properties.memoryTypes[i].propertyFlags & properties) == properties) {
+          res = i;
+          return true;
+        }
+    spdlog::error("Failed to find suitable memory type!");
+    return false;
   }
 
   [[nodiscard]] vk::SampleCountFlagBits get_max_usable_sample_count() const {
@@ -127,20 +136,22 @@ class VulkanContext {
     return vk::SampleCountFlagBits::e1;
   }
 
-  void init_vulkan(const std::string& app_name, const WindowHandler& window) {
-    create_instance(app_name);
-    create_surface(window);
-    pick_physical_device();
+  [[nodiscard]] bool init_vulkan(const std::string& app_name, const WindowHandler& window) {
+    if (!create_instance(app_name)) return false;
+    if (!create_surface(window)) return false;
+    if (!pick_physical_device()) return false;
     create_logical_device();
+    return true;
   }
 
-  void create_instance(const std::string& app_name) {
+  [[nodiscard]] bool create_instance(const std::string& app_name) {
     const vk::ApplicationInfo app_info =
         vk::ApplicationInfo().setPApplicationName(app_name.c_str()).setApplicationVersion(VK_MAKE_VERSION(1, 0, 0)).setApiVersion(VK_API_VERSION_1_2);
 
-    if (_enable_validation_layers && !check_validation_layer_support(validation_layers))
-      throw std::runtime_error("validation layers requested, but not available!");
-
+    if (_enable_validation_layers && !check_validation_layer_support(validation_layers)) {
+      spdlog::error("Validation layers requested, but not available!");
+      return false;
+    }
     uint32_t glfw_extension_count = 0;
     const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
 
@@ -160,30 +171,38 @@ class VulkanContext {
     if (_enable_validation_layers) create_info.setPEnabledLayerNames(validation_layers);
 
     _instance = createInstanceUnique(create_info, nullptr);
+    return true;
   }
 
-  void create_surface(const WindowHandler& window) {
+  [[nodiscard]] bool create_surface(const WindowHandler& window) {
     VkSurfaceKHR surface{};
-    if (glfwCreateWindowSurface(_instance.get(), window.window(), nullptr, &surface) != VK_SUCCESS)
-      throw std::runtime_error("failed to create window surface!");
+    if (glfwCreateWindowSurface(_instance.get(), window.window(), nullptr, &surface) != VK_SUCCESS) {
+      spdlog::error("Failed to create window surface!");
+      return false;
+    }
     const vk::ObjectDestroy<vk::Instance, VULKAN_HPP_DEFAULT_DISPATCHER_TYPE> deleter(_instance.get());
     _surface = vk::UniqueSurfaceKHR(vk::SurfaceKHR(surface), deleter);
+    return true;
   }
 
-  void pick_physical_device() {
+  [[nodiscard]] bool pick_physical_device() {
     const auto devices = _instance->enumeratePhysicalDevices();
     std::vector<vk::PhysicalDevice> suitable_devices;
     std::copy_if(devices.begin(), devices.end(), std::back_inserter(suitable_devices),
                  [this](const auto& device) { return is_device_suitable(device); });
-    if (suitable_devices.empty()) throw std::runtime_error("failed to find a suitable GPU!");
+    if (suitable_devices.empty()) {
+      spdlog::error("Failed to find a suitable GPU!");
+      return false;
+    }
     if (_gpu_idx < suitable_devices.size())
       _physical_device = suitable_devices[_gpu_idx];
     else {
       _physical_device = suitable_devices[0];
       const auto props = _physical_device.getProperties();
-      std::cerr << "WARN: Cannot use selected GPU (" << _gpu_idx << "), " << props.deviceName << " is used instead." << std::endl;
+      spdlog::warn("Cannot use selected GPU ({}), {} is used instead.", _gpu_idx, props.deviceName);
     }
     _msaa_samples = get_max_usable_sample_count();
+    return true;
   }
 
   void create_logical_device() {
@@ -236,9 +255,10 @@ class VulkanContext {
 
     const vk::MemoryRequirements mem_requirements = _device->getImageMemoryRequirements(image.get());
 
-    const vk::MemoryAllocateInfo alloc_info = vk::MemoryAllocateInfo()
-                                                  .setAllocationSize(mem_requirements.size)
-                                                  .setMemoryTypeIndex(find_memory_type(mem_requirements.memoryTypeBits, properties));
+    uint32_t memoty_type;
+    if (!find_memory_type(mem_requirements.memoryTypeBits, properties, memoty_type))
+      return std::make_pair(vk::UniqueImage(nullptr), vk::UniqueDeviceMemory(nullptr));
+    const vk::MemoryAllocateInfo alloc_info = vk::MemoryAllocateInfo().setAllocationSize(mem_requirements.size).setMemoryTypeIndex(memoty_type);
     auto image_memory = _device->allocateMemoryUnique(alloc_info);
 
     _device->bindImageMemory(image.get(), image_memory.get(), 0);
@@ -252,9 +272,11 @@ class VulkanContext {
     auto buffer = _device->createBufferUnique(buffer_info);
 
     const auto mem_requirements = _device->getBufferMemoryRequirements(buffer.get());
-    const vk::MemoryAllocateInfo alloc_info = vk::MemoryAllocateInfo()
-                                                  .setAllocationSize(mem_requirements.size)
-                                                  .setMemoryTypeIndex(find_memory_type(mem_requirements.memoryTypeBits, properties));
+    uint32_t memory_type;
+    if (!find_memory_type(mem_requirements.memoryTypeBits, properties, memory_type)) {
+      return std::make_pair(vk::UniqueBuffer(nullptr), vk::UniqueDeviceMemory(nullptr));
+    }
+    const vk::MemoryAllocateInfo alloc_info = vk::MemoryAllocateInfo().setAllocationSize(mem_requirements.size).setMemoryTypeIndex(memory_type);
     auto buffer_memory = _device->allocateMemoryUnique(alloc_info);
 
     _device->bindBufferMemory(buffer.get(), buffer_memory.get(), 0);
@@ -289,11 +311,13 @@ class VulkanContext {
     _graphics_queue.waitIdle();
   }
 
-  void generate_mipmaps(vk::UniqueImage& image, const vk::Format format, const int32_t tex_width, const int32_t tex_height,
-                        const uint32_t mip_levels) const {
+  [[nodiscard]] bool generate_mipmaps(vk::UniqueImage& image, const vk::Format format, const int32_t tex_width, const int32_t tex_height,
+                                      const uint32_t mip_levels) const {
     if (const auto format_properties = _physical_device.getFormatProperties(format);
-        !(format_properties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear))
-      throw std::runtime_error("texture image format does not support linear blitting!");
+        !(format_properties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear)) {
+      spdlog::error("texture image format does not support linear blitting!");
+      return false;
+    }
 
     auto command_buffer = begin_single_time_commands();
 
@@ -355,10 +379,11 @@ class VulkanContext {
                                     {}, barrier);
 
     end_single_time_commands(command_buffer);
+    return true;
   }
 
-  void transition_image_layout(vk::UniqueImage& image, const vk::Format format, const vk::ImageLayout old_layout, const vk::ImageLayout new_layout,
-                               const uint32_t mip_levels) const {
+  [[nodiscard]] bool transition_image_layout(vk::UniqueImage& image, const vk::Format format, const vk::ImageLayout old_layout,
+                                             const vk::ImageLayout new_layout, const uint32_t mip_levels) const {
     auto command_buffer = begin_single_time_commands();
 
     vk::ImageMemoryBarrier barrier = vk::ImageMemoryBarrier()
@@ -394,11 +419,14 @@ class VulkanContext {
       barrier.dstAccessMask = vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
       source_stage = vk::PipelineStageFlagBits::eTopOfPipe;
       destination_stage = vk::PipelineStageFlagBits::eEarlyFragmentTests;
-    } else
-      throw std::invalid_argument("unsupported layout transition!");
+    } else {
+      spdlog::error("Unsupported layout transition!");
+      return false;
+    }
 
     command_buffer->pipelineBarrier(source_stage, destination_stage, {}, {}, {}, barrier);
     end_single_time_commands(command_buffer);
+    return true;
   }
 
   void copy_buffer(const vk::Buffer src_buffer, const vk::Buffer dst_buffer, const vk::DeviceSize size) const {

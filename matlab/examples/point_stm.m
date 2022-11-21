@@ -4,7 +4,7 @@
 %Created Date: 11/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 24/10/2022
+%Last Modified: 17/11/2022
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,7 +21,8 @@ function point_stm(cnt)
     z = 150.0;
     center = [x y z];
 
-    stm = PointSTM();
+    sound_speed = cnt.sound_speed;
+    stm = PointSTM(sound_speed);
     points_num = 200;
     radius = 30.0;
 

@@ -3,10 +3,10 @@ cmake_minimum_required(VERSION 3.21)
 add_library(autd3capi-link-soem SHARED
   c_api.cpp
   soem_link.h
-  ./custom_sink.hpp
+  ../base/custom_sink.hpp
   ../base/header.hpp
   ../base/wrapper_link.hpp
-)
+) 
 
 target_link_libraries(autd3capi-link-soem link_soem)
 if(WIN32)

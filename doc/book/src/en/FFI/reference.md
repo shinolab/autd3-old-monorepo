@@ -5,20 +5,20 @@ The API for the C language is defined under [capi](https://github.com/shinolab/a
 The following is a reference to this API. 
 For actual usage, please refer to [C API Example](https://github.com/shinolab/autd3/tree/master/capi/example).
 
-## AUTDGetLastError (autd3capi)
+## AUTDSetLogLevel (autd3capi)
 
-Get the error message of the last exception.
+| Argument name / return | type     | in/out | description                        |
+| ---------------------- | -------- | ------ | ---------------------------------- |
+| level                  | int32_t  | in     | log level                          |
+| return                 | void     | -      | -                                  |
 
-The argument is a pointer to the error message. 
-The error message is copied to this pointer. However, if the argument is nullptr, no copying is done.
-The function returns the size of the error message including null terminations.
+## AUTDSetDefaultLogger (autd3capi)
 
-Since the length of the error message is variable, you should reserve a large enough area or pass nullptr to error to get the required size and call the function again.
-
-| Argument name / return | type    | in/out | description                                       |
-| ---------------------- | ------- | ------ | ------------------------------------------------- |
-| error                  | char*   | out    | pointer to error message                          |
-| return                 | int32_t | -      | length of error message including null terminator |
+| Argument name / return | type     | in/out | description                        |
+| ---------------------- | -------- | ------ | ---------------------------------- |
+| out                    | void*    | in     | output callback                    |
+| flush                  | void*    | in     | flush callback                     |
+| return                 | void     | -      | -                                  |
 
 ## AUTDCreateController (autd3capi)
 
@@ -30,13 +30,11 @@ The controller created must be freed at the end by `AUTDFreeController`.
 | ---------------------- | ------ | ------ | -------------------------------- |
 | out                    | void** | out    | pointer to pointer to Controller |
 | driver_version         | uint8_t| in     | driver version                   |
-| return                 | void   | -      | -                                |
+| return                 | bool    | -      | true if successful                                                                                     |
 
 ## AUTDOpenController (autd3capi)
 
 Open `Controller`.
-
-This function returns false if failure, and you can get the error message with `AUTDGetLastError`.
 
 | Argument name / return | type  | in/out | description           |
 | ---------------------- | ----- | ------ | --------------------- |
@@ -79,12 +77,10 @@ Add a device to the Controller.
 
 Close Controller.
 
-This function returns a value less than zero if an error occurred. If an error occurs, you can get the error message with `AUTDGetLastError`.
-
 | Argument name / return | type    | in/out | description                                                                                            |
 | ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
 | handle                 | void*   | in     | pointer to Controller                                                                                  |
-| return                 | int32_t | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred. |
+| return                 | bool    | -      | true if successful                                                                                     |
 
 ## AUTDCreateSilencer (autd3capi)
 
@@ -302,8 +298,6 @@ Set attenuation coefficient.
 Get FPGA information.
 
 Make sure set read FPGA info flag by `AUTDSetReadsFPGAInfo` before calling this function,
-
-This function returns false if failure, and you can get the error message with `AUTDGetLastError`.
 
 | Argument name / return | type     | in/out | description           |
 | ---------------------- | -------- | ------ | --------------------- |
@@ -679,6 +673,7 @@ The stm created must be deleted at the end by `AUTDDeleteSTM`.
 | Argument name / return | type   | in/out | description                     |
 | ---------------------- | ------ | ------ | ------------------------------- |
 | out                    | void** | out    | pointer to pointer to Point STM |
+| sound_speed            | double | in     | sound speed                     |
 | return                 | void   | -      | -                               |
 
 ## AUTDGainSTM (autd3capi)
@@ -704,7 +699,7 @@ Add focus to PointSTM.
 | y                      | double  | in     | y coordinate of focal point |
 | z                      | double  | in     | z coordinate of focal point |
 | shift                  | uint8_t | in     | duty shift                  |
-| return                 | bool    | -      | true if success             |
+| return                 | void    | -      | -             |
 
 ## AUTDGainSTMAdd (autd3capi)
 
@@ -714,7 +709,7 @@ Add gain to GainSTM.
 | ---------------------- | ----- | ------ | -------------------- |
 | stm                    | void* | in     | pointer to Point STM |
 | gain                   | void* | in     | pointer to Gain      |
-| return                 | bool  | -      | true if success      |
+| return                 | void  | -      | -      |
 
 ## AUTDSetGainSTMMode (autd3capi)
 
@@ -859,26 +854,22 @@ Delete special data.
 
 Send header and body data.
 
-This function returns a value less than zero if an error occurred. If an error occurs, you can get the error message with `AUTDGetLastError`.
-
 | Argument name / return | type    | in/out | description                                                                                            |
 | ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
 | handle                 | void*   | in     | pointer to Controller                                                                                  |
 | header                 | void*   | in     | pointer to header data                                                                                 |
 | body                   | void*   | in     | pointer to body data                                                                                   |
-| return                 | int32_t | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred. |
+| return                 | bool    | -      | true if successful                                                                                     |
 
 ## AUTDSendSpecial (autd3capi)
 
 Send special data.
 
-This function returns a value less than zero if an error occurred. If an error occurs, you can get the error message with `AUTDGetLastError`.
-
 | Argument name / return | type    | in/out | description                                                                                            |
 | ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
 | handle                 | void*   | in     | pointer to Controller                                                                                  |
 | special                | void*   | in     | pointer to special data                                                                                |
-| return                 | int32_t | -      | if $>0$ and check ack flag is true, it guarantees devices have processed data. if $<0$, error ocurred. |
+| return                 | bool    | -      | true if successful                                                                                     |
 
 ## AUTDSendAsync (autd3capi)
 
@@ -891,7 +882,7 @@ Send header and body data asynchronously.
 | handle                 | void*   | in     | pointer to Controller                                                                                  |
 | header                 | void*   | in     | pointer to header data                                                                                 |
 | body                   | void*   | in     | pointer to body data                                                                                   |
-| return                 | void     | -      | -                                  |
+| return                 | void     | -      | -                                                                                                     |
 
 ## AUTDSendSpecialAsync (autd3capi)
 
@@ -1469,7 +1460,7 @@ Run Geometry Viewer.
 | height                 | int32_t | in     | window height                      |
 | vsync                  | bool    | in     | vsync                              |
 | gpu_idx                | int32_t | in     | GPU index                          |
-| return                 | void    | -      | -                                  |
+| return                 | bool    | -      | true if successful                                                                                     |
 
 ## AUTDExtraSimulator (autd3capi-extra-simulator)
 
@@ -1482,4 +1473,4 @@ If a configuration file exists in `settings_path`, the parameters (`vsync`, and 
 | settings_path          | char*   | in     | path to setting file               |
 | vsync                  | bool    | in     | vsync                              |
 | gpu_idx                | int32_t | in     | GPU index                          |
-| return                 | void    | -      | -                                  |
+| return                 | bool    | -      | true if successful                                                                                     |

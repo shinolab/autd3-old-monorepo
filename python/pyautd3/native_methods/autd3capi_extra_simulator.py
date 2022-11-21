@@ -28,4 +28,4 @@ class NativeMethods(metaclass=Singleton):
         self.dll = ctypes.CDLL(os.path.join(self.bin, f'{self.prefix}autd3capi-extra-simulator{self.ext}'))
 
         self.dll.AUTDExtraSimulator.argtypes = [ctypes.c_char_p, ctypes.c_bool, ctypes.c_int32] 
-        self.dll.AUTDExtraSimulator.restype = None
+        self.dll.AUTDExtraSimulator.restype = ctypes.c_bool

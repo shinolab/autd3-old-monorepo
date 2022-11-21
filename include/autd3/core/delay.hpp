@@ -3,7 +3,7 @@
 // Created Date: 01/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -31,11 +31,15 @@ struct ModDelayConfig final : DatagramBody {
   ModDelayConfig(ModDelayConfig&& obj) = default;
   ModDelayConfig& operator=(ModDelayConfig&& obj) = default;
 
-  void init() override { _sent = false; }
+  bool init() override {
+    _sent = false;
+    return false;
+  }
 
-  void pack(const std::unique_ptr<const driver::Driver>& driver, const Geometry& geometry, driver::TxDatagram& tx) override {
+  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const core::Mode>&, const Geometry& geometry,
+            driver::TxDatagram& tx) override {
     driver->null_body(tx);
-    if (is_finished()) return;
+    if (is_finished()) return true;
 
     std::vector<uint16_t> delays;
     std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
@@ -45,6 +49,8 @@ struct ModDelayConfig final : DatagramBody {
     driver->mod_delay(delays.data(), tx);
 
     _sent = true;
+
+    return true;
   }
 
   [[nodiscard]] bool is_finished() const noexcept override { return _sent; }

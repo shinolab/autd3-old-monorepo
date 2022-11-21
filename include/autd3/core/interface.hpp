@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,6 +13,7 @@
 
 #include "autd3/driver/driver.hpp"
 #include "geometry.hpp"
+#include "mode.hpp"
 
 namespace autd3::core {
 
@@ -71,8 +72,8 @@ struct DatagramHeader {
   DatagramHeader(DatagramHeader&& obj) = default;
   DatagramHeader& operator=(DatagramHeader&& obj) = default;
 
-  virtual void init() = 0;
-  virtual void pack(const std::unique_ptr<const driver::Driver>& driver, uint8_t msg_id, driver::TxDatagram& tx) = 0;
+  [[nodiscard]] virtual bool init() = 0;
+  [[nodiscard]] virtual bool pack(const std::unique_ptr<const driver::Driver>& driver, uint8_t msg_id, driver::TxDatagram& tx) = 0;
   [[nodiscard]] virtual bool is_finished() const = 0;
 };
 
@@ -87,16 +88,20 @@ struct DatagramBody {
   DatagramBody(DatagramBody&& obj) = default;
   DatagramBody& operator=(DatagramBody&& obj) = default;
 
-  virtual void init() = 0;
-  virtual void pack(const std::unique_ptr<const driver::Driver>& driver, const Geometry& geometry, driver::TxDatagram& tx) = 0;
+  [[nodiscard]] virtual bool init() = 0;
+  [[nodiscard]] virtual bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const core::Mode>& mode,
+                                  const Geometry& geometry, driver::TxDatagram& tx) = 0;
   [[nodiscard]] virtual bool is_finished() const = 0;
 };
 
 struct NullHeader final : DatagramHeader {
   ~NullHeader() override = default;
 
-  void init() override {}
-  void pack(const std::unique_ptr<const driver::Driver>& driver, uint8_t msg_id, driver::TxDatagram& tx) override { driver->null_header(msg_id, tx); }
+  bool init() override { return true; }
+  bool pack(const std::unique_ptr<const driver::Driver>& driver, uint8_t msg_id, driver::TxDatagram& tx) override {
+    driver->null_header(msg_id, tx);
+    return true;
+  }
 
   bool is_finished() const override { return true; }
 };
@@ -104,9 +109,13 @@ struct NullHeader final : DatagramHeader {
 struct NullBody final : DatagramBody {
   ~NullBody() override = default;
 
-  void init() override {}
+  bool init() override { return true; }
 
-  void pack(const std::unique_ptr<const driver::Driver>& driver, const Geometry&, driver::TxDatagram& tx) override { driver->null_body(tx); }
+  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const core::Mode>&, const Geometry&,
+            driver::TxDatagram& tx) override {
+    driver->null_body(tx);
+    return true;
+  }
 
   bool is_finished() const override { return true; }
 };

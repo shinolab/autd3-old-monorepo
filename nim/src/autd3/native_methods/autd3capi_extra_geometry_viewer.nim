@@ -11,5 +11,5 @@ else:
   const
     dll* = "bin/libautd3capi-extra-geometry-viewer.so"
 proc AUTDExtraGeometryViewer*(cnt: pointer; width: int32; height: int32; vsync: bool;
-                             gpu_idx: int32) {.cdecl,
+                             gpu_idx: int32): bool {.cdecl,
     importc: "AUTDExtraGeometryViewer", dynlib: dll.}

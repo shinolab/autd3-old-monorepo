@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/10/2022
+// Last Modified: 19/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,7 +12,6 @@
 #pragma once
 
 #include <filesystem>
-#include <vector>
 
 #include "autd3/core/modulation.hpp"
 
@@ -28,9 +27,9 @@ class RawPCM final : public core::Modulation {
    * @param[in] mod_sampling_freq_div sampling frequency of the Modulation
    * @details The sampling frequency in AUTD device will be autd3::driver::FPGA_CLK_FREQ / mod_sampling_freq_div.
    */
-  explicit RawPCM(const std::filesystem::path& filename, double sampling_freq, uint32_t mod_sampling_freq_div = 40960);
+  explicit RawPCM(std::filesystem::path filename, double sampling_freq, uint32_t mod_sampling_freq_div = 40960);
 
-  void calc() override;
+  bool calc() override;
 
   ~RawPCM() override = default;
   RawPCM(const RawPCM& v) noexcept = delete;
@@ -39,8 +38,8 @@ class RawPCM final : public core::Modulation {
   RawPCM& operator=(RawPCM&& obj) = default;
 
  private:
+  std::filesystem::path _filename;
   double _sampling_freq;
-  std::vector<uint8_t> _buf;
 };
 
 /**
@@ -53,9 +52,9 @@ class Wav final : public core::Modulation {
    * @param[in] mod_sampling_freq_div sampling frequency of the Modulation
    * @details The sampling frequency in AUTD device will be autd3::driver::FPGA_CLK_FREQ / mod_sampling_freq_div.
    */
-  explicit Wav(const std::filesystem::path& filename, uint32_t mod_sampling_freq_div = 40960);
+  explicit Wav(std::filesystem::path filename, uint32_t mod_sampling_freq_div = 40960);
 
-  void calc() override;
+  bool calc() override;
 
   ~Wav() override = default;
   Wav(const Wav& v) noexcept = delete;
@@ -64,7 +63,6 @@ class Wav final : public core::Modulation {
   Wav& operator=(Wav&& obj) = default;
 
  private:
-  uint32_t _sampling_freq;
-  std::vector<uint8_t> _buf;
+  std::filesystem::path _filename;
 };
 }  // namespace autd3::modulation

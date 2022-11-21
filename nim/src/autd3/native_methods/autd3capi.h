@@ -12,12 +12,13 @@
 #  endif
 #endif
 
-int32 AUTDGetLastError(char* error);
-void AUTDCreateController(void** out, uint8 driver_version);
+void AUTDSetLogLevel(int32 level);
+void AUTDSetDefaultLogger(void* out, void* flush);
+bool AUTDCreateController(void** out, uint8 driver_version);
 bool AUTDOpenController(void* handle, void* link);
 int32 AUTDAddDevice(void* handle, float64 x, float64 y, float64 z, float64 rz1, float64 ry, float64 rz2);
 int32 AUTDAddDeviceQuaternion(void* handle, float64 x, float64 y, float64 z, float64 qw, float64 qx, float64 qy, float64 qz);
-int32 AUTDClose(void* handle);
+bool AUTDClose(void* handle);
 void AUTDFreeController(void* handle);
 bool AUTDIsOpen(void* handle);
 bool AUTDGetForceFan(void* handle);
@@ -67,10 +68,10 @@ uint32 AUTDModulationSamplingFrequencyDivision(void* mod);
 void AUTDModulationSetSamplingFrequencyDivision(void* mod, uint32 freq_div);
 float64 AUTDModulationSamplingFrequency(void* mod);
 void AUTDDeleteModulation(void* mod);
-void AUTDPointSTM(void** out);
+void AUTDPointSTM(void** out, float64 sound_speed);
 void AUTDGainSTM(void** out, void* handle);
-bool AUTDPointSTMAdd(void* stm, float64 x, float64 y, float64 z, uint8 shift);
-bool AUTDGainSTMAdd(void* stm, void* gain);
+void AUTDPointSTMAdd(void* stm, float64 x, float64 y, float64 z, uint8 shift);
+void AUTDGainSTMAdd(void* stm, void* gain);
 uint16 AUTDGetGainSTMMode(void* stm);
 void AUTDSetGainSTMMode(void* stm, uint16 mode);
 float64 AUTDSTMSetFrequency(void* stm, float64 freq);
@@ -87,8 +88,8 @@ void AUTDModDelayConfig(void** out);
 void AUTDDeleteSpecialData(void* data);
 void AUTDCreateSilencer(void** out, uint16 step, uint16 cycle);
 void AUTDDeleteSilencer(void* config);
-int32 AUTDSend(void* handle, void* header, void* body);
-int32 AUTDSendSpecial(void* handle, void* special);
+bool AUTDSend(void* handle, void* header, void* body);
+bool AUTDSendSpecial(void* handle, void* special);
 void AUTDSendAsync(void* handle, void* header, void* body);
 void AUTDSendSpecialAsync(void* handle, void* special);
 uint16 AUTDGetModDelay(void* handle, int32 device_idx, int32 local_trans_idx);

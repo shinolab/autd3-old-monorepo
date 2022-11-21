@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 17/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,7 +15,6 @@
 #include <numeric>
 #include <vector>
 
-#include "mode.hpp"
 #include "transducer.hpp"
 
 namespace autd3::core {
@@ -30,10 +29,6 @@ struct Geometry {
   struct Device {
     explicit Device(const size_t id, const Vector3& position, const Quaternion& rotation) : _id(id), _origin(position), _rotation(rotation) {
       const Eigen::Transform<double, 3, Eigen::Affine> transform_matrix = Eigen::Translation<double, 3>(position) * rotation;
-      const Vector3 x_direction = rotation * Vector3(1, 0, 0);
-      const Vector3 y_direction = rotation * Vector3(0, 1, 0);
-      const Vector3 z_direction = rotation * Vector3(0, 0, 1);
-
       _transducers.reserve(driver::NUM_TRANS_IN_UNIT);
       size_t i = id * driver::NUM_TRANS_IN_UNIT;
       for (size_t y = 0; y < driver::NUM_TRANS_Y; y++)
@@ -41,7 +36,7 @@ struct Geometry {
           if (driver::is_missing_transducer(x, y)) continue;
           const auto local_pos = Vector4(static_cast<double>(x) * driver::TRANS_SPACING, static_cast<double>(y) * driver::TRANS_SPACING, 0.0, 1.0);
           const Vector4 global_pos = transform_matrix * local_pos;
-          _transducers.emplace_back(i++, global_pos.head<3>(), x_direction, y_direction, z_direction);
+          _transducers.emplace_back(i++, global_pos.head<3>(), rotation);
         }
       _trans_inv = transform_matrix.inverse();
     }
@@ -106,27 +101,7 @@ struct Geometry {
     Eigen::Transform<double, 3, Eigen::Affine> _trans_inv;
   };
 
-  Geometry()
-      : attenuation(0.0),
-        sound_speed(
-#ifdef AUTD3_USE_METER
-            340.0),
-#else
-            340.0e3),
-#endif
-        _devices(),
-        _mode(std::make_unique<LegacyMode>()) {
-  }
-
-  /**
-   * @brief Attenuation coefficient.
-   */
-  double attenuation;
-
-  /**
-   * @brief Speed of sound.
-   */
-  double sound_speed;
+  Geometry() : _devices() {}
 
   /**
    * @brief Number of devices
@@ -183,12 +158,8 @@ struct Geometry {
   Device& operator[](const size_t i) { return _devices[i]; }
   const Device& operator[](const size_t i) const { return _devices[i]; }
 
-  const std::unique_ptr<Mode>& mode() const { return _mode; }
-  std::unique_ptr<Mode>& mode() { return _mode; }
-
  private:
   std::vector<Device> _devices;
-  std::unique_ptr<Mode> _mode;
 };
 
 }  // namespace autd3::core
