@@ -148,15 +148,15 @@ jobs:
         run: |
           git config --global user.name 'github-bot'
           git config --global user.email 'github-bot@users.noreply.github.com'
-          git mv cs/unity/Assets/autd3/Samples cs/unity/Assets/autd3/Samples~
-          rm -Force cs/unity/Assets/autd3/Samples.meta
-          git add .
-          git commit -am "replaced"
           git branch -d upm/latest
           git subtree split -P cs/unity/Assets/autd3 -b upm/latest
           git checkout upm/latest
           git clean -fxd
           Remove-Item -Path 3rdparty -Force -Recurse
+          git mv Samples Samples~
+          rm -Force Samples.meta
+          git add .
+          git commit -am "replaced"
           git push -f -u origin upm/latest
       - name: Get upm tag name
         id: get_upm_tag
