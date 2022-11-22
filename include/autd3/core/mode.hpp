@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "autd3/driver/driver.hpp"
