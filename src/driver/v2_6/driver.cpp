@@ -12,10 +12,11 @@
 #include "autd3/driver/v2_6/driver.hpp"
 
 #include "../../spdlog.hpp"
+#include "autd3/driver/v2_6/defined.hpp"
 
 namespace autd3::driver {
 
-uint8_t autd3::driver::DriverV2_6::version_num() const noexcept { return 0x86; }
+uint8_t DriverV2_6::version_num() const noexcept { return 0x86; }
 
 void DriverV2_6::clear(TxDatagram& tx) const noexcept {
   tx.header().msg_id = MSG_CLEAR;
@@ -38,7 +39,7 @@ void DriverV2_6::sync(const uint16_t* const cycles, TxDatagram& tx) const noexce
   tx.header().cpu_flag.remove(CPUControlFlags::CONFIG_SILENCER);
   tx.header().cpu_flag.set(CPUControlFlags::CONFIG_SYNC);
 
-  std::memcpy(reinterpret_cast<uint16_t*>(tx.bodies()), cycles, sizeof(Body) * tx.size());
+  std::memcpy(tx.bodies(), cycles, sizeof(Body) * tx.size());
 
   tx.num_bodies = tx.size();
 }
@@ -46,7 +47,7 @@ void DriverV2_6::mod_delay(const uint16_t* const delays, TxDatagram& tx) const n
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.set(CPUControlFlags::MOD_DELAY);
 
-  std::memcpy(reinterpret_cast<uint16_t*>(tx.bodies()), delays, sizeof(Body) * tx.size());
+  std::memcpy(tx.bodies(), delays, sizeof(Body) * tx.size());
 
   tx.num_bodies = tx.size();
 }
@@ -57,7 +58,7 @@ bool DriverV2_6::modulation(const uint8_t msg_id, const std::vector<uint8_t>& mo
   }
 
   const auto is_first_frame = sent == 0;
-  const auto max_size = is_first_frame ? driver::MOD_HEAD_DATA_SIZE : driver::MOD_BODY_DATA_SIZE;
+  const auto max_size = is_first_frame ? MOD_HEAD_DATA_SIZE : MOD_BODY_DATA_SIZE;
   const auto mod_size = (std::min)(mod_data.size() - sent, max_size);
   const auto is_last_frame = sent + mod_size == mod_data.size();
   const auto* buf = mod_data.data() + sent;
@@ -173,7 +174,7 @@ void DriverV2_6::point_stm_header(TxDatagram& tx) const noexcept {
   tx.num_bodies = 0;
 }
 size_t DriverV2_6::point_stm_send_size(const size_t total_size, const size_t sent) const noexcept {
-  const auto max_size = sent == 0 ? driver::POINT_STM_HEAD_DATA_SIZE : driver::POINT_STM_BODY_DATA_SIZE;
+  const auto max_size = sent == 0 ? POINT_STM_HEAD_DATA_SIZE : POINT_STM_BODY_DATA_SIZE;
   return (std::min)(total_size - sent, max_size);
 }
 bool DriverV2_6::point_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, const size_t total_size, const uint32_t freq_div,
@@ -235,8 +236,8 @@ void DriverV2_6::gain_stm_legacy_header(TxDatagram& tx) const noexcept {
 
   tx.num_bodies = 0;
 }
-bool DriverV2_6::gain_stm_legacy_body(const std::vector<std::vector<driver::Drive>>& drives, size_t& sent, const uint32_t freq_div,
-                                      const GainSTMMode mode, TxDatagram& tx) const {
+bool DriverV2_6::gain_stm_legacy_body(const std::vector<std::vector<Drive>>& drives, size_t& sent, const uint32_t freq_div, const GainSTMMode mode,
+                                      TxDatagram& tx) const {
   if (drives.size() > v2_6::GAIN_STM_LEGACY_BUF_SIZE_MAX) {
     spdlog::error("GainSTM out of buffer");
     return false;
@@ -302,9 +303,6 @@ bool DriverV2_6::gain_stm_legacy_body(const std::vector<std::vector<driver::Driv
           sent++;
         }
         break;
-      default:
-        spdlog::error("Unknown Gain STM Mode: {}", static_cast<int>(mode));
-        return false;
     }
   }
 
@@ -327,7 +325,7 @@ void DriverV2_6::gain_stm_normal_header(TxDatagram& tx) const noexcept {
 
   tx.num_bodies = 0;
 }
-bool DriverV2_6::gain_stm_normal_phase(const std::vector<std::vector<driver::Drive>>& drives, const size_t sent, const uint32_t freq_div,
+bool DriverV2_6::gain_stm_normal_phase(const std::vector<std::vector<Drive>>& drives, const size_t sent, const uint32_t freq_div,
                                        const GainSTMMode mode, TxDatagram& tx) const {
   if (drives.size() > v2_6::GAIN_STM_BUF_SIZE_MAX) {
     spdlog::error("GainSTM out of buffer");
@@ -371,7 +369,7 @@ bool DriverV2_6::gain_stm_normal_phase(const std::vector<std::vector<driver::Dri
   tx.num_bodies = tx.size();
   return true;
 }
-bool DriverV2_6::gain_stm_normal_duty(const std::vector<std::vector<driver::Drive>>& drives, const size_t sent, const uint32_t freq_div,
+bool DriverV2_6::gain_stm_normal_duty(const std::vector<std::vector<Drive>>& drives, const size_t sent, const uint32_t freq_div,
                                       const GainSTMMode mode, TxDatagram& tx) const {
   if (drives.size() > v2_6::GAIN_STM_BUF_SIZE_MAX) {
     spdlog::error("GainSTM out of buffer");
@@ -429,17 +427,17 @@ void DriverV2_6::reads_fpga_info(TxDatagram& tx, const bool value) const noexcep
 }
 void DriverV2_6::cpu_version(TxDatagram& tx) const noexcept {
   tx.header().msg_id = MSG_RD_CPU_VERSION;
-  tx.header().cpu_flag = (CPUControlFlags::VALUE)(MSG_RD_CPU_VERSION);  // For backward compatibility before 1.9
+  tx.header().cpu_flag = static_cast<CPUControlFlags::VALUE>(MSG_RD_CPU_VERSION);  // For backward compatibility before 1.9
   tx.num_bodies = 0;
 }
 void DriverV2_6::fpga_version(TxDatagram& tx) const noexcept {
   tx.header().msg_id = MSG_RD_FPGA_VERSION;
-  tx.header().cpu_flag = (CPUControlFlags::VALUE)(MSG_RD_FPGA_VERSION);  // For backward compatibility before 1.9
+  tx.header().cpu_flag = static_cast<CPUControlFlags::VALUE>(MSG_RD_FPGA_VERSION);  // For backward compatibility before 1.9
   tx.num_bodies = 0;
 }
 void DriverV2_6::fpga_functions(TxDatagram& tx) const noexcept {
   tx.header().msg_id = MSG_RD_FPGA_FUNCTION;
-  tx.header().cpu_flag = (CPUControlFlags::VALUE)(MSG_RD_FPGA_FUNCTION);  // For backward compatibility before 1.9
+  tx.header().cpu_flag = static_cast<CPUControlFlags::VALUE>(MSG_RD_FPGA_FUNCTION);  // For backward compatibility before 1.9
   tx.num_bodies = 0;
 }
 }  // namespace autd3::driver

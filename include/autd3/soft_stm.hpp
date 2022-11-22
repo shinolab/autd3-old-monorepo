@@ -17,7 +17,6 @@
 
 #include "autd3/controller.hpp"
 #include "autd3/core/gain.hpp"
-#include "autd3/core/utils.hpp"
 
 namespace autd3 {
 
@@ -57,7 +56,7 @@ class SoftwareSTM {
 
     void set(const VALUE v) noexcept { _value = static_cast<VALUE>(_value | v); }
     void remove(const VALUE v) noexcept { _value = static_cast<VALUE>(_value & ~v); }
-    bool contains(const VALUE v) const noexcept { return (_value & v) == v; }
+    [[nodiscard]] bool contains(const VALUE v) const noexcept { return (_value & v) == v; }
 
     [[nodiscard]] VALUE value() const noexcept { return _value; }
 
@@ -80,8 +79,7 @@ class SoftwareSTM {
     bool finish();
 
    private:
-    SoftwareSTMThreadHandle(Controller& cnt, const std::vector<std::shared_ptr<core::Gain>>& bodies, const uint64_t period,
-                            const TimerStrategy strategy);
+    SoftwareSTMThreadHandle(Controller& cnt, std::vector<std::shared_ptr<core::Gain>> bodies, uint64_t period, TimerStrategy strategy);
 
     bool _run;
     std::thread _th;
@@ -103,7 +101,7 @@ class SoftwareSTM {
    * @param[in] freq Frequency
    * @return double Actual frequency
    */
-  double set_frequency(const double freq);
+  double set_frequency(double freq);
 
   /**
    * @brief Add data to send
