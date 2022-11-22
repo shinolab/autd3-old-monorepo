@@ -42,7 +42,7 @@ void DriverV2_5::sync(const uint16_t* const cycles, TxDatagram& tx) const noexce
   tx.header().cpu_flag.remove(CPUControlFlags::CONFIG_SILENCER);
   tx.header().cpu_flag.set(CPUControlFlags::CONFIG_SYNC);
 
-  std::memcpy(tx.bodies(), cycles, sizeof(Body) * tx.size());
+  std::memcpy(reinterpret_cast<uint16_t*>(tx.bodies()), cycles, sizeof(Body) * tx.size());
 
   tx.num_bodies = tx.size();
 }
@@ -51,7 +51,7 @@ void DriverV2_5::mod_delay(const uint16_t* const delays, TxDatagram& tx) const n
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.set(CPUControlFlags::MOD_DELAY);
 
-  std::memcpy(tx.bodies(), delays, sizeof(Body) * tx.size());
+  std::memcpy(reinterpret_cast<uint16_t*>(tx.bodies()), delays, sizeof(Body) * tx.size());
 
   tx.num_bodies = tx.size();
 }
