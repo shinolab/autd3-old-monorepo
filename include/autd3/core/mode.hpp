@@ -28,10 +28,15 @@ class Mode {
   [[nodiscard]] virtual bool pack_stm_gain_body(const std::unique_ptr<const driver::Driver>& driver, size_t& sent, bool& next_duty, uint32_t freq_div,
                                                 const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode mode,
                                                 driver::TxDatagram& tx) const = 0;
+  Mode() = default;
   virtual ~Mode() = default;
+  Mode(const Mode& v) = default;
+  Mode& operator=(const Mode& obj) = default;
+  Mode(Mode&& obj) = default;
+  Mode& operator=(Mode&& obj) = default;
 };
 
-class LegacyMode : public Mode {
+class LegacyMode final : public Mode {
   [[nodiscard]] bool pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles,
                                driver::TxDatagram& tx) const override;
 
@@ -46,11 +51,16 @@ class LegacyMode : public Mode {
                           const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode mode, driver::TxDatagram& tx) const override;
 
  public:
+  LegacyMode() = default;
   ~LegacyMode() override = default;
+  LegacyMode(const LegacyMode& v) = default;
+  LegacyMode& operator=(const LegacyMode& obj) = default;
+  LegacyMode(LegacyMode&& obj) = default;
+  LegacyMode& operator=(LegacyMode&& obj) = default;
   static std::unique_ptr<LegacyMode> create() noexcept;
 };
 
-class NormalMode : public Mode {
+class NormalMode final : public Mode {
   bool pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles, driver::TxDatagram& tx) const override;
 
   void pack_gain_header(const std::unique_ptr<const driver::Driver>& driver, driver::TxDatagram& tx) const noexcept override;
@@ -64,11 +74,16 @@ class NormalMode : public Mode {
                           const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode mode, driver::TxDatagram& tx) const override;
 
  public:
+  NormalMode() = default;
   ~NormalMode() override = default;
+  NormalMode(const NormalMode& v) = default;
+  NormalMode& operator=(const NormalMode& obj) = default;
+  NormalMode(NormalMode&& obj) = default;
+  NormalMode& operator=(NormalMode&& obj) = default;
   static std::unique_ptr<NormalMode> create() noexcept;
 };
 
-class NormalPhaseMode : public Mode {
+class NormalPhaseMode final : public Mode {
   bool pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles, driver::TxDatagram& tx) const override;
 
   void pack_gain_header(const std::unique_ptr<const driver::Driver>& driver, driver::TxDatagram& tx) const noexcept override;
@@ -82,7 +97,12 @@ class NormalPhaseMode : public Mode {
                           const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode, driver::TxDatagram& tx) const override;
 
  public:
+  NormalPhaseMode() = default;
   ~NormalPhaseMode() override = default;
+  NormalPhaseMode(const NormalPhaseMode& v) = default;
+  NormalPhaseMode& operator=(const NormalPhaseMode& obj) = default;
+  NormalPhaseMode(NormalPhaseMode&& obj) = default;
+  NormalPhaseMode& operator=(NormalPhaseMode&& obj) = default;
   static std::unique_ptr<NormalPhaseMode> create() noexcept;
 };
 

@@ -18,7 +18,7 @@ namespace autd3 {
 Controller::Controller(std::unique_ptr<const driver::Driver> driver)
     : force_fan(false),
       reads_fpga_info(false),
-      _mode(std::make_unique<autd3::core::LegacyMode>()),
+      _mode(std::make_unique<core::LegacyMode>()),
       _tx_buf(0),
       _rx_buf(0),
       _link(nullptr),

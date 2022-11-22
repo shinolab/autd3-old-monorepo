@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/11/2022
+// Last Modified: 22/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -262,9 +262,8 @@ namespace autd3::extra {
       if (!command_buffer) {
         if (image_index == 0) {
           break;
-        } else {
-          continue;
         }
+        continue;
       }
       slice_viewer->render(slice_model, view, proj, command_buffer);
       trans_viewer->render(view, proj, command_buffer);
@@ -277,9 +276,8 @@ namespace autd3::extra {
       if (!command_buffer) {
         if (image_index == 0) {
           break;
-        } else {
-          continue;
         }
+        continue;
       }
       simulator::VulkanImGui::render(command_buffer);
       if (!renderer->end_frame(command_buffer, image_index)) break;

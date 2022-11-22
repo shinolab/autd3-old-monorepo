@@ -305,12 +305,12 @@ class Controller {
    * @param m Molar mass [kg mod^-1]
    * @return sound_speed
    */
-  double set_sound_speed_from_temp(const double temp, const double k = 1.4, const double r = 8.31446261815324, const double m = 28.9647e-3);
+  double set_sound_speed_from_temp(double temp, double k = 1.4, double r = 8.31446261815324, double m = 28.9647e-3);
 
   /**
    * Set attenuation coefficient
    */
-  void set_attenuation(const double attenuation);
+  void set_attenuation(double attenuation);
 
   /**
 * Get attenuation coefficient

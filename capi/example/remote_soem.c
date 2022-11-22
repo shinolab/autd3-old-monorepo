@@ -4,15 +4,12 @@
  * Created Date: 03/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/11/2022
+ * Last Modified: 22/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
-
-#include <stdio.h>
-#include <stdlib.h>
 
 #include "autd3_c_api.h"
 #include "remote_soem_link.h"

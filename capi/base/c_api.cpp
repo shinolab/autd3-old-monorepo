@@ -386,7 +386,7 @@ void AUTDDeleteSilencer(const void* config) {
 }
 
 bool AUTDSend(void* const handle, void* const header, void* const body) {
-  if (header == nullptr && body == nullptr) return 0;
+  if (header == nullptr && body == nullptr) return false;
   auto* const wrapper = static_cast<Controller*>(handle);
   auto* const h = static_cast<autd3::core::DatagramHeader*>(header);
   auto* const b = static_cast<autd3::core::DatagramBody*>(body);

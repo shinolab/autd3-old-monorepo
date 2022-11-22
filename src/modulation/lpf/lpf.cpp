@@ -65,7 +65,7 @@ bool LPF::calc() {
   for (int32_t i = 0; i < static_cast<int32_t>(mf.size()); i++) {
     double r = 0.0;
     for (int32_t j = 0; j < static_cast<int32_t>(_coef.size()); j++)
-      r += _coef[j] * static_cast<double>(mf[static_cast<size_t>(autd3::driver::rem_euclid(i - j, static_cast<int32_t>(mf.size())))]);
+      r += _coef[j] * static_cast<double>(mf[static_cast<size_t>(driver::rem_euclid(i - j, static_cast<int32_t>(mf.size())))]);
     this->_props.buffer.emplace_back(static_cast<uint8_t>(std::round(r)));
   }
   return true;

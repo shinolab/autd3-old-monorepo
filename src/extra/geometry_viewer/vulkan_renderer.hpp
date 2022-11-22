@@ -3,7 +3,7 @@
 // Created Date: 24/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 22/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -414,7 +414,7 @@ class VulkanRenderer {
     for (size_t i = 0; i < _max_frames_in_flight; i++) {
       auto [buf, mem] = _context->create_buffer(sizeof(UniformBufferObject), vk::BufferUsageFlagBits::eUniformBuffer,
                                                 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-      if (!buf || !buf) return false;
+      if (!buf || !mem) return false;
 
       _uniform_buffers[i] = std::move(buf);
       _uniform_buffers_memory[i] = std::move(mem);
