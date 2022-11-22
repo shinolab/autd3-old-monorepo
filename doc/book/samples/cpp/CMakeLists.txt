@@ -8,7 +8,7 @@ add_executable(main main.cpp)
 
 target_link_directories(main PRIVATE lib)
 target_include_directories(main PRIVATE include eigen)
-target_link_libraries(main link_soem)
+target_link_libraries(main autd3 link_soem)
 
 if(WIN32)
   target_link_directories(main PRIVATE lib/wpcap)
