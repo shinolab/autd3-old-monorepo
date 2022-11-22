@@ -11,6 +11,7 @@
 
 #include "autd3/soft_stm.hpp"
 
+#include "autd3/core/utils.hpp"
 #include "spdlog.hpp"
 
 namespace autd3 {
@@ -25,15 +26,15 @@ bool SoftwareSTM::SoftwareSTMThreadHandle::finish() {
   _cnt.set_ack_check_timeout(_timeout);
   return true;
 }
-SoftwareSTM::SoftwareSTMThreadHandle::SoftwareSTMThreadHandle(Controller& cnt, const std::vector<std::shared_ptr<core::Gain>>& bodies,
-                                                              const uint64_t period, const TimerStrategy strategy)
+SoftwareSTM::SoftwareSTMThreadHandle::SoftwareSTMThreadHandle(Controller& cnt, std::vector<std::shared_ptr<core::Gain>> bodies, const uint64_t period,
+                                                              const TimerStrategy strategy)
     : _cnt(cnt), _timeout(_cnt.get_ack_check_timeout()) {
   _run = true;
-  if (bodies.size() == 0) return;
+  if (bodies.empty()) return;
   const auto interval = std::chrono::nanoseconds(period);
   _cnt.set_ack_check_timeout(std::chrono::high_resolution_clock::duration::zero());
   if (strategy.contains(TimerStrategy::BUSY_WAIT))
-    _th = std::thread([this, interval, bodies]() {
+    _th = std::thread([this, interval, bodies = std::move(bodies)] {
       size_t i = 0;
       auto next = std::chrono::high_resolution_clock::now();
       while (_run) {
@@ -46,7 +47,7 @@ SoftwareSTM::SoftwareSTMThreadHandle::SoftwareSTMThreadHandle(Controller& cnt, c
       }
     });
   else
-    _th = std::thread([this, interval, bodies]() {
+    _th = std::thread([this, interval, bodies = std::move(bodies)] {
       size_t i = 0;
       auto next = std::chrono::high_resolution_clock::now();
       while (_run) {
@@ -68,12 +69,12 @@ double SoftwareSTM::set_frequency(const double freq) {
 
 SoftwareSTM::SoftwareSTMThreadHandle SoftwareSTM::start(Controller& cnt) {
   if (size() == 0) spdlog::warn("No data was added.");
-  return SoftwareSTMThreadHandle(cnt, std::move(_bodies), _sample_period_ns, timer_strategy);
+  return {cnt, std::move(_bodies), _sample_period_ns, timer_strategy};
 }
 
 double SoftwareSTM::frequency() const { return sampling_frequency() / static_cast<double>(size()); }
 
-uint64_t SoftwareSTM::period() const { return _sample_period_ns * static_cast<uint64_t>(size()); }
+uint64_t SoftwareSTM::period() const { return _sample_period_ns * size(); }
 
 double SoftwareSTM::sampling_frequency() const noexcept { return 1000000000.0 / static_cast<double>(_sample_period_ns); }
 

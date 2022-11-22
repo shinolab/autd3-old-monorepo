@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/11/2022
+// Last Modified: 22/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,6 +16,7 @@
 #pragma warning(disable : 6011 6386)
 #endif
 
+#include <stdio.h>
 #include <stdlib.h>
 
 #ifndef M_PI
@@ -125,7 +126,7 @@ int run(void* autd) {
     printf("[Others]: finish.\n");
 
     printf("Choose number: ");
-    int32_t i;
+    int32_t i = example_size;
     if (!scanf("%d", &i)) {
       break;
     }

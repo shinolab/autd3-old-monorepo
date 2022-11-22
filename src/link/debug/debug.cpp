@@ -11,7 +11,6 @@
 
 #include "autd3/link/debug.hpp"
 
-#include "../../spdlog.hpp"
 #include "autd3/core/link.hpp"
 #include "autd3/extra/cpu_emulator.hpp"
 
