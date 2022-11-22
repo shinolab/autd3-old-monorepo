@@ -1,3 +1,8 @@
+# 2.6.4
+
+- Fix [#46](https://github.com/shinolab/autd3/issues/46)
+- Fix [#47](https://github.com/shinolab/autd3/issues/47)
+
 # 2.6.3
 
 - Change sound speed configuration API
