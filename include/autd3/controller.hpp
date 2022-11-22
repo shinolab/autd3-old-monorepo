@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 22/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -295,13 +295,7 @@ class Controller {
    * Get speed of sound
    * @details This function returns the speed of sound set to the 0-th transducer of the 0-th device.
    */
-  [[nodiscard]] double get_sound_speed() const {
-    if (_geometry.num_devices() == 0) {
-      spdlog::warn("No devices are added.");
-      return 0.0;
-    }
-    return _geometry[0][0].sound_speed;
-  }
+  [[nodiscard]] double get_sound_speed() const;
 
   /**
    * Set speed of sound from temperature
@@ -311,37 +305,19 @@ class Controller {
    * @param m Molar mass [kg mod^-1]
    * @return sound_speed
    */
-  double set_sound_speed_from_temp(const double temp, const double k = 1.4, const double r = 8.31446261815324, const double m = 28.9647e-3) {
-#ifdef AUTD3_USE_METER
-    const auto sound_speed = std::sqrt(k * r * (273.15 + temp) / m);
-#else
-    const auto sound_speed = std::sqrt(k * r * (273.15 + temp) / m) * 1e3;
-#endif
-    for (auto& dev : _geometry)
-      for (auto& tr : dev) tr.sound_speed = sound_speed;
-    return sound_speed;
-  }
+  double set_sound_speed_from_temp(double temp, double k = 1.4, double r = 8.31446261815324, double m = 28.9647e-3);
 
   /**
    * Set attenuation coefficient
    */
-  void set_attenuation(const double attenuation) {
-    for (auto& dev : _geometry)
-      for (auto& tr : dev) tr.attenuation = attenuation;
-  }
+  void set_attenuation(double attenuation);
 
   /**
 * Get attenuation coefficient
 * @details This function returns the attenuation coefficient set to the 0-th transducer of the 0-th device.
 
 */
-  [[nodiscard]] double get_attenuation() const {
-    if (_geometry.num_devices() == 0) {
-      spdlog::warn("No devices are added.");
-      return 0.0;
-    }
-    return _geometry[0][0].attenuation;
-  }
+  [[nodiscard]] double get_attenuation() const;
 
  private:
   static uint8_t get_id() noexcept;

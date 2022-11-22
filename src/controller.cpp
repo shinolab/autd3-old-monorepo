@@ -3,7 +3,7 @@
 // Created Date: 16/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 22/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,13 +12,13 @@
 #include "autd3/controller.hpp"
 
 #include "autd3/core/interface.hpp"
-#include "autd3/spdlog.hpp"
+#include "spdlog.hpp"
 
 namespace autd3 {
 Controller::Controller(std::unique_ptr<const driver::Driver> driver)
     : force_fan(false),
       reads_fpga_info(false),
-      _mode(std::make_unique<autd3::core::LegacyMode>()),
+      _mode(std::make_unique<core::LegacyMode>()),
       _tx_buf(0),
       _rx_buf(0),
       _link(nullptr),
@@ -317,6 +317,38 @@ void Controller::flush() {
 std::chrono::high_resolution_clock::duration Controller::get_send_interval() const noexcept { return _send_interval; }
 
 std::chrono::high_resolution_clock::duration Controller::get_ack_check_timeout() const noexcept { return _ack_check_timeout; }
+
+double Controller::get_sound_speed() const {
+  if (_geometry.num_devices() == 0) {
+    spdlog::warn("No devices are added.");
+    return 0.0;
+  }
+  return _geometry[0][0].sound_speed;
+}
+
+double Controller::set_sound_speed_from_temp(const double temp, const double k, const double r, const double m) {
+#ifdef AUTD3_USE_METER
+  const auto sound_speed = std::sqrt(k * r * (273.15 + temp) / m);
+#else
+  const auto sound_speed = std::sqrt(k * r * (273.15 + temp) / m) * 1e3;
+#endif
+  for (auto& dev : _geometry)
+    for (auto& tr : dev) tr.sound_speed = sound_speed;
+  return sound_speed;
+}
+
+void Controller::set_attenuation(const double attenuation) {
+  for (auto& dev : _geometry)
+    for (auto& tr : dev) tr.attenuation = attenuation;
+}
+
+double Controller::get_attenuation() const {
+  if (_geometry.num_devices() == 0) {
+    spdlog::warn("No devices are added.");
+    return 0.0;
+  }
+  return _geometry[0][0].attenuation;
+}
 
 uint8_t Controller::get_id() noexcept {
   static std::atomic id_body{driver::MSG_BEGIN};

@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/11/2022
+// Last Modified: 22/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 #include <string>
 
-#include "autd3/spdlog.hpp"
+#include "../../spdlog.hpp"
 
 namespace autd3::link {
 inline void check_state(const uint16_t slave, std::stringstream& ss) {
