@@ -62,7 +62,6 @@ jobs:
         mkdir ./doc/book/samples/cpp/lib/wpcap
         copy 3rdparty/SOEM/oshw/win32/wpcap/Lib/x64/*.lib ./doc/book/samples/cpp/lib/wpcap
         copy 3rdparty/eigen -Recurse ./doc/book/samples/cpp/
-        copy 3rdparty/spdlog -Recurse ./doc/book/samples/cpp/
         cd ./doc/book/samples/cpp
         mkdir build
         cd build
