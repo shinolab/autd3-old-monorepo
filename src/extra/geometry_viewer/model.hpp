@@ -3,7 +3,7 @@
 // Created Date: 26/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 22/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@
 #include <utility>
 #include <vector>
 
-#include "autd3/spdlog.hpp"
+#include "../../spdlog.hpp"
 #include "glm.hpp"
 
 #if _MSC_VER
