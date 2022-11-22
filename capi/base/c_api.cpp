@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 22/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,6 +15,7 @@
 #include <string>
 #include <utility>
 
+#include "../../src/spdlog.hpp"
 #include "./autd3_c_api.h"
 #include "autd3.hpp"
 #include "autd3/driver/v2_2/driver.hpp"
@@ -385,7 +386,7 @@ void AUTDDeleteSilencer(const void* config) {
 }
 
 bool AUTDSend(void* const handle, void* const header, void* const body) {
-  if (header == nullptr && body == nullptr) return 0;
+  if (header == nullptr && body == nullptr) return false;
   auto* const wrapper = static_cast<Controller*>(handle);
   auto* const h = static_cast<autd3::core::DatagramHeader*>(header);
   auto* const b = static_cast<autd3::core::DatagramBody*>(body);

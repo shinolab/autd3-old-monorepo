@@ -3,7 +3,7 @@
 // Created Date: 19/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 22/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #include "autd3/modulation/lpf.hpp"
 
+#include "../../spdlog.hpp"
 #include "autd3/driver/utils.hpp"
 
 namespace autd3::modulation {
@@ -64,7 +65,7 @@ bool LPF::calc() {
   for (int32_t i = 0; i < static_cast<int32_t>(mf.size()); i++) {
     double r = 0.0;
     for (int32_t j = 0; j < static_cast<int32_t>(_coef.size()); j++)
-      r += _coef[j] * static_cast<double>(mf[static_cast<size_t>(autd3::driver::rem_euclid(i - j, static_cast<int32_t>(mf.size())))]);
+      r += _coef[j] * static_cast<double>(mf[static_cast<size_t>(driver::rem_euclid(i - j, static_cast<int32_t>(mf.size())))]);
     this->_props.buffer.emplace_back(static_cast<uint8_t>(std::round(r)));
   }
   return true;
