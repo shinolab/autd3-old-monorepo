@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/11/2022
+// Last Modified: 22/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,11 +17,31 @@
 #pragma GCC diagnostic ignored "-Wuninitialized"
 #endif
 
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 6285 6385 26437 26800 26498 26451 26495 26450)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic push
+#endif
+#ifdef __clang__
+#pragma clang diagnostic push
+#endif
+#include "spdlog/spdlog.h"
+#if _MSC_VER
+#pragma warning(pop)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic pop
+#endif
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
 #include <algorithm>
 
 #include "autd3/driver/common/cpu/datagram.hpp"
 #include "autd3/driver/hardware.hpp"
-#include "autd3/spdlog.hpp"
 #include "fpga_emulator.hpp"
 
 namespace autd3::extra::cpu {
