@@ -16,8 +16,8 @@ jobs:
         cargo run -- "../../doc/book/src/en/FFI/reference.md"
 
   check-cs:
-    name: build cs windows-latest
-    runs-on: windows-latest
+    name: build cs
+    runs-on: ubuntu-latest
     steps: 
     - uses: actions/checkout@v3
     - name: Setup .NET Core
@@ -38,17 +38,17 @@ jobs:
         mkdir build
         cd build
         cmake .. -DBUILD_LINK_SOEM=ON -DBUILD_GAIN_HOLO=OFF -DDISABLE_EXAMPLES=ON
-        cmake --build . --parallel 8 --config Release
+        cmake --build . --parallel 8
         cd ..
-        copy include -Recurse ./doc/book/samples/cpp/
+        \cp -r include/ ./doc/book/samples/cpp/
         mkdir ./doc/book/samples/cpp/lib
-        copy build/lib/Release/*.a  ./doc/book/samples/cpp/lib
-        copy 3rdparty/eigen -Recurse ./doc/book/samples/cpp/
+        \cp build/lib/*.a  ./doc/book/samples/cpp/lib
+        \cp -r 3rdparty/eigen/ ./doc/book/samples/cpp/
         cd ./doc/book/samples/cpp
         mkdir build
         cd build
         cmake ..
-        cmake --build . --parallel 8 --config Release
+        cmake --build . --parallel 8
 
   check-nim:
     name: build nim
