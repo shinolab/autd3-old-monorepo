@@ -17,7 +17,7 @@ requires "https://github.com/shinolab/autd3.git?subdir=nim == 2.6.4"
 たとえば, [Getting Started](../Users_Manual/getting_started.md)と等価なコードは以下のようになる.
 
 ```nim
-{{#include ../../../samples/nim/sample.nim}}
+{{#include ../../../samples/nim/sample/src/sample.nim}}
 ```
 
 より詳細なサンプルは[example](https://github.com/shinolab/autd3/tree/master/nim/examples)を参照されたい.
