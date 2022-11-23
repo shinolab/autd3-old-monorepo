@@ -1,5 +1,3 @@
-import strutils
-
 import autd3
 import autd3/soem
 
@@ -14,9 +12,9 @@ when isMainModule:
 
         var soem = initSOEM()
         let link = soem.highPrecision(true).onLost(onLost).build()
-        cnt.open(link)
+        discard cnt.open(link)
 
-        cnt.checkTrials = 50
+        cnt.ackCheckTimeoutMs = 20
 
         cnt.send(clear())
         cnt.send(synchronize())

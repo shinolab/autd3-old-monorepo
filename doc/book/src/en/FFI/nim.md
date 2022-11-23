@@ -18,7 +18,7 @@ For example, the following code is equivalent to [Getting Started](../Users_Manu
 
 
 ```nim
-{{#include ../../../samples/nim/sample.nim}}
+{{#include ../../../samples/nim/sample/src/sample.nim}}
 ```
 
 For a more detailed example, see [example](https://github.com/shinolab/autd3/tree/master/nim/examples).

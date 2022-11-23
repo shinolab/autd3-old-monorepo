@@ -26,27 +26,11 @@ jobs:
         dotnet-version: '6.0.x'
     - name: build
       run: |
-        cp LICENSE cs/src/LICENSE.md
-        mkdir build
-        cd build
-        cmake .. -DBUILD_LINK_SOEM=ON -DBUILD_GAIN_HOLO=OFF -DDISABLE_EXAMPLES=ON -DBUILD_CAPI=ON
-        cmake --build . --parallel 8 --config Release
-        cd ..
-        foreach($dll in Get-ChildItem -Path build/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/src/native/windows/x64}
-        cd cs/src
-        dotnet clean
-        dotnet build -c:Release
-        cd ..
-        dotnet nuget add source $pwd/src/bin/Release -n autd3sharp_local
-        cd ..
         dotnet build ./doc/book/samples/cs/cs.csproj -c:Release
 
   check-cpp:
-    name: build cpp ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-latest]
+    name: build cpp
+    runs-on: ubuntu-latest
     steps: 
     - uses: actions/checkout@v3
     - name: build
@@ -58,15 +42,57 @@ jobs:
         cd ..
         copy include -Recurse ./doc/book/samples/cpp/
         mkdir ./doc/book/samples/cpp/lib
-        copy build/lib/Release/*.lib  ./doc/book/samples/cpp/lib
-        mkdir ./doc/book/samples/cpp/lib/wpcap
-        copy 3rdparty/SOEM/oshw/win32/wpcap/Lib/x64/*.lib ./doc/book/samples/cpp/lib/wpcap
+        copy build/lib/Release/*.a  ./doc/book/samples/cpp/lib
         copy 3rdparty/eigen -Recurse ./doc/book/samples/cpp/
         cd ./doc/book/samples/cpp
         mkdir build
         cd build
         cmake ..
         cmake --build . --parallel 8 --config Release
+
+  check-nim:
+    name: build nim
+    runs-on: ubuntu-latest
+    steps: 
+    - uses: actions/checkout@v3
+    - uses: jiro4989/setup-nim-action@v1
+    - name: build
+      run: |
+        cd doc/book/samples/nim/sample
+        nimble build -Y
+
+  check-rust:
+    name: build rust
+    runs-on: ubuntu-latest
+    steps: 
+    - uses: actions/checkout@v3
+    - name: build
+      run: |
+        cd doc/book/samples/rust/sample
+        cargo build
+
+  # check-julia:
+  #   name: build julia
+  #   runs-on: ubuntu-latest
+  #   steps: 
+  #   - uses: actions/checkout@v3
+  #   - name: Set up Julia
+  #     uses: julia-actions/setup-julia@v1
+  #     with:
+  #       version: 1.8.2
+  #   - name: build
+  #     run: |
+  #       cd doc/book/samples/julia
+  #       julia -e 'using Pkg; Pkg.add(url="https://github.com/shinolab/autd3.git", subdir="julia"); Pkg.build("AUTD3")'
+
+  # check-python:
+  #   name: build python
+  #   runs-on: ubuntu-latest
+  #   steps: 
+  #   - uses: actions/checkout@v3
+  #   - name: build
+  #     run: |
+  #       cd doc/book/samples/python
 
   build:
     needs: [check, check-cs, check-cpp]
@@ -79,12 +105,11 @@ jobs:
       run: |
         mkdir -p doc_build
         sudo mv ./build/doc/doxygen/html ./doc_build/api
-    - uses: jontze/action-mdbook@v1
-      with:
-        token: ${{secrets.GITHUB_TOKEN}}
-        use-linkcheck: true
-        use-opengh: false
-        use-toc: true
+    - uses: peaceiris/actions-mdbook@v1
+    - name: Setup mdbook plugins
+      run: |
+        cargo install mdbook-linkcheck
+        cargo install mdbook-toc
     - name: Setup mdbook-katex
       uses: magicgh/mdbook-katex-action@v1
       with:
