@@ -95,7 +95,7 @@ jobs:
   #       cd doc/book/samples/python
 
   build:
-    needs: [check, check-cs, check-cpp]
+    needs: [check, check-cs, check-rust, check-nim, check-cpp]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
