@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 add_library(autd3
+  ${PROJECT_SOURCE_DIR}/include/autd3/core/geometry.hpp
   ${PROJECT_SOURCE_DIR}/include/autd3/controller.hpp
   controller.cpp
   ${PROJECT_SOURCE_DIR}/include/autd3/soft_stm.hpp
