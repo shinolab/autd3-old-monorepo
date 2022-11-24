@@ -22,14 +22,12 @@ fn main() {
 
     autd.synchronize().unwrap();
 
-    println!("***** Firmware information *****");
     autd.firmware_infos().unwrap().iter().for_each(|firm_info| {
         println!("{}", firm_info);
     });
-    println!("********************************");
 
-    let silencer_config = SilencerConfig::default();
-    autd.config_silencer(silencer_config).unwrap();
+    let mut silencer = SilencerConfig::default();
+    autd.send(&mut silencer).flush().unwrap();
 
     let center = autd.geometry().center() + Vector3::new(0., 0., 150.0);
 
@@ -39,7 +37,7 @@ fn main() {
     autd.send(&mut m).send(&mut g).unwrap();
 
     let mut _s = String::new();
-    io::stdin().read_line(&mut _s).unwrap();
+    std::io::stdin().read_line(&mut _s).unwrap();
 
     autd.close().unwrap();
 }
