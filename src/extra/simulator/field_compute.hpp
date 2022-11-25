@@ -3,7 +3,7 @@
 // Created Date: 05/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -58,7 +58,7 @@ class FieldCompute {
   FieldCompute(FieldCompute&& obj) = default;
   FieldCompute& operator=(FieldCompute&& obj) = default;
 
-  [[nodiscard]] bool init(const SoundSources& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers,
+  [[nodiscard]] bool init(const std::vector<SoundSources>& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers,
                           const size_t image_size, const tinycolormap::ColormapType type) {
     create_descriptor_set_layouts();
 
@@ -88,7 +88,7 @@ class FieldCompute {
     return update_source_drive(sources) && update_source_pos(sources);
   }
 
-  [[nodiscard]] bool update(const SoundSources& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers,
+  [[nodiscard]] bool update(const std::vector<SoundSources>& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers,
                             const size_t image_size, const tinycolormap::ColormapType type, const UpdateFlags update_flags) {
     if (update_flags.contains(UpdateFlags::UPDATE_SLICE_SIZE)) create_descriptor_sets(sources, image_buffers, image_size);
 
@@ -178,7 +178,9 @@ class FieldCompute {
     return std::make_pair(vk::UniquePipelineLayout(nullptr), vk::UniquePipeline(nullptr));
   }
 
-  void create_descriptor_sets(const SoundSources& sources, const std::vector<vk::UniqueBuffer>& image_buffers, const size_t image_size) {
+  void create_descriptor_sets(const std::vector<SoundSources>& sources, const std::vector<vk::UniqueBuffer>& image_buffers, const size_t image_size) {
+    const auto size = std::accumulate(sources.begin(), sources.end(), size_t{0}, [](size_t acc, const auto& s) { return acc + s.size(); });
+
     {
       const std::vector layouts(_renderer->frames_in_flight(), _descriptor_set_layout_0.get());
       _descriptor_sets_0 = _context->device().allocateDescriptorSetsUnique(
@@ -204,7 +206,7 @@ class FieldCompute {
           vk::DescriptorSetAllocateInfo().setDescriptorPool(_context->descriptor_pool()).setSetLayouts(layouts));
       for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
         const vk::DescriptorBufferInfo buffer_info =
-            vk::DescriptorBufferInfo().setBuffer(_pos_buffers[i].get()).setOffset(0).setRange(sizeof(glm::vec4) * sources.size());
+            vk::DescriptorBufferInfo().setBuffer(_pos_buffers[i].get()).setOffset(0).setRange(sizeof(glm::vec4) * size);
         std::array descriptor_writes{
             vk::WriteDescriptorSet()
                 .setDstSet(_descriptor_sets_1[i].get())
@@ -223,7 +225,7 @@ class FieldCompute {
           vk::DescriptorSetAllocateInfo().setDescriptorPool(_context->descriptor_pool()).setSetLayouts(layouts));
       for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
         const vk::DescriptorBufferInfo buffer_info =
-            vk::DescriptorBufferInfo().setBuffer(_drive_buffers[i].get()).setOffset(0).setRange(sizeof(Drive) * sources.size());
+            vk::DescriptorBufferInfo().setBuffer(_drive_buffers[i].get()).setOffset(0).setRange(sizeof(Drive) * size);
         std::array descriptor_writes{
             vk::WriteDescriptorSet()
                 .setDstSet(_descriptor_sets_2[i].get())
@@ -334,11 +336,12 @@ class FieldCompute {
     return true;
   }
 
-  [[nodiscard]] bool create_source_drive(const SoundSources& sources) {
+  [[nodiscard]] bool create_source_drive(const std::vector<SoundSources>& sources) {
     _drive_buffers.resize(_renderer->frames_in_flight());
     _drive_buffers_memory.resize(_renderer->frames_in_flight());
     for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
-      auto [buf, mem] = _context->create_buffer(sizeof(Drive) * sources.size(), vk::BufferUsageFlagBits::eStorageBuffer,
+      const auto size = std::accumulate(sources.begin(), sources.end(), size_t{0}, [](size_t acc, const auto& s) { return acc + s.size(); });
+      auto [buf, mem] = _context->create_buffer(sizeof(Drive) * size, vk::BufferUsageFlagBits::eStorageBuffer,
                                                 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
       if (!buf || !mem) return false;
 
@@ -348,11 +351,12 @@ class FieldCompute {
     return true;
   }
 
-  [[nodiscard]] bool create_source_pos(const SoundSources& sources) {
+  [[nodiscard]] bool create_source_pos(const std::vector<SoundSources>& sources) {
     _pos_buffers.resize(_renderer->frames_in_flight());
     _pos_buffers_memory.resize(_renderer->frames_in_flight());
     for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
-      auto [buf, mem] = _context->create_buffer(sizeof(glm::vec4) * sources.size(), vk::BufferUsageFlagBits::eStorageBuffer,
+      const auto size = std::accumulate(sources.begin(), sources.end(), size_t{0}, [](size_t acc, const auto& s) { return acc + s.size(); });
+      auto [buf, mem] = _context->create_buffer(sizeof(glm::vec4) * size, vk::BufferUsageFlagBits::eStorageBuffer,
                                                 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
       if (!buf || !mem) return false;
 
@@ -363,29 +367,35 @@ class FieldCompute {
     return true;
   }
 
-  [[nodiscard]] bool update_source_drive(const SoundSources& sources) {
-    const auto& drives = sources.drives();
-    void* data;
+  [[nodiscard]] bool update_source_drive(const std::vector<SoundSources>& sources) {
+    const auto size = std::accumulate(sources.begin(), sources.end(), size_t{0}, [](size_t acc, const auto& s) { return acc + s.size(); });
+    uint8_t* data = nullptr;
     for (auto& memory : _drive_buffers_memory) {
-      if (_context->device().mapMemory(memory.get(), 0, sizeof(Drive) * drives.size(), {}, &data) != vk::Result::eSuccess) {
+      if (_context->device().mapMemory(memory.get(), 0, sizeof(Drive) * size, {}, reinterpret_cast<void**>(&data)) != vk::Result::eSuccess) {
         spdlog::error("Failed to map uniform buffer memory");
         return false;
       }
-      memcpy(data, drives.data(), sizeof(glm::vec4) * drives.size());
+      for (const auto& s : sources) {
+        memcpy(data, s.drives().data(), sizeof(glm::vec4) * s.drives().size());
+        data += sizeof(glm::vec4) * s.drives().size();
+      }
       _context->device().unmapMemory(memory.get());
     }
     return true;
   }
 
-  [[nodiscard]] bool update_source_pos(const SoundSources& sources) {
-    const auto& positions = sources.positions();
-    void* data;
+  [[nodiscard]] bool update_source_pos(const std::vector<SoundSources>& sources) {
+    const auto size = std::accumulate(sources.begin(), sources.end(), size_t{0}, [](size_t acc, const auto& s) { return acc + s.size(); });
+    uint8_t* data = nullptr;
     for (auto& memory : _pos_buffers_memory) {
-      if (_context->device().mapMemory(memory.get(), 0, sizeof(glm::vec4) * positions.size(), {}, &data) != vk::Result::eSuccess) {
+      if (_context->device().mapMemory(memory.get(), 0, sizeof(glm::vec4) * size, {}, reinterpret_cast<void**>(&data)) != vk::Result::eSuccess) {
         spdlog::error("Failed to map uniform buffer memory");
         return false;
       }
-      memcpy(data, positions.data(), sizeof(glm::vec4) * positions.size());
+      for (const auto& s : sources) {
+        memcpy(data, s.positions().data(), sizeof(glm::vec4) * s.positions().size());
+        data += sizeof(glm::vec4) * s.positions().size();
+      }
       _context->device().unmapMemory(memory.get());
     }
     return true;
