@@ -65,12 +65,12 @@ struct TxDatagram {
 
   Body &body(const size_t idx) noexcept {
     const auto start = _trans_num_prefix_sum[idx];
-    return *reinterpret_cast<Body *>(_data.data() + sizeof(GlobalHeader) + start);
+    return *reinterpret_cast<Body *>(_data.data() + sizeof(GlobalHeader) + sizeof(uint16_t) * start);
   }
 
   [[nodiscard]] const Body &body(const size_t idx) const noexcept {
     const auto start = _trans_num_prefix_sum[idx];
-    return *reinterpret_cast<const Body *>(_data.data() + sizeof(GlobalHeader) + start);
+    return *reinterpret_cast<const Body *>(_data.data() + sizeof(GlobalHeader) + sizeof(uint16_t) * start);
   }
 
   void clear() { std::memset(_data.data(), 0, _data.size()); }

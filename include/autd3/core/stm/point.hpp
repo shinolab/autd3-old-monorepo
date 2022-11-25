@@ -12,6 +12,7 @@
 #pragma once
 
 #include <algorithm>
+#include <iostream>
 #include <utility>
 #include <vector>
 
@@ -91,12 +92,12 @@ struct PointSTM final : STM {
     points.reserve(geometry.device_map().size());
     const auto send_size = driver->point_stm_send_size(_points.size(), _sent, geometry.device_map());
 
-    for (size_t i = 0; i < geometry.device_map().size(); i++) {
+    auto idx = 0;
+    for (size_t i = 0; i < geometry.device_map().size(); i++, idx += geometry.device_map()[i]) {
       std::vector<driver::STMFocus> lp;
       lp.reserve(send_size);
       const auto src = _points.data() + _sent;
 
-      const auto idx = i == 0 ? 0 : geometry.device_map()[i - 1];
       const Vector3 origin = geometry[idx].position();
       const Quaternion rotation = geometry[idx].rotation();
       const Eigen::Transform<double, 3, Eigen::Affine> transform_matrix = Eigen::Translation<double, 3>(origin) * rotation;
