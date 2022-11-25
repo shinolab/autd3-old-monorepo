@@ -3,7 +3,7 @@
 // Created Date: 01/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,36 +14,47 @@
 namespace autd3::link {
 
 struct IOMap {
-  IOMap() : _size(0), _buf(nullptr), _device_num(0) {}
+  IOMap() : _size(0), _buf(nullptr), _trans_num_prefix_sum() {}
 
-  explicit IOMap(const size_t device_num)
-      : _size(device_num * (driver::HEADER_SIZE + driver::BODY_SIZE + driver::EC_INPUT_FRAME_SIZE)),
-        _buf(std::make_unique<uint8_t[]>(_size)),
-        _device_num(device_num) {}
+  explicit IOMap(const std::vector<size_t>& device_map) : _device_map(device_map) {
+    _trans_num_prefix_sum.resize(device_map.size() + 1, 0);
+    for (size_t i = 0; i < device_map.size(); i++)
+      _trans_num_prefix_sum[i + 1] = _trans_num_prefix_sum[i] + (driver::HEADER_SIZE + device_map[i] * sizeof(uint16_t));
 
-  void resize(const size_t device_num) {
-    if (const auto size = device_num * (driver::HEADER_SIZE + driver::BODY_SIZE + driver::EC_INPUT_FRAME_SIZE); _size != size) {
-      _device_num = device_num;
-      _size = size;
+    _size = _trans_num_prefix_sum[_trans_num_prefix_sum.size() - 1];
+    _buf = std::make_unique<uint8_t[]>(_size);
+  }
+
+  void resize(const std::vector<size_t>& device_map) {
+    std::vector<size_t> trans_num_prefix_sum;
+    trans_num_prefix_sum.resize(device_map.size() + 1, 0);
+    for (size_t i = 0; i < device_map.size(); i++)
+      trans_num_prefix_sum[i + 1] = trans_num_prefix_sum[i] + (driver::HEADER_SIZE + device_map[i] * sizeof(uint16_t));
+
+    if (trans_num_prefix_sum.size() != _trans_num_prefix_sum.size() ||
+        !std::equal(trans_num_prefix_sum.cbegin(), trans_num_prefix_sum.cend(), _trans_num_prefix_sum.cbegin())) {
+      _trans_num_prefix_sum = trans_num_prefix_sum;
+      _size = _trans_num_prefix_sum[_trans_num_prefix_sum.size() - 1];
       _buf = std::make_unique<uint8_t[]>(_size);
+      _device_map = device_map;
     }
   }
 
   [[nodiscard]] size_t size() const { return _size; }
 
   driver::GlobalHeader* header(const size_t i) {
-    return reinterpret_cast<driver::GlobalHeader*>(&_buf[(driver::HEADER_SIZE + driver::BODY_SIZE) * i + driver::BODY_SIZE]);
+    return reinterpret_cast<driver::GlobalHeader*>(&_buf[_trans_num_prefix_sum[i] + _device_map[i] * sizeof(uint16_t)]);
   }
 
-  driver::Body* body(const size_t i) { return reinterpret_cast<driver::Body*>(&_buf[(driver::HEADER_SIZE + driver::BODY_SIZE) * i]); }
+  driver::Body* body(const size_t i) { return reinterpret_cast<driver::Body*>(&_buf[_trans_num_prefix_sum[i]]); }
 
   [[nodiscard]] const driver::RxMessage* input() const {
-    return reinterpret_cast<const driver::RxMessage*>(&_buf[(driver::HEADER_SIZE + driver::BODY_SIZE) * _device_num]);
+    return reinterpret_cast<const driver::RxMessage*>(&_buf[_trans_num_prefix_sum[_trans_num_prefix_sum.size() - 1]]);
   }
 
   void copy_from(driver::TxDatagram& tx) {
-    for (size_t i = 0; i < tx.num_bodies; i++) std::memcpy(body(i), tx.bodies() + i, sizeof(driver::Body));
-    for (size_t i = 0; i < _device_num; i++) std::memcpy(header(i), tx.data().data(), sizeof(driver::GlobalHeader));
+    for (size_t i = 0; i < tx.num_bodies; i++) std::memcpy(body(i), &tx.body(i), _device_map[i] * sizeof(uint16_t));
+    for (size_t i = 0; i < _device_map.size(); i++) std::memcpy(header(i), tx.data().data(), sizeof(driver::GlobalHeader));
   }
 
   [[nodiscard]] uint8_t* get() const { return _buf.get(); }
@@ -51,7 +62,8 @@ struct IOMap {
  private:
   size_t _size;
   std::unique_ptr<uint8_t[]> _buf;
-  size_t _device_num;
+  std::vector<size_t> _trans_num_prefix_sum;
+  std::vector<size_t> _device_map;
 };
 
 }  // namespace autd3::link
