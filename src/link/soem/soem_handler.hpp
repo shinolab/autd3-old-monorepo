@@ -242,15 +242,8 @@ class SOEMHandler final {
     const auto cyc_time = static_cast<uint32_t*>(ecx_context.userdata)[0];
     for (uint16_t slave = 1; slave <= static_cast<uint16_t>(ec_slavecount); slave++) ec_dcsync0(slave, false, cyc_time, 0U);
 
-    ec_slave[0].state = EC_STATE_SAFE_OP;
+    ec_slave[0].state = EC_STATE_INIT;
     ec_writestate(0);
-    if (const auto state = ec_statecheck(0, EC_STATE_SAFE_OP, EC_TIMEOUTSTATE); state != EC_STATE_SAFE_OP)
-      spdlog::warn("Failed to reach safe op: {}", state);
-
-    ec_slave[0].state = EC_STATE_PRE_OP;
-    ec_writestate(0);
-    if (const auto state = ec_statecheck(0, EC_STATE_PRE_OP, EC_TIMEOUTSTATE); state != EC_STATE_PRE_OP)
-      spdlog::warn("Failed to reach pre op: {}", state);
 
     ec_close();
 
