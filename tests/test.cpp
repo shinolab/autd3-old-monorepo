@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ TEST(ControllerTest, stream) {
 
   autd3::Controller autd;
 
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
   (void)autd.open(autd3::test::NullLink().build());
 
   autd << clear;
@@ -93,7 +93,7 @@ TEST(ControllerTest, stream_async) {
 
   autd3::Controller autd;
 
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
   (void)autd.open(autd3::test::NullLink().build());
 
   autd << async << clear;
@@ -203,7 +203,7 @@ TEST(ControllerTest, stream_async) {
 TEST(ControllerTest, basic_usage) {
   autd3::Controller autd;
 
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
 
   auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
@@ -211,7 +211,7 @@ TEST(ControllerTest, basic_usage) {
   (void)autd.open(std::move(link));
 
   const auto firm_infos = autd.firmware_infos();
-  ASSERT_EQ(firm_infos.size(), autd.geometry().num_devices());
+  ASSERT_EQ(firm_infos.size(), autd.geometry().device_map().size());
   for (const auto& firm : firm_infos) {
     ASSERT_EQ(firm.cpu_version(), "v2.6");
     ASSERT_EQ(firm.fpga_version(), "v2.6");
@@ -243,16 +243,17 @@ TEST(ControllerTest, basic_usage) {
     ASSERT_TRUE(cpu.fpga_flags().contains(autd3::driver::FPGAControlFlags::LEGACY_MODE));
     ASSERT_FALSE(cpu.fpga_flags().contains(autd3::driver::FPGAControlFlags::STM_MODE));
   }
-  const auto& base_tr = autd.geometry()[0][0];
+  const auto& base_tr = autd.geometry()[0];
   ASSERT_EQ(cpus->at(0).fpga().drives().first.size(), 1);
   ASSERT_EQ(cpus->at(0).fpga().drives().second.size(), 1);
   const auto expect = std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0.0, base_tr.wavenumber(), focus) *
                                std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[0][0].phase) /
                                                               static_cast<double>(cpus->at(0).fpga().cycles()[0]))));
-  for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
-    for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
-      const auto p = std::arg(autd3::core::propagate(autd.geometry()[i][j].position(), autd.geometry()[i][j].z_direction(), 0.0,
-                                                     autd.geometry()[i][j].wavenumber(), focus) *
+  for (size_t i = 0; i < autd.geometry().device_map().size(); i++) {
+    for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
+      const auto p = std::arg(autd3::core::propagate(autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].position(),
+                                                     autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].z_direction(), 0.0,
+                                                     autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].wavenumber(), focus) *
                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives().second[0][j].phase) /
                                                              static_cast<double>(cpus->at(i).fpga().cycles()[j]))));
       ASSERT_EQ(cpus->at(i).fpga().drives().first[0][j].duty, cpus->at(i).fpga().cycles()[j] >> 1);
@@ -302,7 +303,7 @@ TEST(ControllerTest, basic_usage) {
 TEST(ControllerTest, basic_usage_async) {
   autd3::Controller autd;
 
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
 
   auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
@@ -310,7 +311,7 @@ TEST(ControllerTest, basic_usage_async) {
   (void)autd.open(std::move(link));
 
   const auto firm_infos = autd.firmware_infos();
-  ASSERT_EQ(firm_infos.size(), autd.geometry().num_devices());
+  ASSERT_EQ(firm_infos.size(), autd.geometry().device_map().size());
   for (const auto& firm : firm_infos) {
     ASSERT_EQ(firm.cpu_version(), "v2.6");
     ASSERT_EQ(firm.fpga_version(), "v2.6");
@@ -344,16 +345,17 @@ TEST(ControllerTest, basic_usage_async) {
     ASSERT_TRUE(cpu.fpga_flags().contains(autd3::driver::FPGAControlFlags::LEGACY_MODE));
     ASSERT_FALSE(cpu.fpga_flags().contains(autd3::driver::FPGAControlFlags::STM_MODE));
   }
-  const auto& base_tr = autd.geometry()[0][0];
+  const auto& base_tr = autd.geometry()[0];
   ASSERT_EQ(cpus->at(0).fpga().drives().first.size(), 1);
   ASSERT_EQ(cpus->at(0).fpga().drives().second.size(), 1);
   const auto expect = std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0.0, base_tr.wavenumber(), focus) *
                                std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[0][0].phase) /
                                                               static_cast<double>(cpus->at(0).fpga().cycles()[0]))));
-  for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
-    for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
-      const auto p = std::arg(autd3::core::propagate(autd.geometry()[i][j].position(), autd.geometry()[i][j].z_direction(), 0.0,
-                                                     autd.geometry()[i][j].wavenumber(), focus) *
+  for (size_t i = 0; i < autd.geometry().device_map().size(); i++) {
+    for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
+      const auto p = std::arg(autd3::core::propagate(autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].position(),
+                                                     autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].z_direction(), 0.0,
+                                                     autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].wavenumber(), focus) *
                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives().second[0][j].phase) /
                                                              static_cast<double>(cpus->at(i).fpga().cycles()[j]))));
       ASSERT_EQ(cpus->at(i).fpga().drives().first[0][j].duty, cpus->at(i).fpga().cycles()[j] >> 1);
@@ -405,7 +407,7 @@ TEST(ControllerTest, basic_usage_async) {
 TEST(ControllerTest, freq_config) {
   autd3::Controller autd;
 
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
 
   const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
@@ -413,8 +415,7 @@ TEST(ControllerTest, freq_config) {
   (void)autd.open(std::move(link));
 
   autd << autd3::normal_mode;
-  for (auto& dev : autd.geometry())
-    for (auto& tr : dev) tr.set_cycle(2341);
+  for (auto& tr : autd.geometry()) tr.set_cycle(2341);
 
   autd.send(autd3::clear());
   autd.send(autd3::synchronize());
@@ -428,12 +429,12 @@ TEST(ControllerTest, freq_config) {
 TEST(ControllerTest, simple_legacy) {
   autd3::Controller autd;
 
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3(0, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()));
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
 
-  ASSERT_EQ(autd.geometry().num_devices(), 4);
+  ASSERT_EQ(autd.geometry().device_map().size(), 4);
   ASSERT_EQ(autd.geometry().num_transducers(), 4 * 249);
 
   const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
@@ -446,14 +447,15 @@ TEST(ControllerTest, simple_legacy) {
   const autd3::Vector3 focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   autd3::gain::Focus g(focus);
   autd << g;
-  const auto& base_tr = autd.geometry()[0][0];
+  const auto& base_tr = autd.geometry()[0];
   const auto expect = std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0.0, base_tr.wavenumber(), focus) *
                                std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[0][0].phase) /
                                                               static_cast<double>(cpus->at(0).fpga().cycles()[0]))));
-  for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
-    for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
-      const auto p = std::arg(autd3::core::propagate(autd.geometry()[i][j].position(), autd.geometry()[i][j].z_direction(), 0.0,
-                                                     autd.geometry()[i][j].wavenumber(), focus) *
+  for (size_t i = 0; i < autd.geometry().device_map().size(); i++) {
+    for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
+      const auto p = std::arg(autd3::core::propagate(autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].position(),
+                                                     autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].z_direction(), 0.0,
+                                                     autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].wavenumber(), focus) *
                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives().second[0][j].phase) /
                                                              static_cast<double>(cpus->at(i).fpga().cycles()[j]))));
       ASSERT_EQ(cpus->at(i).fpga().drives().first[0][j].duty, cpus->at(i).fpga().cycles()[j] >> 1);
@@ -466,12 +468,12 @@ TEST(ControllerTest, simple_legacy) {
 TEST(ControllerTest, simple_normal) {
   autd3::Controller autd;
 
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3(0, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()));
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
 
-  ASSERT_EQ(autd.geometry().num_devices(), 4);
+  ASSERT_EQ(autd.geometry().device_map().size(), 4);
   ASSERT_EQ(autd.geometry().num_transducers(), 4 * 249);
 
   const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
@@ -481,22 +483,22 @@ TEST(ControllerTest, simple_normal) {
 
   autd << autd3::normal_mode;
   constexpr uint16_t cycle = 2341;  // 70kHz
-  for (auto& dev : autd.geometry())
-    for (auto& tr : dev) tr.set_cycle(cycle);
+  for (auto& tr : autd.geometry()) tr.set_cycle(cycle);
 
   autd << autd3::clear << autd3::synchronize;
 
   const autd3::Vector3 focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   autd3::gain::Focus g(focus);
   autd << g;
-  const auto& base_tr = autd.geometry()[0][0];
+  const auto& base_tr = autd.geometry()[0];
   const auto expect = std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0.0, base_tr.wavenumber(), focus) *
                                std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[0][0].phase) /
                                                               static_cast<double>(cpus->at(0).fpga().cycles()[0]))));
-  for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
-    for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
-      const auto p = std::arg(autd3::core::propagate(autd.geometry()[i][j].position(), autd.geometry()[i][j].z_direction(), 0.0,
-                                                     autd.geometry()[i][j].wavenumber(), focus) *
+  for (size_t i = 0; i < autd.geometry().device_map().size(); i++) {
+    for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
+      const auto p = std::arg(autd3::core::propagate(autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].position(),
+                                                     autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].z_direction(), 0.0,
+                                                     autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].wavenumber(), focus) *
                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives().second[0][j].phase) /
                                                              static_cast<double>(cpus->at(i).fpga().cycles()[j]))));
       ASSERT_LE(std::abs(static_cast<int>(cpus->at(i).fpga().drives().first[0][j].duty) - (cpus->at(i).fpga().cycles()[j] >> 1)), 1);
@@ -509,12 +511,12 @@ TEST(ControllerTest, simple_normal) {
 TEST(ControllerTest, simple_normal_phase) {
   autd3::Controller autd;
 
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3(0, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()));
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
 
-  ASSERT_EQ(autd.geometry().num_devices(), 4);
+  ASSERT_EQ(autd.geometry().device_map().size(), 4);
   ASSERT_EQ(autd.geometry().num_transducers(), 4 * 249);
 
   const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
@@ -524,8 +526,7 @@ TEST(ControllerTest, simple_normal_phase) {
 
   autd << autd3::normal_phase_mode;
   constexpr uint16_t cycle = 2341;  // 70kHz
-  for (auto& dev : autd.geometry())
-    for (auto& tr : dev) tr.set_cycle(cycle);
+  for (auto& tr : autd.geometry()) tr.set_cycle(cycle);
 
   autd << autd3::clear << autd3::synchronize;
 
@@ -535,14 +536,15 @@ TEST(ControllerTest, simple_normal_phase) {
   const autd3::Vector3 focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   autd3::gain::Focus g(focus);
   autd << g;
-  const auto& base_tr = autd.geometry()[0][0];
+  const auto& base_tr = autd.geometry()[0];
   const auto expect = std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0.0, base_tr.wavenumber(), focus) *
                                std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[0][0].phase) /
                                                               static_cast<double>(cpus->at(0).fpga().cycles()[0]))));
-  for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
-    for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
-      const auto p = std::arg(autd3::core::propagate(autd.geometry()[i][j].position(), autd.geometry()[i][j].z_direction(), 0.0,
-                                                     autd.geometry()[i][j].wavenumber(), focus) *
+  for (size_t i = 0; i < autd.geometry().device_map().size(); i++) {
+    for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
+      const auto p = std::arg(autd3::core::propagate(autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].position(),
+                                                     autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].z_direction(), 0.0,
+                                                     autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].wavenumber(), focus) *
                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives().second[0][j].phase) /
                                                              static_cast<double>(cpus->at(i).fpga().cycles()[j]))));
       ASSERT_LE(std::abs(static_cast<int>(cpus->at(i).fpga().drives().first[0][j].duty) - (cpus->at(i).fpga().cycles()[j] >> 1)), 1);
@@ -555,10 +557,10 @@ TEST(ControllerTest, simple_normal_phase) {
 TEST(ControllerTest, point_stm) {
   autd3::Controller autd;
 
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3(0, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()));
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
 
   const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
@@ -583,21 +585,22 @@ TEST(ControllerTest, point_stm) {
   std::copy(points.begin(), points.end(), std::back_inserter(stm));
 
   autd << stm;
-  for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
+  for (size_t i = 0; i < autd.geometry().device_map().size(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
 
   const auto cycle = cpus->at(0).fpga().cycles()[0];
-  const auto wavenumber = autd.geometry()[0][0].wavenumber();
-  const auto& base_tr = autd.geometry()[0][0];
+  const auto wavenumber = autd.geometry()[0].wavenumber();
+  const auto& base_tr = autd.geometry()[0];
   const auto& z_dir = base_tr.z_direction();
   constexpr double criteria = 2.0 * autd3::pi / 100.0;
   for (size_t k = 0; k < size; k++) {
     const auto& focus = points[k].point;
     const auto expect = std::arg(autd3::core::propagate(base_tr.position(), z_dir, 0.0, wavenumber, focus)) +
                         2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[k][0].phase) / static_cast<double>(cycle);
-    for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
-      for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
-        const auto p = std::arg(autd3::core::propagate(autd.geometry()[i][j].position(), z_dir, 0.0, wavenumber, focus)) +
-                       2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives().second[k][j].phase) / static_cast<double>(cycle);
+    for (size_t i = 0; i < autd.geometry().device_map().size(); i++) {
+      for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
+        const auto p =
+            std::arg(autd3::core::propagate(autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].position(), z_dir, 0.0, wavenumber, focus)) +
+            2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives().second[k][j].phase) / static_cast<double>(cycle);
         ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, cycle >> 1);
         if (autd3::driver::rem_euclid(p - expect, 2.0 * autd3::pi) > autd3::pi)
           ASSERT_NEAR(autd3::driver::rem_euclid(p - expect, 2.0 * autd3::pi), 2.0 * autd3::pi, criteria);
@@ -620,10 +623,10 @@ TEST(ControllerTest, point_stm) {
 TEST(ControllerTest, gain_stm_legacy) {
   autd3::Controller autd;
 
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3(0, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()));
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
 
   auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
@@ -650,15 +653,15 @@ TEST(ControllerTest, gain_stm_legacy) {
     });
 
     autd << stm;
-    for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
+    for (size_t i = 0; i < autd.geometry().device_map().size(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
 
     for (size_t k = 0; k < size; k++) {
-      for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
-        for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
+      for (size_t i = 0; i < autd.geometry().device_map().size(); i++) {
+        for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
           ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty,
-                    (autd3::driver::LegacyDrive::to_duty(drives[k][i * autd3::driver::NUM_TRANS_IN_UNIT + j]) << 3) + 0x08);
+                    (autd3::driver::LegacyDrive::to_duty(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]) << 3) + 0x08);
           ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase,
-                    autd3::driver::LegacyDrive::to_phase(drives[k][i * autd3::driver::NUM_TRANS_IN_UNIT + j]) << 4);
+                    autd3::driver::LegacyDrive::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]) << 4);
         }
       }
     }
@@ -681,15 +684,15 @@ TEST(ControllerTest, gain_stm_legacy) {
     });
 
     autd << stm;
-    for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
+    for (size_t i = 0; i < autd.geometry().device_map().size(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
 
-    const uint16_t cycle = autd.geometry()[0][0].cycle();
+    const uint16_t cycle = autd.geometry()[0].cycle();
     for (size_t k = 0; k < size; k++) {
-      for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
-        for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
+      for (size_t i = 0; i < autd.geometry().device_map().size(); i++) {
+        for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
           ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, cycle >> 1);
           ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase,
-                    autd3::driver::LegacyDrive::to_phase(drives[k][i * autd3::driver::NUM_TRANS_IN_UNIT + j]) << 4);
+                    autd3::driver::LegacyDrive::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]) << 4);
         }
       }
     }
@@ -712,14 +715,14 @@ TEST(ControllerTest, gain_stm_legacy) {
     });
 
     autd << stm;
-    for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
+    for (size_t i = 0; i < autd.geometry().device_map().size(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
 
-    const uint16_t cycle = autd.geometry()[0][0].cycle();
+    const uint16_t cycle = autd.geometry()[0].cycle();
     for (size_t k = 0; k < size; k++) {
-      for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
-        for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
+      for (size_t i = 0; i < autd.geometry().device_map().size(); i++) {
+        for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
           ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, cycle >> 1);
-          const auto phase = autd3::driver::LegacyDrive::to_phase(drives[k][i * autd3::driver::NUM_TRANS_IN_UNIT + j]) >> 4;
+          const auto phase = autd3::driver::LegacyDrive::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]) >> 4;
           ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase, ((phase << 4) + phase) << 4);
         }
       }
@@ -741,10 +744,10 @@ TEST(ControllerTest, gain_stm_normal) {
 
   autd << autd3::normal_mode;
 
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3(0, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()));
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
 
   auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
@@ -771,14 +774,14 @@ TEST(ControllerTest, gain_stm_normal) {
     });
 
     autd << stm;
-    for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
+    for (size_t i = 0; i < autd.geometry().device_map().size(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
 
     for (size_t k = 0; k < size; k++) {
-      for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
-        for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
-          ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, autd3::driver::Duty::to_duty(drives[k][i * autd3::driver::NUM_TRANS_IN_UNIT + j]));
+      for (size_t i = 0; i < autd.geometry().device_map().size(); i++) {
+        for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
+          ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, autd3::driver::Duty::to_duty(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]));
           ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase,
-                    autd3::driver::Phase::to_phase(drives[k][i * autd3::driver::NUM_TRANS_IN_UNIT + j]));
+                    autd3::driver::Phase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]));
         }
       }
     }
@@ -801,15 +804,15 @@ TEST(ControllerTest, gain_stm_normal) {
     });
 
     autd << stm;
-    for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
+    for (size_t i = 0; i < autd.geometry().device_map().size(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
 
-    const uint16_t cycle = autd.geometry()[0][0].cycle();
+    const uint16_t cycle = autd.geometry()[0].cycle();
     for (size_t k = 0; k < size; k++) {
-      for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
-        for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
+      for (size_t i = 0; i < autd.geometry().device_map().size(); i++) {
+        for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
           ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, cycle >> 1);
           ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase,
-                    autd3::driver::Phase::to_phase(drives[k][i * autd3::driver::NUM_TRANS_IN_UNIT + j]));
+                    autd3::driver::Phase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]));
         }
       }
     }
@@ -830,10 +833,10 @@ TEST(ControllerTest, gain_stm_normal_phase) {
 
   autd << autd3::normal_phase_mode;
 
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3(0, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
-  autd.geometry().add_device(autd3::Vector3(autd3::DEVICE_WIDTH, autd3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()));
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
 
   auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
@@ -861,15 +864,15 @@ TEST(ControllerTest, gain_stm_normal_phase) {
     });
 
     autd << stm;
-    for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
+    for (size_t i = 0; i < autd.geometry().device_map().size(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
 
-    const uint16_t cycle = autd.geometry()[0][0].cycle();
+    const uint16_t cycle = autd.geometry()[0].cycle();
     for (size_t k = 0; k < size; k++) {
-      for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
-        for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
+      for (size_t i = 0; i < autd.geometry().device_map().size(); i++) {
+        for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
           ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, cycle >> 1);
           ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase,
-                    autd3::driver::Phase::to_phase(drives[k][i * autd3::driver::NUM_TRANS_IN_UNIT + j]));
+                    autd3::driver::Phase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]));
         }
       }
     }
@@ -892,15 +895,15 @@ TEST(ControllerTest, gain_stm_normal_phase) {
     });
 
     autd << stm;
-    for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
+    for (size_t i = 0; i < autd.geometry().device_map().size(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
 
-    const uint16_t cycle = autd.geometry()[0][0].cycle();
+    const uint16_t cycle = autd.geometry()[0].cycle();
     for (size_t k = 0; k < size; k++) {
-      for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
-        for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT; j++) {
+      for (size_t i = 0; i < autd.geometry().device_map().size(); i++) {
+        for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
           ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, cycle >> 1);
           ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase,
-                    autd3::driver::Phase::to_phase(drives[k][i * autd3::driver::NUM_TRANS_IN_UNIT + j]));
+                    autd3::driver::Phase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]));
         }
       }
     }
