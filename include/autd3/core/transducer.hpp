@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,35 +13,18 @@
 
 #include <utility>
 
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning( \
-    disable : 4068 6031 6255 6294 26408 26450 26426 26429 26432 26434 26440 26446 26447 26451 26454 26455 26461 26462 26471 26472 26474 26475 26495 26481 26482 26485 26490 26491 26493 26494 26496 26497 26812 26813 26814)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#pragma GCC diagnostic ignored "-Wclass-memaccess"
-#endif
-#include <Eigen/Dense>
-#if _MSC_VER
-#pragma warning(pop)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic pop
-#endif
-
 #include "autd3/driver/common/fpga/defined.hpp"
+#include "autd3/driver/defined.hpp"
 
 namespace autd3::core {
 
-using Vector3 = Eigen::Matrix<double, 3, 1>;
-using Vector4 = Eigen::Matrix<double, 4, 1>;
-using Matrix4X4 = Eigen::Matrix<double, 4, 4>;
-using Quaternion = Eigen::Quaternion<double>;
+using driver::Matrix4X4;
+using driver::Quaternion;
+using driver::Vector3;
+using driver::Vector4;
 
 /**
- * \brief Transduce contains a position and id, direction, frequency of a transducer
+ * \brief Transducer contains a position and id, direction, frequency of a transducer
  */
 struct Transducer {
   Transducer(const size_t id, Vector3 pos, Quaternion rot) noexcept
@@ -70,6 +53,11 @@ struct Transducer {
    * \brief Position of the transducer
    */
   [[nodiscard]] const Vector3& position() const noexcept { return _pos; }
+
+  /**
+   * \brief Rotation of the transducer
+   */
+  [[nodiscard]] const Quaternion& rotation() const noexcept { return _rot; }
 
   /**
    * \brief ID of the transducer

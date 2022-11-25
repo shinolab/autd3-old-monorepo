@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@
 #include <string>
 #include <vector>
 
-#include "autd3/driver/hardware.hpp"
+#include "autd3/driver/defined.hpp"
 #include "autd3/driver/utils.hpp"
 
 namespace autd3::driver {
@@ -80,7 +80,7 @@ class FPGAControlFlags final {
     if ((_value & STM_MODE) == STM_MODE) flags.emplace_back("STM_MODE");
     if ((_value & STM_GAIN_MODE) == STM_GAIN_MODE) flags.emplace_back("STM_GAIN_MODE");
     if ((_value & READS_FPGA_INFO) == READS_FPGA_INFO) flags.emplace_back("READS_FPGA_INFO");
-    if (flags.size() == 0) flags.emplace_back("NONE");
+    if (flags.empty()) flags.emplace_back("NONE");
 
     constexpr auto delim = " | ";
     std::ostringstream os;
@@ -110,10 +110,9 @@ struct LegacyDrive {
   uint8_t phase;
   uint8_t duty;
 
-  static uint8_t to_phase(const Drive d) {
-    return static_cast<uint8_t>(static_cast<int32_t>(std::round(d.phase / (2.0 * autd3::driver::pi) * 256.0)) & 0xFF);
-  }
-  static uint8_t to_duty(const Drive d) { return std::round(510.0 * std::asin(std::clamp(d.amp, 0.0, 1.0)) / autd3::driver::pi); }
+  static uint8_t to_phase(const Drive d) { return static_cast<uint8_t>(static_cast<int32_t>(std::round(d.phase / (2.0 * pi) * 256.0)) & 0xFF); }
+
+  static uint8_t to_duty(const Drive d) { return static_cast<uint8_t>(std::round(510.0 * std::asin(std::clamp(d.amp, 0.0, 1.0)) / pi)); }
 
   void set(const Drive d) {
     phase = to_phase(d);
@@ -125,8 +124,8 @@ struct Phase {
   uint16_t phase;
 
   static uint16_t to_phase(const Drive d) {
-    return static_cast<uint16_t>(autd3::driver::rem_euclid(
-        static_cast<int32_t>(std::round(d.phase / (2.0 * autd3::driver::pi) * static_cast<double>(d.cycle))), static_cast<int32_t>(d.cycle)));
+    return static_cast<uint16_t>(
+        rem_euclid(static_cast<int32_t>(std::round(d.phase / (2.0 * pi) * static_cast<double>(d.cycle))), static_cast<int32_t>(d.cycle)));
   }
 
   void set(const Drive d) { phase = to_phase(d); }
@@ -136,7 +135,7 @@ struct Duty {
   uint16_t duty;
 
   static uint16_t to_duty(const Drive d) {
-    return static_cast<uint16_t>(std::round(static_cast<double>(d.cycle) * std::asin(std::clamp(d.amp, 0.0, 1.0)) / driver::pi));
+    return static_cast<uint16_t>(std::round(static_cast<double>(d.cycle) * std::asin(std::clamp(d.amp, 0.0, 1.0)) / pi));
   }
 
   void set(const Drive d) { duty = to_duty(d); }

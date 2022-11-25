@@ -3,7 +3,7 @@
 // Created Date: 01/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -42,9 +42,7 @@ struct ModDelayConfig final : DatagramBody {
     if (is_finished()) return true;
 
     std::vector<uint16_t> delays;
-    std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-      std::transform(dev.begin(), dev.end(), std::back_inserter(delays), [](const Transducer& tr) { return tr.mod_delay(); });
-    });
+    std::transform(geometry.begin(), geometry.end(), std::back_inserter(delays), [](const Transducer& tr) { return tr.mod_delay(); });
 
     driver->mod_delay(delays.data(), tx);
 

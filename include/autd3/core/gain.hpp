@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -44,8 +44,8 @@ struct Gain : DatagramBody {
     if (_built) return;
 
     _drives.clear();
-    std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-      std::transform(dev.begin(), dev.end(), std::back_inserter(_drives), [](const Transducer& tr) { return driver::Drive{0, 0, tr.cycle()}; });
+    std::transform(geometry.begin(), geometry.end(), std::back_inserter(_drives), [](const Transducer& tr) {
+      return driver::Drive{0, 0, tr.cycle()};
     });
 
     calc(geometry);
