@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -54,7 +54,7 @@ inline int run(autd3::Controller& autd) {
       std::pair(F{advanced_test}, "Custom Gain & Modulation Test"),
       std::pair(F{flag_test}, "Flag Test"),
   };
-  if (autd.geometry().num_devices() == 2) tests.emplace_back(std::pair(F{group_test}, "Grouped Gain Test"));
+  if (autd.geometry().device_map().size() == 2) tests.emplace_back(std::pair(F{group_test}, "Grouped Gain Test"));
 
   autd.set_sound_speed(340.0e3);
 

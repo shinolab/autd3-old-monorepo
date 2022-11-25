@@ -3,7 +3,7 @@
 // Created Date: 28/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -43,8 +43,8 @@ class Amplitudes final : public DatagramBody {
 
     std::vector<driver::Drive> drives;
     drives.reserve(geometry.num_transducers());
-    std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-      std::transform(dev.begin(), dev.end(), std::back_inserter(drives), [&](const auto& tr) { return driver::Drive{0.0, _amp, tr.cycle()}; });
+    std::transform(geometry.begin(), geometry.end(), std::back_inserter(drives), [&](const auto& tr) {
+      return driver::Drive{0.0, _amp, tr.cycle()};
     });
 
     driver->normal_duty_body(drives, tx);

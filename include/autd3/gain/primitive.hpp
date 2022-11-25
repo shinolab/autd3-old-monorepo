@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,11 +27,9 @@ class Null final : public core::Gain {
   Null() noexcept {}
 
   void calc(const core::Geometry& geometry) override {
-    std::for_each(geometry.begin(), geometry.end(), [this](const auto& dev) {
-      std::for_each(dev.begin(), dev.end(), [this](const auto& trans) {
-        _drives[trans.id()].amp = 0.0;
-        _drives[trans.id()].phase = 0.0;
-      });
+    std::for_each(geometry.begin(), geometry.end(), [this](const auto& trans) {
+      _drives[trans.id()].amp = 0.0;
+      _drives[trans.id()].phase = 0.0;
     });
   }
 
@@ -54,13 +52,11 @@ class Focus final : public core::Gain {
   explicit Focus(core::Vector3 point, const double amp = 1.0) : _point(std::move(point)), _amp(amp) {}
 
   void calc(const core::Geometry& geometry) override {
-    std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-      std::for_each(dev.begin(), dev.end(), [&](const auto& transducer) {
-        const auto dist = (_point - transducer.position()).norm();
-        const auto phase = transducer.align_phase_at(dist);
-        _drives[transducer.id()].amp = _amp;
-        _drives[transducer.id()].phase = phase;
-      });
+    std::for_each(geometry.begin(), geometry.end(), [&](const auto& transducer) {
+      const auto dist = (_point - transducer.position()).norm();
+      const auto phase = transducer.align_phase_at(dist);
+      _drives[transducer.id()].amp = _amp;
+      _drives[transducer.id()].phase = phase;
     });
   }
 
@@ -96,15 +92,13 @@ class BesselBeam final : public core::Gain {
     v.normalize();
     const Eigen::AngleAxisd rot(-theta_v, v);
 
-    std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-      std::for_each(dev.begin(), dev.end(), [&](const auto& transducer) {
-        const auto r = transducer.position() - this->_apex;
-        const auto rr = rot * r;
-        const auto d = std::sin(_theta_z) * std::sqrt(rr.x() * rr.x() + rr.y() * rr.y()) - std::cos(_theta_z) * rr.z();
-        const auto phase = transducer.align_phase_at(d);
-        _drives[transducer.id()].amp = _amp;
-        _drives[transducer.id()].phase = phase;
-      });
+    std::for_each(geometry.begin(), geometry.end(), [&](const auto& transducer) {
+      const auto r = transducer.position() - this->_apex;
+      const auto rr = rot * r;
+      const auto d = std::sin(_theta_z) * std::sqrt(rr.x() * rr.x() + rr.y() * rr.y()) - std::cos(_theta_z) * rr.z();
+      const auto phase = transducer.align_phase_at(d);
+      _drives[transducer.id()].amp = _amp;
+      _drives[transducer.id()].phase = phase;
     });
   }
 
@@ -133,13 +127,11 @@ class PlaneWave final : public core::Gain {
   explicit PlaneWave(core::Vector3 direction, const double amp = 1.0) noexcept : _direction(std::move(direction)), _amp(amp) {}
 
   void calc(const core::Geometry& geometry) override {
-    std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-      std::for_each(dev.begin(), dev.end(), [&](const auto& transducer) {
-        const auto dist = transducer.position().dot(_direction);
-        const auto phase = transducer.align_phase_at(dist);
-        _drives[transducer.id()].amp = _amp;
-        _drives[transducer.id()].phase = phase;
-      });
+    std::for_each(geometry.begin(), geometry.end(), [&](const auto& transducer) {
+      const auto dist = transducer.position().dot(_direction);
+      const auto phase = transducer.align_phase_at(dist);
+      _drives[transducer.id()].amp = _amp;
+      _drives[transducer.id()].phase = phase;
     });
   }
 
@@ -167,9 +159,8 @@ class Grouped final : public core::Gain {
   template <class G>
   std::enable_if_t<std::is_base_of_v<core::Gain, G>> add(const size_t device_id, G& gain) {
     gain.build(_geometry);
-    if (device_id < _geometry.num_devices())
-      std::memcpy(_buf.data() + device_id * driver::NUM_TRANS_IN_UNIT, gain.drives().data() + device_id * driver::NUM_TRANS_IN_UNIT,
-                  sizeof(driver::Drive) * driver::NUM_TRANS_IN_UNIT);
+    const auto start = device_id == 0 ? 0 : _geometry.device_map()[device_id - 1];
+    std::memcpy(_buf.data() + start, gain.drives().data() + start, sizeof(driver::Drive) * _geometry.device_map()[device_id]);
   }
 
   void calc(const core::Geometry& geometry) override { std::memcpy(_drives.data(), _buf.data(), geometry.num_transducers() * sizeof(driver::Drive)); }
@@ -197,24 +188,14 @@ class TransducerTest final : public core::Gain {
 
   void calc(const core::Geometry& geometry) override {
     for (const auto& [key, value] : _map) {
-      const auto id = geometry[key / driver::NUM_TRANS_IN_UNIT][key % driver::NUM_TRANS_IN_UNIT].id();
+      const auto id = geometry[key].id();
       _drives[id].amp = value.first;
       _drives[id].phase = value.second;
     }
   }
 
   /**
-   * @param[in] dev_idx device index
-   * @param[in] tr_idx local transducer index
-   * @param[in] amp amplitude (from 0.0 to 1.0)
-   * @param[in] phase phase in radian
-   */
-  void set(const size_t dev_idx, const size_t tr_idx, const double amp, const double phase) {
-    _map.insert_or_assign(dev_idx * driver::NUM_TRANS_IN_UNIT + tr_idx, std::make_pair(amp, phase));
-  }
-
-  /**
-   * @param[in] tr_idx global transducer index
+   * @param[in] tr_idx transducer index
    * @param[in] amp amplitude (from 0.0 to 1.0)
    * @param[in] phase phase in radian
    */

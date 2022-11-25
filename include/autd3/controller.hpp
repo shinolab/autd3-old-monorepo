@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -287,8 +287,7 @@ class Controller {
    * Set speed of sound
    */
   void set_sound_speed(const double sound_speed) {
-    for (auto& dev : _geometry)
-      for (auto& tr : dev) tr.sound_speed = sound_speed;
+    for (auto& tr : _geometry) tr.sound_speed = sound_speed;
   }
 
   /**

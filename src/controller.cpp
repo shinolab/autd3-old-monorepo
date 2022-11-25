@@ -3,7 +3,7 @@
 // Created Date: 16/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ Controller::Controller(std::unique_ptr<const driver::Driver> driver)
     : force_fan(false),
       reads_fpga_info(false),
       _mode(std::make_unique<core::LegacyMode>()),
-      _tx_buf(0),
+      _tx_buf({0}),
       _rx_buf(0),
       _link(nullptr),
       _send_th_running(false),
@@ -38,7 +38,7 @@ core::Geometry& Controller::geometry() noexcept { return _geometry; }
 const core::Geometry& Controller::geometry() const noexcept { return _geometry; }
 
 bool Controller::open(core::LinkPtr link) {
-  spdlog::debug("Open Controller with {} devices.", _geometry.num_devices());
+  spdlog::debug("Open Controller with {} transducers.", _geometry.num_transducers());
 
   if (link == nullptr) {
     spdlog::error("link is null");
@@ -50,8 +50,8 @@ bool Controller::open(core::LinkPtr link) {
     return false;
   }
 
-  _tx_buf = driver::TxDatagram(_geometry.num_devices());
-  _rx_buf = driver::RxDatagram(_geometry.num_devices());
+  _tx_buf = driver::TxDatagram(_geometry.device_map());
+  _rx_buf = driver::RxDatagram(_geometry.device_map().size());
 
   _send_th_running = true;
   _send_th = std::thread([this] {
@@ -209,7 +209,7 @@ std::vector<driver::FirmwareInfo> Controller::firmware_infos() {
     spdlog::error("Failed to get firmware information.");
     return firmware_infos;
   }
-  for (size_t i = 0; i < _geometry.num_devices(); i++) firmware_infos.emplace_back(i, cpu_versions.at(i), fpga_versions.at(i), fpga_functions.at(i));
+  for (size_t i = 0; i < cpu_versions.size(); i++) firmware_infos.emplace_back(i, cpu_versions.at(i), fpga_versions.at(i), fpga_functions.at(i));
 
   for (const auto& info : firmware_infos) {
     if (info.cpu_version_num() != info.fpga_version_num())
@@ -319,11 +319,11 @@ std::chrono::high_resolution_clock::duration Controller::get_send_interval() con
 std::chrono::high_resolution_clock::duration Controller::get_ack_check_timeout() const noexcept { return _ack_check_timeout; }
 
 double Controller::get_sound_speed() const {
-  if (_geometry.num_devices() == 0) {
+  if (_geometry.num_transducers() == 0) {
     spdlog::warn("No devices are added.");
     return 0.0;
   }
-  return _geometry[0][0].sound_speed;
+  return _geometry[0].sound_speed;
 }
 
 double Controller::set_sound_speed_from_temp(const double temp, const double k, const double r, const double m) {
@@ -332,22 +332,20 @@ double Controller::set_sound_speed_from_temp(const double temp, const double k, 
 #else
   const auto sound_speed = std::sqrt(k * r * (273.15 + temp) / m) * 1e3;
 #endif
-  for (auto& dev : _geometry)
-    for (auto& tr : dev) tr.sound_speed = sound_speed;
+  for (auto& tr : _geometry) tr.sound_speed = sound_speed;
   return sound_speed;
 }
 
 void Controller::set_attenuation(const double attenuation) {
-  for (auto& dev : _geometry)
-    for (auto& tr : dev) tr.attenuation = attenuation;
+  for (auto& tr : _geometry) tr.attenuation = attenuation;
 }
 
 double Controller::get_attenuation() const {
-  if (_geometry.num_devices() == 0) {
+  if (_geometry.num_transducers() == 0) {
     spdlog::warn("No devices are added.");
     return 0.0;
   }
-  return _geometry[0][0].attenuation;
+  return _geometry[0].attenuation;
 }
 
 uint8_t Controller::get_id() noexcept {

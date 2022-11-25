@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/09/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,10 +13,9 @@
 
 #include <cmath>
 #include <complex>
-#include <type_traits>
 
 #include "autd3/core/transducer.hpp"
-#include "autd3/driver/hardware.hpp"
+#include "autd3/driver/defined.hpp"
 
 namespace autd3::core {
 
@@ -52,8 +51,8 @@ class Directivity {
   }
 };
 
-inline std::complex<double> propagate(const core::Vector3& source_pos, const core::Vector3& source_dir, const double attenuation,
-                                      const double wavenumber, const core::Vector3& target) {
+inline std::complex<double> propagate(const Vector3& source_pos, const Vector3& source_dir, const double attenuation, const double wavenumber,
+                                      const Vector3& target) {
   const auto diff = target - source_pos;
   const auto dist = diff.norm();
 
