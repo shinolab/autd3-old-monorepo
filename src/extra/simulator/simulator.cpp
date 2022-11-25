@@ -103,6 +103,7 @@ namespace autd3::extra {
   std::atomic run_recv = true;
   std::atomic data_updated = false;
   _th = std::thread([this, ptr, &cpus, &sources, &initialized, &run_recv, &data_updated, &imgui, &trans_viewer, &slice_viewer, &field_compute] {
+    uint8_t last_msg_id = 0;
     while (run_recv.load()) {
       auto* cursor = const_cast<uint8_t*>(ptr);
       const auto* header = reinterpret_cast<driver::GlobalHeader*>(cursor);
@@ -165,7 +166,10 @@ namespace autd3::extra {
             cpus[i].send(header, body);
             c += sources[i].size() * sizeof(uint16_t);
           }
-          data_updated.store(true);
+          if (last_msg_id != header->msg_id) {
+            last_msg_id = header->msg_id;
+            data_updated.store(true);
+          }
           for (size_t i = 0; i < cpus.size(); i++) {
             auto* input =
                 reinterpret_cast<driver::RxMessage*>(const_cast<uint8_t*>(ptr + sizeof(driver::GlobalHeader) + c + i * driver::EC_INPUT_FRAME_SIZE));
@@ -226,7 +230,8 @@ namespace autd3::extra {
                                  update_flags))
         return false;
 
-      const simulator::Config config{static_cast<uint32_t>(sources.size()),
+      const simulator::Config config{static_cast<uint32_t>(std::accumulate(sources.begin(), sources.end(), size_t{0},
+                                                                           [](const size_t acc, const auto& s) { return acc + s.size(); })),
                                      0,
                                      imgui->color_scale,
                                      static_cast<uint32_t>(imgui->slice_width / imgui->pixel_size),
