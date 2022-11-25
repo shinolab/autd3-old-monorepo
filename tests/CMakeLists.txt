@@ -34,7 +34,11 @@ if(BUILD_MODULATION_AUDIO_FILE)
   add_subdirectory(${PROJECT_SOURCE_DIR}/tests/modulation/audio_file)
 endif()
 
-target_sources(test_autd3 PRIVATE test.cpp)
+target_sources(test_autd3 PRIVATE
+  test.cpp
+  autd3_device_test.cpp
+)
+
 add_test(NAME test_autd3 COMMAND test_autd3)
 
 include(GoogleTest)
