@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,7 +18,6 @@
 
 #include "autd3/driver/common/cpu/defined.hpp"
 #include "autd3/driver/common/fpga/defined.hpp"
-#include "autd3/driver/hardware.hpp"
 
 namespace autd3::driver {
 
@@ -42,12 +41,12 @@ struct PointSTMBodyHead {
 
   void set_size(const uint16_t size) noexcept { _data[0] = size; }
 
-  void set_freq_div(uint32_t freq_div) noexcept {
+  void set_freq_div(const uint32_t freq_div) noexcept {
     _data[1] = static_cast<uint16_t>(freq_div & 0xFFFF);
     _data[2] = static_cast<uint16_t>(freq_div >> 16 & 0xFFFF);
   }
 
-  void set_sound_speed(uint32_t sound_speed) noexcept {
+  void set_sound_speed(const uint32_t sound_speed) noexcept {
     _data[3] = static_cast<uint16_t>(sound_speed & 0xFFFF);
     _data[4] = static_cast<uint16_t>(sound_speed >> 16 & 0xFFFF);
   }
@@ -55,7 +54,7 @@ struct PointSTMBodyHead {
   void set_point(const std::vector<STMFocus>& points) noexcept { std::memcpy(&_data[5], points.data(), sizeof(STMFocus) * points.size()); }
 
  private:
-  uint16_t _data[NUM_TRANS_IN_UNIT]{};
+  uint16_t _data[5]{};
 };
 
 struct PointSTMBodyBody {
@@ -66,12 +65,12 @@ struct PointSTMBodyBody {
   void set_point(const std::vector<STMFocus>& points) noexcept { std::memcpy(&_data[1], points.data(), sizeof(STMFocus) * points.size()); }
 
  private:
-  uint16_t _data[NUM_TRANS_IN_UNIT]{};
+  uint16_t _data[2]{};
 };
 
 struct GainSTMBodyHead {
   uint16_t* data() noexcept { return _data; }
-  const uint16_t* data() const noexcept { return _data; }
+  [[nodiscard]] const uint16_t* data() const noexcept { return _data; }
 
   void set_freq_div(uint32_t freq_div) noexcept {
     _data[0] = static_cast<uint16_t>(freq_div & 0xFFFF);
@@ -83,30 +82,25 @@ struct GainSTMBodyHead {
   void set_cycle(const size_t size) noexcept { _data[3] = static_cast<uint16_t>(size); }
 
  private:
-  uint16_t _data[NUM_TRANS_IN_UNIT]{};
+  uint16_t _data[4]{};
 };
 
 struct GainSTMBodyBody {
-  [[nodiscard]] const uint16_t* data() const noexcept { return _data; }
-
- private:
-  uint16_t _data[NUM_TRANS_IN_UNIT]{};
+  [[nodiscard]] const uint16_t* data() const noexcept { return reinterpret_cast<const uint16_t*>(this); }
 };
 
 struct Body {
-  uint16_t data[NUM_TRANS_IN_UNIT]{};
-
   Body() noexcept = default;
 
-  [[nodiscard]] const PointSTMBodyHead& point_stm_head() const noexcept { return *reinterpret_cast<const PointSTMBodyHead* const>(&data[0]); }
-  PointSTMBodyHead& point_stm_head() noexcept { return *reinterpret_cast<PointSTMBodyHead*>(&data[0]); }
-  [[nodiscard]] const PointSTMBodyBody& point_stm_body() const noexcept { return *reinterpret_cast<const PointSTMBodyBody* const>(&data[0]); }
-  PointSTMBodyBody& point_stm_body() noexcept { return *reinterpret_cast<PointSTMBodyBody*>(&data[0]); }
+  [[nodiscard]] const PointSTMBodyHead& point_stm_head() const noexcept { return *reinterpret_cast<const PointSTMBodyHead* const>(this); }
+  PointSTMBodyHead& point_stm_head() noexcept { return *reinterpret_cast<PointSTMBodyHead*>(this); }
+  [[nodiscard]] const PointSTMBodyBody& point_stm_body() const noexcept { return *reinterpret_cast<const PointSTMBodyBody* const>(this); }
+  PointSTMBodyBody& point_stm_body() noexcept { return *reinterpret_cast<PointSTMBodyBody*>(this); }
 
-  [[nodiscard]] const GainSTMBodyHead& gain_stm_head() const noexcept { return *reinterpret_cast<const GainSTMBodyHead* const>(&data[0]); }
-  GainSTMBodyHead& gain_stm_head() noexcept { return *reinterpret_cast<GainSTMBodyHead*>(&data[0]); }
-  [[nodiscard]] const GainSTMBodyBody& gain_stm_body() const noexcept { return *reinterpret_cast<const GainSTMBodyBody* const>(&data[0]); }
-  GainSTMBodyBody& gain_stm_body() noexcept { return *reinterpret_cast<GainSTMBodyBody*>(&data[0]); }
+  [[nodiscard]] const GainSTMBodyHead& gain_stm_head() const noexcept { return *reinterpret_cast<const GainSTMBodyHead* const>(this); }
+  GainSTMBodyHead& gain_stm_head() noexcept { return *reinterpret_cast<GainSTMBodyHead*>(this); }
+  [[nodiscard]] const GainSTMBodyBody& gain_stm_body() const noexcept { return *reinterpret_cast<const GainSTMBodyBody* const>(this); }
+  GainSTMBodyBody& gain_stm_body() noexcept { return *reinterpret_cast<GainSTMBodyBody*>(this); }
 };
 
 struct LegacyPhaseFull {
@@ -121,6 +115,8 @@ struct LegacyPhaseFull {
       case 1:
         phase_1 = phase;
         break;
+      default:
+        throw std::runtime_error("Unreachable!");
     }
   }
 };
@@ -144,6 +140,8 @@ struct LegacyPhaseHalf {
       case 3:
         phase_23 = (phase_23 & 0x0F) | (phase & 0xF0);
         break;
+      default:
+        throw std::runtime_error("Unreachable!");
     }
   }
 };

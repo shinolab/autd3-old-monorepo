@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,9 +15,11 @@
 #include <vector>
 
 #include "autd3/driver/common/fpga/defined.hpp"
-#include "autd3/driver/hardware.hpp"
+#include "autd3/driver/defined.hpp"
 
-namespace autd3::extra::fpga {
+namespace autd3::extra {
+
+namespace fpga {
 constexpr uint8_t VERSION_NUM = 0x86;
 
 constexpr uint16_t BRAM_SELECT_CONTROLLER = 0x0;
@@ -61,35 +63,11 @@ constexpr uint8_t ENABLED_EMULATOR_BIT = 0x80;
 constexpr uint8_t ENABLED_FEATURES_BITS =
     ENABLED_MOD_DELAY_BIT | ENABLED_STM_BIT | ENABLED_MODULATOR_BIT | ENABLED_SILENCER_BIT | ENABLED_EMULATOR_BIT;
 
-constexpr uint32_t TR_POS[driver::NUM_TRANS_IN_UNIT] = {
-    0x00000000, 0x01960000, 0x032c0000, 0x04c30000, 0x06590000, 0x07ef0000, 0x09860000, 0x0b1c0000, 0x0cb30000, 0x0e490000, 0x0fdf0000, 0x11760000,
-    0x130c0000, 0x14a30000, 0x16390000, 0x17d00000, 0x19660000, 0x1afc0000, 0x00000196, 0x04c30196, 0x06590196, 0x07ef0196, 0x09860196, 0x0b1c0196,
-    0x0cb30196, 0x0e490196, 0x0fdf0196, 0x11760196, 0x130c0196, 0x14a30196, 0x16390196, 0x17d00196, 0x1afc0196, 0x0000032c, 0x0196032c, 0x032c032c,
-    0x04c3032c, 0x0659032c, 0x07ef032c, 0x0986032c, 0x0b1c032c, 0x0cb3032c, 0x0e49032c, 0x0fdf032c, 0x1176032c, 0x130c032c, 0x14a3032c, 0x1639032c,
-    0x17d0032c, 0x1966032c, 0x1afc032c, 0x000004c3, 0x019604c3, 0x032c04c3, 0x04c304c3, 0x065904c3, 0x07ef04c3, 0x098604c3, 0x0b1c04c3, 0x0cb304c3,
-    0x0e4904c3, 0x0fdf04c3, 0x117604c3, 0x130c04c3, 0x14a304c3, 0x163904c3, 0x17d004c3, 0x196604c3, 0x1afc04c3, 0x00000659, 0x01960659, 0x032c0659,
-    0x04c30659, 0x06590659, 0x07ef0659, 0x09860659, 0x0b1c0659, 0x0cb30659, 0x0e490659, 0x0fdf0659, 0x11760659, 0x130c0659, 0x14a30659, 0x16390659,
-    0x17d00659, 0x19660659, 0x1afc0659, 0x000007ef, 0x019607ef, 0x032c07ef, 0x04c307ef, 0x065907ef, 0x07ef07ef, 0x098607ef, 0x0b1c07ef, 0x0cb307ef,
-    0x0e4907ef, 0x0fdf07ef, 0x117607ef, 0x130c07ef, 0x14a307ef, 0x163907ef, 0x17d007ef, 0x196607ef, 0x1afc07ef, 0x00000986, 0x01960986, 0x032c0986,
-    0x04c30986, 0x06590986, 0x07ef0986, 0x09860986, 0x0b1c0986, 0x0cb30986, 0x0e490986, 0x0fdf0986, 0x11760986, 0x130c0986, 0x14a30986, 0x16390986,
-    0x17d00986, 0x19660986, 0x1afc0986, 0x00000b1c, 0x01960b1c, 0x032c0b1c, 0x04c30b1c, 0x06590b1c, 0x07ef0b1c, 0x09860b1c, 0x0b1c0b1c, 0x0cb30b1c,
-    0x0e490b1c, 0x0fdf0b1c, 0x11760b1c, 0x130c0b1c, 0x14a30b1c, 0x16390b1c, 0x17d00b1c, 0x19660b1c, 0x1afc0b1c, 0x00000cb3, 0x01960cb3, 0x032c0cb3,
-    0x04c30cb3, 0x06590cb3, 0x07ef0cb3, 0x09860cb3, 0x0b1c0cb3, 0x0cb30cb3, 0x0e490cb3, 0x0fdf0cb3, 0x11760cb3, 0x130c0cb3, 0x14a30cb3, 0x16390cb3,
-    0x17d00cb3, 0x19660cb3, 0x1afc0cb3, 0x00000e49, 0x01960e49, 0x032c0e49, 0x04c30e49, 0x06590e49, 0x07ef0e49, 0x09860e49, 0x0b1c0e49, 0x0cb30e49,
-    0x0e490e49, 0x0fdf0e49, 0x11760e49, 0x130c0e49, 0x14a30e49, 0x16390e49, 0x17d00e49, 0x19660e49, 0x1afc0e49, 0x00000fdf, 0x01960fdf, 0x032c0fdf,
-    0x04c30fdf, 0x06590fdf, 0x07ef0fdf, 0x09860fdf, 0x0b1c0fdf, 0x0cb30fdf, 0x0e490fdf, 0x0fdf0fdf, 0x11760fdf, 0x130c0fdf, 0x14a30fdf, 0x16390fdf,
-    0x17d00fdf, 0x19660fdf, 0x1afc0fdf, 0x00001176, 0x01961176, 0x032c1176, 0x04c31176, 0x06591176, 0x07ef1176, 0x09861176, 0x0b1c1176, 0x0cb31176,
-    0x0e491176, 0x0fdf1176, 0x11761176, 0x130c1176, 0x14a31176, 0x16391176, 0x17d01176, 0x19661176, 0x1afc1176, 0x0000130c, 0x0196130c, 0x032c130c,
-    0x04c3130c, 0x0659130c, 0x07ef130c, 0x0986130c, 0x0b1c130c, 0x0cb3130c, 0x0e49130c, 0x0fdf130c, 0x1176130c, 0x130c130c, 0x14a3130c, 0x1639130c,
-    0x17d0130c, 0x1966130c, 0x1afc130c, 0x000014a3, 0x019614a3, 0x032c14a3, 0x04c314a3, 0x065914a3, 0x07ef14a3, 0x098614a3, 0x0b1c14a3, 0x0cb314a3,
-    0x0e4914a3, 0x0fdf14a3, 0x117614a3, 0x130c14a3, 0x14a314a3, 0x163914a3, 0x17d014a3, 0x196614a3, 0x1afc14a3};
-}  // namespace autd3::extra::fpga
-
-namespace autd3::extra {
+}  // namespace fpga
 
 class FPGA {
  public:
-  FPGA() {
+  explicit FPGA(const size_t num_transducers) : _num_transducers(num_transducers) {
     _controller_bram.resize(1024);
     _modulator_bram.resize(32768);
     _normal_op_bram.resize(512);
@@ -147,15 +125,17 @@ class FPGA {
 
   [[nodiscard]] uint16_t silencer_step() const { return _controller_bram[fpga::ADDR_SILENT_STEP]; }
 
-  [[nodiscard]] std::array<uint16_t, driver::NUM_TRANS_IN_UNIT> cycles() const {
-    std::array<uint16_t, driver::NUM_TRANS_IN_UNIT> cycles{};
-    for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) cycles[i] = _controller_bram[fpga::ADDR_CYCLE_BASE + i];
+  [[nodiscard]] std::vector<uint16_t> cycles() const {
+    std::vector<uint16_t> cycles;
+    cycles.resize(_num_transducers);
+    for (size_t i = 0; i < _num_transducers; i++) cycles[i] = _controller_bram[fpga::ADDR_CYCLE_BASE + i];
     return cycles;
   }
 
-  [[nodiscard]] std::array<uint16_t, driver::NUM_TRANS_IN_UNIT> mod_delays() const {
-    std::array<uint16_t, driver::NUM_TRANS_IN_UNIT> delays{};
-    for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) delays[i] = _controller_bram[fpga::ADDR_MOD_DELAY_BASE + i];
+  [[nodiscard]] std::vector<uint16_t> mod_delays() const {
+    std::vector<uint16_t> delays;
+    delays.resize(_num_transducers);
+    for (size_t i = 0; i < _num_transducers; i++) delays[i] = _controller_bram[fpga::ADDR_MOD_DELAY_BASE + i];
     return delays;
   }
 
@@ -204,9 +184,7 @@ class FPGA {
     return true;
   }
 
-  [[nodiscard]] std::pair<std::vector<std::array<driver::Duty, driver::NUM_TRANS_IN_UNIT>>,
-                          std::vector<std::array<driver::Phase, driver::NUM_TRANS_IN_UNIT>>>
-  drives() const {
+  [[nodiscard]] std::pair<std::vector<std::vector<driver::Duty>>, std::vector<std::vector<driver::Phase>>> drives() const {
     if (is_stm_mode()) {
       if (is_stm_gain_mode()) {
         if (is_legacy_mode()) return std::make_pair(gain_stm_legacy_duty(), gain_stm_legacy_phase());
@@ -214,26 +192,60 @@ class FPGA {
       }
       return std::make_pair(point_stm_duty(), point_stm_phase());
     }
-    if (is_legacy_mode()) return std::make_pair(std::vector{legacy_duty()}, std::vector{legacy_phase()});
-    return std::make_pair(std::vector{normal_duty()}, std::vector{normal_phase()});
+    if (is_legacy_mode()) {
+      std::vector<std::vector<driver::Duty>> duty = {legacy_duty()};
+      std::vector<std::vector<driver::Phase>> phase = {legacy_phase()};
+      return std::make_pair(std::move(duty), std::move(phase));
+    }
+
+    std::vector<std::vector<driver::Duty>> duty = {normal_duty()};
+    std::vector<std::vector<driver::Phase>> phase = {normal_phase()};
+    return std::make_pair(std::move(duty), std::move(phase));
+  }
+
+  [[nodiscard]] bool configure_local_trans_pos(const std::vector<driver::Vector3>& local_trans_pos) {
+    if (local_trans_pos.size() != _num_transducers) {
+      spdlog::error("The size of local_trans_pos is not the same as the number of transducers.");
+      return false;
+    }
+
+    _tr_pos.resize(local_trans_pos.size());
+    for (size_t i = 0; i < local_trans_pos.size(); i++) {
+#ifdef AUTD3_USE_METER
+      const auto x = static_cast<uint16_t>(std::round(local_trans_pos[i].x() * 1000.0 / 0.025));
+      const auto y = static_cast<uint16_t>(std::round(local_trans_pos[i].y() * 1000.0 / 0.025));
+      const auto z = static_cast<uint16_t>(std::round(local_trans_pos[i].z() * 1000.0 / 0.025));
+#else
+      const auto x = static_cast<uint16_t>(std::round(local_trans_pos[i].x() / 0.025));
+      const auto y = static_cast<uint16_t>(std::round(local_trans_pos[i].y() / 0.025));
+      const auto z = static_cast<uint16_t>(std::round(local_trans_pos[i].z() / 0.025));
+#endif
+
+      _tr_pos[i] = (static_cast<uint64_t>(z) << 32) | (static_cast<uint64_t>(x) << 16) | static_cast<uint64_t>(y);
+    }
+
+    return true;
   }
 
  private:
-  [[nodiscard]] std::array<driver::Duty, driver::NUM_TRANS_IN_UNIT> normal_duty() const {
-    std::array<driver::Duty, driver::NUM_TRANS_IN_UNIT> d{};
-    for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) d[i] = driver::Duty{_normal_op_bram[2 * i + 1]};
+  [[nodiscard]] std::vector<driver::Duty> normal_duty() const {
+    std::vector<driver::Duty> d;
+    d.resize(_num_transducers);
+    for (size_t i = 0; i < _num_transducers; i++) d[i] = driver::Duty{_normal_op_bram[2 * i + 1]};
     return d;
   }
 
-  [[nodiscard]] std::array<driver::Phase, driver::NUM_TRANS_IN_UNIT> normal_phase() const {
-    std::array<driver::Phase, driver::NUM_TRANS_IN_UNIT> d{};
-    for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) d[i] = driver::Phase{_normal_op_bram[2 * i]};
+  [[nodiscard]] std::vector<driver::Phase> normal_phase() const {
+    std::vector<driver::Phase> d;
+    d.resize(_num_transducers);
+    for (size_t i = 0; i < _num_transducers; i++) d[i] = driver::Phase{_normal_op_bram[2 * i]};
     return d;
   }
 
-  [[nodiscard]] std::array<driver::Duty, driver::NUM_TRANS_IN_UNIT> legacy_duty() const {
-    std::array<driver::Duty, driver::NUM_TRANS_IN_UNIT> d{};
-    for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) {
+  [[nodiscard]] std::vector<driver::Duty> legacy_duty() const {
+    std::vector<driver::Duty> d;
+    d.resize(_num_transducers);
+    for (size_t i = 0; i < _num_transducers; i++) {
       auto duty = static_cast<uint16_t>((_normal_op_bram[2 * i] >> 8) & 0x00FF);
       duty = static_cast<uint16_t>(((duty << 3) | 0x07) + 1);
       d[i] = driver::Duty{duty};
@@ -241,9 +253,10 @@ class FPGA {
     return d;
   }
 
-  [[nodiscard]] std::array<driver::Phase, driver::NUM_TRANS_IN_UNIT> legacy_phase() const {
-    std::array<driver::Phase, driver::NUM_TRANS_IN_UNIT> d{};
-    for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) {
+  [[nodiscard]] std::vector<driver::Phase> legacy_phase() const {
+    std::vector<driver::Phase> d;
+    d.resize(_num_transducers);
+    for (size_t i = 0; i < _num_transducers; i++) {
       auto phase = static_cast<uint16_t>(_normal_op_bram[2 * i] & 0x00FF);
       phase <<= 4;
       d[i] = driver::Phase{phase};
@@ -251,37 +264,40 @@ class FPGA {
     return d;
   }
 
-  [[nodiscard]] std::vector<std::array<driver::Duty, driver::NUM_TRANS_IN_UNIT>> gain_stm_normal_duty() const {
+  [[nodiscard]] std::vector<std::vector<driver::Duty>> gain_stm_normal_duty() const {
     const auto cycle = stm_cycle();
-    std::vector<std::array<driver::Duty, driver::NUM_TRANS_IN_UNIT>> v;
+    std::vector<std::vector<driver::Duty>> v;
     v.reserve(cycle);
     for (size_t i = 0; i < cycle; i++) {
-      std::array<driver::Duty, driver::NUM_TRANS_IN_UNIT> d{};
-      for (size_t j = 0; j < driver::NUM_TRANS_IN_UNIT; j++) d[j] = driver::Duty{_stm_op_bram[512 * i + 2 * j + 1]};
+      std::vector<driver::Duty> d;
+      d.resize(_num_transducers);
+      for (size_t j = 0; j < _num_transducers; j++) d[j] = driver::Duty{_stm_op_bram[512 * i + 2 * j + 1]};
       v.emplace_back(d);
     }
     return v;
   }
 
-  [[nodiscard]] std::vector<std::array<driver::Phase, driver::NUM_TRANS_IN_UNIT>> gain_stm_normal_phase() const {
+  [[nodiscard]] std::vector<std::vector<driver::Phase>> gain_stm_normal_phase() const {
     const auto cycle = stm_cycle();
-    std::vector<std::array<driver::Phase, driver::NUM_TRANS_IN_UNIT>> v;
+    std::vector<std::vector<driver::Phase>> v;
     v.reserve(cycle);
     for (size_t i = 0; i < cycle; i++) {
-      std::array<driver::Phase, driver::NUM_TRANS_IN_UNIT> d{};
-      for (size_t j = 0; j < driver::NUM_TRANS_IN_UNIT; j++) d[j] = driver::Phase{_stm_op_bram[512 * i + 2 * j]};
+      std::vector<driver::Phase> d;
+      d.resize(_num_transducers);
+      for (size_t j = 0; j < _num_transducers; j++) d[j] = driver::Phase{_stm_op_bram[512 * i + 2 * j]};
       v.emplace_back(d);
     }
     return v;
   }
 
-  [[nodiscard]] std::vector<std::array<driver::Duty, driver::NUM_TRANS_IN_UNIT>> gain_stm_legacy_duty() const {
+  [[nodiscard]] std::vector<std::vector<driver::Duty>> gain_stm_legacy_duty() const {
     const auto cycle = stm_cycle();
-    std::vector<std::array<driver::Duty, driver::NUM_TRANS_IN_UNIT>> v;
+    std::vector<std::vector<driver::Duty>> v;
     v.reserve(cycle);
     for (size_t i = 0; i < cycle; i++) {
-      std::array<driver::Duty, driver::NUM_TRANS_IN_UNIT> d{};
-      for (size_t j = 0; j < driver::NUM_TRANS_IN_UNIT; j++) {
+      std::vector<driver::Duty> d;
+      d.resize(_num_transducers);
+      for (size_t j = 0; j < _num_transducers; j++) {
         auto duty = static_cast<uint16_t>((_stm_op_bram[256 * i + j] >> 8) & 0x00FF);
         duty = static_cast<uint16_t>(((duty << 3) | 0x07) + 1);
         d[j] = driver::Duty{duty};
@@ -291,13 +307,14 @@ class FPGA {
     return v;
   }
 
-  [[nodiscard]] std::vector<std::array<driver::Phase, driver::NUM_TRANS_IN_UNIT>> gain_stm_legacy_phase() const {
+  [[nodiscard]] std::vector<std::vector<driver::Phase>> gain_stm_legacy_phase() const {
     const auto cycle = stm_cycle();
-    std::vector<std::array<driver::Phase, driver::NUM_TRANS_IN_UNIT>> v;
+    std::vector<std::vector<driver::Phase>> v;
     v.reserve(cycle);
     for (size_t i = 0; i < cycle; i++) {
-      std::array<driver::Phase, driver::NUM_TRANS_IN_UNIT> d{};
-      for (size_t j = 0; j < driver::NUM_TRANS_IN_UNIT; j++) {
+      std::vector<driver::Phase> d;
+      d.resize(_num_transducers);
+      for (size_t j = 0; j < _num_transducers; j++) {
         auto phase = static_cast<uint16_t>(_stm_op_bram[256 * i + j] & 0x00FF);
         phase <<= 4;
         d[j] = driver::Phase{phase};
@@ -307,14 +324,15 @@ class FPGA {
     return v;
   }
 
-  [[nodiscard]] std::vector<std::array<driver::Duty, driver::NUM_TRANS_IN_UNIT>> point_stm_duty() const {
+  [[nodiscard]] std::vector<std::vector<driver::Duty>> point_stm_duty() const {
     const auto cycle = stm_cycle();
     const auto ultrasound_cycles = cycles();
-    std::vector<std::array<driver::Duty, driver::NUM_TRANS_IN_UNIT>> v;
+    std::vector<std::vector<driver::Duty>> v;
     v.reserve(cycle);
     for (size_t i = 0; i < cycle; i++) {
-      std::array<driver::Duty, driver::NUM_TRANS_IN_UNIT> d{};
-      for (size_t j = 0; j < driver::NUM_TRANS_IN_UNIT; j++) {
+      std::vector<driver::Duty> d;
+      d.resize(_num_transducers);
+      for (size_t j = 0; j < _num_transducers; j++) {
         const auto duty_shift = static_cast<uint16_t>((_stm_op_bram[8 * i + 3] >> 6) & 0x000F);
         d[j] = driver::Duty{static_cast<uint16_t>(ultrasound_cycles[j] >> (duty_shift + 1))};
       }
@@ -323,24 +341,26 @@ class FPGA {
     return v;
   }
 
-  [[nodiscard]] std::vector<std::array<driver::Phase, driver::NUM_TRANS_IN_UNIT>> point_stm_phase() const {
+  [[nodiscard]] std::vector<std::vector<driver::Phase>> point_stm_phase() const {
     const auto cycle = stm_cycle();
     const auto ultrasound_cycles = cycles();
     const auto sound_speed = static_cast<uint64_t>(this->sound_speed());
-    std::vector<std::array<driver::Phase, driver::NUM_TRANS_IN_UNIT>> v;
+    std::vector<std::vector<driver::Phase>> v;
     v.reserve(cycle);
     for (size_t i = 0; i < cycle; i++) {
-      std::array<driver::Phase, driver::NUM_TRANS_IN_UNIT> d{};
+      std::vector<driver::Phase> d;
+      d.resize(_num_transducers);
       auto x = (((_stm_op_bram[8 * i + 1]) << 16) & 0x30000) | _stm_op_bram[8 * i];
       if ((x & 0x20000) != 0) x = -131072 + (x & 0x1FFFF);
       auto y = (((_stm_op_bram[8 * i + 2]) << 14) & 0x3C000) | (((_stm_op_bram[8 * i + 1]) >> 2) & 0x3FFFF);
       if ((y & 0x20000) != 0) y = -131072 + (y & 0x1FFFF);
       auto z = (((_stm_op_bram[8 * i + 3]) << 12) & 0x3F000) | (((_stm_op_bram[8 * i + 2]) >> 4) & 0xFFF);
       if ((z & 0x20000) != 0) z = -131072 + (z & 0x1FFFF);
-      for (size_t j = 0; j < driver::NUM_TRANS_IN_UNIT; j++) {
-        const auto tr_x = ((fpga::TR_POS[j] >> 16) & 0xFFFF);
-        const auto tr_y = (fpga::TR_POS[j] & 0xFFFF);
-        const auto d2 = (x - tr_x) * (x - tr_x) + (y - tr_y) * (y - tr_y) + z * z;
+      for (size_t j = 0; j < _num_transducers; j++) {
+        const auto tr_z = ((_tr_pos[j] >> 32) & 0xFFFF);
+        const auto tr_x = ((_tr_pos[j] >> 16) & 0xFFFF);
+        const auto tr_y = (_tr_pos[j] & 0xFFFF);
+        const auto d2 = (x - tr_x) * (x - tr_x) + (y - tr_y) * (y - tr_y) + (z - tr_z) * (z - tr_z);
         const auto dist = static_cast<uint64_t>(std::sqrt(d2));
         const auto q = (dist << 22) / sound_speed;
         const auto p = q % ultrasound_cycles[j];
@@ -351,10 +371,34 @@ class FPGA {
     return v;
   }
 
+  size_t _num_transducers;
   std::vector<uint16_t> _controller_bram;
   std::vector<uint16_t> _modulator_bram;
   std::vector<uint16_t> _normal_op_bram;
   std::vector<uint16_t> _stm_op_bram;
+
+  std::vector<uint64_t> _tr_pos = {
+      0x00000000, 0x01960000, 0x032c0000, 0x04c30000, 0x06590000, 0x07ef0000, 0x09860000, 0x0b1c0000, 0x0cb30000, 0x0e490000, 0x0fdf0000, 0x11760000,
+      0x130c0000, 0x14a30000, 0x16390000, 0x17d00000, 0x19660000, 0x1afc0000, 0x00000196, 0x04c30196, 0x06590196, 0x07ef0196, 0x09860196, 0x0b1c0196,
+      0x0cb30196, 0x0e490196, 0x0fdf0196, 0x11760196, 0x130c0196, 0x14a30196, 0x16390196, 0x17d00196, 0x1afc0196, 0x0000032c, 0x0196032c, 0x032c032c,
+      0x04c3032c, 0x0659032c, 0x07ef032c, 0x0986032c, 0x0b1c032c, 0x0cb3032c, 0x0e49032c, 0x0fdf032c, 0x1176032c, 0x130c032c, 0x14a3032c, 0x1639032c,
+      0x17d0032c, 0x1966032c, 0x1afc032c, 0x000004c3, 0x019604c3, 0x032c04c3, 0x04c304c3, 0x065904c3, 0x07ef04c3, 0x098604c3, 0x0b1c04c3, 0x0cb304c3,
+      0x0e4904c3, 0x0fdf04c3, 0x117604c3, 0x130c04c3, 0x14a304c3, 0x163904c3, 0x17d004c3, 0x196604c3, 0x1afc04c3, 0x00000659, 0x01960659, 0x032c0659,
+      0x04c30659, 0x06590659, 0x07ef0659, 0x09860659, 0x0b1c0659, 0x0cb30659, 0x0e490659, 0x0fdf0659, 0x11760659, 0x130c0659, 0x14a30659, 0x16390659,
+      0x17d00659, 0x19660659, 0x1afc0659, 0x000007ef, 0x019607ef, 0x032c07ef, 0x04c307ef, 0x065907ef, 0x07ef07ef, 0x098607ef, 0x0b1c07ef, 0x0cb307ef,
+      0x0e4907ef, 0x0fdf07ef, 0x117607ef, 0x130c07ef, 0x14a307ef, 0x163907ef, 0x17d007ef, 0x196607ef, 0x1afc07ef, 0x00000986, 0x01960986, 0x032c0986,
+      0x04c30986, 0x06590986, 0x07ef0986, 0x09860986, 0x0b1c0986, 0x0cb30986, 0x0e490986, 0x0fdf0986, 0x11760986, 0x130c0986, 0x14a30986, 0x16390986,
+      0x17d00986, 0x19660986, 0x1afc0986, 0x00000b1c, 0x01960b1c, 0x032c0b1c, 0x04c30b1c, 0x06590b1c, 0x07ef0b1c, 0x09860b1c, 0x0b1c0b1c, 0x0cb30b1c,
+      0x0e490b1c, 0x0fdf0b1c, 0x11760b1c, 0x130c0b1c, 0x14a30b1c, 0x16390b1c, 0x17d00b1c, 0x19660b1c, 0x1afc0b1c, 0x00000cb3, 0x01960cb3, 0x032c0cb3,
+      0x04c30cb3, 0x06590cb3, 0x07ef0cb3, 0x09860cb3, 0x0b1c0cb3, 0x0cb30cb3, 0x0e490cb3, 0x0fdf0cb3, 0x11760cb3, 0x130c0cb3, 0x14a30cb3, 0x16390cb3,
+      0x17d00cb3, 0x19660cb3, 0x1afc0cb3, 0x00000e49, 0x01960e49, 0x032c0e49, 0x04c30e49, 0x06590e49, 0x07ef0e49, 0x09860e49, 0x0b1c0e49, 0x0cb30e49,
+      0x0e490e49, 0x0fdf0e49, 0x11760e49, 0x130c0e49, 0x14a30e49, 0x16390e49, 0x17d00e49, 0x19660e49, 0x1afc0e49, 0x00000fdf, 0x01960fdf, 0x032c0fdf,
+      0x04c30fdf, 0x06590fdf, 0x07ef0fdf, 0x09860fdf, 0x0b1c0fdf, 0x0cb30fdf, 0x0e490fdf, 0x0fdf0fdf, 0x11760fdf, 0x130c0fdf, 0x14a30fdf, 0x16390fdf,
+      0x17d00fdf, 0x19660fdf, 0x1afc0fdf, 0x00001176, 0x01961176, 0x032c1176, 0x04c31176, 0x06591176, 0x07ef1176, 0x09861176, 0x0b1c1176, 0x0cb31176,
+      0x0e491176, 0x0fdf1176, 0x11761176, 0x130c1176, 0x14a31176, 0x16391176, 0x17d01176, 0x19661176, 0x1afc1176, 0x0000130c, 0x0196130c, 0x032c130c,
+      0x04c3130c, 0x0659130c, 0x07ef130c, 0x0986130c, 0x0b1c130c, 0x0cb3130c, 0x0e49130c, 0x0fdf130c, 0x1176130c, 0x130c130c, 0x14a3130c, 0x1639130c,
+      0x17d0130c, 0x1966130c, 0x1afc130c, 0x000014a3, 0x019614a3, 0x032c14a3, 0x04c314a3, 0x065914a3, 0x07ef14a3, 0x098614a3, 0x0b1c14a3, 0x0cb314a3,
+      0x0e4914a3, 0x0fdf14a3, 0x117614a3, 0x130c14a3, 0x14a314a3, 0x163914a3, 0x17d014a3, 0x196614a3, 0x1afc14a3};
 };
 
-};  // namespace autd3::extra
+}  // namespace autd3::extra

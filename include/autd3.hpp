@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "autd3/autd3_device.hpp"
 #include "autd3/controller.hpp"
 #include "autd3/core/amplitudes.hpp"
 #include "autd3/core/delay.hpp"
@@ -60,13 +61,6 @@ using core::Point;
 using core::PointSTM;
 
 using core::LinkPtr;
-
-using driver::DEVICE_HEIGHT;
-using driver::DEVICE_WIDTH;
-using driver::NUM_TRANS_IN_UNIT;
-using driver::NUM_TRANS_X;
-using driver::NUM_TRANS_Y;
-using driver::TRANS_SPACING;
 
 using core::legacy_mode;
 using core::normal_mode;

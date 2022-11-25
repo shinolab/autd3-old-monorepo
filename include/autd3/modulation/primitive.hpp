@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
 #pragma once
 
 #include "autd3/core/modulation.hpp"
-#include "autd3/driver/hardware.hpp"
+#include "autd3/driver/defined.hpp"
 
 namespace autd3::modulation {
 

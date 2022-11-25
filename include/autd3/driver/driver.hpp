@@ -3,7 +3,7 @@
 // Created Date: 15/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ class Driver {
   virtual void normal_duty_body(const std::vector<Drive>& drives, TxDatagram& tx) const = 0;
   virtual void normal_phase_body(const std::vector<Drive>& drives, TxDatagram& tx) const = 0;
   virtual void point_stm_header(TxDatagram& tx) const = 0;
-  [[nodiscard]] virtual size_t point_stm_send_size(size_t total_size, size_t sent) const = 0;
+  [[nodiscard]] virtual size_t point_stm_send_size(size_t total_size, size_t sent, const std::vector<size_t>& device_map) const = 0;
   virtual bool point_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, size_t total_size, uint32_t freq_div,
                               double sound_speed, TxDatagram& tx) const = 0;
   virtual void gain_stm_legacy_header(TxDatagram& tx) const = 0;

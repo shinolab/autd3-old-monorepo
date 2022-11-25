@@ -3,7 +3,7 @@
 // Created Date: 15/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -55,7 +55,7 @@ class DriverV2_3 final : public Driver {
 
   void point_stm_header(TxDatagram& tx) const noexcept override;
 
-  [[nodiscard]] size_t point_stm_send_size(size_t total_size, size_t sent) const noexcept override;
+  [[nodiscard]] size_t point_stm_send_size(size_t total_size, size_t sent, const std::vector<size_t>& device_map) const noexcept override;
 
   bool point_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, size_t total_size, uint32_t freq_div, double sound_speed,
                       TxDatagram& tx) const override;
