@@ -3,7 +3,7 @@
 // Created Date: 20/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,7 +21,6 @@
 #include <autd3/driver/common/cpu/body.hpp>
 #include <autd3/driver/common/cpu/datagram.hpp>
 #include <autd3/driver/firmware_version.hpp>
-#include <autd3/driver/hardware.hpp>
 #include <random>
 
 #include "autd3/driver/common/fpga/defined.hpp"
@@ -30,6 +29,8 @@
 
 using autd3::driver::CPUControlFlags;
 using autd3::driver::FPGAControlFlags;
+
+constexpr size_t NUM_TRANS_IN_UNIT = 249;
 
 TEST(FPGATest, FPGAControlFlagsTest) {
   FPGAControlFlags flag(FPGAControlFlags::NONE);
@@ -68,266 +69,6 @@ TEST(FPGATest, FPGAInfo) {
 
   info = FPGAInfo(2);
   ASSERT_FALSE(info.is_thermal_assert());
-}
-
-TEST(HARDTest, is_missing_transducer) {
-  using autd3::driver::is_missing_transducer;
-
-  ASSERT_TRUE(is_missing_transducer(1, 1));
-  ASSERT_TRUE(is_missing_transducer(2, 1));
-  ASSERT_TRUE(is_missing_transducer(16, 1));
-
-  ASSERT_FALSE(is_missing_transducer(0, 0));
-  ASSERT_FALSE(is_missing_transducer(1, 0));
-  ASSERT_FALSE(is_missing_transducer(2, 0));
-  ASSERT_FALSE(is_missing_transducer(3, 0));
-  ASSERT_FALSE(is_missing_transducer(4, 0));
-  ASSERT_FALSE(is_missing_transducer(5, 0));
-  ASSERT_FALSE(is_missing_transducer(6, 0));
-  ASSERT_FALSE(is_missing_transducer(7, 0));
-  ASSERT_FALSE(is_missing_transducer(8, 0));
-  ASSERT_FALSE(is_missing_transducer(9, 0));
-  ASSERT_FALSE(is_missing_transducer(10, 0));
-  ASSERT_FALSE(is_missing_transducer(11, 0));
-  ASSERT_FALSE(is_missing_transducer(12, 0));
-  ASSERT_FALSE(is_missing_transducer(13, 0));
-  ASSERT_FALSE(is_missing_transducer(14, 0));
-  ASSERT_FALSE(is_missing_transducer(15, 0));
-  ASSERT_FALSE(is_missing_transducer(16, 0));
-  ASSERT_FALSE(is_missing_transducer(17, 0));
-  ASSERT_FALSE(is_missing_transducer(0, 1));
-  ASSERT_TRUE(is_missing_transducer(1, 1));
-  ASSERT_TRUE(is_missing_transducer(2, 1));
-  ASSERT_FALSE(is_missing_transducer(3, 1));
-  ASSERT_FALSE(is_missing_transducer(4, 1));
-  ASSERT_FALSE(is_missing_transducer(5, 1));
-  ASSERT_FALSE(is_missing_transducer(6, 1));
-  ASSERT_FALSE(is_missing_transducer(7, 1));
-  ASSERT_FALSE(is_missing_transducer(8, 1));
-  ASSERT_FALSE(is_missing_transducer(9, 1));
-  ASSERT_FALSE(is_missing_transducer(10, 1));
-  ASSERT_FALSE(is_missing_transducer(11, 1));
-  ASSERT_FALSE(is_missing_transducer(12, 1));
-  ASSERT_FALSE(is_missing_transducer(13, 1));
-  ASSERT_FALSE(is_missing_transducer(14, 1));
-  ASSERT_FALSE(is_missing_transducer(15, 1));
-  ASSERT_TRUE(is_missing_transducer(16, 1));
-  ASSERT_FALSE(is_missing_transducer(17, 1));
-  ASSERT_FALSE(is_missing_transducer(0, 2));
-  ASSERT_FALSE(is_missing_transducer(1, 2));
-  ASSERT_FALSE(is_missing_transducer(2, 2));
-  ASSERT_FALSE(is_missing_transducer(3, 2));
-  ASSERT_FALSE(is_missing_transducer(4, 2));
-  ASSERT_FALSE(is_missing_transducer(5, 2));
-  ASSERT_FALSE(is_missing_transducer(6, 2));
-  ASSERT_FALSE(is_missing_transducer(7, 2));
-  ASSERT_FALSE(is_missing_transducer(8, 2));
-  ASSERT_FALSE(is_missing_transducer(9, 2));
-  ASSERT_FALSE(is_missing_transducer(10, 2));
-  ASSERT_FALSE(is_missing_transducer(11, 2));
-  ASSERT_FALSE(is_missing_transducer(12, 2));
-  ASSERT_FALSE(is_missing_transducer(13, 2));
-  ASSERT_FALSE(is_missing_transducer(14, 2));
-  ASSERT_FALSE(is_missing_transducer(15, 2));
-  ASSERT_FALSE(is_missing_transducer(16, 2));
-  ASSERT_FALSE(is_missing_transducer(17, 2));
-  ASSERT_FALSE(is_missing_transducer(0, 3));
-  ASSERT_FALSE(is_missing_transducer(1, 3));
-  ASSERT_FALSE(is_missing_transducer(2, 3));
-  ASSERT_FALSE(is_missing_transducer(3, 3));
-  ASSERT_FALSE(is_missing_transducer(4, 3));
-  ASSERT_FALSE(is_missing_transducer(5, 3));
-  ASSERT_FALSE(is_missing_transducer(6, 3));
-  ASSERT_FALSE(is_missing_transducer(7, 3));
-  ASSERT_FALSE(is_missing_transducer(8, 3));
-  ASSERT_FALSE(is_missing_transducer(9, 3));
-  ASSERT_FALSE(is_missing_transducer(10, 3));
-  ASSERT_FALSE(is_missing_transducer(11, 3));
-  ASSERT_FALSE(is_missing_transducer(12, 3));
-  ASSERT_FALSE(is_missing_transducer(13, 3));
-  ASSERT_FALSE(is_missing_transducer(14, 3));
-  ASSERT_FALSE(is_missing_transducer(15, 3));
-  ASSERT_FALSE(is_missing_transducer(16, 3));
-  ASSERT_FALSE(is_missing_transducer(17, 3));
-  ASSERT_FALSE(is_missing_transducer(0, 4));
-  ASSERT_FALSE(is_missing_transducer(1, 4));
-  ASSERT_FALSE(is_missing_transducer(2, 4));
-  ASSERT_FALSE(is_missing_transducer(3, 4));
-  ASSERT_FALSE(is_missing_transducer(4, 4));
-  ASSERT_FALSE(is_missing_transducer(5, 4));
-  ASSERT_FALSE(is_missing_transducer(6, 4));
-  ASSERT_FALSE(is_missing_transducer(7, 4));
-  ASSERT_FALSE(is_missing_transducer(8, 4));
-  ASSERT_FALSE(is_missing_transducer(9, 4));
-  ASSERT_FALSE(is_missing_transducer(10, 4));
-  ASSERT_FALSE(is_missing_transducer(11, 4));
-  ASSERT_FALSE(is_missing_transducer(12, 4));
-  ASSERT_FALSE(is_missing_transducer(13, 4));
-  ASSERT_FALSE(is_missing_transducer(14, 4));
-  ASSERT_FALSE(is_missing_transducer(15, 4));
-  ASSERT_FALSE(is_missing_transducer(16, 4));
-  ASSERT_FALSE(is_missing_transducer(17, 4));
-  ASSERT_FALSE(is_missing_transducer(0, 5));
-  ASSERT_FALSE(is_missing_transducer(1, 5));
-  ASSERT_FALSE(is_missing_transducer(2, 5));
-  ASSERT_FALSE(is_missing_transducer(3, 5));
-  ASSERT_FALSE(is_missing_transducer(4, 5));
-  ASSERT_FALSE(is_missing_transducer(5, 5));
-  ASSERT_FALSE(is_missing_transducer(6, 5));
-  ASSERT_FALSE(is_missing_transducer(7, 5));
-  ASSERT_FALSE(is_missing_transducer(8, 5));
-  ASSERT_FALSE(is_missing_transducer(9, 5));
-  ASSERT_FALSE(is_missing_transducer(10, 5));
-  ASSERT_FALSE(is_missing_transducer(11, 5));
-  ASSERT_FALSE(is_missing_transducer(12, 5));
-  ASSERT_FALSE(is_missing_transducer(13, 5));
-  ASSERT_FALSE(is_missing_transducer(14, 5));
-  ASSERT_FALSE(is_missing_transducer(15, 5));
-  ASSERT_FALSE(is_missing_transducer(16, 5));
-  ASSERT_FALSE(is_missing_transducer(17, 5));
-  ASSERT_FALSE(is_missing_transducer(0, 6));
-  ASSERT_FALSE(is_missing_transducer(1, 6));
-  ASSERT_FALSE(is_missing_transducer(2, 6));
-  ASSERT_FALSE(is_missing_transducer(3, 6));
-  ASSERT_FALSE(is_missing_transducer(4, 6));
-  ASSERT_FALSE(is_missing_transducer(5, 6));
-  ASSERT_FALSE(is_missing_transducer(6, 6));
-  ASSERT_FALSE(is_missing_transducer(7, 6));
-  ASSERT_FALSE(is_missing_transducer(8, 6));
-  ASSERT_FALSE(is_missing_transducer(9, 6));
-  ASSERT_FALSE(is_missing_transducer(10, 6));
-  ASSERT_FALSE(is_missing_transducer(11, 6));
-  ASSERT_FALSE(is_missing_transducer(12, 6));
-  ASSERT_FALSE(is_missing_transducer(13, 6));
-  ASSERT_FALSE(is_missing_transducer(14, 6));
-  ASSERT_FALSE(is_missing_transducer(15, 6));
-  ASSERT_FALSE(is_missing_transducer(16, 6));
-  ASSERT_FALSE(is_missing_transducer(17, 6));
-  ASSERT_FALSE(is_missing_transducer(0, 7));
-  ASSERT_FALSE(is_missing_transducer(1, 7));
-  ASSERT_FALSE(is_missing_transducer(2, 7));
-  ASSERT_FALSE(is_missing_transducer(3, 7));
-  ASSERT_FALSE(is_missing_transducer(4, 7));
-  ASSERT_FALSE(is_missing_transducer(5, 7));
-  ASSERT_FALSE(is_missing_transducer(6, 7));
-  ASSERT_FALSE(is_missing_transducer(7, 7));
-  ASSERT_FALSE(is_missing_transducer(8, 7));
-  ASSERT_FALSE(is_missing_transducer(9, 7));
-  ASSERT_FALSE(is_missing_transducer(10, 7));
-  ASSERT_FALSE(is_missing_transducer(11, 7));
-  ASSERT_FALSE(is_missing_transducer(12, 7));
-  ASSERT_FALSE(is_missing_transducer(13, 7));
-  ASSERT_FALSE(is_missing_transducer(14, 7));
-  ASSERT_FALSE(is_missing_transducer(15, 7));
-  ASSERT_FALSE(is_missing_transducer(16, 7));
-  ASSERT_FALSE(is_missing_transducer(17, 7));
-  ASSERT_FALSE(is_missing_transducer(0, 8));
-  ASSERT_FALSE(is_missing_transducer(1, 8));
-  ASSERT_FALSE(is_missing_transducer(2, 8));
-  ASSERT_FALSE(is_missing_transducer(3, 8));
-  ASSERT_FALSE(is_missing_transducer(4, 8));
-  ASSERT_FALSE(is_missing_transducer(5, 8));
-  ASSERT_FALSE(is_missing_transducer(6, 8));
-  ASSERT_FALSE(is_missing_transducer(7, 8));
-  ASSERT_FALSE(is_missing_transducer(8, 8));
-  ASSERT_FALSE(is_missing_transducer(9, 8));
-  ASSERT_FALSE(is_missing_transducer(10, 8));
-  ASSERT_FALSE(is_missing_transducer(11, 8));
-  ASSERT_FALSE(is_missing_transducer(12, 8));
-  ASSERT_FALSE(is_missing_transducer(13, 8));
-  ASSERT_FALSE(is_missing_transducer(14, 8));
-  ASSERT_FALSE(is_missing_transducer(15, 8));
-  ASSERT_FALSE(is_missing_transducer(16, 8));
-  ASSERT_FALSE(is_missing_transducer(17, 8));
-  ASSERT_FALSE(is_missing_transducer(0, 9));
-  ASSERT_FALSE(is_missing_transducer(1, 9));
-  ASSERT_FALSE(is_missing_transducer(2, 9));
-  ASSERT_FALSE(is_missing_transducer(3, 9));
-  ASSERT_FALSE(is_missing_transducer(4, 9));
-  ASSERT_FALSE(is_missing_transducer(5, 9));
-  ASSERT_FALSE(is_missing_transducer(6, 9));
-  ASSERT_FALSE(is_missing_transducer(7, 9));
-  ASSERT_FALSE(is_missing_transducer(8, 9));
-  ASSERT_FALSE(is_missing_transducer(9, 9));
-  ASSERT_FALSE(is_missing_transducer(10, 9));
-  ASSERT_FALSE(is_missing_transducer(11, 9));
-  ASSERT_FALSE(is_missing_transducer(12, 9));
-  ASSERT_FALSE(is_missing_transducer(13, 9));
-  ASSERT_FALSE(is_missing_transducer(14, 9));
-  ASSERT_FALSE(is_missing_transducer(15, 9));
-  ASSERT_FALSE(is_missing_transducer(16, 9));
-  ASSERT_FALSE(is_missing_transducer(17, 9));
-  ASSERT_FALSE(is_missing_transducer(0, 10));
-  ASSERT_FALSE(is_missing_transducer(1, 10));
-  ASSERT_FALSE(is_missing_transducer(2, 10));
-  ASSERT_FALSE(is_missing_transducer(3, 10));
-  ASSERT_FALSE(is_missing_transducer(4, 10));
-  ASSERT_FALSE(is_missing_transducer(5, 10));
-  ASSERT_FALSE(is_missing_transducer(6, 10));
-  ASSERT_FALSE(is_missing_transducer(7, 10));
-  ASSERT_FALSE(is_missing_transducer(8, 10));
-  ASSERT_FALSE(is_missing_transducer(9, 10));
-  ASSERT_FALSE(is_missing_transducer(10, 10));
-  ASSERT_FALSE(is_missing_transducer(11, 10));
-  ASSERT_FALSE(is_missing_transducer(12, 10));
-  ASSERT_FALSE(is_missing_transducer(13, 10));
-  ASSERT_FALSE(is_missing_transducer(14, 10));
-  ASSERT_FALSE(is_missing_transducer(15, 10));
-  ASSERT_FALSE(is_missing_transducer(16, 10));
-  ASSERT_FALSE(is_missing_transducer(17, 10));
-  ASSERT_FALSE(is_missing_transducer(0, 11));
-  ASSERT_FALSE(is_missing_transducer(1, 11));
-  ASSERT_FALSE(is_missing_transducer(2, 11));
-  ASSERT_FALSE(is_missing_transducer(3, 11));
-  ASSERT_FALSE(is_missing_transducer(4, 11));
-  ASSERT_FALSE(is_missing_transducer(5, 11));
-  ASSERT_FALSE(is_missing_transducer(6, 11));
-  ASSERT_FALSE(is_missing_transducer(7, 11));
-  ASSERT_FALSE(is_missing_transducer(8, 11));
-  ASSERT_FALSE(is_missing_transducer(9, 11));
-  ASSERT_FALSE(is_missing_transducer(10, 11));
-  ASSERT_FALSE(is_missing_transducer(11, 11));
-  ASSERT_FALSE(is_missing_transducer(12, 11));
-  ASSERT_FALSE(is_missing_transducer(13, 11));
-  ASSERT_FALSE(is_missing_transducer(14, 11));
-  ASSERT_FALSE(is_missing_transducer(15, 11));
-  ASSERT_FALSE(is_missing_transducer(16, 11));
-  ASSERT_FALSE(is_missing_transducer(17, 11));
-  ASSERT_FALSE(is_missing_transducer(0, 12));
-  ASSERT_FALSE(is_missing_transducer(1, 12));
-  ASSERT_FALSE(is_missing_transducer(2, 12));
-  ASSERT_FALSE(is_missing_transducer(3, 12));
-  ASSERT_FALSE(is_missing_transducer(4, 12));
-  ASSERT_FALSE(is_missing_transducer(5, 12));
-  ASSERT_FALSE(is_missing_transducer(6, 12));
-  ASSERT_FALSE(is_missing_transducer(7, 12));
-  ASSERT_FALSE(is_missing_transducer(8, 12));
-  ASSERT_FALSE(is_missing_transducer(9, 12));
-  ASSERT_FALSE(is_missing_transducer(10, 12));
-  ASSERT_FALSE(is_missing_transducer(11, 12));
-  ASSERT_FALSE(is_missing_transducer(12, 12));
-  ASSERT_FALSE(is_missing_transducer(13, 12));
-  ASSERT_FALSE(is_missing_transducer(14, 12));
-  ASSERT_FALSE(is_missing_transducer(15, 12));
-  ASSERT_FALSE(is_missing_transducer(16, 12));
-  ASSERT_FALSE(is_missing_transducer(17, 12));
-  ASSERT_FALSE(is_missing_transducer(1, 13));
-  ASSERT_FALSE(is_missing_transducer(2, 13));
-  ASSERT_FALSE(is_missing_transducer(3, 13));
-  ASSERT_FALSE(is_missing_transducer(4, 13));
-  ASSERT_FALSE(is_missing_transducer(5, 13));
-  ASSERT_FALSE(is_missing_transducer(6, 13));
-  ASSERT_FALSE(is_missing_transducer(7, 13));
-  ASSERT_FALSE(is_missing_transducer(8, 13));
-  ASSERT_FALSE(is_missing_transducer(9, 13));
-  ASSERT_FALSE(is_missing_transducer(10, 13));
-  ASSERT_FALSE(is_missing_transducer(11, 13));
-  ASSERT_FALSE(is_missing_transducer(12, 13));
-  ASSERT_FALSE(is_missing_transducer(13, 13));
-  ASSERT_FALSE(is_missing_transducer(14, 13));
-  ASSERT_FALSE(is_missing_transducer(15, 13));
-  ASSERT_FALSE(is_missing_transducer(16, 13));
-  ASSERT_FALSE(is_missing_transducer(17, 13));
 }
 
 TEST(VersionTest, FirmwareInfo) {
@@ -529,18 +270,11 @@ TEST(CPUTest, STMFocus) {
   }
 }
 
-TEST(CPUTest, Body) {
-  ASSERT_EQ(sizeof(autd3::driver::PointSTMBodyHead), 498);
-  ASSERT_EQ(sizeof(autd3::driver::PointSTMBodyBody), 498);
-  ASSERT_EQ(sizeof(autd3::driver::GainSTMBodyHead), 498);
-  ASSERT_EQ(sizeof(autd3::driver::GainSTMBodyBody), 498);
-  ASSERT_EQ(sizeof(autd3::driver::Body), 498);
-}
-
 TEST(CPUTest, TxDatagram) {
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
-  ASSERT_EQ(tx.size(), 10);
+  ASSERT_EQ(tx.num_devices(), 10);
   ASSERT_EQ(tx.effective_size(), 128 + 498 * 10);
 
   tx.num_bodies = 5;
@@ -597,7 +331,8 @@ TEST(UtilitiesTest, rem_euclid) {
 TEST(CPUTest, operation_clear_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   driver.clear(tx);
 
@@ -608,7 +343,8 @@ TEST(CPUTest, operation_clear_v2_6) {
 TEST(CPUTest, operation_null_header_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   driver.null_header(1, tx);
 
@@ -623,7 +359,8 @@ TEST(CPUTest, operation_null_header_v2_6) {
 TEST(CPUTest, operation_null_body_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   driver.null_body(tx);
 
@@ -634,14 +371,15 @@ TEST(CPUTest, operation_null_body_v2_6) {
 TEST(CPUTest, operation_sync_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   std::vector<uint16_t> cycle;
   std::random_device seed_gen;
   std::mt19937 engine(seed_gen());
   std::uniform_int_distribution dist(0, 0xFFFF);
-  cycle.reserve(autd3::driver::NUM_TRANS_IN_UNIT * 10);
-  for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++) cycle.emplace_back(dist(engine));
+  cycle.reserve(NUM_TRANS_IN_UNIT * 10);
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) cycle.emplace_back(dist(engine));
 
   driver.sync(cycle.data(), tx);
 
@@ -649,8 +387,7 @@ TEST(CPUTest, operation_sync_v2_6) {
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_SILENCER));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_SYNC));
 
-  for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++)
-    ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT], cycle[i]);
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i], cycle[i]);
 
   ASSERT_EQ(tx.num_bodies, 10);
 }
@@ -658,7 +395,8 @@ TEST(CPUTest, operation_sync_v2_6) {
 TEST(CPUTest, operation_modulation_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   std::vector<uint8_t> mod_data;
   for (size_t i = 0; i < autd3::driver::MOD_HEAD_DATA_SIZE + autd3::driver::MOD_BODY_DATA_SIZE + 1; i++)
@@ -703,7 +441,8 @@ TEST(CPUTest, operation_modulation_v2_6) {
 TEST(CPUTest, operation_config_silencer_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   driver.config_silencer(1, 522, 4, tx);
   ASSERT_EQ(tx.header().msg_id, 1);
@@ -719,7 +458,8 @@ TEST(CPUTest, operation_config_silencer_v2_6) {
 TEST(CPUTest, normal_legacy_header_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   driver.normal_legacy_header(tx);
 
@@ -733,24 +473,23 @@ TEST(CPUTest, normal_legacy_header_v2_6) {
 TEST(CPUTest, operation_normal_legacy_body_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   std::vector<autd3::driver::Drive> drives;
   std::random_device seed_gen;
   std::mt19937 engine(seed_gen());
   std::uniform_real_distribution dist(0.0, 1.0);
-  drives.reserve(autd3::driver::NUM_TRANS_IN_UNIT * 10);
-  for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++) drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine), 4096});
+  drives.reserve(NUM_TRANS_IN_UNIT * 10);
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine), 4096});
 
   driver.normal_legacy_body(drives, tx);
 
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
 
-  for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++) {
-    ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT] & 0xFF,
-              autd3::driver::LegacyDrive::to_phase(drives[i]));
-    ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT] >> 8,
-              autd3::driver::LegacyDrive::to_duty(drives[i]));
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) {
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i] & 0xFF, autd3::driver::LegacyDrive::to_phase(drives[i]));
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i] >> 8, autd3::driver::LegacyDrive::to_duty(drives[i]));
   }
 
   ASSERT_EQ(tx.num_bodies, 10);
@@ -759,7 +498,8 @@ TEST(CPUTest, operation_normal_legacy_body_v2_6) {
 TEST(CPUTest, operation_normal_header_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   driver.normal_header(tx);
 
@@ -773,52 +513,54 @@ TEST(CPUTest, operation_normal_header_v2_6) {
 TEST(CPUTest, operation_normal_duty_body_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   std::vector<autd3::driver::Drive> drives;
   std::random_device seed_gen;
   std::mt19937 engine(seed_gen());
   std::uniform_real_distribution dist(0.0, 1.0);
-  drives.reserve(autd3::driver::NUM_TRANS_IN_UNIT * 10);
-  for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++) drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine), 4096});
+  drives.reserve(NUM_TRANS_IN_UNIT * 10);
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine), 4096});
 
   driver.normal_duty_body(drives, tx);
 
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
 
-  for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++)
-    ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT], autd3::driver::Duty::to_duty(drives[i]));
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i], autd3::driver::Duty::to_duty(drives[i]));
 
   ASSERT_EQ(tx.num_bodies, 10);
 }
 TEST(CPUTest, operation_normal_phase_body_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   std::vector<autd3::driver::Drive> drives;
   std::random_device seed_gen;
   std::mt19937 engine(seed_gen());
   std::uniform_real_distribution dist(0.0, 1.0);
-  drives.reserve(autd3::driver::NUM_TRANS_IN_UNIT * 10);
-  for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++) drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine), 4096});
+  drives.reserve(NUM_TRANS_IN_UNIT * 10);
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine), 4096});
 
   driver.normal_phase_body(drives, tx);
 
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
 
-  for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++)
-    ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT],
-              autd3::driver::Phase::to_phase(drives[i]));
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i], autd3::driver::Phase::to_phase(drives[i]));
 
   ASSERT_EQ(tx.num_bodies, 10);
 }
 TEST(CPUTest, operation_point_stm_header_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   driver.point_stm_header(tx);
 
@@ -834,7 +576,8 @@ TEST(CPUTest, operation_point_stm_header_v2_6) {
 TEST(CPUTest, operation_point_stm_body_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   constexpr size_t size = 30;
 
@@ -863,11 +606,11 @@ TEST(CPUTest, operation_point_stm_body_v2_6) {
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
 
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].point_stm_head().data()[0], 30);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].point_stm_head().data()[1], 3224);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].point_stm_head().data()[2], 0);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].point_stm_head().data()[3], sp & 0xFFFF);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].point_stm_head().data()[4], sp >> 16);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_head().data()[0], 30);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_head().data()[1], 3224);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_head().data()[2], 0);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_head().data()[3], sp & 0xFFFF);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_head().data()[4], sp >> 16);
   ASSERT_EQ(tx.num_bodies, 10);
 
   driver.point_stm_header(tx);
@@ -879,7 +622,7 @@ TEST(CPUTest, operation_point_stm_body_v2_6) {
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
 
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].point_stm_head().data()[0], 30);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_head().data()[0], 30);
   ASSERT_EQ(tx.num_bodies, 10);
 
   driver.point_stm_header(tx);
@@ -903,7 +646,8 @@ TEST(CPUTest, operation_point_stm_body_v2_6) {
 TEST(CPUTest, operation_gain_stm_legacy_header_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   driver.gain_stm_legacy_header(tx);
 
@@ -920,7 +664,8 @@ TEST(CPUTest, operation_gain_stm_legacy_header_v2_6) {
 TEST(CPUTest, operation_gain_stm_legacy_body_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   std::vector<std::vector<autd3::driver::Drive>> drives_list;
   drives_list.reserve(5);
@@ -929,8 +674,8 @@ TEST(CPUTest, operation_gain_stm_legacy_body_v2_6) {
     std::random_device seed_gen;
     std::mt19937 engine(seed_gen());
     std::uniform_real_distribution dist(0.0, 1.0);
-    drives.reserve(autd3::driver::NUM_TRANS_IN_UNIT * 10);
-    for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT * 10; j++) drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine), 4096});
+    drives.reserve(NUM_TRANS_IN_UNIT * 10);
+    for (size_t j = 0; j < NUM_TRANS_IN_UNIT * 10; j++) drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine), 4096});
     drives_list.emplace_back(drives);
   }
 
@@ -941,9 +686,9 @@ TEST(CPUTest, operation_gain_stm_legacy_body_v2_6) {
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].gain_stm_head().data()[0], 3224);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].gain_stm_head().data()[1], 0);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].gain_stm_head().data()[3], 5);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_head().data()[0], 3224);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_head().data()[1], 0);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_head().data()[3], 5);
   ASSERT_EQ(tx.num_bodies, 10);
 
   driver.gain_stm_legacy_header(tx);
@@ -952,11 +697,9 @@ TEST(CPUTest, operation_gain_stm_legacy_body_v2_6) {
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
-  for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++) {
-    ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT] & 0xFF,
-              autd3::driver::LegacyDrive::to_phase(drives_list[0][i]));
-    ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT] >> 8,
-              autd3::driver::LegacyDrive::to_duty(drives_list[0][i]));
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) {
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i] & 0xFF, autd3::driver::LegacyDrive::to_phase(drives_list[0][i]));
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i] >> 8, autd3::driver::LegacyDrive::to_duty(drives_list[0][i]));
   }
   ASSERT_EQ(tx.num_bodies, 10);
 
@@ -966,11 +709,9 @@ TEST(CPUTest, operation_gain_stm_legacy_body_v2_6) {
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
-  for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++) {
-    ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT] & 0xFF,
-              autd3::driver::LegacyDrive::to_phase(drives_list[4][i]));
-    ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT] >> 8,
-              autd3::driver::LegacyDrive::to_duty(drives_list[4][i]));
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) {
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i] & 0xFF, autd3::driver::LegacyDrive::to_phase(drives_list[4][i]));
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i] >> 8, autd3::driver::LegacyDrive::to_duty(drives_list[4][i]));
   }
   ASSERT_EQ(tx.num_bodies, 10);
 }
@@ -978,7 +719,8 @@ TEST(CPUTest, operation_gain_stm_legacy_body_v2_6) {
 TEST(CPUTest, operation_gain_stm_normal_header_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   driver.gain_stm_normal_header(tx);
 
@@ -995,7 +737,8 @@ TEST(CPUTest, operation_gain_stm_normal_header_v2_6) {
 TEST(CPUTest, operation_gain_stm_normal_phase_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   std::vector<std::vector<autd3::driver::Drive>> drives_list;
   drives_list.reserve(5);
@@ -1004,8 +747,8 @@ TEST(CPUTest, operation_gain_stm_normal_phase_v2_6) {
     std::random_device seed_gen;
     std::mt19937 engine(seed_gen());
     std::uniform_real_distribution dist(0.0, 1.0);
-    drives.reserve(autd3::driver::NUM_TRANS_IN_UNIT * 10);
-    for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT * 10; j++) drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine), 4096});
+    drives.reserve(NUM_TRANS_IN_UNIT * 10);
+    for (size_t j = 0; j < NUM_TRANS_IN_UNIT * 10; j++) drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine), 4096});
     drives_list.emplace_back(drives);
   }
 
@@ -1015,8 +758,8 @@ TEST(CPUTest, operation_gain_stm_normal_phase_v2_6) {
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].gain_stm_head().data()[0], 3224);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.bodies()[i].gain_stm_head().data()[1], 0);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_head().data()[0], 3224);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_head().data()[1], 0);
   ASSERT_EQ(tx.num_bodies, 10);
 
   driver.gain_stm_normal_header(tx);
@@ -1025,9 +768,8 @@ TEST(CPUTest, operation_gain_stm_normal_phase_v2_6) {
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
-  for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++)
-    ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT],
-              autd3::driver::Phase::to_phase(drives_list[0][i]));
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i], autd3::driver::Phase::to_phase(drives_list[0][i]));
   ASSERT_EQ(tx.num_bodies, 10);
 
   driver.gain_stm_normal_header(tx);
@@ -1036,16 +778,16 @@ TEST(CPUTest, operation_gain_stm_normal_phase_v2_6) {
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
-  for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++)
-    ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT],
-              autd3::driver::Phase::to_phase(drives_list[4][i]));
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i], autd3::driver::Phase::to_phase(drives_list[4][i]));
   ASSERT_EQ(tx.num_bodies, 10);
 }
 
 TEST(CPUTest, operation_gain_stm_normal_duty_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   std::vector<std::vector<autd3::driver::Drive>> drives_list;
   drives_list.reserve(5);
@@ -1054,8 +796,8 @@ TEST(CPUTest, operation_gain_stm_normal_duty_v2_6) {
     std::random_device seed_gen;
     std::mt19937 engine(seed_gen());
     std::uniform_real_distribution dist(0.0, 1.0);
-    drives.reserve(autd3::driver::NUM_TRANS_IN_UNIT * 10);
-    for (size_t j = 0; j < autd3::driver::NUM_TRANS_IN_UNIT * 10; j++) drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine), 4096});
+    drives.reserve(NUM_TRANS_IN_UNIT * 10);
+    for (size_t j = 0; j < NUM_TRANS_IN_UNIT * 10; j++) drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine), 4096});
     drives_list.emplace_back(drives);
   }
 
@@ -1065,9 +807,8 @@ TEST(CPUTest, operation_gain_stm_normal_duty_v2_6) {
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
-  for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++)
-    ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT],
-              autd3::driver::Duty::to_duty(drives_list[0][i]));
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i], autd3::driver::Duty::to_duty(drives_list[0][i]));
   ASSERT_EQ(tx.num_bodies, 10);
 
   driver.gain_stm_normal_header(tx);
@@ -1076,16 +817,16 @@ TEST(CPUTest, operation_gain_stm_normal_duty_v2_6) {
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
-  for (size_t i = 0; i < autd3::driver::NUM_TRANS_IN_UNIT * 10; i++)
-    ASSERT_EQ(tx.bodies()[i / autd3::driver::NUM_TRANS_IN_UNIT].data[i % autd3::driver::NUM_TRANS_IN_UNIT],
-              autd3::driver::Duty::to_duty(drives_list[4][i]));
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i], autd3::driver::Duty::to_duty(drives_list[4][i]));
   ASSERT_EQ(tx.num_bodies, 10);
 }
 
 TEST(CPUTest, operation_force_fan_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   driver.force_fan(tx, true);
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::FORCE_FAN));
@@ -1097,7 +838,8 @@ TEST(CPUTest, operation_force_fan_v2_6) {
 TEST(CPUTest, operation_reads_fpga_info_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   driver.reads_fpga_info(tx, true);
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::READS_FPGA_INFO));
@@ -1109,7 +851,8 @@ TEST(CPUTest, operation_reads_fpga_info_v2_6) {
 TEST(CPUTest, operation_cpu_version_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   driver.cpu_version(tx);
   ASSERT_EQ(tx.header().msg_id, autd3::driver::MSG_RD_CPU_VERSION);
@@ -1119,7 +862,8 @@ TEST(CPUTest, operation_cpu_version_v2_6) {
 TEST(CPUTest, operation_fpga_version_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   driver.fpga_version(tx);
   ASSERT_EQ(tx.header().msg_id, autd3::driver::MSG_RD_FPGA_VERSION);
@@ -1129,7 +873,8 @@ TEST(CPUTest, operation_fpga_version_v2_6) {
 TEST(CPUTest, operation_fpga_functions_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
-  autd3::driver::TxDatagram tx(10);
+  autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
+                                NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   driver.fpga_functions(tx);
   ASSERT_EQ(tx.header().msg_id, autd3::driver::MSG_RD_FPGA_FUNCTION);
