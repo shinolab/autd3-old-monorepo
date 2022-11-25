@@ -128,8 +128,13 @@ class SOEMHandler final {
       spdlog::error("No slaves found");
       return 0;
     }
+
+    const auto auto_detect = device_map.empty();
+    std::vector<size_t> dev_map;
     for (auto i = 1; i <= wc; i++)
-      if (std::strcmp(ec_slave[i].name, "AUTD") != 0) {
+      if (std::strcmp(ec_slave[i].name, "AUTD") == 0) {
+        if (auto_detect) dev_map.emplace_back(249);
+      } else {
         _is_open.store(false);
         spdlog::error("Slave[{}] is not AUTD3", i);
         return 0;
@@ -153,7 +158,7 @@ class SOEMHandler final {
       spdlog::debug("Sync0 configured");
     }
 
-    _io_map.resize(device_map);
+    _io_map.resize(dev_map);
     ec_config_map(_io_map.get());
 
     ec_statecheck(0, EC_STATE_SAFE_OP, EC_TIMEOUTSTATE * 4);
