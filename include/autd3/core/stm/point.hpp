@@ -107,6 +107,7 @@ struct PointSTM final : STM {
         const Vector4 local_position = trans_inv * homo;
         return driver::STMFocus(local_position.x(), local_position.y(), local_position.z(), p.shift);
       });
+      points.emplace_back(lp);
     }
 
     return driver->point_stm_body(points, _sent, _points.size(), this->_freq_div, sound_speed, tx);
