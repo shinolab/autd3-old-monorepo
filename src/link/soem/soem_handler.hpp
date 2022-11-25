@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -104,7 +104,7 @@ class SOEMHandler final {
     return "";
   }
 
-  size_t open(const int remaining) {
+  size_t open(const std::vector<size_t>& device_map, const int remaining) {
     if (is_open()) return 0;
 
     std::queue<driver::TxDatagram>().swap(_send_buf);
@@ -153,7 +153,7 @@ class SOEMHandler final {
       spdlog::debug("Sync0 configured");
     }
 
-    _io_map.resize(static_cast<size_t>(wc));
+    _io_map.resize(device_map);
     ec_config_map(_io_map.get());
 
     ec_statecheck(0, EC_STATE_SAFE_OP, EC_TIMEOUTSTATE * 4);
@@ -186,7 +186,7 @@ class SOEMHandler final {
       if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
       if (remaining == 0) spdlog::error("One ore more slaves are not responding: {}", ec_slave[0].state);
       spdlog::debug("Failed to reach op mode. retry opening...");
-      return open(remaining - 1);
+      return open(device_map, remaining - 1);
     }
 
     if (_sync_mode == SYNC_MODE::FREE_RUN) {
