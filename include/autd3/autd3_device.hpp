@@ -69,7 +69,7 @@ struct AUTD3 final : core::Device {
     std::vector<core::Transducer> transducers;
     const Eigen::Transform<double, 3, Eigen::Affine> transform_matrix = Eigen::Translation<double, 3>(_position) * _rotation;
     transducers.reserve(NUM_TRANS_IN_UNIT);
-    size_t i = start_id * NUM_TRANS_IN_UNIT;
+    size_t i = start_id;
     for (size_t y = 0; y < NUM_TRANS_Y; y++)
       for (size_t x = 0; x < NUM_TRANS_X; x++) {
         if (is_missing_transducer(x, y)) continue;
