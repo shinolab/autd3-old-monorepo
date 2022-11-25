@@ -48,6 +48,7 @@ struct Geometry {
    */
   [[nodiscard]] Vector3 center() const {
     const Vector3 zero = Vector3::Zero();
+    if (num_transducers() == 0) return Vector3::Zero();
     return std::accumulate(begin(), end(), zero,
                            [](const Vector3& acc, const Transducer& tr) {
                              Vector3 res = acc + tr.position();
