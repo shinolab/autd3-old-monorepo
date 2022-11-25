@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -50,7 +50,7 @@ class TransViewer {
   TransViewer(TransViewer&& obj) = default;
   TransViewer& operator=(TransViewer&& obj) = default;
 
-  [[nodiscard]] bool init(const SoundSources& sound_sources) {
+  [[nodiscard]] bool init(const std::vector<SoundSources>& sound_sources) {
     if (!create_pipeline() || !create_texture() || !create_vertex_buffer() || !create_index_buffer() ||
         !create_model_instance_buffer(sound_sources) || !create_color_instance_buffer(sound_sources))
       return false;
@@ -79,7 +79,7 @@ class TransViewer {
     command_buffer.drawIndexed(6, _instance_count, 0, 0, 0);
   }
 
-  [[nodiscard]] bool update(const SoundSources& sound_sources, const UpdateFlags update_flag) {
+  [[nodiscard]] bool update(const std::vector<SoundSources>& sound_sources, const UpdateFlags update_flag) {
     if (update_flag.contains(UpdateFlags::UPDATE_SOURCE_DRIVE) || update_flag.contains(UpdateFlags::UPDATE_SOURCE_ALPHA) ||
         update_flag.contains(UpdateFlags::UPDATE_SOURCE_FLAG))
       return update_color_instance_buffer(sound_sources);
@@ -316,21 +316,26 @@ class TransViewer {
     return true;
   }
 
-  [[nodiscard]] bool create_model_instance_buffer(const SoundSources& sources) {
+  [[nodiscard]] bool create_model_instance_buffer(const std::vector<SoundSources>& sound_sources) {
     std::vector<glm::mat4> models;
-    _instance_count = static_cast<uint32_t>(sources.size());
+    _instance_count = static_cast<uint32_t>(
+        std::accumulate(sound_sources.begin(), sound_sources.end(), size_t{0}, [](auto acc, const auto& s) { return acc + s.size(); }));
     models.reserve(_instance_count);
-    const auto& positions = sources.positions();
-    const auto& rotations = sources.rotations();
-    for (size_t i = 0; i < sources.size(); i++) {
-      const auto s = static_cast<float>(driver::TRANS_SPACING_MM) * _imgui->scale() * 0.5f;
-      auto m = scale(glm::identity<glm::mat4>(), glm::vec3(s, s, s));
-      m[3].x = positions[i].x;
-      m[3].y = positions[i].y;
-      m[3].z = positions[i].z;
-      m = m * mat4_cast(rotations[i]);
-      models.emplace_back(m);
+
+    for (const auto& sources : sound_sources) {
+      const auto& positions = sources.positions();
+      const auto& rotations = sources.rotations();
+      for (size_t i = 0; i < sources.size(); i++) {
+        const auto s = 10.0f * _imgui->scale() * 0.5f;
+        auto m = scale(glm::identity<glm::mat4>(), glm::vec3(s, s, s));
+        m[3].x = positions[i].x;
+        m[3].y = positions[i].y;
+        m[3].z = positions[i].z;
+        m = m * mat4_cast(rotations[i]);
+        models.emplace_back(m);
+      }
     }
+
     const vk::DeviceSize buffer_size = sizeof models[0] * models.size();
 
     auto [staging_buffer, staging_buffer_memory] = _context->create_buffer(
@@ -356,11 +361,12 @@ class TransViewer {
     return true;
   }
 
-  [[nodiscard]] bool create_color_instance_buffer(const SoundSources& sources) {
+  [[nodiscard]] bool create_color_instance_buffer(const std::vector<SoundSources>& sound_sources) {
     std::vector<glm::vec4> colors;
     colors.reserve(_instance_count);
-    for (size_t i = 0; i < _instance_count; i++)
-      colors.emplace_back(coloring_hsv(sources.drives()[i].phase / (2.0f * glm::pi<float>()), sources.drives()[i].amp, sources.visibilities()[i]));
+    for (const auto& s : sound_sources)
+      for (size_t i = 0; i < s.size(); i++)
+        colors.emplace_back(coloring_hsv(s.drives()[i].phase / (2.0f * glm::pi<float>()), s.drives()[i].amp, s.visibilities()[i]));
 
     const vk::DeviceSize buffer_size = sizeof colors[0] * colors.size();
 
@@ -387,11 +393,12 @@ class TransViewer {
     return true;
   }
 
-  [[nodiscard]] bool update_color_instance_buffer(const SoundSources& sources) {
+  [[nodiscard]] bool update_color_instance_buffer(const std::vector<SoundSources>& sources) {
     std::vector<glm::vec4> colors;
     colors.reserve(_instance_count);
-    for (size_t i = 0; i < _instance_count; i++)
-      colors.emplace_back(coloring_hsv(sources.drives()[i].phase / (2.0f * glm::pi<float>()), sources.drives()[i].amp, sources.visibilities()[i]));
+    for (const auto& s : sources)
+      for (size_t i = 0; i < s.size(); i++)
+        colors.emplace_back(coloring_hsv(s.drives()[i].phase / (2.0f * glm::pi<float>()), s.drives()[i].amp, s.visibilities()[i]));
 
     const vk::DeviceSize buffer_size = sizeof colors[0] * colors.size();
 

@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -123,7 +123,8 @@ struct SimulatorSettings {
 
   std::string image_save_path{"image.png"};
 
-  uint8_t max_dev_num{50};
+  size_t max_dev_num{50};
+  size_t max_trans_num{10000};
 
   void load_default(const bool use_meter_, const bool use_left_handed_) {
     use_meter = use_meter_;
@@ -220,6 +221,7 @@ inline void to_json(nlohmann::json& j, const SimulatorSettings& s) {
       {"show_mod_plot_raw", s.show_mod_plot_raw},
       {"image_save_path", s.image_save_path},
       {"max_dev_num", s.max_dev_num},
+      {"max_trans_num", s.max_trans_num},
   };
 }
 inline void from_json(const nlohmann::json& j, SimulatorSettings& s) {
@@ -262,6 +264,7 @@ inline void from_json(const nlohmann::json& j, SimulatorSettings& s) {
   j.at("show_mod_plot_raw").get_to(s.show_mod_plot_raw);
   j.at("image_save_path").get_to(s.image_save_path);
   j.at("max_dev_num").get_to(s.max_dev_num);
+  j.at("max_trans_num").get_to(s.max_trans_num);
 }
 
 class Simulator {
