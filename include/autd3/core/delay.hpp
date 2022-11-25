@@ -33,7 +33,7 @@ struct ModDelayConfig final : DatagramBody {
 
   bool init() override {
     _sent = false;
-    return false;
+    return true;
   }
 
   bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const core::Mode>&, const Geometry& geometry,
