@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -38,9 +38,9 @@ class SimulatorImpl final : public core::Link {
 
     _input_offset = driver::HEADER_SIZE + geometry.num_transducers() * sizeof(uint16_t);
     const auto datagram_size =
-        driver::HEADER_SIZE + geometry.num_transducers() * sizeof(uint16_t) + geometry.device_map().size() * driver::EC_INPUT_FRAME_SIZE;
+        driver::HEADER_SIZE + geometry.num_transducers() * sizeof(uint16_t) + geometry.num_devices() * driver::EC_INPUT_FRAME_SIZE;
     const auto geometry_size =
-        sizeof(uint8_t) + sizeof(uint32_t) + sizeof(uint32_t) * geometry.device_map().size() + geometry.num_transducers() * sizeof(float) * 7;
+        sizeof(uint8_t) + sizeof(uint32_t) + sizeof(uint32_t) * geometry.num_devices() + geometry.num_transducers() * sizeof(float) * 7;
 
     const auto size = (std::max)(datagram_size, geometry_size);
     try {
@@ -110,17 +110,17 @@ class SimulatorImpl final : public core::Link {
   static std::vector<uint8_t> simulator_init_datagram(const core::Geometry& geometry) {
     std::vector<uint8_t> data;
     const auto geometry_size =
-        sizeof(uint8_t) + sizeof(uint32_t) + sizeof(uint32_t) * geometry.device_map().size() + geometry.num_transducers() * sizeof(float) * 7;
+        sizeof(uint8_t) + sizeof(uint32_t) + sizeof(uint32_t) * geometry.num_devices() + geometry.num_transducers() * sizeof(float) * 7;
     data.resize(geometry_size);
 
     auto* cursor = data.data();
     *cursor++ = driver::MSG_SIMULATOR_INIT;
-    *reinterpret_cast<uint32_t*>(cursor) = static_cast<uint32_t>(geometry.device_map().size());
+    *reinterpret_cast<uint32_t*>(cursor) = static_cast<uint32_t>(geometry.num_devices());
     cursor += sizeof(uint32_t);
 
     size_t i = 0;
     size_t c = 0;
-    for (size_t dev = 0; dev < geometry.device_map().size(); dev++) {
+    for (size_t dev = 0; dev < geometry.num_devices(); dev++) {
       c += geometry.device_map()[dev];
       *reinterpret_cast<uint32_t*>(cursor) = static_cast<uint32_t>(geometry.device_map()[dev]);
       cursor += sizeof(uint32_t);

@@ -83,7 +83,7 @@ class RemoteSOEMTcp final : public core::Link {
     }
     spdlog::debug("Connected");
 
-    const auto size = geometry.device_map().size() * driver::EC_INPUT_FRAME_SIZE;
+    const auto size = geometry.num_devices() * driver::EC_INPUT_FRAME_SIZE;
 
     _ptr = std::make_unique<uint8_t[]>(size);
     std::memset(_ptr.get(), 0, size);

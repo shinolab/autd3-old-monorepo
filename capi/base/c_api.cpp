@@ -177,7 +177,7 @@ bool AUTDGetFPGAInfo(void* const handle, uint8_t* out) {
 
 int32_t AUTDNumDevices(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
-  const auto res = wrapper->geometry().device_map().size();
+  const auto res = wrapper->geometry().num_devices();
   return static_cast<int32_t>(res);
 }
 
