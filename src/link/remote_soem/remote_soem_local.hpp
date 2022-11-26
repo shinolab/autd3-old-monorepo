@@ -3,7 +3,7 @@
 // Created Date: 02/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ namespace autd3::link {
 
 class RemoteSOEMLocal final : public core::Link {
  public:
-  RemoteSOEMLocal() : Link(), _ptr(nullptr) {}
+  RemoteSOEMLocal() : Link(), _ptr(nullptr), _output_size(0) {}
   ~RemoteSOEMLocal() override = default;
   RemoteSOEMLocal(const RemoteSOEMLocal& v) noexcept = delete;
   RemoteSOEMLocal& operator=(const RemoteSOEMLocal& obj) = delete;
@@ -29,7 +29,9 @@ class RemoteSOEMLocal final : public core::Link {
   bool open(const core::Geometry& geometry) override {
     if (is_open()) return true;
 
-    const auto size = driver::HEADER_SIZE + geometry.num_devices() * (driver::BODY_SIZE + driver::EC_INPUT_FRAME_SIZE);
+    _output_size = driver::HEADER_SIZE + std::accumulate(geometry.device_map().begin(), geometry.device_map().end(), size_t{0}) * sizeof(uint16_t);
+
+    const auto size = _output_size + geometry.device_map().size() * driver::EC_INPUT_FRAME_SIZE;
     try {
       _smem.create("autd3_soem_server_smem", size);
     } catch (std::exception& ex) {
@@ -60,7 +62,7 @@ class RemoteSOEMLocal final : public core::Link {
 
   bool receive(driver::RxDatagram& rx) override {
     if (_ptr == nullptr) return false;
-    rx.copy_from(reinterpret_cast<const driver::RxMessage*>(_ptr + driver::HEADER_SIZE + rx.messages().size() * driver::BODY_SIZE));
+    rx.copy_from(reinterpret_cast<const driver::RxMessage*>(_ptr + _output_size));
     return true;
   }
 
@@ -69,6 +71,7 @@ class RemoteSOEMLocal final : public core::Link {
  private:
   smem::SMem _smem;
   uint8_t* _ptr;
+  size_t _output_size;
 };
 
 }  // namespace autd3::link
