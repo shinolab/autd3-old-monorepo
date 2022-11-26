@@ -3,7 +3,7 @@
 // Created Date: 31/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@
 int main() try {
   autd3::Controller autd;
 
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
 
   // Here we use link::Debug for example, but you can use any other link.
   if (auto link = autd3::link::Debug().build(); !autd.open(std::move(link))) {
@@ -25,8 +25,7 @@ int main() try {
   }
 
   autd << autd3::normal_mode;
-  for (auto& dev : autd.geometry())
-    for (auto& tr : dev) tr.set_frequency(70e3);  // actual frequency is 163.84MHz/2341 ~ 69987 Hz
+  for (auto& tr : autd.geometry()) tr.set_frequency(70e3);  // actual frequency is 163.84MHz/2341 ~ 69987 Hz
 
   autd << autd3::clear << autd3::synchronize;  // You must configure the frequencies of all transducers before synchronization.
 
