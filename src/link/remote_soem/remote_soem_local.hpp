@@ -31,7 +31,7 @@ class RemoteSOEMLocal final : public core::Link {
 
     _output_size = driver::HEADER_SIZE + std::accumulate(geometry.device_map().begin(), geometry.device_map().end(), size_t{0}) * sizeof(uint16_t);
 
-    const auto size = _output_size + geometry.device_map().size() * driver::EC_INPUT_FRAME_SIZE;
+    const auto size = _output_size + geometry.num_devices() * driver::EC_INPUT_FRAME_SIZE;
     try {
       _smem.create("autd3_soem_server_smem", size);
     } catch (std::exception& ex) {
