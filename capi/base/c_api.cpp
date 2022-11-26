@@ -217,7 +217,7 @@ int32_t AUTDGetFirmwareInfoListPointer(void* const handle, void** out) {
   if (res.empty()) return 0;
   auto* list = firmware_info_list_create(res);
   *out = list;
-  return res.size();
+  return static_cast<int32_t>(res.size());
 }
 
 void AUTDGetFirmwareInfo(const void* const p_firm_info_list, const int32_t index, char* info) {

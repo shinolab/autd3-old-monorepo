@@ -3,7 +3,7 @@
 // Created Date: 15/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,6 +18,11 @@ namespace autd3::driver {
 class Driver {
  public:
   virtual ~Driver() = default;
+  Driver() = default;
+  Driver(const Driver& v) noexcept = default;
+  Driver& operator=(const Driver& obj) = default;
+  Driver(Driver&& obj) = default;
+  Driver& operator=(Driver&& obj) = default;
 
   [[nodiscard]] virtual uint8_t version_num() const = 0;
   virtual void clear(TxDatagram& tx) const = 0;
@@ -38,13 +43,13 @@ class Driver {
   virtual bool point_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, size_t total_size, uint32_t freq_div,
                               double sound_speed, TxDatagram& tx) const = 0;
   virtual void gain_stm_legacy_header(TxDatagram& tx) const = 0;
-  [[nodiscard]] virtual bool gain_stm_legacy_body(const std::vector<std::vector<driver::Drive>>& drives, size_t& sent, uint32_t freq_div,
-                                                  GainSTMMode mode, TxDatagram& tx) const = 0;
+  [[nodiscard]] virtual bool gain_stm_legacy_body(const std::vector<std::vector<Drive>>& drives, size_t& sent, uint32_t freq_div, GainSTMMode mode,
+                                                  TxDatagram& tx) const = 0;
   virtual void gain_stm_normal_header(TxDatagram& tx) const = 0;
-  [[nodiscard]] virtual bool gain_stm_normal_phase(const std::vector<std::vector<driver::Drive>>& drives, size_t sent, uint32_t freq_div,
-                                                   GainSTMMode mode, TxDatagram& tx) const = 0;
-  [[nodiscard]] virtual bool gain_stm_normal_duty(const std::vector<std::vector<driver::Drive>>& drives, size_t sent, uint32_t freq_div,
-                                                  GainSTMMode mode, TxDatagram& tx) const = 0;
+  [[nodiscard]] virtual bool gain_stm_normal_phase(const std::vector<std::vector<Drive>>& drives, size_t sent, uint32_t freq_div, GainSTMMode mode,
+                                                   TxDatagram& tx) const = 0;
+  [[nodiscard]] virtual bool gain_stm_normal_duty(const std::vector<std::vector<Drive>>& drives, size_t sent, uint32_t freq_div, GainSTMMode mode,
+                                                  TxDatagram& tx) const = 0;
   virtual void force_fan(TxDatagram& tx, bool value) const = 0;
   virtual void reads_fpga_info(TxDatagram& tx, bool value) const = 0;
   virtual void cpu_version(TxDatagram& tx) const = 0;

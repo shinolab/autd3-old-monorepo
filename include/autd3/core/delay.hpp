@@ -3,7 +3,7 @@
 // Created Date: 01/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@ struct ModDelayConfig final : DatagramBody {
     return true;
   }
 
-  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const core::Mode>&, const Geometry& geometry,
+  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const Mode>&, const Geometry& geometry,
             driver::TxDatagram& tx) override {
     driver->null_body(tx);
     if (is_finished()) return true;

@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -83,7 +83,7 @@ class backend_test : public testing::Test {
 
 typedef Types<EIGEN3_BACKEND_TYPE CUDA_BACKEND_TYPE BLAS_BACKEND_TYPE ARRAYFIRE_BACKEND_TYPE> Implementations;
 
-TYPED_TEST_SUITE(backend_test, Implementations);
+TYPED_TEST_SUITE(backend_test, Implementations, );
 
 TYPED_TEST(backend_test, copy_to) {
   constexpr Eigen::Index m = 1 * TEST_SIZE;
