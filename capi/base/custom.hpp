@@ -3,7 +3,7 @@
 // Created Date: 19/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,11 +33,9 @@ class CustomGain final : public autd3::Gain {
   }
 
   void calc(const autd3::core::Geometry& geometry) override {
-    std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-      std::for_each(dev.begin(), dev.end(), [&](const auto& tr) {
-        this->_drives[tr.id()].amp = _amp[tr.id()];
-        this->_drives[tr.id()].phase = _phase[tr.id()];
-      });
+    std::for_each(geometry.begin(), geometry.end(), [&](const auto& tr) {
+      this->_drives[tr.id()].amp = _amp[tr.id()];
+      this->_drives[tr.id()].phase = _phase[tr.id()];
     });
   }
 
