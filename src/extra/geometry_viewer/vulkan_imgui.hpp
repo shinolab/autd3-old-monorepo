@@ -3,7 +3,7 @@
 // Created Date: 27/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,6 +21,7 @@
 #include <utility>
 #include <vector>
 
+#include "autd3/autd3_device.hpp"
 #include "glm.hpp"
 #include "model.hpp"
 #include "transform.hpp"
@@ -117,9 +118,9 @@ class VulkanImGui {
     const auto up = glm::vec3(rot_mat * glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
     const auto forward = glm::vec3(rot_mat * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 
-    const auto center = pos + right * static_cast<float>(driver::DEVICE_WIDTH) / 2.0f + up * static_cast<float>(driver::DEVICE_HEIGHT) / 2.0f;
+    const auto center = pos + right * static_cast<float>(AUTD3::DEVICE_WIDTH) / 2.0f + up * static_cast<float>(AUTD3::DEVICE_HEIGHT) / 2.0f;
     const auto cam_pos =
-        pos + right * static_cast<float>(driver::DEVICE_WIDTH) / 2.0f - up * static_cast<float>(driver::DEVICE_HEIGHT) + forward * 300.0f * SCALE;
+        pos + right * static_cast<float>(AUTD3::DEVICE_WIDTH) / 2.0f - up * static_cast<float>(AUTD3::DEVICE_HEIGHT) + forward * 300.0f * SCALE;
     const auto cam_view = lookAt(cam_pos, center, forward);
 
     camera_pos = helper::to_gl_pos(cam_pos);
