@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 27/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -195,10 +195,10 @@ namespace autd3::extra {
         for (size_t dev = 0; dev < cpus.size(); dev++) {
           const auto& cpu = cpus[dev];
           const auto& cycles = cpu.fpga().cycles();
-          const auto& [amps, phases] = cpu.fpga().drives();
+          const auto& [amps, phases] = cpu.fpga().drives(idx);
           for (size_t tr = 0; tr < sources[dev].size(); tr++) {
-            sources[dev].drives()[tr].amp = std::sin(glm::pi<float>() * static_cast<float>(amps[idx][tr].duty) / static_cast<float>(cycles[tr]));
-            sources[dev].drives()[tr].phase = 2.0f * glm::pi<float>() * static_cast<float>(phases[idx][tr].phase) / static_cast<float>(cycles[tr]);
+            sources[dev].drives()[tr].amp = std::sin(glm::pi<float>() * static_cast<float>(amps[tr].duty) / static_cast<float>(cycles[tr]));
+            sources[dev].drives()[tr].phase = 2.0f * glm::pi<float>() * static_cast<float>(phases[tr].phase) / static_cast<float>(cycles[tr]);
             const auto freq = static_cast<float>(driver::FPGA_CLK_FREQ) / static_cast<float>(cycles[tr]);
             sources[dev].drives()[tr].set_wave_num(freq, imgui->sound_speed);
           }
@@ -210,12 +210,10 @@ namespace autd3::extra {
         for (size_t dev = 0; dev < cpus.size(); dev++) {
           const auto& cpu = cpus[dev];
           const auto& cycles = cpu.fpga().cycles();
-          const auto& [amps, phases] = cpu.fpga().drives();
+          const auto& [amps, phases] = cpu.fpga().drives(imgui->stm_idx);
           for (size_t tr = 0; tr < sources[dev].size(); tr++) {
-            sources[dev].drives()[tr].amp =
-                std::sin(glm::pi<float>() * static_cast<float>(amps[imgui->stm_idx][tr].duty) / static_cast<float>(cycles[tr]));
-            sources[dev].drives()[tr].phase =
-                2.0f * glm::pi<float>() * static_cast<float>(phases[imgui->stm_idx][tr].phase) / static_cast<float>(cycles[tr]);
+            sources[dev].drives()[tr].amp = std::sin(glm::pi<float>() * static_cast<float>(amps[tr].duty) / static_cast<float>(cycles[tr]));
+            sources[dev].drives()[tr].phase = 2.0f * glm::pi<float>() * static_cast<float>(phases[tr].phase) / static_cast<float>(cycles[tr]);
             const auto freq = static_cast<float>(driver::FPGA_CLK_FREQ) / static_cast<float>(cycles[tr]);
             sources[dev].drives()[tr].set_wave_num(freq, imgui->sound_speed);
           }

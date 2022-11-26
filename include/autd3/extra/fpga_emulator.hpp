@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 27/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -176,29 +176,22 @@ class FPGA {
   [[nodiscard]] bool is_outputting() const {
     if (const auto m = modulation(); std::all_of(m.begin(), m.end(), [](const uint8_t x) { return x == 0; })) return false;
     if (!is_stm_mode()) {
-      const auto [duties, phases] = drives();
-      if (const auto& duty = duties[0]; std::all_of(duty.begin(), duty.end(), [](const driver::Duty x) { return x.duty == 0; })) return false;
+      const auto [duties, phases] = drives(0);
+      return std::any_of(duties.begin(), duties.end(), [](const driver::Duty x) { return x.duty != 0; });
     }
     return true;
   }
 
-  [[nodiscard]] std::pair<std::vector<std::vector<driver::Duty>>, std::vector<std::vector<driver::Phase>>> drives() const {
+  [[nodiscard]] std::pair<std::vector<driver::Duty>, std::vector<driver::Phase>> drives(const size_t idx) const {
     if (is_stm_mode()) {
       if (is_stm_gain_mode()) {
-        if (is_legacy_mode()) return std::make_pair(gain_stm_legacy_duty(), gain_stm_legacy_phase());
-        return std::make_pair(gain_stm_normal_duty(), gain_stm_normal_phase());
+        if (is_legacy_mode()) return std::make_pair(gain_stm_legacy_duty(idx), gain_stm_legacy_phase(idx));
+        return std::make_pair(gain_stm_normal_duty(idx), gain_stm_normal_phase(idx));
       }
-      return std::make_pair(point_stm_duty(), point_stm_phase());
+      return std::make_pair(point_stm_duty(idx), point_stm_phase(idx));
     }
-    if (is_legacy_mode()) {
-      std::vector<std::vector<driver::Duty>> duty = {legacy_duty()};
-      std::vector<std::vector<driver::Phase>> phase = {legacy_phase()};
-      return std::make_pair(std::move(duty), std::move(phase));
-    }
-
-    std::vector<std::vector<driver::Duty>> duty = {normal_duty()};
-    std::vector<std::vector<driver::Phase>> phase = {normal_phase()};
-    return std::make_pair(std::move(duty), std::move(phase));
+    if (is_legacy_mode()) return std::make_pair(legacy_duty(), legacy_phase());
+    return std::make_pair(normal_duty(), normal_phase());
   }
 
   [[nodiscard]] bool configure_local_trans_pos(const std::vector<driver::Vector3>& local_trans_pos) {
@@ -262,111 +255,75 @@ class FPGA {
     return d;
   }
 
-  [[nodiscard]] std::vector<std::vector<driver::Duty>> gain_stm_normal_duty() const {
-    const auto cycle = stm_cycle();
-    std::vector<std::vector<driver::Duty>> v;
-    v.reserve(cycle);
-    for (size_t i = 0; i < cycle; i++) {
-      std::vector<driver::Duty> d;
-      d.resize(_num_transducers);
-      for (size_t j = 0; j < _num_transducers; j++) d[j] = driver::Duty{_stm_op_bram[512 * i + 2 * j + 1]};
-      v.emplace_back(d);
-    }
-    return v;
+  [[nodiscard]] std::vector<driver::Duty> gain_stm_normal_duty(const size_t idx) const {
+    std::vector<driver::Duty> d;
+    d.resize(_num_transducers);
+    for (size_t j = 0; j < _num_transducers; j++) d[j] = driver::Duty{_stm_op_bram[512 * idx + 2 * j + 1]};
+    return d;
   }
 
-  [[nodiscard]] std::vector<std::vector<driver::Phase>> gain_stm_normal_phase() const {
-    const auto cycle = stm_cycle();
-    std::vector<std::vector<driver::Phase>> v;
-    v.reserve(cycle);
-    for (size_t i = 0; i < cycle; i++) {
-      std::vector<driver::Phase> d;
-      d.resize(_num_transducers);
-      for (size_t j = 0; j < _num_transducers; j++) d[j] = driver::Phase{_stm_op_bram[512 * i + 2 * j]};
-      v.emplace_back(d);
-    }
-    return v;
+  [[nodiscard]] std::vector<driver::Phase> gain_stm_normal_phase(const size_t idx) const {
+    std::vector<driver::Phase> d;
+    d.resize(_num_transducers);
+    for (size_t j = 0; j < _num_transducers; j++) d[j] = driver::Phase{_stm_op_bram[512 * idx + 2 * j]};
+    return d;
   }
 
-  [[nodiscard]] std::vector<std::vector<driver::Duty>> gain_stm_legacy_duty() const {
-    const auto cycle = stm_cycle();
-    std::vector<std::vector<driver::Duty>> v;
-    v.reserve(cycle);
-    for (size_t i = 0; i < cycle; i++) {
-      std::vector<driver::Duty> d;
-      d.resize(_num_transducers);
-      for (size_t j = 0; j < _num_transducers; j++) {
-        auto duty = static_cast<uint16_t>((_stm_op_bram[256 * i + j] >> 8) & 0x00FF);
-        duty = static_cast<uint16_t>(((duty << 3) | 0x07) + 1);
-        d[j] = driver::Duty{duty};
-      }
-      v.emplace_back(d);
+  [[nodiscard]] std::vector<driver::Duty> gain_stm_legacy_duty(const size_t idx) const {
+    std::vector<driver::Duty> d;
+    d.resize(_num_transducers);
+    for (size_t j = 0; j < _num_transducers; j++) {
+      auto duty = static_cast<uint16_t>((_stm_op_bram[256 * idx + j] >> 8) & 0x00FF);
+      duty = static_cast<uint16_t>(((duty << 3) | 0x07) + 1);
+      d[j] = driver::Duty{duty};
     }
-    return v;
+    return d;
   }
 
-  [[nodiscard]] std::vector<std::vector<driver::Phase>> gain_stm_legacy_phase() const {
-    const auto cycle = stm_cycle();
-    std::vector<std::vector<driver::Phase>> v;
-    v.reserve(cycle);
-    for (size_t i = 0; i < cycle; i++) {
-      std::vector<driver::Phase> d;
-      d.resize(_num_transducers);
-      for (size_t j = 0; j < _num_transducers; j++) {
-        auto phase = static_cast<uint16_t>(_stm_op_bram[256 * i + j] & 0x00FF);
-        phase <<= 4;
-        d[j] = driver::Phase{phase};
-      }
-      v.emplace_back(d);
+  [[nodiscard]] std::vector<driver::Phase> gain_stm_legacy_phase(const size_t idx) const {
+    std::vector<driver::Phase> d;
+    d.resize(_num_transducers);
+    for (size_t j = 0; j < _num_transducers; j++) {
+      auto phase = static_cast<uint16_t>(_stm_op_bram[256 * idx + j] & 0x00FF);
+      phase <<= 4;
+      d[j] = driver::Phase{phase};
     }
-    return v;
+    return d;
   }
 
-  [[nodiscard]] std::vector<std::vector<driver::Duty>> point_stm_duty() const {
-    const auto cycle = stm_cycle();
+  [[nodiscard]] std::vector<driver::Duty> point_stm_duty(const size_t idx) const {
     const auto ultrasound_cycles = cycles();
-    std::vector<std::vector<driver::Duty>> v;
-    v.reserve(cycle);
-    for (size_t i = 0; i < cycle; i++) {
-      std::vector<driver::Duty> d;
-      d.resize(_num_transducers);
-      for (size_t j = 0; j < _num_transducers; j++) {
-        const auto duty_shift = static_cast<uint16_t>((_stm_op_bram[8 * i + 3] >> 6) & 0x000F);
-        d[j] = driver::Duty{static_cast<uint16_t>(ultrasound_cycles[j] >> (duty_shift + 1))};
-      }
-      v.emplace_back(d);
+    std::vector<driver::Duty> d;
+    d.resize(_num_transducers);
+    for (size_t j = 0; j < _num_transducers; j++) {
+      const auto duty_shift = static_cast<uint16_t>((_stm_op_bram[8 * idx + 3] >> 6) & 0x000F);
+      d[j] = driver::Duty{static_cast<uint16_t>(ultrasound_cycles[j] >> (duty_shift + 1))};
     }
-    return v;
+    return d;
   }
 
-  [[nodiscard]] std::vector<std::vector<driver::Phase>> point_stm_phase() const {
-    const auto cycle = stm_cycle();
+  [[nodiscard]] std::vector<driver::Phase> point_stm_phase(const size_t idx) const {
     const auto ultrasound_cycles = cycles();
     const auto sound_speed = static_cast<uint64_t>(this->sound_speed());
-    std::vector<std::vector<driver::Phase>> v;
-    v.reserve(cycle);
-    for (size_t i = 0; i < cycle; i++) {
-      std::vector<driver::Phase> d;
-      d.resize(_num_transducers);
-      auto x = ((_stm_op_bram[8 * i + 1] << 16) & 0x30000) | _stm_op_bram[8 * i];
-      if ((x & 0x20000) != 0) x = -131072 + (x & 0x1FFFF);
-      auto y = ((_stm_op_bram[8 * i + 2] << 14) & 0x3C000) | ((_stm_op_bram[8 * i + 1] >> 2) & 0x3FFFF);
-      if ((y & 0x20000) != 0) y = -131072 + (y & 0x1FFFF);
-      auto z = ((_stm_op_bram[8 * i + 3] << 12) & 0x3F000) | ((_stm_op_bram[8 * i + 2] >> 4) & 0xFFF);
-      if ((z & 0x20000) != 0) z = -131072 + (z & 0x1FFFF);
-      for (size_t j = 0; j < _num_transducers; j++) {
-        const auto tr_z = (_tr_pos[j] >> 32) & 0xFFFF;
-        const auto tr_x = (_tr_pos[j] >> 16) & 0xFFFF;
-        const auto tr_y = _tr_pos[j] & 0xFFFF;
-        const auto d2 = (x - tr_x) * (x - tr_x) + (y - tr_y) * (y - tr_y) + (z - tr_z) * (z - tr_z);
-        const auto dist = static_cast<uint64_t>(std::sqrt(d2));
-        const auto q = (dist << 22) / sound_speed;
-        const auto p = q % ultrasound_cycles[j];
-        d[j] = driver::Phase{static_cast<uint16_t>(p)};
-      }
-      v.emplace_back(d);
+    std::vector<driver::Phase> d;
+    d.resize(_num_transducers);
+    auto x = ((_stm_op_bram[8 * idx + 1] << 16) & 0x30000) | _stm_op_bram[8 * idx];
+    if ((x & 0x20000) != 0) x = -131072 + (x & 0x1FFFF);
+    auto y = ((_stm_op_bram[8 * idx + 2] << 14) & 0x3C000) | ((_stm_op_bram[8 * idx + 1] >> 2) & 0x3FFFF);
+    if ((y & 0x20000) != 0) y = -131072 + (y & 0x1FFFF);
+    auto z = ((_stm_op_bram[8 * idx + 3] << 12) & 0x3F000) | ((_stm_op_bram[8 * idx + 2] >> 4) & 0xFFF);
+    if ((z & 0x20000) != 0) z = -131072 + (z & 0x1FFFF);
+    for (size_t j = 0; j < _num_transducers; j++) {
+      const auto tr_z = (_tr_pos[j] >> 32) & 0xFFFF;
+      const auto tr_x = (_tr_pos[j] >> 16) & 0xFFFF;
+      const auto tr_y = _tr_pos[j] & 0xFFFF;
+      const auto d2 = (x - tr_x) * (x - tr_x) + (y - tr_y) * (y - tr_y) + (z - tr_z) * (z - tr_z);
+      const auto dist = static_cast<uint64_t>(std::sqrt(d2));
+      const auto q = (dist << 22) / sound_speed;
+      const auto p = q % ultrasound_cycles[j];
+      d[j] = driver::Phase{static_cast<uint16_t>(p)};
     }
-    return v;
+    return d;
   }
 
   size_t _num_transducers;
