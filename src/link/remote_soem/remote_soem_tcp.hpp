@@ -3,7 +3,7 @@
 // Created Date: 02/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -83,7 +83,7 @@ class RemoteSOEMTcp final : public core::Link {
     }
     spdlog::debug("Connected");
 
-    const auto size = geometry.num_devices() * driver::EC_INPUT_FRAME_SIZE;
+    const auto size = geometry.device_map().size() * driver::EC_INPUT_FRAME_SIZE;
 
     _ptr = std::make_unique<uint8_t[]>(size);
     std::memset(_ptr.get(), 0, size);
@@ -112,7 +112,7 @@ class RemoteSOEMTcp final : public core::Link {
     _is_open = false;
     if (_th.joinable()) _th.join();
 
-    driver::TxDatagram tx(0);
+    driver::TxDatagram tx({0});
     tx.header().msg_id = driver::MSG_SERVER_CLOSE;
     send(tx);
 
