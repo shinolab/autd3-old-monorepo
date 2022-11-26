@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 27/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -219,11 +219,9 @@ TEST(ControllerTest, basic_usage) {
 
   autd << autd3::clear << autd3::synchronize;
   for (const auto& cpu : *cpus) {
-    const auto [duties, phases] = cpu.fpga().drives();
-    for (const auto& duty_pat : duties)
-      for (const auto& [duty] : duty_pat) ASSERT_EQ(duty, 0x0000);
-    for (const auto& phase_pat : phases)
-      for (const auto& [phase] : phase_pat) ASSERT_EQ(phase, 0x0000);
+    const auto [duties, phases] = cpu.fpga().drives(0);
+    for (const auto& [duty] : duties) ASSERT_EQ(duty, 0x0000);
+    for (const auto& [phase] : phases) ASSERT_EQ(phase, 0x0000);
 
     const auto cycles = cpu.fpga().cycles();
     for (const auto& cycle : cycles) ASSERT_EQ(cycle, 0x1000);
@@ -244,19 +242,17 @@ TEST(ControllerTest, basic_usage) {
     ASSERT_FALSE(cpu.fpga_flags().contains(autd3::driver::FPGAControlFlags::STM_MODE));
   }
   const auto& base_tr = autd.geometry()[0];
-  ASSERT_EQ(cpus->at(0).fpga().drives().first.size(), 1);
-  ASSERT_EQ(cpus->at(0).fpga().drives().second.size(), 1);
   const auto expect = std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0.0, base_tr.wavenumber(), focus) *
-                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[0][0].phase) /
+                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives(0).second[0].phase) /
                                                               static_cast<double>(cpus->at(0).fpga().cycles()[0]))));
   for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
     for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
       const auto p = std::arg(autd3::core::propagate(autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].position(),
                                                      autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].z_direction(), 0.0,
                                                      autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].wavenumber(), focus) *
-                              std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives().second[0][j].phase) /
+                              std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives(0).second[j].phase) /
                                                              static_cast<double>(cpus->at(i).fpga().cycles()[j]))));
-      ASSERT_EQ(cpus->at(i).fpga().drives().first[0][j].duty, cpus->at(i).fpga().cycles()[j] >> 1);
+      ASSERT_EQ(cpus->at(i).fpga().drives(0).first[j].duty, cpus->at(i).fpga().cycles()[j] >> 1);
       ASSERT_NEAR(p, expect, 2.0 * autd3::pi / 256.0);
     }
   }
@@ -275,18 +271,15 @@ TEST(ControllerTest, basic_usage) {
 
   autd << autd3::stop;
   for (const auto& cpu : *cpus) {
-    const auto [duties, phases] = cpu.fpga().drives();
-    for (const auto& duty_pat : duties)
-      for (const auto& [duty] : duty_pat) ASSERT_EQ(duty, 0x0000);
+    const auto [duties, phases] = cpu.fpga().drives(0);
+    for (const auto& [duty] : duties) ASSERT_EQ(duty, 0x0000);
   }
 
   autd << autd3::clear;
   for (const auto& cpu : *cpus) {
-    const auto [duties, phases] = cpu.fpga().drives();
-    for (const auto& duty_pat : duties)
-      for (const auto& [duty] : duty_pat) ASSERT_EQ(duty, 0x0000);
-    for (const auto& phase_pat : phases)
-      for (const auto& [phase] : phase_pat) ASSERT_EQ(phase, 0x0000);
+    const auto [duties, phases] = cpu.fpga().drives(0);
+    for (const auto& [duty] : duties) ASSERT_EQ(duty, 0x0000);
+    for (const auto& [phase] : phases) ASSERT_EQ(phase, 0x0000);
 
     const auto cycles = cpu.fpga().cycles();
     for (const auto& cycle : cycles) ASSERT_EQ(cycle, 0x1000);
@@ -320,11 +313,9 @@ TEST(ControllerTest, basic_usage_async) {
   autd << autd3::async << autd3::clear << autd3::synchronize;
   autd.wait();
   for (const auto& cpu : *cpus) {
-    const auto [duties, phases] = cpu.fpga().drives();
-    for (const auto& duty_pat : duties)
-      for (const auto& [duty] : duty_pat) ASSERT_EQ(duty, 0x0000);
-    for (const auto& phase_pat : phases)
-      for (const auto& [phase] : phase_pat) ASSERT_EQ(phase, 0x0000);
+    const auto [duties, phases] = cpu.fpga().drives(0);
+    for (const auto& [duty] : duties) ASSERT_EQ(duty, 0x0000);
+    for (const auto& [phase] : phases) ASSERT_EQ(phase, 0x0000);
 
     const auto cycles = cpu.fpga().cycles();
     for (const auto& cycle : cycles) ASSERT_EQ(cycle, 0x1000);
@@ -346,19 +337,17 @@ TEST(ControllerTest, basic_usage_async) {
     ASSERT_FALSE(cpu.fpga_flags().contains(autd3::driver::FPGAControlFlags::STM_MODE));
   }
   const auto& base_tr = autd.geometry()[0];
-  ASSERT_EQ(cpus->at(0).fpga().drives().first.size(), 1);
-  ASSERT_EQ(cpus->at(0).fpga().drives().second.size(), 1);
   const auto expect = std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0.0, base_tr.wavenumber(), focus) *
-                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[0][0].phase) /
+                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives(0).second[0].phase) /
                                                               static_cast<double>(cpus->at(0).fpga().cycles()[0]))));
   for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
     for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
       const auto p = std::arg(autd3::core::propagate(autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].position(),
                                                      autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].z_direction(), 0.0,
                                                      autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].wavenumber(), focus) *
-                              std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives().second[0][j].phase) /
+                              std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives(0).second[j].phase) /
                                                              static_cast<double>(cpus->at(i).fpga().cycles()[j]))));
-      ASSERT_EQ(cpus->at(i).fpga().drives().first[0][j].duty, cpus->at(i).fpga().cycles()[j] >> 1);
+      ASSERT_EQ(cpus->at(i).fpga().drives(0).first[j].duty, cpus->at(i).fpga().cycles()[j] >> 1);
       ASSERT_NEAR(p, expect, 2.0 * autd3::pi / 256.0);
     }
   }
@@ -378,19 +367,16 @@ TEST(ControllerTest, basic_usage_async) {
   autd << autd3::async << autd3::stop;
   autd.wait();
   for (const auto& cpu : *cpus) {
-    const auto [duties, phases] = cpu.fpga().drives();
-    for (const auto& duty_pat : duties)
-      for (const auto& [duty] : duty_pat) ASSERT_EQ(duty, 0x0000);
+    const auto [duties, phases] = cpu.fpga().drives(0);
+    for (const auto& [duty] : duties) ASSERT_EQ(duty, 0x0000);
   }
 
   autd << autd3::async << autd3::clear;
   autd.wait();
   for (const auto& cpu : *cpus) {
-    const auto [duties, phases] = cpu.fpga().drives();
-    for (const auto& duty_pat : duties)
-      for (const auto& [duty] : duty_pat) ASSERT_EQ(duty, 0x0000);
-    for (const auto& phase_pat : phases)
-      for (const auto& [phase] : phase_pat) ASSERT_EQ(phase, 0x0000);
+    const auto [duties, phases] = cpu.fpga().drives(0);
+    for (const auto& [duty] : duties) ASSERT_EQ(duty, 0x0000);
+    for (const auto& [phase] : phases) ASSERT_EQ(phase, 0x0000);
 
     const auto cycles = cpu.fpga().cycles();
     for (const auto& cycle : cycles) ASSERT_EQ(cycle, 0x1000);
@@ -449,16 +435,16 @@ TEST(ControllerTest, simple_legacy) {
   autd << g;
   const auto& base_tr = autd.geometry()[0];
   const auto expect = std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0.0, base_tr.wavenumber(), focus) *
-                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[0][0].phase) /
+                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives(0).second[0].phase) /
                                                               static_cast<double>(cpus->at(0).fpga().cycles()[0]))));
   for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
     for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
       const auto p = std::arg(autd3::core::propagate(autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].position(),
                                                      autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].z_direction(), 0.0,
                                                      autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].wavenumber(), focus) *
-                              std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives().second[0][j].phase) /
+                              std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives(0).second[j].phase) /
                                                              static_cast<double>(cpus->at(i).fpga().cycles()[j]))));
-      ASSERT_EQ(cpus->at(i).fpga().drives().first[0][j].duty, cpus->at(i).fpga().cycles()[j] >> 1);
+      ASSERT_EQ(cpus->at(i).fpga().drives(0).first[j].duty, cpus->at(i).fpga().cycles()[j] >> 1);
       ASSERT_NEAR(p, expect, 2.0 * autd3::pi / 256.0);
     }
   }
@@ -492,16 +478,16 @@ TEST(ControllerTest, simple_normal) {
   autd << g;
   const auto& base_tr = autd.geometry()[0];
   const auto expect = std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0.0, base_tr.wavenumber(), focus) *
-                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[0][0].phase) /
+                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives(0).second[0].phase) /
                                                               static_cast<double>(cpus->at(0).fpga().cycles()[0]))));
   for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
     for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
       const auto p = std::arg(autd3::core::propagate(autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].position(),
                                                      autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].z_direction(), 0.0,
                                                      autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].wavenumber(), focus) *
-                              std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives().second[0][j].phase) /
+                              std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives(0).second[j].phase) /
                                                              static_cast<double>(cpus->at(i).fpga().cycles()[j]))));
-      ASSERT_LE(std::abs(static_cast<int>(cpus->at(i).fpga().drives().first[0][j].duty) - (cpus->at(i).fpga().cycles()[j] >> 1)), 1);
+      ASSERT_LE(std::abs(static_cast<int>(cpus->at(i).fpga().drives(0).first[j].duty) - (cpus->at(i).fpga().cycles()[j] >> 1)), 1);
       ASSERT_NEAR(p, expect, 2.0 * autd3::pi / static_cast<double>(cycle));
     }
   }
@@ -538,16 +524,16 @@ TEST(ControllerTest, simple_normal_phase) {
   autd << g;
   const auto& base_tr = autd.geometry()[0];
   const auto expect = std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0.0, base_tr.wavenumber(), focus) *
-                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[0][0].phase) /
+                               std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives(0).second[0].phase) /
                                                               static_cast<double>(cpus->at(0).fpga().cycles()[0]))));
   for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
     for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
       const auto p = std::arg(autd3::core::propagate(autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].position(),
                                                      autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].z_direction(), 0.0,
                                                      autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].wavenumber(), focus) *
-                              std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives().second[0][j].phase) /
+                              std::exp(std::complex(0.0, 2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives(0).second[j].phase) /
                                                              static_cast<double>(cpus->at(i).fpga().cycles()[j]))));
-      ASSERT_LE(std::abs(static_cast<int>(cpus->at(i).fpga().drives().first[0][j].duty) - (cpus->at(i).fpga().cycles()[j] >> 1)), 1);
+      ASSERT_LE(std::abs(static_cast<int>(cpus->at(i).fpga().drives(0).first[j].duty) - (cpus->at(i).fpga().cycles()[j] >> 1)), 1);
       ASSERT_NEAR(p, expect, 2.0 * autd3::pi / static_cast<double>(cycle));
     }
   }
@@ -595,13 +581,14 @@ TEST(ControllerTest, point_stm) {
   for (size_t k = 0; k < size; k++) {
     const auto& focus = points[k].point;
     const auto expect = std::arg(autd3::core::propagate(base_tr.position(), z_dir, 0.0, wavenumber, focus)) +
-                        2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives().second[k][0].phase) / static_cast<double>(cycle);
+                        2.0 * autd3::pi * static_cast<double>(cpus->at(0).fpga().drives(k).second[0].phase) / static_cast<double>(cycle);
     for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+      const auto [duties, phases] = cpus->at(i).fpga().drives(k);
       for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
         const auto p =
             std::arg(autd3::core::propagate(autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].position(), z_dir, 0.0, wavenumber, focus)) +
-            2.0 * autd3::pi * static_cast<double>(cpus->at(i).fpga().drives().second[k][j].phase) / static_cast<double>(cycle);
-        ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, cycle >> 1);
+            2.0 * autd3::pi * static_cast<double>(phases[j].phase) / static_cast<double>(cycle);
+        ASSERT_EQ(duties[j].duty, cycle >> 1);
         if (autd3::driver::rem_euclid(p - expect, 2.0 * autd3::pi) > autd3::pi)
           ASSERT_NEAR(autd3::driver::rem_euclid(p - expect, 2.0 * autd3::pi), 2.0 * autd3::pi, criteria);
         else
@@ -612,9 +599,8 @@ TEST(ControllerTest, point_stm) {
 
   autd << autd3::stop;
   for (const auto& cpu : *cpus) {
-    const auto [duties, phases] = cpu.fpga().drives();
-    for (const auto& duty_pat : duties)
-      for (const auto& [duty] : duty_pat) ASSERT_EQ(duty, 0x0000);
+    const auto [duties, phases] = cpu.fpga().drives(0);
+    for (const auto& [duty] : duties) ASSERT_EQ(duty, 0x0000);
   }
 
   autd.close();
@@ -657,11 +643,10 @@ TEST(ControllerTest, gain_stm_legacy) {
 
     for (size_t k = 0; k < size; k++) {
       for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+        const auto [duties, phases] = cpus->at(i).fpga().drives(k);
         for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
-          ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty,
-                    (autd3::driver::LegacyDrive::to_duty(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]) << 3) + 0x08);
-          ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase,
-                    autd3::driver::LegacyDrive::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]) << 4);
+          ASSERT_EQ(duties[j].duty, (autd3::driver::LegacyDrive::to_duty(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]) << 3) + 0x08);
+          ASSERT_EQ(phases[j].phase, autd3::driver::LegacyDrive::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]) << 4);
         }
       }
     }
@@ -689,10 +674,10 @@ TEST(ControllerTest, gain_stm_legacy) {
     const uint16_t cycle = autd.geometry()[0].cycle();
     for (size_t k = 0; k < size; k++) {
       for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+        const auto [duties, phases] = cpus->at(i).fpga().drives(k);
         for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
-          ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, cycle >> 1);
-          ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase,
-                    autd3::driver::LegacyDrive::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]) << 4);
+          ASSERT_EQ(duties[j].duty, cycle >> 1);
+          ASSERT_EQ(phases[j].phase, autd3::driver::LegacyDrive::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]) << 4);
         }
       }
     }
@@ -720,10 +705,11 @@ TEST(ControllerTest, gain_stm_legacy) {
     const uint16_t cycle = autd.geometry()[0].cycle();
     for (size_t k = 0; k < size; k++) {
       for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+        const auto [duties, phases] = cpus->at(i).fpga().drives(k);
         for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
-          ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, cycle >> 1);
+          ASSERT_EQ(duties[j].duty, cycle >> 1);
           const auto phase = autd3::driver::LegacyDrive::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]) >> 4;
-          ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase, ((phase << 4) + phase) << 4);
+          ASSERT_EQ(phases[j].phase, ((phase << 4) + phase) << 4);
         }
       }
     }
@@ -731,9 +717,8 @@ TEST(ControllerTest, gain_stm_legacy) {
 
   autd << autd3::stop;
   for (const auto& cpu : *cpus) {
-    const auto [duties, phases] = cpu.fpga().drives();
-    for (const auto& duty_pat : duties)
-      for (const auto& [duty] : duty_pat) ASSERT_EQ(duty, 0x0000);
+    const auto [duties, phases] = cpu.fpga().drives(0);
+    for (const auto& [duty] : duties) ASSERT_EQ(duty, 0x0000);
   }
 
   autd.close();
@@ -778,10 +763,10 @@ TEST(ControllerTest, gain_stm_normal) {
 
     for (size_t k = 0; k < size; k++) {
       for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+        const auto [duties, phases] = cpus->at(i).fpga().drives(k);
         for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
-          ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, autd3::driver::Duty::to_duty(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]));
-          ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase,
-                    autd3::driver::Phase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]));
+          ASSERT_EQ(duties[j].duty, autd3::driver::Duty::to_duty(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]));
+          ASSERT_EQ(phases[j].phase, autd3::driver::Phase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]));
         }
       }
     }
@@ -809,10 +794,10 @@ TEST(ControllerTest, gain_stm_normal) {
     const uint16_t cycle = autd.geometry()[0].cycle();
     for (size_t k = 0; k < size; k++) {
       for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+        const auto [duties, phases] = cpus->at(i).fpga().drives(k);
         for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
-          ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, cycle >> 1);
-          ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase,
-                    autd3::driver::Phase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]));
+          ASSERT_EQ(duties[j].duty, cycle >> 1);
+          ASSERT_EQ(phases[j].phase, autd3::driver::Phase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]));
         }
       }
     }
@@ -820,9 +805,8 @@ TEST(ControllerTest, gain_stm_normal) {
 
   autd << autd3::stop;
   for (const auto& cpu : *cpus) {
-    const auto [duties, phases] = cpu.fpga().drives();
-    for (const auto& duty_pat : duties)
-      for (const auto& [duty] : duty_pat) ASSERT_EQ(duty, 0x0000);
+    const auto [duties, phases] = cpu.fpga().drives(0);
+    for (const auto& [duty] : duties) ASSERT_EQ(duty, 0x0000);
   }
 
   autd.close();
@@ -869,10 +853,10 @@ TEST(ControllerTest, gain_stm_normal_phase) {
     const uint16_t cycle = autd.geometry()[0].cycle();
     for (size_t k = 0; k < size; k++) {
       for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+        const auto [duties, phases] = cpus->at(i).fpga().drives(k);
         for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
-          ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, cycle >> 1);
-          ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase,
-                    autd3::driver::Phase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]));
+          ASSERT_EQ(duties[j].duty, cycle >> 1);
+          ASSERT_EQ(phases[j].phase, autd3::driver::Phase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]));
         }
       }
     }
@@ -900,10 +884,10 @@ TEST(ControllerTest, gain_stm_normal_phase) {
     const uint16_t cycle = autd.geometry()[0].cycle();
     for (size_t k = 0; k < size; k++) {
       for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+        const auto [duties, phases] = cpus->at(i).fpga().drives(k);
         for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
-          ASSERT_EQ(cpus->at(i).fpga().drives().first[k][j].duty, cycle >> 1);
-          ASSERT_EQ(cpus->at(i).fpga().drives().second[k][j].phase,
-                    autd3::driver::Phase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]));
+          ASSERT_EQ(duties[j].duty, cycle >> 1);
+          ASSERT_EQ(phases[j].phase, autd3::driver::Phase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]));
         }
       }
     }
@@ -911,9 +895,8 @@ TEST(ControllerTest, gain_stm_normal_phase) {
 
   autd << autd3::stop;
   for (const auto& cpu : *cpus) {
-    const auto [duties, phases] = cpu.fpga().drives();
-    for (const auto& duty_pat : duties)
-      for (const auto& [duty] : duty_pat) ASSERT_EQ(duty, 0x0000);
+    const auto [duties, phases] = cpu.fpga().drives(0);
+    for (const auto& [duty] : duties) ASSERT_EQ(duty, 0x0000);
   }
 
   autd.close();
