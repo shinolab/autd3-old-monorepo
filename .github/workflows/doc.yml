@@ -71,31 +71,34 @@ jobs:
         cd doc/book/samples/rust/sample
         cargo build
 
-  # check-julia:
-  #   name: build julia
-  #   runs-on: ubuntu-latest
-  #   steps: 
-  #   - uses: actions/checkout@v3
-  #   - name: Set up Julia
-  #     uses: julia-actions/setup-julia@v1
-  #     with:
-  #       version: 1.8.2
-  #   - name: build
-  #     run: |
-  #       cd doc/book/samples/julia
-  #       julia -e 'using Pkg; Pkg.add(url="https://github.com/shinolab/autd3.git", subdir="julia"); Pkg.build("AUTD3")'
+  check-julia:
+    name: build julia
+    runs-on: ubuntu-latest
+    steps: 
+    - uses: actions/checkout@v3
+    - name: Set up Julia
+      uses: julia-actions/setup-julia@v1
+      with:
+        version: 1.8.2
+    - name: build
+      run: |
+        cd doc/book/samples/julia
+        julia -e 'using Pkg; Pkg.add(url="https://github.com/shinolab/autd3.git", subdir="julia"); Pkg.build("AUTD3")'
+        echo a | julia sample.jl
 
-  # check-python:
-  #   name: build python
-  #   runs-on: ubuntu-latest
-  #   steps: 
-  #   - uses: actions/checkout@v3
-  #   - name: build
-  #     run: |
-  #       cd doc/book/samples/python
+  check-python:
+    name: build python
+    runs-on: ubuntu-latest
+    steps: 
+    - uses: actions/checkout@v3
+    - name: build
+      run: |
+        cd doc/book/samples/python
+        python -m pip install --upgrade pyautd3
+        echo a | python main.py
 
   build:
-    needs: [check, check-cs, check-rust, check-nim, check-cpp]
+    needs: [check, check-cs, check-rust, check-nim, check-cpp, check-julia, check-python]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
