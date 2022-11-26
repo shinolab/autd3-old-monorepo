@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -637,9 +637,7 @@ void APO::calc(const core::Geometry& geometry) {
   for (size_t k = 0; k < k_max; k++) {
     _backend->mul(TRANSPOSE::NO_TRANS, -ONE, h, nabla_j, ZERO, d);
 
-    const auto alpha = line_search(q, p2, ris, m, n);  // FIXME
-
-    _backend->scale(complex(alpha, 0), d);
+    _backend->scale(complex(line_search(q, p2, ris, m, n), 0), d);
 
     if (std::sqrt(_backend->dot(d, d).real()) < eps) break;
 

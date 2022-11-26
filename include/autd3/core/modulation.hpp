@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,8 +11,6 @@
 
 #pragma once
 
-#include <algorithm>
-#include <stdexcept>
 #include <vector>
 
 #include "autd3/driver/driver.hpp"

@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -78,7 +78,7 @@ class FPGA {
 
   [[nodiscard]] uint16_t read(const uint16_t addr) const {
     const auto select = (addr >> 14) & 0x0003;
-    const size_t addr_in_bram = (addr & 0x3FFF);
+    const size_t addr_in_bram = addr & 0x3FFF;
     switch (select) {
       case fpga::BRAM_SELECT_CONTROLLER:
         return _controller_bram[addr_in_bram];
@@ -95,7 +95,7 @@ class FPGA {
 
   void write(const uint16_t addr, const uint16_t data) {
     const auto select = (addr >> 14) & 0x0003;
-    const size_t addr_in_bram = (addr & 0x3FFF);
+    const size_t addr_in_bram = addr & 0x3FFF;
     switch (select) {
       case fpga::BRAM_SELECT_CONTROLLER:
         _controller_bram[addr_in_bram] = data;
@@ -174,12 +174,10 @@ class FPGA {
   }
 
   [[nodiscard]] bool is_outputting() const {
-    const auto m = modulation();
-    if (std::all_of(m.begin(), m.end(), [](const uint8_t x) { return x == 0; })) return false;
+    if (const auto m = modulation(); std::all_of(m.begin(), m.end(), [](const uint8_t x) { return x == 0; })) return false;
     if (!is_stm_mode()) {
       const auto [duties, phases] = drives();
-      const auto& duty = duties[0];
-      if (std::all_of(duty.begin(), duty.end(), [](const driver::Duty x) { return x.duty == 0; })) return false;
+      if (const auto& duty = duties[0]; std::all_of(duty.begin(), duty.end(), [](const driver::Duty x) { return x.duty == 0; })) return false;
     }
     return true;
   }
@@ -350,16 +348,16 @@ class FPGA {
     for (size_t i = 0; i < cycle; i++) {
       std::vector<driver::Phase> d;
       d.resize(_num_transducers);
-      auto x = (((_stm_op_bram[8 * i + 1]) << 16) & 0x30000) | _stm_op_bram[8 * i];
+      auto x = ((_stm_op_bram[8 * i + 1] << 16) & 0x30000) | _stm_op_bram[8 * i];
       if ((x & 0x20000) != 0) x = -131072 + (x & 0x1FFFF);
-      auto y = (((_stm_op_bram[8 * i + 2]) << 14) & 0x3C000) | (((_stm_op_bram[8 * i + 1]) >> 2) & 0x3FFFF);
+      auto y = ((_stm_op_bram[8 * i + 2] << 14) & 0x3C000) | ((_stm_op_bram[8 * i + 1] >> 2) & 0x3FFFF);
       if ((y & 0x20000) != 0) y = -131072 + (y & 0x1FFFF);
-      auto z = (((_stm_op_bram[8 * i + 3]) << 12) & 0x3F000) | (((_stm_op_bram[8 * i + 2]) >> 4) & 0xFFF);
+      auto z = ((_stm_op_bram[8 * i + 3] << 12) & 0x3F000) | ((_stm_op_bram[8 * i + 2] >> 4) & 0xFFF);
       if ((z & 0x20000) != 0) z = -131072 + (z & 0x1FFFF);
       for (size_t j = 0; j < _num_transducers; j++) {
-        const auto tr_z = ((_tr_pos[j] >> 32) & 0xFFFF);
-        const auto tr_x = ((_tr_pos[j] >> 16) & 0xFFFF);
-        const auto tr_y = (_tr_pos[j] & 0xFFFF);
+        const auto tr_z = (_tr_pos[j] >> 32) & 0xFFFF;
+        const auto tr_x = (_tr_pos[j] >> 16) & 0xFFFF;
+        const auto tr_y = _tr_pos[j] & 0xFFFF;
         const auto d2 = (x - tr_x) * (x - tr_x) + (y - tr_y) * (y - tr_y) + (z - tr_z) * (z - tr_z);
         const auto dist = static_cast<uint64_t>(std::sqrt(d2));
         const auto q = (dist << 22) / sound_speed;

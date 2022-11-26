@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -327,7 +327,7 @@ class CPU {
 
     if ((_stm_write & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) == 0)
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET,
-                 ((_stm_write & ~cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) >> cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH));
+                 static_cast<uint16_t>((_stm_write & ~cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) >> cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH));
 
     if (header->cpu_flag.contains(driver::CPUControlFlags::STM_END))
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_CYCLE, static_cast<uint16_t>((std::max)(_stm_cycle, 1u) - 1u));
@@ -375,7 +375,7 @@ class CPU {
 
     if ((_stm_write & cpu::GAIN_STM_BUF_SEGMENT_SIZE_MASK) == 0)
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET,
-                 ((_stm_write & ~cpu::GAIN_STM_BUF_SEGMENT_SIZE_MASK) >> cpu::GAIN_STM_BUF_SEGMENT_SIZE_WIDTH));
+                 static_cast<uint16_t>((_stm_write & ~cpu::GAIN_STM_BUF_SEGMENT_SIZE_MASK) >> cpu::GAIN_STM_BUF_SEGMENT_SIZE_WIDTH));
 
     if (header->cpu_flag.contains(driver::CPUControlFlags::STM_END))
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_CYCLE, static_cast<uint16_t>((std::max)(_stm_cycle, 1u) - 1u));
@@ -479,7 +479,7 @@ class CPU {
   driver::CPUControlFlags _cpu_flags;
 };
 
-};  // namespace autd3::extra
+}  // namespace autd3::extra
 
 #if defined(__GNUC__) && !defined(__llvm__)
 #pragma GCC diagnostic pop

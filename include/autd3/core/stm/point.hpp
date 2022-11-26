@@ -12,7 +12,6 @@
 #pragma once
 
 #include <algorithm>
-#include <iostream>
 #include <utility>
 #include <vector>
 
@@ -82,7 +81,7 @@ struct PointSTM final : STM {
     return true;
   }
 
-  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const core::Mode>&, const Geometry& geometry,
+  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const Mode>&, const Geometry& geometry,
             driver::TxDatagram& tx) override {
     driver->point_stm_header(tx);
 
@@ -92,7 +91,7 @@ struct PointSTM final : STM {
     points.reserve(geometry.num_devices());
     const auto send_size = driver->point_stm_send_size(_points.size(), _sent, geometry.device_map());
 
-    auto idx = 0;
+    size_t idx = 0;
     for (size_t i = 0; i < geometry.num_devices(); i++, idx += geometry.device_map()[i]) {
       std::vector<driver::STMFocus> lp;
       lp.reserve(send_size);

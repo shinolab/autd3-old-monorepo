@@ -64,11 +64,11 @@ bool Controller::open(core::LinkPtr link) {
         std::unique_lock lk(_send_mtx);
         _send_cond.wait(lk, [&] { return !_send_queue.empty() || !this->_send_th_running; });
         if (!this->_send_th_running) break;
-        AsyncData data = std::move(_send_queue.front());
-        header = std::move(data.header);
-        body = std::move(data.body);
-        pre = std::move(data.pre);
-        post = std::move(data.post);
+        auto&& [header_, body_, pre_, post_] = std::move(_send_queue.front());
+        header = std::move(header_);
+        body = std::move(body_);
+        pre = std::move(pre_);
+        post = std::move(post_);
       }
 
       pre();
