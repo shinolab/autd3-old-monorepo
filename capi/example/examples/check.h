@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,13 +22,13 @@ void* check(void* autd) {
   printf("===== Device informations =====\n");
   for (int32_t i = 0; i < num_devices; i++) {
     double x, y, z;
-    AUTDTransPosition(autd, i, 0, &x, &y, &z);
+    AUTDTransPosition(autd, i * 249, &x, &y, &z);
     printf("[%d]: Origin = (%lf, %lf, %lf)\n", i, x, y, z);
-    AUTDTransXDirection(autd, i, 0, &x, &y, &z);
+    AUTDTransXDirection(autd, i * 249, &x, &y, &z);
     printf("[%d]: X = (%lf, %lf, %lf)\n", i, x, y, z);
-    AUTDTransYDirection(autd, i, 0, &x, &y, &z);
+    AUTDTransYDirection(autd, i * 249, &x, &y, &z);
     printf("[%d]: Y = (%lf, %lf, %lf)\n", i, x, y, z);
-    AUTDTransZDirection(autd, i, 0, &x, &y, &z);
+    AUTDTransZDirection(autd, i * 249, &x, &y, &z);
     printf("[%d]: Z = (%lf, %lf, %lf)\n", i, x, y, z);
   }
   printf("\n");

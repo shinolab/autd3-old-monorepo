@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,9 +20,9 @@ EXPORT_AUTD void AUTDSetLogLevel(IN int32_t level);
 EXPORT_AUTD void AUTDSetDefaultLogger(IN void* out, IN void* flush);
 EXPORT_AUTD bool AUTDCreateController(OUT void** out, IN uint8_t driver_version);
 EXPORT_AUTD bool AUTDOpenController(IN void* handle, IN void* link);
-EXPORT_AUTD int32_t AUTDAddDevice(IN void* handle, IN double x, IN double y, IN double z, IN double rz1, IN double ry, IN double rz2);
-EXPORT_AUTD int32_t AUTDAddDeviceQuaternion(IN void* handle, IN double x, IN double y, IN double z, IN double qw, IN double qx, IN double qy,
-                                            IN double qz);
+EXPORT_AUTD void AUTDAddDevice(IN void* handle, IN double x, IN double y, IN double z, IN double rz1, IN double ry, IN double rz2);
+EXPORT_AUTD void AUTDAddDeviceQuaternion(IN void* handle, IN double x, IN double y, IN double z, IN double qw, IN double qx, IN double qy,
+                                         IN double qz);
 EXPORT_AUTD bool AUTDClose(IN void* handle);
 EXPORT_AUTD void AUTDFreeController(IN const void* handle);
 EXPORT_AUTD bool AUTDIsOpen(IN const void* handle);
@@ -36,23 +36,19 @@ EXPORT_AUTD void AUTDSetSendInterval(IN void* handle, IN uint64_t interval);
 EXPORT_AUTD void AUTDSetForceFan(IN void* handle, IN bool force);
 EXPORT_AUTD double AUTDGetSoundSpeed(IN const void* handle);
 EXPORT_AUTD void AUTDSetSoundSpeed(IN void* handle, IN double sound_speed);
-EXPORT_AUTD double AUTDGetTransFrequency(IN const void* handle, IN int32_t device_idx, IN int32_t local_trans_idx);
-EXPORT_AUTD void AUTDSetTransFrequency(IN void* handle, IN int32_t device_idx, IN int32_t local_trans_idx, IN double frequency);
-EXPORT_AUTD uint16_t AUTDGetTransCycle(IN const void* handle, IN int32_t device_idx, IN int32_t local_trans_idx);
-EXPORT_AUTD void AUTDSetTransCycle(IN void* handle, IN int32_t device_idx, IN int32_t local_trans_idx, IN uint16_t cycle);
-EXPORT_AUTD double AUTDGetWavelength(IN const void* handle, IN int32_t device_idx, IN int32_t local_trans_idx);
+EXPORT_AUTD double AUTDGetTransFrequency(IN const void* handle, IN int32_t trans_idx);
+EXPORT_AUTD void AUTDSetTransFrequency(IN void* handle, IN int32_t trans_idx, IN double frequency);
+EXPORT_AUTD uint16_t AUTDGetTransCycle(IN const void* handle, IN int32_t trans_idx);
+EXPORT_AUTD void AUTDSetTransCycle(IN void* handle, IN int32_t trans_idx, IN uint16_t cycle);
+EXPORT_AUTD double AUTDGetWavelength(IN const void* handle, IN int32_t trans_idx);
 EXPORT_AUTD double AUTDGetAttenuation(IN const void* handle);
 EXPORT_AUTD void AUTDSetAttenuation(IN void* handle, IN double attenuation);
 EXPORT_AUTD bool AUTDGetFPGAInfo(IN void* handle, IN uint8_t* out);
 EXPORT_AUTD int32_t AUTDNumDevices(IN const void* handle);
-EXPORT_AUTD void AUTDTransPosition(IN const void* handle, IN int32_t device_idx, IN int32_t local_trans_idx, OUT double* x, OUT double* y,
-                                   OUT double* z);
-EXPORT_AUTD void AUTDTransXDirection(IN const void* handle, IN int32_t device_idx, IN int32_t local_trans_idx, OUT double* x, OUT double* y,
-                                     OUT double* z);
-EXPORT_AUTD void AUTDTransYDirection(IN const void* handle, IN int32_t device_idx, IN int32_t local_trans_idx, OUT double* x, OUT double* y,
-                                     OUT double* z);
-EXPORT_AUTD void AUTDTransZDirection(IN const void* handle, IN int32_t device_idx, IN int32_t local_trans_idx, OUT double* x, OUT double* y,
-                                     OUT double* z);
+EXPORT_AUTD void AUTDTransPosition(IN const void* handle, IN int32_t trans_idx, OUT double* x, OUT double* y, OUT double* z);
+EXPORT_AUTD void AUTDTransXDirection(IN const void* handle, IN int32_t trans_idx, OUT double* x, OUT double* y, OUT double* z);
+EXPORT_AUTD void AUTDTransYDirection(IN const void* handle, IN int32_t trans_idx, OUT double* x, OUT double* y, OUT double* z);
+EXPORT_AUTD void AUTDTransZDirection(IN const void* handle, IN int32_t trans_idx, OUT double* x, OUT double* y, OUT double* z);
 EXPORT_AUTD int32_t AUTDGetFirmwareInfoListPointer(IN void* handle, OUT void** out);
 EXPORT_AUTD void AUTDGetFirmwareInfo(IN const void* p_firm_info_list, IN int32_t index, OUT char* info);
 EXPORT_AUTD void AUTDFreeFirmwareInfoListPointer(IN const void* p_firm_info_list);
@@ -64,7 +60,7 @@ EXPORT_AUTD void AUTDGainBesselBeam(OUT void** gain, IN double x, IN double y, I
                                     IN double theta_z, IN double amp);
 EXPORT_AUTD void AUTDGainPlaneWave(OUT void** gain, IN double n_x, IN double n_y, IN double n_z, IN double amp);
 EXPORT_AUTD void AUTDGainTransducerTest(OUT void** gain);
-EXPORT_AUTD void AUTDGainTransducerTestSet(IN void* gain, IN int32_t dev_idx, IN int32_t tr_idx, IN double amp, IN double phase);
+EXPORT_AUTD void AUTDGainTransducerTestSet(IN void* gain, IN int32_t tr_idx, IN double amp, IN double phase);
 EXPORT_AUTD void AUTDGainCustom(OUT void** gain, IN const double* amp, IN const double* phase, IN uint64_t size);
 EXPORT_AUTD void AUTDDeleteGain(IN const void* gain);
 EXPORT_AUTD void AUTDModulationStatic(OUT void** mod, IN double amp);
@@ -102,8 +98,8 @@ EXPORT_AUTD bool AUTDSend(IN void* handle, IN void* header, IN void* body);
 EXPORT_AUTD bool AUTDSendSpecial(IN void* handle, IN void* special);
 EXPORT_AUTD void AUTDSendAsync(IN void* handle, IN void* header, IN void* body);
 EXPORT_AUTD void AUTDSendSpecialAsync(IN void* handle, IN void* special);
-EXPORT_AUTD uint16_t AUTDGetModDelay(IN const void* handle, IN int32_t device_idx, IN int32_t local_trans_idx);
-EXPORT_AUTD void AUTDSetModDelay(IN void* handle, IN int32_t device_idx, IN int32_t local_trans_idx, IN uint16_t delay);
+EXPORT_AUTD uint16_t AUTDGetModDelay(IN const void* handle, IN int32_t trans_idx);
+EXPORT_AUTD void AUTDSetModDelay(IN void* handle, IN int32_t trans_idx, IN uint16_t delay);
 EXPORT_AUTD void AUTDCreateAmplitudes(OUT void** out, IN double amp);
 EXPORT_AUTD void AUTDDeleteAmplitudes(IN const void* amplitudes);
 EXPORT_AUTD void AUTDSetMode(IN void* handle, IN uint8_t mode);
