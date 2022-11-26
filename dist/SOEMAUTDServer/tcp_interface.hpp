@@ -3,7 +3,7 @@
 // Created Date: 01/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -83,7 +83,7 @@ class TcpInterface final : public Interface {
       return;
     }
 
-    const auto size = driver::HEADER_SIZE + _dev * driver::BODY_SIZE;
+    const auto size = driver::HEADER_SIZE + _dev * AUTD3::NUM_TRANS_IN_UNIT * sizeof(uint16_t);
     _ptr = std::make_unique<uint8_t[]>(size);
     std::memset(_ptr.get(), 0, size);
 
@@ -122,7 +122,7 @@ class TcpInterface final : public Interface {
           spdlog::error("Unknown data size: {}", ulen);
           continue;
         }
-        if (const auto body_len = ulen - driver::HEADER_SIZE; body_len % driver::BODY_SIZE != 0) {
+        if (const auto body_len = ulen - driver::HEADER_SIZE; body_len % (AUTD3::NUM_TRANS_IN_UNIT * sizeof(uint16_t)) != 0) {
           spdlog::error("Unknown data size: {}", ulen);
           continue;
         }
