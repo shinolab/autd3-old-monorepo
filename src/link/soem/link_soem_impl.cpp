@@ -3,7 +3,7 @@
 // Created Date: 23/08/2019
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2019-2020 Shun Suzuki. All rights reserved.
@@ -21,9 +21,9 @@ bool SOEMLink::receive(driver::RxDatagram& rx) { return _handler->receive(rx); }
 
 bool SOEMLink::open(const core::Geometry& geometry) {
   const auto dev_num = _handler->open(geometry.device_map(), 1);
-  if (geometry.device_map().size() == dev_num) return true;
+  if (geometry.num_devices() == dev_num) return true;
   _handler->close();
-  spdlog::error("The number of slaves you configured: {}, but found: {}", geometry.device_map().size(), dev_num);
+  spdlog::error("The number of slaves you configured: {}, but found: {}", geometry.num_devices(), dev_num);
   return false;
 }
 

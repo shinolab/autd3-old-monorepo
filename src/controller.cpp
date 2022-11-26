@@ -3,7 +3,7 @@
 // Created Date: 16/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -51,7 +51,7 @@ bool Controller::open(core::LinkPtr link) {
   }
 
   _tx_buf = driver::TxDatagram(_geometry.device_map());
-  _rx_buf = driver::RxDatagram(_geometry.device_map().size());
+  _rx_buf = driver::RxDatagram(_geometry.num_devices());
 
   _send_th_running = true;
   _send_th = std::thread([this] {

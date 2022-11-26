@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -89,11 +89,11 @@ struct PointSTM final : STM {
     if (is_finished()) return true;
 
     std::vector<std::vector<driver::STMFocus>> points;
-    points.reserve(geometry.device_map().size());
+    points.reserve(geometry.num_devices());
     const auto send_size = driver->point_stm_send_size(_points.size(), _sent, geometry.device_map());
 
     auto idx = 0;
-    for (size_t i = 0; i < geometry.device_map().size(); i++, idx += geometry.device_map()[i]) {
+    for (size_t i = 0; i < geometry.num_devices(); i++, idx += geometry.device_map()[i]) {
       std::vector<driver::STMFocus> lp;
       lp.reserve(send_size);
       const auto src = _points.data() + _sent;

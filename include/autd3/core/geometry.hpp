@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -37,6 +37,11 @@ struct Device {
  */
 struct Geometry {
   Geometry() = default;
+
+  /**
+   * @brief Number of devices
+   */
+  [[nodiscard]] size_t num_devices() const noexcept { return _device_map.size(); }
 
   /**
    * @brief Number of transducers
