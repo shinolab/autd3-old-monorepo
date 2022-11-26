@@ -1,3 +1,8 @@
+# 2.6.5
+
+- Flatten `Geometry`
+- Fix [#48](https://github.com/shinolab/autd3/issues/48)
+
 # 2.6.4
 
 - Fix [#46](https://github.com/shinolab/autd3/issues/46)
