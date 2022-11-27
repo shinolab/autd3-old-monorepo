@@ -130,6 +130,10 @@ class SOEMHandler final {
     }
 
     const auto auto_detect = device_map.empty();
+    if (!auto_detect && wc != device_map.size()) {
+      spdlog::error("The number of slaves you configured: {}, but found: {}", device_map.size(), wc);
+      return 0;
+    }
     std::vector<size_t> dev_map;
     for (auto i = 1; i <= wc; i++)
       if (std::strcmp(ec_slave[i].name, "AUTD") == 0) {
