@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 27/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ class RawPCM final : public core::Modulation {
   /**
    * @param[in] filename file path to raw pcm data
    * @param[in] sampling_freq sampling frequency of the data
-   * @param[in] mod_sampling_freq_div sampling frequency of the Modulation
+   * @param[in] mod_sampling_freq_div sampling frequency division ratio of the Modulation
    * @details The sampling frequency in AUTD device will be autd3::driver::FPGA_CLK_FREQ / mod_sampling_freq_div.
    */
   explicit RawPCM(std::filesystem::path filename, double sampling_freq, uint32_t mod_sampling_freq_div = 40960);
@@ -49,7 +49,7 @@ class Wav final : public core::Modulation {
  public:
   /**
    * @param[in] filename file path to wav data
-   * @param[in] mod_sampling_freq_div sampling frequency of the Modulation
+   * @param[in] mod_sampling_freq_div sampling frequency division ratio of the Modulation
    * @details The sampling frequency in AUTD device will be autd3::driver::FPGA_CLK_FREQ / mod_sampling_freq_div.
    */
   explicit Wav(std::filesystem::path filename, uint32_t mod_sampling_freq_div = 40960);
