@@ -52,8 +52,6 @@ ControllerにDeviceを追加する.
 
 handleは`AUTDCreateController`で作成したものを使う. x, y, zは位置で, rz1, ry, rz2はZYZのオイラー角である.
 
-この関数は追加されたDeviceのIdを返す.
-
 | Argument name / return | type    | in/out | description                               |
 | ---------------------- | ------- | ------ | ----------------------------------------- |
 | handle                 | void*   | in     | pointer to Controller                     |
@@ -63,7 +61,7 @@ handleは`AUTDCreateController`で作成したものを使う. x, y, zは位置�
 | rz1                    | double  | in     | first angle of ZYZ euler angle in radian  |
 | ry                     | double  | in     | second angle of ZYZ euler angle in radian |
 | rz2                    | double  | in     | third angle of ZYZ euler angle in radian  |
-| return                 | int32_t | -      | Device Id                                 |
+| return                 | void | -      | -                                 |
 
 ## AUTDAddDeviceQuaternion (autd3capi)
 
@@ -71,8 +69,6 @@ ControllerにDeviceを追加する.
 
 handleは`AUTDCreateController`で作成したものを使う. x, y, zは位置で, qw, qx, qy,
 qzは回転を表すクオータニオンである.
-
-この関数は追加されたDeviceのIdを返す.
 
 | Argument name / return | type    | in/out | description                            |
 | ---------------------- | ------- | ------ | -------------------------------------- |
@@ -84,7 +80,7 @@ qzは回転を表すクオータニオンである.
 | qx                     | double  | in     | x parameter of quaternion of rotation  |
 | qy                     | double  | in     | y parameter of quaternion of rotation  |
 | qz                     | double  | in     | z parameter of quaternion of rotation  |
-| return                 | int32_t | -      | Device Id                              |
+| return                 | void    | -      | -                              |
 
 ## AUTDClose (autd3capi)
 
@@ -266,28 +262,26 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 指定した振動子の周波数を取得する.
 
-handleは`AUTDCreateController`で作成したものを使う. 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
+handleは`AUTDCreateController`で作成したものを使う. 
 
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
 | handle                 | void*   | in     | pointer to Controller       |
-| device_idx             | int32_t | in     | device index                |
-| local_trans_idx        | int32_t | in     | local transducer index      |
+| trans_idx        | int32_t | in     | transducer index      |
 | return                 | double  | -      | frequency of the transducer |
 
 ## AUTDSetTransFrequency (autd3capi)
 
 指定した振動子の周波数を設定する.
 
-handleは`AUTDCreateController`で作成したものを使う. 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
+handleは`AUTDCreateController`で作成したものを使う.
 
 Legacyモードにおいては, この関数は何もしない.
 
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
 | handle                 | void*   | in     | pointer to Controller       |
-| device_idx             | int32_t | in     | device index                |
-| local_trans_idx        | int32_t | in     | local transducer index      |
+| trans_idx        | int32_t | in     | transducer index      |
 | frequency              | double  | in     | frequency of the transducer |
 | return                 | void    | -      | -                           |
 
@@ -295,28 +289,26 @@ Legacyモードにおいては, この関数は何もしない.
 
 指定した振動子の周期を取得する.
 
-handleは`AUTDCreateController`で作成したものを使う. 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
+handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type     | in/out | description             |
 | ---------------------- | -------- | ------ | ----------------------- |
 | handle                 | void*    | in     | pointer to Controller   |
-| device_idx             | int32_t  | in     | device index            |
-| local_trans_idx        | int32_t  | in     | local transducer index  |
+| trans_idx        | int32_t  | in     | transducer index  |
 | return                 | uint16_t | -      | cycle of the transducer |
 
 ## AUTDSetTransCycle (autd3capi)
 
 指定した振動子の周期を設定する.
 
-handleは`AUTDCreateController`で作成したものを使う. 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
+handleは`AUTDCreateController`で作成したものを使う.
 
 Legacyモードにおいては, この関数は何もしない.
 
 | Argument name / return | type     | in/out | description             |
 | ---------------------- | -------- | ------ | ----------------------- |
 | handle                 | void*    | in     | pointer to Controller   |
-| device_idx             | int32_t  | in     | device index            |
-| local_trans_idx        | int32_t  | in     | local transducer index  |
+| trans_idx        | int32_t  | in     | transducer index  |
 | cycle                  | uint16_t | in     | cycle of the transducer |
 | return                 | void     | -      | -                       |
 
@@ -324,13 +316,12 @@ Legacyモードにおいては, この関数は何もしない.
 
 指定した振動子の波長を取得する.
 
-handleは`AUTDCreateController`で作成したものを使う. 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
+handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type    | in/out | description                                          |
 | ---------------------- | ------- | ------ | ---------------------------------------------------- |
 | handle                 | void*   | in     | pointer to Controller                                |
-| device_idx             | int32_t | in     | device index                                         |
-| local_trans_idx        | int32_t | in     | local transducer index                               |
+| trans_idx        | int32_t | in     | transducer index                               |
 | return                 | double  | -      | wavelength of ultrasound emitted from the transducer |
 
 ## AUTDGetAttenuation (autd3capi)
@@ -374,28 +365,27 @@ handleは`AUTDCreateController`で作成したものを使う. outポインタ�
 | out                    | uint8_t* | in     | FPGA information list |
 | return                 | bool     | -      | true if success       |
 
-## AUTDNumDevices (autd3capi)
+## AUTDNumTransducers (autd3capi)
 
-接続されているDeviceの数を取得する.
+接続されているTransducerの数を取得する.
 
 handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
 | handle                 | void*   | in     | pointer to Controller |
-| return                 | int32_t | -      | number of devices     |
+| return                 | int32_t | -      | number of transducers     |
 
 ## AUTDTransPosition (autd3capi)
 
 指定した振動子の位置を取得する.
 
-handleは`AUTDCreateController`で作成したものを使う. 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
+handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type    | in/out | description                         |
 | ---------------------- | ------- | ------ | ----------------------------------- |
 | handle                 | void*   | in     | pointer to Controller               |
-| device_idx             | int32_t | in     | device index                        |
-| local_trans_idx        | int32_t | in     | local transducer index              |
+| trans_idx        | int32_t | in     | transducer index              |
 | x                      | double* | out    | x coordinate of transducer position |
 | y                      | double* | out    | y coordinate of transducer position |
 | z                      | double* | out    | z coordinate of transducer position |
@@ -405,13 +395,12 @@ handleは`AUTDCreateController`で作成したものを使う. 振動子の指�
 
 指定した振動子のx軸方向を取得する.
 
-handleは`AUTDCreateController`で作成したものを使う. 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
+handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
 | handle                 | void*   | in     | pointer to Controller       |
-| device_idx             | int32_t | in     | device index                |
-| local_trans_idx        | int32_t | in     | local transducer index      |
+| trans_idx        | int32_t | in     | transducer index      |
 | x                      | double* | out    | x coordinate of x-direction |
 | y                      | double* | out    | y coordinate of x-direction |
 | z                      | double* | out    | z coordinate of x-direction |
@@ -421,13 +410,12 @@ handleは`AUTDCreateController`で作成したものを使う. 振動子の指�
 
 指定した振動子のy軸方向を取得する.
 
-handleは`AUTDCreateController`で作成したものを使う. 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
+handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
 | handle                 | void*   | in     | pointer to Controller       |
-| device_idx             | int32_t | in     | device index                |
-| local_trans_idx        | int32_t | in     | local transducer index      |
+| trans_idx        | int32_t | in     | transducer index      |
 | x                      | double* | out    | x coordinate of y-direction |
 | y                      | double* | out    | y coordinate of y-direction |
 | z                      | double* | out    | z coordinate of y-direction |
@@ -437,13 +425,12 @@ handleは`AUTDCreateController`で作成したものを使う. 振動子の指�
 
 指定した振動子のz軸方向を取得する.
 
-handleは`AUTDCreateController`で作成したものを使う. 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
+handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
 | handle                 | void*   | in     | pointer to Controller       |
-| device_idx             | int32_t | in     | device index                |
-| local_trans_idx        | int32_t | in     | local transducer index      |
+| trans_idx        | int32_t | in     | transducer index      |
 | x                      | double* | out    | x coordinate of z-direction |
 | y                      | double* | out    | y coordinate of z-direction |
 | z                      | double* | out    | z coordinate of z-direction |
@@ -594,8 +581,7 @@ TransducerTest gainに振幅と位相をセットする.
 | Argument name / return | type     | in/out | description                     |
 | ---------------------- | -------  | ------ | ---------------------           |
 | gain                   | void*    | in     | pointer to TransducerTest gain  |
-| dev_idx                | int32_t  | in     | device index                    |
-| tr_idx                 | int32_t  | in     | local transducer index          |
+| tr_idx                 | int32_t  | in     | transducer index          |
 | amp                    | double   | in     | amplitude                       |
 | phase                  | double   | in     | phase                           |
 | return                 | void     | -      | -                               |
@@ -1005,26 +991,24 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 指定した振動子のModulation Delayを取得する.
 
-handleは`AUTDCreateController`で作成したものを使う. 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
+handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type     | in/out | description                        |
 | ---------------------- | -------- | ------ | ---------------------------------- |
 | handle                 | void*    | in     | pointer to Controller              |
-| device_idx             | int32_t  | in     | device index                       |
-| local_trans_idx        | int32_t  | in     | local transducer index             |
+| trans_idx        | int32_t  | in     | transducer index             |
 | return                 | uint16_t | -      | modulation delay of the transducer |
 
 ## AUTDSetModDelay (autd3capi)
 
 指定した振動子のModulation Delayを設定する.
 
-handleは`AUTDCreateController`で作成したものを使う. 振動子の指定はデバイスのインデックスとローカルの振動子インデックスでおこなう.
+handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type     | in/out | description                        |
 | ---------------------- | -------- | ------ | ---------------------------------- |
 | handle                 | void*    | in     | pointer to Controller              |
-| device_idx             | int32_t  | in     | device index                       |
-| local_trans_idx        | int32_t  | in     | local transducer index             |
+| trans_idx        | int32_t  | in     | transducer index             |
 | delay                  | uint16_t | in     | modulation delay of the transducer |
 | return                 | void     | -      | -                                  |
 

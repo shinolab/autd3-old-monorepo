@@ -3,7 +3,7 @@
 # Created Date: 14/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 20/11/2022
+# Last Modified: 27/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -43,7 +43,7 @@ mutable struct Controller
     trans_direction_y
     trans_direction_z
     set_mod_delay
-    num_devices
+    num_transducers
     firmware_info_list
     send
     function Controller()
@@ -65,7 +65,7 @@ mutable struct Controller
         cnt.to_normal_phase = () -> autd3capi.set_mode(cnt._ptr, 2)
         cnt.open = (link) -> autd3capi.autd_open_controller(cnt._ptr, link._link._ptr)
         cnt.close = () -> autd3capi.autd_close(cnt._ptr)
-        cnt.num_devices = () -> autd3capi.autd_num_devices(cnt._ptr)
+        cnt.num_transducers = () -> autd3capi.autd_num_transducers(cnt._ptr)
         cnt.is_open = () -> autd3capi.autd_is_open(cnt._ptr)
         cnt.get_force_fan = () -> autd3capi.autd_get_force_fan(cnt._ptr)
         cnt.set_force_fan = (flag::Bool) -> autd3capi.autd_set_force_fan(cnt._ptr, flag)
@@ -79,42 +79,42 @@ mutable struct Controller
         cnt.set_sound_speed = (value::Float64) -> autd3capi.autd_set_sound_speed(cnt._ptr, value)
         cnt.get_attenuation = () -> autd3capi.autd_get_attenuation(cnt._ptr)
         cnt.set_attenuation = (value::Float64) -> autd3capi.autd_set_attenuation(cnt._ptr, value)
-        cnt.get_trans_frequency = (devId, transIdx) -> autd3capi.autd_get_trans_frequency(cnt._ptr, Int32(devId), Int32(transIdx))
-        cnt.set_trans_frequency = (devId, transIdx, value::Float64) -> autd3capi.autd_set_trans_frequency(cnt._ptr, Int32(devId), Int32(transIdx), value)
-        cnt.get_trans_cycle = (devId, transIdx) -> autd3capi.autd_get_trans_cycle(cnt._ptr, Int32(devId), Int32(transIdx))
-        cnt.set_trans_cycle = (devId, transIdx, value) -> autd3capi.autd_set_trans_frequency(cnt._ptr, Int32(devId), Int32(transIdx), Uint16(value))
-        cnt.get_wavelength = function (devId, transIdx)
-            autd3capi.autd_get_wavelength(cnt._ptr, Int32(devId), Int32(transIdx))
+        cnt.get_trans_frequency = (transIdx) -> autd3capi.autd_get_trans_frequency(cnt._ptr, Int32(transIdx))
+        cnt.set_trans_frequency = (transIdx, value::Float64) -> autd3capi.autd_set_trans_frequency(cnt._ptr, Int32(transIdx), value)
+        cnt.get_trans_cycle = (transIdx) -> autd3capi.autd_get_trans_cycle(cnt._ptr, Int32(transIdx))
+        cnt.set_trans_cycle = (transIdx, value) -> autd3capi.autd_set_trans_frequency(cnt._ptr, Int32(transIdx), Uint16(value))
+        cnt.get_wavelength = function (transIdx)
+            autd3capi.autd_get_wavelength(cnt._ptr, Int32(transIdx))
         end
-        cnt.trans_position = function (devId, transIdx)
+        cnt.trans_position = function (transIdx)
             x = Ref{Float64}(0)
             y = Ref{Float64}(0)
             z = Ref{Float64}(0)
-            autd3capi.autd_trans_position(cnt._ptr, Int32(devId), Int32(transIdx), x, y, z)
+            autd3capi.autd_trans_position(cnt._ptr, Int32(transIdx), x, y, z)
             SVector(x[], y[], z[])
         end
-        cnt.trans_direction_x = function (devId, transIdx)
+        cnt.trans_direction_x = function (transIdx)
             x = Ref{Float64}(0)
             y = Ref{Float64}(0)
             z = Ref{Float64}(0)
-            autd3capi.autd_trans_x_direction(cnt._ptr, Int32(devId), Int32(transIdx), x, y, z)
+            autd3capi.autd_trans_x_direction(cnt._ptr, Int32(transIdx), x, y, z)
             SVector(x[], y[], z[])
         end
-        cnt.trans_direction_y = function (devId, transIdx)
+        cnt.trans_direction_y = function (transIdx)
             x = Ref{Float64}(0)
             y = Ref{Float64}(0)
             z = Ref{Float64}(0)
-            autd3capi.autd_trans_y_direction(cnt._ptr, Int32(devId), Int32(transIdx), x, y, z)
+            autd3capi.autd_trans_y_direction(cnt._ptr, Int32(transIdx), x, y, z)
             SVector(x[], y[], z[])
         end
-        cnt.trans_direction_z = function (devId, transIdx)
+        cnt.trans_direction_z = function (transIdx)
             x = Ref{Float64}(0)
             y = Ref{Float64}(0)
             z = Ref{Float64}(0)
-            autd3capi.autd_trans_z_direction(cnt._ptr, Int32(devId), Int32(transIdx), x, y, z)
+            autd3capi.autd_trans_z_direction(cnt._ptr, Int32(transIdx), x, y, z)
             SVector(x[], y[], z[])
         end
-        cnt.set_mod_delay = (devId, transIdx, value) -> autd3capi.autd_set_mod_delay(cnt._ptr, devId, transIdx, UInt16(value))
+        cnt.set_mod_delay = (transIdx, value) -> autd3capi.autd_set_mod_delay(cnt._ptr, transIdx, UInt16(value))
         cnt.firmware_info_list = function ()
             res = []
             phandle = Ref(Ptr{Cvoid}(0))

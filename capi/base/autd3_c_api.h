@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 27/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -44,7 +44,7 @@ EXPORT_AUTD double AUTDGetWavelength(IN const void* handle, IN int32_t trans_idx
 EXPORT_AUTD double AUTDGetAttenuation(IN const void* handle);
 EXPORT_AUTD void AUTDSetAttenuation(IN void* handle, IN double attenuation);
 EXPORT_AUTD bool AUTDGetFPGAInfo(IN void* handle, IN uint8_t* out);
-EXPORT_AUTD int32_t AUTDNumDevices(IN const void* handle);
+EXPORT_AUTD int32_t AUTDNumTransducers(IN const void* handle);
 EXPORT_AUTD void AUTDTransPosition(IN const void* handle, IN int32_t trans_idx, OUT double* x, OUT double* y, OUT double* z);
 EXPORT_AUTD void AUTDTransXDirection(IN const void* handle, IN int32_t trans_idx, OUT double* x, OUT double* y, OUT double* z);
 EXPORT_AUTD void AUTDTransYDirection(IN const void* handle, IN int32_t trans_idx, OUT double* x, OUT double* y, OUT double* z);

@@ -40,10 +40,10 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDOpenController.restype = ctypes.c_bool
 
         self.dll.AUTDAddDevice.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double] 
-        self.dll.AUTDAddDevice.restype = ctypes.c_int32
+        self.dll.AUTDAddDevice.restype = None
 
         self.dll.AUTDAddDeviceQuaternion.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double] 
-        self.dll.AUTDAddDeviceQuaternion.restype = ctypes.c_int32
+        self.dll.AUTDAddDeviceQuaternion.restype = None
 
         self.dll.AUTDClose.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDClose.restype = ctypes.c_bool
@@ -84,19 +84,19 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDSetSoundSpeed.argtypes = [ctypes.c_void_p, ctypes.c_double] 
         self.dll.AUTDSetSoundSpeed.restype = None
 
-        self.dll.AUTDGetTransFrequency.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_int32] 
+        self.dll.AUTDGetTransFrequency.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
         self.dll.AUTDGetTransFrequency.restype = ctypes.c_double
 
-        self.dll.AUTDSetTransFrequency.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_int32, ctypes.c_double] 
+        self.dll.AUTDSetTransFrequency.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_double] 
         self.dll.AUTDSetTransFrequency.restype = None
 
-        self.dll.AUTDGetTransCycle.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_int32] 
+        self.dll.AUTDGetTransCycle.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
         self.dll.AUTDGetTransCycle.restype = ctypes.c_uint16
 
-        self.dll.AUTDSetTransCycle.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_int32, ctypes.c_uint16] 
+        self.dll.AUTDSetTransCycle.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_uint16] 
         self.dll.AUTDSetTransCycle.restype = None
 
-        self.dll.AUTDGetWavelength.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_int32] 
+        self.dll.AUTDGetWavelength.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
         self.dll.AUTDGetWavelength.restype = ctypes.c_double
 
         self.dll.AUTDGetAttenuation.argtypes = [ctypes.c_void_p] 
@@ -108,19 +108,19 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGetFPGAInfo.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint8)] 
         self.dll.AUTDGetFPGAInfo.restype = ctypes.c_bool
 
-        self.dll.AUTDNumDevices.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDNumDevices.restype = ctypes.c_int32
+        self.dll.AUTDNumTransducers.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDNumTransducers.restype = ctypes.c_int32
 
-        self.dll.AUTDTransPosition.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_int32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)] 
+        self.dll.AUTDTransPosition.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)] 
         self.dll.AUTDTransPosition.restype = None
 
-        self.dll.AUTDTransXDirection.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_int32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)] 
+        self.dll.AUTDTransXDirection.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)] 
         self.dll.AUTDTransXDirection.restype = None
 
-        self.dll.AUTDTransYDirection.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_int32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)] 
+        self.dll.AUTDTransYDirection.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)] 
         self.dll.AUTDTransYDirection.restype = None
 
-        self.dll.AUTDTransZDirection.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_int32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)] 
+        self.dll.AUTDTransZDirection.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)] 
         self.dll.AUTDTransZDirection.restype = None
 
         self.dll.AUTDGetFirmwareInfoListPointer.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_void_p)] 
@@ -153,7 +153,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainTransducerTest.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
         self.dll.AUTDGainTransducerTest.restype = None
 
-        self.dll.AUTDGainTransducerTestSet.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_int32, ctypes.c_double, ctypes.c_double] 
+        self.dll.AUTDGainTransducerTestSet.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_double, ctypes.c_double] 
         self.dll.AUTDGainTransducerTestSet.restype = None
 
         self.dll.AUTDGainCustom.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint64] 
@@ -267,10 +267,10 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDSendSpecialAsync.argtypes = [ctypes.c_void_p, ctypes.c_void_p] 
         self.dll.AUTDSendSpecialAsync.restype = None
 
-        self.dll.AUTDGetModDelay.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_int32] 
+        self.dll.AUTDGetModDelay.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
         self.dll.AUTDGetModDelay.restype = ctypes.c_uint16
 
-        self.dll.AUTDSetModDelay.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_int32, ctypes.c_uint16] 
+        self.dll.AUTDSetModDelay.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_uint16] 
         self.dll.AUTDSetModDelay.restype = None
 
         self.dll.AUTDCreateAmplitudes.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_double] 
