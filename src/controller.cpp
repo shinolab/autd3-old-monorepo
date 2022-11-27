@@ -3,7 +3,7 @@
 // Created Date: 16/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 27/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -64,11 +64,11 @@ bool Controller::open(core::LinkPtr link) {
         std::unique_lock lk(_send_mtx);
         _send_cond.wait(lk, [&] { return !_send_queue.empty() || !this->_send_th_running; });
         if (!this->_send_th_running) break;
-        auto&& [header_, body_, pre_, post_] = std::move(_send_queue.front());
-        header = std::move(header_);
-        body = std::move(body_);
-        pre = std::move(pre_);
-        post = std::move(post_);
+        AsyncData data = std::move(_send_queue.front());
+        header = std::move(data.header);
+        body = std::move(data.body);
+        pre = std::move(data.pre);
+        post = std::move(data.post);
       }
 
       pre();
@@ -142,19 +142,9 @@ bool Controller::close() {
   if (_send_th.joinable()) _send_th.join();
   spdlog::debug("Stopping asynchronous send thread...done");
 
-  if (!send(autd3::stop())) {
-    spdlog::debug("Failed to stop outputting.");
-    return false;
-  }
-  if (!send(autd3::clear())) {
-    spdlog::debug("Failed to clear.");
-    return false;
-  }
-  if (!_link->close()) {
-    spdlog::debug("Failed to close link.");
-    return false;
-  }
-  return true;
+  if (!send(autd3::stop())) spdlog::error("Failed to stop outputting.");
+  if (!send(autd3::clear())) spdlog::error("Failed to clear.");
+  return _link->close();
 }
 
 bool Controller::is_open() const noexcept { return _link != nullptr && _link->is_open(); }
