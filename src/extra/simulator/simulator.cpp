@@ -132,10 +132,20 @@ namespace autd3::extra {
 
           CPU cpu(dev, tr_num);
           cpu.init();
+          std::vector<driver::Vector3> local_trans_pos;
+          local_trans_pos.reserve(tr_num);
+          auto* p = reinterpret_cast<float*>(cursor);
+          const driver::Vector3 origin(p[0], p[1], p[2]);
+          for (uint32_t tr = 0; tr < tr_num; tr++) {
+            const driver::Vector3 pos = driver::Vector3(p[0], p[1], p[2]) - origin;
+            local_trans_pos.emplace_back(pos);
+            p += 7;
+          }
+          if (!cpu.configure_local_trans_pos(local_trans_pos)) continue;
           cpus.emplace_back(cpu);
 
           simulator::SoundSources s;
-          auto* p = reinterpret_cast<float*>(cursor);
+          p = reinterpret_cast<float*>(cursor);
           for (uint32_t tr = 0; tr < tr_num; tr++) {
             const auto pos = imgui->to_gl_pos(glm::vec3(p[0], p[1], p[2]));
             const auto rot = imgui->to_gl_rot(glm::quat(p[3], p[4], p[5], p[6]));
