@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 27/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -124,6 +124,10 @@ class CPU {
     _fpga.init();
     std::fill(_cycles.begin(), _cycles.end(), 0x1000);
     clear();
+  }
+
+  [[nodiscard]] bool configure_local_trans_pos(const std::vector<driver::Vector3>& local_trans_pos) {
+    return _fpga.configure_local_trans_pos(local_trans_pos);
   }
 
  private:

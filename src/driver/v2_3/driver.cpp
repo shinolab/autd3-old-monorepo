@@ -3,7 +3,7 @@
 // Created Date: 22/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 27/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -178,7 +178,8 @@ void DriverV2_3::point_stm_header(TxDatagram& tx) const noexcept {
 size_t DriverV2_3::point_stm_send_size(const size_t total_size, const size_t sent, const std::vector<size_t>& device_map) const noexcept {
   const size_t tr_num = *std::min_element(device_map.begin(), device_map.end());
   const size_t data_len = tr_num * sizeof(uint16_t);
-  const auto max_size = sent == 0 ? (data_len - sizeof(uint32_t) - sizeof(uint32_t)) / sizeof(STMFocus) : data_len / sizeof(STMFocus);
+  const auto max_size = sent == 0 ? (data_len - sizeof(uint16_t) - sizeof(uint32_t) - sizeof(uint32_t)) / sizeof(STMFocus)
+                                  : (data_len - sizeof(uint16_t)) / sizeof(STMFocus);
   return (std::min)(total_size - sent, max_size);
 }
 

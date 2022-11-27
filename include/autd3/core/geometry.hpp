@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 27/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -66,6 +66,7 @@ struct Geometry {
   auto add_device(T&& device) -> std::enable_if_t<std::is_base_of_v<Device, T>> {
     const auto id = _transducers.size();
     const auto transducers = device.get_transducers(id);
+    if (transducers.size() > 256) throw std::runtime_error("The maximum number of transducers per device is 256.");
     _transducers.insert(_transducers.end(), transducers.begin(), transducers.end());
     _device_map.emplace_back(transducers.size());
   }
