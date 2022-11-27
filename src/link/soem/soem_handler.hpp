@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 27/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -133,7 +133,7 @@ class SOEMHandler final {
     std::vector<size_t> dev_map;
     for (auto i = 1; i <= wc; i++)
       if (std::strcmp(ec_slave[i].name, "AUTD") == 0) {
-        if (auto_detect) dev_map.emplace_back(249);
+        dev_map.emplace_back(auto_detect ? 249 : device_map[static_cast<size_t>(i) - 1]);
       } else {
         _is_open.store(false);
         spdlog::error("Slave[{}] is not AUTD3", i);
@@ -235,8 +235,8 @@ class SOEMHandler final {
 
   bool close() {
     if (!is_open()) return true;
-
     _is_open.store(false);
+
     spdlog::debug("Stopping ethercat thread...");
     if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
     spdlog::debug("Stopping ethercat thread...done");
