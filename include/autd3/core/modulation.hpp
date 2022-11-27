@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 27/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -88,6 +88,14 @@ class Modulation : public DatagramHeader {
    */
   [[nodiscard]] double sampling_frequency() const noexcept {
     return static_cast<double>(driver::FPGA_CLK_FREQ) / static_cast<double>(_props.freq_div);
+  }
+
+  /**
+   * \brief Set modulation sampling frequency
+   */
+  [[nodiscard]] double set_sampling_frequency(const double freq) {
+    _props.freq_div = static_cast<uint32_t>(std::round(static_cast<double>(driver::FPGA_CLK_FREQ) / freq));
+    return sampling_frequency();
   }
 
   bool init() override {
