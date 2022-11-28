@@ -22,6 +22,7 @@ target_include_directories(link_remote_twincat PRIVATE ${ADS_PATH}/AdsLib ${ADS_
 
 if(WIN32)
   target_link_libraries(link_remote_twincat PUBLIC ws2_32)
+  target_compile_definitions(link_remote_twincat PRIVATE NOMINMAX)
 endif()
 
 set_target_properties(link_remote_twincat
