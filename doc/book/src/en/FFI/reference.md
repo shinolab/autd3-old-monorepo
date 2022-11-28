@@ -55,7 +55,7 @@ Add a device to the Controller.
 | rz1                    | double  | in     | first angle of ZYZ euler angle in radian  |
 | ry                     | double  | in     | second angle of ZYZ euler angle in radian |
 | rz2                    | double  | in     | third angle of ZYZ euler angle in radian  |
-| return                 | int32_t | -      | Device Id                                 |
+| return                 | void | -      | -                                 |
 
 ## AUTDAddDeviceQuaternion (autd3capi)
 
@@ -71,7 +71,7 @@ Add a device to the Controller.
 | qx                     | double  | in     | x parameter of quaternion of rotation  |
 | qy                     | double  | in     | y parameter of quaternion of rotation  |
 | qz                     | double  | in     | z parameter of quaternion of rotation  |
-| return                 | int32_t | -      | Device Id                              |
+| return                 | void | -      | -                                 |
 
 ## AUTDClose (autd3capi)
 
@@ -224,8 +224,7 @@ Get frequency of the transducer.
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
 | handle                 | void*   | in     | pointer to Controller       |
-| device_idx             | int32_t | in     | device index                |
-| local_trans_idx        | int32_t | in     | local transducer index      |
+| trans_idx        | int32_t | in     | transducer index      |
 | return                 | double  | -      | frequency of the transducer |
 
 ## AUTDSetTransFrequency (autd3capi)
@@ -235,8 +234,7 @@ Set frequency of the transducer.
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
 | handle                 | void*   | in     | pointer to Controller       |
-| device_idx             | int32_t | in     | device index                |
-| local_trans_idx        | int32_t | in     | local transducer index      |
+| trans_idx        | int32_t | in     | transducer index      |
 | frequency              | double  | in     | frequency of the transducer |
 | return                 | void    | -      | -                           |
 
@@ -247,8 +245,7 @@ Get cycle of the transducer.
 | Argument name / return | type     | in/out | description             |
 | ---------------------- | -------- | ------ | ----------------------- |
 | handle                 | void*    | in     | pointer to Controller   |
-| device_idx             | int32_t  | in     | device index            |
-| local_trans_idx        | int32_t  | in     | local transducer index  |
+| trans_idx        | int32_t | in     | transducer index      |
 | return                 | uint16_t | -      | cycle of the transducer |
 
 ## AUTDSetTransCycle (autd3capi)
@@ -258,8 +255,7 @@ Set cycle of the transducer.
 | Argument name / return | type     | in/out | description             |
 | ---------------------- | -------- | ------ | ----------------------- |
 | handle                 | void*    | in     | pointer to Controller   |
-| device_idx             | int32_t  | in     | device index            |
-| local_trans_idx        | int32_t  | in     | local transducer index  |
+| trans_idx        | int32_t | in     | transducer index      |
 | cycle                  | uint16_t | in     | cycle of the transducer |
 | return                 | void     | -      | -                       |
 
@@ -270,8 +266,7 @@ Get wavelength of the transducer.
 | Argument name / return | type    | in/out | description                                          |
 | ---------------------- | ------- | ------ | ---------------------------------------------------- |
 | handle                 | void*   | in     | pointer to Controller                                |
-| device_idx             | int32_t | in     | device index                                         |
-| local_trans_idx        | int32_t | in     | local transducer index                               |
+| trans_idx        | int32_t | in     | transducer index      |
 | return                 | double  | -      | wavelength of ultrasound emitted from the transducer |
 
 ## AUTDGetAttenuation (autd3capi)
@@ -305,14 +300,14 @@ Make sure set read FPGA info flag by `AUTDSetReadsFPGAInfo` before calling this 
 | out                    | uint8_t* | in     | FPGA information list |
 | return                 | bool     | -      | true if success       |
 
-## AUTDNumDevices (autd3capi)
+## AUTDNumTransducers (autd3capi)
 
-Get the number of devices.
+Get the number of transducers.
 
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
 | handle                 | void*   | in     | pointer to Controller |
-| return                 | int32_t | -      | number of devices     |
+| return                 | int32_t | -      | number of transducers |
 
 ## AUTDTransPosition (autd3capi)
 
@@ -321,8 +316,7 @@ Get the position of the transducer.
 | Argument name / return | type    | in/out | description                         |
 | ---------------------- | ------- | ------ | ----------------------------------- |
 | handle                 | void*   | in     | pointer to Controller               |
-| device_idx             | int32_t | in     | device index                        |
-| local_trans_idx        | int32_t | in     | local transducer index              |
+| trans_idx        | int32_t | in     | transducer index      |
 | x                      | double* | out    | x coordinate of transducer position |
 | y                      | double* | out    | y coordinate of transducer position |
 | z                      | double* | out    | z coordinate of transducer position |
@@ -335,8 +329,7 @@ Get the x-direction of the transducer.
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
 | handle                 | void*   | in     | pointer to Controller       |
-| device_idx             | int32_t | in     | device index                |
-| local_trans_idx        | int32_t | in     | local transducer index      |
+| trans_idx        | int32_t | in     | transducer index      |
 | x                      | double* | out    | x coordinate of x-direction |
 | y                      | double* | out    | y coordinate of x-direction |
 | z                      | double* | out    | z coordinate of x-direction |
@@ -349,8 +342,7 @@ Get the y-direction of the transducer.
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
 | handle                 | void*   | in     | pointer to Controller       |
-| device_idx             | int32_t | in     | device index                |
-| local_trans_idx        | int32_t | in     | local transducer index      |
+| trans_idx        | int32_t | in     | transducer index      |
 | x                      | double* | out    | x coordinate of y-direction |
 | y                      | double* | out    | y coordinate of y-direction |
 | z                      | double* | out    | z coordinate of y-direction |
@@ -363,8 +355,7 @@ Get the z-direction of the transducer.
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
 | handle                 | void*   | in     | pointer to Controller       |
-| device_idx             | int32_t | in     | device index                |
-| local_trans_idx        | int32_t | in     | local transducer index      |
+| trans_idx        | int32_t | in     | transducer index      |
 | x                      | double* | out    | x coordinate of z-direction |
 | y                      | double* | out    | y coordinate of z-direction |
 | z                      | double* | out    | z coordinate of z-direction |
@@ -503,7 +494,6 @@ Set amp and phase of TransducerTest gain.
 | Argument name / return | type     | in/out | description                     |
 | ---------------------- | -------  | ------ | ---------------------           |
 | gain                   | void*    | in     | pointer to TransducerTest gain  |
-| dev_idx                | int32_t  | in     | device index                    |
 | tr_idx                 | int32_t  | in     | local transducer index          |
 | amp                    | double   | in     | amplitude                       |
 | phase                  | double   | in     | phase                           |
@@ -903,8 +893,7 @@ Configure Modulation Delay of the transducer.
 | Argument name / return | type     | in/out | description                        |
 | ---------------------- | -------- | ------ | ---------------------------------- |
 | handle                 | void*    | in     | pointer to Controller              |
-| device_idx             | int32_t  | in     | device index                       |
-| local_trans_idx        | int32_t  | in     | local transducer index             |
+| trans_idx        | int32_t | in     | transducer index      |
 | delay                  | uint16_t | in     | modulation delay of the transducer |
 | return                 | void     | -      | -                                  |
 
@@ -915,8 +904,7 @@ Get Modulation Delay of the transducer.
 | Argument name / return | type     | in/out | description                        |
 | ---------------------- | -------- | ------ | ---------------------------------- |
 | handle                 | void*    | in     | pointer to Controller              |
-| device_idx             | int32_t  | in     | device index                       |
-| local_trans_idx        | int32_t  | in     | local transducer index             |
+| trans_idx        | int32_t | in     | transducer index      |
 | return                 | uint16_t | -      | modulation delay of the transducer |
 
 ## AUTDCreateAmplitudes (autd3capi)

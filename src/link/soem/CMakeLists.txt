@@ -8,6 +8,8 @@ add_library(link_soem
   link_soem_impl.cpp
   link_soem_impl.hpp
   ${SOEM_SRC_FILES}
+  iomap.hpp
+  soem_handler.hpp
   ecat_thread.hpp
   error_handler.hpp
   ecat_thread/${OS}.hpp

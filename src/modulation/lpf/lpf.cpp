@@ -3,7 +3,7 @@
 // Created Date: 19/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@
 
 namespace autd3::modulation {
 LPF::LPF(Modulation& modulation) : _modulation(modulation) {
-  _coef = {
+  _coefficients = {
       0.0000103,  0.0000071,  0.0000034,  -0.0000008, -0.0000055, -0.0000108, -0.0000165, -0.0000227, -0.0000294, -0.0000366, -0.0000441, -0.0000520,
       -0.0000601, -0.0000684, -0.0000767, -0.0000850, -0.0000930, -0.0001007, -0.0001078, -0.0001142, -0.0001195, -0.0001236, -0.0001261, -0.0001268,
       -0.0001254, -0.0001215, -0.0001148, -0.0001048, -0.0000913, -0.0000737, -0.0000516, -0.0000247, 0.0000076,  0.0000458,  0.0000903,  0.0001416,
@@ -64,8 +64,8 @@ bool LPF::calc() {
   this->_props.buffer.reserve(mf.size());
   for (int32_t i = 0; i < static_cast<int32_t>(mf.size()); i++) {
     double r = 0.0;
-    for (int32_t j = 0; j < static_cast<int32_t>(_coef.size()); j++)
-      r += _coef[j] * static_cast<double>(mf[static_cast<size_t>(driver::rem_euclid(i - j, static_cast<int32_t>(mf.size())))]);
+    for (int32_t j = 0; j < static_cast<int32_t>(_coefficients.size()); j++)
+      r += _coefficients[j] * static_cast<double>(mf[static_cast<size_t>(driver::rem_euclid(i - j, static_cast<int32_t>(mf.size())))]);
     this->_props.buffer.emplace_back(static_cast<uint8_t>(std::round(r)));
   }
   return true;

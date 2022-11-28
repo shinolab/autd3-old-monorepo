@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/11/2022
+ * Last Modified: 28/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -151,24 +151,22 @@ namespace AUTD3Sharp
 
     public sealed class Transducer
     {
-        private readonly int _devId;
         private readonly int _trId;
         private readonly IntPtr _cnt;
 
-        internal Transducer(int devId, int trId, IntPtr cnt)
+        internal Transducer(int trId, IntPtr cnt)
         {
-            _devId = devId;
             _trId = trId;
             _cnt = cnt;
         }
 
-        public int Id => AUTD3.NumTransInDevice * _devId + _trId;
+        public int Id => _trId;
 
         public Vector3 Position
         {
             get
             {
-                Base.AUTDTransPosition(_cnt, _devId, _trId, out var x, out var y, out var z);
+                Base.AUTDTransPosition(_cnt, _trId, out var x, out var y, out var z);
                 return TypeHelper.Convert(x, y, z);
             }
         }
@@ -177,7 +175,7 @@ namespace AUTD3Sharp
         {
             get
             {
-                Base.AUTDTransXDirection(_cnt, _devId, _trId, out var x, out var y, out var z);
+                Base.AUTDTransXDirection(_cnt, _trId, out var x, out var y, out var z);
                 return TypeHelper.Convert(x, y, z);
             }
         }
@@ -186,7 +184,7 @@ namespace AUTD3Sharp
         {
             get
             {
-                Base.AUTDTransYDirection(_cnt, _devId, _trId, out var x, out var y, out var z);
+                Base.AUTDTransYDirection(_cnt, _trId, out var x, out var y, out var z);
                 return TypeHelper.Convert(x, y, z);
             }
         }
@@ -195,85 +193,33 @@ namespace AUTD3Sharp
         {
             get
             {
-                Base.AUTDTransZDirection(_cnt, _devId, _trId, out var x, out var y, out var z);
+                Base.AUTDTransZDirection(_cnt, _trId, out var x, out var y, out var z);
                 return TypeHelper.Convert(x, y, z);
             }
         }
 
-        public double Wavelength => Base.AUTDGetWavelength(_cnt, _devId, _trId);
+        public double Wavelength => Base.AUTDGetWavelength(_cnt, _trId);
 
         public double Frequency
         {
-            get => Base.AUTDGetTransFrequency(_cnt, _devId, _trId);
-            set => Base.AUTDSetTransFrequency(_cnt, _devId, _trId, value);
+            get => Base.AUTDGetTransFrequency(_cnt, _trId);
+            set => Base.AUTDSetTransFrequency(_cnt, _trId, value);
         }
 
         public ushort Cycle
         {
-            get => Base.AUTDGetTransCycle(_cnt, _devId, _trId);
-            set => Base.AUTDSetTransCycle(_cnt, _devId, _trId, value);
+            get => Base.AUTDGetTransCycle(_cnt, _trId);
+            set => Base.AUTDSetTransCycle(_cnt, _trId, value);
         }
 
         public ushort ModDelay
         {
-            get => Base.AUTDGetModDelay(_cnt, _devId, _trId);
-            set => Base.AUTDSetModDelay(_cnt, _devId, _trId, value);
+            get => Base.AUTDGetModDelay(_cnt, _trId);
+            set => Base.AUTDSetModDelay(_cnt, _trId, value);
         }
     }
 
-    public sealed class Device : IEnumerable<Transducer>
-    {
-        private readonly int _id;
-        private readonly IntPtr _cnt;
-
-        internal Device(int id, IntPtr cnt)
-        {
-            _id = id;
-            _cnt = cnt;
-        }
-
-        public Vector3 Origin => new Transducer(_id, 0, _cnt).Position;
-
-        public Vector3 Center => this.Aggregate(Vector3.zero, (current, tr) => current + tr.Position) / AUTD3.NumTransInDevice;
-
-        public Transducer this[int index]
-        {
-            get
-            {
-                if (index >= AUTD3.NumTransInDevice) throw new IndexOutOfRangeException();
-                return new Transducer(_id, index, _cnt);
-            }
-        }
-
-        public sealed class TransducerEnumerator : IEnumerator<Transducer>
-        {
-            private int _idx;
-            private readonly int _devId;
-            private readonly IntPtr _cnt;
-
-            internal TransducerEnumerator(int devId, IntPtr cnt)
-            {
-                _idx = -1;
-                _devId = devId;
-                _cnt = cnt;
-            }
-
-            public bool MoveNext() => ++_idx < AUTD3.NumTransInDevice;
-            public void Reset() => _idx = -1;
-
-            public Transducer Current => new Transducer(_devId, _idx, _cnt);
-
-            object System.Collections.IEnumerator.Current => Current;
-
-            public void Dispose() { }
-        }
-
-        public IEnumerator<Transducer> GetEnumerator() => new TransducerEnumerator(_id, _cnt);
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-    }
-
-    public sealed class Geometry : IEnumerable<Device>
+    public sealed class Geometry : IEnumerable<Transducer>
     {
         internal readonly IntPtr CntPtr;
 
@@ -282,59 +228,60 @@ namespace AUTD3Sharp
             CntPtr = cntPtr;
         }
 
-        public int AddDevice(Vector3 position, Vector3 rotation)
+        public void AddDevice(Vector3 position, Vector3 rotation)
         {
             var (x, y, z) = TypeHelper.Convert(position);
             var (rx, ry, rz) = TypeHelper.Convert(rotation);
-            return Base.AUTDAddDevice(CntPtr, x, y, z, rx, ry, rz);
+            Base.AUTDAddDevice(CntPtr, x, y, z, rx, ry, rz);
         }
 
-        public int AddDevice(Vector3 position, Quaternion quaternion)
+        public void AddDevice(Vector3 position, Quaternion quaternion)
         {
             var (x, y, z) = TypeHelper.Convert(position);
             var (qw, qx, qy, qz) = TypeHelper.Convert(quaternion);
-            return Base.AUTDAddDeviceQuaternion(CntPtr, x, y, z, qw, qx, qy, qz);
+            Base.AUTDAddDeviceQuaternion(CntPtr, x, y, z, qw, qx, qy, qz);
         }
 
-        public int NumDevices => Base.AUTDNumDevices(CntPtr);
+        public int NumTransducers => Base.AUTDNumTransducers(CntPtr);
 
-        public int NumTransducers => NumDevices * AUTD3.NumTransInDevice;
+        public int NumDevices => NumTransducers / AUTD3.NumTransInDevice;
 
-        public Vector3 Center => this.Aggregate(Vector3.zero, (current, dev) => current + dev.Center) / NumDevices;
+        public Vector3 Center => this.Aggregate(Vector3.zero, (current, tr) => current + tr.Position) / NumTransducers;
 
-        public Device this[int index]
+        public Transducer this[int index]
         {
             get
             {
-                if (index >= NumDevices) throw new IndexOutOfRangeException();
-                return new Device(index, CntPtr);
+                if (index >= NumTransducers) throw new IndexOutOfRangeException();
+                return new Transducer(index, CntPtr);
             }
         }
 
-        public sealed class DeviceEnumerator : IEnumerator<Device>
+        public sealed class TransducerEnumerator : IEnumerator<Transducer>
         {
             private int _idx;
-            private readonly int _devLen;
             private readonly IntPtr _cnt;
+            private readonly int _numTrans;
 
-            internal DeviceEnumerator(int devLen, IntPtr cnt)
+            internal TransducerEnumerator(IntPtr cnt)
             {
                 _idx = -1;
-                _devLen = devLen;
                 _cnt = cnt;
+                _numTrans = Base.AUTDNumTransducers(_cnt);
             }
 
-            public bool MoveNext() => ++_idx < _devLen;
+            public bool MoveNext() => ++_idx < _numTrans;
+
             public void Reset() => _idx = -1;
 
-            public Device Current => new Device(_idx, _cnt);
+            public Transducer Current => new Transducer(_idx, _cnt);
 
             object System.Collections.IEnumerator.Current => Current;
 
             public void Dispose() { }
         }
 
-        public IEnumerator<Device> GetEnumerator() => new DeviceEnumerator(NumDevices, CntPtr);
+        public IEnumerator<Transducer> GetEnumerator() => new TransducerEnumerator(CntPtr);
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
@@ -471,7 +418,7 @@ namespace AUTD3Sharp
         {
             get
             {
-                var infos = new byte[Geometry.NumDevices];
+                var infos = new byte[Geometry.NumTransducers / AUTD3.NumTransInDevice];
                 Base.AUTDGetFPGAInfo(AUTDControllerHandle.CntPtr, infos);
                 return infos;
             }

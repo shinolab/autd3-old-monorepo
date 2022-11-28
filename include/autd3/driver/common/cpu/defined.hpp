@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -32,9 +32,6 @@ constexpr uint8_t MSG_SIMULATOR_INIT = 0xFF;
 
 constexpr size_t MOD_HEAD_DATA_SIZE = 120;
 constexpr size_t MOD_BODY_DATA_SIZE = 124;
-
-constexpr size_t POINT_STM_HEAD_DATA_SIZE = 61;
-constexpr size_t POINT_STM_BODY_DATA_SIZE = 62;
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -79,7 +76,7 @@ class CPUControlFlags final {
 
   void remove(const VALUE v) noexcept { _value = static_cast<VALUE>(_value & ~v); }
 
-  bool contains(const VALUE v) const noexcept { return (_value & v) == v; }
+  [[nodiscard]] bool contains(const VALUE v) const noexcept { return (_value & v) == v; }
 
   [[nodiscard]] VALUE value() const noexcept { return _value; }
 
@@ -97,7 +94,7 @@ class CPUControlFlags final {
     if ((_value & STM_END) == STM_END) flags.emplace_back("STM_END");
     if ((_value & IS_DUTY) == IS_DUTY) flags.emplace_back("IS_DUTY");
     if ((_value & MOD_DELAY) == MOD_DELAY) flags.emplace_back("MOD_DELAY");
-    if (flags.size() == 0) flags.emplace_back("NONE");
+    if (flags.empty()) flags.emplace_back("NONE");
 
     constexpr auto delim = " | ";
     std::ostringstream os;

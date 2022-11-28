@@ -3,7 +3,7 @@
 // Created Date: 07/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,9 +21,13 @@ namespace autd3 {
 
 class SpecialData {
  public:
-  virtual bool ack_check_timeout_override() const = 0;
-  virtual std::chrono::high_resolution_clock::duration ack_check_timeout() const = 0;
+  [[nodiscard]] virtual bool ack_check_timeout_override() const = 0;
+  [[nodiscard]] virtual std::chrono::high_resolution_clock::duration ack_check_timeout() const = 0;
   virtual ~SpecialData() = default;
+  SpecialData(const SpecialData& v) noexcept = delete;
+  SpecialData& operator=(const SpecialData& obj) = delete;
+  SpecialData(SpecialData&& obj) = default;
+  SpecialData& operator=(SpecialData&& obj) = default;
 
   std::unique_ptr<core::DatagramHeader> header() { return std::move(_h); }
   std::unique_ptr<core::DatagramBody> body() { return std::move(_b); }
@@ -35,7 +39,7 @@ class SpecialData {
   std::unique_ptr<core::DatagramBody> _b;
 };
 
-class Stop : public SpecialData {
+class Stop final : public SpecialData {
  public:
   Stop() : SpecialData(std::make_unique<core::SilencerConfig>(), std::make_unique<core::Amplitudes>(0.0)) {}
 
@@ -45,7 +49,7 @@ class Stop : public SpecialData {
   }
 };
 
-class UpdateFlag : public SpecialData {
+class UpdateFlag final : public SpecialData {
  public:
   UpdateFlag() : SpecialData(std::make_unique<core::NullHeader>(), std::make_unique<core::NullBody>()) {}
 
@@ -55,7 +59,7 @@ class UpdateFlag : public SpecialData {
   }
 };
 
-class Clear : public SpecialData {
+class Clear final : public SpecialData {
  public:
   Clear() : SpecialData(std::make_unique<core::Clear>(), std::make_unique<core::NullBody>()) {}
 
@@ -65,7 +69,7 @@ class Clear : public SpecialData {
   }
 };
 
-class Synchronize : public SpecialData {
+class Synchronize final : public SpecialData {
  public:
   Synchronize() : SpecialData(std::make_unique<core::NullHeader>(), std::make_unique<core::Synchronize>()) {}
 
@@ -75,7 +79,7 @@ class Synchronize : public SpecialData {
   }
 };
 
-class ModDelayConfig : public SpecialData {
+class ModDelayConfig final : public SpecialData {
  public:
   ModDelayConfig() : SpecialData(std::make_unique<core::NullHeader>(), std::make_unique<core::ModDelayConfig>()) {}
 
@@ -85,14 +89,14 @@ class ModDelayConfig : public SpecialData {
   }
 };
 
-inline autd3::Stop stop() { return autd3::Stop{}; }
+inline Stop stop() { return Stop{}; }
 
-inline autd3::UpdateFlag update_flag() { return autd3::UpdateFlag{}; }
+inline UpdateFlag update_flag() { return UpdateFlag{}; }
 
-inline autd3::Clear clear() { return autd3::Clear{}; }
+inline Clear clear() { return Clear{}; }
 
-inline autd3::Synchronize synchronize() { return autd3::Synchronize{}; }
+inline Synchronize synchronize() { return Synchronize{}; }
 
-inline autd3::ModDelayConfig mod_delay_config() { return autd3::ModDelayConfig{}; }
+inline ModDelayConfig mod_delay_config() { return ModDelayConfig{}; }
 
 }  // namespace autd3

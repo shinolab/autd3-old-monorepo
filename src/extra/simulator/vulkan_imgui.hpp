@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -273,8 +273,8 @@ class VulkanImGui {
     set_font();
   }
 
-  void set(const SoundSources& sources) {
-    const auto dev_num = sources.size() / driver::NUM_TRANS_IN_UNIT;
+  void set(const std::vector<SoundSources>& sources) {
+    const auto dev_num = sources.size();
     visible = std::make_unique<bool[]>(dev_num);
     enable = std::make_unique<bool[]>(dev_num);
     std::fill_n(visible.get(), dev_num, true);
@@ -294,7 +294,7 @@ class VulkanImGui {
     ImGui::Render();
   }
 
-  UpdateFlags draw(const std::vector<CPU>& cpus, SoundSources& sources) {
+  UpdateFlags draw(const std::vector<CPU>& cpus, std::vector<SoundSources>& sources) {
     auto flag = UpdateFlags(UpdateFlags::NONE);
 
     if (_update_font) {
@@ -447,9 +447,9 @@ class VulkanImGui {
         if (ImGui::DragFloat("Sound speed", &sound_speed, 1 * scale())) {
           for (size_t dev = 0; dev < cpus.size(); dev++) {
             const auto& cycles = cpus[dev].fpga().cycles();
-            for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) {
+            for (size_t i = 0; i < sources[dev].size(); i++) {
               const auto freq = static_cast<float>(driver::FPGA_CLK_FREQ) / static_cast<float>(cycles[i]);
-              sources.drives()[i + dev * driver::NUM_TRANS_IN_UNIT].set_wave_num(freq, sound_speed);
+              sources[dev].drives()[i].set_wave_num(freq, sound_speed);
             }
           }
           flag.set(UpdateFlags::UPDATE_SOURCE_DRIVE);
@@ -466,15 +466,13 @@ class VulkanImGui {
           const auto show_id = "##show" + std::to_string(i);
           if (ImGui::Checkbox(show_id.c_str(), &visible[i])) {
             flag.set(UpdateFlags::UPDATE_SOURCE_FLAG);
-            for (size_t tr = 0; tr < driver::NUM_TRANS_IN_UNIT; tr++)
-              sources.visibilities()[driver::NUM_TRANS_IN_UNIT * i + tr] = visible[i] ? 1.0f : 0.0f;
+            for (size_t tr = 0; tr < sources[i].size(); tr++) sources[i].visibilities()[tr] = visible[i] ? 1.0f : 0.0f;
           }
           ImGui::SameLine();
           const auto enable_id = "##enable" + std::to_string(i);
           if (ImGui::Checkbox(enable_id.c_str(), &enable[i])) {
             flag.set(UpdateFlags::UPDATE_SOURCE_FLAG);
-            for (size_t tr = 0; tr < driver::NUM_TRANS_IN_UNIT; tr++)
-              sources.drives()[driver::NUM_TRANS_IN_UNIT * i + tr].enable = enable[i] ? 1.0f : 0.0f;
+            for (size_t tr = 0; tr < sources[i].size(); tr++) sources[i].drives()[tr].enable = enable[i] ? 1.0f : 0.0f;
           }
         }
 

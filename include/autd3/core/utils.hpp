@@ -3,17 +3,13 @@
 // Created Date: 20/07/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/11/2022
+// Last Modified: 28/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
-
-#ifdef _MSC_VER
-#include <intrin.h>
-#endif
 
 namespace autd3::core {
 
