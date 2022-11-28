@@ -83,6 +83,7 @@ jobs:
     - name: build
       run: |
         cd doc/book/samples/julia
+        julia -e 'using Pkg; Pkg.add("StaticArrays"); Pkg.build("StaticArrays ")'
         julia -e 'using Pkg; Pkg.add(url="https://github.com/shinolab/autd3.git", subdir="julia"); Pkg.build("AUTD3")'
         echo a | julia sample.jl
 
@@ -95,6 +96,7 @@ jobs:
       run: |
         cd doc/book/samples/python
         python -m pip install --upgrade pyautd3
+        python -m pip install --upgrade numpy
         echo a | python main.py
 
   build:
