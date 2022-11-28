@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 28/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -63,7 +63,7 @@ int run(void* autd) {
 #ifdef DEBUG_AUTD_CAPI
   example_size++;
 #endif
-  if (AUTDNumDevices(autd) == 2) example_size++;
+  if (AUTDNumTransducers(autd) == 2 * 249) example_size++;
 
   Test* examples = (Test*)malloc(example_size * sizeof(Test));
 
@@ -86,7 +86,7 @@ int run(void* autd) {
   examples[idx++].func = gain_stm;
   examples[idx].name = "SoftwareSTM";
   examples[idx++].func = soft_stm;
-  if (AUTDNumDevices(autd) == 2) {
+  if (AUTDNumTransducers(autd) == 2 * 249) {
     examples[idx].name = "Grouped";
     examples[idx++].func = group;
   }
