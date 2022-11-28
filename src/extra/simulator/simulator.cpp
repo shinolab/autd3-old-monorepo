@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/11/2022
+// Last Modified: 28/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -135,9 +135,9 @@ namespace autd3::extra {
           std::vector<driver::Vector3> local_trans_pos;
           local_trans_pos.reserve(tr_num);
           auto* p = reinterpret_cast<float*>(cursor);
-          const driver::Vector3 origin(p[0], p[1], p[2]);
+          const driver::Vector3 origin = Eigen::Vector3<float>(p[0], p[1], p[2]).cast<double>();
           for (uint32_t tr = 0; tr < tr_num; tr++) {
-            const driver::Vector3 pos = driver::Vector3(p[0], p[1], p[2]) - origin;
+            const driver::Vector3 pos = Eigen::Vector3<float>(p[0], p[1], p[2]).cast<double>() - origin;
             local_trans_pos.emplace_back(pos);
             p += 7;
           }
