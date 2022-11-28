@@ -246,9 +246,10 @@ classdef Controller < handle
         end
 
         function list = fpga_info(obj)
-            n = obj.num_devices();
+            n = obj.num_transducers() / 249;
             info_p = libpointer('uint8Ptr', zeros(n, 1, 'uint8'));
             calllib('autd3capi', 'AUTDGetFPGAInfo', obj.ptr, info_p);
+            list = info_p.Value;
         end
 
         function delete(obj)
