@@ -134,7 +134,7 @@ jobs:
         tar -xvf mdbook-toc.tar.gz
         chmod +x mdbook-toc
         sudo ln -s $PWD/mdbook-toc /usr/local/bin/mdbook-toc
-      - name: Setup mdbook-katex
+    - name: Setup mdbook-katex
       run: |
         mkdir -p mdbook-katex
         cd mdbook-katex
@@ -142,7 +142,8 @@ jobs:
         tar -xvf mdbook-katex.tar.gz
         chmod +x mdbook-katex
         sudo ln -s $PWD/mdbook-katex /usr/local/bin/mdbook-katex
-    - run: |
+    - name: Build book
+      run: |
         cd ./doc/book
         MDBOOK_BOOK__src=src/en mdbook build --dest-dir book/en
         MDBOOK_BOOK__src=src/jp mdbook build --dest-dir book/jp
