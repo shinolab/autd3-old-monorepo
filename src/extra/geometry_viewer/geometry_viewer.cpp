@@ -3,7 +3,7 @@
 // Created Date: 28/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -41,10 +41,18 @@ namespace autd3::extra {
 [[nodiscard]] bool GeometryViewer::view(const core::Geometry& geometry) const {
   std::vector<geometry_viewer::gltf::Geometry> geometries;
   geometries.reserve(geometry.num_devices());
-  for (const auto& g : geometry) {
-    const auto pos = glm::vec3(static_cast<float>(g.origin().x()), static_cast<float>(g.origin().y()), static_cast<float>(g.origin().z()));
-    const auto rot = glm::quat(static_cast<float>(g.rotation().w()), static_cast<float>(g.rotation().x()), static_cast<float>(g.rotation().y()),
-                               static_cast<float>(g.rotation().z()));
+
+  for (const auto& tr_num : geometry.device_map())
+    if (tr_num != AUTD3::NUM_TRANS_IN_UNIT) {
+      spdlog::error("This is not AUTD3 device.");
+      return false;
+    }
+
+  for (size_t dev = 0; dev < geometry.num_devices(); dev++) {
+    const auto& tr = geometry[dev * AUTD3::NUM_TRANS_IN_UNIT];
+    const auto pos = glm::vec3(static_cast<float>(tr.position().x()), static_cast<float>(tr.position().y()), static_cast<float>(tr.position().z()));
+    const auto rot = glm::quat(static_cast<float>(tr.rotation().w()), static_cast<float>(tr.rotation().x()), static_cast<float>(tr.rotation().y()),
+                               static_cast<float>(tr.rotation().z()));
     geometries.emplace_back(geometry_viewer::gltf::Geometry{pos, rot});
   }
 

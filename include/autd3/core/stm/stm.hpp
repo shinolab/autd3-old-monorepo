@@ -3,17 +3,13 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 28/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
-
-#include <algorithm>
-#include <cmath>
-#include <limits>
 
 #include "autd3/driver/common/fpga/defined.hpp"
 
@@ -24,7 +20,7 @@ namespace autd3::core {
  */
 struct STM : DatagramBody {
   STM() noexcept : DatagramBody(), _freq_div(4096) {}
-  virtual ~STM() = default;
+  ~STM() override = default;
   STM(const STM& v) = default;
   STM& operator=(const STM& obj) = default;
   STM(STM&& obj) = default;
@@ -38,7 +34,7 @@ struct STM : DatagramBody {
    * @details STM mode has some constraints, which determine the actual frequency of the STM.
    * @return double Actual frequency of STM
    */
-  virtual double set_frequency(const double freq) = 0;
+  virtual double set_frequency(double freq) = 0;
 
   /**
    * @return frequency of STM
@@ -58,7 +54,7 @@ struct STM : DatagramBody {
 
   /**
    * @brief Sampling frequency division.
-   * @details The value must be larget than driver::STM_SAMPLING_FREQ_DIV_MIN.
+   * @details The value must be larger than driver::STM_SAMPLING_FREQ_DIV_MIN.
    */
   uint32_t& sampling_frequency_division() noexcept { return _freq_div; }
 

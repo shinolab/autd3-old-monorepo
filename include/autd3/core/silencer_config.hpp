@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -55,7 +55,7 @@ struct SilencerConfig final : DatagramHeader {
     return driver->config_silencer(msg_id, cycle, step, tx);
   }
 
-  bool is_finished() const override { return true; }
+  [[nodiscard]] bool is_finished() const override { return true; }
 
  private:
   bool _sent;

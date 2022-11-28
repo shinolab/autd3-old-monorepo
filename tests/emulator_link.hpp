@@ -3,7 +3,7 @@
 // Created Date: 09/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@ class EmulatorLink : public core::Link {
     _cpus->clear();
     _cpus->reserve(geometry.num_devices());
     for (size_t i = 0; i < geometry.num_devices(); i++) {
-      extra::CPU cpu(i);
+      extra::CPU cpu(i, geometry.device_map()[i]);
       cpu.init();
       _cpus->emplace_back(cpu);
     }

@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ namespace autd3::core {
  * @brief Gain controls the duty ratio and phase of each transducer in AUTD devices.
  */
 struct Gain : DatagramBody {
-  Gain() : _built(false), _phase_sent(false), _duty_sent(false), _drives() {}
+  Gain() : _built(false), _phase_sent(false), _duty_sent(false) {}
   ~Gain() override = default;
   Gain(const Gain& v) = default;
   Gain& operator=(const Gain& obj) = default;
@@ -44,8 +44,8 @@ struct Gain : DatagramBody {
     if (_built) return;
 
     _drives.clear();
-    std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-      std::transform(dev.begin(), dev.end(), std::back_inserter(_drives), [](const Transducer& tr) { return driver::Drive{0, 0, tr.cycle()}; });
+    std::transform(geometry.begin(), geometry.end(), std::back_inserter(_drives), [](const Transducer& tr) {
+      return driver::Drive{0, 0, tr.cycle()};
     });
 
     calc(geometry);
@@ -64,7 +64,7 @@ struct Gain : DatagramBody {
   /**
    * @brief Getter function for the data of duty ratio and phase of each transducers
    */
-  const std::vector<driver::Drive>& drives() const { return _drives; }
+  [[nodiscard]] const std::vector<driver::Drive>& drives() const { return _drives; }
 
   [[nodiscard]] bool built() const { return _built; }
 
@@ -74,7 +74,7 @@ struct Gain : DatagramBody {
     return true;
   }
 
-  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const core::Mode>& mode, const Geometry& geometry,
+  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const Mode>& mode, const Geometry& geometry,
             driver::TxDatagram& tx) override {
     mode->pack_gain_header(driver, tx);
     if (is_finished()) return true;

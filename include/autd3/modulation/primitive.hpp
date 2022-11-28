@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
 #pragma once
 
 #include "autd3/core/modulation.hpp"
-#include "autd3/driver/hardware.hpp"
+#include "autd3/driver/defined.hpp"
 
 namespace autd3::modulation {
 
@@ -182,7 +182,7 @@ class Square final : public core::Modulation {
    * @param[in] high high level in amplitude (0 to 1)
    * @param[in] duty duty ratio of square wave
    */
-  Square(const int freq, const double low = 0.0, const double high = 1.0, const double duty = 0.5)
+  explicit Square(const int freq, const double low = 0.0, const double high = 1.0, const double duty = 0.5)
       : _freq(freq), _low(low), _high(high), _duty(duty) {}
 
   bool calc() override {

@@ -4,7 +4,7 @@ Project: example
 Created Date: 10/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 20/11/2022
+Last Modified: 28/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,9 +24,8 @@ if __name__ == '__main__':
     autd.geometry.add_device([DEVICE_WIDTH, 0., 0.], [0., 0., 0.])
 
     autd.to_normal()
-    for dev in autd.geometry:
-        for tr in dev:
-            tr.frequency = 70e3
+    for tr in autd.geometry:
+        tr.frequency = 70e3
 
     link = Simulator().build()
     if not autd.open(link):

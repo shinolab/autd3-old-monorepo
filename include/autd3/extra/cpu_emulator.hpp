@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 27/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -41,7 +41,6 @@
 #include <algorithm>
 
 #include "autd3/driver/common/cpu/datagram.hpp"
-#include "autd3/driver/hardware.hpp"
 #include "fpga_emulator.hpp"
 
 namespace autd3::extra::cpu {
@@ -94,16 +93,19 @@ namespace autd3::extra {
 
 class CPU {
  public:
-  explicit CPU(const size_t id, const bool enable_fpga = true)
+  explicit CPU(const size_t id, const size_t num_transducers)
       : _id(id),
-        _enable_fpga(enable_fpga),
+        _num_transducers(num_transducers),
         _msg_id(0),
         _ack(0),
         _mod_cycle(0),
         _stm_write(0),
         _stm_cycle(0),
-        _gain_stm_mode(cpu::GAIN_STM_MODE_PHASE_DUTY_FULL) {
-    _cycles.fill(0);
+        _fpga(num_transducers),
+        _gain_stm_mode(cpu::GAIN_STM_MODE_PHASE_DUTY_FULL),
+        _fpga_flags(driver::FPGAControlFlags::NONE),
+        _cpu_flags(driver::CPUControlFlags::NONE) {
+    _cycles.resize(num_transducers, 0x0000);
   }
 
   [[nodiscard]] size_t id() const { return _id; }
@@ -116,12 +118,16 @@ class CPU {
   [[nodiscard]] const FPGA& fpga() const { return _fpga; }
 
   void send(const driver::GlobalHeader* header, const driver::Body* body) { ecat_recv(header, body); }
-  void send(const driver::TxDatagram& tx) { ecat_recv(&tx.header(), tx.num_bodies > _id ? tx.bodies() + _id : nullptr); }
+  void send(const driver::TxDatagram& tx) { ecat_recv(&tx.header(), tx.num_bodies > _id ? &tx.body(_id) : nullptr); }
 
   void init() {
     _fpga.init();
-    _cycles.fill(0x1000);
+    std::fill(_cycles.begin(), _cycles.end(), 0x1000);
     clear();
+  }
+
+  [[nodiscard]] bool configure_local_trans_pos(const std::vector<driver::Vector3>& local_trans_pos) {
+    return _fpga.configure_local_trans_pos(local_trans_pos);
   }
 
  private:
@@ -143,8 +149,8 @@ class CPU {
 
   void synchronize(const driver::Body* body) {
     if (body == nullptr) return;
-    bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CYCLE_BASE, body->data, driver::NUM_TRANS_IN_UNIT);
-    std::copy_n(body->data, driver::NUM_TRANS_IN_UNIT, _cycles.begin());
+    bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CYCLE_BASE, reinterpret_cast<const uint16_t*>(body), _num_transducers);
+    std::copy_n(reinterpret_cast<const uint16_t*>(body), _num_transducers, _cycles.begin());
     // Do nothing to sync
   }
 
@@ -188,17 +194,20 @@ class CPU {
 
   void set_mod_delay(const driver::Body* body) {
     if (body == nullptr) return;
-    bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_MOD_DELAY_BASE, body->data, driver::NUM_TRANS_IN_UNIT);
+    bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_MOD_DELAY_BASE, reinterpret_cast<const uint16_t*>(body), _num_transducers);
   }
 
   void write_normal_op(const driver::GlobalHeader* header, const driver::Body* body) {
     if (body == nullptr) return;
     if (header->fpga_flag.contains(driver::FPGAControlFlags::LEGACY_MODE))
-      for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) bram_write(cpu::BRAM_SELECT_NORMAL, static_cast<uint16_t>(i << 1), body->data[i]);
+      for (size_t i = 0; i < _num_transducers; i++)
+        bram_write(cpu::BRAM_SELECT_NORMAL, static_cast<uint16_t>(i << 1), reinterpret_cast<const uint16_t*>(body)[i]);
     else if (header->cpu_flag.contains(driver::CPUControlFlags::IS_DUTY))
-      for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) bram_write(cpu::BRAM_SELECT_NORMAL, static_cast<uint16_t>(i << 1) + 1, body->data[i]);
+      for (size_t i = 0; i < _num_transducers; i++)
+        bram_write(cpu::BRAM_SELECT_NORMAL, static_cast<uint16_t>(i << 1) + 1, reinterpret_cast<const uint16_t*>(body)[i]);
     else
-      for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) bram_write(cpu::BRAM_SELECT_NORMAL, static_cast<uint16_t>(i << 1), body->data[i]);
+      for (size_t i = 0; i < _num_transducers; i++)
+        bram_write(cpu::BRAM_SELECT_NORMAL, static_cast<uint16_t>(i << 1), reinterpret_cast<const uint16_t*>(body)[i]);
   }
 
   void write_point_stm(const driver::GlobalHeader* header, const driver::Body* body) {
@@ -275,18 +284,18 @@ class CPU {
     switch (_gain_stm_mode) {
       case cpu::GAIN_STM_MODE_PHASE_DUTY_FULL:
         _stm_write += 1;
-        for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
+        for (size_t i = 0; i < _num_transducers; i++) bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
         break;
       case cpu::GAIN_STM_MODE_PHASE_FULL:
-        for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) bram_write(cpu::BRAM_SELECT_STM, dst++, 0xFF00 | (*src++ & 0x00FF));
+        for (size_t i = 0; i < _num_transducers; i++) bram_write(cpu::BRAM_SELECT_STM, dst++, 0xFF00 | (*src++ & 0x00FF));
         _stm_write += 1;
         src = body->gain_stm_body().data();
         dst = static_cast<uint16_t>((_stm_write & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
-        for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) bram_write(cpu::BRAM_SELECT_STM, dst++, 0xFF00 | (((*src++) >> 8) & 0x00FF));
+        for (size_t i = 0; i < _num_transducers; i++) bram_write(cpu::BRAM_SELECT_STM, dst++, 0xFF00 | (((*src++) >> 8) & 0x00FF));
         _stm_write += 1;
         break;
       case cpu::GAIN_STM_MODE_PHASE_HALF:
-        for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) {
+        for (size_t i = 0; i < _num_transducers; i++) {
           const auto phase = static_cast<uint16_t>(*src++ & 0x000F);
           bram_write(cpu::BRAM_SELECT_STM, dst++, static_cast<uint16_t>(0xFF00 | (phase << 4) | phase));
         }
@@ -294,7 +303,7 @@ class CPU {
 
         src = body->gain_stm_body().data();
         dst = static_cast<uint16_t>((_stm_write & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
-        for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) {
+        for (size_t i = 0; i < _num_transducers; i++) {
           const auto phase = static_cast<uint16_t>((*src++ >> 4) & 0x000F);
           bram_write(cpu::BRAM_SELECT_STM, dst++, static_cast<uint16_t>(0xFF00 | (phase << 4) | phase));
         }
@@ -302,7 +311,7 @@ class CPU {
 
         src = body->gain_stm_body().data();
         dst = static_cast<uint16_t>((_stm_write & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
-        for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) {
+        for (size_t i = 0; i < _num_transducers; i++) {
           const auto phase = static_cast<uint16_t>((*src++ >> 8) & 0x000F);
           bram_write(cpu::BRAM_SELECT_STM, dst++, static_cast<uint16_t>(0xFF00 | (phase << 4) | phase));
         }
@@ -310,7 +319,7 @@ class CPU {
 
         src = body->gain_stm_body().data();
         dst = static_cast<uint16_t>((_stm_write & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
-        for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) {
+        for (size_t i = 0; i < _num_transducers; i++) {
           const auto phase = static_cast<uint16_t>((*src++ >> 12) & 0x000F);
           bram_write(cpu::BRAM_SELECT_STM, dst++, static_cast<uint16_t>(0xFF00 | (phase << 4) | phase));
         }
@@ -322,7 +331,7 @@ class CPU {
 
     if ((_stm_write & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) == 0)
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET,
-                 ((_stm_write & ~cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) >> cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH));
+                 static_cast<uint16_t>((_stm_write & ~cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) >> cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH));
 
     if (header->cpu_flag.contains(driver::CPUControlFlags::STM_END))
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_CYCLE, static_cast<uint16_t>((std::max)(_stm_cycle, 1u) - 1u));
@@ -349,11 +358,11 @@ class CPU {
           dst += 1;
           _stm_write += 1;
         }
-        for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++, dst += 2) bram_write(cpu::BRAM_SELECT_STM, dst, *src++);
+        for (size_t i = 0; i < _num_transducers; i++, dst += 2) bram_write(cpu::BRAM_SELECT_STM, dst, *src++);
         break;
       case cpu::GAIN_STM_MODE_PHASE_FULL:
         if (!header->cpu_flag.contains(driver::CPUControlFlags::IS_DUTY)) {
-          for (size_t i = 0; i < driver::NUM_TRANS_IN_UNIT; i++) {
+          for (size_t i = 0; i < _num_transducers; i++) {
             bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
             bram_write(cpu::BRAM_SELECT_STM, dst++, _cycles[i] >> 1);
           }
@@ -370,7 +379,7 @@ class CPU {
 
     if ((_stm_write & cpu::GAIN_STM_BUF_SEGMENT_SIZE_MASK) == 0)
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET,
-                 ((_stm_write & ~cpu::GAIN_STM_BUF_SEGMENT_SIZE_MASK) >> cpu::GAIN_STM_BUF_SEGMENT_SIZE_WIDTH));
+                 static_cast<uint16_t>((_stm_write & ~cpu::GAIN_STM_BUF_SEGMENT_SIZE_MASK) >> cpu::GAIN_STM_BUF_SEGMENT_SIZE_WIDTH));
 
     if (header->cpu_flag.contains(driver::CPUControlFlags::STM_END))
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_CYCLE, static_cast<uint16_t>((std::max)(_stm_cycle, 1u) - 1u));
@@ -378,9 +387,9 @@ class CPU {
 
   static uint16_t get_cpu_version() { return cpu::CPU_VERSION; }
 
-  uint16_t get_fpga_version() { return bram_read(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_VERSION_NUM); }
+  [[nodiscard]] uint16_t get_fpga_version() const { return bram_read(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_VERSION_NUM); }
 
-  uint16_t read_fpga_info() { return bram_read(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_FPGA_INFO); }
+  [[nodiscard]] uint16_t read_fpga_info() const { return bram_read(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_FPGA_INFO); }
 
   void clear() {
     constexpr uint32_t freq_div = 40960;
@@ -397,7 +406,7 @@ class CPU {
     bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_MOD_FREQ_DIV_0, reinterpret_cast<const uint16_t*>(&freq_div), 2);
     bram_write(cpu::BRAM_SELECT_MOD, 0, 0x0000);
 
-    bram_set(cpu::BRAM_SELECT_NORMAL, 0, 0x0000, driver::NUM_TRANS_IN_UNIT << 1);
+    bram_set(cpu::BRAM_SELECT_NORMAL, 0, 0x0000, _num_transducers << 1);
   }
 
   void ecat_recv(const driver::GlobalHeader* header, const driver::Body* body) {
@@ -422,7 +431,7 @@ class CPU {
         _ack = (get_fpga_version() >> 8) & 0xFF;
         break;
       default:
-        if (!_enable_fpga || _msg_id > driver::MSG_END) return;
+        if (_msg_id > driver::MSG_END) return;
 
         const auto ctl_reg = header->fpga_flag;
         bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CTL_REG, ctl_reg.value());
@@ -460,7 +469,7 @@ class CPU {
   }
 
   size_t _id;
-  bool _enable_fpga;
+  size_t _num_transducers;
   uint8_t _msg_id;
   uint8_t _ack;
   uint32_t _mod_cycle;
@@ -468,13 +477,13 @@ class CPU {
   uint32_t _stm_cycle;
   FPGA _fpga;
   uint16_t _gain_stm_mode;
-  std::array<uint16_t, driver::NUM_TRANS_IN_UNIT> _cycles{};
+  std::vector<uint16_t> _cycles{};
 
   driver::FPGAControlFlags _fpga_flags;
   driver::CPUControlFlags _cpu_flags;
 };
 
-};  // namespace autd3::extra
+}  // namespace autd3::extra
 
 #if defined(__GNUC__) && !defined(__llvm__)
 #pragma GCC diagnostic pop

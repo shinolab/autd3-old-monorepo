@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 28/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -55,7 +55,7 @@
 namespace autd3::extra {
 
 [[nodiscard]] bool Simulator::run() {
-  simulator::SoundSources sources;
+  std::vector<simulator::SoundSources> sources;
 
   std::vector<CPU> cpus;
 
@@ -93,7 +93,8 @@ namespace autd3::extra {
   imgui->init(static_cast<uint32_t>(renderer->frames_in_flight()), renderer->render_pass(), *_settings);
 
   auto smem = smem::SMem();
-  const auto size = driver::HEADER_SIZE + static_cast<size_t>(_settings->max_dev_num) * (driver::BODY_SIZE + driver::EC_INPUT_FRAME_SIZE);
+
+  const auto size = sizeof(uint8_t) + sizeof(uint32_t) + sizeof(uint32_t) * _settings->max_dev_num + _settings->max_trans_num * sizeof(float) * 7;
   smem.create("autd3_simulator_smem", size);
   volatile auto* ptr = static_cast<uint8_t*>(smem.map());
   for (size_t i = 0; i < size; i++) ptr[i] = 0;
@@ -102,37 +103,57 @@ namespace autd3::extra {
   std::atomic run_recv = true;
   std::atomic data_updated = false;
   _th = std::thread([this, ptr, &cpus, &sources, &initialized, &run_recv, &data_updated, &imgui, &trans_viewer, &slice_viewer, &field_compute] {
+    uint8_t last_msg_id = 0;
     while (run_recv.load()) {
-      const auto* header = reinterpret_cast<driver::GlobalHeader*>(const_cast<uint8_t*>(ptr));
+      auto* cursor = const_cast<uint8_t*>(ptr);
+      const auto* header = reinterpret_cast<driver::GlobalHeader*>(cursor);
       if (!initialized) {
         if (header->msg_id != driver::MSG_SIMULATOR_INIT) {
           std::this_thread::sleep_for(std::chrono::milliseconds(100));
           continue;
         }
-        const auto dev_num = static_cast<size_t>(header->size);
+        cursor++;
+
+        const auto dev_num = *reinterpret_cast<uint32_t*>(cursor);
+        cursor += sizeof(uint32_t);
+
+        spdlog::debug("Open simulator with {} devices", dev_num);
 
         cpus.clear();
         cpus.reserve(dev_num);
-        for (size_t i = 0; i < dev_num; i++) {
-          CPU cpu(i);
-          cpu.init();
-          cpus.emplace_back(cpu);
-        }
 
         sources.clear();
-        for (size_t dev = 0; dev < dev_num; dev++) {
-          const auto* body = reinterpret_cast<float*>(const_cast<uint8_t*>(ptr + sizeof(driver::GlobalHeader) + dev * sizeof(driver::Body)));
-          const auto origin = imgui->to_gl_pos(glm::vec3(body[0], body[1], body[2]));
-          const auto rot = imgui->to_gl_rot(glm::quat(body[3], body[4], body[5], body[6]));
-          const auto matrix = translate(glm::identity<glm::mat4>(), origin) * mat4_cast(rot);
-          for (size_t iy = 0; iy < driver::NUM_TRANS_Y; iy++)
-            for (size_t ix = 0; ix < driver::NUM_TRANS_X; ix++) {
-              if (driver::is_missing_transducer(ix, iy)) continue;
-              const auto local_pos = glm::vec4(static_cast<float>(ix) * static_cast<float>(driver::TRANS_SPACING_MM) * imgui->scale(),
-                                               static_cast<float>(iy) * static_cast<float>(driver::TRANS_SPACING_MM) * imgui->scale(), 0.0f, 1.0f);
-              const auto global_pos = matrix * local_pos;
-              sources.add(global_pos, rot, simulator::Drive(1.0f, 0.0f, 1.0f, 40e3, _settings->use_meter ? 340 : 340e3), 1.0f);
-            }
+
+        for (uint32_t dev = 0; dev < dev_num; dev++) {
+          const auto tr_num = *reinterpret_cast<uint32_t*>(cursor);
+          cursor += sizeof(uint32_t);
+
+          spdlog::debug("Add {}-th device with {} transducers", dev, tr_num);
+
+          CPU cpu(dev, tr_num);
+          cpu.init();
+          std::vector<driver::Vector3> local_trans_pos;
+          local_trans_pos.reserve(tr_num);
+          auto* p = reinterpret_cast<float*>(cursor);
+          const driver::Vector3 origin = Eigen::Vector3<float>(p[0], p[1], p[2]).cast<double>();
+          for (uint32_t tr = 0; tr < tr_num; tr++) {
+            const driver::Vector3 pos = Eigen::Vector3<float>(p[0], p[1], p[2]).cast<double>() - origin;
+            local_trans_pos.emplace_back(pos);
+            p += 7;
+          }
+          if (!cpu.configure_local_trans_pos(local_trans_pos)) continue;
+          cpus.emplace_back(cpu);
+
+          simulator::SoundSources s;
+          p = reinterpret_cast<float*>(cursor);
+          for (uint32_t tr = 0; tr < tr_num; tr++) {
+            const auto pos = imgui->to_gl_pos(glm::vec3(p[0], p[1], p[2]));
+            const auto rot = imgui->to_gl_rot(glm::quat(p[3], p[4], p[5], p[6]));
+            s.add(pos, rot, simulator::Drive(1.0f, 0.0f, 1.0f, 40e3, _settings->use_meter ? 340 : 340e3), 1.0f);
+            p += 7;
+            cursor += sizeof(float) * 7;
+          }
+          sources.emplace_back(std::move(s));
         }
 
         imgui->set(sources);
@@ -149,14 +170,19 @@ namespace autd3::extra {
           cpus.clear();
           sources.clear();
         } else {
+          size_t c = 0;
           for (size_t i = 0; i < cpus.size(); i++) {
-            const auto* body = reinterpret_cast<driver::Body*>(const_cast<uint8_t*>(ptr + sizeof(driver::GlobalHeader) + i * sizeof(driver::Body)));
+            const auto* body = reinterpret_cast<driver::Body*>(const_cast<uint8_t*>(ptr) + sizeof(driver::GlobalHeader) + c);
             cpus[i].send(header, body);
+            c += sources[i].size() * sizeof(uint16_t);
           }
-          data_updated.store(true);
+          if (last_msg_id != header->msg_id) {
+            last_msg_id = header->msg_id;
+            data_updated.store(true);
+          }
           for (size_t i = 0; i < cpus.size(); i++) {
-            auto* input = reinterpret_cast<driver::RxMessage*>(
-                const_cast<uint8_t*>(ptr + sizeof(driver::GlobalHeader) + cpus.size() * sizeof(driver::Body) + i * driver::EC_INPUT_FRAME_SIZE));
+            auto* input =
+                reinterpret_cast<driver::RxMessage*>(const_cast<uint8_t*>(ptr + sizeof(driver::GlobalHeader) + c + i * driver::EC_INPUT_FRAME_SIZE));
             input->msg_id = cpus[i].msg_id();
             input->ack = cpus[i].ack();
           }
@@ -176,31 +202,30 @@ namespace autd3::extra {
       auto update_flags = imgui->draw(cpus, sources);
       if (data_updated) {
         const auto idx = is_stm_mode ? imgui->stm_idx : 0;
-        size_t i = 0;
-        for (auto& cpu : cpus) {
+        for (size_t dev = 0; dev < cpus.size(); dev++) {
+          const auto& cpu = cpus[dev];
           const auto& cycles = cpu.fpga().cycles();
-          const auto& [amps, phases] = cpu.fpga().drives();
-          for (size_t tr = 0; tr < driver::NUM_TRANS_IN_UNIT; tr++, i++) {
-            sources.drives()[i].amp = std::sin(glm::pi<float>() * static_cast<float>(amps[idx][tr].duty) / static_cast<float>(cycles[tr]));
-            sources.drives()[i].phase = 2.0f * glm::pi<float>() * static_cast<float>(phases[idx][tr].phase) / static_cast<float>(cycles[tr]);
+          const auto& [amps, phases] = cpu.fpga().drives(idx);
+          for (size_t tr = 0; tr < sources[dev].size(); tr++) {
+            sources[dev].drives()[tr].amp = std::sin(glm::pi<float>() * static_cast<float>(amps[tr].duty) / static_cast<float>(cycles[tr]));
+            sources[dev].drives()[tr].phase = 2.0f * glm::pi<float>() * static_cast<float>(phases[tr].phase) / static_cast<float>(cycles[tr]);
             const auto freq = static_cast<float>(driver::FPGA_CLK_FREQ) / static_cast<float>(cycles[tr]);
-            sources.drives()[i].set_wave_num(freq, imgui->sound_speed);
+            sources[dev].drives()[tr].set_wave_num(freq, imgui->sound_speed);
           }
         }
         update_flags.set(simulator::UpdateFlags::UPDATE_SOURCE_DRIVE);
         data_updated = false;
       }
       if (is_stm_mode && update_flags.contains(simulator::UpdateFlags::UPDATE_SOURCE_DRIVE)) {
-        size_t i = 0;
-        for (auto& cpu : cpus) {
+        for (size_t dev = 0; dev < cpus.size(); dev++) {
+          const auto& cpu = cpus[dev];
           const auto& cycles = cpu.fpga().cycles();
-          const auto& [amps, phases] = cpu.fpga().drives();
-          for (size_t tr = 0; tr < driver::NUM_TRANS_IN_UNIT; tr++, i++) {
-            sources.drives()[i].amp = std::sin(glm::pi<float>() * static_cast<float>(amps[imgui->stm_idx][tr].duty) / static_cast<float>(cycles[tr]));
-            sources.drives()[i].phase =
-                2.0f * glm::pi<float>() * static_cast<float>(phases[imgui->stm_idx][tr].phase) / static_cast<float>(cycles[tr]);
+          const auto& [amps, phases] = cpu.fpga().drives(imgui->stm_idx);
+          for (size_t tr = 0; tr < sources[dev].size(); tr++) {
+            sources[dev].drives()[tr].amp = std::sin(glm::pi<float>() * static_cast<float>(amps[tr].duty) / static_cast<float>(cycles[tr]));
+            sources[dev].drives()[tr].phase = 2.0f * glm::pi<float>() * static_cast<float>(phases[tr].phase) / static_cast<float>(cycles[tr]);
             const auto freq = static_cast<float>(driver::FPGA_CLK_FREQ) / static_cast<float>(cycles[tr]);
-            sources.drives()[i].set_wave_num(freq, imgui->sound_speed);
+            sources[dev].drives()[tr].set_wave_num(freq, imgui->sound_speed);
           }
         }
       }
@@ -213,7 +238,8 @@ namespace autd3::extra {
                                  update_flags))
         return false;
 
-      const simulator::Config config{static_cast<uint32_t>(sources.size()),
+      const simulator::Config config{static_cast<uint32_t>(std::accumulate(sources.begin(), sources.end(), size_t{0},
+                                                                           [](const size_t acc, const auto& s) { return acc + s.size(); })),
                                      0,
                                      imgui->color_scale,
                                      static_cast<uint32_t>(imgui->slice_width / imgui->pixel_size),

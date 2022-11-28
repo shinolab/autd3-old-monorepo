@@ -4,7 +4,7 @@ Project: pyautd
 Created Date: 10/09/2020
 Author: Shun Suzuki
 -----
-Last Modified: 20/11/2022
+Last Modified: 25/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -118,7 +118,12 @@ packages = ['pyautd3',
             'pyautd3.stm',
             'pyautd3.extra']
 for f in glob.glob('pyautd3/bin/*'):
+    f = f.replace('\\', '.').replace('/', '.')
     packages.append(f)
+
+data_files = []
+for f in glob.glob('pyautd3/bin/**/*'):
+    data_files.append(f)
 
 setuptools.setup(
     name='pyautd3',
@@ -141,4 +146,7 @@ setuptools.setup(
     package_dir={'pyautd3': 'pyautd3'},
     packages=packages,
     python_requires='>=3.8',
+    data_files=[(
+        'lib/site-packages', data_files
+    )],
 )

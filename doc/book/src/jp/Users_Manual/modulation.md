@@ -82,37 +82,6 @@ duty比は$t_\text{high}/T = t_\text{high}f$で定義される, ここで, $t_\t
 
 `RawPCM`を使用するには`BUILD_MODULATION_AUDIO_FILE`フラグをONにしてビルドするか, 或いは, 配布している`modulation_audio_file`ライブラリをリンクされたい.
 
-## ユーザ定義のModulationを作成する
-
-`Modulation`も独自のものを作成することができる.
-ここでは, 周期中のある一瞬だけ出力する`Burst`を作ってみる[^fn_burst].
-
-以下が, この`Burst`のサンプルである.
-```cpp
-class Burst final : public autd3::Modulation {
- public:
-  void calc() override {
-    this->_buffer.resize(_buf_size, 0);
-    this->_buffer[_buf_size - 1] = 0xFF;
-  }
-
-  explicit Burst(const size_t buf_size = 4000, const uint16_t freq_div = 40960) noexcept : _buf_size(buf_size) 
-  {
-    _props.freq_div = freq_div;
-  }
-
- private:
-  size_t _buf_size;
-};
-```
-
-`Modulation`も`Gain`と同じく, `Controller::send`内部で`Modulation::calc`メソッドが呼ばれる.
-この`calc`の中で, `buffer`の中身を書き換えれば良い.
-`Modulation`サンプリング周波数$\SI{163.84}{MHz}/N$を決定する$N$は`_props.freq_div`に設定する.
-この例だと, デフォルトで$N=40960$なので, サンプリング周波数は$\SI{4}{kHz}$になる.
-さらに, 例えば, `buf_size`を4000とすると, AMは$0$が$3999$回サンプリングされた後, $255$が$1$回サンプリングされる.
-したがって, 周期$\SI{1}{s}$の中で, $\SI{0.25}{ms}=1/\SI{4}{kHz}$だけ出力されるようなAMがかかる.
-
 ## Modulationに共通の関数
 
 ### Sampling周波数分周比$N$
@@ -128,6 +97,9 @@ class Burst final : public autd3::Modulation {
 ### Sampling周波数
 
 `sampling_frequency`でサンプリング周波数を取得できる.
+
+また, `set_sampling_frequency`でサンプリング周波数を設定できる.
+ただし, `Modulation`の制約上, 指定したサンプリング周波数になるとは限らない.
 
 ## Modulation Delay
 
@@ -147,5 +119,3 @@ Modulationはすべての振動子に同時に作用し, 伝搬遅延を考慮�
 `mod_delay`が$1$でサンプリング周波数が$\SI{40}{kHz}$の場合は$\SI{25}{\text{μ}s}$, $\SI{4}{kHz}$の場合は$\SI{250}{\text{μ}s}$の遅れになる.
 
 また, `mod_delay`の値は変調の長さ, すなわち, `buffer`サイズ未満でなくてはならない.
-
-[^fn_burst]: SDKにはない.

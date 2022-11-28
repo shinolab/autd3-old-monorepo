@@ -164,44 +164,6 @@ cmake .. -DBUILD_HOLO_GAIN=ON -DBUILD_BLAS_BACKEND=ON -DBLAS_LIB_DIR=D:/lib/open
 ```
 上の場合は, デバイス0が`Gain g0`, デバイス1が`Gain g1`を使用する.
 
-## ユーザ定義Gainを作成する
-
-`Gain`クラスを継承することで独自の`Gain`を作成することができる.
-ここでは, `Focus`と同じように単一焦点を生成する`FocalPoint`を実際に定義してみることにする.
-
-```cpp
-#include "autd3.hpp"
-
-class FocalPoint final : public autd3::Gain {
- public:
-  explicit FocalPoint(autd3::Vector3 point) : _point(std::move(point)) {}
-
-  void calc(const autd3::Geometry& geometry) override {
-    std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-      std::for_each(dev.begin(), dev.end(), [&](const auto& transducer) {
-        const auto dist = (_point - transducer.position()).norm();
-        const auto phase = transducer.align_phase_at(dist);
-        this->_drives[transducer.id()].amp = 1.0;
-        this->_drives[transducer.id()].phase = phase;
-      });
-    });
-  } 
-
- private:
-  autd::Vector3 _point;
-};
-```
-
-`Controller::send`関数は`Gain`型を継承したクラスを引数に取る.
-そのため, `Gain`型を継承をしておく.
-
-`Controller::send`関数内部では`Geometry`を引数にした`Gain::calc`メソッドが呼ばれる.
-そのため, この`calc`メソッド内で位相/振幅の計算を行えば良い.
-Geometryにはイテレータが定義されており, `Device`のイテレータが返される.
-また, `Device`にもイテレータが定義されており, `Transducer`のイテレータが返され, ここから振動子の位置を取得できる.
-ある点$\bp$で多数の振動子からの放出された超音波の音圧が最大になるためには, $\bp$での位相が揃えば良い.
-これは, `Transducer`クラスに用意されている`align_phase_at`関数で計算できる.
-
 [^hasegawa2017]: Hasegawa, Keisuke, et al. "Electronically steerable ultrasound-driven long narrow air stream." Applied Physics Letters 111.6 (2017): 064104.
 
 [^inoue2015]: Inoue, Seki, Yasutoshi Makino, and Hiroyuki Shinoda. "Active touch perception produced by airborne ultrasonic haptic hologram." 2015 IEEE World Haptics Conference (WHC). IEEE, 2015.

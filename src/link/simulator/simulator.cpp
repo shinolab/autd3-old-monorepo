@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -35,7 +35,14 @@ class SimulatorImpl final : public core::Link {
       spdlog::warn("Link is already opened.");
       return false;
     }
-    const auto size = driver::HEADER_SIZE + geometry.num_devices() * (driver::BODY_SIZE + driver::EC_INPUT_FRAME_SIZE);
+
+    _input_offset = driver::HEADER_SIZE + geometry.num_transducers() * sizeof(uint16_t);
+    const auto datagram_size =
+        driver::HEADER_SIZE + geometry.num_transducers() * sizeof(uint16_t) + geometry.num_devices() * driver::EC_INPUT_FRAME_SIZE;
+    const auto geometry_size =
+        sizeof(uint8_t) + sizeof(uint32_t) + sizeof(uint32_t) * geometry.num_devices() + geometry.num_transducers() * sizeof(float) * 7;
+
+    const auto size = (std::max)(datagram_size, geometry_size);
     try {
       _smem.create("autd3_simulator_smem", size);
     } catch (std::exception& ex) {
@@ -44,9 +51,10 @@ class SimulatorImpl final : public core::Link {
     }
     _ptr = static_cast<uint8_t*>(_smem.map());
 
-    _num_devices = geometry.num_devices();
-
-    send(simulator_init_datagram(geometry));
+    if (!send(simulator_init_datagram(geometry))) {
+      spdlog::error("Failed to init simulator.");
+      return false;
+    }
 
     for (size_t i = 0; i < 20; i++) {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -62,7 +70,10 @@ class SimulatorImpl final : public core::Link {
   bool close() override {
     if (!is_open()) return true;
 
-    send(simulator_close_datagram(_num_devices));
+    if (!send(simulator_close_datagram())) {
+      spdlog::error("Failed to close simulator.");
+      return false;
+    }
 
     _smem.unmap();
     _ptr = nullptr;
@@ -78,51 +89,61 @@ class SimulatorImpl final : public core::Link {
 
   bool receive(driver::RxDatagram& rx) override {
     if (_ptr == nullptr) return false;
-    rx.copy_from(reinterpret_cast<const driver::RxMessage*>(_ptr + driver::HEADER_SIZE + _num_devices * driver::BODY_SIZE));
+    rx.copy_from(reinterpret_cast<const driver::RxMessage*>(_ptr + _input_offset));
     return true;
   }
 
   bool is_open() override { return _ptr != nullptr; }
 
  private:
-  size_t _num_devices{0};
-
   smem::SMem _smem;
   uint8_t* _ptr{nullptr};
 
-  static driver::TxDatagram simulator_init_datagram(const core::Geometry& geometry) {
-    driver::TxDatagram buf(geometry.num_devices());
-    auto& uh = buf.header();
-    uh.msg_id = driver::MSG_SIMULATOR_INIT;
-    uh.fpga_flag = driver::FPGAControlFlags::NONE;
-    uh.cpu_flag = driver::CPUControlFlags::NONE;
-    uh.size = static_cast<uint8_t>(geometry.num_devices());
-    for (size_t i = 0; i < geometry.num_devices(); i++) {
-      auto* const cursor = reinterpret_cast<float*>(buf.bodies()[i].data);
-      auto& tr = geometry[i][0];
-      auto origin = tr.position().cast<float>();
-      auto rot = geometry[i].rotation().cast<float>();
-      cursor[0] = origin.x();
-      cursor[1] = origin.y();
-      cursor[2] = origin.z();
-      cursor[3] = rot.w();
-      cursor[4] = rot.x();
-      cursor[5] = rot.y();
-      cursor[6] = rot.z();
-    }
-    return buf;
+  size_t _input_offset{0};
+
+  [[nodiscard]] bool send(const std::vector<uint8_t>& raw) const {
+    if (_ptr == nullptr) return false;
+    std::memcpy(_ptr, raw.data(), raw.size());
+    return true;
   }
 
-  static driver::TxDatagram simulator_close_datagram(const size_t num_devices) {
-    driver::TxDatagram buf(num_devices);
-    auto& uh = buf.header();
-    uh.msg_id = driver::MSG_SIMULATOR_CLOSE;
-    uh.fpga_flag = driver::FPGAControlFlags::NONE;
-    uh.cpu_flag = driver::CPUControlFlags::NONE;
-    uh.size = 0;
-    buf.num_bodies = 0;
-    return buf;
+  static std::vector<uint8_t> simulator_init_datagram(const core::Geometry& geometry) {
+    std::vector<uint8_t> data;
+    const auto geometry_size =
+        sizeof(uint8_t) + sizeof(uint32_t) + sizeof(uint32_t) * geometry.num_devices() + geometry.num_transducers() * sizeof(float) * 7;
+    data.resize(geometry_size);
+
+    auto* cursor = data.data();
+    *cursor++ = driver::MSG_SIMULATOR_INIT;
+    *reinterpret_cast<uint32_t*>(cursor) = static_cast<uint32_t>(geometry.num_devices());
+    cursor += sizeof(uint32_t);
+
+    size_t i = 0;
+    size_t c = 0;
+    for (size_t dev = 0; dev < geometry.num_devices(); dev++) {
+      c += geometry.device_map()[dev];
+      *reinterpret_cast<uint32_t*>(cursor) = static_cast<uint32_t>(geometry.device_map()[dev]);
+      cursor += sizeof(uint32_t);
+      auto* p = reinterpret_cast<float*>(cursor);
+      for (; i < c; i++) {
+        auto& tr = geometry[i];
+        auto origin = tr.position().cast<float>();
+        auto rot = tr.rotation().cast<float>();
+        p[0] = origin.x();
+        p[1] = origin.y();
+        p[2] = origin.z();
+        p[3] = rot.w();
+        p[4] = rot.x();
+        p[5] = rot.y();
+        p[6] = rot.z();
+        p += 7;
+        cursor += 7 * sizeof(float);
+      }
+    }
+    return data;
   }
+
+  static std::vector<uint8_t> simulator_close_datagram() { return {driver::MSG_SIMULATOR_CLOSE}; }
 };
 
 core::LinkPtr Simulator::build() const {

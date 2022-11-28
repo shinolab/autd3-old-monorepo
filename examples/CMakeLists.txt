@@ -72,4 +72,8 @@ if (BUILD_LINK_SIMULATOR)
   add_executable(example_simulator_client simulator_client.cpp)
   target_link_libraries(example_simulator_client PRIVATE autd3_example_common link_simulator)
   set_target_properties(example_simulator_client PROPERTIES FOLDER "example")
+
+  add_executable(example_custom_device custom_device.cpp)
+  target_link_libraries(example_custom_device PRIVATE autd3_example_common link_simulator)
+  set_target_properties(example_custom_device PROPERTIES FOLDER "example")
 endif()

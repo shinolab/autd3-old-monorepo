@@ -136,10 +136,11 @@ autd3::Controller autd;
 その後, デバイスの配置を指定する.
 
 ```cpp
-autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
+autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
 ```
 
-`add_device`の第一引数は位置, 第2引数は回転を表す. 位置は自分の設定したグローバル座標系におけるデバイスの原点を指定する. また,
+`add_device`ではデバイスを指定する.
+現在サポートしているデバイスは`autd3::AUTD3`のみで, このコンストラクタのの第一引数は位置, 第2引数は回転を表す. 位置は自分の設定したグローバル座標系におけるデバイスの原点を指定する. また,
 回転はZYZのオイラー角, または, クオータニオンで指定する. ここでは, 回転も移動も行わないものとする.
 
 次に, `Link`を作成し, デバイスと接続する.

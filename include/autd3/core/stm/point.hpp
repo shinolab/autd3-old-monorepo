@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 26/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,22 +12,20 @@
 #pragma once
 
 #include <algorithm>
-#include <limits>
 #include <utility>
 #include <vector>
 
-#include "autd3/core/interface.hpp"
 #include "autd3/driver/driver.hpp"
 #include "stm.hpp"
 
 namespace autd3::core {
 
 /**
- * @brief Controll point and duty shift used in PointSTM
+ * @brief Control point and duty shift used in PointSTM
  */
 struct Point {
   /**
-   * @brief Controll point
+   * @brief Control point
    */
   Vector3 point;
   /**
@@ -37,15 +35,8 @@ struct Point {
 
   explicit Point(Vector3 point, const uint8_t shift = 0) : point(std::move(point)), shift(shift) {}
   ~Point() = default;
-  Point(const Point& v) noexcept {
-    point = v.point;
-    shift = v.shift;
-  }
-  Point& operator=(const Point& obj) {
-    point = obj.point;
-    shift = obj.shift;
-    return *this;
-  }
+  Point(const Point& v) noexcept = default;
+  Point& operator=(const Point& obj) = default;
   Point(Point&& obj) = default;
   Point& operator=(Point&& obj) = default;
 };
@@ -57,10 +48,10 @@ struct Point {
  * 1. The maximum number of control points is driver::POINT_STM_BUF_SIZE_MAX.
  * 2. Only a single focus can be displayed at a certain moment.
  */
-struct PointSTM final : public STM {
+struct PointSTM final : STM {
   using value_type = Point;
 
-  PointSTM(const double sound_speed) : STM(), sound_speed(sound_speed), _sent(0) {}
+  explicit PointSTM(const double sound_speed) : STM(), sound_speed(sound_speed), _sent(0) {}
 
   /**
    * @brief Set frequency of the STM
@@ -83,12 +74,14 @@ struct PointSTM final : public STM {
 
   void push_back(const value_type& v) { _points.emplace_back(v); }
 
-  size_t size() const override { return _points.size(); }
+  [[nodiscard]] size_t size() const override { return _points.size(); }
+
   bool init() override {
     _sent = 0;
     return true;
   }
-  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const core::Mode>&, const Geometry& geometry,
+
+  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const Mode>&, const Geometry& geometry,
             driver::TxDatagram& tx) override {
     driver->point_stm_header(tx);
 
@@ -96,17 +89,26 @@ struct PointSTM final : public STM {
 
     std::vector<std::vector<driver::STMFocus>> points;
     points.reserve(geometry.num_devices());
-    std::transform(geometry.begin(), geometry.end(), std::back_inserter(points), [this, &driver](const Geometry::Device& dev) {
-      auto send_size = driver->point_stm_send_size(_points.size(), _sent);
+    const auto send_size = driver->point_stm_send_size(_points.size(), _sent, geometry.device_map());
+
+    size_t idx = 0;
+    for (size_t i = 0; i < geometry.num_devices(); i++, idx += geometry.device_map()[i]) {
       std::vector<driver::STMFocus> lp;
       lp.reserve(send_size);
       const auto src = _points.data() + _sent;
-      std::transform(src, src + send_size, std::back_inserter(lp), [&dev](const auto& p) {
-        const auto local = dev.to_local_position(p.point);
-        return driver::STMFocus(local.x(), local.y(), local.z(), p.shift);
+
+      const Vector3 origin = geometry[idx].position();
+      const Quaternion rotation = geometry[idx].rotation();
+      const Eigen::Transform<double, 3, Eigen::Affine> transform_matrix = Eigen::Translation<double, 3>(origin) * rotation;
+      const Eigen::Transform<double, 3, Eigen::Affine> trans_inv = transform_matrix.inverse();
+
+      std::transform(src, src + send_size, std::back_inserter(lp), [&trans_inv](const auto& p) {
+        const auto homo = Vector4(p.point[0], p.point[1], p.point[2], 1.0);
+        const Vector4 local_position = trans_inv * homo;
+        return driver::STMFocus(local_position.x(), local_position.y(), local_position.z(), p.shift);
       });
-      return lp;
-    });
+      points.emplace_back(lp);
+    }
 
     return driver->point_stm_body(points, _sent, _points.size(), this->_freq_div, sound_speed, tx);
   }

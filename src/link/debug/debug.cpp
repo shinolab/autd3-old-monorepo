@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 27/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -35,7 +35,7 @@ class DebugImpl final : public core::Link {
     _cpus.clear();
     _cpus.reserve(geometry.num_devices());
     for (size_t i = 0; i < geometry.num_devices(); i++) {
-      extra::CPU cpu(i);
+      extra::CPU cpu(i, geometry.device_map()[i]);
       cpu.init();
       _cpus.emplace_back(cpu);
     }
@@ -91,11 +91,10 @@ class DebugImpl final : public core::Link {
         if (tx.header().cpu_flag.contains(driver::CPUControlFlags::STM_BEGIN)) spdlog::info("\t\tSTM BEGIN");
         if (tx.header().cpu_flag.contains(driver::CPUControlFlags::STM_END)) {
           spdlog::info("\t\tSTM END (cycle = {}, frequency_division = {})", fpga.stm_cycle(), fpga.stm_frequency_division());
-          const auto [duties, phases] = fpga.drives();
-          for (size_t j = 0; j < duties.size(); j++) {
+          for (size_t j = 0; j < fpga.stm_cycle(); j++) {
+            const auto [duties, phases] = fpga.drives(j);
             spdlog::debug("\tSTM[{}]:", j);
-            for (size_t k = 0; k < driver::NUM_TRANS_IN_UNIT; k++)
-              spdlog::debug("\t\t{:<3}: duty = {:<4}, phase = {:<4}", k, duties[j][k].duty, phases[j][k].phase);
+            for (size_t k = 0; k < duties.size(); k++) spdlog::debug("\t\t{:<3}: duty = {:<4}, phase = {:<4}", k, duties[k].duty, phases[k].phase);
           }
         }
       } else if (fpga.is_legacy_mode())
@@ -109,9 +108,8 @@ class DebugImpl final : public core::Link {
       if (fpga.is_outputting()) {
         spdlog::debug("\t\tmodulation = [{}]", fmt::join(m, ", "));
         if (!fpga.is_stm_mode()) {
-          const auto [duties, phases] = fpga.drives();
-          for (size_t k = 0; k < driver::NUM_TRANS_IN_UNIT; k++)
-            spdlog::debug("\t\t{:<3}: duty = {:<4}, phase = {:<4}", k, duties[0][k].duty, phases[0][k].phase);
+          const auto [duties, phases] = fpga.drives(0);
+          for (size_t k = 0; k < duties.size(); k++) spdlog::debug("\t\t{:<3}: duty = {:<4}, phase = {:<4}", k, duties[k].duty, phases[k].phase);
         }
       } else
         spdlog::info("\tWithout output");

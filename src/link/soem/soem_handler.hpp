@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 28/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -104,7 +104,7 @@ class SOEMHandler final {
     return "";
   }
 
-  size_t open(const int remaining) {
+  size_t open(const std::vector<size_t>& device_map, const int remaining) {
     if (is_open()) return 0;
 
     std::queue<driver::TxDatagram>().swap(_send_buf);
@@ -128,8 +128,17 @@ class SOEMHandler final {
       spdlog::error("No slaves found");
       return 0;
     }
+
+    const auto auto_detect = device_map.empty();
+    if (!auto_detect && static_cast<size_t>(wc) != device_map.size()) {
+      spdlog::error("The number of slaves you configured: {}, but found: {}", device_map.size(), wc);
+      return 0;
+    }
+    std::vector<size_t> dev_map;
     for (auto i = 1; i <= wc; i++)
-      if (std::strcmp(ec_slave[i].name, "AUTD") != 0) {
+      if (std::strcmp(ec_slave[i].name, "AUTD") == 0) {
+        dev_map.emplace_back(auto_detect ? 249 : device_map[static_cast<size_t>(i) - 1]);
+      } else {
         _is_open.store(false);
         spdlog::error("Slave[{}] is not AUTD3", i);
         return 0;
@@ -153,7 +162,7 @@ class SOEMHandler final {
       spdlog::debug("Sync0 configured");
     }
 
-    _io_map.resize(static_cast<size_t>(wc));
+    _io_map.resize(dev_map);
     ec_config_map(_io_map.get());
 
     ec_statecheck(0, EC_STATE_SAFE_OP, EC_TIMEOUTSTATE * 4);
@@ -186,7 +195,7 @@ class SOEMHandler final {
       if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
       if (remaining == 0) spdlog::error("One ore more slaves are not responding: {}", ec_slave[0].state);
       spdlog::debug("Failed to reach op mode. retry opening...");
-      return open(remaining - 1);
+      return open(device_map, remaining - 1);
     }
 
     if (_sync_mode == SYNC_MODE::FREE_RUN) {
@@ -230,8 +239,8 @@ class SOEMHandler final {
 
   bool close() {
     if (!is_open()) return true;
-
     _is_open.store(false);
+
     spdlog::debug("Stopping ethercat thread...");
     if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
     spdlog::debug("Stopping ethercat thread...done");
@@ -242,15 +251,8 @@ class SOEMHandler final {
     const auto cyc_time = static_cast<uint32_t*>(ecx_context.userdata)[0];
     for (uint16_t slave = 1; slave <= static_cast<uint16_t>(ec_slavecount); slave++) ec_dcsync0(slave, false, cyc_time, 0U);
 
-    ec_slave[0].state = EC_STATE_SAFE_OP;
+    ec_slave[0].state = EC_STATE_INIT;
     ec_writestate(0);
-    if (const auto state = ec_statecheck(0, EC_STATE_SAFE_OP, EC_TIMEOUTSTATE); state != EC_STATE_SAFE_OP)
-      spdlog::warn("Failed to reach safe op: {}", state);
-
-    ec_slave[0].state = EC_STATE_PRE_OP;
-    ec_writestate(0);
-    if (const auto state = ec_statecheck(0, EC_STATE_PRE_OP, EC_TIMEOUTSTATE); state != EC_STATE_PRE_OP)
-      spdlog::warn("Failed to reach pre op: {}", state);
 
     ec_close();
 
