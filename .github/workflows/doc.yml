@@ -114,15 +114,34 @@ jobs:
       run: |
         mkdir -p doc_build
         sudo mv ./build/doc/doxygen/html ./doc_build/api
-    - uses: peaceiris/actions-mdbook@v1
-    - name: Setup mdbook plugins
-      run: |
-        cargo install mdbook-linkcheck
-        cargo install mdbook-toc
-    - name: Setup mdbook-katex
-      uses: magicgh/mdbook-katex-action@v1
+    - name: Setup mdbook
+      uses: peaceiris/actions-mdbook@v1
       with:
-        version: 'latest'
+        mdbook-version: 'latest'
+    - name: Setup mdbook-linkcheck
+      run: |
+        mkdir -p mdbook-linkcheck
+        cd mdbook-linkcheck
+        curl -L https://github.com/Michael-F-Bryan/mdbook-linkcheck/releases/latest/download/mdbook-linkcheck.x86_64-unknown-linux-gnu.zip -o mdbook-linkcheck.zip
+        unzip mdbook-linkcheck.zip
+        chmod +x mdbook-linkcheck
+        sudo ln -s $PWD/mdbook-linkcheck /usr/local/bin/mdbook-linkcheck
+    - name: Setup mdbook-toc
+      run: |
+        mkdir -p mdbook-toc
+        cd mdbook-toc
+        curl -L https://github.com/badboy/mdbook-toc/releases/download/0.10.0/mdbook-toc-0.10.0-x86_64-unknown-linux-gnu.tar.gz -o mdbook-toc.tar.gz
+        tar -xvf mdbook-toc.tar.gz
+        chmod +x mdbook-toc
+        sudo ln -s $PWD/mdbook-toc /usr/local/bin/mdbook-toc
+      - name: Setup mdbook-katex
+      run: |
+        mkdir -p mdbook-katex
+        cd mdbook-katex
+        curl -L https://github.com/lzanini/mdbook-katex/releases/download/v0.2.17/mdbook-katex-v0.2.17-x86_64-unknown-linux-gnu.tar.gz -o mdbook-katex.tar.gz
+        tar -xvf mdbook-katex.tar.gz
+        chmod +x mdbook-katex
+        sudo ln -s $PWD/mdbook-katex /usr/local/bin/mdbook-katex
     - run: |
         cd ./doc/book
         MDBOOK_BOOK__src=src/en mdbook build --dest-dir book/en
