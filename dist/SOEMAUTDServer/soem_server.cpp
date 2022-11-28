@@ -3,7 +3,7 @@
 // Created Date: 26/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 28/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@
 #include "tcp_interface.hpp"
 
 int main(const int argc, char* argv[]) try {
-  argparse::ArgumentParser program("SOEMAUTDServer", "2.6.4");
+  argparse::ArgumentParser program("SOEMAUTDServer", "2.6.5");
 
   argparse::ArgumentParser list_cmd("list");
   list_cmd.add_description("List EtherCAT adapter names");
@@ -86,7 +86,7 @@ int main(const int argc, char* argv[]) try {
       freerun ? autd3::link::SYNC_MODE::FREE_RUN : autd3::link::SYNC_MODE::DC, std::chrono::milliseconds(state_check_interval));
 
   spdlog::info("Connecting SOEM server...");
-  const auto dev = soem_handler.open(1);
+  const auto dev = soem_handler.open({}, 1);
   spdlog::info("{} AUTDs found", dev);
 
   std::unique_ptr<autd3::publish::Interface> interf;
@@ -98,7 +98,9 @@ int main(const int argc, char* argv[]) try {
 
   bool run = true;
   auto th = std::thread([&soem_handler, &run, dev, &interf] {
-    autd3::driver::TxDatagram tx(dev);
+    std::vector<size_t> dev_map;
+    dev_map.resize(dev, autd3::AUTD3::NUM_TRANS_IN_UNIT);
+    autd3::driver::TxDatagram tx(dev_map);
     autd3::driver::RxDatagram rx(dev);
     interf->connect();
     while (run) {

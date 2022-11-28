@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/11/2022
+// Last Modified: 25/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,11 +36,9 @@ class UniformGain final : public autd3::Gain {
   UniformGain() = default;
 
   void calc(const autd3::Geometry& geometry) override {
-    std::for_each(geometry.begin(), geometry.end(), [this](const auto& dev) {
-      std::for_each(dev.begin(), dev.end(), [this](const auto& trans) {
-        this->_drives[trans.id()].amp = 1.0;
-        this->_drives[trans.id()].phase = 0.0;
-      });
+    std::for_each(geometry.begin(), geometry.end(), [this](const auto& trans) {
+      this->_drives[trans.id()].amp = 1.0;
+      this->_drives[trans.id()].phase = 0.0;
     });
   }
 };
@@ -48,8 +46,8 @@ class UniformGain final : public autd3::Gain {
 inline void advanced_test(autd3::Controller& autd) {
   auto config = autd3::SilencerConfig::none();
 
-  autd.geometry()[0][0].mod_delay() = 0;
-  autd.geometry()[0][17].mod_delay() = 1;
+  autd.geometry()[0].mod_delay() = 0;
+  autd.geometry()[17].mod_delay() = 1;
   autd << autd3::mod_delay_config;
 
   UniformGain g;

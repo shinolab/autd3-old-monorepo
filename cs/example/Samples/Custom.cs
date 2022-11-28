@@ -4,7 +4,7 @@
  * Created Date: 14/10/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2022
+ * Last Modified: 28/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,17 +26,14 @@ internal static class CustomTest
         var amps = new double[autd.Geometry.NumTransducers];
         var phases = new double[autd.Geometry.NumTransducers];
 
-        foreach (var dev in autd.Geometry)
+        foreach (var tr in autd.Geometry)
         {
-            foreach (var tr in dev)
-            {
-                var tp = tr.Position;
-                var dist = (tp - point).L2Norm;
-                var wavenum = 2.0 * AUTD3.Pi / tr.Wavelength;
-                var phase = dist * wavenum;
-                amps[tr.Id] = 1.0;
-                phases[tr.Id] = phase;
-            }
+            var tp = tr.Position;
+            var dist = (tp - point).L2Norm;
+            var wavenum = 2.0 * AUTD3.Pi / tr.Wavelength;
+            var phase = dist * wavenum;
+            amps[tr.Id] = 1.0;
+            phases[tr.Id] = phase;
         }
 
         return new Custom(amps, phases);

@@ -3,7 +3,7 @@
 # Created Date: 11/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 20/11/2022
+# Last Modified: 28/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -63,11 +63,11 @@ func toNormalPhase*(cnt: Controller) =
     AUTDSetMode(cnt.p, 2)
 
 func addDevice*(cnt: Controller, pos: openArray[float64], rot: openArray[
-        float64]): int32 {.discardable.} =
+        float64]) =
     AUTDAddDevice(cnt.p, pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
 
 func addDeviceQuaternion*(cnt: Controller, pos: openArray[float64],
-        quaternion: openArray[float64]): int32 {.discardable.} =
+        quaternion: openArray[float64]) =
     AUTDAddDeviceQuaternion(cnt.p, pos[0], pos[1], pos[2], quaternion[0],
             quaternion[1], quaternion[2], quaternion[3])
 
@@ -128,56 +128,56 @@ func attenuation*(cnt: Controller): float64 =
 func `attenuation=`*(cnt: var Controller, a: float64) =
     AUTDSetAttenuation(cnt.p, a)
 
-func getTransFrequency*(cnt: Controller, devIdx: int32,
+func getTransFrequency*(cnt: Controller,
         transIdx: int32): float64 =
-    AUTDGetTransFrequency(cnt.p, devIdx, transIdx)
+    AUTDGetTransFrequency(cnt.p, transIdx)
 
-func setTransFrequency*(cnt: Controller, devIdx: int32, transIdx: int32,
+func setTransFrequency*(cnt: Controller, transIdx: int32,
         freq: float64) =
-    AUTDSetTransFrequency(cnt.p, devIdx, transIdx, freq)
+    AUTDSetTransFrequency(cnt.p, transIdx, freq)
 
-func getTransCycle*(cnt: Controller, devIdx: int32,
+func getTransCycle*(cnt: Controller,
         transIdx: int32): uint16 =
-    AUTDGetTransCycle(cnt.p, devIdx, transIdx)
+    AUTDGetTransCycle(cnt.p, transIdx)
 
-func setTransCycle*(cnt: Controller, devIdx: int32, transIdx: int32,
+func setTransCycle*(cnt: Controller, transIdx: int32,
         cycle: uint16) =
-    AUTDSetTransCycle(cnt.p, devIdx, transIdx, cycle)
+    AUTDSetTransCycle(cnt.p, transIdx, cycle)
 
-func setModDelay*(cnt: Controller, devIdx: int32, transIdx: int32,
+func setModDelay*(cnt: Controller, transIdx: int32,
         delay: uint16) =
-    AUTDSetTransCycle(cnt.p, devIdx, transIdx, delay)
+    AUTDSetTransCycle(cnt.p, transIdx, delay)
 
-func transPosition*(cnt: Controller, devIdx: int32, transIdx: int32): array[3, float64] =
+func transPosition*(cnt: Controller, transIdx: int32): array[3, float64] =
     var
         x: float64
         y: float64
         z: float64
-    AUTDTransPosition(cnt.p, devIdx, transIdx, x.addr, y.addr, z.addr)
+    AUTDTransPosition(cnt.p, transIdx, x.addr, y.addr, z.addr)
     [x, y, z]
 
-func transDirectionX*(cnt: Controller, devIdx: int32, transIdx: int32): array[3, float64] =
+func transDirectionX*(cnt: Controller, transIdx: int32): array[3, float64] =
     var
         x: float64
         y: float64
         z: float64
-    AUTDTransXDirection(cnt.p, devIdx, transIdx, x.addr, y.addr, z.addr)
+    AUTDTransXDirection(cnt.p, transIdx, x.addr, y.addr, z.addr)
     [x, y, z]
 
-func transDirectionY*(cnt: Controller, devIdx: int32, transIdx: int32): array[3, float64] =
+func transDirectionY*(cnt: Controller, transIdx: int32): array[3, float64] =
     var
         x: float64
         y: float64
         z: float64
-    AUTDTransYDirection(cnt.p, devIdx, transIdx, x.addr, y.addr, z.addr)
+    AUTDTransYDirection(cnt.p, transIdx, x.addr, y.addr, z.addr)
     [x, y, z]
 
-func transDirectionZ*(cnt: Controller, devIdx: int32, transIdx: int32): array[3, float64] =
+func transDirectionZ*(cnt: Controller, transIdx: int32): array[3, float64] =
     var
         x: float64
         y: float64
         z: float64
-    AUTDTransZDirection(cnt.p, devIdx, transIdx, x.addr, y.addr, z.addr)
+    AUTDTransZDirection(cnt.p, transIdx, x.addr, y.addr, z.addr)
     [x, y, z]
 
 func firmwareInfoList*(cnt: Controller): seq[string] =
@@ -191,14 +191,15 @@ func firmwareInfoList*(cnt: Controller): seq[string] =
     AUTDFreeFirmwareInfoListPointer(p)
     list
 
-func wavelength*(cnt: Controller, devIdx: int32, transIdx: int32): float64 =
-    AUTDGetWavelength(cnt.p, devIdx, transIdx)
+func wavelength*(cnt: Controller, transIdx: int32): float64 =
+    AUTDGetWavelength(cnt.p, transIdx)
 
-func deviceNum*(cnt: Controller): int32 =
-    AUTDNumDevices(cnt.p)
+func numTransducers*(cnt: Controller): int32 =
+    AUTDNumTransducers(cnt.p)
 
 func getFPGAInfo*(cnt: Controller): seq[uint8] =
-    var info = newSeq[uint8](cnt.deviceNum)
+    let numDevices = cnt.numTransducers div 249
+    var info = newSeq[uint8](numDevices)
     discard AUTDGetFPGAInfo(cnt.p, addr info[0])
     info
 

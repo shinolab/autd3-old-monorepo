@@ -1,6 +1,6 @@
 [package]
 name = "autd3-link-simulator"
-version = "2.6.4"
+version = "2.6.5"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -12,6 +12,6 @@ keywords = ["autd"]
 
 [dependencies]
 anyhow = "1.0.57"
-autd3-core = {path="../autd3-core", version="2.6.4"}
+autd3-core = {path="../autd3-core", version="2.6.5"}
 smem = "0.1.0"
 thiserror = "1.0.30"

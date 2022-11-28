@@ -15,6 +15,8 @@ cnt.add_device(SVector(0.0, 0.0, 0.0), SVector(0.0, 0.0, 0.0))
 const link = SOEM(on_lost=on_lost, high_precision=true)
 !cnt.open(link)
 
+cnt.set_ack_check_timeout = 20 * 1000 * 1000
+
 cnt.send(Clear())
 cnt.send(Synchronize())
 
