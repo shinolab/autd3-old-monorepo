@@ -4,7 +4,7 @@
 %Created Date: 07/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 20/11/2022
+%Last Modified: 28/11/2022
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -49,12 +49,12 @@ classdef Controller < handle
             calllib('autd3capi', 'AUTDSetMode', obj.ptr, 2);
         end
 
-        function idx = add_device(obj, pos, rot)
-            idx = calllib('autd3capi', 'AUTDAddDevice', obj.ptr, pos(1), pos(2), pos(3), rot(1), rot(2), rot(3));
+        function add_device(obj, pos, rot)
+            calllib('autd3capi', 'AUTDAddDevice', obj.ptr, pos(1), pos(2), pos(3), rot(1), rot(2), rot(3));
         end
 
-        function idx = add_device_quaternion(obj, pos, rot)
-            idx = calllib('autd3capi', 'AUTDAddDeviceQuaternion', obj.ptr, pos(1), pos(2), pos(3), rot(1), rot(2), rot(3), rot(4));
+        function add_device_quaternion(obj, pos, rot)
+            calllib('autd3capi', 'AUTDAddDeviceQuaternion', obj.ptr, pos(1), pos(2), pos(3), rot(1), rot(2), rot(3), rot(4));
         end
 
         function res = open(obj, link)
@@ -123,64 +123,64 @@ classdef Controller < handle
             value = calllib('autd3capi', 'AUTDGetAttenuation', obj.ptr);
         end
 
-        function freq = get_trans_frequency(obj, dev_idx, trans_idx)
-            freq = calllib('autd3capi', 'AUTDGetTransFrequency', obj.ptr, dev_idx, trans_idx);
+        function freq = get_trans_frequency(obj, trans_idx)
+            freq = calllib('autd3capi', 'AUTDGetTransFrequency', obj.ptr, trans_idx);
         end
 
-        function set_trans_frequency(obj, dev_idx, trans_idx, freq)
-            calllib('autd3capi', 'AUTDSetTransFrequency', obj.ptr, dev_idx, trans_idx, freq);
+        function set_trans_frequency(obj, trans_idx, freq)
+            calllib('autd3capi', 'AUTDSetTransFrequency', obj.ptr, trans_idx, freq);
         end
 
-        function cycle = get_trans_cycle(obj, dev_idx, trans_idx)
-            cycle = calllib('autd3capi', 'AUTDGetTransCycle', obj.ptr, dev_idx, trans_idx);
+        function cycle = get_trans_cycle(obj, trans_idx)
+            cycle = calllib('autd3capi', 'AUTDGetTransCycle', obj.ptr, trans_idx);
         end
 
-        function set_trans_cycle(obj, dev_idx, trans_idx, cycle)
-            calllib('autd3capi', 'AUTDSetTransCycle', obj.ptr, dev_idx, trans_idx, cycle);
+        function set_trans_cycle(obj, trans_idx, cycle)
+            calllib('autd3capi', 'AUTDSetTransCycle', obj.ptr, trans_idx, cycle);
         end
 
-        function wavelength = wavelength(obj, dev_idx, trans_idx)
-            wavelength = calllib('autd3capi', 'AUTDGetWavelength', obj.ptr, dev_idx, trans_idx);
+        function wavelength = wavelength(obj, trans_idx)
+            wavelength = calllib('autd3capi', 'AUTDGetWavelength', obj.ptr, trans_idx);
         end
 
-        function set_mod_delay(obj, dev_idx, trans_idx, delay)
-            calllib('autd3capi', 'AUTDSetModDelay', obj.ptr, dev_idx, trans_idx, delay);
+        function set_mod_delay(obj, trans_idx, delay)
+            calllib('autd3capi', 'AUTDSetModDelay', obj.ptr, trans_idx, delay);
         end
 
-        function pos = trans_position(obj, dev_idx, trans_idx)
+        function pos = trans_position(obj, trans_idx)
             px = libpointer('doublePtr', 0);
             py = libpointer('doublePtr', 0);
             pz = libpointer('doublePtr', 0);
-            calllib('autd3capi', 'AUTDTransPosition', obj.ptr, dev_idx, trans_idx, px, py, pz);
+            calllib('autd3capi', 'AUTDTransPosition', obj.ptr, trans_idx, px, py, pz);
             pos = [px.Value; py.Value; pz.Value];
         end
 
-        function dir = trans_x_direction(obj, dev_idx, trans_idx)
+        function dir = trans_x_direction(obj, trans_idx)
             px = libpointer('doublePtr', 0);
             py = libpointer('doublePtr', 0);
             pz = libpointer('doublePtr', 0);
-            calllib('autd3capi', 'AUTDTransXDirection', obj.ptr, dev_idx, trans_idx, px, py, pz);
+            calllib('autd3capi', 'AUTDTransXDirection', obj.ptr, trans_idx, px, py, pz);
             dir = [px.Value; py.Value; pz.Value];
         end
 
-        function dir = trans_y_direction(obj, dev_idx, trans_idx)
+        function dir = trans_y_direction(obj, trans_idx)
             px = libpointer('doublePtr', 0);
             py = libpointer('doublePtr', 0);
             pz = libpointer('doublePtr', 0);
-            calllib('autd3capi', 'AUTDTransYDirection', obj.ptr, dev_idx, trans_idx, px, py, pz);
+            calllib('autd3capi', 'AUTDTransYDirection', obj.ptr, trans_idx, px, py, pz);
             dir = [px.Value; py.Value; pz.Value];
         end
 
-        function dir = trans_z_direction(obj, dev_idx, trans_idx)
+        function dir = trans_z_direction(obj, trans_idx)
             px = libpointer('doublePtr', 0);
             py = libpointer('doublePtr', 0);
             pz = libpointer('doublePtr', 0);
-            calllib('autd3capi', 'AUTDTransZDirection', obj.ptr, dev_idx, trans_idx, px, py, pz);
+            calllib('autd3capi', 'AUTDTransZDirection', obj.ptr, trans_idx, px, py, pz);
             dir = [px.Value; py.Value; pz.Value];
         end
 
-        function res = num_devices(obj)
-            res = calllib('autd3capi', 'AUTDNumDevices', obj.ptr);
+        function res = num_transducers(obj)
+            res = calllib('autd3capi', 'AUTDNumTransducers', obj.ptr);
         end
 
         function res = send(varargin)
