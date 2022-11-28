@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/11/2022
+ * Last Modified: 28/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -243,6 +243,8 @@ namespace AUTD3Sharp
         }
 
         public int NumTransducers => Base.AUTDNumTransducers(CntPtr);
+
+        public int NumDevices => NumTransducers / AUTD3.NumTransInDevice;
 
         public Vector3 Center => this.Aggregate(Vector3.zero, (current, tr) => current + tr.Position) / NumTransducers;
 
