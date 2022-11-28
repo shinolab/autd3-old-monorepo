@@ -3,7 +3,7 @@
 // Created Date: 07/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 28/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -161,7 +161,7 @@ class SoftwareSTM {
 
   template <typename T>
   void add_impl(T&& b) {
-    _bodies.emplace_back(std::make_shared<std::remove_reference_t<T>>(std::move(b)));
+    _bodies.emplace_back(std::make_shared<std::remove_reference_t<T>>(std::forward<T>(b)));
   }
 
   std::vector<std::shared_ptr<core::Gain>> _bodies;
