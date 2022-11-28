@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/11/2022
+// Last Modified: 28/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -130,7 +130,7 @@ class SOEMHandler final {
     }
 
     const auto auto_detect = device_map.empty();
-    if (!auto_detect && wc != device_map.size()) {
+    if (!auto_detect && static_cast<size_t>(wc) != device_map.size()) {
       spdlog::error("The number of slaves you configured: {}, but found: {}", device_map.size(), wc);
       return 0;
     }
