@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 28/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,17 +18,17 @@
 #endif
 
 void* check(void* autd) {
-  int32_t num_devices = AUTDNumDevices(autd);
-  printf("===== Device informations =====\n");
-  for (int32_t i = 0; i < num_devices; i++) {
+  int32_t num_transducers = AUTDNumTransducers(autd);
+  printf("===== Transducer informations =====\n");
+  for (int32_t i = 0; i < num_transducers; i++) {
     double x, y, z;
-    AUTDTransPosition(autd, i * 249, &x, &y, &z);
+    AUTDTransPosition(autd, i, &x, &y, &z);
     printf("[%d]: Origin = (%lf, %lf, %lf)\n", i, x, y, z);
-    AUTDTransXDirection(autd, i * 249, &x, &y, &z);
+    AUTDTransXDirection(autd, i, &x, &y, &z);
     printf("[%d]: X = (%lf, %lf, %lf)\n", i, x, y, z);
-    AUTDTransYDirection(autd, i * 249, &x, &y, &z);
+    AUTDTransYDirection(autd, i, &x, &y, &z);
     printf("[%d]: Y = (%lf, %lf, %lf)\n", i, x, y, z);
-    AUTDTransZDirection(autd, i * 249, &x, &y, &z);
+    AUTDTransZDirection(autd, i, &x, &y, &z);
     printf("[%d]: Z = (%lf, %lf, %lf)\n", i, x, y, z);
   }
   printf("\n");
@@ -64,9 +64,9 @@ void* check(void* autd) {
 
   printf("===== FPGA informations =====\n");
 
-  uint8_t* infos = malloc(num_devices);
+  uint8_t* infos = malloc(num_transducers / 249);
   AUTDGetFPGAInfo(autd, infos);
-  for (int32_t i = 0; i < num_devices; i++) {
+  for (int32_t i = 0; i < num_transducers / 249; i++) {
     printf("[%d]: Is fan running : %d\n", i, infos[i]);
   }
   printf("\n");
@@ -84,7 +84,7 @@ void* check(void* autd) {
 #endif
 
   AUTDGetFPGAInfo(autd, infos);
-  for (int32_t i = 0; i < num_devices; i++) {
+  for (int32_t i = 0; i < num_transducers / 249; i++) {
     printf("[%d]: Is fan running : %d\n", i, infos[i]);
   }
   printf("\n");
