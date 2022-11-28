@@ -14,24 +14,22 @@
 #include "runner.hpp"
 
 class ConcentricArray final : autd3::core::Device {
-public:
-	ConcentricArray() = default;
+ public:
+  ConcentricArray() = default;
 
-	[[nodiscard]] std::vector<autd3::core::Transducer> get_transducers(const size_t start_id) const override
-	{
-		std::vector<autd3::core::Transducer> transducers;
-		size_t id = start_id;
-		transducers.emplace_back(autd3::core::Transducer(id++, autd3::Vector3::Zero(), autd3::Quaternion::Identity()));
-		for (size_t layer = 1; layer <= 5; layer++)
-		{
-			for (size_t i = 0; i < 6 * layer; i++) {
-				const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(6 * layer);
-				const autd3::Vector3 pos = static_cast<double>(layer) * 10.0 * autd3::Vector3(std::cos(theta), std::sin(theta), 0);
-				transducers.emplace_back(autd3::core::Transducer(id++, pos, autd3::Quaternion::Identity()));
-			}
-		}
-		return transducers;
-	}
+  [[nodiscard]] std::vector<autd3::core::Transducer> get_transducers(const size_t start_id) const override {
+    std::vector<autd3::core::Transducer> transducers;
+    size_t id = start_id;
+    transducers.emplace_back(autd3::core::Transducer(id++, autd3::Vector3::Zero(), autd3::Quaternion::Identity()));
+    for (size_t layer = 1; layer <= 5; layer++) {
+      for (size_t i = 0; i < 6 * layer; i++) {
+        const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(6 * layer);
+        const autd3::Vector3 pos = static_cast<double>(layer) * 10.0 * autd3::Vector3(std::cos(theta), std::sin(theta), 0);
+        transducers.emplace_back(autd3::core::Transducer(id++, pos, autd3::Quaternion::Identity()));
+      }
+    }
+    return transducers;
+  }
 };
 
 int main() try {
