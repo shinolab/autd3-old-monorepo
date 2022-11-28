@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 20/11/2022
+Last Modified: 28/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -76,57 +76,56 @@ class SilencerConfig(Header):
 
 
 class Transducer:
-    def __init__(self, dev_id: int, tr_id: int, cnt: c_void_p):
-        self._dev_id = dev_id
+    def __init__(self, tr_id: int, cnt: c_void_p):
         self._tr_id = tr_id
         self._cnt = cnt
 
     @ property
     def id(self) -> int:
-        return NUM_TRANS_IN_UNIT * self._dev_id + self._tr_id
+        return self._tr_id
 
     @ property
     def position(self):
         x = c_double(0.0)
         y = c_double(0.0)
         z = c_double(0.0)
-        Base().dll.AUTDTransPosition(self._cnt, self._dev_id, self._tr_id, byref(x), byref(y), byref(z))
+        Base().dll.AUTDTransPosition(self._cnt, self._tr_id, byref(x), byref(y), byref(z))
         return np.array([x.value, y.value, z.value])
 
     @ property
     def frequency(self):
-        return Base().dll.AUTDGetTransFrequency(self._cnt, self._dev_id, self._tr_id)
+        return Base().dll.AUTDGetTransFrequency(self._cnt, self._tr_id)
 
     @ frequency.setter
     def frequency(self, freq: float):
-        return Base().dll.AUTDSetTransFrequency(self._cnt, self._dev_id, self._tr_id, freq)
+        return Base().dll.AUTDSetTransFrequency(self._cnt, self._tr_id, freq)
 
     @ property
     def cycle(self):
-        return Base().dll.AUTDGetTransCycle(self._cnt, self._dev_id, self._tr_id)
+        return Base().dll.AUTDGetTransCycle(self._cnt, self._tr_id)
 
     @ cycle.setter
     def cycle(self, cycle: int):
-        return Base().dll.AUTDSetTransCycle(self._cnt, self._dev_id, self._tr_id, cycle)
+        return Base().dll.AUTDSetTransCycle(self._cnt, self._tr_id, cycle)
 
     @ property
     def mod_delay(self):
-        return Base().dll.AUTDGetModDelay(self._cnt, self._dev_id, self._tr_id)
+        return Base().dll.AUTDGetModDelay(self._cnt, self._tr_id)
 
     @ mod_delay.setter
     def mod_delay(self, delay: int):
-        return Base().dll.AUTDSetModDelay(self._cnt, self._dev_id, self._tr_id, delay)
+        return Base().dll.AUTDSetModDelay(self._cnt, self._tr_id, delay)
 
     @ property
     def wavelength(self):
-        return Base().dll.AUTDGetWavelength(self._cnt, self._dev_id, self._tr_id)
+        return Base().dll.AUTDGetWavelength(self._cnt, self._tr_id)
 
     @ property
     def x_direction(self):
         x = c_double(0.0)
         y = c_double(0.0)
         z = c_double(0.0)
-        Base().dll.AUTDTransXDirection(self._cnt, self._dev_id, self._tr_id, byref(x), byref(y), byref(z))
+        Base().dll.AUTDTransXDirection(self._cnt, self._tr_id, byref(x), byref(y), byref(z))
         return np.array([x.value, y.value, z.value])
 
     @ property
@@ -134,7 +133,7 @@ class Transducer:
         x = c_double(0.0)
         y = c_double(0.0)
         z = c_double(0.0)
-        Base().dll.AUTDTransYDirection(self._cnt, self._dev_id, self._tr_id, byref(x), byref(y), byref(z))
+        Base().dll.AUTDTransYDirection(self._cnt, self._tr_id, byref(x), byref(y), byref(z))
         return np.array([x.value, y.value, z.value])
 
     @ property
@@ -142,41 +141,8 @@ class Transducer:
         x = c_double(0.0)
         y = c_double(0.0)
         z = c_double(0.0)
-        Base().dll.AUTDTransZDirection(self._cnt, self._dev_id, self._tr_id, byref(x), byref(y), byref(z))
+        Base().dll.AUTDTransZDirection(self._cnt, self._tr_id, byref(x), byref(y), byref(z))
         return np.array([x.value, y.value, z.value])
-
-
-class Device:
-    def __init__(self, id: int, cnt: c_void_p):
-        self._id = id
-        self._cnt = cnt
-
-    @property
-    def origin(self):
-        return Transducer(self._id, 0, self._cnt).position
-
-    @property
-    def center(self):
-        return sum(map(lambda x: x.position, self)) / NUM_TRANS_IN_UNIT
-
-    def __getitem__(self, key):
-        return Transducer(self._id, key, self._cnt)
-
-    class TransducerIterator:
-        def __init__(self, dev_id: int, cnt: c_void_p):
-            self._dev_id = dev_id
-            self._cnt = cnt
-            self._i = 0
-
-        def __next__(self):
-            if self._i == NUM_TRANS_IN_UNIT:
-                raise StopIteration()
-            value = Transducer(self._dev_id, self._i, self._cnt)
-            self._i += 1
-            return value
-
-    def __iter__(self):
-        return Device.TransducerIterator(self._id, self._cnt)
 
 
 class Geometry:
@@ -184,41 +150,37 @@ class Geometry:
         self._cnt = cnt
 
     def add_device(self, pos, rot):
-        return Base().dll.AUTDAddDevice(self._cnt, pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
+        Base().dll.AUTDAddDevice(self._cnt, pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
 
     def add_device_quaternion(self, pos, q):
-        return Base().dll.AUTDAddDeviceQuaternion(self._cnt, pos[0], pos[1], pos[2], q[0], q[1], q[2], q[3])
-
-    @ property
-    def num_devices(self):
-        return Base().dll.AUTDNumDevices(self._cnt)
+        Base().dll.AUTDAddDeviceQuaternion(self._cnt, pos[0], pos[1], pos[2], q[0], q[1], q[2], q[3])
 
     @ property
     def num_transducers(self):
-        return self.num_devices * NUM_TRANS_IN_UNIT
+        return Base().dll.AUTDNumTransducers(self._cnt)
 
     @property
     def center(self):
-        return sum(map(lambda x: x.center, self)) / self.num_devices
+        return sum(map(lambda x: x.position, self)) / self.num_transducers
 
-    def __getitem__(self, key):
-        return Device(key, self._cnt)
+    def __getitem__(self, key: int):
+        return Transducer(key, self._cnt)
 
-    class DeviceIterator:
-        def __init__(self, dev_len: int, cnt: c_void_p):
-            self._dev_len = dev_len
+    class TransdducerIterator:
+        def __init__(self, cnt: c_void_p):
             self._cnt = cnt
             self._i = 0
+            self._num_trans = Base().dll.AUTDNumTransducers(cnt)
 
         def __next__(self):
-            if self._i == self._dev_len:
+            if self._i == self._num_trans:
                 raise StopIteration()
-            value = Device(self._i, self._cnt)
+            value = Transducer(self._i, self._cnt)
             self._i += 1
             return value
 
     def __iter__(self):
-        return Geometry.DeviceIterator(self.num_devices, self._cnt)
+        return Geometry.TransdducerIterator(self._cnt)
 
 
 class Controller:
@@ -342,7 +304,7 @@ class Controller:
 
     @ property
     def fpga_info(self):
-        infos = np.zeros([self.num_devices()]).astype(np.ubyte)
+        infos = np.zeros([self.num_transducers() / NUM_TRANS_IN_UNIT]).astype(np.ubyte)
         pinfos = np.ctypeslib.as_ctypes(infos)
         Base().dll.AUTDGetFPGAInfo(self.p_cnt, pinfos)
         return infos
