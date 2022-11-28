@@ -30,6 +30,9 @@ Silencerの設定には`SilencerConfig`を送信する.
 `SilencerConfig`には`step`と`cycle`の2つの設定がある.
 詳細は以下を参照されたいが, 大まかには`step`を小さく, `cycle`を大きくするほどより静かになる.
 
+> NOTE: Silencerはデフォルトで適当な値に設定されている.
+> Silencerを無効化する場合は, 明示的に`autd3::SilencerConfig::none()`を送信する必要がある.
+
 ## Silencerによる位相の変化
 
 Silencerは位相$P$の変化を線形補間し, 段階的にすることで静音化を行う.

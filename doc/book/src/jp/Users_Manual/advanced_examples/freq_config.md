@@ -10,7 +10,7 @@
   autd << autd3::normal_mode;
 ```
 
-振動子の周波数は`Geometry`→`Device`→`Transducer`とアクセスし, `Transducer`の`set_frequency`, または, `set_cycle`関数で指定する.
+振動子の周波数は`Geometry`→`Transducer`とアクセスし, `Transducer`の`set_frequency`, または, `set_cycle`関数で指定する.
 
 指定できる周波数は$\SI{163.84}{MHz}/N, N=1,2,...,8191$となっている.
 `set_cycle`ではこの$N$を直接指定する. 
@@ -19,8 +19,8 @@
 周波数, または, 周期の変更は, `synchronize`を送信する前に行う必要があることに注意する.
 
 ```cpp
-  for (auto& dev : autd.geometry())
-    for (auto& tr : dev) tr.set_frequency(70e3); // actual frequency is 163.84MHz/2341 ~ 69987 Hz
+  for (auto& tr : autd.geometry())
+    tr.set_frequency(70e3); // actual frequency is 163.84MHz/2341 ~ 69987 Hz
 
   autd << autd3::synchronize;
 ```

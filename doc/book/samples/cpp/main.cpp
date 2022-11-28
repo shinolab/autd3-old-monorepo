@@ -6,7 +6,7 @@
 int main() try {
   autd3::Controller autd;
 
-  autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
+  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
 
   auto link = autd3::link::SOEM().high_precision(true).build();
   autd.open(std::move(link));
