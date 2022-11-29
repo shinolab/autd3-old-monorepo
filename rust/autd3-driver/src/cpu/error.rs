@@ -19,12 +19,12 @@ pub enum CPUError {
     DeviceNumberNotCorrect { a: usize, b: usize },
     #[error(
         "Maximum size is {}, but {0} data are to be send",
-        crate::cpu::MOD_HEAD_DATA_SIZE
+        crate::cpu::MOD_HEADER_INITIAL_DATA_SIZE
     )]
     ModulationHeadDataSizeOutOfRange(usize),
     #[error(
         "Maximum size is {}, but {0} data are to be send",
-        crate::cpu::MOD_BODY_DATA_SIZE
+        crate::cpu::MOD_HEADER_SUBSEQUENT_DATA_SIZE
     )]
     ModulationBodyDataSizeOutOfRange(usize),
     #[error(

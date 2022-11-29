@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 29/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -72,7 +72,7 @@ fn impl_modulation_macro(ast: &syn::DeriveInput) -> TokenStream {
                 tx: &mut autd3_core::TxDatagram,
             ) -> anyhow::Result<()> {
                 let is_first_frame = self.props.sent == 0;
-                let max_size = if is_first_frame {autd3_core::MOD_HEAD_DATA_SIZE} else {autd3_core::MOD_BODY_DATA_SIZE};
+                let max_size = if is_first_frame {autd3_core::MOD_HEADER_INITIAL_DATA_SIZE} else {autd3_core::MOD_HEADER_SUBSEQUENT_DATA_SIZE};
                 let mod_size = (self.buffer().len() - self.props.sent).min(max_size);
                 let is_last_frame = self.props.sent + mod_size == self.buffer().len();
                 autd3_core::modulation(msg_id, &self.buffer()[self.props.sent..(self.props.sent + mod_size)], is_first_frame, self.props.freq_div, is_last_frame, tx)?;
