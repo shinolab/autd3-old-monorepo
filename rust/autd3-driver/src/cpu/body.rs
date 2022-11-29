@@ -50,7 +50,7 @@ impl Body {
         unsafe { std::mem::transmute(self) }
     }
 
-    pub fn focus_stm_subsequent(&self) -> &FocusSTMBodySubsequent {
+    pub fn focus_stm_body(&self) -> &FocusSTMBodySubsequent {
         unsafe { std::mem::transmute(self) }
     }
 

@@ -219,10 +219,8 @@ struct Body {
 
   [[nodiscard]] const FocusSTMBodyInitial& focus_stm_initial() const noexcept { return *reinterpret_cast<const FocusSTMBodyInitial* const>(this); }
   FocusSTMBodyInitial& focus_stm_initial() noexcept { return *reinterpret_cast<FocusSTMBodyInitial*>(this); }
-  [[nodiscard]] const FocusSTMBodySubsequent& focus_stm_subsequent() const noexcept {
-    return *reinterpret_cast<const FocusSTMBodySubsequent* const>(this);
-  }
-  FocusSTMBodySubsequent& focus_stm_subsequent() noexcept { return *reinterpret_cast<FocusSTMBodySubsequent*>(this); }
+  [[nodiscard]] const FocusSTMBodySubsequent& focus_stm_body() const noexcept { return *reinterpret_cast<const FocusSTMBodySubsequent* const>(this); }
+  FocusSTMBodySubsequent& focus_stm_body() noexcept { return *reinterpret_cast<FocusSTMBodySubsequent*>(this); }
 
   [[nodiscard]] const GainSTMBodyInitial& gain_stm_initial() const noexcept { return *reinterpret_cast<const GainSTMBodyInitial* const>(this); }
   GainSTMBodyInitial& gain_stm_initial() noexcept { return *reinterpret_cast<GainSTMBodyInitial*>(this); }

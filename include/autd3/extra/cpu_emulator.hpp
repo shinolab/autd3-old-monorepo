@@ -228,8 +228,8 @@ class CPU {
       bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_SOUND_SPEED_0, reinterpret_cast<const uint16_t*>(&sound_speed), 2);
       src = body->focus_stm_initial().data() + 5;
     } else {
-      size = body->focus_stm_subsequent().data()[0];
-      src = body->focus_stm_subsequent().data() + 1;
+      size = body->focus_stm_body().data()[0];
+      src = body->focus_stm_body().data() + 1;
     }
 
     if (const auto segment_capacity = (_stm_write & ~cpu::FOCUS_STM_BUF_SEGMENT_SIZE_MASK) + cpu::FOCUS_STM_BUF_SEGMENT_SIZE - _stm_write;

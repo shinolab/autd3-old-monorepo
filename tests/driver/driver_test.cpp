@@ -557,13 +557,13 @@ TEST(CPUTest, operation_normal_phase_body_v2_6) {
 
   ASSERT_EQ(tx.num_bodies, 10);
 }
-TEST(CPUTest, operation_focus_stm_initialer_v2_6) {
+TEST(CPUTest, operation_focus_stm_header_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
                                 NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
-  driver.focus_stm_initialer(tx);
+  driver.focus_stm_header(tx);
 
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
@@ -598,9 +598,9 @@ TEST(CPUTest, operation_focus_stm_subsequent_v2_6) {
   constexpr double sound_speed = 340e3;
   constexpr uint32_t sp = 340 * 1024;
 
-  driver.focus_stm_initialer(tx);
+  driver.focus_stm_header(tx);
   size_t sent = 0;
-  driver.focus_stm_subsequent(points, sent, size, 3224, sound_speed, tx);
+  driver.focus_stm_body(points, sent, size, 3224, sound_speed, tx);
 
   ASSERT_EQ(sent, size);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
@@ -614,9 +614,9 @@ TEST(CPUTest, operation_focus_stm_subsequent_v2_6) {
   for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_initial().data()[4], sp >> 16);
   ASSERT_EQ(tx.num_bodies, 10);
 
-  driver.focus_stm_initialer(tx);
+  driver.focus_stm_header(tx);
   sent = 0;
-  driver.focus_stm_subsequent(points, sent, 500, 3224, sound_speed, tx);
+  driver.focus_stm_body(points, sent, 500, 3224, sound_speed, tx);
 
   ASSERT_EQ(sent, size);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
@@ -626,16 +626,16 @@ TEST(CPUTest, operation_focus_stm_subsequent_v2_6) {
   for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_initial().data()[0], 30);
   ASSERT_EQ(tx.num_bodies, 10);
 
-  driver.focus_stm_initialer(tx);
+  driver.focus_stm_header(tx);
   sent = 1;
-  driver.focus_stm_subsequent(points, sent, 500, 3224, sound_speed, tx);
+  driver.focus_stm_body(points, sent, 500, 3224, sound_speed, tx);
   ASSERT_EQ(sent, size + 1);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
 
-  driver.focus_stm_initialer(tx);
-  driver.focus_stm_subsequent({}, sent, 0, 3224, sound_speed, tx);
+  driver.focus_stm_header(tx);
+  driver.focus_stm_body({}, sent, 0, 3224, sound_speed, tx);
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
