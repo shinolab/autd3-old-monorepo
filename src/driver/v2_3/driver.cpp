@@ -3,7 +3,7 @@
 // Created Date: 22/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -164,7 +164,7 @@ void DriverV2_3::normal_phase_body(const std::vector<Drive>& drives, TxDatagram&
 
   tx.num_bodies = tx.num_devices();
 }
-void DriverV2_3::point_stm_header(TxDatagram& tx) const noexcept {
+void DriverV2_3::point_stm_initialer(TxDatagram& tx) const noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
   tx.header().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
@@ -183,8 +183,8 @@ size_t DriverV2_3::point_stm_send_size(const size_t total_size, const size_t sen
   return (std::min)(total_size - sent, max_size);
 }
 
-bool DriverV2_3::point_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, const size_t total_size, const uint32_t freq_div,
-                                const double sound_speed, TxDatagram& tx) const {
+bool DriverV2_3::point_stm_subsequent(const std::vector<std::vector<STMFocus>>& points, size_t& sent, const size_t total_size,
+                                      const uint32_t freq_div, const double sound_speed, TxDatagram& tx) const {
   if (total_size > v2_3::POINT_STM_BUF_SIZE_MAX) {
     spdlog::error("PointSTM out of buffer");
     return false;
@@ -207,17 +207,17 @@ bool DriverV2_3::point_stm_body(const std::vector<std::vector<STMFocus>>& points
     for (size_t i = 0; i < tx.num_devices(); i++) {
       auto& d = tx.body(i);
       const auto& s = points.at(i);
-      d.point_stm_head().set_size(static_cast<uint16_t>(s.size()));
-      d.point_stm_head().set_freq_div(freq_div);
-      d.point_stm_head().set_sound_speed(sound_speed_internal);
-      d.point_stm_head().set_point(s);
+      d.point_stm_initial().set_size(static_cast<uint16_t>(s.size()));
+      d.point_stm_initial().set_freq_div(freq_div);
+      d.point_stm_initial().set_sound_speed(sound_speed_internal);
+      d.point_stm_initial().set_point(s);
     }
   } else {
     for (size_t i = 0; i < tx.num_devices(); i++) {
       auto& d = tx.body(i);
       const auto& s = points.at(i);
-      d.point_stm_body().set_size(static_cast<uint16_t>(s.size()));
-      d.point_stm_body().set_point(s);
+      d.point_stm_subsequent().set_size(static_cast<uint16_t>(s.size()));
+      d.point_stm_subsequent().set_point(s);
     }
   }
 
@@ -259,8 +259,8 @@ bool DriverV2_3::gain_stm_legacy_body(const std::vector<std::vector<Drive>>& dri
 
     tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
     for (size_t i = 0; i < tx.num_devices(); i++) {
-      tx.body(i).gain_stm_head().set_freq_div(freq_div);
-      tx.body(i).gain_stm_head().set_mode(mode);
+      tx.body(i).gain_stm_initial().set_freq_div(freq_div);
+      tx.body(i).gain_stm_initial().set_mode(mode);
     }
     sent++;
   } else {
@@ -359,8 +359,8 @@ bool DriverV2_3::gain_stm_normal_phase(const std::vector<std::vector<Drive>>& dr
     }
     tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
     for (size_t i = 0; i < tx.num_devices(); i++) {
-      tx.body(i).gain_stm_head().set_freq_div(freq_div);
-      tx.body(i).gain_stm_head().set_mode(mode);
+      tx.body(i).gain_stm_initial().set_freq_div(freq_div);
+      tx.body(i).gain_stm_initial().set_mode(mode);
     }
   } else {
     auto* p = reinterpret_cast<Phase*>(tx.bodies_ptr());
@@ -402,8 +402,8 @@ bool DriverV2_3::gain_stm_normal_duty(const std::vector<std::vector<Drive>>& dri
     }
     tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
     for (size_t i = 0; i < tx.num_devices(); i++) {
-      tx.body(i).gain_stm_head().set_freq_div(freq_div);
-      tx.body(i).gain_stm_head().set_mode(mode);
+      tx.body(i).gain_stm_initial().set_freq_div(freq_div);
+      tx.body(i).gain_stm_initial().set_mode(mode);
     }
   } else {
     auto* p = reinterpret_cast<Duty*>(tx.bodies_ptr());

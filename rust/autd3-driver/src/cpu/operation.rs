@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/11/2022
+ * Last Modified: 29/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -279,7 +279,7 @@ pub fn normal_phase_body(drive: &[Drive], tx: &mut TxDatagram) -> Result<()> {
     Ok(())
 }
 
-pub fn point_stm_head(tx: &mut TxDatagram) {
+pub fn point_stm_initial(tx: &mut TxDatagram) {
     tx.header_mut().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
     tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
     tx.header_mut().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
@@ -295,7 +295,7 @@ pub fn point_stm_head(tx: &mut TxDatagram) {
     tx.num_bodies = 0;
 }
 
-pub fn point_stm_body(
+pub fn point_stm_subsequent(
     points: &[Vec<SeqFocus>],
     is_first_frame: bool,
     freq_div: u32,
@@ -330,15 +330,15 @@ pub fn point_stm_body(
             .set(CPUControlFlags::STM_BEGIN, true);
         let sound_speed = (sound_speed / 1e3 * 1024.0).round() as u32;
         tx.body_mut().iter_mut().zip(points).for_each(|(d, s)| {
-            d.point_stm_head_mut().set_size(s.len() as _);
-            d.point_stm_head_mut().set_freq_div(freq_div);
-            d.point_stm_head_mut().set_sound_speed(sound_speed);
-            d.point_stm_head_mut().set_points(s);
+            d.point_stm_initial_mut().set_size(s.len() as _);
+            d.point_stm_initial_mut().set_freq_div(freq_div);
+            d.point_stm_initial_mut().set_sound_speed(sound_speed);
+            d.point_stm_initial_mut().set_points(s);
         });
     } else {
         tx.body_mut().iter_mut().zip(points).for_each(|(d, s)| {
-            d.point_stm_body_mut().set_size(s.len() as _);
-            d.point_stm_body_mut().set_points(s);
+            d.point_stm_subsequent_mut().set_size(s.len() as _);
+            d.point_stm_subsequent_mut().set_points(s);
         });
     }
 
@@ -391,9 +391,9 @@ pub fn gain_stm_legacy_body(
             .cpu_flag
             .set(CPUControlFlags::STM_BEGIN, true);
         tx.body_mut().iter_mut().for_each(|d| {
-            d.gain_stm_head_mut().set_freq_div(freq_div);
-            d.gain_stm_head_mut().set_mode(mode);
-            d.gain_stm_head_mut().set_cycle(size);
+            d.gain_stm_initial_mut().set_freq_div(freq_div);
+            d.gain_stm_initial_mut().set_mode(mode);
+            d.gain_stm_initial_mut().set_cycle(size);
         });
     } else {
         match mode {
@@ -402,7 +402,7 @@ pub fn gain_stm_legacy_body(
                     .iter_mut()
                     .zip(drives[0].chunks(NUM_TRANS_IN_UNIT))
                     .for_each(|(dd, ss)| {
-                        dd.gain_stm_body_mut()
+                        dd.gain_stm_subsequent_mut()
                             .legacy_drives_mut()
                             .iter_mut()
                             .zip(ss.iter())
@@ -414,7 +414,7 @@ pub fn gain_stm_legacy_body(
                     .iter_mut()
                     .zip(drives[0].chunks(NUM_TRANS_IN_UNIT))
                     .for_each(|(dd, ss)| {
-                        dd.gain_stm_body_mut()
+                        dd.gain_stm_subsequent_mut()
                             .legacy_phase_full_mut()
                             .iter_mut()
                             .zip(ss.iter())
@@ -424,7 +424,7 @@ pub fn gain_stm_legacy_body(
                     .iter_mut()
                     .zip(drives[1].chunks(NUM_TRANS_IN_UNIT))
                     .for_each(|(dd, ss)| {
-                        dd.gain_stm_body_mut()
+                        dd.gain_stm_subsequent_mut()
                             .legacy_phase_full_mut()
                             .iter_mut()
                             .zip(ss.iter())
@@ -436,7 +436,7 @@ pub fn gain_stm_legacy_body(
                     .iter_mut()
                     .zip(drives[0].chunks(NUM_TRANS_IN_UNIT))
                     .for_each(|(dd, ss)| {
-                        dd.gain_stm_body_mut()
+                        dd.gain_stm_subsequent_mut()
                             .legacy_phase_half_mut()
                             .iter_mut()
                             .zip(ss.iter())
@@ -446,7 +446,7 @@ pub fn gain_stm_legacy_body(
                     .iter_mut()
                     .zip(drives[1].chunks(NUM_TRANS_IN_UNIT))
                     .for_each(|(dd, ss)| {
-                        dd.gain_stm_body_mut()
+                        dd.gain_stm_subsequent_mut()
                             .legacy_phase_half_mut()
                             .iter_mut()
                             .zip(ss.iter())
@@ -456,7 +456,7 @@ pub fn gain_stm_legacy_body(
                     .iter_mut()
                     .zip(drives[2].chunks(NUM_TRANS_IN_UNIT))
                     .for_each(|(dd, ss)| {
-                        dd.gain_stm_body_mut()
+                        dd.gain_stm_subsequent_mut()
                             .legacy_phase_half_mut()
                             .iter_mut()
                             .zip(ss.iter())
@@ -466,7 +466,7 @@ pub fn gain_stm_legacy_body(
                     .iter_mut()
                     .zip(drives[3].chunks(NUM_TRANS_IN_UNIT))
                     .for_each(|(dd, ss)| {
-                        dd.gain_stm_body_mut()
+                        dd.gain_stm_subsequent_mut()
                             .legacy_phase_half_mut()
                             .iter_mut()
                             .zip(ss.iter())
@@ -531,16 +531,16 @@ pub fn gain_stm_normal_phase_body(
             .cpu_flag
             .set(CPUControlFlags::STM_BEGIN, true);
         tx.body_mut().iter_mut().for_each(|d| {
-            d.gain_stm_head_mut().set_freq_div(freq_div);
-            d.gain_stm_head_mut().set_mode(mode);
-            d.gain_stm_head_mut().set_cycle(size);
+            d.gain_stm_initial_mut().set_freq_div(freq_div);
+            d.gain_stm_initial_mut().set_mode(mode);
+            d.gain_stm_initial_mut().set_cycle(size);
         });
     } else {
         tx.body_mut()
             .iter_mut()
             .zip(drives.chunks(NUM_TRANS_IN_UNIT))
             .for_each(|(dd, ss)| {
-                dd.gain_stm_body_mut()
+                dd.gain_stm_subsequent_mut()
                     .phases_mut()
                     .iter_mut()
                     .zip(ss.iter())
@@ -572,7 +572,7 @@ pub fn gain_stm_normal_duty_body(
         .iter_mut()
         .zip(drives.chunks(NUM_TRANS_IN_UNIT))
         .for_each(|(dd, ss)| {
-            dd.gain_stm_body_mut()
+            dd.gain_stm_subsequent_mut()
                 .duties_mut()
                 .iter_mut()
                 .zip(ss.iter())
