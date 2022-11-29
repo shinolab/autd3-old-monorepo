@@ -83,7 +83,7 @@ struct FocusSTM final : STM {
 
   bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const Mode>&, const Geometry& geometry,
             driver::TxDatagram& tx) override {
-    driver->focus_stm_initialer(tx);
+    driver->focus_stm_header(tx);
 
     if (is_finished()) return true;
 
@@ -110,7 +110,7 @@ struct FocusSTM final : STM {
       points.emplace_back(lp);
     }
 
-    return driver->focus_stm_subsequent(points, _sent, _points.size(), this->_freq_div, sound_speed, tx);
+    return driver->focus_stm_body(points, _sent, _points.size(), this->_freq_div, sound_speed, tx);
   }
 
   [[nodiscard]] bool is_finished() const override { return _sent == _points.size(); }

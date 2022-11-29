@@ -105,7 +105,7 @@ impl<T: Transducer> DatagramBody<T> for FocusSTM {
             })
             .collect();
 
-        autd3_driver::focus_stm_subsequent(
+        autd3_driver::focus_stm_body(
             &points,
             is_first_frame,
             self.sample_freq_div,

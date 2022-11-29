@@ -173,7 +173,7 @@ void DriverV2_6::normal_phase_body(const std::vector<Drive>& drives, TxDatagram&
   tx.num_bodies = tx.num_devices();
 }
 
-void DriverV2_6::focus_stm_initialer(TxDatagram& tx) const noexcept {
+void DriverV2_6::focus_stm_header(TxDatagram& tx) const noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
   tx.header().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
@@ -193,8 +193,8 @@ size_t DriverV2_6::focus_stm_send_size(const size_t total_size, const size_t sen
   return (std::min)(total_size - sent, max_size);
 }
 
-bool DriverV2_6::focus_stm_subsequent(const std::vector<std::vector<STMFocus>>& points, size_t& sent, const size_t total_size,
-                                      const uint32_t freq_div, const double sound_speed, TxDatagram& tx) const {
+bool DriverV2_6::focus_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, const size_t total_size, const uint32_t freq_div,
+                                const double sound_speed, TxDatagram& tx) const {
   if (total_size > v2_6::FOCUS_STM_BUF_SIZE_MAX) {
     spdlog::error("FocusSTM out of buffer");
     return false;
@@ -225,8 +225,8 @@ bool DriverV2_6::focus_stm_subsequent(const std::vector<std::vector<STMFocus>>& 
     for (size_t i = 0; i < tx.num_devices(); i++) {
       auto& d = tx.body(i);
       const auto& s = points.at(i);
-      d.focus_stm_subsequent().set_size(static_cast<uint16_t>(s.size()));
-      d.focus_stm_subsequent().set_point(s);
+      d.focus_stm_body().set_size(static_cast<uint16_t>(s.size()));
+      d.focus_stm_body().set_point(s);
     }
   }
 

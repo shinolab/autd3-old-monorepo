@@ -296,7 +296,7 @@ pub fn focus_stm_initial(tx: &mut TxDatagram) {
     tx.num_bodies = 0;
 }
 
-pub fn focus_stm_subsequent(
+pub fn focus_stm_body(
     points: &[Vec<SeqFocus>],
     is_first_frame: bool,
     freq_div: u32,
