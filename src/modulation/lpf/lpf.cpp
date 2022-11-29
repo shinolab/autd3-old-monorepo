@@ -3,7 +3,7 @@
 // Created Date: 19/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -61,12 +61,12 @@ bool LPF::calc() {
       mf.emplace_back(static_cast<uint8_t>((static_cast<uint16_t>(resampled[i]) + static_cast<uint16_t>(resampled[i + 1])) >> 1));
   }
 
-  this->_props.buffer.reserve(mf.size());
+  this->_buffer.reserve(mf.size());
   for (int32_t i = 0; i < static_cast<int32_t>(mf.size()); i++) {
     double r = 0.0;
     for (int32_t j = 0; j < static_cast<int32_t>(_coefficients.size()); j++)
       r += _coefficients[j] * static_cast<double>(mf[static_cast<size_t>(driver::rem_euclid(i - j, static_cast<int32_t>(mf.size())))]);
-    this->_props.buffer.emplace_back(static_cast<uint8_t>(std::round(r)));
+    this->_buffer.emplace_back(static_cast<uint8_t>(std::round(r)));
   }
   return true;
 }

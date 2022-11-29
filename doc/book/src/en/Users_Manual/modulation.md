@@ -102,7 +102,7 @@ class Burst final : public autd3::Modulation {
 
   explicit Burst(const size_t buf_size = 4000, const uint16_t freq_div = 40960) noexcept : _buf_size(buf_size) 
   {
-    _props.freq_div = freq_div;
+    _freq_div = freq_div;
   }
 
  private:
@@ -113,7 +113,7 @@ class Burst final : public autd3::Modulation {
 Like `Gain`, `Modulation::calc` method is called inside `Controller::send`.
 In this `calc`, you can rewrite the contents of `buffer`.
 
-$N$, which determines the `Modulation` sampling frequency $\SI{163.84}{MHz}/N$, is set to `_props.freq_div`.
+$N$, which determines the `Modulation` sampling frequency $\SI{163.84}{MHz}/N$, is set to `_freq_div`.
 In this example, since $N=40960$ by default, the sampling frequency is $\SI{4}{kHz}$.
 
 Moreover, for example, if `buf_size` is set to 4000, $0$ is sampled $3999$ times, and then $255$ is sampled once.
