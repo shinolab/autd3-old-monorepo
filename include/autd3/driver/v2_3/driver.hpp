@@ -16,6 +16,9 @@
 
 namespace autd3::driver {
 
+/**
+ * @brief Driver for v2.3 firmware
+ */
 class DriverV2_3 final : public Driver {
  public:
   DriverV2_3() = default;

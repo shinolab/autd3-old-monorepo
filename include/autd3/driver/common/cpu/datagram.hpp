@@ -83,9 +83,12 @@ struct TxDatagram {
   std::vector<uint8_t> _data;
 };
 
+/**
+ * @brief Received data from a device
+ */
 struct RxMessage {
   /**
-   * @brief Response data from device
+   * @brief Response data from the device
    */
   uint8_t ack;
   /**
@@ -97,7 +100,7 @@ struct RxMessage {
 };
 
 /**
- * @brief Received data
+ * @brief Received data from devices
  */
 struct RxDatagram {
   explicit RxDatagram(const size_t size) { _data.resize(size); }

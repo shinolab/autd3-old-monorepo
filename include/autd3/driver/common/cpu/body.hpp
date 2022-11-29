@@ -108,12 +108,27 @@ struct FocusSTMBodySubsequent {
   uint16_t _data[2]{};  // Data size has no meaning.
 };
 
+/**
+ * @brief Data transmission mode for GainSTM
+ */
 enum class GainSTMMode : uint16_t {
+  /**
+   * @brief Both phase and amplitude data are transmitted
+   */
   PhaseDutyFull = 0x0001,
+  /**
+   * @brief Only phase data is transmitted (x2 faster than PhaseDutyFull)
+   */
   PhaseFull = 0x0002,
+  /**
+   * @brief Only phase data is transmitted and phase data is compressed by half (x4 faster than PhaseDutyFull)
+   */
   PhaseHalf = 0x0004,
 };
 
+/**
+ * @brief Transmission data when using GainSTMMode::PhaseFull in Legacy mode
+ */
 struct LegacyPhaseFull {
   uint8_t phase_0;
   uint8_t phase_1;
@@ -132,6 +147,9 @@ struct LegacyPhaseFull {
   }
 };
 
+/**
+ * @brief Transmission data when using GainSTMMode::PhaseHalf in Legacy mode
+ */
 struct LegacyPhaseHalf {
   uint8_t phase_01;
   uint8_t phase_23;
