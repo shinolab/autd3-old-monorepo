@@ -15,6 +15,9 @@
 
 namespace autd3::driver {
 
+/**
+ * @brief Driver provides a set of functions to drive autd3 firmware
+ */
 class Driver {
  public:
   virtual ~Driver() = default;

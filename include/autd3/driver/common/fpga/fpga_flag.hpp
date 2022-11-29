@@ -28,14 +28,32 @@ namespace autd3::driver {
 #pragma warning(push)
 #pragma warning(disable : 26812)
 #endif
+/**
+ * @brief Flags to control FPGA firmware
+ */
 class FPGAControlFlags final {
  public:
   enum VALUE : uint8_t {
     NONE = 0,
+    /**
+     * @brief Set when legacy mode
+     */
     LEGACY_MODE = 1 << 0,
+    /**
+     * @brief Set when forcing fan
+     */
     FORCE_FAN = 1 << 4,
+    /**
+     * @brief Set when STM
+     */
     STM_MODE = 1 << 5,
+    /**
+     * @brief Set when GainSTM
+     */
     STM_GAIN_MODE = 1 << 6,
+    /**
+     * @brief Set when returning FPGA information
+     */
     READS_FPGA_INFO = 1 << 7,
   };
 
