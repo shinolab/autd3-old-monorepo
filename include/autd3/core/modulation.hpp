@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,24 +19,11 @@
 namespace autd3::core {
 
 /**
- * @brief Properties of Modulation
- */
-struct ModProps {
-  ModProps() noexcept : freq_div(40960), built(false), sent(0) {}
-
-  std::vector<uint8_t> buffer;
-  uint32_t freq_div;
-  bool built;
-  size_t sent;
-};
-
-/**
  * @brief Modulation controls the amplitude modulation
  */
 class Modulation : public DatagramHeader {
  public:
-  Modulation() = default;
-
+  Modulation() : _freq_div(40960), _built(false), _sent(0) {}
   ~Modulation() override = default;
   Modulation(const Modulation& v) noexcept = default;
   Modulation& operator=(const Modulation& obj) = default;
@@ -52,8 +39,8 @@ class Modulation : public DatagramHeader {
    * @brief Build modulation data
    */
   [[nodiscard]] bool build() {
-    if (_props.built) return true;
-    _props.built = true;
+    if (_built) return true;
+    _built = true;
     return calc();
   }
 
@@ -61,56 +48,57 @@ class Modulation : public DatagramHeader {
    * \brief Re-build modulation data
    */
   [[nodiscard]] bool rebuild() {
-    _props.built = false;
+    _built = false;
     return build();
   }
 
   /**
    * \brief modulation data
    */
-  [[nodiscard]] const std::vector<uint8_t>& buffer() const noexcept { return _props.buffer; }
+  [[nodiscard]] const std::vector<uint8_t>& buffer() const noexcept { return _buffer; }
 
   /**
    * \brief sampling frequency division ratio
    * \details sampling frequency will be driver::FPGA_CLK_FREQ /(sampling frequency division ratio).
    * The value must be larger than driver::MOD_SAMPLING_FREQ_DIV_MIN.
    */
-  uint32_t& sampling_frequency_division() noexcept { return _props.freq_div; }
+  uint32_t& sampling_frequency_division() noexcept { return _freq_div; }
 
   /**
    * \brief sampling frequency division ratio
    * \details sampling frequency will be driver::FPGA_CLK_FREQ /(sampling frequency division ratio).
    */
-  [[nodiscard]] uint32_t sampling_frequency_division() const noexcept { return _props.freq_div; }
+  [[nodiscard]] uint32_t sampling_frequency_division() const noexcept { return _freq_div; }
 
   /**
    * \brief modulation sampling frequency
    */
-  [[nodiscard]] double sampling_frequency() const noexcept {
-    return static_cast<double>(driver::FPGA_CLK_FREQ) / static_cast<double>(_props.freq_div);
-  }
+  [[nodiscard]] double sampling_frequency() const noexcept { return static_cast<double>(driver::FPGA_CLK_FREQ) / static_cast<double>(_freq_div); }
 
   /**
    * \brief Set modulation sampling frequency
    */
   [[nodiscard]] double set_sampling_frequency(const double freq) {
-    _props.freq_div = static_cast<uint32_t>(std::round(static_cast<double>(driver::FPGA_CLK_FREQ) / freq));
+    _freq_div = static_cast<uint32_t>(std::round(static_cast<double>(driver::FPGA_CLK_FREQ) / freq));
     return sampling_frequency();
   }
 
   bool init() override {
-    _props.sent = 0;
+    _sent = 0;
     return build();
   }
 
   bool pack(const std::unique_ptr<const driver::Driver>& driver, const uint8_t msg_id, driver::TxDatagram& tx) override {
-    return driver->modulation(msg_id, buffer(), _props.sent, _props.freq_div, tx);
+    return driver->modulation(msg_id, buffer(), _sent, _freq_div, tx);
   }
 
-  [[nodiscard]] bool is_finished() const noexcept override { return _props.sent == buffer().size(); }
+  [[nodiscard]] bool is_finished() const noexcept override { return _sent == buffer().size(); }
 
  protected:
-  ModProps _props;
+  std::vector<uint8_t> _buffer;
+  uint32_t _freq_div;
+  bool _built;
+  size_t _sent;
 };
 
 }  // namespace autd3::core

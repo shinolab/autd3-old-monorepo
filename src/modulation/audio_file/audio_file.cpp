@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,7 +22,7 @@ namespace autd3::modulation {
 
 RawPCM::RawPCM(std::filesystem::path filename, const double sampling_freq, const uint32_t mod_sampling_freq_div)
     : Modulation(), _filename(std::move(filename)), _sampling_freq(sampling_freq) {
-  this->_props.freq_div = mod_sampling_freq_div;
+  this->_freq_div = mod_sampling_freq_div;
 }
 
 bool RawPCM::calc() {
@@ -53,11 +53,11 @@ bool RawPCM::calc() {
     sample_buf[i] = tmp;
   }
 
-  this->_props.buffer.resize(sample_buf.size());
+  this->_buffer.resize(sample_buf.size());
   for (size_t i = 0; i < sample_buf.size(); i++) {
     const auto amp = static_cast<double>(sample_buf[i]) / static_cast<double>(std::numeric_limits<uint8_t>::max());
     const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi * 510.0));
-    this->_props.buffer[i] = duty;
+    this->_buffer[i] = duty;
   }
   return true;
 }
@@ -77,7 +77,7 @@ T read_from_stream(std::ifstream& fsp) {
 }  // namespace
 
 Wav::Wav(std::filesystem::path filename, const uint32_t mod_sampling_freq_div) : Modulation(), _filename(std::move(filename)) {
-  this->_props.freq_div = mod_sampling_freq_div;
+  this->_freq_div = mod_sampling_freq_div;
 }
 
 bool Wav::calc() {
@@ -163,7 +163,7 @@ bool Wav::calc() {
     sample_buf[i] = buf[idx];
   }
 
-  this->_props.buffer = std::move(sample_buf);
+  this->_buffer = std::move(sample_buf);
   return true;
 }
 }  // namespace autd3::modulation
