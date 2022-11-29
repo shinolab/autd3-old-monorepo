@@ -3,7 +3,7 @@
 // Created Date: 22/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ bool LegacyMode::pack_sync(const std::unique_ptr<const driver::Driver>& driver, 
     spdlog::error("Cannot change frequency in LegacyMode.");
     return false;
   }
-  driver->sync(cycles.data(), tx);
+  driver->sync(cycles, tx);
   return true;
 }
 void LegacyMode::pack_gain_header(const std::unique_ptr<const driver::Driver>& driver, driver::TxDatagram& tx) const noexcept {
@@ -41,7 +41,7 @@ bool LegacyMode::pack_stm_gain_body(const std::unique_ptr<const driver::Driver>&
 }
 std::unique_ptr<LegacyMode> LegacyMode::create() noexcept { return std::make_unique<LegacyMode>(); }
 bool NormalMode::pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles, driver::TxDatagram& tx) const {
-  driver->sync(cycles.data(), tx);
+  driver->sync(cycles, tx);
   return true;
 }
 void NormalMode::pack_gain_header(const std::unique_ptr<const driver::Driver>& driver, driver::TxDatagram& tx) const noexcept {
@@ -81,7 +81,7 @@ bool NormalMode::pack_stm_gain_body(const std::unique_ptr<const driver::Driver>&
 std::unique_ptr<NormalMode> NormalMode::create() noexcept { return std::make_unique<NormalMode>(); }
 bool NormalPhaseMode::pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles,
                                 driver::TxDatagram& tx) const {
-  driver->sync(cycles.data(), tx);
+  driver->sync(cycles, tx);
   return true;
 }
 void NormalPhaseMode::pack_gain_header(const std::unique_ptr<const driver::Driver>& driver, driver::TxDatagram& tx) const noexcept {

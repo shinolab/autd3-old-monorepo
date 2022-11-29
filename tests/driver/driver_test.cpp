@@ -381,7 +381,7 @@ TEST(CPUTest, operation_sync_v2_6) {
   cycle.reserve(NUM_TRANS_IN_UNIT * 10);
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) cycle.emplace_back(dist(engine));
 
-  driver.sync(cycle.data(), tx);
+  driver.sync(cycle, tx);
 
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::MOD));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_SILENCER));

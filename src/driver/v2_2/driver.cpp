@@ -36,21 +36,21 @@ void DriverV2_2::null_body(TxDatagram& tx) const noexcept {
   tx.num_bodies = 0;
 }
 
-void DriverV2_2::sync(const uint16_t* const cycles, TxDatagram& tx) const noexcept {
+void DriverV2_2::sync(const std::vector<uint16_t>& cycles, TxDatagram& tx) const noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::MOD);
   tx.header().cpu_flag.remove(CPUControlFlags::CONFIG_SILENCER);
   tx.header().cpu_flag.set(CPUControlFlags::CONFIG_SYNC);
   tx.num_bodies = tx.num_devices();
 
-  std::memcpy(tx.bodies_ptr(), cycles, tx.bodies_size());
+  std::memcpy(tx.bodies_ptr(), cycles.data(), tx.bodies_size());
 }
 
-void DriverV2_2::mod_delay(const uint16_t* const delays, TxDatagram& tx) const noexcept {
+void DriverV2_2::mod_delay(const std::vector<uint16_t>& delays, TxDatagram& tx) const noexcept {
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.set(CPUControlFlags::MOD_DELAY);
   tx.num_bodies = tx.num_devices();
 
-  std::memcpy(tx.bodies_ptr(), delays, tx.bodies_size());
+  std::memcpy(tx.bodies_ptr(), delays.data(), tx.bodies_size());
 }
 
 bool DriverV2_2::modulation(const uint8_t msg_id, const std::vector<uint8_t>& mod_data, size_t& sent, const uint32_t freq_div, TxDatagram& tx) const {
