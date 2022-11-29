@@ -22,10 +22,10 @@
 namespace autd3::driver {
 
 /**
- * \brief Focus data structure for PointSTM
+ * \brief Focus data structure for FocusSTM
  * \details The focal point data consists of the three-dimensional focus position from the local coordinates of a device and duty shift data that
 control amplitude control. The focus position is represented in 18-bit signed fixed-point for each axis, where the unit is
-autd3::driver::POINT_STM_FIXED_NUM_UNIT. The duty ratio is cycle >> (duty_shift+1): When duty_shift=0, the duty ratio is cycle/2, which means maximum
+autd3::driver::FOCUS_STM_FIXED_NUM_UNIT. The duty ratio is cycle >> (duty_shift+1): When duty_shift=0, the duty ratio is cycle/2, which means maximum
 amplitude.
  */
 struct STMFocus {
@@ -35,9 +35,9 @@ struct STMFocus {
    * The duty shift data is stored next to the z-axis data. The highest 2 bits are not used.
    */
   explicit STMFocus(const double x, const double y, const double z, const uint8_t duty_shift) noexcept {
-    const auto ix = static_cast<int32_t>(std::round(x / POINT_STM_FIXED_NUM_UNIT));
-    const auto iy = static_cast<int32_t>(std::round(y / POINT_STM_FIXED_NUM_UNIT));
-    const auto iz = static_cast<int32_t>(std::round(z / POINT_STM_FIXED_NUM_UNIT));
+    const auto ix = static_cast<int32_t>(std::round(x / FOCUS_STM_FIXED_NUM_UNIT));
+    const auto iy = static_cast<int32_t>(std::round(y / FOCUS_STM_FIXED_NUM_UNIT));
+    const auto iz = static_cast<int32_t>(std::round(z / FOCUS_STM_FIXED_NUM_UNIT));
     _data[0] = static_cast<uint16_t>(ix & 0xFFFF);
     _data[1] = static_cast<uint16_t>(iy << 2 & 0xFFFC) | static_cast<uint16_t>(ix >> 30 & 0x0002) | static_cast<uint16_t>(ix >> 16 & 0x0001);
     _data[2] = static_cast<uint16_t>(iz << 4 & 0xFFF0) | static_cast<uint16_t>(iy >> 28 & 0x0008) | static_cast<uint16_t>(iy >> 14 & 0x0007);
@@ -49,20 +49,20 @@ struct STMFocus {
 };
 
 /**
- * \brief Initial Body data for PointSTM
+ * \brief Initial Body data for FocusSTM
  * \details The number of STMFocus data is stored in the first 16 bits, the frequency division data in the next 32 bits, and the sound speed data in
  the next 32 bits. The STMFocus data is stored after them.
  */
-struct PointSTMBodyInitial {
+struct FocusSTMBodyInitial {
   /**
    * \brief This data is cast from the Body data. Never construct directly.
    */
-  PointSTMBodyInitial() = delete;
-  ~PointSTMBodyInitial() = delete;
-  PointSTMBodyInitial(const PointSTMBodyInitial& v) = delete;
-  PointSTMBodyInitial& operator=(const PointSTMBodyInitial& obj) = delete;
-  PointSTMBodyInitial(PointSTMBodyInitial&& obj) = delete;
-  PointSTMBodyInitial& operator=(PointSTMBodyInitial&& obj) = delete;
+  FocusSTMBodyInitial() = delete;
+  ~FocusSTMBodyInitial() = delete;
+  FocusSTMBodyInitial(const FocusSTMBodyInitial& v) = delete;
+  FocusSTMBodyInitial& operator=(const FocusSTMBodyInitial& obj) = delete;
+  FocusSTMBodyInitial(FocusSTMBodyInitial&& obj) = delete;
+  FocusSTMBodyInitial& operator=(FocusSTMBodyInitial&& obj) = delete;
 
   [[nodiscard]] const uint16_t* data() const noexcept { return _data; }
 
@@ -85,19 +85,19 @@ struct PointSTMBodyInitial {
 };
 
 /**
- * \brief Subsequent Body data for PointSTM
+ * \brief Subsequent Body data for FocusSTM
  * \details The number of STMFocus data is stored in the first 16 bits, followed by the STMFocus data.
  */
-struct PointSTMBodySubsequent {
+struct FocusSTMBodySubsequent {
   /**
    * \brief This data is cast from the Body data. Never construct directly.
    */
-  PointSTMBodySubsequent() = delete;
-  ~PointSTMBodySubsequent() = delete;
-  PointSTMBodySubsequent(const PointSTMBodySubsequent& v) = delete;
-  PointSTMBodySubsequent& operator=(const PointSTMBodySubsequent& obj) = delete;
-  PointSTMBodySubsequent(PointSTMBodySubsequent&& obj) = delete;
-  PointSTMBodySubsequent& operator=(PointSTMBodySubsequent&& obj) = delete;
+  FocusSTMBodySubsequent() = delete;
+  ~FocusSTMBodySubsequent() = delete;
+  FocusSTMBodySubsequent(const FocusSTMBodySubsequent& v) = delete;
+  FocusSTMBodySubsequent& operator=(const FocusSTMBodySubsequent& obj) = delete;
+  FocusSTMBodySubsequent(FocusSTMBodySubsequent&& obj) = delete;
+  FocusSTMBodySubsequent& operator=(FocusSTMBodySubsequent&& obj) = delete;
 
   [[nodiscard]] const uint16_t* data() const noexcept { return _data; }
 
@@ -166,12 +166,12 @@ struct Body {
   Body(Body&& obj) = delete;
   Body& operator=(Body&& obj) = delete;
 
-  [[nodiscard]] const PointSTMBodyInitial& point_stm_initial() const noexcept { return *reinterpret_cast<const PointSTMBodyInitial* const>(this); }
-  PointSTMBodyInitial& point_stm_initial() noexcept { return *reinterpret_cast<PointSTMBodyInitial*>(this); }
-  [[nodiscard]] const PointSTMBodySubsequent& point_stm_subsequent() const noexcept {
-    return *reinterpret_cast<const PointSTMBodySubsequent* const>(this);
+  [[nodiscard]] const FocusSTMBodyInitial& focus_stm_initial() const noexcept { return *reinterpret_cast<const FocusSTMBodyInitial* const>(this); }
+  FocusSTMBodyInitial& focus_stm_initial() noexcept { return *reinterpret_cast<FocusSTMBodyInitial*>(this); }
+  [[nodiscard]] const FocusSTMBodySubsequent& focus_stm_subsequent() const noexcept {
+    return *reinterpret_cast<const FocusSTMBodySubsequent* const>(this);
   }
-  PointSTMBodySubsequent& point_stm_subsequent() noexcept { return *reinterpret_cast<PointSTMBodySubsequent*>(this); }
+  FocusSTMBodySubsequent& focus_stm_subsequent() noexcept { return *reinterpret_cast<FocusSTMBodySubsequent*>(this); }
 
   [[nodiscard]] const GainSTMBodyInitial& gain_stm_initial() const noexcept { return *reinterpret_cast<const GainSTMBodyInitial* const>(this); }
   GainSTMBodyInitial& gain_stm_initial() noexcept { return *reinterpret_cast<GainSTMBodyInitial*>(this); }

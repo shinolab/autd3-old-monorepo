@@ -14,7 +14,7 @@
 use crate::{
     fpga::{Duty, LegacyDrive, Phase},
     hardware::NUM_TRANS_IN_UNIT,
-    Drive, Mode, POINT_STM_FIXED_NUM_UNIT,
+    Drive, Mode, FOCUS_STM_FIXED_NUM_UNIT,
 };
 
 #[derive(Clone, Copy)]
@@ -42,19 +42,19 @@ impl Body {
         unsafe { std::mem::transmute(&mut self.data) }
     }
 
-    pub fn point_stm_initial(&self) -> &PointSTMBodyInitial {
+    pub fn focus_stm_initial(&self) -> &FocusSTMBodyInitial {
         unsafe { std::mem::transmute(self) }
     }
 
-    pub fn point_stm_initial_mut(&mut self) -> &mut PointSTMBodyInitial {
+    pub fn focus_stm_initial_mut(&mut self) -> &mut FocusSTMBodyInitial {
         unsafe { std::mem::transmute(self) }
     }
 
-    pub fn point_stm_subsequent(&self) -> &PointSTMBodySubsequent {
+    pub fn focus_stm_subsequent(&self) -> &FocusSTMBodySubsequent {
         unsafe { std::mem::transmute(self) }
     }
 
-    pub fn point_stm_subsequent_mut(&mut self) -> &mut PointSTMBodySubsequent {
+    pub fn focus_stm_subsequent_mut(&mut self) -> &mut FocusSTMBodySubsequent {
         unsafe { std::mem::transmute(self) }
     }
 
@@ -88,9 +88,9 @@ pub struct SeqFocus {
 
 impl SeqFocus {
     pub fn new(x: f64, y: f64, z: f64, duty_shift: u8) -> Self {
-        let x = (x / POINT_STM_FIXED_NUM_UNIT).round() as i32;
-        let y = (y / POINT_STM_FIXED_NUM_UNIT).round() as i32;
-        let z = (z / POINT_STM_FIXED_NUM_UNIT).round() as i32;
+        let x = (x / FOCUS_STM_FIXED_NUM_UNIT).round() as i32;
+        let y = (y / FOCUS_STM_FIXED_NUM_UNIT).round() as i32;
+        let z = (z / FOCUS_STM_FIXED_NUM_UNIT).round() as i32;
         let d0 = (x & 0xFFFF) as u16;
         let d1 =
             ((y << 2) & 0xFFFC) as u16 | ((x >> 30) & 0x0002) as u16 | ((x >> 16) & 0x0001) as u16;
@@ -106,11 +106,11 @@ impl SeqFocus {
 }
 
 #[repr(C)]
-pub struct PointSTMBodyInitial {
+pub struct FocusSTMBodyInitial {
     data: [u16; NUM_TRANS_IN_UNIT],
 }
 
-impl PointSTMBodyInitial {
+impl FocusSTMBodyInitial {
     pub fn data(&self) -> &[u16] {
         &self.data
     }
@@ -138,11 +138,11 @@ impl PointSTMBodyInitial {
 }
 
 #[repr(C)]
-pub struct PointSTMBodySubsequent {
+pub struct FocusSTMBodySubsequent {
     data: [u16; NUM_TRANS_IN_UNIT],
 }
 
-impl PointSTMBodySubsequent {
+impl FocusSTMBodySubsequent {
     pub fn data(&self) -> &[u16] {
         &self.data
     }

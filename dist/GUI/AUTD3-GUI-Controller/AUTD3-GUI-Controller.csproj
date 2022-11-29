@@ -28,7 +28,7 @@
     <None Remove="Views\Modulation\SineLegacyPage.xaml" />
     <None Remove="Views\Modulation\SineSquaredPage.xaml" />
     <None Remove="Views\Modulation\SquarePage.xaml" />
-    <None Remove="Views\PointSTMPage.xaml" />
+    <None Remove="Views\FocusSTMPage.xaml" />
     <None Remove="Views\SilencerPage.xaml" />
   </ItemGroup>
 
@@ -63,7 +63,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="Views\PointSTMPage.xaml">
+    <Page Update="Views\FocusSTMPage.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
     <Page Update="Views\SilencerPage.xaml">

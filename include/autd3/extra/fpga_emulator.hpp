@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -188,7 +188,7 @@ class FPGA {
         if (is_legacy_mode()) return std::make_pair(gain_stm_legacy_duty(idx), gain_stm_legacy_phase(idx));
         return std::make_pair(gain_stm_normal_duty(idx), gain_stm_normal_phase(idx));
       }
-      return std::make_pair(point_stm_duty(idx), point_stm_phase(idx));
+      return std::make_pair(focus_stm_duty(idx), focus_stm_phase(idx));
     }
     if (is_legacy_mode()) return std::make_pair(legacy_duty(), legacy_phase());
     return std::make_pair(normal_duty(), normal_phase());
@@ -291,7 +291,7 @@ class FPGA {
     return d;
   }
 
-  [[nodiscard]] std::vector<driver::Duty> point_stm_duty(const size_t idx) const {
+  [[nodiscard]] std::vector<driver::Duty> focus_stm_duty(const size_t idx) const {
     const auto ultrasound_cycles = cycles();
     std::vector<driver::Duty> d;
     d.resize(_num_transducers);
@@ -302,7 +302,7 @@ class FPGA {
     return d;
   }
 
-  [[nodiscard]] std::vector<driver::Phase> point_stm_phase(const size_t idx) const {
+  [[nodiscard]] std::vector<driver::Phase> focus_stm_phase(const size_t idx) const {
     const auto ultrasound_cycles = cycles();
     const auto sound_speed = static_cast<uint64_t>(this->sound_speed());
     std::vector<driver::Phase> d;

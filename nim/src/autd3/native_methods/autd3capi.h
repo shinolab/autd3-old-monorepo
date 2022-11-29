@@ -1,15 +1,15 @@
 // This file was automatically generated from header file
 
 #ifdef C2NIM
-#  dynlib dll
-#  cdecl
-#  if defined(windows)
-#    define dll "bin/autd3capi.dll"
-#  elif defined(macosx)
-#    define dll "bin/libautd3capi.dylib"
-#  else
-#    define dll "bin/libautd3capi.so"
-#  endif
+#dynlib dll
+#cdecl
+#if defined(windows)
+#define dll "bin/autd3capi.dll"
+#elif defined(macosx)
+#define dll "bin/libautd3capi.dylib"
+#else
+#define dll "bin/libautd3capi.so"
+#endif
 #endif
 
 void AUTDSetLogLevel(int32 level);
@@ -68,9 +68,9 @@ uint32 AUTDModulationSamplingFrequencyDivision(void* mod);
 void AUTDModulationSetSamplingFrequencyDivision(void* mod, uint32 freq_div);
 float64 AUTDModulationSamplingFrequency(void* mod);
 void AUTDDeleteModulation(void* mod);
-void AUTDPointSTM(void** out, float64 sound_speed);
+void AUTDFocusSTM(void** out, float64 sound_speed);
 void AUTDGainSTM(void** out, void* handle);
-void AUTDPointSTMAdd(void* stm, float64 x, float64 y, float64 z, uint8 shift);
+void AUTDFocusSTMAdd(void* stm, float64 x, float64 y, float64 z, uint8 shift);
 void AUTDGainSTMAdd(void* stm, void* gain);
 uint16 AUTDGetGainSTMMode(void* stm);
 void AUTDSetGainSTMMode(void* stm, uint16 mode);

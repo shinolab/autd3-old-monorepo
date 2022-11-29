@@ -1,17 +1,17 @@
 %{
-%File: point_stm.m
+%File: focus_stm.m
 %Project: examples
 %Created Date: 11/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 17/11/2022
+%Last Modified: 29/11/2022
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
 %
 %}
 
-function point_stm(cnt)
+function focus_stm(cnt)
     config = SilencerConfig.none();
     cnt.send(config);
     config.delete();
@@ -22,7 +22,7 @@ function point_stm(cnt)
     center = [x y z];
 
     sound_speed = cnt.sound_speed;
-    stm = PointSTM(sound_speed);
+    stm = FocusSTM(sound_speed);
     points_num = 200;
     radius = 30.0;
 

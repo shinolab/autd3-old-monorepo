@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/11/2022
+ * Last Modified: 29/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,9 +23,9 @@
 #define MOD_BUF_SEGMENT_SIZE (1 << MOD_BUF_SEGMENT_SIZE_WIDTH)
 #define MOD_BUF_SEGMENT_SIZE_MASK (MOD_BUF_SEGMENT_SIZE - 1)
 
-#define POINT_STM_BUF_SEGMENT_SIZE_WIDTH (11)
-#define POINT_STM_BUF_SEGMENT_SIZE (1 << POINT_STM_BUF_SEGMENT_SIZE_WIDTH)
-#define POINT_STM_BUF_SEGMENT_SIZE_MASK (POINT_STM_BUF_SEGMENT_SIZE - 1)
+#define FOCUS_STM_BUF_SEGMENT_SIZE_WIDTH (11)
+#define FOCUS_STM_BUF_SEGMENT_SIZE (1 << FOCUS_STM_BUF_SEGMENT_SIZE_WIDTH)
+#define FOCUS_STM_BUF_SEGMENT_SIZE_MASK (FOCUS_STM_BUF_SEGMENT_SIZE - 1)
 
 #define GAIN_STM_BUF_SEGMENT_SIZE_WIDTH (5)
 #define GAIN_STM_BUF_SEGMENT_SIZE (1 << GAIN_STM_BUF_SEGMENT_SIZE_WIDTH)
@@ -112,10 +112,10 @@ typedef struct {
     } CYCLE;
     struct {
       uint16_t data[TRANS_NUM];
-    } POINT_STM_HEAD;
+    } FOCUS_STM_HEAD;
     struct {
       uint16_t data[TRANS_NUM];
-    } POINT_STM_BODY;
+    } FOCUS_STM_BODY;
     struct {
       uint16_t data[TRANS_NUM];
     } GAIN_STM_HEAD;
@@ -240,7 +240,7 @@ static void write_normal_op(const volatile GlobalHeader* header, const volatile 
   }
 }
 
-static void write_point_stm(const volatile GlobalHeader* header, const volatile Body* body) {
+static void write_focus_stm(const volatile GlobalHeader* header, const volatile Body* body) {
   volatile uint16_t* base = (volatile uint16_t*)FPGA_BASE;
   uint16_t addr;
   volatile uint16_t* dst;
@@ -254,22 +254,22 @@ static void write_point_stm(const volatile GlobalHeader* header, const volatile 
     _stm_write = 0;
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, 0);
 
-    size = body->DATA.POINT_STM_HEAD.data[0];
-    freq_div = (body->DATA.POINT_STM_HEAD.data[2] << 16) | body->DATA.POINT_STM_HEAD.data[1];
-    sound_speed = (body->DATA.POINT_STM_HEAD.data[4] << 16) | body->DATA.POINT_STM_HEAD.data[3];
+    size = body->DATA.FOCUS_STM_HEAD.data[0];
+    freq_div = (body->DATA.FOCUS_STM_HEAD.data[2] << 16) | body->DATA.FOCUS_STM_HEAD.data[1];
+    sound_speed = (body->DATA.FOCUS_STM_HEAD.data[4] << 16) | body->DATA.FOCUS_STM_HEAD.data[3];
 
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0, (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SOUND_SPEED_0, (uint16_t*)&sound_speed, sizeof(uint32_t) >> 1);
-    src = body->DATA.POINT_STM_HEAD.data + 5;
+    src = body->DATA.FOCUS_STM_HEAD.data + 5;
   } else {
-    size = body->DATA.POINT_STM_BODY.data[0];
-    src = body->DATA.POINT_STM_BODY.data + 1;
+    size = body->DATA.FOCUS_STM_BODY.data[0];
+    src = body->DATA.FOCUS_STM_BODY.data + 1;
   }
 
-  segment_capacity = (_stm_write & ~POINT_STM_BUF_SEGMENT_SIZE_MASK) + POINT_STM_BUF_SEGMENT_SIZE - _stm_write;
+  segment_capacity = (_stm_write & ~FOCUS_STM_BUF_SEGMENT_SIZE_MASK) + FOCUS_STM_BUF_SEGMENT_SIZE - _stm_write;
   if (size <= segment_capacity) {
     cnt = size;
-    addr = get_addr(BRAM_SELECT_STM, (_stm_write & POINT_STM_BUF_SEGMENT_SIZE_MASK) << 3);
+    addr = get_addr(BRAM_SELECT_STM, (_stm_write & FOCUS_STM_BUF_SEGMENT_SIZE_MASK) << 3);
     dst = &base[addr];
     while (cnt--) {
       *dst++ = *src++;
@@ -281,7 +281,7 @@ static void write_point_stm(const volatile GlobalHeader* header, const volatile 
     _stm_write += size;
   } else {
     cnt = segment_capacity;
-    addr = get_addr(BRAM_SELECT_STM, (_stm_write & POINT_STM_BUF_SEGMENT_SIZE_MASK) << 3);
+    addr = get_addr(BRAM_SELECT_STM, (_stm_write & FOCUS_STM_BUF_SEGMENT_SIZE_MASK) << 3);
     dst = &base[addr];
     while (cnt--) {
       *dst++ = *src++;
@@ -293,10 +293,10 @@ static void write_point_stm(const volatile GlobalHeader* header, const volatile 
     _stm_write += segment_capacity;
 
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET,
-               (_stm_write & ~POINT_STM_BUF_SEGMENT_SIZE_MASK) >> POINT_STM_BUF_SEGMENT_SIZE_WIDTH);
+               (_stm_write & ~FOCUS_STM_BUF_SEGMENT_SIZE_MASK) >> FOCUS_STM_BUF_SEGMENT_SIZE_WIDTH);
 
     cnt = size - segment_capacity;
-    addr = get_addr(BRAM_SELECT_STM, (_stm_write & POINT_STM_BUF_SEGMENT_SIZE_MASK) << 3);
+    addr = get_addr(BRAM_SELECT_STM, (_stm_write & FOCUS_STM_BUF_SEGMENT_SIZE_MASK) << 3);
     dst = &base[addr];
     while (cnt--) {
       *dst++ = *src++;
@@ -559,7 +559,7 @@ void recv_ethercat(void) {
       }
 
       if ((header->fpga_ctl_reg & STM_GAIN_MODE) == 0)
-        write_point_stm(header, body);
+        write_focus_stm(header, body);
       else if ((header->fpga_ctl_reg & LEGACY_MODE) == 0)
         write_gain_stm(header, body);
       else

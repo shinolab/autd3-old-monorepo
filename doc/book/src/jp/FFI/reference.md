@@ -745,15 +745,15 @@ Modulationを削除する.
 | mod                    | void* | in     | pointer to modulation |
 | return                 | void  | -      | -                     |
 
-## AUTDPointSTM (autd3capi)
+## AUTDFocusSTM (autd3capi)
 
-Point STMを作成する.
+Focus STMを作成する.
 
 作成したSTMは最後に`AUTDDeleteSTM`で削除する必要がある.
 
 | Argument name / return | type   | in/out | description                     |
 | ---------------------- | ------ | ------ | ------------------------------- |
-| out                    | void** | out    | pointer to pointer to Point STM |
+| out                    | void** | out    | pointer to pointer to Focus STM |
 | sound_speed            | double | in     | sound speed                     |
 | return                 | void   | -      | -                               |
 
@@ -771,13 +771,13 @@ handleは`AUTDCreateController`で作成したものを使う.
 | handle                 | void*  | in     | pointer to Controller          |
 | return                 | void   | -      | -                              |
 
-## AUTDPointSTMAdd (autd3capi)
+## AUTDFocusSTMAdd (autd3capi)
 
-Point STMに焦点を追加する.
+Focus STMに焦点を追加する.
 
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
-| stm                    | void*   | in     | pointer to Point STM        |
+| stm                    | void*   | in     | pointer to Focus STM        |
 | x                      | double  | in     | x coordinate of focal point |
 | y                      | double  | in     | y coordinate of focal point |
 | z                      | double  | in     | z coordinate of focal point |
@@ -790,7 +790,7 @@ Gain STMにgainを追加する.
 
 | Argument name / return | type  | in/out | description          |
 | ---------------------- | ----- | ------ | -------------------- |
-| stm                    | void* | in     | pointer to Point STM |
+| stm                    | void* | in     | pointer to Focus STM |
 | gain                   | void* | in     | pointer to Gain      |
 | return                 | void    | -      | -                  |
 

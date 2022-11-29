@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/11/2022
+ * Last Modified: 29/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,8 +24,8 @@ pub const MSG_SIMULATOR_INIT: u8 = 0xFF;
 pub const MOD_HEAD_DATA_SIZE: usize = 120;
 pub const MOD_BODY_DATA_SIZE: usize = 124;
 
-pub const POINT_STM_HEAD_DATA_SIZE: usize = 61;
-pub const POINT_STM_BODY_DATA_SIZE: usize = 62;
+pub const FOCUS_STM_HEAD_DATA_SIZE: usize = 61;
+pub const FOCUS_STM_BODY_DATA_SIZE: usize = 62;
 
 bitflags::bitflags! {
     pub struct CPUControlFlags : u8 {

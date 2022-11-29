@@ -3,7 +3,7 @@
 # Created Date: 13/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 10/11/2022
+# Last Modified: 29/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ import strutils
 import autd3
 import focus
 import bessel
-import point_stm
+import focus_stm
 import gain_stm
 import holo
 import custom
@@ -24,7 +24,7 @@ proc run*(cnt: Controller) =
     let samples = [(focus_test, "Single Focal Point Sample"),
     (bessel_test, "BesselBeam Point Sample"),
     (holo_test, "Holo Gain Sample"),
-    (point_stm_test, "PointSTM Sample"),
+    (focus_stm_test, "FocusSTM Sample"),
     (gain_stm_test, "GainSTM Sample"),
     (custom_test, "CustomGain Sample")]
 

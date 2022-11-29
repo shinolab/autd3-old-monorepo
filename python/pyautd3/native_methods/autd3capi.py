@@ -195,14 +195,14 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDDeleteModulation.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDDeleteModulation.restype = None
 
-        self.dll.AUTDPointSTM.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_double] 
-        self.dll.AUTDPointSTM.restype = None
+        self.dll.AUTDFocusSTM.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_double] 
+        self.dll.AUTDFocusSTM.restype = None
 
         self.dll.AUTDGainSTM.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p] 
         self.dll.AUTDGainSTM.restype = None
 
-        self.dll.AUTDPointSTMAdd.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_uint8] 
-        self.dll.AUTDPointSTMAdd.restype = None
+        self.dll.AUTDFocusSTMAdd.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_uint8] 
+        self.dll.AUTDFocusSTMAdd.restype = None
 
         self.dll.AUTDGainSTMAdd.argtypes = [ctypes.c_void_p, ctypes.c_void_p] 
         self.dll.AUTDGainSTMAdd.restype = None
