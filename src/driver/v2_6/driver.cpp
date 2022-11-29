@@ -173,7 +173,7 @@ void DriverV2_6::normal_phase_body(const std::vector<Drive>& drives, TxDatagram&
   tx.num_bodies = tx.num_devices();
 }
 
-void DriverV2_6::point_stm_initialer(TxDatagram& tx) const noexcept {
+void DriverV2_6::focus_stm_initialer(TxDatagram& tx) const noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
   tx.header().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
@@ -185,7 +185,7 @@ void DriverV2_6::point_stm_initialer(TxDatagram& tx) const noexcept {
   tx.num_bodies = 0;
 }
 
-size_t DriverV2_6::point_stm_send_size(const size_t total_size, const size_t sent, const std::vector<size_t>& device_map) const noexcept {
+size_t DriverV2_6::focus_stm_send_size(const size_t total_size, const size_t sent, const std::vector<size_t>& device_map) const noexcept {
   const size_t tr_num = *std::min_element(device_map.begin(), device_map.end());
   const size_t data_len = tr_num * sizeof(uint16_t);
   const auto max_size = sent == 0 ? (data_len - sizeof(uint16_t) - sizeof(uint32_t) - sizeof(uint32_t)) / sizeof(STMFocus)
@@ -193,18 +193,18 @@ size_t DriverV2_6::point_stm_send_size(const size_t total_size, const size_t sen
   return (std::min)(total_size - sent, max_size);
 }
 
-bool DriverV2_6::point_stm_subsequent(const std::vector<std::vector<STMFocus>>& points, size_t& sent, const size_t total_size,
+bool DriverV2_6::focus_stm_subsequent(const std::vector<std::vector<STMFocus>>& points, size_t& sent, const size_t total_size,
                                       const uint32_t freq_div, const double sound_speed, TxDatagram& tx) const {
-  if (total_size > v2_6::POINT_STM_BUF_SIZE_MAX) {
-    spdlog::error("PointSTM out of buffer");
+  if (total_size > v2_6::FOCUS_STM_BUF_SIZE_MAX) {
+    spdlog::error("FocusSTM out of buffer");
     return false;
   }
 
   if (points.empty() || points[0].empty()) return true;
 
   if (sent == 0) {
-    if (freq_div < v2_6::POINT_STM_SAMPLING_FREQ_DIV_MIN) {
-      spdlog::error("STM frequency division is out of range. Minimum is {}, but you use {}.", v2_6::POINT_STM_SAMPLING_FREQ_DIV_MIN, freq_div);
+    if (freq_div < v2_6::FOCUS_STM_SAMPLING_FREQ_DIV_MIN) {
+      spdlog::error("STM frequency division is out of range. Minimum is {}, but you use {}.", v2_6::FOCUS_STM_SAMPLING_FREQ_DIV_MIN, freq_div);
       return false;
     }
     tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
@@ -216,17 +216,17 @@ bool DriverV2_6::point_stm_subsequent(const std::vector<std::vector<STMFocus>>& 
     for (size_t i = 0; i < tx.num_devices(); i++) {
       auto& d = tx.body(i);
       const auto& s = points.at(i);
-      d.point_stm_initial().set_size(static_cast<uint16_t>(s.size()));
-      d.point_stm_initial().set_freq_div(freq_div);
-      d.point_stm_initial().set_sound_speed(sound_speed_internal);
-      d.point_stm_initial().set_point(s);
+      d.focus_stm_initial().set_size(static_cast<uint16_t>(s.size()));
+      d.focus_stm_initial().set_freq_div(freq_div);
+      d.focus_stm_initial().set_sound_speed(sound_speed_internal);
+      d.focus_stm_initial().set_point(s);
     }
   } else {
     for (size_t i = 0; i < tx.num_devices(); i++) {
       auto& d = tx.body(i);
       const auto& s = points.at(i);
-      d.point_stm_subsequent().set_size(static_cast<uint16_t>(s.size()));
-      d.point_stm_subsequent().set_point(s);
+      d.focus_stm_subsequent().set_size(static_cast<uint16_t>(s.size()));
+      d.focus_stm_subsequent().set_point(s);
     }
   }
 

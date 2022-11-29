@@ -4,24 +4,24 @@ using Microsoft.UI.Xaml;
 
 namespace AUTD3_GUI_Controller.Views;
 
-public sealed partial class PointSTMPage
+public sealed partial class FocusSTMPage
 {
     private readonly ILocalizer _localizer;
 
-    public PointSTMViewModel ViewModel
+    public FocusSTMViewModel ViewModel
     {
         get;
     }
 
-    public PointSTMPage()
+    public FocusSTMPage()
     {
-        ViewModel = App.GetService<PointSTMViewModel>();
+        ViewModel = App.GetService<FocusSTMViewModel>();
         InitializeComponent();
 
         _localizer = App.GetService<ILocalizer>();
     }
 
-    private void PointSTMPage_OnLoaded(object sender, RoutedEventArgs e)
+    private void FocusSTMPage_OnLoaded(object sender, RoutedEventArgs e)
     {
         ViewModel.XamlRoot = Root.XamlRoot;
         _localizer.RunLocalization(Root);

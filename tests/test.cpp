@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -540,7 +540,7 @@ TEST(ControllerTest, simple_normal_phase) {
   autd.close();
 }
 
-TEST(ControllerTest, point_stm) {
+TEST(ControllerTest, focus_stm) {
   autd3::Controller autd;
 
   autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
@@ -558,16 +558,16 @@ TEST(ControllerTest, point_stm) {
   const autd3::Vector3 center = autd.geometry().center();
 
   constexpr size_t size = 200;
-  std::vector<autd3::Point> points;
+  std::vector<autd3::FocusSTM::Focus> points;
   constexpr auto radius = 30.0;
   std::vector<size_t> iota(size);
   std::iota(iota.begin(), iota.end(), 0);
   std::transform(iota.begin(), iota.end(), std::back_inserter(points), [&](const size_t i) {
     const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(size);
-    return autd3::Point(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
+    return autd3::FocusSTM::Focus(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
   });
 
-  autd3::PointSTM stm(autd.get_sound_speed());
+  autd3::FocusSTM stm(autd.get_sound_speed());
   std::copy(points.begin(), points.end(), std::back_inserter(stm));
 
   autd << stm;

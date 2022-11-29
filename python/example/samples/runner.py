@@ -4,7 +4,7 @@ Project: samples
 Created Date: 30/12/2020
 Author: Shun Suzuki
 -----
-Last Modified: 08/11/2022
+Last Modified: 29/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2020 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@ Copyright (c) 2020 Shun Suzuki. All rights reserved.
 
 from pyautd3 import Controller, Clear, Synchronize, Stop
 
-from . import focus, bessel, holo, custom, stm_gain, stm_point
+from . import focus, bessel, holo, custom, stm_gain, stm_focus
 
 
 def run(autd: Controller):
@@ -21,7 +21,7 @@ def run(autd: Controller):
         (focus.simple, "Single Focal Point Sample"),
         (bessel.bessel, "Bessel beam Sample"),
         (holo.holo, "Multiple Focal Points Sample"),
-        (stm_point.stm_point, "PointSequence (Hardware STM) Sample"),
+        (stm_focus.stm_focus, "PointSequence (Hardware STM) Sample"),
         (stm_gain.stm_gain, "GainSequence (Hardware STM with arbitrary Gain) Sample"),
         (custom.custom, "Custom Focus Sample")
     ]

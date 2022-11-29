@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2022
+ * Last Modified: 29/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ macro_rules! run {
             println!("[0]: Single Focal Point Test");
             println!("[1]: BesselBeam Test");
             println!("[2]: Multiple foci Test");
-            println!("[3]: PointSTM Test");
+            println!("[3]: FocusSTM Test");
             println!("[4]: GainSTM Test");
             if autd.geometry().num_devices() == 2 {
                 println!("[5]: Grouped Gain Test");
@@ -50,7 +50,7 @@ macro_rules! run {
                 Ok(0) => focus!(autd),
                 Ok(1) => bessel!(autd),
                 Ok(2) => holo!(autd),
-                Ok(3) => point_stm!(autd),
+                Ok(3) => focus_stm!(autd),
                 Ok(4) => gain_stm!(autd),
                 Ok(5) => grouped!(autd),
                 Ok(9) => trans_test!(autd),

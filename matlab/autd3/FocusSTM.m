@@ -1,24 +1,24 @@
 %{
-%File: PointSTM.m
+%File: FocusSTM.m
 %Project: autd3
 %Created Date: 10/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 17/11/2022
+%Last Modified: 29/11/2022
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
 %
 %}
 
-classdef PointSTM < STM
+classdef FocusSTM < STM
 
     methods
 
-        function obj = PointSTM(sound_speed)
+        function obj = FocusSTM(sound_speed)
             obj = obj@STM();
             pp = libpointer('voidPtrPtr', obj.ptr);
-            calllib('autd3capi', 'AUTDPointSTM', pp, sound_speed);
+            calllib('autd3capi', 'AUTDFocusSTM', pp, sound_speed);
         end
 
         function add(varargin)
@@ -31,7 +31,7 @@ classdef PointSTM < STM
                 shift = varargin{3};
             end
 
-            calllib('autd3capi', 'AUTDPointSTMAdd', obj.ptr, f(1), f(2), f(3), shift);
+            calllib('autd3capi', 'AUTDFocusSTMAdd', obj.ptr, f(1), f(2), f(3), shift);
         end
 
     end

@@ -4,7 +4,7 @@
  * Created Date: 13/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/11/2022
+ * Last Modified: 29/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ public class SampleRunner
         var examples = new List<(TestFn, string)> { (FocusTest.Test, "Single Focal Point Test"),
             (BesselBeamTest.Test, "BesselBeam Test"),
             (GainHoloTest.Test, "Multiple Focal Points Test"),
-            (PointSTMTest.Test, "PointSTM Test"),
+            (FocusSTMTest.Test, "FocusSTM Test"),
             (GainSTMTest.Test, "GainSTM Test"),
             (AdvancedTest.Test, "Advanced Test (Custom gain/modulation)"),
             (CustomTest.Test, "Custom Test (Custom Focus)")

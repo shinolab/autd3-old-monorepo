@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/05/2022
+ * Last Modified: 29/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,10 +12,10 @@
  */
 
 mod gain;
-mod point;
+mod focus;
 
 pub use gain::GainSTM;
-pub use point::PointSTM;
+pub use focus::FocusSTM;
 
 pub trait STM {
     fn set_freq(&mut self, freq: f64) -> f64;

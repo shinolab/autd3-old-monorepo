@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/10/2022
+ * Last Modified: 29/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,10 +36,10 @@ pub enum FPGAError {
     )]
     ModulationOutOfBuffer(usize),
     #[error(
-        "PointSTM buffer maximum is {}, but {0} are to be sent",
-        crate::POINT_STM_BUF_SIZE_MAX
+        "FocusSTM buffer maximum is {}, but {0} are to be sent",
+        crate::FOCUS_STM_BUF_SIZE_MAX
     )]
-    PointSTMOutOfBuffer(usize),
+    FocusSTMOutOfBuffer(usize),
     #[error("GainSTM buffer maximum is {1}, but {0} are to be sent")]
     GainSTMOutOfBuffer(usize, usize),
 }

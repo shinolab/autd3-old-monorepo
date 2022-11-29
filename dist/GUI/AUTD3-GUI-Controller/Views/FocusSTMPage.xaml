@@ -1,24 +1,24 @@
 ﻿<!--
-    File: PointSTMPage.xaml
+    File: FocusSTMPage.xaml
     Project: Views
     Created Date: 18/08/2022
     Author: Shun Suzuki
     =====
-Last Modified: 25/08/2022
+Last Modified: 29/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
     =====
     Copyright (c) 2022 Shun Suzuki. All rights reserved.
 -->
 
 <Page
-    x:Class="AUTD3_GUI_Controller.Views.PointSTMPage"
+    x:Class="AUTD3_GUI_Controller.Views.FocusSTMPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:localization="using:AK.Toolkit.WinUI3.Localization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Loaded="PointSTMPage_OnLoaded"
+    Loaded="FocusSTMPage_OnLoaded"
     mc:Ignorable="d">
 
     <Grid x:Name="Root">
