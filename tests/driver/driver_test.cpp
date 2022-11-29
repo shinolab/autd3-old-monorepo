@@ -3,7 +3,7 @@
 // Created Date: 20/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -556,13 +556,13 @@ TEST(CPUTest, operation_normal_phase_body_v2_6) {
 
   ASSERT_EQ(tx.num_bodies, 10);
 }
-TEST(CPUTest, operation_point_stm_header_v2_6) {
+TEST(CPUTest, operation_point_stm_initialer_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
                                 NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
-  driver.point_stm_header(tx);
+  driver.point_stm_initialer(tx);
 
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
@@ -573,7 +573,7 @@ TEST(CPUTest, operation_point_stm_header_v2_6) {
   ASSERT_EQ(tx.num_bodies, 0);
 }
 
-TEST(CPUTest, operation_point_stm_body_v2_6) {
+TEST(CPUTest, operation_point_stm_subsequent_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
@@ -597,44 +597,44 @@ TEST(CPUTest, operation_point_stm_body_v2_6) {
   constexpr double sound_speed = 340e3;
   constexpr uint32_t sp = 340 * 1024;
 
-  driver.point_stm_header(tx);
+  driver.point_stm_initialer(tx);
   size_t sent = 0;
-  driver.point_stm_body(points, sent, size, 3224, sound_speed, tx);
+  driver.point_stm_subsequent(points, sent, size, 3224, sound_speed, tx);
 
   ASSERT_EQ(sent, size);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
 
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_head().data()[0], 30);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_head().data()[1], 3224);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_head().data()[2], 0);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_head().data()[3], sp & 0xFFFF);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_head().data()[4], sp >> 16);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_initial().data()[0], 30);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_initial().data()[1], 3224);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_initial().data()[2], 0);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_initial().data()[3], sp & 0xFFFF);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_initial().data()[4], sp >> 16);
   ASSERT_EQ(tx.num_bodies, 10);
 
-  driver.point_stm_header(tx);
+  driver.point_stm_initialer(tx);
   sent = 0;
-  driver.point_stm_body(points, sent, 500, 3224, sound_speed, tx);
+  driver.point_stm_subsequent(points, sent, 500, 3224, sound_speed, tx);
 
   ASSERT_EQ(sent, size);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
 
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_head().data()[0], 30);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_initial().data()[0], 30);
   ASSERT_EQ(tx.num_bodies, 10);
 
-  driver.point_stm_header(tx);
+  driver.point_stm_initialer(tx);
   sent = 1;
-  driver.point_stm_body(points, sent, 500, 3224, sound_speed, tx);
+  driver.point_stm_subsequent(points, sent, 500, 3224, sound_speed, tx);
   ASSERT_EQ(sent, size + 1);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
 
-  driver.point_stm_header(tx);
-  driver.point_stm_body({}, sent, 0, 3224, sound_speed, tx);
+  driver.point_stm_initialer(tx);
+  driver.point_stm_subsequent({}, sent, 0, 3224, sound_speed, tx);
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
@@ -686,9 +686,9 @@ TEST(CPUTest, operation_gain_stm_legacy_body_v2_6) {
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_head().data()[0], 3224);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_head().data()[1], 0);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_head().data()[3], 5);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().data()[0], 3224);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().data()[1], 0);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().data()[3], 5);
   ASSERT_EQ(tx.num_bodies, 10);
 
   driver.gain_stm_legacy_header(tx);
@@ -758,8 +758,8 @@ TEST(CPUTest, operation_gain_stm_normal_phase_v2_6) {
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_head().data()[0], 3224);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_head().data()[1], 0);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().data()[0], 3224);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().data()[1], 0);
   ASSERT_EQ(tx.num_bodies, 10);
 
   driver.gain_stm_normal_header(tx);

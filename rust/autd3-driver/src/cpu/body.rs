@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/11/2022
+ * Last Modified: 29/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -42,35 +42,35 @@ impl Body {
         unsafe { std::mem::transmute(&mut self.data) }
     }
 
-    pub fn point_stm_head(&self) -> &PointSTMBodyHead {
+    pub fn point_stm_initial(&self) -> &PointSTMBodyInitial {
         unsafe { std::mem::transmute(self) }
     }
 
-    pub fn point_stm_head_mut(&mut self) -> &mut PointSTMBodyHead {
+    pub fn point_stm_initial_mut(&mut self) -> &mut PointSTMBodyInitial {
         unsafe { std::mem::transmute(self) }
     }
 
-    pub fn point_stm_body(&self) -> &PointSTMBodyBody {
+    pub fn point_stm_subsequent(&self) -> &PointSTMBodySubsequent {
         unsafe { std::mem::transmute(self) }
     }
 
-    pub fn point_stm_body_mut(&mut self) -> &mut PointSTMBodyBody {
+    pub fn point_stm_subsequent_mut(&mut self) -> &mut PointSTMBodySubsequent {
         unsafe { std::mem::transmute(self) }
     }
 
-    pub fn gain_stm_head(&self) -> &GainSTMBodyHead {
+    pub fn gain_stm_initial(&self) -> &GainSTMBodyInitial {
         unsafe { std::mem::transmute(self) }
     }
 
-    pub fn gain_stm_head_mut(&mut self) -> &mut GainSTMBodyHead {
+    pub fn gain_stm_initial_mut(&mut self) -> &mut GainSTMBodyInitial {
         unsafe { std::mem::transmute(self) }
     }
 
-    pub fn gain_stm_body(&self) -> &GainSTMBodyBody {
+    pub fn gain_stm_subsequent(&self) -> &GainSTMBodySubsequent {
         unsafe { std::mem::transmute(self) }
     }
 
-    pub fn gain_stm_body_mut(&mut self) -> &mut GainSTMBodyBody {
+    pub fn gain_stm_subsequent_mut(&mut self) -> &mut GainSTMBodySubsequent {
         unsafe { std::mem::transmute(self) }
     }
 }
@@ -106,11 +106,11 @@ impl SeqFocus {
 }
 
 #[repr(C)]
-pub struct PointSTMBodyHead {
+pub struct PointSTMBodyInitial {
     data: [u16; NUM_TRANS_IN_UNIT],
 }
 
-impl PointSTMBodyHead {
+impl PointSTMBodyInitial {
     pub fn data(&self) -> &[u16] {
         &self.data
     }
@@ -138,11 +138,11 @@ impl PointSTMBodyHead {
 }
 
 #[repr(C)]
-pub struct PointSTMBodyBody {
+pub struct PointSTMBodySubsequent {
     data: [u16; NUM_TRANS_IN_UNIT],
 }
 
-impl PointSTMBodyBody {
+impl PointSTMBodySubsequent {
     pub fn data(&self) -> &[u16] {
         &self.data
     }
@@ -160,11 +160,11 @@ impl PointSTMBodyBody {
 }
 
 #[repr(C)]
-pub struct GainSTMBodyHead {
+pub struct GainSTMBodyInitial {
     data: [u16; NUM_TRANS_IN_UNIT],
 }
 
-impl GainSTMBodyHead {
+impl GainSTMBodyInitial {
     pub fn data(&self) -> &[u16] {
         &self.data
     }
@@ -184,7 +184,7 @@ impl GainSTMBodyHead {
 }
 
 #[repr(C)]
-pub struct GainSTMBodyBody {
+pub struct GainSTMBodySubsequent {
     data: [u16; NUM_TRANS_IN_UNIT],
 }
 
@@ -222,7 +222,7 @@ impl LegacyPhaseHalf {
     }
 }
 
-impl GainSTMBodyBody {
+impl GainSTMBodySubsequent {
     pub fn data(&self) -> &[u16] {
         &self.data
     }

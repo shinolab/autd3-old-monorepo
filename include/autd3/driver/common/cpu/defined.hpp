@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,6 +18,8 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include "autd3/driver/common/fpga/defined.hpp"
 
 namespace autd3::driver {
 constexpr uint8_t MSG_CLEAR = 0x00;
@@ -118,6 +120,49 @@ enum class GainSTMMode : uint16_t {
   PhaseDutyFull = 0x0001,
   PhaseFull = 0x0002,
   PhaseHalf = 0x0004,
+};
+
+struct LegacyPhaseFull {
+  uint8_t phase_0;
+  uint8_t phase_1;
+  void set(const size_t idx, const Drive d) {
+    const auto phase = LegacyDrive::to_phase(d);
+    switch (idx) {
+      case 0:
+        phase_0 = phase;
+        break;
+      case 1:
+        phase_1 = phase;
+        break;
+      default:
+        throw std::runtime_error("Unreachable!");
+    }
+  }
+};
+
+struct LegacyPhaseHalf {
+  uint8_t phase_01;
+  uint8_t phase_23;
+
+  void set(const size_t idx, const Drive d) {
+    const auto phase = LegacyDrive::to_phase(d);
+    switch (idx) {
+      case 0:
+        phase_01 = (phase_01 & 0xF0) | ((phase >> 4) & 0x0F);
+        break;
+      case 1:
+        phase_01 = (phase_01 & 0x0F) | (phase & 0xF0);
+        break;
+      case 2:
+        phase_23 = (phase_23 & 0xF0) | ((phase >> 4) & 0x0F);
+        break;
+      case 3:
+        phase_23 = (phase_23 & 0x0F) | (phase & 0xF0);
+        break;
+      default:
+        throw std::runtime_error("Unreachable!");
+    }
+  }
 };
 
 }  // namespace autd3::driver
