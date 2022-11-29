@@ -3,7 +3,7 @@
 // Created Date: 15/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -38,10 +38,10 @@ class Driver {
   virtual void normal_header(TxDatagram& tx) const = 0;
   virtual void normal_duty_body(const std::vector<Drive>& drives, TxDatagram& tx) const = 0;
   virtual void normal_phase_body(const std::vector<Drive>& drives, TxDatagram& tx) const = 0;
-  virtual void point_stm_header(TxDatagram& tx) const = 0;
+  virtual void point_stm_initialer(TxDatagram& tx) const = 0;
   [[nodiscard]] virtual size_t point_stm_send_size(size_t total_size, size_t sent, const std::vector<size_t>& device_map) const = 0;
-  virtual bool point_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, size_t total_size, uint32_t freq_div,
-                              double sound_speed, TxDatagram& tx) const = 0;
+  virtual bool point_stm_subsequent(const std::vector<std::vector<STMFocus>>& points, size_t& sent, size_t total_size, uint32_t freq_div,
+                                    double sound_speed, TxDatagram& tx) const = 0;
   virtual void gain_stm_legacy_header(TxDatagram& tx) const = 0;
   [[nodiscard]] virtual bool gain_stm_legacy_body(const std::vector<std::vector<Drive>>& drives, size_t& sent, uint32_t freq_div, GainSTMMode mode,
                                                   TxDatagram& tx) const = 0;
