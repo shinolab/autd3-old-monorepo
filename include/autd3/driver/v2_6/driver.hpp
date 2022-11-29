@@ -33,9 +33,9 @@ class DriverV2_6 final : public Driver {
 
   void null_body(TxDatagram& tx) const noexcept override;
 
-  void sync(const uint16_t* cycles, TxDatagram& tx) const noexcept override;
+  void sync(const std::vector<uint16_t>& cycles, TxDatagram& tx) const noexcept override;
 
-  void mod_delay(const uint16_t* delays, TxDatagram& tx) const noexcept override;
+  void mod_delay(const std::vector<uint16_t>& delays, TxDatagram& tx) const noexcept override;
 
   bool modulation(uint8_t msg_id, const std::vector<uint8_t>& mod_data, size_t& sent, uint32_t freq_div, TxDatagram& tx) const override;
 
