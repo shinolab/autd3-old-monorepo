@@ -27,20 +27,56 @@ namespace autd3::driver {
 #pragma warning(push)
 #pragma warning(disable : 26812)
 #endif
+/**
+ * @brief Flags to control CPU firmware
+ */
 class CPUControlFlags final {
  public:
   enum VALUE : uint8_t {
     NONE = 0,
+    /**
+     * @brief Set when Header contains modulation data
+     */
     MOD = 1 << 0,
+    /**
+     * @brief Set when modulation data begins
+     */
     MOD_BEGIN = 1 << 1,
+    /**
+     * @brief Set when modulation data ends
+     */
     MOD_END = 1 << 2,
+    /**
+     * @brief Clear when Header contains silencer data or synchronization data
+     */
     CONFIG_EN_N = 1 << 0,
+    /**
+     * @brief Set when Header contains silencer
+     */
     CONFIG_SILENCER = 1 << 1,
+    /**
+     * @brief Set when Header synchronization data
+     */
     CONFIG_SYNC = 1 << 2,
+    /**
+     * @brief Set when Body is valid
+     */
     WRITE_BODY = 1 << 3,
+    /**
+     * @brief Set when Body contains STM data and STM begins
+     */
     STM_BEGIN = 1 << 4,
+    /**
+     * @brief Set when Body contains STM data and STM ends
+     */
     STM_END = 1 << 5,
+    /**
+     * @brief Set when Body is duty data (used only in Normal mode)
+     */
     IS_DUTY = 1 << 6,
+    /**
+     * @brief Set when Body is modulation delay data
+     */
     MOD_DELAY = 1 << 7,
   };
 
