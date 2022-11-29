@@ -73,9 +73,9 @@ constexpr uint16_t BRAM_ADDR_MOD_DELAY_BASE = 0x200;
 constexpr uint32_t MOD_BUF_SEGMENT_SIZE_WIDTH = 15;
 constexpr uint32_t MOD_BUF_SEGMENT_SIZE = 1 << MOD_BUF_SEGMENT_SIZE_WIDTH;
 constexpr uint32_t MOD_BUF_SEGMENT_SIZE_MASK = MOD_BUF_SEGMENT_SIZE - 1;
-constexpr uint32_t POINT_STM_BUF_SEGMENT_SIZE_WIDTH = 11;
-constexpr uint32_t POINT_STM_BUF_SEGMENT_SIZE = 1 << POINT_STM_BUF_SEGMENT_SIZE_WIDTH;
-constexpr uint32_t POINT_STM_BUF_SEGMENT_SIZE_MASK = POINT_STM_BUF_SEGMENT_SIZE - 1;
+constexpr uint32_t FOCUS_STM_BUF_SEGMENT_SIZE_WIDTH = 11;
+constexpr uint32_t FOCUS_STM_BUF_SEGMENT_SIZE = 1 << FOCUS_STM_BUF_SEGMENT_SIZE_WIDTH;
+constexpr uint32_t FOCUS_STM_BUF_SEGMENT_SIZE_MASK = FOCUS_STM_BUF_SEGMENT_SIZE - 1;
 constexpr uint32_t GAIN_STM_BUF_SEGMENT_SIZE_WIDTH = 5;
 constexpr uint32_t GAIN_STM_BUF_SEGMENT_SIZE = 1 << GAIN_STM_BUF_SEGMENT_SIZE_WIDTH;
 constexpr uint32_t GAIN_STM_BUF_SEGMENT_SIZE_MASK = GAIN_STM_BUF_SEGMENT_SIZE - 1;
@@ -210,7 +210,7 @@ class CPU {
         bram_write(cpu::BRAM_SELECT_NORMAL, static_cast<uint16_t>(i << 1), reinterpret_cast<const uint16_t*>(body)[i]);
   }
 
-  void write_point_stm(const driver::GlobalHeader* header, const driver::Body* body) {
+  void write_focus_stm(const driver::GlobalHeader* header, const driver::Body* body) {
     if (body == nullptr) return;
     uint32_t size;
     const uint16_t* src;
@@ -218,23 +218,23 @@ class CPU {
     if (header->cpu_flag.contains(driver::CPUControlFlags::STM_BEGIN)) {
       _stm_write = 0;
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET, 0);
-      size = body->point_stm_initial().data()[0];
+      size = body->focus_stm_initial().data()[0];
       const auto freq_div =
-          (static_cast<uint32_t>(body->point_stm_initial().data()[2]) << 16) | static_cast<uint32_t>(body->point_stm_initial().data()[1]);
+          (static_cast<uint32_t>(body->focus_stm_initial().data()[2]) << 16) | static_cast<uint32_t>(body->focus_stm_initial().data()[1]);
       const auto sound_speed =
-          (static_cast<uint32_t>(body->point_stm_initial().data()[4]) << 16) | static_cast<uint32_t>(body->point_stm_initial().data()[3]);
+          (static_cast<uint32_t>(body->focus_stm_initial().data()[4]) << 16) | static_cast<uint32_t>(body->focus_stm_initial().data()[3]);
 
       bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FREQ_DIV_0, reinterpret_cast<const uint16_t*>(&freq_div), 2);
       bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_SOUND_SPEED_0, reinterpret_cast<const uint16_t*>(&sound_speed), 2);
-      src = body->point_stm_initial().data() + 5;
+      src = body->focus_stm_initial().data() + 5;
     } else {
-      size = body->point_stm_subsequent().data()[0];
-      src = body->point_stm_subsequent().data() + 1;
+      size = body->focus_stm_subsequent().data()[0];
+      src = body->focus_stm_subsequent().data() + 1;
     }
 
-    if (const auto segment_capacity = (_stm_write & ~cpu::POINT_STM_BUF_SEGMENT_SIZE_MASK) + cpu::POINT_STM_BUF_SEGMENT_SIZE - _stm_write;
+    if (const auto segment_capacity = (_stm_write & ~cpu::FOCUS_STM_BUF_SEGMENT_SIZE_MASK) + cpu::FOCUS_STM_BUF_SEGMENT_SIZE - _stm_write;
         size <= segment_capacity) {
-      auto dst = static_cast<uint16_t>((_stm_write & cpu::POINT_STM_BUF_SEGMENT_SIZE_MASK) << 3);
+      auto dst = static_cast<uint16_t>((_stm_write & cpu::FOCUS_STM_BUF_SEGMENT_SIZE_MASK) << 3);
       for (uint32_t i = 0; i < size; i++, dst += 4) {
         bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
         bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
@@ -243,7 +243,7 @@ class CPU {
       }
       _stm_write += size;
     } else {
-      auto dst = static_cast<uint16_t>((_stm_write & cpu::POINT_STM_BUF_SEGMENT_SIZE_MASK) << 3);
+      auto dst = static_cast<uint16_t>((_stm_write & cpu::FOCUS_STM_BUF_SEGMENT_SIZE_MASK) << 3);
       for (uint32_t i = 0; i < segment_capacity; i++, dst += 4) {
         bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
         bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
@@ -252,8 +252,8 @@ class CPU {
       }
       _stm_write += segment_capacity;
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET,
-                 static_cast<uint16_t>((_stm_write & ~cpu::POINT_STM_BUF_SEGMENT_SIZE_MASK) >> cpu::POINT_STM_BUF_SEGMENT_SIZE_WIDTH));
-      dst = static_cast<uint16_t>((_stm_write & cpu::POINT_STM_BUF_SEGMENT_SIZE_MASK) << 3);
+                 static_cast<uint16_t>((_stm_write & ~cpu::FOCUS_STM_BUF_SEGMENT_SIZE_MASK) >> cpu::FOCUS_STM_BUF_SEGMENT_SIZE_WIDTH));
+      dst = static_cast<uint16_t>((_stm_write & cpu::FOCUS_STM_BUF_SEGMENT_SIZE_MASK) << 3);
       const auto cnt = size - segment_capacity;
       for (uint32_t i = 0; i < cnt; i++, dst += 4) {
         bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
@@ -461,7 +461,7 @@ class CPU {
         }
 
         if (!ctl_reg.contains(driver::FPGAControlFlags::STM_GAIN_MODE))
-          write_point_stm(header, body);
+          write_focus_stm(header, body);
         else if (header->fpga_flag.contains(driver::FPGAControlFlags::LEGACY_MODE))
           write_gain_stm_legacy(header, body);
         else

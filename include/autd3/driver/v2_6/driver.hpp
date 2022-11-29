@@ -53,11 +53,11 @@ class DriverV2_6 final : public Driver {
 
   void normal_phase_body(const std::vector<Drive>& drives, TxDatagram& tx) const noexcept override;
 
-  void point_stm_initialer(TxDatagram& tx) const noexcept override;
+  void focus_stm_initialer(TxDatagram& tx) const noexcept override;
 
-  [[nodiscard]] size_t point_stm_send_size(size_t total_size, size_t sent, const std::vector<size_t>& device_map) const noexcept override;
+  [[nodiscard]] size_t focus_stm_send_size(size_t total_size, size_t sent, const std::vector<size_t>& device_map) const noexcept override;
 
-  bool point_stm_subsequent(const std::vector<std::vector<STMFocus>>& points, size_t& sent, size_t total_size, uint32_t freq_div, double sound_speed,
+  bool focus_stm_subsequent(const std::vector<std::vector<STMFocus>>& points, size_t& sent, size_t total_size, uint32_t freq_div, double sound_speed,
                             TxDatagram& tx) const override;
 
   void gain_stm_legacy_header(TxDatagram& tx) const noexcept override;

@@ -42,7 +42,7 @@
     * 0: LEGACY_MODE
     * 4: FORCE_FAN
     * 5: OP_MODE (0: Normal, 1: STM)
-    * 6: STM_MODE (0: Point STM, 1: Gain STM)
+    * 6: STM_MODE (0: Focus STM, 1: Gain STM)
     * 8: SYNC_SET
 
 ## Modulator
@@ -84,9 +84,9 @@
 
 ## STM 
 
-STM BRAMはPoint STMとGain STMで共用である.
+STM BRAMはFocus STMとGain STMで共用である.
 
-### Point STM (STM_MODE == 0)
+### Focus STM (STM_MODE == 0)
 
 | BRAM_SELECT | SEGMENT (5bit) | BRAM_ADDR (14bit) | DATA (16bit)                            | R/W |
 |-------------| -------------- |-------------------|-----------------------------------------|-----|

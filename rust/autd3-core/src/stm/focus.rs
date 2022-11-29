@@ -18,19 +18,19 @@ use crate::{
 
 use anyhow::{Ok, Result};
 use autd3_driver::{
-    SeqFocus, TxDatagram, FPGA_CLK_FREQ, POINT_STM_BODY_DATA_SIZE, POINT_STM_HEAD_DATA_SIZE,
+    SeqFocus, TxDatagram, FOCUS_STM_BODY_DATA_SIZE, FOCUS_STM_HEAD_DATA_SIZE, FPGA_CLK_FREQ,
     STM_SAMPLING_FREQ_DIV_MIN,
 };
 
 use super::STM;
 
-pub struct PointSTM {
+pub struct FocusSTM {
     control_points: Vec<(Vector3, u8)>,
     sample_freq_div: u32,
     sent: usize,
 }
 
-impl PointSTM {
+impl FocusSTM {
     pub fn new() -> Self {
         Self::with_control_points(vec![])
     }
@@ -44,8 +44,8 @@ impl PointSTM {
     }
 
     pub fn add(&mut self, point: Vector3, duty_shift: u8) -> Result<()> {
-        if self.control_points.len() + 1 > autd3_driver::POINT_STM_BUF_SIZE_MAX {
-            return Err(autd3_driver::FPGAError::PointSTMOutOfBuffer(
+        if self.control_points.len() + 1 > autd3_driver::FOCUS_STM_BUF_SIZE_MAX {
+            return Err(autd3_driver::FPGAError::FocusSTMOutOfBuffer(
                 self.control_points.len() + 1,
             )
             .into());
@@ -63,20 +63,20 @@ impl PointSTM {
     }
 }
 
-impl Default for PointSTM {
+impl Default for FocusSTM {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T: Transducer> DatagramBody<T> for PointSTM {
+impl<T: Transducer> DatagramBody<T> for FocusSTM {
     fn init(&mut self) -> Result<()> {
         self.sent = 0;
         Ok(())
     }
 
     fn pack(&mut self, geometry: &Geometry<T>, tx: &mut TxDatagram) -> Result<()> {
-        autd3_driver::point_stm_initial(tx);
+        autd3_driver::focus_stm_initial(tx);
 
         if DatagramBody::<T>::is_finished(self) {
             return Ok(());
@@ -84,9 +84,9 @@ impl<T: Transducer> DatagramBody<T> for PointSTM {
 
         let is_first_frame = self.sent == 0;
         let max_size = if is_first_frame {
-            POINT_STM_HEAD_DATA_SIZE
+            FOCUS_STM_HEAD_DATA_SIZE
         } else {
-            POINT_STM_BODY_DATA_SIZE
+            FOCUS_STM_BODY_DATA_SIZE
         };
         let send_size = (self.control_points.len() - self.sent).min(max_size);
         let is_last_frame = self.sent + send_size == self.control_points.len();
@@ -105,7 +105,7 @@ impl<T: Transducer> DatagramBody<T> for PointSTM {
             })
             .collect();
 
-        autd3_driver::point_stm_subsequent(
+        autd3_driver::focus_stm_subsequent(
             &points,
             is_first_frame,
             self.sample_freq_div,
@@ -124,7 +124,7 @@ impl<T: Transducer> DatagramBody<T> for PointSTM {
     }
 }
 
-impl<T: Transducer> Sendable<T> for PointSTM {
+impl<T: Transducer> Sendable<T> for FocusSTM {
     type H = Empty;
     type B = Filled;
 
@@ -141,7 +141,7 @@ impl<T: Transducer> Sendable<T> for PointSTM {
     }
 }
 
-impl STM for PointSTM {
+impl STM for FocusSTM {
     fn set_freq(&mut self, freq: f64) -> f64 {
         let sample_freq = self.size() as f64 * freq;
         let div = ((FPGA_CLK_FREQ as f64 / sample_freq) as u32)

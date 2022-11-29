@@ -18,7 +18,7 @@ use crate::{
     },
     fpga::{FPGAControlFlags, FPGAError, MOD_SAMPLING_FREQ_DIV_MIN, SILENCER_CYCLE_MIN},
     hardware::NUM_TRANS_IN_UNIT,
-    Drive, Mode, SeqFocus, POINT_STM_BODY_DATA_SIZE, POINT_STM_HEAD_DATA_SIZE,
+    Drive, Mode, SeqFocus, FOCUS_STM_BODY_DATA_SIZE, FOCUS_STM_HEAD_DATA_SIZE,
     STM_SAMPLING_FREQ_DIV_MIN,
 };
 
@@ -279,7 +279,7 @@ pub fn normal_phase_body(drive: &[Drive], tx: &mut TxDatagram) -> Result<()> {
     Ok(())
 }
 
-pub fn point_stm_initial(tx: &mut TxDatagram) {
+pub fn focus_stm_initial(tx: &mut TxDatagram) {
     tx.header_mut().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
     tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
     tx.header_mut().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
@@ -295,7 +295,7 @@ pub fn point_stm_initial(tx: &mut TxDatagram) {
     tx.num_bodies = 0;
 }
 
-pub fn point_stm_subsequent(
+pub fn focus_stm_subsequent(
     points: &[Vec<SeqFocus>],
     is_first_frame: bool,
     freq_div: u32,
@@ -309,14 +309,14 @@ pub fn point_stm_subsequent(
 
     if is_first_frame {
         for s in points {
-            if s.len() > POINT_STM_HEAD_DATA_SIZE {
-                return Err(CPUError::PointSTMHeadDataSizeOutOfRange(s.len()).into());
+            if s.len() > FOCUS_STM_HEAD_DATA_SIZE {
+                return Err(CPUError::FocusSTMHeadDataSizeOutOfRange(s.len()).into());
             }
         }
     } else {
         for s in points {
-            if s.len() > POINT_STM_BODY_DATA_SIZE {
-                return Err(CPUError::PointSTMBodyDataSizeOutOfRange(s.len()).into());
+            if s.len() > FOCUS_STM_BODY_DATA_SIZE {
+                return Err(CPUError::FocusSTMBodyDataSizeOutOfRange(s.len()).into());
             }
         }
     }
@@ -330,15 +330,15 @@ pub fn point_stm_subsequent(
             .set(CPUControlFlags::STM_BEGIN, true);
         let sound_speed = (sound_speed / 1e3 * 1024.0).round() as u32;
         tx.body_mut().iter_mut().zip(points).for_each(|(d, s)| {
-            d.point_stm_initial_mut().set_size(s.len() as _);
-            d.point_stm_initial_mut().set_freq_div(freq_div);
-            d.point_stm_initial_mut().set_sound_speed(sound_speed);
-            d.point_stm_initial_mut().set_points(s);
+            d.focus_stm_initial_mut().set_size(s.len() as _);
+            d.focus_stm_initial_mut().set_freq_div(freq_div);
+            d.focus_stm_initial_mut().set_sound_speed(sound_speed);
+            d.focus_stm_initial_mut().set_points(s);
         });
     } else {
         tx.body_mut().iter_mut().zip(points).for_each(|(d, s)| {
-            d.point_stm_subsequent_mut().set_size(s.len() as _);
-            d.point_stm_subsequent_mut().set_points(s);
+            d.focus_stm_subsequent_mut().set_size(s.len() as _);
+            d.focus_stm_subsequent_mut().set_points(s);
         });
     }
 

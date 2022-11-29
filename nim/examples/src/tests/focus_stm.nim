@@ -1,9 +1,9 @@
-# File: point_stm.nim
+# File: focus_stm.nim
 # Project: tests
 # Created Date: 13/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 17/11/2022
+# Last Modified: 29/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,14 +13,14 @@
 import autd3
 import math
 
-proc point_stm_test*(cnt: Controller) =
+proc focus_stm_test*(cnt: Controller) =
     let config = SilencerConfig.none()
     cnt.send(config)
 
     let m = initStatic(1.0)
 
     soundSpeed = cnt.soundSpeed();
-    let stm = initPointSTM(soundSpeed)
+    let stm = initFocusSTM(soundSpeed)
     let radius = 30.0
     let size = 200
     let x = 90.0

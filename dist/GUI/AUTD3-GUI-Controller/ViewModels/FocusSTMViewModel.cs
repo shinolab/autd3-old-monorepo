@@ -1,10 +1,10 @@
 ﻿/*
- * File: PointSTMViewModel.cs
+ * File: FocusSTMViewModel.cs
  * Project: ViewModels
  * Created Date: 18/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/11/2022
+ * Last Modified: 29/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,10 +24,10 @@ using Microsoft.UI.Xaml;
 namespace AUTD3_GUI_Controller.ViewModels;
 
 [INotifyPropertyChanged]
-public partial class PointSTMViewModel
+public partial class FocusSTMViewModel
 {
-    private const string PointSTMKey = "PointSTM";
-    private const string PointSTMFreqKey = "PointSTM_Frequency";
+    private const string FocusSTMKey = "FocusSTM";
+    private const string FocusSTMFreqKey = "FocusSTM_Frequency";
 
     private readonly AUTDService _autdService;
     private readonly ILocalSettingsService _localSettingsService;
@@ -41,7 +41,7 @@ public partial class PointSTMViewModel
     [RelayCommand]
     public void AddItem()
     {
-        var item = new PointSTMTarget(Targets.Count);
+        var item = new FocusSTMTarget(Targets.Count);
         Targets.Add(item);
         Selected = item;
     }
@@ -78,11 +78,11 @@ public partial class PointSTMViewModel
     }
     private bool DownItemCanExecute() => Selected != null && Selected.No != Targets.Count - 1;
 
-    [ObservableProperty] private ObservableCollection<PointSTMTarget> _targets;
+    [ObservableProperty] private ObservableCollection<FocusSTMTarget> _targets;
 
     [ObservableProperty]
-    private PointSTMTarget? _selected;
-    partial void OnSelectedChanged(PointSTMTarget? value)
+    private FocusSTMTarget? _selected;
+    partial void OnSelectedChanged(FocusSTMTarget? value)
     {
         RemoveItemCommand.NotifyCanExecuteChanged();
         UpItemCommand.NotifyCanExecuteChanged();
@@ -90,7 +90,7 @@ public partial class PointSTMViewModel
     }
 
     [ObservableProperty] private double _frequency;
-    async partial void OnFrequencyChanged(double value) => await _localSettingsService.SaveSettingAsync(PointSTMFreqKey, value);
+    async partial void OnFrequencyChanged(double value) => await _localSettingsService.SaveSettingAsync(FocusSTMFreqKey, value);
 
     public EventHandler CellEditEnded
     {
@@ -101,14 +101,14 @@ public partial class PointSTMViewModel
     [RelayCommand(CanExecute = "SendCanExecute")]
     public async void Send()
     {
-        var stm = new AUTD3Sharp.STM.PointSTM(App.GetService<AUTDService>().GetSoundSpeed());
+        var stm = new AUTD3Sharp.STM.FocusSTM(App.GetService<AUTDService>().GetSoundSpeed());
         foreach (var t in Targets)
         {
             stm.Add(new Vector3d(t.X, t.Y, t.Z, t.Shift));
         }
         stm.Frequency = Frequency;
 
-        if (App.GetService<AUTDService>().SendPointSTM(stm))
+        if (App.GetService<AUTDService>().SendFocusSTM(stm))
         {
             App.GetService<ShellViewModel>().StartCommand.NotifyCanExecuteChanged();
             App.GetService<ShellViewModel>().PauseCommand.NotifyCanExecuteChanged();
@@ -126,12 +126,12 @@ public partial class PointSTMViewModel
     }
     private bool SendCanExecute() => _autdService.IsOpened;
 
-    public PointSTMViewModel(ILocalSettingsService localSettingsService)
+    public FocusSTMViewModel(ILocalSettingsService localSettingsService)
     {
         _autdService = App.GetService<AUTDService>();
         _localSettingsService = localSettingsService;
-        _targets = new ObservableCollection<PointSTMTarget>(_localSettingsService.ReadSetting<PointSTMTarget[]>(PointSTMKey) ?? Array.Empty<PointSTMTarget>());
-        _frequency = _localSettingsService.ReadSetting<double?>(PointSTMFreqKey) ?? 1;
+        _targets = new ObservableCollection<FocusSTMTarget>(_localSettingsService.ReadSetting<FocusSTMTarget[]>(FocusSTMKey) ?? Array.Empty<FocusSTMTarget>());
+        _frequency = _localSettingsService.ReadSetting<double?>(FocusSTMFreqKey) ?? 1;
         Targets.CollectionChanged += async (_, _) => await Save();
         CellEditEnded += async (_, _) => await Save();
         _selected = null;
@@ -147,6 +147,6 @@ public partial class PointSTMViewModel
 
     private async Task Save()
     {
-        await _localSettingsService.SaveSettingAsync(PointSTMKey, Targets.ToArray());
+        await _localSettingsService.SaveSettingAsync(FocusSTMKey, Targets.ToArray());
     }
 }

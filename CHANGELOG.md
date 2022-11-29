@@ -1,3 +1,7 @@
+# 2.6.6
+
+- Rename `PointSTM` to `FocusSTM`
+
 # 2.6.5
 
 - Flatten `Geometry`

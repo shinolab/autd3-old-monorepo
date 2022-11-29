@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,8 +17,8 @@
 #include "autd3/core/delay.hpp"
 #include "autd3/core/geometry.hpp"
 #include "autd3/core/mode.hpp"
+#include "autd3/core/stm/focus.hpp"
 #include "autd3/core/stm/gain.hpp"
-#include "autd3/core/stm/point.hpp"
 #include "autd3/gain/primitive.hpp"
 #include "autd3/modulation/primitive.hpp"
 #include "autd3/soft_stm.hpp"
@@ -56,9 +56,8 @@ using driver::GainSTMMode;
 using core::Quaternion;
 using core::Vector3;
 
+using core::FocusSTM;
 using core::GainSTM;
-using core::Point;
-using core::PointSTM;
 
 using core::LinkPtr;
 

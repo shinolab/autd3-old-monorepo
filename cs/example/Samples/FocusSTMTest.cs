@@ -1,10 +1,10 @@
 ﻿/*
- * File: PointSTMTest.cs
+ * File: FocusSTMTest.cs
  * Project: Test
  * Created Date: 30/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/11/2022
+ * Last Modified: 29/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ using AUTD3Sharp.STM;
 
 namespace Samples;
 
-internal static class PointSTMTest
+internal static class FocusSTMTest
 {
     public static void Test(Controller autd)
     {
@@ -29,7 +29,7 @@ internal static class PointSTMTest
         autd.Send(mod);
 
         var center = autd.Geometry.Center + new Vector3d(0, 0, 150);
-        var stm = new PointSTM(autd.SoundSpeed);
+        var stm = new FocusSTM(autd.SoundSpeed);
         const int pointNum = 200;
         for (var i = 0; i < pointNum; i++)
         {

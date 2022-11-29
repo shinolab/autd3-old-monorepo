@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/11/2022
+ * Last Modified: 29/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -776,17 +776,17 @@ namespace AUTD3Sharp
             }
         }
 
-        public sealed class PointSTM : STM
+        public sealed class FocusSTM : STM
         {
-            public PointSTM(double soundSpeed)
+            public FocusSTM(double soundSpeed)
             {
-                Base.AUTDPointSTM(out handle, soundSpeed);
+                Base.AUTDFocusSTM(out handle, soundSpeed);
             }
 
             public void Add(Vector3 point, byte shift = 0)
             {
                 var (x, y, z) = TypeHelper.Convert(point);
-                Base.AUTDPointSTMAdd(handle, x, y, z, shift);
+                Base.AUTDFocusSTMAdd(handle, x, y, z, shift);
             }
         }
 

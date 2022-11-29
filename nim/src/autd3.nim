@@ -3,7 +3,7 @@
 # Created Date: 11/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 28/11/2022
+# Last Modified: 29/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -328,14 +328,14 @@ proc frequency*(stm: STM): float64 =
 proc `frequency=`*(stm: STM, value: float64): float64 {.discardable.} =
     AUTDSTMSetFrequency(stm.p, value)
 
-type PointSTM* = object of STM
+type FocusSTM* = object of STM
 
-func initPointSTM*(soundSpeed: float64): PointSTM =
-    AUTDPointSTM(result.p.addr, soundSpeed)
+func initFocusSTM*(soundSpeed: float64): FocusSTM =
+    AUTDFocusSTM(result.p.addr, soundSpeed)
 
-func add*(stm: PointSTM, pos: openArray[float64],
+func add*(stm: FocusSTM, pos: openArray[float64],
         shift: uint8 = 0) =
-    AUTDPointSTMAdd(stm.p, pos[0], pos[1], pos[2], shift)
+    AUTDFocusSTMAdd(stm.p, pos[0], pos[1], pos[2], shift)
 
 type GainSTM* = object of STM
 

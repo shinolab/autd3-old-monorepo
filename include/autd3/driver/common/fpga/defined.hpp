@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,9 +27,9 @@ namespace autd3::driver {
 constexpr size_t FPGA_CLK_FREQ = 163840000;
 
 #ifdef AUTD3_USE_METER
-constexpr double POINT_STM_FIXED_NUM_UNIT = 0.025e-3;
+constexpr double FOCUS_STM_FIXED_NUM_UNIT = 0.025e-3;
 #else
-constexpr double POINT_STM_FIXED_NUM_UNIT = 0.025;
+constexpr double FOCUS_STM_FIXED_NUM_UNIT = 0.025;
 #endif
 
 #ifdef _MSC_VER

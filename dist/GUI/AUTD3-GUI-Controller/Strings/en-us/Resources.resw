@@ -222,8 +222,8 @@
   <data name="TextBlock_Freq.Text" xml:space="preserve">
     <value>Frequency</value>
   </data>
-  <data name="Shell_PointSTM.Content" xml:space="preserve">
-    <value>Point STM</value>
+  <data name="Shell_FocusSTM.Content" xml:space="preserve">
+    <value>Focus STM</value>
   </data>
   <data name="Button_Close.Content" xml:space="preserve">
     <value>Close</value>

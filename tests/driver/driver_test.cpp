@@ -227,8 +227,8 @@ TEST(VersionTest, FirmwareInfo) {
 TEST(CPUTest, STMFocus) {
   ASSERT_EQ(sizeof(autd3::driver::STMFocus), 8);
 
-  constexpr auto max = static_cast<double>((1 << 17) - 1) * autd3::driver::POINT_STM_FIXED_NUM_UNIT;
-  constexpr auto min = static_cast<double>(-(1 << 17)) * autd3::driver::POINT_STM_FIXED_NUM_UNIT;
+  constexpr auto max = static_cast<double>((1 << 17) - 1) * autd3::driver::FOCUS_STM_FIXED_NUM_UNIT;
+  constexpr auto min = static_cast<double>(-(1 << 17)) * autd3::driver::FOCUS_STM_FIXED_NUM_UNIT;
 
   std::random_device seed_gen;
   std::mt19937 engine(seed_gen());
@@ -239,7 +239,7 @@ TEST(CPUTest, STMFocus) {
     auto b = static_cast<uint32_t>(v & 0x0003fffful);
     b = (v & 0x20000) == 0 ? b : b | 0xfffc0000u;
     const auto xi = *reinterpret_cast<int32_t*>(&b);
-    return static_cast<double>(xi) * autd3::driver::POINT_STM_FIXED_NUM_UNIT;
+    return static_cast<double>(xi) * autd3::driver::FOCUS_STM_FIXED_NUM_UNIT;
   };
 
   for (auto i = 0; i < 10000; i++) {
@@ -254,15 +254,15 @@ TEST(CPUTest, STMFocus) {
     std::memcpy(&v, &focus, sizeof(autd3::driver::STMFocus));
 
     const auto xx = to(v);
-    ASSERT_NEAR(xx, x, autd3::driver::POINT_STM_FIXED_NUM_UNIT / 2);
+    ASSERT_NEAR(xx, x, autd3::driver::FOCUS_STM_FIXED_NUM_UNIT / 2);
 
     v >>= 18;
     const auto yy = to(v);
-    ASSERT_NEAR(yy, y, autd3::driver::POINT_STM_FIXED_NUM_UNIT / 2);
+    ASSERT_NEAR(yy, y, autd3::driver::FOCUS_STM_FIXED_NUM_UNIT / 2);
 
     v >>= 18;
     const auto zz = to(v);
-    ASSERT_NEAR(zz, z, autd3::driver::POINT_STM_FIXED_NUM_UNIT / 2);
+    ASSERT_NEAR(zz, z, autd3::driver::FOCUS_STM_FIXED_NUM_UNIT / 2);
 
     v >>= 18;
     const auto s = static_cast<uint8_t>(v & 0xFF);
@@ -556,13 +556,13 @@ TEST(CPUTest, operation_normal_phase_body_v2_6) {
 
   ASSERT_EQ(tx.num_bodies, 10);
 }
-TEST(CPUTest, operation_point_stm_initialer_v2_6) {
+TEST(CPUTest, operation_focus_stm_initialer_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
                                 NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
-  driver.point_stm_initialer(tx);
+  driver.focus_stm_initialer(tx);
 
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
@@ -573,7 +573,7 @@ TEST(CPUTest, operation_point_stm_initialer_v2_6) {
   ASSERT_EQ(tx.num_bodies, 0);
 }
 
-TEST(CPUTest, operation_point_stm_subsequent_v2_6) {
+TEST(CPUTest, operation_focus_stm_subsequent_v2_6) {
   const auto driver = autd3::driver::DriverV2_6();
 
   autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
@@ -597,44 +597,44 @@ TEST(CPUTest, operation_point_stm_subsequent_v2_6) {
   constexpr double sound_speed = 340e3;
   constexpr uint32_t sp = 340 * 1024;
 
-  driver.point_stm_initialer(tx);
+  driver.focus_stm_initialer(tx);
   size_t sent = 0;
-  driver.point_stm_subsequent(points, sent, size, 3224, sound_speed, tx);
+  driver.focus_stm_subsequent(points, sent, size, 3224, sound_speed, tx);
 
   ASSERT_EQ(sent, size);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
 
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_initial().data()[0], 30);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_initial().data()[1], 3224);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_initial().data()[2], 0);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_initial().data()[3], sp & 0xFFFF);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_initial().data()[4], sp >> 16);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_initial().data()[0], 30);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_initial().data()[1], 3224);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_initial().data()[2], 0);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_initial().data()[3], sp & 0xFFFF);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_initial().data()[4], sp >> 16);
   ASSERT_EQ(tx.num_bodies, 10);
 
-  driver.point_stm_initialer(tx);
+  driver.focus_stm_initialer(tx);
   sent = 0;
-  driver.point_stm_subsequent(points, sent, 500, 3224, sound_speed, tx);
+  driver.focus_stm_subsequent(points, sent, 500, 3224, sound_speed, tx);
 
   ASSERT_EQ(sent, size);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
 
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).point_stm_initial().data()[0], 30);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_initial().data()[0], 30);
   ASSERT_EQ(tx.num_bodies, 10);
 
-  driver.point_stm_initialer(tx);
+  driver.focus_stm_initialer(tx);
   sent = 1;
-  driver.point_stm_subsequent(points, sent, 500, 3224, sound_speed, tx);
+  driver.focus_stm_subsequent(points, sent, 500, 3224, sound_speed, tx);
   ASSERT_EQ(sent, size + 1);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
 
-  driver.point_stm_initialer(tx);
-  driver.point_stm_subsequent({}, sent, 0, 3224, sound_speed, tx);
+  driver.focus_stm_initialer(tx);
+  driver.focus_stm_subsequent({}, sent, 0, 3224, sound_speed, tx);
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
