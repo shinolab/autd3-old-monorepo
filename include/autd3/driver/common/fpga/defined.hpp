@@ -24,90 +24,51 @@
 
 namespace autd3::driver {
 
+/**
+ * @brief FPGA main clock frequency is 163.84MHz
+ */
 constexpr size_t FPGA_CLK_FREQ = 163840000;
 
+/**
+ * @brief The unit of the fixed-point number for FocusSTM is 0.025mm
+ */
 #ifdef AUTD3_USE_METER
 constexpr double FOCUS_STM_FIXED_NUM_UNIT = 0.025e-3;
 #else
 constexpr double FOCUS_STM_FIXED_NUM_UNIT = 0.025;
 #endif
 
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 26812)
-#endif
-class FPGAControlFlags final {
- public:
-  enum VALUE : uint8_t {
-    NONE = 0,
-    LEGACY_MODE = 1 << 0,
-    FORCE_FAN = 1 << 4,
-    STM_MODE = 1 << 5,
-    STM_GAIN_MODE = 1 << 6,
-    READS_FPGA_INFO = 1 << 7,
-  };
-
-  FPGAControlFlags() = default;
-  explicit FPGAControlFlags(const VALUE value) noexcept : _value(value) {}
-
-  ~FPGAControlFlags() = default;
-  FPGAControlFlags(const FPGAControlFlags& v) noexcept = default;
-  FPGAControlFlags& operator=(const FPGAControlFlags& obj) = default;
-  FPGAControlFlags& operator=(const VALUE v) noexcept {
-    _value = v;
-    return *this;
-  }
-  FPGAControlFlags(FPGAControlFlags&& obj) = default;
-  FPGAControlFlags& operator=(FPGAControlFlags&& obj) = default;
-
-  constexpr bool operator==(const FPGAControlFlags a) const { return _value == a._value; }
-  constexpr bool operator!=(const FPGAControlFlags a) const { return _value != a._value; }
-  constexpr bool operator==(const VALUE a) const { return _value == a; }
-  constexpr bool operator!=(const VALUE a) const { return _value != a; }
-
-  void set(const VALUE v) noexcept { _value = static_cast<VALUE>(_value | v); }
-
-  void remove(const VALUE v) noexcept { _value = static_cast<VALUE>(_value & ~v); }
-
-  [[nodiscard]] bool contains(const VALUE v) const noexcept { return (_value & v) == v; }
-
-  [[nodiscard]] VALUE value() const noexcept { return _value; }
-
-  [[nodiscard]] std::string to_string() const noexcept {
-    std::vector<std::string> flags;
-    if ((_value & LEGACY_MODE) == LEGACY_MODE) flags.emplace_back("LEGACY_MODE");
-    if ((_value & FORCE_FAN) == FORCE_FAN) flags.emplace_back("FORCE_FAN");
-    if ((_value & STM_MODE) == STM_MODE) flags.emplace_back("STM_MODE");
-    if ((_value & STM_GAIN_MODE) == STM_GAIN_MODE) flags.emplace_back("STM_GAIN_MODE");
-    if ((_value & READS_FPGA_INFO) == READS_FPGA_INFO) flags.emplace_back("READS_FPGA_INFO");
-    if (flags.empty()) flags.emplace_back("NONE");
-
-    constexpr auto delim = " | ";
-    std::ostringstream os;
-    std::copy(flags.begin(), flags.end(), std::ostream_iterator<std::string>(os, delim));
-    std::string s = os.str();
-    s.erase(s.size() - std::char_traits<char>::length(delim));
-    return s;
-  }
-
- private:
-  VALUE _value;
-};
-
-inline std::ostream& operator<<(std::ostream& os, const FPGAControlFlags& flag) { return os << flag.to_string(); }
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
-
+/**
+ * @brief Drive is a utility structure for storing ultrasound amplitude, phase, and cycle.
+ */
 struct Drive {
+  /**
+   * @brief The unit of phase is radian (from 0 to 2pi)
+   */
   double phase;
+  /**
+   * @brief Normalized amplitude (from 0 to 1)
+   */
   double amp;
+  /**
+   * @brief The ultrasound cycle: The ultrasound frequency is FPGA_CLK_FREQ/cycle.
+   * @details This is not used in Legacy mode.
+   */
   uint16_t cycle;
 };
 
+/**
+ * @brief LegacyDrive stores the duty ratio/phase data actually sent to the device in Legacy mode.
+ */
 struct LegacyDrive {
+  /**
+   * @brief phase
+   * @details phase=0 means 0 radian, and phase=255 means 2pi*255/256 radian
+   */
   uint8_t phase;
+  /**
+   * @brief duty ratio of PWM signal
+   */
   uint8_t duty;
 
   static uint8_t to_phase(const Drive d) { return static_cast<uint8_t>(static_cast<int32_t>(std::round(d.phase / (2.0 * pi) * 256.0)) & 0xFF); }
@@ -120,6 +81,9 @@ struct LegacyDrive {
   }
 };
 
+/**
+ * @brief Phase stores the phase data actually sent to the device in Normal/NormalPhase mode.
+ */
 struct Phase {
   uint16_t phase;
 
@@ -131,6 +95,9 @@ struct Phase {
   void set(const Drive d) { phase = to_phase(d); }
 };
 
+/**
+ * @brief Duty stores the duty ratio data actually sent to the device in Normal mode.
+ */
 struct Duty {
   uint16_t duty;
 
@@ -141,6 +108,10 @@ struct Duty {
   void set(const Drive d) { duty = to_duty(d); }
 };
 
+/**
+ * @brief FPGAInfo is the state of the FPGA
+ * @details Currently, it is only possible to check if the temperature of the device is above a certain level.
+ */
 struct FPGAInfo {
   uint8_t info;
 

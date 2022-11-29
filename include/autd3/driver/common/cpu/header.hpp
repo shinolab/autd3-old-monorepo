@@ -13,7 +13,7 @@
 
 #include <cstdint>
 
-#include "autd3/driver/common/fpga/defined.hpp"
+#include "autd3/driver/common/fpga/fpga_flag.hpp"
 #include "cpu_flag.hpp"
 
 namespace autd3::driver {
