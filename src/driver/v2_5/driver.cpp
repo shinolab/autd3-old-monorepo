@@ -61,7 +61,7 @@ bool DriverV2_5::modulation(const uint8_t msg_id, const std::vector<uint8_t>& mo
   }
 
   const auto is_first_frame = sent == 0;
-  const auto max_size = is_first_frame ? MOD_HEAD_DATA_SIZE : MOD_BODY_DATA_SIZE;
+  const auto max_size = is_first_frame ? MOD_HEADER_INITIAL_DATA_SIZE : MOD_HEADER_SUBSEQUENT_DATA_SIZE;
   const auto mod_size = (std::min)(mod_data.size() - sent, max_size);
   const auto is_last_frame = sent + mod_size == mod_data.size();
   const auto* buf = mod_data.data() + sent;
@@ -84,10 +84,10 @@ bool DriverV2_5::modulation(const uint8_t msg_id, const std::vector<uint8_t>& mo
     }
 
     tx.header().cpu_flag.set(CPUControlFlags::MOD_BEGIN);
-    tx.header().mod_head().freq_div = freq_div;
-    std::memcpy(&tx.header().mod_head().data[0], buf, mod_size);
+    tx.header().mod_initial().freq_div = freq_div;
+    std::memcpy(&tx.header().mod_initial().data[0], buf, mod_size);
   } else {
-    std::memcpy(&tx.header().mod_body().data[0], buf, mod_size);
+    std::memcpy(&tx.header().mod_subsequent().data[0], buf, mod_size);
   }
 
   if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::MOD_END);
@@ -107,8 +107,8 @@ bool DriverV2_5::config_silencer(const uint8_t msg_id, const uint16_t cycle, con
   tx.header().cpu_flag.remove(CPUControlFlags::CONFIG_SYNC);
   tx.header().cpu_flag.set(CPUControlFlags::CONFIG_SILENCER);
 
-  tx.header().silencer_header().cycle = cycle;
-  tx.header().silencer_header().step = step;
+  tx.header().silencer().cycle = cycle;
+  tx.header().silencer().step = step;
 
   return true;
 }

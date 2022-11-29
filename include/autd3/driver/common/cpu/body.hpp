@@ -16,7 +16,6 @@
 #include <cstring>
 #include <vector>
 
-#include "autd3/driver/common/cpu/defined.hpp"
 #include "autd3/driver/common/fpga/defined.hpp"
 
 namespace autd3::driver {
@@ -109,6 +108,55 @@ struct FocusSTMBodySubsequent {
   uint16_t _data[2]{};  // Data size has no meaning.
 };
 
+enum class GainSTMMode : uint16_t {
+  PhaseDutyFull = 0x0001,
+  PhaseFull = 0x0002,
+  PhaseHalf = 0x0004,
+};
+
+struct LegacyPhaseFull {
+  uint8_t phase_0;
+  uint8_t phase_1;
+  void set(const size_t idx, const Drive d) {
+    const auto phase = LegacyDrive::to_phase(d);
+    switch (idx) {
+      case 0:
+        phase_0 = phase;
+        break;
+      case 1:
+        phase_1 = phase;
+        break;
+      default:
+        throw std::runtime_error("Unreachable!");
+    }
+  }
+};
+
+struct LegacyPhaseHalf {
+  uint8_t phase_01;
+  uint8_t phase_23;
+
+  void set(const size_t idx, const Drive d) {
+    const auto phase = LegacyDrive::to_phase(d);
+    switch (idx) {
+      case 0:
+        phase_01 = (phase_01 & 0xF0) | ((phase >> 4) & 0x0F);
+        break;
+      case 1:
+        phase_01 = (phase_01 & 0x0F) | (phase & 0xF0);
+        break;
+      case 2:
+        phase_23 = (phase_23 & 0xF0) | ((phase >> 4) & 0x0F);
+        break;
+      case 3:
+        phase_23 = (phase_23 & 0x0F) | (phase & 0xF0);
+        break;
+      default:
+        throw std::runtime_error("Unreachable!");
+    }
+  }
+};
+
 /**
  * \brief Initial Body data for GainSTM
  * \details The frequency division data in the first 32 bits, and the GainSTMMode data in the next 16 bits, and the total pattern size in the next 16
@@ -158,6 +206,9 @@ struct GainSTMBodySubsequent {
   [[nodiscard]] const uint16_t* data() const noexcept { return reinterpret_cast<const uint16_t*>(this); }
 };
 
+/**
+ * \brief Body data for each device
+ */
 struct Body {
   Body() noexcept = delete;
   ~Body() = delete;

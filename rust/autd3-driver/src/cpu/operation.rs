@@ -13,8 +13,9 @@
 
 use crate::{
     cpu::{
-        error::CPUError, CPUControlFlags, TxDatagram, MOD_BODY_DATA_SIZE, MOD_HEAD_DATA_SIZE,
-        MSG_CLEAR, MSG_RD_CPU_VERSION, MSG_RD_FPGA_FUNCTION, MSG_RD_FPGA_VERSION,
+        error::CPUError, CPUControlFlags, TxDatagram, MOD_HEADER_INITIAL_DATA_SIZE,
+        MOD_HEADER_SUBSEQUENT_DATA_SIZE, MSG_CLEAR, MSG_RD_CPU_VERSION, MSG_RD_FPGA_FUNCTION,
+        MSG_RD_FPGA_VERSION,
     },
     fpga::{FPGAControlFlags, FPGAError, MOD_SAMPLING_FREQ_DIV_MIN, SILENCER_CYCLE_MIN},
     hardware::NUM_TRANS_IN_UNIT,
@@ -95,11 +96,11 @@ pub fn modulation(
         return Ok(());
     }
 
-    if is_first_frame && mod_data.len() > MOD_HEAD_DATA_SIZE {
+    if is_first_frame && mod_data.len() > MOD_HEADER_INITIAL_DATA_SIZE {
         return Err(CPUError::ModulationHeadDataSizeOutOfRange(mod_data.len()).into());
     }
 
-    if !is_first_frame && mod_data.len() > MOD_BODY_DATA_SIZE {
+    if !is_first_frame && mod_data.len() > MOD_HEADER_SUBSEQUENT_DATA_SIZE {
         return Err(CPUError::ModulationBodyDataSizeOutOfRange(mod_data.len()).into());
     }
 
@@ -110,10 +111,10 @@ pub fn modulation(
         tx.header_mut()
             .cpu_flag
             .set(CPUControlFlags::MOD_BEGIN, true);
-        tx.header_mut().mod_head_mut().freq_div = freq_div;
-        tx.header_mut().mod_head_mut().data[0..mod_data.len()].copy_from_slice(mod_data);
+        tx.header_mut().mod_initial_mut().freq_div = freq_div;
+        tx.header_mut().mod_initial_mut().data[0..mod_data.len()].copy_from_slice(mod_data);
     } else {
-        tx.header_mut().mod_body_mut().data[0..mod_data.len()].copy_from_slice(mod_data);
+        tx.header_mut().mod_subsequent_mut().data[0..mod_data.len()].copy_from_slice(mod_data);
     }
 
     if is_last_frame {
@@ -137,8 +138,8 @@ pub fn config_silencer(msg_id: u8, cycle: u16, step: u16, tx: &mut TxDatagram) -
         .cpu_flag
         .set(CPUControlFlags::CONFIG_SILENCER, true);
 
-    tx.header_mut().silencer_header_mut().cycle = cycle;
-    tx.header_mut().silencer_header_mut().step = step;
+    tx.header_mut().silencer_mut().cycle = cycle;
+    tx.header_mut().silencer_mut().step = step;
 
     Ok(())
 }

@@ -21,8 +21,8 @@ pub const MSG_SERVER_CLOSE: u8 = 0xFD;
 pub const MSG_SIMULATOR_CLOSE: u8 = 0xFE;
 pub const MSG_SIMULATOR_INIT: u8 = 0xFF;
 
-pub const MOD_HEAD_DATA_SIZE: usize = 120;
-pub const MOD_BODY_DATA_SIZE: usize = 124;
+pub const MOD_HEADER_INITIAL_DATA_SIZE: usize = 120;
+pub const MOD_HEADER_SUBSEQUENT_DATA_SIZE: usize = 124;
 
 pub const FOCUS_STM_HEAD_DATA_SIZE: usize = 61;
 pub const FOCUS_STM_BODY_DATA_SIZE: usize = 62;

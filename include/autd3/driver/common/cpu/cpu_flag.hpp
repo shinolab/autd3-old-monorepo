@@ -1,4 +1,4 @@
-// File: defined.hpp
+// File: cpu_flag.hpp
 // Project: cpu
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
@@ -22,18 +22,6 @@
 #include "autd3/driver/common/fpga/defined.hpp"
 
 namespace autd3::driver {
-constexpr uint8_t MSG_CLEAR = 0x00;
-constexpr uint8_t MSG_RD_CPU_VERSION = 0x01;
-constexpr uint8_t MSG_RD_FPGA_VERSION = 0x03;
-constexpr uint8_t MSG_RD_FPGA_FUNCTION = 0x04;
-constexpr uint8_t MSG_BEGIN = 0x05;
-constexpr uint8_t MSG_END = 0xF0;
-constexpr uint8_t MSG_SERVER_CLOSE = 0xFD;
-constexpr uint8_t MSG_SIMULATOR_CLOSE = 0xFE;
-constexpr uint8_t MSG_SIMULATOR_INIT = 0xFF;
-
-constexpr size_t MOD_HEAD_DATA_SIZE = 120;
-constexpr size_t MOD_BODY_DATA_SIZE = 124;
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -115,54 +103,5 @@ inline std::ostream& operator<<(std::ostream& os, const CPUControlFlags& flag) {
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
-
-enum class GainSTMMode : uint16_t {
-  PhaseDutyFull = 0x0001,
-  PhaseFull = 0x0002,
-  PhaseHalf = 0x0004,
-};
-
-struct LegacyPhaseFull {
-  uint8_t phase_0;
-  uint8_t phase_1;
-  void set(const size_t idx, const Drive d) {
-    const auto phase = LegacyDrive::to_phase(d);
-    switch (idx) {
-      case 0:
-        phase_0 = phase;
-        break;
-      case 1:
-        phase_1 = phase;
-        break;
-      default:
-        throw std::runtime_error("Unreachable!");
-    }
-  }
-};
-
-struct LegacyPhaseHalf {
-  uint8_t phase_01;
-  uint8_t phase_23;
-
-  void set(const size_t idx, const Drive d) {
-    const auto phase = LegacyDrive::to_phase(d);
-    switch (idx) {
-      case 0:
-        phase_01 = (phase_01 & 0xF0) | ((phase >> 4) & 0x0F);
-        break;
-      case 1:
-        phase_01 = (phase_01 & 0x0F) | (phase & 0xF0);
-        break;
-      case 2:
-        phase_23 = (phase_23 & 0xF0) | ((phase >> 4) & 0x0F);
-        break;
-      case 3:
-        phase_23 = (phase_23 & 0x0F) | (phase & 0xF0);
-        break;
-      default:
-        throw std::runtime_error("Unreachable!");
-    }
-  }
-};
 
 }  // namespace autd3::driver

@@ -160,11 +160,11 @@ class CPU {
     if (header->cpu_flag.contains(driver::CPUControlFlags::MOD_BEGIN)) {
       _mod_cycle = 0;
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_MOD_ADDR_OFFSET, 0);
-      const auto freq_div = header->mod_head().freq_div;
+      const auto freq_div = header->mod_initial().freq_div;
       bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_MOD_FREQ_DIV_0, reinterpret_cast<const uint16_t*>(&freq_div), 2);
     }
-    const auto* data = reinterpret_cast<const uint16_t*>((header->cpu_flag.contains(driver::CPUControlFlags::MOD_BEGIN)) ? header->mod_head().data
-                                                                                                                         : header->mod_body().data);
+    const auto* data = reinterpret_cast<const uint16_t*>(
+        (header->cpu_flag.contains(driver::CPUControlFlags::MOD_BEGIN)) ? header->mod_initial().data : header->mod_subsequent().data);
     if (const auto segment_capacity = (_mod_cycle & ~cpu::MOD_BUF_SEGMENT_SIZE_MASK) + cpu::MOD_BUF_SEGMENT_SIZE - _mod_cycle;
         write <= segment_capacity) {
       bram_cpy(cpu::BRAM_SELECT_MOD, static_cast<uint16_t>((_mod_cycle & cpu::MOD_BUF_SEGMENT_SIZE_MASK) >> 1), data,
@@ -186,8 +186,8 @@ class CPU {
   }
 
   void config_silencer(const driver::GlobalHeader* header) {
-    const auto step = header->silencer_header().step;
-    const auto cycle = header->silencer_header().cycle;
+    const auto step = header->silencer().step;
+    const auto cycle = header->silencer().cycle;
     bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_SILENT_STEP, step);
     bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_SILENT_CYCLE, cycle);
   }

@@ -275,10 +275,10 @@ TEST(CPUTest, TxDatagram) {
                                 NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   ASSERT_EQ(tx.num_devices(), 10);
-  ASSERT_EQ(tx.effective_size(), 128 + 498 * 10);
+  ASSERT_EQ(tx.transmitting_size(), 128 + 498 * 10);
 
   tx.num_bodies = 5;
-  ASSERT_EQ(tx.effective_size(), 128 + 498 * 5);
+  ASSERT_EQ(tx.transmitting_size(), 128 + 498 * 5);
 }
 
 TEST(CPUTest, RxDatagram) {
@@ -312,8 +312,8 @@ TEST(CPUTest, CPUControlFlags) {
 }
 
 TEST(CPUTest, Header) {
-  ASSERT_EQ(sizeof(autd3::driver::ModHead), 124);
-  ASSERT_EQ(sizeof(autd3::driver::ModBody), 124);
+  ASSERT_EQ(sizeof(autd3::driver::ModHeaderInitial), 124);
+  ASSERT_EQ(sizeof(autd3::driver::ModHeaderSubsequent), 124);
   ASSERT_EQ(sizeof(autd3::driver::SilencerHeader), 124);
   ASSERT_EQ(sizeof(autd3::driver::GlobalHeader), 128);
 }
@@ -399,40 +399,41 @@ TEST(CPUTest, operation_modulation_v2_6) {
                                 NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
   std::vector<uint8_t> mod_data;
-  for (size_t i = 0; i < autd3::driver::MOD_HEAD_DATA_SIZE + autd3::driver::MOD_BODY_DATA_SIZE + 1; i++)
+  for (size_t i = 0; i < autd3::driver::MOD_HEADER_INITIAL_DATA_SIZE + autd3::driver::MOD_HEADER_SUBSEQUENT_DATA_SIZE + 1; i++)
     mod_data.emplace_back(static_cast<uint8_t>(i));
 
   size_t sent = 0;
 
   driver.modulation(1, mod_data, sent, 580, tx);
-  ASSERT_EQ(sent, autd3::driver::MOD_HEAD_DATA_SIZE);
+  ASSERT_EQ(sent, autd3::driver::MOD_HEADER_INITIAL_DATA_SIZE);
   ASSERT_EQ(tx.header().msg_id, 1);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::MOD));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::MOD_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::MOD_END));
-  ASSERT_EQ(tx.header().size, static_cast<uint16_t>(autd3::driver::MOD_HEAD_DATA_SIZE));
-  ASSERT_EQ(tx.header().mod_head().freq_div, 580);
-  for (size_t i = 0; i < sent; i++) ASSERT_EQ(tx.header().mod_head().data[i], static_cast<uint8_t>(i));
+  ASSERT_EQ(tx.header().size, static_cast<uint16_t>(autd3::driver::MOD_HEADER_INITIAL_DATA_SIZE));
+  ASSERT_EQ(tx.header().mod_initial().freq_div, 580);
+  for (size_t i = 0; i < sent; i++) ASSERT_EQ(tx.header().mod_initial().data[i], static_cast<uint8_t>(i));
 
   driver.modulation(0xFF, mod_data, sent, 580, tx);
-  ASSERT_EQ(sent, autd3::driver::MOD_HEAD_DATA_SIZE + autd3::driver::MOD_BODY_DATA_SIZE);
+  ASSERT_EQ(sent, autd3::driver::MOD_HEADER_INITIAL_DATA_SIZE + autd3::driver::MOD_HEADER_SUBSEQUENT_DATA_SIZE);
   ASSERT_EQ(tx.header().msg_id, 0xFF);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::MOD));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::MOD_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::MOD_END));
-  ASSERT_EQ(tx.header().size, static_cast<uint16_t>(autd3::driver::MOD_BODY_DATA_SIZE));
-  for (size_t i = autd3::driver::MOD_HEAD_DATA_SIZE; i < sent; i++)
-    ASSERT_EQ(tx.header().mod_body().data[i - autd3::driver::MOD_HEAD_DATA_SIZE], static_cast<uint8_t>(i));
+  ASSERT_EQ(tx.header().size, static_cast<uint16_t>(autd3::driver::MOD_HEADER_SUBSEQUENT_DATA_SIZE));
+  for (size_t i = autd3::driver::MOD_HEADER_INITIAL_DATA_SIZE; i < sent; i++)
+    ASSERT_EQ(tx.header().mod_subsequent().data[i - autd3::driver::MOD_HEADER_INITIAL_DATA_SIZE], static_cast<uint8_t>(i));
 
   driver.modulation(0xF0, mod_data, sent, 580, tx);
-  ASSERT_EQ(sent, autd3::driver::MOD_HEAD_DATA_SIZE + autd3::driver::MOD_BODY_DATA_SIZE + 1);
+  ASSERT_EQ(sent, autd3::driver::MOD_HEADER_INITIAL_DATA_SIZE + autd3::driver::MOD_HEADER_SUBSEQUENT_DATA_SIZE + 1);
   ASSERT_EQ(tx.header().msg_id, 0xF0);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::MOD));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::MOD_BEGIN));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::MOD_END));
   ASSERT_EQ(tx.header().size, 1);
-  for (size_t i = autd3::driver::MOD_HEAD_DATA_SIZE + autd3::driver::MOD_BODY_DATA_SIZE; i < sent; i++)
-    ASSERT_EQ(tx.header().mod_body().data[i - (autd3::driver::MOD_HEAD_DATA_SIZE + autd3::driver::MOD_BODY_DATA_SIZE)], static_cast<uint8_t>(i));
+  for (size_t i = autd3::driver::MOD_HEADER_INITIAL_DATA_SIZE + autd3::driver::MOD_HEADER_SUBSEQUENT_DATA_SIZE; i < sent; i++)
+    ASSERT_EQ(tx.header().mod_subsequent().data[i - (autd3::driver::MOD_HEADER_INITIAL_DATA_SIZE + autd3::driver::MOD_HEADER_SUBSEQUENT_DATA_SIZE)],
+              static_cast<uint8_t>(i));
 
   sent = 0;
   ASSERT_FALSE(driver.modulation(0xFF, mod_data, sent, 579, tx));
@@ -449,8 +450,8 @@ TEST(CPUTest, operation_config_silencer_v2_6) {
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::MOD));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_SYNC));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_SILENCER));
-  ASSERT_EQ(tx.header().silencer_header().cycle, 522);
-  ASSERT_EQ(tx.header().silencer_header().step, 4);
+  ASSERT_EQ(tx.header().silencer().cycle, 522);
+  ASSERT_EQ(tx.header().silencer().step, 4);
 
   ASSERT_FALSE(driver.config_silencer(1, 521, 4, tx));
 }
