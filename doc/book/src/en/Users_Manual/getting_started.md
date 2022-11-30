@@ -148,8 +148,7 @@ In this example, neither rotation nor translation is assumed.
 Next, create a `Link` to connect to the device.
 
 ```cpp
-  auto link = autd3::link::SOEM().high_precision(true).build();
-  autd.open(std::move(link));
+  if (auto link = autd3::link::SOEM().high_precision(true).build(); !autd.open(std::move(link))) return -1;
 ```
 
 Next, `ack_check_timeout` is set to $\SI{20}{ms}$. 
@@ -203,7 +202,8 @@ Finally, disconnect the device.
 autd.close();
 ```
 
-In the next page, the basic functions will be described. 
+In the next page, the basic functions will be described.
+
 [Online API Documentation](https://shinolab.github.io/autd3/api/index.html) is also available.
 
 [^fn_git]: Not required to run, but used to simplify the work.

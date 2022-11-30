@@ -14,7 +14,7 @@ requires "https://github.com/shinolab/autd3.git?subdir=nim == 2.6.5"
 
 基本的には, C++版と同じになるように設計している.
 
-たとえば, [Getting Started](../Users_Manual/getting_started.md)と等価なコードは以下のようになる.
+たとえば, [チュートリアル](../Users_Manual/getting_started.md)と等価なコードは以下のようになる.
 
 ```nim
 {{#include ../../../samples/nim/sample/src/sample.nim}}

@@ -12,7 +12,8 @@ when isMainModule:
 
         var soem = initSOEM()
         let link = soem.highPrecision(true).onLost(onLost).build()
-        discard cnt.open(link)
+        if not cnt.open(link):
+            system.quit(-1)
 
         cnt.ackCheckTimeoutMs = 20
 
