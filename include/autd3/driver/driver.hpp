@@ -60,7 +60,7 @@ class Driver {
 
   /**
    * @brief Pack Modulation delay data
-   * @param cycles modulation delay data of all transducers
+   * @param delays modulation delay data of all transducers
    * @param tx transmission data
    */
   virtual void mod_delay(const std::vector<uint16_t>& delays, TxDatagram& tx) const = 0;
