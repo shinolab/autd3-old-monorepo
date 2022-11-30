@@ -19,8 +19,6 @@
 #include <string>
 #include <vector>
 
-#include "autd3/driver/common/fpga/defined.hpp"
-
 namespace autd3::driver {
 
 #ifdef _MSC_VER

@@ -12,15 +12,11 @@
 #pragma once
 
 #include <algorithm>
-#include <cmath>
 #include <cstdint>
 #include <iterator>
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include "autd3/driver/defined.hpp"
-#include "autd3/driver/utils.hpp"
 
 namespace autd3::driver {
 
