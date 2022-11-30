@@ -33,6 +33,7 @@ void AUTDSetSendInterval(void* handle, uint64_t interval);
 void AUTDSetForceFan(void* handle, bool force);
 double AUTDGetSoundSpeed(void* handle);
 void AUTDSetSoundSpeed(void* handle, double sound_speed);
+void AUTDSetSoundSpeedFromTemp(void* handle, double temp, double k, double r, double m);
 double AUTDGetTransFrequency(void* handle, int32_t trans_idx);
 void AUTDSetTransFrequency(void* handle, int32_t trans_idx, double frequency);
 uint16_t AUTDGetTransCycle(void* handle, int32_t trans_idx);

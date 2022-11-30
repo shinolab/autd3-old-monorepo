@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 30/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -151,6 +151,11 @@ double AUTDGetSoundSpeed(const void* const handle) {
 void AUTDSetSoundSpeed(void* const handle, const double sound_speed) {
   auto* wrapper = static_cast<Controller*>(handle);
   wrapper->set_sound_speed(sound_speed);
+}
+
+void AUTDSetSoundSpeedFromTemp(const void* handle, const double temp, double k, double r, double m) {
+  auto* wrapper = static_cast<Controller*>(handle);
+  wrapper->set_sound_speed_from_temp(temp, k, r, m);
 }
 
 double AUTDGetWavelength(const void* const handle, const int32_t trans_idx) {

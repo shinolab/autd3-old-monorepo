@@ -1,15 +1,15 @@
 // This file was automatically generated from header file
 
 #ifdef C2NIM
-#dynlib dll
-#cdecl
-#if defined(windows)
-#define dll "bin/autd3capi.dll"
-#elif defined(macosx)
-#define dll "bin/libautd3capi.dylib"
-#else
-#define dll "bin/libautd3capi.so"
-#endif
+#  dynlib dll
+#  cdecl
+#  if defined(windows)
+#    define dll "bin/autd3capi.dll"
+#  elif defined(macosx)
+#    define dll "bin/libautd3capi.dylib"
+#  else
+#    define dll "bin/libautd3capi.so"
+#  endif
 #endif
 
 void AUTDSetLogLevel(int32 level);
@@ -31,6 +31,7 @@ void AUTDSetSendInterval(void* handle, uint64 interval);
 void AUTDSetForceFan(void* handle, bool force);
 float64 AUTDGetSoundSpeed(void* handle);
 void AUTDSetSoundSpeed(void* handle, float64 sound_speed);
+void AUTDSetSoundSpeedFromTemp(void* handle, float64 temp, float64 k, float64 r, float64 m);
 float64 AUTDGetTransFrequency(void* handle, int32 trans_idx);
 void AUTDSetTransFrequency(void* handle, int32 trans_idx, float64 frequency);
 uint16 AUTDGetTransCycle(void* handle, int32 trans_idx);

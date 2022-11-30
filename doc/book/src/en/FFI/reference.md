@@ -217,6 +217,19 @@ Set sound speed.
 | sound_speed            | double | in     | Speed of sound in m/s |
 | return                 | void   | -      | -                     |
 
+## AUTDSetSoundSpeedFromTemp (autd3capi)
+
+Set sound speed from temperature.
+
+| Argument name / return | type   | in/out | description           |
+| ---------------------- | ------ | ------ | --------------------- |
+| handle                 | void*  | in     | pointer to Controller |
+| temp                   | double | in     | temperature in Celsius degree |
+| k                   | double | in     | Heat capacity ratio           |
+| r                   | double | in     |  Gas constant [J K^-1 mol^-1]           |
+| m                   | double | in     | Molar mass [kg mod^-1]           |
+| return                 | void   | -      | -                     |
+
 ## AUTDGetTransFrequency (autd3capi)
 
 Get frequency of the transducer.
