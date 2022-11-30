@@ -18,7 +18,7 @@
 namespace autd3::core {
 
 /**
- * @brief Clear
+ * @brief Clear is a DatagramHeader for clear operation
  */
 struct Clear final : DatagramHeader {
   Clear() noexcept = default;

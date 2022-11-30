@@ -3,7 +3,7 @@
 // Created Date: 07/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 30/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,6 +19,9 @@
 
 namespace autd3 {
 
+/**
+ * @brief Structure with DatagramHeader and DatagramBody for performing special operations
+ */
 class SpecialData {
  public:
   [[nodiscard]] virtual bool ack_check_timeout_override() const = 0;
@@ -39,6 +42,9 @@ class SpecialData {
   std::unique_ptr<core::DatagramBody> _b;
 };
 
+/**
+ * @brief SpecialData to stop ultrasound output
+ */
 class Stop final : public SpecialData {
  public:
   Stop() : SpecialData(std::make_unique<core::SilencerConfig>(), std::make_unique<core::Amplitudes>(0.0)) {}
@@ -49,6 +55,9 @@ class Stop final : public SpecialData {
   }
 };
 
+/**
+ * @brief SpecialData to update control flags
+ */
 class UpdateFlag final : public SpecialData {
  public:
   UpdateFlag() : SpecialData(std::make_unique<core::NullHeader>(), std::make_unique<core::NullBody>()) {}
@@ -59,6 +68,9 @@ class UpdateFlag final : public SpecialData {
   }
 };
 
+/**
+ * @brief SpecialData for clear
+ */
 class Clear final : public SpecialData {
  public:
   Clear() : SpecialData(std::make_unique<core::Clear>(), std::make_unique<core::NullBody>()) {}
@@ -69,6 +81,9 @@ class Clear final : public SpecialData {
   }
 };
 
+/**
+ * @brief SpecialData for synchronization
+ */
 class Synchronize final : public SpecialData {
  public:
   Synchronize() : SpecialData(std::make_unique<core::NullHeader>(), std::make_unique<core::Synchronize>()) {}
@@ -79,6 +94,9 @@ class Synchronize final : public SpecialData {
   }
 };
 
+/**
+ * @brief SpecialData for modulation delay configuration
+ */
 class ModDelayConfig final : public SpecialData {
  public:
   ModDelayConfig() : SpecialData(std::make_unique<core::NullHeader>(), std::make_unique<core::ModDelayConfig>()) {}

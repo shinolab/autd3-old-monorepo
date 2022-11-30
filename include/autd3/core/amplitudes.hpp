@@ -20,7 +20,7 @@
 
 namespace autd3::core {
 /**
- * @brief Amplitude configuration for NormalPhaseMode.
+ * @brief Amplitude configuration for NormalPhaseMode
  */
 class Amplitudes final : public DatagramBody {
  public:

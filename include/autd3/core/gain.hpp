@@ -20,7 +20,7 @@
 namespace autd3::core {
 
 /**
- * @brief Gain controls the duty ratio and phase of each transducer in AUTD devices.
+ * @brief Gain controls the duty ratio and phase of each transducer in AUTD devices
  */
 struct Gain : DatagramBody {
   Gain() : _built(false), _phase_sent(false), _duty_sent(false) {}

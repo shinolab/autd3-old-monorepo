@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 30/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -65,6 +65,9 @@ constexpr uint8_t ENABLED_FEATURES_BITS =
 
 }  // namespace fpga
 
+/**
+ * @brief FPGA firmware emulator
+ */
 class FPGA {
  public:
   explicit FPGA(const size_t num_transducers) : _num_transducers(num_transducers) {

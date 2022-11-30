@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 30/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -50,6 +50,15 @@ class Directivity {
   }
 };
 
+/**
+ * @brief Calculate complex sound pressure propagation
+ * @param source_pos source transducer position
+ * @param source_dir source transducer direction
+ * @param attenuation attenuation coefficient
+ * @param wavenumber wave number
+ * @param target target position
+ * @return complex sound pressure at target position
+ */
 inline std::complex<double> propagate(const driver::Vector3& source_pos, const driver::Vector3& source_dir, const double attenuation,
                                       const double wavenumber, const driver::Vector3& target) {
   const auto diff = target - source_pos;

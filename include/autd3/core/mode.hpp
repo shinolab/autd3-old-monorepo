@@ -3,7 +3,7 @@
 // Created Date: 28/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 30/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,15 +23,56 @@ namespace autd3::core {
  */
 class Mode {
  public:
+  /**
+   * @brief Pack Header for synchronization operation
+   * @param driver unique_ptr to driver
+   * @param cycles ultrasound cycle data of all transducers
+   * @param tx transmission data
+   * @return true if cycles are valid
+   */
   [[nodiscard]] virtual bool pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles,
                                        driver::TxDatagram& tx) const = 0;
+
+  /**
+   * @brief Pack Header for Gain
+   * @param driver unique_ptr to driver
+   * @param tx transmission data
+   */
   virtual void pack_gain_header(const std::unique_ptr<const driver::Driver>& driver, driver::TxDatagram& tx) const = 0;
+
+  /**
+   * @brief Pack Body for Gain
+   * @param driver unique_ptr to driver
+   * @param phase_sent Whether phase data has been sent
+   * @param duty_sent Whether duty data has been sent
+   * @param drives Drive of all transducers
+   * @param tx transmission data
+   */
   virtual void pack_gain_body(const std::unique_ptr<const driver::Driver>& driver, bool& phase_sent, bool& duty_sent,
                               const std::vector<driver::Drive>& drives, driver::TxDatagram& tx) const = 0;
+
+  /**
+   * @brief Pack Header for GainSTM
+   * @param driver unique_ptr to driver
+   * @param tx transmission data
+   */
   virtual void pack_stm_gain_header(const std::unique_ptr<const driver::Driver>& driver, driver::TxDatagram& tx) const = 0;
+
+  /**
+   * @brief Pack Header for GainSTM
+   * @param driver unique_ptr to driver
+   * @param sent Number of data already sent
+   * @param next_duty true if duty data is to be sent next frame
+   * @param freq_div STM sampling frequency division
+   * @param gains Drive of all transducers
+   * @param mode GainSTMMode
+   * @param tx transmission data
+   * @return true if freq_div is valid
+   */
   [[nodiscard]] virtual bool pack_stm_gain_body(const std::unique_ptr<const driver::Driver>& driver, size_t& sent, bool& next_duty, uint32_t freq_div,
                                                 const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode mode,
                                                 driver::TxDatagram& tx) const = 0;
+
   Mode() = default;
   virtual ~Mode() = default;
   Mode(const Mode& v) = default;
