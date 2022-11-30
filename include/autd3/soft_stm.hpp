@@ -3,7 +3,7 @@
 // Created Date: 07/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/11/2022
+// Last Modified: 30/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@
 namespace autd3 {
 
 /**
- * @brief Software Spatio-Temporal Modulation Controller
+ * @brief Software Spatio-Temporal Modulation
  */
 class SoftwareSTM {
  public:
@@ -29,10 +29,17 @@ class SoftwareSTM {
 #pragma warning(push)
 #pragma warning(disable : 26812)
 #endif
+  /**
+   * @brief Software timer strategy flag
+   *
+   */
   class TimerStrategy final {
    public:
     enum VALUE : uint8_t {
       NONE = 0,
+      /**
+       * @brief Use busy wait instead of sleep
+       */
       BUSY_WAIT = 1 << 1,
     };
 
@@ -67,6 +74,9 @@ class SoftwareSTM {
 #pragma warning(pop)
 #endif
 
+  /**
+   * @brief Handler of SoftwareSTM
+   */
   struct SoftwareSTMThreadHandle {
     friend class SoftwareSTM;
 
