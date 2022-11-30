@@ -1,6 +1,7 @@
 # 2.6.6
 
 - Rename `PointSTM` to `FocusSTM`
+- Add `AUTDSetSoundSpeedFromTemp` in capi
 - (internal) refactor to improve readability
 
 # 2.6.5
