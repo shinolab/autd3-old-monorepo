@@ -27,12 +27,12 @@
 namespace autd3 {
 
 /**
- * @brief `core` namespace provides an abstraction of the basic functionality for manipulating AUTD3
+ * @brief `core` namespace provides an abstraction of the basic functionality for manipulating AUTD device
  */
 namespace core {}
 
 /**
- * @brief `driver` namespace contains the logic to control the AUTD3 firmware and constans defined by hardware and firmware
+ * @brief `driver` namespace contains the logic to control autd3 firmware and constans defined by hardware and firmware
  */
 namespace driver {}
 
