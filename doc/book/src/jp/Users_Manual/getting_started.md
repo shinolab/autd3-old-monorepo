@@ -146,8 +146,7 @@ autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::
 次に, `Link`を作成し, デバイスと接続する.
 
 ```cpp
-  auto link = autd3::link::SOEM().high_precision(true).build();
-  autd.open(std::move(link));
+  if (auto link = autd3::link::SOEM().high_precision(true).build(); !autd.open(std::move(link))) return -1;
 ```
 
 linkの型は`unique_ptr`であるため, `Controller`に渡す際は`move`する必要がある.
