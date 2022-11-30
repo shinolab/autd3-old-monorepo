@@ -3,7 +3,7 @@
 // Created Date: 15/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 30/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -155,7 +155,7 @@ class Driver {
 
   /**
    * @brief Pack Body data for GainSTM
-   * @param drives Drive of all transducers.
+   * @param drives Drive of all transducers
    * @param sent Number of data already sent
    * @param freq_div STM sampling frequency division
    * @param mode GainSTMMode

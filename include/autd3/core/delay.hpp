@@ -21,7 +21,7 @@
 namespace autd3::core {
 
 /**
- * @brief Gain controls the duty ratio and phase of each transducer in AUTD devices.
+ * @brief ModDelayConfig is a DatagramBody to configure modulation delay
  */
 struct ModDelayConfig final : DatagramBody {
   ModDelayConfig() : _sent(false) {}
