@@ -3,7 +3,7 @@
 // Created Date: 07/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 30/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,13 +13,13 @@
 
 #include <cstdint>
 
-#include "autd3/core/interface.hpp"
+#include "autd3/core/datagram.hpp"
 #include "autd3/driver/driver.hpp"
 
 namespace autd3::core {
 
 /**
- * @brief Synchronize
+ * @brief DatagramBody for synchronization
  */
 struct Synchronize final : DatagramBody {
   Synchronize() noexcept = default;

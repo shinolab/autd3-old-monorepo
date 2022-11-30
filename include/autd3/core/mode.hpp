@@ -3,7 +3,7 @@
 // Created Date: 28/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,6 +18,9 @@
 
 namespace autd3::core {
 
+/**
+ * @brief Amplitude, phase, and frequency control mode
+ */
 class Mode {
  public:
   [[nodiscard]] virtual bool pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles,
@@ -37,6 +40,9 @@ class Mode {
   Mode& operator=(Mode&& obj) = default;
 };
 
+/**
+ * @brief In LegacyMode, the frequency is fixed at 40 kHz, and the width of phase and amplitude data is 8 bits, respectively.
+ */
 class LegacyMode final : public Mode {
   [[nodiscard]] bool pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles,
                                driver::TxDatagram& tx) const override;
@@ -61,6 +67,9 @@ class LegacyMode final : public Mode {
   static std::unique_ptr<LegacyMode> create() noexcept;
 };
 
+/**
+ * @brief In NormalMode, the frequency is variable. Amplitude and phase data can be controlled with a fineness of driver::FPGA_CLK_FREQ/frequency.
+ */
 class NormalMode final : public Mode {
   bool pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles, driver::TxDatagram& tx) const override;
 
@@ -84,6 +93,9 @@ class NormalMode final : public Mode {
   static std::unique_ptr<NormalMode> create() noexcept;
 };
 
+/**
+ * @brief NormalPhaseMode is equivalent to NormalMode, except for it transmits only phase data.
+ */
 class NormalPhaseMode final : public Mode {
   bool pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles, driver::TxDatagram& tx) const override;
 

@@ -1,9 +1,9 @@
-// File: interface.hpp
+// File: datagram.hpp
 // Project: core
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 30/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,12 +20,24 @@ namespace autd3::core {
 struct DatagramHeader;
 struct DatagramBody;
 
+/**
+ * @brief Pack of DatagramHeader and DatagramBody
+ *
+ * @tparam H DatagramHeader
+ * @tparam B DatagramBody
+ */
 template <typename H, typename B>
 struct DatagramPack {
   H header;
   B body;
 };
 
+/**
+ * @brief Pack of DatagramHeader and DatagramBody references
+ *
+ * @tparam H reference of DatagramHeader
+ * @tparam B reference of DatagramBody
+ */
 struct DatagramPackRef {
   DatagramHeader& header;
   DatagramBody& body;
@@ -94,6 +106,9 @@ struct DatagramBody {
   [[nodiscard]] virtual bool is_finished() const = 0;
 };
 
+/**
+ * @brief DatagramHeader that does nothing
+ */
 struct NullHeader final : DatagramHeader {
   ~NullHeader() override = default;
   NullHeader() = default;
@@ -111,6 +126,9 @@ struct NullHeader final : DatagramHeader {
   [[nodiscard]] bool is_finished() const override { return true; }
 };
 
+/**
+ * @brief DatagramBody that does nothing
+ */
 struct NullBody final : DatagramBody {
   ~NullBody() override = default;
   NullBody() = default;
