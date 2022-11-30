@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 30/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@
 #include <thread>
 
 #include "../../spdlog.hpp"
-#include "autd3/core/interface.hpp"
+#include "autd3/core/datagram.hpp"
 #include "autd3/core/link.hpp"
 #include "autd3/driver/common/cpu/ec_config.hpp"
 

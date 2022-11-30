@@ -3,7 +3,7 @@
 // Created Date: 01/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 30/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,8 +15,8 @@
 #include <type_traits>
 #include <vector>
 
+#include "datagram.hpp"
 #include "geometry.hpp"
-#include "interface.hpp"
 
 namespace autd3::core {
 
