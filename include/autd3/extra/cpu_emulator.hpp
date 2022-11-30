@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 30/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -91,6 +91,9 @@ constexpr uint16_t GAIN_STM_MODE_PHASE_HALF = 0x0004;
 
 namespace autd3::extra {
 
+/**
+ * @brief CPU board firmware emulator
+ */
 class CPU {
  public:
   explicit CPU(const size_t id, const size_t num_transducers)

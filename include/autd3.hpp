@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 30/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,14 +27,34 @@
 namespace autd3 {
 
 /**
- * @brief core namespace provides an abstraction of the basic functionality for manipulating AUTD3.
+ * @brief `core` namespace provides an abstraction of the basic functionality for manipulating AUTD3
  */
 namespace core {}
 
 /**
- * @brief driver namespace contains the logic to control the AUTD3 firmware and constans defined by hardware and firmware.
+ * @brief `driver` namespace contains the logic to control the AUTD3 firmware and constans defined by hardware and firmware
  */
 namespace driver {}
+
+/**
+ * @brief `gain` namespace provides pre-defined Gain
+ */
+namespace gain {}
+
+/**
+ * @brief `modulation` namespace provides pre-defined Modulation
+ */
+namespace modulation {}
+
+/**
+ * @brief `link` namespace provides pre-defined Link
+ */
+namespace link {}
+
+/**
+ * @brief `extra` namespace provides features that are not essential to drive the device
+ */
+namespace extra {}
 
 constexpr double pi = driver::pi;
 
