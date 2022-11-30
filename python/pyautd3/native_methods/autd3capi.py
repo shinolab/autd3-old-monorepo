@@ -84,6 +84,9 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDSetSoundSpeed.argtypes = [ctypes.c_void_p, ctypes.c_double] 
         self.dll.AUTDSetSoundSpeed.restype = None
 
+        self.dll.AUTDSetSoundSpeedFromTemp.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double] 
+        self.dll.AUTDSetSoundSpeedFromTemp.restype = None
+
         self.dll.AUTDGetTransFrequency.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
         self.dll.AUTDGetTransFrequency.restype = ctypes.c_double
 
