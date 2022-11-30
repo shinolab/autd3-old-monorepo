@@ -27,7 +27,7 @@ autd3-gain-holo = "2.6.5"
 
 基本的には, C++版と同じになるように設計している.
 
-たとえば, [Getting Started](../Users_Manual/getting_started.md)と等価なコードは以下のようになる.
+たとえば, [チュートリアル](../Users_Manual/getting_started.md)と等価なコードは以下のようになる.
 
 ```rust
 {{#include ../../../samples/rust/sample/src/main.rs}}
@@ -41,6 +41,6 @@ autd3-gain-holo = "2.6.5"
 
 より詳細なサンプルは[rust-autdのexample](https://github.com/shinolab/autd3/tree/master/rust/autd3-examples)を参照されたい.
 
-## Trouble shooting
+## Troubleshooting
 
 質問があれば[GitHubのissue](https://github.com/shinolab/autd3/issues)に送られたい.
