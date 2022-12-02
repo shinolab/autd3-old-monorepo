@@ -3,7 +3,7 @@
 // Created Date: 22/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 02/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -216,8 +216,8 @@ bool DriverV2_3::focus_stm_body(const std::vector<std::vector<STMFocus>>& points
     for (size_t i = 0; i < tx.num_devices(); i++) {
       auto& d = tx.body(i);
       const auto& s = points.at(i);
-      d.focus_stm_body().set_size(static_cast<uint16_t>(s.size()));
-      d.focus_stm_body().set_point(s);
+      d.focus_stm_subsequent().set_size(static_cast<uint16_t>(s.size()));
+      d.focus_stm_subsequent().set_point(s);
     }
   }
 
@@ -261,6 +261,7 @@ bool DriverV2_3::gain_stm_legacy_body(const std::vector<std::vector<Drive>>& dri
     for (size_t i = 0; i < tx.num_devices(); i++) {
       tx.body(i).gain_stm_initial().set_freq_div(freq_div);
       tx.body(i).gain_stm_initial().set_mode(mode);
+      tx.body(i).gain_stm_initial().set_cycle(drives.size());
     }
     sent++;
   } else {
