@@ -1,4 +1,4 @@
-// File: backend_array_fire.cpp
+// File: backend_arrayfire.cpp
 // Project: gain
 // Created Date: 02/12/2022
 // Author: Shun Suzuki
@@ -10,6 +10,7 @@
 //
 
 #include "autd3/gain/backend_arrayfire.hpp"
+
 #include "backend_base.hpp"
 
 AUTD3_BACKEND_TEST(GainBackendArrayFire, autd3::gain::holo::ArrayFireBackend)
