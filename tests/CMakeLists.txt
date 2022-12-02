@@ -9,30 +9,8 @@ target_link_libraries(test_autd3 autd3)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/tests/driver)
 add_subdirectory(${PROJECT_SOURCE_DIR}/tests/core)
-add_subdirectory(${PROJECT_SOURCE_DIR}/tests/gain/primitive)
-add_subdirectory(${PROJECT_SOURCE_DIR}/tests/modulation/primitive)
-add_subdirectory(${PROJECT_SOURCE_DIR}/tests/link)
-
-if(BUILD_GAIN_HOLO)
-  add_subdirectory(${PROJECT_SOURCE_DIR}/tests/gain/holo)
-  target_link_libraries(test_autd3 gain_holo)
-  if(BUILD_BACKEND_CUDA)
-    target_compile_definitions(test_autd3 PRIVATE TEST_BACKEND_CUDA)
-    target_link_libraries(test_autd3 backend_cuda)
-  endif()
-  if(BUILD_BACKEND_BLAS)
-    target_compile_definitions(test_autd3 PRIVATE TEST_BACKEND_BLAS)
-    target_link_libraries(test_autd3 backend_blas)
-  endif()
-  if(BUILD_BACKEND_ARRAYFIRE)
-    target_compile_definitions(test_autd3 PRIVATE TEST_BACKEND_ARRAYFIRE)
-    target_link_libraries(test_autd3 backend_arrayfire)
-  endif()
-endif()
-
-if(BUILD_MODULATION_AUDIO_FILE)
-  add_subdirectory(${PROJECT_SOURCE_DIR}/tests/modulation/audio_file)
-endif()
+add_subdirectory(${PROJECT_SOURCE_DIR}/tests/gain)
+add_subdirectory(${PROJECT_SOURCE_DIR}/tests/modulation)
 
 target_sources(test_autd3 PRIVATE
   test.cpp

@@ -1,9 +1,9 @@
-// File: core_test.cpp
+// File: acoustics.cpp
 // Project: core
-// Created Date: 24/05/2022
+// Created Date: 02/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 02/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,37 +19,14 @@
 #endif
 
 #include <autd3/core/acoustics.hpp>
-#include <autd3/core/geometry.hpp>
 #include <random>
 
 #include "test_utils.hpp"
 
-using autd3::core::Quaternion;
-using autd3::core::Vector3;
+using autd3::driver::Quaternion;
+using autd3::driver::Vector3;
 
-TEST(TransducerTest, Transducer) {
-  const auto rot =
-      Eigen::AngleAxis(autd3::driver::pi / 2.0, Vector3::UnitZ()) * Eigen::AngleAxis(0.0, Vector3::UnitY()) * Eigen::AngleAxis(0.0, Vector3::UnitX());
-
-  autd3::core::Transducer tr(1, Vector3(10, 20, 30), rot);
-
-  ASSERT_NEAR_VECTOR3(tr.position(), Vector3(10, 20, 30), 1e-3);
-  ASSERT_NEAR_VECTOR3(tr.x_direction(), Vector3(0, 1, 0), 1e-3);
-  ASSERT_NEAR_VECTOR3(tr.y_direction(), Vector3(-1, 0, 0), 1e-3);
-  ASSERT_NEAR_VECTOR3(tr.z_direction(), Vector3(0, 0, 1), 1e-3);
-
-  ASSERT_EQ(tr.id(), 1);
-
-  tr.set_cycle(3000);
-  ASSERT_EQ(tr.cycle(), 3000);
-  tr.set_frequency(70e3);
-  ASSERT_NEAR(tr.frequency(), 70e3, 15.0);
-
-  ASSERT_NEAR(tr.wavelength(), 4.857142857142857142857142857L, 1e-3);
-  ASSERT_NEAR(tr.wavenumber(), 1.293596975007561871293279075L, 1e-3);
-}
-
-TEST(UtilitiesTest, Directivity) {
+TEST(CoreAcoustics, Directivity) {
   constexpr double expects[91] = {
       1,        1,        1,        1,        1,        1,        1,        1,        1,        1,        1,        1,        1,
       1,        1,        1,        1,        1,        1,        1,        1,        0.994632, 0.987783, 0.979551, 0.970031, 0.95932,
@@ -62,7 +39,7 @@ TEST(UtilitiesTest, Directivity) {
   for (size_t i = 0; i < 91; i++) ASSERT_NEAR(autd3::core::Directivity::t4010a1(static_cast<double>(i)), expects[i], 1e-3);
 }
 
-TEST(UtilitiesTest, propagate) {
+TEST(CoreAcoustics, propagate) {
   constexpr auto wavenumber = 2.0 * autd3::driver::pi / 2.0;  // lambda = 2.0
 
   ASSERT_NEAR_COMPLEX(autd3::core::propagate(Vector3::Zero(), Vector3::UnitZ(), 0.0, wavenumber, Vector3(0.0, 0.0, 1.0)), std::complex(-1.0, 0.0),

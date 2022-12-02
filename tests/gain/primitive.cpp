@@ -1,9 +1,9 @@
-// File: primitive_test.cpp
+// File: primitive.cpp
 // Project: primitive
 // Created Date: 24/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 02/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,7 +28,7 @@ using autd3::core::propagate;
 using autd3::core::Vector3;
 using autd3::driver::pi;
 
-TEST(NullTest, Test) {
+TEST(Gain, Null) {
   auto geometry = autd3::core::Geometry();
   geometry.add_device(autd3::AUTD3(Vector3::Zero(), Vector3::Zero()));
 
@@ -40,7 +40,7 @@ TEST(NullTest, Test) {
   }
 }
 
-TEST(FocusTest, Test) {
+TEST(Gain, Focus) {
   auto geometry = autd3::core::Geometry();
   geometry.add_device(autd3::AUTD3(Vector3::Zero(), Vector3::Zero()));
 

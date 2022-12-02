@@ -1,5 +1,11 @@
-file(GLOB test_files *.cpp)
+add_subdirectory(common)
+add_subdirectory(v2_2)
+add_subdirectory(v2_3)
+add_subdirectory(v2_4)
+add_subdirectory(v2_5)
+add_subdirectory(v2_6)
 
 target_sources(test_autd3 PRIVATE
-  ${test_files}
+  firmware_version.cpp
+  utils.cpp
 )

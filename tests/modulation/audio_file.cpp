@@ -1,9 +1,9 @@
-// File: audio_file_test.cpp
-// Project: audio_file
-// Created Date: 30/05/2022
+// File: audio_file.cpp
+// Project: modulation
+// Created Date: 10/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 02/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ namespace fs = std::filesystem;
 
 #include "autd3/modulation/audio_file.hpp"
 
-TEST(RawPCMTest, default) {
+TEST(Modulation, RawPCM) {
   const fs::path path = fs::path(std::string(AUTD3_RESOURCE_PATH)).append(std::string("sin150.dat"));
 
   auto m = autd3::modulation::RawPCM(path.string(), 4e3, 40960);
@@ -38,7 +38,7 @@ TEST(RawPCMTest, default) {
   for (size_t i = 0; i < 80; i++) ASSERT_EQ(m.buffer()[i], expects[i]);
 }
 
-TEST(WavTest, default) {
+TEST(Modulation, Wav) {
   const fs::path path = fs::path(std::string(AUTD3_RESOURCE_PATH)).append(std::string("sin150.wav"));
 
   auto m = autd3::modulation::Wav(path.string(), 40960);
