@@ -7,7 +7,7 @@ if(BUILD_GAIN_HOLO)
     backend_base.hpp
     backend_eigen.cpp
   )
-  target_link_libraries(test_autd3 gain_holo)
+  target_link_libraries(test_autd3 gain_holo backend_eigen)
   if(BUILD_BACKEND_CUDA)
     target_sources(test_autd3 PRIVATE backend_cuda.cpp)
     target_link_libraries(test_autd3 backend_cuda)

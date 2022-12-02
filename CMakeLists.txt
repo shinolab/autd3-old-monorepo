@@ -300,7 +300,6 @@ if(BUILD_TEST)
     cmake_policy(SET CMP0135 NEW)
   endif()
   include(${PROJECT_SOURCE_DIR}/cmakes/gtest.cmake)
-  # set(gtest_disable_pthreads ON)
   add_subdirectory(tests)
 endif()
 
