@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/11/2022
+// Last Modified: 02/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -34,9 +34,6 @@ struct DatagramPack {
 
 /**
  * @brief Pack of DatagramHeader and DatagramBody references
- *
- * @tparam H reference of DatagramHeader
- * @tparam B reference of DatagramBody
  */
 struct DatagramPackRef {
   DatagramHeader& header;

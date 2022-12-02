@@ -3,7 +3,7 @@
 // Created Date: 07/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/11/2022
+// Last Modified: 02/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -83,7 +83,7 @@ class SoftwareSTM {
     ~SoftwareSTMThreadHandle() = default;
     SoftwareSTMThreadHandle(const SoftwareSTMThreadHandle& v) = delete;
     SoftwareSTMThreadHandle& operator=(const SoftwareSTMThreadHandle& obj) = delete;
-    SoftwareSTMThreadHandle(SoftwareSTMThreadHandle&& obj) = delete;
+    SoftwareSTMThreadHandle(SoftwareSTMThreadHandle&& obj) = default;
     SoftwareSTMThreadHandle& operator=(SoftwareSTMThreadHandle&& obj) = delete;
 
     bool finish();

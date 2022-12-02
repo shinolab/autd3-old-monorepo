@@ -20,11 +20,9 @@
 
 #include <autd3/driver/common/cpu/body.hpp>
 #include <autd3/driver/common/cpu/datagram.hpp>
-#include <autd3/driver/firmware_version.hpp>
 #include <random>
 
 #include "autd3/driver/common/fpga/defined.hpp"
-#include "autd3/driver/utils.hpp"
 #include "autd3/driver/v2_2/driver.hpp"
 
 using autd3::driver::CPUControlFlags;
