@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/11/2022
+// Last Modified: 03/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -117,17 +117,16 @@ class SOEMHandler final {
 
     spdlog::debug("interface name: {}", _ifname);
     if (ec_init(_ifname.c_str()) <= 0) {
-      _is_open.store(false);
       spdlog::error("No socket connection on {}", _ifname);
       return 0;
     }
 
     const auto wc = ec_config_init(0);
     if (wc <= 0) {
-      _is_open.store(false);
       spdlog::error("No slaves found");
       return 0;
     }
+    spdlog::debug("Found {} devices", wc);
 
     const auto auto_detect = device_map.empty();
     if (!auto_detect && static_cast<size_t>(wc) != device_map.size()) {
@@ -139,18 +138,14 @@ class SOEMHandler final {
       if (std::strcmp(ec_slave[i].name, "AUTD") == 0) {
         dev_map.emplace_back(auto_detect ? 249 : device_map[static_cast<size_t>(i) - 1]);
       } else {
-        _is_open.store(false);
         spdlog::error("Slave[{}] is not AUTD3", i);
         return 0;
       }
-
-    spdlog::debug("Found {} devices", wc);
 
     _user_data = std::make_unique<uint32_t[]>(1);
     _user_data[0] = driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle;
     ecx_context.userdata = _user_data.get();
     spdlog::debug("Sync0 interval: {} [ns]", driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle);
-
     if (_sync_mode == SYNC_MODE::DC) {
       for (int cnt = 1; cnt <= ec_slavecount; cnt++)
         ec_slave[cnt].PO2SOconfigx = [](auto* context, auto slave) -> int {
@@ -165,11 +160,18 @@ class SOEMHandler final {
     _io_map.resize(dev_map);
     ec_config_map(_io_map.get());
 
-    ec_statecheck(0, EC_STATE_SAFE_OP, EC_TIMEOUTSTATE * 4);
-
     ec_configdc();
 
-    ec_readstate();
+    ec_statecheck(0, EC_STATE_SAFE_OP, EC_TIMEOUTSTATE);
+    if (ec_slave[0].state != EC_STATE_SAFE_OP) {
+      spdlog::error("One ore more slaves did not reach safe operational state: {}", ec_slave[0].state);
+      ec_readstate();
+      for (size_t slave = 1; slave <= ec_slavecount; slave++)
+        if (ec_slave[slave].state != EC_STATE_SAFE_OP)
+          spdlog::error("Slave[{}]: {} (State={:#02x} StatusCode={:#04x})", slave, ec_ALstatuscode2string(ec_slave[slave].ALstatuscode),
+                        ec_slave[slave].state, ec_slave[slave].ALstatuscode);
+      return false;
+    }
 
     const auto expected_wkc = ec_group[0].outputsWKC * 2 + ec_group[0].inputsWKC;
     spdlog::debug("Calculated workcounter {}", expected_wkc);
@@ -179,21 +181,26 @@ class SOEMHandler final {
     ec_send_processdata();
     ec_receive_processdata(EC_TIMEOUTRET);
 
-    ec_writestate(0);
-
     _is_open.store(true);
     _ecat_thread = std::thread([this, cycle_time] {
       ecat_run(this->_high_precision, &this->_is_open, &this->_wkc, cycle_time, this->_send_mtx, this->_send_buf, this->_io_map);
     });
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    ec_writestate(0);
 
     ec_statecheck(0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE);
-
     if (ec_slave[0].state != EC_STATE_OPERATIONAL) {
       _is_open.store(false);
-      if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
-      if (remaining == 0) spdlog::error("One ore more slaves are not responding: {}", ec_slave[0].state);
+      if (_ecat_thread.joinable()) _ecat_thread.join();
+      if (remaining == 0) {
+        spdlog::error("One ore more slaves are not responding: {}", ec_slave[0].state);
+        ec_readstate();
+        for (size_t slave = 1; slave <= ec_slavecount; slave++)
+          if (ec_slave[slave].state != EC_STATE_SAFE_OP)
+            spdlog::error("Slave {} State={:#02x} StatusCode={:#04x} : {}", slave, ec_slave[slave].state, ec_slave[slave].ALstatuscode,
+                          ec_ALstatuscode2string(ec_slave[slave].ALstatuscode));
+        return static_cast<size_t>(wc);
+      }
       spdlog::debug("Failed to reach op mode. retry opening...");
       return open(device_map, remaining - 1);
     }
@@ -242,10 +249,10 @@ class SOEMHandler final {
     _is_open.store(false);
 
     spdlog::debug("Stopping ethercat thread...");
-    if (this->_ecat_thread.joinable()) this->_ecat_thread.join();
+    if (_ecat_thread.joinable()) _ecat_thread.join();
     spdlog::debug("Stopping ethercat thread...done");
     spdlog::debug("Stopping state check thread...");
-    if (this->_ecat_check_thread.joinable()) this->_ecat_check_thread.join();
+    if (_ecat_check_thread.joinable()) _ecat_check_thread.join();
     spdlog::debug("Stopping state check thread...done");
 
     const auto cyc_time = static_cast<uint32_t*>(ecx_context.userdata)[0];
