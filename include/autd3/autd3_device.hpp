@@ -3,7 +3,7 @@
 // Created Date: 24/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 04/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -39,6 +39,15 @@ struct AUTD3 final : core::Device {
   template <typename T>
   static constexpr auto is_missing_transducer(T x, T y) -> std::enable_if_t<std::is_integral_v<T>, bool> {
     return y == 1 && (x == 1 || x == 2 || x == 16);
+  }
+
+  static constexpr std::pair<size_t, size_t> grid_id(const size_t id) {
+    const size_t local_id = id % NUM_TRANS_IN_UNIT;
+    size_t offset = 0;
+    if (local_id >= 19) offset += 2;
+    if (local_id >= 32) offset += 1;
+    const size_t uid = local_id + offset;
+    return std::make_pair(uid % NUM_TRANS_X, uid / NUM_TRANS_X);
   }
 
   ~AUTD3() override = default;
