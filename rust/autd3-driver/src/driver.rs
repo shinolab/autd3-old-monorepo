@@ -475,7 +475,7 @@ pub fn gain_stm_normal_header(tx: &mut TxDatagram) {
 }
 
 pub fn gain_stm_normal_phase_body(
-    drives: &[&[Drive]],
+    drives: &[Vec<Drive>],
     sent: usize,
     freq_div: u32,
     mode: Mode,
@@ -507,7 +507,7 @@ pub fn gain_stm_normal_phase_body(
     } else {
         tx.phases_mut()
             .iter_mut()
-            .zip(drives[sent - 1])
+            .zip(&drives[sent - 1])
             .for_each(|(d, s)| d.set(s));
     }
 
@@ -525,7 +525,7 @@ pub fn gain_stm_normal_phase_body(
 }
 
 pub fn gain_stm_normal_duty_body(
-    drives: &[&[Drive]],
+    drives: &[Vec<Drive>],
     sent: usize,
     tx: &mut TxDatagram,
 ) -> Result<()> {
@@ -537,7 +537,7 @@ pub fn gain_stm_normal_duty_body(
 
     tx.duties_mut()
         .iter_mut()
-        .zip(drives[sent - 1])
+        .zip(&drives[sent - 1])
         .for_each(|(d, s)| d.set(s));
 
     tx.header_mut()

@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -55,7 +55,7 @@ impl GeometryBuilder<Normal> {
     }
 
     pub fn build(self) -> Geometry<NormalTransducer> {
-        Geometry::<NormalTransducer>::new(self.attenuation, self.sound_speed)
+        Geometry::<NormalTransducer>::new()
     }
 }
 
@@ -69,7 +69,7 @@ impl GeometryBuilder<Legacy> {
     }
 
     pub fn build(self) -> Geometry<LegacyTransducer> {
-        Geometry::<LegacyTransducer>::new(self.attenuation, self.sound_speed)
+        Geometry::<LegacyTransducer>::new()
     }
 }
 
@@ -83,7 +83,7 @@ impl GeometryBuilder<NormalPhase> {
     }
 
     pub fn build(self) -> Geometry<NormalPhaseTransducer> {
-        Geometry::<NormalPhaseTransducer>::new(self.attenuation, self.sound_speed)
+        Geometry::<NormalPhaseTransducer>::new()
     }
 }
 
