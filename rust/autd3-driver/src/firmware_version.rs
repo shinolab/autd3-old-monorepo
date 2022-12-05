@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,6 +17,7 @@ const ENABLED_STM_BIT: u8 = 0x01;
 const ENABLED_MODULATOR_BIT: u8 = 0x02;
 const ENABLED_SILENCER_BIT: u8 = 0x04;
 const ENABLED_MOD_DELAY_BIT: u8 = 0x08;
+const ENABLED_EMULATOR_BIT: u8 = 0x80;
 
 pub struct FirmwareInfo {
     idx: usize,
@@ -64,6 +65,10 @@ impl FirmwareInfo {
         (self.fpga_function_bits & ENABLED_MOD_DELAY_BIT) == ENABLED_MOD_DELAY_BIT
     }
 
+    pub fn is_emulator(&self) -> bool {
+        (self.fpga_function_bits & ENABLED_EMULATOR_BIT) == ENABLED_EMULATOR_BIT
+    }
+
     fn firmware_version_map(version_number: u8) -> String {
         match version_number {
             0 => "older than v0.4".to_string(),
@@ -79,14 +84,19 @@ impl fmt::Display for FirmwareInfo {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            r"{}: CPU = {}, FPGA = {} (STM = {}, Modulator = {}, Silencer = {}, ModDelay = {})",
+            r"{}: CPU = {}, FPGA = {} (STM = {}, Modulator = {}, Silencer = {}, ModDelay = {}){}",
             self.idx,
             self.cpu_version(),
             self.fpga_version(),
             self.stm_enabled(),
             self.modulator_enabled(),
             self.silencer_enabled(),
-            self.modulation_delay_enabled()
+            self.modulation_delay_enabled(),
+            if self.is_emulator() {
+                " [Emulator]"
+            } else {
+                ""
+            }
         )
     }
 }
