@@ -195,6 +195,16 @@ impl<L: Link, T: Transducer> Controller<L, T> {
         &self.geometry
     }
 
+    pub fn sound_speed(&self) -> f64 {
+        self.geometry[0].sound_speed()
+    }
+
+    pub fn set_sound_speed(&mut self, value: f64) {
+        self.geometry
+            .transducers_mut()
+            .for_each(|tr| tr.set_sound_speed(value));
+    }
+
     /// Send header and body to the devices
     ///
     /// # Arguments

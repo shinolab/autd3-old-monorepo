@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -17,9 +17,8 @@ use crate::{
 };
 use anyhow::Result;
 use autd3_core::{
-    gain::{Gain, GainProps, IGain},
+    gain::GainProps,
     geometry::{Geometry, Transducer, Vector3},
-    NUM_TRANS_IN_UNIT,
 };
 use autd3_traits::Gain;
 use nalgebra::ComplexField;
@@ -30,8 +29,8 @@ use std::{f64::consts::PI, marker::PhantomData};
 /// * D.W.Marquardt, “An algorithm for least-squares estimation of non-linear parameters,” Journal of the society for Industrial and AppliedMathematics, vol.11, no.2, pp.431–441, 1963.
 /// * K.Madsen, H.Nielsen, and O.Tingleff, “Methods for non-linear least squares problems (2nd ed.),” 2004.
 #[derive(Gain)]
-pub struct LM<B: Backend, T: Transducer, C: Constraint> {
-    props: GainProps<T>,
+pub struct LM<B: Backend, C: Constraint> {
+    props: GainProps,
     foci: Vec<Vector3>,
     amps: Vec<f64>,
     eps_1: f64,
@@ -43,7 +42,7 @@ pub struct LM<B: Backend, T: Transducer, C: Constraint> {
     constraint: C,
 }
 
-impl<B: Backend, T: Transducer, C: Constraint> LM<B, T, C> {
+impl<B: Backend, C: Constraint> LM<B, C> {
     pub fn new(foci: Vec<Vector3>, amps: Vec<f64>, constraint: C) -> Self {
         Self::with_param(foci, amps, constraint, 1e-8, 1e-8, 1e-3, 5, vec![])
     }
@@ -75,7 +74,7 @@ impl<B: Backend, T: Transducer, C: Constraint> LM<B, T, C> {
     }
 
     #[allow(clippy::many_single_char_names)]
-    fn make_bhb(
+    fn make_bhb<T: Transducer>(
         geometry: &Geometry<T>,
         amps: &[f64],
         foci: &[Vector3],
@@ -114,14 +113,12 @@ impl<B: Backend, T: Transducer, C: Constraint> LM<B, T, C> {
             tth,
         );
     }
-}
 
-impl<B: Backend, T: Transducer, C: Constraint> IGain<T> for LM<B, T, C> {
     #[allow(clippy::many_single_char_names)]
     #[allow(clippy::unnecessary_wraps)]
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<()> {
+    fn calc<T: Transducer>(&mut self, geometry: &Geometry<T>) -> Result<()> {
         let m = self.foci.len();
-        let n = geometry.num_devices() * NUM_TRANS_IN_UNIT;
+        let n = geometry.num_transducers();
         let n_param = n + m;
 
         let bhb = Self::make_bhb(geometry, &self.amps, &self.foci, m, n);

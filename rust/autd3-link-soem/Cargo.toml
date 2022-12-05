@@ -1,6 +1,6 @@
 [package]
 name = "autd3-link-soem"
-version = "2.6.5"
+version = "2.6.6"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -11,13 +11,13 @@ readme = "README.md"
 keywords = ["autd"]
 
 [build-dependencies]
-bindgen = "0.62.0"
+bindgen = "0.63.0"
 cc = { version = "1.0.73", features = ["parallel"] }
 glob = "0.3.0"
 
 [dependencies]
 anyhow = "1.0.57"
-autd3-core = {path="../autd3-core", version="2.6.5"}
+autd3-core = {path="../autd3-core", version="2.6.6"}
 crossbeam-channel = "0.5.4"
 libc = "0.2.124"
 thiserror = "1.0.30"

@@ -39,9 +39,7 @@ impl TransducerTest {
     pub fn set(&mut self, id: usize, phase: f64, amp: f64) {
         self.test_drive.insert(id, (phase, amp));
     }
-}
 
-impl TransducerTest {
     fn calc<T: Transducer>(&mut self, geometry: &Geometry<T>) -> anyhow::Result<()> {
         geometry.transducers().for_each(|tr| {
             if let Some((phase, amp)) = self.test_drive.get(&tr.id()) {

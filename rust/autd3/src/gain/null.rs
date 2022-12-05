@@ -31,9 +31,7 @@ impl Null {
             props: GainProps::new(),
         }
     }
-}
 
-impl Null {
     fn calc<T: Transducer>(&mut self, geometry: &Geometry<T>) -> anyhow::Result<()> {
         geometry.transducers().for_each(|tr| {
             self.props.drives[tr.id()].amp = 0.0;

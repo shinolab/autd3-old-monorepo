@@ -51,9 +51,7 @@ impl Plane {
             dir,
         }
     }
-}
 
-impl Plane {
     fn calc<T: Transducer>(&mut self, geometry: &Geometry<T>) -> anyhow::Result<()> {
         geometry.transducers().for_each(|tr| {
             let dist = self.dir.dot(tr.position());

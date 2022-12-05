@@ -18,8 +18,15 @@ use crate::{
     geometry::{Geometry, Transducer},
 };
 
+#[derive(Default)]
 pub struct Synchronize {
     sent: bool,
+}
+
+impl Synchronize {
+    pub fn new() -> Self {
+        Self { sent: false }
+    }
 }
 
 impl<T: Transducer> DatagramBody<T> for Synchronize {

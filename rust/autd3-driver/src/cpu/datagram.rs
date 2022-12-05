@@ -199,10 +199,6 @@ impl RxDatagram {
         }
     }
 
-    pub fn copy_from(&mut self, src: &RxDatagram) {
-        self.data.copy_from_slice(&src.data);
-    }
-
     pub fn messages(&self) -> &[RxMessage] {
         &self.data
     }

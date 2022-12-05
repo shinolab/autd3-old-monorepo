@@ -21,4 +21,6 @@ pub enum AUTDInternalError {
     LinkClosed,
     #[error("Maximum cycle is {} , but {0} is specified", MAX_CYCLE)]
     CycleOutOfRange(u16),
+    #[error("The maximum number of transducers per device is 256")]
+    TransducersNumInDeviceOutOfRange,
 }

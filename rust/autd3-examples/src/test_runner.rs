@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -26,9 +26,11 @@ macro_rules! run {
         });
         println!("*************************************************************************************************");
 
-        autd.clear()?;
+        let mut clear = Clear::new();
+        autd.send(&mut clear).flush()?;
 
-        autd.synchronize()?;
+        let mut sync = Synchronize::new();
+        autd.send(&mut sync).flush()?;
 
         loop {
             println!("[0]: Single Focal Point Test");
@@ -61,7 +63,8 @@ macro_rules! run {
             let mut _s = String::new();
             io::stdin().read_line(&mut _s)?;
 
-            let res = autd.stop()?;
+            let mut stop = Amplitudes::none();
+            let res = autd.send(&mut stop).flush()?;
             println!("stop: {}", res);
         }
 
