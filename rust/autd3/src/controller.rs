@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/11/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,16 +17,12 @@ use std::{
 };
 
 use anyhow::{Ok, Result};
-use itertools::Itertools;
 
 use autd3_core::{
-    amplitude::Amplitudes,
+    datagram::{DatagramBody, DatagramHeader, Empty, Filled, NullBody, NullHeader, Sendable},
     geometry::{Geometry, Transducer},
-    interface::{DatagramBody, DatagramHeader, Empty, Filled, NullBody, NullHeader, Sendable},
-    is_msg_processed,
     link::Link,
-    silencer_config::SilencerConfig,
-    FirmwareInfo, RxDatagram, TxDatagram, MSG_BEGIN, MSG_END, NUM_TRANS_IN_UNIT,
+    FirmwareInfo, RxDatagram, TxDatagram, MSG_BEGIN, MSG_END,
 };
 
 static MSG_ID: AtomicU8 = AtomicU8::new(MSG_BEGIN);
@@ -178,10 +174,11 @@ impl<L: Link, T: Transducer> Controller<L, T> {
         let mut link = link;
         link.open(&geometry)?;
         let num_devices = geometry.num_devices();
+        let tx_buf = TxDatagram::new(geometry.device_map());
         Ok(Controller {
             link,
             geometry,
-            tx_buf: TxDatagram::new(num_devices),
+            tx_buf,
             rx_buf: RxDatagram::new(num_devices),
             ack_check_timeout: std::time::Duration::from_nanos(0),
             send_interval: std::time::Duration::from_micros(
@@ -210,34 +207,6 @@ impl<L: Link, T: Transducer> Controller<L, T> {
         s: &'b mut S,
     ) -> Sender<'a, 'b, L, T, S, S::H, S::B> {
         Sender::new(self, s)
-    }
-
-    /// Clear all data
-    pub fn clear(&mut self) -> Result<bool> {
-        autd3_core::clear(&mut self.tx_buf);
-        self.link.send(&self.tx_buf)?;
-        self.wait_msg_processed(std::time::Duration::from_millis(100))
-    }
-
-    pub fn synchronize(&mut self) -> Result<bool> {
-        autd3_core::force_fan(&mut self.tx_buf, self.force_fan);
-        autd3_core::reads_fpga_info(&mut self.tx_buf, self.reads_fpga_info);
-
-        let msg_id = self.get_id();
-        let cycles: Vec<[u16; NUM_TRANS_IN_UNIT]> = self
-            .geometry
-            .transducers()
-            .map(|tr| tr.cycle())
-            .chunks(NUM_TRANS_IN_UNIT)
-            .into_iter()
-            .map(|c| c.collect::<Vec<_>>())
-            .map(|v| v.try_into().unwrap())
-            .collect();
-
-        autd3_core::sync(msg_id, &cycles, &mut self.tx_buf)?;
-
-        self.link.send(&self.tx_buf)?;
-        self.wait_msg_processed(std::time::Duration::from_millis(100))
     }
 
     /// Return firmware information of the devices
@@ -277,18 +246,12 @@ impl<L: Link, T: Transducer> Controller<L, T> {
             .collect())
     }
 
-    /// Stop outputting
-    pub fn stop(&mut self) -> Result<bool> {
-        let mut config = SilencerConfig::default();
-        let mut null = Amplitudes::none();
-        self.send(&mut config).send(&mut null)
-    }
-
     pub fn close(&mut self) -> Result<bool> {
-        let res = self.stop()?;
-        let res = res & self.clear()?;
+        // let res = self.stop()?;
+        // let res = res & self.clear()?;
         self.link.close()?;
-        Ok(res)
+        // Ok(res)
+        Ok(true)
     }
 }
 
@@ -312,7 +275,7 @@ impl<L: Link, T: Transducer> Controller<L, T> {
         let msg_id = self.tx_buf.header().msg_id;
         let start = std::time::Instant::now();
         while std::time::Instant::now() - start < timeout {
-            if self.link.receive(&mut self.rx_buf)? && is_msg_processed(msg_id, &self.rx_buf) {
+            if self.link.receive(&mut self.rx_buf)? && self.rx_buf.is_msg_processed(msg_id) {
                 return Ok(true);
             }
             std::thread::sleep(self.send_interval);

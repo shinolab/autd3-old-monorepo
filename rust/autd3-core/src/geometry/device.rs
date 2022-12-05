@@ -14,5 +14,5 @@
 use super::Transducer;
 
 pub trait Device<T: Transducer> {
-    fn get_transducers(start_id: usize) -> Vec<T>;
+    fn get_transducers(&self, start_id: usize) -> Vec<T>;
 }

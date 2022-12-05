@@ -11,36 +11,32 @@
  *
  */
 
-use std::marker::PhantomData;
-
-use autd3_driver::{Drive, TxDatagram};
+use autd3_driver::Drive;
 
 use crate::{
     datagram::DatagramBody,
-    geometry::{Geometry, LegacyTransducer, NormalPhaseTransducer, NormalTransducer, Transducer},
+    geometry::{Geometry, Transducer},
 };
 use anyhow::Result;
 
-pub struct GainProps<T: Transducer> {
+pub struct GainProps {
     pub built: bool,
     pub phase_sent: bool,
     pub duty_sent: bool,
     pub drives: Vec<Drive>,
-    _t: PhantomData<T>,
 }
 
-impl<T: Transducer> GainProps<T> {
+impl GainProps {
     pub fn new() -> Self {
         Self {
             built: false,
             phase_sent: false,
             duty_sent: false,
             drives: vec![],
-            _t: PhantomData,
         }
     }
 
-    pub fn init(&mut self, geometry: &Geometry<T>) {
+    pub fn init<T: Transducer>(&mut self, geometry: &Geometry<T>) {
         self.drives.clear();
         self.drives = geometry
             .transducers()
@@ -53,62 +49,15 @@ impl<T: Transducer> GainProps<T> {
     }
 }
 
-impl GainProps<LegacyTransducer> {
-    pub fn pack_head(&mut self, tx: &mut TxDatagram) {
-        autd3_driver::normal_legacy_header(tx);
-    }
-
-    pub fn pack_body(&mut self, tx: &mut TxDatagram) -> Result<()> {
-        autd3_driver::normal_legacy_body(&self.drives, tx)?;
-        self.phase_sent = true;
-        self.duty_sent = true;
-        Ok(())
-    }
-}
-
-impl GainProps<NormalTransducer> {
-    pub fn pack_head(&mut self, tx: &mut TxDatagram) {
-        autd3_driver::normal_header(tx);
-    }
-
-    pub fn pack_body(&mut self, tx: &mut TxDatagram) -> Result<()> {
-        if !self.phase_sent {
-            autd3_driver::normal_phase_body(&self.drives, tx)?;
-            self.phase_sent = true;
-        } else {
-            autd3_driver::normal_duty_body(&self.drives, tx)?;
-            self.duty_sent = true;
-        }
-        Ok(())
-    }
-}
-
-impl GainProps<NormalPhaseTransducer> {
-    pub fn pack_head(&mut self, tx: &mut TxDatagram) {
-        autd3_driver::normal_header(tx);
-    }
-
-    pub fn pack_body(&mut self, tx: &mut TxDatagram) -> Result<()> {
-        autd3_driver::normal_phase_body(&self.drives, tx)?;
-        self.phase_sent = true;
-        self.duty_sent = true;
-        Ok(())
-    }
-}
-
-impl<T: Transducer> Default for GainProps<T> {
+impl Default for GainProps {
     fn default() -> Self {
         Self::new()
     }
 }
 
-pub trait IGain<T: Transducer> {
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<()>;
-}
-
 /// Gain contains amplitude and phase of each transducer in the AUTD.
 /// Note that the amplitude means duty ratio of Pulse Width Modulation, respectively.
-pub trait Gain<T: Transducer>: IGain<T> + DatagramBody<T> {
+pub trait Gain<T: Transducer>: DatagramBody<T> {
     fn build(&mut self, geometry: &Geometry<T>) -> Result<()>;
     fn rebuild(&mut self, geometry: &Geometry<T>) -> Result<()>;
     fn drives(&self) -> &[Drive];
