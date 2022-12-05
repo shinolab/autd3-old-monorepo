@@ -23,6 +23,7 @@ pub use crate::{
 
 pub use autd3_core::{
     amplitude::Amplitudes,
+    clear::Clear,
     delay::ModDelay,
     geometry::{
         Geometry, GeometryBuilder, LegacyTransducer, NormalPhaseTransducer, NormalTransducer,
@@ -31,5 +32,6 @@ pub use autd3_core::{
     link::Link,
     silencer_config::SilencerConfig,
     stm::{FocusSTM, GainSTM, STM},
+    synchronize::Synchronize,
     Mode,
 };

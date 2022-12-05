@@ -57,9 +57,7 @@ impl Bessel {
             theta,
         }
     }
-}
 
-impl Bessel {
     fn calc<T: Transducer>(&mut self, geometry: &Geometry<T>) -> anyhow::Result<()> {
         let dir = self.dir.normalize();
         let v = Vector3::new(dir.y, -dir.x, 0.);

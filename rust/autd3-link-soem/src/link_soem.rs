@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/11/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -66,7 +66,7 @@ impl<F: Fn(&str) + Send> SOEM<F> {
             config,
             ec_sync0_cycle_time_ns,
             ec_send_cycle_time_ns,
-            io_map: Arc::new(Mutex::new(IOMap::new(0))),
+            io_map: Arc::new(Mutex::new(IOMap::new(&[0]))),
         }
     }
 }
@@ -116,7 +116,7 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
     fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> anyhow::Result<()> {
         let dev_num = geometry.num_devices() as u16;
 
-        self.io_map = Arc::new(Mutex::new(IOMap::new(dev_num as _)));
+        self.io_map = Arc::new(Mutex::new(IOMap::new(geometry.device_map())));
 
         let (tx_sender, tx_receiver) = bounded(SEND_BUF_SIZE);
 
@@ -294,9 +294,13 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
         if !self.is_open() {
             return Err(AUTDInternalError::LinkClosed.into());
         }
-
-        rx.copy_from(&self.io_map.lock().unwrap().input());
-
+        unsafe {
+            std::ptr::copy_nonoverlapping(
+                self.io_map.lock().unwrap().input(),
+                rx.messages_mut().as_mut_ptr(),
+                rx.messages().len(),
+            );
+        }
         Ok(true)
     }
 

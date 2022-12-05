@@ -21,23 +21,8 @@ use autd3_driver::*;
 
 use super::STM;
 
-pub struct Focus {
-    point: Vector3,
-    shift: u8,
-}
-
-impl Focus {
-    pub fn new(point: Vector3) -> Self {
-        Self { point, shift: 0 }
-    }
-
-    pub fn with_shift(point: Vector3, shift: u8) -> Self {
-        Self { point, shift }
-    }
-}
-
 pub struct FocusSTM {
-    control_points: Vec<Focus>,
+    control_points: Vec<(Vector3, u8)>,
     sample_freq_div: u32,
     sent: usize,
     pub sound_speed: f64,
@@ -53,12 +38,17 @@ impl FocusSTM {
         }
     }
 
-    pub fn add(&mut self, point: Focus) -> Result<()> {
-        self.control_points.push(point);
+    pub fn add(&mut self, point: Vector3) -> Result<()> {
+        self.control_points.push((point, 0));
         Ok(())
     }
 
-    pub fn control_points(&self) -> &[Focus] {
+    pub fn add_with_shift(&mut self, point: Vector3, shift: u8) -> Result<()> {
+        self.control_points.push((point, shift));
+        Ok(())
+    }
+
+    pub fn control_points(&self) -> &[(Vector3, u8)] {
         &self.control_points
     }
 }
@@ -97,9 +87,9 @@ impl<T: Transducer> DatagramBody<T> for FocusSTM {
                     Matrix3::from_columns(&[tr.x_direction(), tr.y_direction(), tr.z_direction()])
                         .transpose();
                 src.iter()
-                    .map(|p| {
-                        let lp = trans_inv * (p.point - origin);
-                        STMFocus::new(lp.x, lp.y, lp.z, p.shift)
+                    .map(|(p, shift)| {
+                        let lp = trans_inv * (p - origin);
+                        STMFocus::new(lp.x, lp.y, lp.z, *shift)
                     })
                     .collect()
             })

@@ -34,6 +34,8 @@ pub use normal_phase_transducer::*;
 pub use normal_transducer::*;
 pub use transducer::*;
 
+use crate::error::AUTDInternalError;
+
 #[derive(Default)]
 pub struct Geometry<T: Transducer> {
     transducers: Vec<T>,
@@ -46,6 +48,17 @@ impl<T: Transducer> Geometry<T> {
             transducers: vec![],
             device_map: vec![],
         }
+    }
+
+    pub fn add_device<D: Device<T>>(&mut self, dev: D) -> anyhow::Result<()> {
+        let id = self.transducers.len();
+        let mut transducers = dev.get_transducers(id);
+        if transducers.len() > 256 {
+            return Err(AUTDInternalError::TransducersNumInDeviceOutOfRange.into());
+        }
+        self.device_map.push(transducers.len());
+        self.transducers.append(&mut transducers);
+        Ok(())
     }
 
     pub fn num_devices(&self) -> usize {
