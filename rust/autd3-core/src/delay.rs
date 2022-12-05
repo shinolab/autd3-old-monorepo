@@ -4,7 +4,7 @@
  * Created Date: 01/06/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/06/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,13 +13,9 @@
 
 use anyhow::Result;
 
-use itertools::Itertools;
-
-use autd3_driver::NUM_TRANS_IN_UNIT;
-
 use crate::{
+    datagram::{DatagramBody, Empty, Filled, Sendable},
     geometry::{Geometry, Transducer},
-    interface::{DatagramBody, Empty, Filled, Sendable},
 };
 
 pub struct ModDelay {
@@ -38,14 +34,7 @@ impl<T: Transducer> DatagramBody<T> for ModDelay {
             return Ok(());
         }
 
-        let delays: Vec<[u16; NUM_TRANS_IN_UNIT]> = geometry
-            .transducers()
-            .map(|tr| tr.mod_delay())
-            .chunks(NUM_TRANS_IN_UNIT)
-            .into_iter()
-            .map(|c| c.collect::<Vec<_>>())
-            .map(|v| v.try_into().unwrap())
-            .collect();
+        let delays: Vec<u16> = geometry.transducers().map(|tr| tr.mod_delay()).collect();
 
         self.sent = true;
         autd3_driver::mod_delay(&delays, tx)?;

@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/05/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use anyhow::Result;
 
-use crate::interface::DatagramHeader;
+use crate::datagram::DatagramHeader;
 
 pub struct ModProps {
     pub buffer: Vec<u8>,
