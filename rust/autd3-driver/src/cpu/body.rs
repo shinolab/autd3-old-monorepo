@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,80 +13,15 @@
 
 use crate::{
     fpga::{Duty, LegacyDrive, Phase},
-    hardware::NUM_TRANS_IN_UNIT,
-    Drive, Mode, FOCUS_STM_FIXED_NUM_UNIT,
+    Drive, FOCUS_STM_FIXED_NUM_UNIT,
 };
 
-#[derive(Clone, Copy)]
 #[repr(C)]
-pub struct Body {
-    pub data: [u16; NUM_TRANS_IN_UNIT],
-}
-
-impl Body {
-    pub fn new() -> Self {
-        Self {
-            data: [0x0000; NUM_TRANS_IN_UNIT],
-        }
-    }
-
-    pub fn legacy_drives_mut(&mut self) -> &mut [LegacyDrive; NUM_TRANS_IN_UNIT] {
-        unsafe { std::mem::transmute(&mut self.data) }
-    }
-
-    pub fn duties_mut(&mut self) -> &mut [Duty; NUM_TRANS_IN_UNIT] {
-        unsafe { std::mem::transmute(&mut self.data) }
-    }
-
-    pub fn phases_mut(&mut self) -> &mut [Phase; NUM_TRANS_IN_UNIT] {
-        unsafe { std::mem::transmute(&mut self.data) }
-    }
-
-    pub fn focus_stm_initial(&self) -> &FocusSTMBodyInitial {
-        unsafe { std::mem::transmute(self) }
-    }
-
-    pub fn focus_stm_initial_mut(&mut self) -> &mut FocusSTMBodyInitial {
-        unsafe { std::mem::transmute(self) }
-    }
-
-    pub fn focus_stm_body(&self) -> &FocusSTMBodySubsequent {
-        unsafe { std::mem::transmute(self) }
-    }
-
-    pub fn focus_stm_subsequent_mut(&mut self) -> &mut FocusSTMBodySubsequent {
-        unsafe { std::mem::transmute(self) }
-    }
-
-    pub fn gain_stm_initial(&self) -> &GainSTMBodyInitial {
-        unsafe { std::mem::transmute(self) }
-    }
-
-    pub fn gain_stm_initial_mut(&mut self) -> &mut GainSTMBodyInitial {
-        unsafe { std::mem::transmute(self) }
-    }
-
-    pub fn gain_stm_subsequent(&self) -> &GainSTMBodySubsequent {
-        unsafe { std::mem::transmute(self) }
-    }
-
-    pub fn gain_stm_subsequent_mut(&mut self) -> &mut GainSTMBodySubsequent {
-        unsafe { std::mem::transmute(self) }
-    }
-}
-
-impl Default for Body {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-#[repr(C)]
-pub struct SeqFocus {
+pub struct STMFocus {
     pub(crate) buf: [u16; 4],
 }
 
-impl SeqFocus {
+impl STMFocus {
     pub fn new(x: f64, y: f64, z: f64, duty_shift: u8) -> Self {
         let x = (x / FOCUS_STM_FIXED_NUM_UNIT).round() as i32;
         let y = (y / FOCUS_STM_FIXED_NUM_UNIT).round() as i32;
@@ -99,18 +34,18 @@ impl SeqFocus {
         let d3 = (((duty_shift as u16) << 6) & 0x3FC0) as u16
             | ((z >> 26) & 0x0020) as u16
             | ((z >> 12) & 0x001F) as u16;
-        SeqFocus {
+        Self {
             buf: [d0, d1, d2, d3],
         }
     }
 }
 
 #[repr(C)]
-pub struct FocusSTMBodyInitial {
-    data: [u16; NUM_TRANS_IN_UNIT],
+pub struct FocusSTMBodyInitial<T: ?Sized> {
+    data: T,
 }
 
-impl FocusSTMBodyInitial {
+impl FocusSTMBodyInitial<[u16]> {
     pub fn data(&self) -> &[u16] {
         &self.data
     }
@@ -129,20 +64,20 @@ impl FocusSTMBodyInitial {
         self.data[4] = ((sound_speed >> 16) & 0x0000FFFF) as _;
     }
 
-    pub fn set_points(&mut self, points: &[SeqFocus]) {
+    pub fn set_points(&mut self, points: &[STMFocus]) {
         self.data[5..]
-            .chunks_mut(4)
+            .chunks_mut(std::mem::size_of::<STMFocus>())
             .zip(points.iter())
             .for_each(|(d, s)| d.copy_from_slice(&s.buf));
     }
 }
 
 #[repr(C)]
-pub struct FocusSTMBodySubsequent {
-    data: [u16; NUM_TRANS_IN_UNIT],
+pub struct FocusSTMBodySubsequent<T: ?Sized> {
+    data: T,
 }
 
-impl FocusSTMBodySubsequent {
+impl FocusSTMBodySubsequent<[u16]> {
     pub fn data(&self) -> &[u16] {
         &self.data
     }
@@ -151,20 +86,28 @@ impl FocusSTMBodySubsequent {
         self.data[0] = size;
     }
 
-    pub fn set_points(&mut self, points: &[SeqFocus]) {
+    pub fn set_points(&mut self, points: &[STMFocus]) {
         self.data[1..]
-            .chunks_mut(4)
+            .chunks_mut(std::mem::size_of::<STMFocus>())
             .zip(points.iter())
             .for_each(|(d, s)| d.copy_from_slice(&s.buf));
     }
 }
 
-#[repr(C)]
-pub struct GainSTMBodyInitial {
-    data: [u16; NUM_TRANS_IN_UNIT],
+#[repr(u16)]
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum Mode {
+    PhaseDutyFull = 0x0001,
+    PhaseFull = 0x0002,
+    PhaseHalf = 0x0004,
 }
 
-impl GainSTMBodyInitial {
+#[repr(C)]
+pub struct GainSTMBodyInitial<T: ?Sized> {
+    data: T,
+}
+
+impl GainSTMBodyInitial<[u16]> {
     pub fn data(&self) -> &[u16] {
         &self.data
     }
@@ -184,10 +127,11 @@ impl GainSTMBodyInitial {
 }
 
 #[repr(C)]
-pub struct GainSTMBodySubsequent {
-    data: [u16; NUM_TRANS_IN_UNIT],
+pub struct GainSTMBodySubsequent<T: ?Sized> {
+    data: T,
 }
 
+#[repr(C)]
 pub struct LegacyPhaseFull {
     phase_0: u8,
     phase_1: u8,
@@ -204,6 +148,7 @@ impl LegacyPhaseFull {
     }
 }
 
+#[repr(C)]
 pub struct LegacyPhaseHalf {
     phase_01: u8,
     phase_23: u8,
@@ -222,28 +167,67 @@ impl LegacyPhaseHalf {
     }
 }
 
-impl GainSTMBodySubsequent {
+impl GainSTMBodySubsequent<[u16]> {
     pub fn data(&self) -> &[u16] {
         &self.data
     }
 
-    pub fn legacy_drives_mut(&mut self) -> &mut [LegacyDrive; NUM_TRANS_IN_UNIT] {
+    pub fn legacy_drives_mut(&mut self) -> &mut [LegacyDrive] {
         unsafe { std::mem::transmute(&mut self.data) }
     }
 
-    pub fn phases_mut(&mut self) -> &mut [Phase; NUM_TRANS_IN_UNIT] {
+    pub fn phases_mut(&mut self) -> &mut [Phase] {
         unsafe { std::mem::transmute(&mut self.data) }
     }
 
-    pub fn duties_mut(&mut self) -> &mut [Duty; NUM_TRANS_IN_UNIT] {
+    pub fn duties_mut(&mut self) -> &mut [Duty] {
         unsafe { std::mem::transmute(&mut self.data) }
     }
 
-    pub fn legacy_phase_full_mut(&mut self) -> &mut [LegacyPhaseFull; NUM_TRANS_IN_UNIT] {
+    pub fn legacy_phase_full_mut(&mut self) -> &mut [LegacyPhaseFull] {
         unsafe { std::mem::transmute(&mut self.data) }
     }
 
-    pub fn legacy_phase_half_mut(&mut self) -> &mut [LegacyPhaseHalf; NUM_TRANS_IN_UNIT] {
+    pub fn legacy_phase_half_mut(&mut self) -> &mut [LegacyPhaseHalf] {
         unsafe { std::mem::transmute(&mut self.data) }
+    }
+}
+
+#[repr(C)]
+pub struct Body<T: ?Sized> {
+    data: T,
+}
+
+impl Body<[u16]> {
+    pub fn focus_stm_initial(&self) -> &FocusSTMBodyInitial<[u16]> {
+        unsafe { std::mem::transmute(self) }
+    }
+
+    pub fn focus_stm_initial_mut(&mut self) -> &mut FocusSTMBodyInitial<[u16]> {
+        unsafe { std::mem::transmute(self) }
+    }
+
+    pub fn focus_stm_body(&self) -> &FocusSTMBodySubsequent<[u16]> {
+        unsafe { std::mem::transmute(self) }
+    }
+
+    pub fn focus_stm_subsequent_mut(&mut self) -> &mut FocusSTMBodySubsequent<[u16]> {
+        unsafe { std::mem::transmute(self) }
+    }
+
+    pub fn gain_stm_initial(&self) -> &GainSTMBodyInitial<[u16]> {
+        unsafe { std::mem::transmute(self) }
+    }
+
+    pub fn gain_stm_initial_mut(&mut self) -> &mut GainSTMBodyInitial<[u16]> {
+        unsafe { std::mem::transmute(self) }
+    }
+
+    pub fn gain_stm_subsequent(&self) -> &GainSTMBodySubsequent<[u16]> {
+        unsafe { std::mem::transmute(self) }
+    }
+
+    pub fn gain_stm_subsequent_mut(&mut self) -> &mut GainSTMBodySubsequent<[u16]> {
+        unsafe { std::mem::transmute(self) }
     }
 }

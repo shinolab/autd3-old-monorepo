@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,30 +15,7 @@ use std::f64::consts::PI;
 
 pub const FPGA_CLK_FREQ: usize = 163840000;
 
-pub const MAX_CYCLE: u16 = 8191;
-
-pub const MOD_SAMPLING_FREQ_DIV_MIN: u32 = 1160;
-pub const MOD_BUF_SIZE_MAX: usize = 65536;
-
 pub const FOCUS_STM_FIXED_NUM_UNIT: f64 = 0.025; //mm
-
-pub const STM_SAMPLING_FREQ_DIV_MIN: u32 = 1612;
-pub const FOCUS_STM_BUF_SIZE_MAX: usize = 65536;
-pub const GAIN_STM_NORMAL_BUF_SIZE_MAX: usize = 1024;
-pub const GAIN_STM_LEGACY_BUF_SIZE_MAX: usize = 2048;
-
-pub const SILENCER_CYCLE_MIN: u16 = 1044;
-
-bitflags::bitflags! {
-    pub struct FPGAControlFlags : u8 {
-        const NONE            = 0;
-        const LEGACY_MODE     = 1 << 0;
-        const FORCE_FAN       = 1 << 4;
-        const STM_MODE        = 1 << 5;
-        const STM_GAIN_MODE   = 1 << 6;
-        const READS_FPGA_INFO = 1 << 7;
-    }
-}
 
 #[derive(Clone, Copy, Debug)]
 pub struct Drive {
@@ -56,11 +33,15 @@ pub struct LegacyDrive {
 
 impl LegacyDrive {
     pub fn to_phase(d: &Drive) -> u8 {
-        (((d.phase / (2.0 * PI) * 256.0).round() as i32) & 0xFF) as u8
+        (((d.phase / (2.0 * PI) * 256.0).round() as i32) & 0xFF) as _
+    }
+
+    pub fn to_duty(d: &Drive) -> u8 {
+        (510.0 * d.amp.clamp(0., 1.).asin() / PI).round() as _
     }
 
     pub fn set(&mut self, d: &Drive) {
-        self.duty = (510.0 * d.amp.asin() / PI).round() as u8;
+        self.duty = Self::to_duty(d);
         self.phase = Self::to_phase(d);
     }
 }
@@ -72,9 +53,12 @@ pub struct Phase {
 }
 
 impl Phase {
+    pub fn to_phase(d: &Drive) -> u16 {
+        ((d.phase / (2.0 * PI) * d.cycle as f64).round() as i32).rem_euclid(d.cycle as i32) as _
+    }
+
     pub fn set(&mut self, d: &Drive) {
-        self.phase = ((d.phase / (2.0 * PI) * d.cycle as f64).round() as i32)
-            .rem_euclid(d.cycle as i32) as _;
+        self.phase = Self::to_phase(d);
     }
 }
 
@@ -85,8 +69,12 @@ pub struct Duty {
 }
 
 impl Duty {
+    pub fn to_duty(d: &Drive) -> u16 {
+        (d.cycle as f64 * d.amp.clamp(0., 1.).asin() / PI).round() as _
+    }
+
     pub fn set(&mut self, d: &Drive) {
-        self.duty = (d.cycle as f64 * d.amp.asin() / PI).round() as _;
+        self.duty = Self::to_duty(d);
     }
 }
 
