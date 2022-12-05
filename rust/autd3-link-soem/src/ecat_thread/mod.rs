@@ -4,7 +4,7 @@
  * Created Date: 03/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/11/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -92,7 +92,7 @@ impl<W: Waiter> EcatThreadHandler<W> {
                 ec_sync(ec_DCtime, self.cycletime, &mut toff);
 
                 if let Ok(tx) = self.receiver.try_recv() {
-                    self.io_map.lock().unwrap().copy_from(tx);
+                    self.io_map.lock().unwrap().copy_from(&tx);
                 }
 
                 ec_send_processdata();

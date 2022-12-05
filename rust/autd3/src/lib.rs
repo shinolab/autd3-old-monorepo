@@ -11,9 +11,9 @@
  *
  */
 
-mod autd3_device;
-mod controller;
-mod error;
+pub mod autd3_device;
+pub mod controller;
+pub mod error;
 pub mod gain;
 pub mod modulation;
 pub mod prelude;

@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -17,9 +17,8 @@ use crate::{
 };
 use anyhow::Result;
 use autd3_core::{
-    gain::{Gain, GainProps, IGain},
+    gain::GainProps,
     geometry::{Geometry, Transducer, Vector3},
-    NUM_TRANS_IN_UNIT,
 };
 use autd3_traits::Gain;
 use nalgebra::ComplexField;
@@ -30,8 +29,8 @@ use std::{f64::consts::PI, marker::PhantomData};
 ///
 /// Not yet been implemented with GPU.
 #[derive(Gain)]
-pub struct GSPAT<B: Backend, T: Transducer, C: Constraint> {
-    props: GainProps<T>,
+pub struct GSPAT<B: Backend, C: Constraint> {
+    props: GainProps,
     foci: Vec<Vector3>,
     amps: Vec<f64>,
     repeat: usize,
@@ -39,7 +38,7 @@ pub struct GSPAT<B: Backend, T: Transducer, C: Constraint> {
     constraint: C,
 }
 
-impl<B: Backend, T: Transducer, C: Constraint> GSPAT<B, T, C> {
+impl<B: Backend, C: Constraint> GSPAT<B, C> {
     pub fn new(foci: Vec<Vector3>, amps: Vec<f64>, constraint: C) -> Self {
         Self::with_param(foci, amps, constraint, 100)
     }
@@ -55,12 +54,10 @@ impl<B: Backend, T: Transducer, C: Constraint> GSPAT<B, T, C> {
             constraint,
         }
     }
-}
 
-impl<B: Backend, T: Transducer, C: Constraint> IGain<T> for GSPAT<B, T, C> {
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<()> {
+    fn calc<T: Transducer>(&mut self, geometry: &Geometry<T>) -> Result<()> {
         let m = self.foci.len();
-        let n = geometry.num_devices() * NUM_TRANS_IN_UNIT;
+        let n = geometry.num_transducers();
 
         let g = generate_propagation_matrix(geometry, &self.foci);
 

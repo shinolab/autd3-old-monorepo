@@ -199,6 +199,10 @@ pub struct Body<T: ?Sized> {
 }
 
 impl Body<[u16]> {
+    pub fn data(&self) -> &[u16] {
+        &self.data
+    }
+
     pub fn focus_stm_initial(&self) -> &FocusSTMBodyInitial<[u16]> {
         unsafe { std::mem::transmute(self) }
     }

@@ -18,8 +18,15 @@ use crate::{
     geometry::{Geometry, Transducer},
 };
 
+#[derive(Default)]
 pub struct Clear {
     sent: bool,
+}
+
+impl Clear {
+    pub fn new() -> Self {
+        Self { sent: false }
+    }
 }
 
 impl DatagramHeader for Clear {
@@ -40,8 +47,8 @@ impl DatagramHeader for Clear {
 }
 
 impl<T: Transducer> Sendable<T> for Clear {
-    type H = Empty;
-    type B = Filled;
+    type H = Filled;
+    type B = Empty;
 
     fn init(&mut self) -> Result<()> {
         DatagramHeader::init(self)
