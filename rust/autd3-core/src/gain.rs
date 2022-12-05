@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,8 +16,8 @@ use std::marker::PhantomData;
 use autd3_driver::{Drive, TxDatagram};
 
 use crate::{
-    geometry::{Geometry, Transducer},
-    interface::DatagramBody,
+    datagram::DatagramBody,
+    geometry::{Geometry, LegacyTransducer, NormalPhaseTransducer, NormalTransducer, Transducer},
 };
 use anyhow::Result;
 
@@ -51,13 +51,48 @@ impl<T: Transducer> GainProps<T> {
             })
             .collect();
     }
+}
 
+impl GainProps<LegacyTransducer> {
     pub fn pack_head(&mut self, tx: &mut TxDatagram) {
-        T::pack_head(tx);
+        autd3_driver::normal_legacy_header(tx);
     }
 
     pub fn pack_body(&mut self, tx: &mut TxDatagram) -> Result<()> {
-        T::pack_body(&mut self.phase_sent, &mut self.duty_sent, &self.drives, tx)
+        autd3_driver::normal_legacy_body(&self.drives, tx)?;
+        self.phase_sent = true;
+        self.duty_sent = true;
+        Ok(())
+    }
+}
+
+impl GainProps<NormalTransducer> {
+    pub fn pack_head(&mut self, tx: &mut TxDatagram) {
+        autd3_driver::normal_header(tx);
+    }
+
+    pub fn pack_body(&mut self, tx: &mut TxDatagram) -> Result<()> {
+        if !self.phase_sent {
+            autd3_driver::normal_phase_body(&self.drives, tx)?;
+            self.phase_sent = true;
+        } else {
+            autd3_driver::normal_duty_body(&self.drives, tx)?;
+            self.duty_sent = true;
+        }
+        Ok(())
+    }
+}
+
+impl GainProps<NormalPhaseTransducer> {
+    pub fn pack_head(&mut self, tx: &mut TxDatagram) {
+        autd3_driver::normal_header(tx);
+    }
+
+    pub fn pack_body(&mut self, tx: &mut TxDatagram) -> Result<()> {
+        autd3_driver::normal_phase_body(&self.drives, tx)?;
+        self.phase_sent = true;
+        self.duty_sent = true;
+        Ok(())
     }
 }
 

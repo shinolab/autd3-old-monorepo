@@ -1,7 +1,7 @@
 /*
- * File: amplitude.rs
+ * File: synchronize.rs
  * Project: src
- * Created Date: 07/11/2022
+ * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
  * Last Modified: 05/12/2022
@@ -13,54 +13,31 @@
 
 use anyhow::Result;
 
-use autd3_driver::Drive;
-
 use crate::{
-    geometry::{Geometry, Transducer},
     datagram::{DatagramBody, Empty, Filled, Sendable},
+    geometry::{Geometry, Transducer},
 };
 
-pub struct Amplitudes {
-    amp: f64,
+pub struct Synchronize {
     sent: bool,
 }
 
-impl Amplitudes {
-    pub fn uniform(amp: f64) -> Self {
-        Self { amp, sent: false }
-    }
-
-    pub fn none() -> Self {
-        Self::uniform(0.0)
-    }
-}
-
-impl<T> DatagramBody<T> for Amplitudes
-where
-    T: Transducer,
-{
+impl<T: Transducer> DatagramBody<T> for Synchronize {
     fn init(&mut self) -> Result<()> {
         self.sent = false;
         Ok(())
     }
 
     fn pack(&mut self, geometry: &Geometry<T>, tx: &mut autd3_driver::TxDatagram) -> Result<()> {
-        autd3_driver::normal_header(tx);
+        autd3_driver::null_body(tx);
         if DatagramBody::<T>::is_finished(self) {
             return Ok(());
         }
 
-        let drives: Vec<_> = geometry
-            .transducers()
-            .map(|tr| Drive {
-                phase: 0.0,
-                amp: self.amp,
-                cycle: tr.cycle(),
-            })
-            .collect();
+        let cycles: Vec<u16> = geometry.transducers().map(|tr| tr.cycle()).collect();
 
-        autd3_driver::normal_duty_body(&drives, tx)?;
         self.sent = true;
+        autd3_driver::sync(&cycles, tx)?;
         Ok(())
     }
 
@@ -69,10 +46,7 @@ where
     }
 }
 
-impl<T> Sendable<T> for Amplitudes
-where
-    T: Transducer,
-{
+impl<T: Transducer> Sendable<T> for Synchronize {
     type H = Empty;
     type B = Filled;
 
