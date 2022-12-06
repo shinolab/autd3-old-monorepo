@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 30/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -46,6 +46,9 @@
 
 namespace autd3::extra {
 
+/**
+ * @brief Settings for Simulator
+ */
 struct SimulatorSettings {
   int32_t window_width{800};
   int32_t window_height{600};
@@ -267,6 +270,9 @@ inline void from_json(const nlohmann::json& j, SimulatorSettings& s) {
   j.at("max_trans_num").get_to(s.max_trans_num);
 }
 
+/**
+ * @brief An acoustic field simulator of autd3
+ */
 class Simulator {
  public:
   Simulator() = default;

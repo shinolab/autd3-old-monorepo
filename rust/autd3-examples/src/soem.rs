@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/11/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,9 +21,9 @@ use autd3_link_soem::{Config, SOEM};
 
 fn main() -> Result<()> {
     let mut geometry = GeometryBuilder::new().legacy_mode().build();
-    geometry.add_device(Vector3::zeros(), Vector3::zeros());
+    geometry.add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))?;
     // let mut geometry = GeometryBuilder::new().build();
-    // geometry.add_device(Vector3::zeros(), Vector3::zeros());
+    // geometry.add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))?;
     // geometry
     //     .transducers_mut()
     //     .for_each(|t| t.set_frequency(40e3).unwrap());

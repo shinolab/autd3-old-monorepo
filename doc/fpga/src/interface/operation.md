@@ -43,8 +43,8 @@ Silencerを無効にすることはできないので, 静音化を無効にし�
 
 STMを使用する場合は, STM_CYCLE ($\SI{16}{bit}$) とSTM_FREQ_DIV ($\SI{32}{bit}$) を書き込む.
 
-Point STMの場合は焦点データをSTM BRAMに書き込み, CTL_REGの5番目のビットをセットし, 6番目のビットをクリアする.
-Point STMを使用する場合は, 追加でSOUND_SPEED ($\SI{32}{bit}$) も書き込む. SOUND_SPEEDの単位は$\SI{1/1024}{m/s}$である.
+Focus STMの場合は焦点データをSTM BRAMに書き込み, CTL_REGの5番目のビットをセットし, 6番目のビットをクリアする.
+Focus STMを使用する場合は, 追加でSOUND_SPEED ($\SI{32}{bit}$) も書き込む. SOUND_SPEEDの単位は$\SI{1/1024}{m/s}$である.
 焦点データは(x,y,z)の位置データを単位$\SI{0.025}{mm}$の$\SI{18}{bit}$符号あり固定小数点数で指定する.
 また, duty_shiftを指定して, Duty比を調整できる. Duty比$D$は超音波周期$CYCLE$に対して
 $$

@@ -3,7 +3,7 @@
 // Created Date: 16/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/11/2022
+// Last Modified: 06/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,7 +11,9 @@
 
 #include "autd3/controller.hpp"
 
-#include "autd3/core/interface.hpp"
+#include <atomic>
+
+#include "autd3/core/datagram.hpp"
 #include "spdlog.hpp"
 
 namespace autd3 {
@@ -38,6 +40,11 @@ core::Geometry& Controller::geometry() noexcept { return _geometry; }
 const core::Geometry& Controller::geometry() const noexcept { return _geometry; }
 
 bool Controller::open(core::LinkPtr link) {
+  if (_geometry.num_transducers() == 0) {
+    spdlog::error("Please add devices before opening.");
+    return false;
+  }
+
   spdlog::debug("Open Controller with {} transducers.", _geometry.num_transducers());
 
   if (link == nullptr) {

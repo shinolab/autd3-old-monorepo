@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 06/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -96,6 +96,11 @@ void ecat_run_(std::atomic<bool>* is_open, std::atomic<int32_t>* wkc, const int6
       const auto itvl = std::chrono::duration_cast<std::chrono::nanoseconds>(now - start).count();
       stats.emplace_back(itvl);
       if (stats.size() == stats_size) {
+        ec_readstate();
+        for (size_t slave = 1; slave <= static_cast<size_t>(ec_slavecount); slave++)
+          spdlog::debug("Slave[{}]: {} (State={:#02x}, StatusCode={:#04x})", slave, ec_ALstatuscode2string(ec_slave[slave].ALstatuscode),
+                        ec_slave[slave].state, ec_slave[slave].ALstatuscode);
+
         print_stats("EC send interval", stats);
         stats.clear();
         stats.reserve(stats_size);

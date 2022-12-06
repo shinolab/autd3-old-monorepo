@@ -4,7 +4,7 @@
  * Created Date: 23/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/11/2022
+ * Last Modified: 29/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -106,7 +106,7 @@ public class AUTDService
         return _autd?.Send(gain) ?? false;
     }
 
-    public bool SendPointSTM(PointSTM stm)
+    public bool SendFocusSTM(FocusSTM stm)
     {
         IsStarted = true;
         _lastBody = stm;

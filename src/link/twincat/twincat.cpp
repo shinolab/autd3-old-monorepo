@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -138,7 +138,7 @@ bool TwinCATImpl::send(const driver::TxDatagram& tx) {
 
   const auto ret = this->_write(this->_port,  // NOLINT
                                 &this->_net_addr, INDEX_GROUP, INDEX_OFFSET_BASE,
-                                static_cast<unsigned long>(tx.effective_size()),  // NOLINT
+                                static_cast<unsigned long>(tx.transmitting_size()),  // NOLINT
                                 const_cast<void*>(static_cast<const void*>(tx.data().data())));
   if (ret == 0) return true;
 

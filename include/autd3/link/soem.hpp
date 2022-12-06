@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/11/2022
+// Last Modified: 03/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -114,8 +114,10 @@ class SOEM {
   /**
    * @brief Set EtherCAT state check interval.
    */
-  SOEM& state_check_interval(const std::chrono::milliseconds interval) {
-    _state_check_interval = interval;
+
+  template <typename Rep, typename Period>
+  SOEM& state_check_interval(const std::chrono::duration<Rep, Period> interval) {
+    _state_check_interval = std::chrono::duration_cast<std::chrono::milliseconds>(interval);
     return *this;
   }
 

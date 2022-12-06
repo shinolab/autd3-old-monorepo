@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,8 +14,9 @@
 use std::collections::HashMap;
 
 use autd3_core::{
-    gain::{Gain, GainProps, IGain},
+    gain::{Gain, GainProps},
     geometry::{Geometry, Transducer},
+    Drive,
 };
 
 use autd3_traits::Gain;
@@ -24,12 +25,12 @@ use crate::error::AUTDError;
 
 /// Gain to produce single focal point
 #[derive(Gain)]
-pub struct Grouped<'a, T: Transducer> {
-    props: GainProps<T>,
-    gain_map: HashMap<usize, Box<dyn 'a + Gain<T>>>,
+pub struct Grouped {
+    props: GainProps,
+    gain_map: HashMap<usize, Vec<Drive>>,
 }
 
-impl<'a, T: Transducer> Grouped<'a, T> {
+impl Grouped {
     /// constructor
     pub fn new() -> Self {
         Self {
@@ -38,33 +39,36 @@ impl<'a, T: Transducer> Grouped<'a, T> {
         }
     }
 
-    pub fn add<G: 'a + Gain<T>>(&mut self, id: usize, gain: G) {
-        self.gain_map.insert(id, Box::new(gain));
+    pub fn add<T: Transducer, G: Gain<T>>(
+        &mut self,
+        id: usize,
+        gain: G,
+        geometry: &Geometry<T>,
+    ) -> anyhow::Result<()> {
+        let mut gain = gain;
+        gain.build(geometry)?;
+        self.gain_map.insert(id, gain.take_drives());
+        Ok(())
     }
-}
 
-impl<'a, T: Transducer> IGain<T> for Grouped<'a, T>
-where
-    Grouped<'a, T>: Gain<T>,
-{
-    fn calc(&mut self, geometry: &Geometry<T>) -> anyhow::Result<()> {
-        for gain in self.gain_map.values_mut() {
-            gain.build(geometry)?;
-        }
-
+    fn calc<T: Transducer>(&mut self, geometry: &Geometry<T>) -> anyhow::Result<()> {
         self.gain_map.iter().try_for_each(|(dev_id, gain)| {
             if *dev_id >= geometry.num_devices() {
                 return Err(AUTDError::GroupedOutOfRange(*dev_id, geometry.num_devices()).into());
             }
-            let start = *dev_id * autd3_core::NUM_TRANS_IN_UNIT;
-            let end = start + autd3_core::NUM_TRANS_IN_UNIT;
-            self.props.drives[start..end].copy_from_slice(&gain.drives()[start..end]);
+            let start = if *dev_id == 0 {
+                0
+            } else {
+                geometry.device_map()[*dev_id - 1]
+            };
+            let end = start + geometry.device_map()[*dev_id];
+            self.props.drives[start..end].copy_from_slice(&gain[start..end]);
             Ok(())
         })
     }
 }
 
-impl<'a, T: Transducer> Default for Grouped<'a, T> {
+impl Default for Grouped {
     fn default() -> Self {
         Self::new()
     }

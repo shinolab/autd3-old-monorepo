@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,14 +18,12 @@
 class BurstModulation final : public autd3::Modulation {
  public:
   bool calc() override {
-    this->_props.buffer.resize(_buf_size, 0);
-    this->_props.buffer.at(_buf_size - 1) = 0xFF;
+    this->_buffer.resize(_buf_size, 0);
+    this->_buffer.at(_buf_size - 1) = 0xFF;
     return true;
   }
 
-  explicit BurstModulation(const size_t buf_size = 4000, const uint16_t freq_div = 40960) noexcept : _buf_size(buf_size) {
-    _props.freq_div = freq_div;
-  }
+  explicit BurstModulation(const size_t buf_size = 4000, const uint16_t freq_div = 40960) noexcept : _buf_size(buf_size) { _freq_div = freq_div; }
 
  private:
   size_t _buf_size;

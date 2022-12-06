@@ -19,9 +19,9 @@ dependencies = [
 
 [[package]]
 name = "autd3"
-version = "2.6.4"
+version = "2.6.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "58d375f7d74568e52434d48b7205734ecba53749980c3e2d9e3b9f8482d1f00b"
+checksum = "7a0cfd66c033f012818bd605fca634cc848f730098184342753c15deb0e880a2"
 dependencies = [
  "anyhow",
  "autd3-core",
@@ -34,9 +34,9 @@ dependencies = [
 
 [[package]]
 name = "autd3-core"
-version = "2.6.4"
+version = "2.6.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "03d4209344ba30d10e5120c4a3988b12c713317a8b866cb111fbd4729bf36f7e"
+checksum = "143c61248e57108beb50ef878ab8a5e43c402184295b6249b288a18e039eaa53"
 dependencies = [
  "anyhow",
  "autd3-driver",
@@ -48,9 +48,9 @@ dependencies = [
 
 [[package]]
 name = "autd3-driver"
-version = "2.6.4"
+version = "2.6.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a36494ce1f531d15f131c6e9dd707f890e091b3af320ddc2c2a15d1b3d7a088"
+checksum = "a918410b3b1351e4c6b94319adee1e7e71793bde99e694adfc59b5676a4a2dae"
 dependencies = [
  "anyhow",
  "bitflags",
@@ -60,9 +60,9 @@ dependencies = [
 
 [[package]]
 name = "autd3-link-soem"
-version = "2.6.4"
+version = "2.6.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "099a6faee8d3effaa4812486d4e901e7798c6ab7bba3258c15780bf24bbf2407"
+checksum = "dd48221d0f996310b49e624c3b0da80aeb1596e343accf80ccac8ebad063e29a"
 dependencies = [
  "anyhow",
  "autd3-core",
@@ -78,9 +78,9 @@ dependencies = [
 
 [[package]]
 name = "autd3-traits"
-version = "2.6.4"
+version = "2.6.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8dc88e441c074ab94562b42595fc8040993a25b108c8c8f5a087b0416a8bbf0f"
+checksum = "aed9c710c0ad9947de1e6da2f273f6a92c288e05de45f5743392b7e8d4a78d04"
 dependencies = [
  "quote",
  "syn",
@@ -455,7 +455,7 @@ dependencies = [
 
 [[package]]
 name = "sample"
-version = "2.6.4"
+version = "2.6.5"
 dependencies = [
  "autd3",
  "autd3-link-soem",

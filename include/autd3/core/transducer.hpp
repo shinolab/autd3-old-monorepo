@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ using driver::Vector3;
 using driver::Vector4;
 
 /**
- * \brief Transducer contains a position and id, direction, frequency of a transducer
+ * \brief Transducer contains id, position, rotation, and frequency of a transducer
  */
 struct Transducer {
   Transducer(const size_t id, Vector3 pos, Quaternion rot) noexcept

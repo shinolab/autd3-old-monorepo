@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -17,9 +17,8 @@ use crate::{
 };
 use anyhow::Result;
 use autd3_core::{
-    gain::{Gain, GainProps, IGain},
+    gain::GainProps,
     geometry::{Geometry, Transducer, Vector3},
-    NUM_TRANS_IN_UNIT,
 };
 use autd3_traits::Gain;
 use nalgebra::ComplexField;
@@ -29,8 +28,8 @@ use std::{f64::consts::PI, marker::PhantomData, ops::MulAssign};
 /// Reference
 /// * Inoue, Seki, Yasutoshi Makino, and Hiroyuki Shinoda. "Active touch perception produced by airborne ultrasonic haptic hologram." 2015 IEEE World Haptics Conference (WHC). IEEE, 2015.
 #[derive(Gain)]
-pub struct SDP<B: Backend, T: Transducer, C: Constraint> {
-    props: GainProps<T>,
+pub struct SDP<B: Backend, C: Constraint> {
+    props: GainProps,
     foci: Vec<Vector3>,
     amps: Vec<f64>,
     alpha: f64,
@@ -40,7 +39,7 @@ pub struct SDP<B: Backend, T: Transducer, C: Constraint> {
     constraint: C,
 }
 
-impl<B: Backend, T: Transducer, C: Constraint> SDP<B, T, C> {
+impl<B: Backend, C: Constraint> SDP<B, C> {
     pub fn new(foci: Vec<Vector3>, amps: Vec<f64>, constraint: C) -> Self {
         Self::with_params(foci, amps, constraint, 1e-3, 0.9, 100)
     }
@@ -65,11 +64,10 @@ impl<B: Backend, T: Transducer, C: Constraint> SDP<B, T, C> {
             constraint,
         }
     }
-}
-impl<B: Backend, T: Transducer, C: Constraint> IGain<T> for SDP<B, T, C> {
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<()> {
+
+    fn calc<T: Transducer>(&mut self, geometry: &Geometry<T>) -> Result<()> {
         let m = self.foci.len();
-        let n = geometry.num_devices() * NUM_TRANS_IN_UNIT;
+        let n = geometry.num_transducers();
 
         let p = MatrixXc::from_diagonal(&VectorXc::from_iterator(
             m,

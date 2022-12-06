@@ -14,7 +14,7 @@ class Burst final : public autd3::Modulation {
 
   explicit Burst(const size_t buf_size = 4000, const uint16_t freq_div = 40960) noexcept : _buf_size(buf_size) 
   {
-    _props.freq_div = freq_div;
+    _freq_div = freq_div;
   }
 
  private:
@@ -24,7 +24,7 @@ class Burst final : public autd3::Modulation {
 
 `Modulation`も`Gain`と同じく, `Controller::send`内部で`Modulation::calc`メソッドが呼ばれる.
 この`calc`の中で, `buffer`の中身を書き換えれば良い.
-`Modulation`サンプリング周波数$\SI{163.84}{MHz}/N$を決定する$N$は`_props.freq_div`に設定する.
+`Modulation`サンプリング周波数$\SI{163.84}{MHz}/N$を決定する$N$は`_freq_div`に設定する.
 この例だと, デフォルトで$N=40960$なので, サンプリング周波数は$\SI{4}{kHz}$になる.
 さらに, 例えば, `buf_size`を4000とすると, AMは$0$が$3999$回サンプリングされた後, $255$が$1$回サンプリングされる.
 したがって, 周期$\SI{1}{s}$の中で, $\SI{0.25}{ms}=1/\SI{4}{kHz}$だけ出力されるようなAMがかかる.

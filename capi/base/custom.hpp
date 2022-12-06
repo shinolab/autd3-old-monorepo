@@ -3,7 +3,7 @@
 // Created Date: 19/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -62,9 +62,9 @@ class CustomModulation final : public autd3::Modulation {
    * @param freq_div sampling frequency division ratio
    */
   explicit CustomModulation(const uint8_t* buffer, const size_t size, const uint32_t freq_div = 40960) : Modulation() {
-    this->_props.freq_div = freq_div;
-    this->_props.buffer.resize(size);
-    std::memcpy(this->_props.buffer.data(), buffer, size);
+    this->_freq_div = freq_div;
+    this->_buffer.resize(size);
+    std::memcpy(this->_buffer.data(), buffer, size);
   }
 
   bool calc() override { return true; }

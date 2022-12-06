@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 28/11/2022
+Last Modified: 30/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -212,6 +212,9 @@ class Controller:
     @ sound_speed.setter
     def sound_speed(self, sound_speed: float):
         Base().dll.AUTDSetSoundSpeed(self.p_cnt, sound_speed)
+
+    def set_sound_speed_from_temp(self, temp: float, k: float = 1.4, r: float = 8.31446261815324, m: float = 28.9647e-3):
+        Base().dll.AUTDSetSoundSpeed(self.p_cnt, temp, k, r, m)
 
     @ property
     def attenuation(self):

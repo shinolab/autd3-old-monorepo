@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/06/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
  */
 
 #[macro_export]
-macro_rules! point_stm {
+macro_rules! focus_stm {
     ($autd:ident) => {{
         use autd3::prelude::*;
 
@@ -21,13 +21,13 @@ macro_rules! point_stm {
 
         let center = $autd.geometry().center() + Vector3::new(0., 0., 150.0);
 
-        let mut stm = PointSTM::new();
+        let mut stm = FocusSTM::new($autd.sound_speed());
         let point_num = 200;
         let radius = 30.0;
         for i in 0..point_num {
             let theta = 2.0 * std::f64::consts::PI * i as f64 / point_num as f64;
             let p = radius * Vector3::new(theta.cos(), theta.sin(), 0.0);
-            stm.add(center + p, 0)?;
+            stm.add(center + p)?;
         }
         stm.set_freq(1.0);
 

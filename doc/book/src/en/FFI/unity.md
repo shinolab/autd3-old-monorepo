@@ -22,7 +22,7 @@ Append the following to `Packages/manifest.json`
     }
   ],
   "dependencies": {
-    "com.shinolab.autd3": "2.6.5",
+    "com.shinolab.autd3": "2.6.6",
     ...
 ```
 

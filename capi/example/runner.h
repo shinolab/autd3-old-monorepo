@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,10 +27,10 @@
 #include "examples/bessel.h"
 #include "examples/check.h"
 #include "examples/focus.h"
+#include "examples/focus_stm.h"
 #include "examples/gain_stm.h"
 #include "examples/group.h"
 #include "examples/plane.h"
-#include "examples/point_stm.h"
 #include "examples/soft_stm.h"
 #ifdef BUILD_GAIN_HOLO
 #include "examples/holo.h"
@@ -80,8 +80,8 @@ int run(void* autd) {
   examples[idx].name = "Modulation from audio file";
   examples[idx++].func = mod_audio_file;
 #endif
-  examples[idx].name = "PointSTM";
-  examples[idx++].func = point_stm;
+  examples[idx].name = "FocusSTM";
+  examples[idx++].func = focus_stm;
   examples[idx].name = "GainSTM";
   examples[idx++].func = gain_stm;
   examples[idx].name = "SoftwareSTM";

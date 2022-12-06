@@ -28,15 +28,15 @@ sudo pip install pyautd3
 
 基本的には, C++版と同じになるように設計している.
 
-たとえば, [Getting Started](../Users_Manual/getting_started.md)と等価なコードは以下のようになる.
+たとえば, [チュートリアル](../Users_Manual/getting_started.md)と等価なコードは以下のようになる.
 
 ```python
 {{#include ../../../samples/python/main.py}}
 ```
 
-より詳細なサンプルは[pyautdのexample](https://github.com/shinolab/autd3/tree/master/python/example)を参照されたい.
+より詳細なサンプルは[pyautd3のexample](https://github.com/shinolab/autd3/tree/master/python/example)を参照されたい.
 
-## Trouble shooting
+## Troubleshooting
 
 Q. linuxやmacから実行できない
 

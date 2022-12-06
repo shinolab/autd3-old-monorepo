@@ -17,19 +17,15 @@ set_target_properties(gain_holo PROPERTIES FOLDER "gain")
 set_target_properties(gain_holo PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 add_subdirectory(eigen)
-target_link_libraries(gain_holo INTERFACE backend_eigen)
 
 if(BUILD_BACKEND_CUDA)
   add_subdirectory(cuda)
-  target_link_libraries(gain_holo INTERFACE backend_cuda)
 endif()
 
 if(BUILD_BACKEND_BLAS)
   add_subdirectory(blas)
-  target_link_libraries(gain_holo INTERFACE backend_blas)
 endif()
 
 if(BUILD_BACKEND_ARRAYFIRE)
   add_subdirectory(arrayfire)
-  target_link_libraries(gain_holo INTERFACE backend_arrayfire)
 endif()

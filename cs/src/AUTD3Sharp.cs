@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/11/2022
+ * Last Modified: 30/11/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -425,6 +425,12 @@ namespace AUTD3Sharp
         }
         #endregion
 
+
+        public void SetSoundSpeedFromTemp(double temp, double k = 1.4, double r = 8.31446261815324, double m = 28.9647e-3)
+        {
+            Base.AUTDSetSoundSpeedFromTemp(AUTDControllerHandle.CntPtr, temp, k, r, m);
+        }
+
         public bool Send(SpecialData special)
         {
             if (special == null) throw new ArgumentNullException(nameof(special));
@@ -776,17 +782,17 @@ namespace AUTD3Sharp
             }
         }
 
-        public sealed class PointSTM : STM
+        public sealed class FocusSTM : STM
         {
-            public PointSTM(double soundSpeed)
+            public FocusSTM(double soundSpeed)
             {
-                Base.AUTDPointSTM(out handle, soundSpeed);
+                Base.AUTDFocusSTM(out handle, soundSpeed);
             }
 
             public void Add(Vector3 point, byte shift = 0)
             {
                 var (x, y, z) = TypeHelper.Convert(point);
-                Base.AUTDPointSTMAdd(handle, x, y, z, shift);
+                Base.AUTDFocusSTMAdd(handle, x, y, z, shift);
             }
         }
 
