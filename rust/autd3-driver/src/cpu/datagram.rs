@@ -160,8 +160,7 @@ impl TxDatagram {
                 .as_ptr()
                 .add(std::mem::size_of::<GlobalHeader>() + self.body_pointer[idx]);
             let len = self.device_map[idx];
-            &*(std::slice::from_raw_parts(ptr as *const u16, len) as *const [u16]
-                as *const Body<[u16]>)
+            &*(std::ptr::slice_from_raw_parts(ptr as *const u16, len) as *const Body<[u16]>)
         }
     }
 
@@ -172,8 +171,7 @@ impl TxDatagram {
                 .as_mut_ptr()
                 .add(std::mem::size_of::<GlobalHeader>() + self.body_pointer[idx]);
             let len = self.device_map[idx];
-            &mut *(std::slice::from_raw_parts_mut(ptr as *mut u16, len) as *mut [u16]
-                as *mut Body<[u16]>)
+            &mut *(std::ptr::slice_from_raw_parts_mut(ptr as *mut u16, len) as *mut Body<[u16]>)
         }
     }
 

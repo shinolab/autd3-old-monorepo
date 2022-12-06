@@ -30,9 +30,9 @@ impl IOMap {
             })
             .collect::<Vec<_>>();
         let trans_num_prefix_sum = head
-            .into_iter()
+            .iter()
             .chain(trans_num_prefix_sum.iter())
-            .map(|v| *v)
+            .copied()
             .collect::<Vec<_>>();
         let device_map = device_map.to_vec();
         let size = trans_num_prefix_sum.last().unwrap() + device_map.len() * EC_INPUT_FRAME_SIZE;
