@@ -3,7 +3,7 @@
 // Created Date: 22/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/12/2022
+// Last Modified: 06/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -42,7 +42,7 @@ void DriverV2_4::sync(const std::vector<uint16_t>& cycles, TxDatagram& tx) const
   tx.header().cpu_flag.set(CPUControlFlags::CONFIG_SYNC);
   tx.num_bodies = tx.num_devices();
 
-  std::memcpy(tx.bodies_ptr(), cycles.data(), tx.bodies_size());
+  std::memcpy(tx.bodies_raw_ptr(), cycles.data(), tx.bodies_size());
 }
 
 void DriverV2_4::mod_delay(const std::vector<uint16_t>& delays, TxDatagram& tx) const noexcept {
@@ -50,7 +50,7 @@ void DriverV2_4::mod_delay(const std::vector<uint16_t>& delays, TxDatagram& tx) 
   tx.header().cpu_flag.set(CPUControlFlags::MOD_DELAY);
   tx.num_bodies = tx.num_devices();
 
-  std::memcpy(tx.bodies_ptr(), delays.data(), tx.bodies_size());
+  std::memcpy(tx.bodies_raw_ptr(), delays.data(), tx.bodies_size());
 }
 
 bool DriverV2_4::modulation(const uint8_t msg_id, const std::vector<uint8_t>& mod_data, size_t& sent, const uint32_t freq_div, TxDatagram& tx) const {
@@ -132,7 +132,7 @@ void DriverV2_4::normal_legacy_header(TxDatagram& tx) const noexcept {
 }
 
 void DriverV2_4::normal_legacy_body(const std::vector<Drive>& drives, TxDatagram& tx) const noexcept {
-  auto* p = reinterpret_cast<LegacyDrive*>(tx.bodies_ptr());
+  auto* p = reinterpret_cast<LegacyDrive*>(tx.bodies_raw_ptr());
   for (size_t i = 0; i < drives.size(); i++) p[i].set(drives[i]);
 
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
@@ -153,7 +153,7 @@ void DriverV2_4::normal_header(TxDatagram& tx) const noexcept {
 void DriverV2_4::normal_duty_body(const std::vector<Drive>& drives, TxDatagram& tx) const noexcept {
   tx.header().cpu_flag.set(CPUControlFlags::IS_DUTY);
 
-  auto* p = reinterpret_cast<Duty*>(tx.bodies_ptr());
+  auto* p = reinterpret_cast<Duty*>(tx.bodies_raw_ptr());
   for (size_t i = 0; i < drives.size(); i++) p[i].set(drives[i]);
 
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
@@ -164,7 +164,7 @@ void DriverV2_4::normal_duty_body(const std::vector<Drive>& drives, TxDatagram& 
 void DriverV2_4::normal_phase_body(const std::vector<Drive>& drives, TxDatagram& tx) const noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
 
-  auto* p = reinterpret_cast<Phase*>(tx.bodies_ptr());
+  auto* p = reinterpret_cast<Phase*>(tx.bodies_raw_ptr());
   for (size_t i = 0; i < drives.size(); i++) p[i].set(drives[i]);
 
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
@@ -280,7 +280,7 @@ bool DriverV2_4::gain_stm_legacy_body(const std::vector<std::vector<Drive>>& dri
       case GainSTMMode::PhaseDutyFull:
         is_last_frame = sent + 1 >= drives.size() + 1;
         {
-          auto* p = reinterpret_cast<LegacyDrive*>(tx.bodies_ptr());
+          auto* p = reinterpret_cast<LegacyDrive*>(tx.bodies_raw_ptr());
           for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(drives[sent - 1][i]);
         }
         sent++;
@@ -288,12 +288,12 @@ bool DriverV2_4::gain_stm_legacy_body(const std::vector<std::vector<Drive>>& dri
       case GainSTMMode::PhaseFull:
         is_last_frame = sent + 2 >= drives.size() + 1;
         {
-          auto* p = reinterpret_cast<LegacyPhaseFull*>(tx.bodies_ptr());
+          auto* p = reinterpret_cast<LegacyPhaseFull*>(tx.bodies_raw_ptr());
           for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(0, drives[sent - 1][i]);
         }
         sent++;
         if (sent - 1 < drives.size()) {
-          auto* p = reinterpret_cast<LegacyPhaseFull*>(tx.bodies_ptr());
+          auto* p = reinterpret_cast<LegacyPhaseFull*>(tx.bodies_raw_ptr());
           for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(1, drives[sent - 1][i]);
           sent++;
         }
@@ -301,22 +301,22 @@ bool DriverV2_4::gain_stm_legacy_body(const std::vector<std::vector<Drive>>& dri
       case GainSTMMode::PhaseHalf:
         is_last_frame = sent + 4 >= drives.size() + 1;
         {
-          auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies_ptr());
+          auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies_raw_ptr());
           for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(0, drives[sent - 1][i]);
         }
         sent++;
         if (sent - 1 < drives.size()) {
-          auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies_ptr());
+          auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies_raw_ptr());
           for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(1, drives[sent - 1][i]);
           sent++;
         }
         if (sent - 1 < drives.size()) {
-          auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies_ptr());
+          auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies_raw_ptr());
           for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(2, drives[sent - 1][i]);
           sent++;
         }
         if (sent - 1 < drives.size()) {
-          auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies_ptr());
+          auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies_raw_ptr());
           for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(3, drives[sent - 1][i]);
           sent++;
         }
@@ -377,7 +377,7 @@ bool DriverV2_4::gain_stm_normal_phase(const std::vector<std::vector<Drive>>& dr
       tx.body(i).gain_stm_initial().set_mode(mode);
     }
   } else {
-    auto* p = reinterpret_cast<Phase*>(tx.bodies_ptr());
+    auto* p = reinterpret_cast<Phase*>(tx.bodies_raw_ptr());
     for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(drives[sent - 1][i]);
   }
 
@@ -421,7 +421,7 @@ bool DriverV2_4::gain_stm_normal_duty(const std::vector<std::vector<Drive>>& dri
       tx.body(i).gain_stm_initial().set_mode(mode);
     }
   } else {
-    auto* p = reinterpret_cast<Duty*>(tx.bodies_ptr());
+    auto* p = reinterpret_cast<Duty*>(tx.bodies_raw_ptr());
     for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(drives[sent - 1][i]);
   }
 

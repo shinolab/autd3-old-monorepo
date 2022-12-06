@@ -3,7 +3,7 @@
 // Created Date: 02/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/12/2022
+// Last Modified: 06/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -89,7 +89,7 @@ TEST(DriverV2_5Driver, operation_sync_v2_5) {
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_SILENCER));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::CONFIG_SYNC));
 
-  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i], cycle[i]);
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_raw_ptr())[i], cycle[i]);
 
   ASSERT_EQ(tx.num_bodies, 10);
 }
@@ -191,8 +191,8 @@ TEST(DriverV2_5Driver, operation_normal_legacy_body_v2_5) {
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
 
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) {
-    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i] & 0xFF, autd3::driver::LegacyDrive::to_phase(drives[i]));
-    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i] >> 8, autd3::driver::LegacyDrive::to_duty(drives[i]));
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_raw_ptr())[i] & 0xFF, autd3::driver::LegacyDrive::to_phase(drives[i]));
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_raw_ptr())[i] >> 8, autd3::driver::LegacyDrive::to_duty(drives[i]));
   }
 
   ASSERT_EQ(tx.num_bodies, 10);
@@ -232,7 +232,7 @@ TEST(DriverV2_5Driver, operation_normal_duty_body_v2_5) {
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
 
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
-    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i], autd3::driver::Duty::to_duty(drives[i]));
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_raw_ptr())[i], autd3::driver::Duty::to_duty(drives[i]));
 
   ASSERT_EQ(tx.num_bodies, 10);
 }
@@ -256,7 +256,7 @@ TEST(DriverV2_5Driver, operation_normal_phase_body_v2_5) {
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
 
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
-    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i], autd3::driver::Phase::to_phase(drives[i]));
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_raw_ptr())[i], autd3::driver::Phase::to_phase(drives[i]));
 
   ASSERT_EQ(tx.num_bodies, 10);
 }
@@ -403,8 +403,8 @@ TEST(DriverV2_5Driver, operation_gain_stm_legacy_body_v2_5) {
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) {
-    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i] & 0xFF, autd3::driver::LegacyDrive::to_phase(drives_list[0][i]));
-    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i] >> 8, autd3::driver::LegacyDrive::to_duty(drives_list[0][i]));
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_raw_ptr())[i] & 0xFF, autd3::driver::LegacyDrive::to_phase(drives_list[0][i]));
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_raw_ptr())[i] >> 8, autd3::driver::LegacyDrive::to_duty(drives_list[0][i]));
   }
   ASSERT_EQ(tx.num_bodies, 10);
 
@@ -415,8 +415,8 @@ TEST(DriverV2_5Driver, operation_gain_stm_legacy_body_v2_5) {
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) {
-    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i] & 0xFF, autd3::driver::LegacyDrive::to_phase(drives_list[4][i]));
-    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i] >> 8, autd3::driver::LegacyDrive::to_duty(drives_list[4][i]));
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_raw_ptr())[i] & 0xFF, autd3::driver::LegacyDrive::to_phase(drives_list[4][i]));
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_raw_ptr())[i] >> 8, autd3::driver::LegacyDrive::to_duty(drives_list[4][i]));
   }
   ASSERT_EQ(tx.num_bodies, 10);
 }
@@ -474,7 +474,7 @@ TEST(DriverV2_5Driver, operation_gain_stm_normal_phase_v2_5) {
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
-    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i], autd3::driver::Phase::to_phase(drives_list[0][i]));
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_raw_ptr())[i], autd3::driver::Phase::to_phase(drives_list[0][i]));
   ASSERT_EQ(tx.num_bodies, 10);
 
   driver.gain_stm_normal_header(tx);
@@ -484,7 +484,7 @@ TEST(DriverV2_5Driver, operation_gain_stm_normal_phase_v2_5) {
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
-    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i], autd3::driver::Phase::to_phase(drives_list[4][i]));
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_raw_ptr())[i], autd3::driver::Phase::to_phase(drives_list[4][i]));
   ASSERT_EQ(tx.num_bodies, 10);
 }
 
@@ -513,7 +513,7 @@ TEST(DriverV2_5Driver, operation_gain_stm_normal_duty_v2_5) {
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
-    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i], autd3::driver::Duty::to_duty(drives_list[0][i]));
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_raw_ptr())[i], autd3::driver::Duty::to_duty(drives_list[0][i]));
   ASSERT_EQ(tx.num_bodies, 10);
 
   driver.gain_stm_normal_header(tx);
@@ -523,7 +523,7 @@ TEST(DriverV2_5Driver, operation_gain_stm_normal_duty_v2_5) {
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
-    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_ptr())[i], autd3::driver::Duty::to_duty(drives_list[4][i]));
+    ASSERT_EQ(reinterpret_cast<uint16_t*>(tx.bodies_raw_ptr())[i], autd3::driver::Duty::to_duty(drives_list[4][i]));
   ASSERT_EQ(tx.num_bodies, 10);
 }
 

@@ -3,7 +3,7 @@
 // Created Date: 01/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/12/2022
+// Last Modified: 06/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@ TEST(DriverCommonCPUTest, TxDatagram) {
   ASSERT_EQ(tx.transmitting_size(), 128 + sizeof(uint16_t) * 15);
 
   ASSERT_EQ(tx.data().data(), reinterpret_cast<uint8_t*>(&tx.header()));
-  ASSERT_EQ(tx.data().data() + 128, reinterpret_cast<uint8_t*>(tx.bodies_ptr()));
+  ASSERT_EQ(tx.data().data() + 128, reinterpret_cast<uint8_t*>(tx.bodies_raw_ptr()));
   auto* cursor = tx.data().data() + 128;
   for (size_t i = 0; i < device_map.size(); i++) {
     ASSERT_EQ(cursor, reinterpret_cast<uint8_t*>(&tx.body(i)));

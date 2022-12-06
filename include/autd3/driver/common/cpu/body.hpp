@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/12/2022
+// Last Modified: 06/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -234,6 +234,8 @@ struct Body {
   Body& operator=(const Body& obj) = delete;
   Body(Body&& obj) = delete;
   Body& operator=(Body&& obj) = delete;
+
+  uint16_t* data() { return reinterpret_cast<uint16_t*>(this); }
 
   [[nodiscard]] const FocusSTMBodyInitial& focus_stm_initial() const noexcept { return *reinterpret_cast<const FocusSTMBodyInitial* const>(this); }
   FocusSTMBodyInitial& focus_stm_initial() noexcept { return *reinterpret_cast<FocusSTMBodyInitial*>(this); }
