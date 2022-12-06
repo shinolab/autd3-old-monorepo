@@ -4,9 +4,9 @@ version = 3
 
 [[package]]
 name = "anyhow"
-version = "1.0.65"
+version = "1.0.66"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "98161a4e3e2184da77bb14f02184cdd111e83bbbcc9979dfee3c44b9a85f5602"
+checksum = "216261ddc8289130e551ddcd5ce8a064710c0d064a4d2895c67151c92b5443f6"
 
 [[package]]
 name = "approx"
@@ -19,12 +19,13 @@ dependencies = [
 
 [[package]]
 name = "autd3"
-version = "2.6.5"
+version = "2.6.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a0cfd66c033f012818bd605fca634cc848f730098184342753c15deb0e880a2"
+checksum = "04388abf034512f8812d29d8b42f9e49a2dde00506babb6141a786b000fbd142"
 dependencies = [
  "anyhow",
  "autd3-core",
+ "autd3-driver",
  "autd3-traits",
  "itertools",
  "nalgebra",
@@ -34,9 +35,9 @@ dependencies = [
 
 [[package]]
 name = "autd3-core"
-version = "2.6.5"
+version = "2.6.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "143c61248e57108beb50ef878ab8a5e43c402184295b6249b288a18e039eaa53"
+checksum = "5bd9fb2e36c5ad4ed74915f62d4a8dd45a63ab0b9c57b9ba418d0a9c8801a516"
 dependencies = [
  "anyhow",
  "autd3-driver",
@@ -48,9 +49,9 @@ dependencies = [
 
 [[package]]
 name = "autd3-driver"
-version = "2.6.5"
+version = "2.6.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a918410b3b1351e4c6b94319adee1e7e71793bde99e694adfc59b5676a4a2dae"
+checksum = "e3b67816184f338d68e6432de4bd015ac666e0df892b7fd38ff2bf7342c2ad4f"
 dependencies = [
  "anyhow",
  "bitflags",
@@ -60,9 +61,9 @@ dependencies = [
 
 [[package]]
 name = "autd3-link-soem"
-version = "2.6.5"
+version = "2.6.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dd48221d0f996310b49e624c3b0da80aeb1596e343accf80ccac8ebad063e29a"
+checksum = "5f29c44275a3d9acb4b871d4ecc6142791a9134c23f8b4736f468cc3b30104a4"
 dependencies = [
  "anyhow",
  "autd3-core",
@@ -78,9 +79,9 @@ dependencies = [
 
 [[package]]
 name = "autd3-traits"
-version = "2.6.5"
+version = "2.6.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aed9c710c0ad9947de1e6da2f273f6a92c288e05de45f5743392b7e8d4a78d04"
+checksum = "13298f786b18d79ef5c97c066d9e51c5fc216c8c2e2dddb24c4842898020986a"
 dependencies = [
  "quote",
  "syn",
@@ -94,9 +95,9 @@ checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 
 [[package]]
 name = "bindgen"
-version = "0.62.0"
+version = "0.63.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c6720a8b7b2d39dd533285ed438d458f65b31b5c257e6ac7bb3d7e82844dd722"
+checksum = "36d860121800b2a9a94f9b5604b332d5cffb234ce17609ea479d723dbc9d3885"
 dependencies = [
  "bitflags",
  "cexpr",
@@ -455,8 +456,9 @@ dependencies = [
 
 [[package]]
 name = "sample"
-version = "2.6.5"
+version = "2.6.6"
 dependencies = [
+ "anyhow",
  "autd3",
  "autd3-link-soem",
 ]
