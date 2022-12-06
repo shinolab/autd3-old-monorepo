@@ -3,7 +3,7 @@
 // Created Date: 10/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/12/2022
+// Last Modified: 06/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -964,4 +964,4 @@ using autd3::gain::holo::ZERO;
           ASSERT_NEAR(c(i, j), 1.0, 0.1);                                                           \
         else                                                                                        \
           ASSERT_NEAR(c(i, j), 0.0, 0.1);                                                           \
-  }\
+  }
