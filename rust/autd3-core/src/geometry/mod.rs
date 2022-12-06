@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 06/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -100,5 +100,29 @@ impl<T: Transducer> Index<usize> for Geometry<T> {
 impl<T: Transducer> IndexMut<usize> for Geometry<T> {
     fn index_mut(&mut self, idx: usize) -> &mut Self::Output {
         &mut self.transducers[idx]
+    }
+}
+
+impl<'a, T> IntoIterator for &'a Geometry<T>
+where
+    T: Transducer,
+{
+    type Item = &'a T;
+    type IntoIter = std::slice::Iter<'a, T>;
+
+    fn into_iter(self) -> std::slice::Iter<'a, T> {
+        self.transducers()
+    }
+}
+
+impl<'a, T> IntoIterator for &'a mut Geometry<T>
+where
+    T: Transducer,
+{
+    type Item = &'a mut T;
+    type IntoIter = std::slice::IterMut<'a, T>;
+
+    fn into_iter(self) -> std::slice::IterMut<'a, T> {
+        self.transducers_mut()
     }
 }
