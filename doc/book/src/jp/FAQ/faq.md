@@ -1,5 +1,7 @@
 # FAQ
 
+[[_TOC_]]
+
 ## "No AUTD3 devices found"と表示される
 
 - macOS, linuxで`link::SOEM`を使用する場合, root権限が必要
@@ -85,6 +87,40 @@
 - ファイアウォールでブロックされている可能性があるため, ファイアウォールを切るか, TCP/UDPの48898番ポートを開ける.
 - クライアントPCのサーバー以外とのLANをすべて切断する.
 
+## 振動子の位相/振幅データにアクセスするには?
+
+`Gain`に定義されている`drives()`関数でアクセスできる.
+
+```cpp
+  autd3::Controller autd;
+
+  ...
+
+  autd3::gain::Focus g(autd3::Vector3(x, y, z));
+
+  g.build(autd.geometry()); // initialize drive data
+  g.drives()[0].phase = 0.0; // overwrite phase of 0-th transducer
+```
+
+先に手動で`build`を呼んで初期化する必要がある点に注意する.
+
+## AM変調データにアクセスするには?
+
+`Modulation`に定義されている`buffer()`関数でアクセスできる.
+
+```cpp
+  autd3::Controller autd;
+
+  ...
+
+  autd3::modulation::Static m;
+
+  m.build(); // initialize buffer data
+  m.buffer()[0] = 0;
+```
+
+先に手動で`build`を呼んで初期化する必要がある点に注意する.
+   
 ## その他
 
 - 質問やバグ報告は[GithubのIssue](https://github.com/shinolab/autd3/issues)へお気軽にどうぞ
