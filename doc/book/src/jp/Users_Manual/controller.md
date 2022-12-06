@@ -56,7 +56,7 @@ autd.set_ack_check_timeout(std::chrono::milliseconds(20));
 autd.set_send_interval(std::chrono::milliseconds(1));
 ```
 
-デフォルトは$\SI{500}{\text{μ}s}$にセットされている.
+デフォルトは$\SI{1}{ms}$にセットされている.
 
 ## Force fan
 

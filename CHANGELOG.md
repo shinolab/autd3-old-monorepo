@@ -1,3 +1,7 @@
+# 2.6.7
+
+- Change `Controller::_send_interval` to 1ms by default
+
 # 2.6.6
 
 - Rename `PointSTM` to `FocusSTM`
