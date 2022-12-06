@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@
 #ifdef BUILD_MODULATION_AUDIO_FILE
 #include "tests/mod_audio_file.hpp"
 #endif
-#include "tests/point_stm.hpp"
+#include "tests/focus_stm.hpp"
 
 inline int run(autd3::Controller& autd) {
   using F = std::function<void(autd3::Controller&)>;
@@ -45,7 +45,7 @@ inline int run(autd3::Controller& autd) {
 #ifdef BUILD_MODULATION_AUDIO_FILE
       std::pair(F{mod_audio_file_test}, "Wav and RawPCM modulation Test"),
 #endif
-      std::pair(F{point_stm}, "PointSTM Test"),
+      std::pair(F{focus_stm}, "FocusSTM Test"),
       std::pair(F{gain_stm}, "GainSTM Test"),
       std::pair(F{soft_stm}, "Software STM Test"),
 #ifdef BUILD_GAIN_HOLO

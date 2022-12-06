@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/11/2022
+// Last Modified: 02/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -151,6 +151,11 @@ double AUTDGetSoundSpeed(const void* const handle) {
 void AUTDSetSoundSpeed(void* const handle, const double sound_speed) {
   auto* wrapper = static_cast<Controller*>(handle);
   wrapper->set_sound_speed(sound_speed);
+}
+
+void AUTDSetSoundSpeedFromTemp(void* const handle, const double temp, const double k, const double r, const double m) {
+  auto* wrapper = static_cast<Controller*>(handle);
+  wrapper->set_sound_speed_from_temp(temp, k, r, m);
 }
 
 double AUTDGetWavelength(const void* const handle, const int32_t trans_idx) {
@@ -314,13 +319,13 @@ void AUTDDeleteModulation(const void* const mod) {
   delete m;
 }
 
-void AUTDPointSTM(void** out, const double sound_speed) { *out = new autd3::PointSTM(sound_speed); }
+void AUTDFocusSTM(void** out, const double sound_speed) { *out = new autd3::FocusSTM(sound_speed); }
 void AUTDGainSTM(void** out, const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   *out = new autd3::GainSTM(wrapper->geometry());
 }
-void AUTDPointSTMAdd(void* const stm, const double x, const double y, const double z, const uint8_t shift) {
-  auto* const stm_w = static_cast<autd3::PointSTM*>(stm);
+void AUTDFocusSTMAdd(void* const stm, const double x, const double y, const double z, const uint8_t shift) {
+  auto* const stm_w = static_cast<autd3::FocusSTM*>(stm);
   stm_w->add(to_vec3(x, y, z), shift);
 }
 void AUTDGainSTMAdd(void* const stm, void* const gain) {

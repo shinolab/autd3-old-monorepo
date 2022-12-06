@@ -3,7 +3,7 @@
 // Created Date: 15/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,6 +16,9 @@
 
 namespace autd3::driver {
 
+/**
+ * @brief Driver for v2.2 firmware
+ */
 class DriverV2_2 final : public Driver {
  public:
   DriverV2_2() = default;
@@ -33,9 +36,9 @@ class DriverV2_2 final : public Driver {
 
   void null_body(TxDatagram& tx) const noexcept override;
 
-  void sync(const uint16_t* cycles, TxDatagram& tx) const noexcept override;
+  void sync(const std::vector<uint16_t>& cycles, TxDatagram& tx) const noexcept override;
 
-  void mod_delay(const uint16_t* delays, TxDatagram& tx) const noexcept override;
+  void mod_delay(const std::vector<uint16_t>& delays, TxDatagram& tx) const noexcept override;
 
   bool modulation(uint8_t msg_id, const std::vector<uint8_t>& mod_data, size_t& sent, uint32_t freq_div, TxDatagram& tx) const override;
 
@@ -53,11 +56,11 @@ class DriverV2_2 final : public Driver {
 
   void normal_phase_body(const std::vector<Drive>& drives, TxDatagram& tx) const noexcept override;
 
-  void point_stm_header(TxDatagram& tx) const noexcept override;
+  void focus_stm_header(TxDatagram& tx) const noexcept override;
 
-  [[nodiscard]] size_t point_stm_send_size(size_t total_size, size_t sent, const std::vector<size_t>& device_map) const noexcept override;
+  [[nodiscard]] size_t focus_stm_send_size(size_t total_size, size_t sent, const std::vector<size_t>& device_map) const noexcept override;
 
-  bool point_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, size_t total_size, uint32_t freq_div, double sound_speed,
+  bool focus_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, size_t total_size, uint32_t freq_div, double sound_speed,
                       TxDatagram& tx) const override;
 
   void gain_stm_legacy_header(TxDatagram& tx) const noexcept override;

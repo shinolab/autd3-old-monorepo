@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -87,7 +87,7 @@ class DebugImpl final : public core::Link {
           else
             spdlog::info("\tGain STM mode");
         else
-          spdlog::info("\tPoint STM mode");
+          spdlog::info("\tFocus STM mode");
         if (tx.header().cpu_flag.contains(driver::CPUControlFlags::STM_BEGIN)) spdlog::info("\t\tSTM BEGIN");
         if (tx.header().cpu_flag.contains(driver::CPUControlFlags::STM_END)) {
           spdlog::info("\t\tSTM END (cycle = {}, frequency_division = {})", fpga.stm_cycle(), fpga.stm_frequency_division());

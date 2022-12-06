@@ -4,7 +4,7 @@
 %Created Date: 11/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 10/11/2022
+%Last Modified: 29/11/2022
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ function runner(cnt)
 
     tests = ["focus(x)", "Single focus Test"
         "bessel(x)", "BesselBeam Test"
-        "point_stm(x)", "PointSTM Test"
+        "focus_stm(x)", "FocusSTM Test"
         "gain_stm(x)", "GainSTM Test"
         "holo(x)", "Holo Test"
         "custom(x)", "Custom Test"];

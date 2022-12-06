@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 30/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,12 +13,12 @@
 
 #include <cstdint>
 
-#include "autd3/core/interface.hpp"
+#include "autd3/core/datagram.hpp"
 
 namespace autd3::core {
 
 /**
- * @brief Silencer Configuration
+ * @brief DatagramHeader for silencer configuration
  */
 struct SilencerConfig final : DatagramHeader {
   SilencerConfig() noexcept : SilencerConfig(10, 4096) {}
@@ -34,6 +34,7 @@ struct SilencerConfig final : DatagramHeader {
    * @details The smaller the step, the stronger the effect of noise reduction.
    */
   uint16_t step;
+
   /**
    * @brief Silencer sampling frequency division ratio.
    * @details The sampling frequency will be driver::FPGA_CLK_FREQ/cycle. The larger the cycle, the stronger the effect of noise reduction.

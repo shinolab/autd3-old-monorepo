@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/11/2022
+ * Last Modified: 06/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -66,7 +66,7 @@ impl<F: Fn(&str) + Send> SOEM<F> {
             config,
             ec_sync0_cycle_time_ns,
             ec_send_cycle_time_ns,
-            io_map: Arc::new(Mutex::new(IOMap::new(0))),
+            io_map: Arc::new(Mutex::new(IOMap::new(&[0]))),
         }
     }
 }
@@ -85,20 +85,20 @@ fn lookup_autd() -> anyhow::Result<String> {
             ec_close();
             return false;
         }
-        let slave_name = String::from_utf8(
-            ec_slave[1]
-                .name
-                .iter()
-                .take_while(|&&c| c != 0)
-                .map(|&c| c as u8)
-                .collect(),
-        )
-        .unwrap();
-        if slave_name == "AUTD" {
-            ec_close();
-            return true;
-        }
-        false
+        let found = (1..=wc).all(|i| {
+            let slave_name = String::from_utf8(
+                ec_slave[i as usize]
+                    .name
+                    .iter()
+                    .take_while(|&&c| c != 0)
+                    .map(|&c| c as u8)
+                    .collect(),
+            )
+            .unwrap();
+            slave_name == "AUTD"
+        });
+        ec_close();
+        found
     }) {
         Ok(adapter.name.to_owned())
     } else {
@@ -112,20 +112,17 @@ unsafe extern "C" fn dc_config(context: *mut ecx_contextt, slave: u16) -> i32 {
     0
 }
 
-impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
-    fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> anyhow::Result<()> {
+impl<F: 'static + Fn(&str) + Send> SOEM<F> {
+    fn open_impl<T: Transducer>(
+        &mut self,
+        ifname: &str,
+        geometry: &Geometry<T>,
+    ) -> anyhow::Result<()> {
+        let ifname = std::ffi::CString::new(ifname.to_owned()).unwrap();
+
         let dev_num = geometry.num_devices() as u16;
 
-        self.io_map = Arc::new(Mutex::new(IOMap::new(dev_num as _)));
-
         let (tx_sender, tx_receiver) = bounded(SEND_BUF_SIZE);
-
-        let ifname = if self.config.ifname.is_empty() {
-            lookup_autd()?
-        } else {
-            self.config.ifname.clone()
-        };
-        let ifname = std::ffi::CString::new(ifname).unwrap();
 
         unsafe {
             if ec_init(ifname.as_ptr()) <= 0 {
@@ -143,31 +140,25 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
             }
 
             ecx_context.userdata = &mut self.ec_sync0_cycle_time_ns as *mut _ as *mut c_void;
-
             if self.config.sync_mode == SyncMode::DC {
                 (1..=ec_slavecount as usize).for_each(|i| {
                     ec_slave[i].PO2SOconfigx = Some(dc_config);
                 });
             }
 
-            ec_configdc();
-
             ec_config_map(self.io_map.lock().unwrap().data() as *mut c_void);
 
-            ec_statecheck(
-                0,
-                ec_state_EC_STATE_SAFE_OP as u16,
-                EC_TIMEOUTSTATE as i32 * 4,
-            );
+            ec_configdc();
 
-            ec_readstate();
+            ec_statecheck(0, ec_state_EC_STATE_SAFE_OP as u16, EC_TIMEOUTSTATE as i32);
+            if ec_slave[0].state != ec_state_EC_STATE_SAFE_OP as _ {
+                return Err(SOEMError::NotReachedSafeOp(ec_slave[0].state).into());
+            }
 
             ec_slave[0].state = ec_state_EC_STATE_OPERATIONAL as u16;
 
             ec_send_processdata();
             ec_receive_processdata(EC_TIMEOUTRET as _);
-
-            ec_writestate(0);
 
             self.is_open.store(true, Ordering::Release);
             let expected_wkc = (ec_group[0].outputsWKC * 2 + ec_group[0].inputsWKC) as i32;
@@ -199,15 +190,14 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
                 }
             }));
 
-            std::thread::sleep(std::time::Duration::from_millis(100));
+            ec_writestate(0);
 
             ec_statecheck(
                 0,
                 ec_state_EC_STATE_OPERATIONAL as u16,
-                EC_TIMEOUTSTATE as i32 * 5,
+                EC_TIMEOUTSTATE as i32,
             );
-
-            if ec_slave[0].state != ec_state_EC_STATE_OPERATIONAL as u16 {
+            if ec_slave[0].state != ec_state_EC_STATE_OPERATIONAL as _ {
                 self.is_open.store(false, Ordering::Release);
                 if let Some(timer) = self.ecatth_handle.take() {
                     let _ = timer.join();
@@ -239,6 +229,35 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
 
         Ok(())
     }
+}
+
+impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
+    fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> anyhow::Result<()> {
+        if self.is_open() {
+            return Ok(());
+        }
+
+        self.io_map = Arc::new(Mutex::new(IOMap::new(geometry.device_map())));
+
+        let ifname = if self.config.ifname.is_empty() {
+            lookup_autd()?
+        } else {
+            self.config.ifname.clone()
+        };
+        for i in 0..2 {
+            match self.open_impl(&ifname, geometry) {
+                Ok(_) => return Ok(()),
+                Err(e) => {
+                    if i == 1 {
+                        return Err(e);
+                    } else {
+                        continue;
+                    }
+                }
+            }
+        }
+        unreachable!()
+    }
 
     fn close(&mut self) -> Result<()> {
         if !self.is_open() {
@@ -265,13 +284,8 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
                 ec_dcsync0(i, 0, cyc_time, 0);
             });
 
-            ec_slave[0].state = ec_state_EC_STATE_SAFE_OP as _;
+            ec_slave[0].state = ec_state_EC_STATE_INIT as _;
             ec_writestate(0);
-            ec_statecheck(0, ec_state_EC_STATE_SAFE_OP as _, EC_TIMEOUTSTATE as _);
-
-            ec_slave[0].state = ec_state_EC_STATE_PRE_OP as _;
-            ec_writestate(0);
-            ec_statecheck(0, ec_state_EC_STATE_PRE_OP as _, EC_TIMEOUTSTATE as _);
 
             ec_close();
         }
@@ -294,9 +308,13 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
         if !self.is_open() {
             return Err(AUTDInternalError::LinkClosed.into());
         }
-
-        rx.copy_from(&self.io_map.lock().unwrap().input());
-
+        unsafe {
+            std::ptr::copy_nonoverlapping(
+                self.io_map.lock().unwrap().input(),
+                rx.messages_mut().as_mut_ptr(),
+                rx.messages().len(),
+            );
+        }
         Ok(true)
     }
 

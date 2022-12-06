@@ -19,7 +19,7 @@ public class PageService : IPageService
         Configure<GainViewModel, GainPage>();
         Configure<ModulationViewModel, ModulationPage>();
 
-        Configure<PointSTMViewModel, PointSTMPage>();
+        Configure<FocusSTMViewModel, FocusSTMPage>();
 
         Configure<SilencerViewModel, SilencerPage>();
 

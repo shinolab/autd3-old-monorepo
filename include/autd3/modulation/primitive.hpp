@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,10 +27,10 @@ class Static final : public core::Modulation {
   explicit Static(const double amp = 1.0) noexcept : Modulation(), _amp(amp) {}
 
   bool calc() override {
-    this->_props.buffer.resize(2, 0);
+    this->_buffer.resize(2, 0);
     for (size_t i = 0; i < 2; i++) {
       const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp(_amp, 0.0, 1.0)) / driver::pi * 510.0));
-      this->_props.buffer.at(i) = duty;
+      this->_buffer.at(i) = duty;
     }
     return true;
   }
@@ -69,11 +69,11 @@ class Sine final : public core::Modulation {
     const size_t n = f_s / k;
     const size_t d = f / k;
 
-    this->_props.buffer.resize(n, 0);
+    this->_buffer.resize(n, 0);
     for (size_t i = 0; i < n; i++) {
       const auto amp = this->_amp / 2.0 * std::sin(2.0 * driver::pi * static_cast<double>(d * i) / static_cast<double>(n)) + this->_offset;
       const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi * 510.0));
-      this->_props.buffer.at(i) = duty;
+      this->_buffer.at(i) = duty;
     }
     return true;
   }
@@ -115,11 +115,11 @@ class SineSquared final : public core::Modulation {
     const size_t n = f_s / k;
     const size_t d = f / k;
 
-    this->_props.buffer.resize(n, 0);
+    this->_buffer.resize(n, 0);
     for (size_t i = 0; i < n; i++) {
       const auto amp = std::sqrt(this->_amp / 2.0 * std::sin(2.0 * driver::pi * static_cast<double>(d * i) / static_cast<double>(n)) + this->_offset);
       const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi * 510.0));
-      this->_props.buffer.at(i) = duty;
+      this->_buffer.at(i) = duty;
     }
     return true;
   }
@@ -156,11 +156,11 @@ class SineLegacy final : public core::Modulation {
     const auto f = (std::min)(this->_freq, f_s / 2.0);
 
     const auto t = static_cast<size_t>(std::round(f_s / f));
-    this->_props.buffer.resize(t, 0);
+    this->_buffer.resize(t, 0);
     for (size_t i = 0; i < t; i++) {
       double amp = _offset + 0.5 * _amp * std::cos(2.0 * driver::pi * static_cast<double>(i) / static_cast<double>(t));
       const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi * 510.0));
-      this->_props.buffer.at(i) = duty;
+      this->_buffer.at(i) = duty;
     }
     return true;
   }
@@ -193,11 +193,11 @@ class Square final : public core::Modulation {
     const size_t d = f / k;
 
     const auto low = static_cast<uint8_t>(std::round(std::asin(std::clamp(_low, 0.0, 1.0)) / driver::pi * 510.0));
-    std::fill(this->_props.buffer.begin(), this->_props.buffer.end(), low);
-    this->_props.buffer.resize(n, low);
+    std::fill(this->_buffer.begin(), this->_buffer.end(), low);
+    this->_buffer.resize(n, low);
 
     const auto high = static_cast<uint8_t>(std::round(std::asin(std::clamp(_high, 0.0, 1.0)) / driver::pi * 510.0));
-    auto* cursor = this->_props.buffer.data();
+    auto* cursor = this->_buffer.data();
     for (size_t i = 0; i < d; i++) {
       const size_t size = (n + i) / d;
       std::memset(cursor, high, static_cast<size_t>(std::round(static_cast<double>(size) * _duty)));

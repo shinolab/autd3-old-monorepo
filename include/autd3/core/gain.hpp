@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 06/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,13 +14,13 @@
 #include <algorithm>
 #include <vector>
 
+#include "datagram.hpp"
 #include "geometry.hpp"
-#include "interface.hpp"
 
 namespace autd3::core {
 
 /**
- * @brief Gain controls the duty ratio and phase of each transducer in AUTD devices.
+ * @brief Gain controls the duty ratio and phase of each transducer in AUTD devices
  */
 struct Gain : DatagramBody {
   Gain() : _built(false), _phase_sent(false), _duty_sent(false) {}
@@ -64,7 +64,13 @@ struct Gain : DatagramBody {
   /**
    * @brief Getter function for the data of duty ratio and phase of each transducers
    */
-  [[nodiscard]] const std::vector<driver::Drive>& drives() const { return _drives; }
+  [[nodiscard]] const std::vector<driver::Drive>& drives() const noexcept { return _drives; }
+
+  /**
+   * @brief [Advanced] Getter function for the data of duty ratio and phase of each transducers
+   * @details Call Gain::build before using this function to initialize drive data.
+   */
+  std::vector<driver::Drive>& drives() noexcept { return _drives; }
 
   [[nodiscard]] bool built() const { return _built; }
 

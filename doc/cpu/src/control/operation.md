@@ -97,9 +97,9 @@ STM動作時のデータはBodyに書き込む.
 また, MSG_IDは0x05から0xFFのいずれか, 且つ, 以前のフレームとは別の値にしておく.
 さらに, FPGA_CTL_REGのOP_MODE bitはセットしておく.
 
-### Point STM (STM_MODE = 0)
+### Focus STM (STM_MODE = 0)
 
-Point STMの場合も, Modulatorと同じく, いくつかのフレームに分けてデータを送信する.
+Focus STMの場合も, Modulatorと同じく, いくつかのフレームに分けてデータを送信する.
 最初のフレームではCPU_CTL_REGのSTM_BEGIN bitをセットする.
 また, Bodyの先頭$\SI{2}{byte}$に点列数を, 続く$\SI{4}{byte}$にサンプリング周波数分周比を, さらに続く$\SI{4}{byte}$に音速を書き込み, 残りの$\SI{488}{byte}$に点列データを書き込む.
 点列データがすべて含まれている場合はCPU_CTL_REGのSTM_END bitをセットし, 終了する.

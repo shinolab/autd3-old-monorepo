@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/11/2022
+// Last Modified: 30/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,7 +33,7 @@ struct Device {
 };
 
 /**
- * @brief Geometry of all devices
+ * @brief Geometry of all transducers
  */
 struct Geometry {
   Geometry() = default;
@@ -49,7 +49,7 @@ struct Geometry {
   [[nodiscard]] size_t num_transducers() const noexcept { return _transducers.size(); }
 
   /**
-   * @brief Center position of all devices
+   * @brief Center position of all transducers
    */
   [[nodiscard]] Vector3 center() const {
     const Vector3 zero = Vector3::Zero();
@@ -62,6 +62,11 @@ struct Geometry {
            _transducers.size();
   }
 
+  /**
+   * @brief Add device to Geometry
+   * @tparam T Class inheriting from Device
+   * @param device device
+   */
   template <typename T>
   auto add_device(T&& device) -> std::enable_if_t<std::is_base_of_v<Device, T>> {
     const auto id = _transducers.size();
@@ -71,6 +76,9 @@ struct Geometry {
     _device_map.emplace_back(transducers.size());
   }
 
+  /**
+   * @return device_map contains the number of transducers each device has
+   */
   [[nodiscard]] const std::vector<size_t>& device_map() const noexcept { return _device_map; }
 
   [[nodiscard]] std::vector<Transducer>::const_iterator begin() const noexcept { return _transducers.begin(); }

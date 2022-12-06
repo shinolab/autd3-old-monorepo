@@ -4,7 +4,7 @@ Project: Views
 Created Date: 11/10/2022
 Author: Shun Suzuki
 =====
-Last Modified: 12/10/2022
+Last Modified: 29/11/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 =====
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -104,7 +104,7 @@ Copyright (c) 2022 Shun Suzuki. All rights reserved.
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE877;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem helpers:NavigationHelper.NavigateTo="AUTD3_GUI_Controller.ViewModels.PointSTMViewModel" localization:Localizer.Uid="Shell_PointSTM">
+                <NavigationViewItem helpers:NavigationHelper.NavigateTo="AUTD3_GUI_Controller.ViewModels.FocusSTMViewModel" localization:Localizer.Uid="Shell_FocusSTM">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE916;" />
                     </NavigationViewItem.Icon>

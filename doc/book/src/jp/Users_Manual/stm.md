@@ -1,22 +1,22 @@
 # STM/時空間変調
 
 `STM`はハードウェアのタイマでSpatio-Temporal Modulation (STM, 時空間変調) を実現する機能である.
-SDKには単一焦点のみをサポートする`PointSTM`と任意の`Gain`をサポートする`GainSTM`が用意されている.
+SDKには単一焦点のみをサポートする`FocusSTM`と任意の`Gain`をサポートする`GainSTM`が用意されている.
 
-### PointSTM
+### FocusSTM
 
-`PointSTM`には以下の制約がある.
+`FocusSTM`には以下の制約がある.
 
 * 最大サンプリング点数は65536
 * サンプリング周波数は$\SI{163.84}{MHz}/N$. ここで, $N$は32-bit符号なし整数であり, $806$以上の値である必要がある.
 
-`PointSTM`の使用方法は以下のようになる.
+`FocusSTM`の使用方法は以下のようになる.
 これは, アレイの中心から直上$\SI{150}{mm}$の点を中心とした半径$\SI{30}{mm}$の円周上で焦点を回すサンプルである.
 円周上を200点サンプリングし, 一周を$\SI{1}{Hz}$で回るようにしている.
 (すなわち, サンプリング周波数は$\SI{200}{Hz}$である.)
 
 ```cpp
-  autd3::PointSTM stm;
+  autd3::FocusSTM stm;
 
   const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   constexpr size_t points_num = 200;
@@ -41,7 +41,7 @@ SDKには単一焦点のみをサポートする`PointSTM`と任意の`Gain`を�
 
 ### GainSTM
 
-`GainSTM`は`PointSTM`とは異なり, 任意の`Gain`を扱える.
+`GainSTM`は`FocusSTM`とは異なり, 任意の`Gain`を扱える.
 ただし, 使用できる`Gain`の個数は
 
 - Legacyモードの場合2048
@@ -55,7 +55,7 @@ SDKには単一焦点のみをサポートする`PointSTM`と任意の`Gain`を�
 
 となっている.
 
-`GainSTM`の使用サンプルは`PointSTM`とほぼ同じである.
+`GainSTM`の使用サンプルは`FocusSTM`とほぼ同じである.
 
 ```cpp
   autd3::GainSTM stm(autd.geometry());
@@ -76,7 +76,7 @@ SDKには単一焦点のみをサポートする`PointSTM`と任意の`Gain`を�
   autd << stm;
 ```
 
-周波数の制約も`PointSTM`と同じである.
+周波数の制約も`FocusSTM`と同じである.
 
 `GainSTM`は位相/振幅データをすべて送信するため, レイテンシが大きい[^fn_gain_seq].
 
@@ -141,7 +141,7 @@ AUTD3ハードウェア上の制約はないが, その精度はホスト側の�
   handle.finish();
 ```
 
-[^fn_gain_seq]: `PointSTM`のおよそ60倍のレイテンシ
+[^fn_gain_seq]: `FocusSTM`のおよそ60倍のレイテンシ
 
 [^phase_half]: Legacyモード限定
 

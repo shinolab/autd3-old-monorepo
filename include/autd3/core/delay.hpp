@@ -3,7 +3,7 @@
 // Created Date: 01/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 30/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,16 +12,15 @@
 #pragma once
 
 #include <algorithm>
-#include <type_traits>
 #include <vector>
 
+#include "datagram.hpp"
 #include "geometry.hpp"
-#include "interface.hpp"
 
 namespace autd3::core {
 
 /**
- * @brief Gain controls the duty ratio and phase of each transducer in AUTD devices.
+ * @brief ModDelayConfig is a DatagramBody to configure modulation delay
  */
 struct ModDelayConfig final : DatagramBody {
   ModDelayConfig() : _sent(false) {}
@@ -44,7 +43,7 @@ struct ModDelayConfig final : DatagramBody {
     std::vector<uint16_t> delays;
     std::transform(geometry.begin(), geometry.end(), std::back_inserter(delays), [](const Transducer& tr) { return tr.mod_delay(); });
 
-    driver->mod_delay(delays.data(), tx);
+    driver->mod_delay(delays, tx);
 
     _sent = true;
 

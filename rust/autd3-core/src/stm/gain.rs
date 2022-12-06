@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/11/2022
+ * Last Modified: 06/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,13 +14,13 @@
 use std::marker::PhantomData;
 
 use crate::{
+    datagram::{DatagramBody, Empty, Filled, Sendable},
     gain::Gain,
     geometry::{Geometry, LegacyTransducer, NormalPhaseTransducer, NormalTransducer, Transducer},
-    interface::{DatagramBody, Empty, Filled, Sendable},
 };
 
 use anyhow::{Ok, Result};
-use autd3_driver::{Drive, Mode, TxDatagram, FPGA_CLK_FREQ, STM_SAMPLING_FREQ_DIV_MIN};
+use autd3_driver::{Drive, Mode, TxDatagram};
 
 use super::STM;
 
@@ -30,7 +30,7 @@ pub struct GainSTM<T: Transducer> {
     next_duty: bool,
     sent: usize,
     mode: Mode,
-    _t: PhantomData<T>,
+    phantom: PhantomData<T>,
 }
 
 impl<T: Transducer> GainSTM<T> {
@@ -41,7 +41,7 @@ impl<T: Transducer> GainSTM<T> {
             next_duty: false,
             sent: 0,
             mode: Mode::PhaseDutyFull,
-            _t: PhantomData,
+            phantom: PhantomData,
         }
     }
 
@@ -54,26 +54,11 @@ impl<T: Transducer> GainSTM<T> {
     }
 
     pub fn add<G: Gain<T>>(&mut self, gain: G, geometry: &Geometry<T>) -> Result<()> {
-        if self.gains.len() + 1 > T::gain_stm_max() {
-            return Err(autd3_driver::FPGAError::GainSTMOutOfBuffer(
-                self.gains.len() + 1,
-                T::gain_stm_max(),
-            )
-            .into());
-        }
-
         let mut gain = gain;
-
         gain.build(geometry)?;
-
         let drives = gain.take_drives();
-
         self.gains.push(drives);
         Ok(())
-    }
-
-    pub fn size(&self) -> usize {
-        self.gains.len()
     }
 }
 
@@ -90,79 +75,17 @@ impl DatagramBody<LegacyTransducer> for GainSTM<LegacyTransducer> {
     }
 
     fn pack(&mut self, _geometry: &Geometry<LegacyTransducer>, tx: &mut TxDatagram) -> Result<()> {
-        autd3_driver::gain_stm_legacy_head(tx);
-
+        autd3_driver::gain_stm_legacy_header(tx);
         if DatagramBody::<LegacyTransducer>::is_finished(self) {
             return Ok(());
         }
-
-        let is_first_frame = self.sent == 0;
-
-        if is_first_frame {
-            autd3_driver::gain_stm_legacy_body(
-                &[],
-                self.gains.len(),
-                is_first_frame,
-                self.sample_freq_div,
-                false,
-                self.mode,
-                tx,
-            )?;
-            self.sent += 1;
-            return Ok(());
-        }
-
-        match self.mode {
-            Mode::PhaseDutyFull => {
-                let is_last_frame = self.sent + 1 == self.gains.len() + 1;
-                autd3_driver::gain_stm_legacy_body(
-                    &[&self.gains[self.sent - 1]],
-                    self.gains.len(),
-                    is_first_frame,
-                    self.sample_freq_div,
-                    is_last_frame,
-                    self.mode,
-                    tx,
-                )?;
-                self.sent += 1;
-            }
-            Mode::PhaseFull => {
-                let is_last_frame = self.sent + 2 >= self.gains.len() + 1;
-                autd3_driver::gain_stm_legacy_body(
-                    &[
-                        &self.gains[self.sent - 1],
-                        self.gains.get(self.sent + 1 - 1).unwrap_or(&Vec::new()),
-                    ],
-                    self.gains.len(),
-                    is_first_frame,
-                    self.sample_freq_div,
-                    is_last_frame,
-                    self.mode,
-                    tx,
-                )?;
-                self.sent += 2;
-            }
-            Mode::PhaseHalf => {
-                let is_last_frame = self.sent + 4 >= self.gains.len() + 1;
-                autd3_driver::gain_stm_legacy_body(
-                    &[
-                        &self.gains[self.sent - 1],
-                        self.gains.get(self.sent + 1 - 1).unwrap_or(&Vec::new()),
-                        self.gains.get(self.sent + 2 - 1).unwrap_or(&Vec::new()),
-                        self.gains.get(self.sent + 3 - 1).unwrap_or(&Vec::new()),
-                    ],
-                    self.gains.len(),
-                    is_first_frame,
-                    self.sample_freq_div,
-                    is_last_frame,
-                    self.mode,
-                    tx,
-                )?;
-                self.sent += 4;
-            }
-        }
-
-        Ok(())
+        autd3_driver::gain_stm_legacy_body(
+            &self.gains,
+            &mut self.sent,
+            self.sample_freq_div,
+            self.mode,
+            tx,
+        )
     }
 
     fn is_finished(&self) -> bool {
@@ -178,70 +101,57 @@ impl DatagramBody<NormalTransducer> for GainSTM<NormalTransducer> {
     }
 
     fn pack(&mut self, _geometry: &Geometry<NormalTransducer>, tx: &mut TxDatagram) -> Result<()> {
-        autd3_driver::gain_stm_normal_head(tx);
-
+        autd3_driver::gain_stm_normal_header(tx);
         if DatagramBody::<NormalTransducer>::is_finished(self) {
             return Ok(());
         }
 
-        let is_first_frame = self.sent == 0;
-        let is_last_frame = if self.mode == Mode::PhaseDutyFull {
-            self.sent + 1 == self.gains.len() * 2 + 1
-        } else {
-            self.sent + 1 == self.gains.len() + 1
-        };
-
-        if is_first_frame {
-            autd3_driver::gain_stm_normal_phase_body(
-                &[],
-                self.gains.len(),
-                is_first_frame,
-                self.sample_freq_div,
-                self.mode,
-                is_last_frame,
-                tx,
-            )?;
+        if self.sent == 0 {
             self.sent += 1;
-            return Ok(());
-        }
-
-        if !self.next_duty {
-            let idx = if self.mode == Mode::PhaseDutyFull {
-                (self.sent - 1) / 2
-            } else {
-                self.sent - 1
-            };
-            autd3_driver::gain_stm_normal_phase_body(
-                &self.gains[idx],
-                self.gains.len(),
-                is_first_frame,
+            return autd3_driver::gain_stm_normal_phase_body(
+                &self.gains,
+                0,
                 self.sample_freq_div,
                 self.mode,
-                is_last_frame,
                 tx,
-            )?;
-        } else {
-            autd3_driver::gain_stm_normal_duty_body(
-                &self.gains[(self.sent - 1) / 2],
-                is_last_frame,
-                tx,
-            )?;
-        }
-        if self.mode == Mode::PhaseDutyFull {
-            self.next_duty = !self.next_duty;
+            );
         }
 
-        self.sent += 1;
-
-        Ok(())
+        match self.mode {
+            Mode::PhaseDutyFull => {
+                if self.next_duty {
+                    self.next_duty = !self.next_duty;
+                    autd3_driver::gain_stm_normal_duty_body(&self.gains, self.sent, tx)
+                } else {
+                    self.next_duty = !self.next_duty;
+                    let sent = self.sent;
+                    self.sent += 1;
+                    autd3_driver::gain_stm_normal_phase_body(
+                        &self.gains,
+                        sent,
+                        self.sample_freq_div,
+                        self.mode,
+                        tx,
+                    )
+                }
+            }
+            Mode::PhaseFull => {
+                let sent = self.sent;
+                self.sent += 1;
+                autd3_driver::gain_stm_normal_phase_body(
+                    &self.gains,
+                    sent,
+                    self.sample_freq_div,
+                    self.mode,
+                    tx,
+                )
+            }
+            Mode::PhaseHalf => Err(autd3_driver::DriverError::PhaseHalfNotSupported.into()),
+        }
     }
 
     fn is_finished(&self) -> bool {
-        if self.mode == Mode::PhaseDutyFull {
-            self.sent == self.gains.len() * 2 + 1
-        } else {
-            self.sent == self.gains.len() + 1
-        }
+        self.sent == self.gains.len() + 1
     }
 }
 
@@ -257,43 +167,19 @@ impl DatagramBody<NormalPhaseTransducer> for GainSTM<NormalPhaseTransducer> {
         _geometry: &Geometry<NormalPhaseTransducer>,
         tx: &mut TxDatagram,
     ) -> Result<()> {
-        autd3_driver::gain_stm_normal_head(tx);
-
+        autd3_driver::gain_stm_normal_header(tx);
         if DatagramBody::<NormalPhaseTransducer>::is_finished(self) {
             return Ok(());
         }
-
-        let is_first_frame = self.sent == 0;
-        let is_last_frame = self.sent + 1 == self.gains.len() + 1;
-
-        if is_first_frame {
-            autd3_driver::gain_stm_normal_phase_body(
-                &[],
-                self.gains.len(),
-                is_first_frame,
-                self.sample_freq_div,
-                Mode::PhaseFull,
-                is_last_frame,
-                tx,
-            )?;
-            self.sent += 1;
-            return Ok(());
-        }
-
-        let idx = self.sent - 1;
+        let sent = self.sent;
+        self.sent += 1;
         autd3_driver::gain_stm_normal_phase_body(
-            &self.gains[idx],
-            self.gains.len(),
-            is_first_frame,
+            &self.gains,
+            sent,
             self.sample_freq_div,
             self.mode,
-            is_last_frame,
             tx,
-        )?;
-
-        self.sent += 1;
-
-        Ok(())
+        )
     }
 
     fn is_finished(&self) -> bool {
@@ -302,27 +188,15 @@ impl DatagramBody<NormalPhaseTransducer> for GainSTM<NormalPhaseTransducer> {
 }
 
 impl<T: Transducer> STM for GainSTM<T> {
-    fn set_freq(&mut self, freq: f64) -> f64 {
-        let sample_freq = self.size() as f64 * freq;
-        let div = ((FPGA_CLK_FREQ as f64 / sample_freq) as u32)
-            .clamp(STM_SAMPLING_FREQ_DIV_MIN, u32::MAX);
-        self.sample_freq_div = div;
-        STM::freq(self)
-    }
-
-    fn freq(&self) -> f64 {
-        STM::sampling_freq(self) / self.size() as f64
-    }
-
-    fn sampling_freq(&self) -> f64 {
-        FPGA_CLK_FREQ as f64 / self.sample_freq_div as f64
+    fn size(&self) -> usize {
+        self.gains.len()
     }
 
     fn set_sampling_freq_div(&mut self, freq_div: u32) {
         self.sample_freq_div = freq_div;
     }
 
-    fn sampling_freq_div(&mut self) -> u32 {
+    fn sampling_freq_div(&self) -> u32 {
         self.sample_freq_div
     }
 }

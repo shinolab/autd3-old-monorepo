@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 02/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -184,7 +184,7 @@ class Grouped final : public core::Gain {
  */
 class TransducerTest final : public core::Gain {
  public:
-  TransducerTest() noexcept = default;
+  TransducerTest() noexcept : _map(){};
 
   void calc(const core::Geometry& geometry) override {
     for (const auto& [key, value] : _map) {
