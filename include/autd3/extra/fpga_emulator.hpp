@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/11/2022
+// Last Modified: 07/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -54,6 +54,10 @@ constexpr uint16_t CTL_REG_FORCE_FAN_BIT = 4;
 constexpr uint16_t CTL_REG_OP_MODE_BIT = 5;
 constexpr uint16_t CTL_REG_STM_GAIN_MODE_BIT = 6;
 // constexpr size_t CTL_REG_SYNC_BIT = 8;
+constexpr uint16_t CTL_REG_LEGACY_MODE = 1 << CTL_REG_LEGACY_MODE_BIT;
+constexpr uint16_t CTL_REG_FORCE_FAN = 1 << CTL_REG_FORCE_FAN_BIT;
+constexpr uint16_t CTL_REG_OP_MODE = 1 << CTL_REG_OP_MODE_BIT;
+constexpr uint16_t CTL_REG_STM_GAIN_MODE = 1 << CTL_REG_STM_GAIN_MODE_BIT;
 
 constexpr uint8_t ENABLED_STM_BIT = 0x01;
 constexpr uint8_t ENABLED_MODULATOR_BIT = 0x02;
@@ -80,7 +84,7 @@ class FPGA {
   void init() { _controller_bram[fpga::ADDR_VERSION_NUM] = static_cast<uint16_t>(fpga::ENABLED_FEATURES_BITS << 8 | fpga::VERSION_NUM); }
 
   [[nodiscard]] uint16_t read(const uint16_t addr) const {
-    const auto select = (addr >> 14) & 0x0003;
+    const auto select = addr >> 14 & 0x0003;
     const size_t addr_in_bram = addr & 0x3FFF;
     switch (select) {
       case fpga::BRAM_SELECT_CONTROLLER:
@@ -97,7 +101,7 @@ class FPGA {
   }
 
   void write(const uint16_t addr, const uint16_t data) {
-    const auto select = (addr >> 14) & 0x0003;
+    const auto select = addr >> 14 & 0x0003;
     const size_t addr_in_bram = addr & 0x3FFF;
     switch (select) {
       case fpga::BRAM_SELECT_CONTROLLER:
@@ -117,12 +121,12 @@ class FPGA {
     }
   }
 
-  [[nodiscard]] bool is_legacy_mode() const { return (_controller_bram[fpga::ADDR_CTL_REG] & (1 << fpga::CTL_REG_LEGACY_MODE_BIT)) != 0; }
+  [[nodiscard]] bool is_legacy_mode() const { return (_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_LEGACY_MODE) != 0; }
 
-  [[nodiscard]] bool is_force_fan() const { return (_controller_bram[fpga::ADDR_CTL_REG] & (1 << fpga::CTL_REG_FORCE_FAN_BIT)) != 0; }
+  [[nodiscard]] bool is_force_fan() const { return (_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_FORCE_FAN) != 0; }
 
-  [[nodiscard]] bool is_stm_mode() const { return (_controller_bram[fpga::ADDR_CTL_REG] & (1 << fpga::CTL_REG_OP_MODE_BIT)) != 0; }
-  [[nodiscard]] bool is_stm_gain_mode() const { return (_controller_bram[fpga::ADDR_CTL_REG] & (1 << fpga::CTL_REG_STM_GAIN_MODE_BIT)) != 0; }
+  [[nodiscard]] bool is_stm_mode() const { return (_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_OP_MODE) != 0; }
+  [[nodiscard]] bool is_stm_gain_mode() const { return (_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_STM_GAIN_MODE) != 0; }
 
   [[nodiscard]] uint16_t silencer_cycle() const { return _controller_bram[fpga::ADDR_SILENT_CYCLE]; }
 
@@ -143,17 +147,17 @@ class FPGA {
   }
 
   [[nodiscard]] uint32_t stm_frequency_division() const {
-    return (_controller_bram[fpga::ADDR_STM_FREQ_DIV_1] << 16 & 0xFFFF0000) | (_controller_bram[fpga::ADDR_STM_FREQ_DIV_0] & 0x0000FFFF);
+    return to_u32(_controller_bram[fpga::ADDR_STM_FREQ_DIV_1], _controller_bram[fpga::ADDR_STM_FREQ_DIV_0]);
   }
 
   [[nodiscard]] size_t stm_cycle() const { return static_cast<size_t>(_controller_bram[fpga::ADDR_STM_CYCLE]) + 1; }
 
   [[nodiscard]] uint32_t sound_speed() const {
-    return (_controller_bram[fpga::ADDR_SOUND_SPEED_1] << 16 & 0xFFFF0000) | (_controller_bram[fpga::ADDR_SOUND_SPEED_0] & 0x0000FFFF);
+    return to_u32(_controller_bram[fpga::ADDR_SOUND_SPEED_1], _controller_bram[fpga::ADDR_SOUND_SPEED_0]);
   }
 
   [[nodiscard]] uint32_t modulation_frequency_division() const {
-    return (_controller_bram[fpga::ADDR_MOD_FREQ_DIV_1] << 16 & 0xFFFF0000) | (_controller_bram[fpga::ADDR_MOD_FREQ_DIV_0] & 0x0000FFFF);
+    return to_u32(_controller_bram[fpga::ADDR_MOD_FREQ_DIV_1], _controller_bram[fpga::ADDR_MOD_FREQ_DIV_0]);
   }
 
   [[nodiscard]] size_t modulation_cycle() const { return static_cast<size_t>(_controller_bram[fpga::ADDR_MOD_CYCLE]) + 1; }
@@ -163,14 +167,14 @@ class FPGA {
     std::vector<uint8_t> m;
     m.reserve(cycle);
 
-    for (size_t i = 0; i < cycle >> 1; i++) {
+    for (size_t i = 0; i < cycle / 2; i++) {
       const auto b = _modulator_bram[i];
       m.emplace_back(b & 0x00FF);
-      m.emplace_back(b >> 8 & 0x00FF);
+      m.emplace_back(b >> 8);
     }
 
     if (cycle % 2 != 0) {
-      const auto b = _modulator_bram[(cycle + 1) >> 1];
+      const auto b = _modulator_bram[(cycle + 1) / 2];
       m.emplace_back(b & 0x00FF);
     }
     return m;
@@ -215,13 +219,15 @@ class FPGA {
       const auto z = static_cast<uint16_t>(std::round(local_trans_pos[i].z() / 0.025));
 #endif
 
-      _tr_pos[i] = (static_cast<uint64_t>(z) << 32) | (static_cast<uint64_t>(x) << 16) | static_cast<uint64_t>(y);
+      _tr_pos[i] = static_cast<uint64_t>(z) << 32 | static_cast<uint64_t>(x) << 16 | static_cast<uint64_t>(y);
     }
 
     return true;
   }
 
  private:
+  static uint32_t to_u32(const uint16_t high, const uint16_t low) { return static_cast<uint32_t>(high) << 16 | low; }
+
   [[nodiscard]] std::vector<driver::Duty> normal_duty() const {
     std::vector<driver::Duty> d;
     d.resize(_num_transducers);
@@ -240,8 +246,8 @@ class FPGA {
     std::vector<driver::Duty> d;
     d.resize(_num_transducers);
     for (size_t i = 0; i < _num_transducers; i++) {
-      auto duty = static_cast<uint16_t>((_normal_op_bram[2 * i] >> 8) & 0x00FF);
-      duty = static_cast<uint16_t>(((duty << 3) | 0x07) + 1);
+      auto duty = static_cast<uint16_t>(_normal_op_bram[2 * i] >> 8 & 0x00FF);
+      duty = static_cast<uint16_t>((duty << 3 | 0x07) + 1);
       d[i] = driver::Duty{duty};
     }
     return d;
@@ -276,8 +282,8 @@ class FPGA {
     std::vector<driver::Duty> d;
     d.resize(_num_transducers);
     for (size_t j = 0; j < _num_transducers; j++) {
-      auto duty = static_cast<uint16_t>((_stm_op_bram[256 * idx + j] >> 8) & 0x00FF);
-      duty = static_cast<uint16_t>(((duty << 3) | 0x07) + 1);
+      auto duty = static_cast<uint16_t>(_stm_op_bram[256 * idx + j] >> 8 & 0x00FF);
+      duty = static_cast<uint16_t>((duty << 3 | 0x07) + 1);
       d[j] = driver::Duty{duty};
     }
     return d;
@@ -298,9 +304,9 @@ class FPGA {
     const auto ultrasound_cycles = cycles();
     std::vector<driver::Duty> d;
     d.resize(_num_transducers);
+    const auto duty_shift = static_cast<uint16_t>(_stm_op_bram[8 * idx + 3] >> 6 & 0x000F) + 1;
     for (size_t j = 0; j < _num_transducers; j++) {
-      const auto duty_shift = static_cast<uint16_t>((_stm_op_bram[8 * idx + 3] >> 6) & 0x000F);
-      d[j] = driver::Duty{static_cast<uint16_t>(ultrasound_cycles[j] >> (duty_shift + 1))};
+      d[j] = driver::Duty{static_cast<uint16_t>(ultrasound_cycles[j] >> duty_shift)};
     }
     return d;
   }
@@ -310,15 +316,18 @@ class FPGA {
     const auto sound_speed = static_cast<uint64_t>(this->sound_speed());
     std::vector<driver::Phase> d;
     d.resize(_num_transducers);
-    auto x = ((_stm_op_bram[8 * idx + 1] << 16) & 0x30000) | _stm_op_bram[8 * idx];
+    auto x = _stm_op_bram[8 * idx + 1] << 16 & 0x30000;
+    x |= _stm_op_bram[8 * idx];
     if ((x & 0x20000) != 0) x = -131072 + (x & 0x1FFFF);
-    auto y = ((_stm_op_bram[8 * idx + 2] << 14) & 0x3C000) | ((_stm_op_bram[8 * idx + 1] >> 2) & 0x3FFFF);
+    auto y = _stm_op_bram[8 * idx + 2] << 14 & 0x3C000;
+    y |= _stm_op_bram[8 * idx + 1] >> 2;
     if ((y & 0x20000) != 0) y = -131072 + (y & 0x1FFFF);
-    auto z = ((_stm_op_bram[8 * idx + 3] << 12) & 0x3F000) | ((_stm_op_bram[8 * idx + 2] >> 4) & 0xFFF);
+    auto z = _stm_op_bram[8 * idx + 3] << 12 & 0x3F000;
+    z |= _stm_op_bram[8 * idx + 2] >> 4;
     if ((z & 0x20000) != 0) z = -131072 + (z & 0x1FFFF);
     for (size_t j = 0; j < _num_transducers; j++) {
-      const auto tr_z = (_tr_pos[j] >> 32) & 0xFFFF;
-      const auto tr_x = (_tr_pos[j] >> 16) & 0xFFFF;
+      const auto tr_z = _tr_pos[j] >> 32 & 0xFFFF;
+      const auto tr_x = _tr_pos[j] >> 16 & 0xFFFF;
       const auto tr_y = _tr_pos[j] & 0xFFFF;
       const auto d2 = (x - tr_x) * (x - tr_x) + (y - tr_y) * (y - tr_y) + (z - tr_z) * (z - tr_z);
       const auto dist = static_cast<uint64_t>(std::sqrt(d2));
