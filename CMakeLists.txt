@@ -143,7 +143,7 @@ if(ENABLE_LINT)
   ADD_CUSTOM_TARGET(cpplint
     python
     ${PROJECT_SOURCE_DIR}/3rdparty/cpplint/cpplint.py
-    --filter=-runtime/references,-build/c++11,-whitespace/comments,-readability/braces,-build/include_subdir,-build/include_order,-build/include_what_you_use,-whitespace/parens
+    --filter=-runtime/references,-build/c++11,-whitespace/comments,-readability/braces,-build/include_subdir,-build/include_order,-build/include_what_you_use,-whitespace/parens,-readability/fn_size
     --linelength=1000
     ${lint_files}
   )
