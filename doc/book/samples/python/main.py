@@ -4,6 +4,7 @@ from pyautd3.gain import Focus
 from pyautd3.modulation import Sine
 
 import numpy as np
+import sys
 
 if __name__ == '__main__':
     autd = Controller()
@@ -11,7 +12,8 @@ if __name__ == '__main__':
     autd.geometry.add_device([0., 0., 0.], [0., 0., 0.])
 
     link = SOEM().high_precision(True).build()
-    autd.open(link)
+    if not autd.open(link):
+        sys.exit(-1)
 
     autd.ack_check_timeout_ms = 20
 

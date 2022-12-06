@@ -11,23 +11,23 @@ Rust版のライブラリはC++版をラップしたものではなく, Rustで�
 
 ```
 [dependencies]
-autd3 = "2.6.5"
+autd3 = "2.6.6"
 ```
 
 また, 各種Link, Gain等は別crateとして公開しているので必要に応じてdependenciesに追加すること.
 ```
 [dependencies]
-autd3-link-soem = "2.6.5"
-autd3-link-twincat = "2.6.5"
-autd3-link-simulator = "2.6.5"
-autd3-gain-holo = "2.6.5"
+autd3-link-soem = "2.6.6"
+autd3-link-twincat = "2.6.6"
+autd3-link-simulator = "2.6.6"
+autd3-gain-holo = "2.6.6"
 ```
 
 ## Usage
 
 基本的には, C++版と同じになるように設計している.
 
-たとえば, [Getting Started](../Users_Manual/getting_started.md)と等価なコードは以下のようになる.
+たとえば, [チュートリアル](../Users_Manual/getting_started.md)と等価なコードは以下のようになる.
 
 ```rust
 {{#include ../../../samples/rust/sample/src/main.rs}}
@@ -41,6 +41,6 @@ autd3-gain-holo = "2.6.5"
 
 より詳細なサンプルは[rust-autdのexample](https://github.com/shinolab/autd3/tree/master/rust/autd3-examples)を参照されたい.
 
-## Trouble shooting
+## Troubleshooting
 
 質問があれば[GitHubのissue](https://github.com/shinolab/autd3/issues)に送られたい.

@@ -1,19 +1,19 @@
 # Spatio-Temporal Modulation
 
 `STM` is a function to realize Spatio-Temporal Modulation in Hardware timers.
-The SDK provides `PointSTM`, which supports only a single focus, and `GainSTM`, which supports arbitrary `Gain`.
+The SDK provides `FocusSTM`, which supports only a single focus, and `GainSTM`, which supports arbitrary `Gain`.
 
-### PointSTM
+### FocusSTM
 
-`PointSTM` has the following restrictions.
+`FocusSTM` has the following restrictions.
 
 * The maximum number of sampling points is 65536
 * The sampling frequency is $\SI{163.84}{MHz}/N$. where $N$ is a 32-bit unsigned integer and must be greater than or equal to $1612$.
 
-The usage of `PointSTM` is as follows.
+The usage of `FocusSTM` is as follows.
 
 ```cpp
-  autd3::PointSTM stm;
+  autd3::FocusSTM stm;
 
   const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   constexpr size_t points_num = 200;
@@ -38,7 +38,7 @@ The `set_frequency` function returns the actual frequency.
 
 ### GainSTM
 
-Unlike `PointSTM`, `GainSTM` can handle arbitrary `Gain`.
+Unlike `FocusSTM`, `GainSTM` can handle arbitrary `Gain`.
 However, the number of `Gain` that can be used is
 
 - 2048 for Legacy mode
@@ -63,7 +63,7 @@ However, the number of `Gain` that can be used is
   autd << stm;
 ```
 
-The frequency constraints are also the same as for `PointSTM`.
+The frequency constraints are also the same as for `FocusSTM`.
 
 Since `GainSTM` sends all phase/amplitude data, the latency is large[^fn_gain_seq].
 
@@ -128,7 +128,7 @@ The basic usage is the same as that of `GainSTM`.
   handle.finish();
 ```
 
-[^fn_gain_seq]: About 60 times the latency of `PointSTM`.
+[^fn_gain_seq]: About 60 times the latency of `FocusSTM`.
 
 [^phase_half]: Only available in Legacy mode.
 

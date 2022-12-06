@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -133,7 +133,7 @@ class RemoteTwinCATImpl final : public core::Link {
   bool send(const driver::TxDatagram& tx) override {
     const AmsAddr p_addr = {this->_net_id, PORT};
     const auto ret =
-        AdsSyncWriteReqEx(this->_port, &p_addr, INDEX_GROUP, INDEX_OFFSET_BASE, static_cast<uint32_t>(tx.effective_size()), tx.data().data());
+        AdsSyncWriteReqEx(this->_port, &p_addr, INDEX_GROUP, INDEX_OFFSET_BASE, static_cast<uint32_t>(tx.transmitting_size()), tx.data().data());
     if (ret == 0) return true;
 
     if (ret == ADSERR_DEVICE_INVALIDSIZE) {

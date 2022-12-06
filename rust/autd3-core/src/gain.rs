@@ -4,43 +4,39 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::marker::PhantomData;
-
-use autd3_driver::{Drive, TxDatagram};
+use autd3_driver::Drive;
 
 use crate::{
+    datagram::DatagramBody,
     geometry::{Geometry, Transducer},
-    interface::DatagramBody,
 };
 use anyhow::Result;
 
-pub struct GainProps<T: Transducer> {
+pub struct GainProps {
     pub built: bool,
     pub phase_sent: bool,
     pub duty_sent: bool,
     pub drives: Vec<Drive>,
-    _t: PhantomData<T>,
 }
 
-impl<T: Transducer> GainProps<T> {
+impl GainProps {
     pub fn new() -> Self {
         Self {
             built: false,
             phase_sent: false,
             duty_sent: false,
             drives: vec![],
-            _t: PhantomData,
         }
     }
 
-    pub fn init(&mut self, geometry: &Geometry<T>) {
+    pub fn init<T: Transducer>(&mut self, geometry: &Geometry<T>) {
         self.drives.clear();
         self.drives = geometry
             .transducers()
@@ -51,29 +47,17 @@ impl<T: Transducer> GainProps<T> {
             })
             .collect();
     }
-
-    pub fn pack_head(&mut self, tx: &mut TxDatagram) {
-        T::pack_head(tx);
-    }
-
-    pub fn pack_body(&mut self, tx: &mut TxDatagram) -> Result<()> {
-        T::pack_body(&mut self.phase_sent, &mut self.duty_sent, &self.drives, tx)
-    }
 }
 
-impl<T: Transducer> Default for GainProps<T> {
+impl Default for GainProps {
     fn default() -> Self {
         Self::new()
     }
 }
 
-pub trait IGain<T: Transducer> {
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<()>;
-}
-
 /// Gain contains amplitude and phase of each transducer in the AUTD.
 /// Note that the amplitude means duty ratio of Pulse Width Modulation, respectively.
-pub trait Gain<T: Transducer>: IGain<T> + DatagramBody<T> {
+pub trait Gain<T: Transducer>: DatagramBody<T> {
     fn build(&mut self, geometry: &Geometry<T>) -> Result<()>;
     fn rebuild(&mut self, geometry: &Geometry<T>) -> Result<()>;
     fn drives(&self) -> &[Drive];

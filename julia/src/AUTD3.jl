@@ -3,7 +3,7 @@
 # Created Date: 11/02/2020
 # Author: Shun Suzuki
 # -----
-# Last Modified: 15/11/2022
+# Last Modified: 29/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2020 Hapis Lab. All rights reserved.
@@ -29,7 +29,7 @@ include("SilencerConfig.jl")
 include("Gain.jl")
 include("Modulation.jl")
 include("STM.jl")
-include("PointSTM.jl")
+include("FocusSTM.jl")
 include("Null.jl")
 include("Focus.jl")
 include("Plane.jl")
@@ -71,7 +71,7 @@ export Controller, get_last_error, Clear, Synchronize, UpdateFlag, Stop, ModDela
 export SilencerConfig, SilencerConfigNone, ModDelayConfig, Amplitudes
 export Null, Focus, BesselBeam, PlaneWave, CustomGain, Grouped
 export Static, Sine, SineSquared, SineLegacy, Square, CustomModulation
-export GainSTM, PointSTM
+export GainSTM, FocusSTM
 export SOEM, enumerate_adapters
 export Simulator
 if Sys.iswindows()

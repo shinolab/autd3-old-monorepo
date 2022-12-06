@@ -3,7 +3,7 @@
 # Created Date: 14/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 10/11/2022
+# Last Modified: 29/11/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
 include("focus.jl")
 include("bessel.jl")
 include("holo.jl")
-include("point_stm.jl")
+include("focus_stm.jl")
 include("gain_stm.jl")
 
 function run(cnt::Controller)
@@ -20,7 +20,7 @@ function run(cnt::Controller)
         (focus, "Single Focal Point Sample"),
         (bessel, "BesselBeam Sample"),
         (holo, "Multiple Focal Points Sample"),
-        (point_stm, "PointSTM Sample"),
+        (focus_stm, "FocusSTM Sample"),
         (gain_stm, "GainSTM Sample")
     ]
 

@@ -4,7 +4,7 @@
  * Created Date: 07/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ use autd3_driver::Drive;
 
 use crate::{
     geometry::{Geometry, Transducer},
-    interface::{DatagramBody, Empty, Filled, Sendable},
+    datagram::{DatagramBody, Empty, Filled, Sendable},
 };
 
 pub struct Amplitudes {
@@ -45,7 +45,7 @@ where
     }
 
     fn pack(&mut self, geometry: &Geometry<T>, tx: &mut autd3_driver::TxDatagram) -> Result<()> {
-        autd3_driver::normal_head(tx);
+        autd3_driver::normal_header(tx);
         if DatagramBody::<T>::is_finished(self) {
             return Ok(());
         }

@@ -8,7 +8,7 @@ project(autd3)
 
 set(VERSION_MAJOR 2 CACHE STRING "Project major version number.")
 set(VERSION_MINOR 6 CACHE STRING "Project minor version number.")
-set(VERSION_PATCH 4 CACHE STRING "Project patch version number.")
+set(VERSION_PATCH 6 CACHE STRING "Project patch version number.")
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -143,7 +143,7 @@ if(ENABLE_LINT)
   ADD_CUSTOM_TARGET(cpplint
     python
     ${PROJECT_SOURCE_DIR}/3rdparty/cpplint/cpplint.py
-    --filter=-runtime/references,-build/c++11,-whitespace/comments,-readability/braces,-build/include_subdir,-build/include_order,-build/include_what_you_use,-whitespace/parens
+    --filter=-runtime/references,-build/c++11,-whitespace/comments,-readability/braces,-build/include_subdir,-build/include_order,-build/include_what_you_use,-whitespace/parens,-readability/fn_size
     --linelength=1000
     ${lint_files}
   )
@@ -300,7 +300,6 @@ if(BUILD_TEST)
     cmake_policy(SET CMP0135 NEW)
   endif()
   include(${PROJECT_SOURCE_DIR}/cmakes/gtest.cmake)
-  # set(gtest_disable_pthreads ON)
   add_subdirectory(tests)
 endif()
 

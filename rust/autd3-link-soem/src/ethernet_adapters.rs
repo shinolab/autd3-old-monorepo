@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/11/2022
+ * Last Modified: 06/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,18 +20,39 @@ use std::ffi::CStr;
 use std::ops::Index;
 use std::slice;
 
-#[derive(Copy, Clone)]
-pub struct EthernetAdapter<'a> {
-    pub desc: &'a str,
-    pub name: &'a str,
+#[derive(Clone)]
+pub struct EthernetAdapter {
+    pub desc: String,
+    pub name: String,
 }
 
 #[derive(Clone)]
-pub struct EthernetAdapters<'a> {
-    adapters: Vec<EthernetAdapter<'a>>,
+pub struct EthernetAdapters {
+    adapters: Vec<EthernetAdapter>,
 }
 
-impl<'a> EthernetAdapters<'a> {
+impl EthernetAdapters {
+    pub fn new() -> Self {
+        let mut adapters = Vec::new();
+        unsafe {
+            let mut adapter = native_methods::ec_find_adapters();
+            while !adapter.is_null() {
+                let desc = CStr::from_ptr(((*adapter).desc).as_ptr())
+                    .to_str()
+                    .unwrap()
+                    .to_string();
+                let name = CStr::from_ptr(((*adapter).name).as_ptr())
+                    .to_str()
+                    .unwrap()
+                    .to_string();
+                adapters.push(EthernetAdapter { desc, name });
+                adapter = (*adapter).next;
+            }
+            native_methods::ec_free_adapters(adapter);
+            EthernetAdapters { adapters }
+        }
+    }
+
     pub fn len(&self) -> usize {
         self.adapters.len()
     }
@@ -41,40 +62,29 @@ impl<'a> EthernetAdapters<'a> {
     }
 }
 
-impl<'a> Default for EthernetAdapters<'a> {
+impl Default for EthernetAdapters {
     fn default() -> Self {
-        let mut adapters = Vec::new();
-        unsafe {
-            let mut adapter = native_methods::ec_find_adapters();
-            while !adapter.is_null() {
-                let desc = CStr::from_ptr(((*adapter).desc).as_ptr()).to_str().unwrap();
-                let name = CStr::from_ptr(((*adapter).name).as_ptr()).to_str().unwrap();
-                adapters.push(EthernetAdapter { desc, name });
-                adapter = (*adapter).next;
-            }
-            native_methods::ec_free_adapters(adapter);
-            EthernetAdapters { adapters }
-        }
+        Self::new()
     }
 }
 
-impl<'a> Index<usize> for EthernetAdapters<'a> {
-    type Output = EthernetAdapter<'a>;
+impl Index<usize> for EthernetAdapters {
+    type Output = EthernetAdapter;
     fn index(&self, index: usize) -> &Self::Output {
         &self.adapters[index]
     }
 }
 
-impl<'a> IntoIterator for &'a EthernetAdapters<'a> {
-    type Item = &'a EthernetAdapter<'a>;
-    type IntoIter = slice::Iter<'a, EthernetAdapter<'a>>;
+impl<'a> IntoIterator for &'a EthernetAdapters {
+    type Item = &'a EthernetAdapter;
+    type IntoIter = slice::Iter<'a, EthernetAdapter>;
 
-    fn into_iter(self) -> slice::Iter<'a, EthernetAdapter<'a>> {
+    fn into_iter(self) -> slice::Iter<'a, EthernetAdapter> {
         self.adapters.iter()
     }
 }
 
-impl<'a> fmt::Display for EthernetAdapter<'a> {
+impl fmt::Display for EthernetAdapter {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}, {}", self.desc, self.name)
     }

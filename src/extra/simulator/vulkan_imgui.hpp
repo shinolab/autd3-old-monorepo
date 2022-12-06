@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 29/11/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -542,7 +542,7 @@ class VulkanImGui {
           if (cpus[0].fpga().is_stm_gain_mode())
             ImGui::Text("Gain STM");
           else {
-            ImGui::Text("Point STM");
+            ImGui::Text("Focus STM");
             if (use_meter)
               ImGui::Text("Sound speed: %.3lf [m/s]", cpus[0].fpga().sound_speed() / 1024.0);
             else
