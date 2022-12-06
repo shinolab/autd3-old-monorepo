@@ -4,7 +4,7 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/08/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -88,7 +88,7 @@ impl Link for TwinCAT {
                 &self.send_addr as *const _,
                 INDEX_GROUP,
                 INDEX_OFFSET_BASE,
-                tx.size() as u32,
+                tx.transmitting_size() as u32,
                 tx.data().as_ptr() as *const c_void,
             );
 

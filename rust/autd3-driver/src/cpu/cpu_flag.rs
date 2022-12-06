@@ -4,28 +4,12 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
-
-pub const MSG_CLEAR: u8 = 0x00;
-pub const MSG_RD_CPU_VERSION: u8 = 0x01;
-pub const MSG_RD_FPGA_VERSION: u8 = 0x03;
-pub const MSG_RD_FPGA_FUNCTION: u8 = 0x04;
-pub const MSG_BEGIN: u8 = 0x05;
-pub const MSG_END: u8 = 0xF0;
-pub const MSG_SERVER_CLOSE: u8 = 0xFD;
-pub const MSG_SIMULATOR_CLOSE: u8 = 0xFE;
-pub const MSG_SIMULATOR_INIT: u8 = 0xFF;
-
-pub const MOD_HEADER_INITIAL_DATA_SIZE: usize = 120;
-pub const MOD_HEADER_SUBSEQUENT_DATA_SIZE: usize = 124;
-
-pub const FOCUS_STM_HEAD_DATA_SIZE: usize = 61;
-pub const FOCUS_STM_BODY_DATA_SIZE: usize = 62;
 
 bitflags::bitflags! {
     pub struct CPUControlFlags : u8 {
@@ -42,12 +26,4 @@ bitflags::bitflags! {
         const IS_DUTY         = 1 << 6;
         const MOD_DELAY       = 1 << 7;
     }
-}
-
-#[repr(u16)]
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub enum Mode {
-    PhaseDutyFull = 0x0001,
-    PhaseFull = 0x0002,
-    PhaseHalf = 0x0004,
 }

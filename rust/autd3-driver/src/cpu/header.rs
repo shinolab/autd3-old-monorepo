@@ -4,17 +4,27 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{
-    cpu::{CPUControlFlags, MOD_HEADER_INITIAL_DATA_SIZE, MOD_HEADER_SUBSEQUENT_DATA_SIZE},
-    fpga::FPGAControlFlags,
-};
+use crate::{cpu::CPUControlFlags, fpga::FPGAControlFlags};
+
+pub const MSG_CLEAR: u8 = 0x00;
+pub const MSG_RD_CPU_VERSION: u8 = 0x01;
+pub const MSG_RD_FPGA_VERSION: u8 = 0x03;
+pub const MSG_RD_FPGA_FUNCTION: u8 = 0x04;
+pub const MSG_BEGIN: u8 = 0x05;
+pub const MSG_END: u8 = 0xF0;
+pub const MSG_SERVER_CLOSE: u8 = 0xFD;
+pub const MSG_SIMULATOR_CLOSE: u8 = 0xFE;
+pub const MSG_SIMULATOR_INIT: u8 = 0xFF;
+
+pub const MOD_HEADER_INITIAL_DATA_SIZE: usize = 120;
+pub const MOD_HEADER_SUBSEQUENT_DATA_SIZE: usize = 124;
 
 #[derive(Clone, Copy)]
 #[repr(C)]
@@ -27,21 +37,21 @@ pub struct GlobalHeader {
 }
 
 #[repr(C)]
-pub struct MOD_HEAD {
+pub struct ModInitial {
     pub freq_div: u32,
     pub data: [u8; MOD_HEADER_INITIAL_DATA_SIZE],
 }
 
 #[repr(C)]
-pub struct MOD_BODY {
+pub struct ModSubsequent {
     pub data: [u8; MOD_HEADER_SUBSEQUENT_DATA_SIZE],
 }
 
 #[repr(C)]
-pub struct SILENCER_HEADER {
+pub struct SilencerHeader {
     pub cycle: u16,
     pub step: u16,
-    _data: [u8; 120],
+    _unused: [u8; 120],
 }
 
 impl GlobalHeader {
@@ -55,27 +65,27 @@ impl GlobalHeader {
         }
     }
 
-    pub fn mod_initial(&self) -> &MOD_HEAD {
+    pub fn mod_initial(&self) -> &ModInitial {
         unsafe { std::mem::transmute(&self.data) }
     }
 
-    pub fn mod_initial_mut(&mut self) -> &mut MOD_HEAD {
+    pub fn mod_initial_mut(&mut self) -> &mut ModInitial {
         unsafe { std::mem::transmute(&mut self.data) }
     }
 
-    pub fn mod_subsequent(&self) -> &MOD_BODY {
+    pub fn mod_subsequent(&self) -> &ModSubsequent {
         unsafe { std::mem::transmute(&self.data) }
     }
 
-    pub fn mod_subsequent_mut(&mut self) -> &mut MOD_BODY {
+    pub fn mod_subsequent_mut(&mut self) -> &mut ModSubsequent {
         unsafe { std::mem::transmute(&mut self.data) }
     }
 
-    pub fn silencer(&self) -> &SILENCER_HEADER {
+    pub fn silencer(&self) -> &SilencerHeader {
         unsafe { std::mem::transmute(&self.data) }
     }
 
-    pub fn silencer_mut(&mut self) -> &mut SILENCER_HEADER {
+    pub fn silencer_mut(&mut self) -> &mut SilencerHeader {
         unsafe { std::mem::transmute(&mut self.data) }
     }
 }
