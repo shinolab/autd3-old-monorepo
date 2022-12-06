@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 06/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,16 +20,18 @@ use crate::{
 pub struct TxDatagram {
     data: Vec<u8>,
     body_pointer: Vec<usize>,
+    device_map: Vec<usize>,
     pub num_bodies: usize,
 }
 
 impl TxDatagram {
     pub fn new(device_map: &[usize]) -> Self {
+        let device_map = device_map.to_vec();
         let num_bodies = device_map.len();
         let head = &[0usize];
         let body_pointer = head
             .iter()
-            .chain(device_map)
+            .chain(device_map.iter())
             .scan(0, |state, tr_num| {
                 *state += std::mem::size_of::<u16>() * tr_num;
                 Some(*state)
@@ -38,6 +40,7 @@ impl TxDatagram {
         Self {
             data: vec![0x00; std::mem::size_of::<GlobalHeader>() + body_pointer.last().unwrap()],
             body_pointer,
+            device_map,
             num_bodies,
         }
     }
@@ -70,7 +73,7 @@ impl TxDatagram {
         unsafe { &mut *(self.data.as_mut_ptr() as *mut GlobalHeader) }
     }
 
-    pub fn body_data_mut(&mut self) -> &mut [u16] {
+    pub fn body_raw_mut(&mut self) -> &mut [u16] {
         let len =
             (self.data.len() - std::mem::size_of::<GlobalHeader>()) / std::mem::size_of::<u16>();
         unsafe {
@@ -152,15 +155,25 @@ impl TxDatagram {
 
     pub fn body(&self, idx: usize) -> &Body<[u16]> {
         unsafe {
-            &*(&self.data[std::mem::size_of::<GlobalHeader>() + self.body_pointer[idx]..]
-                as *const [u8] as *const Body<[u16]>)
+            let ptr = self
+                .data
+                .as_ptr()
+                .add(std::mem::size_of::<GlobalHeader>() + self.body_pointer[idx]);
+            let len = self.device_map[idx];
+            &*(std::slice::from_raw_parts(ptr as *const u16, len) as *const [u16]
+                as *const Body<[u16]>)
         }
     }
 
     pub fn body_mut(&mut self, idx: usize) -> &mut Body<[u16]> {
         unsafe {
-            &mut *(&mut self.data[std::mem::size_of::<GlobalHeader>() + self.body_pointer[idx]..]
-                as *mut [u8] as *mut Body<[u16]>)
+            let ptr = self
+                .data
+                .as_mut_ptr()
+                .add(std::mem::size_of::<GlobalHeader>() + self.body_pointer[idx]);
+            let len = self.device_map[idx];
+            &mut *(std::slice::from_raw_parts_mut(ptr as *mut u16, len) as *mut [u16]
+                as *mut Body<[u16]>)
         }
     }
 
