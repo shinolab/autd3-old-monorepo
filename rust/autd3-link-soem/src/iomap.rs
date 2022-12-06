@@ -4,7 +4,7 @@
  * Created Date: 03/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 06/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,14 +21,18 @@ pub struct IOMap {
 
 impl IOMap {
     pub fn new(device_map: &[usize]) -> Self {
-        let head = &[0];
-        let trans_num_prefix_sum = head
+        let head = &[0usize];
+        let trans_num_prefix_sum = device_map
             .iter()
-            .chain(device_map)
             .scan(0, |state, tr_num| {
                 *state += HEADER_SIZE + std::mem::size_of::<u16>() * tr_num;
                 Some(*state)
             })
+            .collect::<Vec<_>>();
+        let trans_num_prefix_sum = head
+            .into_iter()
+            .chain(trans_num_prefix_sum.iter())
+            .map(|v| *v)
             .collect::<Vec<_>>();
         let device_map = device_map.to_vec();
         let size = trans_num_prefix_sum.last().unwrap() + device_map.len() * EC_INPUT_FRAME_SIZE;
