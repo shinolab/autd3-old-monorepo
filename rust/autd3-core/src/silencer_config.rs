@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/05/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use crate::{
     geometry::{Geometry, Transducer},
-    interface::{DatagramHeader, Empty, Filled, Sendable},
+    datagram::{DatagramHeader, Empty, Filled, Sendable},
 };
 use anyhow::Result;
 use autd3_driver::TxDatagram;

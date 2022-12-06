@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/06/2022
+ * Last Modified: 06/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,7 +25,8 @@ pub type UnitQuaternion = nalgebra::UnitQuaternion<f64>;
 pub type Matrix3 = nalgebra::Matrix3<f64>;
 pub type Matrix4 = nalgebra::Matrix4<f64>;
 
-use autd3_driver::NUM_TRANS_IN_UNIT;
+use std::ops::{Index, IndexMut};
+
 pub use builder::*;
 pub use device::*;
 pub use legacy_transducer::*;
@@ -33,114 +34,95 @@ pub use normal_phase_transducer::*;
 pub use normal_transducer::*;
 pub use transducer::*;
 
+use crate::error::AUTDInternalError;
+
 #[derive(Default)]
 pub struct Geometry<T: Transducer> {
-    devices: Vec<Device<T>>,
-    pub attenuation: f64,
-    pub sound_speed: f64,
+    transducers: Vec<T>,
+    device_map: Vec<usize>,
 }
 
 impl<T: Transducer> Geometry<T> {
-    fn new(attenuation: f64, sound_speed: f64) -> Geometry<T> {
+    fn new() -> Geometry<T> {
         Geometry {
-            devices: vec![],
-            attenuation,
-            sound_speed,
+            transducers: vec![],
+            device_map: vec![],
         }
     }
 
+    pub fn add_device<D: Device<T>>(&mut self, dev: D) -> anyhow::Result<()> {
+        let id = self.transducers.len();
+        let mut transducers = dev.get_transducers(id);
+        if transducers.len() > 256 {
+            return Err(AUTDInternalError::TransducersNumInDeviceOutOfRange.into());
+        }
+        self.device_map.push(transducers.len());
+        self.transducers.append(&mut transducers);
+        Ok(())
+    }
+
     pub fn num_devices(&self) -> usize {
-        self.devices.len()
+        self.device_map.len()
     }
 
     pub fn num_transducers(&self) -> usize {
-        self.devices.len() * NUM_TRANS_IN_UNIT
+        self.transducers.len()
     }
 
-    pub fn devices(&self) -> &[Device<T>] {
-        &self.devices
+    pub fn transducers(&self) -> std::slice::Iter<'_, T> {
+        self.transducers.iter()
     }
 
-    pub fn devices_mut(&mut self) -> &mut [Device<T>] {
-        &mut self.devices
-    }
-
-    pub fn transducers(&self) -> impl Iterator<Item = &T> {
-        self.devices.iter().flat_map(|dev| dev.transducers())
-    }
-
-    pub fn transducers_mut(&mut self) -> impl Iterator<Item = &mut T> {
-        self.devices
-            .iter_mut()
-            .flat_map(|dev| dev.transducers_mut())
+    pub fn transducers_mut(&mut self) -> std::slice::IterMut<'_, T> {
+        self.transducers.iter_mut()
     }
 
     pub fn center(&self) -> Vector3 {
-        let sum: Vector3 = self.devices().iter().map(|d| d.center()).sum();
-        sum / self.devices.len() as f64
+        self.transducers
+            .iter()
+            .map(|d| d.position())
+            .sum::<Vector3>()
+            / self.transducers.len() as f64
     }
 
-    pub fn sound_speed(&self) -> f64 {
-        self.sound_speed
-    }
-
-    pub fn set_sound_speed(&mut self, sound_speed: f64) {
-        self.sound_speed = sound_speed;
-    }
-}
-
-impl Geometry<LegacyTransducer> {
-    pub fn wavelength(&self) -> f64 {
-        self.sound_speed() / 40e3
-    }
-
-    pub fn set_wavelength(&mut self, wavelength: f64) {
-        let sound_speed = 40e3 * wavelength;
-        self.set_sound_speed(sound_speed);
+    pub fn device_map(&self) -> &[usize] {
+        &self.device_map
     }
 }
 
-impl<T: Transducer> Geometry<T> {
-    /// Add device to the geometry.
-    ///
-    /// Use this method to specify the device geometry in order of proximity to the master.
-    /// Call this method or [add_device_quaternion](#method.add_device_quaternion) as many times as the number of AUTDs connected to the master.
-    ///
-    /// # Arguments
-    ///
-    /// * `pos` - Global position of AUTD.
-    /// * `rot` - ZYZ Euler angles.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use std::f64::consts::PI;
-    /// use autd3_core::geometry::{Vector3, GeometryBuilder};
-    ///
-    /// let mut geometry = GeometryBuilder::new().build();
-    ///
-    /// geometry.add_device(Vector3::zeros(), Vector3::zeros());
-    /// geometry.add_device(Vector3::new(192., 0., 0.), Vector3::new(-PI, 0., 0.));
-    /// ```
-    pub fn add_device(&mut self, position: Vector3, euler_angles: Vector3) {
-        let q = UnitQuaternion::from_axis_angle(&Vector3::z_axis(), euler_angles.x)
-            * UnitQuaternion::from_axis_angle(&Vector3::y_axis(), euler_angles.y)
-            * UnitQuaternion::from_axis_angle(&Vector3::z_axis(), euler_angles.z);
-        self.add_device_quaternion(position, q)
+impl<T: Transducer> Index<usize> for Geometry<T> {
+    type Output = T;
+    fn index(&self, idx: usize) -> &Self::Output {
+        &self.transducers[idx]
     }
+}
 
-    /// Add device to the geometry.
-    ///
-    /// Use this method to specify the device geometry in order of proximity to the master.
-    /// Call this method or [add_device](#method.add_device) as many times as the number of AUTDs connected to the master.
-    ///
-    /// # Arguments
-    ///
-    /// * `pos` - Global position of AUTD.
-    /// * `rot` - Rotation quaternion.
-    ///
-    pub fn add_device_quaternion(&mut self, position: Vector3, rotation: UnitQuaternion) {
-        let id = self.devices.len();
-        self.devices.push(Device::<T>::new(id, position, rotation));
+impl<T: Transducer> IndexMut<usize> for Geometry<T> {
+    fn index_mut(&mut self, idx: usize) -> &mut Self::Output {
+        &mut self.transducers[idx]
+    }
+}
+
+impl<'a, T> IntoIterator for &'a Geometry<T>
+where
+    T: Transducer,
+{
+    type Item = &'a T;
+    type IntoIter = std::slice::Iter<'a, T>;
+
+    fn into_iter(self) -> std::slice::Iter<'a, T> {
+        self.transducers()
+    }
+}
+
+impl<'a, T> IntoIterator for &'a mut Geometry<T>
+where
+    T: Transducer,
+{
+    type Item = &'a mut T;
+    type IntoIter = std::slice::IterMut<'a, T>;
+
+    fn into_iter(self) -> std::slice::IterMut<'a, T> {
+        self.transducers_mut()
     }
 }
