@@ -5,7 +5,7 @@ on:
     tags-ignore:
       - v*
     branches:
-      - 'release'
+      - 'test'
 
 jobs:
   test:
@@ -13,7 +13,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps: 
     - uses: actions/checkout@v3
@@ -24,8 +24,17 @@ jobs:
         sudo apt install mesa-common-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev -y
       shell: bash
     - name: test
+      if: matrix.os != 'windows-latest'
       run: |
         mkdir -p build && cd build
         cmake .. -DBUILD_ALL=ON -DBUILD_TEST=ON
         cmake --build . --config Release --parallel 8 --target test_autd3
         ./tests/test_autd3
+    - name: test
+      if: matrix.os == 'windows-latest'
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DBUILD_ALL=ON -DBUILD_TEST=ON
+        cmake --build . --config Release --parallel 8 --target test_autd3
+        ./tests/Release/test_autd3.exe
