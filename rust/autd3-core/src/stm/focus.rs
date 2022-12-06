@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 06/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -77,8 +77,9 @@ impl<T: Transducer> DatagramBody<T> for FocusSTM {
             .device_map()
             .iter()
             .scan(0, |state, tr_num| {
+                let r = Some(*state);
                 *state += tr_num;
-                Some(*state)
+                r
             })
             .map(|origin_idx| {
                 let tr = &geometry[origin_idx];

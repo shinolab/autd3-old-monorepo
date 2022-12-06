@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 06/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -57,7 +57,7 @@ pub fn sync(cycles: &[u16], tx: &mut TxDatagram) -> Result<()> {
         .set(CPUControlFlags::CONFIG_SYNC, true);
     tx.num_bodies = tx.num_devices();
 
-    tx.body_data_mut().clone_from_slice(cycles);
+    tx.body_raw_mut().clone_from_slice(cycles);
 
     Ok(())
 }
@@ -79,7 +79,7 @@ pub fn mod_delay(delays: &[u16], tx: &mut TxDatagram) -> Result<()> {
         .set(CPUControlFlags::MOD_DELAY, true);
     tx.num_bodies = tx.num_devices();
 
-    tx.body_data_mut().clone_from_slice(delays);
+    tx.body_raw_mut().clone_from_slice(delays);
 
     Ok(())
 }
@@ -319,8 +319,8 @@ pub fn focus_stm_body(
         (0..tx.num_devices()).for_each(|idx| {
             let d = tx.body_mut(idx);
             let s = &points[idx];
-            d.focus_stm_initial_mut().set_size(s.len() as _);
-            d.focus_stm_initial_mut().set_points(s);
+            d.focus_stm_subsequent_mut().set_size(s.len() as _);
+            d.focus_stm_subsequent_mut().set_points(s);
         });
     }
 
@@ -359,7 +359,7 @@ pub fn gain_stm_legacy_header(tx: &mut TxDatagram) {
 }
 
 pub fn gain_stm_legacy_body(
-    drives: &[&[Drive]],
+    drives: &[Vec<Drive>],
     sent: &mut usize,
     freq_div: u32,
     mode: Mode,
@@ -391,7 +391,7 @@ pub fn gain_stm_legacy_body(
                 is_last_frame = *sent + 1 >= drives.len() + 1;
                 tx.legacy_drives_mut()
                     .iter_mut()
-                    .zip(drives[*sent - 1])
+                    .zip(&drives[*sent - 1])
                     .for_each(|(d, s)| d.set(s));
                 *sent += 1;
             }
@@ -399,13 +399,13 @@ pub fn gain_stm_legacy_body(
                 is_last_frame = *sent + 2 >= drives.len() + 1;
                 tx.legacy_phase_full_mut()
                     .iter_mut()
-                    .zip(drives[*sent - 1])
+                    .zip(&drives[*sent - 1])
                     .for_each(|(d, s)| d.set(0, s));
                 *sent += 1;
                 if *sent - 1 < drives.len() {
                     tx.legacy_phase_full_mut()
                         .iter_mut()
-                        .zip(drives[*sent - 1])
+                        .zip(&drives[*sent - 1])
                         .for_each(|(d, s)| d.set(1, s));
                     *sent += 1;
                 }
@@ -414,27 +414,27 @@ pub fn gain_stm_legacy_body(
                 is_last_frame = *sent + 4 >= drives.len() + 1;
                 tx.legacy_phase_half_mut()
                     .iter_mut()
-                    .zip(drives[*sent - 1])
+                    .zip(&drives[*sent - 1])
                     .for_each(|(d, s)| d.set(0, s));
                 *sent += 1;
                 if *sent - 1 < drives.len() {
                     tx.legacy_phase_half_mut()
                         .iter_mut()
-                        .zip(drives[*sent - 1])
+                        .zip(&drives[*sent - 1])
                         .for_each(|(d, s)| d.set(1, s));
                     *sent += 1;
                 }
                 if *sent - 1 < drives.len() {
                     tx.legacy_phase_half_mut()
                         .iter_mut()
-                        .zip(drives[*sent - 1])
+                        .zip(&drives[*sent - 1])
                         .for_each(|(d, s)| d.set(2, s));
                     *sent += 1;
                 }
                 if *sent - 1 < drives.len() {
                     tx.legacy_phase_half_mut()
                         .iter_mut()
-                        .zip(drives[*sent - 1])
+                        .zip(&drives[*sent - 1])
                         .for_each(|(d, s)| d.set(3, s));
                     *sent += 1;
                 }

@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 06/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -66,7 +66,7 @@ impl FocusSTMBodyInitial<[u16]> {
 
     pub fn set_points(&mut self, points: &[STMFocus]) {
         self.data[5..]
-            .chunks_mut(std::mem::size_of::<STMFocus>())
+            .chunks_mut(std::mem::size_of::<STMFocus>() / std::mem::size_of::<u16>())
             .zip(points.iter())
             .for_each(|(d, s)| d.copy_from_slice(&s.buf));
     }
@@ -88,7 +88,7 @@ impl FocusSTMBodySubsequent<[u16]> {
 
     pub fn set_points(&mut self, points: &[STMFocus]) {
         self.data[1..]
-            .chunks_mut(std::mem::size_of::<STMFocus>())
+            .chunks_mut(std::mem::size_of::<STMFocus>() / std::mem::size_of::<u16>())
             .zip(points.iter())
             .for_each(|(d, s)| d.copy_from_slice(&s.buf));
     }
@@ -211,7 +211,7 @@ impl Body<[u16]> {
         unsafe { std::mem::transmute(self) }
     }
 
-    pub fn focus_stm_body(&self) -> &FocusSTMBodySubsequent<[u16]> {
+    pub fn focus_stm_subsequent(&self) -> &FocusSTMBodySubsequent<[u16]> {
         unsafe { std::mem::transmute(self) }
     }
 
