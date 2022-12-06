@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 06/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -79,7 +79,13 @@ impl DatagramBody<LegacyTransducer> for GainSTM<LegacyTransducer> {
         if DatagramBody::<LegacyTransducer>::is_finished(self) {
             return Ok(());
         }
-        autd3_driver::gain_stm_legacy_body(&[], &mut self.sent, self.sample_freq_div, self.mode, tx)
+        autd3_driver::gain_stm_legacy_body(
+            &self.gains,
+            &mut self.sent,
+            self.sample_freq_div,
+            self.mode,
+            tx,
+        )
     }
 
     fn is_finished(&self) -> bool {
