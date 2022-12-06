@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/11/2022
+// Last Modified: 06/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -56,6 +56,12 @@ class Modulation : public DatagramHeader {
    * \brief modulation data
    */
   [[nodiscard]] const std::vector<uint8_t>& buffer() const noexcept { return _buffer; }
+
+  /**
+   * @brief [Advanced] modulation data
+   * @details Call Modulation::build before using this function to initialize buffer data.
+   */
+  std::vector<uint8_t>& buffer() noexcept { return _buffer; }
 
   /**
    * \brief sampling frequency division ratio
