@@ -3,7 +3,7 @@
 // Created Date: 16/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/12/2022
+// Last Modified: 07/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -62,29 +62,19 @@ bool Controller::open(core::LinkPtr link) {
 
   _send_th_running = true;
   _send_th = std::thread([this] {
-    std::unique_ptr<core::DatagramHeader> header = nullptr;
-    std::unique_ptr<core::DatagramBody> body = nullptr;
+    AsyncData data{};
     while (_send_th_running) {
-      std::function<void()> post;
-      std::function<void()> pre;
-      if (header == nullptr && body == nullptr) {
+      if (data.header == nullptr && data.body == nullptr) {
         std::unique_lock lk(_send_mtx);
         _send_cond.wait(lk, [&] { return !_send_queue.empty() || !this->_send_th_running; });
         if (!this->_send_th_running) break;
-        AsyncData data = std::move(_send_queue.front());
-        header = std::move(data.header);
-        body = std::move(data.body);
-        pre = std::move(data.pre);
-        post = std::move(data.post);
+        data = std::move(_send_queue.front());
       }
 
-      pre();
-
-      if (!header->init() || !body->init()) {
+      if (!data.header->init() || !data.body->init()) {
         spdlog::error("Failed to initialize data.");
-        header = nullptr;
-        body = nullptr;
-        post();
+        data.header = nullptr;
+        data.body = nullptr;
         {
           std::unique_lock lk(_send_mtx);
           _send_queue.pop();
@@ -95,39 +85,37 @@ bool Controller::open(core::LinkPtr link) {
       _driver->force_fan(_tx_buf, force_fan);
       _driver->reads_fpga_info(_tx_buf, reads_fpga_info);
 
-      const auto no_wait = _ack_check_timeout == std::chrono::high_resolution_clock::duration::zero();
+      const auto no_wait = data.timeout == std::chrono::high_resolution_clock::duration::zero();
       while (true) {
         const auto msg_id = get_id();
-        if (!header->pack(_driver, msg_id, _tx_buf) || !body->pack(_driver, _mode, _geometry, _tx_buf)) {
+        if (!data.header->pack(_driver, msg_id, _tx_buf) || !data.body->pack(_driver, _mode, _geometry, _tx_buf)) {
           spdlog::error("Failed to pack data.");
-          header = nullptr;
-          body = nullptr;
+          data.header = nullptr;
+          data.body = nullptr;
           break;
         }
         spdlog::debug("Sending data ({}) asynchronously", msg_id);
         spdlog::debug("Timeout: {} [ms]",
-                      static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(_ack_check_timeout).count()) / 1000.0 / 1000.0);
+                      static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(data.timeout).count()) / 1000.0 / 1000.0);
         if (!_link->send(_tx_buf)) {
           spdlog::warn("Failed to send data ({}). Trying to resend...", msg_id);
           break;
         }
-        if (const auto success = wait_msg_processed(_ack_check_timeout); !no_wait && !success) {
+        if (const auto success = wait_msg_processed(data.timeout); !no_wait && !success) {
           spdlog::warn("Could not confirm if the data ({}) was processed successfully.", msg_id);
           break;
         }
         spdlog::debug("Sending data ({}) succeeded.", msg_id);
-        if (header->is_finished() && body->is_finished()) {
-          header = nullptr;
-          body = nullptr;
+        if (data.header->is_finished() && data.body->is_finished()) {
+          data.header = nullptr;
+          data.body = nullptr;
           spdlog::debug("All data has been sent successfully.");
           break;
         }
         if (no_wait) std::this_thread::sleep_for(_send_interval);
       }
 
-      post();
-
-      if (header == nullptr && body == nullptr) {
+      if (data.header == nullptr && data.body == nullptr) {
         std::unique_lock lk(_send_mtx);
         _send_queue.pop();
       }
@@ -229,7 +217,7 @@ bool Controller::clear() { return send(Clear{}); }
 
 bool Controller::stop() { return send(Stop{}); }
 
-bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body) {
+bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body, const std::chrono::high_resolution_clock::duration timeout) {
   if (!header->init() || !body->init()) {
     spdlog::error("Failed to initialize data.");
     return false;
@@ -238,7 +226,7 @@ bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body) {
   _driver->force_fan(_tx_buf, force_fan);
   _driver->reads_fpga_info(_tx_buf, reads_fpga_info);
 
-  const auto no_wait = _ack_check_timeout == std::chrono::high_resolution_clock::duration::zero();
+  const auto no_wait = timeout == std::chrono::high_resolution_clock::duration::zero();
   while (true) {
     const auto msg_id = get_id();
     if (!header->pack(_driver, msg_id, _tx_buf) || !body->pack(_driver, _mode, _geometry, _tx_buf)) {
@@ -246,13 +234,12 @@ bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body) {
       return false;
     }
     spdlog::debug("Sending data ({})", msg_id);
-    spdlog::debug("Timeout: {} [ms]",
-                  static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(_ack_check_timeout).count()) / 1000.0 / 1000.0);
+    spdlog::debug("Timeout: {} [ms]", static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count()) / 1000.0 / 1000.0);
     if (!_link->send(_tx_buf)) {
       spdlog::warn("Failed to send data ({})", msg_id);
       return false;
     }
-    if (const auto success = wait_msg_processed(_ack_check_timeout); !no_wait && !success) {
+    if (const auto success = wait_msg_processed(timeout); !no_wait && !success) {
       spdlog::warn("Could not confirm if the data ({}) was processed successfully.", msg_id);
       return false;
     }
@@ -266,36 +253,30 @@ bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body) {
 }
 
 bool Controller::send(SpecialData* s) {
-  push_ack_check_timeout();
-  if (s->ack_check_timeout_override()) _ack_check_timeout = s->ack_check_timeout();
+  const auto timeout = s->ack_check_timeout_override() ? s->ack_check_timeout() : _ack_check_timeout;
   const auto h = s->header();
   const auto b = s->body();
-  const auto res = send(h.get(), b.get());
-  pop_ack_check_timeout();
+  const auto res = send(h.get(), b.get(), timeout);
   return res;
 }
 
 void Controller::send_async(SpecialData* s) {
-  auto ack_check_timeout_override = s->ack_check_timeout_override();
-  auto timeout = s->ack_check_timeout();
-  send_async(
-      s->header(), s->body(),
-      [this, ack_check_timeout_override, timeout] {
-        push_ack_check_timeout();
-        if (ack_check_timeout_override) _ack_check_timeout = timeout;
-      },
-      [this] { pop_ack_check_timeout(); });
+  const auto timeout = s->ack_check_timeout_override() ? s->ack_check_timeout() : _ack_check_timeout;
+  send_async(s->header(), s->body(), timeout);
 }
 
-void Controller::send_async(std::unique_ptr<core::DatagramHeader> header, std::unique_ptr<core::DatagramBody> body, std::function<void()> pre,
-                            std::function<void()> post) {
+void Controller::send_async(std::unique_ptr<core::DatagramHeader> header, std::unique_ptr<core::DatagramBody> body) {
+  send_async(std::move(header), std::move(body), _ack_check_timeout);
+}
+
+void Controller::send_async(std::unique_ptr<core::DatagramHeader> header, std::unique_ptr<core::DatagramBody> body,
+                            const std::chrono::high_resolution_clock::duration timeout) {
   {
     std::unique_lock lk(_send_mtx);
     AsyncData data;
     data.header = std::move(header);
     data.body = std::move(body);
-    data.pre = std::move(pre);
-    data.post = std::move(post);
+    data.timeout = timeout;
     _send_queue.emplace(std::move(data));
   }
   _send_cond.notify_all();
@@ -360,8 +341,4 @@ bool Controller::wait_msg_processed(const std::chrono::high_resolution_clock::du
   }
   return false;
 }
-
-void Controller::push_ack_check_timeout() { _ack_check_timeout_ = _ack_check_timeout; }
-
-void Controller::pop_ack_check_timeout() { _ack_check_timeout = _ack_check_timeout_; }
 }  // namespace autd3
