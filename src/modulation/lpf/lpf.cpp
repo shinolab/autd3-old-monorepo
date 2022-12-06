@@ -3,7 +3,7 @@
 // Created Date: 19/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 07/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -50,15 +50,15 @@ bool LPF::calc() {
   if (resampled.size() % 2 == 0) {
     mf.reserve(resampled.size() / 2);
     for (size_t i = 0; i < resampled.size(); i += 2)
-      mf.emplace_back(static_cast<uint8_t>((static_cast<uint16_t>(resampled[i]) + static_cast<uint16_t>(resampled[i + 1])) >> 1));
+      mf.emplace_back(static_cast<uint8_t>((static_cast<uint16_t>(resampled[i]) + static_cast<uint16_t>(resampled[i + 1])) / 2));
   } else {
     mf.reserve(resampled.size());
     size_t i;
     for (i = 0; i < resampled.size() - 1; i += 2)
-      mf.emplace_back(static_cast<uint8_t>((static_cast<uint16_t>(resampled[i]) + static_cast<uint16_t>(resampled[i + 1])) >> 1));
-    mf.emplace_back(static_cast<uint8_t>((static_cast<uint16_t>(resampled[i]) + static_cast<uint16_t>(resampled[0])) >> 1));
+      mf.emplace_back(static_cast<uint8_t>((static_cast<uint16_t>(resampled[i]) + static_cast<uint16_t>(resampled[i + 1])) / 2));
+    mf.emplace_back(static_cast<uint8_t>((static_cast<uint16_t>(resampled[i]) + static_cast<uint16_t>(resampled[0])) / 2));
     for (i = 1; i < resampled.size(); i += 2)
-      mf.emplace_back(static_cast<uint8_t>((static_cast<uint16_t>(resampled[i]) + static_cast<uint16_t>(resampled[i + 1])) >> 1));
+      mf.emplace_back(static_cast<uint8_t>((static_cast<uint16_t>(resampled[i]) + static_cast<uint16_t>(resampled[i + 1])) / 2));
   }
 
   this->_buffer.reserve(mf.size());
