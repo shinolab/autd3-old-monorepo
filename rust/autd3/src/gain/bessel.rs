@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 05/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
  */
 
 use autd3_core::{
-    gain::{Gain, GainProps, IGain},
+    gain::GainProps,
     geometry::{Geometry, Transducer, UnitQuaternion, Vector3},
 };
 
@@ -20,15 +20,15 @@ use autd3_traits::Gain;
 
 /// Gain to produce single focal point
 #[derive(Gain)]
-pub struct Bessel<T: Transducer> {
-    props: GainProps<T>,
+pub struct Bessel {
+    props: GainProps,
     amp: f64,
     pos: Vector3,
     dir: Vector3,
     theta: f64,
 }
 
-impl<T: Transducer> Bessel<T> {
+impl Bessel {
     /// constructor
     ///
     /// # Arguments
@@ -57,10 +57,8 @@ impl<T: Transducer> Bessel<T> {
             theta,
         }
     }
-}
 
-impl<T: Transducer> IGain<T> for Bessel<T> {
-    fn calc(&mut self, geometry: &Geometry<T>) -> anyhow::Result<()> {
+    fn calc<T: Transducer>(&mut self, geometry: &Geometry<T>) -> anyhow::Result<()> {
         let dir = self.dir.normalize();
         let v = Vector3::new(dir.y, -dir.x, 0.);
         let theta_v = v.norm().asin();
@@ -75,7 +73,7 @@ impl<T: Transducer> IGain<T> for Bessel<T> {
             let r = Vector3::new(r.x, r.y, r.z);
             let r = rot * r;
             let dist = self.theta.sin() * (r.x * r.x + r.y * r.y).sqrt() - self.theta.cos() * r.z;
-            let phase = tr.align_phase_at(dist, geometry.sound_speed());
+            let phase = tr.align_phase_at(dist);
             self.props.drives[tr.id()].amp = self.amp;
             self.props.drives[tr.id()].phase = phase;
         });

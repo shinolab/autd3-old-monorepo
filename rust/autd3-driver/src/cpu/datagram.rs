@@ -4,36 +4,61 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/05/2022
+ * Last Modified: 06/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::cpu::{Body, GlobalHeader};
+use crate::{
+    cpu::{Body, GlobalHeader, LegacyPhaseFull, LegacyPhaseHalf},
+    fpga::{Duty, LegacyDrive, Phase},
+};
 
 #[derive(Clone)]
 pub struct TxDatagram {
     data: Vec<u8>,
-    size: usize,
+    body_pointer: Vec<usize>,
+    device_map: Vec<usize>,
     pub num_bodies: usize,
 }
 
 impl TxDatagram {
-    pub fn new(size: usize) -> Self {
+    pub fn new(device_map: &[usize]) -> Self {
+        let device_map = device_map.to_vec();
+        let num_bodies = device_map.len();
+        let head = &[0usize];
+        let body_pointer = head
+            .iter()
+            .chain(device_map.iter())
+            .scan(0, |state, tr_num| {
+                *state += std::mem::size_of::<u16>() * tr_num;
+                Some(*state)
+            })
+            .collect::<Vec<_>>();
         Self {
-            data: vec![
-                0x00;
-                std::mem::size_of::<GlobalHeader>() + std::mem::size_of::<Body>() * size
-            ],
-            size,
-            num_bodies: size,
+            data: vec![0x00; std::mem::size_of::<GlobalHeader>() + body_pointer.last().unwrap()],
+            body_pointer,
+            device_map,
+            num_bodies,
         }
     }
 
-    pub fn size(&self) -> usize {
-        std::mem::size_of::<GlobalHeader>() + std::mem::size_of::<Body>() * self.num_bodies
+    pub fn num_devices(&self) -> usize {
+        self.body_pointer.len() - 1
+    }
+
+    pub fn num_transducers(&self) -> usize {
+        self.body_pointer.last().unwrap() / std::mem::size_of::<u16>()
+    }
+
+    pub fn transmitting_size(&self) -> usize {
+        std::mem::size_of::<GlobalHeader>() + self.body_pointer[self.num_bodies]
+    }
+
+    pub fn body_size(&self) -> usize {
+        self.body_pointer[self.num_bodies]
     }
 
     pub fn data(&self) -> &[u8] {
@@ -41,35 +66,112 @@ impl TxDatagram {
     }
 
     pub fn header(&self) -> &GlobalHeader {
-        unsafe {
-            (self.data.as_ptr() as *const GlobalHeader)
-                .as_ref()
-                .unwrap()
-        }
+        unsafe { &*(self.data.as_ptr() as *const GlobalHeader) }
     }
 
     pub fn header_mut(&mut self) -> &mut GlobalHeader {
+        unsafe { &mut *(self.data.as_mut_ptr() as *mut GlobalHeader) }
+    }
+
+    pub fn body_raw_mut(&mut self) -> &mut [u16] {
+        let len =
+            (self.data.len() - std::mem::size_of::<GlobalHeader>()) / std::mem::size_of::<u16>();
         unsafe {
-            (self.data.as_mut_ptr() as *mut GlobalHeader)
-                .as_mut()
-                .unwrap()
+            &mut *std::ptr::slice_from_raw_parts_mut(
+                self.data
+                    .as_mut_ptr()
+                    .add(std::mem::size_of::<GlobalHeader>()) as *mut u16,
+                len,
+            )
         }
     }
 
-    pub fn body(&self) -> &[Body] {
+    pub fn legacy_drives_mut(&mut self) -> &mut [LegacyDrive] {
+        let len =
+            (self.data.len() - std::mem::size_of::<GlobalHeader>()) / std::mem::size_of::<u16>();
         unsafe {
-            let ptr = self.data.as_ptr().add(std::mem::size_of::<GlobalHeader>()) as *const Body;
-            std::slice::from_raw_parts(ptr, self.size)
+            &mut *std::ptr::slice_from_raw_parts_mut(
+                self.data
+                    .as_mut_ptr()
+                    .add(std::mem::size_of::<GlobalHeader>()) as *mut LegacyDrive,
+                len,
+            )
         }
     }
 
-    pub fn body_mut(&mut self) -> &mut [Body] {
+    pub fn legacy_phase_full_mut(&mut self) -> &mut [LegacyPhaseFull] {
+        let len =
+            (self.data.len() - std::mem::size_of::<GlobalHeader>()) / std::mem::size_of::<u16>();
+        unsafe {
+            &mut *std::ptr::slice_from_raw_parts_mut(
+                self.data
+                    .as_mut_ptr()
+                    .add(std::mem::size_of::<GlobalHeader>())
+                    as *mut LegacyPhaseFull,
+                len,
+            )
+        }
+    }
+
+    pub fn legacy_phase_half_mut(&mut self) -> &mut [LegacyPhaseHalf] {
+        let len =
+            (self.data.len() - std::mem::size_of::<GlobalHeader>()) / std::mem::size_of::<u16>();
+        unsafe {
+            &mut *std::ptr::slice_from_raw_parts_mut(
+                self.data
+                    .as_mut_ptr()
+                    .add(std::mem::size_of::<GlobalHeader>())
+                    as *mut LegacyPhaseHalf,
+                len,
+            )
+        }
+    }
+
+    pub fn duties_mut(&mut self) -> &mut [Duty] {
+        let len =
+            (self.data.len() - std::mem::size_of::<GlobalHeader>()) / std::mem::size_of::<u16>();
+        unsafe {
+            &mut *std::ptr::slice_from_raw_parts_mut(
+                self.data
+                    .as_mut_ptr()
+                    .add(std::mem::size_of::<GlobalHeader>()) as *mut Duty,
+                len,
+            )
+        }
+    }
+
+    pub fn phases_mut(&mut self) -> &mut [Phase] {
+        let len =
+            (self.data.len() - std::mem::size_of::<GlobalHeader>()) / std::mem::size_of::<u16>();
+        unsafe {
+            &mut *std::ptr::slice_from_raw_parts_mut(
+                self.data
+                    .as_mut_ptr()
+                    .add(std::mem::size_of::<GlobalHeader>()) as *mut Phase,
+                len,
+            )
+        }
+    }
+
+    pub fn body(&self, idx: usize) -> &Body<[u16]> {
+        unsafe {
+            let ptr = self
+                .data
+                .as_ptr()
+                .add(std::mem::size_of::<GlobalHeader>() + self.body_pointer[idx]);
+            let len = self.device_map[idx];
+            &*(std::ptr::slice_from_raw_parts(ptr as *const u16, len) as *const Body<[u16]>)
+        }
+    }
+
+    pub fn body_mut(&mut self, idx: usize) -> &mut Body<[u16]> {
         unsafe {
             let ptr = self
                 .data
                 .as_mut_ptr()
-                .add(std::mem::size_of::<GlobalHeader>()) as *mut Body;
-            std::slice::from_raw_parts_mut(ptr, self.size)
+                .add(std::mem::size_of::<GlobalHeader>() + self.body_pointer[idx]);
+            let len = self.device_map[idx];
+            &mut *(std::ptr::slice_from_raw_parts_mut(ptr as *mut u16, len) as *mut Body<[u16]>)
         }
     }
 
@@ -108,10 +210,6 @@ impl RxDatagram {
         }
     }
 
-    pub fn copy_from(&mut self, src: &RxDatagram) {
-        self.data.copy_from_slice(&src.data);
-    }
-
     pub fn messages(&self) -> &[RxMessage] {
         &self.data
     }
@@ -119,8 +217,8 @@ impl RxDatagram {
     pub fn messages_mut(&mut self) -> &mut [RxMessage] {
         &mut self.data
     }
-}
 
-pub fn is_msg_processed(msg_id: u8, rx: &RxDatagram) -> bool {
-    rx.data.iter().all(|msg| msg.msg_id == msg_id)
+    pub fn is_msg_processed(&self, msg_id: u8) -> bool {
+        self.data.iter().all(|msg| msg.msg_id == msg_id)
+    }
 }
