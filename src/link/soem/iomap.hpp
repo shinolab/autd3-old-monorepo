@@ -3,7 +3,7 @@
 // Created Date: 01/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/11/2022
+// Last Modified: 06/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -42,7 +42,7 @@ struct IOMap {
   }
 
   void copy_from(driver::TxDatagram& tx) {
-    for (size_t i = 0; i < tx.num_bodies; i++) std::memcpy(body(i), &tx.body(i), _device_map[i] * sizeof(uint16_t));
+    for (size_t i = 0; i < tx.num_bodies; i++) std::memcpy(body(i)->data(), tx.body(i).data(), _device_map[i] * sizeof(uint16_t));
     for (size_t i = 0; i < _device_map.size(); i++) std::memcpy(header(i), tx.data().data(), sizeof(driver::GlobalHeader));
   }
 
