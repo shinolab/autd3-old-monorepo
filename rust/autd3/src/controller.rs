@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 07/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,6 +19,8 @@ use std::{
 use anyhow::{Ok, Result};
 
 use autd3_core::{
+    amplitude::Amplitudes,
+    clear::Clear,
     datagram::{DatagramBody, DatagramHeader, Empty, Filled, NullBody, NullHeader, Sendable},
     geometry::{Geometry, Transducer},
     link::Link,
@@ -257,11 +259,12 @@ impl<L: Link, T: Transducer> Controller<L, T> {
     }
 
     pub fn close(&mut self) -> Result<bool> {
-        // let res = self.stop()?;
-        // let res = res & self.clear()?;
+        let mut stop = Amplitudes::none();
+        let res = self.send(&mut stop).flush()?;
+        let mut clear = Clear::new();
+        let res = res & self.send(&mut clear).flush()?;
         self.link.close()?;
-        // Ok(res)
-        Ok(true)
+        Ok(res)
     }
 }
 
