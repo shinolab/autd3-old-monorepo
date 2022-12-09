@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
+if(NOT BUILD_LINK_REMOTE_SOEM)
+  return()
+endif()
+
 add_library(autd3capi-link-remote-soem SHARED
   c_api.cpp
   remote_soem_link.h

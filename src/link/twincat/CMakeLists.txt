@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
+if(NOT BUILD_LINK_TWINCAT)
+  return()
+endif()
+
 add_library(link_twincat
   twincat.cpp
   ${PROJECT_SOURCE_DIR}/include/autd3/link/twincat.hpp

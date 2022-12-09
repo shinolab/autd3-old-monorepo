@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
+if(NOT (BUILD_LINK_TWINCAT AND WIN32))
+  return()
+endif()
+
 add_library(autd3capi-link-twincat SHARED
   c_api.cpp
   twincat_link.h

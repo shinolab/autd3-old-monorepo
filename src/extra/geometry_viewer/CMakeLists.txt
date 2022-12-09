@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
+if(NOT BUILD_GEOMETRY_VIEWER)
+  return()
+endif()
+
 add_subdirectory(models)
 
 add_library(geometry_viewer

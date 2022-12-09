@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
+if(NOT BUILD_TEST)
+  return()
+endif()
+
 enable_testing()
 
 add_executable(test_autd3)

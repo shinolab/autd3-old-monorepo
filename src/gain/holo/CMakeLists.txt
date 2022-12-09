@@ -17,15 +17,6 @@ set_target_properties(gain_holo PROPERTIES FOLDER "gain")
 set_target_properties(gain_holo PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 add_subdirectory(eigen)
-
-if(BUILD_BACKEND_CUDA)
-  add_subdirectory(cuda)
-endif()
-
-if(BUILD_BACKEND_BLAS)
-  add_subdirectory(blas)
-endif()
-
-if(BUILD_BACKEND_ARRAYFIRE)
-  add_subdirectory(arrayfire)
-endif()
+add_subdirectory(cuda)
+add_subdirectory(blas)
+add_subdirectory(arrayfire)
