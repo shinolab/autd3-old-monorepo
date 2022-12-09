@@ -224,6 +224,13 @@ if(EXPORT_SOEM_AUTD_SERVER)
   add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/argparse)
 endif()
 
+if(ENABLE_BENCH)
+  set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
+  set(BENCHMARK_ENABLE_TESTING OFF)
+  update_git_submodule(benchmark RECURSIVE)
+  add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/benchmark)
+endif()
+
 add_library(autd3_common INTERFACE)
 target_include_directories(autd3_common INTERFACE ${PROJECT_SOURCE_DIR}/include ${EIGEN_PATH} ${SPDLOG_INCLUDE_PATH})
 target_compile_definitions(autd3_common INTERFACE EIGEN_MPL2_ONLY)
