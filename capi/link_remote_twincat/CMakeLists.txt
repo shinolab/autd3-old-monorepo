@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
+if(BUILD_LINK_REMOTE_TWINCAT)
+  return()
+endif()
+
 add_library(autd3capi-link-remote-twincat SHARED
   c_api.cpp
   remote_twincat_link.h

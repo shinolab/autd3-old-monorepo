@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
+if(NOT BUILD_BACKEND_BLAS)
+  return()
+endif()
+
 set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${BLAS_LIB_DIR}")
 set(BLA_STATIC ON)
 find_package(BLAS REQUIRED)
