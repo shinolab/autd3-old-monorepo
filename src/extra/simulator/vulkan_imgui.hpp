@@ -728,7 +728,7 @@ class VulkanImGui {
 
   glm::vec4 background{0.3f, 0.3f, 0.3f, 1.0f};
 
-  bool mod_enable;
+  bool mod_enable{false};
   int32_t mod_idx{0};
 
   int32_t stm_idx{0};
@@ -753,8 +753,8 @@ class VulkanImGui {
   bool _show_mod_plot_raw{false};
   ImVec2 _mod_plot_size{200, 50};
 
-  bool _mod_auto_play;
-  bool _stm_auto_play;
+  bool _mod_auto_play{false};
+  bool _stm_auto_play{false};
 
   static void check_vk_result(const VkResult err) {
     if (err == VK_SUCCESS) return;
