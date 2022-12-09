@@ -1295,6 +1295,17 @@ The backend created must be deleted at the end by `AUTDDeleteBackend`.
 | out                    | void** | out    | pointer to pointer to CUDA backend |
 | return                 | void   | -      | -                                  |
 
+## AUTDLinkBundle (autd3capi-link-bundle)
+
+Create a Bundle link.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| out                    | void**   | out    | pointer to pointer to Debug link    |
+| links                  | void**   | in     | link pointer array                  |
+| n                      | int32_t  | in     | size of links                       |
+| return                 | void     | -      | -                                   |
+
 ## AUTDLinkDebug (autd3capi-link-debug)
 
 Create Debug link.

@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/11/2022
+ * Last Modified: 09/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -38,7 +38,44 @@ namespace AUTD3Sharp
             protected override bool ReleaseHandle() => true;
         }
 
-        public class SOEM
+        public sealed class Bundle
+        {
+            private List<Link> _links;
+
+            public Bundle(Link link)
+            {
+                _links = new List<Link>();
+                _links.Add(link);
+            }
+
+            public Bundle Link(Link link)
+            {
+                _links.Add(link);
+                return this;
+            }
+
+            public Link Build()
+            {
+                var n = _links.Count;
+                var links = new IntPtr[n];
+                for (var i = 0; i < n; i++)
+                    links[i] = _links[i].LinkPtr;
+                NativeMethods.LinkBundle.AUTDLinkBundle(out var handle, links, n);
+                return new Link(handle);
+            }
+        }
+
+        public sealed class Debug
+        {
+            public Link Build()
+            {
+                NativeMethods.LinkDebug.AUTDLinkDebug(out var handle);
+                return new Link(handle);
+            }
+        }
+
+
+        public sealed class SOEM
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnLostCallbackDelegate(string str);
 
