@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/12/2022
+// Last Modified: 09/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -162,21 +162,15 @@ class FPGA {
 
   [[nodiscard]] size_t modulation_cycle() const { return static_cast<size_t>(_controller_bram[fpga::ADDR_MOD_CYCLE]) + 1; }
 
+  [[nodiscard]] uint8_t modulation(const size_t idx) const {
+    return idx % 2 == 0 ? _modulator_bram[idx >> 1] & 0xFF : _modulator_bram[idx >> 1] >> 8;
+  }
+
   [[nodiscard]] std::vector<uint8_t> modulation() const {
     const auto cycle = modulation_cycle();
     std::vector<uint8_t> m;
     m.reserve(cycle);
-
-    for (size_t i = 0; i < cycle / 2; i++) {
-      const auto b = _modulator_bram[i];
-      m.emplace_back(b & 0x00FF);
-      m.emplace_back(b >> 8);
-    }
-
-    if (cycle % 2 != 0) {
-      const auto b = _modulator_bram[(cycle + 1) / 2];
-      m.emplace_back(b & 0x00FF);
-    }
+    for (size_t i = 0; i < cycle; i++) m.emplace_back(modulation(i));
     return m;
   }
 

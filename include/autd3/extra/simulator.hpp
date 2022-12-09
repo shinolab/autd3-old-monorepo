@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/11/2022
+// Last Modified: 09/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -123,6 +123,9 @@ struct SimulatorSettings {
   float background_a{1.0f};
   bool show_mod_plot{false};
   bool show_mod_plot_raw{false};
+  bool mod_enable{false};
+  bool mod_auto_play{false};
+  bool stm_auto_play{false};
 
   std::string image_save_path{"image.png"};
 
@@ -180,53 +183,58 @@ struct SimulatorSettings {
     background_a = 1.0f;
     show_mod_plot = false;
     show_mod_plot_raw = false;
+    mod_enable = false;
+    mod_auto_play = false;
+    stm_auto_play = false;
   }
 };
 
 inline void to_json(nlohmann::json& j, const SimulatorSettings& s) {
-  j = nlohmann::json{
-      {"window_width", s.window_width},
-      {"window_height", s.window_height},
-      {"vsync", s.vsync},
-      {"gpu_idx", s.gpu_idx},
-      {"use_meter", s.use_meter},
-      {"use_left_handed", s.use_left_handed},
-      {"slice_pos_x", s.slice_pos_x},
-      {"slice_pos_y", s.slice_pos_y},
-      {"slice_pos_z", s.slice_pos_z},
-      {"slice_rot_x", s.slice_rot_x},
-      {"slice_rot_y", s.slice_rot_y},
-      {"slice_rot_z", s.slice_rot_z},
-      {"slice_width", s.slice_width},
-      {"slice_height", s.slice_height},
-      {"slice_pixel_size", s.slice_pixel_size},
-      {"slice_color_scale", s.slice_color_scale},
-      {"slice_alpha", s.slice_alpha},
-      {"show_radiation_pressure", s.show_radiation_pressure},
-      {"coloring_method", s.coloring_method},
-      {"camera_pos_x", s.camera_pos_x},
-      {"camera_pos_y", s.camera_pos_y},
-      {"camera_pos_z", s.camera_pos_z},
-      {"camera_rot_x", s.camera_rot_x},
-      {"camera_rot_y", s.camera_rot_y},
-      {"camera_rot_z", s.camera_rot_z},
-      {"camera_fov", s.camera_fov},
-      {"camera_near_clip", s.camera_near_clip},
-      {"camera_far_clip", s.camera_far_clip},
-      {"camera_move_speed", s.camera_move_speed},
-      {"sound_speed", s.sound_speed},
-      {"font_size", s.font_size},
-      {"background_r", s.background_r},
-      {"background_g", s.background_g},
-      {"background_b", s.background_b},
-      {"background_a", s.background_a},
-      {"show_mod_plot", s.show_mod_plot},
-      {"show_mod_plot_raw", s.show_mod_plot_raw},
-      {"image_save_path", s.image_save_path},
-      {"max_dev_num", s.max_dev_num},
-      {"max_trans_num", s.max_trans_num},
-  };
+  j = nlohmann::json{{"window_width", s.window_width},
+                     {"window_height", s.window_height},
+                     {"vsync", s.vsync},
+                     {"gpu_idx", s.gpu_idx},
+                     {"use_meter", s.use_meter},
+                     {"use_left_handed", s.use_left_handed},
+                     {"slice_pos_x", s.slice_pos_x},
+                     {"slice_pos_y", s.slice_pos_y},
+                     {"slice_pos_z", s.slice_pos_z},
+                     {"slice_rot_x", s.slice_rot_x},
+                     {"slice_rot_y", s.slice_rot_y},
+                     {"slice_rot_z", s.slice_rot_z},
+                     {"slice_width", s.slice_width},
+                     {"slice_height", s.slice_height},
+                     {"slice_pixel_size", s.slice_pixel_size},
+                     {"slice_color_scale", s.slice_color_scale},
+                     {"slice_alpha", s.slice_alpha},
+                     {"show_radiation_pressure", s.show_radiation_pressure},
+                     {"coloring_method", s.coloring_method},
+                     {"camera_pos_x", s.camera_pos_x},
+                     {"camera_pos_y", s.camera_pos_y},
+                     {"camera_pos_z", s.camera_pos_z},
+                     {"camera_rot_x", s.camera_rot_x},
+                     {"camera_rot_y", s.camera_rot_y},
+                     {"camera_rot_z", s.camera_rot_z},
+                     {"camera_fov", s.camera_fov},
+                     {"camera_near_clip", s.camera_near_clip},
+                     {"camera_far_clip", s.camera_far_clip},
+                     {"camera_move_speed", s.camera_move_speed},
+                     {"sound_speed", s.sound_speed},
+                     {"font_size", s.font_size},
+                     {"background_r", s.background_r},
+                     {"background_g", s.background_g},
+                     {"background_b", s.background_b},
+                     {"background_a", s.background_a},
+                     {"show_mod_plot", s.show_mod_plot},
+                     {"show_mod_plot_raw", s.show_mod_plot_raw},
+                     {"image_save_path", s.image_save_path},
+                     {"max_dev_num", s.max_dev_num},
+                     {"max_trans_num", s.max_trans_num},
+                     {"mod_enable", s.mod_enable},
+                     {"stm_auto_play", s.stm_auto_play},
+                     {"stm_auto_play", s.stm_auto_play}};
 }
+
 inline void from_json(const nlohmann::json& j, SimulatorSettings& s) {
   j.at("window_width").get_to(s.window_width);
   j.at("window_height").get_to(s.window_height);
@@ -268,6 +276,9 @@ inline void from_json(const nlohmann::json& j, SimulatorSettings& s) {
   j.at("image_save_path").get_to(s.image_save_path);
   j.at("max_dev_num").get_to(s.max_dev_num);
   j.at("max_trans_num").get_to(s.max_trans_num);
+  j.at("mod_enable").get_to(s.mod_enable);
+  j.at("mod_auto_play").get_to(s.mod_auto_play);
+  j.at("stm_auto_play").get_to(s.stm_auto_play);
 }
 
 /**
