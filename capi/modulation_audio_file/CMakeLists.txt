@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
+if(NOT BUILD_MODULATION_AUDIO_FILE)
+  return()
+endif()
+
 add_library(autd3capi-modulation-audio-file SHARED
   c_api.cpp
   audio_file_modulation.h

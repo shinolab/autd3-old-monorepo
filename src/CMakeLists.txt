@@ -32,3 +32,8 @@ set_target_properties(autd3
 )
 
 set_target_properties(autd3 PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+add_subdirectory(link)
+add_subdirectory(gain)
+add_subdirectory(modulation)
+add_subdirectory(extra)

@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
+if(NOT BUILD_LINK_REMOTE_TWINCAT)
+  return()
+endif()
+
 add_library(link_remote_twincat
   remote_twincat.cpp
   ${PROJECT_SOURCE_DIR}/include/autd3/link/remote_twincat.hpp
@@ -25,8 +29,8 @@ if(WIN32)
   target_compile_definitions(link_remote_twincat PRIVATE NOMINMAX)
 elseif(APPLE)
 else()
-  target_compile_options(link_remote_twincat PRIVATE -Wno-mismatched-new-delete)
 endif()
+enable_cxx_compiler_flag_if_supported(link_remote_twincat PRIVATE -Wno-mismatched-new-delete)
 
 set_target_properties(link_remote_twincat
   PROPERTIES

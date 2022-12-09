@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.17)
 
+if(NOT BUILD_BACKEND_ARRAYFIRE)
+  return()
+endif()
+
 find_package(ArrayFire REQUIRED)
 message("ArrayFire version: " ${ArrayFire_VERSION})
 

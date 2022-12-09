@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
+if(NOT BUILD_LINK_REMOTE_SOEM)
+  return()
+endif()
+
 add_library(link_remote_soem
   remote_soem.cpp
   remote_soem_local.hpp
