@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
-if(BUILD_LINK_REMOTE_TWINCAT)
+if(NOT BUILD_LINK_REMOTE_TWINCAT)
   return()
 endif()
 
