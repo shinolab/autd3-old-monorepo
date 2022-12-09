@@ -55,6 +55,8 @@ option(BUILD_TEST "BUILD_TEST" OFF)
 option(USE_METER "Use meter instead of millimeter" OFF)
 option(USE_LEFT_HANDED "Use left-handed coordinate system instead of right-handed" OFF)
 
+option(ENABLE_BENCH "Enable benchmarks" OFF)
+
 if(DEFINED BUILD_TARGET)
   if(${BUILD_TARGET} STREQUAL ARM32 OR ${BUILD_TARGET} STREQUAL ARM)
     set(AUTD3_BUILD_ARM ON)
@@ -244,3 +246,4 @@ add_subdirectory(tests)
 add_subdirectory(examples)
 add_subdirectory(capi)
 add_subdirectory(dist)
+add_subdirectory(bench)
