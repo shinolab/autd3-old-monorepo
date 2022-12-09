@@ -244,7 +244,9 @@ endif()
 enable_cxx_compiler_flag_if_supported(autd3_common INTERFACE /bigobj)
 enable_cxx_compiler_flag_if_supported(autd3_common INTERFACE /wd4819)
 enable_cxx_compiler_flag_if_supported(autd3_common INTERFACE /Zc:__cplusplus)
-enable_cxx_compiler_flag_if_supported(autd3_common INTERFACE /Wall)
+if(NOT MSVC) # Too noisy
+  enable_cxx_compiler_flag_if_supported(autd3_common INTERFACE /Wall)
+endif()
 enable_cxx_compiler_flag_if_supported(autd3_common INTERFACE /Wextra)
 enable_cxx_compiler_flag_if_supported(autd3_common INTERFACE /Werror)
 
