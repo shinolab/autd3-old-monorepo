@@ -1,6 +1,8 @@
 # 2.6.7
 
 - Change `Controller::_send_interval` to 1ms by default
+- Improve Simulator stability
+- Add "Auto play" option for Simulator
 
 # 2.6.6
 

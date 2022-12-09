@@ -3,7 +3,7 @@
 // Created Date: 07/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/12/2022
+// Last Modified: 09/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,6 +28,8 @@ int main() try {
     std::cerr << "Failed to open controller." << std::endl;
     return -1;
   }
+
+  autd.set_ack_check_timeout(std::chrono::milliseconds(20));
 
   return run(autd);
 } catch (std::exception& e) {
