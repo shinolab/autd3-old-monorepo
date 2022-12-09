@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/12/2022
+// Last Modified: 09/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -184,6 +184,20 @@ int32_t AUTDNumTransducers(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   const auto res = wrapper->geometry().num_transducers();
   return static_cast<int32_t>(res);
+}
+
+int32_t AUTDNumDevices(const void* const handle) {
+  const auto* wrapper = static_cast<const Controller*>(handle);
+  const auto res = wrapper->geometry().num_devices();
+  return static_cast<int32_t>(res);
+}
+
+void AUTDGeometryCenter(const void* const handle, double* x, double* y, double* z) {
+  const auto* wrapper = static_cast<const Controller*>(handle);
+  const auto pos = wrapper->geometry().center();
+  *x = pos.x();
+  *y = pos.y();
+  *z = pos.z();
 }
 
 void AUTDTransPosition(const void* const handle, const int32_t trans_idx, double* x, double* y, double* z) {
