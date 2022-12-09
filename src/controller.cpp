@@ -3,7 +3,7 @@
 // Created Date: 16/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/12/2022
+// Last Modified: 09/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -233,7 +233,7 @@ bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body, co
       spdlog::error("Failed to pack data.");
       return false;
     }
-    spdlog::debug("Sending data ({})", msg_id);
+    spdlog::debug("Sending data ({})", _tx_buf.header().msg_id);
     spdlog::debug("Timeout: {} [ms]", static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count()) / 1000.0 / 1000.0);
     if (!_link->send(_tx_buf)) {
       spdlog::warn("Failed to send data ({})", msg_id);
