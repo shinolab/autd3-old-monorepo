@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
+if(NOT BUILD_EXAMPLES)
+  return()
+endif()
+
 find_package(Threads REQUIRED)
 
 file(GLOB hpp_files tests/*.hpp runner.hpp)

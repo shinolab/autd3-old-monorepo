@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
+if(NOT BUILD_LINK_DEBUG)
+  return()
+endif()
+
 add_library(autd3capi-link-debug SHARED
   c_api.cpp
   debug_link.h

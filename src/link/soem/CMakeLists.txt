@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
+if(NOT BUILD_LINK_SOEM)
+  return()
+endif()
+
 find_package(Threads REQUIRED)
 
 file(GLOB_RECURSE SOEM_SRC_FILES ${SOEM_PATH}/soem/*.c ${SOEM_PATH}/osal/${OS}/*.c ${SOEM_PATH}/oshw/${OS}/*.c)
@@ -31,10 +35,8 @@ if(WIN32)
     ${SOEM_PATH}/oshw/${OS}/wpcap/Include/pcap
   )
   target_compile_definitions(link_soem PRIVATE __STDC_LIMIT_MACROS NOMINMAX _CRT_SECURE_NO_WARNINGS)
-  if(MSVC)
-    target_compile_options(link_soem PRIVATE /wd4996)
-  endif()
 endif()
+enable_cxx_compiler_flag_if_supported(link_soem PRIVATE /wd4996)
 
 target_link_libraries(link_soem INTERFACE ${CMAKE_THREAD_LIBS_INIT})
 if(WIN32)

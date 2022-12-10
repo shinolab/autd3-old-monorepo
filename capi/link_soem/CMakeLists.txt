@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
+if (NOT BUILD_LINK_SOEM)
+  return()
+endif()
+
 add_library(autd3capi-link-soem SHARED
   c_api.cpp
   soem_link.h

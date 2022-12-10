@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
+if(NOT BUILD_LINK_SIMULATOR)
+  return()
+endif()
+
 add_library(autd3capi-link-simulator SHARED
   c_api.cpp
   simulator_link.h

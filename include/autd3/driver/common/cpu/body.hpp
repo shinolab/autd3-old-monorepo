@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/12/2022
+// Last Modified: 07/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -158,16 +158,20 @@ struct LegacyPhaseHalf {
     const auto phase = LegacyDrive::to_phase(d);
     switch (idx) {
       case 0:
-        phase_01 = (phase_01 & 0xF0) | ((phase >> 4) & 0x0F);
+        phase_01 &= 0xF0;
+        phase_01 |= phase >> 4 & 0x0F;
         break;
       case 1:
-        phase_01 = (phase_01 & 0x0F) | (phase & 0xF0);
+        phase_01 &= 0x0F;
+        phase_01 |= phase & 0xF0;
         break;
       case 2:
-        phase_23 = (phase_23 & 0xF0) | ((phase >> 4) & 0x0F);
+        phase_23 &= 0xF0;
+        phase_23 |= phase >> 4 & 0x0F;
         break;
       case 3:
-        phase_23 = (phase_23 & 0x0F) | (phase & 0xF0);
+        phase_23 &= 0x0F;
+        phase_23 |= phase & 0xF0;
         break;
       default:
         throw std::runtime_error("Unreachable!");

@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/12/2022
+// Last Modified: 07/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -162,14 +162,14 @@ class Controller {
    */
   template <typename H, typename B>
   auto send(H& header, B& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>, bool> {
-    return send(&header, &body);
+    return send(&header, &body, _ack_check_timeout);
   }
 
   /**
    * @brief Send header and body data to devices
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
-  bool send(core::DatagramHeader* header, core::DatagramBody* body);
+  bool send(core::DatagramHeader* header, core::DatagramBody* body, std::chrono::high_resolution_clock::duration timeout);
 
   /**
    * @brief Send special data to devices
@@ -177,12 +177,10 @@ class Controller {
    */
   template <typename S>
   auto send(S s) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, bool> {
-    push_ack_check_timeout();
-    if (s.ack_check_timeout_override()) _ack_check_timeout = s.ack_check_timeout();
+    const auto timeout = s.ack_check_timeout_override() ? s.ack_check_timeout() : _ack_check_timeout;
     auto h = s.header();
     auto b = s.body();
-    const auto res = send(h.get(), b.get());
-    pop_ack_check_timeout();
+    const auto res = send(h.get(), b.get(), timeout);
     return res;
   }
 
@@ -232,9 +230,13 @@ class Controller {
   /**
    * @brief Send header and body data to devices asynchronously
    */
-  void send_async(
-      std::unique_ptr<core::DatagramHeader> header, std::unique_ptr<core::DatagramBody> body, std::function<void()> pre = [] {},
-      std::function<void()> post = [] {});
+  void send_async(std::unique_ptr<core::DatagramHeader> header, std::unique_ptr<core::DatagramBody> body);
+
+  /**
+   * @brief Send header and body data to devices asynchronously
+   */
+  void send_async(std::unique_ptr<core::DatagramHeader> header, std::unique_ptr<core::DatagramBody> body,
+                  std::chrono::high_resolution_clock::duration timeout);
 
   /**
    * @brief Wait until all asynchronously sent data to complete the transmission
@@ -322,21 +324,14 @@ class Controller {
 
   bool wait_msg_processed(std::chrono::high_resolution_clock::duration timeout);
 
-  std::chrono::high_resolution_clock::duration _send_interval{std::chrono::nanoseconds(driver::EC_CYCLE_TIME_BASE_NANO_SEC)};
+  std::chrono::high_resolution_clock::duration _send_interval{std::chrono::milliseconds(1)};
 
   std::chrono::high_resolution_clock::duration _ack_check_timeout{std::chrono::high_resolution_clock::duration::zero()};
-
-  std::chrono::high_resolution_clock::duration _ack_check_timeout_{std::chrono::high_resolution_clock::duration::zero()};
-
-  void push_ack_check_timeout();
-
-  void pop_ack_check_timeout();
 
   struct AsyncData {
     std::unique_ptr<core::DatagramHeader> header;
     std::unique_ptr<core::DatagramBody> body;
-    std::function<void()> pre = [] {};
-    std::function<void()> post = [] {};
+    std::chrono::high_resolution_clock::duration timeout{};
   };
 
   core::Geometry _geometry;

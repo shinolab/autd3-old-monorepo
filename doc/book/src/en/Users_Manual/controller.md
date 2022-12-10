@@ -28,7 +28,7 @@ The interval between consecutive frames and data check intervals are configured 
 autd.set_send_interval(std::chrono::milliseconds(1));
 ```
 
-It is set to $\SI{500}{\text{μ}s}$ by default.
+It is set to $\SI{1}{ms}$ by default.
 
 ## Force fan
 

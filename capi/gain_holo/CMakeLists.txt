@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
+if(NOT BUILD_GAIN_HOLO)
+  return()
+endif()
+
 add_library(autd3capi-gain-holo SHARED
   c_api.cpp
   holo_gain.h
@@ -25,10 +29,5 @@ set_target_properties(autd3capi-gain-holo
 set_target_properties(autd3capi-gain-holo PROPERTIES FOLDER "capi/gain")
 set_target_properties(autd3capi-gain-holo PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-if(BUILD_BACKEND_BLAS)
-  add_subdirectory(blas)
-endif()
-
-if(BUILD_BACKEND_CUDA)
-  add_subdirectory(cuda)
-endif()
+add_subdirectory(blas)
+add_subdirectory(cuda)

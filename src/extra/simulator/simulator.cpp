@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/11/2022
+// Last Modified: 09/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 #include <atomic>
 #include <mutex>
-#include <queue>
+#include <numeric>
 #include <smem/smem.hpp>
 #include <thread>
 #include <vulkan_context.hpp>
@@ -65,14 +65,25 @@ namespace autd3::extra {
   const auto imgui = std::make_unique<simulator::VulkanImGui>(window.get(), context.get());
   const auto renderer = std::make_unique<simulator::VulkanRenderer>(context.get(), window.get(), imgui.get(), _settings->vsync);
 
+  spdlog::info("Initializing window...");
   window->init("AUTD3 Simulator", renderer.get(), simulator::VulkanRenderer::resize_callback, simulator::VulkanRenderer::pos_callback);
-  if (!context->init_vulkan("AUTD3 Simulator", *window)) return false;
+  spdlog::info("Initializing vulkan...");
+  if (!context->init_vulkan("AUTD3 Simulator", *window)) {
+    spdlog::error("Initializing vulkan...failed");
+    return false;
+  }
+  spdlog::info("Initializing renderer...");
   renderer->create_swapchain();
   renderer->create_image_views();
-  if (!renderer->create_render_pass()) return false;
-
+  if (!renderer->create_render_pass()) {
+    spdlog::error("Initializing renderer...failed");
+    return false;
+  }
   context->create_command_pool();
-  if (!renderer->create_depth_resources() || !renderer->create_color_resources()) return false;
+  if (!renderer->create_depth_resources() || !renderer->create_color_resources()) {
+    spdlog::error("Initializing renderer...failed");
+    return false;
+  }
   renderer->create_framebuffers();
 
   const std::array pool_size = {
@@ -94,30 +105,36 @@ namespace autd3::extra {
 
   auto smem = smem::SMem();
 
+  spdlog::info("Initializing shared memory...");
   const auto size = sizeof(uint8_t) + sizeof(uint32_t) + sizeof(uint32_t) * _settings->max_dev_num + _settings->max_trans_num * sizeof(float) * 7;
   smem.create("autd3_simulator_smem", size);
   volatile auto* ptr = static_cast<uint8_t*>(smem.map());
   for (size_t i = 0; i < size; i++) ptr[i] = 0;
+  spdlog::info("Initializing shared memory...done");
 
-  bool initialized = false;
-  std::atomic run_recv = true;
+  std::atomic initialized = false;
+  std::atomic do_init = false;
+  std::atomic do_close = false;
   std::atomic data_updated = false;
-  _th = std::thread([this, ptr, &cpus, &sources, &initialized, &run_recv, &data_updated, &imgui, &trans_viewer, &slice_viewer, &field_compute] {
+  std::atomic run_recv = true;
+  _th = std::thread([this, ptr, &cpus, &sources, &initialized, &run_recv, &data_updated, &do_init, &do_close, &imgui] {
     uint8_t last_msg_id = 0;
     while (run_recv.load()) {
       auto* cursor = const_cast<uint8_t*>(ptr);
       const auto* header = reinterpret_cast<driver::GlobalHeader*>(cursor);
-      if (!initialized) {
-        if (header->msg_id != driver::MSG_SIMULATOR_INIT) {
+      if (!initialized.load()) {
+        if (do_init.load() || header->msg_id != driver::MSG_SIMULATOR_INIT) {
           std::this_thread::sleep_for(std::chrono::milliseconds(100));
           continue;
         }
+
+        spdlog::info("Client connected");
         cursor++;
 
         const auto dev_num = *reinterpret_cast<uint32_t*>(cursor);
         cursor += sizeof(uint32_t);
 
-        spdlog::debug("Open simulator with {} devices", dev_num);
+        spdlog::info("Open simulator with {} devices", dev_num);
 
         cpus.clear();
         cpus.reserve(dev_num);
@@ -128,7 +145,7 @@ namespace autd3::extra {
           const auto tr_num = *reinterpret_cast<uint32_t*>(cursor);
           cursor += sizeof(uint32_t);
 
-          spdlog::debug("Add {}-th device with {} transducers", dev, tr_num);
+          spdlog::info("Add {}-th device with {} transducers", dev, tr_num);
 
           CPU cpu(dev, tr_num);
           cpu.init();
@@ -156,19 +173,16 @@ namespace autd3::extra {
           sources.emplace_back(std::move(s));
         }
 
-        imgui->set(sources);
-        if (!trans_viewer->init(sources)) spdlog::warn("Failed to initialize transducer viewer.");
-        if (!slice_viewer->init(imgui->slice_width, imgui->slice_height, imgui->pixel_size)) spdlog::warn("Failed to initialize slice viewer.");
-        if (!field_compute->init(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size(), imgui->coloring_method))
-          spdlog::warn("Failed to initialize field compute.");
-
-        ptr[0] = 0x00;
-        initialized = true;
+        do_init.store(true);
       } else {
+        if (do_close.load()) {
+          std::this_thread::sleep_for(std::chrono::milliseconds(100));
+          continue;
+        }
         if (header->msg_id == driver::MSG_SIMULATOR_CLOSE) {
-          initialized = false;
-          cpus.clear();
-          sources.clear();
+          spdlog::info("Client disconnected");
+          do_close.store(true);
+          spdlog::info("Waiting for client connection...");
         } else {
           size_t c = 0;
           for (size_t i = 0; i < cpus.size(); i++) {
@@ -176,15 +190,15 @@ namespace autd3::extra {
             cpus[i].send(header, body);
             c += sources[i].size() * sizeof(uint16_t);
           }
-          if (last_msg_id != header->msg_id) {
-            last_msg_id = header->msg_id;
-            data_updated.store(true);
-          }
           for (size_t i = 0; i < cpus.size(); i++) {
             auto* input =
                 reinterpret_cast<driver::RxMessage*>(const_cast<uint8_t*>(ptr + sizeof(driver::GlobalHeader) + c + i * driver::EC_INPUT_FRAME_SIZE));
             input->msg_id = cpus[i].msg_id();
             input->ack = cpus[i].ack();
+          }
+          if (last_msg_id != header->msg_id) {
+            last_msg_id = header->msg_id;
+            data_updated.store(true);
           }
         }
       }
@@ -195,118 +209,124 @@ namespace autd3::extra {
     helper::WindowHandler::poll_events();
     glfwPollEvents();
 
-    if (initialized) {
-      const bool is_stm_mode = std::any_of(cpus.begin(), cpus.end(), [](const auto& cpu) { return cpu.fpga().is_stm_mode(); });
-      imgui->is_stm_mode = is_stm_mode;
-      if (is_stm_mode) imgui->stm_size = static_cast<int32_t>(cpus[0].fpga().stm_cycle());
-      auto update_flags = imgui->draw(cpus, sources);
-      if (data_updated) {
-        const auto idx = is_stm_mode ? imgui->stm_idx : 0;
-        for (size_t dev = 0; dev < cpus.size(); dev++) {
-          const auto& cpu = cpus[dev];
-          const auto& cycles = cpu.fpga().cycles();
-          const auto& [amps, phases] = cpu.fpga().drives(idx);
-          for (size_t tr = 0; tr < sources[dev].size(); tr++) {
-            sources[dev].drives()[tr].amp = std::sin(glm::pi<float>() * static_cast<float>(amps[tr].duty) / static_cast<float>(cycles[tr]));
-            sources[dev].drives()[tr].phase = 2.0f * glm::pi<float>() * static_cast<float>(phases[tr].phase) / static_cast<float>(cycles[tr]);
-            const auto freq = static_cast<float>(driver::FPGA_CLK_FREQ) / static_cast<float>(cycles[tr]);
-            sources[dev].drives()[tr].set_wave_num(freq, imgui->sound_speed);
+    if (initialized.load()) {
+      if (do_close.load()) {
+        cpus.clear();
+        sources.clear();
+        for (size_t i = 0; i < size; i++) ptr[i] = 0;
+        initialized.store(false);
+        do_close.store(false);
+      } else {
+        auto update_flags = imgui->draw(cpus, sources);
+        if (data_updated.load()) {
+          data_updated.store(false);
+          update_flags.set(simulator::UpdateFlags::UPDATE_SOURCE_DRIVE);
+        }
+        if (update_flags.contains(simulator::UpdateFlags::UPDATE_SOURCE_DRIVE)) {
+          for (size_t dev = 0; dev < cpus.size(); dev++) {
+            const auto& cpu = cpus[dev];
+            const auto& cycles = cpu.fpga().cycles();
+            const auto& [amps, phases] = cpu.fpga().drives(imgui->stm_idx);
+            const auto m = imgui->mod_enable ? static_cast<float>(cpu.fpga().modulation(static_cast<size_t>(imgui->mod_idx))) / 255.0f : 1.0f;
+            for (size_t tr = 0; tr < sources[dev].size(); tr++) {
+              sources[dev].drives()[tr].amp = std::sin(glm::pi<float>() * static_cast<float>(amps[tr].duty) * m / static_cast<float>(cycles[tr]));
+              sources[dev].drives()[tr].phase = 2.0f * glm::pi<float>() * static_cast<float>(phases[tr].phase) / static_cast<float>(cycles[tr]);
+              const auto freq = static_cast<float>(driver::FPGA_CLK_FREQ) / static_cast<float>(cycles[tr]);
+              sources[dev].drives()[tr].set_wave_num(freq, imgui->sound_speed);
+            }
           }
         }
-        update_flags.set(simulator::UpdateFlags::UPDATE_SOURCE_DRIVE);
-        data_updated = false;
-      }
-      if (is_stm_mode && update_flags.contains(simulator::UpdateFlags::UPDATE_SOURCE_DRIVE)) {
-        for (size_t dev = 0; dev < cpus.size(); dev++) {
-          const auto& cpu = cpus[dev];
-          const auto& cycles = cpu.fpga().cycles();
-          const auto& [amps, phases] = cpu.fpga().drives(imgui->stm_idx);
-          for (size_t tr = 0; tr < sources[dev].size(); tr++) {
-            sources[dev].drives()[tr].amp = std::sin(glm::pi<float>() * static_cast<float>(amps[tr].duty) / static_cast<float>(cycles[tr]));
-            sources[dev].drives()[tr].phase = 2.0f * glm::pi<float>() * static_cast<float>(phases[tr].phase) / static_cast<float>(cycles[tr]);
-            const auto freq = static_cast<float>(driver::FPGA_CLK_FREQ) / static_cast<float>(cycles[tr]);
-            sources[dev].drives()[tr].set_wave_num(freq, imgui->sound_speed);
+
+        const auto& [view, proj] = imgui->get_view_proj(static_cast<float>(renderer->extent().width) / static_cast<float>(renderer->extent().height));
+        const auto& slice_model = imgui->get_slice_model();
+        if (!slice_viewer->update(imgui->slice_width, imgui->slice_height, imgui->pixel_size, update_flags) ||
+            !trans_viewer->update(sources, update_flags) ||
+            !field_compute->update(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size(), imgui->coloring_method,
+                                   update_flags))
+          return false;
+
+        const simulator::Config config{static_cast<uint32_t>(std::accumulate(sources.begin(), sources.end(), size_t{0},
+                                                                             [](const size_t acc, const auto& s) { return acc + s.size(); })),
+                                       0,
+                                       imgui->color_scale,
+                                       static_cast<uint32_t>(imgui->slice_width / imgui->pixel_size),
+                                       static_cast<uint32_t>(imgui->slice_height / imgui->pixel_size),
+                                       imgui->pixel_size,
+                                       imgui->scale(),
+                                       0,
+                                       slice_model};
+        field_compute->compute(config, imgui->show_radiation_pressure);
+
+        if (update_flags.contains(simulator::UpdateFlags::SAVE_IMAGE)) {
+          const auto& image = slice_viewer->images()[renderer->current_frame()].get();
+          const auto image_size = slice_viewer->image_size();
+
+          auto [staging_buffer, staging_buffer_memory] =
+              context->create_buffer(image_size, vk::BufferUsageFlagBits::eTransferDst,
+                                     vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+          if (!staging_buffer || !staging_buffer_memory) return false;
+
+          context->copy_buffer(image, staging_buffer.get(), image_size);
+          void* data;
+          if (context->device().mapMemory(staging_buffer_memory.get(), 0, image_size, {}, &data) != vk::Result::eSuccess) {
+            spdlog::error("Failed to map texture buffer.");
+            break;
           }
-        }
-      }
 
-      const auto& [view, proj] = imgui->get_view_proj(static_cast<float>(renderer->extent().width) / static_cast<float>(renderer->extent().height));
-      const auto& slice_model = imgui->get_slice_model();
-      if (!slice_viewer->update(imgui->slice_width, imgui->slice_height, imgui->pixel_size, update_flags) ||
-          !trans_viewer->update(sources, update_flags) ||
-          !field_compute->update(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size(), imgui->coloring_method,
-                                 update_flags))
-        return false;
-
-      const simulator::Config config{static_cast<uint32_t>(std::accumulate(sources.begin(), sources.end(), size_t{0},
-                                                                           [](const size_t acc, const auto& s) { return acc + s.size(); })),
-                                     0,
-                                     imgui->color_scale,
-                                     static_cast<uint32_t>(imgui->slice_width / imgui->pixel_size),
-                                     static_cast<uint32_t>(imgui->slice_height / imgui->pixel_size),
-                                     imgui->pixel_size,
-                                     imgui->scale(),
-                                     0,
-                                     slice_model};
-      field_compute->compute(config, imgui->show_radiation_pressure);
-
-      if (update_flags.contains(simulator::UpdateFlags::SAVE_IMAGE)) {
-        const auto& image = slice_viewer->images()[renderer->current_frame()].get();
-        const auto image_size = slice_viewer->image_size();
-
-        auto [staging_buffer, staging_buffer_memory] = context->create_buffer(
-            image_size, vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-        if (!staging_buffer || !staging_buffer_memory) return false;
-
-        context->copy_buffer(image, staging_buffer.get(), image_size);
-        void* data;
-        if (context->device().mapMemory(staging_buffer_memory.get(), 0, image_size, {}, &data) != vk::Result::eSuccess) {
-          spdlog::error("Failed to map texture buffer.");
-          break;
-        }
-
-        const auto* image_data = static_cast<float*>(data);
-        std::vector<uint8_t> pixels;
-        const auto image_width = static_cast<int32_t>(imgui->slice_width / imgui->pixel_size);
-        const auto image_height = static_cast<int32_t>(imgui->slice_height / imgui->pixel_size);
-        pixels.reserve(static_cast<size_t>(image_width) * static_cast<size_t>(image_height) * 4);
-        for (int32_t i = image_height - 1; i >= 0; i--) {
-          for (int32_t j = 0; j < image_width; j++) {
-            const auto idx = image_width * static_cast<size_t>(i) + static_cast<size_t>(j);
-            pixels.emplace_back(static_cast<uint8_t>(255.0f * image_data[4 * idx]));
-            pixels.emplace_back(static_cast<uint8_t>(255.0f * image_data[4 * idx + 1]));
-            pixels.emplace_back(static_cast<uint8_t>(255.0f * image_data[4 * idx + 2]));
-            pixels.emplace_back(static_cast<uint8_t>(255.0f * image_data[4 * idx + 3]));
+          const auto* image_data = static_cast<float*>(data);
+          std::vector<uint8_t> pixels;
+          const auto image_width = static_cast<int32_t>(imgui->slice_width / imgui->pixel_size);
+          const auto image_height = static_cast<int32_t>(imgui->slice_height / imgui->pixel_size);
+          pixels.reserve(static_cast<size_t>(image_width) * static_cast<size_t>(image_height) * 4);
+          for (int32_t i = image_height - 1; i >= 0; i--) {
+            for (int32_t j = 0; j < image_width; j++) {
+              const auto idx = image_width * static_cast<size_t>(i) + static_cast<size_t>(j);
+              pixels.emplace_back(static_cast<uint8_t>(255.0f * image_data[4 * idx]));
+              pixels.emplace_back(static_cast<uint8_t>(255.0f * image_data[4 * idx + 1]));
+              pixels.emplace_back(static_cast<uint8_t>(255.0f * image_data[4 * idx + 2]));
+              pixels.emplace_back(static_cast<uint8_t>(255.0f * image_data[4 * idx + 3]));
+            }
           }
+          stbi_write_png(imgui->save_path, image_width, image_height, 4, pixels.data(), image_width * 4);
+          context->device().unmapMemory(staging_buffer_memory.get());
         }
-        stbi_write_png(imgui->save_path, image_width, image_height, 4, pixels.data(), image_width * 4);
-        context->device().unmapMemory(staging_buffer_memory.get());
-      }
 
-      const std::array background = {imgui->background.r, imgui->background.g, imgui->background.b, imgui->background.a};
-      const auto& [command_buffer, image_index] = renderer->begin_frame(background);
-      if (!command_buffer) {
-        if (image_index == 0) {
-          break;
+        const std::array background = {imgui->background.r, imgui->background.g, imgui->background.b, imgui->background.a};
+        const auto& [command_buffer, image_index] = renderer->begin_frame(background);
+        if (!command_buffer) {
+          if (image_index == 0) {
+            break;
+          }
+          continue;
         }
-        continue;
+        slice_viewer->render(slice_model, view, proj, command_buffer);
+        trans_viewer->render(view, proj, command_buffer);
+        simulator::VulkanImGui::render(command_buffer);
+        if (!renderer->end_frame(command_buffer, image_index)) break;
       }
-      slice_viewer->render(slice_model, view, proj, command_buffer);
-      trans_viewer->render(view, proj, command_buffer);
-      simulator::VulkanImGui::render(command_buffer);
-      if (!renderer->end_frame(command_buffer, image_index)) break;
     } else {
-      simulator::VulkanImGui::draw();
-      const std::array background = {imgui->background.r, imgui->background.g, imgui->background.b, imgui->background.a};
-      const auto& [command_buffer, image_index] = renderer->begin_frame(background);
-      if (!command_buffer) {
-        if (image_index == 0) {
-          break;
+      if (do_init.load()) {
+        imgui->set(sources);
+        if (!trans_viewer->init(sources)) spdlog::warn("Failed to initialize transducer viewer.");
+        if (!slice_viewer->init(imgui->slice_width, imgui->slice_height, imgui->pixel_size)) spdlog::warn("Failed to initialize slice viewer.");
+        if (!field_compute->init(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size(), imgui->coloring_method))
+          spdlog::warn("Failed to initialize field compute.");
+        ptr[0] = 0x00;
+        initialized.store(true);
+        do_init.store(false);
+      } else {
+        simulator::VulkanImGui::draw();
+        const std::array background = {imgui->background.r, imgui->background.g, imgui->background.b, imgui->background.a};
+        const auto& [command_buffer, image_index] = renderer->begin_frame(background);
+        if (!command_buffer) {
+          if (image_index == 0) {
+            break;
+          }
+          continue;
         }
-        continue;
+        simulator::VulkanImGui::render(command_buffer);
+        if (!renderer->end_frame(command_buffer, image_index)) break;
       }
-      simulator::VulkanImGui::render(command_buffer);
-      if (!renderer->end_frame(command_buffer, image_index)) break;
     }
   }
 

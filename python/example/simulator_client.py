@@ -4,7 +4,7 @@ Project: example
 Created Date: 10/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 28/11/2022
+Last Modified: 09/12/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -31,5 +31,7 @@ if __name__ == '__main__':
     if not autd.open(link):
         print('Failed to open Controller')
         exit()
+
+    autd.ack_check_timeout_ms = 20
 
     runner.run(autd)

@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
+if(NOT BUILD_SIMULATOR)
+  return()
+endif()
+
 add_library(simulator
   color.hpp
   coloring.hpp
