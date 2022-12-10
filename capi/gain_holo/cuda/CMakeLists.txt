@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
+if(NOT BUILD_BACKEND_CUDA)
+  return()
+endif()
+
 add_library(autd3capi-backend-cuda SHARED
   c_api.cpp
   cuda_backend.h

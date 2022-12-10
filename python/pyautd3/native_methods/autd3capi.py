@@ -114,6 +114,12 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDNumTransducers.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDNumTransducers.restype = ctypes.c_int32
 
+        self.dll.AUTDNumDevices.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDNumDevices.restype = ctypes.c_int32
+
+        self.dll.AUTDGeometryCenter.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)] 
+        self.dll.AUTDGeometryCenter.restype = ctypes.c_int32
+
         self.dll.AUTDTransPosition.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)] 
         self.dll.AUTDTransPosition.restype = None
 

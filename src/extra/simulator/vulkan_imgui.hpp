@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 09/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -199,6 +199,10 @@ class VulkanImGui {
     use_left_handed = settings.use_left_handed;
 
     settings.image_save_path.copy(save_path, 256);
+
+    mod_enable = settings.mod_enable;
+    _mod_auto_play = settings.mod_auto_play;
+    _stm_auto_play = settings.stm_auto_play;
   }
 
   void save_settings(SimulatorSettings& settings) const {
@@ -242,6 +246,10 @@ class VulkanImGui {
 
     settings.use_meter = use_meter;
     settings.use_left_handed = use_left_handed;
+
+    settings.mod_enable = mod_enable;
+    settings.mod_auto_play = _mod_auto_play;
+    settings.stm_auto_play = _stm_auto_play;
   }
 
   void init(const uint32_t image_count, const VkRenderPass renderer_pass, const SimulatorSettings& settings) {
@@ -497,7 +505,9 @@ class VulkanImGui {
           const auto& m = cpus[0].fpga().modulation();
           ImGui::Separator();
           ImGui::Text("Modulation");
-          ImGui::Text("Size: %d", static_cast<int32_t>(m.size()));
+
+          const auto mod_size = static_cast<int32_t>(m.size());
+          ImGui::Text("Size: %d", mod_size);
           ImGui::Text("Frequency division: %d", cpus[0].fpga().modulation_frequency_division());
           const auto sampling_freq = static_cast<double>(driver::FPGA_CLK_FREQ) / static_cast<double>(cpus[0].fpga().modulation_frequency_division());
           ImGui::Text("Sampling Frequency: %.3lf [Hz]", sampling_freq);
@@ -534,9 +544,20 @@ class VulkanImGui {
           }
 
           if (_show_mod_plot || _show_mod_plot_raw) ImGui::DragFloat2("plot size", &_mod_plot_size.x);
+          ImGui::Checkbox("Enable##MOD", &mod_enable);
+          if (mod_enable) {
+            if (ImGui::InputInt("Index##MOD", &mod_idx, 1, 10)) flag.set(UpdateFlags::UPDATE_SOURCE_DRIVE);
+            ImGui::Checkbox("Auto play##MOD", &_mod_auto_play);
+            if (_mod_auto_play) {
+              flag.set(UpdateFlags::UPDATE_SOURCE_DRIVE);
+              mod_idx++;
+            }
+            if (mod_idx >= mod_size) mod_idx = 0;
+            if (mod_idx < 0) mod_idx = mod_size - 1;
+          }
         }
 
-        if (is_stm_mode) {
+        if (std::any_of(cpus.begin(), cpus.end(), [](const auto& cpu) { return cpu.fpga().is_stm_mode(); })) {
           ImGui::Separator();
 
           if (cpus[0].fpga().is_stm_gain_mode())
@@ -549,7 +570,8 @@ class VulkanImGui {
               ImGui::Text("Sound speed: %.3lf [mm/s]", cpus[0].fpga().sound_speed() * 1000.0 / 1024.0);
           }
 
-          ImGui::Text("Size: %d", static_cast<int32_t>(cpus[0].fpga().stm_cycle()));
+          const auto stm_size = static_cast<int32_t>(cpus[0].fpga().stm_cycle());
+          ImGui::Text("Size: %d", stm_size);
           ImGui::Text("Frequency division: %d", cpus[0].fpga().stm_frequency_division());
           const auto sampling_freq = static_cast<double>(driver::FPGA_CLK_FREQ) / static_cast<double>(cpus[0].fpga().stm_frequency_division());
           ImGui::Text("Sampling Frequency: %.3lf [Hz]", sampling_freq);
@@ -560,6 +582,11 @@ class VulkanImGui {
           ImGui::Text("Period: %.3lf [us]", period);
 
           if (ImGui::InputInt("Index##STM", &stm_idx, 1, 10)) flag.set(UpdateFlags::UPDATE_SOURCE_DRIVE);
+          ImGui::Checkbox("Auto play##STM", &_stm_auto_play);
+          if (_stm_auto_play) {
+            flag.set(UpdateFlags::UPDATE_SOURCE_DRIVE);
+            stm_idx++;
+          }
           if (stm_idx >= stm_size) stm_idx = 0;
           if (stm_idx < 0) stm_idx = stm_size - 1;
 
@@ -701,9 +728,10 @@ class VulkanImGui {
 
   glm::vec4 background{0.3f, 0.3f, 0.3f, 1.0f};
 
-  bool is_stm_mode{false};
+  bool mod_enable{false};
+  int32_t mod_idx{0};
+
   int32_t stm_idx{0};
-  int32_t stm_size{0};
 
   std::unique_ptr<bool[]> enable;
   std::unique_ptr<bool[]> visible;
@@ -724,6 +752,9 @@ class VulkanImGui {
   bool _show_mod_plot{false};
   bool _show_mod_plot_raw{false};
   ImVec2 _mod_plot_size{200, 50};
+
+  bool _mod_auto_play{false};
+  bool _stm_auto_play{false};
 
   static void check_vk_result(const VkResult err) {
     if (err == VK_SUCCESS) return;

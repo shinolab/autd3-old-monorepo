@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
+if(NOT BUILD_LINK_DEBUG)
+  return()
+endif()
+
 add_library(link_debug
   debug.cpp
   ${PROJECT_SOURCE_DIR}/include/autd3/link/debug.hpp

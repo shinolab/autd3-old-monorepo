@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 07/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -708,8 +708,11 @@ TEST(ControllerTest, gain_stm_legacy) {
         const auto [duties, phases] = cpus->at(i).fpga().drives(k);
         for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
           ASSERT_EQ(duties[j].duty, cycle >> 1);
-          const auto phase = autd3::driver::LegacyDrive::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]) >> 4;
-          ASSERT_EQ(phases[j].phase, ((phase << 4) + phase) << 4);
+          const auto legacy_phase = autd3::driver::LegacyDrive::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]) >> 4;
+          auto phase = legacy_phase << 4;
+          phase += legacy_phase;
+          phase <<= 4;
+          ASSERT_EQ(phases[j].phase, phase);
         }
       }
     }

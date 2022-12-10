@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/12/2022
+// Last Modified: 07/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -215,7 +215,7 @@ class SOEMHandler final {
     spdlog::debug("Run EC state check thread, interval: {} [ms]", _state_check_interval.count());
     _ecat_check_thread = std::thread([this, expected_wkc] {
       while (this->_is_open.load()) {
-        if ((this->_wkc.load() < expected_wkc) || ec_group[0].docheckstate)
+        if (this->_wkc.load() < expected_wkc || ec_group[0].docheckstate)
           if (!error_handle(this->_on_lost)) break;
         std::this_thread::sleep_for(_state_check_interval);
       }
