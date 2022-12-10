@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/12/2022
+// Last Modified: 07/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -134,7 +134,11 @@ class CPU {
   }
 
  private:
-  static uint16_t get_addr(const uint8_t select, const uint16_t addr) { return static_cast<uint16_t>((select & 0x0003) << 14) | (addr & 0x3FFF); }
+  static uint16_t get_addr(const uint8_t select, const uint16_t addr) {
+    const auto h = static_cast<uint16_t>((select & 0x0003) << 14);
+    const uint16_t l = addr & 0x3FFF;
+    return h | l;
+  }
 
   [[nodiscard]] uint16_t bram_read(const uint8_t select, const uint16_t addr) const { return _fpga.read(get_addr(select, addr)); }
 
@@ -167,20 +171,20 @@ class CPU {
       bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_MOD_FREQ_DIV_0, reinterpret_cast<const uint16_t*>(&freq_div), 2);
     }
     const auto* data = reinterpret_cast<const uint16_t*>(
-        (header->cpu_flag.contains(driver::CPUControlFlags::MOD_BEGIN)) ? header->mod_initial().data : header->mod_subsequent().data);
+        header->cpu_flag.contains(driver::CPUControlFlags::MOD_BEGIN) ? header->mod_initial().data : header->mod_subsequent().data);
     if (const auto segment_capacity = (_mod_cycle & ~cpu::MOD_BUF_SEGMENT_SIZE_MASK) + cpu::MOD_BUF_SEGMENT_SIZE - _mod_cycle;
         write <= segment_capacity) {
       bram_cpy(cpu::BRAM_SELECT_MOD, static_cast<uint16_t>((_mod_cycle & cpu::MOD_BUF_SEGMENT_SIZE_MASK) >> 1), data,
-               ((static_cast<size_t>(write) + 1) >> 1));
+               (static_cast<size_t>(write) + 1) / 2);
       _mod_cycle += write;
     } else {
-      bram_cpy(cpu::BRAM_SELECT_MOD, static_cast<uint16_t>((_mod_cycle & cpu::MOD_BUF_SEGMENT_SIZE_MASK) >> 1), data, (segment_capacity >> 1));
+      bram_cpy(cpu::BRAM_SELECT_MOD, static_cast<uint16_t>((_mod_cycle & cpu::MOD_BUF_SEGMENT_SIZE_MASK) >> 1), data, segment_capacity >> 1);
       _mod_cycle += segment_capacity;
       data += segment_capacity;
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_MOD_ADDR_OFFSET,
                  static_cast<uint16_t>((_mod_cycle & ~cpu::MOD_BUF_SEGMENT_SIZE_MASK) >> cpu::MOD_BUF_SEGMENT_SIZE_WIDTH));
-      bram_cpy(cpu::BRAM_SELECT_MOD, ((_mod_cycle & cpu::MOD_BUF_SEGMENT_SIZE_MASK) >> 1), data,
-               ((static_cast<size_t>(write) - segment_capacity + 1) >> 1));
+      bram_cpy(cpu::BRAM_SELECT_MOD, (_mod_cycle & cpu::MOD_BUF_SEGMENT_SIZE_MASK) >> 1, data,
+               (static_cast<size_t>(write) - segment_capacity + 1) / 2);
       _mod_cycle += write - segment_capacity;
     }
 
@@ -223,9 +227,9 @@ class CPU {
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET, 0);
       size = body->focus_stm_initial().data()[0];
       const auto freq_div =
-          (static_cast<uint32_t>(body->focus_stm_initial().data()[2]) << 16) | static_cast<uint32_t>(body->focus_stm_initial().data()[1]);
+          static_cast<uint32_t>(body->focus_stm_initial().data()[2]) << 16 | static_cast<uint32_t>(body->focus_stm_initial().data()[1]);
       const auto sound_speed =
-          (static_cast<uint32_t>(body->focus_stm_initial().data()[4]) << 16) | static_cast<uint32_t>(body->focus_stm_initial().data()[3]);
+          static_cast<uint32_t>(body->focus_stm_initial().data()[4]) << 16 | static_cast<uint32_t>(body->focus_stm_initial().data()[3]);
 
       bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FREQ_DIV_0, reinterpret_cast<const uint16_t*>(&freq_div), 2);
       bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_SOUND_SPEED_0, reinterpret_cast<const uint16_t*>(&sound_speed), 2);
@@ -276,7 +280,7 @@ class CPU {
       _stm_write = 0;
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET, 0);
       const auto freq_div =
-          (static_cast<uint32_t>(body->gain_stm_initial().data()[1]) << 16) | static_cast<uint32_t>(body->gain_stm_initial().data()[0]);
+          static_cast<uint32_t>(body->gain_stm_initial().data()[1]) << 16 | static_cast<uint32_t>(body->gain_stm_initial().data()[0]);
       bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FREQ_DIV_0, reinterpret_cast<const uint16_t*>(&freq_div), 2);
       _gain_stm_mode = body->gain_stm_initial().data()[2];
       _stm_cycle = body->gain_stm_initial().data()[3];
@@ -292,41 +296,41 @@ class CPU {
         for (size_t i = 0; i < _num_transducers; i++) bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
         break;
       case cpu::GAIN_STM_MODE_PHASE_FULL:
-        for (size_t i = 0; i < _num_transducers; i++) bram_write(cpu::BRAM_SELECT_STM, dst++, 0xFF00 | (*src++ & 0x00FF));
+        for (size_t i = 0; i < _num_transducers; i++) bram_write(cpu::BRAM_SELECT_STM, dst++, 0xFF00 | *src++);
         _stm_write += 1;
         src = body->gain_stm_subsequent().data();
         dst = static_cast<uint16_t>((_stm_write & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
-        for (size_t i = 0; i < _num_transducers; i++) bram_write(cpu::BRAM_SELECT_STM, dst++, 0xFF00 | (((*src++) >> 8) & 0x00FF));
+        for (size_t i = 0; i < _num_transducers; i++) bram_write(cpu::BRAM_SELECT_STM, dst++, 0xFF00 | *src++ >> 8);
         _stm_write += 1;
         break;
       case cpu::GAIN_STM_MODE_PHASE_HALF:
         for (size_t i = 0; i < _num_transducers; i++) {
           const auto phase = static_cast<uint16_t>(*src++ & 0x000F);
-          bram_write(cpu::BRAM_SELECT_STM, dst++, static_cast<uint16_t>(0xFF00 | (phase << 4) | phase));
+          bram_write(cpu::BRAM_SELECT_STM, dst++, static_cast<uint16_t>(0xFF00 | phase << 4 | phase));
         }
         _stm_write += 1;
 
         src = body->gain_stm_subsequent().data();
         dst = static_cast<uint16_t>((_stm_write & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
         for (size_t i = 0; i < _num_transducers; i++) {
-          const auto phase = static_cast<uint16_t>((*src++ >> 4) & 0x000F);
-          bram_write(cpu::BRAM_SELECT_STM, dst++, static_cast<uint16_t>(0xFF00 | (phase << 4) | phase));
+          const auto phase = static_cast<uint16_t>(*src++ >> 4 & 0x000F);
+          bram_write(cpu::BRAM_SELECT_STM, dst++, static_cast<uint16_t>(0xFF00 | phase << 4 | phase));
         }
         _stm_write += 1;
 
         src = body->gain_stm_subsequent().data();
         dst = static_cast<uint16_t>((_stm_write & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
         for (size_t i = 0; i < _num_transducers; i++) {
-          const auto phase = static_cast<uint16_t>((*src++ >> 8) & 0x000F);
-          bram_write(cpu::BRAM_SELECT_STM, dst++, static_cast<uint16_t>(0xFF00 | (phase << 4) | phase));
+          const auto phase = static_cast<uint16_t>(*src++ >> 8 & 0x000F);
+          bram_write(cpu::BRAM_SELECT_STM, dst++, static_cast<uint16_t>(0xFF00 | phase << 4 | phase));
         }
         _stm_write += 1;
 
         src = body->gain_stm_subsequent().data();
         dst = static_cast<uint16_t>((_stm_write & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
         for (size_t i = 0; i < _num_transducers; i++) {
-          const auto phase = static_cast<uint16_t>((*src++ >> 12) & 0x000F);
-          bram_write(cpu::BRAM_SELECT_STM, dst++, static_cast<uint16_t>(0xFF00 | (phase << 4) | phase));
+          const auto phase = static_cast<uint16_t>(*src++ >> 12 & 0x000F);
+          bram_write(cpu::BRAM_SELECT_STM, dst++, static_cast<uint16_t>(0xFF00 | phase << 4 | phase));
         }
         _stm_write += 1;
         break;
@@ -348,7 +352,7 @@ class CPU {
       _stm_write = 0;
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET, 0);
       const auto freq_div =
-          (static_cast<uint32_t>(body->gain_stm_initial().data()[1]) << 16) | static_cast<uint32_t>(body->gain_stm_initial().data()[0]);
+          static_cast<uint32_t>(body->gain_stm_initial().data()[1]) << 16 | static_cast<uint32_t>(body->gain_stm_initial().data()[0]);
       bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FREQ_DIV_0, reinterpret_cast<const uint16_t*>(&freq_div), 2);
       _gain_stm_mode = body->gain_stm_initial().data()[2];
       _stm_cycle = body->gain_stm_initial().data()[3];
@@ -434,7 +438,7 @@ class CPU {
         _ack = get_fpga_version() & 0xFF;
         break;
       case driver::MSG_RD_FPGA_FUNCTION:
-        _ack = (get_fpga_version() >> 8) & 0xFF;
+        _ack = get_fpga_version() >> 8;
         break;
       default:
         if (_msg_id > driver::MSG_END) return;

@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
+if(NOT BUILD_BACKEND_BLAS)
+  return()
+endif()
+
 add_library(autd3capi-backend-blas SHARED
   c_api.cpp
   blas_backend.h

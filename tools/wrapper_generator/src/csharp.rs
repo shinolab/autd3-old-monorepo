@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/11/2022
+ * Last Modified: 09/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -159,7 +159,11 @@ impl CSharpGenerator {
                 },
             },
             2 => match arg.ty() {
-                Type::Void => "out IntPtr",
+                Type::Void => match arg.inout() {
+                    InOut::IN => "IntPtr[]?",
+                    InOut::OUT => "out IntPtr",
+                    InOut::INOUT => panic!("INOUT void** is not supported."),
+                },
                 _ => panic!("double pointer is not supported, but void**"),
             },
             _ => {

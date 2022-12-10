@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 07/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -45,7 +45,7 @@ struct ModHeaderSubsequent {
 struct SilencerHeader {
   uint16_t cycle;
   uint16_t step;
-  uint8_t _unused[120];
+  uint8_t unused[120];
 };
 
 /**

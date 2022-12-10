@@ -322,6 +322,27 @@ Get the number of transducers.
 | handle                 | void*   | in     | pointer to Controller |
 | return                 | int32_t | -      | number of transducers |
 
+## AUTDNumDevices (autd3capi)
+
+Get the number of devices.
+
+| Argument name / return | type    | in/out | description           |
+| ---------------------- | ------- | ------ | --------------------- |
+| handle                 | void*   | in     | pointer to Controller |
+| return                 | int32_t | -      | number of devices     |
+
+## AUTDGeometryCenter (autd3capi)
+
+Get the geometry center.
+
+| Argument name / return | type    | in/out | description                         |
+| ---------------------- | ------- | ------ | ----------------------------------- |
+| handle                 | void*   | in     | pointer to Controller               |
+| x                      | double* | out    | x coordinate of center              |
+| y                      | double* | out    | y coordinate of center              |
+| z                      | double* | out    | z coordinate of center              |
+| return                 | void    | -      | -                                   |
+
 ## AUTDTransPosition (autd3capi)
 
 Get the position of the transducer.
@@ -1294,6 +1315,17 @@ The backend created must be deleted at the end by `AUTDDeleteBackend`.
 | ---------------------- | ------ | ------ | ---------------------------------- |
 | out                    | void** | out    | pointer to pointer to CUDA backend |
 | return                 | void   | -      | -                                  |
+
+## AUTDLinkBundle (autd3capi-link-bundle)
+
+Create a Bundle link.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| out                    | void**   | out    | pointer to pointer to Debug link    |
+| links                  | void**   | in     | link pointer array                  |
+| n                      | int32_t  | in     | size of links                       |
+| return                 | void     | -      | -                                   |
 
 ## AUTDLinkDebug (autd3capi-link-debug)
 

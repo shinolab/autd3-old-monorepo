@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
+if(NOT EXPORT_SOEM_AUTD_SERVER)
+  return()
+endif()
+
 find_package(Threads REQUIRED)
 
 file(GLOB_RECURSE SOEM_SRC_FILES ${SOEM_PATH}/soem/*.c ${SOEM_PATH}/osal/${OS}/*.c ${SOEM_PATH}/oshw/${OS}/*.c)
@@ -31,10 +35,9 @@ if(WIN32)
     ${SOEM_PATH}/oshw/${OS}/wpcap/Include/pcap
   )
   target_compile_definitions(SOEMAUTDServer PRIVATE __STDC_LIMIT_MACROS NOMINMAX _CRT_SECURE_NO_WARNINGS)
-  if(MSVC)
-    target_compile_options(SOEMAUTDServer PRIVATE /wd4996)
-  endif()
 endif()
+
+enable_cxx_compiler_flag_if_supported(SOEMAUTDServer PRIVATE /wd4996)
 
 target_link_libraries(SOEMAUTDServer PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 if(WIN32)

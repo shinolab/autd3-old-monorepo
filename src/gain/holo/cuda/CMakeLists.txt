@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.17)
 
+if(NOT BUILD_BACKEND_CUDA)
+  return()
+endif()
+
 find_package(CUDA REQUIRED)
 find_package(CUDAToolkit REQUIRED)
 message("CUDA version: " ${CUDA_VERSION})
