@@ -11,6 +11,7 @@
 
 #include "autd3/gain/holo.hpp"
 
+#include <execution>
 #include <random>
 
 #include "autd3/core/acoustics.hpp"
@@ -20,7 +21,7 @@ namespace autd3::gain::holo {
 namespace {
 
 void generate_transfer_matrix(const std::vector<core::Vector3>& foci, const core::Geometry& geometry, MatrixXc& dst) {
-  std::for_each(geometry.begin(), geometry.end(), [&](const auto& transducer) {
+  std::for_each(std::execution::par, geometry.begin(), geometry.end(), [&](const auto& transducer) {
     for (size_t i = 0; i < foci.size(); i++)
       dst(i, transducer.id()) =
           core::propagate(transducer.position(), transducer.z_direction(), transducer.attenuation, transducer.wavenumber(), foci[i]);
