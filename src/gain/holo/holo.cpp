@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 12/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,11 +20,11 @@ namespace autd3::gain::holo {
 namespace {
 
 void generate_transfer_matrix(const std::vector<core::Vector3>& foci, const core::Geometry& geometry, MatrixXc& dst) {
-  for (size_t i = 0; i < foci.size(); i++)
-    std::for_each(geometry.begin(), geometry.end(), [&](const auto& transducer) {
+  std::for_each(geometry.begin(), geometry.end(), [&](const auto& transducer) {
+    for (size_t i = 0; i < foci.size(); i++)
       dst(i, transducer.id()) =
           core::propagate(transducer.position(), transducer.z_direction(), transducer.attenuation, transducer.wavenumber(), foci[i]);
-    });
+  });
 }
 
 void back_prop(const BackendPtr& backend, const MatrixXc& transfer, const VectorXc& amps, MatrixXc& b) {
