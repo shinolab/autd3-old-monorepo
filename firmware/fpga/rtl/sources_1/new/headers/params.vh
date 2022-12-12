@@ -4,14 +4,16 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/11/2022
+ * Last Modified: 12/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  * 
  */
 
-localparam bit [7:0] VERSION_NUM = 8'h86;
+localparam bit [7:0] VERSION_NUM = 8'h87;
+
+localparam string SUB_CLOCK_FREQ = "40.96MHZ";
 
 localparam string ENABLE_STM = "TRUE";
 localparam string ENABLE_MODULATOR = "TRUE";
