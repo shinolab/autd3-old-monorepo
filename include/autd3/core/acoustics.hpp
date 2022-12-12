@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/11/2022
+// Last Modified: 12/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -50,6 +50,10 @@ class Directivity {
   }
 };
 
+using directivity_func = double(double);
+
+constexpr double directivity_sphere(double) { return 1.0; }
+
 /**
  * @brief Calculate complex sound pressure propagation
  * @param source_pos source transducer position
@@ -59,17 +63,18 @@ class Directivity {
  * @param target target position
  * @return complex sound pressure at target position
  */
-inline std::complex<double> propagate(const driver::Vector3& source_pos, const driver::Vector3& source_dir, const double attenuation,
-                                      const double wavenumber, const driver::Vector3& target) {
+template <directivity_func D = directivity_sphere>
+std::complex<double> propagate(const driver::Vector3& source_pos, const driver::Vector3& source_dir, const double attenuation,
+                               const double wavenumber, const driver::Vector3& target) {
   const auto diff = target - source_pos;
   const auto dist = diff.norm();
 
   const auto theta = std::atan2(source_dir.cross(diff).norm(), source_dir.dot(diff)) * 180.0 / driver::pi;
 
-  const auto d = Directivity::t4010a1(theta);
+  const auto d = D(theta);
   const auto r = d * std::exp(-dist * attenuation) / dist;
   const auto phi = -wavenumber * dist;
-  return r * std::exp(std::complex<double>(0., phi));
+  return r * std::complex<double>(std::cos(phi), std::sin(phi));
 }
 
 }  // namespace autd3::core
