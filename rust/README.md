@@ -4,13 +4,13 @@
 
 [autd3 library](https://github.com/shinolab/autd3) for Rust
 
-version: 2.6.7
+version: 2.6.8
 
 ## Install with Cargo
 
 ```
 [dependencies]
-autd3 = "2.6.7"
+autd3 = "2.6.8"
 ```
 
 ## Documents
