@@ -51,7 +51,7 @@ class Directivity {
     return a + b * x + c * x * x + d * x * x * x;
   }
 
-  static constexpr double sphere(double) noexcept { return 1.0; }
+  static constexpr double sphere(double) noexcept { return 1.0; }  // NOLINT
 };
 
 /**
