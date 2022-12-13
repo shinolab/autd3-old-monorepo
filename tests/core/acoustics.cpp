@@ -3,7 +3,7 @@
 // Created Date: 02/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/12/2022
+// Last Modified: 13/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -42,18 +42,23 @@ TEST(CoreAcoustics, Directivity) {
 TEST(CoreAcoustics, propagate) {
   constexpr auto wavenumber = 2.0 * autd3::driver::pi / 2.0;  // lambda = 2.0
 
-  ASSERT_NEAR_COMPLEX(autd3::core::propagate(Vector3::Zero(), Vector3::UnitZ(), 0.0, wavenumber, Vector3(0.0, 0.0, 1.0)), std::complex(-1.0, 0.0),
-                      1e-3);
+  ASSERT_NEAR_COMPLEX(
+      autd3::core::propagate<autd3::core::Directivity::t4010a1>(Vector3::Zero(), Vector3::UnitZ(), 0.0, wavenumber, Vector3(0.0, 0.0, 1.0)),
+      std::complex(-1.0, 0.0), 1e-3);
 
-  ASSERT_NEAR_COMPLEX(autd3::core::propagate(Vector3::Zero(), Vector3::UnitZ(), 0.0, wavenumber, Vector3(0.0, 0.0, 2.0)), std::complex(0.5, 0.0),
-                      1e-3);
+  ASSERT_NEAR_COMPLEX(
+      autd3::core::propagate<autd3::core::Directivity::t4010a1>(Vector3::Zero(), Vector3::UnitZ(), 0.0, wavenumber, Vector3(0.0, 0.0, 2.0)),
+      std::complex(0.5, 0.0), 1e-3);
 
-  ASSERT_NEAR_COMPLEX(autd3::core::propagate(Vector3::Zero(), Vector3::UnitZ(), 0.0, wavenumber, Vector3(1.0, 0.0, 0.0)),
-                      std::complex(-0.177831, 0.0), 1e-3);
+  ASSERT_NEAR_COMPLEX(
+      autd3::core::propagate<autd3::core::Directivity::t4010a1>(Vector3::Zero(), Vector3::UnitZ(), 0.0, wavenumber, Vector3(1.0, 0.0, 0.0)),
+      std::complex(-0.177831, 0.0), 1e-3);
 
-  ASSERT_NEAR_COMPLEX(autd3::core::propagate(Vector3::Zero(), Vector3::UnitZ(), 0.0, wavenumber, Vector3(0.0, 1.0, 0.0)),
-                      std::complex(-0.177831, 0.0), 1e-3);
+  ASSERT_NEAR_COMPLEX(
+      autd3::core::propagate<autd3::core::Directivity::t4010a1>(Vector3::Zero(), Vector3::UnitZ(), 0.0, wavenumber, Vector3(0.0, 1.0, 0.0)),
+      std::complex(-0.177831, 0.0), 1e-3);
 
-  ASSERT_NEAR_COMPLEX(autd3::core::propagate(Vector3::Zero(), Vector3::UnitX(), 0.0, wavenumber, Vector3(1.0, 0.0, 0.0)), std::complex(-1.0, 0.0),
-                      1e-3);
+  ASSERT_NEAR_COMPLEX(
+      autd3::core::propagate<autd3::core::Directivity::t4010a1>(Vector3::Zero(), Vector3::UnitX(), 0.0, wavenumber, Vector3(1.0, 0.0, 0.0)),
+      std::complex(-1.0, 0.0), 1e-3);
 }
