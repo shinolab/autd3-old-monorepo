@@ -1,3 +1,8 @@
+# 2.6.8
+
+- Fix [#49](https://github.com/shinolab/autd3/issues/49)
+- Improve `Holo` gain performance
+
 # 2.6.7
 
 - Change `Controller::_send_interval` to 1ms by default

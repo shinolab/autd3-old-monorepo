@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/11/2022
+// Last Modified: 13/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,6 +25,8 @@ constexpr double DIR_COEFFICIENT_C[] = {
     0., 0., -0.000787968093807, -0.000307591508224, -0.000218348633296, 0.00047738416141, 0.000120353137658, 0.000323676257958, 0.000143850511};
 constexpr double DIR_COEFFICIENT_D[] = {
     0., 0., 1.60125528528e-05, 2.9747624976e-06, 2.31910931569e-05, -1.1901034125e-05, 6.77743734332e-06, -5.99548024824e-06, -4.79372835035e-06};
+
+using directivity_func = double(double);
 
 /**
  * \brief Utility class to calculate directivity of ultrasound transducer.
@@ -48,6 +50,8 @@ class Directivity {
     const auto x = theta_deg - static_cast<double>(i - 1) * 10;
     return a + b * x + c * x * x + d * x * x * x;
   }
+
+  static constexpr double sphere(double) noexcept { return 1.0; }  // NOLINT
 };
 
 /**
@@ -59,17 +63,18 @@ class Directivity {
  * @param target target position
  * @return complex sound pressure at target position
  */
-inline std::complex<double> propagate(const driver::Vector3& source_pos, const driver::Vector3& source_dir, const double attenuation,
-                                      const double wavenumber, const driver::Vector3& target) {
+template <directivity_func D = Directivity::sphere>
+std::complex<double> propagate(const driver::Vector3& source_pos, const driver::Vector3& source_dir, const double attenuation,
+                               const double wavenumber, const driver::Vector3& target) {
   const auto diff = target - source_pos;
   const auto dist = diff.norm();
 
   const auto theta = std::atan2(source_dir.cross(diff).norm(), source_dir.dot(diff)) * 180.0 / driver::pi;
 
-  const auto d = Directivity::t4010a1(theta);
+  const auto d = D(theta);
   const auto r = d * std::exp(-dist * attenuation) / dist;
   const auto phi = -wavenumber * dist;
-  return r * std::exp(std::complex<double>(0., phi));
+  return r * std::complex<double>(std::cos(phi), std::sin(phi));
 }
 
 }  // namespace autd3::core
