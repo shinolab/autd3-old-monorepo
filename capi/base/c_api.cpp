@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/12/2022
+// Last Modified: 14/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,6 +23,7 @@
 #include "autd3/driver/v2_4/driver.hpp"
 #include "autd3/driver/v2_5/driver.hpp"
 #include "autd3/driver/v2_6/driver.hpp"
+#include "autd3/driver/v2_7/driver.hpp"
 #include "autd3/modulation/lpf.hpp"
 #include "custom.hpp"
 #include "custom_sink.hpp"
@@ -48,6 +49,8 @@ std::unique_ptr<const autd3::driver::Driver> get_driver(const uint8_t driver_ver
       return std::make_unique<autd3::driver::DriverV2_5>();
     case 0x86:
       return std::make_unique<autd3::driver::DriverV2_6>();
+    case 0x87:
+      return std::make_unique<autd3::driver::DriverV2_7>();
     default:
       spdlog::error("unknown driver version: {}", driver_version);
       return nullptr;

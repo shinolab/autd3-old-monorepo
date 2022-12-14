@@ -1,6 +1,6 @@
 // File: driver.cpp
-// Project: v2_3
-// Created Date: 22/11/2022
+// Project: v2_7
+// Created Date: 14/12/2022
 // Author: Shun Suzuki
 // -----
 // Last Modified: 14/12/2022
@@ -9,20 +9,21 @@
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
-#include "autd3/driver/v2_3/driver.hpp"
+#include "autd3/driver/v2_7/driver.hpp"
 
 #include "../../spdlog.hpp"
-#include "autd3/driver/v2_3/defined.hpp"
+#include "autd3/driver/v2_7/defined.hpp"
 
 namespace autd3::driver {
-uint8_t DriverV2_3::version_num() const noexcept { return 0x83; }
 
-void DriverV2_3::clear(TxDatagram& tx) const noexcept {
+uint8_t DriverV2_7::version_num() const noexcept { return 0x87; }
+
+void DriverV2_7::clear(TxDatagram& tx) const noexcept {
   tx.header().msg_id = MSG_CLEAR;
   tx.num_bodies = 0;
 }
 
-void DriverV2_3::null_header(const uint8_t msg_id, TxDatagram& tx) const noexcept {
+void DriverV2_7::null_header(const uint8_t msg_id, TxDatagram& tx) const noexcept {
   tx.header().msg_id = msg_id;
   tx.header().cpu_flag.remove(CPUControlFlags::MOD);
   tx.header().cpu_flag.remove(CPUControlFlags::CONFIG_SILENCER);
@@ -30,13 +31,13 @@ void DriverV2_3::null_header(const uint8_t msg_id, TxDatagram& tx) const noexcep
   tx.header().size = 0;
 }
 
-void DriverV2_3::null_body(TxDatagram& tx) const noexcept {
+void DriverV2_7::null_body(TxDatagram& tx) const noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
   tx.num_bodies = 0;
 }
 
-void DriverV2_3::sync(const std::vector<uint16_t>& cycles, TxDatagram& tx) const noexcept {
+void DriverV2_7::sync(const std::vector<uint16_t>& cycles, TxDatagram& tx) const noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::MOD);
   tx.header().cpu_flag.remove(CPUControlFlags::CONFIG_SILENCER);
   tx.header().cpu_flag.set(CPUControlFlags::CONFIG_SYNC);
@@ -45,7 +46,7 @@ void DriverV2_3::sync(const std::vector<uint16_t>& cycles, TxDatagram& tx) const
   std::memcpy(tx.bodies_raw_ptr(), cycles.data(), tx.bodies_size());
 }
 
-void DriverV2_3::mod_delay(const std::vector<uint16_t>& delays, TxDatagram& tx) const noexcept {
+void DriverV2_7::mod_delay(const std::vector<uint16_t>& delays, TxDatagram& tx) const noexcept {
   tx.header().cpu_flag.set(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.set(CPUControlFlags::MOD_DELAY);
   tx.num_bodies = tx.num_devices();
@@ -53,8 +54,8 @@ void DriverV2_3::mod_delay(const std::vector<uint16_t>& delays, TxDatagram& tx) 
   std::memcpy(tx.bodies_raw_ptr(), delays.data(), tx.bodies_size());
 }
 
-bool DriverV2_3::modulation(const uint8_t msg_id, const std::vector<uint8_t>& mod_data, size_t& sent, const uint32_t freq_div, TxDatagram& tx) const {
-  if (mod_data.size() > v2_3::MOD_BUF_SIZE_MAX) {
+bool DriverV2_7::modulation(const uint8_t msg_id, const std::vector<uint8_t>& mod_data, size_t& sent, const uint32_t freq_div, TxDatagram& tx) const {
+  if (mod_data.size() > v2_7::MOD_BUF_SIZE_MAX) {
     spdlog::error("Modulation buffer overflow");
     return false;
   }
@@ -77,8 +78,8 @@ bool DriverV2_3::modulation(const uint8_t msg_id, const std::vector<uint8_t>& mo
   }
 
   if (is_first_frame) {
-    if (freq_div < v2_3::MOD_SAMPLING_FREQ_DIV_MIN) {
-      spdlog::error("Modulation frequency division is out of range. Minimum is {}, but you use {}.", v2_3::MOD_SAMPLING_FREQ_DIV_MIN, freq_div);
+    if (freq_div < v2_7::MOD_SAMPLING_FREQ_DIV_MIN) {
+      spdlog::error("Modulation frequency division is out of range. Minimum is {}, but you use {}.", v2_7::MOD_SAMPLING_FREQ_DIV_MIN, freq_div);
       return false;
     }
 
@@ -94,9 +95,10 @@ bool DriverV2_3::modulation(const uint8_t msg_id, const std::vector<uint8_t>& mo
   sent += mod_size;
   return true;
 }
-bool DriverV2_3::config_silencer(const uint8_t msg_id, const uint16_t cycle, const uint16_t step, TxDatagram& tx) const {
-  if (cycle < v2_3::SILENCER_CYCLE_MIN) {
-    spdlog::error("Silencer cycle is out of range. Minimum is {}, but you use {}.", v2_3::SILENCER_CYCLE_MIN, cycle);
+
+bool DriverV2_7::config_silencer(const uint8_t msg_id, const uint16_t cycle, const uint16_t step, TxDatagram& tx) const {
+  if (cycle < v2_7::SILENCER_CYCLE_MIN) {
+    spdlog::error("Silencer cycle is out of range. Minimum is {}, but you use {}.", v2_7::SILENCER_CYCLE_MIN, cycle);
     return false;
   }
 
@@ -109,7 +111,8 @@ bool DriverV2_3::config_silencer(const uint8_t msg_id, const uint16_t cycle, con
   tx.header().silencer().step = step;
   return true;
 }
-void DriverV2_3::normal_legacy_header(TxDatagram& tx) noexcept {
+
+void DriverV2_7::normal_legacy_header(TxDatagram& tx) noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
 
@@ -118,7 +121,8 @@ void DriverV2_3::normal_legacy_header(TxDatagram& tx) noexcept {
 
   tx.num_bodies = 0;
 }
-void DriverV2_3::normal_legacy_header(TxDatagram& tx) const noexcept {
+
+void DriverV2_7::normal_legacy_header(TxDatagram& tx) const noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
 
@@ -127,7 +131,8 @@ void DriverV2_3::normal_legacy_header(TxDatagram& tx) const noexcept {
 
   tx.num_bodies = 0;
 }
-void DriverV2_3::normal_legacy_body(const std::vector<Drive>& drives, TxDatagram& tx) const noexcept {
+
+void DriverV2_7::normal_legacy_body(const std::vector<Drive>& drives, TxDatagram& tx) const noexcept {
   auto* p = reinterpret_cast<LegacyDrive*>(tx.bodies_raw_ptr());
   for (size_t i = 0; i < drives.size(); i++) p[i].set(drives[i]);
 
@@ -135,7 +140,8 @@ void DriverV2_3::normal_legacy_body(const std::vector<Drive>& drives, TxDatagram
 
   tx.num_bodies = tx.num_devices();
 }
-void DriverV2_3::normal_header(TxDatagram& tx) const noexcept {
+
+void DriverV2_7::normal_header(TxDatagram& tx) const noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
 
@@ -144,7 +150,8 @@ void DriverV2_3::normal_header(TxDatagram& tx) const noexcept {
 
   tx.num_bodies = 0;
 }
-void DriverV2_3::normal_duty_body(const std::vector<Drive>& drives, TxDatagram& tx) const noexcept {
+
+void DriverV2_7::normal_duty_body(const std::vector<Drive>& drives, TxDatagram& tx) const noexcept {
   tx.header().cpu_flag.set(CPUControlFlags::IS_DUTY);
 
   auto* p = reinterpret_cast<Duty*>(tx.bodies_raw_ptr());
@@ -154,7 +161,8 @@ void DriverV2_3::normal_duty_body(const std::vector<Drive>& drives, TxDatagram& 
 
   tx.num_bodies = tx.num_devices();
 }
-void DriverV2_3::normal_phase_body(const std::vector<Drive>& drives, TxDatagram& tx) const noexcept {
+
+void DriverV2_7::normal_phase_body(const std::vector<Drive>& drives, TxDatagram& tx) const noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
 
   auto* p = reinterpret_cast<Phase*>(tx.bodies_raw_ptr());
@@ -164,7 +172,8 @@ void DriverV2_3::normal_phase_body(const std::vector<Drive>& drives, TxDatagram&
 
   tx.num_bodies = tx.num_devices();
 }
-void DriverV2_3::focus_stm_header(TxDatagram& tx, bool immediate) const noexcept {
+
+void DriverV2_7::focus_stm_header(TxDatagram& tx, const bool immediate) const noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
   tx.header().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
@@ -172,32 +181,39 @@ void DriverV2_3::focus_stm_header(TxDatagram& tx, bool immediate) const noexcept
 
   tx.header().fpga_flag.set(FPGAControlFlags::STM_MODE);
   tx.header().fpga_flag.remove(FPGAControlFlags::STM_GAIN_MODE);
+  tx.header().fpga_flag.remove(FPGAControlFlags::USE_STM_START_IDX);
+  if (immediate)
+    tx.header().fpga_flag.remove(FPGAControlFlags::STM_IMMEDIATE_N);
+  else
+    tx.header().fpga_flag.set(FPGAControlFlags::STM_IMMEDIATE_N);
 
   tx.num_bodies = 0;
 }
-size_t DriverV2_3::focus_stm_send_size(const size_t total_size, const size_t sent, const std::vector<size_t>& device_map) const noexcept {
+
+size_t DriverV2_7::focus_stm_send_size(const size_t total_size, const size_t sent, const std::vector<size_t>& device_map) const noexcept {
   const size_t tr_num = *std::min_element(device_map.begin(), device_map.end());
   const size_t data_len = tr_num * sizeof(uint16_t);
-  const auto max_size = sent == 0 ? (data_len - sizeof(uint16_t) - sizeof(uint32_t) - sizeof(uint32_t)) / sizeof(STMFocus)
+  const auto max_size = sent == 0 ? (data_len - sizeof(uint16_t) - sizeof(uint32_t) - sizeof(uint32_t) - sizeof(uint16_t)) / sizeof(STMFocus)
                                   : (data_len - sizeof(uint16_t)) / sizeof(STMFocus);
   return (std::min)(total_size - sent, max_size);
 }
 
-bool DriverV2_3::focus_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, const size_t total_size, const uint32_t freq_div,
-                                const double sound_speed, std::optional<uint16_t>, TxDatagram& tx) const {
-  if (total_size > v2_3::FOCUS_STM_BUF_SIZE_MAX) {
+bool DriverV2_7::focus_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, const size_t total_size, const uint32_t freq_div,
+                                const double sound_speed, std::optional<uint16_t> stm_start_idx, TxDatagram& tx) const {
+  if (total_size > v2_7::FOCUS_STM_BUF_SIZE_MAX) {
     spdlog::error("FocusSTM out of buffer");
     return false;
   }
 
+  if (stm_start_idx) tx.header().fpga_flag.set(FPGAControlFlags::USE_STM_START_IDX);
+
   if (points.empty() || points[0].empty()) return true;
 
   if (sent == 0) {
-    if (freq_div < v2_3::FOCUS_STM_SAMPLING_FREQ_DIV_MIN) {
-      spdlog::error("STM frequency division is out of range. Minimum is {}, but you use {}.", v2_3::FOCUS_STM_SAMPLING_FREQ_DIV_MIN, freq_div);
+    if (freq_div < v2_7::FOCUS_STM_SAMPLING_FREQ_DIV_MIN) {
+      spdlog::error("STM frequency division is out of range. Minimum is {}, but you use {}.", v2_7::FOCUS_STM_SAMPLING_FREQ_DIV_MIN, freq_div);
       return false;
     }
-
     tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
 #ifdef AUTD3_USE_METER
     const auto sound_speed_internal = static_cast<uint32_t>(std::round(sound_speed * 1024.0));
@@ -210,7 +226,8 @@ bool DriverV2_3::focus_stm_body(const std::vector<std::vector<STMFocus>>& points
       d.focus_stm_initial().set_size(static_cast<uint16_t>(s.size()));
       d.focus_stm_initial().set_freq_div(freq_div);
       d.focus_stm_initial().set_sound_speed(sound_speed_internal);
-      d.focus_stm_initial().set_point(s);
+      if (stm_start_idx) d.focus_stm_initial().set_stm_start_idx(stm_start_idx.value());
+      d.focus_stm_initial().set_point(s, 6);
     }
   } else {
     for (size_t i = 0; i < tx.num_devices(); i++) {
@@ -231,7 +248,8 @@ bool DriverV2_3::focus_stm_body(const std::vector<std::vector<STMFocus>>& points
   sent += send_size;
   return true;
 }
-void DriverV2_3::gain_stm_legacy_header(TxDatagram& tx, bool) const noexcept {
+
+void DriverV2_7::gain_stm_legacy_header(TxDatagram& tx, const bool immediate) const noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
   tx.header().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
@@ -240,20 +258,28 @@ void DriverV2_3::gain_stm_legacy_header(TxDatagram& tx, bool) const noexcept {
   tx.header().fpga_flag.set(FPGAControlFlags::LEGACY_MODE);
   tx.header().fpga_flag.set(FPGAControlFlags::STM_MODE);
   tx.header().fpga_flag.set(FPGAControlFlags::STM_GAIN_MODE);
+  tx.header().fpga_flag.remove(FPGAControlFlags::USE_STM_START_IDX);
+  if (immediate)
+    tx.header().fpga_flag.remove(FPGAControlFlags::STM_IMMEDIATE_N);
+  else
+    tx.header().fpga_flag.set(FPGAControlFlags::STM_IMMEDIATE_N);
 
   tx.num_bodies = 0;
 }
-bool DriverV2_3::gain_stm_legacy_body(const std::vector<std::vector<Drive>>& drives, size_t& sent, const uint32_t freq_div, const GainSTMMode mode,
-                                      std::optional<uint16_t>, TxDatagram& tx) const {
-  if (drives.size() > v2_3::GAIN_STM_LEGACY_BUF_SIZE_MAX) {
+
+bool DriverV2_7::gain_stm_legacy_body(const std::vector<std::vector<Drive>>& drives, size_t& sent, const uint32_t freq_div, const GainSTMMode mode,
+                                      const std::optional<uint16_t> stm_start_idx, TxDatagram& tx) const {
+  if (drives.size() > v2_7::GAIN_STM_LEGACY_BUF_SIZE_MAX) {
     spdlog::error("GainSTM out of buffer");
     return false;
   }
 
+  if (stm_start_idx) tx.header().fpga_flag.set(FPGAControlFlags::USE_STM_START_IDX);
+
   bool is_last_frame = false;
   if (sent == 0) {
-    if (freq_div < v2_3::GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN) {
-      spdlog::error("STM frequency division is out of range. Minimum is {}, but you use {}.", v2_3::GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN, freq_div);
+    if (freq_div < v2_7::GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN) {
+      spdlog::error("STM frequency division is out of range. Minimum is {}, but you use {}.", v2_7::GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN, freq_div);
       return false;
     }
 
@@ -262,6 +288,7 @@ bool DriverV2_3::gain_stm_legacy_body(const std::vector<std::vector<Drive>>& dri
       tx.body(i).gain_stm_initial().set_freq_div(freq_div);
       tx.body(i).gain_stm_initial().set_mode(mode);
       tx.body(i).gain_stm_initial().set_cycle(drives.size());
+      if (stm_start_idx) tx.body(i).gain_stm_initial().set_stm_start_idx(stm_start_idx.value());
     }
     sent++;
   } else {
@@ -320,7 +347,8 @@ bool DriverV2_3::gain_stm_legacy_body(const std::vector<std::vector<Drive>>& dri
   tx.num_bodies = tx.num_devices();
   return true;
 }
-void DriverV2_3::gain_stm_normal_header(TxDatagram& tx, bool) const noexcept {
+
+void DriverV2_7::gain_stm_normal_header(TxDatagram& tx, const bool immediate) const noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
   tx.header().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
@@ -329,12 +357,18 @@ void DriverV2_3::gain_stm_normal_header(TxDatagram& tx, bool) const noexcept {
   tx.header().fpga_flag.remove(FPGAControlFlags::LEGACY_MODE);
   tx.header().fpga_flag.set(FPGAControlFlags::STM_MODE);
   tx.header().fpga_flag.set(FPGAControlFlags::STM_GAIN_MODE);
+  tx.header().fpga_flag.remove(FPGAControlFlags::USE_STM_START_IDX);
+  if (immediate)
+    tx.header().fpga_flag.remove(FPGAControlFlags::STM_IMMEDIATE_N);
+  else
+    tx.header().fpga_flag.set(FPGAControlFlags::STM_IMMEDIATE_N);
 
   tx.num_bodies = 0;
 }
-bool DriverV2_3::gain_stm_normal_phase(const std::vector<std::vector<Drive>>& drives, const size_t sent, const uint32_t freq_div,
-                                       const GainSTMMode mode, std::optional<uint16_t>, TxDatagram& tx) const {
-  if (drives.size() > v2_3::GAIN_STM_BUF_SIZE_MAX) {
+
+bool DriverV2_7::gain_stm_normal_phase(const std::vector<std::vector<Drive>>& drives, const size_t sent, const uint32_t freq_div,
+                                       const GainSTMMode mode, const std::optional<uint16_t> stm_start_idx, TxDatagram& tx) const {
+  if (drives.size() > v2_7::GAIN_STM_BUF_SIZE_MAX) {
     spdlog::error("GainSTM out of buffer");
     return false;
   }
@@ -351,17 +385,20 @@ bool DriverV2_3::gain_stm_normal_phase(const std::vector<std::vector<Drive>>& dr
 #pragma warning(pop)
 #endif
 
+  if (stm_start_idx) tx.header().fpga_flag.set(FPGAControlFlags::USE_STM_START_IDX);
   tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
 
   if (sent == 0) {
-    if (freq_div < v2_3::GAIN_STM_SAMPLING_FREQ_DIV_MIN) {
-      spdlog::error("STM frequency division is out of range. Minimum is {}, but you use {}.", v2_3::GAIN_STM_SAMPLING_FREQ_DIV_MIN, freq_div);
+    if (freq_div < v2_7::GAIN_STM_SAMPLING_FREQ_DIV_MIN) {
+      spdlog::error("STM frequency division is out of range. Minimum is {}, but you use {}.", v2_7::GAIN_STM_SAMPLING_FREQ_DIV_MIN, freq_div);
       return false;
     }
     tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
     for (size_t i = 0; i < tx.num_devices(); i++) {
       tx.body(i).gain_stm_initial().set_freq_div(freq_div);
       tx.body(i).gain_stm_initial().set_mode(mode);
+      tx.body(i).gain_stm_initial().set_cycle(drives.size());
+      if (stm_start_idx) tx.body(i).gain_stm_initial().set_stm_start_idx(stm_start_idx.value());
     }
   } else {
     auto* p = reinterpret_cast<Phase*>(tx.bodies_raw_ptr());
@@ -375,9 +412,10 @@ bool DriverV2_3::gain_stm_normal_phase(const std::vector<std::vector<Drive>>& dr
   tx.num_bodies = tx.num_devices();
   return true;
 }
-bool DriverV2_3::gain_stm_normal_duty(const std::vector<std::vector<Drive>>& drives, const size_t sent, const uint32_t freq_div,
-                                      const GainSTMMode mode, std::optional<uint16_t>, TxDatagram& tx) const {
-  if (drives.size() > v2_3::GAIN_STM_BUF_SIZE_MAX) {
+
+bool DriverV2_7::gain_stm_normal_duty(const std::vector<std::vector<Drive>>& drives, const size_t sent, const uint32_t freq_div,
+                                      const GainSTMMode mode, const std::optional<uint16_t> stm_start_idx, TxDatagram& tx) const {
+  if (drives.size() > v2_7::GAIN_STM_BUF_SIZE_MAX) {
     spdlog::error("GainSTM out of buffer");
     return false;
   }
@@ -394,17 +432,20 @@ bool DriverV2_3::gain_stm_normal_duty(const std::vector<std::vector<Drive>>& dri
 #pragma warning(pop)
 #endif
 
+  if (stm_start_idx) tx.header().fpga_flag.set(FPGAControlFlags::USE_STM_START_IDX);
   tx.header().cpu_flag.set(CPUControlFlags::IS_DUTY);
 
   if (sent == 0) {
-    if (freq_div < v2_3::GAIN_STM_SAMPLING_FREQ_DIV_MIN) {
-      spdlog::error("STM frequency division is out of range. Minimum is {}, but you use {}.", v2_3::GAIN_STM_SAMPLING_FREQ_DIV_MIN, freq_div);
+    if (freq_div < v2_7::GAIN_STM_SAMPLING_FREQ_DIV_MIN) {
+      spdlog::error("STM frequency division is out of range. Minimum is {}, but you use {}.", v2_7::GAIN_STM_SAMPLING_FREQ_DIV_MIN, freq_div);
       return false;
     }
     tx.header().cpu_flag.set(CPUControlFlags::STM_BEGIN);
     for (size_t i = 0; i < tx.num_devices(); i++) {
       tx.body(i).gain_stm_initial().set_freq_div(freq_div);
       tx.body(i).gain_stm_initial().set_mode(mode);
+      tx.body(i).gain_stm_initial().set_cycle(drives.size());
+      if (stm_start_idx) tx.body(i).gain_stm_initial().set_stm_start_idx(stm_start_idx.value());
     }
   } else {
     auto* p = reinterpret_cast<Duty*>(tx.bodies_raw_ptr());
@@ -418,29 +459,34 @@ bool DriverV2_3::gain_stm_normal_duty(const std::vector<std::vector<Drive>>& dri
   tx.num_bodies = tx.num_devices();
   return true;
 }
-void DriverV2_3::force_fan(TxDatagram& tx, const bool value) const noexcept {
+
+void DriverV2_7::force_fan(TxDatagram& tx, const bool value) const noexcept {
   if (value)
     tx.header().fpga_flag.set(FPGAControlFlags::FORCE_FAN);
   else
     tx.header().fpga_flag.remove(FPGAControlFlags::FORCE_FAN);
 }
-void DriverV2_3::reads_fpga_info(TxDatagram& tx, const bool value) const noexcept {
+
+void DriverV2_7::reads_fpga_info(TxDatagram& tx, const bool value) const noexcept {
   if (value)
     tx.header().fpga_flag.set(FPGAControlFlags::READS_FPGA_INFO);
   else
     tx.header().fpga_flag.remove(FPGAControlFlags::READS_FPGA_INFO);
 }
-void DriverV2_3::cpu_version(TxDatagram& tx) const noexcept {
+
+void DriverV2_7::cpu_version(TxDatagram& tx) const noexcept {
   tx.header().msg_id = MSG_RD_CPU_VERSION;
   tx.header().cpu_flag = static_cast<CPUControlFlags::VALUE>(MSG_RD_CPU_VERSION);  // For backward compatibility before 1.9
   tx.num_bodies = 0;
 }
-void DriverV2_3::fpga_version(TxDatagram& tx) const noexcept {
+
+void DriverV2_7::fpga_version(TxDatagram& tx) const noexcept {
   tx.header().msg_id = MSG_RD_FPGA_VERSION;
   tx.header().cpu_flag = static_cast<CPUControlFlags::VALUE>(MSG_RD_FPGA_VERSION);  // For backward compatibility before 1.9
   tx.num_bodies = 0;
 }
-void DriverV2_3::fpga_functions(TxDatagram& tx) const noexcept {
+
+void DriverV2_7::fpga_functions(TxDatagram& tx) const noexcept {
   tx.header().msg_id = MSG_RD_FPGA_FUNCTION;
   tx.header().cpu_flag = static_cast<CPUControlFlags::VALUE>(MSG_RD_FPGA_FUNCTION);  // For backward compatibility before 1.9
   tx.num_bodies = 0;
