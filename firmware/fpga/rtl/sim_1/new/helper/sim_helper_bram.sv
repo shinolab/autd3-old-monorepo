@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2022
+ * Last Modified: 14/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -157,6 +157,10 @@ module sim_helper_bram #(
   task write_sound_speed(bit [31:0] sound_speed);
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_SOUND_SPEED_0, sound_speed[15:0]);
     bram_write(BRAM_SELECT_CONTROLLER, ADDR_SOUND_SPEED_1, sound_speed[31:16]);
+  endtask
+
+  task write_stm_start_idx(bit [15:0] stm_start_idx);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_START_IDX, stm_start_idx);
   endtask
 
   task write_cycle(bit [WIDTH-1:0] cycle[0:DEPTH-1]);

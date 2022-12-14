@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/09/2022
+ * Last Modified: 14/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -74,7 +74,6 @@ module stm_gain_operator #(
       case (state)
         IDLE: begin
           if (start) begin
-            done <= 0;
             gain_addr_base <= idx[10:1];
             gain_addr_offset <= idx[0] ? 6'h20 : 0;
             state <= WAIT_0;
@@ -90,31 +89,6 @@ module stm_gain_operator #(
           state <= SET;
         end
         SET: begin
-          // if (set_cnt < DEPTH[7:3]) begin
-          //   phase_buf[{set_cnt, 3'h0}] <= {1'b0, data_out[7:0], 4'h00};
-          //   duty_buf[{set_cnt, 3'h0}] <= {2'b00, data_out[15:8], 3'h7} + 1;
-          //   phase_buf[{set_cnt, 3'h1}] <= {1'b0, data_out[23:16], 4'h00};
-          //   duty_buf[{set_cnt, 3'h1}] <= {2'b00, data_out[31:24], 3'h7} + 1;
-          //   phase_buf[{set_cnt, 3'h2}] <= {1'b0, data_out[39:32], 4'h00};
-          //   duty_buf[{set_cnt, 3'h2}] <= {2'b00, data_out[47:40], 3'h7} + 1;
-          //   phase_buf[{set_cnt, 3'h3}] <= {1'b0, data_out[55:48], 4'h00};
-          //   duty_buf[{set_cnt, 3'h3}] <= {2'b00, data_out[63:56], 3'h7} + 1;
-          //   phase_buf[{set_cnt, 3'h4}] <= {1'b0, data_out[71:64], 4'h00};
-          //   duty_buf[{set_cnt, 3'h4}] <= {2'b00, data_out[79:72], 3'h7} + 1;
-          //   phase_buf[{set_cnt, 3'h5}] <= {1'b0, data_out[87:80], 4'h00};
-          //   duty_buf[{set_cnt, 3'h5}] <= {2'b00, data_out[95:88], 3'h7} + 1;
-          //   phase_buf[{set_cnt, 3'h6}] <= {1'b0, data_out[103:96], 4'h00};
-          //   duty_buf[{set_cnt, 3'h6}] <= {2'b00, data_out[111:104], 3'h7} + 1;
-          //   phase_buf[{set_cnt, 3'h7}] <= {1'b0, data_out[119:112], 4'h00};
-          //   duty_buf[{set_cnt, 3'h7}] <= {2'b00, data_out[127:120], 3'h7} + 1;
-          //   gain_addr_offset <= gain_addr_offset + 1;
-          //   set_cnt <= set_cnt + 1;
-          // end else begin
-          //   phase_buf[{set_cnt, 3'h0}] <= {1'b0, data_out[7:0], 4'h00};
-          //   duty_buf[{set_cnt, 3'h0}] <= {2'b00, data_out[15:8], 3'h7} + 1;
-          //   state <= BUF;
-          // end
-          // unroll to meet timing
           case (set_cnt)
             6'd0: begin
               phase_buf[0] <= {1'b0, data_out[7:0], 4'h00};
@@ -739,6 +713,7 @@ module stm_gain_operator #(
             6'd31: begin
               phase_buf[248] <= {1'b0, data_out[7:0], 4'h00};
               duty_buf[248] <= {2'b00, data_out[15:8], 3'h7} + 1;
+              done <= 1;
               state <= BUF;
             end
           endcase
@@ -746,7 +721,7 @@ module stm_gain_operator #(
         BUF: begin
           phase <= phase_buf;
           duty  <= duty_buf;
-          done  <= 1;
+          done  <= 0;
           state <= IDLE;
         end
       endcase
@@ -754,7 +729,6 @@ module stm_gain_operator #(
       case (state)
         IDLE: begin
           if (start) begin
-            done <= 0;
             gain_addr_base <= idx[9:0];
             gain_addr_offset <= 0;
             state <= WAIT_0;
@@ -770,23 +744,6 @@ module stm_gain_operator #(
           state <= SET;
         end
         SET: begin
-          // if (set_cnt < DEPTH[7:2]) begin
-          //   phase_buf[{set_cnt, 2'h0}] <= data_out[0+WIDTH-1:0];
-          //   duty_buf[{set_cnt, 2'h0}] <= data_out[16+WIDTH-1:16];
-          //   phase_buf[{set_cnt, 2'h1}] <= data_out[32+WIDTH-1:32];
-          //   duty_buf[{set_cnt, 2'h1}] <= data_out[48+WIDTH-1:48];
-          //   phase_buf[{set_cnt, 2'h2}] <= data_out[64+WIDTH-1:64];
-          //   duty_buf[{set_cnt, 2'h2}] <= data_out[80+WIDTH-1:80];
-          //   phase_buf[{set_cnt, 2'h3}] <= data_out[96+WIDTH-1:96];
-          //   duty_buf[{set_cnt, 2'h3}] <= data_out[112+WIDTH-1:112];
-          //   gain_addr_offset <= gain_addr_offset + 1;
-          //   set_cnt <= set_cnt + 1;
-          // end else begin
-          //   phase_buf[{set_cnt, 2'h0}] <= data_out[0+WIDTH-1:0];
-          //   duty_buf[{set_cnt, 2'h0}] <= data_out[0+WIDTH-1+16:0+16];
-          //   state <= BUF;
-          // end
-          // unroll to meet timing
           case (set_cnt)
             6'd0: begin
               phase_buf[0] <= data_out[0+WIDTH-1:0];
@@ -1535,6 +1492,7 @@ module stm_gain_operator #(
             6'd62: begin
               phase_buf[248] <= data_out[0+WIDTH-1:0];
               duty_buf[248] <= data_out[16+WIDTH-1:16];
+              done <= 1;
               state <= BUF;
             end
           endcase
@@ -1542,7 +1500,7 @@ module stm_gain_operator #(
         BUF: begin
           phase <= phase_buf;
           duty  <= duty_buf;
-          done  <= 1;
+          done  <= 0;
           state <= IDLE;
         end
       endcase
