@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/12/2022
+ * Last Modified: 14/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -72,6 +72,8 @@ module top (
   bit [15:0] cycle_stm;
   bit [31:0] freq_div_stm;
   bit [31:0] sound_speed;
+  bit [15:0] stm_start_idx;
+  bit use_stm_start_idx;
 
   bit PWM_OUT[0:TRANS_NUM-1];
 
@@ -134,6 +136,8 @@ module top (
       .CYCLE_STM(cycle_stm),
       .FREQ_DIV_STM(freq_div_stm),
       .SOUND_SPEED(sound_speed),
+      .STM_START_IDX(stm_start_idx),
+      .USE_STM_START_IDX(use_stm_start_idx),
       .CYCLE(cycle),
       .LEGACY_MODE(legacy_mode)
   );
@@ -151,9 +155,12 @@ module top (
   );
 
   if (ENABLE_STM == "TRUE") begin
+    bit stm_start;
+    bit stm_begin;
+    bit [15:0] stm_idx;
     for (genvar i = 0; i < TRANS_NUM; i++) begin
-      assign duty[i]  = op_mode ? duty_stm[i] : duty_normal[i];
-      assign phase[i] = op_mode ? phase_stm[i] : phase_normal[i];
+      assign duty[i]  = (op_mode & stm_begin) ? duty_stm[i] : duty_normal[i];
+      assign phase[i] = (op_mode & stm_begin) ? phase_stm[i] : phase_normal[i];
     end
     stm_operator #(
         .WIDTH(WIDTH),
@@ -170,10 +177,17 @@ module top (
         .CPU_BUS(cpu_bus.stm_port),
         .DUTY(duty_stm),
         .PHASE(phase_stm),
-        .START(),
+        .START(stm_start),
         .DONE(stm_done),
-        .IDX()
+        .IDX(stm_idx)
     );
+    always_ff @(posedge clk_l) begin
+      if (op_mode) begin
+        stm_begin <= (~use_stm_start_idx | (stm_done & (stm_idx == stm_start_idx))) ? 1 : stm_begin;
+      end else begin
+        stm_begin <= 0;
+      end
+    end
   end else begin
     for (genvar i = 0; i < TRANS_NUM; i++) begin
       assign duty[i]  = duty_normal[i];
