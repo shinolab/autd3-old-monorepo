@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 14/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -83,7 +83,7 @@ struct FocusSTM final : STM {
 
   bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const Mode>&, const Geometry& geometry,
             driver::TxDatagram& tx) override {
-    driver->focus_stm_header(tx);
+    driver->focus_stm_header(tx, immediate);
 
     if (is_finished()) return true;
 
@@ -110,7 +110,7 @@ struct FocusSTM final : STM {
       points.emplace_back(lp);
     }
 
-    return driver->focus_stm_body(points, _sent, _points.size(), this->_freq_div, sound_speed, tx);
+    return driver->focus_stm_body(points, _sent, _points.size(), this->_freq_div, sound_speed, start_idx, tx);
   }
 
   [[nodiscard]] bool is_finished() const override { return _sent == _points.size(); }
