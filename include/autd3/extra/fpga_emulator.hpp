@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/12/2022
+// Last Modified: 14/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -20,7 +21,7 @@
 namespace autd3::extra {
 
 namespace fpga {
-constexpr uint8_t VERSION_NUM = 0x86;
+constexpr uint8_t VERSION_NUM = 0x87;
 
 constexpr uint16_t BRAM_SELECT_CONTROLLER = 0x0;
 constexpr uint16_t BRAM_SELECT_MOD = 0x1;
@@ -46,15 +47,18 @@ constexpr size_t ADDR_STM_FREQ_DIV_0 = 0x0052;
 constexpr size_t ADDR_STM_FREQ_DIV_1 = 0x0053;
 constexpr size_t ADDR_SOUND_SPEED_0 = 0x0054;
 constexpr size_t ADDR_SOUND_SPEED_1 = 0x0055;
+constexpr size_t ADDR_STM_START_IDX = 0x0056;
 constexpr size_t ADDR_CYCLE_BASE = 0x0100;
 constexpr size_t ADDR_MOD_DELAY_BASE = 0x0200;
 
 constexpr uint16_t CTL_REG_LEGACY_MODE_BIT = 0;
+constexpr uint16_t CTL_REG_USE_STM_START_IDX_BIT = 3;
 constexpr uint16_t CTL_REG_FORCE_FAN_BIT = 4;
-constexpr uint16_t CTL_REG_OP_MODE_BIT = 5;
 constexpr uint16_t CTL_REG_STM_GAIN_MODE_BIT = 6;
 // constexpr size_t CTL_REG_SYNC_BIT = 8;
+constexpr uint16_t CTL_REG_OP_MODE_BIT = 9;
 constexpr uint16_t CTL_REG_LEGACY_MODE = 1 << CTL_REG_LEGACY_MODE_BIT;
+constexpr uint16_t CTL_REG_USE_STM_START_IDX = 1 << CTL_REG_USE_STM_START_IDX_BIT;
 constexpr uint16_t CTL_REG_FORCE_FAN = 1 << CTL_REG_FORCE_FAN_BIT;
 constexpr uint16_t CTL_REG_OP_MODE = 1 << CTL_REG_OP_MODE_BIT;
 constexpr uint16_t CTL_REG_STM_GAIN_MODE = 1 << CTL_REG_STM_GAIN_MODE_BIT;
@@ -126,6 +130,7 @@ class FPGA {
   [[nodiscard]] bool is_force_fan() const { return (_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_FORCE_FAN) != 0; }
 
   [[nodiscard]] bool is_stm_mode() const { return (_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_OP_MODE) != 0; }
+
   [[nodiscard]] bool is_stm_gain_mode() const { return (_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_STM_GAIN_MODE) != 0; }
 
   [[nodiscard]] uint16_t silencer_cycle() const { return _controller_bram[fpga::ADDR_SILENT_CYCLE]; }
@@ -154,6 +159,13 @@ class FPGA {
 
   [[nodiscard]] uint32_t sound_speed() const {
     return to_u32(_controller_bram[fpga::ADDR_SOUND_SPEED_1], _controller_bram[fpga::ADDR_SOUND_SPEED_0]);
+  }
+
+  [[nodiscard]] bool is_use_stm_start_idx() const { return (_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_USE_STM_START_IDX) != 0; }
+
+  [[nodiscard]] std::optional<uint16_t> stm_start_idx() const {
+    if (is_use_stm_start_idx()) return _controller_bram[fpga::ADDR_STM_START_IDX];
+    return std::nullopt;
   }
 
   [[nodiscard]] uint32_t modulation_frequency_division() const {
