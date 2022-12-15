@@ -60,7 +60,6 @@ extern void update(void);
 
 typedef enum {
   LEGACY_MODE = 1 << CTL_REG_LEGACY_MODE_BIT,
-  STM_IMMEDIATE = 1 << CTL_REG_STM_IMMEDIATE_BIT,
   FORCE_FAN = 1 << CTL_REG_FORCE_FAN_BIT,
   OP_MODE = 1 << CTL_REG_OP_MODE_BIT,
   STM_GAIN_MODE = 1 << CTL_REG_STM_GAIN_MODE_BIT,
@@ -265,7 +264,6 @@ static void write_focus_stm(const volatile GlobalHeader* header, const volatile 
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0, (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SOUND_SPEED_0, (uint16_t*)&sound_speed, sizeof(uint32_t) >> 1);
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX, start_idx);
-    if ((header->fpga_ctl_reg & STM_IMMEDIATE) != 0) bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, header->fpga_ctl_reg | OP_MODE_FPGA);
     src = body->DATA.FOCUS_STM_INITIAL.data + 6;
   } else {
     size = body->DATA.FOCUS_STM_SUBSEQUENT.data[0];
@@ -339,7 +337,6 @@ static void write_gain_stm_legacy(const volatile GlobalHeader* header, const vol
     _stm_cycle = body->DATA.GAIN_STM_INITIAL.data[3];
     start_idx = body->DATA.GAIN_STM_INITIAL.data[4];
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX, start_idx);
-    if ((header->fpga_ctl_reg & STM_IMMEDIATE) != 0) bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, header->fpga_ctl_reg | OP_MODE_FPGA);
     return;
   }
 
@@ -437,7 +434,6 @@ static void write_gain_stm(const volatile GlobalHeader* header, const volatile B
     _stm_cycle = body->DATA.GAIN_STM_INITIAL.data[3];
     start_idx = body->DATA.GAIN_STM_INITIAL.data[4];
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX, start_idx);
-    if ((header->fpga_ctl_reg & STM_IMMEDIATE) != 0) bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, header->fpga_ctl_reg | OP_MODE_FPGA);
     return;
   }
 

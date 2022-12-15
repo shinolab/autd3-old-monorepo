@@ -3,7 +3,7 @@
 // Created Date: 02/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/12/2022
+// Last Modified: 15/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -265,7 +265,7 @@ TEST(DriverV2_6Driver, operation_focus_stm_header_v2_6) {
   autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
                                 NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
-  driver.focus_stm_header(tx, true);
+  driver.focus_stm_header(tx);
 
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
@@ -300,7 +300,7 @@ TEST(DriverV2_6Driver, operation_focus_stm_subsequent_v2_6) {
   constexpr double sound_speed = 340e3;
   constexpr uint32_t sp = 340 * 1024;
 
-  driver.focus_stm_header(tx, true);
+  driver.focus_stm_header(tx);
   size_t sent = 0;
   driver.focus_stm_body(points, sent, size, 3224, sound_speed, std::nullopt, tx);
 
@@ -316,7 +316,7 @@ TEST(DriverV2_6Driver, operation_focus_stm_subsequent_v2_6) {
   for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_initial().data()[4], sp >> 16);
   ASSERT_EQ(tx.num_bodies, 10);
 
-  driver.focus_stm_header(tx, true);
+  driver.focus_stm_header(tx);
   sent = 0;
   driver.focus_stm_body(points, sent, 500, 3224, sound_speed, std::nullopt, tx);
 
@@ -328,7 +328,7 @@ TEST(DriverV2_6Driver, operation_focus_stm_subsequent_v2_6) {
   for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_initial().data()[0], 30);
   ASSERT_EQ(tx.num_bodies, 10);
 
-  driver.focus_stm_header(tx, true);
+  driver.focus_stm_header(tx);
   sent = 1;
   driver.focus_stm_body(points, sent, 500, 3224, sound_speed, std::nullopt, tx);
   ASSERT_EQ(sent, size + 1);
@@ -336,7 +336,7 @@ TEST(DriverV2_6Driver, operation_focus_stm_subsequent_v2_6) {
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
 
-  driver.focus_stm_header(tx, true);
+  driver.focus_stm_header(tx);
   driver.focus_stm_body({}, sent, 0, 3224, sound_speed, std::nullopt, tx);
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
@@ -352,7 +352,7 @@ TEST(DriverV2_6Driver, operation_gain_stm_legacy_header_v2_6) {
   autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
                                 NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
-  driver.gain_stm_legacy_header(tx, true);
+  driver.gain_stm_legacy_header(tx);
 
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
@@ -382,7 +382,7 @@ TEST(DriverV2_6Driver, operation_gain_stm_legacy_body_v2_6) {
     drives_list.emplace_back(drives);
   }
 
-  driver.gain_stm_legacy_header(tx, true);
+  driver.gain_stm_legacy_header(tx);
   size_t sent = 0;
   driver.gain_stm_legacy_body(drives_list, sent, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, std::nullopt, tx);
   ASSERT_EQ(sent, 1);
@@ -394,7 +394,7 @@ TEST(DriverV2_6Driver, operation_gain_stm_legacy_body_v2_6) {
   for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().data()[3], 5);
   ASSERT_EQ(tx.num_bodies, 10);
 
-  driver.gain_stm_legacy_header(tx, true);
+  driver.gain_stm_legacy_header(tx);
   driver.gain_stm_legacy_body(drives_list, sent, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, std::nullopt, tx);
   ASSERT_EQ(sent, 2);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
@@ -406,7 +406,7 @@ TEST(DriverV2_6Driver, operation_gain_stm_legacy_body_v2_6) {
   }
   ASSERT_EQ(tx.num_bodies, 10);
 
-  driver.gain_stm_legacy_header(tx, true);
+  driver.gain_stm_legacy_header(tx);
   sent = 5;
   driver.gain_stm_legacy_body(drives_list, sent, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, std::nullopt, tx);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
@@ -425,7 +425,7 @@ TEST(DriverV2_6Driver, operation_gain_stm_normal_header_v2_6) {
   autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
                                 NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
-  driver.gain_stm_normal_header(tx, true);
+  driver.gain_stm_normal_header(tx);
 
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
@@ -455,7 +455,7 @@ TEST(DriverV2_6Driver, operation_gain_stm_normal_phase_v2_6) {
     drives_list.emplace_back(drives);
   }
 
-  driver.gain_stm_normal_header(tx, true);
+  driver.gain_stm_normal_header(tx);
   driver.gain_stm_normal_phase(drives_list, 0, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, std::nullopt, tx);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
@@ -465,7 +465,7 @@ TEST(DriverV2_6Driver, operation_gain_stm_normal_phase_v2_6) {
   for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().data()[1], 0);
   ASSERT_EQ(tx.num_bodies, 10);
 
-  driver.gain_stm_normal_header(tx, true);
+  driver.gain_stm_normal_header(tx);
   driver.gain_stm_normal_phase(drives_list, 1, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, std::nullopt, tx);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
@@ -474,7 +474,7 @@ TEST(DriverV2_6Driver, operation_gain_stm_normal_phase_v2_6) {
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::Phase::to_phase(drives_list[0][i]));
   ASSERT_EQ(tx.num_bodies, 10);
 
-  driver.gain_stm_normal_header(tx, true);
+  driver.gain_stm_normal_header(tx);
   driver.gain_stm_normal_phase(drives_list, 5, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, std::nullopt, tx);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
@@ -502,7 +502,7 @@ TEST(DriverV2_6Driver, operation_gain_stm_normal_duty_v2_6) {
     drives_list.emplace_back(drives);
   }
 
-  driver.gain_stm_normal_header(tx, true);
+  driver.gain_stm_normal_header(tx);
   driver.gain_stm_normal_duty(drives_list, 1, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, std::nullopt, tx);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
@@ -511,7 +511,7 @@ TEST(DriverV2_6Driver, operation_gain_stm_normal_duty_v2_6) {
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::Duty::to_duty(drives_list[0][i]));
   ASSERT_EQ(tx.num_bodies, 10);
 
-  driver.gain_stm_normal_header(tx, true);
+  driver.gain_stm_normal_header(tx);
   driver.gain_stm_normal_duty(drives_list, 5, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, std::nullopt, tx);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
