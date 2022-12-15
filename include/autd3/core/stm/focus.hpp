@@ -83,7 +83,7 @@ struct FocusSTM final : STM {
 
   bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const Mode>&, const Geometry& geometry,
             driver::TxDatagram& tx) override {
-    driver->focus_stm_header(tx, immediate);
+    driver->focus_stm_header(tx);
 
     if (is_finished()) return true;
 

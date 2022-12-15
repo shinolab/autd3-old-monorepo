@@ -36,10 +36,6 @@ class FPGAControlFlags final {
      */
     LEGACY_MODE = 1 << 0,
     /**
-     * @brief Set when not start stm immediately
-     */
-    STM_IMMEDIATE = 1 << 2,
-    /**
      * @brief Set when using STM start idx
      */
     USE_STM_START_IDX = 1 << 3,
