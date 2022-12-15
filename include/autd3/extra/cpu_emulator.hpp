@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/12/2022
+// Last Modified: 15/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -239,7 +239,7 @@ class CPU {
       bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FREQ_DIV_0, reinterpret_cast<const uint16_t*>(&freq_div), 2);
       bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_SOUND_SPEED_0, reinterpret_cast<const uint16_t*>(&sound_speed), 2);
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_START_IDX, start_idx);
-      if (!header->fpga_flag.contains(driver::FPGAControlFlags::STM_IMMEDIATE_N))
+      if (header->fpga_flag.contains(driver::FPGAControlFlags::STM_IMMEDIATE))
         bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CTL_REG, header->fpga_flag.value() | cpu::CTL_REG_OP_MODE);
       src = body->focus_stm_initial().data() + 6;
     } else {
@@ -298,7 +298,7 @@ class CPU {
       const auto start_idx = body->gain_stm_initial().data()[4];
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_START_IDX, start_idx);
 
-      if (!header->fpga_flag.contains(driver::FPGAControlFlags::STM_IMMEDIATE_N))
+      if (header->fpga_flag.contains(driver::FPGAControlFlags::STM_IMMEDIATE))
         bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CTL_REG, header->fpga_flag.value() | cpu::CTL_REG_OP_MODE);
       return;
     }
@@ -378,7 +378,7 @@ class CPU {
       const auto start_idx = body->gain_stm_initial().data()[4];
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_START_IDX, start_idx);
 
-      if (!header->fpga_flag.contains(driver::FPGAControlFlags::STM_IMMEDIATE_N))
+      if (header->fpga_flag.contains(driver::FPGAControlFlags::STM_IMMEDIATE))
         bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CTL_REG, header->fpga_flag.value() | cpu::CTL_REG_OP_MODE);
       return;
     }

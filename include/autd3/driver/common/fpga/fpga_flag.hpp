@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/12/2022
+// Last Modified: 15/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -38,7 +38,7 @@ class FPGAControlFlags final {
     /**
      * @brief Set when not start stm immediately
      */
-    STM_IMMEDIATE_N = 1 << 2,
+    STM_IMMEDIATE = 1 << 2,
     /**
      * @brief Set when using STM start idx
      */
