@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/12/2022
+// Last Modified: 15/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -210,7 +210,7 @@ struct GainSTMBodyInitial {
 
   void set_cycle(const size_t size) noexcept { _data[3] = static_cast<uint16_t>(size); }
 
-  void set_stm_start_idx(const size_t stm_start_idx) noexcept { _data[4] = stm_start_idx; }
+  void set_stm_start_idx(const uint16_t stm_start_idx) noexcept { _data[4] = stm_start_idx; }
 
  private:
   uint16_t _data[5]{};

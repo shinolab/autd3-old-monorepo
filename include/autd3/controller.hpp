@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/12/2022
+// Last Modified: 15/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -775,8 +775,6 @@ class Controller {
 
     /**
      * @brief Send buffered core::DatagramBody and then send core::DatagramHeader and core::DatagramBody in DatagramPackRef
-     * @tparam H2 Class inheriting from core::DatagramHeader
-     * @tparam B2 Class inheriting from core::DatagramBody
      * @param pack core::DatagramPackRef
      * @return Controller&
      */

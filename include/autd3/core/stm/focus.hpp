@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/12/2022
+// Last Modified: 15/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ namespace autd3::core {
  * @brief FocusSTM provides a function to display the focus sequentially and periodically.
  * @details FocusSTM uses a timer on the FPGA to ensure that the focus is precisely timed.
  * FocusSTM currently has the following three limitations.
- * 1. The maximum number of control points is driver::FOCUS_STM_BUF_SIZE_MAX.
+ * 1. The maximum number of control points is 65536.
  * 2. Only a single focus can be displayed at a certain moment.
  */
 struct FocusSTM final : STM {
