@@ -3,7 +3,7 @@
 // Created Date: 14/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/12/2022
+// Last Modified: 15/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -199,13 +199,13 @@ size_t DriverV2_7::focus_stm_send_size(const size_t total_size, const size_t sen
 }
 
 bool DriverV2_7::focus_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, const size_t total_size, const uint32_t freq_div,
-                                const double sound_speed, std::optional<uint16_t> stm_start_idx, TxDatagram& tx) const {
+                                const double sound_speed, const std::optional<uint16_t> start_idx, TxDatagram& tx) const {
   if (total_size > v2_7::FOCUS_STM_BUF_SIZE_MAX) {
     spdlog::error("FocusSTM out of buffer");
     return false;
   }
 
-  if (stm_start_idx) tx.header().fpga_flag.set(FPGAControlFlags::USE_STM_START_IDX);
+  if (start_idx) tx.header().fpga_flag.set(FPGAControlFlags::USE_STM_START_IDX);
 
   if (points.empty() || points[0].empty()) return true;
 
@@ -226,7 +226,7 @@ bool DriverV2_7::focus_stm_body(const std::vector<std::vector<STMFocus>>& points
       d.focus_stm_initial().set_size(static_cast<uint16_t>(s.size()));
       d.focus_stm_initial().set_freq_div(freq_div);
       d.focus_stm_initial().set_sound_speed(sound_speed_internal);
-      if (stm_start_idx) d.focus_stm_initial().set_stm_start_idx(stm_start_idx.value());
+      if (start_idx) d.focus_stm_initial().set_stm_start_idx(start_idx.value());
       d.focus_stm_initial().set_point(s, 6);
     }
   } else {
@@ -268,13 +268,13 @@ void DriverV2_7::gain_stm_legacy_header(TxDatagram& tx, const bool immediate) co
 }
 
 bool DriverV2_7::gain_stm_legacy_body(const std::vector<std::vector<Drive>>& drives, size_t& sent, const uint32_t freq_div, const GainSTMMode mode,
-                                      const std::optional<uint16_t> stm_start_idx, TxDatagram& tx) const {
+                                      const std::optional<uint16_t> start_idx, TxDatagram& tx) const {
   if (drives.size() > v2_7::GAIN_STM_LEGACY_BUF_SIZE_MAX) {
     spdlog::error("GainSTM out of buffer");
     return false;
   }
 
-  if (stm_start_idx) tx.header().fpga_flag.set(FPGAControlFlags::USE_STM_START_IDX);
+  if (start_idx) tx.header().fpga_flag.set(FPGAControlFlags::USE_STM_START_IDX);
 
   bool is_last_frame = false;
   if (sent == 0) {
@@ -288,7 +288,7 @@ bool DriverV2_7::gain_stm_legacy_body(const std::vector<std::vector<Drive>>& dri
       tx.body(i).gain_stm_initial().set_freq_div(freq_div);
       tx.body(i).gain_stm_initial().set_mode(mode);
       tx.body(i).gain_stm_initial().set_cycle(drives.size());
-      if (stm_start_idx) tx.body(i).gain_stm_initial().set_stm_start_idx(stm_start_idx.value());
+      if (start_idx) tx.body(i).gain_stm_initial().set_stm_start_idx(start_idx.value());
     }
     sent++;
   } else {
@@ -367,7 +367,7 @@ void DriverV2_7::gain_stm_normal_header(TxDatagram& tx, const bool immediate) co
 }
 
 bool DriverV2_7::gain_stm_normal_phase(const std::vector<std::vector<Drive>>& drives, const size_t sent, const uint32_t freq_div,
-                                       const GainSTMMode mode, const std::optional<uint16_t> stm_start_idx, TxDatagram& tx) const {
+                                       const GainSTMMode mode, const std::optional<uint16_t> start_idx, TxDatagram& tx) const {
   if (drives.size() > v2_7::GAIN_STM_BUF_SIZE_MAX) {
     spdlog::error("GainSTM out of buffer");
     return false;
@@ -385,7 +385,7 @@ bool DriverV2_7::gain_stm_normal_phase(const std::vector<std::vector<Drive>>& dr
 #pragma warning(pop)
 #endif
 
-  if (stm_start_idx) tx.header().fpga_flag.set(FPGAControlFlags::USE_STM_START_IDX);
+  if (start_idx) tx.header().fpga_flag.set(FPGAControlFlags::USE_STM_START_IDX);
   tx.header().cpu_flag.remove(CPUControlFlags::IS_DUTY);
 
   if (sent == 0) {
@@ -398,7 +398,7 @@ bool DriverV2_7::gain_stm_normal_phase(const std::vector<std::vector<Drive>>& dr
       tx.body(i).gain_stm_initial().set_freq_div(freq_div);
       tx.body(i).gain_stm_initial().set_mode(mode);
       tx.body(i).gain_stm_initial().set_cycle(drives.size());
-      if (stm_start_idx) tx.body(i).gain_stm_initial().set_stm_start_idx(stm_start_idx.value());
+      if (start_idx) tx.body(i).gain_stm_initial().set_stm_start_idx(start_idx.value());
     }
   } else {
     auto* p = reinterpret_cast<Phase*>(tx.bodies_raw_ptr());
@@ -414,7 +414,7 @@ bool DriverV2_7::gain_stm_normal_phase(const std::vector<std::vector<Drive>>& dr
 }
 
 bool DriverV2_7::gain_stm_normal_duty(const std::vector<std::vector<Drive>>& drives, const size_t sent, const uint32_t freq_div,
-                                      const GainSTMMode mode, const std::optional<uint16_t> stm_start_idx, TxDatagram& tx) const {
+                                      const GainSTMMode mode, const std::optional<uint16_t> start_idx, TxDatagram& tx) const {
   if (drives.size() > v2_7::GAIN_STM_BUF_SIZE_MAX) {
     spdlog::error("GainSTM out of buffer");
     return false;
@@ -432,7 +432,7 @@ bool DriverV2_7::gain_stm_normal_duty(const std::vector<std::vector<Drive>>& dri
 #pragma warning(pop)
 #endif
 
-  if (stm_start_idx) tx.header().fpga_flag.set(FPGAControlFlags::USE_STM_START_IDX);
+  if (start_idx) tx.header().fpga_flag.set(FPGAControlFlags::USE_STM_START_IDX);
   tx.header().cpu_flag.set(CPUControlFlags::IS_DUTY);
 
   if (sent == 0) {
@@ -445,7 +445,7 @@ bool DriverV2_7::gain_stm_normal_duty(const std::vector<std::vector<Drive>>& dri
       tx.body(i).gain_stm_initial().set_freq_div(freq_div);
       tx.body(i).gain_stm_initial().set_mode(mode);
       tx.body(i).gain_stm_initial().set_cycle(drives.size());
-      if (stm_start_idx) tx.body(i).gain_stm_initial().set_stm_start_idx(stm_start_idx.value());
+      if (start_idx) tx.body(i).gain_stm_initial().set_stm_start_idx(start_idx.value());
     }
   } else {
     auto* p = reinterpret_cast<Duty*>(tx.bodies_raw_ptr());
