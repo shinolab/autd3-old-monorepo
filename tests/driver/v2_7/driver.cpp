@@ -272,7 +272,7 @@ TEST(DriverV2_7Driver, operation_focus_stm_header_v2_7) {
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_GAIN_MODE));
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::USE_STM_START_IDX));
-  ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_IMMEDIATE_N));
+  ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_IMMEDIATE));
   ASSERT_EQ(tx.num_bodies, 0);
 
   driver.focus_stm_header(tx, false);
@@ -282,7 +282,7 @@ TEST(DriverV2_7Driver, operation_focus_stm_header_v2_7) {
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_GAIN_MODE));
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::USE_STM_START_IDX));
-  ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_IMMEDIATE_N));
+  ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_IMMEDIATE));
 }
 
 TEST(DriverV2_7Driver, operation_focus_stm_subsequent_v2_7) {
@@ -374,7 +374,7 @@ TEST(DriverV2_7Driver, operation_gain_stm_legacy_header_v2_7) {
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_GAIN_MODE));
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::USE_STM_START_IDX));
-  ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_IMMEDIATE_N));
+  ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_IMMEDIATE));
   ASSERT_EQ(tx.num_bodies, 0);
 
   driver.gain_stm_legacy_header(tx, false);
@@ -385,7 +385,7 @@ TEST(DriverV2_7Driver, operation_gain_stm_legacy_header_v2_7) {
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_GAIN_MODE));
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::USE_STM_START_IDX));
-  ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_IMMEDIATE_N));
+  ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_IMMEDIATE));
   ASSERT_EQ(tx.num_bodies, 0);
 }
 
@@ -462,7 +462,7 @@ TEST(DriverV2_7Driver, operation_gain_stm_normal_header_v2_7) {
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_GAIN_MODE));
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::USE_STM_START_IDX));
-  ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_IMMEDIATE_N));
+  ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_IMMEDIATE));
   ASSERT_EQ(tx.num_bodies, 0);
 
   driver.gain_stm_normal_header(tx, false);
@@ -473,7 +473,7 @@ TEST(DriverV2_7Driver, operation_gain_stm_normal_header_v2_7) {
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_GAIN_MODE));
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::USE_STM_START_IDX));
-  ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_IMMEDIATE_N));
+  ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::STM_IMMEDIATE));
   ASSERT_EQ(tx.num_bodies, 0);
 }
 

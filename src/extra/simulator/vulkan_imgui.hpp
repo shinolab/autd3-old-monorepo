@@ -625,14 +625,14 @@ class VulkanImGui {
         ImGui::Text("FPGA control flags");
         const auto fpga_flags = cpus[0].fpga_flags();
         auto is_legacy_mode = fpga_flags.contains(driver::FPGAControlFlags::LEGACY_MODE);
-        auto stm_immediate = fpga_flags.contains(driver::FPGAControlFlags::STM_IMMEDIATE_N);
+        auto stm_immediate = fpga_flags.contains(driver::FPGAControlFlags::STM_IMMEDIATE);
         auto use_stm_start_idx = fpga_flags.contains(driver::FPGAControlFlags::USE_STM_START_IDX);
         auto force_fan = fpga_flags.contains(driver::FPGAControlFlags::FORCE_FAN);
         auto stm_mode = fpga_flags.contains(driver::FPGAControlFlags::STM_MODE);
         auto stm_gain_mode = fpga_flags.contains(driver::FPGAControlFlags::STM_GAIN_MODE);
         auto reads_fpga_info = fpga_flags.contains(driver::FPGAControlFlags::READS_FPGA_INFO);
         ImGui::Checkbox("LEGACY MODE", &is_legacy_mode);
-        ImGui::Checkbox("STM IMMEDIATE N", &stm_immediate);
+        ImGui::Checkbox("STM IMMEDIATE", &stm_immediate);
         ImGui::Checkbox("USE STM START IDX", &use_stm_start_idx);
         ImGui::Checkbox("FORCE FAN", &force_fan);
         ImGui::Checkbox("STM MODE", &stm_mode);
