@@ -3,7 +3,7 @@
 // Created Date: 22/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/12/2022
+// Last Modified: 15/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -31,9 +31,8 @@ void LegacyMode::pack_gain_body(const std::unique_ptr<const driver::Driver>& dri
   phase_sent = true;
   duty_sent = true;
 }
-void LegacyMode::pack_stm_gain_header(const std::unique_ptr<const driver::Driver>& driver, const bool immediate,
-                                      driver::TxDatagram& tx) const noexcept {
-  driver->gain_stm_legacy_header(tx, immediate);
+void LegacyMode::pack_stm_gain_header(const std::unique_ptr<const driver::Driver>& driver, driver::TxDatagram& tx) const noexcept {
+  driver->gain_stm_legacy_header(tx);
 }
 bool LegacyMode::pack_stm_gain_body(const std::unique_ptr<const driver::Driver>& driver, size_t& sent, bool&, const uint32_t freq_div,
                                     const std::vector<std::vector<driver::Drive>>& gains, const driver::GainSTMMode mode,
@@ -58,9 +57,8 @@ void NormalMode::pack_gain_body(const std::unique_ptr<const driver::Driver>& dri
     duty_sent = true;
   }
 }
-void NormalMode::pack_stm_gain_header(const std::unique_ptr<const driver::Driver>& driver, const bool immediate,
-                                      driver::TxDatagram& tx) const noexcept {
-  driver->gain_stm_normal_header(tx, immediate);
+void NormalMode::pack_stm_gain_header(const std::unique_ptr<const driver::Driver>& driver, driver::TxDatagram& tx) const noexcept {
+  driver->gain_stm_normal_header(tx);
 }
 bool NormalMode::pack_stm_gain_body(const std::unique_ptr<const driver::Driver>& driver, size_t& sent, bool& next_duty, const uint32_t freq_div,
                                     const std::vector<std::vector<driver::Drive>>& gains, const driver::GainSTMMode mode,
@@ -95,9 +93,8 @@ void NormalPhaseMode::pack_gain_body(const std::unique_ptr<const driver::Driver>
   phase_sent = true;
   duty_sent = true;
 }
-void NormalPhaseMode::pack_stm_gain_header(const std::unique_ptr<const driver::Driver>& driver, const bool immediate,
-                                           driver::TxDatagram& tx) const noexcept {
-  driver->gain_stm_normal_header(tx, immediate);
+void NormalPhaseMode::pack_stm_gain_header(const std::unique_ptr<const driver::Driver>& driver, driver::TxDatagram& tx) const noexcept {
+  driver->gain_stm_normal_header(tx);
 }
 bool NormalPhaseMode::pack_stm_gain_body(const std::unique_ptr<const driver::Driver>& driver, size_t& sent, bool&, const uint32_t freq_div,
                                          const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode,

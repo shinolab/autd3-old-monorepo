@@ -58,7 +58,6 @@ struct STM : DatagramBody {
    */
   uint32_t& sampling_frequency_division() noexcept { return _freq_div; }
 
-  bool immediate{false};
   std::optional<uint16_t> start_idx{std::nullopt};
 
  protected:

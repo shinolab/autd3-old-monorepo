@@ -173,7 +173,7 @@ void DriverV2_7::normal_phase_body(const std::vector<Drive>& drives, TxDatagram&
   tx.num_bodies = tx.num_devices();
 }
 
-void DriverV2_7::focus_stm_header(TxDatagram& tx, const bool immediate) const noexcept {
+void DriverV2_7::focus_stm_header(TxDatagram& tx) const noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
   tx.header().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
@@ -182,10 +182,6 @@ void DriverV2_7::focus_stm_header(TxDatagram& tx, const bool immediate) const no
   tx.header().fpga_flag.set(FPGAControlFlags::STM_MODE);
   tx.header().fpga_flag.remove(FPGAControlFlags::STM_GAIN_MODE);
   tx.header().fpga_flag.remove(FPGAControlFlags::USE_STM_START_IDX);
-  if (immediate)
-    tx.header().fpga_flag.set(FPGAControlFlags::STM_IMMEDIATE);
-  else
-    tx.header().fpga_flag.remove(FPGAControlFlags::STM_IMMEDIATE);
 
   tx.num_bodies = 0;
 }
@@ -249,7 +245,7 @@ bool DriverV2_7::focus_stm_body(const std::vector<std::vector<STMFocus>>& points
   return true;
 }
 
-void DriverV2_7::gain_stm_legacy_header(TxDatagram& tx, const bool immediate) const noexcept {
+void DriverV2_7::gain_stm_legacy_header(TxDatagram& tx) const noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
   tx.header().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
@@ -259,10 +255,6 @@ void DriverV2_7::gain_stm_legacy_header(TxDatagram& tx, const bool immediate) co
   tx.header().fpga_flag.set(FPGAControlFlags::STM_MODE);
   tx.header().fpga_flag.set(FPGAControlFlags::STM_GAIN_MODE);
   tx.header().fpga_flag.remove(FPGAControlFlags::USE_STM_START_IDX);
-  if (immediate)
-    tx.header().fpga_flag.set(FPGAControlFlags::STM_IMMEDIATE);
-  else
-    tx.header().fpga_flag.remove(FPGAControlFlags::STM_IMMEDIATE);
 
   tx.num_bodies = 0;
 }
@@ -348,7 +340,7 @@ bool DriverV2_7::gain_stm_legacy_body(const std::vector<std::vector<Drive>>& dri
   return true;
 }
 
-void DriverV2_7::gain_stm_normal_header(TxDatagram& tx, const bool immediate) const noexcept {
+void DriverV2_7::gain_stm_normal_header(TxDatagram& tx) const noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
   tx.header().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
@@ -358,10 +350,6 @@ void DriverV2_7::gain_stm_normal_header(TxDatagram& tx, const bool immediate) co
   tx.header().fpga_flag.set(FPGAControlFlags::STM_MODE);
   tx.header().fpga_flag.set(FPGAControlFlags::STM_GAIN_MODE);
   tx.header().fpga_flag.remove(FPGAControlFlags::USE_STM_START_IDX);
-  if (immediate)
-    tx.header().fpga_flag.set(FPGAControlFlags::STM_IMMEDIATE);
-  else
-    tx.header().fpga_flag.remove(FPGAControlFlags::STM_IMMEDIATE);
 
   tx.num_bodies = 0;
 }

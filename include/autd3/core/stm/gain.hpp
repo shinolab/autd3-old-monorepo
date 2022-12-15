@@ -65,7 +65,7 @@ struct GainSTM final : STM {
 
   bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const Mode>& mode, const Geometry&,
             driver::TxDatagram& tx) override {
-    mode->pack_stm_gain_header(driver, immediate, tx);
+    mode->pack_stm_gain_header(driver, tx);
 
     if (is_finished()) return true;
 

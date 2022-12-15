@@ -125,9 +125,8 @@ class Driver {
   /**
    * @brief Pack Header data for FocusSTM
    * @param tx transmission data
-   * @param immediate true if starting stm immediately
    */
-  virtual void focus_stm_header(TxDatagram& tx, bool immediate) const = 0;
+  virtual void focus_stm_header(TxDatagram& tx) const = 0;
 
   /**
    * @param total_size Total number of STMFocus to be sent
@@ -154,9 +153,8 @@ class Driver {
   /**
    * @brief Pack Header data for GainSTM in Legacy mode
    * @param tx transmission data
-   * @param immediate true if starting stm immediately
    */
-  virtual void gain_stm_legacy_header(TxDatagram& tx, bool immediate) const = 0;
+  virtual void gain_stm_legacy_header(TxDatagram& tx) const = 0;
 
   /**
    * @brief Pack Body data for GainSTM
@@ -174,9 +172,8 @@ class Driver {
   /**
    * @brief Pack Header data for GainSTM in Normal/NormalPhase mode
    * @param tx transmission data
-   * @param immediate true if starting stm immediately
    */
-  virtual void gain_stm_normal_header(TxDatagram& tx, bool immediate) const = 0;
+  virtual void gain_stm_normal_header(TxDatagram& tx) const = 0;
 
   /**
    * @brief Pack phase data to Body for GainSTM in Normal/NormalPhase mode

@@ -3,7 +3,7 @@
 // Created Date: 15/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/12/2022
+// Last Modified: 15/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -56,19 +56,19 @@ class DriverV2_2 final : public Driver {
 
   void normal_phase_body(const std::vector<Drive>& drives, TxDatagram& tx) const noexcept override;
 
-  void focus_stm_header(TxDatagram& tx, bool immediate) const noexcept override;
+  void focus_stm_header(TxDatagram& tx) const noexcept override;
 
   [[nodiscard]] size_t focus_stm_send_size(size_t total_size, size_t sent, const std::vector<size_t>& device_map) const noexcept override;
 
   bool focus_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, size_t total_size, uint32_t freq_div, double sound_speed,
                       std::optional<uint16_t> start_idx, TxDatagram& tx) const override;
 
-  void gain_stm_legacy_header(TxDatagram& tx, bool immediate) const noexcept override;
+  void gain_stm_legacy_header(TxDatagram& tx) const noexcept override;
 
   bool gain_stm_legacy_body(const std::vector<std::vector<Drive>>& drives, size_t& sent, uint32_t freq_div, GainSTMMode mode,
                             std::optional<uint16_t> start_idx, TxDatagram& tx) const override;
 
-  void gain_stm_normal_header(TxDatagram& tx, bool immediate) const noexcept override;
+  void gain_stm_normal_header(TxDatagram& tx) const noexcept override;
 
   bool gain_stm_normal_phase(const std::vector<std::vector<Drive>>& drives, size_t sent, uint32_t freq_div, GainSTMMode mode,
                              std::optional<uint16_t> start_idx, TxDatagram& tx) const override;

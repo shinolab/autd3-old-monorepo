@@ -3,7 +3,7 @@
 // Created Date: 22/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/12/2022
+// Last Modified: 15/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -164,7 +164,7 @@ void DriverV2_3::normal_phase_body(const std::vector<Drive>& drives, TxDatagram&
 
   tx.num_bodies = tx.num_devices();
 }
-void DriverV2_3::focus_stm_header(TxDatagram& tx, bool immediate) const noexcept {
+void DriverV2_3::focus_stm_header(TxDatagram& tx) const noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
   tx.header().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
@@ -231,7 +231,7 @@ bool DriverV2_3::focus_stm_body(const std::vector<std::vector<STMFocus>>& points
   sent += send_size;
   return true;
 }
-void DriverV2_3::gain_stm_legacy_header(TxDatagram& tx, bool) const noexcept {
+void DriverV2_3::gain_stm_legacy_header(TxDatagram& tx) const noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
   tx.header().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
@@ -320,7 +320,7 @@ bool DriverV2_3::gain_stm_legacy_body(const std::vector<std::vector<Drive>>& dri
   tx.num_bodies = tx.num_devices();
   return true;
 }
-void DriverV2_3::gain_stm_normal_header(TxDatagram& tx, bool) const noexcept {
+void DriverV2_3::gain_stm_normal_header(TxDatagram& tx) const noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
   tx.header().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
   tx.header().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
