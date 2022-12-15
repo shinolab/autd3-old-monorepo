@@ -183,9 +183,9 @@ void DriverV2_7::focus_stm_header(TxDatagram& tx, const bool immediate) const no
   tx.header().fpga_flag.remove(FPGAControlFlags::STM_GAIN_MODE);
   tx.header().fpga_flag.remove(FPGAControlFlags::USE_STM_START_IDX);
   if (immediate)
-    tx.header().fpga_flag.remove(FPGAControlFlags::STM_IMMEDIATE_N);
+    tx.header().fpga_flag.set(FPGAControlFlags::STM_IMMEDIATE);
   else
-    tx.header().fpga_flag.set(FPGAControlFlags::STM_IMMEDIATE_N);
+    tx.header().fpga_flag.remove(FPGAControlFlags::STM_IMMEDIATE);
 
   tx.num_bodies = 0;
 }
@@ -260,9 +260,9 @@ void DriverV2_7::gain_stm_legacy_header(TxDatagram& tx, const bool immediate) co
   tx.header().fpga_flag.set(FPGAControlFlags::STM_GAIN_MODE);
   tx.header().fpga_flag.remove(FPGAControlFlags::USE_STM_START_IDX);
   if (immediate)
-    tx.header().fpga_flag.remove(FPGAControlFlags::STM_IMMEDIATE_N);
+    tx.header().fpga_flag.set(FPGAControlFlags::STM_IMMEDIATE);
   else
-    tx.header().fpga_flag.set(FPGAControlFlags::STM_IMMEDIATE_N);
+    tx.header().fpga_flag.remove(FPGAControlFlags::STM_IMMEDIATE);
 
   tx.num_bodies = 0;
 }
@@ -359,9 +359,9 @@ void DriverV2_7::gain_stm_normal_header(TxDatagram& tx, const bool immediate) co
   tx.header().fpga_flag.set(FPGAControlFlags::STM_GAIN_MODE);
   tx.header().fpga_flag.remove(FPGAControlFlags::USE_STM_START_IDX);
   if (immediate)
-    tx.header().fpga_flag.remove(FPGAControlFlags::STM_IMMEDIATE_N);
+    tx.header().fpga_flag.set(FPGAControlFlags::STM_IMMEDIATE);
   else
-    tx.header().fpga_flag.set(FPGAControlFlags::STM_IMMEDIATE_N);
+    tx.header().fpga_flag.remove(FPGAControlFlags::STM_IMMEDIATE);
 
   tx.num_bodies = 0;
 }
