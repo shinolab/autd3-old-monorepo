@@ -222,7 +222,13 @@ bool DriverV2_7::focus_stm_body(const std::vector<std::vector<STMFocus>>& points
       d.focus_stm_initial().set_size(static_cast<uint16_t>(s.size()));
       d.focus_stm_initial().set_freq_div(freq_div);
       d.focus_stm_initial().set_sound_speed(sound_speed_internal);
-      if (start_idx) d.focus_stm_initial().set_stm_start_idx(start_idx.value());
+      if (start_idx) {
+        if (static_cast<size_t>(start_idx.value()) >= total_size) {
+          spdlog::error("STM start index out of range");
+          return false;
+        }
+        d.focus_stm_initial().set_stm_start_idx(start_idx.value());
+      }
       d.focus_stm_initial().set_point(s, 6);
     }
   } else {
@@ -280,7 +286,13 @@ bool DriverV2_7::gain_stm_legacy_body(const std::vector<std::vector<Drive>>& dri
       tx.body(i).gain_stm_initial().set_freq_div(freq_div);
       tx.body(i).gain_stm_initial().set_mode(mode);
       tx.body(i).gain_stm_initial().set_cycle(drives.size());
-      if (start_idx) tx.body(i).gain_stm_initial().set_stm_start_idx(start_idx.value());
+      if (start_idx) {
+        if (static_cast<size_t>(start_idx.value()) >= drives.size()) {
+          spdlog::error("STM start index out of range");
+          return false;
+        }
+        tx.body(i).gain_stm_initial().set_stm_start_idx(start_idx.value());
+      }
     }
     sent++;
   } else {
@@ -386,7 +398,13 @@ bool DriverV2_7::gain_stm_normal_phase(const std::vector<std::vector<Drive>>& dr
       tx.body(i).gain_stm_initial().set_freq_div(freq_div);
       tx.body(i).gain_stm_initial().set_mode(mode);
       tx.body(i).gain_stm_initial().set_cycle(drives.size());
-      if (start_idx) tx.body(i).gain_stm_initial().set_stm_start_idx(start_idx.value());
+      if (start_idx) {
+        if (static_cast<size_t>(start_idx.value()) >= drives.size()) {
+          spdlog::error("STM start index out of range");
+          return false;
+        }
+        tx.body(i).gain_stm_initial().set_stm_start_idx(start_idx.value());
+      }
     }
   } else {
     auto* p = reinterpret_cast<Phase*>(tx.bodies_raw_ptr());
@@ -433,7 +451,13 @@ bool DriverV2_7::gain_stm_normal_duty(const std::vector<std::vector<Drive>>& dri
       tx.body(i).gain_stm_initial().set_freq_div(freq_div);
       tx.body(i).gain_stm_initial().set_mode(mode);
       tx.body(i).gain_stm_initial().set_cycle(drives.size());
-      if (start_idx) tx.body(i).gain_stm_initial().set_stm_start_idx(start_idx.value());
+      if (start_idx) {
+        if (static_cast<size_t>(start_idx.value()) >= drives.size()) {
+          spdlog::error("STM start index out of range");
+          return false;
+        }
+        tx.body(i).gain_stm_initial().set_stm_start_idx(start_idx.value());
+      }
     }
   } else {
     auto* p = reinterpret_cast<Duty*>(tx.bodies_raw_ptr());
