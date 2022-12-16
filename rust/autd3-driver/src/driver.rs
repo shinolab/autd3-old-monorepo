@@ -291,6 +291,7 @@ pub fn focus_stm_send_size(total_size: usize, sent: usize, device_map: &[usize])
     (total_size - sent).min(max_size)
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn focus_stm_body(
     points: &[Vec<STMFocus>],
     sent: &mut usize,
