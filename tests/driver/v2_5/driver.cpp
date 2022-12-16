@@ -3,7 +3,7 @@
 // Created Date: 02/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/12/2022
+// Last Modified: 16/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -302,7 +302,7 @@ TEST(DriverV2_5Driver, operation_focus_stm_subsequent_v2_5) {
 
   driver.focus_stm_header(tx);
   size_t sent = 0;
-  driver.focus_stm_body(points, sent, size, 3224, sound_speed, tx);
+  driver.focus_stm_body(points, sent, size, 3224, sound_speed, std::nullopt, std::nullopt, tx);
 
   ASSERT_EQ(sent, size);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
@@ -318,7 +318,7 @@ TEST(DriverV2_5Driver, operation_focus_stm_subsequent_v2_5) {
 
   driver.focus_stm_header(tx);
   sent = 0;
-  driver.focus_stm_body(points, sent, 500, 3224, sound_speed, tx);
+  driver.focus_stm_body(points, sent, 500, 3224, sound_speed, std::nullopt, std::nullopt, tx);
 
   ASSERT_EQ(sent, size);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
@@ -330,14 +330,14 @@ TEST(DriverV2_5Driver, operation_focus_stm_subsequent_v2_5) {
 
   driver.focus_stm_header(tx);
   sent = 1;
-  driver.focus_stm_body(points, sent, 500, 3224, sound_speed, tx);
+  driver.focus_stm_body(points, sent, 500, 3224, sound_speed, std::nullopt, std::nullopt, tx);
   ASSERT_EQ(sent, size + 1);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
 
   driver.focus_stm_header(tx);
-  driver.focus_stm_body({}, sent, 0, 3224, sound_speed, tx);
+  driver.focus_stm_body({}, sent, 0, 3224, sound_speed, std::nullopt, std::nullopt, tx);
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
@@ -384,7 +384,7 @@ TEST(DriverV2_5Driver, operation_gain_stm_legacy_body_v2_5) {
 
   driver.gain_stm_legacy_header(tx);
   size_t sent = 0;
-  driver.gain_stm_legacy_body(drives_list, sent, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
+  driver.gain_stm_legacy_body(drives_list, sent, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, std::nullopt, std::nullopt, tx);
   ASSERT_EQ(sent, 1);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
@@ -395,7 +395,7 @@ TEST(DriverV2_5Driver, operation_gain_stm_legacy_body_v2_5) {
   ASSERT_EQ(tx.num_bodies, 10);
 
   driver.gain_stm_legacy_header(tx);
-  driver.gain_stm_legacy_body(drives_list, sent, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
+  driver.gain_stm_legacy_body(drives_list, sent, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, std::nullopt, std::nullopt, tx);
   ASSERT_EQ(sent, 2);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
@@ -408,7 +408,7 @@ TEST(DriverV2_5Driver, operation_gain_stm_legacy_body_v2_5) {
 
   driver.gain_stm_legacy_header(tx);
   sent = 5;
-  driver.gain_stm_legacy_body(drives_list, sent, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
+  driver.gain_stm_legacy_body(drives_list, sent, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, std::nullopt, std::nullopt, tx);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
@@ -456,7 +456,7 @@ TEST(DriverV2_5Driver, operation_gain_stm_normal_phase_v2_5) {
   }
 
   driver.gain_stm_normal_header(tx);
-  driver.gain_stm_normal_phase(drives_list, 0, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
+  driver.gain_stm_normal_phase(drives_list, 0, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, std::nullopt, std::nullopt, tx);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
@@ -466,7 +466,7 @@ TEST(DriverV2_5Driver, operation_gain_stm_normal_phase_v2_5) {
   ASSERT_EQ(tx.num_bodies, 10);
 
   driver.gain_stm_normal_header(tx);
-  driver.gain_stm_normal_phase(drives_list, 1, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
+  driver.gain_stm_normal_phase(drives_list, 1, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, std::nullopt, std::nullopt, tx);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
@@ -475,7 +475,7 @@ TEST(DriverV2_5Driver, operation_gain_stm_normal_phase_v2_5) {
   ASSERT_EQ(tx.num_bodies, 10);
 
   driver.gain_stm_normal_header(tx);
-  driver.gain_stm_normal_phase(drives_list, 5, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
+  driver.gain_stm_normal_phase(drives_list, 5, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, std::nullopt, std::nullopt, tx);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
@@ -503,7 +503,7 @@ TEST(DriverV2_5Driver, operation_gain_stm_normal_duty_v2_5) {
   }
 
   driver.gain_stm_normal_header(tx);
-  driver.gain_stm_normal_duty(drives_list, 1, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
+  driver.gain_stm_normal_duty(drives_list, 1, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, std::nullopt, std::nullopt, tx);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
@@ -512,7 +512,7 @@ TEST(DriverV2_5Driver, operation_gain_stm_normal_duty_v2_5) {
   ASSERT_EQ(tx.num_bodies, 10);
 
   driver.gain_stm_normal_header(tx);
-  driver.gain_stm_normal_duty(drives_list, 5, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, tx);
+  driver.gain_stm_normal_duty(drives_list, 5, 3224, autd3::driver::GainSTMMode::PhaseDutyFull, std::nullopt, std::nullopt, tx);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));

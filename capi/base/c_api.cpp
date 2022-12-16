@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/12/2022
+// Last Modified: 16/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,6 +23,7 @@
 #include "autd3/driver/v2_4/driver.hpp"
 #include "autd3/driver/v2_5/driver.hpp"
 #include "autd3/driver/v2_6/driver.hpp"
+#include "autd3/driver/v2_7/driver.hpp"
 #include "autd3/modulation/lpf.hpp"
 #include "custom.hpp"
 #include "custom_sink.hpp"
@@ -48,6 +49,8 @@ std::unique_ptr<const autd3::driver::Driver> get_driver(const uint8_t driver_ver
       return std::make_unique<autd3::driver::DriverV2_5>();
     case 0x86:
       return std::make_unique<autd3::driver::DriverV2_6>();
+    case 0x87:
+      return std::make_unique<autd3::driver::DriverV2_7>();
     default:
       spdlog::error("unknown driver version: {}", driver_version);
       return nullptr;
@@ -355,6 +358,35 @@ void AUTDSetGainSTMMode(void* const stm, uint16_t mode) {
   auto* const stm_w = static_cast<autd3::GainSTM*>(stm);
   stm_w->mode() = static_cast<autd3::GainSTMMode>(mode);
 }
+
+int32_t AUTDSTMGetStartIdx(const void* const stm) {
+  const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
+  const auto start_idx = stm_w->start_idx;
+  return start_idx ? static_cast<int32_t>(start_idx.value()) : -1;
+}
+
+int32_t AUTDSTMGetFinishIdx(const void* const stm) {
+  const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
+  const auto finish_idx = stm_w->finish_idx;
+  return finish_idx ? static_cast<int32_t>(finish_idx.value()) : -1;
+}
+
+void AUTDSTMSetStartIdx(void* const stm, const int32_t start_idx) {
+  auto* const stm_w = static_cast<autd3::core::STM*>(stm);
+  if (start_idx < 0)
+    stm_w->start_idx = std::nullopt;
+  else
+    stm_w->start_idx = static_cast<uint16_t>(start_idx);
+}
+
+void AUTDSTMSetFinishIdx(void* const stm, const int32_t finish_idx) {
+  auto* const stm_w = static_cast<autd3::core::STM*>(stm);
+  if (finish_idx < 0)
+    stm_w->finish_idx = std::nullopt;
+  else
+    stm_w->finish_idx = static_cast<uint16_t>(finish_idx);
+}
+
 double AUTDSTMSetFrequency(void* const stm, const double freq) {
   auto* const stm_w = static_cast<autd3::core::STM*>(stm);
   return stm_w->set_frequency(freq);

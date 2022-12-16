@@ -3,13 +3,15 @@
 // Created Date: 15/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/11/2022
+// Last Modified: 16/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
+
+#include <optional>
 
 #include "autd3/driver/common/cpu/datagram.hpp"
 
@@ -142,10 +144,12 @@ class Driver {
    * @param freq_div STM sampling frequency division
    * @param sound_speed Sound speed
    * @param tx transmission data
+   * @param start_idx stm start index
+   * @param finish_idx stm finish index
    * @return true if total_size and freq_div are valid
    */
   virtual bool focus_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, size_t total_size, uint32_t freq_div,
-                              double sound_speed, TxDatagram& tx) const = 0;
+                              double sound_speed, std::optional<uint16_t> start_idx, std::optional<uint16_t> finish_idx, TxDatagram& tx) const = 0;
 
   /**
    * @brief Pack Header data for GainSTM in Legacy mode
@@ -159,11 +163,13 @@ class Driver {
    * @param sent Number of data already sent
    * @param freq_div STM sampling frequency division
    * @param mode GainSTMMode
+   * @param start_idx stm start index
+   * @param finish_idx stm finish index
    * @param tx transmission data
    * @return true if freq_div is valid
    */
   [[nodiscard]] virtual bool gain_stm_legacy_body(const std::vector<std::vector<Drive>>& drives, size_t& sent, uint32_t freq_div, GainSTMMode mode,
-                                                  TxDatagram& tx) const = 0;
+                                                  std::optional<uint16_t> start_idx, std::optional<uint16_t> finish_idx, TxDatagram& tx) const = 0;
 
   /**
    * @brief Pack Header data for GainSTM in Normal/NormalPhase mode
@@ -177,11 +183,13 @@ class Driver {
    * @param sent Number of data already sent
    * @param freq_div STM sampling frequency division
    * @param mode GainSTMMode
+   * @param start_idx stm start index
+   * @param finish_idx stm finish index
    * @param tx transmission data
    * @return true if freq_div is valid
    */
   [[nodiscard]] virtual bool gain_stm_normal_phase(const std::vector<std::vector<Drive>>& drives, size_t sent, uint32_t freq_div, GainSTMMode mode,
-                                                   TxDatagram& tx) const = 0;
+                                                   std::optional<uint16_t> start_idx, std::optional<uint16_t> finish_idx, TxDatagram& tx) const = 0;
 
   /**
    * @brief Pack duty data to Body for GainSTM in Normal/NormalPhase mode
@@ -189,11 +197,13 @@ class Driver {
    * @param sent Number of data already sent
    * @param freq_div STM sampling frequency division
    * @param mode GainSTMMode
+   * @param start_idx stm start index
+   * @param finish_idx stm finish index
    * @param tx transmission data
    * @return true if freq_div is valid
    */
   [[nodiscard]] virtual bool gain_stm_normal_duty(const std::vector<std::vector<Drive>>& drives, size_t sent, uint32_t freq_div, GainSTMMode mode,
-                                                  TxDatagram& tx) const = 0;
+                                                  std::optional<uint16_t> start_idx, std::optional<uint16_t> finish_idx, TxDatagram& tx) const = 0;
 
   /**
    * @brief Set force fan flag
