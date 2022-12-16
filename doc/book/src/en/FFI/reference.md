@@ -754,6 +754,44 @@ Get GainSTM mode.
 | stm                    | void*    | in     | pointer to STM |
 | return                 | uint16_t | -      | GainSTM mode   |
 
+## AUTDSTMGetStartIdx (autd3capi)
+
+Get start index of STM.
+
+| Argument name / return | type   | in/out | description      |
+| ---------------------- | ------ | ------ | ---------------- |
+| stm                    | void*  | in     | pointer to STM   |
+| return                 | int32_t | -      | start index (if < 0, nullopt) |
+
+## AUTDSTMGetFinishIdx (autd3capi)
+
+Get finish index of STM.
+
+| Argument name / return | type   | in/out | description      |
+| ---------------------- | ------ | ------ | ---------------- |
+| stm                    | void*  | in     | pointer to STM   |
+| return                 | int32_t | -      | finish index (if < 0, nullopt) |
+
+## AUTDSTMSetStartIdx (autd3capi)
+
+Set start index of STM.
+
+| Argument name / return | type   | in/out | description      |
+| ---------------------- | ------ | ------ | ---------------- |
+| stm                    | void*  | in     | pointer to STM   |
+| start_idx              | int32_t | in      | start index (if < 0, nullopt) |
+| return                 | void | -      | - |
+
+## AUTDSTMSetFinishIdx (autd3capi)
+
+Set finish index of STM.
+
+| Argument name / return | type   | in/out | description      |
+| ---------------------- | ------ | ------ | ---------------- |
+| stm                    | void*  | in     | pointer to STM   |
+| finish_idx              | int32_t | in     | start index (if < 0, nullopt) |
+| return                 | void | -      | - |
+
 ## AUTDSTMSetFrequency (autd3capi)
 
 Set frequency of STM.

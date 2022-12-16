@@ -118,7 +118,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDNumDevices.restype = ctypes.c_int32
 
         self.dll.AUTDGeometryCenter.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)] 
-        self.dll.AUTDGeometryCenter.restype = ctypes.c_int32
+        self.dll.AUTDGeometryCenter.restype = None
 
         self.dll.AUTDTransPosition.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)] 
         self.dll.AUTDTransPosition.restype = None
@@ -224,6 +224,18 @@ class NativeMethods(metaclass=Singleton):
 
         self.dll.AUTDSTMSetFrequency.argtypes = [ctypes.c_void_p, ctypes.c_double] 
         self.dll.AUTDSTMSetFrequency.restype = ctypes.c_double
+
+        self.dll.AUTDSTMGetStartIdx.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDSTMGetStartIdx.restype = ctypes.c_int32
+
+        self.dll.AUTDSTMGetFinishIdx.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDSTMGetFinishIdx.restype = ctypes.c_int32
+
+        self.dll.AUTDSTMSetStartIdx.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
+        self.dll.AUTDSTMSetStartIdx.restype = None
+
+        self.dll.AUTDSTMSetFinishIdx.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
+        self.dll.AUTDSTMSetFinishIdx.restype = None
 
         self.dll.AUTDSTMFrequency.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDSTMFrequency.restype = ctypes.c_double

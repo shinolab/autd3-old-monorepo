@@ -849,6 +849,44 @@ GainSTMのmodeを取得する.
 | stm                    | void*    | in     | pointer to STM |
 | return                 | uint16_t | -      | GainSTM mode   |
 
+## AUTDSTMGetStartIdx (autd3capi)
+
+start index を取得する.
+
+| Argument name / return | type   | in/out | description      |
+| ---------------------- | ------ | ------ | ---------------- |
+| stm                    | void*  | in     | pointer to STM   |
+| return                 | int32_t | -      | start index (if < 0, nullopt) |
+
+## AUTDSTMGetFinishIdx (autd3capi)
+
+finish index を取得する.
+
+| Argument name / return | type   | in/out | description      |
+| ---------------------- | ------ | ------ | ---------------- |
+| stm                    | void*  | in     | pointer to STM   |
+| return                 | int32_t | -      | finish index (if < 0, nullopt) |
+
+## AUTDSTMSetStartIdx (autd3capi)
+
+start index を設定する.
+
+| Argument name / return | type   | in/out | description      |
+| ---------------------- | ------ | ------ | ---------------- |
+| stm                    | void*  | in     | pointer to STM   |
+| start_idx              | int32_t | in      | start index (if < 0, nullopt) |
+| return                 | void | -      | - |
+
+## AUTDSTMSetFinishIdx (autd3capi)
+
+finish index を設定する.
+
+| Argument name / return | type   | in/out | description      |
+| ---------------------- | ------ | ------ | ---------------- |
+| stm                    | void*  | in     | pointer to STM   |
+| finish_idx              | int32_t | in     | start index (if < 0, nullopt) |
+| return                 | void | -      | - |
+
 ## AUTDSTMSetFrequency (autd3capi)
 
 STMのfrequencyを設定する.
