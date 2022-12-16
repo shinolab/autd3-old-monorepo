@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/12/2022
+ * Last Modified: 16/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -34,6 +34,8 @@ module controller #(
     output var [31:0] SOUND_SPEED,
     output var [15:0] STM_START_IDX,
     output var USE_STM_START_IDX,
+    output var [15:0] STM_FINISH_IDX,
+    output var USE_STM_FINISH_IDX,
     output var [WIDTH-1:0] CYCLE[0:DEPTH-1],
     output var LEGACY_MODE
 );
@@ -71,6 +73,7 @@ module controller #(
   bit [31:0] freq_div_stm;
   bit [31:0] sound_speed;
   bit [15:0] stm_start_idx;
+  bit [15:0] stm_finish_idx;
   bit [WIDTH-1:0] cycle[0:DEPTH-1];
 
   assign bus_clk = CPU_BUS.BUS_CLK;
@@ -87,6 +90,7 @@ module controller #(
   assign OP_MODE = ctl_reg[CTL_REG_OP_MODE_BIT];
   assign STM_GAIN_MODE = ctl_reg[CTL_REG_STM_GAIN_MODE_BIT];
   assign USE_STM_START_IDX = ctl_reg[CTL_REG_USE_STM_START_IDX_BIT];
+  assign USE_STM_FINISH_IDX = ctl_reg[CTL_REG_USE_STM_FINISH_IDX_BIT];
 
   assign ECAT_SYNC_TIME = ecat_sync_time;
   assign SYNC_SET = sync_set;
@@ -98,6 +102,7 @@ module controller #(
   assign FREQ_DIV_STM = freq_div_stm;
   assign SOUND_SPEED = sound_speed;
   assign STM_START_IDX = stm_start_idx;
+  assign STM_FINISH_IDX = stm_finish_idx;
 
   for (genvar i = 0; i < DEPTH; i++) begin
     assign CYCLE[i]   = cycle[i];
@@ -148,9 +153,10 @@ module controller #(
     RD_STM_CYCLE_REQ_RD_SOUND_SPEED_0,
     RD_STM_FREQ_DIV_0_REQ_RD_SOUND_SPEED_1,
     RD_STM_FREQ_DIV_1_REQ_RD_STM_START_IDX,
-    RD_SOUND_SPEED_0_REQ_RD_CTL_REG,
-    RD_SOUND_SPEED_1_REQ_WR_FPGA_INFO,
-    RD_STM_START_IDX_REQ_RD_MOD_CYCLE,
+    RD_SOUND_SPEED_0_REQ_RD_STM_FINISH_IDX,
+    RD_SOUND_SPEED_1_REQ_RD_CTL_REG,
+    RD_STM_START_IDX_REQ_WR_FPGA_INFO,
+    RD_STM_FINISH_IDX_REQ_RD_MOD_CYCLE,
 
     REQ_RD_EC_SYNC_TIME_0,
     REQ_RD_EC_SYNC_TIME_1,
@@ -263,29 +269,35 @@ module controller #(
 
         freq_div_stm[31:16] <= dout;
 
-        state <= RD_SOUND_SPEED_0_REQ_RD_CTL_REG;
+        state <= RD_SOUND_SPEED_0_REQ_RD_STM_FINISH_IDX;
       end
-      RD_SOUND_SPEED_0_REQ_RD_CTL_REG: begin
-        addr <= ADDR_CTL_REG;
+      RD_SOUND_SPEED_0_REQ_RD_STM_FINISH_IDX: begin
+        addr <= ADDR_STM_FINISH_IDX;
 
         sound_speed[15:0] <= dout;
 
-        state <= RD_SOUND_SPEED_1_REQ_WR_FPGA_INFO;
+        state <= RD_SOUND_SPEED_1_REQ_RD_CTL_REG;
       end
-      RD_SOUND_SPEED_1_REQ_WR_FPGA_INFO: begin
-        we <= 1'b1;
-        addr <= ADDR_FPGA_INFO;
-        din <= {15'h00, THERMO};
+      RD_SOUND_SPEED_1_REQ_RD_CTL_REG: begin
+        addr <= ADDR_CTL_REG;
 
         sound_speed[31:16] <= dout;
 
-        state <= RD_STM_START_IDX_REQ_RD_MOD_CYCLE;
+        state <= RD_STM_START_IDX_REQ_WR_FPGA_INFO;
       end
-      RD_STM_START_IDX_REQ_RD_MOD_CYCLE: begin
+      RD_STM_START_IDX_REQ_WR_FPGA_INFO: begin
+        we <= 1'b1;
+        addr <= ADDR_FPGA_INFO;
+        din <= {15'h00, THERMO};
+        stm_start_idx <= dout;
+
+        state <= RD_STM_FINISH_IDX_REQ_RD_MOD_CYCLE;
+      end
+      RD_STM_FINISH_IDX_REQ_RD_MOD_CYCLE: begin
         we <= 1'b0;
         addr <= ADDR_MOD_CYCLE;
 
-        stm_start_idx <= dout;
+        stm_finish_idx <= dout;
 
         state <= RD_CTL_REG_REQ_RD_MOD_FREQ_DIV_0;
       end
