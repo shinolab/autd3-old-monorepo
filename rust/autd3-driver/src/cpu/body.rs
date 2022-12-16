@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/12/2022
+ * Last Modified: 16/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -64,8 +64,16 @@ impl FocusSTMBodyInitial<[u16]> {
         self.data[4] = ((sound_speed >> 16) & 0x0000FFFF) as _;
     }
 
+    pub fn set_start_idx(&mut self, idx: u16) {
+        self.data[5] = idx;
+    }
+
+    pub fn set_finish_idx(&mut self, idx: u16) {
+        self.data[6] = idx;
+    }
+
     pub fn set_points(&mut self, points: &[STMFocus]) {
-        self.data[5..]
+        self.data[7..]
             .chunks_mut(std::mem::size_of::<STMFocus>() / std::mem::size_of::<u16>())
             .zip(points.iter())
             .for_each(|(d, s)| d.copy_from_slice(&s.buf));
@@ -123,6 +131,14 @@ impl GainSTMBodyInitial<[u16]> {
 
     pub fn set_cycle(&mut self, cycle: usize) {
         self.data[3] = cycle as u16;
+    }
+
+    pub fn set_start_idx(&mut self, idx: u16) {
+        self.data[4] = idx;
+    }
+
+    pub fn set_finish_idx(&mut self, idx: u16) {
+        self.data[5] = idx;
     }
 }
 
