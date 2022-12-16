@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/12/2022
+ * Last Modified: 16/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -264,6 +264,12 @@ pub fn focus_stm_header(tx: &mut TxDatagram) {
     tx.header_mut()
         .fpga_flag
         .remove(FPGAControlFlags::STM_GAIN_MODE);
+    tx.header_mut()
+        .fpga_flag
+        .remove(FPGAControlFlags::USE_START_IDX);
+    tx.header_mut()
+        .fpga_flag
+        .remove(FPGAControlFlags::USE_FINISH_IDX);
 
     tx.num_bodies = 0;
 }
@@ -275,7 +281,9 @@ pub fn focus_stm_send_size(total_size: usize, sent: usize, device_map: &[usize])
         (data_len
             - std::mem::size_of::<u16>()
             - std::mem::size_of::<u32>()
-            - std::mem::size_of::<u32>())
+            - std::mem::size_of::<u32>()
+            - std::mem::size_of::<u16>()
+            - std::mem::size_of::<u16>())
             / std::mem::size_of::<STMFocus>()
     } else {
         (data_len - std::mem::size_of::<u16>()) / std::mem::size_of::<STMFocus>()
@@ -289,6 +297,8 @@ pub fn focus_stm_body(
     total_size: usize,
     freq_div: u32,
     sound_speed: f64,
+    start_idx: Option<u16>,
+    finish_idx: Option<u16>,
     tx: &mut TxDatagram,
 ) -> Result<()> {
     if total_size > FOCUS_STM_BUF_SIZE_MAX {
@@ -297,6 +307,23 @@ pub fn focus_stm_body(
 
     if points.is_empty() || points[0].is_empty() {
         return Ok(());
+    }
+
+    if let Some(idx) = start_idx {
+        if idx as usize >= total_size {
+            return Err(DriverError::STMStartIndexOutOfRange.into());
+        }
+        tx.header_mut()
+            .fpga_flag
+            .set(FPGAControlFlags::USE_START_IDX, true);
+    }
+    if let Some(idx) = finish_idx {
+        if idx as usize >= total_size {
+            return Err(DriverError::STMFinishIndexOutOfRange.into());
+        }
+        tx.header_mut()
+            .fpga_flag
+            .set(FPGAControlFlags::USE_FINISH_IDX, true);
     }
 
     if *sent == 0 {
@@ -314,6 +341,12 @@ pub fn focus_stm_body(
             d.focus_stm_initial_mut().set_freq_div(freq_div);
             d.focus_stm_initial_mut().set_sound_speed(sound_speed);
             d.focus_stm_initial_mut().set_points(s);
+            if let Some(idx) = start_idx {
+                d.focus_stm_initial_mut().set_start_idx(idx);
+            }
+            if let Some(idx) = finish_idx {
+                d.focus_stm_initial_mut().set_finish_idx(idx);
+            }
         });
     } else {
         (0..tx.num_devices()).for_each(|idx| {
@@ -354,6 +387,12 @@ pub fn gain_stm_legacy_header(tx: &mut TxDatagram) {
     tx.header_mut()
         .fpga_flag
         .set(FPGAControlFlags::STM_GAIN_MODE, true);
+    tx.header_mut()
+        .fpga_flag
+        .remove(FPGAControlFlags::USE_START_IDX);
+    tx.header_mut()
+        .fpga_flag
+        .remove(FPGAControlFlags::USE_FINISH_IDX);
 
     tx.num_bodies = 0;
 }
@@ -363,6 +402,8 @@ pub fn gain_stm_legacy_body(
     sent: &mut usize,
     freq_div: u32,
     mode: Mode,
+    start_idx: Option<u16>,
+    finish_idx: Option<u16>,
     tx: &mut TxDatagram,
 ) -> Result<()> {
     if drives.len() > GAIN_STM_LEGACY_BUF_SIZE_MAX {
@@ -370,6 +411,23 @@ pub fn gain_stm_legacy_body(
     }
 
     let mut is_last_frame = false;
+
+    if let Some(idx) = start_idx {
+        if idx as usize >= drives.len() {
+            return Err(DriverError::STMStartIndexOutOfRange.into());
+        }
+        tx.header_mut()
+            .fpga_flag
+            .set(FPGAControlFlags::USE_START_IDX, true);
+    }
+    if let Some(idx) = finish_idx {
+        if idx as usize >= drives.len() {
+            return Err(DriverError::STMFinishIndexOutOfRange.into());
+        }
+        tx.header_mut()
+            .fpga_flag
+            .set(FPGAControlFlags::USE_FINISH_IDX, true);
+    }
 
     if *sent == 0 {
         if freq_div < GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN {
@@ -383,6 +441,12 @@ pub fn gain_stm_legacy_body(
             d.gain_stm_initial_mut().set_freq_div(freq_div);
             d.gain_stm_initial_mut().set_mode(mode);
             d.gain_stm_initial_mut().set_cycle(drives.len());
+            if let Some(idx) = start_idx {
+                d.gain_stm_initial_mut().set_start_idx(idx);
+            }
+            if let Some(idx) = finish_idx {
+                d.gain_stm_initial_mut().set_finish_idx(idx);
+            }
         });
         *sent += 1;
     } else {
@@ -470,6 +534,12 @@ pub fn gain_stm_normal_header(tx: &mut TxDatagram) {
     tx.header_mut()
         .fpga_flag
         .set(FPGAControlFlags::STM_GAIN_MODE, true);
+    tx.header_mut()
+        .fpga_flag
+        .remove(FPGAControlFlags::USE_START_IDX);
+    tx.header_mut()
+        .fpga_flag
+        .remove(FPGAControlFlags::USE_FINISH_IDX);
 
     tx.num_bodies = 0;
 }
@@ -479,6 +549,8 @@ pub fn gain_stm_normal_phase_body(
     sent: usize,
     freq_div: u32,
     mode: Mode,
+    start_idx: Option<u16>,
+    finish_idx: Option<u16>,
     tx: &mut TxDatagram,
 ) -> Result<()> {
     if drives.len() > GAIN_STM_BUF_SIZE_MAX {
@@ -490,6 +562,23 @@ pub fn gain_stm_normal_phase_body(
     }
 
     tx.header_mut().cpu_flag.remove(CPUControlFlags::IS_DUTY);
+
+    if let Some(idx) = start_idx {
+        if idx as usize >= drives.len() {
+            return Err(DriverError::STMStartIndexOutOfRange.into());
+        }
+        tx.header_mut()
+            .fpga_flag
+            .set(FPGAControlFlags::USE_START_IDX, true);
+    }
+    if let Some(idx) = finish_idx {
+        if idx as usize >= drives.len() {
+            return Err(DriverError::STMFinishIndexOutOfRange.into());
+        }
+        tx.header_mut()
+            .fpga_flag
+            .set(FPGAControlFlags::USE_FINISH_IDX, true);
+    }
 
     if sent == 0 {
         if freq_div < GAIN_STM_SAMPLING_FREQ_DIV_MIN {
@@ -503,6 +592,12 @@ pub fn gain_stm_normal_phase_body(
             d.gain_stm_initial_mut().set_freq_div(freq_div);
             d.gain_stm_initial_mut().set_mode(mode);
             d.gain_stm_initial_mut().set_cycle(drives.len());
+            if let Some(idx) = start_idx {
+                d.gain_stm_initial_mut().set_start_idx(idx);
+            }
+            if let Some(idx) = finish_idx {
+                d.gain_stm_initial_mut().set_finish_idx(idx);
+            }
         });
     } else {
         tx.phases_mut()
