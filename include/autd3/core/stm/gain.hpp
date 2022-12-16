@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/12/2022
+// Last Modified: 16/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -69,7 +69,7 @@ struct GainSTM final : STM {
 
     if (is_finished()) return true;
 
-    return mode->pack_stm_gain_body(driver, _sent, _next_duty, _freq_div, _gains, _mode, start_idx, tx);
+    return mode->pack_stm_gain_body(driver, _sent, _next_duty, _freq_div, _gains, _mode, start_idx, finish_idx, tx);
   }
 
   [[nodiscard]] bool is_finished() const override { return _sent >= _gains.size() + 1; }
