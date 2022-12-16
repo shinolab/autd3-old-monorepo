@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/12/2022
+// Last Modified: 16/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -71,6 +71,7 @@ constexpr uint16_t BRAM_ADDR_STM_CYCLE = 0x051;
 constexpr uint16_t BRAM_ADDR_STM_FREQ_DIV_0 = 0x052;
 constexpr uint16_t BRAM_ADDR_SOUND_SPEED_0 = 0x054;
 constexpr uint16_t BRAM_ADDR_STM_START_IDX = 0x056;
+constexpr uint16_t BRAM_ADDR_STM_FINISH_IDX = 0x057;
 constexpr uint16_t BRAM_ADDR_CYCLE_BASE = 0x100;
 constexpr uint16_t BRAM_ADDR_MOD_DELAY_BASE = 0x200;
 
@@ -235,11 +236,13 @@ class CPU {
       const auto sound_speed =
           static_cast<uint32_t>(body->focus_stm_initial().data()[4]) << 16 | static_cast<uint32_t>(body->focus_stm_initial().data()[3]);
       const auto start_idx = body->focus_stm_initial().data()[5];
+      const auto finish_idx = body->focus_stm_initial().data()[6];
 
       bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FREQ_DIV_0, reinterpret_cast<const uint16_t*>(&freq_div), 2);
       bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_SOUND_SPEED_0, reinterpret_cast<const uint16_t*>(&sound_speed), 2);
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_START_IDX, start_idx);
-      src = body->focus_stm_initial().data() + 6;
+      bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FINISH_IDX, finish_idx);
+      src = body->focus_stm_initial().data() + 7;
     } else {
       size = body->focus_stm_subsequent().data()[0];
       src = body->focus_stm_subsequent().data() + 1;
@@ -295,6 +298,8 @@ class CPU {
 
       const auto start_idx = body->gain_stm_initial().data()[4];
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_START_IDX, start_idx);
+      const auto finish_idx = body->gain_stm_initial().data()[5];
+      bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FINISH_IDX, finish_idx);
 
       return;
     }
@@ -373,6 +378,8 @@ class CPU {
 
       const auto start_idx = body->gain_stm_initial().data()[4];
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_START_IDX, start_idx);
+      const auto finish_idx = body->gain_stm_initial().data()[5];
+      bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FINISH_IDX, finish_idx);
 
       return;
     }

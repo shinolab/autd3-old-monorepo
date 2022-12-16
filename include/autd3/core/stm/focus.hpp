@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/12/2022
+// Last Modified: 16/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -110,7 +110,7 @@ struct FocusSTM final : STM {
       points.emplace_back(lp);
     }
 
-    return driver->focus_stm_body(points, _sent, _points.size(), this->_freq_div, sound_speed, start_idx, tx);
+    return driver->focus_stm_body(points, _sent, _points.size(), this->_freq_div, sound_speed, start_idx, finish_idx, tx);
   }
 
   [[nodiscard]] bool is_finished() const override { return _sent == _points.size(); }
