@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/12/2022
+// Last Modified: 15/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -65,14 +65,11 @@ class Modulation : public DatagramHeader {
 
   /**
    * \brief sampling frequency division ratio
-   * \details sampling frequency will be driver::FPGA_CLK_FREQ / (sampling frequency division ratio).
-   * The value must be larger than driver::MOD_SAMPLING_FREQ_DIV_MIN.
    */
   uint32_t& sampling_frequency_division() noexcept { return _freq_div; }
 
   /**
    * \brief sampling frequency division ratio
-   * \details sampling frequency will be driver::FPGA_CLK_FREQ / (sampling frequency division ratio).
    */
   [[nodiscard]] uint32_t sampling_frequency_division() const noexcept { return _freq_div; }
 

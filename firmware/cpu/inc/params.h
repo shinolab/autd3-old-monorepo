@@ -3,7 +3,7 @@
 // Created Date: 22/04/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/06/2022
+// Last Modified: 16/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,6 +36,8 @@
 #define BRAM_ADDR_STM_FREQ_DIV_1 (0x053)
 #define BRAM_ADDR_SOUND_SPEED_0 (0x054)
 #define BRAM_ADDR_SOUND_SPEED_1 (0x055)
+#define BRAM_ADDR_STM_START_IDX (0x056)
+#define BRAM_ADDR_STM_FINISH_IDX (0x057)
 #define BRAM_ADDR_CYCLE_BASE (0x100)
 #define BRAM_ADDR_MOD_DELAY_BASE (0x200)
 
@@ -45,5 +47,6 @@
 #define CTL_REG_STM_GAIN_MODE_BIT (6)
 #define CTL_REG_READS_FPGA_INFO_BIT (7)
 #define CTL_REG_SYNC_BIT (8)
+#define CTL_REG_OP_MODE_FPGA_BIT (9)
 
 #endif  // INC_PARAMS_H_

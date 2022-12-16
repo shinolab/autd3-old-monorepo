@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/12/2022
+// Last Modified: 16/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -84,6 +84,10 @@ EXPORT_AUTD void AUTDGainSTMAdd(IN void* stm, IN void* gain);
 EXPORT_AUTD uint16_t AUTDGetGainSTMMode(IN void* stm);
 EXPORT_AUTD void AUTDSetGainSTMMode(IN void* stm, IN uint16_t mode);
 EXPORT_AUTD double AUTDSTMSetFrequency(IN void* stm, IN double freq);
+EXPORT_AUTD int32_t AUTDSTMGetStartIdx(IN const void* stm);
+EXPORT_AUTD int32_t AUTDSTMGetFinishIdx(IN const void* stm);
+EXPORT_AUTD void AUTDSTMSetStartIdx(IN void* stm, IN int32_t start_idx);
+EXPORT_AUTD void AUTDSTMSetFinishIdx(IN void* stm, IN int32_t finish_idx);
 EXPORT_AUTD double AUTDSTMFrequency(IN const void* stm);
 EXPORT_AUTD double AUTDSTMSamplingFrequency(IN const void* stm);
 EXPORT_AUTD uint32_t AUTDSTMSamplingFrequencyDivision(IN const void* stm);

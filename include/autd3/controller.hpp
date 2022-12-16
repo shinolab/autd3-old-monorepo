@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/12/2022
+// Last Modified: 15/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,19 +30,19 @@
 #include "autd3/driver/common/cpu/ec_config.hpp"
 #include "autd3/driver/driver.hpp"
 #include "autd3/driver/firmware_version.hpp"
-#include "autd3/driver/v2_6/driver.hpp"
+#include "autd3/driver/v2_7/driver.hpp"
 #include "autd3/special_data.hpp"
 
 namespace autd3 {
 
-using DriverLatest = driver::DriverV2_6;
+using DriverLatest = driver::DriverV2_7;
 
 /**
  * @brief AUTD Controller
  */
 class Controller {
  public:
-  explicit Controller(std::unique_ptr<const driver::Driver> driver = std::make_unique<const driver::DriverV2_6>());
+  explicit Controller(std::unique_ptr<const driver::Driver> driver = std::make_unique<const DriverLatest>());
   Controller(const Controller& v) = delete;
   Controller& operator=(const Controller& obj) = delete;
   Controller(Controller&& obj) = delete;
@@ -775,8 +775,6 @@ class Controller {
 
     /**
      * @brief Send buffered core::DatagramBody and then send core::DatagramHeader and core::DatagramBody in DatagramPackRef
-     * @tparam H2 Class inheriting from core::DatagramHeader
-     * @tparam B2 Class inheriting from core::DatagramBody
      * @param pack core::DatagramPackRef
      * @return Controller&
      */

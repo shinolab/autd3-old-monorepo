@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 14/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -31,6 +31,7 @@ module sim_controller ();
 
   bit thermo;
   bit force_fan;
+  bit use_stm_start_idx;
   bit [63:0] ecat_sync_time;
   bit sync_set;
   bit [15:0] cycle_m;
@@ -41,6 +42,7 @@ module sim_controller ();
   bit [15:0] cycle_stm;
   bit [31:0] freq_div_stm;
   bit [31:0] sound_speed;
+  bit [15:0] stm_start_idx;
   bit [WIDTH-1:0] cycle[0:DEPTH-1];
 
   controller #(
@@ -61,6 +63,8 @@ module sim_controller ();
       .CYCLE_STM(cycle_stm),
       .FREQ_DIV_STM(freq_div_stm),
       .SOUND_SPEED(sound_speed),
+      .STM_START_IDX(stm_start_idx),
+      .USE_STM_START_IDX(use_stm_start_idx),
       .CYCLE(cycle)
   );
 
@@ -74,6 +78,7 @@ module sim_controller ();
     bit [15:0] cycle_stm_buf;
     bit [31:0] freq_div_stm_buf;
     bit [31:0] sound_speed_buf;
+    bit [15:0] stm_start_idx_buf;
     bit [WIDTH-1:0] cycle_buf[0:DEPTH-1];
     bit [15:0] delay_buf[0:DEPTH-1];
     @(posedge locked);
@@ -104,6 +109,9 @@ module sim_controller ();
 
     sound_speed_buf = sim_helper_random.range(32'hFFFFFFFF, 0);
     sim_helper_bram.write_sound_speed(sound_speed_buf);
+
+    stm_start_idx_buf = sim_helper_random.range(16'hFFFF, 0);
+    sim_helper_bram.write_stm_start_idx(stm_start_idx_buf);
 
     for (int i = 0; i < DEPTH; i++) begin
       cycle_buf[i] = sim_helper_random.range(MAX, 0);
@@ -145,6 +153,10 @@ module sim_controller ();
     end
     if (sound_speed_buf != sound_speed) begin
       $error("Failed at sound_speed");
+      $finish();
+    end
+    if (stm_start_idx_buf != stm_start_idx) begin
+      $error("Failed at stm_start_idx");
       $finish();
     end
 

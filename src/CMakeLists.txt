@@ -15,6 +15,7 @@ add_library(autd3
   driver/v2_4/driver.cpp
   driver/v2_5/driver.cpp
   driver/v2_6/driver.cpp
+  driver/v2_7/driver.cpp
   core/mode.cpp
   ${HEADER_FILES}
   ${CORE_HEADER_FILES}

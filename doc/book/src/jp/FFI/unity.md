@@ -12,7 +12,7 @@ v2.6からは, Unity Package Manager経由でインストールする.
 
 ### npmjs
 
-1. Edit→Project Settingsから「Project Settings」を開く
+1. Edit→Project Settingsから「Package Manager」を開く
 1. Scoped Registryにて以下を追加し, 保存する
   - Name    : shinolab
   - URL     : https://registry.npmjs.com
@@ -33,7 +33,7 @@ v2.6からは, Unity Package Manager経由でインストールする.
     }
   ],
   "dependencies": {
-    "com.shinolab.autd3": "2.6.8",
+    "com.shinolab.autd3": "2.7.0",
     ...
 ```
 

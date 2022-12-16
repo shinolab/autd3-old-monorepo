@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/12/2022
+ * Last Modified: 16/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,6 +25,8 @@ pub struct FocusSTM {
     control_points: Vec<(Vector3, u8)>,
     sample_freq_div: u32,
     sent: usize,
+    pub start_idx: Option<u16>,
+    pub finish_idx: Option<u16>,
     pub sound_speed: f64,
 }
 
@@ -34,6 +36,8 @@ impl FocusSTM {
             control_points: vec![],
             sample_freq_div: 4096,
             sent: 0,
+            start_idx: None,
+            finish_idx: None,
             sound_speed,
         }
     }
@@ -102,6 +106,8 @@ impl<T: Transducer> DatagramBody<T> for FocusSTM {
             self.control_points.len(),
             self.sample_freq_div,
             self.sound_speed,
+            self.start_idx,
+            self.finish_idx,
             tx,
         )
     }

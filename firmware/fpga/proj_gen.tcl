@@ -10,7 +10,6 @@ set_property "default_lib"        "xil_defaultlib" [current_project]
 set_property "simulator_language" "Verilog"        [current_project]
 set_property "target_language"    "Verilog"        [current_project]
 
-
 if {[string equal [get_filesets -quiet sources_1] ""]} {
     create_fileset -srcset sources_1
 }
@@ -23,90 +22,37 @@ if {[string equal [get_filesets -quiet sim_1] ""]} {
     create_fileset -simset sim_1
 }
 
+set synth_flow              "Vivado Synthesis 2022"
+set synth_strategy_default  "Vivado Synthesis Defaults"
+set synth_strategy_perf     "Flow_PerfOptimized_high"
+set synth_strategy_area     "Flow_AreaOptimized_high"
+create_run -name synth_default -flow $synth_flow -strategy $synth_strategy_default -constrset constrs_1
+create_run -name synth_perf -flow $synth_flow -strategy $synth_strategy_perf -constrset constrs_1
+create_run -name synth_area -flow $synth_flow -strategy $synth_strategy_area -constrset constrs_1
+current_run -synthesis [get_runs synth_default]
 
-set synth_1_flow     "Vivado Synthesis 2022"
-set synth_1_strategy "Flow_PerfOptimized_high"
-if {[string equal [get_runs -quiet synth_1] ""]} {
-    create_run -name synth_1 -flow $synth_1_flow -strategy $synth_1_strategy -constrset constrs_1
-} else {
-    set_property flow     $synth_1_flow     [get_runs synth_1]
-    set_property strategy $synth_1_strategy [get_runs synth_1]
-}
-set synth_2_flow     "Vivado Synthesis 2022"
-set synth_2_strategy "Vivado Synthesis Defaults"
-if {[string equal [get_runs -quiet synth_2] ""]} {
-    create_run -name synth_2 -flow $synth_2_flow -strategy $synth_2_strategy -constrset constrs_1
-} else {
-    set_property flow     $synth_2_flow     [get_runs synth_2]
-    set_property strategy $synth_2_strategy [get_runs synth_2]
-}
-set synth_3_flow     "Vivado Synthesis 2022"
-set synth_3_strategy "Flow_AreaOptimized_high"
-if {[string equal [get_runs -quiet synth_3] ""]} {
-    create_run -name synth_3 -flow $synth_3_flow -strategy $synth_3_strategy -constrset constrs_1
-} else {
-    set_property flow     $synth_3_flow     [get_runs synth_3]
-    set_property strategy $synth_3_strategy [get_runs synth_3]
-}
-set synth_4_flow     "Vivado Synthesis 2022"
-set synth_4_strategy "Flow_AreaOptimized_high"
-if {[string equal [get_runs -quiet synth_4] ""]} {
-    create_run -name synth_4 -flow $synth_4_flow -strategy $synth_4_strategy -constrset constrs_1
-} else {
-    set_property flow     $synth_4_flow     [get_runs synth_4]
-    set_property strategy $synth_4_strategy [get_runs synth_4]
-}
-set synth_5_flow     "Vivado Synthesis 2022"
-set synth_5_strategy "Flow_AreaOptimized_high"
-if {[string equal [get_runs -quiet synth_5] ""]} {
-    create_run -name synth_5 -flow $synth_5_flow -strategy $synth_5_strategy -constrset constrs_1
-} else {
-    set_property flow     $synth_5_flow     [get_runs synth_5]
-    set_property strategy $synth_5_strategy [get_runs synth_5]
-}
-current_run -synthesis [get_runs synth_1]
+set impl_flow               "Vivado Implementation 2022"
+set impl_strategy_default   "Vivado Implementation Defaults"
+set impl_strategy_netdelay  "Performance_NetDelay_high"
+set impl_strategy_area      "Area_ExploreWithRemap"
+set impl_strategy_utilslrs  "Performance_HighUtilSLRs"
+create_run -name impl_def_def -flow $impl_flow -strategy $impl_strategy_default -constrset constrs_1 -parent_run synth_default
+create_run -name impl_def_netdelay -flow $impl_flow -strategy $impl_strategy_netdelay -constrset constrs_1 -parent_run synth_default
+create_run -name impl_def_area -flow $impl_flow -strategy $impl_strategy_area -constrset constrs_1 -parent_run synth_default
+create_run -name impl_def_utilslrs -flow $impl_flow -strategy $impl_strategy_utilslrs -constrset constrs_1 -parent_run synth_default
+create_run -name impl_perf_def -flow $impl_flow -strategy $impl_strategy_default -constrset constrs_1 -parent_run synth_perf
+create_run -name impl_perf_netdelay -flow $impl_flow -strategy $impl_strategy_netdelay -constrset constrs_1 -parent_run synth_perf
+create_run -name impl_perf_area -flow $impl_flow -strategy $impl_strategy_area -constrset constrs_1 -parent_run synth_perf
+create_run -name impl_perf_utilslrs -flow $impl_flow -strategy $impl_strategy_utilslrs -constrset constrs_1 -parent_run synth_perf
+create_run -name impl_area_def -flow $impl_flow -strategy $impl_strategy_default -constrset constrs_1 -parent_run synth_area
+create_run -name impl_area_netdelay -flow $impl_flow -strategy $impl_strategy_netdelay -constrset constrs_1 -parent_run synth_area
+create_run -name impl_area_area -flow $impl_flow -strategy $impl_strategy_area -constrset constrs_1 -parent_run synth_area
+create_run -name impl_area_utilslrs -flow $impl_flow -strategy $impl_strategy_utilslrs -constrset constrs_1 -parent_run synth_area
+current_run -implementation [get_runs impl_def_def]
 
-set impl_1_flow      "Vivado Implementation 2022"
-set impl_1_strategy  "Performance_NetDelay_high"
-if {[string equal [get_runs -quiet impl_1] ""]} {
-    create_run -name impl_1 -flow $impl_1_flow -strategy $impl_1_strategy -constrset constrs_1 -parent_run synth_1
-} else {
-    set_property flow     $impl_1_flow      [get_runs impl_1]
-    set_property strategy $impl_1_strategy  [get_runs impl_1]
-}
-set impl_2_flow      "Vivado Implementation 2022"
-set impl_2_strategy  "Vivado Implementation Defaults"
-if {[string equal [get_runs -quiet impl_2] ""]} {
-    create_run -name impl_2 -flow $impl_2_flow -strategy $impl_2_strategy -constrset constrs_1 -parent_run synth_2
-} else {
-    set_property flow     $impl_2_flow      [get_runs impl_2]
-    set_property strategy $impl_2_strategy  [get_runs impl_2]
-}
-set impl_3_flow      "Vivado Implementation 2022"
-set impl_3_strategy  "Area_ExploreWithRemap"
-if {[string equal [get_runs -quiet impl_3] ""]} {
-    create_run -name impl_3 -flow $impl_3_flow -strategy $impl_3_strategy -constrset constrs_1 -parent_run synth_3
-} else {
-    set_property flow     $impl_3_flow      [get_runs impl_3]
-    set_property strategy $impl_3_strategy  [get_runs impl_3]
-}
-set impl_4_flow      "Vivado Implementation 2022"
-set impl_4_strategy  "Performance_NetDelay_high"
-if {[string equal [get_runs -quiet impl_4] ""]} {
-    create_run -name impl_4 -flow $impl_4_flow -strategy $impl_4_strategy -constrset constrs_1 -parent_run synth_4
-} else {
-    set_property flow     $impl_4_flow      [get_runs impl_4]
-    set_property strategy $impl_4_strategy  [get_runs impl_4]
-}
-set impl_5_flow      "Vivado Implementation 2022"
-set impl_5_strategy  "Performance_HighUtilSLRs"
-if {[string equal [get_runs -quiet impl_5] ""]} {
-    create_run -name impl_5 -flow $impl_5_flow -strategy $impl_5_strategy -constrset constrs_1 -parent_run synth_5
-} else {
-    set_property flow     $impl_5_flow      [get_runs impl_5]
-    set_property strategy $impl_5_strategy  [get_runs impl_5]
-}
-current_run -implementation [get_runs impl_1]
+delete_runs "impl_1"
+delete_runs "synth_1"
+delete_runs "impl_2"
 
 add_files -fileset constrs_1 -norecurse [file join $project_directory "rtl/constrs_1/new/top.xdc"]
 add_files -fileset constrs_1 -norecurse [file join $project_directory "rtl/constrs_1/new/timing.xdc"]

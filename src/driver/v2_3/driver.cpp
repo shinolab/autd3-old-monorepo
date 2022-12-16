@@ -3,7 +3,7 @@
 // Created Date: 22/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/12/2022
+// Last Modified: 16/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -184,7 +184,7 @@ size_t DriverV2_3::focus_stm_send_size(const size_t total_size, const size_t sen
 }
 
 bool DriverV2_3::focus_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, const size_t total_size, const uint32_t freq_div,
-                                const double sound_speed, TxDatagram& tx) const {
+                                const double sound_speed, std::optional<uint16_t>, std::optional<uint16_t>, TxDatagram& tx) const {
   if (total_size > v2_3::FOCUS_STM_BUF_SIZE_MAX) {
     spdlog::error("FocusSTM out of buffer");
     return false;
@@ -244,7 +244,7 @@ void DriverV2_3::gain_stm_legacy_header(TxDatagram& tx) const noexcept {
   tx.num_bodies = 0;
 }
 bool DriverV2_3::gain_stm_legacy_body(const std::vector<std::vector<Drive>>& drives, size_t& sent, const uint32_t freq_div, const GainSTMMode mode,
-                                      TxDatagram& tx) const {
+                                      std::optional<uint16_t>, std::optional<uint16_t>, TxDatagram& tx) const {
   if (drives.size() > v2_3::GAIN_STM_LEGACY_BUF_SIZE_MAX) {
     spdlog::error("GainSTM out of buffer");
     return false;
@@ -333,7 +333,7 @@ void DriverV2_3::gain_stm_normal_header(TxDatagram& tx) const noexcept {
   tx.num_bodies = 0;
 }
 bool DriverV2_3::gain_stm_normal_phase(const std::vector<std::vector<Drive>>& drives, const size_t sent, const uint32_t freq_div,
-                                       const GainSTMMode mode, TxDatagram& tx) const {
+                                       const GainSTMMode mode, std::optional<uint16_t>, std::optional<uint16_t>, TxDatagram& tx) const {
   if (drives.size() > v2_3::GAIN_STM_BUF_SIZE_MAX) {
     spdlog::error("GainSTM out of buffer");
     return false;
@@ -376,7 +376,7 @@ bool DriverV2_3::gain_stm_normal_phase(const std::vector<std::vector<Drive>>& dr
   return true;
 }
 bool DriverV2_3::gain_stm_normal_duty(const std::vector<std::vector<Drive>>& drives, const size_t sent, const uint32_t freq_div,
-                                      const GainSTMMode mode, TxDatagram& tx) const {
+                                      const GainSTMMode mode, std::optional<uint16_t>, std::optional<uint16_t>, TxDatagram& tx) const {
   if (drives.size() > v2_3::GAIN_STM_BUF_SIZE_MAX) {
     spdlog::error("GainSTM out of buffer");
     return false;

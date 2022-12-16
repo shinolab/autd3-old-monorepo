@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2022
+ * Last Modified: 16/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@
 #include "params.h"
 #include "utils.h"
 
-#define CPU_VERSION (0x86) /* v2.6 */
+#define CPU_VERSION (0x87) /* v2.7 */
 
 #define MOD_BUF_SEGMENT_SIZE_WIDTH (15)
 #define MOD_BUF_SEGMENT_SIZE (1 << MOD_BUF_SEGMENT_SIZE_WIDTH)
@@ -65,6 +65,7 @@ typedef enum {
   STM_GAIN_MODE = 1 << CTL_REG_STM_GAIN_MODE_BIT,
   READS_FPGA_INFO = 1 << CTL_REG_READS_FPGA_INFO_BIT,
   SYNC = 1 << CTL_REG_SYNC_BIT,
+  OP_MODE_FPGA = 1 << CTL_REG_OP_MODE_FPGA_BIT
 } FPGAControlFlags;
 
 typedef enum {
@@ -112,16 +113,16 @@ typedef struct {
     } CYCLE;
     struct {
       uint16_t data[TRANS_NUM];
-    } FOCUS_STM_HEAD;
+    } FOCUS_STM_INITIAL;
     struct {
       uint16_t data[TRANS_NUM];
-    } FOCUS_STM_BODY;
+    } FOCUS_STM_SUBSEQUENT;
     struct {
       uint16_t data[TRANS_NUM];
-    } GAIN_STM_HEAD;
+    } GAIN_STM_INITIAL;
     struct {
       uint16_t data[TRANS_NUM];
-    } GAIN_STM_BODY;
+    } GAIN_STM_SUBSEQUENT;
     struct {
       uint16_t data[TRANS_NUM];
     } MOD_DELAY_DATA;
@@ -173,7 +174,9 @@ void write_mod(const volatile GlobalHeader* header) {
 
   if ((header->cpu_ctl_reg & MOD_BEGIN) != 0) {
     _mod_cycle = 0;
+    asm("dmb");
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_ADDR_OFFSET, 0);
+    asm("dmb");
     freq_div = header->DATA.MOD_HEAD.freq_div;
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_0, (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
     data = (uint16_t*)header->DATA.MOD_HEAD.data;
@@ -189,7 +192,9 @@ void write_mod(const volatile GlobalHeader* header) {
     bram_cpy(BRAM_SELECT_MOD, (_mod_cycle & MOD_BUF_SEGMENT_SIZE_MASK) >> 1, data, segment_capacity >> 1);
     _mod_cycle += segment_capacity;
     data += segment_capacity;
+    asm("dmb");
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_ADDR_OFFSET, (_mod_cycle & ~MOD_BUF_SEGMENT_SIZE_MASK) >> MOD_BUF_SEGMENT_SIZE_WIDTH);
+    asm("dmb");
     bram_cpy(BRAM_SELECT_MOD, (_mod_cycle & MOD_BUF_SEGMENT_SIZE_MASK) >> 1, data, (write - segment_capacity + 1) >> 1);
     _mod_cycle += write - segment_capacity;
   }
@@ -247,23 +252,30 @@ static void write_focus_stm(const volatile GlobalHeader* header, const volatile 
   const volatile uint16_t* src;
   uint32_t freq_div;
   uint32_t sound_speed;
+  uint16_t start_idx;
+  uint16_t finish_idx;
   uint32_t size, cnt;
   uint32_t segment_capacity;
 
   if ((header->cpu_ctl_reg & STM_BEGIN) != 0) {
     _stm_write = 0;
+    asm("dmb");
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, 0);
-
-    size = body->DATA.FOCUS_STM_HEAD.data[0];
-    freq_div = (body->DATA.FOCUS_STM_HEAD.data[2] << 16) | body->DATA.FOCUS_STM_HEAD.data[1];
-    sound_speed = (body->DATA.FOCUS_STM_HEAD.data[4] << 16) | body->DATA.FOCUS_STM_HEAD.data[3];
+    asm("dmb");
+    size = body->DATA.FOCUS_STM_INITIAL.data[0];
+    freq_div = (body->DATA.FOCUS_STM_INITIAL.data[2] << 16) | body->DATA.FOCUS_STM_INITIAL.data[1];
+    sound_speed = (body->DATA.FOCUS_STM_INITIAL.data[4] << 16) | body->DATA.FOCUS_STM_INITIAL.data[3];
+    start_idx = body->DATA.FOCUS_STM_INITIAL.data[5];
+    finish_idx = body->DATA.FOCUS_STM_INITIAL.data[6];
 
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0, (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SOUND_SPEED_0, (uint16_t*)&sound_speed, sizeof(uint32_t) >> 1);
-    src = body->DATA.FOCUS_STM_HEAD.data + 5;
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX, start_idx);
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FINISH_IDX, finish_idx);
+    src = body->DATA.FOCUS_STM_INITIAL.data + 7;
   } else {
-    size = body->DATA.FOCUS_STM_BODY.data[0];
-    src = body->DATA.FOCUS_STM_BODY.data + 1;
+    size = body->DATA.FOCUS_STM_SUBSEQUENT.data[0];
+    src = body->DATA.FOCUS_STM_SUBSEQUENT.data + 1;
   }
 
   segment_capacity = (_stm_write & ~FOCUS_STM_BUF_SEGMENT_SIZE_MASK) + FOCUS_STM_BUF_SEGMENT_SIZE - _stm_write;
@@ -292,8 +304,10 @@ static void write_focus_stm(const volatile GlobalHeader* header, const volatile 
     }
     _stm_write += segment_capacity;
 
+    asm("dmb");
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET,
                (_stm_write & ~FOCUS_STM_BUF_SEGMENT_SIZE_MASK) >> FOCUS_STM_BUF_SEGMENT_SIZE_WIDTH);
+    asm("dmb");
 
     cnt = size - segment_capacity;
     addr = get_addr(BRAM_SELECT_STM, (_stm_write & FOCUS_STM_BUF_SEGMENT_SIZE_MASK) << 3);
@@ -308,7 +322,10 @@ static void write_focus_stm(const volatile GlobalHeader* header, const volatile 
     _stm_write += size - segment_capacity;
   }
 
-  if ((header->cpu_ctl_reg & STM_END) != 0) bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_write) - 1);
+  if ((header->cpu_ctl_reg & STM_END) != 0) {
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_write) - 1);
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, header->fpga_ctl_reg | OP_MODE_FPGA);
+  }
 }
 
 static void write_gain_stm_legacy(const volatile GlobalHeader* header, const volatile Body* body) {
@@ -317,20 +334,28 @@ static void write_gain_stm_legacy(const volatile GlobalHeader* header, const vol
   volatile uint16_t* dst;
   const volatile uint16_t* src;
   uint32_t freq_div;
+  uint16_t start_idx;
+  uint16_t finish_idx;
   uint32_t cnt;
   uint16_t phase;
 
   if ((header->cpu_ctl_reg & STM_BEGIN) != 0) {
     _stm_write = 0;
+    asm("dmb");
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, 0);
-    freq_div = (body->DATA.GAIN_STM_HEAD.data[1] << 16) | body->DATA.GAIN_STM_HEAD.data[0];
+    asm("dmb");
+    freq_div = (body->DATA.GAIN_STM_INITIAL.data[1] << 16) | body->DATA.GAIN_STM_INITIAL.data[0];
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0, (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
-    _stm_gain_data_mode = body->DATA.GAIN_STM_HEAD.data[2];
-    _stm_cycle = body->DATA.GAIN_STM_HEAD.data[3];
+    _stm_gain_data_mode = body->DATA.GAIN_STM_INITIAL.data[2];
+    _stm_cycle = body->DATA.GAIN_STM_INITIAL.data[3];
+    start_idx = body->DATA.GAIN_STM_INITIAL.data[4];
+    finish_idx = body->DATA.GAIN_STM_INITIAL.data[5];
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX, start_idx);
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FINISH_IDX, finish_idx);
     return;
   }
 
-  src = body->DATA.GAIN_STM_BODY.data;
+  src = body->DATA.GAIN_STM_SUBSEQUENT.data;
 
   addr = get_addr(BRAM_SELECT_STM, (_stm_write & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
 
@@ -346,7 +371,7 @@ static void write_gain_stm_legacy(const volatile GlobalHeader* header, const vol
       cnt = TRANS_NUM;
       while (cnt--) *dst++ = 0xFF00 | ((*src++) & 0x00FF);
       _stm_write += 1;
-      src = body->DATA.GAIN_STM_BODY.data;
+      src = body->DATA.GAIN_STM_SUBSEQUENT.data;
       addr = get_addr(BRAM_SELECT_STM, (_stm_write & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
       dst = &base[addr];
       cnt = TRANS_NUM;
@@ -362,7 +387,7 @@ static void write_gain_stm_legacy(const volatile GlobalHeader* header, const vol
       }
       _stm_write += 1;
 
-      src = body->DATA.GAIN_STM_BODY.data;
+      src = body->DATA.GAIN_STM_SUBSEQUENT.data;
       addr = get_addr(BRAM_SELECT_STM, (_stm_write & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
       dst = &base[addr];
       cnt = TRANS_NUM;
@@ -372,7 +397,7 @@ static void write_gain_stm_legacy(const volatile GlobalHeader* header, const vol
       }
       _stm_write += 1;
 
-      src = body->DATA.GAIN_STM_BODY.data;
+      src = body->DATA.GAIN_STM_SUBSEQUENT.data;
       addr = get_addr(BRAM_SELECT_STM, (_stm_write & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
       dst = &base[addr];
       cnt = TRANS_NUM;
@@ -382,7 +407,7 @@ static void write_gain_stm_legacy(const volatile GlobalHeader* header, const vol
       }
       _stm_write += 1;
 
-      src = body->DATA.GAIN_STM_BODY.data;
+      src = body->DATA.GAIN_STM_SUBSEQUENT.data;
       addr = get_addr(BRAM_SELECT_STM, (_stm_write & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) << 8);
       dst = &base[addr];
       cnt = TRANS_NUM;
@@ -396,11 +421,16 @@ static void write_gain_stm_legacy(const volatile GlobalHeader* header, const vol
       break;
   }
 
-  if ((_stm_write & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) == 0)
+  if ((_stm_write & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) == 0) {
+    asm("dmb");
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET,
                (_stm_write & ~GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) >> GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH);
-
-  if ((header->cpu_ctl_reg & STM_END) != 0) bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_cycle) - 1);
+    asm("dmb");
+  }
+  if ((header->cpu_ctl_reg & STM_END) != 0) {
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_cycle) - 1);
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, header->fpga_ctl_reg | OP_MODE_FPGA);
+  }
 }
 
 static void write_gain_stm(const volatile GlobalHeader* header, const volatile Body* body) {
@@ -409,19 +439,27 @@ static void write_gain_stm(const volatile GlobalHeader* header, const volatile B
   volatile uint16_t* dst;
   const volatile uint16_t* src;
   uint32_t freq_div;
+  uint16_t start_idx;
+  uint16_t finish_idx;
   uint32_t cnt;
 
   if ((header->cpu_ctl_reg & STM_BEGIN) != 0) {
     _stm_write = 0;
+    asm("dmb");
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, 0);
-    freq_div = (body->DATA.GAIN_STM_HEAD.data[1] << 16) | body->DATA.GAIN_STM_HEAD.data[0];
+    asm("dmb");
+    freq_div = (body->DATA.GAIN_STM_INITIAL.data[1] << 16) | body->DATA.GAIN_STM_INITIAL.data[0];
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0, (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
-    _stm_gain_data_mode = body->DATA.GAIN_STM_HEAD.data[2];
-    _stm_cycle = body->DATA.GAIN_STM_HEAD.data[3];
+    _stm_gain_data_mode = body->DATA.GAIN_STM_INITIAL.data[2];
+    _stm_cycle = body->DATA.GAIN_STM_INITIAL.data[3];
+    start_idx = body->DATA.GAIN_STM_INITIAL.data[4];
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX, start_idx);
+    finish_idx = body->DATA.GAIN_STM_INITIAL.data[5];
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FINISH_IDX, finish_idx);
     return;
   }
 
-  src = body->DATA.GAIN_STM_BODY.data;
+  src = body->DATA.GAIN_STM_SUBSEQUENT.data;
 
   addr = get_addr(BRAM_SELECT_STM, (_stm_write & GAIN_STM_BUF_SEGMENT_SIZE_MASK) << 9);
 
@@ -456,10 +494,16 @@ static void write_gain_stm(const volatile GlobalHeader* header, const volatile B
       break;
   }
 
-  if ((_stm_write & GAIN_STM_BUF_SEGMENT_SIZE_MASK) == 0)
+  if ((_stm_write & GAIN_STM_BUF_SEGMENT_SIZE_MASK) == 0) {
+    asm("dmb");
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, (_stm_write & ~GAIN_STM_BUF_SEGMENT_SIZE_MASK) >> GAIN_STM_BUF_SEGMENT_SIZE_WIDTH);
+    asm("dmb");
+  }
 
-  if ((header->cpu_ctl_reg & STM_END) != 0) bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_cycle) - 1);
+  if ((header->cpu_ctl_reg & STM_END) != 0) {
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_cycle) - 1);
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, header->fpga_ctl_reg | OP_MODE_FPGA);
+  }
 }
 
 static void clear(void) {

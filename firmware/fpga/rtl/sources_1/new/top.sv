@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/12/2022
+ * Last Modified: 16/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -72,6 +72,9 @@ module top (
   bit [15:0] cycle_stm;
   bit [31:0] freq_div_stm;
   bit [31:0] sound_speed;
+  bit [15:0] stm_start_idx;
+  bit [15:0] stm_finish_idx;
+  bit use_stm_start_idx;
 
   bit PWM_OUT[0:TRANS_NUM-1];
 
@@ -134,6 +137,10 @@ module top (
       .CYCLE_STM(cycle_stm),
       .FREQ_DIV_STM(freq_div_stm),
       .SOUND_SPEED(sound_speed),
+      .STM_START_IDX(stm_start_idx),
+      .USE_STM_START_IDX(use_stm_start_idx),
+      .STM_FINISH_IDX(stm_finish_idx),
+      .USE_STM_FINISH_IDX(use_stm_finish_idx),
       .CYCLE(cycle),
       .LEGACY_MODE(legacy_mode)
   );
@@ -151,9 +158,17 @@ module top (
   );
 
   if (ENABLE_STM == "TRUE") begin
+    bit [15:0] stm_idx;
+    enum bit [1:0] {
+      NORMAL,
+      WAIT_START_STM,
+      STM,
+      WAIT_FINISH_STM
+    } stm_state = NORMAL;
+
     for (genvar i = 0; i < TRANS_NUM; i++) begin
-      assign duty[i]  = op_mode ? duty_stm[i] : duty_normal[i];
-      assign phase[i] = op_mode ? phase_stm[i] : phase_normal[i];
+      assign duty[i]  = (stm_state == STM) | (stm_state == WAIT_FINISH_STM) ? duty_stm[i] : duty_normal[i];
+      assign phase[i] = (stm_state == STM) | (stm_state == WAIT_FINISH_STM) ? phase_stm[i] : phase_normal[i];
     end
     stm_operator #(
         .WIDTH(WIDTH),
@@ -172,8 +187,36 @@ module top (
         .PHASE(phase_stm),
         .START(),
         .DONE(stm_done),
-        .IDX()
+        .IDX(stm_idx)
     );
+    always_ff @(posedge clk_l) begin
+      case (stm_state)
+        NORMAL: begin
+          if (op_mode) begin
+            stm_state <= use_stm_start_idx ? WAIT_START_STM : STM;
+          end
+        end
+        WAIT_START_STM: begin
+          if (op_mode) begin
+            stm_state <= stm_done & (stm_idx == stm_start_idx) ? STM : stm_state;
+          end else begin
+            stm_state <= NORMAL;
+          end
+        end
+        STM: begin
+          if (~op_mode) begin
+            stm_state <= use_stm_finish_idx ? WAIT_FINISH_STM : NORMAL;
+          end
+        end
+        WAIT_FINISH_STM: begin
+          if (~op_mode) begin
+            stm_state <= stm_done & (stm_idx == stm_finish_idx) ? NORMAL : stm_state;
+          end else begin
+            stm_state <= STM;
+          end
+        end
+      endcase
+    end
   end else begin
     for (genvar i = 0; i < TRANS_NUM; i++) begin
       assign duty[i]  = duty_normal[i];

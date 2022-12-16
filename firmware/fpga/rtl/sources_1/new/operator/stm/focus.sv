@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 13/09/2022
+ * Last Modified: 14/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -193,7 +193,6 @@ module stm_focus_operator #(
   always_ff @(posedge CLK) begin
     case (state)
       IDLE: begin
-        done <= 0;
         if (start) begin
           focus_x <= data_out[17:0];
           focus_y <= data_out[35:18];
@@ -215,6 +214,7 @@ module stm_focus_operator #(
         end
         if (cnt >= DIV_LATENCY) begin
           if (set_cnt == DEPTH - 1) begin
+            done  <= 1;
             state <= BUF;
           end else begin
             set_cnt <= set_cnt + 1;
@@ -226,7 +226,7 @@ module stm_focus_operator #(
       BUF: begin
         phase <= phase_buf;
         duty  <= duty_buf;
-        done  <= 1;
+        done  <= 0;
         state <= IDLE;
       end
     endcase

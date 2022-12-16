@@ -1,3 +1,8 @@
+# 2.7.0 
+
+- Fix [#50](https://github.com/shinolab/autd3/issues/50)
+- Add `start_idx` and `finish_idx` to `STM`
+
 # 2.6.8
 
 - Fix [#49](https://github.com/shinolab/autd3/issues/49)

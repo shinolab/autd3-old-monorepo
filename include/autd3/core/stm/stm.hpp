@@ -3,13 +3,15 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/11/2022
+// Last Modified: 16/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
+
+#include <optional>
 
 #include "autd3/driver/common/fpga/defined.hpp"
 
@@ -43,7 +45,6 @@ struct STM : DatagramBody {
 
   /**
    * @brief Sampling frequency.
-   * @details Sampling frequency is driver::FPGA_CLK_FREQ/sampling_frequency_division()
    */
   [[nodiscard]] double sampling_frequency() const noexcept { return static_cast<double>(driver::FPGA_CLK_FREQ) / static_cast<double>(_freq_div); }
 
@@ -54,9 +55,11 @@ struct STM : DatagramBody {
 
   /**
    * @brief Sampling frequency division.
-   * @details The value must be larger than driver::STM_SAMPLING_FREQ_DIV_MIN.
    */
   uint32_t& sampling_frequency_division() noexcept { return _freq_div; }
+
+  std::optional<uint16_t> start_idx{std::nullopt};
+  std::optional<uint16_t> finish_idx{std::nullopt};
 
  protected:
   uint32_t _freq_div;

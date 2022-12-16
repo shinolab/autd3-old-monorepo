@@ -1,6 +1,6 @@
 // File: driver.hpp
-// Project: v2_4
-// Created Date: 15/11/2022
+// Project: v2_7
+// Created Date: 14/12/2022
 // Author: Shun Suzuki
 // -----
 // Last Modified: 16/12/2022
@@ -17,16 +17,16 @@
 namespace autd3::driver {
 
 /**
- * @brief Driver for v2.4 firmware
+ * @brief Driver for v2.7 firmware
  */
-class DriverV2_4 final : public Driver {
+class DriverV2_7 final : public Driver {
  public:
-  DriverV2_4() = default;
-  ~DriverV2_4() override = default;
-  DriverV2_4(const DriverV2_4& v) = default;
-  DriverV2_4& operator=(const DriverV2_4& obj) = default;
-  DriverV2_4(DriverV2_4&& obj) = default;
-  DriverV2_4& operator=(DriverV2_4&& obj) = default;
+  DriverV2_7() = default;
+  ~DriverV2_7() override = default;
+  DriverV2_7(const DriverV2_7& v) = default;
+  DriverV2_7& operator=(const DriverV2_7& obj) = default;
+  DriverV2_7(DriverV2_7&& obj) = default;
+  DriverV2_7& operator=(DriverV2_7&& obj) = default;
 
   [[nodiscard]] uint8_t version_num() const noexcept override;
 

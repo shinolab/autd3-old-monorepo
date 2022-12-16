@@ -3,7 +3,7 @@
 // Created Date: 28/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/11/2022
+// Last Modified: 16/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -66,11 +66,14 @@ class Mode {
    * @param freq_div STM sampling frequency division
    * @param gains Drive of all transducers
    * @param mode GainSTMMode
+   * @param start_idx STM start idx
+   * @param finish_idx STM finish idx
    * @param tx transmission data
    * @return true if freq_div is valid
    */
   [[nodiscard]] virtual bool pack_stm_gain_body(const std::unique_ptr<const driver::Driver>& driver, size_t& sent, bool& next_duty, uint32_t freq_div,
                                                 const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode mode,
+                                                std::optional<uint16_t> start_idx, std::optional<uint16_t> finish_idx,
                                                 driver::TxDatagram& tx) const = 0;
 
   Mode() = default;
@@ -96,7 +99,8 @@ class LegacyMode final : public Mode {
   void pack_stm_gain_header(const std::unique_ptr<const driver::Driver>& driver, driver::TxDatagram& tx) const noexcept override;
 
   bool pack_stm_gain_body(const std::unique_ptr<const driver::Driver>& driver, size_t& sent, bool&, uint32_t freq_div,
-                          const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode mode, driver::TxDatagram& tx) const override;
+                          const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode mode, std::optional<uint16_t> start_idx,
+                          std::optional<uint16_t> finish_idx, driver::TxDatagram& tx) const override;
 
  public:
   LegacyMode() = default;
@@ -122,7 +126,8 @@ class NormalMode final : public Mode {
   void pack_stm_gain_header(const std::unique_ptr<const driver::Driver>& driver, driver::TxDatagram& tx) const noexcept override;
 
   bool pack_stm_gain_body(const std::unique_ptr<const driver::Driver>& driver, size_t& sent, bool& next_duty, uint32_t freq_div,
-                          const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode mode, driver::TxDatagram& tx) const override;
+                          const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode mode, std::optional<uint16_t> start_idx,
+                          std::optional<uint16_t> finish_idx, driver::TxDatagram& tx) const override;
 
  public:
   NormalMode() = default;
@@ -148,7 +153,8 @@ class NormalPhaseMode final : public Mode {
   void pack_stm_gain_header(const std::unique_ptr<const driver::Driver>& driver, driver::TxDatagram& tx) const noexcept override;
 
   bool pack_stm_gain_body(const std::unique_ptr<const driver::Driver>& driver, size_t& sent, bool&, uint32_t freq_div,
-                          const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode, driver::TxDatagram& tx) const override;
+                          const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode, std::optional<uint16_t> start_idx,
+                          std::optional<uint16_t> finish_idx, driver::TxDatagram& tx) const override;
 
  public:
   NormalPhaseMode() = default;
