@@ -3,7 +3,7 @@
 // Created Date: 22/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 16/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,8 +36,8 @@ void LegacyMode::pack_stm_gain_header(const std::unique_ptr<const driver::Driver
 }
 bool LegacyMode::pack_stm_gain_body(const std::unique_ptr<const driver::Driver>& driver, size_t& sent, bool&, const uint32_t freq_div,
                                     const std::vector<std::vector<driver::Drive>>& gains, const driver::GainSTMMode mode,
-                                    driver::TxDatagram& tx) const {
-  return driver->gain_stm_legacy_body(gains, sent, freq_div, mode, tx);
+                                    const std::optional<uint16_t> start_idx, const std::optional<uint16_t> finish_idx, driver::TxDatagram& tx) const {
+  return driver->gain_stm_legacy_body(gains, sent, freq_div, mode, start_idx, finish_idx, tx);
 }
 std::unique_ptr<LegacyMode> LegacyMode::create() noexcept { return std::make_unique<LegacyMode>(); }
 bool NormalMode::pack_sync(const std::unique_ptr<const driver::Driver>& driver, const std::vector<uint16_t>& cycles, driver::TxDatagram& tx) const {
@@ -62,16 +62,16 @@ void NormalMode::pack_stm_gain_header(const std::unique_ptr<const driver::Driver
 }
 bool NormalMode::pack_stm_gain_body(const std::unique_ptr<const driver::Driver>& driver, size_t& sent, bool& next_duty, const uint32_t freq_div,
                                     const std::vector<std::vector<driver::Drive>>& gains, const driver::GainSTMMode mode,
-                                    driver::TxDatagram& tx) const {
-  if (sent == 0) return driver->gain_stm_normal_phase(gains, sent++, freq_div, mode, tx);
+                                    const std::optional<uint16_t> start_idx, const std::optional<uint16_t> finish_idx, driver::TxDatagram& tx) const {
+  if (sent == 0) return driver->gain_stm_normal_phase(gains, sent++, freq_div, mode, start_idx, finish_idx, tx);
 
   switch (mode) {
     case driver::GainSTMMode::PhaseDutyFull:
       next_duty = !next_duty;
-      return next_duty ? driver->gain_stm_normal_phase(gains, sent, freq_div, mode, tx)
-                       : driver->gain_stm_normal_duty(gains, sent++, freq_div, mode, tx);
+      return next_duty ? driver->gain_stm_normal_phase(gains, sent, freq_div, mode, start_idx, finish_idx, tx)
+                       : driver->gain_stm_normal_duty(gains, sent++, freq_div, mode, start_idx, finish_idx, tx);
     case driver::GainSTMMode::PhaseFull:
-      return driver->gain_stm_normal_phase(gains, sent++, freq_div, mode, tx);
+      return driver->gain_stm_normal_phase(gains, sent++, freq_div, mode, start_idx, finish_idx, tx);
     case driver::GainSTMMode::PhaseHalf:
       spdlog::error("This mode is not supported");
       return false;
@@ -97,8 +97,10 @@ void NormalPhaseMode::pack_stm_gain_header(const std::unique_ptr<const driver::D
   driver->gain_stm_normal_header(tx);
 }
 bool NormalPhaseMode::pack_stm_gain_body(const std::unique_ptr<const driver::Driver>& driver, size_t& sent, bool&, const uint32_t freq_div,
-                                         const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode, driver::TxDatagram& tx) const {
-  return driver->gain_stm_normal_phase(gains, sent++, freq_div, driver::GainSTMMode::PhaseFull, tx);
+                                         const std::vector<std::vector<driver::Drive>>& gains, driver::GainSTMMode,
+                                         const std::optional<uint16_t> start_idx, const std::optional<uint16_t> finish_idx,
+                                         driver::TxDatagram& tx) const {
+  return driver->gain_stm_normal_phase(gains, sent++, freq_div, driver::GainSTMMode::PhaseFull, start_idx, finish_idx, tx);
 }
 std::unique_ptr<NormalPhaseMode> NormalPhaseMode::create() noexcept { return std::make_unique<NormalPhaseMode>(); }
 }  // namespace autd3::core

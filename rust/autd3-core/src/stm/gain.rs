@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/12/2022
+ * Last Modified: 16/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,6 +30,8 @@ pub struct GainSTM<T: Transducer> {
     next_duty: bool,
     sent: usize,
     mode: Mode,
+    pub start_idx: Option<u16>,
+    pub finish_idx: Option<u16>,
     phantom: PhantomData<T>,
 }
 
@@ -41,6 +43,8 @@ impl<T: Transducer> GainSTM<T> {
             next_duty: false,
             sent: 0,
             mode: Mode::PhaseDutyFull,
+            start_idx: None,
+            finish_idx: None,
             phantom: PhantomData,
         }
     }
@@ -84,6 +88,8 @@ impl DatagramBody<LegacyTransducer> for GainSTM<LegacyTransducer> {
             &mut self.sent,
             self.sample_freq_div,
             self.mode,
+            self.start_idx,
+            self.finish_idx,
             tx,
         )
     }
@@ -113,6 +119,8 @@ impl DatagramBody<NormalTransducer> for GainSTM<NormalTransducer> {
                 0,
                 self.sample_freq_div,
                 self.mode,
+                self.start_idx,
+                self.finish_idx,
                 tx,
             );
         }
@@ -131,6 +139,8 @@ impl DatagramBody<NormalTransducer> for GainSTM<NormalTransducer> {
                         sent,
                         self.sample_freq_div,
                         self.mode,
+                        self.start_idx,
+                        self.finish_idx,
                         tx,
                     )
                 }
@@ -143,6 +153,8 @@ impl DatagramBody<NormalTransducer> for GainSTM<NormalTransducer> {
                     sent,
                     self.sample_freq_div,
                     self.mode,
+                    self.start_idx,
+                    self.finish_idx,
                     tx,
                 )
             }
@@ -178,6 +190,8 @@ impl DatagramBody<NormalPhaseTransducer> for GainSTM<NormalPhaseTransducer> {
             sent,
             self.sample_freq_div,
             self.mode,
+            self.start_idx,
+            self.finish_idx,
             tx,
         )
     }

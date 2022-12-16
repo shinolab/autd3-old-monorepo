@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/12/2022
+ * Last Modified: 16/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -780,6 +780,18 @@ namespace AUTD3Sharp
             {
                 get => Base.AUTDSTMFrequency(handle);
                 set => Base.AUTDSTMSetFrequency(handle, value);
+            }
+
+            public int StartIdx
+            {
+                get => Base.AUTDSTMGetStartIdx(handle);
+                set => Base.AUTDSTMSetStartIdx(handle, value);
+            }
+
+            public int FinishIdx
+            {
+                get => Base.AUTDSTMGetFinishIdx(handle);
+                set => Base.AUTDSTMSetFinishIdx(handle, value);
             }
 
             public double SamplingFrequency => Base.AUTDSTMSamplingFrequency(handle);
