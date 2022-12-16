@@ -108,6 +108,35 @@ stm.mode() = autd3::Mode::PhaseFull;
     stm.sampling_frequency_division() = 20480; // 163.84MHz/20480 = 8kHz
 ```
 
+#### start_idx/finish_idx
+
+`Focus/GainSTM`は通常, 何番目の焦点/`Gain`からスタートするかは決められていない.
+これを指定するには, 以下のように`start_idx`を指定する.
+
+```cpp
+  stm.start_idx = 0;
+```
+
+これにより, `start_idx`で指定したインデックスの焦点/`Gain`からスタートするようになる.
+
+また, 同様に, 何番目の焦点/`Gain`で終了するかは`finish_idx`で決定できる.
+
+```cpp
+  stm.finish_idx = 0;
+```
+
+注意点として, `finish_idx`で指定したインデックスの焦点/`Gain`は最後に出力されない.
+`finish_idx`の一つ前の焦点/`Gain`を出力したあと, 終了する.
+
+また, 以上の2つの設定は, 通常の`Gain`→`Focus/GainSTM`への遷移, 及び, `Focus/GainSTM`→通常の`Gain`への遷移の場合にのみ有効となる.
+
+これらの設定を無効 (デフォルト) にするには, `std::nullopt`を指定する.
+
+```cpp
+  stm.start_idx = std::nullopt;
+  stm.finish_idx = std::nullopt;
+```
+
 # SoftwareSTM
 
 `SoftwareSTM`はソフトウェアのタイマでSpatio-Temporal Modulationを実現する機能である.
