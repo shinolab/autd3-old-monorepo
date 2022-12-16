@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/12/2022
+// Last Modified: 16/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -570,6 +570,9 @@ class VulkanImGui {
               ImGui::Text("Sound speed: %.3lf [mm/s]", cpus[0].fpga().sound_speed() * 1000.0 / 1024.0);
           }
 
+          if (const auto stm_start_idx = cpus[0].fpga().stm_start_idx(); stm_start_idx) ImGui::Text("Start idx: %d", stm_start_idx.value());
+          if (const auto stm_finish_idx = cpus[0].fpga().stm_finish_idx(); stm_finish_idx) ImGui::Text("Finish idx: %d", stm_finish_idx.value());
+
           const auto stm_size = static_cast<int32_t>(cpus[0].fpga().stm_cycle());
           ImGui::Text("Size: %d", stm_size);
           ImGui::Text("Frequency division: %d", cpus[0].fpga().stm_frequency_division());
@@ -626,11 +629,13 @@ class VulkanImGui {
         const auto fpga_flags = cpus[0].fpga_flags();
         auto is_legacy_mode = fpga_flags.contains(driver::FPGAControlFlags::LEGACY_MODE);
         auto use_stm_start_idx = fpga_flags.contains(driver::FPGAControlFlags::USE_STM_START_IDX);
+        auto use_stm_finish_idx = fpga_flags.contains(driver::FPGAControlFlags::USE_STM_FINISH_IDX);
         auto force_fan = fpga_flags.contains(driver::FPGAControlFlags::FORCE_FAN);
         auto stm_mode = fpga_flags.contains(driver::FPGAControlFlags::STM_MODE);
         auto stm_gain_mode = fpga_flags.contains(driver::FPGAControlFlags::STM_GAIN_MODE);
         auto reads_fpga_info = fpga_flags.contains(driver::FPGAControlFlags::READS_FPGA_INFO);
         ImGui::Checkbox("LEGACY MODE", &is_legacy_mode);
+        ImGui::Checkbox("USE STM FINISH IDX", &use_stm_finish_idx);
         ImGui::Checkbox("USE STM START IDX", &use_stm_start_idx);
         ImGui::Checkbox("FORCE FAN", &force_fan);
         ImGui::Checkbox("STM MODE", &stm_mode);
