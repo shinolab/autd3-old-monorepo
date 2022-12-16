@@ -253,6 +253,7 @@ static void write_focus_stm(const volatile GlobalHeader* header, const volatile 
   uint32_t freq_div;
   uint32_t sound_speed;
   uint16_t start_idx;
+  uint16_t finish_idx;
   uint32_t size, cnt;
   uint32_t segment_capacity;
 
@@ -265,11 +266,13 @@ static void write_focus_stm(const volatile GlobalHeader* header, const volatile 
     freq_div = (body->DATA.FOCUS_STM_INITIAL.data[2] << 16) | body->DATA.FOCUS_STM_INITIAL.data[1];
     sound_speed = (body->DATA.FOCUS_STM_INITIAL.data[4] << 16) | body->DATA.FOCUS_STM_INITIAL.data[3];
     start_idx = body->DATA.FOCUS_STM_INITIAL.data[5];
+    finish_idx = body->DATA.FOCUS_STM_INITIAL.data[6];
 
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0, (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SOUND_SPEED_0, (uint16_t*)&sound_speed, sizeof(uint32_t) >> 1);
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX, start_idx);
-    src = body->DATA.FOCUS_STM_INITIAL.data + 6;
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FINISH_IDX, finish_idx);
+    src = body->DATA.FOCUS_STM_INITIAL.data + 7;
   } else {
     size = body->DATA.FOCUS_STM_SUBSEQUENT.data[0];
     src = body->DATA.FOCUS_STM_SUBSEQUENT.data + 1;
@@ -332,6 +335,7 @@ static void write_gain_stm_legacy(const volatile GlobalHeader* header, const vol
   const volatile uint16_t* src;
   uint32_t freq_div;
   uint16_t start_idx;
+  uint16_t finish_idx;
   uint32_t cnt;
   uint16_t phase;
 
@@ -345,7 +349,9 @@ static void write_gain_stm_legacy(const volatile GlobalHeader* header, const vol
     _stm_gain_data_mode = body->DATA.GAIN_STM_INITIAL.data[2];
     _stm_cycle = body->DATA.GAIN_STM_INITIAL.data[3];
     start_idx = body->DATA.GAIN_STM_INITIAL.data[4];
+    finish_idx = body->DATA.GAIN_STM_INITIAL.data[5];
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX, start_idx);
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FINISH_IDX, finish_idx);
     return;
   }
 
@@ -434,6 +440,7 @@ static void write_gain_stm(const volatile GlobalHeader* header, const volatile B
   const volatile uint16_t* src;
   uint32_t freq_div;
   uint16_t start_idx;
+  uint16_t finish_idx;
   uint32_t cnt;
 
   if ((header->cpu_ctl_reg & STM_BEGIN) != 0) {
@@ -447,6 +454,8 @@ static void write_gain_stm(const volatile GlobalHeader* header, const volatile B
     _stm_cycle = body->DATA.GAIN_STM_INITIAL.data[3];
     start_idx = body->DATA.GAIN_STM_INITIAL.data[4];
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_START_IDX, start_idx);
+    finish_idx = body->DATA.GAIN_STM_INITIAL.data[5];
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FINISH_IDX, finish_idx);
     return;
   }
 
