@@ -42,7 +42,7 @@ namespace AUTD3Sharp.NativeMethods
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDGetFPGAInfo(IntPtr handle, byte[]? @out);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDNumTransducers(IntPtr handle);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDNumDevices(IntPtr handle);
-        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDGeometryCenter(IntPtr handle, out double x, out double y, out double z);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDGeometryCenter(IntPtr handle, out double x, out double y, out double z);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDTransPosition(IntPtr handle, int transIdx, out double x, out double y, out double z);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDTransXDirection(IntPtr handle, int transIdx, out double x, out double y, out double z);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDTransYDirection(IntPtr handle, int transIdx, out double x, out double y, out double z);
@@ -78,6 +78,10 @@ namespace AUTD3Sharp.NativeMethods
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ushort AUTDGetGainSTMMode(IntPtr stm);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSetGainSTMMode(IntPtr stm, ushort mode);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern double AUTDSTMSetFrequency(IntPtr stm, double freq);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDSTMGetStartIdx(IntPtr stm);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDSTMGetFinishIdx(IntPtr stm);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSTMSetStartIdx(IntPtr stm, int startIdx);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSTMSetFinishIdx(IntPtr stm, int finishIdx);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern double AUTDSTMFrequency(IntPtr stm);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern double AUTDSTMSamplingFrequency(IntPtr stm);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern uint AUTDSTMSamplingFrequencyDivision(IntPtr stm);

@@ -4,7 +4,7 @@ Project: stm
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 29/11/2022
+Last Modified: 16/12/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,6 +33,22 @@ class STM(Body):
     @ frequency.setter
     def frequency(self, freq: float):
         return Base().dll.AUTDSTMSetFrequency(self.ptr, freq)
+
+    @ property
+    def start_idx(self):
+        return Base().dll.AUTDSTMGetStartIdx(self.ptr)
+
+    @ start_idx.setter
+    def start_idx(self, value: int):
+        return Base().dll.AUTDSTMSetStartIdx(self.ptr, value)
+
+    @ property
+    def finish_idx(self):
+        return Base().dll.AUTDSTMGetFinishIdx(self.ptr)
+
+    @ finish_idx.setter
+    def finish_idx(self, value: int):
+        return Base().dll.AUTDSTMSetFinishIdx(self.ptr, value)
 
     @ property
     def sampling_frequency(self):

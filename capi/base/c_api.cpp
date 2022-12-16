@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/12/2022
+// Last Modified: 16/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -358,6 +358,35 @@ void AUTDSetGainSTMMode(void* const stm, uint16_t mode) {
   auto* const stm_w = static_cast<autd3::GainSTM*>(stm);
   stm_w->mode() = static_cast<autd3::GainSTMMode>(mode);
 }
+
+int32_t AUTDSTMGetStartIdx(const void* const stm) {
+  const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
+  const auto start_idx = stm_w->start_idx;
+  return start_idx ? static_cast<int32_t>(start_idx.value()) : -1;
+}
+
+int32_t AUTDSTMGetFinishIdx(const void* const stm) {
+  const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
+  const auto finish_idx = stm_w->finish_idx;
+  return finish_idx ? static_cast<int32_t>(finish_idx.value()) : -1;
+}
+
+void AUTDSTMSetStartIdx(void* const stm, const int32_t start_idx) {
+  auto* const stm_w = static_cast<autd3::core::STM*>(stm);
+  if (start_idx < 0)
+    stm_w->start_idx = std::nullopt;
+  else
+    stm_w->start_idx = static_cast<uint16_t>(start_idx);
+}
+
+void AUTDSTMSetFinishIdx(void* const stm, const int32_t finish_idx) {
+  auto* const stm_w = static_cast<autd3::core::STM*>(stm);
+  if (finish_idx < 0)
+    stm_w->finish_idx = std::nullopt;
+  else
+    stm_w->finish_idx = static_cast<uint16_t>(finish_idx);
+}
+
 double AUTDSTMSetFrequency(void* const stm, const double freq) {
   auto* const stm_w = static_cast<autd3::core::STM*>(stm);
   return stm_w->set_frequency(freq);
