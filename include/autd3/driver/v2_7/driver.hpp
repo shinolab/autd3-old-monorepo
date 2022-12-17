@@ -3,7 +3,7 @@
 // Created Date: 14/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/12/2022
+// Last Modified: 18/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -40,9 +40,9 @@ class DriverV2_7 final : public Driver {
 
   void mod_delay(const std::vector<uint16_t>& delays, TxDatagram& tx) const noexcept override;
 
-  bool modulation(uint8_t msg_id, const std::vector<uint8_t>& mod_data, size_t& sent, uint32_t freq_div, TxDatagram& tx) const override;
+  [[nodiscard]] bool modulation(uint8_t msg_id, const std::vector<uint8_t>& mod_data, size_t& sent, uint32_t freq_div, TxDatagram& tx) const override;
 
-  bool config_silencer(uint8_t msg_id, uint16_t cycle, uint16_t step, TxDatagram& tx) const override;
+  [[nodiscard]] bool config_silencer(uint8_t msg_id, uint16_t cycle, uint16_t step, TxDatagram& tx) const override;
 
   void normal_legacy_header(TxDatagram& tx) noexcept;
 
@@ -60,21 +60,22 @@ class DriverV2_7 final : public Driver {
 
   [[nodiscard]] size_t focus_stm_send_size(size_t total_size, size_t sent, const std::vector<size_t>& device_map) const noexcept override;
 
-  bool focus_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, size_t total_size, uint32_t freq_div, double sound_speed,
-                      std::optional<uint16_t> start_idx, std::optional<uint16_t> finish_idx, TxDatagram& tx) const override;
+  [[nodiscard]] bool focus_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, size_t total_size, uint32_t freq_div,
+                                    double sound_speed, std::optional<uint16_t> start_idx, std::optional<uint16_t> finish_idx,
+                                    TxDatagram& tx) const override;
 
   void gain_stm_legacy_header(TxDatagram& tx) const noexcept override;
 
-  bool gain_stm_legacy_body(const std::vector<std::vector<Drive>>& drives, size_t& sent, uint32_t freq_div, GainSTMMode mode,
-                            std::optional<uint16_t> start_idx, std::optional<uint16_t> finish_idx, TxDatagram& tx) const override;
+  [[nodiscard]] bool gain_stm_legacy_body(const std::vector<std::vector<Drive>>& drives, size_t& sent, uint32_t freq_div, GainSTMMode mode,
+                                          std::optional<uint16_t> start_idx, std::optional<uint16_t> finish_idx, TxDatagram& tx) const override;
 
   void gain_stm_normal_header(TxDatagram& tx) const noexcept override;
 
-  bool gain_stm_normal_phase(const std::vector<std::vector<Drive>>& drives, size_t sent, uint32_t freq_div, GainSTMMode mode,
-                             std::optional<uint16_t> start_idx, std::optional<uint16_t> finish_idx, TxDatagram& tx) const override;
+  [[nodiscard]] bool gain_stm_normal_phase(const std::vector<std::vector<Drive>>& drives, size_t sent, uint32_t freq_div, GainSTMMode mode,
+                                           std::optional<uint16_t> start_idx, std::optional<uint16_t> finish_idx, TxDatagram& tx) const override;
 
-  bool gain_stm_normal_duty(const std::vector<std::vector<Drive>>& drives, size_t sent, uint32_t freq_div, GainSTMMode mode,
-                            std::optional<uint16_t> start_idx, std::optional<uint16_t> finish_idx, TxDatagram& tx) const override;
+  [[nodiscard]] bool gain_stm_normal_duty(const std::vector<std::vector<Drive>>& drives, size_t sent, uint32_t freq_div, GainSTMMode mode,
+                                          std::optional<uint16_t> start_idx, std::optional<uint16_t> finish_idx, TxDatagram& tx) const override;
 
   void force_fan(TxDatagram& tx, bool value) const noexcept override;
 
