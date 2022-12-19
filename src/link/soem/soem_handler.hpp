@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/12/2022
+// Last Modified: 19/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -85,14 +85,14 @@ class SOEMHandler final {
       }
       found = true;
       for (auto i = 1; i <= wc; i++)
-        if (std::strcmp(ec_slave[1].name, "AUTD") != 0) {
+        if (std::strcmp(ec_slave[i].name, "AUTD") != 0) {
           found = false;
-          spdlog::warn("AUTD found on {} ({}), but {}-th device is not AUTD", adapter->name, adapter->desc, i);
+          spdlog::warn("EtherCAT slaves were found on {} ({}), but {}-th device is not AUTD3", adapter->name, adapter->desc, i);
           ec_close();
           break;
         }
       if (found) {
-        spdlog::debug("AUTD found on {} ({})", adapter->name, adapter->desc);
+        spdlog::debug("AUTD3 found on {} ({})", adapter->name, adapter->desc);
         const auto ifname = std::string(adapter->name);
         ec_free_adapters(adapters);
         ec_close();
