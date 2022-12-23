@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/12/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,7 +33,7 @@ struct STMFocus {
    * \details The x-axis data is stored in the lowest 18 bits, followed by the y-axis and z-axis data.
    * The duty shift data is stored next to the z-axis data. The highest 2 bits are not used.
    */
-  explicit STMFocus(const double x, const double y, const double z, const uint8_t duty_shift) noexcept {
+  explicit STMFocus(const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const uint8_t duty_shift) noexcept {
     const auto ix = static_cast<int32_t>(std::round(x / FOCUS_STM_FIXED_NUM_UNIT));
     const auto iy = static_cast<int32_t>(std::round(y / FOCUS_STM_FIXED_NUM_UNIT));
     const auto iz = static_cast<int32_t>(std::round(z / FOCUS_STM_FIXED_NUM_UNIT));

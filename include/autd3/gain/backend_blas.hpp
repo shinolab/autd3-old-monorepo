@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 23/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -49,7 +49,7 @@ class BLASBackend final : public Backend {
   void arg(const VectorXc& src, VectorXc& dst) override;
   void reciprocal(const VectorXc& src, VectorXc& dst) override;
   void exp(const VectorXc& src, VectorXc& dst) override;
-  void pow(const VectorXd& src, double p, VectorXd& dst) override;
+  void pow(const VectorXd& src, driver::autd3_float_t p, VectorXd& dst) override;
 
   void create_diagonal(const VectorXc& src, MatrixXc& dst) override;
   void get_diagonal(const MatrixXc& src, VectorXc& dst) override;
@@ -68,23 +68,24 @@ class BLASBackend final : public Backend {
   void reduce_col(const MatrixXd& src, VectorXd& dst) override;
 
   complex max_abs_element(const VectorXc& src) override;
-  double max_element(const VectorXd& src) override;
+  driver::autd3_float_t max_element(const VectorXd& src) override;
 
   void scale(complex value, VectorXc& dst) override;
-  void scale(double value, VectorXd& dst) override;
+  void scale(driver::autd3_float_t value, VectorXd& dst) override;
 
   complex dot(const VectorXc& a, const VectorXc& b) override;
-  double dot(const VectorXd& a, const VectorXd& b) override;
+  driver::autd3_float_t dot(const VectorXd& a, const VectorXd& b) override;
 
-  void add(double alpha, const MatrixXd& a, MatrixXd& b) override;
-  void add(double alpha, const VectorXd& a, VectorXd& b) override;
+  void add(driver::autd3_float_t alpha, const MatrixXd& a, MatrixXd& b) override;
+  void add(driver::autd3_float_t alpha, const VectorXd& a, VectorXd& b) override;
   void add(complex alpha, const MatrixXc& a, MatrixXc& b) override;
   void add(complex alpha, const VectorXc& a, VectorXc& b) override;
 
-  void mul(TRANSPOSE trans_a, TRANSPOSE trans_b, complex alpha, const MatrixXc& a, const MatrixXc& b, complex beta, MatrixXc& c) override;
-  void mul(TRANSPOSE trans_a, complex alpha, const MatrixXc& a, const VectorXc& b, complex beta, VectorXc& c) override;
-  void mul(TRANSPOSE trans_a, TRANSPOSE trans_b, double alpha, const MatrixXd& a, const MatrixXd& b, double beta, MatrixXd& c) override;
-  void mul(TRANSPOSE trans_a, double alpha, const MatrixXd& a, const VectorXd& b, double beta, VectorXd& c) override;
+  void mul(Transpose trans_a, Transpose trans_b, complex alpha, const MatrixXc& a, const MatrixXc& b, complex beta, MatrixXc& c) override;
+  void mul(Transpose trans_a, complex alpha, const MatrixXc& a, const VectorXc& b, complex beta, VectorXc& c) override;
+  void mul(Transpose trans_a, Transpose trans_b, driver::autd3_float_t alpha, const MatrixXd& a, const MatrixXd& b, driver::autd3_float_t beta,
+           MatrixXd& c) override;
+  void mul(Transpose trans_a, driver::autd3_float_t alpha, const MatrixXd& a, const VectorXd& b, driver::autd3_float_t beta, VectorXd& c) override;
   void hadamard_product(const VectorXc& a, const VectorXc& b, VectorXc& c) override;
   void hadamard_product(const MatrixXc& a, const MatrixXc& b, MatrixXc& c) override;
 
@@ -93,8 +94,8 @@ class BLASBackend final : public Backend {
 
   void max_eigen_vector(MatrixXc& src, VectorXc& dst) override;
 
-  void pseudo_inverse_svd(MatrixXd& src, double alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf, MatrixXd& dst) override;
-  void pseudo_inverse_svd(MatrixXc& src, double alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) override;
+  void pseudo_inverse_svd(MatrixXd& src, driver::autd3_float_t alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf, MatrixXd& dst) override;
+  void pseudo_inverse_svd(MatrixXc& src, driver::autd3_float_t alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) override;
 
   static BackendPtr create();
 };

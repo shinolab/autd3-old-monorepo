@@ -3,7 +3,7 @@
 // Created Date: 24/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/12/2022
+// Last Modified: 23/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,6 +24,7 @@
 #include "autd3/core/geometry.hpp"
 #include "autd3/gain/primitive.hpp"
 
+using complex = std::complex<autd3::driver::autd3_float_t>;
 using autd3::core::propagate;
 using autd3::core::Vector3;
 using autd3::driver::pi;
@@ -50,10 +51,10 @@ TEST(Gain, Focus) {
   g.build(geometry);
 
   const auto expect = std::arg(propagate(geometry[0].position(), geometry[0].z_direction(), 0.0, geometry[0].wavenumber(), f) *
-                               std::exp(std::complex(0.0, g.drives()[0].phase)));
+                               std::exp(complex(0.0, g.drives()[0].phase)));
   for (size_t i = 0; i < g.drives().size(); i++) {
     const auto p = std::arg(propagate(geometry[i].position(), geometry[i].z_direction(), 0.0, geometry[i].wavenumber(), f) *
-                            std::exp(std::complex(0.0, g.drives()[i].phase)));
+                            std::exp(complex(0.0, g.drives()[i].phase)));
     ASSERT_EQ(g.drives()[i].amp, 1.0);
     ASSERT_NEAR(p, expect, 2.0 * pi / 256.0);
   }

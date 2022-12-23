@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/12/2022
+// Last Modified: 21/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -34,19 +34,21 @@ struct STM : DatagramBody {
    * @brief Set frequency of the STM
    * @param[in] freq Frequency of the STM
    * @details STM mode has some constraints, which determine the actual frequency of the STM.
-   * @return double Actual frequency of STM
+   * @return driver::autd3_float_t Actual frequency of STM
    */
-  virtual double set_frequency(double freq) = 0;
+  virtual driver::autd3_float_t set_frequency(driver::autd3_float_t freq) = 0;
 
   /**
    * @return frequency of STM
    */
-  [[nodiscard]] double frequency() const { return sampling_frequency() / static_cast<double>(size()); }
+  [[nodiscard]] driver::autd3_float_t frequency() const { return sampling_frequency() / static_cast<driver::autd3_float_t>(size()); }
 
   /**
    * @brief Sampling frequency.
    */
-  [[nodiscard]] double sampling_frequency() const noexcept { return static_cast<double>(driver::FPGA_CLK_FREQ) / static_cast<double>(_freq_div); }
+  [[nodiscard]] driver::autd3_float_t sampling_frequency() const noexcept {
+    return static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / static_cast<driver::autd3_float_t>(_freq_div);
+  }
 
   /**
    * @brief Sampling frequency division.

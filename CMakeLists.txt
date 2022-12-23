@@ -54,6 +54,7 @@ option(BUILD_TEST "BUILD_TEST" OFF)
 
 option(USE_METER "Use meter instead of millimeter" OFF)
 option(USE_LEFT_HANDED "Use left-handed coordinate system instead of right-handed" OFF)
+option(USE_SINGLE_FLOAT "Use single precision (32 bit) floating number" OFF)
 
 option(ENABLE_BENCH "Enable benchmarks" OFF)
 
@@ -223,6 +224,9 @@ if(USE_METER)
 endif()
 if(USE_LEFT_HANDED)
   target_compile_definitions(autd3_common INTERFACE AUTD3_USE_LEFT_HANDED)
+endif()
+if(USE_SINGLE_FLOAT)
+  target_compile_definitions(autd3_common INTERFACE AUTD3_USE_SINGLE_FLOAT)
 endif()
 
 enable_cxx_compiler_flag_if_supported(autd3_common INTERFACE /bigobj)
