@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/12/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,7 +27,6 @@
 #include "autd3/core/link.hpp"
 #include "autd3/core/mode.hpp"
 #include "autd3/driver/common/cpu/datagram.hpp"
-#include "autd3/driver/common/cpu/ec_config.hpp"
 #include "autd3/driver/driver.hpp"
 #include "autd3/driver/firmware_version.hpp"
 #include "autd3/driver/v2_7/driver.hpp"
@@ -287,7 +286,7 @@ class Controller {
   /**
    * Set speed of sound
    */
-  void set_sound_speed(const double sound_speed) {
+  void set_sound_speed(const driver::autd3_float_t sound_speed) {
     for (auto& tr : _geometry) tr.sound_speed = sound_speed;
   }
 
@@ -295,7 +294,7 @@ class Controller {
    * Get speed of sound
    * @details This function returns the speed of sound set to the 0-th transducer of the 0-th device.
    */
-  [[nodiscard]] double get_sound_speed() const;
+  [[nodiscard]] driver::autd3_float_t get_sound_speed() const;
 
   /**
    * Set speed of sound from temperature
@@ -305,19 +304,21 @@ class Controller {
    * @param m Molar mass [kg mod^-1]
    * @return sound_speed
    */
-  double set_sound_speed_from_temp(double temp, double k = 1.4, double r = 8.31446261815324, double m = 28.9647e-3);
+  driver::autd3_float_t set_sound_speed_from_temp(driver::autd3_float_t temp, driver::autd3_float_t k = static_cast<driver::autd3_float_t>(1.4),
+                                                  driver::autd3_float_t r = static_cast<driver::autd3_float_t>(8.31446261815324),
+                                                  driver::autd3_float_t m = static_cast<driver::autd3_float_t>(28.9647e-3));
 
   /**
    * Set attenuation coefficient
    */
-  void set_attenuation(double attenuation);
+  void set_attenuation(driver::autd3_float_t attenuation);
 
   /**
 * Get attenuation coefficient
 * @details This function returns the attenuation coefficient set to the 0-th transducer of the 0-th device.
 
 */
-  [[nodiscard]] double get_attenuation() const;
+  [[nodiscard]] driver::autd3_float_t get_attenuation() const;
 
  private:
   static uint8_t get_id() noexcept;
@@ -408,7 +409,7 @@ class Controller {
        * @brief Send buffered core::DatagramHeader and buffer core::DatagramHeader passed as argument
        * @tparam H2 Class inheriting from core::DatagramHeader
        * @param header core::DatagramHeader
-       * @return StreamCommaInputHeaderAsync<H2>
+       * @return StreamCommaInputHeaderAsync
        */
       template <typename H2>
       auto operator<<(H2 header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H2>, StreamCommaInputHeaderAsync<H2>> {
@@ -648,7 +649,7 @@ class Controller {
      * @brief Send buffered core::DatagramHeader and buffer core::DatagramHeader passed as argument
      * @tparam H2 Class inheriting from core::DatagramHeader
      * @param header core::DatagramHeader
-     * @return StreamCommaInputHeader<H2>
+     * @return StreamCommaInputHeader
      */
     template <typename H2>
     auto operator<<(H2&& header)
@@ -824,7 +825,7 @@ class Controller {
    * @brief Buffer core::DatagramBody
    * @tparam B Class inheriting from core::DatagramBody
    * @param body core::DatagramBody
-   * @return StreamCommaInputBody<B>
+   * @return StreamCommaInputBody
    */
   template <typename B>
   auto operator<<(B&& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, std::remove_reference_t<B>>, StreamCommaInputBody<B>> {

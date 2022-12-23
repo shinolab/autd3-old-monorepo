@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/12/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -40,7 +40,7 @@ void back_prop(const BackendPtr& backend, const MatrixXc& transfer, const Vector
   const auto m = transfer.rows();
 
   MatrixXc tmp = MatrixXc::Zero(m, m);
-  backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::CONJ_TRANS, ONE, transfer, transfer, ZERO, tmp);
+  backend->mul(Transpose::NoTrans, Transpose::ConjTrans, ONE, transfer, transfer, ZERO, tmp);
 
   VectorXc denominator(m);
   backend->get_diagonal(tmp, denominator);
@@ -48,7 +48,7 @@ void back_prop(const BackendPtr& backend, const MatrixXc& transfer, const Vector
   backend->hadamard_product(amps, denominator, denominator);
 
   backend->create_diagonal(denominator, tmp);
-  backend->mul(TRANSPOSE::CONJ_TRANS, TRANSPOSE::NO_TRANS, ONE, transfer, tmp, ZERO, b);
+  backend->mul(Transpose::ConjTrans, Transpose::NoTrans, ONE, transfer, tmp, ZERO, b);
 }
 }  // namespace
 
@@ -79,29 +79,29 @@ void SDP::calc(const core::Geometry& geometry) {
   VectorXc one = VectorXc::Ones(m);
   _backend->create_diagonal(one, mm);
 
-  _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, -ONE, b, pseudo_inv_b, ONE, mm);
+  _backend->mul(Transpose::NoTrans, Transpose::NoTrans, -ONE, b, pseudo_inv_b, ONE, mm);
 
   MatrixXc tmp = MatrixXc::Zero(m, m);
-  _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, p, mm, ZERO, tmp);
-  _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, tmp, p, ZERO, mm);
+  _backend->mul(Transpose::NoTrans, Transpose::NoTrans, ONE, p, mm, ZERO, tmp);
+  _backend->mul(Transpose::NoTrans, Transpose::NoTrans, ONE, tmp, p, ZERO, mm);
 
   MatrixXc x_mat(m, m);
   _backend->create_diagonal(one, x_mat);
 
   std::random_device rnd;
   std::mt19937 mt(rnd());
-  std::uniform_real_distribution<double> range(0, 1);
+  std::uniform_real_distribution<driver::autd3_float_t> range(0, 1);
   VectorXc zero = VectorXc::Zero(m);
   VectorXc x = VectorXc::Zero(m);
   VectorXc x_conj(m);
   VectorXc mmc(m);
   for (size_t i = 0; i < repeat; i++) {
-    const auto ii = static_cast<size_t>(std::floor(static_cast<double>(m) * range(mt)));
+    const auto ii = static_cast<size_t>(std::floor(static_cast<driver::autd3_float_t>(m) * range(mt)));
 
     _backend->get_col(mm, ii, mmc);
     _backend->set(ii, ZERO, mmc);
 
-    _backend->mul(TRANSPOSE::NO_TRANS, ONE, x_mat, mmc, ZERO, x);
+    _backend->mul(Transpose::NoTrans, ONE, x_mat, mmc, ZERO, x);
     if (complex gamma = _backend->dot(x, mmc); gamma.real() > 0) {
       _backend->scale(complex(-std::sqrt(lambda / gamma.real()), 0.0), x);
       _backend->conj(x, x_conj);
@@ -122,10 +122,10 @@ void SDP::calc(const core::Geometry& geometry) {
   _backend->max_eigen_vector(x_mat, u);
 
   VectorXc ut = VectorXc::Zero(m);
-  _backend->mul(TRANSPOSE::NO_TRANS, ONE, p, u, ZERO, ut);
+  _backend->mul(Transpose::NoTrans, ONE, p, u, ZERO, ut);
 
   VectorXc q = VectorXc::Zero(n);
-  _backend->mul(TRANSPOSE::NO_TRANS, ONE, pseudo_inv_b, ut, ZERO, q);
+  _backend->mul(Transpose::NoTrans, ONE, pseudo_inv_b, ut, ZERO, q);
   _backend->to_host(q);
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
@@ -153,17 +153,17 @@ void EVD::calc(const core::Geometry& geometry) {
   back_prop(_backend, g, amps_, x);
 
   MatrixXc r = MatrixXc::Zero(m, m);
-  _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, g, x, ZERO, r);
+  _backend->mul(Transpose::NoTrans, Transpose::NoTrans, ONE, g, x, ZERO, r);
   VectorXc max_ev(m);
   _backend->max_eigen_vector(r, max_ev);
 
   MatrixXc sigma(n, n);
   {
     VectorXc sigma_tmp = VectorXc::Zero(n);
-    _backend->mul(TRANSPOSE::TRANS, ONE, g, amps_, ZERO, sigma_tmp);
+    _backend->mul(Transpose::Trans, ONE, g, amps_, ZERO, sigma_tmp);
     VectorXd sigma_tmp_real(n);
     _backend->abs(sigma_tmp, sigma_tmp_real);
-    _backend->scale(1.0 / static_cast<double>(m), sigma_tmp_real);
+    _backend->scale(1 / static_cast<driver::autd3_float_t>(m), sigma_tmp_real);
     _backend->sqrt(sigma_tmp_real, sigma_tmp_real);
     _backend->pow(sigma_tmp_real, gamma, sigma_tmp_real);
     const VectorXd zero = VectorXd::Zero(n);
@@ -183,10 +183,10 @@ void EVD::calc(const core::Geometry& geometry) {
   _backend->concat_row(fm, fn, f);
 
   MatrixXc gtg = MatrixXc::Zero(n, n);
-  _backend->mul(TRANSPOSE::CONJ_TRANS, TRANSPOSE::NO_TRANS, ONE, gr, gr, ZERO, gtg);
+  _backend->mul(Transpose::ConjTrans, Transpose::NoTrans, ONE, gr, gr, ZERO, gtg);
 
   VectorXc gtf = VectorXc::Zero(n);
-  _backend->mul(TRANSPOSE::CONJ_TRANS, ONE, gr, f, ZERO, gtf);
+  _backend->mul(Transpose::ConjTrans, ONE, gr, f, ZERO, gtf);
 
   _backend->solveh(gtg, gtf);
 
@@ -213,7 +213,7 @@ void LSS::calc(const core::Geometry& geometry) {
   generate_transfer_matrix(_foci, geometry, g);
 
   VectorXc q = VectorXc::Zero(n);
-  _backend->mul(TRANSPOSE::CONJ_TRANS, ONE, g, p, ZERO, q);
+  _backend->mul(Transpose::ConjTrans, ONE, g, p, ZERO, q);
   _backend->to_host(q);
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
@@ -245,10 +245,10 @@ void GS::calc(const core::Geometry& geometry) {
   VectorXc p(m);
   VectorXc xi = VectorXc::Zero(n);
   for (size_t k = 0; k < repeat; k++) {
-    _backend->mul(TRANSPOSE::NO_TRANS, ONE, g, q, ZERO, gamma);
+    _backend->mul(Transpose::NoTrans, ONE, g, q, ZERO, gamma);
     _backend->arg(gamma, gamma);
     _backend->hadamard_product(gamma, amps_, p);
-    _backend->mul(TRANSPOSE::CONJ_TRANS, ONE, g, p, ZERO, xi);
+    _backend->mul(Transpose::ConjTrans, ONE, g, p, ZERO, xi);
     _backend->arg(xi, xi);
     _backend->hadamard_product(xi, q0, q);
   }
@@ -279,16 +279,16 @@ void GSPAT::calc(const core::Geometry& geometry) {
   back_prop(_backend, g, amps_, b);
 
   MatrixXc r = MatrixXc::Zero(m, m);
-  _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, g, b, ZERO, r);
+  _backend->mul(Transpose::NoTrans, Transpose::NoTrans, ONE, g, b, ZERO, r);
 
   VectorXc p = amps_;
 
   VectorXc gamma = VectorXc::Zero(m);
-  _backend->mul(TRANSPOSE::NO_TRANS, ONE, r, p, ZERO, gamma);
+  _backend->mul(Transpose::NoTrans, ONE, r, p, ZERO, gamma);
   for (size_t k = 0; k < repeat; k++) {
     _backend->arg(gamma, gamma);
     _backend->hadamard_product(gamma, amps_, p);
-    _backend->mul(TRANSPOSE::NO_TRANS, ONE, r, p, ZERO, gamma);
+    _backend->mul(Transpose::NoTrans, ONE, r, p, ZERO, gamma);
   }
 
   VectorXc tmp(m);
@@ -300,7 +300,7 @@ void GSPAT::calc(const core::Geometry& geometry) {
   _backend->hadamard_product(gamma, tmp, p);
 
   VectorXc q = VectorXc::Zero(n);
-  _backend->mul(TRANSPOSE::NO_TRANS, ONE, b, p, ZERO, q);
+  _backend->mul(Transpose::NoTrans, ONE, b, p, ZERO, q);
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
   _backend->to_host(q);
@@ -330,7 +330,7 @@ void make_bhb(const BackendPtr& backend, const std::vector<core::Vector3>& foci,
   MatrixXc b(m, m + n);
   backend->concat_col(g, p, b);
 
-  backend->mul(TRANSPOSE::CONJ_TRANS, TRANSPOSE::NO_TRANS, ONE, b, b, ZERO, bhb);
+  backend->mul(Transpose::ConjTrans, Transpose::NoTrans, ONE, b, b, ZERO, bhb);
 }
 
 void make_t(const BackendPtr& backend, const VectorXd& zero, const VectorXd& x, VectorXc& t) {
@@ -341,17 +341,17 @@ void make_t(const BackendPtr& backend, const VectorXd& zero, const VectorXd& x, 
 
 void calc_jtj_jtf(const BackendPtr& backend, const VectorXc& t, const MatrixXc& bhb, MatrixXc& tth, MatrixXc& bhb_tth, MatrixXd& bhb_tth_i,
                   MatrixXd& jtj, VectorXd& jtf) {
-  backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::CONJ_TRANS, ONE, t, t, ZERO, tth);
+  backend->mul(Transpose::NoTrans, Transpose::ConjTrans, ONE, t, t, ZERO, tth);
   backend->hadamard_product(bhb, tth, bhb_tth);
   backend->real(bhb_tth, jtj);
   backend->imag(bhb_tth, bhb_tth_i);
   backend->reduce_col(bhb_tth_i, jtf);
 }
 
-double calc_fx(const BackendPtr& backend, const VectorXd& zero, const VectorXd& x, const MatrixXc& bhb, VectorXc& tmp, VectorXc& t) {
+driver::autd3_float_t calc_fx(const BackendPtr& backend, const VectorXd& zero, const VectorXd& x, const MatrixXc& bhb, VectorXc& tmp, VectorXc& t) {
   backend->make_complex(zero, x, t);
   backend->exp(t, t);
-  backend->mul(TRANSPOSE::NO_TRANS, ONE, bhb, t, ZERO, tmp);
+  backend->mul(Transpose::NoTrans, ONE, bhb, t, ZERO, tmp);
   return backend->dot(t, tmp).real();
 }
 
@@ -369,7 +369,7 @@ void LM::calc(const core::Geometry& geometry) {
   VectorXd x = VectorXd::Zero(n_param);
   for (size_t i = 0; i < initial.size(); i++) x(static_cast<Eigen::Index>(i)) = initial[i];
 
-  auto nu = 2.0;
+  driver::autd3_float_t nu = 2;
 
   const VectorXd zero = VectorXd::Zero(n_param);
 
@@ -391,7 +391,7 @@ void LM::calc(const core::Geometry& geometry) {
 
   VectorXc tmp = VectorXc::Zero(n_param);
   VectorXc t_(n_param);
-  double fx = calc_fx(_backend, zero, x, bhb, tmp, t);
+  driver::autd3_float_t fx = calc_fx(_backend, zero, x, bhb, tmp, t);
 
   const MatrixXd identity = MatrixXd::Identity(n_param, n_param);
 
@@ -415,12 +415,12 @@ void LM::calc(const core::Geometry& geometry) {
     _backend->copy_to(x, x_new);
     _backend->add(-1.0, h_lm, x_new);
 
-    const double fx_new = calc_fx(_backend, zero, x_new, bhb, tmp, t);
+    const driver::autd3_float_t fx_new = calc_fx(_backend, zero, x_new, bhb, tmp, t);
 
     _backend->copy_to(g, tmp_vec);
     _backend->add(mu, h_lm, tmp_vec);
 
-    const double l0_lhlm = _backend->dot(h_lm, tmp_vec) / 2;
+    const driver::autd3_float_t l0_lhlm = _backend->dot(h_lm, tmp_vec) / 2;
 
     const auto rho = (fx - fx_new) / l0_lhlm;
     fx = fx_new;
@@ -431,7 +431,7 @@ void LM::calc(const core::Geometry& geometry) {
       make_t(_backend, zero, x, t);
       calc_jtj_jtf(_backend, t, bhb, tth, bhb_tth, bhb_tth_i, a, g);
 
-      mu *= (std::max)(1. / 3., std::pow(1 - (2 * rho - 1), 3.0));
+      mu *= (std::max)(driver::autd3_float_t{1} / driver::autd3_float_t{3}, std::pow(1 - (2 * rho - 1), driver::autd3_float_t{3}));
       nu = 2;
     } else {
       mu *= nu;
@@ -441,7 +441,7 @@ void LM::calc(const core::Geometry& geometry) {
 
   _backend->to_host(x);
   std::for_each(geometry.begin(), geometry.end(), [&](const auto& tr) {
-    const auto phase = driver::rem_euclid(x(tr.id()), 2.0 * driver::pi);
+    const auto phase = driver::rem_euclid(x(tr.id()), 2 * driver::pi);
     const auto power = constraint->convert(1.0, 1.0);
     _drives[tr.id()].amp = power;
     _drives[tr.id()].phase = phase;
@@ -457,11 +457,12 @@ void Greedy::calc(const core::Geometry& geometry) {
   std::vector<complex> phases;
   phases.reserve(phase_div);
   for (size_t i = 0; i < phase_div; i++)
-    phases.emplace_back(std::exp(complex(0., 2.0 * driver::pi * static_cast<double>(i) / static_cast<double>(phase_div))));
+    phases.emplace_back(
+        std::exp(complex(0., 2 * driver::pi * static_cast<driver::autd3_float_t>(i) / static_cast<driver::autd3_float_t>(phase_div))));
 
   std::vector<VectorXc> tmp;
   tmp.reserve(phases.size());
-  for (size_t i = 0; i < phases.size(); i++) tmp.emplace_back(VectorXc(m));
+  for (size_t i = 0; i < phases.size(); i++) tmp.emplace_back(m);
 
   VectorXc cache = VectorXc::Zero(m);
 
@@ -478,7 +479,7 @@ void Greedy::calc(const core::Geometry& geometry) {
   for (const auto i : select) {
     const auto& transducer = geometry[i];
     size_t min_idx = 0;
-    auto min_v = std::numeric_limits<double>::infinity();
+    auto min_v = std::numeric_limits<driver::autd3_float_t>::infinity();
     for (size_t p = 0; p < phases.size(); p++) {
       transfer_foci(transducer, phases[p], _foci, tmp[p]);
       if (const auto v = objective(amps_, tmp[p] + cache); v < min_v) {
@@ -504,7 +505,8 @@ void LSSGreedy::calc(const core::Geometry& geometry) {
   std::vector<complex> phases;
   phases.reserve(phase_div);
   for (size_t i = 0; i < phase_div; i++)
-    phases.emplace_back(std::exp(complex(0., 2.0 * driver::pi * static_cast<double>(i) / static_cast<double>(phase_div))));
+    phases.emplace_back(
+        std::exp(complex(0., 2 * driver::pi * static_cast<driver::autd3_float_t>(i) / static_cast<driver::autd3_float_t>(phase_div))));
 
   std::vector<VectorXc> focus_phase_list;
   focus_phase_list.reserve(_foci.size());
@@ -533,10 +535,10 @@ void LSSGreedy::calc(const core::Geometry& geometry) {
   std::shuffle(select.begin(), select.end(), engine);
   for (const auto i : select) {
     size_t min_idx = 0;
-    auto min_v = std::numeric_limits<double>::infinity();
+    auto min_v = std::numeric_limits<driver::autd3_float_t>::infinity();
     for (size_t j = 0; j < phases.size(); j++) {
       const auto q_tmp = q + focus_phase_list[i] * phases[j];
-      _backend->mul(TRANSPOSE::NO_TRANS, ONE, g, q_tmp, ZERO, tmp[j]);
+      _backend->mul(Transpose::NoTrans, ONE, g, q_tmp, ZERO, tmp[j]);
       if (const auto v = objective(amps_, tmp[j]); v < min_v) {
         min_v = v;
         min_idx = j;
@@ -565,8 +567,8 @@ void APO::calc(const core::Geometry& geometry) {
 
     MatrixXc tmp = MatrixXc::Zero(n, m);
 
-    _backend->mul(TRANSPOSE::CONJ_TRANS, TRANSPOSE::NO_TRANS, ONE, g, di, ZERO, tmp);
-    _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, tmp, g, ZERO, ri);
+    _backend->mul(Transpose::ConjTrans, Transpose::NoTrans, ONE, g, di, ZERO, tmp);
+    _backend->mul(Transpose::NoTrans, Transpose::NoTrans, ONE, tmp, g, ZERO, ri);
 
     return ri;
   };
@@ -575,7 +577,7 @@ void APO::calc(const core::Geometry& geometry) {
                           VectorXc& nabla_j) {
     VectorXc tmp = VectorXc::Zero(static_cast<Eigen::Index>(n));
     for (size_t i = 0; i < m; i++) {
-      _backend->mul(TRANSPOSE::NO_TRANS, ONE, ris[i], q, ZERO, tmp);
+      _backend->mul(Transpose::NoTrans, ONE, ris[i], q, ZERO, tmp);
       const auto s = p2(static_cast<Eigen::Index>(i)) - _backend->dot(q, tmp);
       _backend->scale(s, tmp);
       _backend->add(ONE, tmp, nabla_j);
@@ -585,9 +587,9 @@ void APO::calc(const core::Geometry& geometry) {
 
   auto calc_j = [&](const VectorXc& q, const VectorXc& p2, const std::vector<MatrixXc>& ris, const size_t m, const size_t n) {
     MatrixXc tmp = MatrixXc::Zero(static_cast<Eigen::Index>(n), 1);
-    auto j = 0.0;
+    driver::autd3_float_t j = 0;
     for (size_t i = 0; i < m; i++) {
-      _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::NO_TRANS, ONE, ris[i], q, ZERO, tmp);
+      _backend->mul(Transpose::NoTrans, Transpose::NoTrans, ONE, ris[i], q, ZERO, tmp);
       const auto s = p2(static_cast<Eigen::Index>(i), 0) - _backend->dot(q, tmp);
       j += std::norm(s);
     }
@@ -596,10 +598,10 @@ void APO::calc(const core::Geometry& geometry) {
   };
 
   auto line_search = [&](const VectorXc& q, const VectorXc& p2, const std::vector<MatrixXc>& ris, const size_t m, const size_t n) {
-    auto alpha = 0.0;
-    auto min = (std::numeric_limits<double>::max)();
+    driver::autd3_float_t alpha = 0;
+    auto min = (std::numeric_limits<driver::autd3_float_t>::max)();
     for (size_t i = 0; i < line_search_max; i++) {
-      const auto a = static_cast<double>(i) / static_cast<double>(line_search_max);  // FIXME: only for 0-1
+      const auto a = static_cast<driver::autd3_float_t>(i) / static_cast<driver::autd3_float_t>(line_search_max);  // FIXME: only for 0-1
       if (const auto v = calc_j(q, p2, ris, m, n); v < min) {
         alpha = a;
         min = v;
@@ -624,11 +626,11 @@ void APO::calc(const core::Geometry& geometry) {
   _backend->create_diagonal(one, h);
 
   MatrixXc tmp = MatrixXc::Zero(static_cast<Eigen::Index>(n), static_cast<Eigen::Index>(n));
-  _backend->mul(TRANSPOSE::CONJ_TRANS, TRANSPOSE::NO_TRANS, ONE, g, g, ZERO, tmp);
+  _backend->mul(Transpose::ConjTrans, Transpose::NoTrans, ONE, g, g, ZERO, tmp);
   _backend->add(complex(lambda, 0.0), h, tmp);
 
   VectorXc q = VectorXc::Zero(static_cast<Eigen::Index>(n));
-  _backend->mul(TRANSPOSE::CONJ_TRANS, ONE, g, p, ZERO, q);
+  _backend->mul(Transpose::ConjTrans, ONE, g, p, ZERO, q);
   _backend->solveh(tmp, q);
 
   std::vector<MatrixXc> ris;
@@ -644,7 +646,7 @@ void APO::calc(const core::Geometry& geometry) {
   VectorXc s(n);
   VectorXc hs = VectorXc::Zero(static_cast<Eigen::Index>(n));
   for (size_t k = 0; k < k_max; k++) {
-    _backend->mul(TRANSPOSE::NO_TRANS, -ONE, h, nabla_j, ZERO, d);
+    _backend->mul(Transpose::NoTrans, -ONE, h, nabla_j, ZERO, d);
 
     _backend->scale(complex(line_search(q, p2, ris, m, n), 0), d);
 
@@ -657,11 +659,11 @@ void APO::calc(const core::Geometry& geometry) {
     _backend->add(-ONE, nabla_j, s);
 
     const auto ys = ONE / _backend->dot(d, s);
-    _backend->mul(TRANSPOSE::NO_TRANS, ONE, h, s, ZERO, hs);
+    _backend->mul(Transpose::NoTrans, ONE, h, s, ZERO, hs);
     const auto shs = -ONE / _backend->dot(s, hs);
 
-    _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::CONJ_TRANS, ys, d, d, ONE, h);
-    _backend->mul(TRANSPOSE::NO_TRANS, TRANSPOSE::CONJ_TRANS, shs, hs, hs, ONE, h);
+    _backend->mul(Transpose::NoTrans, Transpose::ConjTrans, ys, d, d, ONE, h);
+    _backend->mul(Transpose::NoTrans, Transpose::ConjTrans, shs, hs, hs, ONE, h);
 
     _backend->copy_to(nabla_j_new, nabla_j);
   }

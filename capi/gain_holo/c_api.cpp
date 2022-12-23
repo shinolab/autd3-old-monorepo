@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/10/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,16 +27,16 @@ void AUTDDeleteBackend(const void* backend) {
   backend_delete(b);
 }
 
-void AUTDGainHoloSDP(void** gain, const void* backend, const double alpha, const double lambda, const uint64_t repeat) {
+void AUTDGainHoloSDP(void** gain, const void* backend, const autd3_float_t alpha, const autd3_float_t lambda, const uint64_t repeat) {
   const auto b = static_cast<const BackendWrapper*>(backend);
   auto* g = new autd3::gain::holo::SDP(b->ptr);
   g->alpha = alpha;
   g->lambda = lambda;
-  g->repeat = repeat;
+  g->repeat = static_cast<size_t>(repeat);
   *gain = g;
 }
 
-void AUTDGainHoloEVD(void** gain, const void* backend, const double gamma) {
+void AUTDGainHoloEVD(void** gain, const void* backend, const autd3_float_t gamma) {
   const auto b = static_cast<const BackendWrapper*>(backend);
   auto* g = new autd3::gain::holo::EVD(b->ptr);
   g->gamma = gamma;
@@ -52,21 +52,21 @@ void AUTDGainHoloNaive(void** gain, const void* backend) {
 void AUTDGainHoloGS(void** gain, const void* backend, const uint64_t repeat) {
   const auto b = static_cast<const BackendWrapper*>(backend);
   auto* g = new autd3::gain::holo::GS(b->ptr);
-  g->repeat = repeat;
+  g->repeat = static_cast<size_t>(repeat);
   *gain = g;
 }
 
 void AUTDGainHoloGSPAT(void** gain, const void* backend, const uint64_t repeat) {
   const auto b = static_cast<const BackendWrapper*>(backend);
   auto* g = new autd3::gain::holo::GSPAT(b->ptr);
-  g->repeat = repeat;
+  g->repeat = static_cast<size_t>(repeat);
   *gain = g;
 }
 
-void AUTDGainHoloLM(void** gain, const void* backend, const double eps_1, const double eps_2, const double tau, const uint64_t k_max,
-                    const double* initial, const int32_t initial_size) {
+void AUTDGainHoloLM(void** gain, const void* backend, const autd3_float_t eps_1, const autd3_float_t eps_2, const autd3_float_t tau,
+                    const uint64_t k_max, const autd3_float_t* initial, const int32_t initial_size) {
   const auto b = static_cast<const BackendWrapper*>(backend);
-  std::vector<double> initial_;
+  std::vector<autd3_float_t> initial_;
   initial_.reserve(initial_size);
   for (auto i = 0; i < initial_size; i++) initial_.emplace_back(initial[i]);
 
@@ -74,7 +74,7 @@ void AUTDGainHoloLM(void** gain, const void* backend, const double eps_1, const 
   g->eps_1 = eps_1;
   g->eps_2 = eps_2;
   g->tau = tau;
-  g->k_max = k_max;
+  g->k_max = static_cast<size_t>(k_max);
   g->initial = std::move(initial_);
   *gain = g;
 }
@@ -93,7 +93,8 @@ void AUTDGainHoloLSSGreedy(void** gain, const void* backend, const int32_t phase
   *gain = g;
 }
 
-void AUTDGainHoloAPO(void** gain, const void* backend, const double eps, const double lambda, const int32_t k_max, const int32_t line_search_max) {
+void AUTDGainHoloAPO(void** gain, const void* backend, const autd3_float_t eps, const autd3_float_t lambda, const int32_t k_max,
+                     const int32_t line_search_max) {
   const auto b = static_cast<const BackendWrapper*>(backend);
   auto* g = new autd3::gain::holo::APO(b->ptr);
   g->eps = eps;
@@ -103,7 +104,7 @@ void AUTDGainHoloAPO(void** gain, const void* backend, const double eps, const d
   *gain = g;
 }
 
-void AUTDGainHoloAdd(void* gain, const double x, const double y, const double z, const double amp) {
+void AUTDGainHoloAdd(void* gain, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const autd3_float_t amp) {
   auto* g = static_cast<autd3::gain::holo::Holo*>(gain);
   g->add_focus(autd3::core::Vector3(x, y, z), amp);
 }
@@ -116,7 +117,7 @@ void AUTDConstraintNormalize(void** constraint) {
   auto* c = constraint_create(std::make_unique<autd3::gain::holo::Normalize>());
   *constraint = c;
 }
-void AUTDConstraintUniform(void** constraint, double value) {
+void AUTDConstraintUniform(void** constraint, autd3_float_t value) {
   auto* c = constraint_create(std::make_unique<autd3::gain::holo::Uniform>(value));
   *constraint = c;
 }

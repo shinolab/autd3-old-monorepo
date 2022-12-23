@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/12/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -63,9 +63,9 @@ inline void print_stats(const std::string& header, const std::vector<int64_t>& s
   spdlog::debug("{}: {}+/-{} (Max.{} Min.{}) [us]", header, ave / 1000, stdd / 1000.0, max / 1000, min / 1000);
 }
 
-using wait_func = void(const timespec&);
+using WaitFunc = void(const timespec&);
 
-template <wait_func W>
+template <WaitFunc W>
 void ecat_run_(std::atomic<bool>* is_open, std::atomic<int32_t>* wkc, const int64_t cycletime_ns, std::mutex& mtx,
                std::queue<driver::TxDatagram>& send_queue, IOMap& io_map) {
   ecat_init();

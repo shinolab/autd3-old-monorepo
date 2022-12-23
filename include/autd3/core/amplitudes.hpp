@@ -3,7 +3,7 @@
 // Created Date: 28/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/11/2022
+// Last Modified: 21/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ namespace autd3::core {
  */
 class Amplitudes final : public DatagramBody {
  public:
-  explicit Amplitudes(const double amp = 1.0) : _amp(amp), _sent(false) {}
+  explicit Amplitudes(const driver::autd3_float_t amp = 1.0) : _amp(amp), _sent(false) {}
   ~Amplitudes() override = default;
   Amplitudes(const Amplitudes& v) = default;
   Amplitudes& operator=(const Amplitudes& obj) = default;
@@ -43,9 +43,7 @@ class Amplitudes final : public DatagramBody {
 
     std::vector<driver::Drive> drives;
     drives.reserve(geometry.num_transducers());
-    std::transform(geometry.begin(), geometry.end(), std::back_inserter(drives), [&](const auto& tr) {
-      return driver::Drive{0.0, _amp, tr.cycle()};
-    });
+    std::transform(geometry.begin(), geometry.end(), std::back_inserter(drives), [&](const auto& tr) { return driver::Drive{0, _amp, tr.cycle()}; });
 
     driver->normal_duty_body(drives, tx);
     _sent = true;
@@ -55,7 +53,7 @@ class Amplitudes final : public DatagramBody {
   [[nodiscard]] bool is_finished() const noexcept override { return _sent; }
 
  private:
-  double _amp;
+  driver::autd3_float_t _amp;
   bool _sent;
 };
 

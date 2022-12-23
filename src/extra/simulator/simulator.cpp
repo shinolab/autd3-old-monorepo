@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/12/2022
+// Last Modified: 23/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -59,11 +59,11 @@ namespace autd3::extra {
 
   std::vector<CPU> cpus;
 
-  const auto window = std::make_unique<helper::WindowHandler>(_settings->window_width, _settings->window_height);
-  const auto context = std::make_unique<helper::VulkanContext>(_settings->gpu_idx, false);
+  const auto window = std::make_unique<helper::WindowHandler>(_settings.window_width, _settings.window_height);
+  const auto context = std::make_unique<helper::VulkanContext>(_settings.gpu_idx, false);
 
   const auto imgui = std::make_unique<simulator::VulkanImGui>(window.get(), context.get());
-  const auto renderer = std::make_unique<simulator::VulkanRenderer>(context.get(), window.get(), imgui.get(), _settings->vsync);
+  const auto renderer = std::make_unique<simulator::VulkanRenderer>(context.get(), window.get(), imgui.get(), _settings.vsync);
 
   spdlog::info("Initializing window...");
   window->init("AUTD3 Simulator", renderer.get(), simulator::VulkanRenderer::resize_callback, simulator::VulkanRenderer::pos_callback);
@@ -73,7 +73,7 @@ namespace autd3::extra {
     return false;
   }
   spdlog::info("Initializing renderer...");
-  renderer->create_swapchain();
+  if (!renderer->create_swapchain()) return false;
   renderer->create_image_views();
   if (!renderer->create_render_pass()) {
     spdlog::error("Initializing renderer...failed");
@@ -101,12 +101,12 @@ namespace autd3::extra {
   const auto slice_viewer = std::make_unique<simulator::slice_viewer::SliceViewer>(context.get(), renderer.get());
   const auto field_compute = std::make_unique<simulator::FieldCompute>(context.get(), renderer.get());
 
-  imgui->init(static_cast<uint32_t>(renderer->frames_in_flight()), renderer->render_pass(), *_settings);
+  if (!imgui->init(static_cast<uint32_t>(renderer->frames_in_flight()), renderer->render_pass(), _settings)) return false;
 
   auto smem = smem::SMem();
 
   spdlog::info("Initializing shared memory...");
-  const auto size = sizeof(uint8_t) + sizeof(uint32_t) + sizeof(uint32_t) * _settings->max_dev_num + _settings->max_trans_num * sizeof(float) * 7;
+  const auto size = sizeof(uint8_t) + sizeof(uint32_t) + sizeof(uint32_t) * _settings.max_dev_num + _settings.max_trans_num * sizeof(float) * 7;
   smem.create("autd3_simulator_smem", size);
   volatile auto* ptr = static_cast<uint8_t*>(smem.map());
   for (size_t i = 0; i < size; i++) ptr[i] = 0;
@@ -152,9 +152,9 @@ namespace autd3::extra {
           std::vector<driver::Vector3> local_trans_pos;
           local_trans_pos.reserve(tr_num);
           auto* p = reinterpret_cast<float*>(cursor);
-          const driver::Vector3 origin = Eigen::Vector3<float>(p[0], p[1], p[2]).cast<double>();
+          const driver::Vector3 origin = Eigen::Vector3<float>(p[0], p[1], p[2]).cast<driver::autd3_float_t>();
           for (uint32_t tr = 0; tr < tr_num; tr++) {
-            const driver::Vector3 pos = Eigen::Vector3<float>(p[0], p[1], p[2]).cast<double>() - origin;
+            const driver::Vector3 pos = Eigen::Vector3<float>(p[0], p[1], p[2]).cast<driver::autd3_float_t>() - origin;
             local_trans_pos.emplace_back(pos);
             p += 7;
           }
@@ -166,7 +166,7 @@ namespace autd3::extra {
           for (uint32_t tr = 0; tr < tr_num; tr++) {
             const auto pos = imgui->to_gl_pos(glm::vec3(p[0], p[1], p[2]));
             const auto rot = imgui->to_gl_rot(glm::quat(p[3], p[4], p[5], p[6]));
-            s.add(pos, rot, simulator::Drive(1.0f, 0.0f, 1.0f, 40e3, _settings->use_meter ? 340 : 340e3), 1.0f);
+            s.add(pos, rot, simulator::Drive(1.0f, 0.0f, 1.0f, 40e3, _settings.use_meter ? 340 : 340e3), 1.0f);
             p += 7;
             cursor += sizeof(float) * 7;
           }
@@ -220,9 +220,9 @@ namespace autd3::extra {
         auto update_flags = imgui->draw(cpus, sources);
         if (data_updated.load()) {
           data_updated.store(false);
-          update_flags.set(simulator::UpdateFlags::UPDATE_SOURCE_DRIVE);
+          update_flags.set(simulator::UpdateFlags::UpdateSourceDrive);
         }
-        if (update_flags.contains(simulator::UpdateFlags::UPDATE_SOURCE_DRIVE)) {
+        if (update_flags.contains(simulator::UpdateFlags::UpdateSourceDrive)) {
           for (size_t dev = 0; dev < cpus.size(); dev++) {
             const auto& cpu = cpus[dev];
             const auto& cycles = cpu.fpga().cycles();
@@ -257,7 +257,7 @@ namespace autd3::extra {
                                        slice_model};
         field_compute->compute(config, imgui->show_radiation_pressure);
 
-        if (update_flags.contains(simulator::UpdateFlags::SAVE_IMAGE)) {
+        if (update_flags.contains(simulator::UpdateFlags::SaveImage)) {
           const auto& image = slice_viewer->images()[renderer->current_frame()].get();
           const auto image_size = slice_viewer->image_size();
 
@@ -337,10 +337,10 @@ namespace autd3::extra {
   simulator::VulkanImGui::cleanup();
   renderer->cleanup();
 
-  imgui->save_settings(*_settings);
+  imgui->save_settings(_settings);
   const auto [window_width, window_height] = window->get_window_size();
-  _settings->window_width = window_width;
-  _settings->window_height = window_height;
+  _settings.window_width = window_width;
+  _settings.window_height = window_height;
 
   return true;
 }

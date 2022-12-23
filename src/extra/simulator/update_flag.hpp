@@ -3,7 +3,7 @@
 // Created Date: 05/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/11/2022
+// Last Modified: 23/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,25 +22,25 @@ namespace autd3::extra::simulator {
 
 class UpdateFlags final {
  public:
-  enum VALUE : uint32_t {
-    NONE = 0,
-    UPDATE_SOURCE_DRIVE = 1 << 0,
-    UPDATE_COLOR_MAP = 1 << 1,
-    UPDATE_CAMERA_POS = 1 << 2,
-    UPDATE_SLICE_POS = 1 << 3,
-    UPDATE_SLICE_SIZE = 1 << 4,
-    UPDATE_SOURCE_ALPHA = 1 << 5,
-    UPDATE_SOURCE_FLAG = 1 << 6,
-    SAVE_IMAGE = 1 << 7,
+  enum Value : uint32_t {
+    None = 0,
+    UpdateSourceDrive = 1 << 0,
+    UpdateColorMap = 1 << 1,
+    UpdateCameraPos = 1 << 2,
+    UpdateSlicePos = 1 << 3,
+    UpdateSliceSize = 1 << 4,
+    UpdateSourceAlpha = 1 << 5,
+    UpdateSourceFlag = 1 << 6,
+    SaveImage = 1 << 7,
   };
 
   UpdateFlags() = default;
-  explicit UpdateFlags(const VALUE value) noexcept : _value(value) {}
+  explicit UpdateFlags(const Value value) noexcept : _value(value) {}
 
   ~UpdateFlags() = default;
   UpdateFlags(const UpdateFlags& v) noexcept = default;
   UpdateFlags& operator=(const UpdateFlags& obj) = default;
-  UpdateFlags& operator=(const VALUE v) noexcept {
+  UpdateFlags& operator=(const Value v) noexcept {
     _value = v;
     return *this;
   }
@@ -49,21 +49,21 @@ class UpdateFlags final {
 
   constexpr bool operator==(const UpdateFlags a) const { return _value == a._value; }
   constexpr bool operator!=(const UpdateFlags a) const { return _value != a._value; }
-  constexpr bool operator==(const VALUE a) const { return _value == a; }
-  constexpr bool operator!=(const VALUE a) const { return _value != a; }
+  constexpr bool operator==(const Value a) const { return _value == a; }
+  constexpr bool operator!=(const Value a) const { return _value != a; }
 
-  void set(const VALUE v) noexcept { _value = static_cast<VALUE>(_value | v); }
+  void set(const Value v) noexcept { _value = static_cast<Value>(_value | v); }
 
-  void remove(const VALUE v) noexcept { _value = static_cast<VALUE>(_value & ~v); }
+  void remove(const Value v) noexcept { _value = static_cast<Value>(_value & ~v); }
 
-  [[nodiscard]] bool contains(const VALUE v) const noexcept { return (_value & v) == v; }
+  [[nodiscard]] bool contains(const Value v) const noexcept { return (_value & v) == v; }
 
-  [[nodiscard]] VALUE value() const noexcept { return _value; }
+  [[nodiscard]] Value value() const noexcept { return _value; }
 
-  static UpdateFlags all() { return UpdateFlags{static_cast<VALUE>(0xFFFFFFFF)}; }
+  static UpdateFlags all() { return UpdateFlags{static_cast<Value>(0xFFFFFFFF)}; }
 
  private:
-  VALUE _value;
+  Value _value;
 };
 
 #ifdef _MSC_VER

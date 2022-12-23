@@ -3,7 +3,7 @@
 // Created Date: 08/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -37,7 +37,7 @@ class LPF final : public core::Modulation {
 
  private:
   Modulation& _modulation;
-  std::vector<double> _coefficients;
+  std::vector<driver::autd3_float_t> _coefficients;
 };
 
 }  // namespace autd3::modulation

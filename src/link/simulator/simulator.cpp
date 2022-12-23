@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/11/2022
+// Last Modified: 21/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -127,8 +127,8 @@ class SimulatorImpl final : public core::Link {
       auto* p = reinterpret_cast<float*>(cursor);
       for (; i < c; i++) {
         auto& tr = geometry[i];
-        auto origin = tr.position().cast<float>();
-        auto rot = tr.rotation().cast<float>();
+        Eigen::Vector3<float> origin = tr.position().cast<float>();
+        Eigen::Quaternion<float> rot = tr.rotation().cast<float>();
         p[0] = origin.x();
         p[1] = origin.y();
         p[2] = origin.z();

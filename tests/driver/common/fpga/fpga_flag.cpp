@@ -3,7 +3,7 @@
 // Created Date: 30/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/11/2022
+// Last Modified: 23/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,100 +23,100 @@
 using autd3::driver::FPGAControlFlags;
 
 TEST(DriverCommonFPGAControlFlags, FPGAControlFlagsTest) {
-  FPGAControlFlags flag(FPGAControlFlags::NONE);
-  ASSERT_EQ(flag, FPGAControlFlags::NONE);
+  FPGAControlFlags flag(FPGAControlFlags::None);
+  ASSERT_EQ(flag, FPGAControlFlags::None);
 
-  flag.set(FPGAControlFlags::LEGACY_MODE);
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::LEGACY_MODE));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::FORCE_FAN));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::READS_FPGA_INFO));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::STM_GAIN_MODE));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::STM_MODE));
+  flag.set(FPGAControlFlags::LegacyMode);
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::LegacyMode));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::ForceFan));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::ReadsFPGAInfo));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::STMGainMode));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::STMMode));
 
-  flag.set(FPGAControlFlags::STM_MODE);
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::LEGACY_MODE));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::STM_MODE));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::FORCE_FAN));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::READS_FPGA_INFO));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::STM_GAIN_MODE));
+  flag.set(FPGAControlFlags::STMMode);
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::LegacyMode));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::STMMode));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::ForceFan));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::ReadsFPGAInfo));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::STMGainMode));
 
-  flag.set(FPGAControlFlags::FORCE_FAN);
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::LEGACY_MODE));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::STM_MODE));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::FORCE_FAN));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::READS_FPGA_INFO));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::STM_GAIN_MODE));
+  flag.set(FPGAControlFlags::ForceFan);
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::LegacyMode));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::STMMode));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::ForceFan));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::ReadsFPGAInfo));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::STMGainMode));
 
-  flag.set(FPGAControlFlags::READS_FPGA_INFO);
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::LEGACY_MODE));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::STM_MODE));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::FORCE_FAN));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::READS_FPGA_INFO));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::STM_GAIN_MODE));
+  flag.set(FPGAControlFlags::ReadsFPGAInfo);
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::LegacyMode));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::STMMode));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::ForceFan));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::ReadsFPGAInfo));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::STMGainMode));
 
-  flag.set(FPGAControlFlags::STM_GAIN_MODE);
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::LEGACY_MODE));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::STM_MODE));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::FORCE_FAN));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::READS_FPGA_INFO));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::STM_GAIN_MODE));
+  flag.set(FPGAControlFlags::STMGainMode);
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::LegacyMode));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::STMMode));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::ForceFan));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::ReadsFPGAInfo));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::STMGainMode));
 
-  flag.set(FPGAControlFlags::LEGACY_MODE);
-  flag.set(FPGAControlFlags::STM_MODE);
-  flag.set(FPGAControlFlags::FORCE_FAN);
-  flag.set(FPGAControlFlags::READS_FPGA_INFO);
-  flag.set(FPGAControlFlags::STM_GAIN_MODE);
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::LEGACY_MODE));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::STM_MODE));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::FORCE_FAN));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::READS_FPGA_INFO));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::STM_GAIN_MODE));
+  flag.set(FPGAControlFlags::LegacyMode);
+  flag.set(FPGAControlFlags::STMMode);
+  flag.set(FPGAControlFlags::ForceFan);
+  flag.set(FPGAControlFlags::ReadsFPGAInfo);
+  flag.set(FPGAControlFlags::STMGainMode);
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::LegacyMode));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::STMMode));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::ForceFan));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::ReadsFPGAInfo));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::STMGainMode));
 
-  flag.remove(FPGAControlFlags::LEGACY_MODE);
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::LEGACY_MODE));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::STM_MODE));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::FORCE_FAN));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::READS_FPGA_INFO));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::STM_GAIN_MODE));
+  flag.remove(FPGAControlFlags::LegacyMode);
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::LegacyMode));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::STMMode));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::ForceFan));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::ReadsFPGAInfo));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::STMGainMode));
 
-  flag.remove(FPGAControlFlags::STM_MODE);
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::LEGACY_MODE));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::STM_MODE));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::FORCE_FAN));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::READS_FPGA_INFO));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::STM_GAIN_MODE));
+  flag.remove(FPGAControlFlags::STMMode);
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::LegacyMode));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::STMMode));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::ForceFan));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::ReadsFPGAInfo));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::STMGainMode));
 
-  flag.remove(FPGAControlFlags::FORCE_FAN);
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::LEGACY_MODE));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::STM_MODE));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::FORCE_FAN));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::READS_FPGA_INFO));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::STM_GAIN_MODE));
+  flag.remove(FPGAControlFlags::ForceFan);
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::LegacyMode));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::STMMode));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::ForceFan));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::ReadsFPGAInfo));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::STMGainMode));
 
-  flag.remove(FPGAControlFlags::READS_FPGA_INFO);
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::LEGACY_MODE));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::STM_MODE));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::FORCE_FAN));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::READS_FPGA_INFO));
-  ASSERT_TRUE(flag.contains(FPGAControlFlags::STM_GAIN_MODE));
+  flag.remove(FPGAControlFlags::ReadsFPGAInfo);
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::LegacyMode));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::STMMode));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::ForceFan));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::ReadsFPGAInfo));
+  ASSERT_TRUE(flag.contains(FPGAControlFlags::STMGainMode));
 
-  flag.remove(FPGAControlFlags::STM_GAIN_MODE);
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::LEGACY_MODE));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::STM_MODE));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::FORCE_FAN));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::READS_FPGA_INFO));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::STM_GAIN_MODE));
-  ASSERT_EQ(flag, FPGAControlFlags::NONE);
+  flag.remove(FPGAControlFlags::STMGainMode);
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::LegacyMode));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::STMMode));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::ForceFan));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::ReadsFPGAInfo));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::STMGainMode));
+  ASSERT_EQ(flag, FPGAControlFlags::None);
 
-  flag.remove(FPGAControlFlags::LEGACY_MODE);
-  flag.remove(FPGAControlFlags::STM_MODE);
-  flag.remove(FPGAControlFlags::FORCE_FAN);
-  flag.remove(FPGAControlFlags::READS_FPGA_INFO);
-  flag.remove(FPGAControlFlags::STM_GAIN_MODE);
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::LEGACY_MODE));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::STM_MODE));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::FORCE_FAN));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::READS_FPGA_INFO));
-  ASSERT_FALSE(flag.contains(FPGAControlFlags::STM_GAIN_MODE));
-  ASSERT_EQ(flag, FPGAControlFlags::NONE);
+  flag.remove(FPGAControlFlags::LegacyMode);
+  flag.remove(FPGAControlFlags::STMMode);
+  flag.remove(FPGAControlFlags::ForceFan);
+  flag.remove(FPGAControlFlags::ReadsFPGAInfo);
+  flag.remove(FPGAControlFlags::STMGainMode);
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::LegacyMode));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::STMMode));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::ForceFan));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::ReadsFPGAInfo));
+  ASSERT_FALSE(flag.contains(FPGAControlFlags::STMGainMode));
+  ASSERT_EQ(flag, FPGAControlFlags::None);
 }

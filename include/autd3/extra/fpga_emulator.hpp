@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/12/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,6 +22,12 @@ namespace autd3::extra {
 
 namespace fpga {
 constexpr uint8_t VERSION_NUM = 0x87;
+
+#ifdef AUTD3_USE_METER
+constexpr driver::autd3_float_t TRANS_SIZE_FIXED_POINT_UNIT = 40000;
+#else
+constexpr driver::autd3_float_t TRANS_SIZE_FIXED_POINT_UNIT = 40;
+#endif
 
 constexpr uint16_t BRAM_SELECT_CONTROLLER = 0x0;
 constexpr uint16_t BRAM_SELECT_MOD = 0x1;
@@ -225,15 +231,9 @@ class FPGA {
 
     _tr_pos.resize(local_trans_pos.size());
     for (size_t i = 0; i < local_trans_pos.size(); i++) {
-#ifdef AUTD3_USE_METER
-      const auto x = static_cast<uint16_t>(std::round(local_trans_pos[i].x() * 1000.0 / 0.025));
-      const auto y = static_cast<uint16_t>(std::round(local_trans_pos[i].y() * 1000.0 / 0.025));
-      const auto z = static_cast<uint16_t>(std::round(local_trans_pos[i].z() * 1000.0 / 0.025));
-#else
-      const auto x = static_cast<uint16_t>(std::round(local_trans_pos[i].x() / 0.025));
-      const auto y = static_cast<uint16_t>(std::round(local_trans_pos[i].y() / 0.025));
-      const auto z = static_cast<uint16_t>(std::round(local_trans_pos[i].z() / 0.025));
-#endif
+      const auto x = static_cast<uint16_t>(std::round(local_trans_pos[i].x() * fpga::TRANS_SIZE_FIXED_POINT_UNIT));
+      const auto y = static_cast<uint16_t>(std::round(local_trans_pos[i].y() * fpga::TRANS_SIZE_FIXED_POINT_UNIT));
+      const auto z = static_cast<uint16_t>(std::round(local_trans_pos[i].z() * fpga::TRANS_SIZE_FIXED_POINT_UNIT));
 
       _tr_pos[i] = static_cast<uint64_t>(z) << 32 | static_cast<uint64_t>(x) << 16 | static_cast<uint64_t>(y);
     }

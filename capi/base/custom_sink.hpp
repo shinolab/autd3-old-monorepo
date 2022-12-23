@@ -3,7 +3,7 @@
 // Created Date: 10/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -40,6 +40,6 @@ class CustomSink final : public spdlog::sinks::base_sink<Mutex> {
   std::function<void()> _flush;
 };
 
-using custom_sink_mt = CustomSink<std::mutex>;
+using CustomSinkMt = CustomSink<std::mutex>;
 
 }  // namespace autd3::capi

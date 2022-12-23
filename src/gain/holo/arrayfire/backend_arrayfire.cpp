@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/09/2022
+// Last Modified: 23/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,6 +12,14 @@
 #include "autd3/gain/backend_arrayfire.hpp"
 
 #include <arrayfire.h>
+
+#ifdef AUTD3_USE_SINGLE_FLOAT
+#define AUTD_complex af::cfloat
+#define AUTD_f f32
+#else
+#define AUTD_complex af::cdouble
+#define AUTD_f f64
+#endif
 
 namespace autd3::gain::holo {
 
@@ -32,7 +40,7 @@ class BufferPool final {
       return af::array(ret);
     }
 
-    af::array va(v.size(), reinterpret_cast<const af::cdouble*>(v.data()));
+    af::array va(v.size(), reinterpret_cast<const AUTD_complex*>(v.data()));
     af_array vap;
     af_retain_array(&vap, va.get());
     _pool.emplace(key, vap);
@@ -47,7 +55,7 @@ class BufferPool final {
       return af::array(ret);
     }
 
-    af::array va(v.rows(), v.cols(), reinterpret_cast<const af::cdouble*>(v.data()));
+    af::array va(v.rows(), v.cols(), reinterpret_cast<const AUTD_complex*>(v.data()));
     af_array vap;
     af_retain_array(&vap, va.get());
     _pool.emplace(key, vap);
@@ -171,7 +179,9 @@ class ArrayFireBackendImpl final : public ArrayFireBackend {
   }
 
   void abs(const VectorXc& src, VectorXd& dst) override { _pool.set(dst, af::abs(_pool.get(src))); }
-  void abs(const VectorXc& src, VectorXc& dst) override { _pool.set(dst, af::complex(af::abs(_pool.get(src)), af::constant(0.0, src.size(), f64))); }
+  void abs(const VectorXc& src, VectorXc& dst) override {
+    _pool.set(dst, af::complex(af::abs(_pool.get(src)), af::constant<driver::autd3_float_t>(0, src.size(), AUTD_f)));
+  }
   void sqrt(const VectorXd& src, VectorXd& dst) override { _pool.set(dst, af::sqrt(_pool.get(src))); }
   void conj(const VectorXc& src, VectorXc& dst) override { _pool.set(dst, conjg(_pool.get(src))); }
   void arg(const VectorXc& src, VectorXc& dst) override {
@@ -179,7 +189,7 @@ class ArrayFireBackendImpl final : public ArrayFireBackend {
   }
   void reciprocal(const VectorXc& src, VectorXc& dst) override { _pool.set(dst, af::pow(_pool.get(src), -1)); }
   void exp(const VectorXc& src, VectorXc& dst) override { _pool.set(dst, af::exp(_pool.get(src))); }
-  void pow(const VectorXd& src, const double p, VectorXd& dst) override { _pool.set(dst, af::pow(_pool.get(src), p)); }
+  void pow(const VectorXd& src, const driver::autd3_float_t p, VectorXd& dst) override { _pool.set(dst, af::pow(_pool.get(src), p)); }
 
   void real(const MatrixXc& src, MatrixXd& re) override { _pool.set(re, af::real(_pool.get(src))); }
   void imag(const MatrixXc& src, MatrixXd& im) override { _pool.set(im, af::imag(_pool.get(src))); }
@@ -196,41 +206,41 @@ class ArrayFireBackendImpl final : public ArrayFireBackend {
 
   void set(const size_t i, const complex value, VectorXc& dst) override {
     auto d = _pool.get(dst);
-    d(static_cast<int>(i)) = af::cdouble{value.real(), value.imag()};
+    d(static_cast<int>(i)) = AUTD_complex{value.real(), value.imag()};
     _pool.set(dst, d);
   }
 
   void set_row(VectorXc& src, const size_t i, const size_t begin, const size_t end, MatrixXc& dst) override {
     auto d = _pool.get(dst);
-    d(static_cast<int>(i), af::seq(static_cast<double>(begin), static_cast<double>(end) - 1)) =
-        _pool.get(src)(af::seq(static_cast<double>(begin), static_cast<double>(end) - 1), 0);
+    d(static_cast<int>(i), af::seq(static_cast<driver::autd3_float_t>(begin), static_cast<driver::autd3_float_t>(end) - 1)) =
+        _pool.get(src)(af::seq(static_cast<driver::autd3_float_t>(begin), static_cast<driver::autd3_float_t>(end) - 1), 0);
     _pool.set(dst, d);
   }
 
   void set_col(VectorXc& src, const size_t i, const size_t begin, const size_t end, MatrixXc& dst) override {
     auto d = _pool.get(dst);
-    d(af::seq(static_cast<double>(begin), static_cast<double>(end) - 1), static_cast<int>(i)) =
-        _pool.get(src)(af::seq(static_cast<double>(begin), static_cast<double>(end) - 1), 0);
+    d(af::seq(static_cast<driver::autd3_float_t>(begin), static_cast<driver::autd3_float_t>(end) - 1), static_cast<int>(i)) =
+        _pool.get(src)(af::seq(static_cast<driver::autd3_float_t>(begin), static_cast<driver::autd3_float_t>(end) - 1), 0);
     _pool.set(dst, d);
   }
 
   void get_col(const MatrixXc& src, const size_t i, VectorXc& dst) override { _pool.set(dst, _pool.get(src).col(static_cast<int>(i))); }
 
   complex max_abs_element(const VectorXc& src) override {
-    af::cdouble v{};
+    AUTD_complex v{};
     (af::max)(_pool.get(src)).host(&v);
     return {v.real, v.imag};
   }
 
-  double max_element(const VectorXd& src) override {
-    double v{};
+  driver::autd3_float_t max_element(const VectorXd& src) override {
+    driver::autd3_float_t v{};
     (af::max)(_pool.get(src)).host(&v);
     return std::abs(v);
   }
 
-  void scale(const complex value, VectorXc& dst) override { _pool.set(dst, _pool.get(dst) * af::cdouble(value.real(), value.imag())); }
+  void scale(const complex value, VectorXc& dst) override { _pool.set(dst, _pool.get(dst) * AUTD_complex(value.real(), value.imag())); }
 
-  void scale(const double value, VectorXd& dst) override { _pool.set(dst, _pool.get(dst) * value); }
+  void scale(const driver::autd3_float_t value, VectorXd& dst) override { _pool.set(dst, _pool.get(dst) * value); }
 
   complex dot(const VectorXc& a, const VectorXc& b) override {
     complex v{};
@@ -239,20 +249,20 @@ class ArrayFireBackendImpl final : public ArrayFireBackend {
     return v;
   }
 
-  double dot(const VectorXd& a, const VectorXd& b) override {
-    double v{};
+  driver::autd3_float_t dot(const VectorXd& a, const VectorXd& b) override {
+    driver::autd3_float_t v{};
     const auto r = af::dot(_pool.get(a), _pool.get(b));
     r.host(&v);
     return v;
   }
 
-  void add(const double alpha, const MatrixXd& a, MatrixXd& b) override {
+  void add(const driver::autd3_float_t alpha, const MatrixXd& a, MatrixXd& b) override {
     const auto aa = _pool.get(a);
     const auto ba = _pool.get(b);
     _pool.set(b, alpha * aa + ba);
   }
 
-  void add(const double alpha, const VectorXd& a, VectorXd& b) override {
+  void add(const driver::autd3_float_t alpha, const VectorXd& a, VectorXd& b) override {
     const auto aa = _pool.get(a);
     const auto ba = _pool.get(b);
     _pool.set(b, alpha * aa + ba);
@@ -261,58 +271,58 @@ class ArrayFireBackendImpl final : public ArrayFireBackend {
   void add(const complex alpha, const MatrixXc& a, MatrixXc& b) override {
     const auto aa = _pool.get(a);
     const auto ba = _pool.get(b);
-    _pool.set(b, af::cdouble(alpha.real(), alpha.imag()) * aa + ba);
+    _pool.set(b, AUTD_complex(alpha.real(), alpha.imag()) * aa + ba);
   }
 
   void add(const complex alpha, const VectorXc& a, VectorXc& b) override {
     const auto aa = _pool.get(a);
     const auto ba = _pool.get(b);
-    _pool.set(b, af::cdouble(alpha.real(), alpha.imag()) * aa + ba);
+    _pool.set(b, AUTD_complex(alpha.real(), alpha.imag()) * aa + ba);
   }
 
-  void mul(const TRANSPOSE trans_a, const TRANSPOSE trans_b, const complex alpha, const MatrixXc& a, const MatrixXc& b, const complex beta,
+  void mul(const Transpose trans_a, const Transpose trans_b, const complex alpha, const MatrixXc& a, const MatrixXc& b, const complex beta,
            MatrixXc& c) override {
     const auto aa = _pool.get(a);
     const auto ba = _pool.get(b);
     auto ca = _pool.get(c);
-    ca *= af::cdouble(beta.real(), beta.imag());
+    ca *= AUTD_complex(beta.real(), beta.imag());
     switch (trans_a) {
-      case TRANSPOSE::CONJ_TRANS:
+      case Transpose::ConjTrans:
         switch (trans_b) {
-          case TRANSPOSE::CONJ_TRANS:
-            ca += af::cdouble(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_CTRANS, AF_MAT_CTRANS);
+          case Transpose::ConjTrans:
+            ca += AUTD_complex(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_CTRANS, AF_MAT_CTRANS);
             break;
-          case TRANSPOSE::TRANS:
-            ca += af::cdouble(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_CTRANS, AF_MAT_TRANS);
+          case Transpose::Trans:
+            ca += AUTD_complex(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_CTRANS, AF_MAT_TRANS);
             break;
-          case TRANSPOSE::NO_TRANS:
-            ca += af::cdouble(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_CTRANS, AF_MAT_NONE);
+          case Transpose::NoTrans:
+            ca += AUTD_complex(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_CTRANS, AF_MAT_NONE);
             break;
         }
         break;
-      case TRANSPOSE::TRANS:
+      case Transpose::Trans:
         switch (trans_b) {
-          case TRANSPOSE::CONJ_TRANS:
-            ca += af::cdouble(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_TRANS, AF_MAT_CTRANS);
+          case Transpose::ConjTrans:
+            ca += AUTD_complex(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_TRANS, AF_MAT_CTRANS);
             break;
-          case TRANSPOSE::TRANS:
-            ca += af::cdouble(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_TRANS, AF_MAT_TRANS);
+          case Transpose::Trans:
+            ca += AUTD_complex(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_TRANS, AF_MAT_TRANS);
             break;
-          case TRANSPOSE::NO_TRANS:
-            ca += af::cdouble(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_TRANS, AF_MAT_NONE);
+          case Transpose::NoTrans:
+            ca += AUTD_complex(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_TRANS, AF_MAT_NONE);
             break;
         }
         break;
-      case TRANSPOSE::NO_TRANS:
+      case Transpose::NoTrans:
         switch (trans_b) {
-          case TRANSPOSE::CONJ_TRANS:
-            ca += af::cdouble(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_NONE, AF_MAT_CTRANS);
+          case Transpose::ConjTrans:
+            ca += AUTD_complex(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_NONE, AF_MAT_CTRANS);
             break;
-          case TRANSPOSE::TRANS:
-            ca += af::cdouble(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_NONE, AF_MAT_TRANS);
+          case Transpose::Trans:
+            ca += AUTD_complex(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_NONE, AF_MAT_TRANS);
             break;
-          case TRANSPOSE::NO_TRANS:
-            ca += af::cdouble(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_NONE, AF_MAT_NONE);
+          case Transpose::NoTrans:
+            ca += AUTD_complex(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_NONE, AF_MAT_NONE);
             break;
         }
         break;
@@ -320,67 +330,67 @@ class ArrayFireBackendImpl final : public ArrayFireBackend {
     _pool.set(c, ca);
   }
 
-  void mul(const TRANSPOSE trans_a, const complex alpha, const MatrixXc& a, const VectorXc& b, const complex beta, VectorXc& c) override {
+  void mul(const Transpose trans_a, const complex alpha, const MatrixXc& a, const VectorXc& b, const complex beta, VectorXc& c) override {
     const auto aa = _pool.get(a);
     const auto ba = _pool.get(b);
     auto ca = _pool.get(c);
-    ca *= af::cdouble(beta.real(), beta.imag());
+    ca *= AUTD_complex(beta.real(), beta.imag());
     switch (trans_a) {
-      case TRANSPOSE::CONJ_TRANS:
-        ca += af::cdouble(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_CTRANS, AF_MAT_NONE);
+      case Transpose::ConjTrans:
+        ca += AUTD_complex(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_CTRANS, AF_MAT_NONE);
         break;
-      case TRANSPOSE::TRANS:
-        ca += af::cdouble(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_TRANS, AF_MAT_NONE);
+      case Transpose::Trans:
+        ca += AUTD_complex(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_TRANS, AF_MAT_NONE);
         break;
-      case TRANSPOSE::NO_TRANS:
-        ca += af::cdouble(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_NONE, AF_MAT_NONE);
+      case Transpose::NoTrans:
+        ca += AUTD_complex(alpha.real(), alpha.imag()) * matmul(aa, ba, AF_MAT_NONE, AF_MAT_NONE);
         break;
     }
     _pool.set(c, ca);
   }
 
-  void mul(const TRANSPOSE trans_a, const TRANSPOSE trans_b, const double alpha, const MatrixXd& a, const MatrixXd& b, const double beta,
-           MatrixXd& c) override {
+  void mul(const Transpose trans_a, const Transpose trans_b, const driver::autd3_float_t alpha, const MatrixXd& a, const MatrixXd& b,
+           const driver::autd3_float_t beta, MatrixXd& c) override {
     const auto aa = _pool.get(a);
     const auto ba = _pool.get(b);
     auto ca = _pool.get(c);
     ca *= beta;
     switch (trans_a) {
-      case TRANSPOSE::CONJ_TRANS:
+      case Transpose::ConjTrans:
         switch (trans_b) {
-          case TRANSPOSE::CONJ_TRANS:
+          case Transpose::ConjTrans:
             ca += alpha * matmul(aa, ba, AF_MAT_CTRANS, AF_MAT_CTRANS);
             break;
-          case TRANSPOSE::TRANS:
+          case Transpose::Trans:
             ca += alpha * matmul(aa, ba, AF_MAT_CTRANS, AF_MAT_TRANS);
             break;
-          case TRANSPOSE::NO_TRANS:
+          case Transpose::NoTrans:
             ca += alpha * matmul(aa, ba, AF_MAT_CTRANS, AF_MAT_NONE);
             break;
         }
         break;
-      case TRANSPOSE::TRANS:
+      case Transpose::Trans:
         switch (trans_b) {
-          case TRANSPOSE::CONJ_TRANS:
+          case Transpose::ConjTrans:
             ca += alpha * matmul(aa, ba, AF_MAT_TRANS, AF_MAT_CTRANS);
             break;
-          case TRANSPOSE::TRANS:
+          case Transpose::Trans:
             ca += alpha * matmul(aa, ba, AF_MAT_TRANS, AF_MAT_TRANS);
             break;
-          case TRANSPOSE::NO_TRANS:
+          case Transpose::NoTrans:
             ca += alpha * matmul(aa, ba, AF_MAT_TRANS, AF_MAT_NONE);
             break;
         }
         break;
-      case TRANSPOSE::NO_TRANS:
+      case Transpose::NoTrans:
         switch (trans_b) {
-          case TRANSPOSE::CONJ_TRANS:
+          case Transpose::ConjTrans:
             ca += alpha * matmul(aa, ba, AF_MAT_NONE, AF_MAT_CTRANS);
             break;
-          case TRANSPOSE::TRANS:
+          case Transpose::Trans:
             ca += alpha * matmul(aa, ba, AF_MAT_NONE, AF_MAT_TRANS);
             break;
-          case TRANSPOSE::NO_TRANS:
+          case Transpose::NoTrans:
             ca += alpha * matmul(aa, ba, AF_MAT_NONE, AF_MAT_NONE);
             break;
         }
@@ -388,20 +398,21 @@ class ArrayFireBackendImpl final : public ArrayFireBackend {
     }
     _pool.set(c, ca);
   }
-  void mul(const TRANSPOSE trans_a, const double alpha, const MatrixXd& a, const VectorXd& b, const double beta, VectorXd& c) override {
+  void mul(const Transpose trans_a, const driver::autd3_float_t alpha, const MatrixXd& a, const VectorXd& b, const driver::autd3_float_t beta,
+           VectorXd& c) override {
     const auto aa = _pool.get(a);
     const auto ba = _pool.get(b);
     auto ca = _pool.get(c);
     ca *= beta;
     switch (trans_a) {
-      case TRANSPOSE::CONJ_TRANS:
+      case Transpose::ConjTrans:
 
         ca += alpha * matmul(aa, ba, AF_MAT_CTRANS, AF_MAT_NONE);
         break;
-      case TRANSPOSE::TRANS:
+      case Transpose::Trans:
         ca += alpha * matmul(aa, ba, AF_MAT_TRANS, AF_MAT_NONE);
         break;
-      case TRANSPOSE::NO_TRANS:
+      case Transpose::NoTrans:
         ca += alpha * matmul(aa, ba, AF_MAT_NONE, AF_MAT_NONE);
         break;
     }
@@ -425,7 +436,7 @@ class ArrayFireBackendImpl final : public ArrayFireBackend {
     dst = ces.eigenvectors().col(idx);
   }
 
-  void pseudo_inverse_svd(MatrixXc& src, const double alpha, MatrixXc& u, MatrixXc&, MatrixXc& vt, MatrixXc&, MatrixXc& dst) override {
+  void pseudo_inverse_svd(MatrixXc& src, const driver::autd3_float_t alpha, MatrixXc& u, MatrixXc&, MatrixXc& vt, MatrixXc&, MatrixXc& dst) override {
     const auto srca = _pool.get(src);
     auto ua = _pool.get(u);
     auto vta = _pool.get(vt);
@@ -433,15 +444,15 @@ class ArrayFireBackendImpl final : public ArrayFireBackend {
     const auto n = src.cols();
     af::array s_vec;
     svd(ua, s_vec, vta, srca);
-    s_vec = s_vec / (s_vec * s_vec + af::constant(alpha, s_vec.dims(0), af::dtype::f64));
+    s_vec = s_vec / (s_vec * s_vec + af::constant(alpha, s_vec.dims(0), af::dtype::AUTD_f));
     const af::array s_mat = diag(s_vec, 0, false);
-    const af::array zero = af::constant(0.0, n - m, m, af::dtype::f64);
+    const af::array zero = af::constant<driver::autd3_float_t>(0, n - m, m, af::dtype::AUTD_f);
     const auto sa = af::complex(join(0, s_mat, zero), 0);
     const auto bufa = matmul(sa, ua, AF_MAT_NONE, AF_MAT_CTRANS);
     _pool.set(dst, matmul(vta, bufa, AF_MAT_CTRANS, AF_MAT_NONE));
   }
 
-  void pseudo_inverse_svd(MatrixXd& src, const double alpha, MatrixXd& u, MatrixXd&, MatrixXd& vt, MatrixXd&, MatrixXd& dst) override {
+  void pseudo_inverse_svd(MatrixXd& src, const driver::autd3_float_t alpha, MatrixXd& u, MatrixXd&, MatrixXd& vt, MatrixXd&, MatrixXd& dst) override {
     const auto srca = _pool.get(src);
     auto ua = _pool.get(u);
     auto vta = _pool.get(vt);
@@ -449,9 +460,9 @@ class ArrayFireBackendImpl final : public ArrayFireBackend {
     const auto n = src.cols();
     af::array s_vec;
     svd(ua, s_vec, vta, srca);
-    s_vec = s_vec / (s_vec * s_vec + af::constant(alpha, s_vec.dims(0), af::dtype::f64));
+    s_vec = s_vec / (s_vec * s_vec + af::constant(alpha, s_vec.dims(0), af::dtype::AUTD_f));
     const af::array s_mat = diag(s_vec, 0, false);
-    const af::array zero = af::constant(0.0, n - m, m, af::dtype::f64);
+    const af::array zero = af::constant(0.0, n - m, m, af::dtype::AUTD_f);
     const auto sa = join(0, s_mat, zero);
     const auto bufa = matmul(sa, ua, AF_MAT_NONE, AF_MAT_TRANS);
     _pool.set(dst, matmul(vta, bufa, AF_MAT_TRANS, AF_MAT_NONE));

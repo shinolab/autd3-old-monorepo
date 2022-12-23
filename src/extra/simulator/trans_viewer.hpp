@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 23/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -80,8 +80,8 @@ class TransViewer {
   }
 
   [[nodiscard]] bool update(const std::vector<SoundSources>& sound_sources, const UpdateFlags update_flag) {
-    if (update_flag.contains(UpdateFlags::UPDATE_SOURCE_DRIVE) || update_flag.contains(UpdateFlags::UPDATE_SOURCE_ALPHA) ||
-        update_flag.contains(UpdateFlags::UPDATE_SOURCE_FLAG))
+    if (update_flag.contains(UpdateFlags::UpdateSourceDrive) || update_flag.contains(UpdateFlags::UpdateSourceAlpha) ||
+        update_flag.contains(UpdateFlags::UpdateSourceFlag))
       return update_color_instance_buffer(sound_sources);
     return true;
   }

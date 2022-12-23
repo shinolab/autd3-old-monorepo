@@ -3,7 +3,7 @@
 // Created Date: 16/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/12/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -96,7 +96,7 @@ bool Controller::open(core::LinkPtr link) {
         }
         spdlog::debug("Sending data ({}) asynchronously", msg_id);
         spdlog::debug("Timeout: {} [ms]",
-                      static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(data.timeout).count()) / 1000.0 / 1000.0);
+                      static_cast<driver::autd3_float_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(data.timeout).count()) / 1000 / 1000);
         if (!_link->send(_tx_buf)) {
           spdlog::warn("Failed to send data ({}). Trying to resend...", msg_id);
           break;
@@ -234,7 +234,8 @@ bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body, co
       return false;
     }
     spdlog::debug("Sending data ({})", _tx_buf.header().msg_id);
-    spdlog::debug("Timeout: {} [ms]", static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count()) / 1000.0 / 1000.0);
+    spdlog::debug("Timeout: {} [ms]",
+                  static_cast<driver::autd3_float_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count()) / 1000 / 1000);
     if (!_link->send(_tx_buf)) {
       spdlog::warn("Failed to send data ({})", msg_id);
       return false;
@@ -296,7 +297,7 @@ std::chrono::high_resolution_clock::duration Controller::get_send_interval() con
 
 std::chrono::high_resolution_clock::duration Controller::get_ack_check_timeout() const noexcept { return _ack_check_timeout; }
 
-double Controller::get_sound_speed() const {
+driver::autd3_float_t Controller::get_sound_speed() const {
   if (_geometry.num_transducers() == 0) {
     spdlog::warn("No devices are added.");
     return 0.0;
@@ -304,21 +305,22 @@ double Controller::get_sound_speed() const {
   return _geometry[0].sound_speed;
 }
 
-double Controller::set_sound_speed_from_temp(const double temp, const double k, const double r, const double m) {
+driver::autd3_float_t Controller::set_sound_speed_from_temp(const driver::autd3_float_t temp, const driver::autd3_float_t k,
+                                                            const driver::autd3_float_t r, const driver::autd3_float_t m) {
 #ifdef AUTD3_USE_METER
-  const auto sound_speed = std::sqrt(k * r * (273.15 + temp) / m);
+  const auto sound_speed = std::sqrt(k * r * (static_cast<driver::autd3_float_t>(273.15) + temp) / m);
 #else
-  const auto sound_speed = std::sqrt(k * r * (273.15 + temp) / m) * 1e3;
+  const auto sound_speed = std::sqrt(k * r * (static_cast<driver::autd3_float_t>(273.15) + temp) / m) * static_cast<driver::autd3_float_t>(1e3);
 #endif
   for (auto& tr : _geometry) tr.sound_speed = sound_speed;
   return sound_speed;
 }
 
-void Controller::set_attenuation(const double attenuation) {
+void Controller::set_attenuation(const driver::autd3_float_t attenuation) {
   for (auto& tr : _geometry) tr.attenuation = attenuation;
 }
 
-double Controller::get_attenuation() const {
+driver::autd3_float_t Controller::get_attenuation() const {
   if (_geometry.num_transducers() == 0) {
     spdlog::warn("No devices are added.");
     return 0.0;

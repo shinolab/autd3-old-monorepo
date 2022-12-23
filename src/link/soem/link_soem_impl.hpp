@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/11/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,7 +14,6 @@
 #include <functional>
 #include <memory>
 #include <string>
-#include <thread>
 #include <utility>
 
 #include "autd3/core/link.hpp"
@@ -27,7 +26,7 @@ namespace autd3::link {
 class SOEMLink final : public core::Link {
  public:
   SOEMLink(const bool high_precision, std::string ifname, const uint16_t sync0_cycle, const uint16_t send_cycle,
-           std::function<void(std::string)> on_lost, const SYNC_MODE sync_mode, const std::chrono::milliseconds state_check_interval)
+           std::function<void(std::string)> on_lost, const SyncMode sync_mode, const std::chrono::milliseconds state_check_interval)
       : Link(),
         _handler(std::make_unique<SOEMHandler>(high_precision, std::move(ifname), sync0_cycle, send_cycle, std::move(on_lost), sync_mode,
                                                state_check_interval)) {}

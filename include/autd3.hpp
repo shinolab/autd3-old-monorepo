@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/11/2022
+// Last Modified: 23/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -56,7 +56,7 @@ namespace link {}
  */
 namespace extra {}
 
-constexpr double pi = driver::pi;
+constexpr driver::autd3_float_t pi = driver::pi;
 
 using core::Geometry;
 using core::LegacyMode;

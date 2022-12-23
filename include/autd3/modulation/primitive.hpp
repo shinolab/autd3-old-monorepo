@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,12 +24,12 @@ class Static final : public core::Modulation {
   /**
    * @param[in] amp amplitude
    */
-  explicit Static(const double amp = 1.0) noexcept : Modulation(), _amp(amp) {}
+  explicit Static(const driver::autd3_float_t amp = 1.0) noexcept : Modulation(), _amp(amp) {}
 
   bool calc() override {
     this->_buffer.resize(2, 0);
     for (size_t i = 0; i < 2; i++) {
-      const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp(_amp, 0.0, 1.0)) / driver::pi * 510.0));
+      const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp<driver::autd3_float_t>(_amp, 0, 1)) / driver::pi * 510));
       this->_buffer.at(i) = duty;
     }
     return true;
@@ -42,7 +42,7 @@ class Static final : public core::Modulation {
   Static& operator=(Static&& obj) = default;
 
  private:
-  double _amp;
+  driver::autd3_float_t _amp;
 };
 
 /**
@@ -57,7 +57,8 @@ class Sine final : public core::Modulation {
    * @details Ultrasound amplitude oscillate from offset-amp/2 to offset+amp/2.
    * If the value exceeds the range of [0, 1], the value will be clamped in the [0, 1].
    */
-  explicit Sine(const int freq, const double amp = 1.0, const double offset = 0.5) noexcept : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
+  explicit Sine(const int freq, const driver::autd3_float_t amp = 1.0, const driver::autd3_float_t offset = 0.5) noexcept
+      : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
 
   bool calc() override {
     const auto f_s = static_cast<int32_t>(sampling_frequency());
@@ -71,8 +72,9 @@ class Sine final : public core::Modulation {
 
     this->_buffer.resize(n, 0);
     for (size_t i = 0; i < n; i++) {
-      const auto amp = this->_amp / 2.0 * std::sin(2.0 * driver::pi * static_cast<double>(d * i) / static_cast<double>(n)) + this->_offset;
-      const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi * 510.0));
+      const auto amp = this->_amp / 2 * std::sin(2 * driver::pi * static_cast<driver::autd3_float_t>(d * i) / static_cast<driver::autd3_float_t>(n)) +
+                       this->_offset;
+      const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp<driver::autd3_float_t>(amp, 0, 1)) / driver::pi * 510));
       this->_buffer.at(i) = duty;
     }
     return true;
@@ -86,8 +88,8 @@ class Sine final : public core::Modulation {
 
  private:
   int _freq;
-  double _amp;
-  double _offset;
+  driver::autd3_float_t _amp;
+  driver::autd3_float_t _offset;
 };
 
 /**
@@ -102,7 +104,7 @@ class SineSquared final : public core::Modulation {
    * @details Radiation pressure oscillate from offset-amp/2 to offset+amp/2
    * If the value exceeds the range of [0, 1], the value will be clamped in the [0, 1].
    */
-  explicit SineSquared(const int freq, const double amp = 1.0, const double offset = 0.5) noexcept
+  explicit SineSquared(const int freq, const driver::autd3_float_t amp = 1.0, const driver::autd3_float_t offset = 0.5) noexcept
       : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
 
   bool calc() override {
@@ -117,8 +119,10 @@ class SineSquared final : public core::Modulation {
 
     this->_buffer.resize(n, 0);
     for (size_t i = 0; i < n; i++) {
-      const auto amp = std::sqrt(this->_amp / 2.0 * std::sin(2.0 * driver::pi * static_cast<double>(d * i) / static_cast<double>(n)) + this->_offset);
-      const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi * 510.0));
+      const auto amp =
+          std::sqrt(this->_amp / 2 * std::sin(2 * driver::pi * static_cast<driver::autd3_float_t>(d * i) / static_cast<driver::autd3_float_t>(n)) +
+                    this->_offset);
+      const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp<driver::autd3_float_t>(amp, 0, 1)) / driver::pi * 510));
       this->_buffer.at(i) = duty;
     }
     return true;
@@ -132,8 +136,8 @@ class SineSquared final : public core::Modulation {
 
  private:
   int _freq;
-  double _amp;
-  double _offset;
+  driver::autd3_float_t _amp;
+  driver::autd3_float_t _offset;
 };
 
 /**
@@ -148,27 +152,28 @@ class SineLegacy final : public core::Modulation {
    * @details Ultrasound amplitude oscillate from offset-amp/2 to offset+amp/2.
    * If the value exceeds the range of [0, 1], the value will be clamped in the [0, 1].
    */
-  explicit SineLegacy(const double freq, const double amp = 1.0, const double offset = 0.5) noexcept
+  explicit SineLegacy(const driver::autd3_float_t freq, const driver::autd3_float_t amp = 1.0, const driver::autd3_float_t offset = 0.5) noexcept
       : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
 
   bool calc() override {
     const auto f_s = sampling_frequency();
-    const auto f = (std::min)(this->_freq, f_s / 2.0);
+    const auto f = (std::min)(this->_freq, f_s / 2);
 
     const auto t = static_cast<size_t>(std::round(f_s / f));
     this->_buffer.resize(t, 0);
     for (size_t i = 0; i < t; i++) {
-      double amp = _offset + 0.5 * _amp * std::cos(2.0 * driver::pi * static_cast<double>(i) / static_cast<double>(t));
-      const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp(amp, 0.0, 1.0)) / driver::pi * 510.0));
+      driver::autd3_float_t amp =
+          _offset + _amp * std::cos(2 * driver::pi * static_cast<driver::autd3_float_t>(i) / static_cast<driver::autd3_float_t>(t)) / 2;
+      const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp<driver::autd3_float_t>(amp, 0, 1)) / driver::pi * 510));
       this->_buffer.at(i) = duty;
     }
     return true;
   }
 
  private:
-  double _freq;
-  double _amp;
-  double _offset;
+  driver::autd3_float_t _freq;
+  driver::autd3_float_t _amp;
+  driver::autd3_float_t _offset;
 };
 
 /**
@@ -182,7 +187,8 @@ class Square final : public core::Modulation {
    * @param[in] high high level in amplitude (0 to 1)
    * @param[in] duty duty ratio of square wave
    */
-  explicit Square(const int freq, const double low = 0.0, const double high = 1.0, const double duty = 0.5)
+  explicit Square(const int freq, const driver::autd3_float_t low = 0.0, const driver::autd3_float_t high = 1.0,
+                  const driver::autd3_float_t duty = 0.5)
       : _freq(freq), _low(low), _high(high), _duty(duty) {}
 
   bool calc() override {
@@ -192,15 +198,15 @@ class Square final : public core::Modulation {
     const size_t n = f_s / k;
     const size_t d = f / k;
 
-    const auto low = static_cast<uint8_t>(std::round(std::asin(std::clamp(_low, 0.0, 1.0)) / driver::pi * 510.0));
+    const auto low = static_cast<uint8_t>(std::round(std::asin(std::clamp<driver::autd3_float_t>(_low, 0, 1)) / driver::pi * 510));
     std::fill(this->_buffer.begin(), this->_buffer.end(), low);
     this->_buffer.resize(n, low);
 
-    const auto high = static_cast<uint8_t>(std::round(std::asin(std::clamp(_high, 0.0, 1.0)) / driver::pi * 510.0));
+    const auto high = static_cast<uint8_t>(std::round(std::asin(std::clamp<driver::autd3_float_t>(_high, 0, 1)) / driver::pi * 510));
     auto* cursor = this->_buffer.data();
     for (size_t i = 0; i < d; i++) {
       const size_t size = (n + i) / d;
-      std::memset(cursor, high, static_cast<size_t>(std::round(static_cast<double>(size) * _duty)));
+      std::memset(cursor, high, static_cast<size_t>(std::round(static_cast<driver::autd3_float_t>(size) * _duty)));
       cursor += size;
     }
     return true;
@@ -208,9 +214,9 @@ class Square final : public core::Modulation {
 
  private:
   int _freq;
-  double _low;
-  double _high;
-  double _duty;
+  driver::autd3_float_t _low;
+  driver::autd3_float_t _high;
+  driver::autd3_float_t _duty;
 };
 
 }  // namespace autd3::modulation

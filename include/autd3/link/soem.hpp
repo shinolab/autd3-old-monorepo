@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/12/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -32,7 +32,7 @@ struct EtherCATAdapter final {
   std::string name;
 };
 
-enum class SYNC_MODE { FREE_RUN, DC };
+enum class SyncMode { FreeRun, DC };
 
 /**
  * @brief Link using [SOEM](https://github.com/OpenEtherCATSociety/SOEM)
@@ -57,7 +57,7 @@ class SOEM {
         _sync0_cycle(2),
         _send_cycle(2),
         _callback(nullptr),
-        _sync_mode(SYNC_MODE::DC),
+        _sync_mode(SyncMode::DC),
         _state_check_interval(std::chrono::milliseconds(100)) {}
 
   /**
@@ -106,7 +106,7 @@ class SOEM {
   /**
    * @brief Set EtherCAT sync mode.
    */
-  SOEM& sync_mode(const SYNC_MODE sync_mode) {
+  SOEM& sync_mode(const SyncMode sync_mode) {
     _sync_mode = sync_mode;
     return *this;
   }
@@ -133,7 +133,7 @@ class SOEM {
   uint16_t _sync0_cycle;
   uint16_t _send_cycle;
   std::function<void(std::string)> _callback;
-  SYNC_MODE _sync_mode;
+  SyncMode _sync_mode;
   std::chrono::milliseconds _state_check_interval;
 };
 }  // namespace autd3::link

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/11/2022
+// Last Modified: 23/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ bool AUTDExtraSimulator(const char* settings_path, const bool vsync, const int32
     settings = j.get<autd3::extra::SimulatorSettings>();
   }
 
-  const auto res = autd3::extra::Simulator().settings(&settings).run();
+  const auto res = autd3::extra::Simulator().settings(settings).run();
 
   nlohmann::json j = settings;
   std::ofstream o(setting_file);

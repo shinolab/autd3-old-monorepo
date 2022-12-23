@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 15/12/2022
+// Last Modified: 21/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -76,13 +76,15 @@ class Modulation : public DatagramHeader {
   /**
    * \brief modulation sampling frequency
    */
-  [[nodiscard]] double sampling_frequency() const noexcept { return static_cast<double>(driver::FPGA_CLK_FREQ) / static_cast<double>(_freq_div); }
+  [[nodiscard]] driver::autd3_float_t sampling_frequency() const noexcept {
+    return static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / static_cast<driver::autd3_float_t>(_freq_div);
+  }
 
   /**
    * \brief Set modulation sampling frequency
    */
-  [[nodiscard]] double set_sampling_frequency(const double freq) {
-    _freq_div = static_cast<uint32_t>(std::round(static_cast<double>(driver::FPGA_CLK_FREQ) / freq));
+  [[nodiscard]] driver::autd3_float_t set_sampling_frequency(const driver::autd3_float_t freq) {
+    _freq_div = static_cast<uint32_t>(std::round(static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / freq));
     return sampling_frequency();
   }
 

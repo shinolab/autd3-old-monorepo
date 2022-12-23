@@ -3,7 +3,7 @@
 // Created Date: 27/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 23/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -97,7 +97,7 @@ class VulkanImGui {
     const vk::CommandBufferAllocateInfo alloc_info(_context->command_pool(), vk::CommandBufferLevel::ePrimary, 1);
     auto command_buffers = _context->device().allocateCommandBuffersUnique(alloc_info);
     vk::UniqueCommandBuffer command_buffer = std::move(command_buffers[0]);
-    const vk::CommandBufferBeginInfo begin_info(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+    constexpr vk::CommandBufferBeginInfo begin_info(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
     command_buffer->begin(begin_info);
     ImGui_ImplVulkan_CreateFontsTexture(command_buffer.get());
     const vk::SubmitInfo end_info(0, nullptr, nullptr, 1, &command_buffer.get(), 0, nullptr);
@@ -107,7 +107,7 @@ class VulkanImGui {
     ImGui_ImplVulkan_DestroyFontUploadObjects();
   }
 
-  void init(const uint32_t image_count, const VkRenderPass renderer_pass, std::vector<gltf::Geometry> geometries) {
+  [[nodiscard]] bool init(const uint32_t image_count, const VkRenderPass renderer_pass, std::vector<gltf::Geometry> geometries) {
     _geometries = std::move(geometries);
 
     const auto& [pos, rot] = _geometries[0];
@@ -136,6 +136,11 @@ class VulkanImGui {
     ImGui::StyleColorsDark();
     const auto [graphics_family, present_family] = _context->find_queue_families(_context->physical_device());
 
+    if (!graphics_family) {
+      spdlog::error("Failed to find queue family.");
+      return false;
+    }
+
     ImGui_ImplGlfw_InitForVulkan(_window->window(), true);
     ImGui_ImplVulkan_InitInfo init_info{_context->instance(),
                                         _context->physical_device(),
@@ -153,6 +158,8 @@ class VulkanImGui {
     ImGui_ImplVulkan_Init(&init_info, renderer_pass);
 
     set_font();
+
+    return true;
   }
 
   void draw() {
