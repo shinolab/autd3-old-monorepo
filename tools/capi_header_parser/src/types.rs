@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/12/2022
+ * Last Modified: 24/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,8 +28,8 @@ pub enum Type {
     Bool,
 }
 
-impl From<&str> for Type {
-    fn from(str: &str) -> Self {
+impl Type {
+    pub fn parse(str: &str, use_single: bool) -> Self {
         match str {
             "int8_t" => Type::Int8,
             "int16_t" => Type::Int16,
@@ -41,10 +41,13 @@ impl From<&str> for Type {
             "uint64_t" => Type::UInt64,
             "void" => Type::Void,
             "char" => Type::Char,
-            #[cfg(feature = "single_float")]
-            "autd3_float_t" => Type::Float32,
-            #[cfg(not(feature = "single_float"))]
-            "autd3_float_t" => Type::Float64,
+            "autd3_float_t" => {
+                if use_single {
+                    Type::Float32
+                } else {
+                    Type::Float64
+                }
+            }
             "float" => Type::Float32,
             "double" => Type::Float64,
             "bool" => Type::Bool,

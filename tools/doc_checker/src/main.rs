@@ -4,7 +4,7 @@
  * Created Date: 24/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/12/2022
+ * Last Modified: 24/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -45,7 +45,7 @@ fn parse_arg(lines: &mut Lines<BufReader<File>>) -> Result<(Type, Vec<Arg>)> {
         let pointer = types_tokes.chars().filter(|&c| c == '*').count();
         let ty: &str = &types_tokes.replace('*', "");
         if name == "return" {
-            return Ok((ty.into(), args));
+            return Ok((Type::parse(ty, false), args));
         }
         let inout = match matches
             .get(3)
@@ -57,7 +57,13 @@ fn parse_arg(lines: &mut Lines<BufReader<File>>) -> Result<(Type, Vec<Arg>)> {
             "out" => InOut::OUT,
             _ => panic!("Cannot determine in/out:{}", &line),
         };
-        args.push(Arg::new(name, ty.into(), inout, false, pointer))
+        args.push(Arg::new(
+            name,
+            Type::parse(ty, false),
+            inout,
+            false,
+            pointer,
+        ))
     }
 }
 
@@ -132,7 +138,7 @@ fn main() -> Result<()> {
     let projects = cmake::glob_projects("../../capi", &[])?;
     let mut defined_functions = HashSet::new();
     for proj in projects {
-        for func in parse(proj.header())? {
+        for func in parse(proj.header(), false)? {
             defined_functions.insert(Func {
                 bin: proj.name().to_string(),
                 func,

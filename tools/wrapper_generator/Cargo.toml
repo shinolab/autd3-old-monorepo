@@ -10,7 +10,3 @@ anyhow = "1.0.57"
 capi_header_parser = {path = "../capi_header_parser"}
 convert_case = "0.6.0"
 itertools = "0.10.3"
-
-[features]
-default = []
-single_float = ["capi_header_parser/single_float"]
