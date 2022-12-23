@@ -4,7 +4,7 @@
  * Created Date: 23/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2022
+ * Last Modified: 24/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -122,11 +122,7 @@ namespace AUTD3Sharp
                     set => NativeMethods.GainHolo.AUTDSetConstraint(handle, value.Ptr);
                 }
 
-                public void Add(Vector3 focus, double amp)
-                {
-                    var (x, y, z) = TypeHelper.Convert(focus);
-                    NativeMethods.GainHolo.AUTDGainHoloAdd(handle, x, y, z, amp);
-                }
+                public void Add(Vector3 focus, double amp) => NativeMethods.GainHolo.AUTDGainHoloAdd(handle, focus.x, focus.y, focus.z, amp);
             }
 
             public sealed class SDP : Holo
