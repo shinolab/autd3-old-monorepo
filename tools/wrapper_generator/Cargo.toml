@@ -1,6 +1,6 @@
 [package]
 name = "wrapper_generator"
-version = "2.6.7"
+version = "2.7.1"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -10,3 +10,7 @@ anyhow = "1.0.57"
 capi_header_parser = {path = "../capi_header_parser"}
 convert_case = "0.6.0"
 itertools = "0.10.3"
+
+[features]
+default = []
+single_float = ["capi_header_parser/single_float"]
