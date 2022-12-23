@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/06/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -38,7 +38,7 @@ void EigenBackend::conj(const VectorXc& src, VectorXc& dst) { dst = src.conjugat
 void EigenBackend::arg(const VectorXc& src, VectorXc& dst) { dst = src.cwiseQuotient(src.cwiseAbs()); }
 void EigenBackend::reciprocal(const VectorXc& src, VectorXc& dst) { dst = src.cwiseInverse(); }
 void EigenBackend::exp(const VectorXc& src, VectorXc& dst) { dst = src.array().exp(); }
-void EigenBackend::pow(const VectorXd& src, const double p, VectorXd& dst) { dst = src.array().pow(p); }
+void EigenBackend::pow(const VectorXd& src, const driver::autd3_float_t p, VectorXd& dst) { dst = src.array().pow(p); }
 
 void EigenBackend::create_diagonal(const VectorXc& src, MatrixXc& dst) {
   dst.fill(ZERO);
@@ -72,102 +72,102 @@ complex EigenBackend::max_abs_element(const VectorXc& src) {
   return src(idx);
 }
 
-double EigenBackend::max_element(const VectorXd& src) { return src.maxCoeff(); }
+driver::autd3_float_t EigenBackend::max_element(const VectorXd& src) { return src.maxCoeff(); }
 
 void EigenBackend::scale(const complex value, VectorXc& dst) { dst *= value; }
-void EigenBackend::scale(const double value, VectorXd& dst) { dst *= value; }
+void EigenBackend::scale(const driver::autd3_float_t value, VectorXd& dst) { dst *= value; }
 
 complex EigenBackend::dot(const VectorXc& a, const VectorXc& b) { return a.dot(b); }
-double EigenBackend::dot(const VectorXd& a, const VectorXd& b) { return a.dot(b); }
+driver::autd3_float_t EigenBackend::dot(const VectorXd& a, const VectorXd& b) { return a.dot(b); }
 
-void EigenBackend::add(const double alpha, const MatrixXd& a, MatrixXd& b) { b += alpha * a; }
+void EigenBackend::add(const driver::autd3_float_t alpha, const MatrixXd& a, MatrixXd& b) { b += alpha * a; }
 void EigenBackend::add(const complex alpha, const MatrixXc& a, MatrixXc& b) { b += alpha * a; }
-void EigenBackend::add(const double alpha, const VectorXd& a, VectorXd& b) { b += alpha * a; }
+void EigenBackend::add(const driver::autd3_float_t alpha, const VectorXd& a, VectorXd& b) { b += alpha * a; }
 void EigenBackend::add(const complex alpha, const VectorXc& a, VectorXc& b) { b += alpha * a; }
 
-void EigenBackend::mul(const TRANSPOSE trans_a, const TRANSPOSE trans_b, const complex alpha, const MatrixXc& a, const MatrixXc& b,
+void EigenBackend::mul(const Transpose trans_a, const Transpose trans_b, const complex alpha, const MatrixXc& a, const MatrixXc& b,
                        const complex beta, MatrixXc& c) {
   c *= beta;
   switch (trans_a) {
-    case TRANSPOSE::CONJ_TRANS:
+    case Transpose::ConjTrans:
       switch (trans_b) {
-        case TRANSPOSE::CONJ_TRANS:
+        case Transpose::ConjTrans:
           c.noalias() += alpha * (a.adjoint() * b.adjoint());
           break;
-        case TRANSPOSE::TRANS:
+        case Transpose::Trans:
           c.noalias() += alpha * (a.adjoint() * b.transpose());
           break;
-        case TRANSPOSE::NO_TRANS:
+        case Transpose::NoTrans:
           c.noalias() += alpha * (a.adjoint() * b);
           break;
       }
       break;
-    case TRANSPOSE::TRANS:
+    case Transpose::Trans:
       switch (trans_b) {
-        case TRANSPOSE::CONJ_TRANS:
+        case Transpose::ConjTrans:
           c.noalias() += alpha * (a.transpose() * b.adjoint());
           break;
-        case TRANSPOSE::TRANS:
+        case Transpose::Trans:
           c.noalias() += alpha * (a.transpose() * b.transpose());
           break;
-        case TRANSPOSE::NO_TRANS:
+        case Transpose::NoTrans:
           c.noalias() += alpha * (a.transpose() * b);
           break;
       }
       break;
-    case TRANSPOSE::NO_TRANS:
+    case Transpose::NoTrans:
       switch (trans_b) {
-        case TRANSPOSE::CONJ_TRANS:
+        case Transpose::ConjTrans:
           c.noalias() += alpha * (a * b.adjoint());
           break;
-        case TRANSPOSE::TRANS:
+        case Transpose::Trans:
           c.noalias() += alpha * (a * b.transpose());
           break;
-        case TRANSPOSE::NO_TRANS:
+        case Transpose::NoTrans:
           c.noalias() += alpha * (a * b);
           break;
       }
       break;
   }
 }
-void EigenBackend::mul(const TRANSPOSE trans_a, const complex alpha, const MatrixXc& a, const VectorXc& b, const complex beta, VectorXc& c) {
+void EigenBackend::mul(const Transpose trans_a, const complex alpha, const MatrixXc& a, const VectorXc& b, const complex beta, VectorXc& c) {
   c *= beta;
   switch (trans_a) {
-    case TRANSPOSE::CONJ_TRANS:
+    case Transpose::ConjTrans:
       c.noalias() += alpha * (a.adjoint() * b);
       break;
-    case TRANSPOSE::TRANS:
+    case Transpose::Trans:
       c.noalias() += alpha * (a.transpose() * b);
       break;
-    case TRANSPOSE::NO_TRANS:
+    case Transpose::NoTrans:
       c.noalias() += alpha * (a * b);
       break;
   }
 }
 
-void EigenBackend::mul(const TRANSPOSE trans_a, const TRANSPOSE trans_b, const double alpha, const MatrixXd& a, const MatrixXd& b, const double beta,
-                       MatrixXd& c) {
+void EigenBackend::mul(const Transpose trans_a, const Transpose trans_b, const driver::autd3_float_t alpha, const MatrixXd& a, const MatrixXd& b,
+                       const driver::autd3_float_t beta, MatrixXd& c) {
   c *= beta;
   switch (trans_a) {
-    case TRANSPOSE::CONJ_TRANS:
-    case TRANSPOSE::TRANS:
+    case Transpose::ConjTrans:
+    case Transpose::Trans:
       switch (trans_b) {
-        case TRANSPOSE::CONJ_TRANS:
-        case TRANSPOSE::TRANS:
+        case Transpose::ConjTrans:
+        case Transpose::Trans:
           c.noalias() += alpha * (a.transpose() * b.transpose());
           break;
-        case TRANSPOSE::NO_TRANS:
+        case Transpose::NoTrans:
           c.noalias() += alpha * (a.transpose() * b);
           break;
       }
       break;
-    case TRANSPOSE::NO_TRANS:
+    case Transpose::NoTrans:
       switch (trans_b) {
-        case TRANSPOSE::CONJ_TRANS:
-        case TRANSPOSE::TRANS:
+        case Transpose::ConjTrans:
+        case Transpose::Trans:
           c.noalias() += alpha * (a * b.transpose());
           break;
-        case TRANSPOSE::NO_TRANS:
+        case Transpose::NoTrans:
           c.noalias() += alpha * (a * b);
           break;
       }
@@ -175,14 +175,15 @@ void EigenBackend::mul(const TRANSPOSE trans_a, const TRANSPOSE trans_b, const d
   }
 }
 
-void EigenBackend::mul(const TRANSPOSE trans_a, const double alpha, const MatrixXd& a, const VectorXd& b, const double beta, VectorXd& c) {
+void EigenBackend::mul(const Transpose trans_a, const driver::autd3_float_t alpha, const MatrixXd& a, const VectorXd& b,
+                       const driver::autd3_float_t beta, VectorXd& c) {
   c *= beta;
   switch (trans_a) {
-    case TRANSPOSE::CONJ_TRANS:
-    case TRANSPOSE::TRANS:
+    case Transpose::ConjTrans:
+    case Transpose::Trans:
       c.noalias() += alpha * (a.transpose() * b);
       break;
-    case TRANSPOSE::NO_TRANS:
+    case Transpose::NoTrans:
       c.noalias() += alpha * (a * b);
       break;
   }
@@ -208,7 +209,7 @@ void EigenBackend::max_eigen_vector(MatrixXc& src, VectorXc& dst) {
   dst = ces.eigenvectors().col(idx);
 }
 
-void EigenBackend::pseudo_inverse_svd(MatrixXc& src, const double alpha, MatrixXc&, MatrixXc& s, MatrixXc&, MatrixXc&, MatrixXc& dst) {
+void EigenBackend::pseudo_inverse_svd(MatrixXc& src, const driver::autd3_float_t alpha, MatrixXc&, MatrixXc& s, MatrixXc&, MatrixXc&, MatrixXc& dst) {
   const Eigen::BDCSVD svd(src, Eigen::ComputeFullU | Eigen::ComputeFullV);
   s.fill(ZERO);
   auto& singular_values = svd.singularValues();
@@ -217,7 +218,7 @@ void EigenBackend::pseudo_inverse_svd(MatrixXc& src, const double alpha, MatrixX
   dst.noalias() = svd.matrixV() * s * svd.matrixU().adjoint();
 }
 
-void EigenBackend::pseudo_inverse_svd(MatrixXd& src, const double alpha, MatrixXd&, MatrixXd& s, MatrixXd&, MatrixXd&, MatrixXd& dst) {
+void EigenBackend::pseudo_inverse_svd(MatrixXd& src, const driver::autd3_float_t alpha, MatrixXd&, MatrixXd& s, MatrixXd&, MatrixXd&, MatrixXd& dst) {
   const Eigen::BDCSVD svd(src, Eigen::ComputeFullU | Eigen::ComputeFullV);
   s.fill(0.0);
   auto& singular_values = svd.singularValues();

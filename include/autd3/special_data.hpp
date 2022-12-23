@@ -3,7 +3,7 @@
 // Created Date: 07/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/11/2022
+// Last Modified: 21/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -47,7 +47,7 @@ class SpecialData {
  */
 class Stop final : public SpecialData {
  public:
-  Stop() : SpecialData(std::make_unique<core::SilencerConfig>(), std::make_unique<core::Amplitudes>(0.0)) {}
+  Stop() : SpecialData(std::make_unique<core::SilencerConfig>(), std::make_unique<core::Amplitudes>(driver::autd3_float_t{0})) {}
 
   [[nodiscard]] bool ack_check_timeout_override() const override { return false; }
   [[nodiscard]] std::chrono::high_resolution_clock::duration ack_check_timeout() const override {

@@ -29,45 +29,45 @@ namespace autd3::driver {
  */
 class FPGAControlFlags final {
  public:
-  enum VALUE : uint8_t {
-    NONE = 0,
+  enum Value : uint8_t {
+    None = 0,
     /**
      * @brief Set when legacy mode
      */
-    LEGACY_MODE = 1 << 0,
+    LegacyMode = 1 << 0,
     /**
      * @brief Set when using STM finish idx
      */
-    USE_STM_FINISH_IDX = 1 << 2,
+    UseSTMFinishIdx = 1 << 2,
     /**
      * @brief Set when using STM start idx
      */
-    USE_STM_START_IDX = 1 << 3,
+    UseSTMStartIdx = 1 << 3,
     /**
      * @brief Set when forcing fan
      */
-    FORCE_FAN = 1 << 4,
+    ForceFan = 1 << 4,
     /**
      * @brief Set when STM
      */
-    STM_MODE = 1 << 5,
+    STMMode = 1 << 5,
     /**
      * @brief Set when GainSTM
      */
-    STM_GAIN_MODE = 1 << 6,
+    STMGainMode = 1 << 6,
     /**
      * @brief Set when returning FPGA information
      */
-    READS_FPGA_INFO = 1 << 7,
+    ReadsFPGAInfo = 1 << 7,
   };
 
   FPGAControlFlags() = default;
-  explicit FPGAControlFlags(const VALUE value) noexcept : _value(value) {}
+  explicit FPGAControlFlags(const Value value) noexcept : _value(value) {}
 
   ~FPGAControlFlags() = default;
   FPGAControlFlags(const FPGAControlFlags& v) noexcept = default;
   FPGAControlFlags& operator=(const FPGAControlFlags& obj) = default;
-  FPGAControlFlags& operator=(const VALUE v) noexcept {
+  FPGAControlFlags& operator=(const Value v) noexcept {
     _value = v;
     return *this;
   }
@@ -76,24 +76,24 @@ class FPGAControlFlags final {
 
   constexpr bool operator==(const FPGAControlFlags a) const { return _value == a._value; }
   constexpr bool operator!=(const FPGAControlFlags a) const { return _value != a._value; }
-  constexpr bool operator==(const VALUE a) const { return _value == a; }
-  constexpr bool operator!=(const VALUE a) const { return _value != a; }
+  constexpr bool operator==(const Value a) const { return _value == a; }
+  constexpr bool operator!=(const Value a) const { return _value != a; }
 
-  void set(const VALUE v) noexcept { _value = static_cast<VALUE>(_value | v); }
+  void set(const Value v) noexcept { _value = static_cast<Value>(_value | v); }
 
-  void remove(const VALUE v) noexcept { _value = static_cast<VALUE>(_value & ~v); }
+  void remove(const Value v) noexcept { _value = static_cast<Value>(_value & ~v); }
 
-  [[nodiscard]] bool contains(const VALUE v) const noexcept { return (_value & v) == v; }
+  [[nodiscard]] bool contains(const Value v) const noexcept { return (_value & v) == v; }
 
-  [[nodiscard]] VALUE value() const noexcept { return _value; }
+  [[nodiscard]] Value value() const noexcept { return _value; }
 
   [[nodiscard]] std::string to_string() const noexcept {
     std::vector<std::string> flags;
-    if ((_value & LEGACY_MODE) == LEGACY_MODE) flags.emplace_back("LEGACY_MODE");
-    if ((_value & FORCE_FAN) == FORCE_FAN) flags.emplace_back("FORCE_FAN");
-    if ((_value & STM_MODE) == STM_MODE) flags.emplace_back("STM_MODE");
-    if ((_value & STM_GAIN_MODE) == STM_GAIN_MODE) flags.emplace_back("STM_GAIN_MODE");
-    if ((_value & READS_FPGA_INFO) == READS_FPGA_INFO) flags.emplace_back("READS_FPGA_INFO");
+    if ((_value & LegacyMode) == LegacyMode) flags.emplace_back("LEGACY_MODE");
+    if ((_value & ForceFan) == ForceFan) flags.emplace_back("FORCE_FAN");
+    if ((_value & STMMode) == STMMode) flags.emplace_back("STM_MODE");
+    if ((_value & STMGainMode) == STMGainMode) flags.emplace_back("STM_GAIN_MODE");
+    if ((_value & ReadsFPGAInfo) == ReadsFPGAInfo) flags.emplace_back("READS_FPGA_INFO");
     if (flags.empty()) flags.emplace_back("NONE");
 
     constexpr auto delim = " | ";
@@ -105,7 +105,7 @@ class FPGAControlFlags final {
   }
 
  private:
-  VALUE _value;
+  Value _value;
 };
 
 inline std::ostream& operator<<(std::ostream& os, const FPGAControlFlags& flag) { return os << flag.to_string(); }

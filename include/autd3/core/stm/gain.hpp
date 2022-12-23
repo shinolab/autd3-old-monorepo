@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/12/2022
+// Last Modified: 21/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,11 +36,11 @@ struct GainSTM final : STM {
    * @brief Set frequency of the STM
    * @param[in] freq Frequency of the STM
    * @details STM mode has some constraints, which determine the actual frequency of the STM.
-   * @return double Actual frequency of STM
+   * @return driver::autd3_float_t Actual frequency of STM
    */
-  double set_frequency(const double freq) override {
-    const auto sample_freq = static_cast<double>(size()) * freq;
-    _freq_div = static_cast<uint32_t>(std::round(static_cast<double>(driver::FPGA_CLK_FREQ) / sample_freq));
+  driver::autd3_float_t set_frequency(const driver::autd3_float_t freq) override {
+    const auto sample_freq = static_cast<driver::autd3_float_t>(size()) * freq;
+    _freq_div = static_cast<uint32_t>(std::round(static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / sample_freq));
     return frequency();
   }
 

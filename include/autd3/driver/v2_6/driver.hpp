@@ -3,7 +3,7 @@
 // Created Date: 15/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/12/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -61,7 +61,7 @@ class DriverV2_6 final : public Driver {
   [[nodiscard]] size_t focus_stm_send_size(size_t total_size, size_t sent, const std::vector<size_t>& device_map) const noexcept override;
 
   [[nodiscard]] bool focus_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, size_t total_size, uint32_t freq_div,
-                                    double sound_speed, std::optional<uint16_t> start_idx, std::optional<uint16_t> finish_idx,
+                                    autd3_float_t sound_speed, std::optional<uint16_t> start_idx, std::optional<uint16_t> finish_idx,
                                     TxDatagram& tx) const override;
 
   void gain_stm_legacy_header(TxDatagram& tx) const noexcept override;

@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -47,7 +47,7 @@ struct Transducer {
   Transducer(Transducer&& obj) = default;
   Transducer& operator=(Transducer&& obj) = default;
 
-  [[nodiscard]] double align_phase_at(const double dist) const { return dist * wavenumber(); }
+  [[nodiscard]] driver::autd3_float_t align_phase_at(const driver::autd3_float_t dist) const { return dist * wavenumber(); }
 
   /**
    * \brief Position of the transducer
@@ -97,7 +97,9 @@ struct Transducer {
   /**
    * \brief Frequency of the transducer
    */
-  [[nodiscard]] double frequency() const { return driver::FPGA_CLK_FREQ / static_cast<double>(_cycle); }
+  [[nodiscard]] driver::autd3_float_t frequency() const {
+    return static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / static_cast<driver::autd3_float_t>(_cycle);
+  }
 
   /**
    * \brief Set fFrequency division ratio. The frequency will be autd3::driver::FPGA_CLK_FREQ/cycle.
@@ -107,30 +109,30 @@ struct Transducer {
   /**
    * \brief Set fFrequency of the transducer.
    */
-  void set_frequency(const double freq) noexcept {
-    const auto cycle = static_cast<uint16_t>(std::round(static_cast<double>(driver::FPGA_CLK_FREQ) / freq));
+  void set_frequency(const driver::autd3_float_t freq) noexcept {
+    const auto cycle = static_cast<uint16_t>(std::round(static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / freq));
     set_cycle(cycle);
   }
 
   /**
    * \brief Wavelength of the ultrasound emitted from the transducer
    */
-  [[nodiscard]] double wavelength() const { return sound_speed / frequency(); }
+  [[nodiscard]] driver::autd3_float_t wavelength() const { return sound_speed / frequency(); }
 
   /**
    * \brief Wavenumber of the ultrasound emitted from the transducer
    */
-  [[nodiscard]] double wavenumber() const { return 2.0 * driver::pi * frequency() / sound_speed; }
+  [[nodiscard]] driver::autd3_float_t wavenumber() const { return 2 * driver::pi * frequency() / sound_speed; }
 
   /**
    * @brief Attenuation coefficient.
    */
-  double attenuation;
+  driver::autd3_float_t attenuation;
 
   /**
    * @brief Speed of sound.
    */
-  double sound_speed;
+  driver::autd3_float_t sound_speed;
 
  private:
   size_t _id;

@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,9 +30,9 @@ constexpr size_t FPGA_CLK_FREQ = 163840000;
  * @brief The unit of the fixed-point number for FocusSTM is 0.025mm
  */
 #ifdef AUTD3_USE_METER
-constexpr double FOCUS_STM_FIXED_NUM_UNIT = 0.025e-3;
+constexpr autd3_float_t FOCUS_STM_FIXED_NUM_UNIT = static_cast<autd3_float_t>(0.025e-3);
 #else
-constexpr double FOCUS_STM_FIXED_NUM_UNIT = 0.025;
+constexpr autd3_float_t FOCUS_STM_FIXED_NUM_UNIT = static_cast<autd3_float_t>(0.025);
 #endif
 
 /**
@@ -42,11 +42,11 @@ struct Drive {
   /**
    * @brief The unit of phase is radian (from 0 to 2pi)
    */
-  double phase;
+  autd3_float_t phase;
   /**
    * @brief Normalized amplitude (from 0 to 1)
    */
-  double amp;
+  autd3_float_t amp;
   /**
    * @brief The ultrasound cycle: The ultrasound frequency is FPGA_CLK_FREQ/cycle.
    * @details This is not used in Legacy mode.
@@ -68,9 +68,9 @@ struct LegacyDrive {
    */
   uint8_t duty;
 
-  static uint8_t to_phase(const Drive d) { return static_cast<uint8_t>(static_cast<int32_t>(std::round(d.phase / (2.0 * pi) * 256.0)) & 0xFF); }
+  static uint8_t to_phase(const Drive d) { return static_cast<uint8_t>(static_cast<int32_t>(std::round(d.phase / (2 * pi) * 256)) & 0xFF); }
 
-  static uint8_t to_duty(const Drive d) { return static_cast<uint8_t>(std::round(510.0 * std::asin(std::clamp(d.amp, 0.0, 1.0)) / pi)); }
+  static uint8_t to_duty(const Drive d) { return static_cast<uint8_t>(std::round(510 * std::asin(std::clamp<autd3_float_t>(d.amp, 0, 1)) / pi)); }
 
   void set(const Drive d) {
     phase = to_phase(d);
@@ -86,7 +86,7 @@ struct Phase {
 
   static uint16_t to_phase(const Drive d) {
     return static_cast<uint16_t>(
-        rem_euclid(static_cast<int32_t>(std::round(d.phase / (2.0 * pi) * static_cast<double>(d.cycle))), static_cast<int32_t>(d.cycle)));
+        rem_euclid(static_cast<int32_t>(std::round(d.phase / (2 * pi) * static_cast<autd3_float_t>(d.cycle))), static_cast<int32_t>(d.cycle)));
   }
 
   void set(const Drive d) { phase = to_phase(d); }
@@ -99,7 +99,7 @@ struct Duty {
   uint16_t duty;
 
   static uint16_t to_duty(const Drive d) {
-    return static_cast<uint16_t>(std::round(static_cast<double>(d.cycle) * std::asin(std::clamp(d.amp, 0.0, 1.0)) / pi));
+    return static_cast<uint16_t>(std::round(static_cast<autd3_float_t>(d.cycle) * std::asin(std::clamp<autd3_float_t>(d.amp, 0, 1)) / pi));
   }
 
   void set(const Drive d) { duty = to_duty(d); }
