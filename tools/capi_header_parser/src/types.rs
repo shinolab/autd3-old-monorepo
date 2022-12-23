@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2022
+ * Last Modified: 23/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -41,6 +41,10 @@ impl From<&str> for Type {
             "uint64_t" => Type::UInt64,
             "void" => Type::Void,
             "char" => Type::Char,
+            #[cfg(feature = "single_float")]
+            "autd3_float_t" => Type::Float32,
+            #[cfg(not(feature = "single_float"))]
+            "autd3_float_t" => Type::Float64,
             "float" => Type::Float32,
             "double" => Type::Float64,
             "bool" => Type::Bool,

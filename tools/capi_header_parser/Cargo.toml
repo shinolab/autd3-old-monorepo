@@ -1,6 +1,6 @@
 [package]
 name = "capi_header_parser"
-version = "2.4.1"
+version = "2.7.1"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -9,3 +9,7 @@ edition = "2021"
 anyhow = "1.0.57"
 glob = "0.3.0"
 regex = "1.5.6"
+
+[features]
+default = []
+single_float = []
