@@ -9,7 +9,3 @@ edition = "2021"
 anyhow = "1.0.57"
 glob = "0.3.0"
 regex = "1.5.6"
-
-[features]
-default = []
-single_float = []
