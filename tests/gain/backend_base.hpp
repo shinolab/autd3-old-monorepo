@@ -3,7 +3,7 @@
 // Created Date: 10/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/12/2022
+// Last Modified: 24/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -716,7 +716,7 @@ using autd3::gain::holo::ZERO;
                                                                                                                                      \
     MatrixXc aa = MatrixXc::Random(k, n);                                                                                            \
     MatrixXc bb = MatrixXc::Random(m, k);                                                                                            \
-    backend->mul(Transpose::ConjTrans, Transpose::Trans, autd3::driver::autd3_float_t{2} * ONE, aa, bb, ONE, c);                     \
+    backend->mul(Transpose::ConjTrans, Transpose::Trans, 2 * ONE, aa, bb, ONE, c);                                                   \
     backend->to_host(c);                                                                                                             \
                                                                                                                                      \
     expected += 2 * (aa.adjoint() * bb.transpose());                                                                                 \
@@ -743,7 +743,7 @@ using autd3::gain::holo::ZERO;
     for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR_COMPLEX(c(i), expected(i), EPS);                                                \
                                                                                                                                      \
     MatrixXc aa = MatrixXc::Random(m, n);                                                                                            \
-    backend->mul(Transpose::ConjTrans, autd3::driver::autd3_float_t{3} * ONE, aa, b, ONE, c);                                        \
+    backend->mul(Transpose::ConjTrans, 3 * ONE, aa, b, ONE, c);                                                                      \
     backend->to_host(c);                                                                                                             \
                                                                                                                                      \
     expected += 3 * (aa.adjoint() * b);                                                                                              \
