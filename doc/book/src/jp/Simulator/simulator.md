@@ -7,8 +7,9 @@ Windowsの場合は, ビルド済みの実行ファイルが配布されてい�
 
 ## Build
 
-AUTDシミュレータをビルドするには, CMakeの`BUILD_SIMULATOR`フラグをオンにする必要がある.
-なお, macOSを使用している場合はVulkan SDKをインストールする必要がある.
+AUTDシミュレータをビルドするには, [Vulkan SDK](https://www.lunarg.com/vulkan-sdk/)をインストールし, CMakeの`BUILD_SIMULATOR`フラグをオンにする必要がある.
+或いは, 配布している`simulator`ライブラリをリンクされたい.
+
 
 ```
 cmake .. -DBUILD_SIMULATOR=ON
