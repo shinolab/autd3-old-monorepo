@@ -716,10 +716,10 @@ using autd3::gain::holo::ZERO;
                                                                                                                                      \
     MatrixXc aa = MatrixXc::Random(k, n);                                                                                            \
     MatrixXc bb = MatrixXc::Random(m, k);                                                                                            \
-    backend->mul(Transpose::ConjTrans, Transpose::Trans, 2 * ONE, aa, bb, ONE, c);                                                   \
+    backend->mul(Transpose::ConjTrans, Transpose::Trans, ONE, aa, bb, ONE, c);                                                       \
     backend->to_host(c);                                                                                                             \
                                                                                                                                      \
-    expected += 2 * (aa.adjoint() * bb.transpose());                                                                                 \
+    expected += aa.adjoint() * bb.transpose();                                                                                       \
                                                                                                                                      \
     for (Eigen::Index i = 0; i < n; i++)                                                                                             \
       for (Eigen::Index j = 0; j < m; j++) ASSERT_NEAR_COMPLEX(c(i, j), expected(i, j), EPS);                                        \
@@ -743,10 +743,10 @@ using autd3::gain::holo::ZERO;
     for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR_COMPLEX(c(i), expected(i), EPS);                                                \
                                                                                                                                      \
     MatrixXc aa = MatrixXc::Random(m, n);                                                                                            \
-    backend->mul(Transpose::ConjTrans, 3 * ONE, aa, b, ONE, c);                                                                      \
+    backend->mul(Transpose::ConjTrans, ONE, aa, b, ONE, c);                                                                          \
     backend->to_host(c);                                                                                                             \
                                                                                                                                      \
-    expected += 3 * (aa.adjoint() * b);                                                                                              \
+    expected += aa.adjoint() * b;                                                                                                    \
     for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR_COMPLEX(c(i), expected(i), EPS);                                                \
   }                                                                                                                                  \
                                                                                                                                      \
