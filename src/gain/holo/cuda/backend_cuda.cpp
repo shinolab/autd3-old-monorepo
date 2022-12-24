@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/12/2022
+// Last Modified: 24/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -44,6 +44,9 @@
 #define AUTDscal cublasDscal
 #define AUTDCdotc cublasZdotc
 #define AUTDgemv cublasDgemv
+#define AUTDgemm cublasDgemm
+#define AUTDCgemv cublasZgemv
+#define AUTDCgemm cublasZgemm
 #define AUTDaxpy cublasDaxpy
 #define AUTDCaxpy cublasZaxpy
 #define AUTDdot cublasDdot
