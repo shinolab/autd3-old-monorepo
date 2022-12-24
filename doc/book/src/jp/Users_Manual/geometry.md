@@ -72,7 +72,5 @@ SDKにおけるAPIでは, すべてグローバル座標を用いるため, 接�
   autd3::extra::GeometryViewer().window_size(800, 600).vsync(true).view(autd.geometry());
 ```
 
-`GeometryViewer`を使用するにはCMakeで`BUILD_GEOMETRY_VIEWER`オプションをOnにする必要がある[^vulkan_mac].
-或いは, 配布している`autd3_model`及び, `geometry_viewer`をリンクされたい.
-
-[^vulkan_mac]: macで使用する場合は, [Vulkan SDK](https://www.lunarg.com/vulkan-sdk/)をインストールする必要がある.
+`GeometryViewer`を使用するには, [Vulkan SDK](https://www.lunarg.com/vulkan-sdk/)をインストールし, CMakeで`BUILD_GEOMETRY_VIEWER`オプションをOnにする必要がある
+或いは, 配布している`autd3_model`及び, `geometry_viewer`ライブラリをリンクされたい.
