@@ -11,6 +11,9 @@
  * 
  */
 
+#if UNITY_2018_3_OR_NEWER
+#define USE_SINGLE
+#endif
 
 using System;
 using System.Runtime.InteropServices;
@@ -18,7 +21,6 @@ using Microsoft.Win32.SafeHandles;
 
 #if UNITY_2018_3_OR_NEWER
 using UnityEngine;
-#define USE_SINGLE
 using Vector3 = UnityEngine.Vector3;
 #else
 using Vector3 = AUTD3Sharp.Utils.Vector3d;
