@@ -3,7 +3,7 @@
 // Created Date: 01/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/12/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 namespace autd3::link {
 
 struct IOMap {
-  IOMap() : _size(0), _buf(nullptr), _trans_num_prefix_sum() {}
+  IOMap() : _size(0), _buf(nullptr) {}
 
   void resize(const std::vector<size_t>& device_map) {
     std::vector<size_t> trans_num_prefix_sum;

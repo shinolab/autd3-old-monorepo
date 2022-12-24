@@ -3,7 +3,7 @@
 // Created Date: 15/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/12/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -148,8 +148,9 @@ class Driver {
    * @param finish_idx stm finish index
    * @return true if total_size and freq_div are valid
    */
-  virtual bool focus_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, size_t total_size, uint32_t freq_div,
-                              double sound_speed, std::optional<uint16_t> start_idx, std::optional<uint16_t> finish_idx, TxDatagram& tx) const = 0;
+  [[nodiscard]] virtual bool focus_stm_body(const std::vector<std::vector<STMFocus>>& points, size_t& sent, size_t total_size, uint32_t freq_div,
+                                            autd3_float_t sound_speed, std::optional<uint16_t> start_idx, std::optional<uint16_t> finish_idx,
+                                            TxDatagram& tx) const = 0;
 
   /**
    * @brief Pack Header data for GainSTM in Legacy mode

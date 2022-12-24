@@ -3,7 +3,7 @@
 // Created Date: 28/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 23/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -66,8 +66,7 @@ namespace autd3::extra {
   const geometry_viewer::gltf::Model model("models/AUTD3.glb", geometries);
 
   window.init("Geometry Viewer", &renderer, geometry_viewer::VulkanRenderer::resize_callback, geometry_viewer::VulkanRenderer::pos_callback);
-  if (!context.init_vulkan("Geometry Viewer", window)) return false;
-  renderer.create_swapchain();
+  if (!context.init_vulkan("Geometry Viewer", window) || !renderer.create_swapchain()) return false;
   renderer.create_image_views();
   if (!renderer.create_render_pass() || !renderer.create_graphics_pipeline(model)) return false;
   context.create_command_pool();
@@ -87,7 +86,7 @@ namespace autd3::extra {
   renderer.create_command_buffers();
   renderer.create_sync_objects();
 
-  imgui.init(static_cast<uint32_t>(renderer.frames_in_flight()), renderer.render_pass(), geometries);
+  if (!imgui.init(static_cast<uint32_t>(renderer.frames_in_flight()), renderer.render_pass(), geometries)) return false;
 
   while (!window.should_close()) {
     helper::WindowHandler::poll_events();

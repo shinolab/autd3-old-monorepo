@@ -4,13 +4,16 @@
  * Created Date: 23/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2022
+ * Last Modified: 24/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  * 
  */
 
+#if UNITY_2018_3_OR_NEWER
+#define USE_SINGLE
+#endif
 
 using System;
 using System.Runtime.InteropServices;
@@ -21,6 +24,12 @@ using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 #else
 using Vector3 = AUTD3Sharp.Utils.Vector3d;
+#endif
+
+#if USE_SINGLE
+using autd3_float_t = System.Single;
+#else
+using autd3_float_t = System.Double;
 #endif
 
 #if UNITY_2020_2_OR_NEWER
@@ -95,7 +104,7 @@ namespace AUTD3Sharp
             public sealed class Uniform : AmplitudeConstraint
             {
 
-                public Uniform(double value = 1.0)
+                public Uniform(autd3_float_t value = (autd3_float_t)1.0)
                 {
                     NativeMethods.GainHolo.AUTDConstraintUniform(out handle, value);
                 }
@@ -122,27 +131,24 @@ namespace AUTD3Sharp
                     set => NativeMethods.GainHolo.AUTDSetConstraint(handle, value.Ptr);
                 }
 
-                public void Add(Vector3 focus, double amp)
-                {
-                    var (x, y, z) = TypeHelper.Convert(focus);
-                    NativeMethods.GainHolo.AUTDGainHoloAdd(handle, x, y, z, amp);
-                }
+                public void Add(Vector3 focus, autd3_float_t amp) => NativeMethods.GainHolo.AUTDGainHoloAdd(handle, focus.x, focus.y, focus.z, amp);
             }
 
             public sealed class SDP : Holo
             {
-                public SDP(double alpha = 1e-3, double lambda = 0.9, ulong repeat = 100)
+                public SDP(autd3_float_t alpha = (autd3_float_t)1e-3, autd3_float_t lambda = (autd3_float_t)0.9, ulong repeat = 100)
                 {
                     NativeMethods.GainHolo.AUTDGainHoloSDP(out handle, Backend.Ptr, alpha, lambda, repeat);
                 }
             }
             public sealed class EVD : Holo
             {
-                public EVD(double gamma = 1.0)
+                public EVD(autd3_float_t gamma = (autd3_float_t)1.0)
                 {
                     NativeMethods.GainHolo.AUTDGainHoloEVD(out handle, Backend.Ptr, gamma);
                 }
             }
+
             public sealed class Naive : Holo
             {
                 public Naive()
@@ -168,7 +174,7 @@ namespace AUTD3Sharp
             }
             public sealed class LM : Holo
             {
-                public LM(double eps1 = 1e-8, double eps2 = 1e-8, double tau = 1e-3, ulong kMax = 5, double[]? initial = null)
+                public LM(autd3_float_t eps1 = (autd3_float_t)1e-8, autd3_float_t eps2 = (autd3_float_t)1e-8, autd3_float_t tau = (autd3_float_t)1e-3, ulong kMax = 5, autd3_float_t[]? initial = null)
                 {
                     NativeMethods.GainHolo.AUTDGainHoloLM(out handle, Backend.Ptr, eps1, eps2, tau, kMax, initial, initial?.Length ?? 0);
                 }
@@ -184,7 +190,7 @@ namespace AUTD3Sharp
 
             public sealed class APO : Holo
             {
-                public APO(double eps = 1e-8, double lambda = 1.0, int kMax = 200, int lineSearchMax = 100)
+                public APO(autd3_float_t eps = (autd3_float_t)1e-8, autd3_float_t lambda = (autd3_float_t)1.0, int kMax = 200, int lineSearchMax = 100)
                 {
                     NativeMethods.GainHolo.AUTDGainHoloAPO(out handle, Backend.Ptr, eps, lambda, kMax, lineSearchMax);
                 }

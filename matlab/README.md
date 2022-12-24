@@ -1,6 +1,6 @@
 # autd3-matlab
 
-Version 2.7.0
+Version 2.7.1
 
 This is a sample program to drive [autd3](https://github.com/shinolab/autd3) in MATLAB.
 

@@ -30,94 +30,94 @@ namespace autd3::driver {
  */
 class CPUControlFlags final {
  public:
-  enum VALUE : uint8_t {
-    NONE = 0,
+  enum Value : uint8_t {
+    None = 0,
     /**
      * @brief Set when Header contains modulation data
      */
-    MOD = 1 << 0,
+    Mod = 1 << 0,
     /**
      * @brief Set when modulation data begins
      */
-    MOD_BEGIN = 1 << 1,
+    ModBegin = 1 << 1,
     /**
      * @brief Set when modulation data ends
      */
-    MOD_END = 1 << 2,
+    ModEnd = 1 << 2,
     /**
      * @brief Clear when Header contains silencer data or synchronization data
      */
-    CONFIG_EN_N = 1 << 0,
+    ConfigEnN = 1 << 0,
     /**
      * @brief Set when Header contains silencer
      */
-    CONFIG_SILENCER = 1 << 1,
+    ConfigSilencer = 1 << 1,
     /**
      * @brief Set when Header synchronization data
      */
-    CONFIG_SYNC = 1 << 2,
+    ConfigSync = 1 << 2,
     /**
      * @brief Set when Body is valid
      */
-    WRITE_BODY = 1 << 3,
+    WriteBody = 1 << 3,
     /**
      * @brief Set when Body contains STM data and STM begins
      */
-    STM_BEGIN = 1 << 4,
+    STMBegin = 1 << 4,
     /**
      * @brief Set when Body contains STM data and STM ends
      */
-    STM_END = 1 << 5,
+    STMEnd = 1 << 5,
     /**
      * @brief Set when Body is duty data (used only in Normal mode)
      */
-    IS_DUTY = 1 << 6,
+    IsDuty = 1 << 6,
     /**
      * @brief Set when Body is modulation delay data
      */
-    MOD_DELAY = 1 << 7,
+    ModDelay = 1 << 7,
   };
 
   CPUControlFlags() = default;
-  explicit CPUControlFlags(const VALUE value) noexcept : _value(value) {}
+  explicit CPUControlFlags(const Value value) noexcept : _value(value) {}
 
   ~CPUControlFlags() = default;
   CPUControlFlags(const CPUControlFlags& v) noexcept = default;
   CPUControlFlags& operator=(const CPUControlFlags& obj) = default;
-  CPUControlFlags& operator=(const VALUE v) noexcept {
+  CPUControlFlags& operator=(const Value v) noexcept {
     _value = v;
     return *this;
   }
   CPUControlFlags(CPUControlFlags&& obj) = default;
   CPUControlFlags& operator=(CPUControlFlags&& obj) = default;
 
-  constexpr bool operator==(const VALUE a) const { return _value == a; }
-  constexpr bool operator!=(const VALUE a) const { return _value != a; }
+  constexpr bool operator==(const Value a) const { return _value == a; }
+  constexpr bool operator!=(const Value a) const { return _value != a; }
   constexpr bool operator==(const CPUControlFlags a) const { return _value == a._value; }
   constexpr bool operator!=(const CPUControlFlags a) const { return _value != a._value; }
 
-  void set(const VALUE v) noexcept { _value = static_cast<VALUE>(_value | v); }
+  void set(const Value v) noexcept { _value = static_cast<Value>(_value | v); }
 
-  void remove(const VALUE v) noexcept { _value = static_cast<VALUE>(_value & ~v); }
+  void remove(const Value v) noexcept { _value = static_cast<Value>(_value & ~v); }
 
-  [[nodiscard]] bool contains(const VALUE v) const noexcept { return (_value & v) == v; }
+  [[nodiscard]] bool contains(const Value v) const noexcept { return (_value & v) == v; }
 
-  [[nodiscard]] VALUE value() const noexcept { return _value; }
+  [[nodiscard]] Value value() const noexcept { return _value; }
 
   [[nodiscard]] std::string to_string() const noexcept {
     std::vector<std::string> flags;
-    if ((_value & MOD) == MOD) {
-      if ((_value & MOD_BEGIN) == MOD_BEGIN) flags.emplace_back("MOD_BEGIN");
-      if ((_value & MOD_END) == MOD_END) flags.emplace_back("MOD_END");
+    if ((_value & Mod) == Mod) {
+      if ((_value & ModBegin) == ModBegin) flags.emplace_back("MOD_BEGIN");
+      if ((_value & ModEnd) == ModEnd) flags.emplace_back("MOD_END");
     } else {
-      if ((_value & CONFIG_SILENCER) == CONFIG_SILENCER) flags.emplace_back("CONFIG_SILENCER");
-      if ((_value & CONFIG_SYNC) == CONFIG_SYNC) flags.emplace_back("CONFIG_SYNC");
+      if ((_value & ConfigSilencer) == ConfigSilencer) flags.emplace_back("CONFIG_SILENCER");
+      if ((_value & ConfigSync) == ConfigSync) flags.emplace_back("CONFIG_SYNC");
     }
-    if ((_value & WRITE_BODY) == WRITE_BODY) flags.emplace_back("WRITE_BODY");
-    if ((_value & STM_BEGIN) == STM_BEGIN) flags.emplace_back("STM_BEGIN");
-    if ((_value & STM_END) == STM_END) flags.emplace_back("STM_END");
-    if ((_value & IS_DUTY) == IS_DUTY) flags.emplace_back("IS_DUTY");
-    if ((_value & MOD_DELAY) == MOD_DELAY) flags.emplace_back("MOD_DELAY");
+    if ((_value & WriteBody) == WriteBody) flags.emplace_back("WRITE_BODY");
+    if ((_value & STMBegin) == STMBegin) flags.emplace_back("STM_BEGIN");
+    if ((_value & STMEnd) == STMEnd) flags.emplace_back("STM_END");
+    if ((_value & IsDuty) == IsDuty) flags.emplace_back("IS_DUTY");
+    if ((_value & ModDelay) == ModDelay) flags.emplace_back("MOD_DELAY");
     if (flags.empty()) flags.emplace_back("NONE");
 
     constexpr auto delim = " | ";
@@ -129,7 +129,7 @@ class CPUControlFlags final {
   }
 
  private:
-  VALUE _value;
+  Value _value;
 };
 
 inline std::ostream& operator<<(std::ostream& os, const CPUControlFlags& flag) { return os << flag.to_string(); }

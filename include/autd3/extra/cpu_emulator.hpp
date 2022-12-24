@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/12/2022
+// Last Modified: 23/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -111,8 +111,8 @@ class CPU {
         _stm_cycle(0),
         _fpga(num_transducers),
         _gain_stm_mode(cpu::GAIN_STM_MODE_PHASE_DUTY_FULL),
-        _fpga_flags(driver::FPGAControlFlags::NONE),
-        _cpu_flags(driver::CPUControlFlags::NONE) {
+        _fpga_flags(driver::FPGAControlFlags::None),
+        _cpu_flags(driver::CPUControlFlags::None) {
     _cycles.resize(num_transducers, 0x0000);
   }
 
@@ -169,14 +169,14 @@ class CPU {
   void write_mod(const driver::GlobalHeader* header) {
     const auto write = header->size;
 
-    if (header->cpu_flag.contains(driver::CPUControlFlags::MOD_BEGIN)) {
+    if (header->cpu_flag.contains(driver::CPUControlFlags::ModBegin)) {
       _mod_cycle = 0;
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_MOD_ADDR_OFFSET, 0);
       const auto freq_div = header->mod_initial().freq_div;
       bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_MOD_FREQ_DIV_0, reinterpret_cast<const uint16_t*>(&freq_div), 2);
     }
     const auto* data = reinterpret_cast<const uint16_t*>(
-        header->cpu_flag.contains(driver::CPUControlFlags::MOD_BEGIN) ? header->mod_initial().data : header->mod_subsequent().data);
+        header->cpu_flag.contains(driver::CPUControlFlags::ModBegin) ? header->mod_initial().data : header->mod_subsequent().data);
     if (const auto segment_capacity = (_mod_cycle & ~cpu::MOD_BUF_SEGMENT_SIZE_MASK) + cpu::MOD_BUF_SEGMENT_SIZE - _mod_cycle;
         write <= segment_capacity) {
       bram_cpy(cpu::BRAM_SELECT_MOD, static_cast<uint16_t>((_mod_cycle & cpu::MOD_BUF_SEGMENT_SIZE_MASK) >> 1), data,
@@ -193,7 +193,7 @@ class CPU {
       _mod_cycle += write - segment_capacity;
     }
 
-    if (header->cpu_flag.contains(driver::CPUControlFlags::MOD_END))
+    if (header->cpu_flag.contains(driver::CPUControlFlags::ModEnd))
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_MOD_CYCLE, static_cast<uint16_t>((std::max)(_mod_cycle, 1u) - 1u));
   }
 
@@ -211,10 +211,10 @@ class CPU {
 
   void write_normal_op(const driver::GlobalHeader* header, const driver::Body* body) {
     if (body == nullptr) return;
-    if (header->fpga_flag.contains(driver::FPGAControlFlags::LEGACY_MODE))
+    if (header->fpga_flag.contains(driver::FPGAControlFlags::LegacyMode))
       for (size_t i = 0; i < _num_transducers; i++)
         bram_write(cpu::BRAM_SELECT_NORMAL, static_cast<uint16_t>(i << 1), reinterpret_cast<const uint16_t*>(body)[i]);
-    else if (header->cpu_flag.contains(driver::CPUControlFlags::IS_DUTY))
+    else if (header->cpu_flag.contains(driver::CPUControlFlags::IsDuty))
       for (size_t i = 0; i < _num_transducers; i++)
         bram_write(cpu::BRAM_SELECT_NORMAL, static_cast<uint16_t>(i << 1) + 1, reinterpret_cast<const uint16_t*>(body)[i]);
     else
@@ -227,7 +227,7 @@ class CPU {
     uint32_t size;
     const uint16_t* src;
 
-    if (header->cpu_flag.contains(driver::CPUControlFlags::STM_BEGIN)) {
+    if (header->cpu_flag.contains(driver::CPUControlFlags::STMBegin)) {
       _stm_write = 0;
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET, 0);
       size = body->focus_stm_initial().data()[0];
@@ -279,7 +279,7 @@ class CPU {
       }
       _stm_write += cnt;
     }
-    if (header->cpu_flag.contains(driver::CPUControlFlags::STM_END)) {
+    if (header->cpu_flag.contains(driver::CPUControlFlags::STMEnd)) {
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_CYCLE, static_cast<uint16_t>((std::max)(_stm_write, 1u) - 1u));
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CTL_REG, header->fpga_flag.value() | cpu::CTL_REG_OP_MODE);
     }
@@ -287,7 +287,7 @@ class CPU {
 
   void write_gain_stm_legacy(const driver::GlobalHeader* header, const driver::Body* body) {
     if (body == nullptr) return;
-    if (header->cpu_flag.contains(driver::CPUControlFlags::STM_BEGIN)) {
+    if (header->cpu_flag.contains(driver::CPUControlFlags::STMBegin)) {
       _stm_write = 0;
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET, 0);
       const auto freq_div =
@@ -359,7 +359,7 @@ class CPU {
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET,
                  static_cast<uint16_t>((_stm_write & ~cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) >> cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH));
 
-    if (header->cpu_flag.contains(driver::CPUControlFlags::STM_END)) {
+    if (header->cpu_flag.contains(driver::CPUControlFlags::STMEnd)) {
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_CYCLE, static_cast<uint16_t>((std::max)(_stm_cycle, 1u) - 1u));
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CTL_REG, header->fpga_flag.value() | cpu::CTL_REG_OP_MODE);
     }
@@ -367,7 +367,7 @@ class CPU {
 
   void write_gain_stm(const driver::GlobalHeader* header, const driver::Body* body) {
     if (body == nullptr) return;
-    if (header->cpu_flag.contains(driver::CPUControlFlags::STM_BEGIN)) {
+    if (header->cpu_flag.contains(driver::CPUControlFlags::STMBegin)) {
       _stm_write = 0;
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET, 0);
       const auto freq_div =
@@ -389,14 +389,14 @@ class CPU {
 
     switch (_gain_stm_mode) {
       case cpu::GAIN_STM_MODE_PHASE_DUTY_FULL:
-        if (header->cpu_flag.contains(driver::CPUControlFlags::IS_DUTY)) {
+        if (header->cpu_flag.contains(driver::CPUControlFlags::IsDuty)) {
           dst += 1;
           _stm_write += 1;
         }
         for (size_t i = 0; i < _num_transducers; i++, dst += 2) bram_write(cpu::BRAM_SELECT_STM, dst, *src++);
         break;
       case cpu::GAIN_STM_MODE_PHASE_FULL:
-        if (!header->cpu_flag.contains(driver::CPUControlFlags::IS_DUTY)) {
+        if (!header->cpu_flag.contains(driver::CPUControlFlags::IsDuty)) {
           for (size_t i = 0; i < _num_transducers; i++) {
             bram_write(cpu::BRAM_SELECT_STM, dst++, *src++);
             bram_write(cpu::BRAM_SELECT_STM, dst++, _cycles[i] >> 1);
@@ -416,7 +416,7 @@ class CPU {
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET,
                  static_cast<uint16_t>((_stm_write & ~cpu::GAIN_STM_BUF_SEGMENT_SIZE_MASK) >> cpu::GAIN_STM_BUF_SEGMENT_SIZE_WIDTH));
 
-    if (header->cpu_flag.contains(driver::CPUControlFlags::STM_END)) {
+    if (header->cpu_flag.contains(driver::CPUControlFlags::STMEnd)) {
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_CYCLE, static_cast<uint16_t>((std::max)(_stm_cycle, 1u) - 1u));
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CTL_REG, header->fpga_flag.value() | cpu::CTL_REG_OP_MODE);
     }
@@ -452,7 +452,7 @@ class CPU {
     _msg_id = header->msg_id;
     _fpga_flags = header->fpga_flag;
     _cpu_flags = header->cpu_flag;
-    if (header->fpga_flag.contains(driver::FPGAControlFlags::READS_FPGA_INFO)) _ack = static_cast<uint8_t>(read_fpga_info());
+    if (header->fpga_flag.contains(driver::FPGAControlFlags::ReadsFPGAInfo)) _ack = static_cast<uint8_t>(read_fpga_info());
 
     switch (_msg_id) {
       case driver::MSG_CLEAR:
@@ -473,30 +473,30 @@ class CPU {
         const auto ctl_reg = header->fpga_flag;
         bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CTL_REG, ctl_reg.value());
 
-        if (header->cpu_flag.contains(driver::CPUControlFlags::MOD))
+        if (header->cpu_flag.contains(driver::CPUControlFlags::Mod))
           write_mod(header);
-        else if (header->cpu_flag.contains(driver::CPUControlFlags::CONFIG_SILENCER))
+        else if (header->cpu_flag.contains(driver::CPUControlFlags::ConfigSilencer))
           config_silencer(header);
-        else if (header->cpu_flag.contains(driver::CPUControlFlags::CONFIG_SYNC)) {
+        else if (header->cpu_flag.contains(driver::CPUControlFlags::ConfigSync)) {
           synchronize(body);
           return;
         }
 
-        if (!header->cpu_flag.contains(driver::CPUControlFlags::WRITE_BODY)) return;
+        if (!header->cpu_flag.contains(driver::CPUControlFlags::WriteBody)) return;
 
-        if (header->cpu_flag.contains(driver::CPUControlFlags::MOD_DELAY)) {
+        if (header->cpu_flag.contains(driver::CPUControlFlags::ModDelay)) {
           set_mod_delay(body);
           return;
         }
 
-        if (!ctl_reg.contains(driver::FPGAControlFlags::STM_MODE)) {
+        if (!ctl_reg.contains(driver::FPGAControlFlags::STMMode)) {
           write_normal_op(header, body);
           return;
         }
 
-        if (!ctl_reg.contains(driver::FPGAControlFlags::STM_GAIN_MODE))
+        if (!ctl_reg.contains(driver::FPGAControlFlags::STMGainMode))
           write_focus_stm(header, body);
-        else if (header->fpga_flag.contains(driver::FPGAControlFlags::LEGACY_MODE))
+        else if (header->fpga_flag.contains(driver::FPGAControlFlags::LegacyMode))
           write_gain_stm_legacy(header, body);
         else
           write_gain_stm(header, body);

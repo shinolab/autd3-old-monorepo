@@ -3,7 +3,7 @@
 // Created Date: 02/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/11/2022
+// Last Modified: 23/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -40,7 +40,7 @@ class SoundSources {
   SoundSources& operator=(SoundSources&& obj) = default;
 
   void add(const glm::vec3 pos, glm::quat rot, Drive drive, float visibility) {
-    _pos.emplace_back(glm::vec4(pos, 0.0f));
+    _pos.emplace_back(pos, 0.0f);
     _rot.emplace_back(rot);
     _drive.emplace_back(drive);
     _visibilities.emplace_back(visibility);

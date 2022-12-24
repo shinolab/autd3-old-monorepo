@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/12/2022
+// Last Modified: 23/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -158,7 +158,7 @@ class VulkanImGui {
     const vk::CommandBufferAllocateInfo alloc_info(_context->command_pool(), vk::CommandBufferLevel::ePrimary, 1);
     auto command_buffers = _context->device().allocateCommandBuffersUnique(alloc_info);
     vk::UniqueCommandBuffer command_buffer = std::move(command_buffers[0]);
-    const vk::CommandBufferBeginInfo begin_info(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+    constexpr vk::CommandBufferBeginInfo begin_info(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
     command_buffer->begin(begin_info);
     ImGui_ImplVulkan_CreateFontsTexture(command_buffer.get());
     const vk::SubmitInfo end_info(0, nullptr, nullptr, 1, &command_buffer.get(), 0, nullptr);
@@ -252,7 +252,7 @@ class VulkanImGui {
     settings.stm_auto_play = _stm_auto_play;
   }
 
-  void init(const uint32_t image_count, const VkRenderPass renderer_pass, const SimulatorSettings& settings) {
+  [[nodiscard]] bool init(const uint32_t image_count, const VkRenderPass renderer_pass, const SimulatorSettings& settings) {
     load_settings(settings);
     _initial_settings = settings;
 
@@ -261,6 +261,11 @@ class VulkanImGui {
 
     ImGui::StyleColorsDark();
     const auto [graphics_family, present_family] = _context->find_queue_families(_context->physical_device());
+
+    if (!graphics_family) {
+      spdlog::error("Failed to find queue family.");
+      return false;
+    }
 
     ImGui_ImplGlfw_InitForVulkan(_window->window(), true);
     ImGui_ImplVulkan_InitInfo init_info{_context->instance(),
@@ -279,6 +284,7 @@ class VulkanImGui {
     ImGui_ImplVulkan_Init(&init_info, renderer_pass);
 
     set_font();
+    return true;
   }
 
   void set(const std::vector<SoundSources>& sources) {
@@ -303,7 +309,7 @@ class VulkanImGui {
   }
 
   UpdateFlags draw(const std::vector<CPU>& cpus, std::vector<SoundSources>& sources) {
-    auto flag = UpdateFlags(UpdateFlags::NONE);
+    auto flag = UpdateFlags(UpdateFlags::None);
 
     if (_update_font) {
       set_font();
@@ -329,7 +335,7 @@ class VulkanImGui {
         camera_pos[0] += trans.x;
         camera_pos[1] += trans.y;
         camera_pos[2] += trans.z;
-        flag.set(UpdateFlags::UPDATE_CAMERA_POS);
+        flag.set(UpdateFlags::UpdateCameraPos);
       }
 
       if (!io.WantCaptureMouse) {
@@ -347,7 +353,7 @@ class VulkanImGui {
             camera_pos[1] += trans.y;
             camera_pos[2] += trans.z;
           }
-          flag.set(UpdateFlags::UPDATE_CAMERA_POS);
+          flag.set(UpdateFlags::UpdateCameraPos);
         }
       }
     }
@@ -358,29 +364,29 @@ class VulkanImGui {
     if (ImGui::BeginTabBar("Settings")) {
       if (ImGui::BeginTabItem("Slice")) {
         ImGui::Text("Position");
-        if (ImGui::DragFloat("X##Slice", &slice_pos.x, 1 * scale())) flag.set(UpdateFlags::UPDATE_SLICE_POS);
-        if (ImGui::DragFloat("Y##Slice", &slice_pos.y, 1 * scale())) flag.set(UpdateFlags::UPDATE_SLICE_POS);
-        if (ImGui::DragFloat("Z##Slice", &slice_pos.z, 1 * scale())) flag.set(UpdateFlags::UPDATE_SLICE_POS);
+        if (ImGui::DragFloat("X##Slice", &slice_pos.x, 1 * scale())) flag.set(UpdateFlags::UpdateSlicePos);
+        if (ImGui::DragFloat("Y##Slice", &slice_pos.y, 1 * scale())) flag.set(UpdateFlags::UpdateSlicePos);
+        if (ImGui::DragFloat("Z##Slice", &slice_pos.z, 1 * scale())) flag.set(UpdateFlags::UpdateSlicePos);
         ImGui::Separator();
 
         ImGui::Text("Rotation");
-        if (ImGui::DragFloat("RX##Slice", &slice_rot.x, 1, -180, 180)) flag.set(UpdateFlags::UPDATE_SLICE_POS);
-        if (ImGui::DragFloat("RY##Slice", &slice_rot.y, 1, -180, 180)) flag.set(UpdateFlags::UPDATE_SLICE_POS);
-        if (ImGui::DragFloat("RZ##Slice", &slice_rot.z, 1, -180, 180)) flag.set(UpdateFlags::UPDATE_SLICE_POS);
+        if (ImGui::DragFloat("RX##Slice", &slice_rot.x, 1, -180, 180)) flag.set(UpdateFlags::UpdateSlicePos);
+        if (ImGui::DragFloat("RY##Slice", &slice_rot.y, 1, -180, 180)) flag.set(UpdateFlags::UpdateSlicePos);
+        if (ImGui::DragFloat("RZ##Slice", &slice_rot.z, 1, -180, 180)) flag.set(UpdateFlags::UpdateSlicePos);
         ImGui::Separator();
 
         ImGui::Text("Size");
         if (ImGui::DragFloat("Width##Slice", &slice_width, 1 * scale(), 1 * scale(), 2000 * scale())) {
           if (slice_width < 1 * scale()) slice_width = 1 * scale();
-          flag.set(UpdateFlags::UPDATE_SLICE_SIZE);
+          flag.set(UpdateFlags::UpdateSliceSize);
         }
         if (ImGui::DragFloat("Height##Slice", &slice_height, 1 * scale(), 1 * scale(), 2000 * scale())) {
           if (slice_height < 1 * scale()) slice_height = 1 * scale();
-          flag.set(UpdateFlags::UPDATE_SLICE_SIZE);
+          flag.set(UpdateFlags::UpdateSliceSize);
         }
         if (ImGui::DragFloat("Pixel size##Slice", &pixel_size, 1 * scale(), 0.1f * scale(), 8 * scale())) {
           if (pixel_size <= 0.1f * scale()) pixel_size = 0.1f * scale();
-          flag.set(UpdateFlags::UPDATE_SLICE_SIZE);
+          flag.set(UpdateFlags::UpdateSliceSize);
         }
         ImGui::Separator();
 
@@ -397,7 +403,7 @@ class VulkanImGui {
           for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
             const bool is_selected = coloring_method_idx == n;
             if (ImGui::Selectable(items[n], is_selected)) {
-              if (coloring_method_idx != n) flag.set(UpdateFlags::UPDATE_COLOR_MAP);
+              if (coloring_method_idx != n) flag.set(UpdateFlags::UpdateColorMap);
               coloring_method_idx = n;
             }
             if (is_selected) ImGui::SetItemDefaultFocus();
@@ -406,24 +412,23 @@ class VulkanImGui {
           ImGui::EndCombo();
         }
 
-        if (ImGui::DragFloat("Scale##Slice", &color_scale, 0.1f, 0.0f, std::numeric_limits<float>::infinity()))
-          flag.set(UpdateFlags::UPDATE_COLOR_MAP);
-        if (ImGui::DragFloat("Alpha##Slice", &slice_alpha, 0.01f, 0.0f, 1.0f)) flag.set(UpdateFlags::UPDATE_COLOR_MAP);
+        if (ImGui::DragFloat("Scale##Slice", &color_scale, 0.1f, 0.0f, std::numeric_limits<float>::infinity())) flag.set(UpdateFlags::UpdateColorMap);
+        if (ImGui::DragFloat("Alpha##Slice", &slice_alpha, 0.01f, 0.0f, 1.0f)) flag.set(UpdateFlags::UpdateColorMap);
 
         ImGui::Separator();
         if (ImGui::SmallButton("xy")) {
           slice_rot = glm::vec3(0, 0, 0);
-          flag.set(UpdateFlags::UPDATE_SLICE_POS);
+          flag.set(UpdateFlags::UpdateSlicePos);
         }
         ImGui::SameLine();
         if (ImGui::SmallButton("yz")) {
           slice_rot = glm::vec3(90, 0, 90);
-          flag.set(UpdateFlags::UPDATE_SLICE_POS);
+          flag.set(UpdateFlags::UpdateSlicePos);
         }
         ImGui::SameLine();
         if (ImGui::SmallButton("zx")) {
           slice_rot = glm::vec3(90, 0, 0);
-          flag.set(UpdateFlags::UPDATE_SLICE_POS);
+          flag.set(UpdateFlags::UpdateSlicePos);
         }
 
         ImGui::EndTabItem();
@@ -431,21 +436,20 @@ class VulkanImGui {
 
       if (ImGui::BeginTabItem("Camera")) {
         ImGui::Text("Position");
-        if (ImGui::DragFloat("X##Camera", &camera_pos.x, 1 * scale())) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
-        if (ImGui::DragFloat("Y##Camera", &camera_pos.y, 1 * scale())) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
-        if (ImGui::DragFloat("Z##Camera", &camera_pos.z, 1 * scale())) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
+        if (ImGui::DragFloat("X##Camera", &camera_pos.x, 1 * scale())) flag.set(UpdateFlags::UpdateCameraPos);
+        if (ImGui::DragFloat("Y##Camera", &camera_pos.y, 1 * scale())) flag.set(UpdateFlags::UpdateCameraPos);
+        if (ImGui::DragFloat("Z##Camera", &camera_pos.z, 1 * scale())) flag.set(UpdateFlags::UpdateCameraPos);
         ImGui::Separator();
         ImGui::Text("Rotation");
-        if (ImGui::DragFloat("RX##Camera", &camera_rot.x, 1, -180, 180)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
-        if (ImGui::DragFloat("RY##Camera", &camera_rot.y, 1, -180, 180)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
-        if (ImGui::DragFloat("RZ##Camera", &camera_rot.z, 1, -180, 180)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
+        if (ImGui::DragFloat("RX##Camera", &camera_rot.x, 1, -180, 180)) flag.set(UpdateFlags::UpdateCameraPos);
+        if (ImGui::DragFloat("RY##Camera", &camera_rot.y, 1, -180, 180)) flag.set(UpdateFlags::UpdateCameraPos);
+        if (ImGui::DragFloat("RZ##Camera", &camera_rot.z, 1, -180, 180)) flag.set(UpdateFlags::UpdateCameraPos);
         ImGui::Separator();
         ImGui::Text("Perspective");
-        if (ImGui::DragFloat("FOV", &fov, 1, 0, 180)) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
-        if (ImGui::DragFloat("Near clip", &near_clip, 1 * scale(), 0, std::numeric_limits<float>::infinity()))
-          flag.set(UpdateFlags::UPDATE_CAMERA_POS);
-        if (ImGui::DragFloat("Far clip", &far_clip, 1 * scale(), 0, std::numeric_limits<float>::infinity())) flag.set(UpdateFlags::UPDATE_CAMERA_POS);
-        flag.set(UpdateFlags::UPDATE_CAMERA_POS);
+        if (ImGui::DragFloat("FOV", &fov, 1, 0, 180)) flag.set(UpdateFlags::UpdateCameraPos);
+        if (ImGui::DragFloat("Near clip", &near_clip, 1 * scale(), 0, std::numeric_limits<float>::infinity())) flag.set(UpdateFlags::UpdateCameraPos);
+        if (ImGui::DragFloat("Far clip", &far_clip, 1 * scale(), 0, std::numeric_limits<float>::infinity())) flag.set(UpdateFlags::UpdateCameraPos);
+        flag.set(UpdateFlags::UpdateCameraPos);
         ImGui::Separator();
         ImGui::DragFloat("Move speed", &_cam_move_speed, 1 * scale());
         ImGui::EndTabItem();
@@ -460,7 +464,7 @@ class VulkanImGui {
               sources[dev].drives()[i].set_wave_num(freq, sound_speed);
             }
           }
-          flag.set(UpdateFlags::UPDATE_SOURCE_DRIVE);
+          flag.set(UpdateFlags::UpdateSourceDrive);
         }
 
         ImGui::Separator();
@@ -473,13 +477,13 @@ class VulkanImGui {
           ImGui::SameLine();
           const auto show_id = "##show" + std::to_string(i);
           if (ImGui::Checkbox(show_id.c_str(), &visible[i])) {
-            flag.set(UpdateFlags::UPDATE_SOURCE_FLAG);
+            flag.set(UpdateFlags::UpdateSourceFlag);
             for (size_t tr = 0; tr < sources[i].size(); tr++) sources[i].visibilities()[tr] = visible[i] ? 1.0f : 0.0f;
           }
           ImGui::SameLine();
           const auto enable_id = "##enable" + std::to_string(i);
           if (ImGui::Checkbox(enable_id.c_str(), &enable[i])) {
-            flag.set(UpdateFlags::UPDATE_SOURCE_FLAG);
+            flag.set(UpdateFlags::UpdateSourceFlag);
             for (size_t tr = 0; tr < sources[i].size(); tr++) sources[i].drives()[tr].enable = enable[i] ? 1.0f : 0.0f;
           }
         }
@@ -546,10 +550,10 @@ class VulkanImGui {
           if (_show_mod_plot || _show_mod_plot_raw) ImGui::DragFloat2("plot size", &_mod_plot_size.x);
           ImGui::Checkbox("Enable##MOD", &mod_enable);
           if (mod_enable) {
-            if (ImGui::InputInt("Index##MOD", &mod_idx, 1, 10)) flag.set(UpdateFlags::UPDATE_SOURCE_DRIVE);
+            if (ImGui::InputInt("Index##MOD", &mod_idx, 1, 10)) flag.set(UpdateFlags::UpdateSourceDrive);
             ImGui::Checkbox("Auto play##MOD", &_mod_auto_play);
             if (_mod_auto_play) {
-              flag.set(UpdateFlags::UPDATE_SOURCE_DRIVE);
+              flag.set(UpdateFlags::UpdateSourceDrive);
               mod_idx++;
             }
             if (mod_idx >= mod_size) mod_idx = 0;
@@ -584,10 +588,10 @@ class VulkanImGui {
           const auto period = sampling_period * static_cast<double>(cpus[0].fpga().stm_cycle());
           ImGui::Text("Period: %.3lf [us]", period);
 
-          if (ImGui::InputInt("Index##STM", &stm_idx, 1, 10)) flag.set(UpdateFlags::UPDATE_SOURCE_DRIVE);
+          if (ImGui::InputInt("Index##STM", &stm_idx, 1, 10)) flag.set(UpdateFlags::UpdateSourceDrive);
           ImGui::Checkbox("Auto play##STM", &_stm_auto_play);
           if (_stm_auto_play) {
-            flag.set(UpdateFlags::UPDATE_SOURCE_DRIVE);
+            flag.set(UpdateFlags::UpdateSourceDrive);
             stm_idx++;
           }
           if (stm_idx >= stm_size) stm_idx = 0;
@@ -600,24 +604,24 @@ class VulkanImGui {
         ImGui::Text("MSG ID: %d", cpus[0].msg_id());
         ImGui::Text("CPU control flags");
         const auto cpu_flags = cpus[0].cpu_flags();
-        if (auto mod = cpu_flags.contains(driver::CPUControlFlags::MOD); mod) {
-          auto mod_begin = cpu_flags.contains(driver::CPUControlFlags::MOD_BEGIN);
-          auto mod_end = cpu_flags.contains(driver::CPUControlFlags::MOD_END);
+        if (auto mod = cpu_flags.contains(driver::CPUControlFlags::Mod); mod) {
+          auto mod_begin = cpu_flags.contains(driver::CPUControlFlags::ModBegin);
+          auto mod_end = cpu_flags.contains(driver::CPUControlFlags::ModEnd);
           ImGui::Checkbox("MOD", &mod);
           ImGui::Checkbox("MOD BEGIN", &mod_begin);
           ImGui::Checkbox("MOD END", &mod_end);
-        } else if (auto config_en_n = cpu_flags.contains(driver::CPUControlFlags::CONFIG_EN_N); !config_en_n) {
-          auto config_silencer = cpu_flags.contains(driver::CPUControlFlags::CONFIG_SILENCER);
-          auto config_sync = cpu_flags.contains(driver::CPUControlFlags::CONFIG_SYNC);
+        } else if (auto config_en_n = cpu_flags.contains(driver::CPUControlFlags::ConfigEnN); !config_en_n) {
+          auto config_silencer = cpu_flags.contains(driver::CPUControlFlags::ConfigSilencer);
+          auto config_sync = cpu_flags.contains(driver::CPUControlFlags::ConfigSync);
           ImGui::Checkbox("CONFIG EN N", &config_en_n);
           ImGui::Checkbox("CONFIG SILENCER", &config_silencer);
           ImGui::Checkbox("CONFIG SYNC", &config_sync);
         }
-        auto write_body = cpu_flags.contains(driver::CPUControlFlags::WRITE_BODY);
-        auto stm_begin = cpu_flags.contains(driver::CPUControlFlags::STM_BEGIN);
-        auto stm_end = cpu_flags.contains(driver::CPUControlFlags::STM_END);
-        auto is_duty = cpu_flags.contains(driver::CPUControlFlags::IS_DUTY);
-        auto mod_delay = cpu_flags.contains(driver::CPUControlFlags::MOD_DELAY);
+        auto write_body = cpu_flags.contains(driver::CPUControlFlags::WriteBody);
+        auto stm_begin = cpu_flags.contains(driver::CPUControlFlags::STMBegin);
+        auto stm_end = cpu_flags.contains(driver::CPUControlFlags::STMEnd);
+        auto is_duty = cpu_flags.contains(driver::CPUControlFlags::IsDuty);
+        auto mod_delay = cpu_flags.contains(driver::CPUControlFlags::ModDelay);
         ImGui::Checkbox("WRITE BODY", &write_body);
         ImGui::Checkbox("STM BEGIN", &stm_begin);
         ImGui::Checkbox("STM END", &stm_end);
@@ -627,13 +631,13 @@ class VulkanImGui {
         ImGui::Separator();
         ImGui::Text("FPGA control flags");
         const auto fpga_flags = cpus[0].fpga_flags();
-        auto is_legacy_mode = fpga_flags.contains(driver::FPGAControlFlags::LEGACY_MODE);
-        auto use_stm_start_idx = fpga_flags.contains(driver::FPGAControlFlags::USE_STM_START_IDX);
-        auto use_stm_finish_idx = fpga_flags.contains(driver::FPGAControlFlags::USE_STM_FINISH_IDX);
-        auto force_fan = fpga_flags.contains(driver::FPGAControlFlags::FORCE_FAN);
-        auto stm_mode = fpga_flags.contains(driver::FPGAControlFlags::STM_MODE);
-        auto stm_gain_mode = fpga_flags.contains(driver::FPGAControlFlags::STM_GAIN_MODE);
-        auto reads_fpga_info = fpga_flags.contains(driver::FPGAControlFlags::READS_FPGA_INFO);
+        auto is_legacy_mode = fpga_flags.contains(driver::FPGAControlFlags::LegacyMode);
+        auto use_stm_start_idx = fpga_flags.contains(driver::FPGAControlFlags::UseSTMStartIdx);
+        auto use_stm_finish_idx = fpga_flags.contains(driver::FPGAControlFlags::UseSTMFinishIdx);
+        auto force_fan = fpga_flags.contains(driver::FPGAControlFlags::ForceFan);
+        auto stm_mode = fpga_flags.contains(driver::FPGAControlFlags::STMMode);
+        auto stm_gain_mode = fpga_flags.contains(driver::FPGAControlFlags::STMGainMode);
+        auto reads_fpga_info = fpga_flags.contains(driver::FPGAControlFlags::ReadsFPGAInfo);
         ImGui::Checkbox("LEGACY MODE", &is_legacy_mode);
         ImGui::Checkbox("USE STM FINISH IDX", &use_stm_finish_idx);
         ImGui::Checkbox("USE STM START IDX", &use_stm_start_idx);
@@ -651,7 +655,7 @@ class VulkanImGui {
     ImGui::Separator();
     ImGui::Text("Save image as file");
     ImGui::InputText("path to image", save_path, 256);
-    if (ImGui::SmallButton("save")) flag.set(UpdateFlags::SAVE_IMAGE);
+    if (ImGui::SmallButton("save")) flag.set(UpdateFlags::SaveImage);
 
     ImGui::Separator();
 
@@ -660,20 +664,20 @@ class VulkanImGui {
       const auto srf = to_gl_pos(glm::vec3(sr * glm::vec4(0, 0, 1, 1)));
       camera_pos = slice_pos + srf * 600.0f * scale();
       camera_rot = slice_rot;
-      flag.set(UpdateFlags::UPDATE_CAMERA_POS);
+      flag.set(UpdateFlags::UpdateCameraPos);
     }
     ImGui::SameLine();
     if (ImGui::SmallButton("Reset")) {
       load_settings(_initial_settings);
       flag.set(UpdateFlags::all().value());
-      flag.remove(UpdateFlags::SAVE_IMAGE);
+      flag.remove(UpdateFlags::SaveImage);
     }
     ImGui::SameLine();
     if (ImGui::SmallButton("Default")) {
       _initial_settings.load_default(use_meter, use_left_handed);
       load_settings(_initial_settings);
       flag.set(UpdateFlags::all().value());
-      flag.remove(UpdateFlags::SAVE_IMAGE);
+      flag.remove(UpdateFlags::SaveImage);
     }
 
     ImGui::End();

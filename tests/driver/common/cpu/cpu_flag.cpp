@@ -3,7 +3,7 @@
 // Created Date: 01/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/12/2022
+// Last Modified: 23/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,18 +25,18 @@
 TEST(DriverCommonCPUTest, CPUControlFlags) {
   using autd3::driver::CPUControlFlags;
 
-  CPUControlFlags flag(CPUControlFlags::NONE);
+  CPUControlFlags flag(CPUControlFlags::None);
 
-  ASSERT_EQ(flag, CPUControlFlags::NONE);
+  ASSERT_EQ(flag, CPUControlFlags::None);
 
-  flag.set(CPUControlFlags::MOD);
+  flag.set(CPUControlFlags::Mod);
 
-  ASSERT_TRUE(flag != CPUControlFlags::NONE);
-  ASSERT_EQ(flag, CPUControlFlags::MOD);
+  ASSERT_TRUE(flag != CPUControlFlags::None);
+  ASSERT_EQ(flag, CPUControlFlags::Mod);
 
-  flag.set(CPUControlFlags::MOD_BEGIN);
-  flag.remove(CPUControlFlags::MOD);
+  flag.set(CPUControlFlags::ModBegin);
+  flag.remove(CPUControlFlags::Mod);
 
-  ASSERT_TRUE(flag != CPUControlFlags::MOD);
-  ASSERT_EQ(flag, CPUControlFlags::MOD_BEGIN);
+  ASSERT_TRUE(flag != CPUControlFlags::Mod);
+  ASSERT_EQ(flag, CPUControlFlags::ModBegin);
 }

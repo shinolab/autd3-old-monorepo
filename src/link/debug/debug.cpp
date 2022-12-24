@@ -88,8 +88,8 @@ class DebugImpl final : public core::Link {
             spdlog::info("\tGain STM mode");
         else
           spdlog::info("\tFocus STM mode");
-        if (tx.header().cpu_flag.contains(driver::CPUControlFlags::STM_BEGIN)) spdlog::info("\t\tSTM BEGIN");
-        if (tx.header().cpu_flag.contains(driver::CPUControlFlags::STM_END)) {
+        if (tx.header().cpu_flag.contains(driver::CPUControlFlags::STMBegin)) spdlog::info("\t\tSTM BEGIN");
+        if (tx.header().cpu_flag.contains(driver::CPUControlFlags::STMEnd)) {
           spdlog::info("\t\tSTM END (cycle = {}, frequency_division = {})", fpga.stm_cycle(), fpga.stm_frequency_division());
           for (size_t j = 0; j < fpga.stm_cycle(); j++) {
             const auto [duties, phases] = fpga.drives(j);
