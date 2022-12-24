@@ -18,5 +18,6 @@
 | 2022/12/10 | Version 2.6.7 Initial release                 |
 | 2022/12/10 | Version 2.6.8 Initial release                 |
 | 2022/12/16 | Version 2.7.0 Initial release                 |
+| 2022/12/24 | Version 2.7.1 Initial release                 |
 
 - Documents before version 2.4.3 are only available in Japanese

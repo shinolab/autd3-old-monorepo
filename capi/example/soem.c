@@ -33,7 +33,7 @@ _Noreturn
 #endif
 }
 
-int main() {
+int main(void) {
   void* cnt = NULL;
   void* link = NULL;
   AUTDCreateController(&cnt, 0);

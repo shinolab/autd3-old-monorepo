@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/11/2022
+// Last Modified: 21/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -32,15 +32,15 @@ inline void holo_test(autd3::Controller& autd) {
   auto backend = autd3::gain::holo::EigenBackend::create();
 
   std::vector<std::tuple<std::string, std::shared_ptr<autd3::gain::holo::Holo>>> opts;
-  opts.emplace_back(std::make_tuple("SDP", std::make_shared<autd3::gain::holo::SDP>(backend)));
-  opts.emplace_back(std::make_tuple("EVD", std::make_shared<autd3::gain::holo::EVD>(backend)));
-  opts.emplace_back(std::make_tuple("GS", std::make_shared<autd3::gain::holo::GS>(backend)));
-  opts.emplace_back(std::make_tuple("GSPAT", std::make_shared<autd3::gain::holo::GSPAT>(backend)));
-  opts.emplace_back(std::make_tuple("Naive", std::make_shared<autd3::gain::holo::Naive>(backend)));
-  opts.emplace_back(std::make_tuple("LM", std::make_shared<autd3::gain::holo::LM>(backend)));
-  opts.emplace_back(std::make_tuple("Greedy", std::make_shared<autd3::gain::holo::Greedy>(backend)));
-  opts.emplace_back(std::make_tuple("LSSGreedy", std::make_shared<autd3::gain::holo::LSSGreedy>(backend)));
-  opts.emplace_back(std::make_tuple("APO", std::make_shared<autd3::gain::holo::APO>(backend)));
+  opts.emplace_back("SDP", std::make_shared<autd3::gain::holo::SDP>(backend));
+  opts.emplace_back("EVD", std::make_shared<autd3::gain::holo::EVD>(backend));
+  opts.emplace_back("GS", std::make_shared<autd3::gain::holo::GS>(backend));
+  opts.emplace_back("GSPAT", std::make_shared<autd3::gain::holo::GSPAT>(backend));
+  opts.emplace_back("Naive", std::make_shared<autd3::gain::holo::Naive>(backend));
+  opts.emplace_back("LM", std::make_shared<autd3::gain::holo::LM>(backend));
+  opts.emplace_back("Greedy", std::make_shared<autd3::gain::holo::Greedy>(backend));
+  opts.emplace_back("LSSGreedy", std::make_shared<autd3::gain::holo::LSSGreedy>(backend));
+  opts.emplace_back("APO", std::make_shared<autd3::gain::holo::APO>(backend));
 
   size_t i = 0;
   for (const auto& [name, _opt] : opts) std::cout << "[" << i++ << "]: " << name << std::endl;
@@ -57,7 +57,7 @@ inline void holo_test(autd3::Controller& autd) {
   g->add_focus(center + autd3::Vector3(0.0, 30.0, 0.0), 1.0);
   g->add_focus(center - autd3::Vector3(0.0, 30.0, 0.0), 1.0);
 
-  g->constraint = std::make_unique<autd3::gain::holo::Uniform>(1.0);
+  g->constraint = std::make_unique<autd3::gain::holo::Uniform>(1);
 
   autd << silencer << m, *g;
 }

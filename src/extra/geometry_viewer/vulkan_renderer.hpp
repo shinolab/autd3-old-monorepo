@@ -3,7 +3,7 @@
 // Created Date: 24/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 23/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -69,7 +69,7 @@ class VulkanRenderer {
   VulkanRenderer(VulkanRenderer&& obj) = default;
   VulkanRenderer& operator=(VulkanRenderer&& obj) = delete;
 
-  void create_swapchain() {
+  [[nodiscard]] bool create_swapchain() {
     const auto [capabilities, formats, present_modes] = _context->query_swap_chain_support(_context->physical_device());
 
     const vk::SurfaceFormatKHR surface_format = choose_swap_surface_format(formats);
@@ -95,6 +95,11 @@ class VulkanRenderer {
 
     if (const auto [graphics_family, present_family] = _context->find_queue_families(_context->physical_device());
         graphics_family != present_family) {
+      if (!graphics_family || !present_family) {
+        spdlog::error("Failed to find queue family.");
+        return false;
+      }
+
       create_info.setImageSharingMode(vk::SharingMode::eConcurrent);
       std::vector queue_family_indices = {graphics_family.value(), present_family.value()};
       create_info.setQueueFamilyIndices(queue_family_indices);
@@ -104,6 +109,8 @@ class VulkanRenderer {
     _swap_chain_images = _context->device().getSwapchainImagesKHR(_swap_chain.get());
     _swap_chain_image_format = surface_format.format;
     _swap_chain_extent = extent;
+
+    return true;
   }
 
   void create_image_views() {
@@ -546,7 +553,7 @@ class VulkanRenderer {
 
     cleanup();
 
-    create_swapchain();
+    if (!create_swapchain()) return false;
     create_image_views();
     if (!create_depth_resources() || !create_color_resources()) return false;
     create_framebuffers();

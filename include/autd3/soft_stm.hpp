@@ -3,7 +3,7 @@
 // Created Date: 07/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/12/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -35,21 +35,21 @@ class SoftwareSTM {
    */
   class TimerStrategy final {
    public:
-    enum VALUE : uint8_t {
-      NONE = 0,
+    enum Value : uint8_t {
+      None = 0,
       /**
        * @brief Use busy wait instead of sleep
        */
-      BUSY_WAIT = 1 << 1,
+      BusyWait = 1 << 1,
     };
 
     TimerStrategy() = default;
-    explicit TimerStrategy(const VALUE value) noexcept : _value(value) {}
+    explicit TimerStrategy(const Value value) noexcept : _value(value) {}
 
     ~TimerStrategy() = default;
     TimerStrategy(const TimerStrategy& v) noexcept = default;
     TimerStrategy& operator=(const TimerStrategy& obj) = default;
-    TimerStrategy& operator=(const VALUE v) noexcept {
+    TimerStrategy& operator=(const Value v) noexcept {
       _value = v;
       return *this;
     }
@@ -58,17 +58,17 @@ class SoftwareSTM {
 
     constexpr bool operator==(const TimerStrategy a) const { return _value == a._value; }
     constexpr bool operator!=(const TimerStrategy a) const { return _value != a._value; }
-    constexpr bool operator==(const VALUE a) const { return _value == a; }
-    constexpr bool operator!=(const VALUE a) const { return _value != a; }
+    constexpr bool operator==(const Value a) const { return _value == a; }
+    constexpr bool operator!=(const Value a) const { return _value != a; }
 
-    void set(const VALUE v) noexcept { _value = static_cast<VALUE>(_value | v); }
-    void remove(const VALUE v) noexcept { _value = static_cast<VALUE>(_value & ~v); }
-    [[nodiscard]] bool contains(const VALUE v) const noexcept { return (_value & v) == v; }
+    void set(const Value v) noexcept { _value = static_cast<Value>(_value | v); }
+    void remove(const Value v) noexcept { _value = static_cast<Value>(_value & ~v); }
+    [[nodiscard]] bool contains(const Value v) const noexcept { return (_value & v) == v; }
 
-    [[nodiscard]] VALUE value() const noexcept { return _value; }
+    [[nodiscard]] Value value() const noexcept { return _value; }
 
    private:
-    VALUE _value;
+    Value _value;
   };
 #ifdef _MSC_VER
 #pragma warning(pop)
@@ -97,7 +97,7 @@ class SoftwareSTM {
     std::chrono::high_resolution_clock::duration _timeout;
   };
 
-  SoftwareSTM() noexcept : timer_strategy(TimerStrategy::NONE), _sample_period_ns(0) {}
+  SoftwareSTM() noexcept : timer_strategy(TimerStrategy::None), _sample_period_ns(0) {}
   ~SoftwareSTM() = default;
   SoftwareSTM(const SoftwareSTM& v) = default;
   SoftwareSTM& operator=(const SoftwareSTM& obj) = default;
@@ -109,9 +109,9 @@ class SoftwareSTM {
   /**
    * @brief Set frequency
    * @param[in] freq Frequency
-   * @return double Actual frequency
+   * @return autd3_float_t Actual frequency
    */
-  double set_frequency(double freq);
+  driver::autd3_float_t set_frequency(driver::autd3_float_t freq);
 
   /**
    * @brief Add data to send
@@ -139,7 +139,7 @@ class SoftwareSTM {
   /**
    * @return Frequency
    */
-  [[nodiscard]] double frequency() const;
+  [[nodiscard]] driver::autd3_float_t frequency() const;
 
   /**
    * @return Period
@@ -149,7 +149,7 @@ class SoftwareSTM {
   /**
    * @brief Sampling frequency
    */
-  [[nodiscard]] double sampling_frequency() const noexcept;
+  [[nodiscard]] driver::autd3_float_t sampling_frequency() const noexcept;
 
   /**
    * @brief Sampling period in ns

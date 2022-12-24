@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/12/2022
+// Last Modified: 21/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -51,17 +51,17 @@ struct FocusSTM final : STM {
 
   using value_type = Focus;
 
-  explicit FocusSTM(const double sound_speed) : STM(), sound_speed(sound_speed), _sent(0) {}
+  explicit FocusSTM(const driver::autd3_float_t sound_speed) : STM(), sound_speed(sound_speed), _sent(0) {}
 
   /**
    * @brief Set frequency of the STM
    * @param[in] freq Frequency of the STM
    * @details STM mode has some constraints, which determine the actual frequency of the STM.
-   * @return double Actual frequency of STM
+   * @return driver::autd3_float_t Actual frequency of STM
    */
-  double set_frequency(const double freq) override {
-    const auto sample_freq = static_cast<double>(size()) * freq;
-    _freq_div = static_cast<uint32_t>(std::round(static_cast<double>(driver::FPGA_CLK_FREQ) / sample_freq));
+  driver::autd3_float_t set_frequency(const driver::autd3_float_t freq) override {
+    const auto sample_freq = static_cast<driver::autd3_float_t>(size()) * freq;
+    _freq_div = static_cast<uint32_t>(std::round(static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / sample_freq));
     return frequency();
   }
 
@@ -99,8 +99,9 @@ struct FocusSTM final : STM {
 
       const Vector3 origin = geometry[idx].position();
       const Quaternion rotation = geometry[idx].rotation();
-      const Eigen::Transform<double, 3, Eigen::Affine> transform_matrix = Eigen::Translation<double, 3>(origin) * rotation;
-      const Eigen::Transform<double, 3, Eigen::Affine> trans_inv = transform_matrix.inverse();
+      const Eigen::Transform<driver::autd3_float_t, 3, Eigen::Affine> transform_matrix =
+          Eigen::Translation<driver::autd3_float_t, 3>(origin) * rotation;
+      const Eigen::Transform<driver::autd3_float_t, 3, Eigen::Affine> trans_inv = transform_matrix.inverse();
 
       std::transform(src, src + send_size, std::back_inserter(lp), [&trans_inv](const auto& p) {
         const auto homo = Vector4(p.point[0], p.point[1], p.point[2], 1.0);
@@ -118,7 +119,7 @@ struct FocusSTM final : STM {
   /**
    * @brief Speed of sound.
    */
-  double sound_speed;
+  driver::autd3_float_t sound_speed;
 
  private:
   std::vector<Focus> _points;

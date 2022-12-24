@@ -3,7 +3,7 @@
 // Created Date: 05/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 23/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -90,12 +90,12 @@ class FieldCompute {
 
   [[nodiscard]] bool update(const std::vector<SoundSources>& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers,
                             const size_t image_size, const tinycolormap::ColormapType type, const UpdateFlags update_flags) {
-    if (update_flags.contains(UpdateFlags::UPDATE_SLICE_SIZE)) create_descriptor_sets(sources, image_buffers, image_size);
+    if (update_flags.contains(UpdateFlags::UpdateSliceSize)) create_descriptor_sets(sources, image_buffers, image_size);
 
-    if (update_flags.contains(UpdateFlags::UPDATE_SOURCE_DRIVE) || update_flags.contains(UpdateFlags::UPDATE_SOURCE_FLAG))
+    if (update_flags.contains(UpdateFlags::UpdateSourceDrive) || update_flags.contains(UpdateFlags::UpdateSourceFlag))
       if (!update_source_drive(sources)) return false;
 
-    if (update_flags.contains(UpdateFlags::UPDATE_COLOR_MAP)) return create_color_map(slice_alpha, type);
+    if (update_flags.contains(UpdateFlags::UpdateColorMap)) return create_color_map(slice_alpha, type);
 
     return true;
   }

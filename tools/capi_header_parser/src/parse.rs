@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2022
+ * Last Modified: 24/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -84,7 +84,7 @@ impl Function {
     }
 }
 
-pub fn parse<P>(header: P) -> Result<Vec<Function>>
+pub fn parse<P>(header: P, use_single: bool) -> Result<Vec<Function>>
 where
     P: AsRef<Path>,
 {
@@ -95,7 +95,7 @@ where
     let re_arg = Regex::new(r"(IN |OUT |INOUT )?(const)? ?(.*?) (.*)$").unwrap();
 
     for cap in re.captures_iter(&data) {
-        let return_ty = cap[1].into();
+        let return_ty = Type::parse(&cap[1], use_single);
         let name = cap[2].to_string();
         let mut args = Vec::new();
         for arg in cap[3].split(',') {
@@ -109,7 +109,7 @@ where
                 let name = matches.get(4).unwrap().as_str().to_string();
                 let types_token = matches.get(3).unwrap().as_str();
                 let pointer = types_token.chars().filter(|&c| c == '*').count();
-                let ty = types_token.replace('*', "").trim().into();
+                let ty = Type::parse(types_token.replace('*', "").trim(), use_single);
                 args.push(Arg {
                     name,
                     ty,

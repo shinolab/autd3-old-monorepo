@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/12/2022
+// Last Modified: 23/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -108,7 +108,7 @@ struct GlobalHeader {
    */
   uint8_t data[124];
 
-  GlobalHeader() noexcept : msg_id(0), fpga_flag(FPGAControlFlags::NONE), cpu_flag(CPUControlFlags::NONE), size(0), data() {}
+  GlobalHeader() noexcept : msg_id(0), fpga_flag(FPGAControlFlags::None), cpu_flag(CPUControlFlags::None), size(0), data() {}
 
   [[nodiscard]] const ModHeaderInitial& mod_initial() const noexcept { return *reinterpret_cast<ModHeaderInitial const*>(data); }
   ModHeaderInitial& mod_initial() noexcept { return *reinterpret_cast<ModHeaderInitial*>(data); }

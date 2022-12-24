@@ -3,7 +3,7 @@
 // Created Date: 19/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,9 +27,9 @@ class CustomGain final : public autd3::Gain {
    * @param[in] size length of the data
    * @details The data length should be the same as the number of transducers.
    */
-  explicit CustomGain(const double* amp, const double* phase, const size_t size) : _amp(size), _phase(size) {
-    std::memcpy(_amp.data(), amp, size * sizeof(double));
-    std::memcpy(_phase.data(), phase, size * sizeof(double));
+  explicit CustomGain(const autd3_float_t* amp, const autd3_float_t* phase, const size_t size) : _amp(size), _phase(size) {
+    std::memcpy(_amp.data(), amp, size * sizeof(autd3_float_t));
+    std::memcpy(_phase.data(), phase, size * sizeof(autd3_float_t));
   }
 
   void calc(const autd3::core::Geometry& geometry) override {
@@ -46,8 +46,8 @@ class CustomGain final : public autd3::Gain {
   CustomGain& operator=(CustomGain&& obj) = default;
 
  private:
-  std::vector<double> _amp;
-  std::vector<double> _phase;
+  std::vector<autd3_float_t> _amp;
+  std::vector<autd3_float_t> _phase;
 };
 
 /**

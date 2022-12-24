@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -47,7 +47,7 @@ void AUTDLinkSOEM(void** out, const char* ifname, const uint16_t sync0_cycle, co
                                .sync0_cycle(sync0_cycle)
                                .send_cycle(send_cycle)
                                .high_precision(high_precision)
-                               .sync_mode(freerun ? autd3::link::SYNC_MODE::FREE_RUN : autd3::link::SYNC_MODE::DC)
+                               .sync_mode(freerun ? autd3::link::SyncMode::FreeRun : autd3::link::SyncMode::DC)
                                .state_check_interval(std::chrono::milliseconds(state_check_interval));
   if (ifname != nullptr) soem.ifname(std::string(ifname));
   if (on_lost != nullptr) soem.on_lost([on_lost](const std::string& msg) { reinterpret_cast<OnLostCallback>(on_lost)(msg.c_str()); });
@@ -60,7 +60,7 @@ void AUTDLinkSOEM(void** out, const char* ifname, const uint16_t sync0_cycle, co
 void AUTDLinkSOEMSetLogLevel(const int32_t level) { spdlog::set_level(static_cast<spdlog::level::level_enum>(level)); }
 
 void AUTDLinkSOEMSetDefaultLogger(void* out, void* flush) {
-  auto custom_sink = std::make_shared<autd3::capi::custom_sink_mt>(out, flush);
+  auto custom_sink = std::make_shared<autd3::capi::CustomSinkMt>(out, flush);
   const auto logger = std::make_shared<spdlog::logger>("AUTD3 Logger", custom_sink);
   set_default_logger(logger);
 }

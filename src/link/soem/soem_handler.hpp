@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/12/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -35,7 +35,7 @@ namespace autd3::link {
 class SOEMHandler final {
  public:
   SOEMHandler(const bool high_precision, std::string ifname, const uint16_t sync0_cycle, const uint16_t send_cycle,
-              std::function<void(std::string)> on_lost, const SYNC_MODE sync_mode, const std::chrono::milliseconds state_check_interval)
+              std::function<void(std::string)> on_lost, const SyncMode sync_mode, const std::chrono::milliseconds state_check_interval)
       : _high_precision(high_precision),
         _ifname(std::move(ifname)),
         _sync0_cycle(sync0_cycle),
@@ -71,7 +71,6 @@ class SOEMHandler final {
   static std::string lookup_autd() {
     spdlog::debug("looking for AUTD...");
     auto* adapters = ec_find_adapters();
-    bool found = false;
     for (const auto* adapter = adapters; adapter != nullptr; adapter = adapter->next) {
       spdlog::debug("Checking on {} ({})...", adapter->name, adapter->desc);
       if (ec_init(adapter->name) <= 0) {
@@ -83,17 +82,17 @@ class SOEMHandler final {
         ec_close();
         continue;
       }
-      found = true;
+      bool found = true;
       for (auto i = 1; i <= wc; i++)
-        if (std::strcmp(ec_slave[1].name, "AUTD") != 0) {
+        if (std::strcmp(ec_slave[i].name, "AUTD") != 0) {
           found = false;
-          spdlog::warn("AUTD found on {} ({}), but {}-th device is not AUTD", adapter->name, adapter->desc, i);
+          spdlog::warn("EtherCAT slaves were found on {} ({}), but {}-th device is not AUTD3", adapter->name, adapter->desc, i);
           ec_close();
           break;
         }
       if (found) {
-        spdlog::debug("AUTD found on {} ({})", adapter->name, adapter->desc);
-        const auto ifname = std::string(adapter->name);
+        spdlog::debug("AUTD3 found on {} ({})", adapter->name, adapter->desc);
+        auto ifname = std::string(adapter->name);
         ec_free_adapters(adapters);
         ec_close();
         return ifname;
@@ -146,7 +145,7 @@ class SOEMHandler final {
     _user_data[0] = driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle;
     ecx_context.userdata = _user_data.get();
     spdlog::debug("Sync0 interval: {} [ns]", driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle);
-    if (_sync_mode == SYNC_MODE::DC) {
+    if (_sync_mode == SyncMode::DC) {
       for (int cnt = 1; cnt <= ec_slavecount; cnt++)
         ec_slave[cnt].PO2SOconfigx = [](auto* context, auto slave) -> int {
           const auto cyc_time = static_cast<uint32_t*>(context->userdata)[0];
@@ -205,7 +204,7 @@ class SOEMHandler final {
       return open(device_map, remaining - 1);
     }
 
-    if (_sync_mode == SYNC_MODE::FREE_RUN) {
+    if (_sync_mode == SyncMode::FreeRun) {
       for (int slave = 1; slave <= ec_slavecount; slave++)
         ec_dcsync0(static_cast<uint16_t>(slave), true, driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle, 0U);
       spdlog::debug("run mode: Free Run");
@@ -278,7 +277,7 @@ class SOEMHandler final {
 
   std::function<void(std::string)> _on_lost = nullptr;
 
-  SYNC_MODE _sync_mode;
+  SyncMode _sync_mode;
 
   IOMap _io_map;
 
