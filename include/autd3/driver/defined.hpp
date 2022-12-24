@@ -3,7 +3,7 @@
 // Created Date: 25/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/11/2022
+// Last Modified: 21/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -35,15 +35,21 @@
 
 namespace autd3::driver {
 
-#if __cplusplus >= 202002L
-constexpr double pi = std::numbers::pi;
+#ifdef AUTD3_USE_SINGLE_FLOAT
+using autd3_float_t = float;
 #else
-constexpr double pi = 3.141592653589793238462643383279502884L;
+using autd3_float_t = double;
 #endif
 
-using Vector3 = Eigen::Matrix<double, 3, 1>;
-using Vector4 = Eigen::Matrix<double, 4, 1>;
-using Matrix4X4 = Eigen::Matrix<double, 4, 4>;
-using Quaternion = Eigen::Quaternion<double>;
+#if __cplusplus >= 202002L
+constexpr autd3_float_t pi = std::numbers::pi_v<autd3_float_t>;
+#else
+constexpr autd3_float_t pi = static_cast<autd3_float_t>(3.141592653589793238462643383279502884L);
+#endif
+
+using Vector3 = Eigen::Matrix<autd3_float_t, 3, 1>;
+using Vector4 = Eigen::Matrix<autd3_float_t, 4, 1>;
+using Matrix4X4 = Eigen::Matrix<autd3_float_t, 4, 4>;
+using Quaternion = Eigen::Quaternion<autd3_float_t>;
 
 }  // namespace autd3::driver

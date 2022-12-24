@@ -301,14 +301,13 @@ class Simulator {
   /**
    * @brief Set settings
    */
-  Simulator& settings(SimulatorSettings* settings) {
+  Simulator& settings(const SimulatorSettings& settings) {
     _settings = settings;
     return *this;
   }
 
  private:
-  SimulatorSettings _default_settings{};
-  SimulatorSettings* _settings{&_default_settings};
+  SimulatorSettings _settings{};
 
   std::thread _th;
 };

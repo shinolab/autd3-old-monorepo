@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/12/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -32,8 +32,8 @@
 
 using Controller = autd3::Controller;
 
-autd3::Vector3 to_vec3(const double x, const double y, const double z) { return {x, y, z}; }
-autd3::Quaternion to_quaternion(const double w, const double x, const double y, const double z) { return {w, x, y, z}; }
+autd3::Vector3 to_vec3(const autd3_float_t x, const autd3_float_t y, const autd3_float_t z) { return {x, y, z}; }
+autd3::Quaternion to_quaternion(const autd3_float_t w, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z) { return {w, x, y, z}; }
 
 std::unique_ptr<const autd3::driver::Driver> get_driver(const uint8_t driver_version) {
   switch (driver_version) {
@@ -60,7 +60,7 @@ std::unique_ptr<const autd3::driver::Driver> get_driver(const uint8_t driver_ver
 void AUTDSetLogLevel(const int32_t level) { spdlog::set_level(static_cast<spdlog::level::level_enum>(level)); }
 
 void AUTDSetDefaultLogger(void* out, void* flush) {
-  auto custom_sink = std::make_shared<autd3::capi::custom_sink_mt>(out, flush);
+  auto custom_sink = std::make_shared<autd3::capi::CustomSinkMt>(out, flush);
   const auto logger = std::make_shared<spdlog::logger>("AUTD3 Logger", custom_sink);
   set_default_logger(logger);
 }
@@ -80,13 +80,14 @@ bool AUTDOpenController(void* const handle, void* const link) {
   return wrapper->open(std::move(link_));
 }
 
-void AUTDAddDevice(void* const handle, const double x, const double y, const double z, const double rz1, const double ry, const double rz2) {
+void AUTDAddDevice(void* const handle, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const autd3_float_t rz1,
+                   const autd3_float_t ry, const autd3_float_t rz2) {
   auto* const wrapper = static_cast<Controller*>(handle);
   wrapper->geometry().add_device(autd3::AUTD3(to_vec3(x, y, z), to_vec3(rz1, ry, rz2)));
 }
 
-void AUTDAddDeviceQuaternion(void* const handle, const double x, const double y, const double z, const double qw, const double qx, const double qy,
-                             const double qz) {
+void AUTDAddDeviceQuaternion(void* const handle, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const autd3_float_t qw,
+                             const autd3_float_t qx, const autd3_float_t qy, const autd3_float_t qz) {
   auto* const wrapper = static_cast<Controller*>(handle);
   wrapper->geometry().add_device(autd3::AUTD3(to_vec3(x, y, z), to_quaternion(qw, qx, qy, qz)));
 }
@@ -136,7 +137,7 @@ void AUTDSetSendInterval(void* const handle, const uint64_t interval) {
   auto* const wrapper = static_cast<Controller*>(handle);
   wrapper->set_send_interval(std::chrono::nanoseconds(interval));
 }
-double AUTDGetTransFrequency(const void* const handle, const int32_t trans_idx) {
+autd3_float_t AUTDGetTransFrequency(const void* const handle, const int32_t trans_idx) {
   const auto* const wrapper = static_cast<const Controller*>(handle);
   return wrapper->geometry()[trans_idx].frequency();
 }
@@ -146,32 +147,32 @@ uint16_t AUTDGetTransCycle(const void* const handle, const int32_t trans_idx) {
   return wrapper->geometry()[trans_idx].cycle();
 }
 
-double AUTDGetSoundSpeed(const void* const handle) {
+autd3_float_t AUTDGetSoundSpeed(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   return wrapper->get_sound_speed();
 }
 
-void AUTDSetSoundSpeed(void* const handle, const double sound_speed) {
+void AUTDSetSoundSpeed(void* const handle, const autd3_float_t sound_speed) {
   auto* wrapper = static_cast<Controller*>(handle);
   wrapper->set_sound_speed(sound_speed);
 }
 
-void AUTDSetSoundSpeedFromTemp(void* const handle, const double temp, const double k, const double r, const double m) {
+void AUTDSetSoundSpeedFromTemp(void* const handle, const autd3_float_t temp, const autd3_float_t k, const autd3_float_t r, const autd3_float_t m) {
   auto* wrapper = static_cast<Controller*>(handle);
   wrapper->set_sound_speed_from_temp(temp, k, r, m);
 }
 
-double AUTDGetWavelength(const void* const handle, const int32_t trans_idx) {
+autd3_float_t AUTDGetWavelength(const void* const handle, const int32_t trans_idx) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   return wrapper->geometry()[trans_idx].wavelength();
 }
 
-double AUTDGetAttenuation(const void* const handle) {
+autd3_float_t AUTDGetAttenuation(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   return wrapper->get_attenuation();
 }
 
-void AUTDSetAttenuation(void* const handle, const double attenuation) {
+void AUTDSetAttenuation(void* const handle, const autd3_float_t attenuation) {
   auto* const wrapper = static_cast<Controller*>(handle);
   wrapper->set_attenuation(attenuation);
 }
@@ -195,7 +196,7 @@ int32_t AUTDNumDevices(const void* const handle) {
   return static_cast<int32_t>(res);
 }
 
-void AUTDGeometryCenter(const void* const handle, double* x, double* y, double* z) {
+void AUTDGeometryCenter(const void* const handle, autd3_float_t* x, autd3_float_t* y, autd3_float_t* z) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   const auto pos = wrapper->geometry().center();
   *x = pos.x();
@@ -203,7 +204,7 @@ void AUTDGeometryCenter(const void* const handle, double* x, double* y, double* 
   *z = pos.z();
 }
 
-void AUTDTransPosition(const void* const handle, const int32_t trans_idx, double* x, double* y, double* z) {
+void AUTDTransPosition(const void* const handle, const int32_t trans_idx, autd3_float_t* x, autd3_float_t* y, autd3_float_t* z) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   const auto& pos = wrapper->geometry()[trans_idx].position();
   *x = pos.x();
@@ -211,21 +212,21 @@ void AUTDTransPosition(const void* const handle, const int32_t trans_idx, double
   *z = pos.z();
 }
 
-void AUTDTransXDirection(const void* const handle, const int32_t trans_idx, double* x, double* y, double* z) {
+void AUTDTransXDirection(const void* const handle, const int32_t trans_idx, autd3_float_t* x, autd3_float_t* y, autd3_float_t* z) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   const auto& pos = wrapper->geometry()[trans_idx].x_direction();
   *x = pos.x();
   *y = pos.y();
   *z = pos.z();
 }
-void AUTDTransYDirection(const void* const handle, const int32_t trans_idx, double* x, double* y, double* z) {
+void AUTDTransYDirection(const void* const handle, const int32_t trans_idx, autd3_float_t* x, autd3_float_t* y, autd3_float_t* z) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   const auto& pos = wrapper->geometry()[trans_idx].y_direction();
   *x = pos.x();
   *y = pos.y();
   *z = pos.z();
 }
-void AUTDTransZDirection(const void* const handle, const int32_t trans_idx, double* x, double* y, double* z) {
+void AUTDTransZDirection(const void* const handle, const int32_t trans_idx, autd3_float_t* x, autd3_float_t* y, autd3_float_t* z) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   const auto& pos = wrapper->geometry()[trans_idx].z_direction();
   *x = pos.x();
@@ -269,25 +270,25 @@ void AUTDGainGroupedAdd(void* grouped_gain, const int32_t device_id, void* gain)
   gg->add(device_id, *g);
 }
 
-void AUTDGainFocus(void** gain, const double x, const double y, const double z, const double amp) {
+void AUTDGainFocus(void** gain, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const autd3_float_t amp) {
   *gain = new autd3::gain::Focus(to_vec3(x, y, z), amp);
 }
-void AUTDGainBesselBeam(void** gain, const double x, const double y, const double z, const double n_x, const double n_y, const double n_z,
-                        const double theta_z, const double amp) {
+void AUTDGainBesselBeam(void** gain, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const autd3_float_t n_x,
+                        const autd3_float_t n_y, const autd3_float_t n_z, const autd3_float_t theta_z, const autd3_float_t amp) {
   *gain = new autd3::gain::BesselBeam(to_vec3(x, y, z), to_vec3(n_x, n_y, n_z), theta_z, amp);
 }
-void AUTDGainPlaneWave(void** gain, const double n_x, const double n_y, const double n_z, const double amp) {
+void AUTDGainPlaneWave(void** gain, const autd3_float_t n_x, const autd3_float_t n_y, const autd3_float_t n_z, const autd3_float_t amp) {
   *gain = new autd3::gain::PlaneWave(to_vec3(n_x, n_y, n_z), amp);
 }
 
 void AUTDGainTransducerTest(void** gain) { *gain = new autd3::gain::TransducerTest(); }
 
-void AUTDGainTransducerTestSet(void* gain, const int32_t tr_idx, const double amp, const double phase) {
+void AUTDGainTransducerTestSet(void* gain, const int32_t tr_idx, const autd3_float_t amp, const autd3_float_t phase) {
   auto* const g = static_cast<autd3::gain::TransducerTest*>(gain);
   g->set(tr_idx, amp, phase);
 }
 
-void AUTDGainCustom(void** gain, const double* amp, const double* phase, const uint64_t size) {
+void AUTDGainCustom(void** gain, const autd3_float_t* amp, const autd3_float_t* phase, const uint64_t size) {
   *gain = new CustomGain(amp, phase, static_cast<size_t>(size));
 }
 
@@ -296,18 +297,18 @@ void AUTDDeleteGain(const void* const gain) {
   delete g;
 }
 
-void AUTDModulationStatic(void** mod, const double amp) { *mod = new autd3::modulation::Static(amp); }
+void AUTDModulationStatic(void** mod, const autd3_float_t amp) { *mod = new autd3::modulation::Static(amp); }
 
-void AUTDModulationSquare(void** mod, const int32_t freq, const double low, const double high, const double duty) {
+void AUTDModulationSquare(void** mod, const int32_t freq, const autd3_float_t low, const autd3_float_t high, const autd3_float_t duty) {
   *mod = new autd3::modulation::Square(freq, low, high, duty);
 }
-void AUTDModulationSine(void** mod, const int32_t freq, const double amp, const double offset) {
+void AUTDModulationSine(void** mod, const int32_t freq, const autd3_float_t amp, const autd3_float_t offset) {
   *mod = new autd3::modulation::Sine(freq, amp, offset);
 }
-void AUTDModulationSineSquared(void** mod, const int32_t freq, const double amp, const double offset) {
+void AUTDModulationSineSquared(void** mod, const int32_t freq, const autd3_float_t amp, const autd3_float_t offset) {
   *mod = new autd3::modulation::SineSquared(freq, amp, offset);
 }
-void AUTDModulationSineLegacy(void** mod, const double freq, const double amp, const double offset) {
+void AUTDModulationSineLegacy(void** mod, const autd3_float_t freq, const autd3_float_t amp, const autd3_float_t offset) {
   *mod = new autd3::modulation::SineLegacy(freq, amp, offset);
 }
 
@@ -327,7 +328,7 @@ void AUTDModulationSetSamplingFrequencyDivision(void* const mod, const uint32_t 
   auto* const m = static_cast<autd3::Modulation*>(mod);
   m->sampling_frequency_division() = freq_div;
 }
-double AUTDModulationSamplingFrequency(const void* const mod) {
+autd3_float_t AUTDModulationSamplingFrequency(const void* const mod) {
   const auto* const m = static_cast<const autd3::Modulation*>(mod);
   return m->sampling_frequency();
 }
@@ -336,12 +337,12 @@ void AUTDDeleteModulation(const void* const mod) {
   delete m;
 }
 
-void AUTDFocusSTM(void** out, const double sound_speed) { *out = new autd3::FocusSTM(sound_speed); }
+void AUTDFocusSTM(void** out, const autd3_float_t sound_speed) { *out = new autd3::FocusSTM(sound_speed); }
 void AUTDGainSTM(void** out, const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   *out = new autd3::GainSTM(wrapper->geometry());
 }
-void AUTDFocusSTMAdd(void* const stm, const double x, const double y, const double z, const uint8_t shift) {
+void AUTDFocusSTMAdd(void* const stm, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const uint8_t shift) {
   auto* const stm_w = static_cast<autd3::FocusSTM*>(stm);
   stm_w->add(to_vec3(x, y, z), shift);
 }
@@ -387,15 +388,15 @@ void AUTDSTMSetFinishIdx(void* const stm, const int32_t finish_idx) {
     stm_w->finish_idx = static_cast<uint16_t>(finish_idx);
 }
 
-double AUTDSTMSetFrequency(void* const stm, const double freq) {
+autd3_float_t AUTDSTMSetFrequency(void* const stm, const autd3_float_t freq) {
   auto* const stm_w = static_cast<autd3::core::STM*>(stm);
   return stm_w->set_frequency(freq);
 }
-double AUTDSTMFrequency(const void* const stm) {
+autd3_float_t AUTDSTMFrequency(const void* const stm) {
   const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
   return stm_w->frequency();
 }
-double AUTDSTMSamplingFrequency(const void* const stm) {
+autd3_float_t AUTDSTMSamplingFrequency(const void* const stm) {
   const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
   return stm_w->sampling_frequency();
 }
@@ -466,7 +467,7 @@ void AUTDSendSpecialAsync(void* const handle, void* const special) {
   delete s;
 }
 
-void AUTDSetTransFrequency(void* const handle, const int32_t trans_idx, const double frequency) {
+void AUTDSetTransFrequency(void* const handle, const int32_t trans_idx, const autd3_float_t frequency) {
   auto* const wrapper = static_cast<Controller*>(handle);
   wrapper->geometry()[trans_idx].set_frequency(frequency);
 }
@@ -486,7 +487,7 @@ void AUTDSetModDelay(void* const handle, const int32_t trans_idx, const uint16_t
   wrapper->geometry()[trans_idx].mod_delay() = delay;
 }
 
-void AUTDCreateAmplitudes(void** out, const double amp) { *out = new autd3::core::Amplitudes(amp); }
+void AUTDCreateAmplitudes(void** out, const autd3_float_t amp) { *out = new autd3::core::Amplitudes(amp); }
 void AUTDDeleteAmplitudes(IN const void* amplitudes) {
   const auto* const amps_ = static_cast<const autd3::core::Amplitudes*>(amplitudes);
   delete amps_;
@@ -512,7 +513,7 @@ void AUTDSetMode(void* const handle, const uint8_t mode) {
 void AUTDSoftwareSTM(void** out) { *out = new autd3::SoftwareSTM; }
 void AUTDSoftwareSTMSetStrategy(void* stm, const uint8_t strategy) {
   static_cast<autd3::SoftwareSTM*>(stm)->timer_strategy =
-      autd3::SoftwareSTM::TimerStrategy(static_cast<autd3::SoftwareSTM::TimerStrategy::VALUE>(strategy));
+      autd3::SoftwareSTM::TimerStrategy(static_cast<autd3::SoftwareSTM::TimerStrategy::Value>(strategy));
 }
 EXPORT_AUTD void AUTDSoftwareSTMAdd(void* stm, void* gain) {
   static_cast<autd3::SoftwareSTM*>(stm)->add(std::shared_ptr<autd3::core::Gain>(static_cast<autd3::core::Gain*>(gain)));
@@ -524,10 +525,14 @@ EXPORT_AUTD void AUTDSoftwareSTMFinish(void* handle) {
   auto* h = static_cast<autd3::SoftwareSTM::SoftwareSTMThreadHandle*>(handle);
   h->finish();
 }
-EXPORT_AUTD double AUTDSoftwareSTMSetFrequency(void* stm, const double freq) { return static_cast<autd3::SoftwareSTM*>(stm)->set_frequency(freq); }
-EXPORT_AUTD double AUTDSoftwareSTMFrequency(const void* stm) { return static_cast<const autd3::SoftwareSTM*>(stm)->frequency(); }
+EXPORT_AUTD autd3_float_t AUTDSoftwareSTMSetFrequency(void* stm, const autd3_float_t freq) {
+  return static_cast<autd3::SoftwareSTM*>(stm)->set_frequency(freq);
+}
+EXPORT_AUTD autd3_float_t AUTDSoftwareSTMFrequency(const void* stm) { return static_cast<const autd3::SoftwareSTM*>(stm)->frequency(); }
 EXPORT_AUTD uint64_t AUTDSoftwareSTMPeriod(const void* stm) { return static_cast<const autd3::SoftwareSTM*>(stm)->period(); }
-EXPORT_AUTD double AUTDSoftwareSTMSamplingFrequency(const void* stm) { return static_cast<const autd3::SoftwareSTM*>(stm)->sampling_frequency(); }
+EXPORT_AUTD autd3_float_t AUTDSoftwareSTMSamplingFrequency(const void* stm) {
+  return static_cast<const autd3::SoftwareSTM*>(stm)->sampling_frequency();
+}
 EXPORT_AUTD uint64_t AUTDSoftwareSTMSamplingPeriod(const void* stm) { return static_cast<const autd3::SoftwareSTM*>(stm)->sampling_period_ns(); }
 EXPORT_AUTD void AUTDSoftwareSTMSetSamplingPeriod(void* stm, const uint64_t period) {
   static_cast<autd3::SoftwareSTM*>(stm)->sampling_period_ns() = period;

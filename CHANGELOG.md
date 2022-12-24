@@ -1,3 +1,9 @@
+# 2.7.1
+
+- Fix [#51](https://github.com/shinolab/autd3/issues/51)
+- Add `USE_SINGLE_FLOAT` option
+- [Unity] Unity API now uses `float` instead of `double`
+
 # 2.7.0 
 
 - Fix [#50](https://github.com/shinolab/autd3/issues/50)

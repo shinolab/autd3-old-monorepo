@@ -3,7 +3,7 @@
 // Created Date: 22/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 22/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,6 +15,8 @@
 #include "spdlog.hpp"
 
 namespace autd3 {
+
+constexpr driver::autd3_float_t NANO_SECONDS = static_cast<driver::autd3_float_t>(1000000000);
 
 bool SoftwareSTM::SoftwareSTMThreadHandle::finish() {
   if (!_run) {
@@ -33,7 +35,7 @@ SoftwareSTM::SoftwareSTMThreadHandle::SoftwareSTMThreadHandle(Controller& cnt, s
   if (bodies.empty()) return;
   const auto interval = std::chrono::nanoseconds(period);
   _cnt.set_ack_check_timeout(std::chrono::high_resolution_clock::duration::zero());
-  if (strategy.contains(TimerStrategy::BUSY_WAIT))
+  if (strategy.contains(TimerStrategy::BusyWait))
     _th = std::thread([this, interval, bodies = std::move(bodies)] {
       size_t i = 0;
       auto next = std::chrono::high_resolution_clock::now();
@@ -60,9 +62,9 @@ SoftwareSTM::SoftwareSTMThreadHandle::SoftwareSTMThreadHandle(Controller& cnt, s
     });
 }
 
-double SoftwareSTM::set_frequency(const double freq) {
-  const auto sample_freq = static_cast<double>(size()) * freq;
-  const auto sample_period_ns = static_cast<uint64_t>(std::round(1000000000.0 / sample_freq));
+driver::autd3_float_t SoftwareSTM::set_frequency(const driver::autd3_float_t freq) {
+  const auto sample_freq = static_cast<driver::autd3_float_t>(size()) * freq;
+  const auto sample_period_ns = static_cast<uint64_t>(std::round(NANO_SECONDS / sample_freq));
   _sample_period_ns = sample_period_ns;
   return frequency();
 }
@@ -72,11 +74,13 @@ SoftwareSTM::SoftwareSTMThreadHandle SoftwareSTM::start(Controller& cnt) {
   return {cnt, std::move(_bodies), _sample_period_ns, timer_strategy};
 }
 
-double SoftwareSTM::frequency() const { return sampling_frequency() / static_cast<double>(size()); }
+driver::autd3_float_t SoftwareSTM::frequency() const { return sampling_frequency() / static_cast<driver::autd3_float_t>(size()); }
 
 uint64_t SoftwareSTM::period() const { return _sample_period_ns * size(); }
 
-double SoftwareSTM::sampling_frequency() const noexcept { return 1000000000.0 / static_cast<double>(_sample_period_ns); }
+driver::autd3_float_t SoftwareSTM::sampling_frequency() const noexcept {
+  return NANO_SECONDS / static_cast<driver::autd3_float_t>(_sample_period_ns);
+}
 
 uint64_t SoftwareSTM::sampling_period_ns() const noexcept { return _sample_period_ns; }
 
