@@ -35,6 +35,11 @@ using Quaternion = AUTD3Sharp.Utils.Quaterniond;
 using System.Numerics;
 #endif
 
+#if USE_SINGLE
+using autd3_float_t = System.Single;
+#else
+using autd3_float_t = System.Double;
+#endif
 
 namespace AUTD3Sharp
 {
@@ -166,9 +171,9 @@ namespace AUTD3Sharp
             }
         }
 
-        public double Wavelength => Base.AUTDGetWavelength(_cnt, _trId);
+        public autd3_float_t Wavelength => Base.AUTDGetWavelength(_cnt, _trId);
 
-        public double Frequency
+        public autd3_float_t Frequency
         {
             get => Base.AUTDGetTransFrequency(_cnt, _trId);
             set => Base.AUTDSetTransFrequency(_cnt, _trId, value);
@@ -330,13 +335,13 @@ namespace AUTD3Sharp
         public Geometry Geometry { get; }
 
 
-        public double SoundSpeed
+        public autd3_float_t SoundSpeed
         {
             get => Base.AUTDGetSoundSpeed(AUTDControllerHandle.CntPtr);
             set => Base.AUTDSetSoundSpeed(AUTDControllerHandle.CntPtr, value);
         }
 
-        public double Attenuation
+        public autd3_float_t Attenuation
         {
             get => Base.AUTDGetAttenuation(AUTDControllerHandle.CntPtr);
             set => Base.AUTDSetAttenuation(AUTDControllerHandle.CntPtr, value);
@@ -391,7 +396,7 @@ namespace AUTD3Sharp
         #endregion
 
 
-        public void SetSoundSpeedFromTemp(double temp, double k = 1.4, double r = 8.31446261815324, double m = 28.9647e-3)
+        public void SetSoundSpeedFromTemp(autd3_float_t temp, autd3_float_t k = (autd3_float_t)1.4, autd3_float_t r = (autd3_float_t)8.31446261815324, autd3_float_t m = (autd3_float_t)28.9647e-3)
         {
             Base.AUTDSetSoundSpeedFromTemp(AUTDControllerHandle.CntPtr, temp, k, r, m);
         }
@@ -559,7 +564,7 @@ namespace AUTD3Sharp
 
     public sealed class Amplitudes : Body
     {
-        public Amplitudes(double amp = 1.0)
+        public Amplitudes(autd3_float_t amp = (autd3_float_t)1.0)
         {
             Base.AUTDCreateAmplitudes(out handle, amp);
         }
@@ -590,7 +595,7 @@ namespace AUTD3Sharp
 
         public sealed class Focus : Gain
         {
-            public Focus(Vector3 point, double amp = 1.0) => Base.AUTDGainFocus(out handle, point.x, point.y, point.z, amp);
+            public Focus(Vector3 point, autd3_float_t amp = (autd3_float_t)1.0) => Base.AUTDGainFocus(out handle, point.x, point.y, point.z, amp);
         }
 
         public sealed class Grouped : Gain
@@ -608,17 +613,17 @@ namespace AUTD3Sharp
 
         public sealed class BesselBeam : Gain
         {
-            public BesselBeam(Vector3 point, Vector3 dir, double thetaZ, double amp = 1.0) => Base.AUTDGainBesselBeam(out handle, point.x, point.y, point.z, dir.x, dir.y, dir.z, thetaZ, amp);
+            public BesselBeam(Vector3 point, Vector3 dir, autd3_float_t thetaZ, autd3_float_t amp = (autd3_float_t)1.0) => Base.AUTDGainBesselBeam(out handle, point.x, point.y, point.z, dir.x, dir.y, dir.z, thetaZ, amp);
         }
 
         public sealed class PlaneWave : Gain
         {
-            public PlaneWave(Vector3 dir, double amp = 1.0) => Base.AUTDGainPlaneWave(out handle, dir.x, dir.y, dir.z, amp);
+            public PlaneWave(Vector3 dir, autd3_float_t amp = (autd3_float_t)1.0) => Base.AUTDGainPlaneWave(out handle, dir.x, dir.y, dir.z, amp);
         }
 
         public sealed class Custom : Gain
         {
-            public Custom(double[] amp, double[] phase)
+            public Custom(autd3_float_t[] amp, autd3_float_t[] phase)
             {
                 if (amp.Length != phase.Length) throw new ArgumentException();
                 var length = amp.Length;
@@ -651,7 +656,7 @@ namespace AUTD3Sharp
                 return true;
             }
 
-            public double SamplingFrequency => Base.AUTDModulationSamplingFrequency(handle);
+            public autd3_float_t SamplingFrequency => Base.AUTDModulationSamplingFrequency(handle);
             public uint SamplingFrequencyDivision
             {
                 get => Base.AUTDModulationSamplingFrequencyDivision(handle);
@@ -661,7 +666,7 @@ namespace AUTD3Sharp
 
         public sealed class Static : Modulation
         {
-            public Static(double amp = 1.0)
+            public Static(autd3_float_t amp = (autd3_float_t)1.0)
             {
                 Base.AUTDModulationStatic(out handle, amp);
 
@@ -670,7 +675,7 @@ namespace AUTD3Sharp
 
         public sealed class Sine : Modulation
         {
-            public Sine(int freq, double amp = 1.0, double offset = 0.5)
+            public Sine(int freq, autd3_float_t amp = (autd3_float_t)1.0, autd3_float_t offset = (autd3_float_t)0.5)
             {
                 Base.AUTDModulationSine(out handle, freq, amp, offset);
             }
@@ -678,7 +683,7 @@ namespace AUTD3Sharp
 
         public sealed class SineSquared : Modulation
         {
-            public SineSquared(int freq, double amp = 1.0, double offset = 0.5)
+            public SineSquared(int freq, autd3_float_t amp = (autd3_float_t)1.0, autd3_float_t offset = (autd3_float_t)0.5)
             {
                 Base.AUTDModulationSineSquared(out handle, freq, amp, offset);
             }
@@ -686,7 +691,7 @@ namespace AUTD3Sharp
 
         public sealed class SineLegacy : Modulation
         {
-            public SineLegacy(double freq, double amp = 1.0, double offset = 0.5)
+            public SineLegacy(autd3_float_t freq, autd3_float_t amp = (autd3_float_t)1.0, autd3_float_t offset = (autd3_float_t)0.5)
             {
                 Base.AUTDModulationSineLegacy(out handle, freq, amp, offset);
             }
@@ -695,7 +700,7 @@ namespace AUTD3Sharp
 
         public sealed class Square : Modulation
         {
-            public Square(int freq, double low = 0.0, double high = 1.0, double duty = 0.5)
+            public Square(int freq, autd3_float_t low = (autd3_float_t)0.0, autd3_float_t high = (autd3_float_t)1.0, autd3_float_t duty = (autd3_float_t)0.5)
             {
                 Base.AUTDModulationSquare(out handle, freq, low, high, duty);
             }
@@ -720,7 +725,7 @@ namespace AUTD3Sharp
                 return true;
             }
 
-            public double Frequency
+            public autd3_float_t Frequency
             {
                 get => Base.AUTDSTMFrequency(handle);
                 set => Base.AUTDSTMSetFrequency(handle, value);
@@ -738,7 +743,7 @@ namespace AUTD3Sharp
                 set => Base.AUTDSTMSetFinishIdx(handle, value);
             }
 
-            public double SamplingFrequency => Base.AUTDSTMSamplingFrequency(handle);
+            public autd3_float_t SamplingFrequency => Base.AUTDSTMSamplingFrequency(handle);
             public uint SamplingFrequencyDivision
             {
                 get => Base.AUTDSTMSamplingFrequencyDivision(handle);
@@ -748,7 +753,7 @@ namespace AUTD3Sharp
 
         public sealed class FocusSTM : STM
         {
-            public FocusSTM(double soundSpeed)
+            public FocusSTM(autd3_float_t soundSpeed)
             {
                 Base.AUTDFocusSTM(out handle, soundSpeed);
             }
