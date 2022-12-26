@@ -20,6 +20,11 @@
             "displayName": "Simple",
             "description": "Sample to display the focus at target object",
             "path": "Samples~/Simple"
+        },
+        {
+            "displayName": "MultiDevice",
+            "description": "Sample to use 2 devices with Simulator",
+            "path": "Samples~/MultiDevice"
         }
     ]
 }
