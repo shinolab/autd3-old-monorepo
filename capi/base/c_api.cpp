@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 28/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -199,6 +199,14 @@ int32_t AUTDNumDevices(const void* const handle) {
 void AUTDGeometryCenter(const void* const handle, autd3_float_t* x, autd3_float_t* y, autd3_float_t* z) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   const auto pos = wrapper->geometry().center();
+  *x = pos.x();
+  *y = pos.y();
+  *z = pos.z();
+}
+
+void AUTDGeometryCenterOf(const void* const handle, const int32_t dev_idx, autd3_float_t* x, autd3_float_t* y, autd3_float_t* z) {
+  const auto* wrapper = static_cast<const Controller*>(handle);
+  const auto pos = wrapper->geometry().center_of(dev_idx);
   *x = pos.x();
   *y = pos.y();
   *z = pos.z();

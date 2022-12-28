@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/12/2022
+ * Last Modified: 28/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -225,6 +225,12 @@ namespace AUTD3Sharp
                 if (index >= NumTransducers) throw new IndexOutOfRangeException();
                 return new Transducer(index, CntPtr);
             }
+        }
+
+        public Vector3 CenterOf(int devIdx)
+        {
+            Base.AUTDGeometryCenterOf(CntPtr, devIdx, out var x, out var y, out var z);
+            return new Vector3(x, y, z);
         }
 
         public sealed class TransducerEnumerator : IEnumerator<Transducer>

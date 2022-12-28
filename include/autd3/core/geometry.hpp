@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/11/2022
+// Last Modified: 28/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -52,14 +52,31 @@ struct Geometry {
    * @brief Center position of all transducers
    */
   [[nodiscard]] Vector3 center() const {
-    const Vector3 zero = Vector3::Zero();
     if (num_transducers() == 0) return Vector3::Zero();
+    const Vector3 zero = Vector3::Zero();
     return std::accumulate(begin(), end(), zero,
                            [](const Vector3& acc, const Transducer& tr) {
                              Vector3 res = acc + tr.position();
                              return res;
                            }) /
            _transducers.size();
+  }
+
+  /**
+   * @brief Center position of the device
+   */
+  [[nodiscard]] Vector3 center_of(const size_t dev_idx) const {
+    if (dev_idx >= _device_map.size()) return Vector3::Zero();
+    const auto start_idx =
+        std::accumulate(_device_map.begin(), _device_map.begin() + static_cast<decltype(_device_map)::difference_type>(dev_idx), size_t{0});
+    const Vector3 zero = Vector3::Zero();
+    return std::accumulate(begin() + static_cast<decltype(_transducers)::difference_type>(start_idx),
+                           begin() + static_cast<decltype(_transducers)::difference_type>(start_idx + _device_map[dev_idx]), zero,
+                           [](const Vector3& acc, const Transducer& tr) {
+                             Vector3 res = acc + tr.position();
+                             return res;
+                           }) /
+           _device_map[dev_idx];
   }
 
   /**

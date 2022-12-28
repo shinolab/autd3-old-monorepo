@@ -343,6 +343,19 @@ Get the geometry center.
 | z                      | double* | out    | z coordinate of center              |
 | return                 | void    | -      | -                                   |
 
+## AUTDGeometryCenterOf (autd3capi)
+
+Get the device center.
+
+| Argument name / return | type    | in/out | description                         |
+| ---------------------- | ------- | ------ | ----------------------------------- |
+| handle                 | void*   | in     | pointer to Controller               |
+| dev_idx                | int32_t | in     | device index                        |
+| x                      | double* | out    | x coordinate of center              |
+| y                      | double* | out    | y coordinate of center              |
+| z                      | double* | out    | z coordinate of center              |
+| return                 | void    | -      | -                                   |
+
 ## AUTDTransPosition (autd3capi)
 
 Get the position of the transducer.
