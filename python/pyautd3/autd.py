@@ -33,6 +33,7 @@ DRIVER_V2_3 = 0x83
 DRIVER_V2_4 = 0x84
 DRIVER_V2_5 = 0x85
 DRIVER_V2_6 = 0x86
+DRIVER_V2_7 = 0x87
 
 
 LogOutputFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
