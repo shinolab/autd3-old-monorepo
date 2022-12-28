@@ -3,7 +3,7 @@
 // Created Date: 07/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/11/2022
+// Last Modified: 29/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -29,6 +29,7 @@ struct Synchronize final : DatagramBody {
   bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const Mode>& mode, const Geometry& geometry,
             driver::TxDatagram& tx) override {
     std::vector<uint16_t> cycles;
+    cycles.reserve(geometry.num_transducers());
     std::transform(geometry.begin(), geometry.end(), std::back_inserter(cycles), [](const Transducer& tr) { return tr.cycle(); });
     return mode->pack_sync(driver, cycles, tx);
   }
