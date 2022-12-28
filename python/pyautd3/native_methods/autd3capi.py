@@ -120,6 +120,9 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGeometryCenter.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)] 
         self.dll.AUTDGeometryCenter.restype = None
 
+        self.dll.AUTDGeometryCenterOf.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)] 
+        self.dll.AUTDGeometryCenterOf.restype = None
+
         self.dll.AUTDTransPosition.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)] 
         self.dll.AUTDTransPosition.restype = None
 
