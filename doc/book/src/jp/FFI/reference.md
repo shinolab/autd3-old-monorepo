@@ -412,6 +412,19 @@ Geometryの中心を取得する.
 | z                      | double* | out    | z coordinate of center              |
 | return                 | void    | -      | -                                   |
 
+## AUTDGeometryCenterOf (autd3capi)
+
+Deviceの中心を取得する.
+
+| Argument name / return | type    | in/out | description                         |
+| ---------------------- | ------- | ------ | ----------------------------------- |
+| handle                 | void*   | in     | pointer to Controller               |
+| dev_idx                | int32_t | in     | device index                        |
+| x                      | double* | out    | x coordinate of center              |
+| y                      | double* | out    | y coordinate of center              |
+| z                      | double* | out    | z coordinate of center              |
+| return                 | void    | -      | -                                   |
+
 ## AUTDTransPosition (autd3capi)
 
 指定した振動子の位置を取得する.
