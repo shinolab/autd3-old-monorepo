@@ -3,7 +3,7 @@
 // Created Date: 22/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 29/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -152,22 +152,22 @@ void DriverV2_5::normal_header(TxDatagram& tx) const noexcept {
   tx.num_bodies = 0;
 }
 
-void DriverV2_5::normal_duty_body(const std::vector<Drive>& drives, TxDatagram& tx) const noexcept {
+void DriverV2_5::normal_duty_body(const std::vector<Drive>& drives, const std::vector<uint16_t>& cycles, TxDatagram& tx) const noexcept {
   tx.header().cpu_flag.set(CPUControlFlags::IsDuty);
 
   auto* p = reinterpret_cast<Duty*>(tx.bodies_raw_ptr());
-  for (size_t i = 0; i < drives.size(); i++) p[i].set(drives[i]);
+  for (size_t i = 0; i < drives.size(); i++) p[i].set(drives[i], cycles[i]);
 
   tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
 
   tx.num_bodies = tx.num_devices();
 }
 
-void DriverV2_5::normal_phase_body(const std::vector<Drive>& drives, TxDatagram& tx) const noexcept {
+void DriverV2_5::normal_phase_body(const std::vector<Drive>& drives, const std::vector<uint16_t>& cycles, TxDatagram& tx) const noexcept {
   tx.header().cpu_flag.remove(CPUControlFlags::IsDuty);
 
   auto* p = reinterpret_cast<Phase*>(tx.bodies_raw_ptr());
-  for (size_t i = 0; i < drives.size(); i++) p[i].set(drives[i]);
+  for (size_t i = 0; i < drives.size(); i++) p[i].set(drives[i], cycles[i]);
 
   tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
 
@@ -345,8 +345,9 @@ void DriverV2_5::gain_stm_normal_header(TxDatagram& tx) const noexcept {
   tx.num_bodies = 0;
 }
 
-bool DriverV2_5::gain_stm_normal_phase(const std::vector<std::vector<Drive>>& drives, const size_t sent, const uint32_t freq_div,
-                                       const GainSTMMode mode, std::optional<uint16_t>, std::optional<uint16_t>, TxDatagram& tx) const {
+bool DriverV2_5::gain_stm_normal_phase(const std::vector<std::vector<Drive>>& drives, const std::vector<uint16_t>& cycles, const size_t sent,
+                                       const uint32_t freq_div, const GainSTMMode mode, std::optional<uint16_t>, std::optional<uint16_t>,
+                                       TxDatagram& tx) const {
   if (drives.size() > v2_5::GAIN_STM_BUF_SIZE_MAX) {
     spdlog::error("GainSTM out of buffer");
     return false;
@@ -378,7 +379,7 @@ bool DriverV2_5::gain_stm_normal_phase(const std::vector<std::vector<Drive>>& dr
     }
   } else {
     auto* p = reinterpret_cast<Phase*>(tx.bodies_raw_ptr());
-    for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(drives[sent - 1][i]);
+    for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(drives[sent - 1][i], cycles[i]);
   }
 
   if (sent + 1 == drives.size() + 1) tx.header().cpu_flag.set(CPUControlFlags::STMEnd);
@@ -389,8 +390,9 @@ bool DriverV2_5::gain_stm_normal_phase(const std::vector<std::vector<Drive>>& dr
   return true;
 }
 
-bool DriverV2_5::gain_stm_normal_duty(const std::vector<std::vector<Drive>>& drives, const size_t sent, const uint32_t freq_div,
-                                      const GainSTMMode mode, std::optional<uint16_t>, std::optional<uint16_t>, TxDatagram& tx) const {
+bool DriverV2_5::gain_stm_normal_duty(const std::vector<std::vector<Drive>>& drives, const std::vector<uint16_t>& cycles, const size_t sent,
+                                      const uint32_t freq_div, const GainSTMMode mode, std::optional<uint16_t>, std::optional<uint16_t>,
+                                      TxDatagram& tx) const {
   if (drives.size() > v2_5::GAIN_STM_BUF_SIZE_MAX) {
     spdlog::error("GainSTM out of buffer");
     return false;
@@ -422,7 +424,7 @@ bool DriverV2_5::gain_stm_normal_duty(const std::vector<std::vector<Drive>>& dri
     }
   } else {
     auto* p = reinterpret_cast<Duty*>(tx.bodies_raw_ptr());
-    for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(drives[sent - 1][i]);
+    for (size_t i = 0; i < drives[sent - 1].size(); i++) p[i].set(drives[sent - 1][i], cycles[i]);
   }
 
   if (sent + 1 == drives.size() + 1) tx.header().cpu_flag.set(CPUControlFlags::STMEnd);

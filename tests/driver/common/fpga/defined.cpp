@@ -3,7 +3,7 @@
 // Created Date: 30/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/12/2022
+// Last Modified: 29/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -66,49 +66,49 @@ TEST(DriverCommonFPGADefined, Phase) {
   Drive s{};
   Phase d{};
 
-  s.cycle = 4096;
   {
+    constexpr uint16_t cycle = 4096;
     s.phase = 0.0;
-    d.set(s);
+    d.set(s, cycle);
     ASSERT_EQ(d.phase, 0);
 
     s.phase = pi;
-    d.set(s);
+    d.set(s, cycle);
     ASSERT_EQ(d.phase, 2048);
 
     s.phase = 2.0 * pi;
-    d.set(s);
+    d.set(s, cycle);
     ASSERT_EQ(d.phase, 0);
 
     s.phase = 3.0 * pi;
-    d.set(s);
+    d.set(s, cycle);
     ASSERT_EQ(d.phase, 2048);
 
     s.phase = -pi;
-    d.set(s);
+    d.set(s, cycle);
     ASSERT_EQ(d.phase, 2048);
   }
 
-  s.cycle = 2000;
   {
+    constexpr uint16_t cycle = 2000;
     s.phase = 0.0;
-    d.set(s);
+    d.set(s, cycle);
     ASSERT_EQ(d.phase, 0);
 
     s.phase = pi;
-    d.set(s);
+    d.set(s, cycle);
     ASSERT_EQ(d.phase, 1000);
 
     s.phase = 2.0 * pi;
-    d.set(s);
+    d.set(s, cycle);
     ASSERT_EQ(d.phase, 0);
 
     s.phase = 3.0 * pi;
-    d.set(s);
+    d.set(s, cycle);
     ASSERT_EQ(d.phase, 1000);
 
     s.phase = -pi;
-    d.set(s);
+    d.set(s, cycle);
     ASSERT_EQ(d.phase, 1000);
   }
 }
@@ -119,49 +119,51 @@ TEST(DriverCommonFPGADefined, Duty) {
   Drive s{};
   Duty d{};
 
-  s.cycle = 4096;
   {
+    constexpr uint16_t cycle = 4096;
+
     s.amp = 0.0;
-    d.set(s);
+    d.set(s, cycle);
     ASSERT_EQ(d.duty, 0);
 
     s.amp = 0.5;
-    d.set(s);
+    d.set(s, cycle);
     ASSERT_EQ(d.duty, 683);
 
     s.amp = 1.0;
-    d.set(s);
+    d.set(s, cycle);
     ASSERT_EQ(d.duty, 2048);
 
     s.amp = 1.5;
-    d.set(s);
+    d.set(s, cycle);
     ASSERT_EQ(d.duty, 2048);
 
     s.amp = -1;
-    d.set(s);
+    d.set(s, cycle);
     ASSERT_EQ(d.duty, 0);
   }
 
-  s.cycle = 2000;
   {
+    constexpr uint16_t cycle = 2000;
+
     s.amp = 0.0;
-    d.set(s);
+    d.set(s, cycle);
     ASSERT_EQ(d.duty, 0);
 
     s.amp = 0.5;
-    d.set(s);
+    d.set(s, cycle);
     ASSERT_EQ(d.duty, 333);
 
     s.amp = 1.0;
-    d.set(s);
+    d.set(s, cycle);
     ASSERT_EQ(d.duty, 1000);
 
     s.amp = 1.5;
-    d.set(s);
+    d.set(s, cycle);
     ASSERT_EQ(d.duty, 1000);
 
     s.amp = -1;
-    d.set(s);
+    d.set(s, cycle);
     ASSERT_EQ(d.duty, 0);
   }
 }

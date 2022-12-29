@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/12/2022
+// Last Modified: 29/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -187,7 +187,7 @@ class Grouped final : public core::Gain {
   void calc(const core::Geometry& geometry) override { std::memcpy(_drives.data(), _buf.data(), geometry.num_transducers() * sizeof(driver::Drive)); }
 
   explicit Grouped(const core::Geometry& geometry) : core::Gain(), _buf(), _geometry(geometry) {
-    _buf.resize(geometry.num_transducers(), driver::Drive{0, 0, 0});
+    _buf.resize(geometry.num_transducers(), driver::Drive{0, 0});
   }
   ~Grouped() override = default;
   Grouped(const Grouped& v) noexcept = delete;

@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/12/2022
+// Last Modified: 29/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -775,12 +775,13 @@ TEST(ControllerTest, gain_stm_normal) {
     autd << stm;
     for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
 
+    const uint16_t cycle = autd.geometry()[0].cycle();
     for (size_t k = 0; k < size; k++) {
       for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
         const auto [duties, phases] = cpus->at(i).fpga().drives(k);
         for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
-          ASSERT_EQ(duties[j].duty, autd3::driver::Duty::to_duty(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]));
-          ASSERT_EQ(phases[j].phase, autd3::driver::Phase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]));
+          ASSERT_EQ(duties[j].duty, autd3::driver::Duty::to_duty(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j], cycle));
+          ASSERT_EQ(phases[j].phase, autd3::driver::Phase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j], cycle));
         }
       }
     }
@@ -811,7 +812,7 @@ TEST(ControllerTest, gain_stm_normal) {
         const auto [duties, phases] = cpus->at(i).fpga().drives(k);
         for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
           ASSERT_EQ(duties[j].duty, cycle >> 1);
-          ASSERT_EQ(phases[j].phase, autd3::driver::Phase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]));
+          ASSERT_EQ(phases[j].phase, autd3::driver::Phase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j], cycle));
         }
       }
     }
@@ -870,7 +871,7 @@ TEST(ControllerTest, gain_stm_normal_phase) {
         const auto [duties, phases] = cpus->at(i).fpga().drives(k);
         for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
           ASSERT_EQ(duties[j].duty, cycle >> 1);
-          ASSERT_EQ(phases[j].phase, autd3::driver::Phase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]));
+          ASSERT_EQ(phases[j].phase, autd3::driver::Phase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j], cycle));
         }
       }
     }
@@ -901,7 +902,7 @@ TEST(ControllerTest, gain_stm_normal_phase) {
         const auto [duties, phases] = cpus->at(i).fpga().drives(k);
         for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
           ASSERT_EQ(duties[j].duty, cycle >> 1);
-          ASSERT_EQ(phases[j].phase, autd3::driver::Phase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j]));
+          ASSERT_EQ(phases[j].phase, autd3::driver::Phase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j], cycle));
         }
       }
     }

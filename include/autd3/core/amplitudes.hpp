@@ -3,7 +3,7 @@
 // Created Date: 28/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/12/2022
+// Last Modified: 29/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -42,10 +42,11 @@ class Amplitudes final : public DatagramBody {
     if (is_finished()) return true;
 
     std::vector<driver::Drive> drives;
-    drives.reserve(geometry.num_transducers());
-    std::transform(geometry.begin(), geometry.end(), std::back_inserter(drives), [&](const auto& tr) { return driver::Drive{0, _amp, tr.cycle()}; });
+    drives.resize(geometry.num_transducers(), driver::Drive{0, _amp});
 
-    driver->normal_duty_body(drives, tx);
+    const auto cycles = geometry.cycles();
+
+    driver->normal_duty_body(drives, cycles, tx);
     _sent = true;
     return true;
   }

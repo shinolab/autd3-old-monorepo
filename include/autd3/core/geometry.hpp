@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/12/2022
+// Last Modified: 29/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -97,6 +97,13 @@ struct Geometry {
    * @return device_map contains the number of transducers each device has
    */
   [[nodiscard]] const std::vector<size_t>& device_map() const noexcept { return _device_map; }
+
+  [[nodiscard]] std::vector<uint16_t> cycles() const {
+    std::vector<uint16_t> cycles;
+    cycles.reserve(num_transducers());
+    std::transform(begin(), end(), std::back_inserter(cycles), [](const auto& tr) { return tr.cycle(); });
+    return cycles;
+  }
 
   [[nodiscard]] std::vector<Transducer>::const_iterator begin() const noexcept { return _transducers.begin(); }
   [[nodiscard]] std::vector<Transducer>::const_iterator end() const noexcept { return _transducers.end(); }
