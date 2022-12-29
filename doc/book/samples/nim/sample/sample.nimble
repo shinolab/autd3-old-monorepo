@@ -1,6 +1,6 @@
 # Package
 
-version       = "2.7.2"
+version       = "2.7.3"
 author        = "shun suzuki"
 description   = "An autd3 sample"
 license       = "MIT"
@@ -11,4 +11,4 @@ bin           = @["sample"]
 # Dependencies
 
 requires "nim >= 1.6.6"
-requires "https://github.com/shinolab/autd3.git?subdir=nim == 2.7.2"
+requires "https://github.com/shinolab/autd3.git?subdir=nim == 2.7.3"
