@@ -111,6 +111,7 @@ class Driver {
   /**
    * @brief Pack duty ratio data to Body for normal operation in Normal mode
    * @param drives Drive of all transducers
+   * @param cycles Cycle of all transducers
    * @param tx transmission data
    */
   virtual void normal_duty_body(const std::vector<Drive>& drives, const std::vector<uint16_t>& cycles, TxDatagram& tx) const = 0;
@@ -118,6 +119,7 @@ class Driver {
   /**
    * @brief Pack phase data to Body for normal operation in Normal mode
    * @param drives Drive of all transducers
+   * @param cycles Cycle of all transducers
    * @param tx transmission data
    */
   virtual void normal_phase_body(const std::vector<Drive>& drives, const std::vector<uint16_t>& cycles, TxDatagram& tx) const = 0;
@@ -180,7 +182,8 @@ class Driver {
 
   /**
    * @brief Pack phase data to Body for GainSTM in Normal/NormalPhase mode
-   * @param drives Drive of all transducers.
+   * @param drives Drive of all transducers
+   * @param cycles Cycle of all transducers
    * @param sent Number of data already sent
    * @param freq_div STM sampling frequency division
    * @param mode GainSTMMode
@@ -195,7 +198,8 @@ class Driver {
 
   /**
    * @brief Pack duty data to Body for GainSTM in Normal/NormalPhase mode
-   * @param drives Drive of all transducers.
+   * @param drives Drive of all transducers
+   * @param cycles Cycle of all transducers
    * @param sent Number of data already sent
    * @param freq_div STM sampling frequency division
    * @param mode GainSTMMode

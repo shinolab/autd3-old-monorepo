@@ -12,7 +12,6 @@
 #pragma once
 
 #include <autd3.hpp>
-#include <vector>
 
 inline void soft_stm(autd3::Controller& autd) {
   auto config = autd3::SilencerConfig::none();
@@ -24,8 +23,8 @@ inline void soft_stm(autd3::Controller& autd) {
 
   const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   constexpr size_t points_num = 200;
-  constexpr auto radius = 30.0;
   for (size_t i = 0; i < points_num; i++) {
+    constexpr auto radius = 30.0;
     const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(points_num);
     stm.add(autd3::gain::Focus(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0.0)));
   }

@@ -67,7 +67,7 @@ class Mode {
    * @param next_duty true if duty data is to be sent next frame
    * @param freq_div STM sampling frequency division
    * @param gains Drive of all transducers
-   * @param cycles Cycle of all transducers
+   * @param geometry Geometry
    * @param mode GainSTMMode
    * @param start_idx STM start idx
    * @param finish_idx STM finish idx

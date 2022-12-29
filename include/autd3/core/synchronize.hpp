@@ -11,8 +11,6 @@
 
 #pragma once
 
-#include <cstdint>
-
 #include "autd3/core/datagram.hpp"
 #include "autd3/driver/driver.hpp"
 
