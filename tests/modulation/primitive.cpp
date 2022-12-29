@@ -3,7 +3,7 @@
 // Created Date: 10/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/12/2022
+// Last Modified: 29/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -148,7 +148,7 @@ TEST(Modulation, SineSquared) {
                                  255, 236, 217, 198, 179, 159, 140, 121, 102, 83,  64,  45,  26,  6,   13,  32,  51,  70,  89,  108};
 
     ASSERT_EQ(m.buffer().size(), 80);
-    for (size_t i = 0; i < 80; i++) ASSERT_EQ(m.buffer()[i], expects[i]);
+    for (size_t i = 0; i < 80; i++) ASSERT_NEAR(m.buffer()[i], expects[i], 1);
   }
 
   {
