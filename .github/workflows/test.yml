@@ -17,12 +17,6 @@ jobs:
 
     steps: 
     - uses: actions/checkout@v3
-    - name: install compile tools
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt update
-        sudo apt install mesa-common-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev -y
-      shell: bash
     - name: test
       if: matrix.os != 'windows-latest'
       run: |
