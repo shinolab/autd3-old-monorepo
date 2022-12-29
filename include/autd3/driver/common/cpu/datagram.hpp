@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/12/2022
+// Last Modified: 29/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <numeric>
 #include <vector>
 
 #include "body.hpp"
@@ -37,7 +38,8 @@ struct TxDatagram {
    */
   explicit TxDatagram(const std::vector<size_t> &device_map) : num_bodies(device_map.size()) {
     _body_pointer.resize(device_map.size() + 1, 0);
-    for (size_t i = 0; i < device_map.size(); i++) _body_pointer[i + 1] = _body_pointer[i] + sizeof(uint16_t) * device_map[i];
+    std::exclusive_scan(device_map.begin(), device_map.end() + 1, _body_pointer.begin(), size_t{0},
+                        [](const size_t acc, const size_t i) { return acc + sizeof(uint16_t) * i; });
     _data.resize(sizeof(GlobalHeader) + _body_pointer[_body_pointer.size() - 1], 0x00);
   }
   ~TxDatagram() = default;

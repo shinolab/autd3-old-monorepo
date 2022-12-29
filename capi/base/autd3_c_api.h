@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 28/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -49,6 +49,7 @@ EXPORT_AUTD bool AUTDGetFPGAInfo(IN void* handle, IN uint8_t* out);
 EXPORT_AUTD int32_t AUTDNumTransducers(IN const void* handle);
 EXPORT_AUTD int32_t AUTDNumDevices(IN const void* handle);
 EXPORT_AUTD void AUTDGeometryCenter(IN const void* handle, OUT autd3_float_t* x, OUT autd3_float_t* y, OUT autd3_float_t* z);
+EXPORT_AUTD void AUTDGeometryCenterOf(IN const void* handle, IN int32_t dev_idx, OUT autd3_float_t* x, OUT autd3_float_t* y, OUT autd3_float_t* z);
 EXPORT_AUTD void AUTDTransPosition(IN const void* handle, IN int32_t trans_idx, OUT autd3_float_t* x, OUT autd3_float_t* y, OUT autd3_float_t* z);
 EXPORT_AUTD void AUTDTransXDirection(IN const void* handle, IN int32_t trans_idx, OUT autd3_float_t* x, OUT autd3_float_t* y, OUT autd3_float_t* z);
 EXPORT_AUTD void AUTDTransYDirection(IN const void* handle, IN int32_t trans_idx, OUT autd3_float_t* x, OUT autd3_float_t* y, OUT autd3_float_t* z);

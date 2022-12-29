@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 29/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@ constexpr autd3_float_t FOCUS_STM_FIXED_NUM_UNIT = static_cast<autd3_float_t>(0.
 #endif
 
 /**
- * @brief Drive is a utility structure for storing ultrasound amplitude, phase, and cycle.
+ * @brief Drive is a utility structure for storing ultrasound amplitude and phase.
  */
 struct Drive {
   /**
@@ -47,11 +47,6 @@ struct Drive {
    * @brief Normalized amplitude (from 0 to 1)
    */
   autd3_float_t amp;
-  /**
-   * @brief The ultrasound cycle: The ultrasound frequency is FPGA_CLK_FREQ/cycle.
-   * @details This is not used in Legacy mode.
-   */
-  uint16_t cycle;
 };
 
 /**
@@ -84,12 +79,12 @@ struct LegacyDrive {
 struct Phase {
   uint16_t phase;
 
-  static uint16_t to_phase(const Drive d) {
+  static uint16_t to_phase(const Drive d, const uint16_t cycle) {
     return static_cast<uint16_t>(
-        rem_euclid(static_cast<int32_t>(std::round(d.phase / (2 * pi) * static_cast<autd3_float_t>(d.cycle))), static_cast<int32_t>(d.cycle)));
+        rem_euclid(static_cast<int32_t>(std::round(d.phase / (2 * pi) * static_cast<autd3_float_t>(cycle))), static_cast<int32_t>(cycle)));
   }
 
-  void set(const Drive d) { phase = to_phase(d); }
+  void set(const Drive d, const uint16_t cycle) { phase = to_phase(d, cycle); }
 };
 
 /**
@@ -98,11 +93,11 @@ struct Phase {
 struct Duty {
   uint16_t duty;
 
-  static uint16_t to_duty(const Drive d) {
-    return static_cast<uint16_t>(std::round(static_cast<autd3_float_t>(d.cycle) * std::asin(std::clamp<autd3_float_t>(d.amp, 0, 1)) / pi));
+  static uint16_t to_duty(const Drive d, const uint16_t cycle) {
+    return static_cast<uint16_t>(std::round(static_cast<autd3_float_t>(cycle) * std::asin(std::clamp<autd3_float_t>(d.amp, 0, 1)) / pi));
   }
 
-  void set(const Drive d) { duty = to_duty(d); }
+  void set(const Drive d, const uint16_t cycle) { duty = to_duty(d, cycle); }
 };
 
 /**

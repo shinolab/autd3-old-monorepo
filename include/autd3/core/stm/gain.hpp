@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/12/2022
+// Last Modified: 29/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -63,13 +63,13 @@ struct GainSTM final : STM {
     return true;
   }
 
-  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const Mode>& mode, const Geometry&,
+  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const Mode>& mode, const Geometry& geometry,
             driver::TxDatagram& tx) override {
     mode->pack_stm_gain_header(driver, tx);
 
     if (is_finished()) return true;
 
-    return mode->pack_stm_gain_body(driver, _sent, _next_duty, _freq_div, _gains, _mode, start_idx, finish_idx, tx);
+    return mode->pack_stm_gain_body(driver, _sent, _next_duty, _freq_div, _gains, geometry, _mode, start_idx, finish_idx, tx);
   }
 
   [[nodiscard]] bool is_finished() const override { return _sent >= _gains.size() + 1; }
