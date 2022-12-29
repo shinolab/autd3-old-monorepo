@@ -1,4 +1,4 @@
-# 2.7.2
+# 2.7.3
 
 - Fix [#54](https://github.com/shinolab/autd3/issues/54)
 
