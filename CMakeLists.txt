@@ -95,6 +95,12 @@ if(DISABLE_EXAMPLES)
   set(BUILD_EXAMPLES OFF)
 endif()
 
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set(HOLO_PARALLEL_FOR OFF)
+  set(AUTD3_PARALLEL_FOR OFF)
+  message(NOTICE "Disable HOLO_PARALLEL_FOR and AUTD3_PARALLEL_FOR options because clang does not support std::execution")
+endif()
+
 if(WIN32)
   set(OS win32)
   include(cmakes/win_vs.cmake)
