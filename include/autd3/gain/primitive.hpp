@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/12/2022
+// Last Modified: 29/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,6 +14,10 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
+#ifdef AUTD3_PARALLEL_FOR
+#include <execution>
+#endif
 
 #include "autd3/core/gain.hpp"
 
@@ -27,9 +31,12 @@ class Null final : public core::Gain {
   Null() noexcept {}
 
   void calc(const core::Geometry& geometry) override {
-    std::for_each(geometry.begin(), geometry.end(), [this](const auto& trans) {
-      _drives[trans.id()].amp = 0;
-      _drives[trans.id()].phase = 0;
+#ifdef AUTD3_PARALLEL_FOR
+    std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& transducer) {
+#else
+    std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& transducer) {
+#endif
+      return driver::Drive{0, 0};
     });
   }
 
@@ -52,11 +59,14 @@ class Focus final : public core::Gain {
   explicit Focus(core::Vector3 point, const driver::autd3_float_t amp = 1) : _point(std::move(point)), _amp(amp) {}
 
   void calc(const core::Geometry& geometry) override {
-    std::for_each(geometry.begin(), geometry.end(), [&](const auto& transducer) {
+#ifdef AUTD3_PARALLEL_FOR
+    std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& transducer) {
+#else
+    std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& transducer) {
+#endif
       const auto dist = (_point - transducer.position()).norm();
       const auto phase = transducer.align_phase_at(dist);
-      _drives[transducer.id()].amp = _amp;
-      _drives[transducer.id()].phase = phase;
+      return driver::Drive{phase, _amp};
     });
   }
 
@@ -92,13 +102,16 @@ class BesselBeam final : public core::Gain {
     v.normalize();
     const Eigen::AngleAxis<driver::autd3_float_t> rot(-theta_v, v);
 
-    std::for_each(geometry.begin(), geometry.end(), [&](const auto& transducer) {
+#ifdef AUTD3_PARALLEL_FOR
+    std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& transducer) {
+#else
+    std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& transducer) {
+#endif
       const auto r = transducer.position() - this->_apex;
       const auto rr = rot * r;
       const auto d = std::sin(_theta_z) * std::sqrt(rr.x() * rr.x() + rr.y() * rr.y()) - std::cos(_theta_z) * rr.z();
       const auto phase = transducer.align_phase_at(d);
-      _drives[transducer.id()].amp = _amp;
-      _drives[transducer.id()].phase = phase;
+      return driver::Drive{phase, _amp};
     });
   }
 
@@ -127,11 +140,14 @@ class PlaneWave final : public core::Gain {
   explicit PlaneWave(core::Vector3 direction, const driver::autd3_float_t amp = 1) noexcept : _direction(std::move(direction)), _amp(amp) {}
 
   void calc(const core::Geometry& geometry) override {
-    std::for_each(geometry.begin(), geometry.end(), [&](const auto& transducer) {
+#ifdef AUTD3_PARALLEL_FOR
+    std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& transducer) {
+#else
+    std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& transducer) {
+#endif
       const auto dist = transducer.position().dot(_direction);
       const auto phase = transducer.align_phase_at(dist);
-      _drives[transducer.id()].amp = _amp;
-      _drives[transducer.id()].phase = phase;
+      return driver::Drive{phase, _amp};
     });
   }
 
@@ -166,7 +182,7 @@ class Grouped final : public core::Gain {
   void calc(const core::Geometry& geometry) override { std::memcpy(_drives.data(), _buf.data(), geometry.num_transducers() * sizeof(driver::Drive)); }
 
   explicit Grouped(const core::Geometry& geometry) : core::Gain(), _buf(), _geometry(geometry) {
-    _buf.resize(geometry.num_transducers(), driver::Drive{0, 0, 0});
+    _buf.resize(geometry.num_transducers(), driver::Drive{0, 0});
   }
   ~Grouped() override = default;
   Grouped(const Grouped& v) noexcept = delete;

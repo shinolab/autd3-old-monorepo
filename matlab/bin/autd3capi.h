@@ -45,6 +45,7 @@ bool AUTDGetFPGAInfo(void* handle, uint8_t* out);
 int32_t AUTDNumTransducers(void* handle);
 int32_t AUTDNumDevices(void* handle);
 void AUTDGeometryCenter(void* handle, double* x, double* y, double* z);
+void AUTDGeometryCenterOf(void* handle, int32_t dev_idx, double* x, double* y, double* z);
 void AUTDTransPosition(void* handle, int32_t trans_idx, double* x, double* y, double* z);
 void AUTDTransXDirection(void* handle, int32_t trans_idx, double* x, double* y, double* z);
 void AUTDTransYDirection(void* handle, int32_t trans_idx, double* x, double* y, double* z);

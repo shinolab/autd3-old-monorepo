@@ -63,6 +63,7 @@ autd_get_fpga_info(handle, out) = ccall((:AUTDGetFPGAInfo, _dll), Bool, (Ptr{Cvo
 autd_num_transducers(handle) = ccall((:AUTDNumTransducers, _dll), Int32, (Ptr{Cvoid}, ), handle);
 autd_num_devices(handle) = ccall((:AUTDNumDevices, _dll), Int32, (Ptr{Cvoid}, ), handle);
 autd_geometry_center(handle, x, y, z) = ccall((:AUTDGeometryCenter, _dll), Cvoid, (Ptr{Cvoid}, Ref{Float64}, Ref{Float64}, Ref{Float64}, ), handle, x, y, z);
+autd_geometry_center_of(handle, dev_idx, x, y, z) = ccall((:AUTDGeometryCenterOf, _dll), Cvoid, (Ptr{Cvoid}, Int32, Ref{Float64}, Ref{Float64}, Ref{Float64}, ), handle, dev_idx, x, y, z);
 autd_trans_position(handle, trans_idx, x, y, z) = ccall((:AUTDTransPosition, _dll), Cvoid, (Ptr{Cvoid}, Int32, Ref{Float64}, Ref{Float64}, Ref{Float64}, ), handle, trans_idx, x, y, z);
 autd_trans_x_direction(handle, trans_idx, x, y, z) = ccall((:AUTDTransXDirection, _dll), Cvoid, (Ptr{Cvoid}, Int32, Ref{Float64}, Ref{Float64}, Ref{Float64}, ), handle, trans_idx, x, y, z);
 autd_trans_y_direction(handle, trans_idx, x, y, z) = ccall((:AUTDTransYDirection, _dll), Cvoid, (Ptr{Cvoid}, Int32, Ref{Float64}, Ref{Float64}, Ref{Float64}, ), handle, trans_idx, x, y, z);

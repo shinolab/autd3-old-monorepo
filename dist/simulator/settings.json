@@ -17,6 +17,10 @@
     "font_size": 16.0,
     "gpu_idx": 0,
     "image_save_path": "image.png",
+    "max_dev_num": 50,
+    "max_trans_num": 10000,
+    "mod_enable": false,
+    "mod_auto_play": false,
     "show_mod_plot": false,
     "show_mod_plot_raw": false,
     "show_radiation_pressure": false,
@@ -32,10 +36,10 @@
     "slice_rot_z": 0.0,
     "slice_width": 300.0,
     "sound_speed": 340000.0,
+    "stm_auto_play": false,
     "use_left_handed": false,
     "use_meter": false,
     "vsync": true,
     "window_height": 600,
-    "window_width": 800,
-    "max_dev_num": 50
+    "window_width": 800
 }

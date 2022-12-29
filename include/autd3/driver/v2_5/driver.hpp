@@ -3,7 +3,7 @@
 // Created Date: 15/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 29/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -52,9 +52,9 @@ class DriverV2_5 final : public Driver {
 
   void normal_header(TxDatagram& tx) const noexcept override;
 
-  void normal_duty_body(const std::vector<Drive>& drives, TxDatagram& tx) const noexcept override;
+  void normal_duty_body(const std::vector<Drive>& drives, const std::vector<uint16_t>& cycles, TxDatagram& tx) const noexcept override;
 
-  void normal_phase_body(const std::vector<Drive>& drives, TxDatagram& tx) const noexcept override;
+  void normal_phase_body(const std::vector<Drive>& drives, const std::vector<uint16_t>& cycles, TxDatagram& tx) const noexcept override;
 
   void focus_stm_header(TxDatagram& tx) const noexcept override;
 
@@ -71,11 +71,13 @@ class DriverV2_5 final : public Driver {
 
   void gain_stm_normal_header(TxDatagram& tx) const noexcept override;
 
-  [[nodiscard]] bool gain_stm_normal_phase(const std::vector<std::vector<Drive>>& drives, size_t sent, uint32_t freq_div, GainSTMMode mode,
-                                           std::optional<uint16_t> start_idx, std::optional<uint16_t> finish_idx, TxDatagram& tx) const override;
+  [[nodiscard]] bool gain_stm_normal_phase(const std::vector<std::vector<Drive>>& drives, const std::vector<uint16_t>& cycles, size_t sent,
+                                           uint32_t freq_div, GainSTMMode mode, std::optional<uint16_t> start_idx, std::optional<uint16_t> finish_idx,
+                                           TxDatagram& tx) const override;
 
-  [[nodiscard]] bool gain_stm_normal_duty(const std::vector<std::vector<Drive>>& drives, size_t sent, uint32_t freq_div, GainSTMMode mode,
-                                          std::optional<uint16_t> start_idx, std::optional<uint16_t> finish_idx, TxDatagram& tx) const override;
+  [[nodiscard]] bool gain_stm_normal_duty(const std::vector<std::vector<Drive>>& drives, const std::vector<uint16_t>& cycles, size_t sent,
+                                          uint32_t freq_div, GainSTMMode mode, std::optional<uint16_t> start_idx, std::optional<uint16_t> finish_idx,
+                                          TxDatagram& tx) const override;
 
   void force_fan(TxDatagram& tx, bool value) const noexcept override;
 

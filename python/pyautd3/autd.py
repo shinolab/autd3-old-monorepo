@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 09/12/2022
+Last Modified: 28/12/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,6 +33,7 @@ DRIVER_V2_3 = 0x83
 DRIVER_V2_4 = 0x84
 DRIVER_V2_5 = 0x85
 DRIVER_V2_6 = 0x86
+DRIVER_V2_7 = 0x87
 
 
 LogOutputFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
@@ -169,6 +170,13 @@ class Geometry:
         y = c_double(0.0)
         z = c_double(0.0)
         Base().dll.AUTDGeometryCenter(self._cnt, byref(x), byref(y), byref(z))
+        return np.array([x.value, y.value, z.value])
+
+    def center_of(self, dev_idx: int):
+        x = c_double(0.0)
+        y = c_double(0.0)
+        z = c_double(0.0)
+        Base().dll.AUTDGeometryCenterOf(self._cnt, dev_idx, byref(x), byref(y), byref(z))
         return np.array([x.value, y.value, z.value])
 
     def __getitem__(self, key: int):

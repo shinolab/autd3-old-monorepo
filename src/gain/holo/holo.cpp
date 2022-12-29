@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 29/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,8 +11,11 @@
 
 #include "autd3/gain/holo.hpp"
 
-#include <execution>
 #include <random>
+
+#ifdef HOLO_PARALLEL_FOR
+#include <execution>
+#endif
 
 #include "autd3/core/acoustics.hpp"
 
@@ -21,19 +24,15 @@ namespace autd3::gain::holo {
 namespace {
 
 void generate_transfer_matrix(const std::vector<core::Vector3>& foci, const core::Geometry& geometry, MatrixXc& dst) {
-#ifdef __clang__
-  std::for_each(geometry.begin(), geometry.end(), [&](const auto& transducer) {
-    for (size_t i = 0; i < foci.size(); i++)
-      dst(i, transducer.id()) =
-          core::propagate(transducer.position(), transducer.z_direction(), transducer.attenuation, transducer.wavenumber(), foci[i]);
-  });
+#ifdef HOLO_PARALLEL_FOR
+  std::for_each(std::execution::par_unseq, geometry.begin(), geometry.end(), [&](const auto& transducer) {
 #else
-  std::for_each(std::execution::par, geometry.begin(), geometry.end(), [&](const auto& transducer) {
+  std::for_each(geometry.begin(), geometry.end(), [&](const auto& transducer) {
+#endif
     for (size_t i = 0; i < foci.size(); i++)
       dst(i, transducer.id()) =
           core::propagate(transducer.position(), transducer.z_direction(), transducer.attenuation, transducer.wavenumber(), foci[i]);
   });
-#endif
 }
 
 void back_prop(const BackendPtr& backend, const MatrixXc& transfer, const VectorXc& amps, MatrixXc& b) {
@@ -129,12 +128,15 @@ void SDP::calc(const core::Geometry& geometry) {
   _backend->to_host(q);
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
-  std::for_each(geometry.begin(), geometry.end(), [&](const auto& tr) {
+#ifdef HOLO_PARALLEL_FOR
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+#else
+  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+#endif
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
-    _drives[tr.id()].amp = power;
-    _drives[tr.id()].phase = phase;
+    return driver::Drive{phase, power};
   });
 }
 
@@ -192,12 +194,15 @@ void EVD::calc(const core::Geometry& geometry) {
 
   _backend->to_host(gtf);
   const auto max_coefficient = std::abs(_backend->max_abs_element(gtf));
-  std::for_each(geometry.begin(), geometry.end(), [&](const auto& tr) {
+#ifdef HOLO_PARALLEL_FOR
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+#else
+  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+#endif
     const auto phase = std::arg(gtf(tr.id())) + driver::pi;
     const auto raw = std::abs(gtf(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
-    _drives[tr.id()].amp = power;
-    _drives[tr.id()].phase = phase;
+    return driver::Drive{phase, power};
   });
 }
 
@@ -217,12 +222,15 @@ void LSS::calc(const core::Geometry& geometry) {
   _backend->to_host(q);
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
-  std::for_each(geometry.begin(), geometry.end(), [&](const auto& tr) {
+#ifdef HOLO_PARALLEL_FOR
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+#else
+  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+#endif
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
-    _drives[tr.id()].amp = power;
-    _drives[tr.id()].phase = phase;
+    return driver::Drive{phase, power};
   });
 }
 
@@ -255,12 +263,15 @@ void GS::calc(const core::Geometry& geometry) {
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
   _backend->to_host(q);
-  std::for_each(geometry.begin(), geometry.end(), [&](const auto& tr) {
+#ifdef HOLO_PARALLEL_FOR
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+#else
+  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+#endif
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
-    _drives[tr.id()].amp = power;
-    _drives[tr.id()].phase = phase;
+    return driver::Drive{phase, power};
   });
 }
 
@@ -304,12 +315,15 @@ void GSPAT::calc(const core::Geometry& geometry) {
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
   _backend->to_host(q);
-  std::for_each(geometry.begin(), geometry.end(), [&](const auto& tr) {
+#ifdef HOLO_PARALLEL_FOR
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+#else
+  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+#endif
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
-    _drives[tr.id()].amp = power;
-    _drives[tr.id()].phase = phase;
+    return driver::Drive{phase, power};
   });
 }
 
@@ -367,7 +381,7 @@ void LM::calc(const core::Geometry& geometry) {
   make_bhb(_backend, _foci, _amps, geometry, bhb);
 
   VectorXd x = VectorXd::Zero(n_param);
-  for (size_t i = 0; i < initial.size(); i++) x(static_cast<Eigen::Index>(i)) = initial[i];
+  std::copy(initial.begin(), initial.end(), x.begin());
 
   driver::autd3_float_t nu = 2;
 
@@ -440,11 +454,14 @@ void LM::calc(const core::Geometry& geometry) {
   }
 
   _backend->to_host(x);
-  std::for_each(geometry.begin(), geometry.end(), [&](const auto& tr) {
+#ifdef HOLO_PARALLEL_FOR
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+#else
+  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+#endif
     const auto phase = driver::rem_euclid(x(tr.id()), 2 * driver::pi);
     const auto power = constraint->convert(1.0, 1.0);
-    _drives[tr.id()].amp = power;
-    _drives[tr.id()].phase = phase;
+    return driver::Drive{phase, power};
   });
 }
 
@@ -454,21 +471,22 @@ void Greedy::calc(const core::Geometry& geometry) {
 
   const VectorXd amps_ = Eigen::Map<VectorXc, Eigen::Unaligned>(_amps.data(), static_cast<Eigen::Index>(_amps.size())).real();
 
-  std::vector<complex> phases;
-  phases.reserve(phase_div);
-  for (size_t i = 0; i < phase_div; i++)
-    phases.emplace_back(
-        std::exp(complex(0., 2 * driver::pi * static_cast<driver::autd3_float_t>(i) / static_cast<driver::autd3_float_t>(phase_div))));
+  std::vector<complex> phases(phase_div);
+  driver::autd3_float_t phase = 0;
+  std::generate(phases.begin(), phases.end(), [&] {
+    phase += 2 * driver::pi / static_cast<driver::autd3_float_t>(phase_div);
+    return complex(std::cos(phase), std::sin(phase));
+  });
 
-  std::vector<VectorXc> tmp;
-  tmp.reserve(phases.size());
-  for (size_t i = 0; i < phases.size(); i++) tmp.emplace_back(m);
+  std::vector<VectorXc> tmp(phases.size());
+  std::generate(tmp.begin(), tmp.end(), [m] { return VectorXc(m); });
 
   VectorXc cache = VectorXc::Zero(m);
 
-  auto transfer_foci = [m](const core::Transducer& trans, const complex phase, const std::vector<core::Vector3>& foci_, VectorXc& res) {
-    for (Eigen::Index i = 0; i < m; i++)
-      res(i) = core::propagate(trans.position(), trans.z_direction(), trans.attenuation, trans.wavenumber(), foci_[i]) * phase;
+  auto transfer_foci = [](const core::Transducer& trans, const complex p, const std::vector<core::Vector3>& foci_, VectorXc& res) {
+    std::transform(foci_.begin(), foci_.end(), res.begin(), [trans, p](const core::Vector3& focus) {
+      return core::propagate(trans.position(), trans.z_direction(), trans.attenuation, trans.wavenumber(), focus) * p;
+    });
   };
 
   std::vector<size_t> select(n);
@@ -502,20 +520,25 @@ void LSSGreedy::calc(const core::Geometry& geometry) {
 
   const VectorXd amps_ = Eigen::Map<VectorXc, Eigen::Unaligned>(_amps.data(), static_cast<Eigen::Index>(_amps.size())).real();
 
-  std::vector<complex> phases;
-  phases.reserve(phase_div);
-  for (size_t i = 0; i < phase_div; i++)
-    phases.emplace_back(
-        std::exp(complex(0., 2 * driver::pi * static_cast<driver::autd3_float_t>(i) / static_cast<driver::autd3_float_t>(phase_div))));
+  std::vector<complex> phases(phase_div);
+  driver::autd3_float_t phase = 0;
+  std::generate(phases.begin(), phases.end(), [&] {
+    phase += 2 * driver::pi / static_cast<driver::autd3_float_t>(phase_div);
+    return complex(std::cos(phase), std::sin(phase));
+  });
 
   std::vector<VectorXc> focus_phase_list;
   focus_phase_list.reserve(_foci.size());
   std::transform(_foci.begin(), _foci.end(), std::back_inserter(focus_phase_list), [&](const auto& focus) {
     VectorXc q(n);
-    std::for_each(geometry.begin(), geometry.end(), [&](const auto& transducer) {
-      const auto dist = (focus - transducer.position()).norm();
-      const auto phase = transducer.align_phase_at(dist);
-      q(transducer.id()) = std::exp(complex(0., phase));
+#ifdef HOLO_PARALLEL_FOR
+    std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), q.begin(), [&](const auto& tr) {
+#else
+    std::transform(geometry.begin(), geometry.end(), q.begin(), [&](const auto& tr) {
+#endif
+      const auto dist = (focus - tr.position()).norm();
+      const auto p = tr.align_phase_at(dist);
+      return complex(std::cos(p), std::sin(p));
     });
     return q;
   });
@@ -523,9 +546,8 @@ void LSSGreedy::calc(const core::Geometry& geometry) {
   MatrixXc g(m, n);
   generate_transfer_matrix(_foci, geometry, g);
 
-  std::vector<VectorXc> tmp;
-  tmp.reserve(phases.size());
-  for (size_t i = 0; i < phases.size(); i++) tmp.emplace_back(VectorXc::Zero(m));
+  std::vector<VectorXc> tmp(phases.size());
+  std::generate(tmp.begin(), tmp.end(), [m] { return VectorXc::Zero(m); });
 
   VectorXc q = focus_phase_list[0];
   std::vector<size_t> select(m - 1);
@@ -549,12 +571,14 @@ void LSSGreedy::calc(const core::Geometry& geometry) {
 
   _backend->to_host(q);
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
-  std::for_each(geometry.begin(), geometry.end(), [&](const auto& tr) {
-    const auto phase = std::arg(q(tr.id())) + driver::pi;
+#ifdef HOLO_PARALLEL_FOR
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+#else
+  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+#endif
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
-    _drives[tr.id()].amp = power;
-    _drives[tr.id()].phase = phase;
+    return driver::Drive{std::arg(q(tr.id())) + driver::pi, power};
   });
 }
 
@@ -585,24 +609,25 @@ void APO::calc(const core::Geometry& geometry) {
     _backend->add(complex(lambda, 0), q, nabla_j);
   };
 
-  auto calc_j = [&](const VectorXc& q, const VectorXc& p2, const std::vector<MatrixXc>& ris, const size_t m, const size_t n) {
+  auto calc_j = [&](const VectorXc& q, const VectorXc& p2, const std::vector<MatrixXc>& ris, const size_t n) {
     MatrixXc tmp = MatrixXc::Zero(static_cast<Eigen::Index>(n), 1);
-    driver::autd3_float_t j = 0;
-    for (size_t i = 0; i < m; i++) {
-      _backend->mul(Transpose::NoTrans, Transpose::NoTrans, ONE, ris[i], q, ZERO, tmp);
-      const auto s = p2(static_cast<Eigen::Index>(i), 0) - _backend->dot(q, tmp);
-      j += std::norm(s);
-    }
+    size_t i = 0;
+    driver::autd3_float_t j =
+        std::accumulate(ris.begin(), ris.end(), driver::autd3_float_t{0}, [&](const driver::autd3_float_t acc, const MatrixXc& r) {
+          _backend->mul(Transpose::NoTrans, Transpose::NoTrans, ONE, r, q, ZERO, tmp);
+          const auto s = p2(static_cast<Eigen::Index>(i++), 0) - _backend->dot(q, tmp);
+          return acc + std::norm(s);
+        });
     j += std::abs(_backend->dot(q, q)) * lambda;
     return j;
   };
 
-  auto line_search = [&](const VectorXc& q, const VectorXc& p2, const std::vector<MatrixXc>& ris, const size_t m, const size_t n) {
+  auto line_search = [&](const VectorXc& q, const VectorXc& p2, const std::vector<MatrixXc>& ris, const size_t n) {
     driver::autd3_float_t alpha = 0;
     auto min = (std::numeric_limits<driver::autd3_float_t>::max)();
     for (size_t i = 0; i < line_search_max; i++) {
       const auto a = static_cast<driver::autd3_float_t>(i) / static_cast<driver::autd3_float_t>(line_search_max);  // FIXME: only for 0-1
-      if (const auto v = calc_j(q, p2, ris, m, n); v < min) {
+      if (const auto v = calc_j(q, p2, ris, n); v < min) {
         alpha = a;
         min = v;
       }
@@ -633,10 +658,9 @@ void APO::calc(const core::Geometry& geometry) {
   _backend->mul(Transpose::ConjTrans, ONE, g, p, ZERO, q);
   _backend->solveh(tmp, q);
 
-  std::vector<MatrixXc> ris;
-  ris.reserve(m);
-  for (size_t i = 0; i < m; i++)
-    ris.emplace_back(make_ri(g, static_cast<Eigen::Index>(m), static_cast<Eigen::Index>(n), static_cast<Eigen::Index>(i)));
+  std::vector<MatrixXc> ris(m);
+  Eigen::Index i = 0;
+  std::generate(ris.begin(), ris.end(), [&]() { return make_ri(g, static_cast<Eigen::Index>(m), static_cast<Eigen::Index>(n), i++); });
 
   VectorXc nabla_j = VectorXc::Zero(static_cast<Eigen::Index>(n));
   calc_nabla_j(q, p2, ris, m, n, nabla_j);
@@ -648,7 +672,7 @@ void APO::calc(const core::Geometry& geometry) {
   for (size_t k = 0; k < k_max; k++) {
     _backend->mul(Transpose::NoTrans, -ONE, h, nabla_j, ZERO, d);
 
-    _backend->scale(complex(line_search(q, p2, ris, m, n), 0), d);
+    _backend->scale(complex(line_search(q, p2, ris, n), 0), d);
 
     if (std::sqrt(_backend->dot(d, d).real()) < eps) break;
 
@@ -670,12 +694,15 @@ void APO::calc(const core::Geometry& geometry) {
 
   _backend->to_host(q);
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
-  std::for_each(geometry.begin(), geometry.end(), [&](const auto& tr) {
+#ifdef HOLO_PARALLEL_FOR
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+#else
+  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+#endif
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
-    _drives[tr.id()].amp = power;
-    _drives[tr.id()].phase = phase;
+    return driver::Drive{phase, power};
   });
 }
 

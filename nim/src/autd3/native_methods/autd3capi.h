@@ -43,6 +43,7 @@ bool AUTDGetFPGAInfo(void* handle, uint8* out);
 int32 AUTDNumTransducers(void* handle);
 int32 AUTDNumDevices(void* handle);
 void AUTDGeometryCenter(void* handle, float64* x, float64* y, float64* z);
+void AUTDGeometryCenterOf(void* handle, int32 dev_idx, float64* x, float64* y, float64* z);
 void AUTDTransPosition(void* handle, int32 trans_idx, float64* x, float64* y, float64* z);
 void AUTDTransXDirection(void* handle, int32 trans_idx, float64* x, float64* y, float64* z);
 void AUTDTransYDirection(void* handle, int32 trans_idx, float64* x, float64* y, float64* z);
