@@ -11,7 +11,6 @@
 
 #pragma once
 
-#include <algorithm>
 #include <vector>
 
 #include "autd3/core/datagram.hpp"

@@ -26,7 +26,7 @@ using autd3::driver::pi;
 TEST(DriverCommonFPGADefined, LegacyDrive) {
   using autd3::driver::LegacyDrive;
 
-  Drive s{};
+  Drive s;  // NOLINT
   LegacyDrive d{};
 
   s.phase = 0.0;
