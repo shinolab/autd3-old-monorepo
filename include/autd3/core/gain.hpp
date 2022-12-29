@@ -41,7 +41,7 @@ struct Gain : DatagramBody {
    */
   void build(const Geometry& geometry) {
     if (_built) return;
-    _drives.resize(geometry.num_transducers(), driver::Drive{0, 0});
+    _drives.resize(geometry.num_transducers());
     calc(geometry);
     _built = true;
   }
