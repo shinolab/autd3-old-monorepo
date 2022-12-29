@@ -3,7 +3,7 @@
 // Created Date: 25/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/12/2022
+// Last Modified: 28/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -1306,6 +1306,36 @@ TEST(GeometryTest, center) {
   }
   expect /= 249;
   ASSERT_NEAR_VECTOR3(geometry.center(), expect, 1e-3);
+}
+
+TEST(GeometryTest, center_of) {
+  autd3::core::Geometry geometry;
+
+  Vector3 zero = Vector3::Zero();
+  ASSERT_NEAR_VECTOR3(geometry.center_of(0), zero, 1e-3);
+  ASSERT_NEAR_VECTOR3(geometry.center_of(1), zero, 1e-3);
+  ASSERT_NEAR_VECTOR3(geometry.center_of(2), zero, 1e-3);
+
+  Vector3 expect_0 = Vector3::Zero();
+  Vector3 expect_1 = Vector3::Zero();
+  geometry.add_device(autd3::AUTD3(Vector3(10, 20, 30), Vector3::Zero()));
+  geometry.add_device(autd3::AUTD3(Vector3(40, 50, 60), Vector3::Zero()));
+  for (size_t i = 0; i < 18; i++) {
+    for (size_t j = 0; j < 14; j++) {
+      if (autd3::AUTD3::is_missing_transducer(i, j)) continue;
+      expect_0 += 10.16 * Vector3(static_cast<double>(i), static_cast<double>(j), 0.0) + Vector3(10, 20, 30);
+    }
+  }
+  expect_0 /= 249;
+  for (size_t i = 0; i < 18; i++) {
+    for (size_t j = 0; j < 14; j++) {
+      if (autd3::AUTD3::is_missing_transducer(i, j)) continue;
+      expect_1 += 10.16 * Vector3(static_cast<double>(i), static_cast<double>(j), 0.0) + Vector3(40, 50, 60);
+    }
+  }
+  expect_1 /= 249;
+  ASSERT_NEAR_VECTOR3(geometry.center_of(0), expect_0, 1e-3);
+  ASSERT_NEAR_VECTOR3(geometry.center_of(1), expect_1, 1e-3);
 }
 
 TEST(GeometryTest, add_device) {

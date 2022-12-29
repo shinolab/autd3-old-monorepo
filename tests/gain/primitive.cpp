@@ -3,7 +3,7 @@
 // Created Date: 24/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/12/2022
+// Last Modified: 29/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@ TEST(Gain, Null) {
   auto g = autd3::gain::Null();
   g.build(geometry);
 
-  for (const auto& [phase, duty, _] : g.drives()) {
+  for (const auto& [phase, duty] : g.drives()) {
     ASSERT_EQ(duty, 0.0);
   }
 }
@@ -61,17 +61,17 @@ TEST(Gain, Focus) {
 
   auto g1 = autd3::gain::Focus(f, 0.5);
   g1.build(geometry);
-  for (auto& [phase, amp, _] : g1.drives()) ASSERT_EQ(amp, 0.5);
+  for (auto& [phase, amp] : g1.drives()) ASSERT_EQ(amp, 0.5);
 
   auto g2 = autd3::gain::Focus(f, 0.0);
   g2.build(geometry);
-  for (auto& [phase, amp, _] : g2.drives()) ASSERT_EQ(amp, 0.0);
+  for (auto& [phase, amp] : g2.drives()) ASSERT_EQ(amp, 0.0);
 
   auto g3 = autd3::gain::Focus(f, 2.0);
   g3.build(geometry);
-  for (auto& [phase, amp, _] : g3.drives()) ASSERT_EQ(amp, 2.0);
+  for (auto& [phase, amp] : g3.drives()) ASSERT_EQ(amp, 2.0);
 
   auto g4 = autd3::gain::Focus(f, -1.0);
   g4.build(geometry);
-  for (auto& [phase, amp, _] : g4.drives()) ASSERT_EQ(amp, -1.0);
+  for (auto& [phase, amp] : g4.drives()) ASSERT_EQ(amp, -1.0);
 }

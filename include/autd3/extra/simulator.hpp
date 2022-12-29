@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/12/2022
+// Last Modified: 27/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -231,7 +231,7 @@ inline void to_json(nlohmann::json& j, const SimulatorSettings& s) {
                      {"max_dev_num", s.max_dev_num},
                      {"max_trans_num", s.max_trans_num},
                      {"mod_enable", s.mod_enable},
-                     {"stm_auto_play", s.stm_auto_play},
+                     {"mod_auto_play", s.mod_auto_play},
                      {"stm_auto_play", s.stm_auto_play}};
 }
 

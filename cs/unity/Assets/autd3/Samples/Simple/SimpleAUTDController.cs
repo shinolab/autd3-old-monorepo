@@ -4,7 +4,7 @@
  * Created Date: 10/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/11/2022
+ * Last Modified: 25/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -81,7 +81,7 @@ public class SimpleAUTDController : MonoBehaviour
         _autd.Send(new AUTD3Sharp.Modulation.Sine(150)); // 150 Hz
 
         if (Target == null) return;
-        _autd.Send(new AUTD3Sharp.Gain.Focus(Target.transform.position, 1.0));
+        _autd.Send(new AUTD3Sharp.Gain.Focus(Target.transform.position, 1.0f));
         _oldPosition = Target.transform.position;
     }
 

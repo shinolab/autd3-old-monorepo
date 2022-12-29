@@ -2,7 +2,7 @@
     "name": "com.shinolab.autd3",
     "displayName": "autd3-unity",
     "description": "autd3 library wrapper for Unity",
-    "version": "2.7.1",
+    "version": "2.7.2",
     "author": "Shun Suzuki",
     "unity": "2021.3",
     "keywords": [
@@ -20,6 +20,11 @@
             "displayName": "Simple",
             "description": "Sample to display the focus at target object",
             "path": "Samples~/Simple"
+        },
+        {
+            "displayName": "MultiDevice",
+            "description": "Sample to use 2 devices with Simulator",
+            "path": "Samples~/MultiDevice"
         }
     ]
 }

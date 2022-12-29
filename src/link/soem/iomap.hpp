@@ -3,13 +3,15 @@
 // Created Date: 01/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 29/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
+
+#include <numeric>
 
 namespace autd3::link {
 
@@ -19,12 +21,12 @@ struct IOMap {
   void resize(const std::vector<size_t>& device_map) {
     std::vector<size_t> trans_num_prefix_sum;
     trans_num_prefix_sum.resize(device_map.size() + 1, 0);
-    for (size_t i = 0; i < device_map.size(); i++)
-      trans_num_prefix_sum[i + 1] = trans_num_prefix_sum[i] + (driver::HEADER_SIZE + device_map[i] * sizeof(uint16_t));
+    std::exclusive_scan(device_map.begin(), device_map.end() + 1, trans_num_prefix_sum.begin(), size_t{0},
+                        [](const size_t acc, const size_t i) { return acc + driver::HEADER_SIZE + sizeof(uint16_t) * i; });
 
     if (trans_num_prefix_sum.size() != _trans_num_prefix_sum.size() ||
         !std::equal(trans_num_prefix_sum.cbegin(), trans_num_prefix_sum.cend(), _trans_num_prefix_sum.cbegin())) {
-      _trans_num_prefix_sum = trans_num_prefix_sum;
+      _trans_num_prefix_sum = std::move(trans_num_prefix_sum);
       _size = _trans_num_prefix_sum[_trans_num_prefix_sum.size() - 1] + device_map.size() * driver::EC_INPUT_FRAME_SIZE;
       _buf = std::make_unique<uint8_t[]>(_size);
       _device_map = device_map;
