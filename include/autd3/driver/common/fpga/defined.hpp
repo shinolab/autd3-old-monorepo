@@ -36,7 +36,7 @@ constexpr autd3_float_t FOCUS_STM_FIXED_NUM_UNIT = static_cast<autd3_float_t>(0.
 #endif
 
 /**
- * @brief Drive is a utility structure for storing ultrasound amplitude, phase, and cycle.
+ * @brief Drive is a utility structure for storing ultrasound amplitude and phase.
  */
 struct Drive {
   /**
