@@ -11,7 +11,6 @@
 
 #pragma once
 
-#include <algorithm>
 #include <vector>
 
 #include "datagram.hpp"
@@ -42,13 +41,7 @@ struct Gain : DatagramBody {
    */
   void build(const Geometry& geometry) {
     if (_built) return;
-
-    _drives.clear();
-    _drives.reserve(geometry.num_transducers());
-    std::transform(geometry.begin(), geometry.end(), std::back_inserter(_drives), [](const Transducer& tr) {
-      return driver::Drive{0, 0, tr.cycle()};
-    });
-
+    _drives.resize(geometry.num_transducers(), driver::Drive{0, 0});
     calc(geometry);
     _built = true;
   }
@@ -86,7 +79,7 @@ struct Gain : DatagramBody {
     mode->pack_gain_header(driver, tx);
     if (is_finished()) return true;
     build(geometry);
-    mode->pack_gain_body(driver, _phase_sent, _duty_sent, _drives, tx);
+    mode->pack_gain_body(driver, _phase_sent, _duty_sent, _drives, geometry, tx);
     return true;
   }
 
