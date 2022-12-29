@@ -32,12 +32,11 @@ class Null final : public core::Gain {
 
   void calc(const core::Geometry& geometry) override {
 #ifdef AUTD3_PARALLEL_FOR
-    std::for_each(std::execution::par_unseq, geometry.begin(), geometry.end(), [&](const auto& transducer) {
+    std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& transducer) {
 #else
-    std::for_each(geometry.begin(), geometry.end(), [&](const auto& transducer) {
+    std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& transducer) {
 #endif
-      _drives[transducer.id()].amp = 0;
-      _drives[transducer.id()].phase = 0;
+      return driver::Drive{0, 0};
     });
   }
 
@@ -61,15 +60,13 @@ class Focus final : public core::Gain {
 
   void calc(const core::Geometry& geometry) override {
 #ifdef AUTD3_PARALLEL_FOR
-    std::for_each(std::execution::par_unseq, geometry.begin(), geometry.end(), [&](const auto& transducer) {
+    std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& transducer) {
 #else
-    std::for_each(geometry.begin(), geometry.end(), [&](const auto& transducer) {
+    std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& transducer) {
 #endif
       const auto dist = (_point - transducer.position()).norm();
-
       const auto phase = transducer.align_phase_at(dist);
-      _drives[transducer.id()].amp = _amp;
-      _drives[transducer.id()].phase = phase;
+      return driver::Drive{phase, _amp};
     });
   }
 
@@ -106,16 +103,15 @@ class BesselBeam final : public core::Gain {
     const Eigen::AngleAxis<driver::autd3_float_t> rot(-theta_v, v);
 
 #ifdef AUTD3_PARALLEL_FOR
-    std::for_each(std::execution::par_unseq, geometry.begin(), geometry.end(), [&](const auto& transducer) {
+    std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& transducer) {
 #else
-    std::for_each(geometry.begin(), geometry.end(), [&](const auto& transducer) {
+    std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& transducer) {
 #endif
       const auto r = transducer.position() - this->_apex;
       const auto rr = rot * r;
       const auto d = std::sin(_theta_z) * std::sqrt(rr.x() * rr.x() + rr.y() * rr.y()) - std::cos(_theta_z) * rr.z();
       const auto phase = transducer.align_phase_at(d);
-      _drives[transducer.id()].amp = _amp;
-      _drives[transducer.id()].phase = phase;
+      return driver::Drive{phase, _amp};
     });
   }
 
@@ -145,14 +141,13 @@ class PlaneWave final : public core::Gain {
 
   void calc(const core::Geometry& geometry) override {
 #ifdef AUTD3_PARALLEL_FOR
-    std::for_each(std::execution::par_unseq, geometry.begin(), geometry.end(), [&](const auto& transducer) {
+    std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& transducer) {
 #else
-    std::for_each(geometry.begin(), geometry.end(), [&](const auto& transducer) {
+    std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& transducer) {
 #endif
       const auto dist = transducer.position().dot(_direction);
       const auto phase = transducer.align_phase_at(dist);
-      _drives[transducer.id()].amp = _amp;
-      _drives[transducer.id()].phase = phase;
+      return driver::Drive{phase, _amp};
     });
   }
 
