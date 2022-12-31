@@ -1,5 +1,6 @@
 # 2.7.3
 
+- Remove sound speed argument from `FocusSTM` constructor
 - Fix [#54](https://github.com/shinolab/autd3/issues/54)
 
 # 2.7.2

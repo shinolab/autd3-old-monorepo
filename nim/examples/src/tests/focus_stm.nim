@@ -19,8 +19,7 @@ proc focus_stm_test*(cnt: Controller) =
 
     let m = initStatic(1.0)
 
-    soundSpeed = cnt.soundSpeed();
-    let stm = initFocusSTM(soundSpeed)
+    let stm = initFocusSTM()
     let radius = 30.0
     let size = 200
     let x = 90.0
