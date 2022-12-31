@@ -3,7 +3,7 @@
 # Created Date: 14/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 29/11/2022
+# Last Modified: 31/12/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,8 +13,7 @@ function focus_stm(cnt::Controller)
     config = SilencerConfigNone()
     cnt.send(config)
 
-    sound_speed = cnt.get_sound_speed()
-    stm = FocusSTM(sound_speed)
+    stm = FocusSTM()
     center = SVector(90.0, 80.0, 150.0)
     radius = 30.0
     size = 200

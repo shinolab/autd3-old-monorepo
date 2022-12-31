@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/12/2022
+ * Last Modified: 31/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -759,9 +759,14 @@ namespace AUTD3Sharp
 
         public sealed class FocusSTM : STM
         {
-            public FocusSTM(autd3_float_t soundSpeed)
+            public FocusSTM()
             {
-                Base.AUTDFocusSTM(out handle, soundSpeed);
+                Base.AUTDFocusSTM(out handle);
+            }
+
+            public autd3_float_t SoundSpeed
+            {
+                set => Base.AUTDSetFocusSTMSoundSpeed(handle, value);
             }
 
             public void Add(Vector3 point, byte shift = 0) => Base.AUTDFocusSTMAdd(handle, point.x, point.y, point.z, shift);

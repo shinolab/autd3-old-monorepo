@@ -330,8 +330,8 @@ proc `frequency=`*(stm: STM, value: float64): float64 {.discardable.} =
 
 type FocusSTM* = object of STM
 
-func initFocusSTM*(soundSpeed: float64): FocusSTM =
-    AUTDFocusSTM(result.p.addr, soundSpeed)
+func initFocusSTM*(): FocusSTM =
+    AUTDFocusSTM(result.p.addr)
 
 func add*(stm: FocusSTM, pos: openArray[float64],
         shift: uint8 = 0) =

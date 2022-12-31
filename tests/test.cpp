@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/12/2022
+// Last Modified: 31/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -577,7 +577,7 @@ TEST(ControllerTest, focus_stm) {
     return autd3::FocusSTM::Focus(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
   });
 
-  autd3::FocusSTM stm(autd.get_sound_speed());
+  autd3::FocusSTM stm;
   std::copy(points.begin(), points.end(), std::back_inserter(stm));
 
   autd << stm;
