@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 31/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ macro_rules! focus_stm {
 
         let center = $autd.geometry().center() + Vector3::new(0., 0., 150.0);
 
-        let mut stm = FocusSTM::new($autd.sound_speed());
+        let mut stm = FocusSTM::new();
         let point_num = 200;
         let radius = 30.0;
         for i in 0..point_num {

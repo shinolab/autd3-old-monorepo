@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/12/2022
+// Last Modified: 31/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -345,7 +345,13 @@ void AUTDDeleteModulation(const void* const mod) {
   delete m;
 }
 
-void AUTDFocusSTM(void** out, const autd3_float_t sound_speed) { *out = new autd3::FocusSTM(sound_speed); }
+void AUTDFocusSTM(void** out) { *out = new autd3::FocusSTM(); }
+
+void AUTDSetFocusSTMSoundSpeed(void* const stm, const autd3_float_t sound_speed) {
+  auto* const s = static_cast<autd3::FocusSTM*>(stm);
+  s->sound_speed = sound_speed;
+}
+
 void AUTDGainSTM(void** out, const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   *out = new autd3::GainSTM(wrapper->geometry());

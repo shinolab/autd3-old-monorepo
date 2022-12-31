@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/12/2022
+ * Last Modified: 31/12/2022
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,18 +27,18 @@ pub struct FocusSTM {
     sent: usize,
     pub start_idx: Option<u16>,
     pub finish_idx: Option<u16>,
-    pub sound_speed: f64,
+    pub sound_speed: Option<f64>,
 }
 
 impl FocusSTM {
-    pub fn new(sound_speed: f64) -> Self {
+    pub fn new() -> Self {
         Self {
             control_points: vec![],
             sample_freq_div: 4096,
             sent: 0,
             start_idx: None,
             finish_idx: None,
-            sound_speed,
+            sound_speed: None,
         }
     }
 
@@ -100,12 +100,13 @@ impl<T: Transducer> DatagramBody<T> for FocusSTM {
             })
             .collect();
 
+        let sound_speed = self.sound_speed.unwrap_or(geometry[0].sound_speed());
         autd3_driver::focus_stm_body(
             &points,
             &mut self.sent,
             self.control_points.len(),
             self.sample_freq_div,
-            self.sound_speed,
+            sound_speed,
             self.start_idx,
             self.finish_idx,
             tx,

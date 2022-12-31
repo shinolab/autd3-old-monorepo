@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/12/2022
+// Last Modified: 31/12/2022
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -79,7 +79,8 @@ EXPORT_AUTD uint32_t AUTDModulationSamplingFrequencyDivision(IN const void* mod)
 EXPORT_AUTD void AUTDModulationSetSamplingFrequencyDivision(IN void* mod, IN uint32_t freq_div);
 EXPORT_AUTD autd3_float_t AUTDModulationSamplingFrequency(IN const void* mod);
 EXPORT_AUTD void AUTDDeleteModulation(IN const void* mod);
-EXPORT_AUTD void AUTDFocusSTM(OUT void** out, IN autd3_float_t sound_speed);
+EXPORT_AUTD void AUTDFocusSTM(OUT void** out);
+EXPORT_AUTD void AUTDSetFocusSTMSoundSpeed(IN void* stm, IN autd3_float_t sound_speed);
 EXPORT_AUTD void AUTDGainSTM(OUT void** out, IN const void* handle);
 EXPORT_AUTD void AUTDFocusSTMAdd(IN void* stm, IN autd3_float_t x, IN autd3_float_t y, IN autd3_float_t z, IN uint8_t shift);
 EXPORT_AUTD void AUTDGainSTMAdd(IN void* stm, IN void* gain);

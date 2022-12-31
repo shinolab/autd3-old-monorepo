@@ -15,10 +15,10 @@ classdef FocusSTM < STM
 
     methods
 
-        function obj = FocusSTM(sound_speed)
+        function obj = FocusSTM()
             obj = obj@STM();
             pp = libpointer('voidPtrPtr', obj.ptr);
-            calllib('autd3capi', 'AUTDFocusSTM', pp, sound_speed);
+            calllib('autd3capi', 'AUTDFocusSTM', pp);
         end
 
         function add(varargin)

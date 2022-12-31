@@ -710,6 +710,15 @@ The stm created must be deleted at the end by `AUTDDeleteSTM`.
 | Argument name / return | type   | in/out | description                     |
 | ---------------------- | ------ | ------ | ------------------------------- |
 | out                    | void** | out    | pointer to pointer to Focus STM |
+| return                 | void   | -      | -                               |
+
+## AUTDSetFocusSTMSoundSpeed (autd3capi)
+
+Set sound speed of FocusSTM.
+
+| Argument name / return | type   | in/out | description                     |
+| ---------------------- | ------ | ------ | ------------------------------- |
+| stm                    | void*  | in    | pointer to FocusSTM |
 | sound_speed            | double | in     | sound speed                     |
 | return                 | void   | -      | -                               |
 

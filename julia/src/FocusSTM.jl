@@ -3,7 +3,7 @@
 # Created Date: 14/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 29/11/2022
+# Last Modified: 31/12/2022
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,9 +21,9 @@ mutable struct FocusSTM
     get_sampling_frequency_division
     set_sampling_frequency_division
     get_sampling_frequency
-    function FocusSTM(sound_speed::Float64)
+    function FocusSTM()
         chandle = Ref(Ptr{Cvoid}(0))
-        autd3capi.autd_focus_stm(chandle, sound_speed)
+        autd3capi.autd_focus_stm(chandle)
         stm = STM(chandle[])
         p = new(stm, chandle[])
         p.add = function (position::SVector{3,Float64}; shift = 0)

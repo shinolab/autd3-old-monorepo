@@ -4,7 +4,7 @@ Project: stm
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 16/12/2022
+Last Modified: 31/12/2022
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -64,12 +64,15 @@ class STM(Body):
 
 
 class FocusSTM(STM):
-    def __init__(self, sound_speed: float):
+    def __init__(self):
         super().__init__()
-        Base().dll.AUTDFocusSTM(byref(self.ptr), sound_speed)
+        Base().dll.AUTDFocusSTM(byref(self.ptr))
 
     def __del__(self):
         super().__del__()
+
+    def set_sound_speed(self, sound_speed: float):
+        Base().dll.AUTDSetFocusSTMSoundSpeed(self.ptr, sound_speed)
 
     def add(self, point, duty_shift: int = 0):
         Base().dll.AUTDFocusSTMAdd(self.ptr, point[0], point[1], point[2], duty_shift)
