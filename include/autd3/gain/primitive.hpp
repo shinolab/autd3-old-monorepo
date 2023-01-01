@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/12/2022
+// Last Modified: 01/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -203,8 +203,7 @@ class TransducerTest final : public core::Gain {
   TransducerTest() noexcept : _map(){};
 
   void calc(const core::Geometry& geometry) override {
-    for (const auto& [key, value] : _map) {
-      const auto id = geometry[key].id();
+    for (const auto& [id, value] : _map) {
       _drives[id].amp = value.first;
       _drives[id].phase = value.second;
     }
