@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/12/2022
+// Last Modified: 02/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -52,7 +52,8 @@ struct FocusSTM final : STM {
 
   using value_type = Focus;
 
-  explicit FocusSTM() : STM(), _sent(0) {}
+  FocusSTM() : STM(), _sent(0) {}
+  explicit FocusSTM(const driver::autd3_float_t sound_speed) : STM(), _sent(0), sound_speed(sound_speed) {}
 
   /**
    * @brief Set frequency of the STM
