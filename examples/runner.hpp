@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 03/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -56,7 +56,7 @@ inline int run(autd3::Controller& autd) {
   };
   if (autd.geometry().num_devices() == 2) tests.emplace_back(std::pair(F{group_test}, "Grouped Gain Test"));
 
-  autd.set_sound_speed(340.0e3);
+  autd.geometry().sound_speed = 340.0e3;  // mm/s
 
   const auto firm_infos = autd.firmware_infos();
   if (firm_infos.empty()) throw std::runtime_error("Cannot read firmware information.");

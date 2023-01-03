@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/12/2022
+// Last Modified: 03/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -149,12 +149,12 @@ uint16_t AUTDGetTransCycle(const void* const handle, const int32_t trans_idx) {
 
 autd3_float_t AUTDGetSoundSpeed(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
-  return wrapper->get_sound_speed();
+  return wrapper->geometry().sound_speed;
 }
 
 void AUTDSetSoundSpeed(void* const handle, const autd3_float_t sound_speed) {
   auto* wrapper = static_cast<Controller*>(handle);
-  wrapper->set_sound_speed(sound_speed);
+  wrapper->geometry().sound_speed = sound_speed;
 }
 
 void AUTDSetSoundSpeedFromTemp(void* const handle, const autd3_float_t temp, const autd3_float_t k, const autd3_float_t r, const autd3_float_t m) {
@@ -164,17 +164,18 @@ void AUTDSetSoundSpeedFromTemp(void* const handle, const autd3_float_t temp, con
 
 autd3_float_t AUTDGetWavelength(const void* const handle, const int32_t trans_idx) {
   const auto* wrapper = static_cast<const Controller*>(handle);
-  return wrapper->geometry()[trans_idx].wavelength();
+  const auto sound_speed = wrapper->geometry().sound_speed;
+  return wrapper->geometry()[trans_idx].wavelength(sound_speed);
 }
 
 autd3_float_t AUTDGetAttenuation(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
-  return wrapper->get_attenuation();
+  return wrapper->geometry().attenuation;
 }
 
 void AUTDSetAttenuation(void* const handle, const autd3_float_t attenuation) {
   auto* const wrapper = static_cast<Controller*>(handle);
-  wrapper->set_attenuation(attenuation);
+  wrapper->geometry().attenuation = attenuation;
 }
 
 bool AUTDGetFPGAInfo(void* const handle, uint8_t* out) {
@@ -346,11 +347,6 @@ void AUTDDeleteModulation(const void* const mod) {
 }
 
 void AUTDFocusSTM(void** out) { *out = new autd3::FocusSTM(); }
-
-void AUTDSetFocusSTMSoundSpeed(void* const stm, const autd3_float_t sound_speed) {
-  auto* const s = static_cast<autd3::FocusSTM*>(stm);
-  s->sound_speed = sound_speed;
-}
 
 void AUTDGainSTM(void** out, const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);

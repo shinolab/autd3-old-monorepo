@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 03/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,26 +28,16 @@ using driver::Vector4;
  */
 struct Transducer {
   Transducer(const size_t id, Vector3 pos, Quaternion rot) noexcept
-      : attenuation(0.0),
-        sound_speed(
-#ifdef AUTD3_USE_METER
-            340.0),
-#else
-            340.0e3),
-#endif
-        _id(id),
-        _pos(std::move(pos)),
-        _rot(std::move(rot)),
-        _mod_delay(0),
-        _cycle(4096) {
-  }
+      : _id(id), _pos(std::move(pos)), _rot(std::move(rot)), _mod_delay(0), _cycle(4096) {}
   ~Transducer() = default;
   Transducer(const Transducer& v) noexcept = default;
   Transducer& operator=(const Transducer& obj) = default;
   Transducer(Transducer&& obj) = default;
   Transducer& operator=(Transducer&& obj) = default;
 
-  [[nodiscard]] driver::autd3_float_t align_phase_at(const driver::autd3_float_t dist) const { return dist * wavenumber(); }
+  [[nodiscard]] driver::autd3_float_t align_phase_at(const driver::autd3_float_t dist, const driver::autd3_float_t sound_speed) const {
+    return dist * wavenumber(sound_speed);
+  }
 
   /**
    * \brief Position of the transducer
@@ -117,22 +107,12 @@ struct Transducer {
   /**
    * \brief Wavelength of the ultrasound emitted from the transducer
    */
-  [[nodiscard]] driver::autd3_float_t wavelength() const { return sound_speed / frequency(); }
+  [[nodiscard]] driver::autd3_float_t wavelength(const driver::autd3_float_t sound_speed) const { return sound_speed / frequency(); }
 
   /**
    * \brief Wavenumber of the ultrasound emitted from the transducer
    */
-  [[nodiscard]] driver::autd3_float_t wavenumber() const { return 2 * driver::pi * frequency() / sound_speed; }
-
-  /**
-   * @brief Attenuation coefficient.
-   */
-  driver::autd3_float_t attenuation;
-
-  /**
-   * @brief Speed of sound.
-   */
-  driver::autd3_float_t sound_speed;
+  [[nodiscard]] driver::autd3_float_t wavenumber(const driver::autd3_float_t sound_speed) const { return 2 * driver::pi * frequency() / sound_speed; }
 
  private:
   size_t _id;
