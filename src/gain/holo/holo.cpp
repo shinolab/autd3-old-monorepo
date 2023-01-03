@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/12/2022
+// Last Modified: 03/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,6 +24,8 @@ namespace autd3::gain::holo {
 namespace {
 
 void generate_transfer_matrix(const std::vector<core::Vector3>& foci, const core::Geometry& geometry, MatrixXc& dst) {
+  const auto sound_speed = geometry.sound_speed;
+  const auto attenuation = geometry.attenuation;
 #ifdef HOLO_PARALLEL_FOR
   std::for_each(std::execution::par_unseq, geometry.begin(), geometry.end(), [&](const auto& transducer) {
 #else
@@ -31,7 +33,7 @@ void generate_transfer_matrix(const std::vector<core::Vector3>& foci, const core
 #endif
     for (size_t i = 0; i < foci.size(); i++)
       dst(i, transducer.id()) =
-          core::propagate(transducer.position(), transducer.z_direction(), transducer.attenuation, transducer.wavenumber(), foci[i]);
+          core::propagate(transducer.position(), transducer.z_direction(), attenuation, transducer.wavenumber(sound_speed), foci[i]);
   });
 }
 
@@ -483,9 +485,12 @@ void Greedy::calc(const core::Geometry& geometry) {
 
   VectorXc cache = VectorXc::Zero(m);
 
-  auto transfer_foci = [](const core::Transducer& trans, const complex p, const std::vector<core::Vector3>& foci_, VectorXc& res) {
-    std::transform(foci_.begin(), foci_.end(), res.begin(), [trans, p](const core::Vector3& focus) {
-      return core::propagate(trans.position(), trans.z_direction(), trans.attenuation, trans.wavenumber(), focus) * p;
+  const auto sound_speed = geometry.sound_speed;
+  const auto attenuation = geometry.attenuation;
+  auto transfer_foci = [attenuation, sound_speed](const core::Transducer& trans, const complex p, const std::vector<core::Vector3>& foci_,
+                                                  VectorXc& res) {
+    std::transform(foci_.begin(), foci_.end(), res.begin(), [trans, p, attenuation, sound_speed](const core::Vector3& focus) {
+      return core::propagate(trans.position(), trans.z_direction(), attenuation, trans.wavenumber(sound_speed), focus) * p;
     });
   };
 
@@ -529,6 +534,7 @@ void LSSGreedy::calc(const core::Geometry& geometry) {
 
   std::vector<VectorXc> focus_phase_list;
   focus_phase_list.reserve(_foci.size());
+  const auto sound_speed = geometry.sound_speed;
   std::transform(_foci.begin(), _foci.end(), std::back_inserter(focus_phase_list), [&](const auto& focus) {
     VectorXc q(n);
 #ifdef HOLO_PARALLEL_FOR
@@ -537,7 +543,7 @@ void LSSGreedy::calc(const core::Geometry& geometry) {
     std::transform(geometry.begin(), geometry.end(), q.begin(), [&](const auto& tr) {
 #endif
       const auto dist = (focus - tr.position()).norm();
-      const auto p = tr.align_phase_at(dist);
+      const auto p = tr.align_phase_at(dist, sound_speed);
       return complex(std::cos(p), std::sin(p));
     });
     return q;

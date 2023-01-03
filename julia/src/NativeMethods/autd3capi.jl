@@ -93,7 +93,6 @@ autd_modulation_set_sampling_frequency_division(mod, freq_div) = ccall((:AUTDMod
 autd_modulation_sampling_frequency(mod) = ccall((:AUTDModulationSamplingFrequency, _dll), Float64, (Ptr{Cvoid}, ), mod);
 autd_delete_modulation(mod) = ccall((:AUTDDeleteModulation, _dll), Cvoid, (Ptr{Cvoid}, ), mod);
 autd_focus_stm(out) = ccall((:AUTDFocusSTM, _dll), Cvoid, (Ref{Ptr{Cvoid}}, ), out);
-autd_set_focus_stm_sound_speed(stm, sound_speed) = ccall((:AUTDSetFocusSTMSoundSpeed, _dll), Cvoid, (Ptr{Cvoid}, Float64, ), stm, sound_speed);
 autd_gain_stm(out, handle) = ccall((:AUTDGainSTM, _dll), Cvoid, (Ref{Ptr{Cvoid}}, Ptr{Cvoid}, ), out, handle);
 autd_focus_stm_add(stm, x, y, z, shift) = ccall((:AUTDFocusSTMAdd, _dll), Cvoid, (Ptr{Cvoid}, Float64, Float64, Float64, UInt8, ), stm, x, y, z, shift);
 autd_gain_stm_add(stm, gain) = ccall((:AUTDGainSTMAdd, _dll), Cvoid, (Ptr{Cvoid}, Ptr{Cvoid}, ), stm, gain);

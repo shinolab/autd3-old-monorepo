@@ -3,7 +3,7 @@
 // Created Date: 16/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 03/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -297,14 +297,6 @@ std::chrono::high_resolution_clock::duration Controller::get_send_interval() con
 
 std::chrono::high_resolution_clock::duration Controller::get_ack_check_timeout() const noexcept { return _ack_check_timeout; }
 
-driver::autd3_float_t Controller::get_sound_speed() const {
-  if (_geometry.num_transducers() == 0) {
-    spdlog::warn("No devices are added.");
-    return 0.0;
-  }
-  return _geometry[0].sound_speed;
-}
-
 driver::autd3_float_t Controller::set_sound_speed_from_temp(const driver::autd3_float_t temp, const driver::autd3_float_t k,
                                                             const driver::autd3_float_t r, const driver::autd3_float_t m) {
 #ifdef AUTD3_USE_METER
@@ -312,20 +304,8 @@ driver::autd3_float_t Controller::set_sound_speed_from_temp(const driver::autd3_
 #else
   const auto sound_speed = std::sqrt(k * r * (static_cast<driver::autd3_float_t>(273.15) + temp) / m) * static_cast<driver::autd3_float_t>(1e3);
 #endif
-  for (auto& tr : _geometry) tr.sound_speed = sound_speed;
+  _geometry.sound_speed = sound_speed;
   return sound_speed;
-}
-
-void Controller::set_attenuation(const driver::autd3_float_t attenuation) {
-  for (auto& tr : _geometry) tr.attenuation = attenuation;
-}
-
-driver::autd3_float_t Controller::get_attenuation() const {
-  if (_geometry.num_transducers() == 0) {
-    spdlog::warn("No devices are added.");
-    return 0.0;
-  }
-  return _geometry[0].attenuation;
 }
 
 uint8_t Controller::get_id() noexcept {

@@ -75,7 +75,6 @@ void AUTDModulationSetSamplingFrequencyDivision(void* mod, uint32_t freq_div);
 double AUTDModulationSamplingFrequency(void* mod);
 void AUTDDeleteModulation(void* mod);
 void AUTDFocusSTM(void** out);
-void AUTDSetFocusSTMSoundSpeed(void* stm, double sound_speed);
 void AUTDGainSTM(void** out, void* handle);
 void AUTDFocusSTMAdd(void* stm, double x, double y, double z, uint8_t shift);
 void AUTDGainSTMAdd(void* stm, void* gain);

@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 03/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -284,19 +284,6 @@ class Controller {
   [[nodiscard]] std::chrono::high_resolution_clock::duration get_ack_check_timeout() const noexcept;
 
   /**
-   * Set speed of sound
-   */
-  void set_sound_speed(const driver::autd3_float_t sound_speed) {
-    for (auto& tr : _geometry) tr.sound_speed = sound_speed;
-  }
-
-  /**
-   * Get speed of sound
-   * @details This function returns the speed of sound set to the 0-th transducer of the 0-th device.
-   */
-  [[nodiscard]] driver::autd3_float_t get_sound_speed() const;
-
-  /**
    * Set speed of sound from temperature
    * @param temp temperature in Celsius degree
    * @param k Heat capacity ratio
@@ -307,18 +294,6 @@ class Controller {
   driver::autd3_float_t set_sound_speed_from_temp(driver::autd3_float_t temp, driver::autd3_float_t k = static_cast<driver::autd3_float_t>(1.4),
                                                   driver::autd3_float_t r = static_cast<driver::autd3_float_t>(8.31446261815324),
                                                   driver::autd3_float_t m = static_cast<driver::autd3_float_t>(28.9647e-3));
-
-  /**
-   * Set attenuation coefficient
-   */
-  void set_attenuation(driver::autd3_float_t attenuation);
-
-  /**
-* Get attenuation coefficient
-* @details This function returns the attenuation coefficient set to the 0-th transducer of the 0-th device.
-
-*/
-  [[nodiscard]] driver::autd3_float_t get_attenuation() const;
 
  private:
   static uint8_t get_id() noexcept;

@@ -3,7 +3,7 @@
 // Created Date: 02/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/12/2022
+// Last Modified: 03/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -44,6 +44,6 @@ TEST(CoreTransducer, Transducer) {
   tr.set_frequency(70e3);
   ASSERT_NEAR(tr.frequency(), 70e3, 15.0);
 
-  ASSERT_NEAR(tr.wavelength(), 4.857142857142857142857142857L, 1e-3);
-  ASSERT_NEAR(tr.wavenumber(), 1.293596975007561871293279075L, 1e-3);
+  ASSERT_NEAR(tr.wavelength(340e3), 4.857142857142857142857142857L, 1e-3);
+  ASSERT_NEAR(tr.wavenumber(340e3), 1.293596975007561871293279075L, 1e-3);
 }
