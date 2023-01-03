@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/01/2023
+// Last Modified: 03/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -53,7 +53,6 @@ struct FocusSTM final : STM {
   using value_type = Focus;
 
   FocusSTM() : STM(), _sent(0) {}
-  explicit FocusSTM(const driver::autd3_float_t sound_speed) : STM(), _sent(0), sound_speed(sound_speed) {}
 
   /**
    * @brief Set frequency of the STM
@@ -113,16 +112,10 @@ struct FocusSTM final : STM {
       points.emplace_back(lp);
     }
 
-    const auto c = sound_speed ? sound_speed.value() : geometry[0].sound_speed;
-    return driver->focus_stm_body(points, _sent, _points.size(), this->_freq_div, c, start_idx, finish_idx, tx);
+    return driver->focus_stm_body(points, _sent, _points.size(), this->_freq_div, geometry.sound_speed, start_idx, finish_idx, tx);
   }
 
   [[nodiscard]] bool is_finished() const override { return _sent == _points.size(); }
-
-  /**
-   * @brief Speed of sound.
-   */
-  std::optional<driver::autd3_float_t> sound_speed;
 
  private:
   std::vector<Focus> _points;

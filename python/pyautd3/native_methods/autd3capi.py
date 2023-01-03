@@ -210,9 +210,6 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDFocusSTM.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
         self.dll.AUTDFocusSTM.restype = None
 
-        self.dll.AUTDSetFocusSTMSoundSpeed.argtypes = [ctypes.c_void_p, ctypes.c_double] 
-        self.dll.AUTDSetFocusSTMSoundSpeed.restype = None
-
         self.dll.AUTDGainSTM.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p] 
         self.dll.AUTDGainSTM.restype = None
 
