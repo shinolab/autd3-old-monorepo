@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/12/2022
+// Last Modified: 04/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -94,8 +94,8 @@ class Modulation : public DatagramHeader {
     return build();
   }
 
-  bool pack(const std::unique_ptr<const driver::Driver>& driver, const uint8_t msg_id, driver::TxDatagram& tx) override {
-    return driver->modulation(msg_id, buffer(), _sent, _freq_div, tx);
+  bool pack(const uint8_t msg_id, driver::TxDatagram& tx) override {
+    return driver::Modulation().msg_id(msg_id).mod_data(_buffer).sent(&_sent).freq_div(_freq_div).pack(tx);
   }
 
   [[nodiscard]] bool is_finished() const noexcept override { return _sent == buffer().size(); }

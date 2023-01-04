@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/12/2022
+// Last Modified: 04/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -63,8 +63,7 @@ struct GainSTM final : STM {
     return true;
   }
 
-  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const Mode>& mode, const Geometry& geometry,
-            driver::TxDatagram& tx) override {
+  bool pack(const std::unique_ptr<const Mode>& mode, const Geometry& geometry, driver::TxDatagram& tx) override {
     mode->pack_stm_gain_header(driver, tx);
 
     if (is_finished()) return true;

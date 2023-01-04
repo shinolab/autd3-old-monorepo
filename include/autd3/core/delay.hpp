@@ -3,7 +3,7 @@
 // Created Date: 01/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/12/2022
+// Last Modified: 04/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -35,20 +35,16 @@ struct ModDelayConfig final : DatagramBody {
     return true;
   }
 
-  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const Mode>&, const Geometry& geometry,
-            driver::TxDatagram& tx) override {
-    driver->null_body(tx);
+  bool pack(Mode, const Geometry& geometry, driver::TxDatagram& tx) override {
+    if (!driver::NullBody().pack(tx)) return false;
     if (is_finished()) return true;
 
     std::vector<uint16_t> delays;
     delays.reserve(geometry.num_transducers());
     std::transform(geometry.begin(), geometry.end(), std::back_inserter(delays), [](const Transducer& tr) { return tr.mod_delay(); });
 
-    driver->mod_delay(delays, tx);
-
     _sent = true;
-
-    return true;
+    return driver::ModDelay().delays(delays).pack(tx);
   }
 
   [[nodiscard]] bool is_finished() const noexcept override { return _sent; }

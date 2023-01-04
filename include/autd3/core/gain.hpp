@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/12/2022
+// Last Modified: 04/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -74,13 +74,34 @@ struct Gain : DatagramBody {
     return true;
   }
 
-  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const Mode>& mode, const Geometry& geometry,
-            driver::TxDatagram& tx) override {
-    mode->pack_gain_header(driver, tx);
+  bool pack(const Mode mode, const Geometry& geometry, driver::TxDatagram& tx) override {
+    if (mode == Mode::Legacy)
+      driver::GainHeader<driver::Legacy>().pack(tx);
+    else
+      driver::GainHeader<driver::Normal>().pack(tx);
+
     if (is_finished()) return true;
     build(geometry);
-    mode->pack_gain_body(driver, _phase_sent, _duty_sent, _drives, geometry, tx);
-    return true;
+
+    switch (mode) {
+      case Mode::Legacy:
+        _phase_sent = true;
+        _duty_sent = true;
+        return driver::GainBody<driver::Legacy>().drives(_drives).pack(tx);
+      case Mode::Normal:
+        if (!_phase_sent) {
+          _phase_sent = true;
+          return driver::GainBody<driver::NormalPhase>().drives(_drives).cycles(geometry.cycles()).pack(tx);
+        }
+        _duty_sent = true;
+        return driver::GainBody<driver::NormalDuty>().drives(_drives).cycles(geometry.cycles()).pack(tx);
+      case Mode::NormalPhase:
+        _phase_sent = true;
+        _duty_sent = true;
+        return driver::GainBody<driver::NormalPhase>().drives(_drives).cycles(geometry.cycles()).pack(tx);
+    }
+
+    throw std::runtime_error("Unreachable!");
   }
 
   [[nodiscard]] bool is_finished() const noexcept override { return _phase_sent && _duty_sent; }

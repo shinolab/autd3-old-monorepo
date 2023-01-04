@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/01/2023
+// Last Modified: 04/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -489,7 +489,7 @@ void Greedy::calc(const core::Geometry& geometry) {
   const auto attenuation = geometry.attenuation;
   auto transfer_foci = [attenuation, sound_speed](const core::Transducer& trans, const complex p, const std::vector<core::Vector3>& foci_,
                                                   VectorXc& res) {
-    std::transform(foci_.begin(), foci_.end(), res.begin(), [trans, p, attenuation, sound_speed](const core::Vector3& focus) {
+    std::transform(foci_.begin(), foci_.end(), res.begin(), [&trans, p, attenuation, sound_speed](const core::Vector3& focus) {
       return core::propagate(trans.position(), trans.z_direction(), attenuation, trans.wavenumber(sound_speed), focus) * p;
     });
   };
