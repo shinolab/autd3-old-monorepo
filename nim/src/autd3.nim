@@ -49,9 +49,9 @@ func mod_delay_config*(): SpecialData =
 type Controller* = object
     p*: pointer
 
-func initController*(driverVersion: uint8 = 0): Controller =
+func initController*(): Controller =
     result.p = pointer(nil)
-    let _ = AUTDCreateController(result.p.addr, driverVersion)
+    let _ = AUTDCreateController(result.p.addr)
 
 func toLegacy*(cnt: Controller) =
     AUTDSetMode(cnt.p, 0)

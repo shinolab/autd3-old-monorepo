@@ -33,7 +33,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDSetDefaultLogger.argtypes = [ctypes.c_void_p, ctypes.c_void_p] 
         self.dll.AUTDSetDefaultLogger.restype = None
 
-        self.dll.AUTDCreateController.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_uint8] 
+        self.dll.AUTDCreateController.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
         self.dll.AUTDCreateController.restype = ctypes.c_bool
 
         self.dll.AUTDOpenController.argtypes = [ctypes.c_void_p, ctypes.c_void_p] 
