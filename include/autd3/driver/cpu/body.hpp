@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 04/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@
 #include <cstring>
 #include <vector>
 
-#include "autd3/driver/common/fpga/defined.hpp"
+#include "autd3/driver/fpga/defined.hpp"
 
 namespace autd3::driver {
 
@@ -80,12 +80,10 @@ struct FocusSTMBodyInitial {
   void set_stm_start_idx(const uint16_t stm_start_idx) noexcept { _data[5] = stm_start_idx; }
   void set_stm_finish_idx(const uint16_t stm_finish_idx) noexcept { _data[6] = stm_finish_idx; }
 
-  void set_point(const std::vector<STMFocus>& points, const size_t offset = 5) noexcept {
-    std::memcpy(&_data[offset], points.data(), sizeof(STMFocus) * points.size());
-  }
+  void set_point(const std::vector<STMFocus>& points) noexcept { std::memcpy(&_data[7], points.data(), sizeof(STMFocus) * points.size()); }
 
  private:
-  uint16_t _data[7]{};  // Data size has no meaning.
+  uint16_t _data[8]{};  // Data size has no meaning.
 };
 
 /**

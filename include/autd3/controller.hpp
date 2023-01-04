@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/01/2023
+// Last Modified: 04/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,22 +26,19 @@
 #include "autd3/core/geometry.hpp"
 #include "autd3/core/link.hpp"
 #include "autd3/core/mode.hpp"
-#include "autd3/driver/common/cpu/datagram.hpp"
+#include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/driver/driver.hpp"
 #include "autd3/driver/firmware_version.hpp"
-#include "autd3/driver/v2_7/driver.hpp"
 #include "autd3/special_data.hpp"
 
 namespace autd3 {
-
-using DriverLatest = driver::DriverV2_7;
 
 /**
  * @brief AUTD Controller
  */
 class Controller {
  public:
-  explicit Controller(std::unique_ptr<const driver::Driver> driver = std::make_unique<const DriverLatest>());
+  Controller();
   Controller(const Controller& v) = delete;
   Controller& operator=(const Controller& obj) = delete;
   Controller(Controller&& obj) = delete;
@@ -305,13 +302,13 @@ class Controller {
   std::chrono::high_resolution_clock::duration _ack_check_timeout{std::chrono::high_resolution_clock::duration::zero()};
 
   struct AsyncData {
-    std::unique_ptr<core::DatagramHeader> header;
-    std::unique_ptr<core::DatagramBody> body;
+    std::unique_ptr<core::DatagramHeader> header{};
+    std::unique_ptr<core::DatagramBody> body{};
     std::chrono::high_resolution_clock::duration timeout{};
   };
 
   core::Geometry _geometry;
-  std::unique_ptr<const core::Mode> _mode;
+  core::Mode _mode;
 
   driver::TxDatagram _tx_buf;
   driver::RxDatagram _rx_buf;
@@ -324,8 +321,6 @@ class Controller {
   std::mutex _send_mtx;
 
   bool _last_send_res;
-
-  std::unique_ptr<const driver::Driver> _driver;
 
  public:
   /**
@@ -853,7 +848,7 @@ class Controller {
    * @brief Set Mode
    * @param f mode function
    */
-  void operator<<(std::unique_ptr<core::Mode> (*f)()) { _mode = f(); }
+  void operator<<(core::Mode (*f)()) { _mode = f(); }
 
   void operator>>(bool& res) const { res = _last_send_res; }
 };

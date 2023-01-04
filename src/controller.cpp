@@ -3,7 +3,7 @@
 // Created Date: 16/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/01/2023
+// Last Modified: 04/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,19 +14,19 @@
 #include <atomic>
 
 #include "autd3/core/datagram.hpp"
+#include "autd3/core/mode.hpp"
 #include "spdlog.hpp"
 
 namespace autd3 {
-Controller::Controller(std::unique_ptr<const driver::Driver> driver)
+Controller::Controller()
     : force_fan(false),
       reads_fpga_info(false),
-      _mode(std::make_unique<core::LegacyMode>()),
+      _mode(core::Mode::Legacy),
       _tx_buf({0}),
       _rx_buf(0),
       _link(nullptr),
       _send_th_running(false),
-      _last_send_res(false),
-      _driver(std::move(driver)) {}
+      _last_send_res(false) {}
 
 Controller::~Controller() noexcept {
   try {
@@ -82,13 +82,13 @@ bool Controller::open(core::LinkPtr link) {
         continue;
       }
 
-      _driver->force_fan(_tx_buf, force_fan);
-      _driver->reads_fpga_info(_tx_buf, reads_fpga_info);
+      driver::ForceFan(force_fan).pack(_tx_buf);
+      driver::ReadsFPGAInfo(reads_fpga_info).pack(_tx_buf);
 
       const auto no_wait = data.timeout == std::chrono::high_resolution_clock::duration::zero();
       while (true) {
         const auto msg_id = get_id();
-        if (!data.header->pack(_driver, msg_id, _tx_buf) || !data.body->pack(_driver, _mode, _geometry, _tx_buf)) {
+        if (!data.header->pack(msg_id, _tx_buf) || !data.body->pack(_mode, _geometry, _tx_buf)) {
           spdlog::error("Failed to pack data.");
           data.header = nullptr;
           data.body = nullptr;
@@ -162,33 +162,21 @@ std::vector<driver::FirmwareInfo> Controller::firmware_infos() {
     return acks;
   };
 
-  _driver->cpu_version(_tx_buf);
+  driver::CPUVersion().pack(_tx_buf);
   const auto cpu_versions = pack_ack();
   if (cpu_versions.empty()) {
     spdlog::error("Failed to get firmware information.");
     return firmware_infos;
   }
-  for (const auto version : cpu_versions)
-    if (version != _driver->version_num())
-      spdlog::error(
-          "Driver version is {}, but found {} CPU firmware. This discrepancy may cause abnormal behavior. Please change the driver version to an "
-          "appropriate one or update the firmware version.",
-          driver::FirmwareInfo::firmware_version_map(_driver->version_num()), driver::FirmwareInfo::firmware_version_map(version));
 
-  _driver->fpga_version(_tx_buf);
+  driver::FPGAVersion().pack(_tx_buf);
   const auto fpga_versions = pack_ack();
   if (fpga_versions.empty()) {
     spdlog::error("Failed to get firmware information.");
     return firmware_infos;
   }
-  for (const auto version : fpga_versions)
-    if (version != _driver->version_num())
-      spdlog::error(
-          "Driver version is {}, but found {} FPGA firmware. This discrepancy may cause abnormal behavior. Please change the driver version to an "
-          "appropriate one or update the firmware version.",
-          driver::FirmwareInfo::firmware_version_map(_driver->version_num()), driver::FirmwareInfo::firmware_version_map(version));
 
-  _driver->fpga_functions(_tx_buf);
+  driver::FPGAFunctions().pack(_tx_buf);
   const auto fpga_functions = pack_ack();
   if (fpga_functions.empty()) {
     spdlog::error("Failed to get firmware information.");
@@ -200,10 +188,8 @@ std::vector<driver::FirmwareInfo> Controller::firmware_infos() {
     if (info.cpu_version_num() != info.fpga_version_num())
       spdlog::error("FPGA firmware version {} and CPU firmware version {} do not match. This discrepancy may cause abnormal behavior.",
                     info.fpga_version(), info.cpu_version());
-    if (const DriverLatest latest_driver;
-        info.cpu_version_num() != latest_driver.version_num() || info.fpga_version_num() != latest_driver.version_num())
-      spdlog::warn("You are using old firmware. Please consider updating to {}.",
-                   driver::FirmwareInfo::firmware_version_map(latest_driver.version_num()));
+    if (info.cpu_version_num() != driver::VERSION_NUM || info.fpga_version_num() != driver::VERSION_NUM)
+      spdlog::warn("You are using old firmware. Please consider updating to {}.", driver::FirmwareInfo::firmware_version_map(driver::VERSION_NUM));
   }
 
   return firmware_infos;
@@ -223,13 +209,13 @@ bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body, co
     return false;
   }
 
-  _driver->force_fan(_tx_buf, force_fan);
-  _driver->reads_fpga_info(_tx_buf, reads_fpga_info);
+  driver::ForceFan(force_fan).pack(_tx_buf);
+  driver::ReadsFPGAInfo(reads_fpga_info).pack(_tx_buf);
 
   const auto no_wait = timeout == std::chrono::high_resolution_clock::duration::zero();
   while (true) {
     const auto msg_id = get_id();
-    if (!header->pack(_driver, msg_id, _tx_buf) || !body->pack(_driver, _mode, _geometry, _tx_buf)) {
+    if (!header->pack(msg_id, _tx_buf) || !body->pack(_mode, _geometry, _tx_buf)) {
       spdlog::error("Failed to pack data.");
       return false;
     }

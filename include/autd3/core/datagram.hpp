@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/12/2022
+// Last Modified: 04/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -82,7 +82,7 @@ struct DatagramHeader {
   DatagramHeader& operator=(DatagramHeader&& obj) = default;
 
   [[nodiscard]] virtual bool init() = 0;
-  [[nodiscard]] virtual bool pack(const std::unique_ptr<const driver::Driver>& driver, uint8_t msg_id, driver::TxDatagram& tx) = 0;
+  [[nodiscard]] virtual bool pack(uint8_t msg_id, driver::TxDatagram& tx) = 0;
   [[nodiscard]] virtual bool is_finished() const = 0;
 };
 
@@ -98,8 +98,7 @@ struct DatagramBody {
   DatagramBody& operator=(DatagramBody&& obj) = default;
 
   [[nodiscard]] virtual bool init() = 0;
-  [[nodiscard]] virtual bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const Mode>& mode,
-                                  const Geometry& geometry, driver::TxDatagram& tx) = 0;
+  [[nodiscard]] virtual bool pack(Mode mode, const Geometry& geometry, driver::TxDatagram& tx) = 0;
   [[nodiscard]] virtual bool is_finished() const = 0;
 };
 
@@ -115,10 +114,7 @@ struct NullHeader final : DatagramHeader {
   NullHeader& operator=(NullHeader&& obj) = default;
 
   bool init() override { return true; }
-  bool pack(const std::unique_ptr<const driver::Driver>& driver, const uint8_t msg_id, driver::TxDatagram& tx) override {
-    driver->null_header(msg_id, tx);
-    return true;
-  }
+  bool pack(const uint8_t msg_id, driver::TxDatagram& tx) override { return driver::NullHeader().msg_id(msg_id).pack(tx); }
 
   [[nodiscard]] bool is_finished() const override { return true; }
 };
@@ -136,11 +132,7 @@ struct NullBody final : DatagramBody {
 
   bool init() override { return true; }
 
-  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const Mode>&, const Geometry&,
-            driver::TxDatagram& tx) override {
-    driver->null_body(tx);
-    return true;
-  }
+  bool pack(Mode, const Geometry&, driver::TxDatagram& tx) override { return driver::NullBody().pack(tx); }
 
   [[nodiscard]] bool is_finished() const override { return true; }
 };
