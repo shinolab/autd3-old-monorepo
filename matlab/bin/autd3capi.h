@@ -16,7 +16,7 @@ typedef unsigned long uint64_t;
 
 void AUTDSetLogLevel(int32_t level);
 void AUTDSetDefaultLogger(void* out, void* flush);
-bool AUTDCreateController(void** out, uint8_t driver_version);
+bool AUTDCreateController(void** out);
 bool AUTDOpenController(void* handle, void* link);
 void AUTDAddDevice(void* handle, double x, double y, double z, double rz1, double ry, double rz2);
 void AUTDAddDeviceQuaternion(void* handle, double x, double y, double z, double qw, double qx, double qy, double qz);
