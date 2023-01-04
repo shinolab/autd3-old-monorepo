@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/12/2022
+ * Last Modified: 05/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -100,7 +100,7 @@ impl<T: Transducer> DatagramBody<T> for FocusSTM {
             })
             .collect();
 
-        let sound_speed = self.sound_speed.unwrap_or(geometry[0].sound_speed());
+        let sound_speed = self.sound_speed.unwrap_or(geometry.sound_speed);
         autd3_driver::focus_stm_body(
             &points,
             &mut self.sent,
@@ -146,5 +146,11 @@ impl STM for FocusSTM {
 
     fn sampling_freq_div(&self) -> u32 {
         self.sample_freq_div
+    }
+}
+
+impl Default for FocusSTM {
+    fn default() -> Self {
+        Self::new()
     }
 }

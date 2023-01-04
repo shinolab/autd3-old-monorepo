@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/12/2022
+ * Last Modified: 05/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -40,6 +40,8 @@ use crate::error::AUTDInternalError;
 pub struct Geometry<T: Transducer> {
     transducers: Vec<T>,
     device_map: Vec<usize>,
+    pub sound_speed: f64,
+    pub attenuation: f64,
 }
 
 impl<T: Transducer> Geometry<T> {
@@ -47,6 +49,8 @@ impl<T: Transducer> Geometry<T> {
         Geometry {
             transducers: vec![],
             device_map: vec![],
+            sound_speed: 340e3,
+            attenuation: 0.0,
         }
     }
 
