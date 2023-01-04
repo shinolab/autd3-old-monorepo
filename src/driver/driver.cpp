@@ -3,7 +3,7 @@
 // Created Date: 14/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 05/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,6 +16,7 @@
 
 namespace autd3::driver {
 
+template <>
 bool Sync<Legacy>::pack(TxDatagram& tx) {
   if (std::any_of(_cycles, _cycles + _size, [](const uint16_t cycle) { return cycle != 4096; })) {
     spdlog::error("Cannot change frequency in LegacyMode.");
@@ -32,6 +33,7 @@ bool Sync<Legacy>::pack(TxDatagram& tx) {
   return true;
 }
 
+template <>
 bool Sync<Normal>::pack(TxDatagram& tx) {
   tx.header().cpu_flag.remove(CPUControlFlags::Mod);
   tx.header().cpu_flag.remove(CPUControlFlags::ConfigSilencer);
@@ -166,6 +168,7 @@ bool FocusSTMBody::pack(TxDatagram& tx) {
   return true;
 }
 
+template <>
 bool GainSTMBody<Legacy>::pack(TxDatagram& tx) {
   if (_size > GAIN_STM_LEGACY_BUF_SIZE_MAX) {
     spdlog::error("GainSTM out of buffer");
@@ -261,6 +264,7 @@ bool GainSTMBody<Legacy>::pack(TxDatagram& tx) {
   return true;
 }
 
+template <>
 bool GainSTMBody<NormalPhase>::pack(TxDatagram& tx) {
   if (_size > GAIN_STM_BUF_SIZE_MAX) {
     spdlog::error("GainSTM out of buffer");
@@ -321,6 +325,7 @@ bool GainSTMBody<NormalPhase>::pack(TxDatagram& tx) {
   return true;
 }
 
+template <>
 bool GainSTMBody<NormalDuty>::pack(TxDatagram& tx) {
   if (_size > GAIN_STM_BUF_SIZE_MAX) {
     spdlog::error("GainSTM out of buffer");
