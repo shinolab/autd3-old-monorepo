@@ -315,8 +315,6 @@ bool GainSTMBody<NormalPhase>::pack(TxDatagram& tx) {
 
   if (*_sent + 1 == _size + 1) tx.header().cpu_flag.set(CPUControlFlags::STMEnd);
 
-  (*_sent)++;
-
   tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
 
   tx.num_bodies = tx.num_devices();

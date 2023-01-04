@@ -24,6 +24,7 @@ bool GainSTM::pack(const Mode mode, const Geometry& geometry, driver::TxDatagram
 
   if (is_finished()) return true;
 
+  bool res;
   switch (mode) {
     case Mode::Legacy:
       return driver::GainSTMBody<driver::Legacy>()
@@ -35,62 +36,74 @@ bool GainSTM::pack(const Mode mode, const Geometry& geometry, driver::TxDatagram
           .finish_idx(finish_idx)
           .pack(tx);
     case Mode::Normal:
-      if (_sent == 0)
-        return driver::GainSTMBody<driver::NormalPhase>()
-            .drives(_gains)
-            .cycles(geometry.cycles())
-            .sent(&_sent)
-            .freq_div(_freq_div)
-            .mode(_mode)
-            .start_idx(start_idx)
-            .finish_idx(finish_idx)
-            .pack(tx);
+      if (_sent == 0) {
+        res = driver::GainSTMBody<driver::NormalPhase>()
+                  .drives(_gains)
+                  .cycles(geometry.cycles())
+                  .sent(&_sent)
+                  .freq_div(_freq_div)
+                  .mode(_mode)
+                  .start_idx(start_idx)
+                  .finish_idx(finish_idx)
+                  .pack(tx);
+        _sent++;
+        return res;
+      }
       switch (_mode) {
         case driver::GainSTMMode::PhaseDutyFull:
+          if (_next_duty) {
+            res = driver::GainSTMBody<driver::NormalDuty>()
+                      .drives(_gains)
+                      .cycles(geometry.cycles())
+                      .sent(&_sent)
+                      .freq_div(_freq_div)
+                      .mode(_mode)
+                      .start_idx(start_idx)
+                      .finish_idx(finish_idx)
+                      .pack(tx);
+            _sent++;
+          } else {
+            res = driver::GainSTMBody<driver::NormalPhase>()
+                      .drives(_gains)
+                      .cycles(geometry.cycles())
+                      .sent(&_sent)
+                      .freq_div(_freq_div)
+                      .mode(_mode)
+                      .start_idx(start_idx)
+                      .finish_idx(finish_idx)
+                      .pack(tx);
+          }
           _next_duty = !_next_duty;
-          return _next_duty ? driver::GainSTMBody<driver::NormalPhase>()
-                                  .drives(_gains)
-                                  .cycles(geometry.cycles())
-                                  .sent(&_sent)
-                                  .freq_div(_freq_div)
-                                  .mode(_mode)
-                                  .start_idx(start_idx)
-                                  .finish_idx(finish_idx)
-                                  .pack(tx)
-                            : driver::GainSTMBody<driver::NormalDuty>()
-                                  .drives(_gains)
-                                  .cycles(geometry.cycles())
-                                  .sent(&_sent)
-                                  .freq_div(_freq_div)
-                                  .mode(_mode)
-                                  .start_idx(start_idx)
-                                  .finish_idx(finish_idx)
-                                  .pack(tx);
+          return res;
         case driver::GainSTMMode::PhaseFull:
-          return driver::GainSTMBody<driver::NormalPhase>()
-              .drives(_gains)
-              .cycles(geometry.cycles())
-              .sent(&_sent)
-              .freq_div(_freq_div)
-              .mode(_mode)
-              .start_idx(start_idx)
-              .finish_idx(finish_idx)
-              .pack(tx);
+          res = driver::GainSTMBody<driver::NormalPhase>()
+                    .drives(_gains)
+                    .cycles(geometry.cycles())
+                    .sent(&_sent)
+                    .freq_div(_freq_div)
+                    .mode(_mode)
+                    .start_idx(start_idx)
+                    .finish_idx(finish_idx)
+                    .pack(tx);
+          _sent++;
+          return res;
         case driver::GainSTMMode::PhaseHalf:
           spdlog::error("This mode is not supported");
           return false;
       }
       throw std::runtime_error("Unreachable!");
     case Mode::NormalPhase:
-      return driver::GainSTMBody<driver::NormalPhase>()
-          .drives(_gains)
-          .cycles(geometry.cycles())
-          .sent(&_sent)
-          .freq_div(_freq_div)
-          .mode(_mode)
-          .start_idx(start_idx)
-          .finish_idx(finish_idx)
-          .pack(tx);
+      res = driver::GainSTMBody<driver::NormalPhase>()
+                .drives(_gains)
+                .cycles(geometry.cycles())
+                .sent(&_sent)
+                .freq_div(_freq_div)
+                .mode(driver::GainSTMMode::PhaseFull)
+                .start_idx(start_idx)
+                .finish_idx(finish_idx)
+                .pack(tx);
+      _sent++;
+      return res;
   }
 
   throw std::runtime_error("Unreachable!");
