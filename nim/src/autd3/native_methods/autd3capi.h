@@ -14,7 +14,7 @@
 
 void AUTDSetLogLevel(int32 level);
 void AUTDSetDefaultLogger(void* out, void* flush);
-bool AUTDCreateController(void** out, uint8 driver_version);
+bool AUTDCreateController(void** out);
 bool AUTDOpenController(void* handle, void* link);
 void AUTDAddDevice(void* handle, float64 x, float64 y, float64 z, float64 rz1, float64 ry, float64 rz2);
 void AUTDAddDeviceQuaternion(void* handle, float64 x, float64 y, float64 z, float64 qw, float64 qx, float64 qy, float64 qz);

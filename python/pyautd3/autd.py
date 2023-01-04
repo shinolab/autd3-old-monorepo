@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 28/12/2022
+Last Modified: 05/01/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,15 +26,6 @@ NUM_TRANS_Y = 14
 TRANS_SPACING = 10.16
 DEVICE_WIDTH = 192.0
 DEVICE_HEIGHT = 151.4
-
-DRIVER_LATEST = 0x00
-DRIVER_V2_2 = 0x82
-DRIVER_V2_3 = 0x83
-DRIVER_V2_4 = 0x84
-DRIVER_V2_5 = 0x85
-DRIVER_V2_6 = 0x86
-DRIVER_V2_7 = 0x87
-
 
 LogOutputFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 LogFlushFunc = ctypes.CFUNCTYPE(None)
@@ -200,9 +191,9 @@ class Geometry:
 
 
 class Controller:
-    def __init__(self, driver_version: int = DRIVER_LATEST):
+    def __init__(self):
         self.p_cnt = c_void_p()
-        Base().dll.AUTDCreateController(byref(self.p_cnt), driver_version)
+        Base().dll.AUTDCreateController(byref(self.p_cnt))
         self.__disposed = False
 
     def __del__(self):

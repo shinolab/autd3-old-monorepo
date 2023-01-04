@@ -14,7 +14,7 @@ namespace AUTD3Sharp.NativeMethods
 
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSetLogLevel(int level);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSetDefaultLogger(IntPtr @out, IntPtr flush);
-        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDCreateController(out IntPtr @out, byte driverVersion);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDCreateController(out IntPtr @out);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDOpenController(IntPtr handle, IntPtr link);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDAddDevice(IntPtr handle, double x, double y, double z, double rz1, double ry, double rz2);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDAddDeviceQuaternion(IntPtr handle, double x, double y, double z, double qw, double qx, double qy, double qz);

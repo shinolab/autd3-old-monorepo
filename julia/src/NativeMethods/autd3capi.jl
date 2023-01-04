@@ -34,7 +34,7 @@ const _dll = joinpath(@__DIR__, get_bin_path(), "bin", get_lib_prefix() * "autd3
 
 autd_set_log_level(level) = ccall((:AUTDSetLogLevel, _dll), Cvoid, (Int32, ), level);
 autd_set_default_logger(out, flush) = ccall((:AUTDSetDefaultLogger, _dll), Cvoid, (Ptr{Cvoid}, Ptr{Cvoid}, ), out, flush);
-autd_create_controller(out, driver_version) = ccall((:AUTDCreateController, _dll), Bool, (Ref{Ptr{Cvoid}}, UInt8, ), out, driver_version);
+autd_create_controller(out) = ccall((:AUTDCreateController, _dll), Bool, (Ref{Ptr{Cvoid}}, ), out);
 autd_open_controller(handle, link) = ccall((:AUTDOpenController, _dll), Bool, (Ptr{Cvoid}, Ptr{Cvoid}, ), handle, link);
 autd_add_device(handle, x, y, z, rz1, ry, rz2) = ccall((:AUTDAddDevice, _dll), Cvoid, (Ptr{Cvoid}, Float64, Float64, Float64, Float64, Float64, Float64, ), handle, x, y, z, rz1, ry, rz2);
 autd_add_device_quaternion(handle, x, y, z, qw, qx, qy, qz) = ccall((:AUTDAddDeviceQuaternion, _dll), Cvoid, (Ptr{Cvoid}, Float64, Float64, Float64, Float64, Float64, Float64, Float64, ), handle, x, y, z, qw, qx, qy, qz);

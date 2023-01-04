@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/01/2023
+ * Last Modified: 05/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -49,17 +49,14 @@ namespace AUTD3Sharp
     {
         internal IntPtr CntPtr => handle;
 
-        private readonly byte _driverVersion;
-
-        public AUTDControllerHandle(bool ownsHandle, byte driverVersion) : base(ownsHandle)
+        public AUTDControllerHandle(bool ownsHandle) : base(ownsHandle)
         {
             handle = new IntPtr();
-            _driverVersion = driverVersion;
         }
 
         public bool Create()
         {
-            return Base.AUTDCreateController(out handle, _driverVersion);
+            return Base.AUTDCreateController(out handle);
         }
 
         protected override bool ReleaseHandle()
@@ -96,15 +93,6 @@ namespace AUTD3Sharp
         public const int NumTransInDevice = 249;
         public const int NumTransInX = 18;
         public const int NumTransInY = 14;
-
-        public const byte DriverLatest = 0x00;
-        public const byte DriverV2_2 = 0x82;
-        public const byte DriverV2_3 = 0x83;
-        public const byte DriverV2_4 = 0x84;
-        public const byte DriverV2_5 = 0x85;
-        public const byte DriverV2_6 = 0x86;
-        public const byte DriverV2_7 = 0x87;
-
         #endregion
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnLogOutputCallback(string str);
@@ -273,9 +261,9 @@ namespace AUTD3Sharp
 
         #region Controller
 
-        public Controller(byte driverVersion = AUTD3.DriverLatest)
+        public Controller()
         {
-            AUTDControllerHandle = new AUTDControllerHandle(true, driverVersion);
+            AUTDControllerHandle = new AUTDControllerHandle(true);
             if (!AUTDControllerHandle.Create())
                 throw new Exception("Failed to create Controller.");
             Geometry = new Geometry(AUTDControllerHandle.CntPtr);
