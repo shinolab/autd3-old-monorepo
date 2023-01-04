@@ -3,7 +3,7 @@
 // Created Date: 28/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/12/2022
+// Last Modified: 04/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@
 
 #include "autd3/core/datagram.hpp"
 #include "autd3/core/geometry.hpp"
-#include "autd3/driver/common/cpu/datagram.hpp"
+#include "autd3/driver/cpu/datagram.hpp"
 
 namespace autd3::core {
 /**
@@ -35,9 +35,8 @@ class Amplitudes final : public DatagramBody {
     return true;
   }
 
-  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const Mode>&, const Geometry& geometry,
-            driver::TxDatagram& tx) override {
-    driver->normal_header(tx);
+  bool pack(Mode, const Geometry& geometry, driver::TxDatagram& tx) override {
+    if (!driver::GainHeader<driver::Normal>().pack(tx)) return false;
     if (is_finished()) return true;
 
     std::vector<driver::Drive> drives;
@@ -45,9 +44,8 @@ class Amplitudes final : public DatagramBody {
 
     const auto cycles = geometry.cycles();
 
-    driver->normal_duty_body(drives, cycles, tx);
     _sent = true;
-    return true;
+    return driver::GainBody<driver::NormalDuty>().drives(drives).cycles(cycles).pack(tx);
   }
 
   [[nodiscard]] bool is_finished() const noexcept override { return _sent; }
