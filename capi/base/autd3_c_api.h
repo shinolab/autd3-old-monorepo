@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/01/2023
+// Last Modified: 04/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 EXPORT_AUTD void AUTDSetLogLevel(IN int32_t level);
 EXPORT_AUTD void AUTDSetDefaultLogger(IN void* out, IN void* flush);
-EXPORT_AUTD bool AUTDCreateController(OUT void** out, IN uint8_t driver_version);
+EXPORT_AUTD bool AUTDCreateController(OUT void** out);
 EXPORT_AUTD bool AUTDOpenController(IN void* handle, IN void* link);
 EXPORT_AUTD void AUTDAddDevice(IN void* handle, IN autd3_float_t x, IN autd3_float_t y, IN autd3_float_t z, IN autd3_float_t rz1, IN autd3_float_t ry,
                                IN autd3_float_t rz2);
