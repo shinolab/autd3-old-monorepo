@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/12/2022
+ * Last Modified: 05/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -198,13 +198,11 @@ impl<L: Link, T: Transducer> Controller<L, T> {
     }
 
     pub fn sound_speed(&self) -> f64 {
-        self.geometry[0].sound_speed()
+        self.geometry.sound_speed
     }
 
     pub fn set_sound_speed(&mut self, value: f64) {
-        self.geometry
-            .transducers_mut()
-            .for_each(|tr| tr.set_sound_speed(value));
+        self.geometry.sound_speed = value
     }
 
     /// Send header and body to the devices

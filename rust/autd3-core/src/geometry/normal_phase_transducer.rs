@@ -4,7 +4,7 @@
  * Created Date: 31/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 05/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,8 +24,6 @@ pub struct NormalPhaseTransducer {
     pos: Vector3,
     rot: UnitQuaternion,
     cycle: u16,
-    sound_speed: f64,
-    attenuation: f64,
     mod_delay: u16,
 }
 
@@ -36,8 +34,6 @@ impl Transducer for NormalPhaseTransducer {
             pos,
             rot,
             cycle: 4096,
-            sound_speed: 340e3,
-            attenuation: 0.,
             mod_delay: 0,
         }
     }
@@ -68,22 +64,6 @@ impl Transducer for NormalPhaseTransducer {
 
     fn frequency(&self) -> f64 {
         FPGA_CLK_FREQ as f64 / self.cycle as f64
-    }
-
-    fn sound_speed(&self) -> f64 {
-        self.sound_speed
-    }
-
-    fn set_sound_speed(&mut self, value: f64) {
-        self.sound_speed = value;
-    }
-
-    fn attenuation(&self) -> f64 {
-        self.attenuation
-    }
-
-    fn set_attenuation(&mut self, value: f64) {
-        self.attenuation = value;
     }
 }
 

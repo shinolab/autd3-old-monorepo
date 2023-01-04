@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 05/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -68,12 +68,13 @@ impl Bessel {
             UnitQuaternion::identity()
         };
 
+        let sound_speed = geometry.sound_speed;
         geometry.transducers().for_each(|tr| {
             let r = tr.position() - self.pos;
             let r = Vector3::new(r.x, r.y, r.z);
             let r = rot * r;
             let dist = self.theta.sin() * (r.x * r.x + r.y * r.y).sqrt() - self.theta.cos() * r.z;
-            let phase = tr.align_phase_at(dist);
+            let phase = tr.align_phase_at(dist, sound_speed);
             self.props.drives[tr.id()].amp = self.amp;
             self.props.drives[tr.id()].phase = phase;
         });

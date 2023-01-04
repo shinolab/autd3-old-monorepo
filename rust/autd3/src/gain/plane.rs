@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 05/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -53,9 +53,10 @@ impl Plane {
     }
 
     fn calc<T: Transducer>(&mut self, geometry: &Geometry<T>) -> anyhow::Result<()> {
+        let sound_speed = geometry.sound_speed;
         geometry.transducers().for_each(|tr| {
             let dist = self.dir.dot(tr.position());
-            let phase = tr.align_phase_at(dist);
+            let phase = tr.align_phase_at(dist, sound_speed);
             self.props.drives[tr.id()].amp = self.amp;
             self.props.drives[tr.id()].phase = phase;
         });
