@@ -100,7 +100,7 @@ TEST(DriverCommonCPUTest, FocusSTMBodyInitial) {
   ASSERT_EQ(d[7], 0xCD);
   ASSERT_EQ(d[8], 0xAB);
   ASSERT_EQ(d[9], 0x89);
-  for (size_t i = 0; i < point_size * sizeof(autd3::driver::STMFocus); i++) ASSERT_EQ(d[10 + i], static_cast<uint8_t>(i));
+  for (size_t i = 0; i < point_size * sizeof(autd3::driver::STMFocus); i++) ASSERT_EQ(d[14 + i], static_cast<uint8_t>(i));
 }
 
 TEST(DriverCommonCPUTest, FocusSTMBodySubsequent) {
