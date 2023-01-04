@@ -92,7 +92,7 @@ TEST(Driver_Driver, operation_sync_normal) {
   cycles.reserve(NUM_TRANS_IN_UNIT * 10);
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) cycles.emplace_back(dist(engine));
 
-  ASSERT_TRUE(autd3::driver::Sync<autd3::driver::Legacy>().cycles(cycles).pack(tx));
+  ASSERT_TRUE(autd3::driver::Sync<autd3::driver::Normal>().cycles(cycles).pack(tx));
 
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::Mod));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::ConfigSilencer));
@@ -300,7 +300,7 @@ TEST(Driver_Driver, operation_focus_stm_subsequent) {
                   .points(points)
                   .sent(&sent)
                   .total_size(size)
-                  .freq_div(3234)
+                  .freq_div(3224)
                   .sound_speed(sound_speed)
                   .start_idx(1)
                   .finish_idx(1)
@@ -648,7 +648,7 @@ TEST(Driver_Driver, operation_gain_stm_normal_duty) {
   cycles.resize(NUM_TRANS_IN_UNIT * 10, 4096);
 
   autd3::driver::GainSTMHeader<autd3::driver::Normal>().pack(tx);
-  size_t sent = 0;
+  size_t sent = 1;
   ASSERT_TRUE(autd3::driver::GainSTMBody<autd3::driver::NormalDuty>()
                   .drives(drives_list)
                   .cycles(cycles)
