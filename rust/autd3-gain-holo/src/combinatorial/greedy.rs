@@ -4,7 +4,7 @@
  * Created Date: 03/06/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 05/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -56,11 +56,13 @@ impl<C: Constraint> Greedy<C> {
     fn transfer_foci<T: Transducer>(
         trans: &T,
         phase: Complex,
+        sound_speed: f64,
+        attenuation: f64,
         foci: &[Vector3],
         res: &mut [Complex],
     ) {
         for i in 0..foci.len() {
-            res[i] = propagate(trans, foci[i]) * phase;
+            res[i] = propagate(trans, foci[i], sound_speed, attenuation) * phase;
         }
     }
 
@@ -73,11 +75,21 @@ impl<C: Constraint> Greedy<C> {
         let mut cache = Vec::with_capacity(m);
         cache.resize(m, Complex::new(0., 0.));
 
+        let sound_speed = geometry.sound_speed;
+        let attenuation = geometry.attenuation;
+
         geometry.transducers().for_each(|trans| {
             let mut min_idx = 0;
             let mut min_v = std::f64::INFINITY;
             for (idx, &phase) in self.phase_candidates.iter().enumerate() {
-                Self::transfer_foci(trans, phase, &self.foci, &mut tmp[idx]);
+                Self::transfer_foci(
+                    trans,
+                    phase,
+                    sound_speed,
+                    attenuation,
+                    &self.foci,
+                    &mut tmp[idx],
+                );
                 let mut v = 0.0;
                 for (j, c) in cache.iter().enumerate() {
                     v += (self.amps[j] - (tmp[idx][j] + c).abs()).abs();
