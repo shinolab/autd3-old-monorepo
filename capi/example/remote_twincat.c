@@ -22,7 +22,7 @@ int main(void) {
   const char* remote_ams_net_id = "";
   const char* local_ams_net_id = "";
 
-  AUTDCreateController(&cnt, 0);
+  AUTDCreateController(&cnt);
 
   AUTDAddDevice(cnt, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 

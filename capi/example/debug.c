@@ -19,7 +19,7 @@ int main(void) {
   void* cnt = NULL;
   void* link = NULL;
 
-  AUTDCreateController(&cnt, 0);
+  AUTDCreateController(&cnt);
 
   AUTDAddDevice(cnt, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 

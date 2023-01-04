@@ -21,7 +21,7 @@ int main(void) {
   const char* ip = "";
   const uint16_t port = 50632;
 
-  AUTDCreateController(&cnt, 0);
+  AUTDCreateController(&cnt);
 
   AUTDAddDevice(cnt, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 

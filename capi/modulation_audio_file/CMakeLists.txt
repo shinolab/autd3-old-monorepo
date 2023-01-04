@@ -10,7 +10,7 @@ add_library(autd3capi-modulation-audio-file SHARED
   ../base/header.hpp
 )
 
-target_link_libraries(autd3capi-modulation-audio-file modulation_audio_file)
+target_link_libraries(autd3capi-modulation-audio-file modulation_audio_file autd3)
 if(WIN32)
 elseif(APPLE)
 else()
