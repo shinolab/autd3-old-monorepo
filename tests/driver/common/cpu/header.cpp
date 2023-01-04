@@ -3,7 +3,7 @@
 // Created Date: 01/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/12/2022
+// Last Modified: 04/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@
 
 #include <random>
 
-#include "autd3/driver/common/cpu/datagram.hpp"
+#include "autd3/driver/cpu/datagram.hpp"
 
 TEST(DriverCommonCPUTest, ModHeaderInitial) { ASSERT_EQ(sizeof(autd3::driver::ModHeaderInitial), 124); }
 

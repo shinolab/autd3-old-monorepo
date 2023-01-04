@@ -29,7 +29,7 @@ struct Driver {
 };
 
 struct Clear final : Driver {
-  [[nodiscard]] bool pack(TxDatagram& tx) override {
+  bool pack(TxDatagram& tx) override {
     tx.header().msg_id = MSG_CLEAR;
     tx.num_bodies = 0;
     return true;
@@ -42,7 +42,7 @@ struct NullHeader final : Driver {
     return *this;
   }
 
-  [[nodiscard]] bool pack(TxDatagram& tx) override {
+  bool pack(TxDatagram& tx) override {
     tx.header().msg_id = _msg_id;
     tx.header().cpu_flag.remove(CPUControlFlags::Mod);
     tx.header().cpu_flag.remove(CPUControlFlags::ConfigSilencer);
@@ -56,7 +56,7 @@ struct NullHeader final : Driver {
 };
 
 struct NullBody final : Driver {
-  [[nodiscard]] bool pack(TxDatagram& tx) override {
+  bool pack(TxDatagram& tx) override {
     tx.header().cpu_flag.remove(CPUControlFlags::WriteBody);
     tx.header().cpu_flag.remove(CPUControlFlags::ModDelay);
     tx.num_bodies = 0;
@@ -203,7 +203,7 @@ struct GainBody final : Driver {
     return *this;
   }
 
-  [[nodiscard]] bool pack(TxDatagram& tx) override;
+  bool pack(TxDatagram& tx) override;
 
  private:
   size_t _size{};
