@@ -3,7 +3,7 @@
 // Created Date: 30/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/12/2022
+// Last Modified: 04/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@
 #pragma warning(pop)
 #endif
 
-#include "autd3/driver/common/fpga/fpga_flag.hpp"
+#include "autd3/driver/fpga/fpga_flag.hpp"
 
 using autd3::driver::FPGAControlFlags;
 
