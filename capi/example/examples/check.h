@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/11/2022
+// Last Modified: 04/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -64,9 +64,10 @@ void* check(void* autd) {
 
   printf("===== FPGA informations =====\n");
 
-  uint8_t* infos = malloc(num_transducers / 249);
+  int32_t num_devices = AUTDNumDevices(autd);
+  uint8_t* infos = malloc(num_devices);
   AUTDGetFPGAInfo(autd, infos);
-  for (int32_t i = 0; i < num_transducers / 249; i++) {
+  for (int32_t i = 0; i < num_devices; i++) {
     printf("[%d]: Is fan running : %d\n", i, infos[i]);
   }
   printf("\n");
@@ -84,7 +85,7 @@ void* check(void* autd) {
 #endif
 
   AUTDGetFPGAInfo(autd, infos);
-  for (int32_t i = 0; i < num_transducers / 249; i++) {
+  for (int32_t i = 0; i < num_devices; i++) {
     printf("[%d]: Is fan running : %d\n", i, infos[i]);
   }
   printf("\n");
