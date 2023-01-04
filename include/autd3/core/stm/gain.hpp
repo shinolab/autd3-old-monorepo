@@ -15,7 +15,6 @@
 
 #include "autd3/core/gain.hpp"
 #include "autd3/core/geometry.hpp"
-#include "autd3/driver/driver.hpp"
 #include "stm.hpp"
 
 namespace autd3::core {
@@ -63,13 +62,7 @@ struct GainSTM final : STM {
     return true;
   }
 
-  bool pack(const std::unique_ptr<const Mode>& mode, const Geometry& geometry, driver::TxDatagram& tx) override {
-    mode->pack_stm_gain_header(driver, tx);
-
-    if (is_finished()) return true;
-
-    return mode->pack_stm_gain_body(driver, _sent, _next_duty, _freq_div, _gains, geometry, _mode, start_idx, finish_idx, tx);
-  }
+  bool pack(Mode mode, const Geometry& geometry, driver::TxDatagram& tx) override;
 
   [[nodiscard]] bool is_finished() const override { return _sent >= _gains.size() + 1; }
 

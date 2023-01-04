@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 04/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,8 +24,8 @@
 #include <vector>
 
 #include "../../spdlog.hpp"
-#include "autd3/driver/common/cpu/datagram.hpp"
-#include "autd3/driver/common/cpu/ec_config.hpp"
+#include "autd3/driver/cpu/datagram.hpp"
+#include "autd3/driver/cpu/ec_config.hpp"
 #include "autd3/link/soem.hpp"
 #include "ecat_thread.hpp"
 #include "error_handler.hpp"

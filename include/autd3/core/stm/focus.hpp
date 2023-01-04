@@ -12,7 +12,6 @@
 #pragma once
 
 #include <algorithm>
-#include <optional>
 #include <utility>
 #include <vector>
 
@@ -82,14 +81,14 @@ struct FocusSTM final : STM {
     return true;
   }
 
-  bool pack(const std::unique_ptr<const Mode>&, const Geometry& geometry, driver::TxDatagram& tx) override {
-    driver->focus_stm_header(tx);
+  bool pack(const Mode, const Geometry& geometry, driver::TxDatagram& tx) override {
+    driver::FocusSTMHeader().pack(tx);
 
     if (is_finished()) return true;
 
     std::vector<std::vector<driver::STMFocus>> points;
     points.reserve(geometry.num_devices());
-    const auto send_size = driver->focus_stm_send_size(_points.size(), _sent, geometry.device_map());
+    const auto send_size = driver::FocusSTMBody::send_size(_points.size(), _sent, geometry.device_map());
 
     size_t idx = 0;
     for (size_t i = 0; i < geometry.num_devices(); i++, idx += geometry.device_map()[i]) {
@@ -111,7 +110,15 @@ struct FocusSTM final : STM {
       points.emplace_back(lp);
     }
 
-    return driver->focus_stm_body(points, _sent, _points.size(), this->_freq_div, geometry.sound_speed, start_idx, finish_idx, tx);
+    return driver::FocusSTMBody()
+        .points(points)
+        .sent(&_sent)
+        .total_size(_points.size())
+        .freq_div(_freq_div)
+        .sound_speed(geometry.sound_speed)
+        .start_idx(start_idx)
+        .finish_idx(finish_idx)
+        .pack(tx);
   }
 
   [[nodiscard]] bool is_finished() const override { return _sent == _points.size(); }

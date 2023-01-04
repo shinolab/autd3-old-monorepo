@@ -252,7 +252,7 @@ inline bool GainBody<NormalPhase>::pack(TxDatagram& tx) {
 }
 
 struct FocusSTMHeader final : Driver {
-  [[nodiscard]] bool pack(TxDatagram& tx) override {
+  bool pack(TxDatagram& tx) override {
     tx.header().cpu_flag.remove(CPUControlFlags::WriteBody);
     tx.header().cpu_flag.remove(CPUControlFlags::ModDelay);
     tx.header().cpu_flag.remove(CPUControlFlags::STMBegin);
@@ -295,17 +295,17 @@ struct FocusSTMBody final : Driver {
     return *this;
   }
 
-  FocusSTMBody& start_idx(const uint16_t start_idx) {
+  FocusSTMBody& start_idx(const std::optional<uint16_t> start_idx) {
     _start_idx = start_idx;
     return *this;
   }
 
-  FocusSTMBody& finish_idx(const uint16_t finish_idx) {
+  FocusSTMBody& finish_idx(const std::optional<uint16_t> finish_idx) {
     _finish_idx = finish_idx;
     return *this;
   }
 
-  [[nodiscard]] size_t send_size(const size_t total_size, const size_t sent, const std::vector<size_t>& device_map) const noexcept {
+  [[nodiscard]] static size_t send_size(const size_t total_size, const size_t sent, const std::vector<size_t>& device_map) noexcept {
     const size_t tr_num = *std::min_element(device_map.begin(), device_map.end());
     const size_t data_len = tr_num * sizeof(uint16_t);
     const auto max_size =
@@ -328,7 +328,7 @@ struct FocusSTMBody final : Driver {
 
 template <typename T>
 struct GainSTMHeader final : Driver {
-  [[nodiscard]] bool pack(TxDatagram& tx) override;
+  bool pack(TxDatagram& tx) override;
 };
 
 template <>
@@ -395,12 +395,12 @@ struct GainSTMBody final : Driver {
     return *this;
   }
 
-  GainSTMBody& start_idx(const uint16_t start_idx) {
+  GainSTMBody& start_idx(const std::optional<uint16_t> start_idx) {
     _start_idx = start_idx;
     return *this;
   }
 
-  GainSTMBody& finish_idx(const uint16_t finish_idx) {
+  GainSTMBody& finish_idx(const std::optional<uint16_t> finish_idx) {
     _finish_idx = finish_idx;
     return *this;
   }
