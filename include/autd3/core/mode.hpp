@@ -15,4 +15,8 @@ namespace autd3::core {
 
 enum class Mode { Legacy, Normal, NormalPhase };
 
-}
+inline Mode legacy_mode() noexcept { return Mode::Legacy; }
+inline Mode normal_mode() noexcept { return Mode::Normal; }
+inline Mode normal_phase_mode() noexcept { return Mode::NormalPhase; }
+
+}  // namespace autd3::core

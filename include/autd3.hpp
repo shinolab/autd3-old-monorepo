@@ -59,9 +59,7 @@ namespace extra {}
 constexpr driver::autd3_float_t pi = driver::pi;
 
 using core::Geometry;
-using core::LegacyMode;
-using core::NormalMode;
-using core::NormalPhaseMode;
+using core::Mode;
 using core::SilencerConfig;
 
 using core::Amplitudes;

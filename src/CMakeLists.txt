@@ -10,6 +10,7 @@ add_library(autd3
   controller.cpp
   soft_stm.cpp
   modulation/lpf/lpf.cpp
+  core/stm/gain.cpp
   driver/driver.cpp
   ${HEADER_FILES}
   ${CORE_HEADER_FILES}
