@@ -24,7 +24,12 @@ struct NormalDuty {};
 struct NormalPhase {};
 
 struct Driver {
+  Driver() = default;
   virtual ~Driver() = default;
+  Driver(const Driver& v) = default;
+  Driver& operator=(const Driver& obj) = default;
+  Driver(Driver&& obj) = default;
+  Driver& operator=(Driver&& obj) = default;
   virtual bool pack(TxDatagram& tx) = 0;
 };
 
