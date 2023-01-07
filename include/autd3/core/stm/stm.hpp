@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,15 +13,13 @@
 
 #include <optional>
 
-#include "autd3/driver/fpga/defined.hpp"
-
 namespace autd3::core {
 
 /**
  * @brief STM provide hardware Spatio-Temporal Modulation or Lateral Modulation function.
  */
 struct STM : DatagramBody {
-  STM() noexcept : DatagramBody(), _freq_div(4096) {}
+  STM() noexcept : DatagramBody() {}
   ~STM() override = default;
   STM(const STM& v) = default;
   STM& operator=(const STM& obj) = default;
@@ -46,24 +44,16 @@ struct STM : DatagramBody {
   /**
    * @brief Sampling frequency.
    */
-  [[nodiscard]] driver::autd3_float_t sampling_frequency() const noexcept {
-    return static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / static_cast<driver::autd3_float_t>(_freq_div);
-  }
+  [[nodiscard]] virtual driver::autd3_float_t sampling_frequency() const = 0;
 
   /**
    * @brief Sampling frequency division.
    */
-  [[nodiscard]] uint32_t sampling_frequency_division() const noexcept { return _freq_div; }
+  [[nodiscard]] virtual uint32_t sampling_frequency_division() const = 0;
 
   /**
    * @brief Sampling frequency division.
    */
-  uint32_t& sampling_frequency_division() noexcept { return _freq_div; }
-
-  std::optional<uint16_t> start_idx{std::nullopt};
-  std::optional<uint16_t> finish_idx{std::nullopt};
-
- protected:
-  uint32_t _freq_div;
+  virtual uint32_t& sampling_frequency_division() = 0;
 };
 }  // namespace autd3::core
