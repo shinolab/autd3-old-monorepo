@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,8 +15,8 @@
 #include <utility>
 #include <vector>
 
-#include "autd3/driver/driver.hpp"
-#include "stm.hpp"
+#include "autd3/core/stm/stm.hpp"
+#include "autd3/driver/operation/focus_stm.hpp"
 
 namespace autd3::core {
 
@@ -51,7 +51,7 @@ struct FocusSTM final : STM {
 
   using value_type = Focus;
 
-  FocusSTM() : STM(), _sent(0) {}
+  FocusSTM() : STM() {}
 
   /**
    * @brief Set frequency of the STM
@@ -61,9 +61,31 @@ struct FocusSTM final : STM {
    */
   driver::autd3_float_t set_frequency(const driver::autd3_float_t freq) override {
     const auto sample_freq = static_cast<driver::autd3_float_t>(size()) * freq;
-    _freq_div = static_cast<uint32_t>(std::round(static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / sample_freq));
+    _op.freq_div = static_cast<uint32_t>(std::round(static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / sample_freq));
     return frequency();
   }
+
+  /**
+   * @brief Sampling frequency.
+   */
+  [[nodiscard]] driver::autd3_float_t sampling_frequency() const noexcept override {
+    return static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / static_cast<driver::autd3_float_t>(_op.freq_div);
+  }
+
+  /**
+   * @brief Sampling frequency division.
+   */
+  [[nodiscard]] uint32_t sampling_frequency_division() const noexcept override { return _op.freq_div; }
+
+  /**
+   * @brief Sampling frequency division.
+   */
+  uint32_t& sampling_frequency_division() noexcept override { return _op.freq_div; }
+
+  std::optional<uint16_t>& start_idx() { return _op.start_idx; }
+  std::optional<uint16_t> start_idx() const { return _op.start_idx; }
+  std::optional<uint16_t>& finish_idx() { return _op.finish_idx; }
+  std::optional<uint16_t> finish_idx() const { return _op.finish_idx; }
 
   /**
    * @brief Add control point
@@ -74,58 +96,40 @@ struct FocusSTM final : STM {
 
   void push_back(const value_type& v) { _points.emplace_back(v); }
 
-  [[nodiscard]] size_t size() const override { return _points.size(); }
+  [[nodiscard]] size_t size() const override { return _op.points.size(); }
 
-  bool init() override {
-    _sent = 0;
-    return true;
-  }
-
-  bool pack(const Mode, const Geometry& geometry, driver::TxDatagram& tx) override {
-    driver::FocusSTMHeader().pack(tx);
-
-    if (is_finished()) return true;
-
-    std::vector<std::vector<driver::STMFocus>> points;
-    points.reserve(geometry.num_devices());
-    const auto send_size = driver::FocusSTMBody::send_size(_points.size(), _sent, geometry.device_map());
-
+  bool init(const Geometry& geometry) override {
+    _op.init();
+    _op.device_map = geometry.device_map();
+    _op.points.reserve(geometry.num_devices());
     size_t idx = 0;
     for (size_t i = 0; i < geometry.num_devices(); i++, idx += geometry.device_map()[i]) {
-      std::vector<driver::STMFocus> lp;
-      lp.reserve(send_size);
-      const auto src = _points.data() + _sent;
-
       const Vector3 origin = geometry[idx].position();
       const Quaternion rotation = geometry[idx].rotation();
       const Eigen::Transform<driver::autd3_float_t, 3, Eigen::Affine> transform_matrix =
           Eigen::Translation<driver::autd3_float_t, 3>(origin) * rotation;
       const Eigen::Transform<driver::autd3_float_t, 3, Eigen::Affine> trans_inv = transform_matrix.inverse();
 
-      std::transform(src, src + send_size, std::back_inserter(lp), [&trans_inv](const auto& p) {
+      std::vector<driver::STMFocus> local_points;
+      local_points.reserve(_points.size());
+      std::transform(_points.begin(), _points.end(), std::back_inserter(local_points), [&trans_inv](const auto& p) {
         const auto homo = Vector4(p.point[0], p.point[1], p.point[2], 1.0);
         const Vector4 local_position = trans_inv * homo;
-        return driver::STMFocus(local_position.x(), local_position.y(), local_position.z(), p.shift);
+        return STMFocus(local_position.x(), local_position.y(), local_position.z(), p.shift);
       });
-      points.emplace_back(lp);
+      _op.points.emplace_back(local_points);
     }
 
-    return driver::FocusSTMBody()
-        .points(points)
-        .sent(&_sent)
-        .total_size(_points.size())
-        .freq_div(_freq_div)
-        .sound_speed(geometry.sound_speed)
-        .start_idx(start_idx)
-        .finish_idx(finish_idx)
-        .pack(tx);
+    return true;
   }
 
-  [[nodiscard]] bool is_finished() const override { return _sent == _points.size(); }
+  void pack(driver::TxDatagram& tx) override { _op.pack(tx); }
+
+  [[nodiscard]] bool is_finished() const override { return _op.is_finished(); }
 
  private:
   std::vector<Focus> _points;
-  size_t _sent;
+  driver::FocusSTM _op;
 };
 
 }  // namespace autd3::core
