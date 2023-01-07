@@ -22,7 +22,7 @@ namespace autd3::core {
 struct Clear final : DatagramHeader {
   Clear() noexcept = default;
 
-  bool init() override { return true; }
+  void init() override { _op.init(); }
 
   void pack(driver::TxDatagram& tx) override { _op.pack(tx); }
 

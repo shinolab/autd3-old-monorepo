@@ -45,10 +45,7 @@ struct SilencerConfig final : DatagramHeader {
    */
   [[nodiscard]] uint16_t cycle() const { return _op.step; }
 
-  bool init() override {
-    _op.init();
-    return true;
-  }
+  void init() override { _op.init(); }
 
   void pack(driver::TxDatagram& tx) override { _op.pack(tx); }
 

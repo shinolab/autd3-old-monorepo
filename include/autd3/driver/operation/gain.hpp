@@ -15,11 +15,15 @@
 
 namespace autd3::driver {
 
+struct GainBase : Operation {
+  std::vector<Drive> drives{};
+};
+
 template <typename T>
 struct Gain;
 
 template <>
-struct Gain<Legacy> final : Operation {
+struct Gain<Legacy> final : GainBase {
   void init() override {
     _sent = false;
     drives.clear();
@@ -47,14 +51,12 @@ struct Gain<Legacy> final : Operation {
 
   [[nodiscard]] bool is_finished() const override { return _sent; }
 
-  std::vector<Drive> drives{};
-
  private:
   bool _sent{false};
 };
 
 template <>
-struct Gain<Normal> final : Operation {
+struct Gain<Normal> final : GainBase {
   void init() override {
     _phase_sent = false;
     _duty_sent = false;
@@ -82,7 +84,6 @@ struct Gain<Normal> final : Operation {
 
   [[nodiscard]] bool is_finished() const override { return _phase_sent && _duty_sent; }
 
-  std::vector<Drive> drives{};
   std::vector<uint16_t> cycles{};
 
  private:
@@ -117,7 +118,7 @@ struct Gain<Normal> final : Operation {
 };
 
 template <>
-struct Gain<NormalPhase> final : Operation {
+struct Gain<NormalPhase> final : GainBase {
   void init() override {
     _sent = false;
     drives.clear();
@@ -148,7 +149,6 @@ struct Gain<NormalPhase> final : Operation {
 
   [[nodiscard]] bool is_finished() const override { return _sent; }
 
-  std::vector<Drive> drives{};
   std::vector<uint16_t> cycles{};
 
  private:

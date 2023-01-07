@@ -17,8 +17,15 @@
 
 namespace autd3::driver {
 
+struct SyncBase : Operation {
+  [[nodiscard]] bool is_finished() const override { return _sent; }
+
+ protected:
+  bool _sent{false};
+};
+
 template <typename T>
-struct Sync final : Operation {
+struct Sync final : SyncBase {
   void pack(TxDatagram& tx) override {
     static_assert(is_mode_v<T>, "Template type parameter must be Mode.");
 
@@ -38,17 +45,11 @@ struct Sync final : Operation {
     cycles.clear();
   }
 
-  [[nodiscard]] bool is_finished() const override { return _sent; }
-
-  size_t size{};
   std::vector<uint16_t> cycles{};
-
- private:
-  bool _sent{false};
 };
 
 template <>
-struct Sync<Legacy> final : Operation {
+struct Sync<Legacy> final : SyncBase {
   void pack(TxDatagram& tx) override {
     tx.header().cpu_flag.remove(CPUControlFlags::Mod);
     tx.header().cpu_flag.remove(CPUControlFlags::ConfigSilencer);
@@ -56,14 +57,11 @@ struct Sync<Legacy> final : Operation {
     tx.num_bodies = tx.num_devices();
 
     std::generate_n(tx.bodies_raw_ptr(), tx.bodies_size(), [] { return 4096; });
+
+    _sent = true;
   }
 
   void init() override { _sent = false; }
-
-  [[nodiscard]] bool is_finished() const override { return _sent; }
-
- private:
-  bool _sent{false};
 };
 
 }  // namespace autd3::driver

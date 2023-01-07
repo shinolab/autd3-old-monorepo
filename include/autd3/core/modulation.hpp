@@ -33,25 +33,7 @@ class Modulation : public DatagramHeader {
   /**
    * \brief Calculate modulation data
    */
-  virtual bool calc() = 0;
-
-  /**
-   * @brief Build modulation data
-   */
-  [[nodiscard]] bool build() {
-    if (_built) return true;
-    _op.mod_data.clear();
-    _built = true;
-    return calc();
-  }
-
-  /**
-   * \brief Re-build modulation data
-   */
-  [[nodiscard]] bool rebuild() {
-    _built = false;
-    return build();
-  }
+  virtual void calc() = 0;
 
   /**
    * \brief modulation data
@@ -89,9 +71,9 @@ class Modulation : public DatagramHeader {
     return sampling_frequency();
   }
 
-  bool init() override {
+  void init() override {
     _op.init();
-    return build();
+    calc();
   }
 
   void pack(driver::TxDatagram& tx) override { _op.pack(tx); }
@@ -99,7 +81,6 @@ class Modulation : public DatagramHeader {
   [[nodiscard]] bool is_finished() const noexcept override { return _op.is_finished(); }
 
  protected:
-  bool _built{false};
   driver::Modulation _op;
 };
 

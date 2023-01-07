@@ -30,11 +30,10 @@ struct ModDelayConfig final : DatagramBody {
   ModDelayConfig(ModDelayConfig&& obj) = default;
   ModDelayConfig& operator=(ModDelayConfig&& obj) = default;
 
-  bool init(const Geometry& geometry) override {
+  void init(const Mode, const Geometry& geometry) override {
     _op.init();
     _op.delays.reserve(geometry.num_transducers());
     std::transform(geometry.begin(), geometry.end(), std::back_inserter(_op.delays), [](const Transducer& tr) { return tr.mod_delay(); });
-    return true;
   }
 
   void pack(driver::TxDatagram& tx) override { _op.pack(tx); }

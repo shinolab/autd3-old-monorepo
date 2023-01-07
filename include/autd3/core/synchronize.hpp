@@ -19,22 +19,37 @@ namespace autd3::core {
 /**
  * @brief DatagramBody for synchronization
  */
-template <typename T>
 struct Synchronize final : DatagramBody {
   Synchronize() noexcept = default;
 
-  bool init(const Geometry& geometry) override {
-    _op.init();
-    if constexpr (driver::uses_cycle_v<T>) _op.cycles = geometry.cycles();
-    return true;
+  void init(const Mode mode, const Geometry& geometry) override {
+    switch (mode) {
+      case Mode::Legacy: {
+        auto op = std::make_unique<driver::Sync<driver::Legacy>>();
+        op->init();
+        _op = std::move(op);
+      } break;
+      case Mode::Normal: {
+        auto op = std::make_unique<driver::Sync<driver::Normal>>();
+        op->init();
+        op->cycles = geometry.cycles();
+        _op = std::move(op);
+      } break;
+      case Mode::NormalPhase: {
+        auto op = std::make_unique<driver::Sync<driver::NormalPhase>>();
+        op->init();
+        op->cycles = geometry.cycles();
+        _op = std::move(op);
+      } break;
+    }
   }
 
-  void pack(driver::TxDatagram& tx) override { _op.pack(tx); }
+  void pack(driver::TxDatagram& tx) override { _op->pack(tx); }
 
-  [[nodiscard]] bool is_finished() const override { return true; }
+  [[nodiscard]] bool is_finished() const override { return _op->is_finished(); }
 
  private:
-  driver::Sync<T> _op;
+  std::unique_ptr<driver::SyncBase> _op;
 };
 
 }  // namespace autd3::core

@@ -83,9 +83,9 @@ struct FocusSTM final : STM {
   uint32_t& sampling_frequency_division() noexcept override { return _op.freq_div; }
 
   std::optional<uint16_t>& start_idx() { return _op.start_idx; }
-  std::optional<uint16_t> start_idx() const { return _op.start_idx; }
+  [[nodiscard]] std::optional<uint16_t> start_idx() const { return _op.start_idx; }
   std::optional<uint16_t>& finish_idx() { return _op.finish_idx; }
-  std::optional<uint16_t> finish_idx() const { return _op.finish_idx; }
+  [[nodiscard]] std::optional<uint16_t> finish_idx() const { return _op.finish_idx; }
 
   /**
    * @brief Add control point
@@ -96,14 +96,15 @@ struct FocusSTM final : STM {
 
   void push_back(const value_type& v) { _points.emplace_back(v); }
 
-  [[nodiscard]] size_t size() const override { return _op.points.size(); }
+  [[nodiscard]] size_t size() const override { return _points.size(); }
 
-  bool init(const Geometry& geometry) override {
+  void init(const Mode, const Geometry& geometry) override {
     _op.init();
+    _op.sound_speed = geometry.sound_speed;
     _op.device_map = geometry.device_map();
     _op.points.reserve(geometry.num_devices());
     size_t idx = 0;
-    for (size_t i = 0; i < geometry.num_devices(); i++, idx += geometry.device_map()[i]) {
+    for (size_t i = 0; i < geometry.num_devices(); i++) {
       const Vector3 origin = geometry[idx].position();
       const Quaternion rotation = geometry[idx].rotation();
       const Eigen::Transform<driver::autd3_float_t, 3, Eigen::Affine> transform_matrix =
@@ -115,12 +116,11 @@ struct FocusSTM final : STM {
       std::transform(_points.begin(), _points.end(), std::back_inserter(local_points), [&trans_inv](const auto& p) {
         const auto homo = Vector4(p.point[0], p.point[1], p.point[2], 1.0);
         const Vector4 local_position = trans_inv * homo;
-        return STMFocus(local_position.x(), local_position.y(), local_position.z(), p.shift);
+        return driver::STMFocus(local_position.x(), local_position.y(), local_position.z(), p.shift);
       });
       _op.points.emplace_back(local_points);
+      idx += geometry.device_map()[i];
     }
-
-    return true;
   }
 
   void pack(driver::TxDatagram& tx) override { _op.pack(tx); }
