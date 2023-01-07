@@ -3,7 +3,7 @@
 // Created Date: 01/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -45,7 +45,7 @@ class LocalInterface final : public Interface {
     const auto msg_id = _ptr[0];
     if (_last_msg_id == msg_id) return false;
     _last_msg_id = msg_id;
-    std::memcpy(tx.data().data(), _ptr, tx.transmitting_size());
+    std::memcpy(tx.data().data(), _ptr, tx.transmitting_size_in_bytes());
     return true;
   }
 

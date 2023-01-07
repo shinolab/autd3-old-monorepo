@@ -34,8 +34,6 @@ struct FocusSTM final : Operation {
 
     tx.header().fpga_flag.set(FPGAControlFlags::STMMode);
     tx.header().fpga_flag.remove(FPGAControlFlags::STMGainMode);
-    tx.header().fpga_flag.remove(FPGAControlFlags::UseSTMStartIdx);
-    tx.header().fpga_flag.remove(FPGAControlFlags::UseSTMFinishIdx);
 
     tx.num_bodies = 0;
 
@@ -44,10 +42,14 @@ struct FocusSTM final : Operation {
     if (start_idx) {
       if (static_cast<size_t>(start_idx.value()) >= points[0].size()) throw std::runtime_error("STM start index out of range");
       tx.header().fpga_flag.set(FPGAControlFlags::UseSTMStartIdx);
+    } else {
+      tx.header().fpga_flag.remove(FPGAControlFlags::UseSTMStartIdx);
     }
     if (finish_idx) {
       if (static_cast<size_t>(finish_idx.value()) >= points[0].size()) throw std::runtime_error("STM finish index out of range");
       tx.header().fpga_flag.set(FPGAControlFlags::UseSTMFinishIdx);
+    } else {
+      tx.header().fpga_flag.remove(FPGAControlFlags::UseSTMFinishIdx);
     }
 
     const auto send_size = get_send_size(points[0].size(), _sent, device_map);

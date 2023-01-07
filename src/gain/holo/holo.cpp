@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -131,9 +131,9 @@ void SDP::calc(const core::Geometry& geometry) {
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #endif
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
@@ -197,9 +197,9 @@ void EVD::calc(const core::Geometry& geometry) {
   _backend->to_host(gtf);
   const auto max_coefficient = std::abs(_backend->max_abs_element(gtf));
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #endif
     const auto phase = std::arg(gtf(tr.id())) + driver::pi;
     const auto raw = std::abs(gtf(tr.id()));
@@ -225,9 +225,9 @@ void LSS::calc(const core::Geometry& geometry) {
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #endif
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
@@ -266,9 +266,9 @@ void GS::calc(const core::Geometry& geometry) {
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
   _backend->to_host(q);
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #endif
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
@@ -318,9 +318,9 @@ void GSPAT::calc(const core::Geometry& geometry) {
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
   _backend->to_host(q);
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #endif
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
@@ -457,9 +457,9 @@ void LM::calc(const core::Geometry& geometry) {
 
   _backend->to_host(x);
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #endif
     const auto phase = driver::rem_euclid(x(tr.id()), 2 * driver::pi);
     const auto power = constraint->convert(1.0, 1.0);
@@ -514,8 +514,8 @@ void Greedy::calc(const core::Geometry& geometry) {
 
     const auto power = constraint->convert(1.0, 1.0);
 
-    _drives[transducer.id()].amp = power;
-    _drives[transducer.id()].phase = std::arg(phases[min_idx]) + driver::pi;
+    _op->drives[transducer.id()].amp = power;
+    _op->drives[transducer.id()].phase = std::arg(phases[min_idx]) + driver::pi;
   }
 }
 
@@ -578,9 +578,9 @@ void LSSGreedy::calc(const core::Geometry& geometry) {
   _backend->to_host(q);
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #endif
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
@@ -666,7 +666,7 @@ void APO::calc(const core::Geometry& geometry) {
 
   std::vector<MatrixXc> ris(m);
   Eigen::Index i = 0;
-  std::generate(ris.begin(), ris.end(), [&]() { return make_ri(g, static_cast<Eigen::Index>(m), static_cast<Eigen::Index>(n), i++); });
+  std::generate(ris.begin(), ris.end(), [&] { return make_ri(g, static_cast<Eigen::Index>(m), static_cast<Eigen::Index>(n), i++); });
 
   VectorXc nabla_j = VectorXc::Zero(static_cast<Eigen::Index>(n));
   calc_nabla_j(q, p2, ris, m, n, nabla_j);
@@ -701,9 +701,9 @@ void APO::calc(const core::Geometry& geometry) {
   _backend->to_host(q);
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #endif
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
