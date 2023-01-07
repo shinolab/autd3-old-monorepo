@@ -645,7 +645,7 @@ TEST(ControllerTest, gain_stm_legacy) {
   const autd3::Vector3 center = autd.geometry().center();
 
   {
-    autd3::GainSTM stm(autd.geometry());
+    autd3::GainSTM stm;
     constexpr size_t size = 50;
     std::vector<std::vector<autd3::driver::Drive>> drives;
     constexpr autd3::driver::autd3_float_t radius = 30;
@@ -654,7 +654,7 @@ TEST(ControllerTest, gain_stm_legacy) {
     std::for_each(iota.begin(), iota.end(), [&](const size_t i) {
       const auto theta = 2 * autd3::pi * static_cast<autd3::driver::autd3_float_t>(i) / static_cast<autd3::driver::autd3_float_t>(size);
       autd3::gain::Focus f(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
-      f.build(autd.geometry());
+      f.init(autd.mode(), autd.geometry());
       drives.emplace_back(f.drives());
       stm.add(f);
     });
@@ -674,8 +674,8 @@ TEST(ControllerTest, gain_stm_legacy) {
   }
 
   {
-    autd3::GainSTM stm(autd.geometry());
-    stm.mode() = autd3::GainSTMMode::PhaseFull;
+    autd3::GainSTM stm;
+    stm.mode = autd3::GainSTMMode::PhaseFull;
     constexpr size_t size = 50;
     std::vector<std::vector<autd3::driver::Drive>> drives;
     constexpr autd3::driver::autd3_float_t radius = 40;
@@ -684,7 +684,7 @@ TEST(ControllerTest, gain_stm_legacy) {
     std::for_each(iota.begin(), iota.end(), [&](const size_t i) {
       const auto theta = 2 * autd3::pi * static_cast<autd3::driver::autd3_float_t>(i) / static_cast<autd3::driver::autd3_float_t>(size);
       autd3::gain::Focus f(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
-      f.build(autd.geometry());
+      f.init(autd.mode(), autd.geometry());
       drives.emplace_back(f.drives());
       stm.add(f);
     });
@@ -705,8 +705,8 @@ TEST(ControllerTest, gain_stm_legacy) {
   }
 
   {
-    autd3::GainSTM stm(autd.geometry());
-    stm.mode() = autd3::GainSTMMode::PhaseHalf;
+    autd3::GainSTM stm;
+    stm.mode = autd3::GainSTMMode::PhaseHalf;
     constexpr size_t size = 50;
     std::vector<std::vector<autd3::driver::Drive>> drives;
     constexpr autd3::driver::autd3_float_t radius = 40;
@@ -715,7 +715,7 @@ TEST(ControllerTest, gain_stm_legacy) {
     std::for_each(iota.begin(), iota.end(), [&](const size_t i) {
       const auto theta = 2 * autd3::pi * static_cast<autd3::driver::autd3_float_t>(i) / static_cast<autd3::driver::autd3_float_t>(size);
       autd3::gain::Focus f(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
-      f.build(autd.geometry());
+      f.init(autd.mode(), autd.geometry());
       drives.emplace_back(f.drives());
       stm.add(f);
     });
@@ -768,7 +768,7 @@ TEST(ControllerTest, gain_stm_normal) {
   const autd3::Vector3 center = autd.geometry().center();
 
   {
-    autd3::GainSTM stm(autd.geometry());
+    autd3::GainSTM stm;
     constexpr size_t size = 50;
     std::vector<std::vector<autd3::driver::Drive>> drives;
     constexpr autd3::driver::autd3_float_t radius = 30;
@@ -777,7 +777,7 @@ TEST(ControllerTest, gain_stm_normal) {
     std::for_each(iota.begin(), iota.end(), [&](const size_t i) {
       const auto theta = 2 * autd3::pi * static_cast<autd3::driver::autd3_float_t>(i) / static_cast<autd3::driver::autd3_float_t>(size);
       autd3::gain::Focus f(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
-      f.build(autd.geometry());
+      f.init(autd.mode(), autd.geometry());
       drives.emplace_back(f.drives());
       stm.add(f);
     });
@@ -798,8 +798,8 @@ TEST(ControllerTest, gain_stm_normal) {
   }
 
   {
-    autd3::GainSTM stm(autd.geometry());
-    stm.mode() = autd3::GainSTMMode::PhaseFull;
+      autd3::GainSTM stm;
+    stm.mode = autd3::GainSTMMode::PhaseFull;
     constexpr size_t size = 50;
     std::vector<std::vector<autd3::driver::Drive>> drives;
     constexpr autd3::driver::autd3_float_t radius = 40;
@@ -808,7 +808,7 @@ TEST(ControllerTest, gain_stm_normal) {
     std::for_each(iota.begin(), iota.end(), [&](const size_t i) {
       const auto theta = 2 * autd3::pi * static_cast<autd3::driver::autd3_float_t>(i) / static_cast<autd3::driver::autd3_float_t>(size);
       autd3::gain::Focus f(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
-      f.build(autd.geometry());
+      f.init(autd.mode(), autd.geometry());
       drives.emplace_back(f.drives());
       stm.add(f);
     });
@@ -858,7 +858,7 @@ TEST(ControllerTest, gain_stm_normal_phase) {
 
   const autd3::Vector3 center = autd.geometry().center();
   {
-    autd3::GainSTM stm(autd.geometry());
+      autd3::GainSTM stm;
     constexpr size_t size = 50;
     std::vector<std::vector<autd3::driver::Drive>> drives;
     constexpr autd3::driver::autd3_float_t radius = 30;
@@ -867,7 +867,7 @@ TEST(ControllerTest, gain_stm_normal_phase) {
     std::for_each(iota.begin(), iota.end(), [&](const size_t i) {
       const auto theta = 2 * autd3::pi * static_cast<autd3::driver::autd3_float_t>(i) / static_cast<autd3::driver::autd3_float_t>(size);
       autd3::gain::Focus f(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
-      f.build(autd.geometry());
+      f.init(autd.mode(), autd.geometry());
       drives.emplace_back(f.drives());
       stm.add(f);
     });
@@ -888,8 +888,8 @@ TEST(ControllerTest, gain_stm_normal_phase) {
   }
 
   {
-    autd3::GainSTM stm(autd.geometry());
-    stm.mode() = autd3::GainSTMMode::PhaseFull;
+      autd3::GainSTM stm;
+    stm.mode = autd3::GainSTMMode::PhaseFull;
     constexpr size_t size = 50;
     std::vector<std::vector<autd3::driver::Drive>> drives;
     constexpr autd3::driver::autd3_float_t radius = 30;
@@ -898,7 +898,7 @@ TEST(ControllerTest, gain_stm_normal_phase) {
     std::for_each(iota.begin(), iota.end(), [&](const size_t i) {
       const auto theta = 2 * autd3::pi * static_cast<autd3::driver::autd3_float_t>(i) / static_cast<autd3::driver::autd3_float_t>(size);
       autd3::gain::Focus f(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
-      f.build(autd.geometry());
+      f.init(autd.mode(), autd.geometry());
       drives.emplace_back(f.drives());
       stm.add(f);
     });

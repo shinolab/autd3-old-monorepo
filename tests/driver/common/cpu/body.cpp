@@ -3,7 +3,7 @@
 // Created Date: 30/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -88,7 +88,7 @@ TEST(DriverCommonCPUTest, FocusSTMBodyInitial) {
     auto* p = reinterpret_cast<uint8_t*>(points.data());
     for (size_t i = 0; i < point_size * sizeof(autd3::driver::STMFocus); i++) *p++ = static_cast<uint8_t>(i);
   }
-  b->set_point(points);
+  b->set_point(points.data(), points.size());
 
   ASSERT_EQ(d[0], point_size & 0xFF);
   ASSERT_EQ(d[1], point_size >> 8);
@@ -119,7 +119,7 @@ TEST(DriverCommonCPUTest, FocusSTMBodySubsequent) {
     auto* p = reinterpret_cast<uint8_t*>(points.data());
     for (size_t i = 0; i < point_size * sizeof(autd3::driver::STMFocus); i++) *p++ = static_cast<uint8_t>(i);
   }
-  b->set_point(points);
+  b->set_point(points.data(), points.size());
 
   ASSERT_EQ(d[0], point_size & 0xFF);
   ASSERT_EQ(d[1], point_size >> 8);
