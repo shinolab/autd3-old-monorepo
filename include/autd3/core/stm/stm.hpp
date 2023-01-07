@@ -55,5 +55,10 @@ struct STM : DatagramBody {
    * @brief Sampling frequency division.
    */
   virtual uint32_t& sampling_frequency_division() = 0;
+
+  virtual std::optional<uint16_t>& start_idx() = 0;
+  [[nodiscard]] virtual std::optional<uint16_t> start_idx() const = 0;
+  virtual std::optional<uint16_t>& finish_idx() = 0;
+  [[nodiscard]] virtual std::optional<uint16_t> finish_idx() const = 0;
 };
 }  // namespace autd3::core

@@ -25,7 +25,7 @@ struct NullHeader final : Operation {
 
   void init() override {}
 
-  bool is_finished() const override { return true; }
+  [[nodiscard]] bool is_finished() const override { return true; }
 };
 
 struct NullBody final : Operation {
@@ -36,7 +36,7 @@ struct NullBody final : Operation {
   }
 
   void init() override {}
-  bool is_finished() const override { return true; }
+  [[nodiscard]] bool is_finished() const override { return true; }
 };
 
 }  // namespace autd3::driver

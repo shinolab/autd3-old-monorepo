@@ -54,8 +54,10 @@ struct GainSTM final : STM {
    */
   uint32_t& sampling_frequency_division() noexcept override { return _freq_div; }
 
-  std::optional<uint16_t> start_idx{std::nullopt};
-  std::optional<uint16_t> finish_idx{std::nullopt};
+  std::optional<uint16_t>& start_idx() override { return _start_idx; }
+  [[nodiscard]] std::optional<uint16_t> start_idx() const override { return _start_idx; }
+  std::optional<uint16_t>& finish_idx() override { return _finish_idx; }
+  [[nodiscard]] std::optional<uint16_t> finish_idx() const override { return _finish_idx; }
 
   /**
    * @brief Add gain
@@ -92,8 +94,8 @@ struct GainSTM final : STM {
       } break;
     }
 
-    _op->start_idx = start_idx;
-    _op->finish_idx = finish_idx;
+    _op->start_idx = _start_idx;
+    _op->finish_idx = _finish_idx;
     _op->freq_div = _freq_div;
     _op->mode = mode;
 
@@ -108,6 +110,8 @@ struct GainSTM final : STM {
   [[nodiscard]] bool is_finished() const override { return _op->is_finished(); }
 
  private:
+  std::optional<uint16_t> _start_idx{std::nullopt};
+  std::optional<uint16_t> _finish_idx{std::nullopt};
   uint32_t _freq_div{4096};
   std::vector<std::shared_ptr<Gain>> _gains;
   std::unique_ptr<driver::GainSTMBase> _op;

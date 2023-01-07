@@ -82,10 +82,10 @@ struct FocusSTM final : STM {
    */
   uint32_t& sampling_frequency_division() noexcept override { return _op.freq_div; }
 
-  std::optional<uint16_t>& start_idx() { return _op.start_idx; }
-  [[nodiscard]] std::optional<uint16_t> start_idx() const { return _op.start_idx; }
-  std::optional<uint16_t>& finish_idx() { return _op.finish_idx; }
-  [[nodiscard]] std::optional<uint16_t> finish_idx() const { return _op.finish_idx; }
+  std::optional<uint16_t>& start_idx() override { return _op.start_idx; }
+  [[nodiscard]] std::optional<uint16_t> start_idx() const override { return _op.start_idx; }
+  std::optional<uint16_t>& finish_idx() override { return _op.finish_idx; }
+  [[nodiscard]] std::optional<uint16_t> finish_idx() const override { return _op.finish_idx; }
 
   /**
    * @brief Add control point

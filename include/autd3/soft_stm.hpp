@@ -24,7 +24,6 @@ namespace autd3 {
 /**
  * @brief Software Spatio-Temporal Modulation
  */
-template <typename T>
 class SoftwareSTM {
  public:
 #ifdef _MSC_VER
@@ -96,19 +95,20 @@ class SoftwareSTM {
     }
 
    private:
-    SoftwareSTMThreadHandle(Controller& cnt, std::vector<std::shared_ptr<core::Gain<T>>> bodies, const uint64_t period, TimerStrategy strategy)
+    SoftwareSTMThreadHandle(Controller& cnt, std::vector<std::shared_ptr<core::Gain>> bodies, const uint64_t period, const TimerStrategy strategy)
         : _cnt(cnt), _timeout(_cnt.get_ack_check_timeout()) {
       _run = true;
       if (bodies.empty()) return;
       const auto interval = std::chrono::nanoseconds(period);
       _cnt.set_ack_check_timeout(std::chrono::high_resolution_clock::duration::zero());
+      const auto mode = cnt.mode();
       if (strategy.contains(TimerStrategy::BusyWait))
-        _th = std::thread([this, interval, bodies = std::move(bodies)] {
+        _th = std::thread([this, mode, interval, bodies = std::move(bodies)] {
           size_t i = 0;
           auto next = std::chrono::high_resolution_clock::now();
           while (_run) {
             next += interval;
-            bodies[i]->build(this->_cnt.geometry());
+            bodies[i]->init(mode, this->_cnt.geometry());
             for (;; core::spin_loop_hint())
               if (std::chrono::high_resolution_clock::now() >= next) break;
             this->_cnt.send(*bodies[i]);
@@ -116,12 +116,12 @@ class SoftwareSTM {
           }
         });
       else
-        _th = std::thread([this, interval, bodies = std::move(bodies)] {
+        _th = std::thread([this, mode, interval, bodies = std::move(bodies)] {
           size_t i = 0;
           auto next = std::chrono::high_resolution_clock::now();
           while (_run) {
             next += interval;
-            bodies[i]->build(this->_cnt.geometry());
+            bodies[i]->init(mode, this->_cnt.geometry());
             std::this_thread::sleep_until(next);
             this->_cnt.send(*bodies[i]);
             i = (i + 1) % bodies.size();
@@ -150,7 +150,7 @@ class SoftwareSTM {
    * @return autd3_float_t Actual frequency
    */
   driver::autd3_float_t set_frequency(const driver::autd3_float_t freq) {
-    constexpr driver::autd3_float_t nanoseconds = static_cast<driver::autd3_float_t>(1000000000);
+    constexpr auto nanoseconds = static_cast<driver::autd3_float_t>(1000000000);
     const auto sample_freq = static_cast<driver::autd3_float_t>(size()) * freq;
     const auto sample_period_ns = static_cast<uint64_t>(std::round(nanoseconds / sample_freq));
     _sample_period_ns = sample_period_ns;
@@ -163,7 +163,7 @@ class SoftwareSTM {
    */
   template <typename G>
   void add(G&& b) {
-    static_assert(std::is_base_of_v<core::Gain<T>, std::remove_reference_t<G>>, "This is not Gain.");
+    static_assert(std::is_base_of_v<core::Gain, std::remove_reference_t<G>>, "This is not Gain.");
     add_impl(std::forward<G>(b));
   }
 
@@ -171,7 +171,7 @@ class SoftwareSTM {
    * @brief Add data to send
    * @param[in] b data
    */
-  void add(std::shared_ptr<core::Gain<T>> b) { _bodies.emplace_back(std::move(b)); }
+  void add(std::shared_ptr<core::Gain> b) { _bodies.emplace_back(std::move(b)); }
 
   /**
    * @brief Start STM
@@ -197,7 +197,7 @@ class SoftwareSTM {
    * @brief Sampling frequency
    */
   [[nodiscard]] driver::autd3_float_t sampling_frequency() const noexcept {
-    constexpr driver::autd3_float_t nanoseconds = static_cast<driver::autd3_float_t>(1000000000);
+    constexpr auto nanoseconds = static_cast<driver::autd3_float_t>(1000000000);
     return nanoseconds / static_cast<driver::autd3_float_t>(_sample_period_ns);
   }
 
@@ -224,7 +224,7 @@ class SoftwareSTM {
     _bodies.emplace_back(std::make_shared<std::remove_reference_t<G>>(std::forward<G>(b)));
   }
 
-  std::vector<std::shared_ptr<core::Gain<T>>> _bodies;
+  std::vector<std::shared_ptr<core::Gain>> _bodies;
   uint64_t _sample_period_ns;
 };
 
