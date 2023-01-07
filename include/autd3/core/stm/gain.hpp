@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -66,7 +66,7 @@ struct GainSTM final : STM {
   template <typename G>
   void add(G&& gain) {
     static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
-    _gains.emplace_back(std::make_shared<std::remove_reference_t<G>>(std::forward<std::remove_reference_t<G>>(gain)));
+    _gains.emplace_back(std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain)));
   }
 
   driver::GainSTMMode mode{driver::GainSTMMode::PhaseDutyFull};
