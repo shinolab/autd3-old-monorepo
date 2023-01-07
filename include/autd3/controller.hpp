@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,8 +27,9 @@
 #include "autd3/core/link.hpp"
 #include "autd3/core/mode.hpp"
 #include "autd3/driver/cpu/datagram.hpp"
-#include "autd3/driver/driver.hpp"
 #include "autd3/driver/firmware_version.hpp"
+#include "autd3/driver/operation/force_fan.hpp"
+#include "autd3/driver/operation/reads_fpga_info.hpp"
 #include "autd3/special_data.hpp"
 
 namespace autd3 {
@@ -72,38 +73,13 @@ class Controller {
    * @brief FPGA info
    *  \return vector of FPGAInfo. If failed, the vector is empty
    */
-  std::vector<driver::FPGAInfo> read_fpga_info();
+  std::vector<driver::FPGAInfo> fpga_info();
 
   /**
    * @brief Enumerate firmware information
    * \return vector of driver::FirmwareInfo. If failed, the vector is empty.
    */
   [[nodiscard]] std::vector<driver::FirmwareInfo> firmware_infos();
-
-  /**
-   * @brief Synchronize devices
-   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
-   */
-
-  [[deprecated("please send autd3::synchronize instead")]] bool synchronize();
-
-  /**
-   * @brief Update flags (force fan and reads_fpga_info)
-   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
-   */
-  [[deprecated("please send autd3::update_flag instead")]] bool update_flag();
-
-  /**
-   * @brief Clear all data in devices
-   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
-   */
-  [[deprecated("please send autd3::clear instead")]] bool clear();
-
-  /**
-   * @brief Stop outputting
-   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
-   */
-  [[deprecated("please send autd3::stop instead")]] bool stop();
 
   /**
    * @brief Send header data to devices
@@ -247,12 +223,20 @@ class Controller {
   /**
    * @brief If true, the fan will be forced to start.
    */
-  bool force_fan;
+  bool& force_fan() noexcept { return _force_fan.value; }
+  /**
+   * @brief If true, the fan will be forced to start.
+   */
+  bool force_fan() const noexcept { return _force_fan.value; }
 
   /**
    * @brief If true, the devices return FPGA info in all frames. The FPGA info can be read by fpga_info().
    */
-  bool reads_fpga_info;
+  bool& reads_fpga_info() noexcept { return _reads_fpga_info.value; }
+  /**
+   * @brief If true, the devices return FPGA info in all frames. The FPGA info can be read by fpga_info().
+   */
+  bool reads_fpga_info() const noexcept { return _reads_fpga_info.value; }
 
   /**
    * @brief Transmission interval between frames when sending multiple data.
@@ -321,6 +305,9 @@ class Controller {
   std::mutex _send_mtx;
 
   bool _last_send_res;
+
+  driver::ForceFan _force_fan;
+  driver::ReadsFPGAInfo _reads_fpga_info;
 
  public:
   /**
