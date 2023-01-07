@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/10/2022
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -32,7 +32,7 @@ void* gain_stm(void* autd) {
   double z = 150.0;
 
   void* stm = NULL;
-  AUTDGainSTM(&stm, autd);
+  AUTDGainSTM(&stm);
 
   const int32_t point_num = 200;
   for (int32_t i = 0; i < point_num; i++) {

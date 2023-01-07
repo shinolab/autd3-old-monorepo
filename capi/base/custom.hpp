@@ -3,7 +3,7 @@
 // Created Date: 19/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/12/2022
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,12 +28,12 @@ class CustomGain final : public autd3::Gain {
    * @details The data length should be the same as the number of transducers.
    */
   explicit CustomGain(const autd3_float_t* amp, const autd3_float_t* phase, const size_t size) : _amp(size), _phase(size) {
-    std::memcpy(_amp.data(), amp, size * sizeof(autd3_float_t));
-    std::memcpy(_phase.data(), phase, size * sizeof(autd3_float_t));
+    std::copy_n(amp, size, _amp.begin());
+    std::copy_n(phase, size, _phase.begin());
   }
 
   void calc(const autd3::core::Geometry& geometry) override {
-    std::transform(_phase.begin(), _phase.end(), _amp.begin(), this->_drives.begin(), [](const auto phase, const auto amp) {
+    std::transform(_phase.begin(), _phase.end(), _amp.begin(), this->begin(), [](const auto phase, const auto amp) {
       return autd3::driver::Drive{phase, amp};
     });
   }
@@ -61,12 +61,12 @@ class CustomModulation final : public autd3::Modulation {
    * @param freq_div sampling frequency division ratio
    */
   explicit CustomModulation(const uint8_t* buffer, const size_t size, const uint32_t freq_div = 40960) : Modulation() {
-    this->_freq_div = freq_div;
-    this->_buffer.resize(size);
-    std::memcpy(this->_buffer.data(), buffer, size);
+    _op.freq_div = freq_div;
+    _op.mod_data.resize(size);
+    std::copy_n(buffer, size, _op.mod_data.begin());
   }
 
-  bool calc() override { return true; }
+  void calc() override {}
 
   ~CustomModulation() override = default;
   CustomModulation(const CustomModulation& v) noexcept = delete;

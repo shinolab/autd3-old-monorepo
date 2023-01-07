@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,6 +21,8 @@
 #include "autd3/modulation/lpf.hpp"
 #include "custom.hpp"
 #include "custom_sink.hpp"
+#include "gain_stm.hpp"
+#include "grouped.hpp"
 #include "wrapper.hpp"
 #include "wrapper_link.hpp"
 
@@ -77,11 +79,11 @@ bool AUTDIsOpen(const void* const handle) {
 }
 bool AUTDGetForceFan(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
-  return wrapper->force_fan;
+  return wrapper->force_fan();
 }
 bool AUTDGetReadsFPGAInfo(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
-  return wrapper->reads_fpga_info;
+  return wrapper->reads_fpga_info();
 }
 uint64_t AUTDGetAckCheckTimeout(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
@@ -93,11 +95,11 @@ uint64_t AUTDGetSendInterval(const void* const handle) {
 }
 void AUTDSetForceFan(void* const handle, const bool force) {
   auto* const wrapper = static_cast<Controller*>(handle);
-  wrapper->force_fan = force;
+  wrapper->force_fan() = force;
 }
 void AUTDSetReadsFPGAInfo(void* const handle, const bool reads_fpga_info) {
   auto* const wrapper = static_cast<Controller*>(handle);
-  wrapper->reads_fpga_info = reads_fpga_info;
+  wrapper->reads_fpga_info() = reads_fpga_info;
 }
 void AUTDSetAckCheckTimeout(void* const handle, const uint64_t timeout) {
   auto* const wrapper = static_cast<Controller*>(handle);
@@ -150,7 +152,7 @@ void AUTDSetAttenuation(void* const handle, const autd3_float_t attenuation) {
 
 bool AUTDGetFPGAInfo(void* const handle, uint8_t* out) {
   auto* const wrapper = static_cast<Controller*>(handle);
-  const auto& res = wrapper->read_fpga_info();
+  const auto& res = wrapper->fpga_info();
   std::memcpy(out, res.data(), res.size());
   return !res.empty();
 }
@@ -237,16 +239,15 @@ void AUTDGainNull(void** gain) {
   *gain = g;
 }
 
-void AUTDGainGrouped(void** gain, const void* const handle) {
-  const auto* wrapper = static_cast<const Controller*>(handle);
-  auto* g = new autd3::gain::Grouped(wrapper->geometry());
+void AUTDGainGrouped(void** gain) {
+  auto* g = new Grouped4CAPI;
   *gain = g;
 }
 
 void AUTDGainGroupedAdd(void* grouped_gain, const int32_t device_id, void* gain) {
-  auto* const gg = static_cast<autd3::gain::Grouped*>(grouped_gain);
+  auto* const gg = static_cast<Grouped4CAPI*>(grouped_gain);
   auto* const g = static_cast<autd3::Gain*>(gain);
-  gg->add(device_id, *g);
+  gg->add(device_id, g);
 }
 
 void AUTDGainFocus(void** gain, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const autd3_float_t amp) {
@@ -318,54 +319,51 @@ void AUTDDeleteModulation(const void* const mod) {
 
 void AUTDFocusSTM(void** out) { *out = new autd3::FocusSTM(); }
 
-void AUTDGainSTM(void** out, const void* const handle) {
-  const auto* wrapper = static_cast<const Controller*>(handle);
-  *out = new autd3::GainSTM(wrapper->geometry());
-}
+void AUTDGainSTM(void** out) { *out = new GainSTM4CAPI; }
 void AUTDFocusSTMAdd(void* const stm, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const uint8_t shift) {
   auto* const stm_w = static_cast<autd3::FocusSTM*>(stm);
   stm_w->add(to_vec3(x, y, z), shift);
 }
 void AUTDGainSTMAdd(void* const stm, void* const gain) {
-  auto* const stm_w = static_cast<autd3::GainSTM*>(stm);
+  auto* const stm_w = static_cast<GainSTM4CAPI*>(stm);
   auto* const g = static_cast<autd3::Gain*>(gain);
-  stm_w->add(*g);
+  stm_w->add(g);
 }
 uint16_t AUTDGetGainSTMMode(void* const stm) {
-  auto* const stm_w = static_cast<autd3::GainSTM*>(stm);
-  return static_cast<uint16_t>(stm_w->mode());
+  auto* const stm_w = static_cast<GainSTM4CAPI*>(stm);
+  return static_cast<uint16_t>(stm_w->mode);
 }
 void AUTDSetGainSTMMode(void* const stm, uint16_t mode) {
-  auto* const stm_w = static_cast<autd3::GainSTM*>(stm);
-  stm_w->mode() = static_cast<autd3::GainSTMMode>(mode);
+  auto* const stm_w = static_cast<GainSTM4CAPI*>(stm);
+  stm_w->mode = static_cast<autd3::GainSTMMode>(mode);
 }
 
 int32_t AUTDSTMGetStartIdx(const void* const stm) {
   const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
-  const auto start_idx = stm_w->start_idx;
+  const auto start_idx = stm_w->start_idx();
   return start_idx ? static_cast<int32_t>(start_idx.value()) : -1;
 }
 
 int32_t AUTDSTMGetFinishIdx(const void* const stm) {
   const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
-  const auto finish_idx = stm_w->finish_idx;
+  const auto finish_idx = stm_w->finish_idx();
   return finish_idx ? static_cast<int32_t>(finish_idx.value()) : -1;
 }
 
 void AUTDSTMSetStartIdx(void* const stm, const int32_t start_idx) {
   auto* const stm_w = static_cast<autd3::core::STM*>(stm);
   if (start_idx < 0)
-    stm_w->start_idx = std::nullopt;
+    stm_w->start_idx() = std::nullopt;
   else
-    stm_w->start_idx = static_cast<uint16_t>(start_idx);
+    stm_w->start_idx() = static_cast<uint16_t>(start_idx);
 }
 
 void AUTDSTMSetFinishIdx(void* const stm, const int32_t finish_idx) {
   auto* const stm_w = static_cast<autd3::core::STM*>(stm);
   if (finish_idx < 0)
-    stm_w->finish_idx = std::nullopt;
+    stm_w->finish_idx() = std::nullopt;
   else
-    stm_w->finish_idx = static_cast<uint16_t>(finish_idx);
+    stm_w->finish_idx() = static_cast<uint16_t>(finish_idx);
 }
 
 autd3_float_t AUTDSTMSetFrequency(void* const stm, const autd3_float_t freq) {

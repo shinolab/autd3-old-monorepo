@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -58,7 +58,7 @@ EXPORT_AUTD int32_t AUTDGetFirmwareInfoListPointer(IN void* handle, OUT void** o
 EXPORT_AUTD void AUTDGetFirmwareInfo(IN const void* p_firm_info_list, IN int32_t index, OUT char* info);
 EXPORT_AUTD void AUTDFreeFirmwareInfoListPointer(IN const void* p_firm_info_list);
 EXPORT_AUTD void AUTDGainNull(OUT void** gain);
-EXPORT_AUTD void AUTDGainGrouped(OUT void** gain, IN const void* handle);
+EXPORT_AUTD void AUTDGainGrouped(OUT void** gain);
 EXPORT_AUTD void AUTDGainGroupedAdd(IN void* grouped_gain, IN int32_t device_id, IN void* gain);
 EXPORT_AUTD void AUTDGainFocus(OUT void** gain, IN autd3_float_t x, IN autd3_float_t y, IN autd3_float_t z, IN autd3_float_t amp);
 EXPORT_AUTD void AUTDGainBesselBeam(OUT void** gain, IN autd3_float_t x, IN autd3_float_t y, IN autd3_float_t z, IN autd3_float_t n_x,
@@ -80,7 +80,7 @@ EXPORT_AUTD void AUTDModulationSetSamplingFrequencyDivision(IN void* mod, IN uin
 EXPORT_AUTD autd3_float_t AUTDModulationSamplingFrequency(IN const void* mod);
 EXPORT_AUTD void AUTDDeleteModulation(IN const void* mod);
 EXPORT_AUTD void AUTDFocusSTM(OUT void** out);
-EXPORT_AUTD void AUTDGainSTM(OUT void** out, IN const void* handle);
+EXPORT_AUTD void AUTDGainSTM(OUT void** out);
 EXPORT_AUTD void AUTDFocusSTMAdd(IN void* stm, IN autd3_float_t x, IN autd3_float_t y, IN autd3_float_t z, IN uint8_t shift);
 EXPORT_AUTD void AUTDGainSTMAdd(IN void* stm, IN void* gain);
 EXPORT_AUTD uint16_t AUTDGetGainSTMMode(IN void* stm);
