@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,6 +14,7 @@
 #include <cstdint>
 
 #include "autd3/core/datagram.hpp"
+#include "autd3/driver/operation/silencer.hpp"
 
 namespace autd3::core {
 
@@ -22,7 +23,10 @@ namespace autd3::core {
  */
 struct SilencerConfig final : DatagramHeader {
   SilencerConfig() noexcept : SilencerConfig(10, 4096) {}
-  explicit SilencerConfig(const uint16_t step, const uint16_t cycle) noexcept : step(step), cycle(cycle), _sent(false) {}
+  explicit SilencerConfig(const uint16_t step, const uint16_t cycle) noexcept {
+    _op.step = step;
+    _op.cycle = cycle;
+  }
 
   /**
    * @brief Create SilencerConfig to disable Silencer
@@ -33,29 +37,25 @@ struct SilencerConfig final : DatagramHeader {
    * @brief Silencer update step.
    * @details The smaller the step, the stronger the effect of noise reduction.
    */
-  uint16_t step;
+  [[nodiscard]] uint16_t step() const { return _op.step; }
 
   /**
    * @brief Silencer sampling frequency division ratio.
    * @details The sampling frequency will be driver::FPGA_CLK_FREQ/cycle. The larger the cycle, the stronger the effect of noise reduction.
    */
-  uint16_t cycle;
+  [[nodiscard]] uint16_t cycle() const { return _op.step; }
 
   bool init() override {
-    _sent = false;
+    _op.init();
     return true;
   }
 
-  bool pack(const uint8_t msg_id, driver::TxDatagram& tx) override {
-    if (_sent) return driver::NullHeader().msg_id(msg_id).pack(tx);
-    _sent = true;
-    return driver::ConfigSilencer().msg_id(msg_id).cycle(cycle).step(step).pack(tx);
-  }
+  void pack(driver::TxDatagram& tx) override { _op.pack(tx); }
 
-  [[nodiscard]] bool is_finished() const override { return true; }
+  [[nodiscard]] bool is_finished() const override { return _op.is_finished(); }
 
  private:
-  bool _sent;
+  driver::ConfigSilencer _op;
 };
 
 }  // namespace autd3::core
