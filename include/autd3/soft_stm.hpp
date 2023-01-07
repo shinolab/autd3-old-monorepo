@@ -3,7 +3,7 @@
 // Created Date: 07/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -214,11 +214,6 @@ class SoftwareSTM {
   TimerStrategy timer_strategy;
 
  private:
-  template <typename G>
-  void add_impl(G& b) {
-    _bodies.emplace_back(std::make_shared<std::remove_reference_t<G>>(b));
-  }
-
   template <typename G>
   void add_impl(G&& b) {
     _bodies.emplace_back(std::make_shared<std::remove_reference_t<G>>(std::forward<G>(b)));

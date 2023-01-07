@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -178,7 +178,7 @@ class Grouped final : public core::Gain {
   template <class G>
   void add(const size_t device_id, G&& gain) {
     static_assert(std::is_base_of_v<core::Gain, std::remove_reference_t<G>>, "This is not Gain");
-    _gains.insert_or_assign(device_id, std::make_shared<std::remove_reference_t<G>>(std::forward<std::remove_reference_t<G>>(gain)));
+    _gains.insert_or_assign(device_id, std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain)));
   }
 
   void calc(const core::Geometry& geometry) override {
