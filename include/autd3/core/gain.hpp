@@ -53,6 +53,7 @@ struct Gain : DatagramBody {
   }
 
   void init(const Mode mode, const Geometry& geometry) override {
+    _mode = mode;
     switch (mode) {
       case Mode::Legacy: {
         auto op = std::make_shared<driver::Gain<driver::Legacy>>();
@@ -90,6 +91,7 @@ struct Gain : DatagramBody {
   [[nodiscard]] driver::Drive& operator[](const size_t i) { return _op->drives[i]; }
 
  protected:
+  Mode _mode{Mode::Legacy};
   bool _built{false};
   std::shared_ptr<driver::GainBase> _op{nullptr};
 };
