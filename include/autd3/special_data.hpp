@@ -3,7 +3,7 @@
 // Created Date: 07/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/12/2022
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -84,9 +84,10 @@ class Clear final : public SpecialData {
 /**
  * @brief SpecialData for synchronization
  */
+template <typename T>
 class Synchronize final : public SpecialData {
  public:
-  Synchronize() : SpecialData(std::make_unique<core::NullHeader>(), std::make_unique<core::Synchronize>()) {}
+  Synchronize() : SpecialData(std::make_unique<core::NullHeader>(), std::make_unique<core::Synchronize<T>>()) {}
 
   [[nodiscard]] bool ack_check_timeout_override() const override { return true; }
   [[nodiscard]] std::chrono::high_resolution_clock::duration ack_check_timeout() const override {
@@ -113,7 +114,10 @@ inline UpdateFlag update_flag() { return UpdateFlag{}; }
 
 inline Clear clear() { return Clear{}; }
 
-inline Synchronize synchronize() { return Synchronize{}; }
+template <typename T>
+inline Synchronize<T> synchronize() {
+  return Synchronize{};
+}
 
 inline ModDelayConfig mod_delay_config() { return ModDelayConfig{}; }
 
