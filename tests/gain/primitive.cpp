@@ -3,7 +3,7 @@
 // Created Date: 24/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/01/2023
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ TEST(Gain, Null) {
   geometry.add_device(autd3::AUTD3(Vector3::Zero(), Vector3::Zero()));
 
   auto g = autd3::gain::Null();
-  g.build(geometry);
+  g.init(autd3::core::Mode::Legacy, geometry);
 
   for (const auto& [phase, duty] : g.drives()) {
     ASSERT_EQ(duty, 0.0);
@@ -48,7 +48,7 @@ TEST(Gain, Focus) {
   const Vector3 f(10, 20, 30);
 
   auto g = autd3::gain::Focus(f);
-  g.build(geometry);
+  g.init(autd3::core::Mode::Legacy, geometry);
 
   const auto expect = std::arg(propagate(geometry[0].position(), geometry[0].z_direction(), 0.0, geometry[0].wavenumber(geometry.sound_speed), f) *
                                std::exp(complex(0.0, g.drives()[0].phase)));
@@ -60,18 +60,18 @@ TEST(Gain, Focus) {
   }
 
   auto g1 = autd3::gain::Focus(f, 0.5);
-  g1.build(geometry);
+  g1.init(autd3::core::Mode::Legacy, geometry);
   for (auto& [phase, amp] : g1.drives()) ASSERT_EQ(amp, 0.5);
 
   auto g2 = autd3::gain::Focus(f, 0.0);
-  g2.build(geometry);
+  g2.init(autd3::core::Mode::Legacy, geometry);
   for (auto& [phase, amp] : g2.drives()) ASSERT_EQ(amp, 0.0);
 
   auto g3 = autd3::gain::Focus(f, 2.0);
-  g3.build(geometry);
+  g3.init(autd3::core::Mode::Legacy, geometry);
   for (auto& [phase, amp] : g3.drives()) ASSERT_EQ(amp, 2.0);
 
   auto g4 = autd3::gain::Focus(f, -1.0);
-  g4.build(geometry);
+  g4.init(autd3::core::Mode::Legacy, geometry);
   for (auto& [phase, amp] : g4.drives()) ASSERT_EQ(amp, -1.0);
 }
