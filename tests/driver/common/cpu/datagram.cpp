@@ -3,7 +3,7 @@
 // Created Date: 01/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,13 +27,13 @@ TEST(DriverCommonCPUTest, TxDatagram) {
   autd3::driver::TxDatagram tx(device_map);
 
   ASSERT_EQ(tx.num_devices(), 10);
-  ASSERT_EQ(tx.bodies_size(), sizeof(uint16_t) * 55);
-  ASSERT_EQ(tx.transmitting_size(), 128 + sizeof(uint16_t) * 55);
+  ASSERT_EQ(tx.bodies_size(), 55);
+  ASSERT_EQ(tx.transmitting_size_in_bytes(), 128 + sizeof(uint16_t) * 55);
 
   tx.num_bodies = 5;
   ASSERT_EQ(tx.num_devices(), 10);
-  ASSERT_EQ(tx.bodies_size(), sizeof(uint16_t) * 15);
-  ASSERT_EQ(tx.transmitting_size(), 128 + sizeof(uint16_t) * 15);
+  ASSERT_EQ(tx.bodies_size(), 15);
+  ASSERT_EQ(tx.transmitting_size_in_bytes(), 128 + sizeof(uint16_t) * 15);
 
   ASSERT_EQ(tx.data().data(), reinterpret_cast<uint8_t*>(&tx.header()));
   ASSERT_EQ(tx.data().data() + 128, reinterpret_cast<uint8_t*>(tx.bodies_raw_ptr()));
