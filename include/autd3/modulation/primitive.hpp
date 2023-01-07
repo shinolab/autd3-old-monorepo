@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/12/2022
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -31,8 +31,8 @@ class Static final : public core::Modulation {
   explicit Static(const driver::autd3_float_t amp = 1.0) noexcept : Modulation(), _amp(amp) {}
 
   bool calc() override {
-    _buffer.resize(2, 0);
-    std::generate(_buffer.begin(), _buffer.end(), [this] { return to_duty(_amp); });
+    buffer().resize(2, 0);
+    std::generate(buffer().begin(), buffer().end(), [this] { return to_duty(_amp); });
     return true;
   }
 
@@ -71,9 +71,9 @@ class Sine final : public core::Modulation {
     const size_t n = fs / k;
     const size_t d = f / k;
 
-    _buffer.resize(n, 0);
+    buffer().resize(n, 0);
     size_t i = 0;
-    std::generate(_buffer.begin(), _buffer.end(), [this, d, n, &i] {
+    std::generate(buffer().begin(), buffer().end(), [this, d, n, &i] {
       return to_duty(_amp / 2 * std::sin(2 * driver::pi * static_cast<driver::autd3_float_t>(d * i++) / static_cast<driver::autd3_float_t>(n)) +
                      _offset);
     });
@@ -117,9 +117,9 @@ class SineSquared final : public core::Modulation {
     const size_t n = fs / k;
     const size_t d = f / k;
 
-    _buffer.resize(n, 0);
+    buffer().resize(n, 0);
     size_t i = 0;
-    std::generate(_buffer.begin(), _buffer.end(), [this, d, n, &i] {
+    std::generate(buffer().begin(), buffer().end(), [this, d, n, &i] {
       return to_duty(std::sqrt(
           _amp / 2 * std::sin(2 * driver::pi * static_cast<driver::autd3_float_t>(d * i++) / static_cast<driver::autd3_float_t>(n)) + _offset));
     });
@@ -158,9 +158,9 @@ class SineLegacy final : public core::Modulation {
     const auto f = (std::min)(_freq, fs / 2);
 
     const auto t = static_cast<size_t>(std::round(fs / f));
-    _buffer.resize(t, 0);
+    buffer().resize(t, 0);
     size_t i = 0;
-    std::generate(_buffer.begin(), _buffer.end(), [this, t, &i] {
+    std::generate(buffer().begin(), buffer().end(), [this, t, &i] {
       return to_duty(_offset + _amp * std::cos(2 * driver::pi * static_cast<driver::autd3_float_t>(i++) / static_cast<driver::autd3_float_t>(t)) / 2);
     });
     return true;
@@ -195,10 +195,10 @@ class Square final : public core::Modulation {
     const size_t d = f / k;
 
     const auto low = to_duty(_low);
-    _buffer.resize(n, low);
+    buffer().resize(n, low);
 
     const auto high = to_duty(_high);
-    auto* cursor = _buffer.data();
+    auto* cursor = buffer().data();
     for (size_t i = 0; i < d; i++) {
       const size_t size = (n + i) / d;
       std::memset(cursor, high, static_cast<size_t>(std::round(static_cast<driver::autd3_float_t>(size) * _duty)));

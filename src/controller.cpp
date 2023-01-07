@@ -3,7 +3,7 @@
 // Created Date: 16/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,18 +15,11 @@
 
 #include "autd3/core/datagram.hpp"
 #include "autd3/core/mode.hpp"
+#include "autd3/driver/operation/info.hpp"
 #include "spdlog.hpp"
 
 namespace autd3 {
-Controller::Controller()
-    : force_fan(false),
-      reads_fpga_info(false),
-      _mode(core::Mode::Legacy),
-      _tx_buf({0}),
-      _rx_buf(0),
-      _link(nullptr),
-      _send_th_running(false),
-      _last_send_res(false) {}
+Controller::Controller() : _mode(core::Mode::Legacy), _tx_buf({0}), _rx_buf(0), _link(nullptr), _send_th_running(false), _last_send_res(false) {}
 
 Controller::~Controller() noexcept {
   try {
@@ -71,7 +64,7 @@ bool Controller::open(core::LinkPtr link) {
         data = std::move(_send_queue.front());
       }
 
-      if (!data.header->init() || !data.body->init()) {
+      if (!data.header->init() || !data.body->init(_geometry)) {
         spdlog::error("Failed to initialize data.");
         data.header = nullptr;
         data.body = nullptr;
@@ -82,18 +75,15 @@ bool Controller::open(core::LinkPtr link) {
         continue;
       }
 
-      driver::ForceFan(force_fan).pack(_tx_buf);
-      driver::ReadsFPGAInfo(reads_fpga_info).pack(_tx_buf);
+      _force_fan.pack(_tx_buf);
+      _reads_fpga_info.pack(_tx_buf);
 
       const auto no_wait = data.timeout == std::chrono::high_resolution_clock::duration::zero();
       while (true) {
         const auto msg_id = get_id();
-        if (!data.header->pack(msg_id, _tx_buf) || !data.body->pack(_mode, _geometry, _tx_buf)) {
-          spdlog::error("Failed to pack data.");
-          data.header = nullptr;
-          data.body = nullptr;
-          break;
-        }
+        _tx_buf.header().msg_id = msg_id;
+        data.header->pack(_tx_buf);
+        data.body->pack(_tx_buf);
         spdlog::debug("Sending data ({}) asynchronously", msg_id);
         spdlog::debug("Timeout: {} [ms]",
                       static_cast<driver::autd3_float_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(data.timeout).count()) / 1000 / 1000);
@@ -144,7 +134,7 @@ bool Controller::close() {
 
 bool Controller::is_open() const noexcept { return _link != nullptr && _link->is_open(); }
 
-std::vector<driver::FPGAInfo> Controller::read_fpga_info() {
+std::vector<driver::FPGAInfo> Controller::fpga_info() {
   std::vector<driver::FPGAInfo> fpga_info;
   if (!_link->receive(_rx_buf)) return fpga_info;
   std::transform(_rx_buf.begin(), _rx_buf.end(), std::back_inserter(fpga_info), [](const driver::RxMessage& rx) { return driver::FPGAInfo(rx.ack); });
@@ -195,30 +185,21 @@ std::vector<driver::FirmwareInfo> Controller::firmware_infos() {
   return firmware_infos;
 }
 
-bool Controller::synchronize() { return send(Synchronize{}); }
-
-bool Controller::update_flag() { return send(UpdateFlag{}); }
-
-bool Controller::clear() { return send(Clear{}); }
-
-bool Controller::stop() { return send(Stop{}); }
-
 bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body, const std::chrono::high_resolution_clock::duration timeout) {
-  if (!header->init() || !body->init()) {
+  if (!header->init() || !body->init(_geometry)) {
     spdlog::error("Failed to initialize data.");
     return false;
   }
 
-  driver::ForceFan(force_fan).pack(_tx_buf);
-  driver::ReadsFPGAInfo(reads_fpga_info).pack(_tx_buf);
+  _force_fan.pack(_tx_buf);
+  _reads_fpga_info.pack(_tx_buf);
 
   const auto no_wait = timeout == std::chrono::high_resolution_clock::duration::zero();
   while (true) {
     const auto msg_id = get_id();
-    if (!header->pack(msg_id, _tx_buf) || !body->pack(_mode, _geometry, _tx_buf)) {
-      spdlog::error("Failed to pack data.");
-      return false;
-    }
+    _tx_buf.header().msg_id = msg_id;
+    header->pack(_tx_buf);
+    body->pack(_tx_buf);
     spdlog::debug("Sending data ({})", _tx_buf.header().msg_id);
     spdlog::debug("Timeout: {} [ms]",
                   static_cast<driver::autd3_float_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count()) / 1000 / 1000);
