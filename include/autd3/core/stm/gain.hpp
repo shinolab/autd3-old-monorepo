@@ -67,12 +67,12 @@ struct GainSTM final : STM {
     _gains.emplace_back(std::make_shared<std::remove_reference_t<G>>(std::forward<std::remove_reference_t<G>>(gain)));
   }
 
-  driver::GainSTMMode& mode() noexcept { return _op->mode; }
+  driver::GainSTMMode mode{driver::GainSTMMode::PhaseDutyFull};
 
   [[nodiscard]] size_t size() const override { return _gains.size(); }
 
-  void init(const Mode mode, const Geometry& geometry) override {
-    switch (mode) {
+  void init(const Mode mode_, const Geometry& geometry) override {
+    switch (mode_) {
       case Mode::Legacy: {
         auto op = std::make_unique<driver::GainSTM<driver::Legacy>>();
         op->init();
@@ -95,9 +95,10 @@ struct GainSTM final : STM {
     _op->start_idx = start_idx;
     _op->finish_idx = finish_idx;
     _op->freq_div = _freq_div;
+    _op->mode = mode;
 
     for (const auto& gain : _gains) {
-      gain->init(mode, geometry);
+      gain->init(mode_, geometry);
       _op->drives.emplace_back(gain->drives());
     }
   }
