@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/01/2023
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -798,7 +798,7 @@ TEST(ControllerTest, gain_stm_normal) {
   }
 
   {
-      autd3::GainSTM stm;
+    autd3::GainSTM stm;
     stm.mode = autd3::GainSTMMode::PhaseFull;
     constexpr size_t size = 50;
     std::vector<std::vector<autd3::driver::Drive>> drives;
@@ -858,7 +858,7 @@ TEST(ControllerTest, gain_stm_normal_phase) {
 
   const autd3::Vector3 center = autd.geometry().center();
   {
-      autd3::GainSTM stm;
+    autd3::GainSTM stm;
     constexpr size_t size = 50;
     std::vector<std::vector<autd3::driver::Drive>> drives;
     constexpr autd3::driver::autd3_float_t radius = 30;
@@ -888,7 +888,7 @@ TEST(ControllerTest, gain_stm_normal_phase) {
   }
 
   {
-      autd3::GainSTM stm;
+    autd3::GainSTM stm;
     stm.mode = autd3::GainSTMMode::PhaseFull;
     constexpr size_t size = 50;
     std::vector<std::vector<autd3::driver::Drive>> drives;

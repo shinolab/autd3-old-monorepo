@@ -63,13 +63,16 @@ constexpr uint16_t BRAM_ADDR_FPGA_INFO = 0x001;
 constexpr uint16_t BRAM_ADDR_MOD_ADDR_OFFSET = 0x020;
 constexpr uint16_t BRAM_ADDR_MOD_CYCLE = 0x021;
 constexpr uint16_t BRAM_ADDR_MOD_FREQ_DIV_0 = 0x022;
+constexpr uint16_t BRAM_ADDR_MOD_FREQ_DIV_1 = BRAM_ADDR_MOD_FREQ_DIV_0 + 1;
 constexpr uint16_t BRAM_ADDR_VERSION_NUM = 0x03F;
 constexpr uint16_t BRAM_ADDR_SILENT_CYCLE = 0x040;
 constexpr uint16_t BRAM_ADDR_SILENT_STEP = 0x041;
 constexpr uint16_t BRAM_ADDR_STM_ADDR_OFFSET = 0x050;
 constexpr uint16_t BRAM_ADDR_STM_CYCLE = 0x051;
 constexpr uint16_t BRAM_ADDR_STM_FREQ_DIV_0 = 0x052;
+constexpr uint16_t BRAM_ADDR_STM_FREQ_DIV_1 = 0x053;
 constexpr uint16_t BRAM_ADDR_SOUND_SPEED_0 = 0x054;
+constexpr uint16_t BRAM_ADDR_SOUND_SPEED_1 = 0x055;
 constexpr uint16_t BRAM_ADDR_STM_START_IDX = 0x056;
 constexpr uint16_t BRAM_ADDR_STM_FINISH_IDX = 0x057;
 constexpr uint16_t BRAM_ADDR_CYCLE_BASE = 0x100;
@@ -238,8 +241,10 @@ class CPU {
       const auto start_idx = body->focus_stm_initial().data()[5];
       const auto finish_idx = body->focus_stm_initial().data()[6];
 
-      bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FREQ_DIV_0, reinterpret_cast<const uint16_t*>(&freq_div), 2);
-      bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_SOUND_SPEED_0, reinterpret_cast<const uint16_t*>(&sound_speed), 2);
+      bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FREQ_DIV_0, static_cast<uint16_t>(freq_div & 0xFFFF));
+      bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FREQ_DIV_1, static_cast<uint16_t>(freq_div >> 16 & 0xFFFF));
+      bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_SOUND_SPEED_0, static_cast<uint16_t>(sound_speed & 0xFFFF));
+      bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_SOUND_SPEED_1, static_cast<uint16_t>(sound_speed >> 16 & 0xFFFF));
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_START_IDX, start_idx);
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FINISH_IDX, finish_idx);
       src = body->focus_stm_initial().data() + 7;
@@ -440,7 +445,8 @@ class CPU {
 
     _mod_cycle = 2;
     bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_MOD_CYCLE, static_cast<uint16_t>((std::max)(_mod_cycle, 1u) - 1u));
-    bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_MOD_FREQ_DIV_0, reinterpret_cast<const uint16_t*>(&freq_div), 2);
+    bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_MOD_FREQ_DIV_0, static_cast<uint16_t>(freq_div & 0xFFFF));
+    bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_MOD_FREQ_DIV_1, static_cast<uint16_t>(freq_div >> 16 & 0xFFFF));
     bram_write(cpu::BRAM_SELECT_MOD, 0, 0x0000);
 
     bram_set(cpu::BRAM_SELECT_NORMAL, 0, 0x0000, _num_transducers << 1);
