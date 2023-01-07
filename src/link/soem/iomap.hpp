@@ -3,7 +3,7 @@
 // Created Date: 01/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/12/2022
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,9 +21,9 @@ struct IOMap {
   void resize(const std::vector<size_t>& device_map) {
     std::vector<size_t> trans_num_prefix_sum;
     trans_num_prefix_sum.resize(device_map.size() + 1, 0);
-    std::exclusive_scan(device_map.begin(), device_map.end() + 1, trans_num_prefix_sum.begin(), size_t{0},
-                        [](const size_t acc, const size_t i) { return acc + driver::HEADER_SIZE + sizeof(uint16_t) * i; });
-
+    std::inclusive_scan(
+        device_map.begin(), device_map.end(), trans_num_prefix_sum.begin() + 1,
+        [](const size_t acc, const size_t i) { return acc + 128 + sizeof(uint16_t) * i; }, size_t{0});
     if (trans_num_prefix_sum.size() != _trans_num_prefix_sum.size() ||
         !std::equal(trans_num_prefix_sum.cbegin(), trans_num_prefix_sum.cend(), _trans_num_prefix_sum.cbegin())) {
       _trans_num_prefix_sum = std::move(trans_num_prefix_sum);

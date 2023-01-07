@@ -60,11 +60,9 @@ LPF::LPF(Modulation& modulation) : _modulation(modulation) {
 }
 #endif
 
-bool LPF::calc() {
-  if (!_modulation.build()) {
-    spdlog::error("Failed to build original modulation.");
-    return false;
-  }
+void LPF::calc() {
+  _modulation.init();
+
   std::vector<uint8_t> resampled;
   resampled.reserve(_modulation.buffer().size() * _modulation.sampling_frequency_division());
   for (const auto d : _modulation.buffer())
@@ -92,7 +90,6 @@ bool LPF::calc() {
       r += _coefficients[j] * static_cast<driver::autd3_float_t>(mf[static_cast<size_t>(driver::rem_euclid(i - j, static_cast<int32_t>(mf.size())))]);
     buffer().emplace_back(static_cast<uint8_t>(std::round(r)));
   }
-  return true;
 }
 
 }  // namespace autd3::modulation

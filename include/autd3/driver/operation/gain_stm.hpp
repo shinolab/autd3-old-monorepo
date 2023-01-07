@@ -48,8 +48,6 @@ struct GainSTM<Legacy> final : GainSTMBase {
     tx.header().fpga_flag.set(FPGAControlFlags::LegacyMode);
     tx.header().fpga_flag.set(FPGAControlFlags::STMMode);
     tx.header().fpga_flag.set(FPGAControlFlags::STMGainMode);
-    tx.header().fpga_flag.remove(FPGAControlFlags::UseSTMStartIdx);
-    tx.header().fpga_flag.remove(FPGAControlFlags::UseSTMFinishIdx);
 
     tx.num_bodies = 0;
 
@@ -60,10 +58,14 @@ struct GainSTM<Legacy> final : GainSTMBase {
     if (start_idx) {
       if (static_cast<size_t>(start_idx.value()) >= drives.size()) throw std::runtime_error("STM start index out of range");
       tx.header().fpga_flag.set(FPGAControlFlags::UseSTMStartIdx);
+    } else {
+      tx.header().fpga_flag.remove(FPGAControlFlags::UseSTMStartIdx);
     }
     if (finish_idx) {
       if (static_cast<size_t>(finish_idx.value()) >= drives.size()) throw std::runtime_error("STM finish index out of range");
       tx.header().fpga_flag.set(FPGAControlFlags::UseSTMFinishIdx);
+    } else {
+      tx.header().fpga_flag.remove(FPGAControlFlags::UseSTMFinishIdx);
     }
 
     bool is_last_frame = false;
@@ -154,8 +156,6 @@ struct GainSTM<Normal> final : GainSTMBase {
     tx.header().fpga_flag.remove(FPGAControlFlags::LegacyMode);
     tx.header().fpga_flag.set(FPGAControlFlags::STMMode);
     tx.header().fpga_flag.set(FPGAControlFlags::STMGainMode);
-    tx.header().fpga_flag.remove(FPGAControlFlags::UseSTMStartIdx);
-    tx.header().fpga_flag.remove(FPGAControlFlags::UseSTMFinishIdx);
 
     tx.num_bodies = 0;
 
@@ -197,10 +197,14 @@ struct GainSTM<Normal> final : GainSTMBase {
     if (start_idx) {
       if (static_cast<size_t>(start_idx.value()) >= drives.size()) throw std::runtime_error("STM start index out of range");
       tx.header().fpga_flag.set(FPGAControlFlags::UseSTMStartIdx);
+    } else {
+      tx.header().fpga_flag.remove(FPGAControlFlags::UseSTMStartIdx);
     }
     if (finish_idx) {
       if (static_cast<size_t>(finish_idx.value()) >= drives.size()) throw std::runtime_error("STM finish index out of range");
       tx.header().fpga_flag.set(FPGAControlFlags::UseSTMFinishIdx);
+    } else {
+      tx.header().fpga_flag.remove(FPGAControlFlags::UseSTMFinishIdx);
     }
 
     tx.header().cpu_flag.remove(CPUControlFlags::IsDuty);
@@ -283,8 +287,6 @@ struct GainSTM<NormalPhase> final : GainSTMBase {
     tx.header().fpga_flag.remove(FPGAControlFlags::LegacyMode);
     tx.header().fpga_flag.set(FPGAControlFlags::STMMode);
     tx.header().fpga_flag.set(FPGAControlFlags::STMGainMode);
-    tx.header().fpga_flag.remove(FPGAControlFlags::UseSTMStartIdx);
-    tx.header().fpga_flag.remove(FPGAControlFlags::UseSTMFinishIdx);
 
     tx.num_bodies = 0;
 
@@ -303,10 +305,14 @@ struct GainSTM<NormalPhase> final : GainSTMBase {
     if (start_idx) {
       if (static_cast<size_t>(start_idx.value()) >= drives.size()) throw std::runtime_error("STM start index out of range");
       tx.header().fpga_flag.set(FPGAControlFlags::UseSTMStartIdx);
+    } else {
+      tx.header().fpga_flag.remove(FPGAControlFlags::UseSTMStartIdx);
     }
     if (finish_idx) {
       if (static_cast<size_t>(finish_idx.value()) >= drives.size()) throw std::runtime_error("STM finish index out of range");
       tx.header().fpga_flag.set(FPGAControlFlags::UseSTMFinishIdx);
+    } else {
+      tx.header().fpga_flag.remove(FPGAControlFlags::UseSTMFinishIdx);
     }
 
     tx.header().cpu_flag.remove(CPUControlFlags::IsDuty);
@@ -319,7 +325,7 @@ struct GainSTM<NormalPhase> final : GainSTMBase {
       tx.header().cpu_flag.set(CPUControlFlags::STMBegin);
       for (size_t i = 0; i < tx.num_devices(); i++) {
         tx.body(i).gain_stm_initial().set_freq_div(freq_div);
-        tx.body(i).gain_stm_initial().set_mode(mode);
+        tx.body(i).gain_stm_initial().set_mode(GainSTMMode::PhaseFull);
         tx.body(i).gain_stm_initial().set_cycle(drives.size());
         tx.body(i).gain_stm_initial().set_stm_start_idx(start_idx.value_or(0));
         tx.body(i).gain_stm_initial().set_stm_finish_idx(finish_idx.value_or(0));

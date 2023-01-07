@@ -30,10 +30,9 @@ class Static final : public core::Modulation {
    */
   explicit Static(const driver::autd3_float_t amp = 1.0) noexcept : Modulation(), _amp(amp) {}
 
-  bool calc() override {
+  void calc() override {
     buffer().resize(2, 0);
     std::generate(buffer().begin(), buffer().end(), [this] { return to_duty(_amp); });
-    return true;
   }
 
   ~Static() override = default;
@@ -61,7 +60,7 @@ class Sine final : public core::Modulation {
   explicit Sine(const int32_t freq, const driver::autd3_float_t amp = 1.0, const driver::autd3_float_t offset = 0.5) noexcept
       : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
 
-  bool calc() override {
+  void calc() override {
     const auto fs = static_cast<int32_t>(sampling_frequency());
 
     const auto f = std::clamp(_freq, 1, fs / 2);
@@ -77,7 +76,6 @@ class Sine final : public core::Modulation {
       return to_duty(_amp / 2 * std::sin(2 * driver::pi * static_cast<driver::autd3_float_t>(d * i++) / static_cast<driver::autd3_float_t>(n)) +
                      _offset);
     });
-    return true;
   }
 
   ~Sine() override = default;
@@ -107,7 +105,7 @@ class SineSquared final : public core::Modulation {
   explicit SineSquared(const int32_t freq, const driver::autd3_float_t amp = 1.0, const driver::autd3_float_t offset = 0.5) noexcept
       : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
 
-  bool calc() override {
+  void calc() override {
     const auto fs = static_cast<int32_t>(sampling_frequency());
 
     const auto f = std::clamp(_freq, 1, fs / 2);
@@ -123,7 +121,6 @@ class SineSquared final : public core::Modulation {
       return to_duty(std::sqrt(
           _amp / 2 * std::sin(2 * driver::pi * static_cast<driver::autd3_float_t>(d * i++) / static_cast<driver::autd3_float_t>(n)) + _offset));
     });
-    return true;
   }
 
   ~SineSquared() override = default;
@@ -153,7 +150,7 @@ class SineLegacy final : public core::Modulation {
   explicit SineLegacy(const driver::autd3_float_t freq, const driver::autd3_float_t amp = 1.0, const driver::autd3_float_t offset = 0.5) noexcept
       : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
 
-  bool calc() override {
+  void calc() override {
     const auto fs = sampling_frequency();
     const auto f = (std::min)(_freq, fs / 2);
 
@@ -163,7 +160,6 @@ class SineLegacy final : public core::Modulation {
     std::generate(buffer().begin(), buffer().end(), [this, t, &i] {
       return to_duty(_offset + _amp * std::cos(2 * driver::pi * static_cast<driver::autd3_float_t>(i++) / static_cast<driver::autd3_float_t>(t)) / 2);
     });
-    return true;
   }
 
  private:
@@ -187,7 +183,7 @@ class Square final : public core::Modulation {
                   const driver::autd3_float_t duty = 0.5)
       : _freq(freq), _low(low), _high(high), _duty(duty) {}
 
-  bool calc() override {
+  void calc() override {
     const auto f_s = static_cast<int32_t>(sampling_frequency());
     const auto f = std::clamp(_freq, 1, f_s / 2);
     const auto k = std::gcd(f_s, f);
@@ -204,7 +200,6 @@ class Square final : public core::Modulation {
       std::memset(cursor, high, static_cast<size_t>(std::round(static_cast<driver::autd3_float_t>(size) * _duty)));
       cursor += size;
     }
-    return true;
   }
 
  private:

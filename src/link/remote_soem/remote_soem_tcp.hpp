@@ -3,7 +3,7 @@
 // Created Date: 02/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -130,8 +130,8 @@ class RemoteSOEMTcp final : public core::Link {
   }
 
   bool send(const driver::TxDatagram& tx) override {
-    return ::send(_socket, reinterpret_cast<const char*>(tx.data().data()), static_cast<int>(tx.transmitting_size()), 0) ==
-           static_cast<int>(tx.transmitting_size());
+    return ::send(_socket, reinterpret_cast<const char*>(tx.data().data()), static_cast<int>(tx.transmitting_size_in_bytes()), 0) ==
+           static_cast<int>(tx.transmitting_size_in_bytes());
   }
 
   bool receive(driver::RxDatagram& rx) override {

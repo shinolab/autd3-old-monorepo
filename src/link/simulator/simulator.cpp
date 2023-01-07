@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -83,7 +83,7 @@ class SimulatorImpl final : public core::Link {
 
   bool send(const driver::TxDatagram& tx) override {
     if (_ptr == nullptr) return false;
-    std::memcpy(_ptr, tx.data().data(), tx.transmitting_size());
+    std::memcpy(_ptr, tx.data().data(), tx.transmitting_size_in_bytes());
     return true;
   }
 

@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -41,7 +41,7 @@
 #include <algorithm>
 
 #include "autd3/driver/cpu/datagram.hpp"
-#include "fpga_emulator.hpp"
+#include "autd3/extra/fpga_emulator.hpp"
 
 namespace autd3::extra::cpu {
 constexpr uint16_t CPU_VERSION = 0x87;

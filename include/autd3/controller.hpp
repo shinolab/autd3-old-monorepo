@@ -224,19 +224,26 @@ class Controller {
    * @brief If true, the fan will be forced to start.
    */
   bool& force_fan() noexcept { return _force_fan.value; }
+
   /**
    * @brief If true, the fan will be forced to start.
    */
-  bool force_fan() const noexcept { return _force_fan.value; }
+  [[nodiscard]] bool force_fan() const noexcept { return _force_fan.value; }
 
   /**
    * @brief If true, the devices return FPGA info in all frames. The FPGA info can be read by fpga_info().
    */
   bool& reads_fpga_info() noexcept { return _reads_fpga_info.value; }
+
   /**
    * @brief If true, the devices return FPGA info in all frames. The FPGA info can be read by fpga_info().
    */
-  bool reads_fpga_info() const noexcept { return _reads_fpga_info.value; }
+  [[nodiscard]] bool reads_fpga_info() const noexcept;
+
+  /**
+   * @brief Drive mode
+   */
+  [[nodiscard]] core::Mode mode() const noexcept { return _mode; }
 
   /**
    * @brief Transmission interval between frames when sending multiple data.

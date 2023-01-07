@@ -64,16 +64,8 @@ bool Controller::open(core::LinkPtr link) {
         data = std::move(_send_queue.front());
       }
 
-      if (!data.header->init() || !data.body->init(_geometry)) {
-        spdlog::error("Failed to initialize data.");
-        data.header = nullptr;
-        data.body = nullptr;
-        {
-          std::unique_lock lk(_send_mtx);
-          _send_queue.pop();
-        }
-        continue;
-      }
+      data.header->init();
+      data.body->init(_mode, _geometry);
 
       _force_fan.pack(_tx_buf);
       _reads_fpga_info.pack(_tx_buf);
@@ -186,10 +178,8 @@ std::vector<driver::FirmwareInfo> Controller::firmware_infos() {
 }
 
 bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body, const std::chrono::high_resolution_clock::duration timeout) {
-  if (!header->init() || !body->init(_geometry)) {
-    spdlog::error("Failed to initialize data.");
-    return false;
-  }
+  header->init();
+  body->init(_mode, _geometry);
 
   _force_fan.pack(_tx_buf);
   _reads_fpga_info.pack(_tx_buf);
@@ -259,6 +249,8 @@ void Controller::flush() {
   std::unique_lock lk(_send_mtx);
   std::queue<AsyncData>().swap(_send_queue);
 }
+
+bool Controller::reads_fpga_info() const noexcept { return _reads_fpga_info.value; }
 
 std::chrono::high_resolution_clock::duration Controller::get_send_interval() const noexcept { return _send_interval; }
 

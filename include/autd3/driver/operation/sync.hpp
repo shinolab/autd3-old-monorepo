@@ -35,7 +35,7 @@ struct Sync final : SyncBase {
     tx.num_bodies = tx.num_devices();
 
     assert(cycles.size() == tx.bodies_size());
-    std::memcpy(tx.bodies_raw_ptr(), cycles.data(), tx.bodies_size());
+    std::copy_n(cycles.begin(), tx.bodies_size(), tx.bodies_raw_ptr());
 
     _sent = true;
   }
