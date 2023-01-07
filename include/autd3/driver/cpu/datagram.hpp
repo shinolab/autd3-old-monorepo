@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 06/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,8 +16,8 @@
 #include <numeric>
 #include <vector>
 
-#include "body.hpp"
-#include "header.hpp"
+#include "autd3/driver/cpu/body.hpp"
+#include "autd3/driver/cpu/header.hpp"
 
 namespace autd3::driver {
 
@@ -38,9 +38,8 @@ struct TxDatagram {
    */
   explicit TxDatagram(const std::vector<size_t> &device_map) : num_bodies(device_map.size()) {
     _body_pointer.resize(device_map.size() + 1, 0);
-    std::exclusive_scan(device_map.begin(), device_map.end() + 1, _body_pointer.begin(), size_t{0},
-                        [](const size_t acc, const size_t i) { return acc + sizeof(uint16_t) * i; });
-    _data.resize(sizeof(GlobalHeader) + _body_pointer[_body_pointer.size() - 1], 0x00);
+    std::exclusive_scan(device_map.begin(), device_map.end() + 1, _body_pointer.begin(), size_t{0});
+    _data.resize(sizeof(GlobalHeader) + sizeof(uint16_t) * _body_pointer[_body_pointer.size() - 1], 0x00);
   }
   ~TxDatagram() = default;
   TxDatagram(const TxDatagram &v) noexcept = delete;
@@ -58,7 +57,7 @@ struct TxDatagram {
 
   [[nodiscard]] size_t num_devices() const noexcept { return _body_pointer.size() - 1; }
 
-  [[nodiscard]] size_t transmitting_size() const noexcept { return sizeof(GlobalHeader) + _body_pointer[num_bodies]; }
+  [[nodiscard]] size_t transmitting_size_in_bytes() const noexcept { return sizeof(GlobalHeader) + sizeof(uint16_t) * _body_pointer[num_bodies]; }
 
   [[nodiscard]] size_t bodies_size() const noexcept { return _body_pointer[num_bodies]; }
 
@@ -68,12 +67,12 @@ struct TxDatagram {
   GlobalHeader &header() noexcept { return *reinterpret_cast<GlobalHeader *>(_data.data()); }
   [[nodiscard]] GlobalHeader const &header() const noexcept { return *reinterpret_cast<GlobalHeader const *const>(_data.data()); }
 
-  uint16_t *bodies_raw_ptr() noexcept { return reinterpret_cast<uint16_t *>(_data.data() + sizeof(GlobalHeader)); }
+  uint16_t *bodies_raw_ptr() noexcept { return reinterpret_cast<uint16_t *>(&_data[sizeof(GlobalHeader)]); }
 
-  Body &body(const size_t idx) noexcept { return *reinterpret_cast<Body *>(_data.data() + sizeof(GlobalHeader) + _body_pointer[idx]); }
+  Body &body(const size_t idx) noexcept { return *reinterpret_cast<Body *>(&_data[sizeof(GlobalHeader) + sizeof(uint16_t) * _body_pointer[idx]]); }
 
   [[nodiscard]] const Body &body(const size_t idx) const noexcept {
-    return *reinterpret_cast<const Body *>(_data.data() + sizeof(GlobalHeader) + _body_pointer[idx]);
+    return *reinterpret_cast<const Body *>(&_data[sizeof(GlobalHeader) + sizeof(uint16_t) * _body_pointer[idx]]);
   }
 
   void clear() { std::memset(_data.data(), 0, _data.size()); }
@@ -98,7 +97,7 @@ struct RxMessage {
    */
   uint8_t msg_id;
 
-  RxMessage() noexcept : ack(0), msg_id() {}
+  RxMessage() noexcept : ack(), msg_id() {}
 };
 
 /**
@@ -124,8 +123,8 @@ struct RxDatagram {
   [[nodiscard]] std::vector<RxMessage>::iterator begin() noexcept { return _data.begin(); }
   [[nodiscard]] std::vector<RxMessage>::iterator end() noexcept { return _data.end(); }
 
-  RxMessage &operator[](const size_t i) noexcept { return _data.at(i); }
-  const RxMessage &operator[](const size_t i) const noexcept { return _data.at(i); }
+  RxMessage &operator[](const size_t i) noexcept { return _data[i]; }
+  const RxMessage &operator[](const size_t i) const noexcept { return _data[i]; }
 
   void clear() {
     std::for_each(_data.begin(), _data.end(), [](RxMessage &msg) {

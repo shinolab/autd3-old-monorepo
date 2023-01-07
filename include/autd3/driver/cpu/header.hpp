@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 06/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,8 +13,8 @@
 
 #include <cstdint>
 
+#include "autd3/driver/cpu/cpu_flag.hpp"
 #include "autd3/driver/fpga/fpga_flag.hpp"
-#include "cpu_flag.hpp"
 
 namespace autd3::driver {
 

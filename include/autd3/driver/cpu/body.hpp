@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,10 +11,10 @@
 
 #pragma once
 
+#include <cassert>
 #include <cmath>
 #include <cstdint>
 #include <cstring>
-#include <vector>
 
 #include "autd3/driver/fpga/defined.hpp"
 
@@ -80,7 +80,7 @@ struct FocusSTMBodyInitial {
   void set_stm_start_idx(const uint16_t stm_start_idx) noexcept { _data[5] = stm_start_idx; }
   void set_stm_finish_idx(const uint16_t stm_finish_idx) noexcept { _data[6] = stm_finish_idx; }
 
-  void set_point(const std::vector<STMFocus>& points) noexcept { std::memcpy(&_data[7], points.data(), sizeof(STMFocus) * points.size()); }
+  void set_point(const STMFocus* const points, const size_t size) noexcept { std::memcpy(&_data[7], points, sizeof(STMFocus) * size); }
 
  private:
   uint16_t _data[8]{};  // Data size has no meaning.
@@ -105,7 +105,7 @@ struct FocusSTMBodySubsequent {
 
   void set_size(const uint16_t size) noexcept { _data[0] = size; }
 
-  void set_point(const std::vector<STMFocus>& points) noexcept { std::memcpy(&_data[1], points.data(), sizeof(STMFocus) * points.size()); }
+  void set_point(const STMFocus* const points, const size_t size) noexcept { std::memcpy(&_data[1], points, sizeof(STMFocus) * size); }
 
  private:
   uint16_t _data[2]{};  // Data size has no meaning.
@@ -135,7 +135,10 @@ enum class GainSTMMode : uint16_t {
 struct LegacyPhaseFull {
   uint8_t phase_0;
   uint8_t phase_1;
+
   void set(const size_t idx, const Drive d) {
+    assert(idx < 2);
+
     const auto phase = LegacyDrive::to_phase(d);
     switch (idx) {
       case 0:
@@ -158,6 +161,8 @@ struct LegacyPhaseHalf {
   uint8_t phase_23;
 
   void set(const size_t idx, const Drive d) {
+    assert(idx < 4);
+
     const auto phase = LegacyDrive::to_phase(d);
     switch (idx) {
       case 0:
