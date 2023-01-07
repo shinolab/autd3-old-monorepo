@@ -3,7 +3,7 @@
 // Created Date: 09/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/12/2022
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,8 +21,8 @@ static void bm_gain_primitive_focus(benchmark::State& state) {
   autd3::gain::Focus g(center);
 
   for (auto _ : state) {
-    g.rebuild(autd.geometry());
+    g.init(autd.mode(), autd.geometry());
   }
 }
 
-BENCHMARK(bm_gain_primitive_focus)->Args({1, 1})->Args({ 2, 2 })->Args({ 3, 3 })->Args({ 4, 4 })->Args({ 10, 10 });
+BENCHMARK(bm_gain_primitive_focus)->Args({1, 1})->Args({2, 2})->Args({3, 3})->Args({4, 4})->Args({10, 10});
