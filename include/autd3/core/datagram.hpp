@@ -12,6 +12,7 @@
 #pragma once
 
 #include "autd3/core/geometry.hpp"
+#include "autd3/core/mode.hpp"
 #include "autd3/driver/operation/null.hpp"
 
 namespace autd3::core {
@@ -80,7 +81,7 @@ struct DatagramHeader {
   DatagramHeader(DatagramHeader&& obj) = default;
   DatagramHeader& operator=(DatagramHeader&& obj) = default;
 
-  [[nodiscard]] virtual bool init() = 0;
+  virtual void init() = 0;
   virtual void pack(driver::TxDatagram& tx) = 0;
   [[nodiscard]] virtual bool is_finished() const = 0;
 };
@@ -96,7 +97,7 @@ struct DatagramBody {
   DatagramBody(DatagramBody&& obj) = default;
   DatagramBody& operator=(DatagramBody&& obj) = default;
 
-  [[nodiscard]] virtual bool init(const Geometry& geometry) = 0;
+  virtual void init(Mode mode, const Geometry& geometry) = 0;
   virtual void pack(driver::TxDatagram& tx) = 0;
   [[nodiscard]] virtual bool is_finished() const = 0;
 };
@@ -112,7 +113,7 @@ struct NullHeader final : DatagramHeader {
   NullHeader(NullHeader&& obj) = default;
   NullHeader& operator=(NullHeader&& obj) = default;
 
-  bool init() override { return true; }
+  void init() override { _op.init(); }
   void pack(driver::TxDatagram& tx) override { return _op.pack(tx); }
 
   [[nodiscard]] bool is_finished() const override { return _op.is_finished(); }
@@ -132,10 +133,7 @@ struct NullBody final : DatagramBody {
   NullBody(NullBody&& obj) = default;
   NullBody& operator=(NullBody&& obj) = default;
 
-  bool init(const Geometry& geometry) override {
-    _op.init();
-    return true;
-  }
+  void init(const Mode, const Geometry&) override { _op.init(); }
 
   void pack(driver::TxDatagram& tx) override { _op.pack(tx); }
 

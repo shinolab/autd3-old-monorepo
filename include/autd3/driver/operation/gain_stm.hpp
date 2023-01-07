@@ -19,10 +19,24 @@
 
 namespace autd3::driver {
 
+struct GainSTMBase : Operation {
+  [[nodiscard]] bool is_finished() const override { return _sent >= drives.size() + 1; }
+
+  std::vector<std::vector<Drive>> drives{};
+  uint32_t freq_div{4096};
+  GainSTMMode mode{GainSTMMode::PhaseDutyFull};
+  std::optional<uint16_t> start_idx{std::nullopt};
+  std::optional<uint16_t> finish_idx{std::nullopt};
+
+ protected:
+  size_t _sent{0};
+};
+
 template <typename T>
 struct GainSTM;
 
-struct GainSTM<Legacy> final : Operation {
+template <>
+struct GainSTM<Legacy> final : GainSTMBase {
   void init() override { _sent = 0; }
 
   void pack(TxDatagram& tx) override {
@@ -122,21 +136,14 @@ struct GainSTM<Legacy> final : Operation {
 
     tx.num_bodies = tx.num_devices();
   }
-
-  [[nodiscard]] bool is_finished() const override { return _sent >= drives.size() + 1; }
-
-  std::vector<std::vector<Drive>> drives{};
-  uint32_t freq_div{4096};
-  GainSTMMode mode{GainSTMMode::PhaseDutyFull};
-  std::optional<uint16_t> start_idx{std::nullopt};
-  std::optional<uint16_t> finish_idx{std::nullopt};
-
- private:
-  size_t _sent{0};
 };
 
-struct GainSTM<Normal> final : Operation {
-  void init() override { _sent = 0; }
+template <>
+struct GainSTM<Normal> final : GainSTMBase {
+  void init() override {
+    _sent = 0;
+    _next_duty = false;
+  }
 
   void pack(TxDatagram& tx) override {
     tx.header().cpu_flag.remove(CPUControlFlags::WriteBody);
@@ -179,17 +186,9 @@ struct GainSTM<Normal> final : Operation {
     }
   }
 
-  [[nodiscard]] bool is_finished() const override { return _sent >= drives.size() + 1; }
-
-  std::vector<std::vector<Drive>> drives{};
   std::vector<uint16_t> cycles{};
-  uint32_t freq_div{4096};
-  GainSTMMode mode{GainSTMMode::PhaseDutyFull};
-  std::optional<uint16_t> start_idx{std::nullopt};
-  std::optional<uint16_t> finish_idx{std::nullopt};
 
  private:
-  size_t _sent{0};
   bool _next_duty{false};
 
   void pack_phase(TxDatagram& tx) const {
@@ -271,7 +270,8 @@ struct GainSTM<Normal> final : Operation {
   }
 };
 
-struct GainSTM<NormalPhase> final : Operation {
+template <>
+struct GainSTM<NormalPhase> final : GainSTMBase {
   void init() override { _sent = 0; }
 
   void pack(TxDatagram& tx) override {
@@ -294,18 +294,9 @@ struct GainSTM<NormalPhase> final : Operation {
     _sent++;
   }
 
-  [[nodiscard]] bool is_finished() const override { return _sent >= drives.size() + 1; }
-
-  std::vector<std::vector<Drive>> drives{};
   std::vector<uint16_t> cycles{};
-  uint32_t freq_div{4096};
-  GainSTMMode mode{GainSTMMode::PhaseDutyFull};
-  std::optional<uint16_t> start_idx{std::nullopt};
-  std::optional<uint16_t> finish_idx{std::nullopt};
 
  private:
-  size_t _sent{0};
-
   void pack_phase(TxDatagram& tx) const {
     if (drives.size() > GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
 

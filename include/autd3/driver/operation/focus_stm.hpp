@@ -50,7 +50,7 @@ struct FocusSTM final : Operation {
       tx.header().fpga_flag.set(FPGAControlFlags::UseSTMFinishIdx);
     }
 
-    const auto send_size = send_size(points.size(), _sent, device_map);
+    const auto send_size = get_send_size(points[0].size(), _sent, device_map);
     if (_sent == 0) {
       tx.header().cpu_flag.set(CPUControlFlags::STMBegin);
 #ifdef AUTD3_USE_METER
@@ -98,7 +98,7 @@ struct FocusSTM final : Operation {
  private:
   size_t _sent{};
 
-  [[nodiscard]] static size_t send_size(const size_t total_size, const size_t sent, const std::vector<size_t>& device_map) noexcept {
+  [[nodiscard]] static size_t get_send_size(const size_t total_size, const size_t sent, const std::vector<size_t>& device_map) noexcept {
     const size_t tr_num = *std::min_element(device_map.begin(), device_map.end());
     const size_t data_len = tr_num * sizeof(uint16_t);
     const auto max_size =

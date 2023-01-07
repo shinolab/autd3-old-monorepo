@@ -22,9 +22,8 @@ namespace autd3::core {
  * @brief GainSTM provides a function to display Gain sequentially and periodically.
  * @details GainSTM uses a timer on the FPGA to ensure that Gain is precisely timed.
  */
-template <typename T>
 struct GainSTM final : STM {
-  explicit GainSTM(const Geometry& geometry) : STM(), _geometry(geometry) {}
+  explicit GainSTM() : STM() {}
 
   /**
    * @brief Set frequency of the STM
@@ -34,7 +33,7 @@ struct GainSTM final : STM {
    */
   driver::autd3_float_t set_frequency(const driver::autd3_float_t freq) override {
     const auto sample_freq = static_cast<driver::autd3_float_t>(size()) * freq;
-    _op.freq_div = static_cast<uint32_t>(std::round(static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / sample_freq));
+    _freq_div = static_cast<uint32_t>(std::round(static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / sample_freq));
     return frequency();
   }
 
@@ -42,50 +41,75 @@ struct GainSTM final : STM {
    * @brief Sampling frequency.
    */
   [[nodiscard]] driver::autd3_float_t sampling_frequency() const noexcept override {
-    return static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / static_cast<driver::autd3_float_t>(_op.freq_div);
+    return static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / static_cast<driver::autd3_float_t>(_freq_div);
   }
 
   /**
    * @brief Sampling frequency division.
    */
-  [[nodiscard]] uint32_t sampling_frequency_division() const noexcept override { return _op.freq_div; }
+  [[nodiscard]] uint32_t sampling_frequency_division() const noexcept override { return _freq_div; }
 
   /**
    * @brief Sampling frequency division.
    */
-  uint32_t& sampling_frequency_division() noexcept override { return _op.freq_div; }
+  uint32_t& sampling_frequency_division() noexcept override { return _freq_div; }
 
-  std::optional<uint16_t>& start_idx() { return _op.start_idx; }
-  std::optional<uint16_t> start_idx() const { return _op.start_idx; }
-  std::optional<uint16_t>& finish_idx() { return _op.finish_idx; }
-  std::optional<uint16_t> finish_idx() const { return _op.finish_idx; }
+  std::optional<uint16_t> start_idx{std::nullopt};
+  std::optional<uint16_t> finish_idx{std::nullopt};
 
   /**
    * @brief Add gain
    * @param[in] gain gain
    */
-  template <typename G, std::enable_if_t<std::is_base_of_v<Gain<T>, G>, nullptr_t> = nullptr>
-  void add(G& gain) {
-    gain.build(_geometry);
-    _op.drives.emplace_back(gain.drives());
+  template <typename G>
+  void add(G&& gain) {
+    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
+    _gains.emplace_back(std::make_shared<std::remove_reference_t<G>>(std::forward<std::remove_reference_t<G>>(gain)));
   }
 
-  driver::GainSTMMode& mode() noexcept { return _op.mode; }
+  driver::GainSTMMode& mode() noexcept { return _op->mode; }
 
-  [[nodiscard]] size_t size() const override { return _op.drives.size(); }
+  [[nodiscard]] size_t size() const override { return _gains.size(); }
 
-  bool init(const Geometry& geometry) override {
-    _op.init();
-    return true;
+  void init(const Mode mode, const Geometry& geometry) override {
+    switch (mode) {
+      case Mode::Legacy: {
+        auto op = std::make_unique<driver::GainSTM<driver::Legacy>>();
+        op->init();
+        _op = std::move(op);
+      } break;
+      case Mode::Normal: {
+        auto op = std::make_unique<driver::GainSTM<driver::Normal>>();
+        op->init();
+        op->cycles = geometry.cycles();
+        _op = std::move(op);
+      } break;
+      case Mode::NormalPhase: {
+        auto op = std::make_unique<driver::GainSTM<driver::NormalPhase>>();
+        op->init();
+        op->cycles = geometry.cycles();
+        _op = std::move(op);
+      } break;
+    }
+
+    _op->start_idx = start_idx;
+    _op->finish_idx = finish_idx;
+    _op->freq_div = _freq_div;
+
+    for (const auto& gain : _gains) {
+      gain->init(mode, geometry);
+      _op->drives.emplace_back(gain->drives());
+    }
   }
 
-  void pack(driver::TxDatagram& tx) override { _op.pack(tx); }
+  void pack(driver::TxDatagram& tx) override { _op->pack(tx); }
 
-  [[nodiscard]] bool is_finished() const override { return _op.is_finished(); }
+  [[nodiscard]] bool is_finished() const override { return _op->is_finished(); }
 
  private:
-  const Geometry& _geometry;
-  driver::GainSTM<T> _op;
+  uint32_t _freq_div{4096};
+  std::vector<std::shared_ptr<Gain>> _gains;
+  std::unique_ptr<driver::GainSTMBase> _op;
 };
 
 }  // namespace autd3::core

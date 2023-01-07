@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/01/2023
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -38,7 +38,7 @@ struct TxDatagram {
    */
   explicit TxDatagram(const std::vector<size_t> &device_map) : num_bodies(device_map.size()) {
     _body_pointer.resize(device_map.size() + 1, 0);
-    std::exclusive_scan(device_map.begin(), device_map.end() + 1, _body_pointer.begin(), size_t{0});
+    std::inclusive_scan(device_map.begin(), device_map.end(), _body_pointer.begin() + 1);
     _data.resize(sizeof(GlobalHeader) + sizeof(uint16_t) * _body_pointer[_body_pointer.size() - 1], 0x00);
   }
   ~TxDatagram() = default;

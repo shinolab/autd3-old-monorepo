@@ -31,11 +31,10 @@ class Amplitudes final : public DatagramBody {
   Amplitudes(Amplitudes&& obj) = default;
   Amplitudes& operator=(Amplitudes&& obj) = default;
 
-  bool init(const Geometry& geometry) override {
+  void init(const Mode, const Geometry& geometry) override {
     _op.init();
     _op.cycles = geometry.cycles();
     _op.drives.resize(geometry.num_transducers(), driver::Drive{0, _amp});
-    return true;
   }
 
   void pack(driver::TxDatagram& tx) override { _op.pack(tx); }
