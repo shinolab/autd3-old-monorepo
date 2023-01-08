@@ -3,7 +3,7 @@
 // Created Date: 26/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -125,19 +125,17 @@ class Model {
   [[nodiscard]] std::vector<Geometry> geometries() const { return _geometries; }
 
   void load_node(const fx::gltf::Node& gltf_node, const fx::gltf::Document& doc, std::vector<uint32_t>& indices, std::vector<Vertex>& vertices) {
-    for (const int i : gltf_node.children) load_node(doc.nodes[i], doc, indices, vertices);
+    std::for_each(gltf_node.children.begin(), gltf_node.children.end(),
+                  [this, &doc, &indices, &vertices](const auto i) { load_node(doc.nodes[i], doc, indices, vertices); });
     if (gltf_node.mesh > -1)
-      for (const auto& gltf_primitive : doc.meshes[gltf_node.mesh].primitives) {
-        const auto first_index = static_cast<uint32_t>(indices.size());
-        const auto vertex_start = static_cast<uint32_t>(vertices.size());
-        load_vertices(gltf_primitive, doc, vertices);
-        const auto index_count = load_indices(gltf_primitive, vertex_start, doc, indices);
-        Primitive primitive{};
-        primitive.first_index = first_index;
-        primitive.index_count = index_count;
-        primitive.material_index = gltf_primitive.material;
-        _primitives.emplace_back(primitive);
-      }
+      std::transform(doc.meshes[gltf_node.mesh].primitives.begin(), doc.meshes[gltf_node.mesh].primitives.end(), std::back_inserter(_primitives),
+                     [this, &doc, &indices, &vertices](const auto& gltf_primitive) {
+                       const auto first_index = static_cast<uint32_t>(indices.size());
+                       const auto vertex_start = static_cast<uint32_t>(vertices.size());
+                       load_vertices(gltf_primitive, doc, vertices);
+                       const auto index_count = load_indices(gltf_primitive, vertex_start, doc, indices);
+                       return Primitive{first_index, index_count, gltf_primitive.material};
+                     });
   }
 
   void load_vertices(const fx::gltf::Primitive& gltf_primitive, const fx::gltf::Document& doc, std::vector<Vertex>& vertices) const {
@@ -219,11 +217,10 @@ class Model {
 
   void load_materials(const fx::gltf::Document& doc) {
     _materials.reserve(doc.materials.size());
-    for (const auto& [alphaCutoff, alphaMode, doubleSided, normalTexture, occlusionTexture, pbrMetallicRoughness, emissiveTexture, emissiveFactor,
-                      name, extensionsAndExtras] : doc.materials) {
-      _materials.emplace_back(Material{glm::make_vec4(pbrMetallicRoughness.baseColorFactor.data()), pbrMetallicRoughness.baseColorTexture.index,
-                                       pbrMetallicRoughness.metallicFactor, pbrMetallicRoughness.roughnessFactor});
-    }
+    std::transform(doc.materials.begin(), doc.materials.end(), std::back_inserter(_materials), [](const auto& materail) {
+      return Material{glm::make_vec4(materail.pbrMetallicRoughness.baseColorFactor.data()), materail.pbrMetallicRoughness.baseColorTexture.index,
+                      materail.pbrMetallicRoughness.metallicFactor, materail.pbrMetallicRoughness.roughnessFactor};
+    });
   }
 
  private:

@@ -3,7 +3,7 @@
 // Created Date: 27/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -264,16 +264,14 @@ class VulkanImGui {
         ImGui::Text("FPS: %4.2f fps", static_cast<double>(ImGui::GetIO().Framerate));
 
         ImGui::Separator();
-
-        for (size_t i = 0; i < _geometries.size(); i++) {
-          ImGui::Text("Device %d", static_cast<int32_t>(i));
-          ImGui::Text("\tx: %4.2f, y: %4.2f, z: %4.2f", static_cast<double>(_geometries[i].pos.x), static_cast<double>(_geometries[i].pos.y),
-                      static_cast<double>(_geometries[i].pos.z));
-          ImGui::Text("\trw: %4.2f, rx: %4.2f, ry: %4.2f, rz: %4.2f", static_cast<double>(_geometries[i].rot.w),
-                      static_cast<double>(_geometries[i].rot.x), static_cast<double>(_geometries[i].rot.y),
-                      static_cast<double>(_geometries[i].rot.z));
-        }
-
+        size_t i = 0;
+        std::for_each(_geometries.begin(), _geometries.end(), [&i](const auto geometry) {
+          ImGui::Text("Device %d", static_cast<int32_t>(i++));
+          ImGui::Text("\tx: %4.2f, y: %4.2f, z: %4.2f", static_cast<double>(geometry.pos.x), static_cast<double>(geometry.pos.y),
+                      static_cast<double>(geometry.pos.z));
+          ImGui::Text("\trw: %4.2f, rx: %4.2f, ry: %4.2f, rz: %4.2f", static_cast<double>(geometry.rot.w), static_cast<double>(geometry.rot.x),
+                      static_cast<double>(geometry.rot.y), static_cast<double>(geometry.rot.z));
+        });
         ImGui::EndTabItem();
       }
 

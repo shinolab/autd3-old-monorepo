@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,14 +19,15 @@
 #include "autd3/driver/fpga/defined.hpp"
 
 namespace autd3::driver {
+struct LegacyPhaseFull;
 
 /**
- * \brief Focus data structure for FocusSTM
- * \details The focal point data consists of the three-dimensional focus position from the local coordinates of a device and duty shift data that
+* \brief Focus data structure for FocusSTM
+* \details The focal point data consists of the three-dimensional focus position from the local coordinates of a device and duty shift data that
 control amplitude control. The focus position is represented in 18-bit signed fixed-point for each axis, where the unit is
 autd3::driver::FOCUS_STM_FIXED_NUM_UNIT. The duty ratio is cycle >> (duty_shift+1): When duty_shift=0, the duty ratio is cycle/2, which means maximum
 amplitude.
- */
+*/
 struct STMFocus {
   /**
    * \brief Constructor
@@ -130,60 +131,138 @@ enum class GainSTMMode : uint16_t {
 };
 
 /**
- * @brief Transmission data when using GainSTMMode::PhaseFull in Legacy mode
+ * @brief Transmission data when using GainSTMMode::PhaseFull in Legacy mode (for the low 8-bit part)
  */
-struct LegacyPhaseFull {
+struct LegacyPhaseFull0 {
   uint8_t phase_0;
   uint8_t phase_1;
 
-  void set(const size_t idx, const Drive d) {
-    assert(idx < 2);
-
+  void set(const Drive d) {
     const auto phase = LegacyDrive::to_phase(d);
-    switch (idx) {
-      case 0:
-        phase_0 = phase;
-        break;
-      case 1:
-        phase_1 = phase;
-        break;
-      default:
-        throw std::runtime_error("Unreachable!");
-    }
+    phase_0 = phase;
+  }
+
+  LegacyPhaseFull0& operator=(const Drive& d) {
+    set(d);
+    return *this;
+  }
+  LegacyPhaseFull0& operator=(Drive&& d) {
+    set(d);
+    return *this;
   }
 };
 
 /**
- * @brief Transmission data when using GainSTMMode::PhaseHalf in Legacy mode
+ * @brief Transmission data when using GainSTMMode::PhaseFull in Legacy mode (for the high 8-bit part)
  */
-struct LegacyPhaseHalf {
+struct LegacyPhaseFull1 {
+  uint8_t phase_0;
+  uint8_t phase_1;
+
+  void set(const Drive d) {
+    const auto phase = LegacyDrive::to_phase(d);
+    phase_1 = phase;
+  }
+
+  LegacyPhaseFull1& operator=(const Drive& d) {
+    set(d);
+    return *this;
+  }
+  LegacyPhaseFull1& operator=(Drive&& d) {
+    set(d);
+    return *this;
+  }
+};
+
+/**
+ * @brief Transmission data when using GainSTMMode::PhaseHalf in Legacy mode (for the [3:0] bits)
+ */
+struct LegacyPhaseHalf0 {
   uint8_t phase_01;
   uint8_t phase_23;
 
-  void set(const size_t idx, const Drive d) {
-    assert(idx < 4);
-
+  void set(const Drive d) {
     const auto phase = LegacyDrive::to_phase(d);
-    switch (idx) {
-      case 0:
-        phase_01 &= 0xF0;
-        phase_01 |= phase >> 4 & 0x0F;
-        break;
-      case 1:
-        phase_01 &= 0x0F;
-        phase_01 |= phase & 0xF0;
-        break;
-      case 2:
-        phase_23 &= 0xF0;
-        phase_23 |= phase >> 4 & 0x0F;
-        break;
-      case 3:
-        phase_23 &= 0x0F;
-        phase_23 |= phase & 0xF0;
-        break;
-      default:
-        throw std::runtime_error("Unreachable!");
-    }
+    phase_01 &= 0xF0;
+    phase_01 |= phase >> 4 & 0x0F;
+  }
+
+  LegacyPhaseHalf0& operator=(const Drive& d) {
+    set(d);
+    return *this;
+  }
+  LegacyPhaseHalf0& operator=(Drive&& d) {
+    set(d);
+    return *this;
+  }
+};
+
+/**
+ * @brief Transmission data when using GainSTMMode::PhaseHalf in Legacy mode (for the [7:4] bits)
+ */
+struct LegacyPhaseHalf1 {
+  uint8_t phase_01;
+  uint8_t phase_23;
+
+  void set(const Drive d) {
+    const auto phase = LegacyDrive::to_phase(d);
+    phase_01 &= 0x0F;
+    phase_01 |= phase & 0xF0;
+  }
+
+  LegacyPhaseHalf1& operator=(const Drive& d) {
+    set(d);
+    return *this;
+  }
+  LegacyPhaseHalf1& operator=(Drive&& d) {
+    set(d);
+    return *this;
+  }
+};
+
+/**
+ * @brief Transmission data when using GainSTMMode::PhaseHalf in Legacy mode (for the [11:8] bits)
+ */
+struct LegacyPhaseHalf2 {
+  uint8_t phase_01;
+  uint8_t phase_23;
+
+  void set(const Drive d) {
+    const auto phase = LegacyDrive::to_phase(d);
+    phase_23 &= 0xF0;
+    phase_23 |= phase >> 4 & 0x0F;
+  }
+
+  LegacyPhaseHalf2& operator=(const Drive& d) {
+    set(d);
+    return *this;
+  }
+  LegacyPhaseHalf2& operator=(Drive&& d) {
+    set(d);
+    return *this;
+  }
+};
+
+/**
+ * @brief Transmission data when using GainSTMMode::PhaseHalf in Legacy mode (for the [15:12] bits)
+ */
+struct LegacyPhaseHalf3 {
+  uint8_t phase_01;
+  uint8_t phase_23;
+
+  void set(const Drive d) {
+    const auto phase = LegacyDrive::to_phase(d);
+    phase_23 &= 0x0F;
+    phase_23 |= phase & 0xF0;
+  }
+
+  LegacyPhaseHalf3& operator=(const Drive& d) {
+    set(d);
+    return *this;
+  }
+  LegacyPhaseHalf3& operator=(Drive&& d) {
+    set(d);
+    return *this;
   }
 };
 
@@ -246,7 +325,7 @@ struct Body {
   Body() noexcept = delete;
   ~Body() = delete;
   Body(const Body& v) = delete;
-  Body& operator=(const Body& obj) = delete;
+  Body& operator=(const Body& obj) = default;
   Body(Body&& obj) = delete;
   Body& operator=(Body&& obj) = delete;
 

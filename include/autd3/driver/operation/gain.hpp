@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -43,8 +43,7 @@ struct Gain<Legacy> final : GainBase {
     tx.num_bodies = tx.num_devices();
 
     assert(drives.size() == tx.bodies_size());
-    auto* p = reinterpret_cast<LegacyDrive*>(tx.bodies_raw_ptr());
-    for (size_t i = 0; i < drives.size(); i++) p[i].set(drives[i]);
+    std::transform(drives.begin(), drives.end(), reinterpret_cast<LegacyDrive*>(tx.bodies_raw_ptr()), [](const auto& d) { return d; });
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
   }
@@ -97,8 +96,8 @@ struct Gain<Normal> final : GainBase {
 
     assert(drives.size() == tx.bodies_size());
     assert(cycles.size() == tx.bodies_size());
-    auto* p = reinterpret_cast<Duty*>(tx.bodies_raw_ptr());
-    for (size_t i = 0; i < drives.size(); i++) p[i].set(drives[i], cycles[i]);
+    std::transform(drives.begin(), drives.end(), cycles.begin(), reinterpret_cast<Duty*>(tx.bodies_raw_ptr()),
+                   [](const auto& d, const auto cycle) { return Duty(d, cycle); });
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
   }
@@ -110,8 +109,8 @@ struct Gain<Normal> final : GainBase {
 
     assert(drives.size() == tx.bodies_size());
     assert(cycles.size() == tx.bodies_size());
-    auto* p = reinterpret_cast<Phase*>(tx.bodies_raw_ptr());
-    for (size_t i = 0; i < drives.size(); i++) p[i].set(drives[i], cycles[i]);
+    std::transform(drives.begin(), drives.end(), cycles.begin(), reinterpret_cast<Phase*>(tx.bodies_raw_ptr()),
+                   [](const auto& d, const auto cycle) { return Phase(d, cycle); });
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
   }
@@ -141,8 +140,8 @@ struct Gain<NormalPhase> final : GainBase {
 
     assert(drives.size() == tx.bodies_size());
     assert(cycles.size() == tx.bodies_size());
-    auto* p = reinterpret_cast<Phase*>(tx.bodies_raw_ptr());
-    for (size_t i = 0; i < drives.size(); i++) p[i].set(drives[i], cycles[i]);
+    std::transform(drives.begin(), drives.end(), cycles.begin(), reinterpret_cast<Phase*>(tx.bodies_raw_ptr()),
+                   [](const auto& d, const auto cycle) { return Phase(d, cycle); });
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
   }

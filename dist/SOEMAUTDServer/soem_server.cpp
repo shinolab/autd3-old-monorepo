@@ -3,7 +3,7 @@
 // Created Date: 26/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -55,7 +55,8 @@ int main(const int argc, char* argv[]) try {
   if (program.is_subcommand_used("list")) {
     const auto adapters = autd3::link::SOEMHandler::enumerate_adapters();
     std::cout << "Available adapters are ..." << std::endl;
-    for (const auto& adapter : adapters) std::cout << "\t" << adapter.desc << ": " << adapter.name << std::endl;
+    std::transform(adapters.begin(), adapters.end(), std::ostream_iterator<std::string>(std::cout, "\n"),
+                   [](const auto& adapter) { return "\t" + adapter.desc + ": " + adapter.name; });
     return 0;
   }
 

@@ -3,7 +3,7 @@
 // Created Date: 16/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/11/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,16 +36,11 @@ class BundleImpl final : public core::Link {
   }
 
   bool send(const driver::TxDatagram& tx) override {
-    bool result = true;
-    for (const auto& link : _links) result &= link->send(tx);
-    return result;
+    return std::accumulate(_links.begin(), _links.end(), true, [&tx](const bool acc, const auto& link) { return acc & link->send(tx); });
   }
 
   bool receive(driver::RxDatagram& rx) override {
-    bool result = true;
-    for (size_t i = 1; i < _links.size(); i++) result &= _links[i]->receive(rx);
-    result &= _links[0]->receive(rx);
-    return result;
+    return std::accumulate(_links.rbegin(), _links.rend(), true, [&rx](const bool acc, const auto& link) { return acc & link->receive(rx); });
   }
 
   bool is_open() override { return _is_open; }
