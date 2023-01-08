@@ -95,10 +95,7 @@ class VulkanRenderer {
 
     if (const auto [graphics_family, present_family] = _context->find_queue_families(_context->physical_device());
         graphics_family != present_family) {
-      if (!graphics_family || !present_family) {
-        spdlog::error("Failed to find queue family.");
-        return false;
-      }
+      if (!graphics_family || !present_family) throw std::runtime_error("Failed to find queue family.");
 
       create_info.setImageSharingMode(vk::SharingMode::eConcurrent);
       std::vector queue_family_indices = {graphics_family.value(), present_family.value()};
@@ -325,10 +322,8 @@ class VulkanRenderer {
           result.result == vk::Result::eSuccess)
         _pipelines[i++] = std::move(result.value);
 
-      else {
-        spdlog::error("Failed to create a pipeline!");
-        return false;
-      }
+      else
+        throw std::runtime_error("Failed to create a pipeline!");
     }
     return true;
   }
@@ -372,10 +367,8 @@ class VulkanRenderer {
     if (!staging_buffer || !staging_buffer_memory) return false;
 
     void* data;
-    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess) {
-      spdlog::error("Failed to map vertex buffer memory!");
-      return false;
-    }
+    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to map vertex buffer memory!");
     std::memcpy(data, vertices.data(), buffer_size);
     _context->device().unmapMemory(staging_buffer_memory.get());
 
@@ -399,10 +392,8 @@ class VulkanRenderer {
     if (!staging_buffer || !staging_buffer_memory) return false;
 
     void* data;
-    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess) {
-      spdlog::error("Failed to map vertex buffer memory!");
-      return false;
-    }
+    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to map vertex buffer memory!");
     std::memcpy(data, indices.data(), buffer_size);
     _context->device().unmapMemory(staging_buffer_memory.get());
 
@@ -501,21 +492,15 @@ class VulkanRenderer {
   }
 
   [[nodiscard]] bool draw_frame(const gltf::Model& model, const VulkanImGui& imgui) {
-    if (_context->device().waitForFences(_in_flight_fences[_current_frame].get(), true, std::numeric_limits<uint64_t>::max()) !=
-        vk::Result::eSuccess) {
-      spdlog::error("Failed to wait fence!");
-      return false;
-    }
+    if (_context->device().waitForFences(_in_flight_fences[_current_frame].get(), true, std::numeric_limits<uint64_t>::max()) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to wait fence!");
 
     uint32_t image_index;
     auto result = _context->device().acquireNextImageKHR(_swap_chain.get(), std::numeric_limits<uint64_t>::max(),
                                                          _image_available_semaphores[_current_frame].get(), nullptr, &image_index);
     if (result == vk::Result::eErrorOutOfDateKHR) return recreate_swap_chain();
 
-    if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR) {
-      spdlog::error("Failed to acquire next image!");
-      return false;
-    }
+    if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR) throw std::runtime_error("Failed to acquire next image!");
 
     _context->device().resetFences(_in_flight_fences[_current_frame].get());
 
@@ -535,10 +520,7 @@ class VulkanRenderer {
       _framebuffer_resized = false;
       return recreate_swap_chain();
     }
-    if (result != vk::Result::eSuccess) {
-      spdlog::error("Failed to wait fence!");
-      return false;
-    }
+    if (result != vk::Result::eSuccess) throw std::runtime_error("Failed to wait fence!");
     _current_frame = (_current_frame + 1) % _max_frames_in_flight;
     return true;
   }
@@ -686,10 +668,8 @@ class VulkanRenderer {
     ubo.proj[1][1] *= -1;
 
     void* data;
-    if (_context->device().mapMemory(_uniform_buffers_memory[current_image].get(), 0, sizeof ubo, {}, &data) != vk::Result::eSuccess) {
-      spdlog::error("Failed to map uniform buffer memory");
-      return false;
-    }
+    if (_context->device().mapMemory(_uniform_buffers_memory[current_image].get(), 0, sizeof ubo, {}, &data) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to map uniform buffer memory");
 
     memcpy(data, &ubo, sizeof ubo);
     _context->device().unmapMemory(_uniform_buffers_memory[current_image].get());

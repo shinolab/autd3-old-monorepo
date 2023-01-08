@@ -3,7 +3,7 @@
 // Created Date: 02/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -32,12 +32,7 @@ class RemoteSOEMLocal final : public core::Link {
     _output_size = driver::HEADER_SIZE + std::accumulate(geometry.device_map().begin(), geometry.device_map().end(), size_t{0}) * sizeof(uint16_t);
 
     const auto size = _output_size + geometry.num_devices() * driver::EC_INPUT_FRAME_SIZE;
-    try {
-      _smem.create("autd3_soem_server_smem", size);
-    } catch (std::exception& ex) {
-      spdlog::error("Failed to create shared memory: {}", ex.what());
-      return false;
-    }
+    _smem.create("autd3_soem_server_smem", size);
     _ptr = static_cast<uint8_t*>(_smem.map());
 
     return true;

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -90,24 +90,15 @@ bool TwinCATImpl::is_open() { return this->_port > 0; }
 
 bool TwinCATImpl::open(const core::Geometry&) {
   this->_lib = LoadLibrary("TcAdsDll.dll");
-  if (_lib == nullptr) {
-    spdlog::error("couldn't find TcADS-DLL");
-    return false;
-  }
+  if (_lib == nullptr) throw std::runtime_error("couldn't find TcADS-DLL");
 
   const auto port_open = reinterpret_cast<TcAdsPortOpenEx>(GetProcAddress(this->_lib, TCADS_ADS_PORT_OPEN_EX));  // NOLINT
   this->_port = (*port_open)();
-  if (this->_port == 0) {
-    spdlog::error("Failed to open a new ADS port");
-    return false;
-  }
+  if (this->_port == 0) throw std::runtime_error("Failed to open a new ADS port");
 
   AmsAddr addr{};
   const auto get_addr = reinterpret_cast<TcAdsGetLocalAddressEx>(GetProcAddress(this->_lib, TCADS_ADS_GET_LOCAL_ADDRESS_EX));  // NOLINT
-  if (const auto ret = get_addr(this->_port, &addr); ret) {
-    spdlog::error("AdsGetLocalAddress: {:#x}", ret);
-    return false;
-  }
+  if (const auto ret = get_addr(this->_port, &addr); ret) throw std::runtime_error("AdsGetLocalAddress: " + std::to_string(ret));
 
   _write = reinterpret_cast<TcAdsSyncWriteReqEx>(GetProcAddress(this->_lib, TCADS_ADS_SYNC_WRITE_REQ_EX));  // NOLINT
   _read = reinterpret_cast<TcAdsSyncReadReqEx>(GetProcAddress(this->_lib, TCADS_ADS_SYNC_READ_REQ_EX));     // NOLINT
@@ -121,20 +112,14 @@ bool TwinCATImpl::close() {
   if (!this->is_open()) return true;
 
   const auto port_close = reinterpret_cast<TcAdsPortCloseEx>(GetProcAddress(this->_lib, TCADS_ADS_PORT_CLOSE_EX));  // NOLINT
-  if (const auto res = (*port_close)(this->_port); res != 0) {
-    spdlog::error("Error on closing (local): {:#x}", res);
-    return false;
-  }
+  if (const auto res = (*port_close)(this->_port); res != 0) throw std::runtime_error("Error on closing (local): " + std::to_string(res));
 
   this->_port = 0;
   return true;
 }
 
 bool TwinCATImpl::send(const driver::TxDatagram& tx) {
-  if (!this->is_open()) {
-    spdlog::warn("Link is closed");
-    return false;
-  }
+  if (!this->is_open()) throw std::runtime_error("Link is closed");
 
   const auto ret = this->_write(this->_port,  // NOLINT
                                 &this->_net_addr, INDEX_GROUP, INDEX_OFFSET_BASE,
@@ -142,15 +127,11 @@ bool TwinCATImpl::send(const driver::TxDatagram& tx) {
                                 const_cast<void*>(static_cast<const void*>(tx.data().data())));
   if (ret == 0) return true;
 
-  spdlog::error("Error on sending data (local): {:#x}", ret);  // 6 : target port not found
-  return false;
+  throw std::runtime_error("Error on sending data (local): {:#x}" + std::to_string(ret));  // 6 : target port not found
 }
 
 bool TwinCATImpl::receive(driver::RxDatagram& rx) {
-  if (!this->is_open()) {
-    spdlog::warn("Link is closed");
-    return false;
-  }
+  if (!this->is_open()) throw std::runtime_error("Link is closed");
 
   unsigned long read_bytes = 0;              // NOLINT
   const auto ret = this->_read(this->_port,  // NOLINT
@@ -158,15 +139,11 @@ bool TwinCATImpl::receive(driver::RxDatagram& rx) {
                                static_cast<uint32_t>(rx.messages().size() * sizeof(driver::RxMessage)), rx.messages().data(), &read_bytes);
   if (ret == 0) return true;
 
-  spdlog::error("Error on receiving data (local): {:#x}", ret);
-  return false;
+  throw std::runtime_error("Error on receiving data (local): " + std::to_string(ret));
 }
 
 #else
-bool TwinCATImpl::open(const core::Geometry&) {
-  spdlog::error("TwinCAT link is only supported in Windows.");
-  return false;
-}
+bool TwinCATImpl::open(const core::Geometry&) { throw std::runtime_error("TwinCAT link is only supported in Windows."); }
 bool TwinCATImpl::close() { return false; }
 bool TwinCATImpl::send(const driver::TxDatagram&) { return false; }
 bool TwinCATImpl::receive(driver::RxDatagram&) { return false; }

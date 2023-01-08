@@ -48,10 +48,8 @@ class RemoteSOEMTcp final : public core::Link {
 #pragma warning(push)
 #pragma warning(disable : 6031)
     WSAData wsa_data{};
-    if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) {
-      spdlog::error("WSAStartup failed: {}", WSAGetLastError());
-      return false;
-    }
+    if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) throw std::runtime_error("WSAStartup failed: " + WSAGetLastError());
+
 #pragma warning(pop)
 #endif
 
@@ -62,8 +60,7 @@ class RemoteSOEMTcp final : public core::Link {
     if (_socket < 0)
 #endif
     {
-      spdlog::error("Cannot connect to simulator");
-      return false;
+      throw std::runtime_error("Cannot connect to simulator");
     }
 
     spdlog::debug("Create socket: {}", _socket);
@@ -77,10 +74,7 @@ class RemoteSOEMTcp final : public core::Link {
 #endif
 
     spdlog::debug("Connecting to server...");
-    if (connect(_socket, reinterpret_cast<sockaddr*>(&_addr), sizeof _addr)) {
-      spdlog::error("Failed to connect server");
-      return false;
-    }
+    if (connect(_socket, reinterpret_cast<sockaddr*>(&_addr), sizeof _addr)) throw std::runtime_error("Failed to connect server");
     spdlog::debug("Connected");
 
     const auto size = geometry.num_devices() * driver::EC_INPUT_FRAME_SIZE;
@@ -96,7 +90,7 @@ class RemoteSOEMTcp final : public core::Link {
         if (len <= 0) continue;
         const auto ulen = static_cast<size_t>(len);
         if (ulen % size != 0) {
-          spdlog::error("Unknown data size: {}", ulen);
+          spdlog::warn("Unknown data size: {}", ulen);
           continue;
         }
         const auto n = ulen / size;
@@ -118,10 +112,7 @@ class RemoteSOEMTcp final : public core::Link {
 
 #if WIN32
     closesocket(_socket);
-    if (WSACleanup() != 0) {
-      spdlog::error("WSACleanup failed: {}", WSAGetLastError());
-      return false;
-    }
+    if (WSACleanup() != 0) throw std::runtime_error("WSACleanup failed: " + WSAGetLastError());
 #else
     ::close(_socket);
 #endif

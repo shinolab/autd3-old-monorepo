@@ -136,10 +136,7 @@ class VulkanImGui {
     ImGui::StyleColorsDark();
     const auto [graphics_family, present_family] = _context->find_queue_families(_context->physical_device());
 
-    if (!graphics_family) {
-      spdlog::error("Failed to find queue family.");
-      return false;
-    }
+    if (!graphics_family) throw std::runtime_error("Failed to find queue family.");
 
     ImGui_ImplGlfw_InitForVulkan(_window->window(), true);
     ImGui_ImplVulkan_InitInfo init_info{_context->instance(),
