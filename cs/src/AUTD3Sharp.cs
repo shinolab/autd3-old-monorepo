@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/01/2023
+ * Last Modified: 08/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,8 +19,6 @@
 using Microsoft.Win32.SafeHandles;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -32,7 +30,6 @@ using Math = UnityEngine.Mathf;
 #else
 using Vector3 = AUTD3Sharp.Utils.Vector3d;
 using Quaternion = AUTD3Sharp.Utils.Quaterniond;
-using System.Numerics;
 #endif
 
 #if USE_SINGLE
@@ -54,9 +51,9 @@ namespace AUTD3Sharp
             handle = new IntPtr();
         }
 
-        public bool Create()
+        public void Create()
         {
-            return Base.AUTDCreateController(out handle);
+            Base.AUTDCreateController(out handle);
         }
 
         protected override bool ReleaseHandle()
@@ -112,22 +109,21 @@ namespace AUTD3Sharp
 
     public sealed class Transducer
     {
-        private readonly int _trId;
         private readonly IntPtr _cnt;
 
         internal Transducer(int trId, IntPtr cnt)
         {
-            _trId = trId;
+            Id = trId;
             _cnt = cnt;
         }
 
-        public int Id => _trId;
+        public int Id { get; }
 
         public Vector3 Position
         {
             get
             {
-                Base.AUTDTransPosition(_cnt, _trId, out var x, out var y, out var z);
+                Base.AUTDTransPosition(_cnt, Id, out var x, out var y, out var z);
                 return new Vector3(x, y, z);
             }
         }
@@ -136,7 +132,7 @@ namespace AUTD3Sharp
         {
             get
             {
-                Base.AUTDTransXDirection(_cnt, _trId, out var x, out var y, out var z);
+                Base.AUTDTransXDirection(_cnt, Id, out var x, out var y, out var z);
                 return new Vector3(x, y, z);
             }
         }
@@ -145,7 +141,7 @@ namespace AUTD3Sharp
         {
             get
             {
-                Base.AUTDTransYDirection(_cnt, _trId, out var x, out var y, out var z);
+                Base.AUTDTransYDirection(_cnt, Id, out var x, out var y, out var z);
                 return new Vector3(x, y, z);
             }
         }
@@ -154,29 +150,29 @@ namespace AUTD3Sharp
         {
             get
             {
-                Base.AUTDTransZDirection(_cnt, _trId, out var x, out var y, out var z);
+                Base.AUTDTransZDirection(_cnt, Id, out var x, out var y, out var z);
                 return new Vector3(x, y, z);
             }
         }
 
-        public autd3_float_t Wavelength => Base.AUTDGetWavelength(_cnt, _trId);
+        public autd3_float_t Wavelength => Base.AUTDGetWavelength(_cnt, Id);
 
         public autd3_float_t Frequency
         {
-            get => Base.AUTDGetTransFrequency(_cnt, _trId);
-            set => Base.AUTDSetTransFrequency(_cnt, _trId, value);
+            get => Base.AUTDGetTransFrequency(_cnt, Id);
+            set => Base.AUTDSetTransFrequency(_cnt, Id, value);
         }
 
         public ushort Cycle
         {
-            get => Base.AUTDGetTransCycle(_cnt, _trId);
-            set => Base.AUTDSetTransCycle(_cnt, _trId, value);
+            get => Base.AUTDGetTransCycle(_cnt, Id);
+            set => Base.AUTDSetTransCycle(_cnt, Id, value);
         }
 
         public ushort ModDelay
         {
-            get => Base.AUTDGetModDelay(_cnt, _trId);
-            set => Base.AUTDSetModDelay(_cnt, _trId, value);
+            get => Base.AUTDGetModDelay(_cnt, Id);
+            set => Base.AUTDSetModDelay(_cnt, Id, value);
         }
     }
 
@@ -264,8 +260,7 @@ namespace AUTD3Sharp
         public Controller()
         {
             AUTDControllerHandle = new AUTDControllerHandle(true);
-            if (!AUTDControllerHandle.Create())
-                throw new Exception("Failed to create Controller.");
+            AUTDControllerHandle.Create();
             Geometry = new Geometry(AUTDControllerHandle.CntPtr);
         }
 
@@ -594,14 +589,18 @@ namespace AUTD3Sharp
 
         public sealed class Grouped : Gain
         {
-            public Grouped(Controller cnt)
+            private readonly List<Gain> _gains;
+
+            public Grouped()
             {
-                Base.AUTDGainGrouped(out handle, cnt.AUTDControllerHandle.CntPtr);
+                Base.AUTDGainGrouped(out handle);
+                _gains = new List<Gain>();
             }
 
             public void Add(int deviceIdx, Gain gain)
             {
                 Base.AUTDGainGroupedAdd(handle, deviceIdx, gain.Ptr);
+                _gains.Add(gain);
             }
         }
 
@@ -764,20 +763,24 @@ namespace AUTD3Sharp
 
         public sealed class GainSTM : STM
         {
+            private readonly List<AUTD3Sharp.Gain.Gain> _gains;
+
             public Mode Mode
             {
                 get => (Mode)Base.AUTDGetGainSTMMode(handle);
                 set => Base.AUTDSetGainSTMMode(handle, (ushort)value);
             }
 
-            public GainSTM(Controller cnt)
+            public GainSTM()
             {
-                Base.AUTDGainSTM(out handle, cnt.AUTDControllerHandle.CntPtr);
+                Base.AUTDGainSTM(out handle);
+                _gains = new List<AUTD3Sharp.Gain.Gain>();
             }
 
             public void Add(AUTD3Sharp.Gain.Gain gain)
             {
                 Base.AUTDGainSTMAdd(handle, gain.Ptr);
+                _gains.Add(gain);
             }
         }
     }
