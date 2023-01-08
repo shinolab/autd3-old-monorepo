@@ -24,10 +24,8 @@ int main() try {
   // autd << autd3::normal_mode;
   // std::for_each(autd.geometry().begin(), autd.geometry().end(), [](auto& tr) { tr.set_frequency(70e3); });
 
-  if (auto link = autd3::link::Simulator().build(); !autd.open(std::move(link))) {
-    std::cerr << "Failed to open controller." << std::endl;
-    return -1;
-  }
+  auto link = autd3::link::Simulator().build();
+  autd.open(std::move(link));
 
   autd.set_ack_check_timeout(std::chrono::milliseconds(20));
 

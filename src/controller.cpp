@@ -32,7 +32,7 @@ core::Geometry& Controller::geometry() noexcept { return _geometry; }
 
 const core::Geometry& Controller::geometry() const noexcept { return _geometry; }
 
-bool Controller::open(core::LinkPtr link) {
+void Controller::open(core::LinkPtr link) {
   if (_geometry.num_transducers() == 0) throw std::runtime_error("Please add devices before opening.");
 
   if (link == nullptr) throw std::runtime_error("link is null");
@@ -88,8 +88,6 @@ bool Controller::open(core::LinkPtr link) {
       }
     }
   });
-
-  return is_open();
 }
 
 bool Controller::close() {

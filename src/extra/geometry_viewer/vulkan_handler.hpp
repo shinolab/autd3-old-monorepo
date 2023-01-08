@@ -44,7 +44,7 @@ class VulkanHandler {
   VulkanHandler(VulkanHandler&& obj) = default;
   VulkanHandler& operator=(VulkanHandler&& obj) = default;
 
-  [[nodiscard]] bool create_texture_image(const uint8_t* image_buffer, const uint32_t image_len) {
+  void create_texture_image(const uint8_t* image_buffer, const uint32_t image_len) {
     int tex_width, tex_height, tex_channels;
     stbi_uc* pixels = stbi_load_from_memory(image_buffer, static_cast<int>(image_len), &tex_width, &tex_height, &tex_channels, STBI_rgb_alpha);
     if (!pixels) throw std::runtime_error("Failed to load texture image!");
@@ -54,7 +54,6 @@ class VulkanHandler {
 
     auto [staging_buffer, staging_buffer_memory] = _context->create_buffer(
         image_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-    if (!staging_buffer || !staging_buffer_memory) return false;
 
     void* data;
     if (_context->device().mapMemory(staging_buffer_memory.get(), 0, image_size, {}, &data) != vk::Result::eSuccess)
@@ -68,13 +67,11 @@ class VulkanHandler {
     auto [texture_image, texture_image_memory] =
         _context->create_image(static_cast<uint32_t>(tex_width), static_cast<uint32_t>(tex_height), _mip_levels, vk::SampleCountFlagBits::e1,
                                vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal, flag, vk::MemoryPropertyFlagBits::eDeviceLocal);
-    if (!texture_image || !texture_image_memory) return false;
     _texture_image = std::move(texture_image);
     _texture_image_memory = std::move(texture_image_memory);
 
-    if (!_context->transition_image_layout(_texture_image, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eUndefined,
-                                           vk::ImageLayout::eTransferDstOptimal, _mip_levels))
-      return false;
+    _context->transition_image_layout(_texture_image, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal,
+                                      _mip_levels);
     _context->copy_buffer_to_image(staging_buffer, _texture_image, static_cast<uint32_t>(tex_width), static_cast<uint32_t>(tex_height));
     return _context->generate_mipmaps(_texture_image, vk::Format::eR8G8B8A8Srgb, tex_width, tex_height, _mip_levels);
   }

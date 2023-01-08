@@ -108,12 +108,12 @@ class VulkanContext {
     return *it;
   }
 
-  [[nodiscard]] bool find_memory_type(const uint32_t type_filter, const vk::MemoryPropertyFlags properties, uint32_t& res) const {
+  void find_memory_type(const uint32_t type_filter, const vk::MemoryPropertyFlags properties, uint32_t& res) const {
     const auto mem_properties = _physical_device.getMemoryProperties();
     for (uint32_t i = 0; i < mem_properties.memoryTypeCount; i++)
       if ((type_filter & 1 << i) && (mem_properties.memoryTypes[i].propertyFlags & properties) == properties) {
         res = i;
-        return true;
+        return;
       }
     throw std::runtime_error("Failed to find suitable memory type!");
   }
@@ -131,15 +131,14 @@ class VulkanContext {
     return vk::SampleCountFlagBits::e1;
   }
 
-  [[nodiscard]] bool init_vulkan(const std::string& app_name, const WindowHandler& window) {
-    if (!create_instance(app_name)) return false;
-    if (!create_surface(window)) return false;
-    if (!pick_physical_device()) return false;
+  void init_vulkan(const std::string& app_name, const WindowHandler& window) {
+    create_instance(app_name);
+    create_surface(window);
+    pick_physical_device();
     create_logical_device();
-    return true;
   }
 
-  [[nodiscard]] bool create_instance(const std::string& app_name) {
+  void create_instance(const std::string& app_name) {
     const vk::ApplicationInfo app_info =
         vk::ApplicationInfo().setPApplicationName(app_name.c_str()).setApplicationVersion(VK_MAKE_VERSION(1, 0, 0)).setApiVersion(VK_API_VERSION_1_2);
 
@@ -165,20 +164,18 @@ class VulkanContext {
     if (_enable_validation_layers) create_info.setPEnabledLayerNames(validation_layers);
 
     _instance = createInstanceUnique(create_info, nullptr);
-    return true;
   }
 
-  [[nodiscard]] bool create_surface(const WindowHandler& window) {
+  void create_surface(const WindowHandler& window) {
     VkSurfaceKHR surface{};
     if (glfwCreateWindowSurface(_instance.get(), window.window(), nullptr, &surface) != VK_SUCCESS)
       throw std::runtime_error("Failed to create window surface!");
 
     const vk::ObjectDestroy<vk::Instance, VULKAN_HPP_DEFAULT_DISPATCHER_TYPE> deleter(_instance.get());
     _surface = vk::UniqueSurfaceKHR(vk::SurfaceKHR(surface), deleter);
-    return true;
   }
 
-  [[nodiscard]] bool pick_physical_device() {
+  void pick_physical_device() {
     const auto devices = _instance->enumeratePhysicalDevices();
     std::vector<vk::PhysicalDevice> suitable_devices;
     std::copy_if(devices.begin(), devices.end(), std::back_inserter(suitable_devices),
@@ -193,7 +190,6 @@ class VulkanContext {
       spdlog::warn("Cannot use selected GPU ({}), {} is used instead.", _gpu_idx, props.deviceName);
     }
     _msaa_samples = get_max_usable_sample_count();
-    return true;
   }
 
   void create_logical_device() {
@@ -247,8 +243,7 @@ class VulkanContext {
     const vk::MemoryRequirements mem_requirements = _device->getImageMemoryRequirements(image.get());
 
     uint32_t memoty_type;
-    if (!find_memory_type(mem_requirements.memoryTypeBits, properties, memoty_type))
-      return std::make_pair(vk::UniqueImage(nullptr), vk::UniqueDeviceMemory(nullptr));
+    find_memory_type(mem_requirements.memoryTypeBits, properties, memoty_type);
     const vk::MemoryAllocateInfo alloc_info = vk::MemoryAllocateInfo().setAllocationSize(mem_requirements.size).setMemoryTypeIndex(memoty_type);
     auto image_memory = _device->allocateMemoryUnique(alloc_info);
 
@@ -264,9 +259,7 @@ class VulkanContext {
 
     const auto mem_requirements = _device->getBufferMemoryRequirements(buffer.get());
     uint32_t memory_type;
-    if (!find_memory_type(mem_requirements.memoryTypeBits, properties, memory_type)) {
-      return std::make_pair(vk::UniqueBuffer(nullptr), vk::UniqueDeviceMemory(nullptr));
-    }
+    find_memory_type(mem_requirements.memoryTypeBits, properties, memory_type);
     const vk::MemoryAllocateInfo alloc_info = vk::MemoryAllocateInfo().setAllocationSize(mem_requirements.size).setMemoryTypeIndex(memory_type);
     auto buffer_memory = _device->allocateMemoryUnique(alloc_info);
 
@@ -302,8 +295,8 @@ class VulkanContext {
     _graphics_queue.waitIdle();
   }
 
-  [[nodiscard]] bool generate_mipmaps(vk::UniqueImage& image, const vk::Format format, const int32_t tex_width, const int32_t tex_height,
-                                      const uint32_t mip_levels) const {
+  void generate_mipmaps(vk::UniqueImage& image, const vk::Format format, const int32_t tex_width, const int32_t tex_height,
+                        const uint32_t mip_levels) const {
     if (const auto format_properties = _physical_device.getFormatProperties(format);
         !(format_properties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear))
       throw std::runtime_error("texture image format does not support linear blitting!");
@@ -368,11 +361,10 @@ class VulkanContext {
                                     {}, barrier);
 
     end_single_time_commands(command_buffer);
-    return true;
   }
 
-  [[nodiscard]] bool transition_image_layout(vk::UniqueImage& image, const vk::Format format, const vk::ImageLayout old_layout,
-                                             const vk::ImageLayout new_layout, const uint32_t mip_levels) const {
+  void transition_image_layout(vk::UniqueImage& image, const vk::Format format, const vk::ImageLayout old_layout, const vk::ImageLayout new_layout,
+                               const uint32_t mip_levels) const {
     auto command_buffer = begin_single_time_commands();
 
     vk::ImageMemoryBarrier barrier = vk::ImageMemoryBarrier()
@@ -413,7 +405,6 @@ class VulkanContext {
 
     command_buffer->pipelineBarrier(source_stage, destination_stage, {}, {}, {}, barrier);
     end_single_time_commands(command_buffer);
-    return true;
   }
 
   void copy_buffer(const vk::Buffer src_buffer, const vk::Buffer dst_buffer, const vk::DeviceSize size) const {

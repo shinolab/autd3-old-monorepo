@@ -3,7 +3,7 @@
 // Created Date: 28/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -37,10 +37,8 @@ int main() try {
 
   autd.geometry().add_device(ConcentricArray());
 
-  if (auto link = autd3::link::Simulator().build(); !autd.open(std::move(link))) {
-    std::cerr << "Failed to open controller." << std::endl;
-    return -1;
-  }
+  auto link = autd3::link::Simulator().build();
+  autd.open(std::move(link));
 
   return run(autd);
 } catch (std::exception& e) {

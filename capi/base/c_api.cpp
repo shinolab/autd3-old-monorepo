@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -39,12 +39,9 @@ void AUTDSetDefaultLogger(void* out, void* flush) {
   set_default_logger(logger);
 }
 
-bool AUTDCreateController(void** out) {
-  *out = new Controller;
-  return true;
-}
+void AUTDCreateController(void** out) { *out = new Controller; }
 
-bool AUTDOpenController(void* const handle, void* const link) {
+void AUTDOpenController(void* const handle, void* const link) {
   auto* const wrapper = static_cast<Controller*>(handle);
   auto* w_link = static_cast<LinkWrapper*>(link);
   autd3::LinkPtr link_ = std::move(w_link->ptr);
