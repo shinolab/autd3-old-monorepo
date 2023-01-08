@@ -181,13 +181,13 @@ class VulkanRenderer {
   void create_sync_objects() {
     _image_available_semaphores.resize(_max_frames_in_flight);
     std::generate(_image_available_semaphores.begin(), _image_available_semaphores.end(),
-                  [this]() { return _context->device().createSemaphoreUnique({}); });
+                  [this] { return _context->device().createSemaphoreUnique({}); });
     _render_finished_semaphores.resize(_max_frames_in_flight);
     std::generate(_render_finished_semaphores.begin(), _render_finished_semaphores.end(),
-                  [this]() { return _context->device().createSemaphoreUnique({}); });
+                  [this] { return _context->device().createSemaphoreUnique({}); });
     _in_flight_fences.resize(_max_frames_in_flight);
     std::generate(_in_flight_fences.begin(), _in_flight_fences.end(),
-                  [this]() { return _context->device().createFenceUnique({vk::FenceCreateFlagBits::eSignaled}); });
+                  [this] { return _context->device().createFenceUnique({vk::FenceCreateFlagBits::eSignaled}); });
   }
 
   std::pair<vk::CommandBuffer, uint32_t> begin_frame(const std::array<float, 4>& background) {
