@@ -22,20 +22,19 @@
 #include "window_handler.hpp"
 
 namespace {
-[[nodiscard]] bool write_model() {
-  if (std::filesystem::exists("models/AUTD3.glb")) return true;
+void write_model() {
+  if (std::filesystem::exists("models/AUTD3.glb")) return;
   std::filesystem::create_directory("models");
   std::ofstream fs;
   fs.open("models/AUTD3.glb", std::ios::out | std::ios::binary | std::ios::trunc);
   if (!fs) throw std::runtime_error("Cannot write AUTD3 model.");
   for (size_t i = 0; i < model_size; i++) fs.write(reinterpret_cast<const char*>(&model_data[i]), sizeof(char));
   fs.close();
-  return true;
 }
 }  // namespace
 
 namespace autd3::extra {
-[[nodiscard]] bool GeometryViewer::view(const core::Geometry& geometry) const {
+void GeometryViewer::view(const core::Geometry& geometry) const {
   if (std::any_of(geometry.device_map().begin(), geometry.device_map().end(),
                   [](const size_t& tr_num) { return tr_num != AUTD3::NUM_TRANS_IN_UNIT; }))
     throw std::runtime_error("Only AUTD3 devices can be displayed.");
@@ -58,20 +57,25 @@ namespace autd3::extra {
   geometry_viewer::VulkanImGui imgui(&window, &context);
   geometry_viewer::VulkanRenderer renderer(&context, &window, &handle, &imgui, _vsync);
 
-  if (!write_model()) return false;
+  write_model();
   const geometry_viewer::gltf::Model model("models/AUTD3.glb", geometries);
 
   window.init("Geometry Viewer", &renderer, geometry_viewer::VulkanRenderer::resize_callback, geometry_viewer::VulkanRenderer::pos_callback);
-  if (!context.init_vulkan("Geometry Viewer", window) || !renderer.create_swapchain()) return false;
+  context.init_vulkan("Geometry Viewer", window);
+  renderer.create_swapchain();
   renderer.create_image_views();
-  if (!renderer.create_render_pass() || !renderer.create_graphics_pipeline(model)) return false;
+  renderer.create_render_pass();
+  renderer.create_graphics_pipeline(model);
   context.create_command_pool();
-  if (!renderer.create_depth_resources() || !renderer.create_color_resources()) return false;
+  renderer.create_depth_resources();
+  renderer.create_color_resources();
   renderer.create_framebuffers();
-  if (!handle.create_texture_image(model.image_data(), model.image_size())) return false;
+  handle.create_texture_image(model.image_data(), model.image_size());
   handle.create_texture_image_view();
   handle.create_texture_sampler();
-  if (!renderer.create_vertex_buffer(model) || !renderer.create_index_buffer(model) || !renderer.create_uniform_buffers()) return false;
+  renderer.create_vertex_buffer(model);
+  renderer.create_index_buffer(model);
+  renderer.create_uniform_buffers();
   const std::array pool_size = {
       vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 100),
       vk::DescriptorPoolSize(vk::DescriptorType::eSampledImage, 100),
@@ -82,20 +86,18 @@ namespace autd3::extra {
   renderer.create_command_buffers();
   renderer.create_sync_objects();
 
-  if (!imgui.init(static_cast<uint32_t>(renderer.frames_in_flight()), renderer.render_pass(), geometries)) return false;
+  imgui.init(static_cast<uint32_t>(renderer.frames_in_flight()), renderer.render_pass(), geometries);
 
   while (!window.should_close()) {
     helper::WindowHandler::poll_events();
     glfwPollEvents();
     imgui.draw();
-    if (!renderer.draw_frame(model, imgui)) return false;
+    renderer.draw_frame(model, imgui);
   }
 
   context.device().waitIdle();
   geometry_viewer::VulkanImGui::cleanup();
   renderer.cleanup();
-
-  return true;
 }
 
 }  // namespace autd3::extra

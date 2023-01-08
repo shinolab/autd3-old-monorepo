@@ -3,7 +3,7 @@
 // Created Date: 07/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,10 +26,7 @@ int main([[maybe_unused]] int argc, char* argv[]) try {
   settings.camera_rot_x = 90.0f;
   settings.image_save_path = std::filesystem::path(argv[0]).parent_path().append("image.png").string();
 
-  if (!autd3::extra::Simulator().settings(settings).run()) {
-    std::cerr << "Failed to run simulator." << std::endl;
-    return -1;
-  }
+  autd3::extra::Simulator().settings(settings).run();
 
   return 0;
 } catch (std::exception& e) {

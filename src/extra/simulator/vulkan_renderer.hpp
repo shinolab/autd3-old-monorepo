@@ -33,7 +33,7 @@ class VulkanRenderer {
   VulkanRenderer(VulkanRenderer&& obj) = default;
   VulkanRenderer& operator=(VulkanRenderer&& obj) = delete;
 
-  [[nodiscard]] bool create_swapchain() {
+  void create_swapchain() {
     const auto [capabilities, formats, present_modes] = _context->query_swap_chain_support(_context->physical_device());
 
     const vk::SurfaceFormatKHR surface_format = choose_swap_surface_format(formats);
@@ -70,8 +70,6 @@ class VulkanRenderer {
     _swap_chain_images = _context->device().getSwapchainImagesKHR(_swap_chain.get());
     _swap_chain_image_format = surface_format.format;
     _swap_chain_extent = extent;
-
-    return true;
   }
 
   void create_image_views() {
@@ -96,9 +94,8 @@ class VulkanRenderer {
                    });
   }
 
-  [[nodiscard]] bool create_render_pass() {
+  void create_render_pass() {
     const auto depth_format = _context->find_depth_format();
-    if (depth_format == vk::Format::eUndefined) return false;
     std::vector attachments = {vk::AttachmentDescription()
                                    .setFormat(_swap_chain_image_format)
                                    .setSamples(_context->msaa_samples())
@@ -146,16 +143,13 @@ class VulkanRenderer {
     const vk::RenderPassCreateInfo render_pass_info =
         vk::RenderPassCreateInfo().setAttachments(attachments).setSubpasses(subpasses).setDependencies(dependencies);
     _render_pass = _context->device().createRenderPassUnique(render_pass_info);
-    return true;
   }
 
-  [[nodiscard]] bool create_depth_resources() {
+  void create_depth_resources() {
     const auto depth_format = _context->find_depth_format();
-    if (depth_format == vk::Format::eUndefined) return false;
     auto [depth_image, depth_image_memory] =
         _context->create_image(_swap_chain_extent.width, _swap_chain_extent.height, 1, _context->msaa_samples(), depth_format,
                                vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal);
-    if (!depth_image || !depth_image_memory) return false;
     _depth_image = std::move(depth_image);
     _depth_image_memory = std::move(depth_image_memory);
     _depth_image_view = _context->create_image_view(_depth_image.get(), depth_format, vk::ImageAspectFlagBits::eDepth, 1);
@@ -164,18 +158,16 @@ class VulkanRenderer {
                                              1);
   }
 
-  [[nodiscard]] bool create_color_resources() {
+  void create_color_resources() {
     const auto color_format = _swap_chain_image_format;
 
     auto [color_image, color_image_memory] = _context->create_image(
         _swap_chain_extent.width, _swap_chain_extent.height, 1, _context->msaa_samples(), color_format, vk::ImageTiling::eOptimal,
         vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal);
-    if (!color_image || !color_image_memory) return false;
     _color_image = std::move(color_image);
     _color_image_memory = std::move(color_image_memory);
 
     _color_image_view = _context->create_image_view(_color_image.get(), color_format, vk::ImageAspectFlagBits::eColor, 1);
-    return true;
   }
 
   void create_command_buffers() {
@@ -205,7 +197,10 @@ class VulkanRenderer {
     uint32_t image_index;
     const auto result = _context->device().acquireNextImageKHR(_swap_chain.get(), std::numeric_limits<uint64_t>::max(),
                                                                _image_available_semaphores[_current_frame].get(), nullptr, &image_index);
-    if (result == vk::Result::eErrorOutOfDateKHR) return recreate_swap_chain() ? std::make_pair(nullptr, 1) : std::make_pair(nullptr, 0);
+    if (result == vk::Result::eErrorOutOfDateKHR) {
+      recreate_swap_chain();
+      return std::make_pair(nullptr, 0);
+    }
     if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR) throw std::runtime_error("Failed to acquire next image!");
 
     _context->device().resetFences(_in_flight_fences[_current_frame].get());
@@ -216,7 +211,7 @@ class VulkanRenderer {
     return std::make_pair(_command_buffers[_current_frame].get(), image_index);
   }
 
-  [[nodiscard]] bool end_frame(const vk::CommandBuffer& command_buffer, uint32_t image_index) {
+  void end_frame(const vk::CommandBuffer& command_buffer, uint32_t image_index) {
     command_buffer.endRenderPass();
     command_buffer.end();
 
@@ -233,10 +228,9 @@ class VulkanRenderer {
     } else if (result != vk::Result::eSuccess)
       throw std::runtime_error("Failed to wait fence!");
     _current_frame = (_current_frame + 1) % _max_frames_in_flight;
-    return true;
   }
 
-  [[nodiscard]] bool recreate_swap_chain() {
+  void recreate_swap_chain() {
     int width = 0, height = 0;
     glfwGetFramebufferSize(_window->window(), &width, &height);
     while (width == 0 || height == 0) {
@@ -248,12 +242,11 @@ class VulkanRenderer {
 
     cleanup();
 
-    if (!create_swapchain()) return false;
+    create_swapchain();
     create_image_views();
-    if (!create_depth_resources() || !create_color_resources()) return false;
+    create_depth_resources();
+    create_color_resources();
     create_framebuffers();
-
-    return true;
   }
 
   void cleanup() {

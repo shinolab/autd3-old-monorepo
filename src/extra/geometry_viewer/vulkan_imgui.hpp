@@ -107,7 +107,7 @@ class VulkanImGui {
     ImGui_ImplVulkan_DestroyFontUploadObjects();
   }
 
-  [[nodiscard]] bool init(const uint32_t image_count, const VkRenderPass renderer_pass, std::vector<gltf::Geometry> geometries) {
+  void init(const uint32_t image_count, const VkRenderPass renderer_pass, std::vector<gltf::Geometry> geometries) {
     _geometries = std::move(geometries);
 
     const auto& [pos, rot] = _geometries[0];
@@ -155,8 +155,6 @@ class VulkanImGui {
     ImGui_ImplVulkan_Init(&init_info, renderer_pass);
 
     set_font();
-
-    return true;
   }
 
   void draw() {

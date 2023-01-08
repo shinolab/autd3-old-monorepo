@@ -252,7 +252,7 @@ class VulkanImGui {
     settings.stm_auto_play = _stm_auto_play;
   }
 
-  [[nodiscard]] bool init(const uint32_t image_count, const VkRenderPass renderer_pass, const SimulatorSettings& settings) {
+  void init(const uint32_t image_count, const VkRenderPass renderer_pass, const SimulatorSettings& settings) {
     load_settings(settings);
     _initial_settings = settings;
 
@@ -281,7 +281,6 @@ class VulkanImGui {
     ImGui_ImplVulkan_Init(&init_info, renderer_pass);
 
     set_font();
-    return true;
   }
 
   void set(const std::vector<SoundSources>& sources) {
