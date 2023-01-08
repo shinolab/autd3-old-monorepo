@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/01/2023
+ * Last Modified: 09/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,6 +21,10 @@ pub struct LegacyTransducer {
 }
 
 impl Transducer for LegacyTransducer {
+    type Sync = autd3_driver::SyncLegacy;
+    type Gain = autd3_driver::GainLegacy;
+    type GainSTM = autd3_driver::GainSTMLegacy;
+
     fn new(id: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
         Self {
             id,
@@ -42,10 +46,6 @@ impl Transducer for LegacyTransducer {
         self.id
     }
 
-    fn cycle(&self) -> u16 {
-        4096
-    }
-
     fn frequency(&self) -> f64 {
         40e3
     }
@@ -56,5 +56,35 @@ impl Transducer for LegacyTransducer {
 
     fn set_mod_delay(&mut self, delay: u16) {
         self.mod_delay = delay;
+    }
+
+    fn get_direction(dir: Vector3, rotation: &UnitQuaternion) -> Vector3 {
+        let dir: UnitQuaternion =
+            UnitQuaternion::from_quaternion(super::Quaternion::from_imag(dir));
+        (rotation * dir * rotation.conjugate()).imag().normalize()
+    }
+
+    fn align_phase_at(&self, dist: f64, sound_speed: f64) -> f64 {
+        dist * self.wavenumber(sound_speed)
+    }
+
+    fn x_direction(&self) -> Vector3 {
+        Self::get_direction(Vector3::x(), self.rotation())
+    }
+
+    fn y_direction(&self) -> Vector3 {
+        Self::get_direction(Vector3::y(), self.rotation())
+    }
+
+    fn z_direction(&self) -> Vector3 {
+        Self::get_direction(Vector3::z(), self.rotation())
+    }
+
+    fn wavelength(&self, sound_speed: f64) -> f64 {
+        sound_speed / self.frequency()
+    }
+
+    fn wavenumber(&self, sound_speed: f64) -> f64 {
+        2.0 * std::f64::consts::PI * self.frequency() / sound_speed
     }
 }

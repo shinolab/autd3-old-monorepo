@@ -4,7 +4,7 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 09/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,6 +12,7 @@
  */
 
 use anyhow::Result;
+use autd3_driver::Operation;
 
 use crate::{
     datagram::{DatagramHeader, Empty, Filled, Sendable},
@@ -20,29 +21,29 @@ use crate::{
 
 #[derive(Default)]
 pub struct Clear {
-    sent: bool,
+    op: autd3_driver::Clear,
 }
 
 impl Clear {
     pub fn new() -> Self {
-        Self { sent: false }
+        Self {
+            op: Default::default(),
+        }
     }
 }
 
 impl DatagramHeader for Clear {
     fn init(&mut self) -> Result<()> {
-        self.sent = false;
+        self.op.init();
         Ok(())
     }
 
-    fn pack(&mut self, _: u8, tx: &mut autd3_driver::TxDatagram) -> Result<()> {
-        self.sent = true;
-        autd3_driver::clear(tx);
-        Ok(())
+    fn pack(&mut self, tx: &mut autd3_driver::TxDatagram) -> Result<()> {
+        self.op.pack(tx)
     }
 
     fn is_finished(&self) -> bool {
-        self.sent
+        self.op.is_finished()
     }
 }
 
@@ -50,17 +51,12 @@ impl<T: Transducer> Sendable<T> for Clear {
     type H = Filled;
     type B = Empty;
 
-    fn init(&mut self) -> Result<()> {
+    fn init(&mut self, _geometry: &Geometry<T>) -> Result<()> {
         DatagramHeader::init(self)
     }
 
-    fn pack(
-        &mut self,
-        msg_id: u8,
-        _geometry: &Geometry<T>,
-        tx: &mut autd3_driver::TxDatagram,
-    ) -> Result<()> {
-        DatagramHeader::pack(self, msg_id, tx)
+    fn pack(&mut self, tx: &mut autd3_driver::TxDatagram) -> Result<()> {
+        DatagramHeader::pack(self, tx)
     }
 
     fn is_finished(&self) -> bool {

@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 09/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,25 +12,22 @@
  */
 
 use crate::{
-    geometry::{Geometry, Transducer},
     datagram::{DatagramHeader, Empty, Filled, Sendable},
+    geometry::{Geometry, Transducer},
 };
 use anyhow::Result;
-use autd3_driver::TxDatagram;
+use autd3_driver::{Operation, TxDatagram};
 
 pub struct SilencerConfig {
-    pub(crate) step: u16,
-    pub(crate) cycle: u16,
-    sent: bool,
+    op: autd3_driver::ConfigSilencer,
 }
 
 impl SilencerConfig {
     pub fn new(step: u16, cycle: u16) -> Self {
-        SilencerConfig {
-            step,
-            cycle,
-            sent: false,
-        }
+        let mut op = autd3_driver::ConfigSilencer::default();
+        op.step = step;
+        op.cycle = cycle;
+        SilencerConfig { op }
     }
 
     pub fn none() -> Self {
@@ -40,22 +37,16 @@ impl SilencerConfig {
 
 impl DatagramHeader for SilencerConfig {
     fn init(&mut self) -> Result<()> {
-        self.sent = false;
+        self.op.init();
         Ok(())
     }
 
-    fn pack(&mut self, msg_id: u8, tx: &mut TxDatagram) -> Result<()> {
-        if self.sent {
-            autd3_driver::null_header(msg_id, tx);
-            Ok(())
-        } else {
-            self.sent = true;
-            autd3_driver::config_silencer(msg_id, self.cycle, self.step, tx)
-        }
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+        self.op.pack(tx)
     }
 
     fn is_finished(&self) -> bool {
-        true
+        self.op.is_finished()
     }
 }
 
@@ -63,12 +54,12 @@ impl<T: Transducer> Sendable<T> for SilencerConfig {
     type H = Filled;
     type B = Empty;
 
-    fn init(&mut self) -> Result<()> {
+    fn init(&mut self, _geometry: &Geometry<T>) -> Result<()> {
         DatagramHeader::init(self)
     }
 
-    fn pack(&mut self, msg_id: u8, _geometry: &Geometry<T>, tx: &mut TxDatagram) -> Result<()> {
-        DatagramHeader::pack(self, msg_id, tx)
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+        DatagramHeader::pack(self, tx)
     }
 
     fn is_finished(&self) -> bool {
