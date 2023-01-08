@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -34,11 +34,12 @@ class DebugImpl final : public core::Link {
 
     _cpus.clear();
     _cpus.reserve(geometry.num_devices());
-    for (size_t i = 0; i < geometry.num_devices(); i++) {
-      extra::CPU cpu(i, geometry.device_map()[i]);
+    size_t i = 0;
+    std::transform(geometry.device_map().begin(), geometry.device_map().end(), std::back_inserter(_cpus), [&i](const size_t dev) {
+      extra::CPU cpu(i++, dev);
       cpu.init();
-      _cpus.emplace_back(cpu);
-    }
+      return cpu;
+    });
     spdlog::info("Initialize emulator");
 
     _is_open = true;
@@ -118,12 +119,7 @@ class DebugImpl final : public core::Link {
   }
   bool receive(driver::RxDatagram& rx) override {
     spdlog::info("Receive data");
-
-    for (size_t i = 0; i < _cpus.size(); i++) {
-      rx.messages()[i].msg_id = _cpus[i].msg_id();
-      rx.messages()[i].ack = _cpus[i].ack();
-    }
-
+    std::transform(_cpus.begin(), _cpus.end(), rx.messages().begin(), [](const auto& cpu) { return driver::RxMessage(cpu.ack(), cpu.msg_id()); });
     return true;
   }
 

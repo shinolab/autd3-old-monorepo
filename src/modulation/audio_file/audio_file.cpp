@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -42,19 +42,17 @@ void RawPCM::calc() {
   std::vector<int32_t> sample_buf;
   const auto freq_ratio = mod_sf / _sampling_freq;
   sample_buf.resize(buf.size() * static_cast<size_t>(freq_ratio));
-
-  for (size_t i = 0; i < sample_buf.size(); i++) {
-    const auto v = static_cast<driver::autd3_float_t>(i) / freq_ratio;
-    const auto tmp = std::fmod(v, driver::autd3_float_t{1}) < 1 / freq_ratio ? buf[static_cast<size_t>(v)] : 0;
-    sample_buf[i] = tmp;
-  }
+  size_t i = 0;
+  std::generate(sample_buf.begin(), sample_buf.end(), [&i, freq_ratio, &buf] {
+    const auto v = static_cast<driver::autd3_float_t>(i++) / freq_ratio;
+    return std::fmod(v, driver::autd3_float_t{1}) < 1 / freq_ratio ? buf[static_cast<size_t>(v)] : 0;
+  });
 
   buffer().resize(sample_buf.size());
-  for (size_t i = 0; i < sample_buf.size(); i++) {
-    const auto amp = static_cast<driver::autd3_float_t>(sample_buf[i]) / static_cast<driver::autd3_float_t>(std::numeric_limits<uint8_t>::max());
-    const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp<driver::autd3_float_t>(amp, 0, 1)) / driver::pi * 510));
-    buffer()[i] = duty;
-  }
+  std::transform(sample_buf.begin(), sample_buf.end(), buffer().begin(), [](const auto& v) {
+    const auto amp = static_cast<driver::autd3_float_t>(v) / static_cast<driver::autd3_float_t>(std::numeric_limits<uint8_t>::max());
+    return static_cast<uint8_t>(std::round(std::asin(std::clamp<driver::autd3_float_t>(amp, 0, 1)) / driver::pi * 510));
+  });
 }
 
 namespace {
@@ -107,19 +105,19 @@ void Wav::calc() {
 
   std::vector<uint8_t> buf;
   const auto data_size = data_chunk_size / (bits_per_sample / 8);
-  for (size_t i = 0; i < data_size; i++) {
+  buf.resize(data_size);
+  std::generate(buf.begin(), buf.end(), [&] {
     if (bits_per_sample == 8) {
       auto amp =
           static_cast<driver::autd3_float_t>(read_from_stream<uint8_t>(fs)) / static_cast<driver::autd3_float_t>(std::numeric_limits<uint8_t>::max());
-      const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp<driver::autd3_float_t>(amp, 0, 1)) / driver::pi * 510));
-      buf.emplace_back(duty);
+      return static_cast<uint8_t>(std::round(std::asin(std::clamp<driver::autd3_float_t>(amp, 0, 1)) / driver::pi * 510));
     } else if (bits_per_sample == 16) {
       const auto d32 = static_cast<int32_t>(read_from_stream<int16_t>(fs)) - std::numeric_limits<int16_t>::min();
       auto amp = static_cast<driver::autd3_float_t>(d32) / static_cast<driver::autd3_float_t>(std::numeric_limits<uint16_t>::max());
-      const auto duty = static_cast<uint8_t>(std::round(std::asin(std::clamp<driver::autd3_float_t>(amp, 0, 1)) / driver::pi * 510));
-      buf.emplace_back(duty);
+      return static_cast<uint8_t>(std::round(std::asin(std::clamp<driver::autd3_float_t>(amp, 0, 1)) / driver::pi * 510));
     }
-  }
+    throw std::runtime_error("Unsupported format.");
+  });
 
   const auto mod_sf = this->sampling_frequency();
 
@@ -129,10 +127,8 @@ void Wav::calc() {
   const auto buffer_size = static_cast<size_t>(static_cast<driver::autd3_float_t>(buf.size()) * freq_ratio);
 
   sample_buf.resize(buffer_size);
-  for (size_t i = 0; i < sample_buf.size(); i++) {
-    const auto idx = static_cast<size_t>(static_cast<driver::autd3_float_t>(i) / freq_ratio);
-    sample_buf[i] = buf[idx];
-  }
+  size_t i = 0;
+  std::generate(sample_buf.begin(), sample_buf.end(), [&] { return buf[static_cast<size_t>(static_cast<driver::autd3_float_t>(i++) / freq_ratio)]; });
 
   buffer() = std::move(sample_buf);
 }

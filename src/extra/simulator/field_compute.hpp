@@ -3,7 +3,7 @@
 // Created Date: 05/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -376,7 +376,7 @@ class FieldCompute {
         return false;
       }
       for (const auto& s : sources) {
-        memcpy(data, s.drives().data(), sizeof(glm::vec4) * s.drives().size());
+        std::memcpy(data, s.drives().data(), sizeof(glm::vec4) * s.drives().size());
         data += sizeof(glm::vec4) * s.drives().size();
       }
       _context->device().unmapMemory(memory.get());

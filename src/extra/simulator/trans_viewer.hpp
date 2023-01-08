@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -325,15 +325,15 @@ class TransViewer {
     for (const auto& sources : sound_sources) {
       const auto& positions = sources.positions();
       const auto& rotations = sources.rotations();
-      for (size_t i = 0; i < sources.size(); i++) {
+      std::transform(positions.begin(), positions.end(), rotations.begin(), std::back_inserter(models), [this](const auto& pos, const auto& rot) {
         const auto s = 10.0f * _imgui->scale() * 0.5f;
         auto m = scale(glm::identity<glm::mat4>(), glm::vec3(s, s, s));
-        m[3].x = positions[i].x;
-        m[3].y = positions[i].y;
-        m[3].z = positions[i].z;
-        m = m * mat4_cast(rotations[i]);
-        models.emplace_back(m);
-      }
+        m[3].x = pos.x;
+        m[3].y = pos.y;
+        m[3].z = pos.z;
+        m = m * mat4_cast(rot);
+        return m;
+      });
     }
 
     const vk::DeviceSize buffer_size = sizeof models[0] * models.size();
@@ -365,8 +365,9 @@ class TransViewer {
     std::vector<glm::vec4> colors;
     colors.reserve(_instance_count);
     for (const auto& s : sound_sources)
-      for (size_t i = 0; i < s.size(); i++)
-        colors.emplace_back(coloring_hsv(s.drives()[i].phase / (2.0f * glm::pi<float>()), s.drives()[i].amp, s.visibilities()[i]));
+      std::transform(
+          s.drives().begin(), s.drives().end(), s.visibilities().begin(), std::back_inserter(colors),
+          [](const auto& drive, const auto& visibility) { return coloring_hsv(drive.phase / (2.0f * glm::pi<float>()), drive.amp, visibility); });
 
     const vk::DeviceSize buffer_size = sizeof colors[0] * colors.size();
 
@@ -397,8 +398,9 @@ class TransViewer {
     std::vector<glm::vec4> colors;
     colors.reserve(_instance_count);
     for (const auto& s : sources)
-      for (size_t i = 0; i < s.size(); i++)
-        colors.emplace_back(coloring_hsv(s.drives()[i].phase / (2.0f * glm::pi<float>()), s.drives()[i].amp, s.visibilities()[i]));
+      std::transform(
+          s.drives().begin(), s.drives().end(), s.visibilities().begin(), std::back_inserter(colors),
+          [](const auto& drive, const auto& visibility) { return coloring_hsv(drive.phase / (2.0f * glm::pi<float>()), drive.amp, visibility); });
 
     const vk::DeviceSize buffer_size = sizeof colors[0] * colors.size();
 

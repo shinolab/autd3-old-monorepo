@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -68,7 +68,7 @@ void AUTDGainHoloLM(void** gain, const void* backend, const autd3_float_t eps_1,
   const auto b = static_cast<const BackendWrapper*>(backend);
   std::vector<autd3_float_t> initial_;
   initial_.reserve(initial_size);
-  for (auto i = 0; i < initial_size; i++) initial_.emplace_back(initial[i]);
+  std::copy_n(initial, initial_size, std::back_inserter(initial_));
 
   auto* g = new autd3::gain::holo::LM(b->ptr);
   g->eps_1 = eps_1;

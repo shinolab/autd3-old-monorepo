@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -120,13 +120,13 @@ class SimulatorImpl final : public core::Link {
 
     size_t i = 0;
     size_t c = 0;
-    for (size_t dev = 0; dev < geometry.num_devices(); dev++) {
-      c += geometry.device_map()[dev];
-      *reinterpret_cast<uint32_t*>(cursor) = static_cast<uint32_t>(geometry.device_map()[dev]);
+    for (const size_t dev : geometry.device_map()) {
+      c += dev;
+      *reinterpret_cast<uint32_t*>(cursor) = static_cast<uint32_t>(dev);
       cursor += sizeof(uint32_t);
       auto* p = reinterpret_cast<float*>(cursor);
-      for (; i < c; i++) {
-        auto& tr = geometry[i];
+      while (i < c) {
+        auto& tr = geometry[i++];
         Eigen::Vector3<float> origin = tr.position().cast<float>();
         Eigen::Quaternion<float> rot = tr.rotation().cast<float>();
         p[0] = origin.x();

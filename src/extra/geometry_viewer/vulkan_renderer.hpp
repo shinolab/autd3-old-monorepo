@@ -3,7 +3,7 @@
 // Created Date: 24/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -115,22 +115,24 @@ class VulkanRenderer {
 
   void create_image_views() {
     _swap_chain_image_views.resize(_swap_chain_images.size());
-    for (size_t i = 0; i < _swap_chain_image_views.size(); i++)
-      _swap_chain_image_views[i] = _context->create_image_view(_swap_chain_images[i], _swap_chain_image_format, vk::ImageAspectFlagBits::eColor, 1);
+    std::transform(_swap_chain_images.begin(), _swap_chain_images.end(), _swap_chain_image_views.begin(), [this](const auto& swap_chain_image) {
+      return _context->create_image_view(swap_chain_image, _swap_chain_image_format, vk::ImageAspectFlagBits::eColor, 1);
+    });
   }
 
   void create_framebuffers() {
     _swap_chain_framebuffers.resize(_swap_chain_image_views.size());
-    for (size_t i = 0; i < _swap_chain_image_views.size(); i++) {
-      std::array attachments{_color_image_view.get(), _depth_image_view.get(), _swap_chain_image_views[i].get()};
-      vk::FramebufferCreateInfo framebuffer_create_info = vk::FramebufferCreateInfo()
-                                                              .setRenderPass(_render_pass.get())
-                                                              .setAttachments(attachments)
-                                                              .setWidth(_swap_chain_extent.width)
-                                                              .setHeight(_swap_chain_extent.height)
-                                                              .setLayers(1);
-      _swap_chain_framebuffers[i] = _context->device().createFramebufferUnique(framebuffer_create_info);
-    }
+    std::transform(_swap_chain_image_views.begin(), _swap_chain_image_views.end(), _swap_chain_framebuffers.begin(),
+                   [this](const auto& swap_chain_image_view) {
+                     std::array attachments{_color_image_view.get(), _depth_image_view.get(), swap_chain_image_view.get()};
+                     vk::FramebufferCreateInfo framebuffer_create_info = vk::FramebufferCreateInfo()
+                                                                             .setRenderPass(_render_pass.get())
+                                                                             .setAttachments(attachments)
+                                                                             .setWidth(_swap_chain_extent.width)
+                                                                             .setHeight(_swap_chain_extent.height)
+                                                                             .setLayers(1);
+                     return _context->device().createFramebufferUnique(framebuffer_create_info);
+                   });
   }
 
   [[nodiscard]] bool create_render_pass() {
@@ -561,14 +563,14 @@ class VulkanRenderer {
   }
 
   void cleanup() {
-    for (auto& framebuffer : _swap_chain_framebuffers) {
+    std::for_each(_swap_chain_framebuffers.begin(), _swap_chain_framebuffers.end(), [this](auto& framebuffer) {
       _context->device().destroyFramebuffer(framebuffer.get(), nullptr);
       framebuffer.get() = nullptr;
-    }
-    for (auto& image_view : _swap_chain_image_views) {
+    });
+    std::for_each(_swap_chain_image_views.begin(), _swap_chain_image_views.end(), [this](auto& image_view) {
       _context->device().destroyImageView(image_view.get(), nullptr);
       image_view.get() = nullptr;
-    }
+    });
     _context->device().destroySwapchainKHR(_swap_chain.get(), nullptr);
     _swap_chain.get() = nullptr;
   }

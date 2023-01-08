@@ -3,7 +3,7 @@
 // Created Date: 30/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,7 +26,7 @@ using autd3::driver::pi;
 TEST(DriverCommonFPGADefined, LegacyDrive) {
   using autd3::driver::LegacyDrive;
 
-  Drive s;  // NOLINT
+  Drive s{};  // NOLINT
   LegacyDrive d{};
 
   s.phase = 0.0;
@@ -64,7 +64,7 @@ TEST(DriverCommonFPGADefined, Phase) {
   using autd3::driver::Phase;
 
   Drive s{};
-  Phase d{};
+  Phase d{0};
 
   {
     constexpr uint16_t cycle = 4096;
@@ -117,7 +117,7 @@ TEST(DriverCommonFPGADefined, Duty) {
   using autd3::driver::Duty;
 
   Drive s{};
-  Duty d{};
+  Duty d{0};
 
   {
     constexpr uint16_t cycle = 4096;

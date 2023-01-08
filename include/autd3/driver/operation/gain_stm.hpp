@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -75,57 +75,52 @@ struct GainSTM<Legacy> final : GainSTMBase {
                                  " but you use " + std::to_string(freq_div));
 
       tx.header().cpu_flag.set(CPUControlFlags::STMBegin);
-      for (size_t i = 0; i < tx.num_devices(); i++) {
-        tx.body(i).gain_stm_initial().set_freq_div(freq_div);
-        tx.body(i).gain_stm_initial().set_mode(mode);
-        tx.body(i).gain_stm_initial().set_cycle(drives.size());
-        tx.body(i).gain_stm_initial().set_stm_start_idx(start_idx.value_or(0));
-        tx.body(i).gain_stm_initial().set_stm_finish_idx(finish_idx.value_or(0));
-      }
+      std::for_each(tx.begin(), tx.end(), [this](const auto& body) {
+        const auto& [_, d] = body;
+        d.gain_stm_initial().set_freq_div(freq_div);
+        d.gain_stm_initial().set_mode(mode);
+        d.gain_stm_initial().set_cycle(drives.size());
+        d.gain_stm_initial().set_stm_start_idx(start_idx.value_or(0));
+        d.gain_stm_initial().set_stm_finish_idx(finish_idx.value_or(0));
+      });
       _sent++;
     } else {
       switch (mode) {
         case GainSTMMode::PhaseDutyFull:
           is_last_frame = _sent + 1 >= drives.size() + 1;
-          {
-            auto* p = reinterpret_cast<LegacyDrive*>(tx.bodies_raw_ptr());
-            for (size_t i = 0; i < drives[_sent - 1].size(); i++) p[i].set(drives[_sent - 1][i]);
-          }
+          std::transform(drives[_sent - 1].begin(), drives[_sent - 1].end(), reinterpret_cast<LegacyDrive*>(tx.bodies_raw_ptr()),
+                         [](const auto& d) { return d; });
           _sent++;
           break;
         case GainSTMMode::PhaseFull:
           is_last_frame = _sent + 2 >= drives.size() + 1;
-          {
-            auto* p = reinterpret_cast<LegacyPhaseFull*>(tx.bodies_raw_ptr());
-            for (size_t i = 0; i < drives[_sent - 1].size(); i++) p[i].set(0, drives[_sent - 1][i]);
-          }
+          std::transform(drives[_sent - 1].begin(), drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseFull0*>(tx.bodies_raw_ptr()),
+                         [](const auto& d) { return d; });
           _sent++;
           if (_sent - 1 < drives.size()) {
-            auto* p = reinterpret_cast<LegacyPhaseFull*>(tx.bodies_raw_ptr());
-            for (size_t i = 0; i < drives[_sent - 1].size(); i++) p[i].set(1, drives[_sent - 1][i]);
+            std::transform(drives[_sent - 1].begin(), drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseFull1*>(tx.bodies_raw_ptr()),
+                           [](const auto& d) { return d; });
             _sent++;
           }
           break;
         case GainSTMMode::PhaseHalf:
           is_last_frame = _sent + 4 >= drives.size() + 1;
-          {
-            auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies_raw_ptr());
-            for (size_t i = 0; i < drives[_sent - 1].size(); i++) p[i].set(0, drives[_sent - 1][i]);
-          }
+          std::transform(drives[_sent - 1].begin(), drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf0*>(tx.bodies_raw_ptr()),
+                         [](const auto& d) { return d; });
           _sent++;
           if (_sent - 1 < drives.size()) {
-            auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies_raw_ptr());
-            for (size_t i = 0; i < drives[_sent - 1].size(); i++) p[i].set(1, drives[_sent - 1][i]);
+            std::transform(drives[_sent - 1].begin(), drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf1*>(tx.bodies_raw_ptr()),
+                           [](const auto& d) { return d; });
             _sent++;
           }
           if (_sent - 1 < drives.size()) {
-            auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies_raw_ptr());
-            for (size_t i = 0; i < drives[_sent - 1].size(); i++) p[i].set(2, drives[_sent - 1][i]);
+            std::transform(drives[_sent - 1].begin(), drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf2*>(tx.bodies_raw_ptr()),
+                           [](const auto& d) { return d; });
             _sent++;
           }
           if (_sent - 1 < drives.size()) {
-            auto* p = reinterpret_cast<LegacyPhaseHalf*>(tx.bodies_raw_ptr());
-            for (size_t i = 0; i < drives[_sent - 1].size(); i++) p[i].set(3, drives[_sent - 1][i]);
+            std::transform(drives[_sent - 1].begin(), drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf3*>(tx.bodies_raw_ptr()),
+                           [](const auto& d) { return d; });
             _sent++;
           }
           break;
@@ -215,16 +210,17 @@ struct GainSTM<Normal> final : GainSTMBase {
                                  " but you use " + std::to_string(freq_div));
 
       tx.header().cpu_flag.set(CPUControlFlags::STMBegin);
-      for (size_t i = 0; i < tx.num_devices(); i++) {
-        tx.body(i).gain_stm_initial().set_freq_div(freq_div);
-        tx.body(i).gain_stm_initial().set_mode(mode);
-        tx.body(i).gain_stm_initial().set_cycle(drives.size());
-        tx.body(i).gain_stm_initial().set_stm_start_idx(start_idx.value_or(0));
-        tx.body(i).gain_stm_initial().set_stm_finish_idx(finish_idx.value_or(0));
-      }
+      std::for_each(tx.begin(), tx.end(), [this](const auto& body) {
+        const auto& [_, d] = body;
+        d.gain_stm_initial().set_freq_div(freq_div);
+        d.gain_stm_initial().set_mode(mode);
+        d.gain_stm_initial().set_cycle(drives.size());
+        d.gain_stm_initial().set_stm_start_idx(start_idx.value_or(0));
+        d.gain_stm_initial().set_stm_finish_idx(finish_idx.value_or(0));
+      });
     } else {
-      auto* p = reinterpret_cast<Phase*>(tx.bodies_raw_ptr());
-      for (size_t i = 0; i < drives[_sent - 1].size(); i++) p[i].set(drives[_sent - 1][i], cycles[i]);
+      std::transform(drives[_sent - 1].begin(), drives[_sent - 1].end(), cycles.begin(), reinterpret_cast<Phase*>(tx.bodies_raw_ptr()),
+                     [](const auto& d, const auto cycle) { return Phase(d, cycle); });
     }
 
     if (_sent + 1 == drives.size() + 1) tx.header().cpu_flag.set(CPUControlFlags::STMEnd);
@@ -254,16 +250,17 @@ struct GainSTM<Normal> final : GainSTMBase {
                                  " but you use " + std::to_string(freq_div));
 
       tx.header().cpu_flag.set(CPUControlFlags::STMBegin);
-      for (size_t i = 0; i < tx.num_devices(); i++) {
-        tx.body(i).gain_stm_initial().set_freq_div(freq_div);
-        tx.body(i).gain_stm_initial().set_mode(mode);
-        tx.body(i).gain_stm_initial().set_cycle(drives.size());
-        tx.body(i).gain_stm_initial().set_stm_start_idx(start_idx.value_or(0));
-        tx.body(i).gain_stm_initial().set_stm_finish_idx(finish_idx.value_or(0));
-      }
+      std::for_each(tx.begin(), tx.end(), [this](const auto& body) {
+        const auto& [_, d] = body;
+        d.gain_stm_initial().set_freq_div(freq_div);
+        d.gain_stm_initial().set_mode(mode);
+        d.gain_stm_initial().set_cycle(drives.size());
+        d.gain_stm_initial().set_stm_start_idx(start_idx.value_or(0));
+        d.gain_stm_initial().set_stm_finish_idx(finish_idx.value_or(0));
+      });
     } else {
-      auto* p = reinterpret_cast<Duty*>(tx.bodies_raw_ptr());
-      for (size_t i = 0; i < drives[_sent - 1].size(); i++) p[i].set(drives[_sent - 1][i], cycles[i]);
+      std::transform(drives[_sent - 1].begin(), drives[_sent - 1].end(), cycles.begin(), reinterpret_cast<Duty*>(tx.bodies_raw_ptr()),
+                     [](const auto& d, const auto cycle) { return Duty(d, cycle); });
     }
 
     if (_sent + 1 == drives.size() + 1) tx.header().cpu_flag.set(CPUControlFlags::STMEnd);
@@ -323,16 +320,17 @@ struct GainSTM<NormalPhase> final : GainSTMBase {
                                  " but you use " + std::to_string(freq_div));
 
       tx.header().cpu_flag.set(CPUControlFlags::STMBegin);
-      for (size_t i = 0; i < tx.num_devices(); i++) {
-        tx.body(i).gain_stm_initial().set_freq_div(freq_div);
-        tx.body(i).gain_stm_initial().set_mode(GainSTMMode::PhaseFull);
-        tx.body(i).gain_stm_initial().set_cycle(drives.size());
-        tx.body(i).gain_stm_initial().set_stm_start_idx(start_idx.value_or(0));
-        tx.body(i).gain_stm_initial().set_stm_finish_idx(finish_idx.value_or(0));
-      }
+      std::for_each(tx.begin(), tx.end(), [this](const auto& body) {
+        const auto& [_, d] = body;
+        d.gain_stm_initial().set_freq_div(freq_div);
+        d.gain_stm_initial().set_mode(GainSTMMode::PhaseFull);
+        d.gain_stm_initial().set_cycle(drives.size());
+        d.gain_stm_initial().set_stm_start_idx(start_idx.value_or(0));
+        d.gain_stm_initial().set_stm_finish_idx(finish_idx.value_or(0));
+      });
     } else {
-      auto* p = reinterpret_cast<Phase*>(tx.bodies_raw_ptr());
-      for (size_t i = 0; i < drives[_sent - 1].size(); i++) p[i].set(drives[_sent - 1][i], cycles[i]);
+      std::transform(drives[_sent - 1].begin(), drives[_sent - 1].end(), cycles.begin(), reinterpret_cast<Phase*>(tx.bodies_raw_ptr()),
+                     [](const auto& d, const auto cycle) { return Phase(d, cycle); });
     }
 
     if (_sent + 1 == drives.size() + 1) tx.header().cpu_flag.set(CPUControlFlags::STMEnd);

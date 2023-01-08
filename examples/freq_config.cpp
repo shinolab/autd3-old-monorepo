@@ -3,7 +3,7 @@
 // Created Date: 31/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/11/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,7 +25,9 @@ int main() try {
   }
 
   autd << autd3::normal_mode;
-  for (auto& tr : autd.geometry()) tr.set_frequency(70e3);  // actual frequency is 163.84MHz/2341 ~ 69987 Hz
+  std::for_each(autd.geometry().begin(), autd.geometry().end(), [](auto& tr) {
+    tr.set_frequency(70e3);  // actual frequency is 163.84MHz/2341 ~ 69987 Hz
+  });
 
   autd << autd3::clear << autd3::synchronize;  // You must configure the frequencies of all transducers before synchronization.
 
