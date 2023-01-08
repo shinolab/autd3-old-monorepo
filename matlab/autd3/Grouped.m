@@ -15,10 +15,10 @@ classdef Grouped < Gain
 
     methods
 
-        function obj = Grouped(cnt)
+        function obj = Grouped()
             obj = obj@Gain();
             pp = libpointer('voidPtrPtr', obj.ptr);
-            calllib('autd3capi', 'AUTDGainGrouped', pp, cnt.ptr);
+            calllib('autd3capi', 'AUTDGainGrouped', pp);
         end
 
         function add(obj, idx, gain)

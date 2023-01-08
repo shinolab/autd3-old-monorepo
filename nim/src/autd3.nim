@@ -226,12 +226,15 @@ func initNull*(): Null =
     AUTDGainNull(result.p.addr)
 
 type Grouped* = object of Gain
+    gains: seq[Gain]
 
-func initGrouped*(cnt: Controller): Grouped =
-    AUTDGainGrouped(result.p.addr, cnt.p)
+func initGrouped*(): Grouped =
+    AUTDGainGrouped(result.p.addr)
+    result.gains = @[]
 
 func add*(self: Grouped, devId: int32, gain: Gain) =
     AUTDGainGroupedAdd(self.p, devId, gain.p)
+    self.gains.add(gain)
 
 type Focus* = object of Gain
 
@@ -338,17 +341,20 @@ func add*(stm: FocusSTM, pos: openArray[float64],
     AUTDFocusSTMAdd(stm.p, pos[0], pos[1], pos[2], shift)
 
 type GainSTM* = object of STM
+    gains: seq[Gain]
 
 type Mode* {.pure.} = enum
     PhaseDutyFull = 0x0001
     PhaseFull = 0x0002
     PhaseHalf = 0x0004
 
-func initGainSTM*(cnt: Controller): GainSTM =
-    AUTDGainSTM(result.p.addr, cnt.p)
+func initGainSTM*(): GainSTM =
+    AUTDGainSTM(result.p.addr)
+    result.gains = @[]
 
 func add*(stm: GainSTM, gain: Gain) =
     AUTDGainSTMAdd(stm.p, gain.p)
+    stm.gains.add(gain)
 
 func mode*(stm: GainSTM): Mode =
     let m = AUTDGetGainSTMMode(stm.p)

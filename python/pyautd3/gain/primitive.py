@@ -4,7 +4,7 @@ Project: gain
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 21/10/2022
+Last Modified: 08/01/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -68,12 +68,14 @@ class Null(Gain):
 
 
 class Grouped(Gain):
-    def __init__(self, autd: Controller):
+    def __init__(self):
         super().__init__()
-        Base().dll.AUTDGainGrouped(byref(self.ptr), autd.p_cnt)
+        Base().dll.AUTDGainGrouped(byref(self.ptr))
+        self._gains = []
 
     def __del__(self):
         super().__del__()
 
     def add(self, dev_idx: int, gain: Gain):
         Base().dll.AUTDGainGroupedAdd(self.ptr, dev_idx, gain.ptr)
+        self._gains.append(gain)
