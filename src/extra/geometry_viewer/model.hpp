@@ -216,9 +216,9 @@ class Model {
 
   void load_materials(const fx::gltf::Document& doc) {
     _materials.reserve(doc.materials.size());
-    std::transform(doc.materials.begin(), doc.materials.end(), std::back_inserter(_materials), [](const auto& materail) {
-      return Material{glm::make_vec4(materail.pbrMetallicRoughness.baseColorFactor.data()), materail.pbrMetallicRoughness.baseColorTexture.index,
-                      materail.pbrMetallicRoughness.metallicFactor, materail.pbrMetallicRoughness.roughnessFactor};
+    std::transform(doc.materials.begin(), doc.materials.end(), std::back_inserter(_materials), [](const auto& material) {
+      return Material{glm::make_vec4(material.pbrMetallicRoughness.baseColorFactor.data()), material.pbrMetallicRoughness.baseColorTexture.index,
+                      material.pbrMetallicRoughness.metallicFactor, material.pbrMetallicRoughness.roughnessFactor};
     });
   }
 
