@@ -101,8 +101,8 @@ class VulkanImGui {
   ~VulkanImGui() = default;
   VulkanImGui(const VulkanImGui& v) = delete;
   VulkanImGui& operator=(const VulkanImGui& obj) = delete;
-  VulkanImGui(VulkanImGui&& obj) = default;
-  VulkanImGui& operator=(VulkanImGui&& obj) = default;
+  VulkanImGui(VulkanImGui&& obj) = delete;
+  VulkanImGui& operator=(VulkanImGui&& obj) = delete;
 
   void set_font() const {
     ImGuiIO& io = ImGui::GetIO();
@@ -393,10 +393,10 @@ class VulkanImGui {
 
         ImGui::Text("Color settings");
 
-        if (ImGui::BeginCombo("Coloring", coloring_methods[coloring_method_idx])) {
-          for (int n = 0; n < static_cast<int>(coloring_methods.size()); n++) {
+        if (ImGui::BeginCombo("Coloring", _coloring_methods[coloring_method_idx])) {
+          for (int n = 0; n < static_cast<int>(_coloring_methods.size()); n++) {
             const bool is_selected = coloring_method_idx == n;
-            if (ImGui::Selectable(coloring_methods[n], is_selected)) {
+            if (ImGui::Selectable(_coloring_methods[n], is_selected)) {
               if (coloring_method_idx != n) flag.set(UpdateFlags::UpdateColorMap);
               coloring_method_idx = n;
             }
@@ -756,8 +756,8 @@ class VulkanImGui {
   bool _update_font = false;
   float _cam_move_speed = 10.0f;
 
-  const std::vector<const char*> coloring_methods = {"Parula",  "Heat",   "Jet",     "Turbo",   "Hot",    "Gray",     "Magma",
-                                                     "Inferno", "Plasma", "Viridis", "Cividis", "Github", "Cubehelix"};
+  const std::vector<const char*> _coloring_methods = {"Parula",  "Heat",   "Jet",     "Turbo",   "Hot",    "Gray",     "Magma",
+                                                      "Inferno", "Plasma", "Viridis", "Cividis", "Github", "Cubehelix"};
 
   bool _show_mod_plot{false};
   bool _show_mod_plot_raw{false};
