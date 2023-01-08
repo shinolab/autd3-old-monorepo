@@ -104,10 +104,7 @@ class VulkanContext {
       if (tiling == vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & features) == features) return true;
       return false;
     });
-    if (it == candidates.end()) {
-      spdlog::error("Failed to find supported format!");
-      return vk::Format::eUndefined;
-    }
+    if (it == candidates.end()) throw std::runtime_error("Failed to find supported format!");
     return *it;
   }
 
@@ -118,8 +115,7 @@ class VulkanContext {
         res = i;
         return true;
       }
-    spdlog::error("Failed to find suitable memory type!");
-    return false;
+    throw std::runtime_error("Failed to find suitable memory type!");
   }
 
   [[nodiscard]] vk::SampleCountFlagBits get_max_usable_sample_count() const {
@@ -147,10 +143,9 @@ class VulkanContext {
     const vk::ApplicationInfo app_info =
         vk::ApplicationInfo().setPApplicationName(app_name.c_str()).setApplicationVersion(VK_MAKE_VERSION(1, 0, 0)).setApiVersion(VK_API_VERSION_1_2);
 
-    if (_enable_validation_layers && !check_validation_layer_support(validation_layers)) {
-      spdlog::error("Validation layers requested, but not available!");
-      return false;
-    }
+    if (_enable_validation_layers && !check_validation_layer_support(validation_layers))
+      throw std::runtime_error("Validation layers requested, but not available!");
+
     uint32_t glfw_extension_count = 0;
     const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
 
@@ -175,10 +170,9 @@ class VulkanContext {
 
   [[nodiscard]] bool create_surface(const WindowHandler& window) {
     VkSurfaceKHR surface{};
-    if (glfwCreateWindowSurface(_instance.get(), window.window(), nullptr, &surface) != VK_SUCCESS) {
-      spdlog::error("Failed to create window surface!");
-      return false;
-    }
+    if (glfwCreateWindowSurface(_instance.get(), window.window(), nullptr, &surface) != VK_SUCCESS)
+      throw std::runtime_error("Failed to create window surface!");
+
     const vk::ObjectDestroy<vk::Instance, VULKAN_HPP_DEFAULT_DISPATCHER_TYPE> deleter(_instance.get());
     _surface = vk::UniqueSurfaceKHR(vk::SurfaceKHR(surface), deleter);
     return true;
@@ -189,10 +183,8 @@ class VulkanContext {
     std::vector<vk::PhysicalDevice> suitable_devices;
     std::copy_if(devices.begin(), devices.end(), std::back_inserter(suitable_devices),
                  [this](const auto& device) { return is_device_suitable(device); });
-    if (suitable_devices.empty()) {
-      spdlog::error("Failed to find a suitable GPU!");
-      return false;
-    }
+    if (suitable_devices.empty()) throw std::runtime_error("Failed to find a suitable GPU!");
+
     if (_gpu_idx < suitable_devices.size())
       _physical_device = suitable_devices[_gpu_idx];
     else {
@@ -313,10 +305,8 @@ class VulkanContext {
   [[nodiscard]] bool generate_mipmaps(vk::UniqueImage& image, const vk::Format format, const int32_t tex_width, const int32_t tex_height,
                                       const uint32_t mip_levels) const {
     if (const auto format_properties = _physical_device.getFormatProperties(format);
-        !(format_properties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear)) {
-      spdlog::error("texture image format does not support linear blitting!");
-      return false;
-    }
+        !(format_properties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear))
+      throw std::runtime_error("texture image format does not support linear blitting!");
 
     auto command_buffer = begin_single_time_commands();
 
@@ -418,10 +408,8 @@ class VulkanContext {
       barrier.dstAccessMask = vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
       source_stage = vk::PipelineStageFlagBits::eTopOfPipe;
       destination_stage = vk::PipelineStageFlagBits::eEarlyFragmentTests;
-    } else {
-      spdlog::error("Unsupported layout transition!");
-      return false;
-    }
+    } else
+      throw std::runtime_error("Unsupported layout transition!");
 
     command_buffer->pipelineBarrier(source_stage, destination_stage, {}, {}, {}, barrier);
     end_single_time_commands(command_buffer);

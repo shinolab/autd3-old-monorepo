@@ -202,8 +202,7 @@ class Model {
       case fx::gltf::Accessor::ComponentType::Byte:
       case fx::gltf::Accessor::ComponentType::Short:
       case fx::gltf::Accessor::ComponentType::Float:
-        spdlog::error("Not supported component type: {}", static_cast<uint16_t>(component_type));
-        return 0;
+        throw std::runtime_error("Float indices is not supported.");
     }
 
     return count;

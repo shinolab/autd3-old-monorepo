@@ -174,8 +174,7 @@ class FieldCompute {
         result.result == vk::Result::eSuccess)
       return std::make_pair(std::move(layout), std::move(result.value));
 
-    spdlog::error("Failed to create a pipeline!");
-    return std::make_pair(vk::UniquePipelineLayout(nullptr), vk::UniquePipeline(nullptr));
+    throw std::runtime_error("Failed to create a pipeline!");
   }
 
   void create_descriptor_sets(const std::vector<SoundSources>& sources, const std::vector<vk::UniqueBuffer>& image_buffers, const size_t image_size) {
@@ -262,10 +261,9 @@ class FieldCompute {
       if (!staging_buffer || !staging_buffer_memory) return false;
 
       void* data;
-      if (_context->device().mapMemory(staging_buffer_memory.get(), 0, image_size, {}, &data) != vk::Result::eSuccess) {
-        spdlog::error("Failed to map texture buffer.");
-        return false;
-      }
+      if (_context->device().mapMemory(staging_buffer_memory.get(), 0, image_size, {}, &data) != vk::Result::eSuccess)
+        throw std::runtime_error("Failed to map texture buffer.");
+
       std::memcpy(data, pixels.data(), image_size);
       _context->device().unmapMemory(staging_buffer_memory.get());
 
@@ -371,10 +369,9 @@ class FieldCompute {
     const auto size = std::accumulate(sources.begin(), sources.end(), size_t{0}, [](size_t acc, const auto& s) { return acc + s.size(); });
     uint8_t* data = nullptr;
     for (auto& memory : _drive_buffers_memory) {
-      if (_context->device().mapMemory(memory.get(), 0, sizeof(Drive) * size, {}, reinterpret_cast<void**>(&data)) != vk::Result::eSuccess) {
-        spdlog::error("Failed to map uniform buffer memory");
-        return false;
-      }
+      if (_context->device().mapMemory(memory.get(), 0, sizeof(Drive) * size, {}, reinterpret_cast<void**>(&data)) != vk::Result::eSuccess)
+        throw std::runtime_error("Failed to map uniform buffer memory");
+
       for (const auto& s : sources) {
         std::memcpy(data, s.drives().data(), sizeof(glm::vec4) * s.drives().size());
         data += sizeof(glm::vec4) * s.drives().size();
@@ -388,10 +385,9 @@ class FieldCompute {
     const auto size = std::accumulate(sources.begin(), sources.end(), size_t{0}, [](size_t acc, const auto& s) { return acc + s.size(); });
     uint8_t* data = nullptr;
     for (auto& memory : _pos_buffers_memory) {
-      if (_context->device().mapMemory(memory.get(), 0, sizeof(glm::vec4) * size, {}, reinterpret_cast<void**>(&data)) != vk::Result::eSuccess) {
-        spdlog::error("Failed to map uniform buffer memory");
-        return false;
-      }
+      if (_context->device().mapMemory(memory.get(), 0, sizeof(glm::vec4) * size, {}, reinterpret_cast<void**>(&data)) != vk::Result::eSuccess)
+        throw std::runtime_error("Failed to map uniform buffer memory");
+
       for (const auto& s : sources) {
         memcpy(data, s.positions().data(), sizeof(glm::vec4) * s.positions().size());
         data += sizeof(glm::vec4) * s.positions().size();

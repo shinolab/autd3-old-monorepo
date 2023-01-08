@@ -27,10 +27,7 @@ namespace {
   std::filesystem::create_directory("models");
   std::ofstream fs;
   fs.open("models/AUTD3.glb", std::ios::out | std::ios::binary | std::ios::trunc);
-  if (!fs) {
-    spdlog::error("Cannot write AUTD3 model.");
-    return false;
-  }
+  if (!fs) throw std::runtime_error("Cannot write AUTD3 model.");
   for (size_t i = 0; i < model_size; i++) fs.write(reinterpret_cast<const char*>(&model_data[i]), sizeof(char));
   fs.close();
   return true;
@@ -40,10 +37,8 @@ namespace {
 namespace autd3::extra {
 [[nodiscard]] bool GeometryViewer::view(const core::Geometry& geometry) const {
   if (std::any_of(geometry.device_map().begin(), geometry.device_map().end(),
-                  [](const size_t& tr_num) { return tr_num != AUTD3::NUM_TRANS_IN_UNIT; })) {
-    spdlog::error("Only AUTD3 devices can be displayed.");
-    return false;
-  }
+                  [](const size_t& tr_num) { return tr_num != AUTD3::NUM_TRANS_IN_UNIT; }))
+    throw std::runtime_error("Only AUTD3 devices can be displayed.");
 
   std::vector<geometry_viewer::gltf::Geometry> geometries;
   geometries.reserve(geometry.num_devices());

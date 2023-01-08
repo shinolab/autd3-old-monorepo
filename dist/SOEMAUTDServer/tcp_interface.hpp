@@ -3,7 +3,7 @@
 // Created Date: 01/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -59,8 +59,7 @@ class TcpInterface final : public Interface {
 #else
     if (_socket < 0) {
 #endif
-      spdlog::error("Cannot connect to client");
-      return;
+      throw std::runtime_error("Cannot connect to client");
     }
 
     constexpr int y = 1;
@@ -74,14 +73,9 @@ class TcpInterface final : public Interface {
     _addr.sin_addr.s_addr = htonl(INADDR_ANY);
 #endif
 
-    if (const auto e = bind(_socket, reinterpret_cast<sockaddr*>(&_addr), sizeof _addr); e != 0) {
-      spdlog::error("Failed to bind socket: {}", e);
-      return;
-    }
-    if (const auto e = listen(_socket, 1); e != 0) {
-      spdlog::error("Failed to listen: {}", e);
-      return;
-    }
+    if (const auto e = bind(_socket, reinterpret_cast<sockaddr*>(&_addr), sizeof _addr); e != 0)
+      throw std::runtime_error("Failed to bind socket: " + std::to_string(e));
+    if (const auto e = listen(_socket, 1); e != 0) throw std::runtime_error("Failed to listen: " + std::to_string(e));
 
     const auto size = driver::HEADER_SIZE + _dev * AUTD3::NUM_TRANS_IN_UNIT * sizeof(uint16_t);
     _ptr = std::make_unique<uint8_t[]>(size);
@@ -96,11 +90,7 @@ class TcpInterface final : public Interface {
 #else
     if (_dst_socket < 0) return;
     if (errno == 53) return;
-    if (errno != 0) {
-      spdlog::error("Failed to connect client: {}", strerror(errno));
-      spdlog::error("Please reboot the program...");
-      return;
-    }
+    if (errno != 0) throw std::runtime_error("Failed to connect client: " + strerror(errno));
 #endif
     spdlog::info("Connected to client");
 
@@ -119,11 +109,11 @@ class TcpInterface final : public Interface {
         if (len <= 0) continue;
         const auto ulen = static_cast<size_t>(len);
         if (ulen < driver::HEADER_SIZE) {
-          spdlog::error("Unknown data size: {}", ulen);
+          spdlog::warn("Unknown data size: {}", ulen);
           continue;
         }
         if (const auto body_len = ulen - driver::HEADER_SIZE; body_len % (AUTD3::NUM_TRANS_IN_UNIT * sizeof(uint16_t)) != 0) {
-          spdlog::error("Unknown data size: {}", ulen);
+          spdlog::warn("Unknown data size: {}", ulen);
           continue;
         }
         std::memcpy(_ptr.get(), buffer.data(), ulen);

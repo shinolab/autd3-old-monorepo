@@ -59,10 +59,7 @@ class VulkanRenderer {
 
     if (const auto [graphics_family, present_family] = _context->find_queue_families(_context->physical_device());
         graphics_family != present_family) {
-      if (!graphics_family || !present_family) {
-        spdlog::error("Failed to find queue family.");
-        return false;
-      }
+      if (!graphics_family || !present_family) throw std::runtime_error("Failed to find queue family.");
 
       create_info.setImageSharingMode(vk::SharingMode::eConcurrent);
       std::vector queue_family_indices = {graphics_family.value(), present_family.value()};
@@ -202,20 +199,14 @@ class VulkanRenderer {
   }
 
   std::pair<vk::CommandBuffer, uint32_t> begin_frame(const std::array<float, 4>& background) {
-    if (_context->device().waitForFences(_in_flight_fences[_current_frame].get(), true, std::numeric_limits<uint64_t>::max()) !=
-        vk::Result::eSuccess) {
-      spdlog::error("Failed to wait fence!");
-      return std::make_pair(nullptr, 0);
-    }
+    if (_context->device().waitForFences(_in_flight_fences[_current_frame].get(), true, std::numeric_limits<uint64_t>::max()) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to wait fence!");
 
     uint32_t image_index;
     const auto result = _context->device().acquireNextImageKHR(_swap_chain.get(), std::numeric_limits<uint64_t>::max(),
                                                                _image_available_semaphores[_current_frame].get(), nullptr, &image_index);
     if (result == vk::Result::eErrorOutOfDateKHR) return recreate_swap_chain() ? std::make_pair(nullptr, 1) : std::make_pair(nullptr, 0);
-    if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR) {
-      spdlog::error("Failed to acquire next image!");
-      return std::make_pair(nullptr, 0);
-    }
+    if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR) throw std::runtime_error("Failed to acquire next image!");
 
     _context->device().resetFences(_in_flight_fences[_current_frame].get());
 
@@ -239,10 +230,8 @@ class VulkanRenderer {
         result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || _framebuffer_resized) {
       _framebuffer_resized = false;
       return recreate_swap_chain();
-    } else if (result != vk::Result::eSuccess) {
-      spdlog::error("Failed to wait fence!");
-      return false;
-    }
+    } else if (result != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to wait fence!");
     _current_frame = (_current_frame + 1) % _max_frames_in_flight;
     return true;
   }

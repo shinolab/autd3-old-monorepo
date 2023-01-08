@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -137,9 +137,7 @@ class CPU {
     clear();
   }
 
-  [[nodiscard]] bool configure_local_trans_pos(const std::vector<driver::Vector3>& local_trans_pos) {
-    return _fpga.configure_local_trans_pos(local_trans_pos);
-  }
+  void configure_local_trans_pos(const std::vector<driver::Vector3>& local_trans_pos) { _fpga.configure_local_trans_pos(local_trans_pos); }
 
  private:
   static uint16_t get_addr(const uint8_t select, const uint16_t addr) {
@@ -357,7 +355,7 @@ class CPU {
         _stm_write += 1;
         break;
       default:
-        spdlog::error("Not supported GainSTM mode");
+        throw std::runtime_error("Not supported GainSTM mode");
     }
 
     if ((_stm_write & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) == 0)
@@ -410,11 +408,9 @@ class CPU {
         }
         break;
       case cpu::GAIN_STM_MODE_PHASE_HALF:
-        spdlog::error("Phase half mode is not supported in Normal GainSTM");
-        return;
+        throw std::runtime_error("Phase half mode is not supported in Normal GainSTM");
       default:
-        spdlog::error("Not supported GainSTM mode");
-        return;
+        throw std::runtime_error("Not supported GainSTM mode");
     }
 
     if ((_stm_write & cpu::GAIN_STM_BUF_SEGMENT_SIZE_MASK) == 0)

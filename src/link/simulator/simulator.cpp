@@ -43,18 +43,10 @@ class SimulatorImpl final : public core::Link {
         sizeof(uint8_t) + sizeof(uint32_t) + sizeof(uint32_t) * geometry.num_devices() + geometry.num_transducers() * sizeof(float) * 7;
 
     const auto size = (std::max)(datagram_size, geometry_size);
-    try {
-      _smem.create("autd3_simulator_smem", size);
-    } catch (std::exception& ex) {
-      spdlog::error("Failed to create shared memory: {}", ex.what());
-      return false;
-    }
+    _smem.create("autd3_simulator_smem", size);
     _ptr = static_cast<uint8_t*>(_smem.map());
 
-    if (!send(simulator_init_datagram(geometry))) {
-      spdlog::error("Failed to init simulator.");
-      return false;
-    }
+    if (!send(simulator_init_datagram(geometry))) throw std::runtime_error("Failed to init simulator.");
 
     for (size_t i = 0; i < 20; i++) {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -63,17 +55,13 @@ class SimulatorImpl final : public core::Link {
 
     _smem.unmap();
     _ptr = nullptr;
-    spdlog::error("Failed to open simulator. Make sure simulator is running.");
-    return false;
+    throw std::runtime_error("Failed to open simulator. Make sure simulator is running.");
   }
 
   bool close() override {
     if (!is_open()) return true;
 
-    if (!send(simulator_close_datagram())) {
-      spdlog::error("Failed to close simulator.");
-      return false;
-    }
+    if (!send(simulator_close_datagram())) throw std::runtime_error("Failed to close simulator.");
 
     _smem.unmap();
     _ptr = nullptr;

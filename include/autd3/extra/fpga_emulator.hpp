@@ -223,11 +223,9 @@ class FPGA {
     return std::make_pair(normal_duty(), normal_phase());
   }
 
-  [[nodiscard]] bool configure_local_trans_pos(const std::vector<driver::Vector3>& local_trans_pos) {
-    if (local_trans_pos.size() != _num_transducers) {
-      spdlog::error("The size of local_trans_pos is not the same as the number of transducers.");
-      return false;
-    }
+  void configure_local_trans_pos(const std::vector<driver::Vector3>& local_trans_pos) {
+    if (local_trans_pos.size() != _num_transducers)
+      throw std::runtime_error("The size of local_trans_pos is not the same as the number of transducers.");
 
     _tr_pos.resize(local_trans_pos.size());
     for (size_t i = 0; i < local_trans_pos.size(); i++) {
@@ -237,8 +235,6 @@ class FPGA {
 
       _tr_pos[i] = static_cast<uint64_t>(z) << 32 | static_cast<uint64_t>(x) << 16 | static_cast<uint64_t>(y);
     }
-
-    return true;
   }
 
  private:

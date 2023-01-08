@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -63,20 +63,14 @@ std::vector<std::string> split(const std::string& s, const char deliminator) {
 bool startup() {
 #ifdef _WIN32
   WSADATA wsa_data;
-  if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) {
-    spdlog::error("WSAStartup failed: {}", WSAGetLastError());
-    return false;
-  }
+  if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) throw std::runtime_error("WSAStartup failed: " + std::to_string(WSAGetLastError()));
 #endif
   return true;
 }
 
 bool cleanup() {
 #ifdef _WIN32
-  if (WSACleanup() != 0) {
-    spdlog::error("WSACleanup failed: {}", WSAGetLastError());
-    return false;
-  }
+  if (WSACleanup() != 0) throw std::runtime_error("WSACleanup failed: " + std::to_string(WSAGetLastError()));
 #endif
   return true;
 }
@@ -100,10 +94,7 @@ class RemoteTwinCATImpl final : public core::Link {
 
   bool open(const core::Geometry&) override {
     const auto octets = split(_server_ams_net_id, '.');
-    if (octets.size() != 6) {
-      spdlog::error("Ams net id must have 6 octets");
-      return false;
-    }
+    if (octets.size() != 6) throw std::runtime_error("Ams net id must have 6 octets");
 
     if (_server_ip.empty()) {
       for (auto i = 0; i < 3; i++) _server_ip += octets[i] + ".";
@@ -112,10 +103,7 @@ class RemoteTwinCATImpl final : public core::Link {
 
     if (!_client_ams_net_id.empty()) {
       const auto local_octets = split(_client_ams_net_id, '.');
-      if (local_octets.size() != 6) {
-        spdlog::error("Ams net id must have 6 octets");
-        return false;
-      }
+      if (local_octets.size() != 6) throw std::runtime_error("Ams net id must have 6 octets");
       bhf::ads::SetLocalAddress({static_cast<uint8_t>(std::stoi(local_octets[0])), static_cast<uint8_t>(std::stoi(local_octets[1])),
                                  static_cast<uint8_t>(std::stoi(local_octets[2])), static_cast<uint8_t>(std::stoi(local_octets[3])),
                                  static_cast<uint8_t>(std::stoi(local_octets[4])), static_cast<uint8_t>(std::stoi(local_octets[5]))});
@@ -128,14 +116,14 @@ class RemoteTwinCATImpl final : public core::Link {
     startup();
     if (const auto res = AdsAddRoute(this->_net_id, _server_ip.c_str()); res != 0) {
       cleanup();
-      spdlog::error("Could not connect to remote: {}", res);
+      throw std::runtime_error("Could not connect to remote: " + std::to_string(res));
     }
 
     this->_port = AdsPortOpenEx();
 
     if (this->_port == 0) {
       cleanup();
-      spdlog::error("Failed to open a new ADS port");
+      throw std::runtime_error("Failed to open a new ADS port");
     }
 
     return true;
@@ -143,8 +131,7 @@ class RemoteTwinCATImpl final : public core::Link {
 
   bool close() override {
     if (this->_port == 0) return true;
-    if (AdsPortCloseEx(this->_port) != 0) spdlog::error("Failed to close");
-
+    if (AdsPortCloseEx(this->_port) != 0) throw std::runtime_error("Failed to close");
     this->_port = 0;
     return cleanup();
   }
@@ -154,14 +141,8 @@ class RemoteTwinCATImpl final : public core::Link {
     const auto ret = AdsSyncWriteReqEx(this->_port, &p_addr, INDEX_GROUP, INDEX_OFFSET_BASE, static_cast<uint32_t>(tx.transmitting_size_in_bytes()),
                                        tx.data().data());
     if (ret == 0) return true;
-
-    if (ret == ADSERR_DEVICE_INVALIDSIZE) {
-      spdlog::error("The number of devices is invalid.");
-      return false;
-    }
-
-    spdlog::error("Error on sending data: {:#x}", ret);
-    return false;
+    if (ret == ADSERR_DEVICE_INVALIDSIZE) throw std::runtime_error("The number of devices is invalid.");
+    throw std::runtime_error("Error on sending data: " + std::to_string(ret));
   }
 
   bool receive(driver::RxDatagram& rx) override {
@@ -170,8 +151,7 @@ class RemoteTwinCATImpl final : public core::Link {
     const auto ret = AdsSyncReadReqEx2(this->_port, &p_addr, INDEX_GROUP, INDEX_OFFSET_BASE_READ,
                                        static_cast<uint32_t>(rx.messages().size() * sizeof(driver::RxMessage)), rx.messages().data(), &receive_bytes);
     if (ret == 0) return true;
-    spdlog::error("Error on receiving data: {:#x}", ret);
-    return false;
+    throw std::runtime_error("Error on receiving data: " + std::to_string(ret));
   }
 
   bool is_open() override { return this->_port > 0; }

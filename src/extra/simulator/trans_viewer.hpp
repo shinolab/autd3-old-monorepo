@@ -206,8 +206,7 @@ class TransViewer {
       return true;
     }
 
-    spdlog::error("Failed to create a pipeline!");
-    return false;
+    throw std::runtime_error("Failed to create a pipeline!");
   }
 
   [[nodiscard]] bool create_texture() {
@@ -226,10 +225,9 @@ class TransViewer {
       if (!staging_buffer || !staging_buffer_memory) return false;
 
       void* data;
-      if (_context->device().mapMemory(staging_buffer_memory.get(), 0, image_size, {}, &data) != vk::Result::eSuccess) {
-        spdlog::error("Failed to map texture buffer.");
-        return false;
-      }
+      if (_context->device().mapMemory(staging_buffer_memory.get(), 0, image_size, {}, &data) != vk::Result::eSuccess)
+        throw std::runtime_error("Failed to map texture buffer.");
+
       std::memcpy(data, pixels.data(), image_size);
       _context->device().unmapMemory(staging_buffer_memory.get());
 
@@ -298,10 +296,9 @@ class TransViewer {
     if (!staging_buffer || !staging_buffer_memory) return false;
 
     void* data;
-    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess) {
-      spdlog::error("Failed to map vertex buffer memory!");
-      return false;
-    }
+    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to map vertex buffer memory!");
+
     std::memcpy(data, vertices.data(), buffer_size);
     _context->device().unmapMemory(staging_buffer_memory.get());
 
@@ -343,10 +340,9 @@ class TransViewer {
     if (!staging_buffer || !staging_buffer_memory) return false;
 
     void* data;
-    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess) {
-      spdlog::error("Failed to map vertex buffer memory!");
-      return false;
-    }
+    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to map vertex buffer memory!");
+
     std::memcpy(data, models.data(), buffer_size);
     _context->device().unmapMemory(staging_buffer_memory.get());
 
@@ -376,10 +372,8 @@ class TransViewer {
     if (!staging_buffer || !staging_buffer_memory) return false;
 
     void* data;
-    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess) {
-      spdlog::error("Failed to map vertex buffer memory!");
-      return false;
-    }
+    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to map vertex buffer memory!");
     std::memcpy(data, colors.data(), buffer_size);
     _context->device().unmapMemory(staging_buffer_memory.get());
 
@@ -409,10 +403,9 @@ class TransViewer {
     if (!staging_buffer || !staging_buffer_memory) return false;
 
     void* data;
-    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess) {
-      spdlog::error("Failed to map vertex buffer memory!");
-      return false;
-    }
+    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to map vertex buffer memory!");
+
     std::memcpy(data, colors.data(), buffer_size);
     _context->device().unmapMemory(staging_buffer_memory.get());
 
@@ -429,10 +422,9 @@ class TransViewer {
     if (!staging_buffer || !staging_buffer_memory) return false;
 
     void* data;
-    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess) {
-      spdlog::error("Failed to map vertex buffer memory!");
-      return false;
-    }
+    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to map vertex buffer memory!");
+
     std::memcpy(data, indices.data(), buffer_size);
     _context->device().unmapMemory(staging_buffer_memory.get());
 
