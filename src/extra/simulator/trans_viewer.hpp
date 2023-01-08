@@ -204,6 +204,7 @@ class TransViewer {
                                                                               .setRenderPass(_renderer->render_pass()));
         result.result == vk::Result::eSuccess) {
       _pipeline = std::move(result.value);
+      return;
     }
 
     throw std::runtime_error("Failed to create a pipeline!");

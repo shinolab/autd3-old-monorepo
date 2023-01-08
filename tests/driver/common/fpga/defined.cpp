@@ -26,11 +26,9 @@ using autd3::driver::pi;
 TEST(DriverCommonFPGADefined, LegacyDrive) {
   using autd3::driver::LegacyDrive;
 
-  Drive s{};  // NOLINT
+  Drive s{0.0, 0.0};
   LegacyDrive d{};
 
-  s.phase = 0.0;
-  s.amp = 0.0;
   d.set(s);
   ASSERT_EQ(d.phase, 0);
   ASSERT_EQ(d.duty, 0);

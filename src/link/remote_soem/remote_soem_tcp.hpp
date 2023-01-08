@@ -48,7 +48,7 @@ class RemoteSOEMTcp final : public core::Link {
 #pragma warning(push)
 #pragma warning(disable : 6031)
     WSAData wsa_data{};
-    if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) throw std::runtime_error("WSAStartup failed: " + WSAGetLastError());
+    if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) throw std::runtime_error("WSAStartup failed: " + std::to_string(WSAGetLastError()));
 
 #pragma warning(pop)
 #endif
@@ -112,7 +112,7 @@ class RemoteSOEMTcp final : public core::Link {
 
 #if WIN32
     closesocket(_socket);
-    if (WSACleanup() != 0) throw std::runtime_error("WSACleanup failed: " + WSAGetLastError());
+    if (WSACleanup() != 0) throw std::runtime_error("WSACleanup failed: " + std::to_string(WSAGetLastError()));
 #else
     ::close(_socket);
 #endif

@@ -108,12 +108,13 @@ void Wav::calc() {
   buf.resize(data_size);
   std::generate(buf.begin(), buf.end(), [&] {
     if (bits_per_sample == 8) {
-      auto amp =
+      const auto amp =
           static_cast<driver::autd3_float_t>(read_from_stream<uint8_t>(fs)) / static_cast<driver::autd3_float_t>(std::numeric_limits<uint8_t>::max());
       return static_cast<uint8_t>(std::round(std::asin(std::clamp<driver::autd3_float_t>(amp, 0, 1)) / driver::pi * 510));
-    } else if (bits_per_sample == 16) {
+    }
+    if (bits_per_sample == 16) {
       const auto d32 = static_cast<int32_t>(read_from_stream<int16_t>(fs)) - std::numeric_limits<int16_t>::min();
-      auto amp = static_cast<driver::autd3_float_t>(d32) / static_cast<driver::autd3_float_t>(std::numeric_limits<uint16_t>::max());
+      const auto amp = static_cast<driver::autd3_float_t>(d32) / static_cast<driver::autd3_float_t>(std::numeric_limits<uint16_t>::max());
       return static_cast<uint8_t>(std::round(std::asin(std::clamp<driver::autd3_float_t>(amp, 0, 1)) / driver::pi * 510));
     }
     throw std::runtime_error("Unsupported format.");
