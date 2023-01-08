@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -104,23 +104,25 @@ struct FocusSTM final : STM {
     _op.device_map = geometry.device_map();
     _op.points.reserve(geometry.num_devices());
     size_t idx = 0;
-    for (size_t i = 0; i < geometry.num_devices(); i++) {
-      const Vector3 origin = geometry[idx].position();
-      const Quaternion rotation = geometry[idx].rotation();
-      const Eigen::Transform<driver::autd3_float_t, 3, Eigen::Affine> transform_matrix =
-          Eigen::Translation<driver::autd3_float_t, 3>(origin) * rotation;
-      const Eigen::Transform<driver::autd3_float_t, 3, Eigen::Affine> trans_inv = transform_matrix.inverse();
+    std::transform(geometry.device_map().begin(), geometry.device_map().end(), std::back_inserter(_op.points),
+                   [this, geometry, &idx](const size_t dev) {
+                     const Vector3 origin = geometry[idx].position();
+                     const Quaternion rotation = geometry[idx].rotation();
+                     const Eigen::Transform<driver::autd3_float_t, 3, Eigen::Affine> transform_matrix =
+                         Eigen::Translation<driver::autd3_float_t, 3>(origin) * rotation;
+                     const Eigen::Transform<driver::autd3_float_t, 3, Eigen::Affine> trans_inv = transform_matrix.inverse();
 
-      std::vector<driver::STMFocus> local_points;
-      local_points.reserve(_points.size());
-      std::transform(_points.begin(), _points.end(), std::back_inserter(local_points), [&trans_inv](const auto& p) {
-        const auto homo = Vector4(p.point[0], p.point[1], p.point[2], 1.0);
-        const Vector4 local_position = trans_inv * homo;
-        return driver::STMFocus(local_position.x(), local_position.y(), local_position.z(), p.shift);
-      });
-      _op.points.emplace_back(local_points);
-      idx += geometry.device_map()[i];
-    }
+                     std::vector<driver::STMFocus> local_points;
+                     local_points.reserve(_points.size());
+                     std::transform(_points.begin(), _points.end(), std::back_inserter(local_points), [&trans_inv](const auto& p) {
+                       const auto homo = Vector4(p.point[0], p.point[1], p.point[2], 1.0);
+                       const Vector4 local_position = trans_inv * homo;
+                       return driver::STMFocus(local_position.x(), local_position.y(), local_position.z(), p.shift);
+                     });
+
+                     idx += dev;
+                     return local_points;
+                   });
   }
 
   void pack(driver::TxDatagram& tx) override { _op.pack(tx); }

@@ -3,7 +3,7 @@
 // Created Date: 02/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -100,7 +100,7 @@ class RemoteSOEMTcp final : public core::Link {
           continue;
         }
         const auto n = ulen / size;
-        for (size_t i = 0; i < n; i++) std::memcpy(_ptr.get(), buffer.data() + i * size, ulen);
+        for (size_t i = 0; i < n; i++) std::memcpy(_ptr.get(), &buffer[i * size], ulen);
       }
     });
 

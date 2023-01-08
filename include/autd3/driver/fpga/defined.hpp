@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -71,6 +71,15 @@ struct LegacyDrive {
     phase = to_phase(d);
     duty = to_duty(d);
   }
+
+  LegacyDrive& operator=(const Drive& d) {
+    set(d);
+    return *this;
+  }
+  LegacyDrive& operator=(Drive&& d) {
+    set(d);
+    return *this;
+  }
 };
 
 /**
@@ -85,6 +94,13 @@ struct Phase {
   }
 
   void set(const Drive d, const uint16_t cycle) { phase = to_phase(d, cycle); }
+  explicit Phase(const Drive d, const uint16_t cycle) : phase(to_phase(d, cycle)) {}
+  explicit Phase(const uint16_t phase) : phase(phase) {}
+  Phase(const Phase& v) = default;
+  Phase& operator=(const Phase& obj) = default;
+  Phase(Phase&& obj) = default;
+  Phase& operator=(Phase&& obj) = default;
+  ~Phase() = default;
 };
 
 /**
@@ -98,6 +114,13 @@ struct Duty {
   }
 
   void set(const Drive d, const uint16_t cycle) { duty = to_duty(d, cycle); }
+  explicit Duty(const Drive d, const uint16_t cycle) : duty(to_duty(d, cycle)) {}
+  explicit Duty(const uint16_t duty) : duty(duty) {}
+  Duty(const Duty& v) = default;
+  Duty& operator=(const Duty& obj) = default;
+  Duty(Duty&& obj) = default;
+  Duty& operator=(Duty&& obj) = default;
+  ~Duty() = default;
 };
 
 /**

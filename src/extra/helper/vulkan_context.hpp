@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -114,11 +114,10 @@ class VulkanContext {
   [[nodiscard]] bool find_memory_type(const uint32_t type_filter, const vk::MemoryPropertyFlags properties, uint32_t& res) const {
     const auto mem_properties = _physical_device.getMemoryProperties();
     for (uint32_t i = 0; i < mem_properties.memoryTypeCount; i++)
-      if (type_filter & 1 << i)
-        if ((mem_properties.memoryTypes[i].propertyFlags & properties) == properties) {
-          res = i;
-          return true;
-        }
+      if ((type_filter & 1 << i) && (mem_properties.memoryTypes[i].propertyFlags & properties) == properties) {
+        res = i;
+        return true;
+      }
     spdlog::error("Failed to find suitable memory type!");
     return false;
   }
@@ -157,7 +156,7 @@ class VulkanContext {
 
     std::vector<const char*> extensions;
     extensions.reserve(glfw_extension_count);
-    for (uint32_t i = 0; i < glfw_extension_count; i++) extensions.emplace_back(glfw_extensions[i]);
+    std::copy_n(glfw_extensions, glfw_extension_count, std::back_inserter(extensions));
 #ifdef __APPLE__
     extensions.emplace_back("VK_KHR_portability_enumeration");
 #endif
@@ -487,7 +486,8 @@ class VulkanContext {
   static bool check_device_extension_support(const vk::PhysicalDevice& device, const std::vector<const char*>& extensions) {
     const std::vector<vk::ExtensionProperties> available_extensions = device.enumerateDeviceExtensionProperties();
     std::set<std::string> required_extensions(extensions.begin(), extensions.end());
-    for (const auto& extension : available_extensions) required_extensions.erase(extension.extensionName);
+    std::for_each(available_extensions.begin(), available_extensions.end(),
+                  [&required_extensions](const auto& extension) { required_extensions.erase(extension.extensionName); });
     return required_extensions.empty();
   }
 

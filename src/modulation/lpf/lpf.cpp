@@ -3,7 +3,7 @@
 // Created Date: 19/11/20.2f
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 20.2f Shun Suzuki. All rights reserved.
@@ -66,7 +66,7 @@ void LPF::calc() {
   std::vector<uint8_t> resampled;
   resampled.reserve(_modulation.buffer().size() * _modulation.sampling_frequency_division());
   for (const auto d : _modulation.buffer())
-    for (size_t i = 0; i < _modulation.sampling_frequency_division(); i++) resampled.emplace_back(d);
+    std::generate_n(std::back_inserter(resampled), _modulation.sampling_frequency_division(), [d] { return d; });
 
   std::vector<uint8_t> mf;
   if (resampled.size() % 2 == 0) {

@@ -182,11 +182,12 @@ class Grouped final : public core::Gain {
   }
 
   void calc(const core::Geometry& geometry) override {
-    for (const auto& [device_id, gain] : _gains) {
+    std::for_each(_gains.begin(), _gains.end(), [this, geometry](const auto& g) {
+      const auto& [device_id, gain] = g;
       gain->init(_mode, geometry);
       const auto start = device_id == 0 ? 0 : geometry.device_map()[device_id - 1];
-      std::memcpy(_op->drives.data() + start, gain->drives().data() + start, sizeof(driver::Drive) * geometry.device_map()[device_id]);
-    }
+      std::memcpy(&_op->drives[start], &gain->drives()[start], sizeof(autd3::driver::Drive) * geometry.device_map()[device_id]);
+    });
   }
 
   Grouped() : core::Gain() {}
@@ -208,10 +209,11 @@ class TransducerTest final : public core::Gain {
   TransducerTest() noexcept : _map(){};
 
   void calc(const core::Geometry& geometry) override {
-    for (const auto& [id, value] : _map) {
+    std::for_each(_map.begin(), _map.end(), [this](const auto& v) {
+      const auto& [id, value] = v;
       _op->drives[id].amp = value.first;
       _op->drives[id].phase = value.second;
-    }
+    });
   }
 
   /**

@@ -99,10 +99,10 @@ struct GainSTM final : STM {
     _op->freq_div = _freq_div;
     _op->mode = mode;
 
-    for (const auto& gain : _gains) {
+    std::transform(_gains.begin(), _gains.end(), std::back_inserter(_op->drives), [mode_, geometry](const auto& gain) {
       gain->init(mode_, geometry);
-      _op->drives.emplace_back(gain->drives());
-    }
+      return gain->drives();
+    });
   }
 
   void pack(driver::TxDatagram& tx) override { _op->pack(tx); }

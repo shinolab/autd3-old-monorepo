@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -48,18 +48,14 @@ inline int64_t ec_sync(const int64_t reftime, const int64_t cycletime, int64_t* 
 }
 
 inline void print_stats(const std::string& header, const std::vector<int64_t>& stats) {
-  int64_t min = std::numeric_limits<int64_t>::max();
-  int64_t max = std::numeric_limits<int64_t>::min();
-  int64_t sum = 0;
-  for (const auto s : stats) {
-    min = std::min(min, s);
-    max = std::max(max, s);
-    sum += s;
-  }
-  const auto ave = sum / static_cast<int64_t>(stats.size());
-  int64_t std = 0;
-  for (const auto s : stats) std += (s - ave) * (s - ave);
-  const auto stdd = std::sqrt(static_cast<double>(std) / static_cast<double>(stats.size()));
+  const int64_t min = std::accumulate(stats.begin(), stats.end(), std::numeric_limits<int64_t>::max(),
+                                      [](const int64_t min, const int64_t s) { return std::min(min, s); });
+  const int64_t max = std::accumulate(stats.begin(), stats.end(), std::numeric_limits<int64_t>::min(),
+                                      [](const int64_t max, const int64_t s) { return std::max(max, s); });
+  const int64_t ave = std::accumulate(stats.begin(), stats.end(), int64_t{0}) / static_cast<int64_t>(stats.size());
+  const int64_t stdd = std::sqrt(static_cast<double>(std::accumulate(stats.begin(), stats.end(), int64_t{0},
+                                                                     [ave](const int64_t acc, const int64_t s) { return (s - ave) * (s - ave); })) /
+                                 static_cast<double>(stats.size()));
   spdlog::debug("{}: {}+/-{} (Max.{} Min.{}) [us]", header, ave / 1000, stdd / 1000.0, max / 1000, min / 1000);
 }
 

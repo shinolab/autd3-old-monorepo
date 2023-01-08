@@ -3,7 +3,7 @@
 // Created Date: 16/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/08/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,6 +22,8 @@ namespace autd3::link {
  */
 class Bundle {
  public:
+  using value_type = core::LinkPtr;
+
   /**
    * @brief Create Bundle link
    */
@@ -34,6 +36,8 @@ class Bundle {
     _links.emplace_back(std::move(link));
     return *this;
   }
+
+  void push_back(core::LinkPtr link) { _links.emplace_back(std::move(link)); }
 
   /**
    * @brief Constructor

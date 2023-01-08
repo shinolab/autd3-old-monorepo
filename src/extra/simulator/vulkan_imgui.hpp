@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -397,12 +397,10 @@ class VulkanImGui {
 
         ImGui::Text("Color settings");
 
-        if (const char* items[] = {"Parula", "Heat", "Jet", "Turbo", "Hot", "Gray", "Magma", "Inferno", "Plasma", "Viridis", "Cividis", "Github",
-                                   "Cubehelix"};
-            ImGui::BeginCombo("Coloring", items[coloring_method_idx])) {
-          for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
+        if (ImGui::BeginCombo("Coloring", coloring_methods[coloring_method_idx])) {
+          for (int n = 0; n < static_cast<int>(coloring_methods.size()); n++) {
             const bool is_selected = coloring_method_idx == n;
-            if (ImGui::Selectable(items[n], is_selected)) {
+            if (ImGui::Selectable(coloring_methods[n], is_selected)) {
               if (coloring_method_idx != n) flag.set(UpdateFlags::UpdateColorMap);
               coloring_method_idx = n;
             }
@@ -478,13 +476,15 @@ class VulkanImGui {
           const auto show_id = "##show" + std::to_string(i);
           if (ImGui::Checkbox(show_id.c_str(), &visible[i])) {
             flag.set(UpdateFlags::UpdateSourceFlag);
-            for (size_t tr = 0; tr < sources[i].size(); tr++) sources[i].visibilities()[tr] = visible[i] ? 1.0f : 0.0f;
+            const auto v = visible[i] ? 1.0f : 0.0f;
+            std::generate(sources[i].visibilities().begin(), sources[i].visibilities().end(), [v] { return v; });
           }
           ImGui::SameLine();
           const auto enable_id = "##enable" + std::to_string(i);
           if (ImGui::Checkbox(enable_id.c_str(), &enable[i])) {
             flag.set(UpdateFlags::UpdateSourceFlag);
-            for (size_t tr = 0; tr < sources[i].size(); tr++) sources[i].drives()[tr].enable = enable[i] ? 1.0f : 0.0f;
+            const auto v = enable[i] ? 1.0f : 0.0f;
+            std::for_each(sources[i].drives().begin(), sources[i].drives().end(), [v](auto& drive) { drive.enable = v; });
           }
         }
 
@@ -759,6 +759,9 @@ class VulkanImGui {
   float _font_size = 16.0f;
   bool _update_font = false;
   float _cam_move_speed = 10.0f;
+
+  const std::vector<const char*> coloring_methods = {"Parula",  "Heat",   "Jet",     "Turbo",   "Hot",    "Gray",     "Magma",
+                                                     "Inferno", "Plasma", "Viridis", "Cividis", "Github", "Cubehelix"};
 
   bool _show_mod_plot{false};
   bool _show_mod_plot_raw{false};

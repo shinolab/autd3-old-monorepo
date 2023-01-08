@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -60,23 +60,21 @@ struct FocusSTM final : Operation {
 #else
       const auto sound_speed_internal = static_cast<uint32_t>(std::round(sound_speed / 1000 * 1024));
 #endif
-      for (size_t i = 0; i < tx.num_devices(); i++) {
-        auto& d = tx.body(i);
-        const auto* s = &points[i][_sent];
+      std::for_each(tx.begin(), tx.end(), [this, sound_speed_internal, send_size](const auto& body) {
+        const auto& [idx, d] = body;
         d.focus_stm_initial().set_size(static_cast<uint16_t>(send_size));
         d.focus_stm_initial().set_freq_div(freq_div);
         d.focus_stm_initial().set_sound_speed(sound_speed_internal);
         d.focus_stm_initial().set_stm_start_idx(start_idx.value_or(0));
         d.focus_stm_initial().set_stm_finish_idx(finish_idx.value_or(0));
-        d.focus_stm_initial().set_point(s, send_size);
-      }
+        d.focus_stm_initial().set_point(&points[idx][_sent], send_size);
+      });
     } else {
-      for (size_t i = 0; i < tx.num_devices(); i++) {
-        auto& d = tx.body(i);
-        const auto* s = &points[i][_sent];
+      std::for_each(tx.begin(), tx.end(), [this, send_size](const auto& body) {
+        const auto& [idx, d] = body;
         d.focus_stm_subsequent().set_size(static_cast<uint16_t>(send_size));
-        d.focus_stm_subsequent().set_point(s, send_size);
-      }
+        d.focus_stm_subsequent().set_point(&points[idx][_sent], send_size);
+      });
     }
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);

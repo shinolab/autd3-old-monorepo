@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,6 +27,25 @@ namespace autd3::driver {
  * transducers in the device * 2 bytes.
  */
 struct TxDatagram {
+  class TxBodyIterator {
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = std::pair<size_t, Body &>;
+
+    size_t _counter;
+
+    TxDatagram *_tx;
+
+   public:
+    explicit TxBodyIterator(TxDatagram *tx, const size_t counter = 0) : _counter(counter), _tx(tx) {}
+
+    value_type operator*() const { return {_counter, _tx->body(_counter)}; }
+    TxBodyIterator &operator++() {
+      _counter++;
+      return *this;
+    }
+    bool operator!=(const TxBodyIterator &x) const { return _counter != x._counter; }
+  };
+
   /**
    * @brief Number of valid Body data
    */
@@ -77,6 +96,11 @@ struct TxDatagram {
 
   void clear() { std::memset(_data.data(), 0, _data.size()); }
 
+  using iterator = TxBodyIterator;
+
+  iterator begin() { return iterator(this, 0); }
+  iterator end() { return iterator(this, num_devices()); }
+
  private:
   TxDatagram() : num_bodies(0) {}
 
@@ -97,6 +121,7 @@ struct RxMessage {
    */
   uint8_t msg_id;
 
+  RxMessage(const uint8_t ack, const uint8_t msg_id) noexcept : ack(ack), msg_id(msg_id) {}
   RxMessage() noexcept : ack(), msg_id() {}
 };
 

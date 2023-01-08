@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -73,10 +73,10 @@ struct GainSTM4CAPI final : autd3::core::STM {
     _op->freq_div = _freq_div;
     _op->mode = mode;
 
-    for (const auto& gain : _gains) {
+    std::transform(_gains.begin(), _gains.end(), std::back_inserter(_op->drives), [mode_, geometry](const auto& gain) {
       gain->init(mode_, geometry);
-      _op->drives.emplace_back(gain->drives());
-    }
+      return gain->drives();
+    });
   }
 
   void pack(autd3::driver::TxDatagram& tx) override { _op->pack(tx); }
