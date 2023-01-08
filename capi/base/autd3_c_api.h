@@ -19,10 +19,10 @@ extern "C" {
 EXPORT_AUTD void AUTDSetLogLevel(IN int32_t level);
 EXPORT_AUTD void AUTDSetDefaultLogger(IN void* out, IN void* flush);
 EXPORT_AUTD void AUTDCreateController(OUT void** out);
-EXPORT_AUTD void AUTDOpenController(IN void* handle, IN void* link);
-EXPORT_AUTD void AUTDAddDevice(IN void* handle, IN autd3_float_t x, IN autd3_float_t y, IN autd3_float_t z, IN autd3_float_t rz1, IN autd3_float_t ry,
+EXPORT_AUTD bool AUTDOpenController(IN void* handle, IN void* link);
+EXPORT_AUTD bool AUTDAddDevice(IN void* handle, IN autd3_float_t x, IN autd3_float_t y, IN autd3_float_t z, IN autd3_float_t rz1, IN autd3_float_t ry,
                                IN autd3_float_t rz2);
-EXPORT_AUTD void AUTDAddDeviceQuaternion(IN void* handle, IN autd3_float_t x, IN autd3_float_t y, IN autd3_float_t z, IN autd3_float_t qw,
+EXPORT_AUTD bool AUTDAddDeviceQuaternion(IN void* handle, IN autd3_float_t x, IN autd3_float_t y, IN autd3_float_t z, IN autd3_float_t qw,
                                          IN autd3_float_t qx, IN autd3_float_t qy, IN autd3_float_t qz);
 EXPORT_AUTD bool AUTDClose(IN void* handle);
 EXPORT_AUTD void AUTDFreeController(IN const void* handle);

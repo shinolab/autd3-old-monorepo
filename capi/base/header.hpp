@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,3 +33,22 @@ typedef float autd3_float_t;
 #else
 typedef double autd3_float_t;
 #endif
+
+#define AUTD3_CAPI_TRY_RET(action, ret_if_failed) \
+  try {                                           \
+    action;                                       \
+  } catch (std::exception & ex) {                 \
+    spdlog::error(ex.what());                     \
+    return ret_if_failed;                         \
+  }
+#define AUTD3_CAPI_TRY_RET_BOOL(action) \
+  try {                                 \
+    action;                             \
+    return true;                        \
+  } catch (std::exception & ex) {       \
+    spdlog::error(ex.what());           \
+    return false;                       \
+  }
+#define AUTD3_CAPI_GET_2ND_ARG(arg0, arg1, arg2, ...) arg2
+#define AUTD3_CAPI_TRY_MACRO_CHOOSER(...) AUTD3_CAPI_GET_2ND_ARG(__VA_ARGS__, AUTD3_CAPI_TRY_RET, AUTD3_CAPI_TRY_RET_BOOL, )
+#define AUTD3_CAPI_TRY(...) AUTD3_CAPI_TRY_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__)
