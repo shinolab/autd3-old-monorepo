@@ -20,7 +20,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-EXPORT_AUTD void AUTDExtraGeometryViewer(IN void* cnt, IN int32_t width, IN int32_t height, IN bool vsync, IN int32_t gpu_idx);
+EXPORT_AUTD bool AUTDExtraGeometryViewer(IN void* cnt, IN int32_t width, IN int32_t height, IN bool vsync, IN int32_t gpu_idx);
 #ifdef __cplusplus
 }
 #endif

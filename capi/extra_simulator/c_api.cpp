@@ -13,26 +13,34 @@
 #include <fstream>
 #include <string>
 
+#include "../../src/spdlog.hpp"
 #include "./simulator.h"
 #include "autd3/extra/simulator.hpp"
 
-void AUTDExtraSimulator(const char* settings_path, const bool vsync, const int32_t gpu_idx) {
-  const auto setting_file = std::string(settings_path);
+bool AUTDExtraSimulator(const char* settings_path, const bool vsync, const int32_t gpu_idx) {
+  try {
+    const auto setting_file = std::string(settings_path);
 
-  autd3::extra::SimulatorSettings settings;
-  settings.vsync = vsync;
-  settings.gpu_idx = gpu_idx;
+    autd3::extra::SimulatorSettings settings;
+    settings.vsync = vsync;
+    settings.gpu_idx = gpu_idx;
 
-  if (std::filesystem::exists(setting_file)) {
-    std::ifstream i(setting_file);
-    nlohmann::json j;
-    i >> j;
-    settings = j.get<autd3::extra::SimulatorSettings>();
+    if (std::filesystem::exists(setting_file)) {
+      std::ifstream i(setting_file);
+      nlohmann::json j;
+      i >> j;
+      settings = j.get<autd3::extra::SimulatorSettings>();
+    }
+
+    autd3::extra::Simulator().settings(settings).run();
+
+    nlohmann::json j = settings;
+    std::ofstream o(setting_file);
+    o << std::setw(4) << j << std::endl;
+    return true;
+  } catch (std::exception& ex) {
+    spdlog::error(ex.what());
+
+    return false;
   }
-
-  autd3::extra::Simulator().settings(settings).run();
-
-  nlohmann::json j = settings;
-  std::ofstream o(setting_file);
-  o << std::setw(4) << j << std::endl;
 }

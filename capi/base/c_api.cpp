@@ -15,7 +15,6 @@
 #include <string>
 #include <utility>
 
-#include "../../src/spdlog.hpp"
 #include "./autd3_c_api.h"
 #include "autd3.hpp"
 #include "autd3/modulation/lpf.hpp"
@@ -41,71 +40,81 @@ void AUTDSetDefaultLogger(void* out, void* flush) {
 
 void AUTDCreateController(void** out) { *out = new Controller; }
 
-void AUTDOpenController(void* const handle, void* const link) {
+bool AUTDOpenController(void* const handle, void* const link) {
   auto* const wrapper = static_cast<Controller*>(handle);
   auto* w_link = static_cast<LinkWrapper*>(link);
   autd3::LinkPtr link_ = std::move(w_link->ptr);
   link_delete(w_link);
-  return wrapper->open(std::move(link_));
+  AUTD3_CAPI_TRY(wrapper->open(std::move(link_));)
 }
 
-void AUTDAddDevice(void* const handle, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const autd3_float_t rz1,
+bool AUTDAddDevice(void* const handle, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const autd3_float_t rz1,
                    const autd3_float_t ry, const autd3_float_t rz2) {
   auto* const wrapper = static_cast<Controller*>(handle);
-  wrapper->geometry().add_device(autd3::AUTD3(to_vec3(x, y, z), to_vec3(rz1, ry, rz2)));
+  AUTD3_CAPI_TRY(wrapper->geometry().add_device(autd3::AUTD3(to_vec3(x, y, z), to_vec3(rz1, ry, rz2)));)
 }
 
-void AUTDAddDeviceQuaternion(void* const handle, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const autd3_float_t qw,
+bool AUTDAddDeviceQuaternion(void* const handle, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const autd3_float_t qw,
                              const autd3_float_t qx, const autd3_float_t qy, const autd3_float_t qz) {
   auto* const wrapper = static_cast<Controller*>(handle);
-  wrapper->geometry().add_device(autd3::AUTD3(to_vec3(x, y, z), to_quaternion(qw, qx, qy, qz)));
+  AUTD3_CAPI_TRY(wrapper->geometry().add_device(autd3::AUTD3(to_vec3(x, y, z), to_quaternion(qw, qx, qy, qz)));)
 }
 
 bool AUTDClose(void* const handle) {
   auto* const wrapper = static_cast<Controller*>(handle);
-  return wrapper->close();
+  AUTD3_CAPI_TRY(return wrapper->close(), false)
 }
 
 void AUTDFreeController(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   delete wrapper;
 }
+
 bool AUTDIsOpen(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   return wrapper->is_open();
 }
+
 bool AUTDGetForceFan(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   return wrapper->force_fan();
 }
+
 bool AUTDGetReadsFPGAInfo(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   return wrapper->reads_fpga_info();
 }
+
 uint64_t AUTDGetAckCheckTimeout(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(wrapper->get_ack_check_timeout()).count());
 }
+
 uint64_t AUTDGetSendInterval(const void* const handle) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(wrapper->get_send_interval()).count());
 }
+
 void AUTDSetForceFan(void* const handle, const bool force) {
   auto* const wrapper = static_cast<Controller*>(handle);
   wrapper->force_fan() = force;
 }
+
 void AUTDSetReadsFPGAInfo(void* const handle, const bool reads_fpga_info) {
   auto* const wrapper = static_cast<Controller*>(handle);
   wrapper->reads_fpga_info() = reads_fpga_info;
 }
+
 void AUTDSetAckCheckTimeout(void* const handle, const uint64_t timeout) {
   auto* const wrapper = static_cast<Controller*>(handle);
   wrapper->set_ack_check_timeout(std::chrono::nanoseconds(timeout));
 }
+
 void AUTDSetSendInterval(void* const handle, const uint64_t interval) {
   auto* const wrapper = static_cast<Controller*>(handle);
   wrapper->set_send_interval(std::chrono::nanoseconds(interval));
 }
+
 autd3_float_t AUTDGetTransFrequency(const void* const handle, const int32_t trans_idx) {
   const auto* const wrapper = static_cast<const Controller*>(handle);
   return wrapper->geometry()[trans_idx].frequency();
@@ -197,6 +206,7 @@ void AUTDTransXDirection(const void* const handle, const int32_t trans_idx, autd
   *y = pos.y();
   *z = pos.z();
 }
+
 void AUTDTransYDirection(const void* const handle, const int32_t trans_idx, autd3_float_t* x, autd3_float_t* y, autd3_float_t* z) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   const auto& pos = wrapper->geometry()[trans_idx].y_direction();
@@ -204,6 +214,7 @@ void AUTDTransYDirection(const void* const handle, const int32_t trans_idx, autd
   *y = pos.y();
   *z = pos.z();
 }
+
 void AUTDTransZDirection(const void* const handle, const int32_t trans_idx, autd3_float_t* x, autd3_float_t* y, autd3_float_t* z) {
   const auto* wrapper = static_cast<const Controller*>(handle);
   const auto& pos = wrapper->geometry()[trans_idx].z_direction();
@@ -213,12 +224,16 @@ void AUTDTransZDirection(const void* const handle, const int32_t trans_idx, autd
 }
 
 int32_t AUTDGetFirmwareInfoListPointer(void* const handle, void** out) {
-  auto* const wrapper = static_cast<Controller*>(handle);
-  const auto res = wrapper->firmware_infos();
-  if (res.empty()) return 0;
-  auto* list = firmware_info_list_create(res);
-  *out = list;
-  return static_cast<int32_t>(res.size());
+  try {
+    auto* const wrapper = static_cast<Controller*>(handle);
+    const auto res = wrapper->firmware_infos();
+    auto* list = firmware_info_list_create(res);
+    *out = list;
+    return static_cast<int32_t>(res.size());
+  } catch (std::exception& ex) {
+    spdlog::error(ex.what());
+    return -1;
+  }
 }
 
 void AUTDGetFirmwareInfo(const void* const p_firm_info_list, const int32_t index, char* info) {
@@ -226,6 +241,7 @@ void AUTDGetFirmwareInfo(const void* const p_firm_info_list, const int32_t index
   const auto& info_ = wrapper->list[index].to_string();
   std::char_traits<char>::copy(info, info_.c_str(), info_.size() + 1);
 }
+
 void AUTDFreeFirmwareInfoListPointer(const void* const p_firm_info_list) {
   const auto* wrapper = static_cast<const FirmwareInfoListWrapper*>(p_firm_info_list);
   firmware_info_list_delete(wrapper);
@@ -250,10 +266,12 @@ void AUTDGainGroupedAdd(void* grouped_gain, const int32_t device_id, void* gain)
 void AUTDGainFocus(void** gain, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const autd3_float_t amp) {
   *gain = new autd3::gain::Focus(to_vec3(x, y, z), amp);
 }
+
 void AUTDGainBesselBeam(void** gain, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const autd3_float_t n_x,
                         const autd3_float_t n_y, const autd3_float_t n_z, const autd3_float_t theta_z, const autd3_float_t amp) {
   *gain = new autd3::gain::BesselBeam(to_vec3(x, y, z), to_vec3(n_x, n_y, n_z), theta_z, amp);
 }
+
 void AUTDGainPlaneWave(void** gain, const autd3_float_t n_x, const autd3_float_t n_y, const autd3_float_t n_z, const autd3_float_t amp) {
   *gain = new autd3::gain::PlaneWave(to_vec3(n_x, n_y, n_z), amp);
 }
@@ -297,18 +315,22 @@ void AUTDModulationLPF(void** mod, void* mod_in) {
 void AUTDModulationCustom(void** mod, const uint8_t* buffer, const uint64_t size, const uint32_t freq_div) {
   *mod = new CustomModulation(buffer, static_cast<size_t>(size), freq_div);
 }
+
 uint32_t AUTDModulationSamplingFrequencyDivision(const void* const mod) {
   const auto* const m = static_cast<const autd3::Modulation*>(mod);
   return m->sampling_frequency_division();
 }
+
 void AUTDModulationSetSamplingFrequencyDivision(void* const mod, const uint32_t freq_div) {
   auto* const m = static_cast<autd3::Modulation*>(mod);
   m->sampling_frequency_division() = freq_div;
 }
+
 autd3_float_t AUTDModulationSamplingFrequency(const void* const mod) {
   const auto* const m = static_cast<const autd3::Modulation*>(mod);
   return m->sampling_frequency();
 }
+
 void AUTDDeleteModulation(const void* const mod) {
   const auto* m = static_cast<const autd3::Modulation*>(mod);
   delete m;
@@ -317,19 +339,23 @@ void AUTDDeleteModulation(const void* const mod) {
 void AUTDFocusSTM(void** out) { *out = new autd3::FocusSTM(); }
 
 void AUTDGainSTM(void** out) { *out = new GainSTM4CAPI; }
+
 void AUTDFocusSTMAdd(void* const stm, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const uint8_t shift) {
   auto* const stm_w = static_cast<autd3::FocusSTM*>(stm);
   stm_w->add(to_vec3(x, y, z), shift);
 }
+
 void AUTDGainSTMAdd(void* const stm, void* const gain) {
   auto* const stm_w = static_cast<GainSTM4CAPI*>(stm);
   auto* const g = static_cast<autd3::Gain*>(gain);
   stm_w->add(g);
 }
+
 uint16_t AUTDGetGainSTMMode(void* const stm) {
   auto* const stm_w = static_cast<GainSTM4CAPI*>(stm);
   return static_cast<uint16_t>(stm_w->mode);
 }
+
 void AUTDSetGainSTMMode(void* const stm, uint16_t mode) {
   auto* const stm_w = static_cast<GainSTM4CAPI*>(stm);
   stm_w->mode = static_cast<autd3::GainSTMMode>(mode);
@@ -367,22 +393,27 @@ autd3_float_t AUTDSTMSetFrequency(void* const stm, const autd3_float_t freq) {
   auto* const stm_w = static_cast<autd3::core::STM*>(stm);
   return stm_w->set_frequency(freq);
 }
+
 autd3_float_t AUTDSTMFrequency(const void* const stm) {
   const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
   return stm_w->frequency();
 }
+
 autd3_float_t AUTDSTMSamplingFrequency(const void* const stm) {
   const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
   return stm_w->sampling_frequency();
 }
+
 uint32_t AUTDSTMSamplingFrequencyDivision(const void* const stm) {
   const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
   return stm_w->sampling_frequency_division();
 }
+
 void AUTDSTMSetSamplingFrequencyDivision(void* const stm, const uint32_t freq_div) {
   auto* const stm_w = static_cast<autd3::core::STM*>(stm);
   stm_w->sampling_frequency_division() = freq_div;
 }
+
 void AUTDDeleteSTM(const void* const stm) {
   const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
   delete stm_w;
@@ -404,6 +435,7 @@ void AUTDDeleteSpecialData(const void* const data) {
 }
 
 void AUTDCreateSilencer(void** out, const uint16_t step, const uint16_t cycle) { *out = new autd3::SilencerConfig(step, cycle); }
+
 void AUTDDeleteSilencer(const void* config) {
   const auto* const config_ = static_cast<const autd3::SilencerConfig*>(config);
   delete config_;
@@ -414,19 +446,20 @@ bool AUTDSend(void* const handle, void* const header, void* const body) {
   auto* const wrapper = static_cast<Controller*>(handle);
   auto* const h = static_cast<autd3::core::DatagramHeader*>(header);
   auto* const b = static_cast<autd3::core::DatagramBody*>(body);
-  if (header == nullptr) return wrapper->send(*b);
-  if (body == nullptr) return wrapper->send(*h);
-  return wrapper->send(*h, *b);
+  if (header == nullptr) AUTD3_CAPI_TRY(return wrapper->send(*b), false)
+  if (body == nullptr) AUTD3_CAPI_TRY(return wrapper->send(*h), false)
+  AUTD3_CAPI_TRY(return wrapper->send(*h, *b), false)
 }
 
 bool AUTDSendSpecial(void* const handle, void* const special) {
   auto* const wrapper = static_cast<Controller*>(handle);
   auto* const s = static_cast<autd3::SpecialData*>(special);
-  return wrapper->send(s);
+  AUTD3_CAPI_TRY(return wrapper->send(s), false)
 }
 
 void AUTDSendAsync(void* const handle, void* header, void* body) {
   if (header == nullptr && body == nullptr) return;
+
   auto* const wrapper = static_cast<Controller*>(handle);
   auto h = std::unique_ptr<autd3::core::DatagramHeader>(static_cast<autd3::core::DatagramHeader*>(header));
   auto b = std::unique_ptr<autd3::core::DatagramBody>(static_cast<autd3::core::DatagramBody*>(body));
@@ -463,6 +496,7 @@ void AUTDSetModDelay(void* const handle, const int32_t trans_idx, const uint16_t
 }
 
 void AUTDCreateAmplitudes(void** out, const autd3_float_t amp) { *out = new autd3::core::Amplitudes(amp); }
+
 void AUTDDeleteAmplitudes(IN const void* amplitudes) {
   const auto* const amps_ = static_cast<const autd3::core::Amplitudes*>(amplitudes);
   delete amps_;
@@ -486,32 +520,43 @@ void AUTDSetMode(void* const handle, const uint8_t mode) {
 }
 
 void AUTDSoftwareSTM(void** out) { *out = new autd3::SoftwareSTM; }
+
 void AUTDSoftwareSTMSetStrategy(void* stm, const uint8_t strategy) {
   static_cast<autd3::SoftwareSTM*>(stm)->timer_strategy =
       autd3::SoftwareSTM::TimerStrategy(static_cast<autd3::SoftwareSTM::TimerStrategy::Value>(strategy));
 }
+
 EXPORT_AUTD void AUTDSoftwareSTMAdd(void* stm, void* gain) {
   static_cast<autd3::SoftwareSTM*>(stm)->add(std::shared_ptr<autd3::core::Gain>(static_cast<autd3::core::Gain*>(gain)));
 }
+
 EXPORT_AUTD void AUTDSoftwareSTMStart(void** handle, void* stm, void* cnt) {
   *handle = new autd3::SoftwareSTM::SoftwareSTMThreadHandle(static_cast<autd3::SoftwareSTM*>(stm)->start(*static_cast<Controller*>(cnt)));
 }
+
 EXPORT_AUTD void AUTDSoftwareSTMFinish(void* handle) {
   auto* h = static_cast<autd3::SoftwareSTM::SoftwareSTMThreadHandle*>(handle);
   h->finish();
 }
+
 EXPORT_AUTD autd3_float_t AUTDSoftwareSTMSetFrequency(void* stm, const autd3_float_t freq) {
   return static_cast<autd3::SoftwareSTM*>(stm)->set_frequency(freq);
 }
+
 EXPORT_AUTD autd3_float_t AUTDSoftwareSTMFrequency(const void* stm) { return static_cast<const autd3::SoftwareSTM*>(stm)->frequency(); }
+
 EXPORT_AUTD uint64_t AUTDSoftwareSTMPeriod(const void* stm) { return static_cast<const autd3::SoftwareSTM*>(stm)->period(); }
+
 EXPORT_AUTD autd3_float_t AUTDSoftwareSTMSamplingFrequency(const void* stm) {
   return static_cast<const autd3::SoftwareSTM*>(stm)->sampling_frequency();
 }
+
 EXPORT_AUTD uint64_t AUTDSoftwareSTMSamplingPeriod(const void* stm) { return static_cast<const autd3::SoftwareSTM*>(stm)->sampling_period_ns(); }
+
 EXPORT_AUTD void AUTDSoftwareSTMSetSamplingPeriod(void* stm, const uint64_t period) {
   static_cast<autd3::SoftwareSTM*>(stm)->sampling_period_ns() = period;
 }
+
 EXPORT_AUTD void AUTDDeleteSoftwareSTM(const void* stm) {
   const auto* const stm_ = static_cast<const autd3::SoftwareSTM*>(stm);
   delete stm_;
