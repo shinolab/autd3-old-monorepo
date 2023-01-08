@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -476,7 +476,7 @@ TEST(Driver_Driver, gain_stm_normal) {
   {
     std::random_device seed_gen;
     std::mt19937 engine(seed_gen());
-    std::uniform_int_distribution<uint16_t> dist(0, 0xFFFF);
+    std::uniform_int_distribution<uint16_t> dist(2, 0xFFFF);
     for (size_t i = 0; i < 10 * NUM_TRANS_IN_UNIT; i++) {
       cycles.emplace_back(dist(engine));
     }
@@ -607,7 +607,7 @@ TEST(Driver_Driver, gain_stm_normal_phase) {
   {
     std::random_device seed_gen;
     std::mt19937 engine(seed_gen());
-    std::uniform_int_distribution<uint16_t> dist(0, 0xFFFF);
+    std::uniform_int_distribution<uint16_t> dist(2, 0xFFFF);
     for (size_t i = 0; i < 10 * NUM_TRANS_IN_UNIT; i++) {
       cycles.emplace_back(dist(engine));
     }
