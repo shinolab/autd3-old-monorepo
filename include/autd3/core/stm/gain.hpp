@@ -69,6 +69,12 @@ struct GainSTM final : STM {
     _gains.emplace_back(std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain)));
   }
 
+  /**
+   * @brief Add gain
+   * @param[in] gain gain
+   */
+  void add(std::shared_ptr<core::Gain> b) { _gains.emplace_back(std::move(b)); }
+
   driver::GainSTMMode mode{driver::GainSTMMode::PhaseDutyFull};
 
   [[nodiscard]] size_t size() const override { return _gains.size(); }

@@ -20,8 +20,6 @@
 #include "autd3/modulation/lpf.hpp"
 #include "custom.hpp"
 #include "custom_sink.hpp"
-#include "gain_stm.hpp"
-#include "grouped.hpp"
 #include "wrapper.hpp"
 #include "wrapper_link.hpp"
 
@@ -253,14 +251,14 @@ void AUTDGainNull(void** gain) {
 }
 
 void AUTDGainGrouped(void** gain) {
-  auto* g = new Grouped4CAPI;
+  auto* g = new autd3::gain::Grouped;
   *gain = g;
 }
 
 void AUTDGainGroupedAdd(void* grouped_gain, const int32_t device_id, void* gain) {
-  auto* const gg = static_cast<Grouped4CAPI*>(grouped_gain);
+  auto* const gg = static_cast<autd3::gain::Grouped*>(grouped_gain);
   auto* const g = static_cast<autd3::Gain*>(gain);
-  gg->add(device_id, g);
+  gg->add(device_id, std::shared_ptr<autd3::core::Gain>(static_cast<autd3::core::Gain*>(g), [](autd3::core::Gain*) {}));
 }
 
 void AUTDGainFocus(void** gain, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const autd3_float_t amp) {
@@ -338,7 +336,7 @@ void AUTDDeleteModulation(const void* const mod) {
 
 void AUTDFocusSTM(void** out) { *out = new autd3::FocusSTM(); }
 
-void AUTDGainSTM(void** out) { *out = new GainSTM4CAPI; }
+void AUTDGainSTM(void** out) { *out = new autd3::GainSTM; }
 
 void AUTDFocusSTMAdd(void* const stm, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const uint8_t shift) {
   auto* const stm_w = static_cast<autd3::FocusSTM*>(stm);
@@ -346,18 +344,18 @@ void AUTDFocusSTMAdd(void* const stm, const autd3_float_t x, const autd3_float_t
 }
 
 void AUTDGainSTMAdd(void* const stm, void* const gain) {
-  auto* const stm_w = static_cast<GainSTM4CAPI*>(stm);
+  auto* const stm_w = static_cast<autd3::GainSTM*>(stm);
   auto* const g = static_cast<autd3::Gain*>(gain);
-  stm_w->add(g);
+  stm_w->add(std::shared_ptr<autd3::core::Gain>(static_cast<autd3::core::Gain*>(g), [](autd3::core::Gain*) {}));
 }
 
 uint16_t AUTDGetGainSTMMode(void* const stm) {
-  auto* const stm_w = static_cast<GainSTM4CAPI*>(stm);
+  auto* const stm_w = static_cast<autd3::GainSTM*>(stm);
   return static_cast<uint16_t>(stm_w->mode);
 }
 
 void AUTDSetGainSTMMode(void* const stm, uint16_t mode) {
-  auto* const stm_w = static_cast<GainSTM4CAPI*>(stm);
+  auto* const stm_w = static_cast<autd3::GainSTM*>(stm);
   stm_w->mode = static_cast<autd3::GainSTMMode>(mode);
 }
 
@@ -527,7 +525,7 @@ void AUTDSoftwareSTMSetStrategy(void* stm, const uint8_t strategy) {
 }
 
 EXPORT_AUTD void AUTDSoftwareSTMAdd(void* stm, void* gain) {
-  static_cast<autd3::SoftwareSTM*>(stm)->add(std::shared_ptr<autd3::core::Gain>(static_cast<autd3::core::Gain*>(gain)));
+  static_cast<autd3::SoftwareSTM*>(stm)->add(std::shared_ptr<autd3::core::Gain>(static_cast<autd3::core::Gain*>(gain), [](autd3::core::Gain*) {}));
 }
 
 EXPORT_AUTD void AUTDSoftwareSTMStart(void** handle, void* stm, void* cnt) {
