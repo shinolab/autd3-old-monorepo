@@ -33,22 +33,12 @@ core::Geometry& Controller::geometry() noexcept { return _geometry; }
 const core::Geometry& Controller::geometry() const noexcept { return _geometry; }
 
 bool Controller::open(core::LinkPtr link) {
-  if (_geometry.num_transducers() == 0) {
-    spdlog::error("Please add devices before opening.");
-    return false;
-  }
+  if (_geometry.num_transducers() == 0) throw std::runtime_error("Please add devices before opening.");
 
-  spdlog::debug("Open Controller with {} transducers.", _geometry.num_transducers());
+  if (link == nullptr) throw std::runtime_error("link is null");
 
-  if (link == nullptr) {
-    spdlog::error("link is null");
-    return false;
-  }
   _link = std::move(link);
-  if (!_link->open(_geometry)) {
-    spdlog::error("Failed to open link.");
-    return false;
-  }
+  if (!_link->open(_geometry)) throw std::runtime_error("Failed to open link.");
 
   _tx_buf = driver::TxDatagram(_geometry.device_map());
   _rx_buf = driver::RxDatagram(_geometry.num_devices());
@@ -76,9 +66,6 @@ bool Controller::open(core::LinkPtr link) {
         _tx_buf.header().msg_id = msg_id;
         data.header->pack(_tx_buf);
         data.body->pack(_tx_buf);
-        spdlog::debug("Sending data ({}) asynchronously", msg_id);
-        spdlog::debug("Timeout: {} [ms]",
-                      static_cast<driver::autd3_float_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(data.timeout).count()) / 1000 / 1000);
         if (!_link->send(_tx_buf)) {
           spdlog::warn("Failed to send data ({}). Trying to resend...", msg_id);
           break;
@@ -87,11 +74,9 @@ bool Controller::open(core::LinkPtr link) {
           spdlog::warn("Could not confirm if the data ({}) was processed successfully.", msg_id);
           break;
         }
-        spdlog::debug("Sending data ({}) succeeded.", msg_id);
         if (data.header->is_finished() && data.body->is_finished()) {
           data.header = nullptr;
           data.body = nullptr;
-          spdlog::debug("All data has been sent successfully.");
           break;
         }
         if (no_wait) std::this_thread::sleep_for(_send_interval);
@@ -108,19 +93,12 @@ bool Controller::open(core::LinkPtr link) {
 }
 
 bool Controller::close() {
-  if (!is_open()) {
-    spdlog::debug("Controller is not opened.");
-    return true;
-  }
-
+  if (!is_open()) return true;
   _send_th_running = false;
   _send_cond.notify_all();
-  spdlog::debug("Stopping asynchronous send thread...");
   if (_send_th.joinable()) _send_th.join();
-  spdlog::debug("Stopping asynchronous send thread...done");
-
-  if (!send(autd3::stop())) spdlog::error("Failed to stop outputting.");
-  if (!send(autd3::clear())) spdlog::error("Failed to clear.");
+  if (!send(autd3::stop())) spdlog::warn("Failed to stop outputting.");
+  if (!send(autd3::clear())) spdlog::warn("Failed to clear.");
   return _link->close();
 }
 
@@ -146,30 +124,20 @@ std::vector<driver::FirmwareInfo> Controller::firmware_infos() {
 
   driver::CPUVersion().pack(_tx_buf);
   const auto cpu_versions = pack_ack();
-  if (cpu_versions.empty()) {
-    spdlog::error("Failed to get firmware information.");
-    return firmware_infos;
-  }
+  if (cpu_versions.empty()) throw std::runtime_error("Failed to get firmware information.");
 
   driver::FPGAVersion().pack(_tx_buf);
   const auto fpga_versions = pack_ack();
-  if (fpga_versions.empty()) {
-    spdlog::error("Failed to get firmware information.");
-    return firmware_infos;
-  }
+  if (fpga_versions.empty()) throw std::runtime_error("Failed to get firmware information.");
 
   driver::FPGAFunctions().pack(_tx_buf);
   const auto fpga_functions = pack_ack();
-  if (fpga_functions.empty()) {
-    spdlog::error("Failed to get firmware information.");
-    return firmware_infos;
-  }
+  if (fpga_functions.empty()) throw std::runtime_error("Failed to get firmware information.");
+
   for (size_t i = 0; i < cpu_versions.size(); i++) firmware_infos.emplace_back(i, cpu_versions[i], fpga_versions[i], fpga_functions[i]);
 
   for (const auto& info : firmware_infos) {
-    if (info.cpu_version_num() != info.fpga_version_num())
-      spdlog::error("FPGA firmware version {} and CPU firmware version {} do not match. This discrepancy may cause abnormal behavior.",
-                    info.fpga_version(), info.cpu_version());
+    if (info.cpu_version_num() != info.fpga_version_num()) throw std::runtime_error("FPGA firmware version and CPU firmware version do not match.");
     if (info.cpu_version_num() != driver::VERSION_NUM || info.fpga_version_num() != driver::VERSION_NUM)
       spdlog::warn("You are using old firmware. Please consider updating to {}.", driver::FirmwareInfo::firmware_version_map(driver::VERSION_NUM));
   }
@@ -190,9 +158,6 @@ bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body, co
     _tx_buf.header().msg_id = msg_id;
     header->pack(_tx_buf);
     body->pack(_tx_buf);
-    spdlog::debug("Sending data ({})", _tx_buf.header().msg_id);
-    spdlog::debug("Timeout: {} [ms]",
-                  static_cast<driver::autd3_float_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count()) / 1000 / 1000);
     if (!_link->send(_tx_buf)) {
       spdlog::warn("Failed to send data ({})", msg_id);
       return false;
@@ -201,10 +166,7 @@ bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body, co
       spdlog::warn("Could not confirm if the data ({}) was processed successfully.", msg_id);
       return false;
     }
-    if (header->is_finished() && body->is_finished()) {
-      spdlog::debug("All data has been sent successfully.");
-      break;
-    }
+    if (header->is_finished() && body->is_finished()) break;
     if (no_wait) std::this_thread::sleep_for(_send_interval);
   }
   return true;

@@ -3,7 +3,7 @@
 // Created Date: 05/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -200,8 +200,7 @@ class SliceViewer {
       _pipeline = std::move(result.value);
       return true;
     }
-    spdlog::error("Failed to create a pipeline!");
-    return false;
+    throw std::runtime_error("Failed to create a pipeline!");
   }
 
   [[nodiscard]] bool create_vertex_buffer(const float width, const float height) {
@@ -230,10 +229,9 @@ class SliceViewer {
     if (!staging_buffer || !staging_buffer_memory) return false;
 
     void* data;
-    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess) {
-      spdlog::error("Failed to map vertex buffer memory!");
-      return false;
-    }
+    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to map vertex buffer memory!");
+
     std::memcpy(data, vertices.data(), buffer_size);
     _context->device().unmapMemory(staging_buffer_memory.get());
 
@@ -258,10 +256,9 @@ class SliceViewer {
     if (!staging_buffer || !staging_buffer_memory) return false;
 
     void* data;
-    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess) {
-      spdlog::error("Failed to map vertex buffer memory!");
-      return false;
-    }
+    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to map vertex buffer memory!");
+
     std::memcpy(data, indices.data(), buffer_size);
     _context->device().unmapMemory(staging_buffer_memory.get());
 
