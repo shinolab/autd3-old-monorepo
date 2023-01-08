@@ -4,7 +4,7 @@
  * Created Date: 16/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/01/2023
+ * Last Modified: 08/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -42,7 +42,7 @@ int main(void) {
 
   AUTDLinkSOEM(&link, NULL, 2, 2, false, (void*)callback, false, 100);
 
-  if (!AUTDOpenController(cnt, link)) return -1;
+  AUTDOpenController(cnt, link);
 
   AUTDSetAckCheckTimeout(cnt, 20LL * 1000 * 1000);
 

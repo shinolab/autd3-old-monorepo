@@ -58,8 +58,8 @@ class FieldCompute {
   FieldCompute(FieldCompute&& obj) = default;
   FieldCompute& operator=(FieldCompute&& obj) = default;
 
-  [[nodiscard]] bool init(const std::vector<SoundSources>& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers,
-                          const size_t image_size, const tinycolormap::ColormapType type) {
+  void init(const std::vector<SoundSources>& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers,
+            const size_t image_size, const tinycolormap::ColormapType type) {
     create_descriptor_set_layouts();
 
     const std::vector<uint8_t> shader_code = {
@@ -67,7 +67,6 @@ class FieldCompute {
     };
 
     auto [layout, pipeline] = create_pipeline(shader_code);
-    if (!layout || !pipeline) return false;
 
     _layout1 = std::move(layout);
     _pipeline1 = std::move(pipeline);
@@ -76,28 +75,27 @@ class FieldCompute {
 #include "shaders/field2.comp.spv.txt"
     };
     auto [layout2, pipeline2] = create_pipeline(shader_code2);
-    if (!layout2 || !pipeline2) return false;
 
     _layout2 = std::move(layout2);
     _pipeline2 = std::move(pipeline2);
 
-    if (!create_source_drive(sources) || !create_source_pos(sources) || !create_color_map(slice_alpha, type)) return false;
+    create_source_drive(sources);
+    create_source_pos(sources);
+    create_color_map(slice_alpha, type);
 
     create_descriptor_sets(sources, image_buffers, image_size);
 
-    return update_source_drive(sources) && update_source_pos(sources);
+    update_source_drive(sources);
+    update_source_pos(sources);
   }
 
-  [[nodiscard]] bool update(const std::vector<SoundSources>& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers,
-                            const size_t image_size, const tinycolormap::ColormapType type, const UpdateFlags update_flags) {
+  void update(const std::vector<SoundSources>& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers,
+              const size_t image_size, const tinycolormap::ColormapType type, const UpdateFlags update_flags) {
     if (update_flags.contains(UpdateFlags::UpdateSliceSize)) create_descriptor_sets(sources, image_buffers, image_size);
 
-    if (update_flags.contains(UpdateFlags::UpdateSourceDrive) || update_flags.contains(UpdateFlags::UpdateSourceFlag))
-      if (!update_source_drive(sources)) return false;
+    if (update_flags.contains(UpdateFlags::UpdateSourceDrive) || update_flags.contains(UpdateFlags::UpdateSourceFlag)) update_source_drive(sources);
 
     if (update_flags.contains(UpdateFlags::UpdateColorMap)) return create_color_map(slice_alpha, type);
-
-    return true;
   }
 
   void compute(const Config config, const bool show_radiation_pressure) {
@@ -239,7 +237,7 @@ class FieldCompute {
     }
   }
 
-  [[nodiscard]] bool create_color_map(const float slice_alpha, const tinycolormap::ColormapType type) {
+  void create_color_map(const float slice_alpha, const tinycolormap::ColormapType type) {
     constexpr size_t color_map_size = 100;
     constexpr size_t image_size = color_map_size * 4;
     std::vector<uint8_t> pixels;
@@ -258,7 +256,6 @@ class FieldCompute {
     {
       auto [staging_buffer, staging_buffer_memory] = _context->create_buffer(
           image_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-      if (!staging_buffer || !staging_buffer_memory) return false;
 
       void* data;
       if (_context->device().mapMemory(staging_buffer_memory.get(), 0, image_size, {}, &data) != vk::Result::eSuccess)
@@ -271,17 +268,14 @@ class FieldCompute {
       auto [texture_image, texture_image_memory] =
           _context->create_image(static_cast<uint32_t>(color_map_size), 1u, 1, vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Unorm,
                                  vk::ImageTiling::eOptimal, flag, vk::MemoryPropertyFlagBits::eDeviceLocal, vk::ImageType::e1D);
-      if (!texture_image || !texture_image_memory) return false;
       _texture_image = std::move(texture_image);
       _texture_image_memory = std::move(texture_image_memory);
 
-      if (!_context->transition_image_layout(_texture_image, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eUndefined,
-                                             vk::ImageLayout::eTransferDstOptimal, 1))
-        return false;
+      _context->transition_image_layout(_texture_image, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal,
+                                        1);
       _context->copy_buffer_to_image(staging_buffer, _texture_image, static_cast<uint32_t>(color_map_size), 1u);
-      if (!_context->transition_image_layout(_texture_image, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eTransferDstOptimal,
-                                             vk::ImageLayout::eShaderReadOnlyOptimal, 1))
-        return false;
+      _context->transition_image_layout(_texture_image, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eTransferDstOptimal,
+                                        vk::ImageLayout::eShaderReadOnlyOptimal, 1);
     }
 
     {
@@ -331,41 +325,35 @@ class FieldCompute {
         _context->device().updateDescriptorSets(descriptor_writes, {});
       }
     }
-    return true;
   }
 
-  [[nodiscard]] bool create_source_drive(const std::vector<SoundSources>& sources) {
+  void create_source_drive(const std::vector<SoundSources>& sources) {
     _drive_buffers.resize(_renderer->frames_in_flight());
     _drive_buffers_memory.resize(_renderer->frames_in_flight());
     for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
       const auto size = std::accumulate(sources.begin(), sources.end(), size_t{0}, [](size_t acc, const auto& s) { return acc + s.size(); });
       auto [buf, mem] = _context->create_buffer(sizeof(Drive) * size, vk::BufferUsageFlagBits::eStorageBuffer,
                                                 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-      if (!buf || !mem) return false;
 
       _drive_buffers[i] = std::move(buf);
       _drive_buffers_memory[i] = std::move(mem);
     }
-    return true;
   }
 
-  [[nodiscard]] bool create_source_pos(const std::vector<SoundSources>& sources) {
+  void create_source_pos(const std::vector<SoundSources>& sources) {
     _pos_buffers.resize(_renderer->frames_in_flight());
     _pos_buffers_memory.resize(_renderer->frames_in_flight());
     for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
       const auto size = std::accumulate(sources.begin(), sources.end(), size_t{0}, [](size_t acc, const auto& s) { return acc + s.size(); });
       auto [buf, mem] = _context->create_buffer(sizeof(glm::vec4) * size, vk::BufferUsageFlagBits::eStorageBuffer,
                                                 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-      if (!buf || !mem) return false;
 
       _pos_buffers[i] = std::move(buf);
       _pos_buffers_memory[i] = std::move(mem);
     }
-
-    return true;
   }
 
-  [[nodiscard]] bool update_source_drive(const std::vector<SoundSources>& sources) {
+  void update_source_drive(const std::vector<SoundSources>& sources) {
     const auto size = std::accumulate(sources.begin(), sources.end(), size_t{0}, [](size_t acc, const auto& s) { return acc + s.size(); });
     uint8_t* data = nullptr;
     for (auto& memory : _drive_buffers_memory) {
@@ -378,10 +366,9 @@ class FieldCompute {
       }
       _context->device().unmapMemory(memory.get());
     }
-    return true;
   }
 
-  [[nodiscard]] bool update_source_pos(const std::vector<SoundSources>& sources) {
+  void update_source_pos(const std::vector<SoundSources>& sources) {
     const auto size = std::accumulate(sources.begin(), sources.end(), size_t{0}, [](size_t acc, const auto& s) { return acc + s.size(); });
     uint8_t* data = nullptr;
     for (auto& memory : _pos_buffers_memory) {
@@ -394,7 +381,6 @@ class FieldCompute {
       }
       _context->device().unmapMemory(memory.get());
     }
-    return true;
   }
 
   const helper::VulkanContext* _context;
