@@ -181,6 +181,13 @@ class Grouped final : public core::Gain {
     _gains.insert_or_assign(device_id, std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain)));
   }
 
+  /**
+   * \brief Decide which device outputs which Gain
+   * \param device_id device id
+   * \param gain gain
+   */
+  void add(const size_t device_id, std::shared_ptr<core::Gain> b) { _gains.insert_or_assign(device_id, std::move(b)); }
+
   void calc(const core::Geometry& geometry) override {
     std::for_each(_gains.begin(), _gains.end(), [this, geometry](const auto& g) {
       const auto& [device_id, gain] = g;
