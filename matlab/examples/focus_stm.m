@@ -21,8 +21,7 @@ function focus_stm(cnt)
     z = 150.0;
     center = [x y z];
 
-    sound_speed = cnt.sound_speed;
-    stm = FocusSTM(sound_speed);
+    stm = FocusSTM();
     points_num = 200;
     radius = 30.0;
 

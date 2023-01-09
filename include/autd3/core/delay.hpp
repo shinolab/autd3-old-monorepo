@@ -3,7 +3,7 @@
 // Created Date: 01/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/12/2022
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,8 +14,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "datagram.hpp"
-#include "geometry.hpp"
+#include "autd3/core/datagram.hpp"
+#include "autd3/driver/operation/mod_delay.hpp"
 
 namespace autd3::core {
 
@@ -23,38 +23,25 @@ namespace autd3::core {
  * @brief ModDelayConfig is a DatagramBody to configure modulation delay
  */
 struct ModDelayConfig final : DatagramBody {
-  ModDelayConfig() : _sent(false) {}
+  ModDelayConfig() = default;
   ~ModDelayConfig() override = default;
   ModDelayConfig(const ModDelayConfig& v) = default;
   ModDelayConfig& operator=(const ModDelayConfig& obj) = default;
   ModDelayConfig(ModDelayConfig&& obj) = default;
   ModDelayConfig& operator=(ModDelayConfig&& obj) = default;
 
-  bool init() override {
-    _sent = false;
-    return true;
+  void init(const Mode, const Geometry& geometry) override {
+    _op.init();
+    _op.delays.reserve(geometry.num_transducers());
+    std::transform(geometry.begin(), geometry.end(), std::back_inserter(_op.delays), [](const Transducer& tr) { return tr.mod_delay(); });
   }
 
-  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const Mode>&, const Geometry& geometry,
-            driver::TxDatagram& tx) override {
-    driver->null_body(tx);
-    if (is_finished()) return true;
+  void pack(driver::TxDatagram& tx) override { _op.pack(tx); }
 
-    std::vector<uint16_t> delays;
-    delays.reserve(geometry.num_transducers());
-    std::transform(geometry.begin(), geometry.end(), std::back_inserter(delays), [](const Transducer& tr) { return tr.mod_delay(); });
-
-    driver->mod_delay(delays, tx);
-
-    _sent = true;
-
-    return true;
-  }
-
-  [[nodiscard]] bool is_finished() const noexcept override { return _sent; }
+  [[nodiscard]] bool is_finished() const noexcept override { return _op.is_finished(); }
 
  private:
-  bool _sent;
+  driver::ModDelay _op;
 };
 
 }  // namespace autd3::core

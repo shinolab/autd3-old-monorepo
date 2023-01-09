@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,37 +11,10 @@
 
 #pragma once
 
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#pragma GCC diagnostic ignored "-Wuninitialized"
-#endif
-
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 6285 6385 26437 26800 26498 26451 26495 26450)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic push
-#endif
-#ifdef __clang__
-#pragma clang diagnostic push
-#endif
-#include "spdlog/spdlog.h"
-#if _MSC_VER
-#pragma warning(pop)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic pop
-#endif
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
 #include <algorithm>
 
-#include "autd3/driver/common/cpu/datagram.hpp"
-#include "fpga_emulator.hpp"
+#include "autd3/driver/cpu/datagram.hpp"
+#include "autd3/extra/fpga_emulator.hpp"
 
 namespace autd3::extra::cpu {
 constexpr uint16_t CPU_VERSION = 0x87;
@@ -63,13 +36,16 @@ constexpr uint16_t BRAM_ADDR_FPGA_INFO = 0x001;
 constexpr uint16_t BRAM_ADDR_MOD_ADDR_OFFSET = 0x020;
 constexpr uint16_t BRAM_ADDR_MOD_CYCLE = 0x021;
 constexpr uint16_t BRAM_ADDR_MOD_FREQ_DIV_0 = 0x022;
+constexpr uint16_t BRAM_ADDR_MOD_FREQ_DIV_1 = BRAM_ADDR_MOD_FREQ_DIV_0 + 1;
 constexpr uint16_t BRAM_ADDR_VERSION_NUM = 0x03F;
 constexpr uint16_t BRAM_ADDR_SILENT_CYCLE = 0x040;
 constexpr uint16_t BRAM_ADDR_SILENT_STEP = 0x041;
 constexpr uint16_t BRAM_ADDR_STM_ADDR_OFFSET = 0x050;
 constexpr uint16_t BRAM_ADDR_STM_CYCLE = 0x051;
 constexpr uint16_t BRAM_ADDR_STM_FREQ_DIV_0 = 0x052;
+constexpr uint16_t BRAM_ADDR_STM_FREQ_DIV_1 = 0x053;
 constexpr uint16_t BRAM_ADDR_SOUND_SPEED_0 = 0x054;
+constexpr uint16_t BRAM_ADDR_SOUND_SPEED_1 = 0x055;
 constexpr uint16_t BRAM_ADDR_STM_START_IDX = 0x056;
 constexpr uint16_t BRAM_ADDR_STM_FINISH_IDX = 0x057;
 constexpr uint16_t BRAM_ADDR_CYCLE_BASE = 0x100;
@@ -134,9 +110,7 @@ class CPU {
     clear();
   }
 
-  [[nodiscard]] bool configure_local_trans_pos(const std::vector<driver::Vector3>& local_trans_pos) {
-    return _fpga.configure_local_trans_pos(local_trans_pos);
-  }
+  void configure_local_trans_pos(const std::vector<driver::Vector3>& local_trans_pos) { _fpga.configure_local_trans_pos(local_trans_pos); }
 
  private:
   static uint16_t get_addr(const uint8_t select, const uint16_t addr) {
@@ -238,8 +212,10 @@ class CPU {
       const auto start_idx = body->focus_stm_initial().data()[5];
       const auto finish_idx = body->focus_stm_initial().data()[6];
 
-      bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FREQ_DIV_0, reinterpret_cast<const uint16_t*>(&freq_div), 2);
-      bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_SOUND_SPEED_0, reinterpret_cast<const uint16_t*>(&sound_speed), 2);
+      bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FREQ_DIV_0, static_cast<uint16_t>(freq_div & 0xFFFF));
+      bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FREQ_DIV_1, static_cast<uint16_t>(freq_div >> 16 & 0xFFFF));
+      bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_SOUND_SPEED_0, static_cast<uint16_t>(sound_speed & 0xFFFF));
+      bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_SOUND_SPEED_1, static_cast<uint16_t>(sound_speed >> 16 & 0xFFFF));
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_START_IDX, start_idx);
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FINISH_IDX, finish_idx);
       src = body->focus_stm_initial().data() + 7;
@@ -352,7 +328,7 @@ class CPU {
         _stm_write += 1;
         break;
       default:
-        spdlog::error("Not supported GainSTM mode");
+        throw std::runtime_error("Not supported GainSTM mode");
     }
 
     if ((_stm_write & cpu::GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) == 0)
@@ -405,11 +381,9 @@ class CPU {
         }
         break;
       case cpu::GAIN_STM_MODE_PHASE_HALF:
-        spdlog::error("Phase half mode is not supported in Normal GainSTM");
-        return;
+        throw std::runtime_error("Phase half mode is not supported in Normal GainSTM");
       default:
-        spdlog::error("Not supported GainSTM mode");
-        return;
+        throw std::runtime_error("Not supported GainSTM mode");
     }
 
     if ((_stm_write & cpu::GAIN_STM_BUF_SEGMENT_SIZE_MASK) == 0)
@@ -440,7 +414,8 @@ class CPU {
 
     _mod_cycle = 2;
     bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_MOD_CYCLE, static_cast<uint16_t>((std::max)(_mod_cycle, 1u) - 1u));
-    bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_MOD_FREQ_DIV_0, reinterpret_cast<const uint16_t*>(&freq_div), 2);
+    bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_MOD_FREQ_DIV_0, static_cast<uint16_t>(freq_div & 0xFFFF));
+    bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_MOD_FREQ_DIV_1, static_cast<uint16_t>(freq_div >> 16 & 0xFFFF));
     bram_write(cpu::BRAM_SELECT_MOD, 0, 0x0000);
 
     bram_set(cpu::BRAM_SELECT_NORMAL, 0, 0x0000, _num_transducers << 1);

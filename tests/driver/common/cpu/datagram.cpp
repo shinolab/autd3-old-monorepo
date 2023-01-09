@@ -3,7 +3,7 @@
 // Created Date: 01/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/12/2022
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,20 +20,20 @@
 
 #include <random>
 
-#include "autd3/driver/common/cpu/datagram.hpp"
+#include "autd3/driver/cpu/datagram.hpp"
 
 TEST(DriverCommonCPUTest, TxDatagram) {
   const std::vector<size_t> device_map = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
   autd3::driver::TxDatagram tx(device_map);
 
   ASSERT_EQ(tx.num_devices(), 10);
-  ASSERT_EQ(tx.bodies_size(), sizeof(uint16_t) * 55);
-  ASSERT_EQ(tx.transmitting_size(), 128 + sizeof(uint16_t) * 55);
+  ASSERT_EQ(tx.bodies_size(), 55);
+  ASSERT_EQ(tx.transmitting_size_in_bytes(), 128 + sizeof(uint16_t) * 55);
 
   tx.num_bodies = 5;
   ASSERT_EQ(tx.num_devices(), 10);
-  ASSERT_EQ(tx.bodies_size(), sizeof(uint16_t) * 15);
-  ASSERT_EQ(tx.transmitting_size(), 128 + sizeof(uint16_t) * 15);
+  ASSERT_EQ(tx.bodies_size(), 15);
+  ASSERT_EQ(tx.transmitting_size_in_bytes(), 128 + sizeof(uint16_t) * 15);
 
   ASSERT_EQ(tx.data().data(), reinterpret_cast<uint8_t*>(&tx.header()));
   ASSERT_EQ(tx.data().data() + 128, reinterpret_cast<uint8_t*>(tx.bodies_raw_ptr()));

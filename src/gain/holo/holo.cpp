@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/12/2022
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,6 +24,8 @@ namespace autd3::gain::holo {
 namespace {
 
 void generate_transfer_matrix(const std::vector<core::Vector3>& foci, const core::Geometry& geometry, MatrixXc& dst) {
+  const auto sound_speed = geometry.sound_speed;
+  const auto attenuation = geometry.attenuation;
 #ifdef HOLO_PARALLEL_FOR
   std::for_each(std::execution::par_unseq, geometry.begin(), geometry.end(), [&](const auto& transducer) {
 #else
@@ -31,7 +33,7 @@ void generate_transfer_matrix(const std::vector<core::Vector3>& foci, const core
 #endif
     for (size_t i = 0; i < foci.size(); i++)
       dst(i, transducer.id()) =
-          core::propagate(transducer.position(), transducer.z_direction(), transducer.attenuation, transducer.wavenumber(), foci[i]);
+          core::propagate(transducer.position(), transducer.z_direction(), attenuation, transducer.wavenumber(sound_speed), foci[i]);
   });
 }
 
@@ -129,9 +131,9 @@ void SDP::calc(const core::Geometry& geometry) {
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #endif
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
@@ -195,9 +197,9 @@ void EVD::calc(const core::Geometry& geometry) {
   _backend->to_host(gtf);
   const auto max_coefficient = std::abs(_backend->max_abs_element(gtf));
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #endif
     const auto phase = std::arg(gtf(tr.id())) + driver::pi;
     const auto raw = std::abs(gtf(tr.id()));
@@ -223,9 +225,9 @@ void LSS::calc(const core::Geometry& geometry) {
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #endif
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
@@ -264,9 +266,9 @@ void GS::calc(const core::Geometry& geometry) {
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
   _backend->to_host(q);
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #endif
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
@@ -316,9 +318,9 @@ void GSPAT::calc(const core::Geometry& geometry) {
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
   _backend->to_host(q);
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #endif
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
@@ -455,9 +457,9 @@ void LM::calc(const core::Geometry& geometry) {
 
   _backend->to_host(x);
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #endif
     const auto phase = driver::rem_euclid(x(tr.id()), 2 * driver::pi);
     const auto power = constraint->convert(1.0, 1.0);
@@ -483,9 +485,12 @@ void Greedy::calc(const core::Geometry& geometry) {
 
   VectorXc cache = VectorXc::Zero(m);
 
-  auto transfer_foci = [](const core::Transducer& trans, const complex p, const std::vector<core::Vector3>& foci_, VectorXc& res) {
-    std::transform(foci_.begin(), foci_.end(), res.begin(), [trans, p](const core::Vector3& focus) {
-      return core::propagate(trans.position(), trans.z_direction(), trans.attenuation, trans.wavenumber(), focus) * p;
+  const auto sound_speed = geometry.sound_speed;
+  const auto attenuation = geometry.attenuation;
+  auto transfer_foci = [attenuation, sound_speed](const core::Transducer& trans, const complex p, const std::vector<core::Vector3>& foci_,
+                                                  VectorXc& res) {
+    std::transform(foci_.begin(), foci_.end(), res.begin(), [&trans, p, attenuation, sound_speed](const core::Vector3& focus) {
+      return core::propagate(trans.position(), trans.z_direction(), attenuation, trans.wavenumber(sound_speed), focus) * p;
     });
   };
 
@@ -509,8 +514,8 @@ void Greedy::calc(const core::Geometry& geometry) {
 
     const auto power = constraint->convert(1.0, 1.0);
 
-    _drives[transducer.id()].amp = power;
-    _drives[transducer.id()].phase = std::arg(phases[min_idx]) + driver::pi;
+    _op->drives[transducer.id()].amp = power;
+    _op->drives[transducer.id()].phase = std::arg(phases[min_idx]) + driver::pi;
   }
 }
 
@@ -529,6 +534,7 @@ void LSSGreedy::calc(const core::Geometry& geometry) {
 
   std::vector<VectorXc> focus_phase_list;
   focus_phase_list.reserve(_foci.size());
+  const auto sound_speed = geometry.sound_speed;
   std::transform(_foci.begin(), _foci.end(), std::back_inserter(focus_phase_list), [&](const auto& focus) {
     VectorXc q(n);
 #ifdef HOLO_PARALLEL_FOR
@@ -537,7 +543,7 @@ void LSSGreedy::calc(const core::Geometry& geometry) {
     std::transform(geometry.begin(), geometry.end(), q.begin(), [&](const auto& tr) {
 #endif
       const auto dist = (focus - tr.position()).norm();
-      const auto p = tr.align_phase_at(dist);
+      const auto p = tr.align_phase_at(dist, sound_speed);
       return complex(std::cos(p), std::sin(p));
     });
     return q;
@@ -572,9 +578,9 @@ void LSSGreedy::calc(const core::Geometry& geometry) {
   _backend->to_host(q);
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #endif
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
@@ -660,7 +666,7 @@ void APO::calc(const core::Geometry& geometry) {
 
   std::vector<MatrixXc> ris(m);
   Eigen::Index i = 0;
-  std::generate(ris.begin(), ris.end(), [&]() { return make_ri(g, static_cast<Eigen::Index>(m), static_cast<Eigen::Index>(n), i++); });
+  std::generate(ris.begin(), ris.end(), [&] { return make_ri(g, static_cast<Eigen::Index>(m), static_cast<Eigen::Index>(n), i++); });
 
   VectorXc nabla_j = VectorXc::Zero(static_cast<Eigen::Index>(n));
   calc_nabla_j(q, p2, ris, m, n, nabla_j);
@@ -695,9 +701,9 @@ void APO::calc(const core::Geometry& geometry) {
   _backend->to_host(q);
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
 #endif
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));

@@ -1,3 +1,9 @@
+# 2.7.3
+
+- Remove parameter from `FocusSTM`, `GainSTM`, and `gain::Grouped` constructor
+- Remove `Driver` to drive old firmware
+- Fix [#54](https://github.com/shinolab/autd3/issues/54)
+
 # 2.7.2
 
 - Fix [#52](https://github.com/shinolab/autd3/issues/52)

@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 09/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -29,7 +29,7 @@ macro_rules! run {
         let mut clear = Clear::new();
         autd.send(&mut clear).flush()?;
 
-        let mut sync = Synchronize::new();
+        let mut sync = Synchronize::<_>::new();
         autd.send(&mut sync).flush()?;
 
         loop {
@@ -63,8 +63,7 @@ macro_rules! run {
             let mut _s = String::new();
             io::stdin().read_line(&mut _s)?;
 
-            let mut stop = Amplitudes::none();
-            let res = autd.send(&mut stop).flush()?;
+            let res = autd.stop()?;
             println!("stop: {}", res);
         }
 

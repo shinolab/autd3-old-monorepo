@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,8 +15,8 @@
 #include <utility>
 #include <vector>
 
-#include "autd3/driver/common/fpga/defined.hpp"
 #include "autd3/driver/defined.hpp"
+#include "autd3/driver/fpga/defined.hpp"
 
 namespace autd3::extra {
 
@@ -223,11 +223,9 @@ class FPGA {
     return std::make_pair(normal_duty(), normal_phase());
   }
 
-  [[nodiscard]] bool configure_local_trans_pos(const std::vector<driver::Vector3>& local_trans_pos) {
-    if (local_trans_pos.size() != _num_transducers) {
-      spdlog::error("The size of local_trans_pos is not the same as the number of transducers.");
-      return false;
-    }
+  void configure_local_trans_pos(const std::vector<driver::Vector3>& local_trans_pos) {
+    if (local_trans_pos.size() != _num_transducers)
+      throw std::runtime_error("The size of local_trans_pos is not the same as the number of transducers.");
 
     _tr_pos.resize(local_trans_pos.size());
     for (size_t i = 0; i < local_trans_pos.size(); i++) {
@@ -237,8 +235,6 @@ class FPGA {
 
       _tr_pos[i] = static_cast<uint64_t>(z) << 32 | static_cast<uint64_t>(x) << 16 | static_cast<uint64_t>(y);
     }
-
-    return true;
   }
 
  private:
@@ -246,72 +242,72 @@ class FPGA {
 
   [[nodiscard]] std::vector<driver::Duty> normal_duty() const {
     std::vector<driver::Duty> d;
-    d.resize(_num_transducers);
-    for (size_t i = 0; i < _num_transducers; i++) d[i] = driver::Duty{_normal_op_bram[2 * i + 1]};
+    d.reserve(_num_transducers);
+    for (size_t i = 0; i < _num_transducers; i++) d.emplace_back(_normal_op_bram[2 * i + 1]);
     return d;
   }
 
   [[nodiscard]] std::vector<driver::Phase> normal_phase() const {
     std::vector<driver::Phase> d;
-    d.resize(_num_transducers);
-    for (size_t i = 0; i < _num_transducers; i++) d[i] = driver::Phase{_normal_op_bram[2 * i]};
+    d.reserve(_num_transducers);
+    for (size_t i = 0; i < _num_transducers; i++) d.emplace_back(_normal_op_bram[2 * i]);
     return d;
   }
 
   [[nodiscard]] std::vector<driver::Duty> legacy_duty() const {
     std::vector<driver::Duty> d;
-    d.resize(_num_transducers);
+    d.reserve(_num_transducers);
     for (size_t i = 0; i < _num_transducers; i++) {
       auto duty = static_cast<uint16_t>(_normal_op_bram[2 * i] >> 8 & 0x00FF);
       duty = static_cast<uint16_t>((duty << 3 | 0x07) + 1);
-      d[i] = driver::Duty{duty};
+      d.emplace_back(duty);
     }
     return d;
   }
 
   [[nodiscard]] std::vector<driver::Phase> legacy_phase() const {
     std::vector<driver::Phase> d;
-    d.resize(_num_transducers);
+    d.reserve(_num_transducers);
     for (size_t i = 0; i < _num_transducers; i++) {
       auto phase = static_cast<uint16_t>(_normal_op_bram[2 * i] & 0x00FF);
       phase <<= 4;
-      d[i] = driver::Phase{phase};
+      d.emplace_back(phase);
     }
     return d;
   }
 
   [[nodiscard]] std::vector<driver::Duty> gain_stm_normal_duty(const size_t idx) const {
     std::vector<driver::Duty> d;
-    d.resize(_num_transducers);
-    for (size_t j = 0; j < _num_transducers; j++) d[j] = driver::Duty{_stm_op_bram[512 * idx + 2 * j + 1]};
+    d.reserve(_num_transducers);
+    for (size_t j = 0; j < _num_transducers; j++) d.emplace_back(_stm_op_bram[512 * idx + 2 * j + 1]);
     return d;
   }
 
   [[nodiscard]] std::vector<driver::Phase> gain_stm_normal_phase(const size_t idx) const {
     std::vector<driver::Phase> d;
-    d.resize(_num_transducers);
-    for (size_t j = 0; j < _num_transducers; j++) d[j] = driver::Phase{_stm_op_bram[512 * idx + 2 * j]};
+    d.reserve(_num_transducers);
+    for (size_t j = 0; j < _num_transducers; j++) d.emplace_back(_stm_op_bram[512 * idx + 2 * j]);
     return d;
   }
 
   [[nodiscard]] std::vector<driver::Duty> gain_stm_legacy_duty(const size_t idx) const {
     std::vector<driver::Duty> d;
-    d.resize(_num_transducers);
+    d.reserve(_num_transducers);
     for (size_t j = 0; j < _num_transducers; j++) {
       auto duty = static_cast<uint16_t>(_stm_op_bram[256 * idx + j] >> 8 & 0x00FF);
       duty = static_cast<uint16_t>((duty << 3 | 0x07) + 1);
-      d[j] = driver::Duty{duty};
+      d.emplace_back(duty);
     }
     return d;
   }
 
   [[nodiscard]] std::vector<driver::Phase> gain_stm_legacy_phase(const size_t idx) const {
     std::vector<driver::Phase> d;
-    d.resize(_num_transducers);
+    d.reserve(_num_transducers);
     for (size_t j = 0; j < _num_transducers; j++) {
       auto phase = static_cast<uint16_t>(_stm_op_bram[256 * idx + j] & 0x00FF);
       phase <<= 4;
-      d[j] = driver::Phase{phase};
+      d.emplace_back(phase);
     }
     return d;
   }
@@ -319,10 +315,10 @@ class FPGA {
   [[nodiscard]] std::vector<driver::Duty> focus_stm_duty(const size_t idx) const {
     const auto ultrasound_cycles = cycles();
     std::vector<driver::Duty> d;
-    d.resize(_num_transducers);
+    d.reserve(_num_transducers);
     const auto duty_shift = static_cast<uint16_t>(_stm_op_bram[8 * idx + 3] >> 6 & 0x000F) + 1;
     for (size_t j = 0; j < _num_transducers; j++) {
-      d[j] = driver::Duty{static_cast<uint16_t>(ultrasound_cycles[j] >> duty_shift)};
+      d.emplace_back(static_cast<uint16_t>(ultrasound_cycles[j] >> duty_shift));
     }
     return d;
   }
@@ -331,7 +327,7 @@ class FPGA {
     const auto ultrasound_cycles = cycles();
     const auto sound_speed = static_cast<uint64_t>(this->sound_speed());
     std::vector<driver::Phase> d;
-    d.resize(_num_transducers);
+    d.reserve(_num_transducers);
     auto x = _stm_op_bram[8 * idx + 1] << 16 & 0x30000;
     x |= _stm_op_bram[8 * idx];
     if ((x & 0x20000) != 0) x = -131072 + (x & 0x1FFFF);
@@ -349,7 +345,7 @@ class FPGA {
       const auto dist = static_cast<uint64_t>(std::sqrt(d2));
       const auto q = (dist << 22) / sound_speed;
       const auto p = q % ultrasound_cycles[j];
-      d[j] = driver::Phase{static_cast<uint16_t>(p)};
+      d.emplace_back(static_cast<uint16_t>(p));
     }
     return d;
   }

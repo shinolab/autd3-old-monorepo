@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 28/12/2022
+Last Modified: 08/01/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,15 +26,6 @@ NUM_TRANS_Y = 14
 TRANS_SPACING = 10.16
 DEVICE_WIDTH = 192.0
 DEVICE_HEIGHT = 151.4
-
-DRIVER_LATEST = 0x00
-DRIVER_V2_2 = 0x82
-DRIVER_V2_3 = 0x83
-DRIVER_V2_4 = 0x84
-DRIVER_V2_5 = 0x85
-DRIVER_V2_6 = 0x86
-DRIVER_V2_7 = 0x87
-
 
 LogOutputFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 LogFlushFunc = ctypes.CFUNCTYPE(None)
@@ -151,10 +142,10 @@ class Geometry:
         self._cnt = cnt
 
     def add_device(self, pos, rot):
-        Base().dll.AUTDAddDevice(self._cnt, pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
+        return Base().dll.AUTDAddDevice(self._cnt, pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
 
     def add_device_quaternion(self, pos, q):
-        Base().dll.AUTDAddDeviceQuaternion(self._cnt, pos[0], pos[1], pos[2], q[0], q[1], q[2], q[3])
+        return Base().dll.AUTDAddDeviceQuaternion(self._cnt, pos[0], pos[1], pos[2], q[0], q[1], q[2], q[3])
 
     @ property
     def num_transducers(self):
@@ -200,9 +191,9 @@ class Geometry:
 
 
 class Controller:
-    def __init__(self, driver_version: int = DRIVER_LATEST):
+    def __init__(self):
         self.p_cnt = c_void_p()
-        Base().dll.AUTDCreateController(byref(self.p_cnt), driver_version)
+        Base().dll.AUTDCreateController(byref(self.p_cnt))
         self.__disposed = False
 
     def __del__(self):
@@ -247,6 +238,8 @@ class Controller:
         res = []
         handle = c_void_p()
         size = Base().dll.AUTDGetFirmwareInfoListPointer(self.p_cnt, byref(handle))
+        if size < 0:
+            raise Exception('Failed to get firmware version.')
 
         for i in range(size):
             sb = ctypes.create_string_buffer(256)

@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/12/2022
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,8 +13,8 @@
 
 #include <vector>
 
-#include "datagram.hpp"
-#include "geometry.hpp"
+#include "autd3/core/datagram.hpp"
+#include "autd3/driver/operation/gain.hpp"
 
 namespace autd3::core {
 
@@ -22,7 +22,7 @@ namespace autd3::core {
  * @brief Gain controls the duty ratio and phase of each transducer in AUTD devices
  */
 struct Gain : DatagramBody {
-  Gain() : _built(false), _phase_sent(false), _duty_sent(false) {}
+  Gain() = default;
   ~Gain() override = default;
   Gain(const Gain& v) = default;
   Gain& operator=(const Gain& obj) = default;
@@ -36,60 +36,64 @@ struct Gain : DatagramBody {
   virtual void calc(const Geometry& geometry) = 0;
 
   /**
-   * \brief Initialize data and call calc().
-   * \param geometry Geometry
-   */
-  void build(const Geometry& geometry) {
-    if (_built) return;
-    _drives.resize(geometry.num_transducers());
-    calc(geometry);
-    _built = true;
-  }
-
-  /**
-   * \brief Re-calculate duty ratio and phase of each transducer
-   * \param geometry Geometry
-   */
-  void rebuild(const Geometry& geometry) {
-    _built = false;
-    build(geometry);
-  }
-
-  /**
    * @brief Getter function for the data of duty ratio and phase of each transducers
    */
-  [[nodiscard]] const std::vector<driver::Drive>& drives() const noexcept { return _drives; }
+  [[nodiscard]] const std::vector<driver::Drive>& drives() const {
+    if (_op == nullptr) throw std::runtime_error("Call init() before access drives data.");
+    return _op->drives;
+  }
 
   /**
    * @brief [Advanced] Getter function for the data of duty ratio and phase of each transducers
    * @details Call Gain::build before using this function to initialize drive data.
    */
-  std::vector<driver::Drive>& drives() noexcept { return _drives; }
-
-  [[nodiscard]] bool built() const { return _built; }
-
-  bool init() override {
-    _phase_sent = false;
-    _duty_sent = false;
-    return true;
+  std::vector<driver::Drive>& drives() {
+    if (_op == nullptr) throw std::runtime_error("Call init() before access drives data.");
+    return _op->drives;
   }
 
-  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const Mode>& mode, const Geometry& geometry,
-            driver::TxDatagram& tx) override {
-    mode->pack_gain_header(driver, tx);
-    if (is_finished()) return true;
-    build(geometry);
-    mode->pack_gain_body(driver, _phase_sent, _duty_sent, _drives, geometry, tx);
-    return true;
+  void init(const Mode mode, const Geometry& geometry) override {
+    _mode = mode;
+    switch (mode) {
+      case Mode::Legacy: {
+        auto op = std::make_shared<driver::Gain<driver::Legacy>>();
+        op->init();
+        op->drives.resize(geometry.num_transducers());
+        _op = std::move(op);
+      } break;
+      case Mode::Normal: {
+        auto op = std::make_shared<driver::Gain<driver::Normal>>();
+        op->init();
+        op->cycles = geometry.cycles();
+        op->drives.resize(geometry.num_transducers());
+        _op = std::move(op);
+      } break;
+      case Mode::NormalPhase: {
+        auto op = std::make_shared<driver::Gain<driver::NormalPhase>>();
+        op->init();
+        op->cycles = geometry.cycles();
+        op->drives.resize(geometry.num_transducers());
+        _op = std::move(op);
+      } break;
+    }
+    calc(geometry);
   }
 
-  [[nodiscard]] bool is_finished() const noexcept override { return _phase_sent && _duty_sent; }
+  void pack(driver::TxDatagram& tx) override { _op->pack(tx); }
+
+  [[nodiscard]] bool is_finished() const noexcept override { return _op->is_finished(); }
+
+  [[nodiscard]] std::vector<driver::Drive>::const_iterator begin() const noexcept { return _op->drives.begin(); }
+  [[nodiscard]] std::vector<driver::Drive>::const_iterator end() const noexcept { return _op->drives.end(); }
+  [[nodiscard]] std::vector<driver::Drive>::iterator begin() noexcept { return _op->drives.begin(); }
+  [[nodiscard]] std::vector<driver::Drive>::iterator end() noexcept { return _op->drives.end(); }
+  [[nodiscard]] const driver::Drive& operator[](const size_t i) const { return _op->drives[i]; }
+  [[nodiscard]] driver::Drive& operator[](const size_t i) { return _op->drives[i]; }
 
  protected:
-  bool _built;
-  bool _phase_sent;
-  bool _duty_sent;
-  std::vector<driver::Drive> _drives;
+  Mode _mode{Mode::Legacy};
+  bool _built{false};
+  std::shared_ptr<driver::GainBase> _op{nullptr};
 };
 
 }  // namespace autd3::core

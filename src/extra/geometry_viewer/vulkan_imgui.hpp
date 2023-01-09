@@ -3,7 +3,7 @@
 // Created Date: 27/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -107,7 +107,7 @@ class VulkanImGui {
     ImGui_ImplVulkan_DestroyFontUploadObjects();
   }
 
-  [[nodiscard]] bool init(const uint32_t image_count, const VkRenderPass renderer_pass, std::vector<gltf::Geometry> geometries) {
+  void init(const uint32_t image_count, const VkRenderPass renderer_pass, std::vector<gltf::Geometry> geometries) {
     _geometries = std::move(geometries);
 
     const auto& [pos, rot] = _geometries[0];
@@ -136,10 +136,7 @@ class VulkanImGui {
     ImGui::StyleColorsDark();
     const auto [graphics_family, present_family] = _context->find_queue_families(_context->physical_device());
 
-    if (!graphics_family) {
-      spdlog::error("Failed to find queue family.");
-      return false;
-    }
+    if (!graphics_family) throw std::runtime_error("Failed to find queue family.");
 
     ImGui_ImplGlfw_InitForVulkan(_window->window(), true);
     ImGui_ImplVulkan_InitInfo init_info{_context->instance(),
@@ -158,8 +155,6 @@ class VulkanImGui {
     ImGui_ImplVulkan_Init(&init_info, renderer_pass);
 
     set_font();
-
-    return true;
   }
 
   void draw() {
@@ -264,16 +259,14 @@ class VulkanImGui {
         ImGui::Text("FPS: %4.2f fps", static_cast<double>(ImGui::GetIO().Framerate));
 
         ImGui::Separator();
-
-        for (size_t i = 0; i < _geometries.size(); i++) {
-          ImGui::Text("Device %d", static_cast<int32_t>(i));
-          ImGui::Text("\tx: %4.2f, y: %4.2f, z: %4.2f", static_cast<double>(_geometries[i].pos.x), static_cast<double>(_geometries[i].pos.y),
-                      static_cast<double>(_geometries[i].pos.z));
-          ImGui::Text("\trw: %4.2f, rx: %4.2f, ry: %4.2f, rz: %4.2f", static_cast<double>(_geometries[i].rot.w),
-                      static_cast<double>(_geometries[i].rot.x), static_cast<double>(_geometries[i].rot.y),
-                      static_cast<double>(_geometries[i].rot.z));
-        }
-
+        size_t i = 0;
+        std::for_each(_geometries.begin(), _geometries.end(), [&i](const auto geometry) {
+          ImGui::Text("Device %d", static_cast<int32_t>(i++));
+          ImGui::Text("\tx: %4.2f, y: %4.2f, z: %4.2f", static_cast<double>(geometry.pos.x), static_cast<double>(geometry.pos.y),
+                      static_cast<double>(geometry.pos.z));
+          ImGui::Text("\trw: %4.2f, rx: %4.2f, ry: %4.2f, rz: %4.2f", static_cast<double>(geometry.rot.w), static_cast<double>(geometry.rot.x),
+                      static_cast<double>(geometry.rot.y), static_cast<double>(geometry.rot.z));
+        });
         ImGui::EndTabItem();
       }
 

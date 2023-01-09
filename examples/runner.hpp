@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -56,7 +56,7 @@ inline int run(autd3::Controller& autd) {
   };
   if (autd.geometry().num_devices() == 2) tests.emplace_back(std::pair(F{group_test}, "Grouped Gain Test"));
 
-  autd.set_sound_speed(340.0e3);
+  autd.geometry().sound_speed = 340.0e3;  // mm/s
 
   const auto firm_infos = autd.firmware_infos();
   if (firm_infos.empty()) throw std::runtime_error("Cannot read firmware information.");
@@ -67,7 +67,9 @@ inline int run(autd3::Controller& autd) {
   autd << autd3::clear << autd3::synchronize;
 
   while (true) {
-    for (size_t i = 0; i < tests.size(); i++) std::cout << "[" << i << "]: " << tests[i].second << std::endl;
+    size_t i = 0;
+    std::transform(tests.begin(), tests.end(), std::ostream_iterator<std::string>(std::cout, "\n"),
+                   [&i](const auto& test) { return "[" + std::to_string(i++) + "]: " + test.second; });
     std::cout << "[Others]: finish." << std::endl;
 
     std::cout << "Choose number: ";

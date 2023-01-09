@@ -3,7 +3,7 @@
 // Created Date: 10/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,10 +27,7 @@ int main() try {
     settings = j.get<autd3::extra::SimulatorSettings>();
   }
 
-  if (!autd3::extra::Simulator().settings(settings).run()) {
-    std::cerr << "Failed to run simulator." << std::endl;
-    return -1;
-  }
+  autd3::extra::Simulator().settings(settings).run();
 
   nlohmann::json j = settings;
   std::ofstream o(setting_file);

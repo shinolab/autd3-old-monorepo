@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@
 #include "../../spdlog.hpp"
 #include "autd3/core/datagram.hpp"
 #include "autd3/core/link.hpp"
-#include "autd3/driver/common/cpu/ec_config.hpp"
+#include "autd3/driver/cpu/ec_config.hpp"
 
 namespace autd3::link {
 
@@ -43,18 +43,10 @@ class SimulatorImpl final : public core::Link {
         sizeof(uint8_t) + sizeof(uint32_t) + sizeof(uint32_t) * geometry.num_devices() + geometry.num_transducers() * sizeof(float) * 7;
 
     const auto size = (std::max)(datagram_size, geometry_size);
-    try {
-      _smem.create("autd3_simulator_smem", size);
-    } catch (std::exception& ex) {
-      spdlog::error("Failed to create shared memory: {}", ex.what());
-      return false;
-    }
+    _smem.create("autd3_simulator_smem", size);
     _ptr = static_cast<uint8_t*>(_smem.map());
 
-    if (!send(simulator_init_datagram(geometry))) {
-      spdlog::error("Failed to init simulator.");
-      return false;
-    }
+    if (!send(simulator_init_datagram(geometry))) throw std::runtime_error("Failed to init simulator.");
 
     for (size_t i = 0; i < 20; i++) {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -63,17 +55,13 @@ class SimulatorImpl final : public core::Link {
 
     _smem.unmap();
     _ptr = nullptr;
-    spdlog::error("Failed to open simulator. Make sure simulator is running.");
-    return false;
+    throw std::runtime_error("Failed to open simulator. Make sure simulator is running.");
   }
 
   bool close() override {
     if (!is_open()) return true;
 
-    if (!send(simulator_close_datagram())) {
-      spdlog::error("Failed to close simulator.");
-      return false;
-    }
+    if (!send(simulator_close_datagram())) throw std::runtime_error("Failed to close simulator.");
 
     _smem.unmap();
     _ptr = nullptr;
@@ -83,7 +71,7 @@ class SimulatorImpl final : public core::Link {
 
   bool send(const driver::TxDatagram& tx) override {
     if (_ptr == nullptr) return false;
-    std::memcpy(_ptr, tx.data().data(), tx.transmitting_size());
+    std::memcpy(_ptr, tx.data().data(), tx.transmitting_size_in_bytes());
     return true;
   }
 
@@ -120,13 +108,13 @@ class SimulatorImpl final : public core::Link {
 
     size_t i = 0;
     size_t c = 0;
-    for (size_t dev = 0; dev < geometry.num_devices(); dev++) {
-      c += geometry.device_map()[dev];
-      *reinterpret_cast<uint32_t*>(cursor) = static_cast<uint32_t>(geometry.device_map()[dev]);
+    for (const size_t dev : geometry.device_map()) {
+      c += dev;
+      *reinterpret_cast<uint32_t*>(cursor) = static_cast<uint32_t>(dev);
       cursor += sizeof(uint32_t);
       auto* p = reinterpret_cast<float*>(cursor);
-      for (; i < c; i++) {
-        auto& tr = geometry[i];
+      while (i < c) {
+        auto& tr = geometry[i++];
         Eigen::Vector3<float> origin = tr.position().cast<float>();
         Eigen::Quaternion<float> rot = tr.rotation().cast<float>();
         p[0] = origin.x();

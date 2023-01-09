@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/12/2022
+ * Last Modified: 08/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -40,12 +40,11 @@ namespace AUTD3Sharp
 
         public sealed class Bundle
         {
-            private List<Link> _links;
+            private readonly List<Link> _links;
 
             public Bundle(Link link)
             {
-                _links = new List<Link>();
-                _links.Add(link);
+                _links = new List<Link> { link };
             }
 
             public Bundle Link(Link link)

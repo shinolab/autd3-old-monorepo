@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/12/2022
+ * Last Modified: 09/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ impl STMFocus {
             ((y << 2) & 0xFFFC) as u16 | ((x >> 30) & 0x0002) as u16 | ((x >> 16) & 0x0001) as u16;
         let d2 =
             ((z << 4) & 0xFFF0) as u16 | ((y >> 28) & 0x0008) as u16 | ((y >> 14) & 0x0007) as u16;
-        let d3 = (((duty_shift as u16) << 6) & 0x3FC0) as u16
+        let d3 = (((duty_shift as u16) << 6) & 0x3FC0)
             | ((z >> 26) & 0x0020) as u16
             | ((z >> 12) & 0x001F) as u16;
         Self {
@@ -108,6 +108,12 @@ pub enum Mode {
     PhaseDutyFull = 0x0001,
     PhaseFull = 0x0002,
     PhaseHalf = 0x0004,
+}
+
+impl Default for Mode {
+    fn default() -> Self {
+        Mode::PhaseDutyFull
+    }
 }
 
 #[repr(C)]

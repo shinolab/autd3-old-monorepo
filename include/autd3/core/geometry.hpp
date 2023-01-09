@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/12/2022
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 #include <numeric>
 #include <vector>
 
-#include "transducer.hpp"
+#include "autd3/core/transducer.hpp"
 
 namespace autd3::core {
 
@@ -36,7 +36,16 @@ struct Device {
  * @brief Geometry of all transducers
  */
 struct Geometry {
-  Geometry() = default;
+  Geometry()
+      : attenuation(0.0),
+        sound_speed(
+#ifdef AUTD3_USE_METER
+            340.0)
+#else
+            340.0e3)
+#endif
+  {
+  }
 
   /**
    * @brief Number of devices
@@ -111,6 +120,16 @@ struct Geometry {
   [[nodiscard]] std::vector<Transducer>::iterator end() noexcept { return _transducers.end(); }
   [[nodiscard]] const Transducer& operator[](const size_t i) const { return _transducers[i]; }
   [[nodiscard]] Transducer& operator[](const size_t i) { return _transducers[i]; }
+
+  /**
+   * @brief Attenuation coefficient.
+   */
+  driver::autd3_float_t attenuation;
+
+  /**
+   * @brief Speed of sound.
+   */
+  driver::autd3_float_t sound_speed;
 
  private:
   std::vector<Transducer> _transducers;

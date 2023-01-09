@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,7 +14,6 @@
 #include <iostream>
 #include <memory>
 #include <string>
-#include <tuple>
 #include <vector>
 
 #include "autd3.hpp"
@@ -31,7 +30,7 @@ inline void holo_test(autd3::Controller& autd) {
 
   auto backend = autd3::gain::holo::EigenBackend::create();
 
-  std::vector<std::tuple<std::string, std::shared_ptr<autd3::gain::holo::Holo>>> opts;
+  std::vector<std::pair<std::string, std::shared_ptr<autd3::gain::holo::Holo>>> opts;
   opts.emplace_back("SDP", std::make_shared<autd3::gain::holo::SDP>(backend));
   opts.emplace_back("EVD", std::make_shared<autd3::gain::holo::EVD>(backend));
   opts.emplace_back("GS", std::make_shared<autd3::gain::holo::GS>(backend));
@@ -43,7 +42,8 @@ inline void holo_test(autd3::Controller& autd) {
   opts.emplace_back("APO", std::make_shared<autd3::gain::holo::APO>(backend));
 
   size_t i = 0;
-  for (const auto& [name, _opt] : opts) std::cout << "[" << i++ << "]: " << name << std::endl;
+  std::transform(opts.begin(), opts.end(), std::ostream_iterator<std::string>(std::cout, "\n"),
+                 [&i](const auto& opt) { return "[" + std::to_string(i++) + "]: " + opt.first; });
 
   std::string in;
   size_t idx;
