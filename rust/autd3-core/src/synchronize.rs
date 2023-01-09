@@ -24,6 +24,14 @@ pub struct Synchronize<T: Transducer> {
     op: T::Sync,
 }
 
+impl<T: Transducer> Synchronize<T> {
+    pub fn new() -> Self {
+        Self {
+            op: Default::default(),
+        }
+    }
+}
+
 impl DatagramBody<LegacyTransducer> for Synchronize<LegacyTransducer> {
     fn init(&mut self, _geometry: &Geometry<LegacyTransducer>) -> Result<()> {
         self.op.init();

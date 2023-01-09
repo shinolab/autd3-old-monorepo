@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/12/2022
+ * Last Modified: 09/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -55,7 +55,7 @@ macro_rules! gain_stm {
             let p = radius * Vector3::new(theta.cos(), theta.sin(), 0.0);
 
             let g = Focus::new(center + p);
-            stm.add(g, $autd.geometry())?;
+            stm.add(g)?;
         }
         stm.set_freq(1.0);
 
