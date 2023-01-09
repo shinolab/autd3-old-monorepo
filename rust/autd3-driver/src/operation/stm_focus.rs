@@ -108,7 +108,7 @@ impl Operation for FocusSTM {
             (0..tx.num_devices()).for_each(|idx| {
                 let d = tx.body_mut(idx);
                 let s = &self.points[idx];
-                d.focus_stm_initial_mut().set_size(s.len() as _);
+                d.focus_stm_initial_mut().set_size(send_size as _);
                 d.focus_stm_initial_mut().set_freq_div(self.freq_div);
                 d.focus_stm_initial_mut().set_sound_speed(sound_speed);
                 d.focus_stm_initial_mut()
@@ -122,7 +122,7 @@ impl Operation for FocusSTM {
             (0..tx.num_devices()).for_each(|idx| {
                 let d = tx.body_mut(idx);
                 let s = &self.points[idx];
-                d.focus_stm_subsequent_mut().set_size(s.len() as _);
+                d.focus_stm_subsequent_mut().set_size(send_size as _);
                 d.focus_stm_subsequent_mut()
                     .set_points(&s[self.sent..self.sent + send_size]);
             });

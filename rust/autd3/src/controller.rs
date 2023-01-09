@@ -24,7 +24,7 @@ use autd3_core::{
     datagram::{DatagramBody, DatagramHeader, Empty, Filled, NullBody, NullHeader, Sendable},
     geometry::{Geometry, LegacyTransducer, NormalPhaseTransducer, NormalTransducer, Transducer},
     link::Link,
-    FirmwareInfo, Operation, RxDatagram, TxDatagram, MSG_BEGIN, MSG_END,
+    FirmwareInfo, RxDatagram, TxDatagram, MSG_BEGIN, MSG_END,
 };
 
 use crate::gain::Null;

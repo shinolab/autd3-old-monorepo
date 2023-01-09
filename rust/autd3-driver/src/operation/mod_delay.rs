@@ -45,6 +45,7 @@ impl Operation for ModDelay {
 
         tx.body_raw_mut().clone_from_slice(&self.delays);
 
+        self.sent = true;
         Ok(())
     }
 
