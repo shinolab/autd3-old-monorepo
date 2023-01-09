@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 09/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,4 +33,8 @@ pub trait STM {
     }
     fn set_sampling_freq_div(&mut self, freq_div: u32);
     fn sampling_freq_div(&self) -> u32;
+    fn set_start_idx(&mut self, idx: Option<u16>);
+    fn start_idx(&self) -> Option<u16>;
+    fn set_finish_idx(&mut self, idx: Option<u16>);
+    fn finish_idx(&self) -> Option<u16>;
 }

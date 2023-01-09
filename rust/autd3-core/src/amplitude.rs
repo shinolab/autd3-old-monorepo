@@ -4,7 +4,7 @@
  * Created Date: 07/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 09/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,21 +13,24 @@
 
 use anyhow::Result;
 
-use autd3_driver::Drive;
+use autd3_driver::{Drive, Operation};
 
 use crate::{
-    geometry::{Geometry, Transducer},
     datagram::{DatagramBody, Empty, Filled, Sendable},
+    geometry::{Geometry, NormalPhaseTransducer},
 };
 
 pub struct Amplitudes {
     amp: f64,
-    sent: bool,
+    op: autd3_driver::GainNormal,
 }
 
 impl Amplitudes {
     pub fn uniform(amp: f64) -> Self {
-        Self { amp, sent: false }
+        Self {
+            amp,
+            op: Default::default(),
+        }
     }
 
     pub fn none() -> Self {
@@ -35,61 +38,42 @@ impl Amplitudes {
     }
 }
 
-impl<T> DatagramBody<T> for Amplitudes
-where
-    T: Transducer,
-{
-    fn init(&mut self) -> Result<()> {
-        self.sent = false;
+impl DatagramBody<NormalPhaseTransducer> for Amplitudes {
+    fn init(&mut self, geometry: &Geometry<NormalPhaseTransducer>) -> Result<()> {
+        self.op.init();
+        self.op.phase_sent = true;
+        self.op.drives = (0..geometry.num_transducers())
+            .map(|_| Drive {
+                phase: 0.0,
+                amp: self.amp,
+            })
+            .collect();
+        self.op.cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
         Ok(())
     }
 
-    fn pack(&mut self, geometry: &Geometry<T>, tx: &mut autd3_driver::TxDatagram) -> Result<()> {
-        autd3_driver::normal_header(tx);
-        if DatagramBody::<T>::is_finished(self) {
-            return Ok(());
-        }
-
-        let drives: Vec<_> = geometry
-            .transducers()
-            .map(|tr| Drive {
-                phase: 0.0,
-                amp: self.amp,
-                cycle: tr.cycle(),
-            })
-            .collect();
-
-        autd3_driver::normal_duty_body(&drives, tx)?;
-        self.sent = true;
-        Ok(())
+    fn pack(&mut self, tx: &mut autd3_driver::TxDatagram) -> Result<()> {
+        self.op.pack(tx)
     }
 
     fn is_finished(&self) -> bool {
-        self.sent
+        self.op.is_finished()
     }
 }
 
-impl<T> Sendable<T> for Amplitudes
-where
-    T: Transducer,
-{
+impl Sendable<NormalPhaseTransducer> for Amplitudes {
     type H = Empty;
     type B = Filled;
 
-    fn init(&mut self) -> Result<()> {
-        DatagramBody::<T>::init(self)
+    fn init(&mut self, geometry: &Geometry<NormalPhaseTransducer>) -> Result<()> {
+        DatagramBody::<NormalPhaseTransducer>::init(self, geometry)
     }
 
-    fn pack(
-        &mut self,
-        _msg_id: u8,
-        geometry: &Geometry<T>,
-        tx: &mut autd3_driver::TxDatagram,
-    ) -> Result<()> {
-        DatagramBody::<T>::pack(self, geometry, tx)
+    fn pack(&mut self, tx: &mut autd3_driver::TxDatagram) -> Result<()> {
+        DatagramBody::<NormalPhaseTransducer>::pack(self, tx)
     }
 
     fn is_finished(&self) -> bool {
-        DatagramBody::<T>::is_finished(self)
+        DatagramBody::<NormalPhaseTransducer>::is_finished(self)
     }
 }

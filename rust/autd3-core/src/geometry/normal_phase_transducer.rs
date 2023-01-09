@@ -4,7 +4,7 @@
  * Created Date: 31/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/01/2023
+ * Last Modified: 09/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,6 +28,10 @@ pub struct NormalPhaseTransducer {
 }
 
 impl Transducer for NormalPhaseTransducer {
+    type Sync = autd3_driver::SyncNormal;
+    type Gain = autd3_driver::GainNormal;
+    type GainSTM = autd3_driver::GainSTMNormal;
+
     fn new(id: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
         Self {
             id,
@@ -50,10 +54,6 @@ impl Transducer for NormalPhaseTransducer {
         self.id
     }
 
-    fn cycle(&self) -> u16 {
-        self.cycle
-    }
-
     fn mod_delay(&self) -> u16 {
         self.mod_delay
     }
@@ -68,6 +68,10 @@ impl Transducer for NormalPhaseTransducer {
 }
 
 impl NormalPhaseTransducer {
+    pub fn cycle(&self) -> u16 {
+        self.cycle
+    }
+
     pub fn set_cycle(&mut self, cycle: u16) -> Result<()> {
         if cycle > MAX_CYCLE {
             return Err(AUTDInternalError::CycleOutOfRange(cycle).into());

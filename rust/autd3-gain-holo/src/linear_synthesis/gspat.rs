@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 09/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -12,15 +12,11 @@
  */
 
 use crate::{
-    constraint::Constraint, macros::generate_propagation_matrix, Backend, Complex, MatrixXc,
-    Transpose, VectorXc,
+    constraint::Constraint, impl_holo_gain, macros::generate_propagation_matrix, Backend, Complex,
+    MatrixXc, Transpose, VectorXc,
 };
 use anyhow::Result;
-use autd3_core::{
-    gain::GainProps,
-    geometry::{Geometry, Transducer, Vector3},
-};
-use autd3_traits::Gain;
+use autd3_core::geometry::{Geometry, Transducer, Vector3};
 use nalgebra::ComplexField;
 use std::{f64::consts::PI, marker::PhantomData};
 
@@ -28,9 +24,8 @@ use std::{f64::consts::PI, marker::PhantomData};
 /// * Diego Martinez Plasencia et al. "Gs-pat: high-speed multi-point sound-fields for phased arrays of transducers," ACMTrans-actions on Graphics (TOG), 39(4):138–1, 2020.
 ///
 /// Not yet been implemented with GPU.
-#[derive(Gain)]
-pub struct GSPAT<B: Backend, C: Constraint> {
-    props: GainProps,
+pub struct GSPAT<B: Backend, C: Constraint, T: Transducer> {
+    op: T::Gain,
     foci: Vec<Vector3>,
     amps: Vec<f64>,
     repeat: usize,
@@ -38,7 +33,7 @@ pub struct GSPAT<B: Backend, C: Constraint> {
     constraint: C,
 }
 
-impl<B: Backend, C: Constraint> GSPAT<B, C> {
+impl<B: Backend, C: Constraint, T: Transducer> GSPAT<B, C, T> {
     pub fn new(foci: Vec<Vector3>, amps: Vec<f64>, constraint: C) -> Self {
         Self::with_param(foci, amps, constraint, 100)
     }
@@ -46,7 +41,7 @@ impl<B: Backend, C: Constraint> GSPAT<B, C> {
     pub fn with_param(foci: Vec<Vector3>, amps: Vec<f64>, constraint: C, repeat: usize) -> Self {
         assert!(foci.len() == amps.len());
         Self {
-            props: GainProps::default(),
+            op: Default::default(),
             foci,
             amps,
             repeat,
@@ -55,7 +50,7 @@ impl<B: Backend, C: Constraint> GSPAT<B, C> {
         }
     }
 
-    fn calc<T: Transducer>(&mut self, geometry: &Geometry<T>) -> Result<()> {
+    fn calc(&mut self, geometry: &Geometry<T>) -> Result<()> {
         let m = self.foci.len();
         let n = geometry.num_transducers();
 
@@ -120,10 +115,11 @@ impl<B: Backend, C: Constraint> GSPAT<B, C> {
         geometry.transducers().for_each(|tr| {
             let phase = q[tr.id()].argument() + PI;
             let amp = self.constraint.convert(q[tr.id()].abs(), max_coefficient);
-            self.props.drives[tr.id()].amp = amp;
-            self.props.drives[tr.id()].phase = phase;
+            self.op.set_drive(tr.id(), amp, phase);
         });
 
         Ok(())
     }
 }
+
+impl_holo_gain!(GSPAT);

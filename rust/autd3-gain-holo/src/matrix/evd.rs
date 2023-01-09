@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 09/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -12,23 +12,18 @@
  */
 
 use crate::{
-    constraint::Constraint, error::HoloError, macros::generate_propagation_matrix, Backend,
-    Complex, MatrixXc, Transpose, VectorXc,
+    constraint::Constraint, error::HoloError, impl_holo_gain, macros::generate_propagation_matrix,
+    Backend, Complex, MatrixXc, Transpose, VectorXc,
 };
 use anyhow::Result;
-use autd3_core::{
-    gain::GainProps,
-    geometry::{Geometry, Transducer, Vector3},
-};
-use autd3_traits::Gain;
+use autd3_core::geometry::{Geometry, Transducer, Vector3};
 use nalgebra::ComplexField;
 use std::{f64::consts::PI, marker::PhantomData};
 
 /// Reference
 /// * Long, Benjamin, et al. "Rendering volumetric haptic shapes in mid-air using ultrasound." ACM Transactions on Graphics (TOG) 33.6 (2014): 1-10.
-#[derive(Gain)]
-pub struct EVD<B: Backend, C: Constraint> {
-    props: GainProps,
+pub struct EVD<B: Backend, C: Constraint, T: Transducer> {
+    op: T::Gain,
     foci: Vec<Vector3>,
     amps: Vec<f64>,
     gamma: f64,
@@ -36,7 +31,7 @@ pub struct EVD<B: Backend, C: Constraint> {
     constraint: C,
 }
 
-impl<B: Backend, C: Constraint> EVD<B, C> {
+impl<B: Backend, C: Constraint, T: Transducer> EVD<B, C, T> {
     pub fn new(foci: Vec<Vector3>, amps: Vec<f64>, constraint: C) -> Self {
         Self::with_params(foci, amps, constraint, 1.0)
     }
@@ -44,7 +39,7 @@ impl<B: Backend, C: Constraint> EVD<B, C> {
     pub fn with_params(foci: Vec<Vector3>, amps: Vec<f64>, constraint: C, gamma: f64) -> Self {
         assert!(foci.len() == amps.len());
         Self {
-            props: GainProps::default(),
+            op: Default::default(),
             foci,
             amps,
             gamma,
@@ -53,7 +48,7 @@ impl<B: Backend, C: Constraint> EVD<B, C> {
         }
     }
 
-    fn calc<T: Transducer>(&mut self, geometry: &Geometry<T>) -> Result<()> {
+    fn calc(&mut self, geometry: &Geometry<T>) -> Result<()> {
         let m = self.foci.len();
         let n = geometry.num_transducers();
 
@@ -127,10 +122,11 @@ impl<B: Backend, C: Constraint> EVD<B, C> {
         geometry.transducers().for_each(|tr| {
             let phase = gtf[tr.id()].argument() + PI;
             let amp = self.constraint.convert(gtf[tr.id()].abs(), max_coefficient);
-            self.props.drives[tr.id()].amp = amp;
-            self.props.drives[tr.id()].phase = phase;
+            self.op.set_drive(tr.id(), amp, phase);
         });
 
         Ok(())
     }
 }
+
+impl_holo_gain!(EVD);
