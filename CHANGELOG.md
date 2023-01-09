@@ -1,3 +1,8 @@
+# 2.7.4
+
+- Fix [#55](https://github.com/shinolab/autd3/issues/55)
+- Fix [#56](https://github.com/shinolab/autd3/issues/56)
+
 # 2.7.3
 
 - Remove parameter from `FocusSTM`, `GainSTM`, and `gain::Grouped` constructor
