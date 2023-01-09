@@ -4,7 +4,7 @@
  * Created Date: 13/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 09/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -35,8 +35,8 @@ macro_rules! grouped {
         );
 
         let mut g = Grouped::new();
-        g.add(0, g1, $autd.geometry())?;
-        g.add(1, g2, $autd.geometry())?;
+        g.add(0, g1)?;
+        g.add(1, g2)?;
 
         let mut m = Sine::new(150);
 

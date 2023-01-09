@@ -306,6 +306,27 @@ impl<L: Link, T: Transducer> Controller<L, T> {
 }
 
 impl<L: Link> Controller<L, LegacyTransducer> {
+    pub fn stop(&mut self) -> Result<bool> {
+        let mut stop = Null::new();
+        self.send(&mut stop).flush()
+    }
+}
+
+impl<L: Link> Controller<L, NormalTransducer> {
+    pub fn stop(&mut self) -> Result<bool> {
+        let mut stop = Null::new();
+        self.send(&mut stop).flush()
+    }
+}
+
+impl<L: Link> Controller<L, NormalPhaseTransducer> {
+    pub fn stop(&mut self) -> Result<bool> {
+        let mut stop = Amplitudes::none();
+        self.send(&mut stop).flush()
+    }
+}
+
+impl<L: Link> Controller<L, LegacyTransducer> {
     pub fn close(&mut self) -> Result<bool> {
         let mut stop = Null::new();
         let res = self.send(&mut stop).flush()?;
