@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 09/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -57,8 +57,8 @@ struct Gain<Legacy> final : GainBase {
 template <>
 struct Gain<Normal> final : GainBase {
   void init() override {
-    _phase_sent = false;
-    _duty_sent = false;
+    phase_sent = false;
+    duty_sent = false;
     drives.clear();
     cycles.clear();
   }
@@ -71,24 +71,24 @@ struct Gain<Normal> final : GainBase {
     tx.num_bodies = 0;
     if (is_finished()) return;
 
-    if (!_phase_sent) {
-      _phase_sent = true;
+    if (!phase_sent) {
+      phase_sent = true;
       pack_phase(tx);
       return;
     }
 
-    _duty_sent = true;
+    duty_sent = true;
     pack_duty(tx);
   }
 
-  [[nodiscard]] bool is_finished() const override { return _phase_sent && _duty_sent; }
+  [[nodiscard]] bool is_finished() const override { return phase_sent && duty_sent; }
 
   std::vector<uint16_t> cycles{};
 
- private:
-  bool _phase_sent{false};
-  bool _duty_sent{false};
+  bool phase_sent{false};
+  bool duty_sent{false};
 
+ private:
   void pack_duty(TxDatagram& tx) const {
     tx.header().cpu_flag.set(CPUControlFlags::IsDuty);
 
