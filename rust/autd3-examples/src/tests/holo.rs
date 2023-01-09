@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 09/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -42,35 +42,35 @@ macro_rules! holo {
         let c = autd3_gain_holo::Normalize {};
         match s.trim().parse::<usize>() {
             Ok(0) => {
-                let mut g = SDP::<NalgebraBackend, _>::new(foci, amps, c);
+                let mut g = SDP::<NalgebraBackend, _, _>::new(foci, amps, c);
                 $autd.send(&mut m).send(&mut g)?;
             }
             Ok(1) => {
-                let mut g = EVD::<NalgebraBackend, _>::new(foci, amps, c);
+                let mut g = EVD::<NalgebraBackend, _, _>::new(foci, amps, c);
                 $autd.send(&mut m).send(&mut g)?;
             }
             Ok(2) => {
-                let mut g = Naive::<NalgebraBackend, _>::new(foci, amps, c);
+                let mut g = Naive::<NalgebraBackend, _, _>::new(foci, amps, c);
                 $autd.send(&mut m).send(&mut g)?;
             }
             Ok(3) => {
-                let mut g = GS::<NalgebraBackend, _>::new(foci, amps, c);
+                let mut g = GS::<NalgebraBackend, _, _>::new(foci, amps, c);
                 $autd.send(&mut m).send(&mut g)?;
             }
             Ok(4) => {
-                let mut g = GSPAT::<NalgebraBackend, _>::new(foci, amps, c);
+                let mut g = GSPAT::<NalgebraBackend, _, _>::new(foci, amps, c);
                 $autd.send(&mut m).send(&mut g)?;
             }
             Ok(5) => {
-                let mut g = LM::<NalgebraBackend, _>::new(foci, amps, c);
+                let mut g = LM::<NalgebraBackend, _, _>::new(foci, amps, c);
                 $autd.send(&mut m).send(&mut g)?;
             }
             Ok(6) => {
-                let mut g = Greedy::new(foci, amps, c);
+                let mut g = Greedy::<NalgebraBackend, _, _>::new(foci, amps, c);
                 $autd.send(&mut m).send(&mut g)?;
             }
             _ => {
-                let mut g = GSPAT::<NalgebraBackend, _>::new(foci, amps, c);
+                let mut g = GSPAT::<NalgebraBackend, _, _>::new(foci, amps, c);
                 $autd.send(&mut m).send(&mut g)?;
             }
         };

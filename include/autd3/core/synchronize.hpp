@@ -3,7 +3,7 @@
 // Created Date: 07/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/12/2022
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
 #pragma once
 
 #include "autd3/core/datagram.hpp"
-#include "autd3/driver/driver.hpp"
+#include "autd3/driver/operation/sync.hpp"
 
 namespace autd3::core {
 
@@ -22,14 +22,34 @@ namespace autd3::core {
 struct Synchronize final : DatagramBody {
   Synchronize() noexcept = default;
 
-  bool init() override { return true; }
-
-  bool pack(const std::unique_ptr<const driver::Driver>& driver, const std::unique_ptr<const Mode>& mode, const Geometry& geometry,
-            driver::TxDatagram& tx) override {
-    return mode->pack_sync(driver, geometry, tx);
+  void init(const Mode mode, const Geometry& geometry) override {
+    switch (mode) {
+      case Mode::Legacy: {
+        auto op = std::make_unique<driver::Sync<driver::Legacy>>();
+        op->init();
+        _op = std::move(op);
+      } break;
+      case Mode::Normal: {
+        auto op = std::make_unique<driver::Sync<driver::Normal>>();
+        op->init();
+        op->cycles = geometry.cycles();
+        _op = std::move(op);
+      } break;
+      case Mode::NormalPhase: {
+        auto op = std::make_unique<driver::Sync<driver::NormalPhase>>();
+        op->init();
+        op->cycles = geometry.cycles();
+        _op = std::move(op);
+      } break;
+    }
   }
 
-  [[nodiscard]] bool is_finished() const override { return true; }
+  void pack(driver::TxDatagram& tx) override { _op->pack(tx); }
+
+  [[nodiscard]] bool is_finished() const override { return _op->is_finished(); }
+
+ private:
+  std::unique_ptr<driver::SyncBase> _op;
 };
 
 }  // namespace autd3::core

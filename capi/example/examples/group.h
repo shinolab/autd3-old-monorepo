@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/10/2022
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -29,7 +29,7 @@ void* group(void* autd) {
   AUTDGainBesselBeam(&g2, x, y, 0.0, 0.0, 0.0, 1.0, 13.0 / 180.0 * M_PI, 1.0);
 
   void* g = NULL;
-  AUTDGainGrouped(&g, autd);
+  AUTDGainGrouped(&g);
 
   AUTDGainGroupedAdd(g, 0, g1);
   AUTDGainGroupedAdd(g, 1, g2);

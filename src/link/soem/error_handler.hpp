@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/11/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -38,7 +38,7 @@ inline void check_state(const uint16_t slave, std::stringstream& ss) {
     if (ec_slave[slave].state == EC_STATE_NONE) {
       ec_slave[slave].islost = 1;
       ss << "ERROR: slave " << slave << " lost\n";
-      spdlog::error("slave {} lost", slave);
+      spdlog::warn("slave {} lost", slave);
     }
   }
 }

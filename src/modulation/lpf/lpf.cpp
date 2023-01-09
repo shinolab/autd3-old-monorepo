@@ -3,7 +3,7 @@
 // Created Date: 19/11/20.2f
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 20.2f Shun Suzuki. All rights reserved.
@@ -60,15 +60,13 @@ LPF::LPF(Modulation& modulation) : _modulation(modulation) {
 }
 #endif
 
-bool LPF::calc() {
-  if (!_modulation.build()) {
-    spdlog::error("Failed to build original modulation.");
-    return false;
-  }
+void LPF::calc() {
+  _modulation.init();
+
   std::vector<uint8_t> resampled;
   resampled.reserve(_modulation.buffer().size() * _modulation.sampling_frequency_division());
   for (const auto d : _modulation.buffer())
-    for (size_t i = 0; i < _modulation.sampling_frequency_division(); i++) resampled.emplace_back(d);
+    std::generate_n(std::back_inserter(resampled), _modulation.sampling_frequency_division(), [d] { return d; });
 
   std::vector<uint8_t> mf;
   if (resampled.size() % 2 == 0) {
@@ -85,14 +83,13 @@ bool LPF::calc() {
       mf.emplace_back(static_cast<uint8_t>((static_cast<uint16_t>(resampled[i]) + static_cast<uint16_t>(resampled[i + 1])) / 2));
   }
 
-  this->_buffer.reserve(mf.size());
+  buffer().reserve(mf.size());
   for (int32_t i = 0; i < static_cast<int32_t>(mf.size()); i++) {
     driver::autd3_float_t r = 0;
     for (int32_t j = 0; j < static_cast<int32_t>(_coefficients.size()); j++)
       r += _coefficients[j] * static_cast<driver::autd3_float_t>(mf[static_cast<size_t>(driver::rem_euclid(i - j, static_cast<int32_t>(mf.size())))]);
-    this->_buffer.emplace_back(static_cast<uint8_t>(std::round(r)));
+    buffer().emplace_back(static_cast<uint8_t>(std::round(r)));
   }
-  return true;
 }
 
 }  // namespace autd3::modulation

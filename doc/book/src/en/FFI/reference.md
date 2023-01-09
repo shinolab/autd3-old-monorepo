@@ -29,8 +29,7 @@ The controller created must be freed at the end by `AUTDFreeController`.
 | Argument name / return | type   | in/out | description                      |
 | ---------------------- | ------ | ------ | -------------------------------- |
 | out                    | void** | out    | pointer to pointer to Controller |
-| driver_version         | uint8_t| in     | driver version                   |
-| return                 | bool    | -      | true if successful                                                                                     |
+| return                 | void   | -      |                                  |
 
 ## AUTDOpenController (autd3capi)
 
@@ -55,7 +54,7 @@ Add a device to the Controller.
 | rz1                    | double  | in     | first angle of ZYZ euler angle in radian  |
 | ry                     | double  | in     | second angle of ZYZ euler angle in radian |
 | rz2                    | double  | in     | third angle of ZYZ euler angle in radian  |
-| return                 | void | -      | -                                 |
+| return                 | bool | -      | -                                 |
 
 ## AUTDAddDeviceQuaternion (autd3capi)
 
@@ -71,7 +70,7 @@ Add a device to the Controller.
 | qx                     | double  | in     | x parameter of quaternion of rotation  |
 | qy                     | double  | in     | y parameter of quaternion of rotation  |
 | qz                     | double  | in     | z parameter of quaternion of rotation  |
-| return                 | void | -      | -                                 |
+| return                 | bool | -      | -                                 |
 
 ## AUTDClose (autd3capi)
 
@@ -460,7 +459,6 @@ The gain created must be deleted at the end by `AUTDDeleteGain`.
 | Argument name / return | type   | in/out | description                        |
 | ---------------------- | ------ | ------ | ---------------------------------- |
 | gain                   | void** | out    | pointer to pointer to Grouped gain |
-| handle                 | void*  | in     | pointer to Controller              |
 | return                 | void   | -      | -                                  |
 
 ## AUTDGainGroupedAdd (autd3capi)
@@ -710,7 +708,6 @@ The stm created must be deleted at the end by `AUTDDeleteSTM`.
 | Argument name / return | type   | in/out | description                     |
 | ---------------------- | ------ | ------ | ------------------------------- |
 | out                    | void** | out    | pointer to pointer to Focus STM |
-| sound_speed            | double | in     | sound speed                     |
 | return                 | void   | -      | -                               |
 
 ## AUTDGainSTM (autd3capi)
@@ -722,7 +719,6 @@ The stm created must be deleted at the end by `AUTDDeleteSTM`.
 | Argument name / return | type   | in/out | description                    |
 | ---------------------- | ------ | ------ | ------------------------------ |
 | out                    | void** | out    | pointer to pointer to Gain STM |
-| handle                 | void*  | in     | pointer to Controller          |
 | return                 | void   | -      | -                              |
 
 ## AUTDFocusSTMAdd (autd3capi)

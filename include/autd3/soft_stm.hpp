@@ -3,7 +3,7 @@
 // Created Date: 07/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,6 +17,7 @@
 
 #include "autd3/controller.hpp"
 #include "autd3/core/gain.hpp"
+#include "autd3/core/utils.hpp"
 
 namespace autd3 {
 
@@ -31,7 +32,6 @@ class SoftwareSTM {
 #endif
   /**
    * @brief Software timer strategy flag
-   *
    */
   class TimerStrategy final {
    public:
@@ -86,10 +86,48 @@ class SoftwareSTM {
     SoftwareSTMThreadHandle(SoftwareSTMThreadHandle&& obj) = default;
     SoftwareSTMThreadHandle& operator=(SoftwareSTMThreadHandle&& obj) = delete;
 
-    bool finish();
+    bool finish() {
+      if (!_run) return false;
+      _run = false;
+      if (_th.joinable()) _th.join();
+      _cnt.set_ack_check_timeout(_timeout);
+      return true;
+    }
 
    private:
-    SoftwareSTMThreadHandle(Controller& cnt, std::vector<std::shared_ptr<core::Gain>> bodies, uint64_t period, TimerStrategy strategy);
+    SoftwareSTMThreadHandle(Controller& cnt, std::vector<std::shared_ptr<core::Gain>> bodies, const uint64_t period, const TimerStrategy strategy)
+        : _cnt(cnt), _timeout(_cnt.get_ack_check_timeout()) {
+      _run = true;
+      if (bodies.empty()) return;
+      const auto interval = std::chrono::nanoseconds(period);
+      _cnt.set_ack_check_timeout(std::chrono::high_resolution_clock::duration::zero());
+      const auto mode = cnt.mode();
+      if (strategy.contains(TimerStrategy::BusyWait))
+        _th = std::thread([this, mode, interval, bodies = std::move(bodies)] {
+          size_t i = 0;
+          auto next = std::chrono::high_resolution_clock::now();
+          while (_run) {
+            next += interval;
+            bodies[i]->init(mode, this->_cnt.geometry());
+            for (;; core::spin_loop_hint())
+              if (std::chrono::high_resolution_clock::now() >= next) break;
+            this->_cnt.send(*bodies[i]);
+            i = (i + 1) % bodies.size();
+          }
+        });
+      else
+        _th = std::thread([this, mode, interval, bodies = std::move(bodies)] {
+          size_t i = 0;
+          auto next = std::chrono::high_resolution_clock::now();
+          while (_run) {
+            next += interval;
+            bodies[i]->init(mode, this->_cnt.geometry());
+            std::this_thread::sleep_until(next);
+            this->_cnt.send(*bodies[i]);
+            i = (i + 1) % bodies.size();
+          }
+        });
+    }
 
     bool _run;
     std::thread _th;
@@ -111,16 +149,22 @@ class SoftwareSTM {
    * @param[in] freq Frequency
    * @return autd3_float_t Actual frequency
    */
-  driver::autd3_float_t set_frequency(driver::autd3_float_t freq);
+  driver::autd3_float_t set_frequency(const driver::autd3_float_t freq) {
+    constexpr auto nanoseconds = static_cast<driver::autd3_float_t>(1000000000);
+    const auto sample_freq = static_cast<driver::autd3_float_t>(size()) * freq;
+    const auto sample_period_ns = static_cast<uint64_t>(std::round(nanoseconds / sample_freq));
+    _sample_period_ns = sample_period_ns;
+    return frequency();
+  }
 
   /**
    * @brief Add data to send
    * @param[in] b data
    */
-  template <typename T>
-  void add(T&& b) {
-    static_assert(std::is_base_of_v<core::Gain, std::remove_reference_t<T>>, "This is not Gain.");
-    add_impl(std::forward<T>(b));
+  template <typename G>
+  void add(G&& b) {
+    static_assert(std::is_base_of_v<core::Gain, std::remove_reference_t<G>>, "This is not Gain.");
+    add_impl(std::forward<G>(b));
   }
 
   /**
@@ -134,44 +178,45 @@ class SoftwareSTM {
    * @param[in] cnt autd3::Controller
    * @details Never use cnt after calling this function.
    */
-  SoftwareSTMThreadHandle start(Controller& cnt);
+  SoftwareSTMThreadHandle start(Controller& cnt) {
+    if (size() == 0) throw std::runtime_error("No Gains ware added.");
+    return {cnt, std::move(_bodies), _sample_period_ns, timer_strategy};
+  }
 
   /**
    * @return Frequency
    */
-  [[nodiscard]] driver::autd3_float_t frequency() const;
+  [[nodiscard]] driver::autd3_float_t frequency() const { return sampling_frequency() / static_cast<driver::autd3_float_t>(size()); }
 
   /**
    * @return Period
    */
-  [[nodiscard]] uint64_t period() const;
+  [[nodiscard]] uint64_t period() const { return _sample_period_ns * size(); }
 
   /**
    * @brief Sampling frequency
    */
-  [[nodiscard]] driver::autd3_float_t sampling_frequency() const noexcept;
+  [[nodiscard]] driver::autd3_float_t sampling_frequency() const noexcept {
+    constexpr auto nanoseconds = static_cast<driver::autd3_float_t>(1000000000);
+    return nanoseconds / static_cast<driver::autd3_float_t>(_sample_period_ns);
+  }
 
   /**
    * @brief Sampling period in ns
    */
-  [[nodiscard]] uint64_t sampling_period_ns() const noexcept;
+  [[nodiscard]] uint64_t sampling_period_ns() const noexcept { return _sample_period_ns; }
 
   /**
    * @brief Sampling period in ns
    */
-  uint64_t& sampling_period_ns() noexcept;
+  uint64_t& sampling_period_ns() noexcept { return _sample_period_ns; }
 
   TimerStrategy timer_strategy;
 
  private:
-  template <typename T>
-  void add_impl(T& b) {
-    _bodies.emplace_back(std::make_shared<std::remove_reference_t<T>>(b));
-  }
-
-  template <typename T>
-  void add_impl(T&& b) {
-    _bodies.emplace_back(std::make_shared<std::remove_reference_t<T>>(std::forward<T>(b)));
+  template <typename G>
+  void add_impl(G&& b) {
+    _bodies.emplace_back(std::make_shared<std::remove_reference_t<G>>(std::forward<G>(b)));
   }
 
   std::vector<std::shared_ptr<core::Gain>> _bodies;

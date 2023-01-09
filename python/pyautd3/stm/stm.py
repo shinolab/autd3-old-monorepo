@@ -4,7 +4,7 @@ Project: stm
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 16/12/2022
+Last Modified: 08/01/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -64,9 +64,9 @@ class STM(Body):
 
 
 class FocusSTM(STM):
-    def __init__(self, sound_speed: float):
+    def __init__(self):
         super().__init__()
-        Base().dll.AUTDFocusSTM(byref(self.ptr), sound_speed)
+        Base().dll.AUTDFocusSTM(byref(self.ptr))
 
     def __del__(self):
         super().__del__()
@@ -82,15 +82,17 @@ class Mode(IntEnum):
 
 
 class GainSTM(STM):
-    def __init__(self, autd: Controller):
+    def __init__(self):
         super().__init__()
-        Base().dll.AUTDGainSTM(byref(self.ptr), autd.p_cnt)
+        Base().dll.AUTDGainSTM(byref(self.ptr))
+        self._gains = []
 
     def __del__(self):
         super().__del__()
 
     def add(self, gain: Gain):
         Base().dll.AUTDGainSTMAdd(self.ptr, gain.ptr)
+        self._gains.append(gain)
 
     @ property
     def mode(self):

@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/12/2022
+ * Last Modified: 09/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,22 +23,14 @@ use super::STM;
 
 pub struct FocusSTM {
     control_points: Vec<(Vector3, u8)>,
-    sample_freq_div: u32,
-    sent: usize,
-    pub start_idx: Option<u16>,
-    pub finish_idx: Option<u16>,
-    pub sound_speed: f64,
+    op: autd3_driver::FocusSTM,
 }
 
 impl FocusSTM {
-    pub fn new(sound_speed: f64) -> Self {
+    pub fn new() -> Self {
         Self {
             control_points: vec![],
-            sample_freq_div: 4096,
-            sent: 0,
-            start_idx: None,
-            finish_idx: None,
-            sound_speed,
+            op: Default::default(),
         }
     }
 
@@ -58,26 +50,11 @@ impl FocusSTM {
 }
 
 impl<T: Transducer> DatagramBody<T> for FocusSTM {
-    fn init(&mut self) -> Result<()> {
-        self.sent = 0;
-        Ok(())
-    }
-
-    fn pack(&mut self, geometry: &Geometry<T>, tx: &mut TxDatagram) -> Result<()> {
-        autd3_driver::focus_stm_header(tx);
-
-        if DatagramBody::<T>::is_finished(self) {
-            return Ok(());
-        }
-
-        let send_size = autd3_driver::focus_stm_send_size(
-            self.control_points.len(),
-            self.sent,
-            geometry.device_map(),
-        );
-
-        let src = &self.control_points[self.sent..(self.sent + send_size)];
-        let points: Vec<Vec<_>> = geometry
+    fn init(&mut self, geometry: &Geometry<T>) -> Result<()> {
+        self.op.init();
+        self.op.sound_speed = geometry.sound_speed;
+        self.op.device_map = geometry.device_map().to_vec();
+        self.op.points = geometry
             .device_map()
             .iter()
             .scan(0, |state, tr_num| {
@@ -91,7 +68,8 @@ impl<T: Transducer> DatagramBody<T> for FocusSTM {
                 let trans_inv =
                     Matrix3::from_columns(&[tr.x_direction(), tr.y_direction(), tr.z_direction()])
                         .transpose();
-                src.iter()
+                self.control_points
+                    .iter()
                     .map(|(p, shift)| {
                         let lp = trans_inv * (p - origin);
                         STMFocus::new(lp.x, lp.y, lp.z, *shift)
@@ -100,20 +78,15 @@ impl<T: Transducer> DatagramBody<T> for FocusSTM {
             })
             .collect();
 
-        autd3_driver::focus_stm_body(
-            &points,
-            &mut self.sent,
-            self.control_points.len(),
-            self.sample_freq_div,
-            self.sound_speed,
-            self.start_idx,
-            self.finish_idx,
-            tx,
-        )
+        Ok(())
+    }
+
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+        self.op.pack(tx)
     }
 
     fn is_finished(&self) -> bool {
-        self.sent == self.control_points.len()
+        self.op.is_finished()
     }
 }
 
@@ -121,12 +94,12 @@ impl<T: Transducer> Sendable<T> for FocusSTM {
     type H = Empty;
     type B = Filled;
 
-    fn init(&mut self) -> Result<()> {
-        DatagramBody::<T>::init(self)
+    fn init(&mut self, geometry: &Geometry<T>) -> Result<()> {
+        DatagramBody::<T>::init(self, geometry)
     }
 
-    fn pack(&mut self, _msg_id: u8, geometry: &Geometry<T>, tx: &mut TxDatagram) -> Result<()> {
-        DatagramBody::<T>::pack(self, geometry, tx)
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+        DatagramBody::<T>::pack(self, tx)
     }
 
     fn is_finished(&self) -> bool {
@@ -140,10 +113,32 @@ impl STM for FocusSTM {
     }
 
     fn set_sampling_freq_div(&mut self, freq_div: u32) {
-        self.sample_freq_div = freq_div;
+        self.op.freq_div = freq_div;
     }
 
     fn sampling_freq_div(&self) -> u32 {
-        self.sample_freq_div
+        self.op.freq_div
+    }
+
+    fn set_start_idx(&mut self, idx: Option<u16>) {
+        self.op.start_idx = idx;
+    }
+
+    fn start_idx(&self) -> Option<u16> {
+        self.op.start_idx
+    }
+
+    fn set_finish_idx(&mut self, idx: Option<u16>) {
+        self.op.finish_idx = idx;
+    }
+
+    fn finish_idx(&self) -> Option<u16> {
+        self.op.finish_idx
+    }
+}
+
+impl Default for FocusSTM {
+    fn default() -> Self {
+        Self::new()
     }
 }

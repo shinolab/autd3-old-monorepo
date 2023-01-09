@@ -4,14 +4,12 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/12/2022
+ * Last Modified: 09/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
-
-use std::marker::PhantomData;
 
 use crate::{
     datagram::{DatagramBody, Empty, Filled, Sendable},
@@ -20,263 +18,155 @@ use crate::{
 };
 
 use anyhow::{Ok, Result};
-use autd3_driver::{Drive, Mode, TxDatagram};
+use autd3_driver::{GainSTMOp, Mode, Operation, TxDatagram};
 
 use super::STM;
 
-pub struct GainSTM<T: Transducer> {
-    gains: Vec<Vec<Drive>>,
-    sample_freq_div: u32,
-    next_duty: bool,
-    sent: usize,
-    mode: Mode,
-    pub start_idx: Option<u16>,
-    pub finish_idx: Option<u16>,
-    phantom: PhantomData<T>,
+#[derive(Default)]
+pub struct GainSTM<'a, T: Transducer> {
+    gains: Vec<Box<dyn Gain<T> + 'a>>,
+    op: T::GainSTM,
 }
 
-impl<T: Transducer> GainSTM<T> {
+impl<'a, T: Transducer> GainSTM<'a, T> {
     pub fn new() -> Self {
         Self {
             gains: vec![],
-            sample_freq_div: 4096,
-            next_duty: false,
-            sent: 0,
-            mode: Mode::PhaseDutyFull,
-            start_idx: None,
-            finish_idx: None,
-            phantom: PhantomData,
+            op: Default::default(),
         }
     }
 
-    pub fn mode(&self) -> Mode {
-        self.mode
-    }
-
-    pub fn set_mode(&mut self, mode: Mode) {
-        self.mode = mode;
-    }
-
-    pub fn add<G: Gain<T>>(&mut self, gain: G, geometry: &Geometry<T>) -> Result<()> {
-        let mut gain = gain;
-        gain.build(geometry)?;
-        let drives = gain.take_drives();
-        self.gains.push(drives);
+    pub fn add<G: Gain<T> + 'a>(&mut self, gain: G) -> Result<()> {
+        self.gains.push(Box::new(gain));
         Ok(())
     }
 }
 
-impl<T: Transducer> Default for GainSTM<T> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl DatagramBody<LegacyTransducer> for GainSTM<LegacyTransducer> {
-    fn init(&mut self) -> Result<()> {
-        self.sent = 0;
-        Ok(())
-    }
-
-    fn pack(&mut self, _geometry: &Geometry<LegacyTransducer>, tx: &mut TxDatagram) -> Result<()> {
-        autd3_driver::gain_stm_legacy_header(tx);
-        if DatagramBody::<LegacyTransducer>::is_finished(self) {
-            return Ok(());
-        }
-        autd3_driver::gain_stm_legacy_body(
-            &self.gains,
-            &mut self.sent,
-            self.sample_freq_div,
-            self.mode,
-            self.start_idx,
-            self.finish_idx,
-            tx,
-        )
-    }
-
-    fn is_finished(&self) -> bool {
-        self.sent > self.gains.len()
-    }
-}
-
-impl DatagramBody<NormalTransducer> for GainSTM<NormalTransducer> {
-    fn init(&mut self) -> Result<()> {
-        self.sent = 0;
-        self.next_duty = false;
-        Ok(())
-    }
-
-    fn pack(&mut self, _geometry: &Geometry<NormalTransducer>, tx: &mut TxDatagram) -> Result<()> {
-        autd3_driver::gain_stm_normal_header(tx);
-        if DatagramBody::<NormalTransducer>::is_finished(self) {
-            return Ok(());
-        }
-
-        if self.sent == 0 {
-            self.sent += 1;
-            return autd3_driver::gain_stm_normal_phase_body(
-                &self.gains,
-                0,
-                self.sample_freq_div,
-                self.mode,
-                self.start_idx,
-                self.finish_idx,
-                tx,
-            );
-        }
-
-        match self.mode {
-            Mode::PhaseDutyFull => {
-                if self.next_duty {
-                    self.next_duty = !self.next_duty;
-                    autd3_driver::gain_stm_normal_duty_body(&self.gains, self.sent, tx)
-                } else {
-                    self.next_duty = !self.next_duty;
-                    let sent = self.sent;
-                    self.sent += 1;
-                    autd3_driver::gain_stm_normal_phase_body(
-                        &self.gains,
-                        sent,
-                        self.sample_freq_div,
-                        self.mode,
-                        self.start_idx,
-                        self.finish_idx,
-                        tx,
-                    )
-                }
-            }
-            Mode::PhaseFull => {
-                let sent = self.sent;
-                self.sent += 1;
-                autd3_driver::gain_stm_normal_phase_body(
-                    &self.gains,
-                    sent,
-                    self.sample_freq_div,
-                    self.mode,
-                    self.start_idx,
-                    self.finish_idx,
-                    tx,
-                )
-            }
-            Mode::PhaseHalf => Err(autd3_driver::DriverError::PhaseHalfNotSupported.into()),
-        }
-    }
-
-    fn is_finished(&self) -> bool {
-        self.sent == self.gains.len() + 1
-    }
-}
-
-impl DatagramBody<NormalPhaseTransducer> for GainSTM<NormalPhaseTransducer> {
-    fn init(&mut self) -> Result<()> {
-        self.sent = 0;
-        self.next_duty = false;
-        Ok(())
-    }
-
-    fn pack(
-        &mut self,
-        _geometry: &Geometry<NormalPhaseTransducer>,
-        tx: &mut TxDatagram,
-    ) -> Result<()> {
-        autd3_driver::gain_stm_normal_header(tx);
-        if DatagramBody::<NormalPhaseTransducer>::is_finished(self) {
-            return Ok(());
-        }
-        let sent = self.sent;
-        self.sent += 1;
-        autd3_driver::gain_stm_normal_phase_body(
-            &self.gains,
-            sent,
-            self.sample_freq_div,
-            self.mode,
-            self.start_idx,
-            self.finish_idx,
-            tx,
-        )
-    }
-
-    fn is_finished(&self) -> bool {
-        self.sent == self.gains.len() + 1
-    }
-}
-
-impl<T: Transducer> STM for GainSTM<T> {
+impl<'a, T: Transducer> STM for GainSTM<'a, T> {
     fn size(&self) -> usize {
         self.gains.len()
     }
 
     fn set_sampling_freq_div(&mut self, freq_div: u32) {
-        self.sample_freq_div = freq_div;
+        self.op.set_sampling_freq_div(freq_div);
     }
 
     fn sampling_freq_div(&self) -> u32 {
-        self.sample_freq_div
+        self.op.sampling_freq_div()
+    }
+
+    fn set_start_idx(&mut self, idx: Option<u16>) {
+        self.op.set_start_idx(idx)
+    }
+
+    fn start_idx(&self) -> Option<u16> {
+        self.op.start_idx()
+    }
+
+    fn set_finish_idx(&mut self, idx: Option<u16>) {
+        self.op.set_finish_idx(idx)
+    }
+
+    fn finish_idx(&self) -> Option<u16> {
+        self.op.finish_idx()
     }
 }
 
-impl Sendable<LegacyTransducer> for GainSTM<LegacyTransducer> {
-    type H = Empty;
-    type B = Filled;
-
-    fn init(&mut self) -> Result<()> {
-        DatagramBody::<LegacyTransducer>::init(self)
+impl<'a> GainSTM<'a, LegacyTransducer> {
+    pub fn mode(&self) -> Mode {
+        self.op.mode
     }
 
-    fn pack(
-        &mut self,
-        _msg_id: u8,
-        geometry: &Geometry<LegacyTransducer>,
-        tx: &mut TxDatagram,
-    ) -> Result<()> {
-        DatagramBody::<LegacyTransducer>::pack(self, geometry, tx)
-    }
-
-    fn is_finished(&self) -> bool {
-        DatagramBody::<LegacyTransducer>::is_finished(self)
+    pub fn set_mode(&mut self, mode: Mode) {
+        self.op.mode = mode;
     }
 }
 
-impl Sendable<NormalTransducer> for GainSTM<NormalTransducer> {
-    type H = Empty;
-    type B = Filled;
-
-    fn init(&mut self) -> Result<()> {
-        DatagramBody::<NormalTransducer>::init(self)
+impl<'a> GainSTM<'a, NormalTransducer> {
+    pub fn mode(&self) -> Mode {
+        self.op.mode
     }
 
-    fn pack(
-        &mut self,
-        _msg_id: u8,
-        geometry: &Geometry<NormalTransducer>,
-        tx: &mut TxDatagram,
-    ) -> Result<()> {
-        DatagramBody::<NormalTransducer>::pack(self, geometry, tx)
-    }
-
-    fn is_finished(&self) -> bool {
-        DatagramBody::<NormalTransducer>::is_finished(self)
+    pub fn set_mode(&mut self, mode: Mode) {
+        self.op.mode = mode;
     }
 }
 
-impl Sendable<NormalPhaseTransducer> for GainSTM<NormalPhaseTransducer> {
-    type H = Empty;
-    type B = Filled;
-
-    fn init(&mut self) -> Result<()> {
-        DatagramBody::<NormalPhaseTransducer>::init(self)
+impl<'a> DatagramBody<NormalTransducer> for GainSTM<'a, NormalTransducer> {
+    fn init(&mut self, geometry: &Geometry<NormalTransducer>) -> Result<()> {
+        self.op.init();
+        self.op.cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
+        for gain in &mut self.gains {
+            gain.init(geometry)?;
+            self.op.drives.push(gain.drives().to_vec());
+        }
+        Ok(())
     }
 
-    fn pack(
-        &mut self,
-        _msg_id: u8,
-        geometry: &Geometry<NormalPhaseTransducer>,
-        tx: &mut TxDatagram,
-    ) -> Result<()> {
-        DatagramBody::<NormalPhaseTransducer>::pack(self, geometry, tx)
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+        self.op.pack(tx)
     }
 
     fn is_finished(&self) -> bool {
-        DatagramBody::<NormalPhaseTransducer>::is_finished(self)
+        self.op.is_finished()
+    }
+}
+
+impl<'a> DatagramBody<NormalPhaseTransducer> for GainSTM<'a, NormalPhaseTransducer> {
+    fn init(&mut self, geometry: &Geometry<NormalPhaseTransducer>) -> Result<()> {
+        self.op.init();
+        self.op.cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
+        for gain in &mut self.gains {
+            gain.init(geometry)?;
+            self.op.drives.push(gain.drives().to_vec());
+        }
+        Ok(())
+    }
+
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+        self.op.pack(tx)
+    }
+
+    fn is_finished(&self) -> bool {
+        self.op.is_finished()
+    }
+}
+
+impl<'a> DatagramBody<LegacyTransducer> for GainSTM<'a, LegacyTransducer> {
+    fn init(&mut self, geometry: &Geometry<LegacyTransducer>) -> Result<()> {
+        self.op.init();
+        for gain in &mut self.gains {
+            gain.init(geometry)?;
+            self.op.drives.push(gain.drives().to_vec());
+        }
+        Ok(())
+    }
+
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+        self.op.pack(tx)
+    }
+
+    fn is_finished(&self) -> bool {
+        self.op.is_finished()
+    }
+}
+
+impl<'a, T: Transducer> Sendable<T> for GainSTM<'a, T>
+where
+    GainSTM<'a, T>: DatagramBody<T>,
+{
+    type H = Empty;
+    type B = Filled;
+
+    fn init(&mut self, geometry: &Geometry<T>) -> Result<()> {
+        DatagramBody::<T>::init(self, geometry)
+    }
+
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+        DatagramBody::<T>::pack(self, tx)
+    }
+
+    fn is_finished(&self) -> bool {
+        DatagramBody::<T>::is_finished(self)
     }
 }

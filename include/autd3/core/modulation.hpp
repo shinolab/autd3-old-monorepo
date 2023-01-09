@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/12/2022
+// Last Modified: 07/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,8 +13,8 @@
 
 #include <vector>
 
-#include "autd3/driver/driver.hpp"
-#include "datagram.hpp"
+#include "autd3/core/datagram.hpp"
+#include "autd3/driver/operation/modulation.hpp"
 
 namespace autd3::core {
 
@@ -23,7 +23,7 @@ namespace autd3::core {
  */
 class Modulation : public DatagramHeader {
  public:
-  Modulation() : _freq_div(40960), _built(false), _sent(0) {}
+  Modulation() = default;
   ~Modulation() override = default;
   Modulation(const Modulation& v) noexcept = default;
   Modulation& operator=(const Modulation& obj) = default;
@@ -33,78 +33,55 @@ class Modulation : public DatagramHeader {
   /**
    * \brief Calculate modulation data
    */
-  virtual bool calc() = 0;
-
-  /**
-   * @brief Build modulation data
-   */
-  [[nodiscard]] bool build() {
-    if (_built) return true;
-    _buffer.clear();
-    _built = true;
-    return calc();
-  }
-
-  /**
-   * \brief Re-build modulation data
-   */
-  [[nodiscard]] bool rebuild() {
-    _built = false;
-    return build();
-  }
+  virtual void calc() = 0;
 
   /**
    * \brief modulation data
    */
-  [[nodiscard]] const std::vector<uint8_t>& buffer() const noexcept { return _buffer; }
+  [[nodiscard]] const std::vector<uint8_t>& buffer() const noexcept { return _op.mod_data; }
 
   /**
    * @brief [Advanced] modulation data
    * @details Call Modulation::build before using this function to initialize buffer data.
    */
-  std::vector<uint8_t>& buffer() noexcept { return _buffer; }
+  std::vector<uint8_t>& buffer() noexcept { return _op.mod_data; }
 
   /**
    * \brief sampling frequency division ratio
    */
-  uint32_t& sampling_frequency_division() noexcept { return _freq_div; }
+  uint32_t& sampling_frequency_division() noexcept { return _op.freq_div; }
 
   /**
    * \brief sampling frequency division ratio
    */
-  [[nodiscard]] uint32_t sampling_frequency_division() const noexcept { return _freq_div; }
+  [[nodiscard]] uint32_t sampling_frequency_division() const noexcept { return _op.freq_div; }
 
   /**
    * \brief modulation sampling frequency
    */
   [[nodiscard]] driver::autd3_float_t sampling_frequency() const noexcept {
-    return static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / static_cast<driver::autd3_float_t>(_freq_div);
+    return static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / static_cast<driver::autd3_float_t>(_op.freq_div);
   }
 
   /**
    * \brief Set modulation sampling frequency
    */
   [[nodiscard]] driver::autd3_float_t set_sampling_frequency(const driver::autd3_float_t freq) {
-    _freq_div = static_cast<uint32_t>(std::round(static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / freq));
+    _op.freq_div = static_cast<uint32_t>(std::round(static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / freq));
     return sampling_frequency();
   }
 
-  bool init() override {
-    _sent = 0;
-    return build();
+  void init() override {
+    _op.init();
+    calc();
   }
 
-  bool pack(const std::unique_ptr<const driver::Driver>& driver, const uint8_t msg_id, driver::TxDatagram& tx) override {
-    return driver->modulation(msg_id, buffer(), _sent, _freq_div, tx);
-  }
+  void pack(driver::TxDatagram& tx) override { _op.pack(tx); }
 
-  [[nodiscard]] bool is_finished() const noexcept override { return _sent == buffer().size(); }
+  [[nodiscard]] bool is_finished() const noexcept override { return _op.is_finished(); }
 
  protected:
-  std::vector<uint8_t> _buffer;
-  uint32_t _freq_div;
-  bool _built;
-  size_t _sent;
+  driver::Modulation _op;
 };
 
 }  // namespace autd3::core

@@ -3,7 +3,7 @@
 # Created Date: 14/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 27/11/2022
+# Last Modified: 05/01/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -48,7 +48,7 @@ mutable struct Controller
     send
     function Controller()
         chandle = Ref(Ptr{Cvoid}(0))
-        autd3capi.autd_create_controller(chandle, UInt8(0))
+        autd3capi.autd_create_controller(chandle)
         cnt = new(chandle[])
         cnt.add_device = function (pos::SVector{3,Float64}, rot::SVector{3,Float64})
             x, y, z = pos

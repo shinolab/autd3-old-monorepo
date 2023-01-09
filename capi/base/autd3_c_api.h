@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,11 +18,11 @@ extern "C" {
 #endif
 EXPORT_AUTD void AUTDSetLogLevel(IN int32_t level);
 EXPORT_AUTD void AUTDSetDefaultLogger(IN void* out, IN void* flush);
-EXPORT_AUTD bool AUTDCreateController(OUT void** out, IN uint8_t driver_version);
+EXPORT_AUTD void AUTDCreateController(OUT void** out);
 EXPORT_AUTD bool AUTDOpenController(IN void* handle, IN void* link);
-EXPORT_AUTD void AUTDAddDevice(IN void* handle, IN autd3_float_t x, IN autd3_float_t y, IN autd3_float_t z, IN autd3_float_t rz1, IN autd3_float_t ry,
+EXPORT_AUTD bool AUTDAddDevice(IN void* handle, IN autd3_float_t x, IN autd3_float_t y, IN autd3_float_t z, IN autd3_float_t rz1, IN autd3_float_t ry,
                                IN autd3_float_t rz2);
-EXPORT_AUTD void AUTDAddDeviceQuaternion(IN void* handle, IN autd3_float_t x, IN autd3_float_t y, IN autd3_float_t z, IN autd3_float_t qw,
+EXPORT_AUTD bool AUTDAddDeviceQuaternion(IN void* handle, IN autd3_float_t x, IN autd3_float_t y, IN autd3_float_t z, IN autd3_float_t qw,
                                          IN autd3_float_t qx, IN autd3_float_t qy, IN autd3_float_t qz);
 EXPORT_AUTD bool AUTDClose(IN void* handle);
 EXPORT_AUTD void AUTDFreeController(IN const void* handle);
@@ -58,7 +58,7 @@ EXPORT_AUTD int32_t AUTDGetFirmwareInfoListPointer(IN void* handle, OUT void** o
 EXPORT_AUTD void AUTDGetFirmwareInfo(IN const void* p_firm_info_list, IN int32_t index, OUT char* info);
 EXPORT_AUTD void AUTDFreeFirmwareInfoListPointer(IN const void* p_firm_info_list);
 EXPORT_AUTD void AUTDGainNull(OUT void** gain);
-EXPORT_AUTD void AUTDGainGrouped(OUT void** gain, IN const void* handle);
+EXPORT_AUTD void AUTDGainGrouped(OUT void** gain);
 EXPORT_AUTD void AUTDGainGroupedAdd(IN void* grouped_gain, IN int32_t device_id, IN void* gain);
 EXPORT_AUTD void AUTDGainFocus(OUT void** gain, IN autd3_float_t x, IN autd3_float_t y, IN autd3_float_t z, IN autd3_float_t amp);
 EXPORT_AUTD void AUTDGainBesselBeam(OUT void** gain, IN autd3_float_t x, IN autd3_float_t y, IN autd3_float_t z, IN autd3_float_t n_x,
@@ -79,8 +79,8 @@ EXPORT_AUTD uint32_t AUTDModulationSamplingFrequencyDivision(IN const void* mod)
 EXPORT_AUTD void AUTDModulationSetSamplingFrequencyDivision(IN void* mod, IN uint32_t freq_div);
 EXPORT_AUTD autd3_float_t AUTDModulationSamplingFrequency(IN const void* mod);
 EXPORT_AUTD void AUTDDeleteModulation(IN const void* mod);
-EXPORT_AUTD void AUTDFocusSTM(OUT void** out, IN autd3_float_t sound_speed);
-EXPORT_AUTD void AUTDGainSTM(OUT void** out, IN const void* handle);
+EXPORT_AUTD void AUTDFocusSTM(OUT void** out);
+EXPORT_AUTD void AUTDGainSTM(OUT void** out);
 EXPORT_AUTD void AUTDFocusSTMAdd(IN void* stm, IN autd3_float_t x, IN autd3_float_t y, IN autd3_float_t z, IN uint8_t shift);
 EXPORT_AUTD void AUTDGainSTMAdd(IN void* stm, IN void* gain);
 EXPORT_AUTD uint16_t AUTDGetGainSTMMode(IN void* stm);

@@ -33,17 +33,17 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDSetDefaultLogger.argtypes = [ctypes.c_void_p, ctypes.c_void_p] 
         self.dll.AUTDSetDefaultLogger.restype = None
 
-        self.dll.AUTDCreateController.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_uint8] 
-        self.dll.AUTDCreateController.restype = ctypes.c_bool
+        self.dll.AUTDCreateController.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
+        self.dll.AUTDCreateController.restype = None
 
         self.dll.AUTDOpenController.argtypes = [ctypes.c_void_p, ctypes.c_void_p] 
         self.dll.AUTDOpenController.restype = ctypes.c_bool
 
         self.dll.AUTDAddDevice.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double] 
-        self.dll.AUTDAddDevice.restype = None
+        self.dll.AUTDAddDevice.restype = ctypes.c_bool
 
         self.dll.AUTDAddDeviceQuaternion.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double] 
-        self.dll.AUTDAddDeviceQuaternion.restype = None
+        self.dll.AUTDAddDeviceQuaternion.restype = ctypes.c_bool
 
         self.dll.AUTDClose.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDClose.restype = ctypes.c_bool
@@ -147,7 +147,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainNull.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
         self.dll.AUTDGainNull.restype = None
 
-        self.dll.AUTDGainGrouped.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p] 
+        self.dll.AUTDGainGrouped.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
         self.dll.AUTDGainGrouped.restype = None
 
         self.dll.AUTDGainGroupedAdd.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_void_p] 
@@ -207,10 +207,10 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDDeleteModulation.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDDeleteModulation.restype = None
 
-        self.dll.AUTDFocusSTM.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_double] 
+        self.dll.AUTDFocusSTM.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
         self.dll.AUTDFocusSTM.restype = None
 
-        self.dll.AUTDGainSTM.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p] 
+        self.dll.AUTDGainSTM.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
         self.dll.AUTDGainSTM.restype = None
 
         self.dll.AUTDFocusSTMAdd.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_uint8] 

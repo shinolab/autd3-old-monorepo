@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -50,12 +50,14 @@ class TransViewer {
   TransViewer(TransViewer&& obj) = default;
   TransViewer& operator=(TransViewer&& obj) = default;
 
-  [[nodiscard]] bool init(const std::vector<SoundSources>& sound_sources) {
-    if (!create_pipeline() || !create_texture() || !create_vertex_buffer() || !create_index_buffer() ||
-        !create_model_instance_buffer(sound_sources) || !create_color_instance_buffer(sound_sources))
-      return false;
+  void init(const std::vector<SoundSources>& sound_sources) {
+    create_pipeline();
+    create_texture();
+    create_vertex_buffer();
+    create_index_buffer();
+    create_model_instance_buffer(sound_sources);
+    create_color_instance_buffer(sound_sources);
     create_descriptor_sets();
-    return true;
   }
 
   void render(const glm::mat4 view, const glm::mat4 proj, const vk::CommandBuffer& command_buffer) {
@@ -79,15 +81,14 @@ class TransViewer {
     command_buffer.drawIndexed(6, _instance_count, 0, 0, 0);
   }
 
-  [[nodiscard]] bool update(const std::vector<SoundSources>& sound_sources, const UpdateFlags update_flag) {
+  void update(const std::vector<SoundSources>& sound_sources, const UpdateFlags update_flag) {
     if (update_flag.contains(UpdateFlags::UpdateSourceDrive) || update_flag.contains(UpdateFlags::UpdateSourceAlpha) ||
         update_flag.contains(UpdateFlags::UpdateSourceFlag))
       return update_color_instance_buffer(sound_sources);
-    return true;
   }
 
  private:
-  [[nodiscard]] bool create_pipeline() {
+  void create_pipeline() {
     const std::vector<uint8_t> vert_shader_code = {
 #include "shaders/circle.vert.spv.txt"
     };
@@ -203,14 +204,13 @@ class TransViewer {
                                                                               .setRenderPass(_renderer->render_pass()));
         result.result == vk::Result::eSuccess) {
       _pipeline = std::move(result.value);
-      return true;
+      return;
     }
 
-    spdlog::error("Failed to create a pipeline!");
-    return false;
+    throw std::runtime_error("Failed to create a pipeline!");
   }
 
-  [[nodiscard]] bool create_texture() {
+  void create_texture() {
     uint32_t mip_levels;
     {
       constexpr uint32_t tex_width = 128;
@@ -223,13 +223,11 @@ class TransViewer {
 
       auto [staging_buffer, staging_buffer_memory] = _context->create_buffer(
           image_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-      if (!staging_buffer || !staging_buffer_memory) return false;
 
       void* data;
-      if (_context->device().mapMemory(staging_buffer_memory.get(), 0, image_size, {}, &data) != vk::Result::eSuccess) {
-        spdlog::error("Failed to map texture buffer.");
-        return false;
-      }
+      if (_context->device().mapMemory(staging_buffer_memory.get(), 0, image_size, {}, &data) != vk::Result::eSuccess)
+        throw std::runtime_error("Failed to map texture buffer.");
+
       std::memcpy(data, pixels.data(), image_size);
       _context->device().unmapMemory(staging_buffer_memory.get());
 
@@ -237,15 +235,13 @@ class TransViewer {
       auto [texture_image, texture_image_memory] =
           _context->create_image(tex_width, tex_height, mip_levels, vk::SampleCountFlagBits::e1, vk::Format::eR8G8B8A8Srgb, vk::ImageTiling::eOptimal,
                                  flag, vk::MemoryPropertyFlagBits::eDeviceLocal);
-      if (!texture_image || !texture_image_memory) return false;
       _texture_image = std::move(texture_image);
       _texture_image_memory = std::move(texture_image_memory);
 
-      if (!_context->transition_image_layout(_texture_image, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eUndefined,
-                                             vk::ImageLayout::eTransferDstOptimal, mip_levels))
-        return false;
+      _context->transition_image_layout(_texture_image, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal,
+                                        mip_levels);
       _context->copy_buffer_to_image(staging_buffer, _texture_image, tex_width, tex_height);
-      if (!_context->generate_mipmaps(_texture_image, vk::Format::eR8G8B8A8Srgb, tex_width, tex_height, mip_levels)) return false;
+      _context->generate_mipmaps(_texture_image, vk::Format::eR8G8B8A8Srgb, tex_width, tex_height, mip_levels);
     }
 
     { _texture_image_view = _context->create_image_view(_texture_image.get(), vk::Format::eR8G8B8A8Srgb, vk::ImageAspectFlagBits::eColor, 1); }
@@ -269,10 +265,9 @@ class TransViewer {
                                                                     .setBorderColor(vk::BorderColor::eIntOpaqueBlack)
                                                                     .setUnnormalizedCoordinates(false));
     }
-    return true;
   }
 
-  [[nodiscard]] bool create_vertex_buffer() {
+  void create_vertex_buffer() {
     const std::vector vertices = {
         Vertex{
             {-1.0, -1.0, 0.0, 1.0},
@@ -295,28 +290,24 @@ class TransViewer {
 
     auto [staging_buffer, staging_buffer_memory] = _context->create_buffer(
         buffer_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-    if (!staging_buffer || !staging_buffer_memory) return false;
 
     void* data;
-    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess) {
-      spdlog::error("Failed to map vertex buffer memory!");
-      return false;
-    }
+    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to map vertex buffer memory!");
+
     std::memcpy(data, vertices.data(), buffer_size);
     _context->device().unmapMemory(staging_buffer_memory.get());
 
     auto [vertex_buffer, vertex_buffer_memory] = _context->create_buffer(
         buffer_size, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal);
-    if (!vertex_buffer || !vertex_buffer_memory) return false;
 
     _vertex_buffer = std::move(vertex_buffer);
     _vertex_buffer_memory = std::move(vertex_buffer_memory);
 
     _context->copy_buffer(staging_buffer.get(), _vertex_buffer.get(), buffer_size);
-    return true;
   }
 
-  [[nodiscard]] bool create_model_instance_buffer(const std::vector<SoundSources>& sound_sources) {
+  void create_model_instance_buffer(const std::vector<SoundSources>& sound_sources) {
     std::vector<glm::mat4> models;
     _instance_count = static_cast<uint32_t>(
         std::accumulate(sound_sources.begin(), sound_sources.end(), size_t{0}, [](auto acc, const auto& s) { return acc + s.size(); }));
@@ -325,124 +316,110 @@ class TransViewer {
     for (const auto& sources : sound_sources) {
       const auto& positions = sources.positions();
       const auto& rotations = sources.rotations();
-      for (size_t i = 0; i < sources.size(); i++) {
+      std::transform(positions.begin(), positions.end(), rotations.begin(), std::back_inserter(models), [this](const auto& pos, const auto& rot) {
         const auto s = 10.0f * _imgui->scale() * 0.5f;
         auto m = scale(glm::identity<glm::mat4>(), glm::vec3(s, s, s));
-        m[3].x = positions[i].x;
-        m[3].y = positions[i].y;
-        m[3].z = positions[i].z;
-        m = m * mat4_cast(rotations[i]);
-        models.emplace_back(m);
-      }
+        m[3].x = pos.x;
+        m[3].y = pos.y;
+        m[3].z = pos.z;
+        m = m * mat4_cast(rot);
+        return m;
+      });
     }
 
     const vk::DeviceSize buffer_size = sizeof models[0] * models.size();
 
     auto [staging_buffer, staging_buffer_memory] = _context->create_buffer(
         buffer_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-    if (!staging_buffer || !staging_buffer_memory) return false;
 
     void* data;
-    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess) {
-      spdlog::error("Failed to map vertex buffer memory!");
-      return false;
-    }
+    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to map vertex buffer memory!");
+
     std::memcpy(data, models.data(), buffer_size);
     _context->device().unmapMemory(staging_buffer_memory.get());
 
     auto [model_instance_buffer, model_instance_buffer_memory] = _context->create_buffer(
         buffer_size, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal);
-    if (!model_instance_buffer || !model_instance_buffer_memory) return false;
 
     _model_instance_buffer = std::move(model_instance_buffer);
     _model_instance_buffer_memory = std::move(model_instance_buffer_memory);
 
     _context->copy_buffer(staging_buffer.get(), _model_instance_buffer.get(), buffer_size);
-    return true;
   }
 
-  [[nodiscard]] bool create_color_instance_buffer(const std::vector<SoundSources>& sound_sources) {
+  void create_color_instance_buffer(const std::vector<SoundSources>& sound_sources) {
     std::vector<glm::vec4> colors;
     colors.reserve(_instance_count);
     for (const auto& s : sound_sources)
-      for (size_t i = 0; i < s.size(); i++)
-        colors.emplace_back(coloring_hsv(s.drives()[i].phase / (2.0f * glm::pi<float>()), s.drives()[i].amp, s.visibilities()[i]));
+      std::transform(
+          s.drives().begin(), s.drives().end(), s.visibilities().begin(), std::back_inserter(colors),
+          [](const auto& drive, const auto& visibility) { return coloring_hsv(drive.phase / (2.0f * glm::pi<float>()), drive.amp, visibility); });
 
     const vk::DeviceSize buffer_size = sizeof colors[0] * colors.size();
 
     auto [staging_buffer, staging_buffer_memory] = _context->create_buffer(
         buffer_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-    if (!staging_buffer || !staging_buffer_memory) return false;
 
     void* data;
-    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess) {
-      spdlog::error("Failed to map vertex buffer memory!");
-      return false;
-    }
+    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to map vertex buffer memory!");
     std::memcpy(data, colors.data(), buffer_size);
     _context->device().unmapMemory(staging_buffer_memory.get());
 
     auto [color_instance_buffer, color_instance_buffer_memory] = _context->create_buffer(
         buffer_size, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal);
-    if (!color_instance_buffer || !color_instance_buffer_memory) return false;
 
     _color_instance_buffer = std::move(color_instance_buffer);
     _color_instance_buffer_memory = std::move(color_instance_buffer_memory);
 
     _context->copy_buffer(staging_buffer.get(), _color_instance_buffer.get(), buffer_size);
-    return true;
   }
 
-  [[nodiscard]] bool update_color_instance_buffer(const std::vector<SoundSources>& sources) {
+  void update_color_instance_buffer(const std::vector<SoundSources>& sources) {
     std::vector<glm::vec4> colors;
     colors.reserve(_instance_count);
     for (const auto& s : sources)
-      for (size_t i = 0; i < s.size(); i++)
-        colors.emplace_back(coloring_hsv(s.drives()[i].phase / (2.0f * glm::pi<float>()), s.drives()[i].amp, s.visibilities()[i]));
+      std::transform(
+          s.drives().begin(), s.drives().end(), s.visibilities().begin(), std::back_inserter(colors),
+          [](const auto& drive, const auto& visibility) { return coloring_hsv(drive.phase / (2.0f * glm::pi<float>()), drive.amp, visibility); });
 
     const vk::DeviceSize buffer_size = sizeof colors[0] * colors.size();
 
     auto [staging_buffer, staging_buffer_memory] = _context->create_buffer(
         buffer_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-    if (!staging_buffer || !staging_buffer_memory) return false;
 
     void* data;
-    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess) {
-      spdlog::error("Failed to map vertex buffer memory!");
-      return false;
-    }
+    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to map vertex buffer memory!");
+
     std::memcpy(data, colors.data(), buffer_size);
     _context->device().unmapMemory(staging_buffer_memory.get());
 
     _context->copy_buffer(staging_buffer.get(), _color_instance_buffer.get(), buffer_size);
-    return true;
   }
 
-  [[nodiscard]] bool create_index_buffer() {
+  void create_index_buffer() {
     const std::vector indices = {0, 1, 2, 2, 3, 0};
     const vk::DeviceSize buffer_size = sizeof indices[0] * indices.size();
 
     auto [staging_buffer, staging_buffer_memory] = _context->create_buffer(
         buffer_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-    if (!staging_buffer || !staging_buffer_memory) return false;
 
     void* data;
-    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess) {
-      spdlog::error("Failed to map vertex buffer memory!");
-      return false;
-    }
+    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to map vertex buffer memory!");
+
     std::memcpy(data, indices.data(), buffer_size);
     _context->device().unmapMemory(staging_buffer_memory.get());
 
     auto [index_buffer, index_buffer_memory] = _context->create_buffer(
         buffer_size, vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal);
-    if (!index_buffer || !index_buffer_memory) return false;
 
     _index_buffer = std::move(index_buffer);
     _index_buffer_memory = std::move(index_buffer_memory);
 
     _context->copy_buffer(staging_buffer.get(), _index_buffer.get(), buffer_size);
-    return true;
   }
 
   void create_descriptor_sets() {

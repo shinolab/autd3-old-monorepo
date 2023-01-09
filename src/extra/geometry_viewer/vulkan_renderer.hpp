@@ -3,7 +3,7 @@
 // Created Date: 24/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -69,7 +69,7 @@ class VulkanRenderer {
   VulkanRenderer(VulkanRenderer&& obj) = default;
   VulkanRenderer& operator=(VulkanRenderer&& obj) = delete;
 
-  [[nodiscard]] bool create_swapchain() {
+  void create_swapchain() {
     const auto [capabilities, formats, present_modes] = _context->query_swap_chain_support(_context->physical_device());
 
     const vk::SurfaceFormatKHR surface_format = choose_swap_surface_format(formats);
@@ -95,10 +95,7 @@ class VulkanRenderer {
 
     if (const auto [graphics_family, present_family] = _context->find_queue_families(_context->physical_device());
         graphics_family != present_family) {
-      if (!graphics_family || !present_family) {
-        spdlog::error("Failed to find queue family.");
-        return false;
-      }
+      if (!graphics_family || !present_family) throw std::runtime_error("Failed to find queue family.");
 
       create_info.setImageSharingMode(vk::SharingMode::eConcurrent);
       std::vector queue_family_indices = {graphics_family.value(), present_family.value()};
@@ -109,33 +106,32 @@ class VulkanRenderer {
     _swap_chain_images = _context->device().getSwapchainImagesKHR(_swap_chain.get());
     _swap_chain_image_format = surface_format.format;
     _swap_chain_extent = extent;
-
-    return true;
   }
 
   void create_image_views() {
     _swap_chain_image_views.resize(_swap_chain_images.size());
-    for (size_t i = 0; i < _swap_chain_image_views.size(); i++)
-      _swap_chain_image_views[i] = _context->create_image_view(_swap_chain_images[i], _swap_chain_image_format, vk::ImageAspectFlagBits::eColor, 1);
+    std::transform(_swap_chain_images.begin(), _swap_chain_images.end(), _swap_chain_image_views.begin(), [this](const auto& swap_chain_image) {
+      return _context->create_image_view(swap_chain_image, _swap_chain_image_format, vk::ImageAspectFlagBits::eColor, 1);
+    });
   }
 
   void create_framebuffers() {
     _swap_chain_framebuffers.resize(_swap_chain_image_views.size());
-    for (size_t i = 0; i < _swap_chain_image_views.size(); i++) {
-      std::array attachments{_color_image_view.get(), _depth_image_view.get(), _swap_chain_image_views[i].get()};
-      vk::FramebufferCreateInfo framebuffer_create_info = vk::FramebufferCreateInfo()
-                                                              .setRenderPass(_render_pass.get())
-                                                              .setAttachments(attachments)
-                                                              .setWidth(_swap_chain_extent.width)
-                                                              .setHeight(_swap_chain_extent.height)
-                                                              .setLayers(1);
-      _swap_chain_framebuffers[i] = _context->device().createFramebufferUnique(framebuffer_create_info);
-    }
+    std::transform(_swap_chain_image_views.begin(), _swap_chain_image_views.end(), _swap_chain_framebuffers.begin(),
+                   [this](const auto& swap_chain_image_view) {
+                     std::array attachments{_color_image_view.get(), _depth_image_view.get(), swap_chain_image_view.get()};
+                     const vk::FramebufferCreateInfo framebuffer_create_info = vk::FramebufferCreateInfo()
+                                                                                   .setRenderPass(_render_pass.get())
+                                                                                   .setAttachments(attachments)
+                                                                                   .setWidth(_swap_chain_extent.width)
+                                                                                   .setHeight(_swap_chain_extent.height)
+                                                                                   .setLayers(1);
+                     return _context->device().createFramebufferUnique(framebuffer_create_info);
+                   });
   }
 
-  [[nodiscard]] bool create_render_pass() {
+  void create_render_pass() {
     const auto depth_format = _context->find_depth_format();
-    if (depth_format == vk::Format::eUndefined) return false;
     std::vector attachments = {vk::AttachmentDescription()
                                    .setFormat(_swap_chain_image_format)
                                    .setSamples(_context->msaa_samples())
@@ -183,10 +179,9 @@ class VulkanRenderer {
     const vk::RenderPassCreateInfo render_pass_info =
         vk::RenderPassCreateInfo().setAttachments(attachments).setSubpasses(subpasses).setDependencies(dependencies);
     _render_pass = _context->device().createRenderPassUnique(render_pass_info);
-    return true;
   }
 
-  [[nodiscard]] bool create_graphics_pipeline(const gltf::Model& model) {
+  void create_graphics_pipeline(const gltf::Model& model) {
     const std::vector<uint8_t> vert_shader_code = {
 #include "shaders/vert.spv.txt"
     };
@@ -323,21 +318,16 @@ class VulkanRenderer {
           result.result == vk::Result::eSuccess)
         _pipelines[i++] = std::move(result.value);
 
-      else {
-        spdlog::error("Failed to create a pipeline!");
-        return false;
-      }
+      else
+        throw std::runtime_error("Failed to create a pipeline!");
     }
-    return true;
   }
 
-  [[nodiscard]] bool create_depth_resources() {
+  void create_depth_resources() {
     const auto depth_format = _context->find_depth_format();
-    if (depth_format == vk::Format::eUndefined) return false;
     auto [depth_image, depth_image_memory] =
         _context->create_image(_swap_chain_extent.width, _swap_chain_extent.height, 1, _context->msaa_samples(), depth_format,
                                vk::ImageTiling::eOptimal, vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal);
-    if (!depth_image || !depth_image_memory) return false;
     _depth_image = std::move(depth_image);
     _depth_image_memory = std::move(depth_image_memory);
     _depth_image_view = _context->create_image_view(_depth_image.get(), depth_format, vk::ImageAspectFlagBits::eDepth, 1);
@@ -346,87 +336,72 @@ class VulkanRenderer {
                                              1);
   }
 
-  [[nodiscard]] bool create_color_resources() {
+  void create_color_resources() {
     const auto color_format = _swap_chain_image_format;
 
     auto [color_image, color_image_memory] = _context->create_image(
         _swap_chain_extent.width, _swap_chain_extent.height, 1, _context->msaa_samples(), color_format, vk::ImageTiling::eOptimal,
         vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment, vk::MemoryPropertyFlagBits::eDeviceLocal);
-    if (!color_image || !color_image_memory) return false;
-
     _color_image = std::move(color_image);
     _color_image_memory = std::move(color_image_memory);
 
     _color_image_view = _context->create_image_view(_color_image.get(), color_format, vk::ImageAspectFlagBits::eColor, 1);
-    return true;
   }
 
-  [[nodiscard]] bool create_vertex_buffer(const gltf::Model& model) {
+  void create_vertex_buffer(const gltf::Model& model) {
     const auto& vertices = model.vertices();
     const vk::DeviceSize buffer_size = sizeof vertices[0] * vertices.size();
 
     auto [staging_buffer, staging_buffer_memory] = _context->create_buffer(
         buffer_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-    if (!staging_buffer || !staging_buffer_memory) return false;
 
     void* data;
-    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess) {
-      spdlog::error("Failed to map vertex buffer memory!");
-      return false;
-    }
+    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to map vertex buffer memory!");
     std::memcpy(data, vertices.data(), buffer_size);
     _context->device().unmapMemory(staging_buffer_memory.get());
 
     auto [vertex_buffer, vertex_buffer_memory] = _context->create_buffer(
         buffer_size, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal);
-    if (!vertex_buffer || !vertex_buffer_memory) return false;
 
     _vertex_buffer = std::move(vertex_buffer);
     _vertex_buffer_memory = std::move(vertex_buffer_memory);
 
     _context->copy_buffer(staging_buffer.get(), _vertex_buffer.get(), buffer_size);
-    return true;
   }
 
-  [[nodiscard]] bool create_index_buffer(const gltf::Model& model) {
+  void create_index_buffer(const gltf::Model& model) {
     const auto& indices = model.indices();
     const vk::DeviceSize buffer_size = sizeof indices[0] * indices.size();
 
     auto [staging_buffer, staging_buffer_memory] = _context->create_buffer(
         buffer_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-    if (!staging_buffer || !staging_buffer_memory) return false;
 
     void* data;
-    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess) {
-      spdlog::error("Failed to map vertex buffer memory!");
-      return false;
-    }
+    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to map vertex buffer memory!");
     std::memcpy(data, indices.data(), buffer_size);
     _context->device().unmapMemory(staging_buffer_memory.get());
 
     auto [index_buffer, index_buffer_memory] = _context->create_buffer(
         buffer_size, vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal);
-    if (!index_buffer || !index_buffer_memory) return false;
 
     _index_buffer = std::move(index_buffer);
     _index_buffer_memory = std::move(index_buffer_memory);
 
     _context->copy_buffer(staging_buffer.get(), _index_buffer.get(), buffer_size);
-    return true;
   }
 
-  [[nodiscard]] bool create_uniform_buffers() {
+  void create_uniform_buffers() {
     _uniform_buffers.resize(_max_frames_in_flight);
     _uniform_buffers_memory.resize(_max_frames_in_flight);
     for (size_t i = 0; i < _max_frames_in_flight; i++) {
       auto [buf, mem] = _context->create_buffer(sizeof(UniformBufferObject), vk::BufferUsageFlagBits::eUniformBuffer,
                                                 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-      if (!buf || !mem) return false;
 
       _uniform_buffers[i] = std::move(buf);
       _uniform_buffers_memory[i] = std::move(mem);
     }
-    return true;
   }
 
   void create_descriptor_sets() {
@@ -498,29 +473,23 @@ class VulkanRenderer {
     }
   }
 
-  [[nodiscard]] bool draw_frame(const gltf::Model& model, const VulkanImGui& imgui) {
-    if (_context->device().waitForFences(_in_flight_fences[_current_frame].get(), true, std::numeric_limits<uint64_t>::max()) !=
-        vk::Result::eSuccess) {
-      spdlog::error("Failed to wait fence!");
-      return false;
-    }
+  void draw_frame(const gltf::Model& model, const VulkanImGui& imgui) {
+    if (_context->device().waitForFences(_in_flight_fences[_current_frame].get(), true, std::numeric_limits<uint64_t>::max()) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to wait fence!");
 
     uint32_t image_index;
     auto result = _context->device().acquireNextImageKHR(_swap_chain.get(), std::numeric_limits<uint64_t>::max(),
                                                          _image_available_semaphores[_current_frame].get(), nullptr, &image_index);
     if (result == vk::Result::eErrorOutOfDateKHR) return recreate_swap_chain();
 
-    if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR) {
-      spdlog::error("Failed to acquire next image!");
-      return false;
-    }
+    if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR) throw std::runtime_error("Failed to acquire next image!");
 
     _context->device().resetFences(_in_flight_fences[_current_frame].get());
 
     _command_buffers[_current_frame]->reset(vk::CommandBufferResetFlags{0});
     record_command_buffer(_command_buffers[_current_frame], image_index, model, imgui);
 
-    if (!update_uniform_buffer(_current_frame, imgui)) return false;
+    update_uniform_buffer(_current_frame, imgui);
 
     vk::PipelineStageFlags wait_stage(vk::PipelineStageFlagBits::eColorAttachmentOutput);
     const vk::SubmitInfo submit_info(_image_available_semaphores[_current_frame].get(), wait_stage, _command_buffers[_current_frame].get(),
@@ -533,15 +502,11 @@ class VulkanRenderer {
       _framebuffer_resized = false;
       return recreate_swap_chain();
     }
-    if (result != vk::Result::eSuccess) {
-      spdlog::error("Failed to wait fence!");
-      return false;
-    }
+    if (result != vk::Result::eSuccess) throw std::runtime_error("Failed to wait fence!");
     _current_frame = (_current_frame + 1) % _max_frames_in_flight;
-    return true;
   }
 
-  [[nodiscard]] bool recreate_swap_chain() {
+  void recreate_swap_chain() {
     int width = 0, height = 0;
     glfwGetFramebufferSize(_window->window(), &width, &height);
     while (width == 0 || height == 0) {
@@ -553,22 +518,22 @@ class VulkanRenderer {
 
     cleanup();
 
-    if (!create_swapchain()) return false;
+    create_swapchain();
     create_image_views();
-    if (!create_depth_resources() || !create_color_resources()) return false;
+    create_depth_resources();
+    create_color_resources();
     create_framebuffers();
-    return true;
   }
 
   void cleanup() {
-    for (auto& framebuffer : _swap_chain_framebuffers) {
+    std::for_each(_swap_chain_framebuffers.begin(), _swap_chain_framebuffers.end(), [this](auto& framebuffer) {
       _context->device().destroyFramebuffer(framebuffer.get(), nullptr);
       framebuffer.get() = nullptr;
-    }
-    for (auto& image_view : _swap_chain_image_views) {
+    });
+    std::for_each(_swap_chain_image_views.begin(), _swap_chain_image_views.end(), [this](auto& image_view) {
       _context->device().destroyImageView(image_view.get(), nullptr);
       image_view.get() = nullptr;
-    }
+    });
     _context->device().destroySwapchainKHR(_swap_chain.get(), nullptr);
     _swap_chain.get() = nullptr;
   }
@@ -672,7 +637,7 @@ class VulkanRenderer {
     command_buffer->end();
   }
 
-  [[nodiscard]] bool update_uniform_buffer(const size_t current_image, const VulkanImGui& imgui) {
+  void update_uniform_buffer(const size_t current_image, const VulkanImGui& imgui) {
     const auto rot = helper::to_gl_rot(glm::quat(radians(imgui.camera_rot)));
     const auto p = helper::to_gl_pos(imgui.camera_pos) * GL_SCALE;
     const auto view = helper::orthogonal(p, rot);
@@ -684,14 +649,11 @@ class VulkanRenderer {
     ubo.proj[1][1] *= -1;
 
     void* data;
-    if (_context->device().mapMemory(_uniform_buffers_memory[current_image].get(), 0, sizeof ubo, {}, &data) != vk::Result::eSuccess) {
-      spdlog::error("Failed to map uniform buffer memory");
-      return false;
-    }
+    if (_context->device().mapMemory(_uniform_buffers_memory[current_image].get(), 0, sizeof ubo, {}, &data) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to map uniform buffer memory");
 
     memcpy(data, &ubo, sizeof ubo);
     _context->device().unmapMemory(_uniform_buffers_memory[current_image].get());
-    return true;
   }
 
   const helper::VulkanContext* _context;

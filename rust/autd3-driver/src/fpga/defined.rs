@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 09/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,7 +21,6 @@ pub const FOCUS_STM_FIXED_NUM_UNIT: f64 = 0.025; //mm
 pub struct Drive {
     pub phase: f64,
     pub amp: f64,
-    pub cycle: u16,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -53,12 +52,12 @@ pub struct Phase {
 }
 
 impl Phase {
-    pub fn to_phase(d: &Drive) -> u16 {
-        ((d.phase / (2.0 * PI) * d.cycle as f64).round() as i32).rem_euclid(d.cycle as i32) as _
+    pub fn to_phase(d: &Drive, cycle: u16) -> u16 {
+        ((d.phase / (2.0 * PI) * cycle as f64).round() as i32).rem_euclid(cycle as i32) as _
     }
 
-    pub fn set(&mut self, d: &Drive) {
-        self.phase = Self::to_phase(d);
+    pub fn set(&mut self, d: &Drive, cycle: u16) {
+        self.phase = Self::to_phase(d, cycle);
     }
 }
 
@@ -69,12 +68,12 @@ pub struct Duty {
 }
 
 impl Duty {
-    pub fn to_duty(d: &Drive) -> u16 {
-        (d.cycle as f64 * d.amp.clamp(0., 1.).asin() / PI).round() as _
+    pub fn to_duty(d: &Drive, cycle: u16) -> u16 {
+        (cycle as f64 * d.amp.clamp(0., 1.).asin() / PI).round() as _
     }
 
-    pub fn set(&mut self, d: &Drive) {
-        self.duty = Self::to_duty(d);
+    pub fn set(&mut self, d: &Drive, cycle: u16) {
+        self.duty = Self::to_duty(d, cycle);
     }
 }
 

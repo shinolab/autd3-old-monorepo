@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@
 
 #if _MSC_VER
 #pragma warning(push)
-#pragma warning(disable : 26495 26800 26819)
+#pragma warning(disable : 26495 26800 26819 28020)
 #endif
 #if defined(__GNUC__) && !defined(__llvm__)
 #pragma GCC diagnostic push
@@ -296,7 +296,7 @@ class Simulator {
   /**
    * @brief Start simulator
    */
-  [[nodiscard]] bool run();
+  void run();
 
   /**
    * @brief Set settings
