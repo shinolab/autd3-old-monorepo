@@ -19,7 +19,7 @@ proc gain_stm_test*(cnt: Controller) =
 
     let m = initStatic(1.0)
 
-    let stm = initGainSTM(cnt)
+    let stm = initGainSTM()
     let radius = 30.0
     let size = 200
     let x = 90.0
