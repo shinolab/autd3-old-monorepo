@@ -16,18 +16,23 @@ use crate::{TxDatagram, MSG_CLEAR};
 use anyhow::Result;
 
 #[derive(Default)]
-pub struct Clear {}
+pub struct Clear {
+    sent: bool,
+}
 
 impl Operation for Clear {
     fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
         tx.header_mut().msg_id = MSG_CLEAR;
         tx.num_bodies = 0;
+        self.sent = true;
         Ok(())
     }
 
-    fn init(&mut self) {}
+    fn init(&mut self) {
+        self.sent = false;
+    }
 
     fn is_finished(&self) -> bool {
-        true
+        self.sent
     }
 }

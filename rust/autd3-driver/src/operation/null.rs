@@ -17,7 +17,9 @@ use super::Operation;
 use crate::{CPUControlFlags, TxDatagram};
 
 #[derive(Default)]
-pub struct NullHeader {}
+pub struct NullHeader {
+    sent: bool,
+}
 
 impl Operation for NullHeader {
     fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
@@ -30,30 +32,40 @@ impl Operation for NullHeader {
             .remove(CPUControlFlags::CONFIG_SYNC);
 
         tx.header_mut().size = 0;
+
+        self.sent = true;
         Ok(())
     }
 
-    fn init(&mut self) {}
+    fn init(&mut self) {
+        self.sent = false;
+    }
 
     fn is_finished(&self) -> bool {
-        true
+        self.sent
     }
 }
 
 #[derive(Default)]
-pub struct NullBody {}
+pub struct NullBody {
+    sent: bool,
+}
 
 impl Operation for NullBody {
     fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
         tx.header_mut().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
         tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
         tx.num_bodies = 0;
+
+        self.sent = true;
         Ok(())
     }
 
-    fn init(&mut self) {}
+    fn init(&mut self) {
+        self.sent = false;
+    }
 
     fn is_finished(&self) -> bool {
-        true
+        self.sent
     }
 }

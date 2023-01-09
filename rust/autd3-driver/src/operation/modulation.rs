@@ -18,11 +18,20 @@ use crate::{
 };
 use anyhow::Result;
 
-#[derive(Default)]
 pub struct Modulation {
     pub mod_data: Vec<u8>,
     pub sent: usize,
     pub freq_div: u32,
+}
+
+impl Default for Modulation {
+    fn default() -> Self {
+        Self {
+            mod_data: vec![],
+            sent: 0,
+            freq_div: 40960,
+        }
+    }
 }
 
 impl Operation for Modulation {

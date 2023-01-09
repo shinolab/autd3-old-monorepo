@@ -42,6 +42,7 @@ impl Operation for SyncLegacy {
 
         tx.body_raw_mut().fill(4096);
 
+        self.sent = true;
         Ok(())
     }
 

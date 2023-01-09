@@ -43,6 +43,7 @@ impl Operation for ConfigSilencer {
         tx.header_mut().silencer_mut().cycle = self.cycle;
         tx.header_mut().silencer_mut().step = self.step;
 
+        self.sent = true;
         Ok(())
     }
 
