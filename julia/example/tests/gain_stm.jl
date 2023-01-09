@@ -3,7 +3,7 @@
 # Created Date: 14/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 14/06/2022
+# Last Modified: 09/01/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@ function gain_stm(cnt::Controller)
     config = SilencerConfigNone()
     cnt.send(config)
 
-    stm = GainSTM(cnt)
+    stm = GainSTM()
     center = SVector(90.0, 80.0, 150.0)
     radius = 30.0
     size = 200
