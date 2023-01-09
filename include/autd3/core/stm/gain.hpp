@@ -73,7 +73,7 @@ struct GainSTM final : STM {
    * @brief Add gain
    * @param[in] gain gain
    */
-  void add(std::shared_ptr<core::Gain> b) { _gains.emplace_back(std::move(b)); }
+  void add(std::shared_ptr<core::Gain> gain) { _gains.emplace_back(std::move(gain)); }
 
   driver::GainSTMMode mode{driver::GainSTMMode::PhaseDutyFull};
 
