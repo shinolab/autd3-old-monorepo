@@ -3,15 +3,13 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 10/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
-
-#include <spdlog/spdlog.h>
 
 #include <optional>
 
