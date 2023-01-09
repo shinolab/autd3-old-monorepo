@@ -4,7 +4,7 @@ Project: samples
 Created Date: 21/07/2021
 Author: Shun Suzuki
 -----
-Last Modified: 21/10/2022
+Last Modified: 09/01/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,7 +27,7 @@ def stm_gain(autd: Controller):
     radius = 30.0
     size = 200
     center = autd.geometry.center + np.array([0., 0., 150.])
-    stm = GainSTM(autd)
+    stm = GainSTM()
     for i in range(size):
         theta = 2.0 * np.pi * i / size
         p = radius * np.array([np.cos(theta), np.sin(theta), 0])

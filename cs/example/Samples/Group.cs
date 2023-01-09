@@ -34,7 +34,7 @@ internal static class GroupTest
         g2.Add(center + new Vector3d(30.0, 0.0, 0.0), 1.0);
         g2.Add(center - new Vector3d(30.0, 0.0, 0.0), 1.0);
 
-        var gain = new Grouped(autd);
+        var gain = new Grouped();
         gain.Add(0, g1);
         gain.Add(1, g2);
         var mod = new Sine(150); // AM sin 150 Hz
