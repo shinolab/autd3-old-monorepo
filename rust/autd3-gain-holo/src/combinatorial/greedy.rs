@@ -4,36 +4,32 @@
  * Created Date: 03/06/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/01/2023
+ * Last Modified: 09/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::f64::consts::PI;
+use std::{f64::consts::PI, marker::PhantomData};
 
-use crate::{constraint::Constraint, macros::propagate, Complex};
+use crate::{constraint::Constraint, impl_holo_gain, macros::propagate, Backend, Complex};
 use anyhow::Result;
-use autd3_core::{
-    gain::GainProps,
-    geometry::{Geometry, Transducer, Vector3},
-};
-use autd3_traits::Gain;
+use autd3_core::geometry::{Geometry, Transducer, Vector3};
 use nalgebra::ComplexField;
 
 /// Reference
 /// * Shun Suzuki, Masahiro Fujiwara, Yasutoshi Makino, and Hiroyuki Shinoda, “Radiation Pressure Field Reconstruction for Ultrasound Midair Haptics by Greedy Algorithm with Brute-Force Search,” in IEEE Transactions on Haptics, doi: 10.1109/TOH.2021.3076489
-#[derive(Gain)]
-pub struct Greedy<C: Constraint> {
-    props: GainProps,
+pub struct Greedy<B: Backend, C: Constraint, T: Transducer> {
+    op: T::Gain,
     foci: Vec<Vector3>,
     amps: Vec<f64>,
     phase_candidates: Vec<Complex>,
     constraint: C,
+    phantom: PhantomData<B>,
 }
 
-impl<C: Constraint> Greedy<C> {
+impl<B: Backend, C: Constraint, T: Transducer> Greedy<B, C, T> {
     pub fn new(foci: Vec<Vector3>, amps: Vec<f64>, constraint: C) -> Self {
         Self::with_param(foci, amps, constraint, 16)
     }
@@ -45,15 +41,16 @@ impl<C: Constraint> Greedy<C> {
             phase_candidates.push(Complex::new(0., 2.0 * PI * i as f64 / phase_div as f64).exp());
         }
         Self {
-            props: GainProps::default(),
+            op: Default::default(),
             foci,
             amps,
             phase_candidates,
             constraint,
+            phantom: PhantomData,
         }
     }
 
-    fn transfer_foci<T: Transducer>(
+    fn transfer_foci(
         trans: &T,
         phase: Complex,
         sound_speed: f64,
@@ -66,7 +63,7 @@ impl<C: Constraint> Greedy<C> {
         }
     }
 
-    fn calc<T: Transducer>(&mut self, geometry: &Geometry<T>) -> Result<()> {
+    fn calc(&mut self, geometry: &Geometry<T>) -> Result<()> {
         let m = self.foci.len();
 
         let mut tmp = Vec::with_capacity(self.phase_candidates.len());
@@ -107,9 +104,10 @@ impl<C: Constraint> Greedy<C> {
 
             let phase = self.phase_candidates[min_idx].argument() + PI;
             let amp = self.constraint.convert(1.0, 1.0);
-            self.props.drives[trans.id()].amp = amp;
-            self.props.drives[trans.id()].phase = phase;
+            self.op.set_drive(trans.id(), amp, phase);
         });
         Ok(())
     }
 }
+
+impl_holo_gain!(Greedy);

@@ -1,6 +1,7 @@
 # 2.7.3
 
-- Remove sound speed argument from `FocusSTM` constructor
+- Remove parameter from `FocusSTM`, `GainSTM`, and `gain::Grouped` constructor
+- Remove `Driver` to drive old firmware
 - Fix [#54](https://github.com/shinolab/autd3/issues/54)
 
 # 2.7.2
