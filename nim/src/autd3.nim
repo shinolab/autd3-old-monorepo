@@ -63,11 +63,11 @@ func toNormalPhase*(cnt: Controller) =
     AUTDSetMode(cnt.p, 2)
 
 func addDevice*(cnt: Controller, pos: openArray[float64], rot: openArray[
-        float64]) =
+        float64]): bool =
     AUTDAddDevice(cnt.p, pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
 
 func addDeviceQuaternion*(cnt: Controller, pos: openArray[float64],
-        quaternion: openArray[float64]) =
+        quaternion: openArray[float64]): bool =
     AUTDAddDeviceQuaternion(cnt.p, pos[0], pos[1], pos[2], quaternion[0],
             quaternion[1], quaternion[2], quaternion[3])
 
@@ -197,8 +197,11 @@ func wavelength*(cnt: Controller, transIdx: int32): float64 =
 func numTransducers*(cnt: Controller): int32 =
     AUTDNumTransducers(cnt.p)
 
+func numDevices*(cnt: Controller): int32 =
+    AUTDNumDevices(cnt.p)
+
 func getFPGAInfo*(cnt: Controller): seq[uint8] =
-    let numDevices = cnt.numTransducers div 249
+    let numDevices = cnt.numDevices
     var info = newSeq[uint8](numDevices)
     discard AUTDGetFPGAInfo(cnt.p, addr info[0])
     info
