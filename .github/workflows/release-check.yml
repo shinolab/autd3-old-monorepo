@@ -252,3 +252,25 @@ jobs:
         dotnet clean example.sln
         dotnet nuget locals global-packages --clear
         dotnet build example.sln -c:Release
+
+  check-cpp-sample:
+      name: build cpp
+      runs-on: ubuntu-latest
+      steps: 
+      - uses: actions/checkout@v3
+      - name: build
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DBUILD_LINK_SOEM=ON -DBUILD_GAIN_HOLO=OFF -DDISABLE_EXAMPLES=ON
+          cmake --build . --parallel 8
+          cd ..
+          \cp -r include/ ./doc/book/samples/cpp/
+          mkdir ./doc/book/samples/cpp/lib
+          \cp build/lib/*.a  ./doc/book/samples/cpp/lib
+          \cp -r 3rdparty/eigen/ ./doc/book/samples/cpp/
+          cd ./doc/book/samples/cpp
+          mkdir build
+          cd build
+          cmake ..
+          cmake --build . --parallel 8
