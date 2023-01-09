@@ -94,6 +94,7 @@ impl<B: Backend, C: Constraint>
         geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::LegacyTransducer>,
     ) -> anyhow::Result<()> {
         self.op.init();
+        self.op.drives.resize(geometry.num_transducers(), autd3_core::Drive{amp: 0.0, phase: 0.0});
         self.calc(geometry)
     }
 
@@ -115,6 +116,7 @@ impl<B: Backend, C: Constraint>
         geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::NormalTransducer>,
     ) -> anyhow::Result<()> {
         self.op.init();
+        self.op.drives.resize(geometry.num_transducers(), autd3_core::Drive{amp: 0.0, phase: 0.0});
         self.op.cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
         self.calc(geometry)
     }
@@ -137,6 +139,7 @@ impl<B: Backend, C: Constraint>
         geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::NormalPhaseTransducer>,
     ) -> anyhow::Result<()> {
         self.op.init();
+        self.op.drives.resize(geometry.num_transducers(), autd3_core::Drive{amp: 0.0, phase: 0.0});
         self.op.cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
         self.calc(geometry)
     }

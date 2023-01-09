@@ -11,7 +11,6 @@
  *
  */
 
-use super::Operation;
 use crate::{FPGAControlFlags, TxDatagram};
 use anyhow::Result;
 
@@ -20,18 +19,12 @@ pub struct ForceFan {
     pub value: bool,
 }
 
-impl Operation for ForceFan {
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+impl ForceFan {
+    pub fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
         tx.header_mut()
             .fpga_flag
             .set(FPGAControlFlags::FORCE_FAN, self.value);
         Ok(())
-    }
-
-    fn init(&mut self) {}
-
-    fn is_finished(&self) -> bool {
-        true
     }
 }
 
@@ -40,17 +33,11 @@ pub struct ReadsFPGAInfo {
     pub value: bool,
 }
 
-impl Operation for ReadsFPGAInfo {
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+impl ReadsFPGAInfo {
+    pub fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
         tx.header_mut()
             .fpga_flag
             .set(FPGAControlFlags::READS_FPGA_INFO, self.value);
         Ok(())
-    }
-
-    fn init(&mut self) {}
-
-    fn is_finished(&self) -> bool {
-        true
     }
 }
