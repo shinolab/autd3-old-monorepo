@@ -3,7 +3,7 @@
 # Created Date: 14/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 14/06/2022
+# Last Modified: 08/01/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,9 +22,9 @@ mutable struct GainSTM
     get_sampling_frequency
     get_mode
     set_mode
-    function GainSTM(cnt::Controller)
+    function GainSTM()
         chandle = Ref(Ptr{Cvoid}(0))
-        autd3capi.autd_gain_stm(chandle, cnt._ptr)
+        autd3capi.autd_gain_stm(chandle)
         stm = STM(chandle[])
         p = new(stm, chandle[])
         p.add = (gain) -> autd3capi.autd_gain_stm_add(p._body_ptr, gain._body_ptr)

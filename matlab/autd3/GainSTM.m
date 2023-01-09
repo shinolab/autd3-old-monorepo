@@ -19,10 +19,10 @@ classdef GainSTM < STM
 
     methods
 
-        function obj = GainSTM(cnt)
+        function obj = GainSTM()
             obj = obj@STM();
             pp = libpointer('voidPtrPtr', obj.ptr);
-            calllib('autd3capi', 'AUTDGainSTM', pp, cnt.ptr);
+            calllib('autd3capi', 'AUTDGainSTM', pp);
         end
 
         function set.mode(obj, value)

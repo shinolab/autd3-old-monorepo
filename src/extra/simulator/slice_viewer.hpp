@@ -3,7 +3,7 @@
 // Created Date: 05/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -49,15 +49,16 @@ class SliceViewer {
   SliceViewer(SliceViewer&& obj) = default;
   SliceViewer& operator=(SliceViewer&& obj) = default;
 
-  [[nodiscard]] bool init(const float width, const float height, const float pixel_width) {
+  void init(const float width, const float height, const float pixel_width) {
     _width = static_cast<uint32_t>(width / pixel_width);
     _height = static_cast<uint32_t>(height / pixel_width);
 
-    if (!create_pipeline() || !create_vertex_buffer(width, height) || !create_index_buffer() || !create_field_buffers(_width, _height)) return false;
+    create_pipeline();
+    create_vertex_buffer(width, height);
+    create_index_buffer();
+    create_field_buffers(_width, _height);
     create_descriptor_sets();
     update_field_descriptor_sets(_width, _height);
-
-    return true;
   }
 
   void render(const glm::mat4 model, const glm::mat4 view, const glm::mat4 proj, const vk::CommandBuffer& command_buffer) {
@@ -76,13 +77,13 @@ class SliceViewer {
     command_buffer.drawIndexed(6, 1, 0, 0, 0);
   }
 
-  [[nodiscard]] bool update(const float width, const float height, const float pixel_width, const UpdateFlags update_flag) {
-    if (!update_flag.contains(UpdateFlags::UpdateSliceSize)) return true;
+  void update(const float width, const float height, const float pixel_width, const UpdateFlags update_flag) {
+    if (!update_flag.contains(UpdateFlags::UpdateSliceSize)) return;
 
     _context->device().waitIdle();
     _width = static_cast<uint32_t>(width / pixel_width);
     _height = static_cast<uint32_t>(height / pixel_width);
-    if (!create_field_buffers(_width, _height)) return false;
+    create_field_buffers(_width, _height);
     update_field_descriptor_sets(_width, _height);
     return create_vertex_buffer(width, height);
   }
@@ -91,7 +92,7 @@ class SliceViewer {
   [[nodiscard]] size_t image_size() const { return _field_buffer_size; }
 
  private:
-  [[nodiscard]] bool create_pipeline() {
+  void create_pipeline() {
     const std::vector<uint8_t> vert_shader_code = {
 #include "shaders/slice.vert.spv.txt"
     };
@@ -198,13 +199,12 @@ class SliceViewer {
                                                                               .setRenderPass(_renderer->render_pass()));
         result.result == vk::Result::eSuccess) {
       _pipeline = std::move(result.value);
-      return true;
+      return;
     }
-    spdlog::error("Failed to create a pipeline!");
-    return false;
+    throw std::runtime_error("Failed to create a pipeline!");
   }
 
-  [[nodiscard]] bool create_vertex_buffer(const float width, const float height) {
+  void create_vertex_buffer(const float width, const float height) {
     const std::vector vertices = {
         Vertex{
             {-width / 2.0f, -height / 2.0f, 0.0, 1.0},
@@ -227,68 +227,57 @@ class SliceViewer {
 
     auto [staging_buffer, staging_buffer_memory] = _context->create_buffer(
         buffer_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-    if (!staging_buffer || !staging_buffer_memory) return false;
 
     void* data;
-    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess) {
-      spdlog::error("Failed to map vertex buffer memory!");
-      return false;
-    }
+    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to map vertex buffer memory!");
+
     std::memcpy(data, vertices.data(), buffer_size);
     _context->device().unmapMemory(staging_buffer_memory.get());
 
     auto [vertex_buffer, vertex_buffer_memory] = _context->create_buffer(
         buffer_size, vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal);
-    if (!vertex_buffer || !vertex_buffer_memory) return false;
 
     _vertex_buffer = std::move(vertex_buffer);
     _vertex_buffer_memory = std::move(vertex_buffer_memory);
 
     _context->copy_buffer(staging_buffer.get(), _vertex_buffer.get(), buffer_size);
-
-    return true;
   }
 
-  [[nodiscard]] bool create_index_buffer() {
+  void create_index_buffer() {
     const std::vector indices = {0, 1, 2, 2, 3, 0};
     const vk::DeviceSize buffer_size = sizeof indices[0] * indices.size();
 
     auto [staging_buffer, staging_buffer_memory] = _context->create_buffer(
         buffer_size, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-    if (!staging_buffer || !staging_buffer_memory) return false;
 
     void* data;
-    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess) {
-      spdlog::error("Failed to map vertex buffer memory!");
-      return false;
-    }
+    if (_context->device().mapMemory(staging_buffer_memory.get(), 0, buffer_size, {}, &data) != vk::Result::eSuccess)
+      throw std::runtime_error("Failed to map vertex buffer memory!");
+
     std::memcpy(data, indices.data(), buffer_size);
     _context->device().unmapMemory(staging_buffer_memory.get());
 
     auto [index_buffer, index_buffer_memory] = _context->create_buffer(
         buffer_size, vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal);
-    if (!index_buffer || !index_buffer_memory) return false;
 
     _index_buffer = std::move(index_buffer);
     _index_buffer_memory = std::move(index_buffer_memory);
 
     _context->copy_buffer(staging_buffer.get(), _index_buffer.get(), buffer_size);
-    return true;
   }
 
-  [[nodiscard]] bool create_field_buffers(const uint32_t width, const uint32_t height) {
+  void create_field_buffers(const uint32_t width, const uint32_t height) {
     _field_buffer_size = sizeof(glm::vec4) * width * height;
     _field_buffers.resize(_renderer->frames_in_flight());
     _field_buffers_memory.resize(_renderer->frames_in_flight());
     for (size_t i = 0; i < _renderer->frames_in_flight(); i++) {
       auto [buf, mem] =
           _context->create_buffer(_field_buffer_size, vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eTransferSrc, {});
-      if (!buf || !mem) return false;
 
       _field_buffers[i] = std::move(buf);
       _field_buffers_memory[i] = std::move(mem);
     }
-    return true;
   }
 
   void create_descriptor_sets() {

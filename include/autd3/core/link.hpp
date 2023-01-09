@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/11/2022
+// Last Modified: 04/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 #include <memory>
 
 #include "autd3/core/geometry.hpp"
-#include "autd3/driver/common/cpu/datagram.hpp"
+#include "autd3/driver/cpu/datagram.hpp"
 
 namespace autd3::core {
 

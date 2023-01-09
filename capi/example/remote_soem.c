@@ -4,7 +4,7 @@
  * Created Date: 03/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/12/2022
+ * Last Modified: 08/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,13 +21,13 @@ int main(void) {
   const char* ip = "";
   const uint16_t port = 50632;
 
-  AUTDCreateController(&cnt, 0);
+  AUTDCreateController(&cnt);
 
   AUTDAddDevice(cnt, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 
   AUTDLinkRemoteSOEM(&link, ip, port);
 
-  if (!AUTDOpenController(cnt, link)) return -1;
+  AUTDOpenController(cnt, link);
 
   return run(cnt);
 }

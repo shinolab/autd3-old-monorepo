@@ -4,7 +4,7 @@
  * Created Date: 18/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2022
+ * Last Modified: 05/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -101,7 +101,7 @@ public partial class FocusSTMViewModel
     [RelayCommand(CanExecute = "SendCanExecute")]
     public async void Send()
     {
-        var stm = new AUTD3Sharp.STM.FocusSTM(App.GetService<AUTDService>().GetSoundSpeed());
+        var stm = new AUTD3Sharp.STM.FocusSTM();
         foreach (var t in Targets)
         {
             stm.Add(new Vector3d(t.X, t.Y, t.Z, t.Shift));

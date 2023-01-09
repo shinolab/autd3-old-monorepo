@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,8 +24,8 @@
 #include <vector>
 
 #include "../../spdlog.hpp"
-#include "autd3/driver/common/cpu/datagram.hpp"
-#include "autd3/driver/common/cpu/ec_config.hpp"
+#include "autd3/driver/cpu/datagram.hpp"
+#include "autd3/driver/cpu/ec_config.hpp"
 #include "autd3/link/soem.hpp"
 #include "ecat_thread.hpp"
 #include "error_handler.hpp"
@@ -48,7 +48,7 @@ class SOEMHandler final {
     try {
       close();
     } catch (std::exception& ex) {
-      spdlog::error(ex.what());
+      spdlog::warn(ex.what());
     }
   }
   SOEMHandler(const SOEMHandler& v) noexcept = delete;
@@ -99,8 +99,7 @@ class SOEMHandler final {
       }
     }
     ec_free_adapters(adapters);
-    spdlog::error("No AUTD3 devices found");
-    return "";
+    throw std::runtime_error("No AUTD3 devices found");
   }
 
   size_t open(const std::vector<size_t>& device_map, const int remaining) {
@@ -115,31 +114,21 @@ class SOEMHandler final {
     if (_ifname.empty()) return 0;
 
     spdlog::debug("interface name: {}", _ifname);
-    if (ec_init(_ifname.c_str()) <= 0) {
-      spdlog::error("No socket connection on {}", _ifname);
-      return 0;
-    }
+    if (ec_init(_ifname.c_str()) <= 0) throw std::runtime_error("No socket connection on " + _ifname);
 
     const auto wc = ec_config_init(0);
-    if (wc <= 0) {
-      spdlog::error("No slaves found");
-      return 0;
-    }
+    if (wc <= 0) throw std::runtime_error("No slaves found");
     spdlog::debug("Found {} devices", wc);
 
     const auto auto_detect = device_map.empty();
-    if (!auto_detect && static_cast<size_t>(wc) != device_map.size()) {
-      spdlog::error("The number of slaves you configured: {}, but found: {}", device_map.size(), wc);
-      return 0;
-    }
+    if (!auto_detect && static_cast<size_t>(wc) != device_map.size())
+      throw std::runtime_error("The number of slaves you configured: " + std::to_string(device_map.size()) + ", but found: " + std::to_string(wc));
     std::vector<size_t> dev_map;
     for (auto i = 1; i <= wc; i++)
       if (std::strcmp(ec_slave[i].name, "AUTD") == 0) {
         dev_map.emplace_back(auto_detect ? 249 : device_map[static_cast<size_t>(i) - 1]);
-      } else {
-        spdlog::error("Slave[{}] is not AUTD3", i);
-        return 0;
-      }
+      } else
+        throw std::runtime_error("Slave[" + std::to_string(i) + "] is not AUTD3");
 
     _user_data = std::make_unique<uint32_t[]>(1);
     _user_data[0] = driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle;
@@ -163,13 +152,12 @@ class SOEMHandler final {
 
     ec_statecheck(0, EC_STATE_SAFE_OP, EC_TIMEOUTSTATE);
     if (ec_slave[0].state != EC_STATE_SAFE_OP) {
-      spdlog::error("One ore more slaves did not reach safe operational state: {}", ec_slave[0].state);
       ec_readstate();
       for (size_t slave = 1; slave <= static_cast<size_t>(ec_slavecount); slave++)
         if (ec_slave[slave].state != EC_STATE_SAFE_OP)
-          spdlog::error("Slave[{}]: {} (State={:#02x} StatusCode={:#04x})", slave, ec_ALstatuscode2string(ec_slave[slave].ALstatuscode),
-                        ec_slave[slave].state, ec_slave[slave].ALstatuscode);
-      return false;
+          spdlog::warn("Slave[{}]: {} (State={:#02x} StatusCode={:#04x})", slave, ec_ALstatuscode2string(ec_slave[slave].ALstatuscode),
+                       ec_slave[slave].state, ec_slave[slave].ALstatuscode);
+      throw std::runtime_error("One ore more slaves did not reach safe operational state");
     }
 
     const auto expected_wkc = ec_group[0].outputsWKC * 2 + ec_group[0].inputsWKC;
@@ -192,13 +180,12 @@ class SOEMHandler final {
       _is_open.store(false);
       if (_ecat_thread.joinable()) _ecat_thread.join();
       if (remaining == 0) {
-        spdlog::error("One ore more slaves are not responding: {}", ec_slave[0].state);
         ec_readstate();
         for (size_t slave = 1; slave <= static_cast<size_t>(ec_slavecount); slave++)
           if (ec_slave[slave].state != EC_STATE_SAFE_OP)
-            spdlog::error("Slave {} State={:#02x} StatusCode={:#04x} : {}", slave, ec_slave[slave].state, ec_slave[slave].ALstatuscode,
-                          ec_ALstatuscode2string(ec_slave[slave].ALstatuscode));
-        return static_cast<size_t>(wc);
+            spdlog::warn("Slave {} State={:#02x} StatusCode={:#04x} : {}", slave, ec_slave[slave].state, ec_slave[slave].ALstatuscode,
+                         ec_ALstatuscode2string(ec_slave[slave].ALstatuscode));
+        throw std::runtime_error("One ore more slaves are not responding.");
       }
       spdlog::debug("Failed to reach op mode. retry opening...");
       return open(device_map, remaining - 1);
@@ -224,10 +211,7 @@ class SOEMHandler final {
   }
 
   bool send(const driver::TxDatagram& tx) {
-    if (!is_open()) {
-      spdlog::error("link is closed");
-      return false;
-    }
+    if (!is_open()) throw std::runtime_error("link is closed");
 
     std::lock_guard lock(_send_mtx);
     _send_buf.push(tx.clone());
@@ -235,10 +219,8 @@ class SOEMHandler final {
   }
 
   bool receive(driver::RxDatagram& rx) const {
-    if (!is_open()) {
-      spdlog::error("link is closed");
-      return false;
-    }
+    if (!is_open()) throw std::runtime_error("link is closed");
+
     rx.copy_from(_io_map.input());
     return true;
   }

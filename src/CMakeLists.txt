@@ -8,15 +8,7 @@ file(GLOB_RECURSE MODULATION_HEADER_FILES ${PROJECT_SOURCE_DIR}/include/autd3/mo
 
 add_library(autd3
   controller.cpp
-  soft_stm.cpp
   modulation/lpf/lpf.cpp
-  driver/v2_2/driver.cpp
-  driver/v2_3/driver.cpp
-  driver/v2_4/driver.cpp
-  driver/v2_5/driver.cpp
-  driver/v2_6/driver.cpp
-  driver/v2_7/driver.cpp
-  core/mode.cpp
   ${HEADER_FILES}
   ${CORE_HEADER_FILES}
   ${DRIVER_HEADER_FILES}

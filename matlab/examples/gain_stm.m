@@ -21,7 +21,7 @@ function gain_stm(cnt)
     z = 150.0;
     center = [x y z];
 
-    stm = GainSTM(cnt);
+    stm = GainSTM();
 
     points_num = 200;
     radius = 30.0;

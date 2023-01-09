@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,22 +26,20 @@
 #include "autd3/core/geometry.hpp"
 #include "autd3/core/link.hpp"
 #include "autd3/core/mode.hpp"
-#include "autd3/driver/common/cpu/datagram.hpp"
-#include "autd3/driver/driver.hpp"
+#include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/driver/firmware_version.hpp"
-#include "autd3/driver/v2_7/driver.hpp"
+#include "autd3/driver/operation/force_fan.hpp"
+#include "autd3/driver/operation/reads_fpga_info.hpp"
 #include "autd3/special_data.hpp"
 
 namespace autd3 {
-
-using DriverLatest = driver::DriverV2_7;
 
 /**
  * @brief AUTD Controller
  */
 class Controller {
  public:
-  explicit Controller(std::unique_ptr<const driver::Driver> driver = std::make_unique<const DriverLatest>());
+  Controller();
   Controller(const Controller& v) = delete;
   Controller& operator=(const Controller& obj) = delete;
   Controller(Controller&& obj) = delete;
@@ -58,7 +56,7 @@ class Controller {
    */
   [[nodiscard]] const core::Geometry& geometry() const noexcept;
 
-  [[nodiscard]] bool open(core::LinkPtr link);
+  void open(core::LinkPtr link);
 
   /**
    * @brief Close the controller
@@ -75,38 +73,13 @@ class Controller {
    * @brief FPGA info
    *  \return vector of FPGAInfo. If failed, the vector is empty
    */
-  std::vector<driver::FPGAInfo> read_fpga_info();
+  std::vector<driver::FPGAInfo> fpga_info();
 
   /**
    * @brief Enumerate firmware information
    * \return vector of driver::FirmwareInfo. If failed, the vector is empty.
    */
   [[nodiscard]] std::vector<driver::FirmwareInfo> firmware_infos();
-
-  /**
-   * @brief Synchronize devices
-   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
-   */
-
-  [[deprecated("please send autd3::synchronize instead")]] bool synchronize();
-
-  /**
-   * @brief Update flags (force fan and reads_fpga_info)
-   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
-   */
-  [[deprecated("please send autd3::update_flag instead")]] bool update_flag();
-
-  /**
-   * @brief Clear all data in devices
-   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
-   */
-  [[deprecated("please send autd3::clear instead")]] bool clear();
-
-  /**
-   * @brief Stop outputting
-   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
-   */
-  [[deprecated("please send autd3::stop instead")]] bool stop();
 
   /**
    * @brief Send header data to devices
@@ -250,12 +223,27 @@ class Controller {
   /**
    * @brief If true, the fan will be forced to start.
    */
-  bool force_fan;
+  bool& force_fan() noexcept { return _force_fan.value; }
+
+  /**
+   * @brief If true, the fan will be forced to start.
+   */
+  [[nodiscard]] bool force_fan() const noexcept { return _force_fan.value; }
 
   /**
    * @brief If true, the devices return FPGA info in all frames. The FPGA info can be read by fpga_info().
    */
-  bool reads_fpga_info;
+  bool& reads_fpga_info() noexcept { return _reads_fpga_info.value; }
+
+  /**
+   * @brief If true, the devices return FPGA info in all frames. The FPGA info can be read by fpga_info().
+   */
+  [[nodiscard]] bool reads_fpga_info() const noexcept;
+
+  /**
+   * @brief Drive mode
+   */
+  [[nodiscard]] core::Mode mode() const noexcept { return _mode; }
 
   /**
    * @brief Transmission interval between frames when sending multiple data.
@@ -284,19 +272,6 @@ class Controller {
   [[nodiscard]] std::chrono::high_resolution_clock::duration get_ack_check_timeout() const noexcept;
 
   /**
-   * Set speed of sound
-   */
-  void set_sound_speed(const driver::autd3_float_t sound_speed) {
-    for (auto& tr : _geometry) tr.sound_speed = sound_speed;
-  }
-
-  /**
-   * Get speed of sound
-   * @details This function returns the speed of sound set to the 0-th transducer of the 0-th device.
-   */
-  [[nodiscard]] driver::autd3_float_t get_sound_speed() const;
-
-  /**
    * Set speed of sound from temperature
    * @param temp temperature in Celsius degree
    * @param k Heat capacity ratio
@@ -308,18 +283,6 @@ class Controller {
                                                   driver::autd3_float_t r = static_cast<driver::autd3_float_t>(8.31446261815324),
                                                   driver::autd3_float_t m = static_cast<driver::autd3_float_t>(28.9647e-3));
 
-  /**
-   * Set attenuation coefficient
-   */
-  void set_attenuation(driver::autd3_float_t attenuation);
-
-  /**
-* Get attenuation coefficient
-* @details This function returns the attenuation coefficient set to the 0-th transducer of the 0-th device.
-
-*/
-  [[nodiscard]] driver::autd3_float_t get_attenuation() const;
-
  private:
   static uint8_t get_id() noexcept;
 
@@ -330,13 +293,13 @@ class Controller {
   std::chrono::high_resolution_clock::duration _ack_check_timeout{std::chrono::high_resolution_clock::duration::zero()};
 
   struct AsyncData {
-    std::unique_ptr<core::DatagramHeader> header;
-    std::unique_ptr<core::DatagramBody> body;
+    std::unique_ptr<core::DatagramHeader> header{};
+    std::unique_ptr<core::DatagramBody> body{};
     std::chrono::high_resolution_clock::duration timeout{};
   };
 
   core::Geometry _geometry;
-  std::unique_ptr<const core::Mode> _mode;
+  core::Mode _mode;
 
   driver::TxDatagram _tx_buf;
   driver::RxDatagram _rx_buf;
@@ -350,7 +313,8 @@ class Controller {
 
   bool _last_send_res;
 
-  std::unique_ptr<const driver::Driver> _driver;
+  driver::ForceFan _force_fan;
+  driver::ReadsFPGAInfo _reads_fpga_info;
 
  public:
   /**
@@ -878,7 +842,7 @@ class Controller {
    * @brief Set Mode
    * @param f mode function
    */
-  void operator<<(std::unique_ptr<core::Mode> (*f)()) { _mode = f(); }
+  void operator<<(core::Mode (*f)()) { _mode = f(); }
 
   void operator>>(bool& res) const { res = _last_send_res; }
 };

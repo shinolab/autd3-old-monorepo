@@ -3,7 +3,7 @@
 // Created Date: 02/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 08/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@
 #endif
 
 #include <autd3/core/link.hpp>
-#include <autd3/driver/common/cpu/ec_config.hpp>
+#include <autd3/driver/cpu/ec_config.hpp>
 #include <thread>
 
 #include "../../spdlog.hpp"
@@ -48,10 +48,8 @@ class RemoteSOEMTcp final : public core::Link {
 #pragma warning(push)
 #pragma warning(disable : 6031)
     WSAData wsa_data{};
-    if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) {
-      spdlog::error("WSAStartup failed: {}", WSAGetLastError());
-      return false;
-    }
+    if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) throw std::runtime_error("WSAStartup failed: " + std::to_string(WSAGetLastError()));
+
 #pragma warning(pop)
 #endif
 
@@ -62,8 +60,7 @@ class RemoteSOEMTcp final : public core::Link {
     if (_socket < 0)
 #endif
     {
-      spdlog::error("Cannot connect to simulator");
-      return false;
+      throw std::runtime_error("Cannot connect to simulator");
     }
 
     spdlog::debug("Create socket: {}", _socket);
@@ -77,10 +74,7 @@ class RemoteSOEMTcp final : public core::Link {
 #endif
 
     spdlog::debug("Connecting to server...");
-    if (connect(_socket, reinterpret_cast<sockaddr*>(&_addr), sizeof _addr)) {
-      spdlog::error("Failed to connect server");
-      return false;
-    }
+    if (connect(_socket, reinterpret_cast<sockaddr*>(&_addr), sizeof _addr)) throw std::runtime_error("Failed to connect server");
     spdlog::debug("Connected");
 
     const auto size = geometry.num_devices() * driver::EC_INPUT_FRAME_SIZE;
@@ -96,11 +90,11 @@ class RemoteSOEMTcp final : public core::Link {
         if (len <= 0) continue;
         const auto ulen = static_cast<size_t>(len);
         if (ulen % size != 0) {
-          spdlog::error("Unknown data size: {}", ulen);
+          spdlog::warn("Unknown data size: {}", ulen);
           continue;
         }
         const auto n = ulen / size;
-        for (size_t i = 0; i < n; i++) std::memcpy(_ptr.get(), buffer.data() + i * size, ulen);
+        for (size_t i = 0; i < n; i++) std::memcpy(_ptr.get(), &buffer[i * size], ulen);
       }
     });
 
@@ -118,10 +112,7 @@ class RemoteSOEMTcp final : public core::Link {
 
 #if WIN32
     closesocket(_socket);
-    if (WSACleanup() != 0) {
-      spdlog::error("WSACleanup failed: {}", WSAGetLastError());
-      return false;
-    }
+    if (WSACleanup() != 0) throw std::runtime_error("WSACleanup failed: " + std::to_string(WSAGetLastError()));
 #else
     ::close(_socket);
 #endif
@@ -130,8 +121,8 @@ class RemoteSOEMTcp final : public core::Link {
   }
 
   bool send(const driver::TxDatagram& tx) override {
-    return ::send(_socket, reinterpret_cast<const char*>(tx.data().data()), static_cast<int>(tx.transmitting_size()), 0) ==
-           static_cast<int>(tx.transmitting_size());
+    return ::send(_socket, reinterpret_cast<const char*>(tx.data().data()), static_cast<int>(tx.transmitting_size_in_bytes()), 0) ==
+           static_cast<int>(tx.transmitting_size_in_bytes());
   }
 
   bool receive(driver::RxDatagram& rx) override {
