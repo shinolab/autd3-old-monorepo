@@ -3,7 +3,7 @@
 // Created Date: 16/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/01/2023
+// Last Modified: 12/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -135,7 +135,7 @@ std::vector<driver::FirmwareInfo> Controller::firmware_infos() {
   for (size_t i = 0; i < cpu_versions.size(); i++) firmware_infos.emplace_back(i, cpu_versions[i], fpga_versions[i], fpga_functions[i]);
 
   for (const auto& info : firmware_infos) {
-    if (info.cpu_version_num() != info.fpga_version_num()) throw std::runtime_error("FPGA firmware version and CPU firmware version do not match.");
+    if (info.cpu_version_num() != info.fpga_version_num()) spdlog::warn("FPGA firmware version and CPU firmware version do not match.");
     if (info.cpu_version_num() != driver::VERSION_NUM || info.fpga_version_num() != driver::VERSION_NUM)
       spdlog::warn("You are using old firmware. Please consider updating to {}.", driver::FirmwareInfo::firmware_version_map(driver::VERSION_NUM));
   }
