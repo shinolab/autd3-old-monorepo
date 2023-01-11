@@ -45,7 +45,7 @@ However, the number of `Gain` that can be used is
 - 1024 for Normla mode.
 
 ```cpp
-  autd3::GainSTM stm(autd.geometry());
+  autd3::GainSTM stm;
 
   const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   constexpr size_t points_num = 200;
