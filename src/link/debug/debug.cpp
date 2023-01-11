@@ -18,7 +18,7 @@ namespace autd3::link {
 
 class NullLink final : public core::Link {
  public:
-	[[nodiscard]] core::LinkPtr build() const {
+  [[nodiscard]] core::LinkPtr build() const {
     core::LinkPtr link = std::make_unique<NullLink>();
     return link;
   }
@@ -30,11 +30,14 @@ class NullLink final : public core::Link {
   NullLink(NullLink&& obj) = delete;
   NullLink& operator=(NullLink&& obj) = delete;
 
-  bool open(const core::Geometry&) override { return true; }
-  bool close() override { return true; }
+  bool open(const core::Geometry&) override { return _is_open = true; }
+  bool close() override { return _is_open = false; }
   bool send(const driver::TxDatagram&) override { return true; }
   bool receive(driver::RxDatagram&) override { return true; }
-  bool is_open() override { return true; }
+  bool is_open() override { return _is_open; }
+
+ private:
+  bool _is_open{false};
 };
 
 class DebugImpl final : public core::Link {
