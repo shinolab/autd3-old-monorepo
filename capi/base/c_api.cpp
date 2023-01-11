@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 11/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -351,12 +351,12 @@ void AUTDGainSTMAdd(void* const stm, void* const gain) {
 
 uint16_t AUTDGetGainSTMMode(void* const stm) {
   auto* const stm_w = static_cast<autd3::GainSTM*>(stm);
-  return static_cast<uint16_t>(stm_w->mode);
+  return static_cast<uint16_t>(stm_w->mode());
 }
 
 void AUTDSetGainSTMMode(void* const stm, uint16_t mode) {
   auto* const stm_w = static_cast<autd3::GainSTM*>(stm);
-  stm_w->mode = static_cast<autd3::GainSTMMode>(mode);
+  stm_w->mode() = static_cast<autd3::GainSTMMode>(mode);
 }
 
 int32_t AUTDSTMGetStartIdx(const void* const stm) {
