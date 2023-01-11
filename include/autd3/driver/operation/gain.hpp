@@ -52,7 +52,7 @@ struct Gain<Legacy> final : GainBase {
 
     tx.num_bodies = tx.num_devices();
 
-    assert(drives.size() == tx.bodies_size());
+    assert(_props.drives.size() == tx.bodies_size());
     std::transform(_props.drives.begin(), _props.drives.end(), reinterpret_cast<LegacyDrive*>(tx.bodies_raw_ptr()), [](const auto& d) { return d; });
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
@@ -109,7 +109,7 @@ struct Gain<Normal> final : GainBase {
 
     tx.num_bodies = tx.num_devices();
 
-    assert(drives.size() == tx.bodies_size());
+    assert(_props.drives.size() == tx.bodies_size());
     assert(cycles.size() == tx.bodies_size());
     std::transform(_props.drives.begin(), _props.drives.end(), cycles.begin(), reinterpret_cast<Duty*>(tx.bodies_raw_ptr()),
                    [](const auto& d, const auto cycle) { return Duty(d, cycle); });
@@ -122,7 +122,7 @@ struct Gain<Normal> final : GainBase {
 
     tx.num_bodies = tx.num_devices();
 
-    assert(drives.size() == tx.bodies_size());
+    assert(_props.drives.size() == tx.bodies_size());
     assert(cycles.size() == tx.bodies_size());
     std::transform(_props.drives.begin(), _props.drives.end(), cycles.begin(), reinterpret_cast<Phase*>(tx.bodies_raw_ptr()),
                    [](const auto& d, const auto cycle) { return Phase(d, cycle); });
@@ -155,7 +155,7 @@ struct Gain<NormalPhase> final : GainBase {
 
     tx.num_bodies = tx.num_devices();
 
-    assert(drives.size() == tx.bodies_size());
+    assert(_props.drives.size() == tx.bodies_size());
     assert(cycles.size() == tx.bodies_size());
     std::transform(_props.drives.begin(), _props.drives.end(), cycles.begin(), reinterpret_cast<Phase*>(tx.bodies_raw_ptr()),
                    [](const auto& d, const auto cycle) { return Phase(d, cycle); });
