@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 11/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -675,7 +675,7 @@ TEST(ControllerTest, gain_stm_legacy) {
 
   {
     autd3::GainSTM stm;
-    stm.mode = autd3::GainSTMMode::PhaseFull;
+    stm.mode() = autd3::GainSTMMode::PhaseFull;
     constexpr size_t size = 50;
     std::vector<std::vector<autd3::driver::Drive>> drives;
     constexpr autd3::driver::autd3_float_t radius = 40;
@@ -706,7 +706,7 @@ TEST(ControllerTest, gain_stm_legacy) {
 
   {
     autd3::GainSTM stm;
-    stm.mode = autd3::GainSTMMode::PhaseHalf;
+    stm.mode() = autd3::GainSTMMode::PhaseHalf;
     constexpr size_t size = 50;
     std::vector<std::vector<autd3::driver::Drive>> drives;
     constexpr autd3::driver::autd3_float_t radius = 40;
@@ -799,7 +799,7 @@ TEST(ControllerTest, gain_stm_normal) {
 
   {
     autd3::GainSTM stm;
-    stm.mode = autd3::GainSTMMode::PhaseFull;
+    stm.mode() = autd3::GainSTMMode::PhaseFull;
     constexpr size_t size = 50;
     std::vector<std::vector<autd3::driver::Drive>> drives;
     constexpr autd3::driver::autd3_float_t radius = 40;
@@ -889,7 +889,7 @@ TEST(ControllerTest, gain_stm_normal_phase) {
 
   {
     autd3::GainSTM stm;
-    stm.mode = autd3::GainSTMMode::PhaseFull;
+    stm.mode() = autd3::GainSTMMode::PhaseFull;
     constexpr size_t size = 50;
     std::vector<std::vector<autd3::driver::Drive>> drives;
     constexpr autd3::driver::autd3_float_t radius = 30;

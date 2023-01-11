@@ -3,7 +3,7 @@
 // Created Date: 30/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 11/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,6 +25,10 @@ using autd3::driver::pi;
 
 TEST(DriverCommonFPGADefined, LegacyDrive) {
   using autd3::driver::LegacyDrive;
+
+  ASSERT_EQ(sizeof(LegacyDrive), 2);
+  ASSERT_EQ(offsetof(LegacyDrive, phase), 0);
+  ASSERT_EQ(offsetof(LegacyDrive, duty), 1);
 
   Drive s{0.0, 0.0};
   LegacyDrive d{};
@@ -60,6 +64,9 @@ TEST(DriverCommonFPGADefined, LegacyDrive) {
 
 TEST(DriverCommonFPGADefined, Phase) {
   using autd3::driver::Phase;
+
+  ASSERT_EQ(sizeof(Phase), 2);
+  ASSERT_EQ(offsetof(Phase, phase), 0);
 
   Drive s{};
   Phase d{0};
@@ -113,6 +120,9 @@ TEST(DriverCommonFPGADefined, Phase) {
 
 TEST(DriverCommonFPGADefined, Duty) {
   using autd3::driver::Duty;
+
+  ASSERT_EQ(sizeof(Duty), 2);
+  ASSERT_EQ(offsetof(Duty, duty), 0);
 
   Drive s{};
   Duty d{0};
@@ -168,6 +178,8 @@ TEST(DriverCommonFPGADefined, Duty) {
 
 TEST(DriverCommonFPGADefined, FPGAInfo) {
   using autd3::driver::FPGAInfo;
+
+  ASSERT_EQ(sizeof(FPGAInfo), 1);
 
   FPGAInfo info(0);
   ASSERT_FALSE(info.is_thermal_assert());
