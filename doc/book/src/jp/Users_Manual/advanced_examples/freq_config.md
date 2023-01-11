@@ -25,6 +25,8 @@
   autd << autd3::synchronize;
 ```
 
+> NOTE: Legacyモードで周波数を変更した場合の挙動は保証しない.
+
 ## NormalPhaseモード
 
 Normalモードは振幅/位相データをそれぞれ1フレームで送信する必要があるため, 若干通信のレイテンシが大きい.
