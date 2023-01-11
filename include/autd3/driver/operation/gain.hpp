@@ -24,7 +24,12 @@ struct GainBase {
   virtual ~GainBase() = default;
   virtual void init() = 0;
   virtual void pack(TxDatagram& tx) = 0;
-  virtual bool is_finished() const = 0;
+  [[nodiscard]] virtual bool is_finished() const = 0;
+  GainBase() noexcept = default;
+  GainBase(const GainBase& v) noexcept = default;
+  GainBase& operator=(const GainBase& obj) = default;
+  GainBase(GainBase&& obj) = default;
+  GainBase& operator=(GainBase&& obj) = default;
 };
 
 template <typename T>

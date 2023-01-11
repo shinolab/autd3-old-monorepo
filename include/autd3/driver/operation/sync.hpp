@@ -23,6 +23,11 @@ struct SyncBase {
   virtual void init() = 0;
   virtual void pack(TxDatagram& tx) = 0;
   [[nodiscard]] bool is_finished() const { return _sent; }
+  SyncBase() noexcept = default;
+  SyncBase(const SyncBase& v) noexcept = default;
+  SyncBase& operator=(const SyncBase& obj) = default;
+  SyncBase(SyncBase&& obj) = default;
+  SyncBase& operator=(SyncBase&& obj) = default;
 
  protected:
   bool _sent{false};
