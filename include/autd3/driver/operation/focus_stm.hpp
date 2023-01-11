@@ -22,8 +22,7 @@ struct FocusSTM final {
   }
 
   void pack(TxDatagram& tx) {
-    assert(!points.empty());
-    for (const auto& point : points) assert(point.size() == tx.num_devices());
+    assert(points.size() == tx.num_devices());
     assert(device_map.size() == tx.num_devices());
 
     const auto total_size = points[0].size();
