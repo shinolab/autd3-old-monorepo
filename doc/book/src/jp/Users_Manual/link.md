@@ -234,7 +234,7 @@ High Precisionモードを`true`にすると, より高精度なタイマが使�
 
 ```cpp
   auto link = autd3::link::SOEM()
-                .sync_mode(autd3::link::SYNC_MODE::FREE_RUN)
+                .sync_mode(autd3::link::SyncMode::FreeRun)
                 .build();
 ```
 

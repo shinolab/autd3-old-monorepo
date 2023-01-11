@@ -11,7 +11,7 @@ class FocalPoint final : public autd3::Gain {
   explicit FocalPoint(autd3::Vector3 point) : _point(std::move(point)) {}
 
   void calc(const autd3::Geometry& geometry) override {
-    std::transform(geometry.begin(), geometry.end(), this->_drives.begin(), [&](const auto& transducer) { {
+    std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& transducer) { {
         const auto dist = (_point - transducer.position()).norm();
         const auto phase = transducer.align_phase_at(dist);
         return driver::Drive{phase, 1.0};

@@ -8,8 +8,8 @@
 class Burst final : public autd3::Modulation {
  public:
   void calc() override {
-    this->_buffer.resize(_buf_size, 0);
-    this->_buffer[_buf_size - 1] = 0xFF;
+    buffer().resize(_buf_size, 0);
+    buffer()[_buf_size - 1] = 0xFF;
   }
 
   explicit Burst(const size_t buf_size = 4000, const uint16_t freq_div = 40960) noexcept : _buf_size(buf_size) 
