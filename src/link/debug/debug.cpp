@@ -18,7 +18,7 @@ namespace autd3::link {
 
 class NullLink final : public core::Link {
  public:
-  core::LinkPtr build() const {
+	[[nodiscard]] core::LinkPtr build() const {
     core::LinkPtr link = std::make_unique<NullLink>();
     return link;
   }
