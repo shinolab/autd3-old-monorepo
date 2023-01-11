@@ -3,7 +3,7 @@
 // Created Date: 06/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 11/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,17 +13,17 @@
 
 #include <vector>
 
-#include "autd3/driver/operation/operation.hpp"
+#include "autd3/driver/cpu/datagram.hpp"
 
 namespace autd3::driver {
 
-struct Modulation final : Operation {
-  void init() override {
+struct Modulation final {
+  void init() {
     sent = 0;
     mod_data.clear();
   }
 
-  void pack(TxDatagram& tx) override {
+  void pack(TxDatagram& tx) {
     if (mod_data.size() > MOD_BUF_SIZE_MAX) throw std::runtime_error("Modulation buffer overflow");
     if (freq_div < MOD_SAMPLING_FREQ_DIV_MIN)
       throw std::runtime_error("Modulation frequency division is out of range. Minimum is " + std::to_string(MOD_SAMPLING_FREQ_DIV_MIN) +
@@ -54,7 +54,7 @@ struct Modulation final : Operation {
     sent += mod_size;
   }
 
-  [[nodiscard]] bool is_finished() const override { return sent == mod_data.size(); }
+  [[nodiscard]] bool is_finished() const { return sent == mod_data.size(); }
 
   std::vector<uint8_t> mod_data{};
   size_t sent{};
