@@ -26,7 +26,7 @@ struct NullHeader final {
 
   void init() { _sent = false; }
 
-  bool is_finished() const { return _sent; }
+  [[nodiscard]] bool is_finished() const { return _sent; }
 
  private:
   bool _sent{false};
@@ -42,7 +42,7 @@ struct NullBody final {
 
   void init() { _sent = false; }
 
-  bool is_finished() const { return _sent; }
+  [[nodiscard]] bool is_finished() const { return _sent; }
 
  private:
   bool _sent{false};

@@ -31,6 +31,11 @@ struct GainSTMBase {
   virtual void init() = 0;
   virtual void pack(TxDatagram& tx) = 0;
   [[nodiscard]] virtual bool is_finished() const = 0;
+  GainSTMBase() noexcept = default;
+  GainSTMBase(const GainSTMBase& v) noexcept = default;
+  GainSTMBase& operator=(const GainSTMBase& obj) = default;
+  GainSTMBase(GainSTMBase&& obj) = default;
+  GainSTMBase& operator=(GainSTMBase&& obj) = default;
 };
 
 template <typename T>

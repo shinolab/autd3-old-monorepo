@@ -3,7 +3,7 @@
 // Created Date: 16/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 11/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -120,15 +120,15 @@ std::vector<driver::FirmwareInfo> Controller::firmware_infos() {
     return acks;
   };
 
-  driver::CPUVersion().pack(_tx_buf);
+  driver::CPUVersion::pack(_tx_buf);
   const auto cpu_versions = pack_ack();
   if (cpu_versions.empty()) throw std::runtime_error("Failed to get firmware information.");
 
-  driver::FPGAVersion().pack(_tx_buf);
+  driver::FPGAVersion::pack(_tx_buf);
   const auto fpga_versions = pack_ack();
   if (fpga_versions.empty()) throw std::runtime_error("Failed to get firmware information.");
 
-  driver::FPGAFunctions().pack(_tx_buf);
+  driver::FPGAFunctions::pack(_tx_buf);
   const auto fpga_functions = pack_ack();
   if (fpga_functions.empty()) throw std::runtime_error("Failed to get firmware information.");
 
