@@ -22,8 +22,9 @@ struct FocusSTM final {
   }
 
   void pack(TxDatagram& tx) {
-    if (points.empty()) throw std::runtime_error("Points were not set.");
-    if (device_map.empty()) throw std::runtime_error("Device map was not set.");
+    assert(!points.empty());
+    for (const auto& point : points) assert(point.size() == tx.num_devices());
+    assert(device_map.size() == tx.num_devices());
 
     const auto total_size = points[0].size();
 
