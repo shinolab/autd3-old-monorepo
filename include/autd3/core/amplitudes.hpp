@@ -3,7 +3,7 @@
 // Created Date: 28/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/01/2023
+// Last Modified: 11/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,7 +33,6 @@ class Amplitudes final : public DatagramBody {
 
   void init(const Mode, const Geometry& geometry) override {
     _op.init();
-    _op.phase_sent = true;
     _op.cycles = geometry.cycles();
     _op.drives.resize(geometry.num_transducers(), driver::Drive{0, _amp});
   }
@@ -44,7 +43,7 @@ class Amplitudes final : public DatagramBody {
 
  private:
   driver::autd3_float_t _amp;
-  driver::Gain<driver::Normal> _op;
+  driver::GainDuty _op;
 };
 
 }  // namespace autd3::core

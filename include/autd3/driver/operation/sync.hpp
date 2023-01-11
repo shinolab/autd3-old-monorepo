@@ -3,7 +3,7 @@
 // Created Date: 06/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 11/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,12 +13,16 @@
 
 #include <vector>
 
+#include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/driver/operation/operation.hpp"
 
 namespace autd3::driver {
 
-struct SyncBase : Operation {
-  [[nodiscard]] bool is_finished() const override { return _sent; }
+struct SyncBase {
+  virtual ~SyncBase() = default;
+  virtual void init() = 0;
+  virtual void pack(TxDatagram& tx) = 0;
+  [[nodiscard]] bool is_finished() const { return _sent; }
 
  protected:
   bool _sent{false};

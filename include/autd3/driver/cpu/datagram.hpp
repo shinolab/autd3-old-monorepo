@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 11/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -111,6 +111,8 @@ struct TxDatagram {
 /**
  * @brief Received data from a device
  */
+#pragma pack(push)
+#pragma pack(1)
 struct RxMessage {
   /**
    * @brief Response data from the device
@@ -124,6 +126,7 @@ struct RxMessage {
   RxMessage(const uint8_t ack, const uint8_t msg_id) noexcept : ack(ack), msg_id(msg_id) {}
   RxMessage() noexcept : ack(), msg_id() {}
 };
+#pragma pack(pop)
 
 /**
  * @brief Received data from devices

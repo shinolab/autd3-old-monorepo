@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 11/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -193,7 +193,7 @@ class Grouped final : public core::Gain {
       const auto& [device_id, gain] = g;
       gain->init(_mode, geometry);
       const auto start = device_id == 0 ? 0 : geometry.device_map()[device_id - 1];
-      std::memcpy(&_op->drives[start], &gain->drives()[start], sizeof(autd3::driver::Drive) * geometry.device_map()[device_id]);
+      std::memcpy(&_props.drives[start], &gain->drives()[start], sizeof(autd3::driver::Drive) * geometry.device_map()[device_id]);
     });
   }
 
@@ -218,8 +218,8 @@ class TransducerTest final : public core::Gain {
   void calc(const core::Geometry& geometry) override {
     std::for_each(_map.begin(), _map.end(), [this](const auto& v) {
       const auto& [id, value] = v;
-      _op->drives[id].amp = value.first;
-      _op->drives[id].phase = value.second;
+      _props.drives[id].amp = value.first;
+      _props.drives[id].phase = value.second;
     });
   }
 

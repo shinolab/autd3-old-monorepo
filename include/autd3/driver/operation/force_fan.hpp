@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 11/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,20 +11,17 @@
 
 #pragma once
 
-#include "autd3/driver/operation/operation.hpp"
+#include "autd3/driver/cpu/datagram.hpp"
 
 namespace autd3::driver {
 
-struct ForceFan final : Operation {
-  void pack(TxDatagram& tx) override {
+struct ForceFan final {
+  void pack(TxDatagram& tx) const {
     if (value)
       tx.header().fpga_flag.set(FPGAControlFlags::ForceFan);
     else
       tx.header().fpga_flag.remove(FPGAControlFlags::ForceFan);
   }
-
-  void init() override {}
-  [[nodiscard]] bool is_finished() const override { return true; }
 
   bool value{false};
 };

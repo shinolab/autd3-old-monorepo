@@ -3,7 +3,7 @@
 // Created Date: 01/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 11/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -45,6 +45,10 @@ TEST(DriverCommonCPUTest, TxDatagram) {
 }
 
 TEST(DriverCommonCPUTest, RxDatagram) {
+  ASSERT_EQ(sizeof(autd3::driver::RxMessage), 2);
+  ASSERT_EQ(offsetof(autd3::driver::RxMessage, ack), 0);
+  ASSERT_EQ(offsetof(autd3::driver::RxMessage, msg_id), 1);
+
   autd3::driver::RxDatagram rx(10);
 
   ASSERT_FALSE(rx.is_msg_processed(1));

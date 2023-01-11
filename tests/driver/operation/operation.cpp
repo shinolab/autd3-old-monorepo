@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 11/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -178,21 +178,22 @@ TEST(Driver_Driver, normal_legacy_gain) {
   autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
                                 NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
-  autd3::driver::Gain<autd3::driver::Legacy> op;
+  autd3::driver::GainProps props;
+  autd3::driver::Gain<autd3::driver::Legacy> op(props);
 
   std::random_device seed_gen;
   std::mt19937 engine(seed_gen());
   std::uniform_real_distribution<autd3::driver::autd3_float_t> dist(0, 1);
-  op.drives.reserve(NUM_TRANS_IN_UNIT * 10);
-  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) op.drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine)});
+  props.drives.reserve(NUM_TRANS_IN_UNIT * 10);
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) props.drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine)});
 
   op.pack(tx);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WriteBody));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::LegacyMode));
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::STMMode));
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) {
-    ASSERT_EQ(tx.bodies_raw_ptr()[i] & 0xFF, autd3::driver::LegacyDrive::to_phase(op.drives[i]));
-    ASSERT_EQ(tx.bodies_raw_ptr()[i] >> 8, autd3::driver::LegacyDrive::to_duty(op.drives[i]));
+    ASSERT_EQ(tx.bodies_raw_ptr()[i] & 0xFF, autd3::driver::LegacyDrive::to_phase(props.drives[i]));
+    ASSERT_EQ(tx.bodies_raw_ptr()[i] >> 8, autd3::driver::LegacyDrive::to_duty(props.drives[i]));
   }
   ASSERT_EQ(tx.num_bodies, 10);
 
@@ -207,14 +208,15 @@ TEST(Driver_Driver, normal_gain) {
   autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
                                 NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
-  autd3::driver::Gain<autd3::driver::Normal> op;
+  autd3::driver::GainProps props;
+  autd3::driver::Gain<autd3::driver::Normal> op(props);
   op.init();
 
   std::random_device seed_gen;
   std::mt19937 engine(seed_gen());
   std::uniform_real_distribution<autd3::driver::autd3_float_t> dist(0, 1);
-  op.drives.reserve(NUM_TRANS_IN_UNIT * 10);
-  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) op.drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine)});
+  props.drives.reserve(NUM_TRANS_IN_UNIT * 10);
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) props.drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine)});
 
   op.cycles.resize(NUM_TRANS_IN_UNIT * 10, 4096);
   op.pack(tx);
@@ -223,13 +225,13 @@ TEST(Driver_Driver, normal_gain) {
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::STMMode));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::IsDuty));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WriteBody));
-  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::Phase::to_phase(op.drives[i], 4096));
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::Phase::to_phase(props.drives[i], 4096));
   ASSERT_EQ(tx.num_bodies, 10);
 
   op.pack(tx);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::IsDuty));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WriteBody));
-  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::Duty::to_duty(op.drives[i], 4096));
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::Duty::to_duty(props.drives[i], 4096));
   ASSERT_EQ(tx.num_bodies, 10);
 
   op.pack(tx);
@@ -241,13 +243,14 @@ TEST(Driver_Driver, normal_phase_gain) {
   autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
                                 NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
-  autd3::driver::Gain<autd3::driver::NormalPhase> op;
+  autd3::driver::GainProps props;
+  autd3::driver::Gain<autd3::driver::NormalPhase> op(props);
 
   std::random_device seed_gen;
   std::mt19937 engine(seed_gen());
   std::uniform_real_distribution<autd3::driver::autd3_float_t> dist(0, 1);
-  op.drives.reserve(NUM_TRANS_IN_UNIT * 10);
-  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) op.drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine)});
+  props.drives.reserve(NUM_TRANS_IN_UNIT * 10);
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) props.drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine)});
 
   op.cycles.resize(NUM_TRANS_IN_UNIT * 10, 4096);
 
@@ -255,7 +258,7 @@ TEST(Driver_Driver, normal_phase_gain) {
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::IsDuty));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WriteBody));
 
-  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::Phase::to_phase(op.drives[i], 4096));
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::Phase::to_phase(props.drives[i], 4096));
 
   ASSERT_EQ(tx.num_bodies, 10);
 
@@ -301,13 +304,11 @@ TEST(Driver_Driver, focus_stm) {
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STMEnd));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_initial().data()[0], 60);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_initial().data()[1], 3224);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_initial().data()[2], 0);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_initial().data()[3], sp & 0xFFFF);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_initial().data()[4], sp >> 16);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_initial().data()[5], 1);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_initial().data()[6], 1);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_initial().size, 60);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_initial().freq_div, 3224);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_initial().sound_speed, sp);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_initial().stm_start_idx, 1);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_initial().stm_finish_idx, 1);
   ASSERT_EQ(tx.num_bodies, 10);
 
   op.start_idx = std::nullopt;
@@ -320,7 +321,7 @@ TEST(Driver_Driver, focus_stm) {
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STMEnd));
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_subsequent().data()[0], 62);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_subsequent().size, 62);
   ASSERT_EQ(tx.num_bodies, 10);
 
   op.start_idx = 0;
@@ -333,7 +334,7 @@ TEST(Driver_Driver, focus_stm) {
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STMEnd));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_subsequent().data()[0], 28);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).focus_stm_subsequent().size, 28);
   ASSERT_EQ(tx.num_bodies, 10);
 
   op.pack(tx);
@@ -376,12 +377,13 @@ TEST(Driver_Driver, gain_stm_legacy) {
     drives.emplace_back(d);
   }
 
-  autd3::driver::GainSTM<autd3::driver::Legacy> op;
+  autd3::driver::GainSTMProps props;
+  autd3::driver::GainSTM<autd3::driver::Legacy> op(props);
   op.init();
-  op.drives = drives;
-  op.freq_div = 3224;
-  op.start_idx = 1;
-  op.finish_idx = 1;
+  props.drives = drives;
+  props.freq_div = 3224;
+  props.start_idx = 1;
+  props.finish_idx = 1;
   op.pack(tx);
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::LegacyMode));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STMMode));
@@ -391,15 +393,15 @@ TEST(Driver_Driver, gain_stm_legacy) {
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STMEnd));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().data()[0], 3224);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().data()[1], 0);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().data()[3], 2);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().data()[4], 1);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().data()[5], 1);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().freq_div, 3224);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().size, 0);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().mode, autd3::driver::GainSTMMode::PhaseDutyFull);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().stm_start_idx, 1);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().stm_finish_idx, 1);
   ASSERT_EQ(tx.num_bodies, 10);
 
-  op.start_idx = std::nullopt;
-  op.finish_idx = std::nullopt;
+  props.start_idx = std::nullopt;
+  props.finish_idx = std::nullopt;
   op.pack(tx);
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::LegacyMode));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STMMode));
@@ -410,13 +412,13 @@ TEST(Driver_Driver, gain_stm_legacy) {
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) {
-    ASSERT_EQ(tx.bodies_raw_ptr()[i] & 0xFF, autd3::driver::LegacyDrive::to_phase(op.drives[0][i]));
-    ASSERT_EQ(tx.bodies_raw_ptr()[i] >> 8, autd3::driver::LegacyDrive::to_duty(op.drives[0][i]));
+    ASSERT_EQ(tx.bodies_raw_ptr()[i] & 0xFF, autd3::driver::LegacyDrive::to_phase(props.drives[0][i]));
+    ASSERT_EQ(tx.bodies_raw_ptr()[i] >> 8, autd3::driver::LegacyDrive::to_duty(props.drives[0][i]));
   }
   ASSERT_EQ(tx.num_bodies, 10);
 
-  op.start_idx = 0;
-  op.finish_idx = 0;
+  props.start_idx = 0;
+  props.finish_idx = 0;
   op.pack(tx);
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::LegacyMode));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STMMode));
@@ -427,8 +429,8 @@ TEST(Driver_Driver, gain_stm_legacy) {
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) {
-    ASSERT_EQ(tx.bodies_raw_ptr()[i] & 0xFF, autd3::driver::LegacyDrive::to_phase(op.drives[1][i]));
-    ASSERT_EQ(tx.bodies_raw_ptr()[i] >> 8, autd3::driver::LegacyDrive::to_duty(op.drives[1][i]));
+    ASSERT_EQ(tx.bodies_raw_ptr()[i] & 0xFF, autd3::driver::LegacyDrive::to_phase(props.drives[1][i]));
+    ASSERT_EQ(tx.bodies_raw_ptr()[i] >> 8, autd3::driver::LegacyDrive::to_duty(props.drives[1][i]));
   }
   ASSERT_EQ(tx.num_bodies, 10);
 
@@ -444,15 +446,15 @@ TEST(Driver_Driver, gain_stm_legacy) {
   ASSERT_EQ(tx.num_bodies, 0);
 
   op.init();
-  op.drives = drives;
-  op.start_idx = static_cast<uint16_t>(2);
-  op.finish_idx = 0;
+  props.drives = drives;
+  props.start_idx = static_cast<uint16_t>(2);
+  props.finish_idx = 0;
   ASSERT_THROW(op.pack(tx), std::runtime_error);
 
   op.init();
-  op.drives = drives;
-  op.start_idx = 0;
-  op.finish_idx = static_cast<uint16_t>(2);
+  props.drives = drives;
+  props.start_idx = 0;
+  props.finish_idx = static_cast<uint16_t>(2);
   ASSERT_THROW(op.pack(tx), std::runtime_error);
 }
 
@@ -482,13 +484,14 @@ TEST(Driver_Driver, gain_stm_normal) {
     }
   }
 
-  autd3::driver::GainSTM<autd3::driver::Normal> op;
+  autd3::driver::GainSTMProps props;
+  autd3::driver::GainSTM<autd3::driver::Normal> op(props);
   op.init();
-  op.drives = drives;
+  props.drives = drives;
   op.cycles = cycles;
-  op.freq_div = 3224;
-  op.start_idx = 1;
-  op.finish_idx = 1;
+  props.freq_div = 3224;
+  props.start_idx = 1;
+  props.finish_idx = 1;
   op.pack(tx);
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::LegacyMode));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STMMode));
@@ -498,15 +501,15 @@ TEST(Driver_Driver, gain_stm_normal) {
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STMEnd));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().data()[0], 3224);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().data()[1], 0);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().data()[3], 2);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().data()[4], 1);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().data()[5], 1);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().freq_div, 3224);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().size, 0);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().mode, autd3::driver::GainSTMMode::PhaseDutyFull);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().stm_finish_idx, 1);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().stm_start_idx, 1);
   ASSERT_EQ(tx.num_bodies, 10);
 
-  op.start_idx = std::nullopt;
-  op.finish_idx = std::nullopt;
+  props.start_idx = std::nullopt;
+  props.finish_idx = std::nullopt;
   op.pack(tx);
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::LegacyMode));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STMMode));
@@ -517,11 +520,12 @@ TEST(Driver_Driver, gain_stm_normal) {
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STMEnd));
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
-  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::Phase::to_phase(op.drives[0][i], cycles[i]));
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
+    ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::Phase::to_phase(props.drives[0][i], cycles[i]));
   ASSERT_EQ(tx.num_bodies, 10);
 
-  op.start_idx = std::nullopt;
-  op.finish_idx = std::nullopt;
+  props.start_idx = std::nullopt;
+  props.finish_idx = std::nullopt;
   op.pack(tx);
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::LegacyMode));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STMMode));
@@ -532,11 +536,11 @@ TEST(Driver_Driver, gain_stm_normal) {
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STMEnd));
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
-  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::Duty::to_duty(op.drives[0][i], cycles[i]));
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::Duty::to_duty(props.drives[0][i], cycles[i]));
   ASSERT_EQ(tx.num_bodies, 10);
 
-  op.start_idx = 0;
-  op.finish_idx = 0;
+  props.start_idx = 0;
+  props.finish_idx = 0;
   op.pack(tx);
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::LegacyMode));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STMMode));
@@ -547,7 +551,8 @@ TEST(Driver_Driver, gain_stm_normal) {
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STMEnd));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
-  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::Phase::to_phase(op.drives[1][i], cycles[i]));
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
+    ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::Phase::to_phase(props.drives[1][i], cycles[i]));
   ASSERT_EQ(tx.num_bodies, 10);
 
   op.pack(tx);
@@ -560,7 +565,7 @@ TEST(Driver_Driver, gain_stm_normal) {
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STMEnd));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
-  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::Duty::to_duty(op.drives[1][i], cycles[i]));
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::Duty::to_duty(props.drives[1][i], cycles[i]));
   ASSERT_EQ(tx.num_bodies, 10);
 
   op.pack(tx);
@@ -575,15 +580,15 @@ TEST(Driver_Driver, gain_stm_normal) {
   ASSERT_EQ(tx.num_bodies, 0);
 
   op.init();
-  op.drives = drives;
-  op.start_idx = static_cast<uint16_t>(2);
-  op.finish_idx = 0;
+  props.drives = drives;
+  props.start_idx = static_cast<uint16_t>(2);
+  props.finish_idx = 0;
   ASSERT_THROW(op.pack(tx), std::runtime_error);
 
   op.init();
-  op.drives = drives;
-  op.start_idx = 0;
-  op.finish_idx = static_cast<uint16_t>(2);
+  props.drives = drives;
+  props.start_idx = 0;
+  props.finish_idx = static_cast<uint16_t>(2);
   ASSERT_THROW(op.pack(tx), std::runtime_error);
 }
 
@@ -613,13 +618,14 @@ TEST(Driver_Driver, gain_stm_normal_phase) {
     }
   }
 
-  autd3::driver::GainSTM<autd3::driver::NormalPhase> op;
+  autd3::driver::GainSTMProps props;
+  autd3::driver::GainSTM<autd3::driver::NormalPhase> op(props);
   op.init();
-  op.drives = drives;
+  props.drives = drives;
   op.cycles = cycles;
-  op.freq_div = 3224;
-  op.start_idx = 1;
-  op.finish_idx = 1;
+  props.freq_div = 3224;
+  props.start_idx = 1;
+  props.finish_idx = 1;
   op.pack(tx);
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::LegacyMode));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STMMode));
@@ -629,15 +635,15 @@ TEST(Driver_Driver, gain_stm_normal_phase) {
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STMEnd));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().data()[0], 3224);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().data()[1], 0);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().data()[3], 2);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().data()[4], 1);
-  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().data()[5], 1);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().freq_div, 3224);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().size, 0);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().mode, autd3::driver::GainSTMMode::PhaseFull);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().stm_start_idx, 1);
+  for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().stm_finish_idx, 1);
   ASSERT_EQ(tx.num_bodies, 10);
 
-  op.start_idx = std::nullopt;
-  op.finish_idx = std::nullopt;
+  props.start_idx = std::nullopt;
+  props.finish_idx = std::nullopt;
   op.pack(tx);
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::LegacyMode));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STMMode));
@@ -648,11 +654,12 @@ TEST(Driver_Driver, gain_stm_normal_phase) {
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::STMEnd));
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
-  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::Phase::to_phase(op.drives[0][i], cycles[i]));
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
+    ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::Phase::to_phase(props.drives[0][i], cycles[i]));
   ASSERT_EQ(tx.num_bodies, 10);
 
-  op.start_idx = 0;
-  op.finish_idx = 0;
+  props.start_idx = 0;
+  props.finish_idx = 0;
   op.pack(tx);
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::LegacyMode));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::STMMode));
@@ -663,7 +670,8 @@ TEST(Driver_Driver, gain_stm_normal_phase) {
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::STMEnd));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
-  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::Phase::to_phase(op.drives[1][i], cycles[i]));
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
+    ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::Phase::to_phase(props.drives[1][i], cycles[i]));
   ASSERT_EQ(tx.num_bodies, 10);
 
   op.pack(tx);
@@ -678,15 +686,15 @@ TEST(Driver_Driver, gain_stm_normal_phase) {
   ASSERT_EQ(tx.num_bodies, 0);
 
   op.init();
-  op.drives = drives;
-  op.start_idx = static_cast<uint16_t>(2);
-  op.finish_idx = 0;
+  props.drives = drives;
+  props.start_idx = static_cast<uint16_t>(2);
+  props.finish_idx = 0;
   ASSERT_THROW(op.pack(tx), std::runtime_error);
 
   op.init();
-  op.drives = drives;
-  op.start_idx = 0;
-  op.finish_idx = static_cast<uint16_t>(2);
+  props.drives = drives;
+  props.start_idx = 0;
+  props.finish_idx = static_cast<uint16_t>(2);
   ASSERT_THROW(op.pack(tx), std::runtime_error);
 }
 
@@ -696,7 +704,6 @@ TEST(Driver_Driver, force_fan) {
 
   autd3::driver::ForceFan op;
 
-  op.init();
   op.value = true;
   op.pack(tx);
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::ForceFan));
@@ -712,7 +719,6 @@ TEST(Driver_Driver, reads_fpga_info) {
 
   autd3::driver::ReadsFPGAInfo op;
 
-  op.init();
   op.value = true;
   op.pack(tx);
   ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::ReadsFPGAInfo));
@@ -726,10 +732,7 @@ TEST(Driver_Driver, cpu_version) {
   autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
                                 NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
-  autd3::driver::CPUVersion op;
-
-  op.init();
-  op.pack(tx);
+  autd3::driver::CPUVersion::pack(tx);
   ASSERT_EQ(tx.header().msg_id, autd3::driver::MSG_RD_CPU_VERSION);
   ASSERT_EQ(static_cast<uint8_t>(tx.header().cpu_flag.value()), autd3::driver::MSG_RD_CPU_VERSION);
 }
@@ -738,10 +741,7 @@ TEST(Driver_Driver, fpga_version) {
   autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
                                 NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
-  autd3::driver::FPGAVersion op;
-
-  op.init();
-  op.pack(tx);
+  autd3::driver::FPGAVersion::pack(tx);
   ASSERT_EQ(tx.header().msg_id, autd3::driver::MSG_RD_FPGA_VERSION);
   ASSERT_EQ(static_cast<uint8_t>(tx.header().cpu_flag.value()), autd3::driver::MSG_RD_FPGA_VERSION);
 }
@@ -750,10 +750,7 @@ TEST(Driver_Driver, fpga_functions) {
   autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
                                 NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
-  autd3::driver::FPGAFunctions op;
-
-  op.init();
-  op.pack(tx);
+  autd3::driver::FPGAFunctions::pack(tx);
   ASSERT_EQ(tx.header().msg_id, autd3::driver::MSG_RD_FPGA_FUNCTION);
   ASSERT_EQ(static_cast<uint8_t>(tx.header().cpu_flag.value()), autd3::driver::MSG_RD_FPGA_FUNCTION);
 }

@@ -3,7 +3,7 @@
 // Created Date: 06/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 11/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,17 +14,17 @@
 #include <cassert>
 #include <vector>
 
-#include "autd3/driver/operation/operation.hpp"
+#include "autd3/driver/cpu/datagram.hpp"
 
 namespace autd3::driver {
 
-struct ModDelay final : Operation {
-  void init() override {
+struct ModDelay final {
+  void init() {
     _sent = false;
     delays.clear();
   }
 
-  void pack(TxDatagram& tx) override {
+  void pack(TxDatagram& tx) {
     if (_sent) return;
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
@@ -36,7 +36,7 @@ struct ModDelay final : Operation {
     _sent = true;
   }
 
-  [[nodiscard]] bool is_finished() const override { return _sent; }
+  [[nodiscard]] bool is_finished() const { return _sent; }
 
   std::vector<uint16_t> delays{};
 

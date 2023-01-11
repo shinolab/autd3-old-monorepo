@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/01/2023
+// Last Modified: 11/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,10 +25,14 @@ constexpr size_t MOD_HEADER_SUBSEQUENT_DATA_SIZE = 124;
  * \brief Initial Header data for Modulation
  * \details The sampling frequency division data is stored in the first 32 bits, followed by the modulation data.
  */
+
+#pragma pack(push)
+#pragma pack(1)
 struct ModHeaderInitial {
   uint32_t freq_div;
   uint8_t data[MOD_HEADER_INITIAL_DATA_SIZE];
 };
+#pragma pack(pop)
 
 /**
  * \brief Subsequent Header data for Modulation
@@ -42,11 +46,14 @@ struct ModHeaderSubsequent {
  * \brief Header data for Silencer
  * \details The cycle is stored in the first 16 bits, the step data in the next 16 bits, and the other is unused.
  */
+#pragma pack(push)
+#pragma pack(1)
 struct SilencerHeader {
   uint16_t cycle;
   uint16_t step;
   uint8_t unused[120];
 };
+#pragma pack(pop)
 
 /**
  * \brief Message ID for clear operation
@@ -89,6 +96,8 @@ constexpr uint8_t MSG_SIMULATOR_INIT = 0xFF;
 /**
  * \brief Header data for all devices
  */
+#pragma pack(push)
+#pragma pack(1)
 struct GlobalHeader {
   /**
    * \brief Message ID
@@ -119,5 +128,6 @@ struct GlobalHeader {
   [[nodiscard]] const SilencerHeader& silencer() const noexcept { return *reinterpret_cast<SilencerHeader const*>(data); }
   SilencerHeader& silencer() noexcept { return *reinterpret_cast<SilencerHeader*>(data); }
 };
+#pragma pack(pop)
 
 }  // namespace autd3::driver
