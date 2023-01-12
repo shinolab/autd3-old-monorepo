@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/01/2023
+// Last Modified: 12/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -101,6 +101,8 @@ class CPU {
 
   [[nodiscard]] const FPGA& fpga() const { return _fpga; }
 
+  [[nodiscard]] bool synchronized() const { return _synchronized; }
+
   void send(const driver::GlobalHeader* header, const driver::Body* body) { ecat_recv(header, body); }
   void send(const driver::TxDatagram& tx) { ecat_recv(&tx.header(), tx.num_bodies > _id ? &tx.body(_id) : nullptr); }
 
@@ -113,6 +115,8 @@ class CPU {
   void configure_local_trans_pos(const std::vector<driver::Vector3>& local_trans_pos) { _fpga.configure_local_trans_pos(local_trans_pos); }
 
  private:
+  bool _synchronized{false};
+
   static uint16_t get_addr(const uint8_t select, const uint16_t addr) {
     const auto h = static_cast<uint16_t>((select & 0x0003) << 14);
     const uint16_t l = addr & 0x3FFF;
@@ -138,6 +142,7 @@ class CPU {
     bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CYCLE_BASE, reinterpret_cast<const uint16_t*>(body), _num_transducers);
     std::copy_n(reinterpret_cast<const uint16_t*>(body), _num_transducers, _cycles.begin());
     // Do nothing to sync
+    _synchronized = true;
   }
 
   void write_mod(const driver::GlobalHeader* header) {
