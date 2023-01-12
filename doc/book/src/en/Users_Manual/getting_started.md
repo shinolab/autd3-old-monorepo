@@ -148,7 +148,8 @@ In this example, neither rotation nor translation is assumed.
 Next, create a `Link` to connect to the device.
 
 ```cpp
-  if (auto link = autd3::link::SOEM().high_precision(true).build(); !autd.open(std::move(link))) return -1;
+  auto link = autd3::link::SOEM().high_precision(true).build(); 
+  autd.open(std::move(link));
 ```
 
 Next, `ack_check_timeout` is set to $\SI{20}{ms}$. 

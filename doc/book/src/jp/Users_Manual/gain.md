@@ -158,7 +158,7 @@ cmake .. -DBUILD_HOLO_GAIN=ON -DBUILD_BLAS_BACKEND=ON -DBLAS_LIB_DIR=D:/lib/open
   const auto g0 = ...;
   const auto g1 = ...;
 
-  autd3::gain::Grouped g(autd.geometry());
+  autd3::gain::Grouped g;
   g.add(0, g0);
   g.add(1, g1);
 ```

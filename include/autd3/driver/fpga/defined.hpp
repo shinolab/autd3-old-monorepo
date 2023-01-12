@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 11/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -52,6 +52,8 @@ struct Drive {
 /**
  * @brief LegacyDrive stores the duty ratio/phase data actually sent to the device in Legacy mode.
  */
+#pragma pack(push)
+#pragma pack(1)
 struct LegacyDrive {
   /**
    * @brief phase
@@ -81,10 +83,13 @@ struct LegacyDrive {
     return *this;
   }
 };
+#pragma pack(pop)
 
 /**
  * @brief Phase stores the phase data actually sent to the device in Normal/NormalPhase mode.
  */
+#pragma pack(push)
+#pragma pack(1)
 struct Phase {
   uint16_t phase;
 
@@ -102,10 +107,13 @@ struct Phase {
   Phase& operator=(Phase&& obj) = default;
   ~Phase() = default;
 };
+#pragma pack(pop)
 
 /**
  * @brief Duty stores the duty ratio data actually sent to the device in Normal mode.
  */
+#pragma pack(push)
+#pragma pack(1)
 struct Duty {
   uint16_t duty;
 
@@ -122,11 +130,14 @@ struct Duty {
   Duty& operator=(Duty&& obj) = default;
   ~Duty() = default;
 };
+#pragma pack(pop)
 
 /**
  * @brief FPGAInfo is the state of the FPGA
  * @details Currently, it is only possible to check if the temperature of the device is above a certain level.
  */
+#pragma pack(push)
+#pragma pack(1)
 struct FPGAInfo {
   uint8_t info;
 
@@ -137,6 +148,7 @@ struct FPGAInfo {
 
   [[nodiscard]] std::string to_string() const { return "Thermal assert = " + std::to_string(is_thermal_assert()); }
 };
+#pragma pack(pop)
 
 inline std::ostream& operator<<(std::ostream& os, const FPGAInfo& obj) {
   os << obj.to_string();

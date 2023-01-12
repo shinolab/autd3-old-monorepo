@@ -228,7 +228,7 @@ This does not solve the problem thoroughly, but it may improve it somewhat.
 
 ```cpp
   auto link = autd3::link::SOEM()
-                .sync_mode(autd3::link::SYNC_MODE::FREE_RUN)
+                .sync_mode(autd3::link::SyncMode::FreeRun)
                 .build();
 ```
 
