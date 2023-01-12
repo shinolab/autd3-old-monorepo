@@ -51,7 +51,7 @@ type Controller* = object
 
 func initController*(): Controller =
     result.p = pointer(nil)
-    let _ = AUTDCreateController(result.p.addr)
+    AUTDCreateController(result.p.addr)
 
 func toLegacy*(cnt: Controller) =
     AUTDSetMode(cnt.p, 0)
@@ -235,7 +235,7 @@ func initGrouped*(): Grouped =
     AUTDGainGrouped(result.p.addr)
     result.gains = @[]
 
-func add*(self: Grouped, devId: int32, gain: Gain) =
+func add*(self: var Grouped, devId: int32, gain: Gain) =
     AUTDGainGroupedAdd(self.p, devId, gain.p)
     self.gains.add(gain)
 
@@ -355,7 +355,7 @@ func initGainSTM*(): GainSTM =
     AUTDGainSTM(result.p.addr)
     result.gains = @[]
 
-func add*(stm: GainSTM, gain: Gain) =
+func add*(stm: var GainSTM, gain: Gain) =
     AUTDGainSTMAdd(stm.p, gain.p)
     stm.gains.add(gain)
 
