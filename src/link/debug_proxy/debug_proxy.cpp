@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/01/2023
+// Last Modified: 12/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -74,6 +74,8 @@ class DebugProxyImpl final : public core::Link {
       default:
         break;
     }
+
+    if (std::any_of(_cpus.begin(), _cpus.end(), [](const auto& cpu) { return !cpu.synchronized(); })) spdlog::warn("\tDevices are not synchronized!");
 
     spdlog::info("\tCPU Flag: {}", tx.header().cpu_flag.to_string());
     spdlog::info("\tFPGA Flag: {}", tx.header().fpga_flag.to_string());
