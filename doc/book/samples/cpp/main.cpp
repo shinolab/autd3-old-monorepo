@@ -8,7 +8,8 @@ int main() try {
 
   autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
 
-  if (auto link = autd3::link::SOEM().high_precision(true).build(); !autd.open(std::move(link))) return -1;
+  auto link = autd3::link::SOEM().high_precision(true).build();
+  autd.open(std::move(link));
 
   autd.set_ack_check_timeout(std::chrono::milliseconds(20));
 

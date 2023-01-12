@@ -3,7 +3,7 @@
 // Created Date: 01/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 11/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,6 +22,8 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include <string>
 #endif
 
 #if WIN32
@@ -90,7 +92,7 @@ class TcpInterface final : public Interface {
 #else
     if (_dst_socket < 0) return;
     if (errno == 53) return;
-    if (errno != 0) throw std::runtime_error("Failed to connect client: " + strerror(errno));
+    if (errno != 0) throw std::runtime_error("Failed to connect client: " + std::string(strerror(errno)));
 #endif
     spdlog::info("Connected to client");
 

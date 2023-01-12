@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 11/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -204,13 +204,12 @@ class CPU {
     if (header->cpu_flag.contains(driver::CPUControlFlags::STMBegin)) {
       _stm_write = 0;
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET, 0);
-      size = body->focus_stm_initial().data()[0];
-      const auto freq_div =
-          static_cast<uint32_t>(body->focus_stm_initial().data()[2]) << 16 | static_cast<uint32_t>(body->focus_stm_initial().data()[1]);
-      const auto sound_speed =
-          static_cast<uint32_t>(body->focus_stm_initial().data()[4]) << 16 | static_cast<uint32_t>(body->focus_stm_initial().data()[3]);
-      const auto start_idx = body->focus_stm_initial().data()[5];
-      const auto finish_idx = body->focus_stm_initial().data()[6];
+      const auto* ptr = reinterpret_cast<const uint16_t*>(&body->focus_stm_initial());
+      size = ptr[0];
+      const auto freq_div = static_cast<uint32_t>(ptr[2]) << 16 | static_cast<uint32_t>(ptr[1]);
+      const auto sound_speed = static_cast<uint32_t>(ptr[4]) << 16 | static_cast<uint32_t>(ptr[3]);
+      const auto start_idx = ptr[5];
+      const auto finish_idx = ptr[6];
 
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FREQ_DIV_0, static_cast<uint16_t>(freq_div & 0xFFFF));
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FREQ_DIV_1, static_cast<uint16_t>(freq_div >> 16 & 0xFFFF));
@@ -218,10 +217,11 @@ class CPU {
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_SOUND_SPEED_1, static_cast<uint16_t>(sound_speed >> 16 & 0xFFFF));
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_START_IDX, start_idx);
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FINISH_IDX, finish_idx);
-      src = body->focus_stm_initial().data() + 7;
+      src = ptr + 7;
     } else {
-      size = body->focus_stm_subsequent().data()[0];
-      src = body->focus_stm_subsequent().data() + 1;
+      const auto* ptr = reinterpret_cast<const uint16_t*>(&body->focus_stm_subsequent());
+      size = ptr[0];
+      src = ptr + 1;
     }
 
     if (const auto segment_capacity = (_stm_write & ~cpu::FOCUS_STM_BUF_SEGMENT_SIZE_MASK) + cpu::FOCUS_STM_BUF_SEGMENT_SIZE - _stm_write;
@@ -264,17 +264,17 @@ class CPU {
   void write_gain_stm_legacy(const driver::GlobalHeader* header, const driver::Body* body) {
     if (body == nullptr) return;
     if (header->cpu_flag.contains(driver::CPUControlFlags::STMBegin)) {
+      const auto* ptr = reinterpret_cast<const uint16_t*>(&body->gain_stm_initial());
       _stm_write = 0;
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET, 0);
-      const auto freq_div =
-          static_cast<uint32_t>(body->gain_stm_initial().data()[1]) << 16 | static_cast<uint32_t>(body->gain_stm_initial().data()[0]);
+      const auto freq_div = static_cast<uint32_t>(ptr[1]) << 16 | static_cast<uint32_t>(ptr[0]);
       bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FREQ_DIV_0, reinterpret_cast<const uint16_t*>(&freq_div), 2);
-      _gain_stm_mode = body->gain_stm_initial().data()[2];
-      _stm_cycle = body->gain_stm_initial().data()[3];
+      _gain_stm_mode = ptr[2];
+      _stm_cycle = ptr[3];
 
-      const auto start_idx = body->gain_stm_initial().data()[4];
+      const auto start_idx = ptr[4];
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_START_IDX, start_idx);
-      const auto finish_idx = body->gain_stm_initial().data()[5];
+      const auto finish_idx = ptr[5];
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FINISH_IDX, finish_idx);
 
       return;
@@ -344,17 +344,17 @@ class CPU {
   void write_gain_stm(const driver::GlobalHeader* header, const driver::Body* body) {
     if (body == nullptr) return;
     if (header->cpu_flag.contains(driver::CPUControlFlags::STMBegin)) {
+      const auto* ptr = reinterpret_cast<const uint16_t*>(&body->gain_stm_initial());
       _stm_write = 0;
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_ADDR_OFFSET, 0);
-      const auto freq_div =
-          static_cast<uint32_t>(body->gain_stm_initial().data()[1]) << 16 | static_cast<uint32_t>(body->gain_stm_initial().data()[0]);
+      const auto freq_div = static_cast<uint32_t>(ptr[1]) << 16 | static_cast<uint32_t>(ptr[0]);
       bram_cpy(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FREQ_DIV_0, reinterpret_cast<const uint16_t*>(&freq_div), 2);
-      _gain_stm_mode = body->gain_stm_initial().data()[2];
-      _stm_cycle = body->gain_stm_initial().data()[3];
+      _gain_stm_mode = ptr[2];
+      _stm_cycle = ptr[3];
 
-      const auto start_idx = body->gain_stm_initial().data()[4];
+      const auto start_idx = ptr[4];
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_START_IDX, start_idx);
-      const auto finish_idx = body->gain_stm_initial().data()[5];
+      const auto finish_idx = ptr[5];
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_FINISH_IDX, finish_idx);
 
       return;
