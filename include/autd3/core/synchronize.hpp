@@ -3,7 +3,7 @@
 // Created Date: 07/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 12/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,6 +25,8 @@ struct Synchronize final : DatagramBody {
   void init(const Mode mode, const Geometry& geometry) override {
     switch (mode) {
       case Mode::Legacy: {
+        if (const auto cycles = geometry.cycles(); std::any_of(cycles.begin(), cycles.end(), [](const auto& cycle) { return cycle != 4096; }))
+          throw std::runtime_error("Frequency cannot be changed in Legacy mode.");
         auto op = std::make_unique<driver::Sync<driver::Legacy>>();
         op->init();
         _op = std::move(op);
