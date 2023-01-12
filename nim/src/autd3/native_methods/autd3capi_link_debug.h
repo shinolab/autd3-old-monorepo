@@ -12,5 +12,4 @@
 #  endif
 #endif
 
-void AUTDLinkDebug(void** out);
-void AUTDLinkDebugSetLevel(int32 level);
+void AUTDLinkDebug(void** out, int32 level, void* out_func, void* flush_func);

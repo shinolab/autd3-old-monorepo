@@ -1494,15 +1494,9 @@ Debug linkを作成する.
 | Argument name / return | type     | in/out | description                         |
 | ---------------------- | -------- | ------ | ----------------------------------- |
 | out                    | void**   | out    | pointer to pointer to Debug link    |
-| return                 | void     | -      | -                                   |
-
-## AUTDLinkDebugSetLevel (autd3capi-link-debug)
-
-Debugのログ表示レベルを設定する.
-
-| Argument name / return | type     | in/out | description                         |
-| ---------------------- | -------- | ------ | ----------------------------------- |
 | level                  | int32_t  | in     | debug level                         |
+| out_func               | void*    | in     | output callback                     |
+| flush_func             | void*    | in     | flush callback                      |
 | return                 | void     | -      | -                                   |
 
 ## AUTDLinkSimulator (autd3capi-link-simulator)

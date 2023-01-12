@@ -10,6 +10,6 @@ elif defined(macosx):
 else:
   const
     dll* = "bin/libautd3capi-link-debug.so"
-proc AUTDLinkDebug*(`out`: ptr pointer) {.cdecl, importc: "AUTDLinkDebug", dynlib: dll.}
-proc AUTDLinkDebugSetLevel*(level: int32) {.cdecl, importc: "AUTDLinkDebugSetLevel",
-    dynlib: dll.}
+proc AUTDLinkDebug*(`out`: ptr pointer; level: int32; out_func: pointer;
+                   flush_func: pointer) {.cdecl, importc: "AUTDLinkDebug",
+                                        dynlib: dll.}

@@ -1381,16 +1381,11 @@ Create Debug link.
 | Argument name / return | type     | in/out | description                         |
 | ---------------------- | -------- | ------ | ----------------------------------- |
 | out                    | void**   | out    | pointer to pointer to Debug link    |
-| return                 | void     | -      | -                                   |
-
-## AUTDLinkDebugSetLevel (autd3capi-link-debug)
-
-Configure log level.
-
-| Argument name / return | type     | in/out | description                         |
-| ---------------------- | -------- | ------ | ----------------------------------- |
 | level                  | int32_t  | in     | debug level                         |
+| out_func               | void*    | in     | output callback                     |
+| flush_func             | void*    | in     | flush callback                      |
 | return                 | void     | -      | -                                   |
+
 
 ## AUTDLinkSimulator (autd3capi-link-simulator)
 
