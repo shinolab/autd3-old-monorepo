@@ -58,18 +58,16 @@ SDKには単一焦点のみをサポートする`FocusSTM`と任意の`Gain`を�
 `GainSTM`の使用サンプルは`FocusSTM`とほぼ同じである.
 
 ```cpp
-  autd3::GainSTM stm(autd.geometry());
+  autd3::GainSTM stm;
 
   const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
-  constexpr size_t points_num = 200;
-  constexpr auto radius = 30.0;
-  std::vector<size_t> points(points_num);
-  std::iota(points.begin(), points.end(), 0);
-  std::for_each(points.begin(), points.end(), [&](const size_t i) {
+  constexpr size_t points_num = 50;
+  for (size_t i = 0; i < points_num; i++) {
+    constexpr auto radius = 30.0;
     const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(points_num);
     autd3::gain::Focus g(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0.0));
     stm.add(g);
-  });
+  }
 
   const auto actual_freq = stm.set_frequency(1);
   std::cout << "Actual frequency is " << actual_freq << " Hz\n";
@@ -84,7 +82,7 @@ SDKには単一焦点のみをサポートする`FocusSTM`と任意の`Gain`を�
 モードの切り替えは`mode`関数で行う.
 
 ```cpp
-stm.mode() = autd3::Mode::PhaseFull;
+stm.mode() = autd3::GainSTMMode::PhaseFull;
 ```
 
 デフォルトはすべての情報を送る`PhaseDutyFull`モードである.
@@ -114,7 +112,7 @@ stm.mode() = autd3::Mode::PhaseFull;
 これを指定するには, 以下のように`start_idx`を指定する.
 
 ```cpp
-  stm.start_idx = 0;
+  stm.start_idx() = 0;
 ```
 
 これにより, `start_idx`で指定したインデックスの焦点/`Gain`からスタートするようになる.
@@ -122,7 +120,7 @@ stm.mode() = autd3::Mode::PhaseFull;
 また, 同様に, 何番目の焦点/`Gain`で終了するかは`finish_idx`で決定できる.
 
 ```cpp
-  stm.finish_idx = 0;
+  stm.finish_idx() = 0;
 ```
 
 注意点として, `finish_idx`で指定したインデックスの焦点/`Gain`は最後に出力されない.
@@ -133,8 +131,8 @@ stm.mode() = autd3::Mode::PhaseFull;
 これらの設定を無効 (デフォルト) にするには, `std::nullopt`を指定する.
 
 ```cpp
-  stm.start_idx = std::nullopt;
-  stm.finish_idx = std::nullopt;
+  stm.start_idx() = std::nullopt;
+  stm.finish_idx() = std::nullopt;
 ```
 
 # SoftwareSTM
@@ -150,14 +148,11 @@ AUTD3ハードウェア上の制約はないが, その精度はホスト側の�
 
   const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   constexpr size_t points_num = 200;
-  constexpr auto radius = 30.0;
-  std::vector<size_t> points(points_num);
-  std::iota(points.begin(), points.end(), 0);
-  std::for_each(points.begin(), points.end(), [&](const size_t i) {
+  for (size_t i = 0; i < points_num; i++) {
+    constexpr auto radius = 30.0;
     const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(points_num);
-    autd3::gain::Focus g(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0.0));
-    stm.add(g);
-  });
+    stm.add(autd3::gain::Focus(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0.0)));
+  }
 
   const auto actual_freq = stm.set_frequency(1);
   std::cout << "Actual frequency is " << actual_freq << " Hz\n";

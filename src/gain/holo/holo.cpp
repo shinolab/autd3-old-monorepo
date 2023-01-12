@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 11/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -514,8 +514,8 @@ void Greedy::calc(const core::Geometry& geometry) {
 
     const auto power = constraint->convert(1.0, 1.0);
 
-    _op->drives[transducer.id()].amp = power;
-    _op->drives[transducer.id()].phase = std::arg(phases[min_idx]) + driver::pi;
+    _props.drives[transducer.id()].amp = power;
+    _props.drives[transducer.id()].phase = std::arg(phases[min_idx]) + driver::pi;
   }
 }
 

@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 11/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,7 +18,6 @@
 #include "autd3/driver/fpga/defined.hpp"
 
 namespace autd3::driver {
-struct LegacyPhaseFull;
 
 /**
 * \brief Focus data structure for FocusSTM
@@ -27,6 +26,8 @@ control amplitude control. The focus position is represented in 18-bit signed fi
 autd3::driver::FOCUS_STM_FIXED_NUM_UNIT. The duty ratio is cycle >> (duty_shift+1): When duty_shift=0, the duty ratio is cycle/2, which means maximum
 amplitude.
 */
+#pragma pack(push)
+#pragma pack(1)
 struct STMFocus {
   /**
    * \brief Constructor
@@ -46,12 +47,15 @@ struct STMFocus {
  private:
   uint16_t _data[4]{};
 };
+#pragma pack(pop)
 
 /**
- * \brief Initial Body data for FocusSTM
- * \details The number of STMFocus data is stored in the first 16 bits, the frequency division data in the next 32 bits, and the sound speed data in
- the next 32 bits. The STMFocus data is stored after them.
- */
+* \brief Initial Body data for FocusSTM
+* \details The number of STMFocus data is stored in the first 16 bits, the frequency division data in the next 32 bits, and the sound speed data in
+the next 32 bits. The STMFocus data is stored after them.
+*/
+#pragma pack(push)
+#pragma pack(1)
 struct FocusSTMBodyInitial {
   /**
    * \brief This data is cast from the Body data. Never construct directly.
@@ -63,33 +67,24 @@ struct FocusSTMBodyInitial {
   FocusSTMBodyInitial(FocusSTMBodyInitial&& obj) = delete;
   FocusSTMBodyInitial& operator=(FocusSTMBodyInitial&& obj) = delete;
 
-  [[nodiscard]] const uint16_t* data() const noexcept { return _data; }
-
-  void set_size(const uint16_t size) noexcept { _data[0] = size; }
-
-  void set_freq_div(const uint32_t freq_div) noexcept {
-    _data[1] = static_cast<uint16_t>(freq_div & 0xFFFF);
-    _data[2] = static_cast<uint16_t>(freq_div >> 16 & 0xFFFF);
+  void set_point(const STMFocus* const points, const size_t n) noexcept {
+    std::memcpy(reinterpret_cast<uint8_t*>(this) + sizeof(FocusSTMBodyInitial), points, sizeof(STMFocus) * n);
   }
 
-  void set_sound_speed(const uint32_t sound_speed) noexcept {
-    _data[3] = static_cast<uint16_t>(sound_speed & 0xFFFF);
-    _data[4] = static_cast<uint16_t>(sound_speed >> 16 & 0xFFFF);
-  }
-
-  void set_stm_start_idx(const uint16_t stm_start_idx) noexcept { _data[5] = stm_start_idx; }
-  void set_stm_finish_idx(const uint16_t stm_finish_idx) noexcept { _data[6] = stm_finish_idx; }
-
-  void set_point(const STMFocus* const points, const size_t size) noexcept { std::memcpy(&_data[7], points, sizeof(STMFocus) * size); }
-
- private:
-  uint16_t _data[8]{};  // Data size has no meaning.
+  uint16_t size;
+  uint32_t freq_div;
+  uint32_t sound_speed;
+  uint16_t stm_start_idx;
+  uint16_t stm_finish_idx;
 };
+#pragma pack(pop)
 
 /**
  * \brief Subsequent Body data for FocusSTM
  * \details The number of STMFocus data is stored in the first 16 bits, followed by the STMFocus data.
  */
+#pragma pack(push)
+#pragma pack(1)
 struct FocusSTMBodySubsequent {
   /**
    * \brief This data is cast from the Body data. Never construct directly.
@@ -101,15 +96,13 @@ struct FocusSTMBodySubsequent {
   FocusSTMBodySubsequent(FocusSTMBodySubsequent&& obj) = delete;
   FocusSTMBodySubsequent& operator=(FocusSTMBodySubsequent&& obj) = delete;
 
-  [[nodiscard]] const uint16_t* data() const noexcept { return _data; }
+  void set_point(const STMFocus* const points, const size_t n) noexcept {
+    std::memcpy(reinterpret_cast<uint8_t*>(this) + sizeof(FocusSTMBodySubsequent), points, sizeof(STMFocus) * n);
+  }
 
-  void set_size(const uint16_t size) noexcept { _data[0] = size; }
-
-  void set_point(const STMFocus* const points, const size_t size) noexcept { std::memcpy(&_data[1], points, sizeof(STMFocus) * size); }
-
- private:
-  uint16_t _data[2]{};  // Data size has no meaning.
+  uint16_t size;
 };
+#pragma pack(pop)
 
 /**
  * @brief Data transmission mode for GainSTM
@@ -132,6 +125,8 @@ enum class GainSTMMode : uint16_t {
 /**
  * @brief Transmission data when using GainSTMMode::PhaseFull in Legacy mode (for the low 8-bit part)
  */
+#pragma pack(push)
+#pragma pack(1)
 struct LegacyPhaseFull0 {
   uint8_t phase_0;
   uint8_t phase_1;
@@ -150,10 +145,13 @@ struct LegacyPhaseFull0 {
     return *this;
   }
 };
+#pragma pack(pop)
 
 /**
  * @brief Transmission data when using GainSTMMode::PhaseFull in Legacy mode (for the high 8-bit part)
  */
+#pragma pack(push)
+#pragma pack(1)
 struct LegacyPhaseFull1 {
   uint8_t phase_0;
   uint8_t phase_1;
@@ -172,10 +170,13 @@ struct LegacyPhaseFull1 {
     return *this;
   }
 };
+#pragma pack(pop)
 
 /**
  * @brief Transmission data when using GainSTMMode::PhaseHalf in Legacy mode (for the [3:0] bits)
  */
+#pragma pack(push)
+#pragma pack(1)
 struct LegacyPhaseHalf0 {
   uint8_t phase_01;
   uint8_t phase_23;
@@ -195,10 +196,13 @@ struct LegacyPhaseHalf0 {
     return *this;
   }
 };
+#pragma pack(pop)
 
 /**
  * @brief Transmission data when using GainSTMMode::PhaseHalf in Legacy mode (for the [7:4] bits)
  */
+#pragma pack(push)
+#pragma pack(1)
 struct LegacyPhaseHalf1 {
   uint8_t phase_01;
   uint8_t phase_23;
@@ -218,10 +222,13 @@ struct LegacyPhaseHalf1 {
     return *this;
   }
 };
+#pragma pack(pop)
 
 /**
  * @brief Transmission data when using GainSTMMode::PhaseHalf in Legacy mode (for the [11:8] bits)
  */
+#pragma pack(push)
+#pragma pack(1)
 struct LegacyPhaseHalf2 {
   uint8_t phase_01;
   uint8_t phase_23;
@@ -241,10 +248,13 @@ struct LegacyPhaseHalf2 {
     return *this;
   }
 };
+#pragma pack(pop)
 
 /**
  * @brief Transmission data when using GainSTMMode::PhaseHalf in Legacy mode (for the [15:12] bits)
  */
+#pragma pack(push)
+#pragma pack(1)
 struct LegacyPhaseHalf3 {
   uint8_t phase_01;
   uint8_t phase_23;
@@ -264,12 +274,15 @@ struct LegacyPhaseHalf3 {
     return *this;
   }
 };
+#pragma pack(pop)
 
 /**
  * \brief Initial Body data for GainSTM
  * \details The frequency division data in the first 32 bits, and the GainSTMMode data in the next 16 bits, and the total pattern size in the next 16
  * bits. Amplitude and phase data are not stored.
  */
+#pragma pack(push)
+#pragma pack(1)
 struct GainSTMBodyInitial {
   /**
    * \brief This data is cast from the Body data. Never construct directly.
@@ -281,28 +294,21 @@ struct GainSTMBodyInitial {
   GainSTMBodyInitial(GainSTMBodyInitial&& obj) = delete;
   GainSTMBodyInitial& operator=(GainSTMBodyInitial&& obj) = delete;
 
-  [[nodiscard]] const uint16_t* data() const noexcept { return _data; }
-
-  void set_freq_div(const uint32_t freq_div) noexcept {
-    _data[0] = static_cast<uint16_t>(freq_div & 0xFFFF);
-    _data[1] = static_cast<uint16_t>(freq_div >> 16 & 0xFFFF);
-  }
-
-  void set_mode(const GainSTMMode mode) noexcept { _data[2] = static_cast<uint16_t>(mode); }
-
-  void set_cycle(const size_t size) noexcept { _data[3] = static_cast<uint16_t>(size); }
-
-  void set_stm_start_idx(const uint16_t stm_start_idx) noexcept { _data[4] = stm_start_idx; }
-  void set_stm_finish_idx(const uint16_t stm_finish_idx) noexcept { _data[5] = stm_finish_idx; }
-
- private:
-  uint16_t _data[6]{};
+  uint32_t freq_div;
+  GainSTMMode mode;
+  uint16_t cycle;
+  uint16_t size;
+  uint16_t stm_start_idx;
+  uint16_t stm_finish_idx;
 };
+#pragma pack(pop)
 
 /**
  * \brief Subsequent Body data for GainSTM
  * \details Amplitude/phase data is stored.
  */
+#pragma pack(push)
+#pragma pack(1)
 struct GainSTMBodySubsequent {
   /**
    * \brief This data is cast from the Body data. Never construct directly.
@@ -316,6 +322,7 @@ struct GainSTMBodySubsequent {
 
   [[nodiscard]] const uint16_t* data() const noexcept { return reinterpret_cast<const uint16_t*>(this); }
 };
+#pragma pack(pop)
 
 /**
  * \brief Body data for each device
