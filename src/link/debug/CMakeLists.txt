@@ -8,7 +8,6 @@ add_library(link_debug
   debug.cpp
   ${PROJECT_SOURCE_DIR}/include/autd3/link/debug.hpp
 )
-target_link_libraries(link_debug INTERFACE link_debug_proxy)
 target_link_libraries(link_debug PUBLIC autd3_common)
 
 set_target_properties(link_debug

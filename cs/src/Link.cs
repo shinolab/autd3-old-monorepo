@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/01/2023
+ * Last Modified: 13/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -64,15 +64,37 @@ namespace AUTD3Sharp
             }
         }
 
+        public enum DebugLevel : int { Trace = 0, Debug = 1, Info = 2, Warn = 3, Err = 4, Critical = 5, Off = 6 }
+
         public sealed class Debug
         {
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnLogOutputCallback(string str);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void OnLogFlushCallback();
+
+            IntPtr _output = IntPtr.Zero;
+            IntPtr _flush = IntPtr.Zero;
+            DebugLevel _level = DebugLevel.Debug;
+
+            public Debug LogFunc(OnLogOutputCallback output, OnLogFlushCallback flush)
+            {
+                _output = Marshal.GetFunctionPointerForDelegate(output);
+                _flush = Marshal.GetFunctionPointerForDelegate(flush);
+                return this;
+            }
+
+            public Debug Level(DebugLevel level)
+            {
+                _level = level;
+                return this;
+            }
+
             public Link Build()
             {
-                NativeMethods.LinkDebug.AUTDLinkDebug(out var handle);
+                NativeMethods.LinkDebug.AUTDLinkDebug(out var handle, (int)_level, _output, _flush);
                 return new Link(handle);
             }
         }
-
 
         public sealed class SOEM
         {

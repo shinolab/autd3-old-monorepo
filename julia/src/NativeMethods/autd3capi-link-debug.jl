@@ -32,6 +32,5 @@ end
 
 const _dll = joinpath(@__DIR__, get_bin_path(), "bin", get_lib_prefix() * "autd3capi-link-debug" * get_lib_ext())
 
-autd_link_debug(out) = ccall((:AUTDLinkDebug, _dll), Cvoid, (Ref{Ptr{Cvoid}}, ), out);
-autd_link_debug_set_level(level) = ccall((:AUTDLinkDebugSetLevel, _dll), Cvoid, (Int32, ), level);
+autd_link_debug(out, level, out_func, flush_func) = ccall((:AUTDLinkDebug, _dll), Cvoid, (Ref{Ptr{Cvoid}}, Int32, Ptr{Cvoid}, Ptr{Cvoid}, ), out, level, out_func, flush_func);
 end
