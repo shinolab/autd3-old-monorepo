@@ -3,7 +3,7 @@
 // Created Date: 26/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/01/2023
+// Last Modified: 14/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -87,7 +87,7 @@ int main(const int argc, char* argv[]) try {
       freerun ? autd3::link::SyncMode::FreeRun : autd3::link::SyncMode::DC, std::chrono::milliseconds(state_check_interval));
 
   spdlog::info("Connecting SOEM server...");
-  const auto dev = soem_handler.open({}, 1);
+  const auto dev = soem_handler.open({});
   spdlog::info("{} AUTDs found", dev);
 
   std::unique_ptr<autd3::publish::Interface> interf;

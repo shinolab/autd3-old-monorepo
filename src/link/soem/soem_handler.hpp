@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 14/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -102,7 +102,7 @@ class SOEMHandler final {
     throw std::runtime_error("No AUTD3 devices found");
   }
 
-  size_t open(const std::vector<size_t>& device_map, const int remaining) {
+  size_t open(const std::vector<size_t>& device_map) {
     if (is_open()) return 0;
 
     std::queue<driver::TxDatagram>().swap(_send_buf);
@@ -135,24 +135,24 @@ class SOEMHandler final {
     ecx_context.userdata = _user_data.get();
     spdlog::debug("Sync0 interval: {} [ns]", driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle);
     if (_sync_mode == SyncMode::DC) {
+      spdlog::debug("run mode: DC");
       for (int cnt = 1; cnt <= ec_slavecount; cnt++)
         ec_slave[cnt].PO2SOconfigx = [](auto* context, auto slave) -> int {
           const auto cyc_time = static_cast<uint32_t*>(context->userdata)[0];
           ec_dcsync0(slave, true, cyc_time, 0U);
+          spdlog::debug("Sync0 configured on slave[{}]", slave);
           return 0;
         };
-      spdlog::debug("run mode: DC sync");
-      spdlog::debug("Sync0 configured");
     }
+
+    ec_configdc();
 
     _io_map.resize(dev_map);
     ec_config_map(_io_map.get());
 
-    ec_configdc();
-
     ec_statecheck(0, EC_STATE_SAFE_OP, EC_TIMEOUTSTATE);
+    ec_readstate();
     if (ec_slave[0].state != EC_STATE_SAFE_OP) {
-      ec_readstate();
       for (size_t slave = 1; slave <= static_cast<size_t>(ec_slavecount); slave++)
         if (ec_slave[slave].state != EC_STATE_SAFE_OP)
           spdlog::warn("Slave[{}]: {} (State={:#02x} StatusCode={:#04x})", slave, ec_ALstatuscode2string(ec_slave[slave].ALstatuscode),
@@ -164,38 +164,31 @@ class SOEMHandler final {
     spdlog::debug("Calculated workcounter {}", expected_wkc);
 
     ec_slave[0].state = EC_STATE_OPERATIONAL;
-
-    ec_send_processdata();
-    ec_receive_processdata(EC_TIMEOUTRET);
+    ec_writestate(0);
 
     _is_open.store(true);
     _ecat_thread = std::thread([this, cycle_time] {
       ecat_run(this->_high_precision, &this->_is_open, &this->_wkc, cycle_time, this->_send_mtx, this->_send_buf, this->_io_map);
     });
 
-    ec_writestate(0);
-
-    ec_statecheck(0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE);
+    ec_statecheck(0, EC_STATE_OPERATIONAL, 5 * EC_TIMEOUTSTATE);
     if (ec_slave[0].state != EC_STATE_OPERATIONAL) {
       _is_open.store(false);
       if (_ecat_thread.joinable()) _ecat_thread.join();
-      if (remaining == 0) {
-        ec_readstate();
-        for (size_t slave = 1; slave <= static_cast<size_t>(ec_slavecount); slave++)
-          if (ec_slave[slave].state != EC_STATE_SAFE_OP)
-            spdlog::warn("Slave {} State={:#02x} StatusCode={:#04x} : {}", slave, ec_slave[slave].state, ec_slave[slave].ALstatuscode,
-                         ec_ALstatuscode2string(ec_slave[slave].ALstatuscode));
-        throw std::runtime_error("One ore more slaves are not responding.");
-      }
-      spdlog::debug("Failed to reach op mode. retry opening...");
-      return open(device_map, remaining - 1);
+      ec_readstate();
+      for (size_t slave = 1; slave <= static_cast<size_t>(ec_slavecount); slave++)
+        if (ec_slave[slave].state != EC_STATE_SAFE_OP)
+          spdlog::warn("Slave {} State={:#02x} StatusCode={:#04x} : {}", slave, ec_slave[slave].state, ec_slave[slave].ALstatuscode,
+                       ec_ALstatuscode2string(ec_slave[slave].ALstatuscode));
+      throw std::runtime_error("One ore more slaves are not responding.");
     }
 
     if (_sync_mode == SyncMode::FreeRun) {
-      for (int slave = 1; slave <= ec_slavecount; slave++)
+      spdlog::debug("run mode: FreeRun");
+      for (int slave = 1; slave <= ec_slavecount; slave++) {
         ec_dcsync0(static_cast<uint16_t>(slave), true, driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle, 0U);
-      spdlog::debug("run mode: Free Run");
-      spdlog::debug("Sync0 configured");
+        spdlog::debug("Sync0 configured on slave[{}]", slave);
+      }
     }
 
     spdlog::debug("Run EC state check thread, interval: {} [ms]", _state_check_interval.count());
