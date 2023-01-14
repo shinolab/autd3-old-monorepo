@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/01/2023
+// Last Modified: 14/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ int main() try {
 
   autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
 
-  auto link = autd3::link::Debug().level(autd3::link::DebugLevel::Debug).build();
+  auto link = autd3::link::Debug().level(autd3::DebugLevel::Debug).build();
   autd.open(std::move(link));
 
   return run(autd);
