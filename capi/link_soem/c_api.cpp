@@ -3,14 +3,13 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 14/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #include "../../src/spdlog.hpp"
-#include "../base/custom_sink.hpp"
 #include "../base/wrapper_link.hpp"
 #include "./soem_link.h"
 #include "autd3/link/soem.hpp"
@@ -41,26 +40,33 @@ void AUTDFreeAdapterPointer(void* p_adapter) {
   ether_cat_adapters_delete(wrapper);
 }
 
+typedef void (*OutCallback)(const char*);
+typedef void (*FlushCallback)();
+
 void AUTDLinkSOEM(void** out, const char* ifname, const uint16_t sync0_cycle, const uint16_t send_cycle, const bool freerun, void* on_lost,
-                  const bool high_precision, const uint64_t state_check_interval) {
-  autd3::link::SOEM soem = autd3::link::SOEM()
-                               .sync0_cycle(sync0_cycle)
-                               .send_cycle(send_cycle)
-                               .high_precision(high_precision)
-                               .sync_mode(freerun ? autd3::link::SyncMode::FreeRun : autd3::link::SyncMode::DC)
-                               .state_check_interval(std::chrono::milliseconds(state_check_interval));
-  if (ifname != nullptr) soem.ifname(std::string(ifname));
-  if (on_lost != nullptr) soem.on_lost([on_lost](const std::string& msg) { reinterpret_cast<OnLostCallback>(on_lost)(msg.c_str()); });
+                  const bool high_precision, const uint64_t state_check_interval, const int32_t level, const void* out_func, void* flush_func) {
+  std::function<void(std::string)> out_f = nullptr;
+  std::function<void()> flush_f = nullptr;
+  if (out_func != nullptr) out_f = [out](const std::string& msg) { reinterpret_cast<OutCallback>(out)(msg.c_str()); };
+  if (flush_func != nullptr) flush_f = [flush_func] { reinterpret_cast<FlushCallback>(flush_func)(); };
 
-  auto soem_link = soem.build();
-  auto* link = link_create(std::move(soem_link));
+  std::function<void(std::string)> callback = nullptr;
+  if (on_lost != nullptr) callback = [on_lost](const std::string& msg) { reinterpret_cast<OnLostCallback>(on_lost)(msg.c_str()); };
+  std::string ifname_;
+  if (ifname != nullptr) ifname_ = std::string(ifname);
+
+  auto soem = autd3::link::SOEM()
+                  .ifname(ifname_)
+                  .sync0_cycle(sync0_cycle)
+                  .send_cycle(send_cycle)
+                  .high_precision(high_precision)
+                  .sync_mode(freerun ? autd3::link::SyncMode::FreeRun : autd3::link::SyncMode::DC)
+                  .on_lost(std::move(callback))
+                  .state_check_interval(std::chrono::milliseconds(state_check_interval))
+                  .debug_level(static_cast<autd3::driver::DebugLevel>(level))
+                  .debug_log_func(std::move(out_f), std::move(flush_f))
+                  .build();
+
+  auto* link = link_create(std::move(soem));
   *out = link;
-}
-
-void AUTDLinkSOEMSetLogLevel(const int32_t level) { spdlog::set_level(static_cast<spdlog::level::level_enum>(level)); }
-
-void AUTDLinkSOEMSetDefaultLogger(void* out, void* flush) {
-  auto custom_sink = std::make_shared<autd3::capi::CustomSinkMt>(out, flush);
-  const auto logger = std::make_shared<spdlog::logger>("AUTD3 Logger", custom_sink);
-  set_default_logger(logger);
 }

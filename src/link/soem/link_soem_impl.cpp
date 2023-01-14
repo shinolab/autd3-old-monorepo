@@ -28,8 +28,14 @@ bool SOEMLink::open(const core::Geometry& geometry) {
 bool SOEMLink::close() { return _handler->close(); }
 
 core::LinkPtr SOEM::build() {
+  const auto name = "AUTD3 SOEM Log";
+  std::shared_ptr<spdlog::logger> logger =
+      (_out == nullptr || _flush == nullptr)
+          ? get_default_logger(name)
+          : std::make_shared<spdlog::logger>(name, std::make_shared<CustomSink<std::mutex>>(std::move(_out), std::move(_flush)));
+  logger->set_level(static_cast<spdlog::level::level_enum>(_level));
   return std::make_unique<SOEMLink>(_high_precision, std::move(_ifname), _sync0_cycle, _send_cycle, std::move(_callback), _sync_mode,
-                                    _state_check_interval);
+                                    _state_check_interval, logger);
 }
 
 std::vector<EtherCATAdapter> SOEM::enumerate_adapters() { return SOEMHandler::enumerate_adapters(); }

@@ -3,7 +3,7 @@
 // Created Date: 10/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/01/2023
+// Last Modified: 14/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,6 +23,6 @@ EXPORT_AUTD void AUTDLinkDebug(void** out, const int32_t level, const void* out_
   if (out_func != nullptr) out_f = [out](const std::string& msg) { reinterpret_cast<OutCallback>(out)(msg.c_str()); };
   if (flush_func != nullptr) flush_f = [flush_func] { reinterpret_cast<FlushCallback>(flush_func)(); };
   auto* link =
-      link_create(autd3::link::Debug().level(static_cast<autd3::link::DebugLevel>(level)).log_func(std::move(out_f), std::move(flush_f)).build());
+      link_create(autd3::link::Debug().level(static_cast<autd3::driver::DebugLevel>(level)).log_func(std::move(out_f), std::move(flush_f)).build());
   *out = link;
 }
