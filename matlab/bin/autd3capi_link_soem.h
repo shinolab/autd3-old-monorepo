@@ -17,6 +17,4 @@ typedef unsigned long uint64_t;
 int32_t AUTDGetAdapterPointer(void** out);
 void AUTDGetAdapter(void* p_adapter, int32_t index, int8_t* desc, int8_t* name);
 void AUTDFreeAdapterPointer(void* p_adapter);
-void AUTDLinkSOEM(void** out, char* ifname, uint16_t sync0_cycle, uint16_t send_cycle, bool freerun, void* on_lost, bool high_precision, uint64_t state_check_interval);
-void AUTDLinkSOEMSetLogLevel(int32_t level);
-void AUTDLinkSOEMSetDefaultLogger(void* out, void* flush);
+void AUTDLinkSOEM(void** out, char* ifname, uint16_t sync0_cycle, uint16_t send_cycle, bool freerun, void* on_lost, bool high_precision, uint64_t state_check_interval, int32_t level, void* out_func, void* flush_func);

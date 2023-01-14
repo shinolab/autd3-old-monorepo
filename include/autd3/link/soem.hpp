@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 14/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "autd3/core/link.hpp"
+#include "autd3/driver/debug_level.hpp"
 
 namespace autd3::link {
 
@@ -112,9 +113,26 @@ class SOEM {
   }
 
   /**
+   * @brief Set Debug level (for debug)
+   */
+  SOEM& debug_level(const driver::DebugLevel level) {
+    _level = level;
+    return *this;
+  }
+
+  /**
+   * @brief Set Debug log func (for debug)
+   * @details The log will be written to stdout by default
+   */
+  SOEM& debug_log_func(std::function<void(std::string)> out, std::function<void()> flush) {
+    _out = std::move(out);
+    _flush = std::move(flush);
+    return *this;
+  }
+
+  /**
    * @brief Set EtherCAT state check interval.
    */
-
   template <typename Rep, typename Period>
   SOEM& state_check_interval(const std::chrono::duration<Rep, Period> interval) {
     _state_check_interval = std::chrono::duration_cast<std::chrono::milliseconds>(interval);
@@ -135,5 +153,8 @@ class SOEM {
   std::function<void(std::string)> _callback;
   SyncMode _sync_mode;
   std::chrono::milliseconds _state_check_interval;
+  driver::DebugLevel _level{driver::DebugLevel::Info};
+  std::function<void(std::string)> _out{nullptr};
+  std::function<void()> _flush{nullptr};
 };
 }  // namespace autd3::link

@@ -3,7 +3,7 @@
 // Created Date: 11/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/01/2023
+// Last Modified: 14/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,10 +15,9 @@
 #include <utility>
 
 #include "autd3/core/link.hpp"
+#include "autd3/driver/debug_level.hpp"
 
 namespace autd3::link {
-
-enum class DebugLevel : int { Trace = 0, Debug = 1, Info = 2, Warn = 3, Err = 4, Critical = 5, Off = 6 };
 
 /**
  * @brief Link for debug
@@ -40,7 +39,7 @@ class Debug {
     return *this;
   }
 
-  Debug& level(const DebugLevel level) {
+  Debug& level(const driver::DebugLevel level) {
     _level = level;
     return *this;
   }
@@ -59,7 +58,7 @@ class Debug {
 
  private:
   core::LinkPtr _link{nullptr};
-  DebugLevel _level{DebugLevel::Debug};
+  driver::DebugLevel _level{driver::DebugLevel::Debug};
   std::function<void(std::string)> _out{nullptr};
   std::function<void()> _flush{nullptr};
 };

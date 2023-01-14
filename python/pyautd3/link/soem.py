@@ -4,7 +4,7 @@ Project: link
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 07/11/2022
+Last Modified: 14/01/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,6 +16,7 @@ from ctypes import c_void_p, byref
 from .link import Link
 
 from pyautd3.native_methods.autd3capi_link_soem import NativeMethods as LinkSOEM
+from pyautd3.debug_level import DebugLevel
 
 
 OnLostFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
@@ -32,6 +33,9 @@ class SOEM:
         self._high_precision = False
         self._freerun = False
         self._check_interval = 500
+        self._debug_level = DebugLevel.Info
+        self._debug_log_out = None
+        self._debug_log_flush = None
 
     def ifname(self, ifname: str):
         self._ifname = ifname
@@ -61,11 +65,21 @@ class SOEM:
         self._check_interval = interval
         return self
 
+    def debug_level(self, level: DebugLevel):
+        self._debug_level = level
+        return self
+
+    def debug_log(self, log_out, log_flush):
+        self._debug_log_out = log_out
+        self._debug_log_flush = log_flush
+        return self
+
     def build(self):
         LinkSOEM().init_dll()
         link = c_void_p()
         LinkSOEM().dll.AUTDLinkSOEM(byref(link), self._ifname.encode('utf-8') if self._ifname is not None else None,
-                                    self._sync0_cycle, self._send_cycle, self._freerun, self._on_lost, self._high_precision, self._check_interval)
+                                    self._sync0_cycle, self._send_cycle, self._freerun, self._on_lost, self._high_precision, self._check_interval,
+                                    int(self._debug_level), self._debug_log_out, self._debug_log_flush)
         return Link(link)
 
     @ staticmethod
@@ -84,13 +98,3 @@ class SOEM:
         LinkSOEM().dll.AUTDFreeAdapterPointer(handle)
 
         return res
-
-    @ staticmethod
-    def set_log_level(level: int):
-        LinkSOEM().init_dll()
-        LinkSOEM().dll.AUTDLinkSOEMSetLogLevel(level)
-
-    @ staticmethod
-    def set_log_func(output, flush):
-        LinkSOEM().init_dll()
-        LinkSOEM().dll.AUTDLinkSOEMSetDefaultLogger(output, flush)

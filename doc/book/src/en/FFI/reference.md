@@ -1460,21 +1460,9 @@ Delete pointer to Adapter list.
 | on_lost                | void*    | in     | pointer to on-lost callback        |
 | high_precision         | bool     | in     | high precision mode                |
 | state_check_interval   | uint64_t | in     | state check interval in ms         |
-| return                 | void     | -      | -                                  |
-
-## AUTDLinkSOEMSetLogLevel (autd3capi-link-soem)
-
-| Argument name / return | type     | in/out | description                        |
-| ---------------------- | -------- | ------ | ---------------------------------- |
 | level                  | int32_t  | in     | log level                          |
-| return                 | void     | -      | -                                  |
-
-## AUTDLinkSOEMSetDefaultLogger (autd3capi-link-soem)
-
-| Argument name / return | type     | in/out | description                        |
-| ---------------------- | -------- | ------ | ---------------------------------- |
-| out                    | void*    | in     | output callback                    |
-| flush                  | void*    | in     | flush callback                     |
+| out_func               | void*    | in     | output callback                    |
+| flush_func             | void*    | in     | flush callback                     |
 | return                 | void     | -      | -                                  |
 
 ## AUTDLinkRemoteSOEM (autd3capi-link-remote-soem)

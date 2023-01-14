@@ -3,7 +3,7 @@
 // Created Date: 11/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/01/2023
+// Last Modified: 14/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -158,42 +158,15 @@ class DebugImpl final : public core::Link {
   std::shared_ptr<spdlog::logger> _logger;
 };
 
-template <typename Mutex>
-class CustomSink final : public spdlog::sinks::base_sink<Mutex> {
- public:
-  explicit CustomSink(std::function<void(std::string)> out, std::function<void()> flush) : _out(std::move(out)), _flush(std::move(flush)) {}
-
- protected:
-  void sink_it_(const spdlog::details::log_msg& msg) override {
-    spdlog::memory_buf_t formatted;
-    spdlog::sinks::base_sink<Mutex>::formatter_->format(msg, formatted);
-    _out(fmt::to_string(formatted));
-  }
-  void flush_() override { _flush(); }
-
- private:
-  std::function<void(std::string)> _out;
-  std::function<void()> _flush;
-};
-
 core::LinkPtr Debug::build() {
   const auto name = "AUTD3 Debug Log";
-  std::shared_ptr<spdlog::logger> logger;
-  if (_out == nullptr || _flush == nullptr) {
-#ifdef WIN32
-    auto color_sink = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
-#else
-    auto color_sink = std::make_shared<spdlog::sinks::ansicolor_stdout_sink_mt>();
-#endif
-    logger = std::make_shared<spdlog::logger>(name, std::move(color_sink));
-  } else {
-    auto custom_sink = std::make_shared<CustomSink<std::mutex>>(std::move(_out), std::move(_flush));
-    logger = std::make_shared<spdlog::logger>(name, custom_sink);
-  }
+  std::shared_ptr<spdlog::logger> logger =
+      (_out == nullptr || _flush == nullptr)
+          ? get_default_logger(name)
+          : std::make_shared<spdlog::logger>(name, std::make_shared<CustomSink<std::mutex>>(std::move(_out), std::move(_flush)));
+  logger->set_level(static_cast<spdlog::level::level_enum>(_level));
 
   if (_link == nullptr) _link = NullLink().build();
-
-  logger->set_level(static_cast<spdlog::level::level_enum>(_level));
   core::LinkPtr link = std::make_unique<DebugImpl>(std::move(_link), std::move(logger));
   return link;
 }

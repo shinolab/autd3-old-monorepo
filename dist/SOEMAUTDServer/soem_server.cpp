@@ -84,7 +84,8 @@ int main(const int argc, char* argv[]) try {
         std::quick_exit(-1);
 #endif
       },
-      freerun ? autd3::link::SyncMode::FreeRun : autd3::link::SyncMode::DC, std::chrono::milliseconds(state_check_interval));
+      freerun ? autd3::link::SyncMode::FreeRun : autd3::link::SyncMode::DC, std::chrono::milliseconds(state_check_interval),
+      autd3::get_default_logger("SOEMAUTDServer Log"));
 
   spdlog::info("Connecting SOEM server...");
   const auto dev = soem_handler.open({});

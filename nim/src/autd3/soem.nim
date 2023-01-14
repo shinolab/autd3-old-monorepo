@@ -16,6 +16,8 @@ import native_methods/autd3capi_link_soem
 import link
 
 type Callback* = proc(a: cstring)
+type LogOut* = proc(a: cstring)
+type LogFlush* = proc()
 
 type SOEM* = object of RootObj
   ifname: cstring
@@ -25,6 +27,9 @@ type SOEM* = object of RootObj
   onLost: Callback
   freerun: bool
   check_interval: uint64
+  debug_level: int32
+  debug_log_out: LogOut
+  debug_log_flush: LogFlush
 
 type Adapter* = object
   name*: string
@@ -53,7 +58,10 @@ func initSOEM*(): SOEM =
   result.highPrecision = false
   result.onLost = nil
   result.freerun = false
-  result.check_interval = 500
+  result.checkInterval = 500
+  result.debugLevel = 2
+  result.debugLogOut = nil
+  result.debugLogFlush = nil
 
 proc ifname*(cnt: var SOEM, ifname: string): var SOEM =
   cnt.ifname = cast[cstring](ifname)
@@ -80,10 +88,21 @@ proc onLost*(cnt: var SOEM, onLost: Callback): var SOEM =
   result = cnt
 
 proc checkInterval*(cnt: var SOEM, interval: uint64): var SOEM =
-  cnt.check_interval = interval
+  cnt.checkInterval = interval
+  result = cnt
+
+proc debugLevel*(cnt: var SOEM, level: int32): var SOEM =
+  cnt.debugLevel = level
+  result = cnt
+  
+proc debugLogFunc*(cnt: var SOEM, logOut: LogOut, logFlush: LogFlush): var SOEM =
+  cnt.debugLogOut = logOut
+  cnt.debugLogFlush = logFlush
   result = cnt
 
 func build*(cnt: SOEM): Link {.discardable.} =
   let p = rawProc(cnt.onLost)
+  let pLogOut = rawProc(cnt.debugLogOut)
+  let pLogFlush = rawProc(cnt.debugLogFlush)
   AUTDLinkSOEM(result.p.addr, cnt.ifname, cnt.sync0Cycle, cnt.sendCycle,
-      cnt.freerun, p, cnt.highPrecision, cnt.check_interval)
+      cnt.freerun, p, cnt.highPrecision, cnt.checkInterval, cnt.debugLevel, pLogOut, pLogFlush)

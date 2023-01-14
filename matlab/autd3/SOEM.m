@@ -21,6 +21,7 @@ classdef SOEM < handle
         freerun_
         high_precision_
         check_interval_
+        debug_level_
     end
 
     methods
@@ -33,6 +34,7 @@ classdef SOEM < handle
             obj.freerun_ = false;
             obj.high_precision_ = true;
             obj.check_interval_ = 500;
+            obj.debug_level_ = 2;
         end
 
         function ifname(obj, name)
@@ -58,11 +60,17 @@ classdef SOEM < handle
         function check_interval(obj, interval)
             obj.check_interval_ = interval;
         end
+        
+        function debug_level(obj, level)
+            obj.debug_level_ = level;
+        end
 
         function res = build(obj)
             pp = libpointer('voidPtrPtr', obj.ptr);
             on_lost = libpointer('voidPtr', 0);
-            calllib('autd3capi_link_soem', 'AUTDLinkSOEM', pp, obj.ifname_, obj.sync0_cycle_, obj.send_cycle_, obj.freerun_, on_lost, obj.high_precision_, obj.check_interval_);
+            log_out = libpointer('voidPtr', 0);
+            log_flush = libpointer('voidPtr', 0);
+            calllib('autd3capi_link_soem', 'AUTDLinkSOEM', pp, obj.ifname_, obj.sync0_cycle_, obj.send_cycle_, obj.freerun_, on_lost, obj.high_precision_, obj.check_interval_, obj.debug_level_, log_out, log_flush);
             res = obj;
         end
 
