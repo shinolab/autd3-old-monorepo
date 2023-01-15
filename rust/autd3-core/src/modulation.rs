@@ -11,11 +11,7 @@
  *
  */
 
-use crate::datagram::DatagramHeader;
-
 /// Modulation contains the amplitude modulation data.
-pub trait Modulation: DatagramHeader {
-    fn buffer(&self) -> &[u8];
-    fn sampling_frequency_division(&mut self) -> &mut u32;
-    fn sampling_freq(&self) -> f64;
+pub trait Modulation {
+    fn calc(&self) -> anyhow::Result<Vec<u8>>;
 }
