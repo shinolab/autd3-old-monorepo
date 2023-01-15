@@ -99,10 +99,7 @@ impl<'a> DatagramBody<LegacyTransducer> for GainSTM<'a, LegacyTransducer> {
         let drives = self
             .gains
             .iter_mut()
-            .map(|g| {
-                g.calc(geometry)?;
-                Ok(g.take_drives())
-            })
+            .map(|g| g.calc(geometry))
             .collect::<Result<_>>()?;
         Ok(Self::O::new(drives, self.props))
     }
@@ -126,10 +123,7 @@ impl<'a> DatagramBody<NormalTransducer> for GainSTM<'a, NormalTransducer> {
         let drives = self
             .gains
             .iter_mut()
-            .map(|g| {
-                g.calc(geometry)?;
-                Ok(g.take_drives())
-            })
+            .map(|g| g.calc(geometry))
             .collect::<Result<_>>()?;
         Ok(Self::O::new(drives, cycles, self.props))
     }
@@ -153,10 +147,7 @@ impl<'a> DatagramBody<NormalPhaseTransducer> for GainSTM<'a, NormalPhaseTransduc
         let drives = self
             .gains
             .iter_mut()
-            .map(|g| {
-                g.calc(geometry)?;
-                Ok(g.take_drives())
-            })
+            .map(|g| g.calc(geometry))
             .collect::<Result<_>>()?;
         Ok(Self::O::new(drives, cycles, self.props))
     }

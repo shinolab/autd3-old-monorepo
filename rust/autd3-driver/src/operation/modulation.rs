@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/01/2023
+ * Last Modified: 15/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,17 +19,17 @@ use crate::{
 use anyhow::Result;
 
 pub struct Modulation {
-    pub mod_data: Vec<u8>,
-    pub sent: usize,
-    pub freq_div: u32,
+    mod_data: Vec<u8>,
+    sent: usize,
+    freq_div: u32,
 }
 
-impl Default for Modulation {
-    fn default() -> Self {
+impl Modulation {
+    pub fn new(mod_data: Vec<u8>, freq_div: u32) -> Self {
         Self {
-            mod_data: vec![],
+            mod_data,
             sent: 0,
-            freq_div: 40960,
+            freq_div,
         }
     }
 }

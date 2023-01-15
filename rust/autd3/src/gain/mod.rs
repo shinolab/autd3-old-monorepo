@@ -11,16 +11,16 @@
  *
  */
 
-// pub mod bessel;
+pub mod bessel;
 pub mod focus;
-// pub mod grouped;
-// pub mod null;
-// pub mod plane;
-// pub mod trans_test;
+pub mod grouped;
+pub mod null;
+pub mod plane;
+pub mod trans_test;
 
-// pub use bessel::Bessel;
+pub use bessel::Bessel;
 pub use focus::Focus;
-// pub use grouped::Grouped;
-// pub use null::Null;
-// pub use plane::Plane;
-// pub use trans_test::TransducerTest;
+pub use grouped::Grouped;
+pub use null::Null;
+pub use plane::Plane;
+pub use trans_test::TransducerTest;

@@ -11,6 +11,8 @@
  *
  */
 
+use anyhow::Result;
+
 use autd3_core::{
     gain::Gain,
     geometry::{Geometry, Transducer, Vector3},
@@ -22,7 +24,6 @@ use autd3_traits::Gain;
 /// Gain to produce single focal point
 #[derive(Gain)]
 pub struct Focus {
-    drives: Vec<Drive>,
     amp: f64,
     pos: Vector3,
 }
@@ -46,23 +47,23 @@ impl Focus {
     /// * `amp` - normalized amp (from 0 to 1)
     ///
     pub fn with_amp(pos: Vector3, amp: f64) -> Self {
-        Self {
-            drives: vec![],
-            amp,
-            pos,
-        }
+        Self { amp, pos }
     }
 }
 
 impl<T: Transducer> Gain<T> for Focus {
-    fn calc(&mut self, geometry: &Geometry<T>) -> anyhow::Result<()> {
+    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>> {
         let sound_speed = geometry.sound_speed;
-        geometry.transducers().for_each(|tr| {
-            let dist = (self.pos - tr.position()).norm();
-            let phase = tr.align_phase_at(dist, sound_speed);
-            self.drives[tr.id()].amp = self.amp;
-            self.drives[tr.id()].phase = phase;
-        });
-        Ok(())
+        Ok(geometry
+            .transducers()
+            .map(|tr| {
+                let dist = (self.pos - tr.position()).norm();
+                let phase = tr.align_phase_at(dist, sound_speed);
+                Drive {
+                    phase,
+                    amp: self.amp,
+                }
+            })
+            .collect())
     }
 }

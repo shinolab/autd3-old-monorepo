@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/01/2023
+ * Last Modified: 15/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -12,19 +12,24 @@
  */
 
 use crate::{
-    constraint::Constraint, impl_holo_gain, macros::generate_propagation_matrix, Backend, Complex,
-    MatrixXc, Transpose, VectorXc,
+    constraint::Constraint, macros::generate_propagation_matrix, Backend, Complex, MatrixXc,
+    Transpose, VectorXc,
 };
 use anyhow::Result;
-use autd3_core::geometry::{Geometry, Transducer, Vector3};
+use autd3_core::{
+    gain::Gain,
+    geometry::{Geometry, Transducer, Vector3},
+    Drive,
+};
+use autd3_traits::Gain;
 use nalgebra::ComplexField;
 use rand::{thread_rng, Rng};
 use std::{f64::consts::PI, marker::PhantomData, ops::MulAssign};
 
 /// Reference
 /// * Inoue, Seki, Yasutoshi Makino, and Hiroyuki Shinoda. "Active touch perception produced by airborne ultrasonic haptic hologram." 2015 IEEE World Haptics Conference (WHC). IEEE, 2015.
-pub struct SDP<B: Backend, C: Constraint, T: Transducer> {
-    op: T::Gain,
+#[derive(Gain)]
+pub struct SDP<B: Backend, C: Constraint> {
     foci: Vec<Vector3>,
     amps: Vec<f64>,
     alpha: f64,
@@ -34,7 +39,7 @@ pub struct SDP<B: Backend, C: Constraint, T: Transducer> {
     constraint: C,
 }
 
-impl<B: Backend, C: Constraint, T: Transducer> SDP<B, C, T> {
+impl<B: Backend, C: Constraint> SDP<B, C> {
     pub fn new(foci: Vec<Vector3>, amps: Vec<f64>, constraint: C) -> Self {
         Self::with_params(foci, amps, constraint, 1e-3, 0.9, 100)
     }
@@ -49,7 +54,6 @@ impl<B: Backend, C: Constraint, T: Transducer> SDP<B, C, T> {
     ) -> Self {
         assert!(foci.len() == amps.len());
         Self {
-            op: Default::default(),
             foci,
             amps,
             alpha,
@@ -59,8 +63,10 @@ impl<B: Backend, C: Constraint, T: Transducer> SDP<B, C, T> {
             constraint,
         }
     }
+}
 
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<()> {
+impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for SDP<B, C> {
+    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>> {
         let m = self.foci.len();
         let n = geometry.num_transducers();
 
@@ -165,14 +171,13 @@ impl<B: Backend, C: Constraint, T: Transducer> SDP<B, C, T> {
         );
 
         let max_coefficient = B::max_coefficient_c(&q).abs();
-        geometry.transducers().for_each(|tr| {
-            let phase = q[tr.id()].argument() + PI;
-            let amp = self.constraint.convert(q[tr.id()].abs(), max_coefficient);
-            self.op.set_drive(tr.id(), amp, phase);
-        });
-
-        Ok(())
+        Ok(geometry
+            .transducers()
+            .map(|tr| {
+                let phase = q[tr.id()].argument() + PI;
+                let amp = self.constraint.convert(q[tr.id()].abs(), max_coefficient);
+                Drive { amp, phase }
+            })
+            .collect())
     }
 }
-
-impl_holo_gain!(SDP);
