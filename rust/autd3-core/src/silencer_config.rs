@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/01/2023
+ * Last Modified: 15/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,18 +16,15 @@ use crate::{
     geometry::{Geometry, Transducer},
 };
 use anyhow::Result;
-use autd3_driver::{Operation, TxDatagram};
 
 pub struct SilencerConfig {
-    op: autd3_driver::ConfigSilencer,
+    step: u16,
+    cycle: u16,
 }
 
 impl SilencerConfig {
     pub fn new(step: u16, cycle: u16) -> Self {
-        let mut op = autd3_driver::ConfigSilencer::default();
-        op.step = step;
-        op.cycle = cycle;
-        SilencerConfig { op }
+        SilencerConfig { step, cycle }
     }
 
     pub fn none() -> Self {
@@ -36,34 +33,20 @@ impl SilencerConfig {
 }
 
 impl DatagramHeader for SilencerConfig {
-    fn init(&mut self) -> Result<()> {
-        self.op.init();
-        Ok(())
-    }
+    type O = autd3_driver::ConfigSilencer;
 
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
-        self.op.pack(tx)
-    }
-
-    fn is_finished(&self) -> bool {
-        self.op.is_finished()
+    fn operation(&mut self) -> Result<Self::O> {
+        Ok(autd3_driver::ConfigSilencer::new(self.step, self.cycle))
     }
 }
 
 impl<T: Transducer> Sendable<T> for SilencerConfig {
     type H = Filled;
     type B = Empty;
+    type O = <Self as DatagramHeader>::O;
 
-    fn init(&mut self, _geometry: &Geometry<T>) -> Result<()> {
-        DatagramHeader::init(self)
-    }
-
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
-        DatagramHeader::pack(self, tx)
-    }
-
-    fn is_finished(&self) -> bool {
-        DatagramHeader::is_finished(self)
+    fn operation(&mut self, _: &Geometry<T>) -> Result<Self::O> {
+        <Self as DatagramHeader>::operation(self)
     }
 }
 

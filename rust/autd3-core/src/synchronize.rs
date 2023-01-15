@@ -4,7 +4,7 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/01/2023
+ * Last Modified: 15/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,89 +12,73 @@
  */
 
 use anyhow::Result;
-use autd3_driver::Operation;
 
 use crate::{
     datagram::{DatagramBody, Empty, Filled, Sendable},
-    geometry::{Geometry, LegacyTransducer, NormalPhaseTransducer, NormalTransducer, Transducer},
+    geometry::{Geometry, LegacyTransducer, NormalPhaseTransducer, NormalTransducer},
 };
 
 #[derive(Default)]
-pub struct Synchronize<T: Transducer> {
-    op: T::Sync,
-}
+pub struct Synchronize {}
 
-impl<T: Transducer> Synchronize<T> {
+impl Synchronize {
     pub fn new() -> Self {
-        Self {
-            op: Default::default(),
-        }
+        Self {}
     }
 }
 
-impl DatagramBody<LegacyTransducer> for Synchronize<LegacyTransducer> {
-    fn init(&mut self, _geometry: &Geometry<LegacyTransducer>) -> Result<()> {
-        self.op.init();
-        Ok(())
-    }
+impl DatagramBody<LegacyTransducer> for Synchronize {
+    type O = autd3_driver::SyncLegacy;
 
-    fn pack(&mut self, tx: &mut autd3_driver::TxDatagram) -> Result<()> {
-        self.op.pack(tx)
-    }
-
-    fn is_finished(&self) -> bool {
-        self.op.is_finished()
+    fn operation(&mut self, _: &Geometry<LegacyTransducer>) -> Result<Self::O> {
+        Ok(Default::default())
     }
 }
 
-impl DatagramBody<NormalTransducer> for Synchronize<NormalTransducer> {
-    fn init(&mut self, geometry: &Geometry<NormalTransducer>) -> Result<()> {
-        self.op.init();
-        self.op.cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
-        Ok(())
-    }
-
-    fn pack(&mut self, tx: &mut autd3_driver::TxDatagram) -> Result<()> {
-        self.op.pack(tx)
-    }
-
-    fn is_finished(&self) -> bool {
-        self.op.is_finished()
-    }
-}
-
-impl DatagramBody<NormalPhaseTransducer> for Synchronize<NormalPhaseTransducer> {
-    fn init(&mut self, geometry: &Geometry<NormalPhaseTransducer>) -> Result<()> {
-        self.op.init();
-        self.op.cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
-        Ok(())
-    }
-
-    fn pack(&mut self, tx: &mut autd3_driver::TxDatagram) -> Result<()> {
-        self.op.pack(tx)
-    }
-
-    fn is_finished(&self) -> bool {
-        self.op.is_finished()
-    }
-}
-
-impl<T: Transducer> Sendable<T> for Synchronize<T>
-where
-    Synchronize<T>: DatagramBody<T>,
-{
+impl Sendable<LegacyTransducer> for Synchronize {
     type H = Empty;
     type B = Filled;
+    type O = <Self as DatagramBody<LegacyTransducer>>::O;
 
-    fn init(&mut self, geometry: &Geometry<T>) -> Result<()> {
-        DatagramBody::<T>::init(self, geometry)
+    fn operation(&mut self, geometry: &Geometry<LegacyTransducer>) -> Result<Self::O> {
+        <Self as DatagramBody<LegacyTransducer>>::operation(self, geometry)
     }
+}
 
-    fn pack(&mut self, tx: &mut autd3_driver::TxDatagram) -> Result<()> {
-        DatagramBody::<T>::pack(self, tx)
+impl DatagramBody<NormalTransducer> for Synchronize {
+    type O = autd3_driver::SyncNormal;
+
+    fn operation(&mut self, geometry: &Geometry<NormalTransducer>) -> Result<Self::O> {
+        let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
+        Ok(Self::O::new(cycles))
     }
+}
 
-    fn is_finished(&self) -> bool {
-        DatagramBody::<T>::is_finished(self)
+impl Sendable<NormalTransducer> for Synchronize {
+    type H = Empty;
+    type B = Filled;
+    type O = <Self as DatagramBody<NormalTransducer>>::O;
+
+    fn operation(&mut self, geometry: &Geometry<NormalTransducer>) -> Result<Self::O> {
+        <Self as DatagramBody<NormalTransducer>>::operation(self, geometry)
+    }
+}
+
+impl DatagramBody<NormalPhaseTransducer> for Synchronize {
+    type O = autd3_driver::SyncNormal;
+
+    fn operation(&mut self, geometry: &Geometry<NormalPhaseTransducer>) -> Result<Self::O> {
+        let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
+        Ok(Self::O::new(cycles))
+    }
+}
+
+impl Sendable<NormalPhaseTransducer> for Synchronize {
+    type H = Empty;
+    type B = Filled;
+    type O = <Self as DatagramBody<NormalPhaseTransducer>>::O;
+
+    fn operation(&mut self, geometry: &Geometry<NormalPhaseTransducer>) -> Result<Self::O> {
+        <Self as DatagramBody<NormalPhaseTransducer>>::operation(self, geometry)
     }
 }
