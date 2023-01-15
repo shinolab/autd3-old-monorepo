@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/01/2023
+ * Last Modified: 15/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,48 +20,27 @@ use crate::{
     GAIN_STM_SAMPLING_FREQ_DIV_MIN,
 };
 
-pub trait GainSTMOp {
-    fn set_sampling_freq_div(&mut self, freq_div: u32);
-    fn sampling_freq_div(&self) -> u32;
-    fn set_start_idx(&mut self, idx: Option<u16>);
-    fn start_idx(&self) -> Option<u16>;
-    fn set_finish_idx(&mut self, idx: Option<u16>);
-    fn finish_idx(&self) -> Option<u16>;
-}
-
-#[derive(Default)]
-pub struct GainSTMLegacy {
-    sent: usize,
-    pub drives: Vec<Vec<Drive>>,
+#[derive(Default, Clone, Copy)]
+pub struct GainSTMProps {
     pub freq_div: u32,
     pub mode: Mode,
     pub start_idx: Option<u16>,
     pub finish_idx: Option<u16>,
 }
 
-impl GainSTMOp for GainSTMLegacy {
-    fn set_sampling_freq_div(&mut self, freq_div: u32) {
-        self.freq_div = freq_div;
-    }
+pub struct GainSTMLegacy {
+    sent: usize,
+    drives: Vec<Vec<Drive>>,
+    props: GainSTMProps,
+}
 
-    fn sampling_freq_div(&self) -> u32 {
-        self.freq_div
-    }
-
-    fn set_start_idx(&mut self, idx: Option<u16>) {
-        self.start_idx = idx;
-    }
-
-    fn start_idx(&self) -> Option<u16> {
-        self.start_idx
-    }
-
-    fn set_finish_idx(&mut self, idx: Option<u16>) {
-        self.finish_idx = idx;
-    }
-
-    fn finish_idx(&self) -> Option<u16> {
-        self.finish_idx
+impl GainSTMLegacy {
+    pub fn new(drives: Vec<Vec<Drive>>, props: GainSTMProps) -> Self {
+        Self {
+            sent: 0,
+            drives,
+            props,
+        }
     }
 }
 
@@ -94,7 +73,7 @@ impl Operation for GainSTMLegacy {
 
         let mut is_last_frame = false;
 
-        if let Some(idx) = self.start_idx {
+        if let Some(idx) = self.props.start_idx {
             if idx as usize >= self.drives.len() {
                 return Err(DriverError::STMStartIndexOutOfRange.into());
             }
@@ -106,7 +85,7 @@ impl Operation for GainSTMLegacy {
                 .fpga_flag
                 .set(FPGAControlFlags::USE_START_IDX, false);
         }
-        if let Some(idx) = self.finish_idx {
+        if let Some(idx) = self.props.finish_idx {
             if idx as usize >= self.drives.len() {
                 return Err(DriverError::STMFinishIndexOutOfRange.into());
             }
@@ -120,25 +99,27 @@ impl Operation for GainSTMLegacy {
         }
 
         if self.sent == 0 {
-            if self.freq_div < GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN {
-                return Err(DriverError::GainSTMLegacyFreqDivOutOfRange(self.freq_div).into());
+            if self.props.freq_div < GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN {
+                return Err(
+                    DriverError::GainSTMLegacyFreqDivOutOfRange(self.props.freq_div).into(),
+                );
             }
             tx.header_mut()
                 .cpu_flag
                 .set(CPUControlFlags::STM_BEGIN, true);
             (0..tx.num_devices()).for_each(|idx| {
                 let d = tx.body_mut(idx);
-                d.gain_stm_initial_mut().set_freq_div(self.freq_div);
-                d.gain_stm_initial_mut().set_mode(self.mode);
+                d.gain_stm_initial_mut().set_freq_div(self.props.freq_div);
+                d.gain_stm_initial_mut().set_mode(self.props.mode);
                 d.gain_stm_initial_mut().set_cycle(self.drives.len());
                 d.gain_stm_initial_mut()
-                    .set_start_idx(self.start_idx.unwrap_or(0));
+                    .set_start_idx(self.props.start_idx.unwrap_or(0));
                 d.gain_stm_initial_mut()
-                    .set_finish_idx(self.finish_idx.unwrap_or(0));
+                    .set_finish_idx(self.props.finish_idx.unwrap_or(0));
             });
             self.sent += 1;
         } else {
-            match self.mode {
+            match self.props.mode {
                 Mode::PhaseDutyFull => {
                     is_last_frame = self.sent + 1 >= self.drives.len() + 1;
                     tx.legacy_drives_mut()
@@ -149,45 +130,45 @@ impl Operation for GainSTMLegacy {
                 }
                 Mode::PhaseFull => {
                     is_last_frame = self.sent + 2 >= self.drives.len() + 1;
-                    tx.legacy_phase_full_mut()
+                    tx.legacy_phase_full_mut::<0>()
                         .iter_mut()
                         .zip(&self.drives[self.sent - 1])
-                        .for_each(|(d, s)| d.set(0, s));
+                        .for_each(|(d, s)| d.set(s));
                     self.sent += 1;
                     if self.sent - 1 < self.drives.len() {
-                        tx.legacy_phase_full_mut()
+                        tx.legacy_phase_full_mut::<1>()
                             .iter_mut()
                             .zip(&self.drives[self.sent - 1])
-                            .for_each(|(d, s)| d.set(1, s));
+                            .for_each(|(d, s)| d.set(s));
                         self.sent += 1;
                     }
                 }
                 Mode::PhaseHalf => {
                     is_last_frame = self.sent + 4 >= self.drives.len() + 1;
-                    tx.legacy_phase_half_mut()
+                    tx.legacy_phase_half_mut::<0>()
                         .iter_mut()
                         .zip(&self.drives[self.sent - 1])
-                        .for_each(|(d, s)| d.set(0, s));
+                        .for_each(|(d, s)| d.set(s));
                     self.sent += 1;
                     if self.sent - 1 < self.drives.len() {
-                        tx.legacy_phase_half_mut()
+                        tx.legacy_phase_half_mut::<1>()
                             .iter_mut()
                             .zip(&self.drives[self.sent - 1])
-                            .for_each(|(d, s)| d.set(1, s));
+                            .for_each(|(d, s)| d.set(s));
                         self.sent += 1;
                     }
                     if self.sent - 1 < self.drives.len() {
-                        tx.legacy_phase_half_mut()
+                        tx.legacy_phase_half_mut::<2>()
                             .iter_mut()
                             .zip(&self.drives[self.sent - 1])
-                            .for_each(|(d, s)| d.set(2, s));
+                            .for_each(|(d, s)| d.set(s));
                         self.sent += 1;
                     }
                     if self.sent - 1 < self.drives.len() {
-                        tx.legacy_phase_half_mut()
+                        tx.legacy_phase_half_mut::<3>()
                             .iter_mut()
                             .zip(&self.drives[self.sent - 1])
-                            .for_each(|(d, s)| d.set(3, s));
+                            .for_each(|(d, s)| d.set(s));
                         self.sent += 1;
                     }
                 }
@@ -220,15 +201,22 @@ impl Operation for GainSTMLegacy {
 pub struct GainSTMNormal {
     sent: usize,
     next_duty: bool,
-    pub drives: Vec<Vec<Drive>>,
-    pub cycles: Vec<u16>,
-    pub freq_div: u32,
-    pub mode: Mode,
-    pub start_idx: Option<u16>,
-    pub finish_idx: Option<u16>,
+    drives: Vec<Vec<Drive>>,
+    cycles: Vec<u16>,
+    props: GainSTMProps,
 }
 
 impl GainSTMNormal {
+    pub fn new(drives: Vec<Vec<Drive>>, cycles: Vec<u16>, props: GainSTMProps) -> Self {
+        Self {
+            sent: 0,
+            next_duty: false,
+            drives,
+            cycles,
+            props,
+        }
+    }
+
     fn pack_phase(&self, tx: &mut TxDatagram) -> Result<()> {
         if self.drives.len() > GAIN_STM_BUF_SIZE_MAX {
             return Err(DriverError::GainSTMSizeOutOfRange(self.drives.len()).into());
@@ -236,7 +224,7 @@ impl GainSTMNormal {
 
         tx.header_mut().cpu_flag.remove(CPUControlFlags::IS_DUTY);
 
-        if let Some(idx) = self.start_idx {
+        if let Some(idx) = self.props.start_idx {
             if idx as usize >= self.drives.len() {
                 return Err(DriverError::STMStartIndexOutOfRange.into());
             }
@@ -248,7 +236,7 @@ impl GainSTMNormal {
                 .fpga_flag
                 .set(FPGAControlFlags::USE_START_IDX, false);
         }
-        if let Some(idx) = self.finish_idx {
+        if let Some(idx) = self.props.finish_idx {
             if idx as usize >= self.drives.len() {
                 return Err(DriverError::STMFinishIndexOutOfRange.into());
             }
@@ -262,21 +250,21 @@ impl GainSTMNormal {
         }
 
         if self.sent == 0 {
-            if self.freq_div < GAIN_STM_SAMPLING_FREQ_DIV_MIN {
-                return Err(DriverError::GainSTMFreqDivOutOfRange(self.freq_div).into());
+            if self.props.freq_div < GAIN_STM_SAMPLING_FREQ_DIV_MIN {
+                return Err(DriverError::GainSTMFreqDivOutOfRange(self.props.freq_div).into());
             }
             tx.header_mut()
                 .cpu_flag
                 .set(CPUControlFlags::STM_BEGIN, true);
             (0..tx.num_devices()).for_each(|idx| {
                 let d = tx.body_mut(idx);
-                d.gain_stm_initial_mut().set_freq_div(self.freq_div);
-                d.gain_stm_initial_mut().set_mode(self.mode);
+                d.gain_stm_initial_mut().set_freq_div(self.props.freq_div);
+                d.gain_stm_initial_mut().set_mode(self.props.mode);
                 d.gain_stm_initial_mut().set_cycle(self.drives.len());
                 d.gain_stm_initial_mut()
-                    .set_start_idx(self.start_idx.unwrap_or(0));
+                    .set_start_idx(self.props.start_idx.unwrap_or(0));
                 d.gain_stm_initial_mut()
-                    .set_finish_idx(self.finish_idx.unwrap_or(0));
+                    .set_finish_idx(self.props.finish_idx.unwrap_or(0));
             });
         } else {
             tx.phases_mut()
@@ -326,32 +314,6 @@ impl GainSTMNormal {
     }
 }
 
-impl GainSTMOp for GainSTMNormal {
-    fn set_sampling_freq_div(&mut self, freq_div: u32) {
-        self.freq_div = freq_div;
-    }
-
-    fn sampling_freq_div(&self) -> u32 {
-        self.freq_div
-    }
-
-    fn set_start_idx(&mut self, idx: Option<u16>) {
-        self.start_idx = idx;
-    }
-
-    fn start_idx(&self) -> Option<u16> {
-        self.start_idx
-    }
-
-    fn set_finish_idx(&mut self, idx: Option<u16>) {
-        self.finish_idx = idx;
-    }
-
-    fn finish_idx(&self) -> Option<u16> {
-        self.finish_idx
-    }
-}
-
 impl Operation for GainSTMNormal {
     fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
         tx.header_mut().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
@@ -375,7 +337,7 @@ impl Operation for GainSTMNormal {
             return Ok(());
         }
 
-        match self.mode {
+        match self.props.mode {
             Mode::PhaseDutyFull => {
                 if self.next_duty {
                     self.pack_duty(tx)?;
