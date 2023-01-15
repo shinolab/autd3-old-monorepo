@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/11/2022
+ * Last Modified: 16/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -68,6 +68,7 @@ fn main() {
         .header("3rdparty/SOEM/soem/ethercatmain.h")
         .header("3rdparty/SOEM/soem/ethercatdc.h")
         .header("3rdparty/SOEM/soem/ethercatconfig.h")
+        .header("3rdparty/SOEM/soem/ethercatprint.h")
         .allowlist_function("ec_init")
         .allowlist_function("ec_find_adapters")
         .allowlist_function("ec_free_adapters")
@@ -83,6 +84,7 @@ fn main() {
         .allowlist_function("ec_readstate")
         .allowlist_function("ec_reconfig_slave")
         .allowlist_function("ec_recover_slave")
+        .allowlist_function("ec_ALstatuscode2string")
         .allowlist_var("ec_slave")
         .allowlist_var("ec_group")
         .allowlist_var("ec_DCtime")
@@ -129,6 +131,7 @@ fn main() {
         .header("3rdparty/SOEM/soem/ethercatmain.h")
         .header("3rdparty/SOEM/soem/ethercatdc.h")
         .header("3rdparty/SOEM/soem/ethercatconfig.h")
+        .header("3rdparty/SOEM/soem/ethercatprint.h")
         .allowlist_function("ec_init")
         .allowlist_function("ec_find_adapters")
         .allowlist_function("ec_free_adapters")
@@ -144,6 +147,7 @@ fn main() {
         .allowlist_function("ec_readstate")
         .allowlist_function("ec_reconfig_slave")
         .allowlist_function("ec_recover_slave")
+        .allowlist_function("ec_ALstatuscode2string")
         .allowlist_var("ec_slave")
         .allowlist_var("ec_group")
         .allowlist_var("ec_DCtime")
@@ -190,6 +194,7 @@ fn main() {
         .header("3rdparty/SOEM/soem/ethercatmain.h")
         .header("3rdparty/SOEM/soem/ethercatdc.h")
         .header("3rdparty/SOEM/soem/ethercatconfig.h")
+        .header("3rdparty/SOEM/soem/ethercatprint.h")
         .allowlist_function("ec_init")
         .allowlist_function("ec_find_adapters")
         .allowlist_function("ec_free_adapters")
@@ -205,6 +210,7 @@ fn main() {
         .allowlist_function("ec_readstate")
         .allowlist_function("ec_reconfig_slave")
         .allowlist_function("ec_recover_slave")
+        .allowlist_function("ec_ALstatuscode2string")
         .allowlist_var("ec_slave")
         .allowlist_var("ec_group")
         .allowlist_var("ec_DCtime")
