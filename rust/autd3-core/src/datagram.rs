@@ -4,17 +4,16 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/01/2023
+ * Last Modified: 15/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_driver::{Operation, TxDatagram};
+use anyhow::Result;
 
 use crate::geometry::{Geometry, Transducer};
-use anyhow::Result;
 
 pub struct Empty;
 pub struct Filled;
@@ -22,75 +21,51 @@ pub struct Filled;
 pub trait Sendable<T: Transducer> {
     type H;
     type B;
-    fn init(&mut self, geometry: &Geometry<T>) -> Result<()>;
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()>;
-    fn is_finished(&self) -> bool;
+    type O: autd3_driver::Operation;
+
+    fn operation(&mut self, geometry: &Geometry<T>) -> Result<Self::O>;
 }
 
 pub trait DatagramHeader {
-    fn init(&mut self) -> Result<()>;
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()>;
-    fn is_finished(&self) -> bool;
+    type O: autd3_driver::Operation;
+    fn operation(&mut self) -> Result<Self::O>;
 }
 
 pub trait DatagramBody<T: Transducer> {
-    fn init(&mut self, geometry: &Geometry<T>) -> Result<()>;
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()>;
-    fn is_finished(&self) -> bool;
+    type O: autd3_driver::Operation;
+    fn operation(&mut self, geometry: &Geometry<T>) -> Result<Self::O>;
 }
 
 #[derive(Default)]
-pub struct NullHeader {
-    op: autd3_driver::NullHeader,
-}
+pub struct NullHeader {}
 
 impl NullHeader {
     pub fn new() -> Self {
-        Self {
-            op: Default::default(),
-        }
+        Self {}
     }
 }
 
 impl DatagramHeader for NullHeader {
-    fn init(&mut self) -> Result<()> {
-        self.op.init();
-        Ok(())
-    }
+    type O = autd3_driver::NullHeader;
 
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
-        self.op.pack(tx)
-    }
-
-    fn is_finished(&self) -> bool {
-        self.op.is_finished()
+    fn operation(&mut self) -> Result<Self::O> {
+        Ok(Default::default())
     }
 }
 
 #[derive(Default)]
-pub struct NullBody {
-    op: autd3_driver::NullBody,
-}
+pub struct NullBody {}
 
 impl NullBody {
     pub fn new() -> Self {
-        Self {
-            op: Default::default(),
-        }
+        Self {}
     }
 }
 
 impl<T: Transducer> DatagramBody<T> for NullBody {
-    fn init(&mut self, _geometry: &Geometry<T>) -> Result<()> {
-        self.op.init();
-        Ok(())
-    }
+    type O = autd3_driver::NullBody;
 
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
-        self.op.pack(tx)
-    }
-
-    fn is_finished(&self) -> bool {
-        self.op.is_finished()
+    fn operation(&mut self, _: &Geometry<T>) -> Result<Self::O> {
+        Ok(Default::default())
     }
 }
