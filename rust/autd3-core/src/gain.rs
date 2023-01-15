@@ -16,12 +16,8 @@ use crate::geometry::{Geometry, Transducer};
 use anyhow::Result;
 use autd3_driver::Drive;
 
-pub trait GainData {
-    fn take_drives(&mut self) -> Vec<Drive>;
-}
-
 /// Gain contains amplitude and phase of each transducer in the AUTD.
 /// Note that the amplitude means duty ratio of Pulse Width Modulation, respectively.
-pub trait Gain<T: Transducer>: GainData {
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<()>;
+pub trait Gain<T: Transducer> {
+    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>>;
 }

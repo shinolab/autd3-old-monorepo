@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/01/2023
+ * Last Modified: 15/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -12,11 +12,16 @@
  */
 
 use crate::{
-    constraint::Constraint, error::HoloError, impl_holo_gain, macros::generate_propagation_matrix,
-    Backend, Complex, MatrixX, MatrixXc, Transpose, VectorX, VectorXc,
+    constraint::Constraint, error::HoloError, macros::generate_propagation_matrix, Backend,
+    Complex, MatrixX, MatrixXc, Transpose, VectorX, VectorXc,
 };
 use anyhow::Result;
-use autd3_core::geometry::{Geometry, Transducer, Vector3};
+use autd3_core::{
+    gain::Gain,
+    geometry::{Geometry, Transducer, Vector3},
+    Drive,
+};
+use autd3_traits::Gain;
 use nalgebra::ComplexField;
 use std::{f64::consts::PI, marker::PhantomData};
 
@@ -24,8 +29,8 @@ use std::{f64::consts::PI, marker::PhantomData};
 /// * K.Levenberg, “A method for the solution of certain non-linear problems in least squares,” Quarterly of applied mathematics, vol.2, no.2, pp.164–168, 1944.
 /// * D.W.Marquardt, “An algorithm for least-squares estimation of non-linear parameters,” Journal of the society for Industrial and AppliedMathematics, vol.11, no.2, pp.431–441, 1963.
 /// * K.Madsen, H.Nielsen, and O.Tingleff, “Methods for non-linear least squares problems (2nd ed.),” 2004.
-pub struct LM<B: Backend, C: Constraint, T: Transducer> {
-    op: T::Gain,
+#[derive(Gain)]
+pub struct LM<B: Backend, C: Constraint> {
     foci: Vec<Vector3>,
     amps: Vec<f64>,
     eps_1: f64,
@@ -37,7 +42,7 @@ pub struct LM<B: Backend, C: Constraint, T: Transducer> {
     constraint: C,
 }
 
-impl<B: Backend, C: Constraint, T: Transducer> LM<B, C, T> {
+impl<B: Backend, C: Constraint> LM<B, C> {
     pub fn new(foci: Vec<Vector3>, amps: Vec<f64>, constraint: C) -> Self {
         Self::with_param(foci, amps, constraint, 1e-8, 1e-8, 1e-3, 5, vec![])
     }
@@ -55,7 +60,6 @@ impl<B: Backend, C: Constraint, T: Transducer> LM<B, C, T> {
     ) -> Self {
         assert!(foci.len() == amps.len());
         Self {
-            op: Default::default(),
             foci,
             amps,
             eps_1,
@@ -69,7 +73,7 @@ impl<B: Backend, C: Constraint, T: Transducer> LM<B, C, T> {
     }
 
     #[allow(clippy::many_single_char_names)]
-    fn make_bhb(
+    fn make_bhb<T: Transducer>(
         geometry: &Geometry<T>,
         amps: &[f64],
         foci: &[Vector3],
@@ -108,10 +112,11 @@ impl<B: Backend, C: Constraint, T: Transducer> LM<B, C, T> {
             tth,
         );
     }
+}
 
+impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for LM<B, C> {
     #[allow(clippy::many_single_char_names)]
-    #[allow(clippy::unnecessary_wraps)]
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<()> {
+    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>> {
         let m = self.foci.len();
         let n = geometry.num_transducers();
         let n_param = n + m;
@@ -212,14 +217,13 @@ impl<B: Backend, C: Constraint, T: Transducer> LM<B, C, T> {
             }
         }
 
-        geometry.transducers().for_each(|tr| {
-            let phase = x[tr.id()].rem_euclid(2.0 * PI);
-            let amp = self.constraint.convert(1.0, 1.0);
-            self.op.set_drive(tr.id(), amp, phase);
-        });
-
-        Ok(())
+        Ok(geometry
+            .transducers()
+            .map(|tr| {
+                let phase = x[tr.id()].rem_euclid(2.0 * PI);
+                let amp = self.constraint.convert(1.0, 1.0);
+                Drive { amp, phase }
+            })
+            .collect())
     }
 }
-
-impl_holo_gain!(LM);
