@@ -4,16 +4,16 @@
  * Created Date: 03/06/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 16/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::{f64::consts::PI, marker::PhantomData};
+use std::f64::consts::PI;
 
-use crate::{constraint::Constraint, macros::propagate, Backend, Complex};
+use crate::{constraint::Constraint, macros::propagate, Complex};
 use anyhow::Result;
 use autd3_core::{
     gain::Gain,
