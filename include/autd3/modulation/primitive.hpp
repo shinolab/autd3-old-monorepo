@@ -11,6 +11,10 @@
 
 #pragma once
 
+#include <algorithm>
+#include <utility>
+#include <vector>
+
 #include "autd3/core/modulation.hpp"
 #include "autd3/driver/defined.hpp"
 
