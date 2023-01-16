@@ -31,6 +31,7 @@ elseif(APPLE)
 else()
 endif()
 enable_cxx_compiler_flag_if_supported(link_remote_twincat PRIVATE -Wno-mismatched-new-delete)
+target_compile_definitions(link_remote_twincat PRIVATE -DCONFIG_DEFAULT_LOGLEVEL=1)
 
 set_target_properties(link_remote_twincat
   PROPERTIES

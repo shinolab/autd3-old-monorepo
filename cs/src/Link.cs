@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/01/2023
+ * Last Modified: 14/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -66,13 +66,33 @@ namespace AUTD3Sharp
 
         public sealed class Debug
         {
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnLogOutputCallback(string str);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void OnLogFlushCallback();
+
+            IntPtr _output = IntPtr.Zero;
+            IntPtr _flush = IntPtr.Zero;
+            DebugLevel _level = DebugLevel.Debug;
+
+            public Debug LogFunc(OnLogOutputCallback output, OnLogFlushCallback flush)
+            {
+                _output = Marshal.GetFunctionPointerForDelegate(output);
+                _flush = Marshal.GetFunctionPointerForDelegate(flush);
+                return this;
+            }
+
+            public Debug Level(DebugLevel level)
+            {
+                _level = level;
+                return this;
+            }
+
             public Link Build()
             {
-                NativeMethods.LinkDebug.AUTDLinkDebug(out var handle);
+                NativeMethods.LinkDebug.AUTDLinkDebug(out var handle, (int)_level, _output, _flush);
                 return new Link(handle);
             }
         }
-
 
         public sealed class SOEM
         {
@@ -81,6 +101,11 @@ namespace AUTD3Sharp
             [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnLogOutputCallback(string str);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void OnLogFlushCallback();
+
+
+            IntPtr _output = IntPtr.Zero;
+            IntPtr _flush = IntPtr.Zero;
+            AUTD3Sharp.DebugLevel _level = AUTD3Sharp.DebugLevel.Info;
 
             private string _ifname;
             private ushort _sendCycle;
@@ -136,15 +161,29 @@ namespace AUTD3Sharp
                 _onLost = Marshal.GetFunctionPointerForDelegate(onLost);
                 return this;
             }
+
             public SOEM CheckInterval(ulong interval)
             {
                 _checkInterval = interval;
                 return this;
             }
 
+            public SOEM DebugLogFunc(OnLogOutputCallback output, OnLogFlushCallback flush)
+            {
+                _output = Marshal.GetFunctionPointerForDelegate(output);
+                _flush = Marshal.GetFunctionPointerForDelegate(flush);
+                return this;
+            }
+
+            public SOEM DebugLevel(AUTD3Sharp.DebugLevel level)
+            {
+                _level = level;
+                return this;
+            }
+
             public Link Build()
             {
-                NativeMethods.LinkSOEM.AUTDLinkSOEM(out var handle, _ifname, _sync0Cycle, _sendCycle, _freerun, _onLost, _highPrecision, _checkInterval);
+                NativeMethods.LinkSOEM.AUTDLinkSOEM(out var handle, _ifname, _sync0Cycle, _sendCycle, _freerun, _onLost, _highPrecision, _checkInterval, (int)_level, _output, _flush);
                 return new Link(handle);
             }
 
@@ -159,19 +198,6 @@ namespace AUTD3Sharp
                     yield return new EtherCATAdapter(sbDesc.ToString(), sbName.ToString());
                 }
                 NativeMethods.LinkSOEM.AUTDFreeAdapterPointer(handle);
-            }
-
-            public static void SetLogLevel(int level)
-            {
-                NativeMethods.LinkSOEM.AUTDLinkSOEMSetLogLevel(level);
-            }
-
-            public static void SetLogFunc(OnLogOutputCallback output, OnLogFlushCallback flush)
-            {
-                var onOutput = Marshal.GetFunctionPointerForDelegate(output);
-                var onFlush = Marshal.GetFunctionPointerForDelegate(flush);
-
-                NativeMethods.LinkSOEM.AUTDLinkSOEMSetDefaultLogger(onOutput, onFlush);
             }
         }
 

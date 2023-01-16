@@ -47,7 +47,7 @@ static void bm_gain_holo_sdp(benchmark::State& state) {
   for (auto& focus : foci) g.add_focus(focus, 1);
 
   for (auto _ : state) {
-    g.init(autd.mode(), autd.geometry());
+    g.calc(autd.geometry());
   }
 }
 
@@ -65,7 +65,7 @@ static void bm_gain_holo_evd(benchmark::State& state) {
   for (auto& focus : foci) g.add_focus(focus, 1);
 
   for (auto _ : state) {
-    g.init(autd.mode(), autd.geometry());
+    g.calc(autd.geometry());
   }
 }
 
@@ -83,7 +83,7 @@ static void bm_gain_holo_lss(benchmark::State& state) {
   for (auto& focus : foci) g.add_focus(focus, 1);
 
   for (auto _ : state) {
-    g.init(autd.mode(), autd.geometry());
+    g.calc(autd.geometry());
   }
 }
 
@@ -101,7 +101,7 @@ static void bm_gain_holo_gs(benchmark::State& state) {
   for (auto& focus : foci) g.add_focus(focus, 1);
 
   for (auto _ : state) {
-    g.init(autd.mode(), autd.geometry());
+    g.calc(autd.geometry());
   }
 }
 
@@ -119,7 +119,7 @@ static void bm_gain_holo_gspat(benchmark::State& state) {
   for (auto& focus : foci) g.add_focus(focus, 1);
 
   for (auto _ : state) {
-    g.init(autd.mode(), autd.geometry());
+    g.calc(autd.geometry());
   }
 }
 
@@ -137,7 +137,7 @@ static void bm_gain_holo_lm(benchmark::State& state) {
   for (auto& focus : foci) g.add_focus(focus, 1);
 
   for (auto _ : state) {
-    g.init(autd.mode(), autd.geometry());
+    g.calc(autd.geometry());
   }
 }
 
@@ -155,7 +155,7 @@ static void bm_gain_holo_greedy(benchmark::State& state) {
   for (auto& focus : foci) g.add_focus(focus, 1);
 
   for (auto _ : state) {
-    g.init(autd.mode(), autd.geometry());
+    g.calc(autd.geometry());
   }
 }
 

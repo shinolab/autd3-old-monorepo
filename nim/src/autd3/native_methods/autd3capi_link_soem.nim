@@ -18,9 +18,6 @@ proc AUTDFreeAdapterPointer*(p_adapter: pointer) {.cdecl,
     importc: "AUTDFreeAdapterPointer", dynlib: dll.}
 proc AUTDLinkSOEM*(`out`: ptr pointer; ifname: cstring; sync0_cycle: uint16;
                   send_cycle: uint16; freerun: bool; on_lost: pointer;
-                  high_precision: bool; state_check_interval: uint64) {.cdecl,
+                  high_precision: bool; state_check_interval: uint64; level: int32;
+                  out_func: pointer; flush_func: pointer) {.cdecl,
     importc: "AUTDLinkSOEM", dynlib: dll.}
-proc AUTDLinkSOEMSetLogLevel*(level: int32) {.cdecl,
-    importc: "AUTDLinkSOEMSetLogLevel", dynlib: dll.}
-proc AUTDLinkSOEMSetDefaultLogger*(`out`: pointer; flush: pointer) {.cdecl,
-    importc: "AUTDLinkSOEMSetDefaultLogger", dynlib: dll.}

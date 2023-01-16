@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/01/2023
+// Last Modified: 17/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,38 +11,23 @@
 
 #pragma once
 
+#include <algorithm>
+#include <utility>
+#include <vector>
+
 #include "autd3/driver/cpu/datagram.hpp"
-#include "operation.hpp"
+#include "autd3/driver/operation/operation.hpp"
 
 namespace autd3::driver {
-
-struct GainProps {
-  std::vector<Drive> drives{};
-};
-
-struct GainBase {
-  virtual ~GainBase() = default;
-  virtual void init() = 0;
-  virtual void pack(TxDatagram& tx) = 0;
-  [[nodiscard]] virtual bool is_finished() const = 0;
-  GainBase() noexcept = default;
-  GainBase(const GainBase& v) noexcept = default;
-  GainBase& operator=(const GainBase& obj) = default;
-  GainBase(GainBase&& obj) = default;
-  GainBase& operator=(GainBase&& obj) = default;
-};
 
 template <typename T>
 struct Gain;
 
 template <>
-struct Gain<Legacy> final : GainBase {
-  explicit Gain(GainProps& props) : _props(props) {}
+struct Gain<Legacy> final : Operation {
+  explicit Gain(std::vector<Drive> drives) : _drives(std::move(drives)) {}
 
-  void init() override {
-    _sent = false;
-    _props.drives.clear();
-  }
+  void init() override { _sent = false; }
 
   void pack(TxDatagram& tx) override {
     tx.header().cpu_flag.remove(CPUControlFlags::WriteBody);
@@ -52,33 +37,33 @@ struct Gain<Legacy> final : GainBase {
     tx.header().fpga_flag.remove(FPGAControlFlags::STMMode);
 
     tx.num_bodies = 0;
-    if (_sent) return;
-    _sent = true;
+
+    if (is_finished()) return;
 
     tx.num_bodies = tx.num_devices();
 
-    assert(_props.drives.size() == tx.bodies_size());
-    std::transform(_props.drives.begin(), _props.drives.end(), reinterpret_cast<LegacyDrive*>(tx.bodies_raw_ptr()), [](const auto& d) { return d; });
+    assert(_drives.size() == tx.bodies_size());
+    std::transform(_drives.begin(), _drives.end(), reinterpret_cast<LegacyDrive*>(tx.bodies_raw_ptr()), [](const auto& d) { return d; });
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
+
+    _sent = true;
   }
 
   [[nodiscard]] bool is_finished() const override { return _sent; }
 
  private:
-  GainProps& _props;
+  std::vector<Drive> _drives{};
   bool _sent{false};
 };
 
 template <>
-struct Gain<Normal> final : GainBase {
-  explicit Gain(GainProps& props) : _props(props) {}
+struct Gain<Normal> final : Operation {
+  explicit Gain(std::vector<Drive> drives, std::vector<uint16_t> cycles) : _drives(std::move(drives)), _cycles(std::move(cycles)) {}
 
   void init() override {
     _phase_sent = false;
     _duty_sent = false;
-    _props.drives.clear();
-    cycles.clear();
   }
 
   void pack(TxDatagram& tx) override {
@@ -87,36 +72,35 @@ struct Gain<Normal> final : GainBase {
     tx.header().fpga_flag.remove(FPGAControlFlags::LegacyMode);
     tx.header().fpga_flag.remove(FPGAControlFlags::STMMode);
     tx.num_bodies = 0;
+
     if (is_finished()) return;
 
     if (!_phase_sent) {
-      _phase_sent = true;
       pack_phase(tx);
+      _phase_sent = true;
       return;
     }
 
-    _duty_sent = true;
     pack_duty(tx);
+    _duty_sent = true;
   }
 
   [[nodiscard]] bool is_finished() const override { return _phase_sent && _duty_sent; }
 
-  std::vector<uint16_t> cycles{};
-
  private:
   bool _phase_sent{false};
   bool _duty_sent{false};
-
-  GainProps& _props;
+  std::vector<Drive> _drives{};
+  std::vector<uint16_t> _cycles{};
 
   void pack_duty(TxDatagram& tx) const {
     tx.header().cpu_flag.set(CPUControlFlags::IsDuty);
 
     tx.num_bodies = tx.num_devices();
 
-    assert(_props.drives.size() == tx.bodies_size());
-    assert(cycles.size() == tx.bodies_size());
-    std::transform(_props.drives.begin(), _props.drives.end(), cycles.begin(), reinterpret_cast<Duty*>(tx.bodies_raw_ptr()),
+    assert(_drives.size() == tx.bodies_size());
+    assert(_cycles.size() == tx.bodies_size());
+    std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<Duty*>(tx.bodies_raw_ptr()),
                    [](const auto& d, const auto cycle) { return Duty(d, cycle); });
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
@@ -127,9 +111,9 @@ struct Gain<Normal> final : GainBase {
 
     tx.num_bodies = tx.num_devices();
 
-    assert(_props.drives.size() == tx.bodies_size());
-    assert(cycles.size() == tx.bodies_size());
-    std::transform(_props.drives.begin(), _props.drives.end(), cycles.begin(), reinterpret_cast<Phase*>(tx.bodies_raw_ptr()),
+    assert(_drives.size() == tx.bodies_size());
+    assert(_cycles.size() == tx.bodies_size());
+    std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<Phase*>(tx.bodies_raw_ptr()),
                    [](const auto& d, const auto cycle) { return Phase(d, cycle); });
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
@@ -137,14 +121,10 @@ struct Gain<Normal> final : GainBase {
 };
 
 template <>
-struct Gain<NormalPhase> final : GainBase {
-  explicit Gain(GainProps& props) : _props(props) {}
+struct Gain<NormalPhase> final : Operation {
+  explicit Gain(std::vector<Drive> drives, std::vector<uint16_t> cycles) : _drives(std::move(drives)), _cycles(std::move(cycles)) {}
 
-  void init() override {
-    _sent = false;
-    _props.drives.clear();
-    cycles.clear();
-  }
+  void init() override { _sent = false; }
 
   void pack(TxDatagram& tx) override {
     tx.header().cpu_flag.remove(CPUControlFlags::WriteBody);
@@ -152,39 +132,37 @@ struct Gain<NormalPhase> final : GainBase {
     tx.header().fpga_flag.remove(FPGAControlFlags::LegacyMode);
     tx.header().fpga_flag.remove(FPGAControlFlags::STMMode);
     tx.num_bodies = 0;
-    if (is_finished()) return;
 
-    _sent = true;
+    if (is_finished()) return;
 
     tx.header().cpu_flag.remove(CPUControlFlags::IsDuty);
 
     tx.num_bodies = tx.num_devices();
 
-    assert(_props.drives.size() == tx.bodies_size());
-    assert(cycles.size() == tx.bodies_size());
-    std::transform(_props.drives.begin(), _props.drives.end(), cycles.begin(), reinterpret_cast<Phase*>(tx.bodies_raw_ptr()),
+    assert(_drives.size() == tx.bodies_size());
+    assert(_cycles.size() == tx.bodies_size());
+    std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<Phase*>(tx.bodies_raw_ptr()),
                    [](const auto& d, const auto cycle) { return Phase(d, cycle); });
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
+
+    _sent = true;
   }
 
   [[nodiscard]] bool is_finished() const override { return _sent; }
 
-  std::vector<uint16_t> cycles{};
-
  private:
-  GainProps& _props;
+  std::vector<Drive> _drives{};
+  std::vector<uint16_t> _cycles{};
   bool _sent{false};
 };
 
-struct GainDuty final {
-  void init() {
-    _sent = false;
-    drives.clear();
-    cycles.clear();
-  }
+struct Amplitude final : Operation {
+  explicit Amplitude(std::vector<Drive> drives, std::vector<uint16_t> cycles) : _drives(std::move(drives)), _cycles(std::move(cycles)) {}
 
-  void pack(TxDatagram& tx) {
+  void init() override { _sent = false; }
+
+  void pack(TxDatagram& tx) override {
     tx.header().cpu_flag.remove(CPUControlFlags::WriteBody);
     tx.header().cpu_flag.remove(CPUControlFlags::ModDelay);
     tx.header().fpga_flag.remove(FPGAControlFlags::LegacyMode);
@@ -192,26 +170,26 @@ struct GainDuty final {
     tx.num_bodies = 0;
 
     if (is_finished()) return;
-    _sent = true;
 
     tx.header().cpu_flag.set(CPUControlFlags::IsDuty);
 
     tx.num_bodies = tx.num_devices();
 
-    assert(drives.size() == tx.bodies_size());
-    assert(cycles.size() == tx.bodies_size());
-    std::transform(drives.begin(), drives.end(), cycles.begin(), reinterpret_cast<Duty*>(tx.bodies_raw_ptr()),
+    assert(_drives.size() == tx.bodies_size());
+    assert(_cycles.size() == tx.bodies_size());
+    std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<Duty*>(tx.bodies_raw_ptr()),
                    [](const auto& d, const auto cycle) { return Duty(d, cycle); });
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
+
+    _sent = true;
   }
 
-  [[nodiscard]] bool is_finished() const { return _sent; }
-
-  std::vector<Drive> drives{};
-  std::vector<uint16_t> cycles{};
+  [[nodiscard]] bool is_finished() const override { return _sent; }
 
  private:
+  std::vector<Drive> _drives{};
+  std::vector<uint16_t> _cycles{};
   bool _sent{false};
 };
 
