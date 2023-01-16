@@ -3,7 +3,7 @@
 // Created Date: 26/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/01/2023
+// Last Modified: 14/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@
 #include "tcp_interface.hpp"
 
 int main(const int argc, char* argv[]) try {
-  argparse::ArgumentParser program("SOEMAUTDServer", "2.7.4");
+  argparse::ArgumentParser program("SOEMAUTDServer", "2.7.5");
 
   argparse::ArgumentParser list_cmd("list");
   list_cmd.add_description("List EtherCAT adapter names");
@@ -84,10 +84,11 @@ int main(const int argc, char* argv[]) try {
         std::quick_exit(-1);
 #endif
       },
-      freerun ? autd3::link::SyncMode::FreeRun : autd3::link::SyncMode::DC, std::chrono::milliseconds(state_check_interval));
+      freerun ? autd3::link::SyncMode::FreeRun : autd3::link::SyncMode::DC, std::chrono::milliseconds(state_check_interval),
+      autd3::get_default_logger("SOEMAUTDServer Log"));
 
   spdlog::info("Connecting SOEM server...");
-  const auto dev = soem_handler.open({}, 1);
+  const auto dev = soem_handler.open({});
   spdlog::info("{} AUTDs found", dev);
 
   std::unique_ptr<autd3::publish::Interface> interf;

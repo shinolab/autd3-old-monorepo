@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/01/2023
+ * Last Modified: 15/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,13 +19,15 @@ use autd3_traits::Modulation;
 
 use num::integer::gcd;
 
+use super::to_duty;
+
 /// Sine wave modulation in ultrasound amplitude
 #[derive(Modulation)]
 pub struct Sine {
-    op: autd3_core::Modulation,
     freq: usize,
     amp: f64,
     offset: f64,
+    freq_div: u32,
 }
 
 impl Sine {
@@ -50,33 +52,28 @@ impl Sine {
     ///
     pub fn with_params(freq: usize, amp: f64, offset: f64) -> Self {
         Self {
-            op: Default::default(),
             freq,
             amp,
             offset,
+            freq_div: 40960,
         }
     }
+}
 
-    #[allow(clippy::unnecessary_wraps)]
-    fn calc(&mut self) -> Result<()> {
+impl Modulation for Sine {
+    fn calc(&self) -> Result<Vec<u8>> {
         let sf = self.sampling_freq() as usize;
-
         let freq = self.freq.clamp(1, sf / 2);
-
         let d = gcd(sf, freq);
-
         let n = sf / d;
         let rep = freq / d;
-
-        self.op.mod_data.resize(n, 0);
-
-        self.op.mod_data.iter_mut().enumerate().for_each(|(i, m)| {
-            let amp = self.amp / 2.0 * (2.0 * PI * (rep * i) as f64 / n as f64).sin() + self.offset;
-            let amp = amp.clamp(0.0, 1.0);
-            let duty = amp.asin() * 2.0 / PI * 255.0;
-            *m = duty as u8
-        });
-
-        Ok(())
+        Ok((0..n)
+            .map(|i| {
+                let amp =
+                    self.amp / 2.0 * (2.0 * PI * (rep * i) as f64 / n as f64).sin() + self.offset;
+                let amp = amp.clamp(0.0, 1.0);
+                to_duty(amp)
+            })
+            .collect())
     }
 }

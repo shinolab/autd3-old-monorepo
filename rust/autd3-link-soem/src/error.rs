@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/12/2022
+ * Last Modified: 16/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,4 +25,6 @@ pub enum SOEMError {
     NotResponding,
     #[error("One ore more slaves did not reach safe operational state: {0}")]
     NotReachedSafeOp(u16),
+    #[error("Non-AUTD3 device detected")]
+    NotAUTD3Device,
 }

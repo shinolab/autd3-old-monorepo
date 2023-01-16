@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/01/2023
+ * Last Modified: 15/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,16 @@ use anyhow::Result;
 #[derive(Default)]
 pub struct ModDelay {
     sent: bool,
-    pub delays: Vec<u16>,
+    delays: Vec<u16>,
+}
+
+impl ModDelay {
+    pub fn new(delays: Vec<u16>) -> Self {
+        Self {
+            sent: false,
+            delays,
+        }
+    }
 }
 
 impl Operation for ModDelay {

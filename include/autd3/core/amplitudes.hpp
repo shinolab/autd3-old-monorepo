@@ -3,7 +3,7 @@
 // Created Date: 28/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/01/2023
+// Last Modified: 17/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,11 +11,11 @@
 
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "autd3/core/datagram.hpp"
 #include "autd3/core/geometry.hpp"
-#include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/driver/operation/gain.hpp"
 
 namespace autd3::core {
@@ -31,19 +31,12 @@ class Amplitudes final : public DatagramBody {
   Amplitudes(Amplitudes&& obj) = default;
   Amplitudes& operator=(Amplitudes&& obj) = default;
 
-  void init(const Mode, const Geometry& geometry) override {
-    _op.init();
-    _op.cycles = geometry.cycles();
-    _op.drives.resize(geometry.num_transducers(), driver::Drive{0, _amp});
+  std::unique_ptr<driver::Operation> operation(const Geometry& geometry) override {
+    return std::make_unique<driver::Amplitude>(std::vector(geometry.num_transducers(), driver::Drive{0, _amp}), geometry.cycles());
   }
-
-  void pack(driver::TxDatagram& tx) override { _op.pack(tx); }
-
-  [[nodiscard]] bool is_finished() const noexcept override { return _op.is_finished(); }
 
  private:
   driver::autd3_float_t _amp;
-  driver::GainDuty _op;
 };
 
 }  // namespace autd3::core
