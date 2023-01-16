@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 16/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,7 +25,6 @@
 #include "autd3/async.hpp"
 #include "autd3/core/geometry.hpp"
 #include "autd3/core/link.hpp"
-#include "autd3/core/mode.hpp"
 #include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/driver/firmware_version.hpp"
 #include "autd3/driver/operation/force_fan.hpp"
@@ -241,11 +240,6 @@ class Controller {
   [[nodiscard]] bool reads_fpga_info() const noexcept;
 
   /**
-   * @brief Drive mode
-   */
-  [[nodiscard]] core::Mode mode() const noexcept { return _mode; }
-
-  /**
    * @brief Transmission interval between frames when sending multiple data.
    */
   template <typename Rep, typename Period>
@@ -299,7 +293,6 @@ class Controller {
   };
 
   core::Geometry _geometry;
-  core::Mode _mode;
 
   driver::TxDatagram _tx_buf;
   driver::RxDatagram _rx_buf;
@@ -842,7 +835,7 @@ class Controller {
    * @brief Set Mode
    * @param f mode function
    */
-  void operator<<(core::Mode (*f)()) { _mode = f(); }
+  void operator<<(core::Mode (*f)()) { _geometry.mode = f(); }
 
   void operator>>(bool& res) const { res = _last_send_res; }
 };
