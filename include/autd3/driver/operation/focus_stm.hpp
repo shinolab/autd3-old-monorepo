@@ -31,7 +31,7 @@ struct FocusSTM final : Operation {
   void init() override { _sent = 0; }
 
   void pack(TxDatagram& tx) override {
-    assert(points.size() == tx.num_devices());
+    assert(_points.size() == tx.num_devices());
 
     const auto total_size = _points[0].size();
 
