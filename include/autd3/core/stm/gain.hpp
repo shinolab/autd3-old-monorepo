@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/01/2023
+// Last Modified: 16/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -80,45 +80,28 @@ struct GainSTM final : STM {
    * @brief Add gain
    * @param[in] gain gain
    */
-  void add(std::shared_ptr<core::Gain> gain) { _gains.emplace_back(std::move(gain)); }
+  void add(std::shared_ptr<Gain> gain) { _gains.emplace_back(std::move(gain)); }
 
   [[nodiscard]] size_t size() const override { return _gains.size(); }
 
-  void init(const Mode mode_, const Geometry& geometry) override {
-    switch (mode_) {
-      case Mode::Legacy: {
-        auto op = std::make_unique<driver::GainSTM<driver::Legacy>>(_props);
-        op->init();
-        _op = std::move(op);
-      } break;
-      case Mode::Normal: {
-        auto op = std::make_unique<driver::GainSTM<driver::Normal>>(_props);
-        op->init();
-        op->cycles = geometry.cycles();
-        _op = std::move(op);
-      } break;
-      case Mode::NormalPhase: {
-        auto op = std::make_unique<driver::GainSTM<driver::NormalPhase>>(_props);
-        op->init();
-        op->cycles = geometry.cycles();
-        _op = std::move(op);
-      } break;
+  std::unique_ptr<driver::Operation> operation(const Geometry& geometry) override {
+    std::vector<std::vector<driver::Drive>> drives;
+    drives.reserve(_gains.size());
+    std::transform(_gains.begin(), _gains.end(), std::back_inserter(drives), [geometry](const auto& gain) { return gain->calc(geometry); });
+    switch (geometry.mode) {
+      case Mode::Legacy:
+        return std::make_unique<driver::GainSTM<driver::Legacy>>(std::move(drives), _props);
+      case Mode::Normal:
+        return std::make_unique<driver::GainSTM<driver::Normal>>(std::move(drives), geometry.cycles(), _props);
+      case Mode::NormalPhase:
+        return std::make_unique<driver::GainSTM<driver::NormalPhase>>(std::move(drives), geometry.cycles(), _props);
     }
-
-    std::transform(_gains.begin(), _gains.end(), std::back_inserter(_props.drives), [mode_, geometry](const auto& gain) {
-      gain->init(mode_, geometry);
-      return gain->drives();
-    });
+    throw std::runtime_error("Unreachable!");
   }
-
-  void pack(driver::TxDatagram& tx) override { _op->pack(tx); }
-
-  [[nodiscard]] bool is_finished() const override { return _op->is_finished(); }
 
  private:
   std::vector<std::shared_ptr<Gain>> _gains;
   driver::GainSTMProps _props;
-  std::unique_ptr<driver::GainSTMBase> _op;
 };
 
 }  // namespace autd3::core

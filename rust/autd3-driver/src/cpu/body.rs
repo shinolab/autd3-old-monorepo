@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/01/2023
+ * Last Modified: 15/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -40,16 +40,14 @@ impl STMFocus {
     }
 }
 
+pub const FOCUS_STM_BODY_INITIAL_SIZE: usize = 14;
+
 #[repr(C)]
 pub struct FocusSTMBodyInitial<T: ?Sized> {
     data: T,
 }
 
 impl FocusSTMBodyInitial<[u16]> {
-    pub fn data(&self) -> &[u16] {
-        &self.data
-    }
-
     pub fn set_size(&mut self, size: u16) {
         self.data[0] = size;
     }
@@ -79,6 +77,8 @@ impl FocusSTMBodyInitial<[u16]> {
             .for_each(|(d, s)| d.copy_from_slice(&s.buf));
     }
 }
+
+pub const FOCUS_STM_BODY_SUBSEQUENT_SIZE: usize = 2;
 
 #[repr(C)]
 pub struct FocusSTMBodySubsequent<T: ?Sized> {
@@ -154,38 +154,54 @@ pub struct GainSTMBodySubsequent<T: ?Sized> {
 }
 
 #[repr(C)]
-pub struct LegacyPhaseFull {
+pub struct LegacyPhaseFull<const N: usize> {
     phase_0: u8,
     phase_1: u8,
 }
 
-impl LegacyPhaseFull {
-    pub fn set(&mut self, idx: usize, d: &Drive) {
-        let phase = LegacyDrive::to_phase(d);
-        match idx {
-            0 => self.phase_0 = phase,
-            1 => self.phase_1 = phase,
-            _ => unreachable!(),
-        }
+impl LegacyPhaseFull<0> {
+    pub fn set(&mut self, d: &Drive) {
+        self.phase_0 = LegacyDrive::to_phase(d);
+    }
+}
+
+impl LegacyPhaseFull<1> {
+    pub fn set(&mut self, d: &Drive) {
+        self.phase_1 = LegacyDrive::to_phase(d);
     }
 }
 
 #[repr(C)]
-pub struct LegacyPhaseHalf {
+pub struct LegacyPhaseHalf<const N: usize> {
     phase_01: u8,
     phase_23: u8,
 }
 
-impl LegacyPhaseHalf {
-    pub fn set(&mut self, idx: usize, d: &Drive) {
+impl LegacyPhaseHalf<0> {
+    pub fn set(&mut self, d: &Drive) {
         let phase = LegacyDrive::to_phase(d);
-        match idx {
-            0 => self.phase_01 = (self.phase_01 & 0xF0) | ((phase >> 4) & 0x0F),
-            1 => self.phase_01 = (self.phase_01 & 0x0F) | (phase & 0xF0),
-            2 => self.phase_23 = (self.phase_23 & 0xF0) | ((phase >> 4) & 0x0F),
-            3 => self.phase_23 = (self.phase_23 & 0x0F) | (phase & 0xF0),
-            _ => unreachable!(),
-        }
+        self.phase_01 = (self.phase_01 & 0xF0) | ((phase >> 4) & 0x0F);
+    }
+}
+
+impl LegacyPhaseHalf<1> {
+    pub fn set(&mut self, d: &Drive) {
+        let phase = LegacyDrive::to_phase(d);
+        self.phase_01 = (self.phase_01 & 0x0F) | (phase & 0xF0);
+    }
+}
+
+impl LegacyPhaseHalf<2> {
+    pub fn set(&mut self, d: &Drive) {
+        let phase = LegacyDrive::to_phase(d);
+        self.phase_23 = (self.phase_23 & 0xF0) | ((phase >> 4) & 0x0F);
+    }
+}
+
+impl LegacyPhaseHalf<3> {
+    pub fn set(&mut self, d: &Drive) {
+        let phase = LegacyDrive::to_phase(d);
+        self.phase_23 = (self.phase_23 & 0x0F) | (phase & 0xF0);
     }
 }
 
@@ -206,11 +222,11 @@ impl GainSTMBodySubsequent<[u16]> {
         unsafe { std::mem::transmute(&mut self.data) }
     }
 
-    pub fn legacy_phase_full_mut(&mut self) -> &mut [LegacyPhaseFull] {
+    pub fn legacy_phase_full_mut<const N: usize>(&mut self) -> &mut [LegacyPhaseFull<N>] {
         unsafe { std::mem::transmute(&mut self.data) }
     }
 
-    pub fn legacy_phase_half_mut(&mut self) -> &mut [LegacyPhaseHalf] {
+    pub fn legacy_phase_half_mut<const N: usize>(&mut self) -> &mut [LegacyPhaseHalf<N>] {
         unsafe { std::mem::transmute(&mut self.data) }
     }
 }
