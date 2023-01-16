@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/01/2023
+// Last Modified: 16/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -53,7 +53,7 @@ void back_prop(const BackendPtr& backend, const MatrixXc& transfer, const Vector
 }
 }  // namespace
 
-void SDP::calc(const core::Geometry& geometry) {
+std::vector<driver::Drive> SDP::calc(const core::Geometry& geometry) {
   _backend->init();
 
   const auto m = static_cast<Eigen::Index>(_foci.size());
@@ -130,19 +130,22 @@ void SDP::calc(const core::Geometry& geometry) {
   _backend->to_host(q);
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
+  std::vector<driver::Drive> drives;
+  drives.resize(geometry.num_transducers());
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
 #endif
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
     return driver::Drive{phase, power};
   });
+  return drives;
 }
 
-void EVD::calc(const core::Geometry& geometry) {
+std::vector<driver::Drive> EVD::calc(const core::Geometry& geometry) {
   _backend->init();
 
   const auto m = static_cast<Eigen::Index>(_foci.size());
@@ -196,19 +199,22 @@ void EVD::calc(const core::Geometry& geometry) {
 
   _backend->to_host(gtf);
   const auto max_coefficient = std::abs(_backend->max_abs_element(gtf));
+  std::vector<driver::Drive> drives;
+  drives.resize(geometry.num_transducers());
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
 #endif
     const auto phase = std::arg(gtf(tr.id())) + driver::pi;
     const auto raw = std::abs(gtf(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
     return driver::Drive{phase, power};
   });
+  return drives;
 }
 
-void LSS::calc(const core::Geometry& geometry) {
+std::vector<driver::Drive> LSS::calc(const core::Geometry& geometry) {
   _backend->init();
 
   const auto m = static_cast<Eigen::Index>(_foci.size());
@@ -224,19 +230,22 @@ void LSS::calc(const core::Geometry& geometry) {
   _backend->to_host(q);
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
+  std::vector<driver::Drive> drives;
+  drives.resize(geometry.num_transducers());
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
 #endif
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
     return driver::Drive{phase, power};
   });
+  return drives;
 }
 
-void GS::calc(const core::Geometry& geometry) {
+std::vector<driver::Drive> GS::calc(const core::Geometry& geometry) {
   _backend->init();
 
   const auto m = static_cast<Eigen::Index>(_foci.size());
@@ -265,19 +274,22 @@ void GS::calc(const core::Geometry& geometry) {
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
   _backend->to_host(q);
+  std::vector<driver::Drive> drives;
+  drives.resize(geometry.num_transducers());
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
 #endif
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
     return driver::Drive{phase, power};
   });
+  return drives;
 }
 
-void GSPAT::calc(const core::Geometry& geometry) {
+std::vector<driver::Drive> GSPAT::calc(const core::Geometry& geometry) {
   _backend->init();
 
   const auto m = static_cast<Eigen::Index>(_foci.size());
@@ -317,16 +329,19 @@ void GSPAT::calc(const core::Geometry& geometry) {
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
   _backend->to_host(q);
+  std::vector<driver::Drive> drives;
+  drives.resize(geometry.num_transducers());
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
 #endif
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
     return driver::Drive{phase, power};
   });
+  return drives;
 }
 
 void make_bhb(const BackendPtr& backend, const std::vector<core::Vector3>& foci, std::vector<complex>& amps, const core::Geometry& geometry,
@@ -371,7 +386,7 @@ driver::autd3_float_t calc_fx(const BackendPtr& backend, const VectorXd& zero, c
   return backend->dot(t, tmp).real();
 }
 
-void LM::calc(const core::Geometry& geometry) {
+std::vector<driver::Drive> LM::calc(const core::Geometry& geometry) {
   _backend->init();
 
   const auto m = static_cast<Eigen::Index>(_foci.size());
@@ -456,18 +471,22 @@ void LM::calc(const core::Geometry& geometry) {
   }
 
   _backend->to_host(x);
+  std::vector<driver::Drive> drives;
+  drives.resize(geometry.num_transducers());
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
 #endif
     const auto phase = driver::rem_euclid(x(tr.id()), 2 * driver::pi);
     const auto power = constraint->convert(1.0, 1.0);
     return driver::Drive{phase, power};
   });
+
+  return drives;
 }
 
-void Greedy::calc(const core::Geometry& geometry) {
+std::vector<driver::Drive> Greedy::calc(const core::Geometry& geometry) {
   const auto m = static_cast<Eigen::Index>(_foci.size());
   const auto n = geometry.num_transducers();
 
@@ -499,6 +518,8 @@ void Greedy::calc(const core::Geometry& geometry) {
   std::random_device seed_gen;
   std::mt19937 engine(seed_gen());
   std::shuffle(select.begin(), select.end(), engine);
+  std::vector<driver::Drive> drives;
+  drives.resize(geometry.num_transducers());
   for (const auto i : select) {
     const auto& transducer = geometry[i];
     size_t min_idx = 0;
@@ -514,12 +535,13 @@ void Greedy::calc(const core::Geometry& geometry) {
 
     const auto power = constraint->convert(1.0, 1.0);
 
-    _props.drives[transducer.id()].amp = power;
-    _props.drives[transducer.id()].phase = std::arg(phases[min_idx]) + driver::pi;
+    drives[transducer.id()].amp = power;
+    drives[transducer.id()].phase = std::arg(phases[min_idx]) + driver::pi;
   }
+  return drives;
 }
 
-void LSSGreedy::calc(const core::Geometry& geometry) {
+std::vector<driver::Drive> LSSGreedy::calc(const core::Geometry& geometry) {
   const auto m = static_cast<Eigen::Index>(_foci.size());
   const auto n = geometry.num_transducers();
 
@@ -577,18 +599,22 @@ void LSSGreedy::calc(const core::Geometry& geometry) {
 
   _backend->to_host(q);
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
+  std::vector<driver::Drive> drives;
+  drives.resize(geometry.num_transducers());
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
 #endif
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
     return driver::Drive{std::arg(q(tr.id())) + driver::pi, power};
   });
+
+  return drives;
 }
 
-void APO::calc(const core::Geometry& geometry) {
+std::vector<driver::Drive> APO::calc(const core::Geometry& geometry) {
   auto make_ri = [&](const MatrixXc& g, const Eigen::Index m, const Eigen::Index n, const Eigen::Index i) {
     MatrixXc di = MatrixXc::Zero(m, m);
     di(i, i) = ONE;
@@ -700,16 +726,20 @@ void APO::calc(const core::Geometry& geometry) {
 
   _backend->to_host(q);
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
+  std::vector<driver::Drive> drives;
+  drives.resize(geometry.num_transducers());
 #ifdef HOLO_PARALLEL_FOR
-  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
+  std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
 #else
-  std::transform(geometry.begin(), geometry.end(), this->begin(), [&](const auto& tr) {
+  std::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
 #endif
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
     return driver::Drive{phase, power};
   });
+
+  return drives;
 }
 
 }  // namespace autd3::gain::holo
