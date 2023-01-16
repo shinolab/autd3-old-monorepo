@@ -27,7 +27,12 @@ struct Operation {
   virtual ~Operation() = default;
   virtual void init() = 0;
   virtual void pack(TxDatagram& tx) = 0;
-  virtual bool is_finished() const = 0;
+  [[nodiscard]] virtual bool is_finished() const = 0;
+  Operation() = default;
+  Operation(const Operation& v) = default;
+  Operation& operator=(const Operation& obj) = default;
+  Operation(Operation&& obj) = default;
+  Operation& operator=(Operation&& obj) = default;
 };
 
 template <typename T>
