@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 16/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,7 +12,6 @@
 #pragma once
 
 #include "autd3/core/geometry.hpp"
-#include "autd3/core/mode.hpp"
 #include "autd3/driver/operation/null.hpp"
 
 namespace autd3::core {
@@ -81,9 +80,7 @@ struct DatagramHeader {
   DatagramHeader(DatagramHeader&& obj) = default;
   DatagramHeader& operator=(DatagramHeader&& obj) = default;
 
-  virtual void init() = 0;
-  virtual void pack(driver::TxDatagram& tx) = 0;
-  [[nodiscard]] virtual bool is_finished() const = 0;
+  virtual std::unique_ptr<driver::Operation> operation() = 0;
 };
 
 /**
@@ -97,9 +94,7 @@ struct DatagramBody {
   DatagramBody(DatagramBody&& obj) = default;
   DatagramBody& operator=(DatagramBody&& obj) = default;
 
-  virtual void init(Mode mode, const Geometry& geometry) = 0;
-  virtual void pack(driver::TxDatagram& tx) = 0;
-  [[nodiscard]] virtual bool is_finished() const = 0;
+  virtual std::unique_ptr<driver::Operation> operation(const Geometry& geometry) = 0;
 };
 
 /**
@@ -113,13 +108,7 @@ struct NullHeader final : DatagramHeader {
   NullHeader(NullHeader&& obj) = default;
   NullHeader& operator=(NullHeader&& obj) = default;
 
-  void init() override { _op.init(); }
-  void pack(driver::TxDatagram& tx) override { return _op.pack(tx); }
-
-  [[nodiscard]] bool is_finished() const override { return _op.is_finished(); }
-
- private:
-  driver::NullHeader _op;
+  std::unique_ptr<driver::Operation> operation() override { return std::make_unique<driver::NullHeader>(); }
 };
 
 /**
@@ -133,14 +122,7 @@ struct NullBody final : DatagramBody {
   NullBody(NullBody&& obj) = default;
   NullBody& operator=(NullBody&& obj) = default;
 
-  void init(const Mode, const Geometry&) override { _op.init(); }
-
-  void pack(driver::TxDatagram& tx) override { _op.pack(tx); }
-
-  [[nodiscard]] bool is_finished() const override { return _op.is_finished(); }
-
- private:
-  driver::NullBody _op;
+  std::unique_ptr<driver::Operation> operation(const Geometry&) override { return std::make_unique<driver::NullBody>(); }
 };
 
 }  // namespace autd3::core
