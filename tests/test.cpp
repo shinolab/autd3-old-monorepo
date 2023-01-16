@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/01/2023
+// Last Modified: 16/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -589,6 +589,7 @@ TEST(ControllerTest, focus_stm) {
 
   autd3::FocusSTM stm;
   std::copy(points.begin(), points.end(), std::back_inserter(stm));
+  stm.set_frequency(1);
 
   autd << stm;
   for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
@@ -654,8 +655,7 @@ TEST(ControllerTest, gain_stm_legacy) {
     std::for_each(iota.begin(), iota.end(), [&](const size_t i) {
       const auto theta = 2 * autd3::pi * static_cast<autd3::driver::autd3_float_t>(i) / static_cast<autd3::driver::autd3_float_t>(size);
       autd3::gain::Focus f(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
-      f.init(autd.mode(), autd.geometry());
-      drives.emplace_back(f.drives());
+      drives.emplace_back(f.calc(autd.geometry()));
       stm.add(f);
     });
 
@@ -684,8 +684,7 @@ TEST(ControllerTest, gain_stm_legacy) {
     std::for_each(iota.begin(), iota.end(), [&](const size_t i) {
       const auto theta = 2 * autd3::pi * static_cast<autd3::driver::autd3_float_t>(i) / static_cast<autd3::driver::autd3_float_t>(size);
       autd3::gain::Focus f(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
-      f.init(autd.mode(), autd.geometry());
-      drives.emplace_back(f.drives());
+      drives.emplace_back(f.calc(autd.geometry()));
       stm.add(f);
     });
 
@@ -715,8 +714,7 @@ TEST(ControllerTest, gain_stm_legacy) {
     std::for_each(iota.begin(), iota.end(), [&](const size_t i) {
       const auto theta = 2 * autd3::pi * static_cast<autd3::driver::autd3_float_t>(i) / static_cast<autd3::driver::autd3_float_t>(size);
       autd3::gain::Focus f(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
-      f.init(autd.mode(), autd.geometry());
-      drives.emplace_back(f.drives());
+      drives.emplace_back(f.calc(autd.geometry()));
       stm.add(f);
     });
 
@@ -777,8 +775,7 @@ TEST(ControllerTest, gain_stm_normal) {
     std::for_each(iota.begin(), iota.end(), [&](const size_t i) {
       const auto theta = 2 * autd3::pi * static_cast<autd3::driver::autd3_float_t>(i) / static_cast<autd3::driver::autd3_float_t>(size);
       autd3::gain::Focus f(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
-      f.init(autd.mode(), autd.geometry());
-      drives.emplace_back(f.drives());
+      drives.emplace_back(f.calc(autd.geometry()));
       stm.add(f);
     });
 
@@ -808,8 +805,7 @@ TEST(ControllerTest, gain_stm_normal) {
     std::for_each(iota.begin(), iota.end(), [&](const size_t i) {
       const auto theta = 2 * autd3::pi * static_cast<autd3::driver::autd3_float_t>(i) / static_cast<autd3::driver::autd3_float_t>(size);
       autd3::gain::Focus f(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
-      f.init(autd.mode(), autd.geometry());
-      drives.emplace_back(f.drives());
+      drives.emplace_back(f.calc(autd.geometry()));
       stm.add(f);
     });
 
@@ -867,8 +863,7 @@ TEST(ControllerTest, gain_stm_normal_phase) {
     std::for_each(iota.begin(), iota.end(), [&](const size_t i) {
       const auto theta = 2 * autd3::pi * static_cast<autd3::driver::autd3_float_t>(i) / static_cast<autd3::driver::autd3_float_t>(size);
       autd3::gain::Focus f(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
-      f.init(autd.mode(), autd.geometry());
-      drives.emplace_back(f.drives());
+      drives.emplace_back(f.calc(autd.geometry()));
       stm.add(f);
     });
 
@@ -898,8 +893,7 @@ TEST(ControllerTest, gain_stm_normal_phase) {
     std::for_each(iota.begin(), iota.end(), [&](const size_t i) {
       const auto theta = 2 * autd3::pi * static_cast<autd3::driver::autd3_float_t>(i) / static_cast<autd3::driver::autd3_float_t>(size);
       autd3::gain::Focus f(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
-      f.init(autd.mode(), autd.geometry());
-      drives.emplace_back(f.drives());
+      drives.emplace_back(f.calc(autd.geometry()));
       stm.add(f);
     });
 
