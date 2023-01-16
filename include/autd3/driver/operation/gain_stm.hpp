@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/01/2023
+// Last Modified: 16/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,39 +14,27 @@
 #include <optional>
 
 #include "autd3/driver/cpu/datagram.hpp"
-#include "operation.hpp"
+#include "autd3/driver/operation/operation.hpp"
 
 namespace autd3::driver {
 
 struct GainSTMProps {
-  std::vector<std::vector<Drive>> drives{};
   uint32_t freq_div{4096};
   GainSTMMode mode{GainSTMMode::PhaseDutyFull};
   std::optional<uint16_t> start_idx{std::nullopt};
   std::optional<uint16_t> finish_idx{std::nullopt};
 };
 
-struct GainSTMBase {
-  virtual ~GainSTMBase() = default;
-  virtual void init() = 0;
-  virtual void pack(TxDatagram& tx) = 0;
-  [[nodiscard]] virtual bool is_finished() const = 0;
-  GainSTMBase() noexcept = default;
-  GainSTMBase(const GainSTMBase& v) noexcept = default;
-  GainSTMBase& operator=(const GainSTMBase& obj) = default;
-  GainSTMBase(GainSTMBase&& obj) = default;
-  GainSTMBase& operator=(GainSTMBase&& obj) = default;
-};
-
 template <typename T>
 struct GainSTM;
 
 template <>
-struct GainSTM<Legacy> final : GainSTMBase {
-  explicit GainSTM(GainSTMProps& props) : _props(props) {}
+struct GainSTM<Legacy> final : Operation {
+  explicit GainSTM(std::vector<std::vector<Drive>> drives, const GainSTMProps props) : _drives(std::move(drives)), _props(props) {}
 
   void init() override { _sent = 0; }
-  [[nodiscard]] bool is_finished() const override { return _sent >= _props.drives.size() + 1; }
+
+  [[nodiscard]] bool is_finished() const override { return _sent >= _drives.size() + 1; }
 
   void pack(TxDatagram& tx) override {
     tx.header().cpu_flag.remove(CPUControlFlags::WriteBody);
@@ -62,16 +50,16 @@ struct GainSTM<Legacy> final : GainSTMBase {
 
     if (is_finished()) return;
 
-    if (_props.drives.size() > GAIN_STM_LEGACY_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+    if (_drives.size() > GAIN_STM_LEGACY_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
 
     if (_props.start_idx) {
-      if (static_cast<size_t>(_props.start_idx.value()) >= _props.drives.size()) throw std::runtime_error("STM start index out of range");
+      if (static_cast<size_t>(_props.start_idx.value()) >= _drives.size()) throw std::runtime_error("STM start index out of range");
       tx.header().fpga_flag.set(FPGAControlFlags::UseSTMStartIdx);
     } else {
       tx.header().fpga_flag.remove(FPGAControlFlags::UseSTMStartIdx);
     }
     if (_props.finish_idx) {
-      if (static_cast<size_t>(_props.finish_idx.value()) >= _props.drives.size()) throw std::runtime_error("STM finish index out of range");
+      if (static_cast<size_t>(_props.finish_idx.value()) >= _drives.size()) throw std::runtime_error("STM finish index out of range");
       tx.header().fpga_flag.set(FPGAControlFlags::UseSTMFinishIdx);
     } else {
       tx.header().fpga_flag.remove(FPGAControlFlags::UseSTMFinishIdx);
@@ -88,7 +76,7 @@ struct GainSTM<Legacy> final : GainSTMBase {
         const auto& [_, d] = body;
         d.gain_stm_initial().freq_div = _props.freq_div;
         d.gain_stm_initial().mode = _props.mode;
-        d.gain_stm_initial().cycle = static_cast<uint16_t>(_props.drives.size());
+        d.gain_stm_initial().cycle = static_cast<uint16_t>(_drives.size());
         d.gain_stm_initial().stm_start_idx = _props.start_idx.value_or(0);
         d.gain_stm_initial().stm_finish_idx = _props.finish_idx.value_or(0);
       });
@@ -96,39 +84,39 @@ struct GainSTM<Legacy> final : GainSTMBase {
     } else {
       switch (_props.mode) {
         case GainSTMMode::PhaseDutyFull:
-          is_last_frame = _sent + 1 >= _props.drives.size() + 1;
-          std::transform(_props.drives[_sent - 1].begin(), _props.drives[_sent - 1].end(), reinterpret_cast<LegacyDrive*>(tx.bodies_raw_ptr()),
+          is_last_frame = _sent + 1 >= _drives.size() + 1;
+          std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyDrive*>(tx.bodies_raw_ptr()),
                          [](const auto& d) { return d; });
           _sent++;
           break;
         case GainSTMMode::PhaseFull:
-          is_last_frame = _sent + 2 >= _props.drives.size() + 1;
-          std::transform(_props.drives[_sent - 1].begin(), _props.drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseFull0*>(tx.bodies_raw_ptr()),
+          is_last_frame = _sent + 2 >= _drives.size() + 1;
+          std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseFull0*>(tx.bodies_raw_ptr()),
                          [](const auto& d) { return d; });
           _sent++;
-          if (_sent - 1 < _props.drives.size()) {
-            std::transform(_props.drives[_sent - 1].begin(), _props.drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseFull1*>(tx.bodies_raw_ptr()),
+          if (_sent - 1 < _drives.size()) {
+            std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseFull1*>(tx.bodies_raw_ptr()),
                            [](const auto& d) { return d; });
             _sent++;
           }
           break;
         case GainSTMMode::PhaseHalf:
-          is_last_frame = _sent + 4 >= _props.drives.size() + 1;
-          std::transform(_props.drives[_sent - 1].begin(), _props.drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf0*>(tx.bodies_raw_ptr()),
+          is_last_frame = _sent + 4 >= _drives.size() + 1;
+          std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf0*>(tx.bodies_raw_ptr()),
                          [](const auto& d) { return d; });
           _sent++;
-          if (_sent - 1 < _props.drives.size()) {
-            std::transform(_props.drives[_sent - 1].begin(), _props.drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf1*>(tx.bodies_raw_ptr()),
+          if (_sent - 1 < _drives.size()) {
+            std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf1*>(tx.bodies_raw_ptr()),
                            [](const auto& d) { return d; });
             _sent++;
           }
-          if (_sent - 1 < _props.drives.size()) {
-            std::transform(_props.drives[_sent - 1].begin(), _props.drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf2*>(tx.bodies_raw_ptr()),
+          if (_sent - 1 < _drives.size()) {
+            std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf2*>(tx.bodies_raw_ptr()),
                            [](const auto& d) { return d; });
             _sent++;
           }
-          if (_sent - 1 < _props.drives.size()) {
-            std::transform(_props.drives[_sent - 1].begin(), _props.drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf3*>(tx.bodies_raw_ptr()),
+          if (_sent - 1 < _drives.size()) {
+            std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf3*>(tx.bodies_raw_ptr()),
                            [](const auto& d) { return d; });
             _sent++;
           }
@@ -144,14 +132,17 @@ struct GainSTM<Legacy> final : GainSTMBase {
   }
 
  private:
-  GainSTMProps& _props;
+  std::vector<std::vector<Drive>> _drives{};
+  GainSTMProps _props;
   size_t _sent{0};
 };
 
 template <>
-struct GainSTM<Normal> final : GainSTMBase {
-  explicit GainSTM(GainSTMProps& props) : _props(props) {}
-  [[nodiscard]] bool is_finished() const override { return _sent >= _props.drives.size() + 1; }
+struct GainSTM<Normal> final : Operation {
+  explicit GainSTM(std::vector<std::vector<Drive>> drives, std::vector<uint16_t> cycles, const GainSTMProps props)
+      : _drives(std::move(drives)), _cycles(std::move(cycles)), _props(props) {}
+
+  [[nodiscard]] bool is_finished() const override { return _sent >= _drives.size() + 1; }
 
   void init() override {
     _sent = 0;
@@ -197,24 +188,24 @@ struct GainSTM<Normal> final : GainSTMBase {
     }
   }
 
-  std::vector<uint16_t> cycles{};
-
  private:
-  GainSTMProps& _props;
+  std::vector<std::vector<Drive>> _drives{};
+  std::vector<uint16_t> _cycles{};
+  GainSTMProps _props;
   size_t _sent{0};
   bool _next_duty{false};
 
   void pack_phase(TxDatagram& tx) const {
-    if (_props.drives.size() > GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+    if (_drives.size() > GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
 
     if (_props.start_idx) {
-      if (static_cast<size_t>(_props.start_idx.value()) >= _props.drives.size()) throw std::runtime_error("STM start index out of range");
+      if (static_cast<size_t>(_props.start_idx.value()) >= _drives.size()) throw std::runtime_error("STM start index out of range");
       tx.header().fpga_flag.set(FPGAControlFlags::UseSTMStartIdx);
     } else {
       tx.header().fpga_flag.remove(FPGAControlFlags::UseSTMStartIdx);
     }
     if (_props.finish_idx) {
-      if (static_cast<size_t>(_props.finish_idx.value()) >= _props.drives.size()) throw std::runtime_error("STM finish index out of range");
+      if (static_cast<size_t>(_props.finish_idx.value()) >= _drives.size()) throw std::runtime_error("STM finish index out of range");
       tx.header().fpga_flag.set(FPGAControlFlags::UseSTMFinishIdx);
     } else {
       tx.header().fpga_flag.remove(FPGAControlFlags::UseSTMFinishIdx);
@@ -232,16 +223,16 @@ struct GainSTM<Normal> final : GainSTMBase {
         const auto& [_, d] = body;
         d.gain_stm_initial().freq_div = _props.freq_div;
         d.gain_stm_initial().mode = _props.mode;
-        d.gain_stm_initial().cycle = static_cast<uint16_t>(_props.drives.size());
+        d.gain_stm_initial().cycle = static_cast<uint16_t>(_drives.size());
         d.gain_stm_initial().stm_start_idx = _props.start_idx.value_or(0);
         d.gain_stm_initial().stm_finish_idx = _props.finish_idx.value_or(0);
       });
     } else {
-      std::transform(_props.drives[_sent - 1].begin(), _props.drives[_sent - 1].end(), cycles.begin(), reinterpret_cast<Phase*>(tx.bodies_raw_ptr()),
+      std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), _cycles.begin(), reinterpret_cast<Phase*>(tx.bodies_raw_ptr()),
                      [](const auto& d, const auto cycle) { return Phase(d, cycle); });
     }
 
-    if (_sent + 1 == _props.drives.size() + 1) tx.header().cpu_flag.set(CPUControlFlags::STMEnd);
+    if (_sent + 1 == _drives.size() + 1) tx.header().cpu_flag.set(CPUControlFlags::STMEnd);
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
 
@@ -249,14 +240,14 @@ struct GainSTM<Normal> final : GainSTMBase {
   }
 
   void pack_duty(TxDatagram& tx) const {
-    if (_props.drives.size() > GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+    if (_drives.size() > GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
 
     if (_props.start_idx) {
-      if (static_cast<size_t>(_props.start_idx.value()) >= _props.drives.size()) throw std::runtime_error("STM start index out of range");
+      if (static_cast<size_t>(_props.start_idx.value()) >= _drives.size()) throw std::runtime_error("STM start index out of range");
       tx.header().fpga_flag.set(FPGAControlFlags::UseSTMStartIdx);
     }
     if (_props.finish_idx) {
-      if (static_cast<size_t>(_props.finish_idx.value()) >= _props.drives.size()) throw std::runtime_error("STM finish index out of range");
+      if (static_cast<size_t>(_props.finish_idx.value()) >= _drives.size()) throw std::runtime_error("STM finish index out of range");
       tx.header().fpga_flag.set(FPGAControlFlags::UseSTMFinishIdx);
     }
 
@@ -272,16 +263,16 @@ struct GainSTM<Normal> final : GainSTMBase {
         const auto& [_, d] = body;
         d.gain_stm_initial().freq_div = _props.freq_div;
         d.gain_stm_initial().mode = _props.mode;
-        d.gain_stm_initial().cycle = static_cast<uint16_t>(_props.drives.size());
+        d.gain_stm_initial().cycle = static_cast<uint16_t>(_drives.size());
         d.gain_stm_initial().stm_start_idx = _props.start_idx.value_or(0);
         d.gain_stm_initial().stm_finish_idx = _props.finish_idx.value_or(0);
       });
     } else {
-      std::transform(_props.drives[_sent - 1].begin(), _props.drives[_sent - 1].end(), cycles.begin(), reinterpret_cast<Duty*>(tx.bodies_raw_ptr()),
+      std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), _cycles.begin(), reinterpret_cast<Duty*>(tx.bodies_raw_ptr()),
                      [](const auto& d, const auto cycle) { return Duty(d, cycle); });
     }
 
-    if (_sent + 1 == _props.drives.size() + 1) tx.header().cpu_flag.set(CPUControlFlags::STMEnd);
+    if (_sent + 1 == _drives.size() + 1) tx.header().cpu_flag.set(CPUControlFlags::STMEnd);
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
 
@@ -290,11 +281,13 @@ struct GainSTM<Normal> final : GainSTMBase {
 };
 
 template <>
-struct GainSTM<NormalPhase> final : GainSTMBase {
-  explicit GainSTM(GainSTMProps& props) : _props(props) {}
+struct GainSTM<NormalPhase> final : Operation {
+  explicit GainSTM(std::vector<std::vector<Drive>> drives, std::vector<uint16_t> cycles, const GainSTMProps props)
+      : _drives(std::move(drives)), _cycles(std::move(cycles)), _props(props) {}
 
   void init() override { _sent = 0; }
-  [[nodiscard]] bool is_finished() const override { return _sent >= _props.drives.size() + 1; }
+
+  [[nodiscard]] bool is_finished() const override { return _sent >= _drives.size() + 1; }
 
   void pack(TxDatagram& tx) override {
     tx.header().cpu_flag.remove(CPUControlFlags::WriteBody);
@@ -314,23 +307,23 @@ struct GainSTM<NormalPhase> final : GainSTMBase {
     _sent++;
   }
 
-  std::vector<uint16_t> cycles{};
-
  private:
-  GainSTMProps& _props;
+  std::vector<std::vector<Drive>> _drives{};
+  std::vector<uint16_t> _cycles{};
+  GainSTMProps _props;
   size_t _sent{0};
 
   void pack_phase(TxDatagram& tx) const {
-    if (_props.drives.size() > GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+    if (_drives.size() > GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
 
     if (_props.start_idx) {
-      if (static_cast<size_t>(_props.start_idx.value()) >= _props.drives.size()) throw std::runtime_error("STM start index out of range");
+      if (static_cast<size_t>(_props.start_idx.value()) >= _drives.size()) throw std::runtime_error("STM start index out of range");
       tx.header().fpga_flag.set(FPGAControlFlags::UseSTMStartIdx);
     } else {
       tx.header().fpga_flag.remove(FPGAControlFlags::UseSTMStartIdx);
     }
     if (_props.finish_idx) {
-      if (static_cast<size_t>(_props.finish_idx.value()) >= _props.drives.size()) throw std::runtime_error("STM finish index out of range");
+      if (static_cast<size_t>(_props.finish_idx.value()) >= _drives.size()) throw std::runtime_error("STM finish index out of range");
       tx.header().fpga_flag.set(FPGAControlFlags::UseSTMFinishIdx);
     } else {
       tx.header().fpga_flag.remove(FPGAControlFlags::UseSTMFinishIdx);
@@ -348,16 +341,16 @@ struct GainSTM<NormalPhase> final : GainSTMBase {
         const auto& [_, d] = body;
         d.gain_stm_initial().freq_div = _props.freq_div;
         d.gain_stm_initial().mode = GainSTMMode::PhaseFull;
-        d.gain_stm_initial().cycle = static_cast<uint16_t>(_props.drives.size());
+        d.gain_stm_initial().cycle = static_cast<uint16_t>(_drives.size());
         d.gain_stm_initial().stm_start_idx = _props.start_idx.value_or(0);
         d.gain_stm_initial().stm_finish_idx = _props.finish_idx.value_or(0);
       });
     } else {
-      std::transform(_props.drives[_sent - 1].begin(), _props.drives[_sent - 1].end(), cycles.begin(), reinterpret_cast<Phase*>(tx.bodies_raw_ptr()),
+      std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), _cycles.begin(), reinterpret_cast<Phase*>(tx.bodies_raw_ptr()),
                      [](const auto& d, const auto cycle) { return Phase(d, cycle); });
     }
 
-    if (_sent + 1 == _props.drives.size() + 1) tx.header().cpu_flag.set(CPUControlFlags::STMEnd);
+    if (_sent + 1 == _drives.size() + 1) tx.header().cpu_flag.set(CPUControlFlags::STMEnd);
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
 
