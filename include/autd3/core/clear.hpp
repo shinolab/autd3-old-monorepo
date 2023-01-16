@@ -23,5 +23,6 @@ struct Clear final : DatagramHeader {
   Clear() noexcept = default;
 
   std::unique_ptr<driver::Operation> operation() override { return std::make_unique<driver::Clear>(); }
+};
 
 }  // namespace autd3::core
