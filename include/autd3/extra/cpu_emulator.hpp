@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/01/2023
+// Last Modified: 17/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,6 +12,7 @@
 #pragma once
 
 #include <algorithm>
+#include <vector>
 
 #include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/extra/fpga_emulator.hpp"
