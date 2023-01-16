@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/01/2023
+ * Last Modified: 15/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use std::{
     sync::atomic::{self, AtomicU8},
 };
 
-use anyhow::{Ok, Result};
+use anyhow::Result;
 
 use autd3_core::{
     amplitude::Amplitudes,
@@ -24,7 +24,7 @@ use autd3_core::{
     datagram::{DatagramBody, DatagramHeader, Empty, Filled, NullBody, NullHeader, Sendable},
     geometry::{Geometry, LegacyTransducer, NormalPhaseTransducer, NormalTransducer, Transducer},
     link::Link,
-    FirmwareInfo, RxDatagram, TxDatagram, MSG_BEGIN, MSG_END,
+    FirmwareInfo, Operation, RxDatagram, TxDatagram, MSG_BEGIN, MSG_END,
 };
 
 use crate::gain::Null;
@@ -53,24 +53,26 @@ impl<'a, 'b, L: Link, T: Transducer, S: Sendable<T>> Sender<'a, 'b, L, T, S, Emp
 
 impl<'a, 'b, L: Link, T: Transducer, S: Sendable<T>> Sender<'a, 'b, L, T, S, Filled, Empty> {
     pub fn send<B: DatagramBody<T>>(mut self, b: &'b mut B) -> Result<bool> {
-        self.buf.init(&self.cnt.geometry)?;
-        b.init(&self.cnt.geometry)?;
+        let mut op_header = self.buf.operation(&self.cnt.geometry)?;
+        let mut op_body = b.operation(&self.cnt.geometry)?;
 
-        self.cnt.force_fan.pack(&mut self.cnt.tx_buf)?;
-        self.cnt.reads_fpga_info.pack(&mut self.cnt.tx_buf)?;
+        op_header.init();
+        op_body.init();
 
+        self.cnt.force_fan.pack(&mut self.cnt.tx_buf);
+        self.cnt.reads_fpga_info.pack(&mut self.cnt.tx_buf);
         loop {
             let msg_id = self.cnt.get_id();
             self.cnt.tx_buf.header_mut().msg_id = msg_id;
-            self.buf.pack(&mut self.cnt.tx_buf)?;
-            b.pack(&mut self.cnt.tx_buf)?;
+            op_header.pack(&mut self.cnt.tx_buf)?;
+            op_body.pack(&mut self.cnt.tx_buf)?;
             self.cnt.link.send(&self.cnt.tx_buf)?;
             let success = self.cnt.wait_msg_processed(self.cnt.ack_check_timeout)?;
             if !self.cnt.ack_check_timeout.is_zero() && !success {
                 self.sent = true;
                 return Ok(false);
             }
-            if self.buf.is_finished() && b.is_finished() {
+            if op_header.is_finished() && op_body.is_finished() {
                 break;
             }
             if self.cnt.ack_check_timeout.is_zero() {
@@ -89,24 +91,27 @@ impl<'a, 'b, L: Link, T: Transducer, S: Sendable<T>> Sender<'a, 'b, L, T, S, Fil
 
 impl<'a, 'b, L: Link, T: Transducer, S: Sendable<T>> Sender<'a, 'b, L, T, S, Empty, Filled> {
     pub fn send<H: DatagramHeader>(mut self, b: &'b mut H) -> Result<bool> {
-        b.init()?;
-        self.buf.init(&self.cnt.geometry)?;
+        let mut op_header = b.operation()?;
+        let mut op_body = self.buf.operation(&self.cnt.geometry)?;
 
-        self.cnt.force_fan.pack(&mut self.cnt.tx_buf)?;
-        self.cnt.reads_fpga_info.pack(&mut self.cnt.tx_buf)?;
+        op_header.init();
+        op_body.init();
+
+        self.cnt.force_fan.pack(&mut self.cnt.tx_buf);
+        self.cnt.reads_fpga_info.pack(&mut self.cnt.tx_buf);
 
         loop {
             let msg_id = self.cnt.get_id();
             self.cnt.tx_buf.header_mut().msg_id = msg_id;
-            b.pack(&mut self.cnt.tx_buf)?;
-            self.buf.pack(&mut self.cnt.tx_buf)?;
+            op_header.pack(&mut self.cnt.tx_buf)?;
+            op_body.pack(&mut self.cnt.tx_buf)?;
             self.cnt.link.send(&self.cnt.tx_buf)?;
             let success = self.cnt.wait_msg_processed(self.cnt.ack_check_timeout)?;
             if !self.cnt.ack_check_timeout.is_zero() && !success {
                 self.sent = true;
                 return Ok(false);
             }
-            if self.buf.is_finished() && b.is_finished() {
+            if op_header.is_finished() && op_body.is_finished() {
                 break;
             }
             if self.cnt.ack_check_timeout.is_zero() {
@@ -125,39 +130,38 @@ impl<'a, 'b, L: Link, T: Transducer, S: Sendable<T>> Sender<'a, 'b, L, T, S, Emp
 
 impl<'a, 'b, L: Link, T: Transducer, S: Sendable<T>, H, B> Drop for Sender<'a, 'b, L, T, S, H, B> {
     fn drop(&mut self) {
-        if !self.sent {
-            if self.buf.init(&self.cnt.geometry).is_err() {
+        if self.sent {
+            return;
+        }
+        let mut op = match self.buf.operation(&self.cnt.geometry) {
+            Ok(op) => op,
+            Err(_) => return,
+        };
+        op.init();
+
+        self.cnt.force_fan.pack(&mut self.cnt.tx_buf);
+        self.cnt.reads_fpga_info.pack(&mut self.cnt.tx_buf);
+
+        loop {
+            let msg_id = self.cnt.get_id();
+            self.cnt.tx_buf.header_mut().msg_id = msg_id;
+            if op.pack(&mut self.cnt.tx_buf).is_err() {
                 return;
             }
-
-            if self.cnt.force_fan.pack(&mut self.cnt.tx_buf).is_err() {
+            if self.cnt.link.send(&self.cnt.tx_buf).is_err() {
                 return;
             }
-            if self.cnt.reads_fpga_info.pack(&mut self.cnt.tx_buf).is_err() {
-                return;
+            if !self
+                .cnt
+                .wait_msg_processed(self.cnt.ack_check_timeout)
+                .unwrap_or(false)
+                || op.is_finished()
+            {
+                break;
             }
 
-            loop {
-                let msg_id = self.cnt.get_id();
-                self.cnt.tx_buf.header_mut().msg_id = msg_id;
-                if self.buf.pack(&mut self.cnt.tx_buf).is_err() {
-                    return;
-                }
-                if self.cnt.link.send(&self.cnt.tx_buf).is_err() {
-                    return;
-                }
-                if !self
-                    .cnt
-                    .wait_msg_processed(self.cnt.ack_check_timeout)
-                    .unwrap_or(false)
-                    || self.buf.is_finished()
-                {
-                    break;
-                }
-
-                if self.cnt.ack_check_timeout.is_zero() {
-                    std::thread::sleep(self.cnt.send_interval);
-                }
+            if self.cnt.ack_check_timeout.is_zero() {
+                std::thread::sleep(self.cnt.send_interval);
             }
         }
     }

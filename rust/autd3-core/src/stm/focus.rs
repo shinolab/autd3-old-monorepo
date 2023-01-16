@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/01/2023
+ * Last Modified: 15/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,14 +23,14 @@ use super::STM;
 
 pub struct FocusSTM {
     control_points: Vec<(Vector3, u8)>,
-    op: autd3_driver::FocusSTM,
+    props: autd3_driver::FocusSTMProps,
 }
 
 impl FocusSTM {
     pub fn new() -> Self {
         Self {
             control_points: vec![],
-            op: Default::default(),
+            props: Default::default(),
         }
     }
 
@@ -50,11 +50,10 @@ impl FocusSTM {
 }
 
 impl<T: Transducer> DatagramBody<T> for FocusSTM {
-    fn init(&mut self, geometry: &Geometry<T>) -> Result<()> {
-        self.op.init();
-        self.op.sound_speed = geometry.sound_speed;
-        self.op.device_map = geometry.device_map().to_vec();
-        self.op.points = geometry
+    type O = autd3_driver::FocusSTM;
+
+    fn operation(&mut self, geometry: &Geometry<T>) -> Result<Self::O> {
+        let points = geometry
             .device_map()
             .iter()
             .scan(0, |state, tr_num| {
@@ -77,33 +76,19 @@ impl<T: Transducer> DatagramBody<T> for FocusSTM {
                     .collect()
             })
             .collect();
-
-        Ok(())
-    }
-
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
-        self.op.pack(tx)
-    }
-
-    fn is_finished(&self) -> bool {
-        self.op.is_finished()
+        let tr_num_min = geometry.device_map().iter().min().unwrap();
+        self.props.sound_speed = geometry.sound_speed;
+        Ok(Self::O::new(points, *tr_num_min, self.props))
     }
 }
 
 impl<T: Transducer> Sendable<T> for FocusSTM {
     type H = Empty;
     type B = Filled;
+    type O = <Self as DatagramBody<T>>::O;
 
-    fn init(&mut self, geometry: &Geometry<T>) -> Result<()> {
-        DatagramBody::<T>::init(self, geometry)
-    }
-
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
-        DatagramBody::<T>::pack(self, tx)
-    }
-
-    fn is_finished(&self) -> bool {
-        DatagramBody::<T>::is_finished(self)
+    fn operation(&mut self, geometry: &Geometry<T>) -> Result<Self::O> {
+        <Self as DatagramBody<T>>::operation(self, geometry)
     }
 }
 
@@ -113,27 +98,27 @@ impl STM for FocusSTM {
     }
 
     fn set_sampling_freq_div(&mut self, freq_div: u32) {
-        self.op.freq_div = freq_div;
+        self.props.freq_div = freq_div;
     }
 
     fn sampling_freq_div(&self) -> u32 {
-        self.op.freq_div
+        self.props.freq_div
     }
 
     fn set_start_idx(&mut self, idx: Option<u16>) {
-        self.op.start_idx = idx;
+        self.props.start_idx = idx;
     }
 
     fn start_idx(&self) -> Option<u16> {
-        self.op.start_idx
+        self.props.start_idx
     }
 
     fn set_finish_idx(&mut self, idx: Option<u16>) {
-        self.op.finish_idx = idx;
+        self.props.finish_idx = idx;
     }
 
     fn finish_idx(&self) -> Option<u16> {
-        self.op.finish_idx
+        self.props.finish_idx
     }
 }
 

@@ -161,7 +161,7 @@ class DebugImpl final : public core::Link {
 core::LinkPtr Debug::build() {
   const auto name = "AUTD3 Debug Log";
   std::shared_ptr<spdlog::logger> logger =
-      (_out == nullptr || _flush == nullptr)
+      _out == nullptr || _flush == nullptr
           ? get_default_logger(name)
           : std::make_shared<spdlog::logger>(name, std::make_shared<CustomSink<std::mutex>>(std::move(_out), std::move(_flush)));
   logger->set_level(static_cast<spdlog::level::level_enum>(_level));

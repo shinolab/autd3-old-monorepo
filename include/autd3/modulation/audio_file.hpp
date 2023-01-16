@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 16/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -29,7 +29,7 @@ class RawPCM final : public core::Modulation {
    */
   explicit RawPCM(std::filesystem::path filename, driver::autd3_float_t sampling_freq, uint32_t mod_sampling_freq_div = 40960);
 
-  void calc() override;
+  std::vector<uint8_t> calc() override;
 
   ~RawPCM() override = default;
   RawPCM(const RawPCM& v) noexcept = delete;
@@ -54,7 +54,7 @@ class Wav final : public core::Modulation {
    */
   explicit Wav(std::filesystem::path filename, uint32_t mod_sampling_freq_div = 40960);
 
-  void calc() override;
+  std::vector<uint8_t> calc() override;
 
   ~Wav() override = default;
   Wav(const Wav& v) noexcept = delete;

@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/01/2023
+ * Last Modified: 15/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,17 +13,17 @@
 
 use std::collections::HashMap;
 
-use crate::error::AUTDError;
+use anyhow::Result;
+
 use autd3_core::{
     gain::Gain,
     geometry::{Geometry, Transducer},
-    GainOp, Operation,
+    Drive,
 };
 
 /// Gain to produce single focal point
 #[derive(Default)]
 pub struct Grouped<'a, T: Transducer> {
-    op: T::Gain,
     gain_map: HashMap<usize, Box<dyn Gain<T> + 'a>>,
 }
 
@@ -31,141 +31,59 @@ impl<'a, T: Transducer> Grouped<'a, T> {
     /// constructor
     pub fn new() -> Self {
         Self {
-            op: Default::default(),
             gain_map: HashMap::new(),
         }
     }
 
-    pub fn add<G: 'a + Gain<T>>(&mut self, id: usize, gain: G) -> anyhow::Result<()> {
+    pub fn add<G: 'a + Gain<T>>(&mut self, id: usize, gain: G) -> Result<()> {
         self.gain_map.insert(id, Box::new(gain));
         Ok(())
     }
-
-    fn calc(&mut self, geometry: &Geometry<T>) -> anyhow::Result<()> {
-        self.gain_map.iter_mut().try_for_each(|(dev_id, gain)| {
-            if *dev_id >= geometry.num_devices() {
-                return Err(AUTDError::GroupedOutOfRange(*dev_id, geometry.num_devices()).into());
-            }
-            let start = if *dev_id == 0 {
-                0
-            } else {
-                geometry.device_map()[*dev_id - 1]
-            };
-            let end = start + geometry.device_map()[*dev_id];
-            gain.init(geometry)?;
-            let gain = gain.drives();
-            (start..end).for_each(|idx| {
-                self.op.set_drive(idx, gain[idx].amp, gain[idx].phase);
-            });
-            Ok(())
-        })
-    }
 }
 
-impl<'a> autd3_core::gain::Gain<autd3_core::geometry::LegacyTransducer>
-    for Grouped<'a, autd3_core::geometry::LegacyTransducer>
-{
-    fn drives(&self) -> &[autd3_core::Drive] {
-        self.op.drives()
-    }
-}
-
-impl<'a> autd3_core::gain::Gain<autd3_core::geometry::NormalTransducer>
-    for Grouped<'a, autd3_core::geometry::NormalTransducer>
-{
-    fn drives(&self) -> &[autd3_core::Drive] {
-        self.op.drives()
-    }
-}
-
-impl<'a> autd3_core::gain::Gain<autd3_core::geometry::NormalPhaseTransducer>
-    for Grouped<'a, autd3_core::geometry::NormalPhaseTransducer>
-{
-    fn drives(&self) -> &[autd3_core::Drive] {
-        self.op.drives()
+impl<'a, T: Transducer> Gain<T> for Grouped<'a, T> {
+    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>> {
+        Ok((0..geometry.num_devices())
+            .flat_map(|i| {
+                self.gain_map
+                    .get_mut(&i)
+                    .and_then(|g| match g.calc(geometry) {
+                        Ok(g) => {
+                            let start = if i == 0 {
+                                0
+                            } else {
+                                geometry.device_map()[i - 1]
+                            };
+                            let end = start + geometry.device_map()[i];
+                            Some(g[start..end].to_vec())
+                        }
+                        Err(_) => None,
+                    })
+                    .unwrap_or_else(|| {
+                        vec![
+                            Drive {
+                                amp: 0.0,
+                                phase: 0.0
+                            };
+                            geometry.device_map()[i]
+                        ]
+                    })
+            })
+            .collect())
     }
 }
 
 impl<'a> autd3_core::datagram::DatagramBody<autd3_core::geometry::LegacyTransducer>
     for Grouped<'a, autd3_core::geometry::LegacyTransducer>
 {
-    fn init(
+    type O = autd3_driver::GainLegacy;
+
+    fn operation(
         &mut self,
         geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::LegacyTransducer>,
-    ) -> anyhow::Result<()> {
-        self.op.init();
-        self.op.drives.resize(
-            geometry.num_transducers(),
-            autd3_core::Drive {
-                amp: 0.0,
-                phase: 0.0,
-            },
-        );
-        self.calc(geometry)
-    }
-
-    fn pack(&mut self, tx: &mut autd3_core::TxDatagram) -> anyhow::Result<()> {
-        self.op.pack(tx)
-    }
-
-    fn is_finished(&self) -> bool {
-        self.op.is_finished()
-    }
-}
-
-impl<'a> autd3_core::datagram::DatagramBody<autd3_core::geometry::NormalTransducer>
-    for Grouped<'a, autd3_core::geometry::NormalTransducer>
-{
-    fn init(
-        &mut self,
-        geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::NormalTransducer>,
-    ) -> anyhow::Result<()> {
-        self.op.init();
-        self.op.drives.resize(
-            geometry.num_transducers(),
-            autd3_core::Drive {
-                amp: 0.0,
-                phase: 0.0,
-            },
-        );
-        self.op.cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
-        self.calc(geometry)
-    }
-
-    fn pack(&mut self, tx: &mut autd3_core::TxDatagram) -> anyhow::Result<()> {
-        self.op.pack(tx)
-    }
-
-    fn is_finished(&self) -> bool {
-        self.op.is_finished()
-    }
-}
-
-impl<'a> autd3_core::datagram::DatagramBody<autd3_core::geometry::NormalPhaseTransducer>
-    for Grouped<'a, autd3_core::geometry::NormalPhaseTransducer>
-{
-    fn init(
-        &mut self,
-        geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::NormalPhaseTransducer>,
-    ) -> anyhow::Result<()> {
-        self.op.init();
-        self.op.drives.resize(
-            geometry.num_transducers(),
-            autd3_core::Drive {
-                amp: 0.0,
-                phase: 0.0,
-            },
-        );
-        self.op.cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
-        self.calc(geometry)
-    }
-
-    fn pack(&mut self, tx: &mut autd3_core::TxDatagram) -> anyhow::Result<()> {
-        self.op.pack(tx)
-    }
-
-    fn is_finished(&self) -> bool {
-        self.op.is_finished()
+    ) -> anyhow::Result<Self::O> {
+        let drives = self.calc(geometry)?;
+        Ok(Self::O::new(drives))
     }
 }
 
@@ -174,24 +92,29 @@ impl<'a> autd3_core::datagram::Sendable<autd3_core::geometry::LegacyTransducer>
 {
     type H = autd3_core::datagram::Empty;
     type B = autd3_core::datagram::Filled;
+    type O =
+        <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::LegacyTransducer>>::O;
 
-    fn init(
+    fn operation(
         &mut self,
-        geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::LegacyTransducer>,
-    ) -> anyhow::Result<()> {
-        autd3_core::datagram::DatagramBody::<autd3_core::geometry::LegacyTransducer>::init(
-            self, geometry,
-        )
+        geometry: &Geometry<autd3_core::geometry::LegacyTransducer>,
+    ) -> anyhow::Result<Self::O> {
+        <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::LegacyTransducer>>::operation(self, geometry)
     }
+}
 
-    fn pack(&mut self, tx: &mut autd3_core::TxDatagram) -> anyhow::Result<()> {
-        autd3_core::datagram::DatagramBody::<autd3_core::geometry::LegacyTransducer>::pack(self, tx)
-    }
+impl<'a> autd3_core::datagram::DatagramBody<autd3_core::geometry::NormalTransducer>
+    for Grouped<'a, autd3_core::geometry::NormalTransducer>
+{
+    type O = autd3_driver::GainNormal;
 
-    fn is_finished(&self) -> bool {
-        autd3_core::datagram::DatagramBody::<autd3_core::geometry::LegacyTransducer>::is_finished(
-            self,
-        )
+    fn operation(
+        &mut self,
+        geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::NormalTransducer>,
+    ) -> anyhow::Result<Self::O> {
+        let drives = self.calc(geometry)?;
+        let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
+        Ok(Self::O::new(drives, cycles))
     }
 }
 
@@ -200,24 +123,29 @@ impl<'a> autd3_core::datagram::Sendable<autd3_core::geometry::NormalTransducer>
 {
     type H = autd3_core::datagram::Empty;
     type B = autd3_core::datagram::Filled;
+    type O =
+        <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::NormalTransducer>>::O;
 
-    fn init(
+    fn operation(
         &mut self,
-        geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::NormalTransducer>,
-    ) -> anyhow::Result<()> {
-        autd3_core::datagram::DatagramBody::<autd3_core::geometry::NormalTransducer>::init(
-            self, geometry,
-        )
+        geometry: &Geometry<autd3_core::geometry::NormalTransducer>,
+    ) -> anyhow::Result<Self::O> {
+        <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::NormalTransducer>>::operation(self, geometry)
     }
+}
 
-    fn pack(&mut self, tx: &mut autd3_core::TxDatagram) -> anyhow::Result<()> {
-        autd3_core::datagram::DatagramBody::<autd3_core::geometry::NormalTransducer>::pack(self, tx)
-    }
+impl<'a> autd3_core::datagram::DatagramBody<autd3_core::geometry::NormalPhaseTransducer>
+    for Grouped<'a, autd3_core::geometry::NormalPhaseTransducer>
+{
+    type O = autd3_driver::GainNormalPhase;
 
-    fn is_finished(&self) -> bool {
-        autd3_core::datagram::DatagramBody::<autd3_core::geometry::NormalTransducer>::is_finished(
-            self,
-        )
+    fn operation(
+        &mut self,
+        geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::NormalPhaseTransducer>,
+    ) -> anyhow::Result<Self::O> {
+        let drives = self.calc(geometry)?;
+        let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
+        Ok(Self::O::new(drives, cycles))
     }
 }
 
@@ -226,25 +154,14 @@ impl<'a> autd3_core::datagram::Sendable<autd3_core::geometry::NormalPhaseTransdu
 {
     type H = autd3_core::datagram::Empty;
     type B = autd3_core::datagram::Filled;
+    type O = <Self as autd3_core::datagram::DatagramBody<
+        autd3_core::geometry::NormalPhaseTransducer,
+    >>::O;
 
-    fn init(
+    fn operation(
         &mut self,
-        geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::NormalPhaseTransducer>,
-    ) -> anyhow::Result<()> {
-        autd3_core::datagram::DatagramBody::<autd3_core::geometry::NormalPhaseTransducer>::init(
-            self, geometry,
-        )
-    }
-
-    fn pack(&mut self, tx: &mut autd3_core::TxDatagram) -> anyhow::Result<()> {
-        autd3_core::datagram::DatagramBody::<autd3_core::geometry::NormalPhaseTransducer>::pack(
-            self, tx,
-        )
-    }
-
-    fn is_finished(&self) -> bool {
-        autd3_core::datagram::DatagramBody::<autd3_core::geometry::NormalPhaseTransducer>::is_finished(
-            self,
-        )
+        geometry: &Geometry<autd3_core::geometry::NormalPhaseTransducer>,
+    ) -> anyhow::Result<Self::O> {
+        <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::NormalPhaseTransducer>>::operation(self, geometry)
     }
 }

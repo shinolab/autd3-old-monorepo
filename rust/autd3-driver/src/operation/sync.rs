@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/01/2023
+ * Last Modified: 15/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,14 +16,10 @@ use anyhow::Result;
 use super::Operation;
 use crate::{CPUControlFlags, DriverError, TxDatagram};
 
-pub trait SyncOP {}
-
 #[derive(Default)]
 pub struct SyncLegacy {
     sent: bool,
 }
-
-impl SyncOP for SyncLegacy {}
 
 impl Operation for SyncLegacy {
     fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
@@ -58,10 +54,17 @@ impl Operation for SyncLegacy {
 #[derive(Default)]
 pub struct SyncNormal {
     sent: bool,
-    pub cycles: Vec<u16>,
+    cycles: Vec<u16>,
 }
 
-impl SyncOP for SyncNormal {}
+impl SyncNormal {
+    pub fn new(cycles: Vec<u16>) -> Self {
+        Self {
+            sent: false,
+            cycles,
+        }
+    }
+}
 
 impl Operation for SyncNormal {
     fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {

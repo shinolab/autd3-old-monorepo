@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 16/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,55 +33,37 @@ class Modulation : public DatagramHeader {
   /**
    * \brief Calculate modulation data
    */
-  virtual void calc() = 0;
-
-  /**
-   * \brief modulation data
-   */
-  [[nodiscard]] const std::vector<uint8_t>& buffer() const noexcept { return _op.mod_data; }
-
-  /**
-   * @brief [Advanced] modulation data
-   * @details Call Modulation::build before using this function to initialize buffer data.
-   */
-  std::vector<uint8_t>& buffer() noexcept { return _op.mod_data; }
+  virtual std::vector<uint8_t> calc() = 0;
 
   /**
    * \brief sampling frequency division ratio
    */
-  uint32_t& sampling_frequency_division() noexcept { return _op.freq_div; }
+  uint32_t& sampling_frequency_division() noexcept { return _freq_div; }
 
   /**
    * \brief sampling frequency division ratio
    */
-  [[nodiscard]] uint32_t sampling_frequency_division() const noexcept { return _op.freq_div; }
+  [[nodiscard]] uint32_t sampling_frequency_division() const noexcept { return _freq_div; }
 
   /**
    * \brief modulation sampling frequency
    */
   [[nodiscard]] driver::autd3_float_t sampling_frequency() const noexcept {
-    return static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / static_cast<driver::autd3_float_t>(_op.freq_div);
+    return static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / static_cast<driver::autd3_float_t>(_freq_div);
   }
 
   /**
    * \brief Set modulation sampling frequency
    */
   [[nodiscard]] driver::autd3_float_t set_sampling_frequency(const driver::autd3_float_t freq) {
-    _op.freq_div = static_cast<uint32_t>(std::round(static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / freq));
+    _freq_div = static_cast<uint32_t>(std::round(static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / freq));
     return sampling_frequency();
   }
 
-  void init() override {
-    _op.init();
-    calc();
-  }
-
-  void pack(driver::TxDatagram& tx) override { _op.pack(tx); }
-
-  [[nodiscard]] bool is_finished() const noexcept override { return _op.is_finished(); }
+  std::unique_ptr<driver::Operation> operation() override { return std::make_unique<driver::Modulation>(calc(), _freq_div); }
 
  protected:
-  driver::Modulation _op;
+  uint32_t _freq_div{40960};
 };
 
 }  // namespace autd3::core

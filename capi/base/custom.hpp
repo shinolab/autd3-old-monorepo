@@ -3,7 +3,7 @@
 // Created Date: 19/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 16/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -32,10 +32,12 @@ class CustomGain final : public autd3::Gain {
     std::copy_n(phase, size, _phase.begin());
   }
 
-  void calc(const autd3::core::Geometry& geometry) override {
-    std::transform(_phase.begin(), _phase.end(), _amp.begin(), this->begin(), [](const auto phase, const auto amp) {
+  std::vector<autd3::driver::Drive> calc(const autd3::core::Geometry& geometry) override {
+    std::vector<autd3::driver::Drive> drives(geometry.num_transducers(), autd3::driver::Drive{0.0, 0.0});
+    std::transform(_phase.begin(), _phase.end(), _amp.begin(), drives.begin(), [](const auto phase, const auto amp) {
       return autd3::driver::Drive{phase, amp};
     });
+    return drives;
   }
 
   ~CustomGain() override = default;
@@ -61,16 +63,19 @@ class CustomModulation final : public autd3::Modulation {
    * @param freq_div sampling frequency division ratio
    */
   explicit CustomModulation(const uint8_t* buffer, const size_t size, const uint32_t freq_div = 40960) : Modulation() {
-    _op.freq_div = freq_div;
-    _op.mod_data.resize(size);
-    std::copy_n(buffer, size, _op.mod_data.begin());
+    _freq_div = freq_div;
+    _data.resize(size);
+    std::copy_n(buffer, size, _data.begin());
   }
 
-  void calc() override {}
+  std::vector<uint8_t> calc() override { return _data; }
 
   ~CustomModulation() override = default;
   CustomModulation(const CustomModulation& v) noexcept = delete;
   CustomModulation& operator=(const CustomModulation& obj) = delete;
   CustomModulation(CustomModulation&& obj) = default;
   CustomModulation& operator=(CustomModulation&& obj) = default;
+
+ private:
+  std::vector<uint8_t> _data;
 };

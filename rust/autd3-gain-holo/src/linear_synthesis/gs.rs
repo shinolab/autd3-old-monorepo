@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/01/2023
+ * Last Modified: 15/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -12,18 +12,23 @@
  */
 
 use crate::{
-    constraint::Constraint, impl_holo_gain, macros::generate_propagation_matrix, Backend, Complex,
-    Transpose, VectorXc,
+    constraint::Constraint, macros::generate_propagation_matrix, Backend, Complex, Transpose,
+    VectorXc,
 };
 use anyhow::Result;
-use autd3_core::geometry::{Geometry, Transducer, Vector3};
+use autd3_core::{
+    gain::Gain,
+    geometry::{Geometry, Transducer, Vector3},
+    Drive,
+};
+use autd3_traits::Gain;
 use nalgebra::ComplexField;
 use std::{f64::consts::PI, marker::PhantomData};
 
 /// Reference
 /// * Asier Marzo and Bruce W Drinkwater. Holographic acoustic tweezers.Proceedings of theNational Academy of Sciences, 116(1):84–89, 2019.
-pub struct GS<B: Backend, C: Constraint, T: Transducer> {
-    op: T::Gain,
+#[derive(Gain)]
+pub struct GS<B: Backend, C: Constraint> {
     foci: Vec<Vector3>,
     amps: Vec<f64>,
     repeat: usize,
@@ -31,7 +36,7 @@ pub struct GS<B: Backend, C: Constraint, T: Transducer> {
     constraint: C,
 }
 
-impl<B: Backend, C: Constraint, T: Transducer> GS<B, C, T> {
+impl<B: Backend, C: Constraint> GS<B, C> {
     pub fn new(foci: Vec<Vector3>, amps: Vec<f64>, constraint: C) -> Self {
         Self::with_param(foci, amps, constraint, 100)
     }
@@ -39,7 +44,6 @@ impl<B: Backend, C: Constraint, T: Transducer> GS<B, C, T> {
     pub fn with_param(foci: Vec<Vector3>, amps: Vec<f64>, constraint: C, repeat: usize) -> Self {
         assert!(foci.len() == amps.len());
         Self {
-            op: Default::default(),
             foci,
             amps,
             repeat,
@@ -47,8 +51,10 @@ impl<B: Backend, C: Constraint, T: Transducer> GS<B, C, T> {
             constraint,
         }
     }
+}
 
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<()> {
+impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for GS<B, C> {
+    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>> {
         let m = self.foci.len();
         let n = geometry.num_transducers();
 
@@ -86,14 +92,13 @@ impl<B: Backend, C: Constraint, T: Transducer> GS<B, C, T> {
         }
 
         let max_coefficient = B::max_coefficient_c(&q).abs();
-        geometry.transducers().for_each(|tr| {
-            let phase = q[tr.id()].argument() + PI;
-            let amp = self.constraint.convert(q[tr.id()].abs(), max_coefficient);
-            self.op.set_drive(tr.id(), amp, phase);
-        });
-
-        Ok(())
+        Ok(geometry
+            .transducers()
+            .map(|tr| {
+                let phase = q[tr.id()].argument() + PI;
+                let amp = self.constraint.convert(q[tr.id()].abs(), max_coefficient);
+                Drive { amp, phase }
+            })
+            .collect())
     }
 }
-
-impl_holo_gain!(GS);

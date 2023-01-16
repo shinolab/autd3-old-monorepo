@@ -3,7 +3,7 @@
 // Created Date: 07/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 16/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -101,14 +101,12 @@ class SoftwareSTM {
       if (bodies.empty()) return;
       const auto interval = std::chrono::nanoseconds(period);
       _cnt.set_ack_check_timeout(std::chrono::high_resolution_clock::duration::zero());
-      const auto mode = cnt.mode();
       if (strategy.contains(TimerStrategy::BusyWait))
-        _th = std::thread([this, mode, interval, bodies = std::move(bodies)] {
+        _th = std::thread([this, interval, bodies = std::move(bodies)] {
           size_t i = 0;
           auto next = std::chrono::high_resolution_clock::now();
           while (_run) {
             next += interval;
-            bodies[i]->init(mode, this->_cnt.geometry());
             for (;; core::spin_loop_hint())
               if (std::chrono::high_resolution_clock::now() >= next) break;
             this->_cnt.send(*bodies[i]);
@@ -116,12 +114,11 @@ class SoftwareSTM {
           }
         });
       else
-        _th = std::thread([this, mode, interval, bodies = std::move(bodies)] {
+        _th = std::thread([this, interval, bodies = std::move(bodies)] {
           size_t i = 0;
           auto next = std::chrono::high_resolution_clock::now();
           while (_run) {
             next += interval;
-            bodies[i]->init(mode, this->_cnt.geometry());
             std::this_thread::sleep_until(next);
             this->_cnt.send(*bodies[i]);
             i = (i + 1) % bodies.size();
