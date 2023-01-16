@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/01/2023
+ * Last Modified: 17/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -149,9 +149,14 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
             }
 
             if (1..=wc as usize).any(|i| {
-                if let Ok(name) =
-                    String::from_utf8(ec_slave[i].name.iter().map(|&c| c as u8).collect())
-                {
+                if let Ok(name) = String::from_utf8(
+                    ec_slave[i]
+                        .name
+                        .iter()
+                        .map(|&c| c as u8)
+                        .take_while(|&c| c != 0)
+                        .collect(),
+                ) {
                     name != "AUTD"
                 } else {
                     false
