@@ -21,7 +21,7 @@ static void bm_gain_primitive_focus(benchmark::State& state) {
   autd3::gain::Focus g(center);
 
   for (auto _ : state) {
-    g.init(autd.mode(), autd.geometry());
+    g.calc(autd.geometry());
   }
 }
 
