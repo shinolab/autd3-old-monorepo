@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 16/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -146,7 +146,7 @@ class SDP final : public Holo {
         lambda(static_cast<driver::autd3_float_t>(0.9)),
         repeat(100) {}
 
-  void calc(const core::Geometry& geometry) override;
+  std::vector<driver::Drive> calc(const core::Geometry& geometry) override;
 
   driver::autd3_float_t alpha;
   driver::autd3_float_t lambda;
@@ -165,7 +165,7 @@ class EVD final : public Holo {
    */
   explicit EVD(BackendPtr backend) : Holo(std::move(backend), std::make_unique<Uniform>(driver::autd3_float_t{1})), gamma(1) {}
 
-  void calc(const core::Geometry& geometry) override;
+  std::vector<driver::Drive> calc(const core::Geometry& geometry) override;
 
   driver::autd3_float_t gamma;
 };
@@ -180,7 +180,7 @@ class LSS final : public Holo {
    */
   explicit LSS(BackendPtr backend) : Holo(std::move(backend), std::make_unique<Normalize>()) {}
 
-  void calc(const core::Geometry& geometry) override;
+  std::vector<driver::Drive> calc(const core::Geometry& geometry) override;
 };
 
 /**
@@ -200,7 +200,7 @@ class GS final : public Holo {
    */
   explicit GS(BackendPtr backend) : Holo(std::move(backend), std::make_unique<Normalize>()), repeat(100) {}
 
-  void calc(const core::Geometry& geometry) override;
+  std::vector<driver::Drive> calc(const core::Geometry& geometry) override;
 
   size_t repeat;
 };
@@ -218,7 +218,7 @@ class GSPAT final : public Holo {
    */
   explicit GSPAT(BackendPtr backend) : Holo(std::move(backend), std::make_unique<Normalize>()), repeat(100) {}
 
-  void calc(const core::Geometry& geometry) override;
+  std::vector<driver::Drive> calc(const core::Geometry& geometry) override;
 
   size_t repeat;
 };
@@ -243,7 +243,7 @@ class LM final : public Holo {
         tau(static_cast<driver::autd3_float_t>(1e-3)),
         k_max(5) {}
 
-  void calc(const core::Geometry& geometry) override;
+  std::vector<driver::Drive> calc(const core::Geometry& geometry) override;
 
   driver::autd3_float_t eps_1;
   driver::autd3_float_t eps_2;
@@ -268,7 +268,7 @@ class Greedy final : public Holo {
         phase_div(16),
         objective([](const VectorXd& target, const VectorXc& p) { return (target - p.cwiseAbs()).cwiseAbs().sum(); }) {}
 
-  void calc(const core::Geometry& geometry) override;
+  std::vector<driver::Drive> calc(const core::Geometry& geometry) override;
 
   size_t phase_div;
   std::function<driver::autd3_float_t(const VectorXd&, const VectorXc&)> objective;
@@ -289,7 +289,7 @@ class LSSGreedy final : public Holo {
         phase_div(16),
         objective([](const VectorXd& target, const VectorXc& p) { return (target - p.cwiseAbs()).cwiseAbs().sum(); }) {}
 
-  void calc(const core::Geometry& geometry) override;
+  std::vector<driver::Drive> calc(const core::Geometry& geometry) override;
 
   size_t phase_div;
   std::function<driver::autd3_float_t(const VectorXd&, const VectorXc&)> objective;
@@ -312,7 +312,7 @@ class APO final : public Holo {
         k_max(200),
         line_search_max(100) {}
 
-  void calc(const core::Geometry& geometry) override;
+  std::vector<driver::Drive> calc(const core::Geometry& geometry) override;
 
   driver::autd3_float_t eps;
   driver::autd3_float_t lambda;
