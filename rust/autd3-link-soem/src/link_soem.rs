@@ -127,7 +127,7 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
             self.config.ifname.clone()
         };
 
-        let ifname = std::ffi::CString::new(ifname.to_owned()).unwrap();
+        let ifname = std::ffi::CString::new(ifname).unwrap();
 
         let dev_num = geometry.num_devices() as u16;
 
