@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 17/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <queue>
 #include <string>
 #include <vector>
@@ -47,7 +48,7 @@ inline int64_t ec_sync(const int64_t reftime, const int64_t cycletime, int64_t* 
   return -(delta / 100) - *integral / 20;
 }
 
-inline void print_stats(const std::string& header, const std::vector<int64_t>& stats) {
+inline void print_stats(std::shared_ptr<spdlog::logger> logger, const std::vector<int64_t>& stats) {
   const int64_t min = std::accumulate(stats.begin(), stats.end(), std::numeric_limits<int64_t>::max(),
                                       [](const int64_t min, const int64_t s) { return std::min(min, s); });
   const int64_t max = std::accumulate(stats.begin(), stats.end(), std::numeric_limits<int64_t>::min(),
@@ -56,14 +57,14 @@ inline void print_stats(const std::string& header, const std::vector<int64_t>& s
   const int64_t stdd = std::sqrt(static_cast<double>(std::accumulate(stats.begin(), stats.end(), int64_t{0},
                                                                      [ave](const int64_t acc, const int64_t s) { return (s - ave) * (s - ave); })) /
                                  static_cast<double>(stats.size()));
-  spdlog::debug("{}: {}+/-{} (Max.{} Min.{}) [us]", header, ave / 1000, stdd / 1000.0, max / 1000, min / 1000);
+  logger->debug("EC send interval: {}+/-{} (Max.{} Min.{}) [us]", ave / 1000, stdd / 1000.0, max / 1000, min / 1000);
 }
 
 using WaitFunc = void(const timespec&);
 
 template <WaitFunc W>
 void ecat_run_(std::atomic<bool>* is_open, std::atomic<int32_t>* wkc, const int64_t cycletime_ns, std::mutex& mtx,
-               std::queue<driver::TxDatagram>& send_queue, IOMap& io_map) {
+               std::queue<driver::TxDatagram>& send_queue, IOMap& io_map, std::shared_ptr<spdlog::logger> logger) {
   ecat_init();
 
 #if WIN32
@@ -87,17 +88,16 @@ void ecat_run_(std::atomic<bool>* is_open, std::atomic<int32_t>* wkc, const int6
 
     W(ts);
 
-    if (spdlog::get_level() <= spdlog::level::debug) {
+    if (logger->level() <= spdlog::level::debug) {
       auto now = std::chrono::high_resolution_clock::now();
       const auto itvl = std::chrono::duration_cast<std::chrono::nanoseconds>(now - start).count();
       stats.emplace_back(itvl);
       if (stats.size() == stats_size) {
         ec_readstate();
         for (size_t slave = 1; slave <= static_cast<size_t>(ec_slavecount); slave++)
-          spdlog::debug("Slave[{}]: {} (State={:#02x}, StatusCode={:#04x})", slave, ec_ALstatuscode2string(ec_slave[slave].ALstatuscode),
+          logger->debug("Slave[{}]: {} (State={:#02x}, StatusCode={:#04x})", slave, ec_ALstatuscode2string(ec_slave[slave].ALstatuscode),
                         ec_slave[slave].state, ec_slave[slave].ALstatuscode);
-
-        print_stats("EC send interval", stats);
+        print_stats(logger, stats);
         stats.clear();
         stats.reserve(stats_size);
       }
@@ -124,11 +124,11 @@ void ecat_run_(std::atomic<bool>* is_open, std::atomic<int32_t>* wkc, const int6
 }
 
 inline void ecat_run(const bool high_precision, std::atomic<bool>* is_open, std::atomic<int32_t>* wkc, const int64_t cycletime_ns, std::mutex& mtx,
-                     std::queue<driver::TxDatagram>& send_queue, IOMap& io_map) {
+                     std::queue<driver::TxDatagram>& send_queue, IOMap& io_map, std::shared_ptr<spdlog::logger> logger) {
   if (high_precision)
-    ecat_run_<timed_wait_h>(is_open, wkc, cycletime_ns, mtx, send_queue, io_map);
+    ecat_run_<timed_wait_h>(is_open, wkc, cycletime_ns, mtx, send_queue, io_map, logger);
   else
-    ecat_run_<timed_wait>(is_open, wkc, cycletime_ns, mtx, send_queue, io_map);
+    ecat_run_<timed_wait>(is_open, wkc, cycletime_ns, mtx, send_queue, io_map, logger);
 }
 
 }  // namespace autd3::link

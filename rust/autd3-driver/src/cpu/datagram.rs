@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/12/2022
+ * Last Modified: 15/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -99,7 +99,7 @@ impl TxDatagram {
         }
     }
 
-    pub fn legacy_phase_full_mut(&mut self) -> &mut [LegacyPhaseFull] {
+    pub fn legacy_phase_full_mut<const N: usize>(&mut self) -> &mut [LegacyPhaseFull<N>] {
         let len =
             (self.data.len() - std::mem::size_of::<GlobalHeader>()) / std::mem::size_of::<u16>();
         unsafe {
@@ -107,13 +107,13 @@ impl TxDatagram {
                 self.data
                     .as_mut_ptr()
                     .add(std::mem::size_of::<GlobalHeader>())
-                    as *mut LegacyPhaseFull,
+                    as *mut LegacyPhaseFull<N>,
                 len,
             )
         }
     }
 
-    pub fn legacy_phase_half_mut(&mut self) -> &mut [LegacyPhaseHalf] {
+    pub fn legacy_phase_half_mut<const N: usize>(&mut self) -> &mut [LegacyPhaseHalf<N>] {
         let len =
             (self.data.len() - std::mem::size_of::<GlobalHeader>()) / std::mem::size_of::<u16>();
         unsafe {
@@ -121,7 +121,7 @@ impl TxDatagram {
                 self.data
                     .as_mut_ptr()
                     .add(std::mem::size_of::<GlobalHeader>())
-                    as *mut LegacyPhaseHalf,
+                    as *mut LegacyPhaseHalf<N>,
                 len,
             )
         }

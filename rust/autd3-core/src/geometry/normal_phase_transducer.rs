@@ -4,7 +4,7 @@
  * Created Date: 31/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/01/2023
+ * Last Modified: 15/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,10 +28,6 @@ pub struct NormalPhaseTransducer {
 }
 
 impl Transducer for NormalPhaseTransducer {
-    type Sync = autd3_driver::SyncNormal;
-    type Gain = autd3_driver::GainNormal;
-    type GainSTM = autd3_driver::GainSTMNormal;
-
     fn new(id: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
         Self {
             id,

@@ -27,8 +27,5 @@ class NativeMethods(metaclass=Singleton):
             return
         self.dll = ctypes.CDLL(os.path.join(self.bin, f'{self.prefix}autd3capi-link-debug{self.ext}'))
 
-        self.dll.AUTDLinkDebug.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
+        self.dll.AUTDLinkDebug.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_int32, ctypes.c_void_p, ctypes.c_void_p] 
         self.dll.AUTDLinkDebug.restype = None
-
-        self.dll.AUTDLinkDebugSetLevel.argtypes = [ctypes.c_int32] 
-        self.dll.AUTDLinkDebugSetLevel.restype = None

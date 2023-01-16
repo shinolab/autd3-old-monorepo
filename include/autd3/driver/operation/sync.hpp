@@ -3,7 +3,7 @@
 // Created Date: 06/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/01/2023
+// Last Modified: 17/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <utility>
 #include <vector>
 
 #include "autd3/driver/cpu/datagram.hpp"
@@ -18,23 +19,10 @@
 
 namespace autd3::driver {
 
-struct SyncBase {
-  virtual ~SyncBase() = default;
-  virtual void init() = 0;
-  virtual void pack(TxDatagram& tx) = 0;
-  [[nodiscard]] bool is_finished() const { return _sent; }
-  SyncBase() noexcept = default;
-  SyncBase(const SyncBase& v) noexcept = default;
-  SyncBase& operator=(const SyncBase& obj) = default;
-  SyncBase(SyncBase&& obj) = default;
-  SyncBase& operator=(SyncBase&& obj) = default;
-
- protected:
-  bool _sent{false};
-};
-
 template <typename T>
-struct Sync final : SyncBase {
+struct Sync final : Operation {
+  explicit Sync(std::vector<uint16_t> cycles) : _cycles(std::move(cycles)) {}
+
   void pack(TxDatagram& tx) override {
     static_assert(is_mode_v<T>, "Template type parameter must be Mode.");
 
@@ -43,22 +31,25 @@ struct Sync final : SyncBase {
     tx.header().cpu_flag.set(CPUControlFlags::ConfigSync);
     tx.num_bodies = tx.num_devices();
 
-    assert(cycles.size() == tx.bodies_size());
-    std::copy_n(cycles.begin(), tx.bodies_size(), tx.bodies_raw_ptr());
+    assert(_cycles.size() == tx.bodies_size());
+    std::copy_n(_cycles.begin(), tx.bodies_size(), tx.bodies_raw_ptr());
 
     _sent = true;
   }
 
-  void init() override {
-    _sent = false;
-    cycles.clear();
-  }
+  void init() override { _sent = false; }
 
-  std::vector<uint16_t> cycles{};
+  [[nodiscard]] bool is_finished() const override { return _sent; }
+
+ private:
+  bool _sent{false};
+  std::vector<uint16_t> _cycles{};
 };
 
 template <>
-struct Sync<Legacy> final : SyncBase {
+struct Sync<Legacy> final : Operation {
+  Sync() = default;
+
   void pack(TxDatagram& tx) override {
     tx.header().cpu_flag.remove(CPUControlFlags::Mod);
     tx.header().cpu_flag.remove(CPUControlFlags::ConfigSilencer);
@@ -71,6 +62,11 @@ struct Sync<Legacy> final : SyncBase {
   }
 
   void init() override { _sent = false; }
+
+  [[nodiscard]] bool is_finished() const override { return _sent; }
+
+ private:
+  bool _sent{false};
 };
 
 }  // namespace autd3::driver

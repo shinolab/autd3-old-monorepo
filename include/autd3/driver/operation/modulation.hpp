@@ -3,7 +3,7 @@
 // Created Date: 06/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/01/2023
+// Last Modified: 17/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,30 +11,31 @@
 
 #pragma once
 
+#include <utility>
 #include <vector>
 
 #include "autd3/driver/cpu/datagram.hpp"
+#include "autd3/driver/operation/operation.hpp"
 
 namespace autd3::driver {
 
-struct Modulation final {
-  void init() {
-    sent = 0;
-    mod_data.clear();
-  }
+struct Modulation final : Operation {
+  Modulation(std::vector<uint8_t> data, const uint32_t freq_div) : _mod_data(std::move(data)), _freq_div(freq_div) {}
 
-  void pack(TxDatagram& tx) {
-    if (mod_data.size() > MOD_BUF_SIZE_MAX) throw std::runtime_error("Modulation buffer overflow");
-    if (freq_div < MOD_SAMPLING_FREQ_DIV_MIN)
+  void init() override { _sent = 0; }
+
+  void pack(TxDatagram& tx) override {
+    if (_mod_data.size() > MOD_BUF_SIZE_MAX) throw std::runtime_error("Modulation buffer overflow");
+    if (_freq_div < MOD_SAMPLING_FREQ_DIV_MIN)
       throw std::runtime_error("Modulation frequency division is out of range. Minimum is " + std::to_string(MOD_SAMPLING_FREQ_DIV_MIN) +
-                               " but you use " + std::to_string(freq_div));
+                               " but you use " + std::to_string(_freq_div));
 
-    const auto is_first_frame = sent == 0;
+    const auto is_first_frame = _sent == 0;
     const auto max_size = is_first_frame ? MOD_HEADER_INITIAL_DATA_SIZE : MOD_HEADER_SUBSEQUENT_DATA_SIZE;
-    const auto mod_size = (std::min)(mod_data.size() - sent, max_size);
+    const auto mod_size = (std::min)(_mod_data.size() - _sent, max_size);
     if (mod_size == 0) return;
-    const auto is_last_frame = sent + mod_size == mod_data.size();
-    const auto* buf = &mod_data[sent];
+    const auto is_last_frame = _sent + mod_size == _mod_data.size();
+    const auto* buf = &_mod_data[_sent];
 
     tx.header().cpu_flag.set(CPUControlFlags::Mod);
     tx.header().cpu_flag.remove(CPUControlFlags::ModBegin);
@@ -43,7 +44,7 @@ struct Modulation final {
 
     if (is_first_frame) {
       tx.header().cpu_flag.set(CPUControlFlags::ModBegin);
-      tx.header().mod_initial().freq_div = freq_div;
+      tx.header().mod_initial().freq_div = _freq_div;
       std::memcpy(&tx.header().mod_initial().data[0], buf, mod_size);
     } else {
       std::memcpy(&tx.header().mod_subsequent().data[0], buf, mod_size);
@@ -51,14 +52,15 @@ struct Modulation final {
 
     if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::ModEnd);
 
-    sent += mod_size;
+    _sent += mod_size;
   }
 
-  [[nodiscard]] bool is_finished() const { return sent == mod_data.size(); }
+  [[nodiscard]] bool is_finished() const override { return _sent == _mod_data.size(); }
 
-  std::vector<uint8_t> mod_data{};
-  size_t sent{};
-  uint32_t freq_div{40960};
+ private:
+  size_t _sent{0};
+  std::vector<uint8_t> _mod_data{};
+  uint32_t _freq_div{40960};
 };
 
 }  // namespace autd3::driver

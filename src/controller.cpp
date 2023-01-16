@@ -3,7 +3,7 @@
 // Created Date: 16/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/01/2023
+// Last Modified: 16/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,12 +14,11 @@
 #include <atomic>
 
 #include "autd3/core/datagram.hpp"
-#include "autd3/core/mode.hpp"
 #include "autd3/driver/operation/info.hpp"
 #include "spdlog.hpp"
 
 namespace autd3 {
-Controller::Controller() : _mode(core::Mode::Legacy), _tx_buf({0}), _rx_buf(0), _link(nullptr), _send_th_running(false), _last_send_res(false) {}
+Controller::Controller() : _tx_buf({0}), _rx_buf(0), _link(nullptr), _send_th_running(false), _last_send_res(false) {}
 
 Controller::~Controller() noexcept {
   try {
@@ -54,8 +53,11 @@ void Controller::open(core::LinkPtr link) {
         data = std::move(_send_queue.front());
       }
 
-      data.header->init();
-      data.body->init(_mode, _geometry);
+      const auto op_header = data.header->operation();
+      const auto op_body = data.body->operation(_geometry);
+
+      op_header->init();
+      op_body->init();
 
       _force_fan.pack(_tx_buf);
       _reads_fpga_info.pack(_tx_buf);
@@ -64,8 +66,8 @@ void Controller::open(core::LinkPtr link) {
       while (true) {
         const auto msg_id = get_id();
         _tx_buf.header().msg_id = msg_id;
-        data.header->pack(_tx_buf);
-        data.body->pack(_tx_buf);
+        op_header->pack(_tx_buf);
+        op_body->pack(_tx_buf);
         if (!_link->send(_tx_buf)) {
           spdlog::warn("Failed to send data ({}). Trying to resend...", msg_id);
           break;
@@ -74,7 +76,7 @@ void Controller::open(core::LinkPtr link) {
           spdlog::warn("Could not confirm if the data ({}) was processed successfully.", msg_id);
           break;
         }
-        if (data.header->is_finished() && data.body->is_finished()) {
+        if (op_header->is_finished() && op_body->is_finished()) {
           data.header = nullptr;
           data.body = nullptr;
           break;
@@ -95,8 +97,8 @@ bool Controller::close() {
   _send_th_running = false;
   _send_cond.notify_all();
   if (_send_th.joinable()) _send_th.join();
-  if (!send(autd3::stop())) spdlog::warn("Failed to stop outputting.");
-  if (!send(autd3::clear())) spdlog::warn("Failed to clear.");
+  if (!send(stop())) spdlog::warn("Failed to stop outputting.");
+  if (!send(clear())) spdlog::warn("Failed to clear.");
   return _link->close();
 }
 
@@ -144,8 +146,11 @@ std::vector<driver::FirmwareInfo> Controller::firmware_infos() {
 }
 
 bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body, const std::chrono::high_resolution_clock::duration timeout) {
-  header->init();
-  body->init(_mode, _geometry);
+  const auto op_header = header->operation();
+  const auto op_body = body->operation(_geometry);
+
+  op_header->init();
+  op_body->init();
 
   _force_fan.pack(_tx_buf);
   _reads_fpga_info.pack(_tx_buf);
@@ -154,8 +159,8 @@ bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body, co
   while (true) {
     const auto msg_id = get_id();
     _tx_buf.header().msg_id = msg_id;
-    header->pack(_tx_buf);
-    body->pack(_tx_buf);
+    op_header->pack(_tx_buf);
+    op_body->pack(_tx_buf);
     if (!_link->send(_tx_buf)) {
       spdlog::warn("Failed to send data ({})", msg_id);
       return false;
@@ -164,7 +169,7 @@ bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body, co
       spdlog::warn("Could not confirm if the data ({}) was processed successfully.", msg_id);
       return false;
     }
-    if (header->is_finished() && body->is_finished()) break;
+    if (op_header->is_finished() && op_body->is_finished()) break;
     if (no_wait) std::this_thread::sleep_for(_send_interval);
   }
   return true;

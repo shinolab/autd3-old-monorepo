@@ -1,7 +1,7 @@
 name = "AUTD3"
 uuid = "fdfd21da-b5ee-4f77-8aa8-34e7bc245f9a"
 authors = ["Shun Suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
-version = "2.7.4"
+version = "2.7.5"
 
 [deps]
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"

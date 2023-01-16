@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 17/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,9 +11,11 @@
 
 #pragma once
 
+#include <algorithm>
 #include <numeric>
 #include <vector>
 
+#include "autd3/core/mode.hpp"
 #include "autd3/core/transducer.hpp"
 
 namespace autd3::core {
@@ -120,6 +122,11 @@ struct Geometry {
   [[nodiscard]] std::vector<Transducer>::iterator end() noexcept { return _transducers.end(); }
   [[nodiscard]] const Transducer& operator[](const size_t i) const { return _transducers[i]; }
   [[nodiscard]] Transducer& operator[](const size_t i) { return _transducers[i]; }
+
+  /**
+   * @brief Drive mode
+   */
+  Mode mode{Mode::Legacy};
 
   /**
    * @brief Attenuation coefficient.

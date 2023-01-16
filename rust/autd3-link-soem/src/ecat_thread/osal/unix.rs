@@ -4,7 +4,7 @@
  * Created Date: 03/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/11/2022
+ * Last Modified: 16/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ pub fn add_timespec(ts: &mut timespec, addtime: i64) {
     ts.tv_nsec += nsec;
     if ts.tv_nsec >= 1000000000 {
         let nsec = ts.tv_nsec % 1000000000;
-        ts.tv_sec += ((ts.tv_nsec - nsec) / 1000000000) as i64;
+        ts.tv_sec += (ts.tv_nsec - nsec) / 1000000000;
         ts.tv_nsec = nsec;
     }
 }

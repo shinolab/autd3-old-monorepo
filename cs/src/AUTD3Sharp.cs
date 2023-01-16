@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/01/2023
+ * Last Modified: 14/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 #if UNITY_2018_3_OR_NEWER
 #define USE_SINGLE
-#define DIMENSION_M 
+#define DIMENSION_M
 #endif
 
 using Microsoft.Win32.SafeHandles;
@@ -94,9 +94,10 @@ namespace AUTD3Sharp
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnLogOutputCallback(string str);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void OnLogFlushCallback();
-        public static void SetLogLevel(int level)
+
+        public static void SetLogLevel(DebugLevel level)
         {
-            Base.AUTDSetLogLevel(level);
+            Base.AUTDSetLogLevel((int)level);
         }
 
         public static void SetLogFunc(OnLogOutputCallback output, OnLogFlushCallback flush)

@@ -3,7 +3,7 @@
 // Created Date: 01/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 17/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,6 +12,8 @@
 #pragma once
 
 #include <algorithm>
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "autd3/core/datagram.hpp"
@@ -30,18 +32,12 @@ struct ModDelayConfig final : DatagramBody {
   ModDelayConfig(ModDelayConfig&& obj) = default;
   ModDelayConfig& operator=(ModDelayConfig&& obj) = default;
 
-  void init(const Mode, const Geometry& geometry) override {
-    _op.init();
-    _op.delays.reserve(geometry.num_transducers());
-    std::transform(geometry.begin(), geometry.end(), std::back_inserter(_op.delays), [](const Transducer& tr) { return tr.mod_delay(); });
+  std::unique_ptr<driver::Operation> operation(const Geometry& geometry) override {
+    std::vector<uint16_t> delays;
+    delays.reserve(geometry.num_transducers());
+    std::transform(geometry.begin(), geometry.end(), std::back_inserter(delays), [](const Transducer& tr) { return tr.mod_delay(); });
+    return std::make_unique<driver::ModDelay>(std::move(delays));
   }
-
-  void pack(driver::TxDatagram& tx) override { _op.pack(tx); }
-
-  [[nodiscard]] bool is_finished() const noexcept override { return _op.is_finished(); }
-
- private:
-  driver::ModDelay _op;
 };
 
 }  // namespace autd3::core

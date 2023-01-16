@@ -14,5 +14,4 @@ typedef long int64_t;
 typedef unsigned long uint64_t;
 #endif
 
-void AUTDLinkDebug(void** out);
-void AUTDLinkDebugSetLevel(int32_t level);
+void AUTDLinkDebug(void** out, int32_t level, void* out_func, void* flush_func);

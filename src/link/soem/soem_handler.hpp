@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 14/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -35,7 +35,8 @@ namespace autd3::link {
 class SOEMHandler final {
  public:
   SOEMHandler(const bool high_precision, std::string ifname, const uint16_t sync0_cycle, const uint16_t send_cycle,
-              std::function<void(std::string)> on_lost, const SyncMode sync_mode, const std::chrono::milliseconds state_check_interval)
+              std::function<void(std::string)> on_lost, const SyncMode sync_mode, const std::chrono::milliseconds state_check_interval,
+              std::shared_ptr<spdlog::logger> logger)
       : _high_precision(high_precision),
         _ifname(std::move(ifname)),
         _sync0_cycle(sync0_cycle),
@@ -43,12 +44,13 @@ class SOEMHandler final {
         _on_lost(std::move(on_lost)),
         _sync_mode(sync_mode),
         _is_open(false),
-        _state_check_interval(state_check_interval) {}
+        _state_check_interval(state_check_interval),
+        _logger(std::move(logger)) {}
   ~SOEMHandler() {
     try {
       close();
     } catch (std::exception& ex) {
-      spdlog::warn(ex.what());
+      _logger->debug(ex.what());
     }
   }
   SOEMHandler(const SOEMHandler& v) noexcept = delete;
@@ -68,11 +70,11 @@ class SOEMHandler final {
     return adapters;
   }
 
-  static std::string lookup_autd() {
-    spdlog::debug("looking for AUTD...");
+  std::string lookup_autd() {
+    _logger->debug("looking for AUTD...");
     auto* adapters = ec_find_adapters();
     for (const auto* adapter = adapters; adapter != nullptr; adapter = adapter->next) {
-      spdlog::debug("Checking on {} ({})...", adapter->name, adapter->desc);
+      _logger->debug("Checking on {} ({})...", adapter->name, adapter->desc);
       if (ec_init(adapter->name) <= 0) {
         ec_close();
         continue;
@@ -86,12 +88,12 @@ class SOEMHandler final {
       for (auto i = 1; i <= wc; i++)
         if (std::strcmp(ec_slave[i].name, "AUTD") != 0) {
           found = false;
-          spdlog::warn("EtherCAT slaves were found on {} ({}), but {}-th device is not AUTD3", adapter->name, adapter->desc, i);
+          _logger->debug("EtherCAT slaves were found on {} ({}), but {}-th device is not AUTD3", adapter->name, adapter->desc, i);
           ec_close();
           break;
         }
       if (found) {
-        spdlog::debug("AUTD3 found on {} ({})", adapter->name, adapter->desc);
+        _logger->debug("AUTD3 found on {} ({})", adapter->name, adapter->desc);
         auto ifname = std::string(adapter->name);
         ec_free_adapters(adapters);
         ec_close();
@@ -102,23 +104,23 @@ class SOEMHandler final {
     throw std::runtime_error("No AUTD3 devices found");
   }
 
-  size_t open(const std::vector<size_t>& device_map, const int remaining) {
+  size_t open(const std::vector<size_t>& device_map) {
     if (is_open()) return 0;
 
     std::queue<driver::TxDatagram>().swap(_send_buf);
 
     const auto cycle_time = driver::EC_CYCLE_TIME_BASE_NANO_SEC * _send_cycle;
-    spdlog::debug("send interval: {} [ns]", cycle_time);
+    _logger->debug("send interval: {} [ns]", cycle_time);
 
     if (_ifname.empty()) _ifname = lookup_autd();
     if (_ifname.empty()) return 0;
 
-    spdlog::debug("interface name: {}", _ifname);
+    _logger->debug("interface name: {}", _ifname);
     if (ec_init(_ifname.c_str()) <= 0) throw std::runtime_error("No socket connection on " + _ifname);
 
     const auto wc = ec_config_init(0);
     if (wc <= 0) throw std::runtime_error("No slaves found");
-    spdlog::debug("Found {} devices", wc);
+    _logger->debug("Found {} devices", wc);
 
     const auto auto_detect = device_map.empty();
     if (!auto_detect && static_cast<size_t>(wc) != device_map.size())
@@ -133,76 +135,68 @@ class SOEMHandler final {
     _user_data = std::make_unique<uint32_t[]>(1);
     _user_data[0] = driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle;
     ecx_context.userdata = _user_data.get();
-    spdlog::debug("Sync0 interval: {} [ns]", driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle);
+    _logger->debug("Sync0 interval: {} [ns]", driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle);
     if (_sync_mode == SyncMode::DC) {
+      _logger->debug("run mode: DC");
       for (int cnt = 1; cnt <= ec_slavecount; cnt++)
         ec_slave[cnt].PO2SOconfigx = [](auto* context, auto slave) -> int {
           const auto cyc_time = static_cast<uint32_t*>(context->userdata)[0];
           ec_dcsync0(slave, true, cyc_time, 0U);
           return 0;
         };
-      spdlog::debug("run mode: DC sync");
-      spdlog::debug("Sync0 configured");
     }
+
+    ec_configdc();
 
     _io_map.resize(dev_map);
     ec_config_map(_io_map.get());
 
-    ec_configdc();
-
     ec_statecheck(0, EC_STATE_SAFE_OP, EC_TIMEOUTSTATE);
+    ec_readstate();
     if (ec_slave[0].state != EC_STATE_SAFE_OP) {
-      ec_readstate();
       for (size_t slave = 1; slave <= static_cast<size_t>(ec_slavecount); slave++)
         if (ec_slave[slave].state != EC_STATE_SAFE_OP)
-          spdlog::warn("Slave[{}]: {} (State={:#02x} StatusCode={:#04x})", slave, ec_ALstatuscode2string(ec_slave[slave].ALstatuscode),
-                       ec_slave[slave].state, ec_slave[slave].ALstatuscode);
+          _logger->debug("Slave[{}]: {} (State={:#02x} StatusCode={:#04x})", slave, ec_ALstatuscode2string(ec_slave[slave].ALstatuscode),
+                         ec_slave[slave].state, ec_slave[slave].ALstatuscode);
       throw std::runtime_error("One ore more slaves did not reach safe operational state");
     }
 
     const auto expected_wkc = ec_group[0].outputsWKC * 2 + ec_group[0].inputsWKC;
-    spdlog::debug("Calculated workcounter {}", expected_wkc);
+    _logger->debug("Calculated workcounter {}", expected_wkc);
 
     ec_slave[0].state = EC_STATE_OPERATIONAL;
-
-    ec_send_processdata();
-    ec_receive_processdata(EC_TIMEOUTRET);
+    ec_writestate(0);
 
     _is_open.store(true);
     _ecat_thread = std::thread([this, cycle_time] {
-      ecat_run(this->_high_precision, &this->_is_open, &this->_wkc, cycle_time, this->_send_mtx, this->_send_buf, this->_io_map);
+      ecat_run(this->_high_precision, &this->_is_open, &this->_wkc, cycle_time, this->_send_mtx, this->_send_buf, this->_io_map, this->_logger);
     });
 
-    ec_writestate(0);
-
-    ec_statecheck(0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE);
+    ec_statecheck(0, EC_STATE_OPERATIONAL, 5 * EC_TIMEOUTSTATE);
     if (ec_slave[0].state != EC_STATE_OPERATIONAL) {
       _is_open.store(false);
       if (_ecat_thread.joinable()) _ecat_thread.join();
-      if (remaining == 0) {
-        ec_readstate();
-        for (size_t slave = 1; slave <= static_cast<size_t>(ec_slavecount); slave++)
-          if (ec_slave[slave].state != EC_STATE_SAFE_OP)
-            spdlog::warn("Slave {} State={:#02x} StatusCode={:#04x} : {}", slave, ec_slave[slave].state, ec_slave[slave].ALstatuscode,
+      ec_readstate();
+      for (size_t slave = 1; slave <= static_cast<size_t>(ec_slavecount); slave++)
+        if (ec_slave[slave].state != EC_STATE_SAFE_OP)
+          _logger->debug("Slave {} State={:#02x} StatusCode={:#04x} : {}", slave, ec_slave[slave].state, ec_slave[slave].ALstatuscode,
                          ec_ALstatuscode2string(ec_slave[slave].ALstatuscode));
-        throw std::runtime_error("One ore more slaves are not responding.");
-      }
-      spdlog::debug("Failed to reach op mode. retry opening...");
-      return open(device_map, remaining - 1);
+      throw std::runtime_error("One ore more slaves are not responding.");
     }
 
     if (_sync_mode == SyncMode::FreeRun) {
-      for (int slave = 1; slave <= ec_slavecount; slave++)
+      _logger->debug("run mode: FreeRun");
+      for (int slave = 1; slave <= ec_slavecount; slave++) {
         ec_dcsync0(static_cast<uint16_t>(slave), true, driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle, 0U);
-      spdlog::debug("run mode: Free Run");
-      spdlog::debug("Sync0 configured");
+        _logger->debug("Sync0 configured on slave[{}]", slave);
+      }
     }
 
-    spdlog::debug("Run EC state check thread, interval: {} [ms]", _state_check_interval.count());
+    _logger->debug("Run EC state check thread, interval: {} [ms]", _state_check_interval.count());
     _ecat_check_thread = std::thread([this, expected_wkc] {
       while (this->_is_open.load()) {
         if (this->_wkc.load() < expected_wkc || ec_group[0].docheckstate)
-          if (!error_handle(this->_on_lost)) break;
+          if (!error_handle(_logger, this->_on_lost)) break;
         std::this_thread::sleep_for(_state_check_interval);
       }
     });
@@ -229,12 +223,12 @@ class SOEMHandler final {
     if (!is_open()) return true;
     _is_open.store(false);
 
-    spdlog::debug("Stopping ethercat thread...");
+    _logger->debug("Stopping ethercat thread...");
     if (_ecat_thread.joinable()) _ecat_thread.join();
-    spdlog::debug("Stopping ethercat thread...done");
-    spdlog::debug("Stopping state check thread...");
+    _logger->debug("Stopping ethercat thread...done");
+    _logger->debug("Stopping state check thread...");
     if (_ecat_check_thread.joinable()) _ecat_check_thread.join();
-    spdlog::debug("Stopping state check thread...done");
+    _logger->debug("Stopping state check thread...done");
 
     const auto cyc_time = static_cast<uint32_t*>(ecx_context.userdata)[0];
     for (uint16_t slave = 1; slave <= static_cast<uint16_t>(ec_slavecount); slave++) ec_dcsync0(slave, false, cyc_time, 0U);
@@ -273,6 +267,8 @@ class SOEMHandler final {
   std::mutex _send_mtx;
 
   std::chrono::milliseconds _state_check_interval;
+
+  std::shared_ptr<spdlog::logger> _logger;
 };
 
 }  // namespace autd3::link
