@@ -1,5 +1,7 @@
 ## FAQ
 
+[[_TOC_]]
+
 ## "No AUTD3 devices found"
 
 - If you use `link::SOEM` on macOS or linux, you need root privileges.
@@ -8,7 +10,7 @@
    sudo ./examples/example_soem
    ```
 
-   - On linux, you can bypass this by setting the following privileges with the `setcap` command: ``` sudo .
+   - On linux, you can bypass this by setting the following privileges with the `setcap` command:
    
       ```
       sudo setcap cap_net_raw,cap_net_admin=eip ./examples/example_soem
