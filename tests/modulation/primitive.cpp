@@ -3,7 +3,7 @@
 // Created Date: 10/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/12/2022
+// Last Modified: 16/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,82 +23,82 @@
 TEST(Modulation, Static) {
   {
     auto m = autd3::modulation::Static();
-    m.calc();
+    const auto buffer = m.calc();
 
-    ASSERT_EQ(m.buffer().size(), 2);
-    ASSERT_EQ(m.buffer()[0], 255);
-    ASSERT_EQ(m.buffer()[1], 255);
+    ASSERT_EQ(buffer.size(), 2);
+    ASSERT_EQ(buffer[0], 255);
+    ASSERT_EQ(buffer[1], 255);
   }
 
   {
     auto m = autd3::modulation::Static(0.5);
-    m.calc();
+    const auto buffer = m.calc();
 
-    ASSERT_EQ(m.buffer().size(), 2);
-    ASSERT_EQ(m.buffer()[0], static_cast<uint8_t>(std::round(std::asin(0.5) / autd3::driver::pi * 510.0)));
-    ASSERT_EQ(m.buffer()[1], static_cast<uint8_t>(std::round(std::asin(0.5) / autd3::driver::pi * 510.0)));
+    ASSERT_EQ(buffer.size(), 2);
+    ASSERT_EQ(buffer[0], static_cast<uint8_t>(std::round(std::asin(0.5) / autd3::driver::pi * 510.0)));
+    ASSERT_EQ(buffer[1], static_cast<uint8_t>(std::round(std::asin(0.5) / autd3::driver::pi * 510.0)));
   }
 
   {
     auto m = autd3::modulation::Static(2.0);
-    m.calc();
+    const auto buffer = m.calc();
 
-    ASSERT_EQ(m.buffer().size(), 2);
-    ASSERT_EQ(m.buffer()[0], 255);
-    ASSERT_EQ(m.buffer()[1], 255);
+    ASSERT_EQ(buffer.size(), 2);
+    ASSERT_EQ(buffer[0], 255);
+    ASSERT_EQ(buffer[1], 255);
   }
 
   {
     auto m = autd3::modulation::Static(-1.0);
-    m.calc();
+    const auto buffer = m.calc();
 
-    ASSERT_EQ(m.buffer().size(), 2);
-    ASSERT_EQ(m.buffer()[0], 0);
-    ASSERT_EQ(m.buffer()[1], 0);
+    ASSERT_EQ(buffer.size(), 2);
+    ASSERT_EQ(buffer[0], 0);
+    ASSERT_EQ(buffer[1], 0);
   }
 }
 
 TEST(Modulation, Sine) {
   {
     auto m = autd3::modulation::Sine(150);
-    m.calc();
+    const auto buffer = m.calc();
 
     const uint8_t expects[80] = {85,  108, 132, 157, 183, 210, 237, 246, 219, 192, 166, 140, 116, 92, 71, 51, 34, 19, 9, 2, 0, 2, 9,  19, 34, 51, 71,
                                  92,  116, 140, 166, 192, 219, 246, 237, 210, 183, 157, 132, 108, 85, 64, 45, 29, 16, 6, 1, 0, 4, 12, 24, 39, 57, 78,
                                  100, 124, 149, 175, 201, 228, 255, 228, 201, 175, 149, 124, 100, 78, 57, 39, 24, 12, 4, 0, 1, 6, 16, 29, 45, 64};
 
-    ASSERT_EQ(m.buffer().size(), 80);
-    for (size_t i = 0; i < 80; i++) ASSERT_EQ(m.buffer()[i], expects[i]);
+    ASSERT_EQ(buffer.size(), 80);
+    for (size_t i = 0; i < 80; i++) ASSERT_EQ(buffer[i], expects[i]);
   }
 
   {
     auto m = autd3::modulation::Sine(150, 0.4, 0.2);  // from -0.2 to 0.2
-    m.calc();
+    const auto buffer = m.calc();
 
     const uint8_t expects[80] = {33, 40, 48, 55, 60, 64, 66, 67, 65, 62, 57, 50, 43, 35, 28, 20, 13, 8, 4, 1, 0, 1, 4, 8,  13, 20, 28,
                                  35, 43, 50, 57, 62, 65, 67, 66, 64, 60, 55, 48, 40, 33, 25, 18, 11, 6, 2, 0, 0, 2, 5, 10, 16, 23, 30,
                                  38, 45, 52, 58, 63, 66, 67, 66, 63, 58, 52, 45, 38, 30, 23, 16, 10, 5, 2, 0, 0, 2, 6, 11, 18, 25};
 
-    ASSERT_EQ(m.buffer().size(), 80);
-    for (size_t i = 0; i < 80; i++) ASSERT_EQ(m.buffer()[i], expects[i]);
+    ASSERT_EQ(buffer.size(), 80);
+    for (size_t i = 0; i < 80; i++) ASSERT_EQ(buffer[i], expects[i]);
   }
 
   {
     auto m = autd3::modulation::Sine(150, 2.0, 0.5);  // clamped from 0.0 to 1.0
-    m.calc();
+    const auto buffer = m.calc();
 
     const uint8_t expects[80] = {85,  134, 206, 255, 255, 255, 255, 255, 255, 255, 255, 255, 153, 100, 57, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 57,
                                  100, 153, 255, 255, 255, 255, 255, 255, 255, 255, 255, 206, 134, 85,  44, 7,  0, 0, 0, 0, 0, 0, 0, 0, 0, 31, 71,
                                  116, 176, 255, 255, 255, 255, 255, 255, 255, 255, 255, 176, 116, 71,  31, 0,  0, 0, 0, 0, 0, 0, 0, 0, 7, 44};
 
-    ASSERT_EQ(m.buffer().size(), 80);
-    for (size_t i = 0; i < 80; i++) ASSERT_EQ(m.buffer()[i], expects[i]);
+    ASSERT_EQ(buffer.size(), 80);
+    for (size_t i = 0; i < 80; i++) ASSERT_EQ(buffer[i], expects[i]);
   }
 
   {
     auto m = autd3::modulation::Sine(150);
     m.sampling_frequency_division() = 4096;
-    m.calc();
+    const auto buffer = m.calc();
 
     const uint8_t expects[800] = {
         85,  87,  89,  92,  94,  96,  99,  101, 103, 106, 108, 110, 113, 115, 117, 120, 122, 125, 127, 130, 132, 135, 137, 140, 142, 145, 147, 150,
@@ -132,128 +132,128 @@ TEST(Modulation, Sine) {
         52,  54,  56,  58,  60,  62,  64,  66,  68,  70,  72,  74,  76,  78,  81,  83,
     };
 
-    ASSERT_EQ(m.buffer().size(), 800);
-    for (size_t i = 0; i < 800; i++) ASSERT_EQ(m.buffer()[i], expects[i]);
+    ASSERT_EQ(buffer.size(), 800);
+    for (size_t i = 0; i < 800; i++) ASSERT_EQ(buffer[i], expects[i]);
   }
 }
 
 TEST(Modulation, SineSquared) {
   {
     auto m = autd3::modulation::SineSquared(150);
-    m.calc();
+    const auto buffer = m.calc();
 
     const uint8_t expects[80] = {128, 147, 166, 185, 204, 223, 242, 249, 230, 210, 191, 172, 153, 134, 115, 96,  77,  57,  38,  19,
                                  0,   19,  38,  57,  76,  96,  115, 134, 153, 172, 191, 210, 230, 249, 242, 223, 204, 185, 166, 147,
                                  128, 108, 89,  70,  51,  32,  13,  6,   25,  45,  64,  83,  102, 121, 140, 159, 179, 198, 217, 236,
                                  255, 236, 217, 198, 179, 159, 140, 121, 102, 83,  64,  45,  26,  6,   13,  32,  51,  70,  89,  108};
 
-    ASSERT_EQ(m.buffer().size(), 80);
-    for (size_t i = 0; i < 80; i++) ASSERT_NEAR(m.buffer()[i], expects[i], 1);
+    ASSERT_EQ(buffer.size(), 80);
+    for (size_t i = 0; i < 80; i++) ASSERT_NEAR(buffer[i], expects[i], 1);
   }
 
   {
     auto m = autd3::modulation::SineSquared(150, 0.4, 0.2);  // from -0.2 to 0.2
-    m.calc();
+    const auto buffer = m.calc();
 
     const uint8_t expects[80] = {75, 84, 92, 99,  105, 109, 111, 111, 110, 106, 101, 95, 87, 78, 69, 58, 47, 36, 24, 12, 0, 12, 24, 36, 47, 58, 69,
                                  78, 87, 95, 101, 106, 110, 111, 111, 109, 105, 99,  92, 84, 75, 65, 55, 44, 32, 20, 8,  4, 16, 28, 40, 51, 62, 72,
                                  81, 90, 97, 103, 108, 110, 111, 110, 108, 103, 97,  90, 81, 72, 62, 51, 40, 28, 16, 4,  8, 20, 32, 44, 55, 65};
 
-    ASSERT_EQ(m.buffer().size(), 80);
-    for (size_t i = 0; i < 80; i++) ASSERT_EQ(m.buffer()[i], expects[i]);
+    ASSERT_EQ(buffer.size(), 80);
+    for (size_t i = 0; i < 80; i++) ASSERT_EQ(buffer[i], expects[i]);
   }
 
   {
     auto m = autd3::modulation::SineSquared(150, 2.0, 0.5);  // clamped from 0.0 to 1.0
-    m.calc();
+    const auto buffer = m.calc();
 
     const uint8_t expects[80] = {128, 167, 220, 255, 255, 255, 255, 255, 255, 255, 255, 255, 182, 140, 102, 57, 0, 0, 0, 0, 0, 0, 0, 0, 0,  57, 102,
                                  140, 182, 255, 255, 255, 255, 255, 255, 255, 255, 255, 220, 167, 128, 88,  35, 0, 0, 0, 0, 0, 0, 0, 0, 0,  73, 115,
                                  153, 198, 255, 255, 255, 255, 255, 255, 255, 255, 255, 198, 153, 115, 73,  0,  0, 0, 0, 0, 0, 0, 0, 0, 35, 88};
 
-    ASSERT_EQ(m.buffer().size(), 80);
-    for (size_t i = 0; i < 80; i++) ASSERT_EQ(m.buffer()[i], expects[i]);
+    ASSERT_EQ(buffer.size(), 80);
+    for (size_t i = 0; i < 80; i++) ASSERT_EQ(buffer[i], expects[i]);
   }
 }
 
 TEST(Modulation, SineLegacy) {
   {
     auto m = autd3::modulation::SineLegacy(150.0);
-    m.calc();
+    const auto buffer = m.calc();
 
     const uint8_t expects[27] = {255, 228, 202, 176, 150, 125, 102, 80, 59, 41, 26, 13, 5, 1, 1, 5, 13, 26, 41, 59, 80, 102, 125, 150, 176, 202, 228};
 
-    ASSERT_EQ(m.buffer().size(), 27);
-    for (size_t i = 0; i < 27; i++) ASSERT_EQ(m.buffer()[i], expects[i]);
+    ASSERT_EQ(buffer.size(), 27);
+    for (size_t i = 0; i < 27; i++) ASSERT_EQ(buffer[i], expects[i]);
   }
 
   {
     auto m = autd3::modulation::SineLegacy(150.0, 0.4, 0.2);  // from -0.2 to 0.2
-    m.calc();
+    const auto buffer = m.calc();
 
     const uint8_t expects[27] = {67, 66, 63, 59, 53, 46, 38, 31, 23, 16, 10, 5, 2, 0, 0, 2, 5, 10, 16, 23, 31, 38, 46, 53, 59, 63, 66};
 
-    ASSERT_EQ(m.buffer().size(), 27);
-    for (size_t i = 0; i < 27; i++) ASSERT_EQ(m.buffer()[i], expects[i]);
+    ASSERT_EQ(buffer.size(), 27);
+    for (size_t i = 0; i < 27; i++) ASSERT_EQ(buffer[i], expects[i]);
   }
 
   {
     auto m = autd3::modulation::SineLegacy(150.0, 2.0, 0.5);  // clamped from 0.0 to 1.0
-    m.calc();
+    const auto buffer = m.calc();
 
     const uint8_t expects[27] = {255, 255, 255, 255, 255, 180, 120, 74, 35, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 35, 74, 120, 180, 255, 255, 255, 255};
 
-    ASSERT_EQ(m.buffer().size(), 27);
-    for (size_t i = 0; i < 27; i++) ASSERT_EQ(m.buffer()[i], expects[i]);
+    ASSERT_EQ(buffer.size(), 27);
+    for (size_t i = 0; i < 27; i++) ASSERT_EQ(buffer[i], expects[i]);
   }
 }
 
 TEST(Modulation, Square) {
   {
     auto m = autd3::modulation::Square(150);
-    m.calc();
+    const auto buffer = m.calc();
 
     const uint8_t expects[80] = {255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255,
                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255,
                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-    ASSERT_EQ(m.buffer().size(), 80);
-    for (size_t i = 0; i < 80; i++) ASSERT_EQ(m.buffer()[i], expects[i]);
+    ASSERT_EQ(buffer.size(), 80);
+    for (size_t i = 0; i < 80; i++) ASSERT_EQ(buffer[i], expects[i]);
   }
 
   {
     auto m = autd3::modulation::Square(150, 0.2, 0.4);
-    m.calc();
+    const auto buffer = m.calc();
 
     const uint8_t expects[80] = {67, 67, 67, 67, 67, 67, 67, 67, 67, 67, 67, 67, 67, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 67,
                                  67, 67, 67, 67, 67, 67, 67, 67, 67, 67, 67, 67, 67, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 67,
                                  67, 67, 67, 67, 67, 67, 67, 67, 67, 67, 67, 67, 67, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33};
 
-    ASSERT_EQ(m.buffer().size(), 80);
-    for (size_t i = 0; i < 80; i++) ASSERT_EQ(m.buffer()[i], expects[i]);
+    ASSERT_EQ(buffer.size(), 80);
+    for (size_t i = 0; i < 80; i++) ASSERT_EQ(buffer[i], expects[i]);
   }
 
   {
     auto m = autd3::modulation::Square(150, -1.0, 2.0);
-    m.calc();
+    const auto buffer = m.calc();
 
     const uint8_t expects[80] = {255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255,
                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255,
                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-    ASSERT_EQ(m.buffer().size(), 80);
-    for (size_t i = 0; i < 80; i++) ASSERT_EQ(m.buffer()[i], expects[i]);
+    ASSERT_EQ(buffer.size(), 80);
+    for (size_t i = 0; i < 80; i++) ASSERT_EQ(buffer[i], expects[i]);
   }
 
   {
     auto m = autd3::modulation::Square(150, 0.0, 1.0, 0.2);
-    m.calc();
+    const auto buffer = m.calc();
 
     const uint8_t expects[80] = {255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255,
                                  255, 255, 255, 255, 0,   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255,
                                  255, 255, 255, 255, 0,   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-    ASSERT_EQ(m.buffer().size(), 80);
-    for (size_t i = 0; i < 80; i++) ASSERT_EQ(m.buffer()[i], expects[i]);
+    ASSERT_EQ(buffer.size(), 80);
+    for (size_t i = 0; i < 80; i++) ASSERT_EQ(buffer[i], expects[i]);
   }
 }
