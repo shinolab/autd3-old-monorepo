@@ -31,7 +31,7 @@ struct ModDelay final : Operation {
     tx.header().cpu_flag.set(CPUControlFlags::ModDelay);
     tx.num_bodies = tx.num_devices();
 
-    assert(delays.size() == tx.bodies_size());
+    assert(_delays.size() == tx.bodies_size());
     std::copy_n(_delays.begin(), tx.bodies_size(), tx.bodies_raw_ptr());
     _sent = true;
   }

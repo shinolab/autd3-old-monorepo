@@ -30,7 +30,7 @@ struct Sync final : Operation {
     tx.header().cpu_flag.set(CPUControlFlags::ConfigSync);
     tx.num_bodies = tx.num_devices();
 
-    assert(cycles.size() == tx.bodies_size());
+    assert(_cycles.size() == tx.bodies_size());
     std::copy_n(_cycles.begin(), tx.bodies_size(), tx.bodies_raw_ptr());
 
     _sent = true;

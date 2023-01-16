@@ -171,7 +171,7 @@ struct Amplitude final : Operation {
 
     tx.num_bodies = tx.num_devices();
 
-    assert(drives.size() == tx.bodies_size());
+    assert(_drives.size() == tx.bodies_size());
     assert(_cycles.size() == tx.bodies_size());
     std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<Duty*>(tx.bodies_raw_ptr()),
                    [](const auto& d, const auto cycle) { return Duty(d, cycle); });
