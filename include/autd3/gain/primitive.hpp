@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/01/2023
+// Last Modified: 17/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -245,6 +245,53 @@ class TransducerTest final : public core::Gain {
 
  private:
   std::unordered_map<size_t, std::pair<driver::autd3_float_t, driver::autd3_float_t>> _map;
+};
+
+template <typename T>
+class Cache final : public core::Gain {
+ public:
+  template <typename... Args>
+  explicit Cache(Args&&... args) : gain(std::forward<Args>(args)...) {}
+
+  std::vector<driver::Drive> calc(const core::Geometry& geometry) override {
+    if (!_built) {
+      _drives = gain.calc(geometry);
+      _built = true;
+    }
+    std::vector<driver::Drive> drives;
+    drives.reserve(_drives.size());
+    std::copy(_drives.begin(), _drives.end(), std::back_inserter(drives));
+    return drives;
+  }
+
+  std::vector<driver::Drive> recalc(const core::Geometry& geometry) {
+    _built = false;
+    return calc(geometry);
+  }
+
+  /**
+   * @brief Getter function for the data of duty ratio and phase of each transducers
+   */
+  [[nodiscard]] const std::vector<driver::Drive>& drives() const { return _drives; }
+
+  /**
+   * @brief [Advanced] Getter function for the data of duty ratio and phase of each transducers
+   * @details Call calc before using this function to initialize drive data.
+   */
+  std::vector<driver::Drive>& drives() { return _drives; }
+
+  [[nodiscard]] std::vector<driver::Drive>::const_iterator begin() const noexcept { return _drives.begin(); }
+  [[nodiscard]] std::vector<driver::Drive>::const_iterator end() const noexcept { return _drives.end(); }
+  [[nodiscard]] std::vector<driver::Drive>::iterator begin() noexcept { return _drives.begin(); }
+  [[nodiscard]] std::vector<driver::Drive>::iterator end() noexcept { return _drives.end(); }
+  [[nodiscard]] const driver::Drive& operator[](const size_t i) const { return _drives[i]; }
+  [[nodiscard]] driver::Drive& operator[](const size_t i) { return _drives[i]; }
+
+  T gain;
+
+ private:
+  bool _built{false};
+  std::vector<driver::Drive> _drives;
 };
 
 }  // namespace autd3::gain

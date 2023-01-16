@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/01/2023
+// Last Modified: 17/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -215,6 +215,54 @@ class Square final : public core::Modulation {
   driver::autd3_float_t _low;
   driver::autd3_float_t _high;
   driver::autd3_float_t _duty;
+};
+
+template <typename T>
+class Cache final : public core::Modulation {
+ public:
+  template <typename... Args>
+  explicit Cache(Args&&... args) : modulation(std::forward<Args>(args)...) {}
+
+  std::vector<uint8_t> calc() override {
+    if (!_built) {
+      _buffer = modulation.calc();
+      _freq_div = modulation.sampling_frequency_division();
+      _built = true;
+    }
+    std::vector<uint8_t> buffer;
+    buffer.reserve(_buffer.size());
+    std::copy(_buffer.begin(), _buffer.end(), std::back_inserter(buffer));
+    return buffer;
+  }
+
+  std::vector<uint8_t> recalc() {
+    _built = false;
+    return calc();
+  }
+
+  /**
+   * \brief modulation data
+   */
+  [[nodiscard]] const std::vector<uint8_t>& buffer() const noexcept { return _buffer; }
+
+  /**
+   * @brief [Advanced] modulation data
+   * @details Call Modulation::build before using this function to initialize buffer data.
+   */
+  std::vector<uint8_t>& buffer() noexcept { return _buffer; }
+
+  [[nodiscard]] std::vector<uint8_t>::const_iterator begin() const noexcept { return _buffer.begin(); }
+  [[nodiscard]] std::vector<uint8_t>::const_iterator end() const noexcept { return _buffer.end(); }
+  [[nodiscard]] std::vector<uint8_t>::iterator begin() noexcept { return _buffer.begin(); }
+  [[nodiscard]] std::vector<uint8_t>::iterator end() noexcept { return _buffer.end(); }
+  [[nodiscard]] const uint8_t& operator[](const size_t i) const { return _buffer[i]; }
+  [[nodiscard]] uint8_t& operator[](const size_t i) { return _buffer[i]; }
+
+  T modulation;
+
+ private:
+  bool _built{false};
+  std::vector<uint8_t> _buffer;
 };
 
 }  // namespace autd3::modulation
