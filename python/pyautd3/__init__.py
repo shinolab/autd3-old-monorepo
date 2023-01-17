@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 14/01/2023
+Last Modified: 18/01/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -42,4 +42,4 @@ __all__ = [
     'DebugLevel'
 ]
 
-__version__ = '2.7.5'
+__version__ = '2.7.6'
