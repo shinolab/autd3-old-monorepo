@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/01/2023
+// Last Modified: 18/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -297,7 +297,6 @@ struct GainSTMBodyInitial {
   uint32_t freq_div;
   GainSTMMode mode;
   uint16_t cycle;
-  uint16_t size;
   uint16_t stm_start_idx;
   uint16_t stm_finish_idx;
 };
