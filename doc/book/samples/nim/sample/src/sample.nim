@@ -8,7 +8,7 @@ proc onLost(msg: cstring) =
 when isMainModule:
     try:
         var cnt = initController()
-        cnt.addDevice([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+        discard cnt.addDevice([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])
 
         var soem = initSOEM()
         let link = soem.highPrecision(true).onLost(onLost).build()
