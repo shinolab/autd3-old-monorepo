@@ -63,11 +63,11 @@ func toNormalPhase*(cnt: Controller) =
     AUTDSetMode(cnt.p, 2)
 
 func addDevice*(cnt: Controller, pos: openArray[float64], rot: openArray[
-        float64]): bool =
+        float64]): bool {.discardable.} =
     AUTDAddDevice(cnt.p, pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
 
 func addDeviceQuaternion*(cnt: Controller, pos: openArray[float64],
-        quaternion: openArray[float64]): bool =
+        quaternion: openArray[float64]): bool {.discardable.} =
     AUTDAddDeviceQuaternion(cnt.p, pos[0], pos[1], pos[2], quaternion[0],
             quaternion[1], quaternion[2], quaternion[3])
 

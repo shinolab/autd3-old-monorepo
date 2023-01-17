@@ -60,6 +60,17 @@ $$
 また, 第4引数にduty比を指定できる.
 duty比は$t_\text{high}/T = t_\text{high}f$で定義される, ここで, $t_\text{high}$は1周期$T=1/f$の内, highを出力する時間である.
 
+## Cache
+
+`Modulation`は使い捨てであり, 複数回使用した場合は, 都度変調データの計算が行われる.
+`Cache`は計算データをキャッシュしておくために使用できる.
+
+```cpp
+  autd3::modulation::Cache<autd3::modulation::Sine> m(150);
+```
+
+元の`Modulation`には`modulation`メンバでアクセスできる.
+
 ## Wav
 
 `Wav`はWavファイルをもとに構成される`Modulation`である.

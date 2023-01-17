@@ -18,3 +18,7 @@ elseif(APPLE)
 else()
   target_link_libraries(main rt)
 endif()
+
+if (CMAKE_GENERATOR MATCHES "Visual Studio")
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT main)
+endif()
