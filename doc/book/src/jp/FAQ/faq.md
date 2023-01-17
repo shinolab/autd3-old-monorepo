@@ -89,37 +89,39 @@
 
 ## 振動子の位相/振幅データにアクセスするには?
 
-`Gain`に定義されている`drives()`関数でアクセスできる.
+1. 自分で所望の`Gain`を作成する. [Gainの自作](../Users_Manual/advanced_examples/custom_gain.md)を参照.
+2. `gain::Cache`経由でアクセスする. `gain::Cache`に定義されている`drives()`関数でアクセスできる.
 
-```cpp
-  autd3::Controller autd;
+   ```cpp
+   autd3::Controller autd;
 
-  ...
+   ...
 
-  autd3::gain::Focus g(autd3::Vector3(x, y, z));
+   autd3::gain::Cache<autd3::gain::Focus> g(autd3::Vector3(x, y, z));
 
-  g.build(autd.geometry()); // initialize drive data
-  g.drives()[0].phase = 0.0; // overwrite phase of 0-th transducer
-```
+   g.calc(autd.geometry()); // initialize drive data
+   g.drives()[0].phase = 0.0; // overwrite phase of 0-th transducer
+   ```
 
-先に手動で`build`を呼んで初期化する必要がある点に注意する.
+   先に手動で`calc`を呼んで初期化する必要がある点に注意する.
 
 ## AM変調データにアクセスするには?
 
-`Modulation`に定義されている`buffer()`関数でアクセスできる.
+1. 自分で所望の`Modulation`を作成する. [Modulationの自作](../Users_Manual/advanced_examples/custom_modulation.md)を参照.
+2. `modulation::Cache`経由でアクセスする. `modulation::Cache`に定義されている`buffer()`関数でアクセスできる.
 
-```cpp
-  autd3::Controller autd;
+   ```cpp
+   autd3::Controller autd;
 
-  ...
+   ...
 
-  autd3::modulation::Static m;
+   autd3::modulation::Cache<autd3::modulation::Static> m;
 
-  m.build(); // initialize buffer data
-  m.buffer()[0] = 0;
-```
+   m.calc(); // initialize buffer data
+   m.buffer()[0] = 0;
+   ```
 
-先に手動で`build`を呼んで初期化する必要がある点に注意する.
+   先に手動で`calc`を呼んで初期化する必要がある点に注意する.
    
 ## その他
 

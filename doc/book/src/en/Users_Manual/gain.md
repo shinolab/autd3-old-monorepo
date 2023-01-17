@@ -176,22 +176,22 @@ In the above case, device 0 uses `g0` and device 1 uses `g1`.
 You can create your own `Gain` by inheriting from the `Gain` class.
 Here, we will actually define a `FocalPoint` that generates a single focus just like `Focus`.
 
-```cpp
+````cpp
 #include "autd3.hpp"
 
 class FocalPoint final : public autd3::Gain {
  public:
   explicit FocalPoint(autd3::Vector3 point) : _point(std::move(point)) {}
 
-  void calc(const autd3::Geometry& geometry) override {
-    std::for_each(geometry.begin(), geometry.end(), [&](const auto& dev) {
-      std::for_each(dev.begin(), dev.end(), [&](const auto& transducer) {
+  std::vector<autd3::driver::Drive> calc(const autd3::Geometry& geometry) override {
+    std::vector<autd3::driver::Drive> drives;
+    drives.reserve(geometry.num_transducers());
+    std::transform(geometry.begin(), geometry.end(), std::back_inserter(drives), [&](const auto& transducer) { {
         const auto dist = (_point - transducer.position()).norm();
         const auto phase = transducer.align_phase_at(dist);
-        this->_drives[transducer.id()].amp = 1.0;
-        this->_drives[transducer.id()].phase = phase;
+        return driver::Drive{phase, 1.0};
       });
-    });
+    return drives;
   } 
 
  private:
