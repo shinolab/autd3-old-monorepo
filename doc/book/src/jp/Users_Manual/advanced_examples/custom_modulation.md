@@ -7,8 +7,8 @@
 ```cpp
 class Burst final : public autd3::Modulation {
  public:
-  void calc() override {
-    buffer().resize(_buf_size, 0);
+  std::vector<uint8_t> calc() override {
+    std::vector<uint8_t> buffer(_buf_size, 0);
     buffer()[_buf_size - 1] = 0xFF;
   }
 
@@ -22,8 +22,8 @@ class Burst final : public autd3::Modulation {
 };
 ```
 
-`Modulation`も`Gain`と同じく, `Controller::send`内部で`Modulation::calc`メソッドが呼ばれる.
-この`calc`の中で, `buffer`の中身を書き換えれば良い.
+`Modulation`も`Gain`と同じく, `Controller::send`内部で`Modulation::calc`メソッドが呼ばれ, その返り値の変調データが使用される.
+したがって, この`calc`の中で, 変調データを計算すれば良い.
 `Modulation`サンプリング周波数$\SI{163.84}{MHz}/N$を決定する$N$は`_freq_div`に設定する.
 この例だと, デフォルトで$N=40960$なので, サンプリング周波数は$\SI{4}{kHz}$になる.
 さらに, 例えば, `buf_size`を4000とすると, AMは$0$が$3999$回サンプリングされた後, $255$が$1$回サンプリングされる.

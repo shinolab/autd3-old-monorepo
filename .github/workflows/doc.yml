@@ -117,7 +117,7 @@ jobs:
     - name: Setup mdbook
       uses: peaceiris/actions-mdbook@v1
       with:
-        mdbook-version: '0.4.21'
+        mdbook-version: '0.4.25'
     - name: Setup mdbook-linkcheck
       run: |
         mkdir -p mdbook-linkcheck
@@ -130,7 +130,7 @@ jobs:
       run: |
         mkdir -p mdbook-toc
         cd mdbook-toc
-        curl -L https://github.com/badboy/mdbook-toc/releases/download/0.10.0/mdbook-toc-0.10.0-x86_64-unknown-linux-gnu.tar.gz -o mdbook-toc.tar.gz
+        curl -L https://github.com/badboy/mdbook-toc/releases/download/0.11.0/mdbook-toc-0.11.0-x86_64-unknown-linux-gnu.tar.gz -o mdbook-toc.tar.gz
         tar -xvf mdbook-toc.tar.gz
         chmod +x mdbook-toc
         sudo ln -s $PWD/mdbook-toc /usr/local/bin/mdbook-toc
@@ -138,7 +138,7 @@ jobs:
       run: |
         mkdir -p mdbook-katex
         cd mdbook-katex
-        curl -L https://github.com/lzanini/mdbook-katex/releases/download/v0.2.17/mdbook-katex-v0.2.17-x86_64-unknown-linux-gnu.tar.gz -o mdbook-katex.tar.gz
+        curl -L https://github.com/lzanini/mdbook-katex/releases/download/v0.3.3/mdbook-katex-v0.3.3-x86_64-unknown-linux-gnu.tar.gz -o mdbook-katex.tar.gz
         tar -xvf mdbook-katex.tar.gz
         chmod +x mdbook-katex
         sudo ln -s $PWD/mdbook-katex /usr/local/bin/mdbook-katex
