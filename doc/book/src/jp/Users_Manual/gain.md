@@ -164,6 +164,26 @@ cmake .. -DBUILD_HOLO_GAIN=ON -DBUILD_BLAS_BACKEND=ON -DBLAS_LIB_DIR=D:/lib/open
 ```
 上の場合は, デバイス0が`Gain g0`, デバイス1が`Gain g1`を使用する.
 
+## Cache
+
+`Gain`は使い捨てであり, 複数回使用した場合は, 都度振幅/位相の計算が行われる.
+`Cache`は計算データをキャッシュしておくために使用できる.
+
+```cpp
+  autd3::gain::Cache<autd3::gain::Focus> g(autd3::Vector3(x, y, z));
+```
+
+元の`Gain`には`gain`メンバでアクセスできる.
+
+```cpp
+  const auto g0 = ...;
+  const auto g1 = ...;
+
+  autd3::gain::Cache<autd3::gain::Grouped> g;
+  g.gain.add(0, g0);
+  g.gain.add(1, g1);
+```
+
 [^hasegawa2017]: Hasegawa, Keisuke, et al. "Electronically steerable ultrasound-driven long narrow air stream." Applied Physics Letters 111.6 (2017): 064104.
 
 [^inoue2015]: Inoue, Seki, Yasutoshi Makino, and Hiroyuki Shinoda. "Active touch perception produced by airborne ultrasonic haptic hologram." 2015 IEEE World Haptics Conference (WHC). IEEE, 2015.
