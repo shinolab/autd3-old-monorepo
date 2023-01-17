@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/01/2023
+// Last Modified: 18/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -419,7 +419,6 @@ TEST(Driver_Driver, gain_stm_legacy) {
     ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
     ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
     for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().freq_div, 3224);
-    for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().size, 0);
     for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().mode, autd3::driver::GainSTMMode::PhaseDutyFull);
     for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().stm_start_idx, 1);
     for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().stm_finish_idx, 1);
@@ -528,7 +527,6 @@ TEST(Driver_Driver, gain_stm_normal) {
     ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
     ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
     for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().freq_div, 3224);
-    for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().size, 0);
     for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().mode, autd3::driver::GainSTMMode::PhaseDutyFull);
     for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().stm_finish_idx, 1);
     for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().stm_start_idx, 1);
@@ -658,7 +656,6 @@ TEST(Driver_Driver, gain_stm_normal_phase) {
     ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
     ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
     for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().freq_div, 3224);
-    for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().size, 0);
     for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().mode, autd3::driver::GainSTMMode::PhaseFull);
     for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().stm_start_idx, 1);
     for (int i = 0; i < 10; i++) ASSERT_EQ(tx.body(i).gain_stm_initial().stm_finish_idx, 1);

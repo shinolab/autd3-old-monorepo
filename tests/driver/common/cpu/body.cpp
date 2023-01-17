@@ -3,7 +3,7 @@
 // Created Date: 30/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/01/2023
+// Last Modified: 18/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -233,13 +233,12 @@ TEST(DriverCommonCPUTest, LegacyPhaseHalf) {
 }
 
 TEST(DriverCommonCPUTest, GainSTMBodyInitial) {
-  ASSERT_EQ(sizeof(GainSTMBodyInitial), 14);
+  ASSERT_EQ(sizeof(GainSTMBodyInitial), 12);
   ASSERT_EQ(offsetof(GainSTMBodyInitial, freq_div), 0);
   ASSERT_EQ(offsetof(GainSTMBodyInitial, mode), 4);
   ASSERT_EQ(offsetof(GainSTMBodyInitial, cycle), 6);
-  ASSERT_EQ(offsetof(GainSTMBodyInitial, size), 8);
-  ASSERT_EQ(offsetof(GainSTMBodyInitial, stm_start_idx), 10);
-  ASSERT_EQ(offsetof(GainSTMBodyInitial, stm_finish_idx), 12);
+  ASSERT_EQ(offsetof(GainSTMBodyInitial, stm_start_idx), 8);
+  ASSERT_EQ(offsetof(GainSTMBodyInitial, stm_finish_idx), 10);
 
   constexpr size_t size = 4 * sizeof(uint16_t);
 
