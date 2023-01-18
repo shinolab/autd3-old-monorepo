@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 19/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -170,17 +170,13 @@ class FPGA {
     return to_u32(_controller_bram[fpga::ADDR_SOUND_SPEED_1], _controller_bram[fpga::ADDR_SOUND_SPEED_0]);
   }
 
-  [[nodiscard]] bool is_use_stm_start_idx() const { return (_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_USE_STM_START_IDX) != 0; }
-
   [[nodiscard]] std::optional<uint16_t> stm_start_idx() const {
-    if (is_use_stm_start_idx()) return _controller_bram[fpga::ADDR_STM_START_IDX];
+    if ((_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_USE_STM_START_IDX) != 0) return _controller_bram[fpga::ADDR_STM_START_IDX];
     return std::nullopt;
   }
 
-  [[nodiscard]] bool is_use_stm_finish_idx() const { return (_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_USE_STM_FINISH_IDX) != 0; }
-
   [[nodiscard]] std::optional<uint16_t> stm_finish_idx() const {
-    if (is_use_stm_finish_idx()) return _controller_bram[fpga::ADDR_STM_FINISH_IDX];
+    if ((_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_USE_STM_FINISH_IDX) != 0) return _controller_bram[fpga::ADDR_STM_FINISH_IDX];
     return std::nullopt;
   }
 
