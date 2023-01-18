@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/01/2023
+// Last Modified: 19/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -594,6 +594,11 @@ TEST(ControllerTest, focus_stm) {
   autd << stm;
   for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
 
+  for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+    ASSERT_FALSE(cpus->at(i).fpga().stm_start_idx().has_value());
+    ASSERT_FALSE(cpus->at(i).fpga().stm_finish_idx().has_value());
+  }
+
   const auto cycle = cpus->at(0).fpga().cycles()[0];
   const auto wavenumber = autd.geometry()[0].wavenumber(autd.geometry().sound_speed);
   const auto& base_tr = autd.geometry()[0];
@@ -617,6 +622,16 @@ TEST(ControllerTest, focus_stm) {
           ASSERT_NEAR(autd3::driver::rem_euclid(p - expect, 2 * autd3::pi), 0, criteria);
       }
     }
+  }
+
+  stm.start_idx() = 1;
+  stm.finish_idx() = 2;
+  autd << stm;
+  for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+    ASSERT_TRUE(cpus->at(i).fpga().stm_start_idx().has_value());
+    ASSERT_EQ(cpus->at(i).fpga().stm_start_idx().value_or(0), 1);
+    ASSERT_TRUE(cpus->at(i).fpga().stm_finish_idx().has_value());
+    ASSERT_EQ(cpus->at(i).fpga().stm_finish_idx().value_or(0), 2);
   }
 
   autd << autd3::stop;
@@ -662,6 +677,11 @@ TEST(ControllerTest, gain_stm_legacy) {
     autd << stm;
     for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
 
+    for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+      ASSERT_FALSE(cpus->at(i).fpga().stm_start_idx().has_value());
+      ASSERT_FALSE(cpus->at(i).fpga().stm_finish_idx().has_value());
+    }
+
     for (size_t k = 0; k < size; k++) {
       for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
         const auto [duties, phases] = cpus->at(i).fpga().drives(k);
@@ -688,8 +708,18 @@ TEST(ControllerTest, gain_stm_legacy) {
       stm.add(f);
     });
 
+    stm.start_idx() = 1;
+    stm.finish_idx() = 2;
+
     autd << stm;
     for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
+
+    for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+      ASSERT_TRUE(cpus->at(i).fpga().stm_start_idx().has_value());
+      ASSERT_EQ(cpus->at(i).fpga().stm_start_idx().value_or(0), 1);
+      ASSERT_TRUE(cpus->at(i).fpga().stm_finish_idx().has_value());
+      ASSERT_EQ(cpus->at(i).fpga().stm_finish_idx().value_or(0), 2);
+    }
 
     const uint16_t cycle = autd.geometry()[0].cycle();
     for (size_t k = 0; k < size; k++) {
@@ -720,6 +750,11 @@ TEST(ControllerTest, gain_stm_legacy) {
 
     autd << stm;
     for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
+
+    for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+      ASSERT_FALSE(cpus->at(i).fpga().stm_start_idx().has_value());
+      ASSERT_FALSE(cpus->at(i).fpga().stm_finish_idx().has_value());
+    }
 
     const uint16_t cycle = autd.geometry()[0].cycle();
     for (size_t k = 0; k < size; k++) {
@@ -782,6 +817,11 @@ TEST(ControllerTest, gain_stm_normal) {
     autd << stm;
     for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
 
+    for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+      ASSERT_FALSE(cpus->at(i).fpga().stm_start_idx().has_value());
+      ASSERT_FALSE(cpus->at(i).fpga().stm_finish_idx().has_value());
+    }
+
     const uint16_t cycle = autd.geometry()[0].cycle();
     for (size_t k = 0; k < size; k++) {
       for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
@@ -809,8 +849,18 @@ TEST(ControllerTest, gain_stm_normal) {
       stm.add(f);
     });
 
+    stm.start_idx() = 2;
+    stm.finish_idx() = 1;
+
     autd << stm;
     for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
+
+    for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+      ASSERT_TRUE(cpus->at(i).fpga().stm_start_idx().has_value());
+      ASSERT_EQ(cpus->at(i).fpga().stm_start_idx().value_or(0), 2);
+      ASSERT_TRUE(cpus->at(i).fpga().stm_finish_idx().has_value());
+      ASSERT_EQ(cpus->at(i).fpga().stm_finish_idx().value_or(0), 1);
+    }
 
     const uint16_t cycle = autd.geometry()[0].cycle();
     for (size_t k = 0; k < size; k++) {
@@ -870,6 +920,11 @@ TEST(ControllerTest, gain_stm_normal_phase) {
     autd << stm;
     for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
 
+    for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+      ASSERT_FALSE(cpus->at(i).fpga().stm_start_idx().has_value());
+      ASSERT_FALSE(cpus->at(i).fpga().stm_finish_idx().has_value());
+    }
+
     const uint16_t cycle = autd.geometry()[0].cycle();
     for (size_t k = 0; k < size; k++) {
       for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
@@ -897,8 +952,18 @@ TEST(ControllerTest, gain_stm_normal_phase) {
       stm.add(f);
     });
 
+    stm.start_idx() = 0;
+    stm.finish_idx() = 0;
+
     autd << stm;
     for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
+
+    for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
+      ASSERT_TRUE(cpus->at(i).fpga().stm_start_idx().has_value());
+      ASSERT_EQ(cpus->at(i).fpga().stm_start_idx().value_or(1), 0);
+      ASSERT_TRUE(cpus->at(i).fpga().stm_finish_idx().has_value());
+      ASSERT_EQ(cpus->at(i).fpga().stm_finish_idx().value_or(1), 0);
+    }
 
     const uint16_t cycle = autd.geometry()[0].cycle();
     for (size_t k = 0; k < size; k++) {
