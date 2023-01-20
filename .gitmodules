@@ -1,9 +1,6 @@
 [submodule "3rdparty/eigen"]
 	path = 3rdparty/eigen
 	url = https://gitlab.com/libeigen/eigen.git
-[submodule "3rdparty/cpplint"]
-	path = 3rdparty/cpplint
-	url = https://github.com/cpplint/cpplint.git
 [submodule "3rdparty/ADS"]
 	path = 3rdparty/ADS
 	url = https://github.com/Beckhoff/ADS.git
