@@ -89,7 +89,7 @@ void Simulator::run() {
   renderer->create_command_buffers();
   renderer->create_sync_objects();
 
-  const auto trans_viewer = std::make_unique<simulator::trans_viewer::TransViewer>(context.get(), renderer.get(), imgui.get());
+  const auto trans_viewer = std::make_unique<simulator::trans_viewer::TransViewer>(context.get(), renderer.get());
   const auto slice_viewer = std::make_unique<simulator::slice_viewer::SliceViewer>(context.get(), renderer.get());
   const auto field_compute = std::make_unique<simulator::FieldCompute>(context.get(), renderer.get());
 
@@ -158,7 +158,7 @@ void Simulator::run() {
           for (uint32_t tr = 0; tr < tr_num; tr++) {
             const auto pos = imgui->to_gl_pos(glm::vec3(p[0], p[1], p[2]));
             const auto rot = imgui->to_gl_rot(glm::quat(p[3], p[4], p[5], p[6]));
-            s.add(pos, rot, simulator::Drive(1.0f, 0.0f, 1.0f, 40e3, 340e3 * simulator::scale), 1.0f);
+            s.add(pos, rot, simulator::Drive(1.0f, 0.0f, 1.0f, 40e3, 340e3f * simulator::scale), 1.0f);
             p += 7;
             cursor += sizeof(float) * 7;
           }

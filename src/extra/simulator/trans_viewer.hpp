@@ -42,8 +42,8 @@ struct Pc {
 
 class TransViewer {
  public:
-  explicit TransViewer(const helper::VulkanContext* context, const VulkanRenderer* renderer, const VulkanImGui* imgui)
-      : _context(context), _renderer(renderer), _imgui(imgui), _instance_count(0) {}
+  explicit TransViewer(const helper::VulkanContext* context, const VulkanRenderer* renderer)
+      : _context(context), _renderer(renderer), _instance_count(0) {}
   ~TransViewer() = default;
   TransViewer(const TransViewer& v) = delete;
   TransViewer& operator=(const TransViewer& obj) = delete;
@@ -452,7 +452,6 @@ class TransViewer {
 
   const helper::VulkanContext* _context;
   const VulkanRenderer* _renderer;
-  const VulkanImGui* _imgui{nullptr};
 
   vk::UniqueImage _texture_image;
   vk::UniqueDeviceMemory _texture_image_memory;
