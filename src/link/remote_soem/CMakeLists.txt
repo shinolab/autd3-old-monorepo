@@ -10,7 +10,9 @@ add_library(link_remote_soem
   remote_soem_tcp.hpp
   ${PROJECT_SOURCE_DIR}/include/autd3/link/remote_soem.hpp
 )
-target_link_libraries(link_remote_soem PUBLIC autd3_common smem)
+target_link_libraries(link_remote_soem PUBLIC autd3_common)
+target_include_directories(link_remote_soem PRIVATE ${PROJECT_SOURCE_DIR}/src/smem)
+target_compile_definitions(link_remote_soem PRIVATE SMEM_HEADER_ONLY)
 
 if(WIN32)
   target_link_libraries(link_remote_soem PUBLIC ws2_32)
