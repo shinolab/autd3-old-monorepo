@@ -37,8 +37,6 @@
     "slice_width": 300.0,
     "sound_speed": 340000.0,
     "stm_auto_play": false,
-    "use_left_handed": false,
-    "use_meter": false,
     "vsync": true,
     "window_height": 600,
     "window_width": 800

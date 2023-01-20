@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/01/2023
+// Last Modified: 21/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -158,7 +158,7 @@ void Simulator::run() {
           for (uint32_t tr = 0; tr < tr_num; tr++) {
             const auto pos = imgui->to_gl_pos(glm::vec3(p[0], p[1], p[2]));
             const auto rot = imgui->to_gl_rot(glm::quat(p[3], p[4], p[5], p[6]));
-            s.add(pos, rot, simulator::Drive(1.0f, 0.0f, 1.0f, 40e3, _settings.use_meter ? 340 : 340e3), 1.0f);
+            s.add(pos, rot, simulator::Drive(1.0f, 0.0f, 1.0f, 40e3, 340e3 * simulator::scale), 1.0f);
             p += 7;
             cursor += sizeof(float) * 7;
           }
@@ -242,7 +242,7 @@ void Simulator::run() {
                                        static_cast<uint32_t>(imgui->slice_width / imgui->pixel_size),
                                        static_cast<uint32_t>(imgui->slice_height / imgui->pixel_size),
                                        imgui->pixel_size,
-                                       imgui->scale(),
+                                       simulator::scale,
                                        0,
                                        slice_model};
         field_compute->compute(config, imgui->show_radiation_pressure);
