@@ -18,6 +18,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(BUILD_ALL "BUILD_ALL" OFF)
 option(BUILD_DOC "BUILD_DOC" OFF)
 
+option(AUTD3_EIGEN_EXTERNAL OFF)
+
 option(AUTD3_PARALLEL_FOR "AUTD3_PARALLEL_FOR" OFF)
 
 option(BUILD_GAIN_HOLO "BUILD_GAIN_HOLO" ON)
@@ -152,8 +154,10 @@ if(ENABLE_LINT)
   )
 endif()
 
-update_git_submodule(eigen RECURSIVE)
-set(EIGEN_PATH ${PROJECT_SOURCE_DIR}/3rdparty/eigen)
+if (NOT AUTD3_EIGEN_EXTERNAL)
+  update_git_submodule(eigen RECURSIVE)
+  set(EIGEN_PATH ${PROJECT_SOURCE_DIR}/3rdparty/eigen)
+endif()
 
 update_git_submodule(spdlog RECURSIVE)
 set(SPDLOG_INCLUDE_PATH ${PROJECT_SOURCE_DIR}/3rdparty/spdlog/include)
