@@ -9,7 +9,8 @@ add_library(link_simulator
   ${PROJECT_SOURCE_DIR}/include/autd3/link/simulator.hpp
 )
 target_link_libraries(link_simulator PUBLIC autd3_common)
-target_link_libraries(link_simulator PRIVATE smem)
+target_include_directories(link_simulator PRIVATE ${PROJECT_SOURCE_DIR}/src/smem)
+target_compile_definitions(link_simulator PRIVATE SMEM_HEADER_ONLY)
 
 set_target_properties(link_simulator
   PROPERTIES
