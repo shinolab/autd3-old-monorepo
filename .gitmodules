@@ -22,9 +22,6 @@
 [submodule "3rdparty/glfw"]
 	path = 3rdparty/glfw
 	url = https://github.com/glfw/glfw.git
-[submodule "3rdparty/stb"]
-	path = 3rdparty/stb
-	url = https://github.com/nothings/stb.git
 [submodule "3rdparty/json"]
 	path = 3rdparty/json
 	url = https://github.com/nlohmann/json.git
