@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 20/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,11 +17,8 @@
 #include <utility>
 #include <vector>
 
-#ifdef AUTD3_PARALLEL_FOR
-#include <execution>
-#endif
-
 #include "autd3/core/gain.hpp"
+#include "autd3/utils/iter.hpp"
 
 namespace autd3::gain {
 
@@ -56,11 +53,7 @@ class Focus final : public core::Gain {
     const auto sound_speed = geometry.sound_speed;
     std::vector<driver::Drive> drives;
     drives.resize(geometry.num_transducers());
-#ifdef AUTD3_PARALLEL_FOR
-    std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), drives.begin(), [&](const auto& transducer) {
-#else
-    std::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& transducer) {
-#endif
+    autd3::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& transducer) {
       const auto dist = (_point - transducer.position()).norm();
       const auto phase = transducer.align_phase_at(dist, sound_speed);
       return driver::Drive{phase, _amp};
@@ -103,11 +96,7 @@ class BesselBeam final : public core::Gain {
     const auto sound_speed = geometry.sound_speed;
     std::vector<driver::Drive> drives;
     drives.resize(geometry.num_transducers());
-#ifdef AUTD3_PARALLEL_FOR
-    std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), drives.begin(), [&](const auto& transducer) {
-#else
-    std::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& transducer) {
-#endif
+    autd3::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& transducer) {
       const auto r = transducer.position() - this->_apex;
       const auto rr = rot * r;
       const auto d = std::sin(_theta_z) * std::sqrt(rr.x() * rr.x() + rr.y() * rr.y()) - std::cos(_theta_z) * rr.z();
@@ -145,11 +134,7 @@ class PlaneWave final : public core::Gain {
     const auto sound_speed = geometry.sound_speed;
     std::vector<driver::Drive> drives;
     drives.resize(geometry.num_transducers());
-#ifdef AUTD3_PARALLEL_FOR
-    std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), drives.begin(), [&](const auto& transducer) {
-#else
-    std::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& transducer) {
-#endif
+    autd3::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& transducer) {
       const auto dist = transducer.position().dot(_direction);
       const auto phase = transducer.align_phase_at(dist, sound_speed);
       return driver::Drive{phase, _amp};
