@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 21/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -317,8 +317,8 @@ class TransViewer {
       const auto& positions = sources.positions();
       const auto& rotations = sources.rotations();
       std::transform(positions.begin(), positions.end(), rotations.begin(), std::back_inserter(models), [this](const auto& pos, const auto& rot) {
-        const auto s = 10.0f * _imgui->scale() * 0.5f;
-        auto m = scale(glm::identity<glm::mat4>(), glm::vec3(s, s, s));
+        constexpr auto s = 10.0f * 0.5f * scale;
+        auto m = glm::scale(glm::identity<glm::mat4>(), glm::vec3(s, s, s));
         m[3].x = pos.x;
         m[3].y = pos.y;
         m[3].z = pos.z;
