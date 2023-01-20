@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 21/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,8 +18,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "window_handler.hpp"
 
 #if _MSC_VER
 #pragma warning(push)
@@ -37,6 +35,7 @@
 #endif
 
 #include "../../spdlog.hpp"
+#include "window_handler.hpp"
 
 namespace autd3::extra::helper {
 
