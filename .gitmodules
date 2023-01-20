@@ -34,9 +34,6 @@
 [submodule "3rdparty/SOEM4Arduino"]
 	path = 3rdparty/SOEM4Arduino
 	url = https://github.com/lipoyang/SOEM4Arduino.git
-[submodule "3rdparty/smem"]
-	path = 3rdparty/smem
-	url = https://github.com/shinolab/smem.git
 [submodule "3rdparty/argparse"]
 	path = 3rdparty/argparse
 	url = https://github.com/p-ranav/argparse.git

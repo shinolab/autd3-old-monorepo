@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 20/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,7 +14,6 @@
 #include <atomic>
 #include <mutex>
 #include <numeric>
-#include <smem/smem.hpp>
 #include <thread>
 #include <vulkan_context.hpp>
 #include <window_handler.hpp>
@@ -24,6 +23,7 @@
 #include "autd3/extra/cpu_emulator.hpp"
 #include "field_compute.hpp"
 #include "slice_viewer.hpp"
+#include "smem.hpp"
 #include "sound_sources.hpp"
 #include "trans_viewer.hpp"
 #include "vulkan_renderer.hpp"
