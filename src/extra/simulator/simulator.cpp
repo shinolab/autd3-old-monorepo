@@ -15,8 +15,6 @@
 #include <mutex>
 #include <numeric>
 #include <thread>
-#include <vulkan_context.hpp>
-#include <window_handler.hpp>
 
 #include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/driver/cpu/ec_config.hpp"
@@ -26,7 +24,9 @@
 #include "smem.hpp"
 #include "sound_sources.hpp"
 #include "trans_viewer.hpp"
+#include "vulkan_context.hpp"
 #include "vulkan_renderer.hpp"
+#include "window_handler.hpp"
 
 #if _MSC_VER
 #pragma warning(push)
