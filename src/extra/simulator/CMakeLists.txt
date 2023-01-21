@@ -20,7 +20,7 @@ add_library(simulator
 target_include_directories(simulator PRIVATE ${PROJECT_SOURCE_DIR}/include ${STB_INCLUDE_PATH} ${Vulkan_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/src/extra/simulator ${PROJECT_SOURCE_DIR}/src/extra/tools ${PROJECT_SOURCE_DIR}/src/smem)
 target_compile_definitions(simulator PRIVATE SMEM_HEADER_ONLY)
 target_link_libraries(simulator PRIVATE autd3_common vk_helper glm::glm glfw imgui_vulkan)
-target_link_libraries(simulator PUBLIC nlohmann_json tinycolormap)
+target_link_libraries(simulator PUBLIC nlohmann_json)
 
 set_target_properties(simulator
   PROPERTIES
