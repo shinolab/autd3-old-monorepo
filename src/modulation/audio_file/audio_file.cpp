@@ -125,13 +125,8 @@ std::vector<uint8_t> Wav::calc() {
   const auto mod_sf = this->sampling_frequency();
 
   // down sampling
-  std::vector<uint8_t> sample_buf;
   const auto freq_ratio = mod_sf / static_cast<driver::autd3_float_t>(sampling_freq);
   const auto buffer_size = static_cast<size_t>(static_cast<driver::autd3_float_t>(buf.size()) * freq_ratio);
-
-  sample_buf.resize(buffer_size);
-  size_t i = 0;
-
   return generate_iota(0, buffer_size, [&](const size_t i) { return buf[static_cast<size_t>(static_cast<driver::autd3_float_t>(i) / freq_ratio)]; });
 }
 }  // namespace autd3::modulation
