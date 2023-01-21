@@ -1,12 +1,12 @@
-// File: utils.hpp
-// Project: core
-// Created Date: 20/07/2022
+// File: hint.hpp
+// Project: utils
+// Created Date: 22/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/11/2022
+// Last Modified: 21/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2022 Shun Suzuki. All rights reserved.
+// Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
 #pragma once

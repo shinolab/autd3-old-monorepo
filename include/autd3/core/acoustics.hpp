@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 21/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -73,7 +73,7 @@ class Directivity {
     const auto c = DIR_COEFFICIENT_C[i - 1];
     const auto d = DIR_COEFFICIENT_D[i - 1];
     const auto x = theta_deg - static_cast<driver::autd3_float_t>(i - 1) * 10;
-    return a + b * x + c * x * x + d * x * x * x;
+    return a + (b + (c + d * x) * x) * x;
   }
 
   static constexpr driver::autd3_float_t sphere(driver::autd3_float_t) noexcept { return 1.0; }  // NOLINT
