@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/01/2023
+// Last Modified: 22/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,7 +18,6 @@
 #include <vector>
 
 #include "autd3/core/gain.hpp"
-#include "autd3/utils/iter.hpp"
 
 namespace autd3::gain {
 
@@ -51,14 +50,11 @@ class Focus final : public core::Gain {
 
   std::vector<driver::Drive> calc(const core::Geometry& geometry) override {
     const auto sound_speed = geometry.sound_speed;
-    std::vector<driver::Drive> drives;
-    drives.resize(geometry.num_transducers());
-    autd3::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& transducer) {
+    return core::Gain::transform(geometry, [&](const auto& transducer) {
       const auto dist = (_point - transducer.position()).norm();
       const auto phase = transducer.align_phase_at(dist, sound_speed);
       return driver::Drive{phase, _amp};
     });
-    return drives;
   }
 
   ~Focus() override = default;
@@ -94,16 +90,13 @@ class BesselBeam final : public core::Gain {
     const Eigen::AngleAxis<driver::autd3_float_t> rot(-theta_v, v);
 
     const auto sound_speed = geometry.sound_speed;
-    std::vector<driver::Drive> drives;
-    drives.resize(geometry.num_transducers());
-    autd3::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& transducer) {
+    return core::Gain::transform(geometry, [&](const auto& transducer) {
       const auto r = transducer.position() - this->_apex;
       const auto rr = rot * r;
       const auto d = std::sin(_theta_z) * std::sqrt(rr.x() * rr.x() + rr.y() * rr.y()) - std::cos(_theta_z) * rr.z();
       const auto phase = transducer.align_phase_at(d, sound_speed);
       return driver::Drive{phase, _amp};
     });
-    return drives;
   }
 
   ~BesselBeam() override = default;
@@ -132,14 +125,11 @@ class PlaneWave final : public core::Gain {
 
   std::vector<driver::Drive> calc(const core::Geometry& geometry) override {
     const auto sound_speed = geometry.sound_speed;
-    std::vector<driver::Drive> drives;
-    drives.resize(geometry.num_transducers());
-    autd3::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& transducer) {
+    return core::Gain::transform(geometry, [&](const auto& transducer) {
       const auto dist = transducer.position().dot(_direction);
       const auto phase = transducer.align_phase_at(dist, sound_speed);
       return driver::Drive{phase, _amp};
     });
-    return drives;
   }
 
   ~PlaneWave() override = default;

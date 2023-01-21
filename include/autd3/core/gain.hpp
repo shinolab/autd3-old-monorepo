@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 21/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "autd3/core/datagram.hpp"
+#include "autd3/core/utils/iter.hpp"
 #include "autd3/driver/operation/gain.hpp"
 
 namespace autd3::core {
@@ -46,6 +47,14 @@ struct Gain : DatagramBody {
         return std::make_unique<driver::Gain<driver::NormalPhase>>(calc(geometry), geometry.cycles());
     }
     throw std::runtime_error("Unreachable!");
+  }
+
+  template <class Fn>
+  static std::vector<driver::Drive> transform(const Geometry& geometry, Fn func) {
+    std::vector<driver::Drive> drives;
+    drives.resize(geometry.num_transducers());
+    core::transform(geometry.begin(), geometry.end(), drives.begin(), func);
+    return drives;
   }
 };
 
