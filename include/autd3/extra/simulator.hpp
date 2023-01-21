@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/01/2023
+// Last Modified: 22/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@
 #if defined(__GNUC__) && !defined(__llvm__)
 #pragma GCC diagnostic push
 #endif
-#include "tinycolormap.hpp"
+#include "autd3/extra/tinycolormap/tinycolormap.hpp"
 #if _MSC_VER
 #pragma warning(pop)
 #endif

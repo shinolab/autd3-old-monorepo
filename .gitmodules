@@ -22,9 +22,6 @@
 [submodule "3rdparty/json"]
 	path = 3rdparty/json
 	url = https://github.com/nlohmann/json.git
-[submodule "3rdparty/tinycolormap"]
-	path = 3rdparty/tinycolormap
-	url = https://github.com/yuki-koyama/tinycolormap.git
 [submodule "3rdparty/SOEM4Arduino"]
 	path = 3rdparty/SOEM4Arduino
 	url = https://github.com/lipoyang/SOEM4Arduino.git
