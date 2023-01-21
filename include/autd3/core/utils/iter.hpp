@@ -3,7 +3,7 @@
 // Created Date: 20/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/01/2023
+// Last Modified: 22/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@
 
 namespace autd3::core {
 template <class InIt, class OutIt, class Fn>
-inline OutIt transform(const InIt first, const InIt last, OutIt dest, Fn func) {
+OutIt transform(const InIt first, const InIt last, OutIt dest, Fn func) {
 #ifdef AUTD3_PARALLEL_FOR
   return std::transform(std::execution::par_unseq, first, last, dest, func);
 #else
