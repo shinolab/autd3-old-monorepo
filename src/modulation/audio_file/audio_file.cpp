@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/01/2023
+// Last Modified: 22/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -54,7 +54,6 @@ std::vector<uint8_t> RawPCM::calc() {
     const auto amp = static_cast<driver::autd3_float_t>(v) / static_cast<driver::autd3_float_t>(std::numeric_limits<uint8_t>::max());
     return static_cast<uint8_t>(std::round(std::asin(std::clamp<driver::autd3_float_t>(amp, 0, 1)) / driver::pi * 510));
   });
-
   return buffer;
 }
 
@@ -132,8 +131,7 @@ std::vector<uint8_t> Wav::calc() {
 
   sample_buf.resize(buffer_size);
   size_t i = 0;
-  std::generate(sample_buf.begin(), sample_buf.end(), [&] { return buf[static_cast<size_t>(static_cast<driver::autd3_float_t>(i++) / freq_ratio)]; });
 
-  return sample_buf;
+  return generate_iota(0, buffer_size, [&](const size_t i) { return buf[static_cast<size_t>(static_cast<driver::autd3_float_t>(i) / freq_ratio)]; });
 }
 }  // namespace autd3::modulation
