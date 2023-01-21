@@ -208,10 +208,8 @@ if(BUILD_GEOMETRY_VIEWER OR BUILD_SIMULATOR)
 endif()
 
 if(BUILD_GEOMETRY_VIEWER)
-  update_git_submodule(fx-gltf)
   set(FX_GLTF_BUILD_TESTS OFF)
   set(FX_GLTF_INSTALL OFF)
-  add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/fx-gltf)
 endif()
 
 if(BUILD_SIMULATOR)
