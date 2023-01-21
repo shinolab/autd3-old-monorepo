@@ -22,9 +22,6 @@
 [submodule "3rdparty/json"]
 	path = 3rdparty/json
 	url = https://github.com/nlohmann/json.git
-[submodule "3rdparty/SOEM4Arduino"]
-	path = 3rdparty/SOEM4Arduino
-	url = https://github.com/lipoyang/SOEM4Arduino.git
 [submodule "3rdparty/benchmark"]
 	path = 3rdparty/benchmark
 	url = https://github.com/google/benchmark.git
