@@ -213,9 +213,7 @@ if(BUILD_GEOMETRY_VIEWER)
 endif()
 
 if(BUILD_SIMULATOR)
-  update_git_submodule(tinycolormap RECURSIVE)
   set(BUILD_LINK_SIMULATOR ON)
-  add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/tinycolormap)
 endif()
 
 if(EXPORT_SOEM_AUTD_SERVER)

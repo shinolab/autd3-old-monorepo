@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/01/2023
+// Last Modified: 22/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,11 +20,11 @@
 #include <limits>
 #include <memory>
 #include <string>
-#include <tinycolormap.hpp>
 #include <transform.hpp>
 #include <utility>
 #include <vector>
 
+#include "autd3/extra/tinycolormap/tinycolormap.hpp"
 #include "glm.hpp"
 
 namespace autd3::extra::simulator {
