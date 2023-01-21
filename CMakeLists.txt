@@ -216,11 +216,6 @@ if(BUILD_SIMULATOR)
   set(BUILD_LINK_SIMULATOR ON)
 endif()
 
-if(EXPORT_SOEM_AUTD_SERVER)
-  update_git_submodule(argparse RECURSIVE)
-  add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/argparse)
-endif()
-
 if(ENABLE_BENCH)
   set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
   set(BENCHMARK_ENABLE_TESTING OFF)
