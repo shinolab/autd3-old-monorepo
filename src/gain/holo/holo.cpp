@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/01/2023
+// Last Modified: 22/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -37,6 +37,14 @@ void for_each(const InIt first, const InIt last, Fn func) {
 #else
   std::for_each(first, last, func);
 #endif
+}
+
+template <class Fn>
+std::vector<driver::Drive> transform(const core::Geometry& geometry, Fn func) {
+  std::vector<driver::Drive> drives;
+  drives.resize(geometry.num_transducers());
+  autd3::gain::holo::transform(geometry.begin(), geometry.end(), drives.begin(), func);
+  return drives;
 }
 
 namespace {
@@ -144,15 +152,12 @@ std::vector<driver::Drive> SDP::calc(const core::Geometry& geometry) {
   _backend->to_host(q);
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
-  std::vector<driver::Drive> drives;
-  drives.resize(geometry.num_transducers());
-  holo::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
+  return holo::transform(geometry, [&](const auto& tr) {
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
     return driver::Drive{phase, power};
   });
-  return drives;
 }
 
 std::vector<driver::Drive> EVD::calc(const core::Geometry& geometry) {
@@ -209,15 +214,12 @@ std::vector<driver::Drive> EVD::calc(const core::Geometry& geometry) {
 
   _backend->to_host(gtf);
   const auto max_coefficient = std::abs(_backend->max_abs_element(gtf));
-  std::vector<driver::Drive> drives;
-  drives.resize(geometry.num_transducers());
-  holo::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
+  return holo::transform(geometry, [&](const auto& tr) {
     const auto phase = std::arg(gtf(tr.id())) + driver::pi;
     const auto raw = std::abs(gtf(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
     return driver::Drive{phase, power};
   });
-  return drives;
 }
 
 std::vector<driver::Drive> LSS::calc(const core::Geometry& geometry) {
@@ -236,15 +238,12 @@ std::vector<driver::Drive> LSS::calc(const core::Geometry& geometry) {
   _backend->to_host(q);
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
-  std::vector<driver::Drive> drives;
-  drives.resize(geometry.num_transducers());
-  holo::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
+  return holo::transform(geometry, [&](const auto& tr) {
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
     return driver::Drive{phase, power};
   });
-  return drives;
 }
 
 std::vector<driver::Drive> GS::calc(const core::Geometry& geometry) {
@@ -276,15 +275,12 @@ std::vector<driver::Drive> GS::calc(const core::Geometry& geometry) {
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
   _backend->to_host(q);
-  std::vector<driver::Drive> drives;
-  drives.resize(geometry.num_transducers());
-  holo::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
+  return holo::transform(geometry, [&](const auto& tr) {
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
     return driver::Drive{phase, power};
   });
-  return drives;
 }
 
 std::vector<driver::Drive> GSPAT::calc(const core::Geometry& geometry) {
@@ -327,15 +323,12 @@ std::vector<driver::Drive> GSPAT::calc(const core::Geometry& geometry) {
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
   _backend->to_host(q);
-  std::vector<driver::Drive> drives;
-  drives.resize(geometry.num_transducers());
-  holo::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
+  return holo::transform(geometry, [&](const auto& tr) {
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
     return driver::Drive{phase, power};
   });
-  return drives;
 }
 
 void make_bhb(const BackendPtr& backend, const std::vector<core::Vector3>& foci, std::vector<complex>& amps, const core::Geometry& geometry,
@@ -465,15 +458,11 @@ std::vector<driver::Drive> LM::calc(const core::Geometry& geometry) {
   }
 
   _backend->to_host(x);
-  std::vector<driver::Drive> drives;
-  drives.resize(geometry.num_transducers());
-  holo::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
+  return holo::transform(geometry, [&](const auto& tr) {
     const auto phase = driver::rem_euclid(x(tr.id()), 2 * driver::pi);
     const auto power = constraint->convert(1.0, 1.0);
     return driver::Drive{phase, power};
   });
-
-  return drives;
 }
 
 std::vector<driver::Drive> Greedy::calc(const core::Geometry& geometry) {
@@ -585,15 +574,11 @@ std::vector<driver::Drive> LSSGreedy::calc(const core::Geometry& geometry) {
 
   _backend->to_host(q);
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
-  std::vector<driver::Drive> drives;
-  drives.resize(geometry.num_transducers());
-  holo::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
+  return holo::transform(geometry, [&](const auto& tr) {
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
     return driver::Drive{std::arg(q(tr.id())) + driver::pi, power};
   });
-
-  return drives;
 }
 
 std::vector<driver::Drive> APO::calc(const core::Geometry& geometry) {
@@ -708,16 +693,12 @@ std::vector<driver::Drive> APO::calc(const core::Geometry& geometry) {
 
   _backend->to_host(q);
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
-  std::vector<driver::Drive> drives;
-  drives.resize(geometry.num_transducers());
-  holo::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& tr) {
+  return holo::transform(geometry, [&](const auto& tr) {
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
     return driver::Drive{phase, power};
   });
-
-  return drives;
 }
 
 }  // namespace autd3::gain::holo
