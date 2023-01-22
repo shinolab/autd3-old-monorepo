@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/01/2023
+// Last Modified: 23/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@
 namespace autd3::extra {
 
 namespace fpga {
-constexpr uint8_t VERSION_NUM = 0x87;
+constexpr uint8_t VERSION_NUM = 0x88;
 
 #ifdef AUTD3_USE_METER
 constexpr driver::autd3_float_t TRANS_SIZE_FIXED_POINT_UNIT = 40000;

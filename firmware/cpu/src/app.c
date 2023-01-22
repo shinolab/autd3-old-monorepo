@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/12/2022
+ * Last Modified: 23/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@
 #include "params.h"
 #include "utils.h"
 
-#define CPU_VERSION (0x87) /* v2.7 */
+#define CPU_VERSION (0x88) /* v2.8 */
 
 #define MOD_BUF_SEGMENT_SIZE_WIDTH (15)
 #define MOD_BUF_SEGMENT_SIZE (1 << MOD_BUF_SEGMENT_SIZE_WIDTH)
