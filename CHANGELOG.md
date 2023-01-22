@@ -1,3 +1,7 @@
+# 2.8.0
+
+- Suppress high-frequency noise
+
 # 2.7.6
 
 - Fix [#57](https://github.com/shinolab/autd3/issues/57)
