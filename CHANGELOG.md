@@ -1,6 +1,6 @@
 # 2.8.0
 
-- Suppress high-frequency noise
+- Suppress midrange frequency noise
 
 # 2.7.6
 
