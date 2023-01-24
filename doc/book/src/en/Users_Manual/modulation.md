@@ -95,9 +95,9 @@ The following is a sample of `Burst`.
 ```cpp
 class Burst final : public autd3::Modulation {
  public:
-  std::vector<uint8_t> calc() override {
-    std::vector<uint8_t> buffer(_buf_size, 0);
-    buffer()[_buf_size - 1] = 0xFF;
+  std::vector<autd3::Amp> calc() override {
+    std::vector buffer(_buf_size, autd3::Amp(0));
+    buffer()[_buf_size - 1] = autd3::Amp(1);
   }
 
   explicit Burst(const size_t buf_size = 4000, const uint16_t freq_div = 40960) noexcept : _buf_size(buf_size) 
@@ -116,7 +116,7 @@ In this `calc`, you can rewrite the contents of `buffer`.
 $N$, which determines the `Modulation` sampling frequency $\SI{163.84}{MHz}/N$, is set to `_freq_div`.
 In this example, since $N=40960$ by default, the sampling frequency is $\SI{4}{kHz}$.
 
-Moreover, for example, if `buf_size` is set to 4000, $0$ is sampled $3999$ times, and then $255$ is sampled once.
+Moreover, for example, if `buf_size` is set to 4000, $0$ is sampled $3999$ times, and then $1$ is sampled once.
 Thus, AM is such that $\SI{0.25}{ms}=1/\SI{4}{kHz}$ is output in the period $\SI{1}{s}$.
 
 ## Modulation common functions

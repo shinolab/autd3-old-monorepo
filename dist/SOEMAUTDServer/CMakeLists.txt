@@ -19,9 +19,10 @@ add_executable(SOEMAUTDServer
   ${PROJECT_SOURCE_DIR}/src/link/soem/soem_handler.hpp
   ${PROJECT_SOURCE_DIR}/src/link/soem/ecat_thread/${OS}.hpp
 )
-target_link_libraries(SOEMAUTDServer PRIVATE argparse autd3_common smem)
+target_link_libraries(SOEMAUTDServer PRIVATE autd3_common)
 
-target_include_directories(SOEMAUTDServer PRIVATE ${PROJECT_SOURCE_DIR}/dist/SOEMAUTDServer ${PROJECT_SOURCE_DIR}/src/link/soem)
+target_include_directories(SOEMAUTDServer PRIVATE ${PROJECT_SOURCE_DIR}/dist/SOEMAUTDServer ${PROJECT_SOURCE_DIR}/src/link/soem ${PROJECT_SOURCE_DIR}/src/smem)
+target_compile_definitions(SOEMAUTDServer PRIVATE SMEM_HEADER_ONLY)
 target_include_directories(SOEMAUTDServer PRIVATE
   ${PROJECT_SOURCE_DIR}/include
   ${SOEM_PATH}/soem

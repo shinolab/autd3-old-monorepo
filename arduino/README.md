@@ -4,7 +4,7 @@
 
 # Install
 
-Run `install.ps1` to generate `SOEM4Arduino.zip` and `AUTD3.zip`. Then, install these zip files in Arduino IDE.
+Run `install.ps1` to generate `AUTD3.zip`. Then, install `SOEM4Arduino.zip` and `AUTD3.zip` zip files in Arduino IDE.
 
 # Example
 

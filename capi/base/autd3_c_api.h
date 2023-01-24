@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 24/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -74,7 +74,7 @@ EXPORT_AUTD void AUTDModulationSineSquared(OUT void** mod, IN int32_t freq, IN a
 EXPORT_AUTD void AUTDModulationSineLegacy(OUT void** mod, IN autd3_float_t freq, IN autd3_float_t amp, IN autd3_float_t offset);
 EXPORT_AUTD void AUTDModulationSquare(OUT void** mod, IN int32_t freq, IN autd3_float_t low, IN autd3_float_t high, IN autd3_float_t duty);
 EXPORT_AUTD void AUTDModulationLPF(OUT void** mod, IN void* mod_in);
-EXPORT_AUTD void AUTDModulationCustom(OUT void** mod, IN const uint8_t* buffer, IN uint64_t size, IN uint32_t freq_div);
+EXPORT_AUTD void AUTDModulationCustom(OUT void** mod, IN const autd3_float_t* buffer, IN uint64_t size, IN uint32_t freq_div);
 EXPORT_AUTD uint32_t AUTDModulationSamplingFrequencyDivision(IN const void* mod);
 EXPORT_AUTD void AUTDModulationSetSamplingFrequencyDivision(IN void* mod, IN uint32_t freq_div);
 EXPORT_AUTD autd3_float_t AUTDModulationSamplingFrequency(IN const void* mod);

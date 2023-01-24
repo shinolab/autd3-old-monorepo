@@ -3,7 +3,7 @@
 // Created Date: 01/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 20/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,11 +11,10 @@
 
 #pragma once
 
-#include <autd3/driver/cpu/ec_config.hpp>
-#include <smem/smem.hpp>
-
 #include "autd3/autd3_device.hpp"
+#include "autd3/driver/cpu/ec_config.hpp"
 #include "interface.hpp"
+#include "smem.hpp"
 
 namespace autd3::publish {
 

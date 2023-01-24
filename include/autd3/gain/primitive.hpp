@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 24/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,10 +17,6 @@
 #include <utility>
 #include <vector>
 
-#ifdef AUTD3_PARALLEL_FOR
-#include <execution>
-#endif
-
 #include "autd3/core/gain.hpp"
 
 namespace autd3::gain {
@@ -32,7 +28,9 @@ class Null final : public core::Gain {
  public:
   Null() noexcept {}
 
-  std::vector<driver::Drive> calc(const core::Geometry& geometry) override { return {geometry.num_transducers(), driver::Drive{0.0, 0.0}}; }
+  std::vector<driver::Drive> calc(const core::Geometry& geometry) override {
+    return {geometry.num_transducers(), driver::Drive{driver::Phase(0), driver::Amp(0)}};
+  }
 
   ~Null() override = default;
   Null(const Null& v) noexcept = default;
@@ -54,18 +52,11 @@ class Focus final : public core::Gain {
 
   std::vector<driver::Drive> calc(const core::Geometry& geometry) override {
     const auto sound_speed = geometry.sound_speed;
-    std::vector<driver::Drive> drives;
-    drives.resize(geometry.num_transducers());
-#ifdef AUTD3_PARALLEL_FOR
-    std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), drives.begin(), [&](const auto& transducer) {
-#else
-    std::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& transducer) {
-#endif
+    return core::Gain::transform(geometry, [&](const auto& transducer) {
       const auto dist = (_point - transducer.position()).norm();
       const auto phase = transducer.align_phase_at(dist, sound_speed);
-      return driver::Drive{phase, _amp};
+      return driver::Drive{driver::Phase(phase), driver::Amp(_amp)};
     });
-    return drives;
   }
 
   ~Focus() override = default;
@@ -101,20 +92,13 @@ class BesselBeam final : public core::Gain {
     const Eigen::AngleAxis<driver::autd3_float_t> rot(-theta_v, v);
 
     const auto sound_speed = geometry.sound_speed;
-    std::vector<driver::Drive> drives;
-    drives.resize(geometry.num_transducers());
-#ifdef AUTD3_PARALLEL_FOR
-    std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), drives.begin(), [&](const auto& transducer) {
-#else
-    std::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& transducer) {
-#endif
+    return core::Gain::transform(geometry, [&](const auto& transducer) {
       const auto r = transducer.position() - this->_apex;
       const auto rr = rot * r;
       const auto d = std::sin(_theta_z) * std::sqrt(rr.x() * rr.x() + rr.y() * rr.y()) - std::cos(_theta_z) * rr.z();
       const auto phase = transducer.align_phase_at(d, sound_speed);
-      return driver::Drive{phase, _amp};
+      return driver::Drive{driver::Phase(phase), driver::Amp(_amp)};
     });
-    return drives;
   }
 
   ~BesselBeam() override = default;
@@ -143,18 +127,11 @@ class PlaneWave final : public core::Gain {
 
   std::vector<driver::Drive> calc(const core::Geometry& geometry) override {
     const auto sound_speed = geometry.sound_speed;
-    std::vector<driver::Drive> drives;
-    drives.resize(geometry.num_transducers());
-#ifdef AUTD3_PARALLEL_FOR
-    std::transform(std::execution::par_unseq, geometry.begin(), geometry.end(), drives.begin(), [&](const auto& transducer) {
-#else
-    std::transform(geometry.begin(), geometry.end(), drives.begin(), [&](const auto& transducer) {
-#endif
+    return core::Gain::transform(geometry, [&](const auto& transducer) {
       const auto dist = transducer.position().dot(_direction);
       const auto phase = transducer.align_phase_at(dist, sound_speed);
-      return driver::Drive{phase, _amp};
+      return driver::Drive{driver::Phase(phase), driver::Amp(_amp)};
     });
-    return drives;
   }
 
   ~PlaneWave() override = default;
@@ -192,7 +169,7 @@ class Grouped final : public core::Gain {
   void add(const size_t device_id, std::shared_ptr<core::Gain> b) { _gains.insert_or_assign(device_id, std::move(b)); }
 
   std::vector<driver::Drive> calc(const core::Geometry& geometry) override {
-    std::vector<driver::Drive> drives(geometry.num_transducers(), driver::Drive{0.0, 0.0});
+    std::vector<driver::Drive> drives(geometry.num_transducers(), driver::Drive{driver::Phase(0), driver::Amp(0)});
     std::for_each(_gains.begin(), _gains.end(), [&drives, geometry](const auto& g) {
       const auto& [device_id, gain] = g;
       const auto d = gain->calc(geometry);
@@ -221,7 +198,7 @@ class TransducerTest final : public core::Gain {
   TransducerTest() noexcept : _map(){};
 
   std::vector<driver::Drive> calc(const core::Geometry& geometry) override {
-    std::vector<driver::Drive> drives(geometry.num_transducers(), driver::Drive{0.0, 0.0});
+    std::vector<driver::Drive> drives(geometry.num_transducers(), driver::Drive{driver::Phase(0), driver::Amp(0)});
     std::for_each(_map.begin(), _map.end(), [&drives](const auto& v) {
       const auto& [id, value] = v;
       drives[id].amp = value.first;
@@ -235,9 +212,7 @@ class TransducerTest final : public core::Gain {
    * @param[in] amp amplitude (from 0.0 to 1.0)
    * @param[in] phase phase in radian
    */
-  void set(const size_t tr_idx, const driver::autd3_float_t amp, const driver::autd3_float_t phase) {
-    _map.insert_or_assign(tr_idx, std::make_pair(amp, phase));
-  }
+  void set(const size_t tr_idx, const driver::Amp amp, const driver::Phase phase) { _map.insert_or_assign(tr_idx, std::make_pair(amp, phase)); }
 
   ~TransducerTest() override = default;
   TransducerTest(const TransducerTest& v) noexcept = default;
@@ -246,7 +221,7 @@ class TransducerTest final : public core::Gain {
   TransducerTest& operator=(TransducerTest&& obj) = default;
 
  private:
-  std::unordered_map<size_t, std::pair<driver::autd3_float_t, driver::autd3_float_t>> _map;
+  std::unordered_map<size_t, std::pair<driver::Amp, driver::Phase>> _map;
 };
 
 template <typename T>

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 24/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,10 +20,6 @@
 
 namespace autd3::modulation {
 
-inline uint8_t to_duty(const driver::autd3_float_t amp) {
-  return static_cast<uint8_t>(std::round(std::asin(std::clamp<driver::autd3_float_t>(amp, 0, 1)) / driver::pi * 510));
-}
-
 /**
  * @brief Static (Without modulation)
  */
@@ -34,9 +30,8 @@ class Static final : public core::Modulation {
    */
   explicit Static(const driver::autd3_float_t amp = 1.0) noexcept : Modulation(), _amp(amp) {}
 
-  std::vector<uint8_t> calc() override {
-    std::vector<uint8_t> buffer(2, 0);
-    std::generate(buffer.begin(), buffer.end(), [this] { return to_duty(_amp); });
+  std::vector<driver::Amp> calc() override {
+    std::vector buffer(2, driver::Amp(_amp));
     return buffer;
   }
 
@@ -65,7 +60,7 @@ class Sine final : public core::Modulation {
   explicit Sine(const int32_t freq, const driver::autd3_float_t amp = 1.0, const driver::autd3_float_t offset = 0.5) noexcept
       : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
 
-  std::vector<uint8_t> calc() override {
+  std::vector<driver::Amp> calc() override {
     const auto fs = static_cast<int32_t>(sampling_frequency());
 
     const auto f = std::clamp(_freq, 1, fs / 2);
@@ -75,14 +70,9 @@ class Sine final : public core::Modulation {
     const size_t n = fs / k;
     const size_t d = f / k;
 
-    std::vector<uint8_t> buffer(n, 0);
-    size_t i = 0;
-    std::generate(buffer.begin(), buffer.end(), [this, d, n, &i] {
-      return to_duty(_amp / 2 * std::sin(2 * driver::pi * static_cast<driver::autd3_float_t>(d * i++) / static_cast<driver::autd3_float_t>(n)) +
-                     _offset);
+    return generate_iota(0, n, [this, d, n](const size_t i) {
+      return _amp / 2 * std::sin(2 * driver::pi * static_cast<driver::autd3_float_t>(d * i) / static_cast<driver::autd3_float_t>(n)) + _offset;
     });
-
-    return buffer;
   }
 
   ~Sine() override = default;
@@ -112,7 +102,7 @@ class SineSquared final : public core::Modulation {
   explicit SineSquared(const int32_t freq, const driver::autd3_float_t amp = 1.0, const driver::autd3_float_t offset = 0.5) noexcept
       : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
 
-  std::vector<uint8_t> calc() override {
+  std::vector<driver::Amp> calc() override {
     const auto fs = static_cast<int32_t>(sampling_frequency());
 
     const auto f = std::clamp(_freq, 1, fs / 2);
@@ -122,14 +112,10 @@ class SineSquared final : public core::Modulation {
     const size_t n = fs / k;
     const size_t d = f / k;
 
-    std::vector<uint8_t> buffer(n, 0);
-    size_t i = 0;
-    std::generate(buffer.begin(), buffer.end(), [this, d, n, &i] {
-      return to_duty(std::sqrt(
-          _amp / 2 * std::sin(2 * driver::pi * static_cast<driver::autd3_float_t>(d * i++) / static_cast<driver::autd3_float_t>(n)) + _offset));
+    return generate_iota(0, n, [this, d, n](const size_t i) {
+      return std::sqrt(_amp / 2 * std::sin(2 * driver::pi * static_cast<driver::autd3_float_t>(d * i) / static_cast<driver::autd3_float_t>(n)) +
+                       _offset);
     });
-
-    return buffer;
   }
 
   ~SineSquared() override = default;
@@ -159,17 +145,15 @@ class SineLegacy final : public core::Modulation {
   explicit SineLegacy(const driver::autd3_float_t freq, const driver::autd3_float_t amp = 1.0, const driver::autd3_float_t offset = 0.5) noexcept
       : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
 
-  std::vector<uint8_t> calc() override {
+  std::vector<driver::Amp> calc() override {
     const auto fs = sampling_frequency();
     const auto f = (std::min)(_freq, fs / 2);
 
     const auto t = static_cast<size_t>(std::round(fs / f));
-    std::vector<uint8_t> buffer(t, 0);
-    size_t i = 0;
-    std::generate(buffer.begin(), buffer.end(), [this, t, &i] {
-      return to_duty(_offset + _amp * std::cos(2 * driver::pi * static_cast<driver::autd3_float_t>(i++) / static_cast<driver::autd3_float_t>(t)) / 2);
+
+    return generate_iota(0, t, [this, t](const size_t i) {
+      return _offset + _amp * std::cos(2 * driver::pi * static_cast<driver::autd3_float_t>(i) / static_cast<driver::autd3_float_t>(t)) / 2;
     });
-    return buffer;
   }
 
  private:
@@ -193,22 +177,22 @@ class Square final : public core::Modulation {
                   const driver::autd3_float_t duty = 0.5)
       : _freq(freq), _low(low), _high(high), _duty(duty) {}
 
-  std::vector<uint8_t> calc() override {
+  std::vector<driver::Amp> calc() override {
     const auto f_s = static_cast<int32_t>(sampling_frequency());
     const auto f = std::clamp(_freq, 1, f_s / 2);
     const auto k = std::gcd(f_s, f);
     const size_t n = f_s / k;
     const size_t d = f / k;
 
-    const auto low = to_duty(_low);
+    const auto high = driver::Amp(_high);
+    const auto low = driver::Amp(_low);
 
     std::vector buffer(n, low);
 
-    const auto high = to_duty(_high);
     auto* cursor = buffer.data();
     for (size_t i = 0; i < d; i++) {
       const size_t size = (n + i) / d;
-      std::memset(cursor, high, static_cast<size_t>(std::round(static_cast<driver::autd3_float_t>(size) * _duty)));
+      std::fill_n(cursor, static_cast<size_t>(std::round(static_cast<driver::autd3_float_t>(size) * _duty)), high);
       cursor += size;
     }
     return buffer;
@@ -227,19 +211,19 @@ class Cache final : public core::Modulation {
   template <typename... Args>
   explicit Cache(Args&&... args) : modulation(std::forward<Args>(args)...) {}
 
-  std::vector<uint8_t> calc() override {
+  std::vector<driver::Amp> calc() override {
     if (!_built) {
       _buffer = modulation.calc();
       _freq_div = modulation.sampling_frequency_division();
       _built = true;
     }
-    std::vector<uint8_t> buffer;
+    std::vector<driver::Amp> buffer;
     buffer.reserve(_buffer.size());
     std::copy(_buffer.begin(), _buffer.end(), std::back_inserter(buffer));
     return buffer;
   }
 
-  std::vector<uint8_t> recalc() {
+  std::vector<driver::Amp> recalc() {
     _built = false;
     return calc();
   }
@@ -247,26 +231,26 @@ class Cache final : public core::Modulation {
   /**
    * \brief modulation data
    */
-  [[nodiscard]] const std::vector<uint8_t>& buffer() const noexcept { return _buffer; }
+  [[nodiscard]] const std::vector<driver::Amp>& buffer() const noexcept { return _buffer; }
 
   /**
    * @brief [Advanced] modulation data
    * @details Call Modulation::build before using this function to initialize buffer data.
    */
-  std::vector<uint8_t>& buffer() noexcept { return _buffer; }
+  std::vector<driver::Amp>& buffer() noexcept { return _buffer; }
 
-  [[nodiscard]] std::vector<uint8_t>::const_iterator begin() const noexcept { return _buffer.begin(); }
-  [[nodiscard]] std::vector<uint8_t>::const_iterator end() const noexcept { return _buffer.end(); }
-  [[nodiscard]] std::vector<uint8_t>::iterator begin() noexcept { return _buffer.begin(); }
-  [[nodiscard]] std::vector<uint8_t>::iterator end() noexcept { return _buffer.end(); }
-  [[nodiscard]] const uint8_t& operator[](const size_t i) const { return _buffer[i]; }
-  [[nodiscard]] uint8_t& operator[](const size_t i) { return _buffer[i]; }
+  [[nodiscard]] std::vector<driver::Amp>::const_iterator begin() const noexcept { return _buffer.begin(); }
+  [[nodiscard]] std::vector<driver::Amp>::const_iterator end() const noexcept { return _buffer.end(); }
+  [[nodiscard]] std::vector<driver::Amp>::iterator begin() noexcept { return _buffer.begin(); }
+  [[nodiscard]] std::vector<driver::Amp>::iterator end() noexcept { return _buffer.end(); }
+  [[nodiscard]] const driver::Amp& operator[](const size_t i) const { return _buffer[i]; }
+  [[nodiscard]] driver::Amp& operator[](const size_t i) { return _buffer[i]; }
 
   T modulation;
 
  private:
   bool _built{false};
-  std::vector<uint8_t> _buffer;
+  std::vector<driver::Amp> _buffer;
 };
 
 }  // namespace autd3::modulation

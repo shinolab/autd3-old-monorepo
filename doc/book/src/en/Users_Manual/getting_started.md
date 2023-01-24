@@ -26,7 +26,7 @@ Connect the ethernet port of the PC to the `EtherCAT In` of the AUTD3 device wit
 
 ### Firmware update
 
-If the firmware is out of date, the operation is not guaranteed. The version of firmware in this document is assumed to be 2.6.
+If the firmware is out of date, the operation is not guaranteed. The version of firmware in this document is assumed to be 2.8.
 
 To update the firmware, [Vivado](https://www.xilinx.com/products/design-tools/vivado.html) and [J-Link Software](https://www.segger.com/downloads/jlink/) on Windows 10/11 64-bit PC are required.
 

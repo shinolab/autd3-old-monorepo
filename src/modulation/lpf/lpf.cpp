@@ -3,7 +3,7 @@
 // Created Date: 19/11/20.2f
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/01/2023
+// Last Modified: 24/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 20.2f Shun Suzuki. All rights reserved.
@@ -60,37 +60,35 @@ LPF::LPF(Modulation& modulation) : _modulation(modulation) {
 }
 #endif
 
-std::vector<uint8_t> LPF::calc() {
+std::vector<driver::Amp> LPF::calc() {
   const auto original_buffer = _modulation.calc();
 
-  std::vector<uint8_t> resampled;
+  std::vector<driver::Amp> resampled;
   resampled.reserve(original_buffer.size() * _modulation.sampling_frequency_division());
   for (const auto d : original_buffer) std::generate_n(std::back_inserter(resampled), _modulation.sampling_frequency_division(), [d] { return d; });
 
-  std::vector<uint8_t> mf;
+  std::vector<driver::Amp> mf;
   if (resampled.size() % 2 == 0) {
     mf.reserve(resampled.size() / 2);
-    for (size_t i = 0; i < resampled.size(); i += 2)
-      mf.emplace_back(static_cast<uint8_t>((static_cast<uint16_t>(resampled[i]) + static_cast<uint16_t>(resampled[i + 1])) / 2));
+    for (size_t i = 0; i < resampled.size(); i += 2) mf.emplace_back((resampled[i].value() + resampled[i + 1].value()) / 2);
   } else {
     mf.reserve(resampled.size());
     size_t i;
-    for (i = 0; i < resampled.size() - 1; i += 2)
-      mf.emplace_back(static_cast<uint8_t>((static_cast<uint16_t>(resampled[i]) + static_cast<uint16_t>(resampled[i + 1])) / 2));
-    mf.emplace_back(static_cast<uint8_t>((static_cast<uint16_t>(resampled[i]) + static_cast<uint16_t>(resampled[0])) / 2));
-    for (i = 1; i < resampled.size(); i += 2)
-      mf.emplace_back(static_cast<uint8_t>((static_cast<uint16_t>(resampled[i]) + static_cast<uint16_t>(resampled[i + 1])) / 2));
+    for (i = 0; i < resampled.size() - 1; i += 2) mf.emplace_back((resampled[i].value() + resampled[i + 1].value()) / 2);
+    mf.emplace_back((resampled[i].value() + resampled[0].value()) / 2);
+    for (i = 1; i < resampled.size(); i += 2) mf.emplace_back((resampled[i].value() + resampled[i + 1].value()) / 2);
   }
 
-  std::vector<uint8_t> buffer;
-  buffer.reserve(mf.size());
-  for (int32_t i = 0; i < static_cast<int32_t>(mf.size()); i++) {
+  return generate_iota(0, mf.size(), [this, &mf](const size_t i) {
     driver::autd3_float_t r = 0;
-    for (int32_t j = 0; j < static_cast<int32_t>(_coefficients.size()); j++)
-      r += _coefficients[j] * static_cast<driver::autd3_float_t>(mf[static_cast<size_t>(driver::rem_euclid(i - j, static_cast<int32_t>(mf.size())))]);
-    buffer.emplace_back(static_cast<uint8_t>(std::round(r)));
-  }
-  return buffer;
+    for (int32_t j = 0; j < static_cast<int32_t>(_coefficients.size()); j++) {
+      const auto duty =
+          driver::Modulation::to_duty(mf[static_cast<size_t>(driver::rem_euclid(static_cast<int32_t>(i) - j, static_cast<int32_t>(mf.size())))]);
+      r += _coefficients[j] * static_cast<driver::autd3_float_t>(duty);
+    }
+    const auto duty = std::clamp<driver::autd3_float_t>(std::round(r) / 255, 0, 1) / 2;
+    return std::sin(duty * driver::pi);
+  });
 }
 
 }  // namespace autd3::modulation

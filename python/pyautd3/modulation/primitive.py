@@ -4,7 +4,7 @@ Project: gain
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 21/10/2022
+Last Modified: 24/01/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ class Custom(Modulation):
     def __init__(self, data, sampling_freq_div: int):
         super().__init__()
         size = len(data)
-        data = np.array(data).astype(np.uint8)
+        data = np.array(data).astype(np.double)
         data = np.ctypeslib.as_ctypes(data)
 
         Base().dll.AUTDModulationCustom(byref(self.ptr), data, size, sampling_freq_div)

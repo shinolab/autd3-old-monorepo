@@ -67,7 +67,7 @@ void AUTDModulationSineSquared(void** mod, int32 freq, float64 amp, float64 offs
 void AUTDModulationSineLegacy(void** mod, float64 freq, float64 amp, float64 offset);
 void AUTDModulationSquare(void** mod, int32 freq, float64 low, float64 high, float64 duty);
 void AUTDModulationLPF(void** mod, void* mod_in);
-void AUTDModulationCustom(void** mod, uint8* buffer, uint64 size, uint32 freq_div);
+void AUTDModulationCustom(void** mod, float64* buffer, uint64 size, uint32 freq_div);
 uint32 AUTDModulationSamplingFrequencyDivision(void* mod);
 void AUTDModulationSetSamplingFrequencyDivision(void* mod, uint32 freq_div);
 float64 AUTDModulationSamplingFrequency(void* mod);

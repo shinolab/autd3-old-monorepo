@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 24/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -100,8 +100,8 @@ struct Gain<Normal> final : Operation {
 
     assert(_drives.size() == tx.bodies_size());
     assert(_cycles.size() == tx.bodies_size());
-    std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<Duty*>(tx.bodies_raw_ptr()),
-                   [](const auto& d, const auto cycle) { return Duty(d, cycle); });
+    std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<NormalDriveDuty*>(tx.bodies_raw_ptr()),
+                   [](const auto& d, const auto cycle) { return NormalDriveDuty(d, cycle); });
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
   }
@@ -113,8 +113,8 @@ struct Gain<Normal> final : Operation {
 
     assert(_drives.size() == tx.bodies_size());
     assert(_cycles.size() == tx.bodies_size());
-    std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<Phase*>(tx.bodies_raw_ptr()),
-                   [](const auto& d, const auto cycle) { return Phase(d, cycle); });
+    std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<NormalDrivePhase*>(tx.bodies_raw_ptr()),
+                   [](const auto& d, const auto cycle) { return NormalDrivePhase(d, cycle); });
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
   }
@@ -141,8 +141,8 @@ struct Gain<NormalPhase> final : Operation {
 
     assert(_drives.size() == tx.bodies_size());
     assert(_cycles.size() == tx.bodies_size());
-    std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<Phase*>(tx.bodies_raw_ptr()),
-                   [](const auto& d, const auto cycle) { return Phase(d, cycle); });
+    std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<NormalDrivePhase*>(tx.bodies_raw_ptr()),
+                   [](const auto& d, const auto cycle) { return NormalDrivePhase(d, cycle); });
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
 
@@ -177,8 +177,8 @@ struct Amplitude final : Operation {
 
     assert(_drives.size() == tx.bodies_size());
     assert(_cycles.size() == tx.bodies_size());
-    std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<Duty*>(tx.bodies_raw_ptr()),
-                   [](const auto& d, const auto cycle) { return Duty(d, cycle); });
+    std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<NormalDriveDuty*>(tx.bodies_raw_ptr()),
+                   [](const auto& d, const auto cycle) { return NormalDriveDuty(d, cycle); });
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
 

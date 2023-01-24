@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 24/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@
 #if defined(__GNUC__) && !defined(__llvm__)
 #pragma GCC diagnostic push
 #endif
-#include "tinycolormap.hpp"
+#include "autd3/extra/tinycolormap/tinycolormap.hpp"
 #if _MSC_VER
 #pragma warning(pop)
 #endif
@@ -46,6 +46,19 @@
 
 namespace autd3::extra {
 
+namespace simulator {
+#ifdef AUTD3_USE_METER
+constexpr float scale = 1e-3f;
+#else
+constexpr float scale = 1;
+#endif
+#ifdef AUTD3_USE_METER
+constexpr float z_parity = -1;
+#else
+constexpr float z_parity = 1;
+#endif
+}  // namespace simulator
+
 /**
  * @brief Settings for Simulator
  */
@@ -54,65 +67,28 @@ struct SimulatorSettings {
   int32_t window_height{600};
   bool vsync{true};
   int32_t gpu_idx{0};
-#ifdef AUTD3_USE_METER
-  bool use_meter{true};
-#ifdef AUTD3_USE_LEFT_HANDED
-  bool use_left_handed{true};
-  float slice_pos_z{-150.0e-3f};
-  float camera_pos_z{-150.0e-3f};
-#else
-  bool use_left_handed{false};
-  float slice_pos_z{150.0e-3f};
-  float camera_pos_z{150.0e-3f};
-#endif
-  float slice_pos_x{86.6252e-3f};
-  float slice_pos_y{66.7133e-3f};
-  float slice_width{300e-3f};
-  float slice_height{300e-3f};
-  float slice_pixel_size{1.0e-3f};
-  float camera_pos_x{86.6252e-3f};
-  float camera_pos_y{-533.2867e-3f};
-  float camera_near_clip{0.1e-3f};
-  float camera_far_clip{1000e-3f};
-  float camera_move_speed{10e-3f};
-  float sound_speed{340.0f};
-#else
-  bool use_meter{false};
-#ifdef AUTD3_USE_LEFT_HANDED
-  bool use_left_handed{true};
-  float slice_pos_z{-150.0f};
-  float camera_pos_z{-150.0f};
-#else
-  bool use_left_handed{false};
-  float slice_pos_z{150.0f};
-  float camera_pos_z{150.0f};
-#endif
-  float slice_pos_x{86.6252f};
-  float slice_pos_y{66.7133f};
-  float slice_width{300};
-  float slice_height{300};
-  float slice_pixel_size{1.0};
-  float camera_pos_x{86.6252f};
-  float camera_pos_y{-533.2867f};
-  float camera_near_clip{0.1f};
-  float camera_far_clip{1000};
-  float camera_move_speed{10};
-  float sound_speed{340.0e3f};
-#endif
+  float slice_pos_x{86.6252f * simulator::scale};
+  float slice_pos_y{66.7133f * simulator::scale};
+  float slice_pos_z{150.0f * simulator::scale * simulator::z_parity};
+  float slice_width{300.0f * simulator::scale};
+  float slice_height{300.0f * simulator::scale};
+  float slice_pixel_size{1.0f * simulator::scale};
+  float camera_pos_x{86.6252f * simulator::scale};
+  float camera_pos_y{-533.2867f * simulator::scale};
+  float camera_pos_z{150.0f * simulator::scale * simulator::z_parity};
+  float camera_near_clip{0.1f * simulator::scale};
+  float camera_far_clip{1000.0f * simulator::scale};
+  float camera_move_speed{10.0f * simulator::scale};
+  float sound_speed{340.0e3f * simulator::scale};
 
-#ifdef AUTD3_USE_LEFT_HANDED
-  float slice_rot_x{-90.0f};
-  float camera_rot_x{-90.0f};
-#else
-  float slice_rot_x{90.0f};
-  float camera_rot_x{90.0f};
-#endif
+  float slice_rot_x{90.0f * simulator::z_parity};
   float slice_rot_y{0};
   float slice_rot_z{0};
   float slice_color_scale{2};
   float slice_alpha{1};
   tinycolormap::ColormapType coloring_method{tinycolormap::ColormapType::Inferno};
   bool show_radiation_pressure{false};
+  float camera_rot_x{90.0f * simulator::z_parity};
   float camera_rot_y{0};
   float camera_rot_z{0};
   float camera_fov{45};
@@ -132,47 +108,29 @@ struct SimulatorSettings {
   size_t max_dev_num{50};
   size_t max_trans_num{10000};
 
-  void load_default(const bool use_meter_, const bool use_left_handed_) {
-    use_meter = use_meter_;
-    use_left_handed = use_left_handed_;
-    if (use_meter) {
-      slice_pos_x = 86.6252e-3f;
-      slice_pos_y = 66.7133e-3f;
-      slice_pos_z = use_left_handed ? -150.0e-3f : 150.0e-3f;
-      slice_width = 300e-3f;
-      slice_height = 300e-3f;
-      slice_pixel_size = 1.0e-3f;
-      camera_pos_x = 86.6252e-3f;
-      camera_pos_y = -533.2867e-3f;
-      camera_pos_z = use_left_handed ? -150.0e-3f : 150.0e-3f;
-      camera_near_clip = 0.1e-3f;
-      camera_far_clip = 1000e-3f;
-      camera_move_speed = 10e-3f;
-      sound_speed = 340.0f;
-    } else {
-      slice_pos_x = 86.6252f;
-      slice_pos_y = 66.7133f;
-      slice_pos_z = use_left_handed ? -150.0f : 150.0f;
-      slice_width = 300;
-      slice_height = 300;
-      slice_pixel_size = 1.0;
-      camera_pos_x = 86.6252f;
-      camera_pos_y = -533.2867f;
-      camera_pos_z = use_left_handed ? -150.0f : 150.0f;
-      camera_near_clip = 0.1f;
-      camera_far_clip = 1000;
-      camera_move_speed = 10;
-      sound_speed = 340.0e3f;
-    }
+  void load_default() {
+    slice_pos_x = 86.6252f * simulator::scale;
+    slice_pos_y = 66.7133f * simulator::scale;
+    slice_pos_z = 150.0f * simulator::scale * simulator::z_parity;
+    slice_width = 300 * simulator::scale;
+    slice_height = 300 * simulator::scale;
+    slice_pixel_size = 1.0f * simulator::scale;
+    camera_pos_x = 86.6252f * simulator::scale;
+    camera_pos_y = -533.2867f * simulator::scale;
+    camera_pos_z = 150.0f * simulator::scale * simulator::z_parity;
+    camera_near_clip = 0.1f * simulator::scale;
+    camera_far_clip = 1000 * simulator::scale;
+    camera_move_speed = 10 * simulator::scale;
+    sound_speed = 340.0e3f * simulator::scale;
 
-    slice_rot_x = use_left_handed ? -90.0f : 90.0f;
+    slice_rot_x = 90.0f * simulator::z_parity;
     slice_rot_y = 0;
     slice_rot_z = 0;
     slice_color_scale = 2;
     slice_alpha = 1;
     coloring_method = tinycolormap::ColormapType::Inferno;
     show_radiation_pressure = false;
-    camera_rot_x = use_left_handed ? -90.0f : 90.0f;
+    camera_rot_x = 90.0f * simulator::z_parity;
     camera_rot_y = 0;
     camera_rot_z = 0;
     camera_fov = 45;
@@ -194,8 +152,6 @@ inline void to_json(nlohmann::json& j, const SimulatorSettings& s) {
                      {"window_height", s.window_height},
                      {"vsync", s.vsync},
                      {"gpu_idx", s.gpu_idx},
-                     {"use_meter", s.use_meter},
-                     {"use_left_handed", s.use_left_handed},
                      {"slice_pos_x", s.slice_pos_x},
                      {"slice_pos_y", s.slice_pos_y},
                      {"slice_pos_z", s.slice_pos_z},
@@ -240,8 +196,6 @@ inline void from_json(const nlohmann::json& j, SimulatorSettings& s) {
   j.at("window_height").get_to(s.window_height);
   j.at("vsync").get_to(s.vsync);
   j.at("vsync").get_to(s.vsync);
-  j.at("use_meter").get_to(s.use_meter);
-  j.at("use_left_handed").get_to(s.use_left_handed);
   j.at("slice_pos_x").get_to(s.slice_pos_x);
   j.at("slice_pos_y").get_to(s.slice_pos_y);
   j.at("slice_pos_z").get_to(s.slice_pos_z);

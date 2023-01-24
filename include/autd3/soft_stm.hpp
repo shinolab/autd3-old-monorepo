@@ -3,7 +3,7 @@
 // Created Date: 07/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/01/2023
+// Last Modified: 21/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@
 
 #include "autd3/controller.hpp"
 #include "autd3/core/gain.hpp"
-#include "autd3/core/utils.hpp"
+#include "autd3/core/utils/hint.hpp"
 
 namespace autd3 {
 

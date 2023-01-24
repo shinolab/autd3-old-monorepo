@@ -26,7 +26,9 @@ PCのイーサネットポートとAUTD3デバイスのEtherCAT In ([Concept](co
 ### ファームウェアアップデート
 
 ファームウェアが古い場合, 動作は保証されない.
-本文章におけるファームウェアのバージョンは2.7が想定される.
+本文章におけるファームウェアのバージョンは2.8が想定される.
+
+> NOTE: 実際には, (少なくとも以下のプログラムは) v2.7以下のファームウェアでも動作すると思われる. しかし, v2.8を使用することを推奨する.
 
 ファームウェアのアップデートには[Vivado Design Suite](https://www.xilinx.com/products/design-tools/vivado.html), 及び, [J-Link Software](https://www.segger.com/downloads/jlink/)をインストールしたWindows 10/11 64bit PCが必要である[^fn_vivado].
 なお, Vivado 2022.1, 及び, J-Link Software v7.82a (x64)での動作を確認している.

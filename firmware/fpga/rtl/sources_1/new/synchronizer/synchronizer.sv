@@ -4,7 +4,7 @@
  * Created Date: 24/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/11/2022
+ * Last Modified: 23/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,6 +26,9 @@ module synchronizer (
   localparam bit [31:0] ECAT_SYNC_BASE = 32'd500000;  // ns
   localparam bit [17:0] ECAT_SYNC_BASE_CNT = 18'd81920;
 
+  localparam bit [31:0] FREQUENCY_TOLERANCE = 32'd320;  // 50ppm * 163.84MHz / 25.6MHz
+  localparam bit [31:0] SYS_TIME_DIFF_ADJUST_CNT_MAX = 1000000 / FREQUENCY_TOLERANCE;
+
   bit [63:0] ecat_sync_time;
   bit [63:0] lap;
   bit [31:0] _unused_rem_lap;
@@ -44,6 +47,8 @@ module synchronizer (
   bit [$clog2(ADDSUB_LATENCY+1+1)-1:0] addsub_cnt = ADDSUB_LATENCY + 1;
   bit [$clog2(ADDSUB_LATENCY+1+1)-1:0] addsub_next_cnt = ADDSUB_LATENCY + 1;
   bit set;
+
+  bit [$clog2(SYS_TIME_DIFF_ADJUST_CNT_MAX)-1:0] sys_time_adjust_cnt = 0;
 
   bit [17:0] next_sync_cnt = 0;
 
@@ -95,6 +100,10 @@ module synchronizer (
   end
 
   always_ff @(posedge CLK) begin
+    sys_time_adjust_cnt <= sys_time_adjust_cnt == SYS_TIME_DIFF_ADJUST_CNT_MAX - 1 ? 0 : sys_time_adjust_cnt + 1;
+  end
+
+  always_ff @(posedge CLK) begin
     if (sync) begin
       if (set) begin
         sys_time <= sync_time;
@@ -111,14 +120,18 @@ module synchronizer (
       next_sync_cnt <= ECAT_SYNC_BASE_CNT >> 1;
     end else begin
       if (addsub_cnt == ADDSUB_LATENCY + 1) begin
-        if (sync_time_diff == 65'd0) begin
-          sys_time <= sys_time + 1;
-        end else if (sync_time_diff[64] == 1'b1) begin
-          sys_time <= sys_time;
-          sync_time_diff <= sync_time_diff + 1;
+        if (sys_time_adjust_cnt == 0) begin
+          if (sync_time_diff == 65'd0) begin
+            sys_time <= sys_time + 1;
+          end else if (sync_time_diff[64] == 1'b1) begin
+            sys_time <= sys_time;
+            sync_time_diff <= sync_time_diff + 1;
+          end else begin
+            sys_time <= sys_time + 2;
+            sync_time_diff <= sync_time_diff - 1;
+          end
         end else begin
-          sys_time <= sys_time + 2;
-          sync_time_diff <= sync_time_diff - 1;
+          sys_time <= sys_time + 1;
         end
       end else if (addsub_cnt == ADDSUB_LATENCY) begin
         sync_time_diff <= s_diff;
