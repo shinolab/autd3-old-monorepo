@@ -18,6 +18,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(BUILD_ALL "BUILD_ALL" OFF)
 option(BUILD_DOC "BUILD_DOC" OFF)
 
+option(AUTD3_EIGEN_EXTERNAL OFF)
+
 option(AUTD3_PARALLEL_FOR "AUTD3_PARALLEL_FOR" OFF)
 
 option(BUILD_GAIN_HOLO "BUILD_GAIN_HOLO" ON)
@@ -141,19 +143,39 @@ if(NOT Git_FOUND)
 endif()
 
 if(ENABLE_LINT)
-  update_git_submodule(cpplint RECURSIVE)
-  file(GLOB_RECURSE lint_files src/*.cpp src/*.hpp include/*.hpp capi/*.cpp capi/*.hpp examples/*.cpp examples/*.hpp tests/*.hpp tests/*.cpp)
+  file(GLOB_RECURSE lint_files
+    src/*.cpp
+    src/*.hpp
+    include/*.hpp
+    capi/*.cpp
+    capi/*.hpp
+    examples/*.cpp
+    examples/*.hpp
+    tests/*.hpp
+    tests/*.cpp
+    bench/*.hpp
+    bench/*.cpp
+    dist/simulator/*.cpp
+    dist/simulator/*.hpp
+    dist/SOEMAUTDServer/*.cpp
+    dist/SOEMAUTDServer/*.hpp
+  )
+  get_filename_component(argparse_path ${CMAKE_CURRENT_SOURCE_DIR}/dist/SOEMAUTDServer/argparse/argparse.hpp ABSOLUTE)
+  get_filename_component(tinycolormap_path ${CMAKE_CURRENT_SOURCE_DIR}/include/autd3/extra/tinycolormap/tinycolormap.hpp ABSOLUTE)
+  list(REMOVE_ITEM lint_files ${argparse_path} ${tinycolormap_path})
   ADD_CUSTOM_TARGET(cpplint
     python
-    ${PROJECT_SOURCE_DIR}/3rdparty/cpplint/cpplint.py
-    --filter=-runtime/references,-build/c++11,-whitespace/comments,-readability/braces,-build/include_subdir,-build/include_order,-whitespace/parens,-readability/fn_size
+    ${PROJECT_SOURCE_DIR}/tools/cpplint/cpplint.py
+    --filter=-runtime/references,-build/c++11,-whitespace/comments,-readability/braces,-build/include_subdir,-build/include_order,-build/include,-whitespace/parens,-readability/fn_size
     --linelength=1000
     ${lint_files}
   )
 endif()
 
-update_git_submodule(eigen RECURSIVE)
-set(EIGEN_PATH ${PROJECT_SOURCE_DIR}/3rdparty/eigen)
+if (NOT AUTD3_EIGEN_EXTERNAL)
+  update_git_submodule(eigen RECURSIVE)
+  set(EIGEN_PATH ${PROJECT_SOURCE_DIR}/3rdparty/eigen)
+endif()
 
 update_git_submodule(spdlog RECURSIVE)
 set(SPDLOG_INCLUDE_PATH ${PROJECT_SOURCE_DIR}/3rdparty/spdlog/include)
@@ -177,41 +199,24 @@ if(BUILD_GEOMETRY_VIEWER OR BUILD_SIMULATOR)
   update_git_submodule(imgui RECURSIVE)
   update_git_submodule(glm RECURSIVE)
   update_git_submodule(glfw RECURSIVE)
-  update_git_submodule(stb RECURSIVE)
   add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/json)
   set(GLFW_BUILD_EXAMPLES OFF)
   set(GLFW_BUILD_DOCS OFF)
   set(GLFW_INSTALL OFF)
   add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/glfw)
   add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/glm)
-  set(STB_INCLUDE_PATH ${PROJECT_SOURCE_DIR}/3rdparty/stb)
   set(IMGUI_PATH ${PROJECT_SOURCE_DIR}/3rdparty/imgui)
   set_target_properties(glfw PROPERTIES FOLDER "3rdparty")
   set_target_properties(update_mappings PROPERTIES FOLDER "3rdparty")
 endif()
 
 if(BUILD_GEOMETRY_VIEWER)
-  update_git_submodule(fx-gltf)
   set(FX_GLTF_BUILD_TESTS OFF)
   set(FX_GLTF_INSTALL OFF)
-  add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/fx-gltf)
 endif()
 
 if(BUILD_SIMULATOR)
-  update_git_submodule(tinycolormap RECURSIVE)
   set(BUILD_LINK_SIMULATOR ON)
-  add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/tinycolormap)
-endif()
-
-if(BUILD_SIMULATOR OR BUILD_LINK_SIMULATOR OR EXPORT_SOEM_AUTD_SERVER OR BUILD_LINK_REMOTE_SOEM)
-  set(SMEM_BUILD_EXAMPLE OFF)
-  update_git_submodule(smem RECURSIVE)
-  add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/smem)
-endif()
-
-if(EXPORT_SOEM_AUTD_SERVER)
-  update_git_submodule(argparse RECURSIVE)
-  add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/argparse)
 endif()
 
 if(ENABLE_BENCH)

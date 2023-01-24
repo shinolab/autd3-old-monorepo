@@ -3,7 +3,7 @@
 // Created Date: 25/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 23/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -52,7 +52,7 @@ using Vector4 = Eigen::Matrix<autd3_float_t, 4, 1>;
 using Matrix4X4 = Eigen::Matrix<autd3_float_t, 4, 4>;
 using Quaternion = Eigen::Quaternion<autd3_float_t>;
 
-constexpr uint8_t VERSION_NUM = 0x87;
+constexpr uint8_t VERSION_NUM = 0x88;
 
 constexpr uint16_t MAX_CYCLE = 8191;
 

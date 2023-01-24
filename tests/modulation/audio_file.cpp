@@ -3,7 +3,7 @@
 // Created Date: 10/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/01/2023
+// Last Modified: 24/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -35,7 +35,7 @@ TEST(Modulation, RawPCM) {
                                124, 148, 174, 201, 226, 255, 226, 201, 174, 148, 124, 100, 77, 57, 39, 24, 12, 4, 0, 1, 6, 15, 29, 45, 64, 85};
 
   ASSERT_EQ(buffer.size(), 80);
-  for (size_t i = 0; i < 80; i++) ASSERT_EQ(buffer[i], expects[i]);
+  for (size_t i = 0; i < 80; i++) ASSERT_EQ(autd3::driver::Modulation::to_duty(buffer[i]), expects[i]);
 }
 
 TEST(Modulation, Wav) {
@@ -49,5 +49,5 @@ TEST(Modulation, Wav) {
                                100, 124, 148, 174, 201, 226, 255, 226, 201, 174, 148, 124, 100, 79, 58, 40, 25, 13, 5,  1, 2, 7, 17, 29, 46, 65};
 
   ASSERT_EQ(buffer.size(), 80);
-  for (size_t i = 0; i < 80; i++) ASSERT_EQ(buffer[i], expects[i]);
+  for (size_t i = 0; i < 80; i++) ASSERT_EQ(autd3::driver::Modulation::to_duty(buffer[i]), expects[i]);
 }

@@ -130,7 +130,7 @@ proc AUTDModulationSquare*(`mod`: ptr pointer; freq: int32; low: float64; high: 
     dynlib: dll.}
 proc AUTDModulationLPF*(`mod`: ptr pointer; mod_in: pointer) {.cdecl,
     importc: "AUTDModulationLPF", dynlib: dll.}
-proc AUTDModulationCustom*(`mod`: ptr pointer; buffer: ptr uint8; size: uint64;
+proc AUTDModulationCustom*(`mod`: ptr pointer; buffer: ptr float64; size: uint64;
                           freq_div: uint32) {.cdecl,
     importc: "AUTDModulationCustom", dynlib: dll.}
 proc AUTDModulationSamplingFrequencyDivision*(`mod`: pointer): uint32 {.cdecl,
