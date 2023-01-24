@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/01/2023
+// Last Modified: 24/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -516,7 +516,7 @@ class VulkanImGui {
             ImGui::Text("mod[1]: %d", m[1]);
           else if (m.size() > 3)
             ImGui::Text("...");
-          if (m.size() >= 3) ImGui::Text("mod[%d]: %d", static_cast<int32_t>(m.size() - 1), m[1]);
+          if (m.size() >= 3) ImGui::Text("mod[%d]: %d", static_cast<int32_t>(m.size() - 1), m[m.size() - 1]);
 
           if (ImGui::RadioButton("Show mod plot", _show_mod_plot)) _show_mod_plot = !_show_mod_plot;
 
@@ -538,7 +538,7 @@ class VulkanImGui {
           }
 
           if (_show_mod_plot || _show_mod_plot_raw) ImGui::DragFloat2("plot size", &_mod_plot_size.x);
-          ImGui::Checkbox("Enable##MOD", &mod_enable);
+          if (ImGui::Checkbox("Enable##MOD", &mod_enable)) flag.set(UpdateFlags::UpdateSourceDrive);
           if (mod_enable) {
             if (ImGui::InputInt("Index##MOD", &mod_idx, 1, 10)) flag.set(UpdateFlags::UpdateSourceDrive);
             ImGui::Checkbox("Auto play##MOD", &_mod_auto_play);
