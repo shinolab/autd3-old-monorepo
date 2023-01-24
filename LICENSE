@@ -48,7 +48,7 @@ THIRD PARTY NOTICES
       - Vulkan-Headers (https://github.com/KhronosGroup/Vulkan-Headers)
       - NotoFont (https://github.com/notofonts/noto-fonts/blob/main/LICENSE)
     - SOEMAUTDServer uses
-      - SOEM link uses SOEM (https://github.com/OpenEtherCATsociety/SOEM)
+      - SOEM (https://github.com/OpenEtherCATsociety/SOEM)
       - argparse (https://github.com/p-ranav/argparse)
 - The licenses of these libraries are shown below.
 

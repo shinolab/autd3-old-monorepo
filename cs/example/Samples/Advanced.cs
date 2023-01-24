@@ -4,7 +4,7 @@
  * Created Date: 23/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/10/2022
+ * Last Modified: 24/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,8 +30,8 @@ public class AdvancedTest
             phase[i] = 0.0;
         }
 
-        var burst = new byte[4000];
-        burst[0] = 0xFF;
+        var burst = new double[4000];
+        burst[0] = 1;
 
         var g = new AUTD3Sharp.Gain.Custom(amp, phase);
         var m = new AUTD3Sharp.Modulation.Custom(burst, 40960);

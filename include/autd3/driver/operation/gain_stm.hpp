@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 24/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -231,8 +231,8 @@ struct GainSTM<Normal> final : Operation {
         d.gain_stm_initial().stm_finish_idx = _props.finish_idx.value_or(0);
       });
     } else {
-      std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), _cycles.begin(), reinterpret_cast<Phase*>(tx.bodies_raw_ptr()),
-                     [](const auto& d, const auto cycle) { return Phase(d, cycle); });
+      std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), _cycles.begin(), reinterpret_cast<NormalDrivePhase*>(tx.bodies_raw_ptr()),
+                     [](const auto& d, const auto cycle) { return NormalDrivePhase(d, cycle); });
     }
 
     if (_sent + 1 == _drives.size() + 1) tx.header().cpu_flag.set(CPUControlFlags::STMEnd);
@@ -271,8 +271,8 @@ struct GainSTM<Normal> final : Operation {
         d.gain_stm_initial().stm_finish_idx = _props.finish_idx.value_or(0);
       });
     } else {
-      std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), _cycles.begin(), reinterpret_cast<Duty*>(tx.bodies_raw_ptr()),
-                     [](const auto& d, const auto cycle) { return Duty(d, cycle); });
+      std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), _cycles.begin(), reinterpret_cast<NormalDriveDuty*>(tx.bodies_raw_ptr()),
+                     [](const auto& d, const auto cycle) { return NormalDriveDuty(d, cycle); });
     }
 
     if (_sent + 1 == _drives.size() + 1) tx.header().cpu_flag.set(CPUControlFlags::STMEnd);
@@ -349,8 +349,8 @@ struct GainSTM<NormalPhase> final : Operation {
         d.gain_stm_initial().stm_finish_idx = _props.finish_idx.value_or(0);
       });
     } else {
-      std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), _cycles.begin(), reinterpret_cast<Phase*>(tx.bodies_raw_ptr()),
-                     [](const auto& d, const auto cycle) { return Phase(d, cycle); });
+      std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), _cycles.begin(), reinterpret_cast<NormalDrivePhase*>(tx.bodies_raw_ptr()),
+                     [](const auto& d, const auto cycle) { return NormalDrivePhase(d, cycle); });
     }
 
     if (_sent + 1 == _drives.size() + 1) tx.header().cpu_flag.set(CPUControlFlags::STMEnd);

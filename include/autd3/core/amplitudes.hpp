@@ -3,7 +3,7 @@
 // Created Date: 28/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 24/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -32,7 +32,8 @@ class Amplitudes final : public DatagramBody {
   Amplitudes& operator=(Amplitudes&& obj) = default;
 
   std::unique_ptr<driver::Operation> operation(const Geometry& geometry) override {
-    return std::make_unique<driver::Amplitude>(std::vector(geometry.num_transducers(), driver::Drive{0, _amp}), geometry.cycles());
+    return std::make_unique<driver::Amplitude>(std::vector(geometry.num_transducers(), driver::Drive{driver::Phase(0), driver::Amp(_amp)}),
+                                               geometry.cycles());
   }
 
  private:
