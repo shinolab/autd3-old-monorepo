@@ -3,7 +3,7 @@
 // Created Date: 06/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 24/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,7 +20,9 @@
 namespace autd3::driver {
 
 struct Modulation final : Operation {
-  Modulation(std::vector<uint8_t> data, const uint32_t freq_div) : _mod_data(std::move(data)), _freq_div(freq_div) {}
+  Modulation(std::vector<Amp> data, const uint32_t freq_div) : _mod_data(std::move(data)), _freq_div(freq_div) {}
+
+  static uint8_t to_duty(const Amp amp) { return static_cast<uint8_t>(std::round(std::asin(amp.value()) / pi * 510)); }
 
   void init() override { _sent = 0; }
 
@@ -35,7 +37,6 @@ struct Modulation final : Operation {
     const auto mod_size = (std::min)(_mod_data.size() - _sent, max_size);
     if (mod_size == 0) return;
     const auto is_last_frame = _sent + mod_size == _mod_data.size();
-    const auto* buf = &_mod_data[_sent];
 
     tx.header().cpu_flag.set(CPUControlFlags::Mod);
     tx.header().cpu_flag.remove(CPUControlFlags::ModBegin);
@@ -45,9 +46,9 @@ struct Modulation final : Operation {
     if (is_first_frame) {
       tx.header().cpu_flag.set(CPUControlFlags::ModBegin);
       tx.header().mod_initial().freq_div = _freq_div;
-      std::memcpy(&tx.header().mod_initial().data[0], buf, mod_size);
+      std::transform(&_mod_data[_sent], &_mod_data[_sent + mod_size], &tx.header().mod_initial().data[0], to_duty);
     } else {
-      std::memcpy(&tx.header().mod_subsequent().data[0], buf, mod_size);
+      std::transform(&_mod_data[_sent], &_mod_data[_sent + mod_size], &tx.header().mod_subsequent().data[0], to_duty);
     }
 
     if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::ModEnd);
@@ -59,7 +60,7 @@ struct Modulation final : Operation {
 
  private:
   size_t _sent{0};
-  std::vector<uint8_t> _mod_data{};
+  std::vector<Amp> _mod_data{};
   uint32_t _freq_div{40960};
 };
 

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/01/2023
+// Last Modified: 24/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -156,7 +156,7 @@ std::vector<driver::Drive> SDP::calc(const core::Geometry& geometry) {
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
-    return driver::Drive{phase, power};
+    return driver::Drive{driver::Phase(phase), driver::Amp(power)};
   });
 }
 
@@ -218,7 +218,7 @@ std::vector<driver::Drive> EVD::calc(const core::Geometry& geometry) {
     const auto phase = std::arg(gtf(tr.id())) + driver::pi;
     const auto raw = std::abs(gtf(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
-    return driver::Drive{phase, power};
+    return driver::Drive{driver::Phase(phase), driver::Amp(power)};
   });
 }
 
@@ -242,7 +242,7 @@ std::vector<driver::Drive> LSS::calc(const core::Geometry& geometry) {
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
-    return driver::Drive{phase, power};
+    return driver::Drive{driver::Phase(phase), driver::Amp(power)};
   });
 }
 
@@ -279,7 +279,7 @@ std::vector<driver::Drive> GS::calc(const core::Geometry& geometry) {
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
-    return driver::Drive{phase, power};
+    return driver::Drive{driver::Phase(phase), driver::Amp(power)};
   });
 }
 
@@ -327,7 +327,7 @@ std::vector<driver::Drive> GSPAT::calc(const core::Geometry& geometry) {
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
-    return driver::Drive{phase, power};
+    return driver::Drive{driver::Phase(phase), driver::Amp(power)};
   });
 }
 
@@ -461,7 +461,7 @@ std::vector<driver::Drive> LM::calc(const core::Geometry& geometry) {
   return holo::transform(geometry, [&](const auto& tr) {
     const auto phase = driver::rem_euclid(x(tr.id()), 2 * driver::pi);
     const auto power = constraint->convert(1.0, 1.0);
-    return driver::Drive{phase, power};
+    return driver::Drive{driver::Phase(phase), driver::Amp(power)};
   });
 }
 
@@ -514,8 +514,8 @@ std::vector<driver::Drive> Greedy::calc(const core::Geometry& geometry) {
 
     const auto power = constraint->convert(1.0, 1.0);
 
-    drives[transducer.id()].amp = power;
-    drives[transducer.id()].phase = std::arg(phases[min_idx]) + driver::pi;
+    drives[transducer.id()].amp = driver::Amp(power);
+    drives[transducer.id()].phase = driver::Phase(std::arg(phases[min_idx]) + driver::pi);
   }
   return drives;
 }
@@ -577,7 +577,7 @@ std::vector<driver::Drive> LSSGreedy::calc(const core::Geometry& geometry) {
   return holo::transform(geometry, [&](const auto& tr) {
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
-    return driver::Drive{std::arg(q(tr.id())) + driver::pi, power};
+    return driver::Drive{driver::Phase(std::arg(q(tr.id())) + driver::pi), driver::Amp(power)};
   });
 }
 
@@ -697,7 +697,7 @@ std::vector<driver::Drive> APO::calc(const core::Geometry& geometry) {
     const auto phase = std::arg(q(tr.id())) + driver::pi;
     const auto raw = std::abs(q(tr.id()));
     const auto power = constraint->convert(raw, max_coefficient);
-    return driver::Drive{phase, power};
+    return driver::Drive{driver::Phase(phase), driver::Amp(power)};
   });
 }
 

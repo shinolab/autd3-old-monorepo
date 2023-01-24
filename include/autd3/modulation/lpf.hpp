@@ -3,7 +3,7 @@
 // Created Date: 08/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/01/2023
+// Last Modified: 24/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,7 +27,7 @@ class LPF final : public core::Modulation {
    */
   explicit LPF(Modulation& modulation);
 
-  std::vector<uint8_t> calc() override;
+  std::vector<driver::Amp> calc() override;
 
   ~LPF() override = default;
   LPF(const LPF& v) noexcept = default;
