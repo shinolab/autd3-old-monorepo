@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/01/2023
+// Last Modified: 24/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -79,7 +79,7 @@ struct SimulatorSettings {
   float camera_near_clip{0.1f * simulator::scale};
   float camera_far_clip{1000.0f * simulator::scale};
   float camera_move_speed{10.0f * simulator::scale};
-  float sound_speed{340.0f * simulator::scale};
+  float sound_speed{340.0e3f * simulator::scale};
 
   float slice_rot_x{90.0f * simulator::z_parity};
   float slice_rot_y{0};
