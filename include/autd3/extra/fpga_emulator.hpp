@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/01/2023
+// Last Modified: 25/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -35,7 +35,7 @@ constexpr uint16_t BRAM_SELECT_NORMAL = 0x2;
 constexpr uint16_t BRAM_SELECT_STM = 0x3;
 
 constexpr size_t ADDR_CTL_REG = 0x0000;
-// constexpr size_t ADDR_FPGA_INFO = 0x0001;
+constexpr size_t ADDR_FPGA_INFO = 0x0001;
 // constexpr size_t ADDR_EC_SYNC_TIME_0 = ADDR_EC_SYNC_CYCLE_TICKS + 1;
 // constexpr size_t ADDR_EC_SYNC_TIME_1 = ADDR_EC_SYNC_CYCLE_TICKS + 2;
 // constexpr size_t ADDR_EC_SYNC_TIME_2 = ADDR_EC_SYNC_CYCLE_TICKS + 3;
@@ -133,6 +133,10 @@ class FPGA {
         break;
     }
   }
+
+  void assert_thermal_sensor() { _controller_bram[fpga::ADDR_FPGA_INFO] |= 0x0001; }
+
+  void deassert_thermal_sensor() { _controller_bram[fpga::ADDR_FPGA_INFO] &= ~0x0001; }
 
   [[nodiscard]] bool is_legacy_mode() const { return (_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_LEGACY_MODE) != 0; }
 
