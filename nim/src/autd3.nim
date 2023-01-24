@@ -3,7 +3,7 @@
 # Created Date: 11/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 29/11/2022
+# Last Modified: 24/01/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -295,7 +295,7 @@ type SilencerConfig* = object of Header
 
 type CustomModulation* = object of Modulation
 
-func initCustomModulation*(buf: openArray[uint8],
+func initCustomModulation*(buf: openArray[float64],
         freqDiv: uint32): CustomModulation =
     let n = cast[uint64](buf.len)
     AUTDModulationCustom(result.p.addr, unsafeAddr buf[0], n, freqDiv)

@@ -192,7 +192,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDModulationLPF.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p] 
         self.dll.AUTDModulationLPF.restype = None
 
-        self.dll.AUTDModulationCustom.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_uint8), ctypes.c_uint64, ctypes.c_uint32] 
+        self.dll.AUTDModulationCustom.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_double), ctypes.c_uint64, ctypes.c_uint32] 
         self.dll.AUTDModulationCustom.restype = None
 
         self.dll.AUTDModulationSamplingFrequencyDivision.argtypes = [ctypes.c_void_p] 
