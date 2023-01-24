@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/01/2023
+// Last Modified: 24/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ RawPCM::RawPCM(std::filesystem::path filename, const driver::autd3_float_t sampl
   _freq_div = mod_sampling_freq_div;
 }
 
-std::vector<uint8_t> RawPCM::calc() {
+std::vector<driver::Amp> RawPCM::calc() {
   std::ifstream ifs;
   ifs.open(_filename, std::ios::binary);
   if (ifs.fail()) throw std::runtime_error("Error on opening file");
@@ -48,11 +48,10 @@ std::vector<uint8_t> RawPCM::calc() {
     return std::fmod(v, driver::autd3_float_t{1}) < 1 / freq_ratio ? buf[static_cast<size_t>(v)] : 0;
   });
 
-  std::vector<uint8_t> buffer;
+  std::vector<driver::Amp> buffer;
   buffer.reserve(sample_buf.size());
   std::transform(sample_buf.begin(), sample_buf.end(), std::back_inserter(buffer), [](const auto& v) {
-    const auto amp = static_cast<driver::autd3_float_t>(v) / static_cast<driver::autd3_float_t>(std::numeric_limits<uint8_t>::max());
-    return static_cast<uint8_t>(std::round(std::asin(std::clamp<driver::autd3_float_t>(amp, 0, 1)) / driver::pi * 510));
+    return driver::Amp(static_cast<driver::autd3_float_t>(v) / static_cast<driver::autd3_float_t>(std::numeric_limits<uint8_t>::max()));
   });
   return buffer;
 }
@@ -72,7 +71,7 @@ Wav::Wav(std::filesystem::path filename, const uint32_t mod_sampling_freq_div) :
   _freq_div = mod_sampling_freq_div;
 }
 
-std::vector<uint8_t> Wav::calc() {
+std::vector<driver::Amp> Wav::calc() {
   std::ifstream fs;
   fs.open(_filename, std::ios::binary);
   if (fs.fail()) throw std::runtime_error("Error on opening file");
@@ -105,19 +104,17 @@ std::vector<uint8_t> Wav::calc() {
 
   if (bits_per_sample != 8 && bits_per_sample != 16) throw std::runtime_error("This only supports 8 or 16 bits per sampling data.");
 
-  std::vector<uint8_t> buf;
+  std::vector<driver::autd3_float_t> buf;
   const auto data_size = data_chunk_size / (bits_per_sample / 8);
   buf.resize(data_size);
   std::generate(buf.begin(), buf.end(), [&] {
-    if (bits_per_sample == 8) {
-      const auto amp =
-          static_cast<driver::autd3_float_t>(read_from_stream<uint8_t>(fs)) / static_cast<driver::autd3_float_t>(std::numeric_limits<uint8_t>::max());
-      return static_cast<uint8_t>(std::round(std::asin(std::clamp<driver::autd3_float_t>(amp, 0, 1)) / driver::pi * 510));
-    }
+    if (bits_per_sample == 8)
+      return static_cast<driver::autd3_float_t>(read_from_stream<uint8_t>(fs)) /
+             static_cast<driver::autd3_float_t>(std::numeric_limits<uint8_t>::max());
+
     if (bits_per_sample == 16) {
       const auto d32 = static_cast<int32_t>(read_from_stream<int16_t>(fs)) - std::numeric_limits<int16_t>::min();
-      const auto amp = static_cast<driver::autd3_float_t>(d32) / static_cast<driver::autd3_float_t>(std::numeric_limits<uint16_t>::max());
-      return static_cast<uint8_t>(std::round(std::asin(std::clamp<driver::autd3_float_t>(amp, 0, 1)) / driver::pi * 510));
+      return static_cast<driver::autd3_float_t>(d32) / static_cast<driver::autd3_float_t>(std::numeric_limits<uint16_t>::max());
     }
     throw std::runtime_error("Unsupported format.");
   });

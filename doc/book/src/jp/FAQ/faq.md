@@ -100,7 +100,7 @@
    autd3::gain::Cache<autd3::gain::Focus> g(autd3::Vector3(x, y, z));
 
    g.calc(autd.geometry()); // initialize drive data
-   g.drives()[0].phase = 0.0; // overwrite phase of 0-th transducer
+   g.drives()[0].phase = autd3::Phase(0); // overwrite phase of 0-th transducer
    ```
 
    先に手動で`calc`を呼んで初期化する必要がある点に注意する.

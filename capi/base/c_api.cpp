@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/01/2023
+// Last Modified: 24/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -278,7 +278,7 @@ void AUTDGainTransducerTest(void** gain) { *gain = new autd3::gain::TransducerTe
 
 void AUTDGainTransducerTestSet(void* gain, const int32_t tr_idx, const autd3_float_t amp, const autd3_float_t phase) {
   auto* const g = static_cast<autd3::gain::TransducerTest*>(gain);
-  g->set(tr_idx, amp, phase);
+  g->set(tr_idx, autd3::Amp(amp), autd3::Phase(phase));
 }
 
 void AUTDGainCustom(void** gain, const autd3_float_t* amp, const autd3_float_t* phase, const uint64_t size) {
@@ -310,7 +310,7 @@ void AUTDModulationLPF(void** mod, void* mod_in) {
   *mod = new autd3::modulation::LPF(*m);
 }
 
-void AUTDModulationCustom(void** mod, const uint8_t* buffer, const uint64_t size, const uint32_t freq_div) {
+void AUTDModulationCustom(void** mod, const autd3_float_t* buffer, const uint64_t size, const uint32_t freq_div) {
   *mod = new CustomModulation(buffer, static_cast<size_t>(size), freq_div);
 }
 

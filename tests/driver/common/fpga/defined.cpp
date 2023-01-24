@@ -3,7 +3,7 @@
 // Created Date: 30/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/01/2023
+// Last Modified: 24/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,123 +30,123 @@ TEST(DriverCommonFPGADefined, LegacyDrive) {
   ASSERT_EQ(offsetof(LegacyDrive, phase), 0);
   ASSERT_EQ(offsetof(LegacyDrive, duty), 1);
 
-  Drive s{0.0, 0.0};
+  Drive s{autd3::driver::Phase(0), autd3::driver::Amp(0)};
   LegacyDrive d{};
 
   d.set(s);
   ASSERT_EQ(d.phase, 0);
   ASSERT_EQ(d.duty, 0);
 
-  s.phase = pi;
-  s.amp = 0.5;
+  s.phase = autd3::driver::Phase(pi);
+  s.amp = autd3::driver::Amp(0.5);
   d.set(s);
   ASSERT_EQ(d.phase, 128);
   ASSERT_EQ(d.duty, 85);
 
-  s.phase = 2.0 * pi;
-  s.amp = 1.0;
+  s.phase = autd3::driver::Phase(2.0 * pi);
+  s.amp = autd3::driver::Amp(1.0);
   d.set(s);
   ASSERT_EQ(d.phase, 0);
   ASSERT_EQ(d.duty, 255);
 
-  s.phase = 3.0 * pi;
-  s.amp = 1.5;
+  s.phase = autd3::driver::Phase(3.0 * pi);
+  s.amp = autd3::driver::Amp(1.5);
   d.set(s);
   ASSERT_EQ(d.phase, 128);
   ASSERT_EQ(d.duty, 255);
 
-  s.phase = -pi;
-  s.amp = -1;
+  s.phase = autd3::driver::Phase(-pi);
+  s.amp = autd3::driver::Amp(-1);
   d.set(s);
   ASSERT_EQ(d.phase, 128);
   ASSERT_EQ(d.duty, 0);
 }
 
 TEST(DriverCommonFPGADefined, Phase) {
-  using autd3::driver::Phase;
+  using autd3::driver::NormalDrivePhase;
 
-  ASSERT_EQ(sizeof(Phase), 2);
-  ASSERT_EQ(offsetof(Phase, phase), 0);
+  ASSERT_EQ(sizeof(NormalDrivePhase), 2);
+  ASSERT_EQ(offsetof(NormalDrivePhase, phase), 0);
 
-  Drive s{};
-  Phase d{0};
+  Drive s{autd3::driver::Phase(0), autd3::driver::Amp(0)};
+  NormalDrivePhase d{0};
 
   {
     constexpr uint16_t cycle = 4096;
-    s.phase = 0.0;
+    s.phase = autd3::driver::Phase(0.0);
     d.set(s, cycle);
     ASSERT_EQ(d.phase, 0);
 
-    s.phase = pi;
+    s.phase = autd3::driver::Phase(pi);
     d.set(s, cycle);
     ASSERT_EQ(d.phase, 2048);
 
-    s.phase = 2.0 * pi;
+    s.phase = autd3::driver::Phase(2.0 * pi);
     d.set(s, cycle);
     ASSERT_EQ(d.phase, 0);
 
-    s.phase = 3.0 * pi;
+    s.phase = autd3::driver::Phase(3.0 * pi);
     d.set(s, cycle);
     ASSERT_EQ(d.phase, 2048);
 
-    s.phase = -pi;
+    s.phase = autd3::driver::Phase(-pi);
     d.set(s, cycle);
     ASSERT_EQ(d.phase, 2048);
   }
 
   {
     constexpr uint16_t cycle = 2000;
-    s.phase = 0.0;
+    s.phase = autd3::driver::Phase(0.0);
     d.set(s, cycle);
     ASSERT_EQ(d.phase, 0);
 
-    s.phase = pi;
+    s.phase = autd3::driver::Phase(pi);
     d.set(s, cycle);
     ASSERT_EQ(d.phase, 1000);
 
-    s.phase = 2.0 * pi;
+    s.phase = autd3::driver::Phase(2.0 * pi);
     d.set(s, cycle);
     ASSERT_EQ(d.phase, 0);
 
-    s.phase = 3.0 * pi;
+    s.phase = autd3::driver::Phase(3.0 * pi);
     d.set(s, cycle);
     ASSERT_EQ(d.phase, 1000);
 
-    s.phase = -pi;
+    s.phase = autd3::driver::Phase(-pi);
     d.set(s, cycle);
     ASSERT_EQ(d.phase, 1000);
   }
 }
 
 TEST(DriverCommonFPGADefined, Duty) {
-  using autd3::driver::Duty;
+  using autd3::driver::NormalDriveDuty;
 
-  ASSERT_EQ(sizeof(Duty), 2);
-  ASSERT_EQ(offsetof(Duty, duty), 0);
+  ASSERT_EQ(sizeof(NormalDriveDuty), 2);
+  ASSERT_EQ(offsetof(NormalDriveDuty, duty), 0);
 
-  Drive s{};
-  Duty d{0};
+  Drive s{autd3::driver::Phase(0), autd3::driver::Amp(0)};
+  NormalDriveDuty d{0};
 
   {
     constexpr uint16_t cycle = 4096;
 
-    s.amp = 0.0;
+    s.amp = autd3::driver::Amp(0.0);
     d.set(s, cycle);
     ASSERT_EQ(d.duty, 0);
 
-    s.amp = 0.5;
+    s.amp = autd3::driver::Amp(0.5);
     d.set(s, cycle);
     ASSERT_EQ(d.duty, 683);
 
-    s.amp = 1.0;
+    s.amp = autd3::driver::Amp(1.0);
     d.set(s, cycle);
     ASSERT_EQ(d.duty, 2048);
 
-    s.amp = 1.5;
+    s.amp = autd3::driver::Amp(1.5);
     d.set(s, cycle);
     ASSERT_EQ(d.duty, 2048);
 
-    s.amp = -1;
+    s.amp = autd3::driver::Amp(-1);
     d.set(s, cycle);
     ASSERT_EQ(d.duty, 0);
   }
@@ -154,23 +154,23 @@ TEST(DriverCommonFPGADefined, Duty) {
   {
     constexpr uint16_t cycle = 2000;
 
-    s.amp = 0.0;
+    s.amp = autd3::driver::Amp(0.0);
     d.set(s, cycle);
     ASSERT_EQ(d.duty, 0);
 
-    s.amp = 0.5;
+    s.amp = autd3::driver::Amp(0.5);
     d.set(s, cycle);
     ASSERT_EQ(d.duty, 333);
 
-    s.amp = 1.0;
+    s.amp = autd3::driver::Amp(1.0);
     d.set(s, cycle);
     ASSERT_EQ(d.duty, 1000);
 
-    s.amp = 1.5;
+    s.amp = autd3::driver::Amp(1.5);
     d.set(s, cycle);
     ASSERT_EQ(d.duty, 1000);
 
-    s.amp = -1;
+    s.amp = autd3::driver::Amp(-1);
     d.set(s, cycle);
     ASSERT_EQ(d.duty, 0);
   }
