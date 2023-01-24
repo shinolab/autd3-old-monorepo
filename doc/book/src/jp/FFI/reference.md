@@ -748,7 +748,7 @@ Custom modulationは振幅を直接指定するModulationである.
 | Argument name / return | type     | in/out | description                             |
 | ---------------------- | -------- | ------ | --------------------------------------- |
 | mod                    | void**   | out    | pointer to pointer to Custom modulation |
-| buffer                 | uint8_t* | in     | pointer to modulation data              |
+| buffer                 | double*  | in     | pointer to modulation data              |
 | size                   | uint64_t | in     | size of buffer                          |
 | freq_div               | uint32_t | in     | modulation sampling frequency division  |
 | return                 | void     | -      | -                                       |

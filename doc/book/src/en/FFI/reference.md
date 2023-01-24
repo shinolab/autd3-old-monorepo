@@ -657,7 +657,7 @@ The created Modulation must be deleted at the end by `AUTDDeleteModulation`.
 | Argument name / return | type     | in/out | description                             |
 | ---------------------- | -------- | ------ | --------------------------------------- |
 | mod                    | void**   | out    | pointer to pointer to Custom modulation |
-| buffer                 | uint8_t* | in     | pointer to modulation data              |
+| buffer                 | double*  | in     | pointer to modulation data              |
 | size                   | uint64_t | in     | size of buffer                          |
 | freq_div               | uint32_t | in     | modulation sampling frequency division  |
 | return                 | void     | -      | -                                       |
