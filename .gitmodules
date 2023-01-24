@@ -25,3 +25,6 @@
 [submodule "3rdparty/benchmark"]
 	path = 3rdparty/benchmark
 	url = https://github.com/google/benchmark.git
+[submodule "rust/autd3-link-soem/3rdparty/SOEM"]
+	path = rust/autd3-link-soem/3rdparty/SOEM
+	url = https://github.com/OpenEtherCATsociety/SOEM.git
