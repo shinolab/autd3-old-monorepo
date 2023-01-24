@@ -160,6 +160,9 @@ if(ENABLE_LINT)
     dist/SOEMAUTDServer/*.cpp
     dist/SOEMAUTDServer/*.hpp
   )
+  get_filename_component(argparse_path ${CMAKE_CURRENT_SOURCE_DIR}/dist/SOEMAUTDServer/argparse/argparse.hpp ABSOLUTE)
+  get_filename_component(tinycolormap_path ${CMAKE_CURRENT_SOURCE_DIR}/include/autd3/extra/tinycolormap/tinycolormap.hpp ABSOLUTE)
+  list(REMOVE_ITEM lint_files ${argparse_path} ${tinycolormap_path})
   ADD_CUSTOM_TARGET(cpplint
     python
     ${PROJECT_SOURCE_DIR}/tools/cpplint/cpplint.py
