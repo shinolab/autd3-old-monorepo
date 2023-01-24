@@ -118,7 +118,7 @@
    autd3::modulation::Cache<autd3::modulation::Static> m;
 
    m.calc(); // initialize buffer data
-   m.buffer()[0] = 0;
+   m.buffer()[0] = autd3::Amp(0); // overwrite amp of 0-th modulation data
    ```
 
    先に手動で`calc`を呼んで初期化する必要がある点に注意する.
