@@ -18,7 +18,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Checkout submodules
-      run: git submodule update --init --force --recursive -- 3rdparty/SOEM
+      run: git submodule update --init --force --recursive -- rust/autd3-link-soem/3rdparty/SOEM
     - name: Build on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |
