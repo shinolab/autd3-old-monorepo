@@ -3,7 +3,7 @@
 // Created Date: 16/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/01/2023
+// Last Modified: 27/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,7 +15,6 @@
 
 #include "autd3/core/datagram.hpp"
 #include "autd3/driver/operation/info.hpp"
-#include "spdlog.hpp"
 
 namespace autd3 {
 Controller::Controller() : _tx_buf({0}), _rx_buf(0), _link(nullptr), _send_th_running(false), _last_send_res(false) {}
@@ -69,11 +68,13 @@ void Controller::open(core::LinkPtr link) {
         op_header->pack(_tx_buf);
         op_body->pack(_tx_buf);
         if (!_link->send(_tx_buf)) {
-          spdlog::warn("Failed to send data ({}). Trying to resend...", msg_id);
+          data.header = nullptr;
+          data.body = nullptr;
           break;
         }
         if (const auto success = wait_msg_processed(data.timeout); !no_wait && !success) {
-          spdlog::warn("Could not confirm if the data ({}) was processed successfully.", msg_id);
+          data.header = nullptr;
+          data.body = nullptr;
           break;
         }
         if (op_header->is_finished() && op_body->is_finished()) {
@@ -94,12 +95,14 @@ void Controller::open(core::LinkPtr link) {
 
 bool Controller::close() {
   if (!is_open()) return true;
+  flush();
   _send_th_running = false;
   _send_cond.notify_all();
   if (_send_th.joinable()) _send_th.join();
-  if (!send(stop())) spdlog::warn("Failed to stop outputting.");
-  if (!send(clear())) spdlog::warn("Failed to clear.");
-  return _link->close();
+  auto res = send(stop());
+  res &= send(clear());
+  res &= _link->close();
+  return res;
 }
 
 bool Controller::is_open() const noexcept { return _link != nullptr && _link->is_open(); }
@@ -136,12 +139,6 @@ std::vector<driver::FirmwareInfo> Controller::firmware_infos() {
 
   for (size_t i = 0; i < cpu_versions.size(); i++) firmware_infos.emplace_back(i, cpu_versions[i], fpga_versions[i], fpga_functions[i]);
 
-  for (const auto& info : firmware_infos) {
-    if (info.cpu_version_num() != info.fpga_version_num()) spdlog::warn("FPGA firmware version and CPU firmware version do not match.");
-    if (info.cpu_version_num() != driver::VERSION_NUM || info.fpga_version_num() != driver::VERSION_NUM)
-      spdlog::warn("You are using old firmware. Please consider updating to {}.", driver::FirmwareInfo::firmware_version_map(driver::VERSION_NUM));
-  }
-
   return firmware_infos;
 }
 
@@ -161,14 +158,8 @@ bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body, co
     _tx_buf.header().msg_id = msg_id;
     op_header->pack(_tx_buf);
     op_body->pack(_tx_buf);
-    if (!_link->send(_tx_buf)) {
-      spdlog::warn("Failed to send data ({})", msg_id);
-      return false;
-    }
-    if (const auto success = wait_msg_processed(timeout); !no_wait && !success) {
-      spdlog::warn("Could not confirm if the data ({}) was processed successfully.", msg_id);
-      return false;
-    }
+    if (!_link->send(_tx_buf)) return false;
+    if (const auto success = wait_msg_processed(timeout); !no_wait && !success) return false;
     if (op_header->is_finished() && op_body->is_finished()) break;
     if (no_wait) std::this_thread::sleep_for(_send_interval);
   }
@@ -179,8 +170,7 @@ bool Controller::send(SpecialData* s) {
   const auto timeout = s->ack_check_timeout_override() ? s->ack_check_timeout() : _ack_check_timeout;
   const auto h = s->header();
   const auto b = s->body();
-  const auto res = send(h.get(), b.get(), timeout);
-  return res;
+  return send(h.get(), b.get(), timeout);
 }
 
 void Controller::send_async(SpecialData* s) {

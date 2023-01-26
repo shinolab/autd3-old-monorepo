@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/01/2023
+// Last Modified: 27/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -76,7 +76,7 @@ class Controller {
 
   /**
    * @brief Enumerate firmware information
-   * \return vector of driver::FirmwareInfo. If failed, the vector is empty.
+   * \return vector of driver::FirmwareInfo
    */
   [[nodiscard]] std::vector<driver::FirmwareInfo> firmware_infos();
 

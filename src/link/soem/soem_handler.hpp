@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/01/2023
+// Last Modified: 27/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -169,7 +169,7 @@ class SOEMHandler final {
 
     _is_open.store(true);
     _ecat_thread = std::thread([this, cycle_time] {
-      ecat_run(this->_high_precision, &this->_is_open, &this->_wkc, cycle_time, this->_send_mtx, this->_send_buf, this->_io_map, this->_logger);
+      ecat_run(this->_high_precision, &this->_is_open, &this->_wkc, cycle_time, this->_send_mtx, this->_send_buf, this->_io_map);
     });
 
     ec_statecheck(0, EC_STATE_OPERATIONAL, 5 * EC_TIMEOUTSTATE);
@@ -223,12 +223,8 @@ class SOEMHandler final {
     if (!is_open()) return true;
     _is_open.store(false);
 
-    _logger->debug("Stopping ethercat thread...");
     if (_ecat_thread.joinable()) _ecat_thread.join();
-    _logger->debug("Stopping ethercat thread...done");
-    _logger->debug("Stopping state check thread...");
     if (_ecat_check_thread.joinable()) _ecat_check_thread.join();
-    _logger->debug("Stopping state check thread...done");
 
     const auto cyc_time = static_cast<uint32_t*>(ecx_context.userdata)[0];
     for (uint16_t slave = 1; slave <= static_cast<uint16_t>(ec_slavecount); slave++) ec_dcsync0(slave, false, cyc_time, 0U);
