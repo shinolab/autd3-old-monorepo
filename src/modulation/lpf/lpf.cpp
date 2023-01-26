@@ -3,7 +3,7 @@
 // Created Date: 19/11/20.2f
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/01/2023
+// Last Modified: 27/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 20.2f Shun Suzuki. All rights reserved.
@@ -11,7 +11,6 @@
 
 #include "autd3/modulation/lpf.hpp"
 
-#include "../../spdlog.hpp"
 #include "autd3/driver/utils.hpp"
 
 namespace autd3::modulation {
