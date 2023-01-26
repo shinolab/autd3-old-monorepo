@@ -30,11 +30,12 @@ If the firmware is out of date, the operation is not guaranteed. The version of 
 
 To update the firmware, [Vivado](https://www.xilinx.com/products/design-tools/vivado.html) and [J-Link Software](https://www.segger.com/downloads/jlink/) on Windows 10/11 64-bit PC are required.
 
+> NOTE: If you only want to update the firmware, we strongly recommend you to use Vivado Lab edition.
+
 First, connect the AUTD3 device and the PC to [XILINX Platform Cable](https://www.xilinx.com/products/boards-and-kits/hw-usb-ii-g.html), and [J-Link Plus](https://www.segger.com/products/debug-probes/j-link/models/j-link-plus/) with [J-Link 9-Pin Cortex-M Adapter](https://www.segger-pocjapan.com/j-link-9-pin-cortex-m-adapter).
 Next, connect AUTD3 to the power supply and power it on.
 Next, run `dist/firmware/autd_firmware_writer.ps1` from PowerShell and follow the instructions.
 The update will take a few minutes.
-
 
 ## Building first program
 
