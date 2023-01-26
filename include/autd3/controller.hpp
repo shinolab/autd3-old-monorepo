@@ -280,8 +280,6 @@ class Controller {
  private:
   static uint8_t get_id() noexcept;
 
-  bool wait_msg_processed(std::chrono::high_resolution_clock::duration timeout);
-
   std::chrono::high_resolution_clock::duration _send_interval{std::chrono::milliseconds(1)};
 
   std::chrono::high_resolution_clock::duration _ack_check_timeout{std::chrono::high_resolution_clock::duration::zero()};

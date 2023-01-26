@@ -1,4 +1,4 @@
-// File: log.cpp
+﻿// File: log.cpp
 // Project: log
 // Created Date: 27/01/2023
 // Author: Shun Suzuki
@@ -94,6 +94,18 @@ class LogImpl final : public core::Link {
 
     if (!_link->receive(rx)) {
       _logger->error("Failed to receive data");
+      return false;
+    }
+
+    return true;
+  }
+
+  bool send_receive(const driver::TxDatagram& tx, driver::RxDatagram& rx, const std::chrono::high_resolution_clock::duration interval,
+                    const std::chrono::high_resolution_clock::duration timeout) override {
+    if (!send(tx)) return false;
+    if (timeout == std::chrono::high_resolution_clock::duration::zero()) return receive(rx);
+    if (!wait_msg_processed(tx.header().msg_id, rx, interval, timeout)) {
+      _logger->error("Failed to confirm that the data was processed");
       return false;
     }
 

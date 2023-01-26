@@ -67,12 +67,7 @@ void Controller::open(core::LinkPtr link) {
         _tx_buf.header().msg_id = msg_id;
         op_header->pack(_tx_buf);
         op_body->pack(_tx_buf);
-        if (!_link->send(_tx_buf)) {
-          data.header = nullptr;
-          data.body = nullptr;
-          break;
-        }
-        if (const auto success = wait_msg_processed(data.timeout); !no_wait && !success) {
+        if (!_link->send_receive(_tx_buf, _rx_buf, _send_interval, data.timeout)) {
           data.header = nullptr;
           data.body = nullptr;
           break;
@@ -119,8 +114,7 @@ std::vector<driver::FirmwareInfo> Controller::firmware_infos() {
 
   const auto pack_ack = [&]() -> std::vector<uint8_t> {
     std::vector<uint8_t> acks;
-    if (!_link->send(_tx_buf)) return acks;
-    if (!wait_msg_processed(std::chrono::nanoseconds(200 * 1000 * 1000))) return acks;
+    if (!_link->send_receive(_tx_buf, _rx_buf, _send_interval, std::chrono::nanoseconds(200 * 1000 * 1000))) return acks;
     std::transform(_rx_buf.begin(), _rx_buf.end(), std::back_inserter(acks), [](const driver::RxMessage msg) noexcept { return msg.ack; });
     return acks;
   };
@@ -156,10 +150,12 @@ bool Controller::send(core::DatagramHeader* header, core::DatagramBody* body, co
   while (true) {
     const auto msg_id = get_id();
     _tx_buf.header().msg_id = msg_id;
+
     op_header->pack(_tx_buf);
     op_body->pack(_tx_buf);
-    if (!_link->send(_tx_buf)) return false;
-    if (const auto success = wait_msg_processed(timeout); !no_wait && !success) return false;
+
+    if (!_link->send_receive(_tx_buf, _rx_buf, _send_interval, timeout)) return false;
+
     if (op_header->is_finished() && op_body->is_finished()) break;
     if (no_wait) std::this_thread::sleep_for(_send_interval);
   }
@@ -228,13 +224,4 @@ uint8_t Controller::get_id() noexcept {
   return id_body.load();
 }
 
-bool Controller::wait_msg_processed(const std::chrono::high_resolution_clock::duration timeout) {
-  const auto msg_id = _tx_buf.header().msg_id;
-  const auto start = std::chrono::high_resolution_clock::now();
-  while (std::chrono::high_resolution_clock::now() - start < timeout) {
-    if (_link->receive(_rx_buf) && _rx_buf.is_msg_processed(msg_id)) return true;
-    std::this_thread::sleep_for(_send_interval);
-  }
-  return false;
-}
 }  // namespace autd3
