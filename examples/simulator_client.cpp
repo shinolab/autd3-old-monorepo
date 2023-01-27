@@ -3,7 +3,7 @@
 // Created Date: 07/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 28/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,6 +12,7 @@
 #include "autd3.hpp"
 #include "autd3/link/simulator.hpp"
 #include "runner.hpp"
+#include "util.hpp"
 
 // Run example_simulator_server before running this example
 
@@ -31,6 +32,6 @@ int main() try {
 
   return run(autd);
 } catch (std::exception& e) {
-  std::cerr << e.what() << std::endl;
+  print_err(e);
   return -1;
 }

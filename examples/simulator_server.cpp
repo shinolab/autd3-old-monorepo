@@ -3,7 +3,7 @@
 // Created Date: 07/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 28/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,6 +13,7 @@
 #include <iostream>
 
 #include "autd3/extra/simulator.hpp"
+#include "util.hpp"
 
 int main([[maybe_unused]] int argc, char* argv[]) try {
   autd3::extra::SimulatorSettings settings;
@@ -30,6 +31,6 @@ int main([[maybe_unused]] int argc, char* argv[]) try {
 
   return 0;
 } catch (std::exception& e) {
-  std::cerr << e.what() << std::endl;
+  print_err(e);
   return -1;
 }
