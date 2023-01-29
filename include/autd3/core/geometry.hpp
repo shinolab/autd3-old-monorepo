@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/01/2023
+// Last Modified: 29/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -79,16 +79,89 @@ struct Geometry {
   [[nodiscard]] Vector3 center_of(const size_t dev_idx) const {
     if (dev_idx >= _device_map.size()) return Vector3::Zero();
     if (_device_map[dev_idx] == 0) return Vector3::Zero();
-    const auto start_idx =
-        std::accumulate(_device_map.begin(), _device_map.begin() + static_cast<decltype(_device_map)::difference_type>(dev_idx), size_t{0});
     const Vector3 zero = Vector3::Zero();
-    return std::accumulate(begin() + static_cast<decltype(_transducers)::difference_type>(start_idx),
-                           begin() + static_cast<decltype(_transducers)::difference_type>(start_idx + _device_map[dev_idx]), zero,
+    return std::accumulate(begin(dev_idx), end(dev_idx), zero,
                            [](const Vector3& acc, const Transducer& tr) {
                              Vector3 res = acc + tr.position();
                              return res;
                            }) /
            _device_map[dev_idx];
+  }
+
+  /**
+   * @brief Translate all devices
+   */
+  void translate(const Vector3& t) {
+    const Eigen::Translation<driver::autd3_float_t, 3> trans(t);
+    affine(trans * Matrix3X3::Identity());
+  }
+
+  /**
+   * @brief Rotate all devices
+   */
+  void rotate(const Quaternion& r) {
+    const Eigen::Translation<driver::autd3_float_t, 3> trans(0, 0, 0);
+    affine(trans * r);
+  }
+
+  /**
+   * @brief Apply affine transformation to all devices
+   */
+  void affine(const Vector3& t, const Quaternion& r) {
+    const Eigen::Translation<driver::autd3_float_t, 3> trans(t);
+    affine(trans * r);
+  }
+
+  /**
+   * @brief Apply affine transformation to all devices
+   */
+  void affine(const Affine3& a) {
+    std::transform(begin(), end(), begin(), [a](const auto& tr) {
+      const auto id = tr.id();
+      const Vector3 pos = a * tr.position();
+      const Quaternion rot(a.linear() * tr.rotation().toRotationMatrix());
+      const auto mod_delay = tr.mod_delay();
+      const auto cycle = tr.cycle();
+      return Transducer(id, pos, rot, mod_delay, cycle);
+    });
+  }
+
+  /**
+   * @brief Translate the device
+   */
+  void translate(const size_t dev_idx, const Vector3& t) {
+    const Eigen::Translation<driver::autd3_float_t, 3> trans(t);
+    affine(dev_idx, trans * Matrix3X3::Identity());
+  }
+
+  /**
+   * @brief Rotate the device
+   */
+  void rotate(const size_t dev_idx, const Quaternion& r) {
+    const Eigen::Translation<driver::autd3_float_t, 3> trans(0, 0, 0);
+    affine(dev_idx, trans * r);
+  }
+
+  /**
+   * @brief Apply affine transformation to all devices
+   */
+  void affine(const size_t dev_idx, const Vector3& t, const Quaternion& r) {
+    const Eigen::Translation<driver::autd3_float_t, 3> trans(t);
+    affine(dev_idx, trans * r);
+  }
+
+  /**
+   * @brief Apply affine transformation to the device
+   */
+  void affine(const size_t dev_idx, const Affine3& a) {
+    std::transform(begin(dev_idx), end(dev_idx), begin(dev_idx), [a](const auto& tr) {
+      const auto id = tr.id();
+      const Vector3 pos = a * tr.position();
+      const Quaternion rot(a.linear() * tr.rotation().toRotationMatrix());
+      const auto mod_delay = tr.mod_delay();
+      const auto cycle = tr.cycle();
+      return Transducer(id, pos, rot, mod_delay, cycle);
+    });
   }
 
   /**
@@ -121,6 +194,34 @@ struct Geometry {
   [[nodiscard]] std::vector<Transducer>::const_iterator end() const noexcept { return _transducers.end(); }
   [[nodiscard]] std::vector<Transducer>::iterator begin() noexcept { return _transducers.begin(); }
   [[nodiscard]] std::vector<Transducer>::iterator end() noexcept { return _transducers.end(); }
+
+  [[nodiscard]] std::vector<Transducer>::const_iterator begin(const size_t dev_idx) const {
+    if (dev_idx >= _device_map.size()) throw std::out_of_range("Device index is out of range");
+    const auto start_idx =
+        std::accumulate(_device_map.begin(), _device_map.begin() + static_cast<decltype(_device_map)::difference_type>(dev_idx), size_t{0});
+    return _transducers.begin() + static_cast<decltype(_transducers)::difference_type>(start_idx);
+  }
+  [[nodiscard]] std::vector<Transducer>::const_iterator end(const size_t dev_idx) const {
+    if (dev_idx >= _device_map.size()) throw std::out_of_range("Device index is out of range");
+    const auto end_idx =
+        std::accumulate(_device_map.begin(), _device_map.begin() + static_cast<decltype(_device_map)::difference_type>(dev_idx), size_t{0}) +
+        _device_map[dev_idx];
+    return begin() + static_cast<decltype(_transducers)::difference_type>(end_idx);
+  }
+  [[nodiscard]] std::vector<Transducer>::iterator begin(const size_t dev_idx) {
+    if (dev_idx >= _device_map.size()) throw std::out_of_range("Device index is out of range");
+    const auto start_idx =
+        std::accumulate(_device_map.begin(), _device_map.begin() + static_cast<decltype(_device_map)::difference_type>(dev_idx), size_t{0});
+    return _transducers.begin() + static_cast<decltype(_transducers)::difference_type>(start_idx);
+  }
+  [[nodiscard]] std::vector<Transducer>::iterator end(const size_t dev_idx) {
+    if (dev_idx >= _device_map.size()) throw std::out_of_range("Device index is out of range");
+    const auto end_idx =
+        std::accumulate(_device_map.begin(), _device_map.begin() + static_cast<decltype(_device_map)::difference_type>(dev_idx), size_t{0}) +
+        _device_map[dev_idx];
+    return begin() + static_cast<decltype(_transducers)::difference_type>(end_idx);
+  }
+
   [[nodiscard]] const Transducer& operator[](const size_t i) const { return _transducers[i]; }
   [[nodiscard]] Transducer& operator[](const size_t i) { return _transducers[i]; }
 
