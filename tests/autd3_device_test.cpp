@@ -3,7 +3,7 @@
 // Created Date: 25/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/12/2022
+// Last Modified: 29/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,7 +19,6 @@
 #endif
 
 #include "autd3/autd3_device.hpp"
-#include "test_utils.hpp"
 
 using Vector3 = autd3::core::Vector3;
 using Quaternion = autd3::core::Quaternion;
@@ -1281,139 +1280,4 @@ TEST(AUTD3Device, grid_id) {
   ASSERT_EQ(autd3::AUTD3::grid_id(497).second, 13);
   ASSERT_EQ(autd3::AUTD3::grid_id(498).first, 0);
   ASSERT_EQ(autd3::AUTD3::grid_id(498).second, 0);
-}
-
-TEST(GeometryTest, num_transducers) {
-  autd3::core::Geometry geometry;
-  ASSERT_EQ(geometry.num_transducers(), 0);
-  geometry.add_device(autd3::AUTD3(Vector3::Zero(), Vector3::Zero()));
-  ASSERT_EQ(geometry.num_transducers(), 249);
-  geometry.add_device(autd3::AUTD3(Vector3::Zero(), Vector3::Zero()));
-  ASSERT_EQ(geometry.num_transducers(), 249 * 2);
-}
-
-TEST(GeometryTest, center) {
-  autd3::core::Geometry geometry;
-  Vector3 expect = Vector3::Zero();
-  ASSERT_NEAR_VECTOR3(geometry.center(), expect, 1e-3);
-
-  geometry.add_device(autd3::AUTD3(Vector3(10, 20, 30), Vector3::Zero()));
-  for (size_t i = 0; i < 18; i++) {
-    for (size_t j = 0; j < 14; j++) {
-      if (autd3::AUTD3::is_missing_transducer(i, j)) continue;
-      expect += 10.16 * Vector3(static_cast<double>(i), static_cast<double>(j), 0.0) + Vector3(10, 20, 30);
-    }
-  }
-  expect /= 249;
-  ASSERT_NEAR_VECTOR3(geometry.center(), expect, 1e-3);
-}
-
-TEST(GeometryTest, center_of) {
-  autd3::core::Geometry geometry;
-
-  Vector3 zero = Vector3::Zero();
-  ASSERT_NEAR_VECTOR3(geometry.center_of(0), zero, 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry.center_of(1), zero, 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry.center_of(2), zero, 1e-3);
-
-  Vector3 expect_0 = Vector3::Zero();
-  Vector3 expect_1 = Vector3::Zero();
-  geometry.add_device(autd3::AUTD3(Vector3(10, 20, 30), Vector3::Zero()));
-  geometry.add_device(autd3::AUTD3(Vector3(40, 50, 60), Vector3::Zero()));
-  for (size_t i = 0; i < 18; i++) {
-    for (size_t j = 0; j < 14; j++) {
-      if (autd3::AUTD3::is_missing_transducer(i, j)) continue;
-      expect_0 += 10.16 * Vector3(static_cast<double>(i), static_cast<double>(j), 0.0) + Vector3(10, 20, 30);
-    }
-  }
-  expect_0 /= 249;
-  for (size_t i = 0; i < 18; i++) {
-    for (size_t j = 0; j < 14; j++) {
-      if (autd3::AUTD3::is_missing_transducer(i, j)) continue;
-      expect_1 += 10.16 * Vector3(static_cast<double>(i), static_cast<double>(j), 0.0) + Vector3(40, 50, 60);
-    }
-  }
-  expect_1 /= 249;
-  ASSERT_NEAR_VECTOR3(geometry.center_of(0), expect_0, 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry.center_of(1), expect_1, 1e-3);
-}
-
-TEST(GeometryTest, add_device) {
-  autd3::core::Geometry geometry;
-
-  geometry.add_device(autd3::AUTD3(Vector3(10, 20, 30), Vector3::Zero()));
-  geometry.add_device(autd3::AUTD3(Vector3(0, 0, 0), Vector3(autd3::driver::pi, autd3::driver::pi, 0)));
-  geometry.add_device(autd3::AUTD3(Vector3(0, 0, 0), Vector3(0, autd3::driver::pi, 0)));
-  geometry.add_device(autd3::AUTD3(Vector3(0, 0, 0), Vector3(autd3::driver::pi, 0, 0)));
-  geometry.add_device(autd3::AUTD3(Vector3(40, 60, 50), Vector3(0, 0, autd3::driver::pi / 2)));
-
-  const Vector3 origin(0, 0, 0);
-  const Vector3 right_bottom(10.16 * 17, 0, 0);
-  const Vector3 left_top(0, 10.16 * 13, 0);
-
-  ASSERT_NEAR_VECTOR3(geometry[0].position(), (Vector3(10, 20, 30) + origin), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[17].position(), (Vector3(10, 20, 30) + right_bottom), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[231].position(), (Vector3(10, 20, 30) + left_top), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[248].position(), (Vector3(10, 20, 30) + right_bottom + left_top), 1e-3);
-
-  ASSERT_NEAR_VECTOR3(geometry[1 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 0].position(), (Vector3(0, 0, 0) + origin), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[1 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 17].position(), (Vector3(0, 0, 0) + right_bottom), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[1 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 231].position(), (Vector3(0, 0, 0) - left_top), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[1 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 248].position(), (Vector3(0, 0, 0) + right_bottom - left_top), 1e-3);
-
-  ASSERT_NEAR_VECTOR3(geometry[2 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 0].position(), (Vector3(0, 0, 0) + origin), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[2 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 17].position(), (Vector3(0, 0, 0) - right_bottom), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[2 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 231].position(), (Vector3(0, 0, 0) + left_top), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[2 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 248].position(), (Vector3(0, 0, 0) - right_bottom + left_top), 1e-3);
-
-  ASSERT_NEAR_VECTOR3(geometry[3 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 0].position(), (Vector3(0, 0, 0) + origin), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[3 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 17].position(), (Vector3(0, 0, 0) - right_bottom), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[3 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 231].position(), (Vector3(0, 0, 0) - left_top), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[3 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 248].position(), (Vector3(0, 0, 0) - right_bottom - left_top), 1e-3);
-
-  ASSERT_NEAR_VECTOR3(geometry[4 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 0].position(), (Vector3(40, 60, 50) + origin), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[4 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 17].position(), (Vector3(40, 60, 50) + Vector3(0, 10.16 * 17, 0)), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[4 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 231].position(), (Vector3(40, 60, 50) - Vector3(10.16 * 13, 0, 0)), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[4 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 248].position(),
-                      (Vector3(40, 60, 50) + Vector3(0, 10.16 * 17, 0) - Vector3(10.16 * 13, 0, 0)), 1e-3);
-}
-
-TEST(GeometryTest, add_device_quaternion) {
-  autd3::core::Geometry geometry;
-
-  geometry.add_device(autd3::AUTD3(Vector3(10, 20, 30), Quaternion::Identity()));
-  geometry.add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity() * Eigen::AngleAxis(autd3::driver::pi, Vector3::UnitX())));
-  geometry.add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity() * Eigen::AngleAxis(autd3::driver::pi, Vector3::UnitY())));
-  geometry.add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity() * Eigen::AngleAxis(autd3::driver::pi, Vector3::UnitZ())));
-  geometry.add_device(autd3::AUTD3(Vector3(40, 60, 50), Quaternion::Identity() * Eigen::AngleAxis(autd3::driver::pi / 2, Vector3::UnitZ())));
-
-  const Vector3 origin(0, 0, 0);
-  const Vector3 right_bottom(10.16 * 17, 0, 0);
-  const Vector3 left_top(0, 10.16 * 13, 0);
-
-  ASSERT_NEAR_VECTOR3(geometry[0 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 0].position(), (Vector3(10, 20, 30) + origin), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[0 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 17].position(), (Vector3(10, 20, 30) + right_bottom), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[0 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 231].position(), (Vector3(10, 20, 30) + left_top), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[0 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 248].position(), (Vector3(10, 20, 30) + right_bottom + left_top), 1e-3);
-
-  ASSERT_NEAR_VECTOR3(geometry[1 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 0].position(), (Vector3(0, 0, 0) + origin), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[1 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 17].position(), (Vector3(0, 0, 0) + right_bottom), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[1 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 231].position(), (Vector3(0, 0, 0) - left_top), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[1 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 248].position(), (Vector3(0, 0, 0) + right_bottom - left_top), 1e-3);
-
-  ASSERT_NEAR_VECTOR3(geometry[2 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 0].position(), (Vector3(0, 0, 0) + origin), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[2 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 17].position(), (Vector3(0, 0, 0) - right_bottom), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[2 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 231].position(), (Vector3(0, 0, 0) + left_top), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[2 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 248].position(), (Vector3(0, 0, 0) - right_bottom + left_top), 1e-3);
-
-  ASSERT_NEAR_VECTOR3(geometry[3 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 0].position(), (Vector3(0, 0, 0) + origin), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[3 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 17].position(), (Vector3(0, 0, 0) - right_bottom), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[3 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 231].position(), (Vector3(0, 0, 0) - left_top), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[3 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 248].position(), (Vector3(0, 0, 0) - right_bottom - left_top), 1e-3);
-
-  ASSERT_NEAR_VECTOR3(geometry[4 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 0].position(), (Vector3(40, 60, 50) + origin), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[4 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 17].position(), (Vector3(40, 60, 50) + Vector3(0, 10.16 * 17, 0)), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[4 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 231].position(), (Vector3(40, 60, 50) - Vector3(10.16 * 13, 0, 0)), 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry[4 * autd3::AUTD3::NUM_TRANS_IN_UNIT + 248].position(),
-                      (Vector3(40, 60, 50) + Vector3(0, 10.16 * 17, 0) - Vector3(10.16 * 13, 0, 0)), 1e-3);
 }
