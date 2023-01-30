@@ -4,7 +4,7 @@
  * Created Date: 16/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/01/2023
+ * Last Modified: 31/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,13 +36,16 @@ _Noreturn
 int main(void) {
   void* cnt = NULL;
   void* link = NULL;
-  AUTDCreateController(&cnt);
+  void* builder = NULL;
+  void* geometry = NULL;
 
-  AUTDAddDevice(cnt, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+  AUTDCreateGeometryBuilder(&builder);
+  AUTDAddDevice(builder, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+  AUTDBuildGeometry(&geometry, builder);
 
   AUTDLinkSOEM(&link, NULL, 2, 2, false, (void*)callback, false, 100, 2, NULL, NULL);
 
-  AUTDOpenController(cnt, link);
+  AUTDOpenController(&cnt, geometry, link);
 
   AUTDSetAckCheckTimeout(cnt, 20LL * 1000 * 1000);
 

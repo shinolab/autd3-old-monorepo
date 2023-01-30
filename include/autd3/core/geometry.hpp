@@ -88,7 +88,11 @@ struct Geometry {
       return *this;
     }
 
-    Geometry build() { return Geometry(_mode, _attenuation, _sound_speed, std::move(_transducers), std::move(_device_map)); }
+#ifdef AUTD3_CAPI
+    Geometry* build() { return new Geometry(_mode, _attenuation, _sound_speed, std::move(_transducers), std::move(_device_map)); }
+#else
+    Geometry build() { return {_mode, _attenuation, _sound_speed, std::move(_transducers), std::move(_device_map)}; }
+#endif
 
    private:
     driver::autd3_float_t _attenuation{0};
