@@ -32,15 +32,9 @@ core::Geometry& Controller::geometry() noexcept { return _geometry; }
 
 const core::Geometry& Controller::geometry() const noexcept { return _geometry; }
 
-Controller Controller::open(core::Geometry geometry, core::LinkPtr link) {
-  if (geometry.num_transducers() == 0) throw std::runtime_error("Please add devices before opening.");
-  if (link == nullptr) throw std::runtime_error("link is null");
-  Controller cnt(std::move(geometry), std::move(link));
-  cnt.open();
-  return cnt;
-}
-
 void Controller::open() {
+  if (_geometry.num_transducers() == 0) throw std::runtime_error("Please add devices before opening.");
+  if (_link == nullptr) throw std::runtime_error("link is null");
   if (!_link->open(_geometry)) throw std::runtime_error("Failed to open link.");
   _tx_buf = driver::TxDatagram(_geometry.device_map());
   _rx_buf = driver::RxDatagram(_geometry.num_devices());

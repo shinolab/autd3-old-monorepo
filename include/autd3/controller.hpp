@@ -32,14 +32,25 @@ namespace autd3 {
  */
 class Controller {
  public:
-  explicit Controller(core::Geometry geometry, core::LinkPtr link);
   Controller(const Controller& v) = delete;
   Controller& operator=(const Controller& obj) = delete;
   Controller(Controller&& obj) = default;
   Controller& operator=(Controller&& obj) = default;
   ~Controller() noexcept;
 
-  static Controller open(core::Geometry geometry, core::LinkPtr link);
+#ifdef AUTD3_CAPI
+  static Controller* open(core::Geometry geometry, core::LinkPtr link) {
+    auto* cnt = new Controller(std::move(geometry), std::move(link));
+    cnt->open();
+    return cnt;
+  }
+#else
+  static Controller open(core::Geometry geometry, core::LinkPtr link) {
+    Controller cnt(std::move(geometry), std::move(link));
+    cnt.open();
+    return cnt;
+  }
+#endif
 
   /**
    * @brief Geometry of the devices
@@ -214,6 +225,8 @@ class Controller {
                                                   driver::autd3_float_t m = static_cast<driver::autd3_float_t>(28.9647e-3));
 
  private:
+  explicit Controller(core::Geometry geometry, core::LinkPtr link);
+
   void open();
 
   static uint8_t get_id() noexcept;

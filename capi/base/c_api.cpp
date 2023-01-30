@@ -59,10 +59,10 @@ void AUTDBuildGeometry(void** out, void* geometry_builder) {
 
 bool AUTDOpenController(void** out, void* const geometry, void* const link) {
   auto* w_link = static_cast<LinkWrapper*>(link);
-  auto* geometry_ptr = static_cast<autd3::Geometry*>(geometry);
+  autd3::Geometry geometry_ = *static_cast<autd3::Geometry*>(geometry);
   autd3::LinkPtr link_ = std::move(w_link->ptr);
   link_delete(w_link);
-  AUTD3_CAPI_TRY(*out = new Controller(std::move(*geometry_ptr), std::move(link_));)
+  AUTD3_CAPI_TRY(*out = Controller::open(std::move(geometry_), std::move(link_));)
 }
 
 bool AUTDClose(void* const handle) {
