@@ -3,7 +3,7 @@
 // Created Date: 16/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/01/2023
+// Last Modified: 31/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,12 +12,19 @@
 #include "autd3/controller.hpp"
 
 #include <atomic>
+#include <utility>
 
 #include "autd3/core/datagram.hpp"
 #include "autd3/driver/operation/info.hpp"
 
 namespace autd3 {
-Controller::Controller() : _tx_buf({0}), _rx_buf(0), _link(nullptr), _send_th_running(false), _last_send_res(false) {}
+Controller::Controller(core::Geometry geometry, core::LinkPtr link)
+    : _geometry(std::move(geometry)),
+      _tx_buf({0}),
+      _rx_buf(0),
+      _link(std::move(link)),
+      //_send_th_running(false),
+      _last_send_res(false) {}
 
 Controller::~Controller() noexcept {
   try {
@@ -30,70 +37,75 @@ core::Geometry& Controller::geometry() noexcept { return _geometry; }
 
 const core::Geometry& Controller::geometry() const noexcept { return _geometry; }
 
-void Controller::open(core::LinkPtr link) {
+Controller Controller::open(core::Geometry geometry, core::LinkPtr link) {
+  Controller cnt(std::move(geometry), std::move(link));
+  cnt.open();
+  return cnt;
+}
+
+void Controller::open() {
   if (_geometry.num_transducers() == 0) throw std::runtime_error("Please add devices before opening.");
 
-  if (link == nullptr) throw std::runtime_error("link is null");
+  if (_link == nullptr) throw std::runtime_error("link is null");
 
-  _link = std::move(link);
   if (!_link->open(_geometry)) throw std::runtime_error("Failed to open link.");
 
   _tx_buf = driver::TxDatagram(_geometry.device_map());
   _rx_buf = driver::RxDatagram(_geometry.num_devices());
 
-  _send_th_running = true;
-  _send_th = std::thread([this] {
-    AsyncData data{};
-    while (_send_th_running) {
-      if (data.header == nullptr && data.body == nullptr) {
-        std::unique_lock lk(_send_mtx);
-        _send_cond.wait(lk, [&] { return !_send_queue.empty() || !this->_send_th_running; });
-        if (!this->_send_th_running) break;
-        data = std::move(_send_queue.front());
-      }
+  //_send_th_running = true;
+  //_send_th = std::thread([this] {
+  //  AsyncData data{};
+  //  while (_send_th_running) {
+  //    if (data.header == nullptr && data.body == nullptr) {
+  //      std::unique_lock lk(_send_mtx);
+  //      _send_cond.wait(lk, [&] { return !_send_queue.empty() || !this->_send_th_running; });
+  //      if (!this->_send_th_running) break;
+  //      data = std::move(_send_queue.front());
+  //    }
 
-      const auto op_header = data.header->operation();
-      const auto op_body = data.body->operation(_geometry);
+  //    const auto op_header = data.header->operation();
+  //    const auto op_body = data.body->operation(_geometry);
 
-      op_header->init();
-      op_body->init();
+  //    op_header->init();
+  //    op_body->init();
 
-      _force_fan.pack(_tx_buf);
-      _reads_fpga_info.pack(_tx_buf);
+  //    _force_fan.pack(_tx_buf);
+  //    _reads_fpga_info.pack(_tx_buf);
 
-      const auto no_wait = data.timeout == std::chrono::high_resolution_clock::duration::zero();
-      while (true) {
-        const auto msg_id = get_id();
-        _tx_buf.header().msg_id = msg_id;
-        op_header->pack(_tx_buf);
-        op_body->pack(_tx_buf);
-        if (!_link->send_receive(_tx_buf, _rx_buf, _send_interval, data.timeout)) {
-          data.header = nullptr;
-          data.body = nullptr;
-          break;
-        }
-        if (op_header->is_finished() && op_body->is_finished()) {
-          data.header = nullptr;
-          data.body = nullptr;
-          break;
-        }
-        if (no_wait) std::this_thread::sleep_for(_send_interval);
-      }
+  //    const auto no_wait = data.timeout == std::chrono::high_resolution_clock::duration::zero();
+  //    while (true) {
+  //      const auto msg_id = get_id();
+  //      _tx_buf.header().msg_id = msg_id;
+  //      op_header->pack(_tx_buf);
+  //      op_body->pack(_tx_buf);
+  //      if (!_link->send_receive(_tx_buf, _rx_buf, _send_interval, data.timeout)) {
+  //        data.header = nullptr;
+  //        data.body = nullptr;
+  //        break;
+  //      }
+  //      if (op_header->is_finished() && op_body->is_finished()) {
+  //        data.header = nullptr;
+  //        data.body = nullptr;
+  //        break;
+  //      }
+  //      if (no_wait) std::this_thread::sleep_for(_send_interval);
+  //    }
 
-      if (data.header == nullptr && data.body == nullptr) {
-        std::unique_lock lk(_send_mtx);
-        _send_queue.pop();
-      }
-    }
-  });
+  //    if (data.header == nullptr && data.body == nullptr) {
+  //      std::unique_lock lk(_send_mtx);
+  //      _send_queue.pop();
+  //    }
+  //  }
+  //});
 }
 
 bool Controller::close() {
   if (!is_open()) return true;
-  flush();
-  _send_th_running = false;
-  _send_cond.notify_all();
-  if (_send_th.joinable()) _send_th.join();
+  // flush();
+  //_send_th_running = false;
+  //_send_cond.notify_all();
+  // if (_send_th.joinable()) _send_th.join();
   auto res = send(stop());
   res &= send(clear());
   res &= _link->close();
@@ -168,38 +180,38 @@ bool Controller::send(SpecialData* s) {
   const auto b = s->body();
   return send(h.get(), b.get(), timeout);
 }
-
-void Controller::send_async(SpecialData* s) {
-  const auto timeout = s->ack_check_timeout_override() ? s->ack_check_timeout() : _ack_check_timeout;
-  send_async(s->header(), s->body(), timeout);
-}
-
-void Controller::send_async(std::unique_ptr<core::DatagramHeader> header, std::unique_ptr<core::DatagramBody> body) {
-  send_async(std::move(header), std::move(body), _ack_check_timeout);
-}
-
-void Controller::send_async(std::unique_ptr<core::DatagramHeader> header, std::unique_ptr<core::DatagramBody> body,
-                            const std::chrono::high_resolution_clock::duration timeout) {
-  {
-    std::unique_lock lk(_send_mtx);
-    AsyncData data;
-    data.header = std::move(header);
-    data.body = std::move(body);
-    data.timeout = timeout;
-    _send_queue.emplace(std::move(data));
-  }
-  _send_cond.notify_all();
-}
-
-void Controller::wait() const {
-  if (!is_open()) return;
-  while (!_send_queue.empty()) std::this_thread::sleep_for(std::chrono::milliseconds(100));
-}
-
-void Controller::flush() {
-  std::unique_lock lk(_send_mtx);
-  std::queue<AsyncData>().swap(_send_queue);
-}
+//
+// void Controller::send_async(SpecialData* s) {
+//  const auto timeout = s->ack_check_timeout_override() ? s->ack_check_timeout() : _ack_check_timeout;
+//  send_async(s->header(), s->body(), timeout);
+//}
+//
+// void Controller::send_async(std::unique_ptr<core::DatagramHeader> header, std::unique_ptr<core::DatagramBody> body) {
+//  send_async(std::move(header), std::move(body), _ack_check_timeout);
+//}
+//
+// void Controller::send_async(std::unique_ptr<core::DatagramHeader> header, std::unique_ptr<core::DatagramBody> body,
+//                            const std::chrono::high_resolution_clock::duration timeout) {
+//  {
+//    std::unique_lock lk(_send_mtx);
+//    AsyncData data;
+//    data.header = std::move(header);
+//    data.body = std::move(body);
+//    data.timeout = timeout;
+//    _send_queue.emplace(std::move(data));
+//  }
+//  _send_cond.notify_all();
+//}
+//
+// void Controller::wait() const {
+//  if (!is_open()) return;
+//  while (!_send_queue.empty()) std::this_thread::sleep_for(std::chrono::milliseconds(100));
+//}
+//
+// void Controller::flush() {
+//  std::unique_lock lk(_send_mtx);
+//  std::queue<AsyncData>().swap(_send_queue);
+//}
 
 bool Controller::reads_fpga_info() const noexcept { return _reads_fpga_info.value; }
 

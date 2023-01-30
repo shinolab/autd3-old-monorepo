@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/01/2023
+// Last Modified: 31/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -38,16 +38,71 @@ struct Device {
  * @brief Geometry of all transducers
  */
 struct Geometry {
-  Geometry()
-      : attenuation(0.0),
-        sound_speed(
+  struct GeometryBuilder {
+    GeometryBuilder() = default;
+
+    /**
+     * @brief Add device to Geometry
+     * @tparam T Class inheriting from Device
+     * @param device device
+     */
+    template <typename T>
+    auto add_device(T&& device) -> std::enable_if_t<std::is_base_of_v<Device, T>, GeometryBuilder&> {
+      {
+        const auto id = _transducers.size();
+        const auto transducers = device.get_transducers(id);
+        if (transducers.size() > 256) throw std::runtime_error("The maximum number of transducers per device is 256.");
+        _transducers.insert(_transducers.end(), transducers.begin(), transducers.end());
+        _device_map.emplace_back(transducers.size());
+      }
+      return *this;
+    }
+
+    GeometryBuilder& attenuation(const driver::autd3_float_t value) {
+      _attenuation = value;
+      return *this;
+    }
+
+    GeometryBuilder& sound_speed(const driver::autd3_float_t value) {
+      _sound_speed = value;
+      return *this;
+    }
+
+    GeometryBuilder& mode(const Mode value) {
+      _mode = value;
+      return *this;
+    }
+
+    GeometryBuilder& legacy_mode() {
+      _mode = Mode::Legacy;
+      return *this;
+    }
+
+    GeometryBuilder& normal_mode() {
+      _mode = Mode::Normal;
+      return *this;
+    }
+
+    GeometryBuilder& normal_phase_mode() {
+      _mode = Mode::NormalPhase;
+      return *this;
+    }
+
+    Geometry build() { return Geometry(_mode, _attenuation, _sound_speed, std::move(_transducers), std::move(_device_map)); }
+
+   private:
+    driver::autd3_float_t _attenuation{0};
+    driver::autd3_float_t _sound_speed{
 #ifdef AUTD3_USE_METER
-            340.0)
+        340.0
 #else
-            340.0e3)
+        340.0e3
 #endif
-  {
-  }
+    };
+    std::vector<Transducer> _transducers;
+    std::vector<size_t> _device_map;
+    Mode _mode{Mode::Legacy};
+  };
 
   /**
    * @brief Number of devices
@@ -165,20 +220,6 @@ struct Geometry {
   }
 
   /**
-   * @brief Add device to Geometry
-   * @tparam T Class inheriting from Device
-   * @param device device
-   */
-  template <typename T>
-  auto add_device(T&& device) -> std::enable_if_t<std::is_base_of_v<Device, T>> {
-    const auto id = _transducers.size();
-    const auto transducers = device.get_transducers(id);
-    if (transducers.size() > 256) throw std::runtime_error("The maximum number of transducers per device is 256.");
-    _transducers.insert(_transducers.end(), transducers.begin(), transducers.end());
-    _device_map.emplace_back(transducers.size());
-  }
-
-  /**
    * @return device_map contains the number of transducers each device has
    */
   [[nodiscard]] const std::vector<size_t>& device_map() const noexcept { return _device_map; }
@@ -241,6 +282,10 @@ struct Geometry {
   driver::autd3_float_t sound_speed;
 
  private:
+  Geometry(const Mode mode, const driver::autd3_float_t attenuation, const driver::autd3_float_t sound_speed, std::vector<Transducer> transducers,
+           std::vector<size_t> device_map)
+      : mode(mode), attenuation(attenuation), sound_speed(sound_speed), _transducers(std::move(transducers)), _device_map(std::move(device_map)) {}
+
   std::vector<Transducer> _transducers;
   std::vector<size_t> _device_map;
 };

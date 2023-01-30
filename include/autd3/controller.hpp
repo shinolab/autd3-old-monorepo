@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/01/2023
+// Last Modified: 31/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,18 +11,12 @@
 
 #pragma once
 
-#include <algorithm>
 #include <chrono>
 #include <condition_variable>
 #include <memory>
-#include <mutex>
-#include <queue>
-#include <thread>
 #include <type_traits>
-#include <utility>
 #include <vector>
 
-#include "autd3/async.hpp"
 #include "autd3/core/geometry.hpp"
 #include "autd3/core/link.hpp"
 #include "autd3/driver/cpu/datagram.hpp"
@@ -38,12 +32,13 @@ namespace autd3 {
  */
 class Controller {
  public:
-  Controller();
   Controller(const Controller& v) = delete;
   Controller& operator=(const Controller& obj) = delete;
-  Controller(Controller&& obj) = delete;
-  Controller& operator=(Controller&& obj) = delete;
+  Controller(Controller&& obj) = default;
+  Controller& operator=(Controller&& obj) = default;
   ~Controller() noexcept;
+
+  static Controller open(core::Geometry geometry, core::LinkPtr link);
 
   /**
    * @brief Geometry of the devices
@@ -54,8 +49,6 @@ class Controller {
    * @brief Geometry of the devices
    */
   [[nodiscard]] const core::Geometry& geometry() const noexcept;
-
-  void open(core::LinkPtr link);
 
   /**
    * @brief Close the controller
@@ -161,63 +154,63 @@ class Controller {
    */
   bool send(SpecialData* s);
 
-  /**
-   * @brief Send header data to devices asynchronously
-   */
-  template <typename H>
-  auto send_async(H header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>> {
-    send_async(std::move(header), core::NullBody{});
-  }
+  ///**
+  // * @brief Send header data to devices asynchronously
+  // */
+  // template <typename H>
+  // auto send_async(H header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>> {
+  //  send_async(std::move(header), core::NullBody{});
+  //}
 
-  /**
-   * @brief Send body data to devices asynchronously
-   */
-  template <typename B>
-  auto send_async(B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>> {
-    send_async(core::NullHeader{}, std::move(body));
-  }
+  ///**
+  // * @brief Send body data to devices asynchronously
+  // */
+  // template <typename B>
+  // auto send_async(B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>> {
+  //  send_async(core::NullHeader{}, std::move(body));
+  //}
 
-  /**
-   * @brief Send header and body data to devices asynchronously
-   */
-  template <typename H, typename B>
-  auto send_async(H header, B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>> {
-    send_async(std::make_unique<H>(std::move(header)), std::make_unique<B>(std::move(body)));
-  }
+  ///**
+  // * @brief Send header and body data to devices asynchronously
+  // */
+  // template <typename H, typename B>
+  // auto send_async(H header, B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>> {
+  //  send_async(std::make_unique<H>(std::move(header)), std::make_unique<B>(std::move(body)));
+  //}
 
-  /**
-   * @brief Send special data to devices asynchronously
-   */
-  template <typename S>
-  auto send_async(S s) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>> {
-    send_async(&s);
-  }
+  ///**
+  // * @brief Send special data to devices asynchronously
+  // */
+  // template <typename S>
+  // auto send_async(S s) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>> {
+  //  send_async(&s);
+  //}
 
-  /**
-   * @brief Send special data to devices asynchronously
-   */
-  void send_async(SpecialData* s);
+  ///**
+  // * @brief Send special data to devices asynchronously
+  // */
+  // void send_async(SpecialData* s);
 
-  /**
-   * @brief Send header and body data to devices asynchronously
-   */
-  void send_async(std::unique_ptr<core::DatagramHeader> header, std::unique_ptr<core::DatagramBody> body);
+  ///**
+  // * @brief Send header and body data to devices asynchronously
+  // */
+  // void send_async(std::unique_ptr<core::DatagramHeader> header, std::unique_ptr<core::DatagramBody> body);
 
-  /**
-   * @brief Send header and body data to devices asynchronously
-   */
-  void send_async(std::unique_ptr<core::DatagramHeader> header, std::unique_ptr<core::DatagramBody> body,
-                  std::chrono::high_resolution_clock::duration timeout);
+  ///**
+  // * @brief Send header and body data to devices asynchronously
+  // */
+  // void send_async(std::unique_ptr<core::DatagramHeader> header, std::unique_ptr<core::DatagramBody> body,
+  //                std::chrono::high_resolution_clock::duration timeout);
 
-  /**
-   * @brief Wait until all asynchronously sent data to complete the transmission
-   */
-  void wait() const;
+  ///**
+  // * @brief Wait until all asynchronously sent data to complete the transmission
+  // */
+  // void wait() const;
 
-  /**
-   * @brief Flush all asynchronously sent data
-   */
-  void flush();
+  ///**
+  // * @brief Flush all asynchronously sent data
+  // */
+  // void flush();
 
   /**
    * @brief If true, the fan will be forced to start.
@@ -278,6 +271,10 @@ class Controller {
                                                   driver::autd3_float_t m = static_cast<driver::autd3_float_t>(28.9647e-3));
 
  private:
+  explicit Controller(core::Geometry geometry, core::LinkPtr link);
+
+  void open();
+
   static uint8_t get_id() noexcept;
 
   std::chrono::high_resolution_clock::duration _send_interval{std::chrono::milliseconds(1)};
@@ -296,11 +293,11 @@ class Controller {
   driver::RxDatagram _rx_buf;
   core::LinkPtr _link;
 
-  bool _send_th_running;
-  std::thread _send_th;
-  std::queue<AsyncData> _send_queue;
-  std::condition_variable _send_cond;
-  std::mutex _send_mtx;
+  // bool _send_th_running;
+  // std::thread _send_th;
+  // std::queue<AsyncData> _send_queue;
+  // std::condition_variable _send_cond;
+  // std::mutex _send_mtx;
 
   bool _last_send_res;
 
@@ -308,254 +305,254 @@ class Controller {
   driver::ReadsFPGAInfo _reads_fpga_info;
 
  public:
-  /**
-   * @brief Controller wrapper for asynchronous send
-   */
-  class AsyncSender {
-    friend class Controller;
+  ///**
+  // * @brief Controller wrapper for asynchronous send
+  // */
+  // class AsyncSender {
+  //  friend class Controller;
 
-   public:
-    Controller& cnt;
+  // public:
+  //  Controller& cnt;
 
-    /**
-     * @brief Buffer for stream operator
-     * @tparam H Class inheriting from core::DatagramHeader
-     */
-    template <typename H>
-    class StreamCommaInputHeaderAsync {
-      friend class AsyncSender;
+  //  /**
+  //   * @brief Buffer for stream operator
+  //   * @tparam H Class inheriting from core::DatagramHeader
+  //   */
+  //  template <typename H>
+  //  class StreamCommaInputHeaderAsync {
+  //    friend class AsyncSender;
 
-     public:
-      ~StreamCommaInputHeaderAsync() {
-        if (!_sent) _cnt.cnt.send_async(std::move(_header));
-      }
-      StreamCommaInputHeaderAsync(const StreamCommaInputHeaderAsync& v) noexcept = delete;
-      StreamCommaInputHeaderAsync& operator=(const StreamCommaInputHeaderAsync& obj) = delete;
-      StreamCommaInputHeaderAsync(StreamCommaInputHeaderAsync&& obj) = default;
-      StreamCommaInputHeaderAsync& operator=(StreamCommaInputHeaderAsync&& obj) = delete;
+  //   public:
+  //    ~StreamCommaInputHeaderAsync() {
+  //      if (!_sent) _cnt.cnt.send_async(std::move(_header));
+  //    }
+  //    StreamCommaInputHeaderAsync(const StreamCommaInputHeaderAsync& v) noexcept = delete;
+  //    StreamCommaInputHeaderAsync& operator=(const StreamCommaInputHeaderAsync& obj) = delete;
+  //    StreamCommaInputHeaderAsync(StreamCommaInputHeaderAsync&& obj) = default;
+  //    StreamCommaInputHeaderAsync& operator=(StreamCommaInputHeaderAsync&& obj) = delete;
 
-      /**
-       * @brief Send buffered core::DatagramHeader and core::DatagramBody
-       * @tparam B Class inheriting from core::DatagramBody
-       * @param body core::DatagramBody
-       * @return AsyncSender&
-       */
-      template <typename B>
-      auto operator,(B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, AsyncSender&> {
-        _cnt.cnt.send_async(std::move(_header), std::move(body));
-        _sent = true;
-        return _cnt;
-      }
+  //    /**
+  //     * @brief Send buffered core::DatagramHeader and core::DatagramBody
+  //     * @tparam B Class inheriting from core::DatagramBody
+  //     * @param body core::DatagramBody
+  //     * @return AsyncSender&
+  //     */
+  //    template <typename B>
+  //    auto operator,(B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, AsyncSender&> {
+  //      _cnt.cnt.send_async(std::move(_header), std::move(body));
+  //      _sent = true;
+  //      return _cnt;
+  //    }
 
-      /**
-       * @brief Send buffered core::DatagramHeader and core::DatagramBody
-       * @tparam B Class inheriting from core::DatagramBody
-       * @param body core::DatagramBody
-       * @return AsyncSender&
-       */
-      template <typename B>
-      auto operator<<(B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, AsyncSender&> {
-        _cnt.cnt.send_async(std::move(_header), std::move(body));
-        _sent = true;
-        return _cnt;
-      }
+  //    /**
+  //     * @brief Send buffered core::DatagramHeader and core::DatagramBody
+  //     * @tparam B Class inheriting from core::DatagramBody
+  //     * @param body core::DatagramBody
+  //     * @return AsyncSender&
+  //     */
+  //    template <typename B>
+  //    auto operator<<(B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, AsyncSender&> {
+  //      _cnt.cnt.send_async(std::move(_header), std::move(body));
+  //      _sent = true;
+  //      return _cnt;
+  //    }
 
-      /**
-       * @brief Send buffered core::DatagramHeader and buffer core::DatagramHeader passed as argument
-       * @tparam H2 Class inheriting from core::DatagramHeader
-       * @param header core::DatagramHeader
-       * @return StreamCommaInputHeaderAsync
-       */
-      template <typename H2>
-      auto operator<<(H2 header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H2>, StreamCommaInputHeaderAsync<H2>> {
-        _cnt.cnt.send_async(std::move(_header));
-        _sent = true;
-        return StreamCommaInputHeaderAsync<H2>(_cnt, std::move(header));
-      }
+  //    /**
+  //     * @brief Send buffered core::DatagramHeader and buffer core::DatagramHeader passed as argument
+  //     * @tparam H2 Class inheriting from core::DatagramHeader
+  //     * @param header core::DatagramHeader
+  //     * @return StreamCommaInputHeaderAsync
+  //     */
+  //    template <typename H2>
+  //    auto operator<<(H2 header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H2>, StreamCommaInputHeaderAsync<H2>> {
+  //      _cnt.cnt.send_async(std::move(_header));
+  //      _sent = true;
+  //      return StreamCommaInputHeaderAsync<H2>(_cnt, std::move(header));
+  //    }
 
-      /**
-       * @brief Send buffered core::DatagramHeader and SpecialData
-       * @tparam S Class inheriting from SpecialData
-       * @param special_f SpecialData function
-       * @return AsyncSender&
-       */
-      template <typename S>
-      auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, AsyncSender&> {
-        _cnt.cnt.send_async(std::move(_header));
-        _sent = true;
-        _cnt.cnt.send_async(special_f());
-        return _cnt;
-      }
+  //    /**
+  //     * @brief Send buffered core::DatagramHeader and SpecialData
+  //     * @tparam S Class inheriting from SpecialData
+  //     * @param special_f SpecialData function
+  //     * @return AsyncSender&
+  //     */
+  //    template <typename S>
+  //    auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, AsyncSender&> {
+  //      _cnt.cnt.send_async(std::move(_header));
+  //      _sent = true;
+  //      _cnt.cnt.send_async(special_f());
+  //      return _cnt;
+  //    }
 
-      /**
-       * @brief Send buffered core::DatagramHeader and then send core::DatagramHeader and core::DatagramBody in DatagramPack
-       * @tparam H2 Class inheriting from core::DatagramHeader
-       * @tparam B2 Class inheriting from core::DatagramBody
-       * @param pack DatagramPack
-       * @return AsyncSender&
-       */
-      template <typename H2, typename B2>
-      auto operator<<(core::DatagramPack<H2, B2>&& pack)
-          -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H2> && std::is_base_of_v<core::DatagramBody, B2>, AsyncSender&> {
-        _cnt.cnt.send_async(std::move(_header));
-        _sent = true;
-        _cnt.cnt.send_async(std::move(pack.header), std::move(pack.body));
-        return _cnt;
-      }
+  //    /**
+  //     * @brief Send buffered core::DatagramHeader and then send core::DatagramHeader and core::DatagramBody in DatagramPack
+  //     * @tparam H2 Class inheriting from core::DatagramHeader
+  //     * @tparam B2 Class inheriting from core::DatagramBody
+  //     * @param pack DatagramPack
+  //     * @return AsyncSender&
+  //     */
+  //    template <typename H2, typename B2>
+  //    auto operator<<(core::DatagramPack<H2, B2>&& pack)
+  //        -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H2> && std::is_base_of_v<core::DatagramBody, B2>, AsyncSender&> {
+  //      _cnt.cnt.send_async(std::move(_header));
+  //      _sent = true;
+  //      _cnt.cnt.send_async(std::move(pack.header), std::move(pack.body));
+  //      return _cnt;
+  //    }
 
-     private:
-      explicit StreamCommaInputHeaderAsync(AsyncSender& cnt, H header) : _cnt(cnt), _header(std::move(header)), _sent(false) {}
+  //   private:
+  //    explicit StreamCommaInputHeaderAsync(AsyncSender& cnt, H header) : _cnt(cnt), _header(std::move(header)), _sent(false) {}
 
-      AsyncSender& _cnt;
-      H _header;
-      bool _sent;
-    };
+  //    AsyncSender& _cnt;
+  //    H _header;
+  //    bool _sent;
+  //  };
 
-    /**
-     * @brief Buffer for stream operator
-     * @tparam B Class inheriting from core::DatagramBody
-     */
-    template <typename B>
-    class StreamCommaInputBodyAsync {
-      friend class AsyncSender;
+  //  /**
+  //   * @brief Buffer for stream operator
+  //   * @tparam B Class inheriting from core::DatagramBody
+  //   */
+  //  template <typename B>
+  //  class StreamCommaInputBodyAsync {
+  //    friend class AsyncSender;
 
-     public:
-      ~StreamCommaInputBodyAsync() {
-        if (!_sent) _cnt.cnt.send_async(std::move(_body));
-      }
-      StreamCommaInputBodyAsync(const StreamCommaInputBodyAsync& v) noexcept = delete;
-      StreamCommaInputBodyAsync& operator=(const StreamCommaInputBodyAsync& obj) = delete;
-      StreamCommaInputBodyAsync(StreamCommaInputBodyAsync&& obj) = default;
-      StreamCommaInputBodyAsync& operator=(StreamCommaInputBodyAsync&& obj) = delete;
+  //   public:
+  //    ~StreamCommaInputBodyAsync() {
+  //      if (!_sent) _cnt.cnt.send_async(std::move(_body));
+  //    }
+  //    StreamCommaInputBodyAsync(const StreamCommaInputBodyAsync& v) noexcept = delete;
+  //    StreamCommaInputBodyAsync& operator=(const StreamCommaInputBodyAsync& obj) = delete;
+  //    StreamCommaInputBodyAsync(StreamCommaInputBodyAsync&& obj) = default;
+  //    StreamCommaInputBodyAsync& operator=(StreamCommaInputBodyAsync&& obj) = delete;
 
-      /**
-       * @brief Send buffered core::DatagramBody and core::DatagramHeader
-       * @tparam H Class inheriting from core::DatagramHeader
-       * @param header core::DatagramHeader
-       * @return AsyncSender&
-       */
-      template <typename H>
-      auto operator,(H header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, AsyncSender&> {
-        _cnt.cnt.send_async(std::move(header), std::move(_body));
-        _sent = true;
-        return _cnt;
-      }
+  //    /**
+  //     * @brief Send buffered core::DatagramBody and core::DatagramHeader
+  //     * @tparam H Class inheriting from core::DatagramHeader
+  //     * @param header core::DatagramHeader
+  //     * @return AsyncSender&
+  //     */
+  //    template <typename H>
+  //    auto operator,(H header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, AsyncSender&> {
+  //      _cnt.cnt.send_async(std::move(header), std::move(_body));
+  //      _sent = true;
+  //      return _cnt;
+  //    }
 
-      /**
-       * @brief Send buffered core::DatagramBody and core::DatagramHeader
-       * @tparam H Class inheriting from core::DatagramHeader
-       * @param header core::DatagramHeader
-       * @return AsyncSender&
-       */
-      template <typename H>
-      auto operator<<(H header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, AsyncSender&> {
-        _cnt.cnt.send_async(std::move(header), std::move(_body));
-        _sent = true;
-        return _cnt;
-      }
+  //    /**
+  //     * @brief Send buffered core::DatagramBody and core::DatagramHeader
+  //     * @tparam H Class inheriting from core::DatagramHeader
+  //     * @param header core::DatagramHeader
+  //     * @return AsyncSender&
+  //     */
+  //    template <typename H>
+  //    auto operator<<(H header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, AsyncSender&> {
+  //      _cnt.cnt.send_async(std::move(header), std::move(_body));
+  //      _sent = true;
+  //      return _cnt;
+  //    }
 
-      /**
-       * @brief Send buffered core::DatagramBody and buffer core::DatagramBody passed as argument
-       * @tparam B2 Class inheriting from core::DatagramBody
-       * @param body core::DatagramBody
-       * @return StreamCommaInputBodyAsync<B2>
-       */
-      template <typename B2>
-      auto operator<<(B2 body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B2>, StreamCommaInputBodyAsync<B2>> {
-        _cnt.cnt.send_async(std::move(_body));
-        _sent = true;
-        return StreamCommaInputBodyAsync<B2>(_cnt, std::move(body));
-      }
+  //    /**
+  //     * @brief Send buffered core::DatagramBody and buffer core::DatagramBody passed as argument
+  //     * @tparam B2 Class inheriting from core::DatagramBody
+  //     * @param body core::DatagramBody
+  //     * @return StreamCommaInputBodyAsync<B2>
+  //     */
+  //    template <typename B2>
+  //    auto operator<<(B2 body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B2>, StreamCommaInputBodyAsync<B2>> {
+  //      _cnt.cnt.send_async(std::move(_body));
+  //      _sent = true;
+  //      return StreamCommaInputBodyAsync<B2>(_cnt, std::move(body));
+  //    }
 
-      /**
-       * @brief Send buffered core::DatagramBody and SpecialData
-       * @tparam S Class inheriting from SpecialData
-       * @param special_f SpecialData function
-       * @return AsyncSender&
-       */
-      template <typename S>
-      auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, AsyncSender&> {
-        _cnt.cnt.send_async(std::move(_body));
-        _sent = true;
-        _cnt.cnt.send_async(special_f());
-        return _cnt;
-      }
+  //    /**
+  //     * @brief Send buffered core::DatagramBody and SpecialData
+  //     * @tparam S Class inheriting from SpecialData
+  //     * @param special_f SpecialData function
+  //     * @return AsyncSender&
+  //     */
+  //    template <typename S>
+  //    auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, AsyncSender&> {
+  //      _cnt.cnt.send_async(std::move(_body));
+  //      _sent = true;
+  //      _cnt.cnt.send_async(special_f());
+  //      return _cnt;
+  //    }
 
-      /**
-       * @brief Send buffered core::DatagramBody and then send core::DatagramHeader and core::DatagramBody in DatagramPack
-       * @tparam H2 Class inheriting from core::DatagramHeader
-       * @tparam B2 Class inheriting from core::DatagramBody
-       * @param pack core::DatagramPack
-       * @return AsyncSender&
-       */
-      template <typename H2, typename B2>
-      auto operator<<(core::DatagramPack<H2, B2>&& pack)
-          -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H2> && std::is_base_of_v<core::DatagramBody, B2>, AsyncSender&> {
-        _cnt.cnt.send_async(std::move(_body));
-        _sent = true;
-        _cnt.cnt.send_async(std::move(pack.header), std::move(pack.body));
-        return _cnt;
-      }
+  //    /**
+  //     * @brief Send buffered core::DatagramBody and then send core::DatagramHeader and core::DatagramBody in DatagramPack
+  //     * @tparam H2 Class inheriting from core::DatagramHeader
+  //     * @tparam B2 Class inheriting from core::DatagramBody
+  //     * @param pack core::DatagramPack
+  //     * @return AsyncSender&
+  //     */
+  //    template <typename H2, typename B2>
+  //    auto operator<<(core::DatagramPack<H2, B2>&& pack)
+  //        -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H2> && std::is_base_of_v<core::DatagramBody, B2>, AsyncSender&> {
+  //      _cnt.cnt.send_async(std::move(_body));
+  //      _sent = true;
+  //      _cnt.cnt.send_async(std::move(pack.header), std::move(pack.body));
+  //      return _cnt;
+  //    }
 
-     private:
-      explicit StreamCommaInputBodyAsync(AsyncSender& cnt, B body) : _cnt(cnt), _body(std::move(body)), _sent(false) {}
+  //   private:
+  //    explicit StreamCommaInputBodyAsync(AsyncSender& cnt, B body) : _cnt(cnt), _body(std::move(body)), _sent(false) {}
 
-      AsyncSender& _cnt;
-      B _body;
-      bool _sent;
-    };
+  //    AsyncSender& _cnt;
+  //    B _body;
+  //    bool _sent;
+  //  };
 
-    /**
-     * @brief Buffer core::DatagramHeader
-     * @tparam H Class inheriting from core::DatagramHeader
-     * @param header core::DatagramHeader
-     * @return StreamCommaInputHeaderAsync<H>
-     */
-    template <typename H>
-    auto operator<<(H header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, StreamCommaInputHeaderAsync<H>> {
-      return StreamCommaInputHeaderAsync<H>(*this, std::move(header));
-    }
+  //  /**
+  //   * @brief Buffer core::DatagramHeader
+  //   * @tparam H Class inheriting from core::DatagramHeader
+  //   * @param header core::DatagramHeader
+  //   * @return StreamCommaInputHeaderAsync<H>
+  //   */
+  //  template <typename H>
+  //  auto operator<<(H header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, StreamCommaInputHeaderAsync<H>> {
+  //    return StreamCommaInputHeaderAsync<H>(*this, std::move(header));
+  //  }
 
-    /**
-     * @brief Buffer core::DatagramBody
-     * @tparam B Class inheriting from core::DatagramBody
-     * @param body core::DatagramBody
-     * @return StreamCommaInputBodyAsync<H>
-     */
-    template <typename B>
-    auto operator<<(B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, StreamCommaInputBodyAsync<B>> {
-      return StreamCommaInputBodyAsync<B>(*this, std::move(body));
-    }
+  //  /**
+  //   * @brief Buffer core::DatagramBody
+  //   * @tparam B Class inheriting from core::DatagramBody
+  //   * @param body core::DatagramBody
+  //   * @return StreamCommaInputBodyAsync<H>
+  //   */
+  //  template <typename B>
+  //  auto operator<<(B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, StreamCommaInputBodyAsync<B>> {
+  //    return StreamCommaInputBodyAsync<B>(*this, std::move(body));
+  //  }
 
-    /**
-     * @brief Send SpecialData
-     * @tparam S Class inheriting from SpecialData
-     * @param special_f SpecialData function
-     * @return AsyncSender&
-     */
-    template <typename S>
-    auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, AsyncSender&> {
-      cnt.send_async(special_f());
-      return *this;
-    }
+  //  /**
+  //   * @brief Send SpecialData
+  //   * @tparam S Class inheriting from SpecialData
+  //   * @param special_f SpecialData function
+  //   * @return AsyncSender&
+  //   */
+  //  template <typename S>
+  //  auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, AsyncSender&> {
+  //    cnt.send_async(special_f());
+  //    return *this;
+  //  }
 
-    /**
-     * @brief Send core::DatagramHeader and core::DatagramBody in core::DatagramPack
-     * @tparam H Class inheriting from core::DatagramHeader
-     * @tparam B Class inheriting from core::DatagramBody
-     * @param pack core::DatagramPack
-     * @return AsyncSender&
-     */
-    template <typename H, typename B>
-    auto operator<<(core::DatagramPack<H, B>&& pack)
-        -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>, AsyncSender&> {
-      cnt.send_async(std::move(pack.header), std::move(pack.body));
-      return *this;
-    }
+  //  /**
+  //   * @brief Send core::DatagramHeader and core::DatagramBody in core::DatagramPack
+  //   * @tparam H Class inheriting from core::DatagramHeader
+  //   * @tparam B Class inheriting from core::DatagramBody
+  //   * @param pack core::DatagramPack
+  //   * @return AsyncSender&
+  //   */
+  //  template <typename H, typename B>
+  //  auto operator<<(core::DatagramPack<H, B>&& pack)
+  //      -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>, AsyncSender&> {
+  //    cnt.send_async(std::move(pack.header), std::move(pack.body));
+  //    return *this;
+  //  }
 
-   private:
-    explicit AsyncSender(Controller& cnt) : cnt(cnt) {}
-  };
+  // private:
+  //  explicit AsyncSender(Controller& cnt) : cnt(cnt) {}
+  //};
 
   /**
    * @brief Buffer for stream operator
@@ -823,11 +820,11 @@ class Controller {
     return *this;
   }
 
-  /**
-   * @brief Set asynchronous send mode
-   * @return AsyncSender asynchronous sender
-   */
-  AsyncSender operator<<(Async (*)()) { return AsyncSender{*this}; }
+  ///**
+  // * @brief Set asynchronous send mode
+  // * @return AsyncSender asynchronous sender
+  // */
+  // AsyncSender operator<<(Async (*)()) { return AsyncSender{*this}; }
 
   /**
    * @brief Set Mode
