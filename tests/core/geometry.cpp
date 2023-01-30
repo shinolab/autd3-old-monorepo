@@ -3,7 +3,7 @@
 // Created Date: 29/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/01/2023
+// Last Modified: 31/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,20 +27,24 @@ using Affine3 = autd3::core::Affine3;
 using Matrix3X3 = autd3::core::Matrix3X3;
 
 TEST(GeometryTest, num_transducers) {
-  autd3::core::Geometry geometry;
-  ASSERT_EQ(geometry.num_transducers(), 0);
-  geometry.add_device(autd3::AUTD3(Vector3::Zero(), Vector3::Zero()));
-  ASSERT_EQ(geometry.num_transducers(), 249);
-  geometry.add_device(autd3::AUTD3(Vector3::Zero(), Vector3::Zero()));
-  ASSERT_EQ(geometry.num_transducers(), 249 * 2);
+  {
+    const auto geometry = autd3::core::Geometry::Builder().add_device(autd3::AUTD3(Vector3::Zero(), Vector3::Zero())).build();
+    ASSERT_EQ(geometry.num_transducers(), 249);
+  }
+
+  {
+    const auto geometry = autd3::core::Geometry::Builder()
+                              .add_device(autd3::AUTD3(Vector3::Zero(), Vector3::Zero()))
+                              .add_device(autd3::AUTD3(Vector3::Zero(), Vector3::Zero()))
+                              .build();
+    ASSERT_EQ(geometry.num_transducers(), 249 * 2);
+  }
 }
 
 TEST(GeometryTest, center) {
-  autd3::core::Geometry geometry;
-  Vector3 expect = Vector3::Zero();
-  ASSERT_NEAR_VECTOR3(geometry.center(), expect, 1e-3);
+  const auto geometry = autd3::core::Geometry::Builder().add_device(autd3::AUTD3(Vector3(10, 20, 30), Vector3::Zero())).build();
 
-  geometry.add_device(autd3::AUTD3(Vector3(10, 20, 30), Vector3::Zero()));
+  Vector3 expect = Vector3::Zero();
   for (size_t i = 0; i < 18; i++) {
     for (size_t j = 0; j < 14; j++) {
       if (autd3::AUTD3::is_missing_transducer(i, j)) continue;
@@ -52,17 +56,13 @@ TEST(GeometryTest, center) {
 }
 
 TEST(GeometryTest, center_of) {
-  autd3::core::Geometry geometry;
-
-  Vector3 zero = Vector3::Zero();
-  ASSERT_NEAR_VECTOR3(geometry.center_of(0), zero, 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry.center_of(1), zero, 1e-3);
-  ASSERT_NEAR_VECTOR3(geometry.center_of(2), zero, 1e-3);
+  const auto geometry = autd3::core::Geometry::Builder()
+                            .add_device(autd3::AUTD3(Vector3(10, 20, 30), Vector3::Zero()))
+                            .add_device(autd3::AUTD3(Vector3(40, 50, 60), Vector3::Zero()))
+                            .build();
 
   Vector3 expect_0 = Vector3::Zero();
   Vector3 expect_1 = Vector3::Zero();
-  geometry.add_device(autd3::AUTD3(Vector3(10, 20, 30), Vector3::Zero()));
-  geometry.add_device(autd3::AUTD3(Vector3(40, 50, 60), Vector3::Zero()));
   for (size_t i = 0; i < 18; i++) {
     for (size_t j = 0; j < 14; j++) {
       if (autd3::AUTD3::is_missing_transducer(i, j)) continue;
@@ -82,13 +82,13 @@ TEST(GeometryTest, center_of) {
 }
 
 TEST(GeometryTest, add_device) {
-  autd3::core::Geometry geometry;
-
-  geometry.add_device(autd3::AUTD3(Vector3(10, 20, 30), Vector3::Zero()));
-  geometry.add_device(autd3::AUTD3(Vector3(0, 0, 0), Vector3(autd3::driver::pi, autd3::driver::pi, 0)));
-  geometry.add_device(autd3::AUTD3(Vector3(0, 0, 0), Vector3(0, autd3::driver::pi, 0)));
-  geometry.add_device(autd3::AUTD3(Vector3(0, 0, 0), Vector3(autd3::driver::pi, 0, 0)));
-  geometry.add_device(autd3::AUTD3(Vector3(40, 60, 50), Vector3(0, 0, autd3::driver::pi / 2)));
+  const auto geometry = autd3::core::Geometry::Builder()
+                            .add_device(autd3::AUTD3(Vector3(10, 20, 30), Vector3::Zero()))
+                            .add_device(autd3::AUTD3(Vector3(0, 0, 0), Vector3(autd3::driver::pi, autd3::driver::pi, 0)))
+                            .add_device(autd3::AUTD3(Vector3(0, 0, 0), Vector3(0, autd3::driver::pi, 0)))
+                            .add_device(autd3::AUTD3(Vector3(0, 0, 0), Vector3(autd3::driver::pi, 0, 0)))
+                            .add_device(autd3::AUTD3(Vector3(40, 60, 50), Vector3(0, 0, autd3::driver::pi / 2)))
+                            .build();
 
   const Vector3 origin(0, 0, 0);
   const Vector3 right_bottom(10.16 * 17, 0, 0);
@@ -122,13 +122,14 @@ TEST(GeometryTest, add_device) {
 }
 
 TEST(GeometryTest, add_device_quaternion) {
-  autd3::core::Geometry geometry;
-
-  geometry.add_device(autd3::AUTD3(Vector3(10, 20, 30), Quaternion::Identity()));
-  geometry.add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity() * Eigen::AngleAxis(autd3::driver::pi, Vector3::UnitX())));
-  geometry.add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity() * Eigen::AngleAxis(autd3::driver::pi, Vector3::UnitY())));
-  geometry.add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity() * Eigen::AngleAxis(autd3::driver::pi, Vector3::UnitZ())));
-  geometry.add_device(autd3::AUTD3(Vector3(40, 60, 50), Quaternion::Identity() * Eigen::AngleAxis(autd3::driver::pi / 2, Vector3::UnitZ())));
+  const auto geometry =
+      autd3::core::Geometry::Builder()
+          .add_device(autd3::AUTD3(Vector3(10, 20, 30), Quaternion::Identity()))
+          .add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity() * Eigen::AngleAxis(autd3::driver::pi, Vector3::UnitX())))
+          .add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity() * Eigen::AngleAxis(autd3::driver::pi, Vector3::UnitY())))
+          .add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity() * Eigen::AngleAxis(autd3::driver::pi, Vector3::UnitZ())))
+          .add_device(autd3::AUTD3(Vector3(40, 60, 50), Quaternion::Identity() * Eigen::AngleAxis(autd3::driver::pi / 2, Vector3::UnitZ())))
+          .build();
 
   const Vector3 origin(0, 0, 0);
   const Vector3 right_bottom(10.16 * 17, 0, 0);
@@ -162,10 +163,10 @@ TEST(GeometryTest, add_device_quaternion) {
 }
 
 TEST(GeometryTest, translate) {
-  autd3::core::Geometry geometry;
-
-  geometry.add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity()));
-  geometry.add_device(autd3::AUTD3(Vector3(10, 20, 30), Quaternion::Identity()));
+  auto geometry = autd3::core::Geometry::Builder()
+                      .add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity()))
+                      .add_device(autd3::AUTD3(Vector3(10, 20, 30), Quaternion::Identity()))
+                      .build();
 
   const Vector3 t(40, 50, 60);
   geometry.translate(t);
@@ -190,10 +191,10 @@ TEST(GeometryTest, translate) {
 }
 
 TEST(GeometryTest, translate_of) {
-  autd3::core::Geometry geometry;
-
-  geometry.add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity()));
-  geometry.add_device(autd3::AUTD3(Vector3(10, 20, 30), Quaternion::Identity()));
+  auto geometry = autd3::core::Geometry::Builder()
+                      .add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity()))
+                      .add_device(autd3::AUTD3(Vector3(10, 20, 30), Quaternion::Identity()))
+                      .build();
 
   const Vector3 t(40, 50, 60);
   geometry.translate(0, t);
@@ -238,10 +239,10 @@ TEST(GeometryTest, translate_of) {
 }
 
 TEST(GeometryTest, rotate) {
-  autd3::core::Geometry geometry;
-
-  geometry.add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity()));
-  geometry.add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity()));
+  auto geometry = autd3::core::Geometry::Builder()
+                      .add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity()))
+                      .add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity()))
+                      .build();
 
   const Quaternion rot = Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX()) * Eigen::AngleAxisd(0, Eigen::Vector3d::UnitY()) *
                          Eigen::AngleAxisd(autd3::driver::pi / 2, Eigen::Vector3d::UnitZ());
@@ -259,10 +260,10 @@ TEST(GeometryTest, rotate) {
 }
 
 TEST(GeometryTest, rotate_of) {
-  autd3::core::Geometry geometry;
-
-  geometry.add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity()));
-  geometry.add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity()));
+  auto geometry = autd3::core::Geometry::Builder()
+                      .add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity()))
+                      .add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity()))
+                      .build();
 
   {
     const Quaternion rot = Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX()) * Eigen::AngleAxisd(autd3::driver::pi / 2, Eigen::Vector3d::UnitY()) *
@@ -302,10 +303,10 @@ TEST(GeometryTest, rotate_of) {
 }
 
 TEST(GeometryTest, affine) {
-  autd3::core::Geometry geometry;
-
-  geometry.add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity()));
-  geometry.add_device(autd3::AUTD3(Vector3(10, 20, 30), Quaternion::Identity()));
+  auto geometry = autd3::core::Geometry::Builder()
+                      .add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity()))
+                      .add_device(autd3::AUTD3(Vector3(10, 20, 30), Quaternion::Identity()))
+                      .build();
 
   const Vector3 t(40, 50, 60);
 
@@ -340,10 +341,10 @@ TEST(GeometryTest, affine) {
 }
 
 TEST(GeometryTest, affine_of) {
-  autd3::core::Geometry geometry;
-
-  geometry.add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity()));
-  geometry.add_device(autd3::AUTD3(Vector3(10, 20, 30), Quaternion::Identity()));
+  auto geometry = autd3::core::Geometry::Builder()
+                      .add_device(autd3::AUTD3(Vector3(0, 0, 0), Quaternion::Identity()))
+                      .add_device(autd3::AUTD3(Vector3(10, 20, 30), Quaternion::Identity()))
+                      .build();
 
   const Vector3 t(40, 50, 60);
 
