@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/01/2023
+// Last Modified: 31/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -105,8 +105,6 @@ EXPORT_AUTD void AUTDCreateSilencer(OUT void** out, IN uint16_t step, IN uint16_
 EXPORT_AUTD void AUTDDeleteSilencer(IN const void* config);
 EXPORT_AUTD bool AUTDSend(IN void* handle, IN void* header, IN void* body);
 EXPORT_AUTD bool AUTDSendSpecial(IN void* handle, IN void* special);
-EXPORT_AUTD void AUTDSendAsync(IN void* handle, IN void* header, IN void* body);
-EXPORT_AUTD void AUTDSendSpecialAsync(IN void* handle, IN void* special);
 EXPORT_AUTD uint16_t AUTDGetModDelay(IN const void* handle, IN int32_t trans_idx);
 EXPORT_AUTD void AUTDSetModDelay(IN void* handle, IN int32_t trans_idx, IN uint16_t delay);
 EXPORT_AUTD void AUTDCreateAmplitudes(OUT void** out, IN autd3_float_t amp);
