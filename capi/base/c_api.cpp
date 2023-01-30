@@ -16,6 +16,7 @@
 #include <utility>
 
 #include "./autd3_c_api.h"
+#define AUTD3_CAPI
 #include "autd3.hpp"
 #include "autd3/modulation/lpf.hpp"
 #include "custom.hpp"
@@ -36,26 +37,32 @@ void AUTDSetDefaultLogger(void* out, void* flush) {
   set_default_logger(logger);
 }
 
-void AUTDCreateController(void** out) { *out = new Controller; }
+EXPORT_AUTD void AUTDCreateGeometryBuilder(void** out) { *out = new autd3::Geometry::Builder; }
 
-bool AUTDOpenController(void* const handle, void* const link) {
-  auto* const wrapper = static_cast<Controller*>(handle);
+bool AUTDAddDevice(void* const geometry_builder, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const autd3_float_t rz1,
+                   const autd3_float_t ry, const autd3_float_t rz2) {
+  auto* const builder = static_cast<autd3::Geometry::Builder*>(geometry_builder);
+  AUTD3_CAPI_TRY(builder->add_device(autd3::AUTD3(to_vec3(x, y, z), to_vec3(rz1, ry, rz2)));)
+}
+
+bool AUTDAddDeviceQuaternion(void* const geometry_builder, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z,
+                             const autd3_float_t qw, const autd3_float_t qx, const autd3_float_t qy, const autd3_float_t qz) {
+  auto* const builder = static_cast<autd3::Geometry::Builder*>(geometry_builder);
+  AUTD3_CAPI_TRY(builder->add_device(autd3::AUTD3(to_vec3(x, y, z), to_quaternion(qw, qx, qy, qz)));)
+}
+
+void AUTDBuildGeometry(void** out, void* geometry_builder) {
+  auto* builder = static_cast<autd3::Geometry::Builder*>(geometry_builder);
+  *out = builder->build();
+  delete builder;
+}
+
+bool AUTDOpenController(void** out, void* const geometry, void* const link) {
   auto* w_link = static_cast<LinkWrapper*>(link);
+  auto* geometry_ptr = static_cast<autd3::Geometry*>(geometry);
   autd3::LinkPtr link_ = std::move(w_link->ptr);
   link_delete(w_link);
-  AUTD3_CAPI_TRY(wrapper->open(std::move(link_));)
-}
-
-bool AUTDAddDevice(void* const handle, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const autd3_float_t rz1,
-                   const autd3_float_t ry, const autd3_float_t rz2) {
-  auto* const wrapper = static_cast<Controller*>(handle);
-  AUTD3_CAPI_TRY(wrapper->geometry().add_device(autd3::AUTD3(to_vec3(x, y, z), to_vec3(rz1, ry, rz2)));)
-}
-
-bool AUTDAddDeviceQuaternion(void* const handle, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const autd3_float_t qw,
-                             const autd3_float_t qx, const autd3_float_t qy, const autd3_float_t qz) {
-  auto* const wrapper = static_cast<Controller*>(handle);
-  AUTD3_CAPI_TRY(wrapper->geometry().add_device(autd3::AUTD3(to_vec3(x, y, z), to_quaternion(qw, qx, qy, qz)));)
+  AUTD3_CAPI_TRY(*out = new Controller(std::move(*geometry_ptr), std::move(link_));)
 }
 
 bool AUTDClose(void* const handle) {
