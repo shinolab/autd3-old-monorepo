@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 30/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,12 +14,10 @@
 use std::f64::consts::PI;
 
 use anyhow::Result;
-use autd3_core::modulation::Modulation;
+use autd3_core::{modulation::Modulation, Amp};
 use autd3_traits::Modulation;
 
 use num::integer::gcd;
-
-use super::to_duty;
 
 /// Sine wave modulation in ultrasound amplitude
 #[derive(Modulation)]
@@ -61,7 +59,7 @@ impl SinePressure {
 }
 
 impl Modulation for SinePressure {
-    fn calc(&self) -> Result<Vec<u8>> {
+    fn calc(&self) -> Result<Vec<Amp>> {
         let sf = self.sampling_freq() as usize;
         let freq = self.freq.clamp(1, sf / 2);
         let d = gcd(sf, freq);
@@ -72,8 +70,7 @@ impl Modulation for SinePressure {
             .map(|i| {
                 let amp =
                     self.amp / 2.0 * (2.0 * PI * (rep * i) as f64 / n as f64).sin() + self.offset;
-                let amp = amp.sqrt().clamp(0.0, 1.0);
-                to_duty(amp)
+                Amp::new(amp)
             })
             .collect())
     }
