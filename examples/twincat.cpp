@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/01/2023
+// Last Modified: 31/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,12 +16,14 @@
 #include "util.hpp"
 
 int main() try {
-  autd3::Controller autd;
-
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
+  auto geometry = autd3::Geometry::Builder()
+                      .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+                      .sound_speed(340.0e3)  // mm/s
+                      .build();
 
   auto link = autd3::link::TwinCAT().build();
-  autd.open(std::move(link));
+
+  auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
 
   return run(autd);
 } catch (std::exception& e) {
