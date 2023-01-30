@@ -38,8 +38,8 @@ struct Device {
  * @brief Geometry of all transducers
  */
 struct Geometry {
-  struct GeometryBuilder {
-    GeometryBuilder() = default;
+  struct Builder {
+    Builder() = default;
 
     /**
      * @brief Add device to Geometry
@@ -47,7 +47,7 @@ struct Geometry {
      * @param device device
      */
     template <typename T>
-    auto add_device(T&& device) -> std::enable_if_t<std::is_base_of_v<Device, T>, GeometryBuilder&> {
+    auto add_device(T&& device) -> std::enable_if_t<std::is_base_of_v<Device, T>, Builder&> {
       {
         const auto id = _transducers.size();
         const auto transducers = device.get_transducers(id);
@@ -58,32 +58,32 @@ struct Geometry {
       return *this;
     }
 
-    GeometryBuilder& attenuation(const driver::autd3_float_t value) {
+    Builder& attenuation(const driver::autd3_float_t value) {
       _attenuation = value;
       return *this;
     }
 
-    GeometryBuilder& sound_speed(const driver::autd3_float_t value) {
+    Builder& sound_speed(const driver::autd3_float_t value) {
       _sound_speed = value;
       return *this;
     }
 
-    GeometryBuilder& mode(const Mode value) {
+    Builder& mode(const Mode value) {
       _mode = value;
       return *this;
     }
 
-    GeometryBuilder& legacy_mode() {
+    Builder& legacy_mode() {
       _mode = Mode::Legacy;
       return *this;
     }
 
-    GeometryBuilder& normal_mode() {
+    Builder& normal_mode() {
       _mode = Mode::Normal;
       return *this;
     }
 
-    GeometryBuilder& normal_phase_mode() {
+    Builder& normal_phase_mode() {
       _mode = Mode::NormalPhase;
       return *this;
     }
