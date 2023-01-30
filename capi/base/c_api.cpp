@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/01/2023
+// Last Modified: 31/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -453,24 +453,6 @@ bool AUTDSendSpecial(void* const handle, void* const special) {
   auto* const wrapper = static_cast<Controller*>(handle);
   auto* const s = static_cast<autd3::SpecialData*>(special);
   AUTD3_CAPI_TRY(return wrapper->send(s), false)
-}
-
-void AUTDSendAsync(void* const handle, void* header, void* body) {
-  if (header == nullptr && body == nullptr) return;
-
-  auto* const wrapper = static_cast<Controller*>(handle);
-  auto h = std::unique_ptr<autd3::core::DatagramHeader>(static_cast<autd3::core::DatagramHeader*>(header));
-  auto b = std::unique_ptr<autd3::core::DatagramBody>(static_cast<autd3::core::DatagramBody*>(body));
-  if (header == nullptr) return wrapper->send_async(std::make_unique<autd3::core::NullHeader>(), std::move(b));
-  if (body == nullptr) return wrapper->send_async(std::move(h), std::make_unique<autd3::core::NullBody>());
-  wrapper->send_async(std::move(h), std::move(b));
-}
-
-void AUTDSendSpecialAsync(void* const handle, void* const special) {
-  auto* const wrapper = static_cast<Controller*>(handle);
-  auto* const s = static_cast<autd3::SpecialData*>(special);
-  wrapper->send_async(s);
-  delete s;
 }
 
 void AUTDSetTransFrequency(void* const handle, const int32_t trans_idx, const autd3_float_t frequency) {
