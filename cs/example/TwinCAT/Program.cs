@@ -4,7 +4,7 @@
  * Created Date: 13/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/10/2022
+ * Last Modified: 01/02/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,14 +17,12 @@ using AUTD3Sharp;
 using AUTD3Sharp.Link;
 using Samples;
 
-var autd = new Controller();
-autd.Geometry.AddDevice(Vector3d.zero, Vector3d.zero);
+var geometry = new GeometryBuilder()
+    .AddDevice(Vector3d.zero, Vector3d.zero)
+    .Build();
 
 var link = new TwinCAT().Build();
-if (!autd.Open(link))
-{
-    Console.WriteLine("Failed to open Controller.");
-    return;
-}
+
+var autd = Controller.Open(geometry, link);
 
 SampleRunner.Run(autd);
