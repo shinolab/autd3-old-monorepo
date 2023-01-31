@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/01/2023
+ * Last Modified: 31/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -115,14 +115,14 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for SDP<B, C> {
 
         fn set_bcd_result(mat: &mut MatrixXc, vec: &VectorXc, idx: usize) {
             let m = vec.len();
-            mat.slice_mut((idx, 0), (1, idx))
-                .copy_from(&vec.slice((0, 0), (idx, 1)).adjoint());
-            mat.slice_mut((idx, idx + 1), (1, m - idx - 1))
-                .copy_from(&vec.slice((0, 0), (m - idx - 1, 1)).adjoint());
-            mat.slice_mut((0, idx), (idx, 1))
-                .copy_from(&vec.slice((0, 0), (idx, 1)));
-            mat.slice_mut((idx + 1, idx), (m - idx - 1, 1))
-                .copy_from(&vec.slice((0, 0), (m - idx - 1, 1)));
+            mat.view_mut((idx, 0), (1, idx))
+                .copy_from(&vec.view((0, 0), (idx, 1)).adjoint());
+            mat.view_mut((idx, idx + 1), (1, m - idx - 1))
+                .copy_from(&vec.view((0, 0), (m - idx - 1, 1)).adjoint());
+            mat.view_mut((0, idx), (idx, 1))
+                .copy_from(&vec.view((0, 0), (idx, 1)));
+            mat.view_mut((idx + 1, idx), (m - idx - 1, 1))
+                .copy_from(&vec.view((0, 0), (m - idx - 1, 1)));
         }
 
         for _ in 0..self.repeat {
