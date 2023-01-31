@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/01/2023
+ * Last Modified: 30/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,11 +13,13 @@
 
 use std::fmt;
 
-const ENABLED_STM_BIT: u8 = 0x01;
-const ENABLED_MODULATOR_BIT: u8 = 0x02;
-const ENABLED_SILENCER_BIT: u8 = 0x04;
-const ENABLED_MOD_DELAY_BIT: u8 = 0x08;
-const ENABLED_EMULATOR_BIT: u8 = 0x80;
+use crate::VERSION_NUM;
+
+const ENABLED_STM_BIT: u8 = 1 << 0;
+const ENABLED_MODULATOR_BIT: u8 = 1 << 1;
+const ENABLED_SILENCER_BIT: u8 = 1 << 2;
+const ENABLED_MOD_DELAY_BIT: u8 = 1 << 3;
+const ENABLED_EMULATOR_BIT: u8 = 1 << 7;
 
 pub struct FirmwareInfo {
     idx: usize,
@@ -75,8 +77,16 @@ impl FirmwareInfo {
             0x01..=0x06 => format!("v0.{}", version_number + 3),
             0x0A..=0x15 => format!("v1.{}", version_number - 0x0A),
             0x80..=0x88 => format!("v2.{}", version_number - 0x80),
-            _ => format!("unknown: {}", version_number),
+            _ => format!("unknown: {version_number}"),
         }
+    }
+
+    pub fn matched_version(&self) -> bool {
+        self.cpu_version_number == self.fpga_version_number
+    }
+
+    pub fn is_latest(&self) -> bool {
+        self.cpu_version_number == VERSION_NUM && self.fpga_version_number == VERSION_NUM
     }
 }
 

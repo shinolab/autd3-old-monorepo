@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/01/2023
+ * Last Modified: 30/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,9 +18,41 @@ pub const FPGA_CLK_FREQ: usize = 163840000;
 pub const FOCUS_STM_FIXED_NUM_UNIT: f64 = 0.025; //mm
 
 #[derive(Clone, Copy, Debug)]
+pub struct Amp {
+    value: f64,
+}
+
+impl Amp {
+    pub fn new(value: f64) -> Self {
+        Self {
+            value: value.clamp(0., 1.),
+        }
+    }
+
+    pub fn value(&self) -> f64 {
+        self.value
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct Phase {
+    value: f64,
+}
+
+impl Phase {
+    pub fn new(value: f64) -> Self {
+        Self { value }
+    }
+
+    pub fn value(&self) -> f64 {
+        self.value
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
 pub struct Drive {
-    pub phase: f64,
-    pub amp: f64,
+    pub phase: Phase,
+    pub amp: Amp,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -32,11 +64,11 @@ pub struct LegacyDrive {
 
 impl LegacyDrive {
     pub fn to_phase(d: &Drive) -> u8 {
-        (((d.phase / (2.0 * PI) * 256.0).round() as i32) & 0xFF) as _
+        (((d.phase.value() / (2.0 * PI) * 256.0).round() as i32) & 0xFF) as _
     }
 
     pub fn to_duty(d: &Drive) -> u8 {
-        (510.0 * d.amp.clamp(0., 1.).asin() / PI).round() as _
+        (510.0 * d.amp.value().clamp(0., 1.).asin() / PI).round() as _
     }
 
     pub fn set(&mut self, d: &Drive) {
@@ -47,13 +79,13 @@ impl LegacyDrive {
 
 #[derive(Clone, Copy, Debug)]
 #[repr(C)]
-pub struct Phase {
+pub struct NormalDrivePhase {
     pub phase: u16,
 }
 
-impl Phase {
+impl NormalDrivePhase {
     pub fn to_phase(d: &Drive, cycle: u16) -> u16 {
-        ((d.phase / (2.0 * PI) * cycle as f64).round() as i32).rem_euclid(cycle as i32) as _
+        ((d.phase.value() / (2.0 * PI) * cycle as f64).round() as i32).rem_euclid(cycle as i32) as _
     }
 
     pub fn set(&mut self, d: &Drive, cycle: u16) {
@@ -63,13 +95,13 @@ impl Phase {
 
 #[derive(Clone, Copy, Debug)]
 #[repr(C)]
-pub struct Duty {
+pub struct NormalDriveDuty {
     pub duty: u16,
 }
 
-impl Duty {
+impl NormalDriveDuty {
     pub fn to_duty(d: &Drive, cycle: u16) -> u16 {
-        (cycle as f64 * d.amp.clamp(0., 1.).asin() / PI).round() as _
+        (cycle as f64 * d.amp.value().clamp(0., 1.).asin() / PI).round() as _
     }
 
     pub fn set(&mut self, d: &Drive, cycle: u16) {

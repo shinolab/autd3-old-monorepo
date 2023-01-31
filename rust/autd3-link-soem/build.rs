@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/01/2023
+ * Last Modified: 30/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -32,10 +32,7 @@ fn main() {
     let home_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     println!("cargo:rustc-link-lib=winmm");
     println!("cargo:rustc-link-lib=ws2_32");
-    println!(
-        "cargo:rustc-link-search={}\\3rdparty\\SOEM\\oshw\\win32\\wpcap\\Lib\\x64",
-        home_dir
-    );
+    println!("cargo:rustc-link-search={home_dir}\\3rdparty\\SOEM\\oshw\\win32\\wpcap\\Lib\\x64");
     println!("cargo:rustc-link-lib=Packet");
     println!("cargo:rustc-link-lib=wpcap");
 
