@@ -4,12 +4,14 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 30/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
+
+pub const VERSION_NUM: u8 = 0x88;
 
 pub const MAX_CYCLE: u16 = 8191;
 
