@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/01/2023
+// Last Modified: 01/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,6 +25,7 @@ EXPORT_AUTD bool AUTDAddDeviceQuaternion(IN void* geometry_builder, IN autd3_flo
                                          IN autd3_float_t qx, IN autd3_float_t qy, IN autd3_float_t qz);
 EXPORT_AUTD void AUTDBuildGeometry(OUT void** out, IN void* geometry_builder);
 EXPORT_AUTD bool AUTDOpenController(OUT void** out, IN void* geometry, IN void* link);
+EXPORT_AUTD void AUTDGetGeometry(OUT void** geometry, IN void* cnt);
 EXPORT_AUTD bool AUTDClose(IN void* handle);
 EXPORT_AUTD void AUTDFreeController(IN const void* handle);
 EXPORT_AUTD bool AUTDIsOpen(IN const void* handle);
@@ -36,25 +37,25 @@ EXPORT_AUTD void AUTDSetReadsFPGAInfo(IN void* handle, IN bool reads_fpga_info);
 EXPORT_AUTD void AUTDSetAckCheckTimeout(IN void* handle, IN uint64_t timeout);
 EXPORT_AUTD void AUTDSetSendInterval(IN void* handle, IN uint64_t interval);
 EXPORT_AUTD void AUTDSetForceFan(IN void* handle, IN bool force);
-EXPORT_AUTD autd3_float_t AUTDGetSoundSpeed(IN const void* handle);
-EXPORT_AUTD void AUTDSetSoundSpeed(IN void* handle, IN autd3_float_t sound_speed);
+EXPORT_AUTD autd3_float_t AUTDGetSoundSpeed(IN const void* geometry);
+EXPORT_AUTD void AUTDSetSoundSpeed(IN void* geometry, IN autd3_float_t sound_speed);
 EXPORT_AUTD void AUTDSetSoundSpeedFromTemp(IN void* handle, IN autd3_float_t temp, IN autd3_float_t k, IN autd3_float_t r, IN autd3_float_t m);
-EXPORT_AUTD autd3_float_t AUTDGetTransFrequency(IN const void* handle, IN int32_t trans_idx);
-EXPORT_AUTD void AUTDSetTransFrequency(IN void* handle, IN int32_t trans_idx, IN autd3_float_t frequency);
-EXPORT_AUTD uint16_t AUTDGetTransCycle(IN const void* handle, IN int32_t trans_idx);
-EXPORT_AUTD void AUTDSetTransCycle(IN void* handle, IN int32_t trans_idx, IN uint16_t cycle);
-EXPORT_AUTD autd3_float_t AUTDGetWavelength(IN const void* handle, IN int32_t trans_idx);
-EXPORT_AUTD autd3_float_t AUTDGetAttenuation(IN const void* handle);
-EXPORT_AUTD void AUTDSetAttenuation(IN void* handle, IN autd3_float_t attenuation);
+EXPORT_AUTD autd3_float_t AUTDGetTransFrequency(IN const void* geometry, IN int32_t trans_idx);
+EXPORT_AUTD void AUTDSetTransFrequency(IN void* geometry, IN int32_t trans_idx, IN autd3_float_t frequency);
+EXPORT_AUTD uint16_t AUTDGetTransCycle(IN const void* geometry, IN int32_t trans_idx);
+EXPORT_AUTD void AUTDSetTransCycle(IN void* geometry, IN int32_t trans_idx, IN uint16_t cycle);
+EXPORT_AUTD autd3_float_t AUTDGetWavelength(IN const void* geometry, IN int32_t trans_idx);
+EXPORT_AUTD autd3_float_t AUTDGetAttenuation(IN const void* geometry);
+EXPORT_AUTD void AUTDSetAttenuation(IN void* geometry, IN autd3_float_t attenuation);
 EXPORT_AUTD bool AUTDGetFPGAInfo(IN void* handle, IN uint8_t* out);
-EXPORT_AUTD int32_t AUTDNumTransducers(IN const void* handle);
-EXPORT_AUTD int32_t AUTDNumDevices(IN const void* handle);
-EXPORT_AUTD void AUTDGeometryCenter(IN const void* handle, OUT autd3_float_t* x, OUT autd3_float_t* y, OUT autd3_float_t* z);
-EXPORT_AUTD void AUTDGeometryCenterOf(IN const void* handle, IN int32_t dev_idx, OUT autd3_float_t* x, OUT autd3_float_t* y, OUT autd3_float_t* z);
-EXPORT_AUTD void AUTDTransPosition(IN const void* handle, IN int32_t trans_idx, OUT autd3_float_t* x, OUT autd3_float_t* y, OUT autd3_float_t* z);
-EXPORT_AUTD void AUTDTransXDirection(IN const void* handle, IN int32_t trans_idx, OUT autd3_float_t* x, OUT autd3_float_t* y, OUT autd3_float_t* z);
-EXPORT_AUTD void AUTDTransYDirection(IN const void* handle, IN int32_t trans_idx, OUT autd3_float_t* x, OUT autd3_float_t* y, OUT autd3_float_t* z);
-EXPORT_AUTD void AUTDTransZDirection(IN const void* handle, IN int32_t trans_idx, OUT autd3_float_t* x, OUT autd3_float_t* y, OUT autd3_float_t* z);
+EXPORT_AUTD int32_t AUTDNumTransducers(IN const void* geometry);
+EXPORT_AUTD int32_t AUTDNumDevices(IN const void* geometry);
+EXPORT_AUTD void AUTDGeometryCenter(IN const void* geometry, OUT autd3_float_t* x, OUT autd3_float_t* y, OUT autd3_float_t* z);
+EXPORT_AUTD void AUTDGeometryCenterOf(IN const void* geometry, IN int32_t dev_idx, OUT autd3_float_t* x, OUT autd3_float_t* y, OUT autd3_float_t* z);
+EXPORT_AUTD void AUTDTransPosition(IN const void* geometry, IN int32_t trans_idx, OUT autd3_float_t* x, OUT autd3_float_t* y, OUT autd3_float_t* z);
+EXPORT_AUTD void AUTDTransXDirection(IN const void* geometry, IN int32_t trans_idx, OUT autd3_float_t* x, OUT autd3_float_t* y, OUT autd3_float_t* z);
+EXPORT_AUTD void AUTDTransYDirection(IN const void* geometry, IN int32_t trans_idx, OUT autd3_float_t* x, OUT autd3_float_t* y, OUT autd3_float_t* z);
+EXPORT_AUTD void AUTDTransZDirection(IN const void* geometry, IN int32_t trans_idx, OUT autd3_float_t* x, OUT autd3_float_t* y, OUT autd3_float_t* z);
 EXPORT_AUTD int32_t AUTDGetFirmwareInfoListPointer(IN void* handle, OUT void** out);
 EXPORT_AUTD void AUTDGetFirmwareInfo(IN const void* p_firm_info_list, IN int32_t index, OUT char* info);
 EXPORT_AUTD void AUTDFreeFirmwareInfoListPointer(IN const void* p_firm_info_list);
@@ -106,8 +107,8 @@ EXPORT_AUTD void AUTDCreateSilencer(OUT void** out, IN uint16_t step, IN uint16_
 EXPORT_AUTD void AUTDDeleteSilencer(IN const void* config);
 EXPORT_AUTD bool AUTDSend(IN void* handle, IN void* header, IN void* body);
 EXPORT_AUTD bool AUTDSendSpecial(IN void* handle, IN void* special);
-EXPORT_AUTD uint16_t AUTDGetModDelay(IN const void* handle, IN int32_t trans_idx);
-EXPORT_AUTD void AUTDSetModDelay(IN void* handle, IN int32_t trans_idx, IN uint16_t delay);
+EXPORT_AUTD uint16_t AUTDGetModDelay(IN const void* geometry, IN int32_t trans_idx);
+EXPORT_AUTD void AUTDSetModDelay(IN void* geometry, IN int32_t trans_idx, IN uint16_t delay);
 EXPORT_AUTD void AUTDCreateAmplitudes(OUT void** out, IN autd3_float_t amp);
 EXPORT_AUTD void AUTDDeleteAmplitudes(IN const void* amplitudes);
 EXPORT_AUTD void AUTDSetMode(IN void* handle, IN uint8_t mode);
