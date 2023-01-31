@@ -4,7 +4,7 @@
  * Created Date: 03/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/11/2022
+ * Last Modified: 31/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,7 +15,6 @@ use libc::timespec;
 use once_cell::sync::Lazy;
 
 use windows::Win32::{
-    Foundation::FILETIME,
     Networking::WinSock::TIMEVAL,
     System::{
         Performance::{QueryPerformanceCounter, QueryPerformanceFrequency},
@@ -33,8 +32,7 @@ static PERFORMANCE_FREQUENCY: Lazy<i64> = Lazy::new(|| unsafe {
 
 fn osal_gettimeofday(tv: *mut TIMEVAL) {
     unsafe {
-        let mut system_time = FILETIME::default();
-        GetSystemTimePreciseAsFileTime(&mut system_time as *mut _);
+        let system_time = GetSystemTimePreciseAsFileTime();
 
         let mut system_time64 =
             ((system_time.dwHighDateTime as i64) << 32) + system_time.dwLowDateTime as i64;

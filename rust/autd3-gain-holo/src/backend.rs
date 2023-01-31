@@ -4,21 +4,21 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/05/2022
+ * Last Modified: 31/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
  *
  */
 
-use nalgebra::{Dynamic, Matrix, VecStorage, U1};
+use nalgebra::{Dyn, Matrix, VecStorage, U1};
 use std::ops::{AddAssign, Mul, MulAssign};
 
 pub type Complex = nalgebra::Complex<f64>;
-pub type MatrixXc = Matrix<Complex, Dynamic, Dynamic, VecStorage<Complex, Dynamic, Dynamic>>;
-pub type MatrixX = Matrix<f64, Dynamic, Dynamic, VecStorage<f64, Dynamic, Dynamic>>;
-pub type VectorXc = Matrix<Complex, Dynamic, U1, VecStorage<Complex, Dynamic, U1>>;
-pub type VectorX = Matrix<f64, Dynamic, U1, VecStorage<f64, Dynamic, U1>>;
+pub type MatrixXc = Matrix<Complex, Dyn, Dyn, VecStorage<Complex, Dyn, Dyn>>;
+pub type MatrixX = Matrix<f64, Dyn, Dyn, VecStorage<f64, Dyn, Dyn>>;
+pub type VectorXc = Matrix<Complex, Dyn, U1, VecStorage<Complex, Dyn, U1>>;
+pub type VectorX = Matrix<f64, Dyn, U1, VecStorage<f64, Dyn, U1>>;
 
 pub enum Transpose {
     NoTrans = 111,
@@ -205,7 +205,7 @@ impl Backend for NalgebraBackend {
         let acols = a.ncols();
         let mut new_mat = a.resize(arows + b.nrows(), acols, Default::default());
         new_mat
-            .slice_mut((arows, 0), (b.nrows(), b.ncols()))
+            .view_mut((arows, 0), (b.nrows(), b.ncols()))
             .copy_from(b);
 
         new_mat
@@ -216,7 +216,7 @@ impl Backend for NalgebraBackend {
         let acols = a.ncols();
         let mut new_mat = a.resize(arows, acols + b.ncols(), Default::default());
         new_mat
-            .slice_mut((0, acols), (b.nrows(), b.ncols()))
+            .view_mut((0, acols), (b.nrows(), b.ncols()))
             .copy_from(b);
 
         new_mat
