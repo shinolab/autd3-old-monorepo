@@ -3,14 +3,13 @@
 // Created Date: 07/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/01/2023
+// Last Modified: 31/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #include <filesystem>
-#include <iostream>
 
 #include "autd3/extra/simulator.hpp"
 #include "util.hpp"
