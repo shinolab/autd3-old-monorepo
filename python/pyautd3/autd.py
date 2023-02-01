@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 08/01/2023
+Last Modified: 02/02/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -138,62 +138,87 @@ class Transducer:
 
 
 class Geometry:
-    def __init__(self, cnt: c_void_p):
-        self._cnt = cnt
+    def __init__(self, ptr: c_void_p):
+        self._ptr = ptr
+        self.__disposed = False
 
-    def add_device(self, pos, rot):
-        return Base().dll.AUTDAddDevice(self._cnt, pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
-
-    def add_device_quaternion(self, pos, q):
-        return Base().dll.AUTDAddDeviceQuaternion(self._cnt, pos[0], pos[1], pos[2], q[0], q[1], q[2], q[3])
+    def __del__(self):
+        self.dispose()
 
     @ property
-    def num_transducers(self):
-        return Base().dll.AUTDNumTransducers(self._cnt)
+    def num_transducers(self) -> int:
+        return Base().dll.AUTDNumTransducers(self._ptr)
 
     @ property
-    def num_devices(self):
-        return Base().dll.AUTDNumDevices(self._cnt)
+    def num_devices(self) -> int:
+        return Base().dll.AUTDNumDevices(self._ptr)
 
     @property
     def center(self):
         x = c_double(0.0)
         y = c_double(0.0)
         z = c_double(0.0)
-        Base().dll.AUTDGeometryCenter(self._cnt, byref(x), byref(y), byref(z))
+        Base().dll.AUTDGeometryCenter(self._ptr, byref(x), byref(y), byref(z))
         return np.array([x.value, y.value, z.value])
 
     def center_of(self, dev_idx: int):
         x = c_double(0.0)
         y = c_double(0.0)
         z = c_double(0.0)
-        Base().dll.AUTDGeometryCenterOf(self._cnt, dev_idx, byref(x), byref(y), byref(z))
+        Base().dll.AUTDGeometryCenterOf(self._ptr, dev_idx, byref(x), byref(y), byref(z))
         return np.array([x.value, y.value, z.value])
 
     def __getitem__(self, key: int):
-        return Transducer(key, self._cnt)
+        return Transducer(key, self._ptr)
 
     class TransdducerIterator:
-        def __init__(self, cnt: c_void_p):
-            self._cnt = cnt
+        def __init__(self, ptr: c_void_p):
+            self._ptr = ptr
             self._i = 0
-            self._num_trans = Base().dll.AUTDNumTransducers(cnt)
+            self._num_trans = Base().dll.AUTDNumTransducers(ptr)
 
         def __next__(self):
             if self._i == self._num_trans:
                 raise StopIteration()
-            value = Transducer(self._i, self._cnt)
+            value = Transducer(self._i, self._ptr)
             self._i += 1
             return value
 
     def __iter__(self):
-        return Geometry.TransdducerIterator(self._cnt)
+        return Geometry.TransdducerIterator(self._ptr)
+
+    def dispose(self):
+        if not self.__disposed:
+            self._free()
+            self.__disposed = True
+
+    def _free(self):
+        Base().dll.AUTDFreeGeometry(self._ptr)
+
+
+class GeometryBuilder:
+    def __init__(self):
+        self._ptr = c_void_p()
+        Base().dll.AUTDCreateGeometryBuilder(byref(self._ptr))
+
+    def add_device(self, pos, rot):
+        Base().dll.AUTDAddDevice(self._ptr, pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
+        return self
+
+    def add_device_quaternion(self, pos, q):
+        Base().dll.AUTDAddDeviceQuaternion(self._ptr, pos[0], pos[1], pos[2], q[0], q[1], q[2], q[3])
+        return self
+
+    def build(self) -> Geometry:
+        geometry_ptr = c_void_p()
+        Base().dll.AUTDBuildGeometry(byref(geometry_ptr), self._ptr)
+        return Geometry(geometry_ptr)
 
 
 class Controller:
-    def __init__(self):
-        self.p_cnt = c_void_p()
-        Base().dll.AUTDCreateController(byref(self.p_cnt))
+    def __init__(self, cnt: c_void_p, geometry: Geometry):
+        self.p_cnt = cnt
+        self._geometry = geometry
         self.__disposed = False
 
     def __del__(self):
@@ -210,7 +235,7 @@ class Controller:
 
     @ property
     def geometry(self):
-        return Geometry(self.p_cnt)
+        return self._geometry
 
     @ property
     def sound_speed(self):
@@ -231,8 +256,12 @@ class Controller:
     def attenuation(self, attenuation: float):
         Base().dll.AUTDSetAttenuation(self.p_cnt, attenuation)
 
-    def open(self, link: Link):
-        return Base().dll.AUTDOpenController(self.p_cnt, link.link_ptr)
+    @staticmethod
+    def open(geometry: Geometry, link: Link):
+        cnt = c_void_p()
+        if not Base().dll.AUTDOpenController(cnt, geometry._ptr, link.link_ptr):
+            raise Exception('Failed to open controller')
+        return Controller(cnt, geometry)
 
     def firmware_info_list(self):
         res = []
@@ -330,26 +359,6 @@ class Controller:
             return Base().dll.AUTDSend(self.p_cnt, None, a.ptr)
         if isinstance(a, Header) and isinstance(b, Body):
             return Base().dll.AUTDSend(self.p_cnt, a.ptr, b.ptr)
-        raise NotImplementedError()
-
-    def send_async(self, a, b=None):
-        if b is None and isinstance(a, SpecialData):
-            Base().dll.AUTDSendSpecialAsync(self.p_cnt, a.ptr)
-            a.ptr = c_void_p()
-            return
-        if b is None and isinstance(a, Header):
-            Base().dll.AUTDSendAsync(self.p_cnt, a.ptr, None)
-            a.ptr = c_void_p()
-            return
-        if b is None and isinstance(a, Body):
-            Base().dll.AUTDSendAsync(self.p_cnt, None, a.ptr)
-            a.ptr = c_void_p()
-            return
-        if isinstance(a, Header) and isinstance(b, Body):
-            Base().dll.AUTDSendAsync(self.p_cnt, a.ptr, b.ptr)
-            a.ptr = c_void_p()
-            b.ptr = c_void_p()
-            return
         raise NotImplementedError()
 
 

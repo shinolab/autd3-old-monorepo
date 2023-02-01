@@ -4,7 +4,7 @@ Project: extra
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 21/10/2022
+Last Modified: 02/02/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -38,4 +38,4 @@ class GeometryViewer:
 
     def view(self, geometry: Geometry):
         ExtraGeometryViewer().init_dll()
-        ExtraGeometryViewer().dll.AUTDExtraGeometryViewer(geometry._cnt, self._width, self._height, self._vsync, self._gpu_idx)
+        ExtraGeometryViewer().dll.AUTDExtraGeometryViewer(geometry._ptr, self._width, self._height, self._vsync, self._gpu_idx)
