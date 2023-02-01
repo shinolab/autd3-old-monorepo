@@ -18,6 +18,7 @@ namespace AUTD3Sharp.NativeMethods
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDAddDevice(IntPtr geometryBuilder, float x, float y, float z, float rz1, float ry, float rz2);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDAddDeviceQuaternion(IntPtr geometryBuilder, float x, float y, float z, float qw, float qx, float qy, float qz);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDBuildGeometry(out IntPtr @out, IntPtr geometryBuilder);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDFreeGeometry(IntPtr geometry);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDOpenController(out IntPtr @out, IntPtr geometry, IntPtr link);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDGetGeometry(out IntPtr geometry, IntPtr cnt);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDClose(IntPtr handle);

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/02/2023
+// Last Modified: 02/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -56,6 +56,11 @@ void AUTDBuildGeometry(void** out, void* geometry_builder) {
   auto* builder = static_cast<autd3::Geometry::Builder*>(geometry_builder);
   *out = builder->build();
   delete builder;
+}
+
+void AUTDFreeGeometry(const void* const geometry) {
+  const auto* geometry_p = static_cast<const autd3::Geometry*>(geometry);
+  delete geometry_p;
 }
 
 bool AUTDOpenController(void** out, void* const geometry, void* const link) {
