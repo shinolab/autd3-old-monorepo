@@ -4,7 +4,7 @@ Project: example
 Created Date: 30/12/2020
 Author: Shun Suzuki
 -----
-Last Modified: 20/11/2022
+Last Modified: 02/02/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2020 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@ Copyright (c) 2020 Shun Suzuki. All rights reserved.
 import os
 import ctypes
 
-from pyautd3 import Controller
+from pyautd3 import Controller, GeometryBuilder
 from pyautd3.link import SOEM, OnLostFunc
 
 from samples import runner
@@ -26,15 +26,12 @@ def on_lost(msg: ctypes.c_char_p):
 
 
 if __name__ == '__main__':
-    autd = Controller()
-
-    autd.geometry.add_device([0., 0., 0.], [0., 0., 0.])
+    geometry = GeometryBuilder().add_device([0., 0., 0.], [0., 0., 0.]).build()
 
     on_lost_f = OnLostFunc(on_lost)
     link = SOEM().high_precision(True).on_lost(on_lost_f).build()
-    if not autd.open(link):
-        print('Failed to open Controller')
-        exit()
+
+    autd = Controller.open(geometry, link)
 
     autd.ack_check_timeout_ms = 20
 

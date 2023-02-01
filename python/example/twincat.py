@@ -4,7 +4,7 @@ Project: example
 Created Date: 30/12/2020
 Author: Shun Suzuki
 -----
-Last Modified: 20/11/2022
+Last Modified: 02/02/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2020 Shun Suzuki. All rights reserved.
@@ -12,20 +12,17 @@ Copyright (c) 2020 Shun Suzuki. All rights reserved.
 '''
 
 
-from pyautd3 import Controller
+from pyautd3 import Controller, GeometryBuilder
 from pyautd3.link import TwinCAT
 
 from samples import runner
 
 
 if __name__ == '__main__':
-    autd = Controller()
-
-    autd.geometry.add_device([0., 0., 0.], [0., 0., 0.])
+    geometry = GeometryBuilder().add_device([0., 0., 0.], [0., 0., 0.]).build()
 
     link = TwinCAT().build()
-    if not autd.open(link):
-        print('Failed to open Controller')
-        exit()
+
+    autd = Controller.open(geometry, link)
 
     runner.run(autd)
