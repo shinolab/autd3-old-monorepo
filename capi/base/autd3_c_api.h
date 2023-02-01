@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/02/2023
+// Last Modified: 02/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,6 +24,7 @@ EXPORT_AUTD bool AUTDAddDevice(IN void* geometry_builder, IN autd3_float_t x, IN
 EXPORT_AUTD bool AUTDAddDeviceQuaternion(IN void* geometry_builder, IN autd3_float_t x, IN autd3_float_t y, IN autd3_float_t z, IN autd3_float_t qw,
                                          IN autd3_float_t qx, IN autd3_float_t qy, IN autd3_float_t qz);
 EXPORT_AUTD void AUTDBuildGeometry(OUT void** out, IN void* geometry_builder);
+EXPORT_AUTD void AUTDFreeGeometry(IN const void* geometry);
 EXPORT_AUTD bool AUTDOpenController(OUT void** out, IN void* geometry, IN void* link);
 EXPORT_AUTD void AUTDGetGeometry(OUT void** geometry, IN void* cnt);
 EXPORT_AUTD bool AUTDClose(IN void* handle);

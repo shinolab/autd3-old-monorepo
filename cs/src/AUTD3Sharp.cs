@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/02/2023
+ * Last Modified: 02/02/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -159,12 +159,12 @@ namespace AUTD3Sharp
     public sealed class Geometry : IEnumerable<Transducer>
     {
         internal readonly IntPtr GeometryPtr;
+        private bool _isDisposed;
 
         internal Geometry(IntPtr geometryPtr)
         {
             GeometryPtr = geometryPtr;
         }
-
 
         public int NumTransducers => Base.AUTDNumTransducers(GeometryPtr);
 
@@ -233,6 +233,19 @@ namespace AUTD3Sharp
         public IEnumerator<Transducer> GetEnumerator() => new TransducerEnumerator(GeometryPtr);
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+        private void Dispose()
+        {
+            if (_isDisposed) return;
+            Base.AUTDFreeGeometry(GeometryPtr);
+            _isDisposed = true;
+            GC.SuppressFinalize(this);
+        }
+
+        ~Geometry()
+        {
+            Dispose();
+        }
     }
 
     public sealed class GeometryBuilder
