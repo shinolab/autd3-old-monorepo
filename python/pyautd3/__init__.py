@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 31/01/2023
+Last Modified: 02/02/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@ Copyright (c) 2022 Shun Suzuki. All rights reserved.
 
 
 from pyautd3.autd import SilencerConfig
-from pyautd3.autd import Controller
+from pyautd3.autd import Controller, GeometryBuilder
 from pyautd3.autd import Amplitudes
 from pyautd3.autd import NUM_TRANS_IN_UNIT, NUM_TRANS_X, NUM_TRANS_Y, TRANS_SPACING, DEVICE_HEIGHT, DEVICE_WIDTH
 from pyautd3.autd import Clear, UpdateFlag, Synchronize, ModDelayConfig, Stop
@@ -23,6 +23,7 @@ from pyautd3.debug_level import DebugLevel
 __all__ = [
     'SilencerConfig',
     'Controller',
+    'GeometryBuilder',
     'Amplitudes',
     'Clear',
     'UpdateFlag',
