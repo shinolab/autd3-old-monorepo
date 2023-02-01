@@ -43,13 +43,13 @@ EXPORT_AUTD void AUTDCreateGeometryBuilder(void** out) { *out = new autd3::Geome
 bool AUTDAddDevice(void* const geometry_builder, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const autd3_float_t rz1,
                    const autd3_float_t ry, const autd3_float_t rz2) {
   auto* const builder = static_cast<autd3::Geometry::Builder*>(geometry_builder);
-  AUTD3_CAPI_TRY(builder->add_device(autd3::AUTD3(to_vec3(x, y, z), to_vec3(rz1, ry, rz2)));)
+  AUTD3_CAPI_TRY(builder->add_device(autd3::AUTD3(to_vec3(x, y, z), to_vec3(rz1, ry, rz2))))
 }
 
 bool AUTDAddDeviceQuaternion(void* const geometry_builder, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z,
                              const autd3_float_t qw, const autd3_float_t qx, const autd3_float_t qy, const autd3_float_t qz) {
   auto* const builder = static_cast<autd3::Geometry::Builder*>(geometry_builder);
-  AUTD3_CAPI_TRY(builder->add_device(autd3::AUTD3(to_vec3(x, y, z), to_quaternion(qw, qx, qy, qz)));)
+  AUTD3_CAPI_TRY(builder->add_device(autd3::AUTD3(to_vec3(x, y, z), to_quaternion(qw, qx, qy, qz))))
 }
 
 void AUTDBuildGeometry(void** out, void* geometry_builder) {
@@ -62,7 +62,7 @@ bool AUTDOpenController(void** out, void* const geometry, void* const link) {
   auto* w_link = static_cast<LinkWrapper*>(link);
   autd3::LinkPtr link_ = std::move(w_link->ptr);
   link_delete(w_link);
-  AUTD3_CAPI_TRY(*out = Controller::open(static_cast<autd3::Geometry*>(geometry), std::move(link_));)
+  AUTD3_CAPI_TRY(*out = Controller::open(static_cast<autd3::Geometry*>(geometry), std::move(link_)))
 }
 
 void AUTDGetGeometry(void** geometry, void* const cnt) { *geometry = &static_cast<Controller*>(cnt)->geometry(); }
