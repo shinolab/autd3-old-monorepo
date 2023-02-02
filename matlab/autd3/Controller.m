@@ -4,7 +4,7 @@
 %Created Date: 07/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 28/11/2022
+%Last Modified: 02/02/2023
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,20 +15,26 @@ classdef Controller < handle
 
     properties
         ptr
+        geometry_
         reads_fpga_info = false
         force_fan = false
-        attenuation = 0.0
         ack_check_timeout = 0
         send_interval = 500000
-        sound_speed = 340e3
     end
 
     methods
 
-        function obj = Controller()
+        function obj = Controller(geometry, link)
             obj.ptr = libpointer('voidPtr', 0);
+            obj.geometry_ = geometry
             pp = libpointer('voidPtrPtr', obj.ptr);
-            calllib('autd3capi', 'AUTDCreateController', pp);
+            if ~calllib('autd3capi', 'AUTDOpenController', pp, geometry.ptr, link.ptr)
+                throw(MException('MATLAB:RuntimeError', 'Failed to open controller'));
+            end
+        end
+
+        function value = get.geometry(obj)
+            value = obj.geometry_;
         end
 
         function to_legacy(obj)
@@ -41,18 +47,6 @@ classdef Controller < handle
 
         function to_normal_phase(obj)
             calllib('autd3capi', 'AUTDSetMode', obj.ptr, 2);
-        end
-
-        function add_device(obj, pos, rot)
-            calllib('autd3capi', 'AUTDAddDevice', obj.ptr, pos(1), pos(2), pos(3), rot(1), rot(2), rot(3));
-        end
-
-        function add_device_quaternion(obj, pos, rot)
-            calllib('autd3capi', 'AUTDAddDeviceQuaternion', obj.ptr, pos(1), pos(2), pos(3), rot(1), rot(2), rot(3), rot(4));
-        end
-
-        function res = open(obj, link)
-            res = calllib('autd3capi', 'AUTDOpenController', obj.ptr, link.ptr);
         end
 
         function res = close(obj)
@@ -97,84 +91,6 @@ classdef Controller < handle
 
         function value = get.send_interval(obj)
             value = calllib('autd3capi', 'AUTDGetSendInterval', obj.ptr);
-        end
-
-        function set.sound_speed(obj, value)
-            obj.sound_speed = value;
-            calllib('autd3capi', 'AUTDSetSoundSpeed', obj.ptr, value);
-        end
-
-        function value = get.sound_speed(obj)
-            value = calllib('autd3capi', 'AUTDGetSoundSpeed', obj.ptr);
-        end
-
-        function set.attenuation(obj, value)
-            obj.attenuation = value;
-            calllib('autd3capi', 'AUTDSetAttenuation', obj.ptr, value);
-        end
-
-        function value = get.attenuation(obj)
-            value = calllib('autd3capi', 'AUTDGetAttenuation', obj.ptr);
-        end
-
-        function freq = get_trans_frequency(obj, trans_idx)
-            freq = calllib('autd3capi', 'AUTDGetTransFrequency', obj.ptr, trans_idx);
-        end
-
-        function set_trans_frequency(obj, trans_idx, freq)
-            calllib('autd3capi', 'AUTDSetTransFrequency', obj.ptr, trans_idx, freq);
-        end
-
-        function cycle = get_trans_cycle(obj, trans_idx)
-            cycle = calllib('autd3capi', 'AUTDGetTransCycle', obj.ptr, trans_idx);
-        end
-
-        function set_trans_cycle(obj, trans_idx, cycle)
-            calllib('autd3capi', 'AUTDSetTransCycle', obj.ptr, trans_idx, cycle);
-        end
-
-        function wavelength = wavelength(obj, trans_idx)
-            wavelength = calllib('autd3capi', 'AUTDGetWavelength', obj.ptr, trans_idx);
-        end
-
-        function set_mod_delay(obj, trans_idx, delay)
-            calllib('autd3capi', 'AUTDSetModDelay', obj.ptr, trans_idx, delay);
-        end
-
-        function pos = trans_position(obj, trans_idx)
-            px = libpointer('doublePtr', 0);
-            py = libpointer('doublePtr', 0);
-            pz = libpointer('doublePtr', 0);
-            calllib('autd3capi', 'AUTDTransPosition', obj.ptr, trans_idx, px, py, pz);
-            pos = [px.Value; py.Value; pz.Value];
-        end
-
-        function dir = trans_x_direction(obj, trans_idx)
-            px = libpointer('doublePtr', 0);
-            py = libpointer('doublePtr', 0);
-            pz = libpointer('doublePtr', 0);
-            calllib('autd3capi', 'AUTDTransXDirection', obj.ptr, trans_idx, px, py, pz);
-            dir = [px.Value; py.Value; pz.Value];
-        end
-
-        function dir = trans_y_direction(obj, trans_idx)
-            px = libpointer('doublePtr', 0);
-            py = libpointer('doublePtr', 0);
-            pz = libpointer('doublePtr', 0);
-            calllib('autd3capi', 'AUTDTransYDirection', obj.ptr, trans_idx, px, py, pz);
-            dir = [px.Value; py.Value; pz.Value];
-        end
-
-        function dir = trans_z_direction(obj, trans_idx)
-            px = libpointer('doublePtr', 0);
-            py = libpointer('doublePtr', 0);
-            pz = libpointer('doublePtr', 0);
-            calllib('autd3capi', 'AUTDTransZDirection', obj.ptr, trans_idx, px, py, pz);
-            dir = [px.Value; py.Value; pz.Value];
-        end
-
-        function res = num_transducers(obj)
-            res = calllib('autd3capi', 'AUTDNumTransducers', obj.ptr);
         end
 
         function res = send(varargin)
@@ -240,7 +156,7 @@ classdef Controller < handle
         end
 
         function list = fpga_info(obj)
-            n = obj.num_transducers() / 249;
+            n = obj.geometry_.num_devices;
             info_p = libpointer('uint8Ptr', zeros(n, 1, 'uint8'));
             calllib('autd3capi', 'AUTDGetFPGAInfo', obj.ptr, info_p);
             list = info_p.Value;
