@@ -3,7 +3,7 @@
 // Created Date: 02/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 27/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,8 +11,10 @@
 
 #pragma once
 
+#include <iostream>
 #include <memory>
 #include <string>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -29,9 +31,6 @@
 
 #include <autd3/core/link.hpp>
 #include <autd3/driver/cpu/ec_config.hpp>
-#include <thread>
-
-#include "../../spdlog.hpp"
 
 namespace autd3::link {
 
@@ -68,8 +67,6 @@ class RemoteSOEMTcp final : public core::Link {
       throw std::runtime_error("Cannot connect to simulator");
     }
 
-    spdlog::debug("Create socket: {}", _socket);
-
     _addr.sin_family = AF_INET;
     _addr.sin_port = htons(_port);
 #if WIN32
@@ -78,9 +75,7 @@ class RemoteSOEMTcp final : public core::Link {
     _addr.sin_addr.s_addr = inet_addr(_ip.c_str());
 #endif
 
-    spdlog::debug("Connecting to server...");
     if (connect(_socket, reinterpret_cast<sockaddr*>(&_addr), sizeof _addr)) throw std::runtime_error("Failed to connect server");
-    spdlog::debug("Connected");
 
     const auto size = geometry.num_devices() * driver::EC_INPUT_FRAME_SIZE;
 
@@ -95,7 +90,7 @@ class RemoteSOEMTcp final : public core::Link {
         if (len <= 0) continue;
         const auto ulen = static_cast<size_t>(len);
         if (ulen % size != 0) {
-          spdlog::warn("Unknown data size: {}", ulen);
+          std::cerr << "Unknown data size: " << ulen << std::endl;
           continue;
         }
         const auto n = ulen / size;

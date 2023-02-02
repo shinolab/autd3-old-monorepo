@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 01/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,17 +18,20 @@
 #endif
 
 void* check(void* autd) {
-  int32_t num_transducers = AUTDNumTransducers(autd);
+  void* geometry = NULL;
+  AUTDGetGeometry(&geometry, autd);
+
+  int32_t num_transducers = AUTDNumTransducers(geometry);
   printf("===== Transducer informations =====\n");
   for (int32_t i = 0; i < num_transducers; i++) {
     double x, y, z;
-    AUTDTransPosition(autd, i, &x, &y, &z);
+    AUTDTransPosition(geometry, i, &x, &y, &z);
     printf("[%d]: Origin = (%lf, %lf, %lf)\n", i, x, y, z);
-    AUTDTransXDirection(autd, i, &x, &y, &z);
+    AUTDTransXDirection(geometry, i, &x, &y, &z);
     printf("[%d]: X = (%lf, %lf, %lf)\n", i, x, y, z);
-    AUTDTransYDirection(autd, i, &x, &y, &z);
+    AUTDTransYDirection(geometry, i, &x, &y, &z);
     printf("[%d]: Y = (%lf, %lf, %lf)\n", i, x, y, z);
-    AUTDTransZDirection(autd, i, &x, &y, &z);
+    AUTDTransZDirection(geometry, i, &x, &y, &z);
     printf("[%d]: Z = (%lf, %lf, %lf)\n", i, x, y, z);
   }
   printf("\n");
@@ -58,13 +61,13 @@ void* check(void* autd) {
 
   printf("===== Properties =====\n");
 
-  AUTDSetAttenuation(autd, 0.0);
-  printf("Attenuation coefficient %lf [Np/mm]\n", AUTDGetAttenuation(autd));
+  AUTDSetAttenuation(geometry, 0.0);
+  printf("Attenuation coefficient %lf [Np/mm]\n", AUTDGetAttenuation(geometry));
   printf("\n");
 
   printf("===== FPGA informations =====\n");
 
-  int32_t num_devices = AUTDNumDevices(autd);
+  int32_t num_devices = AUTDNumDevices(geometry);
   uint8_t* infos = malloc(num_devices);
   AUTDGetFPGAInfo(autd, infos);
   for (int32_t i = 0; i < num_devices; i++) {
@@ -76,7 +79,11 @@ void* check(void* autd) {
   (void)getchar();
 
   AUTDSetForceFan(autd, true);
-  AUTDUpdateFlags(autd);
+
+  void* update_flag;
+  AUTDUpdateFlags(&update_flag);
+  AUTDSendSpecial(autd, update_flag);
+  AUTDDeleteSpecialData(update_flag);
 
 #ifdef WIN32
   Sleep(100);
@@ -94,7 +101,10 @@ void* check(void* autd) {
   (void)getchar();
 
   AUTDSetForceFan(autd, false);
-  AUTDUpdateFlags(autd);
+
+  AUTDUpdateFlags(&update_flag);
+  AUTDSendSpecial(autd, update_flag);
+  AUTDDeleteSpecialData(update_flag);
 
   free(infos);
 

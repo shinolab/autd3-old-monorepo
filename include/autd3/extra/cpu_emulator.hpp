@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/01/2023
+// Last Modified: 25/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -86,6 +86,7 @@ class CPU {
         _mod_cycle(0),
         _stm_write(0),
         _stm_cycle(0),
+        _read_fpga_info(false),
         _fpga(num_transducers),
         _gain_stm_mode(cpu::GAIN_STM_MODE_PHASE_DUTY_FULL),
         _fpga_flags(driver::FPGAControlFlags::None),
@@ -101,6 +102,7 @@ class CPU {
   [[nodiscard]] driver::CPUControlFlags cpu_flags() const { return _cpu_flags; }
 
   [[nodiscard]] const FPGA& fpga() const { return _fpga; }
+  [[nodiscard]] FPGA& fpga() { return _fpga; }
 
   [[nodiscard]] bool synchronized() const { return _synchronized; }
 
@@ -114,6 +116,18 @@ class CPU {
   }
 
   void configure_local_trans_pos(const std::vector<driver::Vector3>& local_trans_pos) { _fpga.configure_local_trans_pos(local_trans_pos); }
+
+  void update() {
+    switch (_msg_id) {
+      case driver::MSG_RD_CPU_VERSION:
+      case driver::MSG_RD_FPGA_VERSION:
+      case driver::MSG_RD_FPGA_FUNCTION:
+        break;
+      default:
+        if (_read_fpga_info) _ack = static_cast<uint8_t>(read_fpga_info() & 0xFF);
+        break;
+    }
+  }
 
  private:
   bool _synchronized{false};
@@ -433,7 +447,8 @@ class CPU {
     _msg_id = header->msg_id;
     _fpga_flags = header->fpga_flag;
     _cpu_flags = header->cpu_flag;
-    if (header->fpga_flag.contains(driver::FPGAControlFlags::ReadsFPGAInfo)) _ack = static_cast<uint8_t>(read_fpga_info());
+    _read_fpga_info = header->fpga_flag.contains(driver::FPGAControlFlags::ReadsFPGAInfo);
+    if (_read_fpga_info) _ack = static_cast<uint8_t>(read_fpga_info());
 
     switch (_msg_id) {
       case driver::MSG_CLEAR:
@@ -493,6 +508,7 @@ class CPU {
   uint32_t _mod_cycle;
   uint32_t _stm_write;
   uint32_t _stm_cycle;
+  bool _read_fpga_info;
   FPGA _fpga;
   uint16_t _gain_stm_mode;
   std::vector<uint16_t> _cycles{};
@@ -502,7 +518,3 @@ class CPU {
 };
 
 }  // namespace autd3::extra
-
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic pop
-#endif

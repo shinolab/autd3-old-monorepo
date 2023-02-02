@@ -4,7 +4,7 @@
  * Created Date: 01/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 30/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use anyhow::Result;
 use autd3_core::{
     gain::Gain,
     geometry::{Geometry, Transducer},
-    Drive,
+    Amp, Drive, Phase,
 };
 
 use autd3_traits::Gain;
@@ -37,8 +37,8 @@ impl<T: Transducer> Gain<T> for Null {
         Ok(geometry
             .transducers()
             .map(|_| Drive {
-                amp: 0.0,
-                phase: 0.0,
+                phase: Phase::new(0.0),
+                amp: Amp::new(0.0),
             })
             .collect())
     }

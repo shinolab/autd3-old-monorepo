@@ -3,7 +3,7 @@
 // Created Date: 24/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/01/2023
+// Last Modified: 31/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,8 +30,7 @@ using autd3::core::Vector3;
 using autd3::driver::pi;
 
 TEST(Gain, Null) {
-  auto geometry = autd3::core::Geometry();
-  geometry.add_device(autd3::AUTD3(Vector3::Zero(), Vector3::Zero()));
+  const auto geometry = autd3::core::Geometry::Builder().add_device(autd3::AUTD3(Vector3::Zero(), Vector3::Zero())).build();
 
   auto g = autd3::gain::Null();
   for (const auto& [phase, duty] : g.calc(geometry)) {
@@ -40,8 +39,7 @@ TEST(Gain, Null) {
 }
 
 TEST(Gain, Focus) {
-  auto geometry = autd3::core::Geometry();
-  geometry.add_device(autd3::AUTD3(Vector3::Zero(), Vector3::Zero()));
+  const auto geometry = autd3::core::Geometry::Builder().add_device(autd3::AUTD3(Vector3::Zero(), Vector3::Zero())).build();
 
   const Vector3 f(10, 20, 30);
 

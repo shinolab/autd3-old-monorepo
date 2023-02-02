@@ -13,16 +13,23 @@ else:
 proc AUTDSetLogLevel*(level: int32) {.cdecl, importc: "AUTDSetLogLevel", dynlib: dll.}
 proc AUTDSetDefaultLogger*(`out`: pointer; flush: pointer) {.cdecl,
     importc: "AUTDSetDefaultLogger", dynlib: dll.}
-proc AUTDCreateController*(`out`: ptr pointer) {.cdecl,
-    importc: "AUTDCreateController", dynlib: dll.}
-proc AUTDOpenController*(handle: pointer; link: pointer): bool {.cdecl,
-    importc: "AUTDOpenController", dynlib: dll.}
-proc AUTDAddDevice*(handle: pointer; x: float64; y: float64; z: float64; rz1: float64;
-                   ry: float64; rz2: float64): bool {.cdecl, importc: "AUTDAddDevice",
+proc AUTDCreateGeometryBuilder*(`out`: ptr pointer) {.cdecl,
+    importc: "AUTDCreateGeometryBuilder", dynlib: dll.}
+proc AUTDAddDevice*(geometry_builder: pointer; x: float64; y: float64; z: float64;
+                   rz1: float64; ry: float64; rz2: float64): bool {.cdecl,
+    importc: "AUTDAddDevice", dynlib: dll.}
+proc AUTDAddDeviceQuaternion*(geometry_builder: pointer; x: float64; y: float64;
+                             z: float64; qw: float64; qx: float64; qy: float64;
+                             qz: float64): bool {.cdecl,
+    importc: "AUTDAddDeviceQuaternion", dynlib: dll.}
+proc AUTDBuildGeometry*(`out`: ptr pointer; geometry_builder: pointer) {.cdecl,
+    importc: "AUTDBuildGeometry", dynlib: dll.}
+proc AUTDFreeGeometry*(geometry: pointer) {.cdecl, importc: "AUTDFreeGeometry",
     dynlib: dll.}
-proc AUTDAddDeviceQuaternion*(handle: pointer; x: float64; y: float64; z: float64;
-                             qw: float64; qx: float64; qy: float64; qz: float64): bool {.
-    cdecl, importc: "AUTDAddDeviceQuaternion", dynlib: dll.}
+proc AUTDOpenController*(`out`: ptr pointer; geometry: pointer; link: pointer): bool {.
+    cdecl, importc: "AUTDOpenController", dynlib: dll.}
+proc AUTDGetGeometry*(geometry: ptr pointer; cnt: pointer) {.cdecl,
+    importc: "AUTDGetGeometry", dynlib: dll.}
 proc AUTDClose*(handle: pointer): bool {.cdecl, importc: "AUTDClose", dynlib: dll.}
 proc AUTDFreeController*(handle: pointer) {.cdecl, importc: "AUTDFreeController",
     dynlib: dll.}
@@ -43,48 +50,49 @@ proc AUTDSetSendInterval*(handle: pointer; interval: uint64) {.cdecl,
     importc: "AUTDSetSendInterval", dynlib: dll.}
 proc AUTDSetForceFan*(handle: pointer; force: bool) {.cdecl,
     importc: "AUTDSetForceFan", dynlib: dll.}
-proc AUTDGetSoundSpeed*(handle: pointer): float64 {.cdecl,
+proc AUTDGetSoundSpeed*(geometry: pointer): float64 {.cdecl,
     importc: "AUTDGetSoundSpeed", dynlib: dll.}
-proc AUTDSetSoundSpeed*(handle: pointer; sound_speed: float64) {.cdecl,
+proc AUTDSetSoundSpeed*(geometry: pointer; sound_speed: float64) {.cdecl,
     importc: "AUTDSetSoundSpeed", dynlib: dll.}
 proc AUTDSetSoundSpeedFromTemp*(handle: pointer; temp: float64; k: float64; r: float64;
                                m: float64) {.cdecl,
     importc: "AUTDSetSoundSpeedFromTemp", dynlib: dll.}
-proc AUTDGetTransFrequency*(handle: pointer; trans_idx: int32): float64 {.cdecl,
+proc AUTDGetTransFrequency*(geometry: pointer; trans_idx: int32): float64 {.cdecl,
     importc: "AUTDGetTransFrequency", dynlib: dll.}
-proc AUTDSetTransFrequency*(handle: pointer; trans_idx: int32; frequency: float64) {.
+proc AUTDSetTransFrequency*(geometry: pointer; trans_idx: int32; frequency: float64) {.
     cdecl, importc: "AUTDSetTransFrequency", dynlib: dll.}
-proc AUTDGetTransCycle*(handle: pointer; trans_idx: int32): uint16 {.cdecl,
+proc AUTDGetTransCycle*(geometry: pointer; trans_idx: int32): uint16 {.cdecl,
     importc: "AUTDGetTransCycle", dynlib: dll.}
-proc AUTDSetTransCycle*(handle: pointer; trans_idx: int32; cycle: uint16) {.cdecl,
+proc AUTDSetTransCycle*(geometry: pointer; trans_idx: int32; cycle: uint16) {.cdecl,
     importc: "AUTDSetTransCycle", dynlib: dll.}
-proc AUTDGetWavelength*(handle: pointer; trans_idx: int32): float64 {.cdecl,
+proc AUTDGetWavelength*(geometry: pointer; trans_idx: int32): float64 {.cdecl,
     importc: "AUTDGetWavelength", dynlib: dll.}
-proc AUTDGetAttenuation*(handle: pointer): float64 {.cdecl,
+proc AUTDGetAttenuation*(geometry: pointer): float64 {.cdecl,
     importc: "AUTDGetAttenuation", dynlib: dll.}
-proc AUTDSetAttenuation*(handle: pointer; attenuation: float64) {.cdecl,
+proc AUTDSetAttenuation*(geometry: pointer; attenuation: float64) {.cdecl,
     importc: "AUTDSetAttenuation", dynlib: dll.}
 proc AUTDGetFPGAInfo*(handle: pointer; `out`: ptr uint8): bool {.cdecl,
     importc: "AUTDGetFPGAInfo", dynlib: dll.}
-proc AUTDNumTransducers*(handle: pointer): int32 {.cdecl,
+proc AUTDNumTransducers*(geometry: pointer): int32 {.cdecl,
     importc: "AUTDNumTransducers", dynlib: dll.}
-proc AUTDNumDevices*(handle: pointer): int32 {.cdecl, importc: "AUTDNumDevices",
+proc AUTDNumDevices*(geometry: pointer): int32 {.cdecl, importc: "AUTDNumDevices",
     dynlib: dll.}
-proc AUTDGeometryCenter*(handle: pointer; x: ptr float64; y: ptr float64; z: ptr float64) {.
-    cdecl, importc: "AUTDGeometryCenter", dynlib: dll.}
-proc AUTDGeometryCenterOf*(handle: pointer; dev_idx: int32; x: ptr float64;
+proc AUTDGeometryCenter*(geometry: pointer; x: ptr float64; y: ptr float64;
+                        z: ptr float64) {.cdecl, importc: "AUTDGeometryCenter",
+                                       dynlib: dll.}
+proc AUTDGeometryCenterOf*(geometry: pointer; dev_idx: int32; x: ptr float64;
                           y: ptr float64; z: ptr float64) {.cdecl,
     importc: "AUTDGeometryCenterOf", dynlib: dll.}
-proc AUTDTransPosition*(handle: pointer; trans_idx: int32; x: ptr float64;
+proc AUTDTransPosition*(geometry: pointer; trans_idx: int32; x: ptr float64;
                        y: ptr float64; z: ptr float64) {.cdecl,
     importc: "AUTDTransPosition", dynlib: dll.}
-proc AUTDTransXDirection*(handle: pointer; trans_idx: int32; x: ptr float64;
+proc AUTDTransXDirection*(geometry: pointer; trans_idx: int32; x: ptr float64;
                          y: ptr float64; z: ptr float64) {.cdecl,
     importc: "AUTDTransXDirection", dynlib: dll.}
-proc AUTDTransYDirection*(handle: pointer; trans_idx: int32; x: ptr float64;
+proc AUTDTransYDirection*(geometry: pointer; trans_idx: int32; x: ptr float64;
                          y: ptr float64; z: ptr float64) {.cdecl,
     importc: "AUTDTransYDirection", dynlib: dll.}
-proc AUTDTransZDirection*(handle: pointer; trans_idx: int32; x: ptr float64;
+proc AUTDTransZDirection*(geometry: pointer; trans_idx: int32; x: ptr float64;
                          y: ptr float64; z: ptr float64) {.cdecl,
     importc: "AUTDTransZDirection", dynlib: dll.}
 proc AUTDGetFirmwareInfoListPointer*(handle: pointer; `out`: ptr pointer): int32 {.
@@ -188,14 +196,10 @@ proc AUTDSend*(handle: pointer; header: pointer; body: pointer): bool {.cdecl,
     importc: "AUTDSend", dynlib: dll.}
 proc AUTDSendSpecial*(handle: pointer; special: pointer): bool {.cdecl,
     importc: "AUTDSendSpecial", dynlib: dll.}
-proc AUTDSendAsync*(handle: pointer; header: pointer; body: pointer) {.cdecl,
-    importc: "AUTDSendAsync", dynlib: dll.}
-proc AUTDSendSpecialAsync*(handle: pointer; special: pointer) {.cdecl,
-    importc: "AUTDSendSpecialAsync", dynlib: dll.}
-proc AUTDGetModDelay*(handle: pointer; trans_idx: int32): uint16 {.cdecl,
-    importc: "AUTDGetModDelay", dynlib: dll.}
-proc AUTDSetModDelay*(handle: pointer; trans_idx: int32; delay: uint16) {.cdecl,
-    importc: "AUTDSetModDelay", dynlib: dll.}
+proc AUTDGetTransModDelay*(geometry: pointer; trans_idx: int32): uint16 {.cdecl,
+    importc: "AUTDGetTransModDelay", dynlib: dll.}
+proc AUTDSetTransModDelay*(geometry: pointer; trans_idx: int32; delay: uint16) {.cdecl,
+    importc: "AUTDSetTransModDelay", dynlib: dll.}
 proc AUTDCreateAmplitudes*(`out`: ptr pointer; amp: float64) {.cdecl,
     importc: "AUTDCreateAmplitudes", dynlib: dll.}
 proc AUTDDeleteAmplitudes*(amplitudes: pointer) {.cdecl,

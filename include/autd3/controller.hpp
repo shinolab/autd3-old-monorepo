@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/01/2023
+// Last Modified: 02/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,23 +11,18 @@
 
 #pragma once
 
-#include <algorithm>
+#include <atomic>
 #include <chrono>
-#include <condition_variable>
 #include <memory>
-#include <mutex>
-#include <queue>
-#include <thread>
 #include <type_traits>
-#include <utility>
 #include <vector>
 
-#include "autd3/async.hpp"
 #include "autd3/core/geometry.hpp"
 #include "autd3/core/link.hpp"
 #include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/driver/firmware_version.hpp"
 #include "autd3/driver/operation/force_fan.hpp"
+#include "autd3/driver/operation/info.hpp"
 #include "autd3/driver/operation/reads_fpga_info.hpp"
 #include "autd3/special_data.hpp"
 
@@ -38,47 +33,103 @@ namespace autd3 {
  */
 class Controller {
  public:
-  Controller();
   Controller(const Controller& v) = delete;
   Controller& operator=(const Controller& obj) = delete;
-  Controller(Controller&& obj) = delete;
-  Controller& operator=(Controller&& obj) = delete;
-  ~Controller() noexcept;
+  Controller(Controller&& obj) = default;
+  Controller& operator=(Controller&& obj) = default;
+  ~Controller() noexcept {
+    try {
+      close();
+    } catch (std::exception&) {
+    }
+  }
+
+#ifdef AUTD3_CAPI
+  static Controller* open(core::Geometry* geometry, core::LinkPtr link) {
+    auto* cnt = new Controller(geometry, std::move(link));
+    cnt->open();
+    return cnt;
+  }
+  core::Geometry& geometry() noexcept { return *_geometry; }
+  [[nodiscard]] core::Geometry* geometry_ptr() const noexcept { return _geometry; }
+  [[nodiscard]] const core::Geometry& geometry() const noexcept { return *_geometry; }
+#else
+  static Controller open(core::Geometry geometry, core::LinkPtr link) {
+    Controller cnt(std::move(geometry), std::move(link));
+    cnt.open();
+    return cnt;
+  }
 
   /**
    * @brief Geometry of the devices
    */
-  core::Geometry& geometry() noexcept;
+  core::Geometry& geometry() noexcept { return _geometry; }
 
   /**
    * @brief Geometry of the devices
    */
-  [[nodiscard]] const core::Geometry& geometry() const noexcept;
-
-  void open(core::LinkPtr link);
+  [[nodiscard]] const core::Geometry& geometry() const noexcept { return _geometry; }
+#endif
 
   /**
    * @brief Close the controller
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
-  bool close();
+  bool close() {
+    if (!is_open()) return true;
+    auto res = send(stop());
+    res &= send(clear());
+    res &= _link->close();
+    return res;
+  }
 
   /**
    * @brief Verify the device is properly connected
    */
-  [[nodiscard]] bool is_open() const noexcept;
+  [[nodiscard]] bool is_open() const noexcept { return _link != nullptr && _link->is_open(); }
 
   /**
    * @brief FPGA info
    *  \return vector of FPGAInfo. If failed, the vector is empty
    */
-  std::vector<driver::FPGAInfo> fpga_info();
+  std::vector<driver::FPGAInfo> fpga_info() {
+    std::vector<driver::FPGAInfo> fpga_info;
+    if (!_link->receive(_rx_buf)) return fpga_info;
+    std::transform(_rx_buf.begin(), _rx_buf.end(), std::back_inserter(fpga_info),
+                   [](const driver::RxMessage& rx) { return driver::FPGAInfo(rx.ack); });
+    return fpga_info;
+  }
 
   /**
    * @brief Enumerate firmware information
-   * \return vector of driver::FirmwareInfo. If failed, the vector is empty.
+   * \return vector of driver::FirmwareInfo
    */
-  [[nodiscard]] std::vector<driver::FirmwareInfo> firmware_infos();
+  [[nodiscard]] std::vector<driver::FirmwareInfo> firmware_infos() {
+    std::vector<driver::FirmwareInfo> firmware_infos;
+
+    const auto pack_ack = [&]() -> std::vector<uint8_t> {
+      std::vector<uint8_t> acks;
+      if (!_link->send_receive(_tx_buf, _rx_buf, _send_interval, std::chrono::nanoseconds(200 * 1000 * 1000))) return acks;
+      std::transform(_rx_buf.begin(), _rx_buf.end(), std::back_inserter(acks), [](const driver::RxMessage msg) noexcept { return msg.ack; });
+      return acks;
+    };
+
+    driver::CPUVersion::pack(_tx_buf);
+    const auto cpu_versions = pack_ack();
+    if (cpu_versions.empty()) throw std::runtime_error("Failed to get firmware information.");
+
+    driver::FPGAVersion::pack(_tx_buf);
+    const auto fpga_versions = pack_ack();
+    if (fpga_versions.empty()) throw std::runtime_error("Failed to get firmware information.");
+
+    driver::FPGAFunctions::pack(_tx_buf);
+    const auto fpga_functions = pack_ack();
+    if (fpga_functions.empty()) throw std::runtime_error("Failed to get firmware information.");
+
+    for (size_t i = 0; i < cpu_versions.size(); i++) firmware_infos.emplace_back(i, cpu_versions[i], fpga_versions[i], fpga_functions[i]);
+
+    return firmware_infos;
+  }
 
   /**
    * @brief Send header data to devices
@@ -140,7 +191,31 @@ class Controller {
    * @brief Send header and body data to devices
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
-  bool send(core::DatagramHeader* header, core::DatagramBody* body, std::chrono::high_resolution_clock::duration timeout);
+  bool send(core::DatagramHeader* header, core::DatagramBody* body, const std::chrono::high_resolution_clock::duration timeout) {
+    const auto op_header = header->operation();
+    const auto op_body = body->operation(geometry());
+
+    op_header->init();
+    op_body->init();
+
+    _force_fan.pack(_tx_buf);
+    _reads_fpga_info.pack(_tx_buf);
+
+    const auto no_wait = timeout == std::chrono::high_resolution_clock::duration::zero();
+    while (true) {
+      const auto msg_id = get_id();
+      _tx_buf.header().msg_id = msg_id;
+
+      op_header->pack(_tx_buf);
+      op_body->pack(_tx_buf);
+
+      if (!_link->send_receive(_tx_buf, _rx_buf, _send_interval, timeout)) return false;
+
+      if (op_header->is_finished() && op_body->is_finished()) break;
+      if (no_wait) std::this_thread::sleep_for(_send_interval);
+    }
+    return true;
+  }
 
   /**
    * @brief Send special data to devices
@@ -159,65 +234,12 @@ class Controller {
    * @brief Send special data to devices
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
-  bool send(SpecialData* s);
-
-  /**
-   * @brief Send header data to devices asynchronously
-   */
-  template <typename H>
-  auto send_async(H header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>> {
-    send_async(std::move(header), core::NullBody{});
+  bool send(SpecialData* s) {
+    const auto timeout = s->ack_check_timeout_override() ? s->ack_check_timeout() : _ack_check_timeout;
+    const auto h = s->header();
+    const auto b = s->body();
+    return send(h.get(), b.get(), timeout);
   }
-
-  /**
-   * @brief Send body data to devices asynchronously
-   */
-  template <typename B>
-  auto send_async(B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>> {
-    send_async(core::NullHeader{}, std::move(body));
-  }
-
-  /**
-   * @brief Send header and body data to devices asynchronously
-   */
-  template <typename H, typename B>
-  auto send_async(H header, B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>> {
-    send_async(std::make_unique<H>(std::move(header)), std::make_unique<B>(std::move(body)));
-  }
-
-  /**
-   * @brief Send special data to devices asynchronously
-   */
-  template <typename S>
-  auto send_async(S s) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>> {
-    send_async(&s);
-  }
-
-  /**
-   * @brief Send special data to devices asynchronously
-   */
-  void send_async(SpecialData* s);
-
-  /**
-   * @brief Send header and body data to devices asynchronously
-   */
-  void send_async(std::unique_ptr<core::DatagramHeader> header, std::unique_ptr<core::DatagramBody> body);
-
-  /**
-   * @brief Send header and body data to devices asynchronously
-   */
-  void send_async(std::unique_ptr<core::DatagramHeader> header, std::unique_ptr<core::DatagramBody> body,
-                  std::chrono::high_resolution_clock::duration timeout);
-
-  /**
-   * @brief Wait until all asynchronously sent data to complete the transmission
-   */
-  void wait() const;
-
-  /**
-   * @brief Flush all asynchronously sent data
-   */
-  void flush();
 
   /**
    * @brief If true, the fan will be forced to start.
@@ -237,7 +259,7 @@ class Controller {
   /**
    * @brief If true, the devices return FPGA info in all frames. The FPGA info can be read by fpga_info().
    */
-  [[nodiscard]] bool reads_fpga_info() const noexcept;
+  [[nodiscard]] bool reads_fpga_info() const noexcept { return _reads_fpga_info.value; }
 
   /**
    * @brief Transmission interval between frames when sending multiple data.
@@ -250,7 +272,7 @@ class Controller {
   /**
    * @brief Transmission interval between frames when sending multiple data.
    */
-  [[nodiscard]] std::chrono::high_resolution_clock::duration get_send_interval() const noexcept;
+  [[nodiscard]] std::chrono::high_resolution_clock::duration get_send_interval() const noexcept { return _send_interval; }
 
   /**
    * @brief If > 0, this controller check ack from devices.
@@ -263,7 +285,7 @@ class Controller {
   /**
    * @brief If > 0, this controller check ack from devices.
    */
-  [[nodiscard]] std::chrono::high_resolution_clock::duration get_ack_check_timeout() const noexcept;
+  [[nodiscard]] std::chrono::high_resolution_clock::duration get_ack_check_timeout() const noexcept { return _ack_check_timeout; }
 
   /**
    * Set speed of sound from temperature
@@ -275,12 +297,40 @@ class Controller {
    */
   driver::autd3_float_t set_sound_speed_from_temp(driver::autd3_float_t temp, driver::autd3_float_t k = static_cast<driver::autd3_float_t>(1.4),
                                                   driver::autd3_float_t r = static_cast<driver::autd3_float_t>(8.31446261815324),
-                                                  driver::autd3_float_t m = static_cast<driver::autd3_float_t>(28.9647e-3));
+                                                  driver::autd3_float_t m = static_cast<driver::autd3_float_t>(28.9647e-3)) {
+#ifdef AUTD3_USE_METER
+    const auto sound_speed = std::sqrt(k * r * (static_cast<driver::autd3_float_t>(273.15) + temp) / m);
+#else
+    const auto sound_speed = std::sqrt(k * r * (static_cast<driver::autd3_float_t>(273.15) + temp) / m) * static_cast<driver::autd3_float_t>(1e3);
+#endif
+    geometry().sound_speed = sound_speed;
+    return sound_speed;
+  }
 
  private:
-  static uint8_t get_id() noexcept;
+#ifdef AUTD3_CAPI
+  explicit Controller(core::Geometry* geometry, core::LinkPtr link)
+      : _geometry(geometry), _tx_buf({0}), _rx_buf(0), _link(std::move(link)), _last_send_res(false) {}
+  core::Geometry* _geometry;
+#else
+  explicit Controller(core::Geometry geometry, core::LinkPtr link)
+      : _geometry(std::move(geometry)), _tx_buf({0}), _rx_buf(0), _link(std::move(link)), _last_send_res(false) {}
+  core::Geometry _geometry;
+#endif
 
-  bool wait_msg_processed(std::chrono::high_resolution_clock::duration timeout);
+  void open() {
+    if (geometry().num_transducers() == 0) throw std::runtime_error("Please add devices before opening.");
+    if (_link == nullptr) throw std::runtime_error("link is null");
+    if (!_link->open(geometry())) throw std::runtime_error("Failed to open link.");
+    _tx_buf = driver::TxDatagram(geometry().device_map());
+    _rx_buf = driver::RxDatagram(geometry().num_devices());
+  }
+
+  static uint8_t get_id() noexcept {
+    static std::atomic id_body{driver::MSG_BEGIN};
+    if (uint8_t expected = driver::MSG_END; !id_body.compare_exchange_weak(expected, driver::MSG_BEGIN)) id_body.fetch_add(0x01);
+    return id_body.load();
+  }
 
   std::chrono::high_resolution_clock::duration _send_interval{std::chrono::milliseconds(1)};
 
@@ -292,17 +342,9 @@ class Controller {
     std::chrono::high_resolution_clock::duration timeout{};
   };
 
-  core::Geometry _geometry;
-
   driver::TxDatagram _tx_buf;
   driver::RxDatagram _rx_buf;
   core::LinkPtr _link;
-
-  bool _send_th_running;
-  std::thread _send_th;
-  std::queue<AsyncData> _send_queue;
-  std::condition_variable _send_cond;
-  std::mutex _send_mtx;
 
   bool _last_send_res;
 
@@ -310,255 +352,6 @@ class Controller {
   driver::ReadsFPGAInfo _reads_fpga_info;
 
  public:
-  /**
-   * @brief Controller wrapper for asynchronous send
-   */
-  class AsyncSender {
-    friend class Controller;
-
-   public:
-    Controller& cnt;
-
-    /**
-     * @brief Buffer for stream operator
-     * @tparam H Class inheriting from core::DatagramHeader
-     */
-    template <typename H>
-    class StreamCommaInputHeaderAsync {
-      friend class AsyncSender;
-
-     public:
-      ~StreamCommaInputHeaderAsync() {
-        if (!_sent) _cnt.cnt.send_async(std::move(_header));
-      }
-      StreamCommaInputHeaderAsync(const StreamCommaInputHeaderAsync& v) noexcept = delete;
-      StreamCommaInputHeaderAsync& operator=(const StreamCommaInputHeaderAsync& obj) = delete;
-      StreamCommaInputHeaderAsync(StreamCommaInputHeaderAsync&& obj) = default;
-      StreamCommaInputHeaderAsync& operator=(StreamCommaInputHeaderAsync&& obj) = delete;
-
-      /**
-       * @brief Send buffered core::DatagramHeader and core::DatagramBody
-       * @tparam B Class inheriting from core::DatagramBody
-       * @param body core::DatagramBody
-       * @return AsyncSender&
-       */
-      template <typename B>
-      auto operator,(B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, AsyncSender&> {
-        _cnt.cnt.send_async(std::move(_header), std::move(body));
-        _sent = true;
-        return _cnt;
-      }
-
-      /**
-       * @brief Send buffered core::DatagramHeader and core::DatagramBody
-       * @tparam B Class inheriting from core::DatagramBody
-       * @param body core::DatagramBody
-       * @return AsyncSender&
-       */
-      template <typename B>
-      auto operator<<(B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, AsyncSender&> {
-        _cnt.cnt.send_async(std::move(_header), std::move(body));
-        _sent = true;
-        return _cnt;
-      }
-
-      /**
-       * @brief Send buffered core::DatagramHeader and buffer core::DatagramHeader passed as argument
-       * @tparam H2 Class inheriting from core::DatagramHeader
-       * @param header core::DatagramHeader
-       * @return StreamCommaInputHeaderAsync
-       */
-      template <typename H2>
-      auto operator<<(H2 header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H2>, StreamCommaInputHeaderAsync<H2>> {
-        _cnt.cnt.send_async(std::move(_header));
-        _sent = true;
-        return StreamCommaInputHeaderAsync<H2>(_cnt, std::move(header));
-      }
-
-      /**
-       * @brief Send buffered core::DatagramHeader and SpecialData
-       * @tparam S Class inheriting from SpecialData
-       * @param special_f SpecialData function
-       * @return AsyncSender&
-       */
-      template <typename S>
-      auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, AsyncSender&> {
-        _cnt.cnt.send_async(std::move(_header));
-        _sent = true;
-        _cnt.cnt.send_async(special_f());
-        return _cnt;
-      }
-
-      /**
-       * @brief Send buffered core::DatagramHeader and then send core::DatagramHeader and core::DatagramBody in DatagramPack
-       * @tparam H2 Class inheriting from core::DatagramHeader
-       * @tparam B2 Class inheriting from core::DatagramBody
-       * @param pack DatagramPack
-       * @return AsyncSender&
-       */
-      template <typename H2, typename B2>
-      auto operator<<(core::DatagramPack<H2, B2>&& pack)
-          -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H2> && std::is_base_of_v<core::DatagramBody, B2>, AsyncSender&> {
-        _cnt.cnt.send_async(std::move(_header));
-        _sent = true;
-        _cnt.cnt.send_async(std::move(pack.header), std::move(pack.body));
-        return _cnt;
-      }
-
-     private:
-      explicit StreamCommaInputHeaderAsync(AsyncSender& cnt, H header) : _cnt(cnt), _header(std::move(header)), _sent(false) {}
-
-      AsyncSender& _cnt;
-      H _header;
-      bool _sent;
-    };
-
-    /**
-     * @brief Buffer for stream operator
-     * @tparam B Class inheriting from core::DatagramBody
-     */
-    template <typename B>
-    class StreamCommaInputBodyAsync {
-      friend class AsyncSender;
-
-     public:
-      ~StreamCommaInputBodyAsync() {
-        if (!_sent) _cnt.cnt.send_async(std::move(_body));
-      }
-      StreamCommaInputBodyAsync(const StreamCommaInputBodyAsync& v) noexcept = delete;
-      StreamCommaInputBodyAsync& operator=(const StreamCommaInputBodyAsync& obj) = delete;
-      StreamCommaInputBodyAsync(StreamCommaInputBodyAsync&& obj) = default;
-      StreamCommaInputBodyAsync& operator=(StreamCommaInputBodyAsync&& obj) = delete;
-
-      /**
-       * @brief Send buffered core::DatagramBody and core::DatagramHeader
-       * @tparam H Class inheriting from core::DatagramHeader
-       * @param header core::DatagramHeader
-       * @return AsyncSender&
-       */
-      template <typename H>
-      auto operator,(H header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, AsyncSender&> {
-        _cnt.cnt.send_async(std::move(header), std::move(_body));
-        _sent = true;
-        return _cnt;
-      }
-
-      /**
-       * @brief Send buffered core::DatagramBody and core::DatagramHeader
-       * @tparam H Class inheriting from core::DatagramHeader
-       * @param header core::DatagramHeader
-       * @return AsyncSender&
-       */
-      template <typename H>
-      auto operator<<(H header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, AsyncSender&> {
-        _cnt.cnt.send_async(std::move(header), std::move(_body));
-        _sent = true;
-        return _cnt;
-      }
-
-      /**
-       * @brief Send buffered core::DatagramBody and buffer core::DatagramBody passed as argument
-       * @tparam B2 Class inheriting from core::DatagramBody
-       * @param body core::DatagramBody
-       * @return StreamCommaInputBodyAsync<B2>
-       */
-      template <typename B2>
-      auto operator<<(B2 body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B2>, StreamCommaInputBodyAsync<B2>> {
-        _cnt.cnt.send_async(std::move(_body));
-        _sent = true;
-        return StreamCommaInputBodyAsync<B2>(_cnt, std::move(body));
-      }
-
-      /**
-       * @brief Send buffered core::DatagramBody and SpecialData
-       * @tparam S Class inheriting from SpecialData
-       * @param special_f SpecialData function
-       * @return AsyncSender&
-       */
-      template <typename S>
-      auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, AsyncSender&> {
-        _cnt.cnt.send_async(std::move(_body));
-        _sent = true;
-        _cnt.cnt.send_async(special_f());
-        return _cnt;
-      }
-
-      /**
-       * @brief Send buffered core::DatagramBody and then send core::DatagramHeader and core::DatagramBody in DatagramPack
-       * @tparam H2 Class inheriting from core::DatagramHeader
-       * @tparam B2 Class inheriting from core::DatagramBody
-       * @param pack core::DatagramPack
-       * @return AsyncSender&
-       */
-      template <typename H2, typename B2>
-      auto operator<<(core::DatagramPack<H2, B2>&& pack)
-          -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H2> && std::is_base_of_v<core::DatagramBody, B2>, AsyncSender&> {
-        _cnt.cnt.send_async(std::move(_body));
-        _sent = true;
-        _cnt.cnt.send_async(std::move(pack.header), std::move(pack.body));
-        return _cnt;
-      }
-
-     private:
-      explicit StreamCommaInputBodyAsync(AsyncSender& cnt, B body) : _cnt(cnt), _body(std::move(body)), _sent(false) {}
-
-      AsyncSender& _cnt;
-      B _body;
-      bool _sent;
-    };
-
-    /**
-     * @brief Buffer core::DatagramHeader
-     * @tparam H Class inheriting from core::DatagramHeader
-     * @param header core::DatagramHeader
-     * @return StreamCommaInputHeaderAsync<H>
-     */
-    template <typename H>
-    auto operator<<(H header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, StreamCommaInputHeaderAsync<H>> {
-      return StreamCommaInputHeaderAsync<H>(*this, std::move(header));
-    }
-
-    /**
-     * @brief Buffer core::DatagramBody
-     * @tparam B Class inheriting from core::DatagramBody
-     * @param body core::DatagramBody
-     * @return StreamCommaInputBodyAsync<H>
-     */
-    template <typename B>
-    auto operator<<(B body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, StreamCommaInputBodyAsync<B>> {
-      return StreamCommaInputBodyAsync<B>(*this, std::move(body));
-    }
-
-    /**
-     * @brief Send SpecialData
-     * @tparam S Class inheriting from SpecialData
-     * @param special_f SpecialData function
-     * @return AsyncSender&
-     */
-    template <typename S>
-    auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, AsyncSender&> {
-      cnt.send_async(special_f());
-      return *this;
-    }
-
-    /**
-     * @brief Send core::DatagramHeader and core::DatagramBody in core::DatagramPack
-     * @tparam H Class inheriting from core::DatagramHeader
-     * @tparam B Class inheriting from core::DatagramBody
-     * @param pack core::DatagramPack
-     * @return AsyncSender&
-     */
-    template <typename H, typename B>
-    auto operator<<(core::DatagramPack<H, B>&& pack)
-        -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>, AsyncSender&> {
-      cnt.send_async(std::move(pack.header), std::move(pack.body));
-      return *this;
-    }
-
-   private:
-    explicit AsyncSender(Controller& cnt) : cnt(cnt) {}
-  };
-
   /**
    * @brief Buffer for stream operator
    * @tparam H Class inheriting from core::DatagramHeader
@@ -826,16 +619,10 @@ class Controller {
   }
 
   /**
-   * @brief Set asynchronous send mode
-   * @return AsyncSender asynchronous sender
-   */
-  AsyncSender operator<<(Async (*)()) { return AsyncSender{*this}; }
-
-  /**
    * @brief Set Mode
    * @param f mode function
    */
-  void operator<<(core::Mode (*f)()) { _geometry.mode = f(); }
+  void operator<<(core::Mode (*f)()) { geometry().mode = f(); }
 
   void operator>>(bool& res) const { res = _last_send_res; }
 };

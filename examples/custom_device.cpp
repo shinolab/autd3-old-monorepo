@@ -3,7 +3,7 @@
 // Created Date: 28/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 31/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,6 +12,7 @@
 #include "autd3.hpp"
 #include "autd3/link/simulator.hpp"
 #include "runner.hpp"
+#include "util.hpp"
 
 class ConcentricArray final : autd3::core::Device {
  public:
@@ -33,15 +34,16 @@ class ConcentricArray final : autd3::core::Device {
 };
 
 int main() try {
-  autd3::Controller autd;
-
-  autd.geometry().add_device(ConcentricArray());
+  auto geometry = autd3::Geometry::Builder()
+                      .add_device(ConcentricArray())
+                      .sound_speed(340.0e3)  // mm/s
+                      .build();
 
   auto link = autd3::link::Simulator().build();
-  autd.open(std::move(link));
+  auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
 
   return run(autd);
 } catch (std::exception& e) {
-  std::cerr << e.what() << std::endl;
+  print_err(e);
   return -1;
 }

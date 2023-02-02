@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 01/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -35,13 +35,14 @@ void* gain_stm(void* autd) {
   AUTDGainSTM(&stm);
 
   const int32_t point_num = 200;
+  void** gains = (void**)malloc(sizeof(void*) * point_num);
   for (int32_t i = 0; i < point_num; i++) {
     const double radius = 30.0;
     const double theta = 2.0 * M_PI * (double)i / (double)point_num;
     void* g = NULL;
     AUTDGainFocus(&g, x + radius * cos(theta), y + radius * sin(theta), z, 1.0);
     AUTDGainSTMAdd(stm, g);
-    AUTDDeleteGain(g);
+    gains[i] = g;
   }
 
   const uint32_t v = AUTDSTMSamplingFrequencyDivision(stm);
@@ -54,6 +55,7 @@ void* gain_stm(void* autd) {
 
   AUTDDeleteSTM(stm);
   AUTDDeleteModulation(m);
+  for (int32_t i = 0; i < point_num; i++) AUTDDeleteGain(gains[i]);
 
   return autd;
 }

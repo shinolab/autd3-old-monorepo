@@ -3,7 +3,7 @@
 # Created Date: 13/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 20/11/2022
+# Last Modified: 02/02/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,16 +17,14 @@ import tests/runner
 
 when isMainModule:
     try:
-        var cnt = initController()
-        cnt.addDevice([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+        var geometry = initGeometryBuilder().addDevice([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]).build()
 
         var simulator = initSimulator()
         let link = simulator.build()
-        if not cnt.open(link):
-            echo "Failed to open Controller."
-            quit(-1)
+      
+        var autd = openController(geometry, link)
 
-        run(cnt)
+        run(autd)
 
     except:
         let

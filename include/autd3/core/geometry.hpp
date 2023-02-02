@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/01/2023
+// Last Modified: 31/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -38,16 +38,75 @@ struct Device {
  * @brief Geometry of all transducers
  */
 struct Geometry {
-  Geometry()
-      : attenuation(0.0),
-        sound_speed(
-#ifdef AUTD3_USE_METER
-            340.0)
+  struct Builder {
+    Builder() = default;
+
+    /**
+     * @brief Add device to Geometry
+     * @tparam T Class inheriting from Device
+     * @param device device
+     */
+    template <typename T>
+    auto add_device(T&& device) -> std::enable_if_t<std::is_base_of_v<Device, T>, Builder&> {
+      {
+        const auto id = _transducers.size();
+        const auto transducers = device.get_transducers(id);
+        if (transducers.size() > 256) throw std::runtime_error("The maximum number of transducers per device is 256.");
+        _transducers.insert(_transducers.end(), transducers.begin(), transducers.end());
+        _device_map.emplace_back(transducers.size());
+      }
+      return *this;
+    }
+
+    Builder& attenuation(const driver::autd3_float_t value) {
+      _attenuation = value;
+      return *this;
+    }
+
+    Builder& sound_speed(const driver::autd3_float_t value) {
+      _sound_speed = value;
+      return *this;
+    }
+
+    Builder& mode(const Mode value) {
+      _mode = value;
+      return *this;
+    }
+
+    Builder& legacy_mode() {
+      _mode = Mode::Legacy;
+      return *this;
+    }
+
+    Builder& normal_mode() {
+      _mode = Mode::Normal;
+      return *this;
+    }
+
+    Builder& normal_phase_mode() {
+      _mode = Mode::NormalPhase;
+      return *this;
+    }
+
+#ifdef AUTD3_CAPI
+    Geometry* build() { return new Geometry(_mode, _attenuation, _sound_speed, std::move(_transducers), std::move(_device_map)); }
 #else
-            340.0e3)
+    Geometry build() { return {_mode, _attenuation, _sound_speed, std::move(_transducers), std::move(_device_map)}; }
 #endif
-  {
-  }
+
+   private:
+    driver::autd3_float_t _attenuation{0};
+    driver::autd3_float_t _sound_speed{
+#ifdef AUTD3_USE_METER
+        340.0
+#else
+        340.0e3
+#endif
+    };
+    std::vector<Transducer> _transducers;
+    std::vector<size_t> _device_map;
+    Mode _mode{Mode::Legacy};
+  };
 
   /**
    * @brief Number of devices
@@ -79,11 +138,8 @@ struct Geometry {
   [[nodiscard]] Vector3 center_of(const size_t dev_idx) const {
     if (dev_idx >= _device_map.size()) return Vector3::Zero();
     if (_device_map[dev_idx] == 0) return Vector3::Zero();
-    const auto start_idx =
-        std::accumulate(_device_map.begin(), _device_map.begin() + static_cast<decltype(_device_map)::difference_type>(dev_idx), size_t{0});
     const Vector3 zero = Vector3::Zero();
-    return std::accumulate(begin() + static_cast<decltype(_transducers)::difference_type>(start_idx),
-                           begin() + static_cast<decltype(_transducers)::difference_type>(start_idx + _device_map[dev_idx]), zero,
+    return std::accumulate(begin(dev_idx), end(dev_idx), zero,
                            [](const Vector3& acc, const Transducer& tr) {
                              Vector3 res = acc + tr.position();
                              return res;
@@ -92,17 +148,79 @@ struct Geometry {
   }
 
   /**
-   * @brief Add device to Geometry
-   * @tparam T Class inheriting from Device
-   * @param device device
+   * @brief Translate all devices
    */
-  template <typename T>
-  auto add_device(T&& device) -> std::enable_if_t<std::is_base_of_v<Device, T>> {
-    const auto id = _transducers.size();
-    const auto transducers = device.get_transducers(id);
-    if (transducers.size() > 256) throw std::runtime_error("The maximum number of transducers per device is 256.");
-    _transducers.insert(_transducers.end(), transducers.begin(), transducers.end());
-    _device_map.emplace_back(transducers.size());
+  void translate(const Vector3& t) {
+    const Eigen::Translation<driver::autd3_float_t, 3> trans(t);
+    affine(trans * Matrix3X3::Identity());
+  }
+
+  /**
+   * @brief Rotate all devices
+   */
+  void rotate(const Quaternion& r) {
+    const Eigen::Translation<driver::autd3_float_t, 3> trans(0, 0, 0);
+    affine(trans * r);
+  }
+
+  /**
+   * @brief Apply affine transformation to all devices
+   */
+  void affine(const Vector3& t, const Quaternion& r) {
+    const Eigen::Translation<driver::autd3_float_t, 3> trans(t);
+    affine(trans * r);
+  }
+
+  /**
+   * @brief Apply affine transformation to all devices
+   */
+  void affine(const Affine3& a) {
+    std::transform(begin(), end(), begin(), [a](const auto& tr) {
+      const auto id = tr.id();
+      const Vector3 pos = a * tr.position();
+      const Quaternion rot(a.linear() * tr.rotation().toRotationMatrix());
+      const auto mod_delay = tr.mod_delay();
+      const auto cycle = tr.cycle();
+      return Transducer(id, pos, rot, mod_delay, cycle);
+    });
+  }
+
+  /**
+   * @brief Translate the device
+   */
+  void translate(const size_t dev_idx, const Vector3& t) {
+    const Eigen::Translation<driver::autd3_float_t, 3> trans(t);
+    affine(dev_idx, trans * Matrix3X3::Identity());
+  }
+
+  /**
+   * @brief Rotate the device
+   */
+  void rotate(const size_t dev_idx, const Quaternion& r) {
+    const Eigen::Translation<driver::autd3_float_t, 3> trans(0, 0, 0);
+    affine(dev_idx, trans * r);
+  }
+
+  /**
+   * @brief Apply affine transformation to all devices
+   */
+  void affine(const size_t dev_idx, const Vector3& t, const Quaternion& r) {
+    const Eigen::Translation<driver::autd3_float_t, 3> trans(t);
+    affine(dev_idx, trans * r);
+  }
+
+  /**
+   * @brief Apply affine transformation to the device
+   */
+  void affine(const size_t dev_idx, const Affine3& a) {
+    std::transform(begin(dev_idx), end(dev_idx), begin(dev_idx), [a](const auto& tr) {
+      const auto id = tr.id();
+      const Vector3 pos = a * tr.position();
+      const Quaternion rot(a.linear() * tr.rotation().toRotationMatrix());
+      const auto mod_delay = tr.mod_delay();
+      const auto cycle = tr.cycle();
+      return Transducer(id, pos, rot, mod_delay, cycle);
+    });
   }
 
   /**
@@ -121,6 +239,34 @@ struct Geometry {
   [[nodiscard]] std::vector<Transducer>::const_iterator end() const noexcept { return _transducers.end(); }
   [[nodiscard]] std::vector<Transducer>::iterator begin() noexcept { return _transducers.begin(); }
   [[nodiscard]] std::vector<Transducer>::iterator end() noexcept { return _transducers.end(); }
+
+  [[nodiscard]] std::vector<Transducer>::const_iterator begin(const size_t dev_idx) const {
+    if (dev_idx >= _device_map.size()) throw std::out_of_range("Device index is out of range");
+    const auto start_idx =
+        std::accumulate(_device_map.begin(), _device_map.begin() + static_cast<decltype(_device_map)::difference_type>(dev_idx), size_t{0});
+    return _transducers.begin() + static_cast<decltype(_transducers)::difference_type>(start_idx);
+  }
+  [[nodiscard]] std::vector<Transducer>::const_iterator end(const size_t dev_idx) const {
+    if (dev_idx >= _device_map.size()) throw std::out_of_range("Device index is out of range");
+    const auto end_idx =
+        std::accumulate(_device_map.begin(), _device_map.begin() + static_cast<decltype(_device_map)::difference_type>(dev_idx), size_t{0}) +
+        _device_map[dev_idx];
+    return begin() + static_cast<decltype(_transducers)::difference_type>(end_idx);
+  }
+  [[nodiscard]] std::vector<Transducer>::iterator begin(const size_t dev_idx) {
+    if (dev_idx >= _device_map.size()) throw std::out_of_range("Device index is out of range");
+    const auto start_idx =
+        std::accumulate(_device_map.begin(), _device_map.begin() + static_cast<decltype(_device_map)::difference_type>(dev_idx), size_t{0});
+    return _transducers.begin() + static_cast<decltype(_transducers)::difference_type>(start_idx);
+  }
+  [[nodiscard]] std::vector<Transducer>::iterator end(const size_t dev_idx) {
+    if (dev_idx >= _device_map.size()) throw std::out_of_range("Device index is out of range");
+    const auto end_idx =
+        std::accumulate(_device_map.begin(), _device_map.begin() + static_cast<decltype(_device_map)::difference_type>(dev_idx), size_t{0}) +
+        _device_map[dev_idx];
+    return begin() + static_cast<decltype(_transducers)::difference_type>(end_idx);
+  }
+
   [[nodiscard]] const Transducer& operator[](const size_t i) const { return _transducers[i]; }
   [[nodiscard]] Transducer& operator[](const size_t i) { return _transducers[i]; }
 
@@ -140,6 +286,10 @@ struct Geometry {
   driver::autd3_float_t sound_speed;
 
  private:
+  Geometry(const Mode mode, const driver::autd3_float_t attenuation, const driver::autd3_float_t sound_speed, std::vector<Transducer> transducers,
+           std::vector<size_t> device_map)
+      : mode(mode), attenuation(attenuation), sound_speed(sound_speed), _transducers(std::move(transducers)), _device_map(std::move(device_map)) {}
+
   std::vector<Transducer> _transducers;
   std::vector<size_t> _device_map;
 };

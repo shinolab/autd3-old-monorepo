@@ -30,11 +30,12 @@ If the firmware is out of date, the operation is not guaranteed. The version of 
 
 To update the firmware, [Vivado](https://www.xilinx.com/products/design-tools/vivado.html) and [J-Link Software](https://www.segger.com/downloads/jlink/) on Windows 10/11 64-bit PC are required.
 
+> NOTE: If you only want to update the firmware, we strongly recommend you to use Vivado Lab edition.
+
 First, connect the AUTD3 device and the PC to [XILINX Platform Cable](https://www.xilinx.com/products/boards-and-kits/hw-usb-ii-g.html), and [J-Link Plus](https://www.segger.com/products/debug-probes/j-link/models/j-link-plus/) with [J-Link 9-Pin Cortex-M Adapter](https://www.segger-pocjapan.com/j-link-9-pin-cortex-m-adapter).
 Next, connect AUTD3 to the power supply and power it on.
 Next, run `dist/firmware/autd_firmware_writer.ps1` from PowerShell and follow the instructions.
 The update will take a few minutes.
-
 
 ## Building first program
 
@@ -117,93 +118,6 @@ Now, `autd3_sample.sln` should be generated under the build directory.
 Open it and execute the main project.
 **Note that you must change the build configuration of Visual Studio from Debug to Release when executing the main project.**
 Also, if you use Linux/macOS, root privileges may be required to run the main project.
-
-## Explanation
-
-To use the SDK, include the `autd3.hpp` header.
-The `autd3/link/soem.hpp` header is also required to use `link::SOEM`.
-
-```cpp
-#include "autd3.hpp"
-#include "autd3/link/soem.hpp"
-```
-
-Next, create a `Controller`.
-
-```cpp
-autd3::Controller autd;
-```
-
-Then, specify the device placement.
-
-```cpp
-autd.geometry().add_device(autd3::Vector3::Zero(), autd3::Vector3::Zero());
-```
-
-The first argument of `add_device` is the position, the second is the rotation. 
-The position is the origin of the device in the global coordinate system.
-The rotation is specified in ZYZ Euler angles or quaternions. 
-In this example, neither rotation nor translation is assumed.
-
-Next, create a `Link` to connect to the device.
-
-```cpp
-  auto link = autd3::link::SOEM().high_precision(true).build(); 
-  autd.open(std::move(link));
-```
-
-Next, `ack_check_timeout` is set to $\SI{20}{ms}$. 
-You do not need to change this value, but setting it increases reliability. 
-For SOEM link, it is recommended to set `ack_check_timeout` to about $\SI{10}{ms}-\SI{20}{ms}$.
-
-```cpp
-autd.set_ack_check_timeout(std::chrono::milliseconds(20));
-```
-
-Next, initialize the AUTD device and synchronize.
-You may not need to send `clear` since the devices are initialized at power-up.
-
-```cpp
-autd << autd3::clear << autd3::synchronize;
-```
-
-**Even if only one device is used, you must synchronize devices once after initialization.**
-
-Next, we check the firmware version. 
-
-```cpp
-const auto firm_infos = autd.firmware_infos();
-std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout,"\n"));
-```
-
-Next, setup silencer.
-
-```cpp
-autd3::SilencerConfig silencer;
-```
-
-This is set by default, so you don't really need to send it.
-If you want to turn silencer off, use `SilencerConfig::none()`.
-The silencer is used to quiet down the transducers by passing the phase/amplitude parameters through a low-pass filter.
-
-Then, we create a `Gain` representing a single focus and a `Modulation` applying a sin wave modulation of $\SI{150}{Hz}$ and send them to the device.
-
-```cpp
-const auto focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
-autd3::gain::Focus g(focus);
-autd3::modulation::Sine m(150);
-
-autd << silencer << m, g;
-```
-, where `focus` denotes $\SI{150}{mm}$ directly above the center of the device.
-
-Finally, disconnect the device.
-
-```cpp
-autd.close();
-```
-
-In the next page, the basic functions will be described.
 
 [Online API Documentation](https://shinolab.github.io/autd3/api/index.html) is also available.
 

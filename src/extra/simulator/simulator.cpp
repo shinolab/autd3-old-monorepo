@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/01/2023
+// Last Modified: 25/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -234,6 +234,17 @@ void Simulator::run() {
         slice_viewer->update(imgui->slice_width, imgui->slice_height, imgui->pixel_size, update_flags);
         trans_viewer->update(sources, update_flags);
         field_compute->update(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size(), imgui->coloring_method, update_flags);
+
+        if (update_flags.contains(simulator::UpdateFlags::UpdateDeviceInfo))
+          for (size_t dev = 0; dev < cpus.size(); dev++) {
+            auto& cpu = cpus[dev];
+            auto& fpga = cpu.fpga();
+            if (imgui->thermal_sensor[dev])
+              fpga.assert_thermal_sensor();
+            else
+              fpga.deassert_thermal_sensor();
+            cpu.update();
+          }
 
         const simulator::Config config{static_cast<uint32_t>(std::accumulate(sources.begin(), sources.end(), size_t{0},
                                                                              [](const size_t acc, const auto& s) { return acc + s.size(); })),

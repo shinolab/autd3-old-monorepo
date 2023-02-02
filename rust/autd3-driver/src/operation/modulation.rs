@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 30/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use super::Operation;
 use crate::{
-    CPUControlFlags, DriverError, TxDatagram, MOD_BUF_SIZE_MAX, MOD_HEADER_INITIAL_DATA_SIZE,
+    Amp, CPUControlFlags, DriverError, TxDatagram, MOD_BUF_SIZE_MAX, MOD_HEADER_INITIAL_DATA_SIZE,
     MOD_HEADER_SUBSEQUENT_DATA_SIZE, MOD_SAMPLING_FREQ_DIV_MIN,
 };
 use anyhow::Result;
@@ -25,12 +25,16 @@ pub struct Modulation {
 }
 
 impl Modulation {
-    pub fn new(mod_data: Vec<u8>, freq_div: u32) -> Self {
+    pub fn new(mod_data: Vec<Amp>, freq_div: u32) -> Self {
         Self {
-            mod_data,
+            mod_data: mod_data.into_iter().map(Self::to_duty).collect(),
             sent: 0,
             freq_div,
         }
+    }
+
+    pub fn to_duty(amp: Amp) -> u8 {
+        (amp.value().asin() * 2.0 / std::f64::consts::PI * 255.0) as u8
     }
 }
 

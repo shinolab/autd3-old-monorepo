@@ -7,8 +7,8 @@ file(GLOB_RECURSE EXTRA_HEADER_FILES ${PROJECT_SOURCE_DIR}/include/autd3/extra/*
 file(GLOB_RECURSE MODULATION_HEADER_FILES ${PROJECT_SOURCE_DIR}/include/autd3/modulation/*.hpp)
 
 add_library(autd3
-  controller.cpp
   modulation/lpf/lpf.cpp
+  link/log/log.cpp
   ${HEADER_FILES}
   ${CORE_HEADER_FILES}
   ${DRIVER_HEADER_FILES}

@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 08/01/2023
+Last Modified: 02/02/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -102,11 +102,11 @@ class Transducer:
 
     @ property
     def mod_delay(self):
-        return Base().dll.AUTDGetModDelay(self._cnt, self._tr_id)
+        return Base().dll.AUTDGetTransModDelay(self._cnt, self._tr_id)
 
     @ mod_delay.setter
     def mod_delay(self, delay: int):
-        return Base().dll.AUTDSetModDelay(self._cnt, self._tr_id, delay)
+        return Base().dll.AUTDSetTransModDelay(self._cnt, self._tr_id, delay)
 
     @ property
     def wavelength(self):
@@ -138,62 +138,103 @@ class Transducer:
 
 
 class Geometry:
-    def __init__(self, cnt: c_void_p):
-        self._cnt = cnt
+    def __init__(self, ptr: c_void_p):
+        self._ptr = ptr
+        self.__disposed = False
 
-    def add_device(self, pos, rot):
-        return Base().dll.AUTDAddDevice(self._cnt, pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
-
-    def add_device_quaternion(self, pos, q):
-        return Base().dll.AUTDAddDeviceQuaternion(self._cnt, pos[0], pos[1], pos[2], q[0], q[1], q[2], q[3])
+    def __del__(self):
+        self.dispose()
 
     @ property
-    def num_transducers(self):
-        return Base().dll.AUTDNumTransducers(self._cnt)
+    def sound_speed(self):
+        return Base().dll.AUTDGetSoundSpeed(self._ptr)
+
+    @ sound_speed.setter
+    def sound_speed(self, sound_speed: float):
+        Base().dll.AUTDSetSoundSpeed(self._ptr, sound_speed)
 
     @ property
-    def num_devices(self):
-        return Base().dll.AUTDNumDevices(self._cnt)
+    def attenuation(self):
+        return Base().dll.AUTDGetAttenuation(self._ptr)
+
+    @ attenuation.setter
+    def attenuation(self, attenuation: float):
+        Base().dll.AUTDSetAttenuation(self._ptr, attenuation)
+
+    @ property
+    def num_transducers(self) -> int:
+        return Base().dll.AUTDNumTransducers(self._ptr)
+
+    @ property
+    def num_devices(self) -> int:
+        return Base().dll.AUTDNumDevices(self._ptr)
 
     @property
     def center(self):
         x = c_double(0.0)
         y = c_double(0.0)
         z = c_double(0.0)
-        Base().dll.AUTDGeometryCenter(self._cnt, byref(x), byref(y), byref(z))
+        Base().dll.AUTDGeometryCenter(self._ptr, byref(x), byref(y), byref(z))
         return np.array([x.value, y.value, z.value])
 
     def center_of(self, dev_idx: int):
         x = c_double(0.0)
         y = c_double(0.0)
         z = c_double(0.0)
-        Base().dll.AUTDGeometryCenterOf(self._cnt, dev_idx, byref(x), byref(y), byref(z))
+        Base().dll.AUTDGeometryCenterOf(self._ptr, dev_idx, byref(x), byref(y), byref(z))
         return np.array([x.value, y.value, z.value])
 
     def __getitem__(self, key: int):
-        return Transducer(key, self._cnt)
+        return Transducer(key, self._ptr)
 
     class TransdducerIterator:
-        def __init__(self, cnt: c_void_p):
-            self._cnt = cnt
+        def __init__(self, ptr: c_void_p):
+            self._ptr = ptr
             self._i = 0
-            self._num_trans = Base().dll.AUTDNumTransducers(cnt)
+            self._num_trans = Base().dll.AUTDNumTransducers(ptr)
 
         def __next__(self):
             if self._i == self._num_trans:
                 raise StopIteration()
-            value = Transducer(self._i, self._cnt)
+            value = Transducer(self._i, self._ptr)
             self._i += 1
             return value
 
     def __iter__(self):
-        return Geometry.TransdducerIterator(self._cnt)
+        return Geometry.TransdducerIterator(self._ptr)
+
+    def dispose(self):
+        if not self.__disposed:
+            self._free()
+            self.__disposed = True
+
+    def _free(self):
+        Base().dll.AUTDFreeGeometry(self._ptr)
+
+
+class GeometryBuilder:
+    def __init__(self):
+        self._ptr = c_void_p()
+        Base().dll.AUTDCreateGeometryBuilder(byref(self._ptr))
+
+    def add_device(self, pos, rot):
+        Base().dll.AUTDAddDevice(self._ptr, pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
+        return self
+
+    def add_device_quaternion(self, pos, q):
+        Base().dll.AUTDAddDeviceQuaternion(self._ptr, pos[0], pos[1], pos[2], q[0], q[1], q[2], q[3])
+        return self
+
+    def build(self) -> Geometry:
+        geometry_ptr = c_void_p()
+        Base().dll.AUTDBuildGeometry(byref(geometry_ptr), self._ptr)
+        return Geometry(geometry_ptr)
 
 
 class Controller:
-    def __init__(self):
-        self.p_cnt = c_void_p()
-        Base().dll.AUTDCreateController(byref(self.p_cnt))
+    def __init__(self, cnt: c_void_p, geometry: Geometry):
+        self.p_cnt = cnt
+        self._geometry = geometry
         self.__disposed = False
 
     def __del__(self):
@@ -210,29 +251,17 @@ class Controller:
 
     @ property
     def geometry(self):
-        return Geometry(self.p_cnt)
-
-    @ property
-    def sound_speed(self):
-        return Base().dll.AUTDGetSoundSpeed(self.p_cnt)
-
-    @ sound_speed.setter
-    def sound_speed(self, sound_speed: float):
-        Base().dll.AUTDSetSoundSpeed(self.p_cnt, sound_speed)
+        return self._geometry
 
     def set_sound_speed_from_temp(self, temp: float, k: float = 1.4, r: float = 8.31446261815324, m: float = 28.9647e-3):
         Base().dll.AUTDSetSoundSpeed(self.p_cnt, temp, k, r, m)
 
-    @ property
-    def attenuation(self):
-        return Base().dll.AUTDGetAttenuation(self.p_cnt)
-
-    @ attenuation.setter
-    def attenuation(self, attenuation: float):
-        Base().dll.AUTDSetAttenuation(self.p_cnt, attenuation)
-
-    def open(self, link: Link):
-        return Base().dll.AUTDOpenController(self.p_cnt, link.link_ptr)
+    @staticmethod
+    def open(geometry: Geometry, link: Link):
+        cnt = c_void_p()
+        if not Base().dll.AUTDOpenController(cnt, geometry._ptr, link.link_ptr):
+            raise Exception('Failed to open controller')
+        return Controller(cnt, geometry)
 
     def firmware_info_list(self):
         res = []
@@ -316,7 +345,7 @@ class Controller:
 
     @ property
     def fpga_info(self):
-        infos = np.zeros([self.num_transducers() / NUM_TRANS_IN_UNIT]).astype(np.ubyte)
+        infos = np.zeros([self.geometry.num_devices]).astype(np.ubyte)
         pinfos = np.ctypeslib.as_ctypes(infos)
         Base().dll.AUTDGetFPGAInfo(self.p_cnt, pinfos)
         return infos
@@ -330,26 +359,6 @@ class Controller:
             return Base().dll.AUTDSend(self.p_cnt, None, a.ptr)
         if isinstance(a, Header) and isinstance(b, Body):
             return Base().dll.AUTDSend(self.p_cnt, a.ptr, b.ptr)
-        raise NotImplementedError()
-
-    def send_async(self, a, b=None):
-        if b is None and isinstance(a, SpecialData):
-            Base().dll.AUTDSendSpecialAsync(self.p_cnt, a.ptr)
-            a.ptr = c_void_p()
-            return
-        if b is None and isinstance(a, Header):
-            Base().dll.AUTDSendAsync(self.p_cnt, a.ptr, None)
-            a.ptr = c_void_p()
-            return
-        if b is None and isinstance(a, Body):
-            Base().dll.AUTDSendAsync(self.p_cnt, None, a.ptr)
-            a.ptr = c_void_p()
-            return
-        if isinstance(a, Header) and isinstance(b, Body):
-            Base().dll.AUTDSendAsync(self.p_cnt, a.ptr, b.ptr)
-            a.ptr = c_void_p()
-            b.ptr = c_void_p()
-            return
         raise NotImplementedError()
 
 

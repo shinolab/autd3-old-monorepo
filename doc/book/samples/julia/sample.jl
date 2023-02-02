@@ -9,13 +9,11 @@ function on_lost(msg::Cstring)
     exit(-1)
 end
 
-const cnt = Controller()
-cnt.add_device(SVector(0.0, 0.0, 0.0), SVector(0.0, 0.0, 0.0))
+geometry = GeometryBuilder().add_device(SVector(0.0, 0.0, 0.0), SVector(0.0, 0.0, 0.0)).build()
 
-const link = SOEM(on_lost=on_lost, high_precision=true)
-if !cnt.open(link)
-    exit()
-end
+link = SOEM(on_lost=on_lost, high_precision=true)
+
+cnt = Controller(geometry, link)
 
 cnt.set_ack_check_timeout = 20 * 1000 * 1000
 
@@ -27,7 +25,7 @@ for firm_info in firm_info_list
     @printf("%s\n", firm_info)
 end
 
-const g = Focus(SVector(90.0, 80.0, 150.0))
+const g = Focus(cnt.geometry().center() + SVector(0.0, 0.0, 150.0))
 const m = Sine(150)
 
 cnt.send(m, g)

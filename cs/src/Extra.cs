@@ -4,7 +4,7 @@
  * Created Date: 11/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/10/2022
+ * Last Modified: 01/02/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,12 +18,10 @@ namespace AUTD3Sharp
     {
         public class GeometryViewer
         {
-
             private int _width;
             private int _height;
             private bool _vsync;
             private int _gpuIdx;
-
 
             public GeometryViewer()
             {
@@ -54,7 +52,7 @@ namespace AUTD3Sharp
 
             public void View(Geometry geometry)
             {
-                NativeMethods.ExtraGeometryViewer.AUTDExtraGeometryViewer(geometry.CntPtr, _width, _height, _vsync, _gpuIdx);
+                NativeMethods.ExtraGeometryViewer.AUTDExtraGeometryViewer(geometry.GeometryPtr, _width, _height, _vsync, _gpuIdx);
             }
         }
 

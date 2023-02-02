@@ -1,3 +1,14 @@
+# 8.1.0
+
+- Introduce Semantic versioning
+- Add thermal sensor option
+- Add vivado lab edition supoprt for firmware update
+- Add `link::Log`
+- Add geometry transformation methods
+- Remove async send methods
+- Change `Controller::open` API
+  - Add `Geometry::Builder` to create geometry
+
 # 2.8.0
 
 - Suppress midrange frequency noise
