@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/01/2023
+// Last Modified: 25/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -281,8 +281,10 @@ class VulkanImGui {
     const auto dev_num = sources.size();
     visible = std::make_unique<bool[]>(dev_num);
     enable = std::make_unique<bool[]>(dev_num);
+    thermal_sensor = std::make_unique<bool[]>(dev_num);
     std::fill_n(visible.get(), dev_num, true);
     std::fill_n(enable.get(), dev_num, true);
+    std::fill_n(thermal_sensor.get(), dev_num, false);
   }
 
   static void draw() {
@@ -459,7 +461,7 @@ class VulkanImGui {
 
         if (ImGui::DragFloat("Font size", &_font_size, 1, 1.0f, 256.0f)) _update_font = true;
         ImGui::Separator();
-        ImGui::Text("Device index: show/enable");
+        ImGui::Text("Device index: show/enable/overheat");
         for (size_t i = 0; i < cpus.size(); i++) {
           ImGui::Text("Device %d: ", static_cast<int32_t>(i));
           ImGui::SameLine();
@@ -476,6 +478,9 @@ class VulkanImGui {
             const auto v = enable[i] ? 1.0f : 0.0f;
             std::for_each(sources[i].drives().begin(), sources[i].drives().end(), [v](auto& drive) { drive.enable = v; });
           }
+          ImGui::SameLine();
+          const auto fan_id = "##overheat" + std::to_string(i);
+          if (ImGui::Checkbox(fan_id.c_str(), &thermal_sensor[i])) flag.set(UpdateFlags::UpdateDeviceInfo);
         }
 
         ImGui::Separator();
@@ -733,6 +738,7 @@ class VulkanImGui {
 
   std::unique_ptr<bool[]> enable;
   std::unique_ptr<bool[]> visible;
+  std::unique_ptr<bool[]> thermal_sensor;
 
   char save_path[256]{};
 

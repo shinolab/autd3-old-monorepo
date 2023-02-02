@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 30/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use crate::{
     cpu::{Body, GlobalHeader, LegacyPhaseFull, LegacyPhaseHalf},
-    fpga::{Duty, LegacyDrive, Phase},
+    fpga::{LegacyDrive, NormalDriveDuty, NormalDrivePhase},
 };
 
 #[derive(Clone)]
@@ -127,27 +127,29 @@ impl TxDatagram {
         }
     }
 
-    pub fn duties_mut(&mut self) -> &mut [Duty] {
+    pub fn duties_mut(&mut self) -> &mut [NormalDriveDuty] {
         let len =
             (self.data.len() - std::mem::size_of::<GlobalHeader>()) / std::mem::size_of::<u16>();
         unsafe {
             &mut *std::ptr::slice_from_raw_parts_mut(
                 self.data
                     .as_mut_ptr()
-                    .add(std::mem::size_of::<GlobalHeader>()) as *mut Duty,
+                    .add(std::mem::size_of::<GlobalHeader>())
+                    as *mut NormalDriveDuty,
                 len,
             )
         }
     }
 
-    pub fn phases_mut(&mut self) -> &mut [Phase] {
+    pub fn phases_mut(&mut self) -> &mut [NormalDrivePhase] {
         let len =
             (self.data.len() - std::mem::size_of::<GlobalHeader>()) / std::mem::size_of::<u16>();
         unsafe {
             &mut *std::ptr::slice_from_raw_parts_mut(
                 self.data
                     .as_mut_ptr()
-                    .add(std::mem::size_of::<GlobalHeader>()) as *mut Phase,
+                    .add(std::mem::size_of::<GlobalHeader>())
+                    as *mut NormalDrivePhase,
                 len,
             )
         }

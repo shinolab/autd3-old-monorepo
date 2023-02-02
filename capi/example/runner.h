@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/11/2022
+// Last Modified: 01/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -53,6 +53,9 @@ typedef struct {
 } Test;
 
 int run(void* autd) {
+  void* geometry = NULL;
+  AUTDGetGeometry(&geometry, autd);
+
   int32_t example_size = 7;
 #ifdef BUILD_GAIN_HOLO
   example_size++;
@@ -63,7 +66,7 @@ int run(void* autd) {
 #ifdef DEBUG_AUTD_CAPI
   example_size++;
 #endif
-  if (AUTDNumTransducers(autd) == 2 * 249) example_size++;
+  if (AUTDNumTransducers(geometry) == 2 * 249) example_size++;
 
   Test* examples = (Test*)malloc(example_size * sizeof(Test));
 
@@ -86,7 +89,7 @@ int run(void* autd) {
   examples[idx++].func = gain_stm;
   examples[idx].name = "SoftwareSTM";
   examples[idx++].func = soft_stm;
-  if (AUTDNumTransducers(autd) == 2 * 249) {
+  if (AUTDNumTransducers(geometry) == 2 * 249) {
     examples[idx].name = "Grouped";
     examples[idx++].func = group;
   }

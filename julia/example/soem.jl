@@ -3,7 +3,7 @@
 # Created Date: 30/12/2020
 # Author: Shun Suzuki
 # -----
-# Last Modified: 20/11/2022
+# Last Modified: 02/02/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2020 Hapis Lab. All rights reserved.
@@ -23,17 +23,18 @@ function on_lost(msg::Cstring)
 end
 
 function main()
-    cnt = Controller()
-    cnt.add_device(SVector(0.0, 0.0, 0.0), SVector(0.0, 0.0, 0.0))
+    try
+        geometry = GeometryBuilder().add_device(SVector(0.0, 0.0, 0.0), SVector(0.0, 0.0, 0.0)).build()
 
-    link = SOEM(on_lost=on_lost, high_precision=true)
+        link = SOEM(on_lost=on_lost, high_precision=true)
 
-    if !cnt.open(link)
-        println("Failed to open Controller.")
-        exit(-1)
+        cnt = Controller(geometry, link)
+
+        run(cnt)
+
+    catch e
+        println(e)
     end
-
-    run(cnt)
 end
 
 main()

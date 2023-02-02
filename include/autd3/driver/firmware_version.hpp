@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/01/2023
+// Last Modified: 27/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,6 +14,8 @@
 #include <cstdint>
 #include <sstream>
 #include <string>
+
+#include "defined.hpp"
 
 namespace autd3::driver {
 
@@ -77,6 +79,12 @@ struct FirmwareInfo {
     if (version_num <= 0x15) return "v1." + std::to_string(version_num - 0x0A);
     if (version_num <= 0x88) return "v2." + std::to_string(version_num - 0x80);
     return "unknown (" + std::to_string(version_num) + ")";
+  }
+
+  [[nodiscard]] static bool matches_version(const FirmwareInfo& info) { return info._cpu_version_number == info._fpga_version_number; }
+
+  [[nodiscard]] static bool is_latest(const FirmwareInfo& info) {
+    return info._cpu_version_number == VERSION_NUM && info._fpga_version_number == VERSION_NUM;
   }
 
  private:

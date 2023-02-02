@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 29/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,6 +18,8 @@
 
 namespace autd3::core {
 
+using driver::Affine3;
+using driver::Matrix3X3;
 using driver::Matrix4X4;
 using driver::Quaternion;
 using driver::Vector3;
@@ -27,8 +29,9 @@ using driver::Vector4;
  * \brief Transducer contains id, position, rotation, and frequency of a transducer
  */
 struct Transducer {
-  Transducer(const size_t id, Vector3 pos, Quaternion rot) noexcept
-      : _id(id), _pos(std::move(pos)), _rot(std::move(rot)), _mod_delay(0), _cycle(4096) {}
+  explicit Transducer(const size_t id, Vector3 pos, Quaternion rot) noexcept : Transducer(id, std::move(pos), std::move(rot), 0, 4096) {}
+  explicit Transducer(const size_t id, Vector3 pos, Quaternion rot, const uint16_t mod_delay, const uint16_t cycle) noexcept
+      : _id(id), _pos(std::move(pos)), _rot(std::move(rot)), _mod_delay(mod_delay), _cycle(cycle) {}
   ~Transducer() = default;
   Transducer(const Transducer& v) noexcept = default;
   Transducer& operator=(const Transducer& obj) = default;

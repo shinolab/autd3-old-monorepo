@@ -12,14 +12,7 @@ SDK内部では, 波長を音速/周波数で計算しており, 種々の`Gain`
 単位は$\SI{}{mm/s}$である.
 
 ```cpp
-autd.set_sound_speed(340e3); // mm/s
-```
-
-なお, 音速は実際には振動子ごとに設定される.
-上記は, 以下のエイリアスになっている.
-
-```cpp
-for (auto& tr : autd.geometry()) tr.sound_speed = sound_speed;
+autd.geometry().sound_speed = 340e3; // mm/s
 ```
 
 また, 室温から音速を設定するユーティリティ関数も用意されている.
@@ -136,23 +129,3 @@ for (auto&& firm_info : autd.firmware_infos()) std::cout << firm_info << std::en
 
 - `send`
 - `<<`演算子
-- `update_flag` (非推奨)
-- `clear` (非推奨)
-- `stop` (非推奨)
-
-## 非同期送信
-
-`send_async`関数, または, stream演算子を使用する場合は, `autd3::async`を予め送っておくことで, データ送信をnon-blockingにすることができる.
-
-```cpp
-autd3::modulation::Sine m(...);
-autd3::gain::Focus g(...);
-
-autd.send_async(std::move(m), std::move(g));
-// or
-autd << autd3::async << std::move(m), std::move(g);
-```
-
-これらの関数は右辺値のみ受け取ることに注意する.
-
-また, 同期送信と非同期送信を混ぜた場合の動作は保証されないので注意されたい.

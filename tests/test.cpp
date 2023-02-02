@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/01/2023
+// Last Modified: 31/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -29,10 +29,9 @@ TEST(ControllerTest, stream) {
   using autd3::gain::Null;
   using autd3::modulation::Sine;
 
-  autd3::Controller autd;
+  auto geometry = autd3::Geometry::Builder().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero())).sound_speed(340.0e3).build();
 
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
-  (void)autd.open(autd3::test::NullLink().build());
+  auto autd = autd3::Controller::open(std::move(geometry), autd3::test::NullLink().build());
 
   autd << clear;
   autd << Sine(150);
@@ -81,134 +80,13 @@ TEST(ControllerTest, stream) {
   autd << (s, n) << s, n;  //
 }
 
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4834)
-#endif
-TEST(ControllerTest, stream_async) {
-  using autd3::async;
-  using autd3::clear;
-  using autd3::gain::Null;
-  using autd3::modulation::Sine;
-
-  autd3::Controller autd;
-
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
-  (void)autd.open(autd3::test::NullLink().build());
-
-  autd << async << clear;
-  autd << async << Sine(150);
-  autd << async << Null();
-  autd << async << Sine(150), Null();
-
-  autd << async                                               //
-       << clear << clear                                      //
-       << clear << Sine(150)                                  //
-       << clear << Null();                                    //
-  autd << async << clear << Sine(150), Null();                //
-  autd << async                                               //
-       << Sine(150) << clear                                  //
-       << Sine(150) << Sine(150)                              //
-       << Sine(150) << Null();                                //
-  autd << async << Sine(150) << Sine(150), Null();            //
-  autd << async                                               //
-       << Null() << clear                                     //
-       << Null() << Sine(150)                                 //
-       << Null() << Null();                                   //
-  autd << async << Null() << (Sine(150), Null());             //
-  autd << async                                               //
-       << (Sine(150), Null()) << clear                        //
-       << (Sine(150), Null()) << Sine(150)                    //
-       << (Sine(150), Null()) << Null();                      //
-  autd << async << (Sine(150), Null()) << Sine(150), Null();  //
-
-  auto s = Sine(150);
-  auto n = Null();
-
-  autd << async << std::move(s);
-  autd << async << std::move(n);
-
-  s = Sine(150);
-  n = Null();
-  autd << async << std::move(s), std::move(n);
-
-  {
-    auto s1 = Sine(150);
-    auto s2 = Sine(150);
-    auto n1 = Null();
-    auto n2 = Null();
-    autd << async                                            //
-         << clear << clear                                   //
-         << clear << std::move(s1)                           //
-         << clear << std::move(n1);                          //
-    autd << async << clear << std::move(s2), std::move(n2);  //
-  }
-
-  {
-    auto s1 = Sine(150);
-    auto s2 = Sine(150);
-    auto s3 = Sine(150);
-    auto s4 = Sine(150);
-    auto s5 = Sine(150);
-    auto s6 = Sine(150);
-    auto n1 = Null();
-    auto n2 = Null();
-    autd << async                                                    //
-         << std::move(s1) << clear                                   //
-         << std::move(s2) << std::move(s3)                           //
-         << std::move(s4) << std::move(n1);                          //
-    autd << async << std::move(s5) << std::move(s6), std::move(n2);  //
-  }
-
-  {
-    auto s1 = Sine(150);
-    auto s2 = Sine(150);
-    auto n1 = Null();
-    auto n2 = Null();
-    auto n3 = Null();
-    auto n4 = Null();
-    auto n5 = Null();
-    auto n6 = Null();
-    autd << async                                                      //
-         << std::move(n1) << clear                                     //
-         << std::move(n2) << std::move(s1)                             //
-         << std::move(n3) << std::move(n4);                            //
-    autd << async << std::move(n5) << (std::move(s2), std::move(n6));  //
-  }
-
-  {
-    auto s1 = Sine(150);
-    auto s2 = Sine(150);
-    auto s3 = Sine(150);
-    auto s4 = Sine(150);
-    auto s5 = Sine(150);
-    auto s6 = Sine(150);
-    auto n1 = Null();
-    auto n2 = Null();
-    auto n3 = Null();
-    auto n4 = Null();
-    auto n5 = Null();
-    auto n6 = Null();
-    autd << async                                                                     //
-         << (std::move(s1), std::move(n1)) << clear                                   //
-         << (std::move(s2), std::move(n2)) << std::move(s3)                           //
-         << (std::move(s4), std::move(n3)) << std::move(n4);                          //
-    autd << async << (std::move(s5), std::move(n5)) << std::move(s6), std::move(n6);  //
-  }
-}
-#if _MSC_VER
-#pragma warning(pop)
-#endif
-
 TEST(ControllerTest, basic_usage) {
-  autd3::Controller autd;
-
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
+  auto geometry = autd3::Geometry::Builder().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero())).sound_speed(340.0e3).build();
 
   auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
-  (void)autd.open(std::move(link));
+  auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
 
   const auto firm_infos = autd.firmware_infos();
   ASSERT_EQ(firm_infos.size(), autd.geometry().num_devices());
@@ -297,118 +175,15 @@ TEST(ControllerTest, basic_usage) {
   autd.close();
 }
 
-TEST(ControllerTest, basic_usage_async) {
-  autd3::Controller autd;
-
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
-
-  auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
-
-  auto link = autd3::test::EmulatorLink(cpus).build();
-  (void)autd.open(std::move(link));
-
-  const auto firm_infos = autd.firmware_infos();
-  ASSERT_EQ(firm_infos.size(), autd.geometry().num_devices());
-  for (const auto& firm : firm_infos) {
-    ASSERT_EQ(firm.cpu_version(), "v2.8");
-    ASSERT_EQ(firm.fpga_version(), "v2.8");
-  }
-
-  autd << autd3::async << autd3::clear << autd3::synchronize;
-  autd.wait();
-  for (const auto& cpu : *cpus) {
-    const auto [duties, phases] = cpu.fpga().drives(0);
-    for (const auto& [duty] : duties) ASSERT_EQ(duty, 0x0000);
-    for (const auto& [phase] : phases) ASSERT_EQ(phase, 0x0000);
-
-    const auto cycles = cpu.fpga().cycles();
-    for (const auto& cycle : cycles) ASSERT_EQ(cycle, 0x1000);
-
-    ASSERT_EQ(cpu.fpga().modulation_cycle(), 2);
-    ASSERT_EQ(cpu.fpga().modulation_frequency_division(), 40960);
-    const auto mod = cpu.fpga().modulation();
-    for (const auto& m : mod) ASSERT_EQ(m, 0x00);
-  }
-
-  autd3::SilencerConfig silencer;
-  const autd3::Vector3 focus = autd.geometry().center() + autd3::Vector3(0, 0, 150);
-  autd3::gain::Focus g(focus);
-  autd3::modulation::Sine m(150);
-  autd << autd3::async << silencer << std::move(m), std::move(g);
-  autd.wait();
-  for (const auto& cpu : *cpus) {
-    ASSERT_TRUE(cpu.fpga_flags().contains(autd3::driver::FPGAControlFlags::LegacyMode));
-    ASSERT_FALSE(cpu.fpga_flags().contains(autd3::driver::FPGAControlFlags::STMMode));
-  }
-  const auto& base_tr = autd.geometry()[0];
-  const auto expect =
-      std::arg(autd3::core::propagate(base_tr.position(), base_tr.z_direction(), 0, base_tr.wavenumber(autd.geometry().sound_speed), focus) *
-               std::exp(std::complex<autd3::driver::autd3_float_t>(
-                   0, 2 * autd3::pi * static_cast<autd3::driver::autd3_float_t>(cpus->at(0).fpga().drives(0).second[0].phase) /
-                          static_cast<autd3::driver::autd3_float_t>(cpus->at(0).fpga().cycles()[0]))));
-  for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
-    for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
-      const auto p =
-          std::arg(autd3::core::propagate(autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].position(),
-                                          autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].z_direction(), 0,
-                                          autd.geometry()[i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j].wavenumber(autd.geometry().sound_speed), focus) *
-                   std::exp(std::complex<autd3::driver::autd3_float_t>(
-                       0, 2 * autd3::pi * static_cast<autd3::driver::autd3_float_t>(cpus->at(i).fpga().drives(0).second[j].phase) /
-                              static_cast<autd3::driver::autd3_float_t>(cpus->at(i).fpga().cycles()[j]))));
-      ASSERT_EQ(cpus->at(i).fpga().drives(0).first[j].duty, cpus->at(i).fpga().cycles()[j] >> 1);
-      ASSERT_NEAR(p, expect, 2 * autd3::pi / 256);
-    }
-  }
-  const std::vector<uint8_t> expect_mod = {85,  108, 132, 157, 183, 210, 237, 246, 219, 192, 166, 140, 116, 92,  71,  51,  34,  19,  9,   2,
-                                           0,   2,   9,   19,  34,  51,  71,  92,  116, 140, 166, 192, 219, 246, 237, 210, 183, 157, 132, 108,
-                                           85,  64,  45,  29,  16,  6,   1,   0,   4,   12,  24,  39,  57,  78,  100, 124, 149, 175, 201, 228,
-                                           255, 228, 201, 175, 149, 124, 100, 78,  57,  39,  24,  12,  4,   0,   1,   6,   16,  29,  45,  64};
-  for (const auto& cpu : *cpus) {
-    ASSERT_EQ(cpu.fpga().modulation_cycle(), expect_mod.size());
-    for (size_t i = 0; i < std::min(cpu.fpga().modulation_cycle(), expect_mod.size()); i++) ASSERT_EQ(cpu.fpga().modulation()[i], expect_mod[i]);
-  }
-  for (const auto& cpu : *cpus) {
-    ASSERT_EQ(cpu.fpga().silencer_cycle(), 4096);
-    ASSERT_EQ(cpu.fpga().silencer_step(), 10);
-  }
-
-  autd << autd3::async << autd3::stop;
-  autd.wait();
-  for (const auto& cpu : *cpus) {
-    const auto [duties, phases] = cpu.fpga().drives(0);
-    for (const auto& [duty] : duties) ASSERT_EQ(duty, 0x0000);
-  }
-
-  autd << autd3::async << autd3::clear;
-  autd.wait();
-  for (const auto& cpu : *cpus) {
-    const auto [duties, phases] = cpu.fpga().drives(0);
-    for (const auto& [duty] : duties) ASSERT_EQ(duty, 0x0000);
-    for (const auto& [phase] : phases) ASSERT_EQ(phase, 0x0000);
-
-    const auto cycles = cpu.fpga().cycles();
-    for (const auto& cycle : cycles) ASSERT_EQ(cycle, 0x1000);
-
-    ASSERT_EQ(cpu.fpga().modulation_cycle(), 2);
-    ASSERT_EQ(cpu.fpga().modulation_frequency_division(), 40960);
-    const auto mod = cpu.fpga().modulation();
-    for (const auto& mv : mod) ASSERT_EQ(mv, 0x00);
-  }
-
-  autd.close();
-}
-
 TEST(ControllerTest, freq_config) {
-  autd3::Controller autd;
-
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
+  auto geometry =
+      autd3::Geometry::Builder().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero())).sound_speed(340.0e3).normal_mode().build();
 
   const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
-  (void)autd.open(std::move(link));
+  auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
 
-  autd << autd3::normal_mode;
   for (auto& tr : autd.geometry()) tr.set_cycle(2341);
 
   autd.send(autd3::clear());
@@ -421,20 +196,21 @@ TEST(ControllerTest, freq_config) {
 }
 
 TEST(ControllerTest, simple_legacy) {
-  autd3::Controller autd;
-
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
-
-  ASSERT_EQ(autd.geometry().num_devices(), 4);
-  ASSERT_EQ(autd.geometry().num_transducers(), 4 * 249);
+  auto geometry = autd3::Geometry::Builder()
+                      .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()))
+                      .sound_speed(340.0e3)
+                      .build();
 
   const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
-  (void)autd.open(std::move(link));
+  auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
+
+  ASSERT_EQ(autd.geometry().num_devices(), 4);
+  ASSERT_EQ(autd.geometry().num_transducers(), 4 * 249);
 
   autd << autd3::clear << autd3::synchronize;
 
@@ -464,22 +240,23 @@ TEST(ControllerTest, simple_legacy) {
 }
 
 TEST(ControllerTest, simple_normal) {
-  autd3::Controller autd;
-
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
-
-  ASSERT_EQ(autd.geometry().num_devices(), 4);
-  ASSERT_EQ(autd.geometry().num_transducers(), 4 * 249);
+  auto geometry = autd3::Geometry::Builder()
+                      .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()))
+                      .sound_speed(340.0e3)
+                      .normal_mode()
+                      .build();
 
   const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
-  (void)autd.open(std::move(link));
+  auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
 
-  autd << autd3::normal_mode;
+  ASSERT_EQ(autd.geometry().num_devices(), 4);
+  ASSERT_EQ(autd.geometry().num_transducers(), 4 * 249);
+
   constexpr uint16_t cycle = 2341;  // 70kHz
   for (auto& tr : autd.geometry()) tr.set_cycle(cycle);
 
@@ -511,22 +288,23 @@ TEST(ControllerTest, simple_normal) {
 }
 
 TEST(ControllerTest, simple_normal_phase) {
-  autd3::Controller autd;
-
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
-
-  ASSERT_EQ(autd.geometry().num_devices(), 4);
-  ASSERT_EQ(autd.geometry().num_transducers(), 4 * 249);
+  auto geometry = autd3::Geometry::Builder()
+                      .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()))
+                      .sound_speed(340.0e3)
+                      .normal_phase_mode()
+                      .build();
 
   const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
-  (void)autd.open(std::move(link));
+  auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
 
-  autd << autd3::normal_phase_mode;
+  ASSERT_EQ(autd.geometry().num_devices(), 4);
+  ASSERT_EQ(autd.geometry().num_transducers(), 4 * 249);
+
   constexpr uint16_t cycle = 2341;  // 70kHz
   for (auto& tr : autd.geometry()) tr.set_cycle(cycle);
 
@@ -561,17 +339,18 @@ TEST(ControllerTest, simple_normal_phase) {
 }
 
 TEST(ControllerTest, focus_stm) {
-  autd3::Controller autd;
-
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
+  auto geometry = autd3::Geometry::Builder()
+                      .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()))
+                      .sound_speed(340.0e3)
+                      .build();
 
   const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
-  (void)autd.open(std::move(link));
+  auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
 
   autd << autd3::clear << autd3::synchronize;
 
@@ -644,17 +423,18 @@ TEST(ControllerTest, focus_stm) {
 }
 
 TEST(ControllerTest, gain_stm_legacy) {
-  autd3::Controller autd;
-
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
+  auto geometry = autd3::Geometry::Builder()
+                      .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()))
+                      .sound_speed(340.0e3)
+                      .build();
 
   auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
-  (void)autd.open(std::move(link));
+  auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
 
   autd << autd3::clear << autd3::synchronize;
 
@@ -782,19 +562,19 @@ TEST(ControllerTest, gain_stm_legacy) {
 }
 
 TEST(ControllerTest, gain_stm_normal) {
-  autd3::Controller autd;
-
-  autd << autd3::normal_mode;
-
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
+  auto geometry = autd3::Geometry::Builder()
+                      .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()))
+                      .sound_speed(340.0e3)
+                      .normal_mode()
+                      .build();
 
   auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
-  (void)autd.open(std::move(link));
+  auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
 
   autd << autd3::clear << autd3::synchronize;
 
@@ -884,19 +664,19 @@ TEST(ControllerTest, gain_stm_normal) {
 }
 
 TEST(ControllerTest, gain_stm_normal_phase) {
-  autd3::Controller autd;
-
-  autd << autd3::normal_phase_mode;
-
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()));
+  auto geometry = autd3::Geometry::Builder()
+                      .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()))
+                      .sound_speed(340.0e3)
+                      .normal_phase_mode()
+                      .build();
 
   auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
   auto link = autd3::test::EmulatorLink(cpus).build();
-  (void)autd.open(std::move(link));
+  auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
 
   autd << autd3::clear << autd3::synchronize;
 

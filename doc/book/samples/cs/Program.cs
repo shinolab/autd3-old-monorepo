@@ -4,16 +4,17 @@ using AUTD3Sharp.Link;
 using AUTD3Sharp.Gain;
 using AUTD3Sharp.Modulation;
 
-var autd = new Controller();
-autd.Geometry.AddDevice(Vector3d.zero, Vector3d.zero);
+var geometry = new GeometryBuilder()
+    .AddDevice(Vector3d.zero, Vector3d.zero)
+    .Build();
 
 var link = new SOEM().HighPrecision(true).Build();
-if (!autd.Open(link)) return;
+
+var autd = Controller.Open(geometry, link);
 
 autd.AckCheckTimeoutMs = 20;
 
 autd.Send(new Clear());
-
 autd.Send(new Synchronize());
 
 var firmList = autd.FirmwareInfoList().ToArray();

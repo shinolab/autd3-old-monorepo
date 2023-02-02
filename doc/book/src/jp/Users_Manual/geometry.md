@@ -28,8 +28,10 @@ SDKで複数台のデバイスを使用する場合は`add_device`関数を接�
 さらに, グローバル座標を1台目のローカル座標と同じようにとるとすると,
 
 ```cpp
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()));
+  auto geometry = autd3::Geometry::Builder()
+                      .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
+                      .build();
 ```
 
 とすれば良い.
@@ -39,8 +41,10 @@ SDKで複数台のデバイスを使用する場合は`add_device`関数を接�
 また, 例えば, グローバル座標を2台目のローカル座標と同じようにとるとすると,
 
 ```cpp
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(-autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
+  auto geometry = autd3::Geometry::Builder()
+                      .add_device(autd3::AUTD3(autd3::Vector3(-autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+                      .build();
 ```
 
 とすれば良い.
@@ -52,8 +56,10 @@ SDKで複数台のデバイスを使用する場合は`add_device`関数を接�
 
 さらに, 例えば, 上図のように配置されており, 下が1台目, 左が2台目で, グローバル座標を1台目のローカル座標と同じだとすると,
 ```cpp
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
-  autd.geometry().add_device(autd3::AUTD3(autd3::Vector3(0, 0, autd3::AUTD3::DEVICE_WIDTH), autd3::Vector3(0, autd3::pi / 2.0, 0)));
+  auto geometry = autd3::Geometry::Builder()
+                      .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(0, 0, autd3::AUTD3::DEVICE_WIDTH), autd3::Vector3(0, autd3::pi / 2.0, 0)))
+                      .build();
 ```
 のように指定する.
 

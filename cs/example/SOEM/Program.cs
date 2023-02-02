@@ -4,7 +4,7 @@
  * Created Date: 14/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/11/2022
+ * Last Modified: 01/02/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,8 +18,9 @@ using Samples;
 
 Console.WriteLine("Test with SOEM");
 
-var autd = new Controller();
-autd.Geometry.AddDevice(Vector3d.zero, Vector3d.zero);
+var geometry = new GeometryBuilder()
+    .AddDevice(Vector3d.zero, Vector3d.zero)
+    .Build();
 
 var onLost = new SOEM.OnLostCallbackDelegate((string msg) =>
 {
@@ -30,11 +31,8 @@ var link = new SOEM()
     .HighPrecision(true)
     .OnLost(onLost)
     .Build();
-if (!autd.Open(link))
-{
-    Console.WriteLine("Failed to open Controller.");
-    return;
-}
+
+var autd = Controller.Open(geometry, link);
 
 autd.AckCheckTimeoutMs = 20;
 

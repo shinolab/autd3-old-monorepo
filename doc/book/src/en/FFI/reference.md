@@ -20,34 +20,19 @@ For actual usage, please refer to [C API Example](https://github.com/shinolab/au
 | flush                  | void*    | in     | flush callback                     |
 | return                 | void     | -      | -                                  |
 
-## AUTDCreateController (autd3capi)
 
-Create `Controller`.
+## AUTDCreateGeometryBuilder (autd3capi)
 
-The controller created must be freed at the end by `AUTDFreeController`.
-
-| Argument name / return | type   | in/out | description                      |
-| ---------------------- | ------ | ------ | -------------------------------- |
-| out                    | void** | out    | pointer to pointer to Controller |
-| return                 | void   | -      |                                  |
-
-## AUTDOpenController (autd3capi)
-
-Open `Controller`.
-
-| Argument name / return | type  | in/out | description           |
-| ---------------------- | ----- | ------ | --------------------- |
-| handle                 | void* | in     | pointer to Controller |
-| link                   | void* | in     | pointer to Link       |
-| return                 | bool  | -      | true if success       |
+| Argument name / return | type    | in/out | description                            |
+| ---------------------- | ------- | ------ | -------------------------------------- |
+| out                    | void**  | out     | pointer to pointer to Geometry::Builder                  |
+| return                 | void    | -      | -                              |
 
 ## AUTDAddDevice (autd3capi)
 
-Add a device to the Controller.
-
 | Argument name / return | type    | in/out | description                               |
 | ---------------------- | ------- | ------ | ----------------------------------------- |
-| handle                 | void*   | in     | pointer to Controller                     |
+| geometry_builder                | void*   | in     | pointer to Geometry::Builder                     |
 | x                      | double  | in     | x coordinate of position in millimeter    |
 | y                      | double  | in     | y coordinate of position in millimeter    |
 | z                      | double  | in     | z coordinate of position in millimeter    |
@@ -58,11 +43,9 @@ Add a device to the Controller.
 
 ## AUTDAddDeviceQuaternion (autd3capi)
 
-Add a device to the Controller.
-
 | Argument name / return | type    | in/out | description                            |
 | ---------------------- | ------- | ------ | -------------------------------------- |
-| handle                 | void*   | in     | pointer to Controller                  |
+| geometry_builder                 | void*   | in     | pointer to Geometry::Builder                  |
 | x                      | double  | in     | x coordinate of position in millimeter |
 | y                      | double  | in     | y coordinate of position in millimeter |
 | z                      | double  | in     | z coordinate of position in millimeter |
@@ -70,7 +53,40 @@ Add a device to the Controller.
 | qx                     | double  | in     | x parameter of quaternion of rotation  |
 | qy                     | double  | in     | y parameter of quaternion of rotation  |
 | qz                     | double  | in     | z parameter of quaternion of rotation  |
-| return                 | bool | -      | -                                 |
+| return                 | bool    | -      | -                              |
+
+## AUTDBuildGeometry (autd3capi)
+
+| Argument name / return | type    | in/out | description                            |
+| ---------------------- | ------- | ------ | -------------------------------------- |
+| out                    | void**  | out     | pointer to pointer to Geometry                  |
+| geometry_builder       | void*   | in     | pointer to Geometry::Builder                  |
+| return                 | void    | -      | -                              |
+
+## AUTDFreeGeometry (autd3capi)
+
+| Argument name / return | type    | in/out | description                            |
+| ---------------------- | ------- | ------ | -------------------------------------- |
+| geometry                 | void*   | in     | pointer to Geometry                  |
+| return                 | void    | -      | -                              |
+
+## AUTDGetGeometry (autd3capi)
+
+| Argument name / return | type    | in/out | description                            |
+| ---------------------- | ------- | ------ | -------------------------------------- |
+| geometry               | void**  | out    | pointer to pointer to Geometry         |
+| cnt                    | void*   | in     | pointer to Controller                  |
+| return                 | void    | -      | -                              |
+
+
+## AUTDOpenController (autd3capi)
+
+| Argument name / return | type  | in/out | description                      |
+| ---------------------- | ----- | ------ | -------------------------------- |
+| out                    | void**| out    | pointer to pointer to Controller |
+| geometry               | void* | in     | pointer to Geometry              |
+| link                   | void* | in     | pointer to Link                  |
+| return                 | bool  | -      | true if success                  |
 
 ## AUTDClose (autd3capi)
 
@@ -203,8 +219,8 @@ Get sound speed.
 
 | Argument name / return | type   | in/out | description           |
 | ---------------------- | ------ | ------ | --------------------- |
-| handle                 | void*  | in     | pointer to Controller |
-| return                 | double | -      | Speed of sound in m/s |
+| geometry                 | void*   | in     | pointer to Geometry                  |
+| return                 | double | -      | Speed of sound in mm/s |
 
 ## AUTDSetSoundSpeed (autd3capi)
 
@@ -212,8 +228,8 @@ Set sound speed.
 
 | Argument name / return | type   | in/out | description           |
 | ---------------------- | ------ | ------ | --------------------- |
-| handle                 | void*  | in     | pointer to Controller |
-| sound_speed            | double | in     | Speed of sound in m/s |
+| geometry                 | void*   | in     | pointer to Geometry                  |
+| sound_speed            | double | in     | Speed of sound in mm/s |
 | return                 | void   | -      | -                     |
 
 ## AUTDSetSoundSpeedFromTemp (autd3capi)
@@ -222,7 +238,7 @@ Set sound speed from temperature.
 
 | Argument name / return | type   | in/out | description           |
 | ---------------------- | ------ | ------ | --------------------- |
-| handle                 | void*  | in     | pointer to Controller |
+| cnt                 | void*  | in     | pointer to Controller |
 | temp                   | double | in     | temperature in Celsius degree |
 | k                   | double | in     | Heat capacity ratio           |
 | r                   | double | in     |  Gas constant [J K^-1 mol^-1]           |
@@ -235,7 +251,7 @@ Get frequency of the transducer.
 
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
-| handle                 | void*   | in     | pointer to Controller       |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | trans_idx        | int32_t | in     | transducer index      |
 | return                 | double  | -      | frequency of the transducer |
 
@@ -245,7 +261,7 @@ Set frequency of the transducer.
 
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
-| handle                 | void*   | in     | pointer to Controller       |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | trans_idx        | int32_t | in     | transducer index      |
 | frequency              | double  | in     | frequency of the transducer |
 | return                 | void    | -      | -                           |
@@ -256,7 +272,7 @@ Get cycle of the transducer.
 
 | Argument name / return | type     | in/out | description             |
 | ---------------------- | -------- | ------ | ----------------------- |
-| handle                 | void*    | in     | pointer to Controller   |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | trans_idx        | int32_t | in     | transducer index      |
 | return                 | uint16_t | -      | cycle of the transducer |
 
@@ -266,7 +282,7 @@ Set cycle of the transducer.
 
 | Argument name / return | type     | in/out | description             |
 | ---------------------- | -------- | ------ | ----------------------- |
-| handle                 | void*    | in     | pointer to Controller   |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | trans_idx        | int32_t | in     | transducer index      |
 | cycle                  | uint16_t | in     | cycle of the transducer |
 | return                 | void     | -      | -                       |
@@ -277,7 +293,7 @@ Get wavelength of the transducer.
 
 | Argument name / return | type    | in/out | description                                          |
 | ---------------------- | ------- | ------ | ---------------------------------------------------- |
-| handle                 | void*   | in     | pointer to Controller                                |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | trans_idx        | int32_t | in     | transducer index      |
 | return                 | double  | -      | wavelength of ultrasound emitted from the transducer |
 
@@ -287,7 +303,7 @@ Get attenuation coefficient.
 
 | Argument name / return | type   | in/out | description                      |
 | ---------------------- | ------ | ------ | -------------------------------- |
-| handle                 | void*  | in     | pointer to Controller            |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | return                 | double | -      | attenuation coefficient in Np/mm |
 
 ## AUTDSetAttenuation (autd3capi)
@@ -296,7 +312,7 @@ Set attenuation coefficient.
 
 | Argument name / return | type   | in/out | description                      |
 | ---------------------- | ------ | ------ | -------------------------------- |
-| handle                 | void*  | in     | pointer to Controller            |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | attenuation            | double | in     | attenuation coefficient in Np/mm |
 | return                 | void   | -      | -                                |
 
@@ -318,7 +334,7 @@ Get the number of transducers.
 
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
-| handle                 | void*   | in     | pointer to Controller |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | return                 | int32_t | -      | number of transducers |
 
 ## AUTDNumDevices (autd3capi)
@@ -327,7 +343,7 @@ Get the number of devices.
 
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
-| handle                 | void*   | in     | pointer to Controller |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | return                 | int32_t | -      | number of devices     |
 
 ## AUTDGeometryCenter (autd3capi)
@@ -336,7 +352,7 @@ Get the geometry center.
 
 | Argument name / return | type    | in/out | description                         |
 | ---------------------- | ------- | ------ | ----------------------------------- |
-| handle                 | void*   | in     | pointer to Controller               |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | x                      | double* | out    | x coordinate of center              |
 | y                      | double* | out    | y coordinate of center              |
 | z                      | double* | out    | z coordinate of center              |
@@ -348,7 +364,7 @@ Get the device center.
 
 | Argument name / return | type    | in/out | description                         |
 | ---------------------- | ------- | ------ | ----------------------------------- |
-| handle                 | void*   | in     | pointer to Controller               |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | dev_idx                | int32_t | in     | device index                        |
 | x                      | double* | out    | x coordinate of center              |
 | y                      | double* | out    | y coordinate of center              |
@@ -361,7 +377,7 @@ Get the position of the transducer.
 
 | Argument name / return | type    | in/out | description                         |
 | ---------------------- | ------- | ------ | ----------------------------------- |
-| handle                 | void*   | in     | pointer to Controller               |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | trans_idx        | int32_t | in     | transducer index      |
 | x                      | double* | out    | x coordinate of transducer position |
 | y                      | double* | out    | y coordinate of transducer position |
@@ -374,7 +390,7 @@ Get the x-direction of the transducer.
 
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
-| handle                 | void*   | in     | pointer to Controller       |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | trans_idx        | int32_t | in     | transducer index      |
 | x                      | double* | out    | x coordinate of x-direction |
 | y                      | double* | out    | y coordinate of x-direction |
@@ -387,7 +403,7 @@ Get the y-direction of the transducer.
 
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
-| handle                 | void*   | in     | pointer to Controller       |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | trans_idx        | int32_t | in     | transducer index      |
 | x                      | double* | out    | x coordinate of y-direction |
 | y                      | double* | out    | y coordinate of y-direction |
@@ -400,7 +416,7 @@ Get the z-direction of the transducer.
 
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
-| handle                 | void*   | in     | pointer to Controller       |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | trans_idx        | int32_t | in     | transducer index      |
 | x                      | double* | out    | x coordinate of z-direction |
 | y                      | double* | out    | y coordinate of z-direction |
@@ -942,49 +958,24 @@ Send special data.
 | special                | void*   | in     | pointer to special data                                                                                |
 | return                 | bool    | -      | true if successful                                                                                     |
 
-## AUTDSendAsync (autd3capi)
-
-Send header and body data asynchronously.
-
-**Never delete header and body after calling this function.**
-
-| Argument name / return | type    | in/out | description                                                                                            |
-| ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
-| handle                 | void*   | in     | pointer to Controller                                                                                  |
-| header                 | void*   | in     | pointer to header data                                                                                 |
-| body                   | void*   | in     | pointer to body data                                                                                   |
-| return                 | void     | -      | -                                                                                                     |
-
-## AUTDSendSpecialAsync (autd3capi)
-
-Send special data asynchronously.
-
-**Never delete special after calling this function.**
-
-| Argument name / return | type    | in/out | description                                                                                            |
-| ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
-| handle                 | void*   | in     | pointer to Controller                                                                                  |
-| special                | void*   | in     | pointer to special data                                                                                 |
-| return                 | void     | -      | -                                  |
-
-## AUTDSetModDelay (autd3capi)
+## AUTDSetTransModDelay (autd3capi)
 
 Configure Modulation Delay of the transducer.
 
 | Argument name / return | type     | in/out | description                        |
 | ---------------------- | -------- | ------ | ---------------------------------- |
-| handle                 | void*    | in     | pointer to Controller              |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | trans_idx        | int32_t | in     | transducer index      |
 | delay                  | uint16_t | in     | modulation delay of the transducer |
 | return                 | void     | -      | -                                  |
 
-## AUTDGetModDelay (autd3capi)
+## AUTDGetTransModDelay (autd3capi)
 
 Get Modulation Delay of the transducer.
 
 | Argument name / return | type     | in/out | description                        |
 | ---------------------- | -------- | ------ | ---------------------------------- |
-| handle                 | void*    | in     | pointer to Controller              |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | trans_idx        | int32_t | in     | transducer index      |
 | return                 | uint16_t | -      | modulation delay of the transducer |
 
@@ -1518,7 +1509,7 @@ Run Geometry Viewer.
 
 | Argument name / return | type    | in/out | description                        |
 | ---------------------- | ------- | ------ | ---------------------------------- |
-| cnt                    | void*   | in     | pointer to Controller              |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | width                  | int32_t | in     | window width                       |
 | height                 | int32_t | in     | window height                      |
 | vsync                  | bool    | in     | vsync                              |

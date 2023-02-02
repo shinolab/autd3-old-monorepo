@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 31/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ use anyhow::Result;
 use autd3_core::{
     gain::Gain,
     geometry::{Geometry, Transducer, Vector3},
-    Drive,
+    Amp, Drive, Phase,
 };
 use autd3_traits::Gain;
 use nalgebra::ComplexField;
@@ -124,7 +124,7 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for LM<B, C> {
         let bhb = Self::make_bhb(geometry, &self.amps, &self.foci, m, n);
 
         let mut x = VectorX::zeros(n_param);
-        x.slice_mut((0, 0), (self.initial.len(), 1))
+        x.view_mut((0, 0), (self.initial.len(), 1))
             .copy_from_slice(&self.initial);
 
         let mut nu = 2.0;
@@ -222,7 +222,10 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for LM<B, C> {
             .map(|tr| {
                 let phase = x[tr.id()].rem_euclid(2.0 * PI);
                 let amp = self.constraint.convert(1.0, 1.0);
-                Drive { amp, phase }
+                Drive {
+                    amp: Amp::new(amp),
+                    phase: Phase::new(phase),
+                }
             })
             .collect())
     }

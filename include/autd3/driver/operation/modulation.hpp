@@ -3,7 +3,7 @@
 // Created Date: 06/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/01/2023
+// Last Modified: 01/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -46,9 +46,9 @@ struct Modulation final : Operation {
     if (is_first_frame) {
       tx.header().cpu_flag.set(CPUControlFlags::ModBegin);
       tx.header().mod_initial().freq_div = _freq_div;
-      std::transform(&_mod_data[_sent], &_mod_data[_sent + mod_size], &tx.header().mod_initial().data[0], to_duty);
+      std::transform(&_mod_data[_sent], &_mod_data[_sent] + mod_size, &tx.header().mod_initial().data[0], to_duty);
     } else {
-      std::transform(&_mod_data[_sent], &_mod_data[_sent + mod_size], &tx.header().mod_subsequent().data[0], to_duty);
+      std::transform(&_mod_data[_sent], &_mod_data[_sent] + mod_size, &tx.header().mod_subsequent().data[0], to_duty);
     }
 
     if (is_last_frame) tx.header().cpu_flag.set(CPUControlFlags::ModEnd);
