@@ -146,6 +146,22 @@ class Geometry:
         self.dispose()
 
     @ property
+    def sound_speed(self):
+        return Base().dll.AUTDGetSoundSpeed(self._ptr)
+
+    @ sound_speed.setter
+    def sound_speed(self, sound_speed: float):
+        Base().dll.AUTDSetSoundSpeed(self._ptr, sound_speed)
+
+    @ property
+    def attenuation(self):
+        return Base().dll.AUTDGetAttenuation(self._ptr)
+
+    @ attenuation.setter
+    def attenuation(self, attenuation: float):
+        Base().dll.AUTDSetAttenuation(self._ptr, attenuation)
+
+    @ property
     def num_transducers(self) -> int:
         return Base().dll.AUTDNumTransducers(self._ptr)
 
@@ -237,24 +253,8 @@ class Controller:
     def geometry(self):
         return self._geometry
 
-    @ property
-    def sound_speed(self):
-        return Base().dll.AUTDGetSoundSpeed(self.p_cnt)
-
-    @ sound_speed.setter
-    def sound_speed(self, sound_speed: float):
-        Base().dll.AUTDSetSoundSpeed(self.p_cnt, sound_speed)
-
     def set_sound_speed_from_temp(self, temp: float, k: float = 1.4, r: float = 8.31446261815324, m: float = 28.9647e-3):
         Base().dll.AUTDSetSoundSpeed(self.p_cnt, temp, k, r, m)
-
-    @ property
-    def attenuation(self):
-        return Base().dll.AUTDGetAttenuation(self.p_cnt)
-
-    @ attenuation.setter
-    def attenuation(self, attenuation: float):
-        Base().dll.AUTDSetAttenuation(self.p_cnt, attenuation)
 
     @staticmethod
     def open(geometry: Geometry, link: Link):
@@ -345,7 +345,7 @@ class Controller:
 
     @ property
     def fpga_info(self):
-        infos = np.zeros([self.num_transducers() / NUM_TRANS_IN_UNIT]).astype(np.ubyte)
+        infos = np.zeros([self.geometry.num_devices]).astype(np.ubyte)
         pinfos = np.ctypeslib.as_ctypes(infos)
         Base().dll.AUTDGetFPGAInfo(self.p_cnt, pinfos)
         return infos
