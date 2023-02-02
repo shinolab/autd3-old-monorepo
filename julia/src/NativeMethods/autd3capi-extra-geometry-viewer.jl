@@ -32,5 +32,5 @@ end
 
 const _dll = joinpath(@__DIR__, get_bin_path(), "bin", get_lib_prefix() * "autd3capi-extra-geometry-viewer" * get_lib_ext())
 
-autd_extra_geometry_viewer(cnt, width, height, vsync, gpu_idx) = ccall((:AUTDExtraGeometryViewer, _dll), Bool, (Ptr{Cvoid}, Int32, Int32, Bool, Int32, ), cnt, width, height, vsync, gpu_idx);
+autd_extra_geometry_viewer(geometry, width, height, vsync, gpu_idx) = ccall((:AUTDExtraGeometryViewer, _dll), Bool, (Ptr{Cvoid}, Int32, Int32, Bool, Int32, ), geometry, width, height, vsync, gpu_idx);
 end

@@ -17,18 +17,19 @@ using StaticArrays: size
 
 include("tests/runner.jl")
 
-function on_lost(msg::Cstring)
-    println(msg)
-    exit(-1)
-end
 
 function main()
     try
         geometry = GeometryBuilder().add_device(SVector(0.0, 0.0, 0.0), SVector(0.0, 0.0, 0.0)).build()
 
-        link = SOEM(on_lost=on_lost, high_precision=true)
+        link = Simulator()
 
         cnt = Controller(geometry, link)
+
+        cnt.to_normal()
+        for tr in cnt.geometry()
+            tr.set_frequency(70e3)
+        end
 
         run(cnt)
 

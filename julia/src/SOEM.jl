@@ -3,7 +3,7 @@
 # Created Date: 13/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 14/01/2023
+# Last Modified: 02/02/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,17 +15,17 @@ struct SOEM
         chandle = Ref(Ptr{Cvoid}(0))
         if on_lost == Nothing
             if ifname == ""
-                autd3capi_link_soem.autd_link_soem(chandle, Ptr{Cvoid}(C_NULL), UInt16(sync0_cycle), UInt16(send_cycle), freerun, Nothing, high_precision, UInt64(check_interval), debug_level, Nothing, Nothing)
+                autd3capi_link_soem.autd_link_soem(chandle, Ptr{Cvoid}(C_NULL), UInt16(sync0_cycle), UInt16(send_cycle), freerun, Ptr{Cvoid}(C_NULL), high_precision, UInt64(check_interval), debug_level, Ptr{Cvoid}(C_NULL), Ptr{Cvoid}(C_NULL))
             else
-                autd3capi_link_soem.autd_link_soem(chandle, ifname, UInt16(sync0_cycle), UInt16(send_cycle), freerun, Nothing, high_precision, UInt64(check_interval), debug_level, Nothing, Nothing)
+                autd3capi_link_soem.autd_link_soem(chandle, ifname, UInt16(sync0_cycle), UInt16(send_cycle), freerun, Ptr{Cvoid}(C_NULL), high_precision, UInt64(check_interval), debug_level, Ptr{Cvoid}(C_NULL), Ptr{Cvoid}(C_NULL))
             end
         else
             f = (x::Cstring) -> on_lost(x)
             p = @cfunction($f, Cvoid, (Cstring,))
             if ifname == ""
-                autd3capi_link_soem.autd_link_soem(chandle, Ptr{Cvoid}(C_NULL), UInt16(sync0_cycle), UInt16(send_cycle), freerun, p, high_precision, UInt64(check_interval), debug_level, Nothing, Nothing)
+                autd3capi_link_soem.autd_link_soem(chandle, Ptr{Cvoid}(C_NULL), UInt16(sync0_cycle), UInt16(send_cycle), freerun, p, high_precision, UInt64(check_interval), debug_level, Ptr{Cvoid}(C_NULL), Ptr{Cvoid}(C_NULL))
             else
-                autd3capi_link_soem.autd_link_soem(chandle, ifname, UInt16(sync0_cycle), UInt16(send_cycle), freerun, p, high_precision, UInt64(check_interval), debug_level, Nothing, Nothing)
+                autd3capi_link_soem.autd_link_soem(chandle, ifname, UInt16(sync0_cycle), UInt16(send_cycle), freerun, p, high_precision, UInt64(check_interval), debug_level, Ptr{Cvoid}(C_NULL), Ptr{Cvoid}(C_NULL))
             end
         end
         new(Link(chandle[]))
