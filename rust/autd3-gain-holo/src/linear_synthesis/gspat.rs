@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 30/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ use anyhow::Result;
 use autd3_core::{
     gain::Gain,
     geometry::{Geometry, Transducer, Vector3},
-    Drive,
+    Amp, Drive, Phase,
 };
 use autd3_traits::Gain;
 use nalgebra::ComplexField;
@@ -123,7 +123,10 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for GSPAT<B, C> {
             .map(|tr| {
                 let phase = q[tr.id()].argument() + PI;
                 let amp = self.constraint.convert(q[tr.id()].abs(), max_coefficient);
-                Drive { amp, phase }
+                Drive {
+                    amp: Amp::new(amp),
+                    phase: Phase::new(phase),
+                }
             })
             .collect())
     }

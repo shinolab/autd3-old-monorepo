@@ -4,7 +4,7 @@
  * Created Date: 03/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/01/2023
+ * Last Modified: 31/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,16 +18,18 @@
 int main(void) {
   void* cnt = NULL;
   void* link = NULL;
+  void* builder = NULL;
+  void* geometry = NULL;
   const char* ip = "";
   const uint16_t port = 50632;
 
-  AUTDCreateController(&cnt);
-
-  AUTDAddDevice(cnt, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+  AUTDCreateGeometryBuilder(&builder);
+  AUTDAddDevice(builder, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+  AUTDBuildGeometry(&geometry, builder);
 
   AUTDLinkRemoteSOEM(&link, ip, port);
 
-  AUTDOpenController(cnt, link);
+  AUTDOpenController(&cnt, geometry, link);
 
   return run(cnt);
 }

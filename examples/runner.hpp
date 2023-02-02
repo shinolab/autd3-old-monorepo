@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 31/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -56,10 +56,14 @@ inline int run(autd3::Controller& autd) {
   };
   if (autd.geometry().num_devices() == 2) tests.emplace_back(std::pair(F{group_test}, "Grouped Gain Test"));
 
-  autd.geometry().sound_speed = 340.0e3;  // mm/s
-
   const auto firm_infos = autd.firmware_infos();
-  if (firm_infos.empty()) throw std::runtime_error("Cannot read firmware information.");
+
+  if (!std::all_of(firm_infos.begin(), firm_infos.end(), autd3::FirmwareInfo::matches_version))
+    std::cerr << "\033[93mWARN: FPGA and CPU firmware version do not match.\033[0m" << std::endl;
+  if (!std::all_of(firm_infos.begin(), firm_infos.end(), autd3::FirmwareInfo::is_latest))
+    std::cerr << "\033[93mWARN: You are using old firmware. Please consider updating to "
+              << autd3::driver::FirmwareInfo::firmware_version_map(autd3::driver::VERSION_NUM) << ".\033[0m" << std::endl;
+
   std::cout << "================================== AUTD3 firmware information ==================================" << std::endl;
   std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));
   std::cout << "================================================================================================" << std::endl;

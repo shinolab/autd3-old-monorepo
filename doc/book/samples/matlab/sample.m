@@ -8,17 +8,16 @@ use_backend_cuda = false;
 try
     init_autd(use_link_soem, use_backend_cuda);
 
-    cnt = Controller();
-    cnt.add_device([0 0 0], [0 0 0]);
+    builder = GeometryBuilder();
+    builder.add_device([0 0 0], [0 0 0]);
+    geometry = builder.build();
 
     l = SOEM();
     link = l.build();
-    if ~cnt.open(link)
-        throw(MException('MATLAB:RuntimeError', 'Cannot open link'));
-    end
+
+    cnt = Controller(geometry, link);
 
     firm_list = cnt.firmware_info_list();
-
     for i = 1:length(firm_list)
         disp(firm_list(i));
     end

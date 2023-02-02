@@ -14,4 +14,4 @@ typedef long int64_t;
 typedef unsigned long uint64_t;
 #endif
 
-bool AUTDExtraGeometryViewer(void* cnt, int32_t width, int32_t height, bool vsync, int32_t gpu_idx);
+bool AUTDExtraGeometryViewer(void* geometry, int32_t width, int32_t height, bool vsync, int32_t gpu_idx);

@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/01/2023
+ * Last Modified: 02/02/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,7 +16,6 @@
 #define DIMENSION_M
 #endif
 
-using Microsoft.Win32.SafeHandles;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -41,27 +40,6 @@ using autd3_float_t = System.Double;
 namespace AUTD3Sharp
 {
     using Base = NativeMethods.Base;
-
-    internal class AUTDControllerHandle : SafeHandleZeroOrMinusOneIsInvalid
-    {
-        internal IntPtr CntPtr => handle;
-
-        public AUTDControllerHandle(bool ownsHandle) : base(ownsHandle)
-        {
-            handle = new IntPtr();
-        }
-
-        public void Create()
-        {
-            Base.AUTDCreateController(out handle);
-        }
-
-        protected override bool ReleaseHandle()
-        {
-            Base.AUTDFreeController(handle);
-            return true;
-        }
-    }
 
     public static class AUTD3
     {
@@ -172,33 +150,42 @@ namespace AUTD3Sharp
 
         public ushort ModDelay
         {
-            get => Base.AUTDGetModDelay(_cnt, Id);
-            set => Base.AUTDSetModDelay(_cnt, Id, value);
+            get => Base.AUTDGetTransModDelay(_cnt, Id);
+            set => Base.AUTDSetTransModDelay(_cnt, Id, value);
         }
     }
 
     public sealed class Geometry : IEnumerable<Transducer>
     {
-        internal readonly IntPtr CntPtr;
+        internal readonly IntPtr GeometryPtr;
+        private bool _isDisposed;
 
-        internal Geometry(IntPtr cntPtr)
+        internal Geometry(IntPtr geometryPtr)
         {
-            CntPtr = cntPtr;
+            GeometryPtr = geometryPtr;
         }
 
-        public void AddDevice(Vector3 position, Vector3 rotation) => Base.AUTDAddDevice(CntPtr, position.x, position.y, position.z, rotation.x, rotation.y, rotation.z);
+        public int NumTransducers => Base.AUTDNumTransducers(GeometryPtr);
 
-        public void AddDevice(Vector3 position, Quaternion quaternion) => Base.AUTDAddDeviceQuaternion(CntPtr, position.x, position.y, position.z, quaternion.w, quaternion.x, quaternion.y, quaternion.z);
+        public int NumDevices => Base.AUTDNumDevices(GeometryPtr);
 
-        public int NumTransducers => Base.AUTDNumTransducers(CntPtr);
+        public autd3_float_t SoundSpeed
+        {
+            get => Base.AUTDGetSoundSpeed(GeometryPtr);
+            set => Base.AUTDSetSoundSpeed(GeometryPtr, value);
+        }
 
-        public int NumDevices => Base.AUTDNumDevices(CntPtr);
+        public autd3_float_t Attenuation
+        {
+            get => Base.AUTDGetAttenuation(GeometryPtr);
+            set => Base.AUTDSetAttenuation(GeometryPtr, value);
+        }
 
         public Vector3 Center
         {
             get
             {
-                Base.AUTDGeometryCenter(CntPtr, out var x, out var y, out var z);
+                Base.AUTDGeometryCenter(GeometryPtr, out var x, out var y, out var z);
                 return new Vector3(x, y, z);
             }
         }
@@ -208,13 +195,13 @@ namespace AUTD3Sharp
             get
             {
                 if (index >= NumTransducers) throw new IndexOutOfRangeException();
-                return new Transducer(index, CntPtr);
+                return new Transducer(index, GeometryPtr);
             }
         }
 
         public Vector3 CenterOf(int devIdx)
         {
-            Base.AUTDGeometryCenterOf(CntPtr, devIdx, out var x, out var y, out var z);
+            Base.AUTDGeometryCenterOf(GeometryPtr, devIdx, out var x, out var y, out var z);
             return new Vector3(x, y, z);
         }
 
@@ -242,9 +229,51 @@ namespace AUTD3Sharp
             public void Dispose() { }
         }
 
-        public IEnumerator<Transducer> GetEnumerator() => new TransducerEnumerator(CntPtr);
+        public IEnumerator<Transducer> GetEnumerator() => new TransducerEnumerator(GeometryPtr);
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+        private void Dispose()
+        {
+            if (_isDisposed) return;
+            Base.AUTDFreeGeometry(GeometryPtr);
+            _isDisposed = true;
+            GC.SuppressFinalize(this);
+        }
+
+        ~Geometry()
+        {
+            Dispose();
+        }
+    }
+
+    public sealed class GeometryBuilder
+    {
+        private readonly IntPtr _builderPtr;
+
+        public GeometryBuilder()
+        {
+            _builderPtr = new IntPtr();
+            Base.AUTDCreateGeometryBuilder(out _builderPtr);
+        }
+
+        public GeometryBuilder AddDevice(Vector3 position, Vector3 rotation)
+        {
+            Base.AUTDAddDevice(_builderPtr, position.x, position.y, position.z, rotation.x, rotation.y, rotation.z);
+            return this;
+        }
+
+        public GeometryBuilder AddDevice(Vector3 position, Quaternion quaternion)
+        {
+            Base.AUTDAddDeviceQuaternion(_builderPtr, position.x, position.y, position.z, quaternion.w, quaternion.x, quaternion.y, quaternion.z);
+            return this;
+        }
+
+        public Geometry Build()
+        {
+            Base.AUTDBuildGeometry(out var geometryPtr, _builderPtr);
+            return new Geometry(geometryPtr);
+        }
     }
 
     public sealed class Controller : IDisposable
@@ -252,39 +281,43 @@ namespace AUTD3Sharp
         #region field
 
         private bool _isDisposed;
-        internal readonly AUTDControllerHandle AUTDControllerHandle;
+        internal readonly IntPtr CntPtr;
 
         #endregion
 
         #region Controller
 
-        public Controller()
+        public static Controller Open(Geometry geometry, Link.Link link)
         {
-            AUTDControllerHandle = new AUTDControllerHandle(true);
-            AUTDControllerHandle.Create();
-            Geometry = new Geometry(AUTDControllerHandle.CntPtr);
+            if (!Base.AUTDOpenController(out var cnt, geometry.GeometryPtr, link.LinkPtr))
+                throw new Exception("Failed to open controller.");
+            return new Controller(cnt, geometry);
+        }
+
+        private Controller(IntPtr cnt, Geometry geometry)
+        {
+            CntPtr = cnt;
+            Geometry = geometry;
         }
 
         public void ToLegacy()
         {
-            Base.AUTDSetMode(AUTDControllerHandle.CntPtr, 0);
+            Base.AUTDSetMode(CntPtr, 0);
         }
 
         public void ToNormal()
         {
-            Base.AUTDSetMode(AUTDControllerHandle.CntPtr, 1);
+            Base.AUTDSetMode(CntPtr, 1);
         }
 
         public void ToNormalPhase()
         {
-            Base.AUTDSetMode(AUTDControllerHandle.CntPtr, 2);
+            Base.AUTDSetMode(CntPtr, 2);
         }
-
-        public bool Open(Link.Link link) => Base.AUTDOpenController(AUTDControllerHandle.CntPtr, link.LinkPtr);
 
         public IEnumerable<FirmwareInfo> FirmwareInfoList()
         {
-            var size = Base.AUTDGetFirmwareInfoListPointer(AUTDControllerHandle.CntPtr, out var handle);
+            var size = Base.AUTDGetFirmwareInfoListPointer(CntPtr, out var handle);
             for (var i = 0; i < size; i++)
             {
                 var info = new StringBuilder(256);
@@ -295,7 +328,7 @@ namespace AUTD3Sharp
             Base.AUTDFreeFirmwareInfoListPointer(handle);
         }
 
-        public bool Close() => Base.AUTDClose(AUTDControllerHandle.CntPtr);
+        public bool Close() => Base.AUTDClose(CntPtr);
 
         public void Dispose()
         {
@@ -309,7 +342,7 @@ namespace AUTD3Sharp
 
             if (disposing) Close();
 
-            AUTDControllerHandle.Dispose();
+            Base.AUTDFreeController(CntPtr);
 
             _isDisposed = true;
         }
@@ -324,54 +357,41 @@ namespace AUTD3Sharp
         #region Property
         public Geometry Geometry { get; }
 
-
-        public autd3_float_t SoundSpeed
-        {
-            get => Base.AUTDGetSoundSpeed(AUTDControllerHandle.CntPtr);
-            set => Base.AUTDSetSoundSpeed(AUTDControllerHandle.CntPtr, value);
-        }
-
-        public autd3_float_t Attenuation
-        {
-            get => Base.AUTDGetAttenuation(AUTDControllerHandle.CntPtr);
-            set => Base.AUTDSetAttenuation(AUTDControllerHandle.CntPtr, value);
-        }
-
-        public bool IsOpen => Base.AUTDIsOpen(AUTDControllerHandle.CntPtr);
+        public bool IsOpen => Base.AUTDIsOpen(CntPtr);
 
         public bool ForceFan
         {
-            get => Base.AUTDGetForceFan(AUTDControllerHandle.CntPtr);
-            set => Base.AUTDSetForceFan(AUTDControllerHandle.CntPtr, value);
+            get => Base.AUTDGetForceFan(CntPtr);
+            set => Base.AUTDSetForceFan(CntPtr, value);
         }
 
         public bool ReadsFPGAInfo
         {
-            get => Base.AUTDGetReadsFPGAInfo(AUTDControllerHandle.CntPtr);
-            set => Base.AUTDSetReadsFPGAInfo(AUTDControllerHandle.CntPtr, value);
+            get => Base.AUTDGetReadsFPGAInfo(CntPtr);
+            set => Base.AUTDSetReadsFPGAInfo(CntPtr, value);
         }
 
         public ulong AckCheckTimeoutMs
         {
-            get => Base.AUTDGetAckCheckTimeout(AUTDControllerHandle.CntPtr) / 1000 / 1000;
-            set => Base.AUTDSetAckCheckTimeout(AUTDControllerHandle.CntPtr, value * 1000 * 1000);
+            get => Base.AUTDGetAckCheckTimeout(CntPtr) / 1000 / 1000;
+            set => Base.AUTDSetAckCheckTimeout(CntPtr, value * 1000 * 1000);
         }
         public ulong AckCheckTimeoutNs
         {
-            get => Base.AUTDGetAckCheckTimeout(AUTDControllerHandle.CntPtr);
-            set => Base.AUTDSetAckCheckTimeout(AUTDControllerHandle.CntPtr, value);
+            get => Base.AUTDGetAckCheckTimeout(CntPtr);
+            set => Base.AUTDSetAckCheckTimeout(CntPtr, value);
         }
 
         public ulong SendIntervalsMs
         {
-            get => Base.AUTDGetSendInterval(AUTDControllerHandle.CntPtr) / 1000 / 1000;
-            set => Base.AUTDSetSendInterval(AUTDControllerHandle.CntPtr, value * 1000 * 1000);
+            get => Base.AUTDGetSendInterval(CntPtr) / 1000 / 1000;
+            set => Base.AUTDSetSendInterval(CntPtr, value * 1000 * 1000);
         }
 
         public ulong SendIntervalsNs
         {
-            get => Base.AUTDGetSendInterval(AUTDControllerHandle.CntPtr);
-            set => Base.AUTDSetSendInterval(AUTDControllerHandle.CntPtr, value);
+            get => Base.AUTDGetSendInterval(CntPtr);
+            set => Base.AUTDSetSendInterval(CntPtr, value);
         }
 
         public byte[] FPGAInfo
@@ -379,88 +399,47 @@ namespace AUTD3Sharp
             get
             {
                 var infos = new byte[Geometry.NumTransducers / AUTD3.NumTransInDevice];
-                Base.AUTDGetFPGAInfo(AUTDControllerHandle.CntPtr, infos);
+                Base.AUTDGetFPGAInfo(CntPtr, infos);
                 return infos;
             }
         }
         #endregion
 
-
         public void SetSoundSpeedFromTemp(autd3_float_t temp, autd3_float_t k = (autd3_float_t)1.4, autd3_float_t r = (autd3_float_t)8.31446261815324, autd3_float_t m = (autd3_float_t)28.9647e-3)
         {
-            Base.AUTDSetSoundSpeedFromTemp(AUTDControllerHandle.CntPtr, temp, k, r, m);
+            Base.AUTDSetSoundSpeedFromTemp(CntPtr, temp, k, r, m);
         }
 
         public bool Send(SpecialData special)
         {
             if (special == null) throw new ArgumentNullException(nameof(special));
-            return Base.AUTDSendSpecial(AUTDControllerHandle.CntPtr, special.Ptr);
+            return Base.AUTDSendSpecial(CntPtr, special.Ptr);
         }
 
         public bool Send(Header header)
         {
             if (header == null) throw new ArgumentNullException(nameof(header));
-            return Base.AUTDSend(AUTDControllerHandle.CntPtr, header.Ptr, IntPtr.Zero);
+            return Base.AUTDSend(CntPtr, header.Ptr, IntPtr.Zero);
         }
 
         public bool Send(Body body)
         {
             if (body == null) throw new ArgumentNullException(nameof(body));
-            return Base.AUTDSend(AUTDControllerHandle.CntPtr, IntPtr.Zero, body.Ptr);
+            return Base.AUTDSend(CntPtr, IntPtr.Zero, body.Ptr);
         }
 
         public bool Send(Header header, Body body)
         {
             if (header == null) throw new ArgumentNullException(nameof(header));
             if (body == null) throw new ArgumentNullException(nameof(body));
-            return Base.AUTDSend(AUTDControllerHandle.CntPtr, header.Ptr, body.Ptr);
+            return Base.AUTDSend(CntPtr, header.Ptr, body.Ptr);
         }
 
         public bool Send(Body body, Header header)
         {
             if (header == null) throw new ArgumentNullException(nameof(header));
             if (body == null) throw new ArgumentNullException(nameof(body));
-            return Base.AUTDSend(AUTDControllerHandle.CntPtr, header.Ptr, body.Ptr);
-        }
-
-        public void SendAsync(SpecialData special)
-        {
-            if (special == null) throw new ArgumentNullException(nameof(special));
-            Base.AUTDSendSpecialAsync(AUTDControllerHandle.CntPtr, special.Ptr);
-            special.Ptr = IntPtr.Zero;
-        }
-
-        public void SendAsync(Header header)
-        {
-            if (header == null) throw new ArgumentNullException(nameof(header));
-            Base.AUTDSendAsync(AUTDControllerHandle.CntPtr, header.Ptr, IntPtr.Zero);
-            header.Ptr = IntPtr.Zero;
-        }
-
-        public void SendAsync(Body body)
-        {
-            if (body == null) throw new ArgumentNullException(nameof(body));
-            Base.AUTDSendAsync(AUTDControllerHandle.CntPtr, IntPtr.Zero, body.Ptr);
-            body.Ptr = IntPtr.Zero;
-        }
-
-        public void SendAsync(Header header, Body body)
-        {
-            if (header == null) throw new ArgumentNullException(nameof(header));
-            if (body == null) throw new ArgumentNullException(nameof(body));
-            Base.AUTDSendAsync(AUTDControllerHandle.CntPtr, header.Ptr, body.Ptr);
-            header.Ptr = IntPtr.Zero;
-            body.Ptr = IntPtr.Zero;
-        }
-
-        public void SendAsync(Body body, Header header)
-        {
-            if (header == null) throw new ArgumentNullException(nameof(header));
-            if (body == null) throw new ArgumentNullException(nameof(body));
-            Base.AUTDSendAsync(AUTDControllerHandle.CntPtr, header.Ptr, body.Ptr);
-            header.Ptr = IntPtr.Zero;
-            body.Ptr = IntPtr.Zero;
-
+            return Base.AUTDSend(CntPtr, header.Ptr, body.Ptr);
         }
     }
 

@@ -3,7 +3,7 @@
 # Created Date: 11/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 24/01/2023
+# Last Modified: 02/02/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,6 +18,15 @@ import autd3/body
 import autd3/gain
 import autd3/modulation
 
+const NUM_TRANS_IN_UNIT* = 249
+const NUM_TRANS_X* = 18
+const NUM_TRANS_Y* = 14
+const TRANS_SPACING* = 10.16
+const DEVICE_WIDTH* = 192.0
+const DEVICE_HEIGHT* = 151.4
+
+type AUTDException* = object of CatchableError
+ 
 type SpecialData* = object of RootObj
     p*: pointer
 
@@ -46,12 +55,156 @@ func mod_delay_config*(): SpecialData =
     result.p = pointer(nil)
     AUTDModDelayConfig(result.p.addr)
 
-type Controller* = object
-    p*: pointer
+type Transducer* = object
+    id: int32
+    p: pointer
 
-func initController*(): Controller =
+func initTransducer(id: int32, p: pointer): Transducer = 
+    result.id= id
+    result.p = p
+
+func id*(self: Transducer) : int32 = 
+    self.id
+
+func position*(self: Transducer): array[3, float64] =
+    var
+        x: float64
+        y: float64
+        z: float64
+    AUTDTransPosition(self.p, self.id, x.addr, y.addr, z.addr)
+    [x, y, z]
+
+func frequency*(self: Transducer) : float64 = 
+    AUTDGetTransFrequency(self.p, self.id)
+
+func `frequency=`*(self: Transducer, value: float64)  = 
+    AUTDSetTransFrequency(self.p, self.id, value)
+
+func cycle*(self: Transducer) : uint16 = 
+    AUTDGetTransCycle(self.p, self.id)
+
+func `cycle=`*(self: Transducer, value: uint16)  = 
+    AUTDSetTransCycle(self.p, self.id, value)
+
+func modDelay*(self: Transducer) : uint16 = 
+    AUTDGetTransModDelay(self.p, self.id)
+
+func `modDelay=`*(self: Transducer, value: uint16)  = 
+    AUTDSetTransModDelay(self.p, self.id, value)
+
+func wavelength*(self: Transducer) : float64 = 
+    AUTDGetWavelength(self.p, self.id)
+
+func x_direction*(self: Transducer): array[3, float64] =
+    var
+        x: float64
+        y: float64
+        z: float64
+    AUTDTransXDirection(self.p, self.id, x.addr, y.addr, z.addr)
+    [x, y, z]
+
+func y_direction*(self: Transducer): array[3, float64] =
+    var
+        x: float64
+        y: float64
+        z: float64
+    AUTDTransYDirection(self.p, self.id, x.addr, y.addr, z.addr)
+    [x, y, z]
+
+func z_direction*(self: Transducer): array[3, float64] =
+    var
+        x: float64
+        y: float64
+        z: float64
+    AUTDTransZDirection(self.p, self.id, x.addr, y.addr, z.addr)
+    [x, y, z]
+
+
+type Geometry* = object
+    p: pointer
+
+func initGeometry(p: pointer) : Geometry = 
+    result.p = p
+
+func soundSpeed*(geometry: Geometry): float64 =
+    AUTDGetSoundSpeed(geometry.p)
+
+func `soundSpeed=`*(geometry: var Geometry, c: float64) =
+    AUTDSetSoundSpeed(geometry.p, c)
+
+func attenuation*(geometry: Geometry): float64 =
+    AUTDGetAttenuation(geometry.p)
+
+func `attenuation=`*(geometry: var Geometry, a: float64) =
+    AUTDSetAttenuation(geometry.p, a)
+
+func numTransducers*(geometry: Geometry): int32 =
+    AUTDNumTransducers(geometry.p)
+
+func numDevices*(geometry: Geometry): int32 =
+    AUTDNumDevices(geometry.p)
+
+func center*(geometry: Geometry): array[3, float64] =
+    var
+        x: float64
+        y: float64
+        z: float64
+    AUTDGeometryCenter(geometry.p, x.addr, y.addr, z.addr)
+    [x, y, z]
+
+func centerOf*(geometry: Geometry, devIdx: int32): array[3, float64] =
+    var
+        x: float64
+        y: float64
+        z: float64
+    AUTDGeometryCenterOf(geometry.p, devIdx, x.addr, y.addr, z.addr)
+    [x, y, z]
+
+iterator iter*(geometry: Geometry) : Transducer =
+    var id : int32 = 0
+    let numTransducers = geometry.numTransducers
+    while id < numTransducers:
+        yield initTransducer(id, geometry.p)
+        id += 1
+
+proc `=destroy`(geometry: var Geometry) =
+    if (geometry.p != pointer(nil)):
+        AUTDFreeGeometry(geometry.p)
+        geometry.p = pointer(nil)
+
+type GeometryBuilder* = object
+    p: pointer
+
+func initGeometryBuilder*() : GeometryBuilder = 
     result.p = pointer(nil)
-    AUTDCreateController(result.p.addr)
+    AUTDCreateGeometryBuilder(result.p.addr)
+
+func addDevice*(builder: GeometryBuilder, pos: openArray[float64], rot: openArray[
+        float64]): bool {.discardable.} =
+    AUTDAddDevice(builder.p, pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
+
+func addDeviceQuaternion*(builder: GeometryBuilder, pos: openArray[float64],
+        quaternion: openArray[float64]): bool {.discardable.} =
+    AUTDAddDeviceQuaternion(builder.p, pos[0], pos[1], pos[2], quaternion[0],
+            quaternion[1], quaternion[2], quaternion[3])
+
+func build*(builder: GeometryBuilder) : Geometry =
+    var p = pointer(nil)
+    AUTDBuildGeometry(p.addr, builder.p)
+    initGeometry(p)
+
+type Controller* = object
+    geometry: Geometry
+    p: pointer
+
+proc `=destroy`(cnt: var Controller) =
+    if (cnt.p != pointer(nil)):
+        AUTDFreeController(cnt.p)
+        cnt.p = pointer(nil)
+
+func initController(p: pointer, geometry: Geometry): Controller = 
+    result.p = p
+    result.geometry = geometry
 
 func toLegacy*(cnt: Controller) =
     AUTDSetMode(cnt.p, 0)
@@ -62,17 +215,14 @@ func toNormal*(cnt: Controller) =
 func toNormalPhase*(cnt: Controller) =
     AUTDSetMode(cnt.p, 2)
 
-func addDevice*(cnt: Controller, pos: openArray[float64], rot: openArray[
-        float64]): bool {.discardable.} =
-    AUTDAddDevice(cnt.p, pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
+func openController*(geometry: Geometry, link: Link): Controller {.raises: [AUTDException].}=
+    var p = pointer(nil)
+    if not AUTDOpenController(p.addr, geometry.p, link.p):
+        raise AUTDException.newException("Faile to open controller")
+    initController(p, geometry)
 
-func addDeviceQuaternion*(cnt: Controller, pos: openArray[float64],
-        quaternion: openArray[float64]): bool {.discardable.} =
-    AUTDAddDeviceQuaternion(cnt.p, pos[0], pos[1], pos[2], quaternion[0],
-            quaternion[1], quaternion[2], quaternion[3])
-
-func open*(cnt: Controller, link: Link): bool =
-    AUTDOpenController(cnt.p, link.p)
+func geometry*(cnt: Controller): Geometry =
+    cnt.geometry
 
 func close*(cnt: Controller): bool {.discardable.} =
     AUTDClose(cnt.p)
@@ -116,70 +266,6 @@ func sendIntervalMs*(cnt: Controller): uint64 =
 func `sendIntervalMs=`*(cnt: var Controller, value: uint64) =
     AUTDSetSendInterval(cnt.p, value * 1000000)
 
-func soundSpeed*(cnt: Controller): float64 =
-    AUTDGetSoundSpeed(cnt.p)
-
-func `soundSpeed=`*(cnt: var Controller, c: float64) =
-    AUTDSetSoundSpeed(cnt.p, c)
-
-func attenuation*(cnt: Controller): float64 =
-    AUTDGetAttenuation(cnt.p)
-
-func `attenuation=`*(cnt: var Controller, a: float64) =
-    AUTDSetAttenuation(cnt.p, a)
-
-func getTransFrequency*(cnt: Controller,
-        transIdx: int32): float64 =
-    AUTDGetTransFrequency(cnt.p, transIdx)
-
-func setTransFrequency*(cnt: Controller, transIdx: int32,
-        freq: float64) =
-    AUTDSetTransFrequency(cnt.p, transIdx, freq)
-
-func getTransCycle*(cnt: Controller,
-        transIdx: int32): uint16 =
-    AUTDGetTransCycle(cnt.p, transIdx)
-
-func setTransCycle*(cnt: Controller, transIdx: int32,
-        cycle: uint16) =
-    AUTDSetTransCycle(cnt.p, transIdx, cycle)
-
-func setModDelay*(cnt: Controller, transIdx: int32,
-        delay: uint16) =
-    AUTDSetTransCycle(cnt.p, transIdx, delay)
-
-func transPosition*(cnt: Controller, transIdx: int32): array[3, float64] =
-    var
-        x: float64
-        y: float64
-        z: float64
-    AUTDTransPosition(cnt.p, transIdx, x.addr, y.addr, z.addr)
-    [x, y, z]
-
-func transDirectionX*(cnt: Controller, transIdx: int32): array[3, float64] =
-    var
-        x: float64
-        y: float64
-        z: float64
-    AUTDTransXDirection(cnt.p, transIdx, x.addr, y.addr, z.addr)
-    [x, y, z]
-
-func transDirectionY*(cnt: Controller, transIdx: int32): array[3, float64] =
-    var
-        x: float64
-        y: float64
-        z: float64
-    AUTDTransYDirection(cnt.p, transIdx, x.addr, y.addr, z.addr)
-    [x, y, z]
-
-func transDirectionZ*(cnt: Controller, transIdx: int32): array[3, float64] =
-    var
-        x: float64
-        y: float64
-        z: float64
-    AUTDTransZDirection(cnt.p, transIdx, x.addr, y.addr, z.addr)
-    [x, y, z]
-
 func firmwareInfoList*(cnt: Controller): seq[string] =
     var p = pointer(nil)
     let n = AUTDGetFirmwareInfoListPointer(cnt.p, p.addr)
@@ -191,17 +277,8 @@ func firmwareInfoList*(cnt: Controller): seq[string] =
     AUTDFreeFirmwareInfoListPointer(p)
     list
 
-func wavelength*(cnt: Controller, transIdx: int32): float64 =
-    AUTDGetWavelength(cnt.p, transIdx)
-
-func numTransducers*(cnt: Controller): int32 =
-    AUTDNumTransducers(cnt.p)
-
-func numDevices*(cnt: Controller): int32 =
-    AUTDNumDevices(cnt.p)
-
 func getFPGAInfo*(cnt: Controller): seq[uint8] =
-    let numDevices = cnt.numDevices
+    let numDevices = cnt.geometry.numDevices
     var info = newSeq[uint8](numDevices)
     discard AUTDGetFPGAInfo(cnt.p, addr info[0])
     info
@@ -217,11 +294,6 @@ func send*(cnt: Controller, body: Body): bool {.discardable.} =
 
 func send*(cnt: Controller, data: SpecialData): bool {.discardable.} =
     AUTDSendSpecial(cnt.p, data.p)
-
-proc `=destroy`(cnt: var Controller) =
-    if (cnt.p != pointer(nil)):
-        AUTDFreeController(cnt.p)
-        cnt.p = pointer(nil)
 
 type Null* = object of Gain
 

@@ -65,7 +65,7 @@ class Directivity {
    */
   static driver::autd3_float_t t4010a1(driver::autd3_float_t theta_deg) {
     theta_deg = std::abs(theta_deg);
-    while (theta_deg > 90) theta_deg = std::abs(180 - theta_deg);
+    if (theta_deg > 90) return 0;
     const auto i = static_cast<size_t>(std::ceil(theta_deg / 10));
     if (i == 0) return 1;
     const auto a = DIR_COEFFICIENT_A[i - 1];

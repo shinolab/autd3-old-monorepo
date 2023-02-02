@@ -4,7 +4,7 @@
  * Created Date: 23/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/11/2022
+ * Last Modified: 01/02/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -32,23 +32,30 @@ public class AUTDService
 
     public bool IsOpened => _autd?.IsOpen ?? false;
 
-
     public bool IsStarted
     {
         get;
         private set;
     }
+
     public bool Open()
     {
         _autd?.Close();
         _autd?.Dispose();
-        _autd = new Controller();
-        foreach (var geometry in App.GetService<GeometryViewModel>().Geometries)
+
+        var geometryBuilder = new GeometryBuilder();
+        foreach (var geo in App.GetService<GeometryViewModel>().Geometries)
         {
-            _autd.Geometry.AddDevice(new Vector3d(geometry.X, geometry.Y, geometry.Z), new Vector3d(AngleUnitConverter.Instance.ToRadian(geometry.RotateZ1), AngleUnitConverter.Instance.ToRadian(geometry.RotateY), AngleUnitConverter.Instance.ToRadian(geometry.RotateZ2)));
+            geometryBuilder.AddDevice(new Vector3d(geo.X, geo.Y, geo.Z),
+                new Vector3d(AngleUnitConverter.Instance.ToRadian(geo.RotateZ1),
+                    AngleUnitConverter.Instance.ToRadian(geo.RotateY),
+                    AngleUnitConverter.Instance.ToRadian(geo.RotateZ2)));
         }
 
+        var geometry = geometryBuilder.Build();
+
         var linkVm = App.GetService<LinkViewModel>();
+
         Link BuildSOEM()
         {
             var soem = new SOEM().FreeRun(linkVm.FreeRun)
@@ -63,18 +70,26 @@ public class AUTDService
 
             return soem.Build();
         }
+
         var link = linkVm.Selected switch
         {
             LinkType.SOEM => BuildSOEM(),
             LinkType.TwinCAT => new TwinCAT().Build(),
-            LinkType.RemoteTwinCAT => new RemoteTwinCAT(linkVm.RemoteAmsNetId).RemoteIp(linkVm.RemoteIp).LocalAmsNetId(linkVm.LocalAmsNetId).Build(),
+            LinkType.RemoteTwinCAT => new RemoteTwinCAT(linkVm.RemoteAmsNetId).RemoteIp(linkVm.RemoteIp)
+                .LocalAmsNetId(linkVm.LocalAmsNetId).Build(),
             LinkType.Simulator => new Simulator().Build(),
             LinkType.RemoteSOEM => new RemoteSOEM().Ip(linkVm.RemoteSOEMIp).Port(linkVm.RemoteSOEMPort).Build(),
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        if (!_autd.Open(link))
+        try
+        {
+            _autd = Controller.Open(geometry, link);
+        }
+        catch (Exception)
+        {
             return false;
+        }
 
         if (!_autd.Send(new Clear()))
             return false;
@@ -144,6 +159,6 @@ public class AUTDService
 
     public double GetSoundSpeed()
     {
-        return _autd?.SoundSpeed ?? 340e3;
+        return _autd?.Geometry.SoundSpeed ?? 340e3;
     }
 }

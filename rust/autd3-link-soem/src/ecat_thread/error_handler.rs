@@ -4,7 +4,7 @@
  * Created Date: 03/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 30/01/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -38,8 +38,7 @@ impl<F: Fn(&str)> EcatErrorHandler<F> {
                         {
                             writeln!(
                                 msg,
-                                "ERROR : slave {} is in SAFE_OP + ERROR, attempting ack",
-                                i
+                                "ERROR : slave {i} is in SAFE_OP + ERROR, attempting ack",
                             )
                             .unwrap();
                             slave.state =
@@ -48,8 +47,7 @@ impl<F: Fn(&str)> EcatErrorHandler<F> {
                         } else if slave.state == ec_state_EC_STATE_SAFE_OP as _ {
                             writeln!(
                                 msg,
-                                "ERROR : slave {} is in SAFE_OP, change to OPERATIONAL",
-                                i
+                                "ERROR : slave {i} is in SAFE_OP, change to OPERATIONAL",
                             )
                             .unwrap();
                             slave.state = ec_state_EC_STATE_OPERATIONAL as _;
@@ -57,7 +55,7 @@ impl<F: Fn(&str)> EcatErrorHandler<F> {
                         } else if slave.state > ec_state_EC_STATE_NONE as _ {
                             if ec_reconfig_slave(i as _, 500) != 0 {
                                 slave.islost = 0;
-                                writeln!(msg, "MESSAGE : slave {} reconfigured", i).unwrap();
+                                writeln!(msg, "MESSAGE : slave {i} reconfigured").unwrap();
                             }
                         } else if slave.islost == 0 {
                             ec_statecheck(
@@ -67,7 +65,7 @@ impl<F: Fn(&str)> EcatErrorHandler<F> {
                             );
                             if slave.state == ec_state_EC_STATE_NONE as _ {
                                 slave.islost = 1;
-                                writeln!(msg, "ERROR : slave {} lost", i).unwrap();
+                                writeln!(msg, "ERROR : slave {i} lost").unwrap();
                             }
                         }
                     }
@@ -75,11 +73,11 @@ impl<F: Fn(&str)> EcatErrorHandler<F> {
                         if slave.state == ec_state_EC_STATE_NONE as _ {
                             if ec_recover_slave(i as _, 500) != 0 {
                                 slave.islost = 0;
-                                writeln!(msg, "MESSAGE : slave {} recovered", i).unwrap();
+                                writeln!(msg, "MESSAGE : slave {i} recovered").unwrap();
                             }
                         } else {
                             slave.islost = 0;
-                            writeln!(msg, "MESSAGE : slave {} found", i).unwrap();
+                            writeln!(msg, "MESSAGE : slave {i} found").unwrap();
                         }
                     }
                 });

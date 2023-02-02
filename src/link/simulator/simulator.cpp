@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/01/2023
+// Last Modified: 27/01/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,7 +13,6 @@
 
 #include <thread>
 
-#include "../../spdlog.hpp"
 #include "autd3/core/datagram.hpp"
 #include "autd3/core/link.hpp"
 #include "autd3/driver/cpu/ec_config.hpp"
@@ -31,10 +30,7 @@ class SimulatorImpl final : public core::Link {
   SimulatorImpl& operator=(SimulatorImpl&& obj) = delete;
 
   bool open(const core::Geometry& geometry) override {
-    if (is_open()) {
-      spdlog::warn("Link is already opened.");
-      return false;
-    }
+    if (is_open()) return false;
 
     _input_offset = driver::HEADER_SIZE + geometry.num_transducers() * sizeof(uint16_t);
     const auto datagram_size =

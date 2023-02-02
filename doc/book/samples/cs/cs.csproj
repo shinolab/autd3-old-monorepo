@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AUTD3Sharp" Version="2.8.0" />
+    <PackageReference Include="AUTD3Sharp" Version="8.1.0" />
   </ItemGroup>
 
 </Project>

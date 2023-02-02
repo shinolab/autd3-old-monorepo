@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/01/2023
+// Last Modified: 02/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,6 +16,7 @@
 #include <utility>
 
 #include "./autd3_c_api.h"
+#define AUTD3_CAPI
 #include "autd3.hpp"
 #include "autd3/modulation/lpf.hpp"
 #include "custom.hpp"
@@ -24,6 +25,7 @@
 #include "wrapper_link.hpp"
 
 using Controller = autd3::Controller;
+using Geometry = autd3::Geometry;
 
 autd3::Vector3 to_vec3(const autd3_float_t x, const autd3_float_t y, const autd3_float_t z) { return {x, y, z}; }
 autd3::Quaternion to_quaternion(const autd3_float_t w, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z) { return {w, x, y, z}; }
@@ -36,27 +38,39 @@ void AUTDSetDefaultLogger(void* out, void* flush) {
   set_default_logger(logger);
 }
 
-void AUTDCreateController(void** out) { *out = new Controller; }
+EXPORT_AUTD void AUTDCreateGeometryBuilder(void** out) { *out = new autd3::Geometry::Builder; }
 
-bool AUTDOpenController(void* const handle, void* const link) {
-  auto* const wrapper = static_cast<Controller*>(handle);
+bool AUTDAddDevice(void* const geometry_builder, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const autd3_float_t rz1,
+                   const autd3_float_t ry, const autd3_float_t rz2) {
+  auto* const builder = static_cast<autd3::Geometry::Builder*>(geometry_builder);
+  AUTD3_CAPI_TRY(builder->add_device(autd3::AUTD3(to_vec3(x, y, z), to_vec3(rz1, ry, rz2))))
+}
+
+bool AUTDAddDeviceQuaternion(void* const geometry_builder, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z,
+                             const autd3_float_t qw, const autd3_float_t qx, const autd3_float_t qy, const autd3_float_t qz) {
+  auto* const builder = static_cast<autd3::Geometry::Builder*>(geometry_builder);
+  AUTD3_CAPI_TRY(builder->add_device(autd3::AUTD3(to_vec3(x, y, z), to_quaternion(qw, qx, qy, qz))))
+}
+
+void AUTDBuildGeometry(void** out, void* geometry_builder) {
+  auto* builder = static_cast<autd3::Geometry::Builder*>(geometry_builder);
+  *out = builder->build();
+  delete builder;
+}
+
+void AUTDFreeGeometry(const void* const geometry) {
+  const auto* geometry_p = static_cast<const autd3::Geometry*>(geometry);
+  delete geometry_p;
+}
+
+bool AUTDOpenController(void** out, void* const geometry, void* const link) {
   auto* w_link = static_cast<LinkWrapper*>(link);
   autd3::LinkPtr link_ = std::move(w_link->ptr);
   link_delete(w_link);
-  AUTD3_CAPI_TRY(wrapper->open(std::move(link_));)
+  AUTD3_CAPI_TRY(*out = Controller::open(static_cast<autd3::Geometry*>(geometry), std::move(link_)))
 }
 
-bool AUTDAddDevice(void* const handle, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const autd3_float_t rz1,
-                   const autd3_float_t ry, const autd3_float_t rz2) {
-  auto* const wrapper = static_cast<Controller*>(handle);
-  AUTD3_CAPI_TRY(wrapper->geometry().add_device(autd3::AUTD3(to_vec3(x, y, z), to_vec3(rz1, ry, rz2)));)
-}
-
-bool AUTDAddDeviceQuaternion(void* const handle, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const autd3_float_t qw,
-                             const autd3_float_t qx, const autd3_float_t qy, const autd3_float_t qz) {
-  auto* const wrapper = static_cast<Controller*>(handle);
-  AUTD3_CAPI_TRY(wrapper->geometry().add_device(autd3::AUTD3(to_vec3(x, y, z), to_quaternion(qw, qx, qy, qz)));)
-}
+void AUTDGetGeometry(void** geometry, void* const cnt) { *geometry = static_cast<Controller*>(cnt)->geometry_ptr(); }
 
 bool AUTDClose(void* const handle) {
   auto* const wrapper = static_cast<Controller*>(handle);
@@ -113,45 +127,9 @@ void AUTDSetSendInterval(void* const handle, const uint64_t interval) {
   wrapper->set_send_interval(std::chrono::nanoseconds(interval));
 }
 
-autd3_float_t AUTDGetTransFrequency(const void* const handle, const int32_t trans_idx) {
-  const auto* const wrapper = static_cast<const Controller*>(handle);
-  return wrapper->geometry()[trans_idx].frequency();
-}
-
-uint16_t AUTDGetTransCycle(const void* const handle, const int32_t trans_idx) {
-  const auto* const wrapper = static_cast<const Controller*>(handle);
-  return wrapper->geometry()[trans_idx].cycle();
-}
-
-autd3_float_t AUTDGetSoundSpeed(const void* const handle) {
-  const auto* wrapper = static_cast<const Controller*>(handle);
-  return wrapper->geometry().sound_speed;
-}
-
-void AUTDSetSoundSpeed(void* const handle, const autd3_float_t sound_speed) {
-  auto* wrapper = static_cast<Controller*>(handle);
-  wrapper->geometry().sound_speed = sound_speed;
-}
-
-void AUTDSetSoundSpeedFromTemp(void* const handle, const autd3_float_t temp, const autd3_float_t k, const autd3_float_t r, const autd3_float_t m) {
-  auto* wrapper = static_cast<Controller*>(handle);
+void AUTDSetSoundSpeedFromTemp(void* const cnt, const autd3_float_t temp, const autd3_float_t k, const autd3_float_t r, const autd3_float_t m) {
+  auto* wrapper = static_cast<Controller*>(cnt);
   wrapper->set_sound_speed_from_temp(temp, k, r, m);
-}
-
-autd3_float_t AUTDGetWavelength(const void* const handle, const int32_t trans_idx) {
-  const auto* wrapper = static_cast<const Controller*>(handle);
-  const auto sound_speed = wrapper->geometry().sound_speed;
-  return wrapper->geometry()[trans_idx].wavelength(sound_speed);
-}
-
-autd3_float_t AUTDGetAttenuation(const void* const handle) {
-  const auto* wrapper = static_cast<const Controller*>(handle);
-  return wrapper->geometry().attenuation;
-}
-
-void AUTDSetAttenuation(void* const handle, const autd3_float_t attenuation) {
-  auto* const wrapper = static_cast<Controller*>(handle);
-  wrapper->geometry().attenuation = attenuation;
 }
 
 bool AUTDGetFPGAInfo(void* const handle, uint8_t* out) {
@@ -161,61 +139,85 @@ bool AUTDGetFPGAInfo(void* const handle, uint8_t* out) {
   return !res.empty();
 }
 
-int32_t AUTDNumTransducers(const void* const handle) {
-  const auto* wrapper = static_cast<const Controller*>(handle);
-  const auto res = wrapper->geometry().num_transducers();
-  return static_cast<int32_t>(res);
+autd3_float_t AUTDGetTransFrequency(const void* const geometry, const int32_t trans_idx) {
+  return (*static_cast<const Geometry*>(geometry))[trans_idx].frequency();
 }
 
-int32_t AUTDNumDevices(const void* const handle) {
-  const auto* wrapper = static_cast<const Controller*>(handle);
-  const auto res = wrapper->geometry().num_devices();
-  return static_cast<int32_t>(res);
+void AUTDSetTransFrequency(void* const geometry, const int32_t trans_idx, const autd3_float_t frequency) {
+  (*static_cast<Geometry*>(geometry))[trans_idx].set_frequency(frequency);
 }
 
-void AUTDGeometryCenter(const void* const handle, autd3_float_t* x, autd3_float_t* y, autd3_float_t* z) {
-  const auto* wrapper = static_cast<const Controller*>(handle);
-  const auto pos = wrapper->geometry().center();
+uint16_t AUTDGetTransCycle(const void* const geometry, const int32_t trans_idx) {
+  return (*static_cast<const Geometry*>(geometry))[trans_idx].cycle();
+}
+
+void AUTDSetTransCycle(void* const geometry, const int32_t trans_idx, const uint16_t cycle) {
+  (*static_cast<Geometry*>(geometry))[trans_idx].set_cycle(cycle);
+}
+
+autd3_float_t AUTDGetSoundSpeed(const void* const geometry) { return (*static_cast<const Geometry*>(geometry)).sound_speed; }
+
+void AUTDSetSoundSpeed(void* const geometry, const autd3_float_t sound_speed) { (*static_cast<Geometry*>(geometry)).sound_speed = sound_speed; }
+
+uint16_t AUTDGetTransModDelay(const void* const geometry, const int32_t trans_idx) {
+  return (*static_cast<const Geometry*>(geometry))[trans_idx].mod_delay();
+}
+
+void AUTDSetTransModDelay(void* const geometry, const int32_t trans_idx, const uint16_t delay) {
+  (*static_cast<Geometry*>(geometry))[trans_idx].mod_delay() = delay;
+}
+
+autd3_float_t AUTDGetWavelength(const void* const geometry, const int32_t trans_idx) {
+  const auto* g = static_cast<const Geometry*>(geometry);
+  const auto sound_speed = g->sound_speed;
+  return (*g)[trans_idx].wavelength(sound_speed);
+}
+
+autd3_float_t AUTDGetAttenuation(const void* const geometry) { return (*static_cast<const Geometry*>(geometry)).attenuation; }
+
+void AUTDSetAttenuation(void* const geometry, const autd3_float_t attenuation) { (*static_cast<Geometry*>(geometry)).attenuation = attenuation; }
+
+int32_t AUTDNumTransducers(const void* const geometry) { return static_cast<int32_t>((*static_cast<const Geometry*>(geometry)).num_transducers()); }
+
+int32_t AUTDNumDevices(const void* const geometry) { return static_cast<int32_t>((*static_cast<const Geometry*>(geometry)).num_devices()); }
+
+void AUTDGeometryCenter(const void* const geometry, autd3_float_t* x, autd3_float_t* y, autd3_float_t* z) {
+  const auto pos = (*static_cast<const Geometry*>(geometry)).center();
   *x = pos.x();
   *y = pos.y();
   *z = pos.z();
 }
 
-void AUTDGeometryCenterOf(const void* const handle, const int32_t dev_idx, autd3_float_t* x, autd3_float_t* y, autd3_float_t* z) {
-  const auto* wrapper = static_cast<const Controller*>(handle);
-  const auto pos = wrapper->geometry().center_of(dev_idx);
+void AUTDGeometryCenterOf(const void* const geometry, const int32_t dev_idx, autd3_float_t* x, autd3_float_t* y, autd3_float_t* z) {
+  const auto pos = (*static_cast<const Geometry*>(geometry)).center_of(dev_idx);
   *x = pos.x();
   *y = pos.y();
   *z = pos.z();
 }
 
-void AUTDTransPosition(const void* const handle, const int32_t trans_idx, autd3_float_t* x, autd3_float_t* y, autd3_float_t* z) {
-  const auto* wrapper = static_cast<const Controller*>(handle);
-  const auto& pos = wrapper->geometry()[trans_idx].position();
+void AUTDTransPosition(const void* const geometry, const int32_t trans_idx, autd3_float_t* x, autd3_float_t* y, autd3_float_t* z) {
+  const auto& pos = (*static_cast<const Geometry*>(geometry))[trans_idx].position();
   *x = pos.x();
   *y = pos.y();
   *z = pos.z();
 }
 
-void AUTDTransXDirection(const void* const handle, const int32_t trans_idx, autd3_float_t* x, autd3_float_t* y, autd3_float_t* z) {
-  const auto* wrapper = static_cast<const Controller*>(handle);
-  const auto& pos = wrapper->geometry()[trans_idx].x_direction();
+void AUTDTransXDirection(const void* const geometry, const int32_t trans_idx, autd3_float_t* x, autd3_float_t* y, autd3_float_t* z) {
+  const auto& pos = (*static_cast<const Geometry*>(geometry))[trans_idx].x_direction();
   *x = pos.x();
   *y = pos.y();
   *z = pos.z();
 }
 
-void AUTDTransYDirection(const void* const handle, const int32_t trans_idx, autd3_float_t* x, autd3_float_t* y, autd3_float_t* z) {
-  const auto* wrapper = static_cast<const Controller*>(handle);
-  const auto& pos = wrapper->geometry()[trans_idx].y_direction();
+void AUTDTransYDirection(const void* const geometry, const int32_t trans_idx, autd3_float_t* x, autd3_float_t* y, autd3_float_t* z) {
+  const auto& pos = (*static_cast<const Geometry*>(geometry))[trans_idx].y_direction();
   *x = pos.x();
   *y = pos.y();
   *z = pos.z();
 }
 
-void AUTDTransZDirection(const void* const handle, const int32_t trans_idx, autd3_float_t* x, autd3_float_t* y, autd3_float_t* z) {
-  const auto* wrapper = static_cast<const Controller*>(handle);
-  const auto& pos = wrapper->geometry()[trans_idx].z_direction();
+void AUTDTransZDirection(const void* const geometry, const int32_t trans_idx, autd3_float_t* x, autd3_float_t* y, autd3_float_t* z) {
+  const auto& pos = (*static_cast<const Geometry*>(geometry))[trans_idx].z_direction();
   *x = pos.x();
   *y = pos.y();
   *z = pos.z();
@@ -453,44 +455,6 @@ bool AUTDSendSpecial(void* const handle, void* const special) {
   auto* const wrapper = static_cast<Controller*>(handle);
   auto* const s = static_cast<autd3::SpecialData*>(special);
   AUTD3_CAPI_TRY(return wrapper->send(s), false)
-}
-
-void AUTDSendAsync(void* const handle, void* header, void* body) {
-  if (header == nullptr && body == nullptr) return;
-
-  auto* const wrapper = static_cast<Controller*>(handle);
-  auto h = std::unique_ptr<autd3::core::DatagramHeader>(static_cast<autd3::core::DatagramHeader*>(header));
-  auto b = std::unique_ptr<autd3::core::DatagramBody>(static_cast<autd3::core::DatagramBody*>(body));
-  if (header == nullptr) return wrapper->send_async(std::make_unique<autd3::core::NullHeader>(), std::move(b));
-  if (body == nullptr) return wrapper->send_async(std::move(h), std::make_unique<autd3::core::NullBody>());
-  wrapper->send_async(std::move(h), std::move(b));
-}
-
-void AUTDSendSpecialAsync(void* const handle, void* const special) {
-  auto* const wrapper = static_cast<Controller*>(handle);
-  auto* const s = static_cast<autd3::SpecialData*>(special);
-  wrapper->send_async(s);
-  delete s;
-}
-
-void AUTDSetTransFrequency(void* const handle, const int32_t trans_idx, const autd3_float_t frequency) {
-  auto* const wrapper = static_cast<Controller*>(handle);
-  wrapper->geometry()[trans_idx].set_frequency(frequency);
-}
-
-void AUTDSetTransCycle(void* const handle, const int32_t trans_idx, const uint16_t cycle) {
-  auto* const wrapper = static_cast<Controller*>(handle);
-  wrapper->geometry()[trans_idx].set_cycle(cycle);
-}
-
-uint16_t AUTDGetModDelay(const void* const handle, const int32_t trans_idx) {
-  const auto* const wrapper = static_cast<const Controller*>(handle);
-  return wrapper->geometry()[trans_idx].mod_delay();
-}
-
-void AUTDSetModDelay(void* const handle, const int32_t trans_idx, const uint16_t delay) {
-  auto* const wrapper = static_cast<Controller*>(handle);
-  wrapper->geometry()[trans_idx].mod_delay() = delay;
 }
 
 void AUTDCreateAmplitudes(void** out, const autd3_float_t amp) { *out = new autd3::core::Amplitudes(amp); }
