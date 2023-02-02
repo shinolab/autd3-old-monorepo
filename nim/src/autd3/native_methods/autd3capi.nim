@@ -196,10 +196,10 @@ proc AUTDSend*(handle: pointer; header: pointer; body: pointer): bool {.cdecl,
     importc: "AUTDSend", dynlib: dll.}
 proc AUTDSendSpecial*(handle: pointer; special: pointer): bool {.cdecl,
     importc: "AUTDSendSpecial", dynlib: dll.}
-proc AUTDGetModDelay*(geometry: pointer; trans_idx: int32): uint16 {.cdecl,
-    importc: "AUTDGetModDelay", dynlib: dll.}
-proc AUTDSetModDelay*(geometry: pointer; trans_idx: int32; delay: uint16) {.cdecl,
-    importc: "AUTDSetModDelay", dynlib: dll.}
+proc AUTDGetTransModDelay*(geometry: pointer; trans_idx: int32): uint16 {.cdecl,
+    importc: "AUTDGetTransModDelay", dynlib: dll.}
+proc AUTDSetTransModDelay*(geometry: pointer; trans_idx: int32; delay: uint16) {.cdecl,
+    importc: "AUTDSetTransModDelay", dynlib: dll.}
 proc AUTDCreateAmplitudes*(`out`: ptr pointer; amp: float64) {.cdecl,
     importc: "AUTDCreateAmplitudes", dynlib: dll.}
 proc AUTDDeleteAmplitudes*(amplitudes: pointer) {.cdecl,

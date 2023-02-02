@@ -967,7 +967,7 @@ Send special data asynchronously.
 | special                | void*   | in     | pointer to special data                                                                                 |
 | return                 | void     | -      | -                                  |
 
-## AUTDSetModDelay (autd3capi)
+## AUTDSetTransModDelay (autd3capi)
 
 Configure Modulation Delay of the transducer.
 
@@ -978,7 +978,7 @@ Configure Modulation Delay of the transducer.
 | delay                  | uint16_t | in     | modulation delay of the transducer |
 | return                 | void     | -      | -                                  |
 
-## AUTDGetModDelay (autd3capi)
+## AUTDGetTransModDelay (autd3capi)
 
 Get Modulation Delay of the transducer.
 
