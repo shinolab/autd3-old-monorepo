@@ -87,10 +87,10 @@ func `cycle=`*(self: Transducer, value: uint16)  =
     AUTDSetTransCycle(self.p, self.id, value)
 
 func modDelay*(self: Transducer) : uint16 = 
-    AUTDGetModDelay(self.p, self.id)
+    AUTDGetTransModDelay(self.p, self.id)
 
 func `modDelay=`*(self: Transducer, value: uint16)  = 
-    AUTDSetModDelay(self.p, self.id, value)
+    AUTDSetTransModDelay(self.p, self.id, value)
 
 func wavelength*(self: Transducer) : float64 = 
     AUTDGetWavelength(self.p, self.id)

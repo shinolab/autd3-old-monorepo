@@ -159,11 +159,11 @@ autd3_float_t AUTDGetSoundSpeed(const void* const geometry) { return (*static_ca
 
 void AUTDSetSoundSpeed(void* const geometry, const autd3_float_t sound_speed) { (*static_cast<Geometry*>(geometry)).sound_speed = sound_speed; }
 
-uint16_t AUTDGetModDelay(const void* const geometry, const int32_t trans_idx) {
+uint16_t AUTDGetTransModDelay(const void* const geometry, const int32_t trans_idx) {
   return (*static_cast<const Geometry*>(geometry))[trans_idx].mod_delay();
 }
 
-void AUTDSetModDelay(void* const geometry, const int32_t trans_idx, const uint16_t delay) {
+void AUTDSetTransModDelay(void* const geometry, const int32_t trans_idx, const uint16_t delay) {
   (*static_cast<Geometry*>(geometry))[trans_idx].mod_delay() = delay;
 }
 

@@ -108,8 +108,8 @@ EXPORT_AUTD void AUTDCreateSilencer(OUT void** out, IN uint16_t step, IN uint16_
 EXPORT_AUTD void AUTDDeleteSilencer(IN const void* config);
 EXPORT_AUTD bool AUTDSend(IN void* handle, IN void* header, IN void* body);
 EXPORT_AUTD bool AUTDSendSpecial(IN void* handle, IN void* special);
-EXPORT_AUTD uint16_t AUTDGetModDelay(IN const void* geometry, IN int32_t trans_idx);
-EXPORT_AUTD void AUTDSetModDelay(IN void* geometry, IN int32_t trans_idx, IN uint16_t delay);
+EXPORT_AUTD uint16_t AUTDGetTransModDelay(IN const void* geometry, IN int32_t trans_idx);
+EXPORT_AUTD void AUTDSetTransModDelay(IN void* geometry, IN int32_t trans_idx, IN uint16_t delay);
 EXPORT_AUTD void AUTDCreateAmplitudes(OUT void** out, IN autd3_float_t amp);
 EXPORT_AUTD void AUTDDeleteAmplitudes(IN const void* amplitudes);
 EXPORT_AUTD void AUTDSetMode(IN void* handle, IN uint8_t mode);

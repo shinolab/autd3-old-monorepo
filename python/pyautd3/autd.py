@@ -102,11 +102,11 @@ class Transducer:
 
     @ property
     def mod_delay(self):
-        return Base().dll.AUTDGetModDelay(self._cnt, self._tr_id)
+        return Base().dll.AUTDGetTransModDelay(self._cnt, self._tr_id)
 
     @ mod_delay.setter
     def mod_delay(self, delay: int):
-        return Base().dll.AUTDSetModDelay(self._cnt, self._tr_id, delay)
+        return Base().dll.AUTDSetTransModDelay(self._cnt, self._tr_id, delay)
 
     @ property
     def wavelength(self):
