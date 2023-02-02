@@ -7,33 +7,36 @@ proc onLost(msg: cstring) =
 
 when isMainModule:
     try:
-        var geometry = initGeometryBuilder().addDevice([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]).build()
+        var builder = initGeometryBuilder()
+        discard builder.addDevice([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+        var geometry = builder.build()
 
         var soem = initSOEM()
         let link = soem.highPrecision(true).onLost(onLost).build()
 
         var autd = openController(geometry, link)
 
-        cnt.ackCheckTimeoutMs = 20
+        autd.ackCheckTimeoutMs = 20
 
-        cnt.send(clear())
-        cnt.send(synchronize())
+        autd.send(clear())
+        autd.send(synchronize())
 
-        let firmList = cnt.firmwareInfoList()
+        let firmList = autd.firmwareInfoList()
         for firm in firmList:
             echo firm
 
         let config = initSilencerConfig()
-        cnt.send(config)
+        autd.send(config)
 
-        let f = initFocus(cnt.geometry.center + [0.0, 0.0, 150.0])
+        let center = autd.geometry.center
+        let f = initFocus([center[0], center[1], 150.0])
         let m = initSine(150)
 
-        cnt.send(m, f)
+        autd.send(m, f)
 
         discard stdin.readLine
 
-        cnt.close()
+        autd.close()
 
     except:
         let
