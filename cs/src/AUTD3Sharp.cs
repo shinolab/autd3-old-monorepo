@@ -16,7 +16,6 @@
 #define DIMENSION_M
 #endif
 
-using Microsoft.Win32.SafeHandles;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -250,30 +249,29 @@ namespace AUTD3Sharp
 
     public sealed class GeometryBuilder
     {
-        private readonly IntPtr BuilderPtr;
+        private readonly IntPtr _builderPtr;
 
         public GeometryBuilder()
         {
-            BuilderPtr = new IntPtr();
-            Base.AUTDCreateGeometryBuilder(out BuilderPtr);
+            _builderPtr = new IntPtr();
+            Base.AUTDCreateGeometryBuilder(out _builderPtr);
         }
 
         public GeometryBuilder AddDevice(Vector3 position, Vector3 rotation)
         {
-            Base.AUTDAddDevice(BuilderPtr, position.x, position.y, position.z, rotation.x, rotation.y, rotation.z);
+            Base.AUTDAddDevice(_builderPtr, position.x, position.y, position.z, rotation.x, rotation.y, rotation.z);
             return this;
         }
 
         public GeometryBuilder AddDevice(Vector3 position, Quaternion quaternion)
         {
-            Base.AUTDAddDeviceQuaternion(BuilderPtr, position.x, position.y, position.z, quaternion.w, quaternion.x, quaternion.y, quaternion.z);
+            Base.AUTDAddDeviceQuaternion(_builderPtr, position.x, position.y, position.z, quaternion.w, quaternion.x, quaternion.y, quaternion.z);
             return this;
         }
 
         public Geometry Build()
         {
-            var geometryPtr = new IntPtr();
-            Base.AUTDBuildGeometry(out geometryPtr, BuilderPtr);
+            Base.AUTDBuildGeometry(out var geometryPtr, _builderPtr);
             return new Geometry(geometryPtr);
         }
     }
@@ -291,8 +289,7 @@ namespace AUTD3Sharp
 
         public static Controller Open(Geometry geometry, Link.Link link)
         {
-            var cnt = new IntPtr();
-            if (!Base.AUTDOpenController(out cnt, geometry.GeometryPtr, link.LinkPtr))
+            if (!Base.AUTDOpenController(out var cnt, geometry.GeometryPtr, link.LinkPtr))
                 throw new Exception("Failed to open controller.");
             return new Controller(cnt, geometry);
         }
