@@ -3,7 +3,7 @@
 # Created Date: 11/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 20/11/2022
+# Last Modified: 02/02/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,18 +20,16 @@ proc onLost(msg: cstring) =
 
 when isMainModule:
     try:
-        var cnt = initController()
-        cnt.addDevice([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+        var geometry = initGeometryBuilder().addDevice([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]).build()
 
         var soem = initSOEM()
         let link = soem.highPrecision(true).onLost(onLost).build()
-        if not cnt.open(link):
-            echo "Failed to open Controller."
-            quit(-1)
+        
+        var autd = openController(geometry, link)
+        
+        autd.ackCheckTimeoutMs = 20
 
-        cnt.ackCheckTimeoutMs = 20
-
-        run(cnt)
+        run(autd)
 
     except:
         let
