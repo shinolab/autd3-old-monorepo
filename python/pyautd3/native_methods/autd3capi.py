@@ -294,11 +294,11 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDSendSpecial.argtypes = [ctypes.c_void_p, ctypes.c_void_p] 
         self.dll.AUTDSendSpecial.restype = ctypes.c_bool
 
-        self.dll.AUTDGetModDelay.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
-        self.dll.AUTDGetModDelay.restype = ctypes.c_uint16
+        self.dll.AUTDGetTransModDelay.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
+        self.dll.AUTDGetTransModDelay.restype = ctypes.c_uint16
 
-        self.dll.AUTDSetModDelay.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_uint16] 
-        self.dll.AUTDSetModDelay.restype = None
+        self.dll.AUTDSetTransModDelay.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_uint16] 
+        self.dll.AUTDSetTransModDelay.restype = None
 
         self.dll.AUTDCreateAmplitudes.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_double] 
         self.dll.AUTDCreateAmplitudes.restype = None

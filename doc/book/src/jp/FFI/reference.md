@@ -1066,7 +1066,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 | special                | void*   | in     | pointer to special data                                                                                 |
 | return                 | void     | -      | -                                  |
 
-## AUTDGetModDelay (autd3capi)
+## AUTDGetTransModDelay (autd3capi)
 
 指定した振動子のModulation Delayを取得する.
 
@@ -1078,7 +1078,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 | trans_idx        | int32_t  | in     | transducer index             |
 | return                 | uint16_t | -      | modulation delay of the transducer |
 
-## AUTDSetModDelay (autd3capi)
+## AUTDSetTransModDelay (autd3capi)
 
 指定した振動子のModulation Delayを設定する.
 

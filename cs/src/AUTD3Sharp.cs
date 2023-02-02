@@ -151,8 +151,8 @@ namespace AUTD3Sharp
 
         public ushort ModDelay
         {
-            get => Base.AUTDGetModDelay(_cnt, Id);
-            set => Base.AUTDSetModDelay(_cnt, Id, value);
+            get => Base.AUTDGetTransModDelay(_cnt, Id);
+            set => Base.AUTDSetTransModDelay(_cnt, Id, value);
         }
     }
 
