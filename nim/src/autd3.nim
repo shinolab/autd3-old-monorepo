@@ -180,13 +180,15 @@ func initGeometryBuilder*() : GeometryBuilder =
     AUTDCreateGeometryBuilder(result.p.addr)
 
 func addDevice*(builder: GeometryBuilder, pos: openArray[float64], rot: openArray[
-        float64]): bool {.discardable.} =
-    AUTDAddDevice(builder.p, pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
+        float64]): GeometryBuilder {.discardable.} =
+    discard AUTDAddDevice(builder.p, pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
+    builder
 
 func addDeviceQuaternion*(builder: GeometryBuilder, pos: openArray[float64],
-        quaternion: openArray[float64]): bool {.discardable.} =
-    AUTDAddDeviceQuaternion(builder.p, pos[0], pos[1], pos[2], quaternion[0],
+        quaternion: openArray[float64]): GeometryBuilder {.discardable.} =
+    discard AUTDAddDeviceQuaternion(builder.p, pos[0], pos[1], pos[2], quaternion[0],
             quaternion[1], quaternion[2], quaternion[3])
+    builder
 
 func build*(builder: GeometryBuilder) : Geometry =
     var p = pointer(nil)
