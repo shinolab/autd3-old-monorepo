@@ -221,6 +221,9 @@ func openController*(geometry: Geometry, link: Link): Controller {.raises: [AUTD
         raise AUTDException.newException("Faile to open controller")
     initController(p, geometry)
 
+func geometry*(cnt: Controller): Geometry =
+    cnt.geometry
+
 func close*(cnt: Controller): bool {.discardable.} =
     AUTDClose(cnt.p)
 
