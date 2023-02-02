@@ -26,7 +26,7 @@ PCのイーサネットポートとAUTD3デバイスのEtherCAT In ([Concept](co
 ### ファームウェアアップデート
 
 ファームウェアが古い場合, 動作は保証されない.
-本文章におけるファームウェアのバージョンは2.8が想定される.
+本文章におけるファームウェアのバージョンはv2.8が想定される.
 
 > NOTE: 実際には, (少なくとも以下のプログラムは) v2.7以下のファームウェアでも動作すると思われる. しかし, v2.8を使用することを推奨する.
 
@@ -119,94 +119,6 @@ cmake ..
 これで, buildディレクトリ以下に`autd3_sample.sln`が生成されているはずなので, これを開き, mainプロジェクトを実行する.
 **なお, 実行に際して, Visual StudioのConfigurationをDebugからReleaseに変更すること.** また,
 Linux/macOSの場合は, 実行時にroot権限が必要な場合がある.
-
-## 解説
-
-上記コードの解説を以下に示す.
-
-SDKを使用するには, `autd3.hpp`ヘッダーをインクルードする. また,
-`link::SOEM`を使用するために`autd3/link/soem.hpp`ヘッダーも必要となる.
-
-```cpp
-#include "autd3.hpp"
-#include "autd3/link/soem.hpp"
-```
-
-次に, `Controller`を作成する.
-
-```cpp
-autd3::Controller autd;
-```
-
-その後, デバイスの配置を指定する.
-
-```cpp
-autd.geometry().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()));
-```
-
-`add_device`ではデバイスを指定する.
-現在サポートしているデバイスは`autd3::AUTD3`のみで, このコンストラクタのの第一引数は位置, 第2引数は回転を表す. 位置は自分の設定したグローバル座標系におけるデバイスの原点を指定する. また,
-回転はZYZのオイラー角, または, クオータニオンで指定する. ここでは, 回転も移動も行わないものとする.
-
-次に, `Link`を作成し, デバイスと接続する.
-
-```cpp
-  auto link = autd3::link::SOEM().high_precision(true).build(); 
-  autd.open(std::move(link));
-```
-
-linkの型は`unique_ptr`であるため, `Controller`に渡す際は`move`する必要がある.
-
-次に, `ack_check_timeout`を$\SI{20}{ms}$にセットしている. これは変更しなくても良いが, 確実にデータを送信したい場合はセットしておく. 
-SOEM link使用時は$\SI{10}{ms}$から$\SI{20}{ms}$程度の値にセットしておくことをお勧めする.
-
-```cpp
-  autd.set_ack_check_timeout(std::chrono::milliseconds(20));
-```
-
-次に, AUTDデバイスの初期化と同期を行う. 
-電源投入時に初期化されるので`clear`は必要ないかもしれない.
-
-```cpp
-autd << autd3::clear << autd3::synchronize;
-```
-
-**例え, 一台のデバイスしか使用しない場合でも, 同期は一度行う必要がある.**
-
-次に, ファームウェアのバージョンを確認している.
-
-```cpp
-const auto firm_infos = autd.firmware_infos();
-std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));
-```
-
-次に, silencerを設定する.
-
-```cpp
-autd3::SilencerConfig silencer;
-```
-
-デフォルトで設定されているので, これも実際には送信する必要はない.
-OFFにしたい場合は`SilencerConfig::none()`を使用する.
-silencerは, 振動子に与える位相/振幅パラメータをローパスフィルタに通すことで, 静音化を行う.
-
-その後, 単一焦点を表す`Gain`と$\SI{150}{Hz}$のSin波変調をかける`Modulation`を作成し, デバイスに送信する.
-
-```cpp
-const auto focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
-autd3::gain::Focus g(focus);
-autd3::modulation::Sine m(150);
-
-autd << silencer << m, g;
-```
-
-ここで, `focus`は振動子アレイの中心から直上$\SI{150}{mm}$を表す.
-
-最後に, デバイスとの接続を切ってお終いである.
-
-```cpp
-autd.close();
-```
 
 次頁では基本的な関数について解説していく.
 なお, [オンラインのAPIドキュメント](https://shinolab.github.io/autd3/api/index.html)もあるのでそちらも参考にする事.

@@ -20,40 +20,39 @@ c言語向けのAPIは[capi](https://github.com/shinolab/autd3/tree/master/capi)
 | flush                  | void*    | in     | flush callback                     |
 | return                 | void     | -      | -                                  |
 
-## AUTDCreateController (autd3capi)
-
-Controllerを作成する.
-
-作成した`Controller`は最後に`AUTDFreeController`で開放する必要がある.
-
-| Argument name / return | type   | in/out | description                      |
-| ---------------------- | ------ | ------ | -------------------------------- |
-| out                    | void** | out    | pointer to pointer to Controller |
-| return                 | void    | -     |                                  |
-
 ## AUTDOpenController (autd3capi)
 
 Controllerをopenする.
 
-handleは`AUTDCreateController`で作成したものを使う. linkは各々のlinkの生成関数で作成したものを使う.
+linkは各々のlinkの生成関数で作成したものを使う.
 
 この関数は失敗した場合にfalseを返す. 
 
-| Argument name / return | type  | in/out | description           |
-| ---------------------- | ----- | ------ | --------------------- |
-| handle                 | void* | in     | pointer to Controller |
-| link                   | void* | in     | pointer to Link       |
-| return                 | bool  | -      | true if success       |
+| Argument name / return | type  | in/out | description                      |
+| ---------------------- | ----- | ------ | -------------------------------- |
+| out                    | void**| out    | pointer to pointer to Controller |
+| geometry               | void* | in     | pointer to Geometry              |
+| link                   | void* | in     | pointer to Link                  |
+| return                 | bool  | -      | true if success                  |
+
+## AUTDCreateGeometryBuilder (autd3capi)
+
+`Geometry::Builder`を作成する.
+
+| Argument name / return | type    | in/out | description                            |
+| ---------------------- | ------- | ------ | -------------------------------------- |
+| out                    | void**  | out     | pointer to pointer to Geometry::Builder                  |
+| return                 | void    | -      | -                              |
 
 ## AUTDAddDevice (autd3capi)
 
-ControllerにDeviceを追加する.
+`Geometry::Builder`に`AUTD3` deviceを追加する.
 
-handleは`AUTDCreateController`で作成したものを使う. x, y, zは位置で, rz1, ry, rz2はZYZのオイラー角である.
+ x, y, zは位置で, rz1, ry, rz2はZYZのオイラー角である.
 
 | Argument name / return | type    | in/out | description                               |
 | ---------------------- | ------- | ------ | ----------------------------------------- |
-| handle                 | void*   | in     | pointer to Controller                     |
+| geometry_builder                | void*   | in     | pointer to Geometry::Builder                     |
 | x                      | double  | in     | x coordinate of position in millimeter    |
 | y                      | double  | in     | y coordinate of position in millimeter    |
 | z                      | double  | in     | z coordinate of position in millimeter    |
@@ -64,14 +63,14 @@ handleは`AUTDCreateController`で作成したものを使う. x, y, zは位置�
 
 ## AUTDAddDeviceQuaternion (autd3capi)
 
-ControllerにDeviceを追加する.
+`Geometry::Builder`に`AUTD3` deviceを追加する.
 
-handleは`AUTDCreateController`で作成したものを使う. x, y, zは位置で, qw, qx, qy,
+ x, y, zは位置で, qw, qx, qy,
 qzは回転を表すクオータニオンである.
 
 | Argument name / return | type    | in/out | description                            |
 | ---------------------- | ------- | ------ | -------------------------------------- |
-| handle                 | void*   | in     | pointer to Controller                  |
+| geometry_builder                 | void*   | in     | pointer to Geometry::Builder                  |
 | x                      | double  | in     | x coordinate of position in millimeter |
 | y                      | double  | in     | y coordinate of position in millimeter |
 | z                      | double  | in     | z coordinate of position in millimeter |
@@ -81,11 +80,38 @@ qzは回転を表すクオータニオンである.
 | qz                     | double  | in     | z parameter of quaternion of rotation  |
 | return                 | bool    | -      | -                              |
 
+## AUTDBuildGeometry (autd3capi)
+
+`Geometry`を作成する.
+
+| Argument name / return | type    | in/out | description                            |
+| ---------------------- | ------- | ------ | -------------------------------------- |
+| out                    | void**  | out     | pointer to pointer to Geometry                  |
+| geometry_builder       | void*   | in     | pointer to Geometry::Builder                  |
+| return                 | void    | -      | -                              |
+
+## AUTDFreeGeometry (autd3capi)
+
+`Geometry`を削除する.
+
+| Argument name / return | type    | in/out | description                            |
+| ---------------------- | ------- | ------ | -------------------------------------- |
+| geometry                 | void*   | in     | pointer to Geometry                  |
+| return                 | void    | -      | -                              |
+
+## AUTDGetGeometry (autd3capi)
+
+`Geometry`を取得する.
+
+| Argument name / return | type    | in/out | description                            |
+| ---------------------- | ------- | ------ | -------------------------------------- |
+| geometry               | void**  | out    | pointer to pointer to Geometry         |
+| cnt                    | void*   | in     | pointer to Controller                  |
+| return                 | void    | -      | -                              |
+
 ## AUTDClose (autd3capi)
 
 Controllerをcloseする.
-
-handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type    | in/out | description                                                                                            |
 | ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
@@ -118,7 +144,7 @@ SilencerConfigを削除する.
 
 Controllerを削除する.
 
-handleは`AUTDCreateController`で作成したものを使う.
+
 
 これ以降, handleは使用できない.
 
@@ -131,7 +157,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 ControllerがOpenされているかどうかを返す.
 
-handleは`AUTDCreateController`で作成したものを使う.
+
 
 | Argument name / return | type  | in/out | description                |
 | ---------------------- | ----- | ------ | -------------------------- |
@@ -142,7 +168,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 Force fan flagを返す.
 
-handleは`AUTDCreateController`で作成したものを使う.
+
 
 | Argument name / return | type  | in/out | description           |
 | ---------------------- | ----- | ------ | --------------------- |
@@ -153,7 +179,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 Reads FPGA info flagを返す.
 
-handleは`AUTDCreateController`で作成したものを使う.
+
 
 | Argument name / return | type  | in/out | description           |
 | ---------------------- | ----- | ------ | --------------------- |
@@ -164,7 +190,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 AckCheckTimeoutをナノ秒単位で返す.
 
-handleは`AUTDCreateController`で作成したものを使う.
+
 
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
@@ -175,7 +201,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 Send intervalをナノ秒単位で返す.
 
-handleは`AUTDCreateController`で作成したものを使う.
+
 
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
@@ -185,8 +211,6 @@ handleは`AUTDCreateController`で作成したものを使う.
 ## AUTDSetReadsFPGAInfo (autd3capi)
 
 Reads FPGA info flagを設定する.
-
-handleは`AUTDCreateController`で作成したものを使う.
 
 デバイスに実際に反映されるのは送信関数のどれかを呼び出し後である.
 
@@ -200,8 +224,6 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 AckCheckTimeoutをナノ秒単位で設定する.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
 | handle                 | void*   | in     | pointer to Controller |
@@ -212,8 +234,6 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 Send intervalをナノ秒単位で設定する.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
 | handle                 | void*   | in     | pointer to Controller |
@@ -223,8 +243,6 @@ handleは`AUTDCreateController`で作成したものを使う.
 ## AUTDSetForceFan (autd3capi)
 
 Force fan flagを設定する.
-
-handleは`AUTDCreateController`で作成したものを使う.
 
 デバイスに実際に反映されるのは送信関数のどれかを呼び出し後である.
 
@@ -238,22 +256,18 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 音速を返す.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
 | Argument name / return | type   | in/out | description           |
 | ---------------------- | ------ | ------ | --------------------- |
-| handle                 | void*  | in     | pointer to Controller |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | return                 | double | -      | Speed of sound in  mm/s |
 
 ## AUTDSetSoundSpeed (autd3capi)
 
 音速を設定する.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
 | Argument name / return | type   | in/out | description           |
 | ---------------------- | ------ | ------ | --------------------- |
-| handle                 | void*  | in     | pointer to Controller |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | sound_speed            | double | in     | Speed of sound in mm/s|
 | return                 | void   | -      | -                     |
 
@@ -261,11 +275,9 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 温度から音速を設定する.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
 | Argument name / return | type   | in/out | description           |
 | ---------------------- | ------ | ------ | --------------------- |
-| handle                 | void*  | in     | pointer to Controller |
+| cnt                 | void*  | in     | pointer to Controller |
 | temp                   | double | in     | temperature in Celsius degree |
 | k                   | double | in     | Heat capacity ratio           |
 | r                   | double | in     |  Gas constant [J K^-1 mol^-1]           |
@@ -276,11 +288,11 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 指定した振動子の周波数を取得する.
 
-handleは`AUTDCreateController`で作成したものを使う. 
+ 
 
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
-| handle                 | void*   | in     | pointer to Controller       |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | trans_idx        | int32_t | in     | transducer index      |
 | return                 | double  | -      | frequency of the transducer |
 
@@ -288,13 +300,11 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 指定した振動子の周波数を設定する.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
 Legacyモードにおいては, この関数は何もしない.
 
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
-| handle                 | void*   | in     | pointer to Controller       |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | trans_idx        | int32_t | in     | transducer index      |
 | frequency              | double  | in     | frequency of the transducer |
 | return                 | void    | -      | -                           |
@@ -303,11 +313,9 @@ Legacyモードにおいては, この関数は何もしない.
 
 指定した振動子の周期を取得する.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
 | Argument name / return | type     | in/out | description             |
 | ---------------------- | -------- | ------ | ----------------------- |
-| handle                 | void*    | in     | pointer to Controller   |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | trans_idx        | int32_t  | in     | transducer index  |
 | return                 | uint16_t | -      | cycle of the transducer |
 
@@ -315,13 +323,11 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 指定した振動子の周期を設定する.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
 Legacyモードにおいては, この関数は何もしない.
 
 | Argument name / return | type     | in/out | description             |
 | ---------------------- | -------- | ------ | ----------------------- |
-| handle                 | void*    | in     | pointer to Controller   |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | trans_idx        | int32_t  | in     | transducer index  |
 | cycle                  | uint16_t | in     | cycle of the transducer |
 | return                 | void     | -      | -                       |
@@ -330,11 +336,9 @@ Legacyモードにおいては, この関数は何もしない.
 
 指定した振動子の波長を取得する.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
 | Argument name / return | type    | in/out | description                                          |
 | ---------------------- | ------- | ------ | ---------------------------------------------------- |
-| handle                 | void*   | in     | pointer to Controller                                |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | trans_idx        | int32_t | in     | transducer index                               |
 | return                 | double  | -      | wavelength of ultrasound emitted from the transducer |
 
@@ -342,22 +346,18 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 減衰係数を返す.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
 | Argument name / return | type   | in/out | description                      |
 | ---------------------- | ------ | ------ | -------------------------------- |
-| handle                 | void*  | in     | pointer to Controller            |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | return                 | double | -      | attenuation coefficient in Np/mm |
 
 ## AUTDSetAttenuation (autd3capi)
 
 減衰係数を設定する.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
 | Argument name / return | type   | in/out | description                      |
 | ---------------------- | ------ | ------ | -------------------------------- |
-| handle                 | void*  | in     | pointer to Controller            |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | attenuation            | double | in     | attenuation coefficient in Np/mm |
 | return                 | void   | -      | -                                |
 
@@ -365,7 +365,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 FPGAの情報を取得する.
 
-handleは`AUTDCreateController`で作成したものを使う. outポインタが指す領域は, 接続しているデバイスと同じ長さである必要がある.
+ outポインタが指す領域は, 接続しているデバイスと同じ長さである必要がある.
 
 なお, FPGAの情報は下位1bitが温度センサがアサートされているかどうかを表し, 他のbitは全て0である.
 
@@ -383,11 +383,9 @@ handleは`AUTDCreateController`で作成したものを使う. outポインタ�
 
 接続されているTransducerの数を取得する.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
-| handle                 | void*   | in     | pointer to Controller |
+| geometry               | void*   | in     | pointer to Geometry |
 | return                 | int32_t | -      | number of transducers     |
 
 ## AUTDNumDevices (autd3capi)
@@ -396,7 +394,7 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 | Argument name / return | type    | in/out | description           |
 | ---------------------- | ------- | ------ | --------------------- |
-| handle                 | void*   | in     | pointer to Controller |
+| geometry               | void*   | in     | pointer to Geometry |
 | return                 | int32_t | -      | number of devices     |
 
 ## AUTDGeometryCenter (autd3capi)
@@ -405,7 +403,7 @@ Geometryの中心を取得する.
 
 | Argument name / return | type    | in/out | description                         |
 | ---------------------- | ------- | ------ | ----------------------------------- |
-| handle                 | void*   | in     | pointer to Controller               |
+| geometry               | void*   | in     | pointer to Geometry |
 | x                      | double* | out    | x coordinate of center              |
 | y                      | double* | out    | y coordinate of center              |
 | z                      | double* | out    | z coordinate of center              |
@@ -417,7 +415,7 @@ Deviceの中心を取得する.
 
 | Argument name / return | type    | in/out | description                         |
 | ---------------------- | ------- | ------ | ----------------------------------- |
-| handle                 | void*   | in     | pointer to Controller               |
+| geometry               | void*   | in     | pointer to Geometry |
 | dev_idx                | int32_t | in     | device index                        |
 | x                      | double* | out    | x coordinate of center              |
 | y                      | double* | out    | y coordinate of center              |
@@ -428,11 +426,9 @@ Deviceの中心を取得する.
 
 指定した振動子の位置を取得する.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
 | Argument name / return | type    | in/out | description                         |
 | ---------------------- | ------- | ------ | ----------------------------------- |
-| handle                 | void*   | in     | pointer to Controller               |
+| geometry               | void*   | in     | pointer to Geometry |
 | trans_idx        | int32_t | in     | transducer index              |
 | x                      | double* | out    | x coordinate of transducer position |
 | y                      | double* | out    | y coordinate of transducer position |
@@ -443,11 +439,9 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 指定した振動子のx軸方向を取得する.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
-| handle                 | void*   | in     | pointer to Controller       |
+| geometry               | void*   | in     | pointer to Geometry |
 | trans_idx        | int32_t | in     | transducer index      |
 | x                      | double* | out    | x coordinate of x-direction |
 | y                      | double* | out    | y coordinate of x-direction |
@@ -458,11 +452,9 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 指定した振動子のy軸方向を取得する.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
-| handle                 | void*   | in     | pointer to Controller       |
+| geometry               | void*   | in     | pointer to Geometry |
 | trans_idx        | int32_t | in     | transducer index      |
 | x                      | double* | out    | x coordinate of y-direction |
 | y                      | double* | out    | y coordinate of y-direction |
@@ -473,11 +465,9 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 指定した振動子のz軸方向を取得する.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
-| handle                 | void*   | in     | pointer to Controller       |
+| geometry               | void*   | in     | pointer to Geometry |
 | trans_idx        | int32_t | in     | transducer index      |
 | x                      | double* | out    | x coordinate of z-direction |
 | y                      | double* | out    | y coordinate of z-direction |
@@ -487,8 +477,6 @@ handleは`AUTDCreateController`で作成したものを使う.
 ## AUTDGetFirmwareInfoListPointer (autd3capi)
 
 Firmware information listへのポインタを取得する.
-
-handleは`AUTDCreateController`で作成したものを使う.
 
 この関数で作成したlistは最後に`AUTDFreeFirmwareInfoListPointer`で開放する必要がある.
 
@@ -1016,8 +1004,6 @@ STMを削除する.
 
 ヘッダーデータとボディーデータを送信する.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
 | Argument name / return | type    | in/out | description                                                                                            |
 | ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
 | handle                 | void*   | in     | pointer to Controller                                                                                  |
@@ -1029,52 +1015,19 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 特殊データを送信する.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
 | Argument name / return | type    | in/out | description                                                                                            |
 | ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
 | handle                 | void*   | in     | pointer to Controller                                                                                  |
 | special                | void*   | in     | pointer to special data                                                                                 |
 | return                 | bool    | -      | true if successful                                                                                     |
 
-## AUTDSendAsync (autd3capi)
-
-非同期にヘッダーデータとボディーデータを送信する.
-
-handleは`AUTDCreateController`で作成したものを使う.
-
-**この関数に使用したheader, 及び, bodyは削除してはいけない.**
-
-| Argument name / return | type    | in/out | description                                                                                            |
-| ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
-| handle                 | void*   | in     | pointer to Controller                                                                                  |
-| header                 | void*   | in     | pointer to header data                                                                                 |
-| body                   | void*   | in     | pointer to body data                                                                                   |
-| return                 | void     | -      | -                                  |
-
-## AUTDSendSpecialAsync (autd3capi)
-
-非同期に特殊データを送信する.
-
-handleは`AUTDCreateController`で作成したものを使う.
-
-**この関数に使用したspecialは削除してはいけない.**
-
-| Argument name / return | type    | in/out | description                                                                                            |
-| ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
-| handle                 | void*   | in     | pointer to Controller                                                                                  |
-| special                | void*   | in     | pointer to special data                                                                                 |
-| return                 | void     | -      | -                                  |
-
 ## AUTDGetTransModDelay (autd3capi)
 
 指定した振動子のModulation Delayを取得する.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
 | Argument name / return | type     | in/out | description                        |
 | ---------------------- | -------- | ------ | ---------------------------------- |
-| handle                 | void*    | in     | pointer to Controller              |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | trans_idx        | int32_t  | in     | transducer index             |
 | return                 | uint16_t | -      | modulation delay of the transducer |
 
@@ -1082,11 +1035,9 @@ handleは`AUTDCreateController`で作成したものを使う.
 
 指定した振動子のModulation Delayを設定する.
 
-handleは`AUTDCreateController`で作成したものを使う.
-
 | Argument name / return | type     | in/out | description                        |
 | ---------------------- | -------- | ------ | ---------------------------------- |
-| handle                 | void*    | in     | pointer to Controller              |
+| geometry                 | void*   | in     | pointer to Geometry                  |
 | trans_idx        | int32_t  | in     | transducer index             |
 | delay                  | uint16_t | in     | modulation delay of the transducer |
 | return                 | void     | -      | -                                  |
@@ -1630,12 +1581,12 @@ Geometry Viewerを起動する.
 
 | Argument name / return | type    | in/out | description                        |
 | ---------------------- | ------- | ------ | ---------------------------------- |
-| cnt                    | void*   | in     | pointer to Controller              |
+| geometry                 | void*   | in     | pointer to Geometry              |
 | width                  | int32_t | in     | window width                       |
 | height                 | int32_t | in     | window height                      |
 | vsync                  | bool    | in     | vsync                              |
 | gpu_idx                | int32_t | in     | GPU index                          |
-| return                 | bool    | -      | true if successful                                                                                     |
+| return                 | bool    | -      | true if successful                 |
 
 ## AUTDExtraSimulator (autd3capi-extra-simulator)
 

@@ -7,13 +7,12 @@ proc onLost(msg: cstring) =
 
 when isMainModule:
     try:
-        var cnt = initController()
-        cnt.addDevice([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+        var geometry = initGeometryBuilder().addDevice([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]).build()
 
         var soem = initSOEM()
         let link = soem.highPrecision(true).onLost(onLost).build()
-        if not cnt.open(link):
-            system.quit(-1)
+
+        var autd = openController(geometry, link)
 
         cnt.ackCheckTimeoutMs = 20
 
@@ -27,7 +26,7 @@ when isMainModule:
         let config = initSilencerConfig()
         cnt.send(config)
 
-        let f = initFocus([90.0, 80.0, 150.0])
+        let f = initFocus(cnt.geometry.center + [0.0, 0.0, 150.0])
         let m = initSine(150)
 
         cnt.send(m, f)

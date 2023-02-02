@@ -25,8 +25,10 @@ For example, suppose that the devices are arranged and connected as shown in the
 Assume that the global coordinates are the same as the local coordinates of the first device, then you must setup Geometry as follows:
 
 ```cpp
-  autd.geometry().add_device(aud3::Vector3::Zero(), aud3::Vector3::Zero());
-  autd.geometry().add_device(aud3::Vector3(aud3::DEVICE_WIDTH, 0, 0), aud3::Vector3::Zero());
+  auto geometry = autd3::Geometry::Builder()
+                      .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
+                      .build();
 ```
 , where `DEVICE_WIDTH` is the width of the device including the substrate.
 The second argument should be zero, since the device is not rotated.
@@ -34,8 +36,10 @@ The second argument should be zero, since the device is not rotated.
 Also, for example, if the global coordinates are the same as the local coordinates of the **second** device, then you must setup Geometry as follows:
 
 ```cpp
-  autd.geometry().add_device(aud3::Vector3(-aud3::DEVICE_WIDTH, 0, 0), aud3::Vector3::Zero());
-  autd.geometry().add_device(aud3::Vector3::Zero(), aud3::Vector3::Zero());
+  auto geometry = autd3::Geometry::Builder()
+                      .add_device(autd3::AUTD3(autd3::Vector3(-autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+                      .build();
 ```
 
 <figure>
@@ -47,8 +51,10 @@ Furthermore, suppose that the above figure is the same as the one above, with th
 Here, you must setup Geometry as follows:
 
 ```cpp
-  autd.geometry().add_device(aud3::Vector3::Zero(), aud3::Vector3::Zero());
-  autd.geometry().add_device(aud3::Vector3(0, 0, aud3::DEVICE_WIDTH), aud3::Vector3(0, autd3::pi / 2.0, 0));
+  auto geometry = autd3::Geometry::Builder()
+                      .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(0, 0, autd3::AUTD3::DEVICE_WIDTH), autd3::Vector3(0, autd3::pi / 2.0, 0)))
+                      .build();
 ```
 
 The SDK API uses global coordinates, so it does not depend on the number of connected devices and can be used transparently.

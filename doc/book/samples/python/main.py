@@ -1,19 +1,16 @@
-from pyautd3 import Controller, SilencerConfig, Clear, Synchronize
+from pyautd3 import GeometryBuilder, Controller, SilencerConfig, Clear, Synchronize
 from pyautd3.link import SOEM
 from pyautd3.gain import Focus
 from pyautd3.modulation import Sine
 
 import numpy as np
-import sys
 
 if __name__ == '__main__':
-    autd = Controller()
-
-    autd.geometry.add_device([0., 0., 0.], [0., 0., 0.])
+    geometry = GeometryBuilder().add_device([0., 0., 0.], [0., 0., 0.]).build()
 
     link = SOEM().high_precision(True).build()
-    if not autd.open(link):
-        sys.exit(-1)
+
+    autd = Controller.open(geometry, link)
 
     autd.ack_check_timeout_ms = 20
 
