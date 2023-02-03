@@ -4,7 +4,7 @@
 %Created Date: 02/02/2023
 %Author: Shun Suzuki
 %-----
-%Last Modified: 02/02/2023
+%Last Modified: 03/02/2023
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,20 +16,23 @@ classdef Transducer < handle
     properties
         ptr
         id
+        frequency
+        cycle
+        mod_delay
     end
 
     methods
 
         function obj = Transducer(id, ptr)
-            obj.id = id
-            obj.ptr = ptr
+            obj.id = id;
+            obj.ptr = ptr;
         end
 
         function value = get.id(obj)
             value = obj.id;
         end
 
-        function value = get.position(obj)
+        function value = position(obj)
             px = libpointer('doublePtr', 0);
             py = libpointer('doublePtr', 0);
             pz = libpointer('doublePtr', 0);
@@ -61,7 +64,7 @@ classdef Transducer < handle
             calllib('autd3capi', 'AUTDSetTransModDelay', obj.ptr, obj.id, value);
         end
 
-        function value = get.wavelength(obj)
+        function value = wavelength(obj)
             value = calllib('autd3capi', 'AUTDGetWavelength', obj.ptr, obj.id);
         end
 
