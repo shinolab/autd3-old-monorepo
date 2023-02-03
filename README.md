@@ -104,6 +104,7 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 
 * [Rust](./rust)
 * [C#](./cs)
+* [F#](./fs)
 * [Python](./python)
 * [Nim](./nim)
 * [Julia](./julia)

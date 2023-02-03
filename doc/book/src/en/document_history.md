@@ -25,5 +25,6 @@
 | 2023/01/18 | Version 2.7.6 Initial release                 |
 | 2023/01/24 | Version 2.8.0 Initial release                 |
 | 2023/02/02 | Version 8.1.0 Initial release                 |
+| 2023/02/03 | Version 8.1.1 Initial release                 |
 
 - Documents before version 2.4.3 are only available in Japanese
