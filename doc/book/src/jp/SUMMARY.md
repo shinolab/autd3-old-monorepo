@@ -20,6 +20,7 @@
 - [FFI](./FFI/ffi.md)
   - [C#](./FFI/csharp.md)
     - [Unity](./FFI/unity.md)
+  - [F#](./FFI/fsharp.md)
   - [python](./FFI/python.md)
   - [Rust](./FFI/rust.md)
   - [Nim](./FFI/nim.md)
