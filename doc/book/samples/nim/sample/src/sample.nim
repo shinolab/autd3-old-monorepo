@@ -7,9 +7,7 @@ proc onLost(msg: cstring) =
 
 when isMainModule:
     try:
-        var builder = initGeometryBuilder()
-        discard builder.addDevice([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])
-        var geometry = builder.build()
+        var geometry = initGeometryBuilder().addDevice([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]).build()
 
         var soem = initSOEM()
         let link = soem.highPrecision(true).onLost(onLost).build()
