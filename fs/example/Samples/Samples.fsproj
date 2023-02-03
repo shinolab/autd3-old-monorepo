@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Custom.fs" />
+    <Compile Include="Advanced.fs" />
+    <Compile Include="GainSTMTest.fs" />
+    <Compile Include="FocusSTMTest.fs" />
+    <Compile Include="GainHoloTest.fs" />
+    <Compile Include="BesselBeam.fs" />
+    <Compile Include="Group.fs" />
+    <Compile Include="FocusTest.fs" />
+    <Compile Include="SampleRunner.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AUTD3Sharp" Version="8.1.0" />
+  </ItemGroup>
+
+</Project>
