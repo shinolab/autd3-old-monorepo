@@ -3,10 +3,10 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/01/2023
+// Last Modified: 03/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2022 Shun Suzuki. All rights reserved.
+// Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
@@ -118,7 +118,7 @@ class VulkanImGui {
     auto* font_data_imgui = new uint8_t[font_data.size()];
     std::memcpy(font_data_imgui, font_data.data(), font_data.size());
     ImFont* font = io.Fonts->AddFontFromMemoryTTF(font_data_imgui, static_cast<int>(font_data.size()), _font_size * windows_scale);
-    io.FontGlobalScale = 1.0f / scale;
+    io.FontGlobalScale = 1.0f / windows_scale;
     io.FontDefault = font;
 
     // To destroy old texture image and image view, and to free memory
