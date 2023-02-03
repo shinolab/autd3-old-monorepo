@@ -1,4 +1,15 @@
-﻿namespace Samples
+﻿// File: BesselBeam.fs
+// Project: Samples
+// Created Date: 03/02/2023
+// Author: Shun Suzuki
+// -----
+// Last Modified: 03/02/2023
+// Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+// -----
+// Copyright (c) 2023 Shun Suzuki. All rights reserved.
+// 
+
+namespace Samples
 
 open AUTD3Sharp
 open AUTD3Sharp.Gain
