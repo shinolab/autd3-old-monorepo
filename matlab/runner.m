@@ -4,7 +4,7 @@
 %Created Date: 11/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 29/11/2022
+%Last Modified: 03/02/2023
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,11 +16,11 @@ function runner(cnt)
     addpath('examples');
 
     tests = ["focus(x)", "Single focus Test"
-        "bessel(x)", "BesselBeam Test"
-        "focus_stm(x)", "FocusSTM Test"
-        "gain_stm(x)", "GainSTM Test"
-        "holo(x)", "Holo Test"
-        "custom(x)", "Custom Test"];
+             "bessel(x)", "BesselBeam Test"
+             "focus_stm(x)", "FocusSTM Test"
+             "gain_stm(x)", "GainSTM Test"
+             "holo(x)", "Holo Test"
+             "custom(x)", "Custom Test"];
     n = size(tests, 1);
     test_names = strings(n);
 
@@ -28,7 +28,7 @@ function runner(cnt)
         test_names(i) = tests(i, 2);
     end
 
-    cnt.sound_speed = 340.0e3;
+    cnt.geometry.sound_speed = 340.0e3;
 
     firm_list = cnt.firmware_info_list();
 

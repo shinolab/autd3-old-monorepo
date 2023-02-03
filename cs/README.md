@@ -2,7 +2,7 @@
 
 [autd3](https://github.com/shinolab/autd3) wrapper for .Net Standard 2.1
 
-version: 8.1.0
+version: 8.1.1
 
 ## Install
 
@@ -12,11 +12,6 @@ version: 8.1.0
 ## Example
 
 * Please refer to [example](./example)
-
-```
-cd example
-dotnet run
-```
 
 * If you are using Linux/macOS, you may need to run as root (e.g. `sudo dotnet run`).
     * On Ubuntu 20.04, you may need to specify runtime (e.g. `sudo dotnet run -r ubuntu-x64`).

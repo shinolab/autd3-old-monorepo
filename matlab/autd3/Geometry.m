@@ -4,7 +4,7 @@
 %Created Date: 02/02/2023
 %Author: Shun Suzuki
 %-----
-%Last Modified: 02/02/2023
+%Last Modified: 03/02/2023
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,13 +14,15 @@
 classdef Geometry < handle
 
     properties
+        attenuation
+        sound_speed
         ptr
     end
 
     methods
 
         function obj = Geometry(ptr)
-            obj.ptr = ptr
+            obj.ptr = ptr;
         end
 
         function value = get.sound_speed(obj)
@@ -28,7 +30,6 @@ classdef Geometry < handle
         end
 
         function set.sound_speed(obj, value)
-            obj.sound_speed = value;
             calllib('autd3capi', 'AUTDSetSoundSpeed', obj.ptr, value);
         end
 
@@ -37,15 +38,14 @@ classdef Geometry < handle
         end
 
         function set.attenuation(obj, value)
-            obj.attenuation = value;
             calllib('autd3capi', 'AUTDSetAttenuation', obj.ptr, value);
         end
 
-        function value = get.num_transducers(obj)
+        function value = num_transducers(obj)
             value = calllib('autd3capi', 'AUTDNumTransducers', obj.ptr);
         end
 
-        function value = get.num_devices(obj)
+        function value = num_devices(obj)
             value = calllib('autd3capi', 'AUTDNumDevices', obj.ptr);
         end
 
