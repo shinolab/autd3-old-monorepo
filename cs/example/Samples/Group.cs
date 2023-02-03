@@ -4,7 +4,7 @@
  * Created Date: 23/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/10/2022
+ * Last Modified: 03/02/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,12 +27,10 @@ internal static class GroupTest
         var config = new SilencerConfig();
         autd.Send(config);
 
-        var center = autd.Geometry.Center + new Vector3d(0, 0, 150);
-
-        var g1 = new Focus(center);
+        var g1 = new Focus(autd.Geometry.CenterOf(0) + new Vector3d(0, 0, 150));
         var g2 = new GSPAT();
-        g2.Add(center + new Vector3d(30.0, 0.0, 0.0), 1.0);
-        g2.Add(center - new Vector3d(30.0, 0.0, 0.0), 1.0);
+        g2.Add(autd.Geometry.CenterOf(1) + new Vector3d(30.0, 0.0, 0.0), 1.0);
+        g2.Add(autd.Geometry.CenterOf(1) - new Vector3d(30.0, 0.0, 0.0), 1.0);
 
         var gain = new Grouped();
         gain.Add(0, g1);
