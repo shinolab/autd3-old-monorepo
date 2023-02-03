@@ -4,7 +4,7 @@
 %Created Date: 07/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 02/02/2023
+%Last Modified: 03/02/2023
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ classdef Controller < handle
 
     properties
         ptr
-        geometry_
+        geometry
         reads_fpga_info = false
         force_fan = false
         ack_check_timeout = 0
@@ -26,7 +26,7 @@ classdef Controller < handle
 
         function obj = Controller(geometry, link)
             obj.ptr = libpointer('voidPtr', 0);
-            obj.geometry_ = geometry
+            obj.geometry = geometry;
             pp = libpointer('voidPtrPtr', obj.ptr);
             if ~calllib('autd3capi', 'AUTDOpenController', pp, geometry.ptr, link.ptr)
                 throw(MException('MATLAB:RuntimeError', 'Failed to open controller'));
@@ -34,7 +34,7 @@ classdef Controller < handle
         end
 
         function value = get.geometry(obj)
-            value = obj.geometry_;
+            value = obj.geometry;
         end
 
         function to_legacy(obj)
@@ -58,7 +58,6 @@ classdef Controller < handle
         end
 
         function set.force_fan(obj, value)
-            obj.force_fan = value;
             calllib('autd3capi', 'AUTDSetForceFan', obj.ptr, value);
         end
 
@@ -67,7 +66,6 @@ classdef Controller < handle
         end
 
         function set.reads_fpga_info(obj, value)
-            obj.reads_fpga_info = value;
             calllib('autd3capi', 'AUTDSetReadsFPGAInfo', obj.ptr, value);
         end
 
@@ -76,7 +74,6 @@ classdef Controller < handle
         end
 
         function set.ack_check_timeout(obj, value)
-            obj.ack_check_timeout = value;
             calllib('autd3capi', 'AUTDSetAckCheckTimeout', obj.ptr, value);
         end
 
@@ -85,7 +82,6 @@ classdef Controller < handle
         end
 
         function set.send_interval(obj, value)
-            obj.send_interval = value;
             calllib('autd3capi', 'AUTDeSetSendInterval', obj.ptr, value);
         end
 
