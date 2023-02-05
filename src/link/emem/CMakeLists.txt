@@ -8,6 +8,7 @@ add_library(link_emem
   emem.cpp
   buffer.hpp
   consts.hpp
+  interface.hpp
   ethercat/header.hpp
   ${PROJECT_SOURCE_DIR}/include/autd3/link/emem.hpp
 )
