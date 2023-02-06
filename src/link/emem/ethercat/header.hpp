@@ -13,13 +13,11 @@
 
 #include <cstdint>
 
-#ifdef WIN32
-#include "winsock.h"
-#endif
+#include "../utils.hpp"
 
 namespace autd3::link::ethercat {
 
-const uint16_t ETH_TYPE_ECAT = htons(0x88A4);
+const uint16_t ETH_TYPE_ECAT = to_be(0x88A4);
 
 struct EthernetHeader {
   static EthernetHeader ecat_header() noexcept { return {0xFFFF, 0xFFFF, 0xFFFF, 0x0101, 0x0101, 0x0101, ETH_TYPE_ECAT}; }
