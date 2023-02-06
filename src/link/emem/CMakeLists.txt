@@ -8,8 +8,20 @@ add_library(link_emem
   emem.cpp
   buffer.hpp
   consts.hpp
+  error.hpp
+  ethercat_driver.hpp
+  idx_stack.hpp
   interface.hpp
+  master.hpp
+  network_driver.hpp
+  utils.hpp
+  ethercat/command.hpp
+  ethercat/datagram_addr.hpp
+  ethercat/datagram.hpp
+  ethercat/fmmu.hpp
   ethercat/header.hpp
+  ethercat/slave.hpp
+  ethercat/sync_manager.hpp
   ${PROJECT_SOURCE_DIR}/include/autd3/link/emem.hpp
 )
 target_link_libraries(link_emem PUBLIC autd3_common)

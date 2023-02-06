@@ -3,7 +3,7 @@
 // Created Date: 06/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/02/2023
+// Last Modified: 07/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -38,6 +38,11 @@ struct IdxStack {
     _pushed = 0;
     _pulled = 0;
   }
+
+  [[nodiscard]] uint8_t idx(const size_t i) const { return _idx[i]; }
+  [[nodiscard]] uint8_t* data(const size_t i) const { return _data[i]; }
+  [[nodiscard]] uint16_t length(const size_t i) const { return _length[i]; }
+  [[nodiscard]] uint16_t dc_offset(const size_t i) const { return _dc_offset[i]; }
 
  private:
   uint8_t _pushed;
