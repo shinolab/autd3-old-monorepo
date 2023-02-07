@@ -25,7 +25,7 @@ enum class EmemError {
   TooManySlaves,
 };
 
-template <typename T>
+template <typename T = std::nullptr_t>
 struct Result {
   explicit Result(T v) : _v(std::move(v)) {}
   explicit Result(EmemError e) : _v(e) {}
