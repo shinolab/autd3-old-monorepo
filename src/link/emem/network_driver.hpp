@@ -52,6 +52,16 @@ class NetworkDriver {
     return Result<uint16_t>(EmemError::NoFrame);
   }
 
+  Result<uint16_t> sr_blocking(const uint8_t idx, const std::chrono::high_resolution_clock::duration timeout) {
+    const auto expire_time = std::chrono::high_resolution_clock::now() + timeout;
+    for (;;) {
+      send_frame(idx);
+      if (const auto res = wait_inframe(idx, std::min(timeout, EC_TIMEOUT)); res.is_ok()) return res;
+      if (std::chrono::high_resolution_clock::now() > expire_time) break;
+    }
+    return Result<uint16_t>(EmemError::NoFrame);
+  }
+
   void setup_buf_state(const uint8_t idx, const BufState state) { _buffers[idx].set_state(state); }
 
   void close() { _interf.close(); }
@@ -59,16 +69,6 @@ class NetworkDriver {
   Buffer& buffer(const size_t idx) { return _buffers[idx]; }
 
  private:
-  Result<uint16_t> sr_blocking(const uint8_t idx, const std::chrono::high_resolution_clock::duration timeout) {
-    const auto expire_time = std::chrono::high_resolution_clock::now() + timeout;
-    for (;;) {
-      send_frame(idx);
-      if (const auto res = wait_inframe(idx); res.is_ok()) return res;
-      if (std::chrono::high_resolution_clock::now() > expire_time) break;
-    }
-    return Result<uint16_t>(EmemError::NoFrame);
-  }
-
   Result<uint16_t> receive_frame(const uint8_t idx) {
     auto& buffer = _buffers[idx];
     auto* rx_buf = buffer.rx_data();

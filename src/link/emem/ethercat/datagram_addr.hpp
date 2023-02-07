@@ -43,6 +43,8 @@ union DatagramAddr {
   LogicalAddress logical_addr;
   uint32_t bytes;
 
+  explicit DatagramAddr(const PositionAddr addr) : position_addr(addr) {}
+  explicit DatagramAddr(const BroadcastAddress addr) : broad_addr(addr) {}
   explicit DatagramAddr(const LogicalAddress addr) : logical_addr(addr) {}
   explicit DatagramAddr(const NodeAddress addr) : node_addr(addr) {}
 

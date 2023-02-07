@@ -23,7 +23,7 @@ constexpr size_t MAX_SM = 8;
 constexpr size_t MAX_FMMU = 4;
 
 struct Slave {
-  uint16_t state;
+  EcState state;
   uint16_t al_status_code;
   uint16_t config_addr;
   uint16_t alias_addr;
