@@ -3,7 +3,7 @@
 // Created Date: 06/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/02/2023
+// Last Modified: 09/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,6 +32,8 @@ class Master {
   }
 
   void close() { _ethercat_driver.close(); }
+
+  [[nodiscard]] uint16_t expected_wkc() const noexcept { return _output_wkc * 2 + _input_wkc; }
 
   void send_process_data() {
     {
@@ -187,14 +189,14 @@ class Master {
 
     _slaves[0].al_status_code = 0x0000;
     uint16_t lowest = 0x00FF;
-    auto fslave = 1;
+    uint16_t fslave = 1;
 
     EcAlStatusBytes sl[MAX_FPRD_MULTI];
     std::array<uint16_t, MAX_FPRD_MULTI> sl_ca{};
-    auto lslave = _slave_num;
+    uint16_t lslave = _slave_num;
 
     for (;;) {
-      if (lslave - fslave >= MAX_FPRD_MULTI) lslave = fslave + MAX_FPRD_MULTI - 1;
+      if (lslave >= MAX_FPRD_MULTI + fslave) lslave = fslave + MAX_FPRD_MULTI - 1;
 
       for (auto slave = fslave; slave <= lslave; slave++) {
         EcAlStatusBytes zero;
@@ -226,27 +228,125 @@ class Master {
 
   [[nodiscard]] Result<uint16_t> write_state(const size_t slave_idx, const ethercat::EcState state) {
     _slaves[0].state = state;
-    return (slave_idx == 0) ? _ethercat_driver.bwr_word(ethercat::BroadcastAddress{0, ethercat::registers::ALCTL}, state.value(), EC_TIMEOUT3)
-                            : _ethercat_driver.fpwr_word(ethercat::NodeAddress{_slaves[slave_idx].config_addr, ethercat::registers::ALCTL},
-                                                         state.value(), EC_TIMEOUT3);
+    return slave_idx == 0 ? _ethercat_driver.bwr_word(ethercat::BroadcastAddress{0, ethercat::registers::ALCTL}, state.value(), EC_TIMEOUT3)
+                          : _ethercat_driver.fpwr_word(ethercat::NodeAddress{_slaves[slave_idx].config_addr, ethercat::registers::ALCTL},
+                                                       state.value(), EC_TIMEOUT3);
   }
 
-  [[nodiscard]] Result<uint16_t> config(uint8_t* p_map) {
-    auto res = initialize();
+  [[nodiscard]] Result<uint16_t> initialize() {
+    auto res = detect_slaves();
     if (res.is_err()) return res;
-    const auto wkc = res.value();
 
+    const uint16_t wkc = res.value();
+    _slave_num = wkc;
+
+    if (const auto r = reset_slaves(); r.is_err()) return Result<uint16_t>(r.err());
+
+    for (uint16_t slave = 1; slave <= _slave_num; slave++) {
+      const auto adp = static_cast<uint16_t>(1 - slave);
+
+      auto addr = ethercat::PositionAddr{adp, ethercat::registers::STADR};
+      const auto w = to_le_bytes(static_cast<uint16_t>(slave + EC_NODE_OFFSET));
+      res = _ethercat_driver.apwr(addr, reinterpret_cast<const uint8_t*>(&w), sizeof(uint16_t), EC_TIMEOUT3);
+      if (res.is_err()) return res;
+
+      const uint8_t b = slave == 1 ? 1 : 0;
+      addr.offset = ethercat::registers::DLCTL;
+      res = _ethercat_driver.apwr(addr, &b, sizeof(uint8_t), EC_TIMEOUT3);
+      if (res.is_err()) return res;
+
+      addr.offset = ethercat::registers::STADR;
+      res = _ethercat_driver.aprd_word(addr, EC_TIMEOUT3);
+      if (res.is_err()) return res;
+      const auto config_addr = res.value();
+      _slaves[slave].config_addr = config_addr;
+
+      const auto node_addr = ethercat::NodeAddress{config_addr, ethercat::registers::ALIAS};
+      res = _ethercat_driver.fprd_word(node_addr, EC_TIMEOUT3);
+      if (res.is_err()) return res;
+      const auto alias_addr = res.value();
+      _slaves[slave].alias_addr = alias_addr;
+    }
+
+    for (uint16_t slave = 1; slave <= _slave_num; slave++) {
+      _slaves[slave].eep_man = 0x08A9;
+      _slaves[slave].eep_id = 0x0001;
+      _slaves[slave].eep_rev = 0x0001;
+      _slaves[slave].mbx_wr_offset = 0x1000;
+      _slaves[slave].mbx_wr_size = 0x0080;
+      _slaves[slave].mbx_rd_offset = 0x1400;
+      _slaves[slave].mbx_rd_size = 0x0080;
+    }
+
+    for (uint16_t slave = 1; slave <= _slave_num; slave++) {
+      const auto config_addr = _slaves[slave].config_addr;
+      _slaves[slave].has_dc = true;
+
+      auto addr = ethercat::NodeAddress{config_addr, ethercat::registers::DLSTAT};
+      res = _ethercat_driver.fprd_word(addr, EC_TIMEOUT3);
+      if (res.is_err()) return res;
+      const auto topology = res.value();
+
+      uint8_t h = 0;
+      uint8_t b = 0;
+      if ((topology & 0x0300) == 0x0200) {
+        h++;
+        b |= 0x01;
+      }
+      if ((topology & 0x0C00) == 0x0800) {
+        h++;
+        b |= 0x02;
+      }
+      if ((topology & 0x0300) == 0x0200) {
+        h++;
+        b |= 0x04;
+      }
+      if ((topology & 0x0C00) == 0x0800) {
+        h++;
+        b |= 0x08;
+      }
+      _slaves[slave].ptype = 0x0F;
+      _slaves[slave].topology = h;
+      _slaves[slave].active_ports = b;
+
+      _slaves[slave].parent = slave - 1;  // Only support line topology
+
+      if (const auto r = state_check(slave, ethercat::EcState::Init, EC_TIMEOUT_STATE); r.is_err()) return Result<uint16_t>(r.err());
+
+      initialize_sii(slave);
+
+      addr = ethercat::NodeAddress{config_addr, ethercat::registers::SM0};
+      uint8_t d[sizeof(ethercat::SM) * 2];
+
+      std::memcpy(&d[0], &_slaves[slave].sm[0], sizeof(ethercat::SM));
+      std::memcpy(&d[1], &_slaves[slave].sm[1], sizeof(ethercat::SM));
+      res = _ethercat_driver.fpwr(addr, d, sizeof(ethercat::SM) * 2, EC_TIMEOUT3);
+      if (res.is_err()) return res;
+
+      res = set_eeprom_to_pdi(slave);
+      if (res.is_err()) return res;
+
+      addr = ethercat::NodeAddress{config_addr, ethercat::registers::ALCTL};
+      constexpr uint16_t w = ethercat::EcState::PreOp | ethercat::EcState::Ack;
+      res = _ethercat_driver.fpwr_word(addr, w, EC_TIMEOUT3);
+      if (res.is_err()) return res;
+    }
+
+    return Result(wkc);
+  }
+
+  [[nodiscard]] Result<std::nullptr_t> config(uint8_t* p_map) {
     for (size_t slave = 1; slave <= _slave_num; slave++)
-      if (const auto r = map_sm(slave); r.is_err()) return Result<uint16_t>(r.err());
+      if (const auto r = map_sm(slave); r.is_err()) return Result(r.err());
 
     uint32_t log_addr = 0;
     uint32_t o_log_addr = log_addr;
     uint8_t bit_pos = 0;
-    size_t current_segment = 0;
+    uint16_t current_segment = 0;
     uint32_t segment_size = 0;
 
     for (size_t slave = 1; slave <= _slave_num; slave++) {
-      if (const auto r = map_output(slave, p_map, log_addr, bit_pos); r.is_err()) return Result<uint16_t>(r.err());
+      if (const auto r = map_output(slave, p_map, log_addr, bit_pos); r.is_err()) return Result(r.err());
 
       const auto diff = log_addr - o_log_addr;
       o_log_addr = log_addr;
@@ -285,7 +385,7 @@ class Master {
     _slaves[0].out_bytes = log_addr;
 
     for (size_t slave = 1; slave <= _slave_num; slave++) {
-      if (const auto r = map_input(slave, p_map, log_addr, bit_pos); r.is_err()) return Result<uint16_t>(r.err());
+      if (const auto r = map_input(slave, p_map, log_addr, bit_pos); r.is_err()) return Result(r.err());
 
       const auto diff = log_addr - o_log_addr;
       o_log_addr = log_addr;
@@ -299,13 +399,11 @@ class Master {
         segment_size += diff;
       }
 
-      res = set_eeprom_to_pdi(slave);
-      if (res.is_err()) return res;
+      if (const auto r = set_eeprom_to_pdi(slave); r.is_err()) return Result(r.err());
 
       const auto config_addr = _slaves[slave].config_addr;
       const auto addr = ethercat::NodeAddress{config_addr, ethercat::registers::ALCTL};
-      res = _ethercat_driver.fpwr_word(addr, ethercat::EcState::SafeOp, EC_TIMEOUT3);
-      if (res.is_err()) return res;
+      if (const auto r = _ethercat_driver.fpwr_word(addr, ethercat::EcState::SafeOp, EC_TIMEOUT3); r.is_err()) return Result(r.err());
     }
     if (bit_pos > 0) {
       log_addr++;
@@ -327,11 +425,11 @@ class Master {
     _slaves[0].p_input = _p_input;
     _slaves[0].in_bytes = log_addr - _slaves[0].out_bytes;
 
-    return Result(wkc);
+    return Result(nullptr);
   }
 
   [[nodiscard]] Result<std::nullptr_t> config_dc() {
-    const auto addr = ethercat::BroadcastAddress{0, ethercat::registers::DCTIME0};
+    constexpr auto addr = ethercat::BroadcastAddress{0, ethercat::registers::DCTIME0};
     uint8_t ht[sizeof(int32_t)]{};
     auto res = _ethercat_driver.bwr(addr, ht, sizeof(int32_t), EC_TIMEOUT3);
     if (res.is_err()) return Result<std::nullptr_t>(res.err());
@@ -362,9 +460,8 @@ class Master {
       _slaves[slave].dc_rt_b = i32_from_le_bytes(ht);
 
       const auto child = slave;
-      const auto parent = _slaves[slave].parent;
 
-      if (parent > 0) {
+      if (const auto parent = _slaves[slave].parent; parent > 0) {
         const auto dt3 = port_time(parent, 1) - port_time(parent, 0);
         auto dt1 = _slaves[slave].topology > 1 ? port_time(slave, prev_port(slave, 0)) - port_time(slave, 0) : 0;
 
@@ -384,6 +481,12 @@ class Master {
 
     return Result(nullptr);
   }
+
+  [[nodiscard]] size_t num_slaves() const noexcept { return _slave_num; }
+  [[nodiscard]] int64_t dc_time() const noexcept { return _dc_time; }
+
+  [[nodiscard]] const ethercat::Slave& operator[](const size_t i) const { return _slaves[i]; }
+  [[nodiscard]] ethercat::Slave& operator[](const size_t i) { return _slaves[i]; }
 
  private:
   [[nodiscard]] Result<uint16_t> detect_slaves() {
@@ -486,7 +589,7 @@ class Master {
     uint16_t wkc = 1;
     if (!_slaves[slave_idx].eep_pdi) {
       const auto config_addr = _slaves[slave_idx].config_addr;
-      const uint8_t eepctl = 0x01;
+      constexpr uint8_t eepctl = 0x01;
 
       wkc = 0;
       const auto addr = ethercat::NodeAddress{config_addr, ethercat::registers::EEPCFG};
@@ -525,108 +628,6 @@ class Master {
     _slaves[slave_idx].fmmu3func = 0;
   }
 
-  [[nodiscard]] Result<uint16_t> initialize() {
-    auto res = detect_slaves();
-    if (res.is_err()) return res;
-
-    const uint16_t wkc = res.value();
-    _slave_num = wkc;
-
-    if (const auto r = reset_slaves(); r.is_err()) return Result<uint16_t>(r.err());
-
-    for (uint16_t slave = 1; slave <= _slave_num; slave++) {
-      const auto adp = static_cast<uint16_t>(1 - slave);
-
-      auto addr = ethercat::PositionAddr{adp, ethercat::registers::STADR};
-      const auto w = to_le_bytes(static_cast<uint16_t>(slave + EC_NODE_OFFSET));
-      res = _ethercat_driver.apwr(addr, reinterpret_cast<const uint8_t*>(&w), sizeof(uint16_t), EC_TIMEOUT3);
-      if (res.is_err()) return res;
-
-      const uint8_t b = slave == 1 ? 1 : 0;
-      addr.offset = ethercat::registers::DLCTL;
-      res = _ethercat_driver.apwr(addr, &b, sizeof(uint8_t), EC_TIMEOUT3);
-      if (res.is_err()) return res;
-
-      addr.offset = ethercat::registers::STADR;
-      res = _ethercat_driver.aprd_word(addr, EC_TIMEOUT3);
-      if (res.is_err()) return res;
-      const auto config_addr = res.value();
-      _slaves[slave].config_addr = config_addr;
-
-      const auto node_addr = ethercat::NodeAddress{config_addr, ethercat::registers::ALIAS};
-      res = _ethercat_driver.fprd_word(node_addr, EC_TIMEOUT3);
-      if (res.is_err()) return res;
-      const auto alias_addr = res.value();
-      _slaves[slave].alias_addr = alias_addr;
-    }
-
-    for (uint16_t slave = 1; slave <= _slave_num; slave++) {
-      _slaves[slave].eep_man = 0x08A9;
-      _slaves[slave].eep_id = 0x0001;
-      _slaves[slave].eep_rev = 0x0001;
-      _slaves[slave].mbx_wr_offset = 0x1000;
-      _slaves[slave].mbx_wr_size = 0x0080;
-      _slaves[slave].mbx_rd_offset = 0x1400;
-      _slaves[slave].mbx_rd_size = 0x0080;
-    }
-
-    for (uint16_t slave = 1; slave <= _slave_num; slave++) {
-      const auto config_addr = _slaves[slave].config_addr;
-      _slaves[slave].has_dc = true;
-
-      auto addr = ethercat::NodeAddress{config_addr, ethercat::registers::DLSTAT};
-      res = _ethercat_driver.fprd_word(addr, EC_TIMEOUT3);
-      if (res.is_err()) return res;
-      const auto topology = res.value();
-
-      auto h = 0;
-      auto b = 0;
-      if (topology & 0x0300 == 0x0200) {
-        h++;
-        b |= 0x01;
-      }
-      if (topology & 0x0C00 == 0x0800) {
-        h++;
-        b |= 0x02;
-      }
-      if (topology & 0x0300 == 0x0200) {
-        h++;
-        b |= 0x04;
-      }
-      if (topology & 0x0C00 == 0x0800) {
-        h++;
-        b |= 0x08;
-      }
-      _slaves[slave].ptype = 0x0F;
-      _slaves[slave].topology = h;
-      _slaves[slave].active_ports = b;
-
-      _slaves[slave].parent = slave - 1;  // Only support line topology
-
-      if (const auto r = state_check(slave, ethercat::EcState::Init, EC_TIMEOUT_STATE); r.is_err()) return Result<uint16_t>(r.err());
-
-      initialize_sii(slave);
-
-      addr = ethercat::NodeAddress{config_addr, ethercat::registers::SM0};
-      uint8_t d[sizeof(ethercat::SM) * 2];
-
-      std::memcpy(&d[0], &_slaves[slave].sm[0], sizeof(ethercat::SM));
-      std::memcpy(&d[1], &_slaves[slave].sm[1], sizeof(ethercat::SM));
-      res = _ethercat_driver.fpwr(addr, d, sizeof(ethercat::SM) * 2, EC_TIMEOUT3);
-      if (res.is_err()) return res;
-
-      res = set_eeprom_to_pdi(slave);
-      if (res.is_err()) return res;
-
-      addr = ethercat::NodeAddress{config_addr, ethercat::registers::ALCTL};
-      const uint16_t w = ethercat::EcState::PreOp | ethercat::EcState::Ack;
-      res = _ethercat_driver.fpwr_word(addr, w, EC_TIMEOUT3);
-      if (res.is_err()) return res;
-    }
-
-    return Result(wkc);
-  }
-
   [[nodiscard]] Result<std::nullptr_t> map_sm(const size_t slave_idx) {
     if (const auto res = state_check(slave_idx, ethercat::EcState::PreOp, EC_TIMEOUT_STATE); res.is_err()) return Result(res.err());
 
@@ -646,8 +647,8 @@ class Master {
   }
 
   [[nodiscard]] Result<std::nullptr_t> map_output(const size_t slave_idx, uint8_t* p_map, uint32_t& log_addr, uint8_t& bit_pos) {
-    const auto fmmu_c = 0;
-    const auto sm_c = 2;
+    constexpr auto fmmu_c = 0;
+    constexpr auto sm_c = 2;
 
     _slaves[slave_idx].fmmu[fmmu_c].phys_start = _slaves[slave_idx].sm[sm_c].start_addr;
     const auto sm_len = to_le_bytes(_slaves[slave_idx].sm[sm_c].sm_length);
@@ -685,8 +686,8 @@ class Master {
   }
 
   [[nodiscard]] Result<std::nullptr_t> map_input(const size_t slave_idx, uint8_t* p_map, uint32_t& log_addr, uint8_t& bit_pos) {
-    const auto fmmu_c = 1;
-    const auto sm_c = 3;
+    constexpr auto fmmu_c = 1;
+    constexpr auto sm_c = 3;
 
     _slaves[slave_idx].fmmu[fmmu_c].phys_start = _slaves[slave_idx].sm[sm_c].start_addr;
     const auto sm_len = to_le_bytes(_slaves[slave_idx].sm[sm_c].sm_length);
@@ -731,8 +732,8 @@ class Master {
 
   [[nodiscard]] uint8_t prev_port(const size_t slave, const uint8_t port) const {
     const auto active_port = _slaves[slave].active_ports;
-    if (port == 0) return active_port & 0x02 > 0 ? 1 : port;
-    if (port == 1) return active_port & 0x01 > 0 ? 0 : port;
+    if (port == 0) return (active_port & 0x02) > 0 ? 1 : port;
+    if (port == 1) return (active_port & 0x01) > 0 ? 0 : port;
     throw std::runtime_error("prev_port unreachable");
   }
 

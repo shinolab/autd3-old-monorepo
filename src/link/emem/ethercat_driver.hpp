@@ -3,7 +3,7 @@
 // Created Date: 06/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/02/2023
+// Last Modified: 08/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,14 +24,14 @@ namespace autd3::link {
 
 using Duration = std::chrono::high_resolution_clock::duration;
 
-constexpr size_t MAX_FPRD_MULTI = 64;
+constexpr uint16_t MAX_FPRD_MULTI = 64;
 
 using EcAlStatusBytes = std::array<uint8_t, sizeof(ethercat::EcAlStatus)>;
 
 template <class I>
 class EtherCATDriver {
  public:
-  explicit EtherCATDriver(I interf) : _net_driver(interf), _idx_stack() {}
+  explicit EtherCATDriver(I interf) : _net_driver(interf) {}
 
   void close() { _net_driver.close(); }
 

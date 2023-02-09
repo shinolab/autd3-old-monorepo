@@ -3,7 +3,7 @@
 // Created Date: 06/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/02/2023
+// Last Modified: 09/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -38,7 +38,7 @@ constexpr T to_le_bytes(const T v) {
 
 constexpr uint16_t to_be(const uint16_t v) {
   const uint8_t b0 = v & 0xFF;
-  const uint8_t b1 = (v >> 8) & 0xFF;
+  const uint8_t b1 = v >> 8 & 0xFF;
   return u16_from_le_bytes(b1, b0);
 }
 

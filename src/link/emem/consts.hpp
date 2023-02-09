@@ -3,7 +3,7 @@
 // Created Date: 05/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/02/2023
+// Last Modified: 08/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ constexpr size_t EC_BUF_SIZE = 16;
 constexpr uint16_t EC_SLAVE_MAX = 200;
 constexpr int32_t EC_DEFAULT_RETRIES = 3;
 
-constexpr size_t MAX_IO_SEGMENT = 64;
+constexpr uint16_t MAX_IO_SEGMENT = 64;
 
 constexpr uint64_t EC_TIMEOUT_US = 2000;
 constexpr std::chrono::nanoseconds EC_TIMEOUT = std::chrono::nanoseconds(EC_TIMEOUT_US * 1000);
