@@ -30,6 +30,12 @@ if(BUILD_LINK_SOEM)
   set_target_properties(example_soem PROPERTIES FOLDER "example")
 endif()
 
+if(BUILD_LINK_EMEM)
+  add_executable(example_emem emem.cpp ${hpp_files})
+  target_link_libraries(example_emem autd3_example_common link_emem)
+  set_target_properties(example_emem PROPERTIES FOLDER "example")
+endif()
+
 if(BUILD_LINK_TWINCAT)
   if(WIN32)
     add_executable(example_twincat twincat.cpp ${hpp_files})

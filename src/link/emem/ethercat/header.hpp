@@ -3,7 +3,7 @@
 // Created Date: 05/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/02/2023
+// Last Modified: 08/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@
 
 namespace autd3::link::ethercat {
 
-const uint16_t ETH_TYPE_ECAT = to_be(0x88A4);
+constexpr uint16_t ETH_TYPE_ECAT = to_be(0x88A4);
 
 struct EthernetHeader {
   static EthernetHeader ecat_header() noexcept { return {0xFFFF, 0xFFFF, 0xFFFF, 0x0101, 0x0101, 0x0101, ETH_TYPE_ECAT}; }
