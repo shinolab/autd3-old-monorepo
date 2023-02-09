@@ -23,7 +23,7 @@
 
 namespace autd3::link::pcap {
 
-class PcapInterface : Interface {
+class PcapInterface final : Interface {
  public:
   explicit PcapInterface(const std::string& ifname) {
     char errbuf[256] = {};

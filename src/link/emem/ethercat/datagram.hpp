@@ -3,7 +3,7 @@
 // Created Date: 06/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/02/2023
+// Last Modified: 08/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,6 @@
 #pragma once
 
 #include <algorithm>
-#include <array>
 #include <cstdint>
 
 #include "command.hpp"

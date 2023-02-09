@@ -20,16 +20,16 @@ struct Adapter {
   [[nodiscard]] const std::string& desc() const noexcept { return _desc; }
 
   static std::vector<Adapter> enumerate_adapters() {
-    pcap_if* alldevs = nullptr;
+    pcap_if* all_devices = nullptr;
     char errbuf[256] = {};
 
-    if (const auto res = pcap_findalldevs(&alldevs, errbuf); res == PCAP_ERROR) throw std::runtime_error(errbuf);
+    if (const auto res = pcap_findalldevs(&all_devices, errbuf); res == PCAP_ERROR) throw std::runtime_error(errbuf);
 
     std::vector<Adapter> adapters;
-    for (pcap_if* cursor = alldevs; cursor != nullptr; cursor = cursor->next)
+    for (const pcap_if* cursor = all_devices; cursor != nullptr; cursor = cursor->next)
       adapters.emplace_back(Adapter{std::string(cursor->name), std::string(cursor->description)});
 
-    pcap_freealldevs(alldevs);
+    pcap_freealldevs(all_devices);
 
     return adapters;
   }
