@@ -3,7 +3,7 @@
 // Created Date: 06/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/02/2023
+// Last Modified: 10/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -250,9 +250,9 @@ class Master {
       res = _ethercat_driver.apwr(addr, reinterpret_cast<const uint8_t*>(&w), sizeof(uint16_t), EC_TIMEOUT3);
       if (res.is_err()) return res;
 
-      const uint8_t b = slave == 1 ? 1 : 0;
+      const uint16_t b = slave == 1 ? 1 : 0;
       addr.offset = ethercat::registers::DLCTL;
-      res = _ethercat_driver.apwr(addr, &b, sizeof(uint8_t), EC_TIMEOUT3);
+      res = _ethercat_driver.apwr_word(addr, b, EC_TIMEOUT3);
       if (res.is_err()) return res;
 
       addr.offset = ethercat::registers::STADR;
@@ -297,11 +297,11 @@ class Master {
         h++;
         b |= 0x02;
       }
-      if ((topology & 0x0300) == 0x0200) {
+      if ((topology & 0x3000) == 0x2000) {
         h++;
         b |= 0x04;
       }
-      if ((topology & 0x0C00) == 0x0800) {
+      if ((topology & 0xC000) == 0x8000) {
         h++;
         b |= 0x08;
       }
@@ -319,7 +319,7 @@ class Master {
       uint8_t d[sizeof(ethercat::SM) * 2];
 
       std::memcpy(&d[0], &_slaves[slave].sm[0], sizeof(ethercat::SM));
-      std::memcpy(&d[1], &_slaves[slave].sm[1], sizeof(ethercat::SM));
+      std::memcpy(&d[sizeof(ethercat::SM)], &_slaves[slave].sm[1], sizeof(ethercat::SM));
       res = _ethercat_driver.fpwr(addr, d, sizeof(ethercat::SM) * 2, EC_TIMEOUT3);
       if (res.is_err()) return res;
 
@@ -522,10 +522,6 @@ class Master {
 
     addr.offset = ethercat::registers::DLPORT;
     auto res = _ethercat_driver.bwr(addr, &b, sizeof(uint8_t), EC_TIMEOUT3);
-    if (res.is_err()) return Result<std::nullptr_t>(res.err());
-
-    addr.offset = ethercat::registers::DLPORT;
-    res = _ethercat_driver.bwr(addr, &b, sizeof(uint8_t), EC_TIMEOUT3);
     if (res.is_err()) return Result<std::nullptr_t>(res.err());
 
     uint16_t w = to_le_bytes(uint16_t{0x0004});

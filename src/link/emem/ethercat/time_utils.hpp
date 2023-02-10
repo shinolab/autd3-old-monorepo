@@ -3,7 +3,7 @@
 // Created Date: 07/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/02/2023
+// Last Modified: 10/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -40,6 +40,7 @@ uint64_t get_master_ec_time() {
   GetSystemTimePreciseAsFileTime(&system_time);
   int64_t system_time64 = (static_cast<int64_t>(system_time.dwHighDateTime) << 32) + static_cast<int64_t>(system_time.dwLowDateTime);
   system_time64 += -134774LL * 86400LL * 1000000LL * 10LL;
+  system_time64 -= 946684800LL * 1000000LL * 10LL;
   return static_cast<uint64_t>(system_time64) * 100ULL;
 #elif __APPLE__
   struct timeval current_time;
