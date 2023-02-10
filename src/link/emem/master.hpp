@@ -55,10 +55,10 @@ class Master {
     }
 
     {
-      auto current_segment = _input_segment;
+      auto current_segment = 0;
       auto* data = _p_output;
       auto length = static_cast<int32_t>(_output_bytes);
-      auto log_addr = _output_bytes;
+      auto log_addr = 0;
       for (;;) {
         const auto sub_len = (std::min)(_io_segment[current_segment], static_cast<uint32_t>(length));
         current_segment++;
