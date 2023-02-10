@@ -3,7 +3,7 @@
 // Created Date: 08/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/02/2023
+// Last Modified: 10/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "../ethercat/time_utils.hpp"
 #include "autd3/core/utils/hint.hpp"
 
 namespace autd3::link {
@@ -21,18 +22,6 @@ inline void ecat_init() {
   LARGE_INTEGER f;
   QueryPerformanceFrequency(&f);
   performance_frequency = f;
-}
-
-inline void gettimeofday_precise(timeval* const tv, struct timezone* const) {
-  FILETIME system_time;
-  GetSystemTimePreciseAsFileTime(&system_time);
-
-  int64_t system_time64 = (static_cast<int64_t>(system_time.dwHighDateTime) << 32) + static_cast<int64_t>(system_time.dwLowDateTime);
-  system_time64 += -134774LL * 86400LL * 1000000LL * 10LL;
-  const auto usecs = system_time64 / 10;
-
-  tv->tv_sec = static_cast<long>(usecs / 1000000);                                        // NOLINT
-  tv->tv_usec = static_cast<long>(usecs - static_cast<int64_t>(tv->tv_sec) * 1000000LL);  // NOLINT
 }
 
 inline void nanosleep(const int64_t t) {
@@ -63,7 +52,7 @@ inline void add_timespec(timespec& ts, const int64_t addtime) {
 
 inline timespec ecat_setup(const int64_t cycletime_ns) {
   auto tp = timeval{0, 0};
-  gettimeofday_precise(&tp, nullptr);
+  ethercat::gettimeofday_precise(&tp);
 
   const auto cycletime_us = cycletime_ns / 1000LL;
 
@@ -73,7 +62,7 @@ inline timespec ecat_setup(const int64_t cycletime_ns) {
 
 inline void timed_wait(const timespec& abs_time) {
   auto tp = timeval{0, 0};
-  gettimeofday_precise(&tp, nullptr);
+  ethercat::gettimeofday_precise(&tp);
 
   if (const auto sleep = (static_cast<int64_t>(abs_time.tv_sec) - static_cast<int64_t>(tp.tv_sec)) * 1000000000LL +
                          (static_cast<int64_t>(abs_time.tv_nsec) - static_cast<int64_t>(tp.tv_usec) * 1000LL);
@@ -83,7 +72,7 @@ inline void timed_wait(const timespec& abs_time) {
 
 inline void timed_wait_h(const timespec& abs_time) {
   auto tp = timeval{0, 0};
-  gettimeofday_precise(&tp, nullptr);
+  ethercat::gettimeofday_precise(&tp);
 
   const auto sleep = (static_cast<int64_t>(abs_time.tv_sec) - static_cast<int64_t>(tp.tv_sec)) * 1000000000LL +
                      (static_cast<int64_t>(abs_time.tv_nsec) - static_cast<int64_t>(tp.tv_usec) * 1000LL);

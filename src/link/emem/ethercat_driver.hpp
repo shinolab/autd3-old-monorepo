@@ -185,7 +185,7 @@ class EtherCATDriver {
             std::memcpy(_idx_stack.data(pos), _net_driver.buffer(idx).rx_data() + 2 + sizeof(ethercat::DatagramHeader), _idx_stack.length(pos));
             uint8_t le_wkc[sizeof(uint16_t)];
             std::memcpy(&le_wkc, _net_driver.buffer(idx).rx_data() + 2 + sizeof(ethercat::DatagramHeader) + _idx_stack.length(pos), sizeof(uint16_t));
-            wkc = u16_from_le_bytes(le_wkc[0], le_wkc[1]) * 2;
+            wkc = u16_from_le_bytes(le_wkc[0], le_wkc[1]);
 
             uint8_t le_dc_time[sizeof(int64_t)];
             std::memcpy(&le_dc_time, _net_driver.buffer(idx).rx_data() + _idx_stack.dc_offset(pos), sizeof(int64_t));
