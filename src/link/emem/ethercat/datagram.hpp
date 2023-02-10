@@ -3,7 +3,7 @@
 // Created Date: 06/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/02/2023
+// Last Modified: 10/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -84,8 +84,8 @@ inline void setup_datagram(uint8_t* tx_data, const Command cmd, const uint8_t id
   p_datagram_header->set_addr(addr);
   p_datagram_header->set_len(data_len);
   write_datagram_data(tx_data + 2 + sizeof(DatagramHeader), cmd, data, data_len);
-  tx_data[sizeof(DatagramHeader) + data_len] = 0x00;
-  tx_data[sizeof(DatagramHeader) + data_len + 1] = 0x00;
+  tx_data[2 + sizeof(DatagramHeader) + data_len] = 0x00;
+  tx_data[2 + sizeof(DatagramHeader) + data_len + 1] = 0x00;
 }
 
 inline size_t add_datagram(uint8_t* tx_data, const size_t prev_len, const Command cmd, const uint8_t idx, const bool more, const DatagramAddr addr,

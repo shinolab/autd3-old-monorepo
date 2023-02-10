@@ -3,7 +3,7 @@
 // Created Date: 06/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/02/2023
+// Last Modified: 10/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -56,6 +56,11 @@ class EtherCATDriver {
 
   [[nodiscard]] Result<uint16_t> apwr(const ethercat::PositionAddr addr, const uint8_t* data, const size_t size, const Duration timeout) {
     return write_cmd(ethercat::Command::Apwr, ethercat::DatagramAddr(addr), data, size, timeout);
+  }
+
+  [[nodiscard]] Result<uint16_t> apwr_word(const ethercat::PositionAddr addr, const uint16_t value, const Duration timeout) {
+    const auto value_le = to_le_bytes(value);
+    return apwr(addr, reinterpret_cast<const uint8_t*>(&value_le), sizeof(uint16_t), timeout);
   }
 
   [[nodiscard]] Result<uint16_t> aprd(const ethercat::PositionAddr addr, uint8_t* data, const size_t size, const Duration timeout) {
