@@ -3,7 +3,7 @@
 // Created Date: 06/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/02/2023
+// Last Modified: 12/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -309,7 +309,7 @@ class Master {
       _slaves[slave].topology = h;
       _slaves[slave].active_ports = b;
 
-      _slaves[slave].parent = slave - 1;  // Only support line topology
+      _slaves[slave].parent = slave - 1;
 
       if (const auto r = state_check(slave, ethercat::EcState::Init, EC_TIMEOUT_STATE); r.is_err()) return Result<uint16_t>(r.err());
 
@@ -337,7 +337,10 @@ class Master {
 
   [[nodiscard]] Result<std::nullptr_t> config(uint8_t* p_map) {
     for (size_t slave = 1; slave <= _slave_num; slave++)
+      if (const auto r = map_coe_soe(slave); r.is_err()) return Result(r.err());
+    for (size_t slave = 1; slave <= _slave_num; slave++) {
       if (const auto r = map_sm(slave); r.is_err()) return Result(r.err());
+    }
 
     uint32_t log_addr = 0;
     uint32_t o_log_addr = log_addr;
@@ -428,9 +431,56 @@ class Master {
     return Result(nullptr);
   }
 
+  Result<ethercat::EcState> reconfig_slave(const uint16_t slave, const Duration timeout) {
+    const uint16_t configadr = _slaves[slave].config_addr;
+    auto addr = ethercat::NodeAddress{configadr, ethercat::registers::ALCTL};
+    auto res = _ethercat_driver.fpwr_word(addr, ethercat::EcState::Init, timeout);
+    if (res.is_err()) return Result<ethercat::EcState>(res.err());
+    const auto v = res.value();
+    if (v == 0) return Result<ethercat::EcState>(ethercat::EcState::None);
+
+    if (const auto r = set_eeprom_to_pdi(slave); r.is_err()) return Result<ethercat::EcState>(r.err());
+
+    auto r_state = state_check(slave, ethercat::EcState::Init, EC_TIMEOUT_STATE);
+    if (r_state.is_err()) return Result<ethercat::EcState>(r_state.err());
+
+    auto state = r_state.value();
+
+    if (state == ethercat::EcState::Init) {
+      for (auto nSM = 0; nSM < ethercat::MAX_SM; nSM++) {
+        if (_slaves[slave].sm[nSM].start_addr > 0) {
+          addr.offset = ethercat::registers::SM0 + sizeof(ethercat::SM) * nSM;
+          _ethercat_driver.fpwr(addr, reinterpret_cast<const uint8_t*>(&_slaves[slave].sm[nSM]), sizeof(ethercat::SM), timeout);
+        }
+      }
+
+      addr.offset = ethercat::registers::ALCTL;
+      if (const auto r = _ethercat_driver.fpwr_word(addr, ethercat::EcState::PreOp, timeout); r.is_err()) return Result<ethercat::EcState>(r.err());
+      r_state = state_check(slave, ethercat::EcState::PreOp, EC_TIMEOUT_STATE);
+      if (r_state.is_err()) return Result<ethercat::EcState>(r_state.err());
+      state = r_state.value();
+      if (state == ethercat::EcState::PreOp) {
+        if (_slaves[slave].po_to_so_config) _slaves[slave].po_to_so_config();
+
+        if (const auto r = _ethercat_driver.fpwr_word(addr, ethercat::EcState::SafeOp, timeout); r.is_err())
+          return Result<ethercat::EcState>(r.err());
+        r_state = state_check(slave, ethercat::EcState::SafeOp, EC_TIMEOUT_STATE);
+        if (r_state.is_err()) return Result<ethercat::EcState>(r_state.err());
+        state = r_state.value();
+
+        for (auto FMMUc = 0; FMMUc < 2; FMMUc++) {
+          addr.offset = ethercat::registers::FMMU0 + sizeof(ethercat::FMMU) * FMMUc;
+          _ethercat_driver.fpwr(addr, reinterpret_cast<const uint8_t*>(&_slaves[FMMUc]), sizeof(ethercat::FMMU), timeout);
+        }
+      }
+    }
+
+    return Result(state);
+  }
+
   [[nodiscard]] Result<std::nullptr_t> config_dc() {
     constexpr auto addr = ethercat::BroadcastAddress{0, ethercat::registers::DCTIME0};
-    uint8_t ht[sizeof(int32_t)];
+    uint8_t ht[sizeof(int32_t)] = {0};
     auto res = _ethercat_driver.bwr(addr, ht, sizeof(int32_t), EC_TIMEOUT3);
     if (res.is_err()) return Result<std::nullptr_t>(res.err());
 
@@ -624,9 +674,15 @@ class Master {
     _slaves[slave_idx].fmmu3func = 0;
   }
 
-  [[nodiscard]] Result<std::nullptr_t> map_sm(const size_t slave_idx) {
+  [[nodiscard]] Result<std::nullptr_t> map_coe_soe(const size_t slave_idx) {
     if (const auto res = state_check(slave_idx, ethercat::EcState::PreOp, EC_TIMEOUT_STATE); res.is_err()) return Result(res.err());
 
+    if (_slaves[slave_idx].po_to_so_config) _slaves[slave_idx].po_to_so_config();
+
+    return Result(nullptr);
+  }
+
+  [[nodiscard]] Result<std::nullptr_t> map_sm(const size_t slave_idx) {
     _slaves[slave_idx].out_bits = (128 + 498) * 8;
     _slaves[slave_idx].in_bits = 16;
 

@@ -3,7 +3,7 @@
 // Created Date: 04/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/02/2023
+// Last Modified: 12/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -56,17 +56,14 @@ class EmemLink final : public core::Link {
 
     _master = std::make_unique<Master<pcap::PcapInterface>>(pcap::PcapInterface(_ifname));
 
-    _io_map.resize(geometry.device_map());
     const auto res = _master->initialize();
     if (res.is_err()) throw std::runtime_error("Failed to initialize");
     const auto wc = res.value();
     if (wc == 0) throw std::runtime_error("No slaves found");
 
-    if (const auto r = _master->config(_io_map.get()); r.is_err()) throw std::runtime_error("Failed to configure IO map");
-
     const uint32_t cyc_time = driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle;
     if (_sync_mode == SyncMode::DC) {
-      for (size_t i = 1; i < wc; i++)
+      for (size_t i = 1; i <= wc; i++)
         (*_master)[i].po_to_so_config = [cyc_time, i, this] {
           if (const auto r = _master->set_dc_sync0(i, true, cyc_time, 0U); r.is_err()) throw std::runtime_error("Failed to configure DC");
         };
@@ -74,15 +71,13 @@ class EmemLink final : public core::Link {
 
     if (const auto r = _master->config_dc(); r.is_err()) throw std::runtime_error("Failed to configure DC");
 
+    _io_map.resize(geometry.device_map());
+    if (const auto r = _master->config(_io_map.get()); r.is_err()) throw std::runtime_error("Failed to configure IO map");
+
     (void)_master->state_check(0, ethercat::EcState::SafeOp, EC_TIMEOUT_SAFE);
     (void)_master->read_state();
 
-    if ((*_master)[0].state != ethercat::EcState::SafeOp) {
-      // for (size_t i = 1; i < wc; i++)
-      //    if ((*_master)[i].state != ethercat::EcState::SafeOp)
-      //        log state
-      throw std::runtime_error("One ore more slaves did not reach safe operational state");
-    }
+    if ((*_master)[0].state != ethercat::EcState::SafeOp) throw std::runtime_error("One ore more slaves did not reach safe operational state");
 
     const auto expected_wkc = _master->expected_wkc();
 
@@ -95,10 +90,6 @@ class EmemLink final : public core::Link {
     if ((*_master)[0].state != ethercat::EcState::Operational) {
       _is_open.store(false);
       if (_ecat_thread.joinable()) _ecat_thread.join();
-      //(void)_master->read_state();
-      // for (size_t i = 1; i < wc; i++)
-      //    if ((*_master)[i].state != ethercat::EcState::SafeOp)
-      //        log state
       throw std::runtime_error("One ore more slaves are not responding.");
     }
 
@@ -109,8 +100,8 @@ class EmemLink final : public core::Link {
 
     _ecat_check_thread = std::thread([this, expected_wkc] {
       while (this->_is_open.load()) {
-        if (this->_wkc.load() < expected_wkc) (void)0;  // do check here
-        //     if (!error_handle(_logger, this->_on_lost)) break;
+        if (this->_wkc.load() < expected_wkc)
+          if (!error_handle()) break;
         std::this_thread::sleep_for(_state_check_interval);
       }
     });
@@ -225,6 +216,52 @@ class EmemLink final : public core::Link {
       ecat_run_<timed_wait_h>();
     else
       ecat_run_<timed_wait>();
+  }
+
+  void check_state(const uint16_t slave) {
+    if ((*_master)[slave].state == ethercat::EcState::Operational) return;
+
+    // ec_group[0].docheckstate = 1;
+    if ((*_master)[slave].state == ethercat::EcState::SafeOp | ethercat::EcState::Error)
+      (void)_master->write_state(slave, ethercat::EcState::from(static_cast<uint16_t>(ethercat::EcState::SafeOp | ethercat::EcState::Ack)));
+    else if ((*_master)[slave].state == ethercat::EcState::SafeOp)
+      (void)_master->write_state(slave, ethercat::EcState::Operational);
+    if (const auto r = _master->reconfig_slave(slave, std::chrono::nanoseconds(500 * 1000)); r.is_ok() && r.value() != ethercat::EcState::None) {
+      (*_master)[slave].is_lost = false;
+    } else if (!(*_master)[slave].is_lost) {
+      (void)_master->state_check(slave, ethercat::EcState::Operational, EC_TIMEOUT);
+      if ((*_master)[slave].state == ethercat::EcState::None) (*_master)[slave].is_lost = true;
+    }
+  }
+
+  void check_lost(const uint16_t slave) {
+    if (!(*_master)[slave].is_lost) return;
+    if ((*_master)[slave].state == ethercat::EcState::None) {
+      if (const auto r = _master->reconfig_slave(slave, std::chrono::nanoseconds(500 * 1000)); r.is_ok() && r.value() != ethercat::EcState::None)
+        (*_master)[slave].is_lost = false;
+    } else
+      (*_master)[slave].is_lost = false;
+  }
+
+  bool error_handle() {
+    std::stringstream ss;
+
+    // ec_group[0].docheckstate = 0;
+    (void)_master->read_state();
+    for (uint16_t slave = 1; slave <= static_cast<uint16_t>(_master->num_slaves()); slave++) {
+      check_state(slave);
+      check_lost(slave);
+    }
+    // if (ec_group[0].docheckstate == 0) return true;
+
+    spdlog::error("check state");
+
+    for (uint16_t slave = 1; slave <= static_cast<uint16_t>(_master->num_slaves()); slave++) {
+      if (!(*_master)[slave].is_lost) continue;
+      if (_on_lost != nullptr) _on_lost(ss.str());
+      return false;
+    }
+    return true;
   }
 
   std::unique_ptr<Master<pcap::PcapInterface>> _master{nullptr};
