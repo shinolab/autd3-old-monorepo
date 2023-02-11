@@ -20,7 +20,7 @@ namespace autd3::link {
 class Interface {
  public:
   virtual Result<std::nullptr_t> send(const uint8_t* data, size_t size) = 0;
-  virtual Result<std::nullptr_t> read(uint8_t* data) = 0;
+  virtual Result<std::nullptr_t> read(uint8_t* data, size_t size) = 0;
   virtual void close() = 0;
   virtual ~Interface() = default;
   Interface() = default;
