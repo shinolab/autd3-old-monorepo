@@ -3,7 +3,7 @@
 // Created Date: 06/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/02/2023
+// Last Modified: 10/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -79,7 +79,7 @@ class NetworkDriver {
       return Result(wkc);
     }
 
-    if (const auto res = _interf.read(_rx_tmp_buf.data()); res.is_err()) return Result<uint16_t>(res.err());
+    if (const auto res = _interf.read(_rx_tmp_buf.data(), _rx_tmp_buf.size()); res.is_err()) return Result<uint16_t>(res.err());
 
     if (const auto* p_eth_header = reinterpret_cast<ethercat::EthernetHeader*>(_rx_tmp_buf.data()); !p_eth_header->is_ecat_frame())
       return Result<uint16_t>(EmemError::NoFrame);
@@ -89,7 +89,7 @@ class NetworkDriver {
 
     const auto idx_recv = p_datagram_header->idx();
     if (idx == idx_recv) {
-      std::copy_n(_rx_tmp_buf.begin() + sizeof(ethercat::EthernetHeader), buffer.len() - sizeof(ethercat::EthernetHeader), rx_buf);
+      std::memcpy(rx_buf, _rx_tmp_buf.data() + sizeof(ethercat::EthernetHeader), buffer.len() - sizeof(ethercat::EthernetHeader));
       const auto wkc = u16_from_le_bytes(rx_buf[d_len], rx_buf[d_len + 1]);
       buffer.set_state(BufState::Complete);
       return Result(wkc);
@@ -98,7 +98,7 @@ class NetworkDriver {
     auto& buffer_recv = _buffers[idx_recv];
     auto* rx_buf_recv = buffer_recv.rx_data();
     if (buffer_recv.state() == BufState::Tx) {
-      std::copy_n(_rx_tmp_buf.data() + sizeof(ethercat::EthernetHeader), buffer.len() - sizeof(ethercat::EthernetHeader), rx_buf_recv);
+      std::memcpy(rx_buf_recv, _rx_tmp_buf.data() + sizeof(ethercat::EthernetHeader), buffer.len() - sizeof(ethercat::EthernetHeader));
       buffer_recv.set_state(BufState::Received);
       return Result<uint16_t>(EmemError::UnknownFrame);
     }
