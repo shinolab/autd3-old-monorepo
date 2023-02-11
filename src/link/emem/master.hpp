@@ -86,7 +86,7 @@ class Master {
     if (const auto res = _ethercat_driver.fpwr(ethercat::NodeAddress{slave_h, ethercat::registers::DCCUC}, &h, 1, EC_TIMEOUT); res.is_err())
       return Result<std::nullptr_t>(res.err());
 
-    uint8_t t1_buf[sizeof(int64_t)]{};
+    uint8_t t1_buf[sizeof(int64_t)];
     if (const auto res = _ethercat_driver.fprd(ethercat::NodeAddress{slave_h, ethercat::registers::DCSYSTIME}, t1_buf, sizeof(int64_t), EC_TIMEOUT);
         res.is_err())
       return Result<std::nullptr_t>(res.err());
@@ -430,7 +430,7 @@ class Master {
 
   [[nodiscard]] Result<std::nullptr_t> config_dc() {
     constexpr auto addr = ethercat::BroadcastAddress{0, ethercat::registers::DCTIME0};
-    uint8_t ht[sizeof(int32_t)]{};
+    uint8_t ht[sizeof(int32_t)];
     auto res = _ethercat_driver.bwr(addr, ht, sizeof(int32_t), EC_TIMEOUT3);
     if (res.is_err()) return Result<std::nullptr_t>(res.err());
 
@@ -444,7 +444,7 @@ class Master {
       if (res.is_err()) return Result<std::nullptr_t>(res.err());
       _slaves[slave].dc_rt_a = i32_from_le_bytes(ht);
 
-      uint8_t htr[sizeof(int64_t)]{};
+      uint8_t htr[sizeof(int64_t)];
       node_addr.offset = ethercat::registers::DCSOF;
       res = _ethercat_driver.fprd(node_addr, htr, sizeof(int64_t), EC_TIMEOUT);
       if (res.is_err()) return Result<std::nullptr_t>(res.err());

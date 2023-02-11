@@ -3,7 +3,7 @@
 // Created Date: 07/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/02/2023
+// Last Modified: 10/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -43,12 +43,12 @@ class PcapInterface final : Interface {
     return Result(nullptr);
   }
 
-  Result<std::nullptr_t> read(uint8_t* data) override {
+  Result<std::nullptr_t> read(uint8_t* data, const size_t size) override {
     pcap_pkthdr* header = nullptr;
     const u_char* data_recv = nullptr;
     if (pcap_next_ex(_pcap, &header, &data_recv) <= 0) return Result(EmemError::ReceiveFrame);
 
-    std::memcpy(data, data_recv, header->len);
+    std::memcpy(data, data_recv, (std::min)(static_cast<size_t>(header->len), size));
     return Result(nullptr);
   }
 
@@ -57,6 +57,7 @@ class PcapInterface final : Interface {
 #ifdef _WIN32
     timeEndPeriod(1);
 #endif
+    _closed = true;
 
     if (_pcap) pcap_close(_pcap);
     _pcap = nullptr;
