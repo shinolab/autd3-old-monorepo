@@ -3,7 +3,7 @@
 // Created Date: 07/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/02/2023
+// Last Modified: 12/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -61,6 +61,7 @@ struct Slave {
   int32_t dc_rt_a;
   int32_t dc_rt_b;
   int32_t propagation_delay;
+  bool is_lost;
   std::function<void()> po_to_so_config{};
 };
 
