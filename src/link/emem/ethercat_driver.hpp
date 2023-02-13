@@ -240,7 +240,7 @@ class EtherCATDriver {
     setup_datagram(_net_driver.buffer(idx).tx_data() + sizeof(ethercat::EthernetHeader), cmd, idx, addr, data, static_cast<uint16_t>(data_len));
     _net_driver.buffer(idx).set_len(sizeof(ethercat::EthernetHeader) + 2 + sizeof(ethercat::DatagramHeader) + data_len + 2);
     const auto res = _net_driver.sr_blocking(idx, timeout, wkc);
-    if (res == EmemResult::Ok && wkc > 0) std::memcpy(data, _net_driver.buffer(idx).rx_data() + 2 + sizeof(ethercat::DatagramHeader), data_len);
+    if (res == EmemResult::Ok && *wkc > 0) std::memcpy(data, _net_driver.buffer(idx).rx_data() + 2 + sizeof(ethercat::DatagramHeader), data_len);
     _net_driver.setup_buf_state(idx, BufState::Empty);
     return res;
   }
