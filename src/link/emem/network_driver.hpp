@@ -16,6 +16,7 @@
 
 #include "buffer.hpp"
 #include "ethercat/datagram.hpp"
+#include "pcap/pcap_interface.hpp"
 #include "result.hpp"
 
 namespace autd3::link {
@@ -23,10 +24,9 @@ namespace autd3::link {
 using Clock = std::chrono::high_resolution_clock;
 using Duration = Clock::duration;
 
-template <typename I>
 class NetworkDriver {
  public:
-  explicit NetworkDriver(I interf) : _interf(std::move(interf)), _rx_tmp_buf(), _last_idx(0) { _rx_tmp_buf.fill(0); }
+  explicit NetworkDriver() : _rx_tmp_buf(), _last_idx(0) { _rx_tmp_buf.fill(0); }
 
   uint8_t get_index() {
     uint8_t idx = _last_idx + 1;
@@ -68,6 +68,8 @@ class NetworkDriver {
   }
 
   void setup_buf_state(const uint8_t idx, const BufState state) { _buffers[idx].set_state(state); }
+
+  void open(const std::string& ifname) { _interf.open(ifname); }
 
   void close() { _interf.close(); }
 
@@ -111,7 +113,7 @@ class NetworkDriver {
     return EmemResult::UndefinedBehavior;
   }
 
-  I _interf;
+  pcap::PcapInterface _interf;
   EcBuf _rx_tmp_buf;
   uint8_t _last_idx;
   std::array<Buffer, EC_BUF_SIZE> _buffers;

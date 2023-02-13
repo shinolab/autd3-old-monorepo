@@ -3,7 +3,7 @@
 // Created Date: 05/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/02/2023
+// Last Modified: 13/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,9 +16,9 @@
 
 namespace autd3::link {
 
-constexpr size_t EC_MAX_FRAME_SIZE = 1518;
-constexpr size_t EC_MAX_LRW_DATA = EC_MAX_FRAME_SIZE - 14 - 2 - 10 - 2 - 4;
-constexpr size_t EC_FIRST_DC_DATAGRAM = 20;
+constexpr uint32_t EC_MAX_FRAME_SIZE = 1518;
+constexpr uint32_t EC_MAX_LRW_DATA = EC_MAX_FRAME_SIZE - 14 - 2 - 10 - 2 - 4;
+constexpr uint32_t EC_FIRST_DC_DATAGRAM = 20;
 constexpr size_t EC_BUF_SIZE = 16;
 constexpr uint16_t EC_SLAVE_MAX = 200;
 constexpr int32_t EC_DEFAULT_RETRIES = 3;

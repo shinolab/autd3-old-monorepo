@@ -14,7 +14,7 @@
 #include <stdexcept>
 #include <string>
 
-#include "../interface.hpp"
+#include "../result.hpp"
 #include "pcap.h"
 
 #ifdef _WIN32
@@ -23,9 +23,11 @@
 
 namespace autd3::link::pcap {
 
-class PcapInterface final : Interface {
+class PcapInterface final {
  public:
-  explicit PcapInterface(const std::string& ifname) {
+  explicit PcapInterface() : _pcap(nullptr), _closed(true) {}
+
+  void open(const std::string& ifname) {
     char errbuf[256] = {};
     _pcap = pcap_open(ifname.c_str(), 65536, PCAP_OPENFLAG_PROMISCUOUS | PCAP_OPENFLAG_MAX_RESPONSIVENESS | PCAP_OPENFLAG_NOCAPTURE_LOCAL, -1,
                       nullptr, errbuf);
@@ -38,12 +40,12 @@ class PcapInterface final : Interface {
     _closed = false;
   }
 
-  EmemResult send(const uint8_t* data, const size_t size) override {
+  EmemResult send(const uint8_t* data, const size_t size) const {
     if (pcap_sendpacket(_pcap, data, static_cast<int32_t>(size)) == PCAP_ERROR) return EmemResult::SendFrame;
     return EmemResult::Ok;
   }
 
-  EmemResult read(uint8_t* data, const size_t size) override {
+  EmemResult read(uint8_t* data, const size_t size) const {
     pcap_pkthdr* header = nullptr;
     const u_char* data_recv = nullptr;
     if (pcap_next_ex(_pcap, &header, &data_recv) <= 0) return EmemResult::ReceiveFrame;
@@ -52,7 +54,7 @@ class PcapInterface final : Interface {
     return EmemResult::Ok;
   }
 
-  void close() override {
+  void close() {
     if (_closed) return;
 #ifdef _WIN32
     timeEndPeriod(1);
@@ -63,7 +65,7 @@ class PcapInterface final : Interface {
     _pcap = nullptr;
   }
 
-  ~PcapInterface() override = default;
+  ~PcapInterface() = default;
   PcapInterface(const PcapInterface& v) = default;
   PcapInterface& operator=(const PcapInterface& obj) = default;
   PcapInterface(PcapInterface&& obj) = default;
@@ -71,7 +73,7 @@ class PcapInterface final : Interface {
 
  private:
   pcap_t* _pcap;
-  bool _closed{true};
+  bool _closed;
 };
 
 }  // namespace autd3::link::pcap

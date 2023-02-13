@@ -3,7 +3,7 @@
 // Created Date: 07/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/02/2023
+// Last Modified: 13/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,8 +15,8 @@
 
 namespace autd3::link::ethercat {
 
-constexpr uint32_t EC_DEFAULTMBXSM0 = 0x00010026;
-constexpr uint32_t EC_DEFAULTMBXSM1 = 0x00010022;
+constexpr uint32_t EC_DEFAULT_MBX_SM0 = 0x00010026;
+constexpr uint32_t EC_DEFAULT_MBX_SM1 = 0x00010022;
 
 enum class SMType : uint8_t {
   Unused = 0x00,
