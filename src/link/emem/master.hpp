@@ -537,10 +537,13 @@ class Master {
 
     addr = ethercat::BroadcastAddress{0x0000, ethercat::registers::TYPE};
     uint8_t w = 0x00;
-    EMEM_CHECK_RESULT(_ethercat_driver.brd(addr, &w, sizeof(uint8_t), EC_TIMEOUT_SAFE, wkc));
-    if (*wkc > EC_SLAVE_MAX) return EmemResult::TooManySlaves;
+    const auto res = _ethercat_driver.brd(addr, &w, sizeof(uint8_t), EC_TIMEOUT_SAFE, wkc);
+    if (res == EmemResult::Ok) {
+      if (*wkc > EC_SLAVE_MAX) return EmemResult::TooManySlaves;
+      return EmemResult::Ok;
+    }
 
-    return EmemResult::Ok;
+    return EmemResult::SlaveNotFound;
   }
 
   EmemResult reset_slaves() {

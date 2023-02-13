@@ -57,7 +57,7 @@ class NetworkDriver {
     return EmemResult::NoFrame;
   }
 
-  EmemResult sr_blocking(const uint8_t idx, const std::chrono::high_resolution_clock::duration timeout, uint16_t* wkc) {
+  EmemResult sr_blocking(const uint8_t idx, const Duration timeout, uint16_t* wkc) {
     const auto expire_time = Clock::now() + timeout;
     for (;;) {
       send_frame(idx);
