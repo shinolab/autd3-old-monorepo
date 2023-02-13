@@ -3,7 +3,7 @@
 // Created Date: 06/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/02/2023
+// Last Modified: 13/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,7 +34,10 @@ class EcState final {
     const auto v = static_cast<Value>(value);
     return EcState{v};
   }
-
+  static EcState from(const int value) {
+    const auto v = static_cast<Value>(value);
+    return EcState{v};
+  }
   ~EcState() = default;
   EcState(const EcState& v) noexcept = default;
   EcState& operator=(const EcState& obj) = default;
