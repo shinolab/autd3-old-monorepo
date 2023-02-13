@@ -9,7 +9,7 @@ add_library(link_emem
   emem.cpp
   buffer.hpp
   consts.hpp
-  error.hpp
+  result.hpp
   ethercat_driver.hpp
   idx_stack.hpp
   interface.hpp
