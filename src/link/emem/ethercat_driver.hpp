@@ -3,7 +3,7 @@
 // Created Date: 06/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/02/2023
+// Last Modified: 13/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,8 +22,6 @@
 
 namespace autd3::link {
 
-using Duration = std::chrono::high_resolution_clock::duration;
-
 constexpr uint16_t MAX_FPRD_MULTI = 64;
 
 using EcAlStatusBytes = std::array<uint8_t, sizeof(ethercat::EcAlStatus)>;
@@ -35,69 +33,72 @@ class EtherCATDriver {
 
   void close() { _net_driver.close(); }
 
-  [[nodiscard]] Result<uint16_t> bwr(const ethercat::BroadcastAddress addr, const uint8_t* data, const size_t size, const Duration timeout) {
-    return write_cmd(ethercat::Command::Bwr, ethercat::DatagramAddr(addr), data, size, timeout);
+  EmemResult bwr(const ethercat::BroadcastAddress addr, const uint8_t* data, const size_t size, const Duration timeout, uint16_t* wkc) {
+    return write_cmd(ethercat::Command::Bwr, ethercat::DatagramAddr(addr), data, size, timeout, wkc);
   }
 
-  [[nodiscard]] Result<uint16_t> bwr_word(const ethercat::BroadcastAddress addr, const uint16_t data, const Duration timeout) {
+  EmemResult bwr_word(const ethercat::BroadcastAddress addr, const uint16_t data, const Duration timeout, uint16_t* wkc) {
     const auto data_le = to_le_bytes(data);
-    return bwr(addr, reinterpret_cast<const uint8_t*>(&data_le), sizeof(uint16_t), timeout);
+    return bwr(addr, reinterpret_cast<const uint8_t*>(&data_le), sizeof(uint16_t), timeout, wkc);
   }
 
-  [[nodiscard]] Result<uint16_t> brd(const ethercat::BroadcastAddress addr, uint8_t* data, const size_t size, const Duration timeout) {
-    return read_cmd(ethercat::Command::Brd, ethercat::DatagramAddr(addr), data, size, timeout);
+  EmemResult brd(const ethercat::BroadcastAddress addr, uint8_t* data, const size_t size, const Duration timeout, uint16_t* wkc) {
+    return read_cmd(ethercat::Command::Brd, ethercat::DatagramAddr(addr), data, size, timeout, wkc);
   }
 
-  [[nodiscard]] Result<uint16_t> brd_word(const ethercat::BroadcastAddress addr, const Duration timeout) {
+  EmemResult brd_word(const ethercat::BroadcastAddress addr, const Duration timeout, uint16_t* wkc, uint16_t* res) {
     uint8_t data[sizeof(uint16_t)];
-    if (const auto res = brd(addr, data, sizeof(uint16_t), timeout); res.is_err()) return res;
-    return Result(u16_from_le_bytes(data[0], data[1]));
+    EMEM_CHECK_RESULT(brd(addr, data, sizeof(uint16_t), timeout, wkc));
+    *res = u16_from_le_bytes(data[0], data[1]);
+    return EmemResult::Ok;
   }
 
-  [[nodiscard]] Result<uint16_t> apwr(const ethercat::PositionAddr addr, const uint8_t* data, const size_t size, const Duration timeout) {
-    return write_cmd(ethercat::Command::Apwr, ethercat::DatagramAddr(addr), data, size, timeout);
+  EmemResult apwr(const ethercat::PositionAddr addr, const uint8_t* data, const size_t size, const Duration timeout, uint16_t* wkc) {
+    return write_cmd(ethercat::Command::Apwr, ethercat::DatagramAddr(addr), data, size, timeout, wkc);
   }
 
-  [[nodiscard]] Result<uint16_t> apwr_word(const ethercat::PositionAddr addr, const uint16_t value, const Duration timeout) {
+  EmemResult apwr_word(const ethercat::PositionAddr addr, const uint16_t value, const Duration timeout, uint16_t* wkc) {
     const auto value_le = to_le_bytes(value);
-    return apwr(addr, reinterpret_cast<const uint8_t*>(&value_le), sizeof(uint16_t), timeout);
+    return apwr(addr, reinterpret_cast<const uint8_t*>(&value_le), sizeof(uint16_t), timeout, wkc);
   }
 
-  [[nodiscard]] Result<uint16_t> aprd(const ethercat::PositionAddr addr, uint8_t* data, const size_t size, const Duration timeout) {
-    return read_cmd(ethercat::Command::Aprd, ethercat::DatagramAddr(addr), data, size, timeout);
+  EmemResult aprd(const ethercat::PositionAddr addr, uint8_t* data, const size_t size, const Duration timeout, uint16_t* wkc) {
+    return read_cmd(ethercat::Command::Aprd, ethercat::DatagramAddr(addr), data, size, timeout, wkc);
   }
 
-  [[nodiscard]] Result<uint16_t> aprd_word(const ethercat::PositionAddr addr, const Duration timeout) {
+  EmemResult aprd_word(const ethercat::PositionAddr addr, const Duration timeout, uint16_t* wkc, uint16_t* res) {
     uint8_t data[sizeof(uint16_t)];
-    if (const auto res = aprd(addr, data, sizeof(uint16_t), timeout); res.is_err()) return res;
-    return Result(u16_from_le_bytes(data[0], data[1]));
+    EMEM_CHECK_RESULT(aprd(addr, data, sizeof(uint16_t), timeout, wkc));
+    *res = u16_from_le_bytes(data[0], data[1]);
+    return EmemResult::Ok;
   }
 
-  [[nodiscard]] Result<uint16_t> fpwr(const ethercat::NodeAddress addr, const uint8_t* data, const size_t size, const Duration timeout) {
-    return write_cmd(ethercat::Command::Fpwr, ethercat::DatagramAddr(addr), data, size, timeout);
+  EmemResult fpwr(const ethercat::NodeAddress addr, const uint8_t* data, const size_t size, const Duration timeout, uint16_t* wkc) {
+    return write_cmd(ethercat::Command::Fpwr, ethercat::DatagramAddr(addr), data, size, timeout, wkc);
   }
 
-  [[nodiscard]] Result<uint16_t> fpwr_word(const ethercat::NodeAddress addr, const uint16_t data, const Duration timeout) {
+  EmemResult fpwr_word(const ethercat::NodeAddress addr, const uint16_t data, const Duration timeout, uint16_t* wkc) {
     const auto data_le = to_le_bytes(data);
-    return fpwr(addr, reinterpret_cast<const uint8_t*>(&data_le), sizeof(uint16_t), timeout);
+    return fpwr(addr, reinterpret_cast<const uint8_t*>(&data_le), sizeof(uint16_t), timeout, wkc);
   }
 
   template <typename T>
-  [[nodiscard]] Result<uint16_t> fpwr_struct(const ethercat::NodeAddress addr, const T* data, const Duration timeout) {
-    return fpwr(addr, reinterpret_cast<const uint8_t*>(data), sizeof(T), timeout);
+  EmemResult fpwr_struct(const ethercat::NodeAddress addr, const T* data, const Duration timeout, uint16_t* wkc) {
+    return fpwr(addr, reinterpret_cast<const uint8_t*>(data), sizeof(T), timeout, wkc);
   }
 
-  [[nodiscard]] Result<uint16_t> fprd(const ethercat::NodeAddress addr, uint8_t* data, const size_t size, const Duration timeout) {
-    return read_cmd(ethercat::Command::Fprd, ethercat::DatagramAddr(addr), data, size, timeout);
+  EmemResult fprd(const ethercat::NodeAddress addr, uint8_t* data, const size_t size, const Duration timeout, uint16_t* wkc) {
+    return read_cmd(ethercat::Command::Fprd, ethercat::DatagramAddr(addr), data, size, timeout, wkc);
   }
 
-  [[nodiscard]] Result<uint16_t> fprd_word(const ethercat::NodeAddress addr, const Duration timeout) {
+  EmemResult fprd_word(const ethercat::NodeAddress addr, const Duration timeout, uint16_t* wkc, uint16_t* res) {
     uint8_t data[sizeof(uint16_t)];
-    if (const auto res = fprd(addr, data, sizeof(uint16_t), timeout); res.is_err()) return res;
-    return Result(u16_from_le_bytes(data[0], data[1]));
+    EMEM_CHECK_RESULT(fprd(addr, data, sizeof(uint16_t), timeout, wkc));
+    *res = u16_from_le_bytes(data[0], data[1]);
+    return EmemResult::Ok;
   }
 
-  [[nodiscard]] Result<uint16_t> fprd_multi(const int32_t n, const uint16_t* config_list, EcAlStatusBytes* al_status_list, const Duration timeout) {
+  EmemResult fprd_multi(const int32_t n, const uint16_t* config_list, EcAlStatusBytes* al_status_list, const Duration timeout, uint16_t* wkc) {
     const auto idx = _net_driver.get_index();
     {
       auto& data = al_status_list[0];
@@ -129,8 +130,8 @@ class EtherCATDriver {
       }
     }
 
-    const auto res = _net_driver.sr_blocking(idx, timeout);
-    if (res.is_ok() && res.value() > 0)
+    const auto res = _net_driver.sr_blocking(idx, timeout, wkc);
+    if (res == EmemResult::Ok && *wkc > 0)
       for (int32_t i = 0; i < n; i++) {
         auto& data = al_status_list[i];
         std::memcpy(data.data(), _net_driver.buffer(idx).rx_data() + sl_data_pos[i], data.size());
@@ -170,42 +171,41 @@ class EtherCATDriver {
     _idx_stack.push_index(idx, data, static_cast<uint16_t>(len), 0);
   }
 
-  [[nodiscard]] Result<uint16_t> receive_process_data(const Duration timeout, int64_t& dc_time) {
+  EmemResult receive_process_data(const Duration timeout, int64_t* dc_time, uint16_t* wkc) {
     auto pos = _idx_stack.pull_index();
-    uint16_t wkc = 0;
+    *wkc = 0;
     auto valid_wkc = false;
 
     while (pos >= 0) {
       const auto idx = _idx_stack.idx(pos);
-      if (const auto res = _net_driver.wait_inframe(idx, timeout); res.is_ok()) {
-        const auto wkc2 = res.value();
+      if (uint16_t wkc2{}; _net_driver.wait_inframe(idx, timeout, &wkc2) == EmemResult::Ok) {
         if (const auto cmd = static_cast<ethercat::Command>(_net_driver.buffer(idx).rx_data()[2]);
             cmd == ethercat::Command::Lrd || cmd == ethercat::Command::Lrw) {
           if (_idx_stack.dc_offset(pos) > 0) {
             std::memcpy(_idx_stack.data(pos), _net_driver.buffer(idx).rx_data() + 2 + sizeof(ethercat::DatagramHeader), _idx_stack.length(pos));
             uint8_t le_wkc[sizeof(uint16_t)];
             std::memcpy(le_wkc, _net_driver.buffer(idx).rx_data() + 2 + sizeof(ethercat::DatagramHeader) + _idx_stack.length(pos), sizeof(uint16_t));
-            wkc = u16_from_le_bytes(le_wkc[0], le_wkc[1]);
+            *wkc = u16_from_le_bytes(le_wkc[0], le_wkc[1]);
 
             uint8_t le_dc_time[sizeof(int64_t)];
             std::memcpy(le_dc_time, _net_driver.buffer(idx).rx_data() + _idx_stack.dc_offset(pos), sizeof(int64_t));
-            dc_time = i64_from_le_bytes(le_dc_time);
+            *dc_time = i64_from_le_bytes(le_dc_time);
           } else {
             std::memcpy(_idx_stack.data(pos), _net_driver.buffer(idx).rx_data() + 2 + sizeof(ethercat::DatagramHeader), _idx_stack.length(pos));
-            wkc += wkc2;
+            *wkc += wkc2;
           }
           valid_wkc = true;
         } else if (cmd == ethercat::Command::Lwr) {
           if (_idx_stack.dc_offset(pos) > 0) {
             uint8_t le_wkc[sizeof(uint16_t)];
             std::memcpy(le_wkc, _net_driver.buffer(idx).rx_data() + 2 + sizeof(ethercat::DatagramHeader) + _idx_stack.length(pos), sizeof(uint16_t));
-            wkc = u16_from_le_bytes(le_wkc[0], le_wkc[1]) * 2;
+            *wkc = u16_from_le_bytes(le_wkc[0], le_wkc[1]) * 2;
 
             uint8_t le_dc_time[sizeof(int64_t)];
             std::memcpy(le_dc_time, _net_driver.buffer(idx).rx_data() + _idx_stack.dc_offset(pos), sizeof(int64_t));
-            dc_time = i64_from_le_bytes(le_dc_time);
+            *dc_time = i64_from_le_bytes(le_dc_time);
           } else {
-            wkc += wkc2 * 2;
+            *wkc += wkc2 * 2;
           }
           valid_wkc = true;
         }
@@ -217,30 +217,30 @@ class EtherCATDriver {
 
     _idx_stack.clear_index();
 
-    return valid_wkc ? Result(wkc) : Result<uint16_t>(EmemError::NoFrame);
+    return valid_wkc ? EmemResult::Ok : EmemResult::NoFrame;
   }
 
  private:
   NetworkDriver<I> _net_driver;
   IdxStack _idx_stack;
 
-  [[nodiscard]] Result<uint16_t> write_cmd(const ethercat::Command cmd, const ethercat::DatagramAddr addr, const uint8_t* data, const size_t data_len,
-                                           const std::chrono::high_resolution_clock::duration timeout) {
+  EmemResult write_cmd(const ethercat::Command cmd, const ethercat::DatagramAddr addr, const uint8_t* data, const size_t data_len,
+                       const std::chrono::high_resolution_clock::duration timeout, uint16_t* wkc) {
     const auto idx = _net_driver.get_index();
     setup_datagram(_net_driver.buffer(idx).tx_data() + sizeof(ethercat::EthernetHeader), cmd, idx, addr, data, static_cast<uint16_t>(data_len));
     _net_driver.buffer(idx).set_len(sizeof(ethercat::EthernetHeader) + 2 + sizeof(ethercat::DatagramHeader) + data_len + 2);
-    const auto res = _net_driver.sr_blocking(idx, timeout);
+    const auto res = _net_driver.sr_blocking(idx, timeout, wkc);
     _net_driver.setup_buf_state(idx, BufState::Empty);
     return res;
   }
 
-  [[nodiscard]] Result<uint16_t> read_cmd(const ethercat::Command cmd, const ethercat::DatagramAddr addr, uint8_t* data, const size_t data_len,
-                                          const std::chrono::high_resolution_clock::duration timeout) {
+  EmemResult read_cmd(const ethercat::Command cmd, const ethercat::DatagramAddr addr, uint8_t* data, const size_t data_len,
+                      const std::chrono::high_resolution_clock::duration timeout, uint16_t* wkc) {
     const auto idx = _net_driver.get_index();
     setup_datagram(_net_driver.buffer(idx).tx_data() + sizeof(ethercat::EthernetHeader), cmd, idx, addr, data, static_cast<uint16_t>(data_len));
     _net_driver.buffer(idx).set_len(sizeof(ethercat::EthernetHeader) + 2 + sizeof(ethercat::DatagramHeader) + data_len + 2);
-    const auto res = _net_driver.sr_blocking(idx, timeout);
-    if (res.is_ok() && res.value() > 0) std::memcpy(data, _net_driver.buffer(idx).rx_data() + 2 + sizeof(ethercat::DatagramHeader), data_len);
+    const auto res = _net_driver.sr_blocking(idx, timeout, wkc);
+    if (res == EmemResult::Ok && wkc > 0) std::memcpy(data, _net_driver.buffer(idx).rx_data() + 2 + sizeof(ethercat::DatagramHeader), data_len);
     _net_driver.setup_buf_state(idx, BufState::Empty);
     return res;
   }

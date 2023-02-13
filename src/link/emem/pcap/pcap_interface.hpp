@@ -3,7 +3,7 @@
 // Created Date: 07/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/02/2023
+// Last Modified: 13/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -38,18 +38,18 @@ class PcapInterface final : Interface {
     _closed = false;
   }
 
-  Result<std::nullptr_t> send(const uint8_t* data, const size_t size) override {
-    if (pcap_sendpacket(_pcap, data, static_cast<int32_t>(size)) == PCAP_ERROR) return Result(EmemError::SendFrame);
-    return Result(nullptr);
+  EmemResult send(const uint8_t* data, const size_t size) override {
+    if (pcap_sendpacket(_pcap, data, static_cast<int32_t>(size)) == PCAP_ERROR) return EmemResult::SendFrame;
+    return EmemResult::Ok;
   }
 
-  Result<std::nullptr_t> read(uint8_t* data, const size_t size) override {
+  EmemResult read(uint8_t* data, const size_t size) override {
     pcap_pkthdr* header = nullptr;
     const u_char* data_recv = nullptr;
-    if (pcap_next_ex(_pcap, &header, &data_recv) <= 0) return Result(EmemError::ReceiveFrame);
+    if (pcap_next_ex(_pcap, &header, &data_recv) <= 0) return EmemResult::ReceiveFrame;
 
     std::memcpy(data, data_recv, (std::min)(static_cast<size_t>(header->len), size));
-    return Result(nullptr);
+    return EmemResult::Ok;
   }
 
   void close() override {

@@ -3,7 +3,7 @@
 // Created Date: 07/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 12/02/2023
+// Last Modified: 13/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,8 +21,8 @@
 
 namespace autd3::link::ethercat {
 
-constexpr size_t MAX_SM = 8;
-constexpr size_t MAX_FMMU = 4;
+constexpr uint16_t MAX_SM = 8;
+constexpr uint16_t MAX_FMMU = 4;
 
 struct Slave {
   EcState state;
