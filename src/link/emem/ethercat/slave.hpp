@@ -39,6 +39,7 @@ struct Slave {
   uint16_t mbx_rd_size;
   uint16_t mbx_proto;
   bool has_dc;
+  uint16_t i_type;
   uint8_t ptype;
   uint8_t topology;
   uint8_t active_ports;

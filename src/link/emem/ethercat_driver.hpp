@@ -24,8 +24,6 @@ namespace autd3::link {
 
 constexpr uint16_t MAX_FPRD_MULTI = 64;
 
-using EcAlStatusBytes = std::array<uint8_t, sizeof(ethercat::EcAlStatus)>;
-
 template <class I>
 class EtherCATDriver {
  public:
@@ -98,44 +96,38 @@ class EtherCATDriver {
     return EmemResult::Ok;
   }
 
-  EmemResult fprd_multi(const int32_t n, const uint16_t* config_list, EcAlStatusBytes* al_status_list, const Duration timeout, uint16_t* wkc) {
+  EmemResult fprd_multi(const int32_t n, const uint16_t* config_list, ethercat::EcAlStatus* al_status_list, const Duration timeout, uint16_t* wkc) {
     const auto idx = _net_driver.get_index();
-    {
-      auto& data = al_status_list[0];
-      ethercat::setup_datagram(_net_driver.buffer(idx).tx_data() + sizeof(ethercat::EthernetHeader), ethercat::Command::Fprd, idx,
-                               ethercat::DatagramAddr(ethercat::NodeAddress{config_list[0], ethercat::registers::ALSTAT}), data.data(),
-                               static_cast<uint16_t>(data.size()));
-      _net_driver.buffer(idx).set_len(sizeof(ethercat::EthernetHeader) + 2 + sizeof(ethercat::DatagramHeader) + data.size() + 2);
-    }
+    int32_t sl_cnt = 0;
+
+    ethercat::setup_datagram(_net_driver.buffer(idx).tx_data() + sizeof(ethercat::EthernetHeader), ethercat::Command::Fprd, idx,
+                             ethercat::DatagramAddr(ethercat::NodeAddress{config_list[0], ethercat::registers::ALSTAT}),
+                             reinterpret_cast<const uint8_t*>(al_status_list + sl_cnt), sizeof(ethercat::EcAlStatus));
+    _net_driver.buffer(idx).set_len(sizeof(ethercat::EthernetHeader) + 2 + sizeof(ethercat::DatagramHeader) + sizeof(ethercat::EcAlStatus) + 2);
 
     size_t sl_data_pos[MAX_FPRD_MULTI];
-    sl_data_pos[0] = 2 + sizeof(ethercat::DatagramHeader);
+    sl_data_pos[sl_cnt] = sizeof(ethercat::EthernetHeader);
 
-    if (n > 1) {
-      for (int32_t sl_cnt = 1; sl_cnt < n - 1; sl_cnt++) {
-        auto& data = al_status_list[sl_cnt];
-        sl_data_pos[sl_cnt] = ethercat::add_datagram(_net_driver.buffer(idx).tx_data() + sizeof(ethercat::EthernetHeader),
-                                                     _net_driver.buffer(idx).len(), ethercat::Command::Fprd, idx, true,
-                                                     ethercat::DatagramAddr(ethercat::NodeAddress{config_list[sl_cnt], ethercat::registers::ALSTAT}),
-                                                     data.data(), static_cast<uint16_t>(data.size()));
-        _net_driver.buffer(idx).add_len(sizeof(ethercat::DatagramHeader) + data.size() + 2);
-      }
-      {
-        auto& data = al_status_list[n - 1];
-        sl_data_pos[n - 1] = ethercat::add_datagram(_net_driver.buffer(idx).tx_data() + sizeof(ethercat::EthernetHeader),
-                                                    _net_driver.buffer(idx).len(), ethercat::Command::Fprd, idx, false,
-                                                    ethercat::DatagramAddr(ethercat::NodeAddress{config_list[n - 1], ethercat::registers::ALSTAT}),
-                                                    data.data(), static_cast<uint16_t>(data.size()));
-        _net_driver.buffer(idx).add_len(sizeof(ethercat::DatagramHeader) + data.size() + 2);
-      }
+    while (++sl_cnt < n - 1) {
+      sl_data_pos[sl_cnt] = ethercat::add_datagram(_net_driver.buffer(idx).tx_data() + sizeof(ethercat::EthernetHeader),
+                                                   _net_driver.buffer(idx).len(), ethercat::Command::Fprd, idx, true,
+                                                   ethercat::DatagramAddr(ethercat::NodeAddress{config_list[sl_cnt], ethercat::registers::ALSTAT}),
+                                                   reinterpret_cast<const uint8_t*>(al_status_list + sl_cnt), sizeof(ethercat::EcAlStatus));
+      _net_driver.buffer(idx).add_len(sizeof(ethercat::DatagramHeader) + sizeof(ethercat::EcAlStatus) + 2);
+    }
+    if (sl_cnt < n) {
+      sl_data_pos[n - 1] = ethercat::add_datagram(_net_driver.buffer(idx).tx_data() + sizeof(ethercat::EthernetHeader), _net_driver.buffer(idx).len(),
+                                                  ethercat::Command::Fprd, idx, false,
+                                                  ethercat::DatagramAddr(ethercat::NodeAddress{config_list[sl_cnt], ethercat::registers::ALSTAT}),
+                                                  reinterpret_cast<const uint8_t*>(al_status_list + sl_cnt), sizeof(ethercat::EcAlStatus));
+      _net_driver.buffer(idx).add_len(sizeof(ethercat::DatagramHeader) + sizeof(ethercat::EcAlStatus) + 2);
     }
 
     const auto res = _net_driver.sr_blocking(idx, timeout, wkc);
-    if (res == EmemResult::Ok && *wkc > 0)
-      for (int32_t i = 0; i < n; i++) {
-        auto& data = al_status_list[i];
-        std::memcpy(data.data(), _net_driver.buffer(idx).rx_data() + sl_data_pos[i], data.size());
-      }
+    if (res == EmemResult::Ok)
+      for (int32_t i = 0; i < n; i++)
+        std::memcpy(reinterpret_cast<uint8_t*>(al_status_list + sl_cnt), _net_driver.buffer(idx).rx_data() + sl_data_pos[i],
+                    sizeof(ethercat::EcAlStatus));
 
     _net_driver.setup_buf_state(idx, BufState::Empty);
     return res;
