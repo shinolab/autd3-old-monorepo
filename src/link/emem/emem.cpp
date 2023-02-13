@@ -54,40 +54,40 @@ class EmemLink final : public core::Link {
 
     spdlog::warn("IFNAME: {}", _ifname);
 
-    _master = std::make_unique<Master<pcap::PcapInterface>>(pcap::PcapInterface(_ifname));
+    _master.open(_ifname);
 
     uint16_t wc{};
-    if (const auto res = _master->initialize(&wc); res != EmemResult::Ok) throw std::runtime_error("Failed to initialize");
+    if (const auto res = _master.initialize(&wc); res != EmemResult::Ok) throw std::runtime_error("Failed to initialize");
     if (wc == 0) throw std::runtime_error("No slaves found");
 
     const uint32_t cyc_time = driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle;
     if (_sync_mode == SyncMode::DC) {
       for (size_t i = 1; i <= wc; i++)
-        (*_master)[i].po_to_so_config = [cyc_time, i, this] {
-          if (const auto r = _master->set_dc_sync0(i, true, cyc_time, 0U); r != EmemResult::Ok) throw std::runtime_error("Failed to configure DC");
+        _master[i].po_to_so_config = [cyc_time, i, this] {
+          if (const auto r = _master.set_dc_sync0(i, true, cyc_time, 0U); r != EmemResult::Ok) throw std::runtime_error("Failed to configure DC");
         };
     }
 
-    if (const auto r = _master->config_dc(); r != EmemResult::Ok) throw std::runtime_error("Failed to configure DC");
+    if (const auto r = _master.config_dc(); r != EmemResult::Ok) throw std::runtime_error("Failed to configure DC");
 
     _io_map.resize(geometry.device_map());
-    if (const auto r = _master->config(_io_map.get()); r != EmemResult::Ok) throw std::runtime_error("Failed to configure IO map");
+    if (const auto r = _master.config(_io_map.get()); r != EmemResult::Ok) throw std::runtime_error("Failed to configure IO map");
 
     EcState unused_state{};
-    (void)_master->state_check(0, EcState::SafeOp, EC_TIMEOUT_SAFE, &unused_state);
-    (void)_master->read_state(&unused_state);
+    (void)_master.state_check(0, EcState::SafeOp, EC_TIMEOUT_SAFE, &unused_state);
+    (void)_master.read_state(&unused_state);
 
-    if ((*_master)[0].state != EcState::SafeOp) throw std::runtime_error("One ore more slaves did not reach safe operational state");
+    if (_master[0].state != EcState::SafeOp) throw std::runtime_error("One ore more slaves did not reach safe operational state");
 
-    const auto expected_wkc = _master->expected_wkc();
+    const auto expected_wkc = _master.expected_wkc();
 
-    (void)_master->write_state(0, EcState::Operational);
+    (void)_master.write_state(0, EcState::Operational);
 
     _is_open.store(true);
     _ecat_thread = std::thread([this] { ecat_run(); });
 
-    (void)_master->state_check(0, EcState::Operational, 5 * EC_TIMEOUT_STATE, &unused_state);
-    if ((*_master)[0].state != EcState::Operational) {
+    (void)_master.state_check(0, EcState::Operational, 5 * EC_TIMEOUT_STATE, &unused_state);
+    if (_master[0].state != EcState::Operational) {
       _is_open.store(false);
       if (_ecat_thread.joinable()) _ecat_thread.join();
       throw std::runtime_error("One ore more slaves are not responding.");
@@ -95,7 +95,7 @@ class EmemLink final : public core::Link {
 
     if (_sync_mode == SyncMode::FreeRun) {
       for (size_t i = 1; i < wc; i++)
-        if (const auto r = _master->set_dc_sync0(i, true, cyc_time, 0U); r != EmemResult::Ok) throw std::runtime_error("Failed to configure DC");
+        if (const auto r = _master.set_dc_sync0(i, true, cyc_time, 0U); r != EmemResult::Ok) throw std::runtime_error("Failed to configure DC");
     }
 
     _ecat_check_thread = std::thread([this, expected_wkc] {
@@ -117,10 +117,10 @@ class EmemLink final : public core::Link {
     if (_ecat_check_thread.joinable()) _ecat_check_thread.join();
 
     const uint32_t cyc_time = driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle;
-    for (size_t i = 1; i < _master->num_slaves(); i++) (void)_master->set_dc_sync0(i, true, cyc_time, 0U);
-    (void)_master->write_state(0, EcState::Init);
+    for (size_t i = 1; i < _master.num_slaves(); i++) (void)_master.set_dc_sync0(i, true, cyc_time, 0U);
+    (void)_master.write_state(0, EcState::Init);
 
-    _master->close();
+    _master.close();
 
     return true;
   }
@@ -144,7 +144,8 @@ class EmemLink final : public core::Link {
   static std::string lookup_autd() {
     const auto adapters = pcap::Adapter::enumerate_adapters();
     for (const auto& adapter : adapters) {
-      Master tester(pcap::PcapInterface(adapter.name()));
+      Master tester;
+      tester.open(adapter.name());
 
       uint16_t wc{};
       if (const auto res = tester.initialize(&wc); res != EmemResult::Ok || wc == 0) {
@@ -160,8 +161,8 @@ class EmemLink final : public core::Link {
     throw std::runtime_error("No AUTD3 devices found");
   }
 
-  static int64_t ec_sync(const int64_t reftime, const int64_t cycletime, int64_t* integral) {
-    auto delta = (reftime - 50000) % cycletime;
+  static int64_t ec_sync(const int64_t ref_time, const int64_t cycletime, int64_t* integral) {
+    auto delta = (ref_time - 50000) % cycletime;
     if (delta > cycletime / 2) delta -= cycletime;
     if (delta > 0) *integral += 1;
     if (delta < 0) *integral -= 1;
@@ -184,12 +185,12 @@ class EmemLink final : public core::Link {
 
     auto ts = ecat_setup(cycletime_ns);
     int64_t toff = 0;
-    _master->send_process_data();
+    _master.send_process_data();
     while (_is_open.load()) {
-      ec_sync(_master->dc_time(), cycletime_ns, &toff);
+      ec_sync(_master.dc_time(), cycletime_ns, &toff);
 
       uint16_t wkc{};
-      if (const auto res = _master->receive_process_data(EC_TIMEOUT, &wkc); res != EmemResult::Ok)
+      if (const auto res = _master.receive_process_data(EC_TIMEOUT, &wkc); res != EmemResult::Ok)
         _wkc.store(0);
       else
         _wkc.store(wkc);
@@ -205,7 +206,7 @@ class EmemLink final : public core::Link {
       add_timespec(ts, cycletime_ns + toff);
       W(ts);
 
-      _master->send_process_data();
+      _master.send_process_data();
     }
 
 #if WIN32
@@ -221,31 +222,31 @@ class EmemLink final : public core::Link {
   }
 
   void check_state(const uint16_t slave) {
-    if ((*_master)[slave].state == EcState::Operational) return;
+    if (_master[slave].state == EcState::Operational) return;
 
     EcState state{};
 
     // ec_group[0].docheckstate = 1;
-    if ((*_master)[slave].state == EcState::SafeOp | EcState::Error)
-      (void)_master->write_state(slave, EcState::from(static_cast<uint16_t>(EcState::SafeOp | EcState::Ack)));
-    else if ((*_master)[slave].state == EcState::SafeOp)
-      (void)_master->write_state(slave, EcState::Operational);
-    if (const auto r = _master->reconfig_slave(slave, std::chrono::nanoseconds(500 * 1000), &state); r != EmemResult::Ok && state != EcState::None) {
-      (*_master)[slave].is_lost = false;
-    } else if (!(*_master)[slave].is_lost) {
-      (void)_master->state_check(slave, EcState::Operational, EC_TIMEOUT, &state);
-      if ((*_master)[slave].state == EcState::None) (*_master)[slave].is_lost = true;
+    if (_master[slave].state == EcState::from(EcState::SafeOp | EcState::Error))
+      (void)_master.write_state(slave, EcState::from(static_cast<uint16_t>(EcState::SafeOp | EcState::Ack)));
+    else if (_master[slave].state == EcState::SafeOp)
+      (void)_master.write_state(slave, EcState::Operational);
+    if (const auto r = _master.re_config_slave(slave, std::chrono::nanoseconds(500 * 1000), &state); r != EmemResult::Ok && state != EcState::None) {
+      _master[slave].is_lost = false;
+    } else if (!_master[slave].is_lost) {
+      (void)_master.state_check(slave, EcState::Operational, EC_TIMEOUT, &state);
+      if (_master[slave].state == EcState::None) _master[slave].is_lost = true;
     }
   }
 
   void check_lost(const uint16_t slave) {
-    if (!(*_master)[slave].is_lost) return;
+    if (!_master[slave].is_lost) return;
     EcState state{};
-    if ((*_master)[slave].state == EcState::None) {
-      if (const auto r = _master->reconfig_slave(slave, std::chrono::nanoseconds(500 * 1000), &state); r != EmemResult::Ok && state != EcState::None)
-        (*_master)[slave].is_lost = false;
+    if (_master[slave].state == EcState::None) {
+      if (const auto r = _master.re_config_slave(slave, std::chrono::nanoseconds(500 * 1000), &state); r != EmemResult::Ok && state != EcState::None)
+        _master[slave].is_lost = false;
     } else
-      (*_master)[slave].is_lost = false;
+      _master[slave].is_lost = false;
   }
 
   bool error_handle() {
@@ -254,8 +255,8 @@ class EmemLink final : public core::Link {
     EcState state{};
 
     // ec_group[0].docheckstate = 0;
-    (void)_master->read_state(&state);
-    for (uint16_t slave = 1; slave <= static_cast<uint16_t>(_master->num_slaves()); slave++) {
+    (void)_master.read_state(&state);
+    for (uint16_t slave = 1; slave <= static_cast<uint16_t>(_master.num_slaves()); slave++) {
       check_state(slave);
       check_lost(slave);
     }
@@ -263,15 +264,15 @@ class EmemLink final : public core::Link {
 
     spdlog::error("check state");
 
-    for (uint16_t slave = 1; slave <= static_cast<uint16_t>(_master->num_slaves()); slave++) {
-      if (!(*_master)[slave].is_lost) continue;
+    for (uint16_t slave = 1; slave <= static_cast<uint16_t>(_master.num_slaves()); slave++) {
+      if (!_master[slave].is_lost) continue;
       if (_on_lost != nullptr) _on_lost(ss.str());
       return false;
     }
     return true;
   }
 
-  std::unique_ptr<Master<pcap::PcapInterface>> _master{nullptr};
+  Master _master;
 
   bool _high_precision;
   std::string _ifname;
