@@ -223,8 +223,8 @@ class Master {
     return EmemResult::Ok;
   }
 
-  EmemResult write_state(const size_t slave_idx, const EcState state) {
-    _slaves[0].state = state;
+  EmemResult write_state(const size_t slave_idx) {
+    const auto state = _slaves[slave_idx].state;
     uint16_t unused{};
     return slave_idx == 0 ? _ethercat_driver.bwr_word(ethercat::BroadcastAddress{0, ethercat::registers::ALCTL}, state.value(), EC_TIMEOUT3, &unused)
                           : _ethercat_driver.fpwr_word(ethercat::NodeAddress{_slaves[slave_idx].config_addr, ethercat::registers::ALCTL},
@@ -415,6 +415,39 @@ class Master {
     _slaves[0].in_bytes = log_addr - _slaves[0].out_bytes;
 
     return EmemResult::Ok;
+  }
+
+  EmemResult recover_slave(const uint16_t slave, const Duration timeout) {
+    const auto config_addr = _slaves[slave].config_addr;
+    const auto adp = static_cast<uint16_t>(1 - slave);
+
+    const auto addr = ethercat::PositionAddr{adp, ethercat::registers::STADR};
+
+    uint16_t wkc{};
+    uint16_t read_addr = 0xFFFE;
+    EMEM_CHECK_RESULT(_ethercat_driver.aprd(addr, reinterpret_cast<uint8_t*>(&read_addr), sizeof(uint16_t), timeout, &wkc));
+
+    if (read_addr == config_addr) return EmemResult::Ok;
+
+    if (wkc > 0 && read_addr == 0) {
+      constexpr auto node_addr = ethercat::NodeAddress{0xFFFF, ethercat::registers::STADR};
+      EMEM_CHECK_RESULT(_ethercat_driver.fpwr_word(node_addr, 0, Duration{0}, &wkc));
+
+      if (const auto res = _ethercat_driver.apwr_word(addr, 0xFFFF, timeout, &wkc); res != EmemResult::Ok) {
+        (void)_ethercat_driver.fpwr_word(node_addr, 0, Duration{0}, &wkc);
+        return res;
+      }
+
+      _slaves[slave].config_addr = 0xFFFF;
+      set_eeprom_to_pdi(slave, &wkc);
+
+      if (const auto res = _ethercat_driver.fpwr_word(node_addr, to_le_bytes(config_addr), timeout, &wkc); res == EmemResult::Ok) {
+        _slaves[slave].config_addr = config_addr;
+        return EmemResult::Ok;
+      }
+    }
+
+    return EmemResult::Recover;
   }
 
   EmemResult re_config_slave(const uint16_t slave, const Duration timeout, EcState* state) {

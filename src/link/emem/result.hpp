@@ -24,6 +24,7 @@ enum class EmemResult {
   UndefinedBehavior,
   SlaveNotFound,
   TooManySlaves,
+  Recover,
 };
 
 inline std::string to_string(const EmemResult r) {
@@ -44,6 +45,8 @@ inline std::string to_string(const EmemResult r) {
       return "No slave found";
     case EmemResult::TooManySlaves:
       return "Too many slaves";
+    case EmemResult::Recover:
+      return "Filed to recover";
   }
   return "Unknown error";
 }
