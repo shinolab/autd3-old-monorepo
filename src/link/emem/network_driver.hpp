@@ -51,7 +51,7 @@ class NetworkDriver {
   EmemResult wait_inframe(const uint8_t idx, const Duration timeout, uint16_t* wkc) {
     const auto expire_time = Clock::now() + timeout;
     for (;;) {
-      EMEM_CHECK_RESULT(receive_frame(idx, wkc));
+      if (receive_frame(idx, wkc) == EmemResult::Ok) return EmemResult::Ok;
       if (Clock::now() > expire_time) break;
     }
     return EmemResult::NoFrame;
@@ -61,7 +61,7 @@ class NetworkDriver {
     const auto expire_time = Clock::now() + timeout;
     for (;;) {
       send_frame(idx);
-      EMEM_CHECK_RESULT(wait_inframe(idx, std::min(timeout, EC_TIMEOUT), wkc));
+      if (wait_inframe(idx, std::min(timeout, EC_TIMEOUT), wkc) == EmemResult::Ok) return EmemResult::Ok;
       if (Clock::now() > expire_time) break;
     }
     return EmemResult::NoFrame;
