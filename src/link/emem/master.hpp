@@ -191,7 +191,7 @@ class Master {
     uint16_t lowest = 0x00FF;
     uint16_t fslave = 1;
 
-    EcAlStatusBytes sl[MAX_FPRD_MULTI];
+    ethercat::EcAlStatus sl[MAX_FPRD_MULTI];
     std::array<uint16_t, MAX_FPRD_MULTI> sl_ca{};
     uint16_t lslave = _slave_num;
 
@@ -199,8 +199,7 @@ class Master {
       if (lslave >= MAX_FPRD_MULTI + fslave) lslave = fslave + MAX_FPRD_MULTI - 1;
 
       for (auto slave = fslave; slave <= lslave; slave++) {
-        EcAlStatusBytes zero;
-        zero.fill(0);
+        constexpr ethercat::EcAlStatus zero{0, 0, 0};
         const auto config_addr = _slaves[slave].config_addr;
         sl_ca[slave - fslave] = config_addr;
         sl[slave - fslave] = zero;
@@ -209,9 +208,9 @@ class Master {
       EMEM_CHECK_RESULT(_ethercat_driver.fprd_multi(lslave - fslave + 1, sl_ca.data(), sl, EC_TIMEOUT3, &wkc));
 
       for (auto slave = fslave; slave <= lslave; slave++) {
-        const auto* p_al_status = reinterpret_cast<const ethercat::EcAlStatus*>(sl[slave - fslave].data());
-        _slaves[slave].al_status_code = p_al_status->al_status_code;
-        rval = p_al_status->al_status;
+        const auto& [al_status, _unused, al_status_code] = sl[slave - fslave];
+        _slaves[slave].al_status_code = al_status_code;
+        rval = al_status;
         if ((rval & 0x000F) < lowest) lowest = rval & 0x000F;
 
         _slaves[slave].state = EcState::from(rval);
@@ -245,7 +244,12 @@ class Master {
 
       const auto adp = static_cast<uint16_t>(1 - slave);
 
-      auto addr = ethercat::PositionAddr{adp, ethercat::registers::STADR};
+      auto addr = ethercat::PositionAddr{adp, ethercat::registers::PDICTL};
+      uint16_t val16{};
+      EMEM_CHECK_RESULT(_ethercat_driver.aprd_word(addr, EC_TIMEOUT3, &unused, &val16));
+      _slaves[slave].i_type = u16_from_le(val16);
+
+      addr = ethercat::PositionAddr{adp, ethercat::registers::STADR};
       const auto w = to_le_bytes(static_cast<uint16_t>(slave + EC_NODE_OFFSET));
       EMEM_CHECK_RESULT(_ethercat_driver.apwr(addr, reinterpret_cast<const uint8_t*>(&w), sizeof(uint16_t), EC_TIMEOUT3, &unused));
 
@@ -258,7 +262,7 @@ class Master {
       EMEM_CHECK_RESULT(_ethercat_driver.aprd_word(addr, EC_TIMEOUT3, &unused, &config_addr));
       _slaves[slave].config_addr = config_addr;
 
-      const auto node_addr = ethercat::NodeAddress{config_addr, ethercat::registers::ALIAS};
+      auto node_addr = ethercat::NodeAddress{config_addr, ethercat::registers::ALIAS};
       uint16_t alias_addr{};
       EMEM_CHECK_RESULT(_ethercat_driver.fprd_word(node_addr, EC_TIMEOUT3, &unused, &alias_addr));
       _slaves[slave].alias_addr = alias_addr;
@@ -278,9 +282,13 @@ class Master {
       uint16_t unused{};
 
       const auto config_addr = _slaves[slave].config_addr;
-      _slaves[slave].has_dc = true;
 
-      auto addr = ethercat::NodeAddress{config_addr, ethercat::registers::DLSTAT};
+      auto addr = ethercat::NodeAddress{config_addr, ethercat::registers::ESCSUP};
+      uint16_t val16{};
+      EMEM_CHECK_RESULT(_ethercat_driver.fprd_word(addr, EC_TIMEOUT3, &unused, &val16));
+      _slaves[slave].has_dc = (u16_from_le(val16) & 0x0004) > 0;
+
+      addr = ethercat::NodeAddress{config_addr, ethercat::registers::DLSTAT};
       uint16_t topology{};
       EMEM_CHECK_RESULT(_ethercat_driver.fprd_word(addr, EC_TIMEOUT3, &unused, &topology));
 
@@ -536,8 +544,8 @@ class Master {
     EMEM_CHECK_RESULT(_ethercat_driver.bwr(addr, &b, sizeof(uint8_t), EC_TIMEOUT3, &unused));
 
     addr = ethercat::BroadcastAddress{0x0000, ethercat::registers::TYPE};
-    uint8_t w = 0x00;
-    const auto res = _ethercat_driver.brd(addr, &w, sizeof(uint8_t), EC_TIMEOUT_SAFE, wkc);
+    uint16_t w = 0x00;
+    const auto res = _ethercat_driver.brd(addr, reinterpret_cast<uint8_t*>(&w), sizeof(uint16_t), EC_TIMEOUT_SAFE, wkc);
     if (res == EmemResult::Ok) {
       if (*wkc > EC_SLAVE_MAX) return EmemResult::TooManySlaves;
       return EmemResult::Ok;

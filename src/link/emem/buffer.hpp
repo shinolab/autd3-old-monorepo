@@ -3,7 +3,7 @@
 // Created Date: 05/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/02/2023
+// Last Modified: 13/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -49,7 +49,7 @@ struct Buffer {
 
   void set_len(const size_t len) { _len = len; }
 
-  void add_len(const size_t len) { _len = +len; }
+  void add_len(const size_t len) { _len += len; }
 
  private:
   EcBuf _tx_buf;
