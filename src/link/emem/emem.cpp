@@ -81,7 +81,8 @@ class EmemLink final : public core::Link {
 
     const auto expected_wkc = _master.expected_wkc();
 
-    (void)_master.write_state(0, EcState::Operational);
+    _master[0].state = EcState::Operational;
+    (void)_master.write_state(0);
 
     _is_open.store(true);
     _ecat_thread = std::thread([this] { ecat_run(); });
@@ -100,7 +101,7 @@ class EmemLink final : public core::Link {
 
     _ecat_check_thread = std::thread([this, expected_wkc] {
       while (this->_is_open.load()) {
-        if (this->_wkc.load() < expected_wkc)
+        if (this->_wkc.load() < expected_wkc || _do_check_state)
           if (!error_handle()) break;
         std::this_thread::sleep_for(_state_check_interval);
       }
@@ -118,7 +119,8 @@ class EmemLink final : public core::Link {
 
     const uint32_t cyc_time = driver::EC_CYCLE_TIME_BASE_NANO_SEC * _sync0_cycle;
     for (size_t i = 1; i < _master.num_slaves(); i++) (void)_master.set_dc_sync0(i, true, cyc_time, 0U);
-    (void)_master.write_state(0, EcState::Init);
+    _master[0].state = EcState::Init;
+    (void)_master.write_state(0);
 
     _master.close();
 
@@ -221,32 +223,47 @@ class EmemLink final : public core::Link {
       ecat_run_<timed_wait>();
   }
 
-  void check_state(const uint16_t slave) {
+  void check_state(const uint16_t slave, std::stringstream& ss) {
     if (_master[slave].state == EcState::Operational) return;
 
     EcState state{};
 
-    // ec_group[0].docheckstate = 1;
-    if (_master[slave].state == EcState::from(EcState::SafeOp | EcState::Error))
-      (void)_master.write_state(slave, EcState::from(static_cast<uint16_t>(EcState::SafeOp | EcState::Ack)));
-    else if (_master[slave].state == EcState::SafeOp)
-      (void)_master.write_state(slave, EcState::Operational);
-    if (const auto r = _master.re_config_slave(slave, std::chrono::nanoseconds(500 * 1000), &state); r != EmemResult::Ok && state != EcState::None) {
-      _master[slave].is_lost = false;
+    _do_check_state = true;
+    if (_master[slave].state == EcState::from(EcState::SafeOp + EcState::Error)) {
+      spdlog::warn("slave {} is in SAFE_OP + ERROR, attempting ack", slave);
+      _master[slave].state = EcState::from(EcState::SafeOp + EcState::Ack);
+      (void)_master.write_state(slave);
+    } else if (_master[slave].state == EcState::SafeOp) {
+      spdlog::warn("slave {} is in SAFE_OP, change to OPERATIONAL", slave);
+      _master[slave].state = EcState::Operational;
+      (void)_master.write_state(slave);
+    } else if (_master[slave].state != EcState::None) {
+      if (const auto r = _master.re_config_slave(slave, std::chrono::nanoseconds(500 * 1000), &state);
+          r != EmemResult::Ok && state != EcState::None) {
+        _master[slave].is_lost = false;
+        spdlog::info("slave {} reconfigured", slave);
+      }
     } else if (!_master[slave].is_lost) {
       (void)_master.state_check(slave, EcState::Operational, EC_TIMEOUT, &state);
-      if (_master[slave].state == EcState::None) _master[slave].is_lost = true;
+      if (_master[slave].state == EcState::None) {
+        _master[slave].is_lost = true;
+        ss << "ERROR: slave " << slave << " lost\n";
+        spdlog::warn("slave {} lost", slave);
+      }
     }
   }
 
   void check_lost(const uint16_t slave) {
     if (!_master[slave].is_lost) return;
-    EcState state{};
     if (_master[slave].state == EcState::None) {
-      if (const auto r = _master.re_config_slave(slave, std::chrono::nanoseconds(500 * 1000), &state); r != EmemResult::Ok && state != EcState::None)
+      if (const auto r = _master.recover_slave(slave, std::chrono::nanoseconds(500 * 1000)); r != EmemResult::Ok) {
         _master[slave].is_lost = false;
-    } else
+        spdlog::info("slave {} recovered.", slave);
+      }
+    } else {
       _master[slave].is_lost = false;
+      spdlog::info("slave {} found.", slave);
+    }
   }
 
   bool error_handle() {
@@ -254,15 +271,13 @@ class EmemLink final : public core::Link {
 
     EcState state{};
 
-    // ec_group[0].docheckstate = 0;
+    _do_check_state = false;
     (void)_master.read_state(&state);
     for (uint16_t slave = 1; slave <= static_cast<uint16_t>(_master.num_slaves()); slave++) {
-      check_state(slave);
+      check_state(slave, ss);
       check_lost(slave);
     }
-    // if (ec_group[0].docheckstate == 0) return true;
-
-    spdlog::error("check state");
+    if (!_do_check_state) return true;
 
     for (uint16_t slave = 1; slave <= static_cast<uint16_t>(_master.num_slaves()); slave++) {
       if (!_master[slave].is_lost) continue;
@@ -273,6 +288,7 @@ class EmemLink final : public core::Link {
   }
 
   Master _master;
+  bool _do_check_state{false};
 
   bool _high_precision;
   std::string _ifname;
