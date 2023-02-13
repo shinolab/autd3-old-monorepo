@@ -24,10 +24,11 @@ namespace autd3::link {
 
 constexpr uint16_t MAX_FPRD_MULTI = 64;
 
-template <class I>
 class EtherCATDriver {
  public:
-  explicit EtherCATDriver(I interf) : _net_driver(interf) {}
+  explicit EtherCATDriver() = default;
+
+  void open(const std::string& ifname) { _net_driver.open(ifname); }
 
   void close() { _net_driver.close(); }
 
@@ -45,7 +46,7 @@ class EtherCATDriver {
   }
 
   EmemResult brd_word(const ethercat::BroadcastAddress addr, const Duration timeout, uint16_t* wkc, uint16_t* res) {
-    uint8_t data[sizeof(uint16_t)];
+    uint8_t data[sizeof(uint16_t)]{};
     EMEM_CHECK_RESULT(brd(addr, data, sizeof(uint16_t), timeout, wkc));
     *res = u16_from_le_bytes(data[0], data[1]);
     return EmemResult::Ok;
@@ -65,7 +66,7 @@ class EtherCATDriver {
   }
 
   EmemResult aprd_word(const ethercat::PositionAddr addr, const Duration timeout, uint16_t* wkc, uint16_t* res) {
-    uint8_t data[sizeof(uint16_t)];
+    uint8_t data[sizeof(uint16_t)]{};
     EMEM_CHECK_RESULT(aprd(addr, data, sizeof(uint16_t), timeout, wkc));
     *res = u16_from_le_bytes(data[0], data[1]);
     return EmemResult::Ok;
@@ -90,7 +91,7 @@ class EtherCATDriver {
   }
 
   EmemResult fprd_word(const ethercat::NodeAddress addr, const Duration timeout, uint16_t* wkc, uint16_t* res) {
-    uint8_t data[sizeof(uint16_t)];
+    uint8_t data[sizeof(uint16_t)]{};
     EMEM_CHECK_RESULT(fprd(addr, data, sizeof(uint16_t), timeout, wkc));
     *res = u16_from_le_bytes(data[0], data[1]);
     return EmemResult::Ok;
@@ -100,26 +101,26 @@ class EtherCATDriver {
     const auto idx = _net_driver.get_index();
     int32_t sl_cnt = 0;
 
-    ethercat::setup_datagram(_net_driver.buffer(idx).tx_data() + sizeof(ethercat::EthernetHeader), ethercat::Command::Fprd, idx,
-                             ethercat::DatagramAddr(ethercat::NodeAddress{config_list[0], ethercat::registers::ALSTAT}),
-                             reinterpret_cast<const uint8_t*>(al_status_list + sl_cnt), sizeof(ethercat::EcAlStatus));
+    setup_datagram(_net_driver.buffer(idx).tx_data() + sizeof(ethercat::EthernetHeader), ethercat::Command::Fprd, idx,
+                   ethercat::DatagramAddr(ethercat::NodeAddress{config_list[0], ethercat::registers::ALSTAT}),
+                   reinterpret_cast<const uint8_t*>(al_status_list + sl_cnt), sizeof(ethercat::EcAlStatus));
     _net_driver.buffer(idx).set_len(sizeof(ethercat::EthernetHeader) + 2 + sizeof(ethercat::DatagramHeader) + sizeof(ethercat::EcAlStatus) + 2);
 
-    size_t sl_data_pos[MAX_FPRD_MULTI];
+    size_t sl_data_pos[MAX_FPRD_MULTI]{};
     sl_data_pos[sl_cnt] = sizeof(ethercat::EthernetHeader);
 
     while (++sl_cnt < n - 1) {
-      sl_data_pos[sl_cnt] = ethercat::add_datagram(_net_driver.buffer(idx).tx_data() + sizeof(ethercat::EthernetHeader),
-                                                   _net_driver.buffer(idx).len(), ethercat::Command::Fprd, idx, true,
-                                                   ethercat::DatagramAddr(ethercat::NodeAddress{config_list[sl_cnt], ethercat::registers::ALSTAT}),
-                                                   reinterpret_cast<const uint8_t*>(al_status_list + sl_cnt), sizeof(ethercat::EcAlStatus));
+      sl_data_pos[sl_cnt] =
+          add_datagram(_net_driver.buffer(idx).tx_data() + sizeof(ethercat::EthernetHeader), _net_driver.buffer(idx).len(), ethercat::Command::Fprd,
+                       idx, true, ethercat::DatagramAddr(ethercat::NodeAddress{config_list[sl_cnt], ethercat::registers::ALSTAT}),
+                       reinterpret_cast<const uint8_t*>(al_status_list + sl_cnt), sizeof(ethercat::EcAlStatus));
       _net_driver.buffer(idx).add_len(sizeof(ethercat::DatagramHeader) + sizeof(ethercat::EcAlStatus) + 2);
     }
     if (sl_cnt < n) {
-      sl_data_pos[n - 1] = ethercat::add_datagram(_net_driver.buffer(idx).tx_data() + sizeof(ethercat::EthernetHeader), _net_driver.buffer(idx).len(),
-                                                  ethercat::Command::Fprd, idx, false,
-                                                  ethercat::DatagramAddr(ethercat::NodeAddress{config_list[sl_cnt], ethercat::registers::ALSTAT}),
-                                                  reinterpret_cast<const uint8_t*>(al_status_list + sl_cnt), sizeof(ethercat::EcAlStatus));
+      sl_data_pos[n - 1] =
+          add_datagram(_net_driver.buffer(idx).tx_data() + sizeof(ethercat::EthernetHeader), _net_driver.buffer(idx).len(), ethercat::Command::Fprd,
+                       idx, false, ethercat::DatagramAddr(ethercat::NodeAddress{config_list[sl_cnt], ethercat::registers::ALSTAT}),
+                       reinterpret_cast<const uint8_t*>(al_status_list + sl_cnt), sizeof(ethercat::EcAlStatus));
       _net_driver.buffer(idx).add_len(sizeof(ethercat::DatagramHeader) + sizeof(ethercat::EcAlStatus) + 2);
     }
 
@@ -136,8 +137,8 @@ class EtherCATDriver {
   void process_data_segment_trans_lrd(uint8_t* data, const uint32_t log_addr, const uint32_t len, const bool first, const uint16_t config_addr,
                                       const int64_t dc_time) {
     const auto idx = _net_driver.get_index();
-    ethercat::setup_datagram(_net_driver.buffer(idx).tx_data() + sizeof(ethercat::EthernetHeader), ethercat::Command::Lrd, idx,
-                             ethercat::DatagramAddr(ethercat::LogicalAddress{log_addr}), data, static_cast<uint16_t>(len));
+    setup_datagram(_net_driver.buffer(idx).tx_data() + sizeof(ethercat::EthernetHeader), ethercat::Command::Lrd, idx,
+                   ethercat::DatagramAddr(ethercat::LogicalAddress{log_addr}), data, static_cast<uint16_t>(len));
     _net_driver.buffer(idx).set_len(sizeof(ethercat::EthernetHeader) + 2 + sizeof(ethercat::DatagramHeader) + len + 2);
 
     size_t dc_offset = 0;
@@ -213,7 +214,7 @@ class EtherCATDriver {
   }
 
  private:
-  NetworkDriver<I> _net_driver;
+  NetworkDriver _net_driver;
   IdxStack _idx_stack;
 
   EmemResult write_cmd(const ethercat::Command cmd, const ethercat::DatagramAddr addr, const uint8_t* data, const size_t data_len,
