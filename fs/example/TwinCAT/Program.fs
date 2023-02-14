@@ -3,7 +3,7 @@
 // Created Date: 03/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/02/2023
+// Last Modified: 14/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,6 +22,4 @@ let geometry =
 
 let link = (new TwinCAT()).Build()
 
-let autd = Controller.Open (geometry, link)
-
-SampleRunner.Run autd
+(geometry, link) |> Controller.Open |> SampleRunner.Run
