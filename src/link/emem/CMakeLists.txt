@@ -12,7 +12,6 @@ add_library(link_emem
   result.hpp
   ethercat_driver.hpp
   idx_stack.hpp
-  interface.hpp
   master.hpp
   network_driver.hpp
   utils.hpp
