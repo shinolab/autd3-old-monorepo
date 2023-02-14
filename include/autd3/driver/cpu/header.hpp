@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/01/2023
+// Last Modified: 14/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -60,13 +60,13 @@ struct SilencerHeader {
  */
 constexpr uint8_t MSG_CLEAR = 0x00;
 /**
- * \brief Message ID for read CPU firmware version operation
+ * \brief Message ID for read CPU firmware major version operation
  */
-constexpr uint8_t MSG_RD_CPU_VERSION = 0x01;
+constexpr uint8_t MSG_RD_CPU_VERSION_MAJOR = 0x01;
 /**
- * \brief Message ID for read FPGA firmware version operation
+ * \brief Message ID for read FPGA firmware major version operation
  */
-constexpr uint8_t MSG_RD_FPGA_VERSION = 0x03;
+constexpr uint8_t MSG_RD_FPGA_VERSION_MAJOR = 0x03;
 /**
  * \brief Message ID for read FPGA function operation
  */
@@ -80,6 +80,14 @@ constexpr uint8_t MSG_BEGIN = 0x05;
  * device.
  */
 constexpr uint8_t MSG_END = 0xF0;
+/**
+ * \brief Message ID for read CPU firmware minor version operation
+ */
+constexpr uint8_t MSG_RD_CPU_VERSION_MINOR = 0xF1;
+/**
+ * \brief Message ID for read FPGA firmware minor version operation
+ */
+constexpr uint8_t MSG_RD_FPGA_VERSION_MINOR = 0xF2;
 /**
  * \brief Message ID for closing remote server
  */
