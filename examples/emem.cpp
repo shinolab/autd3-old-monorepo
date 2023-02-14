@@ -3,7 +3,7 @@
 // Created Date: 08/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/02/2023
+// Last Modified: 14/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,6 +18,8 @@
 #include "util.hpp"
 
 int main() try {
+  // link::Emem is highly experimental, so not recommended for use
+
   auto geometry = autd3::Geometry::Builder()
                       .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
                       .sound_speed(340.0e3)  // mm/s
