@@ -3,7 +3,7 @@
 // Created Date: 04/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/02/2023
+// Last Modified: 14/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -52,8 +52,6 @@ class EmemLink final : public core::Link {
     if (_ifname.empty()) _ifname = lookup_autd();
     if (_ifname.empty()) return false;
 
-    spdlog::warn("IFNAME: {}", _ifname);
-
     _master.open(_ifname);
 
     uint16_t wc{};
@@ -91,7 +89,7 @@ class EmemLink final : public core::Link {
     if (_master[0].state != EcState::Operational) {
       _is_open.store(false);
       if (_ecat_thread.joinable()) _ecat_thread.join();
-      throw std::runtime_error("One ore more slaves are not responding.");
+      throw std::runtime_error("One ore more slaves are not responding:" + _master[0].state.to_string());
     }
 
     if (_sync_mode == SyncMode::FreeRun) {
@@ -192,10 +190,8 @@ class EmemLink final : public core::Link {
       ec_sync(_master.dc_time(), cycletime_ns, &toff);
 
       uint16_t wkc{};
-      if (const auto res = _master.receive_process_data(EC_TIMEOUT, &wkc); res != EmemResult::Ok)
-        _wkc.store(0);
-      else
-        _wkc.store(wkc);
+      (void)_master.receive_process_data(EC_TIMEOUT, &wkc);
+      _wkc.store(wkc);
 
       if (!_send_buf.empty()) {
         _io_map.copy_from(_send_buf.front());
