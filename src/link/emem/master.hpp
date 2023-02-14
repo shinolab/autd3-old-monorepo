@@ -3,7 +3,7 @@
 // Created Date: 06/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/02/2023
+// Last Modified: 14/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -116,30 +116,27 @@ class Master {
     const auto expire_time = std::chrono::high_resolution_clock::now() + timeout;
 
     uint16_t state_v;
+    uint16_t ret{};
     for (;;) {
-      EcState ret{};
       if (slave_idx == 0) {
-        uint16_t tmp{};
         uint16_t unused{};
-        EMEM_CHECK_RESULT(_ethercat_driver.brd_word(ethercat::BroadcastAddress{0, ethercat::registers::ALSTAT}, EC_TIMEOUT, &unused, &tmp));
-        ret = EcState::from(tmp);
+        EMEM_CHECK_RESULT(_ethercat_driver.brd_word(ethercat::BroadcastAddress{0, ethercat::registers::ALSTAT}, EC_TIMEOUT, &unused, &ret));
+        ret = u16_from_le(ret);
       } else {
         uint8_t slave_states[sizeof(ethercat::EcAlStatus)]{};
-        uint16_t unused{};
         EMEM_CHECK_RESULT(_ethercat_driver.fprd(ethercat::NodeAddress{config_addr, ethercat::registers::ALSTAT}, slave_states,
-                                                sizeof(ethercat::EcAlStatus), EC_TIMEOUT, &unused));
+                                                sizeof(ethercat::EcAlStatus), EC_TIMEOUT, &ret));
 
         const auto* p_slave_states = reinterpret_cast<const ethercat::EcAlStatus*>(slave_states);
         _slaves[slave_idx].al_status_code = u16_from_le(p_slave_states->al_status_code);
-        ret = EcState::from(u16_from_le(p_slave_states->al_status));
       }
 
-      _slaves[slave_idx].state = ret;
-      state_v = ret.value() & 0x000F;
+      state_v = ret & 0x000F;
       if (state_v == req_state.value() || std::chrono::high_resolution_clock::now() > expire_time) break;
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
+    _slaves[slave_idx].state = EcState::from(ret);
     *state = EcState::from(state_v);
     return EmemResult::Ok;
   }

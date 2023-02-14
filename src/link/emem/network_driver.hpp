@@ -96,7 +96,7 @@ class NetworkDriver {
     if (const auto* p_eth_header = reinterpret_cast<ethercat::EthernetHeader*>(_rx_tmp_buf.data()); !p_eth_header->is_ecat_frame())
       return EmemResult::NoFrame;
 
-    const auto d_len = u16_from_le_bytes(_rx_tmp_buf[sizeof(ethercat::EthernetHeader)], _rx_tmp_buf[sizeof(ethercat::EthernetHeader) + 1]) & 0x07FF;
+    const auto d_len = u16_from_le_bytes(_rx_tmp_buf[sizeof(ethercat::EthernetHeader)], _rx_tmp_buf[sizeof(ethercat::EthernetHeader) + 1]) & 0x0FFF;
     const auto* p_datagram_header = reinterpret_cast<ethercat::DatagramHeader*>(&_rx_tmp_buf[sizeof(ethercat::EthernetHeader) + 2]);
 
     const auto idx_recv = p_datagram_header->idx();
