@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/01/2023
+ * Last Modified: 14/02/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,8 @@
 #include "params.h"
 #include "utils.h"
 
-#define CPU_VERSION (0x88) /* v2.8 */
+#define CPU_VERSION_MAJOR (0x88) /* v2.8 */
+#define CPU_VERSION_MINOR (0x01)
 
 #define MOD_BUF_SEGMENT_SIZE_WIDTH (15)
 #define MOD_BUF_SEGMENT_SIZE (1 << MOD_BUF_SEGMENT_SIZE_WIDTH)
@@ -39,11 +40,13 @@
 #define GAIN_DATA_MODE_PHASE_HALF (0x0004)
 
 #define MSG_CLEAR (0x00)
-#define MSG_RD_CPU_VERSION (0x01)
-#define MSG_RD_FPGA_VERSION (0x03)
+#define MSG_RD_CPU_VERSION_MAJOR (0x01)
+#define MSG_RD_FPGA_VERSION_MAJOR (0x03)
 #define MSG_RD_FPGA_FUNCTION (0x04)
 #define MSG_BEGIN (0x05)
 #define MSG_END (0xF0)
+#define MSG_RD_CPU_VERSION_MINOR (0xF1)
+#define MSG_RD_FPGA_VERSION_MINOR (0xF2)
 
 #define WDT_CNT_MAX (1000)
 
@@ -526,8 +529,10 @@ static void clear(void) {
   bram_set(BRAM_SELECT_NORMAL, 0, 0x0000, TRANS_NUM << 1);
 }
 
-inline static uint16_t get_cpu_version(void) { return CPU_VERSION; }
+inline static uint16_t get_cpu_version(void) { return CPU_VERSION_MAJOR; }
+inline static uint16_t get_cpu_version_minor(void) { return CPU_VERSION_MINOR; }
 inline static uint16_t get_fpga_version(void) { return bram_read(BRAM_SELECT_CONTROLLER, BRAM_ADDR_VERSION_NUM); }
+inline static uint16_t get_fpga_version_minor(void) { return bram_read(BRAM_SELECT_CONTROLLER, BRAM_ADDR_VERSION_NUM_MINOR); }
 inline static uint16_t read_fpga_info(void) { return bram_read(BRAM_SELECT_CONTROLLER, BRAM_ADDR_FPGA_INFO); }
 
 void init_app(void) { clear(); }
@@ -541,8 +546,10 @@ void update(void) {
   }
 
   switch (_msg_id) {
-    case MSG_RD_CPU_VERSION:
-    case MSG_RD_FPGA_VERSION:
+    case MSG_RD_CPU_VERSION_MAJOR:
+    case MSG_RD_FPGA_VERSION_MAJOR:
+    case MSG_RD_CPU_VERSION_MINOR:
+    case MSG_RD_FPGA_VERSION_MINOR:
     case MSG_RD_FPGA_FUNCTION:
       break;
     default:
@@ -565,11 +572,17 @@ void recv_ethercat(void) {
     case MSG_CLEAR:
       clear();
       break;
-    case MSG_RD_CPU_VERSION:
+    case MSG_RD_CPU_VERSION_MAJOR:
       _ack = (_ack & 0xFF00) | (get_cpu_version() & 0xFF);
       break;
-    case MSG_RD_FPGA_VERSION:
+    case MSG_RD_FPGA_VERSION_MAJOR:
       _ack = (_ack & 0xFF00) | (get_fpga_version() & 0xFF);
+      break;
+    case MSG_RD_CPU_VERSION_MINOR:
+      _ack = (_ack & 0xFF00) | (get_cpu_version_minor() & 0xFF);
+      break;
+    case MSG_RD_FPGA_VERSION_MINOR:
+      _ack = (_ack & 0xFF00) | (get_fpga_version_minor() & 0xFF);
       break;
     case MSG_RD_FPGA_FUNCTION:
       _ack = (_ack & 0xFF00) | ((get_fpga_version() >> 8) & 0xFF);
