@@ -234,8 +234,7 @@ class EmemLink final : public core::Link {
       _master[slave].state = EcState::Operational;
       (void)_master.write_state(slave);
     } else if (_master[slave].state != EcState::None) {
-      if (const auto r = _master.re_config_slave(slave, std::chrono::nanoseconds(500 * 1000), &state);
-          r != EmemResult::Ok && state != EcState::None) {
+      if (_master.re_config_slave(slave, std::chrono::nanoseconds(500 * 1000), &state) == EmemResult::Ok && state != EcState::None) {
         _master[slave].is_lost = false;
         spdlog::info("slave {} reconfigured", slave);
       }
@@ -252,7 +251,7 @@ class EmemLink final : public core::Link {
   void check_lost(const uint16_t slave) {
     if (!_master[slave].is_lost) return;
     if (_master[slave].state == EcState::None) {
-      if (const auto r = _master.recover_slave(slave, std::chrono::nanoseconds(500 * 1000)); r != EmemResult::Ok) {
+      if (_master.recover_slave(slave, std::chrono::nanoseconds(500 * 1000)) == EmemResult::Ok) {
         _master[slave].is_lost = false;
         spdlog::info("slave {} recovered.", slave);
       }
