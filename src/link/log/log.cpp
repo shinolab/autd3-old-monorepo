@@ -3,7 +3,7 @@
 // Created Date: 27/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/01/2023
+// Last Modified: 14/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -66,8 +66,10 @@ class LogImpl final : public core::Link {
 
     switch (tx.header().msg_id) {
       case driver::MSG_CLEAR:
-      case driver::MSG_RD_CPU_VERSION:
-      case driver::MSG_RD_FPGA_VERSION:
+      case driver::MSG_RD_CPU_VERSION_MAJOR:
+      case driver::MSG_RD_FPGA_VERSION_MAJOR:
+      case driver::MSG_RD_CPU_VERSION_MINOR:
+      case driver::MSG_RD_FPGA_VERSION_MINOR:
       case driver::MSG_RD_FPGA_FUNCTION:
         break;
       default:
