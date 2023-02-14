@@ -3,7 +3,7 @@
 // Created Date: 06/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/02/2023
+// Last Modified: 14/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,17 +15,7 @@
 
 namespace autd3::link {
 
-enum class EmemResult {
-  Ok,
-  SendFrame,
-  ReceiveFrame,
-  NoFrame,
-  UnknownFrame,
-  UndefinedBehavior,
-  SlaveNotFound,
-  TooManySlaves,
-  Recover,
-};
+enum class EmemResult { Ok, SendFrame, ReceiveFrame, NoFrame, UnknownFrame, UndefinedBehavior, SlaveNotFound, TooManySlaves, Recover, ReConfig };
 
 inline std::string to_string(const EmemResult r) {
   switch (r) {
@@ -47,6 +37,8 @@ inline std::string to_string(const EmemResult r) {
       return "Too many slaves";
     case EmemResult::Recover:
       return "Filed to recover";
+    case EmemResult::ReConfig:
+      return "Filed to re-config";
   }
   return "Unknown error";
 }

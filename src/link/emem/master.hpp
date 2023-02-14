@@ -142,14 +142,12 @@ class Master {
   }
 
   [[nodiscard]] EmemResult read_state(EcState* state) {
-    uint8_t status_le[sizeof(uint16_t)]{};
+    uint16_t status{};
     uint16_t wkc{};
-    EMEM_CHECK_RESULT(
-        _ethercat_driver.brd(ethercat::BroadcastAddress{0, ethercat::registers::ALSTAT}, status_le, sizeof(uint16_t), EC_TIMEOUT, &wkc));
+    (void)_ethercat_driver.brd_word(ethercat::BroadcastAddress{0, ethercat::registers::ALSTAT}, EC_TIMEOUT, &wkc, &status);
 
     const auto all_slaves_present = wkc >= num_slaves();
 
-    auto status = u16_from_le_bytes(status_le[0], status_le[1]);
     const auto bitwise_state = EcState::from(status & 0x000F);
 
     bool no_error;
@@ -201,7 +199,7 @@ class Master {
         sl[slave - f_slave] = zero;
       }
 
-      EMEM_CHECK_RESULT(_ethercat_driver.fprd_multi(l_slave - f_slave + 1, sl_ca.data(), sl, EC_TIMEOUT3, &wkc));
+      (void)_ethercat_driver.fprd_multi(l_slave - f_slave + 1, sl_ca.data(), sl, EC_TIMEOUT3, &wkc);
 
       for (auto slave = f_slave; slave <= l_slave; slave++) {
         const auto& [al_status, _unused, al_status_code] = sl[slave - f_slave];
@@ -455,7 +453,7 @@ class Master {
 
     if (v == 0) {
       *state = EcState{};
-      return EmemResult::Ok;
+      return EmemResult::ReConfig;
     }
 
     EMEM_CHECK_RESULT(set_eeprom_to_pdi(slave, &v));
@@ -487,7 +485,7 @@ class Master {
       }
     }
 
-    return EmemResult::Ok;
+    return EmemResult::ReConfig;
   }
 
   EmemResult config_dc() {
