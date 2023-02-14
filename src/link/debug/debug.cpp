@@ -3,7 +3,7 @@
 // Created Date: 11/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/01/2023
+// Last Modified: 14/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -86,11 +86,17 @@ class DebugImpl final : public core::Link {
       case driver::MSG_CLEAR:
         _logger->debug("\tOP: CLEAR");
         return true;
-      case driver::MSG_RD_CPU_VERSION:
+      case driver::MSG_RD_CPU_VERSION_MAJOR:
         _logger->debug("\tOP: READ CPU VERSION");
         return true;
-      case driver::MSG_RD_FPGA_VERSION:
+      case driver::MSG_RD_FPGA_VERSION_MAJOR:
         _logger->debug("\tOP: READ FPGA VERSION");
+        return true;
+      case driver::MSG_RD_CPU_VERSION_MINOR:
+        _logger->debug("\tOP: READ CPU VERSION MINOR");
+        return true;
+      case driver::MSG_RD_FPGA_VERSION_MINOR:
+        _logger->debug("\tOP: READ FPGA VERSION MINOR");
         return true;
       case driver::MSG_RD_FPGA_FUNCTION:
         _logger->debug("\tOP: READ FPGA FUNCTION");

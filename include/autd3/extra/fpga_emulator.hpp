@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/01/2023
+// Last Modified: 14/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,7 +21,8 @@
 namespace autd3::extra {
 
 namespace fpga {
-constexpr uint8_t VERSION_NUM = 0x88;
+constexpr uint8_t VERSION_NUM_MAJOR = 0x88;
+constexpr uint8_t VERSION_NUM_MINOR = 0x01;
 
 #ifdef AUTD3_USE_METER
 constexpr driver::autd3_float_t TRANS_SIZE_FIXED_POINT_UNIT = 40000;
@@ -45,6 +46,7 @@ constexpr size_t ADDR_MOD_CYCLE = 0x0021;
 constexpr size_t ADDR_MOD_FREQ_DIV_0 = 0x0022;
 constexpr size_t ADDR_MOD_FREQ_DIV_1 = 0x0023;
 constexpr size_t ADDR_VERSION_NUM = 0x003F;
+constexpr size_t ADDR_VERSION_NUM_MINOR = 0x003E;
 constexpr size_t ADDR_SILENT_CYCLE = 0x0040;
 constexpr size_t ADDR_SILENT_STEP = 0x0041;
 constexpr size_t ADDR_STM_ADDR_OFFSET = 0x0050;
@@ -94,7 +96,10 @@ class FPGA {
     _stm_op_bram.resize(524288);
   }
 
-  void init() { _controller_bram[fpga::ADDR_VERSION_NUM] = static_cast<uint16_t>(fpga::ENABLED_FEATURES_BITS << 8 | fpga::VERSION_NUM); }
+  void init() {
+    _controller_bram[fpga::ADDR_VERSION_NUM] = static_cast<uint16_t>(fpga::ENABLED_FEATURES_BITS << 8 | fpga::VERSION_NUM_MAJOR);
+    _controller_bram[fpga::ADDR_VERSION_NUM_MINOR] = static_cast<uint16_t>(fpga::VERSION_NUM_MINOR);
+  }
 
   [[nodiscard]] uint16_t read(const uint16_t addr) const {
     const auto select = addr >> 14 & 0x0003;
