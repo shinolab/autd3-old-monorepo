@@ -3,7 +3,7 @@
 // Created Date: 06/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/02/2023
+// Last Modified: 14/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,6 +12,7 @@
 #pragma once
 
 #include <chrono>
+#include <mutex>
 #include <optional>
 
 #include "buffer.hpp"
@@ -29,6 +30,8 @@ class NetworkDriver {
   explicit NetworkDriver() : _rx_tmp_buf(), _last_idx(0) { _rx_tmp_buf.fill(0); }
 
   uint8_t get_index() {
+    std::lock_guard lock(_idx_mtx);
+
     uint8_t idx = _last_idx + 1;
     if (idx >= static_cast<uint8_t>(EC_BUF_SIZE)) idx = 0;
 
@@ -86,6 +89,8 @@ class NetworkDriver {
       return EmemResult::Ok;
     }
 
+    std::lock_guard lock(_rx_mtx);
+
     EMEM_CHECK_RESULT(_interf.read(_rx_tmp_buf.data(), _rx_tmp_buf.size()));
 
     if (const auto* p_eth_header = reinterpret_cast<ethercat::EthernetHeader*>(_rx_tmp_buf.data()); !p_eth_header->is_ecat_frame())
@@ -117,6 +122,8 @@ class NetworkDriver {
   EcBuf _rx_tmp_buf;
   uint8_t _last_idx;
   std::array<Buffer, EC_BUF_SIZE> _buffers;
+  std::mutex _idx_mtx;
+  std::mutex _rx_mtx;
 };
 
 }  // namespace autd3::link
