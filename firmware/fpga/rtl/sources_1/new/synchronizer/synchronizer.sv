@@ -4,7 +4,7 @@
  * Created Date: 24/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/01/2023
+ * Last Modified: 15/02/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,7 +27,9 @@ module synchronizer (
   localparam bit [17:0] ECAT_SYNC_BASE_CNT = 18'd81920;
 
   localparam bit [31:0] FREQUENCY_TOLERANCE = 32'd320;  // 50ppm * 163.84MHz / 25.6MHz
-  localparam bit [31:0] SYS_TIME_DIFF_ADJUST_CNT_MAX = 1000000 / FREQUENCY_TOLERANCE;
+  localparam bit [31:0] SYS_TIME_DIFF_ADJUST_CNT_BASE = 1000000 / FREQUENCY_TOLERANCE;
+  localparam bit [31:0] SYS_TIME_DIFF_ADJUST_CNT_RANGE = 32'd4096;
+  localparam bit [31:0] SYS_TIME_DIFF_ADJUST_CNT_OFFSET = SYS_TIME_DIFF_ADJUST_CNT_BASE - SYS_TIME_DIFF_ADJUST_CNT_RANGE/2;
 
   bit [63:0] ecat_sync_time;
   bit [63:0] lap;
@@ -48,12 +50,19 @@ module synchronizer (
   bit [$clog2(ADDSUB_LATENCY+1+1)-1:0] addsub_next_cnt = ADDSUB_LATENCY + 1;
   bit set;
 
-  bit [$clog2(SYS_TIME_DIFF_ADJUST_CNT_MAX)-1:0] sys_time_adjust_cnt = 0;
+  bit [12:0] sys_time_adjust_cnt = 0;
+  bit [12:0] sys_time_adjust_cnt_cyc = SYS_TIME_DIFF_ADJUST_CNT_BASE[12:0];
 
   bit [17:0] next_sync_cnt = 0;
 
   bit signed [64:0] a_diff, b_diff, s_diff;
   bit signed [64:0] a_next, b_next, s_next;
+
+  bit [31:0] xor_x = 32'd123456789;
+  bit [31:0] xor_y = 32'd362436069;
+  bit [31:0] xor_z = 32'd521288629;
+  bit [31:0] xor_w = 32'd88675123;
+  bit [31:0] xor_t;
 
   div_64_32 div_64_32_lap (
       .s_axis_dividend_tdata(ecat_sync_time),
@@ -100,7 +109,19 @@ module synchronizer (
   end
 
   always_ff @(posedge CLK) begin
-    sys_time_adjust_cnt <= sys_time_adjust_cnt == SYS_TIME_DIFF_ADJUST_CNT_MAX - 1 ? 0 : sys_time_adjust_cnt + 1;
+    if (sys_time_adjust_cnt == 0) begin
+      xor_t <= xor_x ^ {xor_x[20:0], 11'd0};
+    end else if (sys_time_adjust_cnt == sys_time_adjust_cnt_cyc) begin
+      xor_x <= xor_y;
+      xor_y <= xor_z;
+      xor_z <= xor_w;
+      xor_w <= (xor_w ^ {19'd0, xor_w[31:19]}) ^ (xor_t ^ {8'd0, xor_t[31:8]});
+      sys_time_adjust_cnt_cyc <= {1'b0, xor_w[11:0]} + {1'b0, SYS_TIME_DIFF_ADJUST_CNT_OFFSET[11:0]};
+    end
+  end
+
+  always_ff @(posedge CLK) begin
+    sys_time_adjust_cnt <= sys_time_adjust_cnt == sys_time_adjust_cnt_cyc ? 0 : sys_time_adjust_cnt + 1;
   end
 
   always_ff @(posedge CLK) begin

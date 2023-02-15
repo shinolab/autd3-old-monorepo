@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/01/2023
+ * Last Modified: 15/02/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,6 +12,7 @@
  */
 
 localparam bit [7:0] VERSION_NUM = 8'h88;
+localparam bit [7:0] VERSION_NUM_MINOR = 8'h01;
 
 localparam string SUB_CLOCK_FREQ = "40.96MHZ";
 
@@ -35,7 +36,8 @@ localparam bit [13:0] ADDR_MOD_ADDR_OFFSET = 14'h020;
 localparam bit [13:0] ADDR_MOD_CYCLE = 14'h021;
 localparam bit [13:0] ADDR_MOD_FREQ_DIV_0 = 14'h022;
 localparam bit [13:0] ADDR_MOD_FREQ_DIV_1 = 14'h023;
-localparam bit [13:0] ADDR_VERSION_NUM = 14'h03F;  // For backward compatibility
+localparam bit [13:0] ADDR_VERSION_NUM_MAJOR = 14'h03F;  // For backward compatibility
+localparam bit [13:0] ADDR_VERSION_NUM_MINOR = 14'h03E;
 localparam bit [13:0] ADDR_SILENT_CYCLE = 14'h040;
 localparam bit [13:0] ADDR_SILENT_STEP = 14'h041;
 localparam bit [13:0] ADDR_STM_ADDR_OFFSET = 14'h050;
