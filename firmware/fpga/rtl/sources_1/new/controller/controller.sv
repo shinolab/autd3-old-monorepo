@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/12/2022
+ * Last Modified: 15/02/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -138,9 +138,10 @@ module controller #(
   );
 
   enum bit [4:0] {
+    REQ_WR_VER_MINOR,
     REQ_WR_VER,
     WAIT_WR_VER_0_REQ_RD_CTL_REG,
-    WAIT_WR_VER_1_WAIT_RD_CTL_REG_0,
+    WR_VER_MINOR_WAIT_RD_CTL_REG_0,
     WR_VER_WAIT_RD_CTL_REG_1,
 
     RD_CTL_REG_REQ_RD_MOD_FREQ_DIV_0,
@@ -169,15 +170,22 @@ module controller #(
     WAIT_CLR_SYNC_BIT_0,
     WAIT_CLR_SYNC_BIT_1,
     CLR_SYNC_BIT
-  } state = REQ_WR_VER;
+  } state = REQ_WR_VER_MINOR;
 
   always_ff @(posedge CLK) begin
     case (state)
       ////////////////////////// initial //////////////////////////
-      REQ_WR_VER: begin
+      REQ_WR_VER_MINOR: begin
         we <= 1'b1;
+
+        din <= {8'd0, VERSION_NUM_MINOR};
+        addr <= ADDR_VERSION_NUM_MINOR;
+
+        state <= REQ_WR_VER;
+      end
+      REQ_WR_VER: begin
         din <= {ENABLED_FEATURES_BITS, VERSION_NUM};
-        addr <= ADDR_VERSION_NUM;
+        addr <= ADDR_VERSION_NUM_MAJOR;
 
         state <= WAIT_WR_VER_0_REQ_RD_CTL_REG;
       end
@@ -185,9 +193,9 @@ module controller #(
         we <= 1'b0;
         addr <= ADDR_CTL_REG;
 
-        state <= WAIT_WR_VER_1_WAIT_RD_CTL_REG_0;
+        state <= WR_VER_MINOR_WAIT_RD_CTL_REG_0;
       end
-      WAIT_WR_VER_1_WAIT_RD_CTL_REG_0: begin
+      WR_VER_MINOR_WAIT_RD_CTL_REG_0: begin
         state <= WR_VER_WAIT_RD_CTL_REG_1;
       end
       WR_VER_WAIT_RD_CTL_REG_1: begin
