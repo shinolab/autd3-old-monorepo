@@ -3,7 +3,7 @@
 // Created Date: 18/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 18/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,6 +25,7 @@
 #ifdef __clang__
 #pragma clang diagnostic push
 #endif
+#include "spdlog/async.h"
 #include "spdlog/sinks/base_sink.h"
 #include "spdlog/spdlog.h"
 #ifdef WIN32
@@ -68,7 +69,7 @@ inline std::shared_ptr<spdlog::logger> get_default_logger(std::string name) {
 #else
   auto color_sink = std::make_shared<spdlog::sinks::ansicolor_stdout_sink_mt>();
 #endif
-  return std::make_shared<spdlog::logger>(name, std::move(color_sink));
+  return std::make_shared<spdlog::async_logger>(name, std::move(color_sink), spdlog::thread_pool());
 }
 
 }  // namespace autd3
