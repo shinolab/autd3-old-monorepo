@@ -3,7 +3,7 @@
 // Created Date: 06/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/02/2023
+// Last Modified: 18/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,7 +27,7 @@ constexpr uint64_t SYNC_DELAY = 100000000;
 
 class Master {
  public:
-  explicit Master() { _io_segment.fill(0); }
+  Master() { _io_segment.fill(0); }
 
   void open(const std::string& ifname) { _ethercat_driver.open(ifname); }
 

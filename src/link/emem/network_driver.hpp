@@ -3,7 +3,7 @@
 // Created Date: 06/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/02/2023
+// Last Modified: 18/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,7 +27,7 @@ using Duration = Clock::duration;
 
 class NetworkDriver {
  public:
-  explicit NetworkDriver() : _rx_tmp_buf(), _last_idx(0) { _rx_tmp_buf.fill(0); }
+  NetworkDriver() : _rx_tmp_buf(), _last_idx(0) { _rx_tmp_buf.fill(0); }
 
   uint8_t get_index() {
     std::lock_guard lock(_idx_mtx);
