@@ -17,7 +17,7 @@
 #include "tcp_interface.hpp"
 
 int main(const int argc, char* argv[]) try {
-  argparse::ArgumentParser program("SOEMAUTDServer", "8.1.1");
+  argparse::ArgumentParser program("SOEMAUTDServer", "8.2.0");
 
   argparse::ArgumentParser list_cmd("list");
   list_cmd.add_description("List EtherCAT adapter names");
