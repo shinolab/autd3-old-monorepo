@@ -13,7 +13,7 @@ Copyright (c) 2022 Shun Suzuki. All rights reserved.
 
 
 from pyautd3.autd import SilencerConfig
-from pyautd3.autd import Controller, GeometryBuilder
+from pyautd3.autd import Controller, GeometryBuilder, FirmwareInfo
 from pyautd3.autd import Amplitudes
 from pyautd3.autd import NUM_TRANS_IN_UNIT, NUM_TRANS_X, NUM_TRANS_Y, TRANS_SPACING, DEVICE_HEIGHT, DEVICE_WIDTH
 from pyautd3.autd import Clear, UpdateFlag, Synchronize, ModDelayConfig, Stop
@@ -24,6 +24,7 @@ __all__ = [
     'SilencerConfig',
     'Controller',
     'GeometryBuilder',
+    'FirmwareInfo',
     'Amplitudes',
     'Clear',
     'UpdateFlag',
