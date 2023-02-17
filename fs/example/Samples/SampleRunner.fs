@@ -3,7 +3,7 @@
 // Created Date: 03/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/02/2023
+// Last Modified: 18/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -29,9 +29,15 @@ module SampleRunner =
         new Clear() |> autd.Send |> ignore;
         new Synchronize() |> autd.Send |> ignore;
 
-        let print_firm firm = printfn $"{firm}" 
+        let firmwareList = autd.FirmwareInfoList()
+        let inline print_warn msg = 
+                System.Console.ForegroundColor <- System.ConsoleColor.Yellow
+                printfn "%s" msg
+                System.Console.ResetColor()
+        if firmwareList |> Seq.exists (fun firm -> not firm.MatchesVersion) then print_warn "WARN: FPGA and CPU firmware version do not match."
+        if firmwareList |> Seq.exists (fun firm -> not firm.IsLatest) then print_warn (sprintf "WARN: You are using old firmware. Please consider updating to %s." FirmwareInfo.LatestVersion)
         printfn "==================================== Firmware information ======================================"
-        autd.FirmwareInfoList() |> Seq.iter print_firm
+        autd.FirmwareInfoList() |> Seq.iter (fun firm -> printfn $"{firm}")
         printfn "================================================================================================"
 
         let rec run_example () =
