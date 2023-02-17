@@ -3,7 +3,7 @@
 // Created Date: 06/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 06/02/2023
+// Last Modified: 18/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,6 +14,7 @@
 #include <cstdint>
 
 namespace autd3::link::ethercat {
+
 enum class Command : uint8_t {
   Nop = 0x00,
   Aprd = 0x01,
@@ -31,4 +32,5 @@ enum class Command : uint8_t {
   Armw = 0x0D,
   Frmw = 0x0E,
 };
-}
+
+}  // namespace autd3::link::ethercat
