@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/02/2023
+// Last Modified: 18/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -769,15 +769,21 @@ TEST(Driver_Driver, cpu_version) {
   autd3::driver::CPUVersionMajor::pack(tx);
   ASSERT_EQ(tx.header().msg_id, autd3::driver::MSG_RD_CPU_VERSION_MAJOR);
   ASSERT_EQ(static_cast<uint8_t>(tx.header().cpu_flag.value()), autd3::driver::MSG_RD_CPU_VERSION_MAJOR);
+
+  autd3::driver::CPUVersionMinor::pack(tx);
+  ASSERT_EQ(tx.header().msg_id, autd3::driver::MSG_RD_CPU_VERSION_MINOR);
 }
 
 TEST(Driver_Driver, fpga_version) {
   autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
                                 NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
-  autd3::driver::FPGAVersionMinor::pack(tx);
+  autd3::driver::FPGAVersionMajor::pack(tx);
   ASSERT_EQ(tx.header().msg_id, autd3::driver::MSG_RD_FPGA_VERSION_MAJOR);
   ASSERT_EQ(static_cast<uint8_t>(tx.header().cpu_flag.value()), autd3::driver::MSG_RD_FPGA_VERSION_MAJOR);
+
+  autd3::driver::FPGAVersionMinor::pack(tx);
+  ASSERT_EQ(tx.header().msg_id, autd3::driver::MSG_RD_FPGA_VERSION_MINOR);
 }
 
 TEST(Driver_Driver, fpga_functions) {
