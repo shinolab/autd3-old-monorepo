@@ -54,7 +54,7 @@ proc AUTDGetSoundSpeed*(geometry: pointer): float64 {.cdecl,
     importc: "AUTDGetSoundSpeed", dynlib: dll.}
 proc AUTDSetSoundSpeed*(geometry: pointer; sound_speed: float64) {.cdecl,
     importc: "AUTDSetSoundSpeed", dynlib: dll.}
-proc AUTDSetSoundSpeedFromTemp*(handle: pointer; temp: float64; k: float64; r: float64;
+proc AUTDSetSoundSpeedFromTemp*(cnt: pointer; temp: float64; k: float64; r: float64;
                                m: float64) {.cdecl,
     importc: "AUTDSetSoundSpeedFromTemp", dynlib: dll.}
 proc AUTDGetTransFrequency*(geometry: pointer; trans_idx: int32): float64 {.cdecl,
@@ -97,10 +97,13 @@ proc AUTDTransZDirection*(geometry: pointer; trans_idx: int32; x: ptr float64;
     importc: "AUTDTransZDirection", dynlib: dll.}
 proc AUTDGetFirmwareInfoListPointer*(handle: pointer; `out`: ptr pointer): int32 {.
     cdecl, importc: "AUTDGetFirmwareInfoListPointer", dynlib: dll.}
-proc AUTDGetFirmwareInfo*(p_firm_info_list: pointer; index: int32; info: cstring) {.
-    cdecl, importc: "AUTDGetFirmwareInfo", dynlib: dll.}
+proc AUTDGetFirmwareInfo*(p_firm_info_list: pointer; index: int32; info: cstring;
+                         matches_version: ptr bool; is_latest: ptr bool) {.cdecl,
+    importc: "AUTDGetFirmwareInfo", dynlib: dll.}
 proc AUTDFreeFirmwareInfoListPointer*(p_firm_info_list: pointer) {.cdecl,
     importc: "AUTDFreeFirmwareInfoListPointer", dynlib: dll.}
+proc AUTDGetLatestFirmware*(latest_version: cstring) {.cdecl,
+    importc: "AUTDGetLatestFirmware", dynlib: dll.}
 proc AUTDGainNull*(gain: ptr pointer) {.cdecl, importc: "AUTDGainNull", dynlib: dll.}
 proc AUTDGainGrouped*(gain: ptr pointer) {.cdecl, importc: "AUTDGainGrouped",
                                        dynlib: dll.}
