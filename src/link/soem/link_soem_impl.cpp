@@ -3,7 +3,7 @@
 // Created Date: 23/08/2019
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 18/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2019-2020 Shun Suzuki. All rights reserved.
@@ -31,10 +31,14 @@ bool SOEMLink::close() { return _handler->close(); }
 
 core::LinkPtr SOEM::build() {
   const auto name = "AUTD3 SOEM Log";
+
+  if (spdlog::thread_pool() == nullptr) spdlog::init_thread_pool(8192, 1);
+
   std::shared_ptr<spdlog::logger> logger =
       (_out == nullptr || _flush == nullptr)
           ? get_default_logger(name)
-          : std::make_shared<spdlog::logger>(name, std::make_shared<CustomSink<std::mutex>>(std::move(_out), std::move(_flush)));
+          : std::make_shared<spdlog::async_logger>(name, std::make_shared<CustomSink<std::mutex>>(std::move(_out), std::move(_flush)),
+                                                   spdlog::thread_pool());
   logger->set_level(static_cast<spdlog::level::level_enum>(_level));
   return std::make_unique<SOEMLink>(_high_precision, std::move(_ifname), _sync0_cycle, _send_cycle, std::move(_callback), _sync_mode,
                                     _state_check_interval, logger);
