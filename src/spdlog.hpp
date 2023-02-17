@@ -63,13 +63,12 @@ class CustomSink final : public spdlog::sinks::base_sink<Mutex> {
   std::function<void()> _flush;
 };
 
-inline std::shared_ptr<spdlog::logger> get_default_logger(std::string name) {
+inline spdlog::sink_ptr get_default_sink() {
 #ifdef WIN32
-  auto color_sink = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
+  return std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
 #else
-  auto color_sink = std::make_shared<spdlog::sinks::ansicolor_stdout_sink_mt>();
+  return std::make_shared<spdlog::sinks::ansicolor_stdout_sink_mt>();
 #endif
-  return std::make_shared<spdlog::async_logger>(name, std::move(color_sink), spdlog::thread_pool());
 }
 
 }  // namespace autd3

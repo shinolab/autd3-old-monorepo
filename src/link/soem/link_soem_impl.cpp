@@ -34,11 +34,9 @@ core::LinkPtr SOEM::build() {
 
   if (spdlog::thread_pool() == nullptr) spdlog::init_thread_pool(8192, 1);
 
-  std::shared_ptr<spdlog::logger> logger =
-      (_out == nullptr || _flush == nullptr)
-          ? get_default_logger(name)
-          : std::make_shared<spdlog::async_logger>(name, std::make_shared<CustomSink<std::mutex>>(std::move(_out), std::move(_flush)),
-                                                   spdlog::thread_pool());
+  spdlog::sink_ptr sink =
+      (_out == nullptr || _flush == nullptr) ? get_default_sink() : std::make_shared<CustomSink<std::mutex>>(std::move(_out), std::move(_flush));
+  auto logger = std::make_shared<spdlog::async_logger>(name, std::move(sink), spdlog::thread_pool());
   logger->set_level(static_cast<spdlog::level::level_enum>(_level));
   return std::make_unique<SOEMLink>(_high_precision, std::move(_ifname), _sync0_cycle, _send_cycle, std::move(_callback), _sync_mode,
                                     _state_check_interval, logger);
