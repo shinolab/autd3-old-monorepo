@@ -3,7 +3,7 @@
 // Created Date: 06/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/02/2023
+// Last Modified: 18/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,7 +26,7 @@ constexpr uint16_t MAX_FPRD_MULTI = 64;
 
 class EtherCATDriver {
  public:
-  explicit EtherCATDriver() = default;
+  EtherCATDriver() = default;
 
   void open(const std::string& ifname) { _net_driver.open(ifname); }
 
