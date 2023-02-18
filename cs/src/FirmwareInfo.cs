@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/10/2022
+ * Last Modified: 18/02/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -12,6 +12,7 @@
  */
 
 using System;
+using System.Text;
 
 #if UNITY_2020_2_OR_NEWER
 #nullable enable
@@ -22,10 +23,24 @@ namespace AUTD3Sharp
     public readonly struct FirmwareInfo : IEquatable<FirmwareInfo>
     {
         public string Info { get; }
+        public bool MatchesVersion { get; }
+        public bool IsLatest { get; }
 
-        internal FirmwareInfo(string info)
+        public static string LatestVersion
+        {
+            get
+            {
+                var latest = new StringBuilder(256);
+                NativeMethods.Base.AUTDGetLatestFirmware(latest);
+                return latest.ToString();
+            }
+        }
+
+        internal FirmwareInfo(string info, bool matchesVersion, bool isLatest)
         {
             Info = info;
+            MatchesVersion = matchesVersion;
+            IsLatest = isLatest;
         }
 
         public override string ToString() => $"{Info}";

@@ -3,7 +3,7 @@
 // Created Date: 26/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/02/2023
+// Last Modified: 19/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@
 #include "tcp_interface.hpp"
 
 int main(const int argc, char* argv[]) try {
-  argparse::ArgumentParser program("SOEMAUTDServer", "8.1.1");
+  argparse::ArgumentParser program("SOEMAUTDServer", "8.1.2");
 
   argparse::ArgumentParser list_cmd("list");
   list_cmd.add_description("List EtherCAT adapter names");
@@ -73,6 +73,8 @@ int main(const int argc, char* argv[]) try {
 
   const auto local_connection = client.empty() || client == "127.0.0.1" || client == "localhost";
 
+  if (spdlog::thread_pool() == nullptr) spdlog::init_thread_pool(8192, 1);
+  auto logger = std::make_shared<spdlog::async_logger>("SOEMAUTDServer Log", autd3::get_default_sink(), spdlog::thread_pool());
   auto soem_handler = autd3::link::SOEMHandler(
       !disable_high_precision, ifname, static_cast<uint16_t>(sync0_cycle), static_cast<uint16_t>(send_cycle),
       [](const std::string& msg) {
@@ -84,8 +86,7 @@ int main(const int argc, char* argv[]) try {
         std::quick_exit(-1);
 #endif
       },
-      freerun ? autd3::link::SyncMode::FreeRun : autd3::link::SyncMode::DC, std::chrono::milliseconds(state_check_interval),
-      autd3::get_default_logger("SOEMAUTDServer Log"));
+      freerun ? autd3::link::SyncMode::FreeRun : autd3::link::SyncMode::DC, std::chrono::milliseconds(state_check_interval), std::move(logger));
 
   spdlog::info("Connecting SOEM server...");
   const auto dev = soem_handler.open({});

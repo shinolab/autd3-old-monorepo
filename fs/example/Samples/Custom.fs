@@ -3,7 +3,7 @@
 // Created Date: 03/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/02/2023
+// Last Modified: 14/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -31,4 +31,4 @@ module CustomTest =
         let m = new Sine 150;
         let g = Focus autd (autd.Geometry.Center + Vector3d(0, 0, 150))
 
-        autd.Send(m, g) |> ignore
+        (m, g) |> autd.Send |> ignore

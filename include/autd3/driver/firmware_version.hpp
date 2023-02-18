@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/01/2023
+// Last Modified: 18/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@
 #include <sstream>
 #include <string>
 
-#include "defined.hpp"
+#include "autd3/driver/defined.hpp"
 
 namespace autd3::driver {
 
@@ -29,17 +29,23 @@ constexpr uint8_t ENABLED_EMULATOR_BIT = 1 << 7;
  * \brief Firmware information
  */
 struct FirmwareInfo {
-  FirmwareInfo(const size_t idx, const uint8_t cpu_version_number, const uint8_t fpga_version_number, const uint8_t fpga_function_bits) noexcept
-      : _idx(idx), _cpu_version_number(cpu_version_number), _fpga_version_number(fpga_version_number), _fpga_function_bits(fpga_function_bits) {}
+  explicit FirmwareInfo(const size_t idx, const uint8_t cpu_version_major, const uint8_t cpu_version_minor, const uint8_t fpga_version_major,
+                        const uint8_t fpga_version_minor, const uint8_t fpga_function_bits) noexcept
+      : _idx(idx),
+        _cpu_version_number_major(cpu_version_major),
+        _fpga_version_number_major(fpga_version_major),
+        _cpu_version_number_minor(cpu_version_minor),
+        _fpga_version_number_minor(fpga_version_minor),
+        _fpga_function_bits(fpga_function_bits) {}
 
   /**
    * \brief Get cpu firmware version
    */
-  [[nodiscard]] std::string cpu_version() const { return firmware_version_map(_cpu_version_number); }
+  [[nodiscard]] std::string cpu_version() const { return firmware_version_map(_cpu_version_number_major, _cpu_version_number_minor); }
   /**
    * \brief Get fpga firmware version
    */
-  [[nodiscard]] std::string fpga_version() const { return firmware_version_map(_fpga_version_number); }
+  [[nodiscard]] std::string fpga_version() const { return firmware_version_map(_fpga_version_number_major, _fpga_version_number_minor); }
 
   /**
    * \return true if the firmware supports STM function
@@ -69,28 +75,38 @@ struct FirmwareInfo {
 
   [[nodiscard]] bool is_emulator() const { return (_fpga_function_bits & ENABLED_EMULATOR_BIT) != 0; }
 
-  [[nodiscard]] uint8_t cpu_version_num() const { return _cpu_version_number; }
-  [[nodiscard]] uint8_t fpga_version_num() const { return _fpga_version_number; }
-
-  [[nodiscard]] static std::string firmware_version_map(const uint8_t version_num) {
-    if (version_num == 0) return "older than v0.4";
-    if (version_num <= 0x06) return "v0." + std::to_string(version_num + 3);
-    if (version_num <= 0x09) return "unknown (" + std::to_string(version_num) + ")";
-    if (version_num <= 0x15) return "v1." + std::to_string(version_num - 0x0A);
-    if (version_num <= 0x88) return "v2." + std::to_string(version_num - 0x80);
-    return "unknown (" + std::to_string(version_num) + ")";
+  [[nodiscard]] static std::string firmware_version_map(const uint8_t version_num_major, const uint8_t version_num_minor) {
+    const auto minor = std::to_string(version_num_minor);
+    if (version_num_major == 0) return "older than v0.4";
+    if (version_num_major <= 0x06) return "v0." + std::to_string(version_num_major + 3);
+    if (version_num_major <= 0x09) return "unknown (" + std::to_string(version_num_major) + ")";
+    if (version_num_major <= 0x15) return "v1." + std::to_string(version_num_major - 0x0A);
+    if (version_num_major <= 0x88) return "v2." + std::to_string(version_num_major - 0x80) + "." + minor;
+    return "unknown (" + std::to_string(version_num_major) + ")";
   }
 
-  [[nodiscard]] static bool matches_version(const FirmwareInfo& info) { return info._cpu_version_number == info._fpga_version_number; }
+  [[nodiscard]] static bool matches_version(const FirmwareInfo& info) {
+    return (info._cpu_version_number_major == info._fpga_version_number_major) && (info._cpu_version_number_minor == info._fpga_version_number_minor);
+  }
 
   [[nodiscard]] static bool is_latest(const FirmwareInfo& info) {
-    return info._cpu_version_number == VERSION_NUM && info._fpga_version_number == VERSION_NUM;
+    return info._cpu_version_number_major == VERSION_NUM_MAJOR && info._fpga_version_number_major == VERSION_NUM_MAJOR &&
+           info._cpu_version_number_minor == VERSION_NUM_MINOR && info._fpga_version_number_minor == VERSION_NUM_MINOR;
   }
+
+  [[nodiscard]] static std::string latest_version() { return firmware_version_map(VERSION_NUM_MAJOR, VERSION_NUM_MINOR); }
+
+  [[nodiscard]] [[deprecated]] uint8_t cpu_version_num() const { return _cpu_version_number_major; }
+  [[nodiscard]] [[deprecated]] uint8_t fpga_version_num() const { return _fpga_version_number_major; }
+
+  [[nodiscard]] [[deprecated]] static std::string firmware_version_map(const uint8_t version_num) { return firmware_version_map(version_num, 0x00); }
 
  private:
   size_t _idx;
-  uint8_t _cpu_version_number;
-  uint8_t _fpga_version_number;
+  uint8_t _cpu_version_number_major;
+  uint8_t _fpga_version_number_major;
+  uint8_t _cpu_version_number_minor;
+  uint8_t _fpga_version_number_minor;
   uint8_t _fpga_function_bits;
 };
 

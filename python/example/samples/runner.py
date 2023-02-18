@@ -4,14 +4,14 @@ Project: samples
 Created Date: 30/12/2020
 Author: Shun Suzuki
 -----
-Last Modified: 29/11/2022
+Last Modified: 18/02/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2020 Shun Suzuki. All rights reserved.
 
 '''
 
-from pyautd3 import Controller, Clear, Synchronize, Stop
+from pyautd3 import Controller, Clear, Synchronize, Stop, FirmwareInfo
 
 from . import focus, bessel, holo, custom, stm_gain, stm_focus
 
@@ -29,8 +29,12 @@ def run(autd: Controller):
     autd.send(Clear())
     autd.send(Synchronize())
 
-    print('================================== Firmware information ====================================')
     firm_info_list = autd.firmware_info_list()
+    if not all([firm.matches_version for firm in firm_info_list]):
+        print('\033[93mWARN: FPGA and CPU firmware version do not match.\033[0m')
+    if not all([firm.is_latest for firm in firm_info_list]):
+        print(f'\033[93mWARN: You are using old firmware. Please consider updating to {FirmwareInfo.latest_version()}.\033[0m')
+    print('================================== Firmware information ====================================')
     for firm in firm_info_list:
         print(firm)
     print('============================================================================================')

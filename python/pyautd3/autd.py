@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 02/02/2023
+Last Modified: 18/02/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@ Copyright (c) 2022 Shun Suzuki. All rights reserved.
 
 
 import ctypes
-from ctypes import c_void_p, byref, c_double
+from ctypes import c_void_p, byref, c_double, c_bool
 import numpy as np
 
 from .native_methods.autd3capi import NativeMethods as Base
@@ -231,6 +231,34 @@ class GeometryBuilder:
         return Geometry(geometry_ptr)
 
 
+class FirmwareInfo:
+    def __init__(self, info: str, matches_version: bool, is_latest: bool):
+        self._info = info
+        self._matches_version = matches_version
+        self._is_latest = is_latest
+
+    @ property
+    def info(self):
+        return self._info
+
+    @ property
+    def matches_version(self):
+        return self._matches_version
+
+    @ property
+    def is_latest(self):
+        return self._is_latest
+
+    @staticmethod
+    def latest_version():
+        sb = ctypes.create_string_buffer(256)
+        Base().dll.AUTDGetLatestFirmware(sb)
+        return sb.value.decode('utf-8')
+
+    def __repr__(self):
+        return self._info
+
+
 class Controller:
     def __init__(self, cnt: c_void_p, geometry: Geometry):
         self.p_cnt = cnt
@@ -272,8 +300,11 @@ class Controller:
 
         for i in range(size):
             sb = ctypes.create_string_buffer(256)
-            Base().dll.AUTDGetFirmwareInfo(handle, i, sb)
-            res.append(sb.value.decode('utf-8'))
+            matches_version = c_bool(False)
+            is_latest = c_bool(False)
+            Base().dll.AUTDGetFirmwareInfo(handle, i, sb, byref(matches_version), byref(is_latest))
+            info = sb.value.decode('utf-8')
+            res.append(FirmwareInfo(info, matches_version, is_latest))
 
         Base().dll.AUTDFreeFirmwareInfoListPointer(handle)
 

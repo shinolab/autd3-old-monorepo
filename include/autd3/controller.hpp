@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/02/2023
+// Last Modified: 14/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -114,11 +114,11 @@ class Controller {
       return acks;
     };
 
-    driver::CPUVersion::pack(_tx_buf);
+    driver::CPUVersionMajor::pack(_tx_buf);
     const auto cpu_versions = pack_ack();
     if (cpu_versions.empty()) throw std::runtime_error("Failed to get firmware information.");
 
-    driver::FPGAVersion::pack(_tx_buf);
+    driver::FPGAVersionMajor::pack(_tx_buf);
     const auto fpga_versions = pack_ack();
     if (fpga_versions.empty()) throw std::runtime_error("Failed to get firmware information.");
 
@@ -126,7 +126,16 @@ class Controller {
     const auto fpga_functions = pack_ack();
     if (fpga_functions.empty()) throw std::runtime_error("Failed to get firmware information.");
 
-    for (size_t i = 0; i < cpu_versions.size(); i++) firmware_infos.emplace_back(i, cpu_versions[i], fpga_versions[i], fpga_functions[i]);
+    driver::CPUVersionMinor::pack(_tx_buf);
+    auto cpu_versions_minor = pack_ack();
+    if (cpu_versions_minor.empty()) cpu_versions_minor.resize(cpu_versions.size(), 0);
+
+    driver::FPGAVersionMinor::pack(_tx_buf);
+    auto fpga_versions_minor = pack_ack();
+    if (fpga_versions_minor.empty()) fpga_versions_minor.resize(fpga_versions.size(), 0);
+
+    for (size_t i = 0; i < cpu_versions.size(); i++)
+      firmware_infos.emplace_back(i, cpu_versions[i], cpu_versions_minor[i], fpga_versions[i], fpga_versions_minor[i], fpga_functions[i]);
 
     return firmware_infos;
   }

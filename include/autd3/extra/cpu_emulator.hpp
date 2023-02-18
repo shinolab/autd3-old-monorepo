@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/01/2023
+// Last Modified: 14/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,7 +18,8 @@
 #include "autd3/extra/fpga_emulator.hpp"
 
 namespace autd3::extra::cpu {
-constexpr uint16_t CPU_VERSION = 0x88;
+constexpr uint16_t CPU_VERSION_MAJOR = 0x88;
+constexpr uint16_t CPU_VERSION_MINOR = 0x01;
 
 constexpr uint8_t BRAM_SELECT_CONTROLLER = 0x0;
 constexpr uint8_t BRAM_SELECT_MOD = 0x1;
@@ -39,6 +40,7 @@ constexpr uint16_t BRAM_ADDR_MOD_CYCLE = 0x021;
 constexpr uint16_t BRAM_ADDR_MOD_FREQ_DIV_0 = 0x022;
 constexpr uint16_t BRAM_ADDR_MOD_FREQ_DIV_1 = BRAM_ADDR_MOD_FREQ_DIV_0 + 1;
 constexpr uint16_t BRAM_ADDR_VERSION_NUM = 0x03F;
+constexpr uint16_t BRAM_ADDR_VERSION_NUM_MINOR = 0x03E;
 constexpr uint16_t BRAM_ADDR_SILENT_CYCLE = 0x040;
 constexpr uint16_t BRAM_ADDR_SILENT_STEP = 0x041;
 constexpr uint16_t BRAM_ADDR_STM_ADDR_OFFSET = 0x050;
@@ -119,8 +121,10 @@ class CPU {
 
   void update() {
     switch (_msg_id) {
-      case driver::MSG_RD_CPU_VERSION:
-      case driver::MSG_RD_FPGA_VERSION:
+      case driver::MSG_RD_CPU_VERSION_MAJOR:
+      case driver::MSG_RD_FPGA_VERSION_MAJOR:
+      case driver::MSG_RD_CPU_VERSION_MINOR:
+      case driver::MSG_RD_FPGA_VERSION_MINOR:
       case driver::MSG_RD_FPGA_FUNCTION:
         break;
       default:
@@ -416,9 +420,13 @@ class CPU {
     }
   }
 
-  static uint16_t get_cpu_version() { return cpu::CPU_VERSION; }
+  static uint16_t get_cpu_version() { return cpu::CPU_VERSION_MAJOR; }
+
+  static uint16_t get_cpu_version_minor() { return cpu::CPU_VERSION_MINOR; }
 
   [[nodiscard]] uint16_t get_fpga_version() const { return bram_read(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_VERSION_NUM); }
+
+  [[nodiscard]] uint16_t get_fpga_version_minor() const { return bram_read(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_VERSION_NUM_MINOR); }
 
   [[nodiscard]] uint16_t read_fpga_info() const { return bram_read(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_FPGA_INFO); }
 
@@ -454,11 +462,17 @@ class CPU {
       case driver::MSG_CLEAR:
         clear();
         break;
-      case driver::MSG_RD_CPU_VERSION:
+      case driver::MSG_RD_CPU_VERSION_MAJOR:
         _ack = get_cpu_version() & 0xFF;
         break;
-      case driver::MSG_RD_FPGA_VERSION:
+      case driver::MSG_RD_FPGA_VERSION_MAJOR:
         _ack = get_fpga_version() & 0xFF;
+        break;
+      case driver::MSG_RD_CPU_VERSION_MINOR:
+        _ack = get_cpu_version_minor() & 0xFF;
+        break;
+      case driver::MSG_RD_FPGA_VERSION_MINOR:
+        _ack = get_fpga_version_minor() & 0xFF;
         break;
       case driver::MSG_RD_FPGA_FUNCTION:
         _ack = get_fpga_version() >> 8;
