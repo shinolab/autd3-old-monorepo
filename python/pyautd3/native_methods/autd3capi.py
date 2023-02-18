@@ -147,11 +147,14 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGetFirmwareInfoListPointer.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_void_p)] 
         self.dll.AUTDGetFirmwareInfoListPointer.restype = ctypes.c_int32
 
-        self.dll.AUTDGetFirmwareInfo.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_char_p] 
+        self.dll.AUTDGetFirmwareInfo.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_char_p, ctypes.POINTER(ctypes.c_bool), ctypes.POINTER(ctypes.c_bool)] 
         self.dll.AUTDGetFirmwareInfo.restype = None
 
         self.dll.AUTDFreeFirmwareInfoListPointer.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDFreeFirmwareInfoListPointer.restype = None
+
+        self.dll.AUTDGetLatestFirmware.argtypes = [ctypes.c_char_p] 
+        self.dll.AUTDGetLatestFirmware.restype = None
 
         self.dll.AUTDGainNull.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
         self.dll.AUTDGainNull.restype = None

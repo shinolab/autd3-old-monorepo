@@ -3,7 +3,7 @@
 // Created Date: 03/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/02/2023
+// Last Modified: 14/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -31,4 +31,4 @@ module FocusSTMTest =
 
         stm.Frequency <- 1;
         printfn $"Actual frequency is {stm.Frequency}";
-        autd.Send stm |> ignore
+        stm |> autd.Send |> ignore

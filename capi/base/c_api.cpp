@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/02/2023
+// Last Modified: 18/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -236,15 +236,22 @@ int32_t AUTDGetFirmwareInfoListPointer(void* const handle, void** out) {
   }
 }
 
-void AUTDGetFirmwareInfo(const void* const p_firm_info_list, const int32_t index, char* info) {
+void AUTDGetFirmwareInfo(const void* const p_firm_info_list, const int32_t index, char* info, OUT bool* matches_version, OUT bool* is_latest) {
   const auto* wrapper = static_cast<const FirmwareInfoListWrapper*>(p_firm_info_list);
-  const auto& info_ = wrapper->list[index].to_string();
-  std::char_traits<char>::copy(info, info_.c_str(), info_.size() + 1);
+  const auto& info_ = wrapper->list[index];
+  std::char_traits<char>::copy(info, info_.to_string().c_str(), info_.to_string().size() + 1);
+  *matches_version = autd3::FirmwareInfo::matches_version(info_);
+  *is_latest = autd3::FirmwareInfo::is_latest(info_);
 }
 
 void AUTDFreeFirmwareInfoListPointer(const void* const p_firm_info_list) {
   const auto* wrapper = static_cast<const FirmwareInfoListWrapper*>(p_firm_info_list);
   firmware_info_list_delete(wrapper);
+}
+
+void AUTDGetLatestFirmware(char* latest_version) {
+  const auto latest = autd3::FirmwareInfo::latest_version();
+  std::char_traits<char>::copy(latest_version, latest.c_str(), latest.size() + 1);
 }
 
 void AUTDGainNull(void** gain) {

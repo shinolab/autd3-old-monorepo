@@ -3,7 +3,7 @@
 // Created Date: 03/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/02/2023
+// Last Modified: 14/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,4 +26,4 @@ module AdvancedTest =
         let m = new Modulation.Custom(burst, 40960u);
         let g = new Gain.Custom(amp, phase);
 
-        autd.Send(m, g) |> ignore
+        (m, g) |> autd.Send |> ignore

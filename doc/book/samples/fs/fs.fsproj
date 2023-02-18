@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <Compile Include="Program.fs" />
-    <PackageReference Include="AUTD3Sharp" Version="8.1.1" />
+    <PackageReference Include="AUTD3Sharp" Version="8.1.2" />
   </ItemGroup>
 
 </Project>

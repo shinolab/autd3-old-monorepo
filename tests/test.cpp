@@ -91,8 +91,8 @@ TEST(ControllerTest, basic_usage) {
   const auto firm_infos = autd.firmware_infos();
   ASSERT_EQ(firm_infos.size(), autd.geometry().num_devices());
   for (const auto& firm : firm_infos) {
-    ASSERT_EQ(firm.cpu_version(), "v2.8");
-    ASSERT_EQ(firm.fpga_version(), "v2.8");
+    ASSERT_EQ(firm.cpu_version(), "v2.8.1");
+    ASSERT_EQ(firm.fpga_version(), "v2.8.1");
   }
 
   autd << autd3::clear << autd3::synchronize;

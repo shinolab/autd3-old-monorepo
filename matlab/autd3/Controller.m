@@ -4,7 +4,7 @@
 %Created Date: 07/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 03/02/2023
+%Last Modified: 18/02/2023
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -133,22 +133,6 @@ classdef Controller < handle
             end
 
             res = false;
-        end
-
-        function list = firmware_info_list(obj)
-            p = libpointer('voidPtr', 0);
-            pp = libpointer('voidPtrPtr', p);
-            n = calllib('autd3capi', 'AUTDGetFirmwareInfoListPointer', obj.ptr, pp);
-            list = strings(n, 1);
-
-            for i = 1:n
-                info_p = libpointer('int8Ptr', zeros(128, 1, 'int8'));
-                calllib('autd3capi', 'AUTDGetFirmwareInfo', p, i - 1, info_p);
-                info = erase(convertCharsToStrings(char(info_p.value)), char(0));
-                list(i) = info;
-            end
-
-            calllib('autd3capi', 'AUTDFreeFirmwareInfoListPointer', p);
         end
 
         function list = fpga_info(obj)

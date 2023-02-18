@@ -4,7 +4,7 @@
 %Created Date: 11/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 03/02/2023
+%Last Modified: 18/02/2023
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -29,12 +29,6 @@ function runner(cnt)
     end
 
     cnt.geometry.sound_speed = 340.0e3;
-
-    firm_list = cnt.firmware_info_list();
-
-    for i = 1:length(firm_list)
-        disp(firm_list(i));
-    end
 
     cnt.send(Clear());
     cnt.send(Synchronize());
