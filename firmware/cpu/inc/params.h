@@ -3,7 +3,7 @@
 // Created Date: 22/04/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/12/2022
+// Last Modified: 14/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,6 +28,7 @@
 #define BRAM_ADDR_MOD_FREQ_DIV_0 (0x022)
 #define BRAM_ADDR_MOD_FREQ_DIV_1 (0x023)
 #define BRAM_ADDR_VERSION_NUM (0x03F)
+#define BRAM_ADDR_VERSION_NUM_MINOR (0x03E)
 #define BRAM_ADDR_SILENT_CYCLE (0x040)
 #define BRAM_ADDR_SILENT_STEP (0x041)
 #define BRAM_ADDR_STM_ADDR_OFFSET (0x050)

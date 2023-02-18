@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/01/2023
+// Last Modified: 07/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,20 +20,9 @@
 
 #include "autd3/core/link.hpp"
 #include "autd3/driver/debug_level.hpp"
+#include "autd3/link/ecat.hpp"
 
 namespace autd3::link {
-
-/**
- * \brief EtherCAT adapter information for SOEM
- */
-struct EtherCATAdapter final {
-  EtherCATAdapter(std::string desc, std::string name) : desc(std::move(desc)), name(std::move(name)) {}
-
-  std::string desc;
-  std::string name;
-};
-
-enum class SyncMode { FreeRun, DC };
 
 /**
  * @brief Link using [SOEM](https://github.com/OpenEtherCATSociety/SOEM)

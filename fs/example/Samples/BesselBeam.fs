@@ -26,4 +26,4 @@ module BesselBeamTest =
         let dir = Vector3d.UnitZ;
 
         let g = new BesselBeam(start, dir, 13.0 / 180.0 * AUTD3.Pi);
-        autd.Send(m, g) |> ignore
+        (m, g) |> autd.Send |> ignore

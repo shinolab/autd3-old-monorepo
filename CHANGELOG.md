@@ -1,3 +1,7 @@
+# 8.1.2
+
+- Fix [#59](https://github.com/shinolab/autd3/issues/59)
+
 # 8.1.1
 
 - Fix [#58](https://github.com/shinolab/autd3/issues/58)

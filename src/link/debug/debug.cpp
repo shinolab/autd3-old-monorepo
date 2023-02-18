@@ -3,7 +3,7 @@
 // Created Date: 11/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/01/2023
+// Last Modified: 18/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -86,11 +86,17 @@ class DebugImpl final : public core::Link {
       case driver::MSG_CLEAR:
         _logger->debug("\tOP: CLEAR");
         return true;
-      case driver::MSG_RD_CPU_VERSION:
+      case driver::MSG_RD_CPU_VERSION_MAJOR:
         _logger->debug("\tOP: READ CPU VERSION");
         return true;
-      case driver::MSG_RD_FPGA_VERSION:
+      case driver::MSG_RD_FPGA_VERSION_MAJOR:
         _logger->debug("\tOP: READ FPGA VERSION");
+        return true;
+      case driver::MSG_RD_CPU_VERSION_MINOR:
+        _logger->debug("\tOP: READ CPU VERSION MINOR");
+        return true;
+      case driver::MSG_RD_FPGA_VERSION_MINOR:
+        _logger->debug("\tOP: READ FPGA VERSION MINOR");
         return true;
       case driver::MSG_RD_FPGA_FUNCTION:
         _logger->debug("\tOP: READ FPGA FUNCTION");
@@ -160,12 +166,10 @@ class DebugImpl final : public core::Link {
 
 core::LinkPtr Debug::build() {
   const auto name = "AUTD3 Debug Log";
-  std::shared_ptr<spdlog::logger> logger =
-      _out == nullptr || _flush == nullptr
-          ? get_default_logger(name)
-          : std::make_shared<spdlog::logger>(name, std::make_shared<CustomSink<std::mutex>>(std::move(_out), std::move(_flush)));
+  spdlog::sink_ptr sink =
+      _out == nullptr || _flush == nullptr ? get_default_sink() : std::make_shared<CustomSink<std::mutex>>(std::move(_out), std::move(_flush));
+  auto logger = std::make_shared<spdlog::logger>(name, std::move(sink));
   logger->set_level(static_cast<spdlog::level::level_enum>(_level));
-
   if (_link == nullptr) _link = NullLink().build();
   core::LinkPtr link = std::make_unique<DebugImpl>(std::move(_link), std::move(logger));
   return link;

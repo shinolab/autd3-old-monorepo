@@ -501,6 +501,8 @@ Firmware informationを取得する.
 | p_firm_info_list       | void*   | in     | pointer to Firmware information list   |
 | index                  | int32_t | in     | device index                           |
 | info                   | char*   | out    | pointer to firmware information string |
+| matches_version        | bool*   | out    | matches version                        |
+| is_latest              | bool*   | out    | is latest                              |
 | return                 | void    | -      | -                                      |
 
 ## AUTDFreeFirmwareInfoListPointer (autd3capi)
@@ -510,6 +512,13 @@ Firmware informationを取得する.
 | Argument name / return | type  | in/out | description                          |
 | ---------------------- | ----- | ------ | ------------------------------------ |
 | p_firm_info_list       | void* | in     | pointer to Firmware information list |
+| return                 | void  | -      | -                                    |
+
+## AUTDGetLatestFirmware (autd3capi)
+
+| Argument name / return | type  | in/out | description                          |
+| ---------------------- | ----- | ------ | ------------------------------------ |
+| latest_version         | char* | out    | pointer to latest firmware version   |
 | return                 | void  | -      | -                                    |
 
 ## AUTDGainNull (autd3capi)

@@ -1,6 +1,6 @@
 [package]
 name = "autd3"
-version = "8.1.1"
+version = "8.1.2"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -12,9 +12,9 @@ keywords = ["autd"]
 
 [dependencies]
 anyhow = "1.0.57"
-autd3-driver = {path="../autd3-driver", version="8.1.1"}
-autd3-core = {path="../autd3-core", version="8.1.1"}
-autd3-traits = {path="../autd3-traits", version="8.1.1"}
+autd3-driver = {path="../autd3-driver", version="8.1.2"}
+autd3-core = {path="../autd3-core", version="8.1.2"}
+autd3-traits = {path="../autd3-traits", version="8.1.2"}
 itertools = "0.10.3"
 nalgebra = "0.32.1"
 num = "0.4.0"
