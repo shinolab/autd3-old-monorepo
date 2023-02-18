@@ -1,4 +1,4 @@
-# 8.2.0
+# 8.1.2
 
 - Fix [#59](https://github.com/shinolab/autd3/issues/59)
 
