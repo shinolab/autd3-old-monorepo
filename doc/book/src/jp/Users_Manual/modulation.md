@@ -5,7 +5,7 @@
 現在, `Modulation`には以下の制約がある.
 
 * バッファサイズは最大で65536
-* サンプリングレートは$\SI{163.84}{MHz}/N$で, $N$は32-bit符号なし整数であり, $580$以上の値である必要がある.
+* サンプリングレートは$\SI{163.84}{MHz}/N$で, $N$は32-bit符号なし整数であり, $1160$以上の値である必要がある.
 * Modulationは全デバイスで共通
 * Modulationは自動でループする. 1ループだけ, 等の制御は不可能.
 
@@ -99,7 +99,7 @@ duty比は$t_\text{high}/T = t_\text{high}f$で定義される, ここで, $t_\t
 
 `sampling_freq_div_ratio`でサンプリング周波数の分周比$N$の確認, 設定ができる.
 サンプリング周波数の基本周波数は$\SI{163.84}{MHz}$である.
-`sampling_freq_div_ratio`は$580$以上の整数が指定できる.
+`sampling_freq_div_ratio`は$1160$以上の整数が指定できる.
 
 ```cpp
     m.sampling_frequency_division() = 20480; // 163.84MHz/20480 = 8kHz
