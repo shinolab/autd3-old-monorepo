@@ -275,9 +275,9 @@ func firmwareInfoList*(cnt: Controller): seq[string] =
     for i in 0..<n:
         var
             matches_version: bool
-            is_latest: bool
+            is_supported: bool
         var info = cast[cstring]('\0'.repeat(256))
-        AUTDGetFirmwareInfo(p, i, info, matches_version.addr, is_latest.addr)
+        AUTDGetFirmwareInfo(p, i, info, matches_version.addr, is_supported.addr)
         list.add($info)
     AUTDFreeFirmwareInfoListPointer(p)
     list

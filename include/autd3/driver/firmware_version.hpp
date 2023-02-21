@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/02/2023
+// Last Modified: 21/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -89,10 +89,12 @@ struct FirmwareInfo {
     return (info._cpu_version_number_major == info._fpga_version_number_major) && (info._cpu_version_number_minor == info._fpga_version_number_minor);
   }
 
-  [[nodiscard]] static bool is_latest(const FirmwareInfo& info) {
+  [[nodiscard]] static bool is_supported(const FirmwareInfo& info) {
     return info._cpu_version_number_major == VERSION_NUM_MAJOR && info._fpga_version_number_major == VERSION_NUM_MAJOR &&
            info._cpu_version_number_minor == VERSION_NUM_MINOR && info._fpga_version_number_minor == VERSION_NUM_MINOR;
   }
+
+  [[nodiscard]] [[deprecated]] static bool is_latest(const FirmwareInfo& info) { return is_supported(info); }
 
   [[nodiscard]] static std::string latest_version() { return firmware_version_map(VERSION_NUM_MAJOR, VERSION_NUM_MINOR); }
 

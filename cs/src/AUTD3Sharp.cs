@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/02/2023
+ * Last Modified: 21/02/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -321,8 +321,8 @@ namespace AUTD3Sharp
             for (var i = 0; i < size; i++)
             {
                 var info = new StringBuilder(256);
-                Base.AUTDGetFirmwareInfo(handle, i, info, out var matchesVersion, out var isLatest);
-                yield return new FirmwareInfo(info.ToString(), matchesVersion, isLatest);
+                Base.AUTDGetFirmwareInfo(handle, i, info, out var matchesVersion, out var isSupported);
+                yield return new FirmwareInfo(info.ToString(), matchesVersion, isSupported);
             }
 
             Base.AUTDFreeFirmwareInfoListPointer(handle);

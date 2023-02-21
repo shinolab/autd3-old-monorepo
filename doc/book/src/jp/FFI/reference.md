@@ -502,7 +502,7 @@ Firmware informationを取得する.
 | index                  | int32_t | in     | device index                           |
 | info                   | char*   | out    | pointer to firmware information string |
 | matches_version        | bool*   | out    | matches version                        |
-| is_latest              | bool*   | out    | is latest                              |
+| is_supported              | bool*   | out    | is latest                              |
 | return                 | void    | -      | -                                      |
 
 ## AUTDFreeFirmwareInfoListPointer (autd3capi)
