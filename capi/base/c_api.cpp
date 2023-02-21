@@ -236,12 +236,12 @@ int32_t AUTDGetFirmwareInfoListPointer(void* const handle, void** out) {
   }
 }
 
-void AUTDGetFirmwareInfo(const void* const p_firm_info_list, const int32_t index, char* info, OUT bool* matches_version, OUT bool* is_latest) {
+void AUTDGetFirmwareInfo(const void* const p_firm_info_list, const int32_t index, char* info, OUT bool* matches_version, OUT bool* is_supported) {
   const auto* wrapper = static_cast<const FirmwareInfoListWrapper*>(p_firm_info_list);
   const auto& info_ = wrapper->list[index];
   std::char_traits<char>::copy(info, info_.to_string().c_str(), info_.to_string().size() + 1);
-  *matches_version = autd3::FirmwareInfo::matches_version(info_);
-  *is_latest = autd3::FirmwareInfo::is_latest(info_);
+  *matches_version = info_.matches_version();
+  *is_supported = info_.is_supported();
 }
 
 void AUTDFreeFirmwareInfoListPointer(const void* const p_firm_info_list) {

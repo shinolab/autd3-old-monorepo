@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/02/2023
+// Last Modified: 21/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -59,7 +59,7 @@ EXPORT_AUTD void AUTDTransYDirection(IN const void* geometry, IN int32_t trans_i
 EXPORT_AUTD void AUTDTransZDirection(IN const void* geometry, IN int32_t trans_idx, OUT autd3_float_t* x, OUT autd3_float_t* y, OUT autd3_float_t* z);
 EXPORT_AUTD int32_t AUTDGetFirmwareInfoListPointer(IN void* handle, OUT void** out);
 EXPORT_AUTD void AUTDGetFirmwareInfo(IN const void* p_firm_info_list, IN int32_t index, OUT char* info, OUT bool* matches_version,
-                                     OUT bool* is_latest);
+                                     OUT bool* is_supported);
 EXPORT_AUTD void AUTDFreeFirmwareInfoListPointer(IN const void* p_firm_info_list);
 EXPORT_AUTD void AUTDGetLatestFirmware(OUT char* latest_version);
 EXPORT_AUTD void AUTDGainNull(OUT void** gain);

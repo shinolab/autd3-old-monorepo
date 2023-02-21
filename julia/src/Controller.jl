@@ -3,7 +3,7 @@
 # Created Date: 14/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 18/02/2023
+# Last Modified: 21/02/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -185,8 +185,8 @@ mutable struct Controller
             for i = 0:size-1
                 info = zeros(UInt8, 256)
                 matches_version = Ref{Bool}(false)
-                is_latest = Ref{Bool}(false)
-                autd3capi.autd_get_firmware_info(handle, i, info, matches_version, is_latest)
+                is_supported = Ref{Bool}(false)
+                autd3capi.autd_get_firmware_info(handle, i, info, matches_version, is_supported)
                 push!(res, String(strip(String(info), '\0')))
             end
             autd3capi.autd_free_firmware_info_list_pointer(handle)

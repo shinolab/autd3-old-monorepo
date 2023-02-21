@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 18/02/2023
+Last Modified: 21/02/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -232,10 +232,10 @@ class GeometryBuilder:
 
 
 class FirmwareInfo:
-    def __init__(self, info: str, matches_version: bool, is_latest: bool):
+    def __init__(self, info: str, matches_version: bool, is_supported: bool):
         self._info = info
         self._matches_version = matches_version
-        self._is_latest = is_latest
+        self._is_supported = is_supported
 
     @ property
     def info(self):
@@ -246,8 +246,8 @@ class FirmwareInfo:
         return self._matches_version
 
     @ property
-    def is_latest(self):
-        return self._is_latest
+    def is_supported(self):
+        return self._is_supported
 
     @staticmethod
     def latest_version():
@@ -301,10 +301,10 @@ class Controller:
         for i in range(size):
             sb = ctypes.create_string_buffer(256)
             matches_version = c_bool(False)
-            is_latest = c_bool(False)
-            Base().dll.AUTDGetFirmwareInfo(handle, i, sb, byref(matches_version), byref(is_latest))
+            is_supported = c_bool(False)
+            Base().dll.AUTDGetFirmwareInfo(handle, i, sb, byref(matches_version), byref(is_supported))
             info = sb.value.decode('utf-8')
-            res.append(FirmwareInfo(info, matches_version, is_latest))
+            res.append(FirmwareInfo(info, matches_version, is_supported))
 
         Base().dll.AUTDFreeFirmwareInfoListPointer(handle)
 

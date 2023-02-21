@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/02/2023
+ * Last Modified: 21/02/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ namespace AUTD3Sharp
     {
         public string Info { get; }
         public bool MatchesVersion { get; }
-        public bool IsLatest { get; }
+        public bool IsSupported { get; }
 
         public static string LatestVersion
         {
@@ -36,11 +36,11 @@ namespace AUTD3Sharp
             }
         }
 
-        internal FirmwareInfo(string info, bool matchesVersion, bool isLatest)
+        internal FirmwareInfo(string info, bool matchesVersion, bool isSupported)
         {
             Info = info;
             MatchesVersion = matchesVersion;
-            IsLatest = isLatest;
+            IsSupported = isSupported;
         }
 
         public override string ToString() => $"{Info}";
