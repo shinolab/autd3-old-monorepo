@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/02/2023
+// Last Modified: 21/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -129,7 +129,7 @@ void AUTDSetSendInterval(void* const handle, const uint64_t interval) {
 
 void AUTDSetSoundSpeedFromTemp(void* const cnt, const autd3_float_t temp, const autd3_float_t k, const autd3_float_t r, const autd3_float_t m) {
   auto* wrapper = static_cast<Controller*>(cnt);
-  wrapper->set_sound_speed_from_temp(temp, k, r, m);
+  wrapper->geometry().set_sound_speed_from_temp(temp, k, r, m);
 }
 
 bool AUTDGetFPGAInfo(void* const handle, uint8_t* out) {
