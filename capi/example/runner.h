@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/02/2023
+// Last Modified: 21/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -110,11 +110,11 @@ int run(void* autd) {
   for (int32_t i = 0; i < firm_info_list_size; i++) {
     char info[256];
     bool matches_version;
-    bool is_latest;
-    AUTDGetFirmwareInfo(firm_info_list, i, info, &matches_version, &is_latest);
+    bool is_supported;
+    AUTDGetFirmwareInfo(firm_info_list, i, info, &matches_version, &is_supported);
     printf("[%d]: %s\n", i, info);
     if (!matches_version) printf("\033[93mWARN: FPGA and CPU firmware version do not match.\033[0m\n");
-    if (!is_latest) printf("\033[93mWARN: You are using old firmware. Please consider updating to %s.\033[0m\n", latest);
+    if (!is_supported) printf("\033[93mWARN: You are using old firmware. Please consider updating to %s.\033[0m\n", latest);
   }
   AUTDFreeFirmwareInfoListPointer(firm_info_list);
   printf("=========================================\n");

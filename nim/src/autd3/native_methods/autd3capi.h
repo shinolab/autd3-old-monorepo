@@ -52,7 +52,7 @@ void AUTDTransXDirection(void* geometry, int32 trans_idx, float64* x, float64* y
 void AUTDTransYDirection(void* geometry, int32 trans_idx, float64* x, float64* y, float64* z);
 void AUTDTransZDirection(void* geometry, int32 trans_idx, float64* x, float64* y, float64* z);
 int32 AUTDGetFirmwareInfoListPointer(void* handle, void** out);
-void AUTDGetFirmwareInfo(void* p_firm_info_list, int32 index, char* info, bool* matches_version, bool* is_latest);
+void AUTDGetFirmwareInfo(void* p_firm_info_list, int32 index, char* info, bool* matches_version, bool* is_supported);
 void AUTDFreeFirmwareInfoListPointer(void* p_firm_info_list);
 void AUTDGetLatestFirmware(char* latest_version);
 void AUTDGainNull(void** gain);
