@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/01/2023
+// Last Modified: 21/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -284,6 +284,23 @@ struct Geometry {
    * @brief Speed of sound.
    */
   driver::autd3_float_t sound_speed;
+
+  /**
+   * Set speed of sound from temperature
+   * @param temp temperature in Celsius degree
+   * @param k Heat capacity ratio
+   * @param r Gas constant [J K^-1 mol^-1]
+   * @param m Molar mass [kg mod^-1]
+   */
+  void set_sound_speed_from_temp(driver::autd3_float_t temp, driver::autd3_float_t k = static_cast<driver::autd3_float_t>(1.4),
+                                 driver::autd3_float_t r = static_cast<driver::autd3_float_t>(8.31446261815324),
+                                 driver::autd3_float_t m = static_cast<driver::autd3_float_t>(28.9647e-3)) {
+#ifdef AUTD3_USE_METER
+    sound_speed = std::sqrt(k * r * (static_cast<driver::autd3_float_t>(273.15) + temp) / m);
+#else
+    sound_speed = std::sqrt(k * r * (static_cast<driver::autd3_float_t>(273.15) + temp) / m) * static_cast<driver::autd3_float_t>(1e3);
+#endif
+  }
 
  private:
   Geometry(const Mode mode, const driver::autd3_float_t attenuation, const driver::autd3_float_t sound_speed, std::vector<Transducer> transducers,

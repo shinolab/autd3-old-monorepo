@@ -1,3 +1,7 @@
+# 8.2.0
+
+- Move `Controller::set_sound_speed_from_temp` into `Geometry`
+
 # 8.1.2
 
 - Fix [#59](https://github.com/shinolab/autd3/issues/59)
