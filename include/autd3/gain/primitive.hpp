@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/01/2023
+// Last Modified: 22/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -212,7 +212,9 @@ class TransducerTest final : public core::Gain {
    * @param[in] amp amplitude (from 0.0 to 1.0)
    * @param[in] phase phase in radian
    */
-  void set(const size_t tr_idx, const driver::Amp amp, const driver::Phase phase) { _map.insert_or_assign(tr_idx, std::make_pair(amp, phase)); }
+  void set(const size_t tr_idx, const driver::autd3_float_t amp, const driver::autd3_float_t phase) {
+    _map.insert_or_assign(tr_idx, std::make_pair(driver::Amp{amp}, driver::Phase{phase}));
+  }
 
   ~TransducerTest() override = default;
   TransducerTest(const TransducerTest& v) noexcept = default;
