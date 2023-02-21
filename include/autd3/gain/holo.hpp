@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/01/2023
+// Last Modified: 22/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -84,18 +84,7 @@ struct Uniform final : AmplitudeConstraint {
 /**
  * @brief AmplitudeConstraint to clamp amplitude in [0, 1]
  */
-struct Clamp final : AmplitudeConstraint {
-  Clamp() = default;
-  ~Clamp() override = default;
-  Clamp(const Clamp& v) noexcept = default;
-  Clamp& operator=(const Clamp& obj) = default;
-  Clamp(Clamp&& obj) = default;
-  Clamp& operator=(Clamp&& obj) = default;
-
-  [[nodiscard]] driver::autd3_float_t convert(const driver::autd3_float_t raw, const driver::autd3_float_t) const override {
-    return std::clamp<driver::autd3_float_t>(raw, 0, 1);
-  }
-};
+using Clamp = DontCare;
 
 /**
  * @brief Gain to produce multiple focal points
