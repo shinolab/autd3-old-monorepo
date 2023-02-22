@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/02/2023
+// Last Modified: 22/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -332,12 +332,6 @@ class Controller {
   std::chrono::high_resolution_clock::duration _send_interval{std::chrono::milliseconds(1)};
 
   std::chrono::high_resolution_clock::duration _ack_check_timeout{std::chrono::high_resolution_clock::duration::zero()};
-
-  struct AsyncData {
-    std::unique_ptr<core::DatagramHeader> header{};
-    std::unique_ptr<core::DatagramBody> body{};
-    std::chrono::high_resolution_clock::duration timeout{};
-  };
 
   driver::TxDatagram _tx_buf;
   driver::RxDatagram _rx_buf;
