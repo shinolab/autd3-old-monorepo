@@ -240,8 +240,8 @@ void AUTDGetFirmwareInfo(const void* const p_firm_info_list, const int32_t index
   const auto* wrapper = static_cast<const FirmwareInfoListWrapper*>(p_firm_info_list);
   const auto& info_ = wrapper->list[index];
   std::char_traits<char>::copy(info, info_.to_string().c_str(), info_.to_string().size() + 1);
-  *matches_version = info_.matches_version();
-  *is_supported = info_.is_supported();
+  *matches_version = autd3::FirmwareInfo::matches_version(info_);
+  *is_supported = autd3::FirmwareInfo::is_supported(info_);
 }
 
 void AUTDFreeFirmwareInfoListPointer(const void* const p_firm_info_list) {
@@ -287,7 +287,7 @@ void AUTDGainTransducerTest(void** gain) { *gain = new autd3::gain::TransducerTe
 
 void AUTDGainTransducerTestSet(void* gain, const int32_t tr_idx, const autd3_float_t amp, const autd3_float_t phase) {
   auto* const g = static_cast<autd3::gain::TransducerTest*>(gain);
-  g->set(tr_idx, autd3::Amp(amp), autd3::Phase(phase));
+  g->set(tr_idx, amp, phase);
 }
 
 void AUTDGainCustom(void** gain, const autd3_float_t* amp, const autd3_float_t* phase, const uint64_t size) {
