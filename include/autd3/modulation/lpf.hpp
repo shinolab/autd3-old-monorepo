@@ -68,6 +68,10 @@ static driver::autd3_float_t coefficient[COEFFICIENT_SIZE] = {
 template <typename T>
 class LPF final : public core::Modulation {
  public:
+#ifdef AUTD3_CAPI
+  explicit LPF(std::shared_ptr<core::Modulation> modulation) : _modulation(std::move(modulation)) { _freq_div = 8192; }
+  core::Modulation& modulation() noexcept { return *_modulation; }
+#else
   /**
    * \param args constructor parameter of T
    */
@@ -75,14 +79,16 @@ class LPF final : public core::Modulation {
   explicit LPF(Args&&... args) : _modulation(std::forward<Args>(args)...) {
     _freq_div = 8192;
   }
+  T& modulation() noexcept { return _modulation; }
+#endif
 
   std::vector<driver::Amp> calc() override {
-    const auto original_buffer = _modulation.calc();
+    const auto original_buffer = modulation().calc();
 
     std::vector<driver::Amp> resampled;
-    resampled.reserve(original_buffer.size() * _modulation.sampling_frequency_division() / 4096);
+    resampled.reserve(original_buffer.size() * modulation().sampling_frequency_division() / 4096);
     for (const auto d : original_buffer)
-      std::generate_n(std::back_inserter(resampled), _modulation.sampling_frequency_division() / 4096, [d] { return d; });
+      std::generate_n(std::back_inserter(resampled), modulation().sampling_frequency_division() / 4096, [d] { return d; });
 
     std::vector<driver::Amp> mf;
     if (resampled.size() % 2 == 0) {
