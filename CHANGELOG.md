@@ -1,6 +1,7 @@
 # 8.2.0
 
 - Move `Controller::set_sound_speed_from_temp` into `Geometry`
+- Make `modulation::LPF` generic
 
 # 8.1.2
 
