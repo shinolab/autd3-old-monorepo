@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/02/2023
+// Last Modified: 24/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -295,14 +295,6 @@ class Controller {
    * @brief If > 0, this controller check ack from devices.
    */
   [[nodiscard]] std::chrono::high_resolution_clock::duration get_ack_check_timeout() const noexcept { return _ack_check_timeout; }
-
-  [[deprecated("Use Geometry::set_sound_speed_from_temp instead")]] driver::autd3_float_t set_sound_speed_from_temp(
-      driver::autd3_float_t temp, driver::autd3_float_t k = static_cast<driver::autd3_float_t>(1.4),
-      driver::autd3_float_t r = static_cast<driver::autd3_float_t>(8.31446261815324),
-      driver::autd3_float_t m = static_cast<driver::autd3_float_t>(28.9647e-3)) {
-    geometry().set_sound_speed_from_temp(temp, k, r, m);
-    return geometry().sound_speed;
-  }
 
  private:
 #ifdef AUTD3_CAPI
