@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/02/2023
+// Last Modified: 24/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -316,7 +316,8 @@ void AUTDModulationSineLegacy(void** mod, const autd3_float_t freq, const autd3_
 
 void AUTDModulationLPF(void** mod, void* mod_in) {
   auto* m = static_cast<autd3::Modulation*>(mod_in);
-  *mod = new autd3::modulation::LPF(*m);
+  auto mod_p = std::shared_ptr<autd3::core::Modulation>(m, [](autd3::core::Modulation*) {});
+  *mod = new autd3::modulation::LPF<std::shared_ptr<autd3::core::Modulation>>(std::move(mod_p));
 }
 
 void AUTDModulationCustom(void** mod, const autd3_float_t* buffer, const uint64_t size, const uint32_t freq_div) {
