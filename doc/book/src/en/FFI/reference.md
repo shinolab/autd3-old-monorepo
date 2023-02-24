@@ -238,7 +238,7 @@ Set sound speed from temperature.
 
 | Argument name / return | type   | in/out | description           |
 | ---------------------- | ------ | ------ | --------------------- |
-| cnt                 | void*  | in     | pointer to Controller |
+| geometry                 | void*  | in     | pointer to Geometry |
 | temp                   | double | in     | temperature in Celsius degree |
 | k                   | double | in     | Heat capacity ratio           |
 | r                   | double | in     |  Gas constant [J K^-1 mol^-1]           |

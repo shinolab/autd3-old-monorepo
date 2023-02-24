@@ -54,8 +54,8 @@ proc AUTDGetSoundSpeed*(geometry: pointer): float64 {.cdecl,
     importc: "AUTDGetSoundSpeed", dynlib: dll.}
 proc AUTDSetSoundSpeed*(geometry: pointer; sound_speed: float64) {.cdecl,
     importc: "AUTDSetSoundSpeed", dynlib: dll.}
-proc AUTDSetSoundSpeedFromTemp*(cnt: pointer; temp: float64; k: float64; r: float64;
-                               m: float64) {.cdecl,
+proc AUTDSetSoundSpeedFromTemp*(geometry: pointer; temp: float64; k: float64;
+                               r: float64; m: float64) {.cdecl,
     importc: "AUTDSetSoundSpeedFromTemp", dynlib: dll.}
 proc AUTDGetTransFrequency*(geometry: pointer; trans_idx: int32): float64 {.cdecl,
     importc: "AUTDGetTransFrequency", dynlib: dll.}

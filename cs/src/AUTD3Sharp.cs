@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/02/2023
+ * Last Modified: 24/02/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -197,6 +197,11 @@ namespace AUTD3Sharp
                 if (index >= NumTransducers) throw new IndexOutOfRangeException();
                 return new Transducer(index, GeometryPtr);
             }
+        }
+
+        public void SetSoundSpeedFromTemp(autd3_float_t temp, autd3_float_t k = (autd3_float_t)1.4, autd3_float_t r = (autd3_float_t)8.31446261815324, autd3_float_t m = (autd3_float_t)28.9647e-3)
+        {
+            Base.AUTDSetSoundSpeedFromTemp(GeometryPtr, temp, k, r, m);
         }
 
         public Vector3 CenterOf(int devIdx)
@@ -404,11 +409,6 @@ namespace AUTD3Sharp
             }
         }
         #endregion
-
-        public void SetSoundSpeedFromTemp(autd3_float_t temp, autd3_float_t k = (autd3_float_t)1.4, autd3_float_t r = (autd3_float_t)8.31446261815324, autd3_float_t m = (autd3_float_t)28.9647e-3)
-        {
-            Base.AUTDSetSoundSpeedFromTemp(CntPtr, temp, k, r, m);
-        }
 
         public bool Send(SpecialData special)
         {

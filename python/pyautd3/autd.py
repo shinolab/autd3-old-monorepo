@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 21/02/2023
+Last Modified: 24/02/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -177,6 +177,9 @@ class Geometry:
         Base().dll.AUTDGeometryCenter(self._ptr, byref(x), byref(y), byref(z))
         return np.array([x.value, y.value, z.value])
 
+    def set_sound_speed_from_temp(self, temp: float, k: float = 1.4, r: float = 8.31446261815324, m: float = 28.9647e-3):
+        Base().dll.AUTDSetSoundSpeed(self._ptr, temp, k, r, m)
+
     def center_of(self, dev_idx: int):
         x = c_double(0.0)
         y = c_double(0.0)
@@ -280,9 +283,6 @@ class Controller:
     @ property
     def geometry(self):
         return self._geometry
-
-    def set_sound_speed_from_temp(self, temp: float, k: float = 1.4, r: float = 8.31446261815324, m: float = 28.9647e-3):
-        Base().dll.AUTDSetSoundSpeed(self.p_cnt, temp, k, r, m)
 
     @staticmethod
     def open(geometry: Geometry, link: Link):

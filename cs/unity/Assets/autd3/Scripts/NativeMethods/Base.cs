@@ -34,7 +34,7 @@ namespace AUTD3Sharp.NativeMethods
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSetForceFan(IntPtr handle, [MarshalAs(UnmanagedType.U1)] bool force);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern float AUTDGetSoundSpeed(IntPtr geometry);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSetSoundSpeed(IntPtr geometry, float soundSpeed);
-        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSetSoundSpeedFromTemp(IntPtr cnt, float temp, float k, float r, float m);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSetSoundSpeedFromTemp(IntPtr geometry, float temp, float k, float r, float m);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern float AUTDGetTransFrequency(IntPtr geometry, int transIdx);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSetTransFrequency(IntPtr geometry, int transIdx, float frequency);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ushort AUTDGetTransCycle(IntPtr geometry, int transIdx);
