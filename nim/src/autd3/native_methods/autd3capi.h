@@ -34,7 +34,7 @@ void AUTDSetSendInterval(void* handle, uint64 interval);
 void AUTDSetForceFan(void* handle, bool force);
 float64 AUTDGetSoundSpeed(void* geometry);
 void AUTDSetSoundSpeed(void* geometry, float64 sound_speed);
-void AUTDSetSoundSpeedFromTemp(void* cnt, float64 temp, float64 k, float64 r, float64 m);
+void AUTDSetSoundSpeedFromTemp(void* geometry, float64 temp, float64 k, float64 r, float64 m);
 float64 AUTDGetTransFrequency(void* geometry, int32 trans_idx);
 void AUTDSetTransFrequency(void* geometry, int32 trans_idx, float64 frequency);
 uint16 AUTDGetTransCycle(void* geometry, int32 trans_idx);

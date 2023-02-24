@@ -127,9 +127,9 @@ void AUTDSetSendInterval(void* const handle, const uint64_t interval) {
   wrapper->set_send_interval(std::chrono::nanoseconds(interval));
 }
 
-void AUTDSetSoundSpeedFromTemp(void* const cnt, const autd3_float_t temp, const autd3_float_t k, const autd3_float_t r, const autd3_float_t m) {
-  auto* wrapper = static_cast<Controller*>(cnt);
-  wrapper->geometry().set_sound_speed_from_temp(temp, k, r, m);
+void AUTDSetSoundSpeedFromTemp(void* const geometry, const autd3_float_t temp, const autd3_float_t k, const autd3_float_t r, const autd3_float_t m) {
+  auto* wrapper = static_cast<Geometry*>(geometry);
+  wrapper->set_sound_speed_from_temp(temp, k, r, m);
 }
 
 bool AUTDGetFPGAInfo(void* const handle, uint8_t* out) {
