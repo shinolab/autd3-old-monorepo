@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/02/2023
+// Last Modified: 24/02/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -40,7 +40,7 @@ EXPORT_AUTD void AUTDSetSendInterval(IN void* handle, IN uint64_t interval);
 EXPORT_AUTD void AUTDSetForceFan(IN void* handle, IN bool force);
 EXPORT_AUTD autd3_float_t AUTDGetSoundSpeed(IN const void* geometry);
 EXPORT_AUTD void AUTDSetSoundSpeed(IN void* geometry, IN autd3_float_t sound_speed);
-EXPORT_AUTD void AUTDSetSoundSpeedFromTemp(IN void* cnt, IN autd3_float_t temp, IN autd3_float_t k, IN autd3_float_t r, IN autd3_float_t m);
+EXPORT_AUTD void AUTDSetSoundSpeedFromTemp(IN void* geometry, IN autd3_float_t temp, IN autd3_float_t k, IN autd3_float_t r, IN autd3_float_t m);
 EXPORT_AUTD autd3_float_t AUTDGetTransFrequency(IN const void* geometry, IN int32_t trans_idx);
 EXPORT_AUTD void AUTDSetTransFrequency(IN void* geometry, IN int32_t trans_idx, IN autd3_float_t frequency);
 EXPORT_AUTD uint16_t AUTDGetTransCycle(IN const void* geometry, IN int32_t trans_idx);
