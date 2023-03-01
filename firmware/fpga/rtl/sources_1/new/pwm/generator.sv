@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 01/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -31,7 +31,6 @@ module pwm_generator #(
   assign t = TIME_CNT;
   assign R = RISE;
   assign F = FALL;
-  // assign PWM_OUT = (R <= F) ? ((R <= t) & (t < F)) : ((t < F) | (R <= t));
   assign PWM_OUT = v;
 
   always_ff @(posedge CLK) begin

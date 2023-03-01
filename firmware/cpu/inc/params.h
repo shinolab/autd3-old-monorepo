@@ -3,7 +3,7 @@
 // Created Date: 22/04/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/02/2023
+// Last Modified: 01/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@
 #define BRAM_ADDR_EC_SYNC_TIME_1 (BRAM_ADDR_EC_SYNC_TIME_0 + 1)
 #define BRAM_ADDR_EC_SYNC_TIME_2 (BRAM_ADDR_EC_SYNC_TIME_0 + 2)
 #define BRAM_ADDR_EC_SYNC_TIME_3 (BRAM_ADDR_EC_SYNC_TIME_0 + 3)
-#define BRAM_ADDR_MOD_ADDR_OFFSET (0x020)
+#define BRAM_ADDR_MOD_MEM_SEGMENT (0x020)
 #define BRAM_ADDR_MOD_CYCLE (0x021)
 #define BRAM_ADDR_MOD_FREQ_DIV_0 (0x022)
 #define BRAM_ADDR_MOD_FREQ_DIV_1 (0x023)
@@ -31,7 +31,7 @@
 #define BRAM_ADDR_VERSION_NUM_MINOR (0x03E)
 #define BRAM_ADDR_SILENT_CYCLE (0x040)
 #define BRAM_ADDR_SILENT_STEP (0x041)
-#define BRAM_ADDR_STM_ADDR_OFFSET (0x050)
+#define BRAM_ADDR_STM_MEM_SEGMENT (0x050)
 #define BRAM_ADDR_STM_CYCLE (0x051)
 #define BRAM_ADDR_STM_FREQ_DIV_0 (0x052)
 #define BRAM_ADDR_STM_FREQ_DIV_1 (0x053)
