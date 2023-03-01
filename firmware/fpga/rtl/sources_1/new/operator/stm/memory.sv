@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 01/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ module stm_memory (
   assign bus_clk = CPU_BUS.BUS_CLK;
   assign stm_ena = CPU_BUS.STM_EN;
   assign we = CPU_BUS.WE;
-  assign stm_addr = {CPU_BUS.STM_ADDR_OFFSET, CPU_BUS.BRAM_ADDR};
+  assign stm_addr = {CPU_BUS.STM_MEM_SEGMENT, CPU_BUS.BRAM_ADDR};
   assign data_in = CPU_BUS.DATA_IN;
   assign idx = SS_BUS.ADDR;
   assign SS_BUS.DATA_OUT = data_out;
