@@ -4,7 +4,7 @@
  * Created Date: 24/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 01/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ module modulation_memory (
   assign bus_clk = CPU_BUS.BUS_CLK;
   assign mod_ena = CPU_BUS.MOD_EN;
   assign we = CPU_BUS.WE;
-  assign mod_addr = {CPU_BUS.MOD_ADDR_OFFSET, CPU_BUS.BRAM_ADDR};
+  assign mod_addr = {CPU_BUS.MOD_MEM_SEGMENT, CPU_BUS.BRAM_ADDR};
   assign data_in = CPU_BUS.DATA_IN;
   assign idx = MS_BUS.ADDR;
   assign MS_BUS.M = m;

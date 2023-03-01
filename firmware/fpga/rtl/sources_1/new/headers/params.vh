@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/02/2023
+ * Last Modified: 01/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -32,7 +32,7 @@ localparam bit [13:0] ADDR_EC_SYNC_TIME_0 = 14'h011;
 localparam bit [13:0] ADDR_EC_SYNC_TIME_1 = ADDR_EC_SYNC_TIME_0 + 1;
 localparam bit [13:0] ADDR_EC_SYNC_TIME_2 = ADDR_EC_SYNC_TIME_0 + 2;
 localparam bit [13:0] ADDR_EC_SYNC_TIME_3 = ADDR_EC_SYNC_TIME_0 + 3;
-localparam bit [13:0] ADDR_MOD_ADDR_OFFSET = 14'h020;
+localparam bit [13:0] ADDR_MOD_MEM_SEGMENT = 14'h020;
 localparam bit [13:0] ADDR_MOD_CYCLE = 14'h021;
 localparam bit [13:0] ADDR_MOD_FREQ_DIV_0 = 14'h022;
 localparam bit [13:0] ADDR_MOD_FREQ_DIV_1 = 14'h023;
@@ -40,7 +40,7 @@ localparam bit [13:0] ADDR_VERSION_NUM_MAJOR = 14'h03F;  // For backward compati
 localparam bit [13:0] ADDR_VERSION_NUM_MINOR = 14'h03E;
 localparam bit [13:0] ADDR_SILENT_CYCLE = 14'h040;
 localparam bit [13:0] ADDR_SILENT_STEP = 14'h041;
-localparam bit [13:0] ADDR_STM_ADDR_OFFSET = 14'h050;
+localparam bit [13:0] ADDR_STM_MEM_SEGMENT = 14'h050;
 localparam bit [13:0] ADDR_STM_CYCLE = 14'h051;
 localparam bit [13:0] ADDR_STM_FREQ_DIV_0 = 14'h052;
 localparam bit [13:0] ADDR_STM_FREQ_DIV_1 = 14'h053;
