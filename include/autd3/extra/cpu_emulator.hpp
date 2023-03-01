@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/03/2023
+// Last Modified: 02/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,10 +26,10 @@ constexpr uint8_t BRAM_SELECT_MOD = 0x1;
 constexpr uint8_t BRAM_SELECT_NORMAL = 0x2;
 constexpr uint8_t BRAM_SELECT_STM = 0x3;
 
-constexpr uint16_t CTL_REG_OP_MODE_BIT = 9;
-constexpr uint16_t CTL_REG_OP_MODE = 1 << CTL_REG_OP_MODE_BIT;
+constexpr uint16_t CTL_FLAG_OP_MODE_BIT = 9;
+constexpr uint16_t CTL_FLAG_OP_MODE = 1 << CTL_FLAG_OP_MODE_BIT;
 
-constexpr uint16_t BRAM_ADDR_CTL_REG = 0x000;
+constexpr uint16_t BRAM_ADDR_CTL_FLAG = 0x000;
 constexpr uint16_t BRAM_ADDR_FPGA_INFO = 0x001;
 // constexpr uint16_t BRAM_ADDR_EC_SYNC_TIME_0 = BRAM_ADDR_EC_SYNC_CYCLE_TICKS + 1;
 // constexpr uint16_t BRAM_ADDR_EC_SYNC_TIME_1 = BRAM_ADDR_EC_SYNC_CYCLE_TICKS + 2;
@@ -281,7 +281,7 @@ class CPU {
     }
     if (header->cpu_flag.contains(driver::CPUControlFlags::STMEnd)) {
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_CYCLE, static_cast<uint16_t>((std::max)(_stm_write, 1u) - 1u));
-      bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CTL_REG, header->fpga_flag.value() | cpu::CTL_REG_OP_MODE);
+      bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CTL_FLAG, header->fpga_flag.value() | cpu::CTL_FLAG_OP_MODE);
     }
   }
 
@@ -361,7 +361,7 @@ class CPU {
 
     if (header->cpu_flag.contains(driver::CPUControlFlags::STMEnd)) {
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_CYCLE, static_cast<uint16_t>((std::max)(_stm_cycle, 1u) - 1u));
-      bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CTL_REG, header->fpga_flag.value() | cpu::CTL_REG_OP_MODE);
+      bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CTL_FLAG, header->fpga_flag.value() | cpu::CTL_FLAG_OP_MODE);
     }
   }
 
@@ -416,7 +416,7 @@ class CPU {
 
     if (header->cpu_flag.contains(driver::CPUControlFlags::STMEnd)) {
       bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_STM_CYCLE, static_cast<uint16_t>((std::max)(_stm_cycle, 1u) - 1u));
-      bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CTL_REG, header->fpga_flag.value() | cpu::CTL_REG_OP_MODE);
+      bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CTL_FLAG, header->fpga_flag.value() | cpu::CTL_FLAG_OP_MODE);
     }
   }
 
@@ -433,7 +433,7 @@ class CPU {
   void clear() {
     constexpr uint32_t freq_div = 40960;
 
-    bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CTL_REG, 0x0000);
+    bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CTL_FLAG, 0x0000);
 
     bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_SILENT_STEP, 10);
     bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_SILENT_CYCLE, 4096);
@@ -481,7 +481,7 @@ class CPU {
         if (_msg_id > driver::MSG_END) return;
 
         const auto ctl_reg = header->fpga_flag;
-        bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CTL_REG, ctl_reg.value());
+        bram_write(cpu::BRAM_SELECT_CONTROLLER, cpu::BRAM_ADDR_CTL_FLAG, ctl_reg.value());
 
         if (header->cpu_flag.contains(driver::CPUControlFlags::Mod))
           write_mod(header);

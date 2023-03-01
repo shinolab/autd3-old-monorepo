@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/03/2023
+ * Last Modified: 02/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -117,8 +117,8 @@ module sim_helper_bram #(
   task set_ctl_reg(bit force_fan, bit sync);
     automatic
     bit [15:0]
-    ctl_reg = (sync << CTL_REG_SYNC_BIT) | (force_fan << CTL_REG_FORCE_FAN_BIT);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_CTL_REG, ctl_reg);
+    ctl_reg = (sync << CTL_FLAG_SYNC_BIT) | (force_fan << CTL_FLAG_FORCE_FAN_BIT);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_CTL_FLAG, ctl_reg);
   endtask
 
   task write_ecat_sync_time(bit [63:0] ecat_sync_time);

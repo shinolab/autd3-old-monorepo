@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/03/2023
+// Last Modified: 02/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -35,7 +35,7 @@ constexpr uint16_t BRAM_SELECT_MOD = 0x1;
 constexpr uint16_t BRAM_SELECT_NORMAL = 0x2;
 constexpr uint16_t BRAM_SELECT_STM = 0x3;
 
-constexpr size_t ADDR_CTL_REG = 0x0000;
+constexpr size_t ADDR_CTL_FLAG = 0x0000;
 constexpr size_t ADDR_FPGA_INFO = 0x0001;
 // constexpr size_t ADDR_EC_SYNC_TIME_0 = ADDR_EC_SYNC_CYCLE_TICKS + 1;
 // constexpr size_t ADDR_EC_SYNC_TIME_1 = ADDR_EC_SYNC_CYCLE_TICKS + 2;
@@ -60,19 +60,19 @@ constexpr size_t ADDR_STM_FINISH_IDX = 0x0057;
 constexpr size_t ADDR_CYCLE_BASE = 0x0100;
 constexpr size_t ADDR_MOD_DELAY_BASE = 0x0200;
 
-constexpr uint16_t CTL_REG_LEGACY_MODE_BIT = 0;
-constexpr uint16_t CTL_REG_USE_STM_FINISH_IDX_BIT = 2;
-constexpr uint16_t CTL_REG_USE_STM_START_IDX_BIT = 3;
-constexpr uint16_t CTL_REG_FORCE_FAN_BIT = 4;
-constexpr uint16_t CTL_REG_STM_GAIN_MODE_BIT = 6;
-// constexpr size_t CTL_REG_SYNC_BIT = 8;
-constexpr uint16_t CTL_REG_OP_MODE_BIT = 9;
-constexpr uint16_t CTL_REG_LEGACY_MODE = 1 << CTL_REG_LEGACY_MODE_BIT;
-constexpr uint16_t CTL_REG_USE_STM_FINISH_IDX = 1 << CTL_REG_USE_STM_FINISH_IDX_BIT;
-constexpr uint16_t CTL_REG_USE_STM_START_IDX = 1 << CTL_REG_USE_STM_START_IDX_BIT;
-constexpr uint16_t CTL_REG_FORCE_FAN = 1 << CTL_REG_FORCE_FAN_BIT;
-constexpr uint16_t CTL_REG_OP_MODE = 1 << CTL_REG_OP_MODE_BIT;
-constexpr uint16_t CTL_REG_STM_GAIN_MODE = 1 << CTL_REG_STM_GAIN_MODE_BIT;
+constexpr uint16_t CTL_FLAG_LEGACY_MODE_BIT = 0;
+constexpr uint16_t CTL_FLAG_USE_STM_FINISH_IDX_BIT = 2;
+constexpr uint16_t CTL_FLAG_USE_STM_START_IDX_BIT = 3;
+constexpr uint16_t CTL_FLAG_FORCE_FAN_BIT = 4;
+constexpr uint16_t CTL_FLAG_STM_GAIN_MODE_BIT = 6;
+// constexpr size_t CTL_FLAG_SYNC_BIT = 8;
+constexpr uint16_t CTL_FLAG_OP_MODE_BIT = 9;
+constexpr uint16_t CTL_FLAG_LEGACY_MODE = 1 << CTL_FLAG_LEGACY_MODE_BIT;
+constexpr uint16_t CTL_FLAG_USE_STM_FINISH_IDX = 1 << CTL_FLAG_USE_STM_FINISH_IDX_BIT;
+constexpr uint16_t CTL_FLAG_USE_STM_START_IDX = 1 << CTL_FLAG_USE_STM_START_IDX_BIT;
+constexpr uint16_t CTL_FLAG_FORCE_FAN = 1 << CTL_FLAG_FORCE_FAN_BIT;
+constexpr uint16_t CTL_FLAG_OP_MODE = 1 << CTL_FLAG_OP_MODE_BIT;
+constexpr uint16_t CTL_FLAG_STM_GAIN_MODE = 1 << CTL_FLAG_STM_GAIN_MODE_BIT;
 
 constexpr uint8_t ENABLED_STM_BIT = 0x01;
 constexpr uint8_t ENABLED_MODULATOR_BIT = 0x02;
@@ -143,13 +143,13 @@ class FPGA {
 
   void deassert_thermal_sensor() { _controller_bram[fpga::ADDR_FPGA_INFO] &= ~0x0001; }
 
-  [[nodiscard]] bool is_legacy_mode() const { return (_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_LEGACY_MODE) != 0; }
+  [[nodiscard]] bool is_legacy_mode() const { return (_controller_bram[fpga::ADDR_CTL_FLAG] & fpga::CTL_FLAG_LEGACY_MODE) != 0; }
 
-  [[nodiscard]] bool is_force_fan() const { return (_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_FORCE_FAN) != 0; }
+  [[nodiscard]] bool is_force_fan() const { return (_controller_bram[fpga::ADDR_CTL_FLAG] & fpga::CTL_FLAG_FORCE_FAN) != 0; }
 
-  [[nodiscard]] bool is_stm_mode() const { return (_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_OP_MODE) != 0; }
+  [[nodiscard]] bool is_stm_mode() const { return (_controller_bram[fpga::ADDR_CTL_FLAG] & fpga::CTL_FLAG_OP_MODE) != 0; }
 
-  [[nodiscard]] bool is_stm_gain_mode() const { return (_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_STM_GAIN_MODE) != 0; }
+  [[nodiscard]] bool is_stm_gain_mode() const { return (_controller_bram[fpga::ADDR_CTL_FLAG] & fpga::CTL_FLAG_STM_GAIN_MODE) != 0; }
 
   [[nodiscard]] uint16_t silencer_cycle() const { return _controller_bram[fpga::ADDR_SILENT_CYCLE]; }
 
@@ -180,12 +180,12 @@ class FPGA {
   }
 
   [[nodiscard]] std::optional<uint16_t> stm_start_idx() const {
-    if ((_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_USE_STM_START_IDX) != 0) return _controller_bram[fpga::ADDR_STM_START_IDX];
+    if ((_controller_bram[fpga::ADDR_CTL_FLAG] & fpga::CTL_FLAG_USE_STM_START_IDX) != 0) return _controller_bram[fpga::ADDR_STM_START_IDX];
     return std::nullopt;
   }
 
   [[nodiscard]] std::optional<uint16_t> stm_finish_idx() const {
-    if ((_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_USE_STM_FINISH_IDX) != 0) return _controller_bram[fpga::ADDR_STM_FINISH_IDX];
+    if ((_controller_bram[fpga::ADDR_CTL_FLAG] & fpga::CTL_FLAG_USE_STM_FINISH_IDX) != 0) return _controller_bram[fpga::ADDR_STM_FINISH_IDX];
     return std::nullopt;
   }
 
