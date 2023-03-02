@@ -25,7 +25,7 @@ inline void group_test(autd3::Controller& autd) {
   autd3::gain::BesselBeam g2(apex, autd3::Vector3::UnitZ(), 13.0 / 180.0 * autd3::pi);
 
   autd3::gain::Grouped g;
-  g.add(0, g1);
+  g.add({ 0, 1 }, g1);
   g.add(1, g2);
 
   autd << silencer << m, g;
