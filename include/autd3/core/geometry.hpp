@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/02/2023
+// Last Modified: 02/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -176,7 +176,7 @@ struct Geometry {
    */
   void affine(const Affine3& a) {
     std::transform(begin(), end(), begin(), [a](const auto& tr) {
-      const auto id = tr.id();
+      const auto id = tr.idx();
       const Vector3 pos = a * tr.position();
       const Quaternion rot(a.linear() * tr.rotation().toRotationMatrix());
       const auto mod_delay = tr.mod_delay();
@@ -214,7 +214,7 @@ struct Geometry {
    */
   void affine(const size_t dev_idx, const Affine3& a) {
     std::transform(begin(dev_idx), end(dev_idx), begin(dev_idx), [a](const auto& tr) {
-      const auto id = tr.id();
+      const auto id = tr.idx();
       const Vector3 pos = a * tr.position();
       const Quaternion rot(a.linear() * tr.rotation().toRotationMatrix());
       const auto mod_delay = tr.mod_delay();

@@ -54,7 +54,7 @@ void generate_transfer_matrix(const std::vector<core::Vector3>& foci, const core
   const auto attenuation = geometry.attenuation;
   holo::for_each(geometry.begin(), geometry.end(), [&](const auto& transducer) {
     for (size_t i = 0; i < foci.size(); i++)
-      dst(i, transducer.id()) =
+      dst(i, transducer.idx()) =
           core::propagate(transducer.position(), transducer.z_direction(), attenuation, transducer.wavenumber(sound_speed), foci[i]);
   });
 }
@@ -153,8 +153,8 @@ std::vector<driver::Drive> SDP::calc(const core::Geometry& geometry) {
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
   return holo::transform(geometry, [&](const auto& tr) {
-    const auto phase = std::arg(q(tr.id())) + driver::pi;
-    const auto raw = std::abs(q(tr.id()));
+    const auto phase = std::arg(q(tr.idx())) + driver::pi;
+    const auto raw = std::abs(q(tr.idx()));
     const auto power = constraint->convert(raw, max_coefficient);
     return driver::Drive{driver::Phase(phase), driver::Amp(power)};
   });
@@ -215,8 +215,8 @@ std::vector<driver::Drive> EVP::calc(const core::Geometry& geometry) {
   _backend->to_host(gtf);
   const auto max_coefficient = std::abs(_backend->max_abs_element(gtf));
   return holo::transform(geometry, [&](const auto& tr) {
-    const auto phase = std::arg(gtf(tr.id())) + driver::pi;
-    const auto raw = std::abs(gtf(tr.id()));
+    const auto phase = std::arg(gtf(tr.idx())) + driver::pi;
+    const auto raw = std::abs(gtf(tr.idx()));
     const auto power = constraint->convert(raw, max_coefficient);
     return driver::Drive{driver::Phase(phase), driver::Amp(power)};
   });
@@ -239,8 +239,8 @@ std::vector<driver::Drive> LSS::calc(const core::Geometry& geometry) {
 
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
   return holo::transform(geometry, [&](const auto& tr) {
-    const auto phase = std::arg(q(tr.id())) + driver::pi;
-    const auto raw = std::abs(q(tr.id()));
+    const auto phase = std::arg(q(tr.idx())) + driver::pi;
+    const auto raw = std::abs(q(tr.idx()));
     const auto power = constraint->convert(raw, max_coefficient);
     return driver::Drive{driver::Phase(phase), driver::Amp(power)};
   });
@@ -276,8 +276,8 @@ std::vector<driver::Drive> GS::calc(const core::Geometry& geometry) {
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
   _backend->to_host(q);
   return holo::transform(geometry, [&](const auto& tr) {
-    const auto phase = std::arg(q(tr.id())) + driver::pi;
-    const auto raw = std::abs(q(tr.id()));
+    const auto phase = std::arg(q(tr.idx())) + driver::pi;
+    const auto raw = std::abs(q(tr.idx()));
     const auto power = constraint->convert(raw, max_coefficient);
     return driver::Drive{driver::Phase(phase), driver::Amp(power)};
   });
@@ -324,8 +324,8 @@ std::vector<driver::Drive> GSPAT::calc(const core::Geometry& geometry) {
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
   _backend->to_host(q);
   return holo::transform(geometry, [&](const auto& tr) {
-    const auto phase = std::arg(q(tr.id())) + driver::pi;
-    const auto raw = std::abs(q(tr.id()));
+    const auto phase = std::arg(q(tr.idx())) + driver::pi;
+    const auto raw = std::abs(q(tr.idx()));
     const auto power = constraint->convert(raw, max_coefficient);
     return driver::Drive{driver::Phase(phase), driver::Amp(power)};
   });
@@ -459,7 +459,7 @@ std::vector<driver::Drive> LM::calc(const core::Geometry& geometry) {
 
   _backend->to_host(x);
   return holo::transform(geometry, [&](const auto& tr) {
-    const auto phase = driver::rem_euclid(x(tr.id()), 2 * driver::pi);
+    const auto phase = driver::rem_euclid(x(tr.idx()), 2 * driver::pi);
     const auto power = constraint->convert(1.0, 1.0);
     return driver::Drive{driver::Phase(phase), driver::Amp(power)};
   });
@@ -514,8 +514,8 @@ std::vector<driver::Drive> Greedy::calc(const core::Geometry& geometry) {
 
     const auto power = constraint->convert(1.0, 1.0);
 
-    drives[transducer.id()].amp = driver::Amp(power);
-    drives[transducer.id()].phase = driver::Phase(std::arg(phases[min_idx]) + driver::pi);
+    drives[transducer.idx()].amp = driver::Amp(power);
+    drives[transducer.idx()].phase = driver::Phase(std::arg(phases[min_idx]) + driver::pi);
   }
   return drives;
 }
@@ -575,9 +575,9 @@ std::vector<driver::Drive> LSSGreedy::calc(const core::Geometry& geometry) {
   _backend->to_host(q);
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
   return holo::transform(geometry, [&](const auto& tr) {
-    const auto raw = std::abs(q(tr.id()));
+    const auto raw = std::abs(q(tr.idx()));
     const auto power = constraint->convert(raw, max_coefficient);
-    return driver::Drive{driver::Phase(std::arg(q(tr.id())) + driver::pi), driver::Amp(power)};
+    return driver::Drive{driver::Phase(std::arg(q(tr.idx())) + driver::pi), driver::Amp(power)};
   });
 }
 
@@ -694,8 +694,8 @@ std::vector<driver::Drive> APO::calc(const core::Geometry& geometry) {
   _backend->to_host(q);
   const auto max_coefficient = std::abs(_backend->max_abs_element(q));
   return holo::transform(geometry, [&](const auto& tr) {
-    const auto phase = std::arg(q(tr.id())) + driver::pi;
-    const auto raw = std::abs(q(tr.id()));
+    const auto phase = std::arg(q(tr.idx())) + driver::pi;
+    const auto raw = std::abs(q(tr.idx()));
     const auto power = constraint->convert(raw, max_coefficient);
     return driver::Drive{driver::Phase(phase), driver::Amp(power)};
   });
