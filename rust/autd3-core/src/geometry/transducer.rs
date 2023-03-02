@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 02/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,8 +21,8 @@ pub trait Transducer: Sized {
         (rotation * dir * rotation.conjugate()).imag().normalize()
     }
     fn new(id: usize, pos: Vector3, rot: UnitQuaternion) -> Self;
-    fn align_phase_at(&self, dist: f64, sound_speed: f64) -> f64 {
-        dist * self.wavenumber(sound_speed)
+    fn align_phase_at(&self, pos: Vector3, sound_speed: f64) -> f64 {
+        (pos - self.position()).norm() * self.wavenumber(sound_speed)
     }
     fn position(&self) -> &Vector3;
     fn rotation(&self) -> &UnitQuaternion;

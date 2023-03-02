@@ -38,7 +38,8 @@ struct Transducer {
   Transducer(Transducer&& obj) = default;
   Transducer& operator=(Transducer&& obj) = default;
 
-  [[nodiscard]] driver::autd3_float_t align_phase_at(const driver::autd3_float_t dist, const driver::autd3_float_t sound_speed) const {
+  [[nodiscard]] driver::autd3_float_t align_phase_at(const Vector3& p, const driver::autd3_float_t sound_speed) const {
+    const auto dist = (p - _pos).norm();
     return dist * wavenumber(sound_speed);
   }
 
