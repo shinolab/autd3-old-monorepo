@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/02/2023
+ * Last Modified: 03/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -310,12 +310,12 @@ namespace AUTD3Sharp
             Base.AUTDSetMode(CntPtr, 0);
         }
 
-        public void ToNormal()
+        public void ToAdvanced()
         {
             Base.AUTDSetMode(CntPtr, 1);
         }
 
-        public void ToNormalPhase()
+        public void ToAdvancedPhase()
         {
             Base.AUTDSetMode(CntPtr, 2);
         }

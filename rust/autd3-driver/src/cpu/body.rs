@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/01/2023
+ * Last Modified: 03/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
  */
 
 use crate::{
-    fpga::{LegacyDrive, NormalDriveDuty, NormalDrivePhase},
+    fpga::{AdvancedDriveDuty, AdvancedDrivePhase, LegacyDrive},
     Drive, FOCUS_STM_FIXED_NUM_UNIT,
 };
 
@@ -214,11 +214,11 @@ impl GainSTMBodySubsequent<[u16]> {
         unsafe { std::mem::transmute(&mut self.data) }
     }
 
-    pub fn phases_mut(&mut self) -> &mut [NormalDrivePhase] {
+    pub fn phases_mut(&mut self) -> &mut [AdvancedDrivePhase] {
         unsafe { std::mem::transmute(&mut self.data) }
     }
 
-    pub fn duties_mut(&mut self) -> &mut [NormalDriveDuty] {
+    pub fn duties_mut(&mut self) -> &mut [AdvancedDriveDuty] {
         unsafe { std::mem::transmute(&mut self.data) }
     }
 

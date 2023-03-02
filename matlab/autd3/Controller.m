@@ -4,7 +4,7 @@
 %Created Date: 07/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 18/02/2023
+%Last Modified: 03/03/2023
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -41,11 +41,11 @@ classdef Controller < handle
             calllib('autd3capi', 'AUTDSetMode', obj.ptr, 0);
         end
 
-        function to_normal(obj)
+        function to_advanced(obj)
             calllib('autd3capi', 'AUTDSetMode', obj.ptr, 1);
         end
 
-        function to_normal_phase(obj)
+        function to_advanced_phase(obj)
             calllib('autd3capi', 'AUTDSetMode', obj.ptr, 2);
         end
 

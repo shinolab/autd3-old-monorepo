@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 03/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,7 +22,9 @@ use autd3_core::{
     amplitude::Amplitudes,
     clear::Clear,
     datagram::{DatagramBody, DatagramHeader, Empty, Filled, NullBody, NullHeader, Sendable},
-    geometry::{Geometry, LegacyTransducer, NormalPhaseTransducer, NormalTransducer, Transducer},
+    geometry::{
+        AdvancedPhaseTransducer, AdvancedTransducer, Geometry, LegacyTransducer, Transducer,
+    },
     link::Link,
     FirmwareInfo, Operation, RxDatagram, TxDatagram, MSG_BEGIN, MSG_END,
 };
@@ -316,14 +318,14 @@ impl<L: Link> Controller<L, LegacyTransducer> {
     }
 }
 
-impl<L: Link> Controller<L, NormalTransducer> {
+impl<L: Link> Controller<L, AdvancedTransducer> {
     pub fn stop(&mut self) -> Result<bool> {
         let mut stop = Null::new();
         self.send(&mut stop).flush()
     }
 }
 
-impl<L: Link> Controller<L, NormalPhaseTransducer> {
+impl<L: Link> Controller<L, AdvancedPhaseTransducer> {
     pub fn stop(&mut self) -> Result<bool> {
         let mut stop = Amplitudes::none();
         self.send(&mut stop).flush()
@@ -341,7 +343,7 @@ impl<L: Link> Controller<L, LegacyTransducer> {
     }
 }
 
-impl<L: Link> Controller<L, NormalTransducer> {
+impl<L: Link> Controller<L, AdvancedTransducer> {
     pub fn close(&mut self) -> Result<bool> {
         let mut stop = Null::new();
         let res = self.send(&mut stop).flush()?;
@@ -352,7 +354,7 @@ impl<L: Link> Controller<L, NormalTransducer> {
     }
 }
 
-impl<L: Link> Controller<L, NormalPhaseTransducer> {
+impl<L: Link> Controller<L, AdvancedPhaseTransducer> {
     pub fn close(&mut self) -> Result<bool> {
         let mut stop = Amplitudes::none();
         let res = self.send(&mut stop).flush()?;

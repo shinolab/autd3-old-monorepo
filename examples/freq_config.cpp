@@ -3,7 +3,7 @@
 // Created Date: 31/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/01/2023
+// Last Modified: 03/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ int main() try {
   auto link = autd3::link::Debug().build();
   auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
 
-  autd << autd3::normal_mode;
+  autd << autd3::advanced_mode;
   std::for_each(autd.geometry().begin(), autd.geometry().end(), [](auto& tr) {
     tr.set_frequency(70e3);  // actual frequency is 163.84MHz/2341 ~ 69987 Hz
   });

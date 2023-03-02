@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 24/02/2023
+Last Modified: 03/03/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -274,10 +274,10 @@ class Controller:
     def to_legacy(self):
         Base().dll.AUTDSetMode(self.p_cnt, 0)
 
-    def to_normal(self):
+    def to_advanced(self):
         Base().dll.AUTDSetMode(self.p_cnt, 1)
 
-    def to_normal_phaseself(self):
+    def to_advanced_phase(self):
         Base().dll.AUTDSetMode(self.p_cnt, 2)
 
     @ property

@@ -2,6 +2,7 @@
 
 - Move `Controller::set_sound_speed_from_temp` into `Geometry`
 - Make `modulation::LPF` generic
+- Rename Normal mode to Advanced mode
 
 # 8.1.2
 

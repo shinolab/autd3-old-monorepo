@@ -1,10 +1,10 @@
 /*
- * File: normal_phase_transducer.rs
+ * File: advanced_phase_transducer.rs
  * Project: geometry
  * Created Date: 31/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 03/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ use crate::error::AUTDInternalError;
 
 use super::{Transducer, UnitQuaternion, Vector3};
 
-pub struct NormalPhaseTransducer {
+pub struct AdvancedPhaseTransducer {
     id: usize,
     pos: Vector3,
     rot: UnitQuaternion,
@@ -27,7 +27,7 @@ pub struct NormalPhaseTransducer {
     mod_delay: u16,
 }
 
-impl Transducer for NormalPhaseTransducer {
+impl Transducer for AdvancedPhaseTransducer {
     fn new(id: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
         Self {
             id,
@@ -63,7 +63,7 @@ impl Transducer for NormalPhaseTransducer {
     }
 }
 
-impl NormalPhaseTransducer {
+impl AdvancedPhaseTransducer {
     pub fn cycle(&self) -> u16 {
         self.cycle
     }

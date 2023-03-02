@@ -3,7 +3,7 @@
 // Created Date: 30/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/03/2023
+// Last Modified: 03/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -63,13 +63,13 @@ TEST(DriverCommonFPGADefined, LegacyDrive) {
 }
 
 TEST(DriverCommonFPGADefined, Phase) {
-  using autd3::driver::NormalDrivePhase;
+  using autd3::driver::AdvancedDrivePhase;
 
-  ASSERT_EQ(sizeof(NormalDrivePhase), 2);
-  ASSERT_EQ(offsetof(NormalDrivePhase, phase), 0);
+  ASSERT_EQ(sizeof(AdvancedDrivePhase), 2);
+  ASSERT_EQ(offsetof(AdvancedDrivePhase, phase), 0);
 
   Drive s{0, 0};
-  NormalDrivePhase d{0};
+  AdvancedDrivePhase d{0};
 
   {
     constexpr uint16_t cycle = 4096;
@@ -119,13 +119,13 @@ TEST(DriverCommonFPGADefined, Phase) {
 }
 
 TEST(DriverCommonFPGADefined, Duty) {
-  using autd3::driver::NormalDriveDuty;
+  using autd3::driver::AdvancedDriveDuty;
 
-  ASSERT_EQ(sizeof(NormalDriveDuty), 2);
-  ASSERT_EQ(offsetof(NormalDriveDuty, duty), 0);
+  ASSERT_EQ(sizeof(AdvancedDriveDuty), 2);
+  ASSERT_EQ(offsetof(AdvancedDriveDuty, duty), 0);
 
   Drive s{0, 0};
-  NormalDriveDuty d{0};
+  AdvancedDriveDuty d{0};
 
   {
     constexpr uint16_t cycle = 4096;

@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/03/2023
+ * Last Modified: 03/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -487,7 +487,7 @@ static void write_gain_stm(const volatile GlobalHeader* header, const volatile B
       _stm_write += 1;
       break;
     case GAIN_DATA_MODE_PHASE_HALF:
-      // Not supported in normal mode
+      // Not supported in advanced mode
       break;
     default:
       break;

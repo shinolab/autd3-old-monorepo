@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/03/2023
+// Last Modified: 03/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -88,7 +88,7 @@ using core::GainSTM;
 using core::LinkPtr;
 
 using core::legacy_mode;
-using core::normal_mode;
-using core::normal_phase_mode;
+using core::advanced_mode;
+using core::advanced_phase_mode;
 
 }  // namespace autd3

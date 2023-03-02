@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 03/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,7 +14,9 @@
 use crate::{
     datagram::{DatagramBody, Empty, Filled, Sendable},
     gain::Gain,
-    geometry::{Geometry, LegacyTransducer, NormalPhaseTransducer, NormalTransducer, Transducer},
+    geometry::{
+        AdvancedPhaseTransducer, AdvancedTransducer, Geometry, LegacyTransducer, Transducer,
+    },
 };
 
 use anyhow::{Ok, Result};
@@ -82,7 +84,7 @@ impl<'a> GainSTM<'a, LegacyTransducer> {
     }
 }
 
-impl<'a> GainSTM<'a, NormalTransducer> {
+impl<'a> GainSTM<'a, AdvancedTransducer> {
     pub fn mode(&self) -> Mode {
         self.props.mode
     }
@@ -115,10 +117,10 @@ impl<'a> Sendable<LegacyTransducer> for GainSTM<'a, LegacyTransducer> {
     }
 }
 
-impl<'a> DatagramBody<NormalTransducer> for GainSTM<'a, NormalTransducer> {
-    type O = autd3_driver::GainSTMNormal;
+impl<'a> DatagramBody<AdvancedTransducer> for GainSTM<'a, AdvancedTransducer> {
+    type O = autd3_driver::GainSTMAdvanced;
 
-    fn operation(&mut self, geometry: &Geometry<NormalTransducer>) -> Result<Self::O> {
+    fn operation(&mut self, geometry: &Geometry<AdvancedTransducer>) -> Result<Self::O> {
         let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
         let drives = self
             .gains
@@ -129,20 +131,20 @@ impl<'a> DatagramBody<NormalTransducer> for GainSTM<'a, NormalTransducer> {
     }
 }
 
-impl<'a> Sendable<NormalTransducer> for GainSTM<'a, NormalTransducer> {
+impl<'a> Sendable<AdvancedTransducer> for GainSTM<'a, AdvancedTransducer> {
     type H = Empty;
     type B = Filled;
-    type O = <Self as DatagramBody<NormalTransducer>>::O;
+    type O = <Self as DatagramBody<AdvancedTransducer>>::O;
 
-    fn operation(&mut self, geometry: &Geometry<NormalTransducer>) -> Result<Self::O> {
-        <Self as DatagramBody<NormalTransducer>>::operation(self, geometry)
+    fn operation(&mut self, geometry: &Geometry<AdvancedTransducer>) -> Result<Self::O> {
+        <Self as DatagramBody<AdvancedTransducer>>::operation(self, geometry)
     }
 }
 
-impl<'a> DatagramBody<NormalPhaseTransducer> for GainSTM<'a, NormalPhaseTransducer> {
-    type O = autd3_driver::GainSTMNormal;
+impl<'a> DatagramBody<AdvancedPhaseTransducer> for GainSTM<'a, AdvancedPhaseTransducer> {
+    type O = autd3_driver::GainSTMAdvanced;
 
-    fn operation(&mut self, geometry: &Geometry<NormalPhaseTransducer>) -> Result<Self::O> {
+    fn operation(&mut self, geometry: &Geometry<AdvancedPhaseTransducer>) -> Result<Self::O> {
         let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
         let drives = self
             .gains
@@ -153,12 +155,12 @@ impl<'a> DatagramBody<NormalPhaseTransducer> for GainSTM<'a, NormalPhaseTransduc
     }
 }
 
-impl<'a> Sendable<NormalPhaseTransducer> for GainSTM<'a, NormalPhaseTransducer> {
+impl<'a> Sendable<AdvancedPhaseTransducer> for GainSTM<'a, AdvancedPhaseTransducer> {
     type H = Empty;
     type B = Filled;
-    type O = <Self as DatagramBody<NormalPhaseTransducer>>::O;
+    type O = <Self as DatagramBody<AdvancedPhaseTransducer>>::O;
 
-    fn operation(&mut self, geometry: &Geometry<NormalPhaseTransducer>) -> Result<Self::O> {
-        <Self as DatagramBody<NormalPhaseTransducer>>::operation(self, geometry)
+    fn operation(&mut self, geometry: &Geometry<AdvancedPhaseTransducer>) -> Result<Self::O> {
+        <Self as DatagramBody<AdvancedPhaseTransducer>>::operation(self, geometry)
     }
 }

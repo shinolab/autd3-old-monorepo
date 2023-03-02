@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/01/2023
+// Last Modified: 03/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -176,8 +176,11 @@ TEST(ControllerTest, basic_usage) {
 }
 
 TEST(ControllerTest, freq_config) {
-  auto geometry =
-      autd3::Geometry::Builder().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero())).sound_speed(340.0e3).normal_mode().build();
+  auto geometry = autd3::Geometry::Builder()
+                      .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+                      .sound_speed(340.0e3)
+                      .advanced_mode()
+                      .build();
 
   const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
 
@@ -239,14 +242,14 @@ TEST(ControllerTest, simple_legacy) {
   autd.close();
 }
 
-TEST(ControllerTest, simple_normal) {
+TEST(ControllerTest, simple_advenced) {
   auto geometry = autd3::Geometry::Builder()
                       .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
                       .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
                       .add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()))
                       .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()))
                       .sound_speed(340.0e3)
-                      .normal_mode()
+                      .advanced_mode()
                       .build();
 
   const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
@@ -287,14 +290,14 @@ TEST(ControllerTest, simple_normal) {
   autd.close();
 }
 
-TEST(ControllerTest, simple_normal_phase) {
+TEST(ControllerTest, simple_advanced_phase) {
   auto geometry = autd3::Geometry::Builder()
                       .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
                       .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
                       .add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()))
                       .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()))
                       .sound_speed(340.0e3)
-                      .normal_phase_mode()
+                      .advanced_phase_mode()
                       .build();
 
   const auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
@@ -557,18 +560,17 @@ TEST(ControllerTest, gain_stm_legacy) {
     const auto [duties, phases] = cpu.fpga().drives(0);
     for (const auto& [duty] : duties) ASSERT_EQ(duty, 0x0000);
   }
-
   autd.close();
 }
 
-TEST(ControllerTest, gain_stm_normal) {
+TEST(ControllerTest, gain_stm_advanced) {
   auto geometry = autd3::Geometry::Builder()
                       .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
                       .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
                       .add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()))
                       .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()))
                       .sound_speed(340.0e3)
-                      .normal_mode()
+                      .advanced_mode()
                       .build();
 
   auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
@@ -607,8 +609,8 @@ TEST(ControllerTest, gain_stm_normal) {
       for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
         const auto [duties, phases] = cpus->at(i).fpga().drives(k);
         for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
-          ASSERT_EQ(duties[j].duty, autd3::driver::NormalDriveDuty::to_duty(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j], cycle));
-          ASSERT_EQ(phases[j].phase, autd3::driver::NormalDrivePhase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j], cycle));
+          ASSERT_EQ(duties[j].duty, autd3::driver::AdvancedDriveDuty::to_duty(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j], cycle));
+          ASSERT_EQ(phases[j].phase, autd3::driver::AdvancedDrivePhase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j], cycle));
         }
       }
     }
@@ -648,7 +650,7 @@ TEST(ControllerTest, gain_stm_normal) {
         const auto [duties, phases] = cpus->at(i).fpga().drives(k);
         for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
           ASSERT_EQ(duties[j].duty, cycle >> 1);
-          ASSERT_EQ(phases[j].phase, autd3::driver::NormalDrivePhase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j], cycle));
+          ASSERT_EQ(phases[j].phase, autd3::driver::AdvancedDrivePhase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j], cycle));
         }
       }
     }
@@ -663,14 +665,14 @@ TEST(ControllerTest, gain_stm_normal) {
   autd.close();
 }
 
-TEST(ControllerTest, gain_stm_normal_phase) {
+TEST(ControllerTest, gain_stm_advanced_phase) {
   auto geometry = autd3::Geometry::Builder()
                       .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
                       .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
                       .add_device(autd3::AUTD3(autd3::Vector3(0, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()))
                       .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, autd3::AUTD3::DEVICE_HEIGHT, 0), autd3::Vector3::Zero()))
                       .sound_speed(340.0e3)
-                      .normal_phase_mode()
+                      .advanced_phase_mode()
                       .build();
 
   auto cpus = std::make_shared<std::vector<autd3::extra::CPU>>();
@@ -711,7 +713,7 @@ TEST(ControllerTest, gain_stm_normal_phase) {
         const auto [duties, phases] = cpus->at(i).fpga().drives(k);
         for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
           ASSERT_EQ(duties[j].duty, cycle >> 1);
-          ASSERT_EQ(phases[j].phase, autd3::driver::NormalDrivePhase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j], cycle));
+          ASSERT_EQ(phases[j].phase, autd3::driver::AdvancedDrivePhase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j], cycle));
         }
       }
     }
@@ -751,7 +753,7 @@ TEST(ControllerTest, gain_stm_normal_phase) {
         const auto [duties, phases] = cpus->at(i).fpga().drives(k);
         for (size_t j = 0; j < autd.geometry().device_map()[i]; j++) {
           ASSERT_EQ(duties[j].duty, cycle >> 1);
-          ASSERT_EQ(phases[j].phase, autd3::driver::NormalDrivePhase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j], cycle));
+          ASSERT_EQ(phases[j].phase, autd3::driver::AdvancedDrivePhase::to_phase(drives[k][i * autd3::AUTD3::NUM_TRANS_IN_UNIT + j], cycle));
         }
       }
     }
