@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/01/2023
+ * Last Modified: 02/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -57,11 +57,10 @@ impl<T: Transducer> Gain<T> for Focus {
         Ok(geometry
             .transducers()
             .map(|tr| {
-                let dist = (self.pos - tr.position()).norm();
-                let phase = tr.align_phase_at(dist, sound_speed);
+                let phase = tr.align_phase_at(self.pos, sound_speed);
                 Drive {
-                    phase: Phase::new(phase),
-                    amp: Amp::new(self.amp),
+                    phase,
+                    amp: self.amp,
                 }
             })
             .collect())
