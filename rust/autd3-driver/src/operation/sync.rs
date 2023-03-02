@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 03/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -52,12 +52,12 @@ impl Operation for SyncLegacy {
 }
 
 #[derive(Default)]
-pub struct SyncNormal {
+pub struct SyncAdvanced {
     sent: bool,
     cycles: Vec<u16>,
 }
 
-impl SyncNormal {
+impl SyncAdvanced {
     pub fn new(cycles: Vec<u16>) -> Self {
         Self {
             sent: false,
@@ -66,7 +66,7 @@ impl SyncNormal {
     }
 }
 
-impl Operation for SyncNormal {
+impl Operation for SyncAdvanced {
     fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
         if self.is_finished() {
             return Ok(());

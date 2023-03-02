@@ -211,10 +211,10 @@ func initController(p: pointer, geometry: Geometry): Controller =
 func toLegacy*(cnt: Controller) =
     AUTDSetMode(cnt.p, 0)
 
-func toNormal*(cnt: Controller) =
+func toAdvanced*(cnt: Controller) =
     AUTDSetMode(cnt.p, 1)
 
-func toNormalPhase*(cnt: Controller) =
+func toAdvancedPhase*(cnt: Controller) =
     AUTDSetMode(cnt.p, 2)
 
 func openController*(geometry: Geometry, link: Link): Controller {.raises: [AUTDException].}=

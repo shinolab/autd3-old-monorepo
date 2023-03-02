@@ -69,7 +69,7 @@ Modulator BRAMのaddressは\{MOD_ADDR_OFFSET, CPU_ADDR\[13:0\]\}の$\SI{15}{bit}
 |             | 0x1F0             | 15:8 = duty\[248\]<br>7:0 = phase\[248\] | W   |
 |             | 0x1F1             | unused                                | W   |
 
-## Normal mode
+## Advanced mode
 
 | BRAM_SELECT | BRAM_ADDR (9bit)  | DATA (16bit)        | R/W |
 |-------------|-------------------|---------------------|-----|
@@ -124,7 +124,7 @@ STM BRAMのaddressは\{STM_ADDR_OFFSET, CPU_ADDR\[13:0\]\}の$\SI{19}{bit}$
 |             | ︙                | ︙                                                    | ︙  |
 |             | 0x7FFFF           | unused                                                | W   |
 
-### Normal mode
+### Advanced mode
 
 | BRAM_SELECT | BRAM_ADDR (19bit) | DATA (16bit)                 | R/W |
 |-------------|-------------------|------------------------------|-----|

@@ -4,7 +4,7 @@
  * Created Date: 07/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/01/2023
+ * Last Modified: 03/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use autd3_driver::{Amp, Drive, Phase};
 
 use crate::{
     datagram::{DatagramBody, Empty, Filled, Sendable},
-    geometry::{Geometry, NormalPhaseTransducer},
+    geometry::{AdvancedPhaseTransducer, Geometry},
 };
 
 pub struct Amplitudes {
@@ -33,10 +33,10 @@ impl Amplitudes {
     }
 }
 
-impl DatagramBody<NormalPhaseTransducer> for Amplitudes {
-    type O = autd3_driver::GainNormalDuty;
+impl DatagramBody<AdvancedPhaseTransducer> for Amplitudes {
+    type O = autd3_driver::GainAdvancedDuty;
 
-    fn operation(&mut self, geometry: &Geometry<NormalPhaseTransducer>) -> Result<Self::O> {
+    fn operation(&mut self, geometry: &Geometry<AdvancedPhaseTransducer>) -> Result<Self::O> {
         let drives = (0..geometry.num_transducers())
             .map(|_| Drive {
                 phase: Phase::new(0.0),
@@ -48,12 +48,12 @@ impl DatagramBody<NormalPhaseTransducer> for Amplitudes {
     }
 }
 
-impl Sendable<NormalPhaseTransducer> for Amplitudes {
+impl Sendable<AdvancedPhaseTransducer> for Amplitudes {
     type H = Empty;
     type B = Filled;
-    type O = <Self as DatagramBody<NormalPhaseTransducer>>::O;
+    type O = <Self as DatagramBody<AdvancedPhaseTransducer>>::O;
 
-    fn operation(&mut self, geometry: &Geometry<NormalPhaseTransducer>) -> Result<Self::O> {
-        <Self as DatagramBody<NormalPhaseTransducer>>::operation(self, geometry)
+    fn operation(&mut self, geometry: &Geometry<AdvancedPhaseTransducer>) -> Result<Self::O> {
+        <Self as DatagramBody<AdvancedPhaseTransducer>>::operation(self, geometry)
     }
 }

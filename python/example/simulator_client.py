@@ -4,7 +4,7 @@ Project: example
 Created Date: 10/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 02/02/2023
+Last Modified: 03/03/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     autd = Controller.open(geometry, link)
 
-    autd.to_normal()
+    autd.to_advanced()
     for tr in autd.geometry:
         tr.frequency = 70e3
 

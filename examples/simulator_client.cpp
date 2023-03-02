@@ -3,7 +3,7 @@
 // Created Date: 07/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/01/2023
+// Last Modified: 03/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ int main() try {
                       .sound_speed(340.0e3)  // mm/s
                       .build();
 
-  // autd << autd3::normal_mode;
+  // autd << autd3::advanced_mode;
   // std::for_each(autd.geometry().begin(), autd.geometry().end(), [](auto& tr) { tr.set_frequency(70e3); });
 
   auto link = autd3::link::Simulator().build();

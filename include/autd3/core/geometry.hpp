@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/03/2023
+// Last Modified: 03/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -78,13 +78,13 @@ struct Geometry {
       return *this;
     }
 
-    Builder& normal_mode() {
-      _mode = Mode::Normal;
+    Builder& advanced_mode() {
+      _mode = Mode::Advanced;
       return *this;
     }
 
-    Builder& normal_phase_mode() {
-      _mode = Mode::NormalPhase;
+    Builder& advanced_phase_mode() {
+      _mode = Mode::AdvancedPhase;
       return *this;
     }
 

@@ -2,12 +2,12 @@
 
 バージョン2.0から, すべての振動子の周波数を個別に指定できる機能が追加された.
 
-従来の$\SI{40}{kHz}$固定のモードをLegacyモードと呼び, 周波数を可変にできるモードをNormalモードと呼ぶ.
+従来の$\SI{40}{kHz}$固定のモードをLegacyモードと呼び, 周波数を可変にできるモードをAdvancedモードと呼ぶ.
 
-デフォルトはLegacyモードになっており, Normalモードを使用する場合は, 以下のようにする.
+デフォルトはLegacyモードになっており, Advancedモードを使用する場合は, 以下のようにする.
 
 ```cpp
-  autd << autd3::normal_mode;
+  autd << autd3::advanced_mode;
 ```
 
 振動子の周波数は`Geometry`→`Transducer`とアクセスし, `Transducer`の`set_frequency`, または, `set_cycle`関数で指定する.
@@ -27,13 +27,13 @@
 
 > NOTE: Legacyモードで周波数を変更した場合の挙動は保証しない.
 
-## NormalPhaseモード
+## AdvancedPhaseモード
 
-Normalモードは振幅/位相データをそれぞれ1フレームで送信する必要があるため, 若干通信のレイテンシが大きい.
-実際には振幅データは頻繁に更新されることはないと思われるため, 位相データのみを送信する`NormalPhase`モードも用意されている.
+Advancedモードは振幅/位相データをそれぞれ1フレームで送信する必要があるため, 若干通信のレイテンシが大きい.
+実際には振幅データは頻繁に更新されることはないと思われるため, 位相データのみを送信する`AdvancedPhase`モードも用意されている.
 
 ```cpp
-  autd << autd3::normal_phase_mode;
+  autd << autd3::advanced_phase_mode;
 ```
 
 このモードの場合, 振幅は予め`Amplitudes`クラスを送信することで制御する.
