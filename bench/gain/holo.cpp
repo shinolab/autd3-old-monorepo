@@ -3,7 +3,7 @@
 // Created Date: 12/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/01/2023
+// Last Modified: 02/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -69,7 +69,7 @@ static void bm_gain_holo_sdp(benchmark::State& state) {
   }
 }
 
-static void bm_gain_holo_evd(benchmark::State& state) {
+static void bm_gain_holo_evp(benchmark::State& state) {
   const auto geometry = setup_geometry(state.range(0), state.range(1));
 
   const autd3::Vector3 center = geometry.center() + autd3::Vector3(0, 0, 300);
@@ -77,7 +77,7 @@ static void bm_gain_holo_evd(benchmark::State& state) {
   const auto foci = gen_foci(center, FOCI_SIZE, 100, 100, 100);
 
   const auto backend = autd3::gain::holo::EigenBackend::create();
-  autd3::gain::holo::EVD g(backend);
+  autd3::gain::holo::EVP g(backend);
 
   for (auto& focus : foci) g.add_focus(focus, 1);
 
@@ -172,7 +172,7 @@ static void bm_gain_holo_greedy(benchmark::State& state) {
 }
 
 BENCHMARK(bm_gain_holo_sdp)->Args({1, 1})->Args({2, 2})->Args({3, 3})->Args({4, 4});
-BENCHMARK(bm_gain_holo_evd)->Args({1, 1})->Args({2, 2})->Args({3, 3})->Args({4, 4});
+BENCHMARK(bm_gain_holo_evp)->Args({1, 1})->Args({2, 2})->Args({3, 3})->Args({4, 4});
 BENCHMARK(bm_gain_holo_lss)->Args({1, 1})->Args({2, 2})->Args({3, 3})->Args({4, 4});
 BENCHMARK(bm_gain_holo_gs)->Args({1, 1})->Args({2, 2})->Args({3, 3})->Args({4, 4});
 BENCHMARK(bm_gain_holo_gspat)->Args({1, 1})->Args({2, 2})->Args({3, 3})->Args({4, 4});

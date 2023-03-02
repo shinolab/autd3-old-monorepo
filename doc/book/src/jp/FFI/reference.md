@@ -1234,15 +1234,15 @@ SDP holo gainを作成する.
 | repeat                 | uint64_t | in     | parameter                      |
 | return                 | void     | -      | -                              |
 
-## AUTDGainHoloEVD (autd3capi-gain-holo)
+## AUTDGainHoloEVP (autd3capi-gain-holo)
 
-EVD holo gainを作成する.
+EVP holo gainを作成する.
 
 作成したGainは最後に`AUTDDeleteGain`で削除する必要がある.
 
 | Argument name / return | type   | in/out | description                    |
 | ---------------------- | ------ | ------ | ------------------------------ |
-| gain                   | void** | out    | pointer to pointer to EVD gain |
+| gain                   | void** | out    | pointer to pointer to EVP gain |
 | backend                | void*  | in     | pointer to backend             |
 | gamma                  | double | in     | parameter                      |
 | return                 | void   | -      | -                              |

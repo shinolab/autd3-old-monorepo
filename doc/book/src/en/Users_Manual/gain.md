@@ -62,7 +62,7 @@ Holo is a `Gain` for generating multiple foci.
 Several algorithms for generating multiple foci have been proposed, and the following algorithms are implemented in SDK.
 
 * `SDP` - Semi-definite programming, based on Inoue et al.[^inoue2015]
-* `EVD` - Eigen value decomposition, based on Long et al.[^long2014]
+* `EVP` - Eigen value decomposition, based on Long et al.[^long2014]
 * `LSS` - Linear Synthesis Scheme of single-focus solutions
 * `GS` - Gershberg-Saxon, based on Marzo et al.[^marzo2019]
 * `GSPAT` - Gershberg-Saxon for Phased Arrays of Transducers, based on Plasencia et al.[^plasencia2020]

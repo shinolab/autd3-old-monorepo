@@ -4,7 +4,7 @@
  * Created Date: 25/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/10/2022
+ * Last Modified: 02/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,7 +22,7 @@ namespace AUTD3_GUI_Controller.Models.Gain;
 public enum OptMethod
 {
     SDP,
-    EVD,
+    EVP,
     Naive,
     GS,
     GSPAT,
@@ -78,7 +78,7 @@ public partial class HoloModel : IGain
     [ObservableProperty] private int _APOKMax = 200;
     [ObservableProperty] private int _APOLineSearchMax = 100;
 
-    [ObservableProperty] private double _EVDGamma = 1.0;
+    [ObservableProperty] private double _EVPGamma = 1.0;
     [ObservableProperty] private uint _GSRepeat = 100;
     [ObservableProperty] private uint _GSPATRepeat = 100;
     [ObservableProperty] private int _GreedyPhaseDiv = 16;
@@ -98,7 +98,7 @@ public partial class HoloModel : IGain
         Holo gain = _opt switch
         {
             OptMethod.SDP => new SDP(SDPAlpha, SDPLambda, SDPRepeat),
-            OptMethod.EVD => new EVD(EVDGamma),
+            OptMethod.EVP => new EVP(EVPGamma),
             OptMethod.Naive => new Naive(),
             OptMethod.GS => new GS(GSRepeat),
             OptMethod.GSPAT => new GSPAT(GSPATRepeat),

@@ -4,7 +4,7 @@
  * Created Date: 23/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/12/2022
+ * Last Modified: 02/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -141,11 +141,11 @@ namespace AUTD3Sharp
                     NativeMethods.GainHolo.AUTDGainHoloSDP(out handle, Backend.Ptr, alpha, lambda, repeat);
                 }
             }
-            public sealed class EVD : Holo
+            public sealed class EVP : Holo
             {
-                public EVD(autd3_float_t gamma = (autd3_float_t)1.0)
+                public EVP(autd3_float_t gamma = (autd3_float_t)1.0)
                 {
-                    NativeMethods.GainHolo.AUTDGainHoloEVD(out handle, Backend.Ptr, gamma);
+                    NativeMethods.GainHolo.AUTDGainHoloEVP(out handle, Backend.Ptr, gamma);
                 }
             }
 

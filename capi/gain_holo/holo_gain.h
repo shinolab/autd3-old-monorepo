@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/12/2022
+// Last Modified: 02/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ extern "C" {
 EXPORT_AUTD void AUTDEigenBackend(OUT void** out);
 EXPORT_AUTD void AUTDDeleteBackend(IN const void* backend);
 EXPORT_AUTD void AUTDGainHoloSDP(OUT void** gain, IN const void* backend, IN autd3_float_t alpha, IN autd3_float_t lambda, IN uint64_t repeat);
-EXPORT_AUTD void AUTDGainHoloEVD(OUT void** gain, IN const void* backend, IN autd3_float_t gamma);
+EXPORT_AUTD void AUTDGainHoloEVP(OUT void** gain, IN const void* backend, IN autd3_float_t gamma);
 EXPORT_AUTD void AUTDGainHoloNaive(OUT void** gain, IN const void* backend);
 EXPORT_AUTD void AUTDGainHoloGS(OUT void** gain, IN const void* backend, IN uint64_t repeat);
 EXPORT_AUTD void AUTDGainHoloGSPAT(OUT void** gain, IN const void* backend, IN uint64_t repeat);

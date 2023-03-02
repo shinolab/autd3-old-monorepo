@@ -1169,15 +1169,15 @@ The gain created must be deleted at the end by `AUTDDeleteGain`.
 | repeat                 | uint64_t | in     | parameter                      |
 | return                 | void     | -      | -                              |
 
-## AUTDGainHoloEVD (autd3capi-gain-holo)
+## AUTDGainHoloEVP (autd3capi-gain-holo)
 
-Create EVD holo gain.
+Create EVP holo gain.
 
 The gain created must be deleted at the end by `AUTDDeleteGain`.
 
 | Argument name / return | type   | in/out | description                    |
 | ---------------------- | ------ | ------ | ------------------------------ |
-| gain                   | void** | out    | pointer to pointer to EVD gain |
+| gain                   | void** | out    | pointer to pointer to EVP gain |
 | backend                | void*  | in     | pointer to backend             |
 | gamma                  | double | in     | parameter                      |
 | return                 | void   | -      | -                              |
