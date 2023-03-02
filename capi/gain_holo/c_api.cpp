@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 02/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,9 +36,9 @@ void AUTDGainHoloSDP(void** gain, const void* backend, const autd3_float_t alpha
   *gain = g;
 }
 
-void AUTDGainHoloEVD(void** gain, const void* backend, const autd3_float_t gamma) {
+void AUTDGainHoloEVP(void** gain, const void* backend, const autd3_float_t gamma) {
   const auto b = static_cast<const BackendWrapper*>(backend);
-  auto* g = new autd3::gain::holo::EVD(b->ptr);
+  auto* g = new autd3::gain::holo::EVP(b->ptr);
   g->gamma = gamma;
   *gain = g;
 }

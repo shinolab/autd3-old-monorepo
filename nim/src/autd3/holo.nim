@@ -60,10 +60,10 @@ func initSDP*(backend: Backend, alpha: float64 = 1e-3, lambda: float64 = 0.9,
         repeat: uint64 = 100): SDP =
     AUTDGainHoloSDP(result.p.addr, backend.p, alpha, lambda, repeat)
 
-type EVD* = object of Holo
+type EVP* = object of Holo
 
-func initEVD*(backend: Backend, gamma: float64 = 1.0): EVD =
-    AUTDGainHoloEVD(result.p.addr, backend.p, gamma)
+func initEVP*(backend: Backend, gamma: float64 = 1.0): EVP =
+    AUTDGainHoloEVP(result.p.addr, backend.p, gamma)
 
 type Naive* = object of Holo
 

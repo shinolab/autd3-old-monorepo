@@ -17,8 +17,8 @@ proc AUTDDeleteBackend*(backend: pointer) {.cdecl, importc: "AUTDDeleteBackend",
 proc AUTDGainHoloSDP*(gain: ptr pointer; backend: pointer; alpha: float64;
                      lambda: float64; repeat: uint64) {.cdecl,
     importc: "AUTDGainHoloSDP", dynlib: dll.}
-proc AUTDGainHoloEVD*(gain: ptr pointer; backend: pointer; gamma: float64) {.cdecl,
-    importc: "AUTDGainHoloEVD", dynlib: dll.}
+proc AUTDGainHoloEVP*(gain: ptr pointer; backend: pointer; gamma: float64) {.cdecl,
+    importc: "AUTDGainHoloEVP", dynlib: dll.}
 proc AUTDGainHoloNaive*(gain: ptr pointer; backend: pointer) {.cdecl,
     importc: "AUTDGainHoloNaive", dynlib: dll.}
 proc AUTDGainHoloGS*(gain: ptr pointer; backend: pointer; repeat: uint64) {.cdecl,

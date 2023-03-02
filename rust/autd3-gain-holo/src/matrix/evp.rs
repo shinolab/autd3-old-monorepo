@@ -1,10 +1,10 @@
 /*
- * File: evd.rs
+ * File: evp.rs
  * Project: matrix
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/01/2023
+ * Last Modified: 02/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -26,7 +26,7 @@ use std::{f64::consts::PI, marker::PhantomData};
 /// Reference
 /// * Long, Benjamin, et al. "Rendering volumetric haptic shapes in mid-air using ultrasound." ACM Transactions on Graphics (TOG) 33.6 (2014): 1-10.
 #[derive(Gain)]
-pub struct EVD<B: Backend, C: Constraint> {
+pub struct EVP<B: Backend, C: Constraint> {
     foci: Vec<Vector3>,
     amps: Vec<f64>,
     gamma: f64,
@@ -34,7 +34,7 @@ pub struct EVD<B: Backend, C: Constraint> {
     constraint: C,
 }
 
-impl<B: Backend, C: Constraint> EVD<B, C> {
+impl<B: Backend, C: Constraint> EVP<B, C> {
     pub fn new(foci: Vec<Vector3>, amps: Vec<f64>, constraint: C) -> Self {
         Self::with_params(foci, amps, constraint, 1.0)
     }
@@ -51,7 +51,7 @@ impl<B: Backend, C: Constraint> EVD<B, C> {
     }
 }
 
-impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for EVD<B, C> {
+impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for EVP<B, C> {
     fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>> {
         let m = self.foci.len();
         let n = geometry.num_transducers();
