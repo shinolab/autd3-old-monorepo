@@ -126,8 +126,10 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for EVP<B, C> {
         Ok(geometry
             .transducers()
             .map(|tr| {
-                let phase = gtf[tr.id()].argument() + PI;
-                let amp = self.constraint.convert(gtf[tr.id()].abs(), max_coefficient);
+                let phase = gtf[tr.idx()].argument() + PI;
+                let amp = self
+                    .constraint
+                    .convert(gtf[tr.idx()].abs(), max_coefficient);
                 Drive {
                     amp: Amp::new(amp),
                     phase: Phase::new(phase),

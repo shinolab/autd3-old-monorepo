@@ -4,7 +4,7 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/01/2023
+ * Last Modified: 02/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -47,7 +47,7 @@ impl<T: Transducer> Gain<T> for TransducerTest {
         Ok(geometry
             .transducers()
             .map(|tr| {
-                if let Some(&(phase, amp)) = self.test_drive.get(&tr.id()) {
+                if let Some(&(phase, amp)) = self.test_drive.get(&tr.idx()) {
                     Drive {
                         phase: Phase::new(phase),
                         amp: Amp::new(amp),

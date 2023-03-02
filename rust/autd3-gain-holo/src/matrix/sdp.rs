@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/01/2023
+ * Last Modified: 02/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -174,8 +174,8 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for SDP<B, C> {
         Ok(geometry
             .transducers()
             .map(|tr| {
-                let phase = q[tr.id()].argument() + PI;
-                let amp = self.constraint.convert(q[tr.id()].abs(), max_coefficient);
+                let phase = q[tr.idx()].argument() + PI;
+                let amp = self.constraint.convert(q[tr.idx()].abs(), max_coefficient);
                 Drive {
                     amp: Amp::new(amp),
                     phase: Phase::new(phase),
