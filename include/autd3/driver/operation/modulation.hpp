@@ -20,9 +20,9 @@
 namespace autd3::driver {
 
 struct Modulation final : Operation {
-  Modulation(std::vector<Amp> data, const uint32_t freq_div) : _mod_data(std::move(data)), _freq_div(freq_div) {}
+  Modulation(std::vector<autd3_float_t> data, const uint32_t freq_div) : _mod_data(std::move(data)), _freq_div(freq_div) {}
 
-  static uint8_t to_duty(const Amp amp) { return static_cast<uint8_t>(std::round(std::asin(amp.value()) / pi * 510)); }
+  static uint8_t to_duty(const autd3_float_t amp) { return static_cast<uint8_t>(std::round(std::asin(std::clamp<autd3_float_t>(amp, 0, 1)) / pi * 510)); }
 
   void init() override { _sent = 0; }
 
@@ -60,7 +60,7 @@ struct Modulation final : Operation {
 
  private:
   size_t _sent{0};
-  std::vector<Amp> _mod_data{};
+  std::vector<autd3_float_t> _mod_data{};
   uint32_t _freq_div{40960};
 };
 

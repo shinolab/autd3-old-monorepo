@@ -3,7 +3,7 @@
 // Created Date: 08/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/02/2023
+// Last Modified: 02/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -82,24 +82,24 @@ class LPF final : public core::Modulation {
   T& modulation() noexcept { return _modulation; }
 #endif
 
-  std::vector<driver::Amp> calc() override {
+  std::vector<driver::autd3_float_t> calc() override {
     const auto original_buffer = modulation().calc();
 
-    std::vector<driver::Amp> resampled;
+    std::vector<driver::autd3_float_t> resampled;
     resampled.reserve(original_buffer.size() * modulation().sampling_frequency_division() / 4096);
     for (const auto d : original_buffer)
       std::generate_n(std::back_inserter(resampled), modulation().sampling_frequency_division() / 4096, [d] { return d; });
 
-    std::vector<driver::Amp> mf;
+    std::vector<driver::autd3_float_t> mf;
     if (resampled.size() % 2 == 0) {
       mf.reserve(resampled.size() / 2);
-      for (size_t i = 0; i < resampled.size(); i += 2) mf.emplace_back((resampled[i].value() + resampled[i + 1].value()) / 2);
+      for (size_t i = 0; i < resampled.size(); i += 2) mf.emplace_back((resampled[i] + resampled[i + 1]) / 2);
     } else {
       mf.reserve(resampled.size());
       size_t i;
-      for (i = 0; i < resampled.size() - 1; i += 2) mf.emplace_back((resampled[i].value() + resampled[i + 1].value()) / 2);
-      mf.emplace_back((resampled[i].value() + resampled[0].value()) / 2);
-      for (i = 1; i < resampled.size(); i += 2) mf.emplace_back((resampled[i].value() + resampled[i + 1].value()) / 2);
+      for (i = 0; i < resampled.size() - 1; i += 2) mf.emplace_back((resampled[i] + resampled[i + 1]) / 2);
+      mf.emplace_back((resampled[i] + resampled[0]) / 2);
+      for (i = 1; i < resampled.size(); i += 2) mf.emplace_back((resampled[i] + resampled[i + 1]) / 2);
     }
 
     return generate_iota(0, mf.size(), [this, &mf](const size_t i) {
