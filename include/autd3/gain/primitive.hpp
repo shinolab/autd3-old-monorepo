@@ -12,6 +12,7 @@
 #pragma once
 
 #include <algorithm>
+#include <initializer_list>
 #include <memory>
 #include <unordered_map>
 #include <utility>
@@ -149,21 +150,40 @@ class Grouped final : public core::Gain {
  public:
   /**
    * \brief Decide which device outputs which Gain
-   * \param device_id device id
+   * \param device_idx device index
    * \param gain gain
    */
   template <class G>
-  void add(const size_t device_id, G&& gain) {
+  void add(const size_t device_idx, G&& gain) {
     static_assert(std::is_base_of_v<core::Gain, std::remove_reference_t<G>>, "This is not Gain");
-    _gains.insert_or_assign(device_id, std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain)));
+    _gains.insert_or_assign(device_idx, std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain)));
   }
 
   /**
    * \brief Decide which device outputs which Gain
-   * \param device_id device id
+   * \param idx_list device index list
    * \param gain gain
    */
-  void add(const size_t device_id, std::shared_ptr<core::Gain> b) { _gains.insert_or_assign(device_id, std::move(b)); }
+  template <class G>
+  void add(const std::initializer_list<size_t> idx_list, G&& gain) {
+    for (const auto idx : idx_list) add<G>(idx, gain);
+  }
+
+  /**
+   * \brief Decide which device outputs which Gain
+   * \param device_idx device index
+   * \param gain gain
+   */
+  void add(const size_t device_idx, std::shared_ptr<core::Gain> b) { _gains.insert_or_assign(device_idx, std::move(b)); }
+
+  /**
+   * \brief Decide which device outputs which Gain
+   * \param idx_list device index list
+   * \param gain gain
+   */
+  void add(const std::initializer_list<size_t> idx_list, std::shared_ptr<core::Gain> b) {
+    for (const auto idx : idx_list) add(idx, b);
+  }
 
   std::vector<driver::Drive> calc(const core::Geometry& geometry) override {
     std::vector<driver::Drive> drives(geometry.num_transducers(), driver::Drive{0, 0});
