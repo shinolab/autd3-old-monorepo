@@ -28,9 +28,7 @@ class Null final : public core::Gain {
  public:
   Null() noexcept {}
 
-  std::vector<driver::Drive> calc(const core::Geometry& geometry) override {
-    return {geometry.num_transducers(), driver::Drive{driver::Phase(0), driver::Amp(0)}};
-  }
+  std::vector<driver::Drive> calc(const core::Geometry& geometry) override { return {geometry.num_transducers(), driver::Drive{0, 0}}; }
 
   ~Null() override = default;
   Null(const Null& v) noexcept = default;
@@ -168,7 +166,7 @@ class Grouped final : public core::Gain {
   void add(const size_t device_id, std::shared_ptr<core::Gain> b) { _gains.insert_or_assign(device_id, std::move(b)); }
 
   std::vector<driver::Drive> calc(const core::Geometry& geometry) override {
-    std::vector<driver::Drive> drives(geometry.num_transducers(), driver::Drive{driver::Phase(0), driver::Amp(0)});
+    std::vector<driver::Drive> drives(geometry.num_transducers(), driver::Drive{0, 0});
     std::for_each(_gains.begin(), _gains.end(), [&drives, geometry](const auto& g) {
       const auto& [device_id, gain] = g;
       const auto d = gain->calc(geometry);
@@ -197,7 +195,7 @@ class TransducerTest final : public core::Gain {
   TransducerTest() noexcept : _map(){};
 
   std::vector<driver::Drive> calc(const core::Geometry& geometry) override {
-    std::vector<driver::Drive> drives(geometry.num_transducers(), driver::Drive{driver::Phase(0), driver::Amp(0)});
+    std::vector<driver::Drive> drives(geometry.num_transducers(), driver::Drive{0, 0});
     std::for_each(_map.begin(), _map.end(), [&drives](const auto& v) {
       const auto& [id, value] = v;
       drives[id].amp = value.first;
@@ -212,7 +210,7 @@ class TransducerTest final : public core::Gain {
    * @param[in] phase phase in radian
    */
   void set(const size_t tr_idx, const driver::autd3_float_t amp, const driver::autd3_float_t phase) {
-    _map.insert_or_assign(tr_idx, std::make_pair(driver::Amp{amp}, driver::Phase{phase}));
+    _map.insert_or_assign(tr_idx, std::make_pair(amp, phase));
   }
 
   ~TransducerTest() override = default;
@@ -222,7 +220,7 @@ class TransducerTest final : public core::Gain {
   TransducerTest& operator=(TransducerTest&& obj) = default;
 
  private:
-  std::unordered_map<size_t, std::pair<driver::Amp, driver::Phase>> _map;
+  std::unordered_map<size_t, std::pair<driver::autd3_float_t, driver::autd3_float_t>> _map;
 };
 
 template <typename T>

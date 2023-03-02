@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/02/2023
+// Last Modified: 02/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -116,7 +116,7 @@ TEST(Driver_Driver, modulation) {
   autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
                                 NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
-  std::vector<autd3::driver::Amp> mod_data;
+  std::vector<autd3::driver::autd3_float_t> mod_data;
   constexpr size_t size = autd3::driver::MOD_HEADER_INITIAL_DATA_SIZE + autd3::driver::MOD_HEADER_SUBSEQUENT_DATA_SIZE + 1;
   for (size_t i = 0; i < size; i++) {
     const auto amp = static_cast<autd3::driver::autd3_float_t>(i) / static_cast<autd3::driver::autd3_float_t>(size);
@@ -197,7 +197,7 @@ TEST(Driver_Driver, normal_legacy_gain) {
   std::uniform_real_distribution<autd3::driver::autd3_float_t> dist(0, 1);
   drives.reserve(NUM_TRANS_IN_UNIT * 10);
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
-    drives.emplace_back(autd3::driver::Drive{autd3::driver::Phase(dist(engine)), autd3::driver::Amp(dist(engine))});
+    drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine)});
 
   autd3::driver::Gain<autd3::driver::Legacy> op(drives);
   op.pack(tx);
@@ -228,7 +228,7 @@ TEST(Driver_Driver, normal_gain) {
   std::uniform_real_distribution<autd3::driver::autd3_float_t> dist(0, 1);
   drives.reserve(NUM_TRANS_IN_UNIT * 10);
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
-    drives.emplace_back(autd3::driver::Drive{autd3::driver::Phase(dist(engine)), autd3::driver::Amp(dist(engine))});
+    drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine)});
   cycles.resize(NUM_TRANS_IN_UNIT * 10, 4096);
 
   autd3::driver::Gain<autd3::driver::Normal> op(drives, cycles);
@@ -265,7 +265,7 @@ TEST(Driver_Driver, normal_phase_gain) {
   std::uniform_real_distribution<autd3::driver::autd3_float_t> dist(0, 1);
   drives.reserve(NUM_TRANS_IN_UNIT * 10);
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
-    drives.emplace_back(autd3::driver::Drive{autd3::driver::Phase(dist(engine)), autd3::driver::Amp(dist(engine))});
+    drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine)});
   cycles.resize(NUM_TRANS_IN_UNIT * 10, 4096);
 
   autd3::driver::Gain<autd3::driver::NormalPhase> op(drives, cycles);
@@ -405,7 +405,7 @@ TEST(Driver_Driver, gain_stm_legacy) {
     std::vector<autd3::driver::Drive> d;
     d.reserve(NUM_TRANS_IN_UNIT * 10);
     for (size_t j = 0; j < NUM_TRANS_IN_UNIT * 10; j++)
-      d.emplace_back(autd3::driver::Drive{autd3::driver::Phase(dist(engine)), autd3::driver::Amp(dist(engine))});
+      d.emplace_back(autd3::driver::Drive{dist(engine), dist(engine)});
     drives.emplace_back(d);
   }
 
@@ -504,7 +504,7 @@ TEST(Driver_Driver, gain_stm_normal) {
       std::vector<autd3::driver::Drive> d;
       d.reserve(NUM_TRANS_IN_UNIT * 10);
       for (size_t j = 0; j < NUM_TRANS_IN_UNIT * 10; j++)
-        d.emplace_back(autd3::driver::Drive{autd3::driver::Phase(dist(engine)), autd3::driver::Amp(dist(engine))});
+        d.emplace_back(autd3::driver::Drive{dist(engine), dist(engine)});
       drives.emplace_back(d);
     }
   }
@@ -639,7 +639,7 @@ TEST(Driver_Driver, gain_stm_normal_phase) {
       std::vector<autd3::driver::Drive> d;
       d.reserve(NUM_TRANS_IN_UNIT * 10);
       for (size_t j = 0; j < NUM_TRANS_IN_UNIT * 10; j++)
-        d.emplace_back(autd3::driver::Drive{autd3::driver::Phase(dist(engine)), autd3::driver::Amp(dist(engine))});
+        d.emplace_back(autd3::driver::Drive{dist(engine), dist(engine)});
       drives.emplace_back(d);
     }
   }

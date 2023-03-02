@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/01/2023
+// Last Modified: 02/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,9 +17,9 @@
 
 class BurstModulation final : public autd3::Modulation {
  public:
-  std::vector<autd3::Amp> calc() override {
-    std::vector buffer(_buf_size, autd3::Amp(0));
-    buffer[_buf_size - 1] = autd3::Amp(1.0);
+  std::vector<autd3::autd3_float_t> calc() override {
+    std::vector<autd3::autd3_float_t> buffer(_buf_size, 0);
+    buffer[_buf_size - 1] = 1.0;
     return buffer;
   }
 
@@ -34,7 +34,7 @@ class UniformGain final : public autd3::Gain {
   UniformGain() = default;
 
   std::vector<autd3::driver::Drive> calc(const autd3::Geometry& geometry) override {
-    return autd3::Gain::transform(geometry, [this](const auto&) { return autd3::Drive{autd3::Phase(0), autd3::Amp(1)}; });
+    return autd3::Gain::transform(geometry, [this](const auto&) { return autd3::Drive{0.0, 1.0}; });
   }
 };
 
