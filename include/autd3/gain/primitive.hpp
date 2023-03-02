@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/02/2023
+// Last Modified: 02/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -53,9 +53,8 @@ class Focus final : public core::Gain {
   std::vector<driver::Drive> calc(const core::Geometry& geometry) override {
     const auto sound_speed = geometry.sound_speed;
     return core::Gain::transform(geometry, [&](const auto& transducer) {
-      const auto dist = (_point - transducer.position()).norm();
-      const auto phase = transducer.align_phase_at(dist, sound_speed);
-      return driver::Drive{driver::Phase(phase), driver::Amp(_amp)};
+      const auto phase = transducer.align_phase_at(_point, sound_speed);
+      return driver::Drive{phase, _amp};
     });
   }
 
@@ -96,8 +95,8 @@ class BesselBeam final : public core::Gain {
       const auto r = transducer.position() - this->_apex;
       const auto rr = rot * r;
       const auto d = std::sin(_theta_z) * std::sqrt(rr.x() * rr.x() + rr.y() * rr.y()) - std::cos(_theta_z) * rr.z();
-      const auto phase = transducer.align_phase_at(d, sound_speed);
-      return driver::Drive{driver::Phase(phase), driver::Amp(_amp)};
+      const auto phase = d * transducer.wavenumber(sound_speed);
+      return driver::Drive{phase, _amp};
     });
   }
 
@@ -129,8 +128,8 @@ class PlaneWave final : public core::Gain {
     const auto sound_speed = geometry.sound_speed;
     return core::Gain::transform(geometry, [&](const auto& transducer) {
       const auto dist = transducer.position().dot(_direction);
-      const auto phase = transducer.align_phase_at(dist, sound_speed);
-      return driver::Drive{driver::Phase(phase), driver::Amp(_amp)};
+      const auto phase = dist * transducer.wavenumber(sound_speed);
+      return driver::Drive{phase, _amp};
     });
   }
 

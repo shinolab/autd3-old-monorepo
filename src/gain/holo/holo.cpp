@@ -539,8 +539,7 @@ std::vector<driver::Drive> LSSGreedy::calc(const core::Geometry& geometry) {
   std::transform(_foci.begin(), _foci.end(), std::back_inserter(focus_phase_list), [&](const auto& focus) {
     VectorXc q(n);
     holo::transform(geometry.begin(), geometry.end(), q.begin(), [&](const auto& tr) {
-      const auto dist = (focus - tr.position()).norm();
-      const auto p = tr.align_phase_at(dist, sound_speed);
+      const auto p = tr.align_phase_at(focus, sound_speed);
       return complex(std::cos(p), std::sin(p));
     });
     return q;

@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 02/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -60,10 +60,6 @@ impl Transducer for LegacyTransducer {
         (rotation * dir * rotation.conjugate()).imag().normalize()
     }
 
-    fn align_phase_at(&self, dist: f64, sound_speed: f64) -> f64 {
-        dist * self.wavenumber(sound_speed)
-    }
-
     fn x_direction(&self) -> Vector3 {
         Self::get_direction(Vector3::x(), self.rotation())
     }
@@ -74,13 +70,5 @@ impl Transducer for LegacyTransducer {
 
     fn z_direction(&self) -> Vector3 {
         Self::get_direction(Vector3::z(), self.rotation())
-    }
-
-    fn wavelength(&self, sound_speed: f64) -> f64 {
-        sound_speed / self.frequency()
-    }
-
-    fn wavenumber(&self, sound_speed: f64) -> f64 {
-        2.0 * std::f64::consts::PI * self.frequency() / sound_speed
     }
 }
