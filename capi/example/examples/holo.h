@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/10/2022
+// Last Modified: 02/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,8 +27,8 @@ void* select_opt(void* backend) {
   int idx = 0;
   opts[idx].name = "SDP";
   AUTDGainHoloSDP(&opts[idx++].gain, backend, 1e-3, 0.9, 100);
-  opts[idx].name = "EVD";
-  AUTDGainHoloEVD(&opts[idx++].gain, backend, 1.0);
+  opts[idx].name = "EVP";
+  AUTDGainHoloEVP(&opts[idx++].gain, backend, 1.0);
   opts[idx].name = "GS";
   AUTDGainHoloGS(&opts[idx++].gain, backend, 100);
   opts[idx].name = "GSPAT";

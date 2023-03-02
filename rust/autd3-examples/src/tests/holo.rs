@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/01/2023
+ * Last Modified: 02/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -27,7 +27,7 @@ macro_rules! holo {
         let mut m = Sine::new(150);
 
         println!("[0]: SDP");
-        println!("[1]: EVD");
+        println!("[1]: EVP");
         println!("[2]: Naive");
         println!("[3]: GS");
         println!("[4]: GS-PAT");
@@ -46,7 +46,7 @@ macro_rules! holo {
                 $autd.send(&mut m).send(&mut g)?;
             }
             Ok(1) => {
-                let mut g = EVD::<NalgebraBackend, _>::new(foci, amps, c);
+                let mut g = EVP::<NalgebraBackend, _>::new(foci, amps, c);
                 $autd.send(&mut m).send(&mut g)?;
             }
             Ok(2) => {

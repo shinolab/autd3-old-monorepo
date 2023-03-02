@@ -17,7 +17,7 @@ typedef unsigned long uint64_t;
 void AUTDEigenBackend(void** out);
 void AUTDDeleteBackend(void* backend);
 void AUTDGainHoloSDP(void** gain, void* backend, double alpha, double lambda, uint64_t repeat);
-void AUTDGainHoloEVD(void** gain, void* backend, double gamma);
+void AUTDGainHoloEVP(void** gain, void* backend, double gamma);
 void AUTDGainHoloNaive(void** gain, void* backend);
 void AUTDGainHoloGS(void** gain, void* backend, uint64_t repeat);
 void AUTDGainHoloGSPAT(void** gain, void* backend, uint64_t repeat);

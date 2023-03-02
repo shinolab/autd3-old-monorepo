@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/01/2023
+// Last Modified: 02/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -160,7 +160,7 @@ std::vector<driver::Drive> SDP::calc(const core::Geometry& geometry) {
   });
 }
 
-std::vector<driver::Drive> EVD::calc(const core::Geometry& geometry) {
+std::vector<driver::Drive> EVP::calc(const core::Geometry& geometry) {
   _backend->init();
 
   const auto m = static_cast<Eigen::Index>(_foci.size());

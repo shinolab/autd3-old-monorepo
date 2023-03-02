@@ -54,7 +54,7 @@ AUTDは各振動子の位相/振幅を個別に制御することができ, こ�
 多焦点を生成するアルゴリズムが幾つか提案されており, SDKには以下のアルゴリズムが実装されている.
 
 * `SDP` - Semidefinite programming, 井上らの論文[^inoue2015]に基づく
-* `EVD` - Eigen value decomposition, Longらの論文[^long2014]に基づく
+* `EVP` - Eigen value decomposition, Longらの論文[^long2014]に基づく
 * `LSS` - Linear Synthesis Scheme 単一焦点解の重ね合わせ
 * `GS` - Gershberg-Saxon, Marzoらの論文[^marzo2019]に基づく
 * `GSPAT` - Gershberg-Saxon for Phased Arrays of Transducers, Plasenciaらの論文[^plasencia2020]に基づく
