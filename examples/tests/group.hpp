@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 02/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,8 +25,8 @@ inline void group_test(autd3::Controller& autd) {
   autd3::gain::BesselBeam g2(apex, autd3::Vector3::UnitZ(), 13.0 / 180.0 * autd3::pi);
 
   autd3::gain::Grouped g;
-  g.add({ 0, 1 }, g1);
-  g.add(1, g2);
+  g.add({0}, g1);
+  g.add({1}, g2);
 
   autd << silencer << m, g;
 }
