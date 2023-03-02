@@ -4,7 +4,7 @@
  * Created Date: 13/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/02/2023
+ * Last Modified: 03/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ var geometry = new GeometryBuilder()
 var link = new Simulator().Build();
 var autd = Controller.Open(geometry, link);
 
-autd.ToNormal();
+autd.ToAdvanced();
 foreach (var tr in autd.Geometry)
     tr.Frequency = 70e3;
 

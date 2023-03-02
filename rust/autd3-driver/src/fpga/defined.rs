@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/01/2023
+ * Last Modified: 03/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -79,11 +79,11 @@ impl LegacyDrive {
 
 #[derive(Clone, Copy, Debug)]
 #[repr(C)]
-pub struct NormalDrivePhase {
+pub struct AdvancedDrivePhase {
     pub phase: u16,
 }
 
-impl NormalDrivePhase {
+impl AdvancedDrivePhase {
     pub fn to_phase(d: &Drive, cycle: u16) -> u16 {
         ((d.phase.value() / (2.0 * PI) * cycle as f64).round() as i32).rem_euclid(cycle as i32) as _
     }
@@ -95,11 +95,11 @@ impl NormalDrivePhase {
 
 #[derive(Clone, Copy, Debug)]
 #[repr(C)]
-pub struct NormalDriveDuty {
+pub struct AdvancedDriveDuty {
     pub duty: u16,
 }
 
-impl NormalDriveDuty {
+impl AdvancedDriveDuty {
     pub fn to_duty(d: &Drive, cycle: u16) -> u16 {
         (cycle as f64 * d.amp.value().clamp(0., 1.).asin() / PI).round() as _
     }

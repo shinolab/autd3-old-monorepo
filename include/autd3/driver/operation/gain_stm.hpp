@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/01/2023
+// Last Modified: 03/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -141,7 +141,7 @@ struct GainSTM<Legacy> final : Operation {
 };
 
 template <>
-struct GainSTM<Normal> final : Operation {
+struct GainSTM<Advanced> final : Operation {
   explicit GainSTM(std::vector<std::vector<Drive>> drives, std::vector<uint16_t> cycles, const GainSTMProps props)
       : _drives(std::move(drives)), _cycles(std::move(cycles)), _props(props) {}
 
@@ -187,7 +187,7 @@ struct GainSTM<Normal> final : Operation {
         _sent++;
         break;
       case GainSTMMode::PhaseHalf:
-        throw std::runtime_error("PhaseHalf is not supported in normal mode");
+        throw std::runtime_error("PhaseHalf is not supported in advanced mode");
     }
   }
 
@@ -231,8 +231,9 @@ struct GainSTM<Normal> final : Operation {
         d.gain_stm_initial().stm_finish_idx = _props.finish_idx.value_or(0);
       });
     } else {
-      std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), _cycles.begin(), reinterpret_cast<NormalDrivePhase*>(tx.bodies_raw_ptr()),
-                     [](const auto& d, const auto cycle) { return NormalDrivePhase(d, cycle); });
+      std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), _cycles.begin(),
+                     reinterpret_cast<AdvancedDrivePhase*>(tx.bodies_raw_ptr()),
+                     [](const auto& d, const auto cycle) { return AdvancedDrivePhase(d, cycle); });
     }
 
     if (_sent + 1 == _drives.size() + 1) tx.header().cpu_flag.set(CPUControlFlags::STMEnd);
@@ -271,8 +272,8 @@ struct GainSTM<Normal> final : Operation {
         d.gain_stm_initial().stm_finish_idx = _props.finish_idx.value_or(0);
       });
     } else {
-      std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), _cycles.begin(), reinterpret_cast<NormalDriveDuty*>(tx.bodies_raw_ptr()),
-                     [](const auto& d, const auto cycle) { return NormalDriveDuty(d, cycle); });
+      std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), _cycles.begin(), reinterpret_cast<AdvancedDriveDuty*>(tx.bodies_raw_ptr()),
+                     [](const auto& d, const auto cycle) { return AdvancedDriveDuty(d, cycle); });
     }
 
     if (_sent + 1 == _drives.size() + 1) tx.header().cpu_flag.set(CPUControlFlags::STMEnd);
@@ -284,7 +285,7 @@ struct GainSTM<Normal> final : Operation {
 };
 
 template <>
-struct GainSTM<NormalPhase> final : Operation {
+struct GainSTM<AdvancedPhase> final : Operation {
   explicit GainSTM(std::vector<std::vector<Drive>> drives, std::vector<uint16_t> cycles, const GainSTMProps props)
       : _drives(std::move(drives)), _cycles(std::move(cycles)), _props(props) {}
 
@@ -349,8 +350,9 @@ struct GainSTM<NormalPhase> final : Operation {
         d.gain_stm_initial().stm_finish_idx = _props.finish_idx.value_or(0);
       });
     } else {
-      std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), _cycles.begin(), reinterpret_cast<NormalDrivePhase*>(tx.bodies_raw_ptr()),
-                     [](const auto& d, const auto cycle) { return NormalDrivePhase(d, cycle); });
+      std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), _cycles.begin(),
+                     reinterpret_cast<AdvancedDrivePhase*>(tx.bodies_raw_ptr()),
+                     [](const auto& d, const auto cycle) { return AdvancedDrivePhase(d, cycle); });
     }
 
     if (_sent + 1 == _drives.size() + 1) tx.header().cpu_flag.set(CPUControlFlags::STMEnd);

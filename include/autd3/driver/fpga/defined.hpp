@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/01/2023
+// Last Modified: 03/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -86,11 +86,11 @@ struct LegacyDrive {
 #pragma pack(pop)
 
 /**
- * @brief Phase stores the phase data actually sent to the device in Normal/NormalPhase mode.
+ * @brief Phase stores the phase data actually sent to the device in Advanced/AdvancedPhase mode.
  */
 #pragma pack(push)
 #pragma pack(1)
-struct NormalDrivePhase {
+struct AdvancedDrivePhase {
   uint16_t phase;
 
   static uint16_t to_phase(const Drive d, const uint16_t cycle) {
@@ -99,22 +99,22 @@ struct NormalDrivePhase {
   }
 
   void set(const Drive d, const uint16_t cycle) { phase = to_phase(d, cycle); }
-  explicit NormalDrivePhase(const Drive d, const uint16_t cycle) : phase(to_phase(d, cycle)) {}
-  explicit NormalDrivePhase(const uint16_t phase) : phase(phase) {}
-  NormalDrivePhase(const NormalDrivePhase& v) = default;
-  NormalDrivePhase& operator=(const NormalDrivePhase& obj) = default;
-  NormalDrivePhase(NormalDrivePhase&& obj) = default;
-  NormalDrivePhase& operator=(NormalDrivePhase&& obj) = default;
-  ~NormalDrivePhase() = default;
+  explicit AdvancedDrivePhase(const Drive d, const uint16_t cycle) : phase(to_phase(d, cycle)) {}
+  explicit AdvancedDrivePhase(const uint16_t phase) : phase(phase) {}
+  AdvancedDrivePhase(const AdvancedDrivePhase& v) = default;
+  AdvancedDrivePhase& operator=(const AdvancedDrivePhase& obj) = default;
+  AdvancedDrivePhase(AdvancedDrivePhase&& obj) = default;
+  AdvancedDrivePhase& operator=(AdvancedDrivePhase&& obj) = default;
+  ~AdvancedDrivePhase() = default;
 };
 #pragma pack(pop)
 
 /**
- * @brief Duty stores the duty ratio data actually sent to the device in Normal mode.
+ * @brief Duty stores the duty ratio data actually sent to the device in Advanced mode.
  */
 #pragma pack(push)
 #pragma pack(1)
-struct NormalDriveDuty {
+struct AdvancedDriveDuty {
   uint16_t duty;
 
   static uint16_t to_duty(const Drive d, const uint16_t cycle) {
@@ -122,13 +122,13 @@ struct NormalDriveDuty {
   }
 
   void set(const Drive d, const uint16_t cycle) { duty = to_duty(d, cycle); }
-  explicit NormalDriveDuty(const Drive d, const uint16_t cycle) : duty(to_duty(d, cycle)) {}
-  explicit NormalDriveDuty(const uint16_t duty) : duty(duty) {}
-  NormalDriveDuty(const NormalDriveDuty& v) = default;
-  NormalDriveDuty& operator=(const NormalDriveDuty& obj) = default;
-  NormalDriveDuty(NormalDriveDuty&& obj) = default;
-  NormalDriveDuty& operator=(NormalDriveDuty&& obj) = default;
-  ~NormalDriveDuty() = default;
+  explicit AdvancedDriveDuty(const Drive d, const uint16_t cycle) : duty(to_duty(d, cycle)) {}
+  explicit AdvancedDriveDuty(const uint16_t duty) : duty(duty) {}
+  AdvancedDriveDuty(const AdvancedDriveDuty& v) = default;
+  AdvancedDriveDuty& operator=(const AdvancedDriveDuty& obj) = default;
+  AdvancedDriveDuty(AdvancedDriveDuty&& obj) = default;
+  AdvancedDriveDuty& operator=(AdvancedDriveDuty&& obj) = default;
+  ~AdvancedDriveDuty() = default;
 };
 #pragma pack(pop)
 

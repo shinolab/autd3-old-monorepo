@@ -3,7 +3,7 @@
 // Created Date: 07/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 03/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,10 +30,10 @@ struct Synchronize final : DatagramBody {
         if (const auto cycles = geometry.cycles(); std::any_of(cycles.begin(), cycles.end(), [](const auto& cycle) { return cycle != 4096; }))
           throw std::runtime_error("Frequency cannot be changed in Legacy mode.");
         return std::make_unique<driver::Sync<driver::Legacy>>();
-      case Mode::Normal:
-        return std::make_unique<driver::Sync<driver::Normal>>(geometry.cycles());
-      case Mode::NormalPhase:
-        return std::make_unique<driver::Sync<driver::NormalPhase>>(geometry.cycles());
+      case Mode::Advanced:
+        return std::make_unique<driver::Sync<driver::Advanced>>(geometry.cycles());
+      case Mode::AdvancedPhase:
+        return std::make_unique<driver::Sync<driver::AdvancedPhase>>(geometry.cycles());
     }
     throw std::runtime_error("Unreachable!");
   }

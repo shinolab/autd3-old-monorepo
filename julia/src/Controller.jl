@@ -3,7 +3,7 @@
 # Created Date: 14/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 21/02/2023
+# Last Modified: 03/03/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -142,8 +142,8 @@ mutable struct Controller
     _ptr::Ptr{Cvoid}
     _geometry::Geometry
     to_legacy
-    to_normal
-    to_normal_phase
+    to_advanced
+    to_advanced_phase
     geometry
     close
     is_open
@@ -164,8 +164,8 @@ mutable struct Controller
         end
         cnt = new(chandle[], geometry)
         cnt.to_legacy = () -> autd3capi.autd_set_mode(cnt._ptr, 0)
-        cnt.to_normal = () -> autd3capi.autd_set_mode(cnt._ptr, 1)
-        cnt.to_normal_phase = () -> autd3capi.autd_set_mode(cnt._ptr, 2)
+        cnt.to_advanced = () -> autd3capi.autd_set_mode(cnt._ptr, 1)
+        cnt.to_advanced_phase = () -> autd3capi.autd_set_mode(cnt._ptr, 2)
         cnt.geometry = () -> cnt._geometry
         cnt.close = () -> autd3capi.autd_close(cnt._ptr)
         cnt.is_open = () -> autd3capi.autd_is_open(cnt._ptr)

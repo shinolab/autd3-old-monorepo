@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 03/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -96,10 +96,10 @@ struct GainSTM final : STM {
     switch (geometry.mode) {
       case Mode::Legacy:
         return std::make_unique<driver::GainSTM<driver::Legacy>>(std::move(drives), _props);
-      case Mode::Normal:
-        return std::make_unique<driver::GainSTM<driver::Normal>>(std::move(drives), geometry.cycles(), _props);
-      case Mode::NormalPhase:
-        return std::make_unique<driver::GainSTM<driver::NormalPhase>>(std::move(drives), geometry.cycles(), _props);
+      case Mode::Advanced:
+        return std::make_unique<driver::GainSTM<driver::Advanced>>(std::move(drives), geometry.cycles(), _props);
+      case Mode::AdvancedPhase:
+        return std::make_unique<driver::GainSTM<driver::AdvancedPhase>>(std::move(drives), geometry.cycles(), _props);
     }
     throw std::runtime_error("Unreachable!");
   }

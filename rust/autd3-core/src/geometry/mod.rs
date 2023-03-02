@@ -4,18 +4,18 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/01/2023
+ * Last Modified: 03/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
 
+mod advanced_phase_transducer;
+mod advanced_transducer;
 mod builder;
 mod device;
 mod legacy_transducer;
-mod normal_phase_transducer;
-mod normal_transducer;
 mod transducer;
 
 pub type Vector3 = nalgebra::Vector3<f64>;
@@ -27,11 +27,11 @@ pub type Matrix4 = nalgebra::Matrix4<f64>;
 
 use std::ops::{Index, IndexMut};
 
+pub use advanced_phase_transducer::*;
+pub use advanced_transducer::*;
 pub use builder::*;
 pub use device::*;
 pub use legacy_transducer::*;
-pub use normal_phase_transducer::*;
-pub use normal_transducer::*;
 pub use transducer::*;
 
 use crate::error::AUTDInternalError;

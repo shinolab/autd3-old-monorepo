@@ -1126,12 +1126,12 @@ Delete SoftwareSTM.
 
 ## AUTDSetMode (autd3capi)
 
-Set Legacy/Normal mode.
+Set Legacy/Advanced mode.
 
 | Argument name / return | type    | in/out | description                                                 |
 | ---------------------- | ------- | ------ | ----------------------------------------------------------- |
 | handle                 | void*   | in     | pointer to Controller                                       |
-| mode                   | uint8_t | in     | mode (0: Legacy mode, 1: Normal mode, 2: Normal Phase mode) |
+| mode                   | uint8_t | in     | mode (0: Legacy mode, 1: Advanced mode, 2: Advanced Phase mode) |
 | return                 | void    | -      | -                                                           |
 
 ## AUTDEigenBackend (autd3capi-gain-holo)
