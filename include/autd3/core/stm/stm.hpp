@@ -13,6 +13,8 @@
 
 #include <optional>
 
+#include "autd3/core/datagram.hpp"
+
 namespace autd3::core {
 
 /**
@@ -66,7 +68,7 @@ struct STM : DatagramBody {
   /**
    * @brief Sampling frequency division.
    */
-  uint32_t sampling_frequency_division;
+  uint32_t sampling_frequency_division{4096};
 
   std::optional<uint16_t> start_idx;
   std::optional<uint16_t> finish_idx;
