@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 07/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,14 +23,18 @@ use super::STM;
 
 pub struct FocusSTM {
     control_points: Vec<(Vector3, u8)>,
-    props: autd3_driver::FocusSTMProps,
+    pub freq_div: u32,
+    pub start_idx: Option<u16>,
+    pub finish_idx: Option<u16>,
 }
 
 impl FocusSTM {
     pub fn new() -> Self {
         Self {
             control_points: vec![],
-            props: Default::default(),
+            freq_div: 4096,
+            start_idx: None,
+            finish_idx: None,
         }
     }
 
@@ -77,8 +81,14 @@ impl<T: Transducer> DatagramBody<T> for FocusSTM {
             })
             .collect();
         let tr_num_min = geometry.device_map().iter().min().unwrap();
-        self.props.sound_speed = geometry.sound_speed;
-        Ok(Self::O::new(points, *tr_num_min, self.props))
+
+        let props = autd3_driver::FocusSTMProps {
+            freq_div: self.freq_div,
+            sound_speed: geometry.sound_speed,
+            start_idx: self.start_idx,
+            finish_idx: self.finish_idx,
+        };
+        Ok(Self::O::new(points, *tr_num_min, props))
     }
 }
 
@@ -98,27 +108,11 @@ impl STM for FocusSTM {
     }
 
     fn set_sampling_freq_div(&mut self, freq_div: u32) {
-        self.props.freq_div = freq_div;
+        self.freq_div = freq_div;
     }
 
     fn sampling_freq_div(&self) -> u32 {
-        self.props.freq_div
-    }
-
-    fn set_start_idx(&mut self, idx: Option<u16>) {
-        self.props.start_idx = idx;
-    }
-
-    fn start_idx(&self) -> Option<u16> {
-        self.props.start_idx
-    }
-
-    fn set_finish_idx(&mut self, idx: Option<u16>) {
-        self.props.finish_idx = idx;
-    }
-
-    fn finish_idx(&self) -> Option<u16> {
-        self.props.finish_idx
+        self.freq_div
     }
 }
 

@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/03/2023
+ * Last Modified: 07/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ use crate::error::AUTDInternalError;
 use super::{Transducer, UnitQuaternion, Vector3};
 
 pub struct AdvancedTransducer {
-    id: usize,
+    idx: usize,
     pos: Vector3,
     rot: UnitQuaternion,
     cycle: u16,
@@ -28,9 +28,9 @@ pub struct AdvancedTransducer {
 }
 
 impl Transducer for AdvancedTransducer {
-    fn new(id: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
+    fn new(idx: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
         Self {
-            id,
+            idx,
             pos,
             rot,
             cycle: 4096,
@@ -46,8 +46,8 @@ impl Transducer for AdvancedTransducer {
         &self.rot
     }
 
-    fn id(&self) -> usize {
-        self.id
+    fn idx(&self) -> usize {
+        self.idx
     }
 
     fn frequency(&self) -> f64 {
