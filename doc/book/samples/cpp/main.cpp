@@ -35,7 +35,7 @@ int main() try {
   autd3::SilencerConfig silencer;
 
   // focus is 150.0 mm above array center
-  const auto focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
+  const autd3::Vector3 focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   autd3::gain::Focus g(focus);
   autd3::modulation::Sine m(150);  // Amplitude Modulation of 150 Hz sine wave
 
