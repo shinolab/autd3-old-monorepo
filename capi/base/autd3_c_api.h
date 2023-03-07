@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/02/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -85,11 +85,9 @@ EXPORT_AUTD void AUTDModulationSetSamplingFrequencyDivision(IN void* mod, IN uin
 EXPORT_AUTD autd3_float_t AUTDModulationSamplingFrequency(IN const void* mod);
 EXPORT_AUTD void AUTDDeleteModulation(IN const void* mod);
 EXPORT_AUTD void AUTDFocusSTM(OUT void** out);
-EXPORT_AUTD void AUTDGainSTM(OUT void** out);
+EXPORT_AUTD void AUTDGainSTM(OUT void** out, IN uint16_t mode);
 EXPORT_AUTD void AUTDFocusSTMAdd(IN void* stm, IN autd3_float_t x, IN autd3_float_t y, IN autd3_float_t z, IN uint8_t shift);
 EXPORT_AUTD void AUTDGainSTMAdd(IN void* stm, IN void* gain);
-EXPORT_AUTD uint16_t AUTDGetGainSTMMode(IN void* stm);
-EXPORT_AUTD void AUTDSetGainSTMMode(IN void* stm, IN uint16_t mode);
 EXPORT_AUTD autd3_float_t AUTDSTMSetFrequency(IN void* stm, IN autd3_float_t freq);
 EXPORT_AUTD int32_t AUTDSTMGetStartIdx(IN const void* stm);
 EXPORT_AUTD int32_t AUTDSTMGetFinishIdx(IN const void* stm);

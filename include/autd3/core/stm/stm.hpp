@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -34,7 +34,22 @@ struct STM : DatagramBody {
    * @details STM mode has some constraints, which determine the actual frequency of the STM.
    * @return driver::autd3_float_t Actual frequency of STM
    */
-  virtual driver::autd3_float_t set_frequency(driver::autd3_float_t freq) = 0;
+  driver::autd3_float_t set_frequency(driver::autd3_float_t freq) {
+    const auto sample_freq = static_cast<driver::autd3_float_t>(size()) * freq;
+    sampling_frequency_division = static_cast<uint32_t>(std::round(static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / sample_freq));
+    return frequency();
+  }
+
+  /**
+   * @brief Set sampling frequency of the STM
+   * @param[in] sample_freq Sampling frequency of the STM
+   * @details STM mode has some constraints, which determine the actual frequency of the STM.
+   * @return driver::autd3_float_t Actual sampling frequency of STM
+   */
+  driver::autd3_float_t set_sampling_frequency(driver::autd3_float_t sample_freq) {
+    sampling_frequency_division = static_cast<uint32_t>(std::round(static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / sample_freq));
+    return sampling_frequency();
+  }
 
   /**
    * @return frequency of STM
@@ -44,21 +59,16 @@ struct STM : DatagramBody {
   /**
    * @brief Sampling frequency.
    */
-  [[nodiscard]] virtual driver::autd3_float_t sampling_frequency() const = 0;
+  [[nodiscard]] driver::autd3_float_t sampling_frequency() const {
+    return static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / static_cast<driver::autd3_float_t>(sampling_frequency_division);
+  }
 
   /**
    * @brief Sampling frequency division.
    */
-  [[nodiscard]] virtual uint32_t sampling_frequency_division() const = 0;
+  uint32_t sampling_frequency_division;
 
-  /**
-   * @brief Sampling frequency division.
-   */
-  virtual uint32_t& sampling_frequency_division() = 0;
-
-  virtual std::optional<uint16_t>& start_idx() = 0;
-  [[nodiscard]] virtual std::optional<uint16_t> start_idx() const = 0;
-  virtual std::optional<uint16_t>& finish_idx() = 0;
-  [[nodiscard]] virtual std::optional<uint16_t> finish_idx() const = 0;
+  std::optional<uint16_t> start_idx;
+  std::optional<uint16_t> finish_idx;
 };
 }  // namespace autd3::core
