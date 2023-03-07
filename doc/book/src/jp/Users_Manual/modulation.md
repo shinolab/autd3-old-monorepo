@@ -123,7 +123,7 @@ Modulationはすべての振動子に同時に作用し, 伝搬遅延を考慮�
 
 ```cpp
   autd.geometry()[0][17].mod_delay() = 1;
-  autd.send(autd3::mod_delay_config());
+  autd.send(autd3::ModDelayConfig());
 ```
 
 サンプリングされるインデックスに対する遅れであるため, どの程度遅れるかは`Modulation`のサンプリング周波数に依存する.

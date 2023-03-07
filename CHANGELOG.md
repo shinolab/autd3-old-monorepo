@@ -6,6 +6,7 @@
 - Rename Normal mode to Advanced mode
 - Rename `gain::holo::EVD` to `gain::holo::EVP`
 - Remove `<<` operators
+- Remove `ack_check_timeout` option, add `timeout` parameter to `send` function instead
 
 # 8.1.2
 

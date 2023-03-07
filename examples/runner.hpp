@@ -68,8 +68,8 @@ inline int run(autd3::Controller& autd) {
   std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));
   std::cout << "================================================================================================" << std::endl;
 
-  autd.send(autd3::clear());
-  autd.send(autd3::synchronize());
+  autd.send(autd3::Clear(), std::chrono::milliseconds(20));
+  autd.send(autd3::Synchronize(), std::chrono::milliseconds(20));
 
   while (true) {
     size_t i = 0;
@@ -90,7 +90,7 @@ inline int run(autd3::Controller& autd) {
     std::cin.ignore();
 
     std::cout << "finish." << std::endl;
-    autd.send(autd3::stop());
+    autd.send(autd3::Stop(), std::chrono::milliseconds(20));
   }
 
   autd.close();

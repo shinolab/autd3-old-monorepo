@@ -40,14 +40,14 @@ class UniformGain final : public autd3::Gain {
 
 inline void advanced_test(autd3::Controller& autd) {
   auto config = autd3::SilencerConfig::none();
-  autd.send(config);
+  autd.send(config, std::chrono::milliseconds(20));
 
   autd.geometry()[0].mod_delay() = 0;
   autd.geometry()[17].mod_delay() = 1;
-  autd.send(autd3::mod_delay_config());
+  autd.send(autd3::ModDelayConfig());
 
   UniformGain g;
   BurstModulation m;
 
-  autd.send(m, g);
+  autd.send(m, g, std::chrono::milliseconds(20));
 }

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/02/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -121,11 +121,11 @@ int run(void* autd) {
 
   void* clear = NULL;
   AUTDClear(&clear);
-  AUTDSendSpecial(autd, clear);
+  AUTDSendSpecial(autd, clear, 20ULL * 1000ULL * 1000ULL);
   AUTDDeleteSpecialData(clear);
   void* sync = NULL;
   AUTDSynchronize(&sync);
-  AUTDSendSpecial(autd, sync);
+  AUTDSendSpecial(autd, sync, 20ULL * 1000ULL * 1000ULL);
   AUTDDeleteSpecialData(sync);
 
   while (1) {
@@ -152,7 +152,7 @@ int run(void* autd) {
     printf("Finish.\n");
     void* stop = NULL;
     AUTDStop(&stop);
-    AUTDSendSpecial(autd, stop);
+    AUTDSendSpecial(autd, stop, 20ULL * 1000ULL * 1000ULL);
     AUTDDeleteSpecialData(stop);
   }
 

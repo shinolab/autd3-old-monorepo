@@ -22,7 +22,7 @@
   for (auto& tr : autd.geometry())
     tr.set_frequency(70e3); // actual frequency is 163.84MHz/2341 ~ 69987 Hz
 
-  autd.send(autd3::synchronize());
+  autd.send(autd3::Synchronize());
 ```
 
 > NOTE: Legacyモードで周波数を変更した場合の挙動は保証しない.
