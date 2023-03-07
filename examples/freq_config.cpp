@@ -29,8 +29,8 @@ int main() try {
     tr.set_frequency(70e3);  // actual frequency is 163.84MHz/2341 ~ 69987 Hz
   });
 
-  autd.send(autd3::clear());
-  autd.send(autd3::synchronize());  // You must configure the frequencies of all transducers before synchronization.
+  autd.send(autd3::Clear());
+  autd.send(autd3::Synchronize());  // You must configure the frequencies of all transducers before synchronization.
 
   autd3::SilencerConfig silencer;
   autd.send(silencer);

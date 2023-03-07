@@ -15,12 +15,11 @@
 
 inline void gain_stm(autd3::Controller& autd) {
   auto silencer = autd3::SilencerConfig::none();
-  autd.send(silencer);
+  autd.send(silencer, std::chrono::milliseconds(20));
 
   autd3::modulation::Static m;
 
   autd3::GainSTM stm;
-  // stm.mode() = autd3::GainSTMMode::PhaseFull;
 
   const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   constexpr size_t points_num = 50;
@@ -33,5 +32,5 @@ inline void gain_stm(autd3::Controller& autd) {
 
   const auto actual_freq = stm.set_frequency(1);
   std::cout << "Actual frequency is " << actual_freq << " Hz\n";
-  autd.send(m, stm);
+  autd.send(m, stm, std::chrono::milliseconds(20));
 }

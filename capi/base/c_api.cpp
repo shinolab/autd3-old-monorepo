@@ -104,44 +104,14 @@ bool AUTDIsOpen(const void* const handle) {
   return wrapper->is_open();
 }
 
-bool AUTDGetForceFan(const void* const handle) {
-  const auto* wrapper = static_cast<const Controller*>(handle);
-  return wrapper->force_fan();
-}
-
-bool AUTDGetReadsFPGAInfo(const void* const handle) {
-  const auto* wrapper = static_cast<const Controller*>(handle);
-  return wrapper->reads_fpga_info();
-}
-
-uint64_t AUTDGetAckCheckTimeout(const void* const handle) {
-  const auto* wrapper = static_cast<const Controller*>(handle);
-  return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(wrapper->get_ack_check_timeout()).count());
-}
-
-uint64_t AUTDGetSendInterval(const void* const handle) {
-  const auto* wrapper = static_cast<const Controller*>(handle);
-  return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(wrapper->get_send_interval()).count());
-}
-
 void AUTDSetForceFan(void* const handle, const bool force) {
   auto* const wrapper = static_cast<Controller*>(handle);
-  wrapper->force_fan() = force;
+  wrapper->force_fan(force);
 }
 
 void AUTDSetReadsFPGAInfo(void* const handle, const bool reads_fpga_info) {
   auto* const wrapper = static_cast<Controller*>(handle);
-  wrapper->reads_fpga_info() = reads_fpga_info;
-}
-
-void AUTDSetAckCheckTimeout(void* const handle, const uint64_t timeout) {
-  auto* const wrapper = static_cast<Controller*>(handle);
-  wrapper->set_ack_check_timeout(std::chrono::nanoseconds(timeout));
-}
-
-void AUTDSetSendInterval(void* const handle, const uint64_t interval) {
-  auto* const wrapper = static_cast<Controller*>(handle);
-  wrapper->set_send_interval(std::chrono::nanoseconds(interval));
+  wrapper->reads_fpga_info(reads_fpga_info);
 }
 
 void AUTDSetSoundSpeedFromTemp(void* const geometry, const autd3_float_t temp, const autd3_float_t k, const autd3_float_t r, const autd3_float_t m) {
@@ -456,20 +426,20 @@ void AUTDDeleteSilencer(const void* config) {
   delete config_;
 }
 
-bool AUTDSend(void* const handle, void* const header, void* const body) {
+bool AUTDSend(void* const handle, void* const header, void* const body, const uint64_t timeout_ns) {
   if (header == nullptr && body == nullptr) return false;
   auto* const wrapper = static_cast<Controller*>(handle);
   auto* const h = static_cast<autd3::core::DatagramHeader*>(header);
   auto* const b = static_cast<autd3::core::DatagramBody*>(body);
-  if (header == nullptr) AUTD3_CAPI_TRY(return wrapper->send(*b), false)
-  if (body == nullptr) AUTD3_CAPI_TRY(return wrapper->send(*h), false)
-  AUTD3_CAPI_TRY(return wrapper->send(*h, *b), false)
+  if (header == nullptr) AUTD3_CAPI_TRY(return wrapper->send(*b, std::chrono::nanoseconds(timeout_ns)), false)
+  if (body == nullptr) AUTD3_CAPI_TRY(return wrapper->send(*h, std::chrono::nanoseconds(timeout_ns)), false)
+  AUTD3_CAPI_TRY(return wrapper->send(*h, *b, std::chrono::nanoseconds(timeout_ns)), false)
 }
 
-bool AUTDSendSpecial(void* const handle, void* const special) {
+bool AUTDSendSpecial(void* const handle, void* const special, const uint64_t timeout_ns) {
   auto* const wrapper = static_cast<Controller*>(handle);
   auto* const s = static_cast<autd3::SpecialData*>(special);
-  AUTD3_CAPI_TRY(return wrapper->send(s), false)
+  AUTD3_CAPI_TRY(return wrapper->send(s, std::chrono::nanoseconds(timeout_ns)), false)
 }
 
 void AUTDCreateAmplitudes(void** out, const autd3_float_t amp) { *out = new autd3::core::Amplitudes(amp); }

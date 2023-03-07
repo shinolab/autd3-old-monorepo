@@ -76,7 +76,7 @@ The return value of `fpga_info` is `vector` for `FPGAInfo` devices.
 You can stop output with the `stop` function.
 
 ```cpp
-autd.send(autd3::stop());
+autd.send(autd3::Stop());
 ```
 
 ## clear
@@ -84,7 +84,7 @@ autd.send(autd3::stop());
 Clear flags, `Gain`/`Modulation` data, etc. in the device.
 
 ```cpp
-autd.send(autd3::clear());
+autd.send(autd3::Clear());
 ```
 
 ## Firmware information

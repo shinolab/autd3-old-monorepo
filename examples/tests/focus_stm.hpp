@@ -15,7 +15,7 @@
 
 inline void focus_stm(autd3::Controller& autd) {
   auto silencer = autd3::SilencerConfig::none();
-  autd.send(silencer);
+  autd.send(silencer, std::chrono::milliseconds(20));
 
   autd3::modulation::Static m;
 
@@ -32,5 +32,5 @@ inline void focus_stm(autd3::Controller& autd) {
   const auto actual_freq = stm.set_frequency(1);
   std::cout << "Actual frequency is " << actual_freq << " Hz\n";
 
-  autd.send(m, stm);
+  autd.send(m, stm, std::chrono::milliseconds(20));
 }

@@ -77,8 +77,8 @@ class Controller {
    */
   bool close() {
     if (!is_open()) return true;
-    auto res = send(stop());
-    res &= send(clear());
+    auto res = send(Stop(), std::chrono::milliseconds(20));
+    res &= send(Clear(), std::chrono::milliseconds(20));
     res &= _link->close();
     return res;
   }
@@ -109,7 +109,7 @@ class Controller {
 
     const auto pack_ack = [&]() -> std::vector<uint8_t> {
       std::vector<uint8_t> acks;
-      if (!_link->send_receive(_tx_buf, _rx_buf, _send_interval, std::chrono::nanoseconds(200 * 1000 * 1000))) return acks;
+      if (!_link->send_receive(_tx_buf, _rx_buf, std::chrono::nanoseconds(200 * 1000 * 1000))) return acks;
       std::transform(_rx_buf.begin(), _rx_buf.end(), std::back_inserter(acks), [](const driver::RxMessage msg) noexcept { return msg.ack; });
       return acks;
     };
@@ -142,31 +142,34 @@ class Controller {
 
   /**
    * @brief Send header data to devices
-   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
+   * @param[in] timeout Timeout per frame
+   * \return if this function returns true and timeout > 0, it guarantees that the devices have processed the data.
    */
-  template <typename H>
-  auto send(H& header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, bool> {
+  template <typename H, typename Rep, typename Period>
+  auto send(H&& header, const std::chrono::duration<Rep, Period> timeout)
+      -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, std::remove_reference_t<H>>, bool> {
     core::NullBody b;
-    return send(header, b);
+    return send(header, b, timeout);
   }
 
   /**
    * @brief Send header data to devices
-   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
   template <typename H>
-  auto send(H&& header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H>, bool> {
-    return send(header);
+  auto send(H&& header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, std::remove_reference_t<H>>> {
+    send(header, std::chrono::nanoseconds::zero());
   }
 
   /**
    * @brief Send body data to devices
-   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
+   * @param[in] timeout Timeout per frame
+   * \return if this function returns true and timeout > 0, it guarantees that the devices have processed the data.
    */
-  template <typename B>
-  auto send(B& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, bool> {
+  template <typename B, typename Rep, typename Period>
+  auto send(B&& body, const std::chrono::duration<Rep, Period> timeout)
+      -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, std::remove_reference_t<B>>, bool> {
     core::NullHeader h;
-    return send(h, body);
+    return send(h, body, timeout);
   }
 
   /**
@@ -174,33 +177,39 @@ class Controller {
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
   template <typename B>
-  auto send(B&& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, B>, bool> {
-    return send(body);
+  auto send(B&& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, std::remove_reference_t<B>>> {
+    send(body, std::chrono::nanoseconds::zero());
   }
 
   /**
    * @brief Send header and body data to devices
-   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
+   * @param[in] timeout Timeout per frame
+   * \return if this function returns true and timeout > 0, it guarantees that the devices have processed the data.
+   */
+  template <typename H, typename B, typename Rep, typename Period>
+  auto send(H&& header, B&& body, const std::chrono::duration<Rep, Period> timeout)
+      -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, std::remove_reference_t<H>> &&
+                              std::is_base_of_v<core::DatagramBody, std::remove_reference_t<B>>,
+                          bool> {
+    return send(&header, &body, timeout);
+  }
+
+  /**
+   * @brief Send header and body data to devices
    */
   template <typename H, typename B>
-  auto send(H&& header, B&& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>, bool> {
-    return send(header, body);
+  auto send(H&& header, B&& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, std::remove_reference_t<H>> &&
+                                                      std::is_base_of_v<core::DatagramBody, std::remove_reference_t<B>>> {
+    send(&header, &body, std::chrono::nanoseconds::zero());
   }
 
   /**
    * @brief Send header and body data to devices
+   * @param[in] timeout Timeout per frame
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
-  template <typename H, typename B>
-  auto send(H& header, B& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>, bool> {
-    return send(&header, &body, _ack_check_timeout);
-  }
-
-  /**
-   * @brief Send header and body data to devices
-   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
-   */
-  bool send(core::DatagramHeader* header, core::DatagramBody* body, const std::chrono::high_resolution_clock::duration timeout) {
+  template <typename Rep, typename Period>
+  bool send(core::DatagramHeader* header, core::DatagramBody* body, const std::chrono::duration<Rep, Period> timeout) {
     const auto op_header = header->operation();
     const auto op_body = body->operation(geometry());
 
@@ -210,7 +219,8 @@ class Controller {
     _force_fan.pack(_tx_buf);
     _reads_fpga_info.pack(_tx_buf);
 
-    const auto no_wait = timeout == std::chrono::high_resolution_clock::duration::zero();
+    const auto timeout_ = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(timeout);
+    const auto no_wait = timeout_ == std::chrono::high_resolution_clock::duration::zero();
     while (true) {
       const auto msg_id = get_id();
       _tx_buf.header().msg_id = msg_id;
@@ -218,25 +228,37 @@ class Controller {
       op_header->pack(_tx_buf);
       op_body->pack(_tx_buf);
 
-      if (!_link->send_receive(_tx_buf, _rx_buf, _send_interval, timeout)) return false;
+      if (!_link->send_receive(_tx_buf, _rx_buf, timeout_)) return false;
 
       if (op_header->is_finished() && op_body->is_finished()) break;
-      if (no_wait) std::this_thread::sleep_for(_send_interval);
+      if (no_wait) std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     return true;
   }
 
   /**
    * @brief Send special data to devices
-   * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
+   * @param[in] timeout Timeout per frame
+   * \return if this function returns true timeout > 0, it guarantees that the devices have processed the data.
    */
-  template <typename S>
-  auto send(S s) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, bool> {
-    const auto timeout = s.ack_check_timeout_override() ? s.ack_check_timeout() : _ack_check_timeout;
+  template <typename S, typename Rep, typename Period>
+  auto send(S&& s, const std::chrono::duration<Rep, Period> timeout)
+      -> std::enable_if_t<std::is_base_of_v<SpecialData, std::remove_reference_t<S>>, bool> {
     auto h = s.header();
     auto b = s.body();
-    const auto res = send(h.get(), b.get(), timeout);
+    const auto timeout_ = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout);
+    const auto res = send(h.get(), b.get(), (std::max)(s.ack_check_timeout(), timeout_));
     return res;
+  }
+
+  /**
+   * @brief Send special data to devices
+   */
+  template <typename S>
+  auto send(S&& s) -> std::enable_if_t<std::is_base_of_v<SpecialData, std::remove_reference_t<S>>> {
+    auto h = s.header();
+    auto b = s.body();
+    send(h.get(), b.get(), s.ack_check_timeout());
   }
 
 #ifdef AUTD3_CAPI
@@ -244,59 +266,22 @@ class Controller {
    * @brief Send special data to devices
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
-  bool send(SpecialData* s) {
-    const auto timeout = s->ack_check_timeout_override() ? s->ack_check_timeout() : _ack_check_timeout;
+  bool send(SpecialData* s, const std::chrono::nanoseconds timeout) {
     const auto h = s->header();
     const auto b = s->body();
-    return send(h.get(), b.get(), timeout);
+    return send(h.get(), b.get(), (std::max)(s->ack_check_timeout(), timeout));
   }
 #endif
 
   /**
    * @brief If true, the fan will be forced to start.
    */
-  bool& force_fan() noexcept { return _force_fan.value; }
-
-  /**
-   * @brief If true, the fan will be forced to start.
-   */
-  [[nodiscard]] bool force_fan() const noexcept { return _force_fan.value; }
+  void force_fan(const bool value) noexcept { _force_fan.value = value; }
 
   /**
    * @brief If true, the devices return FPGA info in all frames. The FPGA info can be read by fpga_info().
    */
-  bool& reads_fpga_info() noexcept { return _reads_fpga_info.value; }
-
-  /**
-   * @brief If true, the devices return FPGA info in all frames. The FPGA info can be read by fpga_info().
-   */
-  [[nodiscard]] bool reads_fpga_info() const noexcept { return _reads_fpga_info.value; }
-
-  /**
-   * @brief Transmission interval between frames when sending multiple data.
-   */
-  template <typename Rep, typename Period>
-  void set_send_interval(std::chrono::duration<Rep, Period> interval) {
-    _send_interval = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(interval);
-  }
-
-  /**
-   * @brief Transmission interval between frames when sending multiple data.
-   */
-  [[nodiscard]] std::chrono::high_resolution_clock::duration get_send_interval() const noexcept { return _send_interval; }
-
-  /**
-   * @brief If > 0, this controller check ack from devices.
-   */
-  template <typename Rep, typename Period>
-  void set_ack_check_timeout(std::chrono::duration<Rep, Period> timeout) {
-    _ack_check_timeout = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(timeout);
-  }
-
-  /**
-   * @brief If > 0, this controller check ack from devices.
-   */
-  [[nodiscard]] std::chrono::high_resolution_clock::duration get_ack_check_timeout() const noexcept { return _ack_check_timeout; }
+  void reads_fpga_info(const bool value) noexcept { _reads_fpga_info.value = value; }
 
  private:
 #ifdef AUTD3_CAPI
@@ -321,10 +306,6 @@ class Controller {
     if (uint8_t expected = driver::MSG_END; !id_body.compare_exchange_weak(expected, driver::MSG_BEGIN)) id_body.fetch_add(0x01);
     return id_body.load();
   }
-
-  std::chrono::high_resolution_clock::duration _send_interval{std::chrono::milliseconds(1)};
-
-  std::chrono::high_resolution_clock::duration _ack_check_timeout{std::chrono::high_resolution_clock::duration::zero()};
 
   driver::TxDatagram _tx_buf;
   driver::RxDatagram _rx_buf;
