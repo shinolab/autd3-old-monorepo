@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 08/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -74,11 +74,11 @@ class Link {
 
  protected:
   bool wait_msg_processed(const uint8_t msg_id, driver::RxDatagram& rx, const std::chrono::high_resolution_clock::duration timeout) {
-    const auto start = std::chrono::high_resolution_clock::now();
+    const auto expired = std::chrono::high_resolution_clock::now() + timeout;
     do {
       if (receive(rx) && rx.is_msg_processed(msg_id)) return true;
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    } while (std::chrono::high_resolution_clock::now() - start < timeout);
+    } while (std::chrono::high_resolution_clock::now() < expired);
     return false;
   }
 };
