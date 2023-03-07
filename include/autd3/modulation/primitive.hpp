@@ -263,9 +263,26 @@ class Power final : public core::Modulation {
     std::vector<driver::autd3_float_t> buffer = _modulation.calc();
     _freq_div = _modulation.sampling_frequency_division();
     const auto alpha = _alpha;
-    return generate_iota(0, buffer.size(), [alpha, buffer](const size_t i) {
-      return std::pow<driver::autd3_float_t>(std::clamp<driver::autd3_float_t>(buffer[i], 0, 1), alpha);
-    });
+    return generate_iota(0, buffer.size(), [alpha, buffer](const size_t i) { return std::pow<driver::autd3_float_t>(buffer[i], alpha); });
+  }
+
+ private:
+  driver::autd3_float_t _alpha;
+  T _modulation;
+};
+
+template <typename T>
+class Normalize final : public core::Modulation {
+ public:
+  template <typename... Args>
+  explicit Normalize(Args&&... args) : _modulation(std::forward<Args>(args)...) {}
+
+  std::vector<driver::autd3_float_t> calc() override {
+    std::vector<driver::autd3_float_t> buffer = _modulation.calc();
+    _freq_div = _modulation.sampling_frequency_division();
+    const auto max_v = *std::max_element(buffer.begin(), buffer.end());
+    const auto min_v = *std::min_element(buffer.begin(), buffer.end());
+    return generate_iota(0, buffer.size(), [max_v, min_v, buffer](const size_t i) { return (buffer[i] - min_v) / (max_v - min_v); });
   }
 
  private:
