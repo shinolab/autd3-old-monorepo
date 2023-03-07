@@ -15,8 +15,4 @@ namespace autd3::core {
 
 enum class Mode { Legacy, Advanced, AdvancedPhase };
 
-inline Mode legacy_mode() noexcept { return Mode::Legacy; }
-inline Mode advanced_mode() noexcept { return Mode::Advanced; }
-inline Mode advanced_phase_mode() noexcept { return Mode::AdvancedPhase; }
-
 }  // namespace autd3::core
