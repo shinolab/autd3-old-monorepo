@@ -55,6 +55,16 @@ For actual usage, please refer to [C API Example](https://github.com/shinolab/au
 | qz                     | double  | in     | z parameter of quaternion of rotation  |
 | return                 | bool    | -      | -                              |
 
+## AUTDSetMode (autd3capi)
+
+Set Legacy/Advanced mode.
+
+| Argument name / return | type    | in/out | description                                                 |
+| ---------------------- | ------- | ------ | ----------------------------------------------------------- |
+| geometry_builder                 | void*   | in     | pointer to GeometryBuilder                                       |
+| mode                   | uint8_t | in     | mode (0: Legacy mode, 1: Advanced mode, 2: Advanced Phase mode) |
+| return                 | void    | -      | -                                                           |
+
 ## AUTDBuildGeometry (autd3capi)
 
 | Argument name / return | type    | in/out | description                            |
@@ -1123,16 +1133,6 @@ Delete SoftwareSTM.
 | ---------------------- | ----- | ------ | ---------------------- |
 | stm                    | void* | in     | pointer to SoftwareSTM |
 | return                 | void  | -      | -                      |
-
-## AUTDSetMode (autd3capi)
-
-Set Legacy/Advanced mode.
-
-| Argument name / return | type    | in/out | description                                                 |
-| ---------------------- | ------- | ------ | ----------------------------------------------------------- |
-| handle                 | void*   | in     | pointer to Controller                                       |
-| mode                   | uint8_t | in     | mode (0: Legacy mode, 1: Advanced mode, 2: Advanced Phase mode) |
-| return                 | void    | -      | -                                                           |
 
 ## AUTDEigenBackend (autd3capi-gain-holo)
 

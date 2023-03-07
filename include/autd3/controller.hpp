@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/02/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -239,6 +239,7 @@ class Controller {
     return res;
   }
 
+#ifdef AUTD3_CAPI
   /**
    * @brief Send special data to devices
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
@@ -249,6 +250,7 @@ class Controller {
     const auto b = s->body();
     return send(h.get(), b.get(), timeout);
   }
+#endif
 
   /**
    * @brief If true, the fan will be forced to start.
@@ -298,12 +300,11 @@ class Controller {
 
  private:
 #ifdef AUTD3_CAPI
-  explicit Controller(core::Geometry* geometry, core::LinkPtr link)
-      : _geometry(geometry), _tx_buf({0}), _rx_buf(0), _link(std::move(link)), _last_send_res(false) {}
+  explicit Controller(core::Geometry* geometry, core::LinkPtr link) : _geometry(geometry), _tx_buf({0}), _rx_buf(0), _link(std::move(link)) {}
   core::Geometry* _geometry;
 #else
   explicit Controller(core::Geometry geometry, core::LinkPtr link)
-      : _geometry(std::move(geometry)), _tx_buf({0}), _rx_buf(0), _link(std::move(link)), _last_send_res(false) {}
+      : _geometry(std::move(geometry)), _tx_buf({0}), _rx_buf(0), _link(std::move(link)) {}
   core::Geometry _geometry;
 #endif
 
@@ -329,285 +330,8 @@ class Controller {
   driver::RxDatagram _rx_buf;
   core::LinkPtr _link;
 
-  bool _last_send_res;
-
   driver::ForceFan _force_fan;
   driver::ReadsFPGAInfo _reads_fpga_info;
-
- public:
-  /**
-   * @brief Buffer for stream operator
-   * @tparam H Class inheriting from core::DatagramHeader
-   */
-  template <typename H>
-  class StreamCommaInputHeader {
-    friend class Controller;
-
-   public:
-    ~StreamCommaInputHeader() {
-      if (!_sent) _cnt._last_send_res = _cnt.send(_header);
-    }
-    StreamCommaInputHeader(const StreamCommaInputHeader& v) noexcept = delete;
-    StreamCommaInputHeader& operator=(const StreamCommaInputHeader& obj) = delete;
-    StreamCommaInputHeader(StreamCommaInputHeader&& obj) = default;
-    StreamCommaInputHeader& operator=(StreamCommaInputHeader&& obj) = delete;
-
-    /**
-     * @brief Send buffered core::DatagramHeader and core::DatagramBody
-     * @tparam B Class inheriting from core::DatagramBody
-     * @param body core::DatagramBody
-     * @return Controller&
-     */
-    template <typename B>
-    auto operator,(B&& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, std::remove_reference_t<B>>, Controller&> {
-      _cnt._last_send_res = _cnt.send(_header, body);
-      _sent = true;
-      return _cnt;
-    }
-
-    /**
-     * @brief Send buffered core::DatagramHeader and core::DatagramBody
-     * @tparam B Class inheriting from core::DatagramBody
-     * @param body core::DatagramBody
-     * @return Controller&
-     */
-    template <typename B>
-    auto operator<<(B&& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, std::remove_reference_t<B>>, Controller&> {
-      _cnt._last_send_res = _cnt.send(_header, body);
-      _sent = true;
-      return _cnt;
-    }
-
-    /**
-     * @brief Send buffered core::DatagramHeader and buffer core::DatagramHeader passed as argument
-     * @tparam H2 Class inheriting from core::DatagramHeader
-     * @param header core::DatagramHeader
-     * @return StreamCommaInputHeader
-     */
-    template <typename H2>
-    auto operator<<(H2&& header)
-        -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, std::remove_reference_t<H2>>, StreamCommaInputHeader<H2>> {
-      _cnt._last_send_res = _cnt.send(_header);
-      _sent = true;
-      return StreamCommaInputHeader<H2>(_cnt, header);
-    }
-
-    /**
-     * @brief Send buffered core::DatagramHeader and SpecialData
-     * @tparam S Class inheriting from SpecialData
-     * @param special_f SpecialData function
-     * @return Controller&
-     */
-    template <typename S>
-    auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, Controller&> {
-      _cnt._last_send_res = _cnt.send(_header);
-      _sent = true;
-      _cnt._last_send_res = _cnt.send(special_f());
-      return _cnt;
-    }
-
-    auto operator<<(const core::DatagramPackRef pack) -> Controller& {
-      _cnt._last_send_res = _cnt.send(_header);
-      _sent = true;
-      _cnt._last_send_res = _cnt.send(pack.header, pack.body);
-      return _cnt;
-    }
-
-    /**
-     * @brief Send buffered core::DatagramHeader and then send core::DatagramHeader and core::DatagramBody in DatagramPack
-     * @tparam H2 Class inheriting from core::DatagramHeader
-     * @tparam B2 Class inheriting from core::DatagramBody
-     * @param pack core::DatagramPack
-     * @return Controller&
-     */
-    template <typename H2, typename B2>
-    auto operator<<(core::DatagramPack<H2, B2>&& pack)
-        -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H2> && std::is_base_of_v<core::DatagramBody, B2>, Controller&> {
-      _cnt._last_send_res = _cnt.send(_header);
-      _sent = true;
-      _cnt._last_send_res = _cnt.send(pack.header, pack.body);
-      return _cnt;
-    }
-
-   private:
-    explicit StreamCommaInputHeader(Controller& cnt, H& header) : _cnt(cnt), _header(header), _sent(false) {}
-
-    Controller& _cnt;
-    H& _header;
-    bool _sent;
-  };
-
-  /**
-   * @brief Buffer for stream operator
-   * @tparam B Class inheriting from core::DatagramBody
-   */
-  template <typename B>
-  class StreamCommaInputBody {
-    friend class Controller;
-
-   public:
-    ~StreamCommaInputBody() {
-      if (!_sent) _cnt._last_send_res = _cnt.send(_body);
-    }
-    StreamCommaInputBody(const StreamCommaInputBody& v) noexcept = delete;
-    StreamCommaInputBody& operator=(const StreamCommaInputBody& obj) = delete;
-    StreamCommaInputBody(StreamCommaInputBody&& obj) = default;
-    StreamCommaInputBody& operator=(StreamCommaInputBody&& obj) = delete;
-
-    /**
-     * @brief Send buffered core::DatagramBody and core::DatagramHeader
-     * @tparam H Class inheriting from core::DatagramHeader
-     * @param header core::DatagramHeader
-     * @return Controller&
-     */
-    template <typename H>
-    auto operator,(H&& header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, std::remove_reference_t<H>>, Controller&> {
-      _cnt._last_send_res = _cnt.send(header, _body);
-      _sent = true;
-      return _cnt;
-    }
-
-    /**
-     * @brief Send buffered core::DatagramBody and core::DatagramHeader
-     * @tparam H Class inheriting from core::DatagramHeader
-     * @param header core::DatagramHeader
-     * @return Controller&
-     */
-    template <typename H>
-    auto operator<<(H&& header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, std::remove_reference_t<H>>, Controller&> {
-      _cnt._last_send_res = _cnt.send(header, _body);
-      _sent = true;
-      return _cnt;
-    }
-
-    /**
-     * @brief Send buffered core::DatagramBody and buffer core::DatagramBody passed as argument
-     * @tparam B2 Class inheriting from core::DatagramBody
-     * @param body core::DatagramBody
-     * @return StreamCommaInputBody<B2>
-     */
-    template <typename B2>
-    auto operator<<(B2&& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, std::remove_reference_t<B2>>, StreamCommaInputBody<B2>> {
-      _cnt._last_send_res = _cnt.send(_body);
-      _sent = true;
-      return StreamCommaInputBody<B2>(_cnt, body);
-    }
-
-    /**
-     * @brief Send buffered core::DatagramBody and SpecialData
-     * @tparam S Class inheriting from SpecialData
-     * @param special_f SpecialData function
-     * @return Controller&
-     */
-    template <typename S>
-    auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, Controller&> {
-      _cnt._last_send_res = _cnt.send(_body);
-      _sent = true;
-      _cnt._last_send_res = _cnt.send(special_f());
-      return _cnt;
-    }
-
-    /**
-     * @brief Send buffered core::DatagramBody and then send core::DatagramHeader and core::DatagramBody in DatagramPackRef
-     * @param pack core::DatagramPackRef
-     * @return Controller&
-     */
-    Controller& operator<<(const core::DatagramPackRef pack) {
-      _cnt._last_send_res = _cnt.send(_body);
-      _sent = true;
-      _cnt._last_send_res = _cnt.send(pack.header, pack.body);
-      return _cnt;
-    }
-
-    /**
-     * @brief Send buffered core::DatagramBody and then send core::DatagramHeader and core::DatagramBody in DatagramPack
-     * @tparam H2 Class inheriting from core::DatagramHeader
-     * @tparam B2 Class inheriting from core::DatagramBody
-     * @param pack core::DatagramPack
-     * @return Controller&
-     */
-    template <typename H2, typename B2>
-    auto operator<<(core::DatagramPack<H2, B2>&& pack)
-        -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H2> && std::is_base_of_v<core::DatagramBody, B2>, Controller&> {
-      _cnt._last_send_res = _cnt.send(_body);
-      _sent = true;
-      _cnt._last_send_res = _cnt.send(pack.header, pack.body);
-      return _cnt;
-    }
-
-   private:
-    explicit StreamCommaInputBody(Controller& cnt, B& body) : _cnt(cnt), _body(body), _sent(false) {}
-
-    Controller& _cnt;
-    B& _body;
-    bool _sent;
-  };
-
-  /**
-   * @brief Buffer core::DatagramHeader
-   * @tparam H Class inheriting from core::DatagramHeader
-   * @param header core::DatagramHeader
-   * @return StreamCommaInputHeader<H>
-   */
-  template <typename H>
-  auto operator<<(H&& header) -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, std::remove_reference_t<H>>, StreamCommaInputHeader<H>> {
-    return StreamCommaInputHeader<H>(*this, header);
-  }
-
-  /**
-   * @brief Buffer core::DatagramBody
-   * @tparam B Class inheriting from core::DatagramBody
-   * @param body core::DatagramBody
-   * @return StreamCommaInputBody
-   */
-  template <typename B>
-  auto operator<<(B&& body) -> std::enable_if_t<std::is_base_of_v<core::DatagramBody, std::remove_reference_t<B>>, StreamCommaInputBody<B>> {
-    return StreamCommaInputBody<B>(*this, body);
-  }
-
-  /**
-   * @brief Send core::DatagramHeader and core::DatagramBody in core::DatagramPackRef
-   * @param pack core::DatagramPackRef
-   * @return Controller&
-   */
-  Controller& operator<<(const core::DatagramPackRef pack) {
-    _last_send_res = send(pack.header, pack.body);
-    return *this;
-  }
-
-  /**
-   * @brief Send core::DatagramHeader and core::DatagramBody in core::DatagramPack
-   * @tparam H Class inheriting from core::DatagramHeader
-   * @tparam B Class inheriting from core::DatagramBody
-   * @param pack core::DatagramPack
-   * @return Controller&
-   */
-  template <typename H, typename B>
-  auto operator<<(core::DatagramPack<H, B>&& pack)
-      -> std::enable_if_t<std::is_base_of_v<core::DatagramHeader, H> && std::is_base_of_v<core::DatagramBody, B>, Controller&> {
-    _last_send_res = send(pack.header, pack.body);
-    return *this;
-  }
-
-  /**
-   * @brief Send SpecialData
-   * @tparam S Class inheriting from SpecialData
-   * @param special_f SpecialData function
-   * @return Controller&
-   */
-  template <typename S>
-  auto operator<<(S (*special_f)()) -> std::enable_if_t<std::is_base_of_v<SpecialData, S>, Controller&> {
-    _last_send_res = send(special_f());
-    return *this;
-  }
-
-  /**
-   * @brief Set Mode
-   * @param f mode function
-   */
-  void operator<<(core::Mode (*f)()) { geometry().mode = f(); }
-
-  void operator>>(bool& res) const { res = _last_send_res; }
 };
 
 }  // namespace autd3

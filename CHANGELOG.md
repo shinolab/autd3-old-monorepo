@@ -4,6 +4,7 @@
 - Make `modulation::LPF` generic
 - Rename Normal mode to Advanced mode
 - Rename `gain::holo::EVD` to `gain::holo::EVP`
+- Remove `<<` operators
 
 # 8.1.2
 

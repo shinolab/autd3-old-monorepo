@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ inline void flag_test(autd3::Controller& autd) {
   std::cin.ignore();
 
   autd.force_fan() = true;
-  autd << autd3::update_flag;
+  autd.send(autd3::update_flag());
 
   bool fin = false;
   auto check_states_thread = std::thread([&] {
@@ -46,5 +46,5 @@ inline void flag_test(autd3::Controller& autd) {
   if (check_states_thread.joinable()) check_states_thread.join();
 
   autd.force_fan() = false;
-  autd << autd3::update_flag;
+  autd.send(autd3::update_flag());
 }
