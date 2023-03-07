@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/03/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -273,7 +273,7 @@ struct Geometry {
   /**
    * @brief Drive mode
    */
-  Mode mode{Mode::Legacy};
+  [[nodiscard]] Mode mode() const noexcept { return _mode; };
 
   /**
    * @brief Attenuation coefficient.
@@ -305,8 +305,9 @@ struct Geometry {
  private:
   Geometry(const Mode mode, const driver::autd3_float_t attenuation, const driver::autd3_float_t sound_speed, std::vector<Transducer> transducers,
            std::vector<size_t> device_map)
-      : mode(mode), attenuation(attenuation), sound_speed(sound_speed), _transducers(std::move(transducers)), _device_map(std::move(device_map)) {}
+      : _mode(mode), attenuation(attenuation), sound_speed(sound_speed), _transducers(std::move(transducers)), _device_map(std::move(device_map)) {}
 
+  Mode _mode;
   std::vector<Transducer> _transducers;
   std::vector<size_t> _device_map;
 };

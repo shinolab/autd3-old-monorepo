@@ -53,7 +53,7 @@ struct GainSTM final : public STM {
     drives.reserve(_gains.size());
     std::transform(_gains.begin(), _gains.end(), std::back_inserter(drives), [geometry](const auto& gain) { return gain->calc(geometry); });
     const driver::GainSTMProps props{sampling_frequency_division, _mode, start_idx, finish_idx};
-    switch (geometry.mode) {
+    switch (geometry.mode()) {
       case Mode::Legacy:
         return std::make_unique<driver::GainSTM<driver::Legacy>>(std::move(drives), props);
       case Mode::Advanced:
