@@ -363,7 +363,7 @@ void AUTDDeleteModulation(const void* const mod) {
 
 void AUTDFocusSTM(void** out) { *out = new autd3::FocusSTM(); }
 
-void AUTDGainSTM(void** out) { *out = new autd3::GainSTM; }
+void AUTDGainSTM(void** out, const uint16_t mode) { *out = new autd3::GainSTM(static_cast<autd3::GainSTMMode>(mode)); }
 
 void AUTDFocusSTMAdd(void* const stm, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const uint8_t shift) {
   auto* const stm_w = static_cast<autd3::FocusSTM*>(stm);
@@ -376,42 +376,32 @@ void AUTDGainSTMAdd(void* const stm, void* const gain) {
   stm_w->add(std::shared_ptr<autd3::core::Gain>(static_cast<autd3::core::Gain*>(g), [](autd3::core::Gain*) {}));
 }
 
-uint16_t AUTDGetGainSTMMode(void* const stm) {
-  auto* const stm_w = static_cast<autd3::GainSTM*>(stm);
-  return static_cast<uint16_t>(stm_w->mode());
-}
-
-void AUTDSetGainSTMMode(void* const stm, uint16_t mode) {
-  auto* const stm_w = static_cast<autd3::GainSTM*>(stm);
-  stm_w->mode() = static_cast<autd3::GainSTMMode>(mode);
-}
-
 int32_t AUTDSTMGetStartIdx(const void* const stm) {
   const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
-  const auto start_idx = stm_w->start_idx();
+  const auto start_idx = stm_w->start_idx;
   return start_idx ? static_cast<int32_t>(start_idx.value()) : -1;
 }
 
 int32_t AUTDSTMGetFinishIdx(const void* const stm) {
   const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
-  const auto finish_idx = stm_w->finish_idx();
+  const auto finish_idx = stm_w->finish_idx;
   return finish_idx ? static_cast<int32_t>(finish_idx.value()) : -1;
 }
 
 void AUTDSTMSetStartIdx(void* const stm, const int32_t start_idx) {
   auto* const stm_w = static_cast<autd3::core::STM*>(stm);
   if (start_idx < 0)
-    stm_w->start_idx() = std::nullopt;
+    stm_w->start_idx = std::nullopt;
   else
-    stm_w->start_idx() = static_cast<uint16_t>(start_idx);
+    stm_w->start_idx = static_cast<uint16_t>(start_idx);
 }
 
 void AUTDSTMSetFinishIdx(void* const stm, const int32_t finish_idx) {
   auto* const stm_w = static_cast<autd3::core::STM*>(stm);
   if (finish_idx < 0)
-    stm_w->finish_idx() = std::nullopt;
+    stm_w->finish_idx = std::nullopt;
   else
-    stm_w->finish_idx() = static_cast<uint16_t>(finish_idx);
+    stm_w->finish_idx = static_cast<uint16_t>(finish_idx);
 }
 
 autd3_float_t AUTDSTMSetFrequency(void* const stm, const autd3_float_t freq) {
@@ -431,12 +421,12 @@ autd3_float_t AUTDSTMSamplingFrequency(const void* const stm) {
 
 uint32_t AUTDSTMSamplingFrequencyDivision(const void* const stm) {
   const auto* const stm_w = static_cast<const autd3::core::STM*>(stm);
-  return stm_w->sampling_frequency_division();
+  return stm_w->sampling_frequency_division;
 }
 
 void AUTDSTMSetSamplingFrequencyDivision(void* const stm, const uint32_t freq_div) {
   auto* const stm_w = static_cast<autd3::core::STM*>(stm);
-  stm_w->sampling_frequency_division() = freq_div;
+  stm_w->sampling_frequency_division = freq_div;
 }
 
 void AUTDDeleteSTM(const void* const stm) {

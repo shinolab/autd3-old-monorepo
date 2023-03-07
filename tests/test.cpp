@@ -357,8 +357,8 @@ TEST(ControllerTest, focus_stm) {
     }
   }
 
-  stm.start_idx() = 1;
-  stm.finish_idx() = 2;
+  stm.start_idx = 1;
+  stm.finish_idx = 2;
   autd.send(stm);
   for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
     ASSERT_TRUE(cpus->at(i).fpga().stm_start_idx().has_value());
@@ -429,8 +429,7 @@ TEST(ControllerTest, gain_stm_legacy) {
   }
 
   {
-    autd3::GainSTM stm;
-    stm.mode() = autd3::GainSTMMode::PhaseFull;
+    autd3::GainSTM stm(autd3::GainSTMMode::PhaseFull);
     constexpr size_t size = 50;
     std::vector<std::vector<autd3::driver::Drive>> drives;
     constexpr autd3::driver::autd3_float_t radius = 40;
@@ -443,8 +442,8 @@ TEST(ControllerTest, gain_stm_legacy) {
       stm.add(f);
     });
 
-    stm.start_idx() = 1;
-    stm.finish_idx() = 2;
+    stm.start_idx = 1;
+    stm.finish_idx = 2;
 
     autd.send(stm);
     for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
@@ -469,8 +468,7 @@ TEST(ControllerTest, gain_stm_legacy) {
   }
 
   {
-    autd3::GainSTM stm;
-    stm.mode() = autd3::GainSTMMode::PhaseHalf;
+    autd3::GainSTM stm(autd3::GainSTMMode::PhaseHalf);
     constexpr size_t size = 50;
     std::vector<std::vector<autd3::driver::Drive>> drives;
     constexpr autd3::driver::autd3_float_t radius = 40;
@@ -570,8 +568,7 @@ TEST(ControllerTest, gain_stm_advanced) {
   }
 
   {
-    autd3::GainSTM stm;
-    stm.mode() = autd3::GainSTMMode::PhaseFull;
+    autd3::GainSTM stm(autd3::GainSTMMode::PhaseFull);
     constexpr size_t size = 50;
     std::vector<std::vector<autd3::driver::Drive>> drives;
     constexpr autd3::driver::autd3_float_t radius = 40;
@@ -584,8 +581,8 @@ TEST(ControllerTest, gain_stm_advanced) {
       stm.add(f);
     });
 
-    stm.start_idx() = 2;
-    stm.finish_idx() = 1;
+    stm.start_idx = 2;
+    stm.finish_idx = 1;
 
     autd.send(stm);
     for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
@@ -674,8 +671,7 @@ TEST(ControllerTest, gain_stm_advanced_phase) {
   }
 
   {
-    autd3::GainSTM stm;
-    stm.mode() = autd3::GainSTMMode::PhaseFull;
+    autd3::GainSTM stm(autd3::GainSTMMode::PhaseFull);
     constexpr size_t size = 50;
     std::vector<std::vector<autd3::driver::Drive>> drives;
     constexpr autd3::driver::autd3_float_t radius = 30;
@@ -688,8 +684,8 @@ TEST(ControllerTest, gain_stm_advanced_phase) {
       stm.add(f);
     });
 
-    stm.start_idx() = 0;
-    stm.finish_idx() = 0;
+    stm.start_idx = 0;
+    stm.finish_idx = 0;
 
     autd.send(stm);
     for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
