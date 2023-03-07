@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/03/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -71,8 +71,8 @@ struct GainSTM<Legacy> final : Operation {
     bool is_last_frame = false;
     if (_sent == 0) {
       if (_props.freq_div < GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN)
-        throw std::runtime_error("STM frequency division is out of range. Minimum is" + std::to_string(GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN) +
-                                 " but you use " + std::to_string(_props.freq_div));
+        throw std::runtime_error("STM frequency division is out of range. Minimum is " + std::to_string(GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN) +
+                                 ", but you use " + std::to_string(_props.freq_div));
 
       tx.header().cpu_flag.set(CPUControlFlags::STMBegin);
       std::for_each(tx.begin(), tx.end(), [this](const auto& body) {
