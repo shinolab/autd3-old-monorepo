@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/03/2023
+ * Last Modified: 07/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ use anyhow::Result;
 use autd3_core::{
     gain::Gain,
     geometry::{Geometry, Transducer},
-    Amp, Drive, Phase,
+    Drive,
 };
 
 /// Gain to produce single focal point
@@ -62,8 +62,8 @@ impl<'a, T: Transducer> Gain<T> for Grouped<'a, T> {
                     .unwrap_or_else(|| {
                         vec![
                             Drive {
-                                phase: Phase::new(0.0),
-                                amp: Amp::new(0.0),
+                                phase: 0.0,
+                                amp: 0.0,
                             };
                             geometry.device_map()[i]
                         ]

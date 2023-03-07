@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/03/2023
+ * Last Modified: 07/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -38,14 +38,6 @@ impl<M> GeometryBuilder<M> {
 }
 
 impl GeometryBuilder<Advanced> {
-    pub fn new() -> Self {
-        Self {
-            attenuation: 0.0,
-            sound_speed: 340.0e3,
-            _mode: PhantomData,
-        }
-    }
-
     pub fn legacy_mode(self) -> GeometryBuilder<Legacy> {
         unsafe { std::mem::transmute(self) }
     }
@@ -60,6 +52,14 @@ impl GeometryBuilder<Advanced> {
 }
 
 impl GeometryBuilder<Legacy> {
+    pub fn new() -> Self {
+        Self {
+            attenuation: 0.0,
+            sound_speed: 340.0e3,
+            _mode: PhantomData,
+        }
+    }
+
     pub fn advanced_mode(self) -> GeometryBuilder<Advanced> {
         unsafe { std::mem::transmute(self) }
     }
@@ -87,7 +87,7 @@ impl GeometryBuilder<AdvancedPhase> {
     }
 }
 
-impl Default for GeometryBuilder<Advanced> {
+impl Default for GeometryBuilder<Legacy> {
     fn default() -> Self {
         Self::new()
     }
