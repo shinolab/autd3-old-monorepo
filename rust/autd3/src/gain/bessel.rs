@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/03/2023
+ * Last Modified: 07/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use anyhow::Result;
 use autd3_core::{
     gain::Gain,
     geometry::{Geometry, Transducer, UnitQuaternion, Vector3},
-    Amp, Drive, Phase,
+    Drive,
 };
 
 use autd3_traits::Gain;

@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/03/2023
+ * Last Modified: 07/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,7 +26,7 @@ pub trait Transducer: Sized {
     }
     fn position(&self) -> &Vector3;
     fn rotation(&self) -> &UnitQuaternion;
-    fn id(&self) -> usize;
+    fn idx(&self) -> usize;
     fn x_direction(&self) -> Vector3 {
         Self::get_direction(Vector3::x(), self.rotation())
     }

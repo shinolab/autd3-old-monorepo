@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/03/2023
+ * Last Modified: 07/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -87,6 +87,17 @@ impl<T: Transducer> Geometry<T> {
             .map(|d| d.position())
             .sum::<Vector3>()
             / self.transducers.len() as f64
+    }
+
+    pub fn center_of(&self, idx: usize) -> Vector3 {
+        let start_idx: usize = self.device_map.iter().take(idx).sum();
+        self.transducers
+            .iter()
+            .skip(start_idx)
+            .take(self.device_map[idx])
+            .map(|d| d.position())
+            .sum::<Vector3>()
+            / self.device_map[idx] as f64
     }
 
     pub fn device_map(&self) -> &[usize] {

@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/01/2023
+ * Last Modified: 07/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -31,10 +31,10 @@ pub trait STM {
     fn sampling_freq(&self) -> f64 {
         FPGA_CLK_FREQ as f64 / self.sampling_freq_div() as f64
     }
+    fn set_sampling_freq(&mut self, sample_freq: f64) -> f64 {
+        self.set_sampling_freq_div((FPGA_CLK_FREQ as f64 / sample_freq) as _);
+        STM::sampling_freq(self)
+    }
     fn set_sampling_freq_div(&mut self, freq_div: u32);
     fn sampling_freq_div(&self) -> u32;
-    fn set_start_idx(&mut self, idx: Option<u16>);
-    fn start_idx(&self) -> Option<u16>;
-    fn set_finish_idx(&mut self, idx: Option<u16>);
-    fn finish_idx(&self) -> Option<u16>;
 }

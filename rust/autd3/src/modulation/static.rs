@@ -4,7 +4,7 @@
  * Created Date: 30/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/01/2023
+ * Last Modified: 07/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
  */
 
 use anyhow::Result;
-use autd3_core::{modulation::Modulation, Amp};
+use autd3_core::modulation::Modulation;
 use autd3_traits::Modulation;
 
 /// Sine wave modulation in ultrasound amplitude
@@ -38,8 +38,8 @@ impl Static {
 }
 
 impl Modulation for Static {
-    fn calc(&self) -> Result<Vec<Amp>> {
-        Ok(vec![Amp::new(self.amp); 2])
+    fn calc(&self) -> Result<Vec<f64>> {
+        Ok(vec![self.amp; 2])
     }
 }
 
