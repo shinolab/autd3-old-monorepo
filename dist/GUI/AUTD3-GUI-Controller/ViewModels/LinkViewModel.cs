@@ -88,14 +88,6 @@ public partial class LinkViewModel
     private string _localAmsNetId;
     async partial void OnLocalAmsNetIdChanged(string value) => await _localSettingsService.SaveSettingAsync(nameof(LocalAmsNetId), value);
 
-    [ObservableProperty]
-    private ulong _ackCheckTimeoutMs;
-    async partial void OnAckCheckTimeoutMsChanged(ulong value) => await _localSettingsService.SaveSettingAsync(nameof(AckCheckTimeoutMs), value);
-
-    [ObservableProperty]
-    private ulong _sendIntervalsMs;
-    async partial void OnSendIntervalsMsChanged(ulong value) => await _localSettingsService.SaveSettingAsync(nameof(SendIntervalsMs), value);
-
     [ObservableProperty] private string _remoteSOEMIp;
     async partial void OnRemoteSOEMIpChanged(string value) => await _localSettingsService.SaveSettingAsync(nameof(RemoteIp), value);
 
@@ -155,7 +147,6 @@ public partial class LinkViewModel
           });
     }
 
-
     public LinkViewModel(ILocalSettingsService localSettingsService)
     {
         _autdService = App.GetService<AUTDService>();
@@ -177,9 +168,6 @@ public partial class LinkViewModel
         _remoteIp = _localSettingsService.ReadSetting<string>(nameof(RemoteIp)) ?? "";
         _remoteAmsNetId = _localSettingsService.ReadSetting<string>(nameof(RemoteAmsNetId)) ?? "";
         _localAmsNetId = _localSettingsService.ReadSetting<string>(nameof(LocalAmsNetId)) ?? "";
-
-        _ackCheckTimeoutMs = _localSettingsService.ReadSetting<ulong?>(nameof(AckCheckTimeoutMs)) ?? 0;
-        _sendIntervalsMs = _localSettingsService.ReadSetting<ulong?>(nameof(SendIntervalsMs)) ?? 1;
 
         _remoteSOEMIp = _localSettingsService.ReadSetting<string>(nameof(RemoteSOEMIp)) ?? "";
         _remoteSOEMPort = _localSettingsService.ReadSetting<ushort?>(nameof(RemoteSOEMPort)) ?? 50632;
