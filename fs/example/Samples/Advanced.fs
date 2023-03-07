@@ -3,7 +3,7 @@
 // Created Date: 03/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/02/2023
+// Last Modified: 08/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,11 +11,12 @@
 
 namespace Samples
 
+open System
 open AUTD3Sharp
 
 module AdvancedTest =
     let Test (autd : Controller) = 
-        SilencerConfig.None() |> autd.Send |> ignore
+        (SilencerConfig.None(), TimeSpan.FromMilliseconds(20)) |> autd.Send |> ignore
 
         let amp = [| for _ in 1..autd.Geometry.NumTransducers -> 1.0 |]
         let phase = [| for _ in 1..autd.Geometry.NumTransducers -> 0.0 |]
@@ -26,4 +27,4 @@ module AdvancedTest =
         let m = new Modulation.Custom(burst, 40960u);
         let g = new Gain.Custom(amp, phase);
 
-        (m, g) |> autd.Send |> ignore
+        (m, g, TimeSpan.FromMilliseconds(20)) |> autd.Send |> ignore

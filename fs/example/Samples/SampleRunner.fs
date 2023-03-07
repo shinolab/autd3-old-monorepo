@@ -3,7 +3,7 @@
 // Created Date: 03/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/02/2023
+// Last Modified: 08/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 namespace Samples
 
+open System
 open AUTD3Sharp
 
 module SampleRunner =
@@ -26,8 +27,8 @@ module SampleRunner =
         let examples = 
             if autd.Geometry.NumDevices = 2 then examples @ [(GroupTest.Test, "Grouped gain Test")] else examples;
 
-        new Clear() |> autd.Send |> ignore;
-        new Synchronize() |> autd.Send |> ignore;
+        (new Clear(), TimeSpan.FromMilliseconds(20)) |> autd.Send |> ignore;
+        (new Synchronize(), TimeSpan.FromMilliseconds(20)) |> autd.Send |> ignore;
 
         let firmwareList = autd.FirmwareInfoList()
         let inline print_warn msg = 
@@ -59,7 +60,7 @@ module SampleRunner =
 
                     printfn "finish."
 
-                    new Stop() |> autd.Send |> ignore;
+                    (new Stop(), TimeSpan.FromMilliseconds(20)) |> autd.Send |> ignore;
 
                     run_example()
                 | _ -> ()

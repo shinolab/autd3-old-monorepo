@@ -15,7 +15,7 @@ import math
 
 proc focus_stm_test*(cnt: Controller) =
     let config = SilencerConfig.none()
-    cnt.send(config)
+    cnt.send(config, 20 * 1000 * 1000)
 
     let m = initStatic(1.0)
 
@@ -32,4 +32,4 @@ proc focus_stm_test*(cnt: Controller) =
 
     stm.frequency = 1.0
 
-    cnt.send(m, stm)
+    cnt.send(m, stm, 20 * 1000 * 1000)

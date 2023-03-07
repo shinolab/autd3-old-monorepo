@@ -4,7 +4,7 @@
  * Created Date: 10/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/02/2023
+ * Last Modified: 08/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -78,16 +78,14 @@ public class SimpleAUTDController : MonoBehaviour
 #endif
         }
 
-        _autd!.AckCheckTimeoutMs = 20;
+        _autd!.Send(new Clear(), TimeSpan.FromMilliseconds(20));
 
-        _autd!.Send(new Clear());
+        _autd!.Send(new Synchronize(), TimeSpan.FromMilliseconds(20));
 
-        _autd!.Send(new Synchronize());
-
-        _autd!.Send(new AUTD3Sharp.Modulation.Sine(150)); // 150 Hz
+        _autd!.Send(new AUTD3Sharp.Modulation.Sine(150), TimeSpan.FromMilliseconds(20)); // 150 Hz
 
         if (Target == null) return;
-        _autd?.Send(new AUTD3Sharp.Gain.Focus(Target.transform.position));
+        _autd?.Send(new AUTD3Sharp.Gain.Focus(Target.transform.position), TimeSpan.FromMilliseconds(20));
         _oldPosition = Target.transform.position;
     }
 
@@ -102,7 +100,7 @@ public class SimpleAUTDController : MonoBehaviour
 #endif
 
         if (Target == null || Target.transform.position == _oldPosition) return;
-        _autd?.Send(new AUTD3Sharp.Gain.Focus(Target.transform.position));
+        _autd?.Send(new AUTD3Sharp.Gain.Focus(Target.transform.position), TimeSpan.FromMilliseconds(20));
         _oldPosition = Target.transform.position;
     }
 

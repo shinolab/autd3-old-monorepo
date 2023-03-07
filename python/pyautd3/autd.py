@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 03/03/2023
+Last Modified: 08/03/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,6 +12,7 @@ Copyright (c) 2022 Shun Suzuki. All rights reserved.
 '''
 
 
+from datetime import timedelta
 import ctypes
 from ctypes import c_void_p, byref, c_double, c_bool
 import numpy as np
@@ -228,6 +229,18 @@ class GeometryBuilder:
         Base().dll.AUTDAddDeviceQuaternion(self._ptr, pos[0], pos[1], pos[2], q[0], q[1], q[2], q[3])
         return self
 
+    def to_legacy(self):
+        Base().dll.AUTDSetMode(self._ptr, 0)
+        return self
+
+    def to_advanced(self):
+        Base().dll.AUTDSetMode(self._ptr, 1)
+        return self
+
+    def to_advanced_phase(self):
+        Base().dll.AUTDSetMode(self._ptr, 2)
+        return self
+
     def build(self) -> Geometry:
         geometry_ptr = c_void_p()
         Base().dll.AUTDBuildGeometry(byref(geometry_ptr), self._ptr)
@@ -270,15 +283,6 @@ class Controller:
 
     def __del__(self):
         self.dispose()
-
-    def to_legacy(self):
-        Base().dll.AUTDSetMode(self.p_cnt, 0)
-
-    def to_advanced(self):
-        Base().dll.AUTDSetMode(self.p_cnt, 1)
-
-    def to_advanced_phase(self):
-        Base().dll.AUTDSetMode(self.p_cnt, 2)
 
     @ property
     def geometry(self):
@@ -326,51 +330,9 @@ class Controller:
     def is_open(self):
         return Base().dll.AUTDIsOpen(self.p_cnt)
 
-    @ property
-    def force_fan(self):
-        return Base().dll.AUTDGetForceFan(self.p_cnt)
-
-    @ force_fan.setter
     def force_fan(self, value: bool):
         return Base().dll.AUTDSetForceFan(self.p_cnt, value)
 
-    @ property
-    def ack_check_timeout_ms(self):
-        return Base().dll.AUTDGetAckCheckTimeout(self.p_cnt) / 1000 / 1000
-
-    @ ack_check_timeout_ms.setter
-    def ack_check_timeout_ms(self, value: int):
-        return Base().dll.AUTDSetAckCheckTimeout(self.p_cnt, value * 1000 * 1000)
-
-    @ property
-    def ack_check_timeout_ns(self):
-        return Base().dll.AUTDGetAckCheckTimeout(self.p_cnt)
-
-    @ ack_check_timeout_ns.setter
-    def ack_check_timeout_ns(self, value: int):
-        return Base().dll.AUTDSetAckCheckTimeout(self.p_cnt, value)
-
-    @ property
-    def send_interval_ms(self):
-        return Base().dll.AUTDGetSendInterval(self.p_cnt) / 1000 / 1000
-
-    @ send_interval_ms.setter
-    def send_interval_ms(self, value: int):
-        return Base().dll.AUTDSetSendInterval(self.p_cnt, value * 1000 * 1000)
-
-    @ property
-    def send_interval_ns(self):
-        return Base().dll.AUTDGetSendInterval(self.p_cnt)
-
-    @ send_interval_ns.setter
-    def send_interval_ns(self, value: int):
-        return Base().dll.AUTDSetSendInterval(self.p_cnt, value)
-
-    @ property
-    def reads_fpga_info(self):
-        Base().dll.AUTDGetReadsFPGAInfo(self.p_cnt)
-
-    @ reads_fpga_info.setter
     def reads_fpga_info(self, value: bool):
         Base().dll.AUTDSetReadsFPGAInfo(self.p_cnt, value)
 
@@ -381,15 +343,16 @@ class Controller:
         Base().dll.AUTDGetFPGAInfo(self.p_cnt, pinfos)
         return infos
 
-    def send(self, a, b=None):
+    def send(self, a, b=None, timeout: timedelta = timedelta(0)):
+        timeout = int(timeout.total_seconds() * 1000 * 1000 * 1000)
         if b is None and isinstance(a, SpecialData):
-            return Base().dll.AUTDSendSpecial(self.p_cnt, a.ptr)
+            return Base().dll.AUTDSendSpecial(self.p_cnt, a.ptr, timeout)
         if b is None and isinstance(a, Header):
-            return Base().dll.AUTDSend(self.p_cnt, a.ptr, None)
+            return Base().dll.AUTDSend(self.p_cnt, a.ptr, None, timeout)
         if b is None and isinstance(a, Body):
-            return Base().dll.AUTDSend(self.p_cnt, None, a.ptr)
+            return Base().dll.AUTDSend(self.p_cnt, None, a.ptr, timeout)
         if isinstance(a, Header) and isinstance(b, Body):
-            return Base().dll.AUTDSend(self.p_cnt, a.ptr, b.ptr)
+            return Base().dll.AUTDSend(self.p_cnt, a.ptr, b.ptr, timeout)
         raise NotImplementedError()
 
 

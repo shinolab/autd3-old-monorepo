@@ -4,7 +4,7 @@ Project: example
 Created Date: 30/12/2020
 Author: Shun Suzuki
 -----
-Last Modified: 02/02/2023
+Last Modified: 08/03/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2020 Shun Suzuki. All rights reserved.
@@ -32,7 +32,5 @@ if __name__ == '__main__':
     link = SOEM().high_precision(True).on_lost(on_lost_f).build()
 
     autd = Controller.open(geometry, link)
-
-    autd.ack_check_timeout_ms = 20
 
     runner.run(autd)
