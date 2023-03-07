@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/03/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -38,7 +38,7 @@ struct Gain : DatagramBody {
   virtual std::vector<driver::Drive> calc(const Geometry& geometry) = 0;
 
   std::unique_ptr<driver::Operation> operation(const Geometry& geometry) override {
-    switch (geometry.mode) {
+    switch (geometry.mode()) {
       case Mode::Legacy:
         return std::make_unique<driver::Gain<driver::Legacy>>(calc(geometry));
       case Mode::Advanced:
