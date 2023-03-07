@@ -15,7 +15,7 @@
 
 inline void group_test(autd3::Controller& autd) {
   autd3::SilencerConfig silencer;
-  autd.send(silencer);
+  autd.send(silencer, std::chrono::milliseconds(20));
 
   autd3::modulation::Sine m(150);  // 150Hz AM
 
@@ -29,5 +29,5 @@ inline void group_test(autd3::Controller& autd) {
   g.add({0}, g1);
   g.add({1}, g2);
 
-  autd.send(m, g);
+  autd.send(m, g, std::chrono::milliseconds(20));
 }

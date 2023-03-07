@@ -20,7 +20,7 @@ Note that you must change the frequency before synchronization.
   for (auto& dev : autd.geometry())
     for (auto& tr : dev) tr.set_frequency(70e3); // actual frequency is 163.84MHz/2341 ~ 69987 Hz
 
-  autd.send(autd3::synchronize());
+  autd.send(autd3::Synchronize());
 ```
 
 ## AdvancedPhase mode

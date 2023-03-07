@@ -15,12 +15,12 @@
 
 inline void focus_test(autd3::Controller& autd) {
   autd3::SilencerConfig silencer;
-  autd.send(silencer);
+  autd.send(silencer, std::chrono::milliseconds(20));
 
   autd3::modulation::Sine m(150);  // 150Hz AM
 
   const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   autd3::gain::Focus g(center);
 
-  autd.send(m, g);
+  autd.send(m, g, std::chrono::milliseconds(20));
 }

@@ -23,7 +23,7 @@
 
 inline void holo_test(autd3::Controller& autd) {
   autd3::SilencerConfig silencer;
-  autd.send(silencer);
+  autd.send(silencer, std::chrono::milliseconds(20));
 
   autd3::modulation::Sine m(150);  // 150Hz AM
 
@@ -62,5 +62,5 @@ inline void holo_test(autd3::Controller& autd) {
 
   g->constraint = std::make_unique<autd3::gain::holo::Uniform>(1);
 
-  autd.send(m, *g);
+  autd.send(m, *g, std::chrono::milliseconds(20));
 }

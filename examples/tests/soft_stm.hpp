@@ -14,11 +14,11 @@
 #include <autd3.hpp>
 
 inline void soft_stm(autd3::Controller& autd) {
-  auto config = autd3::SilencerConfig::none();
+  auto silencer = autd3::SilencerConfig::none();
+  autd.send(silencer, std::chrono::milliseconds(20));
 
   autd3::modulation::Static m;
-  autd.send(config);
-  autd.send(m);
+  autd.send(m, std::chrono::milliseconds(20));
 
   autd3::SoftwareSTM stm;
 

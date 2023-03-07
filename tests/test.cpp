@@ -39,8 +39,8 @@ TEST(ControllerTest, basic_usage) {
     ASSERT_EQ(firm.fpga_version(), "v2.8.1");
   }
 
-  autd.send(autd3::clear());
-  autd.send(autd3::synchronize());
+  autd.send(autd3::Clear());
+  autd.send(autd3::Synchronize());
   for (const auto& cpu : *cpus) {
     const auto [duties, phases] = cpu.fpga().drives(0);
     for (const auto& [duty] : duties) ASSERT_EQ(duty, 0x0000);
@@ -98,13 +98,13 @@ TEST(ControllerTest, basic_usage) {
     ASSERT_EQ(cpu.fpga().silencer_step(), 10);
   }
 
-  autd.send(autd3::stop());
+  autd.send(autd3::Stop());
   for (const auto& cpu : *cpus) {
     const auto [duties, phases] = cpu.fpga().drives(0);
     for (const auto& [duty] : duties) ASSERT_EQ(duty, 0x0000);
   }
 
-  autd.send(autd3::clear());
+  autd.send(autd3::Clear());
   for (const auto& cpu : *cpus) {
     const auto [duties, phases] = cpu.fpga().drives(0);
     for (const auto& [duty] : duties) ASSERT_EQ(duty, 0x0000);
@@ -136,8 +136,8 @@ TEST(ControllerTest, freq_config) {
 
   for (auto& tr : autd.geometry()) tr.set_cycle(2341);
 
-  autd.send(autd3::clear());
-  autd.send(autd3::synchronize());
+  autd.send(autd3::Clear());
+  autd.send(autd3::Synchronize());
 
   for (const auto& cpu : *cpus)
     for (const auto& cycle : cpu.fpga().cycles()) ASSERT_EQ(cycle, 2341);
@@ -162,8 +162,8 @@ TEST(ControllerTest, simple_legacy) {
   ASSERT_EQ(autd.geometry().num_devices(), 4);
   ASSERT_EQ(autd.geometry().num_transducers(), 4 * 249);
 
-  autd.send(autd3::clear());
-  autd.send(autd3::synchronize());
+  autd.send(autd3::Clear());
+  autd.send(autd3::Synchronize());
 
   const autd3::Vector3 focus = autd.geometry().center() + autd3::Vector3(0, 0, 150);
   autd3::gain::Focus g(focus);
@@ -211,8 +211,8 @@ TEST(ControllerTest, simple_advenced) {
   constexpr uint16_t cycle = 2341;  // 70kHz
   for (auto& tr : autd.geometry()) tr.set_cycle(cycle);
 
-  autd.send(autd3::clear());
-  autd.send(autd3::synchronize());
+  autd.send(autd3::Clear());
+  autd.send(autd3::Synchronize());
 
   const autd3::Vector3 focus = autd.geometry().center() + autd3::Vector3(0, 0, 150);
   autd3::gain::Focus g(focus);
@@ -260,8 +260,8 @@ TEST(ControllerTest, simple_advanced_phase) {
   constexpr uint16_t cycle = 2341;  // 70kHz
   for (auto& tr : autd.geometry()) tr.set_cycle(cycle);
 
-  autd.send(autd3::clear());
-  autd.send(autd3::synchronize());
+  autd.send(autd3::Clear());
+  autd.send(autd3::Synchronize());
 
   autd3::Amplitudes amp(1.0);
   autd.send(amp);
@@ -305,8 +305,8 @@ TEST(ControllerTest, focus_stm) {
   auto link = autd3::test::EmulatorLink(cpus).build();
   auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
 
-  autd.send(autd3::clear());
-  autd.send(autd3::synchronize());
+  autd.send(autd3::Clear());
+  autd.send(autd3::Synchronize());
 
   const autd3::Vector3 center = autd.geometry().center();
 
@@ -367,7 +367,7 @@ TEST(ControllerTest, focus_stm) {
     ASSERT_EQ(cpus->at(i).fpga().stm_finish_idx().value_or(0), 2);
   }
 
-  autd.send(autd3::stop());
+  autd.send(autd3::Stop());
   for (const auto& cpu : *cpus) {
     const auto [duties, phases] = cpu.fpga().drives(0);
     for (const auto& [duty] : duties) ASSERT_EQ(duty, 0x0000);
@@ -390,8 +390,8 @@ TEST(ControllerTest, gain_stm_legacy) {
   auto link = autd3::test::EmulatorLink(cpus).build();
   auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
 
-  autd.send(autd3::clear());
-  autd.send(autd3::synchronize());
+  autd.send(autd3::Clear());
+  autd.send(autd3::Synchronize());
 
   const autd3::Vector3 center = autd.geometry().center();
 
@@ -505,7 +505,7 @@ TEST(ControllerTest, gain_stm_legacy) {
     }
   }
 
-  autd.send(autd3::stop());
+  autd.send(autd3::Stop());
   for (const auto& cpu : *cpus) {
     const auto [duties, phases] = cpu.fpga().drives(0);
     for (const auto& [duty] : duties) ASSERT_EQ(duty, 0x0000);
@@ -528,8 +528,8 @@ TEST(ControllerTest, gain_stm_advanced) {
   auto link = autd3::test::EmulatorLink(cpus).build();
   auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
 
-  autd.send(autd3::clear());
-  autd.send(autd3::synchronize());
+  autd.send(autd3::Clear());
+  autd.send(autd3::Synchronize());
 
   const autd3::Vector3 center = autd.geometry().center();
 
@@ -606,7 +606,7 @@ TEST(ControllerTest, gain_stm_advanced) {
     }
   }
 
-  autd.send(autd3::stop());
+  autd.send(autd3::Stop());
   for (const auto& cpu : *cpus) {
     const auto [duties, phases] = cpu.fpga().drives(0);
     for (const auto& [duty] : duties) ASSERT_EQ(duty, 0x0000);
@@ -630,8 +630,8 @@ TEST(ControllerTest, gain_stm_advanced_phase) {
   auto link = autd3::test::EmulatorLink(cpus).build();
   auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
 
-  autd.send(autd3::clear());
-  autd.send(autd3::synchronize());
+  autd.send(autd3::Clear());
+  autd.send(autd3::Synchronize());
 
   autd.send(autd3::Amplitudes(1.0));
 
@@ -709,7 +709,7 @@ TEST(ControllerTest, gain_stm_advanced_phase) {
     }
   }
 
-  autd.send(autd3::stop());
+  autd.send(autd3::Stop());
   for (const auto& cpu : *cpus) {
     const auto [duties, phases] = cpu.fpga().drives(0);
     for (const auto& [duty] : duties) ASSERT_EQ(duty, 0x0000);
