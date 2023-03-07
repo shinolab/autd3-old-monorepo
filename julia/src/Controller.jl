@@ -3,7 +3,7 @@
 # Created Date: 14/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 03/03/2023
+# Last Modified: 08/03/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -112,6 +112,9 @@ mutable struct GeometryBuilder
     _ptr::Ptr{Cvoid}
     add_device
     add_device_quaternion
+    to_legacy
+    to_advanced
+    to_advanced_phase
     build
     function GeometryBuilder()
         chandle = Ref(Ptr{Cvoid}(0))
@@ -129,6 +132,18 @@ mutable struct GeometryBuilder
             autd3capi.autd_add_device_quaternion(builder._ptr, x, y, z, rw, rx, ry, rz,)
             builder
         end
+        cnt.to_legacy = function ()
+            autd3capi.autd_set_mode(builder._ptr, 0)
+            builder
+        end
+        cnt.to_advanced = function ()
+            autd3capi.autd_set_mode(builder._ptr, 1)
+            builder
+        end
+        cnt.to_advanced_phase = function ()
+            autd3capi.autd_set_mode(builder._ptr, 2)
+            builder
+        end
         builder.build = function ()
             chandle = Ref(Ptr{Cvoid}(0))
             autd3capi.autd_build_geometry(chandle, builder._ptr)
@@ -141,20 +156,11 @@ end
 mutable struct Controller
     _ptr::Ptr{Cvoid}
     _geometry::Geometry
-    to_legacy
-    to_advanced
-    to_advanced_phase
     geometry
     close
     is_open
-    get_force_fan
-    set_force_fan
-    get_reads_fpga_info
-    set_reads_fpga_info
-    get_ack_check_timeout
-    set_ack_check_timeout
-    get_send_interval
-    set_send_interval
+    force_fan
+    reads_fpga_info
     firmware_info_list
     send
     function Controller(geometry, link)
@@ -163,20 +169,12 @@ mutable struct Controller
             throw(ErrorException("Failed to open controller"))
         end
         cnt = new(chandle[], geometry)
-        cnt.to_legacy = () -> autd3capi.autd_set_mode(cnt._ptr, 0)
-        cnt.to_advanced = () -> autd3capi.autd_set_mode(cnt._ptr, 1)
-        cnt.to_advanced_phase = () -> autd3capi.autd_set_mode(cnt._ptr, 2)
+
         cnt.geometry = () -> cnt._geometry
         cnt.close = () -> autd3capi.autd_close(cnt._ptr)
         cnt.is_open = () -> autd3capi.autd_is_open(cnt._ptr)
-        cnt.get_force_fan = () -> autd3capi.autd_get_force_fan(cnt._ptr)
-        cnt.set_force_fan = (flag::Bool) -> autd3capi.autd_set_force_fan(cnt._ptr, flag)
-        cnt.get_reads_fpga_info = () -> autd3capi.autd_get_reads_fpga_info(cnt._ptr)
-        cnt.set_reads_fpga_info = (flag::Bool) -> autd3capi.autd_set_reads_fpga_info(cnt._ptr, flag)
-        cnt.get_ack_check_timeout = () -> autd3capi.autd_get_ack_check_timeout(cnt._ptr)
-        cnt.set_ack_check_timeout = (value) -> autd3capi.autd_set_ack_check_timeout(cnt._ptr, UInt64(value))
-        cnt.get_send_interval = () -> autd3capi.autd_get_send_interval(cnt._ptr)
-        cnt.set_send_interval = (value) -> autd3capi.autd_set_send_interval(cnt._ptr, UInt64(value))
+        cnt.force_fan = (flag::Bool) -> autd3capi.autd_set_force_fan(cnt._ptr, flag)
+        cnt.reads_fpga_info = (flag::Bool) -> autd3capi.autd_set_reads_fpga_info(cnt._ptr, flag)
         cnt.firmware_info_list = function ()
             res = []
             phandle = Ref(Ptr{Cvoid}(0))
@@ -192,21 +190,21 @@ mutable struct Controller
             autd3capi.autd_free_firmware_info_list_pointer(handle)
             res
         end
-        cnt.send = function (a, b=Nothing)
+        cnt.send = function (a, b=Nothing; timeout_ns::UInt64=UInt64(0))
             np = Ptr{Cvoid}(0)
             if b == Nothing
                 if hasproperty(a, :_special_data_ptr)
-                    autd3capi.autd_send_special(cnt._ptr, a._special_data_ptr)
+                    autd3capi.autd_send_special(cnt._ptr, a._special_data_ptr, timeout_ns)
                 elseif hasproperty(a, :_header_ptr)
-                    autd3capi.autd_send(cnt._ptr, a._header_ptr, np)
+                    autd3capi.autd_send(cnt._ptr, a._header_ptr, np, timeout_ns)
                 elseif hasproperty(a, :_body_ptr)
-                    autd3capi.autd_send(cnt._ptr, np, a._body_ptr)
+                    autd3capi.autd_send(cnt._ptr, np, a._body_ptr, timeout_ns)
                 end
             else
                 if hasproperty(a, :_header_ptr) && hasproperty(b, :_body_ptr)
-                    autd3capi.autd_send(cnt._ptr, a._header_ptr, b._body_ptr)
+                    autd3capi.autd_send(cnt._ptr, a._header_ptr, b._body_ptr, timeout_ns)
                 elseif hasproperty(b, :_header_ptr) && hasproperty(a, :_body_ptr)
-                    autd3capi.autd_send(cnt._ptr, b._header_ptr, a._body_ptr)
+                    autd3capi.autd_send(cnt._ptr, b._header_ptr, a._body_ptr, timeout_ns)
                 end
             end
         end

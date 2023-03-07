@@ -4,7 +4,7 @@
  * Created Date: 14/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/02/2023
+ * Last Modified: 08/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,7 +33,5 @@ var link = new SOEM()
     .Build();
 
 var autd = Controller.Open(geometry, link);
-
-autd.AckCheckTimeoutMs = 20;
 
 SampleRunner.Run(autd);

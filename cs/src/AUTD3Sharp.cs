@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/03/2023
+ * Last Modified: 08/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -274,6 +274,25 @@ namespace AUTD3Sharp
             return this;
         }
 
+        public GeometryBuilder ToLegacy()
+        {
+            Base.AUTDSetMode(_builderPtr, 0);
+            return this;
+        }
+
+        public GeometryBuilder ToAdvanced()
+        {
+            Base.AUTDSetMode(_builderPtr, 1);
+            return this;
+        }
+
+        public GeometryBuilder ToAdvancedPhase()
+        {
+            Base.AUTDSetMode(_builderPtr, 2);
+            return this;
+        }
+
+
         public Geometry Build()
         {
             Base.AUTDBuildGeometry(out var geometryPtr, _builderPtr);
@@ -303,21 +322,6 @@ namespace AUTD3Sharp
         {
             CntPtr = cnt;
             Geometry = geometry;
-        }
-
-        public void ToLegacy()
-        {
-            Base.AUTDSetMode(CntPtr, 0);
-        }
-
-        public void ToAdvanced()
-        {
-            Base.AUTDSetMode(CntPtr, 1);
-        }
-
-        public void ToAdvancedPhase()
-        {
-            Base.AUTDSetMode(CntPtr, 2);
         }
 
         public IEnumerable<FirmwareInfo> FirmwareInfoList()
@@ -364,82 +368,57 @@ namespace AUTD3Sharp
 
         public bool IsOpen => Base.AUTDIsOpen(CntPtr);
 
-        public bool ForceFan
+        public void ForceFan(bool value)
         {
-            get => Base.AUTDGetForceFan(CntPtr);
-            set => Base.AUTDSetForceFan(CntPtr, value);
+            Base.AUTDSetForceFan(CntPtr, value);
         }
 
-        public bool ReadsFPGAInfo
+        public void ReadsFPGAInfo(bool value)
         {
-            get => Base.AUTDGetReadsFPGAInfo(CntPtr);
-            set => Base.AUTDSetReadsFPGAInfo(CntPtr, value);
-        }
-
-        public ulong AckCheckTimeoutMs
-        {
-            get => Base.AUTDGetAckCheckTimeout(CntPtr) / 1000 / 1000;
-            set => Base.AUTDSetAckCheckTimeout(CntPtr, value * 1000 * 1000);
-        }
-        public ulong AckCheckTimeoutNs
-        {
-            get => Base.AUTDGetAckCheckTimeout(CntPtr);
-            set => Base.AUTDSetAckCheckTimeout(CntPtr, value);
-        }
-
-        public ulong SendIntervalsMs
-        {
-            get => Base.AUTDGetSendInterval(CntPtr) / 1000 / 1000;
-            set => Base.AUTDSetSendInterval(CntPtr, value * 1000 * 1000);
-        }
-
-        public ulong SendIntervalsNs
-        {
-            get => Base.AUTDGetSendInterval(CntPtr);
-            set => Base.AUTDSetSendInterval(CntPtr, value);
+            Base.AUTDSetReadsFPGAInfo(CntPtr, value);
         }
 
         public byte[] FPGAInfo
         {
             get
             {
-                var infos = new byte[Geometry.NumTransducers / AUTD3.NumTransInDevice];
+                var infos = new byte[Geometry.NumDevices];
                 Base.AUTDGetFPGAInfo(CntPtr, infos);
                 return infos;
             }
         }
         #endregion
 
-        public bool Send(SpecialData special)
+        public bool Send(SpecialData special, TimeSpan? timeout = null)
         {
             if (special == null) throw new ArgumentNullException(nameof(special));
-            return Base.AUTDSendSpecial(CntPtr, special.Ptr);
+            return Base.AUTDSendSpecial(CntPtr, special.Ptr, (ulong)(timeout?.TotalMilliseconds * 1000 * 1000 ?? 0));
         }
 
-        public bool Send(Header header)
+        public bool Send(Header header, TimeSpan? timeout = null)
         {
             if (header == null) throw new ArgumentNullException(nameof(header));
-            return Base.AUTDSend(CntPtr, header.Ptr, IntPtr.Zero);
+            return Base.AUTDSend(CntPtr, header.Ptr, IntPtr.Zero, (ulong)(timeout?.TotalMilliseconds * 1000 * 1000 ?? 0));
         }
 
-        public bool Send(Body body)
+        public bool Send(Body body, TimeSpan? timeout = null)
         {
             if (body == null) throw new ArgumentNullException(nameof(body));
-            return Base.AUTDSend(CntPtr, IntPtr.Zero, body.Ptr);
+            return Base.AUTDSend(CntPtr, IntPtr.Zero, body.Ptr, (ulong)(timeout?.TotalMilliseconds * 1000 * 1000 ?? 0));
         }
 
-        public bool Send(Header header, Body body)
-        {
-            if (header == null) throw new ArgumentNullException(nameof(header));
-            if (body == null) throw new ArgumentNullException(nameof(body));
-            return Base.AUTDSend(CntPtr, header.Ptr, body.Ptr);
-        }
-
-        public bool Send(Body body, Header header)
+        public bool Send(Header header, Body body, TimeSpan? timeout = null)
         {
             if (header == null) throw new ArgumentNullException(nameof(header));
             if (body == null) throw new ArgumentNullException(nameof(body));
-            return Base.AUTDSend(CntPtr, header.Ptr, body.Ptr);
+            return Base.AUTDSend(CntPtr, header.Ptr, body.Ptr, (ulong)(timeout?.TotalMilliseconds * 1000 * 1000 ?? 0));
+        }
+
+        public bool Send(Body body, Header header, TimeSpan? timeout = null)
+        {
+            if (header == null) throw new ArgumentNullException(nameof(header));
+            if (body == null) throw new ArgumentNullException(nameof(body));
+            return Base.AUTDSend(CntPtr, header.Ptr, body.Ptr, (ulong)(timeout?.TotalMilliseconds * 1000 * 1000 ?? 0));
         }
     }
 
@@ -745,15 +724,9 @@ namespace AUTD3Sharp
         {
             private readonly List<AUTD3Sharp.Gain.Gain> _gains;
 
-            public Mode Mode
+            public GainSTM(Mode mode = Mode.PhaseDutyFull)
             {
-                get => (Mode)Base.AUTDGetGainSTMMode(handle);
-                set => Base.AUTDSetGainSTMMode(handle, (ushort)value);
-            }
-
-            public GainSTM()
-            {
-                Base.AUTDGainSTM(out handle);
+                Base.AUTDGainSTM(out handle, (ushort)mode);
                 _gains = new List<AUTD3Sharp.Gain.Gain>();
             }
 
