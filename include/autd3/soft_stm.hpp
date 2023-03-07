@@ -127,7 +127,6 @@ class SoftwareSTM {
     bool _run;
     std::thread _th;
     Controller& _cnt;
-    std::chrono::high_resolution_clock::duration _timeout;
   };
 
   SoftwareSTM() noexcept : timer_strategy(TimerStrategy::None), _sample_period_ns(0) {}
