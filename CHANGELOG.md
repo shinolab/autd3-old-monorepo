@@ -2,6 +2,7 @@
 
 - Move `Controller::set_sound_speed_from_temp` into `Geometry`
 - Make `modulation::LPF` generic
+- Add `modulation::Power`
 - Rename Normal mode to Advanced mode
 - Rename `gain::holo::EVD` to `gain::holo::EVP`
 - Remove `<<` operators
