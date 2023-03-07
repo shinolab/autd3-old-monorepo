@@ -79,7 +79,7 @@ FPGAの状態は`fpga_info`関数で取得できる.
 
 ```cpp
 autd.reads_fpga_info = true;
-autd << autd3::update_flag;
+autd.send(autd3::update_flag());
 const auto fpga_info = autd.read_fpga_info();
 ```
 
@@ -92,7 +92,7 @@ const auto fpga_info = autd.read_fpga_info();
 `autd3::stop`で出力を止めることができる.
 
 ```cpp
-autd << autd3::stop;
+autd.send(autd3::stop());
 ```
 
 ## clear
@@ -100,7 +100,7 @@ autd << autd3::stop;
 デバイス内のフラグや`Gain`/`Modulation`データ等をクリアする.
 
 ```cpp
-autd << autd3::clear;
+autd.send(autd3::clear());
 ```
 
 ## Firmware information

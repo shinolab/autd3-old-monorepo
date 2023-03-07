@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/03/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -50,6 +50,23 @@ bool AUTDAddDeviceQuaternion(void* const geometry_builder, const autd3_float_t x
                              const autd3_float_t qw, const autd3_float_t qx, const autd3_float_t qy, const autd3_float_t qz) {
   auto* const builder = static_cast<autd3::Geometry::Builder*>(geometry_builder);
   AUTD3_CAPI_TRY(builder->add_device(autd3::AUTD3(to_vec3(x, y, z), to_quaternion(qw, qx, qy, qz))))
+}
+
+void AUTDSetMode(void* const geometry_builder, const uint8_t mode) {
+  auto* const builder = static_cast<autd3::Geometry::Builder*>(geometry_builder);
+  switch (mode) {
+    case 0:
+      builder->legacy_mode();
+      break;
+    case 1:
+      builder->advanced_mode();
+      break;
+    case 2:
+      builder->advanced_phase_mode();
+      break;
+    default:
+      break;
+  }
 }
 
 void AUTDBuildGeometry(void** out, void* geometry_builder) {
@@ -470,23 +487,6 @@ void AUTDCreateAmplitudes(void** out, const autd3_float_t amp) { *out = new autd
 void AUTDDeleteAmplitudes(IN const void* amplitudes) {
   const auto* const amps_ = static_cast<const autd3::core::Amplitudes*>(amplitudes);
   delete amps_;
-}
-
-void AUTDSetMode(void* const handle, const uint8_t mode) {
-  auto* const wrapper = static_cast<Controller*>(handle);
-  switch (mode) {
-    case 0:
-      *wrapper << autd3::legacy_mode;
-      break;
-    case 1:
-      *wrapper << autd3::advanced_mode;
-      break;
-    case 2:
-      *wrapper << autd3::advanced_phase_mode;
-      break;
-    default:
-      break;
-  }
 }
 
 void AUTDSoftwareSTM(void** out) { *out = new autd3::SoftwareSTM; }
