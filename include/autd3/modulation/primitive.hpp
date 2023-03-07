@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/03/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -251,6 +251,26 @@ class Cache final : public core::Modulation {
  private:
   bool _built{false};
   std::vector<driver::autd3_float_t> _buffer;
+};
+
+template <typename T>
+class Power final : public core::Modulation {
+ public:
+  template <typename... Args>
+  explicit Power(const driver::autd3_float_t alpha, Args&&... args) : _alpha(alpha), _modulation(std::forward<Args>(args)...) {}
+
+  std::vector<driver::autd3_float_t> calc() override {
+    std::vector<driver::autd3_float_t> buffer = _modulation.calc();
+    _freq_div = _modulation.sampling_frequency_division();
+    const auto alpha = _alpha;
+    return generate_iota(0, buffer.size(), [alpha, buffer](const size_t i) {
+      return std::pow<driver::autd3_float_t>(std::clamp<driver::autd3_float_t>(buffer[i], 0, 1), alpha);
+    });
+  }
+
+ private:
+  driver::autd3_float_t _alpha;
+  T _modulation;
 };
 
 }  // namespace autd3::modulation
