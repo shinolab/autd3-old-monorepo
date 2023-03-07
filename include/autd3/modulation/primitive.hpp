@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 08/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -286,7 +286,28 @@ class Normalize final : public core::Modulation {
   }
 
  private:
-  driver::autd3_float_t _alpha;
+  T _modulation;
+};
+
+template <typename T>
+class Clamp final : public core::Modulation {
+ public:
+  template <typename... Args>
+  explicit Clamp(const driver::autd3_float_t min_v, const driver::autd3_float_t max_v, Args&&... args)
+      : _min_v(min_v), _max_v(max_v), _modulation(std::forward<Args>(args)...) {}
+
+  std::vector<driver::autd3_float_t> calc() override {
+    std::vector<driver::autd3_float_t> buffer = _modulation.calc();
+    _freq_div = _modulation.sampling_frequency_division();
+    const auto min_v = _min_v;
+    const auto max_v = _max_v;
+    return generate_iota(0, buffer.size(),
+                         [min_v, max_v, buffer](const size_t i) { return std::clamp<driver::autd3_float_t>(buffer[i], min_v, max_v); });
+  }
+
+ private:
+  driver::autd3_float_t _min_v;
+  driver::autd3_float_t _max_v;
   T _modulation;
 };
 
