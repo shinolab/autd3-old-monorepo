@@ -408,6 +408,7 @@ TEST(ControllerTest, gain_stm_legacy) {
       drives.emplace_back(f.calc(autd.geometry()));
       stm.add(f);
     });
+    stm.set_frequency(1);
 
     autd.send(stm);
     for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
@@ -442,6 +443,7 @@ TEST(ControllerTest, gain_stm_legacy) {
       stm.add(f);
     });
 
+    stm.set_frequency(1);
     stm.start_idx = 1;
     stm.finish_idx = 2;
 
@@ -480,6 +482,7 @@ TEST(ControllerTest, gain_stm_legacy) {
       drives.emplace_back(f.calc(autd.geometry()));
       stm.add(f);
     });
+    stm.set_frequency(1);
 
     autd.send(stm);
     for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
@@ -546,6 +549,7 @@ TEST(ControllerTest, gain_stm_advanced) {
       drives.emplace_back(f.calc(autd.geometry()));
       stm.add(f);
     });
+    stm.set_frequency(1);
 
     autd.send(stm);
     for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
@@ -581,6 +585,7 @@ TEST(ControllerTest, gain_stm_advanced) {
       stm.add(f);
     });
 
+    stm.set_frequency(1);
     stm.start_idx = 2;
     stm.finish_idx = 1;
 
@@ -649,6 +654,7 @@ TEST(ControllerTest, gain_stm_advanced_phase) {
       drives.emplace_back(f.calc(autd.geometry()));
       stm.add(f);
     });
+    stm.set_frequency(1);
 
     autd.send(stm);
     for (size_t i = 0; i < autd.geometry().num_devices(); i++) ASSERT_EQ(cpus->at(i).fpga().stm_cycle(), size);
@@ -684,6 +690,7 @@ TEST(ControllerTest, gain_stm_advanced_phase) {
       stm.add(f);
     });
 
+    stm.set_frequency(1);
     stm.start_idx = 0;
     stm.finish_idx = 0;
 
