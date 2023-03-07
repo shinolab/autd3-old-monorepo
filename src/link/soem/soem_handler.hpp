@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/01/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -169,7 +169,10 @@ class SOEMHandler final {
 
     _is_open.store(true);
     _ecat_thread = std::thread([this, cycle_time] {
-      ecat_run(this->_high_precision, &this->_is_open, &this->_wkc, cycle_time, this->_send_mtx, this->_send_buf, this->_io_map);
+      if (_high_precision)
+        ecat_run<timed_wait_h>(cycle_time);
+      else
+        ecat_run<timed_wait>(cycle_time);
     });
 
     ec_statecheck(0, EC_STATE_OPERATIONAL, 5 * EC_TIMEOUTSTATE);
@@ -265,6 +268,48 @@ class SOEMHandler final {
   std::chrono::milliseconds _state_check_interval;
 
   std::shared_ptr<spdlog::logger> _logger;
+
+  using WaitFunc = void(const timespec&);
+
+  template <WaitFunc W>
+  void ecat_run(const uint32_t cycletime_ns) {
+    ecat_init();
+
+#if WIN32
+    constexpr auto u_resolution = 1;
+    timeBeginPeriod(u_resolution);
+
+    auto* h_process = GetCurrentProcess();
+    const auto priority = GetPriorityClass(h_process);
+    SetPriorityClass(h_process, REALTIME_PRIORITY_CLASS);
+#endif
+
+    auto ts = ecat_setup(cycletime_ns);
+    int64_t toff = 0;
+    ec_send_processdata();
+    while (_is_open.load()) {
+      ec_sync(ec_DCtime, cycletime_ns, &toff);
+
+      _wkc.store(ec_receive_processdata(EC_TIMEOUTRET));
+      if (!_send_buf.empty()) {
+        _io_map.copy_from(_send_buf.front());
+        {
+          std::lock_guard lock(_send_mtx);
+          _send_buf.pop();
+        }
+      }
+
+      add_timespec(ts, cycletime_ns + toff);
+      W(ts);
+
+      ec_send_processdata();
+    }
+
+#if WIN32
+    timeEndPeriod(u_resolution);
+    SetPriorityClass(h_process, priority);
+#endif
+  }
 };
 
 }  // namespace autd3::link
