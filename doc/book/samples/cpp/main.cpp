@@ -25,7 +25,8 @@ int main() try {
 
   // initialize and synchronize devices
   // You MUST synchronize devices once after initialization, even if you are using only one device.
-  autd << autd3::clear << autd3::synchronize;
+  autd.send(autd3::clear());
+  autd.send(autd3::synchronize());
 
   // check firmware version
   const auto firm_infos = autd.firmware_infos();

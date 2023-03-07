@@ -80,6 +80,16 @@ qzは回転を表すクオータニオンである.
 | qz                     | double  | in     | z parameter of quaternion of rotation  |
 | return                 | bool    | -      | -                              |
 
+## AUTDSetMode (autd3capi)
+
+Set Legacy/Advanced mode.
+
+| Argument name / return | type    | in/out | description                                                 |
+| ---------------------- | ------- | ------ | ----------------------------------------------------------- |
+| geometry_builder                 | void*   | in     | pointer to GeometryBuilder                                       |
+| mode                   | uint8_t | in     | mode (0: Legacy mode, 1: Advanced mode, 2: Advanced Phase mode) |
+| return                 | void    | -      | -                                                           |
+
 ## AUTDBuildGeometry (autd3capi)
 
 `Geometry`を作成する.
@@ -1188,16 +1198,6 @@ SoftwareSTMを削除する.
 | ---------------------- | ----- | ------ | ---------------------- |
 | stm                    | void* | in     | pointer to SoftwareSTM |
 | return                 | void  | -      | -                      |
-
-## AUTDSetMode (autd3capi)
-
-Legacy/Advancedモードの設定を行う.
-
-| Argument name / return | type    | in/out | description                                                 |
-| ---------------------- | ------- | ------ | ----------------------------------------------------------- |
-| handle                 | void*   | in     | pointer to Controller                                       |
-| mode                   | uint8_t | in     | mode (0: Legacy mode, 1: Advanced mode, 2: Advanced Phase mode) |
-| return                 | void    | -      | -                                                           |
 
 ## AUTDEigenBackend (autd3capi-gain-holo)
 
