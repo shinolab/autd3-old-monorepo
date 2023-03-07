@@ -4,7 +4,7 @@
  * Created Date: 13/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/02/2023
+ * Last Modified: 08/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -34,8 +34,8 @@ public class SampleRunner
         if (autd.Geometry.NumDevices == 2)
             examples.Add((GroupTest.Test, "Grouped gain Test"));
 
-        autd.Send(new Clear());
-        autd.Send(new Synchronize());
+        autd.Send(new Clear(), TimeSpan.FromMilliseconds(20));
+        autd.Send(new Synchronize(), TimeSpan.FromMilliseconds(20));
 
         var firmList = autd.FirmwareInfoList().ToArray();
         if (!firmList.All((firm) => firm.MatchesVersion))
@@ -73,7 +73,7 @@ public class SampleRunner
             Console.ReadKey(true);
 
             Console.WriteLine("finish.");
-            autd.Send(new Stop());
+            autd.Send(new Stop(), TimeSpan.FromMilliseconds(20));
         }
 
         autd.Close();

@@ -27,8 +27,6 @@ when isMainModule:
         
         var autd = openController(geometry, link)
         
-        autd.ackCheckTimeoutMs = 20
-
         run(autd)
 
     except:
