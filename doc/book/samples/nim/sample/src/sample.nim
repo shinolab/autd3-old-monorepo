@@ -14,23 +14,21 @@ when isMainModule:
 
         var autd = openController(geometry, link)
 
-        autd.ackCheckTimeoutMs = 20
-
-        autd.send(clear())
-        autd.send(synchronize())
+        autd.send(clear(), 20*1000*1000)
+        autd.send(synchronize(), 20*1000*1000)
 
         let firmList = autd.firmwareInfoList()
         for firm in firmList:
             echo firm
 
         let config = initSilencerConfig()
-        autd.send(config)
+        autd.send(config, 20*1000*1000)
 
         let center = autd.geometry.center
         let f = initFocus([center[0], center[1], 150.0])
         let m = initSine(150)
 
-        autd.send(m, f)
+        autd.send(m, f, 20*1000*1000)
 
         discard stdin.readLine
 
