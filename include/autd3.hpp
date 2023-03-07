@@ -87,8 +87,4 @@ using core::GainSTM;
 
 using core::LinkPtr;
 
-using core::legacy_mode;
-using core::advanced_mode;
-using core::advanced_phase_mode;
-
 }  // namespace autd3
