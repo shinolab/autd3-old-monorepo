@@ -3,7 +3,7 @@
 // Created Date: 19/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/03/2023
+// Last Modified: 10/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -62,8 +62,7 @@ class CustomModulation final : public autd3::Modulation {
    * @param size size of buffer
    * @param freq_div sampling frequency division ratio
    */
-  explicit CustomModulation(const autd3_float_t* buffer, const size_t size, const uint32_t freq_div = 40960) : Modulation() {
-    _freq_div = freq_div;
+  explicit CustomModulation(const autd3_float_t* buffer, const size_t size, const uint32_t freq_div = 40960) : Modulation(freq_div) {
     _data.resize(size);
     std::copy_n(buffer, size, _data.begin());
   }

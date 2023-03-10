@@ -3,7 +3,7 @@
 // Created Date: 10/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/03/2023
+// Last Modified: 10/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -97,7 +97,7 @@ TEST(Modulation, Sine) {
 
   {
     auto m = autd3::modulation::Sine(150);
-    m.sampling_frequency_division() = 4096;
+    m.sampling_frequency_division = 4096;
     const auto buffer = m.calc();
 
     const uint8_t expects[800] = {

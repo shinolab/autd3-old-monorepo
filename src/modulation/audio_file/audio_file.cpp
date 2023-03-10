@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/03/2023
+// Last Modified: 10/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,9 +20,7 @@
 namespace autd3::modulation {
 
 RawPCM::RawPCM(std::filesystem::path filename, const driver::autd3_float_t sampling_freq, const uint32_t mod_sampling_freq_div)
-    : Modulation(), _filename(std::move(filename)), _sampling_freq(sampling_freq) {
-  _freq_div = mod_sampling_freq_div;
-}
+    : Modulation(mod_sampling_freq_div), _filename(std::move(filename)), _sampling_freq(sampling_freq) {}
 
 std::vector<driver::autd3_float_t> RawPCM::calc() {
   std::ifstream ifs;
@@ -67,9 +65,7 @@ T read_from_stream(std::ifstream& fsp) {
 }
 }  // namespace
 
-Wav::Wav(std::filesystem::path filename, const uint32_t mod_sampling_freq_div) : Modulation(), _filename(std::move(filename)) {
-  _freq_div = mod_sampling_freq_div;
-}
+Wav::Wav(std::filesystem::path filename, const uint32_t mod_sampling_freq_div) : Modulation(mod_sampling_freq_div), _filename(std::move(filename)) {}
 
 std::vector<driver::autd3_float_t> Wav::calc() {
   std::ifstream fs;
