@@ -2,7 +2,7 @@
 
 From version 2.0, the frequency of all the transducers can be changed individually.
 
-The conventional $\SI{40}{kHz}$ fixed mode is called `LegacyMode`, and the variable frequency mode is called `NormalMode`.
+The conventional $\SI{40}{kHz}$ fixed mode is called `LegacyMode`, and the variable frequency mode is called `AdvancedMode`.
 
 The default mode is `Legacy`.
 
@@ -15,21 +15,21 @@ You can also use `set_frequency` to specify the frequency.
 Note that you must change the frequency before synchronization.
 
 ```cpp
-  autd << autd3::normal_mode;
+  autd << autd3::advanced_mode;
 
   for (auto& dev : autd.geometry())
     for (auto& tr : dev) tr.set_frequency(70e3); // actual frequency is 163.84MHz/2341 ~ 69987 Hz
 
-  autd << autd3::synchronize;
+  autd.send(autd3::Synchronize());
 ```
 
-## NormalPhase mode
+## AdvancedPhase mode
 
-Normal mode has slightly higher communication latency because it requires one frame for each amplitude/phase data.
-In practice, the amplitude data is not expected to be updated frequently, so a `NormalPhaseMode` is also available, in which only the phase data is transmitted.
+Advanced mode has slightly higher communication latency because it requires one frame for each amplitude/phase data.
+In practice, the amplitude data is not expected to be updated frequently, so a `AdvancedPhaseMode` is also available, in which only the phase data is transmitted.
 
 ```cpp
-  autd << autd3::normal_phase_mode;
+  autd << autd3::advanced_phase_mode;
 ```
 
 In this mode, the amplitude is controlled by sending the `Amplitudes`.

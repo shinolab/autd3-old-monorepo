@@ -4,7 +4,7 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/12/2022
+ * Last Modified: 02/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -60,7 +60,7 @@ module sim_helper_bram #(
     bit [15:0] i;
     offset = idx[20:5];
     i = idx[4:0] << 9;
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_ADDR_OFFSET, offset);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_SEGMENT, offset);
     for (int j = 0; j < DEPTH; j++) begin
       bram_write(BRAM_SELECT_STM, i + j * 2, phase[j]);
       bram_write(BRAM_SELECT_STM, i + j * 2 + 1, duty[j]);
@@ -73,7 +73,7 @@ module sim_helper_bram #(
     bit [15:0] i;
     offset = idx[21:6];
     i = idx[5:0] << 8;
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_ADDR_OFFSET, offset);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_SEGMENT, offset);
     for (int j = 0; j < DEPTH; j++) begin
       bram_write(BRAM_SELECT_STM, i + j, {duty[j][7:0], phase[j][7:0]});
     end
@@ -85,7 +85,7 @@ module sim_helper_bram #(
     bit [15:0] i;
     offset = idx[15:11];
     i = idx[10:0] << 3;
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_ADDR_OFFSET, offset);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_STM_MEM_SEGMENT, offset);
     bram_write(BRAM_SELECT_STM, i, x[15:0]);
     bram_write(BRAM_SELECT_STM, i + 1, {y[13:0], x[17:16]});
     bram_write(BRAM_SELECT_STM, i + 2, {z[11:0], y[17:14]});
@@ -93,7 +93,7 @@ module sim_helper_bram #(
   endtask
 
   task set_mod_bram_offset(input offset);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_ADDR_OFFSET, offset);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_MOD_MEM_SEGMENT, offset);
   endtask
 
   task write_mod(input [7:0] mod_data[0:65535], int cnt);
@@ -117,8 +117,8 @@ module sim_helper_bram #(
   task set_ctl_reg(bit force_fan, bit sync);
     automatic
     bit [15:0]
-    ctl_reg = (sync << CTL_REG_SYNC_BIT) | (force_fan << CTL_REG_FORCE_FAN_BIT);
-    bram_write(BRAM_SELECT_CONTROLLER, ADDR_CTL_REG, ctl_reg);
+    ctl_reg = (sync << CTL_FLAG_SYNC_BIT) | (force_fan << CTL_FLAG_FORCE_FAN_BIT);
+    bram_write(BRAM_SELECT_CONTROLLER, ADDR_CTL_FLAG, ctl_reg);
   endtask
 
   task write_ecat_sync_time(bit [63:0] ecat_sync_time);

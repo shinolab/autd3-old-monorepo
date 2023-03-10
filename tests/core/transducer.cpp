@@ -3,7 +3,7 @@
 // Created Date: 02/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/01/2023
+// Last Modified: 10/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -37,10 +37,8 @@ TEST(CoreTransducer, Transducer) {
   ASSERT_NEAR_VECTOR3(tr.y_direction(), Vector3(-1, 0, 0), 1e-3);
   ASSERT_NEAR_VECTOR3(tr.z_direction(), Vector3(0, 0, 1), 1e-3);
 
-  ASSERT_EQ(tr.id(), 1);
+  ASSERT_EQ(tr.idx(), 1);
 
-  tr.set_cycle(3000);
-  ASSERT_EQ(tr.cycle(), 3000);
   tr.set_frequency(70e3);
   ASSERT_NEAR(tr.frequency(), 70e3, 15.0);
 

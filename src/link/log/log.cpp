@@ -3,7 +3,7 @@
 // Created Date: 27/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/02/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -102,11 +102,10 @@ class LogImpl final : public core::Link {
     return true;
   }
 
-  bool send_receive(const driver::TxDatagram& tx, driver::RxDatagram& rx, const std::chrono::high_resolution_clock::duration interval,
-                    const std::chrono::high_resolution_clock::duration timeout) override {
+  bool send_receive(const driver::TxDatagram& tx, driver::RxDatagram& rx, const std::chrono::high_resolution_clock::duration timeout) override {
     if (!send(tx)) return false;
     if (timeout == std::chrono::high_resolution_clock::duration::zero()) return receive(rx);
-    if (!wait_msg_processed(tx.header().msg_id, rx, interval, timeout)) {
+    if (!wait_msg_processed(tx.header().msg_id, rx, timeout)) {
       _logger->error("Failed to confirm that the data was processed");
       return false;
     }

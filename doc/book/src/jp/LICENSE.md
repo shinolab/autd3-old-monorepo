@@ -20,7 +20,6 @@ autd3ライブラリ自体はMITライセンスである.
       - [Dear ImGui](https://github.com/ocornut/imgui)
       - [nlohmann-json](https://github.com/nlohmann/json)
       - [stb](https://github.com/nothings/stb)
-      - [Vulkan-Headers](https://github.com/KhronosGroup/Vulkan-Headers)
       - [NotoFont](https://github.com/notofonts/noto-fonts/blob/main/LICENSE)
     - Simulatorは以下のライブラリを使用している
       - [glfw](https://github.com/glfw/glfw)
@@ -28,7 +27,6 @@ autd3ライブラリ自体はMITライセンスである.
       - [Dear ImGui](https://github.com/ocornut/imgui)
       - [stb](https://github.com/nothings/stb)
       - [tinycolormap](https://github.com/yuki-koyama/tinycolormap)
-      - [Vulkan-Headers](https://github.com/KhronosGroup/Vulkan-Headers)
       - [NotoFont](https://github.com/notofonts/noto-fonts/blob/main/LICENSE)
     - SOEMAUTDServerは以下のライブラリを使用している
       - [SOEM](https://github.com/OpenEtherCATsociety/SOEM)

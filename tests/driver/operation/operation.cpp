@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/02/2023
+// Last Modified: 03/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -89,7 +89,7 @@ TEST(Driver_Driver, sync_legacy) {
   autd3::driver::Sync<autd3::driver::Legacy>().pack(tx);
 }
 
-TEST(Driver_Driver, sync_normal) {
+TEST(Driver_Driver, sync_advanced) {
   autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
                                 NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
@@ -100,7 +100,7 @@ TEST(Driver_Driver, sync_normal) {
   cycles.reserve(NUM_TRANS_IN_UNIT * 10);
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) cycles.emplace_back(dist(engine));
 
-  autd3::driver::Sync<autd3::driver::Normal> op(cycles);
+  autd3::driver::Sync<autd3::driver::Advanced> op(cycles);
 
   op.init();
   op.pack(tx);
@@ -116,7 +116,7 @@ TEST(Driver_Driver, modulation) {
   autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
                                 NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
-  std::vector<autd3::driver::Amp> mod_data;
+  std::vector<autd3::driver::autd3_float_t> mod_data;
   constexpr size_t size = autd3::driver::MOD_HEADER_INITIAL_DATA_SIZE + autd3::driver::MOD_HEADER_SUBSEQUENT_DATA_SIZE + 1;
   for (size_t i = 0; i < size; i++) {
     const auto amp = static_cast<autd3::driver::autd3_float_t>(i) / static_cast<autd3::driver::autd3_float_t>(size);
@@ -196,8 +196,7 @@ TEST(Driver_Driver, normal_legacy_gain) {
   std::mt19937 engine(seed_gen());
   std::uniform_real_distribution<autd3::driver::autd3_float_t> dist(0, 1);
   drives.reserve(NUM_TRANS_IN_UNIT * 10);
-  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
-    drives.emplace_back(autd3::driver::Drive{autd3::driver::Phase(dist(engine)), autd3::driver::Amp(dist(engine))});
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine)});
 
   autd3::driver::Gain<autd3::driver::Legacy> op(drives);
   op.pack(tx);
@@ -227,11 +226,10 @@ TEST(Driver_Driver, normal_gain) {
   std::mt19937 engine(seed_gen());
   std::uniform_real_distribution<autd3::driver::autd3_float_t> dist(0, 1);
   drives.reserve(NUM_TRANS_IN_UNIT * 10);
-  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
-    drives.emplace_back(autd3::driver::Drive{autd3::driver::Phase(dist(engine)), autd3::driver::Amp(dist(engine))});
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine)});
   cycles.resize(NUM_TRANS_IN_UNIT * 10, 4096);
 
-  autd3::driver::Gain<autd3::driver::Normal> op(drives, cycles);
+  autd3::driver::Gain<autd3::driver::Advanced> op(drives, cycles);
   op.init();
   op.pack(tx);
 
@@ -239,13 +237,13 @@ TEST(Driver_Driver, normal_gain) {
   ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::STMMode));
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::IsDuty));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WriteBody));
-  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::NormalDrivePhase::to_phase(drives[i], 4096));
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::AdvancedDrivePhase::to_phase(drives[i], 4096));
   ASSERT_EQ(tx.num_bodies, 10);
 
   op.pack(tx);
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::IsDuty));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WriteBody));
-  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::NormalDriveDuty::to_duty(drives[i], 4096));
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::AdvancedDriveDuty::to_duty(drives[i], 4096));
   ASSERT_EQ(tx.num_bodies, 10);
 
   op.pack(tx);
@@ -253,7 +251,7 @@ TEST(Driver_Driver, normal_gain) {
   ASSERT_EQ(tx.num_bodies, 0);
 }
 
-TEST(Driver_Driver, normal_phase_gain) {
+TEST(Driver_Driver, advanced_phase_gain) {
   autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
                                 NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
@@ -264,18 +262,17 @@ TEST(Driver_Driver, normal_phase_gain) {
   std::mt19937 engine(seed_gen());
   std::uniform_real_distribution<autd3::driver::autd3_float_t> dist(0, 1);
   drives.reserve(NUM_TRANS_IN_UNIT * 10);
-  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
-    drives.emplace_back(autd3::driver::Drive{autd3::driver::Phase(dist(engine)), autd3::driver::Amp(dist(engine))});
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine)});
   cycles.resize(NUM_TRANS_IN_UNIT * 10, 4096);
 
-  autd3::driver::Gain<autd3::driver::NormalPhase> op(drives, cycles);
+  autd3::driver::Gain<autd3::driver::AdvancedPhase> op(drives, cycles);
 
   op.init();
   op.pack(tx);
   ASSERT_FALSE(tx.header().cpu_flag.contains(CPUControlFlags::IsDuty));
   ASSERT_TRUE(tx.header().cpu_flag.contains(CPUControlFlags::WriteBody));
 
-  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::NormalDrivePhase::to_phase(drives[i], 4096));
+  for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::AdvancedDrivePhase::to_phase(drives[i], 4096));
 
   ASSERT_EQ(tx.num_bodies, 10);
 
@@ -404,8 +401,7 @@ TEST(Driver_Driver, gain_stm_legacy) {
   for (size_t i = 0; i < 2; i++) {
     std::vector<autd3::driver::Drive> d;
     d.reserve(NUM_TRANS_IN_UNIT * 10);
-    for (size_t j = 0; j < NUM_TRANS_IN_UNIT * 10; j++)
-      d.emplace_back(autd3::driver::Drive{autd3::driver::Phase(dist(engine)), autd3::driver::Amp(dist(engine))});
+    for (size_t j = 0; j < NUM_TRANS_IN_UNIT * 10; j++) d.emplace_back(autd3::driver::Drive{dist(engine), dist(engine)});
     drives.emplace_back(d);
   }
 
@@ -491,7 +487,7 @@ TEST(Driver_Driver, gain_stm_legacy) {
   }
 }
 
-TEST(Driver_Driver, gain_stm_normal) {
+TEST(Driver_Driver, gain_stm_advanced) {
   autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
                                 NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
@@ -503,8 +499,7 @@ TEST(Driver_Driver, gain_stm_normal) {
     for (size_t i = 0; i < 2; i++) {
       std::vector<autd3::driver::Drive> d;
       d.reserve(NUM_TRANS_IN_UNIT * 10);
-      for (size_t j = 0; j < NUM_TRANS_IN_UNIT * 10; j++)
-        d.emplace_back(autd3::driver::Drive{autd3::driver::Phase(dist(engine)), autd3::driver::Amp(dist(engine))});
+      for (size_t j = 0; j < NUM_TRANS_IN_UNIT * 10; j++) d.emplace_back(autd3::driver::Drive{dist(engine), dist(engine)});
       drives.emplace_back(d);
     }
   }
@@ -523,7 +518,7 @@ TEST(Driver_Driver, gain_stm_normal) {
   props.start_idx = 1;
   props.finish_idx = 1;
   {
-    autd3::driver::GainSTM<autd3::driver::Normal> op(drives, cycles, props);
+    autd3::driver::GainSTM<autd3::driver::Advanced> op(drives, cycles, props);
     op.init();
 
     op.pack(tx);
@@ -552,7 +547,7 @@ TEST(Driver_Driver, gain_stm_normal) {
     ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
     ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
     for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
-      ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::NormalDrivePhase::to_phase(drives[0][i], cycles[i]));
+      ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::AdvancedDrivePhase::to_phase(drives[0][i], cycles[i]));
     ASSERT_EQ(tx.num_bodies, 10);
 
     op.pack(tx);
@@ -566,7 +561,7 @@ TEST(Driver_Driver, gain_stm_normal) {
     ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
     ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
     for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
-      ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::NormalDriveDuty::to_duty(drives[0][i], cycles[i]));
+      ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::AdvancedDriveDuty::to_duty(drives[0][i], cycles[i]));
     ASSERT_EQ(tx.num_bodies, 10);
 
     op.pack(tx);
@@ -580,7 +575,7 @@ TEST(Driver_Driver, gain_stm_normal) {
     ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
     ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
     for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
-      ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::NormalDrivePhase::to_phase(drives[1][i], cycles[i]));
+      ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::AdvancedDrivePhase::to_phase(drives[1][i], cycles[i]));
     ASSERT_EQ(tx.num_bodies, 10);
 
     op.pack(tx);
@@ -594,7 +589,7 @@ TEST(Driver_Driver, gain_stm_normal) {
     ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
     ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
     for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
-      ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::NormalDriveDuty::to_duty(drives[1][i], cycles[i]));
+      ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::AdvancedDriveDuty::to_duty(drives[1][i], cycles[i]));
     ASSERT_EQ(tx.num_bodies, 10);
 
     op.pack(tx);
@@ -612,7 +607,7 @@ TEST(Driver_Driver, gain_stm_normal) {
   {
     props.start_idx = static_cast<uint16_t>(2);
     props.finish_idx = 0;
-    autd3::driver::GainSTM<autd3::driver::Normal> op(drives, cycles, props);
+    autd3::driver::GainSTM<autd3::driver::Advanced> op(drives, cycles, props);
     op.init();
     ASSERT_THROW(op.pack(tx), std::runtime_error);
   }
@@ -620,13 +615,13 @@ TEST(Driver_Driver, gain_stm_normal) {
   {
     props.start_idx = 0;
     props.finish_idx = static_cast<uint16_t>(2);
-    autd3::driver::GainSTM<autd3::driver::Normal> op(drives, cycles, props);
+    autd3::driver::GainSTM<autd3::driver::Advanced> op(drives, cycles, props);
     op.init();
     ASSERT_THROW(op.pack(tx), std::runtime_error);
   }
 }
 
-TEST(Driver_Driver, gain_stm_normal_phase) {
+TEST(Driver_Driver, gain_stm_advanced_phase) {
   autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
                                 NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
@@ -638,8 +633,7 @@ TEST(Driver_Driver, gain_stm_normal_phase) {
     for (size_t i = 0; i < 2; i++) {
       std::vector<autd3::driver::Drive> d;
       d.reserve(NUM_TRANS_IN_UNIT * 10);
-      for (size_t j = 0; j < NUM_TRANS_IN_UNIT * 10; j++)
-        d.emplace_back(autd3::driver::Drive{autd3::driver::Phase(dist(engine)), autd3::driver::Amp(dist(engine))});
+      for (size_t j = 0; j < NUM_TRANS_IN_UNIT * 10; j++) d.emplace_back(autd3::driver::Drive{dist(engine), dist(engine)});
       drives.emplace_back(d);
     }
   }
@@ -658,7 +652,7 @@ TEST(Driver_Driver, gain_stm_normal_phase) {
   props.start_idx = 1;
   props.finish_idx = 1;
   {
-    autd3::driver::GainSTM<autd3::driver::NormalPhase> op(drives, cycles, props);
+    autd3::driver::GainSTM<autd3::driver::AdvancedPhase> op(drives, cycles, props);
     op.init();
     op.pack(tx);
     ASSERT_FALSE(tx.header().fpga_flag.contains(FPGAControlFlags::LegacyMode));
@@ -686,7 +680,7 @@ TEST(Driver_Driver, gain_stm_normal_phase) {
     ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
     ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
     for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
-      ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::NormalDrivePhase::to_phase(drives[0][i], cycles[i]));
+      ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::AdvancedDrivePhase::to_phase(drives[0][i], cycles[i]));
     ASSERT_EQ(tx.num_bodies, 10);
 
     op.pack(tx);
@@ -700,7 +694,7 @@ TEST(Driver_Driver, gain_stm_normal_phase) {
     ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMStartIdx));
     ASSERT_TRUE(tx.header().fpga_flag.contains(FPGAControlFlags::UseSTMFinishIdx));
     for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++)
-      ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::NormalDrivePhase::to_phase(drives[1][i], cycles[i]));
+      ASSERT_EQ(tx.bodies_raw_ptr()[i], autd3::driver::AdvancedDrivePhase::to_phase(drives[1][i], cycles[i]));
     ASSERT_EQ(tx.num_bodies, 10);
 
     op.pack(tx);
@@ -718,7 +712,7 @@ TEST(Driver_Driver, gain_stm_normal_phase) {
   {
     props.start_idx = static_cast<uint16_t>(2);
     props.finish_idx = 0;
-    autd3::driver::GainSTM<autd3::driver::NormalPhase> op(drives, cycles, props);
+    autd3::driver::GainSTM<autd3::driver::AdvancedPhase> op(drives, cycles, props);
     op.init();
     ASSERT_THROW(op.pack(tx), std::runtime_error);
   }
@@ -726,7 +720,7 @@ TEST(Driver_Driver, gain_stm_normal_phase) {
   {
     props.start_idx = 0;
     props.finish_idx = static_cast<uint16_t>(2);
-    autd3::driver::GainSTM<autd3::driver::NormalPhase> op(drives, cycles, props);
+    autd3::driver::GainSTM<autd3::driver::AdvancedPhase> op(drives, cycles, props);
     op.init();
     ASSERT_THROW(op.pack(tx), std::runtime_error);
   }

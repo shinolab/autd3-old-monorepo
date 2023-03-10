@@ -1,21 +1,21 @@
 %{
-%File: EVD.m
+%File: EVP.m
 %Project: autd3
 %Created Date: 10/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 10/06/2022
+%Last Modified: 02/03/2023
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
 %
 %}
 
-classdef EVD < Holo
+classdef EVP < Holo
 
     methods
 
-        function obj = EVD(varargin)
+        function obj = EVP(varargin)
             obj = obj@Holo();
             backend = varargin{1};
 
@@ -26,7 +26,7 @@ classdef EVD < Holo
             end
 
             pp = libpointer('voidPtrPtr', obj.ptr);
-            calllib('autd3capi_gain_holo', 'AUTDGainHoloEVD', pp, backend.ptr, gamma);
+            calllib('autd3capi_gain_holo', 'AUTDGainHoloEVP', pp, backend.ptr, gamma);
         end
 
     end

@@ -1,4 +1,4 @@
-# ライブラリ概観
+# コンセプト
 
 SDKを構成する主なクラスは以下の通りである.
 
@@ -7,54 +7,70 @@ SDKを構成する主なクラスは以下の通りである.
 * `Link` - AUTD3デバイスとのインターフェース
 * `Gain` - 各振動子の位相/振幅を管理するクラス
 * `Modulation` - AM変調を管理するクラス
-* `STM` - Hardware上のSpatio-Temporal Modulation (STM, 時空間変調) 機能を管理するクラス
+* `STM` - ファームウェア上のSpatio-Temporal Modulation (STM, 時空間変調) 機能を管理するクラス
 
 SDK使用の流れは次のようになる.
 
-* `Controller`の作成
-* 接続されているデバイスの位置と姿勢の設定
-* `Link`の作成, 及び, 接続
-* デバイスの初期化
-* `Modulation`, 及び, `Gain`または`STM`の送信
+- `Geometry`の作成: 接続されているデバイスの位置と姿勢の設定
+  - (Modeの選択/周波数の設定)
+- `Link`の作成
+- `Controller`の作成
+- デバイスの初期化/同期
+- (`Silencer`の設定)
+- (`Modulation`の作成, 及び, 送信)
+- `Gain`/`STM`の作成, 及び, 送信
 
-## Hardware description
 
-以下にAUTD3を上から見た写真を載せる.
+以下にAUTD3の前面と背面写真を載せる.
 
 <figure>
   <img src="../fig/Users_Manual/autd_trans_idx.jpg"/>
-  <figcaption>AUTD front</figcaption>
+  <figcaption>AUTDの表面写真</figcaption>
 </figure>
-
-AUTD3には一台あたり249個[^fn_asm]の振動子から構成されており, それぞれ図のようにindex番号が振られている.
-SDKからはこの全ての振動子の周波数, 位相, 及び, 振幅をそれぞれ個別に指定できるようになっている.
-
-AUTD3の座標系は右手座標系を採用しており, 0番目の振動子の中心が原点になる.
-$x$軸は長軸方向, すなわち, 0→17の方向であり, $y$軸は0→18の方向である.
-また, 単位系として, 距離は$\SI{}{mm}$, 角度は$\SI{}{rad}$, 周波数は$\SI{}{Hz}$を採用している.
-振動子は$\SI{10.16}{mm}$の間隔で配置されており, 基板を含めたサイズは$\SI{192}{mm}\times\SI{151.4}{mm}$となっている.
-以下に, 振動子アレイの外形図を載せる.
-
-<figure>
-  <img src="../fig/Users_Manual/transducers_array.jpg"/>
-  <figcaption>Design drawing of transducer array</figcaption>
-</figure>
-
-
-また, 以下にAUTD3の背面の画像を載せる.
 
 <figure>
   <img src="../fig/Users_Manual/autd_back.jpg"/>
-  <figcaption>AUTD back</figcaption>
+  <figcaption>AUTD背面写真</figcaption>
 </figure>
 
-AUTD3は復数のデバイスをデイジーチェーンで接続し拡張できるようになっている.
-PCと1台目のEherCAT Inをイーサネットケーブルを繋ぎ, $i$台目のEherCAT Outと$i+1$台目のEherCAT Inを繋ぐことで拡張アレイを構成できる.
-使用するイーサネットケーブルはCAT 5e以上のものである必要がある.
+
+AUTD3は一台あたり249個の振動子から構成されている[^fn_asm].
+SDKからはこの全ての振動子の位相/振幅をそれぞれ個別に指定できるようになっている.
+AUTD3の座標系は右手座標系を採用しており, 0番目の振動子の中心が原点になる.
+x軸は長軸方向, すなわち, 0→17の方向であり, y軸は0→18の方向である.
+また, 単位系として, 距離はmm, 角度はrad, 周波数はHzを採用している.
+振動子は$\SI{10.16}{mm}$の間隔で配置されており, 基板を含めたサイズは$\SI{192}{mm}\times\SI{151.4}{mm}$となっている.
+
+以下に振動子アレイの寸法を載せる.
+
+<figure>
+  <img src="../fig/Users_Manual/transducers_array.jpg"/>
+  <figcaption>AUTD3デバイスの寸法</figcaption>
+</figure>
+
+さらに, AUTD3は復数のデバイスをデイジーチェインで接続し拡張できるようになっている.
+PCと1台目のEherCAT In をイーサネットケーブルを繋ぎ, $i$台目のEherCAT Outと$i+1$台目のEherCAT Inを繋ぐことで拡張アレイを構成できる.
+この時, イーサネットケーブルはCAT 5e以上のものを使用すること.
 
 AUTD3の電源は$\SI{24}{V}$の直流電源を使用する. 電源についても相互に接続でき, 電源コネクタは3つの内で好きなところを使って良い.
 なお, 電源のコネクタはMolex社5566-02Aを使用している.
 
 > NOTE: AUTD3は最大でデバイスあたり$\SI{2}{A}$の電流を消費する. 電源の最大出力電流に注意されたい.
+
+## Modeの選択/周波数の設定
+
+AUTD3はデフォルトでは, $\ufreq$の超音波を使用するLegacyモードに設定されている.
+Legacyモードでは, 位相と振幅を$\SI{8}{bit}$で設定できる.
+基本的にはLegacyモードの使用を推奨する.
+
+$\ufreq$以外の超音波を使用するために, Advancedモードが用意されている.
+このモードでは, 超音波の周波数を$\clkf/N, N=2,3,...,8191$で設定できる.
+この時, 超音波の位相と振幅は$N$段階で指定できる.
+例えば, $N=4096$とすると, 超音波周波数は\ufreq となり, 位相と振幅は$4096$段階, すなわち, $\SI{12}{bit}$で指定できる.
+
+Advancedモードは送信データ量が多いため, レイテンシ, スループットが悪い.
+実際の利用では, 振幅を頻繁に変更することは少ないため, 位相データのみを送信するAdvancedPhaseモードが用意されている.
+
+SDKでこれらのモードを設定する方法, 及び, 周波数の変更方法は「[Modeの設定/周波数の変更](./advanced_examples/freq_config.md)」を参照されたい.
 
 [^fn_asm]: $18\times 14=252$からネジ用に3つの振動子が抜けている. 態々この位置にネジ穴を持ってきたのは, 複数台並べたときの隙間を可能な限り小さくしようとしたため.

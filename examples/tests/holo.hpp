@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,6 +23,7 @@
 
 inline void holo_test(autd3::Controller& autd) {
   autd3::SilencerConfig silencer;
+  autd.send(silencer, std::chrono::milliseconds(20));
 
   autd3::modulation::Sine m(150);  // 150Hz AM
 
@@ -34,7 +35,7 @@ inline void holo_test(autd3::Controller& autd) {
 
   std::vector<std::pair<std::string, std::shared_ptr<autd3::gain::holo::Holo>>> opts;
   opts.emplace_back("SDP", std::make_shared<autd3::gain::holo::SDP>(backend));
-  opts.emplace_back("EVD", std::make_shared<autd3::gain::holo::EVD>(backend));
+  opts.emplace_back("EVP", std::make_shared<autd3::gain::holo::EVP>(backend));
   opts.emplace_back("GS", std::make_shared<autd3::gain::holo::GS>(backend));
   opts.emplace_back("GSPAT", std::make_shared<autd3::gain::holo::GSPAT>(backend));
   opts.emplace_back("Naive", std::make_shared<autd3::gain::holo::Naive>(backend));
@@ -61,5 +62,5 @@ inline void holo_test(autd3::Controller& autd) {
 
   g->constraint = std::make_unique<autd3::gain::holo::Uniform>(1);
 
-  autd << silencer << m, *g;
+  autd.send(m, *g, std::chrono::milliseconds(20));
 }

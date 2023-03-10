@@ -4,7 +4,7 @@
  * Created Date: 30/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/10/2022
+ * Last Modified: 08/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ internal static class GainHoloTest
     public static void Test(Controller autd)
     {
         var config = new SilencerConfig();
-        autd.Send(config);
+        autd.Send(config, TimeSpan.FromMilliseconds(20));
 
         var center = autd.Geometry.Center + new Vector3d(0, 0, 150);
 
@@ -34,6 +34,6 @@ internal static class GainHoloTest
 
         var mod = new Sine(150);
 
-        autd.Send(mod, gain);
+        autd.Send(mod, gain, TimeSpan.FromMilliseconds(20));
     }
 }

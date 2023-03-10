@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/01/2023
+// Last Modified: 08/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -61,11 +61,10 @@ class Link {
    * @return true if succeed
    */
   [[nodiscard]] virtual bool send_receive(const driver::TxDatagram& tx, driver::RxDatagram& rx,
-                                          const std::chrono::high_resolution_clock::duration interval,
                                           const std::chrono::high_resolution_clock::duration timeout) {
     if (!send(tx)) return false;
     if (timeout == std::chrono::high_resolution_clock::duration::zero()) return receive(rx);
-    return wait_msg_processed(tx.header().msg_id, rx, interval, timeout);
+    return wait_msg_processed(tx.header().msg_id, rx, timeout);
   }
 
   /**
@@ -74,13 +73,12 @@ class Link {
   [[nodiscard]] virtual bool is_open() = 0;
 
  protected:
-  bool wait_msg_processed(const uint8_t msg_id, driver::RxDatagram& rx, const std::chrono::high_resolution_clock::duration interval,
-                          const std::chrono::high_resolution_clock::duration timeout) {
-    const auto start = std::chrono::high_resolution_clock::now();
+  bool wait_msg_processed(const uint8_t msg_id, driver::RxDatagram& rx, const std::chrono::high_resolution_clock::duration timeout) {
+    const auto expired = std::chrono::high_resolution_clock::now() + timeout;
     do {
       if (receive(rx) && rx.is_msg_processed(msg_id)) return true;
-      std::this_thread::sleep_for(interval);
-    } while (std::chrono::high_resolution_clock::now() - start < timeout);
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    } while (std::chrono::high_resolution_clock::now() < expired);
     return false;
   }
 };

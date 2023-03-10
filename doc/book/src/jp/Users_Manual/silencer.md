@@ -66,7 +66,7 @@ $$
 $$
 として位相$P$を更新する.
 ここで, $\Delta$は1ステップ当たりの更新量 (`SilencerConfig`の`step`) を表す.
-また, 更新周波数は`SilencerConfig`の`cycle`で設定でき, $\SI{163.84}{MHz}/cycle$となる.
+また, 更新周波数は`SilencerConfig`の`cycle`で設定でき, $\clkf/\text{cycle}$となる.
 
 $\Delta$が小さいほど, また, 更新周期が遅いほど, 位相変化はなだらかになり騒音が抑制される.
 

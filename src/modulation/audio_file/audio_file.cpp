@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/01/2023
+// Last Modified: 10/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,11 +20,9 @@
 namespace autd3::modulation {
 
 RawPCM::RawPCM(std::filesystem::path filename, const driver::autd3_float_t sampling_freq, const uint32_t mod_sampling_freq_div)
-    : Modulation(), _filename(std::move(filename)), _sampling_freq(sampling_freq) {
-  _freq_div = mod_sampling_freq_div;
-}
+    : Modulation(mod_sampling_freq_div), _filename(std::move(filename)), _sampling_freq(sampling_freq) {}
 
-std::vector<driver::Amp> RawPCM::calc() {
+std::vector<driver::autd3_float_t> RawPCM::calc() {
   std::ifstream ifs;
   ifs.open(_filename, std::ios::binary);
   if (ifs.fail()) throw std::runtime_error("Error on opening file");
@@ -48,10 +46,10 @@ std::vector<driver::Amp> RawPCM::calc() {
     return std::fmod(v, driver::autd3_float_t{1}) < 1 / freq_ratio ? buf[static_cast<size_t>(v)] : 0;
   });
 
-  std::vector<driver::Amp> buffer;
+  std::vector<driver::autd3_float_t> buffer;
   buffer.reserve(sample_buf.size());
   std::transform(sample_buf.begin(), sample_buf.end(), std::back_inserter(buffer), [](const auto& v) {
-    return driver::Amp(static_cast<driver::autd3_float_t>(v) / static_cast<driver::autd3_float_t>(std::numeric_limits<uint8_t>::max()));
+    return static_cast<driver::autd3_float_t>(v / static_cast<driver::autd3_float_t>(std::numeric_limits<uint8_t>::max()));
   });
   return buffer;
 }
@@ -67,11 +65,9 @@ T read_from_stream(std::ifstream& fsp) {
 }
 }  // namespace
 
-Wav::Wav(std::filesystem::path filename, const uint32_t mod_sampling_freq_div) : Modulation(), _filename(std::move(filename)) {
-  _freq_div = mod_sampling_freq_div;
-}
+Wav::Wav(std::filesystem::path filename, const uint32_t mod_sampling_freq_div) : Modulation(mod_sampling_freq_div), _filename(std::move(filename)) {}
 
-std::vector<driver::Amp> Wav::calc() {
+std::vector<driver::autd3_float_t> Wav::calc() {
   std::ifstream fs;
   fs.open(_filename, std::ios::binary);
   if (fs.fail()) throw std::runtime_error("Error on opening file");

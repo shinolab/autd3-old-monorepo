@@ -1,11 +1,7 @@
 # AUTD3-FPGA
 
-version 2.5
-
-# Document
-
-* [日本語/Japanese](https://shinolab.github.io/autd3/fpga/)
+version 2.8.1
 
 # Author
 
-Shun Suzuki, 2022
+Shun Suzuki, 2022-2023

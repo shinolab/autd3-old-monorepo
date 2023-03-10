@@ -36,8 +36,8 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGainHoloSDP.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_uint64] 
         self.dll.AUTDGainHoloSDP.restype = None
 
-        self.dll.AUTDGainHoloEVD.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p, ctypes.c_double] 
-        self.dll.AUTDGainHoloEVD.restype = None
+        self.dll.AUTDGainHoloEVP.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p, ctypes.c_double] 
+        self.dll.AUTDGainHoloEVP.restype = None
 
         self.dll.AUTDGainHoloNaive.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p] 
         self.dll.AUTDGainHoloNaive.restype = None

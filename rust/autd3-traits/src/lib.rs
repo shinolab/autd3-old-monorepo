@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 03/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -54,22 +54,22 @@ fn impl_modulation_macro(ast: &syn::DeriveInput) -> TokenStream {
             }
         }
 
-        impl #impl_generics autd3_core::datagram::Sendable<autd3_core::geometry::NormalTransducer> for #name #ty_generics #where_clause {
+        impl #impl_generics autd3_core::datagram::Sendable<autd3_core::geometry::AdvancedTransducer> for #name #ty_generics #where_clause {
             type H = autd3_core::datagram::Filled;
             type B = autd3_core::datagram::Empty;
             type O = <Self as autd3_core::datagram::DatagramHeader>::O;
 
-            fn operation(&mut self, _: &autd3_core::geometry::Geometry<autd3_core::geometry::NormalTransducer>) -> Result<Self::O> {
+            fn operation(&mut self, _: &autd3_core::geometry::Geometry<autd3_core::geometry::AdvancedTransducer>) -> Result<Self::O> {
                 <Self as autd3_core::datagram::DatagramHeader>::operation(self)
             }
         }
 
-        impl #impl_generics autd3_core::datagram::Sendable<autd3_core::geometry::NormalPhaseTransducer> for #name #ty_generics #where_clause {
+        impl #impl_generics autd3_core::datagram::Sendable<autd3_core::geometry::AdvancedPhaseTransducer> for #name #ty_generics #where_clause {
             type H = autd3_core::datagram::Filled;
             type B = autd3_core::datagram::Empty;
             type O = <Self as autd3_core::datagram::DatagramHeader>::O;
 
-            fn operation(&mut self, _: &autd3_core::geometry::Geometry<autd3_core::geometry::NormalPhaseTransducer>) -> Result<Self::O> {
+            fn operation(&mut self, _: &autd3_core::geometry::Geometry<autd3_core::geometry::AdvancedPhaseTransducer>) -> Result<Self::O> {
                 <Self as autd3_core::datagram::DatagramHeader>::operation(self)
             }
         }
@@ -114,12 +114,12 @@ fn impl_gain_macro(ast: syn::DeriveInput) -> TokenStream {
             }
         }
 
-        impl #impl_generics autd3_core::datagram::DatagramBody<autd3_core::geometry::NormalTransducer> for #name #ty_generics #where_clause {
-            type O = autd3_driver::GainNormal;
+        impl #impl_generics autd3_core::datagram::DatagramBody<autd3_core::geometry::AdvancedTransducer> for #name #ty_generics #where_clause {
+            type O = autd3_driver::GainAdvanced;
 
             fn operation(
                 &mut self,
-                geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::NormalTransducer>,
+                geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::AdvancedTransducer>,
             ) -> anyhow::Result<Self::O> {
                 let drives = self.calc(geometry)?;
                 let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
@@ -127,26 +127,26 @@ fn impl_gain_macro(ast: syn::DeriveInput) -> TokenStream {
             }
         }
 
-        impl #impl_generics autd3_core::datagram::Sendable<autd3_core::geometry::NormalTransducer> for #name #ty_generics #where_clause {
+        impl #impl_generics autd3_core::datagram::Sendable<autd3_core::geometry::AdvancedTransducer> for #name #ty_generics #where_clause {
             type H = autd3_core::datagram::Empty;
             type B = autd3_core::datagram::Filled;
             type O =
-                <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::NormalTransducer>>::O;
+                <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::AdvancedTransducer>>::O;
 
             fn operation(
                 &mut self,
-                geometry: &Geometry<autd3_core::geometry::NormalTransducer>,
+                geometry: &Geometry<autd3_core::geometry::AdvancedTransducer>,
             ) -> anyhow::Result<Self::O> {
-                <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::NormalTransducer>>::operation(self, geometry)
+                <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::AdvancedTransducer>>::operation(self, geometry)
             }
         }
 
-        impl #impl_generics autd3_core::datagram::DatagramBody<autd3_core::geometry::NormalPhaseTransducer> for #name #ty_generics #where_clause {
-            type O = autd3_driver::GainNormalPhase;
+        impl #impl_generics autd3_core::datagram::DatagramBody<autd3_core::geometry::AdvancedPhaseTransducer> for #name #ty_generics #where_clause {
+            type O = autd3_driver::GainAdvancedPhase;
 
             fn operation(
                 &mut self,
-                geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::NormalPhaseTransducer>,
+                geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::AdvancedPhaseTransducer>,
             ) -> anyhow::Result<Self::O> {
                 let drives = self.calc(geometry)?;
                 let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
@@ -159,18 +159,18 @@ fn impl_gain_macro(ast: syn::DeriveInput) -> TokenStream {
             }
         }
 
-        impl #impl_generics autd3_core::datagram::Sendable<autd3_core::geometry::NormalPhaseTransducer> for #name #ty_generics #where_clause {
+        impl #impl_generics autd3_core::datagram::Sendable<autd3_core::geometry::AdvancedPhaseTransducer> for #name #ty_generics #where_clause {
             type H = autd3_core::datagram::Empty;
             type B = autd3_core::datagram::Filled;
             type O = <Self as autd3_core::datagram::DatagramBody<
-                autd3_core::geometry::NormalPhaseTransducer,
+                autd3_core::geometry::AdvancedPhaseTransducer,
             >>::O;
 
             fn operation(
                 &mut self,
-                geometry: &Geometry<autd3_core::geometry::NormalPhaseTransducer>,
+                geometry: &Geometry<autd3_core::geometry::AdvancedPhaseTransducer>,
             ) -> anyhow::Result<Self::O> {
-                <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::NormalPhaseTransducer>>::operation(self, geometry)
+                <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::AdvancedPhaseTransducer>>::operation(self, geometry)
             }
         }
     };

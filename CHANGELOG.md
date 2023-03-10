@@ -1,3 +1,13 @@
+# 8.2.0
+
+- Move `Controller::set_sound_speed_from_temp` into `Geometry`
+- Make `modulation::LPF` generic
+- Add `modulation::Transform`
+- Rename Normal mode to Advanced mode
+- Rename `gain::holo::EVD` to `gain::holo::EVP`
+- Remove `<<` operators
+- Remove `ack_check_timeout` option, add `timeout` parameter to `send` function instead
+
 # 8.1.2
 
 - Fix [#59](https://github.com/shinolab/autd3/issues/59)

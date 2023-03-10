@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 03/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -198,7 +198,7 @@ impl Operation for GainSTMLegacy {
 }
 
 #[derive(Default)]
-pub struct GainSTMNormal {
+pub struct GainSTMAdvanced {
     sent: usize,
     next_duty: bool,
     drives: Vec<Vec<Drive>>,
@@ -206,7 +206,7 @@ pub struct GainSTMNormal {
     props: GainSTMProps,
 }
 
-impl GainSTMNormal {
+impl GainSTMAdvanced {
     pub fn new(drives: Vec<Vec<Drive>>, cycles: Vec<u16>, props: GainSTMProps) -> Self {
         Self {
             sent: 0,
@@ -314,7 +314,7 @@ impl GainSTMNormal {
     }
 }
 
-impl Operation for GainSTMNormal {
+impl Operation for GainSTMAdvanced {
     fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
         tx.header_mut().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
         tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
