@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/10/2022
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,8 +27,8 @@ void* select_opt(void* backend) {
   int idx = 0;
   opts[idx].name = "SDP";
   AUTDGainHoloSDP(&opts[idx++].gain, backend, 1e-3, 0.9, 100);
-  opts[idx].name = "EVD";
-  AUTDGainHoloEVD(&opts[idx++].gain, backend, 1.0);
+  opts[idx].name = "EVP";
+  AUTDGainHoloEVP(&opts[idx++].gain, backend, 1.0);
   opts[idx].name = "GS";
   AUTDGainHoloGS(&opts[idx++].gain, backend, 100);
   opts[idx].name = "GSPAT";
@@ -57,7 +57,7 @@ void* select_opt(void* backend) {
 void* holo(void* autd) {
   void* s = NULL;
   AUTDCreateSilencer(&s, 10, 4096);
-  AUTDSend(autd, s, NULL);
+  AUTDSend(autd, s, NULL, 20 * 1000 * 1000);
   AUTDDeleteSilencer(s);
 
   void* m = NULL;
@@ -78,7 +78,7 @@ void* holo(void* autd) {
   AUTDGainHoloAdd(g, x + 30.0, y, z, 1.0);
   AUTDGainHoloAdd(g, x - 30.0, y, z, 1.0);
 
-  AUTDSend(autd, m, g);
+  AUTDSend(autd, m, g, 20 * 1000 * 1000);
 
   AUTDDeleteGain(g);
   AUTDDeleteModulation(m);

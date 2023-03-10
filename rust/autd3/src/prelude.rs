@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 07/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,12 +26,13 @@ pub use autd3_core::{
     clear::Clear,
     delay::ModDelay,
     geometry::{
-        Geometry, GeometryBuilder, LegacyTransducer, NormalPhaseTransducer, NormalTransducer,
+        AdvancedPhaseTransducer, AdvancedTransducer, Geometry, GeometryBuilder, LegacyTransducer,
         Transducer, Vector3,
     },
     link::Link,
     silencer_config::SilencerConfig,
     stm::{FocusSTM, GainSTM, STM},
+    stop::Stop,
     synchronize::Synchronize,
     Mode,
 };

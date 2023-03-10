@@ -4,7 +4,7 @@
 %Created Date: 11/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 24/10/2022
+%Last Modified: 02/03/2023
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,12 +19,12 @@ function holo(cnt)
     backend = BackendEigen();
 
     opts = ["SDP(x)", "SDP"
-        "EVD(x)", "EVD"
-        "GS(x)", "GS"
-        "GSPAT(x)", "GSPAT"
-        "Naive(x)", "Naive"
-        "LM(x)", "LM"
-        "Greedy(x)", "Greedy"];
+            "EVP(x)", "EVP"
+            "GS(x)", "GS"
+            "GSPAT(x)", "GSPAT"
+            "Naive(x)", "Naive"
+            "LM(x)", "LM"
+            "Greedy(x)", "Greedy"];
     n = size(opts, 1);
     opt_names = strings(n);
 

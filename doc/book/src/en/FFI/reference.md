@@ -55,6 +55,16 @@ For actual usage, please refer to [C API Example](https://github.com/shinolab/au
 | qz                     | double  | in     | z parameter of quaternion of rotation  |
 | return                 | bool    | -      | -                              |
 
+## AUTDSetMode (autd3capi)
+
+Set Legacy/Advanced mode.
+
+| Argument name / return | type    | in/out | description                                                 |
+| ---------------------- | ------- | ------ | ----------------------------------------------------------- |
+| geometry_builder                 | void*   | in     | pointer to GeometryBuilder                                       |
+| mode                   | uint8_t | in     | mode (0: Legacy mode, 1: Advanced mode, 2: Advanced Phase mode) |
+| return                 | void    | -      | -                                                           |
+
 ## AUTDBuildGeometry (autd3capi)
 
 | Argument name / return | type    | in/out | description                            |
@@ -137,41 +147,6 @@ Return if the controller is opened.
 | handle                 | void* | in     | pointer to Controller      |
 | return                 | bool  | -      | true if controller is open |
 
-## AUTDGetForceFan (autd3capi)
-
-Get Force fan flag.
-
-| Argument name / return | type  | in/out | description           |
-| ---------------------- | ----- | ------ | --------------------- |
-| handle                 | void* | in     | pointer to Controller |
-| return                 | bool  | -      | Force fan flag        |
-
-## AUTDGetReadsFPGAInfo (autd3capi)
-
-Get Reads FPGA info flag
-
-| Argument name / return | type  | in/out | description           |
-| ---------------------- | ----- | ------ | --------------------- |
-| handle                 | void* | in     | pointer to Controller |
-| return                 | bool  | -      | Reads FPGA info flag  |
-
-## AUTDGetAckCheckTimeout (autd3capi)
-
-Get AckCheckTimeout in ns.
-
-| Argument name / return | type    | in/out | description           |
-| ---------------------- | ------- | ------ | --------------------- |
-| handle                 | void*   | in     | pointer to Controller |
-| return                 | uint64_t| -      | Check timeout in ns   |
-
-## AUTDGetSendInterval (autd3capi)
-
-Get Send interval in ns.
-
-| Argument name / return | type    | in/out | description           |
-| ---------------------- | ------- | ------ | --------------------- |
-| handle                 | void*   | in     | pointer to Controller |
-| return                 | uint64_t | -      | Send interval in ns   |
 
 ## AUTDSetReadsFPGAInfo (autd3capi)
 
@@ -182,26 +157,6 @@ Set Reads FPGA info flag.
 | handle                 | void* | in     | pointer to Controller |
 | reads_fpga_info        | bool  | in     | read FPGA info flag   |
 | return                 | void  | -      | -                     |
-
-## AUTDSetAckCheckTimeout (autd3capi)
-
-Set AckCheckTimeout in ns.
-
-| Argument name / return | type    | in/out | description           |
-| ---------------------- | ------- | ------ | --------------------- |
-| handle                 | void*   | in     | pointer to Controller |
-| timeout                | uint64_t | in     | AckCheckTimeout in ns |
-| return                 | void    | -      | -                     |
-
-## AUTDSetSendInterval (autd3capi)
-
-Set Send interval in ns.
-
-| Argument name / return | type    | in/out | description           |
-| ---------------------- | ------- | ------ | --------------------- |
-| handle                 | void*   | in     | pointer to Controller |
-| interval               | uint64_t | in     | Send interval in ns  |
-| return                 | void    | -      | -                     |
 
 ## AUTDSetForceFan (autd3capi)
 
@@ -238,7 +193,7 @@ Set sound speed from temperature.
 
 | Argument name / return | type   | in/out | description           |
 | ---------------------- | ------ | ------ | --------------------- |
-| cnt                 | void*  | in     | pointer to Controller |
+| geometry                 | void*  | in     | pointer to Geometry |
 | temp                   | double | in     | temperature in Celsius degree |
 | k                   | double | in     | Heat capacity ratio           |
 | r                   | double | in     |  Gas constant [J K^-1 mol^-1]           |
@@ -445,7 +400,7 @@ Get Firmware information.
 | index                  | int32_t | in     | device index                           |
 | info                   | char*   | out    | pointer to firmware information string |
 | matches_version        | bool*   | out    | matches version                        |
-| is_latest              | bool*   | out    | is latest                              |
+| is_supported              | bool*   | out    | is latest                              |
 | return                 | void    | -      | -                                      |
 
 ## AUTDFreeFirmwareInfoListPointer (autd3capi)
@@ -744,6 +699,7 @@ The stm created must be deleted at the end by `AUTDDeleteSTM`.
 | Argument name / return | type   | in/out | description                    |
 | ---------------------- | ------ | ------ | ------------------------------ |
 | out                    | void** | out    | pointer to pointer to Gain STM |
+| mode                   | uint16_t | in     | GainSTM mode (0x0001 = PhaseDutyFull, 0x0002 = PhaseFull, 0x0004 = PhaseHalf) |
 | return                 | void   | -      | -                              |
 
 ## AUTDFocusSTMAdd (autd3capi)
@@ -768,25 +724,6 @@ Add gain to GainSTM.
 | stm                    | void* | in     | pointer to Focus STM |
 | gain                   | void* | in     | pointer to Gain      |
 | return                 | void  | -      | -      |
-
-## AUTDSetGainSTMMode (autd3capi)
-
-Set GainSTM mode.
-
-| Argument name / return | type     | in/out | description                                                                   |
-| ---------------------- | -------- | ------ | ----------------------------------------------------------------------------- |
-| stm                    | void*    | in     | pointer to STM                                                                |
-| mode                   | uint16_t | in     | GainSTM mode (0x0001 = PhaseDutyFull, 0x0002 = PhaseFull, 0x0004 = PhaseHalf) |
-| return                 | void     | -      | -                                                                             |
-
-## AUTDGetGainSTMMode (autd3capi)
-
-Get GainSTM mode.
-
-| Argument name / return | type     | in/out | description    |
-| ---------------------- | -------- | ------ | -------------- |
-| stm                    | void*    | in     | pointer to STM |
-| return                 | uint16_t | -      | GainSTM mode   |
 
 ## AUTDSTMGetStartIdx (autd3capi)
 
@@ -955,6 +892,7 @@ Send header and body data.
 | handle                 | void*   | in     | pointer to Controller                                                                                  |
 | header                 | void*   | in     | pointer to header data                                                                                 |
 | body                   | void*   | in     | pointer to body data                                                                                   |
+| timeout_ns            |  uint64_t| in     | timeout in ns                                                                                |
 | return                 | bool    | -      | true if successful                                                                                     |
 
 ## AUTDSendSpecial (autd3capi)
@@ -965,6 +903,7 @@ Send special data.
 | ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
 | handle                 | void*   | in     | pointer to Controller                                                                                  |
 | special                | void*   | in     | pointer to special data                                                                                |
+| timeout_ns            |  uint64_t| in     | timeout in ns                                                                                |
 | return                 | bool    | -      | true if successful                                                                                     |
 
 ## AUTDSetTransModDelay (autd3capi)
@@ -1124,16 +1063,6 @@ Delete SoftwareSTM.
 | stm                    | void* | in     | pointer to SoftwareSTM |
 | return                 | void  | -      | -                      |
 
-## AUTDSetMode (autd3capi)
-
-Set Legacy/Normal mode.
-
-| Argument name / return | type    | in/out | description                                                 |
-| ---------------------- | ------- | ------ | ----------------------------------------------------------- |
-| handle                 | void*   | in     | pointer to Controller                                       |
-| mode                   | uint8_t | in     | mode (0: Legacy mode, 1: Normal mode, 2: Normal Phase mode) |
-| return                 | void    | -      | -                                                           |
-
 ## AUTDEigenBackend (autd3capi-gain-holo)
 
 Create Eigen Backend.
@@ -1169,15 +1098,15 @@ The gain created must be deleted at the end by `AUTDDeleteGain`.
 | repeat                 | uint64_t | in     | parameter                      |
 | return                 | void     | -      | -                              |
 
-## AUTDGainHoloEVD (autd3capi-gain-holo)
+## AUTDGainHoloEVP (autd3capi-gain-holo)
 
-Create EVD holo gain.
+Create EVP holo gain.
 
 The gain created must be deleted at the end by `AUTDDeleteGain`.
 
 | Argument name / return | type   | in/out | description                    |
 | ---------------------- | ------ | ------ | ------------------------------ |
-| gain                   | void** | out    | pointer to pointer to EVD gain |
+| gain                   | void** | out    | pointer to pointer to EVP gain |
 | backend                | void*  | in     | pointer to backend             |
 | gamma                  | double | in     | parameter                      |
 | return                 | void   | -      | -                              |

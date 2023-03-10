@@ -28,8 +28,8 @@ proc run*(cnt: Controller) =
     (gain_stm_test, "GainSTM Sample"),
     (custom_test, "CustomGain Sample")]
 
-    cnt.send(clear())
-    cnt.send(synchronize())
+    cnt.send(clear(), 20 * 1000 * 1000)
+    cnt.send(synchronize(), 20 * 1000 * 1000)
 
     echo "================================== Firmware information =========================================="
     let firmList = cnt.firmwareInfoList()
@@ -57,7 +57,7 @@ proc run*(cnt: Controller) =
             echo "press enter to finish"
             discard stdin.readLine
 
-            cnt.send(stop())
+            cnt.send(stop(), 20 * 1000 * 1000)
 
         except:
             break

@@ -4,7 +4,7 @@ Project: holo
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 25/10/2022
+Last Modified: 02/03/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ from .cuda_backend import CUDABackend
 from .constraint import Clamp, DontCare, Normalize, Uniform
 
 from .apo import APO
-from .evd import EVD
+from .evp import EVP
 from .sdp import SDP
 from .gs import GS
 from .gspat import GSPAT
@@ -34,7 +34,7 @@ __all__ = [
     'Normalize',
     'Uniform',
     'APO',
-    'EVD',
+    'EVP',
     'SDP',
     'GS',
     'GSPAT',

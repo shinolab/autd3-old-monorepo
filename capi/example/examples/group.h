@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/01/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@
 void* group(void* autd) {
   void* s = NULL;
   AUTDCreateSilencer(&s, 10, 4096);
-  AUTDSend(autd, s, NULL);
+  AUTDSend(autd, s, NULL, 20ULL * 1000ULL * 1000ULL);
   AUTDDeleteSilencer(s);
 
   double x = 90.0;
@@ -37,7 +37,7 @@ void* group(void* autd) {
   void* m = NULL;
   AUTDModulationSine(&m, 150, 1.0, 0.5);
 
-  AUTDSend(autd, m, g);
+  AUTDSend(autd, m, g, 20ULL * 1000ULL * 1000ULL);
 
   AUTDDeleteGain(g);
   AUTDDeleteModulation(m);

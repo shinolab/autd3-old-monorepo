@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/10/2022
+ * Last Modified: 01/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -49,7 +49,7 @@ module time_cnt_generator #(
   for (genvar i = 0; i < DEPTH; i++) begin
     always_ff @(posedge CLK) begin
       if (i == set_cnt) begin
-        t[i] <= (t[i] == CYCLE_M2[i]) && (rem[WIDTH-1:0] == 0) ? t[i] + 1 : rem[WIDTH-1:0]; // make sure t be T-1
+        t[i] <= (t[i] == CYCLE_M2[i]) && (rem[WIDTH-1:0] == 0) ? CYCLE_M1[i] : 0; // make sure t be T-1
       end else begin
         t[i] <= (t[i] == CYCLE_M1[i]) ? 0 : t[i] + 1;
       end
@@ -64,6 +64,5 @@ module time_cnt_generator #(
     sync_cnt <= (sync_cnt == DEPTH - 1) ? 0 : sync_cnt + 1;
     set_cnt  <= (set_cnt == DEPTH - 1) ? 0 : set_cnt + 1;
   end
-
 
 endmodule

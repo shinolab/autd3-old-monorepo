@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/01/2023
+ * Last Modified: 07/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use std::f64::consts::PI;
 
 use anyhow::Result;
-use autd3_core::{modulation::Modulation, Amp};
+use autd3_core::modulation::Modulation;
 use autd3_traits::Modulation;
 
 use num::integer::gcd;
@@ -59,18 +59,14 @@ impl Sine {
 }
 
 impl Modulation for Sine {
-    fn calc(&self) -> Result<Vec<Amp>> {
+    fn calc(&self) -> Result<Vec<f64>> {
         let sf = self.sampling_freq() as usize;
         let freq = self.freq.clamp(1, sf / 2);
         let d = gcd(sf, freq);
         let n = sf / d;
         let rep = freq / d;
         Ok((0..n)
-            .map(|i| {
-                let amp =
-                    self.amp / 2.0 * (2.0 * PI * (rep * i) as f64 / n as f64).sin() + self.offset;
-                Amp::new(amp)
-            })
+            .map(|i| self.amp / 2.0 * (2.0 * PI * (rep * i) as f64 / n as f64).sin() + self.offset)
             .collect())
     }
 }

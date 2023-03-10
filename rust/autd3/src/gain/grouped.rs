@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/01/2023
+ * Last Modified: 07/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ use anyhow::Result;
 use autd3_core::{
     gain::Gain,
     geometry::{Geometry, Transducer},
-    Amp, Drive, Phase,
+    Drive,
 };
 
 /// Gain to produce single focal point
@@ -62,8 +62,8 @@ impl<'a, T: Transducer> Gain<T> for Grouped<'a, T> {
                     .unwrap_or_else(|| {
                         vec![
                             Drive {
-                                phase: Phase::new(0.0),
-                                amp: Amp::new(0.0),
+                                phase: 0.0,
+                                amp: 0.0,
                             };
                             geometry.device_map()[i]
                         ]
@@ -103,14 +103,14 @@ impl<'a> autd3_core::datagram::Sendable<autd3_core::geometry::LegacyTransducer>
     }
 }
 
-impl<'a> autd3_core::datagram::DatagramBody<autd3_core::geometry::NormalTransducer>
-    for Grouped<'a, autd3_core::geometry::NormalTransducer>
+impl<'a> autd3_core::datagram::DatagramBody<autd3_core::geometry::AdvancedTransducer>
+    for Grouped<'a, autd3_core::geometry::AdvancedTransducer>
 {
-    type O = autd3_driver::GainNormal;
+    type O = autd3_driver::GainAdvanced;
 
     fn operation(
         &mut self,
-        geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::NormalTransducer>,
+        geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::AdvancedTransducer>,
     ) -> anyhow::Result<Self::O> {
         let drives = self.calc(geometry)?;
         let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
@@ -118,30 +118,30 @@ impl<'a> autd3_core::datagram::DatagramBody<autd3_core::geometry::NormalTransduc
     }
 }
 
-impl<'a> autd3_core::datagram::Sendable<autd3_core::geometry::NormalTransducer>
-    for Grouped<'a, autd3_core::geometry::NormalTransducer>
+impl<'a> autd3_core::datagram::Sendable<autd3_core::geometry::AdvancedTransducer>
+    for Grouped<'a, autd3_core::geometry::AdvancedTransducer>
 {
     type H = autd3_core::datagram::Empty;
     type B = autd3_core::datagram::Filled;
     type O =
-        <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::NormalTransducer>>::O;
+        <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::AdvancedTransducer>>::O;
 
     fn operation(
         &mut self,
-        geometry: &Geometry<autd3_core::geometry::NormalTransducer>,
+        geometry: &Geometry<autd3_core::geometry::AdvancedTransducer>,
     ) -> anyhow::Result<Self::O> {
-        <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::NormalTransducer>>::operation(self, geometry)
+        <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::AdvancedTransducer>>::operation(self, geometry)
     }
 }
 
-impl<'a> autd3_core::datagram::DatagramBody<autd3_core::geometry::NormalPhaseTransducer>
-    for Grouped<'a, autd3_core::geometry::NormalPhaseTransducer>
+impl<'a> autd3_core::datagram::DatagramBody<autd3_core::geometry::AdvancedPhaseTransducer>
+    for Grouped<'a, autd3_core::geometry::AdvancedPhaseTransducer>
 {
-    type O = autd3_driver::GainNormalPhase;
+    type O = autd3_driver::GainAdvancedPhase;
 
     fn operation(
         &mut self,
-        geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::NormalPhaseTransducer>,
+        geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::AdvancedPhaseTransducer>,
     ) -> anyhow::Result<Self::O> {
         let drives = self.calc(geometry)?;
         let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
@@ -149,19 +149,21 @@ impl<'a> autd3_core::datagram::DatagramBody<autd3_core::geometry::NormalPhaseTra
     }
 }
 
-impl<'a> autd3_core::datagram::Sendable<autd3_core::geometry::NormalPhaseTransducer>
-    for Grouped<'a, autd3_core::geometry::NormalPhaseTransducer>
+impl<'a> autd3_core::datagram::Sendable<autd3_core::geometry::AdvancedPhaseTransducer>
+    for Grouped<'a, autd3_core::geometry::AdvancedPhaseTransducer>
 {
     type H = autd3_core::datagram::Empty;
     type B = autd3_core::datagram::Filled;
     type O = <Self as autd3_core::datagram::DatagramBody<
-        autd3_core::geometry::NormalPhaseTransducer,
+        autd3_core::geometry::AdvancedPhaseTransducer,
     >>::O;
 
     fn operation(
         &mut self,
-        geometry: &Geometry<autd3_core::geometry::NormalPhaseTransducer>,
+        geometry: &Geometry<autd3_core::geometry::AdvancedPhaseTransducer>,
     ) -> anyhow::Result<Self::O> {
-        <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::NormalPhaseTransducer>>::operation(self, geometry)
+        <Self as autd3_core::datagram::DatagramBody<
+            autd3_core::geometry::AdvancedPhaseTransducer,
+        >>::operation(self, geometry)
     }
 }

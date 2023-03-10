@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 22/01/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,7 +14,8 @@
 #include <autd3.hpp>
 
 inline void focus_stm(autd3::Controller& autd) {
-  auto config = autd3::SilencerConfig::none();
+  auto silencer = autd3::SilencerConfig::none();
+  autd.send(silencer, std::chrono::milliseconds(20));
 
   autd3::modulation::Static m;
 
@@ -30,5 +31,6 @@ inline void focus_stm(autd3::Controller& autd) {
 
   const auto actual_freq = stm.set_frequency(1);
   std::cout << "Actual frequency is " << actual_freq << " Hz\n";
-  autd << config << m, stm;
+
+  autd.send(m, stm, std::chrono::milliseconds(20));
 }

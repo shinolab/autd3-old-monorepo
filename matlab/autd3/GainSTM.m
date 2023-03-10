@@ -4,7 +4,7 @@
 %Created Date: 10/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 11/06/2022
+%Last Modified: 08/03/2023
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,19 +19,17 @@ classdef GainSTM < STM
 
     methods
 
-        function obj = GainSTM()
+        function obj = GainSTM(varargin)
             obj = obj@STM();
+
+            if nargin < 1
+                mode = 1;
+            else
+                mode = varargin{1};
+            end
+
             pp = libpointer('voidPtrPtr', obj.ptr);
-            calllib('autd3capi', 'AUTDGainSTM', pp);
-        end
-
-        function set.mode(obj, value)
-            obj.mode = value;
-            calllib('autd3capi', 'AUTDSetGainSTMMode', obj.ptr, uint16(value));
-        end
-
-        function mode = get.mode(obj)
-            mode = Mode(calllib('autd3capi', 'AUTDGetGainSTMMode', obj.ptr));
+            calllib('autd3capi', 'AUTDGainSTM', pp, uint16(mode));
         end
 
         function add(obj, gain)

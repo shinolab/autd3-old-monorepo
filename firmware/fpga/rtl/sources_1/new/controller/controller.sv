@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/02/2023
+ * Last Modified: 02/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Hapis Lab. All rights reserved.
@@ -85,12 +85,12 @@ module controller #(
   assign cpu_data_in = CPU_BUS.DATA_IN;
   assign CPU_BUS.DATA_OUT = cpu_data_out;
 
-  assign LEGACY_MODE = ctl_reg[CTL_REG_LEGACY_MODE_BIT];
-  assign FORCE_FAN = ctl_reg[CTL_REG_FORCE_FAN_BIT];
-  assign OP_MODE = ctl_reg[CTL_REG_OP_MODE_BIT];
-  assign STM_GAIN_MODE = ctl_reg[CTL_REG_STM_GAIN_MODE_BIT];
-  assign USE_STM_START_IDX = ctl_reg[CTL_REG_USE_STM_START_IDX_BIT];
-  assign USE_STM_FINISH_IDX = ctl_reg[CTL_REG_USE_STM_FINISH_IDX_BIT];
+  assign LEGACY_MODE = ctl_reg[CTL_FLAG_LEGACY_MODE_BIT];
+  assign FORCE_FAN = ctl_reg[CTL_FLAG_FORCE_FAN_BIT];
+  assign OP_MODE = ctl_reg[CTL_FLAG_OP_MODE_BIT];
+  assign STM_GAIN_MODE = ctl_reg[CTL_FLAG_STM_GAIN_MODE_BIT];
+  assign USE_STM_START_IDX = ctl_reg[CTL_FLAG_USE_STM_START_IDX_BIT];
+  assign USE_STM_FINISH_IDX = ctl_reg[CTL_FLAG_USE_STM_FINISH_IDX_BIT];
 
   assign ECAT_SYNC_TIME = ecat_sync_time;
   assign SYNC_SET = sync_set;
@@ -140,11 +140,11 @@ module controller #(
   enum bit [4:0] {
     REQ_WR_VER_MINOR,
     REQ_WR_VER,
-    WAIT_WR_VER_0_REQ_RD_CTL_REG,
-    WR_VER_MINOR_WAIT_RD_CTL_REG_0,
-    WR_VER_WAIT_RD_CTL_REG_1,
+    WAIT_WR_VER_0_REQ_RD_CTL_FLAG,
+    WR_VER_MINOR_WAIT_RD_CTL_FLAG_0,
+    WR_VER_WAIT_RD_CTL_FLAG_1,
 
-    RD_CTL_REG_REQ_RD_MOD_FREQ_DIV_0,
+    RD_CTL_FLAG_REQ_RD_MOD_FREQ_DIV_0,
     WR_FPGA_INFO_REQ_RD_MOD_FREQ_DIV_1,
     RD_MOD_CYCLE_REQ_RD_SILENT_CYCLE,
     RD_MOD_FREQ_DIV_0_REQ_RD_SILENT_STEP,
@@ -155,7 +155,7 @@ module controller #(
     RD_STM_FREQ_DIV_0_REQ_RD_SOUND_SPEED_1,
     RD_STM_FREQ_DIV_1_REQ_RD_STM_START_IDX,
     RD_SOUND_SPEED_0_REQ_RD_STM_FINISH_IDX,
-    RD_SOUND_SPEED_1_REQ_RD_CTL_REG,
+    RD_SOUND_SPEED_1_REQ_RD_CTL_FLAG,
     RD_STM_START_IDX_REQ_WR_FPGA_INFO,
     RD_STM_FINISH_IDX_REQ_RD_MOD_CYCLE,
 
@@ -187,29 +187,29 @@ module controller #(
         din <= {ENABLED_FEATURES_BITS, VERSION_NUM};
         addr <= ADDR_VERSION_NUM_MAJOR;
 
-        state <= WAIT_WR_VER_0_REQ_RD_CTL_REG;
+        state <= WAIT_WR_VER_0_REQ_RD_CTL_FLAG;
       end
-      WAIT_WR_VER_0_REQ_RD_CTL_REG: begin
+      WAIT_WR_VER_0_REQ_RD_CTL_FLAG: begin
         we <= 1'b0;
-        addr <= ADDR_CTL_REG;
+        addr <= ADDR_CTL_FLAG;
 
-        state <= WR_VER_MINOR_WAIT_RD_CTL_REG_0;
+        state <= WR_VER_MINOR_WAIT_RD_CTL_FLAG_0;
       end
-      WR_VER_MINOR_WAIT_RD_CTL_REG_0: begin
-        state <= WR_VER_WAIT_RD_CTL_REG_1;
+      WR_VER_MINOR_WAIT_RD_CTL_FLAG_0: begin
+        state <= WR_VER_WAIT_RD_CTL_FLAG_1;
       end
-      WR_VER_WAIT_RD_CTL_REG_1: begin
-        state <= RD_CTL_REG_REQ_RD_MOD_FREQ_DIV_0;
+      WR_VER_WAIT_RD_CTL_FLAG_1: begin
+        state <= RD_CTL_FLAG_REQ_RD_MOD_FREQ_DIV_0;
       end
       ////////////////////////// initial //////////////////////////
 
       //////////////////////////// run ////////////////////////////
-      RD_CTL_REG_REQ_RD_MOD_FREQ_DIV_0: begin
+      RD_CTL_FLAG_REQ_RD_MOD_FREQ_DIV_0: begin
         ctl_reg <= dout;
-        if (ctl_reg[CTL_REG_SYNC_BIT]) begin
+        if (ctl_reg[CTL_FLAG_SYNC_BIT]) begin
           we <= 1'b1;
-          addr <= ADDR_CTL_REG;
-          din <= ctl_reg & ~(1 << CTL_REG_SYNC_BIT);
+          addr <= ADDR_CTL_FLAG;
+          din <= ctl_reg & ~(1 << CTL_FLAG_SYNC_BIT);
 
           state <= REQ_RD_EC_SYNC_TIME_0;
         end else begin
@@ -284,10 +284,10 @@ module controller #(
 
         sound_speed[15:0] <= dout;
 
-        state <= RD_SOUND_SPEED_1_REQ_RD_CTL_REG;
+        state <= RD_SOUND_SPEED_1_REQ_RD_CTL_FLAG;
       end
-      RD_SOUND_SPEED_1_REQ_RD_CTL_REG: begin
-        addr <= ADDR_CTL_REG;
+      RD_SOUND_SPEED_1_REQ_RD_CTL_FLAG: begin
+        addr <= ADDR_CTL_FLAG;
 
         sound_speed[31:16] <= dout;
 
@@ -307,7 +307,7 @@ module controller #(
 
         stm_finish_idx <= dout;
 
-        state <= RD_CTL_REG_REQ_RD_MOD_FREQ_DIV_0;
+        state <= RD_CTL_FLAG_REQ_RD_MOD_FREQ_DIV_0;
       end
       //////////////////////////// run ////////////////////////////
 
@@ -362,7 +362,7 @@ module controller #(
       RD_CYCLE: begin
         cycle[set_cnt] <= dout[WIDTH-1:0];
         if (set_cnt == DEPTH - 1) begin
-          addr <= ADDR_CTL_REG;
+          addr <= ADDR_CTL_FLAG;
 
           sync_set <= 1'b1;
 
@@ -385,7 +385,7 @@ module controller #(
       CLR_SYNC_BIT: begin
         ctl_reg <= dout[7:0];
 
-        state   <= RD_CTL_REG_REQ_RD_MOD_FREQ_DIV_0;
+        state   <= RD_CTL_FLAG_REQ_RD_MOD_FREQ_DIV_0;
       end
       //////////////////////// synchronize ////////////////////////
     endcase

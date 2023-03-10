@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,49 +27,8 @@ namespace autd3::core {
  * @brief GainSTM provides a function to display Gain sequentially and periodically.
  * @details GainSTM uses a timer on the FPGA to ensure that Gain is precisely timed.
  */
-struct GainSTM final : STM {
-  explicit GainSTM() : STM() {}
-
-  /**
-   * @brief Set frequency of the STM
-   * @param[in] freq Frequency of the STM
-   * @details STM mode has some constraints, which determine the actual frequency of the STM.
-   * @return driver::autd3_float_t Actual frequency of STM
-   */
-  driver::autd3_float_t set_frequency(const driver::autd3_float_t freq) override {
-    const auto sample_freq = static_cast<driver::autd3_float_t>(size()) * freq;
-    _props.freq_div = static_cast<uint32_t>(std::round(static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / sample_freq));
-    return frequency();
-  }
-
-  /**
-   * @brief Sampling frequency.
-   */
-  [[nodiscard]] driver::autd3_float_t sampling_frequency() const noexcept override {
-    return static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / static_cast<driver::autd3_float_t>(_props.freq_div);
-  }
-
-  /**
-   * @brief Sampling frequency division.
-   */
-  [[nodiscard]] uint32_t sampling_frequency_division() const noexcept override { return _props.freq_div; }
-
-  /**
-   * @brief Sampling frequency division.
-   */
-  uint32_t& sampling_frequency_division() noexcept override { return _props.freq_div; }
-
-  std::optional<uint16_t>& start_idx() override { return _props.start_idx; }
-
-  [[nodiscard]] std::optional<uint16_t> start_idx() const override { return _props.start_idx; }
-
-  std::optional<uint16_t>& finish_idx() override { return _props.finish_idx; }
-
-  [[nodiscard]] std::optional<uint16_t> finish_idx() const override { return _props.finish_idx; }
-
-  driver::GainSTMMode& mode() { return _props.mode; }
-
-  [[nodiscard]] driver::GainSTMMode mode() const { return _props.mode; }
+struct GainSTM final : public STM {
+  explicit GainSTM(driver::GainSTMMode mode = driver::GainSTMMode::PhaseDutyFull) : STM(), _mode(mode) {}
 
   /**
    * @brief Add gain
@@ -93,20 +52,21 @@ struct GainSTM final : STM {
     std::vector<std::vector<driver::Drive>> drives;
     drives.reserve(_gains.size());
     std::transform(_gains.begin(), _gains.end(), std::back_inserter(drives), [geometry](const auto& gain) { return gain->calc(geometry); });
-    switch (geometry.mode) {
+    const driver::GainSTMProps props{sampling_frequency_division, _mode, start_idx, finish_idx};
+    switch (geometry.mode()) {
       case Mode::Legacy:
-        return std::make_unique<driver::GainSTM<driver::Legacy>>(std::move(drives), _props);
-      case Mode::Normal:
-        return std::make_unique<driver::GainSTM<driver::Normal>>(std::move(drives), geometry.cycles(), _props);
-      case Mode::NormalPhase:
-        return std::make_unique<driver::GainSTM<driver::NormalPhase>>(std::move(drives), geometry.cycles(), _props);
+        return std::make_unique<driver::GainSTM<driver::Legacy>>(std::move(drives), props);
+      case Mode::Advanced:
+        return std::make_unique<driver::GainSTM<driver::Advanced>>(std::move(drives), geometry.cycles(), props);
+      case Mode::AdvancedPhase:
+        return std::make_unique<driver::GainSTM<driver::AdvancedPhase>>(std::move(drives), geometry.cycles(), props);
     }
     throw std::runtime_error("Unreachable!");
   }
 
  private:
+  driver::GainSTMMode _mode;
   std::vector<std::shared_ptr<Gain>> _gains;
-  driver::GainSTMProps _props;
 };
 
 }  // namespace autd3::core

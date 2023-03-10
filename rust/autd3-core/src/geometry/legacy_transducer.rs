@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 07/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,16 +14,16 @@
 use super::{Transducer, UnitQuaternion, Vector3};
 
 pub struct LegacyTransducer {
-    id: usize,
+    idx: usize,
     pos: Vector3,
     rot: UnitQuaternion,
     mod_delay: u16,
 }
 
 impl Transducer for LegacyTransducer {
-    fn new(id: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
+    fn new(idx: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
         Self {
-            id,
+            idx,
             pos,
             rot,
             mod_delay: 0,
@@ -38,8 +38,8 @@ impl Transducer for LegacyTransducer {
         &self.rot
     }
 
-    fn id(&self) -> usize {
-        self.id
+    fn idx(&self) -> usize {
+        self.idx
     }
 
     fn frequency(&self) -> f64 {
@@ -60,10 +60,6 @@ impl Transducer for LegacyTransducer {
         (rotation * dir * rotation.conjugate()).imag().normalize()
     }
 
-    fn align_phase_at(&self, dist: f64, sound_speed: f64) -> f64 {
-        dist * self.wavenumber(sound_speed)
-    }
-
     fn x_direction(&self) -> Vector3 {
         Self::get_direction(Vector3::x(), self.rotation())
     }
@@ -74,13 +70,5 @@ impl Transducer for LegacyTransducer {
 
     fn z_direction(&self) -> Vector3 {
         Self::get_direction(Vector3::z(), self.rotation())
-    }
-
-    fn wavelength(&self, sound_speed: f64) -> f64 {
-        sound_speed / self.frequency()
-    }
-
-    fn wavenumber(&self, sound_speed: f64) -> f64 {
-        2.0 * std::f64::consts::PI * self.frequency() / sound_speed
     }
 }

@@ -15,7 +15,7 @@
 void AUTDEigenBackend(void** out);
 void AUTDDeleteBackend(void* backend);
 void AUTDGainHoloSDP(void** gain, void* backend, float64 alpha, float64 lambda, uint64 repeat);
-void AUTDGainHoloEVD(void** gain, void* backend, float64 gamma);
+void AUTDGainHoloEVP(void** gain, void* backend, float64 gamma);
 void AUTDGainHoloNaive(void** gain, void* backend);
 void AUTDGainHoloGS(void** gain, void* backend, uint64 repeat);
 void AUTDGainHoloGSPAT(void** gain, void* backend, uint64 repeat);

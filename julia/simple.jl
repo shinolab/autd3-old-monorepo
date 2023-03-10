@@ -3,7 +3,7 @@
 # Created Date: 13/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 02/02/2023
+# Last Modified: 03/03/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ try
 
     cnt = Controller(geometry, link)
 
-    cnt.to_normal()
+    cnt.to_advanced()
     for tr in cnt.geometry()
         tr.set_frequency(70e3)
     end

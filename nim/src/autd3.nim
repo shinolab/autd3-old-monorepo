@@ -190,6 +190,18 @@ func addDeviceQuaternion*(builder: GeometryBuilder, pos: openArray[float64],
             quaternion[1], quaternion[2], quaternion[3])
     builder
 
+func toLegacy*(builder: GeometryBuilder): GeometryBuilder {.discardable.} =
+    AUTDSetMode(builder.p, 0)
+    builder
+
+func toAdvanced*(builder: GeometryBuilder): GeometryBuilder {.discardable.} =
+    AUTDSetMode(builder.p, 1)
+    builder
+
+func toAdvancedPhase*(builder: GeometryBuilder): GeometryBuilder {.discardable.} =
+    AUTDSetMode(builder.p, 2)
+    builder
+
 func build*(builder: GeometryBuilder) : Geometry =
     var p = pointer(nil)
     AUTDBuildGeometry(p.addr, builder.p)
@@ -208,15 +220,6 @@ func initController(p: pointer, geometry: Geometry): Controller =
     result.p = p
     result.geometry = geometry
 
-func toLegacy*(cnt: Controller) =
-    AUTDSetMode(cnt.p, 0)
-
-func toNormal*(cnt: Controller) =
-    AUTDSetMode(cnt.p, 1)
-
-func toNormalPhase*(cnt: Controller) =
-    AUTDSetMode(cnt.p, 2)
-
 func openController*(geometry: Geometry, link: Link): Controller {.raises: [AUTDException].}=
     var p = pointer(nil)
     if not AUTDOpenController(p.addr, geometry.p, link.p):
@@ -232,41 +235,11 @@ func close*(cnt: Controller): bool {.discardable.} =
 func isOpen*(cnt: Controller): bool =
     AUTDIsOpen(cnt.p)
 
-func forceFan*(cnt: Controller): bool =
-    AUTDGetForceFan(cnt.p)
-
-func `forceFan=`*(cnt: var Controller, force: bool) =
+func forceFan*(cnt: var Controller, force: bool) =
     AUTDSetForceFan(cnt.p, force)
 
-func readsFPGAInfo*(cnt: Controller): bool =
-    AUTDGetReadsFPGAInfo(cnt.p)
-
-func `readsFPGAInfo=`*(cnt: var Controller, flag: bool) =
+func readsFPGAInfo*(cnt: var Controller, flag: bool) =
     AUTDSetReadsFPGAInfo(cnt.p, flag)
-
-func ackCheckTimeoutNs*(cnt: Controller): uint64 =
-    AUTDGetAckCheckTimeout(cnt.p)
-
-func `ackCheckTimeoutNs=`*(cnt: var Controller, value: uint64) =
-    AUTDSetAckCheckTimeout(cnt.p, value)
-
-func ackCheckTimeoutMs*(cnt: Controller): uint64 =
-    AUTDGetAckCheckTimeout(cnt.p) div 1000000
-
-func `ackCheckTimeoutMs=`*(cnt: var Controller, value: uint64) =
-    AUTDSetAckCheckTimeout(cnt.p, value * 1000000)
-
-func sendIntervalNs*(cnt: Controller): uint64 =
-    AUTDGetSendInterval(cnt.p)
-
-func `sendIntervalNs=`*(cnt: var Controller, value: uint64) =
-    AUTDSetSendInterval(cnt.p, value)
-
-func sendIntervalMs*(cnt: Controller): uint64 =
-    AUTDGetSendInterval(cnt.p) div 1000000
-
-func `sendIntervalMs=`*(cnt: var Controller, value: uint64) =
-    AUTDSetSendInterval(cnt.p, value * 1000000)
 
 func firmwareInfoList*(cnt: Controller): seq[string] =
     var p = pointer(nil)
@@ -275,9 +248,9 @@ func firmwareInfoList*(cnt: Controller): seq[string] =
     for i in 0..<n:
         var
             matches_version: bool
-            is_latest: bool
+            is_supported: bool
         var info = cast[cstring]('\0'.repeat(256))
-        AUTDGetFirmwareInfo(p, i, info, matches_version.addr, is_latest.addr)
+        AUTDGetFirmwareInfo(p, i, info, matches_version.addr, is_supported.addr)
         list.add($info)
     AUTDFreeFirmwareInfoListPointer(p)
     list
@@ -288,17 +261,17 @@ func getFPGAInfo*(cnt: Controller): seq[uint8] =
     discard AUTDGetFPGAInfo(cnt.p, addr info[0])
     info
 
-func send*(cnt: Controller, header: Header): bool {.discardable.} =
-    AUTDSend(cnt.p, header.p, pointer(nil))
+func send*(cnt: Controller, header: Header, timeout_ns: uint64 = 0): bool {.discardable.} =
+    AUTDSend(cnt.p, header.p, pointer(nil), timeout_ns)
 
-func send*(cnt: Controller, header: Header, body: Body): bool {.discardable.} =
-    AUTDSend(cnt.p, header.p, body.p)
+func send*(cnt: Controller, header: Header, body: Body, timeout_ns: uint64 = 0): bool {.discardable.} =
+    AUTDSend(cnt.p, header.p, body.p, timeout_ns)
 
-func send*(cnt: Controller, body: Body): bool {.discardable.} =
-    AUTDSend(cnt.p, pointer(nil), body.p)
+func send*(cnt: Controller, body: Body, timeout_ns: uint64 = 0): bool {.discardable.} =
+    AUTDSend(cnt.p, pointer(nil), body.p, timeout_ns)
 
-func send*(cnt: Controller, data: SpecialData): bool {.discardable.} =
-    AUTDSendSpecial(cnt.p, data.p)
+func send*(cnt: Controller, data: SpecialData, timeout_ns: uint64 = 0): bool {.discardable.} =
+    AUTDSendSpecial(cnt.p, data.p, timeout_ns)
 
 type Null* = object of Gain
 
@@ -428,21 +401,13 @@ type Mode* {.pure.} = enum
     PhaseFull = 0x0002
     PhaseHalf = 0x0004
 
-func initGainSTM*(): GainSTM =
-    AUTDGainSTM(result.p.addr)
+func initGainSTM*(mode: Mode = Mode.PhaseDutyFull): GainSTM =
+    AUTDGainSTM(result.p.addr, cast[uint16](ord(mode)))
     result.gains = @[]
 
 func add*(stm: var GainSTM, gain: Gain) =
     AUTDGainSTMAdd(stm.p, gain.p)
     stm.gains.add(gain)
-
-func mode*(stm: GainSTM): Mode =
-    let m = AUTDGetGainSTMMode(stm.p)
-    cast[Mode](m)
-
-func `mode=`*(stm: GainSTM, mode: Mode) =
-    let m = cast[uint16](ord(mode))
-    AUTDSetGainSTMMode(stm.p, m)
 
 type Amplitudes* = object of Body
 
