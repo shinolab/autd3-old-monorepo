@@ -42,8 +42,8 @@ inline void advanced_test(autd3::Controller& autd) {
   auto config = autd3::SilencerConfig::none();
   autd.send(config, std::chrono::milliseconds(20));
 
-  autd.geometry()[0].mod_delay() = 0;
-  autd.geometry()[17].mod_delay() = 1;
+  autd.geometry()[0].mod_delay = 0;
+  autd.geometry()[17].mod_delay = 1;
   autd.send(autd3::ModDelayConfig());
 
   UniformGain g;
