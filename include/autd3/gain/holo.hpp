@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/01/2023
+// Last Modified: 02/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -84,18 +84,7 @@ struct Uniform final : AmplitudeConstraint {
 /**
  * @brief AmplitudeConstraint to clamp amplitude in [0, 1]
  */
-struct Clamp final : AmplitudeConstraint {
-  Clamp() = default;
-  ~Clamp() override = default;
-  Clamp(const Clamp& v) noexcept = default;
-  Clamp& operator=(const Clamp& obj) = default;
-  Clamp(Clamp&& obj) = default;
-  Clamp& operator=(Clamp&& obj) = default;
-
-  [[nodiscard]] driver::autd3_float_t convert(const driver::autd3_float_t raw, const driver::autd3_float_t) const override {
-    return std::clamp<driver::autd3_float_t>(raw, 0, 1);
-  }
-};
+using Clamp = DontCare;
 
 /**
  * @brief Gain to produce multiple focal points
@@ -154,16 +143,16 @@ class SDP final : public Holo {
 };
 
 /**
- * @brief Gain to produce multiple focal points with EVD method.
+ * @brief Gain to produce multiple focal points with EVP method.
  * Refer to Long, Benjamin, et al. "Rendering volumetric haptic shapes in mid-air
  * using ultrasound." ACM Transactions on Graphics (TOG) 33.6 (2014): 1-10.
  */
-class EVD final : public Holo {
+class EVP final : public Holo {
  public:
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit EVD(BackendPtr backend) : Holo(std::move(backend), std::make_unique<Uniform>(driver::autd3_float_t{1})), gamma(1) {}
+  explicit EVP(BackendPtr backend) : Holo(std::move(backend), std::make_unique<Uniform>(driver::autd3_float_t{1})), gamma(1) {}
 
   std::vector<driver::Drive> calc(const core::Geometry& geometry) override;
 

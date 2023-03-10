@@ -27,7 +27,6 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
             <Grid>
@@ -218,48 +217,8 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
                 </controls:SwitchPresenter>
             </Grid>
         </ScrollViewer>
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="auto" />
-                <RowDefinition Height="auto" />
-            </Grid.RowDefinitions>
-            <TextBlock
-                Grid.Row="0"
-                Grid.Column="0"
-                VerticalAlignment="Center"
-                localization:Localizer.Uid="LinkPage_AckCheckTimeoutMs" />
-            <NumberBox
-                Grid.Row="0"
-                Grid.Column="1"
-                Width="60"
-                Margin="{StaticResource XSmallLeftMargin}"
-                HorizontalAlignment="Left"
-                Minimum="0"
-                SmallChange="1"
-                SpinButtonPlacementMode="Compact"
-                Text="{x:Bind ViewModel.AckCheckTimeoutMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-            <TextBlock
-                Grid.Row="1"
-                Grid.Column="0"
-                VerticalAlignment="Center"
-                localization:Localizer.Uid="LinkPage_SendIntervals" />
-            <NumberBox
-                Grid.Row="1"
-                Grid.Column="1"
-                Width="60"
-                Margin="{StaticResource XSmallLeftMargin}"
-                HorizontalAlignment="Left"
-                Minimum="1"
-                SmallChange="1"
-                SpinButtonPlacementMode="Compact"
-                Text="{x:Bind ViewModel.SendIntervalsMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-        </Grid>
         <Grid
-            Grid.Row="2"
+            Grid.Row="1"
             Margin="{StaticResource SmallTopMargin}"
             HorizontalAlignment="Right">
             <Grid.ColumnDefinitions>

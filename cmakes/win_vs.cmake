@@ -1,2 +1,1 @@
-set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)

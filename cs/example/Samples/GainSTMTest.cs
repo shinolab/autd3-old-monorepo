@@ -4,7 +4,7 @@
  * Created Date: 21/07/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/01/2023
+ * Last Modified: 08/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ internal static class GainSTMTest
     public static void Test(Controller autd)
     {
         var config = SilencerConfig.None();
-        autd.Send(config);
+        autd.Send(config, TimeSpan.FromMilliseconds(20));
 
         var mod = new Static();
 
@@ -42,6 +42,6 @@ internal static class GainSTMTest
 
         stm.Frequency = 1;
         Console.WriteLine($"Actual frequency is {stm.Frequency}");
-        autd.Send(mod, stm);
+        autd.Send(mod, stm, TimeSpan.FromMilliseconds(20));
     }
 }

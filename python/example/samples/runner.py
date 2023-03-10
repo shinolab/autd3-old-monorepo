@@ -4,13 +4,14 @@ Project: samples
 Created Date: 30/12/2020
 Author: Shun Suzuki
 -----
-Last Modified: 18/02/2023
+Last Modified: 08/03/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2020 Shun Suzuki. All rights reserved.
 
 '''
 
+from datetime import timedelta
 from pyautd3 import Controller, Clear, Synchronize, Stop, FirmwareInfo
 
 from . import focus, bessel, holo, custom, stm_gain, stm_focus
@@ -21,18 +22,18 @@ def run(autd: Controller):
         (focus.simple, "Single Focal Point Sample"),
         (bessel.bessel, "Bessel beam Sample"),
         (holo.holo, "Multiple Focal Points Sample"),
-        (stm_focus.stm_focus, "PointSequence (Hardware STM) Sample"),
-        (stm_gain.stm_gain, "GainSequence (Hardware STM with arbitrary Gain) Sample"),
+        (stm_focus.stm_focus, "FocusSTM (Hardware STM) Sample"),
+        (stm_gain.stm_gain, "GainSTM (Hardware STM with arbitrary Gain) Sample"),
         (custom.custom, "Custom Focus Sample")
     ]
 
-    autd.send(Clear())
-    autd.send(Synchronize())
+    autd.send(Clear(), timeout=timedelta(milliseconds=20))
+    autd.send(Synchronize(), timeout=timedelta(milliseconds=20))
 
     firm_info_list = autd.firmware_info_list()
     if not all([firm.matches_version for firm in firm_info_list]):
         print('\033[93mWARN: FPGA and CPU firmware version do not match.\033[0m')
-    if not all([firm.is_latest for firm in firm_info_list]):
+    if not all([firm.is_supported for firm in firm_info_list]):
         print(f'\033[93mWARN: You are using old firmware. Please consider updating to {FirmwareInfo.latest_version()}.\033[0m')
     print('================================== Firmware information ====================================')
     for firm in firm_info_list:
@@ -57,6 +58,6 @@ def run(autd: Controller):
         _ = input()
 
         print('finish.')
-        autd.send(Stop())
+        autd.send(Stop(), timeout=timedelta(milliseconds=20))
 
     autd.dispose()

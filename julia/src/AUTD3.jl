@@ -3,7 +3,7 @@
 # Created Date: 11/02/2020
 # Author: Shun Suzuki
 # -----
-# Last Modified: 02/02/2023
+# Last Modified: 02/03/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2020 Hapis Lab. All rights reserved.
@@ -58,7 +58,7 @@ end
 include("BackendEigen.jl")
 include("Holo.jl")
 include("SDP.jl")
-include("EVD.jl")
+include("EVP.jl")
 include("Naive.jl")
 include("GS.jl")
 include("GSPAT.jl")
@@ -80,7 +80,7 @@ end
 export RemoteTwinCAT
 export RawPCM, Wav
 export DontCare, Normalize, Uniform, Clamp
-export SDP, EVD, Naive, GS, GSPAT, LM, Greedy, LSSGreedy, APO
+export SDP, EVP, Naive, GS, GSPAT, LM, Greedy, LSSGreedy, APO
 export BackendEigen
 if !Sys.isapple()
     export BackendCUDA

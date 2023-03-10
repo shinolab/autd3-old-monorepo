@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/02/2023
+// Last Modified: 03/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -35,13 +35,13 @@ constexpr uint16_t BRAM_SELECT_MOD = 0x1;
 constexpr uint16_t BRAM_SELECT_NORMAL = 0x2;
 constexpr uint16_t BRAM_SELECT_STM = 0x3;
 
-constexpr size_t ADDR_CTL_REG = 0x0000;
+constexpr size_t ADDR_CTL_FLAG = 0x0000;
 constexpr size_t ADDR_FPGA_INFO = 0x0001;
 // constexpr size_t ADDR_EC_SYNC_TIME_0 = ADDR_EC_SYNC_CYCLE_TICKS + 1;
 // constexpr size_t ADDR_EC_SYNC_TIME_1 = ADDR_EC_SYNC_CYCLE_TICKS + 2;
 // constexpr size_t ADDR_EC_SYNC_TIME_2 = ADDR_EC_SYNC_CYCLE_TICKS + 3;
 // constexpr size_t ADDR_EC_SYNC_TIME_3 = ADDR_EC_SYNC_CYCLE_TICKS + 4;
-constexpr size_t ADDR_MOD_ADDR_OFFSET = 0x0020;
+constexpr size_t ADDR_MOD_MEM_SEGMENT = 0x0020;
 constexpr size_t ADDR_MOD_CYCLE = 0x0021;
 constexpr size_t ADDR_MOD_FREQ_DIV_0 = 0x0022;
 constexpr size_t ADDR_MOD_FREQ_DIV_1 = 0x0023;
@@ -49,7 +49,7 @@ constexpr size_t ADDR_VERSION_NUM = 0x003F;
 constexpr size_t ADDR_VERSION_NUM_MINOR = 0x003E;
 constexpr size_t ADDR_SILENT_CYCLE = 0x0040;
 constexpr size_t ADDR_SILENT_STEP = 0x0041;
-constexpr size_t ADDR_STM_ADDR_OFFSET = 0x0050;
+constexpr size_t ADDR_STM_MEM_SEGMENT = 0x0050;
 constexpr size_t ADDR_STM_CYCLE = 0x0051;
 constexpr size_t ADDR_STM_FREQ_DIV_0 = 0x0052;
 constexpr size_t ADDR_STM_FREQ_DIV_1 = 0x0053;
@@ -60,19 +60,19 @@ constexpr size_t ADDR_STM_FINISH_IDX = 0x0057;
 constexpr size_t ADDR_CYCLE_BASE = 0x0100;
 constexpr size_t ADDR_MOD_DELAY_BASE = 0x0200;
 
-constexpr uint16_t CTL_REG_LEGACY_MODE_BIT = 0;
-constexpr uint16_t CTL_REG_USE_STM_FINISH_IDX_BIT = 2;
-constexpr uint16_t CTL_REG_USE_STM_START_IDX_BIT = 3;
-constexpr uint16_t CTL_REG_FORCE_FAN_BIT = 4;
-constexpr uint16_t CTL_REG_STM_GAIN_MODE_BIT = 6;
-// constexpr size_t CTL_REG_SYNC_BIT = 8;
-constexpr uint16_t CTL_REG_OP_MODE_BIT = 9;
-constexpr uint16_t CTL_REG_LEGACY_MODE = 1 << CTL_REG_LEGACY_MODE_BIT;
-constexpr uint16_t CTL_REG_USE_STM_FINISH_IDX = 1 << CTL_REG_USE_STM_FINISH_IDX_BIT;
-constexpr uint16_t CTL_REG_USE_STM_START_IDX = 1 << CTL_REG_USE_STM_START_IDX_BIT;
-constexpr uint16_t CTL_REG_FORCE_FAN = 1 << CTL_REG_FORCE_FAN_BIT;
-constexpr uint16_t CTL_REG_OP_MODE = 1 << CTL_REG_OP_MODE_BIT;
-constexpr uint16_t CTL_REG_STM_GAIN_MODE = 1 << CTL_REG_STM_GAIN_MODE_BIT;
+constexpr uint16_t CTL_FLAG_LEGACY_MODE_BIT = 0;
+constexpr uint16_t CTL_FLAG_USE_STM_FINISH_IDX_BIT = 2;
+constexpr uint16_t CTL_FLAG_USE_STM_START_IDX_BIT = 3;
+constexpr uint16_t CTL_FLAG_FORCE_FAN_BIT = 4;
+constexpr uint16_t CTL_FLAG_STM_GAIN_MODE_BIT = 6;
+// constexpr size_t CTL_FLAG_SYNC_BIT = 8;
+constexpr uint16_t CTL_FLAG_OP_MODE_BIT = 9;
+constexpr uint16_t CTL_FLAG_LEGACY_MODE = 1 << CTL_FLAG_LEGACY_MODE_BIT;
+constexpr uint16_t CTL_FLAG_USE_STM_FINISH_IDX = 1 << CTL_FLAG_USE_STM_FINISH_IDX_BIT;
+constexpr uint16_t CTL_FLAG_USE_STM_START_IDX = 1 << CTL_FLAG_USE_STM_START_IDX_BIT;
+constexpr uint16_t CTL_FLAG_FORCE_FAN = 1 << CTL_FLAG_FORCE_FAN_BIT;
+constexpr uint16_t CTL_FLAG_OP_MODE = 1 << CTL_FLAG_OP_MODE_BIT;
+constexpr uint16_t CTL_FLAG_STM_GAIN_MODE = 1 << CTL_FLAG_STM_GAIN_MODE_BIT;
 
 constexpr uint8_t ENABLED_STM_BIT = 0x01;
 constexpr uint8_t ENABLED_MODULATOR_BIT = 0x02;
@@ -108,11 +108,11 @@ class FPGA {
       case fpga::BRAM_SELECT_CONTROLLER:
         return _controller_bram[addr_in_bram];
       case fpga::BRAM_SELECT_MOD:
-        return _modulator_bram[static_cast<size_t>(_controller_bram[fpga::ADDR_MOD_ADDR_OFFSET]) << 14 | addr_in_bram];
+        return _modulator_bram[static_cast<size_t>(_controller_bram[fpga::ADDR_MOD_MEM_SEGMENT]) << 14 | addr_in_bram];
       case fpga::BRAM_SELECT_NORMAL:
         return _normal_op_bram[addr_in_bram];
       case fpga::BRAM_SELECT_STM:
-        return _stm_op_bram[static_cast<size_t>(_controller_bram[fpga::ADDR_STM_ADDR_OFFSET]) << 14 | addr_in_bram];
+        return _stm_op_bram[static_cast<size_t>(_controller_bram[fpga::ADDR_STM_MEM_SEGMENT]) << 14 | addr_in_bram];
       default:
         return 0;
     }
@@ -126,13 +126,13 @@ class FPGA {
         _controller_bram[addr_in_bram] = data;
         break;
       case fpga::BRAM_SELECT_MOD:
-        _modulator_bram[static_cast<size_t>(_controller_bram[fpga::ADDR_MOD_ADDR_OFFSET]) << 14 | addr_in_bram] = data;
+        _modulator_bram[static_cast<size_t>(_controller_bram[fpga::ADDR_MOD_MEM_SEGMENT]) << 14 | addr_in_bram] = data;
         break;
       case fpga::BRAM_SELECT_NORMAL:
         _normal_op_bram[addr_in_bram] = data;
         break;
       case fpga::BRAM_SELECT_STM:
-        _stm_op_bram[static_cast<size_t>(_controller_bram[fpga::ADDR_STM_ADDR_OFFSET]) << 14 | addr_in_bram] = data;
+        _stm_op_bram[static_cast<size_t>(_controller_bram[fpga::ADDR_STM_MEM_SEGMENT]) << 14 | addr_in_bram] = data;
         break;
       default:
         break;
@@ -143,13 +143,13 @@ class FPGA {
 
   void deassert_thermal_sensor() { _controller_bram[fpga::ADDR_FPGA_INFO] &= ~0x0001; }
 
-  [[nodiscard]] bool is_legacy_mode() const { return (_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_LEGACY_MODE) != 0; }
+  [[nodiscard]] bool is_legacy_mode() const { return (_controller_bram[fpga::ADDR_CTL_FLAG] & fpga::CTL_FLAG_LEGACY_MODE) != 0; }
 
-  [[nodiscard]] bool is_force_fan() const { return (_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_FORCE_FAN) != 0; }
+  [[nodiscard]] bool is_force_fan() const { return (_controller_bram[fpga::ADDR_CTL_FLAG] & fpga::CTL_FLAG_FORCE_FAN) != 0; }
 
-  [[nodiscard]] bool is_stm_mode() const { return (_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_OP_MODE) != 0; }
+  [[nodiscard]] bool is_stm_mode() const { return (_controller_bram[fpga::ADDR_CTL_FLAG] & fpga::CTL_FLAG_OP_MODE) != 0; }
 
-  [[nodiscard]] bool is_stm_gain_mode() const { return (_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_STM_GAIN_MODE) != 0; }
+  [[nodiscard]] bool is_stm_gain_mode() const { return (_controller_bram[fpga::ADDR_CTL_FLAG] & fpga::CTL_FLAG_STM_GAIN_MODE) != 0; }
 
   [[nodiscard]] uint16_t silencer_cycle() const { return _controller_bram[fpga::ADDR_SILENT_CYCLE]; }
 
@@ -180,12 +180,12 @@ class FPGA {
   }
 
   [[nodiscard]] std::optional<uint16_t> stm_start_idx() const {
-    if ((_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_USE_STM_START_IDX) != 0) return _controller_bram[fpga::ADDR_STM_START_IDX];
+    if ((_controller_bram[fpga::ADDR_CTL_FLAG] & fpga::CTL_FLAG_USE_STM_START_IDX) != 0) return _controller_bram[fpga::ADDR_STM_START_IDX];
     return std::nullopt;
   }
 
   [[nodiscard]] std::optional<uint16_t> stm_finish_idx() const {
-    if ((_controller_bram[fpga::ADDR_CTL_REG] & fpga::CTL_REG_USE_STM_FINISH_IDX) != 0) return _controller_bram[fpga::ADDR_STM_FINISH_IDX];
+    if ((_controller_bram[fpga::ADDR_CTL_FLAG] & fpga::CTL_FLAG_USE_STM_FINISH_IDX) != 0) return _controller_bram[fpga::ADDR_STM_FINISH_IDX];
     return std::nullopt;
   }
 
@@ -211,21 +211,21 @@ class FPGA {
     if (const auto m = modulation(); std::all_of(m.begin(), m.end(), [](const uint8_t x) { return x == 0; })) return false;
     if (!is_stm_mode()) {
       const auto [duties, phases] = drives(0);
-      return std::any_of(duties.begin(), duties.end(), [](const driver::NormalDriveDuty x) { return x.duty != 0; });
+      return std::any_of(duties.begin(), duties.end(), [](const driver::AdvancedDriveDuty x) { return x.duty != 0; });
     }
     return true;
   }
 
-  [[nodiscard]] std::pair<std::vector<driver::NormalDriveDuty>, std::vector<driver::NormalDrivePhase>> drives(const size_t idx) const {
+  [[nodiscard]] std::pair<std::vector<driver::AdvancedDriveDuty>, std::vector<driver::AdvancedDrivePhase>> drives(const size_t idx) const {
     if (is_stm_mode()) {
       if (is_stm_gain_mode()) {
         if (is_legacy_mode()) return std::make_pair(gain_stm_legacy_duty(idx), gain_stm_legacy_phase(idx));
-        return std::make_pair(gain_stm_normal_duty(idx), gain_stm_normal_phase(idx));
+        return std::make_pair(gain_stm_advanced_duty(idx), gain_stm_advanced_phase(idx));
       }
       return std::make_pair(focus_stm_duty(idx), focus_stm_phase(idx));
     }
     if (is_legacy_mode()) return std::make_pair(legacy_duty(), legacy_phase());
-    return std::make_pair(normal_duty(), normal_phase());
+    return std::make_pair(advanced_duty(), advanced_phase());
   }
 
   void configure_local_trans_pos(const std::vector<driver::Vector3>& local_trans_pos) {
@@ -245,22 +245,22 @@ class FPGA {
  private:
   static uint32_t to_u32(const uint16_t high, const uint16_t low) { return static_cast<uint32_t>(high) << 16 | low; }
 
-  [[nodiscard]] std::vector<driver::NormalDriveDuty> normal_duty() const {
-    std::vector<driver::NormalDriveDuty> d;
+  [[nodiscard]] std::vector<driver::AdvancedDriveDuty> advanced_duty() const {
+    std::vector<driver::AdvancedDriveDuty> d;
     d.reserve(_num_transducers);
     for (size_t i = 0; i < _num_transducers; i++) d.emplace_back(_normal_op_bram[2 * i + 1]);
     return d;
   }
 
-  [[nodiscard]] std::vector<driver::NormalDrivePhase> normal_phase() const {
-    std::vector<driver::NormalDrivePhase> d;
+  [[nodiscard]] std::vector<driver::AdvancedDrivePhase> advanced_phase() const {
+    std::vector<driver::AdvancedDrivePhase> d;
     d.reserve(_num_transducers);
     for (size_t i = 0; i < _num_transducers; i++) d.emplace_back(_normal_op_bram[2 * i]);
     return d;
   }
 
-  [[nodiscard]] std::vector<driver::NormalDriveDuty> legacy_duty() const {
-    std::vector<driver::NormalDriveDuty> d;
+  [[nodiscard]] std::vector<driver::AdvancedDriveDuty> legacy_duty() const {
+    std::vector<driver::AdvancedDriveDuty> d;
     d.reserve(_num_transducers);
     for (size_t i = 0; i < _num_transducers; i++) {
       auto duty = static_cast<uint16_t>(_normal_op_bram[2 * i] >> 8 & 0x00FF);
@@ -270,8 +270,8 @@ class FPGA {
     return d;
   }
 
-  [[nodiscard]] std::vector<driver::NormalDrivePhase> legacy_phase() const {
-    std::vector<driver::NormalDrivePhase> d;
+  [[nodiscard]] std::vector<driver::AdvancedDrivePhase> legacy_phase() const {
+    std::vector<driver::AdvancedDrivePhase> d;
     d.reserve(_num_transducers);
     for (size_t i = 0; i < _num_transducers; i++) {
       auto phase = static_cast<uint16_t>(_normal_op_bram[2 * i] & 0x00FF);
@@ -281,22 +281,22 @@ class FPGA {
     return d;
   }
 
-  [[nodiscard]] std::vector<driver::NormalDriveDuty> gain_stm_normal_duty(const size_t idx) const {
-    std::vector<driver::NormalDriveDuty> d;
+  [[nodiscard]] std::vector<driver::AdvancedDriveDuty> gain_stm_advanced_duty(const size_t idx) const {
+    std::vector<driver::AdvancedDriveDuty> d;
     d.reserve(_num_transducers);
     for (size_t j = 0; j < _num_transducers; j++) d.emplace_back(_stm_op_bram[512 * idx + 2 * j + 1]);
     return d;
   }
 
-  [[nodiscard]] std::vector<driver::NormalDrivePhase> gain_stm_normal_phase(const size_t idx) const {
-    std::vector<driver::NormalDrivePhase> d;
+  [[nodiscard]] std::vector<driver::AdvancedDrivePhase> gain_stm_advanced_phase(const size_t idx) const {
+    std::vector<driver::AdvancedDrivePhase> d;
     d.reserve(_num_transducers);
     for (size_t j = 0; j < _num_transducers; j++) d.emplace_back(_stm_op_bram[512 * idx + 2 * j]);
     return d;
   }
 
-  [[nodiscard]] std::vector<driver::NormalDriveDuty> gain_stm_legacy_duty(const size_t idx) const {
-    std::vector<driver::NormalDriveDuty> d;
+  [[nodiscard]] std::vector<driver::AdvancedDriveDuty> gain_stm_legacy_duty(const size_t idx) const {
+    std::vector<driver::AdvancedDriveDuty> d;
     d.reserve(_num_transducers);
     for (size_t j = 0; j < _num_transducers; j++) {
       auto duty = static_cast<uint16_t>(_stm_op_bram[256 * idx + j] >> 8 & 0x00FF);
@@ -306,8 +306,8 @@ class FPGA {
     return d;
   }
 
-  [[nodiscard]] std::vector<driver::NormalDrivePhase> gain_stm_legacy_phase(const size_t idx) const {
-    std::vector<driver::NormalDrivePhase> d;
+  [[nodiscard]] std::vector<driver::AdvancedDrivePhase> gain_stm_legacy_phase(const size_t idx) const {
+    std::vector<driver::AdvancedDrivePhase> d;
     d.reserve(_num_transducers);
     for (size_t j = 0; j < _num_transducers; j++) {
       auto phase = static_cast<uint16_t>(_stm_op_bram[256 * idx + j] & 0x00FF);
@@ -317,9 +317,9 @@ class FPGA {
     return d;
   }
 
-  [[nodiscard]] std::vector<driver::NormalDriveDuty> focus_stm_duty(const size_t idx) const {
+  [[nodiscard]] std::vector<driver::AdvancedDriveDuty> focus_stm_duty(const size_t idx) const {
     const auto ultrasound_cycles = cycles();
-    std::vector<driver::NormalDriveDuty> d;
+    std::vector<driver::AdvancedDriveDuty> d;
     d.reserve(_num_transducers);
     const auto duty_shift = static_cast<uint16_t>(_stm_op_bram[8 * idx + 3] >> 6 & 0x000F) + 1;
     for (size_t j = 0; j < _num_transducers; j++) {
@@ -328,10 +328,10 @@ class FPGA {
     return d;
   }
 
-  [[nodiscard]] std::vector<driver::NormalDrivePhase> focus_stm_phase(const size_t idx) const {
+  [[nodiscard]] std::vector<driver::AdvancedDrivePhase> focus_stm_phase(const size_t idx) const {
     const auto ultrasound_cycles = cycles();
     const auto sound_speed = static_cast<uint64_t>(this->sound_speed());
-    std::vector<driver::NormalDrivePhase> d;
+    std::vector<driver::AdvancedDrivePhase> d;
     d.reserve(_num_transducers);
     auto x = _stm_op_bram[8 * idx + 1] << 16 & 0x30000;
     x |= _stm_op_bram[8 * idx];

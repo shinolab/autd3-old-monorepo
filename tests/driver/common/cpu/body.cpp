@@ -3,7 +3,7 @@
 // Created Date: 30/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/01/2023
+// Last Modified: 02/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -158,21 +158,21 @@ TEST(DriverCommonCPUTest, LegacyPhaseFull) {
 
   autd3::driver::LegacyDrive d{};
   const auto* p = reinterpret_cast<uint8_t*>(&d);
-  autd3::driver::Drive s{autd3::driver::Phase(0), autd3::driver::Amp(0)};
+  autd3::driver::Drive s{0, 0};
 
-  s.phase = autd3::driver::Phase(pi);
+  s.phase = pi;
   reinterpret_cast<LegacyPhaseFull0*>(&d)->set(s);
   const uint8_t expect_phase_0 = autd3::driver::LegacyDrive::to_phase(s);
   ASSERT_EQ(p[0], expect_phase_0);
   ASSERT_EQ(p[1], 0);
 
-  s.phase = autd3::driver::Phase(static_cast<autd3::driver::autd3_float_t>(1.5) * pi);
+  s.phase = static_cast<autd3::driver::autd3_float_t>(1.5 * pi);
   reinterpret_cast<LegacyPhaseFull1*>(&d)->set(s);
   const uint8_t expect_phase_1 = autd3::driver::LegacyDrive::to_phase(s);
   ASSERT_EQ(p[0], expect_phase_0);
   ASSERT_EQ(p[1], expect_phase_1);
 
-  s.phase = autd3::driver::Phase(0);
+  s.phase = 0;
   reinterpret_cast<LegacyPhaseFull0*>(&d)->set(s);
   ASSERT_EQ(p[0], 0);
   ASSERT_EQ(p[1], expect_phase_1);
@@ -197,9 +197,9 @@ TEST(DriverCommonCPUTest, LegacyPhaseHalf) {
 
   autd3::driver::LegacyDrive d{};
   const auto* p = reinterpret_cast<uint8_t*>(&d);
-  autd3::driver::Drive s{autd3::driver::Phase(0), autd3::driver::Amp(0)};
+  autd3::driver::Drive s{0, 0};
 
-  s.phase = autd3::driver::Phase(pi);
+  s.phase = pi;
   reinterpret_cast<LegacyPhaseHalf0*>(&d)->set(s);
   const uint8_t expect_phase_0 = autd3::driver::LegacyDrive::to_phase(s) >> 4;
   ASSERT_EQ(p[0] & 0x0F, expect_phase_0);
@@ -207,7 +207,7 @@ TEST(DriverCommonCPUTest, LegacyPhaseHalf) {
   ASSERT_EQ(p[1] & 0x0F, 0);
   ASSERT_EQ(p[1] & 0xF0, 0);
 
-  s.phase = autd3::driver::Phase(static_cast<autd3::driver::autd3_float_t>(1.5) * pi);
+  s.phase = static_cast<autd3::driver::autd3_float_t>(1.5 * pi);
   reinterpret_cast<LegacyPhaseHalf1*>(&d)->set(s);
   const uint8_t expect_phase_1 = autd3::driver::LegacyDrive::to_phase(s) >> 4;
   ASSERT_EQ(p[0] & 0x0F, expect_phase_0);
@@ -215,7 +215,7 @@ TEST(DriverCommonCPUTest, LegacyPhaseHalf) {
   ASSERT_EQ(p[1] & 0x0F, 0);
   ASSERT_EQ(p[1] & 0xF0, 0);
 
-  s.phase = autd3::driver::Phase(static_cast<autd3::driver::autd3_float_t>(0.8) * pi);
+  s.phase = static_cast<autd3::driver::autd3_float_t>(0.8 * pi);
   reinterpret_cast<LegacyPhaseHalf2*>(&d)->set(s);
   const uint8_t expect_phase_2 = autd3::driver::LegacyDrive::to_phase(s) >> 4;
   ASSERT_EQ(p[0] & 0x0F, expect_phase_0);
@@ -223,7 +223,7 @@ TEST(DriverCommonCPUTest, LegacyPhaseHalf) {
   ASSERT_EQ(p[1] & 0x0F, expect_phase_2);
   ASSERT_EQ(p[1] & 0xF0, 0);
 
-  s.phase = autd3::driver::Phase(static_cast<autd3::driver::autd3_float_t>(1.2) * pi);
+  s.phase = static_cast<autd3::driver::autd3_float_t>(1.2 * pi);
   reinterpret_cast<LegacyPhaseHalf3*>(&d)->set(s);
   const uint8_t expect_phase_3 = autd3::driver::LegacyDrive::to_phase(s) >> 4;
   ASSERT_EQ(p[0] & 0x0F, expect_phase_0);

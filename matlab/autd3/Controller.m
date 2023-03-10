@@ -4,7 +4,7 @@
 %Created Date: 07/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 18/02/2023
+%Last Modified: 08/03/2023
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,8 +16,6 @@ classdef Controller < handle
     properties
         ptr
         geometry
-        reads_fpga_info = false
-        force_fan = false
         ack_check_timeout = 0
         send_interval = 500000
     end
@@ -37,18 +35,6 @@ classdef Controller < handle
             value = obj.geometry;
         end
 
-        function to_legacy(obj)
-            calllib('autd3capi', 'AUTDSetMode', obj.ptr, 0);
-        end
-
-        function to_normal(obj)
-            calllib('autd3capi', 'AUTDSetMode', obj.ptr, 1);
-        end
-
-        function to_normal_phase(obj)
-            calllib('autd3capi', 'AUTDSetMode', obj.ptr, 2);
-        end
-
         function res = close(obj)
             res = calllib('autd3capi', 'AUTDClose', obj.ptr);
         end
@@ -57,36 +43,12 @@ classdef Controller < handle
             res = calllib('autd3capi', 'AUTDIsOpen', obj.ptr);
         end
 
-        function set.force_fan(obj, value)
+        function force_fan(obj, value)
             calllib('autd3capi', 'AUTDSetForceFan', obj.ptr, value);
         end
 
-        function value = get.force_fan(obj)
-            value = calllib('autd3capi', 'AUTDGetForceFan', obj.ptr);
-        end
-
-        function set.reads_fpga_info(obj, value)
+        function reads_fpga_info(obj, value)
             calllib('autd3capi', 'AUTDSetReadsFPGAInfo', obj.ptr, value);
-        end
-
-        function value = get.reads_fpga_info(obj)
-            value = calllib('autd3capi', 'AUTDGetReadsFPGAInfo', obj.ptr);
-        end
-
-        function set.ack_check_timeout(obj, value)
-            calllib('autd3capi', 'AUTDSetAckCheckTimeout', obj.ptr, value);
-        end
-
-        function value = get.ack_check_timeout(obj)
-            value = calllib('autd3capi', 'AUTDGetAckCheckTimeout', obj.ptr);
-        end
-
-        function set.send_interval(obj, value)
-            calllib('autd3capi', 'AUTDeSetSendInterval', obj.ptr, value);
-        end
-
-        function value = get.send_interval(obj)
-            value = calllib('autd3capi', 'AUTDGetSendInterval', obj.ptr);
         end
 
         function res = send(varargin)
@@ -100,12 +62,12 @@ classdef Controller < handle
             if nargin == 3
 
                 if isa(varargin{2}, 'Header') && isa(varargin{3}, 'Body')
-                    res = calllib('autd3capi', 'AUTDSend', obj.ptr, varargin{2}.ptr, varargin{3}.ptr);
+                    res = calllib('autd3capi', 'AUTDSend', obj.ptr, varargin{2}.ptr, varargin{3}.ptr, uint64(0));
                     return;
                 end
 
                 if isa(varargin{3}, 'Header') && isa(varargin{2}, 'Body')
-                    res = calllib('autd3capi', 'AUTDSend', obj.ptr, varargin{3}.ptr, varargin{2}.ptr);
+                    res = calllib('autd3capi', 'AUTDSend', obj.ptr, varargin{3}.ptr, varargin{2}.ptr, uint64(0));
                     return;
                 end
 
@@ -114,19 +76,19 @@ classdef Controller < handle
             if nargin == 2
 
                 if isa(varargin{2}, 'SpecialData')
-                    res = calllib('autd3capi', 'AUTDSendSpecial', obj.ptr, varargin{2}.ptr);
+                    res = calllib('autd3capi', 'AUTDSendSpecial', obj.ptr, varargin{2}.ptr, uint64(0));
                     return;
                 end
 
                 if isa(varargin{2}, 'Header')
                     np = libpointer('voidPtr', []);
-                    res = calllib('autd3capi', 'AUTDSend', obj.ptr, varargin{2}.ptr, np);
+                    res = calllib('autd3capi', 'AUTDSend', obj.ptr, varargin{2}.ptr, np, uint64(0));
                     return;
                 end
 
                 if isa(varargin{2}, 'Body')
                     np = libpointer('voidPtr', []);
-                    res = calllib('autd3capi', 'AUTDSend', obj.ptr, np, varargin{2}.ptr);
+                    res = calllib('autd3capi', 'AUTDSend', obj.ptr, np, varargin{2}.ptr, uint64(0));
                     return;
                 end
 

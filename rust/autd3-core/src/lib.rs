@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 07/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,6 +23,7 @@ pub mod link;
 pub mod modulation;
 pub mod silencer_config;
 pub mod stm;
+pub mod stop;
 pub mod synchronize;
 
 pub use autd3_driver::*;

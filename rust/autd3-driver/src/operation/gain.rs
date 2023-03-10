@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 03/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -78,14 +78,14 @@ impl Operation for GainLegacy {
     }
 }
 
-pub struct GainNormal {
+pub struct GainAdvanced {
     phase_sent: bool,
     duty_sent: bool,
     drives: Vec<Drive>,
     cycles: Vec<u16>,
 }
 
-impl GainNormal {
+impl GainAdvanced {
     pub fn new(drives: Vec<Drive>, cycles: Vec<u16>) -> Self {
         Self {
             phase_sent: false,
@@ -146,7 +146,7 @@ impl GainNormal {
     }
 }
 
-impl Operation for GainNormal {
+impl Operation for GainAdvanced {
     fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
         tx.header_mut().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
         tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
@@ -184,13 +184,13 @@ impl Operation for GainNormal {
     }
 }
 
-pub struct GainNormalPhase {
+pub struct GainAdvancedPhase {
     sent: bool,
     drives: Vec<Drive>,
     cycles: Vec<u16>,
 }
 
-impl GainNormalPhase {
+impl GainAdvancedPhase {
     pub fn new(drives: Vec<Drive>, cycles: Vec<u16>) -> Self {
         Self {
             sent: false,
@@ -200,7 +200,7 @@ impl GainNormalPhase {
     }
 }
 
-impl Operation for GainNormalPhase {
+impl Operation for GainAdvancedPhase {
     fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
         tx.header_mut().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
         tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
@@ -250,13 +250,13 @@ impl Operation for GainNormalPhase {
     }
 }
 
-pub struct GainNormalDuty {
+pub struct GainAdvancedDuty {
     sent: bool,
     drives: Vec<Drive>,
     cycles: Vec<u16>,
 }
 
-impl GainNormalDuty {
+impl GainAdvancedDuty {
     pub fn new(drives: Vec<Drive>, cycles: Vec<u16>) -> Self {
         Self {
             sent: false,
@@ -266,7 +266,7 @@ impl GainNormalDuty {
     }
 }
 
-impl Operation for GainNormalDuty {
+impl Operation for GainAdvancedDuty {
     fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
         tx.header_mut().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
         tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD_DELAY);

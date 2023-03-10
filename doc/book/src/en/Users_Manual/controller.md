@@ -76,7 +76,7 @@ The return value of `fpga_info` is `vector` for `FPGAInfo` devices.
 You can stop output with the `stop` function.
 
 ```cpp
-autd << autd3::stop;
+autd.send(autd3::Stop());
 ```
 
 ## clear
@@ -84,7 +84,7 @@ autd << autd3::stop;
 Clear flags, `Gain`/`Modulation` data, etc. in the device.
 
 ```cpp
-autd << autd3::clear;
+autd.send(autd3::Clear());
 ```
 
 ## Firmware information
@@ -108,8 +108,3 @@ If these functions cannot confirm that the device has processed the data, return
 If `ack_check_timeout` is 0, these do not check, and the return value is always `true`.
 
 The value of `send_interval` affects the interval of sending consecutive frames and the interval of the above checks. 
-
-The list of send functions is as follows:
-
-- `update_flag`
-- `<<` operator

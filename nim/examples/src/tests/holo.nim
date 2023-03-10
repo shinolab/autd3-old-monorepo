@@ -15,7 +15,7 @@ import autd3/holo
 
 proc holo_test*(cnt: Controller) =
     let config = initSilencerConfig()
-    cnt.send(config)
+    cnt.send(config, 20 * 1000 * 1000)
 
     let backend = initBackendEigen()
 
@@ -25,4 +25,4 @@ proc holo_test*(cnt: Controller) =
 
     let m = initSine(150)
 
-    cnt.send(m, g)
+    cnt.send(m, g, 20 * 1000 * 1000)

@@ -14,9 +14,9 @@ import autd3
 
 proc focus_test*(cnt: Controller) =
     let config = initSilencerConfig()
-    cnt.send(config)
+    cnt.send(config, 20 * 1000 * 1000)
 
     let f = initFocus([90.0, 80.0, 150.0])
     let m = initSine(150)
 
-    cnt.send(m, f)
+    cnt.send(m, f, 20 * 1000 * 1000)

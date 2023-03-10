@@ -165,18 +165,6 @@ jobs:
         mkdir -p doc_build/book
         sudo mv ./doc/book/book/en/html ./doc_build/book/en
         sudo mv ./doc/book/book/jp/html ./doc_build/book/jp
-    - run: |
-        cd doc/fpga
-        mdbook build
-    - name: mv fpga doc
-      run: |
-        sudo mv ./doc/fpga/book/html ./doc_build/fpga
-    - run: |
-        cd doc/cpu
-        mdbook build
-    - name: mv cpu doc
-      run: |
-        sudo mv ./doc/cpu/book/html ./doc_build/cpu
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:

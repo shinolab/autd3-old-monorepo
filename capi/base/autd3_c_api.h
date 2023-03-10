@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/02/2023
+// Last Modified: 10/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,6 +23,7 @@ EXPORT_AUTD bool AUTDAddDevice(IN void* geometry_builder, IN autd3_float_t x, IN
                                IN autd3_float_t ry, IN autd3_float_t rz2);
 EXPORT_AUTD bool AUTDAddDeviceQuaternion(IN void* geometry_builder, IN autd3_float_t x, IN autd3_float_t y, IN autd3_float_t z, IN autd3_float_t qw,
                                          IN autd3_float_t qx, IN autd3_float_t qy, IN autd3_float_t qz);
+EXPORT_AUTD void AUTDSetMode(IN void* geometry_builder, IN uint8_t mode);
 EXPORT_AUTD void AUTDBuildGeometry(OUT void** out, IN void* geometry_builder);
 EXPORT_AUTD void AUTDFreeGeometry(IN const void* geometry);
 EXPORT_AUTD bool AUTDOpenController(OUT void** out, IN void* geometry, IN void* link);
@@ -30,17 +31,11 @@ EXPORT_AUTD void AUTDGetGeometry(OUT void** geometry, IN void* cnt);
 EXPORT_AUTD bool AUTDClose(IN void* handle);
 EXPORT_AUTD void AUTDFreeController(IN const void* handle);
 EXPORT_AUTD bool AUTDIsOpen(IN const void* handle);
-EXPORT_AUTD bool AUTDGetForceFan(IN const void* handle);
-EXPORT_AUTD bool AUTDGetReadsFPGAInfo(IN const void* handle);
-EXPORT_AUTD uint64_t AUTDGetAckCheckTimeout(IN const void* handle);
-EXPORT_AUTD uint64_t AUTDGetSendInterval(IN const void* handle);
 EXPORT_AUTD void AUTDSetReadsFPGAInfo(IN void* handle, IN bool reads_fpga_info);
-EXPORT_AUTD void AUTDSetAckCheckTimeout(IN void* handle, IN uint64_t timeout);
-EXPORT_AUTD void AUTDSetSendInterval(IN void* handle, IN uint64_t interval);
 EXPORT_AUTD void AUTDSetForceFan(IN void* handle, IN bool force);
 EXPORT_AUTD autd3_float_t AUTDGetSoundSpeed(IN const void* geometry);
 EXPORT_AUTD void AUTDSetSoundSpeed(IN void* geometry, IN autd3_float_t sound_speed);
-EXPORT_AUTD void AUTDSetSoundSpeedFromTemp(IN void* cnt, IN autd3_float_t temp, IN autd3_float_t k, IN autd3_float_t r, IN autd3_float_t m);
+EXPORT_AUTD void AUTDSetSoundSpeedFromTemp(IN void* geometry, IN autd3_float_t temp, IN autd3_float_t k, IN autd3_float_t r, IN autd3_float_t m);
 EXPORT_AUTD autd3_float_t AUTDGetTransFrequency(IN const void* geometry, IN int32_t trans_idx);
 EXPORT_AUTD void AUTDSetTransFrequency(IN void* geometry, IN int32_t trans_idx, IN autd3_float_t frequency);
 EXPORT_AUTD uint16_t AUTDGetTransCycle(IN const void* geometry, IN int32_t trans_idx);
@@ -59,7 +54,7 @@ EXPORT_AUTD void AUTDTransYDirection(IN const void* geometry, IN int32_t trans_i
 EXPORT_AUTD void AUTDTransZDirection(IN const void* geometry, IN int32_t trans_idx, OUT autd3_float_t* x, OUT autd3_float_t* y, OUT autd3_float_t* z);
 EXPORT_AUTD int32_t AUTDGetFirmwareInfoListPointer(IN void* handle, OUT void** out);
 EXPORT_AUTD void AUTDGetFirmwareInfo(IN const void* p_firm_info_list, IN int32_t index, OUT char* info, OUT bool* matches_version,
-                                     OUT bool* is_latest);
+                                     OUT bool* is_supported);
 EXPORT_AUTD void AUTDFreeFirmwareInfoListPointer(IN const void* p_firm_info_list);
 EXPORT_AUTD void AUTDGetLatestFirmware(OUT char* latest_version);
 EXPORT_AUTD void AUTDGainNull(OUT void** gain);
@@ -85,11 +80,9 @@ EXPORT_AUTD void AUTDModulationSetSamplingFrequencyDivision(IN void* mod, IN uin
 EXPORT_AUTD autd3_float_t AUTDModulationSamplingFrequency(IN const void* mod);
 EXPORT_AUTD void AUTDDeleteModulation(IN const void* mod);
 EXPORT_AUTD void AUTDFocusSTM(OUT void** out);
-EXPORT_AUTD void AUTDGainSTM(OUT void** out);
+EXPORT_AUTD void AUTDGainSTM(OUT void** out, IN uint16_t mode);
 EXPORT_AUTD void AUTDFocusSTMAdd(IN void* stm, IN autd3_float_t x, IN autd3_float_t y, IN autd3_float_t z, IN uint8_t shift);
 EXPORT_AUTD void AUTDGainSTMAdd(IN void* stm, IN void* gain);
-EXPORT_AUTD uint16_t AUTDGetGainSTMMode(IN void* stm);
-EXPORT_AUTD void AUTDSetGainSTMMode(IN void* stm, IN uint16_t mode);
 EXPORT_AUTD autd3_float_t AUTDSTMSetFrequency(IN void* stm, IN autd3_float_t freq);
 EXPORT_AUTD int32_t AUTDSTMGetStartIdx(IN const void* stm);
 EXPORT_AUTD int32_t AUTDSTMGetFinishIdx(IN const void* stm);
@@ -108,13 +101,12 @@ EXPORT_AUTD void AUTDModDelayConfig(OUT void** out);
 EXPORT_AUTD void AUTDDeleteSpecialData(IN const void* data);
 EXPORT_AUTD void AUTDCreateSilencer(OUT void** out, IN uint16_t step, IN uint16_t cycle);
 EXPORT_AUTD void AUTDDeleteSilencer(IN const void* config);
-EXPORT_AUTD bool AUTDSend(IN void* handle, IN void* header, IN void* body);
-EXPORT_AUTD bool AUTDSendSpecial(IN void* handle, IN void* special);
+EXPORT_AUTD bool AUTDSend(IN void* handle, IN void* header, IN void* body, IN uint64_t timeout_ns);
+EXPORT_AUTD bool AUTDSendSpecial(IN void* handle, IN void* special, IN uint64_t timeout_ns);
 EXPORT_AUTD uint16_t AUTDGetTransModDelay(IN const void* geometry, IN int32_t trans_idx);
 EXPORT_AUTD void AUTDSetTransModDelay(IN void* geometry, IN int32_t trans_idx, IN uint16_t delay);
 EXPORT_AUTD void AUTDCreateAmplitudes(OUT void** out, IN autd3_float_t amp);
 EXPORT_AUTD void AUTDDeleteAmplitudes(IN const void* amplitudes);
-EXPORT_AUTD void AUTDSetMode(IN void* handle, IN uint8_t mode);
 EXPORT_AUTD void AUTDSoftwareSTM(OUT void** out);
 EXPORT_AUTD void AUTDSoftwareSTMSetStrategy(IN void* stm, IN uint8_t strategy);
 EXPORT_AUTD void AUTDSoftwareSTMAdd(IN void* stm, IN void* gain);

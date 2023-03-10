@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 03/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -69,7 +69,7 @@ class CPUControlFlags final {
      */
     STMEnd = 1 << 5,
     /**
-     * @brief Set when Body is duty data (used only in Normal mode)
+     * @brief Set when Body is duty data (used only in Advanced mode)
      */
     IsDuty = 1 << 6,
     /**

@@ -12,9 +12,9 @@ Visual Studio Community 2022は「C++によるデスクトップ開発」にチ�
 なお, Linuxの場合はgccが, macOSの場合はclangが使えれば良い.
 また, 以下はターミナルから操作するため, PATHを通しておくことを推奨する.
 
-- Visual Studio Community 2022 17.4.4
-- CMake 3.25.1
-- git 2.39.0.windows.1[^fn_git]
+- Visual Studio Community 2022 17.5.1
+- CMake 3.25.2
+- git 2.39.2.windows.1[^fn_git]
 - npcap 1.72[^fn_npcap]
 
 ## デバイスのセットアップ
@@ -25,7 +25,7 @@ PCのイーサネットポートとAUTD3デバイスのEtherCAT In ([Concept](co
 
 ### ファームウェアアップデート
 
-ファームウェアが古い場合, 動作は保証されない.
+ファームウェアが古い場合, 正常な動作は保証されない.
 本文章におけるファームウェアのバージョンはv2.8が想定される.
 
 > NOTE: 実際には, (少なくとも以下のプログラムは) v2.7以下のファームウェアでも動作すると思われる. しかし, v2.8を使用することを推奨する.
@@ -113,7 +113,7 @@ cd ..
 ```
 mkdir build
 cd build
-cmake ..
+cmake .. -DCMAKE_BUILD_TYPE=Release
 ```
 
 これで, buildディレクトリ以下に`autd3_sample.sln`が生成されているはずなので, これを開き, mainプロジェクトを実行する.

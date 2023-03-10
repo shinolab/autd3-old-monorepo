@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/01/2023
+ * Last Modified: 07/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@ use anyhow::Result;
 use autd3_core::{
     gain::Gain,
     geometry::{Geometry, Transducer, Vector3},
-    Amp, Drive, Phase,
+    Drive,
 };
 
 use autd3_traits::Gain;
@@ -58,10 +58,10 @@ impl<T: Transducer> Gain<T> for Plane {
             .transducers()
             .map(|tr| {
                 let dist = self.dir.dot(tr.position());
-                let phase = tr.align_phase_at(dist, sound_speed);
+                let phase = dist * tr.wavenumber(sound_speed);
                 Drive {
-                    phase: Phase::new(phase),
-                    amp: Amp::new(self.amp),
+                    phase,
+                    amp: self.amp,
                 }
             })
             .collect())

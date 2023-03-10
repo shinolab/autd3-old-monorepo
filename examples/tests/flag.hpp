@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,13 +19,13 @@
 #include "autd3.hpp"
 
 inline void flag_test(autd3::Controller& autd) {
-  autd.reads_fpga_info() = true;
+  autd.reads_fpga_info(true);
 
   std::cout << "press any key to run fan..." << std::endl;
   std::cin.ignore();
 
-  autd.force_fan() = true;
-  autd << autd3::update_flag;
+  autd.force_fan(true);
+  autd.send(autd3::UpdateFlag(), std::chrono::milliseconds(20));
 
   bool fin = false;
   auto check_states_thread = std::thread([&] {
@@ -45,6 +45,6 @@ inline void flag_test(autd3::Controller& autd) {
   fin = true;
   if (check_states_thread.joinable()) check_states_thread.join();
 
-  autd.force_fan() = false;
-  autd << autd3::update_flag;
+  autd.force_fan(false);
+  autd.send(autd3::UpdateFlag(), std::chrono::milliseconds(20));
 }

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/02/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -110,22 +110,22 @@ int run(void* autd) {
   for (int32_t i = 0; i < firm_info_list_size; i++) {
     char info[256];
     bool matches_version;
-    bool is_latest;
-    AUTDGetFirmwareInfo(firm_info_list, i, info, &matches_version, &is_latest);
+    bool is_supported;
+    AUTDGetFirmwareInfo(firm_info_list, i, info, &matches_version, &is_supported);
     printf("[%d]: %s\n", i, info);
     if (!matches_version) printf("\033[93mWARN: FPGA and CPU firmware version do not match.\033[0m\n");
-    if (!is_latest) printf("\033[93mWARN: You are using old firmware. Please consider updating to %s.\033[0m\n", latest);
+    if (!is_supported) printf("\033[93mWARN: You are using old firmware. Please consider updating to %s.\033[0m\n", latest);
   }
   AUTDFreeFirmwareInfoListPointer(firm_info_list);
   printf("=========================================\n");
 
   void* clear = NULL;
   AUTDClear(&clear);
-  AUTDSendSpecial(autd, clear);
+  AUTDSendSpecial(autd, clear, 20ULL * 1000ULL * 1000ULL);
   AUTDDeleteSpecialData(clear);
   void* sync = NULL;
   AUTDSynchronize(&sync);
-  AUTDSendSpecial(autd, sync);
+  AUTDSendSpecial(autd, sync, 20ULL * 1000ULL * 1000ULL);
   AUTDDeleteSpecialData(sync);
 
   while (1) {
@@ -152,7 +152,7 @@ int run(void* autd) {
     printf("Finish.\n");
     void* stop = NULL;
     AUTDStop(&stop);
-    AUTDSendSpecial(autd, stop);
+    AUTDSendSpecial(autd, stop, 20ULL * 1000ULL * 1000ULL);
     AUTDDeleteSpecialData(stop);
   }
 

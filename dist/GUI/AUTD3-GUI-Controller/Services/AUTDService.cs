@@ -97,9 +97,6 @@ public class AUTDService
         if (!_autd.Send(new Synchronize()))
             return false;
 
-        _autd.AckCheckTimeoutMs = linkVm.AckCheckTimeoutMs;
-        _autd.SendIntervalsMs = linkVm.SendIntervalsMs;
-
         if (!_autd.Send(new Static()))
             return false;
 

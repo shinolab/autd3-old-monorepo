@@ -4,7 +4,7 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/02/2023
+ * Last Modified: 03/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -62,13 +62,13 @@ extern void init_app(void);
 extern void update(void);
 
 typedef enum {
-  LEGACY_MODE = 1 << CTL_REG_LEGACY_MODE_BIT,
-  FORCE_FAN = 1 << CTL_REG_FORCE_FAN_BIT,
-  OP_MODE = 1 << CTL_REG_OP_MODE_BIT,
-  STM_GAIN_MODE = 1 << CTL_REG_STM_GAIN_MODE_BIT,
-  READS_FPGA_INFO = 1 << CTL_REG_READS_FPGA_INFO_BIT,
-  SYNC = 1 << CTL_REG_SYNC_BIT,
-  OP_MODE_FPGA = 1 << CTL_REG_OP_MODE_FPGA_BIT
+  LEGACY_MODE = 1 << CTL_FLAG_LEGACY_MODE_BIT,
+  FORCE_FAN = 1 << CTL_FLAG_FORCE_FAN_BIT,
+  OP_MODE = 1 << CTL_FLAG_OP_MODE_BIT,
+  STM_GAIN_MODE = 1 << CTL_FLAG_STM_GAIN_MODE_BIT,
+  READS_FPGA_INFO = 1 << CTL_FLAG_READS_FPGA_INFO_BIT,
+  SYNC = 1 << CTL_FLAG_SYNC_BIT,
+  OP_MODE_FPGA = 1 << CTL_FLAG_OP_MODE_FPGA_BIT
 } FPGAControlFlags;
 
 typedef enum {
@@ -87,17 +87,17 @@ typedef enum {
 
 typedef struct {
   uint8_t msg_id;
-  uint8_t fpga_ctl_reg;
-  uint8_t cpu_ctl_reg;
+  uint8_t fpga_ctl_flag;
+  uint8_t cpu_ctl_flag;
   uint8_t size;
   union {
     struct {
       uint32_t freq_div;
       uint8_t data[120];
-    } MOD_HEAD;
+    } MOD_INITIAL;
     struct {
       uint8_t data[124];
-    } MOD_BODY;
+    } MOD_SUBSEQUENT;
     struct {
       uint16_t cycle;
       uint16_t step;
@@ -164,9 +164,15 @@ void synchronize(const volatile GlobalHeader* header, const volatile Body* body)
 
   next_sync0 = get_next_sync0();
   bram_cpy_volatile(BRAM_SELECT_CONTROLLER, BRAM_ADDR_EC_SYNC_TIME_0, (volatile uint16_t*)&next_sync0, sizeof(uint64_t) >> 1);
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, header->fpga_ctl_reg | SYNC);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, header->fpga_ctl_flag | SYNC);
 
   memcpy_volatile(_cycle, cycle, TRANS_NUM * sizeof(uint16_t));
+}
+
+inline static void change_mod_segment(uint16_t segment) {
+  asm("dmb");
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_MEM_SEGMENT, segment);
+  asm("dmb");
 }
 
 void write_mod(const volatile GlobalHeader* header) {
@@ -175,16 +181,14 @@ void write_mod(const volatile GlobalHeader* header) {
   uint32_t segment_capacity;
   uint32_t write = header->size;
 
-  if ((header->cpu_ctl_reg & MOD_BEGIN) != 0) {
+  if ((header->cpu_ctl_flag & MOD_BEGIN) != 0) {
     _mod_cycle = 0;
-    asm("dmb");
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_ADDR_OFFSET, 0);
-    asm("dmb");
-    freq_div = header->DATA.MOD_HEAD.freq_div;
+    change_mod_segment(0);
+    freq_div = header->DATA.MOD_INITIAL.freq_div;
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_FREQ_DIV_0, (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
-    data = (uint16_t*)header->DATA.MOD_HEAD.data;
+    data = (uint16_t*)header->DATA.MOD_INITIAL.data;
   } else {
-    data = (uint16_t*)header->DATA.MOD_BODY.data;
+    data = (uint16_t*)header->DATA.MOD_SUBSEQUENT.data;
   }
 
   segment_capacity = (_mod_cycle & ~MOD_BUF_SEGMENT_SIZE_MASK) + MOD_BUF_SEGMENT_SIZE - _mod_cycle;
@@ -195,14 +199,12 @@ void write_mod(const volatile GlobalHeader* header) {
     bram_cpy(BRAM_SELECT_MOD, (_mod_cycle & MOD_BUF_SEGMENT_SIZE_MASK) >> 1, data, segment_capacity >> 1);
     _mod_cycle += segment_capacity;
     data += segment_capacity;
-    asm("dmb");
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_ADDR_OFFSET, (_mod_cycle & ~MOD_BUF_SEGMENT_SIZE_MASK) >> MOD_BUF_SEGMENT_SIZE_WIDTH);
-    asm("dmb");
+    change_mod_segment((_mod_cycle & ~MOD_BUF_SEGMENT_SIZE_MASK) >> MOD_BUF_SEGMENT_SIZE_WIDTH);
     bram_cpy(BRAM_SELECT_MOD, (_mod_cycle & MOD_BUF_SEGMENT_SIZE_MASK) >> 1, data, (write - segment_capacity + 1) >> 1);
     _mod_cycle += write - segment_capacity;
   }
 
-  if ((header->cpu_ctl_reg & MOD_END) != 0) bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE, max(1, _mod_cycle) - 1);
+  if ((header->cpu_ctl_flag & MOD_END) != 0) bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_MOD_CYCLE, max(1, _mod_cycle) - 1);
 }
 
 void config_silencer(const volatile GlobalHeader* header) {
@@ -241,11 +243,17 @@ static void write_normal_op_raw(const volatile Body* body, bool_t is_duty) {
 }
 
 static void write_normal_op(const volatile GlobalHeader* header, const volatile Body* body) {
-  if (header->fpga_ctl_reg & LEGACY_MODE) {
+  if (header->fpga_ctl_flag & LEGACY_MODE) {
     write_normal_op_legacy(body);
   } else {
-    write_normal_op_raw(body, (header->cpu_ctl_reg & IS_DUTY) != 0);
+    write_normal_op_raw(body, (header->cpu_ctl_flag & IS_DUTY) != 0);
   }
+}
+
+inline static void change_stm_segment(uint16_t segment) {
+  asm("dmb");
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_MEM_SEGMENT, segment);
+  asm("dmb");
 }
 
 static void write_focus_stm(const volatile GlobalHeader* header, const volatile Body* body) {
@@ -260,11 +268,9 @@ static void write_focus_stm(const volatile GlobalHeader* header, const volatile 
   uint32_t size, cnt;
   uint32_t segment_capacity;
 
-  if ((header->cpu_ctl_reg & STM_BEGIN) != 0) {
+  if ((header->cpu_ctl_flag & STM_BEGIN) != 0) {
     _stm_write = 0;
-    asm("dmb");
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, 0);
-    asm("dmb");
+    change_stm_segment(0);
     size = body->DATA.FOCUS_STM_INITIAL.data[0];
     freq_div = (body->DATA.FOCUS_STM_INITIAL.data[2] << 16) | body->DATA.FOCUS_STM_INITIAL.data[1];
     sound_speed = (body->DATA.FOCUS_STM_INITIAL.data[4] << 16) | body->DATA.FOCUS_STM_INITIAL.data[3];
@@ -307,10 +313,7 @@ static void write_focus_stm(const volatile GlobalHeader* header, const volatile 
     }
     _stm_write += segment_capacity;
 
-    asm("dmb");
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET,
-               (_stm_write & ~FOCUS_STM_BUF_SEGMENT_SIZE_MASK) >> FOCUS_STM_BUF_SEGMENT_SIZE_WIDTH);
-    asm("dmb");
+    change_stm_segment((_stm_write & ~FOCUS_STM_BUF_SEGMENT_SIZE_MASK) >> FOCUS_STM_BUF_SEGMENT_SIZE_WIDTH);
 
     cnt = size - segment_capacity;
     addr = get_addr(BRAM_SELECT_STM, (_stm_write & FOCUS_STM_BUF_SEGMENT_SIZE_MASK) << 3);
@@ -325,9 +328,9 @@ static void write_focus_stm(const volatile GlobalHeader* header, const volatile 
     _stm_write += size - segment_capacity;
   }
 
-  if ((header->cpu_ctl_reg & STM_END) != 0) {
+  if ((header->cpu_ctl_flag & STM_END) != 0) {
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_write) - 1);
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, header->fpga_ctl_reg | OP_MODE_FPGA);
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, header->fpga_ctl_flag | OP_MODE_FPGA);
   }
 }
 
@@ -342,11 +345,9 @@ static void write_gain_stm_legacy(const volatile GlobalHeader* header, const vol
   uint32_t cnt;
   uint16_t phase;
 
-  if ((header->cpu_ctl_reg & STM_BEGIN) != 0) {
+  if ((header->cpu_ctl_flag & STM_BEGIN) != 0) {
     _stm_write = 0;
-    asm("dmb");
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, 0);
-    asm("dmb");
+    change_stm_segment(0);
     freq_div = (body->DATA.GAIN_STM_INITIAL.data[1] << 16) | body->DATA.GAIN_STM_INITIAL.data[0];
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0, (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
     _stm_gain_data_mode = body->DATA.GAIN_STM_INITIAL.data[2];
@@ -424,15 +425,12 @@ static void write_gain_stm_legacy(const volatile GlobalHeader* header, const vol
       break;
   }
 
-  if ((_stm_write & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) == 0) {
-    asm("dmb");
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET,
-               (_stm_write & ~GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) >> GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH);
-    asm("dmb");
-  }
-  if ((header->cpu_ctl_reg & STM_END) != 0) {
+  if ((_stm_write & GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) == 0)
+    change_stm_segment((_stm_write & ~GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK) >> GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH);
+
+  if ((header->cpu_ctl_flag & STM_END) != 0) {
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_cycle) - 1);
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, header->fpga_ctl_reg | OP_MODE_FPGA);
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, header->fpga_ctl_flag | OP_MODE_FPGA);
   }
 }
 
@@ -446,11 +444,9 @@ static void write_gain_stm(const volatile GlobalHeader* header, const volatile B
   uint16_t finish_idx;
   uint32_t cnt;
 
-  if ((header->cpu_ctl_reg & STM_BEGIN) != 0) {
+  if ((header->cpu_ctl_flag & STM_BEGIN) != 0) {
     _stm_write = 0;
-    asm("dmb");
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, 0);
-    asm("dmb");
+    change_stm_segment(0);
     freq_div = (body->DATA.GAIN_STM_INITIAL.data[1] << 16) | body->DATA.GAIN_STM_INITIAL.data[0];
     bram_cpy(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_FREQ_DIV_0, (uint16_t*)&freq_div, sizeof(uint32_t) >> 1);
     _stm_gain_data_mode = body->DATA.GAIN_STM_INITIAL.data[2];
@@ -468,7 +464,7 @@ static void write_gain_stm(const volatile GlobalHeader* header, const volatile B
 
   switch (_stm_gain_data_mode) {
     case GAIN_DATA_MODE_PHASE_DUTY_FULL:
-      if ((header->cpu_ctl_reg & IS_DUTY) != 0) {
+      if ((header->cpu_ctl_flag & IS_DUTY) != 0) {
         dst = &base[addr] + 1;
         _stm_write += 1;
       } else {
@@ -481,7 +477,7 @@ static void write_gain_stm(const volatile GlobalHeader* header, const volatile B
       }
       break;
     case GAIN_DATA_MODE_PHASE_FULL:
-      if ((header->cpu_ctl_reg & IS_DUTY) != 0) break;
+      if ((header->cpu_ctl_flag & IS_DUTY) != 0) break;
       dst = &base[addr];
       cnt = 0;
       while (cnt++ < TRANS_NUM) {
@@ -491,21 +487,18 @@ static void write_gain_stm(const volatile GlobalHeader* header, const volatile B
       _stm_write += 1;
       break;
     case GAIN_DATA_MODE_PHASE_HALF:
-      // Not supported in normal mode
+      // Not supported in advanced mode
       break;
     default:
       break;
   }
 
-  if ((_stm_write & GAIN_STM_BUF_SEGMENT_SIZE_MASK) == 0) {
-    asm("dmb");
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_ADDR_OFFSET, (_stm_write & ~GAIN_STM_BUF_SEGMENT_SIZE_MASK) >> GAIN_STM_BUF_SEGMENT_SIZE_WIDTH);
-    asm("dmb");
-  }
+  if ((_stm_write & GAIN_STM_BUF_SEGMENT_SIZE_MASK) == 0)
+    change_stm_segment((_stm_write & ~GAIN_STM_BUF_SEGMENT_SIZE_MASK) >> GAIN_STM_BUF_SEGMENT_SIZE_WIDTH);
 
-  if ((header->cpu_ctl_reg & STM_END) != 0) {
+  if ((header->cpu_ctl_flag & STM_END) != 0) {
     bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_STM_CYCLE, max(1, _stm_cycle) - 1);
-    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, header->fpga_ctl_reg | OP_MODE_FPGA);
+    bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, header->fpga_ctl_flag | OP_MODE_FPGA);
   }
 }
 
@@ -513,7 +506,7 @@ static void clear(void) {
   uint32_t freq_div_4k = 40960;
 
   _read_fpga_info = false;
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, 0x0000);
+  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, 0x0000);
 
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP, 10);
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_CYCLE, 4096);
@@ -565,7 +558,7 @@ void recv_ethercat(void) {
   if (header->msg_id == _msg_id) return;
   _msg_id = header->msg_id;
   _ack = ((uint16_t)(header->msg_id)) << 8;
-  _read_fpga_info = (header->fpga_ctl_reg & READS_FPGA_INFO) != 0;
+  _read_fpga_info = (header->fpga_ctl_flag & READS_FPGA_INFO) != 0;
   if (_read_fpga_info) _ack = (_ack & 0xFF00) | read_fpga_info();
 
   switch (_msg_id) {
@@ -590,34 +583,34 @@ void recv_ethercat(void) {
     default:
       if (_msg_id > MSG_END) break;
 
-      if (((header->cpu_ctl_reg & MOD) == 0) && ((header->cpu_ctl_reg & CONFIG_SYNC) != 0)) {
+      if (((header->cpu_ctl_flag & MOD) == 0) && ((header->cpu_ctl_flag & CONFIG_SYNC) != 0)) {
         synchronize(header, body);
         break;
       }
 
-      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_REG, header->fpga_ctl_reg);
+      bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, header->fpga_ctl_flag);
 
-      if ((header->cpu_ctl_reg & MOD) != 0)
+      if ((header->cpu_ctl_flag & MOD) != 0)
         write_mod(header);
-      else if ((header->cpu_ctl_reg & CONFIG_SILENCER) != 0) {
+      else if ((header->cpu_ctl_flag & CONFIG_SILENCER) != 0) {
         config_silencer(header);
       };
 
-      if ((header->cpu_ctl_reg & WRITE_BODY) == 0) break;
+      if ((header->cpu_ctl_flag & WRITE_BODY) == 0) break;
 
-      if ((header->cpu_ctl_reg & MOD_DELAY) != 0) {
+      if ((header->cpu_ctl_flag & MOD_DELAY) != 0) {
         set_mod_delay(body);
         break;
       }
 
-      if ((header->fpga_ctl_reg & OP_MODE) == 0) {
+      if ((header->fpga_ctl_flag & OP_MODE) == 0) {
         write_normal_op(header, body);
         break;
       }
 
-      if ((header->fpga_ctl_reg & STM_GAIN_MODE) == 0)
+      if ((header->fpga_ctl_flag & STM_GAIN_MODE) == 0)
         write_focus_stm(header, body);
-      else if ((header->fpga_ctl_reg & LEGACY_MODE) == 0)
+      else if ((header->fpga_ctl_flag & LEGACY_MODE) == 0)
         write_gain_stm(header, body);
       else
         write_gain_stm_legacy(header, body);

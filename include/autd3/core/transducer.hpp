@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/01/2023
+// Last Modified: 10/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,19 +26,20 @@ using driver::Vector3;
 using driver::Vector4;
 
 /**
- * \brief Transducer contains id, position, rotation, and frequency of a transducer
+ * \brief Transducer contains idx, position, rotation, and frequency of a transducer
  */
 struct Transducer {
-  explicit Transducer(const size_t id, Vector3 pos, Quaternion rot) noexcept : Transducer(id, std::move(pos), std::move(rot), 0, 4096) {}
-  explicit Transducer(const size_t id, Vector3 pos, Quaternion rot, const uint16_t mod_delay, const uint16_t cycle) noexcept
-      : _id(id), _pos(std::move(pos)), _rot(std::move(rot)), _mod_delay(mod_delay), _cycle(cycle) {}
+  explicit Transducer(const size_t idx, Vector3 pos, Quaternion rot) noexcept : Transducer(idx, std::move(pos), std::move(rot), 0, 4096) {}
+  explicit Transducer(const size_t idx, Vector3 pos, Quaternion rot, const uint16_t mod_delay, const uint16_t cycle) noexcept
+      : mod_delay(mod_delay), cycle(cycle), _idx(idx), _pos(std::move(pos)), _rot(std::move(rot)) {}
   ~Transducer() = default;
   Transducer(const Transducer& v) noexcept = default;
   Transducer& operator=(const Transducer& obj) = default;
   Transducer(Transducer&& obj) = default;
   Transducer& operator=(Transducer&& obj) = default;
 
-  [[nodiscard]] driver::autd3_float_t align_phase_at(const driver::autd3_float_t dist, const driver::autd3_float_t sound_speed) const {
+  [[nodiscard]] driver::autd3_float_t align_phase_at(const Vector3& p, const driver::autd3_float_t sound_speed) const {
+    const auto dist = (p - _pos).norm();
     return dist * wavenumber(sound_speed);
   }
 
@@ -55,7 +56,7 @@ struct Transducer {
   /**
    * \brief ID of the transducer
    */
-  [[nodiscard]] size_t id() const noexcept { return _id; }
+  [[nodiscard]] size_t idx() const noexcept { return _idx; }
 
   /**
    * \brief x direction of the transducer
@@ -75,36 +76,25 @@ struct Transducer {
   /**
    * \brief modulation delay of the transducer
    */
-  [[nodiscard]] uint16_t mod_delay() const noexcept { return _mod_delay; }
-
-  /**
-   * \brief modulation delay of the transducer
-   */
-  uint16_t& mod_delay() noexcept { return _mod_delay; }
+  uint16_t mod_delay;
 
   /**
    * \brief Frequency division ratio. The frequency will be autd3::driver::FPGA_CLK_FREQ/cycle.
    */
-  [[nodiscard]] uint16_t cycle() const { return _cycle; }
+  uint16_t cycle;
 
   /**
    * \brief Frequency of the transducer
    */
   [[nodiscard]] driver::autd3_float_t frequency() const {
-    return static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / static_cast<driver::autd3_float_t>(_cycle);
+    return static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / static_cast<driver::autd3_float_t>(cycle);
   }
-
-  /**
-   * \brief Set fFrequency division ratio. The frequency will be autd3::driver::FPGA_CLK_FREQ/cycle.
-   */
-  void set_cycle(const uint16_t cycle) noexcept { _cycle = cycle; }
 
   /**
    * \brief Set fFrequency of the transducer.
    */
   void set_frequency(const driver::autd3_float_t freq) noexcept {
-    const auto cycle = static_cast<uint16_t>(std::round(static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / freq));
-    set_cycle(cycle);
+    cycle = static_cast<uint16_t>(std::round(static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / freq));
   }
 
   /**
@@ -118,11 +108,9 @@ struct Transducer {
   [[nodiscard]] driver::autd3_float_t wavenumber(const driver::autd3_float_t sound_speed) const { return 2 * driver::pi * frequency() / sound_speed; }
 
  private:
-  size_t _id;
+  size_t _idx;
   Vector3 _pos;
   Quaternion _rot;
-  uint16_t _mod_delay;
-  uint16_t _cycle;
 };
 
 }  // namespace autd3::core

@@ -3,7 +3,7 @@
 // Created Date: 10/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/01/2023
+// Last Modified: 10/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,8 +26,8 @@ TEST(Modulation, Static) {
     const auto buffer = m.calc();
 
     ASSERT_EQ(buffer.size(), 2);
-    ASSERT_EQ(buffer[0].value(), 1);
-    ASSERT_EQ(buffer[1].value(), 1);
+    ASSERT_EQ(buffer[0], 1);
+    ASSERT_EQ(buffer[1], 1);
   }
 
   {
@@ -35,8 +35,8 @@ TEST(Modulation, Static) {
     const auto buffer = m.calc();
 
     ASSERT_EQ(buffer.size(), 2);
-    ASSERT_EQ(buffer[0].value(), 0.5);
-    ASSERT_EQ(buffer[1].value(), 0.5);
+    ASSERT_EQ(buffer[0], 0.5);
+    ASSERT_EQ(buffer[1], 0.5);
   }
 
   {
@@ -44,8 +44,8 @@ TEST(Modulation, Static) {
     const auto buffer = m.calc();
 
     ASSERT_EQ(buffer.size(), 2);
-    ASSERT_EQ(buffer[0].value(), 1);
-    ASSERT_EQ(buffer[1].value(), 1);
+    ASSERT_EQ(buffer[0], 2);
+    ASSERT_EQ(buffer[1], 2);
   }
 
   {
@@ -53,8 +53,8 @@ TEST(Modulation, Static) {
     const auto buffer = m.calc();
 
     ASSERT_EQ(buffer.size(), 2);
-    ASSERT_EQ(buffer[0].value(), 0);
-    ASSERT_EQ(buffer[1].value(), 0);
+    ASSERT_EQ(buffer[0], -1);
+    ASSERT_EQ(buffer[1], -1);
   }
 }
 
@@ -97,7 +97,7 @@ TEST(Modulation, Sine) {
 
   {
     auto m = autd3::modulation::Sine(150);
-    m.sampling_frequency_division() = 4096;
+    m.sampling_frequency_division = 4096;
     const auto buffer = m.calc();
 
     const uint8_t expects[800] = {

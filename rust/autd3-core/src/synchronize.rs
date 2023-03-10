@@ -4,7 +4,7 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 03/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ use anyhow::Result;
 
 use crate::{
     datagram::{DatagramBody, Empty, Filled, Sendable},
-    geometry::{Geometry, LegacyTransducer, NormalPhaseTransducer, NormalTransducer},
+    geometry::{AdvancedPhaseTransducer, AdvancedTransducer, Geometry, LegacyTransducer},
 };
 
 #[derive(Default)]
@@ -45,40 +45,40 @@ impl Sendable<LegacyTransducer> for Synchronize {
     }
 }
 
-impl DatagramBody<NormalTransducer> for Synchronize {
-    type O = autd3_driver::SyncNormal;
+impl DatagramBody<AdvancedTransducer> for Synchronize {
+    type O = autd3_driver::SyncAdvanced;
 
-    fn operation(&mut self, geometry: &Geometry<NormalTransducer>) -> Result<Self::O> {
+    fn operation(&mut self, geometry: &Geometry<AdvancedTransducer>) -> Result<Self::O> {
         let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
         Ok(Self::O::new(cycles))
     }
 }
 
-impl Sendable<NormalTransducer> for Synchronize {
+impl Sendable<AdvancedTransducer> for Synchronize {
     type H = Empty;
     type B = Filled;
-    type O = <Self as DatagramBody<NormalTransducer>>::O;
+    type O = <Self as DatagramBody<AdvancedTransducer>>::O;
 
-    fn operation(&mut self, geometry: &Geometry<NormalTransducer>) -> Result<Self::O> {
-        <Self as DatagramBody<NormalTransducer>>::operation(self, geometry)
+    fn operation(&mut self, geometry: &Geometry<AdvancedTransducer>) -> Result<Self::O> {
+        <Self as DatagramBody<AdvancedTransducer>>::operation(self, geometry)
     }
 }
 
-impl DatagramBody<NormalPhaseTransducer> for Synchronize {
-    type O = autd3_driver::SyncNormal;
+impl DatagramBody<AdvancedPhaseTransducer> for Synchronize {
+    type O = autd3_driver::SyncAdvanced;
 
-    fn operation(&mut self, geometry: &Geometry<NormalPhaseTransducer>) -> Result<Self::O> {
+    fn operation(&mut self, geometry: &Geometry<AdvancedPhaseTransducer>) -> Result<Self::O> {
         let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
         Ok(Self::O::new(cycles))
     }
 }
 
-impl Sendable<NormalPhaseTransducer> for Synchronize {
+impl Sendable<AdvancedPhaseTransducer> for Synchronize {
     type H = Empty;
     type B = Filled;
-    type O = <Self as DatagramBody<NormalPhaseTransducer>>::O;
+    type O = <Self as DatagramBody<AdvancedPhaseTransducer>>::O;
 
-    fn operation(&mut self, geometry: &Geometry<NormalPhaseTransducer>) -> Result<Self::O> {
-        <Self as DatagramBody<NormalPhaseTransducer>>::operation(self, geometry)
+    fn operation(&mut self, geometry: &Geometry<AdvancedPhaseTransducer>) -> Result<Self::O> {
+        <Self as DatagramBody<AdvancedPhaseTransducer>>::operation(self, geometry)
     }
 }

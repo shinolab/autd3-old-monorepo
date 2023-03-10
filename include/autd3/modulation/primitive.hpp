@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/01/2023
+// Last Modified: 10/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,8 +30,8 @@ class Static final : public core::Modulation {
    */
   explicit Static(const driver::autd3_float_t amp = 1.0) noexcept : Modulation(), _amp(amp) {}
 
-  std::vector<driver::Amp> calc() override {
-    std::vector buffer(2, driver::Amp(_amp));
+  std::vector<driver::autd3_float_t> calc() override {
+    std::vector buffer(2, _amp);
     return buffer;
   }
 
@@ -60,7 +60,7 @@ class Sine final : public core::Modulation {
   explicit Sine(const int32_t freq, const driver::autd3_float_t amp = 1.0, const driver::autd3_float_t offset = 0.5) noexcept
       : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
 
-  std::vector<driver::Amp> calc() override {
+  std::vector<driver::autd3_float_t> calc() override {
     const auto fs = static_cast<int32_t>(sampling_frequency());
 
     const auto f = std::clamp(_freq, 1, fs / 2);
@@ -102,7 +102,7 @@ class SineSquared final : public core::Modulation {
   explicit SineSquared(const int32_t freq, const driver::autd3_float_t amp = 1.0, const driver::autd3_float_t offset = 0.5) noexcept
       : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
 
-  std::vector<driver::Amp> calc() override {
+  std::vector<driver::autd3_float_t> calc() override {
     const auto fs = static_cast<int32_t>(sampling_frequency());
 
     const auto f = std::clamp(_freq, 1, fs / 2);
@@ -145,7 +145,7 @@ class SineLegacy final : public core::Modulation {
   explicit SineLegacy(const driver::autd3_float_t freq, const driver::autd3_float_t amp = 1.0, const driver::autd3_float_t offset = 0.5) noexcept
       : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
 
-  std::vector<driver::Amp> calc() override {
+  std::vector<driver::autd3_float_t> calc() override {
     const auto fs = sampling_frequency();
     const auto f = (std::min)(_freq, fs / 2);
 
@@ -177,15 +177,15 @@ class Square final : public core::Modulation {
                   const driver::autd3_float_t duty = 0.5)
       : _freq(freq), _low(low), _high(high), _duty(duty) {}
 
-  std::vector<driver::Amp> calc() override {
+  std::vector<driver::autd3_float_t> calc() override {
     const auto f_s = static_cast<int32_t>(sampling_frequency());
     const auto f = std::clamp(_freq, 1, f_s / 2);
     const auto k = std::gcd(f_s, f);
     const size_t n = f_s / k;
     const size_t d = f / k;
 
-    const auto high = driver::Amp(_high);
-    const auto low = driver::Amp(_low);
+    const auto high = _high;
+    const auto low = _low;
 
     std::vector buffer(n, low);
 
@@ -211,19 +211,19 @@ class Cache final : public core::Modulation {
   template <typename... Args>
   explicit Cache(Args&&... args) : modulation(std::forward<Args>(args)...) {}
 
-  std::vector<driver::Amp> calc() override {
+  std::vector<driver::autd3_float_t> calc() override {
     if (!_built) {
       _buffer = modulation.calc();
-      _freq_div = modulation.sampling_frequency_division();
+      sampling_frequency_division = modulation.sampling_frequency_division;
       _built = true;
     }
-    std::vector<driver::Amp> buffer;
+    std::vector<driver::autd3_float_t> buffer;
     buffer.reserve(_buffer.size());
     std::copy(_buffer.begin(), _buffer.end(), std::back_inserter(buffer));
     return buffer;
   }
 
-  std::vector<driver::Amp> recalc() {
+  std::vector<driver::autd3_float_t> recalc() {
     _built = false;
     return calc();
   }
@@ -231,26 +231,43 @@ class Cache final : public core::Modulation {
   /**
    * \brief modulation data
    */
-  [[nodiscard]] const std::vector<driver::Amp>& buffer() const noexcept { return _buffer; }
+  [[nodiscard]] const std::vector<driver::autd3_float_t>& buffer() const noexcept { return _buffer; }
 
   /**
    * @brief [Advanced] modulation data
    * @details Call Modulation::build before using this function to initialize buffer data.
    */
-  std::vector<driver::Amp>& buffer() noexcept { return _buffer; }
+  std::vector<driver::autd3_float_t>& buffer() noexcept { return _buffer; }
 
-  [[nodiscard]] std::vector<driver::Amp>::const_iterator begin() const noexcept { return _buffer.begin(); }
-  [[nodiscard]] std::vector<driver::Amp>::const_iterator end() const noexcept { return _buffer.end(); }
-  [[nodiscard]] std::vector<driver::Amp>::iterator begin() noexcept { return _buffer.begin(); }
-  [[nodiscard]] std::vector<driver::Amp>::iterator end() noexcept { return _buffer.end(); }
-  [[nodiscard]] const driver::Amp& operator[](const size_t i) const { return _buffer[i]; }
-  [[nodiscard]] driver::Amp& operator[](const size_t i) { return _buffer[i]; }
+  [[nodiscard]] std::vector<driver::autd3_float_t>::const_iterator begin() const noexcept { return _buffer.begin(); }
+  [[nodiscard]] std::vector<driver::autd3_float_t>::const_iterator end() const noexcept { return _buffer.end(); }
+  [[nodiscard]] std::vector<driver::autd3_float_t>::iterator begin() noexcept { return _buffer.begin(); }
+  [[nodiscard]] std::vector<driver::autd3_float_t>::iterator end() noexcept { return _buffer.end(); }
+  [[nodiscard]] driver::autd3_float_t operator[](const size_t i) const { return _buffer[i]; }
+  [[nodiscard]] driver::autd3_float_t& operator[](const size_t i) { return _buffer[i]; }
 
   T modulation;
 
  private:
   bool _built{false};
-  std::vector<driver::Amp> _buffer;
+  std::vector<driver::autd3_float_t> _buffer;
+};
+
+template <typename T>
+class Transform final : public core::Modulation {
+ public:
+  template <typename... Args>
+  explicit Transform(std::function<double(double)> f, Args&&... args) : _f(std::move(f)), _modulation(std::forward<Args>(args)...) {}
+
+  std::vector<driver::autd3_float_t> calc() override {
+    std::vector<driver::autd3_float_t> buffer = _modulation.calc();
+    sampling_frequency_division = _modulation.sampling_frequency_division;
+    return generate_iota(0, buffer.size(), [this, buffer](const size_t i) { return _f(buffer[i]); });
+  }
+
+ private:
+  std::function<double(double)> _f;
+  T _modulation;
 };
 
 }  // namespace autd3::modulation

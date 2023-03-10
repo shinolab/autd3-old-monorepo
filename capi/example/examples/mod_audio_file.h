@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/10/2022
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@
 void* mod_audio_file(void* autd) {
   void* s = NULL;
   AUTDCreateSilencer(&s, 10, 4096);
-  AUTDSend(autd, s, NULL);
+  AUTDSend(autd, s, NULL, 20 * 1000 * 1000);
   AUTDDeleteSilencer(s);
 
   double x = 90.0;
@@ -33,7 +33,7 @@ void* mod_audio_file(void* autd) {
   void* mw = NULL;
   AUTDModulationWav(&mw, path, 40960);
 
-  AUTDSend(autd, mw, g);
+  AUTDSend(autd, mw, g, 20 * 1000 * 1000);
 
   AUTDDeleteModulation(mw);
 
@@ -45,7 +45,7 @@ void* mod_audio_file(void* autd) {
   void* mr = NULL;
   AUTDModulationRawPCM(&mr, path, 40e3, 40960);
 
-  AUTDSend(autd, mr, g);
+  AUTDSend(autd, mr, g, 20 * 1000 * 1000);
 
   AUTDDeleteGain(g);
   AUTDDeleteModulation(mr);

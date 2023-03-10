@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/01/2023
+ * Last Modified: 03/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use crate::{
     cpu::{Body, GlobalHeader, LegacyPhaseFull, LegacyPhaseHalf},
-    fpga::{LegacyDrive, NormalDriveDuty, NormalDrivePhase},
+    fpga::{AdvancedDriveDuty, AdvancedDrivePhase, LegacyDrive},
 };
 
 #[derive(Clone)]
@@ -127,7 +127,7 @@ impl TxDatagram {
         }
     }
 
-    pub fn duties_mut(&mut self) -> &mut [NormalDriveDuty] {
+    pub fn duties_mut(&mut self) -> &mut [AdvancedDriveDuty] {
         let len =
             (self.data.len() - std::mem::size_of::<GlobalHeader>()) / std::mem::size_of::<u16>();
         unsafe {
@@ -135,13 +135,13 @@ impl TxDatagram {
                 self.data
                     .as_mut_ptr()
                     .add(std::mem::size_of::<GlobalHeader>())
-                    as *mut NormalDriveDuty,
+                    as *mut AdvancedDriveDuty,
                 len,
             )
         }
     }
 
-    pub fn phases_mut(&mut self) -> &mut [NormalDrivePhase] {
+    pub fn phases_mut(&mut self) -> &mut [AdvancedDrivePhase] {
         let len =
             (self.data.len() - std::mem::size_of::<GlobalHeader>()) / std::mem::size_of::<u16>();
         unsafe {
@@ -149,7 +149,7 @@ impl TxDatagram {
                 self.data
                     .as_mut_ptr()
                     .add(std::mem::size_of::<GlobalHeader>())
-                    as *mut NormalDrivePhase,
+                    as *mut AdvancedDrivePhase,
                 len,
             )
         }

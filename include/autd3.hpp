@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/02/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -60,7 +60,7 @@ namespace extra {}
 
 constexpr driver::autd3_float_t pi = driver::pi;
 
-static inline std::string version = "8.1.2";
+static inline std::string version = "8.2.0";
 
 using core::Geometry;
 using core::Mode;
@@ -71,9 +71,8 @@ using core::Amplitudes;
 using core::Gain;
 using core::Modulation;
 
-using driver::Amp;
+using driver::autd3_float_t;
 using driver::Drive;
-using driver::Phase;
 
 using driver::DebugLevel;
 using driver::FirmwareInfo;
@@ -87,9 +86,5 @@ using core::FocusSTM;
 using core::GainSTM;
 
 using core::LinkPtr;
-
-using core::legacy_mode;
-using core::normal_mode;
-using core::normal_phase_mode;
 
 }  // namespace autd3

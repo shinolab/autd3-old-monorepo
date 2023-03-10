@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/01/2023
+ * Last Modified: 03/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -61,6 +61,6 @@ pub enum DriverError {
         crate::GAIN_STM_SAMPLING_FREQ_DIV_MIN
     )]
     GainSTMFreqDivOutOfRange(u32),
-    #[error("PhaseHalf is not supported in Normal mode")]
+    #[error("PhaseHalf is not supported in Advanced mode")]
     PhaseHalfNotSupported,
 }

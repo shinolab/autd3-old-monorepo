@@ -19,13 +19,11 @@ int main() try {
   // create and open controller
   auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
 
-  // You do not need to change this value, but setting it increases reliability.
-  // For SOEM link, it is recommended to set `ack_check_timeout` to about 10 ms
-  autd.set_ack_check_timeout(std::chrono::milliseconds(20));
-
   // initialize and synchronize devices
   // You MUST synchronize devices once after initialization, even if you are using only one device.
-  autd << autd3::clear << autd3::synchronize;
+  // The second argument is a timeout, which is optional.
+  autd.send(autd3::Clear(), std::chrono::milliseconds(20));
+  autd.send(autd3::Synchronize(), std::chrono::milliseconds(20));
 
   // check firmware version
   const auto firm_infos = autd.firmware_infos();
@@ -33,14 +31,15 @@ int main() try {
 
   // Silencer is used to quiet down the transducers' noise by passing the phase/amplitude parameters through a low-pass filter.
   autd3::SilencerConfig silencer;
+  autd.send(silencer, std::chrono::milliseconds(20));
 
   // focus is 150.0 mm above array center
-  const auto focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
+  const autd3::Vector3 focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   autd3::gain::Focus g(focus);
   autd3::modulation::Sine m(150);  // Amplitude Modulation of 150 Hz sine wave
 
   // send data
-  autd << silencer << m, g;
+  autd.send(m, g, std::chrono::milliseconds(20));
 
   std::cout << "press enter to finish..." << std::endl;
   std::cin.ignore();

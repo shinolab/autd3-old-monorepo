@@ -3,7 +3,7 @@
 // Created Date: 07/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/01/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -90,17 +90,15 @@ class SoftwareSTM {
       if (!_run) return false;
       _run = false;
       if (_th.joinable()) _th.join();
-      _cnt.set_ack_check_timeout(_timeout);
       return true;
     }
 
    private:
     SoftwareSTMThreadHandle(Controller& cnt, std::vector<std::shared_ptr<core::Gain>> bodies, const uint64_t period, const TimerStrategy strategy)
-        : _cnt(cnt), _timeout(_cnt.get_ack_check_timeout()) {
+        : _cnt(cnt) {
       _run = true;
       if (bodies.empty()) return;
       const auto interval = std::chrono::nanoseconds(period);
-      _cnt.set_ack_check_timeout(std::chrono::high_resolution_clock::duration::zero());
       if (strategy.contains(TimerStrategy::BusyWait))
         _th = std::thread([this, interval, bodies = std::move(bodies)] {
           size_t i = 0;
@@ -129,7 +127,6 @@ class SoftwareSTM {
     bool _run;
     std::thread _th;
     Controller& _cnt;
-    std::chrono::high_resolution_clock::duration _timeout;
   };
 
   SoftwareSTM() noexcept : timer_strategy(TimerStrategy::None), _sample_period_ns(0) {}

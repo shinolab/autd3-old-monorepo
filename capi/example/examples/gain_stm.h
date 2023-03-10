@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/02/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,19 +20,19 @@
 void* gain_stm(void* autd) {
   void* s = NULL;
   AUTDCreateSilencer(&s, 0xFFFF, 4096);
-  AUTDSend(autd, s, NULL);
+  AUTDSend(autd, s, NULL, 20ULL * 1000ULL * 1000ULL);
   AUTDDeleteSilencer(s);
 
   void* m = NULL;
   AUTDModulationStatic(&m, 0xFF);
-  AUTDSend(autd, m, NULL);
+  AUTDSend(autd, m, NULL, 20ULL * 1000ULL * 1000ULL);
 
   double x = 90.0;
   double y = 70.0;
   double z = 150.0;
 
   void* stm = NULL;
-  AUTDGainSTM(&stm);
+  AUTDGainSTM(&stm, 1);
 
   const int32_t point_num = 200;
   void** gains = (void**)malloc(sizeof(void*) * point_num);
@@ -51,7 +51,7 @@ void* gain_stm(void* autd) {
   const double actual_freq = AUTDSTMSetFrequency(stm, 1.0);
   printf("Actual frequency is %lf Hz\n", actual_freq);
 
-  AUTDSend(autd, NULL, stm);
+  AUTDSend(autd, NULL, stm, 20ULL * 1000ULL * 1000ULL);
 
   AUTDDeleteSTM(stm);
   AUTDDeleteModulation(m);

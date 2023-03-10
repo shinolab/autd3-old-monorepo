@@ -4,7 +4,7 @@ Project: stm
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 08/01/2023
+Last Modified: 08/03/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@ Copyright (c) 2022 Shun Suzuki. All rights reserved.
 from ctypes import byref
 from enum import IntEnum
 
-from pyautd3.autd import Body, Controller
+from pyautd3.autd import Body
 from pyautd3.gain.gain import Gain
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
 
@@ -82,9 +82,9 @@ class Mode(IntEnum):
 
 
 class GainSTM(STM):
-    def __init__(self):
+    def __init__(self, mode: Mode = Mode.PhaseDutyFull):
         super().__init__()
-        Base().dll.AUTDGainSTM(byref(self.ptr))
+        Base().dll.AUTDGainSTM(byref(self.ptr), int(mode))
         self._gains = []
 
     def __del__(self):
@@ -93,11 +93,3 @@ class GainSTM(STM):
     def add(self, gain: Gain):
         Base().dll.AUTDGainSTMAdd(self.ptr, gain.ptr)
         self._gains.append(gain)
-
-    @ property
-    def mode(self):
-        return Mode(Base().dll.AUTDGetGainSTMMode(self.ptr))
-
-    @ mode.setter
-    def mode(self, value: Mode):
-        Base().dll.AUTDSetGainSTMMode(self.ptr, int(value))

@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/01/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,6 +12,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
 #include <utility>
 #include <vector>
 
@@ -58,7 +59,7 @@ struct Gain<Legacy> final : Operation {
 };
 
 template <>
-struct Gain<Normal> final : Operation {
+struct Gain<Advanced> final : Operation {
   explicit Gain(std::vector<Drive> drives, std::vector<uint16_t> cycles) : _drives(std::move(drives)), _cycles(std::move(cycles)) {}
 
   void init() override {
@@ -100,8 +101,8 @@ struct Gain<Normal> final : Operation {
 
     assert(_drives.size() == tx.bodies_size());
     assert(_cycles.size() == tx.bodies_size());
-    std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<NormalDriveDuty*>(tx.bodies_raw_ptr()),
-                   [](const auto& d, const auto cycle) { return NormalDriveDuty(d, cycle); });
+    std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<AdvancedDriveDuty*>(tx.bodies_raw_ptr()),
+                   [](const auto& d, const auto cycle) { return AdvancedDriveDuty(d, cycle); });
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
   }
@@ -113,15 +114,15 @@ struct Gain<Normal> final : Operation {
 
     assert(_drives.size() == tx.bodies_size());
     assert(_cycles.size() == tx.bodies_size());
-    std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<NormalDrivePhase*>(tx.bodies_raw_ptr()),
-                   [](const auto& d, const auto cycle) { return NormalDrivePhase(d, cycle); });
+    std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<AdvancedDrivePhase*>(tx.bodies_raw_ptr()),
+                   [](const auto& d, const auto cycle) { return AdvancedDrivePhase(d, cycle); });
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
   }
 };
 
 template <>
-struct Gain<NormalPhase> final : Operation {
+struct Gain<AdvancedPhase> final : Operation {
   explicit Gain(std::vector<Drive> drives, std::vector<uint16_t> cycles) : _drives(std::move(drives)), _cycles(std::move(cycles)) {}
 
   void init() override { _sent = false; }
@@ -141,8 +142,8 @@ struct Gain<NormalPhase> final : Operation {
 
     assert(_drives.size() == tx.bodies_size());
     assert(_cycles.size() == tx.bodies_size());
-    std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<NormalDrivePhase*>(tx.bodies_raw_ptr()),
-                   [](const auto& d, const auto cycle) { return NormalDrivePhase(d, cycle); });
+    std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<AdvancedDrivePhase*>(tx.bodies_raw_ptr()),
+                   [](const auto& d, const auto cycle) { return AdvancedDrivePhase(d, cycle); });
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
 
@@ -177,8 +178,8 @@ struct Amplitude final : Operation {
 
     assert(_drives.size() == tx.bodies_size());
     assert(_cycles.size() == tx.bodies_size());
-    std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<NormalDriveDuty*>(tx.bodies_raw_ptr()),
-                   [](const auto& d, const auto cycle) { return NormalDriveDuty(d, cycle); });
+    std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<AdvancedDriveDuty*>(tx.bodies_raw_ptr()),
+                   [](const auto& d, const auto cycle) { return AdvancedDriveDuty(d, cycle); });
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
 

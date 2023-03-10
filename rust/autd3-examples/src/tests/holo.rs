@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/01/2023
+ * Last Modified: 07/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -17,7 +17,10 @@ macro_rules! holo {
         use autd3_gain_holo::*;
 
         let mut silencer_config = SilencerConfig::default();
-        $autd.send(&mut silencer_config).flush()?;
+        $autd
+            .timeout(std::time::Duration::from_millis(20))
+            .send(&mut silencer_config)
+            .flush()?;
 
         let center = $autd.geometry().center() + Vector3::new(0., 0., 150.0);
 
@@ -27,7 +30,7 @@ macro_rules! holo {
         let mut m = Sine::new(150);
 
         println!("[0]: SDP");
-        println!("[1]: EVD");
+        println!("[1]: EVP");
         println!("[2]: Naive");
         println!("[3]: GS");
         println!("[4]: GS-PAT");
@@ -43,35 +46,59 @@ macro_rules! holo {
         match s.trim().parse::<usize>() {
             Ok(0) => {
                 let mut g = SDP::<NalgebraBackend, _>::new(foci, amps, c);
-                $autd.send(&mut m).send(&mut g)?;
+                $autd
+                    .timeout(std::time::Duration::from_millis(20))
+                    .send(&mut m)
+                    .send(&mut g)?;
             }
             Ok(1) => {
-                let mut g = EVD::<NalgebraBackend, _>::new(foci, amps, c);
-                $autd.send(&mut m).send(&mut g)?;
+                let mut g = EVP::<NalgebraBackend, _>::new(foci, amps, c);
+                $autd
+                    .timeout(std::time::Duration::from_millis(20))
+                    .send(&mut m)
+                    .send(&mut g)?;
             }
             Ok(2) => {
                 let mut g = Naive::<NalgebraBackend, _>::new(foci, amps, c);
-                $autd.send(&mut m).send(&mut g)?;
+                $autd
+                    .timeout(std::time::Duration::from_millis(20))
+                    .send(&mut m)
+                    .send(&mut g)?;
             }
             Ok(3) => {
                 let mut g = GS::<NalgebraBackend, _>::new(foci, amps, c);
-                $autd.send(&mut m).send(&mut g)?;
+                $autd
+                    .timeout(std::time::Duration::from_millis(20))
+                    .send(&mut m)
+                    .send(&mut g)?;
             }
             Ok(4) => {
                 let mut g = GSPAT::<NalgebraBackend, _>::new(foci, amps, c);
-                $autd.send(&mut m).send(&mut g)?;
+                $autd
+                    .timeout(std::time::Duration::from_millis(20))
+                    .send(&mut m)
+                    .send(&mut g)?;
             }
             Ok(5) => {
                 let mut g = LM::<NalgebraBackend, _>::new(foci, amps, c);
-                $autd.send(&mut m).send(&mut g)?;
+                $autd
+                    .timeout(std::time::Duration::from_millis(20))
+                    .send(&mut m)
+                    .send(&mut g)?;
             }
             Ok(6) => {
                 let mut g = Greedy::<_>::new(foci, amps, c);
-                $autd.send(&mut m).send(&mut g)?;
+                $autd
+                    .timeout(std::time::Duration::from_millis(20))
+                    .send(&mut m)
+                    .send(&mut g)?;
             }
             _ => {
                 let mut g = GSPAT::<NalgebraBackend, _>::new(foci, amps, c);
-                $autd.send(&mut m).send(&mut g)?;
+                $autd
+                    .timeout(std::time::Duration::from_millis(20))
+                    .send(&mut m)
+                    .send(&mut g)?;
             }
         };
     }};

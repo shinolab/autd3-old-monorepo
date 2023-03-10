@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 07/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -55,40 +55,6 @@ struct FocusSTM final : STM {
   FocusSTM() : STM() {}
 
   /**
-   * @brief Set frequency of the STM
-   * @param[in] freq Frequency of the STM
-   * @details STM mode has some constraints, which determine the actual frequency of the STM.
-   * @return driver::autd3_float_t Actual frequency of STM
-   */
-  driver::autd3_float_t set_frequency(const driver::autd3_float_t freq) override {
-    const auto sample_freq = static_cast<driver::autd3_float_t>(size()) * freq;
-    _props.freq_div = static_cast<uint32_t>(std::round(static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / sample_freq));
-    return frequency();
-  }
-
-  /**
-   * @brief Sampling frequency.
-   */
-  [[nodiscard]] driver::autd3_float_t sampling_frequency() const noexcept override {
-    return static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / static_cast<driver::autd3_float_t>(_props.freq_div);
-  }
-
-  /**
-   * @brief Sampling frequency division.
-   */
-  [[nodiscard]] uint32_t sampling_frequency_division() const noexcept override { return _props.freq_div; }
-
-  /**
-   * @brief Sampling frequency division.
-   */
-  uint32_t& sampling_frequency_division() noexcept override { return _props.freq_div; }
-
-  std::optional<uint16_t>& start_idx() override { return _props.start_idx; }
-  [[nodiscard]] std::optional<uint16_t> start_idx() const override { return _props.start_idx; }
-  std::optional<uint16_t>& finish_idx() override { return _props.finish_idx; }
-  [[nodiscard]] std::optional<uint16_t> finish_idx() const override { return _props.finish_idx; }
-
-  /**
    * @brief Add control point
    * @param[in] point control point
    * @param[in] duty_shift duty shift. The duty ratio will be (50% >> duty_shift).
@@ -124,12 +90,12 @@ struct FocusSTM final : STM {
 
     const size_t tr_num = *std::min_element(geometry.device_map().begin(), geometry.device_map().end());
 
-    return std::make_unique<driver::FocusSTM>(std::move(points), tr_num, geometry.sound_speed, _props);
+    const driver::FocusSTMProps props{sampling_frequency_division, start_idx, finish_idx};
+    return std::make_unique<driver::FocusSTM>(std::move(points), tr_num, geometry.sound_speed, props);
   }
 
  private:
   std::vector<Focus> _points;
-  driver::FocusSTMProps _props{};
 };
 
 }  // namespace autd3::core

@@ -62,7 +62,7 @@ Holo is a `Gain` for generating multiple foci.
 Several algorithms for generating multiple foci have been proposed, and the following algorithms are implemented in SDK.
 
 * `SDP` - Semi-definite programming, based on Inoue et al.[^inoue2015]
-* `EVD` - Eigen value decomposition, based on Long et al.[^long2014]
+* `EVP` - Eigen value decomposition, based on Long et al.[^long2014]
 * `LSS` - Linear Synthesis Scheme of single-focus solutions
 * `GS` - Gershberg-Saxon, based on Marzo et al.[^marzo2019]
 * `GSPAT` - Gershberg-Saxon for Phased Arrays of Transducers, based on Plasencia et al.[^plasencia2020]
@@ -186,13 +186,12 @@ class FocalPoint final : public autd3::Gain {
   std::vector<autd3::driver::Drive> calc(const autd3::Geometry& geometry) override {
     std::vector<autd3::driver::Drive> drives;
     drives.reserve(geometry.num_transducers());
-    std::transform(geometry.begin(), geometry.end(), std::back_inserter(drives), [&](const auto& transducer) { {
-        const auto dist = (_point - transducer.position()).norm();
-        const auto phase = transducer.align_phase_at(dist);
-        return driver::Drive{autd3::Phase(phase), autd3::Amp(1.0)};
+    std::transform(geometry.begin(), geometry.end(), std::back_inserter(drives), [&](const auto& transducer) {
+        const auto phase = transducer.align_phase_at(_point, geometry.sound_speed);
+        return driver::Drive{phase, 1.0};
       });
     return drives;
-  } 
+  }
 
  private:
   autd::Vector3 _point;

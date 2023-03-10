@@ -15,10 +15,8 @@ link = SOEM(on_lost=on_lost, high_precision=true)
 
 cnt = Controller(geometry, link)
 
-cnt.set_ack_check_timeout = 20 * 1000 * 1000
-
-cnt.send(Clear())
-cnt.send(Synchronize())
+cnt.send(Clear(), timeout_ns=UInt64(20 * 1000 * 1000))
+cnt.send(Synchronize(), timeout_ns=UInt64(20 * 1000 * 1000))
 
 firm_info_list = cnt.firmware_info_list()
 for firm_info in firm_info_list
@@ -28,7 +26,7 @@ end
 const g = Focus(cnt.geometry().center() + SVector(0.0, 0.0, 150.0))
 const m = Sine(150)
 
-cnt.send(m, g)
+cnt.send(m, g, timeout_ns=UInt64(20 * 1000 * 1000))
 
 readline()
 

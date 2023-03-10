@@ -34,28 +34,16 @@ proc AUTDClose*(handle: pointer): bool {.cdecl, importc: "AUTDClose", dynlib: dl
 proc AUTDFreeController*(handle: pointer) {.cdecl, importc: "AUTDFreeController",
     dynlib: dll.}
 proc AUTDIsOpen*(handle: pointer): bool {.cdecl, importc: "AUTDIsOpen", dynlib: dll.}
-proc AUTDGetForceFan*(handle: pointer): bool {.cdecl, importc: "AUTDGetForceFan",
-    dynlib: dll.}
-proc AUTDGetReadsFPGAInfo*(handle: pointer): bool {.cdecl,
-    importc: "AUTDGetReadsFPGAInfo", dynlib: dll.}
-proc AUTDGetAckCheckTimeout*(handle: pointer): uint64 {.cdecl,
-    importc: "AUTDGetAckCheckTimeout", dynlib: dll.}
-proc AUTDGetSendInterval*(handle: pointer): uint64 {.cdecl,
-    importc: "AUTDGetSendInterval", dynlib: dll.}
 proc AUTDSetReadsFPGAInfo*(handle: pointer; reads_fpga_info: bool) {.cdecl,
     importc: "AUTDSetReadsFPGAInfo", dynlib: dll.}
-proc AUTDSetAckCheckTimeout*(handle: pointer; timeout: uint64) {.cdecl,
-    importc: "AUTDSetAckCheckTimeout", dynlib: dll.}
-proc AUTDSetSendInterval*(handle: pointer; interval: uint64) {.cdecl,
-    importc: "AUTDSetSendInterval", dynlib: dll.}
 proc AUTDSetForceFan*(handle: pointer; force: bool) {.cdecl,
     importc: "AUTDSetForceFan", dynlib: dll.}
 proc AUTDGetSoundSpeed*(geometry: pointer): float64 {.cdecl,
     importc: "AUTDGetSoundSpeed", dynlib: dll.}
 proc AUTDSetSoundSpeed*(geometry: pointer; sound_speed: float64) {.cdecl,
     importc: "AUTDSetSoundSpeed", dynlib: dll.}
-proc AUTDSetSoundSpeedFromTemp*(cnt: pointer; temp: float64; k: float64; r: float64;
-                               m: float64) {.cdecl,
+proc AUTDSetSoundSpeedFromTemp*(geometry: pointer; temp: float64; k: float64;
+                               r: float64; m: float64) {.cdecl,
     importc: "AUTDSetSoundSpeedFromTemp", dynlib: dll.}
 proc AUTDGetTransFrequency*(geometry: pointer; trans_idx: int32): float64 {.cdecl,
     importc: "AUTDGetTransFrequency", dynlib: dll.}
@@ -98,7 +86,7 @@ proc AUTDTransZDirection*(geometry: pointer; trans_idx: int32; x: ptr float64;
 proc AUTDGetFirmwareInfoListPointer*(handle: pointer; `out`: ptr pointer): int32 {.
     cdecl, importc: "AUTDGetFirmwareInfoListPointer", dynlib: dll.}
 proc AUTDGetFirmwareInfo*(p_firm_info_list: pointer; index: int32; info: cstring;
-                         matches_version: ptr bool; is_latest: ptr bool) {.cdecl,
+                         matches_version: ptr bool; is_supported: ptr bool) {.cdecl,
     importc: "AUTDGetFirmwareInfo", dynlib: dll.}
 proc AUTDFreeFirmwareInfoListPointer*(p_firm_info_list: pointer) {.cdecl,
     importc: "AUTDFreeFirmwareInfoListPointer", dynlib: dll.}
@@ -153,15 +141,12 @@ proc AUTDModulationSamplingFrequency*(`mod`: pointer): float64 {.cdecl,
 proc AUTDDeleteModulation*(`mod`: pointer) {.cdecl, importc: "AUTDDeleteModulation",
     dynlib: dll.}
 proc AUTDFocusSTM*(`out`: ptr pointer) {.cdecl, importc: "AUTDFocusSTM", dynlib: dll.}
-proc AUTDGainSTM*(`out`: ptr pointer) {.cdecl, importc: "AUTDGainSTM", dynlib: dll.}
+proc AUTDGainSTM*(`out`: ptr pointer; mode: uint16) {.cdecl, importc: "AUTDGainSTM",
+    dynlib: dll.}
 proc AUTDFocusSTMAdd*(stm: pointer; x: float64; y: float64; z: float64; shift: uint8) {.
     cdecl, importc: "AUTDFocusSTMAdd", dynlib: dll.}
 proc AUTDGainSTMAdd*(stm: pointer; gain: pointer) {.cdecl, importc: "AUTDGainSTMAdd",
     dynlib: dll.}
-proc AUTDGetGainSTMMode*(stm: pointer): uint16 {.cdecl,
-    importc: "AUTDGetGainSTMMode", dynlib: dll.}
-proc AUTDSetGainSTMMode*(stm: pointer; mode: uint16) {.cdecl,
-    importc: "AUTDSetGainSTMMode", dynlib: dll.}
 proc AUTDSTMSetFrequency*(stm: pointer; freq: float64): float64 {.cdecl,
     importc: "AUTDSTMSetFrequency", dynlib: dll.}
 proc AUTDSTMGetStartIdx*(stm: pointer): int32 {.cdecl, importc: "AUTDSTMGetStartIdx",
@@ -195,10 +180,10 @@ proc AUTDCreateSilencer*(`out`: ptr pointer; step: uint16; cycle: uint16) {.cdec
     importc: "AUTDCreateSilencer", dynlib: dll.}
 proc AUTDDeleteSilencer*(config: pointer) {.cdecl, importc: "AUTDDeleteSilencer",
     dynlib: dll.}
-proc AUTDSend*(handle: pointer; header: pointer; body: pointer): bool {.cdecl,
-    importc: "AUTDSend", dynlib: dll.}
-proc AUTDSendSpecial*(handle: pointer; special: pointer): bool {.cdecl,
-    importc: "AUTDSendSpecial", dynlib: dll.}
+proc AUTDSend*(handle: pointer; header: pointer; body: pointer; timeout_ns: uint64): bool {.
+    cdecl, importc: "AUTDSend", dynlib: dll.}
+proc AUTDSendSpecial*(handle: pointer; special: pointer; timeout_ns: uint64): bool {.
+    cdecl, importc: "AUTDSendSpecial", dynlib: dll.}
 proc AUTDGetTransModDelay*(geometry: pointer; trans_idx: int32): uint16 {.cdecl,
     importc: "AUTDGetTransModDelay", dynlib: dll.}
 proc AUTDSetTransModDelay*(geometry: pointer; trans_idx: int32; delay: uint16) {.cdecl,
