@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 10/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -313,12 +313,12 @@ void AUTDModulationCustom(void** mod, const autd3_float_t* buffer, const uint64_
 
 uint32_t AUTDModulationSamplingFrequencyDivision(const void* const mod) {
   const auto* const m = static_cast<const autd3::Modulation*>(mod);
-  return m->sampling_frequency_division();
+  return m->sampling_frequency_division;
 }
 
 void AUTDModulationSetSamplingFrequencyDivision(void* const mod, const uint32_t freq_div) {
   auto* const m = static_cast<autd3::Modulation*>(mod);
-  m->sampling_frequency_division() = freq_div;
+  m->sampling_frequency_division = freq_div;
 }
 
 autd3_float_t AUTDModulationSamplingFrequency(const void* const mod) {
