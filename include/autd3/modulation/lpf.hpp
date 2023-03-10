@@ -3,7 +3,7 @@
 // Created Date: 08/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/03/2023
+// Last Modified: 10/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -69,16 +69,14 @@ template <typename T>
 class LPF final : public core::Modulation {
  public:
 #ifdef AUTD3_CAPI
-  explicit LPF(std::shared_ptr<core::Modulation> modulation) : _modulation(std::move(modulation)) { _freq_div = 8192; }
+  explicit LPF(std::shared_ptr<core::Modulation> modulation) : Modulation(8192), _modulation(std::move(modulation)) {}
   core::Modulation& modulation() noexcept { return *_modulation; }
 #else
   /**
    * \param args constructor parameter of T
    */
   template <typename... Args>
-  explicit LPF(Args&&... args) : _modulation(std::forward<Args>(args)...) {
-    _freq_div = 8192;
-  }
+  explicit LPF(Args&&... args) : Modulation(8192), _modulation(std::forward<Args>(args)...) {}
   T& modulation() noexcept { return _modulation; }
 #endif
 
@@ -86,9 +84,9 @@ class LPF final : public core::Modulation {
     const auto original_buffer = modulation().calc();
 
     std::vector<driver::autd3_float_t> resampled;
-    resampled.reserve(original_buffer.size() * modulation().sampling_frequency_division() / 4096);
+    resampled.reserve(original_buffer.size() * modulation().sampling_frequency_division / 4096);
     for (const auto d : original_buffer)
-      std::generate_n(std::back_inserter(resampled), modulation().sampling_frequency_division() / 4096, [d] { return d; });
+      std::generate_n(std::back_inserter(resampled), modulation().sampling_frequency_division / 4096, [d] { return d; });
 
     std::vector<driver::autd3_float_t> mf;
     if (resampled.size() % 2 == 0) {

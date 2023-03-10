@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 10/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ class BurstModulation final : public autd3::Modulation {
     return buffer;
   }
 
-  explicit BurstModulation(const size_t buf_size = 4000, const uint16_t freq_div = 40960) noexcept : _buf_size(buf_size) { _freq_div = freq_div; }
+  explicit BurstModulation(const size_t buf_size = 4000, const uint16_t freq_div = 40960) noexcept : Modulation(freq_div), _buf_size(buf_size) {}
 
  private:
   size_t _buf_size;
