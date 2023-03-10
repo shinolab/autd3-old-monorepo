@@ -35,8 +35,11 @@ autd3-gain-holo = "8.2.0"
 
 注意点として, Rust版の`send`関数は引数を一つしか取らない. 
 ヘッダーとボディーデータを同時に送りたいときは`send`を続けて呼び出し, そうでない場合は, `flush`を呼ぶこと.
+
+また, タイムアウトは事前に指定する.
+
 ```rust
-    autd.send(&mut m).flush().unwrap();
+    autd.timeout(std::time::Duration::from_millis(20)).send(&mut m).flush().unwrap();
 ```
 
 より詳細なサンプルは[rust-autdのexample](https://github.com/shinolab/autd3/tree/master/rust/autd3-examples)を参照されたい.

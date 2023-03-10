@@ -1,49 +1,59 @@
-# STM/時空間変調
+# Spatio-Temporal Modulation/時空間変調
 
-`STM`はハードウェアのタイマでSpatio-Temporal Modulation (STM, 時空間変調) を実現する機能である.
-SDKには単一焦点のみをサポートする`FocusSTM`と任意の`Gain`をサポートする`GainSTM`が用意されている.
+SDKでは, `Gain`を周期的に切り替えるための機能 (Spatio-Temporal Modulation, STM) が用意されている.
+SDKには単一焦点のみをサポートする`FocusSTM`と, 任意の`Gain`をサポートする`GainSTM`と`SoftwareSTM`が用意されている.
+`FocusSTM`と`GainSTM`はAUTD3ハードウェア上のタイマを使用するので時間精度が高いが, 制約も多い.
+一方, `SoftwareSTM`はSDKを使用するPC上のタイマを使用するので時間精度は低いが制約が少ない.
 
-### FocusSTM
+[[_TOC_]]
 
-`FocusSTM`には以下の制約がある.
+## FocusSTM
 
-* 最大サンプリング点数は65536
-* サンプリング周波数は$\SI{163.84}{MHz}/N$. ここで, $N$は32-bit符号なし整数であり, $1612$以上の値である必要がある.
+- 最大サンプリング点数は$65536$.
+- サンプリング周波数は$\clkf/N$. ここで, $N$は$\SI{32}{bit}$符号なし整数であり, $1612$以上の値である必要がある.
 
 `FocusSTM`の使用方法は以下のようになる.
 これは, アレイの中心から直上$\SI{150}{mm}$の点を中心とした半径$\SI{30}{mm}$の円周上で焦点を回すサンプルである.
-円周上を200点サンプリングし, 一周を$\SI{1}{Hz}$で回るようにしている.
-(すなわち, サンプリング周波数は$\SI{200}{Hz}$である.)
+円周上を200点サンプリングし, 一周を$\SI{1}{Hz}$で回るようにしている. (すなわち, サンプリング周波数は$\SI{200}{Hz}$である.)
 
 ```cpp
   autd3::FocusSTM stm;
 
   const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   constexpr size_t points_num = 200;
-  constexpr auto radius = 30.0;
-  std::vector<size_t> points(points_num);
-  std::iota(points.begin(), points.end(), 0);
-  std::transform(points.begin(), points.end(), std::back_inserter(stm), [&](const size_t i) {
+  for (size_t i = 0; i < points_num; i++) {
+    constexpr auto radius = 30.0;
     const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(points_num);
-    return autd3::Point(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
-  });
+    stm.add(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
+  }
 
   const auto actual_freq = stm.set_frequency(1);
   std::cout << "Actual frequency is " << actual_freq << " Hz\n";
-  autd << stm;
+  autd.send(stm);
 ```
+`FocusSTM::add`の第1引数は焦点の位置であり, 第2引数は`duty_shift`である.
+`duty_shift`により振幅の調整が行える.
+駆動信号のデューティー比$D$は$D=\SI{50}{\%} >> \text{duty\_shift}$となり, 理論上, 超音波の振幅$p$は
+$$
+  p \propto \sin\left(D\pi\right),
+$$
+となる.
+
+> Note: この関係式は理論上であり, 実際の振動子では異なることが知られている. しかし, 依然として, $D\in \[\SI{0}{\%}, \SI{50}{\%}\]$に対して単調増加であるのは変わらない.
+
+したがって, $0$を指定すると最大の出力となり, `duty_shift`を大きくするごとに振幅は減る.
+この引数を省略した場合は0になる.
 
 サンプリング点数とサンプリング周期に関する制約によって, 指定した周波数と実際の周波数は異なる可能性がある.
-例えば, 上記の例は, 200点を$\SI{1}{Hz}$で回すため, サンプリング周波数は$\SI{200}{Hz}=\SI{163.84}{MHz}/819200$とすればよく, 制約を満たす.
-しかし, `point_num`=199にすると, サンプリング周波数を$\SI{199}{Hz}$にしなければならないが, $\SI{199}{Hz}=\SI{163.84}{MHz}/N$を満たすような整数$N$は存在しない, そのため, 最も近い$N$が選択される.
+例えば, 上記の例は200点を$\SI{1}{Hz}$で回すため, サンプリング周波数は$\SI{200}{Hz}=\clkf/819200$とすれば良い.
+しかし, 例えば`point_num=199`にすると, サンプリング周波数を$\SI{199}{Hz}$にしなければならないが, $\SI{199}{Hz}=\clkf/N$を満たすような整数$N$は存在しない.
+そのため, もっとも近い$N$が選択される.
 これによって, 指定した周波数と実際の周波数がずれる.
 `set_frequency`関数はこの実際の周波数を返してくる.
 
-### GainSTM
+## GainSTM
 
-`GainSTM`は`FocusSTM`とは異なり, 任意の`Gain`を扱える.
-ただし, 使用できる`Gain`の個数は
-
+`GainSTM`は`FocusSTM`とは異なり, 任意の`Gain`を扱える. ただし, 使用できる`Gain`の個数は
 - Legacyモードの場合2048
 - Normlaモードの場合1024
 
@@ -53,15 +63,14 @@ SDKには単一焦点のみをサポートする`FocusSTM`と任意の`Gain`を�
 - Legacyモードの場合152
 - Normlaモードの場合276
 
-となっている.
+となる.
 
-`GainSTM`の使用サンプルは`FocusSTM`とほぼ同じである.
-
+`GainSTM`の使用方法は`FocusSTM`とほとんど同じである.
 ```cpp
   autd3::GainSTM stm;
 
   const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
-  constexpr size_t points_num = 50;
+  constexpr size_t points_num = 200;
   for (size_t i = 0; i < points_num; i++) {
     constexpr auto radius = 30.0;
     const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(points_num);
@@ -71,48 +80,43 @@ SDKには単一焦点のみをサポートする`FocusSTM`と任意の`Gain`を�
 
   const auto actual_freq = stm.set_frequency(1);
   std::cout << "Actual frequency is " << actual_freq << " Hz\n";
-  autd << stm;
+  autd.send(stm);
 ```
-
-周波数の制約も`FocusSTM`と同じである.
 
 `GainSTM`は位相/振幅データをすべて送信するため, レイテンシが大きい[^fn_gain_seq].
+この問題に対処するため, `GainSTM`には位相のみを送信して送信にかかる時間を半分にする`PhaseFull`モードと, 位相を4bitに圧縮して送信時間を4分の1にする`PhaseHalf`モード[^phase_half]が用意されている.
 
-この問題に対処するために, `GainSTM`には位相のみを送信して送信にかかる時間を半分にする`PhaseFull`モードと, 位相を$\SI{4}{bit}$に圧縮して送信時間を4分の1にする`PhaseHalf`モード[^phase_half]が用意されている.
-モードの切り替えは`mode`関数で行う.
+このモードの切り替えはコンストラクタで行う.
 
 ```cpp
-stm.mode() = autd3::GainSTMMode::PhaseFull;
+  autd3::GainSTM stm(autd3::GainSTMMode::PhaseFull);
 ```
-
 デフォルトはすべての情報を送る`PhaseDutyFull`モードである.
 
-### STMに共通の関数
+## FocusSTM/GainSTMの共通API
 
-#### frequency
+### frequency/set_frequency
 
-`STM`の周波数を取得する.
+STMの周波数を取得, 設定する.
 
-#### sampling_frequency
+### sampling_frequency
 
-`STM`のサンプリング周波数を取得する.
+サンプリング周波数を取得する.
 
-#### sampling_frequency_division
+### sampling_frequency_division
 
-`STM`のサンプリング周波数の分周比を取得, 設定する.
-サンプリング周波数の基本周波数は$\SI{163.84}{MHz}$である.
-
+サンプリング周波数の分周比を取得, 設定する.
 ```cpp
-    stm.sampling_frequency_division() = 20480; // 163.84MHz/20480 = 8kHz
+    stm.sampling_frequency_division = 20480; // 163.84MHz/20480 = 8kHz
 ```
 
-#### start_idx/finish_idx
+### start_idx/finish_idx
 
-`Focus/GainSTM`は通常, 何番目の焦点/`Gain`からスタートするかは決められていない.
+`FocusSTM`/`GainSTM`は通常, 何番目の焦点/`Gain`からスタートするかは決められていない.
 これを指定するには, 以下のように`start_idx`を指定する.
 
 ```cpp
-  stm.start_idx() = 0;
+  stm.start_idx = 0;
 ```
 
 これにより, `start_idx`で指定したインデックスの焦点/`Gain`からスタートするようになる.
@@ -120,28 +124,27 @@ stm.mode() = autd3::GainSTMMode::PhaseFull;
 また, 同様に, 何番目の焦点/`Gain`で終了するかは`finish_idx`で決定できる.
 
 ```cpp
-  stm.finish_idx() = 0;
+  stm.finish_idx = 0;
 ```
 
 注意点として, `finish_idx`で指定したインデックスの焦点/`Gain`は最後に出力されない.
-`finish_idx`の一つ前の焦点/`Gain`を出力したあと, 終了する.
+`finish_idx`の1つ前の焦点/`Gain`を出力したあと, 終了する.
 
-また, 以上の2つの設定は, 通常の`Gain`→`Focus/GainSTM`への遷移, 及び, `Focus/GainSTM`→通常の`Gain`への遷移の場合にのみ有効となる.
+`start_idx`と`finish_idx`は, 通常の`Gain`から`FocusSTM`/`GainSTM`への遷移, 及び, `FocusSTM`/`GainSTM`から通常の`Gain`への遷移の場合にのみ有効となる.
 
 これらの設定を無効 (デフォルト) にするには, `std::nullopt`を指定する.
 
 ```cpp
-  stm.start_idx() = std::nullopt;
-  stm.finish_idx() = std::nullopt;
+  stm.start_idx = std::nullopt;
+  stm.finish_idx = std::nullopt;
 ```
 
-# SoftwareSTM
+## SoftwareSTM
 
 `SoftwareSTM`はソフトウェアのタイマでSpatio-Temporal Modulationを実現する機能である.
 AUTD3ハードウェア上の制約はないが, その精度はホスト側のタイマの精度によって決まる[^timer_precision].
 
-`SoftwareSTM`の使用方法は以下のようになる.
-基本的な使い方は`GainSTM`と同様である.
+`SoftwareSTM`の使用方法は以下のようになる. 基本的な使い方は`GainSTM`と同様である.
 
 ```cpp
   autd3::SoftwareSTM stm;
@@ -163,6 +166,17 @@ AUTD3ハードウェア上の制約はないが, その精度はホスト側の�
   std::cin.ignore();
 
   handle.finish();
+```
+
+### TimerStrategy
+
+Softwareタイマーの設定を`timer_strategy`で制御できる.
+
+現在は, `TimerStrategy::BusyWait`のみ用意されている.
+このフラグをセットすると, sleepではなく, ビジーウェイトにより送信タイミングを制御するようになる.
+
+```cpp
+  stm.timer_strategy.set(autd3::SoftwareSTM::TimerStrategy::BusyWait);
 ```
 
 [^fn_gain_seq]: `FocusSTM`のおよそ60倍のレイテンシ

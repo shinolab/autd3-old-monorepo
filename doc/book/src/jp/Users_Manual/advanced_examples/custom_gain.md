@@ -30,6 +30,6 @@ class FocalPoint final : public autd3::Gain {
 
 `Controller::send`関数内部では`Geometry`を引数にした`Gain::calc`メソッドが呼ばれ, その返り値の振幅/位相データが使用される.
 そのため, この`calc`メソッド内で位相/振幅の計算を行えば良い.
-Geometryにはイテレータが定義されており, `Transducer`のイテレータが返され, ここから振動子の位置を取得できる.
+`Geometry`にはイテレータが定義されており, `Transducer`のイテレータが返され, ここから振動子の位置を取得できる.
 ある点$\bp$で多数の振動子からの放出された超音波の音圧が最大になるためには, $\bp$での位相が揃えば良い.
 これは, `Transducer`クラスに用意されている`align_phase_at`関数で計算できる.

@@ -86,7 +86,7 @@ Set Legacy/Advanced mode.
 
 | Argument name / return | type    | in/out | description                                                 |
 | ---------------------- | ------- | ------ | ----------------------------------------------------------- |
-| geometry_builder                 | void*   | in     | pointer to GeometryBuilder                                       |
+| geometry_builder       | void*   | in     | pointer to GeometryBuilder                                       |
 | mode                   | uint8_t | in     | mode (0: Legacy mode, 1: Advanced mode, 2: Advanced Phase mode) |
 | return                 | void    | -      | -                                                           |
 
@@ -174,50 +174,6 @@ ControllerがOpenされているかどうかを返す.
 | handle                 | void* | in     | pointer to Controller      |
 | return                 | bool  | -      | true if controller is open |
 
-## AUTDGetForceFan (autd3capi)
-
-Force fan flagを返す.
-
-
-
-| Argument name / return | type  | in/out | description           |
-| ---------------------- | ----- | ------ | --------------------- |
-| handle                 | void* | in     | pointer to Controller |
-| return                 | bool  | -      | Force fan flag        |
-
-## AUTDGetReadsFPGAInfo (autd3capi)
-
-Reads FPGA info flagを返す.
-
-
-
-| Argument name / return | type  | in/out | description           |
-| ---------------------- | ----- | ------ | --------------------- |
-| handle                 | void* | in     | pointer to Controller |
-| return                 | bool  | -      | Reads FPGA info flag  |
-
-## AUTDGetAckCheckTimeout (autd3capi)
-
-AckCheckTimeoutをナノ秒単位で返す.
-
-
-
-| Argument name / return | type    | in/out | description           |
-| ---------------------- | ------- | ------ | --------------------- |
-| handle                 | void*   | in     | pointer to Controller |
-| return                 | uint64_t | -      | AckCheckTimeout in ns |
-
-## AUTDGetSendInterval (autd3capi)
-
-Send intervalをナノ秒単位で返す.
-
-
-
-| Argument name / return | type    | in/out | description           |
-| ---------------------- | ------- | ------ | --------------------- |
-| handle                 | void*   | in     | pointer to Controller |
-| return                 | uint64_t | -      | Send interval in ns  |
-
 ## AUTDSetReadsFPGAInfo (autd3capi)
 
 Reads FPGA info flagを設定する.
@@ -229,26 +185,6 @@ Reads FPGA info flagを設定する.
 | handle                 | void* | in     | pointer to Controller |
 | reads_fpga_info        | bool  | in     | read FPGA info flag   |
 | return                 | void  | -      | -                     |
-
-## AUTDSetAckCheckTimeout (autd3capi)
-
-AckCheckTimeoutをナノ秒単位で設定する.
-
-| Argument name / return | type    | in/out | description           |
-| ---------------------- | ------- | ------ | --------------------- |
-| handle                 | void*   | in     | pointer to Controller |
-| timeout                 | uint64_t | in     | AckCheckTimeout in ns |
-| return                 | void    | -      | -                     |
-
-## AUTDSetSendInterval (autd3capi)
-
-Send intervalをナノ秒単位で設定する.
-
-| Argument name / return | type    | in/out | description           |
-| ---------------------- | ------- | ------ | --------------------- |
-| handle                 | void*   | in     | pointer to Controller |
-| interval               | uint64_t | in    | Send interval in ns   |
-| return                 | void    | -      | -                     |
 
 ## AUTDSetForceFan (autd3capi)
 
@@ -297,8 +233,6 @@ Force fan flagを設定する.
 ## AUTDGetTransFrequency (autd3capi)
 
 指定した振動子の周波数を取得する.
-
- 
 
 | Argument name / return | type    | in/out | description                 |
 | ---------------------- | ------- | ------ | --------------------------- |
@@ -817,6 +751,7 @@ Gain STMを作成する.
 | Argument name / return | type   | in/out | description                    |
 | ---------------------- | ------ | ------ | ------------------------------ |
 | out                    | void** | out    | pointer to pointer to Gain STM |
+| mode                   | uint16_t | in     | GainSTM mode (0x0001 = PhaseDutyFull, 0x0002 = PhaseFull, 0x0004 = PhaseHalf) |
 | return                 | void   | -      | -                              |
 
 ## AUTDFocusSTMAdd (autd3capi)
@@ -841,25 +776,6 @@ Gain STMにgainを追加する.
 | stm                    | void* | in     | pointer to Focus STM |
 | gain                   | void* | in     | pointer to Gain      |
 | return                 | void    | -      | -                  |
-
-## AUTDSetGainSTMMode (autd3capi)
-
-GainSTMのmodeを設定する.
-
-| Argument name / return | type     | in/out | description                                                                   |
-| ---------------------- | -------- | ------ | ----------------------------------------------------------------------------- |
-| stm                    | void*    | in     | pointer to STM                                                                |
-| mode                   | uint16_t | in     | GainSTM mode (0x0001 = PhaseDutyFull, 0x0002 = PhaseFull, 0x0004 = PhaseHalf) |
-| return                 | void     | -      | -                                                                             |
-
-## AUTDGetGainSTMMode (autd3capi)
-
-GainSTMのmodeを取得する.
-
-| Argument name / return | type     | in/out | description    |
-| ---------------------- | -------- | ------ | -------------- |
-| stm                    | void*    | in     | pointer to STM |
-| return                 | uint16_t | -      | GainSTM mode   |
 
 ## AUTDSTMGetStartIdx (autd3capi)
 
@@ -1028,6 +944,7 @@ STMを削除する.
 | handle                 | void*   | in     | pointer to Controller                                                                                  |
 | header                 | void*   | in     | pointer to header data                                                                                 |
 | body                   | void*   | in     | pointer to body data                                                                                   |
+| timeout_ns             | uint64_t| in     | timeout in ns                                                                                 |
 | return                 | bool    | -      | true if successful                                                                                     |
 
 ## AUTDSendSpecial (autd3capi)
@@ -1038,6 +955,7 @@ STMを削除する.
 | ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
 | handle                 | void*   | in     | pointer to Controller                                                                                  |
 | special                | void*   | in     | pointer to special data                                                                                 |
+| timeout_ns             | uint64_t| in     | timeout in ns                                                                                 |
 | return                 | bool    | -      | true if successful                                                                                     |
 
 ## AUTDGetTransModDelay (autd3capi)

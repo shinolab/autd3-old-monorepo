@@ -78,7 +78,7 @@ TwinCAT XAE Shell上部メニューから「TwinCAT」→「Show Realtime Ethern
 
 <figure>
   <img src="../fig/Users_Manual/tcerror.jpg"/>
-  <figcaption>TwinCAT error when using 9 devices</figcaption>
+  <figcaption>9台のAUTD3デバイスを使用した際のTwinCATエラー</figcaption>
 </figure>
 
 この場合は, `TwinCATAUTDServer`のオプションの`-s`と`-t`の値を増やし, TwinCATAUTDServerを再び実行する.
@@ -193,20 +193,26 @@ SOEMのLinkを使用する際は`autd3/link/soem.hpp`ヘッダーをインクル
   auto link = autd3::link::SOEM().build();
 ```
 
-SOEMも大量のデバイスを使用すると挙動が不安定になる時がある[^fn_soem].
-このときは, `sync0_cycle`と`send_cycle`関数を使用し, その値を増やす.
-```cpp
-  auto link = autd3::link::SOEM()
-                .sync0_cycle(3)
-                .send_cycle(3)
-                .build();
-```
-この値はエラーが出ない中で, 可能な限り小さな値が望ましい.
-デフォルトは2であり, どの程度の値にすべきかは接続している台数に依存する.
-例えば, 9台の場合は3, 4程度の値にしておけば動作するはずである.
+### インタフェース名
 
-また, SOEM Linkは回復不能なエラー (例えば, ケーブルが抜けるなど) が発生したときのコールバックを設定することができる[^fn_soem_err].
-callbackはエラーメッセージを引数に取る.
+`ifname`でAUTD3デバイスが接続されているネットワークインタフェースを指定できる.
+
+```cpp
+  auto link = autd3::link::SOEM().ifname("interface name").build();
+```
+
+デフォルトでは空白であり, 空白の場合はAUTD3デバイスが接続されているネットワークインタフェースを自動的に選択する.
+
+なお, 使用可能なネットワークインタフェースの一覧は`enumerate_adapters`関数で取得できる.
+```cpp
+  auto adapters = autd3::link::SOEM::enumerate_adapters();
+```
+
+### リンク切断時のコールバック
+
+`on_lost`関数で, 回復不能なエラー (例えば, ケーブルが抜けるなど) が発生したときのコールバックを設定できる[^fn_soem_err].
+コールバック関数はエラーメッセージを引数に取る.
+
 ```cpp
   auto link = autd3::link::SOEM()
                 .on_lost([](const std::string& msg) {
@@ -216,35 +222,52 @@ callbackはエラーメッセージを引数に取る.
                 })
                 .build();
 ```
- 
-さらに, Windowsの場合はHigh Precisionモードの設定ができる.
+
+### 同期信号/送信サイクル
+
+`SOEM`も大量のデバイスを接続すると挙動が不安定になる場合がある[^fn_soem].
+このときは, `sync0_cycle`と`send_cycle`関数を使用し, その値を増やす.
+```cpp
+  auto link = autd3::link::SOEM()
+                .sync0_cycle(3)
+                .send_cycle(3)
+                .build();
+```
+この値はエラーが出ない中で, 可能な限り小さな値が望ましい. デフォルトは2であり, どの程度の値にすべきかは接続している台数に依存する.
+例えば, 9台の場合は3, 4程度の値にしておけば動作するはずである.
+
+### 高精度タイマ
+
+`high_precision`を設定すると, CPUの負荷が増えるが, より正確なタイマを使用することで`SOEM`の動作を安定させることができる.
+
 ```cpp
   auto link = autd3::link::SOEM()
                 .high_precision(true)
                 .build();
 ```
-High Precisionモードを`true`にすると, より高精度なタイマが使用できるが, 代わりにCPUの負荷が高くなる.
 
-### FreeRunモード
+### 同期モード
 
-特定の環境下でSOEMが上手く動かない場合がある (詳細は[FAQ](https://shinolab.github.io/autd3/book/jp/FAQ/faq.html#linksoem%E4%BD%BF%E7%94%A8%E6%99%82%E3%81%AB%E9%80%81%E4%BF%A1%E3%81%8C%E5%A4%B1%E6%95%97%E3%81%99%E3%82%8B)を参照されたい).
-この問題を緩和するために, FreeRunモードというものを導入した.
-必ずしもこれで解決する訳では無いが, 多少良くなる場合がある.
-(もう一つの解決策として後述のRemoteSOEMが使用できる.)
+EtherCATの同期モードを設定する.
+同期モードには, `DC`と`FreeRun`が存在するが, 基本的デフォルトの`DC`を推奨する.
 
 ```cpp
   auto link = autd3::link::SOEM()
-                .sync_mode(autd3::link::SyncMode::FreeRun)
+                .sync_mode(autd3::link::SyncMode::DC)
                 .build();
 ```
 
+### SOEMの既知の問題
+
+「[FAQ](../FAQ/faq.md)」を参照.
+
 ## RemoteSOEM
 
-前述の通り, SOEMを動かしているPC上で別のプログラムを動作させると動作が不安定になる場合がある.
-このLinkはSOEMを動かすサーバーPCとユーザプログラムを動かすクライアントPCを分離するためのものである.
+`SOEM`を動かしているPC上で別のプログラムを動作させると動作が不安定になる場合がある.
+このLinkは`SOEM`を動かすサーバーPCとユーザプログラムを動かすクライアントPCを分離するためのものである.
 
-RemoteSOEMを使用する場合はPCを2台用意する必要がある.
-この時, 片方のPCはSOEM linkが使えるである必要がある.
+`RemoteSOEM`を使用する場合はPCを2台用意する必要がある.
+この時, 片方のPCは`SOEM` linkが使えるである必要がある.
 このPCをここでは"サーバ"と呼ぶ.
 一方, 開発側のPC, 即ちSDKを使用する側は特に制約はなく, サーバと同じLANに繋がっていれば良い, こちらをここでは"クライアント"と呼ぶ.
 
@@ -276,7 +299,7 @@ TCP関係のエラーが出る場合は, ファイアウォールでブロック
 
 ## Simulator
 
-Simulator linkは[AUTDシミュレータ](https://shinolab.github.io/autd3/book/jp/Simulator/simulator.html)を使用する際に使うLinkである.
+Simulator linkは[AUTDシミュレータ](../Simulator/simulator.md)を使用する際に使うLinkである.
 
 Simulator linkを使用するには`BUILD_LINK_SIMULATOR`フラグをONにしてビルドするか, 或いは, 配布している`link_simulator`ライブラリをリンクされたい.
 

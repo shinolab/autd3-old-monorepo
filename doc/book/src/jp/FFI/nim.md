@@ -20,6 +20,8 @@ requires "https://github.com/shinolab/autd3.git?subdir=nim == 8.2.0"
 {{#include ../../../samples/nim/sample/src/sample.nim}}
 ```
 
+タイムアウト時間はns単位で指定する.
+
 より詳細なサンプルは[example](https://github.com/shinolab/autd3/tree/master/nim/examples)を参照されたい.
 
 その他, 質問があれば[GitHubのissue](https://github.com/shinolab/autd3/issues)に送られたい.
