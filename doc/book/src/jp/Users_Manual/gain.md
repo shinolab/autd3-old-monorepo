@@ -9,10 +9,12 @@ AUTDは各振動子の位相/振幅を個別に制御することができ, こ�
 
 `Focus`は最も単純な`Gain`であり, 単一焦点を生成する.
 ```cpp
-    autd3::gain::Focus g(autd3::Vector3(x, y, z));
+    autd3::gain::Focus g(autd3::Vector3(x, y, z), amp);
 ```
 コンストラクタの第1引数には焦点の位置を指定する.
 第2引数として, 0-1の規格化された音圧振幅を指定できる.
+$\[0, 1\]$の範囲外の値は$\[0, 1\]$にクランプされる (すなわち, $0$未満の値は$0$に, $1$より大きい値は$1$になる).
+第2引数を省略した場合は1となる.
 
 ## BesselBeam
 
@@ -22,7 +24,7 @@ AUTDは各振動子の位相/振幅を個別に制御することができ, こ�
   const autd3::Vector3 apex(x, y, z);
   const autd3::Vector3 dir = autd3::Vector3::UnitZ();
   const double theta_z = 0.3;
-  autd3::gain::BesselBeam g(apex, dir, theta_z);
+  autd3::gain::BesselBeam g(apex, dir, theta_z, amp);
 ```
 コンストラクタの第1引数はビームを生成する仮想円錐の頂点であり, 第2引数はビームの方向, 第3引数はビームに垂直な面とビームを生成する仮想円錐の側面となす角度である (下図の$\theta_z$).
 第4引数として, 0-1の規格化された音圧振幅で指定できる.
@@ -48,7 +50,55 @@ AUTDは各振動子の位相/振幅を個別に制御することができ, こ�
     autd3::gain::Null g;
 ```
 
-## Holo (Multiple foci)
+## Grouped
+
+`Grouped`は複数のデバイスを使用する際に,
+各デバイスで別々の`Gain`を使用するための`Gain`である.
+
+`Grouped`では, デバイスIDと任意の`Gain`を紐付けて使用する.
+```cpp
+  const auto g0 = ...;
+  const auto g1 = ...;
+
+  autd3::gain::Grouped g;
+  g.add(0, g0);
+  g.add(1, g1);
+```
+上の場合は, デバイス0が`Gain g0`, デバイス1が`Gain g1`を使用する.
+
+デバイスインデックスはリストで渡すこともできる.
+```cpp
+  ...
+  
+  autd3::gain::Grouped g;
+  g.add({0, 1}, g1);
+  g.add({2, 3}, g2);
+```
+上の場合は, $0, 1$番目のデバイスが`g0`, $2, 3$番目のデバイスが`g1`を使用する.
+
+
+## Cache
+
+`Cache`は`Gain`の計算結果をキャッシュしておくための`Gain`である.
+位相/振幅計算が重く, かつ, 複数回同じ`Gain`を送信する場合に使用する.
+また, 位相/振幅計算後に一部の振動子の振幅/位相を確認, 変更するために使うこともできる.
+
+`Cache`を使用するには, 任意の`Gain`型を型引数に指定し, コンストラクタに元の型のコンストラクタ引数を指定する.
+```cpp
+  autd3::gain::Cache<autd3::gain::Focus> g(...);
+```
+
+位相/振幅データには, `drives`関数, または, インデクサでアクセスできる.
+ただし, `calc`関数を事前に呼び出す必要がある.
+
+```cpp
+  autd3::gain::Cache<autd3::gain::Focus> g(...);
+  g.calc(autd.geometry());
+  g[0].amp = 0;
+```
+上記の例では, 0番目の振動子の振幅を0にしている.
+
+## Holo (多焦点)
 
 `Holo`は多焦点を生成するための`Gain`である.
 多焦点を生成するアルゴリズムが幾つか提案されており, SDKには以下のアルゴリズムが実装されている.
@@ -59,9 +109,9 @@ AUTDは各振動子の位相/振幅を個別に制御することができ, こ�
 * `GS` - Gershberg-Saxon, Marzoらの論文[^marzo2019]に基づく
 * `GSPAT` - Gershberg-Saxon for Phased Arrays of Transducers, Plasenciaらの論文[^plasencia2020]に基づく
 * `LM` - Levenberg-Marquardt, LM法はLevenberg[^levenberg1944]とMarquardt[^marquardt1963]で提案された非線形最小二乗問題の最適化法, 実装はMadsenのテキスト[^madsen2004]に基づく.
+* `APO` - Acoustic Power Optimization, 長谷川らの論文[^hasegawa2020]に基づく
 * `Greedy` - Greedy algorithm and Brute-force search, 鈴木らの論文[^suzuki2021]に基づく
 * `LSSGreedy` - Greedy algorithm on LSS, Chenらの論文[^chen2022]に基づく
-* `APO` - Acoustic Power Optimization, 長谷川らの論文[^hasegawa2020]に基づく
 
 また, 各手法は計算Backendを選べるようになっている.
 SDKには以下の`Backend`が用意されている
@@ -73,10 +123,12 @@ SDKには以下の`Backend`が用意されている
 Holo gainを使用するには`BUILD_GAIN_HOLO`フラグをONにしてビルドするか, 或いは, 配布している`gain_holo`ライブラリをリンクされたい.
 また, 適当なバックエンドライブラリをビルド, または, リンクする必要がある.
 
-Holo gainを使用する際は`autd3/gain/holo.hpp`を`include`する.
+Holo gainを使用する際は`autd3/gain/holo.hpp`と各`Backend`のヘッダーを`include`する.
 
 ```cpp
 #include "autd3/gain/holo.hpp"
+#include "autd3/gain/eigen_backend.hpp"
+
 ...
 
   const auto backend = autd3::gain::holo::EigenBackend::create();
@@ -84,9 +136,21 @@ Holo gainを使用する際は`autd3/gain/holo.hpp`を`include`する.
   g.add_focus(autd3::Vector3(x1, y1, z1), 1.0);
   g.add_focus(autd3::Vector3(x2, y2, z2), 1.0);
 ```
-
 各アルゴリズムのコンストラクタの引数は`backend`である.
 `add_focus`関数により各焦点の位置と音圧を指定する.
+
+また, 各アルゴリズムの計算結果の振幅は最終的に振動子が出力できる範囲に制限する必要がある.
+これを制御するのが, `constraint`メンバーであり, 以下の4つのいずれかを指定する必要がある.
+
+- DontCare: 何もケアしない. (これは, 結局$\[0, 1\]$の範囲にクランプするのに等しい.)
+- Normalize: 振幅の最大値ですべての振動子の振幅を割り, 規格化する.
+- Uniform: すべての振動子の振幅を指定した値にする. ($\[0, 1\]$の範囲外の値は$\[0, 1\]$の範囲にクランプされる.)
+- Clamp: 振幅を$\[0, 1\]$の範囲にクランプする. (DontCareと同等.)
+
+```cpp
+  g.constraint = std::make_unique<autd3::gain::holo::Uniform>(1);
+```
+
 また, 各アルゴリズムごとに追加のパラメータが存在する.
 各パラメータの詳細はそれぞれの論文を参照されたい.
 
@@ -147,42 +211,6 @@ cmake .. -DBUILD_HOLO_GAIN=ON -DBUILD_BLAS_BACKEND=ON -DBLAS_LIB_DIR=D:/lib/open
 ```
 
 もし, `flangxxx.lib`関連のlinkエラーが発生した場合は, `-DBLAS_DEPEND_LIB_DIR=%CONDA_HOME%/Library/lib`オプションを追加する.
-
-## Grouped
-
-`Grouped`は複数のデバイスを使用する際に,
-各デバイスで別々の`Gain`を使用するための`Gain`である.
-
-`Grouped`では, デバイスIDと任意の`Gain`を紐付けて使用する.
-```cpp
-  const auto g0 = ...;
-  const auto g1 = ...;
-
-  autd3::gain::Grouped g;
-  g.add(0, g0);
-  g.add(1, g1);
-```
-上の場合は, デバイス0が`Gain g0`, デバイス1が`Gain g1`を使用する.
-
-## Cache
-
-`Gain`は使い捨てであり, 複数回使用した場合は, 都度振幅/位相の計算が行われる.
-`Cache`は計算データをキャッシュしておくために使用できる.
-
-```cpp
-  autd3::gain::Cache<autd3::gain::Focus> g(autd3::Vector3(x, y, z));
-```
-
-元の`Gain`には`gain`メンバでアクセスできる.
-
-```cpp
-  const auto g0 = ...;
-  const auto g1 = ...;
-
-  autd3::gain::Cache<autd3::gain::Grouped> g;
-  g.gain.add(0, g0);
-  g.gain.add(1, g1);
-```
 
 [^hasegawa2017]: Hasegawa, Keisuke, et al. "Electronically steerable ultrasound-driven long narrow air stream." Applied Physics Letters 111.6 (2017): 064104.
 

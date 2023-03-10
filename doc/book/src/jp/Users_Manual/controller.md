@@ -1,91 +1,87 @@
 # Controller
 
-ここでは, Controllerクラスに存在するその他の機能を紹介する.
+ここでは, `Controller`クラスに存在するAPIを紹介する.
 
-## 音速の設定
+[[_TOC_]]
 
-SDK内部では, 波長を音速/周波数で計算しており, 種々の`Gain`では内部計算に波長を用いている.
+## open/close/is_open
 
-音速は, 環境によって変わるので適切な値を設定する必要があり, 音速がずれていると, 波長がずれ, 正しく超音波を集束できない可能性がある.
+`Controller`をopen/closeする.
 
-音速は`Controller`クラスの`set_sound_speed`関数で設定する.
-単位は$\SI{}{mm/s}$である.
+Controllerがopenしているかどうかは`is_open`で取得できる.
+
+## geometry
+
+`Geometry`を取得する.
+
+## force_fan
+
+AUTD3にはファンがついており, Auto, Off, Onの3つのファンモードが有る.
+Autoモードでは温度監視ICがICの温度を監視し, 一定温度以上になると自動でファンを起動する.
+Offモードではファンは常時オフであり, Onモードでは常時オンになる.
+
+モードの切替は, ファン横のジャンパスイッチで行う. 少しわかりにくいが, 以下の図のようにファン側をショートするとAuto, 真ん中でOff, 右側でOnとなる.
+
+<figure>
+  <img src="../fig/Users_Manual/fan.jpg"/>
+  <figcaption>AUTDファン制御用のジャンパスイッチ</figcaption>
+</figure>
+
+Autoモードの場合は温度が高くなると自動的にファンが起動する.
+`force_fan`フラグはこのAutoモードでファンを強制的に起動するためのフラグである.
 
 ```cpp
-autd.geometry().sound_speed = 340e3; // mm/s
+autd.force_fan(true);
 ```
 
-また, 室温から音速を設定するユーティリティ関数も用意されている.
-引数の単位はセルシウス温度である.
+実際にフラグが更新されるのは`send`を呼んで, 何らかのデータを送信したときになる.
+フラグの更新だけがしたい場合は`UpdateFlag`を送信すれば良い.
 
 ```cpp
-autd.set_sound_speed_from_temp(15); // 15℃
+autd.force_fan(true);
+autd.send(autd3::UpdateFlag());
 ```
 
-## Ack Check Timeout/応答確認タイムアウト時間
+## fpga_info
 
-`ack_check_timeout`の値を0より大きくすると, デバイスへのデータ送信時に, 送信データがデバイスで処理されたかどうかを確認するようになる.
+FPGAの状態を取得する.
+これを使用する前に, `reads_fpga_info`フラグをセットしておく必要がある.
+
+```cpp
+autd.reads_fpga_info(true);
+autd.send(autd3::update_flag());
+
+const auto infos = autd.fpga_info();
+```
+
+FPGAの状態としては, 現在以下の情報が取得できる.
+
+- ファン制御用の温度センサがアサートされているかどうか
+
+## firmware_infos
+
+ファームウェアのバージョン情報を取得する.
+
+## send
+
+デバイスにデータを送信する.
+
+### タイムアウト
+
+`send`の最終引数に値を0より大きくすると, デバイスへのデータ送信時に, 送信データがデバイスで処理されたかどうかを確認するようになる.
 
 ```cpp
 autd.set_ack_check_timeout(std::chrono::milliseconds(20));
 ```
 
-`ack_check_timeout`の値が0より大きい場合, 送信時に送信データがデバイスで処理されるか, `ack_check_timeout`時間が経過するまで待機する.
-送信データがデバイスで処理されたのが確認できた場合に送信関数は`true`を返し, そうでない場合は`false`を返す.
-なお, データが送信されたかどうかのチェックは後述の[Send intervals](#send-intervals)の時間間隔で行われる.
+タイムアウトの値が0より大きい場合, 送信時に送信データがデバイスで処理されるか, 指定したタイムアウト時間が経過するまで待機する.
+送信データがデバイスで処理されたのが確認できた場合に`send`関数は`true`を返し, そうでない場合は`false`を返す.
 
-`ack_check_timeout`の値が0の場合, 送信関数はチェックを行わず, 必ず`true`を返す.
+タイムアウトの値が0の場合, `send`関数はチェックを行わない.
 
 確実にデータを送信したい場合はこれを適当な値に設定しておくことをおすすめする.
-なお, `ack_check_timeout`を設定すると[送信関数](#送信関数)の実行時間は増加する.
 
 デフォルトは0にセットされている.
-
-## Send intervals
-
-`send_interval`の値は, 連続するフレームの送信間隔, 及び, [Ack Check Timeout](#ack-check-timeout)のデータチェック間隔になる.
-
-```cpp
-autd.set_send_interval(std::chrono::milliseconds(1));
-```
-
-デフォルトは$\SI{1}{ms}$にセットされている.
-
-## Force fan
-
-AUTD3のファン制御はAuto, Off, Onの3つのモードが有る. Autoモードでは温度監視ICがICの温度を監視し,
-一定温度以上になった際に自動的にファンを起動する. Offモードではファンは常時オフであり, Onモードでは常時オンになる.
-
-モードの切替は, ファン横のジャンパスイッチで行う. 少しわかりにくいが, 下図のようにファン側をショートするとAuto, 真ん中でOff, 右側でOnとなる.
-
-<figure>
-  <img src="../fig/Users_Manual/fan.jpg"/>
-  <figcaption>AUTD Fan jumper switch</figcaption>
-</figure>
-
-Autoモードの場合は温度が高くなると自動的にファンが起動する. `force_fan`フラグはこのAutoモードでファンを強制的に起動するためのフラグである.
-実際にフラグが更新されるのは[送信関数](#送信関数)のどれかを呼び出し後になる.
-
-```cpp
-autd.force_fan = true;
-```
-
-## Read FPGA info
-
-`reads_fpga_info`フラグをONにすると, デバイスがFPGAの状態を返すようになる.
-実際にフラグが更新されるのは[送信関数](#送信関数)のどれかを呼び出し後になる.
-
-FPGAの状態は`fpga_info`関数で取得できる.
-
-```cpp
-autd.reads_fpga_info = true;
-autd.send(autd3::UpdateFlag());
-const auto fpga_info = autd.read_fpga_info();
-```
-
-`fpga_info`の返り値は`FPGAInfo`のデバイス分だけの`vector`である.
-
-`FPGAInfo`には現在, デバイスの温度が一定以上であるかどうか (すなわち, Autoモードでファンが起動しているかどうか) を表すフラグがある.
 
 ## stop
 
@@ -95,37 +91,10 @@ const auto fpga_info = autd.read_fpga_info();
 autd.send(autd3::Stop());
 ```
 
-## clear
+### clear
 
 デバイス内のフラグや`Gain`/`Modulation`データ等をクリアする.
 
 ```cpp
 autd.send(autd3::Clear());
 ```
-
-## Firmware information
-
-`firmware_infos`関数でFirmwareのバージョン情報を取得できる.
-
-```cpp
-for (auto&& firm_info : autd.firmware_infos()) std::cout << firm_info << std::endl;
-```
-
-## 送信関数
-
-送信関数とは, 実際にデバイスにデータを送信する関数の総称である.
-これらの関数を呼び出すことで, `force fan`, `reads FPGA info`のフラグが更新される.
-
-また, これらの関数は`ack_check_timeout`, 及び, `send_interval`の値によって挙動が変わる.
-
-`ack_check_timeout`が0より大きい場合, これらの関数はデバイスがデータを処理するか指定のtimeout時間が経過するまで待機する.
-特に, `Modulation`/`STM`を送信する際は1フレーム毎に確認が入るので, 処理時間が大きく増加する可能性がある.
-また, `ack_check_timeout`時間経過後もデバイスがデータを処理したことを確認できなかった場合に`false`を返してくる.
-`ack_check_timeout`が0の場合はデータが処理されたかどうかを確認しない, また, 返り値は常に`true`になる.
-
-また, `send_interval`の値は, 連続するフレームを送信する際の間隔, 及び, 上記チェックの間隔に影響する.
-
-送信関数の一覧は次のとおりである.
-
-- `send`
-- `<<`演算子

@@ -20,6 +20,8 @@ GitHubのリポジトリからインストールできる.
 {{#include ../../../samples/julia/sample.jl}}
 ```
 
+タイムアウト時間はns単位で指定する.
+
 より詳細なサンプルは[AUTD3.jlのexample](https://github.com/shinolab/autd3/tree/master/julia/example)を参照されたい.
 
 その他, 質問があれば[GitHubのissue](https://github.com/shinolab/autd3/issues)に送られたい.
