@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 10/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,6 +23,7 @@ EXPORT_AUTD bool AUTDAddDevice(IN void* geometry_builder, IN autd3_float_t x, IN
                                IN autd3_float_t ry, IN autd3_float_t rz2);
 EXPORT_AUTD bool AUTDAddDeviceQuaternion(IN void* geometry_builder, IN autd3_float_t x, IN autd3_float_t y, IN autd3_float_t z, IN autd3_float_t qw,
                                          IN autd3_float_t qx, IN autd3_float_t qy, IN autd3_float_t qz);
+EXPORT_AUTD void AUTDSetMode(IN void* geometry_builder, IN uint8_t mode);
 EXPORT_AUTD void AUTDBuildGeometry(OUT void** out, IN void* geometry_builder);
 EXPORT_AUTD void AUTDFreeGeometry(IN const void* geometry);
 EXPORT_AUTD bool AUTDOpenController(OUT void** out, IN void* geometry, IN void* link);
@@ -106,7 +107,6 @@ EXPORT_AUTD uint16_t AUTDGetTransModDelay(IN const void* geometry, IN int32_t tr
 EXPORT_AUTD void AUTDSetTransModDelay(IN void* geometry, IN int32_t trans_idx, IN uint16_t delay);
 EXPORT_AUTD void AUTDCreateAmplitudes(OUT void** out, IN autd3_float_t amp);
 EXPORT_AUTD void AUTDDeleteAmplitudes(IN const void* amplitudes);
-EXPORT_AUTD void AUTDSetMode(IN void* handle, IN uint8_t mode);
 EXPORT_AUTD void AUTDSoftwareSTM(OUT void** out);
 EXPORT_AUTD void AUTDSoftwareSTMSetStrategy(IN void* stm, IN uint8_t strategy);
 EXPORT_AUTD void AUTDSoftwareSTMAdd(IN void* stm, IN void* gain);

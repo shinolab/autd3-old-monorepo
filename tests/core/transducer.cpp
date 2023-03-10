@@ -3,7 +3,7 @@
 // Created Date: 02/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/03/2023
+// Last Modified: 10/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -39,8 +39,6 @@ TEST(CoreTransducer, Transducer) {
 
   ASSERT_EQ(tr.idx(), 1);
 
-  tr.set_cycle(3000);
-  ASSERT_EQ(tr.cycle(), 3000);
   tr.set_frequency(70e3);
   ASSERT_NEAR(tr.frequency(), 70e3, 15.0);
 

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 10/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -179,8 +179,8 @@ struct Geometry {
       const auto id = tr.idx();
       const Vector3 pos = a * tr.position();
       const Quaternion rot(a.linear() * tr.rotation().toRotationMatrix());
-      const auto mod_delay = tr.mod_delay();
-      const auto cycle = tr.cycle();
+      const auto mod_delay = tr.mod_delay;
+      const auto cycle = tr.cycle;
       return Transducer(id, pos, rot, mod_delay, cycle);
     });
   }
@@ -217,8 +217,8 @@ struct Geometry {
       const auto id = tr.idx();
       const Vector3 pos = a * tr.position();
       const Quaternion rot(a.linear() * tr.rotation().toRotationMatrix());
-      const auto mod_delay = tr.mod_delay();
-      const auto cycle = tr.cycle();
+      const auto mod_delay = tr.mod_delay;
+      const auto cycle = tr.cycle;
       return Transducer(id, pos, rot, mod_delay, cycle);
     });
   }
@@ -231,7 +231,7 @@ struct Geometry {
   [[nodiscard]] std::vector<uint16_t> cycles() const {
     std::vector<uint16_t> cycles;
     cycles.reserve(num_transducers());
-    std::transform(begin(), end(), std::back_inserter(cycles), [](const auto& tr) { return tr.cycle(); });
+    std::transform(begin(), end(), std::back_inserter(cycles), [](const auto& tr) { return tr.cycle; });
     return cycles;
   }
 

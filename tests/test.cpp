@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 10/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -134,7 +134,7 @@ TEST(ControllerTest, freq_config) {
   auto link = autd3::test::EmulatorLink(cpus).build();
   auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
 
-  for (auto& tr : autd.geometry()) tr.set_cycle(2341);
+  for (auto& tr : autd.geometry()) tr.cycle = 2341;
 
   autd.send(autd3::Clear());
   autd.send(autd3::Synchronize());
@@ -209,7 +209,7 @@ TEST(ControllerTest, simple_advenced) {
   ASSERT_EQ(autd.geometry().num_transducers(), 4 * 249);
 
   constexpr uint16_t cycle = 2341;  // 70kHz
-  for (auto& tr : autd.geometry()) tr.set_cycle(cycle);
+  for (auto& tr : autd.geometry()) tr.cycle = cycle;
 
   autd.send(autd3::Clear());
   autd.send(autd3::Synchronize());
@@ -258,7 +258,7 @@ TEST(ControllerTest, simple_advanced_phase) {
   ASSERT_EQ(autd.geometry().num_transducers(), 4 * 249);
 
   constexpr uint16_t cycle = 2341;  // 70kHz
-  for (auto& tr : autd.geometry()) tr.set_cycle(cycle);
+  for (auto& tr : autd.geometry()) tr.cycle = cycle;
 
   autd.send(autd3::Clear());
   autd.send(autd3::Synchronize());
@@ -457,7 +457,7 @@ TEST(ControllerTest, gain_stm_legacy) {
       ASSERT_EQ(cpus->at(i).fpga().stm_finish_idx().value_or(0), 2);
     }
 
-    const uint16_t cycle = autd.geometry()[0].cycle();
+    const uint16_t cycle = autd.geometry()[0].cycle;
     for (size_t k = 0; k < size; k++) {
       for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
         const auto [duties, phases] = cpus->at(i).fpga().drives(k);
@@ -492,7 +492,7 @@ TEST(ControllerTest, gain_stm_legacy) {
       ASSERT_FALSE(cpus->at(i).fpga().stm_finish_idx().has_value());
     }
 
-    const uint16_t cycle = autd.geometry()[0].cycle();
+    const uint16_t cycle = autd.geometry()[0].cycle;
     for (size_t k = 0; k < size; k++) {
       for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
         const auto [duties, phases] = cpus->at(i).fpga().drives(k);
@@ -559,7 +559,7 @@ TEST(ControllerTest, gain_stm_advanced) {
       ASSERT_FALSE(cpus->at(i).fpga().stm_finish_idx().has_value());
     }
 
-    const uint16_t cycle = autd.geometry()[0].cycle();
+    const uint16_t cycle = autd.geometry()[0].cycle;
     for (size_t k = 0; k < size; k++) {
       for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
         const auto [duties, phases] = cpus->at(i).fpga().drives(k);
@@ -599,7 +599,7 @@ TEST(ControllerTest, gain_stm_advanced) {
       ASSERT_EQ(cpus->at(i).fpga().stm_finish_idx().value_or(0), 1);
     }
 
-    const uint16_t cycle = autd.geometry()[0].cycle();
+    const uint16_t cycle = autd.geometry()[0].cycle;
     for (size_t k = 0; k < size; k++) {
       for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
         const auto [duties, phases] = cpus->at(i).fpga().drives(k);
@@ -664,7 +664,7 @@ TEST(ControllerTest, gain_stm_advanced_phase) {
       ASSERT_FALSE(cpus->at(i).fpga().stm_finish_idx().has_value());
     }
 
-    const uint16_t cycle = autd.geometry()[0].cycle();
+    const uint16_t cycle = autd.geometry()[0].cycle;
     for (size_t k = 0; k < size; k++) {
       for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
         const auto [duties, phases] = cpus->at(i).fpga().drives(k);
@@ -704,7 +704,7 @@ TEST(ControllerTest, gain_stm_advanced_phase) {
       ASSERT_EQ(cpus->at(i).fpga().stm_finish_idx().value_or(1), 0);
     }
 
-    const uint16_t cycle = autd.geometry()[0].cycle();
+    const uint16_t cycle = autd.geometry()[0].cycle;
     for (size_t k = 0; k < size; k++) {
       for (size_t i = 0; i < autd.geometry().num_devices(); i++) {
         const auto [duties, phases] = cpus->at(i).fpga().drives(k);
