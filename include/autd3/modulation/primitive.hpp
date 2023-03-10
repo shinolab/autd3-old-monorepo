@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 09/03/2023
+// Last Modified: 10/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -214,7 +214,7 @@ class Cache final : public core::Modulation {
   std::vector<driver::autd3_float_t> calc() override {
     if (!_built) {
       _buffer = modulation.calc();
-      _freq_div = modulation.sampling_frequency_division();
+      sampling_frequency_division = modulation.sampling_frequency_division;
       _built = true;
     }
     std::vector<driver::autd3_float_t> buffer;
@@ -261,7 +261,7 @@ class Transform final : public core::Modulation {
 
   std::vector<driver::autd3_float_t> calc() override {
     std::vector<driver::autd3_float_t> buffer = _modulation.calc();
-    _freq_div = _modulation.sampling_frequency_division();
+    sampling_frequency_division = _modulation.sampling_frequency_division;
     return generate_iota(0, buffer.size(), [this, buffer](const size_t i) { return _f(buffer[i]); });
   }
 
