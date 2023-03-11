@@ -120,9 +120,6 @@ cmake .. -DCMAKE_BUILD_TYPE=Release
 **なお, 実行に際して, Visual StudioのConfigurationをDebugからReleaseに変更すること.** また,
 Linux/macOSの場合は, 実行時にroot権限が必要な場合がある.
 
-次頁では基本的な関数について解説していく.
-なお, [オンラインのAPIドキュメント](https://shinolab.github.io/autd3/api/index.html)もあるのでそちらも参考にする事.
-
 [^fn_git]: 動かすのに必須ではないが, 作業の単純化のため使用
 
 [^fn_npcap]: SOEM linkを使用するのに使う. それ以外のlinkの場合は必要ない.

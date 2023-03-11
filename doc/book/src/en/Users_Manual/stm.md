@@ -1,9 +1,11 @@
 # Spatio-Temporal Modulation
 
 `STM` is a function to realize Spatio-Temporal Modulation in Hardware timers.
-The SDK provides `FocusSTM`, which supports only a single focus, and `GainSTM`, which supports arbitrary `Gain`.
+The SDK provides `FocusSTM` that supports only a single focus, and `GainSTM`/`SoftwareSTM` that which supports arbitrary `Gain`.
 
-### FocusSTM
+[[_TOC_]]
+
+## FocusSTM
 
 `FocusSTM` has the following restrictions.
 
@@ -17,17 +19,15 @@ The usage of `FocusSTM` is as follows.
 
   const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   constexpr size_t points_num = 200;
-  constexpr auto radius = 30.0;
-  std::vector<size_t> points(points_num);
-  std::iota(points.begin(), points.end(), 0);
-  std::transform(points.begin(), points.end(), std::back_inserter(stm), [&](const size_t i) {
+  for (size_t i = 0; i < points_num; i++) {
+    constexpr auto radius = 30.0;
     const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(points_num);
-    return autd3::Point(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
-  });
+    stm.add(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0));
+  }
 
   const auto actual_freq = stm.set_frequency(1);
   std::cout << "Actual frequency is " << actual_freq << " Hz\n";
-  autd << stm;
+  autd.send(stm);
 ```
 
 Due to constraints on the number of sampling points and sampling period, the specified frequency and the actual frequency may differ.
@@ -36,31 +36,33 @@ However, if `point_num` is 199, the sampling frequency must be $\SI{199}{Hz}$, b
 This results in a discrepancy between the specified frequency and the actual frequency.
 The `set_frequency` function returns the actual frequency.
 
-### GainSTM
+## GainSTM
 
 Unlike `FocusSTM`, `GainSTM` can handle arbitrary `Gain`.
-However, the number of `Gain` that can be used is
+`GainSTM` has the following restrictions.
 
-- 2048 for Legacy mode
-- 1024 for Normla mode.
+* In Legacy mode
+  * The maximum number of gain is 2048
+  * The sampling frequency is $\SI{163.84}{MHz}/N$. where $N$ is a 32-bit unsigned integer and must be greater than or equal to $152$.
+* In Advanced mode
+  * The maximum number of gain is 1024
+  * The sampling frequency is $\SI{163.84}{MHz}/N$. where $N$ is a 32-bit unsigned integer and must be greater than or equal to $276$.
 
 ```cpp
   autd3::GainSTM stm;
 
   const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   constexpr size_t points_num = 200;
-  constexpr auto radius = 30.0;
-  std::vector<size_t> points(points_num);
-  std::iota(points.begin(), points.end(), 0);
-  std::for_each(points.begin(), points.end(), [&](const size_t i) {
+  for (size_t i = 0; i < points_num; i++) {
+    constexpr auto radius = 30.0;
     const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(points_num);
     autd3::gain::Focus g(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0.0));
     stm.add(g);
-  });
+  }
 
   const auto actual_freq = stm.set_frequency(1);
   std::cout << "Actual frequency is " << actual_freq << " Hz\n";
-  autd << stm;
+  autd.send(stm);
 ```
 
 The frequency constraints are also the same as for `FocusSTM`.
@@ -68,21 +70,20 @@ The frequency constraints are also the same as for `FocusSTM`.
 Since `GainSTM` sends all phase/amplitude data, the latency is large[^fn_gain_seq].
 
 To cope with this problem, `GainSTM` provides two modes: `PhaseFull` mode, which transmits only the phase, and `PhaseHalf` mode[^phase_half], which compresses the phase to $\SI{4}{bit}$. 
-The mode can be switched with the `mode` function.
 
 ```cpp
-stm.mode() = autd3::Mode::PhaseFull;
+  autd3::GainSTM stm(autd3::GainSTMMode::PhaseFull);
 ```
 
 The default is `PhaseDutyFull` mode, which sends phase and amplitude.
 
-### STM common functions
+## FocusSTM/GainSTM common API
 
-#### frequency
+### frequency/set_frequency
 
-Get `STM` frequency.
+Get and sed `STM` frequency.
 
-#### sampling_frequency
+### sampling_frequency
 
 Get the sampling frequency of `STM`.
 
@@ -92,10 +93,39 @@ Get or set the division ratio of the sampling frequency of `STM`.
 The fundamental frequency of sampling frequency is $\SI{163.84}{MHz}$.
 
 ```cpp
-    stm.sampling_frequency_division() = 20480; // 163.84MHz/20480 = 8kHz
+    stm.sampling_frequency_division = 20480; // 163.84MHz/20480 = 8kHz
 ```
 
-# SoftwareSTM
+### start_idx/finish_idx
+
+Normally, `FocusSTM`/`GainSTM` does not specify the starting index of focus/`Gain`.
+To specify this, set `start_idx` as follows.
+
+```cpp
+  stm.start_idx = 0;
+```
+
+Similarly, the `finish_idx` can be used to determine the index of final focus/`Gain`.
+
+```cpp
+  stm.finish_idx = 0;
+```
+
+Note that the focus/`Gain` at the index specified by `finish_idx` is not output at the end.
+It will exit after outputting the previous focus/`Gain` at `finish_idx`.
+
+`start_idx` and `finish_idx` are valid only for transitions from normal `Gain` to `FocusSTM`/`GainSTM` and from `FocusSTM`/`GainSTM` to normal `Gain`.
+
+To disable these settings, specify `std::nullopt`.
+
+```cpp
+  stm.start_idx = std::nullopt;
+  stm.finish_idx = std::nullopt;
+```
+
+The default value is `std::nullopt`;
+
+## SoftwareSTM
 
 `SoftwareSTM` is a function to realize Spatio-Temporal Modulation with software timers.
 There is no AUTD3 hardware restriction, but its accuracy depends on the accuracy of the host PC[^timer_precision].
@@ -108,14 +138,11 @@ The basic usage is the same as that of `GainSTM`.
 
   const autd3::Vector3 center = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   constexpr size_t points_num = 200;
-  constexpr auto radius = 30.0;
-  std::vector<size_t> points(points_num);
-  std::iota(points.begin(), points.end(), 0);
-  std::for_each(points.begin(), points.end(), [&](const size_t i) {
+  for (size_t i = 0; i < points_num; i++) {
+    constexpr auto radius = 30.0;
     const auto theta = 2.0 * autd3::pi * static_cast<double>(i) / static_cast<double>(points_num);
-    autd3::gain::Focus g(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0.0));
-    stm.add(g);
-  });
+    stm.add(autd3::gain::Focus(center + autd3::Vector3(radius * std::cos(theta), radius * std::sin(theta), 0.0)));
+  }
 
   const auto actual_freq = stm.set_frequency(1);
   std::cout << "Actual frequency is " << actual_freq << " Hz\n";

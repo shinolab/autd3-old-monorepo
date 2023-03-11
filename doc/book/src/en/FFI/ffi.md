@@ -3,6 +3,8 @@
 Currently, the following languages are supported in addition to C++.
 
 * [C\#](./csharp.md)
+    * [Unity](./unity.md)
+* [F\#](./fsharp.md)
 * [python](./python.md)
 * [Rust](./rust.md)
 * [Nim](./nim.md)
