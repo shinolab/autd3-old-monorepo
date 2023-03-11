@@ -2,42 +2,43 @@
 
 The main classes that make up the SDK are as follows.
 
-* `Controller` - All operations on AUTD3 are performed through this class.
-* `Geometry` - manages the placement of devices in the real world.
-* `Link` - Interface to AUTD3 devices.
-* `Gain` - manages the phase/amplitude of each transducer.
-* `Modulation` - manages Amplitude Modulation (AM)
-* `STM` - manages Spatio-Temporal Modulation (STM) functionality on Hardware
+* `Controller` is top-level user interface. All operations on AUTD3 is performed through this class.
+* `Geometry` manages the placement of devices in the real world.
+* `Link` is interface to AUTD3 devices.
+* `Gain` manages the phase/amplitude of each transducer.
+* `Modulation` manages Amplitude Modulation (AM).
+* `STM` manages Spatio-Temporal Modulation (STM) functionality on firmware.
 
 The flow of using the SDK is as follows:
 
+1. Create `Geometry`: Configure all connected devices' positons and rotations
+1. (Optional) Configure ultrasound frequency 
+1. Create `Link`
 1. Instansiate `Controller`
-1. Set the position and orientation of connected devices
-1. Create and connect `Link`
-1. Initialize devices
-1. Create and send `Gain`, `STM`, and `Modulation`
+1. Initialize and synchronize devices
+1. (Optional) Configure `Silencer` 
+1. (Optional) Create and send `Modulation` 
+1. Create and send `Gain`, `STM`
 
 ## Hardware description
 
-Here is a top view of AUTD3.
+Here is a top and back view of AUTD3.
 
 <figure>
   <img src="../fig/Users_Manual/autd_trans_idx.jpg"/>
   <figcaption>AUTD front</figcaption>
 </figure>
 
-The following is an image of the back of AUTD3. The connector for 24V power supply is Molex 5566-02A.
-
 <figure>
   <img src="../fig/Users_Manual/autd_back.jpg"/>
   <figcaption>AUTD back</figcaption>
 </figure>
 
-AUTD3 consists of 249 [^fn_asm] transducers per unit, each of which is assigned an index number, as shown in the figure.
+AUTD3 consists of 249 [^fn_asm] transducers per unit.
 SDK can individually control the transducers' frequency, phase, and amplitude.
 
 The coordinate system of AUTD3 is a right-handed coordinate system, where the origin is the center of the 0-th transducer.
-The $x$-axis is the major axis direction, i.e., the direction of 0→17, and the $y$-axis is the direction of 0→18.
+The x-axis is the major axis direction, i.e., the direction of 0→17, and the y-axis is the direction of 0→18.
 As the unit system, $\SI{}{mm}$ is adopted for distance, $\SI{}{rad}$ for angle, and $\SI{}{Hz}$ for frequency.
 The transducers are arranged with a spacing of $\SI{10.16}{mm}$, and the size, including the substrate, is $\SI{192}{mm}\times\SI{151.4}{mm}$.
 The outline view of the device is shown below.

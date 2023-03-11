@@ -5,7 +5,7 @@ AUTD Simulator is a simulator for AUTD3 supporting Windows, Linux, and macOS.
 ## Build
 
 To build AUTD Simulator, you need to turn on `BUILD_SIMULATOR` flag of CMake.
-If you use macOS, you need to install Vulkan SDK.
+You also need to install Vulkan SDK.
 
 ```
 cmake .. -DBUILD_SIMULATOR=ON
@@ -13,63 +13,72 @@ cmake .. -DBUILD_SIMULATOR=ON
 
 See [sample](https://github.com/shinolab/autd3/blob/master/examples/simulator_server.cpp) for running AUTD Simulator.
 
-# How to
+## Usage
 
-When you run the AUTD Simulator, it will be waiting for a connection.
-If you run a client program using `link::Simulator`, you will see the sound field which matches the contents of the client program.
-The panel shown in the simulator window is called "Slice", and you can visualize the sound field at any position using this slice.
-The phase and amplitude of each transducer are represented by hue and intensity, respectively.
+When you run the simulator, it is waiting for connection.
+In this state, when you `open` the `Controller` using `link::Simulator`, a black panel will appear on the simulator.
+This black panel is called "Slice", and this "Slice" can be used to visualize the sound field at an arbitrary position.
+The phase of the transducer is represented by hue, and its amplitude is represented by intensity.
 
-The sound field displayed in the simulator is a simple superposition of spherical waves.
-Directivity and nonlinear effects are not taken into account.
+The sound field displayed in the simulator is a simple superposition of spherical waves; directivity and nonlinear effects are not taken into account.
 
-The GUI displayed on the screen is used to control Slice and the camera.
-The GUI is based on [Dear ImGui](https://github.com/ocornut/imgui), which can be operated by mouse.
-You can also enter the numerical input mode by "Ctrl+click".
+The GUI displayed on the left side of the screen is used to control "Slice" and the camera.
+The GUI is based on [Dear ImGui](https://github.com/ocornut/imgui).
 
-In addition, you can move the camera by drag and rotate the camera by shift+drag.
+### Slice tab
 
-## Slice tab
+In the Slice tab, you can change the size, position, and rotation of the slice.
+The rotation is specified in terms of XYZ Euler angles.
+The "xy", "yz", and "zx" buttons are used to rotate the slice to a position parallel to each plane.
 
-Slice tab allows you to change the size, position and rotation of the slice.
-Rotation is specified in terms of XYZ Euler angles.
-Pressing `xy`, `yz`, or `zx` button rotates the slice parallel to each plane.
+You can select either "Acoustic" mode, which displays the sound pressure, or "Radiation" mode, which displays the square value of the sound pressure.
 
-Slice represents the intensity of sound pressure in terms of color.
-Color scale represents the maximum value of sound pressure in this color space.
-When a large number of devices are used, color saturation may occur, in which case the value of `Color scale` should be increased.
-The alpha value of the slice can be specified with `Slice alpha`.
+In the "Color settings" section, you can change the coloring palette, color scale, and alpha value of the slice itself.
+If you use a large number of devices, colors may become saturated, in which case you should increase the value of color scale.
 
-You can also save the sound field displayed in the slice.
-
-## Camera tab
+### Camera tab
 
 In Camera tab, you can change camera position, rotation, field of view, near clip, and far clip.
-The rotation is specified by XYZ Euler angles.
+The rotation is specified in terms of XYZ Euler angles.
 
-## Config tab
+In addition, you can move the camera by "Drag" and rotate it by "Shift+Drag" in other scenes than GUI.
+The speed of movement can be changed by the "Move speed" setting.
 
-In Config tab, you can set the sound speed, font size, and background color.
+### Config tab
 
-You can also switch display/enable for each device.
-If you turn off the display, the devices are not displayed but contribute to the sound field.
-If you turn off the enable, it does not contribute to the sound field.
+In the Config tab, you can set the sound speed, font size, and background color.
 
-## Info tab
+You can also switch the show/enable/overheat settings for each device.
+When "show" is turned off, the devices contribute to the sound field only by not being displayed.
+When "enable" is turned off, it does not contribute to the sound field.
 
-In Info tab, you can check Silencer, Modulation, and STM information.
+### Info tab
 
-You can check the Silencer setting, but it is not affected in the sound field.
+In the Info tab, information on FPS, Silencer, Modulation, and STM can be checked.
 
-Also, Modulation is not affected in the sound field.
-Instead, how the sound pressure is modulated is shown in this tab.
-In raw mode, how the duty ratio is modulated is also shown.
+The Silencer setting can be checked, but it is not affected in the sound field.
 
-When STM is sent, the information of STM is displayed.
-The STM does not switch automatically, you must specify the STM index to display them.
+When "Enable" of Modulation is set to "On", the modulation is reflected in the sound field.
+Specify the index of modulation data to be applied by "Index".
+When "Auto play" is set to On, the index is automatically incremented.
 
-## Other settings
+> Note: The timing of modulation by Auto play is different from the actual timing.
 
-You can change default settings in `simulator::Settings`.
+In addition, how the sound pressure is modulated is shown in this tab.
 
-If vsync is set to true, vertical synchronization is enabled.
+If an STM is transmitted, the information of the STM is displayed.
+The index of STM data to be displayed is specified by "Index".
+If "Auto play" is set to "On", the index is automatically incremented.
+
+> Note: The timing of modulation by Auto play is different from the actual timing.
+
+### Others
+
+"Save image as file" allows you to save an image of the sound field displayed on the current Slice.
+
+"Auto" button automatically moves the camera to the appropriate location.
+"Reset" resets the camera to its beggining state.
+"Default" resets the camera to the default settings.
+
+The settings are stored in "settings.json".
+One of the settings that can be changed only from this file is `vsync`: Setting `vsync` to `false` disables vertical synchronization.

@@ -36,8 +36,9 @@ For example, the following code is equivalent to [Getting Started](../Users_Manu
 
 Note that the Rust version of the `send` function takes only one argument. 
 If you want to send header and body data at the same time, chain `send`; otherwise, call `flush`.
+
 ```rust
-    autd.send(&mut m).flush().unwrap();
+    autd.timeout(std::time::Duration::from_millis(20)).send(&mut m).flush().unwrap();
 ```
 
 See [rust-autd example](https://github.com/shinolab/autd3/tree/master/rust/autd3-examples) for a more detailed sample.
