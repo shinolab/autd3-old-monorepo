@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/03/2023
+// Last Modified: 13/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -53,7 +53,7 @@ struct Drive {
  * @brief LegacyDrive stores the duty ratio/phase data actually sent to the device in Legacy mode.
  */
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(2)
 struct LegacyDrive {
   /**
    * @brief phase
@@ -89,7 +89,7 @@ struct LegacyDrive {
  * @brief Phase stores the phase data actually sent to the device in Advanced/AdvancedPhase mode.
  */
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(2)
 struct AdvancedDrivePhase {
   uint16_t phase;
 
@@ -113,7 +113,7 @@ struct AdvancedDrivePhase {
  * @brief Duty stores the duty ratio data actually sent to the device in Advanced mode.
  */
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(2)
 struct AdvancedDriveDuty {
   uint16_t duty;
 
@@ -137,7 +137,7 @@ struct AdvancedDriveDuty {
  * @details Currently, it is only possible to check if the temperature of the device is above a certain level.
  */
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(2)
 struct FPGAInfo {
   uint8_t info;
 

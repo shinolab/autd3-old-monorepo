@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/01/2023
+// Last Modified: 13/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,7 +27,7 @@ autd3::driver::FOCUS_STM_FIXED_NUM_UNIT. The duty ratio is cycle >> (duty_shift+
 amplitude.
 */
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(2)
 struct STMFocus {
   /**
    * \brief Constructor
@@ -55,7 +55,7 @@ struct STMFocus {
 the next 32 bits. The STMFocus data is stored after them.
 */
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(2)
 struct FocusSTMBodyInitial {
   /**
    * \brief This data is cast from the Body data. Never construct directly.
@@ -84,7 +84,7 @@ struct FocusSTMBodyInitial {
  * \details The number of STMFocus data is stored in the first 16 bits, followed by the STMFocus data.
  */
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(2)
 struct FocusSTMBodySubsequent {
   /**
    * \brief This data is cast from the Body data. Never construct directly.
@@ -126,8 +126,8 @@ enum class GainSTMMode : uint16_t {
  * @brief Transmission data when using GainSTMMode::PhaseFull in Legacy mode (for the low 8-bit part)
  */
 #pragma pack(push)
-#pragma pack(1)
-struct LegacyPhaseFull0 {
+#pragma pack(2)
+template <size_t N>
   uint8_t phase_0;
   uint8_t phase_1;
 
@@ -151,8 +151,8 @@ struct LegacyPhaseFull0 {
  * @brief Transmission data when using GainSTMMode::PhaseFull in Legacy mode (for the high 8-bit part)
  */
 #pragma pack(push)
-#pragma pack(1)
-struct LegacyPhaseFull1 {
+#pragma pack(2)
+template <size_t N>
   uint8_t phase_0;
   uint8_t phase_1;
 
@@ -282,7 +282,7 @@ struct LegacyPhaseHalf3 {
  * bits. Amplitude and phase data are not stored.
  */
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(2)
 struct GainSTMBodyInitial {
   /**
    * \brief This data is cast from the Body data. Never construct directly.
@@ -307,7 +307,7 @@ struct GainSTMBodyInitial {
  * \details Amplitude/phase data is stored.
  */
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(2)
 struct GainSTMBodySubsequent {
   /**
    * \brief This data is cast from the Body data. Never construct directly.
