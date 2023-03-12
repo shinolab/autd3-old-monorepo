@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/02/2023
+// Last Modified: 13/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,7 +27,7 @@ constexpr size_t MOD_HEADER_SUBSEQUENT_DATA_SIZE = 124;
  */
 
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(2)
 struct ModHeaderInitial {
   uint32_t freq_div;
   uint8_t data[MOD_HEADER_INITIAL_DATA_SIZE];
@@ -47,7 +47,7 @@ struct ModHeaderSubsequent {
  * \details The cycle is stored in the first 16 bits, the step data in the next 16 bits, and the other is unused.
  */
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(2)
 struct SilencerHeader {
   uint16_t cycle;
   uint16_t step;
@@ -105,7 +105,7 @@ constexpr uint8_t MSG_SIMULATOR_INIT = 0xFF;
  * \brief Header data for all devices
  */
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(2)
 struct GlobalHeader {
   /**
    * \brief Message ID
