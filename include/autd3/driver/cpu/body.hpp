@@ -123,24 +123,21 @@ enum class GainSTMMode : uint16_t {
 };
 
 /**
- * @brief Transmission data when using GainSTMMode::PhaseFull in Legacy mode (for the low 8-bit part)
+ * @brief Transmission data when using GainSTMMode::PhaseFull in Legacy mode
  */
 #pragma pack(push)
 #pragma pack(2)
 template <size_t N>
-  uint8_t phase_0;
-  uint8_t phase_1;
+struct LegacyPhaseFull {
+  uint8_t phase[2];
 
-  void set(const Drive d) {
-    const auto phase = LegacyDrive::to_phase(d);
-    phase_0 = phase;
-  }
+  void set(const Drive d) { phase[N] = LegacyDrive::to_phase(d); }
 
-  LegacyPhaseFull0& operator=(const Drive& d) {
+  LegacyPhaseFull& operator=(const Drive& d) {
     set(d);
     return *this;
   }
-  LegacyPhaseFull0& operator=(Drive&& d) {
+  LegacyPhaseFull& operator=(Drive&& d) {
     set(d);
     return *this;
   }
@@ -148,128 +145,25 @@ template <size_t N>
 #pragma pack(pop)
 
 /**
- * @brief Transmission data when using GainSTMMode::PhaseFull in Legacy mode (for the high 8-bit part)
+ * @brief Transmission data when using GainSTMMode::PhaseHalf in Legacy mode
  */
 #pragma pack(push)
 #pragma pack(2)
 template <size_t N>
-  uint8_t phase_0;
-  uint8_t phase_1;
+struct LegacyPhaseHalf {
+  uint8_t phase[2];
 
   void set(const Drive d) {
-    const auto phase = LegacyDrive::to_phase(d);
-    phase_1 = phase;
+    const auto p = LegacyDrive::to_phase(d) >> 4;
+    constexpr auto s = (N & 0x1) << 2;
+    phase[N >> 1] = (phase[N >> 1] & (0xF0 >> s)) | (p << s);
   }
 
-  LegacyPhaseFull1& operator=(const Drive& d) {
+  LegacyPhaseHalf& operator=(const Drive& d) {
     set(d);
     return *this;
   }
-  LegacyPhaseFull1& operator=(Drive&& d) {
-    set(d);
-    return *this;
-  }
-};
-#pragma pack(pop)
-
-/**
- * @brief Transmission data when using GainSTMMode::PhaseHalf in Legacy mode (for the [3:0] bits)
- */
-#pragma pack(push)
-#pragma pack(1)
-struct LegacyPhaseHalf0 {
-  uint8_t phase_01;
-  uint8_t phase_23;
-
-  void set(const Drive d) {
-    const auto phase = LegacyDrive::to_phase(d);
-    phase_01 &= 0xF0;
-    phase_01 |= phase >> 4 & 0x0F;
-  }
-
-  LegacyPhaseHalf0& operator=(const Drive& d) {
-    set(d);
-    return *this;
-  }
-  LegacyPhaseHalf0& operator=(Drive&& d) {
-    set(d);
-    return *this;
-  }
-};
-#pragma pack(pop)
-
-/**
- * @brief Transmission data when using GainSTMMode::PhaseHalf in Legacy mode (for the [7:4] bits)
- */
-#pragma pack(push)
-#pragma pack(1)
-struct LegacyPhaseHalf1 {
-  uint8_t phase_01;
-  uint8_t phase_23;
-
-  void set(const Drive d) {
-    const auto phase = LegacyDrive::to_phase(d);
-    phase_01 &= 0x0F;
-    phase_01 |= phase & 0xF0;
-  }
-
-  LegacyPhaseHalf1& operator=(const Drive& d) {
-    set(d);
-    return *this;
-  }
-  LegacyPhaseHalf1& operator=(Drive&& d) {
-    set(d);
-    return *this;
-  }
-};
-#pragma pack(pop)
-
-/**
- * @brief Transmission data when using GainSTMMode::PhaseHalf in Legacy mode (for the [11:8] bits)
- */
-#pragma pack(push)
-#pragma pack(1)
-struct LegacyPhaseHalf2 {
-  uint8_t phase_01;
-  uint8_t phase_23;
-
-  void set(const Drive d) {
-    const auto phase = LegacyDrive::to_phase(d);
-    phase_23 &= 0xF0;
-    phase_23 |= phase >> 4 & 0x0F;
-  }
-
-  LegacyPhaseHalf2& operator=(const Drive& d) {
-    set(d);
-    return *this;
-  }
-  LegacyPhaseHalf2& operator=(Drive&& d) {
-    set(d);
-    return *this;
-  }
-};
-#pragma pack(pop)
-
-/**
- * @brief Transmission data when using GainSTMMode::PhaseHalf in Legacy mode (for the [15:12] bits)
- */
-#pragma pack(push)
-#pragma pack(1)
-struct LegacyPhaseHalf3 {
-  uint8_t phase_01;
-  uint8_t phase_23;
-
-  void set(const Drive d) {
-    const auto phase = LegacyDrive::to_phase(d);
-    phase_23 &= 0x0F;
-    phase_23 |= phase & 0xF0;
-  }
-
-  LegacyPhaseHalf3& operator=(const Drive& d) {
-    set(d);
-    return *this;
-  }
-  LegacyPhaseHalf3& operator=(Drive&& d) {
+  LegacyPhaseHalf& operator=(Drive&& d) {
     set(d);
     return *this;
   }

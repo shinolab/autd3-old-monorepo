@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 13/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -94,32 +94,32 @@ struct GainSTM<Legacy> final : Operation {
           break;
         case GainSTMMode::PhaseFull:
           is_last_frame = _sent + 2 >= _drives.size() + 1;
-          std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseFull0*>(tx.bodies_raw_ptr()),
+          std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseFull<0>*>(tx.bodies_raw_ptr()),
                          [](const auto& d) { return d; });
           _sent++;
           if (_sent - 1 < _drives.size()) {
-            std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseFull1*>(tx.bodies_raw_ptr()),
+            std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseFull<1>*>(tx.bodies_raw_ptr()),
                            [](const auto& d) { return d; });
             _sent++;
           }
           break;
         case GainSTMMode::PhaseHalf:
           is_last_frame = _sent + 4 >= _drives.size() + 1;
-          std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf0*>(tx.bodies_raw_ptr()),
+          std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf<0>*>(tx.bodies_raw_ptr()),
                          [](const auto& d) { return d; });
           _sent++;
           if (_sent - 1 < _drives.size()) {
-            std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf1*>(tx.bodies_raw_ptr()),
+            std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf<1>*>(tx.bodies_raw_ptr()),
                            [](const auto& d) { return d; });
             _sent++;
           }
           if (_sent - 1 < _drives.size()) {
-            std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf2*>(tx.bodies_raw_ptr()),
+            std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf<2>*>(tx.bodies_raw_ptr()),
                            [](const auto& d) { return d; });
             _sent++;
           }
           if (_sent - 1 < _drives.size()) {
-            std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf3*>(tx.bodies_raw_ptr()),
+            std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf<3>*>(tx.bodies_raw_ptr()),
                            [](const auto& d) { return d; });
             _sent++;
           }
