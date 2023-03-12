@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/03/2023
+// Last Modified: 13/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -106,19 +106,19 @@ class CPUControlFlags final {
 
   [[nodiscard]] std::string to_string() const noexcept {
     std::vector<std::string> flags;
-    if ((_value & Mod) == Mod) {
-      if ((_value & ModBegin) == ModBegin) flags.emplace_back("MOD_BEGIN");
-      if ((_value & ModEnd) == ModEnd) flags.emplace_back("MOD_END");
+    if (contains(Mod)) {
+      if (contains(ModBegin)) flags.emplace_back("ModBegin");
+      if (contains(ModEnd)) flags.emplace_back("ModEnd");
     } else {
-      if ((_value & ConfigSilencer) == ConfigSilencer) flags.emplace_back("CONFIG_SILENCER");
-      if ((_value & ConfigSync) == ConfigSync) flags.emplace_back("CONFIG_SYNC");
+      if (contains(ConfigSilencer)) flags.emplace_back("ConfigSilencer");
+      if (contains(ConfigSync)) flags.emplace_back("ConfigSync");
     }
-    if ((_value & WriteBody) == WriteBody) flags.emplace_back("WRITE_BODY");
-    if ((_value & STMBegin) == STMBegin) flags.emplace_back("STM_BEGIN");
-    if ((_value & STMEnd) == STMEnd) flags.emplace_back("STM_END");
-    if ((_value & IsDuty) == IsDuty) flags.emplace_back("IS_DUTY");
-    if ((_value & ModDelay) == ModDelay) flags.emplace_back("MOD_DELAY");
-    if (flags.empty()) flags.emplace_back("NONE");
+    if (contains(WriteBody)) flags.emplace_back("WriteBody");
+    if (contains(STMBegin)) flags.emplace_back("STMBegin");
+    if (contains(STMEnd)) flags.emplace_back("STMEnd");
+    if (contains(IsDuty)) flags.emplace_back("IsDuty");
+    if (contains(ModDelay)) flags.emplace_back("ModDelay");
+    if (flags.empty()) flags.emplace_back("None");
 
     constexpr auto delim = " | ";
     std::ostringstream os;

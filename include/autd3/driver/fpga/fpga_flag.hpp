@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 13/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -89,12 +89,14 @@ class FPGAControlFlags final {
 
   [[nodiscard]] std::string to_string() const noexcept {
     std::vector<std::string> flags;
-    if ((_value & LegacyMode) == LegacyMode) flags.emplace_back("LEGACY_MODE");
-    if ((_value & ForceFan) == ForceFan) flags.emplace_back("FORCE_FAN");
-    if ((_value & STMMode) == STMMode) flags.emplace_back("STM_MODE");
-    if ((_value & STMGainMode) == STMGainMode) flags.emplace_back("STM_GAIN_MODE");
-    if ((_value & ReadsFPGAInfo) == ReadsFPGAInfo) flags.emplace_back("READS_FPGA_INFO");
-    if (flags.empty()) flags.emplace_back("NONE");
+    if (contains(LegacyMode)) flags.emplace_back("LegacyMode");
+    if (contains(UseSTMStartIdx)) flags.emplace_back("UseSTMStartIdx");
+    if (contains(UseSTMFinishIdx)) flags.emplace_back("UseSTMFinishIdx");
+    if (contains(ForceFan)) flags.emplace_back("ForceFan");
+    if (contains(STMMode)) flags.emplace_back("STMMode");
+    if (contains(STMGainMode)) flags.emplace_back("STMGainMode");
+    if (contains(ReadsFPGAInfo)) flags.emplace_back("ReadsFPGAInfo");
+    if (flags.empty()) flags.emplace_back("None");
 
     constexpr auto delim = " | ";
     std::ostringstream os;
