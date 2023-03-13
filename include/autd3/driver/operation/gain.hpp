@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/03/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -60,7 +60,7 @@ struct Gain<Legacy> final : Operation {
 
 template <>
 struct Gain<Advanced> final : Operation {
-  explicit Gain(std::vector<Drive> drives, std::vector<uint16_t> cycles) : _drives(std::move(drives)), _cycles(std::move(cycles)) {}
+  explicit Gain(std::vector<Drive> drives, const std::vector<uint16_t>& cycles) : _drives(std::move(drives)), _cycles(cycles) {}
 
   void init() override {
     _phase_sent = false;
@@ -92,7 +92,7 @@ struct Gain<Advanced> final : Operation {
   bool _phase_sent{false};
   bool _duty_sent{false};
   std::vector<Drive> _drives{};
-  std::vector<uint16_t> _cycles{};
+  const std::vector<uint16_t>& _cycles;
 
   void pack_duty(TxDatagram& tx) const {
     tx.header().cpu_flag.set(CPUControlFlags::IsDuty);
@@ -123,7 +123,7 @@ struct Gain<Advanced> final : Operation {
 
 template <>
 struct Gain<AdvancedPhase> final : Operation {
-  explicit Gain(std::vector<Drive> drives, std::vector<uint16_t> cycles) : _drives(std::move(drives)), _cycles(std::move(cycles)) {}
+  explicit Gain(std::vector<Drive> drives, const std::vector<uint16_t>& cycles) : _drives(std::move(drives)), _cycles(cycles) {}
 
   void init() override { _sent = false; }
 
@@ -154,12 +154,12 @@ struct Gain<AdvancedPhase> final : Operation {
 
  private:
   std::vector<Drive> _drives{};
-  std::vector<uint16_t> _cycles{};
+  const std::vector<uint16_t>& _cycles;
   bool _sent{false};
 };
 
 struct Amplitude final : Operation {
-  explicit Amplitude(std::vector<Drive> drives, std::vector<uint16_t> cycles) : _drives(std::move(drives)), _cycles(std::move(cycles)) {}
+  explicit Amplitude(std::vector<Drive> drives, const std::vector<uint16_t>& cycles) : _drives(std::move(drives)), _cycles(cycles) {}
 
   void init() override { _sent = false; }
 
@@ -190,7 +190,7 @@ struct Amplitude final : Operation {
 
  private:
   std::vector<Drive> _drives{};
-  std::vector<uint16_t> _cycles{};
+  const std::vector<uint16_t>& _cycles;
   bool _sent{false};
 };
 

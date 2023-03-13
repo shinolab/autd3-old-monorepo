@@ -3,7 +3,7 @@
 // Created Date: 29/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/01/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -410,5 +410,21 @@ TEST(GeometryTest, affine_of) {
         tr_idx++;
       }
     }
+  }
+}
+
+TEST(GeometryTest, cycle) {
+  auto geometry = autd3::core::Geometry::Builder().advanced_mode().add_device(autd3::AUTD3(Vector3::Zero(), Vector3::Zero())).build();
+  {
+    const auto& cycles = geometry.cycles();
+    ASSERT_EQ(cycles.size(), 249);
+    for (const auto cycle : cycles) ASSERT_EQ(cycle, 4096);
+  }
+
+  for (auto& tr : geometry) tr.cycle = 2000;
+  {
+    const auto& cycles = geometry.cycles();
+    ASSERT_EQ(cycles.size(), 249);
+    for (const auto cycle : cycles) ASSERT_EQ(cycle, 2000);
   }
 }
