@@ -3,7 +3,7 @@
 // Created Date: 14/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/03/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,7 +22,6 @@
 #include <autd3/core/acoustics.hpp>
 
 #include "emulator_link.hpp"
-#include "null_link.hpp"
 
 TEST(ControllerTest, basic_usage) {
   auto geometry = autd3::Geometry::Builder().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero())).sound_speed(340.0e3).build();

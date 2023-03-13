@@ -289,7 +289,7 @@ struct Geometry {
   /**
    * @brief Drive mode
    */
-  [[nodiscard]] Mode mode() const noexcept { return _mode; };
+  [[nodiscard]] Mode mode() const noexcept { return _mode; }
 
   /**
    * @brief Attenuation coefficient.
@@ -321,7 +321,7 @@ struct Geometry {
  private:
   Geometry(const Mode mode, const driver::autd3_float_t attenuation, const driver::autd3_float_t sound_speed, std::vector<Transducer> transducers,
            std::vector<size_t> device_map)
-      : _mode(mode), attenuation(attenuation), sound_speed(sound_speed), _transducers(std::move(transducers)), _device_map(std::move(device_map)) {}
+      : attenuation(attenuation), sound_speed(sound_speed), _mode(mode), _transducers(std::move(transducers)), _device_map(std::move(device_map)) {}
 
   Mode _mode;
   std::vector<Transducer> _transducers;

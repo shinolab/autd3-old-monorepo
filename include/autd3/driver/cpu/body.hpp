@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/03/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -156,7 +156,8 @@ struct LegacyPhaseHalf {
   void set(const Drive d) {
     const auto p = LegacyDrive::to_phase(d) >> 4;
     constexpr auto s = (N & 0x1) << 2;
-    phase[N >> 1] = (phase[N >> 1] & (0xF0 >> s)) | (p << s);
+    phase[N >> 1] &= 0xF0 >> s;
+    phase[N >> 1] |= p << s;
   }
 
   LegacyPhaseHalf& operator=(const Drive& d) {

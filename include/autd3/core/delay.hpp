@@ -3,7 +3,7 @@
 // Created Date: 01/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/03/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -31,7 +31,6 @@ struct ModDelayConfig final : SpecialData {
  private:
   struct ModDelayConfigBody final : DatagramBody {
     ModDelayConfigBody() = default;
-    ~ModDelayConfigBody() override = default;
 
     std::unique_ptr<driver::Operation> operation(const Geometry& geometry) override {
       std::vector<uint16_t> delays;
