@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/03/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -142,8 +142,8 @@ struct GainSTM<Legacy> final : Operation {
 
 template <>
 struct GainSTM<Advanced> final : Operation {
-  explicit GainSTM(std::vector<std::vector<Drive>> drives, std::vector<uint16_t> cycles, const GainSTMProps props)
-      : _drives(std::move(drives)), _cycles(std::move(cycles)), _props(props) {}
+  explicit GainSTM(std::vector<std::vector<Drive>> drives, const std::vector<uint16_t>& cycles, const GainSTMProps props)
+      : _drives(std::move(drives)), _cycles(cycles), _props(props) {}
 
   [[nodiscard]] bool is_finished() const override { return _sent >= _drives.size() + 1; }
 
@@ -193,7 +193,7 @@ struct GainSTM<Advanced> final : Operation {
 
  private:
   std::vector<std::vector<Drive>> _drives{};
-  std::vector<uint16_t> _cycles{};
+  const std::vector<uint16_t>& _cycles;
   GainSTMProps _props;
   size_t _sent{0};
   bool _next_duty{false};
@@ -286,8 +286,8 @@ struct GainSTM<Advanced> final : Operation {
 
 template <>
 struct GainSTM<AdvancedPhase> final : Operation {
-  explicit GainSTM(std::vector<std::vector<Drive>> drives, std::vector<uint16_t> cycles, const GainSTMProps props)
-      : _drives(std::move(drives)), _cycles(std::move(cycles)), _props(props) {}
+  explicit GainSTM(std::vector<std::vector<Drive>> drives, const std::vector<uint16_t>& cycles, const GainSTMProps props)
+      : _drives(std::move(drives)), _cycles(cycles), _props(props) {}
 
   void init() override { _sent = 0; }
 
@@ -313,7 +313,7 @@ struct GainSTM<AdvancedPhase> final : Operation {
 
  private:
   std::vector<std::vector<Drive>> _drives{};
-  std::vector<uint16_t> _cycles{};
+  const std::vector<uint16_t>& _cycles;
   GainSTMProps _props;
   size_t _sent{0};
 
