@@ -3,7 +3,7 @@
 // Created Date: 06/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/01/2023
+// Last Modified: 13/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -36,7 +36,6 @@ struct NullHeader final : Operation {
 struct NullBody final : Operation {
   void pack(TxDatagram& tx) override {
     tx.header().cpu_flag.remove(CPUControlFlags::WriteBody);
-    tx.header().cpu_flag.remove(CPUControlFlags::ModDelay);
     tx.num_bodies = 0;
     _sent = true;
   }
