@@ -11,7 +11,6 @@
 
 #pragma once
 
-#include <utility>
 #include <vector>
 
 #include "autd3/driver/cpu/datagram.hpp"

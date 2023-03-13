@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,8 +27,8 @@ namespace autd3::core {
  * @brief GainSTM provides a function to display Gain sequentially and periodically.
  * @details GainSTM uses a timer on the FPGA to ensure that Gain is precisely timed.
  */
-struct GainSTM final : public STM {
-  explicit GainSTM(driver::GainSTMMode mode = driver::GainSTMMode::PhaseDutyFull) : STM(), _mode(mode) {}
+struct GainSTM final : STM {
+  explicit GainSTM(const driver::GainSTMMode mode = driver::GainSTMMode::PhaseDutyFull) : STM(), _mode(mode) {}
 
   /**
    * @brief Add gain
