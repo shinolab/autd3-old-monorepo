@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/03/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -144,6 +144,7 @@ class Controller {
 
   /**
    * @brief Send header data to devices
+   * @param[in] header header data
    * @param[in] timeout Timeout per frame
    * \return if this function returns true and timeout > 0, it guarantees that the devices have processed the data.
    */
@@ -164,6 +165,7 @@ class Controller {
 
   /**
    * @brief Send body data to devices
+   * @param[in] body body data
    * @param[in] timeout Timeout per frame
    * \return if this function returns true and timeout > 0, it guarantees that the devices have processed the data.
    */
@@ -185,6 +187,8 @@ class Controller {
 
   /**
    * @brief Send header and body data to devices
+   * @param[in] header header data
+   * @param[in] body body data
    * @param[in] timeout Timeout per frame
    * \return if this function returns true and timeout > 0, it guarantees that the devices have processed the data.
    */
@@ -207,6 +211,8 @@ class Controller {
 
   /**
    * @brief Send header and body data to devices
+   * @param[in] header header data
+   * @param[in] body body data
    * @param[in] timeout Timeout per frame
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
@@ -240,6 +246,7 @@ class Controller {
 
   /**
    * @brief Send special data to devices
+   * @param[in] s special data
    * @param[in] timeout Timeout per frame
    * \return if this function returns true timeout > 0, it guarantees that the devices have processed the data.
    */
