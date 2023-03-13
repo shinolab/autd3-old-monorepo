@@ -47,7 +47,7 @@ struct Geometry {
      * @param device device
      */
     template <typename T>
-    auto add_device(T&& device) -> std::enable_if_t<std::is_base_of_v<Device, T>, Builder&> {
+    auto add_device(T&& device) -> std::enable_if_t<std::is_base_of_v<Device, std::remove_reference_t<T>>, Builder&> {
       {
         const auto id = _transducers.size();
         const auto transducers = device.get_transducers(id);
