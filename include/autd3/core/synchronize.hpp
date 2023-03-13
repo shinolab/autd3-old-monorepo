@@ -3,7 +3,7 @@
 // Created Date: 07/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/03/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ struct Synchronize final : SpecialData {
     std::unique_ptr<driver::Operation> operation(const Geometry& geometry) override {
       switch (geometry.mode()) {
         case Mode::Legacy:
-          if (const auto cycles = geometry.cycles(); std::any_of(cycles.begin(), cycles.end(), [](const auto& cycle) { return cycle != 4096; }))
+          if (const auto& cycles = geometry.cycles(); std::any_of(cycles.begin(), cycles.end(), [](const auto& cycle) { return cycle != 4096; }))
             throw std::runtime_error("Frequency cannot be changed in Legacy mode.");
           return std::make_unique<driver::Sync<driver::Legacy>>();
         case Mode::Advanced:

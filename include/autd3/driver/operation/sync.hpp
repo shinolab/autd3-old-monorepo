@@ -3,7 +3,7 @@
 // Created Date: 06/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/03/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ namespace autd3::driver {
 
 template <typename T>
 struct Sync final : Operation {
-  explicit Sync(std::vector<uint16_t> cycles) : _cycles(std::move(cycles)) {}
+  explicit Sync(const std::vector<uint16_t>& cycles) : _cycles(cycles) {}
 
   void pack(TxDatagram& tx) override {
     static_assert(is_mode_v<T>, "Template type parameter must be Mode.");
@@ -43,7 +43,7 @@ struct Sync final : Operation {
 
  private:
   bool _sent{false};
-  std::vector<uint16_t> _cycles{};
+  const std::vector<uint16_t>& _cycles;
 };
 
 template <>
