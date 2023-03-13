@@ -96,6 +96,8 @@ You can stop output by sending `autd3::Stop`.
 autd.send(autd3::Stop());
 ```
 
+Note that this will overwrite `SilencerConfig` with its default value.
+
 ### clear
 
 You can clear flags, `Gain`/`Modulation` data, etc. in the device by sending `autd3::Clear`.
