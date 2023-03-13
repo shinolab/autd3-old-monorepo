@@ -2,7 +2,7 @@
     "name": "com.shinolab.autd3",
     "displayName": "autd3-unity",
     "description": "autd3 library wrapper for Unity",
-    "version": "8.2.0",
+    "version": "8.2.1",
     "author": "Shun Suzuki",
     "unity": "2021.3",
     "keywords": [

@@ -64,7 +64,7 @@ namespace extra {}
 
 constexpr driver::autd3_float_t pi = driver::pi;
 
-static inline std::string version = "8.2.0";
+static inline std::string version = "8.2.1";
 
 using core::Geometry;
 using core::Mode;
