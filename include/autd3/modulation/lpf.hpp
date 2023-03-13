@@ -3,7 +3,7 @@
 // Created Date: 08/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/03/2023
+// Last Modified: 13/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -100,7 +100,7 @@ class LPF final : public core::Modulation {
       for (i = 1; i < resampled.size(); i += 2) mf.emplace_back((resampled[i] + resampled[i + 1]) / 2);
     }
 
-    return generate_iota(0, mf.size(), [this, &mf](const size_t i) {
+    return generate_iota(mf.size(), [this, &mf](const size_t i) {
       driver::autd3_float_t r = 0;
       for (int32_t j = 0; j < static_cast<int32_t>(lpf::COEFFICIENT_SIZE); j++) {
         const auto duty =

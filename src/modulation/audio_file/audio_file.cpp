@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/03/2023
+// Last Modified: 13/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -120,6 +120,6 @@ std::vector<driver::autd3_float_t> Wav::calc() {
   // down sampling
   const auto freq_ratio = mod_sf / static_cast<driver::autd3_float_t>(sampling_freq);
   const auto buffer_size = static_cast<size_t>(static_cast<driver::autd3_float_t>(buf.size()) * freq_ratio);
-  return generate_iota(0, buffer_size, [&](const size_t i) { return buf[static_cast<size_t>(static_cast<driver::autd3_float_t>(i) / freq_ratio)]; });
+  return generate_iota(buffer_size, [&](const size_t i) { return buf[static_cast<size_t>(static_cast<driver::autd3_float_t>(i) / freq_ratio)]; });
 }
 }  // namespace autd3::modulation

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/03/2023
+// Last Modified: 13/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -70,7 +70,7 @@ class Sine final : public core::Modulation {
     const size_t n = fs / k;
     const size_t d = f / k;
 
-    return generate_iota(0, n, [this, d, n](const size_t i) {
+    return generate_iota(n, [this, d, n](const size_t i) {
       return _amp / 2 * std::sin(2 * driver::pi * static_cast<driver::autd3_float_t>(d * i) / static_cast<driver::autd3_float_t>(n)) + _offset;
     });
   }
@@ -112,7 +112,7 @@ class SineSquared final : public core::Modulation {
     const size_t n = fs / k;
     const size_t d = f / k;
 
-    return generate_iota(0, n, [this, d, n](const size_t i) {
+    return generate_iota(n, [this, d, n](const size_t i) {
       return std::sqrt(_amp / 2 * std::sin(2 * driver::pi * static_cast<driver::autd3_float_t>(d * i) / static_cast<driver::autd3_float_t>(n)) +
                        _offset);
     });
@@ -151,7 +151,7 @@ class SineLegacy final : public core::Modulation {
 
     const auto t = static_cast<size_t>(std::round(fs / f));
 
-    return generate_iota(0, t, [this, t](const size_t i) {
+    return generate_iota(t, [this, t](const size_t i) {
       return _offset + _amp * std::cos(2 * driver::pi * static_cast<driver::autd3_float_t>(i) / static_cast<driver::autd3_float_t>(t)) / 2;
     });
   }
@@ -262,7 +262,7 @@ class Transform final : public core::Modulation {
   std::vector<driver::autd3_float_t> calc() override {
     std::vector<driver::autd3_float_t> buffer = _modulation.calc();
     sampling_frequency_division = _modulation.sampling_frequency_division;
-    return generate_iota(0, buffer.size(), [this, buffer](const size_t i) { return _f(buffer[i]); });
+    return generate_iota(buffer.size(), [this, buffer](const size_t i) { return _f(buffer[i]); });
   }
 
  private:
