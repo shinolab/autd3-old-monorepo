@@ -3,7 +3,7 @@
 // Created Date: 06/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 13/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -31,8 +31,8 @@ struct Sync final : Operation {
     tx.header().cpu_flag.set(CPUControlFlags::ConfigSync);
     tx.num_bodies = tx.num_devices();
 
-    assert(_cycles.size() == tx.bodies_size());
-    std::copy_n(_cycles.begin(), tx.bodies_size(), tx.bodies_raw_ptr());
+    assert(_cycles.size() == tx.num_transducers());
+    std::copy_n(_cycles.begin(), tx.num_transducers(), tx.bodies_raw_ptr());
 
     _sent = true;
   }
@@ -56,7 +56,7 @@ struct Sync<Legacy> final : Operation {
     tx.header().cpu_flag.set(CPUControlFlags::ConfigSync);
     tx.num_bodies = tx.num_devices();
 
-    std::generate_n(tx.bodies_raw_ptr(), tx.bodies_size(), [] { return 4096; });
+    std::generate_n(tx.bodies_raw_ptr(), tx.num_transducers(), [] { return 4096; });
 
     _sent = true;
   }

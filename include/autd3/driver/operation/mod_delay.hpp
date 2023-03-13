@@ -3,7 +3,7 @@
 // Created Date: 06/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 13/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,8 +32,8 @@ struct ModDelay final : Operation {
     tx.header().cpu_flag.set(CPUControlFlags::ModDelay);
     tx.num_bodies = tx.num_devices();
 
-    assert(_delays.size() == tx.bodies_size());
-    std::copy_n(_delays.begin(), tx.bodies_size(), tx.bodies_raw_ptr());
+    assert(_delays.size() == tx.num_transducers());
+    std::copy_n(_delays.begin(), tx.num_transducers(), tx.bodies_raw_ptr());
     _sent = true;
   }
 
