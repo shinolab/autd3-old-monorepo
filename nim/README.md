@@ -1,6 +1,6 @@
 # autd3_nim
 
-version 8.2.0
+version 8.2.1
 
 ## Run examples
 
