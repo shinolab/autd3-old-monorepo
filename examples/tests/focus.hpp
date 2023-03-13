@@ -14,7 +14,7 @@
 #include "autd3.hpp"
 
 inline void focus_test(autd3::Controller& autd) {
-  autd3::SilencerConfig silencer;
+  autd3::SilencerConfig silencer = autd3::SilencerConfig::none();
   autd.send(silencer, std::chrono::milliseconds(20));
 
   autd3::modulation::Sine m(150);  // 150Hz AM

@@ -91,9 +91,11 @@ autd.send(..., std::chrono::milliseconds(20));
 autd.send(autd3::Stop());
 ```
 
+`autd3::Stop`を送信すると, `SilencerConfig`がデフォルトの値で上書きされるので注意されたい.
+
 ### clear
 
-`autd3::Stop`を送信すると, デバイス内のフラグや`Gain`/`Modulation`データ等をクリアする.
+`autd3::Clear`を送信すると, デバイス内のフラグや`Gain`/`Modulation`データ等をクリアする.
 
 ```cpp
 autd.send(autd3::Clear());
