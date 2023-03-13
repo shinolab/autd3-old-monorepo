@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 13/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -43,7 +43,7 @@ struct Gain<Legacy> final : Operation {
 
     tx.num_bodies = tx.num_devices();
 
-    assert(_drives.size() == tx.bodies_size());
+    assert(_drives.size() == tx.num_transducers());
     std::transform(_drives.begin(), _drives.end(), reinterpret_cast<LegacyDrive*>(tx.bodies_raw_ptr()), [](const auto& d) { return d; });
 
     tx.header().cpu_flag.set(CPUControlFlags::WriteBody);
@@ -99,8 +99,8 @@ struct Gain<Advanced> final : Operation {
 
     tx.num_bodies = tx.num_devices();
 
-    assert(_drives.size() == tx.bodies_size());
-    assert(_cycles.size() == tx.bodies_size());
+    assert(_drives.size() == tx.num_transducers());
+    assert(_cycles.size() == tx.num_transducers());
     std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<AdvancedDriveDuty*>(tx.bodies_raw_ptr()),
                    [](const auto& d, const auto cycle) { return AdvancedDriveDuty(d, cycle); });
 
@@ -112,8 +112,8 @@ struct Gain<Advanced> final : Operation {
 
     tx.num_bodies = tx.num_devices();
 
-    assert(_drives.size() == tx.bodies_size());
-    assert(_cycles.size() == tx.bodies_size());
+    assert(_drives.size() == tx.num_transducers());
+    assert(_cycles.size() == tx.num_transducers());
     std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<AdvancedDrivePhase*>(tx.bodies_raw_ptr()),
                    [](const auto& d, const auto cycle) { return AdvancedDrivePhase(d, cycle); });
 
@@ -140,8 +140,8 @@ struct Gain<AdvancedPhase> final : Operation {
 
     tx.num_bodies = tx.num_devices();
 
-    assert(_drives.size() == tx.bodies_size());
-    assert(_cycles.size() == tx.bodies_size());
+    assert(_drives.size() == tx.num_transducers());
+    assert(_cycles.size() == tx.num_transducers());
     std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<AdvancedDrivePhase*>(tx.bodies_raw_ptr()),
                    [](const auto& d, const auto cycle) { return AdvancedDrivePhase(d, cycle); });
 
@@ -176,8 +176,8 @@ struct Amplitude final : Operation {
 
     tx.num_bodies = tx.num_devices();
 
-    assert(_drives.size() == tx.bodies_size());
-    assert(_cycles.size() == tx.bodies_size());
+    assert(_drives.size() == tx.num_transducers());
+    assert(_cycles.size() == tx.num_transducers());
     std::transform(_drives.begin(), _drives.end(), _cycles.begin(), reinterpret_cast<AdvancedDriveDuty*>(tx.bodies_raw_ptr()),
                    [](const auto& d, const auto cycle) { return AdvancedDriveDuty(d, cycle); });
 
