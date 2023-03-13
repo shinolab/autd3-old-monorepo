@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 13/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,14 +17,16 @@
 #include <type_traits>
 #include <vector>
 
+#include "autd3/core/clear.hpp"
+#include "autd3/core/datagram.hpp"
 #include "autd3/core/geometry.hpp"
 #include "autd3/core/link.hpp"
+#include "autd3/core/stop.hpp"
 #include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/driver/firmware_version.hpp"
 #include "autd3/driver/operation/force_fan.hpp"
 #include "autd3/driver/operation/info.hpp"
 #include "autd3/driver/operation/reads_fpga_info.hpp"
-#include "autd3/special_data.hpp"
 
 namespace autd3 {
 
@@ -77,8 +79,8 @@ class Controller {
    */
   bool close() {
     if (!is_open()) return true;
-    auto res = send(Stop(), std::chrono::milliseconds(20));
-    res &= send(Clear(), std::chrono::milliseconds(20));
+    auto res = send(core::Stop(), std::chrono::milliseconds(20));
+    res &= send(core::Clear(), std::chrono::milliseconds(20));
     res &= _link->close();
     return res;
   }
@@ -243,11 +245,11 @@ class Controller {
    */
   template <typename S, typename Rep, typename Period>
   auto send(S&& s, const std::chrono::duration<Rep, Period> timeout)
-      -> std::enable_if_t<std::is_base_of_v<SpecialData, std::remove_reference_t<S>>, bool> {
+      -> std::enable_if_t<std::is_base_of_v<core::SpecialData, std::remove_reference_t<S>>, bool> {
     auto h = s.header();
     auto b = s.body();
     const auto timeout_ = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout);
-    const auto res = send(h.get(), b.get(), (std::max)(s.ack_check_timeout(), timeout_));
+    const auto res = send(h.get(), b.get(), (std::max)(s.min_timeout(), timeout_));
     return res;
   }
 
@@ -255,10 +257,10 @@ class Controller {
    * @brief Send special data to devices
    */
   template <typename S>
-  auto send(S&& s) -> std::enable_if_t<std::is_base_of_v<SpecialData, std::remove_reference_t<S>>> {
+  auto send(S&& s) -> std::enable_if_t<std::is_base_of_v<core::SpecialData, std::remove_reference_t<S>>> {
     auto h = s.header();
     auto b = s.body();
-    send(h.get(), b.get(), s.ack_check_timeout());
+    send(h.get(), b.get(), s.min_timeout());
   }
 
 #ifdef AUTD3_CAPI
@@ -266,10 +268,10 @@ class Controller {
    * @brief Send special data to devices
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
    */
-  bool send(SpecialData* s, const std::chrono::nanoseconds timeout) {
+  bool send(core::SpecialData* s, const std::chrono::nanoseconds timeout) {
     const auto h = s->header();
     const auto b = s->body();
-    return send(h.get(), b.get(), (std::max)(s->ack_check_timeout(), timeout));
+    return send(h.get(), b.get(), (std::max)(s->min_timeout(), timeout));
   }
 #endif
 

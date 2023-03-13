@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/03/2023
+// Last Modified: 13/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -134,9 +134,7 @@ void AUTDSetTransFrequency(void* const geometry, const int32_t trans_idx, const 
   (*static_cast<Geometry*>(geometry))[trans_idx].set_frequency(frequency);
 }
 
-uint16_t AUTDGetTransCycle(const void* const geometry, const int32_t trans_idx) {
-  return (*static_cast<const Geometry*>(geometry))[trans_idx].cycle;
-}
+uint16_t AUTDGetTransCycle(const void* const geometry, const int32_t trans_idx) { return (*static_cast<const Geometry*>(geometry))[trans_idx].cycle; }
 
 void AUTDSetTransCycle(void* const geometry, const int32_t trans_idx, const uint16_t cycle) {
   (*static_cast<Geometry*>(geometry))[trans_idx].cycle = cycle;
@@ -415,7 +413,7 @@ void AUTDStop(void** out) { *out = new autd3::Stop; }
 void AUTDModDelayConfig(void** out) { *out = new autd3::ModDelayConfig; }
 
 void AUTDDeleteSpecialData(const void* const data) {
-  const auto* const d = static_cast<const autd3::SpecialData*>(data);
+  const auto* const d = static_cast<const autd3::core::SpecialData*>(data);
   delete d;
 }
 
@@ -438,7 +436,7 @@ bool AUTDSend(void* const handle, void* const header, void* const body, const ui
 
 bool AUTDSendSpecial(void* const handle, void* const special, const uint64_t timeout_ns) {
   auto* const wrapper = static_cast<Controller*>(handle);
-  auto* const s = static_cast<autd3::SpecialData*>(special);
+  auto* const s = static_cast<autd3::core::SpecialData*>(special);
   AUTD3_CAPI_TRY(return wrapper->send(s, std::chrono::nanoseconds(timeout_ns)), false)
 }
 
