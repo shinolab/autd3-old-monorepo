@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/03/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -61,6 +61,8 @@ class Sine final : public core::Modulation {
       : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
 
   std::vector<driver::autd3_float_t> calc() override {
+    if (driver::FPGA_CLK_FREQ % sampling_frequency_division != 0) throw std::runtime_error("The sampling frequency must be an integer.");
+
     const auto fs = static_cast<int32_t>(sampling_frequency());
 
     const auto f = std::clamp(_freq, 1, fs / 2);
@@ -103,6 +105,8 @@ class SineSquared final : public core::Modulation {
       : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
 
   std::vector<driver::autd3_float_t> calc() override {
+    if (driver::FPGA_CLK_FREQ % sampling_frequency_division != 0) throw std::runtime_error("The sampling frequency must be an integer.");
+
     const auto fs = static_cast<int32_t>(sampling_frequency());
 
     const auto f = std::clamp(_freq, 1, fs / 2);
@@ -178,6 +182,8 @@ class Square final : public core::Modulation {
       : _freq(freq), _low(low), _high(high), _duty(duty) {}
 
   std::vector<driver::autd3_float_t> calc() override {
+    if (driver::FPGA_CLK_FREQ % sampling_frequency_division != 0) throw std::runtime_error("The sampling frequency must be an integer.");
+
     const auto f_s = static_cast<int32_t>(sampling_frequency());
     const auto f = std::clamp(_freq, 1, f_s / 2);
     const auto k = std::gcd(f_s, f);
