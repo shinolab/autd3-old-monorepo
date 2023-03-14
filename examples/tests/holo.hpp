@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ inline void holo_test(autd3::Controller& autd) {
 
   std::cout << "Select Optimization Method (default is GSPAT)" << std::endl;
 
-  auto backend = autd3::gain::holo::EigenBackend::create();
+  auto backend = autd3::gain::holo::EigenBackend().build();
 
   std::vector<std::pair<std::string, std::shared_ptr<autd3::gain::holo::Holo>>> opts;
   opts.emplace_back("SDP", std::make_shared<autd3::gain::holo::SDP>(backend));

@@ -133,7 +133,7 @@ To use `Holo`, `include` the file `autd3/gain/holo.hpp`.
 
 ...
 
-  const auto backend = autd3::gain::holo::EigenBackend::create();
+  const auto backend = autd3::gain::holo::EigenBackend().build();
   autd3::gain::holo::GSPAT g(backend);
   g.add_focus(autd3::Vector3(x1, y1, z1), 1.0);
   g.add_focus(autd3::Vector3(x2, y2, z2), 1.0);

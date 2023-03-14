@@ -123,15 +123,14 @@ SDKには以下の`Backend`が用意されている
 Holo gainを使用するには`BUILD_GAIN_HOLO`フラグをONにしてビルドするか, 或いは, 配布している`gain_holo`ライブラリをリンクされたい.
 また, 適当なバックエンドライブラリをビルド, または, リンクする必要がある.
 
-Holo gainを使用する際は`autd3/gain/holo.hpp`と各`Backend`のヘッダーを`include`する.
+Holo gainを使用する際は`autd3/gain/holo.hpp`と各`Backend`のヘッダーを`include`する (`EigenBackend`はデフォルトで読み込まれる).
 
 ```cpp
 #include "autd3/gain/holo.hpp"
-#include "autd3/gain/eigen_backend.hpp"
 
 ...
 
-  const auto backend = autd3::gain::holo::EigenBackend::create();
+  const auto backend = autd3::gain::holo::EigenBackend().build();
   autd3::gain::holo::GSPAT g(backend);
   g.add_focus(autd3::Vector3(x1, y1, z1), 1.0);
   g.add_focus(autd3::Vector3(x2, y2, z2), 1.0);
@@ -148,7 +147,7 @@ Holo gainを使用する際は`autd3/gain/holo.hpp`と各`Backend`のヘッダ�
 - Clamp: 振幅を$\[0, 1\]$の範囲にクランプする. (DontCareと同等.)
 
 ```cpp
-  g.constraint = std::make_unique<autd3::gain::holo::Uniform>(1);
+  g.constraint = autd3::gain::holo::Uniformstd::make_unique<>(1);
 ```
 
 また, 各アルゴリズムごとに追加のパラメータが存在する.
