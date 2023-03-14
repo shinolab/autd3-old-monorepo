@@ -53,7 +53,7 @@ struct GainSTM<Legacy> final : Operation {
 
     if (is_finished()) return;
 
-    if (_drives.size() > GAIN_STM_LEGACY_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+    if (_drives.size() < 2 || _drives.size() > GAIN_STM_LEGACY_BUF_SIZE_MAX) throw std::runtime_error("GainSTM buffer overflow");
 
     if (_props.start_idx) {
       if (static_cast<size_t>(_props.start_idx.value()) >= _drives.size()) throw std::runtime_error("STM start index out of range");
@@ -199,7 +199,7 @@ struct GainSTM<Advanced> final : Operation {
   bool _next_duty{false};
 
   void pack_phase(TxDatagram& tx) const {
-    if (_drives.size() > GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+    if (_drives.size() < 2 || _drives.size() > GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM buffer overflow");
 
     if (_props.start_idx) {
       if (static_cast<size_t>(_props.start_idx.value()) >= _drives.size()) throw std::runtime_error("STM start index out of range");
@@ -244,7 +244,7 @@ struct GainSTM<Advanced> final : Operation {
   }
 
   void pack_duty(TxDatagram& tx) const {
-    if (_drives.size() > GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+    if (_drives.size() < 2 || _drives.size() > GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM buffer overflow");
 
     if (_props.start_idx) {
       if (static_cast<size_t>(_props.start_idx.value()) >= _drives.size()) throw std::runtime_error("STM start index out of range");
@@ -318,7 +318,7 @@ struct GainSTM<AdvancedPhase> final : Operation {
   size_t _sent{0};
 
   void pack_phase(TxDatagram& tx) const {
-    if (_drives.size() > GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+    if (_drives.size() < 2 || _drives.size() > GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM buffer overflow");
 
     if (_props.start_idx) {
       if (static_cast<size_t>(_props.start_idx.value()) >= _drives.size()) throw std::runtime_error("STM start index out of range");

@@ -3,7 +3,7 @@
 // Created Date: 06/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -29,7 +29,7 @@ struct Modulation final : Operation {
   void init() override { _sent = 0; }
 
   void pack(TxDatagram& tx) override {
-    if (_mod_data.size() > MOD_BUF_SIZE_MAX) throw std::runtime_error("Modulation buffer overflow");
+    if (_mod_data.size() < 2 || _mod_data.size() > MOD_BUF_SIZE_MAX) throw std::runtime_error("Modulation buffer overflow");
     if (_freq_div < MOD_SAMPLING_FREQ_DIV_MIN)
       throw std::runtime_error("Modulation frequency division is out of range. Minimum is " + std::to_string(MOD_SAMPLING_FREQ_DIV_MIN) +
                                ", but you use " + std::to_string(_freq_div));
