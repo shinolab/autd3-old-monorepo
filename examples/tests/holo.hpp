@@ -60,7 +60,7 @@ inline void holo_test(autd3::Controller& autd) {
   g->add_focus(center + autd3::Vector3(0.0, 30.0, 0.0), 1.0);
   g->add_focus(center - autd3::Vector3(0.0, 30.0, 0.0), 1.0);
 
-  g->constraint = std::make_unique<autd3::gain::holo::Uniform>(1);
+  g->constraint = autd3::gain::holo::Uniform(1).build();
 
   autd.send(m, *g, std::chrono::milliseconds(20));
 }

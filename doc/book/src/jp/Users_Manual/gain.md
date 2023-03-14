@@ -147,7 +147,7 @@ Holo gainを使用する際は`autd3/gain/holo.hpp`と各`Backend`のヘッダ�
 - Clamp: 振幅を$\[0, 1\]$の範囲にクランプする. (DontCareと同等.)
 
 ```cpp
-  g.constraint = autd3::gain::holo::Uniformstd::make_unique<>(1);
+  g.constraint = autd3::gain::holo::Uniform(1).build();
 ```
 
 また, 各アルゴリズムごとに追加のパラメータが存在する.

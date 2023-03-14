@@ -110,19 +110,19 @@ void AUTDGainHoloAdd(void* gain, const autd3_float_t x, const autd3_float_t y, c
 }
 
 void AUTDConstraintDontCare(void** constraint) {
-  auto* c = constraint_create(std::make_unique<autd3::gain::holo::DontCare>());
+  auto* c = constraint_create(autd3::gain::holo::DontCare().build());
   *constraint = c;
 }
 void AUTDConstraintNormalize(void** constraint) {
-  auto* c = constraint_create(std::make_unique<autd3::gain::holo::Normalize>());
+  auto* c = constraint_create(autd3::gain::holo::Normalize().build());
   *constraint = c;
 }
 void AUTDConstraintUniform(void** constraint, autd3_float_t value) {
-  auto* c = constraint_create(std::make_unique<autd3::gain::holo::Uniform>(value));
+  auto* c = constraint_create(autd3::gain::holo::Uniform(value).build());
   *constraint = c;
 }
 void AUTDConstraintClamp(void** constraint) {
-  auto* c = constraint_create(std::make_unique<autd3::gain::holo::Clamp>());
+  auto* c = constraint_create(autd3::gain::holo::Clamp().build());
   *constraint = c;
 }
 void AUTDSetConstraint(void* gain, void* constraint) {
