@@ -3,7 +3,7 @@
 // Created Date: 10/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/01/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -54,7 +54,7 @@ using autd3::gain::holo::ZERO;
 #define AUTD3_BACKEND_TEST(TestName, BackendType)                                                                                    \
                                                                                                                                      \
   TEST(TestName, copy_to) {                                                                                                          \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 1 * TEST_SIZE;                                                                                        \
@@ -71,7 +71,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, copy_to_real) {                                                                                                     \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 1 * TEST_SIZE;                                                                                        \
@@ -88,7 +88,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, copy_to_vec_real) {                                                                                                 \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 1 * TEST_SIZE;                                                                                        \
@@ -103,7 +103,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, copy_to_vec) {                                                                                                      \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 1 * TEST_SIZE;                                                                                        \
@@ -118,7 +118,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, real) {                                                                                                             \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 1 * TEST_SIZE;                                                                                        \
@@ -135,7 +135,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, imag) {                                                                                                             \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 1 * TEST_SIZE;                                                                                        \
@@ -152,7 +152,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, make_complex) {                                                                                                     \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 1 * TEST_SIZE;                                                                                        \
@@ -168,7 +168,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, abs) {                                                                                                              \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index n = 1 * TEST_SIZE;                                                                                        \
@@ -183,7 +183,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, abs_c) {                                                                                                            \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index n = 1 * TEST_SIZE;                                                                                        \
@@ -198,7 +198,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, sqrt) {                                                                                                             \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index n = 1 * TEST_SIZE;                                                                                        \
@@ -213,7 +213,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, conj) {                                                                                                             \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index n = 1 * TEST_SIZE;                                                                                        \
@@ -228,7 +228,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, arg) {                                                                                                              \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index n = 1 * TEST_SIZE;                                                                                        \
@@ -242,7 +242,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, reciprocal) {                                                                                                       \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index n = 1 * TEST_SIZE;                                                                                        \
@@ -260,7 +260,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, exp) {                                                                                                              \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 1 * TEST_SIZE;                                                                                        \
@@ -275,7 +275,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, pow) {                                                                                                              \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 1 * TEST_SIZE;                                                                                        \
@@ -290,7 +290,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, create_diagonal) {                                                                                                  \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 1 * TEST_SIZE;                                                                                        \
@@ -311,7 +311,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, get_diagonal) {                                                                                                     \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 1 * TEST_SIZE;                                                                                        \
@@ -327,7 +327,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, get_diagonal_real) {                                                                                                \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 1 * TEST_SIZE;                                                                                        \
@@ -343,7 +343,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, set) {                                                                                                              \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 1 * TEST_SIZE;                                                                                        \
@@ -357,7 +357,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, set_row) {                                                                                                          \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 1 * TEST_SIZE;                                                                                        \
@@ -378,7 +378,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, set_col) {                                                                                                          \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 1 * TEST_SIZE;                                                                                        \
@@ -399,7 +399,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, get_col) {                                                                                                          \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 1 * TEST_SIZE;                                                                                        \
@@ -416,7 +416,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, concal_col) {                                                                                                       \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 1 * TEST_SIZE;                                                                                        \
@@ -437,7 +437,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, concal_row_vec) {                                                                                                   \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index n = 2 * TEST_SIZE;                                                                                        \
@@ -455,7 +455,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, concal_row) {                                                                                                       \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 1 * TEST_SIZE;                                                                                        \
@@ -476,7 +476,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, reduce_col) {                                                                                                       \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 2 * TEST_SIZE;                                                                                        \
@@ -496,7 +496,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, max_abs_element) {                                                                                                  \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index n = 1 * TEST_SIZE;                                                                                        \
@@ -510,7 +510,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, max_element) {                                                                                                      \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index n = 1 * TEST_SIZE;                                                                                        \
@@ -523,7 +523,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, scale) {                                                                                                            \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index n = 1 * TEST_SIZE;                                                                                        \
@@ -541,7 +541,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, scale_real) {                                                                                                       \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index n = 1 * TEST_SIZE;                                                                                        \
@@ -559,7 +559,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, dot) {                                                                                                              \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index n = 1 * TEST_SIZE;                                                                                        \
@@ -574,7 +574,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, dot_real) {                                                                                                         \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index n = 1 * TEST_SIZE;                                                                                        \
@@ -589,7 +589,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, add_vector) {                                                                                                       \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 2 * TEST_SIZE;                                                                                        \
@@ -614,7 +614,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, add_vector_real) {                                                                                                  \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 2 * TEST_SIZE;                                                                                        \
@@ -639,7 +639,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, add_matrix) {                                                                                                       \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index n = 1 * TEST_SIZE;                                                                                        \
@@ -667,7 +667,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, add_matrix_real) {                                                                                                  \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index n = 1 * TEST_SIZE;                                                                                        \
@@ -695,7 +695,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, mul_matrix) {                                                                                                       \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index n = 1 * TEST_SIZE;                                                                                        \
@@ -726,7 +726,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, mul_vec) {                                                                                                          \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index n = 1 * TEST_SIZE;                                                                                        \
@@ -751,7 +751,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, mul_matrix_real) {                                                                                                  \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index n = 1 * TEST_SIZE;                                                                                        \
@@ -782,7 +782,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, mul_vec_real) {                                                                                                     \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index n = 1 * TEST_SIZE;                                                                                        \
@@ -807,7 +807,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, hadamard_product) {                                                                                                 \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index n = 1 * TEST_SIZE;                                                                                        \
@@ -826,7 +826,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, hadamard_product_mat) {                                                                                             \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index n = 1 * TEST_SIZE;                                                                                        \
@@ -844,7 +844,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, solvet) {                                                                                                           \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 1 * TEST_SIZE;                                                                                        \
@@ -863,7 +863,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, solveh) {                                                                                                           \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index m = 1 * TEST_SIZE;                                                                                        \
@@ -882,7 +882,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, max_eigen_vector) {                                                                                                 \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr Eigen::Index n = 1 * TEST_SIZE;                                                                                        \
@@ -917,7 +917,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, pseudo_inverse_svd) {                                                                                               \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr auto n = 5 * TEST_SIZE;                                                                                                \
@@ -945,7 +945,7 @@ using autd3::gain::holo::ZERO;
   }                                                                                                                                  \
                                                                                                                                      \
   TEST(TestName, pseudo_inverse_svd_real) {                                                                                          \
-    auto backend = BackendType::create();                                                                                            \
+    auto backend = BackendType().build();                                                                                            \
     backend->init();                                                                                                                 \
                                                                                                                                      \
     constexpr auto n = 5 * TEST_SIZE;                                                                                                \

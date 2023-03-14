@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/03/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@
 #include "autd3/gain/holo.hpp"
 
 void AUTDEigenBackend(void** out) {
-  auto* b = backend_create(autd3::gain::holo::EigenBackend::create());
+  auto* b = backend_create(autd3::gain::holo::EigenBackend().build());
   *out = b;
 }
 

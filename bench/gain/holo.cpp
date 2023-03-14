@@ -3,7 +3,7 @@
 // Created Date: 12/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/03/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -59,7 +59,7 @@ static void bm_gain_holo_sdp(benchmark::State& state) {
 
   const auto foci = gen_foci(center, FOCI_SIZE, 100, 100, 100);
 
-  const auto backend = autd3::gain::holo::EigenBackend::create();
+  const auto backend = autd3::gain::holo::EigenBackend().build();
   autd3::gain::holo::SDP g(backend);
 
   for (auto& focus : foci) g.add_focus(focus, 1);
@@ -76,7 +76,7 @@ static void bm_gain_holo_evp(benchmark::State& state) {
 
   const auto foci = gen_foci(center, FOCI_SIZE, 100, 100, 100);
 
-  const auto backend = autd3::gain::holo::EigenBackend::create();
+  const auto backend = autd3::gain::holo::EigenBackend().build();
   autd3::gain::holo::EVP g(backend);
 
   for (auto& focus : foci) g.add_focus(focus, 1);
@@ -93,7 +93,7 @@ static void bm_gain_holo_lss(benchmark::State& state) {
 
   const auto foci = gen_foci(center, FOCI_SIZE, 100, 100, 100);
 
-  const auto backend = autd3::gain::holo::EigenBackend::create();
+  const auto backend = autd3::gain::holo::EigenBackend().build();
   autd3::gain::holo::LSS g(backend);
 
   for (auto& focus : foci) g.add_focus(focus, 1);
@@ -110,7 +110,7 @@ static void bm_gain_holo_gs(benchmark::State& state) {
 
   const auto foci = gen_foci(center, FOCI_SIZE, 100, 100, 100);
 
-  const auto backend = autd3::gain::holo::EigenBackend::create();
+  const auto backend = autd3::gain::holo::EigenBackend().build();
   autd3::gain::holo::GS g(backend);
 
   for (auto& focus : foci) g.add_focus(focus, 1);
@@ -127,7 +127,7 @@ static void bm_gain_holo_gspat(benchmark::State& state) {
 
   const auto foci = gen_foci(center, FOCI_SIZE, 100, 100, 100);
 
-  const auto backend = autd3::gain::holo::EigenBackend::create();
+  const auto backend = autd3::gain::holo::EigenBackend().build();
   autd3::gain::holo::GSPAT g(backend);
 
   for (auto& focus : foci) g.add_focus(focus, 1);
@@ -144,7 +144,7 @@ static void bm_gain_holo_lm(benchmark::State& state) {
 
   const auto foci = gen_foci(center, FOCI_SIZE, 100, 100, 100);
 
-  const auto backend = autd3::gain::holo::EigenBackend::create();
+  const auto backend = autd3::gain::holo::EigenBackend().build();
   autd3::gain::holo::LM g(backend);
 
   for (auto& focus : foci) g.add_focus(focus, 1);
@@ -161,7 +161,7 @@ static void bm_gain_holo_greedy(benchmark::State& state) {
 
   const auto foci = gen_foci(center, FOCI_SIZE, 100, 100, 100);
 
-  const auto backend = autd3::gain::holo::EigenBackend::create();
+  const auto backend = autd3::gain::holo::EigenBackend().build();
   autd3::gain::holo::Greedy g(backend);
 
   for (auto& focus : foci) g.add_focus(focus, 1);
