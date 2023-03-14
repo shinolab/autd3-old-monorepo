@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -37,7 +37,7 @@ struct FocusSTM final : Operation {
 
     const auto total_size = _points[0].size();
 
-    if (total_size > FOCUS_STM_BUF_SIZE_MAX) throw std::runtime_error("FocusSTM out of buffer");
+    if (total_size < 2 || total_size > FOCUS_STM_BUF_SIZE_MAX) throw std::runtime_error("FocusSTM buffer overflow");
     if (_props.freq_div < FOCUS_STM_SAMPLING_FREQ_DIV_MIN)
       throw std::runtime_error("STM frequency division is out of range. Minimum is " + std::to_string(FOCUS_STM_SAMPLING_FREQ_DIV_MIN) +
                                ", but you use " + std::to_string(_props.freq_div));
