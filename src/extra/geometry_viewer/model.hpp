@@ -3,7 +3,7 @@
 // Created Date: 26/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/01/2023
+// Last Modified: 16/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,7 +13,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -95,8 +94,9 @@ struct Geometry {
 
 class Model {
  public:
-  explicit Model(const std::string& glb_path, std::vector<Geometry> geometries) : _geometries(std::move(geometries)) {
-    _doc = fx::gltf::LoadFromBinary(glb_path);
+  explicit Model(std::istream& input, std::vector<Geometry> geometries) : _geometries(std::move(geometries)) {
+    const std::filesystem::path document_root_path{};
+    _doc = fx::gltf::LoadFromBinary(input, document_root_path);
 
     load_images(_doc);
     load_materials(_doc);
