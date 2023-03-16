@@ -42,6 +42,9 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDAddDeviceQuaternion.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double] 
         self.dll.AUTDAddDeviceQuaternion.restype = ctypes.c_bool
 
+        self.dll.AUTDSetMode.argtypes = [ctypes.c_void_p, ctypes.c_uint8] 
+        self.dll.AUTDSetMode.restype = None
+
         self.dll.AUTDBuildGeometry.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p] 
         self.dll.AUTDBuildGeometry.restype = None
 
@@ -284,9 +287,6 @@ class NativeMethods(metaclass=Singleton):
 
         self.dll.AUTDDeleteAmplitudes.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDDeleteAmplitudes.restype = None
-
-        self.dll.AUTDSetMode.argtypes = [ctypes.c_void_p, ctypes.c_uint8] 
-        self.dll.AUTDSetMode.restype = None
 
         self.dll.AUTDSoftwareSTM.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
         self.dll.AUTDSoftwareSTM.restype = None
