@@ -1,3 +1,8 @@
+# 8.2.1
+
+- Fix some minor bugs
+- (internal) Refactor some modules
+
 # 8.2.0
 
 - Move `Controller::set_sound_speed_from_temp` into `Geometry`
