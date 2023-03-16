@@ -3,7 +3,7 @@
 // Created Date: 07/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 16/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -94,8 +94,8 @@ class SoftwareSTM {
     }
 
    private:
-    SoftwareSTMThreadHandle(Controller& cnt, std::vector<std::shared_ptr<core::Gain>> bodies, const uint64_t period, const TimerStrategy strategy)
-        : _cnt(cnt) {
+    template <typename T>
+    SoftwareSTMThreadHandle(Controller& cnt, std::vector<T> bodies, const uint64_t period, const TimerStrategy strategy) : _cnt(cnt) {
       _run = true;
       if (bodies.empty()) return;
       const auto interval = std::chrono::nanoseconds(period);
@@ -151,14 +151,17 @@ class SoftwareSTM {
     return frequency();
   }
 
+#ifdef AUTD3_CAPI
+  void add(core::Gain* b) { _bodies.emplace_back(b); }
+#else
   /**
    * @brief Add data to send
    * @param[in] b data
    */
   template <typename G>
   void add(G&& b) {
-    static_assert(std::is_base_of_v<core::Gain, std::remove_reference_t<G>>, "This is not Gain.");
-    add_impl(std::forward<G>(b));
+    static_assert(std::is_base_of_v<core::Gain, std::remove_reference_t<G> >, "This is not Gain.");
+    _bodies.emplace_back(std::make_shared<std::remove_reference_t<G> >(std::forward<G>(b)));
   }
 
   /**
@@ -166,6 +169,7 @@ class SoftwareSTM {
    * @param[in] b data
    */
   void add(std::shared_ptr<core::Gain> b) { _bodies.emplace_back(std::move(b)); }
+#endif
 
   /**
    * @brief Start STM
@@ -208,12 +212,11 @@ class SoftwareSTM {
   TimerStrategy timer_strategy;
 
  private:
-  template <typename G>
-  void add_impl(G&& b) {
-    _bodies.emplace_back(std::make_shared<std::remove_reference_t<G>>(std::forward<G>(b)));
-  }
-
-  std::vector<std::shared_ptr<core::Gain>> _bodies;
+#ifdef AUTD3_CAPI
+  std::vector<core::Gain*> _bodies;
+#else
+  std::vector<std::shared_ptr<core::Gain> > _bodies;
+#endif
   uint64_t _sample_period_ns;
 };
 
