@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/02/2023
+// Last Modified: 16/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,6 @@
 #define EXPORT_AUTD __attribute__((visibility("default")))
 #endif
 
-#define AUTD_DEPENDS_EXT_LIB
 #define IN
 #define OUT
 #define INOUT
