@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/03/2023
+// Last Modified: 16/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -252,7 +252,7 @@ void AUTDGainGrouped(void** gain) {
 void AUTDGainGroupedAdd(void* grouped_gain, const int32_t device_id, void* gain) {
   auto* const gg = static_cast<autd3::gain::Grouped*>(grouped_gain);
   auto* const g = static_cast<autd3::Gain*>(gain);
-  gg->add(device_id, std::shared_ptr<autd3::core::Gain>(static_cast<autd3::core::Gain*>(g), [](autd3::core::Gain*) {}));
+  gg->add(device_id, g);
 }
 
 void AUTDGainFocus(void** gain, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const autd3_float_t amp) {
@@ -301,8 +301,7 @@ void AUTDModulationSineLegacy(void** mod, const autd3_float_t freq, const autd3_
 
 void AUTDModulationLPF(void** mod, void* mod_in) {
   auto* m = static_cast<autd3::Modulation*>(mod_in);
-  auto mod_p = std::shared_ptr<autd3::core::Modulation>(m, [](autd3::core::Modulation*) {});
-  *mod = new autd3::modulation::LPF<std::shared_ptr<autd3::core::Modulation>>(std::move(mod_p));
+  *mod = new autd3::modulation::LPF<autd3::core::Modulation*>(m);
 }
 
 void AUTDModulationCustom(void** mod, const autd3_float_t* buffer, const uint64_t size, const uint32_t freq_div) {
@@ -341,7 +340,7 @@ void AUTDFocusSTMAdd(void* const stm, const autd3_float_t x, const autd3_float_t
 void AUTDGainSTMAdd(void* const stm, void* const gain) {
   auto* const stm_w = static_cast<autd3::GainSTM*>(stm);
   auto* const g = static_cast<autd3::Gain*>(gain);
-  stm_w->add(std::shared_ptr<autd3::core::Gain>(static_cast<autd3::core::Gain*>(g), [](autd3::core::Gain*) {}));
+  stm_w->add(static_cast<autd3::core::Gain*>(g));
 }
 
 int32_t AUTDSTMGetStartIdx(const void* const stm) {
@@ -454,9 +453,7 @@ void AUTDSoftwareSTMSetStrategy(void* stm, const uint8_t strategy) {
       autd3::SoftwareSTM::TimerStrategy(static_cast<autd3::SoftwareSTM::TimerStrategy::Value>(strategy));
 }
 
-EXPORT_AUTD void AUTDSoftwareSTMAdd(void* stm, void* gain) {
-  static_cast<autd3::SoftwareSTM*>(stm)->add(std::shared_ptr<autd3::core::Gain>(static_cast<autd3::core::Gain*>(gain), [](autd3::core::Gain*) {}));
-}
+EXPORT_AUTD void AUTDSoftwareSTMAdd(void* stm, void* gain) { static_cast<autd3::SoftwareSTM*>(stm)->add(static_cast<autd3::core::Gain*>(gain)); }
 
 EXPORT_AUTD void AUTDSoftwareSTMStart(void** handle, void* stm, void* cnt) {
   *handle = new autd3::SoftwareSTM::SoftwareSTMThreadHandle(static_cast<autd3::SoftwareSTM*>(stm)->start(*static_cast<Controller*>(cnt)));
