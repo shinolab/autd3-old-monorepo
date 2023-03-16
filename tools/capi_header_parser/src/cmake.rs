@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2022
+ * Last Modified: 16/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,7 +25,6 @@ use regex::Regex;
 pub struct CMakeProject {
     name: String,
     header: String,
-    depends_ext_lib: bool,
 }
 
 impl CMakeProject {
@@ -34,9 +33,6 @@ impl CMakeProject {
     }
     pub fn header(&self) -> &str {
         &self.header
-    }
-    pub fn depends_ext_lib(&self) -> bool {
-        self.depends_ext_lib
     }
 }
 
@@ -52,22 +48,6 @@ fn find_header(lines: &mut Lines<BufReader<File>>) -> Result<Option<String>> {
             return Ok(Some(cap[1].to_string()));
         }
     }
-}
-
-fn check_dependency_to_ext_lib<P>(path: P) -> Result<bool>
-where
-    P: AsRef<Path>,
-{
-    let file = File::open(path)?;
-    let reader = BufReader::new(file);
-    for line in reader.lines() {
-        let line = line?;
-        if line.contains("AUTD_DEPENDS_EXT_LIB") {
-            return Ok(true);
-        }
-    }
-
-    Ok(false)
 }
 
 fn parse<P>(path: P, projcts: &mut Vec<CMakeProject>, ignores: &[String]) -> Result<()>
@@ -96,11 +76,9 @@ where
             }
             if let Some(header) = find_header(&mut lines_iter)? {
                 let header_path = path.as_ref().join(header);
-                let depends_ext_lib = check_dependency_to_ext_lib(&header_path)?;
                 projcts.push(CMakeProject {
                     name,
                     header: header_path.to_str().unwrap().to_string(),
-                    depends_ext_lib,
                 })
             }
         }
