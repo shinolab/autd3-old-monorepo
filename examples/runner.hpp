@@ -91,7 +91,6 @@ inline int run(autd3::Controller& autd) {
 
     std::cout << "finish." << std::endl;
     autd.send(autd3::Stop(), std::chrono::milliseconds(20));
-    //autd.send(autd3::gain::Null(), std::chrono::milliseconds(20));
   }
 
   autd.close();
