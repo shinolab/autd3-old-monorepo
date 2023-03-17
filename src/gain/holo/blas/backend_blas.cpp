@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/03/2023
+// Last Modified: 17/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -77,88 +77,88 @@ class BLASBackendImpl final : public Backend {
   BLASBackendImpl(BLASBackendImpl&& obj) = default;
   BLASBackendImpl& operator=(BLASBackendImpl&& obj) = default;
 
-  void init() {}
-  void to_host(VectorXc&) {}
-  void to_host(MatrixXc&) {}
-  void to_host(VectorXd&) {}
-  void to_host(MatrixXd&) {}
+  void init() override {}
+  void to_host(VectorXc&) override {}
+  void to_host(MatrixXc&) override {}
+  void to_host(VectorXd&) override {}
+  void to_host(MatrixXd&) override {}
 
-  void copy_to(const MatrixXc& src, MatrixXc& dst) { AUTD_CPYC(static_cast<int>(src.size()), src.data(), 1, dst.data(), 1); }
-  void copy_to(const MatrixXd& src, MatrixXd& dst) { AUTD_CPY(static_cast<int>(src.size()), src.data(), 1, dst.data(), 1); }
-  void copy_to(const VectorXd& src, VectorXd& dst) { AUTD_CPY(static_cast<int>(src.size()), src.data(), 1, dst.data(), 1); }
-  void copy_to(const VectorXc& src, VectorXc& dst) { AUTD_CPYC(static_cast<int>(src.size()), src.data(), 1, dst.data(), 1); }
+  void copy_to(const MatrixXc& src, MatrixXc& dst) override { AUTD_CPYC(static_cast<int>(src.size()), src.data(), 1, dst.data(), 1); }
+  void copy_to(const MatrixXd& src, MatrixXd& dst) override { AUTD_CPY(static_cast<int>(src.size()), src.data(), 1, dst.data(), 1); }
+  void copy_to(const VectorXd& src, VectorXd& dst) override { AUTD_CPY(static_cast<int>(src.size()), src.data(), 1, dst.data(), 1); }
+  void copy_to(const VectorXc& src, VectorXc& dst) override { AUTD_CPYC(static_cast<int>(src.size()), src.data(), 1, dst.data(), 1); }
 
-  void real(const MatrixXc& src, MatrixXd& re) { re = src.real(); }
-  void imag(const MatrixXc& src, MatrixXd& im) { im = src.imag(); }
-  void make_complex(const VectorXd& re, const VectorXd& im, VectorXc& dst) {
+  void real(const MatrixXc& src, MatrixXd& re) override { re = src.real(); }
+  void imag(const MatrixXc& src, MatrixXd& im) override { im = src.imag(); }
+  void make_complex(const VectorXd& re, const VectorXd& im, VectorXc& dst) override {
     dst.real() = re;
     dst.imag() = im;
   }
 
-  void abs(const VectorXc& src, VectorXd& dst) { dst = src.cwiseAbs(); }
-  void abs(const VectorXc& src, VectorXc& dst) { dst = src.cwiseAbs(); }
-  void sqrt(const VectorXd& src, VectorXd& dst) { dst = src.cwiseSqrt(); }
-  void conj(const VectorXc& src, VectorXc& dst) { dst = src.conjugate(); }
-  void arg(const VectorXc& src, VectorXc& dst) { dst = src.cwiseQuotient(src.cwiseAbs()); }
-  void reciprocal(const VectorXc& src, VectorXc& dst) { dst = src.cwiseInverse(); }
-  void exp(const VectorXc& src, VectorXc& dst) { dst = src.array().exp(); }
-  void pow(const VectorXd& src, const driver::autd3_float_t p, VectorXd& dst) { dst = src.array().pow(p); }
+  void abs(const VectorXc& src, VectorXd& dst) override { dst = src.cwiseAbs(); }
+  void abs(const VectorXc& src, VectorXc& dst) override { dst = src.cwiseAbs(); }
+  void sqrt(const VectorXd& src, VectorXd& dst) override { dst = src.cwiseSqrt(); }
+  void conj(const VectorXc& src, VectorXc& dst) override { dst = src.conjugate(); }
+  void arg(const VectorXc& src, VectorXc& dst) override { dst = src.cwiseQuotient(src.cwiseAbs()); }
+  void reciprocal(const VectorXc& src, VectorXc& dst) override { dst = src.cwiseInverse(); }
+  void exp(const VectorXc& src, VectorXc& dst) override { dst = src.array().exp(); }
+  void pow(const VectorXd& src, const driver::autd3_float_t p, VectorXd& dst) override { dst = src.array().pow(p); }
 
-  void create_diagonal(const VectorXc& src, MatrixXc& dst) {
+  void create_diagonal(const VectorXc& src, MatrixXc& dst) override {
     dst.fill(ZERO);
     dst.diagonal() = src;
   }
-  void get_diagonal(const MatrixXc& src, VectorXc& dst) { dst = src.diagonal(); }
-  void get_diagonal(const MatrixXd& src, VectorXd& dst) { dst = src.diagonal(); }
+  void get_diagonal(const MatrixXc& src, VectorXc& dst) override { dst = src.diagonal(); }
+  void get_diagonal(const MatrixXd& src, VectorXd& dst) override { dst = src.diagonal(); }
 
-  void set(const size_t i, const complex value, VectorXc& dst) { dst(static_cast<Eigen::Index>(i)) = value; }
-  void set_row(VectorXc& src, const size_t i, const size_t begin, const size_t end, MatrixXc& dst) {
+  void set(const size_t i, const complex value, VectorXc& dst) override { dst(static_cast<Eigen::Index>(i)) = value; }
+  void set_row(VectorXc& src, const size_t i, const size_t begin, const size_t end, MatrixXc& dst) override {
     dst.block(static_cast<Eigen::Index>(i), static_cast<Eigen::Index>(begin), 1, end - begin) =
         src.block(static_cast<Eigen::Index>(begin), 0, end - begin, 1).transpose();
   }
-  void set_col(VectorXc& src, const size_t i, const size_t begin, const size_t end, MatrixXc& dst) {
+  void set_col(VectorXc& src, const size_t i, const size_t begin, const size_t end, MatrixXc& dst) override {
     dst.block(static_cast<Eigen::Index>(begin), static_cast<Eigen::Index>(i), end - begin, 1) =
         src.block(static_cast<Eigen::Index>(begin), 0, end - begin, 1);
   }
 
-  void get_col(const MatrixXc& src, const size_t i, VectorXc& dst) { dst = src.col(static_cast<Eigen::Index>(i)); }
+  void get_col(const MatrixXc& src, const size_t i, VectorXc& dst) override { dst = src.col(static_cast<Eigen::Index>(i)); }
 
-  void concat_col(const MatrixXc& a, const MatrixXc& b, MatrixXc& dst) { dst << a, b; }
-  void concat_row(const MatrixXc& a, const MatrixXc& b, MatrixXc& dst) { dst << a, b; }
+  void concat_col(const MatrixXc& a, const MatrixXc& b, MatrixXc& dst) override { dst << a, b; }
+  void concat_row(const MatrixXc& a, const MatrixXc& b, MatrixXc& dst) override { dst << a, b; }
 
-  void concat_row(const VectorXc& a, const VectorXc& b, VectorXc& dst) { dst << a, b; }
+  void concat_row(const VectorXc& a, const VectorXc& b, VectorXc& dst) override { dst << a, b; }
 
-  void reduce_col(const MatrixXd& src, VectorXd& dst) { dst = src.rowwise().sum(); }
+  void reduce_col(const MatrixXd& src, VectorXd& dst) override { dst = src.rowwise().sum(); }
 
-  complex max_abs_element(const VectorXc& src) {
+  complex max_abs_element(const VectorXc& src) override {
     Eigen::Index idx = 0;
     src.cwiseAbs2().maxCoeff(&idx);
     return src(idx);
   }
 
-  driver::autd3_float_t max_element(const VectorXd& src) { return src.maxCoeff(); }
+  driver::autd3_float_t max_element(const VectorXd& src) override { return src.maxCoeff(); }
 
-  void scale(const complex value, VectorXc& dst) { AUTD_ZSCAL(static_cast<int>(dst.size()), &value, dst.data(), 1); }
-  void scale(const driver::autd3_float_t value, VectorXd& dst) { AUTD_DSCAL(static_cast<int>(dst.size()), value, dst.data(), 1); }
+  void scale(const complex value, VectorXc& dst) override { AUTD_ZSCAL(static_cast<int>(dst.size()), &value, dst.data(), 1); }
+  void scale(const driver::autd3_float_t value, VectorXd& dst) override { AUTD_DSCAL(static_cast<int>(dst.size()), value, dst.data(), 1); }
 
-  complex dot(const VectorXc& a, const VectorXc& b) {
+  complex dot(const VectorXc& a, const VectorXc& b) override {
     complex d;
     AUTD_DOTC(static_cast<int>(a.size()), a.data(), 1, b.data(), 1, &d);
     return d;
   }
-  driver::autd3_float_t dot(const VectorXd& a, const VectorXd& b) { return AUTD_DOT(static_cast<int>(a.size()), a.data(), 1, b.data(), 1); }
+  driver::autd3_float_t dot(const VectorXd& a, const VectorXd& b) override { return AUTD_DOT(static_cast<int>(a.size()), a.data(), 1, b.data(), 1); }
 
-  void add(const driver::autd3_float_t alpha, const MatrixXd& a, MatrixXd& b) {
+  void add(const driver::autd3_float_t alpha, const MatrixXd& a, MatrixXd& b) override {
     AUTD_AXPY(static_cast<int>(a.size()), alpha, a.data(), 1, b.data(), 1);
   }
-  void add(const driver::autd3_float_t alpha, const VectorXd& a, VectorXd& b) {
+  void add(const driver::autd3_float_t alpha, const VectorXd& a, VectorXd& b) override {
     AUTD_AXPY(static_cast<int>(a.size()), alpha, a.data(), 1, b.data(), 1);
   }
-  void add(const complex alpha, const MatrixXc& a, MatrixXc& b) { AUTD_AXPYC(static_cast<int>(a.size()), &alpha, a.data(), 1, b.data(), 1); }
-  void add(const complex alpha, const VectorXc& a, VectorXc& b) { AUTD_AXPYC(static_cast<int>(a.size()), &alpha, a.data(), 1, b.data(), 1); }
+  void add(const complex alpha, const MatrixXc& a, MatrixXc& b) override { AUTD_AXPYC(static_cast<int>(a.size()), &alpha, a.data(), 1, b.data(), 1); }
+  void add(const complex alpha, const VectorXc& a, VectorXc& b) override { AUTD_AXPYC(static_cast<int>(a.size()), &alpha, a.data(), 1, b.data(), 1); }
 
   void mul(const Transpose trans_a, const Transpose trans_b, const complex alpha, const MatrixXc& a, const MatrixXc& b, const complex beta,
-           MatrixXc& c) {
+           MatrixXc& c) override {
     const auto lda = static_cast<int>(a.rows());
     const auto ldb = static_cast<int>(b.rows());
     const auto ldc = trans_a == Transpose::NoTrans ? static_cast<int>(a.rows()) : static_cast<int>(a.cols());
@@ -168,7 +168,7 @@ class BLASBackendImpl final : public Backend {
                b.data(), ldb, &beta, c.data(), ldc);
   }
 
-  void mul(const Transpose trans_a, const complex alpha, const MatrixXc& a, const VectorXc& b, const complex beta, VectorXc& c) {
+  void mul(const Transpose trans_a, const complex alpha, const MatrixXc& a, const VectorXc& b, const complex beta, VectorXc& c) override {
     const auto m = static_cast<int>(a.rows());
     const auto n = static_cast<int>(a.cols());
     const auto lda = m;
@@ -176,7 +176,7 @@ class BLASBackendImpl final : public Backend {
   }
 
   void mul(const Transpose trans_a, const Transpose trans_b, const driver::autd3_float_t alpha, const MatrixXd& a, const MatrixXd& b,
-           const driver::autd3_float_t beta, MatrixXd& c) {
+           const driver::autd3_float_t beta, MatrixXd& c) override {
     const auto lda = static_cast<int>(a.rows());
     const auto ldb = static_cast<int>(b.rows());
     const auto ldc = trans_a == Transpose::NoTrans ? static_cast<int>(a.rows()) : static_cast<int>(a.cols());
@@ -187,17 +187,17 @@ class BLASBackendImpl final : public Backend {
   }
 
   void mul(const Transpose trans_a, const driver::autd3_float_t alpha, const MatrixXd& a, const VectorXd& b, const driver::autd3_float_t beta,
-           VectorXd& c) {
+           VectorXd& c) override {
     const auto m = static_cast<int>(a.rows());
     const auto n = static_cast<int>(a.cols());
     const auto lda = m;
     AUTD_DGEMV(CblasColMajor, static_cast<CBLAS_TRANSPOSE>(trans_a), m, n, alpha, a.data(), lda, b.data(), 1, beta, c.data(), 1);
   }
 
-  void hadamard_product(const VectorXc& a, const VectorXc& b, VectorXc& c) { c.noalias() = a.cwiseProduct(b); }
-  void hadamard_product(const MatrixXc& a, const MatrixXc& b, MatrixXc& c) { c.noalias() = a.cwiseProduct(b); }
+  void hadamard_product(const VectorXc& a, const VectorXc& b, VectorXc& c) override { c.noalias() = a.cwiseProduct(b); }
+  void hadamard_product(const MatrixXc& a, const MatrixXc& b, MatrixXc& c) override { c.noalias() = a.cwiseProduct(b); }
 
-  void solvet(MatrixXd& a, VectorXd& b) {
+  void solvet(MatrixXd& a, VectorXd& b) override {
     const auto n = static_cast<int>(a.cols());
     const auto lda = static_cast<int>(a.rows());
     const auto ldb = static_cast<int>(b.size());
@@ -205,7 +205,7 @@ class BLASBackendImpl final : public Backend {
     AUTD_SYSV(CblasColMajor, 'U', n, 1, a.data(), lda, ipiv.get(), b.data(), ldb);
   }
 
-  void solveh(MatrixXc& a, VectorXc& b) {
+  void solveh(MatrixXc& a, VectorXc& b) override {
     const auto n = static_cast<int>(a.cols());
     const auto lda = static_cast<int>(a.rows());
     const auto ldb = static_cast<int>(b.size());
@@ -213,14 +213,15 @@ class BLASBackendImpl final : public Backend {
     AUTD_POSVC(CblasColMajor, 'U', n, 1, a.data(), lda, b.data(), ldb);
   }
 
-  void max_eigen_vector(MatrixXc& src, VectorXc& dst) {
+  void max_eigen_vector(MatrixXc& src, VectorXc& dst) override {
     const auto size = src.cols();
     const auto eigenvalues = std::make_unique<driver::autd3_float_t[]>(size);
     AUTD_HEEV(CblasColMajor, 'V', 'U', static_cast<int>(size), src.data(), static_cast<int>(size), eigenvalues.get());
     std::memcpy(dst.data(), src.data() + size * (size - 1), size * sizeof(complex));
   }
 
-  void pseudo_inverse_svd(MatrixXc& src, const driver::autd3_float_t alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) {
+  void pseudo_inverse_svd(MatrixXc& src, const driver::autd3_float_t alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf,
+                          MatrixXc& dst) override {
     const auto nc = src.cols();
     const auto nr = src.rows();
 
@@ -239,7 +240,8 @@ class BLASBackendImpl final : public Backend {
     mul(Transpose::ConjTrans, Transpose::NoTrans, ONE, vt, buf, ZERO, dst);
   }
 
-  void pseudo_inverse_svd(MatrixXd& src, const driver::autd3_float_t alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf, MatrixXd& dst) {
+  void pseudo_inverse_svd(MatrixXd& src, const driver::autd3_float_t alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf,
+                          MatrixXd& dst) override {
     const auto nc = src.cols();
     const auto nr = src.rows();
 
