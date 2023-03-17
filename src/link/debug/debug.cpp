@@ -3,7 +3,7 @@
 // Created Date: 11/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/02/2023
+// Last Modified: 17/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -108,8 +108,8 @@ class DebugImpl final : public core::Link {
     if (std::any_of(_cpus.begin(), _cpus.end(), [](const auto& cpu) { return !cpu.synchronized(); }))
       _logger->warn("\tDevices are not synchronized!");
 
-    _logger->debug("\tCPU Flag: {}", tx.header().cpu_flag.to_string());
-    _logger->debug("\tFPGA Flag: {}", tx.header().fpga_flag.to_string());
+    _logger->debug("\tCPU Flag: {}", to_string(tx.header().cpu_flag));
+    _logger->debug("\tFPGA Flag: {}", to_string(tx.header().fpga_flag));
 
     for (auto& cpu : _cpus) {
       _logger->debug("Status: {}", cpu.id());

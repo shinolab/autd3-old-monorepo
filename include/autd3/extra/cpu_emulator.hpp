@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/03/2023
+// Last Modified: 17/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -100,8 +100,8 @@ class CPU {
 
   [[nodiscard]] uint8_t msg_id() const { return _msg_id; }
   [[nodiscard]] uint8_t ack() const { return _ack; }
-  [[nodiscard]] driver::FPGAControlFlags fpga_flags() const { return _fpga_flags; }
-  [[nodiscard]] driver::CPUControlFlags cpu_flags() const { return _cpu_flags; }
+  [[nodiscard]] driver::BitFlags<driver::FPGAControlFlags> fpga_flags() const { return _fpga_flags; }
+  [[nodiscard]] driver::BitFlags<driver::CPUControlFlags> cpu_flags() const { return _cpu_flags; }
 
   [[nodiscard]] const FPGA& fpga() const { return _fpga; }
   [[nodiscard]] FPGA& fpga() { return _fpga; }
@@ -527,8 +527,8 @@ class CPU {
   uint16_t _gain_stm_mode;
   std::vector<uint16_t> _cycles{};
 
-  driver::FPGAControlFlags _fpga_flags;
-  driver::CPUControlFlags _cpu_flags;
+  driver::BitFlags<driver::FPGAControlFlags> _fpga_flags;
+  driver::BitFlags<driver::CPUControlFlags> _cpu_flags;
 };
 
 }  // namespace autd3::extra
