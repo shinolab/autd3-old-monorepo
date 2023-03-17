@@ -61,7 +61,7 @@ class BitFlags {
 
 template <typename T>
 constexpr BitFlags<T> operator|(BitFlags<T> lhs, BitFlags<T> rhs) {
-  return BitFlags<T>(lhs.value | rhs.value);
+  return static_cast<T>(lhs.value() | rhs.value());
 }
 
 template <typename T>
