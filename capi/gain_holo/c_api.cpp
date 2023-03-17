@@ -117,7 +117,7 @@ void AUTDConstraintNormalize(void** constraint) {
   auto* c = constraint_create(autd3::gain::holo::Normalize().build());
   *constraint = c;
 }
-void AUTDConstraintUniform(void** constraint, autd3_float_t value) {
+void AUTDConstraintUniform(void** constraint, const autd3_float_t value) {
   auto* c = constraint_create(autd3::gain::holo::Uniform(value).build());
   *constraint = c;
 }
