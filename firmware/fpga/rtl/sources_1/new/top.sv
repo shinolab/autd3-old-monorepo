@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/12/2022
+ * Last Modified: 17/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -43,7 +43,6 @@ module top (
 
   bit [63:0] ecat_sync_time;
   bit sync_set;
-  bit sync;
 
   bit legacy_mode;
 
@@ -86,11 +85,18 @@ module top (
 
   assign GPIO_OUT = {gpo_3, gpo_2, gpo_1, gpo_0};
 
+  bit sync_dbg;
+  bit [2:0] sync_tri_dbg = 0;
+  always_ff @(posedge clk_l) begin
+    sync_tri_dbg <= {sync_tri_dbg[1:0], CAT_SYNC0};
+  end
+  assign sync_dbg = sync_tri_dbg == 3'b011;
+
   always_ff @(posedge clk_l) begin
     gpo_0 <= stm_done ? ~gpo_0 : gpo_0;
     gpo_1 <= mod_done ? ~gpo_1 : gpo_1;
     gpo_2 <= silencer_done ? ~gpo_2 : gpo_2;
-    gpo_3 <= sync ? ~gpo_3 : gpo_3;
+    gpo_3 <= sync_dbg ? ~gpo_3 : gpo_3;
   end
 
   assign reset = ~RESET_N;
@@ -231,7 +237,7 @@ module top (
       .SET(sync_set),
       .ECAT_SYNC(CAT_SYNC0),
       .SYS_TIME(sys_time),
-      .SYNC(sync)
+      .SYNC()
   );
 
   if (ENABLE_MODULATOR == "TRUE") begin
