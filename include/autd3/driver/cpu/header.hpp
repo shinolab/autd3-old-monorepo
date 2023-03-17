@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/03/2023
+// Last Modified: 17/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -113,8 +113,8 @@ struct GlobalHeader {
    * Also, some IDs are reserved for idempotent operations.
    */
   uint8_t msg_id;
-  FPGAControlFlags fpga_flag;
-  CPUControlFlags cpu_flag;
+  BitFlags<FPGAControlFlags> fpga_flag;
+  BitFlags<CPUControlFlags> cpu_flag;
   /**
    * @brief Effective size of the following data
    */
