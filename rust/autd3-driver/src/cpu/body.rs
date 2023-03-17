@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/03/2023
+ * Last Modified: 17/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -103,17 +103,12 @@ impl FocusSTMBodySubsequent<[u16]> {
 }
 
 #[repr(u16)]
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Default)]
 pub enum Mode {
+    #[default]
     PhaseDutyFull = 0x0001,
     PhaseFull = 0x0002,
     PhaseHalf = 0x0004,
-}
-
-impl Default for Mode {
-    fn default() -> Self {
-        Mode::PhaseDutyFull
-    }
 }
 
 #[repr(C)]
