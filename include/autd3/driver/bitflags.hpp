@@ -27,7 +27,7 @@ class BitFlags {
   typedef std::underlying_type_t<T> value_type;
 
   constexpr BitFlags() : _value() {}
-  constexpr BitFlags(T value) : _value(static_cast<value_type>(value)) {}
+  constexpr BitFlags(T value) : _value(static_cast<value_type>(value)) {} // NOLINT
   constexpr BitFlags(const BitFlags& value) = default;
   constexpr BitFlags& operator=(const BitFlags& obj) = default;
   constexpr BitFlags(BitFlags&& obj) = default;
