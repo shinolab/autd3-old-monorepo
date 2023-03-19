@@ -3,7 +3,7 @@
 // Created Date: 01/05/2021
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/03/2023
+// Last Modified: 19/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -12,6 +12,7 @@
 #pragma once
 
 #include <Windows.h>
+#include <mmsystem.h>
 
 #include <exception>
 #include <memory>
@@ -19,7 +20,7 @@
 #include <thread>
 #include <utility>
 
-namespace autd::link {
+namespace autd3::core {
 
 template <typename T>
 class Timer {
@@ -28,8 +29,8 @@ class Timer {
   ~Timer() { const auto _ = this->stop(); }
 
   [[nodiscard]] static std::unique_ptr<Timer> start(std::unique_ptr<T> handler, uint32_t interval_ns) {
-    const auto timer_id = timeSetEvent((std::max)(1, interval_ns / 1000 / 1000), u_resolution, timer_thread,
-                                       reinterpret_cast<DWORD_PTR>(handler.get()), TIME_PERIODIC | TIME_CALLBACK_FUNCTION | TIME_KILL_SYNCHRONOUS);
+    const auto timer_id = timeSetEvent((std::max)(1u, interval_ns / 1000 / 1000), 1u, timer_thread, reinterpret_cast<DWORD_PTR>(handler.get()),
+                                       TIME_PERIODIC | TIME_CALLBACK_FUNCTION | TIME_KILL_SYNCHRONOUS);
     if (timer_id == 0) throw std::runtime_error("timeSetEvent failed");
 
     return std::make_unique<Timer>(std::move(handler), timer_id);
@@ -57,4 +58,4 @@ class Timer {
   uint32_t _timer_id;
   bool _is_closed;
 };
-}  // namespace autd::link
+}  // namespace autd3::core

@@ -3,7 +3,7 @@
 // Created Date: 16/03/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/03/2023
+// Last Modified: 19/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,13 +21,15 @@
 #include <thread>
 #include <utility>
 
-namespace autd::link {
+namespace autd3::core {
 
 template <typename T>
 class Timer {
  public:
   Timer(std::unique_ptr<T> handler, const timer_t timer_id) : _handler(std::move(handler)), _timer_id(timer_id), _is_closed(false) {}
+
   ~Timer() { const auto _ = this->stop(); }
+
   [[nodiscard]] static std::unique_ptr<Timer> start(std::unique_ptr<T> handler, const uint32_t interval_ns) {
     struct itimerspec itval;
     struct sigevent se;
@@ -71,4 +73,4 @@ class Timer {
     timer->callback();
   }
 };
-}  // namespace autd::link
+}  // namespace autd3::core

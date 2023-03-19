@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/03/2023
+// Last Modified: 19/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,6 +18,7 @@
 #include "autd3/core/delay.hpp"
 #include "autd3/core/geometry.hpp"
 #include "autd3/core/mode.hpp"
+#include "autd3/core/osal_timer/timer_strategy.hpp"
 #include "autd3/core/silencer_config.hpp"
 #include "autd3/core/stm/focus.hpp"
 #include "autd3/core/stm/gain.hpp"
@@ -96,5 +97,7 @@ using core::FocusSTM;
 using core::GainSTM;
 
 using core::LinkPtr;
+
+using core::TimerStrategy;
 
 }  // namespace autd3
