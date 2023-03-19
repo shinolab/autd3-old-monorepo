@@ -1,9 +1,9 @@
-// File: callback.hpp
+// File: timer_strategy.hpp
 // Project: osal_timer
-// Created Date: 18/03/2023
+// Created Date: 19/03/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/03/2023
+// Last Modified: 20/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,10 +13,10 @@
 
 namespace autd3::core {
 
-class CallbackHandler {
- public:
-  virtual void callback() = 0;
-  virtual ~CallbackHandler() = default;
+enum class TimerStrategy {
+  Sleep,
+  BusyWait,
+  NativeTimer,
 };
 
 }  // namespace autd3::core
