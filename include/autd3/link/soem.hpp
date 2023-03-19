@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/02/2023
+// Last Modified: 19/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "autd3/core/link.hpp"
+#include "autd3/core/osal_timer/timer_strategy.hpp"
 #include "autd3/driver/debug_level.hpp"
 #include "autd3/link/ecat.hpp"
 
@@ -43,7 +44,7 @@ class SOEM {
    * @brief Constructor
    */
   SOEM()
-      : _high_precision(false),
+      : _timer_strategy(core::TimerStrategy::Sleep),
         _sync0_cycle(2),
         _send_cycle(2),
         _callback(nullptr),
@@ -85,11 +86,20 @@ class SOEM {
   }
 
   /**
-   * @brief Set high precision mode.
-   * @details The high precision mode provides more precise timer control but may increase CPU load. Only Windows is affected by this setting.
+   * @brief This function is deprecated.
    */
-  SOEM& high_precision(const bool high_precision) {
-    _high_precision = high_precision;
+#ifdef WIN32
+  [[deprecated("Please use timer_strategy(autd3::TimerStrategy::BusyWait) instead.")]]
+#else
+  [[deprecated("This function is meaningless and should be removed.")]]
+#endif
+  SOEM&
+  high_precision(bool) {
+    return *this;
+  }
+
+  SOEM& timer_strategy(const core::TimerStrategy timer_strategy) {
+    _timer_strategy = timer_strategy;
     return *this;
   }
 
@@ -135,7 +145,7 @@ class SOEM {
   SOEM& operator=(SOEM&& obj) = default;
 
  private:
-  bool _high_precision;
+  core::TimerStrategy _timer_strategy;
   std::string _ifname;
   uint16_t _sync0_cycle;
   uint16_t _send_cycle;

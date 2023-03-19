@@ -3,7 +3,7 @@
 // Created Date: 11/05/2021
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/03/2023
+// Last Modified: 19/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -18,7 +18,7 @@
 #include <thread>
 #include <utility>
 
-namespace autd::link {
+namespace autd3::core {
 
 template <typename T>
 class Timer {
@@ -26,6 +26,7 @@ class Timer {
   Timer(std::unique_ptr<T> handler, dispatch_queue_t queue, dispatch_source_t timer)
       : _handler(std::move(handler)), _queue(queue), _timer(timer), _is_closed(false) {}
   ~Timer() { const auto _ = this->stop(); }
+
   [[nodiscard]] static std::unique_ptr<Timer> start(std::unique_ptr<T> handler, const uint32_t interval_ns) {
     auto queue = dispatch_queue_create("timerQueue", 0);
 
@@ -69,4 +70,4 @@ class Timer {
 
   static void main_loop(T *ptr) { ptr->callback(); }
 };
-}  // namespace autd::link
+}  // namespace autd3::core
