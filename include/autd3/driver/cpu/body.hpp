@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/03/2023
+// Last Modified: 20/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -129,9 +129,14 @@ enum class GainSTMMode : uint16_t {
 #pragma pack(2)
 template <size_t N>
 struct LegacyPhaseFull {
-  uint8_t phase[2];
+  LegacyPhaseFull() noexcept = delete;
+  ~LegacyPhaseFull() = delete;
+  LegacyPhaseFull(const LegacyPhaseFull& v) = delete;
+  LegacyPhaseFull& operator=(const LegacyPhaseFull& obj) = delete;
+  LegacyPhaseFull(LegacyPhaseFull&& obj) = delete;
+  LegacyPhaseFull& operator=(LegacyPhaseFull&& obj) = delete;
 
-  void set(const Drive d) { phase[N] = LegacyDrive::to_phase(d); }
+  void set(const Drive d) { _phase[N] = LegacyDrive::to_phase(d); }
 
   LegacyPhaseFull& operator=(const Drive& d) {
     set(d);
@@ -141,6 +146,9 @@ struct LegacyPhaseFull {
     set(d);
     return *this;
   }
+
+ private:
+  uint8_t _phase[2];
 };
 #pragma pack(pop)
 
@@ -151,13 +159,18 @@ struct LegacyPhaseFull {
 #pragma pack(2)
 template <size_t N>
 struct LegacyPhaseHalf {
-  uint8_t phase[2];
+  LegacyPhaseHalf() noexcept = delete;
+  ~LegacyPhaseHalf() = delete;
+  LegacyPhaseHalf(const LegacyPhaseHalf& v) = delete;
+  LegacyPhaseHalf& operator=(const LegacyPhaseHalf& obj) = delete;
+  LegacyPhaseHalf(LegacyPhaseHalf&& obj) = delete;
+  LegacyPhaseHalf& operator=(LegacyPhaseHalf&& obj) = delete;
 
   void set(const Drive d) {
     const auto p = LegacyDrive::to_phase(d) >> 4;
     constexpr auto s = (N & 0x1) << 2;
-    phase[N >> 1] &= 0xF0 >> s;
-    phase[N >> 1] |= p << s;
+    _phase[N >> 1] &= 0xF0 >> s;
+    _phase[N >> 1] |= p << s;
   }
 
   LegacyPhaseHalf& operator=(const Drive& d) {
@@ -168,6 +181,9 @@ struct LegacyPhaseHalf {
     set(d);
     return *this;
   }
+
+ private:
+  uint8_t _phase[2];
 };
 #pragma pack(pop)
 
