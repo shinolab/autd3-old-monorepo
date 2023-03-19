@@ -23,6 +23,11 @@
 #include "autd3/driver/debug_level.hpp"
 #include "autd3/link/ecat.hpp"
 
+namespace autd3 {
+using core::TimerStrategy;
+using link::SyncMode;
+}  // namespace autd3
+
 namespace autd3::link {
 
 /**
@@ -98,7 +103,7 @@ class SOEM {
     return *this;
   }
 
-  SOEM& timer_strategy(const core::TimerStrategy timer_strategy) {
+  SOEM& timer_strategy(const TimerStrategy timer_strategy) {
     _timer_strategy = timer_strategy;
     return *this;
   }
@@ -145,7 +150,7 @@ class SOEM {
   SOEM& operator=(SOEM&& obj) = default;
 
  private:
-  core::TimerStrategy _timer_strategy;
+  TimerStrategy _timer_strategy;
   std::string _ifname;
   uint16_t _sync0_cycle;
   uint16_t _send_cycle;
