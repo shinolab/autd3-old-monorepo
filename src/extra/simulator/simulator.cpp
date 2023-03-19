@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/01/2023
+// Last Modified: 20/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -221,8 +221,8 @@ void Simulator::run() {
             const auto& [amps, phases] = cpu.fpga().drives(imgui->stm_idx);
             const auto m = imgui->mod_enable ? static_cast<float>(cpu.fpga().modulation(static_cast<size_t>(imgui->mod_idx))) / 255.0f : 1.0f;
             for (size_t tr = 0; tr < sources[dev].size(); tr++) {
-              sources[dev].drives()[tr].amp = std::sin(glm::pi<float>() * static_cast<float>(amps[tr].duty) * m / static_cast<float>(cycles[tr]));
-              sources[dev].drives()[tr].phase = 2.0f * glm::pi<float>() * static_cast<float>(phases[tr].phase) / static_cast<float>(cycles[tr]);
+              sources[dev].drives()[tr].amp = std::sin(glm::pi<float>() * static_cast<float>(amps[tr]) * m / static_cast<float>(cycles[tr]));
+              sources[dev].drives()[tr].phase = 2.0f * glm::pi<float>() * static_cast<float>(phases[tr]) / static_cast<float>(cycles[tr]);
               const auto freq = static_cast<float>(driver::FPGA_CLK_FREQ) / static_cast<float>(cycles[tr]);
               sources[dev].drives()[tr].set_wave_num(freq, imgui->sound_speed);
             }
