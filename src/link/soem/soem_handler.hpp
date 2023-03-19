@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 19/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,20 +24,55 @@
 #include <vector>
 
 #include "../../spdlog.hpp"
+#include "autd3/core/osal_timer.hpp"
 #include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/driver/cpu/ec_config.hpp"
 #include "autd3/link/soem.hpp"
-#include "ecat_thread.hpp"
+#include "ecat.hpp"
 #include "error_handler.hpp"
 
 namespace autd3::link {
 
+struct SOEMCallback final : core::CallbackHandler {
+  ~SOEMCallback() override = default;
+  SOEMCallback(const SOEMCallback& v) noexcept = delete;
+  SOEMCallback& operator=(const SOEMCallback& obj) = delete;
+  SOEMCallback(SOEMCallback&& obj) = delete;
+  SOEMCallback& operator=(SOEMCallback&& obj) = delete;
+
+  explicit SOEMCallback(std::atomic<int32_t>& wkc, std::queue<driver::TxDatagram>& send_buf, std::mutex& send_mtx, IOMap& io_map)
+      : _rt_lock(false), _wkc(wkc), _send_buf(send_buf), _send_mtx(send_mtx), _io_map(io_map) {}
+
+  void callback() override {
+    if (auto expected = false; _rt_lock.compare_exchange_weak(expected, true)) {
+      ec_send_processdata();
+      _wkc.store(ec_receive_processdata(EC_TIMEOUTRET));
+      if (!_send_buf.empty()) {
+        _io_map.copy_from(_send_buf.front());
+        {
+          std::lock_guard lock(_send_mtx);
+          _send_buf.pop();
+        }
+      }
+      _rt_lock.store(false, std::memory_order_release);
+    }
+  }
+
+ private:
+  std::atomic<bool> _rt_lock;
+
+  std::atomic<int32_t>& _wkc;
+  std::queue<driver::TxDatagram>& _send_buf;
+  std::mutex& _send_mtx;
+  IOMap& _io_map;
+};
+
 class SOEMHandler final {
  public:
-  SOEMHandler(const bool high_precision, std::string ifname, const uint16_t sync0_cycle, const uint16_t send_cycle,
+  SOEMHandler(const core::TimerStrategy timer_strategy, std::string ifname, const uint16_t sync0_cycle, const uint16_t send_cycle,
               std::function<void(std::string)> on_lost, const SyncMode sync_mode, const std::chrono::milliseconds state_check_interval,
               std::shared_ptr<spdlog::logger> logger)
-      : _high_precision(high_precision),
+      : _timer_strategy(timer_strategy),
         _ifname(std::move(ifname)),
         _sync0_cycle(sync0_cycle),
         _send_cycle(send_cycle),
@@ -109,7 +144,7 @@ class SOEMHandler final {
 
     std::queue<driver::TxDatagram>().swap(_send_buf);
 
-    const auto cycle_time = driver::EC_CYCLE_TIME_BASE_NANO_SEC * _send_cycle;
+    const uint32_t cycle_time = driver::EC_CYCLE_TIME_BASE_NANO_SEC * _send_cycle;
     _logger->debug("send interval: {} [ns]", cycle_time);
 
     if (_ifname.empty()) _ifname = lookup_autd();
@@ -168,17 +203,23 @@ class SOEMHandler final {
     ec_writestate(0);
 
     _is_open.store(true);
-    _ecat_thread = std::thread([this, cycle_time] {
-      if (_high_precision)
-        ecat_run<timed_wait_h>(cycle_time);
-      else
-        ecat_run<timed_wait>(cycle_time);
-    });
+
+    switch (_timer_strategy) {
+      case core::TimerStrategy::BusyWait:
+        _ecat_thread = std::thread([this, cycle_time] { ecat_run<busy_wait>(cycle_time); });
+        break;
+      case core::TimerStrategy::Sleep:
+        _ecat_thread = std::thread([this, cycle_time] { ecat_run<wait_with_sleep>(cycle_time); });
+        break;
+      case core::TimerStrategy::NativeTimer:
+        _timer = core::Timer<SOEMCallback>::start(std::make_unique<SOEMCallback>(_wkc, _send_buf, _send_mtx, _io_map), cycle_time);
+        break;
+    }
 
     ec_statecheck(0, EC_STATE_OPERATIONAL, 5 * EC_TIMEOUTSTATE);
     if (ec_slave[0].state != EC_STATE_OPERATIONAL) {
       _is_open.store(false);
-      if (_ecat_thread.joinable()) _ecat_thread.join();
+      close_th();
       ec_readstate();
       for (size_t slave = 1; slave <= static_cast<size_t>(ec_slavecount); slave++)
         if (ec_slave[slave].state != EC_STATE_SAFE_OP)
@@ -222,11 +263,23 @@ class SOEMHandler final {
     return true;
   }
 
+  void close_th() {
+    switch (_timer_strategy) {
+      case core::TimerStrategy::BusyWait:
+      case core::TimerStrategy::Sleep:
+        if (_ecat_thread.joinable()) _ecat_thread.join();
+        break;
+      case core::TimerStrategy::NativeTimer:
+        const auto _ = this->_timer->stop();
+        break;
+    }
+  }
+
   bool close() {
     if (!is_open()) return true;
     _is_open.store(false);
 
-    if (_ecat_thread.joinable()) _ecat_thread.join();
+    close_th();
     if (_ecat_check_thread.joinable()) _ecat_check_thread.join();
 
     const auto cyc_time = static_cast<uint32_t*>(ecx_context.userdata)[0];
@@ -243,7 +296,7 @@ class SOEMHandler final {
   bool is_open() const { return _is_open.load(); }
 
  private:
-  bool _high_precision;
+  core::TimerStrategy _timer_strategy;
   std::string _ifname;
   uint16_t _sync0_cycle;
   uint16_t _send_cycle;
@@ -262,6 +315,8 @@ class SOEMHandler final {
   std::thread _ecat_thread;
   std::thread _ecat_check_thread;
 
+  std::unique_ptr<core::Timer<SOEMCallback>> _timer;
+
   std::queue<driver::TxDatagram> _send_buf;
   std::mutex _send_mtx;
 
@@ -271,19 +326,27 @@ class SOEMHandler final {
 
   using WaitFunc = void(const timespec&);
 
+  static void wait_with_sleep(const timespec& abs_time) {
+    auto tp = timeval{0, 0};
+    gettimeofday(&tp, nullptr);
+    if (const auto sleep = (static_cast<int64_t>(abs_time.tv_sec) - static_cast<int64_t>(tp.tv_sec)) * 1000000000LL +
+                           (static_cast<int64_t>(abs_time.tv_nsec) - static_cast<int64_t>(tp.tv_usec) * 1000LL);
+        sleep > 0)
+      std::this_thread::sleep_for(std::chrono::nanoseconds(sleep));
+  }
+
+  static void busy_wait(const timespec& abs_time) {
+    auto tp = timeval{0, 0};
+    gettimeofday(&tp, nullptr);
+
+    const auto sleep = (static_cast<int64_t>(abs_time.tv_sec) - static_cast<int64_t>(tp.tv_sec)) * 1000000000LL +
+                       (static_cast<int64_t>(abs_time.tv_nsec) - static_cast<int64_t>(tp.tv_usec) * 1000LL);
+    const auto expired = std::chrono::high_resolution_clock::now() + std::chrono::nanoseconds(sleep);
+    while (std::chrono::high_resolution_clock::now() < expired) core::spin_loop_hint();
+  }
+
   template <WaitFunc W>
   void ecat_run(const uint32_t cycletime_ns) {
-    ecat_init();
-
-#if WIN32
-    constexpr auto u_resolution = 1;
-    timeBeginPeriod(u_resolution);
-
-    auto* h_process = GetCurrentProcess();
-    const auto priority = GetPriorityClass(h_process);
-    SetPriorityClass(h_process, REALTIME_PRIORITY_CLASS);
-#endif
-
     auto ts = ecat_setup(cycletime_ns);
     int64_t toff = 0;
     ec_send_processdata();
@@ -304,11 +367,6 @@ class SOEMHandler final {
 
       ec_send_processdata();
     }
-
-#if WIN32
-    timeEndPeriod(u_resolution);
-    SetPriorityClass(h_process, priority);
-#endif
   }
 };
 

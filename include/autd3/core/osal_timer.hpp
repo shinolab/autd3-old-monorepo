@@ -3,7 +3,7 @@
 // Created Date: 11/05/2021
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/07/2021
+// Last Modified: 19/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -12,9 +12,12 @@
 #pragma once
 
 #if WIN32
-#include "osal_timer/win32/timer.hpp"
+#include "autd3/core/osal_timer/win32.hpp"
 #elif __APPLE__
-#include "osal_timer/macosx/timer.hpp"
+#include "autd3/core/osal_timer/macosx.hpp"
 #else
-#include "osal_timer/linux/timer.hpp"
+#include "autd3/core/osal_timer/linux.hpp"
 #endif
+
+#include "autd3/core/osal_timer/callback.hpp"
+#include "autd3/core/osal_timer/timer_strategy.hpp"

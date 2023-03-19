@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 19/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,18 +25,30 @@ extern "C" {
 }
 
 #if WIN32
-#include "ecat_thread/win32.hpp"
-#elif __APPLE__
-#include "ecat_thread/macosx.hpp"
-#else
-#include "ecat_thread/linux.hpp"
-#endif
-
-#if WIN32
 #include <timeapi.h>
 #endif
 
+#if WIN32
+#include "ecat_osal/win32.hpp"
+#elif __APPLE__
+#include "ecat_osal/macosx.hpp"
+#else
+#include "ecat_osal/linux.hpp"
+#endif
+
 namespace autd3::link {
+
+inline void add_timespec(timespec& ts, const int64_t addtime) {
+  const auto nsec = addtime % 1000000000LL;
+  const auto sec = (addtime - nsec) / 1000000000LL;
+  ts.tv_sec += sec;
+  ts.tv_nsec += static_cast<long>(nsec);  // NOLINT
+  if (ts.tv_nsec >= 1000000000L) {
+    const auto nsec_ = ts.tv_nsec % 1000000000L;
+    ts.tv_sec += (static_cast<int64_t>(ts.tv_nsec) - nsec_) / 1000000000LL;
+    ts.tv_nsec = nsec_;
+  }
+}
 
 inline int64_t ec_sync(const int64_t reftime, const int64_t cycletime, int64_t* integral) {
   auto delta = (reftime - 50000) % cycletime;
