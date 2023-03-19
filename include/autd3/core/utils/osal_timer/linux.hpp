@@ -1,9 +1,9 @@
 ﻿// File: linux.hpp
 // Project: osal_timer
-// Created Date: 16/03/2023
+// Created Date: 18/03/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/03/2023
+// Last Modified: 20/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.

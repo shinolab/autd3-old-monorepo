@@ -1,12 +1,12 @@
-﻿// File: timer.hpp
-// Project: macosx
-// Created Date: 11/05/2021
+﻿// File: macosx.hpp
+// Project: osal_timer
+// Created Date: 18/03/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/03/2023
+// Last Modified: 20/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2021 Hapis Lab. All rights reserved.
+// Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
