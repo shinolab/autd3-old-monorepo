@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include <sys/time.h>
+
 namespace autd3::link {
 
 timespec ecat_setup(const int64_t cycletime_ns) {
