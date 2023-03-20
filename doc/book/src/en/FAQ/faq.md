@@ -30,15 +30,6 @@
 
 - (Windows) Use the latest npcap.
 
-- (Windows) Use high precision mode.
-
-   ```cpp
-     auto link = autd3::link::SOEM()
-                  ︙
-                  .high_precision(true)
-                  ︙
-                  .build();
-   ```
 - Increase the values of `send_cycle` and `sync0_cycle`.
 
    ```cpp

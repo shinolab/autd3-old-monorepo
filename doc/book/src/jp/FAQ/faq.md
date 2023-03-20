@@ -29,15 +29,6 @@
 
 - (Windows) 最新のnpcapを使用する
 
-- (Windows) high precisionモードにする
-   ```cpp
-     auto link = autd3::link::SOEM()
-                  ︙
-                  .high_precision(true)
-                  ︙
-                  .build();
-   ```
-
 - `send_cycle`と`sync0_cycle`の値を増やす
    ```cpp
      auto link = autd3::link::SOEM()
@@ -51,6 +42,10 @@
 ## `link::SOEM`使用時に送信が頻繁に失敗する
 
 - この問題は
+   * `sync_mode`を`DC`にしている
+
+   かつ,
+
    * オンボードのethernetインターフェースを使用している
 
   かつ, 以下のいずれかの状況で発生することが確認されている
@@ -65,15 +60,14 @@
       * その他の操作 (モデリング等) は問題ない
 
 - この問題の回避策としては, 以下のいずれかを試されたい
+  1. `timer_strategy`を`NativeTimer`にする
+  1. `sync_mode`を`FreeRun`にする
   1. Linuxやmacを使用する.
      - ただし, 仮想マシンはNG
   1. `link::TwinCAT`, `link::RemoteTwinCAT`, または, `link::RemoteSOEM`を使用する
   1. USB to Ethernetアダプターを使用する
      - 少なくとも「ASIX AX88179」のチップを採用しているもので正常に動作することが確認されている
      - なお, オンボードではなくとも, PCIe接続のethernetアダプターでも同様の問題が発生する
-  1. FreeRunモードにする
-  1. (非推奨) `send_cycle`, 及び, `sync0_cycle`の値を増やす
-     - ただし, この場合, 送信レイテンシが大きくなる
 
 - 上記以外の状況でも発生した, 或いは, 上記状況でも発生しなかった等の報告があれば, [GitHubのIssue](https://github.com/shinolab/autd3/issues/20)に積極的に報告していただけると幸いである.
 
