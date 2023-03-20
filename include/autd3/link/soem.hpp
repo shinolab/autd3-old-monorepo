@@ -53,7 +53,7 @@ class SOEM {
         _sync0_cycle(2),
         _send_cycle(2),
         _callback(nullptr),
-        _sync_mode(SyncMode::DC),
+        _sync_mode(SyncMode::FreeRun),
         _state_check_interval(std::chrono::milliseconds(100)) {}
 
   /**
@@ -102,12 +102,13 @@ class SOEM {
    * @brief This function is deprecated.
    */
 #ifdef WIN32
-  [[deprecated("Please use timer_strategy(autd3::TimerStrategy::BusyWait) instead.")]]
+  [[deprecated("Please use timer_strategy(autd3::TimerStrategy) instead.")]]
 #else
   [[deprecated("This function is meaningless and should be removed.")]]
 #endif
   SOEM&
-  high_precision(bool) {
+  high_precision(const bool value) {
+    _timer_strategy = value ? TimerStrategy::BusyWait : TimerStrategy::Sleep;
     return *this;
   }
 

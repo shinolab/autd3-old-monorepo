@@ -43,7 +43,7 @@ int main(void) {
   AUTDAddDevice(builder, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
   AUTDBuildGeometry(&geometry, builder);
 
-  AUTDLinkSOEM(&link, NULL, 0, 2, 2, false, (void*)callback, 0, 100, 2, NULL, NULL);
+  AUTDLinkSOEM(&link, NULL, 0, 2, 2, true, (void*)callback, 0, 100, 2, NULL, NULL);
 
   AUTDOpenController(&cnt, geometry, link);
 
