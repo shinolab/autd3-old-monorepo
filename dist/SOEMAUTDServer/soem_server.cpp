@@ -3,7 +3,7 @@
 // Created Date: 26/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/03/2023
+// Last Modified: 21/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -98,7 +98,7 @@ int main(const int argc, char* argv[]) try {
   const auto send_cycle = std::max(1, program.get<int>("--send"));
   const auto state_check_interval = std::max(1, program.get<int>("--state_check_interval"));
   const auto freerun = program.get<bool>("--freerun");
-  const auto sync_mode_str = program.get<std::string>("--sync_mode");
+  const std::string sync_mode_str = program.get<std::string>("--sync_mode");
   const auto disable_high_precision = program.get<bool>("--disable_high_precision");
   const auto buf_size = program.get<int>("--buffer_size");
   const std::string timer_strategy_str = program.get<std::string>("--timer_strategy");
