@@ -34,21 +34,38 @@ int main(const int argc, char* argv[]) try {
 
   program.add_argument("-t", "--send").help("Send cycle time in units of 500us").scan<'i', int>().default_value(2);
 
-  program.add_argument("-f", "--freerun").help("Set free run mode").implicit_value(true).default_value(false);
+  program.add_argument("-f", "--freerun")
+      .help("Set free run mode (Deprecated, use --sync_mode option instead)")
+      .implicit_value(true)
+      .default_value(false);
 
-  program.add_argument("-l", "--disable_high_precision").help("Disable high precision mode (Deprecated)").implicit_value(true).default_value(false);
+  program.add_argument("-m", "--sync_mode")
+      .help(R"(Sync mode ("dc", "freerun"))")
+      .default_value(std::string{"freerun"})
+      .action([](const std::string& value) {
+        if (static const std::vector<std::string> CHOICES = {"dc", "freerun"}; std::find(CHOICES.begin(), CHOICES.end(), value) != CHOICES.end()) {
+          return value;
+        }
+        spdlog::warn("{} is invalid. Using \"freerun\" instead.", value);
+        return std::string{"freerun"};
+      });
+
+  program.add_argument("-l", "--disable_high_precision")
+      .help("Disable high precision mode (Deprecated, use --timer_strategy option instead)")
+      .implicit_value(true)
+      .default_value(false);
 
   program.add_argument("-b", "--buffer_size").help("Buffer size (unlimited if 0)").scan<'i', int>().default_value(0);
 
   program.add_argument("-w", "--timer_strategy")
-      .help("Timer Strategy (sleep, busywait, timer)")
+      .help(R"(Timer Strategy ("sleep", "busywait", "timer"))")
       .default_value(std::string{"sleep"})
       .action([](const std::string& value) {
         if (static const std::vector<std::string> CHOICES = {"sleep", "busywait", "timer"};
             std::find(CHOICES.begin(), CHOICES.end(), value) != CHOICES.end()) {
           return value;
         }
-        spdlog::warn("{} is invalid. Using sleep instead.", value);
+        spdlog::warn("{} is invalid. Using \"sleep\" instead.", value);
         return std::string{"sleep"};
       });
 
@@ -81,6 +98,7 @@ int main(const int argc, char* argv[]) try {
   const auto send_cycle = std::max(1, program.get<int>("--send"));
   const auto state_check_interval = std::max(1, program.get<int>("--state_check_interval"));
   const auto freerun = program.get<bool>("--freerun");
+  const auto sync_mode_str = program.get<std::string>("--sync_mode");
   const auto disable_high_precision = program.get<bool>("--disable_high_precision");
   const auto buf_size = program.get<int>("--buffer_size");
   const std::string timer_strategy_str = program.get<std::string>("--timer_strategy");
@@ -92,13 +110,14 @@ int main(const int argc, char* argv[]) try {
   else
     timer_strategy = autd3::core::TimerStrategy::Sleep;
 
-  if (disable_high_precision) {
-#ifdef WIN32
-    spdlog::warn("Please use -w BusyWait instead.");
-#else
-    spdlog::warn("This option no longer has any meaning and will be removed.");
-#endif
-  }
+  autd3::link::SyncMode sync_mode;
+  if (sync_mode_str == "dc")
+    sync_mode = autd3::SyncMode::DC;
+  else
+    sync_mode = autd3::SyncMode::FreeRun;
+
+  if (disable_high_precision) spdlog::warn("Please use timer_strategy option instead.");
+  if (freerun) spdlog::warn("Please use --sync_mode option instead.");
 
   if (program.get<bool>("--debug")) spdlog::set_level(spdlog::level::debug);
 
@@ -117,7 +136,7 @@ int main(const int argc, char* argv[]) try {
         std::quick_exit(-1);
 #endif
       },
-      freerun ? autd3::link::SyncMode::FreeRun : autd3::link::SyncMode::DC, std::chrono::milliseconds(state_check_interval), std::move(logger));
+      sync_mode, std::chrono::milliseconds(state_check_interval), std::move(logger));
 
   spdlog::info("Connecting SOEM server...");
   const auto dev = soem_handler.open({});
