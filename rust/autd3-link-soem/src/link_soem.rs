@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/01/2023
+ * Last Modified: 21/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,8 +22,9 @@ use std::{
 };
 
 use anyhow::Result;
-use crossbeam_channel::{bounded, Sender};
-use libc::c_void;
+use autd3_timer::{Timer, TimerCallback};
+use crossbeam_channel::{bounded, Receiver, Sender};
+use libc::{c_void, timeval};
 
 use autd3_core::{
     error::AUTDInternalError,
@@ -33,18 +34,50 @@ use autd3_core::{
 };
 
 use crate::{
-    ecat_thread::{EcatErrorHandler, EcatThreadHandler, HighPrecisionWaiter, NormalWaiter},
+    ecat::{add_timespec, ec_sync, ecat_setup, gettimeofday},
     error::SOEMError,
+    error_handler::EcatErrorHandler,
     iomap::IOMap,
     native_methods::*,
     Config, EthernetAdapters, SyncMode,
 };
 
-const SEND_BUF_SIZE: usize = 32;
+struct SoemCallback {
+    lock: AtomicBool,
+    wkc: Arc<AtomicI32>,
+    receiver: Receiver<TxDatagram>,
+    io_map: Arc<Mutex<IOMap>>,
+}
+
+impl TimerCallback for SoemCallback {
+    fn rt_thread(&mut self) {
+        unsafe {
+            if let Ok(false) =
+                self.lock
+                    .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+            {
+                ec_send_processdata();
+                self.wkc.store(
+                    ec_receive_processdata(EC_TIMEOUTRET as i32),
+                    Ordering::Release,
+                );
+
+                if let Ok(tx) = self.receiver.try_recv() {
+                    self.io_map.lock().unwrap().copy_from(&tx);
+                }
+
+                ec_send_processdata();
+
+                self.lock.store(false, Ordering::Release);
+            }
+        }
+    }
+}
 
 pub struct SOEM<F: Fn(&str) + Send> {
     ecatth_handle: Option<JoinHandle<()>>,
     ecat_check_th: Option<JoinHandle<()>>,
+    timer_handle: Option<Box<Timer<SoemCallback>>>,
     error_handle: Option<F>,
     config: Config,
     sender: Option<Sender<TxDatagram>>,
@@ -61,6 +94,7 @@ impl<F: Fn(&str) + Send> SOEM<F> {
         Self {
             ecatth_handle: None,
             ecat_check_th: None,
+            timer_handle: None,
             error_handle: Some(error_handle),
             sender: None,
             is_open: Arc::new(AtomicBool::new(false)),
@@ -131,7 +165,7 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
 
         let dev_num = geometry.num_devices() as u16;
 
-        let (tx_sender, tx_receiver) = bounded(SEND_BUF_SIZE);
+        let (tx_sender, tx_receiver) = bounded(self.config.buf_size);
 
         unsafe {
             if ec_init(ifname.as_ptr()) <= 0 {
@@ -201,33 +235,46 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
 
             self.is_open.store(true, Ordering::Release);
             let expected_wkc = (ec_group[0].outputsWKC * 2 + ec_group[0].inputsWKC) as i32;
-            let cycletime = self.ec_send_cycle_time_ns as i64;
+            let cycletime = self.ec_send_cycle_time_ns;
             let is_open = self.is_open.clone();
-            let is_high_precision = self.config.high_precision_timer;
             let wkc = Arc::new(AtomicI32::new(0));
             let wkc_clone = wkc.clone();
             let io_map = self.io_map.clone();
-            self.ecatth_handle = Some(std::thread::spawn(move || {
-                if is_high_precision {
-                    let mut callback = EcatThreadHandler::<HighPrecisionWaiter>::new(
-                        io_map,
-                        is_open,
-                        wkc_clone,
-                        tx_receiver,
-                        cycletime,
-                    );
-                    callback.run();
-                } else {
-                    let mut callback = EcatThreadHandler::<NormalWaiter>::new(
-                        io_map,
-                        is_open,
-                        wkc_clone,
-                        tx_receiver,
-                        cycletime,
-                    );
-                    callback.run();
+            match self.config.timer_strategy {
+                crate::TimerStrategy::Sleep => {
+                    self.ecatth_handle = Some(std::thread::spawn(move || {
+                        Self::ecat_run_with_sleep(
+                            is_open,
+                            io_map,
+                            wkc_clone,
+                            tx_receiver,
+                            cycletime,
+                        )
+                    }))
                 }
-            }));
+                crate::TimerStrategy::BusyWait => {
+                    self.ecatth_handle = Some(std::thread::spawn(move || {
+                        Self::ecat_run_with_busywait(
+                            is_open,
+                            io_map,
+                            wkc_clone,
+                            tx_receiver,
+                            cycletime,
+                        )
+                    }))
+                }
+                crate::TimerStrategy::NativeTimer => {
+                    self.timer_handle = Some(Timer::start(
+                        SoemCallback {
+                            lock: AtomicBool::new(false),
+                            wkc: wkc_clone,
+                            receiver: tx_receiver,
+                            io_map,
+                        },
+                        self.ec_send_cycle_time_ns,
+                    )?)
+                }
+            }
 
             ec_statecheck(
                 0,
@@ -238,6 +285,9 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
                 self.is_open.store(false, Ordering::Release);
                 if let Some(timer) = self.ecatth_handle.take() {
                     let _ = timer.join();
+                }
+                if let Some(timer) = self.timer_handle.take() {
+                    timer.close()?;
                 }
                 (1..=wc as usize).for_each(|slave| {
                     if ec_slave[slave].state != ec_state_EC_STATE_SAFE_OP as u16 {
@@ -296,6 +346,9 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
         if let Some(th) = self.ecat_check_th.take() {
             let _ = th.join();
         }
+        if let Some(timer) = self.timer_handle.take() {
+            timer.close()?;
+        }
 
         unsafe {
             let cyc_time = *(ecx_context.userdata as *mut u32);
@@ -339,5 +392,93 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
 
     fn is_open(&self) -> bool {
         self.is_open.load(Ordering::Acquire)
+    }
+}
+
+impl<F: 'static + Fn(&str) + Send> SOEM<F> {
+    #[allow(clippy::unnecessary_cast)]
+    fn ecat_run_with_sleep(
+        is_open: Arc<AtomicBool>,
+        io_map: Arc<Mutex<IOMap>>,
+        wkc: Arc<AtomicI32>,
+        receiver: Receiver<TxDatagram>,
+        cycletime: u32,
+    ) {
+        unsafe {
+            let mut ts = ecat_setup(cycletime as _);
+
+            let mut toff = 0;
+            ec_send_processdata();
+            while is_open.load(Ordering::Acquire) {
+                add_timespec(&mut ts, cycletime as i64 + toff);
+
+                let mut tp = timeval {
+                    tv_sec: 0,
+                    tv_usec: 0,
+                };
+                gettimeofday(&mut tp as *mut _ as *mut _, std::ptr::null_mut());
+                let sleep = (ts.tv_sec - tp.tv_sec as i64) * 1000000000i64
+                    + (ts.tv_nsec as i64 - tp.tv_usec as i64 * 1000i64);
+                if sleep > 0 {
+                    std::thread::sleep(std::time::Duration::from_nanos(sleep as _));
+                }
+
+                wkc.store(
+                    ec_receive_processdata(EC_TIMEOUTRET as i32),
+                    Ordering::Release,
+                );
+                ec_sync(ec_DCtime, cycletime as _, &mut toff);
+
+                if let Ok(tx) = receiver.try_recv() {
+                    io_map.lock().unwrap().copy_from(&tx);
+                }
+
+                ec_send_processdata();
+            }
+        }
+    }
+
+    #[allow(clippy::unnecessary_cast)]
+    fn ecat_run_with_busywait(
+        is_open: Arc<AtomicBool>,
+        io_map: Arc<Mutex<IOMap>>,
+        wkc: Arc<AtomicI32>,
+        receiver: Receiver<TxDatagram>,
+        cycletime: u32,
+    ) {
+        unsafe {
+            let mut ts = ecat_setup(cycletime as _);
+
+            let mut toff = 0;
+            ec_send_processdata();
+            while is_open.load(Ordering::Acquire) {
+                add_timespec(&mut ts, cycletime as i64 + toff);
+
+                let mut tp = timeval {
+                    tv_sec: 0,
+                    tv_usec: 0,
+                };
+                gettimeofday(&mut tp as *mut _ as *mut _, std::ptr::null_mut());
+                let sleep = (ts.tv_sec - tp.tv_sec as i64) * 1000000000i64
+                    + (ts.tv_nsec as i64 - tp.tv_usec as i64 * 1000i64);
+                let expired =
+                    std::time::Instant::now() + std::time::Duration::from_nanos(sleep as _);
+                while std::time::Instant::now() < expired {
+                    std::hint::spin_loop();
+                }
+
+                wkc.store(
+                    ec_receive_processdata(EC_TIMEOUTRET as i32),
+                    Ordering::Release,
+                );
+                ec_sync(ec_DCtime, cycletime as _, &mut toff);
+
+                if let Ok(tx) = receiver.try_recv() {
+                    io_map.lock().unwrap().copy_from(&tx);
+                }
+
+                ec_send_processdata();
+            }
+        }
     }
 }
