@@ -10,7 +10,7 @@ when isMainModule:
         var geometry = initGeometryBuilder().addDevice([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]).build()
 
         var soem = initSOEM()
-        let link = soem.highPrecision(true).onLost(onLost).build()
+        let link = soem.onLost(onLost).build()
 
         var autd = openController(geometry, link)
 

@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/03/2023
+ * Last Modified: 20/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,10 +23,7 @@ fn main() -> Result<()> {
     let mut geometry = GeometryBuilder::new().build();
     geometry.add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))?;
 
-    let config = Config {
-        high_precision_timer: true,
-        ..Config::default()
-    };
+    let config = Config::default();
     let link = SOEM::new(config, |msg| {
         eprintln!("unrecoverable error occurred: {msg}");
         std::process::exit(-1);

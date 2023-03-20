@@ -9,7 +9,7 @@ import numpy as np
 if __name__ == '__main__':
     geometry = GeometryBuilder().add_device([0., 0., 0.], [0., 0., 0.]).build()
 
-    link = SOEM().high_precision(True).build()
+    link = SOEM().build()
 
     autd = Controller.open(geometry, link)
 
