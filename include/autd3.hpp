@@ -98,6 +98,4 @@ using core::GainSTM;
 
 using core::LinkPtr;
 
-using core::TimerStrategy;
-
 }  // namespace autd3

@@ -3,7 +3,7 @@
 // Created Date: 07/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/03/2023
+// Last Modified: 20/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,67 +18,55 @@
 #include "autd3/controller.hpp"
 #include "autd3/core/gain.hpp"
 #include "autd3/core/utils/hint.hpp"
+#include "autd3/core/utils/osal_timer.hpp"
 
 namespace autd3 {
+
+using core::TimerStrategy;
 
 /**
  * @brief Software Spatio-Temporal Modulation
  */
 class SoftwareSTM {
+#ifdef AUTD3_CAPI
+  using gain_ptr = core::Gain*;
+#else
+  using gain_ptr = std::shared_ptr<core::Gain>;
+#endif
+
  public:
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 26812)
-#endif
-  /**
-   * @brief Software timer strategy flag
-   */
-  class TimerStrategy final {
-   public:
-    enum Value : uint8_t {
-      None = 0,
-      /**
-       * @brief Use busy wait instead of sleep
-       */
-      BusyWait = 1 << 1,
-    };
-
-    TimerStrategy() = default;
-    explicit TimerStrategy(const Value value) noexcept : _value(value) {}
-
-    ~TimerStrategy() = default;
-    TimerStrategy(const TimerStrategy& v) noexcept = default;
-    TimerStrategy& operator=(const TimerStrategy& obj) = default;
-    TimerStrategy& operator=(const Value v) noexcept {
-      _value = v;
-      return *this;
-    }
-    TimerStrategy(TimerStrategy&& obj) = default;
-    TimerStrategy& operator=(TimerStrategy&& obj) = default;
-
-    constexpr bool operator==(const TimerStrategy a) const { return _value == a._value; }
-    constexpr bool operator!=(const TimerStrategy a) const { return _value != a._value; }
-    constexpr bool operator==(const Value a) const { return _value == a; }
-    constexpr bool operator!=(const Value a) const { return _value != a; }
-
-    void set(const Value v) noexcept { _value = static_cast<Value>(_value | v); }
-    void remove(const Value v) noexcept { _value = static_cast<Value>(_value & ~v); }
-    [[nodiscard]] bool contains(const Value v) const noexcept { return (_value & v) == v; }
-
-    [[nodiscard]] Value value() const noexcept { return _value; }
-
-   private:
-    Value _value;
-  };
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
-
   /**
    * @brief Handler of SoftwareSTM
    */
   struct SoftwareSTMThreadHandle {
     friend class SoftwareSTM;
+
+    struct SoftwareSTMCallback final : core::CallbackHandler {
+      ~SoftwareSTMCallback() override = default;
+      SoftwareSTMCallback(const SoftwareSTMCallback& v) noexcept = delete;
+      SoftwareSTMCallback& operator=(const SoftwareSTMCallback& obj) = delete;
+      SoftwareSTMCallback(SoftwareSTMCallback&& obj) = delete;
+      SoftwareSTMCallback& operator=(SoftwareSTMCallback&& obj) = delete;
+
+      explicit SoftwareSTMCallback(Controller& cnt, std::vector<gain_ptr> bodies)
+          : _rt_lock(false), _cnt(cnt), _bodies(std::move(bodies)), _i(0), _size(_bodies.size()) {}
+
+      void callback() override {
+        if (auto expected = false; _rt_lock.compare_exchange_weak(expected, true)) {
+          _cnt.send(*_bodies[_i]);
+          _i = (_i + 1) % _size;
+          _rt_lock.store(false, std::memory_order_release);
+        }
+      }
+
+     private:
+      std::atomic<bool> _rt_lock;
+
+      Controller& _cnt;
+      std::vector<gain_ptr> _bodies;
+      size_t _i;
+      size_t _size;
+    };
 
     ~SoftwareSTMThreadHandle() = default;
     SoftwareSTMThreadHandle(const SoftwareSTMThreadHandle& v) = delete;
@@ -89,47 +77,65 @@ class SoftwareSTM {
     bool finish() {
       if (!_run) return false;
       _run = false;
-      if (_th.joinable()) _th.join();
+      switch (_strategy) {
+        case TimerStrategy::BusyWait:
+        case TimerStrategy::Sleep:
+          if (_th.joinable()) _th.join();
+          break;
+        case TimerStrategy::NativeTimer:
+          const auto _ = _timer->stop();
+          break;
+      }
+
       return true;
     }
 
    private:
-    template <typename T>
-    SoftwareSTMThreadHandle(Controller& cnt, std::vector<T> bodies, const uint64_t period, const TimerStrategy strategy) : _cnt(cnt) {
+    SoftwareSTMThreadHandle(Controller& cnt, std::vector<gain_ptr> bodies, const uint32_t period, const TimerStrategy strategy)
+        : _strategy(strategy), _cnt(cnt) {
       _run = true;
       if (bodies.empty()) return;
       const auto interval = std::chrono::nanoseconds(period);
-      if (strategy.contains(TimerStrategy::BusyWait))
-        _th = std::thread([this, interval, bodies = std::move(bodies)] {
-          size_t i = 0;
-          auto next = std::chrono::high_resolution_clock::now();
-          while (_run) {
-            next += interval;
-            for (;; core::spin_loop_hint())
-              if (std::chrono::high_resolution_clock::now() >= next) break;
-            this->_cnt.send(*bodies[i]);
-            i = (i + 1) % bodies.size();
-          }
-        });
-      else
-        _th = std::thread([this, interval, bodies = std::move(bodies)] {
-          size_t i = 0;
-          auto next = std::chrono::high_resolution_clock::now();
-          while (_run) {
-            next += interval;
-            std::this_thread::sleep_until(next);
-            this->_cnt.send(*bodies[i]);
-            i = (i + 1) % bodies.size();
-          }
-        });
+      switch (strategy) {
+        case TimerStrategy::BusyWait:
+          _th = std::thread([this, interval, bodies = std::move(bodies)] {
+            size_t i = 0;
+            auto next = std::chrono::high_resolution_clock::now();
+            while (_run) {
+              next += interval;
+              for (;; core::spin_loop_hint())
+                if (std::chrono::high_resolution_clock::now() >= next) break;
+              this->_cnt.send(*bodies[i]);
+              i = (i + 1) % bodies.size();
+            }
+          });
+          break;
+        case TimerStrategy::Sleep:
+          _th = std::thread([this, interval, bodies = std::move(bodies)] {
+            size_t i = 0;
+            auto next = std::chrono::high_resolution_clock::now();
+            while (_run) {
+              next += interval;
+              std::this_thread::sleep_until(next);
+              this->_cnt.send(*bodies[i]);
+              i = (i + 1) % bodies.size();
+            }
+          });
+          break;
+        case TimerStrategy::NativeTimer:
+          _timer = core::Timer<SoftwareSTMCallback>::start(std::make_unique<SoftwareSTMCallback>(cnt, std::move(bodies)), period);
+          break;
+      }
     }
 
+    std::unique_ptr<core::Timer<SoftwareSTMCallback>> _timer;
     bool _run;
+    TimerStrategy _strategy;
     std::thread _th;
     Controller& _cnt;
   };
 
-  SoftwareSTM() noexcept : timer_strategy(TimerStrategy::None), _sample_period_ns(0) {}
+  explicit SoftwareSTM(const TimerStrategy timer_strategy = TimerStrategy::Sleep) noexcept : sampling_period_ns(0), _timer_strategy(timer_strategy) {}
   ~SoftwareSTM() = default;
   SoftwareSTM(const SoftwareSTM& v) = default;
   SoftwareSTM& operator=(const SoftwareSTM& obj) = default;
@@ -146,8 +152,7 @@ class SoftwareSTM {
   driver::autd3_float_t set_frequency(const driver::autd3_float_t freq) {
     constexpr auto nanoseconds = static_cast<driver::autd3_float_t>(1000000000);
     const auto sample_freq = static_cast<driver::autd3_float_t>(size()) * freq;
-    const auto sample_period_ns = static_cast<uint64_t>(std::round(nanoseconds / sample_freq));
-    _sample_period_ns = sample_period_ns;
+    sampling_period_ns = static_cast<uint32_t>(std::round(nanoseconds / sample_freq));
     return frequency();
   }
 
@@ -160,8 +165,8 @@ class SoftwareSTM {
    */
   template <typename G>
   void add(G&& b) {
-    static_assert(std::is_base_of_v<core::Gain, std::remove_reference_t<G> >, "This is not Gain.");
-    _bodies.emplace_back(std::make_shared<std::remove_reference_t<G> >(std::forward<G>(b)));
+    static_assert(std::is_base_of_v<core::Gain, std::remove_reference_t<G>>, "This is not Gain.");
+    _bodies.emplace_back(std::make_shared<std::remove_reference_t<G>>(std::forward<G>(b)));
   }
 
   /**
@@ -178,7 +183,7 @@ class SoftwareSTM {
    */
   SoftwareSTMThreadHandle start(Controller& cnt) {
     if (size() == 0) throw std::runtime_error("No Gains ware added.");
-    return {cnt, std::move(_bodies), _sample_period_ns, timer_strategy};
+    return {cnt, std::move(_bodies), sampling_period_ns, _timer_strategy};
   }
 
   /**
@@ -189,35 +194,24 @@ class SoftwareSTM {
   /**
    * @return Period
    */
-  [[nodiscard]] uint64_t period() const { return _sample_period_ns * size(); }
+  [[nodiscard]] uint64_t period() const { return sampling_period_ns * size(); }
 
   /**
    * @brief Sampling frequency
    */
   [[nodiscard]] driver::autd3_float_t sampling_frequency() const noexcept {
     constexpr auto nanoseconds = static_cast<driver::autd3_float_t>(1000000000);
-    return nanoseconds / static_cast<driver::autd3_float_t>(_sample_period_ns);
+    return nanoseconds / static_cast<driver::autd3_float_t>(sampling_period_ns);
   }
 
   /**
    * @brief Sampling period in ns
    */
-  [[nodiscard]] uint64_t sampling_period_ns() const noexcept { return _sample_period_ns; }
-
-  /**
-   * @brief Sampling period in ns
-   */
-  uint64_t& sampling_period_ns() noexcept { return _sample_period_ns; }
-
-  TimerStrategy timer_strategy;
+  uint32_t sampling_period_ns;
 
  private:
-#ifdef AUTD3_CAPI
-  std::vector<core::Gain*> _bodies;
-#else
-  std::vector<std::shared_ptr<core::Gain> > _bodies;
-#endif
-  uint64_t _sample_period_ns;
+  TimerStrategy _timer_strategy;
+  std::vector<gain_ptr> _bodies;
 };
 
 }  // namespace autd3

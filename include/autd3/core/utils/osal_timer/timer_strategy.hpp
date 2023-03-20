@@ -13,10 +13,10 @@
 
 namespace autd3::core {
 
-enum class TimerStrategy {
-  Sleep,
-  BusyWait,
-  NativeTimer,
+enum class TimerStrategy : uint8_t {
+  Sleep = 0,
+  BusyWait = 1,
+  NativeTimer = 2,
 };
 
 }  // namespace autd3::core

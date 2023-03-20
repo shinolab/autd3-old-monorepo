@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/03/2023
+// Last Modified: 20/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -446,12 +446,7 @@ void AUTDDeleteAmplitudes(IN const void* amplitudes) {
   delete amps_;
 }
 
-void AUTDSoftwareSTM(void** out) { *out = new autd3::SoftwareSTM; }
-
-void AUTDSoftwareSTMSetStrategy(void* stm, const uint8_t strategy) {
-  static_cast<autd3::SoftwareSTM*>(stm)->timer_strategy =
-      autd3::SoftwareSTM::TimerStrategy(static_cast<autd3::SoftwareSTM::TimerStrategy::Value>(strategy));
-}
+void AUTDSoftwareSTM(void** out, const uint8_t strategy) { *out = new autd3::SoftwareSTM(static_cast<autd3::TimerStrategy>(strategy)); }
 
 EXPORT_AUTD void AUTDSoftwareSTMAdd(void* stm, void* gain) { static_cast<autd3::SoftwareSTM*>(stm)->add(static_cast<autd3::core::Gain*>(gain)); }
 
@@ -476,10 +471,10 @@ EXPORT_AUTD autd3_float_t AUTDSoftwareSTMSamplingFrequency(const void* stm) {
   return static_cast<const autd3::SoftwareSTM*>(stm)->sampling_frequency();
 }
 
-EXPORT_AUTD uint64_t AUTDSoftwareSTMSamplingPeriod(const void* stm) { return static_cast<const autd3::SoftwareSTM*>(stm)->sampling_period_ns(); }
+EXPORT_AUTD uint32_t AUTDSoftwareSTMSamplingPeriod(const void* stm) { return static_cast<const autd3::SoftwareSTM*>(stm)->sampling_period_ns; }
 
-EXPORT_AUTD void AUTDSoftwareSTMSetSamplingPeriod(void* stm, const uint64_t period) {
-  static_cast<autd3::SoftwareSTM*>(stm)->sampling_period_ns() = period;
+EXPORT_AUTD void AUTDSoftwareSTMSetSamplingPeriod(void* stm, const uint32_t period) {
+  static_cast<autd3::SoftwareSTM*>(stm)->sampling_period_ns = period;
 }
 
 EXPORT_AUTD void AUTDDeleteSoftwareSTM(const void* stm) {
