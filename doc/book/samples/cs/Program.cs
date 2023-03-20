@@ -9,7 +9,7 @@ var geometry = new GeometryBuilder()
     .AddDevice(Vector3d.zero, Vector3d.zero)
     .Build();
 
-var link = new SOEM().HighPrecision(true).Build();
+var link = new SOEM().Build();
 
 var autd = Controller.Open(geometry, link);
 
