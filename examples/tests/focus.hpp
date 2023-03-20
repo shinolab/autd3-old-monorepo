@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 20/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 #include "autd3.hpp"
 
 inline void focus_test(autd3::Controller& autd) {
-  autd3::SilencerConfig silencer = autd3::SilencerConfig::none();
+  autd3::SilencerConfig silencer;
   autd.send(silencer, std::chrono::milliseconds(20));
 
   autd3::modulation::Sine m(150);  // 150Hz AM
