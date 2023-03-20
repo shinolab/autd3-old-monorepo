@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/01/2023
+// Last Modified: 20/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -43,8 +43,9 @@ void AUTDFreeAdapterPointer(void* p_adapter) {
 typedef void (*OutCallback)(const char*);
 typedef void (*FlushCallback)();
 
-void AUTDLinkSOEM(void** out, const char* ifname, const uint16_t sync0_cycle, const uint16_t send_cycle, const bool freerun, void* on_lost,
-                  const bool high_precision, const uint64_t state_check_interval, const int32_t level, const void* out_func, void* flush_func) {
+void AUTDLinkSOEM(void** out, const char* ifname, const uint64_t buf_size, const uint16_t sync0_cycle, const uint16_t send_cycle, const bool freerun,
+                  void* on_lost, const uint8_t timer_strategy, const uint64_t state_check_interval, const int32_t level, const void* out_func,
+                  void* flush_func) {
   std::function<void(std::string)> out_f = nullptr;
   std::function<void()> flush_f = nullptr;
   if (out_func != nullptr) out_f = [out](const std::string& msg) { reinterpret_cast<OutCallback>(out)(msg.c_str()); };
@@ -57,9 +58,10 @@ void AUTDLinkSOEM(void** out, const char* ifname, const uint16_t sync0_cycle, co
 
   auto soem = autd3::link::SOEM()
                   .ifname(ifname_)
+                  .buf_size(buf_size)
                   .sync0_cycle(sync0_cycle)
                   .send_cycle(send_cycle)
-                  .high_precision(high_precision)
+                  .timer_strategy(static_cast<autd3::TimerStrategy>(timer_strategy))
                   .sync_mode(freerun ? autd3::link::SyncMode::FreeRun : autd3::link::SyncMode::DC)
                   .on_lost(std::move(callback))
                   .state_check_interval(std::chrono::milliseconds(state_check_interval))
