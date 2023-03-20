@@ -70,9 +70,9 @@ struct SOEMCallback final : core::CallbackHandler {
 
 class SOEMHandler final {
  public:
-  SOEMHandler(const core::TimerStrategy timer_strategy, std::string ifname, const uint16_t sync0_cycle, const uint16_t send_cycle,
-              std::function<void(std::string)> on_lost, const SyncMode sync_mode, const std::chrono::milliseconds state_check_interval,
-              std::shared_ptr<spdlog::logger> logger)
+  SOEMHandler(const core::TimerStrategy timer_strategy, std::string ifname, const size_t buf_size, const uint16_t sync0_cycle,
+              const uint16_t send_cycle, std::function<void(std::string)> on_lost, const SyncMode sync_mode,
+              const std::chrono::milliseconds state_check_interval, std::shared_ptr<spdlog::logger> logger)
       : _timer_strategy(timer_strategy),
         _ifname(std::move(ifname)),
         _sync0_cycle(sync0_cycle),
@@ -80,6 +80,7 @@ class SOEMHandler final {
         _on_lost(std::move(on_lost)),
         _sync_mode(sync_mode),
         _is_open(false),
+        _buf_size(buf_size),
         _state_check_interval(state_check_interval),
         _logger(std::move(logger)) {}
   ~SOEMHandler() {
@@ -252,6 +253,10 @@ class SOEMHandler final {
   bool send(const driver::TxDatagram& tx) {
     if (!is_open()) throw std::runtime_error("link is closed");
 
+    if (_buf_size != 0) {
+      if (_send_buf.size() >= _buf_size) _logger->debug("Send buffer is full. Waiting until capacity is available...");
+      while (_send_buf.size() >= _buf_size) std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
     std::lock_guard lock(_send_mtx);
     _send_buf.push(tx.clone());
     return true;
@@ -318,6 +323,7 @@ class SOEMHandler final {
 
   std::unique_ptr<core::Timer<SOEMCallback>> _timer;
 
+  size_t _buf_size;
   std::queue<driver::TxDatagram> _send_buf;
   std::mutex _send_mtx;
 

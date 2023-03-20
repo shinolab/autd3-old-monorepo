@@ -49,7 +49,7 @@ class SOEM {
    * @brief Constructor
    */
   SOEM()
-      : _timer_strategy(core::TimerStrategy::Sleep),
+      : _timer_strategy(TimerStrategy::Sleep),
         _sync0_cycle(2),
         _send_cycle(2),
         _callback(nullptr),
@@ -63,6 +63,14 @@ class SOEM {
    */
   SOEM& ifname(std::string ifname) {
     _ifname = std::move(ifname);
+    return *this;
+  }
+
+  /**
+   * @brief Set send buffer size (unlimited if 0).
+   */
+  SOEM& buf_size(const size_t size) {
+    _buf_size = size;
     return *this;
   }
 
@@ -152,6 +160,7 @@ class SOEM {
  private:
   TimerStrategy _timer_strategy;
   std::string _ifname;
+  size_t _buf_size{0};
   uint16_t _sync0_cycle;
   uint16_t _send_cycle;
   std::function<void(std::string)> _callback;
