@@ -30,7 +30,7 @@ classdef SOEM < handle
         function obj = SOEM()
             obj.ptr = libpointer('voidPtr', 0);
             obj.ifname_ = [];
-            buf_size_ = 0;
+            obj.buf_size_ = 0;
             obj.sync0_cycle_ = 2;
             obj.send_cycle_ = 2;
             obj.sync_mode_ = SyncMode.FreeRun;
@@ -76,7 +76,9 @@ classdef SOEM < handle
             on_lost = libpointer('voidPtr', 0);
             log_out = libpointer('voidPtr', 0);
             log_flush = libpointer('voidPtr', 0);
-            calllib('autd3capi_link_soem', 'AUTDLinkSOEM', pp, obj.ifname_,  obj.buf_size_, obj.sync0_cycle_, obj.send_cycle_, obj.sync_mode_ == SyncMode.FreeRun, on_lost, obj.timer_strategy_, obj.check_interval_, obj.debug_level_, log_out, log_flush);
+            is_freerun = obj.sync_mode_ == SyncMode.FreeRun;
+            strategy = uint8(obj.timer_strategy_);
+            calllib('autd3capi_link_soem', 'AUTDLinkSOEM', pp, obj.ifname_,  obj.buf_size_, obj.sync0_cycle_, obj.send_cycle_, is_freerun, on_lost, strategy, obj.check_interval_, obj.debug_level_, log_out, log_flush);
             res = obj;
         end
 
