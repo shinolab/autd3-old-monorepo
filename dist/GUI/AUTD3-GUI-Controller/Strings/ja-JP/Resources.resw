@@ -156,8 +156,8 @@
   <data name="Home_Line1.Text" xml:space="preserve">
     <value>• 最初に, GeometryページでAUTD3デバイスの配置を設定します</value>
   </data>
-  <data name="LinkPage_HighPrecision.Content" xml:space="preserve">
-    <value>高精度モード</value>
+  <data name="LinkPage_TimerStrategy.Text" xml:space="preserve">
+    <value>タイマー戦略</value>
   </data>
   <data name="LinkPage_Interface.Text" xml:space="preserve">
     <value>インターフェース</value>
@@ -266,5 +266,8 @@
   </data>
   <data name="LinkPage_CheckInterval.Text" xml:space="preserve">
     <value>状態確認間隔 [ms]</value>
+  </data>
+  <data name="LinkPage_SyncMode.Text" xml:space="preserve">
+    <value>同期モード</value>
   </data>
 </root>
