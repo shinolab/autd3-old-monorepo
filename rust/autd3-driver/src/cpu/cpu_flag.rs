@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 21/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,6 +12,8 @@
  */
 
 bitflags::bitflags! {
+    #[derive(Clone, Copy)]
+    #[repr(C)]
     pub struct CPUControlFlags : u8 {
         const NONE            = 0;
         const MOD             = 1 << 0;

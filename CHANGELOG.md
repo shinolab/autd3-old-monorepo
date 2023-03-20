@@ -1,3 +1,10 @@
+# 8.3.0
+
+- Fix some minor bugs
+- Add `timer_strategy` option for `link::SOEM`
+  - `high_precision` is now deprecated
+- (internal) Refactor some modules
+
 # 8.2.0
 
 - Move `Controller::set_sound_speed_from_temp` into `Geometry`

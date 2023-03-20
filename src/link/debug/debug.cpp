@@ -3,7 +3,7 @@
 // Created Date: 11/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/02/2023
+// Last Modified: 20/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -108,8 +108,8 @@ class DebugImpl final : public core::Link {
     if (std::any_of(_cpus.begin(), _cpus.end(), [](const auto& cpu) { return !cpu.synchronized(); }))
       _logger->warn("\tDevices are not synchronized!");
 
-    _logger->debug("\tCPU Flag: {}", tx.header().cpu_flag.to_string());
-    _logger->debug("\tFPGA Flag: {}", tx.header().fpga_flag.to_string());
+    _logger->debug("\tCPU Flag: {}", to_string(tx.header().cpu_flag));
+    _logger->debug("\tFPGA Flag: {}", to_string(tx.header().fpga_flag));
 
     for (auto& cpu : _cpus) {
       _logger->debug("Status: {}", cpu.id());
@@ -128,7 +128,7 @@ class DebugImpl final : public core::Link {
           for (size_t j = 0; j < fpga.stm_cycle(); j++) {
             const auto [duties, phases] = fpga.drives(j);
             _logger->trace("\tSTM[{}]:", j);
-            for (size_t k = 0; k < duties.size(); k++) _logger->trace("\t\t{:<3}: duty = {:<4}, phase = {:<4}", k, duties[k].duty, phases[k].phase);
+            for (size_t k = 0; k < duties.size(); k++) _logger->trace("\t\t{:<3}: duty = {:<4}, phase = {:<4}", k, duties[k], phases[k]);
           }
         }
       } else if (fpga.is_legacy_mode())
@@ -143,7 +143,7 @@ class DebugImpl final : public core::Link {
         _logger->trace("\t\tmodulation = [{}]", fmt::join(m, ", "));
         if (!fpga.is_stm_mode()) {
           const auto [duties, phases] = fpga.drives(0);
-          for (size_t k = 0; k < duties.size(); k++) _logger->trace("\t\t{:<3}: duty = {:<4}, phase = {:<4}", k, duties[k].duty, phases[k].phase);
+          for (size_t k = 0; k < duties.size(); k++) _logger->trace("\t\t{:<3}: duty = {:<4}, phase = {:<4}", k, duties[k], phases[k]);
         }
       } else
         _logger->debug("\tWithout output");

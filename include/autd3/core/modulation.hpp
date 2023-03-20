@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/03/2023
+// Last Modified: 13/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -60,11 +60,10 @@ class Modulation : public DatagramHeader {
   std::unique_ptr<driver::Operation> operation() override { return std::make_unique<driver::Modulation>(calc(), sampling_frequency_division); }
 
   template <class Fn>
-  static std::vector<driver::autd3_float_t> generate_iota(size_t first, const size_t last, Fn func) {
-    assert(first < last);
+  static std::vector<driver::autd3_float_t> generate_iota(const size_t n, Fn func) {
     std::vector<driver::autd3_float_t> buffer;
-    buffer.reserve(last - first);
-    for (size_t i = 0; first != last; ++first) buffer.emplace_back(func(i++));
+    buffer.reserve(n);
+    for (size_t i = 0; i < n; i++) buffer.emplace_back(func(i));
     return buffer;
   }
 };

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,10 +36,8 @@ inline BackendWrapper* backend_create(const autd3::gain::holo::BackendPtr& ptr) 
 inline void backend_delete(const BackendWrapper* ptr) { delete ptr; }
 
 typedef struct {
-  std::unique_ptr<autd3::gain::holo::AmplitudeConstraint> ptr;
+  autd3::gain::holo::ConstraintPtr ptr;
 } ConstraintWrapper;
 
-inline ConstraintWrapper* constraint_create(std::unique_ptr<autd3::gain::holo::AmplitudeConstraint> ptr) {
-  return new ConstraintWrapper{std::move(ptr)};
-}
+inline ConstraintWrapper* constraint_create(autd3::gain::holo::ConstraintPtr ptr) { return new ConstraintWrapper{std::move(ptr)}; }
 inline void constraint_delete(const ConstraintWrapper* ptr) { delete ptr; }

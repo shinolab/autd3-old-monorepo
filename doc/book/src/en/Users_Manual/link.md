@@ -124,7 +124,7 @@ Then, open `System→Routes` and check the AMS NetId of the server in the `NetId
 
 <figure>
   <img src="../fig/Users_Manual/NetId_Management.jpg"/>
-  <figcaption>Server AmsNetId</figcaption>.
+  <figcaption>Server AmsNetId</figcaption>
 </figure>
 
 Here, the value is assumed to be "172.16.99.194.1.1".
@@ -166,16 +166,19 @@ In such a case, you should allow the connection to port 48898 of TCP/UDP in your
 
 ## SOEM
 
-[SOEM](https://github.com/OpenEtherCATsociety/SOEM) is an open-source EherCAT Master library.
-Unlike TwinCAT, it runs on regular Windows, so real-time performance is not guaranteed.
-Therefore, it is recommended to use TwinCAT as possible.
+[SOEM](https://github.com/OpenEtherCATsociety/SOEM) is an open source EherCAT Master library.
+Unlike TwinCAT, SOEM runs on normal Windows/Linux/macOS, so real-time performance is not guaranteed.
+Therefore, basically, it is recommended to use TwinCAT.
 SOEM should be used only for unavoidable reasons or during development.
 On the other hand, SOEM has the advantage of being cross-platform and simple to install.
 
 For Windows, install [npcap](https://nmap.org/npcap/) with **WinPcap API compatible mode**.
-For Linux/mac, no special preparation is required.
+For Linux/macOS, no special preparation is required.
 
-When you use SOEM Link, include the `autd3/link/soem.hpp` header.
+To use SOEM link, build with the `BUILD_LINK_SOEM` flag ON, or link `link_soem` library.
+On Windows, you need to additionally link `Packet.lib` and `wpcap.lib`.
+
+When you use Link of SOEM, include the `autd3/link/soem.hpp` header.
 
 ```cpp
 #include "autd3/link/soem.hpp"
@@ -184,22 +187,25 @@ When you use SOEM Link, include the `autd3/link/soem.hpp` header.
   auto link = autd3::link::SOEM().build();
 ```
 
-SOEM sometimes behaves unstable when a large number of devices are used[^fn_soem].
-In this case, use the `sync0_cycle` and `send_cycle` functions to increase their values.
+### interface name
+
+You can specify the network interface to which the AUTD3 device is connected with `ifname`.
 
 ```cpp
-  auto link = autd3::link::SOEM()
-                .sync0_cycle(3)
-                .send_cycle(3)
-                .build();
+  auto link = autd3::link::SOEM().ifname("interface name").build();
 ```
 
-This value should be as small as possible while not causing errors.
-The default is 2, and the value depends on the number of connected devices.
-For example, if you have nine devices connected, the value should be around 3 or 4.
+The default is blank, and if blank, the network interface to which the AUTD3 device is connected is automatically selected.
 
-SOEM Link can also set a callback in case of an unrecoverable error (e.g., cable disconnection)[^fn_soem_err].
-The callback takes an error message as an argument.
+The list of available network interfaces can be obtained with the `enumerate_adapters` function.
+```cpp
+  auto adapters = autd3::link::SOEM::enumerate_adapters();
+```
+
+### Callbacks on link disconnection
+
+The ``on_lost`` function allows you to set up a callback in case of a non-recoverable error (for example, cable disconnection)[^fn_soem_err].
+The callback function takes an error message as an argument.
 
 ```cpp
   auto link = autd3::link::SOEM()
@@ -210,32 +216,58 @@ The callback takes an error message as an argument.
                 })
                 .build();
 ```
- 
-In addition, on Windows, you can set High Precision mode.
+
+### Synchronous signal/transmit cycle
+
+The behavior of `SOEM` may also become unstable when a large number of devices are connected[^fn_soem].
+In this case, increase the `sync0_cycle` and `send_cycle` values.
 ```cpp
   auto link = autd3::link::SOEM()
-                .high_precision(true)
+                .sync0_cycle(3)
+                .send_cycle(3)
+                .build();
+```
+This value should be as small as possible while not causing errors.
+The value depends on the number of connected devices.
+For example, if you have 9 devices connected, a value of 3 or 4 should work.
+
+The default is 2.
+
+### Timer strategy
+
+EtherCAT works by sending frames cyclically at a certain interval.
+`timer_strategy` specifies how this periodic transmission is performed.
+
+* Sleep       : Using sleep function in standard library
+* BusyWait    : Using busy waiting loop. High resolution, but high CPU load
+* NativeTimer : Using OS native timer
+  * Multimedia Timer on Windows, POSIX timer on linux, Grand Central Dispatch Timer on macOS
+
+```cpp
+  auto link = autd3::link::SOEM()
+                .timer_strategy(autd3::TimerStrategy::Sleep)
                 .build();
 ```
 
-Setting `high precision mode` allows for more accurate timers, but at the expense of higher CPU load.
+The default is `Sleep`.
 
-### FreeRun mode
+### Synchronization mode
 
-SOEM may not work well under some circumstances (see [FAQ](https://shinolab.github.io/autd3/book/en/FAQ)).
-To address this problem, a FreeRun mode has been introduced.
-This does not solve the problem thoroughly, but it may improve it somewhat.
+Set the synchronization mode of EtherCAT.
+There are two synchronization modes: `DC` and `FreeRun`.
+
+* See [Beckhoff's description](https://infosys.beckhoff.com/english.php?content=../content/1033/ethercatsystem/2469122443.html&id=) for more detauls.
 
 ```cpp
   auto link = autd3::link::SOEM()
-                .sync_mode(autd3::link::SyncMode::FreeRun)
+                .sync_mode(autd3::SyncMode::FreeRun)
                 .build();
 ```
 
+The default is `FreeRun`.
 
 ## RemoteSOEM
 
-As mentioned above, running another program on the PC running SOEM may cause unstable operation.
 RemoteSOEM Link can be used to separate the server PC running SOEM from the client PC running the user program.
 
 To use the RemoteSOEM, you need to prepare two PCs.

@@ -3,7 +3,7 @@
 // Created Date: 06/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,7 +11,6 @@
 
 #pragma once
 
-#include <utility>
 #include <vector>
 
 #include "autd3/driver/cpu/datagram.hpp"
@@ -21,7 +20,7 @@ namespace autd3::driver {
 
 template <typename T>
 struct Sync final : Operation {
-  explicit Sync(std::vector<uint16_t> cycles) : _cycles(std::move(cycles)) {}
+  explicit Sync(const std::vector<uint16_t>& cycles) : _cycles(cycles) {}
 
   void pack(TxDatagram& tx) override {
     static_assert(is_mode_v<T>, "Template type parameter must be Mode.");
@@ -31,8 +30,8 @@ struct Sync final : Operation {
     tx.header().cpu_flag.set(CPUControlFlags::ConfigSync);
     tx.num_bodies = tx.num_devices();
 
-    assert(_cycles.size() == tx.bodies_size());
-    std::copy_n(_cycles.begin(), tx.bodies_size(), tx.bodies_raw_ptr());
+    assert(_cycles.size() == tx.num_transducers());
+    std::copy_n(_cycles.begin(), tx.num_transducers(), tx.bodies_raw_ptr());
 
     _sent = true;
   }
@@ -43,7 +42,7 @@ struct Sync final : Operation {
 
  private:
   bool _sent{false};
-  std::vector<uint16_t> _cycles{};
+  const std::vector<uint16_t>& _cycles;
 };
 
 template <>
@@ -56,7 +55,7 @@ struct Sync<Legacy> final : Operation {
     tx.header().cpu_flag.set(CPUControlFlags::ConfigSync);
     tx.num_bodies = tx.num_devices();
 
-    std::generate_n(tx.bodies_raw_ptr(), tx.bodies_size(), [] { return 4096; });
+    std::generate_n(tx.bodies_raw_ptr(), tx.num_transducers(), [] { return 4096; });
 
     _sent = true;
   }

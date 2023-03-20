@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/03/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -47,7 +47,7 @@ struct Geometry {
      * @param device device
      */
     template <typename T>
-    auto add_device(T&& device) -> std::enable_if_t<std::is_base_of_v<Device, T>, Builder&> {
+    auto add_device(T&& device) -> std::enable_if_t<std::is_base_of_v<Device, std::remove_reference_t<T>>, Builder&> {
       {
         const auto id = _transducers.size();
         const auto transducers = device.get_transducers(id);
@@ -228,17 +228,28 @@ struct Geometry {
    */
   [[nodiscard]] const std::vector<size_t>& device_map() const noexcept { return _device_map; }
 
-  [[nodiscard]] std::vector<uint16_t> cycles() const {
-    std::vector<uint16_t> cycles;
-    cycles.reserve(num_transducers());
-    std::transform(begin(), end(), std::back_inserter(cycles), [](const auto& tr) { return tr.cycle; });
-    return cycles;
+  [[nodiscard]] const std::vector<uint16_t>& cycles() const {
+    if (_cycles.empty()) {
+      _cycles.resize(num_transducers(), 0x00);
+      _tr_maybe_dirty = true;
+    }
+    if (_tr_maybe_dirty) {
+      std::transform(begin(), end(), _cycles.begin(), [](const auto& tr) { return tr.cycle; });
+      _tr_maybe_dirty = false;
+    }
+    return _cycles;
   }
 
   [[nodiscard]] std::vector<Transducer>::const_iterator begin() const noexcept { return _transducers.begin(); }
   [[nodiscard]] std::vector<Transducer>::const_iterator end() const noexcept { return _transducers.end(); }
-  [[nodiscard]] std::vector<Transducer>::iterator begin() noexcept { return _transducers.begin(); }
-  [[nodiscard]] std::vector<Transducer>::iterator end() noexcept { return _transducers.end(); }
+  [[nodiscard]] std::vector<Transducer>::iterator begin() noexcept {
+    _tr_maybe_dirty = true;
+    return _transducers.begin();
+  }
+  [[nodiscard]] std::vector<Transducer>::iterator end() noexcept {
+    _tr_maybe_dirty = true;
+    return _transducers.end();
+  }
 
   [[nodiscard]] std::vector<Transducer>::const_iterator begin(const size_t dev_idx) const {
     if (dev_idx >= _device_map.size()) throw std::out_of_range("Device index is out of range");
@@ -255,12 +266,14 @@ struct Geometry {
   }
   [[nodiscard]] std::vector<Transducer>::iterator begin(const size_t dev_idx) {
     if (dev_idx >= _device_map.size()) throw std::out_of_range("Device index is out of range");
+    _tr_maybe_dirty = true;
     const auto start_idx =
         std::accumulate(_device_map.begin(), _device_map.begin() + static_cast<decltype(_device_map)::difference_type>(dev_idx), size_t{0});
     return _transducers.begin() + static_cast<decltype(_transducers)::difference_type>(start_idx);
   }
   [[nodiscard]] std::vector<Transducer>::iterator end(const size_t dev_idx) {
     if (dev_idx >= _device_map.size()) throw std::out_of_range("Device index is out of range");
+    _tr_maybe_dirty = true;
     const auto end_idx =
         std::accumulate(_device_map.begin(), _device_map.begin() + static_cast<decltype(_device_map)::difference_type>(dev_idx), size_t{0}) +
         _device_map[dev_idx];
@@ -268,12 +281,15 @@ struct Geometry {
   }
 
   [[nodiscard]] const Transducer& operator[](const size_t i) const { return _transducers[i]; }
-  [[nodiscard]] Transducer& operator[](const size_t i) { return _transducers[i]; }
+  [[nodiscard]] Transducer& operator[](const size_t i) {
+    _tr_maybe_dirty = true;
+    return _transducers[i];
+  }
 
   /**
    * @brief Drive mode
    */
-  [[nodiscard]] Mode mode() const noexcept { return _mode; };
+  [[nodiscard]] Mode mode() const noexcept { return _mode; }
 
   /**
    * @brief Attenuation coefficient.
@@ -305,11 +321,14 @@ struct Geometry {
  private:
   Geometry(const Mode mode, const driver::autd3_float_t attenuation, const driver::autd3_float_t sound_speed, std::vector<Transducer> transducers,
            std::vector<size_t> device_map)
-      : _mode(mode), attenuation(attenuation), sound_speed(sound_speed), _transducers(std::move(transducers)), _device_map(std::move(device_map)) {}
+      : attenuation(attenuation), sound_speed(sound_speed), _mode(mode), _transducers(std::move(transducers)), _device_map(std::move(device_map)) {}
 
   Mode _mode;
   std::vector<Transducer> _transducers;
   std::vector<size_t> _device_map;
+
+  mutable bool _tr_maybe_dirty{false};
+  mutable std::vector<uint16_t> _cycles;
 };
 
 }  // namespace autd3::core

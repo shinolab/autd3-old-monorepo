@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/02/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -86,7 +86,7 @@ struct FirmwareInfo {
   }
 
   [[nodiscard]] static bool matches_version(const FirmwareInfo& info) {
-    return (info._cpu_version_number_major == info._fpga_version_number_major) && (info._cpu_version_number_minor == info._fpga_version_number_minor);
+    return info._cpu_version_number_major == info._fpga_version_number_major && info._cpu_version_number_minor == info._fpga_version_number_minor;
   }
 
   [[nodiscard]] static bool is_supported(const FirmwareInfo& info) {

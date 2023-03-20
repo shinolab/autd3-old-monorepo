@@ -168,16 +168,20 @@ AUTD3ハードウェア上の制約はないが, その精度はホスト側の�
   handle.finish();
 ```
 
-### TimerStrategy
+### Timer strategy
 
-Softwareタイマーの設定を`timer_strategy`で制御できる.
-
-現在は, `TimerStrategy::BusyWait`のみ用意されている.
-このフラグをセットすると, sleepではなく, ビジーウェイトにより送信タイミングを制御するようになる.
+`SoftwareSTM`コンストラクタの引数に`TimerStrategy`を指定できる.
 
 ```cpp
-  stm.timer_strategy.set(autd3::SoftwareSTM::TimerStrategy::BusyWait);
+  autd3::SoftwareSTM stm(autd3::TimerStrategy::Sleep);
 ```
+
+* `Sleep`       : 標準ライブラリの`std::chrono::sleep_for`を用いる
+* `BusyWait`    : ビジーウェイトを用いる. 高解像度だが, CPU負荷が高い.
+* `NativeTimer` : OSのタイマー機能を用いる
+  * Windowsではマルチメディアタイマー, linuxではPOSIXタイマー, macOSではGrand Central Dispatch Timer
+
+デフォルトは`Sleep`である.
 
 [^fn_gain_seq]: `FocusSTM`のおよそ60倍のレイテンシ
 

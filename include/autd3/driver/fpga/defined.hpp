@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/03/2023
+// Last Modified: 20/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -53,25 +53,22 @@ struct Drive {
  * @brief LegacyDrive stores the duty ratio/phase data actually sent to the device in Legacy mode.
  */
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(2)
 struct LegacyDrive {
-  /**
-   * @brief phase
-   * @details phase=0 means 0 radian, and phase=255 means 2pi*255/256 radian
-   */
-  uint8_t phase;
-  /**
-   * @brief duty ratio of PWM signal
-   */
-  uint8_t duty;
-
   static uint8_t to_phase(const Drive d) { return static_cast<uint8_t>(static_cast<int32_t>(std::round(d.phase / (2 * pi) * 256)) & 0xFF); }
 
   static uint8_t to_duty(const Drive d) { return static_cast<uint8_t>(std::round(510 * std::asin(std::clamp<autd3_float_t>(d.amp, 0, 1)) / pi)); }
 
+  LegacyDrive() = delete;
+  LegacyDrive(const LegacyDrive& v) = delete;
+  LegacyDrive& operator=(const LegacyDrive& obj) = delete;
+  LegacyDrive(LegacyDrive&& obj) = delete;
+  LegacyDrive& operator=(LegacyDrive&& obj) = delete;
+  ~LegacyDrive() = default;
+
   void set(const Drive d) {
-    phase = to_phase(d);
-    duty = to_duty(d);
+    _phase = to_phase(d);
+    _duty = to_duty(d);
   }
 
   LegacyDrive& operator=(const Drive& d) {
@@ -82,6 +79,17 @@ struct LegacyDrive {
     set(d);
     return *this;
   }
+
+ private:
+  /**
+   * @brief phase
+   * @details phase=0 means 0 radian, and phase=255 means 2pi*255/256 radian
+   */
+  uint8_t _phase;
+  /**
+   * @brief duty ratio of PWM signal
+   */
+  uint8_t _duty;
 };
 #pragma pack(pop)
 
@@ -89,23 +97,26 @@ struct LegacyDrive {
  * @brief Phase stores the phase data actually sent to the device in Advanced/AdvancedPhase mode.
  */
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(2)
 struct AdvancedDrivePhase {
-  uint16_t phase;
-
   static uint16_t to_phase(const Drive d, const uint16_t cycle) {
     return static_cast<uint16_t>(
         rem_euclid(static_cast<int32_t>(std::round(d.phase / (2 * pi) * static_cast<autd3_float_t>(cycle))), static_cast<int32_t>(cycle)));
   }
 
-  void set(const Drive d, const uint16_t cycle) { phase = to_phase(d, cycle); }
-  explicit AdvancedDrivePhase(const Drive d, const uint16_t cycle) : phase(to_phase(d, cycle)) {}
-  explicit AdvancedDrivePhase(const uint16_t phase) : phase(phase) {}
-  AdvancedDrivePhase(const AdvancedDrivePhase& v) = default;
+  AdvancedDrivePhase() = delete;
+  AdvancedDrivePhase(const AdvancedDrivePhase& v) = delete;
   AdvancedDrivePhase& operator=(const AdvancedDrivePhase& obj) = default;
-  AdvancedDrivePhase(AdvancedDrivePhase&& obj) = default;
+  AdvancedDrivePhase(AdvancedDrivePhase&& obj) = delete;
   AdvancedDrivePhase& operator=(AdvancedDrivePhase&& obj) = default;
   ~AdvancedDrivePhase() = default;
+
+  void set(const Drive d, const uint16_t cycle) { _phase = to_phase(d, cycle); }
+
+  explicit AdvancedDrivePhase(const Drive d, const uint16_t cycle) : _phase(to_phase(d, cycle)) {}
+
+ private:
+  uint16_t _phase;
 };
 #pragma pack(pop)
 
@@ -113,22 +124,25 @@ struct AdvancedDrivePhase {
  * @brief Duty stores the duty ratio data actually sent to the device in Advanced mode.
  */
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(2)
 struct AdvancedDriveDuty {
-  uint16_t duty;
-
   static uint16_t to_duty(const Drive d, const uint16_t cycle) {
     return static_cast<uint16_t>(std::round(static_cast<autd3_float_t>(cycle) * std::asin(std::clamp<autd3_float_t>(d.amp, 0, 1)) / pi));
   }
 
-  void set(const Drive d, const uint16_t cycle) { duty = to_duty(d, cycle); }
-  explicit AdvancedDriveDuty(const Drive d, const uint16_t cycle) : duty(to_duty(d, cycle)) {}
-  explicit AdvancedDriveDuty(const uint16_t duty) : duty(duty) {}
-  AdvancedDriveDuty(const AdvancedDriveDuty& v) = default;
+  AdvancedDriveDuty() = delete;
+  AdvancedDriveDuty(const AdvancedDriveDuty& v) = delete;
   AdvancedDriveDuty& operator=(const AdvancedDriveDuty& obj) = default;
-  AdvancedDriveDuty(AdvancedDriveDuty&& obj) = default;
+  AdvancedDriveDuty(AdvancedDriveDuty&& obj) = delete;
   AdvancedDriveDuty& operator=(AdvancedDriveDuty&& obj) = default;
   ~AdvancedDriveDuty() = default;
+
+  void set(const Drive d, const uint16_t cycle) { _duty = to_duty(d, cycle); }
+
+  explicit AdvancedDriveDuty(const Drive d, const uint16_t cycle) : _duty(to_duty(d, cycle)) {}
+
+ private:
+  uint16_t _duty;
 };
 #pragma pack(pop)
 
@@ -137,14 +151,14 @@ struct AdvancedDriveDuty {
  * @details Currently, it is only possible to check if the temperature of the device is above a certain level.
  */
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(2)
 struct FPGAInfo {
   uint8_t info;
 
-  FPGAInfo() noexcept : info(0) {}
-  explicit FPGAInfo(const uint8_t ack) noexcept : info(ack) {}
+  constexpr FPGAInfo() noexcept : info(0) {}
+  constexpr explicit FPGAInfo(const uint8_t ack) noexcept : info(ack) {}
 
-  [[nodiscard]] bool is_thermal_assert() const noexcept { return (info & 0x01) != 0; }
+  [[nodiscard]] constexpr bool is_thermal_assert() const noexcept { return (info & 0x01) != 0; }
 
   [[nodiscard]] std::string to_string() const { return "Thermal assert = " + std::to_string(is_thermal_assert()); }
 };

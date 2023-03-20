@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/03/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ class UniformGain final : public autd3::Gain {
   UniformGain() = default;
 
   std::vector<autd3::driver::Drive> calc(const autd3::Geometry& geometry) override {
-    return autd3::Gain::transform(geometry, [this](const auto&) { return autd3::Drive{0.0, 1.0}; });
+    return transform(geometry, [this](const auto&) { return autd3::Drive{0.0, 1.0}; });
   }
 };
 

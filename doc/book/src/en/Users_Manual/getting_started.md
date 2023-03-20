@@ -22,7 +22,8 @@ Make sure you setup PATH to use `git` and `cmake` from a terminal.
 
 Next, set up the device. 
 We will use only one AUTD3 device here.
-Connect the ethernet port of the PC to the `EtherCAT In` of the AUTD3 device with an Ethernet cable (see [Concept](concept.md)). Next, connect the $\SI{24}{V}$ power supply.
+Connect the ethernet port of the PC to the `EtherCAT In` of the AUTD3 device with an Ethernet cable (see [Concept](./concept.md)).
+Next, connect the $\SI{24}{V}$ power supply.
 
 ### Firmware update
 
@@ -111,15 +112,13 @@ Next, build with CMake.
 ```
 mkdir build
 cd build
-cmake ..
+cmake .. -DCMAKE_BUILD_TYPE=Release
 ```
 
 Now, `autd3_sample.sln` should be generated under the build directory.
 Open it and execute the main project.
 **Note that you must change the build configuration of Visual Studio from Debug to Release when executing the main project.**
 Also, if you use Linux/macOS, root privileges may be required to run the main project.
-
-[Online API Documentation](https://shinolab.github.io/autd3/api/index.html) is also available.
 
 [^fn_git]: Not required to run, but used to simplify the work.
 

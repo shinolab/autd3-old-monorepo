@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/03/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,6 +36,8 @@ struct AmplitudeConstraint {
   [[nodiscard]] virtual driver::autd3_float_t convert(driver::autd3_float_t raw, driver::autd3_float_t max) const = 0;
 };
 
+using ConstraintPtr = std::unique_ptr<AmplitudeConstraint>;
+
 /**
  * @brief AmplitudeConstraint to do nothing
  */
@@ -46,6 +48,8 @@ struct DontCare final : AmplitudeConstraint {
   DontCare& operator=(const DontCare& obj) = default;
   DontCare(DontCare&& obj) = default;
   DontCare& operator=(DontCare&& obj) = default;
+
+  [[nodiscard]] ConstraintPtr build() const { return std::make_unique<DontCare>(); }
 
   [[nodiscard]] driver::autd3_float_t convert(const driver::autd3_float_t raw, const driver::autd3_float_t) const override { return raw; }
 };
@@ -61,6 +65,8 @@ struct Normalize final : AmplitudeConstraint {
   Normalize(Normalize&& obj) = default;
   Normalize& operator=(Normalize&& obj) = default;
 
+  [[nodiscard]] ConstraintPtr build() const { return std::make_unique<Normalize>(); }
+
   [[nodiscard]] driver::autd3_float_t convert(const driver::autd3_float_t raw, const driver::autd3_float_t max) const override { return raw / max; }
 };
 
@@ -74,6 +80,8 @@ struct Uniform final : AmplitudeConstraint {
   Uniform& operator=(const Uniform& obj) = default;
   Uniform(Uniform&& obj) = default;
   Uniform& operator=(Uniform&& obj) = default;
+
+  [[nodiscard]] ConstraintPtr build() const { return std::make_unique<Uniform>(_value); }
 
   [[nodiscard]] driver::autd3_float_t convert(const driver::autd3_float_t, const driver::autd3_float_t) const override { return _value; }
 
@@ -91,7 +99,7 @@ using Clamp = DontCare;
  */
 class Holo : public core::Gain {
  public:
-  explicit Holo(BackendPtr backend, std::unique_ptr<AmplitudeConstraint> constraint = std::make_unique<Normalize>())
+  explicit Holo(BackendPtr backend, ConstraintPtr constraint = Normalize().build())
       : constraint(std::move(constraint)), _backend(std::move(backend)) {}
   ~Holo() override = default;
   Holo(const Holo& v) noexcept = delete;
@@ -110,7 +118,7 @@ class Holo : public core::Gain {
   [[nodiscard]] const std::vector<core::Vector3>& foci() const { return this->_foci; }
   [[nodiscard]] const std::vector<complex>& amplitudes() const { return this->_amps; }
 
-  std::unique_ptr<AmplitudeConstraint> constraint{std::make_unique<Normalize>()};
+  ConstraintPtr constraint{std::make_unique<Normalize>()};
 
  protected:
   BackendPtr _backend;
