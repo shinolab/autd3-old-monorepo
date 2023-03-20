@@ -271,7 +271,7 @@ class SOEMHandler final {
         if (_ecat_thread.joinable()) _ecat_thread.join();
         break;
       case core::TimerStrategy::NativeTimer:
-        const auto _ = this->_timer->stop();
+        const auto _ = _timer->stop();
         break;
     }
   }

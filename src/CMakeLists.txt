@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
+find_package(Threads REQUIRED)
+
 file(GLOB HEADER_FILES ${PROJECT_SOURCE_DIR}/include/autd3/*.hpp)
 file(GLOB_RECURSE CORE_HEADER_FILES ${PROJECT_SOURCE_DIR}/include/autd3/core/*.hpp)
 file(GLOB_RECURSE DRIVER_HEADER_FILES ${PROJECT_SOURCE_DIR}/include/autd3/driver/*.hpp)
@@ -15,6 +17,11 @@ add_library(autd3
   ${MODULATION_HEADER_FILES}
 )
 target_link_libraries(autd3 PUBLIC autd3_common)
+
+target_link_libraries(autd3 INTERFACE ${CMAKE_THREAD_LIBS_INIT})
+if(WIN32)
+  target_link_libraries(autd3 INTERFACE ws2_32 winmm)
+endif()
 
 set_target_properties(autd3
   PROPERTIES
