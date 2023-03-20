@@ -90,7 +90,7 @@ TEST(ControllerTest, basic_usage) {
                                            255, 228, 201, 175, 149, 124, 100, 78,  57,  39,  24,  12,  4,   0,   1,   6,   16,  29,  45,  64};
   for (const auto& cpu : *cpus) {
     ASSERT_EQ(cpu.fpga().modulation_cycle(), expect_mod.size());
-    for (size_t i = 0; i < std::min(cpu.fpga().modulation_cycle(), expect_mod.size()); i++) ASSERT_EQ(cpu.fpga().modulation()[i], expect_mod[i]);
+    for (size_t i = 0; i < (std::min)(cpu.fpga().modulation_cycle(), expect_mod.size()); i++) ASSERT_EQ(cpu.fpga().modulation()[i], expect_mod[i]);
   }
   for (const auto& cpu : *cpus) {
     ASSERT_EQ(cpu.fpga().silencer_cycle(), 4096);
