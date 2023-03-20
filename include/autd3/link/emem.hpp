@@ -3,7 +3,7 @@
 // Created Date: 04/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/02/2023
+// Last Modified: 21/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,13 @@
 #pragma once
 
 #include "autd3/core/link.hpp"
+#include "autd3/core/utils/osal_timer/timer_strategy.hpp"
 #include "autd3/link/ecat.hpp"
+
+namespace autd3 {
+using core::TimerStrategy;
+using link::SyncMode;
+}  // namespace autd3
 
 namespace autd3::link {
 
@@ -35,11 +41,11 @@ class Emem {
    * @brief Constructor
    */
   Emem()
-      : _high_precision(false),
+      : _timer_strategy(TimerStrategy::Sleep),
         _sync0_cycle(2),
         _send_cycle(2),
         _callback(nullptr),
-        _sync_mode(SyncMode::DC),
+        _sync_mode(SyncMode::FreeRun),
         _state_check_interval(std::chrono::milliseconds(100)) {}
 
   ~Emem() = default;
@@ -55,6 +61,14 @@ class Emem {
    */
   Emem& ifname(std::string ifname) {
     _ifname = std::move(ifname);
+    return *this;
+  }
+
+  /**
+   * @brief Set send buffer size (unlimited if 0).
+   */
+  Emem& buf_size(const size_t size) {
+    _buf_size = size;
     return *this;
   }
 
@@ -82,12 +96,8 @@ class Emem {
     return *this;
   }
 
-  /**
-   * @brief Set high precision mode.
-   * @details The high precision mode provides more precise timer control but may increase CPU load. Only Windows is affected by this setting.
-   */
-  Emem& high_precision(const bool high_precision) {
-    _high_precision = high_precision;
+  Emem& timer_strategy(const TimerStrategy timer_strategy) {
+    _timer_strategy = timer_strategy;
     return *this;
   }
 
@@ -109,8 +119,9 @@ class Emem {
   }
 
  private:
-  bool _high_precision;
+  TimerStrategy _timer_strategy;
   std::string _ifname;
+  size_t _buf_size{0};
   uint16_t _sync0_cycle;
   uint16_t _send_cycle;
   std::function<void(std::string)> _callback;
