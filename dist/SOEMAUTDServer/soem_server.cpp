@@ -3,7 +3,7 @@
 // Created Date: 26/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/03/2023
+// Last Modified: 20/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -38,14 +38,17 @@ int main(const int argc, char* argv[]) try {
 
   program.add_argument("-l", "--disable_high_precision").help("Disable high precision mode (Deprecated)").implicit_value(true).default_value(false);
 
+  program.add_argument("-b", "--buffer_size").help("Buffer size (unlimited if 0)").scan<'i', int>().default_value(0);
+
   program.add_argument("-w", "--timer_strategy")
       .help("Timer Strategy (sleep, busywait, timer)")
       .default_value(std::string{"sleep"})
       .action([](const std::string& value) {
-        static const std::vector<std::string> choices = {"sleep", "busywait", "timer"};
-        if (std::find(choices.begin(), choices.end(), value) != choices.end()) {
+        if (static const std::vector<std::string> CHOICES = {"sleep", "busywait", "timer"};
+            std::find(CHOICES.begin(), CHOICES.end(), value) != CHOICES.end()) {
           return value;
         }
+        spdlog::warn("{} is invalid. Using sleep instead.", value);
         return std::string{"sleep"};
       });
 
@@ -79,6 +82,7 @@ int main(const int argc, char* argv[]) try {
   const auto state_check_interval = std::max(1, program.get<int>("--state_check_interval"));
   const auto freerun = program.get<bool>("--freerun");
   const auto disable_high_precision = program.get<bool>("--disable_high_precision");
+  const auto buf_size = program.get<int>("--buffer_size");
   const std::string timer_strategy_str = program.get<std::string>("--timer_strategy");
   autd3::core::TimerStrategy timer_strategy;
   if (timer_strategy_str == "busywait")
@@ -103,7 +107,7 @@ int main(const int argc, char* argv[]) try {
   if (spdlog::thread_pool() == nullptr) spdlog::init_thread_pool(8192, 1);
   auto logger = std::make_shared<spdlog::async_logger>("SOEMAUTDServer Log", autd3::get_default_sink(), spdlog::thread_pool());
   auto soem_handler = autd3::link::SOEMHandler(
-      timer_strategy, ifname, static_cast<uint16_t>(sync0_cycle), static_cast<uint16_t>(send_cycle),
+      timer_strategy, ifname, buf_size, static_cast<uint16_t>(sync0_cycle), static_cast<uint16_t>(send_cycle),
       [](const std::string& msg) {
         spdlog::error("Link is lost");
         spdlog::error(msg);
