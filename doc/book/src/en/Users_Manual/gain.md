@@ -56,6 +56,54 @@ The second argument is a normalized sound pressure amplitude of 0-1 (1 by defaul
     autd3::gain::Null g;
 ```
 
+
+## Grouped
+
+`Grouped` is a `Gain` to use different `Gain` for each device.
+
+In `Grouped`, a device ID is associated with an arbitrary `Gain`.
+```cpp
+  const auto g0 = ... ;
+  const auto g1 = ... ;
+
+  autd3::gain::Grouped g(autd.geometry());
+  g.add(0, g0);
+  g.add(1, g1);
+```
+
+In the above case, device 0 uses `g0` and device 1 uses `g1`.
+
+Device indexes can also be passed as a list.
+```cpp
+  ...
+  
+  autd3::gain::Grouped g;
+  g.add({0, 1}, g1);
+  g.add({2, 3}, g2);
+```
+In the above case, the 0-th, 1-st device uses `g0` and the 2-nd, 3-rd device uses `g1`.
+
+## Cache
+
+`Cache` is `Gain` to cache the results of `Gain` calculations.
+It is used when phase/amplitude calculation is heavy and the same `Gain` is sent more than once.
+It can also be used to check and change the amplitude/phase values after the phase/amplitude calculation.
+
+To use `Cache`, specify any `Gain` type as a type argument and pass the constructor arguments of the original type in the constructor.
+```cpp
+  autd3::gain::Cache<autd3::gain::Focus> g(...) ;
+```
+
+The phase/amplitude data can be accessed with the `drives` function or with the indexer.
+Note that you need to call the `calc` function first.
+
+```cpp
+  autd3::gain::Cache<autd3::gain::Focus> g(...) ;
+  g.calc(autd.geometry());
+  g[0].amp = 0;
+```
+In the above example, the amplitude of the 0-th oscillator is set to 0.
+
 ## Holo (Multiple foci)
 
 Holo is a `Gain` for generating multiple foci.
@@ -85,7 +133,7 @@ To use `Holo`, `include` the file `autd3/gain/holo.hpp`.
 
 ...
 
-  const auto backend = autd3::gain::holo::EigenBackend::create();
+  const auto backend = autd3::gain::holo::EigenBackend().build();
   autd3::gain::holo::GSPAT g(backend);
   g.add_focus(autd3::Vector3(x1, y1, z1), 1.0);
   g.add_focus(autd3::Vector3(x2, y2, z2), 1.0);
@@ -153,61 +201,6 @@ cmake ... -DBUILD_HOLO_GAIN=ON -DBUILD_BLAS_BACKEND=ON -DBLAS_LIB_DIR=<your BLAS
     ```
 
     * If you get `flangxxx.lib` related link errors, add the option `-DBLAS_DEPEND_LIB_DIR=%CONDA_HOME%/Library/lib`.
-
-
-## Grouped
-
-`Grouped` is a `Gain` to use different `Gain` for each device.
-
-In `Grouped`, a device ID is associated with an arbitrary `Gain`.
-```cpp
-  const auto g0 = ... ;
-  const auto g1 = ... ;
-
-  autd3::gain::Grouped g(autd.geometry());
-  g.add(0, g0);
-  g.add(1, g1);
-```
-
-In the above case, device 0 uses `g0` and device 1 uses `g1`.
-
-## Create Custom Gain Tutorial
-
-You can create your own `Gain` by inheriting from the `Gain` class.
-Here, we will actually define a `FocalPoint` that generates a single focus just like `Focus`.
-
-````cpp
-#include "autd3.hpp"
-
-class FocalPoint final : public autd3::Gain {
- public:
-  explicit FocalPoint(autd3::Vector3 point) : _point(std::move(point)) {}
-
-  std::vector<autd3::driver::Drive> calc(const autd3::Geometry& geometry) override {
-    std::vector<autd3::driver::Drive> drives;
-    drives.reserve(geometry.num_transducers());
-    std::transform(geometry.begin(), geometry.end(), std::back_inserter(drives), [&](const auto& transducer) {
-        const auto phase = transducer.align_phase_at(_point, geometry.sound_speed);
-        return driver::Drive{phase, 1.0};
-      });
-    return drives;
-  }
-
- private:
-  autd::Vector3 _point;
-};
-```
-
-The `Controller::send` function takes a class inheriting from `Gain` as an argument.
-Therefore, you should inherit `Gain`.
-
-The `Gain::calc` method is called in the `Controller::send` function whose argument is `Geometry`.
-Therefore, you should calculate the phase/amplitude in this `calc` method.
-`Geometry` defines an iterator that return `Device`.
-The `Device` also defines an iterator that returns `Transducer`, from which the position of the transducer can be obtained.
-
-In order to maximize the sound pressure of the emitted ultrasound from transducers at a certain point $\bp$, the phases at $\bp$ should be aligned.
-This can be calculated by the function `align_phase_at` provided in the `Transducer` class.
 
 [^hasegawa2017]: Hasegawa, Keisuke, et al. "Electronically steerable ultrasound-driven long narrow air stream." Applied Physics Letters 111.6 (2017): 064104.
 

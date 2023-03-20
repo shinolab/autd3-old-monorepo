@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/02/2023
+// Last Modified: 20/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,8 +19,14 @@
 #include <vector>
 
 #include "autd3/core/link.hpp"
+#include "autd3/core/utils/osal_timer/timer_strategy.hpp"
 #include "autd3/driver/debug_level.hpp"
 #include "autd3/link/ecat.hpp"
+
+namespace autd3 {
+using core::TimerStrategy;
+using link::SyncMode;
+}  // namespace autd3
 
 namespace autd3::link {
 
@@ -43,11 +49,11 @@ class SOEM {
    * @brief Constructor
    */
   SOEM()
-      : _high_precision(false),
+      : _timer_strategy(TimerStrategy::Sleep),
         _sync0_cycle(2),
         _send_cycle(2),
         _callback(nullptr),
-        _sync_mode(SyncMode::DC),
+        _sync_mode(SyncMode::FreeRun),
         _state_check_interval(std::chrono::milliseconds(100)) {}
 
   /**
@@ -57,6 +63,14 @@ class SOEM {
    */
   SOEM& ifname(std::string ifname) {
     _ifname = std::move(ifname);
+    return *this;
+  }
+
+  /**
+   * @brief Set send buffer size (unlimited if 0).
+   */
+  SOEM& buf_size(const size_t size) {
+    _buf_size = size;
     return *this;
   }
 
@@ -85,11 +99,21 @@ class SOEM {
   }
 
   /**
-   * @brief Set high precision mode.
-   * @details The high precision mode provides more precise timer control but may increase CPU load. Only Windows is affected by this setting.
+   * @brief This function is deprecated.
    */
-  SOEM& high_precision(const bool high_precision) {
-    _high_precision = high_precision;
+#ifdef WIN32
+  [[deprecated("Please use timer_strategy(autd3::TimerStrategy) instead.")]]
+#else
+  [[deprecated("This function is meaningless and should be removed.")]]
+#endif
+  SOEM&
+  high_precision(const bool value) {
+    _timer_strategy = value ? TimerStrategy::BusyWait : TimerStrategy::Sleep;
+    return *this;
+  }
+
+  SOEM& timer_strategy(const TimerStrategy timer_strategy) {
+    _timer_strategy = timer_strategy;
     return *this;
   }
 
@@ -135,8 +159,9 @@ class SOEM {
   SOEM& operator=(SOEM&& obj) = default;
 
  private:
-  bool _high_precision;
+  TimerStrategy _timer_strategy;
   std::string _ifname;
+  size_t _buf_size{0};
   uint16_t _sync0_cycle;
   uint16_t _send_cycle;
   std::function<void(std::string)> _callback;

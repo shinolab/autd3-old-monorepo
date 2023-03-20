@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <chrono>
 #include <memory>
 #include <utility>
 
@@ -45,6 +46,31 @@ struct DatagramBody {
   DatagramBody& operator=(DatagramBody&& obj) = default;
 
   virtual std::unique_ptr<driver::Operation> operation(const Geometry& geometry) = 0;
+};
+
+/**
+ * @brief Structure with DatagramHeader and DatagramBody for performing special operations
+ */
+class SpecialData {
+ public:
+  virtual ~SpecialData() = default;
+  SpecialData(const SpecialData& v) noexcept = delete;
+  SpecialData& operator=(const SpecialData& obj) = delete;
+  SpecialData(SpecialData&& obj) = default;
+  SpecialData& operator=(SpecialData&& obj) = default;
+
+  std::unique_ptr<DatagramHeader> header() { return std::move(_h); }
+  std::unique_ptr<DatagramBody> body() { return std::move(_b); }
+  [[nodiscard]] std::chrono::high_resolution_clock::duration min_timeout() const noexcept { return _min_timeout; }
+
+ protected:
+  template <typename Rep, typename Period>
+  explicit SpecialData(const std::chrono::duration<Rep, Period> min_timeout, std::unique_ptr<DatagramHeader> h, std::unique_ptr<DatagramBody> b)
+      : _min_timeout(std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(min_timeout)), _h(std::move(h)), _b(std::move(b)) {}
+
+  std::chrono::high_resolution_clock::duration _min_timeout;
+  std::unique_ptr<DatagramHeader> _h;
+  std::unique_ptr<DatagramBody> _b;
 };
 
 /**

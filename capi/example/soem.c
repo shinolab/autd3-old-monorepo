@@ -4,7 +4,7 @@
  * Created Date: 16/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/03/2023
+ * Last Modified: 20/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -43,7 +43,7 @@ int main(void) {
   AUTDAddDevice(builder, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
   AUTDBuildGeometry(&geometry, builder);
 
-  AUTDLinkSOEM(&link, NULL, 2, 2, false, (void*)callback, false, 100, 2, NULL, NULL);
+  AUTDLinkSOEM(&link, NULL, 0, 2, 2, true, (void*)callback, 0, 100, 2, NULL, NULL);
 
   AUTDOpenController(&cnt, geometry, link);
 

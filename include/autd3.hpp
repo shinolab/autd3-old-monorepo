@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 20/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,17 +14,22 @@
 #include "autd3/autd3_device.hpp"
 #include "autd3/controller.hpp"
 #include "autd3/core/amplitudes.hpp"
+#include "autd3/core/clear.hpp"
 #include "autd3/core/delay.hpp"
 #include "autd3/core/geometry.hpp"
 #include "autd3/core/mode.hpp"
+#include "autd3/core/silencer_config.hpp"
 #include "autd3/core/stm/focus.hpp"
 #include "autd3/core/stm/gain.hpp"
+#include "autd3/core/stop.hpp"
+#include "autd3/core/synchronize.hpp"
+#include "autd3/core/update_flag.hpp"
+#include "autd3/core/utils/osal_timer/timer_strategy.hpp"
 #include "autd3/driver/debug_level.hpp"
 #include "autd3/gain/primitive.hpp"
 #include "autd3/link/log.hpp"
 #include "autd3/modulation/primitive.hpp"
 #include "autd3/soft_stm.hpp"
-#include "autd3/special_data.hpp"
 
 namespace autd3 {
 
@@ -60,7 +65,7 @@ namespace extra {}
 
 constexpr driver::autd3_float_t pi = driver::pi;
 
-static inline std::string version = "8.2.0";
+static inline std::string version = "8.3.0";
 
 using core::Geometry;
 using core::Mode;
@@ -70,6 +75,12 @@ using core::Amplitudes;
 
 using core::Gain;
 using core::Modulation;
+
+using core::Clear;
+using core::ModDelayConfig;
+using core::Stop;
+using core::Synchronize;
+using core::UpdateFlag;
 
 using driver::autd3_float_t;
 using driver::Drive;

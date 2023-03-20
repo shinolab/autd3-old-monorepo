@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/03/2023
+// Last Modified: 20/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -107,8 +107,7 @@ EXPORT_AUTD uint16_t AUTDGetTransModDelay(IN const void* geometry, IN int32_t tr
 EXPORT_AUTD void AUTDSetTransModDelay(IN void* geometry, IN int32_t trans_idx, IN uint16_t delay);
 EXPORT_AUTD void AUTDCreateAmplitudes(OUT void** out, IN autd3_float_t amp);
 EXPORT_AUTD void AUTDDeleteAmplitudes(IN const void* amplitudes);
-EXPORT_AUTD void AUTDSoftwareSTM(OUT void** out);
-EXPORT_AUTD void AUTDSoftwareSTMSetStrategy(IN void* stm, IN uint8_t strategy);
+EXPORT_AUTD void AUTDSoftwareSTM(OUT void** out, IN uint8_t strategy);
 EXPORT_AUTD void AUTDSoftwareSTMAdd(IN void* stm, IN void* gain);
 EXPORT_AUTD void AUTDSoftwareSTMStart(OUT void** handle, IN void* stm, IN void* cnt);
 EXPORT_AUTD void AUTDSoftwareSTMFinish(IN void* handle);
@@ -116,8 +115,8 @@ EXPORT_AUTD autd3_float_t AUTDSoftwareSTMSetFrequency(IN void* stm, IN autd3_flo
 EXPORT_AUTD autd3_float_t AUTDSoftwareSTMFrequency(IN const void* stm);
 EXPORT_AUTD uint64_t AUTDSoftwareSTMPeriod(IN const void* stm);
 EXPORT_AUTD autd3_float_t AUTDSoftwareSTMSamplingFrequency(IN const void* stm);
-EXPORT_AUTD uint64_t AUTDSoftwareSTMSamplingPeriod(IN const void* stm);
-EXPORT_AUTD void AUTDSoftwareSTMSetSamplingPeriod(IN void* stm, IN uint64_t period);
+EXPORT_AUTD uint32_t AUTDSoftwareSTMSamplingPeriod(IN const void* stm);
+EXPORT_AUTD void AUTDSoftwareSTMSetSamplingPeriod(IN void* stm, IN uint32_t period);
 EXPORT_AUTD void AUTDDeleteSoftwareSTM(IN const void* stm);
 #ifdef __cplusplus
 }

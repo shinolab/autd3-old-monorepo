@@ -68,10 +68,10 @@ FPGAの状態としては, 現在以下の情報が取得できる.
 
 ### タイムアウト
 
-`send`の最終引数に値を0より大きくすると, デバイスへのデータ送信時に, 送信データがデバイスで処理されたかどうかを確認するようになる.
+`send`の最終引数でタイムアウト時間を指定できる.
 
 ```cpp
-autd.set_ack_check_timeout(std::chrono::milliseconds(20));
+autd.send(..., std::chrono::milliseconds(20));
 ```
 
 タイムアウトの値が0より大きい場合, 送信時に送信データがデバイスで処理されるか, 指定したタイムアウト時間が経過するまで待機する.
@@ -81,19 +81,21 @@ autd.set_ack_check_timeout(std::chrono::milliseconds(20));
 
 確実にデータを送信したい場合はこれを適当な値に設定しておくことをおすすめする.
 
-デフォルトは0にセットされている.
+省略した場合は0になる.
 
-## stop
+### stop
 
-`autd3::Stop`で出力を止めることができる.
+`autd3::Stop`を送信すると, 出力を止めることができる.
 
 ```cpp
 autd.send(autd3::Stop());
 ```
 
+`autd3::Stop`を送信すると, `SilencerConfig`がデフォルトの値で上書きされるので注意されたい.
+
 ### clear
 
-デバイス内のフラグや`Gain`/`Modulation`データ等をクリアする.
+`autd3::Clear`を送信すると, デバイス内のフラグや`Gain`/`Modulation`データ等をクリアする.
 
 ```cpp
 autd.send(autd3::Clear());

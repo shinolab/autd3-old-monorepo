@@ -3,7 +3,7 @@
 // Created Date: 23/08/2019
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/02/2023
+// Last Modified: 20/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2019-2020 Shun Suzuki. All rights reserved.
@@ -38,7 +38,7 @@ core::LinkPtr SOEM::build() {
       (_out == nullptr || _flush == nullptr) ? get_default_sink() : std::make_shared<CustomSink<std::mutex>>(std::move(_out), std::move(_flush));
   auto logger = std::make_shared<spdlog::async_logger>(name, std::move(sink), spdlog::thread_pool());
   logger->set_level(static_cast<spdlog::level::level_enum>(_level));
-  return std::make_unique<SOEMLink>(_high_precision, std::move(_ifname), _sync0_cycle, _send_cycle, std::move(_callback), _sync_mode,
+  return std::make_unique<SOEMLink>(_timer_strategy, std::move(_ifname), _buf_size, _sync0_cycle, _send_cycle, std::move(_callback), _sync_mode,
                                     _state_check_interval, logger);
 }
 

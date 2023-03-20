@@ -4,7 +4,7 @@
  * Created Date: 10/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/03/2023
+ * Last Modified: 21/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -58,8 +58,6 @@ public class SimpleAUTDController : MonoBehaviour
             .Build();
 
         var link = new AUTD3Sharp.Link.SOEM()
-           .HighPrecision(true)
-           // .FreeRun(true)
            .OnLost(_onLost)
            .DebugLogFunc(_output, _flush)
            .Build();

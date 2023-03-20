@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/01/2023
+ * Last Modified: 20/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -108,20 +108,22 @@ namespace AUTD3Sharp
             AUTD3Sharp.DebugLevel _level = AUTD3Sharp.DebugLevel.Info;
 
             private string _ifname;
+            private ulong _bufSize;
             private ushort _sendCycle;
             private ushort _sync0Cycle;
-            private bool _freerun;
-            private bool _highPrecision;
+            private AUTD3Sharp.SyncMode _syncMode;
+            private AUTD3Sharp.TimerStrategy _timerStrategy;
             private IntPtr _onLost;
             private ulong _checkInterval;
 
             public SOEM()
             {
                 _ifname = "";
+                _bufSize = 0;
                 _sendCycle = 2;
                 _sync0Cycle = 2;
-                _freerun = false;
-                _highPrecision = false;
+                _syncMode = AUTD3Sharp.SyncMode.FreeRun;
+                _timerStrategy = AUTD3Sharp.TimerStrategy.Sleep;
                 _onLost = IntPtr.Zero;
                 _checkInterval = 500;
             }
@@ -129,6 +131,12 @@ namespace AUTD3Sharp
             public SOEM Ifname(string ifname)
             {
                 _ifname = ifname;
+                return this;
+            }
+
+            public SOEM BufSize(ulong size)
+            {
+                _bufSize = size;
                 return this;
             }
 
@@ -144,15 +152,29 @@ namespace AUTD3Sharp
                 return this;
             }
 
+            [Obsolete("This methods is deprecated. Use SyncMode(SyncMode) instead.")]
             public SOEM FreeRun(bool freerun)
             {
-                _freerun = freerun;
+                _syncMode = freerun ? AUTD3Sharp.SyncMode.FreeRun : AUTD3Sharp.SyncMode.DC;
                 return this;
             }
 
+            public SOEM SyncMode(SyncMode syncMode)
+            {
+                _syncMode = syncMode;
+                return this;
+            }
+
+            [Obsolete("This methods is deprecated. Use TimerStrategy(TimerStrategy) instead.")]
             public SOEM HighPrecision(bool highPrecision)
             {
-                _highPrecision = highPrecision;
+                _timerStrategy = highPrecision ? AUTD3Sharp.TimerStrategy.BusyWait : AUTD3Sharp.TimerStrategy.Sleep;
+                return this;
+            }
+
+            public SOEM TimerStrategy(TimerStrategy timerStrategy)
+            {
+                _timerStrategy = timerStrategy;
                 return this;
             }
 
@@ -183,7 +205,7 @@ namespace AUTD3Sharp
 
             public Link Build()
             {
-                NativeMethods.LinkSOEM.AUTDLinkSOEM(out var handle, _ifname, _sync0Cycle, _sendCycle, _freerun, _onLost, _highPrecision, _checkInterval, (int)_level, _output, _flush);
+                NativeMethods.LinkSOEM.AUTDLinkSOEM(out var handle, _ifname, _bufSize, _sync0Cycle, _sendCycle, _syncMode == AUTD3Sharp.SyncMode.FreeRun, _onLost, (byte)_timerStrategy, _checkInterval, (int)_level, _output, _flush);
                 return new Link(handle);
             }
 

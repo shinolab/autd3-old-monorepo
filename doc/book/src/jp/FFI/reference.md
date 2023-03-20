@@ -1007,17 +1007,8 @@ SoftwareSTMを作成する.
 | Argument name / return | type  | in/out | description                       |
 | ---------------------- | ----- | ------ | --------------------------------- |
 | out                    | void**| out    | pointer to pointer to SoftwareSTM |
+| strategy               | uint8_t | in     | TimerStrategy                   |
 | return                 | void  | -      | -                                 |
-
-## AUTDSoftwareSTMSetStrategy (autd3capi)
-
-SoftwareSTMのTimerStrategyを設定する.
-
-| Argument name / return | type    | in/out | description                       |
-| ---------------------- | -----   | ------ | --------------------------------- |
-| stm                    | void*   | in     | pointer to SoftwareSTM            |
-| strategy               | uint8_t | in     | TimerStrategy                     |
-| return                 | void    | -      | -                                 |
 
 ## AUTDSoftwareSTMAdd (autd3capi)
 
@@ -1096,7 +1087,7 @@ SoftwareSTMのサンプリング周期をナノ秒単位で取得する.
 | Argument name / return | type     | in/out | description            |
 | ---------------------- | -----    | ------ | -----------------------|
 | stm                    | void*    | in     | pointer to SoftwareSTM |
-| return                 | uint64_t | -      | sampling period        |
+| return                 | uint32_t | -      | sampling period        |
 
 ## AUTDSoftwareSTMSetSamplingPeriod (autd3capi)
 
@@ -1105,7 +1096,7 @@ SoftwareSTMのサンプリング周期をナノ秒単位で設定する.
 | Argument name / return | type     | in/out | description            |
 | ---------------------- | -----    | ------ | -----------------------|
 | stm                    | void*    | in     | pointer to SoftwareSTM |
-| period                 | uint64_t | in     | sampling period        |
+| period                 | uint32_t | in     | sampling period        |
 | return                 | void     | -      | -                      |
 
 ## AUTDDeleteSoftwareSTM (autd3capi)
@@ -1444,11 +1435,12 @@ Adapter listへのポインタを削除する.
 | ---------------------- | -------- | ------ | ---------------------------------- |
 | out                    | void**   | out    | pointer to pointer to TwinCAT link |
 | ifname                 | char*    | in     | interface name                     |
+| buf_size               | uint64_t | in     | buf size (unlimited if 0)          |
 | sync0_cycle            | uint16_t | in     | sync0 cycle                        |
 | send_cycle             | uint16_t | in     | send cycle                         |
 | freerun                | bool     | in     | free run mode                      |
 | on_lost                | void*    | in     | pointer to on-lost callback        |
-| high_precision         | bool     | in     | high precision mode                |
+| timer_strategy         | uint8_t  | in     | TimerStrategy                      |
 | state_check_interval   | uint64_t | in     | state check interval in ms         |
 | level                  | int32_t  | in     | log level                          |
 | out_func               | void*    | in     | output callback                    |

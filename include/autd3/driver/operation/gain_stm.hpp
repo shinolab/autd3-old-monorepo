@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -53,7 +53,7 @@ struct GainSTM<Legacy> final : Operation {
 
     if (is_finished()) return;
 
-    if (_drives.size() > GAIN_STM_LEGACY_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+    if (_drives.size() < 2 || _drives.size() > GAIN_STM_LEGACY_BUF_SIZE_MAX) throw std::runtime_error("GainSTM buffer overflow");
 
     if (_props.start_idx) {
       if (static_cast<size_t>(_props.start_idx.value()) >= _drives.size()) throw std::runtime_error("STM start index out of range");
@@ -94,32 +94,32 @@ struct GainSTM<Legacy> final : Operation {
           break;
         case GainSTMMode::PhaseFull:
           is_last_frame = _sent + 2 >= _drives.size() + 1;
-          std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseFull0*>(tx.bodies_raw_ptr()),
+          std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseFull<0>*>(tx.bodies_raw_ptr()),
                          [](const auto& d) { return d; });
           _sent++;
           if (_sent - 1 < _drives.size()) {
-            std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseFull1*>(tx.bodies_raw_ptr()),
+            std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseFull<1>*>(tx.bodies_raw_ptr()),
                            [](const auto& d) { return d; });
             _sent++;
           }
           break;
         case GainSTMMode::PhaseHalf:
           is_last_frame = _sent + 4 >= _drives.size() + 1;
-          std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf0*>(tx.bodies_raw_ptr()),
+          std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf<0>*>(tx.bodies_raw_ptr()),
                          [](const auto& d) { return d; });
           _sent++;
           if (_sent - 1 < _drives.size()) {
-            std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf1*>(tx.bodies_raw_ptr()),
+            std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf<1>*>(tx.bodies_raw_ptr()),
                            [](const auto& d) { return d; });
             _sent++;
           }
           if (_sent - 1 < _drives.size()) {
-            std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf2*>(tx.bodies_raw_ptr()),
+            std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf<2>*>(tx.bodies_raw_ptr()),
                            [](const auto& d) { return d; });
             _sent++;
           }
           if (_sent - 1 < _drives.size()) {
-            std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf3*>(tx.bodies_raw_ptr()),
+            std::transform(_drives[_sent - 1].begin(), _drives[_sent - 1].end(), reinterpret_cast<LegacyPhaseHalf<3>*>(tx.bodies_raw_ptr()),
                            [](const auto& d) { return d; });
             _sent++;
           }
@@ -142,8 +142,8 @@ struct GainSTM<Legacy> final : Operation {
 
 template <>
 struct GainSTM<Advanced> final : Operation {
-  explicit GainSTM(std::vector<std::vector<Drive>> drives, std::vector<uint16_t> cycles, const GainSTMProps props)
-      : _drives(std::move(drives)), _cycles(std::move(cycles)), _props(props) {}
+  explicit GainSTM(std::vector<std::vector<Drive>> drives, const std::vector<uint16_t>& cycles, const GainSTMProps props)
+      : _drives(std::move(drives)), _cycles(cycles), _props(props) {}
 
   [[nodiscard]] bool is_finished() const override { return _sent >= _drives.size() + 1; }
 
@@ -193,13 +193,13 @@ struct GainSTM<Advanced> final : Operation {
 
  private:
   std::vector<std::vector<Drive>> _drives{};
-  std::vector<uint16_t> _cycles{};
+  const std::vector<uint16_t>& _cycles;
   GainSTMProps _props;
   size_t _sent{0};
   bool _next_duty{false};
 
   void pack_phase(TxDatagram& tx) const {
-    if (_drives.size() > GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+    if (_drives.size() < 2 || _drives.size() > GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM buffer overflow");
 
     if (_props.start_idx) {
       if (static_cast<size_t>(_props.start_idx.value()) >= _drives.size()) throw std::runtime_error("STM start index out of range");
@@ -244,7 +244,7 @@ struct GainSTM<Advanced> final : Operation {
   }
 
   void pack_duty(TxDatagram& tx) const {
-    if (_drives.size() > GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+    if (_drives.size() < 2 || _drives.size() > GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM buffer overflow");
 
     if (_props.start_idx) {
       if (static_cast<size_t>(_props.start_idx.value()) >= _drives.size()) throw std::runtime_error("STM start index out of range");
@@ -286,8 +286,8 @@ struct GainSTM<Advanced> final : Operation {
 
 template <>
 struct GainSTM<AdvancedPhase> final : Operation {
-  explicit GainSTM(std::vector<std::vector<Drive>> drives, std::vector<uint16_t> cycles, const GainSTMProps props)
-      : _drives(std::move(drives)), _cycles(std::move(cycles)), _props(props) {}
+  explicit GainSTM(std::vector<std::vector<Drive>> drives, const std::vector<uint16_t>& cycles, const GainSTMProps props)
+      : _drives(std::move(drives)), _cycles(cycles), _props(props) {}
 
   void init() override { _sent = 0; }
 
@@ -313,12 +313,12 @@ struct GainSTM<AdvancedPhase> final : Operation {
 
  private:
   std::vector<std::vector<Drive>> _drives{};
-  std::vector<uint16_t> _cycles{};
+  const std::vector<uint16_t>& _cycles;
   GainSTMProps _props;
   size_t _sent{0};
 
   void pack_phase(TxDatagram& tx) const {
-    if (_drives.size() > GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM out of buffer");
+    if (_drives.size() < 2 || _drives.size() > GAIN_STM_BUF_SIZE_MAX) throw std::runtime_error("GainSTM buffer overflow");
 
     if (_props.start_idx) {
       if (static_cast<size_t>(_props.start_idx.value()) >= _drives.size()) throw std::runtime_error("STM start index out of range");

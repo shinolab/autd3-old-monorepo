@@ -11,17 +11,17 @@ The Rust version is available at [crate.io](https://crates.io/crates/autd3), so 
 
 ```
 [dependencies]
-autd3 = "8.2.0"
+autd3 = "8.3.0"
 ```
 
 Also, you can add links, gains, etc., to dependencies as needed since they are available as separate crates.
 
 ```
 [dependencies]
-autd3-link-soem = "8.2.0"
-autd3-link-twincat = "8.2.0"
-autd3-link-simulator = "8.2.0"
-autd3-gain-holo = "8.2.0"
+autd3-link-soem = "8.3.0"
+autd3-link-twincat = "8.3.0"
+autd3-link-simulator = "8.3.0"
+autd3-gain-holo = "8.3.0"
 ```
 
 ## Usage
@@ -36,8 +36,9 @@ For example, the following code is equivalent to [Getting Started](../Users_Manu
 
 Note that the Rust version of the `send` function takes only one argument. 
 If you want to send header and body data at the same time, chain `send`; otherwise, call `flush`.
+
 ```rust
-    autd.send(&mut m).flush().unwrap();
+    autd.timeout(std::time::Duration::from_millis(20)).send(&mut m).flush().unwrap();
 ```
 
 See [rust-autd example](https://github.com/shinolab/autd3/tree/master/rust/autd3-examples) for a more detailed sample.

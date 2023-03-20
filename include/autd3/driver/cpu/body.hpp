@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/01/2023
+// Last Modified: 20/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,7 +27,7 @@ autd3::driver::FOCUS_STM_FIXED_NUM_UNIT. The duty ratio is cycle >> (duty_shift+
 amplitude.
 */
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(2)
 struct STMFocus {
   /**
    * \brief Constructor
@@ -55,7 +55,7 @@ struct STMFocus {
 the next 32 bits. The STMFocus data is stored after them.
 */
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(2)
 struct FocusSTMBodyInitial {
   /**
    * \brief This data is cast from the Body data. Never construct directly.
@@ -84,7 +84,7 @@ struct FocusSTMBodyInitial {
  * \details The number of STMFocus data is stored in the first 16 bits, followed by the STMFocus data.
  */
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(2)
 struct FocusSTMBodySubsequent {
   /**
    * \brief This data is cast from the Body data. Never construct directly.
@@ -123,156 +123,67 @@ enum class GainSTMMode : uint16_t {
 };
 
 /**
- * @brief Transmission data when using GainSTMMode::PhaseFull in Legacy mode (for the low 8-bit part)
+ * @brief Transmission data when using GainSTMMode::PhaseFull in Legacy mode
  */
 #pragma pack(push)
-#pragma pack(1)
-struct LegacyPhaseFull0 {
-  uint8_t phase_0;
-  uint8_t phase_1;
+#pragma pack(2)
+template <size_t N>
+struct LegacyPhaseFull {
+  LegacyPhaseFull() noexcept = delete;
+  ~LegacyPhaseFull() = delete;
+  LegacyPhaseFull(const LegacyPhaseFull& v) = delete;
+  LegacyPhaseFull& operator=(const LegacyPhaseFull& obj) = delete;
+  LegacyPhaseFull(LegacyPhaseFull&& obj) = delete;
+  LegacyPhaseFull& operator=(LegacyPhaseFull&& obj) = delete;
 
-  void set(const Drive d) {
-    const auto phase = LegacyDrive::to_phase(d);
-    phase_0 = phase;
-  }
+  void set(const Drive d) { _phase[N] = LegacyDrive::to_phase(d); }
 
-  LegacyPhaseFull0& operator=(const Drive& d) {
+  LegacyPhaseFull& operator=(const Drive& d) {
     set(d);
     return *this;
   }
-  LegacyPhaseFull0& operator=(Drive&& d) {
+  LegacyPhaseFull& operator=(Drive&& d) {
     set(d);
     return *this;
   }
+
+ private:
+  uint8_t _phase[2];
 };
 #pragma pack(pop)
 
 /**
- * @brief Transmission data when using GainSTMMode::PhaseFull in Legacy mode (for the high 8-bit part)
+ * @brief Transmission data when using GainSTMMode::PhaseHalf in Legacy mode
  */
 #pragma pack(push)
-#pragma pack(1)
-struct LegacyPhaseFull1 {
-  uint8_t phase_0;
-  uint8_t phase_1;
+#pragma pack(2)
+template <size_t N>
+struct LegacyPhaseHalf {
+  LegacyPhaseHalf() noexcept = delete;
+  ~LegacyPhaseHalf() = delete;
+  LegacyPhaseHalf(const LegacyPhaseHalf& v) = delete;
+  LegacyPhaseHalf& operator=(const LegacyPhaseHalf& obj) = delete;
+  LegacyPhaseHalf(LegacyPhaseHalf&& obj) = delete;
+  LegacyPhaseHalf& operator=(LegacyPhaseHalf&& obj) = delete;
 
   void set(const Drive d) {
-    const auto phase = LegacyDrive::to_phase(d);
-    phase_1 = phase;
+    const auto p = LegacyDrive::to_phase(d) >> 4;
+    constexpr auto s = (N & 0x1) << 2;
+    _phase[N >> 1] &= 0xF0 >> s;
+    _phase[N >> 1] |= p << s;
   }
 
-  LegacyPhaseFull1& operator=(const Drive& d) {
+  LegacyPhaseHalf& operator=(const Drive& d) {
     set(d);
     return *this;
   }
-  LegacyPhaseFull1& operator=(Drive&& d) {
+  LegacyPhaseHalf& operator=(Drive&& d) {
     set(d);
     return *this;
   }
-};
-#pragma pack(pop)
 
-/**
- * @brief Transmission data when using GainSTMMode::PhaseHalf in Legacy mode (for the [3:0] bits)
- */
-#pragma pack(push)
-#pragma pack(1)
-struct LegacyPhaseHalf0 {
-  uint8_t phase_01;
-  uint8_t phase_23;
-
-  void set(const Drive d) {
-    const auto phase = LegacyDrive::to_phase(d);
-    phase_01 &= 0xF0;
-    phase_01 |= phase >> 4 & 0x0F;
-  }
-
-  LegacyPhaseHalf0& operator=(const Drive& d) {
-    set(d);
-    return *this;
-  }
-  LegacyPhaseHalf0& operator=(Drive&& d) {
-    set(d);
-    return *this;
-  }
-};
-#pragma pack(pop)
-
-/**
- * @brief Transmission data when using GainSTMMode::PhaseHalf in Legacy mode (for the [7:4] bits)
- */
-#pragma pack(push)
-#pragma pack(1)
-struct LegacyPhaseHalf1 {
-  uint8_t phase_01;
-  uint8_t phase_23;
-
-  void set(const Drive d) {
-    const auto phase = LegacyDrive::to_phase(d);
-    phase_01 &= 0x0F;
-    phase_01 |= phase & 0xF0;
-  }
-
-  LegacyPhaseHalf1& operator=(const Drive& d) {
-    set(d);
-    return *this;
-  }
-  LegacyPhaseHalf1& operator=(Drive&& d) {
-    set(d);
-    return *this;
-  }
-};
-#pragma pack(pop)
-
-/**
- * @brief Transmission data when using GainSTMMode::PhaseHalf in Legacy mode (for the [11:8] bits)
- */
-#pragma pack(push)
-#pragma pack(1)
-struct LegacyPhaseHalf2 {
-  uint8_t phase_01;
-  uint8_t phase_23;
-
-  void set(const Drive d) {
-    const auto phase = LegacyDrive::to_phase(d);
-    phase_23 &= 0xF0;
-    phase_23 |= phase >> 4 & 0x0F;
-  }
-
-  LegacyPhaseHalf2& operator=(const Drive& d) {
-    set(d);
-    return *this;
-  }
-  LegacyPhaseHalf2& operator=(Drive&& d) {
-    set(d);
-    return *this;
-  }
-};
-#pragma pack(pop)
-
-/**
- * @brief Transmission data when using GainSTMMode::PhaseHalf in Legacy mode (for the [15:12] bits)
- */
-#pragma pack(push)
-#pragma pack(1)
-struct LegacyPhaseHalf3 {
-  uint8_t phase_01;
-  uint8_t phase_23;
-
-  void set(const Drive d) {
-    const auto phase = LegacyDrive::to_phase(d);
-    phase_23 &= 0x0F;
-    phase_23 |= phase & 0xF0;
-  }
-
-  LegacyPhaseHalf3& operator=(const Drive& d) {
-    set(d);
-    return *this;
-  }
-  LegacyPhaseHalf3& operator=(Drive&& d) {
-    set(d);
-    return *this;
-  }
+ private:
+  uint8_t _phase[2];
 };
 #pragma pack(pop)
 
@@ -282,7 +193,7 @@ struct LegacyPhaseHalf3 {
  * bits. Amplitude and phase data are not stored.
  */
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(2)
 struct GainSTMBodyInitial {
   /**
    * \brief This data is cast from the Body data. Never construct directly.
@@ -307,7 +218,7 @@ struct GainSTMBodyInitial {
  * \details Amplitude/phase data is stored.
  */
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(2)
 struct GainSTMBodySubsequent {
   /**
    * \brief This data is cast from the Body data. Never construct directly.
