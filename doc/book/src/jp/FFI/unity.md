@@ -34,7 +34,7 @@ v2.6からは, Unity Package Manager経由でインストールする.
     }
   ],
   "dependencies": {
-    "com.shinolab.autd3": "8.2.1",
+    "com.shinolab.autd3": "8.3.0",
     ...
 ```
 

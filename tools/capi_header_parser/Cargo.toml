@@ -1,6 +1,6 @@
 [package]
 name = "capi_header_parser"
-version = "8.2.1"
+version = "8.3.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
