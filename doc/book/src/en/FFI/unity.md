@@ -2,8 +2,6 @@
 
 **Unity version has a left-handed coordinate system with z-axis inversion, and the unit of distance is in meters.**
 
-> Note: Using Unity and SOEM link might be cause an error. Please see [FAQ](https://shinolab.github.io/autd3/book/en/FAQ/faq#frequent-send-failures-when-using-linksoem) for more details. 
-
 ## Installation
 
 Please install from Unity Package Manager.

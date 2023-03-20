@@ -233,36 +233,41 @@ For example, if you have 9 devices connected, a value of 3 or 4 should work.
 
 The default is 2.
 
-### High precision timer
+### Timer strategy
 
-Setting `high_precision` will increase the CPU load, but it will stabilize the operation of `SOEM` by using a more accurate timer.
+EtherCAT works by sending frames cyclically at a certain interval.
+`timer_strategy` specifies how this periodic transmission is performed.
+
+* Sleep       : Using sleep function in standard library
+* BusyWait    : Using busy waiting loop. High resolution, but high CPU load
+* NativeTimer : Using OS native timer
+  * Multimedia Timer on Windows, POSIX timer on linux, Grand Central Dispatch Timer on macOS
 
 ```cpp
   auto link = autd3::link::SOEM()
-                .high_precision(true)
+                .timer_strategy(autd3::TimerStrategy::Sleep)
                 .build();
 ```
+
+The default is `Sleep`.
 
 ### Synchronization mode
 
 Set the synchronization mode of EtherCAT.
 There are two synchronization modes: `DC` and `FreeRun`.
 
+* See [Beckhoff's description](https://infosys.beckhoff.com/english.php?content=../content/1033/ethercatsystem/2469122443.html&id=) for more detauls.
+
 ```cpp
   auto link = autd3::link::SOEM()
-                .sync_mode(autd3::link::SyncMode::DC)
+                .sync_mode(autd3::SyncMode::FreeRun)
                 .build();
 ```
 
-The default `DC` mode is recommended.
-
-### Known Issues
-
-See [FAQ](../FAQ/faq.md).
+The default is `FreeRun`.
 
 ## RemoteSOEM
 
-As mentioned above, running another program on the PC running SOEM may cause unstable operation.
 RemoteSOEM Link can be used to separate the server PC running SOEM from the client PC running the user program.
 
 To use the RemoteSOEM, you need to prepare two PCs.
