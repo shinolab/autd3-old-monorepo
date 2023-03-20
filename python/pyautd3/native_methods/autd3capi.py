@@ -288,11 +288,8 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDDeleteAmplitudes.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDDeleteAmplitudes.restype = None
 
-        self.dll.AUTDSoftwareSTM.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
+        self.dll.AUTDSoftwareSTM.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_uint8] 
         self.dll.AUTDSoftwareSTM.restype = None
-
-        self.dll.AUTDSoftwareSTMSetStrategy.argtypes = [ctypes.c_void_p, ctypes.c_uint8] 
-        self.dll.AUTDSoftwareSTMSetStrategy.restype = None
 
         self.dll.AUTDSoftwareSTMAdd.argtypes = [ctypes.c_void_p, ctypes.c_void_p] 
         self.dll.AUTDSoftwareSTMAdd.restype = None
@@ -316,9 +313,9 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDSoftwareSTMSamplingFrequency.restype = ctypes.c_double
 
         self.dll.AUTDSoftwareSTMSamplingPeriod.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDSoftwareSTMSamplingPeriod.restype = ctypes.c_uint64
+        self.dll.AUTDSoftwareSTMSamplingPeriod.restype = ctypes.c_uint32
 
-        self.dll.AUTDSoftwareSTMSetSamplingPeriod.argtypes = [ctypes.c_void_p, ctypes.c_uint64] 
+        self.dll.AUTDSoftwareSTMSetSamplingPeriod.argtypes = [ctypes.c_void_p, ctypes.c_uint32] 
         self.dll.AUTDSoftwareSTMSetSamplingPeriod.restype = None
 
         self.dll.AUTDDeleteSoftwareSTM.argtypes = [ctypes.c_void_p] 

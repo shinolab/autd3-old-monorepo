@@ -36,5 +36,5 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDFreeAdapterPointer.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDFreeAdapterPointer.restype = None
 
-        self.dll.AUTDLinkSOEM.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_char_p, ctypes.c_uint16, ctypes.c_uint16, ctypes.c_bool, ctypes.c_void_p, ctypes.c_bool, ctypes.c_uint64, ctypes.c_int32, ctypes.c_void_p, ctypes.c_void_p] 
+        self.dll.AUTDLinkSOEM.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_char_p, ctypes.c_uint64, ctypes.c_uint16, ctypes.c_uint16, ctypes.c_bool, ctypes.c_void_p, ctypes.c_uint8, ctypes.c_uint64, ctypes.c_int32, ctypes.c_void_p, ctypes.c_void_p] 
         self.dll.AUTDLinkSOEM.restype = None

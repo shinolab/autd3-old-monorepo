@@ -3,7 +3,7 @@
 # Created Date: 11/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 04/11/2022
+# Last Modified: 20/03/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,13 +19,26 @@ type Callback* = proc(a: cstring)
 type LogOut* = proc(a: cstring)
 type LogFlush* = proc()
 
+
+type SyncMode* {.pure.} = enum
+    DC = 0
+    FreeRun = 1
+
+ 
+type TimerStrategy* {.pure.} = enum
+    Sleep = 0
+    BusyWait = 1
+    NativeTimer = 2
+
+
 type SOEM* = object of RootObj
   ifname: cstring
+  bufSize: uint64
   sync0Cycle: uint16
   sendCycle: uint16
-  highPrecision: bool
+  timerStrategy: TimerStrategy
   onLost: Callback
-  freerun: bool
+  syncMode: SyncMode
   check_interval: uint64
   debug_level: int32
   debug_log_out: LogOut
@@ -53,11 +66,12 @@ proc enumerateAdapters*(_: typedesc[SOEM]): seq[Adapter] =
 
 func initSOEM*(): SOEM =
   result.ifname = cast[cstring](pointer(nil))
+  result.bufSize = 0
   result.sync0Cycle = 2
   result.sendCycle = 2
-  result.highPrecision = false
+  result.timerStrategy = TimerStrategy.Sleep
   result.onLost = nil
-  result.freerun = false
+  result.syncMode = SyncMode.FreeRun
   result.checkInterval = 500
   result.debugLevel = 2
   result.debugLogOut = nil
@@ -75,12 +89,12 @@ proc sendCycle*(cnt: var SOEM, sync0Cycle: uint16): var SOEM =
   cnt.sync0Cycle = sync0Cycle
   result = cnt
 
-proc highPrecision*(cnt: var SOEM, highPrecision: bool): var SOEM =
-  cnt.highPrecision = highPrecision
+proc timerStrategy*(cnt: var SOEM, strategy: TimerStrategy): var SOEM =
+  cnt.timerStrategy = strategy
   result = cnt
 
-proc freerun*(cnt: var SOEM, freerun: bool): var SOEM =
-  cnt.freerun = freerun
+proc syncMode*(cnt: var SOEM, mode: SyncMode): var SOEM =
+  cnt.syncMode = mode
   result = cnt
 
 proc onLost*(cnt: var SOEM, onLost: Callback): var SOEM =
@@ -104,5 +118,5 @@ func build*(cnt: SOEM): Link {.discardable.} =
   let p = rawProc(cnt.onLost)
   let pLogOut = rawProc(cnt.debugLogOut)
   let pLogFlush = rawProc(cnt.debugLogFlush)
-  AUTDLinkSOEM(result.p.addr, cnt.ifname, cnt.sync0Cycle, cnt.sendCycle,
-      cnt.freerun, p, cnt.highPrecision, cnt.checkInterval, cnt.debugLevel, pLogOut, pLogFlush)
+  AUTDLinkSOEM(result.p.addr, cnt.ifname, cnt.bufSize, cnt.sync0Cycle, cnt.sendCycle,
+      cnt.syncMode == SyncMode.FreeRun, p, cast[uint8](cnt.timerStrategy), cnt.checkInterval, cnt.debugLevel, pLogOut, pLogFlush)

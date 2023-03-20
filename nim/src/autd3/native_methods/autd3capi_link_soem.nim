@@ -16,8 +16,8 @@ proc AUTDGetAdapter*(p_adapter: pointer; index: int32; desc: cstring; name: cstr
     cdecl, importc: "AUTDGetAdapter", dynlib: dll.}
 proc AUTDFreeAdapterPointer*(p_adapter: pointer) {.cdecl,
     importc: "AUTDFreeAdapterPointer", dynlib: dll.}
-proc AUTDLinkSOEM*(`out`: ptr pointer; ifname: cstring; sync0_cycle: uint16;
-                  send_cycle: uint16; freerun: bool; on_lost: pointer;
-                  high_precision: bool; state_check_interval: uint64; level: int32;
-                  out_func: pointer; flush_func: pointer) {.cdecl,
-    importc: "AUTDLinkSOEM", dynlib: dll.}
+proc AUTDLinkSOEM*(`out`: ptr pointer; ifname: cstring; buf_size: uint64;
+                  sync0_cycle: uint16; send_cycle: uint16; freerun: bool;
+                  on_lost: pointer; timer_strategy: uint8;
+                  state_check_interval: uint64; level: int32; out_func: pointer;
+                  flush_func: pointer) {.cdecl, importc: "AUTDLinkSOEM", dynlib: dll.}
