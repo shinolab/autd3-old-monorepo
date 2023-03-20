@@ -14,9 +14,8 @@ add_library(link_soem
   ${SOEM_SRC_FILES}
   iomap.hpp
   soem_handler.hpp
-  ecat_thread.hpp
+  ecat.hpp
   error_handler.hpp
-  ecat_thread/${OS}.hpp
   ${PROJECT_SOURCE_DIR}/include/autd3/link/soem.hpp
 )
 

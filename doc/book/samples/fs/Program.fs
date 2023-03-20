@@ -10,7 +10,7 @@ let geometry =
         .AddDevice(Vector3d.zero, Vector3d.zero)
         .Build()
 
-let link = (new SOEM()).HighPrecision(true).Build()
+let link = (new SOEM()).Build()
 
 let autd = Controller.Open (geometry, link)
 

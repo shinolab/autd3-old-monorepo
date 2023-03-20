@@ -5,11 +5,12 @@ The `Modulation` is realized by sequentially sampling $\SI{8}{bit}$ data stored 
 Currently, `Modulation` has the following restrictions.
 
 * Maximum buffer size is 65536
-* Sampling rate is $\SI{163.84}{MHz}/N$, where $N$ is a 32-bit unsigned integer and must be greater than $1160$.
-* Modulation is uniform to all devices.
-* Modulation loops automatically.
+* Sampling rate is $\SI{163.84}{MHz}/N$, where $N$ is a 32-bit unsigned integer and must be greater than $1160$
+* Modulation is uniform to all devices
+* Modulation loops automatically
+* Modulation start/end timing cannot be controlled
 
-The SDK provides some `Modulation` to generate several types of AM by default.
+The SDK provides some `Modulation` to generate several types of AM.
 
 [[_TOC_]]
 
@@ -64,6 +65,39 @@ The first argument is the frequency $f$, the second is the low value (0 by defau
 You can specify the duty ratio as the fourth argument.
 The duty ratio is defined as $t_\text{high}/T = t_\text{high}f$, where $t_\text{high}$ is the time to output high in one cycle $T=1/f$.
 
+## Cache
+
+`Cache` is a cache of `Modulation` to store the result of modulation data calculation.
+It is used when the calculation of modulation data is heavy and the same `Modulation` is sent more than once.
+It can also be used to check or change the modulation data after the modulation data calculation.
+
+To use `Cache`, specify any `Modulation` type as a type argument and pass the constructor arguments of the original type in the constructor.
+
+```cpp
+  autd3::modulation::Cache<autd3::modulation::Sine> m(...) ;
+```
+
+The modulation data can be accessed with the `buffer` function or with the indexer.
+Note that you need to call the `calc` function first.
+
+```cpp
+  autd3::modulation::Cache<autd3::modulation::Sine> m(...) ;
+  m.calc();
+  m[0] = 0;
+```
+In the above example, the 0-th modulation data is set to 0.
+
+## Transform
+
+`Transform` is a `Modulation` that modifies the result of `Modulation` calculation.
+
+To use `Transform`, specify any `Modulation` type as a type argument.
+The first argument of the constructor is a transformation function, the second and subsequent arguments are constructor arguments of the original type.
+```cpp
+  autd3::modulation::Transform<autd3::modulation::Sine> m([](const double v) {return std::clamp(v, 0.5, 1.0); }, 150);
+```
+For example, in the above example, the modulation data is like a half-rectified sine wave of $\SI{150}{Hz}$.
+
 ## Wav
 
 `Wav` is a `Modulation` based on a wav file.
@@ -86,46 +120,13 @@ RawPCM` is a `Modulation` built from unsigned 8-bit binary data files.
 
 You must compile with the `BUILD_MODULATION_AUDIO_FILE` option turned on to use `RawPCM`.
 
-## Create Custom Modulation Tutorial
+## Modulation API
 
-You can create your own `Modulation` as well as `Gain`.
-Here, we try to create a `Burst` that outputs only for a certain moment in a cycle[^fn_burst].
+### sampling_frequency_division 
 
-The following is a sample of `Burst`.
-```cpp
-class Burst final : public autd3::Modulation {
- public:
-  std::vector<autd3::Amp> calc() override {
-    std::vector buffer(_buf_size, autd3::Amp(0));
-    buffer()[_buf_size - 1] = autd3::Amp(1);
-  }
-
-  explicit Burst(const size_t buf_size = 4000, const uint16_t freq_div = 40960) noexcept : _buf_size(buf_size) 
-  {
-    _freq_div = freq_div;
-  }
-
- private:
-  size_t _buf_size;
-};
-```
-
-Like `Gain`, `Modulation::calc` method is called inside `Controller::send`.
-In this `calc`, you can rewrite the contents of `buffer`.
-
-$N$, which determines the `Modulation` sampling frequency $\SI{163.84}{MHz}/N$, is set to `_freq_div`.
-In this example, since $N=40960$ by default, the sampling frequency is $\SI{4}{kHz}$.
-
-Moreover, for example, if `buf_size` is set to 4000, $0$ is sampled $3999$ times, and then $1$ is sampled once.
-Thus, AM is such that $\SI{0.25}{ms}=1/\SI{4}{kHz}$ is output in the period $\SI{1}{s}$.
-
-## Modulation common functions
-
-### Sampling frequency division ratio
-
-The `sampling_freq_div_ratio` is used to check and set the division ratio $N$ of the sampling frequency.
+The `sampling_frequency_division` is used to check and set the division ratio $N$ of the sampling frequency.
 The fundamental frequency of sampling frequency is $\SI{163.84}{MHz}$.
-The value of `sampling_freq_div_ratio` can be an integer larger than 1160.
+The value of `sampling_frequency_division` can be an integer larger than 1160.
 
 ```cpp
     m.sampling_frequency_division() = 20480; // 163.84MHz/20480 = 8kHz
@@ -134,6 +135,10 @@ The value of `sampling_freq_div_ratio` can be an integer larger than 1160.
 ### sampling frequency
 
 You can get the sampling frequency with `sampling_frequency`.
+
+### size
+
+You can get the length of the modulation data buffer with `size`.
 
 ## Modulation Delay
 
@@ -153,5 +158,3 @@ Since this is a delay of the sampling index, the actual delay time depends on th
 If `mod_delay` is $1$ and the sampling frequency is $\SI{40}{kHz}$, the delay is $\SI{25}{\text{μ}s}$, and if $\SI{4}{kHz}$, the delay is $\SI{250}{\text{μ}s}$.
 
 Also, the value of `mod_delay` must be less than the modulation length, i.e., `buffer` size.
-
-[^fn_burst]: Such Modulation is not implemented in SDK.

@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 07/03/2023
+Last Modified: 20/03/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,6 +19,8 @@ from pyautd3.autd import NUM_TRANS_IN_UNIT, NUM_TRANS_X, NUM_TRANS_Y, TRANS_SPAC
 from pyautd3.autd import Clear, UpdateFlag, Synchronize, ModDelayConfig, Stop
 from pyautd3.autd import LogOutputFunc, LogFlushFunc, set_log_level, set_log_func
 from pyautd3.debug_level import DebugLevel
+from pyautd3.timer_strategy import TimerStrategy
+from pyautd3.sync_mode import SyncMode
 
 __all__ = [
     'SilencerConfig',
@@ -41,7 +43,9 @@ __all__ = [
     'LogFlushFunc',
     'set_log_level',
     'set_log_func',
-    'DebugLevel'
+    'DebugLevel',
+    'TimerStrategy',
+    'SyncMode'
 ]
 
-__version__ = '8.2.0'
+__version__ = '8.3.0'

@@ -3,7 +3,7 @@
 // Created Date: 03/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/02/2023
+// Last Modified: 20/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ let onLost (msg:string): unit =
     printfn $"Unrecoverable error occurred: {msg}"
     System.Environment.Exit(-1)
 
-let link = (new SOEM()).HighPrecision(true).OnLost(new SOEM.OnLostCallbackDelegate(onLost)).Build()
+let link = (new SOEM()).OnLost(new SOEM.OnLostCallbackDelegate(onLost)).Build()
 
 let autd = Controller.Open (geometry, link)
 

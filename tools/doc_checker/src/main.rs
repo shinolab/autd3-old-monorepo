@@ -4,7 +4,7 @@
  * Created Date: 24/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/12/2022
+ * Last Modified: 16/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -146,49 +146,55 @@ fn main() -> Result<()> {
         }
     }
 
-    let args: Vec<String> = std::env::args().collect();
-    let path = &args[1];
+    let doc_paths = vec![
+        "../../doc/book/src/en/FFI/reference.md",
+        "../../doc/book/src/jp/FFI/reference.md",
+    ];
 
-    let file = File::open(path)?;
-    let reader = BufReader::new(file);
-    let mut lines_iter = reader.lines();
+    for path in doc_paths {
+        let file = File::open(path)?;
+        let reader = BufReader::new(file);
+        let mut lines_iter = reader.lines();
 
-    let func_begin = Regex::new(r"## (.*?) \((.*)\)")?;
+        let func_begin = Regex::new(r"## (.*?) \((.*)\)")?;
 
-    let mut documented_functions = HashSet::new();
-    loop {
-        let line = lines_iter.next();
-        if line.is_none() {
-            break;
-        }
-        let line = line.unwrap()?;
-        if func_begin.is_match(&line) {
-            let matches = func_begin.captures(&line).unwrap();
-            if let Some(func) = parse_function(matches.get(1).unwrap().as_str(), &mut lines_iter)? {
-                documented_functions.insert(Func {
-                    bin: matches.get(2).unwrap().as_str().to_string(),
-                    func,
-                });
+        let mut documented_functions = HashSet::new();
+        loop {
+            let line = lines_iter.next();
+            if line.is_none() {
+                break;
+            }
+            let line = line.unwrap()?;
+            if func_begin.is_match(&line) {
+                let matches = func_begin.captures(&line).unwrap();
+                if let Some(func) =
+                    parse_function(matches.get(1).unwrap().as_str(), &mut lines_iter)?
+                {
+                    documented_functions.insert(Func {
+                        bin: matches.get(2).unwrap().as_str().to_string(),
+                        func,
+                    });
+                }
             }
         }
-    }
 
-    let diff = defined_functions
-        .symmetric_difference(&documented_functions)
-        .collect::<Vec<_>>();
-    for f in diff.iter() {
-        if defined_functions.contains(f) {
-            eprintln!("The following function is defined but not documented:");
-            eprintln!("{}", f);
+        let diff = defined_functions
+            .symmetric_difference(&documented_functions)
+            .collect::<Vec<_>>();
+        for f in diff.iter() {
+            if defined_functions.contains(f) {
+                eprintln!("The following function is defined but not documented:");
+                eprintln!("{}", f);
+            }
+            if documented_functions.contains(f) {
+                eprintln!("The following function is documented but not defined:");
+                eprintln!("{}", f);
+            }
         }
-        if documented_functions.contains(f) {
-            eprintln!("The following function is documented but not defined:");
-            eprintln!("{}", f);
-        }
-    }
 
-    if !diff.is_empty() {
-        panic!("Fix document!");
+        if !diff.is_empty() {
+            panic!("Fix document!");
+        }
     }
 
     Ok(())

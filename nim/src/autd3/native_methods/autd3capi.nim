@@ -22,6 +22,8 @@ proc AUTDAddDeviceQuaternion*(geometry_builder: pointer; x: float64; y: float64;
                              z: float64; qw: float64; qx: float64; qy: float64;
                              qz: float64): bool {.cdecl,
     importc: "AUTDAddDeviceQuaternion", dynlib: dll.}
+proc AUTDSetMode*(geometry_builder: pointer; mode: uint8) {.cdecl,
+    importc: "AUTDSetMode", dynlib: dll.}
 proc AUTDBuildGeometry*(`out`: ptr pointer; geometry_builder: pointer) {.cdecl,
     importc: "AUTDBuildGeometry", dynlib: dll.}
 proc AUTDFreeGeometry*(geometry: pointer) {.cdecl, importc: "AUTDFreeGeometry",
@@ -192,12 +194,8 @@ proc AUTDCreateAmplitudes*(`out`: ptr pointer; amp: float64) {.cdecl,
     importc: "AUTDCreateAmplitudes", dynlib: dll.}
 proc AUTDDeleteAmplitudes*(amplitudes: pointer) {.cdecl,
     importc: "AUTDDeleteAmplitudes", dynlib: dll.}
-proc AUTDSetMode*(handle: pointer; mode: uint8) {.cdecl, importc: "AUTDSetMode",
-    dynlib: dll.}
-proc AUTDSoftwareSTM*(`out`: ptr pointer) {.cdecl, importc: "AUTDSoftwareSTM",
-                                        dynlib: dll.}
-proc AUTDSoftwareSTMSetStrategy*(stm: pointer; strategy: uint8) {.cdecl,
-    importc: "AUTDSoftwareSTMSetStrategy", dynlib: dll.}
+proc AUTDSoftwareSTM*(`out`: ptr pointer; strategy: uint8) {.cdecl,
+    importc: "AUTDSoftwareSTM", dynlib: dll.}
 proc AUTDSoftwareSTMAdd*(stm: pointer; gain: pointer) {.cdecl,
     importc: "AUTDSoftwareSTMAdd", dynlib: dll.}
 proc AUTDSoftwareSTMStart*(handle: ptr pointer; stm: pointer; cnt: pointer) {.cdecl,
@@ -212,9 +210,9 @@ proc AUTDSoftwareSTMPeriod*(stm: pointer): uint64 {.cdecl,
     importc: "AUTDSoftwareSTMPeriod", dynlib: dll.}
 proc AUTDSoftwareSTMSamplingFrequency*(stm: pointer): float64 {.cdecl,
     importc: "AUTDSoftwareSTMSamplingFrequency", dynlib: dll.}
-proc AUTDSoftwareSTMSamplingPeriod*(stm: pointer): uint64 {.cdecl,
+proc AUTDSoftwareSTMSamplingPeriod*(stm: pointer): uint32 {.cdecl,
     importc: "AUTDSoftwareSTMSamplingPeriod", dynlib: dll.}
-proc AUTDSoftwareSTMSetSamplingPeriod*(stm: pointer; period: uint64) {.cdecl,
+proc AUTDSoftwareSTMSetSamplingPeriod*(stm: pointer; period: uint32) {.cdecl,
     importc: "AUTDSoftwareSTMSetSamplingPeriod", dynlib: dll.}
 proc AUTDDeleteSoftwareSTM*(stm: pointer) {.cdecl, importc: "AUTDDeleteSoftwareSTM",
     dynlib: dll.}

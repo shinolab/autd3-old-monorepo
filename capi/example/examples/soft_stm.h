@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 20/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -29,7 +29,7 @@ void* soft_stm(void* autd) {
   double z = 150.0;
 
   void* stm = NULL;
-  AUTDSoftwareSTM(&stm);
+  AUTDSoftwareSTM(&stm, 0);
 
   const int32_t point_num = 200;
   for (int32_t i = 0; i < point_num; i++) {

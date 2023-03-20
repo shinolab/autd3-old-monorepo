@@ -3,7 +3,7 @@
 // Created Date: 30/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 17/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,10 +20,11 @@
 
 #include "autd3/driver/fpga/fpga_flag.hpp"
 
+using autd3::driver::BitFlags;
 using autd3::driver::FPGAControlFlags;
 
 TEST(DriverCommonFPGAControlFlags, FPGAControlFlagsTest) {
-  FPGAControlFlags flag(FPGAControlFlags::None);
+  BitFlags flag(FPGAControlFlags::None);
   ASSERT_EQ(flag, FPGAControlFlags::None);
 
   flag.set(FPGAControlFlags::LegacyMode);

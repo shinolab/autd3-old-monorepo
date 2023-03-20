@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 13/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -76,10 +76,9 @@ struct TxDatagram {
   }
 
   [[nodiscard]] size_t num_devices() const noexcept { return _body_pointer.size() - 1; }
+  [[nodiscard]] size_t num_transducers() const noexcept { return _body_pointer[num_bodies]; }
 
   [[nodiscard]] size_t transmitting_size_in_bytes() const noexcept { return sizeof(GlobalHeader) + sizeof(uint16_t) * _body_pointer[num_bodies]; }
-
-  [[nodiscard]] size_t bodies_size() const noexcept { return _body_pointer[num_bodies]; }
 
   std::vector<uint8_t> &data() noexcept { return _data; }
   [[nodiscard]] const std::vector<uint8_t> &data() const noexcept { return _data; }
@@ -113,7 +112,7 @@ struct TxDatagram {
  * @brief Received data from a device
  */
 #pragma pack(push)
-#pragma pack(1)
+#pragma pack(2)
 struct RxMessage {
   /**
    * @brief Response data from the device

@@ -3,7 +3,7 @@
 # Created Date: 30/12/2020
 # Author: Shun Suzuki
 # -----
-# Last Modified: 02/02/2023
+# Last Modified: 20/03/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2020 Hapis Lab. All rights reserved.
@@ -26,7 +26,7 @@ function main()
     try
         geometry = GeometryBuilder().add_device(SVector(0.0, 0.0, 0.0), SVector(0.0, 0.0, 0.0)).build()
 
-        link = SOEM(on_lost=on_lost, high_precision=true)
+        link = SOEM(on_lost=on_lost)
 
         cnt = Controller(geometry, link)
 

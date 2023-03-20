@@ -11,7 +11,7 @@ end
 
 geometry = GeometryBuilder().add_device(SVector(0.0, 0.0, 0.0), SVector(0.0, 0.0, 0.0)).build()
 
-link = SOEM(on_lost=on_lost, high_precision=true)
+link = SOEM(on_lost=on_lost)
 
 cnt = Controller(geometry, link)
 

@@ -14,10 +14,9 @@ add_executable(SOEMAUTDServer
   local_interface.hpp
   tcp_interface.hpp
   ${SOEM_SRC_FILES}
-  ${PROJECT_SOURCE_DIR}/src/link/soem/ecat_thread.hpp
+  ${PROJECT_SOURCE_DIR}/src/link/soem/ecat.hpp
   ${PROJECT_SOURCE_DIR}/src/link/soem/error_handler.hpp
   ${PROJECT_SOURCE_DIR}/src/link/soem/soem_handler.hpp
-  ${PROJECT_SOURCE_DIR}/src/link/soem/ecat_thread/${OS}.hpp
 )
 target_link_libraries(SOEMAUTDServer PRIVATE autd3_common)
 

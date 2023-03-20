@@ -3,7 +3,7 @@
 // Created Date: 01/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/01/2023
+// Last Modified: 17/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,9 +23,10 @@
 #include "autd3/driver/cpu/cpu_flag.hpp"
 
 TEST(DriverCommonCPUTest, CPUControlFlags) {
+  using autd3::driver::BitFlags;
   using autd3::driver::CPUControlFlags;
 
-  CPUControlFlags flag(CPUControlFlags::None);
+  BitFlags flag(CPUControlFlags::None);
 
   ASSERT_EQ(flag, CPUControlFlags::None);
 

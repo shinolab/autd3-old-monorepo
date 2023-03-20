@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/03/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -61,6 +61,8 @@ class Sine final : public core::Modulation {
       : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
 
   std::vector<driver::autd3_float_t> calc() override {
+    if (driver::FPGA_CLK_FREQ % sampling_frequency_division != 0) throw std::runtime_error("The sampling frequency must be an integer.");
+
     const auto fs = static_cast<int32_t>(sampling_frequency());
 
     const auto f = std::clamp(_freq, 1, fs / 2);
@@ -70,7 +72,7 @@ class Sine final : public core::Modulation {
     const size_t n = fs / k;
     const size_t d = f / k;
 
-    return generate_iota(0, n, [this, d, n](const size_t i) {
+    return generate_iota(n, [this, d, n](const size_t i) {
       return _amp / 2 * std::sin(2 * driver::pi * static_cast<driver::autd3_float_t>(d * i) / static_cast<driver::autd3_float_t>(n)) + _offset;
     });
   }
@@ -103,6 +105,8 @@ class SineSquared final : public core::Modulation {
       : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
 
   std::vector<driver::autd3_float_t> calc() override {
+    if (driver::FPGA_CLK_FREQ % sampling_frequency_division != 0) throw std::runtime_error("The sampling frequency must be an integer.");
+
     const auto fs = static_cast<int32_t>(sampling_frequency());
 
     const auto f = std::clamp(_freq, 1, fs / 2);
@@ -112,7 +116,7 @@ class SineSquared final : public core::Modulation {
     const size_t n = fs / k;
     const size_t d = f / k;
 
-    return generate_iota(0, n, [this, d, n](const size_t i) {
+    return generate_iota(n, [this, d, n](const size_t i) {
       return std::sqrt(_amp / 2 * std::sin(2 * driver::pi * static_cast<driver::autd3_float_t>(d * i) / static_cast<driver::autd3_float_t>(n)) +
                        _offset);
     });
@@ -151,7 +155,7 @@ class SineLegacy final : public core::Modulation {
 
     const auto t = static_cast<size_t>(std::round(fs / f));
 
-    return generate_iota(0, t, [this, t](const size_t i) {
+    return generate_iota(t, [this, t](const size_t i) {
       return _offset + _amp * std::cos(2 * driver::pi * static_cast<driver::autd3_float_t>(i) / static_cast<driver::autd3_float_t>(t)) / 2;
     });
   }
@@ -178,6 +182,8 @@ class Square final : public core::Modulation {
       : _freq(freq), _low(low), _high(high), _duty(duty) {}
 
   std::vector<driver::autd3_float_t> calc() override {
+    if (driver::FPGA_CLK_FREQ % sampling_frequency_division != 0) throw std::runtime_error("The sampling frequency must be an integer.");
+
     const auto f_s = static_cast<int32_t>(sampling_frequency());
     const auto f = std::clamp(_freq, 1, f_s / 2);
     const auto k = std::gcd(f_s, f);
@@ -262,7 +268,7 @@ class Transform final : public core::Modulation {
   std::vector<driver::autd3_float_t> calc() override {
     std::vector<driver::autd3_float_t> buffer = _modulation.calc();
     sampling_frequency_division = _modulation.sampling_frequency_division;
-    return generate_iota(0, buffer.size(), [this, buffer](const size_t i) { return _f(buffer[i]); });
+    return generate_iota(buffer.size(), [this, buffer](const size_t i) { return _f(buffer[i]); });
   }
 
  private:

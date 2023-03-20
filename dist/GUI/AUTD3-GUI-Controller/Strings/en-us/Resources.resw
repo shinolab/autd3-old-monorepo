@@ -156,8 +156,8 @@
   <data name="Home_Line1.Text" xml:space="preserve">
     <value>• First, add devices in Geometry Page</value>
   </data>
-  <data name="LinkPage_HighPrecision.Content" xml:space="preserve">
-    <value>High precision</value>
+  <data name="LinkPage_TimerStrategy.Text" xml:space="preserve">
+    <value>Timer strategy</value>
   </data>
   <data name="LinkPage_Interface.Text" xml:space="preserve">
     <value>Interface</value>
@@ -266,5 +266,8 @@
   </data>
   <data name="LinkPage_CheckInterval.Text" xml:space="preserve">
     <value>State check interval [ms]</value>
+  </data>
+  <data name="LinkPage_SyncMode.Text" xml:space="preserve">
+    <value>Sync mode </value>
   </data>
 </root>

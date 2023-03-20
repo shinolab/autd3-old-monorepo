@@ -20,6 +20,7 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:AUTD3_GUI_Controller.Models"
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
+    xmlns:autd3Sharp="using:AUTD3Sharp"
     Loaded="LinkPage_OnLoaded"
     mc:Ignorable="d">
 
@@ -40,14 +41,24 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
                     Value="{Binding SelectedItem, ElementName=LinkSelector}">
                     <controls:Case Value="SOEM">
                         <StackPanel Loaded="LinkPageSelection_OnLoaded">
-                            <Grid Height="32">
+                            <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="auto" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="auto" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock VerticalAlignment="Center" localization:Localizer.Uid="LinkPage_Interface" />
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                </Grid.RowDefinitions>
+                                <TextBlock
+                                    Grid.Row="0" VerticalAlignment="Center" localization:Localizer.Uid="LinkPage_Interface" />
                                 <ComboBox
+                                    Grid.Row="0"
                                     Grid.Column="1"
                                     Margin="{StaticResource XSmallLeftMargin}"
                                     HorizontalAlignment="Stretch"
@@ -55,6 +66,7 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
                                     ItemsSource="{x:Bind ViewModel.Interfaces, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     SelectedItem="{x:Bind ViewModel.InterfaceName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 <Button
+                                    Grid.Row="0"
                                     Grid.Column="2"
                                     Width="{StaticResource ActionButtonContainerSize}"
                                     Height="{StaticResource ActionButtonContainerSize}"
@@ -67,61 +79,77 @@ Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
                                         FontFamily="{StaticResource SymbolThemeFontFamily}"
                                         Glyph="&#xE72C;" />
                                 </Button>
-                            </Grid>
-                            <CheckBox
-                                Margin="{StaticResource XSmallTopMargin}"
-                                localization:Localizer.Uid="LinkPage_HighPrecision"
-                                IsChecked="{x:Bind ViewModel.HighPrecision, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                            <CheckBox Content="Free run" IsChecked="{x:Bind ViewModel.FreeRun, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                            <Grid Margin="{StaticResource XSmallTopMargin}">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="auto" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="auto" />
-                                    <RowDefinition Height="auto" />
-                                    <RowDefinition Height="auto" />
-                                </Grid.RowDefinitions>
                                 <TextBlock
-                                    Grid.Row="0"
+                                    Margin="{StaticResource XSmallTopMargin}"
+                                    Grid.Column="0"
+                                    VerticalAlignment="Center"
+                                    Grid.Row="1" localization:Localizer.Uid="LinkPage_TimerStrategy"/>
+                                <ComboBox
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Width="140"
+                                    HorizontalAlignment="Left"
+                                    Margin="{StaticResource XSmallLeftTopMargin}"
+                                    IsEditable="False"
+                                    ItemsSource="{ui:EnumValues Type=autd3Sharp:TimerStrategy}"
+                                    SelectedItem="{x:Bind ViewModel.TimerStrategy, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock
+                                    Margin="{StaticResource XSmallTopMargin}"
+                                    Grid.Column="0"
+                                    VerticalAlignment="Center"
+                                    Grid.Row="2" localization:Localizer.Uid="LinkPage_SyncMode"/>
+                                <ComboBox
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Width="120"
+                                    Margin="{StaticResource XSmallLeftTopMargin}"
+                                    IsEditable="False"
+                                    HorizontalAlignment="Left"
+                                    ItemsSource="{ui:EnumValues Type=autd3Sharp:SyncMode}"
+                                    SelectedItem="{x:Bind ViewModel.SyncMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock
+                                    Margin="{StaticResource XSmallTopMargin}"
+                                    Grid.Column="0"
+                                    Grid.Row="3"
                                     VerticalAlignment="Center"
                                     localization:Localizer.Uid="LinkPage_SendCycle" />
                                 <NumberBox
-                                    Grid.Row="0"
+                                    Grid.Row="3"
                                     Grid.Column="1"
                                     Width="60"
-                                    Margin="{StaticResource XSmallLeftMargin}"
+                                    Margin="{StaticResource XSmallLeftTopMargin}"
                                     HorizontalAlignment="Left"
                                     Minimum="1"
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.SendCycle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 <TextBlock
-                                    Grid.Row="1"
+                                    Margin="{StaticResource XSmallTopMargin}"
+                                    Grid.Row="4"
                                     Grid.Column="0"
                                     VerticalAlignment="Center"
                                     localization:Localizer.Uid="LinkPage_Sync0Cycle" />
                                 <NumberBox
-                                    Grid.Row="1"
+                                    Grid.Row="4"
                                     Grid.Column="1"
                                     Width="60"
-                                    Margin="{StaticResource XSmallLeftMargin}"
+                                    Margin="{StaticResource XSmallLeftTopMargin}"
                                     HorizontalAlignment="Left"
                                     Minimum="1"
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.Sync0Cycle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 <TextBlock
-                                    Grid.Row="2"
+                                    Margin="{StaticResource XSmallTopMargin}"
+                                    Grid.Row="5"
                                     Grid.Column="0"
                                     VerticalAlignment="Center"
                                     localization:Localizer.Uid="LinkPage_CheckInterval" />
                                 <TextBox
-                                    Grid.Row="2"
+                                    Grid.Row="5"
                                     Grid.Column="1"
                                     Width="60"
-                                    Margin="{StaticResource XSmallLeftMargin}"
+                                    Margin="{StaticResource XSmallLeftTopMargin}"
                                     HorizontalAlignment="Left"
                                     Text="{x:Bind ViewModel.CheckInterval, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             </Grid>

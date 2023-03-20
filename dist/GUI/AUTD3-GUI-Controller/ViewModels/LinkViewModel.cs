@@ -4,7 +4,7 @@
  * Created Date: 18/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/11/2022
+ * Last Modified: 21/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,6 +16,7 @@ using AUTD3_GUI_Controller.Contracts.Services;
 using AUTD3_GUI_Controller.Helpers;
 using AUTD3_GUI_Controller.Models;
 using AUTD3_GUI_Controller.Services;
+using AUTD3Sharp;
 using AUTD3Sharp.Link;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -61,12 +62,12 @@ public partial class LinkViewModel
     }
 
     [ObservableProperty]
-    private bool _highPrecision;
-    async partial void OnHighPrecisionChanged(bool value) => await _localSettingsService.SaveSettingAsync(nameof(HighPrecision), value);
+    private TimerStrategy _timerStrategy;
+    async partial void OnTimerStrategyChanged(TimerStrategy value) => await _localSettingsService.SaveSettingAsync(nameof(TimerStrategy), value);
 
     [ObservableProperty]
-    private bool _freeRun;
-    async partial void OnFreeRunChanged(bool value) => await _localSettingsService.SaveSettingAsync(nameof(FreeRun), value);
+    private SyncMode _syncMode;
+    async partial void OnSyncModeChanged(SyncMode value) => await _localSettingsService.SaveSettingAsync(nameof(SyncMode), value);
 
     [ObservableProperty]
     private ushort _sendCycle;
@@ -160,8 +161,8 @@ public partial class LinkViewModel
         _interfaceName = _localSettingsService.ReadSetting<string>(nameof(InterfaceName)) ?? "";
         UpdateInterfaces();
 
-        _highPrecision = _localSettingsService.ReadSetting<bool?>(nameof(HighPrecision)) ?? true;
-        _freeRun = _localSettingsService.ReadSetting<bool?>(nameof(FreeRun)) ?? false;
+        _timerStrategy = _localSettingsService.ReadSetting<TimerStrategy?>(nameof(TimerStrategy)) ?? TimerStrategy.Sleep;
+        _syncMode = _localSettingsService.ReadSetting<SyncMode?>(nameof(SyncMode)) ?? SyncMode.FreeRun;
         _sendCycle = _localSettingsService.ReadSetting<ushort?>(nameof(SendCycle)) ?? 1;
         _sync0Cycle = _localSettingsService.ReadSetting<ushort?>(nameof(Sync0Cycle)) ?? 1;
 

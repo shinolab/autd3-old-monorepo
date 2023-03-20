@@ -1,6 +1,6 @@
 [package]
 name = "autd3-traits"
-version = "8.2.0"
+version = "8.3.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -17,4 +17,4 @@ proc-macro = true
 
 [dependencies]
 quote = "1.0.18"
-syn = "1.0.92"
+syn = "2.0.3"

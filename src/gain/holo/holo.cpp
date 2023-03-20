@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/03/2023
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -43,7 +43,7 @@ template <class Fn>
 std::vector<driver::Drive> transform(const core::Geometry& geometry, Fn func) {
   std::vector<driver::Drive> drives;
   drives.resize(geometry.num_transducers());
-  autd3::gain::holo::transform(geometry.begin(), geometry.end(), drives.begin(), func);
+  holo::transform(geometry.begin(), geometry.end(), drives.begin(), func);
   return drives;
 }
 

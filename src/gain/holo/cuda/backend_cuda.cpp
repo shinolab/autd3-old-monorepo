@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/12/2022
+// Last Modified: 14/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -137,7 +137,7 @@ class BufferPool final {
   std::unordered_map<std::uintptr_t, void*> _pool;
 };
 
-class CUDABackendImpl final : public CUDABackend {
+class CUDABackendImpl final : public Backend {
  public:
   explicit CUDABackendImpl(const int device_idx) {
     cudaSetDevice(device_idx);
@@ -677,6 +677,8 @@ class CUDABackendImpl final : public CUDABackend {
 #if _MSC_VER
 #pragma warning(pop)
 #endif
+
+BackendPtr CUDABackend::build() const { return std::make_shared<CUDABackendImpl>(_device_idx); }
 
 BackendPtr CUDABackend::create(const int device_idx) { return std::make_shared<CUDABackendImpl>(device_idx); }
 

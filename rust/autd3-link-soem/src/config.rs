@@ -4,19 +4,20 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/11/2022
+ * Last Modified: 21/03/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::SyncMode;
+use crate::{SyncMode, TimerStrategy};
 
 pub struct Config {
     pub sync0_cycle: u16,
     pub send_cycle: u16,
-    pub high_precision_timer: bool,
+    pub buf_size: usize,
+    pub timer_strategy: TimerStrategy,
     pub sync_mode: SyncMode,
     pub ifname: String,
     pub check_interval: std::time::Duration,
@@ -33,10 +34,11 @@ impl Default for Config {
         Self {
             sync0_cycle: 2,
             send_cycle: 2,
-            high_precision_timer: false,
-            sync_mode: SyncMode::DC,
+            buf_size: 32,
+            timer_strategy: TimerStrategy::default(),
+            sync_mode: SyncMode::default(),
             ifname: String::new(),
-            check_interval: std::time::Duration::from_millis(500),
+            check_interval: std::time::Duration::from_millis(100),
         }
     }
 }

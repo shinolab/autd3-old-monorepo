@@ -193,6 +193,9 @@ SOEMのLinkを使用する際は`autd3/link/soem.hpp`ヘッダーをインクル
   auto link = autd3::link::SOEM().build();
 ```
 
+> NOTE: `SOEM`を使用する場合, `Controller::open`[^soem_init_sync]してから10-20秒ほどはEtherCATスレーブ同士の同期が完了していない可能性があるので注意されたい. (この時間は個体差や同期信号/送信サイクルによって変化する.)
+> この期間, デバイス間の超音波の同期は保証されない.
+
 ### インタフェース名
 
 `ifname`でAUTD3デバイスが接続されているネットワークインタフェースを指定できる.
@@ -236,34 +239,41 @@ SOEMのLinkを使用する際は`autd3/link/soem.hpp`ヘッダーをインクル
 この値はエラーが出ない中で, 可能な限り小さな値が望ましい. デフォルトは2であり, どの程度の値にすべきかは接続している台数に依存する.
 例えば, 9台の場合は3, 4程度の値にしておけば動作するはずである.
 
-### 高精度タイマ
+### Timer strategy
 
-`high_precision`を設定すると, CPUの負荷が増えるが, より正確なタイマを使用することで`SOEM`の動作を安定させることができる.
+EtherCATは、一定の間隔で周期的にフレームを送信することで動作する.
+`timer_strategy`でこの周期的な送信をどのように行うかを指定するできる.
 
 ```cpp
   auto link = autd3::link::SOEM()
-                .high_precision(true)
+                .timer_strategy(autd3::TimerStrategy::Sleep)
                 .build();
 ```
+
+* `Sleep`       : 標準ライブラリの`std::chrono::sleep_for`を用いる
+* `BusyWait`    : ビジーウェイトを用いる. 高解像度だが, CPU負荷が高い.
+* `NativeTimer` : OSのタイマー機能を用いる
+  * Windowsではマルチメディアタイマー, linuxではPOSIXタイマー, macOSではGrand Central Dispatch Timer
+
+デフォルトは`Sleep`である.
 
 ### 同期モード
 
 EtherCATの同期モードを設定する.
-同期モードには, `DC`と`FreeRun`が存在するが, 基本的デフォルトの`DC`を推奨する.
+同期モードには, `DC`と`FreeRun`が存在する.
+
+* 詳細は[Beckhoffの説明](https://infosys.beckhoff.com/english.php?content=../content/1033/ethercatsystem/2469122443.html&id=)を参照されたい.
 
 ```cpp
   auto link = autd3::link::SOEM()
-                .sync_mode(autd3::link::SyncMode::DC)
+                .sync_mode(autd3::SyncMode::FreeRun)
                 .build();
 ```
 
-### SOEMの既知の問題
-
-「[FAQ](../FAQ/faq.md)」を参照.
+デフォルトは`FreeRun`である.
 
 ## RemoteSOEM
 
-`SOEM`を動かしているPC上で別のプログラムを動作させると動作が不安定になる場合がある.
 このLinkは`SOEM`を動かすサーバーPCとユーザプログラムを動かすクライアントPCを分離するためのものである.
 
 `RemoteSOEM`を使用する場合はPCを2台用意する必要がある.
@@ -316,6 +326,8 @@ SimulatorのLinkを使用する際は`autd3/link/simulator.hpp`ヘッダーを�
 ```
 
 [^fn_remote_twin]: 無線LANでも可
+
+[^soem_ini_sync]: `Synchronize`を送信してから**ではない**
 
 [^fn_soem]: TwinCATよりは緩く, 普通に動くこともある.
 

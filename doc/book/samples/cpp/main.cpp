@@ -14,7 +14,7 @@ int main() try {
                       .build();
 
   // create SOEM link
-  auto link = autd3::link::SOEM().high_precision(true).build();
+  auto link = autd3::link::SOEM().build();
 
   // create and open controller
   auto autd = autd3::Controller::open(std::move(geometry), std::move(link));

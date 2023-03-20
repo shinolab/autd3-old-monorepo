@@ -3,7 +3,7 @@
 // Created Date: 08/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/02/2023
+// Last Modified: 21/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -36,12 +36,9 @@ int main() try {
                     std::quick_exit(-1);
 #endif
                   })
-                  .high_precision(true)
                   .build();
 
   auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
-
-  autd.set_ack_check_timeout(std::chrono::milliseconds(20));
 
   return run(autd);
 } catch (std::exception& e) {

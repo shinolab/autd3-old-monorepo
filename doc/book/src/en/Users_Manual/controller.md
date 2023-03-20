@@ -1,34 +1,16 @@
 # Controller
 
-This section introduces other functions that exist in the `Controller` class.
+This section introduces functions that exist in the `Controller` class.
 
-## Ack Check Timeout
+## open/close/is_open
 
-If the value of `ack_check_timeout` is greater than 0, the controller will check if the data sent to the device has been processed properly.
+Open and close `Controller`.
 
-```cpp
-autd.set_ack_check_timeout(std::chrono::milliseconds(20));
-```
+You can check if the `Controller` is open by `is_open`.
 
-If the value of `ack_check_timeout` is greater than 0, `send` function checks ack until the timeout period elapses.
-If it expired, `send` returns `false`.
+## geometry
 
-If the value of `ack_check_timeout` is 0, `send` function does not check ack and always returns `true`.
-
-It is recommended to set this option when you want to send data reliably.
-Note that if `ack_check_timeout` is greater than 0, the time to send will be increased.
-
-`ack_check_timeout` is set to 0 by default.
-
-## Send intervals
-
-The interval between consecutive frames and data check intervals are configured by `send_interval`.
-
-```cpp
-autd.set_send_interval(std::chrono::milliseconds(1));
-```
-
-It is set to $\SI{1}{ms}$ by default.
+Get `Geometry`.
 
 ## Force fan
 
@@ -48,44 +30,34 @@ Off in the middle is shorted, and On on the right side is shorted.
 
 In Auto mode, the fan is automatically activated when the temperature becomes high.
 The `force_fan` flag is used to force the fan to start in Auto mode.
-The flag is updated after calling one of [Send functions](#send-functions).
 
 ```cpp
-autd.force_fan = true;
+autd.force_fan(true);
+```
+
+The flag is updated after calling `send`.
+If you only want to update the flag, send `UpdateFlag`.
+
+```cpp
+autd.force_fan(true);
+autd.send(autd3::UpdateFlag());
 ```
 
 ## Read FPGA info
 
 Turn on the `reads_fpga_info` flag so that the device returns the FPGA status.
-The flag is updated after calling one of [Send functions](#send-functions).
 
 You can get the FPGA state with the `fpga_info` function.
 
-The state of the FPGA can be obtained with the function.
-
 ```cpp
-autd.reads_fpga_info = true;
-autd.update_flag();
-const auto fpga_info = autd.read_fpga_info();
+autd.reads_fpga_info(true);
+autd.send(autd3::update_flag());
+
+const auto infos = autd.fpga_info();
 ```
 
 The return value of `fpga_info` is `vector` for `FPGAInfo` devices.
 
-## stop
-
-You can stop output with the `stop` function.
-
-```cpp
-autd.send(autd3::Stop());
-```
-
-## clear
-
-Clear flags, `Gain`/`Modulation` data, etc. in the device.
-
-```cpp
-autd.send(autd3::Clear());
-```
 
 ## Firmware information
 
@@ -97,14 +69,39 @@ for (auto&& firm_info : autd.firmware_infos()) std::cout << firm_info << std::en
 
 ## Send functions
 
-Send functions are functions that send data to the device.
-Calling these functions will `force fan`, `reads FPGA info` flags are updated by calling these functions.
+Send data to devices.
 
-The behavior of these functions depends on the values of `ack_check_timeout` and `send_interval`.
+### Timeout
 
-If `ack_check_timeout` is greater than 0, these functions wait until the device processes the data or the timeout period elapses.
-In particular, the processing time of `Modulation` and `STM` may increase significantly since a check is made for each frame.
-If these functions cannot confirm that the device has processed the data, return `false`.
-If `ack_check_timeout` is 0, these do not check, and the return value is always `true`.
+Timeout of `send` function can be specified by the last argument.
 
-The value of `send_interval` affects the interval of sending consecutive frames and the interval of the above checks. 
+```cpp
+autd.send(..., std::chrono::milliseconds(20));
+```
+
+If the timeout is greater than zero, wait until the data to be sent has been processed by the device or until the specified timeout period has elapsed.
+The `send` function returns `true` if it is sure that the device has processed the sent data, otherwise it returns `false`.
+
+If the timeout value is zero, the `send` function does not check data and return void.
+
+It is recommended to set this to an appropriate value if you want to send data reliably.
+
+The default value is 0.
+
+### stop
+
+You can stop output by sending `autd3::Stop`.
+
+```cpp
+autd.send(autd3::Stop());
+```
+
+Note that this will overwrite `SilencerConfig` with its default value.
+
+### clear
+
+You can clear flags, `Gain`/`Modulation` data, etc. in the device by sending `autd3::Clear`.
+
+```cpp
+autd.send(autd3::Clear());
+```

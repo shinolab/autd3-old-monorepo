@@ -11,7 +11,7 @@
 
 #include "autd3/extra/geometry_viewer.hpp"
 
-#include <fstream>
+#include <sstream>
 
 #include "model.hpp"
 #include "models/autd3_model.hpp"
@@ -20,18 +20,6 @@
 #include "vulkan_imgui.hpp"
 #include "vulkan_renderer.hpp"
 #include "window_handler.hpp"
-
-namespace {
-void write_model() {
-  if (std::filesystem::exists("models/AUTD3.glb")) return;
-  std::filesystem::create_directory("models");
-  std::ofstream fs;
-  fs.open("models/AUTD3.glb", std::ios::out | std::ios::binary | std::ios::trunc);
-  if (!fs) throw std::runtime_error("Cannot write AUTD3 model.");
-  for (size_t i = 0; i < model_size; i++) fs.write(reinterpret_cast<const char*>(&model_data[i]), sizeof(char));
-  fs.close();
-}
-}  // namespace
 
 namespace autd3::extra {
 void GeometryViewer::view(const core::Geometry& geometry) const {
@@ -57,8 +45,9 @@ void GeometryViewer::view(const core::Geometry& geometry) const {
   geometry_viewer::VulkanImGui imgui(&window, &context);
   geometry_viewer::VulkanRenderer renderer(&context, &window, &handle, &imgui, _vsync);
 
-  write_model();
-  const geometry_viewer::gltf::Model model("models/AUTD3.glb", geometries);
+  std::stringstream model_stream;
+  for (size_t i = 0; i < model_size; i++) model_stream << model_data[i];
+  const geometry_viewer::gltf::Model model(model_stream, geometries);
 
   window.init("Geometry Viewer", &renderer, geometry_viewer::VulkanRenderer::resize_callback, geometry_viewer::VulkanRenderer::pos_callback);
   context.init_vulkan("Geometry Viewer", window);
