@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 19/03/2023
+// Last Modified: 21/03/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,22 +11,9 @@
 
 #pragma once
 
-#include <algorithm>
-#include <limits>
-#include <memory>
-#include <queue>
-#include <string>
-#include <vector>
-
-#include "iomap.hpp"
-
 extern "C" {
 #include "./ethercat.h"
 }
-
-#if WIN32
-#include <timeapi.h>
-#endif
 
 #if WIN32
 #include "ecat_osal/win32.hpp"
