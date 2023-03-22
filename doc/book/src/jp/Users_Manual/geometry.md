@@ -218,9 +218,12 @@ geometry().attenuation = 0.0;
 
 波長, 及び, 波数を取得する.
 
+引数に音速を渡す必要がある.
+
 ```cpp
-  const auto tr_wavelength = autd.geometry()[0].wavelength();
-  const auto tr_wavenumber = autd.geometry()[0].wavenumber();
+  const auto sound_speed = autd.geometry().sound_speed;
+  const auto tr_wavelength = autd.geometry()[0].wavelength(sound_speed);
+  const auto tr_wavenumber = autd.geometry()[0].wavenumber(sound_speed);
 ```
 
 ### align_phase_at
