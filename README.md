@@ -25,7 +25,7 @@ AUTD3: Airborne Ultrasound Tactile Display 3
 
 <p align="center">
 Airborne Ultrasound Tactile Display (AUTD) is a midair haptic device that can remotely produce tactile sensation on a human skin surface without wearing devices.
-Please see <a href="https://hapislab.org/airborne-ultrasound-tactile-display?lang=en">our laboratory homepage</a> for more details on AUTD.
+Please see <a href="https://hapislab.org/en/midair-haptics-by-airborne-ultrasound-tactile-display-autd">our laboratory homepage</a> for more details on AUTD.
 This repository contains a client library to drive AUTD version 3 devices.
 This cross-platform library supports Windows, macOS, and Linux (including Single Board Computer such as Raspberry Pi).
 </p>
