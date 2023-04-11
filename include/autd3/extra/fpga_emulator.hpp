@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/03/2023
+// Last Modified: 11/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,11 +23,7 @@ namespace fpga {
 constexpr uint8_t VERSION_NUM_MAJOR = 0x88;
 constexpr uint8_t VERSION_NUM_MINOR = 0x01;
 
-#ifdef AUTD3_USE_METER
-constexpr driver::autd3_float_t TRANS_SIZE_FIXED_POINT_UNIT = 40000;
-#else
-constexpr driver::autd3_float_t TRANS_SIZE_FIXED_POINT_UNIT = 40;
-#endif
+constexpr driver::autd3_float_t TRANS_SIZE_FIXED_POINT_UNIT = 40000 / driver::METER;
 
 constexpr uint16_t BRAM_SELECT_CONTROLLER = 0x0;
 constexpr uint16_t BRAM_SELECT_MOD = 0x1;

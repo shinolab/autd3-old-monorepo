@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 24/01/2023
+// Last Modified: 11/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -52,7 +52,7 @@ constexpr float scale = 1e-3f;
 #else
 constexpr float scale = 1;
 #endif
-#ifdef AUTD3_USE_METER
+#ifdef AUTD3_USE_LEFT_HANDED
 constexpr float z_parity = -1;
 #else
 constexpr float z_parity = 1;

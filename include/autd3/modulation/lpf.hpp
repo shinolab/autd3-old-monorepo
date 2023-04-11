@@ -3,7 +3,7 @@
 // Created Date: 08/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/03/2023
+// Last Modified: 11/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -68,17 +68,20 @@ static driver::autd3_float_t coefficient[COEFFICIENT_SIZE] = {
 template <typename T>
 class LPF final : public core::Modulation {
  public:
-#ifdef AUTD3_CAPI
-  explicit LPF(core::Modulation* modulation) : Modulation(8192), _modulation(modulation) {}
-  core::Modulation& modulation() noexcept { return *_modulation; }
-#else
+  explicit LPF(T&& m) : Modulation(8192), _modulation(std::forward<T>(m)) {}
+
   /**
    * \param args constructor parameter of T
    */
   template <typename... Args>
   explicit LPF(Args&&... args) : Modulation(8192), _modulation(std::forward<Args>(args)...) {}
-  T& modulation() noexcept { return _modulation; }
-#endif
+
+  std::remove_pointer_t<T>& modulation() {
+    if constexpr (std::is_pointer_v<T>)
+      return *_modulation;
+    else
+      return _modulation;
+  }
 
   std::vector<driver::autd3_float_t> calc() override {
     const auto original_buffer = modulation().calc();

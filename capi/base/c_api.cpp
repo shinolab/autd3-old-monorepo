@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/03/2023
+// Last Modified: 11/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,11 +16,10 @@
 #include <utility>
 
 #include "./autd3_c_api.h"
-#define AUTD3_CAPI
 #include "autd3.hpp"
-#include "autd3/modulation/lpf.hpp"
 #include "custom.hpp"
 #include "custom_sink.hpp"
+#include "lpf_wrapper.hpp"
 #include "wrapper.hpp"
 #include "wrapper_link.hpp"
 
@@ -71,7 +70,8 @@ void AUTDSetMode(void* const geometry_builder, const uint8_t mode) {
 
 void AUTDBuildGeometry(void** out, void* geometry_builder) {
   auto* builder = static_cast<autd3::Geometry::Builder*>(geometry_builder);
-  *out = builder->build();
+  auto geometry = builder->build();
+  *out = new autd3::Geometry(std::move(geometry));
   delete builder;
 }
 
@@ -84,10 +84,11 @@ bool AUTDOpenController(void** out, void* const geometry, void* const link) {
   auto* w_link = static_cast<LinkWrapper*>(link);
   autd3::LinkPtr link_ = std::move(w_link->ptr);
   link_delete(w_link);
-  AUTD3_CAPI_TRY(*out = Controller::open(static_cast<autd3::Geometry*>(geometry), std::move(link_)))
+  auto cnt = Controller::open(*static_cast<autd3::Geometry*>(geometry), std::move(link_));
+  AUTD3_CAPI_TRY(*out = new Controller(std::move(cnt)))
 }
 
-void AUTDGetGeometry(void** geometry, void* const cnt) { *geometry = static_cast<Controller*>(cnt)->geometry_ptr(); }
+void AUTDGetGeometry(void** geometry, void* const cnt) { *geometry = &static_cast<Controller*>(cnt)->geometry(); }
 
 bool AUTDClose(void* const handle) {
   auto* const wrapper = static_cast<Controller*>(handle);
@@ -251,8 +252,7 @@ void AUTDGainGrouped(void** gain) {
 
 void AUTDGainGroupedAdd(void* grouped_gain, const int32_t device_id, void* gain) {
   auto* const gg = static_cast<autd3::gain::Grouped*>(grouped_gain);
-  auto* const g = static_cast<autd3::Gain*>(gain);
-  gg->add(device_id, g);
+  gg->add(device_id, std::shared_ptr<autd3::Gain>(static_cast<autd3::core::Gain*>(gain), [](autd3::Gain*) {}));
 }
 
 void AUTDGainFocus(void** gain, const autd3_float_t x, const autd3_float_t y, const autd3_float_t z, const autd3_float_t amp) {
@@ -301,7 +301,7 @@ void AUTDModulationSineLegacy(void** mod, const autd3_float_t freq, const autd3_
 
 void AUTDModulationLPF(void** mod, void* mod_in) {
   auto* m = static_cast<autd3::Modulation*>(mod_in);
-  *mod = new autd3::modulation::LPF<autd3::core::Modulation*>(m);
+  *mod = new LPF4CAPI(m);
 }
 
 void AUTDModulationCustom(void** mod, const autd3_float_t* buffer, const uint64_t size, const uint32_t freq_div) {
@@ -339,8 +339,7 @@ void AUTDFocusSTMAdd(void* const stm, const autd3_float_t x, const autd3_float_t
 
 void AUTDGainSTMAdd(void* const stm, void* const gain) {
   auto* const stm_w = static_cast<autd3::GainSTM*>(stm);
-  auto* const g = static_cast<autd3::Gain*>(gain);
-  stm_w->add(static_cast<autd3::core::Gain*>(g));
+  stm_w->add(std::shared_ptr<autd3::Gain>(static_cast<autd3::core::Gain*>(gain), [](autd3::Gain*) {}));
 }
 
 int32_t AUTDSTMGetStartIdx(const void* const stm) {
@@ -448,7 +447,9 @@ void AUTDDeleteAmplitudes(IN const void* amplitudes) {
 
 void AUTDSoftwareSTM(void** out, const uint8_t strategy) { *out = new autd3::SoftwareSTM(static_cast<autd3::TimerStrategy>(strategy)); }
 
-EXPORT_AUTD void AUTDSoftwareSTMAdd(void* stm, void* gain) { static_cast<autd3::SoftwareSTM*>(stm)->add(static_cast<autd3::core::Gain*>(gain)); }
+EXPORT_AUTD void AUTDSoftwareSTMAdd(void* stm, void* gain) {
+  static_cast<autd3::SoftwareSTM*>(stm)->add(std::shared_ptr<autd3::Gain>(static_cast<autd3::core::Gain*>(gain), [](autd3::Gain*) {}));
+}
 
 EXPORT_AUTD void AUTDSoftwareSTMStart(void** handle, void* stm, void* cnt) {
   *handle = new autd3::SoftwareSTM::SoftwareSTMThreadHandle(static_cast<autd3::SoftwareSTM*>(stm)->start(*static_cast<Controller*>(cnt)));
