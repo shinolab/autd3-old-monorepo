@@ -3,7 +3,7 @@
 // Created Date: 07/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/03/2023
+// Last Modified: 11/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,12 +28,6 @@ using core::TimerStrategy;
  * @brief Software Spatio-Temporal Modulation
  */
 class SoftwareSTM {
-#ifdef AUTD3_CAPI
-  using gain_ptr = core::Gain*;
-#else
-  using gain_ptr = std::shared_ptr<core::Gain>;
-#endif
-
  public:
   /**
    * @brief Handler of SoftwareSTM
@@ -48,7 +42,7 @@ class SoftwareSTM {
       SoftwareSTMCallback(SoftwareSTMCallback&& obj) = delete;
       SoftwareSTMCallback& operator=(SoftwareSTMCallback&& obj) = delete;
 
-      explicit SoftwareSTMCallback(Controller& cnt, std::vector<gain_ptr> bodies)
+      explicit SoftwareSTMCallback(Controller& cnt, std::vector<std::shared_ptr<core::Gain>> bodies)
           : _rt_lock(false), _cnt(cnt), _bodies(std::move(bodies)), _i(0), _size(_bodies.size()) {}
 
       void callback() override {
@@ -63,7 +57,7 @@ class SoftwareSTM {
       std::atomic<bool> _rt_lock;
 
       Controller& _cnt;
-      std::vector<gain_ptr> _bodies;
+      std::vector<std::shared_ptr<core::Gain>> _bodies;
       size_t _i;
       size_t _size;
     };
@@ -91,7 +85,7 @@ class SoftwareSTM {
     }
 
    private:
-    SoftwareSTMThreadHandle(Controller& cnt, std::vector<gain_ptr> bodies, const uint32_t period, const TimerStrategy strategy)
+    SoftwareSTMThreadHandle(Controller& cnt, std::vector<std::shared_ptr<core::Gain>> bodies, const uint32_t period, const TimerStrategy strategy)
         : _strategy(strategy), _cnt(cnt) {
       _run = true;
       if (bodies.empty()) return;
@@ -156,9 +150,6 @@ class SoftwareSTM {
     return frequency();
   }
 
-#ifdef AUTD3_CAPI
-  void add(core::Gain* b) { _bodies.emplace_back(b); }
-#else
   /**
    * @brief Add data to send
    * @param[in] b data
@@ -174,7 +165,6 @@ class SoftwareSTM {
    * @param[in] b data
    */
   void add(std::shared_ptr<core::Gain> b) { _bodies.emplace_back(std::move(b)); }
-#endif
 
   /**
    * @brief Start STM
@@ -211,7 +201,7 @@ class SoftwareSTM {
 
  private:
   TimerStrategy _timer_strategy;
-  std::vector<gain_ptr> _bodies;
+  std::vector<std::shared_ptr<core::Gain>> _bodies;
 };
 
 }  // namespace autd3
