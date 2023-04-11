@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/03/2023
+// Last Modified: 11/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -46,16 +46,6 @@ class Controller {
     }
   }
 
-#ifdef AUTD3_CAPI
-  static Controller* open(core::Geometry* geometry, core::LinkPtr link) {
-    auto* cnt = new Controller(geometry, std::move(link));
-    cnt->open();
-    return cnt;
-  }
-  core::Geometry& geometry() noexcept { return *_geometry; }
-  [[nodiscard]] core::Geometry* geometry_ptr() const noexcept { return _geometry; }
-  [[nodiscard]] const core::Geometry& geometry() const noexcept { return *_geometry; }
-#else
   static Controller open(core::Geometry geometry, core::LinkPtr link) {
     Controller cnt(std::move(geometry), std::move(link));
     cnt.open();
@@ -71,7 +61,6 @@ class Controller {
    * @brief Geometry of the devices
    */
   [[nodiscard]] const core::Geometry& geometry() const noexcept { return _geometry; }
-#endif
 
   /**
    * @brief Close the controller
@@ -270,7 +259,6 @@ class Controller {
     send(h.get(), b.get(), s.min_timeout());
   }
 
-#ifdef AUTD3_CAPI
   /**
    * @brief Send special data to devices
    * \return if this function returns true and ack_check_timeout > 0, it guarantees that the devices have processed the data.
@@ -280,7 +268,6 @@ class Controller {
     const auto b = s->body();
     return send(h.get(), b.get(), (std::max)(s->min_timeout(), timeout));
   }
-#endif
 
   /**
    * @brief If true, the fan will be forced to start.
@@ -293,14 +280,9 @@ class Controller {
   void reads_fpga_info(const bool value) noexcept { _reads_fpga_info.value = value; }
 
  private:
-#ifdef AUTD3_CAPI
-  explicit Controller(core::Geometry* geometry, core::LinkPtr link) : _geometry(geometry), _tx_buf({0}), _rx_buf(0), _link(std::move(link)) {}
-  core::Geometry* _geometry;
-#else
   explicit Controller(core::Geometry geometry, core::LinkPtr link)
       : _geometry(std::move(geometry)), _tx_buf({0}), _rx_buf(0), _link(std::move(link)) {}
   core::Geometry _geometry;
-#endif
 
   void open() {
     if (geometry().num_transducers() == 0) throw std::runtime_error("Please add devices before opening.");

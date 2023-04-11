@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/03/2023
+// Last Modified: 11/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -148,9 +148,6 @@ class PlaneWave final : public core::Gain {
  */
 class Grouped final : public core::Gain {
  public:
-#ifdef AUTD3_CAPI
-  void add(const size_t device_idx, core::Gain* b) { _gains.insert_or_assign(device_idx, b); }
-#else
   /**
    * \brief Decide which device outputs which Gain
    * \param device_idx device index
@@ -187,7 +184,6 @@ class Grouped final : public core::Gain {
   void add(const std::initializer_list<size_t> idx_list, std::shared_ptr<core::Gain> b) {
     for (const auto idx : idx_list) add(idx, b);
   }
-#endif
 
   std::vector<driver::Drive> calc(const core::Geometry& geometry) override {
     std::vector<driver::Drive> drives(geometry.num_transducers(), driver::Drive{0, 0});
@@ -208,11 +204,7 @@ class Grouped final : public core::Gain {
   Grouped& operator=(Grouped&& obj) = delete;
 
  private:
-#ifdef AUTD3_CAPI
-  std::unordered_map<size_t, Gain*> _gains{};
-#else
-  std::unordered_map<size_t, std::shared_ptr<Gain>> _gains{};
-#endif
+  std::unordered_map<size_t, std::shared_ptr<core::Gain>> _gains{};
 };
 
 /**

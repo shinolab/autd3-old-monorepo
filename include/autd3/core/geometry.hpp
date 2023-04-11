@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/03/2023
+// Last Modified: 11/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -88,21 +88,11 @@ struct Geometry {
       return *this;
     }
 
-#ifdef AUTD3_CAPI
-    Geometry* build() { return new Geometry(_mode, _attenuation, _sound_speed, std::move(_transducers), std::move(_device_map)); }
-#else
     Geometry build() { return {_mode, _attenuation, _sound_speed, std::move(_transducers), std::move(_device_map)}; }
-#endif
 
    private:
     driver::autd3_float_t _attenuation{0};
-    driver::autd3_float_t _sound_speed{
-#ifdef AUTD3_USE_METER
-        340.0
-#else
-        340.0e3
-#endif
-    };
+    driver::autd3_float_t _sound_speed{340 * driver::METER};
     std::vector<Transducer> _transducers;
     std::vector<size_t> _device_map;
     Mode _mode{Mode::Legacy};
@@ -311,11 +301,7 @@ struct Geometry {
   void set_sound_speed_from_temp(driver::autd3_float_t temp, driver::autd3_float_t k = static_cast<driver::autd3_float_t>(1.4),
                                  driver::autd3_float_t r = static_cast<driver::autd3_float_t>(8.31446261815324),
                                  driver::autd3_float_t m = static_cast<driver::autd3_float_t>(28.9647e-3)) {
-#ifdef AUTD3_USE_METER
-    sound_speed = std::sqrt(k * r * (static_cast<driver::autd3_float_t>(273.15) + temp) / m);
-#else
-    sound_speed = std::sqrt(k * r * (static_cast<driver::autd3_float_t>(273.15) + temp) / m) * static_cast<driver::autd3_float_t>(1e3);
-#endif
+    sound_speed = std::sqrt(k * r * (static_cast<driver::autd3_float_t>(273.15) + temp) / m) * driver::METER;
   }
 
  private:

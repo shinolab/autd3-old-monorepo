@@ -3,7 +3,7 @@
 // Created Date: 24/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 11/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,17 +25,9 @@ struct AUTD3 final : core::Device {
   static constexpr size_t NUM_TRANS_IN_UNIT = 249;
   static constexpr size_t NUM_TRANS_X = 18;
   static constexpr size_t NUM_TRANS_Y = 14;
-#ifdef AUTD3_USE_METER
-  static constexpr driver::autd3_float_t TRANS_SPACING = static_cast<driver::autd3_float_t>(10.16e-3);
-  static constexpr driver::autd3_float_t DEVICE_WIDTH = static_cast<driver::autd3_float_t>(192.0e-3);
-  static constexpr driver::autd3_float_t DEVICE_HEIGHT = static_cast<driver::autd3_float_t>(151.4e-3);
-#else
-  static constexpr driver::autd3_float_t TRANS_SPACING = static_cast<driver::autd3_float_t>(10.16);
-  static constexpr driver::autd3_float_t DEVICE_WIDTH = static_cast<driver::autd3_float_t>(192.0);
-  static constexpr driver::autd3_float_t DEVICE_HEIGHT = static_cast<driver::autd3_float_t>(151.4);
-#endif
-
-  static constexpr driver::autd3_float_t TRANS_SPACING_MM = static_cast<driver::autd3_float_t>(10.16);
+  static constexpr driver::autd3_float_t TRANS_SPACING = static_cast<driver::autd3_float_t>(10.16 * driver::MILLIMETER);
+  static constexpr driver::autd3_float_t DEVICE_WIDTH = static_cast<driver::autd3_float_t>(192.0 * driver::MILLIMETER);
+  static constexpr driver::autd3_float_t DEVICE_HEIGHT = static_cast<driver::autd3_float_t>(151.4 * driver::MILLIMETER);
 
   template <typename T>
   static constexpr auto is_missing_transducer(T x, T y) -> std::enable_if_t<std::is_integral_v<T>, bool> {
