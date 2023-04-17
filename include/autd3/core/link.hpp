@@ -13,6 +13,7 @@
 
 #include <chrono>
 #include <memory>
+#include <optional>
 #include <thread>
 
 #include "autd3/core/geometry.hpp"
@@ -65,9 +66,9 @@ class Link {
    * @brief  Send and Read data from devices
    * @return true if succeed
    */
-  [[nodiscard]] virtual bool send_receive(const driver::TxDatagram& tx, driver::RxDatagram& rx, const Duration timeout) {
+  [[nodiscard]] virtual bool send_receive(const driver::TxDatagram& tx, driver::RxDatagram& rx, const std::optional<Duration> timeout) {
     if (!send(tx)) return false;
-    const auto timeout_ = (std::max)(timeout, _timeout);
+    const auto timeout_ = timeout.value_or(_timeout);
     if (timeout_ == Duration::zero()) return receive(rx);
     return wait_msg_processed(tx.header().msg_id, rx, timeout_);
   }
@@ -88,8 +89,6 @@ class Link {
     } while (Clock::now() < expired);
     return false;
   }
-
- private:
   Duration _timeout{Duration::zero()};
 };
 

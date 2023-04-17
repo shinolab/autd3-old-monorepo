@@ -3,7 +3,7 @@
 // Created Date: 07/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/03/2023
+// Last Modified: 17/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,7 +22,7 @@ namespace autd3::core {
  * @brief SpecialData for synchronization
  */
 struct Synchronize final : SpecialData {
-  Synchronize() noexcept : SpecialData(std::chrono::milliseconds(200), std::make_unique<NullHeader>(), std::make_unique<SynchronizeBody>()) {}
+  Synchronize() noexcept : SpecialData(Milliseconds(200), std::make_unique<NullHeader>(), std::make_unique<SynchronizeBody>()) {}
 
  private:
   struct SynchronizeBody final : DatagramBody {
