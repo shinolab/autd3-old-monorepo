@@ -3,8 +3,6 @@ if (NOT BUILD_CAPI)
 endif()
 
 add_subdirectory(base)
-add_subdirectory(link_bundle)
-add_subdirectory(link_debug)
 add_subdirectory(link_remote_twincat)
 add_subdirectory(link_remote_soem)
 add_subdirectory(link_simulator)
