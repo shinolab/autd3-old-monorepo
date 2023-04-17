@@ -425,20 +425,22 @@ void AUTDDeleteSilencer(const void* config) {
   delete config_;
 }
 
-bool AUTDSend(void* const handle, void* const header, void* const body, const uint64_t timeout_ns) {
+bool AUTDSend(void* const handle, void* const header, void* const body, const int64_t timeout_ns) {
   if (header == nullptr && body == nullptr) return false;
   auto* const wrapper = static_cast<Controller*>(handle);
   auto* const h = static_cast<autd3::core::DatagramHeader*>(header);
   auto* const b = static_cast<autd3::core::DatagramBody*>(body);
-  if (header == nullptr) AUTD3_CAPI_TRY(return wrapper->send(*b, std::chrono::nanoseconds(timeout_ns)), false)
-  if (body == nullptr) AUTD3_CAPI_TRY(return wrapper->send(*h, std::chrono::nanoseconds(timeout_ns)), false)
-  AUTD3_CAPI_TRY(return wrapper->send(*h, *b, std::chrono::nanoseconds(timeout_ns)), false)
+  const std::optional<autd3::Duration> timeout = timeout_ns >= 0 ? std::optional(std::chrono::nanoseconds(timeout_ns)) : std::nullopt;
+  if (header == nullptr) AUTD3_CAPI_TRY(return wrapper->send(*b, timeout), false)
+  if (body == nullptr) AUTD3_CAPI_TRY(return wrapper->send(*h, timeout), false)
+  AUTD3_CAPI_TRY(return wrapper->send(*h, *b, timeout), false)
 }
 
-bool AUTDSendSpecial(void* const handle, void* const special, const uint64_t timeout_ns) {
+bool AUTDSendSpecial(void* const handle, void* const special, const int64_t timeout_ns) {
   auto* const wrapper = static_cast<Controller*>(handle);
   auto* const s = static_cast<autd3::core::SpecialData*>(special);
-  AUTD3_CAPI_TRY(return wrapper->send(s, std::chrono::nanoseconds(timeout_ns)), false)
+  const std::optional<autd3::Duration> timeout = timeout_ns >= 0 ? std::optional(std::chrono::nanoseconds(timeout_ns)) : std::nullopt;
+  AUTD3_CAPI_TRY(return wrapper->send(s, timeout), false)
 }
 
 void AUTDCreateAmplitudes(void** out, const autd3_float_t amp) { *out = new autd3::core::Amplitudes(amp); }

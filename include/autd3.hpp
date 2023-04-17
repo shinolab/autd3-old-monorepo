@@ -17,6 +17,7 @@
 #include "autd3/core/clear.hpp"
 #include "autd3/core/delay.hpp"
 #include "autd3/core/geometry.hpp"
+#include "autd3/core/link.hpp"
 #include "autd3/core/mode.hpp"
 #include "autd3/core/silencer_config.hpp"
 #include "autd3/core/stm/focus.hpp"
@@ -67,6 +68,9 @@ namespace extra {}
 constexpr driver::autd3_float_t pi = driver::pi;
 
 static inline std::string version = "8.3.0";
+
+using core::Duration;
+using core::Milliseconds;
 
 using core::Geometry;
 using core::Mode;
