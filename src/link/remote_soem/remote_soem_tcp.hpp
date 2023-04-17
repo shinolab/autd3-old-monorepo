@@ -3,7 +3,7 @@
 // Created Date: 02/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/01/2023
+// Last Modified: 17/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -40,7 +40,8 @@ using socklen_t = int;
 
 class RemoteSOEMTcp final : public core::Link {
  public:
-  RemoteSOEMTcp(std::string ip, const uint16_t port) : Link(), _is_open(false), _ip(std::move(ip)), _port(port) {}
+  RemoteSOEMTcp(const core::Duration timeout, std::string ip, const uint16_t port)
+      : Link(timeout), _is_open(false), _ip(std::move(ip)), _port(port) {}
   ~RemoteSOEMTcp() override = default;
   RemoteSOEMTcp(const RemoteSOEMTcp& v) noexcept = delete;
   RemoteSOEMTcp& operator=(const RemoteSOEMTcp& obj) = delete;
