@@ -3,7 +3,7 @@
 // Created Date: 04/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/03/2023
+// Last Modified: 17/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -53,6 +53,14 @@ class Emem {
   Emem& operator=(const Emem& obj) = delete;
   Emem(Emem&& obj) = default;
   Emem& operator=(Emem&& obj) = default;
+
+  /**
+   * @brief Set default timeout.
+   */
+  Emem& timeout(const core::Duration timeout) {
+    _timeout = timeout;
+    return *this;
+  }
 
   /**
    * @brief Set network interface name. (e.g. eth0)
@@ -127,6 +135,7 @@ class Emem {
   std::function<void(std::string)> _callback;
   SyncMode _sync_mode;
   std::chrono::milliseconds _state_check_interval;
+  core::Duration _timeout{core::Milliseconds(20)};
 };
 
 }  // namespace autd3::link

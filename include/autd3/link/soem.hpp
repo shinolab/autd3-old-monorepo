@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/03/2023
+// Last Modified: 17/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -55,6 +55,14 @@ class SOEM {
         _callback(nullptr),
         _sync_mode(SyncMode::FreeRun),
         _state_check_interval(std::chrono::milliseconds(100)) {}
+
+  /**
+   * @brief Set default timeout.
+   */
+  SOEM& timeout(const core::Duration timeout) {
+    _timeout = timeout;
+    return *this;
+  }
 
   /**
    * @brief Set network interface name. (e.g. eth0)
@@ -170,5 +178,6 @@ class SOEM {
   driver::DebugLevel _level{driver::DebugLevel::Info};
   std::function<void(std::string)> _out{nullptr};
   std::function<void()> _flush{nullptr};
+  core::Duration _timeout{core::Milliseconds(20)};
 };
 }  // namespace autd3::link
