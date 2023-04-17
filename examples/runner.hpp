@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 17/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -68,8 +68,8 @@ inline int run(autd3::Controller& autd) {
   std::copy(firm_infos.begin(), firm_infos.end(), std::ostream_iterator<autd3::FirmwareInfo>(std::cout, "\n"));
   std::cout << "================================================================================================" << std::endl;
 
-  autd.send(autd3::Clear(), std::chrono::milliseconds(20));
-  autd.send(autd3::Synchronize(), std::chrono::milliseconds(20));
+  autd.send(autd3::Clear());
+  autd.send(autd3::Synchronize());
 
   while (true) {
     size_t i = 0;
@@ -90,7 +90,7 @@ inline int run(autd3::Controller& autd) {
     std::cin.ignore();
 
     std::cout << "finish." << std::endl;
-    autd.send(autd3::Stop(), std::chrono::milliseconds(20));
+    autd.send(autd3::Stop());
   }
 
   autd.close();
