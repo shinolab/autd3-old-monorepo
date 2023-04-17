@@ -12,7 +12,7 @@ namespace AUTD3Sharp.NativeMethods
     {
         private const string DLL = "autd3capi-link-remote-soem";
 
-        [DllImport(DLL, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkRemoteSOEM(out IntPtr @out, string ip, ushort port);
+        [DllImport(DLL, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkRemoteSOEM(out IntPtr @out, string ip, ushort port, ulong timeoutNs);
     }
 }
 

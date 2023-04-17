@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/03/2023
+ * Last Modified: 17/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -38,31 +38,44 @@ namespace AUTD3Sharp
             protected override bool ReleaseHandle() => true;
         }
 
-        public sealed class Bundle
-        {
-            private readonly List<Link> _links;
 
-            public Bundle(Link link)
+        public sealed class Log
+        {
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnLogOutputCallback(string str);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void OnLogFlushCallback();
+
+            IntPtr _output = IntPtr.Zero;
+            IntPtr _flush = IntPtr.Zero;
+            DebugLevel _level = DebugLevel.Debug;
+
+            Link _link;
+
+            public Log(Link link)
             {
-                _links = new List<Link> { link };
+                _link = link;
             }
 
-            public Bundle Link(Link link)
+            public Log LogFunc(OnLogOutputCallback output, OnLogFlushCallback flush)
             {
-                _links.Add(link);
+                _output = Marshal.GetFunctionPointerForDelegate(output);
+                _flush = Marshal.GetFunctionPointerForDelegate(flush);
+                return this;
+            }
+
+            public Log Level(DebugLevel level)
+            {
+                _level = level;
                 return this;
             }
 
             public Link Build()
             {
-                var n = _links.Count;
-                var links = new IntPtr[n];
-                for (var i = 0; i < n; i++)
-                    links[i] = _links[i].LinkPtr;
-                NativeMethods.LinkBundle.AUTDLinkBundle(out var handle, links, n);
+                NativeMethods.Base.AUTDLinkLog(out var handle, _link.LinkPtr, (int)_level, _output, _flush);
                 return new Link(handle);
             }
         }
+
 
         public sealed class Debug
         {
@@ -89,12 +102,12 @@ namespace AUTD3Sharp
 
             public Link Build()
             {
-                NativeMethods.LinkDebug.AUTDLinkDebug(out var handle, (int)_level, _output, _flush);
+                NativeMethods.Base.AUTDLinkDebug(out var handle, (int)_level, _output, _flush);
                 return new Link(handle);
             }
         }
 
-        public sealed class SOEM
+        public sealed class SOEM : IDisposable
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnLostCallbackDelegate(string str);
 
@@ -103,109 +116,104 @@ namespace AUTD3Sharp
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void OnLogFlushCallback();
 
 
-            IntPtr _output = IntPtr.Zero;
-            IntPtr _flush = IntPtr.Zero;
-            AUTD3Sharp.DebugLevel _level = AUTD3Sharp.DebugLevel.Info;
-
-            private string _ifname;
-            private ulong _bufSize;
-            private ushort _sendCycle;
-            private ushort _sync0Cycle;
-            private AUTD3Sharp.SyncMode _syncMode;
-            private AUTD3Sharp.TimerStrategy _timerStrategy;
-            private IntPtr _onLost;
-            private ulong _checkInterval;
+            private bool _isDisposed;
+            IntPtr _soem;
 
             public SOEM()
             {
-                _ifname = "";
-                _bufSize = 0;
-                _sendCycle = 2;
-                _sync0Cycle = 2;
-                _syncMode = AUTD3Sharp.SyncMode.FreeRun;
-                _timerStrategy = AUTD3Sharp.TimerStrategy.Sleep;
-                _onLost = IntPtr.Zero;
-                _checkInterval = 500;
+                NativeMethods.LinkSOEM.AUTDLinkSOEM(out _soem);
+            }
+
+            public void Dispose()
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+
+            private void Dispose(bool disposing)
+            {
+                if (_isDisposed) return;
+
+                NativeMethods.LinkSOEM.AUTDLinkSOEMDelete(_soem);
+
+                _isDisposed = true;
+            }
+
+            ~SOEM()
+            {
+                Dispose(false);
             }
 
             public SOEM Ifname(string ifname)
             {
-                _ifname = ifname;
+                NativeMethods.LinkSOEM.AUTDLinkSOEMIfname(_soem, ifname);
                 return this;
             }
 
             public SOEM BufSize(ulong size)
             {
-                _bufSize = size;
+                NativeMethods.LinkSOEM.AUTDLinkSOEMBufSize(_soem, size);
                 return this;
             }
 
             public SOEM SendCycle(ushort sendCycle)
             {
-                _sendCycle = sendCycle;
+                NativeMethods.LinkSOEM.AUTDLinkSOEMSendCycle(_soem, sendCycle);
                 return this;
             }
 
             public SOEM Sync0Cycle(ushort sync0Cycle)
             {
-                _sync0Cycle = sync0Cycle;
-                return this;
-            }
-
-            [Obsolete("This methods is deprecated. Use SyncMode(SyncMode) instead.")]
-            public SOEM FreeRun(bool freerun)
-            {
-                _syncMode = freerun ? AUTD3Sharp.SyncMode.FreeRun : AUTD3Sharp.SyncMode.DC;
+                NativeMethods.LinkSOEM.AUTDLinkSOEMSync0Cycle(_soem, sync0Cycle);
                 return this;
             }
 
             public SOEM SyncMode(SyncMode syncMode)
             {
-                _syncMode = syncMode;
-                return this;
-            }
-
-            [Obsolete("This methods is deprecated. Use TimerStrategy(TimerStrategy) instead.")]
-            public SOEM HighPrecision(bool highPrecision)
-            {
-                _timerStrategy = highPrecision ? AUTD3Sharp.TimerStrategy.BusyWait : AUTD3Sharp.TimerStrategy.Sleep;
+                NativeMethods.LinkSOEM.AUTDLinkSOEMFreerun(_soem, syncMode == AUTD3Sharp.SyncMode.FreeRun);
                 return this;
             }
 
             public SOEM TimerStrategy(TimerStrategy timerStrategy)
             {
-                _timerStrategy = timerStrategy;
+                NativeMethods.LinkSOEM.AUTDLinkSOEMTimerStrategy(_soem, (byte)timerStrategy);
                 return this;
             }
 
             public SOEM OnLost(OnLostCallbackDelegate onLost)
             {
-                _onLost = Marshal.GetFunctionPointerForDelegate(onLost);
+                NativeMethods.LinkSOEM.AUTDLinkSOEMOnLost(_soem, Marshal.GetFunctionPointerForDelegate(onLost));
                 return this;
             }
 
-            public SOEM CheckInterval(ulong interval)
+            public SOEM CheckInterval(TimeSpan interval)
             {
-                _checkInterval = interval;
+                NativeMethods.LinkSOEM.AUTDLinkSOEMStateCheckInterval(_soem, (ulong)interval.TotalMilliseconds);
                 return this;
             }
 
             public SOEM DebugLogFunc(OnLogOutputCallback output, OnLogFlushCallback flush)
             {
-                _output = Marshal.GetFunctionPointerForDelegate(output);
-                _flush = Marshal.GetFunctionPointerForDelegate(flush);
+                NativeMethods.LinkSOEM.AUTDLinkSOEMLogFunc(_soem, Marshal.GetFunctionPointerForDelegate(output), Marshal.GetFunctionPointerForDelegate(flush));
                 return this;
             }
 
             public SOEM DebugLevel(AUTD3Sharp.DebugLevel level)
             {
-                _level = level;
+                NativeMethods.LinkSOEM.AUTDLinkSOEMLogLevel(_soem, (int)level);
+                return this;
+            }
+
+
+            public SOEM Timeout(TimeSpan timeout)
+            {
+                NativeMethods.LinkSOEM.AUTDLinkSOEMTimeout(_soem, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
                 return this;
             }
 
             public Link Build()
             {
-                NativeMethods.LinkSOEM.AUTDLinkSOEM(out var handle, _ifname, _bufSize, _sync0Cycle, _sendCycle, _syncMode == AUTD3Sharp.SyncMode.FreeRun, _onLost, (byte)_timerStrategy, _checkInterval, (int)_level, _output, _flush);
+                NativeMethods.LinkSOEM.AUTDLinkSOEMBuild(out var handle, _soem);
                 return new Link(handle);
             }
 
@@ -227,6 +235,8 @@ namespace AUTD3Sharp
         {
             private string _ip;
             private ushort _port;
+            private TimeSpan _timeout = TimeSpan.FromMilliseconds(20);
+
 
             public RemoteSOEM()
             {
@@ -246,9 +256,15 @@ namespace AUTD3Sharp
                 return this;
             }
 
+            public RemoteSOEM Timeout(TimeSpan timeout)
+            {
+                _timeout = timeout;
+                return this;
+            }
+
             public Link Build()
             {
-                NativeMethods.LinkRemoteSOEM.AUTDLinkRemoteSOEM(out var handle, _ip, _port);
+                NativeMethods.LinkRemoteSOEM.AUTDLinkRemoteSOEM(out var handle, _ip, _port, (ulong)(_timeout.TotalMilliseconds * 1000 * 1000));
                 return new Link(handle);
             }
         }
@@ -296,9 +312,17 @@ namespace AUTD3Sharp
 
         public sealed class Simulator
         {
+            private TimeSpan _timeout = TimeSpan.FromMilliseconds(20);
+
+            public Simulator Timeout(TimeSpan timeout)
+            {
+                _timeout = timeout;
+                return this;
+            }
+
             public Link Build()
             {
-                NativeMethods.LinkSimulator.AUTDLinkSimulator(out var handle);
+                NativeMethods.LinkSimulator.AUTDLinkSimulator(out var handle, (ulong)(_timeout.TotalMilliseconds * 1000 * 1000));
                 return new Link(handle);
             }
         }

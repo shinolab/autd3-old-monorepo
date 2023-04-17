@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/03/2023
+ * Last Modified: 17/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -250,53 +250,52 @@ namespace AUTD3Sharp
         {
             Dispose();
         }
-    }
 
-    public sealed class GeometryBuilder
-    {
-        private readonly IntPtr _builderPtr;
-
-        public GeometryBuilder()
+        public sealed class Builder
         {
-            _builderPtr = new IntPtr();
-            Base.AUTDCreateGeometryBuilder(out _builderPtr);
-        }
+            private readonly IntPtr _builderPtr;
 
-        public GeometryBuilder AddDevice(Vector3 position, Vector3 rotation)
-        {
-            Base.AUTDAddDevice(_builderPtr, position.x, position.y, position.z, rotation.x, rotation.y, rotation.z);
-            return this;
-        }
+            public Builder()
+            {
+                _builderPtr = new IntPtr();
+                Base.AUTDCreateGeometryBuilder(out _builderPtr);
+            }
 
-        public GeometryBuilder AddDevice(Vector3 position, Quaternion quaternion)
-        {
-            Base.AUTDAddDeviceQuaternion(_builderPtr, position.x, position.y, position.z, quaternion.w, quaternion.x, quaternion.y, quaternion.z);
-            return this;
-        }
+            public Builder AddDevice(Vector3 position, Vector3 rotation)
+            {
+                Base.AUTDAddDevice(_builderPtr, position.x, position.y, position.z, rotation.x, rotation.y, rotation.z);
+                return this;
+            }
 
-        public GeometryBuilder ToLegacy()
-        {
-            Base.AUTDSetMode(_builderPtr, 0);
-            return this;
-        }
+            public Builder AddDevice(Vector3 position, Quaternion quaternion)
+            {
+                Base.AUTDAddDeviceQuaternion(_builderPtr, position.x, position.y, position.z, quaternion.w, quaternion.x, quaternion.y, quaternion.z);
+                return this;
+            }
 
-        public GeometryBuilder ToAdvanced()
-        {
-            Base.AUTDSetMode(_builderPtr, 1);
-            return this;
-        }
+            public Builder LegacyMode()
+            {
+                Base.AUTDSetMode(_builderPtr, 0);
+                return this;
+            }
 
-        public GeometryBuilder ToAdvancedPhase()
-        {
-            Base.AUTDSetMode(_builderPtr, 2);
-            return this;
-        }
+            public Builder AdvancedMode()
+            {
+                Base.AUTDSetMode(_builderPtr, 1);
+                return this;
+            }
 
+            public Builder AdvancedPhaseMode()
+            {
+                Base.AUTDSetMode(_builderPtr, 2);
+                return this;
+            }
 
-        public Geometry Build()
-        {
-            Base.AUTDBuildGeometry(out var geometryPtr, _builderPtr);
-            return new Geometry(geometryPtr);
+            public Geometry Build()
+            {
+                Base.AUTDBuildGeometry(out var geometryPtr, _builderPtr);
+                return new Geometry(geometryPtr);
+            }
         }
     }
 
@@ -392,33 +391,33 @@ namespace AUTD3Sharp
         public bool Send(SpecialData special, TimeSpan? timeout = null)
         {
             if (special == null) throw new ArgumentNullException(nameof(special));
-            return Base.AUTDSendSpecial(CntPtr, special.Ptr, (ulong)(timeout?.TotalMilliseconds * 1000 * 1000 ?? 0));
+            return Base.AUTDSendSpecial(CntPtr, special.Ptr, (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1));
         }
 
         public bool Send(Header header, TimeSpan? timeout = null)
         {
             if (header == null) throw new ArgumentNullException(nameof(header));
-            return Base.AUTDSend(CntPtr, header.Ptr, IntPtr.Zero, (ulong)(timeout?.TotalMilliseconds * 1000 * 1000 ?? 0));
+            return Base.AUTDSend(CntPtr, header.Ptr, IntPtr.Zero, (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1));
         }
 
         public bool Send(Body body, TimeSpan? timeout = null)
         {
             if (body == null) throw new ArgumentNullException(nameof(body));
-            return Base.AUTDSend(CntPtr, IntPtr.Zero, body.Ptr, (ulong)(timeout?.TotalMilliseconds * 1000 * 1000 ?? 0));
+            return Base.AUTDSend(CntPtr, IntPtr.Zero, body.Ptr, (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1));
         }
 
         public bool Send(Header header, Body body, TimeSpan? timeout = null)
         {
             if (header == null) throw new ArgumentNullException(nameof(header));
             if (body == null) throw new ArgumentNullException(nameof(body));
-            return Base.AUTDSend(CntPtr, header.Ptr, body.Ptr, (ulong)(timeout?.TotalMilliseconds * 1000 * 1000 ?? 0));
+            return Base.AUTDSend(CntPtr, header.Ptr, body.Ptr, (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1));
         }
 
         public bool Send(Body body, Header header, TimeSpan? timeout = null)
         {
             if (header == null) throw new ArgumentNullException(nameof(header));
             if (body == null) throw new ArgumentNullException(nameof(body));
-            return Base.AUTDSend(CntPtr, header.Ptr, body.Ptr, (ulong)(timeout?.TotalMilliseconds * 1000 * 1000 ?? 0));
+            return Base.AUTDSend(CntPtr, header.Ptr, body.Ptr, (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1));
         }
     }
 
