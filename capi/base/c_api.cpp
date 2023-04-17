@@ -88,7 +88,10 @@ bool AUTDOpenController(void** out, void* const geometry, void* const link) {
   AUTD3_CAPI_TRY(*out = new Controller(std::move(cnt)))
 }
 
-void AUTDGetGeometry(void** geometry, void* const cnt) { *geometry = &static_cast<Controller*>(cnt)->geometry(); }
+void AUTDGetGeometry(void** geometry, void* const cnt) {
+  auto& g = static_cast<Controller*>(cnt)->geometry();
+  *geometry = &g;
+}
 
 bool AUTDClose(void* const handle) {
   auto* const wrapper = static_cast<Controller*>(handle);

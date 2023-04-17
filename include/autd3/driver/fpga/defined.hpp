@@ -29,7 +29,7 @@ constexpr size_t FPGA_CLK_FREQ = 163840000;
 /**
  * @brief The unit of the fixed-point number for FocusSTM is 0.025mm
  */
-constexpr autd3_float_t FOCUS_STM_FIXED_NUM_UNIT = static_cast<autd3_float_t>(0.025e-3) * driver::METER;
+constexpr autd3_float_t FOCUS_STM_FIXED_NUM_UNIT = static_cast<autd3_float_t>(0.025e-3) * METER;
 
 /**
  * @brief Drive is a utility structure for storing ultrasound amplitude and phase.
