@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/03/2023
+// Last Modified: 17/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,6 +27,7 @@
 #include "autd3/core/utils/osal_timer/timer_strategy.hpp"
 #include "autd3/driver/debug_level.hpp"
 #include "autd3/gain/primitive.hpp"
+#include "autd3/link/debug.hpp"
 #include "autd3/link/log.hpp"
 #include "autd3/modulation/primitive.hpp"
 #include "autd3/soft_stm.hpp"

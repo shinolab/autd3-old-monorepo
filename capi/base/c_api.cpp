@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/04/2023
+// Last Modified: 17/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -481,4 +481,31 @@ EXPORT_AUTD void AUTDSoftwareSTMSetSamplingPeriod(void* stm, const uint32_t peri
 EXPORT_AUTD void AUTDDeleteSoftwareSTM(const void* stm) {
   const auto* const stm_ = static_cast<const autd3::SoftwareSTM*>(stm);
   delete stm_;
+}
+
+typedef void (*OutCallback)(const char*);
+typedef void (*FlushCallback)();
+
+EXPORT_AUTD void AUTDLinkLog(void** out, void* const link, const int32_t level, const void* out_func, void* flush_func) {
+  std::function<void(std::string)> out_f = nullptr;
+  std::function<void()> flush_f = nullptr;
+  if (out_func != nullptr) out_f = [out](const std::string& msg) { reinterpret_cast<OutCallback>(out)(msg.c_str()); };
+  if (flush_func != nullptr) flush_f = [flush_func] { reinterpret_cast<FlushCallback>(flush_func)(); };
+
+  auto* w_link = static_cast<LinkWrapper*>(link);
+  *out = link_create(autd3::link::Log(std::move(w_link->ptr))
+                         .level(static_cast<autd3::driver::DebugLevel>(level))
+                         .log_func(std::move(out_f), std::move(flush_f))
+                         .build());
+  link_delete(w_link);
+}
+
+EXPORT_AUTD void AUTDLinkDebug(void** out, const int32_t level, const void* out_func, void* flush_func) {
+  std::function<void(std::string)> out_f = nullptr;
+  std::function<void()> flush_f = nullptr;
+  if (out_func != nullptr) out_f = [out](const std::string& msg) { reinterpret_cast<OutCallback>(out)(msg.c_str()); };
+  if (flush_func != nullptr) flush_f = [flush_func] { reinterpret_cast<FlushCallback>(flush_func)(); };
+  auto* link =
+      link_create(autd3::link::Debug().level(static_cast<autd3::driver::DebugLevel>(level)).log_func(std::move(out_f), std::move(flush_f)).build());
+  *out = link;
 }

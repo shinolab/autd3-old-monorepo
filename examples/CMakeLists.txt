@@ -56,16 +56,6 @@ if(BUILD_LINK_REMOTE_SOEM)
   set_target_properties(example_remote_soem PROPERTIES FOLDER "example")
 endif()
 
-if(BUILD_LINK_DEBUG)
-  add_executable(example_debug debug.cpp ${hpp_files})
-  target_link_libraries(example_debug autd3_example_common link_debug)
-  set_target_properties(example_debug PROPERTIES FOLDER "example")
-
-  add_executable(example_freq_config freq_config.cpp)
-  target_link_libraries(example_freq_config autd3_example_common link_debug)
-  set_target_properties(example_freq_config PROPERTIES FOLDER "example")
-endif()
-
 if(BUILD_GEOMETRY_VIEWER)
   add_executable(example_geometry_viewer geometry_viewer.cpp)
   target_link_libraries(example_geometry_viewer autd3 geometry_viewer)
@@ -88,3 +78,11 @@ if (BUILD_LINK_SIMULATOR)
   target_link_libraries(example_custom_device PRIVATE autd3_example_common link_simulator)
   set_target_properties(example_custom_device PROPERTIES FOLDER "example")
 endif()
+
+add_executable(example_debug debug.cpp ${hpp_files})
+target_link_libraries(example_debug autd3_example_common)
+set_target_properties(example_debug PROPERTIES FOLDER "example")
+
+add_executable(example_freq_config freq_config.cpp)
+target_link_libraries(example_freq_config autd3_example_common)
+set_target_properties(example_freq_config PROPERTIES FOLDER "example")

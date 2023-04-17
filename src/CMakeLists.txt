@@ -10,6 +10,7 @@ file(GLOB_RECURSE MODULATION_HEADER_FILES ${PROJECT_SOURCE_DIR}/include/autd3/mo
 
 add_library(autd3
   link/log/log.cpp
+  link/debug/debug.cpp
   ${HEADER_FILES}
   ${CORE_HEADER_FILES}
   ${DRIVER_HEADER_FILES}
