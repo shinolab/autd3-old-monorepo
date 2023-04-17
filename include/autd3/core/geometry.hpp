@@ -298,9 +298,9 @@ struct Geometry {
    * @param r Gas constant [J K^-1 mol^-1]
    * @param m Molar mass [kg mod^-1]
    */
-  void set_sound_speed_from_temp(driver::autd3_float_t temp, driver::autd3_float_t k = static_cast<driver::autd3_float_t>(1.4),
-                                 driver::autd3_float_t r = static_cast<driver::autd3_float_t>(8.31446261815324),
-                                 driver::autd3_float_t m = static_cast<driver::autd3_float_t>(28.9647e-3)) {
+  void set_sound_speed_from_temp(const driver::autd3_float_t temp, const driver::autd3_float_t k = static_cast<driver::autd3_float_t>(1.4),
+                                 const driver::autd3_float_t r = static_cast<driver::autd3_float_t>(8.31446261815324),
+                                 const driver::autd3_float_t m = static_cast<driver::autd3_float_t>(28.9647e-3)) {
     sound_speed = std::sqrt(k * r * (static_cast<driver::autd3_float_t>(273.15) + temp) / m) * driver::METER;
   }
 
