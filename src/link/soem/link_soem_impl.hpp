@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/03/2023
+// Last Modified: 17/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,10 +25,10 @@ namespace autd3::link {
 
 class SOEMLink final : public core::Link {
  public:
-  SOEMLink(const core::TimerStrategy timer_strategy, std::string ifname, size_t buf_size, const uint16_t sync0_cycle, const uint16_t send_cycle,
-           std::function<void(std::string)> on_lost, const SyncMode sync_mode, const std::chrono::milliseconds state_check_interval,
-           std::shared_ptr<spdlog::logger> logger)
-      : Link(),
+  SOEMLink(const core::Duration timeout, const core::TimerStrategy timer_strategy, std::string ifname, size_t buf_size, const uint16_t sync0_cycle,
+           const uint16_t send_cycle, std::function<void(std::string)> on_lost, const SyncMode sync_mode,
+           const std::chrono::milliseconds state_check_interval, std::shared_ptr<spdlog::logger> logger)
+      : Link(timeout),
         _handler(std::make_unique<SOEMHandler>(timer_strategy, std::move(ifname), buf_size, sync0_cycle, send_cycle, std::move(on_lost), sync_mode,
                                                state_check_interval, std::move(logger))) {}
   ~SOEMLink() override = default;

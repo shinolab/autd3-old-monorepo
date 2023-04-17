@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/03/2023
+// Last Modified: 17/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,6 +16,7 @@
 #include <utility>
 
 #include "autd3/core/geometry.hpp"
+#include "autd3/core/link.hpp"
 #include "autd3/driver/operation/null.hpp"
 
 namespace autd3::core {
@@ -61,14 +62,14 @@ class SpecialData {
 
   std::unique_ptr<DatagramHeader> header() { return std::move(_h); }
   std::unique_ptr<DatagramBody> body() { return std::move(_b); }
-  [[nodiscard]] std::chrono::high_resolution_clock::duration min_timeout() const noexcept { return _min_timeout; }
+  [[nodiscard]] Duration min_timeout() const noexcept { return _min_timeout; }
 
  protected:
   template <typename Rep, typename Period>
   explicit SpecialData(const std::chrono::duration<Rep, Period> min_timeout, std::unique_ptr<DatagramHeader> h, std::unique_ptr<DatagramBody> b)
-      : _min_timeout(std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(min_timeout)), _h(std::move(h)), _b(std::move(b)) {}
+      : _min_timeout(std::chrono::duration_cast<Duration>(min_timeout)), _h(std::move(h)), _b(std::move(b)) {}
 
-  std::chrono::high_resolution_clock::duration _min_timeout;
+  Duration _min_timeout;
   std::unique_ptr<DatagramHeader> _h;
   std::unique_ptr<DatagramBody> _b;
 };
