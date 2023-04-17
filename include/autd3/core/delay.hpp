@@ -3,7 +3,7 @@
 // Created Date: 01/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/03/2023
+// Last Modified: 17/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,7 +26,7 @@ namespace autd3::core {
  */
 
 struct ModDelayConfig final : SpecialData {
-  ModDelayConfig() noexcept : SpecialData(std::chrono::nanoseconds::zero(), std::make_unique<NullHeader>(), std::make_unique<ModDelayConfigBody>()) {}
+  ModDelayConfig() noexcept : SpecialData(std::make_unique<NullHeader>(), std::make_unique<ModDelayConfigBody>()) {}
 
  private:
   struct ModDelayConfigBody final : DatagramBody {

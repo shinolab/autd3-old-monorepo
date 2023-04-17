@@ -3,7 +3,7 @@
 // Created Date: 07/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/04/2023
+// Last Modified: 17/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -47,7 +47,7 @@ class SoftwareSTM {
 
       void callback() override {
         if (auto expected = false; _rt_lock.compare_exchange_weak(expected, true)) {
-          _cnt.send(*_bodies[_i]);
+          _cnt.send(*_bodies[_i], core::Duration::zero());
           _i = (_i + 1) % _size;
           _rt_lock.store(false, std::memory_order_release);
         }
@@ -94,12 +94,12 @@ class SoftwareSTM {
         case TimerStrategy::BusyWait:
           _th = std::thread([this, interval, bodies = std::move(bodies)] {
             size_t i = 0;
-            auto next = std::chrono::high_resolution_clock::now();
+            auto next = core::Clock::now();
             while (_run) {
               next += interval;
               for (;; core::spin_loop_hint())
-                if (std::chrono::high_resolution_clock::now() >= next) break;
-              this->_cnt.send(*bodies[i]);
+                if (core::Clock::now() >= next) break;
+              this->_cnt.send(*bodies[i], core::Duration::zero());
               i = (i + 1) % bodies.size();
             }
           });
@@ -107,11 +107,11 @@ class SoftwareSTM {
         case TimerStrategy::Sleep:
           _th = std::thread([this, interval, bodies = std::move(bodies)] {
             size_t i = 0;
-            auto next = std::chrono::high_resolution_clock::now();
+            auto next = core::Clock::now();
             while (_run) {
               next += interval;
               std::this_thread::sleep_until(next);
-              this->_cnt.send(*bodies[i]);
+              this->_cnt.send(*bodies[i], core::Duration::zero());
               i = (i + 1) % bodies.size();
             }
           });

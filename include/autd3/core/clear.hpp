@@ -3,7 +3,7 @@
 // Created Date: 07/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/03/2023
+// Last Modified: 17/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,7 +22,7 @@ namespace autd3::core {
  * @brief Clear is a SpecialData for clear operation
  */
 struct Clear final : SpecialData {
-  Clear() noexcept : SpecialData(std::chrono::milliseconds(200), std::make_unique<ClearHeader>(), std::make_unique<NullBody>()) {}
+  Clear() noexcept : SpecialData(Milliseconds(200), std::make_unique<ClearHeader>(), std::make_unique<NullBody>()) {}
 
  private:
   struct ClearHeader final : DatagramHeader {
