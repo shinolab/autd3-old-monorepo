@@ -16,6 +16,7 @@ from datetime import timedelta
 import ctypes
 from ctypes import c_void_p, byref, c_double, c_bool
 import numpy as np
+from typing import Optional
 
 from .native_methods.autd3capi import NativeMethods as Base
 from .link.link import Link
@@ -333,7 +334,7 @@ class Controller:
         Base().dll.AUTDGetFPGAInfo(self.p_cnt, pinfos)
         return infos
 
-    def send(self, a, b=None, timeout: timedelta | None = None):
+    def send(self, a, b=None, timeout: Optional[timedelta] = None):
         timeout = -1 if timeout is None else int(timeout.total_seconds() * 1000 * 1000 * 1000)
         if b is None and isinstance(a, SpecialData):
             return Base().dll.AUTDSendSpecial(self.p_cnt, a.ptr, timeout)
