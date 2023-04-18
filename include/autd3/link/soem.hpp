@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/04/2023
+// Last Modified: 18/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -59,7 +59,8 @@ class SOEM {
   /**
    * @brief Set default timeout.
    */
-  SOEM& timeout(const core::Duration timeout) {
+  template <typename Rep, typename Period>
+  SOEM& timeout(const std::chrono::duration<Rep, Period> timeout) {
     _timeout = timeout;
     return *this;
   }
