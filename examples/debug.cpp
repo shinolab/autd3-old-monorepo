@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 31/01/2023
+// Last Modified: 18/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ int main() try {
                       .sound_speed(340.0e3)  // mm/s
                       .build();
 
-  auto link = autd3::link::Debug().level(autd3::DebugLevel::Debug).build();
+  auto link = autd3::link::Debug().build();
   auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
 
   return run(autd);

@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/03/2023
+ * Last Modified: 18/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -39,7 +39,7 @@ pub struct Sender<'a, 'b, L: Link, T: Transducer, S: Sendable<T>, H, B> {
     cnt: &'a mut Controller<L, T>,
     buf: Option<&'b mut S>,
     sent: bool,
-    timeout: std::time::Duration,
+    timeout: Option<std::time::Duration>,
     _head: PhantomData<H>,
     _body: PhantomData<B>,
 }
@@ -50,7 +50,7 @@ impl<'a, 'b, L: Link, T: Transducer, S: Sendable<T>> Sender<'a, 'b, L, T, S, Emp
             cnt,
             buf: Some(s),
             sent: false,
-            timeout: std::time::Duration::from_nanos(0),
+            timeout: None,
             _head: PhantomData,
             _body: PhantomData,
         }
@@ -66,7 +66,7 @@ impl<'a, 'b, L: Link, T: Transducer> Sender<'a, 'b, L, T, EmptySendable<T>, Empt
             cnt,
             buf: None,
             sent: false,
-            timeout,
+            timeout: Some(timeout),
             _head: PhantomData,
             _body: PhantomData,
         }
@@ -91,21 +91,23 @@ impl<'a, 'b, L: Link, T: Transducer, S: Sendable<T>> Sender<'a, 'b, L, T, S, Fil
 
         self.cnt.force_fan.pack(&mut self.cnt.tx_buf);
         self.cnt.reads_fpga_info.pack(&mut self.cnt.tx_buf);
+
+        let timeout = self.timeout.unwrap_or(self.cnt.link.timeout());
         loop {
             let msg_id = self.cnt.get_id();
             self.cnt.tx_buf.header_mut().msg_id = msg_id;
             op_header.pack(&mut self.cnt.tx_buf)?;
             op_body.pack(&mut self.cnt.tx_buf)?;
             self.cnt.link.send(&self.cnt.tx_buf)?;
-            let success = self.cnt.wait_msg_processed(self.timeout)?;
-            if !self.timeout.is_zero() && !success {
+            let success = self.cnt.wait_msg_processed(timeout)?;
+            if !timeout.is_zero() && !success {
                 self.sent = true;
                 return Ok(false);
             }
             if op_header.is_finished() && op_body.is_finished() {
                 break;
             }
-            if self.timeout.is_zero() {
+            if timeout.is_zero() {
                 std::thread::sleep(std::time::Duration::from_millis(1));
             }
         }
@@ -130,21 +132,23 @@ impl<'a, 'b, L: Link, T: Transducer, S: Sendable<T>> Sender<'a, 'b, L, T, S, Emp
         self.cnt.force_fan.pack(&mut self.cnt.tx_buf);
         self.cnt.reads_fpga_info.pack(&mut self.cnt.tx_buf);
 
+        let timeout = self.timeout.unwrap_or(self.cnt.link.timeout());
+
         loop {
             let msg_id = self.cnt.get_id();
             self.cnt.tx_buf.header_mut().msg_id = msg_id;
             op_header.pack(&mut self.cnt.tx_buf)?;
             op_body.pack(&mut self.cnt.tx_buf)?;
             self.cnt.link.send(&self.cnt.tx_buf)?;
-            let success = self.cnt.wait_msg_processed(self.timeout)?;
-            if !self.timeout.is_zero() && !success {
+            let success = self.cnt.wait_msg_processed(timeout)?;
+            if !timeout.is_zero() && !success {
                 self.sent = true;
                 return Ok(false);
             }
             if op_header.is_finished() && op_body.is_finished() {
                 break;
             }
-            if self.timeout.is_zero() {
+            if timeout.is_zero() {
                 std::thread::sleep(std::time::Duration::from_millis(1));
             }
         }
@@ -172,6 +176,8 @@ impl<'a, 'b, L: Link, T: Transducer, S: Sendable<T>, H, B> Drop for Sender<'a, '
         self.cnt.force_fan.pack(&mut self.cnt.tx_buf);
         self.cnt.reads_fpga_info.pack(&mut self.cnt.tx_buf);
 
+        let timeout = self.timeout.unwrap_or(self.cnt.link.timeout());
+
         loop {
             let msg_id = self.cnt.get_id();
             self.cnt.tx_buf.header_mut().msg_id = msg_id;
@@ -181,11 +187,11 @@ impl<'a, 'b, L: Link, T: Transducer, S: Sendable<T>, H, B> Drop for Sender<'a, '
             if self.cnt.link.send(&self.cnt.tx_buf).is_err() {
                 return;
             }
-            if !self.cnt.wait_msg_processed(self.timeout).unwrap_or(false) || op.is_finished() {
+            if !self.cnt.wait_msg_processed(timeout).unwrap_or(false) || op.is_finished() {
                 break;
             }
 
-            if self.timeout.is_zero() {
+            if timeout.is_zero() {
                 std::thread::sleep(std::time::Duration::from_millis(1));
             }
         }

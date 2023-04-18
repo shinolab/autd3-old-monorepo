@@ -107,19 +107,6 @@ if(BUILD_LINK_REMOTE_SOEM)
   set_target_properties(c_example_remote_soem PROPERTIES FOLDER "capi/example")
 endif()
 
-if(BUILD_LINK_DEBUG)
-  add_executable(c_example_debug debug.c)
-  add_autd_dependencies(c_example_debug)
-  target_include_directories(c_example_debug PRIVATE ${PROJECT_SOURCE_DIR}/capi/link_debug)
-  target_link_libraries(c_example_debug PRIVATE autd3capi-link-debug) 
-  if(WIN32)
-    add_custom_command(TARGET c_example_debug PRE_BUILD
-      COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/${prefix}autd3capi-link-debug.${extention} ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>
-      DEPENDS ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/${prefix}autd3capi-link-debug.${extention})
-  endif()
-  set_target_properties(c_example_debug PROPERTIES FOLDER "capi/example")
-endif()
-
 if(BUILD_LINK_SIMULATOR)
   add_executable(c_example_simulator_client simulator_client.c)
   add_autd_dependencies(c_example_simulator_client)
@@ -158,3 +145,7 @@ if(BUILD_SIMULATOR)
   endif()
   set_target_properties(c_example_simulator_server PROPERTIES FOLDER "capi/example")
 endif()
+
+add_executable(c_example_debug debug.c)
+add_autd_dependencies(c_example_debug)
+set_target_properties(c_example_debug PROPERTIES FOLDER "capi/example")

@@ -6,7 +6,7 @@ open AUTD3Sharp.Modulation
 open AUTD3Sharp.Link
 
 let geometry = 
-    GeometryBuilder()
+    Geometry.Builder()
         .AddDevice(Vector3d.zero, Vector3d.zero)
         .Build()
 
@@ -14,19 +14,19 @@ let link = (new SOEM()).Build()
 
 let autd = Controller.Open (geometry, link)
 
-(new Clear(), TimeSpan.FromMilliseconds(20)) |> autd.Send |> ignore;
-(new Synchronize(), TimeSpan.FromMilliseconds(20)) |> autd.Send |> ignore;
+(new Clear()) |> autd.Send |> ignore;
+(new Synchronize()) |> autd.Send |> ignore;
 
 let print_firm firm = printfn $"{firm}" 
 printfn "==================================== Firmware information ======================================"
 autd.FirmwareInfoList() |> Seq.iter print_firm
 printfn "================================================================================================"
 
-(new SilencerConfig(), TimeSpan.FromMilliseconds(20)) |> autd.Send |> ignore;
+(new SilencerConfig()) |> autd.Send |> ignore;
 
 let m = new Sine 150;
 let g = new Focus(autd.Geometry.Center + Vector3d(0, 0, 150));
-autd.Send(m, g, TimeSpan.FromMilliseconds(20)) |> ignore
+autd.Send(m, g) |> ignore
 
 System.Console.ReadKey true |> ignore;
 

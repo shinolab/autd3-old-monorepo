@@ -4,7 +4,7 @@
  * Created Date: 23/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/03/2023
+ * Last Modified: 18/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -43,7 +43,7 @@ public class AUTDService
         _autd?.Close();
         _autd?.Dispose();
 
-        var geometryBuilder = new GeometryBuilder();
+        var geometryBuilder = new Geometry.Builder();
         foreach (var geo in App.GetService<GeometryViewModel>().Geometries)
         {
             geometryBuilder.AddDevice(new Vector3d(geo.X, geo.Y, geo.Z),
@@ -62,7 +62,7 @@ public class AUTDService
                 .TimerStrategy(linkVm.TimerStrategy)
                 .SendCycle(linkVm.SendCycle)
                 .Sync0Cycle(linkVm.Sync0Cycle)
-                .CheckInterval(linkVm.CheckInterval);
+                .StateCheckInterval(TimeSpan.FromMilliseconds(linkVm.CheckInterval));
             if (linkVm.InterfaceName != "SOEM_Link_AUTO".GetLocalized())
             {
                 soem = soem.Ifname(linkVm.InterfaceName);

@@ -4,7 +4,7 @@
 %Created Date: 02/02/2023
 %Author: Shun Suzuki
 %-----
-%Last Modified: 03/02/2023
+%Last Modified: 18/04/2023
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -67,13 +67,6 @@ classdef Geometry < handle
 
         function value = transducer(obj, idx)
             value = Transducer(idx, obj.ptr);
-        end
-
-        function delete(obj)
-            if obj.ptr.Value ~= 0
-                calllib('autd3capi', 'AUTDFreeGeometry', obj.ptr);
-                obj.ptr = libpointer('voidPtr', 0);
-            end
         end
 
     end

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/01/2023
+// Last Modified: 17/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,7 +22,7 @@ namespace autd3::link {
 
 class SimulatorImpl final : public core::Link {
  public:
-  SimulatorImpl() noexcept : Link() {}
+  explicit SimulatorImpl(const core::Duration timeout) noexcept : Link(timeout) {}
   ~SimulatorImpl() override { close(); }
   SimulatorImpl(const SimulatorImpl& v) noexcept = delete;
   SimulatorImpl& operator=(const SimulatorImpl& obj) = delete;
@@ -131,7 +131,7 @@ class SimulatorImpl final : public core::Link {
 };
 
 core::LinkPtr Simulator::build() const {
-  core::LinkPtr link = std::make_unique<SimulatorImpl>();
+  core::LinkPtr link = std::make_unique<SimulatorImpl>(_timeout);
   return link;
 }
 

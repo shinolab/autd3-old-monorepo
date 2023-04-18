@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/03/2023
+// Last Modified: 11/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -29,11 +29,7 @@ constexpr size_t FPGA_CLK_FREQ = 163840000;
 /**
  * @brief The unit of the fixed-point number for FocusSTM is 0.025mm
  */
-#ifdef AUTD3_USE_METER
-constexpr autd3_float_t FOCUS_STM_FIXED_NUM_UNIT = static_cast<autd3_float_t>(0.025e-3);
-#else
-constexpr autd3_float_t FOCUS_STM_FIXED_NUM_UNIT = static_cast<autd3_float_t>(0.025);
-#endif
+constexpr autd3_float_t FOCUS_STM_FIXED_NUM_UNIT = static_cast<autd3_float_t>(0.025e-3) * METER;
 
 /**
  * @brief Drive is a utility structure for storing ultrasound amplitude and phase.

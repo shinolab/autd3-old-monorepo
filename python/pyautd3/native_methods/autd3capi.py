@@ -48,9 +48,6 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDBuildGeometry.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p] 
         self.dll.AUTDBuildGeometry.restype = None
 
-        self.dll.AUTDFreeGeometry.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDFreeGeometry.restype = None
-
         self.dll.AUTDOpenController.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p, ctypes.c_void_p] 
         self.dll.AUTDOpenController.restype = ctypes.c_bool
 
@@ -270,10 +267,10 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDDeleteSilencer.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDDeleteSilencer.restype = None
 
-        self.dll.AUTDSend.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint64] 
+        self.dll.AUTDSend.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int64] 
         self.dll.AUTDSend.restype = ctypes.c_bool
 
-        self.dll.AUTDSendSpecial.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint64] 
+        self.dll.AUTDSendSpecial.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int64] 
         self.dll.AUTDSendSpecial.restype = ctypes.c_bool
 
         self.dll.AUTDGetTransModDelay.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
@@ -320,3 +317,9 @@ class NativeMethods(metaclass=Singleton):
 
         self.dll.AUTDDeleteSoftwareSTM.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDDeleteSoftwareSTM.restype = None
+
+        self.dll.AUTDLinkLog.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p, ctypes.c_int32, ctypes.c_void_p, ctypes.c_void_p] 
+        self.dll.AUTDLinkLog.restype = None
+
+        self.dll.AUTDLinkDebug.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_int32, ctypes.c_void_p, ctypes.c_void_p] 
+        self.dll.AUTDLinkDebug.restype = None

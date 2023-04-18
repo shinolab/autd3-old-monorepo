@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/03/2023
+// Last Modified: 11/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -70,11 +70,7 @@ struct FocusSTM final : Operation {
     const auto send_size = get_send_size(total_size, _sent, _tr_num_min);
     if (_sent == 0) {
       tx.header().cpu_flag.set(CPUControlFlags::STMBegin);
-#ifdef AUTD3_USE_METER
-      const auto sound_speed_internal = static_cast<uint32_t>(std::round(_sound_speed * 1024));
-#else
-      const auto sound_speed_internal = static_cast<uint32_t>(std::round(_sound_speed / 1000 * 1024));
-#endif
+      const auto sound_speed_internal = static_cast<uint32_t>(std::round(_sound_speed / driver::METER * 1024));
       std::for_each(tx.begin(), tx.end(), [this, sound_speed_internal, send_size](const auto& body) {
         const auto& [idx, d] = body;
         d.focus_stm_initial().size = static_cast<uint16_t>(send_size);

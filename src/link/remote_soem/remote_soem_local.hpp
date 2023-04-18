@@ -3,7 +3,7 @@
 // Created Date: 02/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/01/2023
+// Last Modified: 17/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ namespace autd3::link {
 
 class RemoteSOEMLocal final : public core::Link {
  public:
-  RemoteSOEMLocal() : Link(), _ptr(nullptr), _output_size(0) {}
+  explicit RemoteSOEMLocal(const core::Duration timeout) : Link(timeout), _ptr(nullptr), _output_size(0) {}
   ~RemoteSOEMLocal() override = default;
   RemoteSOEMLocal(const RemoteSOEMLocal& v) noexcept = delete;
   RemoteSOEMLocal& operator=(const RemoteSOEMLocal& obj) = delete;

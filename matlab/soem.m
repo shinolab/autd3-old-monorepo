@@ -21,12 +21,9 @@ use_backend_cuda = false;
 try
     init_autd(use_link_soem, use_backend_cuda);
 
-    builder = GeometryBuilder();
-    builder.add_device([0 0 0], [0 0 0]);
-    geometry = builder.build();
+    geometry = GeometryBuilder().add_device([0 0 0], [0 0 0]).build();
 
-    l = SOEM();
-    link = l.build();
+    link = SOEM().build();
 
     cnt = Controller(geometry, link);
 

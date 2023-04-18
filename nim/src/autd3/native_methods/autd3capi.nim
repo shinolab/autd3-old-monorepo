@@ -26,8 +26,6 @@ proc AUTDSetMode*(geometry_builder: pointer; mode: uint8) {.cdecl,
     importc: "AUTDSetMode", dynlib: dll.}
 proc AUTDBuildGeometry*(`out`: ptr pointer; geometry_builder: pointer) {.cdecl,
     importc: "AUTDBuildGeometry", dynlib: dll.}
-proc AUTDFreeGeometry*(geometry: pointer) {.cdecl, importc: "AUTDFreeGeometry",
-    dynlib: dll.}
 proc AUTDOpenController*(`out`: ptr pointer; geometry: pointer; link: pointer): bool {.
     cdecl, importc: "AUTDOpenController", dynlib: dll.}
 proc AUTDGetGeometry*(geometry: ptr pointer; cnt: pointer) {.cdecl,
@@ -182,9 +180,9 @@ proc AUTDCreateSilencer*(`out`: ptr pointer; step: uint16; cycle: uint16) {.cdec
     importc: "AUTDCreateSilencer", dynlib: dll.}
 proc AUTDDeleteSilencer*(config: pointer) {.cdecl, importc: "AUTDDeleteSilencer",
     dynlib: dll.}
-proc AUTDSend*(handle: pointer; header: pointer; body: pointer; timeout_ns: uint64): bool {.
+proc AUTDSend*(handle: pointer; header: pointer; body: pointer; timeout_ns: int64): bool {.
     cdecl, importc: "AUTDSend", dynlib: dll.}
-proc AUTDSendSpecial*(handle: pointer; special: pointer; timeout_ns: uint64): bool {.
+proc AUTDSendSpecial*(handle: pointer; special: pointer; timeout_ns: int64): bool {.
     cdecl, importc: "AUTDSendSpecial", dynlib: dll.}
 proc AUTDGetTransModDelay*(geometry: pointer; trans_idx: int32): uint16 {.cdecl,
     importc: "AUTDGetTransModDelay", dynlib: dll.}
@@ -216,3 +214,8 @@ proc AUTDSoftwareSTMSetSamplingPeriod*(stm: pointer; period: uint32) {.cdecl,
     importc: "AUTDSoftwareSTMSetSamplingPeriod", dynlib: dll.}
 proc AUTDDeleteSoftwareSTM*(stm: pointer) {.cdecl, importc: "AUTDDeleteSoftwareSTM",
     dynlib: dll.}
+proc AUTDLinkLog*(`out`: ptr pointer; link: pointer; level: int32; out_func: pointer;
+                 flush_func: pointer) {.cdecl, importc: "AUTDLinkLog", dynlib: dll.}
+proc AUTDLinkDebug*(`out`: ptr pointer; level: int32; out_func: pointer;
+                   flush_func: pointer) {.cdecl, importc: "AUTDLinkDebug",
+                                        dynlib: dll.}

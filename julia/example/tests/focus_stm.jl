@@ -3,7 +3,7 @@
 # Created Date: 14/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 08/03/2023
+# Last Modified: 18/04/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,7 +11,7 @@
 
 function focus_stm(cnt::Controller)
     config = SilencerConfigNone()
-    cnt.send(config; timeout_ns=UInt64(20 * 1000 * 1000))
+    cnt.send(config)
 
     stm = FocusSTM()
     center = SVector(90.0, 80.0, 150.0)
@@ -26,5 +26,5 @@ function focus_stm(cnt::Controller)
 
     m = Sine(150)
 
-    cnt.send(m, stm; timeout_ns=UInt64(20 * 1000 * 1000))
+    cnt.send(m, stm)
 end

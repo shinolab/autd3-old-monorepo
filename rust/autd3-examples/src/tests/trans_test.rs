@@ -4,7 +4,7 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/03/2023
+ * Last Modified: 18/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,10 +15,7 @@
 macro_rules! trans_test {
     ($autd:ident) => {{
         let mut silencer_config = SilencerConfig::default();
-        $autd
-            .timeout(std::time::Duration::from_millis(20))
-            .send(&mut silencer_config)
-            .flush()?;
+        $autd.send(&mut silencer_config).flush()?;
 
         let mut g = TransducerTest::new();
         g.set(0, 0., 1.0);
@@ -28,9 +25,6 @@ macro_rules! trans_test {
 
         let mut m = Static::new();
 
-        $autd
-            .timeout(std::time::Duration::from_millis(20))
-            .send(&mut m)
-            .send(&mut g)?;
+        $autd.send(&mut m).send(&mut g)?;
     }};
 }
