@@ -21,17 +21,16 @@ function custom(cnt)
     z = 150.0;
     f = [x; y; z];
 
-    n = cnt.num_transducers();
+    n = cnt.geometry.num_transducers();
 
     amps = ones(n);
     phases = zeros(n);
 
     for i = 1:n
-        tp = cnt.trans_position(i - 1);
-        wavenum = 2 * pi / cnt.wavelength(i - 1);
+        tp = cnt.geometry.transducer(i - 1).position();
+        wavenum = 2 * pi / cnt.geometry.transducer(i - 1).wavelength();
         d = norm(f - tp);
-        p = d * wavenum / (2 * pi);
-        phases(i - 1) = p;
+        phases(i) = d * wavenum;
     end
 
     g = CustomGain(amps, phases);

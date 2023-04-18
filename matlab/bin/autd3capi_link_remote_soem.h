@@ -14,4 +14,4 @@ typedef long int64_t;
 typedef unsigned long uint64_t;
 #endif
 
-void AUTDLinkRemoteSOEM(void** out, char* ip, uint16_t port);
+void AUTDLinkRemoteSOEM(void** out, char* ip, uint16_t port, uint64_t timeout_ns);

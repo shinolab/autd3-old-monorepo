@@ -4,7 +4,7 @@
 %Created Date: 02/02/2023
 %Author: Shun Suzuki
 %-----
-%Last Modified: 03/02/2023
+%Last Modified: 18/04/2023
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@ classdef Transducer < handle
             px = libpointer('doublePtr', 0);
             py = libpointer('doublePtr', 0);
             pz = libpointer('doublePtr', 0);
-            calllib('autd3capi', 'AUTDTransPosition', obj.ptr, trans_idx, px, py, pz);
+            calllib('autd3capi', 'AUTDTransPosition', obj.ptr, obj.id, px, py, pz);
             value = [px.Value; py.Value; pz.Value];
         end
 

@@ -23,7 +23,7 @@ function gain_stm(cnt)
 
     stm = GainSTM();
 
-    points_num = 200;
+    points_num = 50;
     radius = 30.0;
 
     for i = 1:points_num

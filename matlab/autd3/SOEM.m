@@ -4,7 +4,7 @@
 %Created Date: 07/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 20/03/2023
+%Last Modified: 18/04/2023
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,70 +15,63 @@ classdef SOEM < handle
 
     properties
         ptr
-        ifname_
-        buf_size_
-        sync0_cycle_
-        send_cycle_
-        sync_mode_
-        timer_strategy_
-        check_interval_
-        debug_level_
+        soem_
     end
 
     methods
 
         function obj = SOEM()
             obj.ptr = libpointer('voidPtr', 0);
-            obj.ifname_ = [];
-            obj.buf_size_ = 0;
-            obj.sync0_cycle_ = 2;
-            obj.send_cycle_ = 2;
-            obj.sync_mode_ = SyncMode.FreeRun;
-            obj.timer_strategy_ = TimerStrategy.Sleep;
-            obj.check_interval_ = 500;
-            obj.debug_level_ = 2;
+            obj.soem_ = libpointer('voidPtr', 0);
+            pp = libpointer('voidPtrPtr', obj.soem_);
+            calllib('autd3capi_link_soem', 'AUTDLinkSOEM', pp);
         end
 
-        function ifname(obj, name)
-            obj.ifname_ = name;
+        function res = ifname(obj, name)
+            calllib('autd3capi_link_soem', 'AUTDLinkSOEMIfname', obj.soem_, name);
+            res = obj;
         end
 
-        function buf_size(obj, size)
-            obj.buf_size_ = size;
+        function res = buf_size(obj, size)
+            calllib('autd3capi_link_soem', 'AUTDLinkSOEMBufSize', obj.soem_, size);
+            res = obj;
         end
 
-        function send_cycle(obj, cycle)
-            obj.send_cycle = cycle;
+        function res = send_cycle(obj, cycle)
+            calllib('autd3capi_link_soem', 'AUTDLinkSOEMSendCycle', obj.soem_, cycle);
+            res = obj;
         end
 
-        function sync0_cycle(obj, cycle)
-            obj.sync0_cycle_ = cycle;
+        function res = sync0_cycle(obj, cycle)
+            calllib('autd3capi_link_soem', 'AUTDLinkSOEMSync0Cycle', obj.soem_, cycle);
+            res = obj;
         end
 
-        function sync_mode(obj, mode)
-            obj.sync_mode_ = mode;
+        function res = sync_mode(obj, mode)
+            is_freerun = obj.sync_mode_ == SyncMode.FreeRun;
+            calllib('autd3capi_link_soem', 'AUTDLinkSOEMFreerun', obj.soem_, is_freerun);
+            res = obj;
         end
 
-        function timer_strategy(obj, strategy)
-            obj.timer_strategy_ = strategy;
+        function res = timer_strategy(obj, strategy)
+            calllib('autd3capi_link_soem', 'AUTDLinkSOEMTimerStrategy', obj.soem_, uint8(strategy));
+            res = obj;
         end
 
-        function check_interval(obj, interval)
-            obj.check_interval_ = interval;
+        function res = state_check_interval(obj, interval)
+            calllib('autd3capi_link_soem', 'AUTDLinkSOEMStateCheckInterval', obj.soem_, interval);
+            res = obj;
+        end
+
+        function res = timeout(obj, t)
+            calllib('autd3capi_link_soem', 'AUTDLinkSOEMTimeout', obj.soem_, t);
+            res = obj;
         end
         
-        function debug_level(obj, level)
-            obj.debug_level_ = level;
-        end
-
         function res = build(obj)
             pp = libpointer('voidPtrPtr', obj.ptr);
-            on_lost = libpointer('voidPtr', 0);
-            log_out = libpointer('voidPtr', 0);
-            log_flush = libpointer('voidPtr', 0);
-            is_freerun = obj.sync_mode_ == SyncMode.FreeRun;
-            strategy = uint8(obj.timer_strategy_);
-            calllib('autd3capi_link_soem', 'AUTDLinkSOEM', pp, obj.ifname_,  obj.buf_size_, obj.sync0_cycle_, obj.send_cycle_, is_freerun, on_lost, strategy, obj.check_interval_, obj.debug_level_, log_out, log_flush);
+            calllib('autd3capi_link_soem', 'AUTDLinkSOEMBuild', pp, obj.soem_);
+            calllib('autd3capi_link_soem', 'AUTDLinkSOEMDelete', obj.soem_);
             res = obj;
         end
 
