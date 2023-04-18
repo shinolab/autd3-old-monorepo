@@ -12,4 +12,4 @@
 #  endif
 #endif
 
-void AUTDLinkRemoteSOEM(void** out, char* ip, uint16 port);
+void AUTDLinkRemoteSOEM(void** out, char* ip, uint16 port, uint64 timeout_ns);
