@@ -25,7 +25,6 @@ EXPORT_AUTD bool AUTDAddDeviceQuaternion(IN void* geometry_builder, IN autd3_flo
                                          IN autd3_float_t qx, IN autd3_float_t qy, IN autd3_float_t qz);
 EXPORT_AUTD void AUTDSetMode(IN void* geometry_builder, IN uint8_t mode);
 EXPORT_AUTD void AUTDBuildGeometry(OUT void** out, IN void* geometry_builder);
-EXPORT_AUTD void AUTDFreeGeometry(IN const void* geometry);
 EXPORT_AUTD bool AUTDOpenController(OUT void** out, IN void* geometry, IN void* link);
 EXPORT_AUTD void AUTDGetGeometry(OUT void** geometry, IN void* cnt);
 EXPORT_AUTD bool AUTDClose(IN void* handle);

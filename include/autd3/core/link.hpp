@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/04/2023
+// Last Modified: 18/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ using Milliseconds = std::chrono::milliseconds;
  */
 class Link {
  public:
-  Link() noexcept {}
+  Link() noexcept = default;
   explicit Link(const Duration timeout) noexcept : _timeout(timeout) {}
   virtual ~Link() = default;
   Link(const Link& v) = delete;
