@@ -116,7 +116,17 @@
    ```
 
    先に手動で`calc`を呼んで初期化する必要がある点に注意する.
-   
+
+## 超音波の出力が異常に弱い/周波数がおかしい
+
+- 初期化/同期を行っているか確認する.
+   - 同期は, たとえ1台のデバイスしか使っていない場合でも必要
+
+   ```cpp
+   autd.send(autd3::Clear(), std::chrono::milliseconds(20));
+   autd.send(autd3::Synchronize(), std::chrono::milliseconds(20));
+   ```
+
 ## その他
 
 - 質問やバグ報告は[GithubのIssue](https://github.com/shinolab/autd3/issues)へお気軽にどうぞ

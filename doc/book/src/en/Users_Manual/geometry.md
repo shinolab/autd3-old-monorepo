@@ -210,8 +210,9 @@ For details, see [Set mode/Change frequency](./advanced_examples/freq_config.md)
 Get wavelength and wavenumber.
 
 ```cpp
-  const auto tr_wavelength = autd.geometry()[0].wavelength();
-  const auto tr_wavenumber = autd.geometry()[0].wavenumber();
+  const auto sound_speed = autd.geometry().sound_speed;
+  const auto tr_wavelength = autd.geometry()[0].wavelength(sound_speed);
+  const auto tr_wavenumber = autd.geometry()[0].wavenumber(sound_speed);
 ```
 
 ### align_phase_at

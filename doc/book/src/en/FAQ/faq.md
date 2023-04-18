@@ -74,6 +74,16 @@
 - It may be blocked by a firewall, turn off the firewall or allow port 48898 of TCP/UDP.
 - Disconnect all client PCs from LAN except for the server.
 
+## Ultrasound output is abnormally weak/frequency is wrong
+
+- Check if initialization/synchronization has been done.
+   - Synchronization is necessary even if you use only one device
+
+   ```cpp
+   autd.send(autd3::Clear(), std::chrono::milliseconds(20));
+   autd.send(autd3::Synchronize(), std::chrono::milliseconds(20));
+   ```
+
 ## Miscellaneous
 
 - Please feel free to ask questions or report bugs to [Issue on Github](https://github.com/shinolab/autd3/issues)

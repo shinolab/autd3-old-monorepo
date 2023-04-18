@@ -17,10 +17,10 @@ PCと1台目のEtherCAT Inをケーブルでつなぎ, $i$台目のEtherCAT Out�
 
 > NOTE: AUTD3は最大でデバイスあたり$\SI{2}{A}$の電流を消費する. 電源の最大出力電流に注意されたい.
 
-SDKで複数台のデバイスを使用する場合は`add_device`関数を接続したデバイスの順に呼び出す必要がある.
+SDKで複数台のデバイスを使用する場合は`add_device`関数を**接続したデバイスの順に**呼び出す必要がある.
 
 <figure>
-  <img src="../fig/Users_Manual/autd_hori.jpg"/>
+  <img src="../fig/Users_Manual/hor_left_ori_left_1.png"/>
   <figcaption>Horizontal alignment</figcaption>
 </figure>
 
@@ -40,7 +40,12 @@ SDKで複数台のデバイスを使用する場合は`add_device`関数を接�
 また, `AUTD3::DEVICE_WIDTH`はデバイスの (基板外形を含めた) 横幅である.
 この例では, 回転はしないので, 第2引数はゼロで良い.
 
-また, 例えば, グローバル座標を2台目のローカル座標と同じようにとるとすると,
+<figure>
+  <img src="../fig/Users_Manual/hor_right_ori_left_1.png"/>
+  <figcaption>Horizontal alignment</figcaption>
+</figure>
+
+また, 例えば上図のように, グローバル座標を2台目のローカル座標と同じようにとるとすると,
 
 ```cpp
   auto geometry = autd3::Geometry::Builder()
@@ -52,7 +57,7 @@ SDKで複数台のデバイスを使用する場合は`add_device`関数を接�
 とすれば良い.
 
 <figure>
-  <img src="../fig/Users_Manual/autd_vert.jpg"/>
+  <img src="../fig/Users_Manual/vert.png"/>
   <figcaption>Vertical alignment</figcaption>
 </figure>
 
@@ -65,8 +70,27 @@ SDKで複数台のデバイスを使用する場合は`add_device`関数を接�
 ```
 のように指定する.
 
-SDKにおけるAPIでは, すべてグローバル座標を用いるため, 接続するデバイスの数に依存せず透過的に使用できる.
 
+<figure>
+  <img src="../fig/Users_Manual/hor_right_ori_right_1.png"/>
+  <figcaption>Horizontal alignment</figcaption>
+</figure>
+
+`add_device`を呼び出す順番は接続した順番に依存することに注意する.
+例えば, 上図のように配置・接続しており, 図右側のデバイスが1台目, 左側のデバイスが2台目だとする.
+さらに, グローバル座標を1台目のローカル座標と同じようにとるとすると,
+
+```cpp
+  auto geometry = autd3::Geometry::Builder()
+                      .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+                      .add_device(autd3::AUTD3(autd3::Vector3(-autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3::Zero()))
+                      .build();
+```
+
+となる.
+
+
+SDKにおけるAPIでは, すべてグローバル座標を用いるため, 接続するデバイスの数に依存せず透過的に使用できる.
 
 ## デバイス/振動子のインデックス
 
@@ -218,9 +242,12 @@ geometry().attenuation = 0.0;
 
 波長, 及び, 波数を取得する.
 
+引数に音速を渡す必要がある.
+
 ```cpp
-  const auto tr_wavelength = autd.geometry()[0].wavelength();
-  const auto tr_wavenumber = autd.geometry()[0].wavenumber();
+  const auto sound_speed = autd.geometry().sound_speed;
+  const auto tr_wavelength = autd.geometry()[0].wavelength(sound_speed);
+  const auto tr_wavenumber = autd.geometry()[0].wavenumber(sound_speed);
 ```
 
 ### align_phase_at
