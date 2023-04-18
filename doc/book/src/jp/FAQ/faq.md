@@ -123,8 +123,8 @@
    - 同期は, たとえ1台のデバイスしか使っていない場合でも必要
 
    ```cpp
-   autd.send(autd3::Clear(), std::chrono::milliseconds(20));
-   autd.send(autd3::Synchronize(), std::chrono::milliseconds(20));
+   autd.send(autd3::Clear());
+   autd.send(autd3::Synchronize());
    ```
 
 ## その他
