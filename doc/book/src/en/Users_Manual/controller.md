@@ -74,6 +74,8 @@ Send data to devices.
 ### Timeout
 
 Timeout of `send` function can be specified by the last argument.
+If this argument is omitted, the default timeout set in [Link](./link.md) is used.
+If a link does not have a timeout setting, the default timeout of the link is 0.
 
 ```cpp
 autd.send(..., std::chrono::milliseconds(20));
@@ -85,8 +87,6 @@ The `send` function returns `true` if it is sure that the device has processed t
 If the timeout value is zero, the `send` function does not check data and return void.
 
 It is recommended to set this to an appropriate value if you want to send data reliably.
-
-The default value is 0.
 
 ### stop
 
