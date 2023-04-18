@@ -4,7 +4,7 @@ Project: samples
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 08/03/2023
+Last Modified: 17/04/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,7 +12,6 @@ Copyright (c) 2022 Shun Suzuki. All rights reserved.
 '''
 
 
-from datetime import timedelta
 from pyautd3 import Controller, SilencerConfig
 from pyautd3.stm import FocusSTM
 from pyautd3.modulation import Static
@@ -21,7 +20,7 @@ import numpy as np
 
 def stm_focus(autd: Controller):
     config = SilencerConfig.none()
-    autd.send(config, timeout=timedelta(milliseconds=20))
+    autd.send(config)
 
     m = Static(1.0)
 
@@ -36,4 +35,4 @@ def stm_focus(autd: Controller):
 
     stm.frequency = 1.0
 
-    autd.send(m, stm, timeout=timedelta(milliseconds=20))
+    autd.send(m, stm)
