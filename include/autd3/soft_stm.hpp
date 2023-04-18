@@ -3,7 +3,7 @@
 // Created Date: 07/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/03/2023
+// Last Modified: 17/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,12 +28,6 @@ using core::TimerStrategy;
  * @brief Software Spatio-Temporal Modulation
  */
 class SoftwareSTM {
-#ifdef AUTD3_CAPI
-  using gain_ptr = core::Gain*;
-#else
-  using gain_ptr = std::shared_ptr<core::Gain>;
-#endif
-
  public:
   /**
    * @brief Handler of SoftwareSTM
@@ -48,12 +42,12 @@ class SoftwareSTM {
       SoftwareSTMCallback(SoftwareSTMCallback&& obj) = delete;
       SoftwareSTMCallback& operator=(SoftwareSTMCallback&& obj) = delete;
 
-      explicit SoftwareSTMCallback(Controller& cnt, std::vector<gain_ptr> bodies)
+      explicit SoftwareSTMCallback(Controller& cnt, std::vector<std::shared_ptr<core::Gain>> bodies)
           : _rt_lock(false), _cnt(cnt), _bodies(std::move(bodies)), _i(0), _size(_bodies.size()) {}
 
       void callback() override {
         if (auto expected = false; _rt_lock.compare_exchange_weak(expected, true)) {
-          _cnt.send(*_bodies[_i]);
+          _cnt.send(*_bodies[_i], core::Duration::zero());
           _i = (_i + 1) % _size;
           _rt_lock.store(false, std::memory_order_release);
         }
@@ -63,7 +57,7 @@ class SoftwareSTM {
       std::atomic<bool> _rt_lock;
 
       Controller& _cnt;
-      std::vector<gain_ptr> _bodies;
+      std::vector<std::shared_ptr<core::Gain>> _bodies;
       size_t _i;
       size_t _size;
     };
@@ -91,7 +85,7 @@ class SoftwareSTM {
     }
 
    private:
-    SoftwareSTMThreadHandle(Controller& cnt, std::vector<gain_ptr> bodies, const uint32_t period, const TimerStrategy strategy)
+    SoftwareSTMThreadHandle(Controller& cnt, std::vector<std::shared_ptr<core::Gain>> bodies, const uint32_t period, const TimerStrategy strategy)
         : _strategy(strategy), _cnt(cnt) {
       _run = true;
       if (bodies.empty()) return;
@@ -100,12 +94,12 @@ class SoftwareSTM {
         case TimerStrategy::BusyWait:
           _th = std::thread([this, interval, bodies = std::move(bodies)] {
             size_t i = 0;
-            auto next = std::chrono::high_resolution_clock::now();
+            auto next = core::Clock::now();
             while (_run) {
               next += interval;
               for (;; core::spin_loop_hint())
-                if (std::chrono::high_resolution_clock::now() >= next) break;
-              this->_cnt.send(*bodies[i]);
+                if (core::Clock::now() >= next) break;
+              this->_cnt.send(*bodies[i], core::Duration::zero());
               i = (i + 1) % bodies.size();
             }
           });
@@ -113,11 +107,11 @@ class SoftwareSTM {
         case TimerStrategy::Sleep:
           _th = std::thread([this, interval, bodies = std::move(bodies)] {
             size_t i = 0;
-            auto next = std::chrono::high_resolution_clock::now();
+            auto next = core::Clock::now();
             while (_run) {
               next += interval;
               std::this_thread::sleep_until(next);
-              this->_cnt.send(*bodies[i]);
+              this->_cnt.send(*bodies[i], core::Duration::zero());
               i = (i + 1) % bodies.size();
             }
           });
@@ -156,9 +150,6 @@ class SoftwareSTM {
     return frequency();
   }
 
-#ifdef AUTD3_CAPI
-  void add(core::Gain* b) { _bodies.emplace_back(b); }
-#else
   /**
    * @brief Add data to send
    * @param[in] b data
@@ -174,7 +165,6 @@ class SoftwareSTM {
    * @param[in] b data
    */
   void add(std::shared_ptr<core::Gain> b) { _bodies.emplace_back(std::move(b)); }
-#endif
 
   /**
    * @brief Start STM
@@ -211,7 +201,7 @@ class SoftwareSTM {
 
  private:
   TimerStrategy _timer_strategy;
-  std::vector<gain_ptr> _bodies;
+  std::vector<std::shared_ptr<core::Gain>> _bodies;
 };
 
 }  // namespace autd3

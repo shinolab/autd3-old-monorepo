@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/03/2023
+// Last Modified: 11/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,9 +30,6 @@ namespace autd3::core {
 struct GainSTM final : STM {
   explicit GainSTM(const driver::GainSTMMode mode = driver::GainSTMMode::PhaseDutyFull) : STM(), _mode(mode) {}
 
-#ifdef AUTD3_CAPI
-  void add(Gain* gain) { _gains.emplace_back(gain); }
-#else
   /**
    * @brief Add gain
    * @param[in] gain gain
@@ -48,7 +45,6 @@ struct GainSTM final : STM {
    * @param[in] gain gain
    */
   void add(std::shared_ptr<Gain> gain) { _gains.emplace_back(std::move(gain)); }
-#endif
 
   [[nodiscard]] size_t size() const override { return _gains.size(); }
 
@@ -71,11 +67,7 @@ struct GainSTM final : STM {
  private:
   driver::GainSTMMode _mode;
 
-#ifdef AUTD3_CAPI
-  std::vector<Gain*> _gains;
-#else
   std::vector<std::shared_ptr<Gain>> _gains;
-#endif
 };
 
 }  // namespace autd3::core

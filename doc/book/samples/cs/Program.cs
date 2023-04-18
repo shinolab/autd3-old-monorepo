@@ -5,7 +5,7 @@ using AUTD3Sharp.Link;
 using AUTD3Sharp.Gain;
 using AUTD3Sharp.Modulation;
 
-var geometry = new GeometryBuilder()
+var geometry = new Geometry.Builder()
     .AddDevice(Vector3d.zero, Vector3d.zero)
     .Build();
 
@@ -13,19 +13,19 @@ var link = new SOEM().Build();
 
 var autd = Controller.Open(geometry, link);
 
-autd.Send(new Clear(), TimeSpan.FromMilliseconds(20));
-autd.Send(new Synchronize(), TimeSpan.FromMilliseconds(20));
+autd.Send(new Clear());
+autd.Send(new Synchronize());
 
 var firmList = autd.FirmwareInfoList().ToArray();
 foreach (var firm in firmList)
     Console.WriteLine(firm);
 
 var config = new SilencerConfig();
-autd.Send(config, TimeSpan.FromMilliseconds(20));
+autd.Send(config);
 
 var g = new Focus(autd.Geometry.Center + new Vector3d(0, 0, 150));
 var m = new Sine(150);
-autd.Send(m, g, TimeSpan.FromMilliseconds(20));
+autd.Send(m, g);
 
 Console.ReadKey(true);
 

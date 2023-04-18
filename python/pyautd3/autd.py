@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 08/03/2023
+Last Modified: 18/04/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,6 +16,7 @@ from datetime import timedelta
 import ctypes
 from ctypes import c_void_p, byref, c_double, c_bool
 import numpy as np
+from typing import Optional
 
 from .native_methods.autd3capi import NativeMethods as Base
 from .link.link import Link
@@ -141,10 +142,6 @@ class Transducer:
 class Geometry:
     def __init__(self, ptr: c_void_p):
         self._ptr = ptr
-        self.__disposed = False
-
-    def __del__(self):
-        self.dispose()
 
     @ property
     def sound_speed(self):
@@ -207,44 +204,35 @@ class Geometry:
     def __iter__(self):
         return Geometry.TransdducerIterator(self._ptr)
 
-    def dispose(self):
-        if not self.__disposed:
-            self._free()
-            self.__disposed = True
+    class Builder:
+        def __init__(self):
+            self._ptr = c_void_p()
+            Base().dll.AUTDCreateGeometryBuilder(byref(self._ptr))
 
-    def _free(self):
-        Base().dll.AUTDFreeGeometry(self._ptr)
+        def add_device(self, pos, rot):
+            Base().dll.AUTDAddDevice(self._ptr, pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
+            return self
 
+        def add_device_quaternion(self, pos, q):
+            Base().dll.AUTDAddDeviceQuaternion(self._ptr, pos[0], pos[1], pos[2], q[0], q[1], q[2], q[3])
+            return self
 
-class GeometryBuilder:
-    def __init__(self):
-        self._ptr = c_void_p()
-        Base().dll.AUTDCreateGeometryBuilder(byref(self._ptr))
+        def legacy_mode(self):
+            Base().dll.AUTDSetMode(self._ptr, 0)
+            return self
 
-    def add_device(self, pos, rot):
-        Base().dll.AUTDAddDevice(self._ptr, pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
-        return self
+        def advanced_mode(self):
+            Base().dll.AUTDSetMode(self._ptr, 1)
+            return self
 
-    def add_device_quaternion(self, pos, q):
-        Base().dll.AUTDAddDeviceQuaternion(self._ptr, pos[0], pos[1], pos[2], q[0], q[1], q[2], q[3])
-        return self
+        def advanced_phase_mode(self):
+            Base().dll.AUTDSetMode(self._ptr, 2)
+            return self
 
-    def to_legacy(self):
-        Base().dll.AUTDSetMode(self._ptr, 0)
-        return self
-
-    def to_advanced(self):
-        Base().dll.AUTDSetMode(self._ptr, 1)
-        return self
-
-    def to_advanced_phase(self):
-        Base().dll.AUTDSetMode(self._ptr, 2)
-        return self
-
-    def build(self) -> Geometry:
-        geometry_ptr = c_void_p()
-        Base().dll.AUTDBuildGeometry(byref(geometry_ptr), self._ptr)
-        return Geometry(geometry_ptr)
+        def build(self):
+            geometry_ptr = c_void_p()
+            Base().dll.AUTDBuildGeometry(byref(geometry_ptr), self._ptr)
+            return Geometry(geometry_ptr)
 
 
 class FirmwareInfo:
@@ -293,7 +281,10 @@ class Controller:
         cnt = c_void_p()
         if not Base().dll.AUTDOpenController(cnt, geometry._ptr, link.link_ptr):
             raise Exception('Failed to open controller')
-        return Controller(cnt, geometry)
+        g = c_void_p()
+        Base().dll.AUTDGetGeometry(byref(g), cnt)
+        geometry._ptr = None
+        return Controller(cnt, Geometry(g))
 
     def firmware_info_list(self):
         res = []
@@ -343,8 +334,8 @@ class Controller:
         Base().dll.AUTDGetFPGAInfo(self.p_cnt, pinfos)
         return infos
 
-    def send(self, a, b=None, timeout: timedelta = timedelta(0)):
-        timeout = int(timeout.total_seconds() * 1000 * 1000 * 1000)
+    def send(self, a, b=None, timeout: Optional[timedelta] = None):
+        timeout = -1 if timeout is None else int(timeout.total_seconds() * 1000 * 1000 * 1000)
         if b is None and isinstance(a, SpecialData):
             return Base().dll.AUTDSendSpecial(self.p_cnt, a.ptr, timeout)
         if b is None and isinstance(a, Header):

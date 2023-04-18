@@ -3,7 +3,7 @@
 // Created Date: 11/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/03/2023
+// Last Modified: 18/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -125,10 +125,14 @@ class DebugImpl final : public core::Link {
         if (tx.header().cpu_flag.contains(driver::CPUControlFlags::STMBegin)) _logger->debug("\t\tSTM BEGIN");
         if (tx.header().cpu_flag.contains(driver::CPUControlFlags::STMEnd)) {
           _logger->debug("\t\tSTM END (cycle = {}, frequency_division = {})", fpga.stm_cycle(), fpga.stm_frequency_division());
-          for (size_t j = 0; j < fpga.stm_cycle(); j++) {
-            const auto [duties, phases] = fpga.drives(j);
-            _logger->trace("\tSTM[{}]:", j);
-            for (size_t k = 0; k < duties.size(); k++) _logger->trace("\t\t{:<3}: duty = {:<4}, phase = {:<4}", k, duties[k], phases[k]);
+          if (_logger->level() == spdlog::level::trace) {
+            const auto cycles = fpga.cycles();
+            for (size_t j = 0; j < fpga.stm_cycle(); j++) {
+              const auto [duties, phases] = fpga.drives(j);
+              _logger->trace("\tSTM[{}]:", j);
+              for (size_t k = 0; k < duties.size(); k++)
+                _logger->trace("\t\t{:<3}: duty = {:<4}, phase = {:<4}, cycle = {:<4}", k, duties[k], phases[k], cycles[k]);
+            }
           }
         }
       } else if (fpga.is_legacy_mode())
@@ -141,9 +145,11 @@ class DebugImpl final : public core::Link {
       _logger->debug("\tModulation size = {}, frequency_division = {}", m.size(), freq_div_m);
       if (fpga.is_outputting()) {
         _logger->trace("\t\tmodulation = [{}]", fmt::join(m, ", "));
-        if (!fpga.is_stm_mode()) {
+        if (!fpga.is_stm_mode() && _logger->level() == spdlog::level::trace) {
+          const auto cycles = fpga.cycles();
           const auto [duties, phases] = fpga.drives(0);
-          for (size_t k = 0; k < duties.size(); k++) _logger->trace("\t\t{:<3}: duty = {:<4}, phase = {:<4}", k, duties[k], phases[k]);
+          for (size_t k = 0; k < duties.size(); k++)
+            _logger->trace("\t\t{:<3}: duty = {:<4}, phase = {:<4}, cycle = {:<4}", k, duties[k], phases[k], cycles[k]);
         }
       } else
         _logger->debug("\tWithout output");

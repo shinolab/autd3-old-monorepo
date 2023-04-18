@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/03/2023
+// Last Modified: 17/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,7 +25,6 @@ EXPORT_AUTD bool AUTDAddDeviceQuaternion(IN void* geometry_builder, IN autd3_flo
                                          IN autd3_float_t qx, IN autd3_float_t qy, IN autd3_float_t qz);
 EXPORT_AUTD void AUTDSetMode(IN void* geometry_builder, IN uint8_t mode);
 EXPORT_AUTD void AUTDBuildGeometry(OUT void** out, IN void* geometry_builder);
-EXPORT_AUTD void AUTDFreeGeometry(IN const void* geometry);
 EXPORT_AUTD bool AUTDOpenController(OUT void** out, IN void* geometry, IN void* link);
 EXPORT_AUTD void AUTDGetGeometry(OUT void** geometry, IN void* cnt);
 EXPORT_AUTD bool AUTDClose(IN void* handle);
@@ -101,8 +100,8 @@ EXPORT_AUTD void AUTDModDelayConfig(OUT void** out);
 EXPORT_AUTD void AUTDDeleteSpecialData(IN const void* data);
 EXPORT_AUTD void AUTDCreateSilencer(OUT void** out, IN uint16_t step, IN uint16_t cycle);
 EXPORT_AUTD void AUTDDeleteSilencer(IN const void* config);
-EXPORT_AUTD bool AUTDSend(IN void* handle, IN void* header, IN void* body, IN uint64_t timeout_ns);
-EXPORT_AUTD bool AUTDSendSpecial(IN void* handle, IN void* special, IN uint64_t timeout_ns);
+EXPORT_AUTD bool AUTDSend(IN void* handle, IN void* header, IN void* body, IN int64_t timeout_ns);
+EXPORT_AUTD bool AUTDSendSpecial(IN void* handle, IN void* special, IN int64_t timeout_ns);
 EXPORT_AUTD uint16_t AUTDGetTransModDelay(IN const void* geometry, IN int32_t trans_idx);
 EXPORT_AUTD void AUTDSetTransModDelay(IN void* geometry, IN int32_t trans_idx, IN uint16_t delay);
 EXPORT_AUTD void AUTDCreateAmplitudes(OUT void** out, IN autd3_float_t amp);
@@ -118,6 +117,9 @@ EXPORT_AUTD autd3_float_t AUTDSoftwareSTMSamplingFrequency(IN const void* stm);
 EXPORT_AUTD uint32_t AUTDSoftwareSTMSamplingPeriod(IN const void* stm);
 EXPORT_AUTD void AUTDSoftwareSTMSetSamplingPeriod(IN void* stm, IN uint32_t period);
 EXPORT_AUTD void AUTDDeleteSoftwareSTM(IN const void* stm);
+EXPORT_AUTD void AUTDLinkLog(OUT void** out, IN void* link, IN int32_t level, IN const void* out_func, IN void* flush_func);
+EXPORT_AUTD void AUTDLinkDebug(OUT void** out, IN int32_t level, IN const void* out_func, IN void* flush_func);
+
 #ifdef __cplusplus
 }
 #endif

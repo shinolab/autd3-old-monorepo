@@ -3,7 +3,7 @@
 // Created Date: 04/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 21/03/2023
+// Last Modified: 17/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -67,9 +67,11 @@ struct EMEMCallback final : core::CallbackHandler {
 
 class EmemLink final : public core::Link {
  public:
-  EmemLink(const TimerStrategy timer_strategy, std::string ifname, const size_t buf_size, const uint16_t sync0_cycle, const uint16_t send_cycle,
-           std::function<void(std::string)> on_lost, const SyncMode sync_mode, const std::chrono::milliseconds state_check_interval)
-      : _timer_strategy(timer_strategy),
+  EmemLink(const Duration timeout, const TimerStrategy timer_strategy, std::string ifname, const size_t buf_size, const uint16_t sync0_cycle,
+           const uint16_t send_cycle, std::function<void(std::string)> on_lost, const SyncMode sync_mode,
+           const std::chrono::milliseconds state_check_interval)
+      : Link(timeout),
+        _timer_strategy(timer_strategy),
         _ifname(std::move(ifname)),
         _buf_size(buf_size),
         _sync0_cycle(sync0_cycle),
@@ -364,8 +366,8 @@ class EmemLink final : public core::Link {
 };
 
 core::LinkPtr Emem::build() {
-  return std::make_unique<EmemLink>(_timer_strategy, std::move(_ifname), _buf_size, _sync0_cycle, _send_cycle, std::move(_callback), _sync_mode,
-                                    _state_check_interval);
+  return std::make_unique<EmemLink>(_timeout, _timer_strategy, std::move(_ifname), _buf_size, _sync0_cycle, _send_cycle, std::move(_callback),
+                                    _sync_mode, _state_check_interval);
 }
 
 std::vector<EtherCATAdapter> Emem::enumerate_adapters() {

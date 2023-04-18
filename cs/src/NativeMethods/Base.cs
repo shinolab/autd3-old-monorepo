@@ -19,7 +19,6 @@ namespace AUTD3Sharp.NativeMethods
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDAddDeviceQuaternion(IntPtr geometryBuilder, double x, double y, double z, double qw, double qx, double qy, double qz);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSetMode(IntPtr geometryBuilder, byte mode);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDBuildGeometry(out IntPtr @out, IntPtr geometryBuilder);
-        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDFreeGeometry(IntPtr geometry);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDOpenController(out IntPtr @out, IntPtr geometry, IntPtr link);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDGetGeometry(out IntPtr geometry, IntPtr cnt);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDClose(IntPtr handle);
@@ -93,8 +92,8 @@ namespace AUTD3Sharp.NativeMethods
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDDeleteSpecialData(IntPtr data);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDCreateSilencer(out IntPtr @out, ushort step, ushort cycle);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDDeleteSilencer(IntPtr config);
-        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDSend(IntPtr handle, IntPtr header, IntPtr body, ulong timeoutNs);
-        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDSendSpecial(IntPtr handle, IntPtr special, ulong timeoutNs);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDSend(IntPtr handle, IntPtr header, IntPtr body, long timeoutNs);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDSendSpecial(IntPtr handle, IntPtr special, long timeoutNs);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ushort AUTDGetTransModDelay(IntPtr geometry, int transIdx);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSetTransModDelay(IntPtr geometry, int transIdx, ushort delay);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDCreateAmplitudes(out IntPtr @out, double amp);
@@ -110,6 +109,8 @@ namespace AUTD3Sharp.NativeMethods
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern uint AUTDSoftwareSTMSamplingPeriod(IntPtr stm);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSoftwareSTMSetSamplingPeriod(IntPtr stm, uint period);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDDeleteSoftwareSTM(IntPtr stm);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkLog(out IntPtr @out, IntPtr link, int level, IntPtr outFunc, IntPtr flushFunc);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkDebug(out IntPtr @out, int level, IntPtr outFunc, IntPtr flushFunc);
     }
 }
 

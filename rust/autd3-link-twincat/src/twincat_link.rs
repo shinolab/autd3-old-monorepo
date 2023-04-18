@@ -4,7 +4,7 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 18/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -123,5 +123,9 @@ impl Link for TwinCAT {
 
     fn is_open(&self) -> bool {
         self.port > 0
+    }
+
+    fn timeout(&self) -> std::time::Duration {
+        std::time::Duration::from_millis(0)
     }
 }
