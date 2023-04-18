@@ -3,13 +3,14 @@
 # Created Date: 11/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 02/02/2023
+# Last Modified: 18/04/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
 #
 
 import strutils
+import options
 
 import autd3/native_methods/autd3capi
 import autd3/link
@@ -167,11 +168,6 @@ iterator iter*(geometry: Geometry) : Transducer =
         yield initTransducer(id, geometry.p)
         id += 1
 
-proc `=destroy`(geometry: var Geometry) =
-    if (geometry.p != pointer(nil)):
-        AUTDFreeGeometry(geometry.p)
-        geometry.p = pointer(nil)
-
 type GeometryBuilder* = object
     p: pointer
 
@@ -190,15 +186,15 @@ func addDeviceQuaternion*(builder: GeometryBuilder, pos: openArray[float64],
             quaternion[1], quaternion[2], quaternion[3])
     builder
 
-func toLegacy*(builder: GeometryBuilder): GeometryBuilder {.discardable.} =
+func legacyMode*(builder: GeometryBuilder): GeometryBuilder {.discardable.} =
     AUTDSetMode(builder.p, 0)
     builder
 
-func toAdvanced*(builder: GeometryBuilder): GeometryBuilder {.discardable.} =
+func advancedMode*(builder: GeometryBuilder): GeometryBuilder {.discardable.} =
     AUTDSetMode(builder.p, 1)
     builder
 
-func toAdvancedPhase*(builder: GeometryBuilder): GeometryBuilder {.discardable.} =
+func advancedPhaseMode*(builder: GeometryBuilder): GeometryBuilder {.discardable.} =
     AUTDSetMode(builder.p, 2)
     builder
 
@@ -220,11 +216,14 @@ func initController(p: pointer, geometry: Geometry): Controller =
     result.p = p
     result.geometry = geometry
 
-func openController*(geometry: Geometry, link: Link): Controller {.raises: [AUTDException].}=
+func openController*(geometry: var Geometry, link: Link): Controller {.raises: [AUTDException].}=
     var p = pointer(nil)
     if not AUTDOpenController(p.addr, geometry.p, link.p):
         raise AUTDException.newException("Faile to open controller")
-    initController(p, geometry)
+    var gp = pointer(nil)
+    AUTDGetGeometry(gp.addr, p)
+    geometry.p = pointer(nil)
+    initController(p, initGeometry(gp))
 
 func geometry*(cnt: Controller): Geometry =
     cnt.geometry
@@ -261,17 +260,21 @@ func getFPGAInfo*(cnt: Controller): seq[uint8] =
     discard AUTDGetFPGAInfo(cnt.p, addr info[0])
     info
 
-func send*(cnt: Controller, header: Header, timeout_ns: uint64 = 0): bool {.discardable.} =
-    AUTDSend(cnt.p, header.p, pointer(nil), timeout_ns)
+func send*(cnt: Controller, header: Header, timeout_ns: Option[int64] = none(int64)): bool {.discardable.} =
+    let timeout = if timeout_ns.isSome: timeout_ns.get else: -1
+    AUTDSend(cnt.p, header.p, pointer(nil), timeout)
 
-func send*(cnt: Controller, header: Header, body: Body, timeout_ns: uint64 = 0): bool {.discardable.} =
-    AUTDSend(cnt.p, header.p, body.p, timeout_ns)
+func send*(cnt: Controller, header: Header, body: Body, timeout_ns: Option[int64] = none(int64)): bool {.discardable.} =
+    let timeout = if timeout_ns.isSome: timeout_ns.get else: -1
+    AUTDSend(cnt.p, header.p, body.p, timeout)
 
-func send*(cnt: Controller, body: Body, timeout_ns: uint64 = 0): bool {.discardable.} =
-    AUTDSend(cnt.p, pointer(nil), body.p, timeout_ns)
+func send*(cnt: Controller, body: Body, timeout_ns: Option[int64] = none(int64)): bool {.discardable.} =
+    let timeout = if timeout_ns.isSome: timeout_ns.get else: -1
+    AUTDSend(cnt.p, pointer(nil), body.p, timeout)
 
-func send*(cnt: Controller, data: SpecialData, timeout_ns: uint64 = 0): bool {.discardable.} =
-    AUTDSendSpecial(cnt.p, data.p, timeout_ns)
+func send*(cnt: Controller, data: SpecialData, timeout_ns: Option[int64] = none(int64)): bool {.discardable.} =
+    let timeout = if timeout_ns.isSome: timeout_ns.get else: -1
+    AUTDSendSpecial(cnt.p, data.p, timeout)
 
 type Null* = object of Gain
 

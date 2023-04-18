@@ -16,8 +16,30 @@ proc AUTDGetAdapter*(p_adapter: pointer; index: int32; desc: cstring; name: cstr
     cdecl, importc: "AUTDGetAdapter", dynlib: dll.}
 proc AUTDFreeAdapterPointer*(p_adapter: pointer) {.cdecl,
     importc: "AUTDFreeAdapterPointer", dynlib: dll.}
-proc AUTDLinkSOEM*(`out`: ptr pointer; ifname: cstring; buf_size: uint64;
-                  sync0_cycle: uint16; send_cycle: uint16; freerun: bool;
-                  on_lost: pointer; timer_strategy: uint8;
-                  state_check_interval: uint64; level: int32; out_func: pointer;
-                  flush_func: pointer) {.cdecl, importc: "AUTDLinkSOEM", dynlib: dll.}
+proc AUTDLinkSOEM*(`out`: ptr pointer) {.cdecl, importc: "AUTDLinkSOEM", dynlib: dll.}
+proc AUTDLinkSOEMIfname*(soem: pointer; ifname: cstring) {.cdecl,
+    importc: "AUTDLinkSOEMIfname", dynlib: dll.}
+proc AUTDLinkSOEMBufSize*(soem: pointer; buf_size: uint64) {.cdecl,
+    importc: "AUTDLinkSOEMBufSize", dynlib: dll.}
+proc AUTDLinkSOEMSync0Cycle*(soem: pointer; sync0_cycle: uint16) {.cdecl,
+    importc: "AUTDLinkSOEMSync0Cycle", dynlib: dll.}
+proc AUTDLinkSOEMSendCycle*(soem: pointer; send_cycle: uint16) {.cdecl,
+    importc: "AUTDLinkSOEMSendCycle", dynlib: dll.}
+proc AUTDLinkSOEMFreerun*(soem: pointer; freerun: bool) {.cdecl,
+    importc: "AUTDLinkSOEMFreerun", dynlib: dll.}
+proc AUTDLinkSOEMOnLost*(soem: pointer; on_lost: pointer) {.cdecl,
+    importc: "AUTDLinkSOEMOnLost", dynlib: dll.}
+proc AUTDLinkSOEMTimerStrategy*(soem: pointer; timer_strategy: uint8) {.cdecl,
+    importc: "AUTDLinkSOEMTimerStrategy", dynlib: dll.}
+proc AUTDLinkSOEMStateCheckInterval*(soem: pointer; state_check_interval: uint64) {.
+    cdecl, importc: "AUTDLinkSOEMStateCheckInterval", dynlib: dll.}
+proc AUTDLinkSOEMLogLevel*(soem: pointer; level: int32) {.cdecl,
+    importc: "AUTDLinkSOEMLogLevel", dynlib: dll.}
+proc AUTDLinkSOEMLogFunc*(soem: pointer; out_func: pointer; flush_func: pointer) {.
+    cdecl, importc: "AUTDLinkSOEMLogFunc", dynlib: dll.}
+proc AUTDLinkSOEMTimeout*(soem: pointer; timeout_ns: uint64) {.cdecl,
+    importc: "AUTDLinkSOEMTimeout", dynlib: dll.}
+proc AUTDLinkSOEMBuild*(`out`: ptr pointer; soem: pointer) {.cdecl,
+    importc: "AUTDLinkSOEMBuild", dynlib: dll.}
+proc AUTDLinkSOEMDelete*(soem: pointer) {.cdecl, importc: "AUTDLinkSOEMDelete",
+                                       dynlib: dll.}

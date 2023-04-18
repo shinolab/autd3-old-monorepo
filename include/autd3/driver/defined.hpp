@@ -3,7 +3,7 @@
 // Created Date: 25/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/02/2023
+// Last Modified: 11/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@
 #if _MSC_VER
 #pragma warning(push)
 #pragma warning( \
-    disable : 4068 6031 6255 6294 26408 26450 26426 26429 26432 26434 26440 26446 26447 26451 26454 26455 26461 26462 26471 26472 26474 26475 26495 26481 26482 26485 26490 26491 26493 26494 26496 26497 26812 26813 26814)
+        disable : 4068 6031 6255 6294 26408 26450 26426 26429 26432 26434 26440 26446 26447 26451 26454 26455 26461 26462 26471 26472 26474 26475 26495 26481 26482 26485 26490 26491 26493 26494 26496 26497 26812 26813 26814)
 #endif
 #if defined(__GNUC__) && !defined(__llvm__)
 #pragma GCC diagnostic push
@@ -40,6 +40,13 @@ using autd3_float_t = float;
 #else
 using autd3_float_t = double;
 #endif
+
+#ifdef AUTD3_USE_METER
+constexpr autd3_float_t METER = 1;
+#else
+constexpr autd3_float_t METER = 1000;
+#endif
+constexpr autd3_float_t MILLIMETER = METER / 1000;
 
 #if __cplusplus >= 202002L
 constexpr autd3_float_t pi = std::numbers::pi_v<autd3_float_t>;

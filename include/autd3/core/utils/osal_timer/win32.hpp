@@ -16,8 +16,6 @@
 
 #include <exception>
 #include <memory>
-#include <string>
-#include <thread>
 #include <utility>
 
 namespace autd3::core {
@@ -28,7 +26,7 @@ class Timer {
   Timer(std::unique_ptr<T> handler, const uint32_t timer_id) : _handler(std::move(handler)), _timer_id(timer_id), _is_closed(false) {}
   ~Timer() { const auto _ = this->stop(); }
 
-  [[nodiscard]] static std::unique_ptr<Timer> start(std::unique_ptr<T> handler, uint32_t interval_ns) {
+  [[nodiscard]] static std::unique_ptr<Timer> start(std::unique_ptr<T> handler, const uint32_t interval_ns) {
     const auto timer_id = timeSetEvent((std::max)(1u, interval_ns / 1000 / 1000), 1u, timer_thread, reinterpret_cast<DWORD_PTR>(handler.get()),
                                        TIME_PERIODIC | TIME_CALLBACK_FUNCTION | TIME_KILL_SYNCHRONOUS);
     if (timer_id == 0) throw std::runtime_error("timeSetEvent failed");

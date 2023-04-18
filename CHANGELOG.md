@@ -1,3 +1,7 @@
+# 8.4.0
+
+- Add default timeout option to `Link`
+
 # 8.3.0
 
 - Fix some minor bugs

@@ -32,5 +32,5 @@ end
 
 const _dll = joinpath(@__DIR__, get_bin_path(), "bin", get_lib_prefix() * "autd3capi-link-remote-soem" * get_lib_ext())
 
-autd_link_remote_soem(out, ip, port) = ccall((:AUTDLinkRemoteSOEM, _dll), Cvoid, (Ref{Ptr{Cvoid}}, Cstring, UInt16, ), out, ip, port);
+autd_link_remote_soem(out, ip, port, timeout_ns) = ccall((:AUTDLinkRemoteSOEM, _dll), Cvoid, (Ref{Ptr{Cvoid}}, Cstring, UInt16, UInt64, ), out, ip, port, timeout_ns);
 end

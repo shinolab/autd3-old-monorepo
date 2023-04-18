@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/03/2023
+ * Last Modified: 18/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -311,7 +311,7 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
 
             let is_open = self.is_open.clone();
             let error_handle = self.error_handle.take();
-            let state_check_interval = self.config.check_interval;
+            let state_check_interval = self.config.state_check_interval;
             self.ecat_check_th = Some(std::thread::spawn(move || {
                 let error_handler = EcatErrorHandler { error_handle };
                 while is_open.load(Ordering::Acquire) {
@@ -392,6 +392,10 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
 
     fn is_open(&self) -> bool {
         self.is_open.load(Ordering::Acquire)
+    }
+
+    fn timeout(&self) -> std::time::Duration {
+        self.config.timeout
     }
 }
 

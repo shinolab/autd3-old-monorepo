@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/03/2023
+ * Last Modified: 18/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,7 +20,8 @@ pub struct Config {
     pub timer_strategy: TimerStrategy,
     pub sync_mode: SyncMode,
     pub ifname: String,
-    pub check_interval: std::time::Duration,
+    pub state_check_interval: std::time::Duration,
+    pub timeout: std::time::Duration,
 }
 
 impl Config {
@@ -38,7 +39,8 @@ impl Default for Config {
             timer_strategy: TimerStrategy::default(),
             sync_mode: SyncMode::default(),
             ifname: String::new(),
-            check_interval: std::time::Duration::from_millis(100),
+            state_check_interval: std::time::Duration::from_millis(100),
+            timeout: std::time::Duration::from_millis(20),
         }
     }
 }

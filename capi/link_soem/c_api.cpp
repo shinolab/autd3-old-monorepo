@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/03/2023
+// Last Modified: 17/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -43,32 +43,40 @@ void AUTDFreeAdapterPointer(void* p_adapter) {
 typedef void (*OutCallback)(const char*);
 typedef void (*FlushCallback)();
 
-void AUTDLinkSOEM(void** out, const char* ifname, const uint64_t buf_size, const uint16_t sync0_cycle, const uint16_t send_cycle, const bool freerun,
-                  void* on_lost, const uint8_t timer_strategy, const uint64_t state_check_interval, const int32_t level, const void* out_func,
-                  void* flush_func) {
-  std::function<void(std::string)> out_f = nullptr;
-  std::function<void()> flush_f = nullptr;
-  if (out_func != nullptr) out_f = [out](const std::string& msg) { reinterpret_cast<OutCallback>(out)(msg.c_str()); };
-  if (flush_func != nullptr) flush_f = [flush_func] { reinterpret_cast<FlushCallback>(flush_func)(); };
-
-  std::function<void(std::string)> callback = nullptr;
-  if (on_lost != nullptr) callback = [on_lost](const std::string& msg) { reinterpret_cast<OnLostCallback>(on_lost)(msg.c_str()); };
-  std::string ifname_;
-  if (ifname != nullptr) ifname_ = std::string(ifname);
-
-  auto soem = autd3::link::SOEM()
-                  .ifname(ifname_)
-                  .buf_size(buf_size)
-                  .sync0_cycle(sync0_cycle)
-                  .send_cycle(send_cycle)
-                  .timer_strategy(static_cast<autd3::TimerStrategy>(timer_strategy))
-                  .sync_mode(freerun ? autd3::link::SyncMode::FreeRun : autd3::link::SyncMode::DC)
-                  .on_lost(std::move(callback))
-                  .state_check_interval(std::chrono::milliseconds(state_check_interval))
-                  .debug_level(static_cast<autd3::driver::DebugLevel>(level))
-                  .debug_log_func(std::move(out_f), std::move(flush_f))
-                  .build();
-
-  auto* link = link_create(std::move(soem));
+void AUTDLinkSOEM(void** out) { *out = new autd3::link::SOEM; }
+void AUTDLinkSOEMIfname(void* soem, const char* ifname) {
+  if (ifname != nullptr) static_cast<autd3::link::SOEM*>(soem)->ifname(std::string(ifname));
+}
+void AUTDLinkSOEMBufSize(void* soem, const uint64_t buf_size) { static_cast<autd3::link::SOEM*>(soem)->buf_size(buf_size); }
+void AUTDLinkSOEMSync0Cycle(void* soem, const uint16_t sync0_cycle) { static_cast<autd3::link::SOEM*>(soem)->sync0_cycle(sync0_cycle); }
+void AUTDLinkSOEMSendCycle(void* soem, const uint16_t send_cycle) { static_cast<autd3::link::SOEM*>(soem)->send_cycle(send_cycle); }
+void AUTDLinkSOEMFreerun(void* soem, const bool freerun) {
+  static_cast<autd3::link::SOEM*>(soem)->sync_mode(freerun ? autd3::link::SyncMode::FreeRun : autd3::link::SyncMode::DC);
+}
+void AUTDLinkSOEMOnLost(void* soem, void* on_lost) {
+  if (on_lost != nullptr)
+    static_cast<autd3::link::SOEM*>(soem)->on_lost([on_lost](const std::string& msg) { reinterpret_cast<OnLostCallback>(on_lost)(msg.c_str()); });
+}
+void AUTDLinkSOEMTimerStrategy(void* soem, const uint8_t timer_strategy) {
+  static_cast<autd3::link::SOEM*>(soem)->timer_strategy(static_cast<autd3::TimerStrategy>(timer_strategy));
+}
+void AUTDLinkSOEMStateCheckInterval(void* soem, const uint64_t state_check_interval) {
+  static_cast<autd3::link::SOEM*>(soem)->state_check_interval(std::chrono::milliseconds(state_check_interval));
+}
+void AUTDLinkSOEMLogLevel(void* soem, const int32_t level) {
+  static_cast<autd3::link::SOEM*>(soem)->debug_level(static_cast<autd3::driver::DebugLevel>(level));
+}
+void AUTDLinkSOEMLogFunc(void* soem, void* out_func, void* flush_func) {
+  if (out_func != nullptr && flush_func != nullptr)
+    static_cast<autd3::link::SOEM*>(soem)->debug_log_func(
+        [out_func](const std::string& msg) { reinterpret_cast<OutCallback>(out_func)(msg.c_str()); },
+        [flush_func] { reinterpret_cast<FlushCallback>(flush_func)(); });
+}
+void AUTDLinkSOEMTimeout(void* soem, const uint64_t timeout_ns) {
+  static_cast<autd3::link::SOEM*>(soem)->timeout(std::chrono::nanoseconds(timeout_ns));
+}
+void AUTDLinkSOEMBuild(void** out, void* soem) {
+  auto* link = link_create(static_cast<autd3::link::SOEM*>(soem)->build());
   *out = link;
 }
+void AUTDLinkSOEMDelete(void* soem) { delete static_cast<autd3::link::SOEM*>(soem); }

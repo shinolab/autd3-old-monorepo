@@ -3,7 +3,7 @@
 // Created Date: 26/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/11/2022
+// Last Modified: 17/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,6 +28,14 @@ class RemoteSOEM {
    */
   core::LinkPtr build();
 
+  /**
+   * @brief Set default timeout.
+   */
+  RemoteSOEM& timeout(const core::Duration timeout) {
+    _timeout = timeout;
+    return *this;
+  }
+
   RemoteSOEM& ip(const std::string& ip) {
     _ip = ip;
     return *this;
@@ -51,5 +59,6 @@ class RemoteSOEM {
  private:
   std::string _ip;
   uint16_t _port;
+  core::Duration _timeout{core::Milliseconds(20)};
 };
 }  // namespace autd3::link

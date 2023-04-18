@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/03/2023
+// Last Modified: 17/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,6 +16,7 @@
 #include <utility>
 
 #include "autd3/core/geometry.hpp"
+#include "autd3/core/link.hpp"
 #include "autd3/driver/operation/null.hpp"
 
 namespace autd3::core {
@@ -34,6 +35,12 @@ struct DatagramHeader {
   virtual std::unique_ptr<driver::Operation> operation() = 0;
 };
 
+template <typename H>
+using is_header = std::is_base_of<DatagramHeader, std::remove_reference_t<H>>;
+
+template <typename H>
+constexpr bool is_header_v = is_header<H>::value;
+
 /**
  * @brief DatagramBody is a data to be packed in the Body part of the driver::TxDatagram
  */
@@ -48,6 +55,12 @@ struct DatagramBody {
   virtual std::unique_ptr<driver::Operation> operation(const Geometry& geometry) = 0;
 };
 
+template <typename B>
+using is_body = std::is_base_of<DatagramBody, std::remove_reference_t<B>>;
+
+template <typename B>
+constexpr bool is_body_v = is_body<B>::value;
+
 /**
  * @brief Structure with DatagramHeader and DatagramBody for performing special operations
  */
@@ -61,17 +74,24 @@ class SpecialData {
 
   std::unique_ptr<DatagramHeader> header() { return std::move(_h); }
   std::unique_ptr<DatagramBody> body() { return std::move(_b); }
-  [[nodiscard]] std::chrono::high_resolution_clock::duration min_timeout() const noexcept { return _min_timeout; }
+  [[nodiscard]] std::optional<Duration> min_timeout() const noexcept { return _min_timeout; }
 
  protected:
-  template <typename Rep, typename Period>
-  explicit SpecialData(const std::chrono::duration<Rep, Period> min_timeout, std::unique_ptr<DatagramHeader> h, std::unique_ptr<DatagramBody> b)
-      : _min_timeout(std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(min_timeout)), _h(std::move(h)), _b(std::move(b)) {}
+  explicit SpecialData(const core::Duration min_timeout, std::unique_ptr<DatagramHeader> h, std::unique_ptr<DatagramBody> b)
+      : _min_timeout(min_timeout), _h(std::move(h)), _b(std::move(b)) {}
+  explicit SpecialData(std::unique_ptr<DatagramHeader> h, std::unique_ptr<DatagramBody> b)
+      : _min_timeout(std::nullopt), _h(std::move(h)), _b(std::move(b)) {}
 
-  std::chrono::high_resolution_clock::duration _min_timeout;
+  std::optional<Duration> _min_timeout;
   std::unique_ptr<DatagramHeader> _h;
   std::unique_ptr<DatagramBody> _b;
 };
+
+template <typename S>
+using is_special = std::is_base_of<SpecialData, std::remove_reference_t<S>>;
+
+template <typename S>
+constexpr bool is_special_v = is_special<S>::value;
 
 /**
  * @brief DatagramHeader that does nothing

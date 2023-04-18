@@ -3,7 +3,7 @@
 // Created Date: 03/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/03/2023
+// Last Modified: 18/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,9 +20,9 @@ open AUTD3Sharp.Utils
 
 module GainSTMTest =
     let Test (autd : Controller) = 
-        (SilencerConfig.None(), TimeSpan.FromMilliseconds(20)) |> autd.Send |> ignore;
+        (SilencerConfig.None()) |> autd.Send |> ignore;
 
-        (new Static(), TimeSpan.FromMilliseconds(20)) |> autd.Send |> ignore;
+        (new Static()) |> autd.Send |> ignore;
         
         let center = autd.Geometry.Center + Vector3d(0, 0, 150);
         let stm = new GainSTM();
@@ -34,4 +34,4 @@ module GainSTMTest =
 
         stm.Frequency <- 1;
         printfn $"Actual frequency is {stm.Frequency}";
-        (stm , TimeSpan.FromMilliseconds(20))|> autd.Send |> ignore
+        (stm )|> autd.Send |> ignore

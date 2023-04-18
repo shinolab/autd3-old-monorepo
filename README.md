@@ -90,8 +90,6 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 | BUILD_LINK_TWINCAT          | OFF     | build TwinCAT link                   |
 | BUILD_LINK_REMOTE_TWINCAT   | OFF     | build RemoteTwinCAT link             |
 | BUILD_LINK_SIMULATOR        | OFF     | build Simulator link                 |
-| BUILD_LINK_BUNDLE           | OFF     | build Bundle link                    |
-| BUILD_LINK_DEBUG            | ON      | build Debug link                     |
 | BUILD_GEOMETRY_VIEWER       | OFF     | build GeometryViewer                 |
 | BUILD_SIMULATOR             | OFF     | build Simulator                      |
 | BUILD_EXAMPLES              | ON      | build examples                       |

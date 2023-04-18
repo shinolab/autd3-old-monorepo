@@ -3,7 +3,7 @@
 // Created Date: 06/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 17/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,10 +15,10 @@
 
 inline void soft_stm(autd3::Controller& autd) {
   auto silencer = autd3::SilencerConfig::none();
-  autd.send(silencer, std::chrono::milliseconds(20));
+  autd.send(silencer);
 
   autd3::modulation::Static m;
-  autd.send(m, std::chrono::milliseconds(20));
+  autd.send(m);
 
   autd3::SoftwareSTM stm;
 

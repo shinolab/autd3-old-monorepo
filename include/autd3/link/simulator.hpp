@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 01/11/2022
+// Last Modified: 17/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -32,7 +32,18 @@ class Simulator {
   Simulator(Simulator&& obj) = default;
   Simulator& operator=(Simulator&& obj) = default;
 
+  /**
+   * @brief Set default timeout.
+   */
+  Simulator& timeout(const core::Duration timeout) {
+    _timeout = timeout;
+    return *this;
+  }
+
   [[nodiscard]] core::LinkPtr build() const;
+
+ private:
+  core::Duration _timeout{core::Milliseconds(20)};
 };
 
 }  // namespace autd3::link
