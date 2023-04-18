@@ -3,7 +3,7 @@
 # Created Date: 14/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 08/03/2023
+# Last Modified: 18/04/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -29,8 +29,8 @@ function run(cnt::Controller)
         @printf("%s\n", firm_info)
     end
 
-    cnt.send(Clear(); timeout_ns=UInt64(20 * 1000 * 1000))
-    cnt.send(Synchronize(); timeout_ns=UInt64(20 * 1000 * 1000))
+    cnt.send(Clear())
+    cnt.send(Synchronize())
 
     while true
         for (i, (_, name)) in enumerate(samples)
@@ -51,7 +51,7 @@ function run(cnt::Controller)
 
         readline()
 
-        cnt.send(Stop(); timeout_ns=UInt64(20 * 1000 * 1000))
+        cnt.send(Stop())
     end
 
     cnt.close()

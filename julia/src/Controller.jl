@@ -3,7 +3,7 @@
 # Created Date: 14/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 08/03/2023
+# Last Modified: 18/04/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -101,7 +101,6 @@ mutable struct Geometry
             autd3capi.autd_geometry_center_of(geometry._ptr, Int32(dev_idx), x, y, z)
             SVector(x[], y[], z[])
         end
-        finalizer(geometry -> autd3capi.autd_free_geometry(geometry._ptr), geometry)
         geometry
     end
 end
@@ -112,9 +111,9 @@ mutable struct GeometryBuilder
     _ptr::Ptr{Cvoid}
     add_device
     add_device_quaternion
-    to_legacy
-    to_advanced
-    to_advanced_phase
+    legacy_mode
+    advanced_mode
+    advanced_phase_mode
     build
     function GeometryBuilder()
         chandle = Ref(Ptr{Cvoid}(0))
@@ -132,15 +131,15 @@ mutable struct GeometryBuilder
             autd3capi.autd_add_device_quaternion(builder._ptr, x, y, z, rw, rx, ry, rz,)
             builder
         end
-        cnt.to_legacy = function ()
+        builder.legacy_mode = function ()
             autd3capi.autd_set_mode(builder._ptr, 0)
             builder
         end
-        cnt.to_advanced = function ()
+        builder.advanced_mode = function ()
             autd3capi.autd_set_mode(builder._ptr, 1)
             builder
         end
-        cnt.to_advanced_phase = function ()
+        builder.advanced_phase_mode = function ()
             autd3capi.autd_set_mode(builder._ptr, 2)
             builder
         end
@@ -165,10 +164,13 @@ mutable struct Controller
     send
     function Controller(geometry, link)
         chandle = Ref(Ptr{Cvoid}(0))
-        if !autd3capi.autd_open_controller(chandle, geometry._ptr, link._link._ptr)
+        if !autd3capi.autd_open_controller(chandle, geometry._ptr, link._ptr)
             throw(ErrorException("Failed to open controller"))
         end
-        cnt = new(chandle[], geometry)
+        gp = Ref(Ptr{Cvoid}(0))
+        autd3capi.autd_get_geometry(gp, chandle[])
+        geometry._ptr = Ptr{Cvoid}(0)
+        cnt = new(chandle[], Geometry(gp[]))
 
         cnt.geometry = () -> cnt._geometry
         cnt.close = () -> autd3capi.autd_close(cnt._ptr)
@@ -190,21 +192,28 @@ mutable struct Controller
             autd3capi.autd_free_firmware_info_list_pointer(handle)
             res
         end
-        cnt.send = function (a, b=Nothing; timeout_ns::UInt64=UInt64(0))
+        cnt.send = function (a, b=Nothing; timeout_ns=Nothing)
             np = Ptr{Cvoid}(0)
+
+            timeout = if timeout_ns == Nothing
+                Int64(-1)
+            else
+                Int64(timeout_ns)
+            end
+
             if b == Nothing
                 if hasproperty(a, :_special_data_ptr)
-                    autd3capi.autd_send_special(cnt._ptr, a._special_data_ptr, timeout_ns)
+                    autd3capi.autd_send_special(cnt._ptr, a._special_data_ptr, timeout)
                 elseif hasproperty(a, :_header_ptr)
-                    autd3capi.autd_send(cnt._ptr, a._header_ptr, np, timeout_ns)
+                    autd3capi.autd_send(cnt._ptr, a._header_ptr, np, timeout)
                 elseif hasproperty(a, :_body_ptr)
-                    autd3capi.autd_send(cnt._ptr, np, a._body_ptr, timeout_ns)
+                    autd3capi.autd_send(cnt._ptr, np, a._body_ptr, timeout)
                 end
             else
                 if hasproperty(a, :_header_ptr) && hasproperty(b, :_body_ptr)
-                    autd3capi.autd_send(cnt._ptr, a._header_ptr, b._body_ptr, timeout_ns)
+                    autd3capi.autd_send(cnt._ptr, a._header_ptr, b._body_ptr, timeout)
                 elseif hasproperty(b, :_header_ptr) && hasproperty(a, :_body_ptr)
-                    autd3capi.autd_send(cnt._ptr, b._header_ptr, a._body_ptr, timeout_ns)
+                    autd3capi.autd_send(cnt._ptr, b._header_ptr, a._body_ptr, timeout)
                 end
             end
         end

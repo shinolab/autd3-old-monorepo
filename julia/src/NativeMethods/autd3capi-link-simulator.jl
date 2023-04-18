@@ -32,5 +32,5 @@ end
 
 const _dll = joinpath(@__DIR__, get_bin_path(), "bin", get_lib_prefix() * "autd3capi-link-simulator" * get_lib_ext())
 
-autd_link_simulator(out) = ccall((:AUTDLinkSimulator, _dll), Cvoid, (Ref{Ptr{Cvoid}}, ), out);
+autd_link_simulator(out, timeout_ns) = ccall((:AUTDLinkSimulator, _dll), Cvoid, (Ref{Ptr{Cvoid}}, UInt64, ), out, timeout_ns);
 end
