@@ -27,5 +27,5 @@ class NativeMethods(metaclass=Singleton):
             return
         self.dll = ctypes.CDLL(os.path.join(self.bin, f'{self.prefix}autd3capi-link-simulator{self.ext}'))
 
-        self.dll.AUTDLinkSimulator.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
+        self.dll.AUTDLinkSimulator.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_uint64] 
         self.dll.AUTDLinkSimulator.restype = None
