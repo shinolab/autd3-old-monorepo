@@ -242,7 +242,7 @@ SOEMのLinkを使用する際は`autd3/link/soem.hpp`ヘッダーをインクル
 ### Timer strategy
 
 EtherCATは、一定の間隔で周期的にフレームを送信することで動作する.
-`timer_strategy`でこの周期的な送信をどのように行うかを指定するできる.
+`timer_strategy`でこの周期的な送信をどのように行うかを指定できる.
 
 ```cpp
   auto link = autd3::link::SOEM()
