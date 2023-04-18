@@ -4,7 +4,7 @@
  * Created Date: 18/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/02/2023
+ * Last Modified: 18/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -70,7 +70,7 @@ public partial class GeometryViewModel
     [RelayCommand]
     public void View()
     {
-        var builder = new GeometryBuilder();
+        var builder = new Geometry.Builder();
         foreach (var geo in Geometries)
             builder.AddDevice(new AUTD3Sharp.Utils.Vector3d(geo.X, geo.Y, geo.Z), new AUTD3Sharp.Utils.Vector3d(
                 AngleUnitConverter.Instance.ToRadian(
