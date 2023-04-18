@@ -100,15 +100,6 @@ Set Legacy/Advanced mode.
 | geometry_builder       | void*   | in     | pointer to Geometry::Builder                  |
 | return                 | void    | -      | -                              |
 
-## AUTDFreeGeometry (autd3capi)
-
-`Geometry`を削除する.
-
-| Argument name / return | type    | in/out | description                            |
-| ---------------------- | ------- | ------ | -------------------------------------- |
-| geometry                 | void*   | in     | pointer to Geometry                  |
-| return                 | void    | -      | -                              |
-
 ## AUTDGetGeometry (autd3capi)
 
 `Geometry`を取得する.
@@ -944,7 +935,7 @@ STMを削除する.
 | handle                 | void*   | in     | pointer to Controller                                                                                  |
 | header                 | void*   | in     | pointer to header data                                                                                 |
 | body                   | void*   | in     | pointer to body data                                                                                   |
-| timeout_ns             | uint64_t| in     | timeout in ns                                                                                 |
+| timeout_ns             | int64_t| in     | timeout in ns (null if $<0$)                                                                                 |
 | return                 | bool    | -      | true if successful                                                                                     |
 
 ## AUTDSendSpecial (autd3capi)
@@ -955,7 +946,7 @@ STMを削除する.
 | ---------------------- | ------- | ------ | ------------------------------------------------------------------------------------------------------ |
 | handle                 | void*   | in     | pointer to Controller                                                                                  |
 | special                | void*   | in     | pointer to special data                                                                                 |
-| timeout_ns             | uint64_t| in     | timeout in ns                                                                                 |
+| timeout_ns             | int64_t| in     | timeout in ns (null if $<0$)                                                                                 |
 | return                 | bool    | -      | true if successful                                                                                     |
 
 ## AUTDGetTransModDelay (autd3capi)
@@ -1107,6 +1098,31 @@ SoftwareSTMを削除する.
 | ---------------------- | ----- | ------ | ---------------------- |
 | stm                    | void* | in     | pointer to SoftwareSTM |
 | return                 | void  | -      | -                      |
+
+## AUTDLinkLog (autd3capi)
+
+Log linkを作成する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| out                    | void**   | out    | pointer to pointer to Debug link    |
+| link                    | void*   | in     | pointer to link    |
+| level                  | int32_t  | in     | debug level                         |
+| out_func               | void*    | in     | output callback                     |
+| flush_func             | void*    | in     | flush callback                      |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkDebug (autd3capi)
+
+Debug linkを作成する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| out                    | void**   | out    | pointer to pointer to Debug link    |
+| level                  | int32_t  | in     | debug level                         |
+| out_func               | void*    | in     | output callback                     |
+| flush_func             | void*    | in     | flush callback                      |
+| return                 | void     | -      | -                                   |
 
 ## AUTDEigenBackend (autd3capi-gain-holo)
 
@@ -1345,29 +1361,6 @@ CUDA Backendを作成する.
 | out                    | void** | out    | pointer to pointer to CUDA backend |
 | return                 | void   | -      | -                                  |
 
-## AUTDLinkBundle (autd3capi-link-bundle)
-
-Create a Bundle link.
-
-| Argument name / return | type     | in/out | description                         |
-| ---------------------- | -------- | ------ | ----------------------------------- |
-| out                    | void**   | out    | pointer to pointer to Debug link    |
-| links                  | void**   | in     | link pointer array                  |
-| n                      | int32_t  | in     | size of links                       |
-| return                 | void     | -      | -                                   |
-
-## AUTDLinkDebug (autd3capi-link-debug)
-
-Debug linkを作成する.
-
-| Argument name / return | type     | in/out | description                         |
-| ---------------------- | -------- | ------ | ----------------------------------- |
-| out                    | void**   | out    | pointer to pointer to Debug link    |
-| level                  | int32_t  | in     | debug level                         |
-| out_func               | void*    | in     | output callback                     |
-| flush_func             | void*    | in     | flush callback                      |
-| return                 | void     | -      | -                                   |
-
 ## AUTDLinkSimulator (autd3capi-link-simulator)
 
 Simulator linkを作成する.
@@ -1375,6 +1368,7 @@ Simulator linkを作成する.
 | Argument name / return | type     | in/out | description                         |
 | ---------------------- | -------- | ------ | ----------------------------------- |
 | out                    | void**   | out    | pointer to pointer to Simulator link |
+| timeout_ns             | uint64_t | in     | timeout in ns  |
 | return                 | void     | -      | -                                   |
 
 ## AUTDLinkRemoteTwinCAT (autd3capi-link-remote-twincat)
@@ -1433,18 +1427,111 @@ Adapter listへのポインタを削除する.
 
 | Argument name / return | type     | in/out | description                        |
 | ---------------------- | -------- | ------ | ---------------------------------- |
-| out                    | void**   | out    | pointer to pointer to TwinCAT link |
-| ifname                 | char*    | in     | interface name                     |
+| out                    | void**   | out    | pointer to pointer to SOEM link builder |
+| return                 | void     | -      | -                                  |
+
+## AUTDLinkSOEMBufSize (autd3capi-link-soem)
+
+| Argument name / return | type     | in/out | description                        |
+| ---------------------- | -------- | ------ | ---------------------------------- |
+| soem                    | void*   | in    | pointer to SOEM link builder |
 | buf_size               | uint64_t | in     | buf size (unlimited if 0)          |
+| return                 | void     | -      | -                                  |
+
+## AUTDLinkSOEMIfname (autd3capi-link-soem)
+
+| Argument name / return | type     | in/out | description                        |
+| ---------------------- | -------- | ------ | ---------------------------------- |
+| soem                    | void*   | in    | pointer to SOEM link builder |
+| ifname                 | char*    | in     | interface name                     |
+| return                 | void     | -      | -                                  |
+
+## AUTDLinkSOEMSync0Cycle (autd3capi-link-soem)
+
+| Argument name / return | type     | in/out | description                        |
+| ---------------------- | -------- | ------ | ---------------------------------- |
+| soem                    | void*   | in    | pointer to SOEM link builder |
 | sync0_cycle            | uint16_t | in     | sync0 cycle                        |
+| return                 | void     | -      | -                                  |
+
+## AUTDLinkSOEMSendCycle (autd3capi-link-soem)
+
+| Argument name / return | type     | in/out | description                        |
+| ---------------------- | -------- | ------ | ---------------------------------- |
+| soem                    | void*   | in    | pointer to SOEM link builder |
 | send_cycle             | uint16_t | in     | send cycle                         |
+| return                 | void     | -      | -                                  |
+
+## AUTDLinkSOEMFreerun (autd3capi-link-soem)
+
+| Argument name / return | type     | in/out | description                        |
+| ---------------------- | -------- | ------ | ---------------------------------- |
+| soem                    | void*   | in    | pointer to SOEM link builder |
 | freerun                | bool     | in     | free run mode                      |
+| return                 | void     | -      | -                                  |
+
+## AUTDLinkSOEMOnLost (autd3capi-link-soem)
+
+| Argument name / return | type     | in/out | description                        |
+| ---------------------- | -------- | ------ | ---------------------------------- |
+| soem                    | void*   | in    | pointer to SOEM link builder |
 | on_lost                | void*    | in     | pointer to on-lost callback        |
+| return                 | void     | -      | -                                  |
+
+## AUTDLinkSOEMTimerStrategy (autd3capi-link-soem)
+
+| Argument name / return | type     | in/out | description                        |
+| ---------------------- | -------- | ------ | ---------------------------------- |
+| soem                    | void*   | in    | pointer to SOEM link builder |
 | timer_strategy         | uint8_t  | in     | TimerStrategy                      |
+| return                 | void     | -      | -                                  |
+
+## AUTDLinkSOEMStateCheckInterval (autd3capi-link-soem)
+
+| Argument name / return | type     | in/out | description                        |
+| ---------------------- | -------- | ------ | ---------------------------------- |
+| soem                    | void*   | in    | pointer to SOEM link builder |
 | state_check_interval   | uint64_t | in     | state check interval in ms         |
+| return                 | void     | -      | -                                  |
+
+## AUTDLinkSOEMLogLevel (autd3capi-link-soem)
+
+| Argument name / return | type     | in/out | description                        |
+| ---------------------- | -------- | ------ | ---------------------------------- |
+| soem                    | void*   | in    | pointer to SOEM link builder |
 | level                  | int32_t  | in     | log level                          |
+| return                 | void     | -      | -                                  |
+
+## AUTDLinkSOEMLogFunc (autd3capi-link-soem)
+
+| Argument name / return | type     | in/out | description                        |
+| ---------------------- | -------- | ------ | ---------------------------------- |
+| soem                    | void*   | in    | pointer to SOEM link builder |
 | out_func               | void*    | in     | output callback                    |
 | flush_func             | void*    | in     | flush callback                     |
+| return                 | void     | -      | -                                  |
+
+## AUTDLinkSOEMTimeout (autd3capi-link-soem)
+
+| Argument name / return | type     | in/out | description                        |
+| ---------------------- | -------- | ------ | ---------------------------------- |
+| soem                    | void*   | in    | pointer to SOEM link builder |
+| timeout_ns                  | uint64_t  | in     | timeout in ns                          |
+| return                 | void     | -      | -                                  |
+
+## AUTDLinkSOEMBuild (autd3capi-link-soem)
+
+| Argument name / return | type     | in/out | description                        |
+| ---------------------- | -------- | ------ | ---------------------------------- |
+| out                    | void**   | out    | pointer to pointer to SOEM link |
+| soem                    | void*  | in    | pointer to SOEM link builder |
+| return                 | void     | -      | -                                  |
+
+## AUTDLinkSOEMDelete (autd3capi-link-soem)
+
+| Argument name / return | type     | in/out | description                        |
+| ---------------------- | -------- | ------ | ---------------------------------- |
+| soem                    | void*   | in    | pointer to SOEM link builder |
 | return                 | void     | -      | -                                  |
 
 ## AUTDLinkRemoteSOEM (autd3capi-link-remote-soem)
@@ -1456,6 +1543,7 @@ Create RemoteSOEM link.
 | out                    | void**  | out    | pointer to pointer to RemoteSOEM link    |
 | ip                     | char*   | in     | server ip address                        |
 | port                   | uint16_t| in     | port                                     |
+| timeout_ns                  | uint64_t  | in     | timeout in ns                          |
 | return                 | void    | -      | -                                        |
 
 ## AUTDLinkTwinCAT (autd3capi-link-twincat)
