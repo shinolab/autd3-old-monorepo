@@ -17,7 +17,7 @@ using AUTD3Sharp;
 using AUTD3Sharp.Link;
 using Samples;
 
-var geometry = new GeometryBuilder()
+var geometry = new Geometry.Builder()
     .AddDevice(Vector3d.zero, Vector3d.zero)
     .Build();
 

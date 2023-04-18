@@ -3,7 +3,7 @@
 // Created Date: 03/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/03/2023
+// Last Modified: 18/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ open AUTD3Sharp.Utils
 
 module GainHoloTest =
     let Test (autd : Controller) = 
-        (new SilencerConfig(), TimeSpan.FromMilliseconds(20)) |> autd.Send |> ignore
+        (new SilencerConfig()) |> autd.Send |> ignore
 
         let m = new Sine 150;
 
@@ -29,4 +29,4 @@ module GainHoloTest =
         g.Add(center - 20.0 * Vector3d.UnitX, 1.0);
         g.Constraint <- new Uniform(1.0);
 
-        (m, g, TimeSpan.FromMilliseconds(20)) |> autd.Send |> ignore
+        (m, g) |> autd.Send |> ignore

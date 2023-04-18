@@ -15,7 +15,7 @@ using AUTD3Sharp;
 using AUTD3Sharp.Extra;
 using AUTD3Sharp.Utils;
 
-var geometry = new GeometryBuilder()
+var geometry = new Geometry.Builder()
     .AddDevice(Vector3d.zero, Vector3d.zero)
     .AddDevice(new Vector3d(0, 0, AUTD3.DeviceWidth), new Vector3d(0, AUTD3.Pi / 2.0, 0))
     .AddDevice(new Vector3d(AUTD3.DeviceWidth, 0, AUTD3.DeviceWidth), new Vector3d(0, AUTD3.Pi, 0))

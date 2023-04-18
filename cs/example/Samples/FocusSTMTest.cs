@@ -4,7 +4,7 @@
  * Created Date: 30/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/03/2023
+ * Last Modified: 18/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,10 +23,10 @@ internal static class FocusSTMTest
     public static void Test(Controller autd)
     {
         var config = SilencerConfig.None();
-        autd.Send(config, TimeSpan.FromMilliseconds(20));
+        autd.Send(config);
 
         var mod = new Static();
-        autd.Send(mod, TimeSpan.FromMilliseconds(20));
+        autd.Send(mod);
 
         var center = autd.Geometry.Center + new Vector3d(0, 0, 150);
         var stm = new FocusSTM();
@@ -40,6 +40,6 @@ internal static class FocusSTMTest
         }
         stm.Frequency = 1;
         Console.WriteLine($"Actual frequency is {stm.Frequency}");
-        autd.Send(stm, TimeSpan.FromMilliseconds(20));
+        autd.Send(stm);
     }
 }

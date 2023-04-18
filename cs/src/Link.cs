@@ -47,7 +47,7 @@ namespace AUTD3Sharp
 
             IntPtr _output = IntPtr.Zero;
             IntPtr _flush = IntPtr.Zero;
-            DebugLevel _level = DebugLevel.Debug;
+            DebugLevel _level = DebugLevel.Info;
 
             Link _link;
 
@@ -107,7 +107,7 @@ namespace AUTD3Sharp
             }
         }
 
-        public sealed class SOEM : IDisposable
+        public sealed class SOEM
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnLostCallbackDelegate(string str);
 
@@ -115,33 +115,11 @@ namespace AUTD3Sharp
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void OnLogFlushCallback();
 
-
-            private bool _isDisposed;
             IntPtr _soem;
 
             public SOEM()
             {
                 NativeMethods.LinkSOEM.AUTDLinkSOEM(out _soem);
-            }
-
-            public void Dispose()
-            {
-                Dispose(true);
-                GC.SuppressFinalize(this);
-            }
-
-            private void Dispose(bool disposing)
-            {
-                if (_isDisposed) return;
-
-                NativeMethods.LinkSOEM.AUTDLinkSOEMDelete(_soem);
-
-                _isDisposed = true;
-            }
-
-            ~SOEM()
-            {
-                Dispose(false);
             }
 
             public SOEM Ifname(string ifname)
@@ -186,7 +164,7 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public SOEM CheckInterval(TimeSpan interval)
+            public SOEM StateCheckInterval(TimeSpan interval)
             {
                 NativeMethods.LinkSOEM.AUTDLinkSOEMStateCheckInterval(_soem, (ulong)interval.TotalMilliseconds);
                 return this;
@@ -214,6 +192,7 @@ namespace AUTD3Sharp
             public Link Build()
             {
                 NativeMethods.LinkSOEM.AUTDLinkSOEMBuild(out var handle, _soem);
+                NativeMethods.LinkSOEM.AUTDLinkSOEMDelete(_soem);
                 return new Link(handle);
             }
 
