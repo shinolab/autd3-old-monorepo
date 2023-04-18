@@ -78,7 +78,7 @@ If this argument is omitted, the default timeout set in [Link](./link.md) is use
 If a link does not have a timeout setting, the default timeout of the link is 0.
 
 ```cpp
-autd.send(..., std::chrono::milliseconds(20));
+autd.send(..., autd3::Milliseconds(20));
 ```
 
 If the timeout is greater than zero, wait until the data to be sent has been processed by the device or until the specified timeout period has elapsed.
