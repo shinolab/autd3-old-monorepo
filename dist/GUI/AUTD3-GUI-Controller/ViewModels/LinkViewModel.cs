@@ -51,7 +51,7 @@ public partial class LinkViewModel
     [RelayCommand]
     private void UpdateInterfaces()
     {
-        var current = _interfaceName;
+        var current = InterfaceName;
         Interfaces.Clear();
         Interfaces.Add("SOEM_Link_AUTO".GetLocalized());
         foreach (var adapter in SOEM.EnumerateAdapters())

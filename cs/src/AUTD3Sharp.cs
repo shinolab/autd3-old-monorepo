@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/04/2023
+ * Last Modified: 18/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -157,8 +157,7 @@ namespace AUTD3Sharp
 
     public sealed class Geometry : IEnumerable<Transducer>
     {
-        internal readonly IntPtr GeometryPtr;
-        private bool _isDisposed;
+        internal IntPtr GeometryPtr;
 
         internal Geometry(IntPtr geometryPtr)
         {
@@ -238,19 +237,6 @@ namespace AUTD3Sharp
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
-        private void Dispose()
-        {
-            if (_isDisposed) return;
-            Base.AUTDFreeGeometry(GeometryPtr);
-            _isDisposed = true;
-            GC.SuppressFinalize(this);
-        }
-
-        ~Geometry()
-        {
-            Dispose();
-        }
-
         public sealed class Builder
         {
             private readonly IntPtr _builderPtr;
@@ -314,7 +300,9 @@ namespace AUTD3Sharp
         {
             if (!Base.AUTDOpenController(out var cnt, geometry.GeometryPtr, link.LinkPtr))
                 throw new Exception("Failed to open controller.");
-            return new Controller(cnt, geometry);
+            Base.AUTDGetGeometry(out var geometryPtr, cnt);
+            geometry.GeometryPtr = IntPtr.Zero;
+            return new Controller(cnt, new Geometry(geometryPtr));
         }
 
         private Controller(IntPtr cnt, Geometry geometry)

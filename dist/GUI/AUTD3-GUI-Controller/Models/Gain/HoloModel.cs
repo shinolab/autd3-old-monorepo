@@ -95,7 +95,7 @@ public partial class HoloModel : IGain
 
     public AUTD3Sharp.Gain.Gain ToGain()
     {
-        Holo gain = _opt switch
+        Holo gain = Opt switch
         {
             OptMethod.SDP => new SDP(SDPAlpha, SDPLambda, SDPRepeat),
             OptMethod.EVP => new EVP(EVPGamma),
@@ -109,7 +109,7 @@ public partial class HoloModel : IGain
             _ => throw new ArgumentOutOfRangeException()
         };
         gain.Backend = _backend;
-        gain.Constraint = _constraint switch
+        gain.Constraint = Constraint switch
         {
             Constraint.Normalize => new Normalize(),
             Constraint.Uniform => new Uniform(UniformAmp),
@@ -117,7 +117,7 @@ public partial class HoloModel : IGain
             Constraint.DontCare => new DontCare(),
             _ => throw new ArgumentOutOfRangeException()
         };
-        foreach (var t in _targets)
+        foreach (var t in Targets)
         {
             gain.Add(new Vector3d(t.X, t.Y, t.Z), t.Amp);
         }

@@ -16,10 +16,10 @@ using AUTD3Sharp;
 using AUTD3Sharp.Link;
 using Samples;
 
-var geometry = new GeometryBuilder()
+var geometry = new Geometry.Builder()
     .AddDevice(Vector3d.zero, Vector3d.zero)
     .AddDevice(new Vector3d(AUTD3.DeviceWidth, 0, 0), Vector3d.zero)
-    .ToAdvanced()
+    .AdvancedMode()
     .Build();
 
 var link = new Simulator().Build();
