@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 18/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,14 +26,20 @@ pub struct Simulator {
     smem: SMem,
     input_offset: usize,
     ptr: *mut u8,
+    timeout: std::time::Duration,
 }
 
 impl Simulator {
     pub fn new() -> Self {
+        Self::with_timeout(std::time::Duration::from_millis(20))
+    }
+
+    pub fn with_timeout(timeout: std::time::Duration) -> Self {
         Self {
             smem: SMem::new(),
             input_offset: 0,
             ptr: std::ptr::null_mut(),
+            timeout,
         }
     }
 }
@@ -168,6 +174,10 @@ impl Link for Simulator {
 
     fn is_open(&self) -> bool {
         !self.ptr.is_null()
+    }
+
+    fn timeout(&self) -> std::time::Duration {
+        self.timeout
     }
 }
 
