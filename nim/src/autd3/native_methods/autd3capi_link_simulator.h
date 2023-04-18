@@ -12,4 +12,4 @@
 #  endif
 #endif
 
-void AUTDLinkSimulator(void** out);
+void AUTDLinkSimulator(void** out, uint64 timeout_ns);

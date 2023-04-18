@@ -3,7 +3,7 @@
 # Created Date: 13/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 29/11/2022
+# Last Modified: 18/04/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,8 +28,8 @@ proc run*(cnt: Controller) =
     (gain_stm_test, "GainSTM Sample"),
     (custom_test, "CustomGain Sample")]
 
-    cnt.send(clear(), 20 * 1000 * 1000)
-    cnt.send(synchronize(), 20 * 1000 * 1000)
+    cnt.send(clear())
+    cnt.send(synchronize())
 
     echo "================================== Firmware information =========================================="
     let firmList = cnt.firmwareInfoList()
@@ -57,7 +57,7 @@ proc run*(cnt: Controller) =
             echo "press enter to finish"
             discard stdin.readLine
 
-            cnt.send(stop(), 20 * 1000 * 1000)
+            cnt.send(stop())
 
         except:
             break
