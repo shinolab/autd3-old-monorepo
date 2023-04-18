@@ -4,14 +4,14 @@ Project: link
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 20/03/2023
+Last Modified: 17/04/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
 
 '''
 
-import warnings
+from datetime import timedelta
 import ctypes
 from ctypes import c_void_p, byref
 from .link import Link
@@ -29,76 +29,59 @@ LogFlushFunc = ctypes.CFUNCTYPE(None)
 
 class SOEM:
     def __init__(self):
-        self._ifname = None
-        self._buf_size = 0
-        self._send_cycle = 2
-        self._sync0_cycle = 2
-        self._on_lost = None
-        self._timer_strategy = TimerStrategy.Sleep
-        self._sync_mode = SyncMode.FreeRun
-        self._check_interval = 500
-        self._debug_level = DebugLevel.Info
-        self._debug_log_out = None
-        self._debug_log_flush = None
+        LinkSOEM().init_dll()
+        soem = c_void_p()
+        LinkSOEM().dll.AUTDLinkSOEM(byref(soem))
+        self._soem = soem
 
     def ifname(self, ifname: str):
-        self._ifname = ifname
+        LinkSOEM().dll.AUTDLinkSOEMIfname(self._soem, ifname.encode('utf-8'))
         return self
 
     def buf_size(self, size: int):
-        self._buf_size = size
+        LinkSOEM().dll.AUTDLinkSOEMBufSize(self._soem, size)
         return self
 
     def send_cycle(self, cycle: int):
-        self._send_cycle = cycle
+        LinkSOEM().dll.AUTDLinkSOEMSendCycle(self._soem, cycle)
         return self
 
     def sync0_cycle(self, cycle: int):
-        self._sync0_cycle = cycle
+        LinkSOEM().dll.AUTDLinkSOEMSync0Cycle(self._soem, cycle)
         return self
 
     def on_lost(self, handle):
-        self._on_lost = handle
-        return self
-
-    def high_precision(self, flag: bool):
-        warnings.warn('This methods is deprecated. Use timer_strategy(TimerStrategy) instead.', UserWarning)
-        self._timer_strategy = TimerStrategy.BusyWait if flag else TimerStrategy.Sleep
+        LinkSOEM().dll.AUTDLinkSOEMOnLost(self._soem, handle)
         return self
 
     def timer_strategy(self, strategy: TimerStrategy):
-        self._timer_strategy = strategy
-        return self
-
-    def freerun(self, flag: bool):
-        warnings.warn('This methods is deprecated. Use sync_mode(SyncMode) instead.', UserWarning)
-        self._sync_mode = SyncMode.FreeRun if flag else SyncMode.DC
+        LinkSOEM().dll.AUTDLinkSOEMTimerStrategy(self._soem, int(strategy))
         return self
 
     def sync_mode(self, mode: SyncMode):
-        self._sync_mode = mode
+        LinkSOEM().dll.AUTDLinkSOEMFreerun(self._soem, mode == SyncMode.FreeRun)
         return self
 
-    def check_interval(self, interval: int):
-        self._check_interval = interval
+    def state_check_interval(self, interval: timedelta):
+        LinkSOEM().dll.AUTDLinkSOEMStateCheckInterval(self._soem, int(interval.total_seconds() / 1000))
         return self
 
     def debug_level(self, level: DebugLevel):
-        self._debug_level = level
+        LinkSOEM().dll.AUTDLinkSOEMLogLevel(self._soem, int(level))
         return self
 
-    def debug_log(self, log_out, log_flush):
-        self._debug_log_out = log_out
-        self._debug_log_flush = log_flush
+    def debug_log_func(self, log_out, log_flush):
+        LinkSOEM().dll.AUTDLinkSOEMLogFunc(self._soem, log_out, log_flush)
+        return self
+
+    def timeout(self, timeout: timedelta):
+        LinkSOEM().dll.AUTDLinkSOEMTimeout(self._soem, int(timeout.total_seconds() * 1000 * 1000 * 1000))
         return self
 
     def build(self):
-        LinkSOEM().init_dll()
         link = c_void_p()
-        LinkSOEM().dll.AUTDLinkSOEM(byref(link), self._ifname.encode('utf-8') if self._ifname is not None else None,
-                                    self._buf_size, self._sync0_cycle, self._send_cycle, self._sync_mode == SyncMode.FreeRun, self._on_lost, int(
-                                        self._timer_strategy), self._check_interval,
-                                    int(self._debug_level), self._debug_log_out, self._debug_log_flush)
+        LinkSOEM().dll.AUTDLinkSOEMBuild(byref(link), self._soem)
+        LinkSOEM().dll.AUTDLinkSOEMDelete(self._soem)
         return Link(link)
 
     @ staticmethod

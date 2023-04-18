@@ -4,14 +4,13 @@ Project: samples
 Created Date: 30/12/2020
 Author: Shun Suzuki
 -----
-Last Modified: 08/03/2023
+Last Modified: 17/04/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2020 Shun Suzuki. All rights reserved.
 
 '''
 
-from datetime import timedelta
 from pyautd3 import Controller, Clear, Synchronize, Stop, FirmwareInfo
 
 from . import focus, bessel, holo, custom, stm_gain, stm_focus
@@ -27,8 +26,8 @@ def run(autd: Controller):
         (custom.custom, "Custom Focus Sample")
     ]
 
-    autd.send(Clear(), timeout=timedelta(milliseconds=20))
-    autd.send(Synchronize(), timeout=timedelta(milliseconds=20))
+    autd.send(Clear())
+    autd.send(Synchronize())
 
     firm_info_list = autd.firmware_info_list()
     if not all([firm.matches_version for firm in firm_info_list]):
@@ -58,6 +57,6 @@ def run(autd: Controller):
         _ = input()
 
         print('finish.')
-        autd.send(Stop(), timeout=timedelta(milliseconds=20))
+        autd.send(Stop())
 
     autd.dispose()
