@@ -259,7 +259,7 @@ EtherCATは、一定の間隔で周期的にフレームを送信することで
 
 ### 同期モード
 
-EtherCATの同期モードを設定する.
+`sync_mode`でEtherCATの同期モードを設定する.
 同期モードには, `DC`と`FreeRun`が存在する.
 
 * 詳細は[Beckhoffの説明](https://infosys.beckhoff.com/english.php?content=../content/1033/ethercatsystem/2469122443.html&id=)を参照されたい.
@@ -271,6 +271,20 @@ EtherCATの同期モードを設定する.
 ```
 
 デフォルトは`FreeRun`である.
+
+### タイムアウト時間
+
+`timeout`でデフォルトのタイムアウト時間を設定する.
+
+* タイムアウト時間の詳細は[Controller#send#タイムアウト](./controller.md#%E3%82%BF%E3%82%A4%E3%83%A0%E3%82%A2%E3%82%A6%E3%83%88)を参照されたい
+
+```cpp
+  auto link = autd3::link::SOEM()
+                .timeout(autd3::Milliseconds(20))
+                .build();
+```
+
+デフォルトは$\SI{20}{ms}$である.
 
 ## RemoteSOEM
 
@@ -302,6 +316,22 @@ EtherCATの同期モードを設定する.
 
 のようにすれば良い.
 
+### タイムアウト時間
+
+`timeout`でデフォルトのタイムアウト時間を設定する.
+
+* タイムアウト時間の詳細は[Controller#send#タイムアウト](./controller.md#%E3%82%BF%E3%82%A4%E3%83%A0%E3%82%A2%E3%82%A6%E3%83%88)を参照されたい
+
+```cpp
+  auto link = autd3::link::RemoteSOEM()
+                .ip(ip)
+                .port(port)
+                .timeout(autd3::Milliseconds(20))
+                .build();
+```
+
+デフォルトは$\SI{20}{ms}$である.
+
 ### ファイアウォール
 
 TCP関係のエラーが出る場合は, ファイアウォールでブロックされている可能性がある.
@@ -324,6 +354,20 @@ SimulatorのLinkを使用する際は`autd3/link/simulator.hpp`ヘッダーを�
 
   auto link = autd3::link::Simulator().build();
 ```
+
+### タイムアウト時間
+
+`timeout`でデフォルトのタイムアウト時間を設定する.
+
+* タイムアウト時間の詳細は[Controller#send#タイムアウト](./controller.md#%E3%82%BF%E3%82%A4%E3%83%A0%E3%82%A2%E3%82%A6%E3%83%88)を参照されたい
+
+```cpp
+  auto link = autd3::link::Simulator()
+                .timeout(autd3::Milliseconds(20))
+                .build();
+```
+
+デフォルトは$\SI{20}{ms}$である.
 
 [^fn_remote_twin]: 無線LANでも可
 
