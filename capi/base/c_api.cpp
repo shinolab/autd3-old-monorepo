@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/04/2023
+// Last Modified: 18/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -75,22 +75,20 @@ void AUTDBuildGeometry(void** out, void* geometry_builder) {
   delete builder;
 }
 
-void AUTDFreeGeometry(const void* const geometry) {
-  const auto* geometry_p = static_cast<const autd3::Geometry*>(geometry);
-  delete geometry_p;
-}
-
 bool AUTDOpenController(void** out, void* const geometry, void* const link) {
+  const auto* g = static_cast<autd3::Geometry*>(geometry);
   auto* w_link = static_cast<LinkWrapper*>(link);
   autd3::LinkPtr link_ = std::move(w_link->ptr);
   link_delete(w_link);
-  auto cnt = Controller::open(*static_cast<autd3::Geometry*>(geometry), std::move(link_));
+  auto cnt = Controller::open(*g, std::move(link_));
+  delete g;
   AUTD3_CAPI_TRY(*out = new Controller(std::move(cnt)))
 }
 
 void AUTDGetGeometry(void** geometry, void* const cnt) {
   auto& g = static_cast<Controller*>(cnt)->geometry();
-  *geometry = &g;
+  Geometry* gp = &g;
+  *geometry = gp;
 }
 
 bool AUTDClose(void* const handle) {
