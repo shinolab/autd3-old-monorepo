@@ -4,7 +4,7 @@
 %Created Date: 07/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 08/03/2023
+%Last Modified: 18/04/2023
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,19 +16,20 @@ classdef Controller < handle
     properties
         ptr
         geometry
-        ack_check_timeout = 0
-        send_interval = 500000
     end
 
     methods
 
         function obj = Controller(geometry, link)
             obj.ptr = libpointer('voidPtr', 0);
-            obj.geometry = geometry;
             pp = libpointer('voidPtrPtr', obj.ptr);
             if ~calllib('autd3capi', 'AUTDOpenController', pp, geometry.ptr, link.ptr)
                 throw(MException('MATLAB:RuntimeError', 'Failed to open controller'));
             end
+            gp = libpointer('voidPtr', 0);
+            gpp = libpointer('voidPtrPtr', gp);
+            calllib('autd3capi', 'AUTDGetGeometry', gpp, obj.ptr);
+            obj.geometry = Geometry(gp);
         end
 
         function value = get.geometry(obj)
@@ -62,12 +63,12 @@ classdef Controller < handle
             if nargin == 3
 
                 if isa(varargin{2}, 'Header') && isa(varargin{3}, 'Body')
-                    res = calllib('autd3capi', 'AUTDSend', obj.ptr, varargin{2}.ptr, varargin{3}.ptr, uint64(0));
+                    res = calllib('autd3capi', 'AUTDSend', obj.ptr, varargin{2}.ptr, varargin{3}.ptr, -1);
                     return;
                 end
 
                 if isa(varargin{3}, 'Header') && isa(varargin{2}, 'Body')
-                    res = calllib('autd3capi', 'AUTDSend', obj.ptr, varargin{3}.ptr, varargin{2}.ptr, uint64(0));
+                    res = calllib('autd3capi', 'AUTDSend', obj.ptr, varargin{3}.ptr, varargin{2}.ptr, -1);
                     return;
                 end
 
@@ -76,19 +77,19 @@ classdef Controller < handle
             if nargin == 2
 
                 if isa(varargin{2}, 'SpecialData')
-                    res = calllib('autd3capi', 'AUTDSendSpecial', obj.ptr, varargin{2}.ptr, uint64(0));
+                    res = calllib('autd3capi', 'AUTDSendSpecial', obj.ptr, varargin{2}.ptr, -1);
                     return;
                 end
 
                 if isa(varargin{2}, 'Header')
                     np = libpointer('voidPtr', []);
-                    res = calllib('autd3capi', 'AUTDSend', obj.ptr, varargin{2}.ptr, np, uint64(0));
+                    res = calllib('autd3capi', 'AUTDSend', obj.ptr, varargin{2}.ptr, np, -1);
                     return;
                 end
 
                 if isa(varargin{2}, 'Body')
                     np = libpointer('voidPtr', []);
-                    res = calllib('autd3capi', 'AUTDSend', obj.ptr, np, varargin{2}.ptr, uint64(0));
+                    res = calllib('autd3capi', 'AUTDSend', obj.ptr, np, varargin{2}.ptr, -1);
                     return;
                 end
 
