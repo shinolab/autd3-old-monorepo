@@ -266,6 +266,20 @@ There are two synchronization modes: `DC` and `FreeRun`.
 
 The default is `FreeRun`.
 
+### Timeout
+
+Set the default timeout.
+
+* For details on timeout, see [Controller#send#timeout](./controller.md#timeout)
+
+```cpp
+  auto link = autd3::link::SOEM()
+                .timeout(autd3::Milliseconds(20))
+                .build();
+```
+
+The default is $\SI{20}{ms}$.
+
 ## RemoteSOEM
 
 RemoteSOEM Link can be used to separate the server PC running SOEM from the client PC running the user program.
@@ -294,6 +308,22 @@ On the client side, include the `autd3/link/remote_soem.hpp` header, and build l
   auto link = autd3::link::RemoteSOEM().ip(ip).port(port).build();
 ```
 
+### Timeout
+
+Set the default timeout.
+
+* For details on timeout, see [Controller#send#timeout](./controller.md#timeout)
+
+```cpp
+  auto link = autd3::link::RemoteSOEM()
+                .ip(ip)
+                .port(port)
+                .timeout(autd3::Milliseconds(20))
+                .build();
+```
+
+The default is $\SI{20}{ms}$.
+
 ### Firewall
 
 If you get a TCP-related error, it may be that your firewall is blocking the connection.
@@ -314,6 +344,20 @@ When you use the Simulator link, include the ``autd3/link/simulator.hpp` header.
 
   auto link = autd3::link::Simulator().build();
 ```
+
+### Timeout
+
+Set the default timeout.
+
+* For details on timeout, see [Controller#send#timeout](./controller.md#timeout)
+
+```cpp
+  auto link = autd3::link::Simulator()
+                .timeout(autd3::Milliseconds(20))
+                .build();
+```
+
+The default is $\SI{20}{ms}$.
 
 [^fn_remote_twin]: Wireless LAN is also acceptable.
 
