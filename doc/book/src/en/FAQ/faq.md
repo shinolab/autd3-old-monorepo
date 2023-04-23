@@ -80,8 +80,8 @@
    - Synchronization is necessary even if you use only one device
 
    ```cpp
-   autd.send(autd3::Clear(), std::chrono::milliseconds(20));
-   autd.send(autd3::Synchronize(), std::chrono::milliseconds(20));
+   autd.send(autd3::Clear());
+   autd.send(autd3::Synchronize());
    ```
 
 ## Miscellaneous

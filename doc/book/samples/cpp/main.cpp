@@ -21,7 +21,6 @@ int main() try {
 
   // initialize and synchronize devices
   // You MUST synchronize devices once after initialization, even if you are using only one device.
-  // The second argument is a timeout, which is optional.
   autd.send(autd3::Clear());
   autd.send(autd3::Synchronize());
 
@@ -36,7 +35,9 @@ int main() try {
   // focus is 150.0 mm above array center
   const autd3::Vector3 focus = autd.geometry().center() + autd3::Vector3(0.0, 0.0, 150.0);
   autd3::gain::Focus g(focus);
-  autd3::modulation::Sine m(150);  // Amplitude Modulation of 150 Hz sine wave
+
+  // Amplitude Modulation of 150 Hz sine wave
+  autd3::modulation::Sine m(150);
 
   // send data
   autd.send(m, g);
