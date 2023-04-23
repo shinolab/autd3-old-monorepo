@@ -3,7 +3,7 @@
 // Created Date: 26/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/04/2023
+// Last Modified: 23/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@
 #include "tcp_interface.hpp"
 
 int main(const int argc, char* argv[]) try {
-  argparse::ArgumentParser program("SOEMAUTDServer", "8.4.0");
+  argparse::ArgumentParser program("SOEMAUTDServer", "8.4.1");
 
   argparse::ArgumentParser list_cmd("list");
   list_cmd.add_description("List EtherCAT adapter names");
