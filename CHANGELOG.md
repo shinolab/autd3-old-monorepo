@@ -1,3 +1,8 @@
+# 8.4.1
+
+- Fix [#60](https://github.com/shinolab/autd3/issues/60)
+- Fix [#61](https://github.com/shinolab/autd3/issues/61)
+
 # 8.4.0
 
 - Add default timeout option to `Link`
