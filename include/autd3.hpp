@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/04/2023
+// Last Modified: 23/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -67,7 +67,7 @@ namespace extra {}
 
 constexpr driver::autd3_float_t pi = driver::pi;
 
-static inline std::string version = "8.4.0";
+static inline std::string version = "8.4.1";
 
 using core::Duration;
 using core::Milliseconds;
