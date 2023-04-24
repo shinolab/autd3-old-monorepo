@@ -3,7 +3,7 @@
 // Created Date: 13/03/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/04/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ namespace autd3::core {
  * @brief Stop is a SpecialData to stop ultrasound output
  */
 struct Stop final : SpecialData {
-  Stop() noexcept : SpecialData(std::make_unique<SilencerConfig>(), std::make_unique<Amplitudes>(driver::autd3_float_t{0})) {}
+  Stop() noexcept : SpecialData(std::make_unique<SilencerConfig>(), std::make_unique<Amplitudes>(driver::float_t{0})) {}
 };
 
 }  // namespace autd3::core

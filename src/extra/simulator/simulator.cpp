@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/03/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -144,9 +144,9 @@ void Simulator::run() {
           std::vector<driver::Vector3> local_trans_pos;
           local_trans_pos.reserve(tr_num);
           auto* p = reinterpret_cast<float*>(cursor);
-          const driver::Vector3 origin = Eigen::Vector3<float>(p[0], p[1], p[2]).cast<driver::autd3_float_t>();
+          const driver::Vector3 origin = Eigen::Vector3<float>(p[0], p[1], p[2]).cast<driver::float_t>();
           for (uint32_t tr = 0; tr < tr_num; tr++) {
-            const driver::Vector3 pos = Eigen::Vector3<float>(p[0], p[1], p[2]).cast<driver::autd3_float_t>() - origin;
+            const driver::Vector3 pos = Eigen::Vector3<float>(p[0], p[1], p[2]).cast<driver::float_t>() - origin;
             local_trans_pos.emplace_back(pos);
             p += 7;
           }

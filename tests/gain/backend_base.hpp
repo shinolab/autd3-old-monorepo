@@ -3,7 +3,7 @@
 // Created Date: 10/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/03/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -37,9 +37,9 @@
 constexpr Eigen::Index TEST_SIZE = 10;
 
 #ifdef AUTD3_USE_SINGLE_FLOAT
-constexpr autd3::driver::autd3_float_t EPS = 1e-3f;
+constexpr autd3::driver::float_t EPS = 1e-3f;
 #else
-constexpr autd3::driver::autd3_float_t EPS = 1e-6;
+constexpr autd3::driver::float_t EPS = 1e-6;
 #endif
 
 using autd3::gain::holo::complex;
@@ -254,7 +254,7 @@ using autd3::gain::holo::ZERO;
     backend->to_host(b);                                                                                                             \
                                                                                                                                      \
     for (Eigen::Index i = 0; i < n; i++) {                                                                                           \
-      const auto expected = static_cast<autd3::driver::autd3_float_t>(1) / a(i);                                                     \
+      const auto expected = static_cast<autd3::driver::float_t>(1) / a(i);                                                     \
       ASSERT_NEAR_COMPLEX(expected, b(i), EPS);                                                                                      \
     }                                                                                                                                \
   }                                                                                                                                  \
@@ -489,7 +489,7 @@ using autd3::gain::holo::ZERO;
     backend->to_host(b);                                                                                                             \
                                                                                                                                      \
     for (Eigen::Index i = 0; i < m; i++) {                                                                                           \
-      autd3::driver::autd3_float_t expected = 0;                                                                                     \
+      autd3::driver::float_t expected = 0;                                                                                     \
       for (Eigen::Index k = 0; k < n; k++) expected += a(i, k);                                                                      \
       ASSERT_NEAR(expected, b(i), EPS);                                                                                              \
     }                                                                                                                                \
@@ -582,7 +582,7 @@ using autd3::gain::holo::ZERO;
     VectorXd a = VectorXd::Random(n);                                                                                                \
     VectorXd b = VectorXd::Random(n);                                                                                                \
                                                                                                                                      \
-    autd3::driver::autd3_float_t expected = 0;                                                                                       \
+    autd3::driver::float_t expected = 0;                                                                                       \
     for (Eigen::Index i = 0; i < n; i++) expected += a(i) * b(i);                                                                    \
                                                                                                                                      \
     ASSERT_NEAR(backend->dot(a, b), expected, EPS);                                                                                  \
@@ -762,7 +762,7 @@ using autd3::gain::holo::ZERO;
     MatrixXd b = MatrixXd::Random(m, m);                                                                                             \
                                                                                                                                      \
     MatrixXd c = MatrixXd::Zero(n, m);                                                                                               \
-    backend->mul(Transpose::NoTrans, Transpose::NoTrans, autd3::driver::autd3_float_t{1}, a, b, autd3::driver::autd3_float_t{0}, c); \
+    backend->mul(Transpose::NoTrans, Transpose::NoTrans, autd3::driver::float_t{1}, a, b, autd3::driver::float_t{0}, c); \
     backend->to_host(c);                                                                                                             \
                                                                                                                                      \
     MatrixXd expected = a * b;                                                                                                       \
@@ -772,7 +772,7 @@ using autd3::gain::holo::ZERO;
                                                                                                                                      \
     MatrixXd aa = MatrixXd::Random(k, n);                                                                                            \
     MatrixXd bb = MatrixXd::Random(m, k);                                                                                            \
-    backend->mul(Transpose::Trans, Transpose::Trans, autd3::driver::autd3_float_t{2}, aa, bb, autd3::driver::autd3_float_t{1}, c);   \
+    backend->mul(Transpose::Trans, Transpose::Trans, autd3::driver::float_t{2}, aa, bb, autd3::driver::float_t{1}, c);   \
     backend->to_host(c);                                                                                                             \
                                                                                                                                      \
     expected += 2 * (aa.transpose() * bb.transpose());                                                                               \
@@ -792,14 +792,14 @@ using autd3::gain::holo::ZERO;
     VectorXd b = VectorXd::Random(m);                                                                                                \
                                                                                                                                      \
     VectorXd c = VectorXd::Zero(n);                                                                                                  \
-    backend->mul(Transpose::NoTrans, autd3::driver::autd3_float_t{1}, a, b, autd3::driver::autd3_float_t{0}, c);                     \
+    backend->mul(Transpose::NoTrans, autd3::driver::float_t{1}, a, b, autd3::driver::float_t{0}, c);                     \
     backend->to_host(c);                                                                                                             \
                                                                                                                                      \
     VectorXd expected = a * b;                                                                                                       \
     for (Eigen::Index i = 0; i < n; i++) ASSERT_NEAR(c(i), expected(i), EPS);                                                        \
                                                                                                                                      \
     MatrixXd aa = MatrixXd::Random(m, n);                                                                                            \
-    backend->mul(Transpose::Trans, autd3::driver::autd3_float_t{3}, aa, b, autd3::driver::autd3_float_t{1}, c);                      \
+    backend->mul(Transpose::Trans, autd3::driver::float_t{3}, aa, b, autd3::driver::float_t{1}, c);                      \
     backend->to_host(c);                                                                                                             \
                                                                                                                                      \
     expected += 3 * (aa.transpose() * b);                                                                                            \
@@ -896,8 +896,8 @@ using autd3::gain::holo::ZERO;
     MatrixXc u = gen_unitary(n);                                                                                                     \
     std::random_device seed_gen;                                                                                                     \
     std::mt19937 engine(seed_gen());                                                                                                 \
-    std::uniform_real_distribution<autd3::driver::autd3_float_t> dist(0, 1);                                                         \
-    std::vector<autd3::driver::autd3_float_t> lambda_vals;                                                                           \
+    std::uniform_real_distribution<autd3::driver::float_t> dist(0, 1);                                                         \
+    std::vector<autd3::driver::float_t> lambda_vals;                                                                           \
     for (Eigen::Index i = 0; i < n; i++) lambda_vals.emplace_back(dist(engine));                                                     \
     std::sort(lambda_vals.begin(), lambda_vals.end());                                                                               \
     MatrixXc lambda = MatrixXc::Zero(n, n);                                                                                          \
@@ -961,7 +961,7 @@ using autd3::gain::holo::ZERO;
     backend->pseudo_inverse_svd(tmp, 0, u, s, vt, buf, b);                                                                           \
                                                                                                                                      \
     MatrixXd c = MatrixXd::Zero(m, m);                                                                                               \
-    backend->mul(Transpose::NoTrans, Transpose::NoTrans, autd3::driver::autd3_float_t{1}, a, b, autd3::driver::autd3_float_t{0}, c); \
+    backend->mul(Transpose::NoTrans, Transpose::NoTrans, autd3::driver::float_t{1}, a, b, autd3::driver::float_t{0}, c); \
     backend->to_host(c);                                                                                                             \
                                                                                                                                      \
     for (Eigen::Index i = 0; i < m; i++)                                                                                             \

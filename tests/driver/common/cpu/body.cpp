@@ -3,7 +3,7 @@
 // Created Date: 30/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 20/03/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -34,19 +34,19 @@ using autd3::driver::STMFocus;
 TEST(DriverCommonCPUTest, STMFocus) {
   ASSERT_EQ(sizeof(STMFocus), 8);
 
-  constexpr auto max = static_cast<autd3::driver::autd3_float_t>((1 << 17) - 1) * autd3::driver::FOCUS_STM_FIXED_NUM_UNIT;
-  constexpr auto min = static_cast<autd3::driver::autd3_float_t>(-(1 << 17)) * autd3::driver::FOCUS_STM_FIXED_NUM_UNIT;
+  constexpr auto max = static_cast<autd3::driver::float_t>((1 << 17) - 1) * autd3::driver::FOCUS_STM_FIXED_NUM_UNIT;
+  constexpr auto min = static_cast<autd3::driver::float_t>(-(1 << 17)) * autd3::driver::FOCUS_STM_FIXED_NUM_UNIT;
 
   std::random_device seed_gen;
   std::mt19937 engine(seed_gen());
   std::uniform_real_distribution dist(min, max);
   std::uniform_int_distribution dist_u8(0, 0xFF);
 
-  const auto to = [](const uint64_t v) -> autd3::driver::autd3_float_t {
+  const auto to = [](const uint64_t v) -> autd3::driver::float_t {
     auto b = static_cast<uint32_t>(v & 0x0003fffful);
     b = (v & 0x20000) == 0 ? b : b | 0xfffc0000u;
     const auto xi = *reinterpret_cast<int32_t*>(&b);
-    return static_cast<autd3::driver::autd3_float_t>(xi) * autd3::driver::FOCUS_STM_FIXED_NUM_UNIT;
+    return static_cast<autd3::driver::float_t>(xi) * autd3::driver::FOCUS_STM_FIXED_NUM_UNIT;
   };
 
   for (auto i = 0; i < 10000; i++) {
@@ -97,7 +97,7 @@ TEST(DriverCommonCPUTest, FocusSTMBodyInitial) {
 
   std::vector<STMFocus> points;
   for (size_t i = 0; i < point_size; i++)
-    points.emplace_back(autd3::driver::autd3_float_t{0}, autd3::driver::autd3_float_t{0}, autd3::driver::autd3_float_t{0}, 0);
+    points.emplace_back(autd3::driver::float_t{0}, autd3::driver::float_t{0}, autd3::driver::float_t{0}, 0);
   {
     auto* p = reinterpret_cast<uint8_t*>(points.data());
     for (size_t i = 0; i < point_size * sizeof(STMFocus); i++) *p++ = static_cast<uint8_t>(i);
@@ -131,7 +131,7 @@ TEST(DriverCommonCPUTest, FocusSTMBodySubsequent) {
 
   std::vector<STMFocus> points;
   for (size_t i = 0; i < point_size; i++)
-    points.emplace_back(autd3::driver::autd3_float_t{0}, autd3::driver::autd3_float_t{0}, autd3::driver::autd3_float_t{0}, 0);
+    points.emplace_back(autd3::driver::float_t{0}, autd3::driver::float_t{0}, autd3::driver::float_t{0}, 0);
   {
     auto* p = reinterpret_cast<uint8_t*>(points.data());
     for (size_t i = 0; i < point_size * sizeof(STMFocus); i++) *p++ = static_cast<uint8_t>(i);
@@ -156,7 +156,7 @@ TEST(DriverCommonCPUTest, LegacyPhaseFull) {
   ASSERT_EQ(p[0], expect_phase_0);
   ASSERT_EQ(p[1], 0);
 
-  s.phase = static_cast<autd3::driver::autd3_float_t>(1.5 * pi);
+  s.phase = static_cast<autd3::driver::float_t>(1.5 * pi);
   reinterpret_cast<LegacyPhaseFull<1>*>(p)->set(s);
   const uint8_t expect_phase_1 = autd3::driver::LegacyDrive::to_phase(s);
   ASSERT_EQ(p[0], expect_phase_0);
@@ -185,7 +185,7 @@ TEST(DriverCommonCPUTest, LegacyPhaseHalf) {
   ASSERT_EQ(p[1] & 0x0F, 0);
   ASSERT_EQ(p[1] & 0xF0, 0);
 
-  s.phase = static_cast<autd3::driver::autd3_float_t>(1.5 * pi);
+  s.phase = static_cast<autd3::driver::float_t>(1.5 * pi);
   reinterpret_cast<LegacyPhaseHalf<1>*>(p)->set(s);
   const uint8_t expect_phase_1 = autd3::driver::LegacyDrive::to_phase(s) >> 4;
   ASSERT_EQ(p[0] & 0x0F, expect_phase_0);
@@ -193,7 +193,7 @@ TEST(DriverCommonCPUTest, LegacyPhaseHalf) {
   ASSERT_EQ(p[1] & 0x0F, 0);
   ASSERT_EQ(p[1] & 0xF0, 0);
 
-  s.phase = static_cast<autd3::driver::autd3_float_t>(0.8 * pi);
+  s.phase = static_cast<autd3::driver::float_t>(0.8 * pi);
   reinterpret_cast<LegacyPhaseHalf<2>*>(p)->set(s);
   const uint8_t expect_phase_2 = autd3::driver::LegacyDrive::to_phase(s) >> 4;
   ASSERT_EQ(p[0] & 0x0F, expect_phase_0);
@@ -201,7 +201,7 @@ TEST(DriverCommonCPUTest, LegacyPhaseHalf) {
   ASSERT_EQ(p[1] & 0x0F, expect_phase_2);
   ASSERT_EQ(p[1] & 0xF0, 0);
 
-  s.phase = static_cast<autd3::driver::autd3_float_t>(1.2 * pi);
+  s.phase = static_cast<autd3::driver::float_t>(1.2 * pi);
   reinterpret_cast<LegacyPhaseHalf<3>*>(p)->set(s);
   const uint8_t expect_phase_3 = autd3::driver::LegacyDrive::to_phase(s) >> 4;
   ASSERT_EQ(p[0] & 0x0F, expect_phase_0);
