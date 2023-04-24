@@ -22,6 +22,9 @@ function(add_autd_dependencies target)
     add_custom_command(TARGET ${target} PRE_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/${prefix}autd3capi.${extention} ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>
       DEPENDS ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/${prefix}autd3capi.${extention})
+  elseif(APPLE)
+  else()
+    target_link_libraries(${target} PRIVATE m)
   endif()
   if(BUILD_GAIN_HOLO)
     target_link_libraries(${target} PRIVATE autd3capi-gain-holo)
