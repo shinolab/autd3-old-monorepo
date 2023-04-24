@@ -4,7 +4,6 @@ if(NOT BUILD_TEST)
   return()
 endif()
 
-cmake_policy(SET CMP0077 NEW)
 if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
 endif()
