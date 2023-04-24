@@ -3,7 +3,7 @@
 // Created Date: 07/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/04/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -141,11 +141,11 @@ class SoftwareSTM {
   /**
    * @brief Set frequency
    * @param[in] freq Frequency
-   * @return autd3_float_t Actual frequency
+   * @return float_t Actual frequency
    */
-  driver::autd3_float_t set_frequency(const driver::autd3_float_t freq) {
-    constexpr auto nanoseconds = static_cast<driver::autd3_float_t>(1000000000);
-    const auto sample_freq = static_cast<driver::autd3_float_t>(size()) * freq;
+  driver::float_t set_frequency(const driver::float_t freq) {
+    constexpr auto nanoseconds = static_cast<driver::float_t>(1000000000);
+    const auto sample_freq = static_cast<driver::float_t>(size()) * freq;
     sampling_period_ns = static_cast<uint32_t>(std::round(nanoseconds / sample_freq));
     return frequency();
   }
@@ -179,7 +179,7 @@ class SoftwareSTM {
   /**
    * @return Frequency
    */
-  [[nodiscard]] driver::autd3_float_t frequency() const { return sampling_frequency() / static_cast<driver::autd3_float_t>(size()); }
+  [[nodiscard]] driver::float_t frequency() const { return sampling_frequency() / static_cast<driver::float_t>(size()); }
 
   /**
    * @return Period
@@ -189,9 +189,9 @@ class SoftwareSTM {
   /**
    * @brief Sampling frequency
    */
-  [[nodiscard]] driver::autd3_float_t sampling_frequency() const noexcept {
-    constexpr auto nanoseconds = static_cast<driver::autd3_float_t>(1000000000);
-    return nanoseconds / static_cast<driver::autd3_float_t>(sampling_period_ns);
+  [[nodiscard]] driver::float_t sampling_frequency() const noexcept {
+    constexpr auto nanoseconds = static_cast<driver::float_t>(1000000000);
+    return nanoseconds / static_cast<driver::float_t>(sampling_period_ns);
   }
 
   /**

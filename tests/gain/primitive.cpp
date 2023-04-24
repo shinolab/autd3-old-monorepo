@@ -3,7 +3,7 @@
 // Created Date: 24/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/03/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@
 #include "autd3/core/geometry.hpp"
 #include "autd3/gain/primitive.hpp"
 
-using complex = std::complex<autd3::driver::autd3_float_t>;
+using complex = std::complex<autd3::driver::float_t>;
 using autd3::core::propagate;
 using autd3::core::Vector3;
 using autd3::driver::pi;

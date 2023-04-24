@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/03/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -65,7 +65,7 @@ class EigenBackendImpl final : public Backend {
   void arg(const VectorXc& src, VectorXc& dst) override { dst = src.cwiseQuotient(src.cwiseAbs()); }
   void reciprocal(const VectorXc& src, VectorXc& dst) override { dst = src.cwiseInverse(); }
   void exp(const VectorXc& src, VectorXc& dst) override { dst = src.array().exp(); }
-  void pow(const VectorXd& src, const driver::autd3_float_t p, VectorXd& dst) override { dst = src.array().pow(p); }
+  void pow(const VectorXd& src, const driver::float_t p, VectorXd& dst) override { dst = src.array().pow(p); }
 
   void create_diagonal(const VectorXc& src, MatrixXc& dst) override {
     dst.fill(ZERO);
@@ -99,17 +99,17 @@ class EigenBackendImpl final : public Backend {
     return src(idx);
   }
 
-  driver::autd3_float_t max_element(const VectorXd& src) override { return src.maxCoeff(); }
+  driver::float_t max_element(const VectorXd& src) override { return src.maxCoeff(); }
 
   void scale(const complex value, VectorXc& dst) override { dst *= value; }
-  void scale(const driver::autd3_float_t value, VectorXd& dst) override { dst *= value; }
+  void scale(const driver::float_t value, VectorXd& dst) override { dst *= value; }
 
   complex dot(const VectorXc& a, const VectorXc& b) override { return a.dot(b); }
-  driver::autd3_float_t dot(const VectorXd& a, const VectorXd& b) override { return a.dot(b); }
+  driver::float_t dot(const VectorXd& a, const VectorXd& b) override { return a.dot(b); }
 
-  void add(const driver::autd3_float_t alpha, const MatrixXd& a, MatrixXd& b) override { b += alpha * a; }
+  void add(const driver::float_t alpha, const MatrixXd& a, MatrixXd& b) override { b += alpha * a; }
   void add(const complex alpha, const MatrixXc& a, MatrixXc& b) override { b += alpha * a; }
-  void add(const driver::autd3_float_t alpha, const VectorXd& a, VectorXd& b) override { b += alpha * a; }
+  void add(const driver::float_t alpha, const VectorXd& a, VectorXd& b) override { b += alpha * a; }
   void add(const complex alpha, const VectorXc& a, VectorXc& b) override { b += alpha * a; }
 
   void mul(const Transpose trans_a, const Transpose trans_b, const complex alpha, const MatrixXc& a, const MatrixXc& b, const complex beta,
@@ -172,8 +172,8 @@ class EigenBackendImpl final : public Backend {
     }
   }
 
-  void mul(const Transpose trans_a, const Transpose trans_b, const driver::autd3_float_t alpha, const MatrixXd& a, const MatrixXd& b,
-           const driver::autd3_float_t beta, MatrixXd& c) override {
+  void mul(const Transpose trans_a, const Transpose trans_b, const driver::float_t alpha, const MatrixXd& a, const MatrixXd& b,
+           const driver::float_t beta, MatrixXd& c) override {
     c *= beta;
     switch (trans_a) {
       case Transpose::ConjTrans:
@@ -202,7 +202,7 @@ class EigenBackendImpl final : public Backend {
     }
   }
 
-  void mul(const Transpose trans_a, const driver::autd3_float_t alpha, const MatrixXd& a, const VectorXd& b, const driver::autd3_float_t beta,
+  void mul(const Transpose trans_a, const driver::float_t alpha, const MatrixXd& a, const VectorXd& b, const driver::float_t beta,
            VectorXd& c) override {
     c *= beta;
     switch (trans_a) {
@@ -236,7 +236,7 @@ class EigenBackendImpl final : public Backend {
     dst = ces.eigenvectors().col(idx);
   }
 
-  void pseudo_inverse_svd(MatrixXc& src, const driver::autd3_float_t alpha, MatrixXc&, MatrixXc& s, MatrixXc&, MatrixXc&, MatrixXc& dst) override {
+  void pseudo_inverse_svd(MatrixXc& src, const driver::float_t alpha, MatrixXc&, MatrixXc& s, MatrixXc&, MatrixXc&, MatrixXc& dst) override {
     const Eigen::BDCSVD svd(src, Eigen::ComputeFullU | Eigen::ComputeFullV);
     s.fill(ZERO);
     auto& singular_values = svd.singularValues();
@@ -245,7 +245,7 @@ class EigenBackendImpl final : public Backend {
     dst.noalias() = svd.matrixV() * s * svd.matrixU().adjoint();
   }
 
-  void pseudo_inverse_svd(MatrixXd& src, const driver::autd3_float_t alpha, MatrixXd&, MatrixXd& s, MatrixXd&, MatrixXd&, MatrixXd& dst) override {
+  void pseudo_inverse_svd(MatrixXd& src, const driver::float_t alpha, MatrixXd&, MatrixXd& s, MatrixXd&, MatrixXd&, MatrixXd& dst) override {
     const Eigen::BDCSVD svd(src, Eigen::ComputeFullU | Eigen::ComputeFullV);
     s.fill(0.0);
     auto& singular_values = svd.singularValues();

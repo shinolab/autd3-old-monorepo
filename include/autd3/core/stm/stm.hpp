@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/03/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -34,11 +34,11 @@ struct STM : DatagramBody {
    * @brief Set frequency of the STM
    * @param[in] freq Frequency of the STM
    * @details STM mode has some constraints, which determine the actual frequency of the STM.
-   * @return driver::autd3_float_t Actual frequency of STM
+   * @return driver::float_t Actual frequency of STM
    */
-  driver::autd3_float_t set_frequency(const driver::autd3_float_t freq) {
-    const auto sample_freq = static_cast<driver::autd3_float_t>(size()) * freq;
-    sampling_frequency_division = static_cast<uint32_t>(std::round(static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / sample_freq));
+  driver::float_t set_frequency(const driver::float_t freq) {
+    const auto sample_freq = static_cast<driver::float_t>(size()) * freq;
+    sampling_frequency_division = static_cast<uint32_t>(std::round(static_cast<driver::float_t>(driver::FPGA_CLK_FREQ) / sample_freq));
     return frequency();
   }
 
@@ -46,23 +46,23 @@ struct STM : DatagramBody {
    * @brief Set sampling frequency of the STM
    * @param[in] sample_freq Sampling frequency of the STM
    * @details STM mode has some constraints, which determine the actual frequency of the STM.
-   * @return driver::autd3_float_t Actual sampling frequency of STM
+   * @return driver::float_t Actual sampling frequency of STM
    */
-  driver::autd3_float_t set_sampling_frequency(const driver::autd3_float_t sample_freq) {
-    sampling_frequency_division = static_cast<uint32_t>(std::round(static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / sample_freq));
+  driver::float_t set_sampling_frequency(const driver::float_t sample_freq) {
+    sampling_frequency_division = static_cast<uint32_t>(std::round(static_cast<driver::float_t>(driver::FPGA_CLK_FREQ) / sample_freq));
     return sampling_frequency();
   }
 
   /**
    * @return frequency of STM
    */
-  [[nodiscard]] driver::autd3_float_t frequency() const { return sampling_frequency() / static_cast<driver::autd3_float_t>(size()); }
+  [[nodiscard]] driver::float_t frequency() const { return sampling_frequency() / static_cast<driver::float_t>(size()); }
 
   /**
    * @brief Sampling frequency.
    */
-  [[nodiscard]] driver::autd3_float_t sampling_frequency() const {
-    return static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / static_cast<driver::autd3_float_t>(sampling_frequency_division);
+  [[nodiscard]] driver::float_t sampling_frequency() const {
+    return static_cast<driver::float_t>(driver::FPGA_CLK_FREQ) / static_cast<driver::float_t>(sampling_frequency_division);
   }
 
   /**

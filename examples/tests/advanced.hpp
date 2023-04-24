@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/04/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,8 +17,8 @@
 
 class BurstModulation final : public autd3::Modulation {
  public:
-  std::vector<autd3::autd3_float_t> calc() override {
-    std::vector<autd3::autd3_float_t> buffer(_buf_size, 0);
+  std::vector<autd3::float_t> calc() override {
+    std::vector<autd3::float_t> buffer(_buf_size, 0);
     buffer[_buf_size - 1] = 1.0;
     return buffer;
   }

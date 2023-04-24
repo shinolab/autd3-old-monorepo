@@ -3,7 +3,7 @@
 // Created Date: 12/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/03/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -37,8 +37,8 @@
 
 constexpr size_t FOCI_SIZE = 10;
 
-static std::vector<autd3::Vector3> gen_foci(const autd3::Vector3& center, const size_t n, const autd3::driver::autd3_float_t rx,
-                                            const autd3::driver::autd3_float_t ry, const autd3::driver::autd3_float_t rz, const int32_t seed = 0) {
+static std::vector<autd3::Vector3> gen_foci(const autd3::Vector3& center, const size_t n, const autd3::driver::float_t rx,
+                                            const autd3::driver::float_t ry, const autd3::driver::float_t rz, const int32_t seed = 0) {
   std::vector<autd3::Vector3> foci;
   foci.reserve(n);
 

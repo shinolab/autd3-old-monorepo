@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/03/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,9 +28,9 @@ class Static final : public core::Modulation {
   /**
    * @param[in] amp amplitude
    */
-  explicit Static(const driver::autd3_float_t amp = 1.0) noexcept : Modulation(), _amp(amp) {}
+  explicit Static(const driver::float_t amp = 1.0) noexcept : Modulation(), _amp(amp) {}
 
-  std::vector<driver::autd3_float_t> calc() override {
+  std::vector<driver::float_t> calc() override {
     std::vector buffer(2, _amp);
     return buffer;
   }
@@ -42,7 +42,7 @@ class Static final : public core::Modulation {
   Static& operator=(Static&& obj) = default;
 
  private:
-  driver::autd3_float_t _amp;
+  driver::float_t _amp;
 };
 
 /**
@@ -57,10 +57,10 @@ class Sine final : public core::Modulation {
    * @details Ultrasound amplitude oscillate from offset-amp/2 to offset+amp/2.
    * If the value exceeds the range of [0, 1], the value will be clamped in the [0, 1].
    */
-  explicit Sine(const int32_t freq, const driver::autd3_float_t amp = 1.0, const driver::autd3_float_t offset = 0.5) noexcept
+  explicit Sine(const int32_t freq, const driver::float_t amp = 1.0, const driver::float_t offset = 0.5) noexcept
       : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
 
-  std::vector<driver::autd3_float_t> calc() override {
+  std::vector<driver::float_t> calc() override {
     if (driver::FPGA_CLK_FREQ % sampling_frequency_division != 0) throw std::runtime_error("The sampling frequency must be an integer.");
 
     const auto fs = static_cast<int32_t>(sampling_frequency());
@@ -73,7 +73,7 @@ class Sine final : public core::Modulation {
     const size_t d = f / k;
 
     return generate_iota(n, [this, d, n](const size_t i) {
-      return _amp / 2 * std::sin(2 * driver::pi * static_cast<driver::autd3_float_t>(d * i) / static_cast<driver::autd3_float_t>(n)) + _offset;
+      return _amp / 2 * std::sin(2 * driver::pi * static_cast<driver::float_t>(d * i) / static_cast<driver::float_t>(n)) + _offset;
     });
   }
 
@@ -85,8 +85,8 @@ class Sine final : public core::Modulation {
 
  private:
   int32_t _freq;
-  driver::autd3_float_t _amp;
-  driver::autd3_float_t _offset;
+  driver::float_t _amp;
+  driver::float_t _offset;
 };
 
 /**
@@ -101,10 +101,10 @@ class SineSquared final : public core::Modulation {
    * @details Radiation pressure oscillate from offset-amp/2 to offset+amp/2
    * If the value exceeds the range of [0, 1], the value will be clamped in the [0, 1].
    */
-  explicit SineSquared(const int32_t freq, const driver::autd3_float_t amp = 1.0, const driver::autd3_float_t offset = 0.5) noexcept
+  explicit SineSquared(const int32_t freq, const driver::float_t amp = 1.0, const driver::float_t offset = 0.5) noexcept
       : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
 
-  std::vector<driver::autd3_float_t> calc() override {
+  std::vector<driver::float_t> calc() override {
     if (driver::FPGA_CLK_FREQ % sampling_frequency_division != 0) throw std::runtime_error("The sampling frequency must be an integer.");
 
     const auto fs = static_cast<int32_t>(sampling_frequency());
@@ -117,7 +117,7 @@ class SineSquared final : public core::Modulation {
     const size_t d = f / k;
 
     return generate_iota(n, [this, d, n](const size_t i) {
-      return std::sqrt(_amp / 2 * std::sin(2 * driver::pi * static_cast<driver::autd3_float_t>(d * i) / static_cast<driver::autd3_float_t>(n)) +
+      return std::sqrt(_amp / 2 * std::sin(2 * driver::pi * static_cast<driver::float_t>(d * i) / static_cast<driver::float_t>(n)) +
                        _offset);
     });
   }
@@ -130,8 +130,8 @@ class SineSquared final : public core::Modulation {
 
  private:
   int32_t _freq;
-  driver::autd3_float_t _amp;
-  driver::autd3_float_t _offset;
+  driver::float_t _amp;
+  driver::float_t _offset;
 };
 
 /**
@@ -146,24 +146,24 @@ class SineLegacy final : public core::Modulation {
    * @details Ultrasound amplitude oscillate from offset-amp/2 to offset+amp/2.
    * If the value exceeds the range of [0, 1], the value will be clamped in the [0, 1].
    */
-  explicit SineLegacy(const driver::autd3_float_t freq, const driver::autd3_float_t amp = 1.0, const driver::autd3_float_t offset = 0.5) noexcept
+  explicit SineLegacy(const driver::float_t freq, const driver::float_t amp = 1.0, const driver::float_t offset = 0.5) noexcept
       : Modulation(), _freq(freq), _amp(amp), _offset(offset) {}
 
-  std::vector<driver::autd3_float_t> calc() override {
+  std::vector<driver::float_t> calc() override {
     const auto fs = sampling_frequency();
     const auto f = (std::min)(_freq, fs / 2);
 
     const auto t = static_cast<size_t>(std::round(fs / f));
 
     return generate_iota(t, [this, t](const size_t i) {
-      return _offset + _amp * std::cos(2 * driver::pi * static_cast<driver::autd3_float_t>(i) / static_cast<driver::autd3_float_t>(t)) / 2;
+      return _offset + _amp * std::cos(2 * driver::pi * static_cast<driver::float_t>(i) / static_cast<driver::float_t>(t)) / 2;
     });
   }
 
  private:
-  driver::autd3_float_t _freq;
-  driver::autd3_float_t _amp;
-  driver::autd3_float_t _offset;
+  driver::float_t _freq;
+  driver::float_t _amp;
+  driver::float_t _offset;
 };
 
 /**
@@ -177,11 +177,11 @@ class Square final : public core::Modulation {
    * @param[in] high high level in amplitude (0 to 1)
    * @param[in] duty duty ratio of square wave
    */
-  explicit Square(const int32_t freq, const driver::autd3_float_t low = 0.0, const driver::autd3_float_t high = 1.0,
-                  const driver::autd3_float_t duty = 0.5)
+  explicit Square(const int32_t freq, const driver::float_t low = 0.0, const driver::float_t high = 1.0,
+                  const driver::float_t duty = 0.5)
       : _freq(freq), _low(low), _high(high), _duty(duty) {}
 
-  std::vector<driver::autd3_float_t> calc() override {
+  std::vector<driver::float_t> calc() override {
     if (driver::FPGA_CLK_FREQ % sampling_frequency_division != 0) throw std::runtime_error("The sampling frequency must be an integer.");
 
     const auto f_s = static_cast<int32_t>(sampling_frequency());
@@ -198,7 +198,7 @@ class Square final : public core::Modulation {
     auto* cursor = buffer.data();
     for (size_t i = 0; i < d; i++) {
       const size_t size = (n + i) / d;
-      std::fill_n(cursor, static_cast<size_t>(std::round(static_cast<driver::autd3_float_t>(size) * _duty)), high);
+      std::fill_n(cursor, static_cast<size_t>(std::round(static_cast<driver::float_t>(size) * _duty)), high);
       cursor += size;
     }
     return buffer;
@@ -206,9 +206,9 @@ class Square final : public core::Modulation {
 
  private:
   int32_t _freq;
-  driver::autd3_float_t _low;
-  driver::autd3_float_t _high;
-  driver::autd3_float_t _duty;
+  driver::float_t _low;
+  driver::float_t _high;
+  driver::float_t _duty;
 };
 
 template <typename T>
@@ -217,19 +217,19 @@ class Cache final : public core::Modulation {
   template <typename... Args>
   explicit Cache(Args&&... args) : modulation(std::forward<Args>(args)...) {}
 
-  std::vector<driver::autd3_float_t> calc() override {
+  std::vector<driver::float_t> calc() override {
     if (!_built) {
       _buffer = modulation.calc();
       sampling_frequency_division = modulation.sampling_frequency_division;
       _built = true;
     }
-    std::vector<driver::autd3_float_t> buffer;
+    std::vector<driver::float_t> buffer;
     buffer.reserve(_buffer.size());
     std::copy(_buffer.begin(), _buffer.end(), std::back_inserter(buffer));
     return buffer;
   }
 
-  std::vector<driver::autd3_float_t> recalc() {
+  std::vector<driver::float_t> recalc() {
     _built = false;
     return calc();
   }
@@ -237,26 +237,26 @@ class Cache final : public core::Modulation {
   /**
    * \brief modulation data
    */
-  [[nodiscard]] const std::vector<driver::autd3_float_t>& buffer() const noexcept { return _buffer; }
+  [[nodiscard]] const std::vector<driver::float_t>& buffer() const noexcept { return _buffer; }
 
   /**
    * @brief [Advanced] modulation data
    * @details Call Modulation::build before using this function to initialize buffer data.
    */
-  std::vector<driver::autd3_float_t>& buffer() noexcept { return _buffer; }
+  std::vector<driver::float_t>& buffer() noexcept { return _buffer; }
 
-  [[nodiscard]] std::vector<driver::autd3_float_t>::const_iterator begin() const noexcept { return _buffer.begin(); }
-  [[nodiscard]] std::vector<driver::autd3_float_t>::const_iterator end() const noexcept { return _buffer.end(); }
-  [[nodiscard]] std::vector<driver::autd3_float_t>::iterator begin() noexcept { return _buffer.begin(); }
-  [[nodiscard]] std::vector<driver::autd3_float_t>::iterator end() noexcept { return _buffer.end(); }
-  [[nodiscard]] driver::autd3_float_t operator[](const size_t i) const { return _buffer[i]; }
-  [[nodiscard]] driver::autd3_float_t& operator[](const size_t i) { return _buffer[i]; }
+  [[nodiscard]] std::vector<driver::float_t>::const_iterator begin() const noexcept { return _buffer.begin(); }
+  [[nodiscard]] std::vector<driver::float_t>::const_iterator end() const noexcept { return _buffer.end(); }
+  [[nodiscard]] std::vector<driver::float_t>::iterator begin() noexcept { return _buffer.begin(); }
+  [[nodiscard]] std::vector<driver::float_t>::iterator end() noexcept { return _buffer.end(); }
+  [[nodiscard]] driver::float_t operator[](const size_t i) const { return _buffer[i]; }
+  [[nodiscard]] driver::float_t& operator[](const size_t i) { return _buffer[i]; }
 
   T modulation;
 
  private:
   bool _built{false};
-  std::vector<driver::autd3_float_t> _buffer;
+  std::vector<driver::float_t> _buffer;
 };
 
 template <typename T>
@@ -265,8 +265,8 @@ class Transform final : public core::Modulation {
   template <typename... Args>
   explicit Transform(std::function<double(double)> f, Args&&... args) : _f(std::move(f)), _modulation(std::forward<Args>(args)...) {}
 
-  std::vector<driver::autd3_float_t> calc() override {
-    std::vector<driver::autd3_float_t> buffer = _modulation.calc();
+  std::vector<driver::float_t> calc() override {
+    std::vector<driver::float_t> buffer = _modulation.calc();
     sampling_frequency_division = _modulation.sampling_frequency_division;
     return generate_iota(buffer.size(), [this, buffer](const size_t i) { return _f(buffer[i]); });
   }

@@ -3,7 +3,7 @@
 // Created Date: 25/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/04/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,30 +36,30 @@
 namespace autd3::driver {
 
 #ifdef AUTD3_USE_SINGLE_FLOAT
-using autd3_float_t = float;
+using float_t = float;
 #else
-using autd3_float_t = double;
+using float_t = double;
 #endif
 
 #ifdef AUTD3_USE_METER
-constexpr autd3_float_t METER = 1;
+constexpr float_t METER = 1;
 #else
-constexpr autd3_float_t METER = 1000;
+constexpr float_t METER = 1000;
 #endif
-constexpr autd3_float_t MILLIMETER = METER / 1000;
+constexpr float_t MILLIMETER = METER / 1000;
 
 #if __cplusplus >= 202002L
-constexpr autd3_float_t pi = std::numbers::pi_v<autd3_float_t>;
+constexpr float_t pi = std::numbers::pi_v<float_t>;
 #else
-constexpr autd3_float_t pi = static_cast<autd3_float_t>(3.141592653589793238462643383279502884L);
+constexpr float_t pi = static_cast<float_t>(3.141592653589793238462643383279502884L);
 #endif
 
-using Vector3 = Eigen::Matrix<autd3_float_t, 3, 1>;
-using Vector4 = Eigen::Matrix<autd3_float_t, 4, 1>;
-using Matrix4X4 = Eigen::Matrix<autd3_float_t, 4, 4>;
-using Matrix3X3 = Eigen::Matrix<autd3_float_t, 3, 3>;
-using Quaternion = Eigen::Quaternion<autd3_float_t>;
-using Affine3 = Eigen::Transform<autd3_float_t, 3, Eigen::Affine>;
+using Vector3 = Eigen::Matrix<float_t, 3, 1>;
+using Vector4 = Eigen::Matrix<float_t, 4, 1>;
+using Matrix4X4 = Eigen::Matrix<float_t, 4, 4>;
+using Matrix3X3 = Eigen::Matrix<float_t, 3, 3>;
+using Quaternion = Eigen::Quaternion<float_t>;
+using Affine3 = Eigen::Transform<float_t, 3, Eigen::Affine>;
 
 constexpr uint8_t VERSION_NUM_MAJOR = 0x88;
 constexpr uint8_t VERSION_NUM_MINOR = 0x01;

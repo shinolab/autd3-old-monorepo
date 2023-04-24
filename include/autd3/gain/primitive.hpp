@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/04/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -47,7 +47,7 @@ class Focus final : public core::Gain {
    * @param[in] point focal point
    * @param[in] amp amplitude of the focus (from 0.0 to 1.0)
    */
-  explicit Focus(core::Vector3 point, const driver::autd3_float_t amp = 1) : _point(std::move(point)), _amp(amp) {}
+  explicit Focus(core::Vector3 point, const driver::float_t amp = 1) : _point(std::move(point)), _amp(amp) {}
 
   std::vector<driver::Drive> calc(const core::Geometry& geometry) override {
     const auto sound_speed = geometry.sound_speed;
@@ -65,7 +65,7 @@ class Focus final : public core::Gain {
 
  private:
   core::Vector3 _point;
-  driver::autd3_float_t _amp;
+  driver::float_t _amp;
 };
 
 /**
@@ -79,7 +79,7 @@ class BesselBeam final : public core::Gain {
    * @param[in] theta_z angle between the side of the cone and the plane perpendicular to direction of the beam
    * @param[in] amp amplitude of the wave (from 0.0 to 1.0)
    */
-  explicit BesselBeam(core::Vector3 apex, core::Vector3 vec_n, const driver::autd3_float_t theta_z, const driver::autd3_float_t amp = 1)
+  explicit BesselBeam(core::Vector3 apex, core::Vector3 vec_n, const driver::float_t theta_z, const driver::float_t amp = 1)
       : core::Gain(), _apex(std::move(apex)), _vec_n(std::move(vec_n)), _theta_z(theta_z), _amp(amp) {}
 
   std::vector<driver::Drive> calc(const core::Geometry& geometry) override {
@@ -87,7 +87,7 @@ class BesselBeam final : public core::Gain {
     core::Vector3 v = core::Vector3::UnitZ().cross(_vec_n);
     const auto theta_v = std::asin(v.norm());
     v.normalize();
-    const Eigen::AngleAxis<driver::autd3_float_t> rot(-theta_v, v);
+    const Eigen::AngleAxis<driver::float_t> rot(-theta_v, v);
 
     const auto sound_speed = geometry.sound_speed;
     return core::Gain::transform(geometry, [&](const auto& transducer) {
@@ -108,8 +108,8 @@ class BesselBeam final : public core::Gain {
  private:
   core::Vector3 _apex;
   core::Vector3 _vec_n;
-  driver::autd3_float_t _theta_z;
-  driver::autd3_float_t _amp;
+  driver::float_t _theta_z;
+  driver::float_t _amp;
 };
 
 /**
@@ -121,7 +121,7 @@ class PlaneWave final : public core::Gain {
    * @param[in] direction wave direction
    * @param[in] amp amplitude of the wave (from 0.0 to 1.0)
    */
-  explicit PlaneWave(core::Vector3 direction, const driver::autd3_float_t amp = 1) noexcept : _direction(std::move(direction)), _amp(amp) {}
+  explicit PlaneWave(core::Vector3 direction, const driver::float_t amp = 1) noexcept : _direction(std::move(direction)), _amp(amp) {}
 
   std::vector<driver::Drive> calc(const core::Geometry& geometry) override {
     const auto sound_speed = geometry.sound_speed;
@@ -140,7 +140,7 @@ class PlaneWave final : public core::Gain {
 
  private:
   core::Vector3 _direction;
-  driver::autd3_float_t _amp;
+  driver::float_t _amp;
 };
 
 /**
@@ -229,7 +229,7 @@ class TransducerTest final : public core::Gain {
    * @param[in] amp amplitude (from 0.0 to 1.0)
    * @param[in] phase phase in radian
    */
-  void set(const size_t tr_idx, const driver::autd3_float_t amp, const driver::autd3_float_t phase) {
+  void set(const size_t tr_idx, const driver::float_t amp, const driver::float_t phase) {
     _map.insert_or_assign(tr_idx, std::make_pair(amp, phase));
   }
 
@@ -240,7 +240,7 @@ class TransducerTest final : public core::Gain {
   TransducerTest& operator=(TransducerTest&& obj) = default;
 
  private:
-  std::unordered_map<size_t, std::pair<driver::autd3_float_t, driver::autd3_float_t>> _map;
+  std::unordered_map<size_t, std::pair<driver::float_t, driver::float_t>> _map;
 };
 
 template <typename T>

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/03/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,10 +19,10 @@
 
 namespace autd3::modulation {
 
-RawPCM::RawPCM(std::filesystem::path filename, const driver::autd3_float_t sampling_freq, const uint32_t mod_sampling_freq_div)
+RawPCM::RawPCM(std::filesystem::path filename, const driver::float_t sampling_freq, const uint32_t mod_sampling_freq_div)
     : Modulation(mod_sampling_freq_div), _filename(std::move(filename)), _sampling_freq(sampling_freq) {}
 
-std::vector<driver::autd3_float_t> RawPCM::calc() {
+std::vector<driver::float_t> RawPCM::calc() {
   std::ifstream ifs;
   ifs.open(_filename, std::ios::binary);
   if (ifs.fail()) throw std::runtime_error("Error on opening file");
@@ -42,14 +42,14 @@ std::vector<driver::autd3_float_t> RawPCM::calc() {
   sample_buf.resize(buf.size() * static_cast<size_t>(freq_ratio));
   size_t i = 0;
   std::generate(sample_buf.begin(), sample_buf.end(), [&i, freq_ratio, &buf] {
-    const auto v = static_cast<driver::autd3_float_t>(i++) / freq_ratio;
-    return std::fmod(v, driver::autd3_float_t{1}) < 1 / freq_ratio ? buf[static_cast<size_t>(v)] : 0;
+    const auto v = static_cast<driver::float_t>(i++) / freq_ratio;
+    return std::fmod(v, driver::float_t{1}) < 1 / freq_ratio ? buf[static_cast<size_t>(v)] : 0;
   });
 
-  std::vector<driver::autd3_float_t> buffer;
+  std::vector<driver::float_t> buffer;
   buffer.reserve(sample_buf.size());
   std::transform(sample_buf.begin(), sample_buf.end(), std::back_inserter(buffer), [](const auto& v) {
-    return static_cast<driver::autd3_float_t>(v / static_cast<driver::autd3_float_t>(std::numeric_limits<uint8_t>::max()));
+    return static_cast<driver::float_t>(v / static_cast<driver::float_t>(std::numeric_limits<uint8_t>::max()));
   });
   return buffer;
 }
@@ -67,7 +67,7 @@ T read_from_stream(std::ifstream& fsp) {
 
 Wav::Wav(std::filesystem::path filename, const uint32_t mod_sampling_freq_div) : Modulation(mod_sampling_freq_div), _filename(std::move(filename)) {}
 
-std::vector<driver::autd3_float_t> Wav::calc() {
+std::vector<driver::float_t> Wav::calc() {
   std::ifstream fs;
   fs.open(_filename, std::ios::binary);
   if (fs.fail()) throw std::runtime_error("Error on opening file");
@@ -100,17 +100,17 @@ std::vector<driver::autd3_float_t> Wav::calc() {
 
   if (bits_per_sample != 8 && bits_per_sample != 16) throw std::runtime_error("This only supports 8 or 16 bits per sampling data.");
 
-  std::vector<driver::autd3_float_t> buf;
+  std::vector<driver::float_t> buf;
   const auto data_size = data_chunk_size / (bits_per_sample / 8);
   buf.resize(data_size);
   std::generate(buf.begin(), buf.end(), [&] {
     if (bits_per_sample == 8)
-      return static_cast<driver::autd3_float_t>(read_from_stream<uint8_t>(fs)) /
-             static_cast<driver::autd3_float_t>(std::numeric_limits<uint8_t>::max());
+      return static_cast<driver::float_t>(read_from_stream<uint8_t>(fs)) /
+             static_cast<driver::float_t>(std::numeric_limits<uint8_t>::max());
 
     if (bits_per_sample == 16) {
       const auto d32 = static_cast<int32_t>(read_from_stream<int16_t>(fs)) - std::numeric_limits<int16_t>::min();
-      return static_cast<driver::autd3_float_t>(d32) / static_cast<driver::autd3_float_t>(std::numeric_limits<uint16_t>::max());
+      return static_cast<driver::float_t>(d32) / static_cast<driver::float_t>(std::numeric_limits<uint16_t>::max());
     }
     throw std::runtime_error("Unsupported format.");
   });
@@ -118,8 +118,8 @@ std::vector<driver::autd3_float_t> Wav::calc() {
   const auto mod_sf = this->sampling_frequency();
 
   // down sampling
-  const auto freq_ratio = mod_sf / static_cast<driver::autd3_float_t>(sampling_freq);
-  const auto buffer_size = static_cast<size_t>(static_cast<driver::autd3_float_t>(buf.size()) * freq_ratio);
-  return generate_iota(buffer_size, [&](const size_t i) { return buf[static_cast<size_t>(static_cast<driver::autd3_float_t>(i) / freq_ratio)]; });
+  const auto freq_ratio = mod_sf / static_cast<driver::float_t>(sampling_freq);
+  const auto buffer_size = static_cast<size_t>(static_cast<driver::float_t>(buf.size()) * freq_ratio);
+  return generate_iota(buffer_size, [&](const size_t i) { return buf[static_cast<size_t>(static_cast<driver::float_t>(i) / freq_ratio)]; });
 }
 }  // namespace autd3::modulation
