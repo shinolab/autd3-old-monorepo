@@ -1,0 +1,7 @@
+find_package(Doxygen)
+if(DOXYGEN_FOUND)
+  message(STATUS "Doxygen found.")
+  add_subdirectory(doc/doxygen)
+else()
+  message(STATUS "Doxygen is needed to build the documentation. Skip building doc...")
+endif()

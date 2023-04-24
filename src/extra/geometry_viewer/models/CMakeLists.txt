@@ -1,9 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
-add_library(autd3_model
-    autd3_model.cpp
-    autd3_model.hpp
-)
+add_library(autd3_model autd3_model.cpp)
+add_library(autd3::extra::model ALIAS autd3_model)
 
 set_target_properties(autd3_model
   PROPERTIES

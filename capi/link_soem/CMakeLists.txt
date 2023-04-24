@@ -4,20 +4,13 @@ if (NOT BUILD_LINK_SOEM)
   return()
 endif()
 
-add_library(autd3capi-link-soem SHARED
-  c_api.cpp
-  soem_link.h
-  ../base/custom_sink.hpp
-  ../base/header.hpp
-  ../base/wrapper_link.hpp
-) 
+add_library(autd3capi-link-soem SHARED c_api.cpp) 
 
-target_link_libraries(autd3capi-link-soem link_soem)
+target_link_libraries(autd3capi-link-soem PRIVATE autd3::common autd3::link::soem)
 if(WIN32)
-  target_link_libraries(autd3capi-link-soem winmm ws2_32)
 elseif(APPLE)
 else()
-  target_link_libraries(autd3capi-link-soem -static-libgcc -static-libstdc++)
+  target_link_libraries(autd3capi-link-soem PRIVATE -static-libgcc -static-libstdc++)
 endif()
 
 set_target_properties(autd3capi-link-soem
