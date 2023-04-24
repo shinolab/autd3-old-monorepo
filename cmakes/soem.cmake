@@ -14,4 +14,3 @@ if(WIN32 AND AUTD3_BUILD_ARM)
 endif()
 
 set_target_properties(soem PROPERTIES FOLDER "3rdparty")
-set_target_properties(soem PROPERTIES POSITION_INDEPENDENT_CODE ON)

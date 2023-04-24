@@ -142,7 +142,7 @@ jobs:
         run: |
           mkdir -p build && cd build
           cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DDISABLE_EXAMPLES=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON
-          make -j8
+          cmake --build . --parallel $(nproc) --config Release
           cd ..
           mkdir -p lib
           mkdir -p bin
@@ -158,7 +158,7 @@ jobs:
         run: |
           mkdir -p build && cd build
           cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM32 -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DDISABLE_EXAMPLES=ON -DBUILD_BACKEND_CUDA=OFF -DBUILD_GEOMETRY_VIEWER=OFF -DBUILD_SIMULATOR=OFF -DCMAKE_C_COMPILER=/usr/bin/arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=/usr/bin/arm-linux-gnueabihf-g++
-          make -j8
+          cmake --build . --parallel $(nproc) --config Release
           cd ..
           mkdir -p lib
           mkdir -p bin
@@ -174,7 +174,7 @@ jobs:
         run: |
           mkdir -p build && cd build
           cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM64 -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DDISABLE_EXAMPLES=ON -DBUILD_BACKEND_CUDA=OFF -DBUILD_GEOMETRY_VIEWER=OFF -DBUILD_SIMULATOR=OFF -DCMAKE_C_COMPILER=/usr/bin/aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=/usr/bin/aarch64-linux-gnu-g++
-          make -j8
+          cmake --build . --parallel $(nproc) --config Release
           cd ..
           mkdir -p lib
           mkdir -p bin
@@ -263,7 +263,7 @@ jobs:
           mkdir build
           cd build
           cmake .. -DBUILD_LINK_SOEM=ON -DBUILD_GAIN_HOLO=OFF -DDISABLE_EXAMPLES=ON
-          cmake --build . --parallel 8
+          cmake --build . --parallel $(nproc)
           cd ..
           \cp -r include/ ./doc/book/samples/cpp/
           mkdir ./doc/book/samples/cpp/lib
@@ -273,4 +273,4 @@ jobs:
           mkdir build
           cd build
           cmake ..
-          cmake --build . --parallel 8
+          cmake --build . --parallel $(nproc)
