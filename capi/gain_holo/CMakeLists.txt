@@ -4,19 +4,13 @@ if(NOT BUILD_GAIN_HOLO)
   return()
 endif()
 
-add_library(autd3capi-gain-holo SHARED
-  c_api.cpp
-  holo_gain.h
-  ../base/header.hpp
-  ../base/wrapper.hpp
-)
+add_library(autd3capi-gain-holo SHARED c_api.cpp)
 
-target_include_directories(autd3capi-gain-holo PRIVATE ${PROJECT_SOURCE_DIR}/include ${EIGEN_PATH})
-target_link_libraries(autd3capi-gain-holo gain_holo backend_eigen)
+target_link_libraries(autd3capi-gain-holo PRIVATE autd3::common autd3::gain::holo autd3::backend::eigen)
 if(WIN32)
 elseif(APPLE)
 else()
-  target_link_libraries(autd3capi-gain-holo -static-libgcc -static-libstdc++)
+  target_link_libraries(autd3capi-gain-holo PRIVATE -static-libgcc -static-libstdc++)
 endif()
 
 set_target_properties(autd3capi-gain-holo

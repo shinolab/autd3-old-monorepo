@@ -4,17 +4,13 @@ if(NOT BUILD_MODULATION_AUDIO_FILE)
   return()
 endif()
 
-add_library(autd3capi-modulation-audio-file SHARED
-  c_api.cpp
-  audio_file_modulation.h
-  ../base/header.hpp
-)
+add_library(autd3capi-modulation-audio-file SHARED c_api.cpp)
 
-target_link_libraries(autd3capi-modulation-audio-file modulation_audio_file autd3)
+target_link_libraries(autd3capi-modulation-audio-file PRIVATE autd3::common autd3::modulation::audio_file)
 if(WIN32)
 elseif(APPLE)
 else()
-  target_link_libraries(autd3capi-modulation-audio-file -static-libgcc -static-libstdc++)
+  target_link_libraries(autd3capi-modulation-audio-file PRIVATE -static-libgcc -static-libstdc++)
 endif()
 
 set_target_properties(autd3capi-modulation-audio-file

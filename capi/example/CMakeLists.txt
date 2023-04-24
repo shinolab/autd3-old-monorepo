@@ -18,13 +18,6 @@ endif()
 function(add_autd_dependencies target)
   target_include_directories(${target} PRIVATE ${PROJECT_SOURCE_DIR}/capi/base)
   target_link_libraries(${target} PRIVATE autd3capi)
-  if(WIN32) 
-    target_link_libraries(${target} PRIVATE winmm ws2_32)
-  elseif(APPLE)
-    target_link_libraries(${target} PRIVATE pcap)
-  else()
-    target_link_libraries(${target} PRIVATE rt m)
-  endif()
   if(WIN32)
     add_custom_command(TARGET ${target} PRE_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/${prefix}autd3capi.${extention} ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>

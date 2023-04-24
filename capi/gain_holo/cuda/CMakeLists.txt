@@ -4,20 +4,14 @@ if(NOT BUILD_BACKEND_CUDA)
   return()
 endif()
 
-add_library(autd3capi-backend-cuda SHARED
-  c_api.cpp
-  cuda_backend.h
-  ../../base/header.hpp
-  ../../base/wrapper.hpp
-)
+add_library(autd3capi-backend-cuda SHARED c_api.cpp)
 
-target_include_directories(autd3capi-backend-cuda PRIVATE ${PROJECT_SOURCE_DIR}/include ${EIGEN_PATH})
-target_link_libraries(autd3capi-backend-cuda backend_cuda)
+target_link_libraries(autd3capi-backend-cuda PRIVATE autd3::common autd3::backend::cuda)
 if(WIN32)
   target_link_options(autd3capi-backend-cuda PRIVATE /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib /NODEFAULTLIB:msvcrtd.lib)
 elseif(APPLE)
 else()
-  target_link_libraries(autd3capi-backend-cuda -static-libgcc -static-libstdc++)
+  target_link_libraries(autd3capi-backend-cuda PRIVATE -static-libgcc -static-libstdc++)
 endif()
 
 set_target_properties(autd3capi-backend-cuda

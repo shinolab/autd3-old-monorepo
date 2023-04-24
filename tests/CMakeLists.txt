@@ -4,12 +4,18 @@ if(NOT BUILD_TEST)
   return()
 endif()
 
+cmake_policy(SET CMP0077 NEW)
+if(POLICY CMP0135)
+  cmake_policy(SET CMP0135 NEW)
+endif()
+include(${PROJECT_SOURCE_DIR}/cmakes/gtest.cmake)
+
 enable_testing()
 
 add_executable(test_autd3)
 target_include_directories(test_autd3 PRIVATE .)
 target_link_libraries(test_autd3 gtest_main)
-target_link_libraries(test_autd3 autd3)
+target_link_libraries(test_autd3 autd3::autd3)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/tests/driver)
 add_subdirectory(${PROJECT_SOURCE_DIR}/tests/core)

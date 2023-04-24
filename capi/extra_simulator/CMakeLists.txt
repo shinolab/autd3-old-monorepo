@@ -4,13 +4,11 @@ if(NOT BUILD_SIMULATOR)
   return()
 endif()
 
-add_library(autd3capi-extra-simulator SHARED
-  c_api.cpp
-  simulator.h
-  ../base/header.hpp
-)
+include(${PROJECT_SOURCE_DIR}/cmakes/json.cmake)
+
+add_library(autd3capi-extra-simulator SHARED c_api.cpp)
  
-target_link_libraries(autd3capi-extra-simulator simulator autd3_common)
+target_link_libraries(autd3capi-extra-simulator PRIVATE autd3::extra::simulator autd3::common nlohmann_json::nlohmann_json)
 
 set_target_properties(autd3capi-extra-simulator
   PROPERTIES

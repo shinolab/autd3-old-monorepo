@@ -4,41 +4,25 @@ if(NOT BUILD_LINK_REMOTE_TWINCAT)
   return()
 endif()
 
-add_library(link_remote_twincat
-  remote_twincat.cpp
-  ${PROJECT_SOURCE_DIR}/include/autd3/link/remote_twincat.hpp
+include(${PROJECT_SOURCE_DIR}/cmakes/ads.cmake)
 
-  ${ADS_PATH}/AdsLib/AdsDef.cpp
-  ${ADS_PATH}/AdsLib/AdsDevice.cpp
-  ${ADS_PATH}/AdsLib/Log.cpp
-  ${ADS_PATH}/AdsLib/Sockets.cpp
-  ${ADS_PATH}/AdsLib/Frame.cpp
-  ${ADS_PATH}/AdsLib/standalone/AdsLib.cpp
-  ${ADS_PATH}/AdsLib/standalone/AmsConnection.cpp
-  ${ADS_PATH}/AdsLib/standalone/AmsNetId.cpp
-  ${ADS_PATH}/AdsLib/standalone/AmsPort.cpp
-  ${ADS_PATH}/AdsLib/standalone/AmsRouter.cpp
-  ${ADS_PATH}/AdsLib/standalone/NotificationDispatcher.cpp
-)
+add_library(autd3_link_remote_twincat remote_twincat.cpp)
+add_library(autd3::link::remote_twincat ALIAS autd3_link_remote_twincat)
 
-target_link_libraries(link_remote_twincat PUBLIC autd3_common)
-target_include_directories(link_remote_twincat PRIVATE ${ADS_PATH}/AdsLib ${ADS_PATH}/AdsLib/standalone)
+target_link_libraries(autd3_link_remote_twincat PRIVATE autd3::common ads)
 
 if(WIN32)
-  target_link_libraries(link_remote_twincat PUBLIC ws2_32)
-  target_compile_definitions(link_remote_twincat PRIVATE NOMINMAX)
-elseif(APPLE)
-else()
+  target_compile_definitions(autd3_link_remote_twincat PRIVATE NOMINMAX)
 endif()
-enable_cxx_compiler_flag_if_supported(link_remote_twincat PRIVATE -Wno-mismatched-new-delete)
-target_compile_definitions(link_remote_twincat PRIVATE -DCONFIG_DEFAULT_LOGLEVEL=1)
+enable_cxx_compiler_flag_if_supported(autd3_link_remote_twincat PRIVATE -Wno-mismatched-new-delete)
+target_compile_definitions(autd3_link_remote_twincat PRIVATE -DCONFIG_DEFAULT_LOGLEVEL=1)
 
-set_target_properties(link_remote_twincat
+set_target_properties(autd3_link_remote_twincat
   PROPERTIES
   ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
 )
 
-set_target_properties(link_remote_twincat PROPERTIES FOLDER "link")
-set_target_properties(link_remote_twincat PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(autd3_link_remote_twincat PROPERTIES FOLDER "link")
+set_target_properties(autd3_link_remote_twincat PROPERTIES POSITION_INDEPENDENT_CODE ON)

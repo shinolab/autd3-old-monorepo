@@ -4,19 +4,13 @@ if(NOT BUILD_LINK_SIMULATOR)
   return()
 endif()
 
-add_library(autd3capi-link-simulator SHARED
-  c_api.cpp
-  simulator_link.h
-  ../base/header.hpp
-  ../base/wrapper_link.hpp
-)
+add_library(autd3capi-link-simulator SHARED c_api.cpp)
 
-target_link_libraries(autd3capi-link-simulator link_simulator autd3)
+target_link_libraries(autd3capi-link-simulator PRIVATE autd3::common autd3::link::simulator)
 if(WIN32)
-  target_link_libraries(autd3capi-link-simulator ws2_32 winmm)
 elseif(APPLE)
 else()
-  target_link_libraries(autd3capi-link-simulator -static-libgcc -static-libstdc++)
+  target_link_libraries(autd3capi-link-simulator PRIVATE -static-libgcc -static-libstdc++)
 endif()
 
 set_target_properties(autd3capi-link-simulator
