@@ -22,7 +22,8 @@ option(BUILD_SHARED_LIBS "BUILD_SHARED_LIBS" OFF)
 option(BUILD_ALL "BUILD_ALL" OFF)
 option(BUILD_DOC "BUILD_DOC" OFF)
 
-option(AUTD3_USE_EIGEN_EXTERNAL OFF)
+option(USE_SYSTEM_EIGEN OFF)
+option(USE_SYSTEM_BOOST OFF)
 
 option(AUTD3_PARALLEL_FOR "AUTD3_PARALLEL_FOR" OFF)
 
@@ -122,16 +123,22 @@ if(ENABLE_LINT)
   include(${PROJECT_SOURCE_DIR}/cmakes/cpplint.cmake)
 endif()
 
-if (AUTD3_USE_EIGEN_EXTERNAL)
+if(USE_SYSTEM_EIGEN)
   find_package(Eigen REQUIRED)
 else()
   include(${PROJECT_SOURCE_DIR}/cmakes/eigen.cmake)
 endif()
 
+if(USE_SYSTEM_BOOST)
+  find_package(Boost REQUIRED)
+else()
+  include(${PROJECT_SOURCE_DIR}/cmakes/boost.cmake)
+endif()
+
 include(${PROJECT_SOURCE_DIR}/cmakes/spdlog.cmake)
 
 add_library(autd3_common INTERFACE)
-target_include_directories(autd3_common INTERFACE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(autd3_common INTERFACE ${PROJECT_SOURCE_DIR}/include ${Boost_INCLUDE_DIRS})
 target_link_libraries(autd3_common INTERFACE Eigen3::Eigen spdlog::spdlog_header_only)
 target_compile_definitions(autd3_common INTERFACE EIGEN_MPL2_ONLY)
 if(USE_METER)
