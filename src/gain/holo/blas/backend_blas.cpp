@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/03/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -102,7 +102,7 @@ class BLASBackendImpl final : public Backend {
   void arg(const VectorXc& src, VectorXc& dst) override { dst = src.cwiseQuotient(src.cwiseAbs()); }
   void reciprocal(const VectorXc& src, VectorXc& dst) override { dst = src.cwiseInverse(); }
   void exp(const VectorXc& src, VectorXc& dst) override { dst = src.array().exp(); }
-  void pow(const VectorXd& src, const driver::autd3_float_t p, VectorXd& dst) override { dst = src.array().pow(p); }
+  void pow(const VectorXd& src, const driver::float_t p, VectorXd& dst) override { dst = src.array().pow(p); }
 
   void create_diagonal(const VectorXc& src, MatrixXc& dst) override {
     dst.fill(ZERO);
@@ -136,22 +136,22 @@ class BLASBackendImpl final : public Backend {
     return src(idx);
   }
 
-  driver::autd3_float_t max_element(const VectorXd& src) override { return src.maxCoeff(); }
+  driver::float_t max_element(const VectorXd& src) override { return src.maxCoeff(); }
 
   void scale(const complex value, VectorXc& dst) override { AUTD_ZSCAL(static_cast<int>(dst.size()), &value, dst.data(), 1); }
-  void scale(const driver::autd3_float_t value, VectorXd& dst) override { AUTD_DSCAL(static_cast<int>(dst.size()), value, dst.data(), 1); }
+  void scale(const driver::float_t value, VectorXd& dst) override { AUTD_DSCAL(static_cast<int>(dst.size()), value, dst.data(), 1); }
 
   complex dot(const VectorXc& a, const VectorXc& b) override {
     complex d;
     AUTD_DOTC(static_cast<int>(a.size()), a.data(), 1, b.data(), 1, &d);
     return d;
   }
-  driver::autd3_float_t dot(const VectorXd& a, const VectorXd& b) override { return AUTD_DOT(static_cast<int>(a.size()), a.data(), 1, b.data(), 1); }
+  driver::float_t dot(const VectorXd& a, const VectorXd& b) override { return AUTD_DOT(static_cast<int>(a.size()), a.data(), 1, b.data(), 1); }
 
-  void add(const driver::autd3_float_t alpha, const MatrixXd& a, MatrixXd& b) override {
+  void add(const driver::float_t alpha, const MatrixXd& a, MatrixXd& b) override {
     AUTD_AXPY(static_cast<int>(a.size()), alpha, a.data(), 1, b.data(), 1);
   }
-  void add(const driver::autd3_float_t alpha, const VectorXd& a, VectorXd& b) override {
+  void add(const driver::float_t alpha, const VectorXd& a, VectorXd& b) override {
     AUTD_AXPY(static_cast<int>(a.size()), alpha, a.data(), 1, b.data(), 1);
   }
   void add(const complex alpha, const MatrixXc& a, MatrixXc& b) override { AUTD_AXPYC(static_cast<int>(a.size()), &alpha, a.data(), 1, b.data(), 1); }
@@ -175,8 +175,8 @@ class BLASBackendImpl final : public Backend {
     AUTD_ZGEMV(CblasColMajor, static_cast<CBLAS_TRANSPOSE>(trans_a), m, n, &alpha, a.data(), lda, b.data(), 1, &beta, c.data(), 1);
   }
 
-  void mul(const Transpose trans_a, const Transpose trans_b, const driver::autd3_float_t alpha, const MatrixXd& a, const MatrixXd& b,
-           const driver::autd3_float_t beta, MatrixXd& c) override {
+  void mul(const Transpose trans_a, const Transpose trans_b, const driver::float_t alpha, const MatrixXd& a, const MatrixXd& b,
+           const driver::float_t beta, MatrixXd& c) override {
     const auto lda = static_cast<int>(a.rows());
     const auto ldb = static_cast<int>(b.rows());
     const auto ldc = trans_a == Transpose::NoTrans ? static_cast<int>(a.rows()) : static_cast<int>(a.cols());
@@ -186,7 +186,7 @@ class BLASBackendImpl final : public Backend {
                ldb, beta, c.data(), ldc);
   }
 
-  void mul(const Transpose trans_a, const driver::autd3_float_t alpha, const MatrixXd& a, const VectorXd& b, const driver::autd3_float_t beta,
+  void mul(const Transpose trans_a, const driver::float_t alpha, const MatrixXd& a, const VectorXd& b, const driver::float_t beta,
            VectorXd& c) override {
     const auto m = static_cast<int>(a.rows());
     const auto n = static_cast<int>(a.cols());
@@ -215,12 +215,12 @@ class BLASBackendImpl final : public Backend {
 
   void max_eigen_vector(MatrixXc& src, VectorXc& dst) override {
     const auto size = src.cols();
-    const auto eigenvalues = std::make_unique<driver::autd3_float_t[]>(size);
+    const auto eigenvalues = std::make_unique<driver::float_t[]>(size);
     AUTD_HEEV(CblasColMajor, 'V', 'U', static_cast<int>(size), src.data(), static_cast<int>(size), eigenvalues.get());
     std::memcpy(dst.data(), src.data() + size * (size - 1), size * sizeof(complex));
   }
 
-  void pseudo_inverse_svd(MatrixXc& src, const driver::autd3_float_t alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf,
+  void pseudo_inverse_svd(MatrixXc& src, const driver::float_t alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf,
                           MatrixXc& dst) override {
     const auto nc = src.cols();
     const auto nr = src.rows();
@@ -230,7 +230,7 @@ class BLASBackendImpl final : public Backend {
     const auto ldvt = static_cast<int>(nc);
 
     const auto s_size = std::min(nr, nc);
-    const auto sigma = std::make_unique<driver::autd3_float_t[]>(s_size);
+    const auto sigma = std::make_unique<driver::float_t[]>(s_size);
 
     AUTD_GESVDC(LAPACK_COL_MAJOR, 'A', static_cast<int>(nr), static_cast<int>(nc), src.data(), lda, sigma.get(), u.data(), ldu, vt.data(), ldvt);
     s.fill(ZERO);
@@ -240,7 +240,7 @@ class BLASBackendImpl final : public Backend {
     mul(Transpose::ConjTrans, Transpose::NoTrans, ONE, vt, buf, ZERO, dst);
   }
 
-  void pseudo_inverse_svd(MatrixXd& src, const driver::autd3_float_t alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf,
+  void pseudo_inverse_svd(MatrixXd& src, const driver::float_t alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf,
                           MatrixXd& dst) override {
     const auto nc = src.cols();
     const auto nr = src.rows();
@@ -250,7 +250,7 @@ class BLASBackendImpl final : public Backend {
     const auto ldvt = static_cast<int>(nc);
 
     const auto s_size = std::min(nr, nc);
-    const auto sigma = std::make_unique<driver::autd3_float_t[]>(s_size);
+    const auto sigma = std::make_unique<driver::float_t[]>(s_size);
 
     AUTD_GESVD(LAPACK_COL_MAJOR, 'A', static_cast<int>(nr), static_cast<int>(nc), src.data(), lda, sigma.get(), u.data(), ldu, vt.data(), ldvt);
     s.fill(0.0);

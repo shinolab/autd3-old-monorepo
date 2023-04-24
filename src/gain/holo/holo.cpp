@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/03/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -113,13 +113,13 @@ std::vector<driver::Drive> SDP::calc(const core::Geometry& geometry) {
 
   std::random_device rnd;
   std::mt19937 mt(rnd());
-  std::uniform_real_distribution<driver::autd3_float_t> range(0, 1);
+  std::uniform_real_distribution<driver::float_t> range(0, 1);
   VectorXc zero = VectorXc::Zero(m);
   VectorXc x = VectorXc::Zero(m);
   VectorXc x_conj(m);
   VectorXc mmc(m);
   for (size_t i = 0; i < repeat; i++) {
-    const auto ii = static_cast<size_t>(std::floor(static_cast<driver::autd3_float_t>(m) * range(mt)));
+    const auto ii = static_cast<size_t>(std::floor(static_cast<driver::float_t>(m) * range(mt)));
 
     _backend->get_col(mm, ii, mmc);
     _backend->set(ii, ZERO, mmc);
@@ -185,7 +185,7 @@ std::vector<driver::Drive> EVP::calc(const core::Geometry& geometry) {
     _backend->mul(Transpose::Trans, ONE, g, amps_, ZERO, sigma_tmp);
     VectorXd sigma_tmp_real(n);
     _backend->abs(sigma_tmp, sigma_tmp_real);
-    _backend->scale(1 / static_cast<driver::autd3_float_t>(m), sigma_tmp_real);
+    _backend->scale(1 / static_cast<driver::float_t>(m), sigma_tmp_real);
     _backend->sqrt(sigma_tmp_real, sigma_tmp_real);
     _backend->pow(sigma_tmp_real, gamma, sigma_tmp_real);
     const VectorXd zero = VectorXd::Zero(n);
@@ -366,7 +366,7 @@ void calc_jtj_jtf(const BackendPtr& backend, const VectorXc& t, const MatrixXc& 
   backend->reduce_col(bhb_tth_i, jtf);
 }
 
-driver::autd3_float_t calc_fx(const BackendPtr& backend, const VectorXd& zero, const VectorXd& x, const MatrixXc& bhb, VectorXc& tmp, VectorXc& t) {
+driver::float_t calc_fx(const BackendPtr& backend, const VectorXd& zero, const VectorXd& x, const MatrixXc& bhb, VectorXc& tmp, VectorXc& t) {
   backend->make_complex(zero, x, t);
   backend->exp(t, t);
   backend->mul(Transpose::NoTrans, ONE, bhb, t, ZERO, tmp);
@@ -387,7 +387,7 @@ std::vector<driver::Drive> LM::calc(const core::Geometry& geometry) {
   VectorXd x = VectorXd::Zero(n_param);
   std::copy(initial.begin(), initial.end(), x.begin());
 
-  driver::autd3_float_t nu = 2;
+  driver::float_t nu = 2;
 
   const VectorXd zero = VectorXd::Zero(n_param);
 
@@ -409,7 +409,7 @@ std::vector<driver::Drive> LM::calc(const core::Geometry& geometry) {
 
   VectorXc tmp = VectorXc::Zero(n_param);
   VectorXc t_(n_param);
-  driver::autd3_float_t fx = calc_fx(_backend, zero, x, bhb, tmp, t);
+  driver::float_t fx = calc_fx(_backend, zero, x, bhb, tmp, t);
 
   const MatrixXd identity = MatrixXd::Identity(n_param, n_param);
 
@@ -433,12 +433,12 @@ std::vector<driver::Drive> LM::calc(const core::Geometry& geometry) {
     _backend->copy_to(x, x_new);
     _backend->add(-1.0, h_lm, x_new);
 
-    const driver::autd3_float_t fx_new = calc_fx(_backend, zero, x_new, bhb, tmp, t);
+    const driver::float_t fx_new = calc_fx(_backend, zero, x_new, bhb, tmp, t);
 
     _backend->copy_to(g, tmp_vec);
     _backend->add(mu, h_lm, tmp_vec);
 
-    const driver::autd3_float_t l0_lhlm = _backend->dot(h_lm, tmp_vec) / 2;
+    const driver::float_t l0_lhlm = _backend->dot(h_lm, tmp_vec) / 2;
 
     const auto rho = (fx - fx_new) / l0_lhlm;
     fx = fx_new;
@@ -449,7 +449,7 @@ std::vector<driver::Drive> LM::calc(const core::Geometry& geometry) {
       make_t(_backend, zero, x, t);
       calc_jtj_jtf(_backend, t, bhb, tth, bhb_tth, bhb_tth_i, a, g);
 
-      mu *= (std::max)(driver::autd3_float_t{1} / driver::autd3_float_t{3}, std::pow(1 - (2 * rho - 1), driver::autd3_float_t{3}));
+      mu *= (std::max)(driver::float_t{1} / driver::float_t{3}, std::pow(1 - (2 * rho - 1), driver::float_t{3}));
       nu = 2;
     } else {
       mu *= nu;
@@ -472,9 +472,9 @@ std::vector<driver::Drive> Greedy::calc(const core::Geometry& geometry) {
   const VectorXd amps_ = Eigen::Map<VectorXc, Eigen::Unaligned>(_amps.data(), static_cast<Eigen::Index>(_amps.size())).real();
 
   std::vector<complex> phases(phase_div);
-  driver::autd3_float_t phase = 0;
+  driver::float_t phase = 0;
   std::generate(phases.begin(), phases.end(), [&] {
-    phase += 2 * driver::pi / static_cast<driver::autd3_float_t>(phase_div);
+    phase += 2 * driver::pi / static_cast<driver::float_t>(phase_div);
     return complex(std::cos(phase), std::sin(phase));
   });
 
@@ -502,7 +502,7 @@ std::vector<driver::Drive> Greedy::calc(const core::Geometry& geometry) {
   for (const auto i : select) {
     const auto& transducer = geometry[i];
     size_t min_idx = 0;
-    auto min_v = std::numeric_limits<driver::autd3_float_t>::infinity();
+    auto min_v = std::numeric_limits<driver::float_t>::infinity();
     for (size_t p = 0; p < phases.size(); p++) {
       transfer_foci(transducer, phases[p], _foci, tmp[p]);
       if (const auto v = objective(amps_, tmp[p] + cache); v < min_v) {
@@ -527,9 +527,9 @@ std::vector<driver::Drive> LSSGreedy::calc(const core::Geometry& geometry) {
   const VectorXd amps_ = Eigen::Map<VectorXc, Eigen::Unaligned>(_amps.data(), static_cast<Eigen::Index>(_amps.size())).real();
 
   std::vector<complex> phases(phase_div);
-  driver::autd3_float_t phase = 0;
+  driver::float_t phase = 0;
   std::generate(phases.begin(), phases.end(), [&] {
-    phase += 2 * driver::pi / static_cast<driver::autd3_float_t>(phase_div);
+    phase += 2 * driver::pi / static_cast<driver::float_t>(phase_div);
     return complex(std::cos(phase), std::sin(phase));
   });
 
@@ -559,7 +559,7 @@ std::vector<driver::Drive> LSSGreedy::calc(const core::Geometry& geometry) {
   std::shuffle(select.begin(), select.end(), engine);
   for (const auto i : select) {
     size_t min_idx = 0;
-    auto min_v = std::numeric_limits<driver::autd3_float_t>::infinity();
+    auto min_v = std::numeric_limits<driver::float_t>::infinity();
     for (size_t j = 0; j < phases.size(); j++) {
       const auto q_tmp = q + focus_phase_list[i] * phases[j];
       _backend->mul(Transpose::NoTrans, ONE, g, q_tmp, ZERO, tmp[j]);
@@ -610,8 +610,8 @@ std::vector<driver::Drive> APO::calc(const core::Geometry& geometry) {
   auto calc_j = [&](const VectorXc& q, const VectorXc& p2, const std::vector<MatrixXc>& ris, const size_t n) {
     MatrixXc tmp = MatrixXc::Zero(static_cast<Eigen::Index>(n), 1);
     size_t i = 0;
-    driver::autd3_float_t j =
-        std::accumulate(ris.begin(), ris.end(), driver::autd3_float_t{0}, [&](const driver::autd3_float_t acc, const MatrixXc& r) {
+    driver::float_t j =
+        std::accumulate(ris.begin(), ris.end(), driver::float_t{0}, [&](const driver::float_t acc, const MatrixXc& r) {
           _backend->mul(Transpose::NoTrans, Transpose::NoTrans, ONE, r, q, ZERO, tmp);
           const auto s = p2(static_cast<Eigen::Index>(i++), 0) - _backend->dot(q, tmp);
           return acc + std::norm(s);
@@ -621,10 +621,10 @@ std::vector<driver::Drive> APO::calc(const core::Geometry& geometry) {
   };
 
   auto line_search = [&](const VectorXc& q, const VectorXc& p2, const std::vector<MatrixXc>& ris, const size_t n) {
-    driver::autd3_float_t alpha = 0;
-    auto min = (std::numeric_limits<driver::autd3_float_t>::max)();
+    driver::float_t alpha = 0;
+    auto min = (std::numeric_limits<driver::float_t>::max)();
     for (size_t i = 0; i < line_search_max; i++) {
-      const auto a = static_cast<driver::autd3_float_t>(i) / static_cast<driver::autd3_float_t>(line_search_max);  // FIXME: only for 0-1
+      const auto a = static_cast<driver::float_t>(i) / static_cast<driver::float_t>(line_search_max);  // FIXME: only for 0-1
       if (const auto v = calc_j(q, p2, ris, n); v < min) {
         alpha = a;
         min = v;

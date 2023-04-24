@@ -3,7 +3,7 @@
 // Created Date: 24/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/04/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -25,9 +25,9 @@ struct AUTD3 final : core::Device {
   static constexpr size_t NUM_TRANS_IN_UNIT = 249;
   static constexpr size_t NUM_TRANS_X = 18;
   static constexpr size_t NUM_TRANS_Y = 14;
-  static constexpr driver::autd3_float_t TRANS_SPACING = static_cast<driver::autd3_float_t>(10.16 * driver::MILLIMETER);
-  static constexpr driver::autd3_float_t DEVICE_WIDTH = static_cast<driver::autd3_float_t>(192.0 * driver::MILLIMETER);
-  static constexpr driver::autd3_float_t DEVICE_HEIGHT = static_cast<driver::autd3_float_t>(151.4 * driver::MILLIMETER);
+  static constexpr driver::float_t TRANS_SPACING = static_cast<driver::float_t>(10.16 * driver::MILLIMETER);
+  static constexpr driver::float_t DEVICE_WIDTH = static_cast<driver::float_t>(192.0 * driver::MILLIMETER);
+  static constexpr driver::float_t DEVICE_HEIGHT = static_cast<driver::float_t>(151.4 * driver::MILLIMETER);
 
   template <typename T>
   static constexpr auto is_missing_transducer(T x, T y) -> std::enable_if_t<std::is_integral_v<T>, bool> {
@@ -69,15 +69,15 @@ struct AUTD3 final : core::Device {
 
   [[nodiscard]] std::vector<core::Transducer> get_transducers(const size_t start_id) const override {
     std::vector<core::Transducer> transducers;
-    const Eigen::Transform<driver::autd3_float_t, 3, Eigen::Affine> transform_matrix =
-        Eigen::Translation<driver::autd3_float_t, 3>(_position) * _rotation;
+    const Eigen::Transform<driver::float_t, 3, Eigen::Affine> transform_matrix =
+        Eigen::Translation<driver::float_t, 3>(_position) * _rotation;
     transducers.reserve(NUM_TRANS_IN_UNIT);
     size_t i = start_id;
     for (size_t y = 0; y < NUM_TRANS_Y; y++)
       for (size_t x = 0; x < NUM_TRANS_X; x++) {
         if (is_missing_transducer(x, y)) continue;
         const auto local_pos =
-            core::Vector4(static_cast<driver::autd3_float_t>(x) * TRANS_SPACING, static_cast<driver::autd3_float_t>(y) * TRANS_SPACING, 0.0, 1.0);
+            core::Vector4(static_cast<driver::float_t>(x) * TRANS_SPACING, static_cast<driver::float_t>(y) * TRANS_SPACING, 0.0, 1.0);
         const core::Vector4 global_pos = transform_matrix * local_pos;
         transducers.emplace_back(i++, global_pos.head<3>(), _rotation);
       }
