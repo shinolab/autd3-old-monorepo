@@ -22,7 +22,7 @@ jobs:
       run: |
         mkdir -p build && cd build
         cmake .. -DBUILD_ALL=ON -DBUILD_TEST=ON
-        cmake --build . --config Release --parallel 8 --target test_autd3
+        cmake --build . --config Release --parallel $(nproc) --target test_autd3
         ./tests/test_autd3
     - name: test
       if: matrix.os == 'windows-latest'
