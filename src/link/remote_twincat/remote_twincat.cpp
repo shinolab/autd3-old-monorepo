@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/01/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -34,6 +34,8 @@
 #include <Windows.h>
 #endif
 
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/split.hpp>
 #include <string>
 #include <vector>
 
@@ -41,40 +43,6 @@
 #include "autd3/link/remote_twincat.hpp"
 
 namespace autd3::link {
-
-namespace {
-
-std::vector<std::string> split(const std::string& s, const char deliminator) {
-  std::vector<std::string> tokens;
-  std::string token;
-  for (const auto& ch : s) {
-    if (ch == deliminator) {
-      if (!token.empty()) tokens.emplace_back(token);
-      token.clear();
-    } else {
-      token += ch;
-    }
-  }
-  if (!token.empty()) tokens.emplace_back(token);
-  return tokens;
-}
-
-bool startup() {
-#ifdef _WIN32
-  WSADATA wsa_data;
-  if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) throw std::runtime_error("WSAStartup failed: " + std::to_string(WSAGetLastError()));
-#endif
-  return true;
-}
-
-bool cleanup() {
-#ifdef _WIN32
-  if (WSACleanup() != 0) throw std::runtime_error("WSACleanup failed: " + std::to_string(WSAGetLastError()));
-#endif
-  return true;
-}
-
-}  // namespace
 
 constexpr uint32_t INDEX_GROUP = 0x3040030;
 constexpr uint32_t INDEX_OFFSET_BASE = 0x81000000;
@@ -92,7 +60,8 @@ class RemoteTwinCATImpl final : public core::Link {
   RemoteTwinCATImpl& operator=(RemoteTwinCATImpl&& obj) = delete;
 
   bool open(const core::Geometry&) override {
-    const auto octets = split(_server_ams_net_id, '.');
+    std::vector<std::string> octets;
+    split(octets, _server_ams_net_id, boost::is_any_of("."));
     if (octets.size() != 6) throw std::runtime_error("Ams net id must have 6 octets");
 
     if (_server_ip.empty()) {
@@ -101,7 +70,8 @@ class RemoteTwinCATImpl final : public core::Link {
     }
 
     if (!_client_ams_net_id.empty()) {
-      const auto local_octets = split(_client_ams_net_id, '.');
+      std::vector<std::string> local_octets;
+      split(local_octets, _client_ams_net_id, boost::is_any_of("."));
       if (local_octets.size() != 6) throw std::runtime_error("Ams net id must have 6 octets");
       bhf::ads::SetLocalAddress({static_cast<uint8_t>(std::stoi(local_octets[0])), static_cast<uint8_t>(std::stoi(local_octets[1])),
                                  static_cast<uint8_t>(std::stoi(local_octets[2])), static_cast<uint8_t>(std::stoi(local_octets[3])),
@@ -112,18 +82,12 @@ class RemoteTwinCATImpl final : public core::Link {
                      static_cast<uint8_t>(std::stoi(octets[2])), static_cast<uint8_t>(std::stoi(octets[3])),
                      static_cast<uint8_t>(std::stoi(octets[4])), static_cast<uint8_t>(std::stoi(octets[5]))};
 
-    startup();
-    if (const auto res = AdsAddRoute(this->_net_id, _server_ip.c_str()); res != 0) {
-      cleanup();
+    if (const auto res = AdsAddRoute(this->_net_id, _server_ip.c_str()); res != 0)
       throw std::runtime_error("Could not connect to remote: " + std::to_string(res));
-    }
 
     this->_port = AdsPortOpenEx();
 
-    if (this->_port == 0) {
-      cleanup();
-      throw std::runtime_error("Failed to open a new ADS port");
-    }
+    if (this->_port == 0) throw std::runtime_error("Failed to open a new ADS port");
 
     return true;
   }
@@ -132,7 +96,7 @@ class RemoteTwinCATImpl final : public core::Link {
     if (this->_port == 0) return true;
     if (AdsPortCloseEx(this->_port) != 0) throw std::runtime_error("Failed to close");
     this->_port = 0;
-    return cleanup();
+    return true;
   }
 
   bool send(const driver::TxDatagram& tx) override {

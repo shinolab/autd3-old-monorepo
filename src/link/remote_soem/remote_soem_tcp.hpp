@@ -3,7 +3,7 @@
 // Created Date: 02/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/04/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,37 +11,48 @@
 
 #pragma once
 
-#include <iostream>
+#ifdef WIN32
+#include <SDKDDKVer.h>
+#endif
+
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4312)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic push
+#endif
+#ifdef __clang__
+#pragma clang diagnostic push
+#endif
+#include <boost/asio.hpp>
+#include <boost/format.hpp>
+#if _MSC_VER
+#pragma warning(pop)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic pop
+#endif
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
 #include <memory>
 #include <string>
 #include <thread>
 #include <utility>
 #include <vector>
 
-#if WIN32
-#include <WS2tcpip.h>
-#else
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
-#endif
-
-#include <autd3/core/link.hpp>
-#include <autd3/driver/cpu/ec_config.hpp>
+#include "../../spdlog.hpp"
+#include "autd3/core/link.hpp"
+#include "autd3/driver/cpu/ec_config.hpp"
 
 namespace autd3::link {
-
-#if WIN32
-using socklen_t = int;
-#endif
 
 class RemoteSOEMTcp final : public core::Link {
  public:
   RemoteSOEMTcp(const core::Duration timeout, std::string ip, const uint16_t port)
-      : Link(timeout), _is_open(false), _ip(std::move(ip)), _port(port) {}
+      : Link(timeout), _is_open(false), _ip(std::move(ip)), _port(port), _socket(_io_service) {}
   ~RemoteSOEMTcp() override = default;
   RemoteSOEMTcp(const RemoteSOEMTcp& v) noexcept = delete;
   RemoteSOEMTcp& operator=(const RemoteSOEMTcp& obj) = delete;
@@ -49,34 +60,9 @@ class RemoteSOEMTcp final : public core::Link {
   RemoteSOEMTcp& operator=(RemoteSOEMTcp&& obj) = delete;
 
   bool open(const core::Geometry& geometry) override {
-#if WIN32
-#pragma warning(push)
-#pragma warning(disable : 6031)
-    WSAData wsa_data{};
-    if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) throw std::runtime_error("WSAStartup failed: " + std::to_string(WSAGetLastError()));
-
-#pragma warning(pop)
-#endif
-
-    _socket = socket(AF_INET, SOCK_STREAM, 0);
-#if WIN32
-    if (_socket == INVALID_SOCKET)
-#else
-    if (_socket < 0)
-#endif
-    {
-      throw std::runtime_error("Cannot connect to simulator");
-    }
-
-    _addr.sin_family = AF_INET;
-    _addr.sin_port = htons(_port);
-#if WIN32
-    inet_pton(AF_INET, _ip.c_str(), &_addr.sin_addr.S_un.S_addr);
-#else
-    _addr.sin_addr.s_addr = inet_addr(_ip.c_str());
-#endif
-
-    if (connect(_socket, reinterpret_cast<sockaddr*>(&_addr), sizeof _addr)) throw std::runtime_error("Failed to connect server");
+    boost::system::error_code error;
+    _socket.connect(boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(_ip), _port), error);
+    if (error) throw std::runtime_error((boost::format("Cannot connect to SOEMServer: %1%") % error.message()).str());
 
     const auto size = geometry.num_devices() * driver::EC_INPUT_FRAME_SIZE;
 
@@ -85,17 +71,21 @@ class RemoteSOEMTcp final : public core::Link {
 
     _is_open = true;
     _th = std::thread([this, size] {
-      std::vector<char> buffer(size);
+      boost::asio::streambuf receive_buffer;
       while (_is_open) {
-        const auto len = recv(_socket, buffer.data(), static_cast<int>(size), 0);
-        if (len <= 0) continue;
-        const auto ulen = static_cast<size_t>(len);
-        if (ulen % size != 0) {
-          std::cerr << "Unknown data size: " << ulen << std::endl;
+        boost::system::error_code e;
+        const auto len = read(_socket, receive_buffer, boost::asio::transfer_all(), e);
+        if (e) {
+          spdlog::warn("Receive failed: {}", e.message());
           continue;
         }
-        const auto n = ulen / size;
-        for (size_t i = 0; i < n; i++) std::memcpy(_ptr.get(), &buffer[i * size], ulen);
+        const auto* buffer = boost::asio::buffer_cast<const uint8_t*>(receive_buffer.data());
+        if (len % size != 0) {
+          spdlog::warn("Received data size unknown: {}", len);
+          continue;
+        }
+        const auto n = len / size;
+        for (size_t i = 0; i < n; i++) std::memcpy(_ptr.get(), &buffer[i * size], len);
       }
     });
 
@@ -111,19 +101,20 @@ class RemoteSOEMTcp final : public core::Link {
     tx.header().msg_id = driver::MSG_SERVER_CLOSE;
     send(tx);
 
-#if WIN32
-    closesocket(_socket);
-    if (WSACleanup() != 0) throw std::runtime_error("WSACleanup failed: " + std::to_string(WSAGetLastError()));
-#else
-    ::close(_socket);
-#endif
+    _socket.close();
 
     return true;
   }
 
   bool send(const driver::TxDatagram& tx) override {
-    return ::send(_socket, reinterpret_cast<const char*>(tx.data().data()), static_cast<int>(tx.transmitting_size_in_bytes()), 0) ==
-           static_cast<int>(tx.transmitting_size_in_bytes());
+    boost::system::error_code error;
+    const auto tx_size = write(_socket, boost::asio::buffer(tx.data()), error);
+    if (!error && tx_size == tx.transmitting_size_in_bytes()) return true;
+    if (error)
+      spdlog::warn("Send failed: {}", error.message());
+    else
+      spdlog::warn("Send failed: Tx data size is {}, but {} was sent.", tx.transmitting_size_in_bytes(), tx_size);
+    return false;
   }
 
   bool receive(driver::RxDatagram& rx) override {
@@ -143,12 +134,8 @@ class RemoteSOEMTcp final : public core::Link {
   std::unique_ptr<uint8_t[]> _ptr;
   std::thread _th;
 
-#if WIN32
-  SOCKET _socket{};
-#else
-  int _socket{0};
-#endif
-  sockaddr_in _addr{};
+  boost::asio::io_service _io_service;
+  boost::asio::ip::tcp::socket _socket;
 };
 
 }  // namespace autd3::link
