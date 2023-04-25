@@ -8,7 +8,8 @@ autd3ライブラリ自体はMITライセンスである.
 
 - このプログラムは以下の二つのライブラリに依存している. 
   - [Eigen3](https://gitlab.com/libeigen/eigen) 
-  - [spdlog](https://github.com/gabime/spdlog) 
+  - [spdlog](https://github.com/gabime/spdlog)
+  - [Boost](https://www.boost.org/)
 
   - また,
     - SOEM link は[SOEM](https://github.com/OpenEtherCATsociety/SOEM)を使用している

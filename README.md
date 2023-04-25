@@ -121,4 +121,4 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 
 # Author
 
-Shun Suzuki, 2022
+Shun Suzuki, 2022-2023

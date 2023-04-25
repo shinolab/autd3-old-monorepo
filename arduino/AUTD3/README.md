@@ -21,4 +21,4 @@ This is AUTD3 library for Arduino.
 
 # Author
 
-Shun Suzuki, 2022
+Shun Suzuki, 2022-2023

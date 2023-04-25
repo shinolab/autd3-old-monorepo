@@ -16,4 +16,4 @@ Then, open in [localhost:3300](http://localhost:3300/)
 
 # Author
 
-Shun Suzuki, 2022
+Shun Suzuki, 2022-2023
