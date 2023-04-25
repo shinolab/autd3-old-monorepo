@@ -12,8 +12,6 @@ add_library(autd3_link_remote_soem
 )
 add_library(autd3::link::remote_soem ALIAS autd3_link_remote_soem)
 target_link_libraries(autd3_link_remote_soem PRIVATE autd3::common)
-target_include_directories(autd3_link_remote_soem PRIVATE ${PROJECT_SOURCE_DIR}/src/smem)
-target_compile_definitions(autd3_link_remote_soem PRIVATE SMEM_HEADER_ONLY)
 
 if(WIN32)
   target_link_libraries(autd3_link_remote_soem INTERFACE ws2_32)

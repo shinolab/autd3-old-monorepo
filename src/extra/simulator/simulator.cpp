@@ -12,6 +12,8 @@
 #include "autd3/extra/simulator.hpp"
 
 #include <atomic>
+#include <boost/interprocess/managed_shared_memory.hpp>
+#include <boost/interprocess/sync/interprocess_mutex.hpp>
 #include <mutex>
 #include <numeric>
 #include <thread>
@@ -21,7 +23,6 @@
 #include "autd3/extra/cpu_emulator.hpp"
 #include "field_compute.hpp"
 #include "slice_viewer.hpp"
-#include "smem.hpp"
 #include "sound_sources.hpp"
 #include "trans_viewer.hpp"
 #include "vulkan_context.hpp"
@@ -53,6 +54,10 @@
 #endif
 
 namespace autd3::extra {
+
+static constexpr std::string_view SHMEM_NAME{"autd3_simulator_shmem"};
+static constexpr std::string_view SHMEM_MTX_NAME{"autd3_simulator_shmem_mtx"};
+static constexpr std::string_view SHMEM_DATA_NAME{"autd3_simulator_shmem_ptr"};
 
 void Simulator::run() {
   std::vector<simulator::SoundSources> sources;
@@ -95,13 +100,14 @@ void Simulator::run() {
 
   imgui->init(static_cast<uint32_t>(renderer->frames_in_flight()), renderer->render_pass(), _settings);
 
-  auto smem = smem::SMem();
-
   spdlog::info("Initializing shared memory...");
   const auto size = sizeof(uint8_t) + sizeof(uint32_t) + sizeof(uint32_t) * _settings.max_dev_num + _settings.max_trans_num * sizeof(float) * 7;
-  smem.create("autd3_simulator_smem", size);
-  volatile auto* ptr = static_cast<uint8_t*>(smem.map());
-  for (size_t i = 0; i < size; i++) ptr[i] = 0;
+
+  boost::interprocess::managed_shared_memory segment(boost::interprocess::create_only, std::string(SHMEM_NAME).c_str(),
+                                                     size + sizeof(boost::interprocess::interprocess_mutex) + 1024);
+  auto* mtx = segment.construct<boost::interprocess::interprocess_mutex>(std::string(SHMEM_MTX_NAME).c_str())();
+  volatile auto* ptr = segment.construct<uint8_t>(std::string(SHMEM_DATA_NAME).c_str())[size](0x00);
+
   spdlog::info("Initializing shared memory...done");
 
   std::atomic initialized = false;
@@ -109,7 +115,7 @@ void Simulator::run() {
   std::atomic do_close = false;
   std::atomic data_updated = false;
   std::atomic run_recv = true;
-  _th = std::thread([this, ptr, &cpus, &sources, &initialized, &run_recv, &data_updated, &do_init, &do_close, &imgui] {
+  _th = std::thread([this, ptr, mtx, &cpus, &sources, &initialized, &run_recv, &data_updated, &do_init, &do_close, &imgui] {
     uint8_t last_msg_id = 0;
     while (run_recv.load()) {
       auto* cursor = const_cast<uint8_t*>(ptr);
@@ -120,49 +126,53 @@ void Simulator::run() {
           continue;
         }
 
-        spdlog::info("Client connected");
-        cursor++;
+        {
+          std::unique_lock lk(*mtx);
 
-        const auto dev_num = *reinterpret_cast<uint32_t*>(cursor);
-        cursor += sizeof(uint32_t);
+          spdlog::info("Client connected");
+          cursor++;
 
-        spdlog::info("Open simulator with {} devices", dev_num);
-
-        cpus.clear();
-        cpus.reserve(dev_num);
-
-        sources.clear();
-
-        for (uint32_t dev = 0; dev < dev_num; dev++) {
-          const auto tr_num = *reinterpret_cast<uint32_t*>(cursor);
+          const auto dev_num = *reinterpret_cast<uint32_t*>(cursor);
           cursor += sizeof(uint32_t);
 
-          spdlog::info("Add {}-th device with {} transducers", dev, tr_num);
+          spdlog::info("Open simulator with {} devices", dev_num);
 
-          CPU cpu(dev, tr_num);
-          cpu.init();
-          std::vector<driver::Vector3> local_trans_pos;
-          local_trans_pos.reserve(tr_num);
-          auto* p = reinterpret_cast<float*>(cursor);
-          const driver::Vector3 origin = Eigen::Vector3<float>(p[0], p[1], p[2]).cast<driver::float_t>();
-          for (uint32_t tr = 0; tr < tr_num; tr++) {
-            const driver::Vector3 pos = Eigen::Vector3<float>(p[0], p[1], p[2]).cast<driver::float_t>() - origin;
-            local_trans_pos.emplace_back(pos);
-            p += 7;
-          }
-          cpu.configure_local_trans_pos(local_trans_pos);
-          cpus.emplace_back(cpu);
+          cpus.clear();
+          cpus.reserve(dev_num);
 
-          simulator::SoundSources s;
-          p = reinterpret_cast<float*>(cursor);
-          for (uint32_t tr = 0; tr < tr_num; tr++) {
-            const auto pos = imgui->to_gl_pos(glm::vec3(p[0], p[1], p[2]));
-            const auto rot = imgui->to_gl_rot(glm::quat(p[3], p[4], p[5], p[6]));
-            s.add(pos, rot, simulator::Drive(1.0f, 0.0f, 1.0f, 40e3, 340e3f * simulator::scale), 1.0f);
-            p += 7;
-            cursor += sizeof(float) * 7;
+          sources.clear();
+
+          for (uint32_t dev = 0; dev < dev_num; dev++) {
+            const auto tr_num = *reinterpret_cast<uint32_t*>(cursor);
+            cursor += sizeof(uint32_t);
+
+            spdlog::info("Add {}-th device with {} transducers", dev, tr_num);
+
+            CPU cpu(dev, tr_num);
+            cpu.init();
+            std::vector<driver::Vector3> local_trans_pos;
+            local_trans_pos.reserve(tr_num);
+            auto* p = reinterpret_cast<float*>(cursor);
+            const driver::Vector3 origin = Eigen::Vector3<float>(p[0], p[1], p[2]).cast<driver::float_t>();
+            for (uint32_t tr = 0; tr < tr_num; tr++) {
+              const driver::Vector3 pos = Eigen::Vector3<float>(p[0], p[1], p[2]).cast<driver::float_t>() - origin;
+              local_trans_pos.emplace_back(pos);
+              p += 7;
+            }
+            cpu.configure_local_trans_pos(local_trans_pos);
+            cpus.emplace_back(cpu);
+
+            simulator::SoundSources s;
+            p = reinterpret_cast<float*>(cursor);
+            for (uint32_t tr = 0; tr < tr_num; tr++) {
+              const auto pos = imgui->to_gl_pos(glm::vec3(p[0], p[1], p[2]));
+              const auto rot = imgui->to_gl_rot(glm::quat(p[3], p[4], p[5], p[6]));
+              s.add(pos, rot, simulator::Drive(1.0f, 0.0f, 1.0f, 40e3, 340e3f * simulator::scale), 1.0f);
+              p += 7;
+              cursor += sizeof(float) * 7;
+            }
+            sources.emplace_back(std::move(s));
           }
-          sources.emplace_back(std::move(s));
         }
 
         do_init.store(true);
@@ -176,17 +186,20 @@ void Simulator::run() {
           do_close.store(true);
           spdlog::info("Waiting for client connection...");
         } else {
-          size_t c = 0;
-          for (size_t i = 0; i < cpus.size(); i++) {
-            const auto* body = reinterpret_cast<driver::Body*>(const_cast<uint8_t*>(ptr) + sizeof(driver::GlobalHeader) + c);
-            cpus[i].send(header, body);
-            c += sources[i].size() * sizeof(uint16_t);
-          }
-          for (size_t i = 0; i < cpus.size(); i++) {
-            auto* input =
-                reinterpret_cast<driver::RxMessage*>(const_cast<uint8_t*>(ptr + sizeof(driver::GlobalHeader) + c + i * driver::EC_INPUT_FRAME_SIZE));
-            input->msg_id = cpus[i].msg_id();
-            input->ack = cpus[i].ack();
+          {
+            std::unique_lock lk(*mtx);
+            size_t c = 0;
+            for (size_t i = 0; i < cpus.size(); i++) {
+              const auto* body = reinterpret_cast<driver::Body*>(const_cast<uint8_t*>(ptr) + sizeof(driver::GlobalHeader) + c);
+              cpus[i].send(header, body);
+              c += sources[i].size() * sizeof(uint16_t);
+            }
+            for (size_t i = 0; i < cpus.size(); i++) {
+              auto* input = reinterpret_cast<driver::RxMessage*>(
+                  const_cast<uint8_t*>(ptr + sizeof(driver::GlobalHeader) + c + i * driver::EC_INPUT_FRAME_SIZE));
+              input->msg_id = cpus[i].msg_id();
+              input->ack = cpus[i].ack();
+            }
           }
           if (last_msg_id != header->msg_id) {
             last_msg_id = header->msg_id;
