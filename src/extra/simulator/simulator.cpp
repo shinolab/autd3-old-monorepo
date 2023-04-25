@@ -11,9 +11,29 @@
 
 #include "autd3/extra/simulator.hpp"
 
-#include <atomic>
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 26439 26451 26495)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic push
+#endif
+#ifdef __clang__
+#pragma clang diagnostic push
+#endif
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
+#if _MSC_VER
+#pragma warning(pop)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic pop
+#endif
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+#include <atomic>
 #include <mutex>
 #include <numeric>
 #include <thread>
@@ -103,6 +123,7 @@ void Simulator::run() {
   spdlog::info("Initializing shared memory...");
   const auto size = sizeof(uint8_t) + sizeof(uint32_t) + sizeof(uint32_t) * _settings.max_dev_num + _settings.max_trans_num * sizeof(float) * 7;
 
+  boost::interprocess::shared_memory_object::remove(std::string(SHMEM_NAME).c_str());
   boost::interprocess::managed_shared_memory segment(boost::interprocess::create_only, std::string(SHMEM_NAME).c_str(),
                                                      size + sizeof(boost::interprocess::interprocess_mutex) + 1024);
   auto* mtx = segment.construct<boost::interprocess::interprocess_mutex>(std::string(SHMEM_MTX_NAME).c_str())();
@@ -341,5 +362,7 @@ void Simulator::run() {
   const auto [window_width, window_height] = window->get_window_size();
   _settings.window_width = window_width;
   _settings.window_height = window_height;
+
+  boost::interprocess::shared_memory_object::remove(std::string(SHMEM_NAME).c_str());
 }
 }  // namespace autd3::extra

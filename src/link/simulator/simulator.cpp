@@ -11,8 +11,28 @@
 
 #include "autd3/link/simulator.hpp"
 
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 26439 26451 26495)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic push
+#endif
+#ifdef __clang__
+#pragma clang diagnostic push
+#endif
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
+#if _MSC_VER
+#pragma warning(pop)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic pop
+#endif
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
 #include <mutex>
 #include <thread>
 
@@ -39,12 +59,6 @@ class SimulatorImpl final : public core::Link {
     if (is_open()) return false;
 
     _input_offset = driver::HEADER_SIZE + geometry.num_transducers() * sizeof(uint16_t);
-    const auto datagram_size =
-        driver::HEADER_SIZE + geometry.num_transducers() * sizeof(uint16_t) + geometry.num_devices() * driver::EC_INPUT_FRAME_SIZE;
-    const auto geometry_size =
-        sizeof(uint8_t) + sizeof(uint32_t) + sizeof(uint32_t) * geometry.num_devices() + geometry.num_transducers() * sizeof(float) * 7;
-
-    const auto size = (std::max)(datagram_size, geometry_size);
 
     _segment = boost::interprocess::managed_shared_memory(boost::interprocess::open_only, std::string(SHMEM_NAME).c_str());
     _ptr = _segment.find<uint8_t>(std::string(SHMEM_DATA_NAME).c_str()).first;
