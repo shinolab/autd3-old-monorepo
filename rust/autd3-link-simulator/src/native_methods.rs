@@ -17,4 +17,4 @@
 #![allow(dead_code)]
 #![allow(clippy::upper_case_acronyms)]
 #![allow(deref_nullptr)]
-include!(concat!(env!("OUT_DIR"), "/soem_bindings.rs"));
+include!(concat!(env!("OUT_DIR"), "/boost_bindings.rs"));
