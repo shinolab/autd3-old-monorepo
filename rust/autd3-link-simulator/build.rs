@@ -27,7 +27,7 @@ fn main() {
         build.flag("-std=c++17");
     }
     build
-        .include(format!("{}", boost_dir))
+        .include(boost_dir)
         .file("boost_wrap.cpp")
         .opt_level(2)
         .compile("boost");
