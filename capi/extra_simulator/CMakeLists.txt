@@ -5,10 +5,11 @@ if(NOT BUILD_SIMULATOR)
 endif()
 
 include(${PROJECT_SOURCE_DIR}/cmakes/json.cmake)
+include(${PROJECT_SOURCE_DIR}/cmakes/tinycolormap.cmake)
 
 add_library(autd3capi-extra-simulator SHARED c_api.cpp)
  
-target_link_libraries(autd3capi-extra-simulator PRIVATE autd3::extra::simulator autd3::common nlohmann_json::nlohmann_json)
+target_link_libraries(autd3capi-extra-simulator PRIVATE autd3::extra::simulator autd3::common nlohmann_json::nlohmann_json tinycolormap)
 
 set_target_properties(autd3capi-extra-simulator
   PROPERTIES
