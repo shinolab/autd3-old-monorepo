@@ -7,8 +7,8 @@ endif()
 project(autd3)
 
 set(VERSION_MAJOR 8 CACHE STRING "Project major version number.")
-set(VERSION_MINOR 4 CACHE STRING "Project minor version number.")
-set(VERSION_PATCH 1 CACHE STRING "Project patch version number.")
+set(VERSION_MINOR 5 CACHE STRING "Project minor version number.")
+set(VERSION_PATCH 0 CACHE STRING "Project patch version number.")
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
 set(CMAKE_CXX_STANDARD 17)
