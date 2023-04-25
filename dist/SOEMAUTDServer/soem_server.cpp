@@ -3,7 +3,7 @@
 // Created Date: 26/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 23/04/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -151,24 +151,28 @@ int main(const int argc, char* argv[]) try {
 
   bool run = true;
   auto th = std::thread([&soem_handler, &run, dev, &interf] {
-    std::vector<size_t> dev_map;
-    dev_map.resize(dev, autd3::AUTD3::NUM_TRANS_IN_UNIT);
-    autd3::driver::TxDatagram tx(dev_map);
-    autd3::driver::RxDatagram rx(dev);
-    interf->connect();
-    while (run) {
-      if (interf->tx(tx)) {
-        soem_handler.send(tx);
+    try {
+      std::vector<size_t> dev_map;
+      dev_map.resize(dev, autd3::AUTD3::NUM_TRANS_IN_UNIT);
+      autd3::driver::TxDatagram tx(dev_map);
+      autd3::driver::RxDatagram rx(dev);
+      interf->connect();
+      while (run) {
+        if (interf->tx(tx)) {
+          soem_handler.send(tx);
+        }
+        soem_handler.receive(rx);
+        interf->rx(rx);
+        if (tx.header().msg_id == autd3::driver::MSG_SERVER_CLOSE) {
+          spdlog::info("Disconnect from client");
+          interf->close();
+          tx.clear();
+          rx.clear();
+          interf->connect();
+        }
       }
-      soem_handler.receive(rx);
-      interf->rx(rx);
-      if (tx.header().msg_id == autd3::driver::MSG_SERVER_CLOSE) {
-        spdlog::info("Disconnect from client");
-        interf->close();
-        tx.clear();
-        rx.clear();
-        interf->connect();
-      }
+    } catch (std::exception& ex) {
+      spdlog::error("{}", ex.what());
     }
   });
 
