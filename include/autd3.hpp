@@ -67,7 +67,7 @@ namespace extra {}
 
 constexpr driver::float_t pi = driver::pi;
 
-static inline std::string version = "8.4.1";
+static inline std::string version = "8.5.0";
 
 using core::Duration;
 using core::Milliseconds;
