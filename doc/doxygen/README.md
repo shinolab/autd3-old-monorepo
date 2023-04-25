@@ -6,4 +6,4 @@ For more information and tutorials, please refer to [book](https://shinolab.gith
 
 # Author
 
-Shun Suzuki, 2022
+Shun Suzuki, 2022-2023

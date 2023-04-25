@@ -23,4 +23,4 @@ See [examples](./autd3-examples)
 
 # Author
 
-Shun Suzuki, 2022
+Shun Suzuki, 2022-2023
