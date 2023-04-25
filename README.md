@@ -48,8 +48,7 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 
 ## Build
 
-* Pre-built binaries and header files are on the [GitHub Release page](https://github.com/shinolab/autd3/releases). 
-* Or, if you want to build from the source, install CMake version 3.21 or higher and follow the instructions below.
+* Install CMake version 3.21 or higher and follow the instructions below.
     ```
     git clone https://github.com/shinolab/autd3.git
     cd autd3
