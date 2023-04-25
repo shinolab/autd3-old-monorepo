@@ -12,4 +12,4 @@ See [LICENSE](./LICENSE).
 
 # Author
 
-Shun Suzuki, 2022
+Shun Suzuki, 2022-2023

@@ -8,7 +8,8 @@ See [LICENSE](https://github.com/shinolab/autd3/blob/master/LICENSE) for details
 
 - This program uses 
   - Eigen3 (https://gitlab.com/libeigen/eigen) 
-  - spdlog (https://github.com/gabime/spdlog) 
+  - spdlog (https://github.com/gabime/spdlog)
+  - Boost (https://www.boost.org/)
 
   - Also,
     - SOEM link uses SOEM (https://github.com/OpenEtherCATsociety/SOEM)
