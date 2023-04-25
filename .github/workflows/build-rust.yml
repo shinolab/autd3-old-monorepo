@@ -30,7 +30,7 @@ jobs:
         cd rust
         cargo build --workspace --verbose --exclude autd3-link-soem
       env:
-          BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
+          BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}/include
     - name: Build on ${{ matrix.os }}
       if: matrix.os != 'windows-latest'
       run: |
@@ -44,7 +44,7 @@ jobs:
         cd rust
         cargo test --workspace --exclude autd3-link-soem
       env:
-          BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
+          BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}/include
     - name: Run tests on ${{ matrix.os }}
       if: matrix.os != 'windows-latest'
       run: |
