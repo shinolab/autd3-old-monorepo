@@ -11,8 +11,28 @@
 
 #pragma once
 
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 26439 26451 26495)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic push
+#endif
+#ifdef __clang__
+#pragma clang diagnostic push
+#endif
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
+#if _MSC_VER
+#pragma warning(pop)
+#endif
+#if defined(__GNUC__) && !defined(__llvm__)
+#pragma GCC diagnostic pop
+#endif
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
 #include <mutex>
 #include <string>
 
