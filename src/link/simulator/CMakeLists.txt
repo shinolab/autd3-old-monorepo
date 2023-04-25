@@ -8,8 +8,6 @@ add_library(autd3_link_simulator simulator.cpp)
 add_library(autd3::link::simulator ALIAS autd3_link_simulator)
 
 target_link_libraries(autd3_link_simulator PRIVATE autd3::common)
-target_include_directories(autd3_link_simulator PRIVATE ${PROJECT_SOURCE_DIR}/src/smem)
-target_compile_definitions(autd3_link_simulator PRIVATE SMEM_HEADER_ONLY)
 
 set_target_properties(autd3_link_simulator
   PROPERTIES
