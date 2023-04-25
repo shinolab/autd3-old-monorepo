@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/04/2023
+ * Last Modified: 25/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,18 +14,16 @@
 use autd3_core::{
     geometry::{Geometry, Transducer},
     link::Link,
-    CPUControlFlags, FPGAControlFlags, RxDatagram, RxMessage, TxDatagram, EC_INPUT_FRAME_SIZE,
-    HEADER_SIZE, MSG_SIMULATOR_CLOSE, MSG_SIMULATOR_INIT,
+    CPUControlFlags, FPGAControlFlags, RxDatagram, RxMessage, TxDatagram, HEADER_SIZE,
+    MSG_SIMULATOR_CLOSE, MSG_SIMULATOR_INIT,
 };
 
-use smem::*;
-
 use crate::error::SimulatorLinkError;
+use crate::native_methods::*;
 
 pub struct Simulator {
-    smem: SMem,
     input_offset: usize,
-    ptr: *mut u8,
+    is_open: bool,
     timeout: std::time::Duration,
 }
 
@@ -36,9 +34,8 @@ impl Simulator {
 
     pub fn with_timeout(timeout: std::time::Duration) -> Self {
         Self {
-            smem: SMem::new(),
             input_offset: 0,
-            ptr: std::ptr::null_mut(),
+            is_open: false,
             timeout,
         }
     }
@@ -53,19 +50,17 @@ impl Link for Simulator {
         }
 
         self.input_offset = HEADER_SIZE + geometry.num_transducers() * std::mem::size_of::<u16>();
-        let datagram_size = HEADER_SIZE
-            + geometry.num_transducers() * std::mem::size_of::<u16>()
-            + geometry.num_devices() * EC_INPUT_FRAME_SIZE;
+
         let geometry_size = std::mem::size_of::<u8>()
             + std::mem::size_of::<u32>()
             + std::mem::size_of::<u32>() * geometry.num_devices()
             + geometry.num_transducers() * std::mem::size_of::<f32>() * 7;
-        let size = datagram_size.max(geometry_size);
-
-        self.smem.create("autd3_simulator_smem", size)?;
-        self.ptr = self.smem.map();
 
         unsafe {
+            if !shmem_create() {
+                return Err(SimulatorLinkError::SimulatorOpenFailed.into());
+            }
+
             let mut geometry_buf: Vec<u8> = vec![0x00; geometry_size];
             let mut cursor: *mut u8 = geometry_buf.as_mut_ptr();
 
@@ -106,20 +101,21 @@ impl Link for Simulator {
                 });
                 i = c;
             });
-            std::ptr::copy_nonoverlapping(geometry_buf.as_ptr(), self.ptr, geometry_size);
+            shmem_copy_to(geometry_buf.as_ptr(), geometry_size);
         }
 
         unsafe {
             for _ in 0..20 {
                 std::thread::sleep(std::time::Duration::from_millis(100));
-                if std::ptr::read_volatile(self.ptr) != MSG_SIMULATOR_INIT {
+                let mut msg: u8 = 0;
+                shmem_copy_from(&mut msg as *mut u8, 0, 1);
+                if msg != MSG_SIMULATOR_INIT {
+                    self.is_open = true;
                     return Ok(());
                 }
             }
         }
 
-        self.smem.unmap();
-        self.ptr = std::ptr::null_mut();
         Err(SimulatorLinkError::SimulatorOpenFailed.into())
     }
 
@@ -138,9 +134,6 @@ impl Link for Simulator {
 
         self.send(&geometry_buf)?;
 
-        self.smem.unmap();
-        self.ptr = std::ptr::null_mut();
-
         Ok(())
     }
 
@@ -150,7 +143,7 @@ impl Link for Simulator {
         }
 
         unsafe {
-            std::ptr::copy_nonoverlapping(tx.data().as_ptr(), self.ptr, tx.transmitting_size());
+            shmem_copy_to(tx.data().as_ptr(), tx.transmitting_size());
         }
 
         Ok(true)
@@ -162,10 +155,10 @@ impl Link for Simulator {
         }
 
         unsafe {
-            std::ptr::copy_nonoverlapping(
-                self.ptr.add(self.input_offset) as *const RxMessage,
-                rx.messages_mut().as_mut_ptr(),
-                rx.messages().len(),
+            shmem_copy_from(
+                rx.messages_mut().as_mut_ptr() as *mut u8,
+                self.input_offset,
+                rx.messages().len() * std::mem::size_of::<RxMessage>(),
             );
         }
 
@@ -173,7 +166,7 @@ impl Link for Simulator {
     }
 
     fn is_open(&self) -> bool {
-        !self.ptr.is_null()
+        self.is_open
     }
 
     fn timeout(&self) -> std::time::Duration {
