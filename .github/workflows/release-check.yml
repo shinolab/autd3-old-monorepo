@@ -35,8 +35,6 @@ jobs:
           cd build
           cmake --build . --parallel 8 --config Release
           mkdir publish
-          mkdir publish/lib
-          mkdir publish/lib/wpcap
           mkdir publish/bin
           mkdir publish/simulator
           mkdir publish/gui-controller
@@ -53,8 +51,6 @@ jobs:
           dotnet publish -c:Release -r win-x64 --self-contained false -o bin
           copy AUTD3-GUI-Controller/Strings -Recurse bin/
           cd ../..
-          copy build/lib/Release/*.lib build/publish/lib
-          copy 3rdparty/SOEM/oshw/win32/wpcap/Lib/x64/*.lib build/publish/lib/wpcap
           copy build/bin/Release/*.dll build/publish/bin
           copy dist/GUI/bin -Recurse publish/gui-controller/bin
           copy dist/GUI/AUTD3-GUI-Controller.exe publish/gui-controller
@@ -63,24 +59,20 @@ jobs:
           copy dist/SOEMAUTDServer/README.md build/publish/SOEMAUTDServer
           copy dist/simulator/settings.json build/publish/simulator
           Remove-Item -Recurse -Force dist/TwinCATAUTDServer/src
-          Compress-Archive -Path LICENSE, dist/TwinCATAUTDServer, dist/firmware, include, build/publish/lib, build/publish/bin, build/publish/simulator, build/publish/SOEMAUTDServer, publish/gui-controller -DestinationPath assets_x64.zip
+          Compress-Archive -Path LICENSE, dist/TwinCATAUTDServer, dist/firmware, build/publish/bin, build/publish/simulator, build/publish/SOEMAUTDServer, publish/gui-controller -DestinationPath assets_x64.zip
       - name: Build project arm
         run: |
           cmake -G "Visual Studio 17 2022" -A ARM64 -B "build_arm" -DBUILD_TARGET=ARM -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=OFF -DEXPORT_AUTD_SIMULATOR=OFF -DDISABLE_EXAMPLES=ON -DEXPORT_SOEM_AUTD_SERVER=ON
           cd build_arm
           cmake --build . --parallel 8 --config Release
           mkdir publish
-          mkdir publish/lib
-          mkdir publish/lib/wpcap
           mkdir publish/bin
           mkdir publish/SOEMAUTDServer
           cd ..
-          copy build_arm/lib/Release/*.lib build_arm/publish/lib
-          copy src/link/soem/Lib/ARM64/*.lib build_arm/publish/lib/wpcap
           copy build_arm/bin/Release/*.dll build_arm/publish/bin
           copy build_arm/dist/SOEMAUTDServer/Release/*.exe build_arm/publish/SOEMAUTDServer
           copy dist/SOEMAUTDServer/README.md build_arm/publish/SOEMAUTDServer
-          Compress-Archive -Path LICENSE, include, build_arm/publish/lib, build_arm/publish/bin, build_arm/publish/SOEMAUTDServer -DestinationPath assets_arm.zip
+          Compress-Archive -Path LICENSE, build_arm/publish/bin, build_arm/publish/SOEMAUTDServer -DestinationPath assets_arm.zip
     
       - name: Build project x64 for Unity
         run: |
@@ -144,12 +136,10 @@ jobs:
           cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DDISABLE_EXAMPLES=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON
           cmake --build . --parallel $(nproc) --config Release
           cd ..
-          mkdir -p lib
           mkdir -p bin
-          cp -f build/lib/*.a lib
           cp -f build/bin/Release/*.so bin
-          tar -zcvf assets_x64.tar.gz include lib bin LICENSE
-          rm -rf build lib bin
+          tar -zcvf assets_x64.tar.gz bin LICENSE
+          rm -rf build bin
         shell: bash
         env:
           CC: gcc-10
@@ -160,12 +150,10 @@ jobs:
           cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM32 -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DDISABLE_EXAMPLES=ON -DBUILD_BACKEND_CUDA=OFF -DBUILD_GEOMETRY_VIEWER=OFF -DBUILD_SIMULATOR=OFF -DCMAKE_C_COMPILER=/usr/bin/arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=/usr/bin/arm-linux-gnueabihf-g++
           cmake --build . --parallel $(nproc) --config Release
           cd ..
-          mkdir -p lib
           mkdir -p bin
-          cp -f build/lib/*.a lib
           cp -f build/bin/Release/*.so bin
-          tar -zcvf assets_arm32.tar.gz include lib bin LICENSE
-          rm -rf build lib bin
+          tar -zcvf assets_arm32.tar.gz bin LICENSE
+          rm -rf build bin
         shell: bash
         env:
           CC: gcc-10
@@ -176,12 +164,10 @@ jobs:
           cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM64 -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DDISABLE_EXAMPLES=ON -DBUILD_BACKEND_CUDA=OFF -DBUILD_GEOMETRY_VIEWER=OFF -DBUILD_SIMULATOR=OFF -DCMAKE_C_COMPILER=/usr/bin/aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=/usr/bin/aarch64-linux-gnu-g++
           cmake --build . --parallel $(nproc) --config Release
           cd ..
-          mkdir -p lib
           mkdir -p bin
-          cp -f build/lib/*.a lib
           cp -f build/bin/Release/*.so bin
-          tar -zcvf assets_arm64.tar.gz include lib bin LICENSE
-          rm -rf build lib bin
+          tar -zcvf assets_arm64.tar.gz bin LICENSE
+          rm -rf build bin
         shell: bash
         env:
           CC: gcc-10
@@ -204,11 +190,9 @@ jobs:
           cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=OFF -DDISABLE_EXAMPLES=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON -DAUTD3_PARALLEL_FOR=OFF -DHOLO_PARALLEL_FOR=OFF -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
           make -j8
           cd ..
-          mkdir -p lib
           mkdir -p bin
-          cp -f build/lib/*.a lib
           cp -f build/bin/Release/*.dylib bin
-          tar -zcvf assets.tar.gz include lib bin LICENSE
+          tar -zcvf assets.tar.gz bin LICENSE
 
   lint:
     name: lint
@@ -260,15 +244,6 @@ jobs:
       - uses: actions/checkout@v3
       - name: build
         run: |
-          mkdir build
-          cd build
-          cmake .. -DBUILD_LINK_SOEM=ON -DBUILD_GAIN_HOLO=OFF -DDISABLE_EXAMPLES=ON
-          cmake --build . --parallel $(nproc)
-          cd ..
-          \cp -r include/ ./doc/book/samples/cpp/
-          mkdir ./doc/book/samples/cpp/lib
-          \cp build/lib/*.a  ./doc/book/samples/cpp/lib
-          \cp -r 3rdparty/eigen/ ./doc/book/samples/cpp/
           cd ./doc/book/samples/cpp
           mkdir build
           cd build
