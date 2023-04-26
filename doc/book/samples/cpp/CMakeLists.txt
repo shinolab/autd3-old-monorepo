@@ -4,20 +4,21 @@ project(autd3_sample)
 
 set (CMAKE_CXX_STANDARD 17)
 
+include(FetchContent)
+FetchContent_Declare(
+  autd3
+  GIT_REPOSITORY https://github.com/shinolab/autd3.git
+  GIT_TAG v8.5.0
+  GIT_SUBMODULES ""
+  GIT_PROGRESS TRUE
+  GIT_SHALLOW TRUE
+)
+set(BUILD_LINK_SOEM ON)
+FetchContent_MakeAvailable(autd3)
+
 add_executable(main main.cpp)
 
-target_link_directories(main PRIVATE lib)
-target_include_directories(main PRIVATE include eigen)
-target_link_libraries(main autd3 link_soem)
-
-if(WIN32)
-  target_link_directories(main PRIVATE lib/wpcap)
-  target_link_libraries(main Packet.lib wpcap.lib ws2_32.lib winmm.lib)
-elseif(APPLE)
-  target_link_libraries(main pcap)
-else()
-  target_link_libraries(main rt)
-endif()
+target_link_libraries(main autd3::autd3 autd3::link::soem)
 
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT main)
