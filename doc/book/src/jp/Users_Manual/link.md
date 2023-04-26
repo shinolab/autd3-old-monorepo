@@ -300,7 +300,7 @@ EtherCATは、一定の間隔で周期的にフレームを送信することで
 そして, サーバとクライアント間のLANのIPを確認しておく.
 ここでは例えば, サーバ側が"169.254.205.219", クライアント側が"169.254.175.45"だったとする.
 次に, サーバで`SOEMAUTDServer`を起動する.
-この時, `-c`オプションでクライアントのIPアドレス (この例だと`169.254.175.45`), `-p`オプションでポート番号 (任意) を指定する.
+この時, `-p`オプションでポート番号を指定する.
 
 クライアント側は`autd3/link/remote_soem.hpp`ヘッダーをincludeして,
 
@@ -310,8 +310,8 @@ EtherCATは、一定の間隔で周期的にフレームを送信することで
 ...
 
   const std::string ip = "169.254.205.219";
-  const uint16_t port = 50632;
-  auto link = autd3::link::RemoteSOEM().ip(ip).port(port).build();
+  const uint16_t port = 0; // port of SOEMAUTDServer
+  auto link = autd3::link::RemoteSOEM(ip, port).build();
 ```
 
 のようにすれば良い.
