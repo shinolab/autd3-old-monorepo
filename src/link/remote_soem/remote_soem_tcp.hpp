@@ -3,7 +3,7 @@
 // Created Date: 02/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/04/2023
+// Last Modified: 26/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -71,15 +71,18 @@ class RemoteSOEMTcp final : public core::Link {
 
     _is_open = true;
     _th = std::thread([this, size] {
-      boost::asio::streambuf receive_buffer;
       while (_is_open) {
+        uint8_t buffer[65536];
         boost::system::error_code e;
-        const auto len = read(_socket, receive_buffer, boost::asio::transfer_all(), e);
+        size_t len = _socket.read_some(boost::asio::buffer(buffer), e);
+        if (e == boost::asio::error::eof) {
+          _is_open = false;
+          break;
+        }
         if (e) {
           spdlog::warn("Receive failed: {}", e.message());
           continue;
         }
-        const auto* buffer = boost::asio::buffer_cast<const uint8_t*>(receive_buffer.data());
         if (len % size != 0) {
           spdlog::warn("Received data size unknown: {}", len);
           continue;
