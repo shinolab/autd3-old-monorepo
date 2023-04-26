@@ -74,9 +74,13 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 
 | Option                      | default | description                          |
 | -------------------------   | ------- | ------------------------------------ |
+| USE_SYSTEM_EIGEN            | OFF     | use system installed Eigen3          |
+| USE_SYSTEM_BOOST            | OFF     | use system installed Boost           |
 | BUILD_ALL                   | OFF     | build all basic options              |
 | BUILD_DOC                   | OFF     | build doxygen documents              |
-| BUILD_GAIN_HOLO             | ON      | build Holo gain                      |
+| AUTD3_PARALLEL_FOR          | OFF     | enable parallell for                 |
+| BUILD_GAIN_HOLO             | OFF     | build Holo gain                      |
+| HOLO_PARALLEL_FOR           | OFF     | enable parallell for in holo gain    |
 | BUILD_BACKEND_CUDA          | OFF     | build CUDABackend for Holo gain      |
 | BUILD_BACKEND_ARRAYFIRE     | OFF     | build ArrayFireBackend for Holo gain |
 | BUILD_BACKEND_BLAS          | OFF     | build BLASBackend for Holo gain      |
@@ -85,9 +89,10 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 | BLAS_INCLUDE_DIR            | OFF     | BLAS include dir                     |
 | USE_MKL                     | OFF     | ON if use intel MKL                  |
 | BUILD_MODULATION_AUDIO_FILE | OFF     | build Wav and RawPCM modulation      |
-| BUILD_LINK_SOEM             | ON      | build SOEM link                      |
+| BUILD_LINK_SOEM             | OFF     | build SOEM link                      |
 | BUILD_LINK_TWINCAT          | OFF     | build TwinCAT link                   |
 | BUILD_LINK_REMOTE_TWINCAT   | OFF     | build RemoteTwinCAT link             |
+| BUILD_LINK_REMOTE_SOEM      | OFF     | build RemoteSOEM link                |
 | BUILD_LINK_SIMULATOR        | OFF     | build Simulator link                 |
 | BUILD_GEOMETRY_VIEWER       | OFF     | build GeometryViewer                 |
 | BUILD_SIMULATOR             | OFF     | build Simulator                      |
@@ -95,7 +100,6 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 | BUILD_CAPI                  | OFF     | build C-API                          |
 | ENABLE_LINT                 | OFF     | enable cpp lint                      |
 | BUILD_TEST                  | OFF     | build tests                          |
-
 
 ## For other programming languages
 
