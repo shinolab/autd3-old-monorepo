@@ -74,7 +74,7 @@ class RemoteSOEMTcp final : public core::Link {
       while (_is_open) {
         uint8_t buffer[65536];
         boost::system::error_code e;
-        size_t len = _socket.read_some(boost::asio::buffer(buffer), e);
+        const auto len = _socket.read_some(boost::asio::buffer(buffer), e);
         if (e == boost::asio::error::eof) {
           _is_open = false;
           break;
@@ -83,12 +83,8 @@ class RemoteSOEMTcp final : public core::Link {
           spdlog::warn("Receive failed: {}", e.message());
           continue;
         }
-        if (len % size != 0) {
-          spdlog::warn("Received data size unknown: {}", len);
-          continue;
-        }
-        const auto n = len / size;
-        for (size_t i = 0; i < n; i++) std::memcpy(_ptr.get(), &buffer[i * size], len);
+        const auto i = len / size;
+        std::memcpy(_ptr.get(), &buffer[i * size], size);
       }
     });
 
@@ -104,14 +100,12 @@ class RemoteSOEMTcp final : public core::Link {
     tx.header().msg_id = driver::MSG_SERVER_CLOSE;
     send(tx);
 
-    _socket.close();
-
     return true;
   }
 
   bool send(const driver::TxDatagram& tx) override {
     boost::system::error_code error;
-    const auto tx_size = write(_socket, boost::asio::buffer(tx.data()), error);
+    const auto tx_size = write(_socket, boost::asio::buffer(tx.data(), tx.transmitting_size_in_bytes()), error);
     if (!error && tx_size == tx.transmitting_size_in_bytes()) return true;
     if (error)
       spdlog::warn("Send failed: {}", error.message());
