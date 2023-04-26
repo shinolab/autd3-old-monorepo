@@ -294,7 +294,7 @@ Second, connect the server and the client with another LAN [^fn_remote_twin].
 Third, check the IP address of the LAN between the server and the client.
 For example, assume that the server is "169.254.205.219" and the client is "169.254.175.45".
 Next, start `SOEMAUTDServer` on the server.
-At this time, please specify client IP address by `-c` option (in this example, `169.254.175.45`) and the port number by `-p` option (optional, default is 50632).
+At this time, please set port number by `-p` option.
 
 On the client side, include the `autd3/link/remote_soem.hpp` header, and build link as follows;
 
@@ -304,8 +304,8 @@ On the client side, include the `autd3/link/remote_soem.hpp` header, and build l
 ...
 
   const std::string ip = "169.254.205.219";
-  const uint16_t port = 50632;
-  auto link = autd3::link::RemoteSOEM().ip(ip).port(port).build();
+  const uint16_t port = 0 ; // port of SOEMAUTDServer
+  auto link = autd3::link::RemoteSOEM(ip, port).build();
 ```
 
 ### Timeout

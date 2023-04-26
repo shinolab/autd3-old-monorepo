@@ -4,12 +4,7 @@ if(NOT BUILD_LINK_REMOTE_SOEM)
   return()
 endif()
 
-add_library(autd3_link_remote_soem
-  remote_soem.cpp
-  remote_soem_local.hpp
-  remote_soem_tcp.hpp
-  ${PROJECT_SOURCE_DIR}/include/autd3/link/remote_soem.hpp
-)
+add_library(autd3_link_remote_soem remote_soem.cpp)
 add_library(autd3::link::remote_soem ALIAS autd3_link_remote_soem)
 target_link_libraries(autd3_link_remote_soem PRIVATE autd3::common)
 
