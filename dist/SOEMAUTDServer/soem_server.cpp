@@ -110,7 +110,8 @@ class App {
     _soem_handler.receive(_rx);
     async_write(*_socket, boost::asio::buffer(_rx.messages().data(), _rx.messages().size() * sizeof(autd3::driver::RxMessage)),
                 [this](const boost::system::error_code ec, std::size_t) {
-                  if (ec == boost::asio::error::eof || ec == boost::asio::error::connection_reset || ec == boost::asio::error::connection_aborted)
+                  if (ec == boost::asio::error::eof || ec == boost::asio::error::connection_reset || ec == boost::asio::error::connection_aborted ||
+                      ec == boost::asio::error::broken_pipe)
                     return;
                   if (ec) spdlog::error("Send error: {}", ec.message());
                   do_write();
