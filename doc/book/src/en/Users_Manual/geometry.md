@@ -233,5 +233,4 @@ You can use `GeometryViewer` to visualize `Geometry`.
 ```
 
 To use `GeometryViewer`, you must link `autd3_model` library and `geometry_viewer` library.
-Or, you can build it with the `BUILD_GEOMETRY_VIEWER` option in CMake.
-You must install [Vulkan SDK](https://www.lunarg.com/vulkan-sdk/) if you build `GeometryViewer`.
+To build these libraries, install [Vulkan SDK](https://www.lunarg.com/vulkan-sdk/) and set `BUILD_GEOMETRY_VIEWER` option in CMake.

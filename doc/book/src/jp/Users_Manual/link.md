@@ -17,7 +17,7 @@ TwinCATはWindowsのみをサポートする非常に特殊なソフトウェア
 
 上記以外のネットワークコントローラでも動作する場合があるが, その場合, 正常な動作とリアルタイム性は保証されない.
 
-TwinCAT linkを使用するには`BUILD_LINK_TWINCAT`フラグをONにしてビルドするか, 或いは, 配布している`link_twincat`ライブラリをリンクされたい.
+TwinCAT linkを使用するには`BUILD_LINK_TWINCAT`フラグをONにしてビルドし, `autd3::link::twincat`ライブラリをリンクされたい.
 
 ### TwinCATのインストール
 
@@ -98,7 +98,7 @@ TwinCATAUTDServer.exe -s 3 -t 3
 Windows以外のPCで開発したい場合は, RemoteTwinCAT linkを用いてLinux/macOSから遠隔でTwinCATを操作することができる.
 (後述のSOEMもLinux/macOSで動作する.)
 
-RemoteTwinCAT linkを使用するには`BUILD_LINK_REMOTE_TWINCAT`フラグをONにしてビルドするか, 或いは, 配布している`link_remote_twincat`ライブラリをリンクされたい.
+RemoteTwinCAT linkを使用するには`BUILD_LINK_REMOTE_TWINCAT`フラグをONにしてビルドし, `autd3::link::remote_twincat`ライブラリをリンクされたい.
 
 ### セットアップ
 
@@ -181,8 +181,7 @@ SOEMを使用するのはやむを得ない理由があるか, 開発時のみ�
 Windowsの場合は, [npcap](https://nmap.org/npcap/)を**WinPcap API compatible mode**でインストールしておくこと.
 Linux/macOSの場合は, 特に準備は必要ない.
 
-SOEM linkを使用するには`BUILD_LINK_SOEM`フラグをONにしてビルドするか, 或いは, 配布している`link_soem`ライブラリをリンクされたい.
-また, Windowsの場合は, 追加で`Packet.lib`及び`wpcap.lib`をリンクする必要がある.
+SOEM linkを使用するには`BUILD_LINK_SOEM`フラグをONにしてビルドし, `autd3::link::soem`ライブラリをリンクされたい.
 
 SOEMのLinkを使用する際は`autd3/link/soem.hpp`ヘッダーをインクルードする.
 
@@ -290,6 +289,8 @@ EtherCATは、一定の間隔で周期的にフレームを送信することで
 
 このLinkは`SOEM`を動かすサーバーPCとユーザプログラムを動かすクライアントPCを分離するためのものである.
 
+`RemoteSOEM`を使用するには`BUILD_LINK_REMOTE_SOEM`フラグをONにしてビルドし, `autd3::link::remote_soem`ライブラリをリンクされたい.
+
 `RemoteSOEM`を使用する場合はPCを2台用意する必要がある.
 この時, 片方のPCは`SOEM` linkが使えるである必要がある.
 このPCをここでは"サーバ"と呼ぶ.
@@ -341,7 +342,7 @@ TCP関係のエラーが出る場合は, ファイアウォールでブロック
 
 Simulator linkは[AUTDシミュレータ](../Simulator/simulator.md)を使用する際に使うLinkである.
 
-Simulator linkを使用するには`BUILD_LINK_SIMULATOR`フラグをONにしてビルドするか, 或いは, 配布している`link_simulator`ライブラリをリンクされたい.
+Simulator linkを使用するには`BUILD_LINK_SIMULATOR`フラグをONにしてビルドし, `autd3::link::simulator`ライブラリをリンクされたい.
 
 このlinkの使用の前に, AUTDシミュレータを起動しておく必要がある.
 

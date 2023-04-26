@@ -175,8 +175,7 @@ On the other hand, SOEM has the advantage of being cross-platform and simple to 
 For Windows, install [npcap](https://nmap.org/npcap/) with **WinPcap API compatible mode**.
 For Linux/macOS, no special preparation is required.
 
-To use SOEM link, build with the `BUILD_LINK_SOEM` flag ON, or link `link_soem` library.
-On Windows, you need to additionally link `Packet.lib` and `wpcap.lib`.
+To use SOEM link, build with the `BUILD_LINK_SOEM` flag ON and link `autd3::link::soem`library.
 
 When you use Link of SOEM, include the `autd3/link/soem.hpp` header.
 

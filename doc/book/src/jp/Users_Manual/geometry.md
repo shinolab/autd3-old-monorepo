@@ -267,5 +267,4 @@ geometry().attenuation = 0.0;
   autd3::extra::GeometryViewer().window_size(800, 600).vsync(true).view(autd.geometry());
 ```
 
-`GeometryViewer`を使用するには, [Vulkan SDK](https://www.lunarg.com/vulkan-sdk/)をインストールし, CMakeで`BUILD_GEOMETRY_VIEWER`オプションをOnにする必要がある
-或いは, 配布している`autd3_model`及び, `geometry_viewer`ライブラリをリンクされたい.
+`GeometryViewer`を使用するには, [Vulkan SDK](https://www.lunarg.com/vulkan-sdk/)をインストールし, CMakeで`BUILD_GEOMETRY_VIEWER`オプションをOnにして`autd3::extra::model`及び, `autd3::extra::geometry_viewer`ライブラリをビルド, リンクする必要がある.
