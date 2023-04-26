@@ -1,6 +1,6 @@
 [package]
 name = "autd3-examples"
-version = "8.5.0"
+version = "9.0.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -22,10 +22,10 @@ required-features = ["simulator"]
 [dependencies]
 anyhow = "1.0.57"
 autd3 = {path="../autd3"}
-autd3-gain-holo = {path="../autd3-gain-holo", version="8.5.0"}
-autd3-link-simulator = {path="../autd3-link-simulator", optional = true, version="8.5.0"}
-autd3-link-soem = {path="../autd3-link-soem", optional = true, version="8.5.0"}
-autd3-link-twincat = {path="../autd3-link-twincat", optional = true, version="8.5.0"}
+autd3-gain-holo = {path="../autd3-gain-holo", version="9.0.0"}
+autd3-link-simulator = {path="../autd3-link-simulator", optional = true, version="9.0.0"}
+autd3-link-soem = {path="../autd3-link-soem", optional = true, version="9.0.0"}
+autd3-link-twincat = {path="../autd3-link-twincat", optional = true, version="9.0.0"}
 colored = "2.0.0"
 
 [features] 

@@ -131,7 +131,7 @@ class App {
 };
 
 int main(const int argc, char* argv[]) try {
-  argparse::ArgumentParser program("SOEMAUTDServer", "8.5.0");
+  argparse::ArgumentParser program("SOEMAUTDServer", "9.0.0");
 
   argparse::ArgumentParser list_cmd("list");
   list_cmd.add_description("List EtherCAT adapter names");
