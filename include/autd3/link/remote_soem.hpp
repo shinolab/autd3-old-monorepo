@@ -3,7 +3,7 @@
 // Created Date: 26/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/04/2023
+// Last Modified: 26/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -36,20 +36,10 @@ class RemoteSOEM {
     return *this;
   }
 
-  RemoteSOEM& ip(const std::string& ip) {
-    _ip = ip;
-    return *this;
-  }
-
-  RemoteSOEM& port(const uint16_t& port) {
-    _port = port;
-    return *this;
-  }
-
   /**
    * @brief Constructor
    */
-  RemoteSOEM() : _port(50632) {}
+  RemoteSOEM(std::string ip, const uint16_t port) : _ip(std::move(ip)), _port(port) {}
   ~RemoteSOEM() = default;
   RemoteSOEM(const RemoteSOEM& v) noexcept = delete;
   RemoteSOEM& operator=(const RemoteSOEM& obj) = delete;

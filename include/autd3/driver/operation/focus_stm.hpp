@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/04/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -27,7 +27,7 @@ struct FocusSTMProps {
 };
 
 struct FocusSTM final : Operation {
-  explicit FocusSTM(std::vector<std::vector<STMFocus>> points, const size_t tr_num_min, const autd3_float_t sound_speed, const FocusSTMProps props)
+  explicit FocusSTM(std::vector<std::vector<STMFocus>> points, const size_t tr_num_min, const float_t sound_speed, const FocusSTMProps props)
       : _points(std::move(points)), _tr_num_min(tr_num_min), _sound_speed(sound_speed), _props(props) {}
 
   void init() override { _sent = 0; }
@@ -104,7 +104,7 @@ struct FocusSTM final : Operation {
 
   std::vector<std::vector<STMFocus>> _points{};
   size_t _tr_num_min;
-  autd3_float_t _sound_speed;
+  float_t _sound_speed;
   FocusSTMProps _props;
 
   [[nodiscard]] static size_t get_send_size(const size_t total_size, const size_t sent, const size_t tr_num) noexcept {

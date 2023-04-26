@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/04/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -58,12 +58,12 @@ struct Geometry {
       return *this;
     }
 
-    Builder& attenuation(const driver::autd3_float_t value) {
+    Builder& attenuation(const driver::float_t value) {
       _attenuation = value;
       return *this;
     }
 
-    Builder& sound_speed(const driver::autd3_float_t value) {
+    Builder& sound_speed(const driver::float_t value) {
       _sound_speed = value;
       return *this;
     }
@@ -91,8 +91,8 @@ struct Geometry {
     Geometry build() { return {_mode, _attenuation, _sound_speed, std::move(_transducers), std::move(_device_map)}; }
 
    private:
-    driver::autd3_float_t _attenuation{0};
-    driver::autd3_float_t _sound_speed{340 * driver::METER};
+    driver::float_t _attenuation{0};
+    driver::float_t _sound_speed{340 * driver::METER};
     std::vector<Transducer> _transducers;
     std::vector<size_t> _device_map;
     Mode _mode{Mode::Legacy};
@@ -141,7 +141,7 @@ struct Geometry {
    * @brief Translate all devices
    */
   void translate(const Vector3& t) {
-    const Eigen::Translation<driver::autd3_float_t, 3> trans(t);
+    const Eigen::Translation<driver::float_t, 3> trans(t);
     affine(trans * Matrix3X3::Identity());
   }
 
@@ -149,7 +149,7 @@ struct Geometry {
    * @brief Rotate all devices
    */
   void rotate(const Quaternion& r) {
-    const Eigen::Translation<driver::autd3_float_t, 3> trans(0, 0, 0);
+    const Eigen::Translation<driver::float_t, 3> trans(0, 0, 0);
     affine(trans * r);
   }
 
@@ -157,7 +157,7 @@ struct Geometry {
    * @brief Apply affine transformation to all devices
    */
   void affine(const Vector3& t, const Quaternion& r) {
-    const Eigen::Translation<driver::autd3_float_t, 3> trans(t);
+    const Eigen::Translation<driver::float_t, 3> trans(t);
     affine(trans * r);
   }
 
@@ -179,7 +179,7 @@ struct Geometry {
    * @brief Translate the device
    */
   void translate(const size_t dev_idx, const Vector3& t) {
-    const Eigen::Translation<driver::autd3_float_t, 3> trans(t);
+    const Eigen::Translation<driver::float_t, 3> trans(t);
     affine(dev_idx, trans * Matrix3X3::Identity());
   }
 
@@ -187,7 +187,7 @@ struct Geometry {
    * @brief Rotate the device
    */
   void rotate(const size_t dev_idx, const Quaternion& r) {
-    const Eigen::Translation<driver::autd3_float_t, 3> trans(0, 0, 0);
+    const Eigen::Translation<driver::float_t, 3> trans(0, 0, 0);
     affine(dev_idx, trans * r);
   }
 
@@ -195,7 +195,7 @@ struct Geometry {
    * @brief Apply affine transformation to all devices
    */
   void affine(const size_t dev_idx, const Vector3& t, const Quaternion& r) {
-    const Eigen::Translation<driver::autd3_float_t, 3> trans(t);
+    const Eigen::Translation<driver::float_t, 3> trans(t);
     affine(dev_idx, trans * r);
   }
 
@@ -284,12 +284,12 @@ struct Geometry {
   /**
    * @brief Attenuation coefficient.
    */
-  driver::autd3_float_t attenuation;
+  driver::float_t attenuation;
 
   /**
    * @brief Speed of sound.
    */
-  driver::autd3_float_t sound_speed;
+  driver::float_t sound_speed;
 
   /**
    * Set speed of sound from temperature
@@ -298,14 +298,14 @@ struct Geometry {
    * @param r Gas constant [J K^-1 mol^-1]
    * @param m Molar mass [kg mod^-1]
    */
-  void set_sound_speed_from_temp(const driver::autd3_float_t temp, const driver::autd3_float_t k = static_cast<driver::autd3_float_t>(1.4),
-                                 const driver::autd3_float_t r = static_cast<driver::autd3_float_t>(8.31446261815324),
-                                 const driver::autd3_float_t m = static_cast<driver::autd3_float_t>(28.9647e-3)) {
-    sound_speed = std::sqrt(k * r * (static_cast<driver::autd3_float_t>(273.15) + temp) / m) * driver::METER;
+  void set_sound_speed_from_temp(const driver::float_t temp, const driver::float_t k = static_cast<driver::float_t>(1.4),
+                                 const driver::float_t r = static_cast<driver::float_t>(8.31446261815324),
+                                 const driver::float_t m = static_cast<driver::float_t>(28.9647e-3)) {
+    sound_speed = std::sqrt(k * r * (static_cast<driver::float_t>(273.15) + temp) / m) * driver::METER;
   }
 
  private:
-  Geometry(const Mode mode, const driver::autd3_float_t attenuation, const driver::autd3_float_t sound_speed, std::vector<Transducer> transducers,
+  Geometry(const Mode mode, const driver::float_t attenuation, const driver::float_t sound_speed, std::vector<Transducer> transducers,
            std::vector<size_t> device_map)
       : attenuation(attenuation), sound_speed(sound_speed), _mode(mode), _transducers(std::move(transducers)), _device_map(std::move(device_map)) {}
 

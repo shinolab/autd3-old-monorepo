@@ -4,19 +4,13 @@ if(NOT BUILD_LINK_REMOTE_TWINCAT)
   return()
 endif()
 
-add_library(autd3capi-link-remote-twincat SHARED
-  c_api.cpp
-  remote_twincat_link.h
-  ../base/header.hpp
-  ../base/wrapper_link.hpp
-)
+add_library(autd3capi-link-remote-twincat SHARED c_api.cpp)
 
-target_link_libraries(autd3capi-link-remote-twincat link_remote_twincat)
+target_link_libraries(autd3capi-link-remote-twincat PRIVATE autd3::common autd3::link::remote_twincat)
 if(WIN32)
-  target_link_libraries(autd3capi-link-remote-twincat ws2_32)
 elseif(APPLE)
 else()
-  target_link_libraries(autd3capi-link-remote-twincat -static-libgcc -static-libstdc++)
+  target_link_libraries(autd3capi-link-remote-twincat PRIVATE -static-libgcc -static-libstdc++)
 endif()
 
 set_target_properties(autd3capi-link-remote-twincat

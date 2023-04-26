@@ -4,19 +4,13 @@ if(NOT BUILD_LINK_REMOTE_SOEM)
   return()
 endif()
 
-add_library(autd3capi-link-remote-soem SHARED
-  c_api.cpp
-  remote_soem_link.h
-  ../base/header.hpp
-  ../base/wrapper_link.hpp
-)
+add_library(autd3capi-link-remote-soem SHARED c_api.cpp)
 
-target_link_libraries(autd3capi-link-remote-soem link_remote_soem autd3)
+target_link_libraries(autd3capi-link-remote-soem PRIVATE autd3::common autd3::link::remote_soem)
 if(WIN32)
-  target_link_libraries(autd3capi-link-remote-soem ws2_32)
 elseif(APPLE)
 else()
-  target_link_libraries(autd3capi-link-remote-soem -static-libgcc -static-libstdc++)
+  target_link_libraries(autd3capi-link-remote-soem PRIVATE -static-libgcc -static-libstdc++)
 endif()
 
 set_target_properties(autd3capi-link-remote-soem

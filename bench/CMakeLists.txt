@@ -4,13 +4,13 @@ if(NOT ENABLE_BENCH)
   return()
 endif()
 
+include(${PROJECT_SOURCE_DIR}/cmakes/gbenchmark.cmake)
+
 add_executable(bench_autd3)
 target_link_libraries(bench_autd3 PRIVATE benchmark::benchmark)
 target_link_libraries(bench_autd3 PRIVATE autd3)
 
-target_sources(bench_autd3 PRIVATE
-  bench.cpp
-)
+target_sources(bench_autd3 PRIVATE bench.cpp)
 
 add_subdirectory(gain)
 

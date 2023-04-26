@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -72,9 +72,9 @@ struct FocusSTM final : STM {
     std::transform(geometry.device_map().begin(), geometry.device_map().end(), std::back_inserter(points), [this, geometry, &idx](const size_t dev) {
       const Vector3 origin = geometry[idx].position();
       const Quaternion rotation = geometry[idx].rotation();
-      const Eigen::Transform<driver::autd3_float_t, 3, Eigen::Affine> transform_matrix =
-          Eigen::Translation<driver::autd3_float_t, 3>(origin) * rotation;
-      const Eigen::Transform<driver::autd3_float_t, 3, Eigen::Affine> trans_inv = transform_matrix.inverse();
+      const Eigen::Transform<driver::float_t, 3, Eigen::Affine> transform_matrix =
+          Eigen::Translation<driver::float_t, 3>(origin) * rotation;
+      const Eigen::Transform<driver::float_t, 3, Eigen::Affine> trans_inv = transform_matrix.inverse();
 
       std::vector<driver::STMFocus> local_points;
       local_points.reserve(_points.size());

@@ -7,23 +7,28 @@ endif()
 project(autd3)
 
 set(VERSION_MAJOR 8 CACHE STRING "Project major version number.")
-set(VERSION_MINOR 4 CACHE STRING "Project minor version number.")
-set(VERSION_PATCH 1 CACHE STRING "Project patch version number.")
+set(VERSION_MINOR 5 CACHE STRING "Project minor version number.")
+set(VERSION_PATCH 0 CACHE STRING "Project patch version number.")
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+
+option(BUILD_SHARED_LIBS "BUILD_SHARED_LIBS" OFF)
+
 option(BUILD_ALL "BUILD_ALL" OFF)
 option(BUILD_DOC "BUILD_DOC" OFF)
 
-option(AUTD3_EIGEN_EXTERNAL OFF)
+option(USE_SYSTEM_EIGEN OFF)
+option(USE_SYSTEM_BOOST OFF)
 
 option(AUTD3_PARALLEL_FOR "AUTD3_PARALLEL_FOR" OFF)
 
-option(BUILD_GAIN_HOLO "BUILD_GAIN_HOLO" ON)
-option(HOLO_PARALLEL_FOR "HOLO_PARALLEL_FOR" ON)
+option(BUILD_GAIN_HOLO "BUILD_GAIN_HOLO" OFF)
+option(HOLO_PARALLEL_FOR "HOLO_PARALLEL_FOR" OFF)
 option(BUILD_BACKEND_CUDA "BUILD_BACKEND_CUDA" OFF)
 option(BUILD_BACKEND_ARRAYFIRE "BUILD_BACKEND_ARRAYFIRE" OFF)
 option(BUILD_BACKEND_BLAS "BUILD_BACKEND_BLAS" OFF)
@@ -34,7 +39,7 @@ option(USE_MKL "USE_MKL" OFF)
 
 option(BUILD_MODULATION_AUDIO_FILE "BUILD_MODULATION_AUDIO_FILE" OFF)
 
-option(BUILD_LINK_SOEM "BUILD_LINK_SOEM" ON)
+option(BUILD_LINK_SOEM "BUILD_LINK_SOEM" OFF)
 option(BUILD_LINK_TWINCAT "BUILD_LINK_TWINCAT" OFF)
 option(BUILD_LINK_REMOTE_TWINCAT "BUILD_LINK_REMOTE_TWINCAT" OFF)
 option(BUILD_LINK_SIMULATOR "BUILD_LINK_SIMULATOR" OFF)
@@ -94,12 +99,6 @@ if(DISABLE_EXAMPLES)
   set(BUILD_EXAMPLES OFF)
 endif()
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  set(HOLO_PARALLEL_FOR OFF)
-  set(AUTD3_PARALLEL_FOR OFF)
-  message(NOTICE "Disable HOLO_PARALLEL_FOR and AUTD3_PARALLEL_FOR options because clang does not support std::execution")
-endif()
-
 if(WIN32)
   set(OS win32)
   include(cmakes/win_vs.cmake)
@@ -112,119 +111,35 @@ else()
 endif()
 include(cmakes/utils.cmake)
 
-if(BUILD_TEST)
-  cmake_policy(SET CMP0077 NEW)
-  if(POLICY CMP0135)
-    cmake_policy(SET CMP0135 NEW)
-  endif()
-  include(${PROJECT_SOURCE_DIR}/cmakes/gtest.cmake)
-endif()
-
 if(NOT BUILD_SHARED_LIBS)
   set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 endif()
 
 if(BUILD_DOC)
-  find_package(Doxygen)
-  if(DOXYGEN_FOUND)
-    message(STATUS "Doxygen found.")
-    add_subdirectory(doc/doxygen)
-  else()
-    message(STATUS "Doxygen is needed to build the documentation. Skip building doc...")
-  endif()
-endif()
-
-find_package(Git)
-if(NOT Git_FOUND)
-  message(WARNING "Git not found.")
+  include(${PROJECT_SOURCE_DIR}/cmakes/doxygen.cmake)
 endif()
 
 if(ENABLE_LINT)
-  file(GLOB_RECURSE lint_files
-    src/*.cpp
-    src/*.hpp
-    include/*.hpp
-    capi/*.cpp
-    capi/*.hpp
-    examples/*.cpp
-    examples/*.hpp
-    tests/*.hpp
-    tests/*.cpp
-    bench/*.hpp
-    bench/*.cpp
-    dist/simulator/*.cpp
-    dist/simulator/*.hpp
-    dist/SOEMAUTDServer/*.cpp
-    dist/SOEMAUTDServer/*.hpp
-  )
-  get_filename_component(argparse_path ${CMAKE_CURRENT_SOURCE_DIR}/dist/SOEMAUTDServer/argparse/argparse.hpp ABSOLUTE)
-  get_filename_component(tinycolormap_path ${CMAKE_CURRENT_SOURCE_DIR}/include/autd3/extra/tinycolormap/tinycolormap.hpp ABSOLUTE)
-  list(REMOVE_ITEM lint_files ${argparse_path} ${tinycolormap_path})
-  ADD_CUSTOM_TARGET(cpplint
-    python
-    ${PROJECT_SOURCE_DIR}/tools/cpplint/cpplint.py
-    --filter=-runtime/references,-build/c++11,-whitespace/comments,-readability/braces,-build/include_subdir,-build/include_order,-build/include,-whitespace/parens,-readability/fn_size
-    --linelength=1000
-    ${lint_files}
-  )
+  include(${PROJECT_SOURCE_DIR}/cmakes/cpplint.cmake)
 endif()
 
-if (NOT AUTD3_EIGEN_EXTERNAL)
-  update_git_submodule(eigen RECURSIVE)
-  set(EIGEN_PATH ${PROJECT_SOURCE_DIR}/3rdparty/eigen)
+if(USE_SYSTEM_EIGEN)
+  find_package(Eigen REQUIRED)
+else()
+  include(${PROJECT_SOURCE_DIR}/cmakes/eigen.cmake)
 endif()
 
-update_git_submodule(spdlog RECURSIVE)
-set(SPDLOG_INCLUDE_PATH ${PROJECT_SOURCE_DIR}/3rdparty/spdlog/include)
-
-if(BUILD_LINK_REMOTE_TWINCAT)
-  update_git_submodule(ADS RECURSIVE)
-  set(ADS_PATH ${PROJECT_SOURCE_DIR}/3rdparty/ADS)
+if(USE_SYSTEM_BOOST)
+  find_package(Boost REQUIRED)
+else()
+  include(${PROJECT_SOURCE_DIR}/cmakes/boost.cmake)
 endif()
 
-if(BUILD_LINK_SOEM OR EXPORT_SOEM_AUTD_SERVER)
-  update_git_submodule(SOEM RECURSIVE)
-  if(WIN32 AND AUTD3_BUILD_ARM)
-    execute_process(COMMAND git -C ${PROJECT_SOURCE_DIR} apply --directory=${PROJECT_SOURCE_DIR}/3rdparty/SOEM --unsafe-paths ${PROJECT_SOURCE_DIR}/src/link/soem/win-arm.patch)
-  endif()
-  set(SOEM_PATH ${PROJECT_SOURCE_DIR}/3rdparty/SOEM)
-endif()
-
-if(BUILD_GEOMETRY_VIEWER OR BUILD_SIMULATOR)
-  find_package(Vulkan)
-  update_git_submodule(json RECURSIVE)
-  update_git_submodule(imgui RECURSIVE)
-  update_git_submodule(glm RECURSIVE)
-  update_git_submodule(glfw RECURSIVE)
-  add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/json)
-  set(GLFW_BUILD_EXAMPLES OFF)
-  set(GLFW_BUILD_DOCS OFF)
-  set(GLFW_INSTALL OFF)
-  add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/glfw)
-  add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/glm)
-  set(IMGUI_PATH ${PROJECT_SOURCE_DIR}/3rdparty/imgui)
-  set_target_properties(glfw PROPERTIES FOLDER "3rdparty")
-  set_target_properties(update_mappings PROPERTIES FOLDER "3rdparty")
-endif()
-
-if(BUILD_GEOMETRY_VIEWER)
-  set(FX_GLTF_BUILD_TESTS OFF)
-  set(FX_GLTF_INSTALL OFF)
-endif()
-
-if(BUILD_SIMULATOR)
-  set(BUILD_LINK_SIMULATOR ON)
-endif()
-
-if(ENABLE_BENCH)
-  set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
-  set(BENCHMARK_ENABLE_TESTING OFF)
-  update_git_submodule(benchmark RECURSIVE)
-  add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/benchmark)
-endif()
+include(${PROJECT_SOURCE_DIR}/cmakes/spdlog.cmake)
 
 add_library(autd3_common INTERFACE)
-target_include_directories(autd3_common INTERFACE ${PROJECT_SOURCE_DIR}/include ${EIGEN_PATH} ${SPDLOG_INCLUDE_PATH})
+target_include_directories(autd3_common INTERFACE ${PROJECT_SOURCE_DIR}/include ${Boost_INCLUDE_DIRS})
+target_link_libraries(autd3_common INTERFACE Eigen3::Eigen spdlog::spdlog_header_only)
 target_compile_definitions(autd3_common INTERFACE EIGEN_MPL2_ONLY)
 if(USE_METER)
   target_compile_definitions(autd3_common INTERFACE AUTD3_USE_METER)
@@ -238,7 +153,6 @@ endif()
 if(AUTD3_PARALLEL_FOR)
   target_compile_definitions(autd3_common INTERFACE AUTD3_PARALLEL_FOR)
 endif()
-
 enable_cxx_compiler_flag_if_supported(autd3_common INTERFACE /bigobj)
 enable_cxx_compiler_flag_if_supported(autd3_common INTERFACE /wd4819)
 enable_cxx_compiler_flag_if_supported(autd3_common INTERFACE /Zc:__cplusplus)
@@ -247,10 +161,11 @@ if(NOT MSVC) # Too noisy
 endif()
 enable_cxx_compiler_flag_if_supported(autd3_common INTERFACE /Wextra)
 enable_cxx_compiler_flag_if_supported(autd3_common INTERFACE /Werror)
+add_library(autd3::common ALIAS autd3_common)
 
+add_subdirectory(bench)
 add_subdirectory(src)
 add_subdirectory(tests)
 add_subdirectory(examples)
 add_subdirectory(capi)
 add_subdirectory(dist)
-add_subdirectory(bench)

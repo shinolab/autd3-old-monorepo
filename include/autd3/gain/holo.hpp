@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/03/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,7 +33,7 @@ struct AmplitudeConstraint {
   AmplitudeConstraint& operator=(const AmplitudeConstraint& obj) = default;
   AmplitudeConstraint(AmplitudeConstraint&& obj) = default;
   AmplitudeConstraint& operator=(AmplitudeConstraint&& obj) = default;
-  [[nodiscard]] virtual driver::autd3_float_t convert(driver::autd3_float_t raw, driver::autd3_float_t max) const = 0;
+  [[nodiscard]] virtual driver::float_t convert(driver::float_t raw, driver::float_t max) const = 0;
 };
 
 using ConstraintPtr = std::unique_ptr<AmplitudeConstraint>;
@@ -51,7 +51,7 @@ struct DontCare final : AmplitudeConstraint {
 
   [[nodiscard]] ConstraintPtr build() const { return std::make_unique<DontCare>(); }
 
-  [[nodiscard]] driver::autd3_float_t convert(const driver::autd3_float_t raw, const driver::autd3_float_t) const override { return raw; }
+  [[nodiscard]] driver::float_t convert(const driver::float_t raw, const driver::float_t) const override { return raw; }
 };
 
 /**
@@ -67,14 +67,14 @@ struct Normalize final : AmplitudeConstraint {
 
   [[nodiscard]] ConstraintPtr build() const { return std::make_unique<Normalize>(); }
 
-  [[nodiscard]] driver::autd3_float_t convert(const driver::autd3_float_t raw, const driver::autd3_float_t max) const override { return raw / max; }
+  [[nodiscard]] driver::float_t convert(const driver::float_t raw, const driver::float_t max) const override { return raw / max; }
 };
 
 /**
  * @brief AmplitudeConstraint to give the same amplitude to all transducers
  */
 struct Uniform final : AmplitudeConstraint {
-  explicit Uniform(const driver::autd3_float_t value) : AmplitudeConstraint(), _value(value) {}
+  explicit Uniform(const driver::float_t value) : AmplitudeConstraint(), _value(value) {}
   ~Uniform() override = default;
   Uniform(const Uniform& v) noexcept = default;
   Uniform& operator=(const Uniform& obj) = default;
@@ -83,10 +83,10 @@ struct Uniform final : AmplitudeConstraint {
 
   [[nodiscard]] ConstraintPtr build() const { return std::make_unique<Uniform>(_value); }
 
-  [[nodiscard]] driver::autd3_float_t convert(const driver::autd3_float_t, const driver::autd3_float_t) const override { return _value; }
+  [[nodiscard]] driver::float_t convert(const driver::float_t, const driver::float_t) const override { return _value; }
 
  private:
-  driver::autd3_float_t _value;
+  driver::float_t _value;
 };
 
 /**
@@ -110,9 +110,9 @@ class Holo : public core::Gain {
   /**
    * @brief Add focus position and amplitude of focus
    */
-  void add_focus(const core::Vector3& focus, const driver::autd3_float_t amp) {
+  void add_focus(const core::Vector3& focus, const driver::float_t amp) {
     _foci.emplace_back(focus);
-    _amps.emplace_back(amp, driver::autd3_float_t{0});
+    _amps.emplace_back(amp, driver::float_t{0});
   }
 
   [[nodiscard]] const std::vector<core::Vector3>& foci() const { return this->_foci; }
@@ -139,14 +139,14 @@ class SDP final : public Holo {
    */
   explicit SDP(BackendPtr backend)
       : Holo(std::move(backend), std::make_unique<Normalize>()),
-        alpha(static_cast<driver::autd3_float_t>(1e-3)),
-        lambda(static_cast<driver::autd3_float_t>(0.9)),
+        alpha(static_cast<driver::float_t>(1e-3)),
+        lambda(static_cast<driver::float_t>(0.9)),
         repeat(100) {}
 
   std::vector<driver::Drive> calc(const core::Geometry& geometry) override;
 
-  driver::autd3_float_t alpha;
-  driver::autd3_float_t lambda;
+  driver::float_t alpha;
+  driver::float_t lambda;
   size_t repeat;
 };
 
@@ -160,11 +160,11 @@ class EVP final : public Holo {
   /**
    * @param[in] backend pointer to Backend
    */
-  explicit EVP(BackendPtr backend) : Holo(std::move(backend), std::make_unique<Uniform>(driver::autd3_float_t{1})), gamma(1) {}
+  explicit EVP(BackendPtr backend) : Holo(std::move(backend), std::make_unique<Uniform>(driver::float_t{1})), gamma(1) {}
 
   std::vector<driver::Drive> calc(const core::Geometry& geometry) override;
 
-  driver::autd3_float_t gamma;
+  driver::float_t gamma;
 };
 
 /**
@@ -235,18 +235,18 @@ class LM final : public Holo {
    */
   explicit LM(BackendPtr backend)
       : Holo(std::move(backend), std::make_unique<Normalize>()),
-        eps_1(static_cast<driver::autd3_float_t>(1e-8)),
-        eps_2(static_cast<driver::autd3_float_t>(1e-8)),
-        tau(static_cast<driver::autd3_float_t>(1e-3)),
+        eps_1(static_cast<driver::float_t>(1e-8)),
+        eps_2(static_cast<driver::float_t>(1e-8)),
+        tau(static_cast<driver::float_t>(1e-3)),
         k_max(5) {}
 
   std::vector<driver::Drive> calc(const core::Geometry& geometry) override;
 
-  driver::autd3_float_t eps_1;
-  driver::autd3_float_t eps_2;
-  driver::autd3_float_t tau;
+  driver::float_t eps_1;
+  driver::float_t eps_2;
+  driver::float_t tau;
   size_t k_max;
-  std::vector<driver::autd3_float_t> initial;
+  std::vector<driver::float_t> initial;
 };
 
 /**
@@ -261,14 +261,14 @@ class Greedy final : public Holo {
    * @param[in] backend pointer to Backend
    */
   explicit Greedy(BackendPtr backend)
-      : Holo(std::move(backend), std::make_unique<Uniform>(driver::autd3_float_t{1})),
+      : Holo(std::move(backend), std::make_unique<Uniform>(driver::float_t{1})),
         phase_div(16),
         objective([](const VectorXd& target, const VectorXc& p) { return (target - p.cwiseAbs()).cwiseAbs().sum(); }) {}
 
   std::vector<driver::Drive> calc(const core::Geometry& geometry) override;
 
   size_t phase_div;
-  std::function<driver::autd3_float_t(const VectorXd&, const VectorXc&)> objective;
+  std::function<driver::float_t(const VectorXd&, const VectorXc&)> objective;
 };
 
 /**
@@ -282,14 +282,14 @@ class LSSGreedy final : public Holo {
    * @param[in] backend pointer to Backend
    */
   explicit LSSGreedy(BackendPtr backend)
-      : Holo(std::move(backend), std::make_unique<Uniform>(driver::autd3_float_t{1})),
+      : Holo(std::move(backend), std::make_unique<Uniform>(driver::float_t{1})),
         phase_div(16),
         objective([](const VectorXd& target, const VectorXc& p) { return (target - p.cwiseAbs()).cwiseAbs().sum(); }) {}
 
   std::vector<driver::Drive> calc(const core::Geometry& geometry) override;
 
   size_t phase_div;
-  std::function<driver::autd3_float_t(const VectorXd&, const VectorXc&)> objective;
+  std::function<driver::float_t(const VectorXd&, const VectorXc&)> objective;
 };
 
 /**
@@ -304,15 +304,15 @@ class APO final : public Holo {
    */
   explicit APO(BackendPtr backend)
       : Holo(std::move(backend), std::make_unique<Normalize>()),
-        eps(static_cast<driver::autd3_float_t>(1e-8)),
+        eps(static_cast<driver::float_t>(1e-8)),
         lambda(1.0),
         k_max(200),
         line_search_max(100) {}
 
   std::vector<driver::Drive> calc(const core::Geometry& geometry) override;
 
-  driver::autd3_float_t eps;
-  driver::autd3_float_t lambda;
+  driver::float_t eps;
+  driver::float_t lambda;
   size_t k_max;
   size_t line_search_max;
 };

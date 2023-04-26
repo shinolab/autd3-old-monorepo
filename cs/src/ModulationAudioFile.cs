@@ -4,7 +4,7 @@
  * Created Date: 23/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/12/2022
+ * Last Modified: 25/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,9 +16,9 @@
 #endif
 
 #if USE_SINGLE
-using autd3_float_t = System.Single;
+using float_t = System.Single;
 #else
-using autd3_float_t = System.Double;
+using float_t = System.Double;
 #endif
 
 namespace AUTD3Sharp
@@ -27,7 +27,7 @@ namespace AUTD3Sharp
     {
         public sealed class RawPCM : Modulation
         {
-            public RawPCM(string filename, autd3_float_t samplingFreq, uint modSamplingFreqDiv)
+            public RawPCM(string filename, float_t samplingFreq, uint modSamplingFreqDiv)
             {
                 NativeMethods.ModulationAudioFile.AUTDModulationRawPCM(out handle, filename, samplingFreq, modSamplingFreqDiv);
             }

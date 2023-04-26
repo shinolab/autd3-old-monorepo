@@ -3,7 +3,7 @@
 // Created Date: 07/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/03/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -116,10 +116,10 @@ TEST(Driver_Driver, modulation) {
   autd3::driver::TxDatagram tx({NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT,
                                 NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT, NUM_TRANS_IN_UNIT});
 
-  std::vector<autd3::driver::autd3_float_t> mod_data;
+  std::vector<autd3::driver::float_t> mod_data;
   constexpr size_t size = autd3::driver::MOD_HEADER_INITIAL_DATA_SIZE + autd3::driver::MOD_HEADER_SUBSEQUENT_DATA_SIZE + 1;
   for (size_t i = 0; i < size; i++) {
-    const auto amp = static_cast<autd3::driver::autd3_float_t>(i) / static_cast<autd3::driver::autd3_float_t>(size);
+    const auto amp = static_cast<autd3::driver::float_t>(i) / static_cast<autd3::driver::float_t>(size);
     mod_data.emplace_back(amp);
   }
 
@@ -194,7 +194,7 @@ TEST(Driver_Driver, normal_legacy_gain) {
   std::vector<autd3::driver::Drive> drives;
   std::random_device seed_gen;
   std::mt19937 engine(seed_gen());
-  std::uniform_real_distribution<autd3::driver::autd3_float_t> dist(0, 1);
+  std::uniform_real_distribution<autd3::driver::float_t> dist(0, 1);
   drives.reserve(NUM_TRANS_IN_UNIT * 10);
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine)});
 
@@ -224,7 +224,7 @@ TEST(Driver_Driver, normal_gain) {
   std::vector<uint16_t> cycles;
   std::random_device seed_gen;
   std::mt19937 engine(seed_gen());
-  std::uniform_real_distribution<autd3::driver::autd3_float_t> dist(0, 1);
+  std::uniform_real_distribution<autd3::driver::float_t> dist(0, 1);
   drives.reserve(NUM_TRANS_IN_UNIT * 10);
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine)});
   cycles.resize(NUM_TRANS_IN_UNIT * 10, 4096);
@@ -260,7 +260,7 @@ TEST(Driver_Driver, advanced_phase_gain) {
 
   std::random_device seed_gen;
   std::mt19937 engine(seed_gen());
-  std::uniform_real_distribution<autd3::driver::autd3_float_t> dist(0, 1);
+  std::uniform_real_distribution<autd3::driver::float_t> dist(0, 1);
   drives.reserve(NUM_TRANS_IN_UNIT * 10);
   for (size_t i = 0; i < NUM_TRANS_IN_UNIT * 10; i++) drives.emplace_back(autd3::driver::Drive{dist(engine), dist(engine)});
   cycles.resize(NUM_TRANS_IN_UNIT * 10, 4096);
@@ -291,7 +291,7 @@ TEST(Driver_Driver, focus_stm) {
   {
     std::random_device seed_gen;
     std::mt19937 engine(seed_gen());
-    std::uniform_real_distribution<autd3::driver::autd3_float_t> dist(-1000, 1000);
+    std::uniform_real_distribution<autd3::driver::float_t> dist(-1000, 1000);
     std::uniform_int_distribution dist_u8(0, 0xFF);
     p.reserve(size);
     for (size_t i = 0; i < size; i++) p.emplace_back(dist(engine), dist(engine), dist(engine), static_cast<uint8_t>(dist_u8(engine)));
@@ -397,7 +397,7 @@ TEST(Driver_Driver, gain_stm_legacy) {
   std::vector<std::vector<autd3::driver::Drive>> drives;
   std::random_device seed_gen;
   std::mt19937 engine(seed_gen());
-  std::uniform_real_distribution<autd3::driver::autd3_float_t> dist(0, 1);
+  std::uniform_real_distribution<autd3::driver::float_t> dist(0, 1);
   for (size_t i = 0; i < 2; i++) {
     std::vector<autd3::driver::Drive> d;
     d.reserve(NUM_TRANS_IN_UNIT * 10);
@@ -495,7 +495,7 @@ TEST(Driver_Driver, gain_stm_advanced) {
   {
     std::random_device seed_gen;
     std::mt19937 engine(seed_gen());
-    std::uniform_real_distribution<autd3::driver::autd3_float_t> dist(0, 1);
+    std::uniform_real_distribution<autd3::driver::float_t> dist(0, 1);
     for (size_t i = 0; i < 2; i++) {
       std::vector<autd3::driver::Drive> d;
       d.reserve(NUM_TRANS_IN_UNIT * 10);
@@ -629,7 +629,7 @@ TEST(Driver_Driver, gain_stm_advanced_phase) {
   {
     std::random_device seed_gen;
     std::mt19937 engine(seed_gen());
-    std::uniform_real_distribution<autd3::driver::autd3_float_t> dist(0, 1);
+    std::uniform_real_distribution<autd3::driver::float_t> dist(0, 1);
     for (size_t i = 0; i < 2; i++) {
       std::vector<autd3::driver::Drive> d;
       d.reserve(NUM_TRANS_IN_UNIT * 10);

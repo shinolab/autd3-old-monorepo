@@ -4,19 +4,13 @@ if(NOT BUILD_BACKEND_BLAS)
   return()
 endif()
 
-add_library(autd3capi-backend-blas SHARED
-  c_api.cpp
-  blas_backend.h
-  ../../base/header.hpp
-  ../../base/wrapper.hpp
-)
+add_library(autd3capi-backend-blas SHARED c_api.cpp)
 
-target_include_directories(autd3capi-backend-blas PRIVATE ${PROJECT_SOURCE_DIR}/include ${EIGEN_PATH})
-target_link_libraries(autd3capi-backend-blas backend_blas)
+target_link_libraries(autd3capi-backend-blas PRIVATE autd3::common autd3::backend::blas)
 if(WIN32)
 elseif(APPLE)
 else()
-  target_link_libraries(autd3capi-backend-blas -static-libgcc -static-libstdc++)
+  target_link_libraries(autd3capi-backend-blas PRIVATE -static-libgcc -static-libstdc++)
 endif()
 
 set_target_properties(autd3capi-backend-blas

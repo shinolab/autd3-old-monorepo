@@ -4,14 +4,9 @@ if(NOT (BUILD_LINK_TWINCAT AND WIN32))
   return()
 endif()
 
-add_library(autd3capi-link-twincat SHARED
-  c_api.cpp
-  twincat_link.h
-  ../base/header.hpp
-  ../base/wrapper_link.hpp
-)
+add_library(autd3capi-link-twincat SHARED c_api.cpp)
  
-target_link_libraries(autd3capi-link-twincat link_twincat)
+target_link_libraries(autd3capi-link-twincat PRIVATE autd3::common autd3::link::twincat)
 
 set_target_properties(autd3capi-link-twincat
   PROPERTIES

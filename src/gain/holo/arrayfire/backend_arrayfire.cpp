@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/03/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -198,7 +198,7 @@ class ArrayFireBackendImpl final : public Backend {
 
   void abs(const VectorXc& src, VectorXd& dst) override { _pool.set(dst, af::abs(_pool.get(src))); }
   void abs(const VectorXc& src, VectorXc& dst) override {
-    _pool.set(dst, af::complex(af::abs(_pool.get(src)), af::constant<driver::autd3_float_t>(0, src.size(), AUTD_f)));
+    _pool.set(dst, af::complex(af::abs(_pool.get(src)), af::constant<driver::float_t>(0, src.size(), AUTD_f)));
   }
   void sqrt(const VectorXd& src, VectorXd& dst) override { _pool.set(dst, af::sqrt(_pool.get(src))); }
   void conj(const VectorXc& src, VectorXc& dst) override { _pool.set(dst, conjg(_pool.get(src))); }
@@ -207,7 +207,7 @@ class ArrayFireBackendImpl final : public Backend {
   }
   void reciprocal(const VectorXc& src, VectorXc& dst) override { _pool.set(dst, af::pow(_pool.get(src), -1)); }
   void exp(const VectorXc& src, VectorXc& dst) override { _pool.set(dst, af::exp(_pool.get(src))); }
-  void pow(const VectorXd& src, const driver::autd3_float_t p, VectorXd& dst) override { _pool.set(dst, af::pow(_pool.get(src), p)); }
+  void pow(const VectorXd& src, const driver::float_t p, VectorXd& dst) override { _pool.set(dst, af::pow(_pool.get(src), p)); }
 
   void real(const MatrixXc& src, MatrixXd& re) override { _pool.set(re, af::real(_pool.get(src))); }
   void imag(const MatrixXc& src, MatrixXd& im) override { _pool.set(im, af::imag(_pool.get(src))); }
@@ -230,15 +230,15 @@ class ArrayFireBackendImpl final : public Backend {
 
   void set_row(VectorXc& src, const size_t i, const size_t begin, const size_t end, MatrixXc& dst) override {
     auto d = _pool.get(dst);
-    d(static_cast<int>(i), af::seq(static_cast<driver::autd3_float_t>(begin), static_cast<driver::autd3_float_t>(end) - 1)) =
-        _pool.get(src)(af::seq(static_cast<driver::autd3_float_t>(begin), static_cast<driver::autd3_float_t>(end) - 1), 0);
+    d(static_cast<int>(i), af::seq(static_cast<driver::float_t>(begin), static_cast<driver::float_t>(end) - 1)) =
+        _pool.get(src)(af::seq(static_cast<driver::float_t>(begin), static_cast<driver::float_t>(end) - 1), 0);
     _pool.set(dst, d);
   }
 
   void set_col(VectorXc& src, const size_t i, const size_t begin, const size_t end, MatrixXc& dst) override {
     auto d = _pool.get(dst);
-    d(af::seq(static_cast<driver::autd3_float_t>(begin), static_cast<driver::autd3_float_t>(end) - 1), static_cast<int>(i)) =
-        _pool.get(src)(af::seq(static_cast<driver::autd3_float_t>(begin), static_cast<driver::autd3_float_t>(end) - 1), 0);
+    d(af::seq(static_cast<driver::float_t>(begin), static_cast<driver::float_t>(end) - 1), static_cast<int>(i)) =
+        _pool.get(src)(af::seq(static_cast<driver::float_t>(begin), static_cast<driver::float_t>(end) - 1), 0);
     _pool.set(dst, d);
   }
 
@@ -250,15 +250,15 @@ class ArrayFireBackendImpl final : public Backend {
     return {v.real, v.imag};
   }
 
-  driver::autd3_float_t max_element(const VectorXd& src) override {
-    driver::autd3_float_t v{};
+  driver::float_t max_element(const VectorXd& src) override {
+    driver::float_t v{};
     (af::max)(_pool.get(src)).host(&v);
     return std::abs(v);
   }
 
   void scale(const complex value, VectorXc& dst) override { _pool.set(dst, _pool.get(dst) * AUTD_complex(value.real(), value.imag())); }
 
-  void scale(const driver::autd3_float_t value, VectorXd& dst) override { _pool.set(dst, _pool.get(dst) * value); }
+  void scale(const driver::float_t value, VectorXd& dst) override { _pool.set(dst, _pool.get(dst) * value); }
 
   complex dot(const VectorXc& a, const VectorXc& b) override {
     complex v{};
@@ -267,20 +267,20 @@ class ArrayFireBackendImpl final : public Backend {
     return v;
   }
 
-  driver::autd3_float_t dot(const VectorXd& a, const VectorXd& b) override {
-    driver::autd3_float_t v{};
+  driver::float_t dot(const VectorXd& a, const VectorXd& b) override {
+    driver::float_t v{};
     const auto r = af::dot(_pool.get(a), _pool.get(b));
     r.host(&v);
     return v;
   }
 
-  void add(const driver::autd3_float_t alpha, const MatrixXd& a, MatrixXd& b) override {
+  void add(const driver::float_t alpha, const MatrixXd& a, MatrixXd& b) override {
     const auto aa = _pool.get(a);
     const auto ba = _pool.get(b);
     _pool.set(b, alpha * aa + ba);
   }
 
-  void add(const driver::autd3_float_t alpha, const VectorXd& a, VectorXd& b) override {
+  void add(const driver::float_t alpha, const VectorXd& a, VectorXd& b) override {
     const auto aa = _pool.get(a);
     const auto ba = _pool.get(b);
     _pool.set(b, alpha * aa + ba);
@@ -367,8 +367,8 @@ class ArrayFireBackendImpl final : public Backend {
     _pool.set(c, ca);
   }
 
-  void mul(const Transpose trans_a, const Transpose trans_b, const driver::autd3_float_t alpha, const MatrixXd& a, const MatrixXd& b,
-           const driver::autd3_float_t beta, MatrixXd& c) override {
+  void mul(const Transpose trans_a, const Transpose trans_b, const driver::float_t alpha, const MatrixXd& a, const MatrixXd& b,
+           const driver::float_t beta, MatrixXd& c) override {
     const auto aa = _pool.get(a);
     const auto ba = _pool.get(b);
     auto ca = _pool.get(c);
@@ -416,7 +416,7 @@ class ArrayFireBackendImpl final : public Backend {
     }
     _pool.set(c, ca);
   }
-  void mul(const Transpose trans_a, const driver::autd3_float_t alpha, const MatrixXd& a, const VectorXd& b, const driver::autd3_float_t beta,
+  void mul(const Transpose trans_a, const driver::float_t alpha, const MatrixXd& a, const VectorXd& b, const driver::float_t beta,
            VectorXd& c) override {
     const auto aa = _pool.get(a);
     const auto ba = _pool.get(b);
@@ -454,7 +454,7 @@ class ArrayFireBackendImpl final : public Backend {
     dst = ces.eigenvectors().col(idx);
   }
 
-  void pseudo_inverse_svd(MatrixXc& src, const driver::autd3_float_t alpha, MatrixXc& u, MatrixXc&, MatrixXc& vt, MatrixXc&, MatrixXc& dst) override {
+  void pseudo_inverse_svd(MatrixXc& src, const driver::float_t alpha, MatrixXc& u, MatrixXc&, MatrixXc& vt, MatrixXc&, MatrixXc& dst) override {
     const auto srca = _pool.get(src);
     auto ua = _pool.get(u);
     auto vta = _pool.get(vt);
@@ -464,13 +464,13 @@ class ArrayFireBackendImpl final : public Backend {
     svd(ua, s_vec, vta, srca);
     s_vec = s_vec / (s_vec * s_vec + af::constant(alpha, s_vec.dims(0), af::dtype::AUTD_f));
     const af::array s_mat = diag(s_vec, 0, false);
-    const af::array zero = af::constant<driver::autd3_float_t>(0, n - m, m, af::dtype::AUTD_f);
+    const af::array zero = af::constant<driver::float_t>(0, n - m, m, af::dtype::AUTD_f);
     const auto sa = af::complex(join(0, s_mat, zero), 0);
     const auto bufa = matmul(sa, ua, AF_MAT_NONE, AF_MAT_CTRANS);
     _pool.set(dst, matmul(vta, bufa, AF_MAT_CTRANS, AF_MAT_NONE));
   }
 
-  void pseudo_inverse_svd(MatrixXd& src, const driver::autd3_float_t alpha, MatrixXd& u, MatrixXd&, MatrixXd& vt, MatrixXd&, MatrixXd& dst) override {
+  void pseudo_inverse_svd(MatrixXd& src, const driver::float_t alpha, MatrixXd& u, MatrixXd&, MatrixXd& vt, MatrixXd&, MatrixXd& dst) override {
     const auto srca = _pool.get(src);
     auto ua = _pool.get(u);
     auto vta = _pool.get(vt);

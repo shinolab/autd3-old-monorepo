@@ -4,13 +4,9 @@ if(NOT BUILD_GEOMETRY_VIEWER)
   return()
 endif()
 
-add_library(autd3capi-extra-geometry-viewer SHARED
-  c_api.cpp
-  geometry_viewer.h
-  ../base/header.hpp
-)
+add_library(autd3capi-extra-geometry-viewer SHARED c_api.cpp)
 
-target_link_libraries(autd3capi-extra-geometry-viewer geometry_viewer autd3_common)
+target_link_libraries(autd3capi-extra-geometry-viewer PRIVATE autd3::extra::geometry_viewer autd3::common)
 
 set_target_properties(autd3capi-extra-geometry-viewer
   PROPERTIES
