@@ -120,8 +120,8 @@ SDKには以下の`Backend`が用意されている
 * `CUDABackend` - CUDAを使用, GPUで実行
 * `BLASBackend` - BLASを使用
 
-Holo gainを使用するには`BUILD_GAIN_HOLO`フラグをONにしてビルドするか, 或いは, 配布している`gain_holo`ライブラリをリンクされたい.
-また, 適当なバックエンドライブラリをビルド, または, リンクする必要がある.
+Holo gainを使用するには`BUILD_GAIN_HOLO`フラグをONにしてビルドされたい.
+また, 適当なバックエンドライブラリをビルド, 及び, リンクする必要がある.
 
 Holo gainを使用する際は`autd3/gain/holo.hpp`と各`Backend`のヘッダーを`include`する (`EigenBackend`はデフォルトで読み込まれる).
 
@@ -155,7 +155,7 @@ Holo gainを使用する際は`autd3/gain/holo.hpp`と各`Backend`のヘッダ�
 
 ### CUDA Backend
 
-CUDA backendを使用するには[CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit)をインストールし, `BUILD_BACKEND_CUDA`フラグをONにしてビルドするか, 或いは, 配布している`backend_cuda`ライブラリをリンクされたい.
+CUDA backendを使用するには[CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit)をインストールし, `BUILD_BACKEND_CUDA`フラグをONにしてビルドしている`autd3::backend::cuda`ライブラリをリンクされたい.
 
 ```
   cmake .. -DBUILD_GAIN_HOLO=ON -DBUILD_BACKEND_CUDA=ON
@@ -165,7 +165,6 @@ CUDA backendを使用するには[CUDA Toolkit](https://developer.nvidia.com/cud
 
 ### BLAS Backend
 
-BLAS backendを使用する場合, ビルド済みのライブラリは配布されていないので, 自分でビルドする必要ある.
 BLAS backendをビルドするには, `BUILD_BACKEND_BLAS`フラグをONにし, BLASのinclude/lib directoryとBLASベンダーを指定する.
 
 ```

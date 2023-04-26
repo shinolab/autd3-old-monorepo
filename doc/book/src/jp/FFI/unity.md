@@ -7,10 +7,6 @@ Unity版は座標系がz軸反転の左手系になり, 距離の単位がmに�
 
 v2.6からは, Unity Package Manager経由でインストールする.
 
-[npmjs](#npmjs), または, [GitHub](#github)からインストールできるが, 基本的にnpmjsからのインストールを推奨する.
-
-### npmjs
-
 1. Edit→Project Settingsから「Package Manager」を開く
 1. Scoped Registryにて以下を追加し, 保存する
   - Name    : shinolab
@@ -35,11 +31,6 @@ v2.6からは, Unity Package Manager経由でインストールする.
     "com.shinolab.autd3": "8.5.0",
     ...
 ```
-
-### GitHub
-
-- Window→Package Managerを開き, 左上の+ボタンから「Add Package from git URL」を選択し, `https://github.com/shinolab/autd3.git#upm/latest`を追加する.
-    - 最新版以外を追加する場合は, `https://github.com/shinolab/autd3.git#upm/vX.Y.Z`で指定する.
 
 ## Sample
 
