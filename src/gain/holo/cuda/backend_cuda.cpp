@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/03/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -111,8 +111,8 @@ class BufferPool final {
     if (_pool.find(key) != _pool.end()) return _pool[key];
 
     void* dp;
-    cudaMalloc(&dp, sizeof(autd3_float_t) * v.size());
-    cudaMemcpy(dp, v.data(), sizeof(autd3_float_t) * v.size(), cudaMemcpyHostToDevice);
+    cudaMalloc(&dp, sizeof(driver::float_t) * v.size());
+    cudaMemcpy(dp, v.data(), sizeof(driver::float_t) * v.size(), cudaMemcpyHostToDevice);
     _pool.emplace(key, dp);
     return dp;
   }
@@ -122,8 +122,8 @@ class BufferPool final {
     if (_pool.find(key) != _pool.end()) return _pool[key];
 
     void* dp;
-    cudaMalloc(&dp, sizeof(autd3_float_t) * v.size());
-    cudaMemcpy(dp, v.data(), sizeof(autd3_float_t) * v.size(), cudaMemcpyHostToDevice);
+    cudaMalloc(&dp, sizeof(driver::float_t) * v.size());
+    cudaMemcpy(dp, v.data(), sizeof(driver::float_t) * v.size(), cudaMemcpyHostToDevice);
     _pool.emplace(key, dp);
     return dp;
   }
@@ -165,11 +165,11 @@ class CUDABackendImpl final : public Backend {
   }
   void to_host(VectorXd& dst) override {
     const auto dst_p = _pool.get(dst);
-    cudaMemcpy(dst.data(), dst_p, sizeof(autd3_float_t) * dst.size(), cudaMemcpyDeviceToHost);
+    cudaMemcpy(dst.data(), dst_p, sizeof(driver::float_t) * dst.size(), cudaMemcpyDeviceToHost);
   }
   void to_host(MatrixXd& dst) override {
     const auto dst_p = _pool.get(dst);
-    cudaMemcpy(dst.data(), dst_p, sizeof(autd3_float_t) * dst.size(), cudaMemcpyDeviceToHost);
+    cudaMemcpy(dst.data(), dst_p, sizeof(driver::float_t) * dst.size(), cudaMemcpyDeviceToHost);
   }
 
   void copy_to(const MatrixXc& src, MatrixXc& dst) override {
@@ -181,12 +181,12 @@ class CUDABackendImpl final : public Backend {
   void copy_to(const MatrixXd& src, MatrixXd& dst) override {
     const auto src_p = _pool.get(src);
     const auto dst_p = _pool.get(dst);
-    cudaMemcpy(dst_p, src_p, sizeof(autd3_float_t) * src.size(), cudaMemcpyDeviceToDevice);
+    cudaMemcpy(dst_p, src_p, sizeof(driver::float_t) * src.size(), cudaMemcpyDeviceToDevice);
   }
   void copy_to(const VectorXd& src, VectorXd& dst) override {
     const auto src_p = _pool.get(src);
     const auto dst_p = _pool.get(dst);
-    cudaMemcpy(dst_p, src_p, sizeof(autd3_float_t) * src.size(), cudaMemcpyDeviceToDevice);
+    cudaMemcpy(dst_p, src_p, sizeof(driver::float_t) * src.size(), cudaMemcpyDeviceToDevice);
   }
   void copy_to(const VectorXc& src, VectorXc& dst) override {
     const auto src_p = _pool.get(src);
@@ -197,7 +197,7 @@ class CUDABackendImpl final : public Backend {
   void abs(const VectorXc& src, VectorXd& dst) override {
     const auto size = static_cast<uint32_t>(src.size());
     const auto src_p = static_cast<autd3_complex_t*>(_pool.get(src));
-    const auto dst_p = static_cast<autd3_float_t*>(_pool.get(dst));
+    const auto dst_p = static_cast<driver::float_t*>(_pool.get(dst));
     cu_abs(src_p, size, 1, dst_p);
   }
 
@@ -209,8 +209,8 @@ class CUDABackendImpl final : public Backend {
   }
   void sqrt(const VectorXd& src, VectorXd& dst) override {
     const auto size = static_cast<uint32_t>(src.size());
-    const auto src_p = static_cast<autd3_float_t*>(_pool.get(src));
-    const auto dst_p = static_cast<autd3_float_t*>(_pool.get(dst));
+    const auto src_p = static_cast<driver::float_t*>(_pool.get(src));
+    const auto dst_p = static_cast<driver::float_t*>(_pool.get(dst));
     cu_sqrt(src_p, size, 1, dst_p);
   }
   void conj(const VectorXc& src, VectorXc& dst) override {
@@ -237,10 +237,10 @@ class CUDABackendImpl final : public Backend {
     const auto dst_p = static_cast<autd3_complex_t*>(_pool.get(dst));
     cu_exp(src_p, size, 1, dst_p);
   }
-  void pow(const VectorXd& src, const autd3_float_t p, VectorXd& dst) override {
+  void pow(const VectorXd& src, const driver::float_t p, VectorXd& dst) override {
     const auto size = static_cast<uint32_t>(src.size());
-    const auto src_p = static_cast<autd3_float_t*>(_pool.get(src));
-    const auto dst_p = static_cast<autd3_float_t*>(_pool.get(dst));
+    const auto src_p = static_cast<driver::float_t*>(_pool.get(src));
+    const auto dst_p = static_cast<driver::float_t*>(_pool.get(dst));
     cu_pow(src_p, p, size, 1, dst_p);
   }
 
@@ -248,22 +248,22 @@ class CUDABackendImpl final : public Backend {
     const auto row = static_cast<uint32_t>(src.rows());
     const auto col = static_cast<uint32_t>(src.cols());
     const auto sp = static_cast<autd3_complex_t*>(_pool.get(src));
-    const auto rp = static_cast<autd3_float_t*>(_pool.get(re));
+    const auto rp = static_cast<driver::float_t*>(_pool.get(re));
     cu_real(sp, row, col, rp);
   }
   void imag(const MatrixXc& src, MatrixXd& im) override {
     const auto row = static_cast<uint32_t>(src.rows());
     const auto col = static_cast<uint32_t>(src.cols());
     const auto sp = static_cast<autd3_complex_t*>(_pool.get(src));
-    const auto ip = static_cast<autd3_float_t*>(_pool.get(im));
+    const auto ip = static_cast<driver::float_t*>(_pool.get(im));
     cu_imag(sp, row, col, ip);
   }
 
   void make_complex(const VectorXd& re, const VectorXd& im, VectorXc& dst) override {
     const auto row = static_cast<uint32_t>(dst.rows());
     const auto col = static_cast<uint32_t>(dst.cols());
-    const auto rp = static_cast<autd3_float_t*>(_pool.get(re));
-    const auto ip = static_cast<autd3_float_t*>(_pool.get(im));
+    const auto rp = static_cast<driver::float_t*>(_pool.get(re));
+    const auto ip = static_cast<driver::float_t*>(_pool.get(im));
     const auto dp = static_cast<autd3_complex_t*>(_pool.get(dst));
     cu_make_complex(rp, ip, row, col, dp);
   }
@@ -286,8 +286,8 @@ class CUDABackendImpl final : public Backend {
   void get_diagonal(const MatrixXd& src, VectorXd& dst) override {
     const auto row = static_cast<uint32_t>(src.rows());
     const auto col = static_cast<uint32_t>(src.cols());
-    const auto src_p = static_cast<autd3_float_t*>(_pool.get(src));
-    const auto dst_p = static_cast<autd3_float_t*>(_pool.get(dst));
+    const auto src_p = static_cast<driver::float_t*>(_pool.get(src));
+    const auto dst_p = static_cast<driver::float_t*>(_pool.get(dst));
     cu_get_diagonal(src_p, row, col, dst_p);
   }
 
@@ -326,10 +326,10 @@ class CUDABackendImpl final : public Backend {
     return tmp(idx);
   }
 
-  autd3_float_t max_element(const VectorXd& src) override {
+  driver::float_t max_element(const VectorXd& src) override {
     const auto src_p = _pool.get(src);
     VectorXd tmp(src.size());
-    cudaMemcpy(tmp.data(), src_p, sizeof(autd3_float_t) * src.size(), cudaMemcpyDeviceToHost);
+    cudaMemcpy(tmp.data(), src_p, sizeof(driver::float_t) * src.size(), cudaMemcpyDeviceToHost);
     return tmp.maxCoeff();
   }
 
@@ -338,8 +338,8 @@ class CUDABackendImpl final : public Backend {
     AUTDCscal(_handle, static_cast<int>(dst.size()), reinterpret_cast<const autd3_complex_t*>(&value), reinterpret_cast<autd3_complex_t*>(dst_p), 1);
   }
 
-  void scale(const autd3_float_t value, VectorXd& dst) override {
-    const auto dst_p = static_cast<autd3_float_t*>(_pool.get(dst));
+  void scale(const driver::float_t value, VectorXd& dst) override {
+    const auto dst_p = static_cast<driver::float_t*>(_pool.get(dst));
     AUTDscal(_handle, static_cast<int>(dst.size()), &value, dst_p, 1);
   }
 
@@ -351,23 +351,23 @@ class CUDABackendImpl final : public Backend {
     return d;
   }
 
-  autd3_float_t dot(const VectorXd& a, const VectorXd& b) override {
-    autd3_float_t d;
-    const auto a_p = static_cast<autd3_float_t*>(_pool.get(a));
-    const auto b_p = static_cast<autd3_float_t*>(_pool.get(b));
+  driver::float_t dot(const VectorXd& a, const VectorXd& b) override {
+    driver::float_t d;
+    const auto a_p = static_cast<driver::float_t*>(_pool.get(a));
+    const auto b_p = static_cast<driver::float_t*>(_pool.get(b));
     AUTDdot(_handle, static_cast<int>(a.size()), a_p, 1, b_p, 1, &d);
     return d;
   }
 
-  void add(const autd3_float_t alpha, const MatrixXd& a, MatrixXd& b) override {
-    const auto a_p = static_cast<autd3_float_t*>(_pool.get(a));
-    const auto b_p = static_cast<autd3_float_t*>(_pool.get(b));
+  void add(const driver::float_t alpha, const MatrixXd& a, MatrixXd& b) override {
+    const auto a_p = static_cast<driver::float_t*>(_pool.get(a));
+    const auto b_p = static_cast<driver::float_t*>(_pool.get(b));
     AUTDaxpy(_handle, static_cast<int>(a.size()), &alpha, a_p, 1, b_p, 1);
   }
 
-  void add(const autd3_float_t alpha, const VectorXd& a, VectorXd& b) override {
-    const auto a_p = static_cast<autd3_float_t*>(_pool.get(a));
-    const auto b_p = static_cast<autd3_float_t*>(_pool.get(b));
+  void add(const driver::float_t alpha, const VectorXd& a, VectorXd& b) override {
+    const auto a_p = static_cast<driver::float_t*>(_pool.get(a));
+    const auto b_p = static_cast<driver::float_t*>(_pool.get(b));
     AUTDaxpy(_handle, static_cast<int>(a.size()), &alpha, a_p, 1, b_p, 1);
   }
 
@@ -409,26 +409,27 @@ class CUDABackendImpl final : public Backend {
               reinterpret_cast<const autd3_complex_t*>(&beta), c_p, 1);
   }
 
-  void mul(const Transpose trans_a, const Transpose trans_b, const autd3_float_t alpha, const MatrixXd& a, const MatrixXd& b,
-           const autd3_float_t beta, MatrixXd& c) override {
+  void mul(const Transpose trans_a, const Transpose trans_b, const driver::float_t alpha, const MatrixXd& a, const MatrixXd& b,
+           const driver::float_t beta, MatrixXd& c) override {
     const auto m = static_cast<int>(c.rows());
     const auto n = static_cast<int>(c.cols());
     const auto k = trans_a == Transpose::NoTrans ? static_cast<int>(a.cols()) : static_cast<int>(a.rows());
     const auto lda = static_cast<int>(a.rows());
     const auto ldb = static_cast<int>(b.rows());
     const auto ldc = static_cast<int>(c.rows());
-    const auto a_p = static_cast<autd3_float_t*>(_pool.get(a));
-    const auto b_p = static_cast<autd3_float_t*>(_pool.get(b));
-    const auto c_p = static_cast<autd3_float_t*>(_pool.get(c));
+    const auto a_p = static_cast<driver::float_t*>(_pool.get(a));
+    const auto b_p = static_cast<driver::float_t*>(_pool.get(b));
+    const auto c_p = static_cast<driver::float_t*>(_pool.get(c));
     AUTDgemm(_handle, convert(trans_a), convert(trans_b), m, n, k, &alpha, a_p, lda, b_p, ldb, &beta, c_p, ldc);
   }
-  void mul(const Transpose trans_a, const autd3_float_t alpha, const MatrixXd& a, const VectorXd& b, const autd3_float_t beta, VectorXd& c) override {
+  void mul(const Transpose trans_a, const driver::float_t alpha, const MatrixXd& a, const VectorXd& b, const driver::float_t beta,
+           VectorXd& c) override {
     const auto m = static_cast<int>(a.rows());
     const auto n = static_cast<int>(a.cols());
     const auto lda = m;
-    const auto a_p = static_cast<autd3_float_t*>(_pool.get(a));
-    const auto b_p = static_cast<autd3_float_t*>(_pool.get(b));
-    const auto c_p = static_cast<autd3_float_t*>(_pool.get(c));
+    const auto a_p = static_cast<driver::float_t*>(_pool.get(a));
+    const auto b_p = static_cast<driver::float_t*>(_pool.get(b));
+    const auto c_p = static_cast<driver::float_t*>(_pool.get(c));
     AUTDgemv(_handle, convert(trans_a), m, n, &alpha, a_p, lda, b_p, 1, &beta, c_p, 1);
   }
 
@@ -478,8 +479,8 @@ class CUDABackendImpl final : public Backend {
     const auto src_p = static_cast<complex*>(_pool.get(src));
     const auto dst_p = static_cast<complex*>(_pool.get(dst));
 
-    autd3_float_t* d_w = nullptr;
-    cudaMalloc(reinterpret_cast<void**>(&d_w), sizeof(autd3_float_t) * size);
+    driver::float_t* d_w = nullptr;
+    cudaMalloc(reinterpret_cast<void**>(&d_w), sizeof(driver::float_t) * size);
 
     size_t workspace_in_bytes_on_device;
     size_t workspace_in_bytes_on_host;
@@ -503,7 +504,7 @@ class CUDABackendImpl final : public Backend {
     cudaMemcpy(dst_p, src_p + size * (size - 1), size * sizeof(complex), cudaMemcpyDeviceToDevice);
   }
 
-  void pseudo_inverse_svd(MatrixXc& src, const autd3_float_t alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) override {
+  void pseudo_inverse_svd(MatrixXc& src, const driver::float_t alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) override {
     const auto nc = src.cols();
     const auto nr = src.rows();
 
@@ -520,8 +521,8 @@ class CUDABackendImpl final : public Backend {
     const auto ldv = n;
 
     const auto s_size = std::min(nr, nc);
-    autd3_float_t* d_s = nullptr;
-    cudaMalloc(reinterpret_cast<void**>(&d_s), sizeof(autd3_float_t) * s_size);
+    driver::float_t* d_s = nullptr;
+    cudaMalloc(reinterpret_cast<void**>(&d_s), sizeof(driver::float_t) * s_size);
 
     size_t workspace_in_bytes_on_device;
     size_t workspace_in_bytes_on_host;
@@ -551,25 +552,25 @@ class CUDABackendImpl final : public Backend {
     free(workspace_buffer_on_host);
   }
 
-  void pseudo_inverse_svd(MatrixXd& src, const autd3_float_t alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf, MatrixXd& dst) override {
+  void pseudo_inverse_svd(MatrixXd& src, const driver::float_t alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf, MatrixXd& dst) override {
     const auto nc = src.cols();
     const auto nr = src.rows();
 
     const auto m = static_cast<int>(nr);
     const auto n = static_cast<int>(nc);
 
-    const auto src_p = static_cast<autd3_float_t*>(_pool.get(src));
-    const auto u_p = static_cast<autd3_float_t*>(_pool.get(u));
-    const auto v_p = static_cast<autd3_float_t*>(_pool.get(vt));
-    const auto s_p = static_cast<autd3_float_t*>(_pool.get(s));
+    const auto src_p = static_cast<driver::float_t*>(_pool.get(src));
+    const auto u_p = static_cast<driver::float_t*>(_pool.get(u));
+    const auto v_p = static_cast<driver::float_t*>(_pool.get(vt));
+    const auto s_p = static_cast<driver::float_t*>(_pool.get(s));
 
     const auto lda = m;
     const auto ldu = m;
     const auto ldv = n;
 
     const auto s_size = std::min(nr, nc);
-    autd3_float_t* d_s = nullptr;
-    cudaMalloc(reinterpret_cast<void**>(&d_s), sizeof(autd3_float_t) * s_size);
+    driver::float_t* d_s = nullptr;
+    cudaMalloc(reinterpret_cast<void**>(&d_s), sizeof(driver::float_t) * s_size);
 
     size_t workspace_in_bytes_on_device;
     size_t workspace_in_bytes_on_host;
@@ -604,8 +605,8 @@ class CUDABackendImpl final : public Backend {
     const auto lda = static_cast<int>(a.rows());
     const auto ldb = static_cast<int>(b.rows());
 
-    const auto ap = static_cast<autd3_float_t*>(_pool.get(a));
-    const auto bp = static_cast<autd3_float_t*>(_pool.get(b));
+    const auto ap = static_cast<driver::float_t*>(_pool.get(a));
+    const auto bp = static_cast<driver::float_t*>(_pool.get(b));
 
     size_t workspace_in_bytes_on_device;
     size_t workspace_in_bytes_on_host;
@@ -660,10 +661,10 @@ class CUDABackendImpl final : public Backend {
   void reduce_col(const MatrixXd& a, VectorXd& b) override {
     const auto m = static_cast<uint32_t>(a.rows());
     const auto n = static_cast<uint32_t>(a.cols());
-    const auto a_p = static_cast<autd3_float_t*>(_pool.get(a));
-    const auto b_p = static_cast<autd3_float_t*>(_pool.get(b));
-    autd3_float_t* buffer = nullptr;
-    cudaMalloc(reinterpret_cast<void**>(&buffer), static_cast<size_t>(m) * BLOCK_SIZE / 2 * sizeof(autd3_float_t));
+    const auto a_p = static_cast<driver::float_t*>(_pool.get(a));
+    const auto b_p = static_cast<driver::float_t*>(_pool.get(b));
+    driver::float_t* buffer = nullptr;
+    cudaMalloc(reinterpret_cast<void**>(&buffer), static_cast<size_t>(m) * BLOCK_SIZE / 2 * sizeof(driver::float_t));
     cu_reduce_col(a_p, m, n, b_p, buffer);
     cudaFree(buffer);
   }

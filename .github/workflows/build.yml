@@ -23,15 +23,15 @@ jobs:
     - name: build for Windows x64
       if: matrix.os == 'windows-latest'
       run: |
-        cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF
+        cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF -DCMAKE_BUILD_TYPE=Debug
         cd build
-        msbuild autd3.sln /t:build
+        cmake --build . --parallel 8 --config Debug
     - name: build for Windows ARM
       if: matrix.os == 'windows-latest'
       run: |
-        cmake -G "Visual Studio 17 2022" -A ARM64 -B "build_arm" -DBUILD_TARGET=ARM -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF
+        cmake -G "Visual Studio 17 2022" -A ARM64 -B "build_arm" -DBUILD_TARGET=ARM -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF -DCMAKE_BUILD_TYPE=Debug
         cd build_arm
-        msbuild autd3.sln /t:build
+        cmake --build . --parallel 8 --config Debug
     - name: install compile tools
       if: matrix.os == 'ubuntu-latest'
       run: |
@@ -42,8 +42,8 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         mkdir -p build && cd build
-        cmake .. -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF
-        make -j8
+        cmake .. -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF -DCMAKE_BUILD_TYPE=Debug
+        cmake --build . --parallel $(nproc) --config Debug
       shell: bash
       env:
         CC: gcc-10
@@ -52,8 +52,8 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         mkdir -p build_arm32 && cd build_arm32
-        cmake .. -DBUILD_TARGET=ARM32 -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF
-        make -j8
+        cmake .. -DBUILD_TARGET=ARM32 -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF -DCMAKE_BUILD_TYPE=Debug
+        cmake --build . --parallel $(nproc) --config Debug
       shell: bash
       env:
         CC: gcc-10
@@ -62,8 +62,8 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         mkdir -p build_arm64 && cd build_arm64
-        cmake .. -DBUILD_TARGET=ARM64 -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF
-        make -j8
+        cmake .. -DBUILD_TARGET=ARM64 -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF -DCMAKE_BUILD_TYPE=Debug
+        cmake --build . --parallel $(nproc) --config Debug
       shell: bash
       env:
         CC: gcc-10
@@ -72,5 +72,5 @@ jobs:
       if: matrix.os == 'macos-latest'
       run: |
         mkdir -p build && cd build
-        cmake .. -DBUILD_ALL=ON -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DBUILD_BACKEND_CUDA=OFF -DAUTD3_PARALLEL_FOR=OFF -DHOLO_PARALLEL_FOR=OFF
-        make -j8
+        cmake .. -DBUILD_ALL=ON -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DBUILD_BACKEND_CUDA=OFF -DAUTD3_PARALLEL_FOR=OFF -DHOLO_PARALLEL_FOR=OFF -DCMAKE_BUILD_TYPE=Debug
+        cmake --build . --parallel $(nproc) --config Debug

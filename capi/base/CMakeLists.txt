@@ -2,24 +2,16 @@ cmake_minimum_required(VERSION 3.21)
 
 find_package(Threads REQUIRED)
 
-add_library(autd3capi SHARED
-  c_api.cpp
-  header.hpp
-  autd3_c_api.h
-  custom_sink.hpp
-)
+add_library(autd3capi SHARED c_api.cpp)
 
-target_link_libraries(autd3capi ${CMAKE_THREAD_LIBS_INIT})
-target_link_libraries(autd3capi autd3)
+target_link_libraries(autd3capi PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(autd3capi PRIVATE autd3::autd3)
 
 if(WIN32)
-  target_link_libraries(autd3capi ws2_32.lib)
-  target_link_libraries(autd3capi winmm.lib)
+  target_link_libraries(autd3capi PRIVATE winmm)
 elseif(APPLE)
-  target_link_libraries(autd3capi pcap)
 else()
-  target_link_libraries(autd3capi rt)
-  target_link_libraries(autd3capi -static-libgcc -static-libstdc++)
+  target_link_libraries(autd3capi PRIVATE -static-libgcc -static-libstdc++)
 endif()
 
 set_target_properties(autd3capi

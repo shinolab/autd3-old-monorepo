@@ -4,30 +4,23 @@ if(NOT BUILD_SIMULATOR)
   return()
 endif()
 
-add_library(simulator
-  color.hpp
-  coloring.hpp
-  update_flag.hpp
-  sound_sources.hpp
-  vulkan_imgui.hpp
-  vulkan_renderer.hpp
-  trans_viewer.hpp
-  slice_viewer.hpp
-  field_compute.hpp
-  ${PROJECT_SOURCE_DIR}/include/autd3/extra/simulator.hpp
-  simulator.cpp
-)
-target_include_directories(simulator PRIVATE ${PROJECT_SOURCE_DIR}/include ${STB_INCLUDE_PATH} ${Vulkan_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/src/extra/simulator ${PROJECT_SOURCE_DIR}/src/extra/tools ${PROJECT_SOURCE_DIR}/src/smem)
-target_compile_definitions(simulator PRIVATE SMEM_HEADER_ONLY)
-target_link_libraries(simulator PRIVATE autd3_common vk_helper glm::glm glfw imgui_vulkan)
-target_link_libraries(simulator PUBLIC nlohmann_json)
+include(${PROJECT_SOURCE_DIR}/cmakes/glm.cmake)
+include(${PROJECT_SOURCE_DIR}/cmakes/json.cmake)
+include(${PROJECT_SOURCE_DIR}/cmakes/stb.cmake)
+include(${PROJECT_SOURCE_DIR}/cmakes/tinycolormap.cmake)
 
-set_target_properties(simulator
+add_library(autd3_simulator simulator.cpp)
+add_library(autd3::extra::simulator ALIAS autd3_simulator)
+target_include_directories(autd3_simulator PRIVATE ${stb_SOURCE_DIR} ${Vulkan_INCLUDE_DIRS})
+target_link_libraries(autd3_simulator PRIVATE autd3::common autd3::extra::vk_helper autd3::extra::imgui_vulkan glm::glm glfw tinycolormap)
+target_link_libraries(autd3_simulator PRIVATE nlohmann_json::nlohmann_json)
+
+set_target_properties(autd3_simulator
   PROPERTIES
   ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
 )
 
-set_target_properties(simulator PROPERTIES FOLDER "extra")
-set_target_properties(simulator PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(autd3_simulator PROPERTIES FOLDER "extra")
+set_target_properties(autd3_simulator PROPERTIES POSITION_INDEPENDENT_CODE ON)

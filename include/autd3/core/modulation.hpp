@@ -3,7 +3,7 @@
 // Created Date: 11/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/03/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -35,7 +35,7 @@ class Modulation : public DatagramHeader {
   /**
    * \brief Calculate modulation data
    */
-  virtual std::vector<driver::autd3_float_t> calc() = 0;
+  virtual std::vector<driver::float_t> calc() = 0;
 
   /**
    * \brief sampling frequency division ratio
@@ -45,23 +45,23 @@ class Modulation : public DatagramHeader {
   /**
    * \brief modulation sampling frequency
    */
-  [[nodiscard]] driver::autd3_float_t sampling_frequency() const noexcept {
-    return static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / static_cast<driver::autd3_float_t>(sampling_frequency_division);
+  [[nodiscard]] driver::float_t sampling_frequency() const noexcept {
+    return static_cast<driver::float_t>(driver::FPGA_CLK_FREQ) / static_cast<driver::float_t>(sampling_frequency_division);
   }
 
   /**
    * \brief Set modulation sampling frequency
    */
-  [[nodiscard]] driver::autd3_float_t set_sampling_frequency(const driver::autd3_float_t freq) {
-    sampling_frequency_division = static_cast<uint32_t>(std::round(static_cast<driver::autd3_float_t>(driver::FPGA_CLK_FREQ) / freq));
+  [[nodiscard]] driver::float_t set_sampling_frequency(const driver::float_t freq) {
+    sampling_frequency_division = static_cast<uint32_t>(std::round(static_cast<driver::float_t>(driver::FPGA_CLK_FREQ) / freq));
     return sampling_frequency();
   }
 
   std::unique_ptr<driver::Operation> operation() override { return std::make_unique<driver::Modulation>(calc(), sampling_frequency_division); }
 
   template <class Fn>
-  static std::vector<driver::autd3_float_t> generate_iota(const size_t n, Fn func) {
-    std::vector<driver::autd3_float_t> buffer;
+  static std::vector<driver::float_t> generate_iota(const size_t n, Fn func) {
+    std::vector<driver::float_t> buffer;
     buffer.reserve(n);
     for (size_t i = 0; i < n; i++) buffer.emplace_back(func(i));
     return buffer;

@@ -4,7 +4,7 @@ Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 23/04/2023
+Last Modified: 25/04/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -48,4 +48,4 @@ __all__ = [
     'SyncMode'
 ]
 
-__version__ = '8.4.1'
+__version__ = '8.5.0'
