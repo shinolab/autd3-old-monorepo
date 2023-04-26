@@ -31,7 +31,7 @@ jobs:
           cuda: '11.8.0'
       - name: Build project x64
         run: |
-          cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=ON -DDISABLE_EXAMPLES=ON -DEXPORT_SOEM_AUTD_SERVER=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON
+          cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=ON -DDISABLE_EXAMPLES=ON -DEXPORT_SOEM_AUTD_SERVER=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON -DHOLO_PARALLEL_FOR=ON
           cd build
           cmake --build . --parallel 8 --config Release
           mkdir publish
@@ -62,7 +62,7 @@ jobs:
           Compress-Archive -Path LICENSE, dist/TwinCATAUTDServer, dist/firmware, build/publish/bin, build/publish/simulator, build/publish/SOEMAUTDServer, publish/gui-controller -DestinationPath assets_x64.zip
       - name: Build project arm
         run: |
-          cmake -G "Visual Studio 17 2022" -A ARM64 -B "build_arm" -DBUILD_TARGET=ARM -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=OFF -DEXPORT_AUTD_SIMULATOR=OFF -DDISABLE_EXAMPLES=ON -DEXPORT_SOEM_AUTD_SERVER=ON
+          cmake -G "Visual Studio 17 2022" -A ARM64 -B "build_arm" -DBUILD_TARGET=ARM -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=OFF -DEXPORT_AUTD_SIMULATOR=OFF -DDISABLE_EXAMPLES=ON -DEXPORT_SOEM_AUTD_SERVER=ON -DHOLO_PARALLEL_FOR=ON
           cd build_arm
           cmake --build . --parallel 8 --config Release
           mkdir publish
@@ -76,7 +76,7 @@ jobs:
     
       - name: Build project x64 for Unity
         run: |
-          cmake -G "Visual Studio 17 2022" -A x64 -B "build_unity" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=ON -DDISABLE_EXAMPLES=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON -DUSE_METER=ON -DUSE_LEFT_HANDED=ON -DUSE_SINGLE_FLOAT=ON
+          cmake -G "Visual Studio 17 2022" -A x64 -B "build_unity" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=ON -DDISABLE_EXAMPLES=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON -DUSE_METER=ON -DUSE_LEFT_HANDED=ON -DUSE_SINGLE_FLOAT=ON -DHOLO_PARALLEL_FOR=ON
           cd build_unity
           cmake --build . --parallel 8 --config Release
           cd ..
@@ -133,7 +133,7 @@ jobs:
       - name: Build project x64
         run: |
           mkdir -p build && cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DDISABLE_EXAMPLES=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DDISABLE_EXAMPLES=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON -DHOLO_PARALLEL_FOR=ON
           cmake --build . --parallel $(nproc) --config Release
           cd ..
           mkdir -p bin
@@ -147,7 +147,7 @@ jobs:
       - name: Build project arm32
         run: |
           mkdir -p build && cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM32 -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DDISABLE_EXAMPLES=ON -DBUILD_BACKEND_CUDA=OFF -DBUILD_GEOMETRY_VIEWER=OFF -DBUILD_SIMULATOR=OFF -DCMAKE_C_COMPILER=/usr/bin/arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=/usr/bin/arm-linux-gnueabihf-g++
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM32 -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DDISABLE_EXAMPLES=ON -DBUILD_BACKEND_CUDA=OFF -DBUILD_GEOMETRY_VIEWER=OFF -DBUILD_SIMULATOR=OFF -DCMAKE_C_COMPILER=/usr/bin/arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=/usr/bin/arm-linux-gnueabihf-g++ -DHOLO_PARALLEL_FOR=ON
           cmake --build . --parallel $(nproc) --config Release
           cd ..
           mkdir -p bin
@@ -161,7 +161,7 @@ jobs:
       - name: Build project arm64
         run: |
           mkdir -p build && cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM64 -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DDISABLE_EXAMPLES=ON -DBUILD_BACKEND_CUDA=OFF -DBUILD_GEOMETRY_VIEWER=OFF -DBUILD_SIMULATOR=OFF -DCMAKE_C_COMPILER=/usr/bin/aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=/usr/bin/aarch64-linux-gnu-g++
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM64 -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DDISABLE_EXAMPLES=ON -DBUILD_BACKEND_CUDA=OFF -DBUILD_GEOMETRY_VIEWER=OFF -DBUILD_SIMULATOR=OFF -DCMAKE_C_COMPILER=/usr/bin/aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=/usr/bin/aarch64-linux-gnu-g++ -DHOLO_PARALLEL_FOR=ON
           cmake --build . --parallel $(nproc) --config Release
           cd ..
           mkdir -p bin
@@ -223,7 +223,7 @@ jobs:
         cp LICENSE cs/src/LICENSE.md   
         mkdir build
         cd build
-        cmake .. -DBUILD_ALL=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON
+        cmake .. -DBUILD_ALL=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON -DHOLO_PARALLEL_FOR=ON
         cmake --build . --parallel 8 --config Release
         cd ..
         foreach($dll in Get-ChildItem -Path build/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/src/native/windows/x64}
