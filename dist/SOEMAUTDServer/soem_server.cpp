@@ -3,18 +3,119 @@
 // Created Date: 26/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/04/2023
+// Last Modified: 26/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
+#ifdef WIN32
+#include <sdkddkver.h>
+#endif
+
 #include <argparse/argparse.hpp>
+#include <boost/asio.hpp>
 #include <soem_handler.hpp>
 
 #include "autd3/link/soem.hpp"
 #include "local_interface.hpp"
 #include "tcp_interface.hpp"
+
+static void exit_() {
+#ifdef __APPLE__
+  exit(0);
+#else
+  std::quick_exit(0);
+#endif
+}
+
+class App {
+ public:
+  explicit App(std::string client, const uint16_t port, const autd3::TimerStrategy timer_strategy, std::string ifname, const size_t buf_size,
+               const uint16_t sync0_cycle, const uint16_t send_cycle, const autd3::link::SyncMode sync_mode, const int state_check_interval,
+               std::shared_ptr<spdlog::logger> logger)
+      : _client(std::move(client)),
+        _port(port),
+        _soem_handler(
+            timer_strategy, std::move(ifname), buf_size, sync0_cycle, send_cycle,
+            [](const std::string& msg) {
+              spdlog::error("Link is lost");
+              spdlog::error(msg);
+              exit_();
+            },
+            sync_mode, std::chrono::milliseconds(state_check_interval), std::move(logger)) {}
+
+  void run() {
+    boost::asio::signal_set signals(_io_service, SIGINT);
+
+    signals.async_wait([this](const boost::system::error_code& error, int) {
+      if (error) spdlog::error("{}", error.message());
+      spdlog::info("Closing...");
+      close();
+      spdlog::info("Done");
+      exit_();
+    });
+    spdlog::info("Press Ctrl+C to exit...");
+
+    std::thread([this] {
+      try {
+        run_();
+      } catch (const std::exception& ex) {
+        spdlog::error("{}", ex.what());
+        exit_();
+      }
+    }).detach();
+
+    _io_service.run();
+  }
+
+ private:
+  void close() {
+    _is_running.store(false);
+    if (_interf != nullptr) _interf->close();
+    _soem_handler.close();
+  }
+
+  void run_() {
+    spdlog::info("Connecting SOEM server...");
+    const auto dev = _soem_handler.open({});
+    spdlog::info("{} AUTDs found", dev);
+
+    if (_client.empty() || _client == "127.0.0.1" || _client == "localhost")
+      _interf = std::make_unique<autd3::publish::LocalInterface>(dev);
+    else
+      _interf = std::make_unique<autd3::publish::TcpInterface>(_client, _port, dev);
+
+    _is_running.store(true);
+    try {
+      std::vector<size_t> dev_map;
+      dev_map.resize(dev, autd3::AUTD3::NUM_TRANS_IN_UNIT);
+      autd3::driver::TxDatagram tx(dev_map);
+      autd3::driver::RxDatagram rx(dev);
+      _interf->connect();
+      while (_is_running.load()) {
+        if (_interf->tx(tx)) _soem_handler.send(tx);
+        if (_soem_handler.receive(rx)) _interf->rx(rx);
+        if (tx.header().msg_id == autd3::driver::MSG_SERVER_CLOSE) {
+          tx.clear();
+          rx.clear();
+        }
+      }
+    } catch (std::exception& ex) {
+      spdlog::error("{}", ex.what());
+    }
+  }
+
+  std::string _client;
+  uint16_t _port;
+
+  autd3::link::SOEMHandler _soem_handler;
+  std::unique_ptr<autd3::publish::Interface> _interf{nullptr};
+
+  std::atomic<bool> _is_running;
+
+  boost::asio::io_service _io_service;
+};
 
 int main(const int argc, char* argv[]) try {
   argparse::ArgumentParser program("SOEMAUTDServer", "8.5.0");
@@ -91,8 +192,8 @@ int main(const int argc, char* argv[]) try {
     return 0;
   }
 
-  const auto& ifname = program.get("--ifname");
-  const auto& client = program.get("--client");
+  auto ifname = program.get("--ifname");
+  auto client = program.get("--client");
   const auto port = static_cast<uint16_t>(program.get<int>("--port"));
   const auto sync0_cycle = std::max(1, program.get<int>("--sync0"));
   const auto send_cycle = std::max(1, program.get<int>("--send"));
@@ -121,72 +222,16 @@ int main(const int argc, char* argv[]) try {
 
   if (program.get<bool>("--debug")) spdlog::set_level(spdlog::level::debug);
 
-  const auto local_connection = client.empty() || client == "127.0.0.1" || client == "localhost";
-
   if (spdlog::thread_pool() == nullptr) spdlog::init_thread_pool(8192, 1);
   auto logger = std::make_shared<spdlog::async_logger>("SOEMAUTDServer Log", autd3::get_default_sink(), spdlog::thread_pool());
-  auto soem_handler = autd3::link::SOEMHandler(
-      timer_strategy, ifname, buf_size, static_cast<uint16_t>(sync0_cycle), static_cast<uint16_t>(send_cycle),
-      [](const std::string& msg) {
-        spdlog::error("Link is lost");
-        spdlog::error(msg);
-#ifdef __APPLE__
-        exit(-1);
-#else
-        std::quick_exit(-1);
-#endif
-      },
-      sync_mode, std::chrono::milliseconds(state_check_interval), std::move(logger));
 
-  spdlog::info("Connecting SOEM server...");
-  const auto dev = soem_handler.open({});
-  spdlog::info("{} AUTDs found", dev);
+  App app(std::move(client), port, timer_strategy, std::move(ifname), buf_size, static_cast<uint16_t>(sync0_cycle), static_cast<uint16_t>(send_cycle),
+          sync_mode, state_check_interval, std::move(logger));
 
-  std::unique_ptr<autd3::publish::Interface> interf;
-
-  if (local_connection)
-    interf = std::make_unique<autd3::publish::LocalInterface>(dev);
-  else
-    interf = std::make_unique<autd3::publish::TcpInterface>(client, port, dev);
-
-  bool run = true;
-  auto th = std::thread([&soem_handler, &run, dev, &interf] {
-    try {
-      std::vector<size_t> dev_map;
-      dev_map.resize(dev, autd3::AUTD3::NUM_TRANS_IN_UNIT);
-      autd3::driver::TxDatagram tx(dev_map);
-      autd3::driver::RxDatagram rx(dev);
-      interf->connect();
-      while (run) {
-        if (interf->tx(tx)) {
-          soem_handler.send(tx);
-        }
-        soem_handler.receive(rx);
-        interf->rx(rx);
-        if (tx.header().msg_id == autd3::driver::MSG_SERVER_CLOSE) {
-          spdlog::info("Disconnect from client");
-          interf->close();
-          tx.clear();
-          rx.clear();
-          interf->connect();
-        }
-      }
-    } catch (std::exception& ex) {
-      spdlog::error("{}", ex.what());
-    }
-  });
-
-  spdlog::info("enter any key to quit...");
-  std::cin.ignore();
-
-  run = false;
-  interf->close();
-  if (th.joinable()) th.join();
-
-  soem_handler.close();
+  app.run();
 
   return 0;
-} catch (const std::runtime_error& err) {
+} catch (const std::exception& err) {
   spdlog::error(err.what());
   return -1;
 }

@@ -3,7 +3,7 @@
 // Created Date: 01/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/04/2023
+// Last Modified: 26/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -47,9 +47,7 @@ class LocalInterface final : public Interface {
   static constexpr std::string_view SHMEM_DATA_NAME{"autd3_soem_server_shmem_ptr"};
 
  public:
-  explicit LocalInterface(const size_t dev) noexcept : _dev(dev) {
-    boost::interprocess::shared_memory_object::remove(std::string(SHMEM_NAME).c_str());
-  }
+  explicit LocalInterface(const size_t dev) noexcept : _dev(dev) {}
   ~LocalInterface() override { boost::interprocess::shared_memory_object::remove(std::string(SHMEM_NAME).c_str()); };
   LocalInterface(const LocalInterface& v) noexcept = delete;
   LocalInterface& operator=(const LocalInterface& obj) = delete;
@@ -57,6 +55,7 @@ class LocalInterface final : public Interface {
   LocalInterface& operator=(LocalInterface&& obj) = default;
 
   void connect() override {
+    boost::interprocess::shared_memory_object::remove(std::string(SHMEM_NAME).c_str());
     const auto size = driver::HEADER_SIZE + _dev * (AUTD3::NUM_TRANS_IN_UNIT * sizeof(uint16_t) + driver::EC_INPUT_FRAME_SIZE);
     _segment = boost::interprocess::managed_shared_memory(boost::interprocess::create_only, std::string(SHMEM_NAME).c_str(),
                                                           size + sizeof(boost::interprocess::interprocess_mutex) + 1024);
@@ -64,7 +63,7 @@ class LocalInterface final : public Interface {
     _ptr = _segment.construct<uint8_t>(std::string(SHMEM_DATA_NAME).c_str())[size](0x00);
   }
 
-  void close() override { boost::interprocess::shared_memory_object::remove(std::string(SHMEM_NAME).c_str()); }
+  void close() override {}
 
   bool tx(driver::TxDatagram& tx) override {
     const auto msg_id = _ptr[0];
