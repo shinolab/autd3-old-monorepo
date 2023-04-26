@@ -3,7 +3,7 @@
 // Created Date: 28/06/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/03/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ namespace autd3::core {
  */
 class Amplitudes final : public DatagramBody {
  public:
-  explicit Amplitudes(const driver::autd3_float_t amp = 1.0) : _amp(amp) {}
+  explicit Amplitudes(const driver::float_t amp = 1.0) : _amp(amp) {}
   ~Amplitudes() override = default;
   Amplitudes(const Amplitudes& v) = default;
   Amplitudes& operator=(const Amplitudes& obj) = default;
@@ -37,7 +37,7 @@ class Amplitudes final : public DatagramBody {
   }
 
  private:
-  driver::autd3_float_t _amp;
+  driver::float_t _amp;
 };
 
 }  // namespace autd3::core

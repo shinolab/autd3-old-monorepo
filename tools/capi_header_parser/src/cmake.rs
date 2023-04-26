@@ -4,19 +4,14 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/03/2023
+ * Last Modified: 25/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::{
-    fs::File,
-    io::BufRead,
-    io::{BufReader, Lines},
-    path::Path,
-};
+use std::{fs::File, io::BufRead, io::BufReader, path::Path};
 
 use anyhow::Result;
 use regex::Regex;
@@ -36,20 +31,6 @@ impl CMakeProject {
     }
 }
 
-fn find_header(lines: &mut Lines<BufReader<File>>) -> Result<Option<String>> {
-    let re_header = Regex::new(r"^\s*(.*\.h)$")?;
-    loop {
-        let line = lines.next();
-        if line.is_none() {
-            return Ok(None);
-        }
-        let line = line.unwrap()?;
-        if let Some(cap) = re_header.captures_iter(&line).next() {
-            return Ok(Some(cap[1].to_string()));
-        }
-    }
-}
-
 fn parse<P>(path: P, projcts: &mut Vec<CMakeProject>, ignores: &[String]) -> Result<()>
 where
     P: AsRef<Path>,
@@ -57,7 +38,7 @@ where
     let file = File::open(path.as_ref().join("CMakeLists.txt"))?;
     let reader = BufReader::new(file);
     let re_subdir = Regex::new(r"add_subdirectory\((.*)\)")?;
-    let re_library_begin = Regex::new(r"add_library\((.*)\s")?;
+    let re_library_begin = Regex::new(r"add_library\((.*?)\s")?;
     let mut lines_iter = reader.lines();
 
     loop {
@@ -74,11 +55,16 @@ where
             if ignores.contains(&name) {
                 continue;
             }
-            if let Some(header) = find_header(&mut lines_iter)? {
-                let header_path = path.as_ref().join(header);
+
+            let files = glob::glob(path.as_ref().join("*.h").to_str().unwrap())
+                .unwrap()
+                .map(|e| e.unwrap())
+                .collect::<Vec<_>>();
+
+            if !files.is_empty() {
                 projcts.push(CMakeProject {
                     name,
-                    header: header_path.to_str().unwrap().to_string(),
+                    header: files[0].to_str().unwrap().to_string(),
                 })
             }
         }

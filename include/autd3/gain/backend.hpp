@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/03/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -19,14 +19,14 @@ namespace autd3::gain::holo {
 
 enum class Transpose { NoTrans = 111, Trans = 112, ConjTrans = 113 };
 
-using complex = std::complex<driver::autd3_float_t>;
+using complex = std::complex<driver::float_t>;
 
 constexpr complex ONE = complex(1, 0);
 constexpr complex ZERO = complex(0, 0);
 
-using VectorXd = Eigen::Vector<driver::autd3_float_t, -1>;
+using VectorXd = Eigen::Vector<driver::float_t, -1>;
 using VectorXc = Eigen::Vector<complex, -1>;
-using MatrixXd = Eigen::Matrix<driver::autd3_float_t, -1, -1, Eigen::ColMajor>;
+using MatrixXd = Eigen::Matrix<driver::float_t, -1, -1, Eigen::ColMajor>;
 using MatrixXc = Eigen::Matrix<complex, -1, -1, Eigen::ColMajor>;
 
 /**
@@ -63,7 +63,7 @@ class Backend {
   virtual void arg(const VectorXc& src, VectorXc& dst) = 0;
   virtual void reciprocal(const VectorXc& src, VectorXc& dst) = 0;
   virtual void exp(const VectorXc& src, VectorXc& dst) = 0;
-  virtual void pow(const VectorXd& src, driver::autd3_float_t p, VectorXd& dst) = 0;
+  virtual void pow(const VectorXd& src, driver::float_t p, VectorXd& dst) = 0;
 
   virtual void create_diagonal(const VectorXc& src, MatrixXc& dst) = 0;
   virtual void get_diagonal(const MatrixXc& src, VectorXc& dst) = 0;
@@ -82,24 +82,24 @@ class Backend {
   virtual void reduce_col(const MatrixXd& src, VectorXd& dst) = 0;
 
   virtual complex max_abs_element(const VectorXc& src) = 0;
-  virtual driver::autd3_float_t max_element(const VectorXd& src) = 0;
+  virtual driver::float_t max_element(const VectorXd& src) = 0;
 
   virtual void scale(complex value, VectorXc& dst) = 0;
-  virtual void scale(driver::autd3_float_t value, VectorXd& dst) = 0;
+  virtual void scale(driver::float_t value, VectorXd& dst) = 0;
 
   virtual complex dot(const VectorXc& a, const VectorXc& b) = 0;
-  virtual driver::autd3_float_t dot(const VectorXd& a, const VectorXd& b) = 0;
+  virtual driver::float_t dot(const VectorXd& a, const VectorXd& b) = 0;
 
-  virtual void add(driver::autd3_float_t alpha, const MatrixXd& a, MatrixXd& b) = 0;
+  virtual void add(driver::float_t alpha, const MatrixXd& a, MatrixXd& b) = 0;
   virtual void add(complex alpha, const MatrixXc& a, MatrixXc& b) = 0;
-  virtual void add(driver::autd3_float_t alpha, const VectorXd& a, VectorXd& b) = 0;
+  virtual void add(driver::float_t alpha, const VectorXd& a, VectorXd& b) = 0;
   virtual void add(complex alpha, const VectorXc& a, VectorXc& b) = 0;
 
   virtual void mul(Transpose trans_a, Transpose trans_b, complex alpha, const MatrixXc& a, const MatrixXc& b, complex beta, MatrixXc& c) = 0;
   virtual void mul(Transpose trans_a, complex alpha, const MatrixXc& a, const VectorXc& b, complex beta, VectorXc& c) = 0;
-  virtual void mul(Transpose trans_a, Transpose trans_b, driver::autd3_float_t alpha, const MatrixXd& a, const MatrixXd& b,
-                   driver::autd3_float_t beta, MatrixXd& c) = 0;
-  virtual void mul(Transpose trans_a, driver::autd3_float_t alpha, const MatrixXd& a, const VectorXd& b, driver::autd3_float_t beta, VectorXd& c) = 0;
+  virtual void mul(Transpose trans_a, Transpose trans_b, driver::float_t alpha, const MatrixXd& a, const MatrixXd& b,
+                   driver::float_t beta, MatrixXd& c) = 0;
+  virtual void mul(Transpose trans_a, driver::float_t alpha, const MatrixXd& a, const VectorXd& b, driver::float_t beta, VectorXd& c) = 0;
   virtual void hadamard_product(const VectorXc& a, const VectorXc& b, VectorXc& c) = 0;
   virtual void hadamard_product(const MatrixXc& a, const MatrixXc& b, MatrixXc& c) = 0;
 
@@ -108,9 +108,9 @@ class Backend {
 
   virtual void max_eigen_vector(MatrixXc& src, VectorXc& dst) = 0;
 
-  virtual void pseudo_inverse_svd(MatrixXd& src, driver::autd3_float_t alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf,
+  virtual void pseudo_inverse_svd(MatrixXd& src, driver::float_t alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf,
                                   MatrixXd& dst) = 0;
-  virtual void pseudo_inverse_svd(MatrixXc& src, driver::autd3_float_t alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf,
+  virtual void pseudo_inverse_svd(MatrixXc& src, driver::float_t alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf,
                                   MatrixXc& dst) = 0;
 };
 

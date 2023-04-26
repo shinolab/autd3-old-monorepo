@@ -3,7 +3,7 @@
 // Created Date: 29/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/03/2023
+// Last Modified: 26/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -223,7 +223,7 @@ TEST(GeometryTest, translate_of) {
   for (size_t j = 0; j < 14; j++) {
     for (size_t i = 0; i < 18; i++) {
       if (autd3::AUTD3::is_missing_transducer(i, j)) continue;
-      const auto expect = 10.16 * Vector3(static_cast<double>(i), static_cast<double>(j), 0.0) + t;
+      const Vector3 expect = 10.16 * Vector3(static_cast<double>(i), static_cast<double>(j), 0.0) + t;
       ASSERT_NEAR_VECTOR3(expect, geometry[tr_idx].position(), 1e-3);
       tr_idx++;
     }
@@ -231,7 +231,7 @@ TEST(GeometryTest, translate_of) {
   for (size_t j = 0; j < 14; j++) {
     for (size_t i = 0; i < 18; i++) {
       if (autd3::AUTD3::is_missing_transducer(i, j)) continue;
-      const auto expect = 10.16 * Vector3(static_cast<double>(i), static_cast<double>(j), 0.0) + Vector3(10, 20, 30) + t;
+      const Vector3 expect = 10.16 * Vector3(static_cast<double>(i), static_cast<double>(j), 0.0) + Vector3(10, 20, 30) + t;
       ASSERT_NEAR_VECTOR3(expect, geometry[tr_idx].position(), 1e-3);
       tr_idx++;
     }

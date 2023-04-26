@@ -1,11 +1,11 @@
 [package]
 name = "sample"
-version = "8.4.1"
+version = "8.5.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 anyhow = "1.0.66"
-autd3 = "8.4.1"
-autd3-link-soem = "8.4.1"
+autd3 = "8.5.0"
+autd3-link-soem = "8.5.0"

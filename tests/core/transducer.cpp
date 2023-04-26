@@ -3,7 +3,7 @@
 // Created Date: 02/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 10/03/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,11 +24,10 @@
 
 using autd3::core::Quaternion;
 using autd3::core::Vector3;
-using autd3::driver::autd3_float_t;
 
 TEST(CoreTransducer, Transducer) {
-  const auto rot = Eigen::AngleAxis(autd3::driver::pi / autd3_float_t{2}, Vector3::UnitZ()) * Eigen::AngleAxis(autd3_float_t{0}, Vector3::UnitY()) *
-                   Eigen::AngleAxis(autd3_float_t{0}, Vector3::UnitX());
+  const auto rot = Eigen::AngleAxis(autd3::driver::pi / autd3::driver::float_t{2}, Vector3::UnitZ()) *
+                   Eigen::AngleAxis(autd3::driver::float_t{0}, Vector3::UnitY()) * Eigen::AngleAxis(autd3::driver::float_t{0}, Vector3::UnitX());
 
   autd3::core::Transducer tr(1, Vector3(10, 20, 30), rot);
 

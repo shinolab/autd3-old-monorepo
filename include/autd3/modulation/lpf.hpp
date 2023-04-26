@@ -3,7 +3,7 @@
 // Created Date: 08/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/04/2023
+// Last Modified: 25/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ namespace autd3::modulation {
 namespace lpf {
 constexpr size_t COEFFICIENT_SIZE = 199;
 #ifdef AUTD3_USE_SINGLE_FLOAT
-static driver::autd3_float_t coefficient[COEFFICIENT_SIZE] = {
+static driver::float_t coefficient[COEFFICIENT_SIZE] = {
     0.0000103f,  0.0000071f,  0.0000034f,  -0.0000008f, -0.0000055f, -0.0000108f, -0.0000165f, -0.0000227f, -0.0000294f, -0.0000366f, -0.0000441f,
     -0.0000520f, -0.0000601f, -0.0000684f, -0.0000767f, -0.0000850f, -0.0000930f, -0.0001007f, -0.0001078f, -0.0001142f, -0.0001195f, -0.0001236f,
     -0.0001261f, -0.0001268f, -0.0001254f, -0.0001215f, -0.0001148f, -0.0001048f, -0.0000913f, -0.0000737f, -0.0000516f, -0.0000247f, 0.0000076f,
@@ -41,7 +41,7 @@ static driver::autd3_float_t coefficient[COEFFICIENT_SIZE] = {
     -0.0000520f, -0.0000441f, -0.0000366f, -0.0000294f, -0.0000227f, -0.0000165f, -0.0000108f, -0.0000055f, -0.0000008f, 0.0000034f,  0.0000071f,
     0.0000103f};
 #else
-static driver::autd3_float_t coefficient[COEFFICIENT_SIZE] = {
+static driver::float_t coefficient[COEFFICIENT_SIZE] = {
     0.0000103,  0.0000071,  0.0000034,  -0.0000008, -0.0000055, -0.0000108, -0.0000165, -0.0000227, -0.0000294, -0.0000366, -0.0000441, -0.0000520,
     -0.0000601, -0.0000684, -0.0000767, -0.0000850, -0.0000930, -0.0001007, -0.0001078, -0.0001142, -0.0001195, -0.0001236, -0.0001261, -0.0001268,
     -0.0001254, -0.0001215, -0.0001148, -0.0001048, -0.0000913, -0.0000737, -0.0000516, -0.0000247, 0.0000076,  0.0000458,  0.0000903,  0.0001416,
@@ -83,15 +83,15 @@ class LPF final : public core::Modulation {
       return _modulation;
   }
 
-  std::vector<driver::autd3_float_t> calc() override {
+  std::vector<driver::float_t> calc() override {
     const auto original_buffer = modulation().calc();
 
-    std::vector<driver::autd3_float_t> resampled;
+    std::vector<driver::float_t> resampled;
     resampled.reserve(original_buffer.size() * modulation().sampling_frequency_division / 4096);
     for (const auto d : original_buffer)
       std::generate_n(std::back_inserter(resampled), modulation().sampling_frequency_division / 4096, [d] { return d; });
 
-    std::vector<driver::autd3_float_t> mf;
+    std::vector<driver::float_t> mf;
     if (resampled.size() % 2 == 0) {
       mf.reserve(resampled.size() / 2);
       for (size_t i = 0; i < resampled.size(); i += 2) mf.emplace_back((resampled[i] + resampled[i + 1]) / 2);
@@ -104,13 +104,13 @@ class LPF final : public core::Modulation {
     }
 
     return generate_iota(mf.size(), [this, &mf](const size_t i) {
-      driver::autd3_float_t r = 0;
+      driver::float_t r = 0;
       for (int32_t j = 0; j < static_cast<int32_t>(lpf::COEFFICIENT_SIZE); j++) {
         const auto duty =
             driver::Modulation::to_duty(mf[static_cast<size_t>(driver::rem_euclid(static_cast<int32_t>(i) - j, static_cast<int32_t>(mf.size())))]);
-        r += lpf::coefficient[j] * static_cast<driver::autd3_float_t>(duty);
+        r += lpf::coefficient[j] * static_cast<driver::float_t>(duty);
       }
-      const auto duty = std::clamp<driver::autd3_float_t>(std::round(r) / 255, 0, 1) / 2;
+      const auto duty = std::clamp<driver::float_t>(std::round(r) / 255, 0, 1) / 2;
       return std::sin(duty * driver::pi);
     });
   }

@@ -23,30 +23,30 @@ else()
   set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -Xcompiler -fPIC)
 endif()
 
-cuda_add_library(backend_cuda
+cuda_add_library(autd3_backend_cuda
   backend_cuda.cpp
   kernel.h
   kernel.cu
   ${PROJECT_SOURCE_DIR}/include/autd3/gain/backend_cuda.hpp
 )
+add_library(autd3::backend::cuda ALIAS autd3_backend_cuda)
 
-cuda_add_cublas_to_target(backend_cuda)
-target_link_libraries(backend_cuda autd3_common)
-target_include_directories(backend_cuda PRIVATE ${PROJECT_SOURCE_DIR}/src/gain/holo)
-target_include_directories(backend_cuda INTERFACE ${CUDA_INCLUDE_DIRS})
-target_link_libraries(backend_cuda ${CUDA_cusolver_LIBRARY})
+cuda_add_cublas_to_target(autd3_backend_cuda)
+target_link_libraries(autd3_backend_cuda autd3::common)
+target_include_directories(autd3_backend_cuda PRIVATE ${PROJECT_SOURCE_DIR}/src/gain/holo)
+target_link_libraries(autd3_backend_cuda ${CUDA_cusolver_LIBRARY})
 
-set_target_properties(backend_cuda
+set_target_properties(autd3_backend_cuda
   PROPERTIES
   ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
 )
 
-set_target_properties(backend_cuda
+set_target_properties(autd3_backend_cuda
   PROPERTIES
   CUDA_SEPARABLE_COMPILATION ON
 )
 
-set_target_properties(backend_cuda PROPERTIES FOLDER "gain/backend")
-set_target_properties(backend_cuda PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(autd3_backend_cuda PROPERTIES FOLDER "gain/backend")
+set_target_properties(autd3_backend_cuda PROPERTIES POSITION_INDEPENDENT_CODE ON)

@@ -1,6 +1,6 @@
 # autd3_nim
 
-version 8.4.1
+version 8.5.0
 
 ## Run examples
 
@@ -36,4 +36,4 @@ See [LICENSE](https://github.com/shinolab/autd3/blob/master/LICENSE).
 
 # Author
 
-Shun Suzuki, 2022
+Shun Suzuki, 2022-2023
