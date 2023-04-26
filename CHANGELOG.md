@@ -1,6 +1,6 @@
 # 8.5.0
 
-
+- (internal) Refactor some modules and adopt Boost library
 
 # 8.4.1
 
