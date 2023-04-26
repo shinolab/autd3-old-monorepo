@@ -4,7 +4,7 @@
  * Created Date: 03/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/04/2023
+ * Last Modified: 26/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ int main(void) {
   void* builder = NULL;
   void* geometry = NULL;
   const char* ip = "";
-  const uint16_t port = 50632;
+  const uint16_t port = 0;  // SOEMAUTDServer port
 
   AUTDCreateGeometryBuilder(&builder);
   AUTDAddDevice(builder, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);

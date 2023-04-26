@@ -3,7 +3,7 @@
 // Created Date: 02/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 07/03/2023
+// Last Modified: 26/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,9 +22,9 @@ int main() try {
                       .build();
 
   const std::string ip = "server ip here";
-  constexpr uint16_t port = 50632;
+  constexpr uint16_t port = 0;  // SOEMAUTDServer port
 
-  auto link = autd3::link::RemoteSOEM().ip(ip).port(port).build();
+  auto link = autd3::link::RemoteSOEM(ip, port).build();
   auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
 
   return run(autd);

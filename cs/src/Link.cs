@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 17/04/2023
+ * Last Modified: 26/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -216,23 +216,10 @@ namespace AUTD3Sharp
             private ushort _port;
             private TimeSpan _timeout = TimeSpan.FromMilliseconds(20);
 
-
-            public RemoteSOEM()
-            {
-                _ip = "";
-                _port = 50632;
-            }
-
-            public RemoteSOEM Ip(string ip)
+            public RemoteSOEM(string ip, ushort port)
             {
                 _ip = ip;
-                return this;
-            }
-
-            public RemoteSOEM Port(ushort port)
-            {
                 _port = port;
-                return this;
             }
 
             public RemoteSOEM Timeout(TimeSpan timeout)
