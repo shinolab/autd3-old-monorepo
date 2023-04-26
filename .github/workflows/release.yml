@@ -140,34 +140,6 @@ jobs:
           cp LICENSE cs/unity/Assets/autd3/LICENSE.md
           cp CHANGELOG.md cs/unity/Assets/autd3/CHANGELOG.md
           foreach($src in Get-ChildItem -Path ./cs/src | Where {$_.extension -like ".cs"}){Copy-Item -Path $src -Destination ./cs/unity/Assets/autd3/Scripts}
-      - name: create npm branch
-        run: |
-          git config --global user.name 'github-bot'
-          git config --global user.email 'github-bot@users.noreply.github.com'
-          git mv cs/unity/Assets/autd3/Samples cs/unity/Assets/autd3/Samples~
-          rm -Force cs/unity/Assets/autd3/Samples.meta
-          git add .
-          git commit -am "replaced"
-          git branch -d upm/latest
-          git subtree split -P cs/unity/Assets/autd3 -b upm/latest
-          git checkout upm/latest
-          git clean -fxd
-          Remove-Item -Path 3rdparty -Force -Recurse
-          git push -f -u origin upm/latest
-      - name: Get upm tag name
-        id: get_upm_tag
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          result-encoding: string
-          script: |
-            return 'upm/'+context.payload.ref.replace(/refs\/tags\//, '');
-      - name: upm git tag
-        run: |
-          git tag $env:TAG upm/latest
-          git push origin $env:TAG
-        env:
-          TAG: ${{ steps.get_upm_tag.outputs.result }}
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -176,6 +148,9 @@ jobs:
       - name: Publish on npmjs
         continue-on-error: true
         run: |
+          mv cs/unity/Assets/autd3/Samples cs/unity/Assets/autd3/Samples~
+          rm -Force cs/unity/Assets/autd3/Samples.meta
+          cd cs/unity/Assets/autd3
           npm install
           npm publish
         env:
