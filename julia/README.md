@@ -2,7 +2,7 @@
 
 [autd3 library](https://github.com/shinolab/autd3) wrapper for Julia 1.8
 
-version: 8.5.0
+version: 9.0.0
 
 ## Install
 
