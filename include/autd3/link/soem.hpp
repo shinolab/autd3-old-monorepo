@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/04/2023
+// Last Modified: 27/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -104,20 +104,6 @@ class SOEM {
    */
   SOEM& send_cycle(const uint16_t cycle) {
     _send_cycle = cycle;
-    return *this;
-  }
-
-  /**
-   * @brief This function is deprecated.
-   */
-#ifdef WIN32
-  [[deprecated("Please use timer_strategy(autd3::TimerStrategy) instead.")]]
-#else
-  [[deprecated("This function is meaningless and should be removed.")]]
-#endif
-  SOEM&
-  high_precision(const bool value) {
-    _timer_strategy = value ? TimerStrategy::BusyWait : TimerStrategy::Sleep;
     return *this;
   }
 

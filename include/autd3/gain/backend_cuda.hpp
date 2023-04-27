@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 14/03/2023
+// Last Modified: 27/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,8 +33,6 @@ class CUDABackend {
   }
 
   [[nodiscard]] BackendPtr build() const;
-
-  [[deprecated("Use CUDABackend().build() instead.")]] static BackendPtr create(int device_idx);
 
  private:
   int _device_idx{0};

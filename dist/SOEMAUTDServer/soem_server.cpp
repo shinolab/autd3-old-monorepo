@@ -3,7 +3,7 @@
 // Created Date: 26/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/04/2023
+// Last Modified: 27/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -146,11 +146,6 @@ int main(const int argc, char* argv[]) try {
 
   program.add_argument("-t", "--send").help("Send cycle time in units of 500us").scan<'i', int>().default_value(2);
 
-  program.add_argument("-f", "--freerun")
-      .help("Set free run mode (Deprecated, use --sync_mode option instead)")
-      .implicit_value(true)
-      .default_value(false);
-
   program.add_argument("-m", "--sync_mode")
       .help(R"(Sync mode ("dc", "freerun"))")
       .default_value(std::string{"freerun"})
@@ -161,11 +156,6 @@ int main(const int argc, char* argv[]) try {
         spdlog::warn("{} is invalid. Using \"freerun\" instead.", value);
         return std::string{"freerun"};
       });
-
-  program.add_argument("-l", "--disable_high_precision")
-      .help("Disable high precision mode (Deprecated, use --timer_strategy option instead)")
-      .implicit_value(true)
-      .default_value(false);
 
   program.add_argument("-b", "--buffer_size").help("Buffer size (unlimited if 0)").scan<'i', int>().default_value(0);
 
@@ -208,9 +198,7 @@ int main(const int argc, char* argv[]) try {
   const auto sync0_cycle = std::max(1, program.get<int>("--sync0"));
   const auto send_cycle = std::max(1, program.get<int>("--send"));
   const auto state_check_interval = std::max(1, program.get<int>("--state_check_interval"));
-  const auto freerun = program.get<bool>("--freerun");
   const std::string sync_mode_str = program.get<std::string>("--sync_mode");
-  const auto disable_high_precision = program.get<bool>("--disable_high_precision");
   const auto buf_size = program.get<int>("--buffer_size");
   const std::string timer_strategy_str = program.get<std::string>("--timer_strategy");
   autd3::core::TimerStrategy timer_strategy;
@@ -226,9 +214,6 @@ int main(const int argc, char* argv[]) try {
     sync_mode = autd3::SyncMode::DC;
   else
     sync_mode = autd3::SyncMode::FreeRun;
-
-  if (disable_high_precision) spdlog::warn("Please use timer_strategy option instead.");
-  if (freerun) spdlog::warn("Please use --sync_mode option instead.");
 
   if (program.get<bool>("--debug")) spdlog::set_level(spdlog::level::debug);
 
