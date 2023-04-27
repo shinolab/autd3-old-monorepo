@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/09/2022
+// Last Modified: 27/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,19 +16,15 @@
 #include <utility>
 
 #include "autd3/core/link.hpp"
+#include "autd3/link/builder.hpp"
 
 namespace autd3::link {
 
 /**
  * @brief Link using TwinCAT via Beckhoff ADS
  */
-class RemoteTwinCAT {
+class RemoteTwinCAT : public LinkBuilder<RemoteTwinCAT> {
  public:
-  /**
-   * @brief Create RemoteTwinCAT
-   */
-  core::LinkPtr build();
-
   RemoteTwinCAT& server_ip_address(const std::string& server_ip_address) {
     _server_ip_address = server_ip_address;
     return *this;
@@ -43,12 +39,15 @@ class RemoteTwinCAT {
    * @brief Constructor
    * @param server_ams_net_id server ams net id
    */
-  explicit RemoteTwinCAT(std::string server_ams_net_id) : _server_ams_net_id(std::move(server_ams_net_id)) {}
+  explicit RemoteTwinCAT(std::string server_ams_net_id) : LinkBuilder(core::Milliseconds(0)), _server_ams_net_id(std::move(server_ams_net_id)) {}
   ~RemoteTwinCAT() = default;
   RemoteTwinCAT(const RemoteTwinCAT& v) noexcept = delete;
   RemoteTwinCAT& operator=(const RemoteTwinCAT& obj) = delete;
   RemoteTwinCAT(RemoteTwinCAT&& obj) = delete;
   RemoteTwinCAT& operator=(RemoteTwinCAT&& obj) = delete;
+
+ protected:
+  core::LinkPtr build_() override;
 
  private:
   std::string _server_ip_address;

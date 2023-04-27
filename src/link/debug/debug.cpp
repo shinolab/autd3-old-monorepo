@@ -3,7 +3,7 @@
 // Created Date: 11/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/04/2023
+// Last Modified: 27/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,33 +17,9 @@
 
 namespace autd3::link {
 
-class NullLink final : public core::Link {
- public:
-  [[nodiscard]] core::LinkPtr build() const {
-    core::LinkPtr link = std::make_unique<NullLink>();
-    return link;
-  }
-
-  NullLink() : Link() {}
-  ~NullLink() override = default;
-  NullLink(const NullLink& v) noexcept = delete;
-  NullLink& operator=(const NullLink& obj) = delete;
-  NullLink(NullLink&& obj) = delete;
-  NullLink& operator=(NullLink&& obj) = delete;
-
-  bool open(const core::Geometry&) override { return _is_open = true; }
-  bool close() override { return _is_open = false; }
-  bool send(const driver::TxDatagram&) override { return true; }
-  bool receive(driver::RxDatagram&) override { return true; }
-  bool is_open() override { return _is_open; }
-
- private:
-  bool _is_open{false};
-};
-
 class DebugImpl final : public core::Link {
  public:
-  explicit DebugImpl(core::LinkPtr link, std::shared_ptr<spdlog::logger> logger) : Link(), _link(std::move(link)), _logger(std::move(logger)) {}
+  explicit DebugImpl(std::shared_ptr<spdlog::logger> logger) : Link(), _logger(std::move(logger)) {}
   ~DebugImpl() override = default;
   DebugImpl(const DebugImpl& v) noexcept = delete;
   DebugImpl& operator=(const DebugImpl& obj) = delete;
@@ -56,7 +32,6 @@ class DebugImpl final : public core::Link {
       _logger->debug("Link is already opened");
       return true;
     }
-    if (!_link->open(geometry)) return false;
 
     _cpus.clear();
     _cpus.reserve(geometry.num_devices());
@@ -68,13 +43,19 @@ class DebugImpl final : public core::Link {
     });
     _logger->debug("Initialize emulator");
 
+    _is_open = true;
+
     return true;
   }
 
   bool close() override {
+    if (!is_open()) {
+      _logger->warn("Link is already closed");
+      return false;
+    }
+    _is_open = false;
     _logger->debug("Close Debug link");
-    if (!is_open()) _logger->debug("Link is not opened");
-    return _link->close();
+    return true;
   }
 
   bool send(const driver::TxDatagram& tx) override {
@@ -154,31 +135,30 @@ class DebugImpl final : public core::Link {
       } else
         _logger->debug("\tWithout output");
     }
-    return _link->send(tx);
+    return true;
   }
   bool receive(driver::RxDatagram& rx) override {
     _logger->debug("Receive data");
     std::transform(_cpus.begin(), _cpus.end(), rx.messages().begin(), [](const auto& cpu) { return driver::RxMessage(cpu.ack(), cpu.msg_id()); });
-    return _link->receive(rx);
+    return true;
   }
 
-  bool is_open() override { return _link->is_open(); }
+  bool is_open() override { return _is_open; }
 
  private:
-  core::LinkPtr _link;
+  bool _is_open{false};
   std::vector<extra::CPU> _cpus;
   std::shared_ptr<spdlog::logger> _logger;
 };
 
-core::LinkPtr Debug::build() {
+core::LinkPtr Debug::build_() {
   const auto name = "AUTD3 Debug Log";
-  spdlog::sink_ptr sink =
-      _out == nullptr || _flush == nullptr ? get_default_sink() : std::make_shared<CustomSink<std::mutex>>(std::move(_out), std::move(_flush));
+  spdlog::sink_ptr sink = _debug_out == nullptr || _debug_flush == nullptr
+                              ? get_default_sink()
+                              : std::make_shared<CustomSink<std::mutex>>(std::move(_debug_out), std::move(_debug_flush));
   auto logger = std::make_shared<spdlog::logger>(name, std::move(sink));
-  logger->set_level(static_cast<spdlog::level::level_enum>(_level));
-  if (_link == nullptr) _link = NullLink().build();
-  core::LinkPtr link = std::make_unique<DebugImpl>(std::move(_link), std::move(logger));
-  return link;
+  logger->set_level(static_cast<spdlog::level::level_enum>(_debug_level));
+  return std::make_unique<DebugImpl>(std::move(logger));
 }
 
 }  // namespace autd3::link

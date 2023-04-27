@@ -3,7 +3,7 @@
 // Created Date: 04/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/04/2023
+// Last Modified: 27/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,6 +13,7 @@
 
 #include "autd3/core/link.hpp"
 #include "autd3/core/utils/osal_timer/timer_strategy.hpp"
+#include "autd3/link/builder.hpp"
 #include "autd3/link/ecat.hpp"
 
 namespace autd3 {
@@ -25,13 +26,8 @@ namespace autd3::link {
 /**
  * @brief Link for Experimental Mini EtherCAT Master
  */
-class Emem {
+class Emem : public LinkBuilder<Emem> {
  public:
-  /**
-   * @brief Create Bundle link
-   */
-  [[nodiscard]] core::LinkPtr build();
-
   /**
    * @brief Enumerate Ethernet adapters of the computer.
    */
@@ -41,7 +37,8 @@ class Emem {
    * @brief Constructor
    */
   Emem()
-      : _timer_strategy(TimerStrategy::Sleep),
+      : LinkBuilder(core::Milliseconds(20)),
+        _timer_strategy(TimerStrategy::Sleep),
         _sync0_cycle(2),
         _send_cycle(2),
         _callback(nullptr),
@@ -53,14 +50,6 @@ class Emem {
   Emem& operator=(const Emem& obj) = delete;
   Emem(Emem&& obj) = default;
   Emem& operator=(Emem&& obj) = default;
-
-  /**
-   * @brief Set default timeout.
-   */
-  Emem& timeout(const core::Duration timeout) {
-    _timeout = timeout;
-    return *this;
-  }
 
   /**
    * @brief Set network interface name. (e.g. eth0)
@@ -126,6 +115,9 @@ class Emem {
     return *this;
   }
 
+ protected:
+  core::LinkPtr build_() override;
+
  private:
   TimerStrategy _timer_strategy;
   std::string _ifname;
@@ -135,7 +127,6 @@ class Emem {
   std::function<void(std::string)> _callback;
   SyncMode _sync_mode;
   std::chrono::milliseconds _state_check_interval;
-  core::Duration _timeout{core::Milliseconds(20)};
 };
 
 }  // namespace autd3::link
