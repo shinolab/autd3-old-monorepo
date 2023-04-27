@@ -3,7 +3,7 @@
 // Created Date: 11/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,7 +19,7 @@ namespace autd3::link {
 
 class DebugImpl final : public core::Link {
  public:
-  explicit DebugImpl(std::shared_ptr<spdlog::logger> logger) : Link(), _logger(std::move(logger)) {}
+  explicit DebugImpl(const core::Duration timeout, std::shared_ptr<spdlog::logger> logger) : Link(timeout), _logger(std::move(logger)) {}
   ~DebugImpl() override = default;
   DebugImpl(const DebugImpl& v) noexcept = delete;
   DebugImpl& operator=(const DebugImpl& obj) = delete;
@@ -158,7 +158,7 @@ core::LinkPtr Debug::build_() {
                               : std::make_shared<CustomSink<std::mutex>>(std::move(_debug_out), std::move(_debug_flush));
   auto logger = std::make_shared<spdlog::logger>(name, std::move(sink));
   logger->set_level(static_cast<spdlog::level::level_enum>(_debug_level));
-  return std::make_unique<DebugImpl>(std::move(logger));
+  return std::make_unique<DebugImpl>(_timeout, std::move(logger));
 }
 
 }  // namespace autd3::link

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -51,8 +51,11 @@ constexpr uint16_t PORT = 301;
 
 class RemoteTwinCATImpl final : public core::Link {
  public:
-  RemoteTwinCATImpl(std::string ipv4_addr, std::string remote_ams_net_id, std::string local_ams_net_id)
-      : Link(), _client_ams_net_id(std::move(local_ams_net_id)), _server_ams_net_id(std::move(remote_ams_net_id)), _server_ip(std::move(ipv4_addr)) {}
+  RemoteTwinCATImpl(const core::Duration timeout, std::string ipv4_addr, std::string remote_ams_net_id, std::string local_ams_net_id)
+      : Link(timeout),
+        _client_ams_net_id(std::move(local_ams_net_id)),
+        _server_ams_net_id(std::move(remote_ams_net_id)),
+        _server_ip(std::move(ipv4_addr)) {}
   ~RemoteTwinCATImpl() override = default;
   RemoteTwinCATImpl(const RemoteTwinCATImpl& v) noexcept = delete;
   RemoteTwinCATImpl& operator=(const RemoteTwinCATImpl& obj) = delete;
@@ -127,6 +130,8 @@ class RemoteTwinCATImpl final : public core::Link {
   AmsNetId _net_id;
 };
 
-core::LinkPtr RemoteTwinCAT::build_() { return std::make_unique<RemoteTwinCATImpl>(_server_ip_address, _server_ams_net_id, _client_ams_net_id); }
+core::LinkPtr RemoteTwinCAT::build_() {
+  return std::make_unique<RemoteTwinCATImpl>(_timeout, _server_ip_address, _server_ams_net_id, _client_ams_net_id);
+}
 
 }  // namespace autd3::link
