@@ -21,6 +21,7 @@
 #include "autd3/core/link.hpp"
 #include "autd3/core/utils/osal_timer/timer_strategy.hpp"
 #include "autd3/driver/debug_level.hpp"
+#include "autd3/link/builder.hpp"
 #include "autd3/link/ecat.hpp"
 
 namespace autd3 {
@@ -33,13 +34,8 @@ namespace autd3::link {
 /**
  * @brief Link using [SOEM](https://github.com/OpenEtherCATSociety/SOEM)
  */
-class SOEM {
+class SOEM : public LinkBuilder<SOEM> {
  public:
-  /**
-   * @brief Create SOEM link.
-   */
-  core::LinkPtr build();
-
   /**
    * @brief Enumerate Ethernet adapters of the computer.
    */
@@ -49,21 +45,13 @@ class SOEM {
    * @brief Constructor
    */
   SOEM()
-      : _timer_strategy(TimerStrategy::Sleep),
+      : LinkBuilder(core::Milliseconds(0)),
+        _timer_strategy(TimerStrategy::Sleep),
         _sync0_cycle(2),
         _send_cycle(2),
         _callback(nullptr),
         _sync_mode(SyncMode::FreeRun),
         _state_check_interval(std::chrono::milliseconds(100)) {}
-
-  /**
-   * @brief Set default timeout.
-   */
-  template <typename Rep, typename Period>
-  SOEM& timeout(const std::chrono::duration<Rep, Period> timeout) {
-    _timeout = timeout;
-    return *this;
-  }
 
   /**
    * @brief Set network interface name. (e.g. eth0)
@@ -124,7 +112,7 @@ class SOEM {
    * @brief Set Debug level (for debug)
    */
   SOEM& debug_level(const driver::DebugLevel level) {
-    _level = level;
+    _debug_level = level;
     return *this;
   }
 
@@ -133,8 +121,8 @@ class SOEM {
    * @details The log will be written to stdout by default
    */
   SOEM& debug_log_func(std::function<void(std::string)> out, std::function<void()> flush) {
-    _out = std::move(out);
-    _flush = std::move(flush);
+    _debug_out = std::move(out);
+    _debug_flush = std::move(flush);
     return *this;
   }
 
@@ -153,6 +141,9 @@ class SOEM {
   SOEM(SOEM&& obj) = default;
   SOEM& operator=(SOEM&& obj) = default;
 
+ protected:
+  core::LinkPtr build_() override;
+
  private:
   TimerStrategy _timer_strategy;
   std::string _ifname;
@@ -162,9 +153,8 @@ class SOEM {
   std::function<void(std::string)> _callback;
   SyncMode _sync_mode;
   std::chrono::milliseconds _state_check_interval;
-  driver::DebugLevel _level{driver::DebugLevel::Info};
-  std::function<void(std::string)> _out{nullptr};
-  std::function<void()> _flush{nullptr};
-  core::Duration _timeout{core::Milliseconds(20)};
+  driver::DebugLevel _debug_level{driver::DebugLevel::Info};
+  std::function<void(std::string)> _debug_out{nullptr};
+  std::function<void()> _debug_flush{nullptr};
 };
 }  // namespace autd3::link

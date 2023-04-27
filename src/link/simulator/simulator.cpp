@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/04/2023
+// Last Modified: 27/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -164,9 +164,6 @@ class SimulatorImpl final : public core::Link {
   static std::vector<uint8_t> simulator_close_datagram() { return {driver::MSG_SIMULATOR_CLOSE}; }
 };
 
-core::LinkPtr Simulator::build() const {
-  core::LinkPtr link = std::make_unique<SimulatorImpl>(_timeout);
-  return link;
-}
+core::LinkPtr Simulator::build_() { return std::make_unique<SimulatorImpl>(_timeout); }
 
 }  // namespace autd3::link

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/04/2023
+// Last Modified: 27/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -127,6 +127,6 @@ class RemoteTwinCATImpl final : public core::Link {
   AmsNetId _net_id;
 };
 
-core::LinkPtr RemoteTwinCAT::build() { return std::make_unique<RemoteTwinCATImpl>(_server_ip_address, _server_ams_net_id, _client_ams_net_id); }
+core::LinkPtr RemoteTwinCAT::build_() { return std::make_unique<RemoteTwinCATImpl>(_server_ip_address, _server_ams_net_id, _client_ams_net_id); }
 
 }  // namespace autd3::link
