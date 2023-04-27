@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/04/2023
+// Last Modified: 27/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,7 +12,7 @@
 #if _MSC_VER
 #pragma warning(push)
 #pragma warning( \
-    disable : 4068 6031 6255 6294 26408 26450 26426 26429 26432 26434 26440 26446 26447 26451 26454 26455 26461 26462 26471 26472 26474 26475 26495 26481 26482 26485 26490 26491 26493 26494 26496 26497 26812 26813 26814)
+        disable : 4068 6031 6255 6294 26408 26450 26426 26429 26432 26434 26440 26446 26447 26451 26454 26455 26461 26462 26471 26472 26474 26475 26495 26481 26482 26485 26490 26491 26493 26494 26496 26497 26812 26813 26814)
 #endif
 #if defined(__GNUC__) && !defined(__llvm__)
 #pragma GCC diagnostic push
@@ -256,7 +256,5 @@ class EigenBackendImpl final : public Backend {
 };
 
 BackendPtr EigenBackend::build() const { return std::make_shared<EigenBackendImpl>(); }
-
-BackendPtr EigenBackend::create() { return std::make_shared<EigenBackendImpl>(); }
 
 }  // namespace autd3::gain::holo

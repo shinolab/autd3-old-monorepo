@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/04/2023
+// Last Modified: 27/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -97,8 +97,8 @@ class Backend {
 
   virtual void mul(Transpose trans_a, Transpose trans_b, complex alpha, const MatrixXc& a, const MatrixXc& b, complex beta, MatrixXc& c) = 0;
   virtual void mul(Transpose trans_a, complex alpha, const MatrixXc& a, const VectorXc& b, complex beta, VectorXc& c) = 0;
-  virtual void mul(Transpose trans_a, Transpose trans_b, driver::float_t alpha, const MatrixXd& a, const MatrixXd& b,
-                   driver::float_t beta, MatrixXd& c) = 0;
+  virtual void mul(Transpose trans_a, Transpose trans_b, driver::float_t alpha, const MatrixXd& a, const MatrixXd& b, driver::float_t beta,
+                   MatrixXd& c) = 0;
   virtual void mul(Transpose trans_a, driver::float_t alpha, const MatrixXd& a, const VectorXd& b, driver::float_t beta, VectorXd& c) = 0;
   virtual void hadamard_product(const VectorXc& a, const VectorXc& b, VectorXc& c) = 0;
   virtual void hadamard_product(const MatrixXc& a, const MatrixXc& b, MatrixXc& c) = 0;
@@ -108,10 +108,8 @@ class Backend {
 
   virtual void max_eigen_vector(MatrixXc& src, VectorXc& dst) = 0;
 
-  virtual void pseudo_inverse_svd(MatrixXd& src, driver::float_t alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf,
-                                  MatrixXd& dst) = 0;
-  virtual void pseudo_inverse_svd(MatrixXc& src, driver::float_t alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf,
-                                  MatrixXc& dst) = 0;
+  virtual void pseudo_inverse_svd(MatrixXd& src, driver::float_t alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf, MatrixXd& dst) = 0;
+  virtual void pseudo_inverse_svd(MatrixXc& src, driver::float_t alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) = 0;
 };
 
 using BackendPtr = std::shared_ptr<Backend>;
@@ -129,8 +127,6 @@ class EigenBackend final {
   EigenBackend& operator=(EigenBackend&& obj) = default;
 
   [[nodiscard]] BackendPtr build() const;
-
-  [[deprecated("Use EigenBackend().build() instead.")]] static BackendPtr create();
 };
 
 }  // namespace autd3::gain::holo

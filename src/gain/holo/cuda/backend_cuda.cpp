@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/04/2023
+// Last Modified: 27/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -680,7 +680,5 @@ class CUDABackendImpl final : public Backend {
 #endif
 
 BackendPtr CUDABackend::build() const { return std::make_shared<CUDABackendImpl>(_device_idx); }
-
-BackendPtr CUDABackend::create(const int device_idx) { return std::make_shared<CUDABackendImpl>(device_idx); }
 
 }  // namespace autd3::gain::holo
