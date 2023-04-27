@@ -6,7 +6,7 @@ endif()
 
 add_library(autd3capi-link-remote-twincat SHARED c_api.cpp)
 
-target_link_libraries(autd3capi-link-remote-twincat PRIVATE autd3::common autd3::link::remote_twincat)
+target_link_libraries(autd3capi-link-remote-twincat PRIVATE autd3::autd3 autd3::link::remote_twincat)
 if(WIN32)
 elseif(APPLE)
 else()

@@ -3,7 +3,7 @@
 // Created Date: 11/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 27/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,37 +17,28 @@
 
 #include "autd3/core/link.hpp"
 #include "autd3/driver/debug_level.hpp"
+#include "autd3/link/builder.hpp"
 
 namespace autd3::link {
 
 /**
  * @brief Link for debug
  */
-class Debug {
+class Debug : public LinkBuilder<Debug> {
  public:
-  /**
-   * @brief Create Bundle link
-   */
-  [[nodiscard]] core::LinkPtr build();
-
   /**
    * @brief Constructor
    */
-  Debug() = default;
+  Debug() : LinkBuilder<Debug>(core::Milliseconds(0)){};
 
-  Debug& link(core::LinkPtr link) {
-    _link = std::move(link);
+  Debug& debug_level(const driver::DebugLevel level) {
+    _debug_level = level;
     return *this;
   }
 
-  Debug& level(const driver::DebugLevel level) {
-    _level = level;
-    return *this;
-  }
-
-  Debug& log_func(std::function<void(std::string)> out, std::function<void()> flush) {
-    _out = std::move(out);
-    _flush = std::move(flush);
+  Debug& debug_log_func(std::function<void(std::string)> out, std::function<void()> flush) {
+    _debug_out = std::move(out);
+    _debug_flush = std::move(flush);
     return *this;
   }
 
@@ -57,10 +48,12 @@ class Debug {
   Debug(Debug&& obj) = default;
   Debug& operator=(Debug&& obj) = default;
 
+ protected:
+  core::LinkPtr build_() override;
+
  private:
-  core::LinkPtr _link{nullptr};
-  driver::DebugLevel _level{driver::DebugLevel::Debug};
-  std::function<void(std::string)> _out{nullptr};
-  std::function<void()> _flush{nullptr};
+  driver::DebugLevel _debug_level{driver::DebugLevel::Debug};
+  std::function<void(std::string)> _debug_out{nullptr};
+  std::function<void()> _debug_flush{nullptr};
 };
 }  // namespace autd3::link

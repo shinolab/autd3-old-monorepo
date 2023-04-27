@@ -3,7 +3,7 @@
 // Created Date: 02/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/04/2023
+// Last Modified: 27/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -134,6 +134,6 @@ class RemoteSOEMImpl final : public core::Link {
   boost::asio::ip::tcp::socket _socket;
 };
 
-core::LinkPtr RemoteSOEM::build() { return std::make_unique<RemoteSOEMImpl>(_timeout, _ip, _port); }
+core::LinkPtr RemoteSOEM::build_() { return std::make_unique<RemoteSOEMImpl>(_timeout, _ip, _port); }
 
 }  // namespace autd3::link

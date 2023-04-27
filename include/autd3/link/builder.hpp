@@ -12,11 +12,17 @@
 #pragma once
 
 #include <chrono>
+#include <functional>
+#include <string>
+#include <utility>
 
 #include "autd3/core/link.hpp"
 #include "autd3/driver/debug_level.hpp"
 
 namespace autd3::link {
+
+core::LinkPtr make_log_link(core::LinkPtr link, driver::DebugLevel level, std::function<void(std::string)> out, std::function<void()> flush,
+                            core::Duration timeout);
 
 /**
  * @brief Builder for Link
@@ -24,15 +30,18 @@ namespace autd3::link {
 template <typename T>
 class LinkBuilder {
  public:
-  virtual core::LinkPtr build() = 0;
+  [[nodiscard]] core::LinkPtr build() {
+    auto link = build_();
+    return _log_enable ? make_log_link(std::move(link), _level, std::move(_out), std::move(_flush), _timeout) : std::move(link);
+  }
 
   /**
-   * @brief Set default timeout.
+   * @brief Default timeout
    */
   template <typename Rep, typename Period>
   T& timeout(const std::chrono::duration<Rep, Period> timeout) {
     _timeout = timeout;
-    return *this;
+    return static_cast<T&>(*this);
   }
 
   /**
@@ -43,24 +52,33 @@ class LinkBuilder {
     return static_cast<T&>(*this);
   }
 
+  /**
+   * @brief Set log level
+   */
   T& log_level(const driver::DebugLevel level) {
     _level = level;
     return static_cast<T&>(*this);
   }
 
+  /**
+   * @brief Set log func
+   * @details The log will be written to stdout by default
+   */
   T& log_func(std::function<void(std::string)> out, std::function<void()> flush) {
     _out = std::move(out);
     _flush = std::move(flush);
     return static_cast<T&>(*this);
   }
 
+  explicit LinkBuilder(const core::Duration timeout) : _timeout(timeout){};
   ~LinkBuilder() = default;
   LinkBuilder(const LinkBuilder& v) noexcept = default;
   LinkBuilder& operator=(const LinkBuilder& obj) = default;
   LinkBuilder(LinkBuilder&& obj) = default;
   LinkBuilder& operator=(LinkBuilder&& obj) = default;
 
- private:
+ protected:
+  virtual core::LinkPtr build_() = 0;
   driver::DebugLevel _level{driver::DebugLevel::Info};
   bool _log_enable{false};
   std::function<void(std::string)> _out{nullptr};
