@@ -3,7 +3,7 @@
 # Created Date: 13/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 18/04/2023
+# Last Modified: 28/04/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,8 +22,8 @@ mutable struct SOEM
     on_lost
     timer_strategy
     state_check_interval
-    debug_level
-    debug_func
+    log_level
+    log_func
     timeout
     build
     function SOEM()
@@ -64,11 +64,11 @@ mutable struct SOEM
             autd3capi_link_soem.autd_link_soem_state_check_interval(soem._soem, interval)
             soem
         end
-        soem.debug_level = function (level::UInt8)
+        soem.log_level = function (level::UInt8)
             autd3capi_link_soem.autd_link_soem_log_level(soem._soem, level)
             soem
         end
-        soem.debug_func = function (out::Function, flush::Function)
+        soem.log_func = function (out::Function, flush::Function)
             ffout = (x::Cstring) -> out(x)
             ffflush = () -> flush()
             pout = @cfunction($ffout, Cvoid, (Cstring,))
@@ -83,7 +83,6 @@ mutable struct SOEM
         soem.build = function ()
             chandle = Ref(Ptr{Cvoid}(0))
             autd3capi_link_soem.autd_link_soem_build(chandle, soem._soem)
-            autd3capi_link_soem.autd_link_soem_delete(soem._soem)
             Link(chandle[])
         end
         soem

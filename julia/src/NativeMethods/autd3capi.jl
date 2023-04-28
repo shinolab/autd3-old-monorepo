@@ -129,6 +129,9 @@ autd_software_stm_sampling_frequency(stm) = ccall((:AUTDSoftwareSTMSamplingFrequ
 autd_software_stm_sampling_period(stm) = ccall((:AUTDSoftwareSTMSamplingPeriod, _dll), UInt32, (Ptr{Cvoid}, ), stm);
 autd_software_stm_set_sampling_period(stm, period) = ccall((:AUTDSoftwareSTMSetSamplingPeriod, _dll), Cvoid, (Ptr{Cvoid}, UInt32, ), stm, period);
 autd_delete_software_stm(stm) = ccall((:AUTDDeleteSoftwareSTM, _dll), Cvoid, (Ptr{Cvoid}, ), stm);
-autd_link_log(out, link, level, out_func, flush_func) = ccall((:AUTDLinkLog, _dll), Cvoid, (Ref{Ptr{Cvoid}}, Ptr{Cvoid}, Int32, Ptr{Cvoid}, Ptr{Cvoid}, ), out, link, level, out_func, flush_func);
-autd_link_debug(out, level, out_func, flush_func) = ccall((:AUTDLinkDebug, _dll), Cvoid, (Ref{Ptr{Cvoid}}, Int32, Ptr{Cvoid}, Ptr{Cvoid}, ), out, level, out_func, flush_func);
+autd_link_debug(out) = ccall((:AUTDLinkDebug, _dll), Cvoid, (Ref{Ptr{Cvoid}}, ), out);
+autd_link_debug_log_level(debug, level) = ccall((:AUTDLinkDebugLogLevel, _dll), Cvoid, (Ptr{Cvoid}, Int32, ), debug, level);
+autd_link_debug_log_func(debug, out_func, flush_func) = ccall((:AUTDLinkDebugLogFunc, _dll), Cvoid, (Ptr{Cvoid}, Ptr{Cvoid}, Ptr{Cvoid}, ), debug, out_func, flush_func);
+autd_link_debug_timeout(debug, timeout_ns) = ccall((:AUTDLinkDebugTimeout, _dll), Cvoid, (Ptr{Cvoid}, UInt64, ), debug, timeout_ns);
+autd_link_debug_build(out, debug) = ccall((:AUTDLinkDebugBuild, _dll), Cvoid, (Ref{Ptr{Cvoid}}, Ptr{Cvoid}, ), out, debug);
 end
