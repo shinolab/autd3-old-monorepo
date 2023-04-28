@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -117,7 +117,11 @@ EXPORT_AUTD autd3_float_t AUTDSoftwareSTMSamplingFrequency(IN const void* stm);
 EXPORT_AUTD uint32_t AUTDSoftwareSTMSamplingPeriod(IN const void* stm);
 EXPORT_AUTD void AUTDSoftwareSTMSetSamplingPeriod(IN void* stm, IN uint32_t period);
 EXPORT_AUTD void AUTDDeleteSoftwareSTM(IN const void* stm);
-EXPORT_AUTD void AUTDLinkDebug(OUT void** out, IN int32_t level, IN const void* out_func, IN void* flush_func);
+EXPORT_AUTD void AUTDLinkDebug(OUT void** out);
+EXPORT_AUTD void AUTDLinkDebugLogLevel(IN void* debug, IN int32_t level);
+EXPORT_AUTD void AUTDLinkDebugLogFunc(IN void* debug, IN void* out_func, IN void* flush_func);
+EXPORT_AUTD void AUTDLinkDebugTimeout(IN void* debug, IN uint64_t timeout_ns);
+EXPORT_AUTD void AUTDLinkDebugBuild(OUT void** out, IN void* debug);
 
 #ifdef __cplusplus
 }

@@ -28,10 +28,6 @@ class DebugImpl final : public core::Link {
 
   bool open(const core::Geometry& geometry) override {
     _logger->debug("Open Debug link");
-    if (is_open()) {
-      _logger->debug("Link is already opened");
-      return true;
-    }
 
     _cpus.clear();
     _cpus.reserve(geometry.num_devices());
@@ -41,7 +37,7 @@ class DebugImpl final : public core::Link {
       cpu.init();
       return cpu;
     });
-    _logger->debug("Initialize emulator");
+    _logger->trace("Initialize emulator");
 
     _is_open = true;
 
@@ -49,10 +45,6 @@ class DebugImpl final : public core::Link {
   }
 
   bool close() override {
-    if (!is_open()) {
-      _logger->warn("Link is already closed");
-      return false;
-    }
     _is_open = false;
     _logger->debug("Close Debug link");
     return true;
@@ -60,8 +52,6 @@ class DebugImpl final : public core::Link {
 
   bool send(const driver::TxDatagram& tx) override {
     for (auto& cpu : _cpus) cpu.send(tx);
-
-    _logger->debug("Send data");
 
     switch (tx.header().msg_id) {
       case driver::MSG_CLEAR:
@@ -85,9 +75,6 @@ class DebugImpl final : public core::Link {
       default:
         break;
     }
-
-    if (std::any_of(_cpus.begin(), _cpus.end(), [](const auto& cpu) { return !cpu.synchronized(); }))
-      _logger->warn("\tDevices are not synchronized!");
 
     _logger->debug("\tCPU Flag: {}", to_string(tx.header().cpu_flag));
     _logger->debug("\tFPGA Flag: {}", to_string(tx.header().fpga_flag));
@@ -138,7 +125,6 @@ class DebugImpl final : public core::Link {
     return true;
   }
   bool receive(driver::RxDatagram& rx) override {
-    _logger->debug("Receive data");
     std::transform(_cpus.begin(), _cpus.end(), rx.messages().begin(), [](const auto& cpu) { return driver::RxMessage(cpu.ack(), cpu.msg_id()); });
     return true;
   }
@@ -152,12 +138,11 @@ class DebugImpl final : public core::Link {
 };
 
 core::LinkPtr Debug::build_() {
-  const auto name = "AUTD3 Debug Log";
-  spdlog::sink_ptr sink = _debug_out == nullptr || _debug_flush == nullptr
-                              ? get_default_sink()
-                              : std::make_shared<CustomSink<std::mutex>>(std::move(_debug_out), std::move(_debug_flush));
+  const auto name = "AUTD3";
+  spdlog::sink_ptr sink =
+      _out == nullptr || _flush == nullptr ? get_default_sink() : std::make_shared<CustomSink<std::mutex>>(std::move(_out), std::move(_flush));
   auto logger = std::make_shared<spdlog::logger>(name, std::move(sink));
-  logger->set_level(static_cast<spdlog::level::level_enum>(_debug_level));
+  logger->set_level(static_cast<spdlog::level::level_enum>(_level));
   return std::make_unique<DebugImpl>(_timeout, std::move(logger));
 }
 

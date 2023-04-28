@@ -51,7 +51,9 @@ class SOEM : public LinkBuilder<SOEM> {
         _send_cycle(2),
         _callback(nullptr),
         _sync_mode(SyncMode::FreeRun),
-        _state_check_interval(std::chrono::milliseconds(100)) {}
+        _state_check_interval(std::chrono::milliseconds(100)) {
+    _level = driver::DebugLevel::Info;
+  }
 
   /**
    * @brief Set network interface name. (e.g. eth0)
@@ -109,24 +111,6 @@ class SOEM : public LinkBuilder<SOEM> {
   }
 
   /**
-   * @brief Set Debug level (for debug)
-   */
-  SOEM& debug_level(const driver::DebugLevel level) {
-    _debug_level = level;
-    return *this;
-  }
-
-  /**
-   * @brief Set Debug log func (for debug)
-   * @details The log will be written to stdout by default
-   */
-  SOEM& debug_log_func(std::function<void(std::string)> out, std::function<void()> flush) {
-    _debug_out = std::move(out);
-    _debug_flush = std::move(flush);
-    return *this;
-  }
-
-  /**
    * @brief Set EtherCAT state check interval.
    */
   template <typename Rep, typename Period>
@@ -153,8 +137,5 @@ class SOEM : public LinkBuilder<SOEM> {
   std::function<void(std::string)> _callback;
   SyncMode _sync_mode;
   std::chrono::milliseconds _state_check_interval;
-  driver::DebugLevel _debug_level{driver::DebugLevel::Info};
-  std::function<void(std::string)> _debug_out{nullptr};
-  std::function<void()> _debug_flush{nullptr};
 };
 }  // namespace autd3::link
