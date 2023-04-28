@@ -308,7 +308,7 @@ class VulkanImGui {
 
   static void check_vk_result(const VkResult err) {
     if (err == VK_SUCCESS) return;
-    std::cerr << "[vulkan] Error: VkResult = " << err << std::endl;
+    spdlog::error("[vulkan] Error: VkResult = {}", err);
     if (err < 0) std::abort();
   }
 };
