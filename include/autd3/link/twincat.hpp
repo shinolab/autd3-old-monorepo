@@ -3,7 +3,7 @@
 // Created Date: 12/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ class TwinCAT : public LinkBuilder<TwinCAT> {
    * @brief Constructor
    */
   TwinCAT() : LinkBuilder(core::Milliseconds(0)) {}
-  ~TwinCAT() = default;
+  ~TwinCAT() override = default;
   TwinCAT(const TwinCAT& v) noexcept = delete;
   TwinCAT& operator=(const TwinCAT& obj) = delete;
   TwinCAT(TwinCAT&& obj) = delete;
