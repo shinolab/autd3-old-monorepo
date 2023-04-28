@@ -57,7 +57,7 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public Debug Level(DebugLevel level)
+            public Debug LogLevel(DebugLevel level)
             {
                 NativeMethods.Base.AUTDLinkDebugLogLevel(_builder, (int)level);
                 return this;
@@ -189,7 +189,7 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public RemoteSOEM Level(DebugLevel level)
+            public RemoteSOEM LogLevel(DebugLevel level)
             {
                 NativeMethods.LinkRemoteSOEM.AUTDLinkRemoteSOEMLogLevel(_builder, (int)level);
                 return this;
@@ -223,7 +223,7 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public TwinCAT Level(DebugLevel level)
+            public TwinCAT LogLevel(DebugLevel level)
             {
                 NativeMethods.LinkTwinCAT.AUTDLinkTwinCATLogLevel(_builder, (int)level);
                 return this;
@@ -269,7 +269,7 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public RemoteTwinCAT Level(DebugLevel level)
+            public RemoteTwinCAT LogLevel(DebugLevel level)
             {
                 NativeMethods.LinkRemoteTwinCAT.AUTDLinkRemoteTwinCATLogLevel(_builder, (int)level);
                 return this;
@@ -303,7 +303,7 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public Simulator Level(DebugLevel level)
+            public Simulator LogLevel(DebugLevel level)
             {
                 NativeMethods.LinkSimulator.AUTDLinkSimulatorLogLevel(_builder, (int)level);
                 return this;
