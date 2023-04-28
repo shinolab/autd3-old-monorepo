@@ -4,7 +4,7 @@
  * Created Date: 25/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/03/2023
+ * Last Modified: 28/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -40,8 +40,7 @@ public enum Constraint
     DontCare
 }
 
-[INotifyPropertyChanged]
-public partial class Target
+public partial class Target : ObservableObject
 {
     [ObservableProperty] private int _no;
     [ObservableProperty] private double _x;
@@ -55,8 +54,7 @@ public partial class Target
     }
 }
 
-[INotifyPropertyChanged]
-public partial class HoloModel : IGain
+public partial class HoloModel : ObservableObject, IGain
 {
     [ObservableProperty] private OptMethod _opt;
     [ObservableProperty] private Constraint _constraint;

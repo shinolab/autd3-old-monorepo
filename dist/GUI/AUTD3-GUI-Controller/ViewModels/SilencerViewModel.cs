@@ -5,8 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AUTD3_GUI_Controller.ViewModels;
 
-[INotifyPropertyChanged]
-public partial class SilencerViewModel
+public partial class SilencerViewModel : ObservableObject
 {
     private const string CycleKey = "SilencerCycle";
     private const string StepKey = "SilencerStep";
