@@ -73,6 +73,12 @@ if (BUILD_LINK_SIMULATOR)
   set_target_properties(example_custom_device PROPERTIES FOLDER "example")
 endif()
 
+if(BUILD_LINK_REMOTE_SIMULATOR)
+  add_executable(example_remote_simulator remote_simulator.cpp)
+  target_link_libraries(example_remote_simulator PRIVATE autd3_example_common autd3::link::remote_simulator)
+  set_target_properties(example_remote_simulator PROPERTIES FOLDER "example")
+endif()
+
 add_executable(example_debug debug.cpp)
 target_link_libraries(example_debug PRIVATE autd3_example_common)
 set_target_properties(example_debug PROPERTIES FOLDER "example")
