@@ -28,7 +28,6 @@ namespace AUTD3Sharp.NativeMethods
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkSOEMLogFunc(IntPtr soem, IntPtr outFunc, IntPtr flushFunc);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkSOEMTimeout(IntPtr soem, ulong timeoutNs);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkSOEMBuild(out IntPtr @out, IntPtr soem);
-        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkSOEMDelete(IntPtr soem);
     }
 }
 
