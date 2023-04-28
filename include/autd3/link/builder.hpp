@@ -70,7 +70,7 @@ class LinkBuilder {
   }
 
   explicit LinkBuilder(const core::Duration timeout) : _timeout(timeout){};
-  ~LinkBuilder() = default;
+  virtual ~LinkBuilder() = default;
   LinkBuilder(const LinkBuilder& v) noexcept = default;
   LinkBuilder& operator=(const LinkBuilder& obj) = default;
   LinkBuilder(LinkBuilder&& obj) = default;
