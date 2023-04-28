@@ -3,7 +3,7 @@
 // Created Date: 05/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/11/2022
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,7 +11,11 @@
 
 #pragma once
 
-#include "glm.hpp"
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 namespace autd3::extra::simulator {
 

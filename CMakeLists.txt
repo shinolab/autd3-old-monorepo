@@ -161,6 +161,7 @@ if(NOT MSVC) # Too noisy
 endif()
 enable_cxx_compiler_flag_if_supported(autd3_common INTERFACE /Wextra)
 enable_cxx_compiler_flag_if_supported(autd3_common INTERFACE /Werror)
+enable_cxx_compiler_flag_if_supported(autd3_common INTERFACE /WX)
 add_library(autd3::common ALIAS autd3_common)
 
 add_subdirectory(bench)

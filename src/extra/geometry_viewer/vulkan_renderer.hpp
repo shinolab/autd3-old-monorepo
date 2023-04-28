@@ -3,7 +3,7 @@
 // Created Date: 24/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/01/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,7 +20,12 @@
 #include <utility>
 #include <vector>
 
-#include "glm.hpp"
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/string_cast.hpp>
+
 #include "model.hpp"
 #include "shader.hpp"
 #include "vulkan_context.hpp"

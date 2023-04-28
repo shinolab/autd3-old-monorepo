@@ -3,7 +3,7 @@
 // Created Date: 26/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 16/03/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,42 +11,19 @@
 
 #pragma once
 
+#include <fx/gltf.h>
+
 #include <algorithm>
 #include <memory>
 #include <utility>
 #include <vector>
-
-#include "glm.hpp"
-
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 6262 26495 26800 26819 28020 26819)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic push
-#endif
-#include <fx/gltf.h>
-#if _MSC_VER
-#pragma warning(pop)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic pop
-#endif
-
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 28251 26451)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic push
-#endif
 #include <vulkan/vulkan.hpp>
-#if _MSC_VER
-#pragma warning(pop)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic pop
-#endif
+
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 namespace autd3::extra::geometry_viewer::gltf {
 
