@@ -3,26 +3,20 @@
 // Created Date: 24/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 26439 26495 26812)
-#endif
+#include "autd3/gain/primitive.hpp"
+
 #include <gtest/gtest.h>
-#if _MSC_VER
-#pragma warning(pop)
-#endif
 
 #include <autd3/core/acoustics.hpp>
 
 #include "autd3/autd3_device.hpp"
 #include "autd3/core/geometry.hpp"
-#include "autd3/gain/primitive.hpp"
 
 using complex = std::complex<autd3::driver::float_t>;
 using autd3::core::propagate;

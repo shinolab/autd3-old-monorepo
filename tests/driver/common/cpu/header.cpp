@@ -3,20 +3,13 @@
 // Created Date: 01/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 11/01/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 26439 26495 26812)
-#endif
 #include <gtest/gtest.h>
-#if _MSC_VER
-#pragma warning(pop)
-#endif
 
 #include <random>
 

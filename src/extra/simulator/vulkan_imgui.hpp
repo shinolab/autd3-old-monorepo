@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -24,7 +24,13 @@
 #include <utility>
 #include <vector>
 
-#include "glm.hpp"
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/string_cast.hpp>
+
+#include "autd3/driver/bitflags.hpp"
 #include "tinycolormap.hpp"
 
 namespace autd3::extra::simulator {
@@ -300,8 +306,8 @@ class VulkanImGui {
     ImGui::Render();
   }
 
-  UpdateFlags draw(const std::vector<CPU>& cpus, std::vector<SoundSources>& sources) {
-    auto flag = UpdateFlags(UpdateFlags::None);
+  driver::BitFlags<UpdateFlags> draw(const std::vector<CPU>& cpus, std::vector<SoundSources>& sources) {
+    driver::BitFlags flag = UpdateFlags::None;
 
     if (_update_font) {
       set_font();
@@ -665,14 +671,28 @@ class VulkanImGui {
     ImGui::SameLine();
     if (ImGui::SmallButton("Reset")) {
       load_settings(_initial_settings);
-      flag.set(UpdateFlags::all().value());
+      flag.set(UpdateFlags::UpdateSourceDrive);
+      flag.set(UpdateFlags::UpdateColorMap);
+      flag.set(UpdateFlags::UpdateCameraPos);
+      flag.set(UpdateFlags::UpdateSlicePos);
+      flag.set(UpdateFlags::UpdateSliceSize);
+      flag.set(UpdateFlags::UpdateSourceAlpha);
+      flag.set(UpdateFlags::UpdateSourceFlag);
+      flag.set(UpdateFlags::UpdateDeviceInfo);
       flag.remove(UpdateFlags::SaveImage);
     }
     ImGui::SameLine();
     if (ImGui::SmallButton("Default")) {
       _initial_settings.load_default();
       load_settings(_initial_settings);
-      flag.set(UpdateFlags::all().value());
+      flag.set(UpdateFlags::UpdateSourceDrive);
+      flag.set(UpdateFlags::UpdateColorMap);
+      flag.set(UpdateFlags::UpdateCameraPos);
+      flag.set(UpdateFlags::UpdateSlicePos);
+      flag.set(UpdateFlags::UpdateSliceSize);
+      flag.set(UpdateFlags::UpdateSourceAlpha);
+      flag.set(UpdateFlags::UpdateSourceFlag);
+      flag.set(UpdateFlags::UpdateDeviceInfo);
       flag.remove(UpdateFlags::SaveImage);
     }
 

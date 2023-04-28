@@ -3,7 +3,7 @@
 // Created Date: 05/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -77,7 +77,7 @@ class SliceViewer {
     command_buffer.drawIndexed(6, 1, 0, 0, 0);
   }
 
-  void update(const float width, const float height, const float pixel_width, const UpdateFlags update_flag) {
+  void update(const float width, const float height, const float pixel_width, const driver::BitFlags<UpdateFlags> update_flag) {
     if (!update_flag.contains(UpdateFlags::UpdateSliceSize)) return;
 
     _context->device().waitIdle();

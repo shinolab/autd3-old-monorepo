@@ -3,7 +3,7 @@
 // Created Date: 18/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/02/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,16 +15,6 @@
 #include <string>
 #include <utility>
 
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 6285 6385 26437 26800 26498 26451 26495 26450)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic push
-#endif
-#ifdef __clang__
-#pragma clang diagnostic push
-#endif
 #include "spdlog/async.h"
 #include "spdlog/sinks/base_sink.h"
 #include "spdlog/spdlog.h"
@@ -32,15 +22,6 @@
 #include "spdlog/sinks/wincolor_sink.h"
 #else
 #include "spdlog/sinks/ansicolor_sink.h"
-#endif
-#if _MSC_VER
-#pragma warning(pop)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic pop
-#endif
-#ifdef __clang__
-#pragma clang diagnostic pop
 #endif
 
 namespace autd3 {
