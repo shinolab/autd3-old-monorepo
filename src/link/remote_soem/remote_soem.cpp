@@ -62,8 +62,7 @@ class RemoteSOEMImpl final : public core::Link {
           spdlog::warn("Receive failed: {}", e.message());
           continue;
         }
-        const auto i = len / size;
-        std::memcpy(_ptr.get(), &buffer[i * size], size);
+        std::memcpy(_ptr.get(), buffer, size);
       }
     });
 
