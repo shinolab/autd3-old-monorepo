@@ -74,6 +74,3 @@ class NativeMethods(metaclass=Singleton):
 
         self.dll.AUTDLinkSOEMBuild.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p] 
         self.dll.AUTDLinkSOEMBuild.restype = None
-
-        self.dll.AUTDLinkSOEMDelete.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDLinkSOEMDelete.restype = None
