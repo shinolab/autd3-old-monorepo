@@ -15,7 +15,6 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_vulkan.h>
 
-#include <iostream>
 #include <memory>
 #include <string>
 #include <utility>
