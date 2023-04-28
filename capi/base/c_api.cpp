@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -33,7 +33,7 @@ void AUTDSetLogLevel(const int32_t level) { spdlog::set_level(static_cast<spdlog
 
 void AUTDSetDefaultLogger(void* out, void* flush) {
   auto custom_sink = std::make_shared<autd3::capi::CustomSinkMt>(out, flush);
-  const auto logger = std::make_shared<spdlog::logger>("AUTD3 Logger", custom_sink);
+  const auto logger = std::make_shared<spdlog::logger>("AUTD3", custom_sink);
   set_default_logger(logger);
 }
 
@@ -493,15 +493,23 @@ EXPORT_AUTD void AUTDDeleteSoftwareSTM(const void* stm) {
   delete stm_;
 }
 
-typedef void (*OutCallback)(const char*);
-typedef void (*FlushCallback)();
+void AUTDLinkDebug(void** out) { *out = new autd3::link::Debug; }
 
-EXPORT_AUTD void AUTDLinkDebug(void** out, const int32_t level, const void* out_func, void* flush_func) {
-  std::function<void(std::string)> out_f = nullptr;
-  std::function<void()> flush_f = nullptr;
-  if (out_func != nullptr) out_f = [out](const std::string& msg) { reinterpret_cast<OutCallback>(out)(msg.c_str()); };
-  if (flush_func != nullptr) flush_f = [flush_func] { reinterpret_cast<FlushCallback>(flush_func)(); };
-  auto* link = link_create(
-      autd3::link::Debug().debug_level(static_cast<autd3::driver::DebugLevel>(level)).debug_log_func(std::move(out_f), std::move(flush_f)).build());
+void AUTDLinkDebugLogLevel(void* debug, const int32_t level) {
+  static_cast<autd3::link::Debug*>(debug)->log_level(static_cast<autd3::driver::DebugLevel>(level));
+}
+void AUTDLinkDebugLogFunc(void* debug, void* out_func, void* flush_func) {
+  if (out_func != nullptr && flush_func != nullptr)
+    static_cast<autd3::link::Debug*>(debug)->log_func([out_func](const std::string& msg) { reinterpret_cast<OutCallback>(out_func)(msg.c_str()); },
+                                                      [flush_func] { reinterpret_cast<FlushCallback>(flush_func)(); });
+}
+void AUTDLinkDebugTimeout(void* debug, const uint64_t timeout_ns) {
+  static_cast<autd3::link::Debug*>(debug)->timeout(std::chrono::nanoseconds(timeout_ns));
+}
+
+void AUTDLinkDebugBuild(void** out, void* debug) {
+  auto* builder = static_cast<autd3::link::Debug*>(debug);
+  auto* link = link_create(builder->build());
+  delete builder;
   *out = link;
 }

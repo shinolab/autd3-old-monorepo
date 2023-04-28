@@ -3,7 +3,7 @@
 // Created Date: 11/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -29,20 +29,9 @@ class Debug : public LinkBuilder<Debug> {
   /**
    * @brief Constructor
    */
-  Debug() : LinkBuilder<Debug>(core::Milliseconds(0)){};
+  Debug() : LinkBuilder<Debug>(core::Milliseconds(0)) { _level = driver::DebugLevel::Debug; };
 
-  Debug& debug_level(const driver::DebugLevel level) {
-    _debug_level = level;
-    return *this;
-  }
-
-  Debug& debug_log_func(std::function<void(std::string)> out, std::function<void()> flush) {
-    _debug_out = std::move(out);
-    _debug_flush = std::move(flush);
-    return *this;
-  }
-
-  ~Debug() = default;
+  ~Debug() override = default;
   Debug(const Debug& v) noexcept = delete;
   Debug& operator=(const Debug& obj) = delete;
   Debug(Debug&& obj) = default;
@@ -50,10 +39,5 @@ class Debug : public LinkBuilder<Debug> {
 
  protected:
   core::LinkPtr build_() override;
-
- private:
-  driver::DebugLevel _debug_level{driver::DebugLevel::Debug};
-  std::function<void(std::string)> _debug_out{nullptr};
-  std::function<void()> _debug_flush{nullptr};
 };
 }  // namespace autd3::link

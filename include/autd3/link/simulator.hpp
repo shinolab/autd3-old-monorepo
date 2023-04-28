@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,7 +27,7 @@ class Simulator : public LinkBuilder<Simulator> {
    * @brief Constructor
    */
   Simulator() : LinkBuilder(core::Milliseconds(20)) {}
-  ~Simulator() = default;
+  ~Simulator() override = default;
   Simulator(const Simulator& v) noexcept = delete;
   Simulator& operator=(const Simulator& obj) = delete;
   Simulator(Simulator&& obj) = default;

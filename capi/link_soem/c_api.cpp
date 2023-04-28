@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -40,9 +40,6 @@ void AUTDFreeAdapterPointer(void* p_adapter) {
   ether_cat_adapters_delete(wrapper);
 }
 
-typedef void (*OutCallback)(const char*);
-typedef void (*FlushCallback)();
-
 void AUTDLinkSOEM(void** out) { *out = new autd3::link::SOEM; }
 void AUTDLinkSOEMIfname(void* soem, const char* ifname) {
   if (ifname != nullptr) static_cast<autd3::link::SOEM*>(soem)->ifname(std::string(ifname));
@@ -64,19 +61,18 @@ void AUTDLinkSOEMStateCheckInterval(void* soem, const uint64_t state_check_inter
   static_cast<autd3::link::SOEM*>(soem)->state_check_interval(std::chrono::milliseconds(state_check_interval));
 }
 void AUTDLinkSOEMLogLevel(void* soem, const int32_t level) {
-  static_cast<autd3::link::SOEM*>(soem)->debug_level(static_cast<autd3::driver::DebugLevel>(level));
+  static_cast<autd3::link::SOEM*>(soem)->log_level(static_cast<autd3::driver::DebugLevel>(level));
 }
 void AUTDLinkSOEMLogFunc(void* soem, void* out_func, void* flush_func) {
   if (out_func != nullptr && flush_func != nullptr)
-    static_cast<autd3::link::SOEM*>(soem)->debug_log_func(
-        [out_func](const std::string& msg) { reinterpret_cast<OutCallback>(out_func)(msg.c_str()); },
-        [flush_func] { reinterpret_cast<FlushCallback>(flush_func)(); });
+    static_cast<autd3::link::SOEM*>(soem)->log_func([out_func](const std::string& msg) { reinterpret_cast<OutCallback>(out_func)(msg.c_str()); },
+                                                    [flush_func] { reinterpret_cast<FlushCallback>(flush_func)(); });
 }
 void AUTDLinkSOEMTimeout(void* soem, const uint64_t timeout_ns) {
   static_cast<autd3::link::SOEM*>(soem)->timeout(std::chrono::nanoseconds(timeout_ns));
 }
 void AUTDLinkSOEMBuild(void** out, void* soem) {
   auto* link = link_create(static_cast<autd3::link::SOEM*>(soem)->build());
+  delete static_cast<autd3::link::SOEM*>(soem);
   *out = link;
 }
-void AUTDLinkSOEMDelete(void* soem) { delete static_cast<autd3::link::SOEM*>(soem); }

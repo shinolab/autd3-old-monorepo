@@ -31,7 +31,7 @@ class LinkBuilder {
  public:
   [[nodiscard]] core::LinkPtr build() {
     auto link = build_();
-    return _log_enable ? make_log_link(std::move(link), _level, std::move(_out), std::move(_flush)) : std::move(link);
+    return _level == driver::DebugLevel::Off ? std::move(link) : make_log_link(std::move(link), _level, std::move(_out), std::move(_flush));
   }
 
   /**
@@ -40,14 +40,6 @@ class LinkBuilder {
   template <typename Rep, typename Period>
   T& timeout(const std::chrono::duration<Rep, Period> timeout) {
     _timeout = timeout;
-    return static_cast<T&>(*this);
-  }
-
-  /**
-   * @brief Enable log
-   */
-  T& log(const bool enable) {
-    _log_enable = enable;
     return static_cast<T&>(*this);
   }
 
@@ -78,8 +70,7 @@ class LinkBuilder {
 
  protected:
   virtual core::LinkPtr build_() = 0;
-  driver::DebugLevel _level{driver::DebugLevel::Info};
-  bool _log_enable{false};
+  driver::DebugLevel _level{driver::DebugLevel::Off};
   std::function<void(std::string)> _out{nullptr};
   std::function<void()> _flush{nullptr};
   core::Duration _timeout{core::Milliseconds(0)};

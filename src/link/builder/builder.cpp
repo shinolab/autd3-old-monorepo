@@ -26,7 +26,7 @@ class LogImpl final : public core::Link {
   LogImpl& operator=(LogImpl&& obj) = delete;
 
   bool open(const core::Geometry& geometry) override {
-    _logger->debug("Open Log link");
+    _logger->trace("Open Log link");
 
     if (is_open()) {
       _logger->warn("Link is already opened");
@@ -42,7 +42,7 @@ class LogImpl final : public core::Link {
   }
 
   bool close() override {
-    _logger->debug("Close Log link");
+    _logger->trace("Close Log link");
 
     if (!is_open()) {
       _logger->warn("Link is not opened");
@@ -125,7 +125,7 @@ class LogImpl final : public core::Link {
 };
 
 core::LinkPtr make_log_link(core::LinkPtr link, const driver::DebugLevel level, std::function<void(std::string)> out, std::function<void()> flush) {
-  const auto name = "AUTD3 Log";
+  const auto name = "AUTD3";
   spdlog::sink_ptr sink =
       out == nullptr || flush == nullptr ? get_default_sink() : std::make_shared<CustomSink<std::mutex>>(std::move(out), std::move(flush));
   auto logger = std::make_shared<spdlog::logger>(name, std::move(sink));

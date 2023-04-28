@@ -3,7 +3,7 @@
 // Created Date: 04/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -45,7 +45,7 @@ class Emem : public LinkBuilder<Emem> {
         _sync_mode(SyncMode::FreeRun),
         _state_check_interval(std::chrono::milliseconds(100)) {}
 
-  ~Emem() = default;
+  ~Emem() override = default;
   Emem(const Emem& v) noexcept = delete;
   Emem& operator=(const Emem& obj) = delete;
   Emem(Emem&& obj) = default;
