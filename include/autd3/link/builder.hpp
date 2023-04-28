@@ -3,7 +3,7 @@
 // Created Date: 27/04/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,8 +21,7 @@
 
 namespace autd3::link {
 
-core::LinkPtr make_log_link(core::LinkPtr link, driver::DebugLevel level, std::function<void(std::string)> out, std::function<void()> flush,
-                            core::Duration timeout);
+core::LinkPtr make_log_link(core::LinkPtr link, driver::DebugLevel level, std::function<void(std::string)> out, std::function<void()> flush);
 
 /**
  * @brief Builder for Link
@@ -32,7 +31,7 @@ class LinkBuilder {
  public:
   [[nodiscard]] core::LinkPtr build() {
     auto link = build_();
-    return _log_enable ? make_log_link(std::move(link), _level, std::move(_out), std::move(_flush), _timeout) : std::move(link);
+    return _log_enable ? make_log_link(std::move(link), _level, std::move(_out), std::move(_flush)) : std::move(link);
   }
 
   /**
