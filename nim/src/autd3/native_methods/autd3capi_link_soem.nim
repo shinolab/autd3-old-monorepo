@@ -41,5 +41,3 @@ proc AUTDLinkSOEMTimeout*(soem: pointer; timeout_ns: uint64) {.cdecl,
     importc: "AUTDLinkSOEMTimeout", dynlib: dll.}
 proc AUTDLinkSOEMBuild*(`out`: ptr pointer; soem: pointer) {.cdecl,
     importc: "AUTDLinkSOEMBuild", dynlib: dll.}
-proc AUTDLinkSOEMDelete*(soem: pointer) {.cdecl, importc: "AUTDLinkSOEMDelete",
-                                       dynlib: dll.}
