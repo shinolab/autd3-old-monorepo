@@ -10,7 +10,7 @@
 //
 
 #ifdef WIN32
-#include <SDKDDKVer.h>
+#include <SDKDDKVer.h>  // for boost/asio
 #endif
 
 #include <boost/asio.hpp>

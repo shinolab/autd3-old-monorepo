@@ -3,14 +3,14 @@
 // Created Date: 26/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #ifdef WIN32
-#include <sdkddkver.h>
+#include <sdkddkver.h>  // for boost/asio
 #endif
 
 #include <argparse/argparse.hpp>
@@ -22,7 +22,7 @@
 
 constexpr size_t BUF_SIZE = 65536;
 
-static void exit_() {
+[[noreturn]] static void exit_() {
 #ifdef __APPLE__
   exit(0);
 #else

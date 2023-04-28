@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -135,7 +135,7 @@ class SOEM : public LinkBuilder<SOEM> {
     return *this;
   }
 
-  ~SOEM() = default;
+  ~SOEM() override = default;
   SOEM(const SOEM& v) noexcept = default;
   SOEM& operator=(const SOEM& obj) = default;
   SOEM(SOEM&& obj) = default;
