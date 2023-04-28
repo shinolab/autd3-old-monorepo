@@ -15,7 +15,6 @@
 
 #include <boost/asio.hpp>
 #include <boost/format.hpp>
-#include <iostream>
 #include <memory>
 #include <string>
 #include <thread>
