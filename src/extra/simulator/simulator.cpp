@@ -108,11 +108,10 @@ class Server {
             _cpus.emplace_back(cpu);
 
             auto* p = reinterpret_cast<float*>(cursor);
+            const auto transducers = AUTD3(Eigen::Vector3<float>(p[0], p[1], p[2]).cast<driver::float_t>(),
+                                           Eigen::Quaternion<float>(p[3], p[4], p[5], p[6]).cast<driver::float_t>())
+                                         .get_transducers(0);
             simulator::SoundSources s;
-            AUTD3 device(Eigen::Vector3<float>(p[0], p[1], p[2]).cast<driver::float_t>(),
-                         Eigen::Quaternion<float>(p[3], p[4], p[6], p[7]).cast<driver::float_t>());
-
-            const auto transducers = device.get_transducers(0);
             for (const auto& tr : transducers) {
               const Eigen::Vector3<float> pos_f = tr.position().cast<float>();
               const Eigen::Quaternion<float> rot_f = tr.rotation().cast<float>();
@@ -140,6 +139,7 @@ class Server {
         if (header->msg_id == driver::MSG_SIMULATOR_CLOSE) {
           spdlog::info("Client disconnected");
           _do_close.store(true);
+          std::memset(_data, 0, BUF_SIZE);
           while (_do_close.load()) std::this_thread::sleep_for(std::chrono::milliseconds(100));
           spdlog::info("Waiting for client connection...");
           return;
