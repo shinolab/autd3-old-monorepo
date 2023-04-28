@@ -501,7 +501,7 @@ EXPORT_AUTD void AUTDLinkDebug(void** out, const int32_t level, const void* out_
   std::function<void()> flush_f = nullptr;
   if (out_func != nullptr) out_f = [out](const std::string& msg) { reinterpret_cast<OutCallback>(out)(msg.c_str()); };
   if (flush_func != nullptr) flush_f = [flush_func] { reinterpret_cast<FlushCallback>(flush_func)(); };
-  auto* link =
-      link_create(autd3::link::Debug().level(static_cast<autd3::driver::DebugLevel>(level)).log_func(std::move(out_f), std::move(flush_f)).build());
+  auto* link = link_create(
+      autd3::link::Debug().debug_level(static_cast<autd3::driver::DebugLevel>(level)).debug_log_func(std::move(out_f), std::move(flush_f)).build());
   *out = link;
 }

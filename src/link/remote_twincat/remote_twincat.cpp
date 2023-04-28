@@ -9,30 +9,9 @@
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 26495)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic push
-#endif
-#ifdef __clang__
-#pragma clang diagnostic push
-#endif
-#include <AdsLib.h>
-#if _MSC_VER
-#pragma warning(pop)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic pop
-#endif
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
+#include "autd3/link/remote_twincat.hpp"
 
-#if WIN32
-#include <Windows.h>
-#endif
+#include <AdsLib.h>
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -40,7 +19,6 @@
 #include <vector>
 
 #include "autd3/core/link.hpp"
-#include "autd3/link/remote_twincat.hpp"
 
 namespace autd3::link {
 
