@@ -74,9 +74,9 @@ if (BUILD_LINK_SIMULATOR)
 endif()
 
 if(BUILD_LINK_REMOTE_SIMULATOR)
-  add_executable(example_remote_simulator remote_simulator.cpp)
-  target_link_libraries(example_remote_simulator PRIVATE autd3_example_common autd3::link::remote_simulator)
-  set_target_properties(example_remote_simulator PROPERTIES FOLDER "example")
+  add_executable(example_simulator_client_remote simulator_client_remote.cpp)
+  target_link_libraries(example_simulator_client_remote PRIVATE autd3_example_common autd3::link::remote_simulator)
+  set_target_properties(example_simulator_client_remote PROPERTIES FOLDER "example")
 endif()
 
 add_executable(example_debug debug.cpp)
