@@ -15,6 +15,10 @@
 #include <string>
 #include <utility>
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
 #include "spdlog/async.h"
 #include "spdlog/sinks/base_sink.h"
 #include "spdlog/spdlog.h"
@@ -22,6 +26,9 @@
 #include "spdlog/sinks/wincolor_sink.h"
 #else
 #include "spdlog/sinks/ansicolor_sink.h"
+#endif
+#ifdef __clang__
+#pragma clang diagnostic pop
 #endif
 
 namespace autd3 {
