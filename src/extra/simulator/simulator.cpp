@@ -16,13 +16,11 @@
 #endif
 
 #include <atomic>
-#include <boost/asio.hpp>
-#include <boost/interprocess/managed_shared_memory.hpp>
-#include <boost/interprocess/sync/interprocess_mutex.hpp>
 #include <mutex>
 #include <numeric>
 #include <thread>
 
+#include "autd3/autd3_device.hpp"
 #include "autd3/driver/cpu/datagram.hpp"
 #include "autd3/driver/cpu/ec_config.hpp"
 #include "autd3/extra/cpu_emulator.hpp"
@@ -35,9 +33,12 @@
 #include "window_handler.hpp"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <autd3/autd3_device.hpp>
-
 #include "stb_image_write.h"
+
+// Boost must be included after Vulkan to avoid hideous namespace pollution in termios.h on macOS
+#include "boost/asio.hpp"
+#include "boost/interprocess/managed_shared_memory.hpp"
+#include "boost/interprocess/sync/interprocess_mutex.hpp"
 
 namespace autd3::extra {
 
