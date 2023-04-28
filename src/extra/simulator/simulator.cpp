@@ -11,7 +11,12 @@
 
 #include "autd3/extra/simulator.hpp"
 
+#ifdef WIN32
+#include <SDKDDKVer.h>
+#endif
+
 #include <atomic>
+#include <boost/asio.hpp>
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
 #include <mutex>
@@ -30,6 +35,8 @@
 #include "window_handler.hpp"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <autd3/autd3_device.hpp>
+
 #include "stb_image_write.h"
 
 namespace autd3::extra {
@@ -37,6 +44,144 @@ namespace autd3::extra {
 static constexpr std::string_view SHMEM_NAME{"autd3_simulator_shmem"};
 static constexpr std::string_view SHMEM_MTX_NAME{"autd3_simulator_shmem_mtx"};
 static constexpr std::string_view SHMEM_DATA_NAME{"autd3_simulator_shmem_ptr"};
+
+constexpr size_t BUF_SIZE = 65536;
+
+class Server {
+ public:
+  Server(boost::asio::io_context& io_context, const uint16_t port, std::vector<CPU>& cpus, std::vector<simulator::SoundSources>& sources,
+         std::atomic<bool>& initialized, std::atomic<bool>& data_updated, std::atomic<bool>& do_init, std::atomic<bool>& do_close)
+      : _acceptor(io_context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
+        _cpus(cpus),
+        _sources(sources),
+        _initialized(initialized),
+        _data_updated(data_updated),
+        _do_init(do_init),
+        _do_close(do_close) {
+    spdlog::info("Waiting for client connection...");
+    do_accept();
+    io_context.run();
+  }
+
+ private:
+  void do_accept() {
+    _acceptor.async_accept([this](const boost::system::error_code ec, boost::asio::ip::tcp::socket socket) {
+      if (ec) {
+        spdlog::error("Accept error: {}", ec.message());
+      } else {
+        _socket = std::make_shared<boost::asio::ip::tcp::socket>(std::move(socket));
+        do_read();
+        do_accept();
+      }
+    });
+  }
+
+  void do_read() {
+    _socket->async_read_some(boost::asio::buffer(_data), [this](boost::system::error_code ec, std::size_t len) {
+      if (ec == boost::asio::error::eof || ec == boost::asio::error::connection_reset || ec == boost::asio::error::connection_aborted) {
+        return;
+      }
+      if (ec) {
+        spdlog::error("receive error: {}", ec.message());
+        return;
+      }
+      auto* cursor = _data;
+      const auto* header = reinterpret_cast<driver::GlobalHeader*>(cursor);
+      if (!_initialized.load()) {
+        if (header->msg_id == driver::MSG_SIMULATOR_INIT) {
+          spdlog::info("Client connected");
+          cursor++;
+
+          const auto dev_num = *reinterpret_cast<uint32_t*>(cursor);
+          cursor += sizeof(uint32_t);
+
+          spdlog::info("Open simulator with {} devices", dev_num);
+
+          _cpus.clear();
+          _cpus.reserve(dev_num);
+
+          _sources.clear();
+
+          for (uint32_t dev = 0; dev < dev_num; dev++) {
+            CPU cpu(dev, AUTD3::NUM_TRANS_IN_UNIT);
+            cpu.init();
+            _cpus.emplace_back(cpu);
+
+            auto* p = reinterpret_cast<float*>(cursor);
+            simulator::SoundSources s;
+            AUTD3 device(Eigen::Vector3<float>(p[0], p[1], p[2]).cast<driver::float_t>(),
+                         Eigen::Quaternion<float>(p[3], p[4], p[6], p[7]).cast<driver::float_t>());
+
+            const auto transducers = device.get_transducers(0);
+            for (const auto& tr : transducers) {
+              const Eigen::Vector3<float> pos_f = tr.position().cast<float>();
+              const Eigen::Quaternion<float> rot_f = tr.rotation().cast<float>();
+              const auto pos = simulator::VulkanImGui::to_gl_pos(glm::vec3(pos_f.x(), pos_f.y(), pos_f.z()));
+              const auto rot = simulator::VulkanImGui::to_gl_rot(glm::quat(rot_f.w(), rot_f.x(), rot_f.y(), rot_f.z()));
+              s.add(pos, rot, simulator::Drive(1.0f, 0.0f, 1.0f, 40e3, 340e3f * simulator::scale), 1.0f);
+            }
+            cursor += sizeof(float) * 7;
+            _sources.emplace_back(std::move(s));
+          }
+
+          _do_init.store(true);
+          while (!_initialized.load()) std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+          _send_buf[0] = driver::MSG_SIMULATOR_INIT;
+
+          boost::system::error_code error;
+          write(*_socket, boost::asio::buffer(_send_buf, 1), error);
+          if (error) {
+            spdlog::error("send error: {}", error.message());
+            return;
+          }
+        }
+      } else {
+        if (header->msg_id == driver::MSG_SIMULATOR_CLOSE) {
+          spdlog::info("Client disconnected");
+          _do_close.store(true);
+          while (_do_close.load()) std::this_thread::sleep_for(std::chrono::milliseconds(100));
+          spdlog::info("Waiting for client connection...");
+          return;
+        }
+        size_t c = 0;
+        for (size_t i = 0; i < _cpus.size(); i++) {
+          const auto* body = reinterpret_cast<driver::Body*>(_data + sizeof(driver::GlobalHeader) + c);
+          _cpus[i].send(header, body);
+          c += _sources[i].size() * sizeof(uint16_t);
+        }
+        for (size_t i = 0; i < _cpus.size(); i++) {
+          auto* input = reinterpret_cast<driver::RxMessage*>(_send_buf + i * sizeof(driver::RxMessage));
+          input->msg_id = _cpus[i].msg_id();
+          input->ack = _cpus[i].ack();
+        }
+        async_write(*_socket, boost::asio::buffer(_send_buf, _cpus.size() * sizeof(driver::RxMessage)),
+                    [this](const boost::system::error_code error, std::size_t) {
+                      if (error == boost::asio::error::eof || error == boost::asio::error::connection_reset ||
+                          error == boost::asio::error::connection_aborted) {
+                        return;
+                      }
+                      if (error) spdlog::error("send error: {}", error.message());
+                    });
+        _data_updated.store(true);
+      }
+      do_read();
+    });
+  }
+
+  boost::asio::ip::tcp::acceptor _acceptor;
+  std::shared_ptr<boost::asio::ip::tcp::socket> _socket{nullptr};
+
+  std::vector<CPU>& _cpus;
+  std::vector<simulator::SoundSources>& _sources;
+  std::atomic<bool>& _initialized;
+  std::atomic<bool>& _data_updated;
+  std::atomic<bool>& _do_init;
+  std::atomic<bool>& _do_close;
+
+  uint8_t _data[BUF_SIZE]{};
+  uint8_t _send_buf[BUF_SIZE]{};
+};
 
 void Simulator::run() {
   std::vector<simulator::SoundSources> sources;
@@ -79,116 +224,123 @@ void Simulator::run() {
 
   imgui->init(static_cast<uint32_t>(renderer->frames_in_flight()), renderer->render_pass(), _settings);
 
-  spdlog::info("Initializing shared memory...");
-  const auto size = sizeof(uint8_t) + sizeof(uint32_t) + sizeof(uint32_t) * _settings.max_dev_num + _settings.max_trans_num * sizeof(float) * 7;
-
-  boost::interprocess::shared_memory_object::remove(std::string(SHMEM_NAME).c_str());
-  boost::interprocess::managed_shared_memory segment(boost::interprocess::create_only, std::string(SHMEM_NAME).c_str(),
-                                                     size + sizeof(boost::interprocess::interprocess_mutex) + 1024);
-  auto* mtx = segment.construct<boost::interprocess::interprocess_mutex>(std::string(SHMEM_MTX_NAME).c_str())();
-  volatile auto* ptr = segment.construct<uint8_t>(std::string(SHMEM_DATA_NAME).c_str())[size](0x00);
-
-  spdlog::info("Initializing shared memory...done");
-
   std::atomic initialized = false;
   std::atomic do_init = false;
   std::atomic do_close = false;
   std::atomic data_updated = false;
   std::atomic run_recv = true;
-  _th = std::thread([this, ptr, mtx, &cpus, &sources, &initialized, &run_recv, &data_updated, &do_init, &do_close, &imgui] {
-    uint8_t last_msg_id = 0;
-    while (run_recv.load()) {
-      auto* cursor = const_cast<uint8_t*>(ptr);
-      const auto* header = reinterpret_cast<driver::GlobalHeader*>(cursor);
-      if (!initialized.load()) {
-        if (do_init.load() || header->msg_id != driver::MSG_SIMULATOR_INIT) {
-          std::this_thread::sleep_for(std::chrono::milliseconds(100));
-          continue;
-        }
 
-        {
-          std::unique_lock lk(*mtx);
+  if (_settings.remote)
+    std::thread([this, &cpus, &sources, &initialized, &data_updated, &do_init, &do_close]() {
+      boost::asio::io_context io_context;
+      Server s(io_context, _settings.remote_port, cpus, sources, initialized, data_updated, do_init, do_close);
+    }).detach();
+  else
+    std::thread([this, &cpus, &sources, &initialized, &run_recv, &data_updated, &do_init, &do_close] {
+      spdlog::info("Initializing shared memory...");
+      const auto size = sizeof(uint8_t) + sizeof(uint32_t) + sizeof(uint32_t) * _settings.max_dev_num + _settings.max_trans_num * sizeof(float) * 7;
+      boost::interprocess::shared_memory_object::remove(std::string(SHMEM_NAME).c_str());
+      boost::interprocess::managed_shared_memory segment(boost::interprocess::create_only, std::string(SHMEM_NAME).c_str(),
+                                                         size + sizeof(boost::interprocess::interprocess_mutex) + 1024);
+      auto* mtx = segment.construct<boost::interprocess::interprocess_mutex>(std::string(SHMEM_MTX_NAME).c_str())();
+      volatile auto* ptr = segment.construct<uint8_t>(std::string(SHMEM_DATA_NAME).c_str())[size](0x00);
 
-          spdlog::info("Client connected");
-          cursor++;
+      spdlog::info("Initializing shared memory...done");
 
-          const auto dev_num = *reinterpret_cast<uint32_t*>(cursor);
-          cursor += sizeof(uint32_t);
-
-          spdlog::info("Open simulator with {} devices", dev_num);
-
-          cpus.clear();
-          cpus.reserve(dev_num);
-
-          sources.clear();
-
-          for (uint32_t dev = 0; dev < dev_num; dev++) {
-            const auto tr_num = *reinterpret_cast<uint32_t*>(cursor);
-            cursor += sizeof(uint32_t);
-
-            spdlog::info("Add {}-th device with {} transducers", dev, tr_num);
-
-            CPU cpu(dev, tr_num);
-            cpu.init();
-            std::vector<driver::Vector3> local_trans_pos;
-            local_trans_pos.reserve(tr_num);
-            auto* p = reinterpret_cast<float*>(cursor);
-            const driver::Vector3 origin = Eigen::Vector3<float>(p[0], p[1], p[2]).cast<driver::float_t>();
-            for (uint32_t tr = 0; tr < tr_num; tr++) {
-              const driver::Vector3 pos = Eigen::Vector3<float>(p[0], p[1], p[2]).cast<driver::float_t>() - origin;
-              local_trans_pos.emplace_back(pos);
-              p += 7;
-            }
-            cpu.configure_local_trans_pos(local_trans_pos);
-            cpus.emplace_back(cpu);
-
-            simulator::SoundSources s;
-            p = reinterpret_cast<float*>(cursor);
-            for (uint32_t tr = 0; tr < tr_num; tr++) {
-              const auto pos = imgui->to_gl_pos(glm::vec3(p[0], p[1], p[2]));
-              const auto rot = imgui->to_gl_rot(glm::quat(p[3], p[4], p[5], p[6]));
-              s.add(pos, rot, simulator::Drive(1.0f, 0.0f, 1.0f, 40e3, 340e3f * simulator::scale), 1.0f);
-              p += 7;
-              cursor += sizeof(float) * 7;
-            }
-            sources.emplace_back(std::move(s));
+      uint8_t last_msg_id = 0;
+      while (run_recv.load()) {
+        auto* cursor = const_cast<uint8_t*>(ptr);
+        const auto* header = reinterpret_cast<driver::GlobalHeader*>(cursor);
+        if (!initialized.load()) {
+          if (do_init.load() || header->msg_id != driver::MSG_SIMULATOR_INIT) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            continue;
           }
-        }
 
-        do_init.store(true);
-      } else {
-        if (do_close.load()) {
-          std::this_thread::sleep_for(std::chrono::milliseconds(100));
-          continue;
-        }
-        if (header->msg_id == driver::MSG_SIMULATOR_CLOSE) {
-          spdlog::info("Client disconnected");
-          do_close.store(true);
-          spdlog::info("Waiting for client connection...");
-        } else {
           {
             std::unique_lock lk(*mtx);
-            size_t c = 0;
-            for (size_t i = 0; i < cpus.size(); i++) {
-              const auto* body = reinterpret_cast<driver::Body*>(const_cast<uint8_t*>(ptr) + sizeof(driver::GlobalHeader) + c);
-              cpus[i].send(header, body);
-              c += sources[i].size() * sizeof(uint16_t);
-            }
-            for (size_t i = 0; i < cpus.size(); i++) {
-              auto* input = reinterpret_cast<driver::RxMessage*>(
-                  const_cast<uint8_t*>(ptr + sizeof(driver::GlobalHeader) + c + i * driver::EC_INPUT_FRAME_SIZE));
-              input->msg_id = cpus[i].msg_id();
-              input->ack = cpus[i].ack();
+
+            spdlog::info("Client connected");
+            cursor++;
+
+            const auto dev_num = *reinterpret_cast<uint32_t*>(cursor);
+            cursor += sizeof(uint32_t);
+
+            spdlog::info("Open simulator with {} devices", dev_num);
+
+            cpus.clear();
+            cpus.reserve(dev_num);
+
+            sources.clear();
+
+            for (uint32_t dev = 0; dev < dev_num; dev++) {
+              const auto tr_num = *reinterpret_cast<uint32_t*>(cursor);
+              cursor += sizeof(uint32_t);
+
+              spdlog::info("Add {}-th device with {} transducers", dev, tr_num);
+
+              CPU cpu(dev, tr_num);
+              cpu.init();
+              std::vector<driver::Vector3> local_trans_pos;
+              local_trans_pos.reserve(tr_num);
+              auto* p = reinterpret_cast<float*>(cursor);
+              const driver::Vector3 origin = Eigen::Vector3<float>(p[0], p[1], p[2]).cast<driver::float_t>();
+              for (uint32_t tr = 0; tr < tr_num; tr++) {
+                const driver::Vector3 pos = Eigen::Vector3<float>(p[0], p[1], p[2]).cast<driver::float_t>() - origin;
+                local_trans_pos.emplace_back(pos);
+                p += 7;
+              }
+              cpu.configure_local_trans_pos(local_trans_pos);
+              cpus.emplace_back(cpu);
+
+              simulator::SoundSources s;
+              p = reinterpret_cast<float*>(cursor);
+              for (uint32_t tr = 0; tr < tr_num; tr++) {
+                const auto pos = simulator::VulkanImGui::to_gl_pos(glm::vec3(p[0], p[1], p[2]));
+                const auto rot = simulator::VulkanImGui::to_gl_rot(glm::quat(p[3], p[4], p[5], p[6]));
+                s.add(pos, rot, simulator::Drive(1.0f, 0.0f, 1.0f, 40e3, 340e3f * simulator::scale), 1.0f);
+                p += 7;
+                cursor += sizeof(float) * 7;
+              }
+              sources.emplace_back(std::move(s));
             }
           }
-          if (last_msg_id != header->msg_id) {
-            last_msg_id = header->msg_id;
-            data_updated.store(true);
+
+          do_init.store(true);
+          while (do_init.load()) std::this_thread::sleep_for(std::chrono::milliseconds(100));
+          ptr[0] = 0x00;
+        } else {
+          if (header->msg_id == driver::MSG_SIMULATOR_CLOSE) {
+            spdlog::info("Client disconnected");
+            do_close.store(true);
+            while (do_close.load()) std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            for (size_t i = 0; i < size; i++) ptr[i] = 0;
+
+            spdlog::info("Waiting for client connection...");
+          } else {
+            {
+              std::unique_lock lk(*mtx);
+              size_t c = 0;
+              for (size_t i = 0; i < cpus.size(); i++) {
+                const auto* body = reinterpret_cast<driver::Body*>(const_cast<uint8_t*>(ptr) + sizeof(driver::GlobalHeader) + c);
+                cpus[i].send(header, body);
+                c += sources[i].size() * sizeof(uint16_t);
+              }
+              for (size_t i = 0; i < cpus.size(); i++) {
+                auto* input = reinterpret_cast<driver::RxMessage*>(
+                    const_cast<uint8_t*>(ptr + sizeof(driver::GlobalHeader) + c + i * driver::EC_INPUT_FRAME_SIZE));
+                input->msg_id = cpus[i].msg_id();
+                input->ack = cpus[i].ack();
+              }
+            }
+            if (last_msg_id != header->msg_id) {
+              last_msg_id = header->msg_id;
+              data_updated.store(true);
+            }
           }
         }
       }
-    }
-  });
+    }).detach();
 
   while (!window->should_close()) {
     helper::WindowHandler::poll_events();
@@ -198,7 +350,6 @@ void Simulator::run() {
       if (do_close.load()) {
         cpus.clear();
         sources.clear();
-        for (size_t i = 0; i < size; i++) ptr[i] = 0;
         initialized.store(false);
         do_close.store(false);
       } else {
@@ -296,7 +447,6 @@ void Simulator::run() {
         trans_viewer->init(sources);
         slice_viewer->init(imgui->slice_width, imgui->slice_height, imgui->pixel_size);
         field_compute->init(sources, imgui->slice_alpha, slice_viewer->images(), slice_viewer->image_size(), imgui->coloring_method);
-        ptr[0] = 0x00;
         initialized.store(true);
         do_init.store(false);
       } else {
@@ -311,7 +461,6 @@ void Simulator::run() {
   }
 
   run_recv.store(false);
-  if (_th.joinable()) _th.join();
 
   context->device().waitIdle();
   simulator::VulkanImGui::cleanup();
