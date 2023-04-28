@@ -48,5 +48,4 @@ autd_link_soem_log_level(soem, level) = ccall((:AUTDLinkSOEMLogLevel, _dll), Cvo
 autd_link_soem_log_func(soem, out_func, flush_func) = ccall((:AUTDLinkSOEMLogFunc, _dll), Cvoid, (Ptr{Cvoid}, Ptr{Cvoid}, Ptr{Cvoid}, ), soem, out_func, flush_func);
 autd_link_soem_timeout(soem, timeout_ns) = ccall((:AUTDLinkSOEMTimeout, _dll), Cvoid, (Ptr{Cvoid}, UInt64, ), soem, timeout_ns);
 autd_link_soem_build(out, soem) = ccall((:AUTDLinkSOEMBuild, _dll), Cvoid, (Ref{Ptr{Cvoid}}, Ptr{Cvoid}, ), out, soem);
-autd_link_soem_delete(soem) = ccall((:AUTDLinkSOEMDelete, _dll), Cvoid, (Ptr{Cvoid}, ), soem);
 end
