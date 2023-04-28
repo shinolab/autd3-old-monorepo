@@ -4,7 +4,7 @@
  * Created Date: 11/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/11/2022
+ * Last Modified: 28/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,8 +28,7 @@ using AK.Toolkit.WinUI3.Localization;
 
 namespace AUTD3_GUI_Controller.ViewModels;
 
-[INotifyPropertyChanged]
-public partial class SettingsViewModel
+public partial class SettingsViewModel : ObservableObject
 {
     private const string AngleUnitKey = "AngleUnit";
 
