@@ -27,7 +27,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/string_cast.hpp>
 
 #include "autd3/driver/bitflags.hpp"
 #include "tinycolormap.hpp"
@@ -62,6 +61,8 @@ inline tinycolormap::ColormapType convert(int& n) {
       return tinycolormap::ColormapType::Github;
     case 12:
       return tinycolormap::ColormapType::Cubehelix;
+    case 13:
+      return tinycolormap::ColormapType::HSV;
     default:
       n = 7;
       return tinycolormap::ColormapType::Inferno;
@@ -96,6 +97,8 @@ inline int convert(const tinycolormap::ColormapType color) {
       return 11;
     case tinycolormap::ColormapType::Cubehelix:
       return 12;
+    case tinycolormap::ColormapType::HSV:
+      return 13;
   }
   return 7;
 }
