@@ -24,11 +24,6 @@ Append the following to `Packages/manifest.json`
     ...
 ```
 
-### GitHub
-
-- Open Window→Package Manager, then click "+" and select "Add Package from git URL", add `https://github.com/shinolab/autd3.git#upm/latest`
-    - If you want to use the old version, add `https://github.com/shinolab/autd3.git#upm/vX.Y.Z` instead
-
 ## Samples
 
 - Import "Samples/Simple" from Unity Package Manager

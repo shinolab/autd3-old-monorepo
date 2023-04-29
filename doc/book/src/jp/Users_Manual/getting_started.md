@@ -14,7 +14,7 @@ Visual Studio Community 2022は「C++によるデスクトップ開発」にチ�
 
 - Visual Studio Community 2022 17.5.1
 - CMake 3.25.2
-- git 2.39.2.windows.1[^fn_git]
+- git 2.39.2.windows.1
 - npcap 1.72[^fn_npcap]
 
 ## デバイスのセットアップ
@@ -56,51 +56,14 @@ cd autd3_sample
         main.cpp
 ```
 
-次に, SDKの最新のバイナリをダウンロードしてくる.
-バイナリは[GitHub Release](https://github.com/shinolab/autd3/releases)にて公開されている.
-ダウンロードしたものを解凍して, `include`フォルダと`lib`フォルダを`autd3_sample`フォルダにコピーする.
-
-```
-└─autd3_sample
-    │  CMakeLists.txt
-    │  main.cpp
-    ├─include
-    └─lib
-```
-
-次に, Eigen3をダウンロードしてくる. Eigen3は行列計算用のヘッダーオンリーライブラリである. ここでは,
-カレントディレクトリを`autd3_sample`に変更し, gitのサブモジュールとして追加する.
-
-```
-git init
-git submodule add https://gitlab.com/libeigen/eigen.git eigen
-cd eigen
-git checkout 3.4.0
-cd ..
-```
-
-あるいは, 直接[Eigen3](https://gitlab.com/libeigen/eigen)をダウンロードしてきて,
-`autd3_sample`フォルダ以下に置いても良い. SDKで使用しているバージョンは3.4.0である.
-
-この時点で, ディレクトリ構成は以下のようになっている.
-
-```
-└─autd3_sample
-    │  CMakeLists.txt
-    │  main.cpp
-    ├─include
-    ├─lib
-    └─eigen
-        ├─bench
-        ├─blas
-        ...
-```
-
 次に, `CMakeLists.txt`を以下のようにする.
 
 ```
 {{#include ../../../samples/cpp/CMakeLists.txt}}
 ```
+
+> NOTE: 上記の例では, 依存ライブラリ (Eigen3, Boost) を自動的にダウンロードするようになっている.
+> すでにこれらがインストールされている場合, それぞれ`USE_SYSTEM_EIGEN `, `USE_SYSTEM_BOOST ` optionをONにすると, 自動ダウンロードを無効化し, インストール済みのものを使用できる.
 
 また, `main.cpp`を以下のようにする. これは単一焦点に$\SI{150}{Hz}$のAM変調をかける場合のソースコードである.
 
@@ -119,7 +82,5 @@ cmake .. -DCMAKE_BUILD_TYPE=Release
 これで, buildディレクトリ以下に`autd3_sample.sln`が生成されているはずなので, これを開き, mainプロジェクトを実行する.
 **なお, 実行に際して, Visual StudioのConfigurationをDebugからReleaseに変更すること.** また,
 Linux/macOSの場合は, 実行時にroot権限が必要な場合がある.
-
-[^fn_git]: 動かすのに必須ではないが, 作業の単純化のため使用
 
 [^fn_npcap]: SOEM linkを使用するのに使う. それ以外のlinkの場合は必要ない.

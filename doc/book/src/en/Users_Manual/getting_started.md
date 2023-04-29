@@ -10,13 +10,13 @@ The tools and versions used in this section are as follows.
 
 - Visual Studio Community 2022 17.3.5
 - CMake 3.24.2
-- git 2.38.0.windows.1[^fn_git]
+- git 2.38.0.windows.1
 - npcap 1.71[^fn_npcap] (only for Windows)
 
 Follow the official instructions to install each of them.
 For Visual Studio Community 2022, install "Desktop development with C++".
 
-Make sure you setup PATH to use `git` and `cmake` from a terminal. 
+Make sure you setup PATH to use `cmake` from a terminal. 
 
 ## Setup Device
 
@@ -55,52 +55,13 @@ Then, make `CMakeLists.txt` and `main.cpp` files.
         main.cpp
 ```
 
-Next, download the [latest binary of the SDK](https://github.com/shinolab/autd3/releases).
-Unzip the downloaded file and copy the `include` and `lib` folders to the `autd3_sample` folder.
-
-```
-└─autd3_sample
-    │  CMakeLists.txt
-    │  main.cpp
-    ├─include
-    └─lib
-```
-
-Next, download Eigen3 library.
-Here, to simplify the process, we use git and add Eigen3 as a submodule.
-
-```
-git init
-git submodule add https://gitlab.com/libeigen/eigen.git eigen
-cd eigen
-git checkout 3.4.0
-cd ..
-```
-
-Alternatively, you can download [Eigen3](https://gitlab.com/libeigen/eigen) directly and put it under the `autd3_sample` folder.
-The Eigen3 version used in the SDK is 3.4.0.
-
-At this point, the directory structure is as follows.
-
-```
-└─autd3_sample
-    │  CMakeLists.txt
-    │  main.cpp
-    ├─include
-    ├─lib
-    └─eigen
-        ├─bench
-        ├─blas
-        ...
-```
-
-Next, make `CMakeLists.txt` as follows,
+Next, edit `CMakeLists.txt` as follows,
 
 ```
 {{#include ../../../samples/cpp/CMakeLists.txt}}
 ```
 
-And, make `main.cpp` as follows.
+And, edit `main.cpp` as follows.
 This is the source code for generating a focus with $\SI{150}{Hz}$ AM modulation. 
 
 ```cpp
@@ -119,7 +80,5 @@ Now, `autd3_sample.sln` should be generated under the build directory.
 Open it and execute the main project.
 **Note that you must change the build configuration of Visual Studio from Debug to Release when executing the main project.**
 Also, if you use Linux/macOS, root privileges may be required to run the main project.
-
-[^fn_git]: Not required to run, but used to simplify the work.
 
 [^fn_npcap]: Used to use SOEM link. Not necessary for other links.

@@ -145,7 +145,7 @@ For the details of each parameter, please refer to the respective papers.
 
 The `add_focus` function specifies the position of each focus and the amplitude.
 
-If you want to use other `Backend` than Eigen, you need to compile the respective `Backend` library.
+If you want to use other `Backend` than Eigen, you need to build and link the respective `Backend` library.
 
 ### CUDA Backend
 
