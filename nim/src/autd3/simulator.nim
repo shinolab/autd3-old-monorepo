@@ -3,7 +3,7 @@
 # Created Date: 08/08/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 18/04/2023
+# Last Modified: 28/04/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,16 +15,24 @@ import native_methods/autd3capi_link_simulator
 import link
 
 type Simulator* = object of RootObj
-    timeout_ns: uint64
+  builder: pointer
 
 proc initSimulator*(): Simulator =
-    result.timeout_ns = 20 * 1000 * 1000
+  AUTDLinkSimulator(result.builder.addr)
 
-
-proc timeout*(cnt: var Simulator, timeout: uint64): var Simulator =
-  cnt.timeout_ns = timeout
+proc logLevel*(cnt: var Simulator, level: int32): var Simulator =
+  AUTDLinkSimulatorLogLevel(cnt.builder, level)
+  result = cnt
+  
+proc logFunc*(cnt: var Simulator, logOut: LogOut, logFlush: LogFlush): var Simulator =
+  let pLogOut = rawProc(logOut)
+  let pLogFlush = rawProc(logFlush)
+  AUTDLinkSimulatorLogFunc(cnt.builder, pLogOut, pLogFlush)
   result = cnt
 
+proc timeout*(cnt: var Simulator, timeout: uint64): var Simulator =
+  AUTDLinkSimulatorTimeout(cnt.builder, timeout)
+  result = cnt
 
 func build*(cnt: Simulator): Link =
-    AUTDLinkSimulator(result.p.addr, cnt.timeout_ns)
+  AUTDLinkSimulatorBuild(result.p.addr, cnt.builder)

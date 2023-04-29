@@ -6,7 +6,7 @@ endif()
 
 add_library(autd3capi-link-twincat SHARED c_api.cpp)
  
-target_link_libraries(autd3capi-link-twincat PRIVATE autd3::common autd3::link::twincat)
+target_link_libraries(autd3capi-link-twincat PRIVATE autd3::autd3 autd3::link::twincat)
 
 set_target_properties(autd3capi-link-twincat
   PROPERTIES

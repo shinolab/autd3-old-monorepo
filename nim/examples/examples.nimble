@@ -1,6 +1,6 @@
 # Package
 
-version       = "8.5.0"
+version       = "9.0.0"
 author        = "shun suzuki"
 description   = "A new awesome nimble package"
 license       = "MIT"
@@ -10,4 +10,4 @@ bin           = @["soem", "simulator"]
 # Dependencies
 
 requires "nim >= 1.6.6"
-requires "https://github.com/shinolab/autd3.git?subdir=nim == 8.5.0"
+requires "https://github.com/shinolab/autd3.git?subdir=nim == 9.0.0"

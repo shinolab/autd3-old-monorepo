@@ -11,17 +11,17 @@ The Rust version is available at [crate.io](https://crates.io/crates/autd3), so 
 
 ```
 [dependencies]
-autd3 = "8.5.0"
+autd3 = "9.0.0"
 ```
 
 Also, you can add links, gains, etc., to dependencies as needed since they are available as separate crates.
 
 ```
 [dependencies]
-autd3-link-soem = "8.5.0"
-autd3-link-twincat = "8.5.0"
-autd3-link-simulator = "8.5.0"
-autd3-gain-holo = "8.5.0"
+autd3-link-soem = "9.0.0"
+autd3-link-twincat = "9.0.0"
+autd3-link-simulator = "9.0.0"
+autd3-gain-holo = "9.0.0"
 ```
 
 ## Usage

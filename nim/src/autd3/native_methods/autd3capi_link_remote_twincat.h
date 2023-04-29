@@ -12,4 +12,10 @@
 #  endif
 #endif
 
-void AUTDLinkRemoteTwinCAT(void** out, char* server_ip_addr, char* server_ams_net_id, char* client_ams_net_id);
+void AUTDLinkRemoteTwinCAT(void** out, char* server_ams_net_id);
+void AUTDLinkRemoteTwinCATServerIpAddr(void* remote_twincat, char* server_ip_addr);
+void AUTDLinkRemoteTwinCATClientAmsNetId(void* remote_twincat, char* client_ams_net_id);
+void AUTDLinkRemoteTwinCATLogLevel(void* remote_twincat, int32 level);
+void AUTDLinkRemoteTwinCATLogFunc(void* remote_twincat, void* out_func, void* flush_func);
+void AUTDLinkRemoteTwinCATTimeout(void* remote_twincat, uint64 timeout_ns);
+void AUTDLinkRemoteTwinCATBuild(void** out, void* remote_twincat);

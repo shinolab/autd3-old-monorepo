@@ -3,7 +3,7 @@
 // Created Date: 11/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/04/2023
+// Last Modified: 29/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,33 +17,9 @@
 
 namespace autd3::link {
 
-class NullLink final : public core::Link {
- public:
-  [[nodiscard]] core::LinkPtr build() const {
-    core::LinkPtr link = std::make_unique<NullLink>();
-    return link;
-  }
-
-  NullLink() : Link() {}
-  ~NullLink() override = default;
-  NullLink(const NullLink& v) noexcept = delete;
-  NullLink& operator=(const NullLink& obj) = delete;
-  NullLink(NullLink&& obj) = delete;
-  NullLink& operator=(NullLink&& obj) = delete;
-
-  bool open(const core::Geometry&) override { return _is_open = true; }
-  bool close() override { return _is_open = false; }
-  bool send(const driver::TxDatagram&) override { return true; }
-  bool receive(driver::RxDatagram&) override { return true; }
-  bool is_open() override { return _is_open; }
-
- private:
-  bool _is_open{false};
-};
-
 class DebugImpl final : public core::Link {
  public:
-  explicit DebugImpl(core::LinkPtr link, std::shared_ptr<spdlog::logger> logger) : Link(), _link(std::move(link)), _logger(std::move(logger)) {}
+  explicit DebugImpl(const core::Duration timeout, std::shared_ptr<spdlog::logger> logger) : Link(timeout), _logger(std::move(logger)) {}
   ~DebugImpl() override = default;
   DebugImpl(const DebugImpl& v) noexcept = delete;
   DebugImpl& operator=(const DebugImpl& obj) = delete;
@@ -52,11 +28,6 @@ class DebugImpl final : public core::Link {
 
   bool open(const core::Geometry& geometry) override {
     _logger->debug("Open Debug link");
-    if (is_open()) {
-      _logger->debug("Link is already opened");
-      return true;
-    }
-    if (!_link->open(geometry)) return false;
 
     _cpus.clear();
     _cpus.reserve(geometry.num_devices());
@@ -66,21 +37,21 @@ class DebugImpl final : public core::Link {
       cpu.init();
       return cpu;
     });
-    _logger->debug("Initialize emulator");
+    _logger->trace("Initialize emulator");
+
+    _is_open = true;
 
     return true;
   }
 
   bool close() override {
+    _is_open = false;
     _logger->debug("Close Debug link");
-    if (!is_open()) _logger->debug("Link is not opened");
-    return _link->close();
+    return true;
   }
 
   bool send(const driver::TxDatagram& tx) override {
     for (auto& cpu : _cpus) cpu.send(tx);
-
-    _logger->debug("Send data");
 
     switch (tx.header().msg_id) {
       case driver::MSG_CLEAR:
@@ -104,9 +75,6 @@ class DebugImpl final : public core::Link {
       default:
         break;
     }
-
-    if (std::any_of(_cpus.begin(), _cpus.end(), [](const auto& cpu) { return !cpu.synchronized(); }))
-      _logger->warn("\tDevices are not synchronized!");
 
     _logger->debug("\tCPU Flag: {}", to_string(tx.header().cpu_flag));
     _logger->debug("\tFPGA Flag: {}", to_string(tx.header().fpga_flag));
@@ -154,31 +122,29 @@ class DebugImpl final : public core::Link {
       } else
         _logger->debug("\tWithout output");
     }
-    return _link->send(tx);
+    return true;
   }
   bool receive(driver::RxDatagram& rx) override {
-    _logger->debug("Receive data");
     std::transform(_cpus.begin(), _cpus.end(), rx.messages().begin(), [](const auto& cpu) { return driver::RxMessage(cpu.ack(), cpu.msg_id()); });
-    return _link->receive(rx);
+    return true;
   }
 
-  bool is_open() override { return _link->is_open(); }
+  bool is_open() override { return _is_open; }
 
  private:
-  core::LinkPtr _link;
+  bool _is_open{false};
   std::vector<extra::CPU> _cpus;
   std::shared_ptr<spdlog::logger> _logger;
 };
 
-core::LinkPtr Debug::build() {
-  const auto name = "AUTD3 Debug Log";
+core::LinkPtr Debug::build_() {
+  const auto name = "AUTD3";
   spdlog::sink_ptr sink =
       _out == nullptr || _flush == nullptr ? get_default_sink() : std::make_shared<CustomSink<std::mutex>>(std::move(_out), std::move(_flush));
   auto logger = std::make_shared<spdlog::logger>(name, std::move(sink));
   logger->set_level(static_cast<spdlog::level::level_enum>(_level));
-  if (_link == nullptr) _link = NullLink().build();
-  core::LinkPtr link = std::make_unique<DebugImpl>(std::move(_link), std::move(logger));
-  return link;
+  register_logger(logger);
+  return std::make_unique<DebugImpl>(_timeout, std::move(logger));
 }
 
 }  // namespace autd3::link

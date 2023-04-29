@@ -3,7 +3,7 @@
 # Created Date: 11/06/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 18/04/2023
+# Last Modified: 28/04/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,9 +16,6 @@ import native_methods/autd3capi_link_soem
 import link
 
 type Callback* = proc(a: cstring)
-type LogOut* = proc(a: cstring)
-type LogFlush* = proc()
-
 
 type SyncMode* {.pure.} = enum
     DC = 0
@@ -33,17 +30,6 @@ type TimerStrategy* {.pure.} = enum
 
 type SOEM* = object of RootObj
   soem: pointer
-  # ifname: cstring
-  # bufSize: uint64
-  # sync0Cycle: uint16
-  # sendCycle: uint16
-  # timerStrategy: TimerStrategy
-  # onLost: Callback
-  # syncMode: SyncMode
-  # check_interval: uint64
-  # debug_level: int32
-  # debug_log_out: LogOut
-  # debug_log_flush: LogFlush
 
 type Adapter* = object
   name*: string
@@ -101,11 +87,11 @@ proc stateCheckInterval*(cnt: var SOEM, intervalMs: uint64): var SOEM =
   AUTDLinkSOEMStateCheckInterval(cnt.soem, intervalMs)
   result = cnt
 
-proc debugLevel*(cnt: var SOEM, level: int32): var SOEM =
+proc logLevel*(cnt: var SOEM, level: int32): var SOEM =
   AUTDLinkSOEMLogLevel(cnt.soem, level)
   result = cnt
   
-proc debugLogFunc*(cnt: var SOEM, logOut: LogOut, logFlush: LogFlush): var SOEM =
+proc logFunc*(cnt: var SOEM, logOut: LogOut, logFlush: LogFlush): var SOEM =
   let pLogOut = rawProc(logOut)
   let pLogFlush = rawProc(logFlush)
   AUTDLinkSOEMLogFunc(cnt.soem, pLogOut, pLogFlush)
@@ -117,4 +103,3 @@ proc timeout*(cnt: var SOEM, timeout: uint64): var SOEM =
 
 func build*(cnt: SOEM): Link =
   AUTDLinkSOEMBuild(result.p.addr, cnt.soem)
-  AUTDLinkSOEMDelete(cnt.soem)

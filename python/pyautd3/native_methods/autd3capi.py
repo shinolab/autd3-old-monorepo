@@ -318,8 +318,17 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDDeleteSoftwareSTM.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDDeleteSoftwareSTM.restype = None
 
-        self.dll.AUTDLinkLog.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p, ctypes.c_int32, ctypes.c_void_p, ctypes.c_void_p] 
-        self.dll.AUTDLinkLog.restype = None
-
-        self.dll.AUTDLinkDebug.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_int32, ctypes.c_void_p, ctypes.c_void_p] 
+        self.dll.AUTDLinkDebug.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
         self.dll.AUTDLinkDebug.restype = None
+
+        self.dll.AUTDLinkDebugLogLevel.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
+        self.dll.AUTDLinkDebugLogLevel.restype = None
+
+        self.dll.AUTDLinkDebugLogFunc.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p] 
+        self.dll.AUTDLinkDebugLogFunc.restype = None
+
+        self.dll.AUTDLinkDebugTimeout.argtypes = [ctypes.c_void_p, ctypes.c_uint64] 
+        self.dll.AUTDLinkDebugTimeout.restype = None
+
+        self.dll.AUTDLinkDebugBuild.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p] 
+        self.dll.AUTDLinkDebugBuild.restype = None

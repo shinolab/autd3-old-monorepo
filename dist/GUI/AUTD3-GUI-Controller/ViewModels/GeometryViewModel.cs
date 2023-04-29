@@ -4,7 +4,7 @@
  * Created Date: 18/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/04/2023
+ * Last Modified: 28/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,8 +20,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AUTD3_GUI_Controller.ViewModels;
 
-[INotifyPropertyChanged]
-public partial class GeometryViewModel
+public partial class GeometryViewModel : ObservableObject
 {
     private const string GeometryKey = "Geometry";
 

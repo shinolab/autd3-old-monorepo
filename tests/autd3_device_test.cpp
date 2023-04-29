@@ -3,22 +3,15 @@
 // Created Date: 25/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/01/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 26439 26495 26812)
-#endif
-#include <gtest/gtest.h>
-#if _MSC_VER
-#pragma warning(pop)
-#endif
-
 #include "autd3/autd3_device.hpp"
+
+#include <gtest/gtest.h>
 
 using Vector3 = autd3::core::Vector3;
 using Quaternion = autd3::core::Quaternion;

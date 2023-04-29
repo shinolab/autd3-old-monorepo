@@ -214,8 +214,12 @@ proc AUTDSoftwareSTMSetSamplingPeriod*(stm: pointer; period: uint32) {.cdecl,
     importc: "AUTDSoftwareSTMSetSamplingPeriod", dynlib: dll.}
 proc AUTDDeleteSoftwareSTM*(stm: pointer) {.cdecl, importc: "AUTDDeleteSoftwareSTM",
     dynlib: dll.}
-proc AUTDLinkLog*(`out`: ptr pointer; link: pointer; level: int32; out_func: pointer;
-                 flush_func: pointer) {.cdecl, importc: "AUTDLinkLog", dynlib: dll.}
-proc AUTDLinkDebug*(`out`: ptr pointer; level: int32; out_func: pointer;
-                   flush_func: pointer) {.cdecl, importc: "AUTDLinkDebug",
-                                        dynlib: dll.}
+proc AUTDLinkDebug*(`out`: ptr pointer) {.cdecl, importc: "AUTDLinkDebug", dynlib: dll.}
+proc AUTDLinkDebugLogLevel*(debug: pointer; level: int32) {.cdecl,
+    importc: "AUTDLinkDebugLogLevel", dynlib: dll.}
+proc AUTDLinkDebugLogFunc*(debug: pointer; out_func: pointer; flush_func: pointer) {.
+    cdecl, importc: "AUTDLinkDebugLogFunc", dynlib: dll.}
+proc AUTDLinkDebugTimeout*(debug: pointer; timeout_ns: uint64) {.cdecl,
+    importc: "AUTDLinkDebugTimeout", dynlib: dll.}
+proc AUTDLinkDebugBuild*(`out`: ptr pointer; debug: pointer) {.cdecl,
+    importc: "AUTDLinkDebugBuild", dynlib: dll.}

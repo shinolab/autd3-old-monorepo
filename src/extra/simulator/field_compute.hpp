@@ -3,7 +3,7 @@
 // Created Date: 05/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,23 +17,9 @@
 
 #include "shader.hpp"
 #include "sound_sources.hpp"
+#include "tinycolormap.hpp"
 #include "update_flag.hpp"
 #include "vulkan_renderer.hpp"
-
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4067 26451)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic push
-#endif
-#include "tinycolormap.hpp"
-#if _MSC_VER
-#pragma warning(pop)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic pop
-#endif
 
 namespace autd3::extra::simulator {
 
@@ -90,7 +76,7 @@ class FieldCompute {
   }
 
   void update(const std::vector<SoundSources>& sources, const float slice_alpha, const std::vector<vk::UniqueBuffer>& image_buffers,
-              const size_t image_size, const tinycolormap::ColormapType type, const UpdateFlags update_flags) {
+              const size_t image_size, const tinycolormap::ColormapType type, const driver::BitFlags<UpdateFlags> update_flags) {
     if (update_flags.contains(UpdateFlags::UpdateSliceSize)) create_descriptor_sets(sources, image_buffers, image_size);
 
     if (update_flags.contains(UpdateFlags::UpdateSourceDrive) || update_flags.contains(UpdateFlags::UpdateSourceFlag)) update_source_drive(sources);
