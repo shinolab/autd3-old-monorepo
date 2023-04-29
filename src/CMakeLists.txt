@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 add_library(autd3
-  link/log/log.cpp
+  link/builder/builder.cpp
   link/debug/debug.cpp
 )
 add_library(autd3::autd3 ALIAS autd3)

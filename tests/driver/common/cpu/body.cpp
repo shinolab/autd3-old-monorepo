@@ -3,24 +3,17 @@
 // Created Date: 30/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 26439 26495 26812)
-#endif
+#include "autd3/driver/cpu/body.hpp"
+
 #include <gtest/gtest.h>
-#if _MSC_VER
-#pragma warning(pop)
-#endif
 
 #include <random>
-
-#include "autd3/driver/cpu/body.hpp"
 
 using autd3::driver::FocusSTMBodyInitial;
 using autd3::driver::FocusSTMBodySubsequent;
@@ -96,8 +89,7 @@ TEST(DriverCommonCPUTest, FocusSTMBodyInitial) {
   b->sound_speed = 0x89ABCDEF;
 
   std::vector<STMFocus> points;
-  for (size_t i = 0; i < point_size; i++)
-    points.emplace_back(autd3::driver::float_t{0}, autd3::driver::float_t{0}, autd3::driver::float_t{0}, 0);
+  for (size_t i = 0; i < point_size; i++) points.emplace_back(autd3::driver::float_t{0}, autd3::driver::float_t{0}, autd3::driver::float_t{0}, 0);
   {
     auto* p = reinterpret_cast<uint8_t*>(points.data());
     for (size_t i = 0; i < point_size * sizeof(STMFocus); i++) *p++ = static_cast<uint8_t>(i);
@@ -130,8 +122,7 @@ TEST(DriverCommonCPUTest, FocusSTMBodySubsequent) {
   b->size = static_cast<uint16_t>(point_size);
 
   std::vector<STMFocus> points;
-  for (size_t i = 0; i < point_size; i++)
-    points.emplace_back(autd3::driver::float_t{0}, autd3::driver::float_t{0}, autd3::driver::float_t{0}, 0);
+  for (size_t i = 0; i < point_size; i++) points.emplace_back(autd3::driver::float_t{0}, autd3::driver::float_t{0}, autd3::driver::float_t{0}, 0);
   {
     auto* p = reinterpret_cast<uint8_t*>(points.data());
     for (size_t i = 0; i < point_size * sizeof(STMFocus); i++) *p++ = static_cast<uint8_t>(i);

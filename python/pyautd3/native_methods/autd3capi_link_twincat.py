@@ -29,3 +29,15 @@ class NativeMethods(metaclass=Singleton):
 
         self.dll.AUTDLinkTwinCAT.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
         self.dll.AUTDLinkTwinCAT.restype = None
+
+        self.dll.AUTDLinkTwinCATLogLevel.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
+        self.dll.AUTDLinkTwinCATLogLevel.restype = None
+
+        self.dll.AUTDLinkTwinCATLogFunc.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p] 
+        self.dll.AUTDLinkTwinCATLogFunc.restype = None
+
+        self.dll.AUTDLinkTwinCATTimeout.argtypes = [ctypes.c_void_p, ctypes.c_uint64] 
+        self.dll.AUTDLinkTwinCATTimeout.restype = None
+
+        self.dll.AUTDLinkTwinCATBuild.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p] 
+        self.dll.AUTDLinkTwinCATBuild.restype = None

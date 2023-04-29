@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 18/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,6 +21,7 @@
 #include "autd3/core/link.hpp"
 #include "autd3/core/utils/osal_timer/timer_strategy.hpp"
 #include "autd3/driver/debug_level.hpp"
+#include "autd3/link/builder.hpp"
 #include "autd3/link/ecat.hpp"
 
 namespace autd3 {
@@ -33,13 +34,8 @@ namespace autd3::link {
 /**
  * @brief Link using [SOEM](https://github.com/OpenEtherCATSociety/SOEM)
  */
-class SOEM {
+class SOEM : public LinkBuilder<SOEM> {
  public:
-  /**
-   * @brief Create SOEM link.
-   */
-  core::LinkPtr build();
-
   /**
    * @brief Enumerate Ethernet adapters of the computer.
    */
@@ -49,20 +45,14 @@ class SOEM {
    * @brief Constructor
    */
   SOEM()
-      : _timer_strategy(TimerStrategy::Sleep),
+      : LinkBuilder(core::Milliseconds(0)),
+        _timer_strategy(TimerStrategy::Sleep),
         _sync0_cycle(2),
         _send_cycle(2),
         _callback(nullptr),
         _sync_mode(SyncMode::FreeRun),
-        _state_check_interval(std::chrono::milliseconds(100)) {}
-
-  /**
-   * @brief Set default timeout.
-   */
-  template <typename Rep, typename Period>
-  SOEM& timeout(const std::chrono::duration<Rep, Period> timeout) {
-    _timeout = timeout;
-    return *this;
+        _state_check_interval(std::chrono::milliseconds(100)) {
+    _level = driver::DebugLevel::Info;
   }
 
   /**
@@ -107,20 +97,6 @@ class SOEM {
     return *this;
   }
 
-  /**
-   * @brief This function is deprecated.
-   */
-#ifdef WIN32
-  [[deprecated("Please use timer_strategy(autd3::TimerStrategy) instead.")]]
-#else
-  [[deprecated("This function is meaningless and should be removed.")]]
-#endif
-  SOEM&
-  high_precision(const bool value) {
-    _timer_strategy = value ? TimerStrategy::BusyWait : TimerStrategy::Sleep;
-    return *this;
-  }
-
   SOEM& timer_strategy(const TimerStrategy timer_strategy) {
     _timer_strategy = timer_strategy;
     return *this;
@@ -135,24 +111,6 @@ class SOEM {
   }
 
   /**
-   * @brief Set Debug level (for debug)
-   */
-  SOEM& debug_level(const driver::DebugLevel level) {
-    _level = level;
-    return *this;
-  }
-
-  /**
-   * @brief Set Debug log func (for debug)
-   * @details The log will be written to stdout by default
-   */
-  SOEM& debug_log_func(std::function<void(std::string)> out, std::function<void()> flush) {
-    _out = std::move(out);
-    _flush = std::move(flush);
-    return *this;
-  }
-
-  /**
    * @brief Set EtherCAT state check interval.
    */
   template <typename Rep, typename Period>
@@ -161,11 +119,14 @@ class SOEM {
     return *this;
   }
 
-  ~SOEM() = default;
+  ~SOEM() override = default;
   SOEM(const SOEM& v) noexcept = default;
   SOEM& operator=(const SOEM& obj) = default;
   SOEM(SOEM&& obj) = default;
   SOEM& operator=(SOEM&& obj) = default;
+
+ protected:
+  core::LinkPtr build_() override;
 
  private:
   TimerStrategy _timer_strategy;
@@ -176,9 +137,5 @@ class SOEM {
   std::function<void(std::string)> _callback;
   SyncMode _sync_mode;
   std::chrono::milliseconds _state_check_interval;
-  driver::DebugLevel _level{driver::DebugLevel::Info};
-  std::function<void(std::string)> _out{nullptr};
-  std::function<void()> _flush{nullptr};
-  core::Duration _timeout{core::Milliseconds(20)};
 };
 }  // namespace autd3::link
