@@ -74,8 +74,7 @@ Send data to devices.
 ### Timeout
 
 Timeout of `send` function can be specified by the last argument.
-If this argument is omitted, the default timeout set in [Link](./link.md) is used.
-If a link does not have a timeout setting, the default timeout of the link is 0.
+If this argument is omitted, the timeout set in [Link](./link.md) is used.
 
 ```cpp
 autd.send(..., autd3::Milliseconds(20));
