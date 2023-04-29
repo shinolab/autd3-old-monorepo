@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/04/2023
+// Last Modified: 29/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@
 
 #include "autd3/core/link.hpp"
 #include "autd3/core/utils/osal_timer/timer_strategy.hpp"
-#include "autd3/driver/debug_level.hpp"
+#include "autd3/driver/log_level.hpp"
 #include "autd3/link/builder.hpp"
 #include "autd3/link/ecat.hpp"
 
@@ -52,7 +52,7 @@ class SOEM : public LinkBuilder<SOEM> {
         _callback(nullptr),
         _sync_mode(SyncMode::FreeRun),
         _state_check_interval(std::chrono::milliseconds(100)) {
-    _level = driver::DebugLevel::Info;
+    _level = driver::LogLevel::Info;
   }
 
   /**
