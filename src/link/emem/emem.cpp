@@ -3,7 +3,7 @@
 // Created Date: 04/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/04/2023
+// Last Modified: 27/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -365,7 +365,7 @@ class EmemLink final : public core::Link {
   std::chrono::milliseconds _state_check_interval;
 };
 
-core::LinkPtr Emem::build() {
+core::LinkPtr Emem::build_() {
   return std::make_unique<EmemLink>(_timeout, _timer_strategy, std::move(_ifname), _buf_size, _sync0_cycle, _send_cycle, std::move(_callback),
                                     _sync_mode, _state_check_interval);
 }

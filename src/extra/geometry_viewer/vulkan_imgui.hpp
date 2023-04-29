@@ -3,7 +3,7 @@
 // Created Date: 27/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 08/01/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,14 +15,17 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_vulkan.h>
 
-#include <iostream>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "autd3/autd3_device.hpp"
-#include "glm.hpp"
 #include "model.hpp"
 #include "transform.hpp"
 
@@ -305,7 +308,7 @@ class VulkanImGui {
 
   static void check_vk_result(const VkResult err) {
     if (err == VK_SUCCESS) return;
-    std::cerr << "[vulkan] Error: VkResult = " << err << std::endl;
+    spdlog::error("[vulkan] Error: VkResult = {}", err);
     if (err < 0) std::abort();
   }
 };

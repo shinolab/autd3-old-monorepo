@@ -4,7 +4,7 @@
  * Created Date: 16/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/01/2023
+ * Last Modified: 28/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,7 +28,10 @@ int main(void) {
   AUTDAddDevice(builder, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
   AUTDBuildGeometry(&geometry, builder);
 
-  AUTDLinkRemoteTwinCAT(&link, remote_ip, remote_ams_net_id, local_ams_net_id);
+  AUTDLinkRemoteTwinCAT(&builder, remote_ams_net_id);
+  AUTDLinkRemoteTwinCATServerIpAddr(builder, remote_ip);
+  AUTDLinkRemoteTwinCATClientAmsNetId(builder, local_ams_net_id);
+  AUTDLinkRemoteTwinCATBuild(&link, builder);
 
   AUTDOpenController(&cnt, geometry, link);
 

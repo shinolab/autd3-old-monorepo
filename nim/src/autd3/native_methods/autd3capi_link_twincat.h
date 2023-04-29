@@ -13,3 +13,7 @@
 #endif
 
 void AUTDLinkTwinCAT(void** out);
+void AUTDLinkTwinCATLogLevel(void* twincat, int32 level);
+void AUTDLinkTwinCATLogFunc(void* twincat, void* out_func, void* flush_func);
+void AUTDLinkTwinCATTimeout(void* twincat, uint64 timeout_ns);
+void AUTDLinkTwinCATBuild(void** out, void* twincat);

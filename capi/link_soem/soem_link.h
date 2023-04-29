@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -34,7 +34,6 @@ EXPORT_AUTD void AUTDLinkSOEMLogLevel(IN void* soem, IN int32_t level);
 EXPORT_AUTD void AUTDLinkSOEMLogFunc(IN void* soem, IN void* out_func, IN void* flush_func);
 EXPORT_AUTD void AUTDLinkSOEMTimeout(IN void* soem, IN uint64_t timeout_ns);
 EXPORT_AUTD void AUTDLinkSOEMBuild(OUT void** out, IN void* soem);
-EXPORT_AUTD void AUTDLinkSOEMDelete(IN void* soem);
 #ifdef __cplusplus
 }
 #endif

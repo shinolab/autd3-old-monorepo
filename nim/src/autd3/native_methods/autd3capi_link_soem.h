@@ -28,4 +28,3 @@ void AUTDLinkSOEMLogLevel(void* soem, int32 level);
 void AUTDLinkSOEMLogFunc(void* soem, void* out_func, void* flush_func);
 void AUTDLinkSOEMTimeout(void* soem, uint64 timeout_ns);
 void AUTDLinkSOEMBuild(void** out, void* soem);
-void AUTDLinkSOEMDelete(void* soem);
