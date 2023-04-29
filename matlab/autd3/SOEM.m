@@ -4,7 +4,7 @@
 %Created Date: 07/06/2022
 %Author: Shun Suzuki
 %-----
-%Last Modified: 18/04/2023
+%Last Modified: 28/04/2023
 %Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 %-----
 %Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -71,7 +71,6 @@ classdef SOEM < handle
         function res = build(obj)
             pp = libpointer('voidPtrPtr', obj.ptr);
             calllib('autd3capi_link_soem', 'AUTDLinkSOEMBuild', pp, obj.soem_);
-            calllib('autd3capi_link_soem', 'AUTDLinkSOEMDelete', obj.soem_);
             res = obj;
         end
 

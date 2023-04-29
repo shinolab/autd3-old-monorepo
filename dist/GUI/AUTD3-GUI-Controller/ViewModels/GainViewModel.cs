@@ -4,7 +4,7 @@
  * Created Date: 24/08/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/11/2022
+ * Last Modified: 28/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,8 +22,7 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace AUTD3_GUI_Controller.ViewModels;
 
-[INotifyPropertyChanged]
-public partial class GainViewModel
+public partial class GainViewModel : ObservableObject
 {
     private readonly AUTDService _autdService;
     private readonly ILocalSettingsService _localSettingsService;

@@ -12,7 +12,13 @@ namespace AUTD3Sharp.NativeMethods
     {
         private const string DLL = "autd3capi-link-remote-twincat";
 
-        [DllImport(DLL, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkRemoteTwinCAT(out IntPtr @out, string serverIpAddr, string serverAmsNetId, string clientAmsNetId);
+        [DllImport(DLL, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkRemoteTwinCAT(out IntPtr @out, string serverAmsNetId);
+        [DllImport(DLL, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkRemoteTwinCATServerIpAddr(IntPtr remoteTwinCAT, string serverIpAddr);
+        [DllImport(DLL, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkRemoteTwinCATClientAmsNetId(IntPtr remoteTwinCAT, string clientAmsNetId);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkRemoteTwinCATLogLevel(IntPtr remoteTwinCAT, int level);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkRemoteTwinCATLogFunc(IntPtr remoteTwinCAT, IntPtr outFunc, IntPtr flushFunc);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkRemoteTwinCATTimeout(IntPtr remoteTwinCAT, ulong timeoutNs);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkRemoteTwinCATBuild(out IntPtr @out, IntPtr remoteTwinCAT);
     }
 }
 

@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/04/2023
+ * Last Modified: 28/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -38,71 +38,41 @@ namespace AUTD3Sharp
             protected override bool ReleaseHandle() => true;
         }
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnLogOutputCallback(string str);
 
-        public sealed class Log
-        {
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnLogOutputCallback(string str);
-
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void OnLogFlushCallback();
-
-            IntPtr _output = IntPtr.Zero;
-            IntPtr _flush = IntPtr.Zero;
-            DebugLevel _level = DebugLevel.Info;
-
-            Link _link;
-
-            public Log(Link link)
-            {
-                _link = link;
-            }
-
-            public Log LogFunc(OnLogOutputCallback output, OnLogFlushCallback flush)
-            {
-                _output = Marshal.GetFunctionPointerForDelegate(output);
-                _flush = Marshal.GetFunctionPointerForDelegate(flush);
-                return this;
-            }
-
-            public Log Level(DebugLevel level)
-            {
-                _level = level;
-                return this;
-            }
-
-            public Link Build()
-            {
-                NativeMethods.Base.AUTDLinkLog(out var handle, _link.LinkPtr, (int)_level, _output, _flush);
-                return new Link(handle);
-            }
-        }
-
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void OnLogFlushCallback();
 
         public sealed class Debug
         {
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnLogOutputCallback(string str);
+            private IntPtr _builder = IntPtr.Zero;
 
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void OnLogFlushCallback();
-
-            IntPtr _output = IntPtr.Zero;
-            IntPtr _flush = IntPtr.Zero;
-            DebugLevel _level = DebugLevel.Debug;
+            public Debug()
+            {
+                NativeMethods.Base.AUTDLinkDebug(out _builder);
+            }
 
             public Debug LogFunc(OnLogOutputCallback output, OnLogFlushCallback flush)
             {
-                _output = Marshal.GetFunctionPointerForDelegate(output);
-                _flush = Marshal.GetFunctionPointerForDelegate(flush);
+                NativeMethods.Base.AUTDLinkDebugLogFunc(_builder, Marshal.GetFunctionPointerForDelegate(output), Marshal.GetFunctionPointerForDelegate(flush));
                 return this;
             }
 
-            public Debug Level(DebugLevel level)
+            public Debug LogLevel(DebugLevel level)
             {
-                _level = level;
+                NativeMethods.Base.AUTDLinkDebugLogLevel(_builder, (int)level);
                 return this;
             }
+
+            public Debug Timeout(TimeSpan timeout)
+            {
+                NativeMethods.Base.AUTDLinkDebugTimeout(_builder, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
+                return this;
+            }
+
 
             public Link Build()
             {
-                NativeMethods.Base.AUTDLinkDebug(out var handle, (int)_level, _output, _flush);
+                NativeMethods.Base.AUTDLinkDebugBuild(out var handle, _builder);
                 return new Link(handle);
             }
         }
@@ -110,10 +80,6 @@ namespace AUTD3Sharp
         public sealed class SOEM
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnLostCallbackDelegate(string str);
-
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnLogOutputCallback(string str);
-
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void OnLogFlushCallback();
 
             IntPtr _soem;
 
@@ -170,18 +136,17 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public SOEM DebugLogFunc(OnLogOutputCallback output, OnLogFlushCallback flush)
+            public SOEM LogFunc(OnLogOutputCallback output, OnLogFlushCallback flush)
             {
                 NativeMethods.LinkSOEM.AUTDLinkSOEMLogFunc(_soem, Marshal.GetFunctionPointerForDelegate(output), Marshal.GetFunctionPointerForDelegate(flush));
                 return this;
             }
 
-            public SOEM DebugLevel(AUTD3Sharp.DebugLevel level)
+            public SOEM LogLevel(AUTD3Sharp.DebugLevel level)
             {
                 NativeMethods.LinkSOEM.AUTDLinkSOEMLogLevel(_soem, (int)level);
                 return this;
             }
-
 
             public SOEM Timeout(TimeSpan timeout)
             {
@@ -192,7 +157,6 @@ namespace AUTD3Sharp
             public Link Build()
             {
                 NativeMethods.LinkSOEM.AUTDLinkSOEMBuild(out var handle, _soem);
-                NativeMethods.LinkSOEM.AUTDLinkSOEMDelete(_soem);
                 return new Link(handle);
             }
 
@@ -212,83 +176,148 @@ namespace AUTD3Sharp
 
         public sealed class RemoteSOEM
         {
-            private string _ip;
-            private ushort _port;
-            private TimeSpan _timeout = TimeSpan.FromMilliseconds(20);
+            private IntPtr _builder = IntPtr.Zero;
 
             public RemoteSOEM(string ip, ushort port)
             {
-                _ip = ip;
-                _port = port;
+                NativeMethods.LinkRemoteSOEM.AUTDLinkRemoteSOEM(out _builder, ip, port);
+            }
+
+            public RemoteSOEM LogFunc(OnLogOutputCallback output, OnLogFlushCallback flush)
+            {
+                NativeMethods.LinkRemoteSOEM.AUTDLinkRemoteSOEMLogFunc(_builder, Marshal.GetFunctionPointerForDelegate(output), Marshal.GetFunctionPointerForDelegate(flush));
+                return this;
+            }
+
+            public RemoteSOEM LogLevel(DebugLevel level)
+            {
+                NativeMethods.LinkRemoteSOEM.AUTDLinkRemoteSOEMLogLevel(_builder, (int)level);
+                return this;
             }
 
             public RemoteSOEM Timeout(TimeSpan timeout)
             {
-                _timeout = timeout;
+                NativeMethods.LinkRemoteSOEM.AUTDLinkRemoteSOEMTimeout(_builder, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
                 return this;
             }
 
             public Link Build()
             {
-                NativeMethods.LinkRemoteSOEM.AUTDLinkRemoteSOEM(out var handle, _ip, _port, (ulong)(_timeout.TotalMilliseconds * 1000 * 1000));
+                NativeMethods.LinkRemoteSOEM.AUTDLinkRemoteSOEMBuild(out var handle, _builder);
                 return new Link(handle);
             }
         }
 
         public sealed class TwinCAT
         {
+            IntPtr _builder = IntPtr.Zero;
+
+            public TwinCAT()
+            {
+                NativeMethods.LinkTwinCAT.AUTDLinkTwinCAT(out _builder);
+            }
+
+            public TwinCAT LogFunc(OnLogOutputCallback output, OnLogFlushCallback flush)
+            {
+                NativeMethods.LinkTwinCAT.AUTDLinkTwinCATLogFunc(_builder, Marshal.GetFunctionPointerForDelegate(output), Marshal.GetFunctionPointerForDelegate(flush));
+                return this;
+            }
+
+            public TwinCAT LogLevel(DebugLevel level)
+            {
+                NativeMethods.LinkTwinCAT.AUTDLinkTwinCATLogLevel(_builder, (int)level);
+                return this;
+            }
+
+            public TwinCAT Timeout(TimeSpan timeout)
+            {
+                NativeMethods.LinkTwinCAT.AUTDLinkTwinCATTimeout(_builder, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
+                return this;
+            }
+
             public Link Build()
             {
-                NativeMethods.LinkTwinCAT.AUTDLinkTwinCAT(out var handle);
+                NativeMethods.LinkTwinCAT.AUTDLinkTwinCATBuild(out var handle, _builder);
                 return new Link(handle);
             }
         }
 
         public sealed class RemoteTwinCAT
         {
-            private readonly string _remoteAmsNetId;
-            private string _remoteIp;
-            private string _localAmsNetId;
+            IntPtr _builder = IntPtr.Zero;
 
-            public RemoteTwinCAT(string remoteAmsNetId)
+            public RemoteTwinCAT(string serverAmsNetId)
             {
-                _remoteAmsNetId = remoteAmsNetId;
-                _localAmsNetId = string.Empty;
-                _remoteIp = string.Empty;
+                NativeMethods.LinkRemoteTwinCAT.AUTDLinkRemoteTwinCAT(out _builder, serverAmsNetId);
             }
 
-            public RemoteTwinCAT RemoteIp(string remoteIp)
+            public RemoteTwinCAT ServerIp(string serverIp)
             {
-                _remoteIp = remoteIp;
+                NativeMethods.LinkRemoteTwinCAT.AUTDLinkRemoteTwinCATServerIpAddr(_builder, serverIp);
                 return this;
             }
 
-            public RemoteTwinCAT LocalAmsNetId(string localAmsNetId)
+            public RemoteTwinCAT ClientAmsNetId(string clientAmsNetId)
             {
-                _localAmsNetId = localAmsNetId;
+                NativeMethods.LinkRemoteTwinCAT.AUTDLinkRemoteTwinCATClientAmsNetId(_builder, clientAmsNetId);
+                return this;
+            }
+
+            public RemoteTwinCAT LogFunc(OnLogOutputCallback output, OnLogFlushCallback flush)
+            {
+                NativeMethods.LinkRemoteTwinCAT.AUTDLinkRemoteTwinCATLogFunc(_builder, Marshal.GetFunctionPointerForDelegate(output), Marshal.GetFunctionPointerForDelegate(flush));
+                return this;
+            }
+
+            public RemoteTwinCAT LogLevel(DebugLevel level)
+            {
+                NativeMethods.LinkRemoteTwinCAT.AUTDLinkRemoteTwinCATLogLevel(_builder, (int)level);
+                return this;
+            }
+
+            public RemoteTwinCAT Timeout(TimeSpan timeout)
+            {
+                NativeMethods.LinkRemoteTwinCAT.AUTDLinkRemoteTwinCATTimeout(_builder, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
                 return this;
             }
 
             public Link Build()
             {
-                NativeMethods.LinkRemoteTwinCAT.AUTDLinkRemoteTwinCAT(out var handle, _remoteIp, _remoteAmsNetId, _localAmsNetId);
+                NativeMethods.LinkRemoteTwinCAT.AUTDLinkRemoteTwinCATBuild(out var handle, _builder);
                 return new Link(handle);
             }
         }
 
         public sealed class Simulator
         {
-            private TimeSpan _timeout = TimeSpan.FromMilliseconds(20);
+            IntPtr _builder = IntPtr.Zero;
+
+            public Simulator()
+            {
+                NativeMethods.LinkSimulator.AUTDLinkSimulator(out _builder);
+            }
+
+            public Simulator LogFunc(OnLogOutputCallback output, OnLogFlushCallback flush)
+            {
+                NativeMethods.LinkSimulator.AUTDLinkSimulatorLogFunc(_builder, Marshal.GetFunctionPointerForDelegate(output), Marshal.GetFunctionPointerForDelegate(flush));
+                return this;
+            }
+
+            public Simulator LogLevel(DebugLevel level)
+            {
+                NativeMethods.LinkSimulator.AUTDLinkSimulatorLogLevel(_builder, (int)level);
+                return this;
+            }
 
             public Simulator Timeout(TimeSpan timeout)
             {
-                _timeout = timeout;
+                NativeMethods.LinkSimulator.AUTDLinkSimulatorTimeout(_builder, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
                 return this;
             }
 
             public Link Build()
             {
-                NativeMethods.LinkSimulator.AUTDLinkSimulator(out var handle, (ulong)(_timeout.TotalMilliseconds * 1000 * 1000));
+                NativeMethods.LinkSimulator.AUTDLinkSimulatorBuild(out var handle, _builder);
                 return new Link(handle);
             }
         }

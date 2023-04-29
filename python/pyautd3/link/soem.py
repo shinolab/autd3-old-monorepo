@@ -4,7 +4,7 @@ Project: link
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 17/04/2023
+Last Modified: 28/04/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -30,9 +30,8 @@ LogFlushFunc = ctypes.CFUNCTYPE(None)
 class SOEM:
     def __init__(self):
         LinkSOEM().init_dll()
-        soem = c_void_p()
-        LinkSOEM().dll.AUTDLinkSOEM(byref(soem))
-        self._soem = soem
+        self._soem = c_void_p()
+        LinkSOEM().dll.AUTDLinkSOEM(byref(self._soem))
 
     def ifname(self, ifname: str):
         LinkSOEM().dll.AUTDLinkSOEMIfname(self._soem, ifname.encode('utf-8'))
@@ -66,11 +65,11 @@ class SOEM:
         LinkSOEM().dll.AUTDLinkSOEMStateCheckInterval(self._soem, int(interval.total_seconds() / 1000))
         return self
 
-    def debug_level(self, level: DebugLevel):
+    def log_level(self, level: DebugLevel):
         LinkSOEM().dll.AUTDLinkSOEMLogLevel(self._soem, int(level))
         return self
 
-    def debug_log_func(self, log_out, log_flush):
+    def log_func(self, log_out, log_flush):
         LinkSOEM().dll.AUTDLinkSOEMLogFunc(self._soem, log_out, log_flush)
         return self
 
@@ -81,7 +80,6 @@ class SOEM:
     def build(self):
         link = c_void_p()
         LinkSOEM().dll.AUTDLinkSOEMBuild(byref(link), self._soem)
-        LinkSOEM().dll.AUTDLinkSOEMDelete(self._soem)
         return Link(link)
 
     @ staticmethod

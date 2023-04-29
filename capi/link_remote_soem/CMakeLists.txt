@@ -6,7 +6,7 @@ endif()
 
 add_library(autd3capi-link-remote-soem SHARED c_api.cpp)
 
-target_link_libraries(autd3capi-link-remote-soem PRIVATE autd3::common autd3::link::remote_soem)
+target_link_libraries(autd3capi-link-remote-soem PRIVATE autd3::autd3 autd3::link::remote_soem)
 if(WIN32)
 elseif(APPLE)
 else()

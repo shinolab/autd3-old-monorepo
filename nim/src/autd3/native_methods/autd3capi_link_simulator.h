@@ -12,4 +12,8 @@
 #  endif
 #endif
 
-void AUTDLinkSimulator(void** out, uint64 timeout_ns);
+void AUTDLinkSimulator(void** out);
+void AUTDLinkSimulatorLogLevel(void* simulator, int32 level);
+void AUTDLinkSimulatorLogFunc(void* simulator, void* out_func, void* flush_func);
+void AUTDLinkSimulatorTimeout(void* simulator, uint64 timeout_ns);
+void AUTDLinkSimulatorBuild(void** out, void* simulator);

@@ -9,8 +9,7 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace AUTD3_GUI_Controller.ViewModels;
 
-[INotifyPropertyChanged]
-public partial class ShellViewModel
+public partial class ShellViewModel : ObservableObject
 {
     [ObservableProperty]
     private bool _isBackEnabled;

@@ -109,8 +109,11 @@ namespace AUTD3Sharp.NativeMethods
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern uint AUTDSoftwareSTMSamplingPeriod(IntPtr stm);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDSoftwareSTMSetSamplingPeriod(IntPtr stm, uint period);
         [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDDeleteSoftwareSTM(IntPtr stm);
-        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkLog(out IntPtr @out, IntPtr link, int level, IntPtr outFunc, IntPtr flushFunc);
-        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkDebug(out IntPtr @out, int level, IntPtr outFunc, IntPtr flushFunc);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkDebug(out IntPtr @out);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkDebugLogLevel(IntPtr debug, int level);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkDebugLogFunc(IntPtr debug, IntPtr outFunc, IntPtr flushFunc);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkDebugTimeout(IntPtr debug, ulong timeoutNs);
+        [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDLinkDebugBuild(out IntPtr @out, IntPtr debug);
     }
 }
 

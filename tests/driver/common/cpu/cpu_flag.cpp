@@ -3,24 +3,17 @@
 // Created Date: 01/12/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 17/03/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 26439 26495 26812)
-#endif
+#include "autd3/driver/cpu/cpu_flag.hpp"
+
 #include <gtest/gtest.h>
-#if _MSC_VER
-#pragma warning(pop)
-#endif
 
 #include <random>
-
-#include "autd3/driver/cpu/cpu_flag.hpp"
 
 TEST(DriverCommonCPUTest, CPUControlFlags) {
   using autd3::driver::BitFlags;

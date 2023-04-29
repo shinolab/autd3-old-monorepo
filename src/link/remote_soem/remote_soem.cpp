@@ -3,38 +3,18 @@
 // Created Date: 02/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 26/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
 //
 
 #ifdef WIN32
-#include <SDKDDKVer.h>
+#include <SDKDDKVer.h>  // for boost/asio
 #endif
 
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4312)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic push
-#endif
-#ifdef __clang__
-#pragma clang diagnostic push
-#endif
 #include <boost/asio.hpp>
 #include <boost/format.hpp>
-#if _MSC_VER
-#pragma warning(pop)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic pop
-#endif
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
 #include <memory>
 #include <string>
 #include <thread>
@@ -82,8 +62,7 @@ class RemoteSOEMImpl final : public core::Link {
           spdlog::warn("Receive failed: {}", e.message());
           continue;
         }
-        const auto i = len / size;
-        std::memcpy(_ptr.get(), &buffer[i * size], size);
+        std::memcpy(_ptr.get(), buffer, size);
       }
     });
 
@@ -134,6 +113,6 @@ class RemoteSOEMImpl final : public core::Link {
   boost::asio::ip::tcp::socket _socket;
 };
 
-core::LinkPtr RemoteSOEM::build() { return std::make_unique<RemoteSOEMImpl>(_timeout, _ip, _port); }
+core::LinkPtr RemoteSOEM::build_() { return std::make_unique<RemoteSOEMImpl>(_timeout, _ip, _port); }
 
 }  // namespace autd3::link
