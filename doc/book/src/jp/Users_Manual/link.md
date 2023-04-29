@@ -271,20 +271,6 @@ EtherCATは、一定の間隔で周期的にフレームを送信することで
 
 デフォルトは`FreeRun`である.
 
-### タイムアウト時間
-
-`timeout`でデフォルトのタイムアウト時間を設定する.
-
-* タイムアウト時間の詳細は[Controller#send#タイムアウト](./controller.md#%E3%82%BF%E3%82%A4%E3%83%A0%E3%82%A2%E3%82%A6%E3%83%88)を参照されたい
-
-```cpp
-  auto link = autd3::link::SOEM()
-                .timeout(autd3::Milliseconds(20))
-                .build();
-```
-
-デフォルトは$\SI{20}{ms}$である.
-
 ## RemoteSOEM
 
 このLinkは`SOEM`を動かすサーバーPCとユーザプログラムを動かすクライアントPCを分離するためのものである.
@@ -317,22 +303,6 @@ EtherCATは、一定の間隔で周期的にフレームを送信することで
 
 のようにすれば良い.
 
-### タイムアウト時間
-
-`timeout`でデフォルトのタイムアウト時間を設定する.
-
-* タイムアウト時間の詳細は[Controller#send#タイムアウト](./controller.md#%E3%82%BF%E3%82%A4%E3%83%A0%E3%82%A2%E3%82%A6%E3%83%88)を参照されたい
-
-```cpp
-  auto link = autd3::link::RemoteSOEM()
-                .ip(ip)
-                .port(port)
-                .timeout(autd3::Milliseconds(20))
-                .build();
-```
-
-デフォルトは$\SI{20}{ms}$である.
-
 ### ファイアウォール
 
 TCP関係のエラーが出る場合は, ファイアウォールでブロックされている可能性がある.
@@ -356,23 +326,66 @@ SimulatorのLinkを使用する際は`autd3/link/simulator.hpp`ヘッダーを�
   auto link = autd3::link::Simulator().build();
 ```
 
-### タイムアウト時間
+
+## RemoteSimulator
+
+RemoteSimulator linkはネットワーク接続された別PC上で実行されている[AUTDシミュレータ](../Simulator/simulator.md)を使用する際に使うLinkである.
+
+RemoteSimulator linkを使用するには`BUILD_LINK_REMOTE_SIMULATOR`フラグをONにしてビルドし, `autd3::link::remote_simulator`ライブラリをリンクされたい.
+
+このlinkの使用の前に, AUTDシミュレータを起動しておく必要がある.
+
+RemoteSimulatorのLinkを使用する際は`autd3/link/remote_simulator.hpp`ヘッダーをインクルードする.
+
+```cpp
+#include "autd3/link/remote_simulator.hpp"
+
+...
+
+  auto link = autd3::link::RemoteSimulator(ip, port).build();
+```
+
+第1引数にAUTDシミュレータを実行しているPCのIPアドレスを, 第2引数にポート番号を指定する.
+
+# Linkに共通のオプション
+
+## タイムアウト時間
 
 `timeout`でデフォルトのタイムアウト時間を設定する.
 
 * タイムアウト時間の詳細は[Controller#send#タイムアウト](./controller.md#%E3%82%BF%E3%82%A4%E3%83%A0%E3%82%A2%E3%82%A6%E3%83%88)を参照されたい
 
 ```cpp
-  auto link = autd3::link::Simulator()
+  auto link = autd3::link::XXX()
                 .timeout(autd3::Milliseconds(20))
                 .build();
 ```
 
-デフォルトは$\SI{20}{ms}$である.
+デフォルトは各Linkに対して適当な値が設定されている.
+
+## Log
+
+`log_level`を設定すると, ロギングが有効化される.
+
+```cpp
+  auto link = autd3::link::XXX()
+                .log_level(autd3::DebugLevel::Info)
+                .build();
+```
+
+なお, ログの出力先はデフォルトで標準出力になっている.
+`log_func`でこれを変更できる.
+
+第1引数はログ出力時のコールバック, 第2引数はログフラッシュ時のコールバックである.
+
+```cpp
+  auto link = autd3::link::XXX()
+                .log_level(autd3::DebugLevel::Info)
+                .log_func([](const std::string& msg){std::cout << msg;}, [](){})
+                .build();
+```
 
 [^fn_remote_twin]: 無線LANでも可
-
-[^soem_ini_sync]: `Synchronize`を送信してから**ではない**
 
 [^fn_soem]: TwinCATよりは緩く, 普通に動くこともある.
 
