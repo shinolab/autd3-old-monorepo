@@ -93,7 +93,7 @@ using driver::FirmwareInfo;
 using driver::FPGAInfo;
 using driver::GainSTMMode;
 using driver::LogLevel;
-[[deprecated("please use LogLevel instead")]] using DebugLevel = driver::LogLevel;
+using DebugLevel [[deprecated("please use LogLevel instead")]] = driver::LogLevel;
 
 using core::Quaternion;
 using core::Vector3;
