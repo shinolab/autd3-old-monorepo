@@ -175,8 +175,7 @@ On the other hand, SOEM has the advantage of being cross-platform and simple to 
 For Windows, install [npcap](https://nmap.org/npcap/) with **WinPcap API compatible mode**.
 For Linux/macOS, no special preparation is required.
 
-To use SOEM link, build with the `BUILD_LINK_SOEM` flag ON, or link `link_soem` library.
-On Windows, you need to additionally link `Packet.lib` and `wpcap.lib`.
+To use SOEM link, build with the `BUILD_LINK_SOEM` flag ON and link `autd3::link::soem`library.
 
 When you use Link of SOEM, include the `autd3/link/soem.hpp` header.
 
@@ -266,20 +265,6 @@ There are two synchronization modes: `DC` and `FreeRun`.
 
 The default is `FreeRun`.
 
-### Timeout
-
-Set the default timeout.
-
-* For details on timeout, see [Controller#send#timeout](./controller.md#timeout)
-
-```cpp
-  auto link = autd3::link::SOEM()
-                .timeout(autd3::Milliseconds(20))
-                .build();
-```
-
-The default is $\SI{20}{ms}$.
-
 ## RemoteSOEM
 
 RemoteSOEM Link can be used to separate the server PC running SOEM from the client PC running the user program.
@@ -308,22 +293,6 @@ On the client side, include the `autd3/link/remote_soem.hpp` header, and build l
   auto link = autd3::link::RemoteSOEM(ip, port).build();
 ```
 
-### Timeout
-
-Set the default timeout.
-
-* For details on timeout, see [Controller#send#timeout](./controller.md#timeout)
-
-```cpp
-  auto link = autd3::link::RemoteSOEM()
-                .ip(ip)
-                .port(port)
-                .timeout(autd3::Milliseconds(20))
-                .build();
-```
-
-The default is $\SI{20}{ms}$.
-
 ### Firewall
 
 If you get a TCP-related error, it may be that your firewall is blocking the connection.
@@ -344,20 +313,6 @@ When you use the Simulator link, include the ``autd3/link/simulator.hpp` header.
 
   auto link = autd3::link::Simulator().build();
 ```
-
-### Timeout
-
-Set the default timeout.
-
-* For details on timeout, see [Controller#send#timeout](./controller.md#timeout)
-
-```cpp
-  auto link = autd3::link::Simulator()
-                .timeout(autd3::Milliseconds(20))
-                .build();
-```
-
-The default is $\SI{20}{ms}$.
 
 [^fn_remote_twin]: Wireless LAN is also acceptable.
 

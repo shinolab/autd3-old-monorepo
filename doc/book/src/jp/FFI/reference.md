@@ -1099,29 +1099,54 @@ SoftwareSTMを削除する.
 | stm                    | void* | in     | pointer to SoftwareSTM |
 | return                 | void  | -      | -                      |
 
-## AUTDLinkLog (autd3capi)
+## AUTDLinkDebug (autd3capi)
 
-Log linkを作成する.
+Debug link builderを作成する.
 
 | Argument name / return | type     | in/out | description                         |
 | ---------------------- | -------- | ------ | ----------------------------------- |
-| out                    | void**   | out    | pointer to pointer to Debug link    |
-| link                    | void*   | in     | pointer to link    |
-| level                  | int32_t  | in     | debug level                         |
-| out_func               | void*    | in     | output callback                     |
-| flush_func             | void*    | in     | flush callback                      |
+| out                    | void**   | out    | pointer to pointer to Debug link builder    |
 | return                 | void     | -      | -                                   |
 
-## AUTDLinkDebug (autd3capi)
+## AUTDLinkDebugLogLevel (autd3capi)
+
+Debug linkのログレベルを設定する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| debug                    | void*   | in    | pointer to Debug link builder |
+| level                  | int32_t  | in     | log level                          |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkDebugLogFunc (autd3capi)
+
+Debug linkのログ関数を設定する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| debug                    | void*   | in    | pointer to Debug link builder |
+| out_func               | void*    | in     | output callback                    |
+| flush_func             | void*    | in     | flush callback                     |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkDebugTimeout (autd3capi)
+
+Debug linkのタイムアウト時間を設定する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| debug                    | void*   | in    | pointer to Debug link builder |
+| timeout_ns                  | uint64_t  | in     | timeout in ns                          |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkDebugBuild (autd3capi)
 
 Debug linkを作成する.
 
 | Argument name / return | type     | in/out | description                         |
 | ---------------------- | -------- | ------ | ----------------------------------- |
-| out                    | void**   | out    | pointer to pointer to Debug link    |
-| level                  | int32_t  | in     | debug level                         |
-| out_func               | void*    | in     | output callback                     |
-| flush_func             | void*    | in     | flush callback                      |
+| out                    | void**   | out    | pointer to Debug link |
+| debug                    | void*   | in    | pointer to Debug link builder |
 | return                 | void     | -      | -                                   |
 
 ## AUTDEigenBackend (autd3capi-gain-holo)
@@ -1360,28 +1385,127 @@ CUDA Backendを作成する.
 | ---------------------- | ------ | ------ | ---------------------------------- |
 | out                    | void** | out    | pointer to pointer to CUDA backend |
 | return                 | void   | -      | -                                  |
-
 ## AUTDLinkSimulator (autd3capi-link-simulator)
+
+Simulator link builderを作成する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| out                    | void**   | out    | pointer to pointer to Simulator link builder |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkSimulatorLogLevel (autd3capi-link-simulator)
+
+Simulator linkのログレベルを設定する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| simulator                    | void*   | in    | pointer to Simulator link builder |
+| level                  | int32_t  | in     | log level                          |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkSimulatorLogFunc (autd3capi-link-simulator)
+
+Simulator linkのログ関数を設定する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| simulator                    | void*   | in    | pointer to Simulator link builder |
+| out_func               | void*    | in     | output callback                    |
+| flush_func             | void*    | in     | flush callback                     |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkSimulatorTimeout (autd3capi-link-simulator)
+
+Simulator linkのタイムアウトを設定する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| simulator                    | void*   | in    | pointer to Simulator link builder |
+| timeout_ns                  | uint64_t  | in     | timeout in ns                          |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkSimulatorBuild (autd3capi-link-simulator)
 
 Simulator linkを作成する.
 
 | Argument name / return | type     | in/out | description                         |
 | ---------------------- | -------- | ------ | ----------------------------------- |
-| out                    | void**   | out    | pointer to pointer to Simulator link |
-| timeout_ns             | uint64_t | in     | timeout in ns  |
+| out                    | void**   | out    | pointer to Simulator link |
+| simulator                    | void*   | in    | pointer to Simulator link builder |
 | return                 | void     | -      | -                                   |
 
 ## AUTDLinkRemoteTwinCAT (autd3capi-link-remote-twincat)
 
-RemoteTwinCAT linkを作成する.
+RemoteTwinCAT link builderを作成する.
 
 | Argument name / return | type   | in/out | description                              |
 | ---------------------- | ------ | ------ | ---------------------------------------- |
-| out                    | void** | out    | pointer to pointer to RemoteTwinCAT link |
-| server_ip_addr         | char*  | in     | server ip address                        |
+| out                    | void** | out    | pointer to pointer to RemoteTwinCAT link builder |
 | server_ams_net_id      | char*  | in     | server ams net id                        |
-| client_ams_net_id      | char*  | in     | client ams net id                        |
 | return                 | void   | -      | -                                        |
+
+
+## AUTDLinkRemoteTwinCATServerIpAddr (autd3capi-link-remote-twincat)
+
+RemoteTwinCAT linkのサーバのIPアドレスを設定する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| remote_twincat                    | void*   | in    | pointer to RemoteTwinCAT link builder |
+| server_ip_addr         | char*  | in     | server ip address                        |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkRemoteTwinCATClientAmsNetId (autd3capi-link-remote-twincat)
+
+RemoteTwinCAT linkのclient ams net idを設定する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| remote_twincat                    | void*   | in    | pointer to RemoteTwinCAT link builder |
+| client_ams_net_id      | char*  | in     | client ams net id                        |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkRemoteTwinCATLogLevel (autd3capi-link-remote-twincat)
+
+RemoteTwinCAT linkのログレベルを設定する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| remote_twincat                    | void*   | in    | pointer to RemoteTwinCAT link builder |
+| level                  | int32_t  | in     | log level                          |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkRemoteTwinCATLogFunc (autd3capi-link-remote-twincat)
+
+RemoteTwinCAT linkのログ関数を設定する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| remote_twincat                    | void*   | in    | pointer to RemoteTwinCAT link builder |
+| out_func               | void*    | in     | output callback                    |
+| flush_func             | void*    | in     | flush callback                     |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkRemoteTwinCATTimeout (autd3capi-link-remote-twincat)
+
+RemoteTwinCAT linkのタイムアウトを設定する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| remote_twincat                    | void*   | in    | pointer to RemoteTwinCAT link builder |
+| timeout_ns                  | uint64_t  | in     | timeout in ns                          |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkRemoteTwinCATBuild (autd3capi-link-remote-twincat)
+
+RemoteTwinCAT linkを作成する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| out                    | void**   | out    | pointer to RemoteTwinCAT link |
+| remote_twincat                    | void*   | in    | pointer to RemoteTwinCAT link builder |
+| return                 | void     | -      | -                                   |
 
 ## AUTDGetAdapterPointer (autd3capi-link-soem)
 
@@ -1527,33 +1651,108 @@ Adapter listへのポインタを削除する.
 | soem                    | void*  | in    | pointer to SOEM link builder |
 | return                 | void     | -      | -                                  |
 
-## AUTDLinkSOEMDelete (autd3capi-link-soem)
-
-| Argument name / return | type     | in/out | description                        |
-| ---------------------- | -------- | ------ | ---------------------------------- |
-| soem                    | void*   | in    | pointer to SOEM link builder |
-| return                 | void     | -      | -                                  |
-
 ## AUTDLinkRemoteSOEM (autd3capi-link-remote-soem)
 
-Create RemoteSOEM link.
+RemoteSOEM link builderを作成する.
 
 | Argument name / return | type    | in/out | description                              |
 | ---------------------- | ------  | ------ | ---------------------------------------- |
 | out                    | void**  | out    | pointer to pointer to RemoteSOEM link    |
 | ip                     | char*   | in     | server ip address                        |
 | port                   | uint16_t| in     | port                                     |
-| timeout_ns                  | uint64_t  | in     | timeout in ns                          |
 | return                 | void    | -      | -                                        |
+
+## AUTDLinkRemoteSOEMLogLevel (autd3capi-link-remote-soem)
+
+RemoteSOEM linkのログレベルを設定する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| remote_soem                    | void*   | in    | pointer to RemoteSOEM link builder |
+| level                  | int32_t  | in     | log level                          |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkRemoteSOEMLogFunc (autd3capi-link-remote-soem)
+
+RemoteSOEM linkのログ関数を設定する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| remote_soem                    | void*   | in    | pointer to RemoteSOEM link builder |
+| out_func               | void*    | in     | output callback                    |
+| flush_func             | void*    | in     | flush callback                     |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkRemoteSOEMTimeout (autd3capi-link-remote-soem)
+
+RemoteSOEM linkのタイムアウトを設定する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| remote_soem                    | void*   | in    | pointer to RemoteSOEM link builder |
+| timeout_ns                  | uint64_t  | in     | timeout in ns                          |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkRemoteSOEMBuild (autd3capi-link-remote-soem)
+
+RemoteSOEM linkを作成する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| out                    | void**   | out    | pointer to RemoteSOEM link |
+| remote_soem                    | void*   | in    | pointer to RemoteSOEM link builder |
+| return                 | void     | -      | -                                   |
 
 ## AUTDLinkTwinCAT (autd3capi-link-twincat)
 
-TwinCAT linkを作成する.
+TwinCAT link buiderを作成する.
 
 | Argument name / return | type   | in/out | description                        |
 | ---------------------- | ------ | ------ | ---------------------------------- |
-| out                    | void** | out    | pointer to pointer to TwinCAT link |
+| out                    | void** | out    | pointer to pointer to TwinCAT link builder |
 | return                 | void   | -      | -                                  |
+
+
+## AUTDLinkTwinCATLogLevel (autd3capi-link-twincat)
+
+TwinCAT linkのログレベルを設定する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| twincat                    | void*   | in    | pointer to TwinCAT link builder |
+| level                  | int32_t  | in     | log level                          |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkTwinCATLogFunc (autd3capi-link-twincat)
+
+TwinCAT linkのログ関数を設定する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| twincat                    | void*   | in    | pointer to TwinCAT link builder |
+| out_func               | void*    | in     | output callback                    |
+| flush_func             | void*    | in     | flush callback                     |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkTwinCATTimeout (autd3capi-link-twincat)
+
+TwinCAT linkのタイムアウトを設定する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| twincat                    | void*   | in    | pointer to TwinCAT link builder |
+| timeout_ns                  | uint64_t  | in     | timeout in ns                          |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkTwinCATBuild (autd3capi-link-twincat)
+
+TwinCAT linkを作成する.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| out                    | void**   | out    | pointer to TwinCAT link |
+| twincat                    | void*   | in    | pointer to TwinCAT link builder |
+| return                 | void     | -      | -                                   |
 
 ## AUTDModulationRawPCM (autd3capi-modulation-audio-file)
 

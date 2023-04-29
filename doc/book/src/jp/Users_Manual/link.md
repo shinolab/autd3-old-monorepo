@@ -17,7 +17,7 @@ TwinCATはWindowsのみをサポートする非常に特殊なソフトウェア
 
 上記以外のネットワークコントローラでも動作する場合があるが, その場合, 正常な動作とリアルタイム性は保証されない.
 
-TwinCAT linkを使用するには`BUILD_LINK_TWINCAT`フラグをONにしてビルドするか, 或いは, 配布している`link_twincat`ライブラリをリンクされたい.
+TwinCAT linkを使用するには`BUILD_LINK_TWINCAT`フラグをONにしてビルドし, `autd3::link::twincat`ライブラリをリンクされたい.
 
 ### TwinCATのインストール
 
@@ -98,7 +98,7 @@ TwinCATAUTDServer.exe -s 3 -t 3
 Windows以外のPCで開発したい場合は, RemoteTwinCAT linkを用いてLinux/macOSから遠隔でTwinCATを操作することができる.
 (後述のSOEMもLinux/macOSで動作する.)
 
-RemoteTwinCAT linkを使用するには`BUILD_LINK_REMOTE_TWINCAT`フラグをONにしてビルドするか, 或いは, 配布している`link_remote_twincat`ライブラリをリンクされたい.
+RemoteTwinCAT linkを使用するには`BUILD_LINK_REMOTE_TWINCAT`フラグをONにしてビルドし, `autd3::link::remote_twincat`ライブラリをリンクされたい.
 
 ### セットアップ
 
@@ -181,8 +181,7 @@ SOEMを使用するのはやむを得ない理由があるか, 開発時のみ�
 Windowsの場合は, [npcap](https://nmap.org/npcap/)を**WinPcap API compatible mode**でインストールしておくこと.
 Linux/macOSの場合は, 特に準備は必要ない.
 
-SOEM linkを使用するには`BUILD_LINK_SOEM`フラグをONにしてビルドするか, 或いは, 配布している`link_soem`ライブラリをリンクされたい.
-また, Windowsの場合は, 追加で`Packet.lib`及び`wpcap.lib`をリンクする必要がある.
+SOEM linkを使用するには`BUILD_LINK_SOEM`フラグをONにしてビルドし, `autd3::link::soem`ライブラリをリンクされたい.
 
 SOEMのLinkを使用する際は`autd3/link/soem.hpp`ヘッダーをインクルードする.
 
@@ -272,23 +271,11 @@ EtherCATは、一定の間隔で周期的にフレームを送信することで
 
 デフォルトは`FreeRun`である.
 
-### タイムアウト時間
-
-`timeout`でデフォルトのタイムアウト時間を設定する.
-
-* タイムアウト時間の詳細は[Controller#send#タイムアウト](./controller.md#%E3%82%BF%E3%82%A4%E3%83%A0%E3%82%A2%E3%82%A6%E3%83%88)を参照されたい
-
-```cpp
-  auto link = autd3::link::SOEM()
-                .timeout(autd3::Milliseconds(20))
-                .build();
-```
-
-デフォルトは$\SI{20}{ms}$である.
-
 ## RemoteSOEM
 
 このLinkは`SOEM`を動かすサーバーPCとユーザプログラムを動かすクライアントPCを分離するためのものである.
+
+`RemoteSOEM`を使用するには`BUILD_LINK_REMOTE_SOEM`フラグをONにしてビルドし, `autd3::link::remote_soem`ライブラリをリンクされたい.
 
 `RemoteSOEM`を使用する場合はPCを2台用意する必要がある.
 この時, 片方のPCは`SOEM` linkが使えるである必要がある.
@@ -316,22 +303,6 @@ EtherCATは、一定の間隔で周期的にフレームを送信することで
 
 のようにすれば良い.
 
-### タイムアウト時間
-
-`timeout`でデフォルトのタイムアウト時間を設定する.
-
-* タイムアウト時間の詳細は[Controller#send#タイムアウト](./controller.md#%E3%82%BF%E3%82%A4%E3%83%A0%E3%82%A2%E3%82%A6%E3%83%88)を参照されたい
-
-```cpp
-  auto link = autd3::link::RemoteSOEM()
-                .ip(ip)
-                .port(port)
-                .timeout(autd3::Milliseconds(20))
-                .build();
-```
-
-デフォルトは$\SI{20}{ms}$である.
-
 ### ファイアウォール
 
 TCP関係のエラーが出る場合は, ファイアウォールでブロックされている可能性がある.
@@ -341,7 +312,7 @@ TCP関係のエラーが出る場合は, ファイアウォールでブロック
 
 Simulator linkは[AUTDシミュレータ](../Simulator/simulator.md)を使用する際に使うLinkである.
 
-Simulator linkを使用するには`BUILD_LINK_SIMULATOR`フラグをONにしてビルドするか, 或いは, 配布している`link_simulator`ライブラリをリンクされたい.
+Simulator linkを使用するには`BUILD_LINK_SIMULATOR`フラグをONにしてビルドし, `autd3::link::simulator`ライブラリをリンクされたい.
 
 このlinkの使用の前に, AUTDシミュレータを起動しておく必要がある.
 
@@ -355,23 +326,66 @@ SimulatorのLinkを使用する際は`autd3/link/simulator.hpp`ヘッダーを�
   auto link = autd3::link::Simulator().build();
 ```
 
-### タイムアウト時間
+
+## RemoteSimulator
+
+RemoteSimulator linkはネットワーク接続された別PC上で実行されている[AUTDシミュレータ](../Simulator/simulator.md)を使用する際に使うLinkである.
+
+RemoteSimulator linkを使用するには`BUILD_LINK_REMOTE_SIMULATOR`フラグをONにしてビルドし, `autd3::link::remote_simulator`ライブラリをリンクされたい.
+
+このlinkの使用の前に, AUTDシミュレータを起動しておく必要がある.
+
+RemoteSimulatorのLinkを使用する際は`autd3/link/remote_simulator.hpp`ヘッダーをインクルードする.
+
+```cpp
+#include "autd3/link/remote_simulator.hpp"
+
+...
+
+  auto link = autd3::link::RemoteSimulator(ip, port).build();
+```
+
+第1引数にAUTDシミュレータを実行しているPCのIPアドレスを, 第2引数にポート番号を指定する.
+
+# Linkに共通のオプション
+
+## タイムアウト時間
 
 `timeout`でデフォルトのタイムアウト時間を設定する.
 
 * タイムアウト時間の詳細は[Controller#send#タイムアウト](./controller.md#%E3%82%BF%E3%82%A4%E3%83%A0%E3%82%A2%E3%82%A6%E3%83%88)を参照されたい
 
 ```cpp
-  auto link = autd3::link::Simulator()
+  auto link = autd3::link::XXX()
                 .timeout(autd3::Milliseconds(20))
                 .build();
 ```
 
-デフォルトは$\SI{20}{ms}$である.
+デフォルトは各Linkに対して適当な値が設定されている.
+
+## Log
+
+`log_level`を設定すると, ロギングが有効化される.
+
+```cpp
+  auto link = autd3::link::XXX()
+                .log_level(autd3::DebugLevel::Info)
+                .build();
+```
+
+なお, ログの出力先はデフォルトで標準出力になっている.
+`log_func`でこれを変更できる.
+
+第1引数はログ出力時のコールバック, 第2引数はログフラッシュ時のコールバックである.
+
+```cpp
+  auto link = autd3::link::XXX()
+                .log_level(autd3::DebugLevel::Info)
+                .log_func([](const std::string& msg){std::cout << msg;}, [](){})
+                .build();
+```
 
 [^fn_remote_twin]: 無線LANでも可
-
-[^soem_ini_sync]: `Synchronize`を送信してから**ではない**
 
 [^fn_soem]: TwinCATよりは緩く, 普通に動くこともある.
 
