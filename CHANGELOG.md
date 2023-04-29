@@ -1,5 +1,11 @@
 # 9.0.0
 
+- AUTD Simulator can now be accessed over the network
+  - Add `link::RemoteSimulator`
+- Add logging and timeout options for all links 
+
+# 8.5.0
+
 - (internal) Refactor some modules and adopt Boost library
 
 # 8.4.1
