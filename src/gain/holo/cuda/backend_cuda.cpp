@@ -3,7 +3,7 @@
 // Created Date: 13/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -11,18 +11,11 @@
 
 #include "autd3/gain/backend_cuda.hpp"
 
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4102 26439 26478 26495 26812)
-#endif
 #include <cublas_v2.h>
 #include <cuda_runtime_api.h>
 #include <cusolverDn.h>
 
 #include "./kernel.h"
-#if _MSC_VER
-#pragma warning(pop)
-#endif
 
 #ifdef AUTD3_USE_SINGLE_FLOAT
 #define AUTDCscal cublasCscal
@@ -69,11 +62,6 @@ cublasOperation_t convert(const Transpose trans) {
   return CUBLAS_OP_N;
 }
 }  // namespace
-
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 26812)
-#endif
 
 class BufferPool final {
  public:
@@ -675,12 +663,6 @@ class CUDABackendImpl final : public Backend {
   cusolverDnHandle_t _handle_s = nullptr;
 };
 
-#if _MSC_VER
-#pragma warning(pop)
-#endif
-
 BackendPtr CUDABackend::build() const { return std::make_shared<CUDABackendImpl>(_device_idx); }
-
-BackendPtr CUDABackend::create(const int device_idx) { return std::make_shared<CUDABackendImpl>(device_idx); }
 
 }  // namespace autd3::gain::holo

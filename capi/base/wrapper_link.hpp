@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2022
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,6 +14,9 @@
 #include <utility>
 
 #include "autd3/core/link.hpp"
+
+typedef void (*OutCallback)(const char*);
+typedef void (*FlushCallback)();
 
 typedef struct {
   autd3::core::LinkPtr ptr;

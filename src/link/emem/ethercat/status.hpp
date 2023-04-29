@@ -3,7 +3,7 @@
 // Created Date: 06/02/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 13/02/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,10 +20,6 @@
 
 namespace autd3::link::ethercat {
 
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 26812)
-#endif
 class EcState final {
  public:
   enum Value : uint8_t { None = 0x00, Init = 0x01, PreOp = 0x02, SafeOp = 0x04, Operational = 0x08, Ack = 0x10, Error = 0x10 };
@@ -85,17 +81,10 @@ class EcState final {
 
 inline std::ostream& operator<<(std::ostream& os, const EcState& flag) { return os << flag.to_string(); }
 
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
-
-#pragma pack(push)
-#pragma pack(1)
 struct EcAlStatus {
   uint16_t al_status{};
   [[maybe_unused]] uint16_t _unused{};
   uint16_t al_status_code{};
 };
-#pragma pack(pop)
 
 }  // namespace autd3::link::ethercat

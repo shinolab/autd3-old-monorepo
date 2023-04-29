@@ -20,7 +20,7 @@ Append the following to `Packages/manifest.json`
     }
   ],
   "dependencies": {
-    "com.shinolab.autd3": "8.5.0",
+    "com.shinolab.autd3": "9.0.0",
     ...
 ```
 

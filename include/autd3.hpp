@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/04/2023
+// Last Modified: 27/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -29,7 +29,6 @@
 #include "autd3/driver/debug_level.hpp"
 #include "autd3/gain/primitive.hpp"
 #include "autd3/link/debug.hpp"
-#include "autd3/link/log.hpp"
 #include "autd3/modulation/primitive.hpp"
 #include "autd3/soft_stm.hpp"
 
@@ -67,7 +66,7 @@ namespace extra {}
 
 constexpr driver::float_t pi = driver::pi;
 
-static inline std::string version = "8.5.0";
+static inline std::string version = "9.0.0";
 
 using core::Duration;
 using core::Milliseconds;
@@ -87,8 +86,8 @@ using core::Stop;
 using core::Synchronize;
 using core::UpdateFlag;
 
-using driver::float_t;
 using driver::Drive;
+using driver::float_t;
 
 using driver::DebugLevel;
 using driver::FirmwareInfo;

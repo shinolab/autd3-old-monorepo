@@ -6,7 +6,7 @@ endif()
 
 add_library(autd3capi-link-simulator SHARED c_api.cpp)
 
-target_link_libraries(autd3capi-link-simulator PRIVATE autd3::common autd3::link::simulator)
+target_link_libraries(autd3capi-link-simulator PRIVATE autd3::autd3 autd3::link::simulator)
 if(WIN32)
 elseif(APPLE)
 else()
