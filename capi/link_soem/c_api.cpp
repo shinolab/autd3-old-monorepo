@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/04/2023
+// Last Modified: 29/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -61,7 +61,7 @@ void AUTDLinkSOEMStateCheckInterval(void* soem, const uint64_t state_check_inter
   static_cast<autd3::link::SOEM*>(soem)->state_check_interval(std::chrono::milliseconds(state_check_interval));
 }
 void AUTDLinkSOEMLogLevel(void* soem, const int32_t level) {
-  static_cast<autd3::link::SOEM*>(soem)->log_level(static_cast<autd3::driver::DebugLevel>(level));
+  static_cast<autd3::link::SOEM*>(soem)->log_level(static_cast<autd3::driver::LogLevel>(level));
 }
 void AUTDLinkSOEMLogFunc(void* soem, void* out_func, void* flush_func) {
   if (out_func != nullptr && flush_func != nullptr)

@@ -369,7 +369,7 @@ RemoteSimulatorのLinkを使用する際は`autd3/link/remote_simulator.hpp`ヘ�
 
 ```cpp
   auto link = autd3::link::XXX()
-                .log_level(autd3::DebugLevel::Info)
+                .log_level(autd3::LogLevel::Info)
                 .build();
 ```
 
@@ -380,7 +380,7 @@ RemoteSimulatorのLinkを使用する際は`autd3/link/remote_simulator.hpp`ヘ�
 
 ```cpp
   auto link = autd3::link::XXX()
-                .log_level(autd3::DebugLevel::Info)
+                .log_level(autd3::LogLevel::Info)
                 .log_func([](const std::string& msg){std::cout << msg;}, [](){})
                 .build();
 ```

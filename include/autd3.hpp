@@ -3,7 +3,7 @@
 // Created Date: 10/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/04/2023
+// Last Modified: 29/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,7 +26,7 @@
 #include "autd3/core/synchronize.hpp"
 #include "autd3/core/update_flag.hpp"
 #include "autd3/core/utils/osal_timer/timer_strategy.hpp"
-#include "autd3/driver/debug_level.hpp"
+#include "autd3/driver/log_level.hpp"
 #include "autd3/gain/primitive.hpp"
 #include "autd3/link/debug.hpp"
 #include "autd3/modulation/primitive.hpp"
@@ -89,10 +89,11 @@ using core::UpdateFlag;
 using driver::Drive;
 using driver::float_t;
 
-using driver::DebugLevel;
 using driver::FirmwareInfo;
 using driver::FPGAInfo;
 using driver::GainSTMMode;
+using driver::LogLevel;
+[[deprecated("please use LogLevel instead")]] using DebugLevel = driver::LogLevel;
 
 using core::Quaternion;
 using core::Vector3;

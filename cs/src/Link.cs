@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/04/2023
+ * Last Modified: 29/04/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -57,7 +57,7 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public Debug LogLevel(DebugLevel level)
+            public Debug LogLevel(LogLevel level)
             {
                 NativeMethods.Base.AUTDLinkDebugLogLevel(_builder, (int)level);
                 return this;
@@ -142,7 +142,7 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public SOEM LogLevel(AUTD3Sharp.DebugLevel level)
+            public SOEM LogLevel(AUTD3Sharp.LogLevel level)
             {
                 NativeMethods.LinkSOEM.AUTDLinkSOEMLogLevel(_soem, (int)level);
                 return this;
@@ -189,7 +189,7 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public RemoteSOEM LogLevel(DebugLevel level)
+            public RemoteSOEM LogLevel(LogLevel level)
             {
                 NativeMethods.LinkRemoteSOEM.AUTDLinkRemoteSOEMLogLevel(_builder, (int)level);
                 return this;
@@ -223,7 +223,7 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public TwinCAT LogLevel(DebugLevel level)
+            public TwinCAT LogLevel(LogLevel level)
             {
                 NativeMethods.LinkTwinCAT.AUTDLinkTwinCATLogLevel(_builder, (int)level);
                 return this;
@@ -269,7 +269,7 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public RemoteTwinCAT LogLevel(DebugLevel level)
+            public RemoteTwinCAT LogLevel(LogLevel level)
             {
                 NativeMethods.LinkRemoteTwinCAT.AUTDLinkRemoteTwinCATLogLevel(_builder, (int)level);
                 return this;
@@ -303,7 +303,7 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public Simulator LogLevel(DebugLevel level)
+            public Simulator LogLevel(LogLevel level)
             {
                 NativeMethods.LinkSimulator.AUTDLinkSimulatorLogLevel(_builder, (int)level);
                 return this;
