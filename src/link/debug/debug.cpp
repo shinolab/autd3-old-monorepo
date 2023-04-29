@@ -3,7 +3,7 @@
 // Created Date: 11/01/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/04/2023
+// Last Modified: 29/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -143,6 +143,7 @@ core::LinkPtr Debug::build_() {
       _out == nullptr || _flush == nullptr ? get_default_sink() : std::make_shared<CustomSink<std::mutex>>(std::move(_out), std::move(_flush));
   auto logger = std::make_shared<spdlog::logger>(name, std::move(sink));
   logger->set_level(static_cast<spdlog::level::level_enum>(_level));
+  register_logger(logger);
   return std::make_unique<DebugImpl>(_timeout, std::move(logger));
 }
 

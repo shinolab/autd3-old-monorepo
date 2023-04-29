@@ -3,7 +3,7 @@
 // Created Date: 28/04/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/04/2023
+// Last Modified: 29/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -126,11 +126,13 @@ class LogImpl final : public core::Link {
 
 core::LinkPtr make_log_link(core::LinkPtr link, const driver::DebugLevel level, std::function<void(std::string)> out, std::function<void()> flush) {
   const auto name = "AUTD3";
-  spdlog::sink_ptr sink =
-      out == nullptr || flush == nullptr ? get_default_sink() : std::make_shared<CustomSink<std::mutex>>(std::move(out), std::move(flush));
-  auto logger = std::make_shared<spdlog::logger>(name, std::move(sink));
-  logger->set_level(static_cast<spdlog::level::level_enum>(level));
-
+  std::shared_ptr<spdlog::logger> logger = spdlog::get(name);
+  if (logger == nullptr) {
+    spdlog::sink_ptr sink =
+        out == nullptr || flush == nullptr ? get_default_sink() : std::make_shared<CustomSink<std::mutex>>(std::move(out), std::move(flush));
+    logger = std::make_shared<spdlog::logger>(name, std::move(sink));
+    logger->set_level(static_cast<spdlog::level::level_enum>(level));
+  }
   return std::make_unique<LogImpl>(std::move(link), std::move(logger));
 }
 
