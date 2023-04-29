@@ -3,7 +3,7 @@
 // Created Date: 30/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,35 +14,8 @@
 #include <string>
 #include <thread>
 
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 26495 26800 26819 28020)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic push
-#endif
 #include "nlohmann/json.hpp"
-#if _MSC_VER
-#pragma warning(pop)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic pop
-#endif
-
-#if _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4067 26451)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic push
-#endif
 #include "tinycolormap.hpp"
-#if _MSC_VER
-#pragma warning(pop)
-#endif
-#if defined(__GNUC__) && !defined(__llvm__)
-#pragma GCC diagnostic pop
-#endif
 
 namespace autd3::extra {
 
@@ -107,6 +80,8 @@ struct SimulatorSettings {
 
   size_t max_dev_num{50};
   size_t max_trans_num{10000};
+  bool remote{false};
+  uint16_t remote_port{0};
 
   void load_default() {
     slice_pos_x = 86.6252f * simulator::scale;
@@ -186,6 +161,8 @@ inline void to_json(nlohmann::json& j, const SimulatorSettings& s) {
                      {"image_save_path", s.image_save_path},
                      {"max_dev_num", s.max_dev_num},
                      {"max_trans_num", s.max_trans_num},
+                     {"remote", s.remote},
+                     {"remote_port", s.remote_port},
                      {"mod_enable", s.mod_enable},
                      {"mod_auto_play", s.mod_auto_play},
                      {"stm_auto_play", s.stm_auto_play}};
@@ -230,6 +207,8 @@ inline void from_json(const nlohmann::json& j, SimulatorSettings& s) {
   j.at("image_save_path").get_to(s.image_save_path);
   j.at("max_dev_num").get_to(s.max_dev_num);
   j.at("max_trans_num").get_to(s.max_trans_num);
+  j.at("remote").get_to(s.remote);
+  j.at("remote_port").get_to(s.remote_port);
   j.at("mod_enable").get_to(s.mod_enable);
   j.at("mod_auto_play").get_to(s.mod_auto_play);
   j.at("stm_auto_play").get_to(s.stm_auto_play);
@@ -262,8 +241,6 @@ class Simulator {
 
  private:
   SimulatorSettings _settings{};
-
-  std::thread _th;
 };
 
 }  // namespace autd3::extra

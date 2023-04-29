@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -220,8 +220,7 @@ class BLASBackendImpl final : public Backend {
     std::memcpy(dst.data(), src.data() + size * (size - 1), size * sizeof(complex));
   }
 
-  void pseudo_inverse_svd(MatrixXc& src, const driver::float_t alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf,
-                          MatrixXc& dst) override {
+  void pseudo_inverse_svd(MatrixXc& src, const driver::float_t alpha, MatrixXc& u, MatrixXc& s, MatrixXc& vt, MatrixXc& buf, MatrixXc& dst) override {
     const auto nc = src.cols();
     const auto nr = src.rows();
 
@@ -240,8 +239,7 @@ class BLASBackendImpl final : public Backend {
     mul(Transpose::ConjTrans, Transpose::NoTrans, ONE, vt, buf, ZERO, dst);
   }
 
-  void pseudo_inverse_svd(MatrixXd& src, const driver::float_t alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf,
-                          MatrixXd& dst) override {
+  void pseudo_inverse_svd(MatrixXd& src, const driver::float_t alpha, MatrixXd& u, MatrixXd& s, MatrixXd& vt, MatrixXd& buf, MatrixXd& dst) override {
     const auto nc = src.cols();
     const auto nr = src.rows();
 
@@ -262,6 +260,5 @@ class BLASBackendImpl final : public Backend {
 };
 
 BackendPtr BLASBackend::build() const { return std::make_shared<BLASBackendImpl>(); }
-BackendPtr BLASBackend::create() { return std::make_shared<BLASBackendImpl>(); }
 
 }  // namespace autd3::gain::holo

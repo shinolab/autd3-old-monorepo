@@ -3,7 +3,7 @@
 // Created Date: 03/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 25/04/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,6 @@
 #include <imgui_impl_vulkan.h>
 
 #include <algorithm>
-#include <iostream>
 #include <limits>
 #include <memory>
 #include <string>
@@ -24,7 +23,12 @@
 #include <utility>
 #include <vector>
 
-#include "glm.hpp"
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include "autd3/driver/bitflags.hpp"
 #include "tinycolormap.hpp"
 
 namespace autd3::extra::simulator {
@@ -57,6 +61,8 @@ inline tinycolormap::ColormapType convert(int& n) {
       return tinycolormap::ColormapType::Github;
     case 12:
       return tinycolormap::ColormapType::Cubehelix;
+    case 13:
+      return tinycolormap::ColormapType::HSV;
     default:
       n = 7;
       return tinycolormap::ColormapType::Inferno;
@@ -91,6 +97,8 @@ inline int convert(const tinycolormap::ColormapType color) {
       return 11;
     case tinycolormap::ColormapType::Cubehelix:
       return 12;
+    case tinycolormap::ColormapType::HSV:
+      return 13;
   }
   return 7;
 }
@@ -300,8 +308,8 @@ class VulkanImGui {
     ImGui::Render();
   }
 
-  UpdateFlags draw(const std::vector<CPU>& cpus, std::vector<SoundSources>& sources) {
-    auto flag = UpdateFlags(UpdateFlags::None);
+  driver::BitFlags<UpdateFlags> draw(const std::vector<CPU>& cpus, std::vector<SoundSources>& sources) {
+    driver::BitFlags flag = UpdateFlags::None;
 
     if (_update_font) {
       set_font();
@@ -665,14 +673,28 @@ class VulkanImGui {
     ImGui::SameLine();
     if (ImGui::SmallButton("Reset")) {
       load_settings(_initial_settings);
-      flag.set(UpdateFlags::all().value());
+      flag.set(UpdateFlags::UpdateSourceDrive);
+      flag.set(UpdateFlags::UpdateColorMap);
+      flag.set(UpdateFlags::UpdateCameraPos);
+      flag.set(UpdateFlags::UpdateSlicePos);
+      flag.set(UpdateFlags::UpdateSliceSize);
+      flag.set(UpdateFlags::UpdateSourceAlpha);
+      flag.set(UpdateFlags::UpdateSourceFlag);
+      flag.set(UpdateFlags::UpdateDeviceInfo);
       flag.remove(UpdateFlags::SaveImage);
     }
     ImGui::SameLine();
     if (ImGui::SmallButton("Default")) {
       _initial_settings.load_default();
       load_settings(_initial_settings);
-      flag.set(UpdateFlags::all().value());
+      flag.set(UpdateFlags::UpdateSourceDrive);
+      flag.set(UpdateFlags::UpdateColorMap);
+      flag.set(UpdateFlags::UpdateCameraPos);
+      flag.set(UpdateFlags::UpdateSlicePos);
+      flag.set(UpdateFlags::UpdateSliceSize);
+      flag.set(UpdateFlags::UpdateSourceAlpha);
+      flag.set(UpdateFlags::UpdateSourceFlag);
+      flag.set(UpdateFlags::UpdateDeviceInfo);
       flag.remove(UpdateFlags::SaveImage);
     }
 
@@ -765,7 +787,7 @@ class VulkanImGui {
 
   static void check_vk_result(const VkResult err) {
     if (err == VK_SUCCESS) return;
-    std::cerr << "[vulkan] Error: VkResult = " << err << std::endl;
+    spdlog::error("[vulkan] Error: VkResult = {}", err);
     if (err < 0) std::abort();
   }
 };

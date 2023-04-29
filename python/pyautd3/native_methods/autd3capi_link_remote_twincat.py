@@ -27,5 +27,23 @@ class NativeMethods(metaclass=Singleton):
             return
         self.dll = ctypes.CDLL(os.path.join(self.bin, f'{self.prefix}autd3capi-link-remote-twincat{self.ext}'))
 
-        self.dll.AUTDLinkRemoteTwinCAT.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p] 
+        self.dll.AUTDLinkRemoteTwinCAT.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_char_p] 
         self.dll.AUTDLinkRemoteTwinCAT.restype = None
+
+        self.dll.AUTDLinkRemoteTwinCATServerIpAddr.argtypes = [ctypes.c_void_p, ctypes.c_char_p] 
+        self.dll.AUTDLinkRemoteTwinCATServerIpAddr.restype = None
+
+        self.dll.AUTDLinkRemoteTwinCATClientAmsNetId.argtypes = [ctypes.c_void_p, ctypes.c_char_p] 
+        self.dll.AUTDLinkRemoteTwinCATClientAmsNetId.restype = None
+
+        self.dll.AUTDLinkRemoteTwinCATLogLevel.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
+        self.dll.AUTDLinkRemoteTwinCATLogLevel.restype = None
+
+        self.dll.AUTDLinkRemoteTwinCATLogFunc.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p] 
+        self.dll.AUTDLinkRemoteTwinCATLogFunc.restype = None
+
+        self.dll.AUTDLinkRemoteTwinCATTimeout.argtypes = [ctypes.c_void_p, ctypes.c_uint64] 
+        self.dll.AUTDLinkRemoteTwinCATTimeout.restype = None
+
+        self.dll.AUTDLinkRemoteTwinCATBuild.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p] 
+        self.dll.AUTDLinkRemoteTwinCATBuild.restype = None

@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 27/01/2023
+// Last Modified: 28/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -57,7 +57,7 @@ constexpr auto TCADS_ADS_SYNC_READ_REQ_EX = "AdsSyncReadReqEx2";
 
 class TwinCATImpl final : public core::Link {
  public:
-  explicit TwinCATImpl() : Link(), _port(0) {}
+  explicit TwinCATImpl(const core::Duration timeout) : Link(timeout), _port(0) {}
   ~TwinCATImpl() override = default;
   TwinCATImpl(const TwinCATImpl& v) noexcept = delete;
   TwinCATImpl& operator=(const TwinCATImpl& obj) = delete;
@@ -81,7 +81,7 @@ class TwinCATImpl final : public core::Link {
 #endif
 };
 
-core::LinkPtr TwinCAT::build() const { return std::make_unique<TwinCATImpl>(); }
+core::LinkPtr TwinCAT::build_() { return std::make_unique<TwinCATImpl>(_timeout); }
 
 bool TwinCATImpl::is_open() { return this->_port > 0; }
 

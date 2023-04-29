@@ -19,6 +19,8 @@
     "image_save_path": "image.png",
     "max_dev_num": 50,
     "max_trans_num": 10000,
+    "remote": false,
+    "remote_port": 0,
     "mod_enable": false,
     "mod_auto_play": false,
     "show_mod_plot": false,
