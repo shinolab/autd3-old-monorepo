@@ -6,12 +6,12 @@ autd3ライブラリ自体はMITライセンスである.
 
 ## 3rdparty library license
 
-- このプログラムは以下の二つのライブラリに依存している. 
+- このプログラムは以下のライブラリに依存している. 
   - [Eigen3](https://gitlab.com/libeigen/eigen) 
   - [spdlog](https://github.com/gabime/spdlog)
   - [Boost](https://www.boost.org/)
 
-  - また,
+  - さらに,
     - SOEM link は[SOEM](https://github.com/OpenEtherCATsociety/SOEM)を使用している
     - RemoteTwinCAT linkは[ADS](https://github.com/Beckhoff/ADS)を使用している
     - GeometryViewerは以下のライブラリを使用している
