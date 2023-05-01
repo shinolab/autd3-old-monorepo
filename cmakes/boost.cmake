@@ -7,20 +7,23 @@ else()
     list(APPEND BOOST_INCLUDE_LIBRARIES winapi)
     list(APPEND BOOST_REQUIRED_SUBMODULES libs/winapi)
   endif()
-  set(BOOST_ALL_NO_LIB ON)
-  include(FetchContent)
-  message(STATUS "Downloading Boost Library Sources. This will take some minutes...")
-  set(FETCHCONTENT_QUIET FALSE)
-  FetchContent_Declare(
-    Boost
-    GIT_REPOSITORY https://github.com/boostorg/boost.git
-    GIT_SHALLOW ON
-    GIT_TAG boost-1.82.0
-    GIT_SUBMODULES ${BOOST_REQUIRED_SUBMODULES}
-    GIT_PROGRESS TRUE
-    CONFIGURE_COMMAND ""
-  )
-  FetchContent_Populate(Boost)
+  FetchContent_GetProperties(Boost)
+  if(NOT boost_POPULATED)
+    set(BOOST_ALL_NO_LIB ON)
+    include(FetchContent)
+    message(STATUS "Downloading Boost Library Sources. This will take some minutes...")
+    set(FETCHCONTENT_QUIET FALSE)
+    FetchContent_Declare(
+      Boost
+      GIT_REPOSITORY https://github.com/boostorg/boost.git
+      GIT_SHALLOW ON
+      GIT_TAG boost-1.82.0
+      GIT_SUBMODULES ${BOOST_REQUIRED_SUBMODULES}
+      GIT_PROGRESS TRUE
+      CONFIGURE_COMMAND ""
+    )
+    FetchContent_Populate(Boost)
+  endif()
   set(Boost_INCLUDE_DIRS "")
   foreach(boost_depends_lib ${BOOST_INCLUDE_LIBRARIES})
     list(APPEND Boost_INCLUDE_DIRS ${boost_SOURCE_DIR}/libs/${boost_depends_lib}/include)
