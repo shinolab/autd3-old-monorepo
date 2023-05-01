@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/04/2023
+// Last Modified: 29/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ void AUTDLinkRemoteTwinCATClientAmsNetId(void* remote_twincat, const char* clien
   static_cast<autd3::link::RemoteTwinCAT*>(remote_twincat)->client_ams_net_id(std::string(client_ams_net_id));
 }
 void AUTDLinkRemoteTwinCATLogLevel(void* remote_twincat, int32_t level) {
-  static_cast<autd3::link::RemoteTwinCAT*>(remote_twincat)->log_level(static_cast<autd3::driver::DebugLevel>(level));
+  static_cast<autd3::link::RemoteTwinCAT*>(remote_twincat)->log_level(static_cast<autd3::driver::LogLevel>(level));
 }
 void AUTDLinkRemoteTwinCATLogFunc(void* remote_twincat, void* out_func, void* flush_func) {
   if (out_func != nullptr && flush_func != nullptr)

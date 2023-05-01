@@ -8,8 +8,14 @@ project(autd3)
 
 set(VERSION_MAJOR 9 CACHE STRING "Project major version number.")
 set(VERSION_MINOR 0 CACHE STRING "Project minor version number.")
-set(VERSION_PATCH 0 CACHE STRING "Project patch version number.")
+set(VERSION_PATCH 1 CACHE STRING "Project patch version number.")
 mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
+
+message(STATUS "Build AUTD3: ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+if(NOT ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+  message(STATUS "AUTD3: disable examples when built as dependency")
+  set(DISABLE_EXAMPLES ON)
+endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -51,7 +57,6 @@ option(BUILD_GEOMETRY_VIEWER "BUILD_GEOMETRY_VIEWER" OFF)
 option(BUILD_SIMULATOR "BUILD_SIMULATOR" OFF)
 
 option(BUILD_EXAMPLES "BUILD_EXAMPLES" ON)
-option(DISABLE_EXAMPLES "DISABLE_EXAMPLES" OFF)
 
 option(BUILD_CAPI "BUILD_CAPI" OFF)
 
@@ -131,16 +136,10 @@ else()
   include(${PROJECT_SOURCE_DIR}/cmakes/eigen.cmake)
 endif()
 
-if(USE_SYSTEM_BOOST)
-  find_package(Boost REQUIRED)
-else()
-  include(${PROJECT_SOURCE_DIR}/cmakes/boost.cmake)
-endif()
-
 include(${PROJECT_SOURCE_DIR}/cmakes/spdlog.cmake)
 
 add_library(autd3_common INTERFACE)
-target_include_directories(autd3_common INTERFACE ${PROJECT_SOURCE_DIR}/include ${Boost_INCLUDE_DIRS})
+target_include_directories(autd3_common INTERFACE ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(autd3_common INTERFACE Eigen3::Eigen spdlog::spdlog_header_only)
 target_compile_definitions(autd3_common INTERFACE EIGEN_MPL2_ONLY)
 if(USE_METER)

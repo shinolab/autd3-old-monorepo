@@ -40,7 +40,7 @@ jobs:
         mkdir build
         cd build
         cmake .. -DBUILD_ALL=ON -DDISABLE_EXAMPLES=ON -DAUTD3_PARALLEL_FOR=OFF -DHOLO_PARALLEL_FOR=OFF -DCMAKE_BUILD_TYPE=Debug
-        cmake --build . --parallel $(nproc) --config Debug
+        cmake --build . --parallel 8 --config Debug
         cd ..
     - name: Copy linux binary
       if: matrix.os == 'ubuntu-latest'

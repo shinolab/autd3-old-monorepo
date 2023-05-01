@@ -4,7 +4,7 @@ Project: link
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 28/04/2023
+Last Modified: 29/04/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ from datetime import timedelta
 from .link import Link
 
 from pyautd3.native_methods.autd3capi_link_simulator import NativeMethods as LinkSimulator
-from pyautd3.debug_level import DebugLevel
+from pyautd3.log_level import LogLevel
 
 
 class Simulator:
@@ -26,7 +26,7 @@ class Simulator:
         self._builder = c_void_p()
         LinkSimulator().dll.AUTDLinkSimulator(byref(self._builder))
 
-    def log_level(self, level: DebugLevel):
+    def log_level(self, level: LogLevel):
         LinkSimulator().dll.AUTDLinkSimulatorLogLevel(self._builder, int(level))
         return self
 

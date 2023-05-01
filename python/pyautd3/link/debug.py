@@ -4,7 +4,7 @@ Project: link
 Created Date: 17/04/2023
 Author: Shun Suzuki
 -----
-Last Modified: 28/04/2023
+Last Modified: 29/04/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
 Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ from ctypes import c_void_p, byref
 from .link import Link
 
 from pyautd3.native_methods.autd3capi import NativeMethods as LinkDebug
-from pyautd3.debug_level import DebugLevel
+from pyautd3.log_level import LogLevel
 
 
 class Debug:
@@ -25,7 +25,7 @@ class Debug:
         self._builder = c_void_p()
         LinkDebug().dll.AUTDLinkDebug(byref(self._builder))
 
-    def log_level(self, level: DebugLevel):
+    def log_level(self, level: LogLevel):
         LinkDebug().dll.AUTDLinkDebugLogLevel(self._builder, int(level))
         return self
 

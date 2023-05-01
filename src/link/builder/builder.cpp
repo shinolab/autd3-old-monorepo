@@ -124,7 +124,7 @@ class LogImpl final : public core::Link {
   std::shared_ptr<spdlog::logger> _logger;
 };
 
-core::LinkPtr make_log_link(core::LinkPtr link, const driver::DebugLevel level, std::function<void(std::string)> out, std::function<void()> flush) {
+core::LinkPtr make_log_link(core::LinkPtr link, const driver::LogLevel level, std::function<void(std::string)> out, std::function<void()> flush) {
   const auto name = "AUTD3";
   std::shared_ptr<spdlog::logger> logger = spdlog::get(name);
   if (logger == nullptr) {
