@@ -15,8 +15,6 @@ typedef unsigned long uint64_t;
 #endif
 
 void AUTDLinkRemoteSOEM(void** out, char* ip, uint16_t port);
-void AUTDLinkRemoteSOEMServerIpAddr(void* remote_soem, char* server_ip_addr);
-void AUTDLinkRemoteSOEMClientAmsNetId(void* remote_soem, char* client_ams_net_id);
 void AUTDLinkRemoteSOEMLogLevel(void* remote_soem, int32_t level);
 void AUTDLinkRemoteSOEMLogFunc(void* remote_soem, void* out_func, void* flush_func);
 void AUTDLinkRemoteSOEMTimeout(void* remote_soem, uint64_t timeout_ns);

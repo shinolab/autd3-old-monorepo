@@ -1,3 +1,8 @@
+# 9.0.1
+
+- Minimize dependence on boost
+- Add `link::RemoteSimulator` to capi
+
 # 9.0.0
 
 - AUTD Simulator can now be accessed over the network
