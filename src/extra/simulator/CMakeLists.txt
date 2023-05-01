@@ -8,10 +8,11 @@ include(${PROJECT_SOURCE_DIR}/cmakes/glm.cmake)
 include(${PROJECT_SOURCE_DIR}/cmakes/json.cmake)
 include(${PROJECT_SOURCE_DIR}/cmakes/stb.cmake)
 include(${PROJECT_SOURCE_DIR}/cmakes/tinycolormap.cmake)
+include(${PROJECT_SOURCE_DIR}/cmakes/boost.cmake)
 
 add_library(autd3_simulator simulator.cpp)
 add_library(autd3::extra::simulator ALIAS autd3_simulator)
-target_include_directories(autd3_simulator PRIVATE ${stb_SOURCE_DIR} ${Vulkan_INCLUDE_DIRS})
+target_include_directories(autd3_simulator PRIVATE ${stb_SOURCE_DIR} ${Vulkan_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 target_link_libraries(autd3_simulator PRIVATE autd3::common autd3::extra::vk_helper autd3::extra::imgui_vulkan glm::glm glfw tinycolormap)
 target_link_libraries(autd3_simulator PRIVATE nlohmann_json::nlohmann_json)
 

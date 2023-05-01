@@ -5,10 +5,12 @@ if(NOT BUILD_LINK_REMOTE_TWINCAT)
 endif()
 
 include(${PROJECT_SOURCE_DIR}/cmakes/ads.cmake)
+include(${PROJECT_SOURCE_DIR}/cmakes/boost.cmake)
 
 add_library(autd3_link_remote_twincat remote_twincat.cpp)
 add_library(autd3::link::remote_twincat ALIAS autd3_link_remote_twincat)
 
+target_include_directories(autd3_link_remote_twincat PRIVATE ${Boost_INCLUDE_DIRS})
 target_link_libraries(autd3_link_remote_twincat PRIVATE autd3::common ads)
 
 if(WIN32)
