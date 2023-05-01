@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/04/2023
+ * Last Modified: 01/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -318,6 +318,40 @@ namespace AUTD3Sharp
             public Link Build()
             {
                 NativeMethods.LinkSimulator.AUTDLinkSimulatorBuild(out var handle, _builder);
+                return new Link(handle);
+            }
+        }
+
+        public sealed class RemoteSimulator
+        {
+            private IntPtr _builder = IntPtr.Zero;
+
+            public RemoteSimulator(string ip, ushort port)
+            {
+                NativeMethods.LinkRemoteSimulator.AUTDLinkRemoteSimulator(out _builder, ip, port);
+            }
+
+            public RemoteSimulator LogFunc(OnLogOutputCallback output, OnLogFlushCallback flush)
+            {
+                NativeMethods.LinkRemoteSimulator.AUTDLinkRemoteSimulatorLogFunc(_builder, Marshal.GetFunctionPointerForDelegate(output), Marshal.GetFunctionPointerForDelegate(flush));
+                return this;
+            }
+
+            public RemoteSimulator LogLevel(LogLevel level)
+            {
+                NativeMethods.LinkRemoteSimulator.AUTDLinkRemoteSimulatorLogLevel(_builder, (int)level);
+                return this;
+            }
+
+            public RemoteSimulator Timeout(TimeSpan timeout)
+            {
+                NativeMethods.LinkRemoteSimulator.AUTDLinkRemoteSimulatorTimeout(_builder, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
+                return this;
+            }
+
+            public Link Build()
+            {
+                NativeMethods.LinkRemoteSimulator.AUTDLinkRemoteSimulatorBuild(out var handle, _builder);
                 return new Link(handle);
             }
         }
