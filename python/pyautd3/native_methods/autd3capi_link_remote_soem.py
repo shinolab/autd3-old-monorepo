@@ -30,12 +30,6 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDLinkRemoteSOEM.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_char_p, ctypes.c_uint16] 
         self.dll.AUTDLinkRemoteSOEM.restype = None
 
-        self.dll.AUTDLinkRemoteSOEMServerIpAddr.argtypes = [ctypes.c_void_p, ctypes.c_char_p] 
-        self.dll.AUTDLinkRemoteSOEMServerIpAddr.restype = None
-
-        self.dll.AUTDLinkRemoteSOEMClientAmsNetId.argtypes = [ctypes.c_void_p, ctypes.c_char_p] 
-        self.dll.AUTDLinkRemoteSOEMClientAmsNetId.restype = None
-
         self.dll.AUTDLinkRemoteSOEMLogLevel.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
         self.dll.AUTDLinkRemoteSOEMLogLevel.restype = None
 

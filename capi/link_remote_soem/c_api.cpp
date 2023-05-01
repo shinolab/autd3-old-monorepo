@@ -3,7 +3,7 @@
 // Created Date: 03/11/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/04/2023
+// Last Modified: 29/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@
 
 void AUTDLinkRemoteSOEM(void** out, const char* const ip, const uint16_t port) { *out = new autd3::link::RemoteSOEM(std::string(ip), port); }
 void AUTDLinkRemoteSOEMLogLevel(void* remote_soem, int32_t level) {
-  static_cast<autd3::link::RemoteSOEM*>(remote_soem)->log_level(static_cast<autd3::driver::DebugLevel>(level));
+  static_cast<autd3::link::RemoteSOEM*>(remote_soem)->log_level(static_cast<autd3::driver::LogLevel>(level));
 }
 void AUTDLinkRemoteSOEMLogFunc(void* remote_soem, void* out_func, void* flush_func) {
   if (out_func != nullptr && flush_func != nullptr)

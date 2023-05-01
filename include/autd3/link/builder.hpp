@@ -3,7 +3,7 @@
 // Created Date: 27/04/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 28/04/2023
+// Last Modified: 29/04/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,11 +17,11 @@
 #include <utility>
 
 #include "autd3/core/link.hpp"
-#include "autd3/driver/debug_level.hpp"
+#include "autd3/driver/log_level.hpp"
 
 namespace autd3::link {
 
-core::LinkPtr make_log_link(core::LinkPtr link, driver::DebugLevel level, std::function<void(std::string)> out, std::function<void()> flush);
+core::LinkPtr make_log_link(core::LinkPtr link, driver::LogLevel level, std::function<void(std::string)> out, std::function<void()> flush);
 
 /**
  * @brief Builder for Link
@@ -31,7 +31,7 @@ class LinkBuilder {
  public:
   [[nodiscard]] core::LinkPtr build() {
     auto link = build_();
-    return _level == driver::DebugLevel::Off ? std::move(link) : make_log_link(std::move(link), _level, std::move(_out), std::move(_flush));
+    return _level == driver::LogLevel::Off ? std::move(link) : make_log_link(std::move(link), _level, std::move(_out), std::move(_flush));
   }
 
   /**
@@ -46,7 +46,7 @@ class LinkBuilder {
   /**
    * @brief Set log level
    */
-  T& log_level(const driver::DebugLevel level) {
+  T& log_level(const driver::LogLevel level) {
     _level = level;
     return static_cast<T&>(*this);
   }
@@ -70,7 +70,7 @@ class LinkBuilder {
 
  protected:
   virtual core::LinkPtr build_() = 0;
-  driver::DebugLevel _level{driver::DebugLevel::Off};
+  driver::LogLevel _level{driver::LogLevel::Off};
   std::function<void(std::string)> _out{nullptr};
   std::function<void()> _flush{nullptr};
   core::Duration _timeout{core::Milliseconds(0)};

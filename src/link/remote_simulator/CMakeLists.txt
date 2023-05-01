@@ -4,8 +4,11 @@ if(NOT BUILD_LINK_REMOTE_SIMULATOR)
   return()
 endif()
 
+include(${PROJECT_SOURCE_DIR}/cmakes/boost.cmake)
+
 add_library(autd3_link_remote_simulator remote_simulator.cpp)
 add_library(autd3::link::remote_simulator ALIAS autd3_link_remote_simulator)
+target_include_directories(autd3_link_remote_simulator PRIVATE ${Boost_INCLUDE_DIRS})
 target_link_libraries(autd3_link_remote_simulator PRIVATE autd3::common)
 
 if(WIN32)
