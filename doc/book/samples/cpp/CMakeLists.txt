@@ -13,7 +13,6 @@ FetchContent_Declare(
   GIT_PROGRESS TRUE
   GIT_SHALLOW TRUE
 )
-set(DISABLE_EXAMPLES ON)
 set(BUILD_LINK_SOEM ON)
 FetchContent_MakeAvailable(autd3)
 
