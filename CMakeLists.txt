@@ -131,16 +131,10 @@ else()
   include(${PROJECT_SOURCE_DIR}/cmakes/eigen.cmake)
 endif()
 
-if(USE_SYSTEM_BOOST)
-  find_package(Boost REQUIRED)
-else()
-  include(${PROJECT_SOURCE_DIR}/cmakes/boost.cmake)
-endif()
-
 include(${PROJECT_SOURCE_DIR}/cmakes/spdlog.cmake)
 
 add_library(autd3_common INTERFACE)
-target_include_directories(autd3_common INTERFACE ${PROJECT_SOURCE_DIR}/include ${Boost_INCLUDE_DIRS})
+target_include_directories(autd3_common INTERFACE ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(autd3_common INTERFACE Eigen3::Eigen spdlog::spdlog_header_only)
 target_compile_definitions(autd3_common INTERFACE EIGEN_MPL2_ONLY)
 if(USE_METER)

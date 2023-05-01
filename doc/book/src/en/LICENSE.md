@@ -9,11 +9,15 @@ See [LICENSE](https://github.com/shinolab/autd3/blob/master/LICENSE) for details
 - This program uses 
   - Eigen3 (https://gitlab.com/libeigen/eigen) 
   - spdlog (https://github.com/gabime/spdlog)
-  - Boost (https://www.boost.org/)
 
-  - Also,
+  - Also,     
     - SOEM link uses SOEM (https://github.com/OpenEtherCATsociety/SOEM)
-    - RemoteTwinCAT link uses ADS (https://github.com/Beckhoff/ADS)
+    - RemoteSOEM link uses Boost (https://www.boost.org/)
+    - RemoteTwinCAT link uses
+      - ADS (https://github.com/Beckhoff/ADS)
+      - Boost (https://www.boost.org/)
+    - Simulator link uses Boost (https://www.boost.org/)
+    - RemoteSimulator link uses Boost (https://www.boost.org/)
     - GeometryViewer uses
       - fx-gltf (https://github.com/jessey-git/fx-gltf)
       - glfw (https://github.com/glfw/glfw)
@@ -31,6 +35,8 @@ See [LICENSE](https://github.com/shinolab/autd3/blob/master/LICENSE) for details
       - tinycolormap (https://github.com/yuki-koyama/tinycolormap)
       - Vulkan-Headers (https://github.com/KhronosGroup/Vulkan-Headers)
       - NotoFont (https://github.com/notofonts/noto-fonts/blob/main/LICENSE)
+      - Boost (https://www.boost.org/)
     - SOEMAUTDServer uses
       - SOEM link uses SOEM (https://github.com/OpenEtherCATsociety/SOEM)
       - argparse (https://github.com/p-ranav/argparse)
+      - Boost (https://www.boost.org/)
