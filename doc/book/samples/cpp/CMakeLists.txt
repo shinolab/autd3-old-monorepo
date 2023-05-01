@@ -8,7 +8,7 @@ include(FetchContent)
 FetchContent_Declare(
   autd3
   GIT_REPOSITORY https://github.com/shinolab/autd3.git
-  GIT_TAG v9.0.0
+  GIT_TAG v9.0.1
   GIT_SUBMODULES ""
   GIT_PROGRESS TRUE
   GIT_SHALLOW TRUE
