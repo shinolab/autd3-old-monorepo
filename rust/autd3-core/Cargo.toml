@@ -1,6 +1,6 @@
 [package]
 name = "autd3-core"
-version = "9.0.0"
+version = "9.0.1"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -12,7 +12,7 @@ keywords = ["autd"]
 
 [dependencies]
 anyhow = "1.0.57"
-autd3-driver = {path = "../autd3-driver", version="9.0.0"}
+autd3-driver = {path = "../autd3-driver", version="9.0.1"}
 bitflags = "2.0.2"
 itertools = "0.10.3"
 nalgebra = "0.32.1"
