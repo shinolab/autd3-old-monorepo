@@ -1646,6 +1646,59 @@ Create RemoteSOEM link.
 | remote_soem                    | void*   | in    | pointer to RemoteSOEM link builder |
 | return                 | void     | -      | -                                   |
 
+## AUTDLinkRemoteSimulator (autd3capi-link-remote-simulator)
+
+Create RemoteSimulator link builder.
+
+| Argument name / return | type    | in/out | description                              |
+| ---------------------- | ------  | ------ | ---------------------------------------- |
+| out                    | void**  | out    | pointer to pointer to RemoteSimulator link    |
+| ip                     | char*   | in     | server ip address                        |
+| port                   | uint16_t| in     | port                                     |
+| return                 | void    | -      | -                                        |
+
+## AUTDLinkRemoteSimulatorLogLevel (autd3capi-link-remote-simulator)
+
+Set log level of RemoteSimulator link.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| remote_simulator                    | void*   | in    | pointer to RemoteSimulator link builder |
+| level                  | int32_t  | in     | log level                          |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkRemoteSimulatorLogFunc (autd3capi-link-remote-simulator)
+
+Set log func of RemoteSimulator link.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| remote_simulator                    | void*   | in    | pointer to RemoteSimulator link builder |
+| out_func               | void*    | in     | output callback                    |
+| flush_func             | void*    | in     | flush callback                     |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkRemoteSimulatorTimeout (autd3capi-link-remote-simulator)
+
+Set timeout of RemoteSimulator link.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| remote_simulator                    | void*   | in    | pointer to RemoteSimulator link builder |
+| timeout_ns                  | uint64_t  | in     | timeout in ns                          |
+| return                 | void     | -      | -                                   |
+
+## AUTDLinkRemoteSimulatorBuild (autd3capi-link-remote-simulator)
+
+Create RemoteSimulator link.
+
+| Argument name / return | type     | in/out | description                         |
+| ---------------------- | -------- | ------ | ----------------------------------- |
+| out                    | void**   | out    | pointer to RemoteSimulator link |
+| remote_simulator                    | void*   | in    | pointer to RemoteSimulator link builder |
+| return                 | void     | -      | -                                   |
+
+
 ## AUTDLinkTwinCAT (autd3capi-link-twincat)
 
 Create TwinCAT link buider.
