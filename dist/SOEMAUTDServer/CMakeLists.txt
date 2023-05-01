@@ -6,11 +6,12 @@ endif()
 
 include(${PROJECT_SOURCE_DIR}/cmakes/argparse.cmake)
 include(${PROJECT_SOURCE_DIR}/cmakes/soem.cmake)
+include(${PROJECT_SOURCE_DIR}/cmakes/boost.cmake)
 
 add_executable(SOEMAUTDServer soem_server.cpp)
 target_link_libraries(SOEMAUTDServer PRIVATE autd3::common soem argparse::argparse)
 
-target_include_directories(SOEMAUTDServer PRIVATE ${PROJECT_SOURCE_DIR}/dist/SOEMAUTDServer ${PROJECT_SOURCE_DIR}/src/link/soem)
+target_include_directories(SOEMAUTDServer PRIVATE ${PROJECT_SOURCE_DIR}/dist/SOEMAUTDServer ${PROJECT_SOURCE_DIR}/src/link/soem ${Boost_INCLUDE_DIRS})
 if(WIN32)
   target_include_directories(SOEMAUTDServer PRIVATE 
     ${soem_SOURCE_DIR}/oshw/${OS}/wpcap/Include

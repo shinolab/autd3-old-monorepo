@@ -4,9 +4,12 @@ if(NOT BUILD_LINK_SIMULATOR)
   return()
 endif()
 
+include(${PROJECT_SOURCE_DIR}/cmakes/boost.cmake)
+
 add_library(autd3_link_simulator simulator.cpp)
 add_library(autd3::link::simulator ALIAS autd3_link_simulator)
 
+target_include_directories(autd3_link_simulator PRIVATE ${Boost_INCLUDE_DIRS})
 target_link_libraries(autd3_link_simulator PRIVATE autd3::common)
 
 set_target_properties(autd3_link_simulator
