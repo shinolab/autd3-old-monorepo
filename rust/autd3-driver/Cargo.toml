@@ -13,6 +13,7 @@ keywords = ["autd"]
 [features]
 default = []
 single_float = []
+use_meter = []
 
 [dependencies]
 anyhow = "1.0.57"

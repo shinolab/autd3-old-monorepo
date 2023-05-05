@@ -24,6 +24,17 @@ mod float_def {
 
 pub use float_def::*;
 
+#[cfg(feature = "use_meter")]
+mod unit {
+    pub const METER: super::float = 1.0;
+}
+#[cfg(not(feature = "use_meter"))]
+mod unit {
+    pub const METER: super::float = 1000.0;
+}
+pub use unit::*;
+pub const MILLIMETER: float = METER / 1000.0;
+
 pub const VERSION_NUM_MAJOR: u8 = 0x88;
 pub const VERSION_NUM_MINOR: u8 = 0x01;
 
