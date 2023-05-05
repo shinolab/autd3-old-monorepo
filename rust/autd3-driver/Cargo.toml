@@ -10,6 +10,10 @@ repository = "https://github.com/shinolab/autd3"
 readme = "README.md"
 keywords = ["autd"]
 
+[features]
+default = []
+single_float = []
+
 [dependencies]
 anyhow = "1.0.57"
 bitflags = "2.0.2"

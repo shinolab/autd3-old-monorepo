@@ -12,6 +12,7 @@
  */
 
 use crate::{
+    float,
     fpga::{AdvancedDriveDuty, AdvancedDrivePhase, LegacyDrive},
     Drive, FOCUS_STM_FIXED_NUM_UNIT,
 };
@@ -22,7 +23,7 @@ pub struct STMFocus {
 }
 
 impl STMFocus {
-    pub fn new(x: f64, y: f64, z: f64, duty_shift: u8) -> Self {
+    pub fn new(x: float, y: float, z: float, duty_shift: u8) -> Self {
         let x = (x / FOCUS_STM_FIXED_NUM_UNIT).round() as i32;
         let y = (y / FOCUS_STM_FIXED_NUM_UNIT).round() as i32;
         let z = (z / FOCUS_STM_FIXED_NUM_UNIT).round() as i32;
@@ -273,16 +274,17 @@ impl Body<[u16]> {
 mod tests {
     use assert_approx_eq::assert_approx_eq;
     use rand::prelude::*;
-    use std::{f64::consts::PI, mem::size_of};
+    use std::mem::size_of;
 
     use super::*;
+    use crate::PI;
 
     #[test]
     fn stm_focus() {
         assert_eq!(size_of::<STMFocus>(), 8);
 
-        let max = ((1 << 17) - 1) as f64 * FOCUS_STM_FIXED_NUM_UNIT;
-        let min = -(1 << 17) as f64 * FOCUS_STM_FIXED_NUM_UNIT;
+        let max = ((1 << 17) - 1) as float * FOCUS_STM_FIXED_NUM_UNIT;
+        let min = -(1 << 17) as float * FOCUS_STM_FIXED_NUM_UNIT;
 
         let mut rng = rand::thread_rng();
 
@@ -293,7 +295,7 @@ mod tests {
             } else {
                 b | 0xfffc0000u32
             };
-            unsafe { *(&b as *const _ as *const i32) as f64 * FOCUS_STM_FIXED_NUM_UNIT }
+            unsafe { *(&b as *const _ as *const i32) as float * FOCUS_STM_FIXED_NUM_UNIT }
         };
 
         for _ in 0..10000 {
