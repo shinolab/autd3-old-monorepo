@@ -4,12 +4,25 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/03/2023
+ * Last Modified: 05/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
+
+#[cfg(feature = "single_float")]
+mod float_def {
+    pub use f32 as float;
+    pub use std::f32::consts::PI;
+}
+#[cfg(not(feature = "single_float"))]
+mod float_def {
+    pub use f64 as float;
+    pub use std::f64::consts::PI;
+}
+
+pub use float_def::*;
 
 pub const VERSION_NUM_MAJOR: u8 = 0x88;
 pub const VERSION_NUM_MINOR: u8 = 0x01;
