@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/03/2023
+ * Last Modified: 06/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -50,7 +50,7 @@ impl TxDatagram {
     }
 
     pub fn num_transducers(&self) -> usize {
-        self.body_pointer.last().unwrap() / std::mem::size_of::<u16>()
+        self.body_pointer[self.num_bodies] / std::mem::size_of::<u16>()
     }
 
     pub fn transmitting_size(&self) -> usize {
@@ -222,5 +222,58 @@ impl RxDatagram {
 
     pub fn is_msg_processed(&self, msg_id: u8) -> bool {
         self.data.iter().all(|msg| msg.msg_id == msg_id)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::mem::size_of;
+
+    use super::*;
+
+    #[test]
+    fn tx_datagram() {
+        let device_map = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        let mut tx = TxDatagram::new(&device_map);
+
+        assert_eq!(tx.num_devices(), 10);
+        assert_eq!(tx.num_transducers(), 55);
+        assert_eq!(tx.transmitting_size(), 128 + size_of::<u16>() * 55);
+
+        tx.num_bodies = 5;
+        assert_eq!(tx.num_devices(), 10);
+        assert_eq!(tx.num_transducers(), 15);
+        assert_eq!(tx.transmitting_size(), 128 + size_of::<u16>() * 15);
+
+        assert_eq!(tx.data().as_ptr(), tx.header() as *const _ as *const u8);
+        unsafe {
+            assert_eq!(
+                tx.data().as_ptr().add(128),
+                tx.body_raw_mut().as_ptr() as *const u8
+            );
+            let mut cursor = tx.data().as_ptr().add(128);
+            for i in 0..device_map.len() {
+                assert_eq!(cursor, tx.body(i) as *const _ as *const u8);
+                cursor = cursor.add(size_of::<u16>() * device_map[i]);
+            }
+        }
+    }
+
+    #[test]
+    fn rx_datagram() {
+        assert_eq!(size_of::<RxMessage>(), 2);
+
+        let mut rx = RxDatagram::new(10);
+
+        assert!(!rx.is_msg_processed(1));
+
+        rx.messages_mut()[0].msg_id = 1;
+        assert!(!rx.is_msg_processed(1));
+
+        for msg in rx.messages_mut() {
+            msg.msg_id = 1;
+        }
+        assert!(rx.is_msg_processed(1));
+        assert!(!rx.is_msg_processed(2));
     }
 }
