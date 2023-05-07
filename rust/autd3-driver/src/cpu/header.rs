@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/03/2023
+ * Last Modified: 07/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -95,5 +95,92 @@ impl GlobalHeader {
 impl Default for GlobalHeader {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::mem::size_of;
+
+    use super::*;
+
+    #[test]
+    fn mod_header_initial() {
+        assert_eq!(size_of::<ModInitial>(), 124);
+
+        let header = ModInitial {
+            freq_div: 0x01234567,
+            data: (0..MOD_HEADER_INITIAL_DATA_SIZE)
+                .map(|i| i as u8)
+                .collect::<Vec<_>>()
+                .try_into()
+                .unwrap(),
+        };
+
+        let mut buf = vec![0x00; 124];
+        unsafe {
+            std::ptr::copy_nonoverlapping(&header as *const _ as *const u8, buf.as_mut_ptr(), 124);
+        }
+        assert_eq!(buf[0], 0x67);
+        assert_eq!(buf[1], 0x45);
+        assert_eq!(buf[2], 0x23);
+        assert_eq!(buf[3], 0x01);
+        for i in 0..MOD_HEADER_INITIAL_DATA_SIZE {
+            assert_eq!(buf[4 + i], i as u8);
+        }
+    }
+
+    #[test]
+    fn mod_header_subsequent() {
+        assert_eq!(size_of::<ModSubsequent>(), 124);
+    }
+
+    #[test]
+    fn silencer_header() {
+        assert_eq!(size_of::<SilencerHeader>(), 124);
+
+        let header = SilencerHeader {
+            cycle: 0x0123,
+            step: 0x4567,
+            _unused: [0x00; 120],
+        };
+
+        let mut buf = vec![0x00; 124];
+        unsafe {
+            std::ptr::copy_nonoverlapping(&header as *const _ as *const u8, buf.as_mut_ptr(), 124);
+        }
+        assert_eq!(buf[0], 0x23);
+        assert_eq!(buf[1], 0x01);
+        assert_eq!(buf[2], 0x67);
+        assert_eq!(buf[3], 0x45);
+    }
+
+    #[test]
+    fn global_header() {
+        assert_eq!(size_of::<GlobalHeader>(), 128);
+
+        let header = GlobalHeader {
+            msg_id: 0x01,
+            fpga_flag: FPGAControlFlags::FORCE_FAN,
+            cpu_flag: CPUControlFlags::CONFIG_SYNC,
+            size: 0x02,
+            data: (0..124)
+                .map(|i| i as u8)
+                .collect::<Vec<_>>()
+                .try_into()
+                .unwrap(),
+        };
+
+        let mut buf = vec![0x00; 128];
+        unsafe {
+            std::ptr::copy_nonoverlapping(&header as *const _ as *const u8, buf.as_mut_ptr(), 128);
+        }
+        assert_eq!(buf[0], 0x01);
+        assert_eq!(buf[1], 1 << 4);
+        assert_eq!(buf[2], 1 << 2);
+        assert_eq!(buf[3], 0x02);
+        for i in 0..124 {
+            assert_eq!(buf[4 + i], i as u8);
+        }
     }
 }
