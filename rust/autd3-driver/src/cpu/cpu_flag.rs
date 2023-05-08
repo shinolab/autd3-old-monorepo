@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/03/2023
+ * Last Modified: 08/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -27,5 +27,17 @@ bitflags::bitflags! {
         const STM_END         = 1 << 5;
         const IS_DUTY         = 1 << 6;
         const MOD_DELAY       = 1 << 7;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::mem::size_of;
+
+    use super::*;
+
+    #[test]
+    fn fpga_info() {
+        assert_eq!(size_of::<CPUControlFlags>(), 1);
     }
 }
