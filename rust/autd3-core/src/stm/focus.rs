@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/03/2023
+ * Last Modified: 08/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,10 +13,10 @@
 
 use crate::{
     datagram::{DatagramBody, Empty, Filled, Sendable},
+    error::AUTDInternalError,
     geometry::{Geometry, Matrix3, Transducer, Vector3},
 };
 
-use anyhow::{Ok, Result};
 use autd3_driver::*;
 
 use super::STM;
@@ -38,14 +38,12 @@ impl FocusSTM {
         }
     }
 
-    pub fn add(&mut self, point: Vector3) -> Result<()> {
+    pub fn add(&mut self, point: Vector3) {
         self.control_points.push((point, 0));
-        Ok(())
     }
 
-    pub fn add_with_shift(&mut self, point: Vector3, shift: u8) -> Result<()> {
+    pub fn add_with_shift(&mut self, point: Vector3, shift: u8) {
         self.control_points.push((point, shift));
-        Ok(())
     }
 
     pub fn control_points(&self) -> &[(Vector3, u8)] {
@@ -56,7 +54,7 @@ impl FocusSTM {
 impl<T: Transducer> DatagramBody<T> for FocusSTM {
     type O = autd3_driver::FocusSTM;
 
-    fn operation(&mut self, geometry: &Geometry<T>) -> Result<Self::O> {
+    fn operation(&mut self, geometry: &Geometry<T>) -> Result<Self::O, AUTDInternalError> {
         let points = geometry
             .device_map()
             .iter()
@@ -97,7 +95,7 @@ impl<T: Transducer> Sendable<T> for FocusSTM {
     type B = Filled;
     type O = <Self as DatagramBody<T>>::O;
 
-    fn operation(&mut self, geometry: &Geometry<T>) -> Result<Self::O> {
+    fn operation(&mut self, geometry: &Geometry<T>) -> Result<Self::O, AUTDInternalError> {
         <Self as DatagramBody<T>>::operation(self, geometry)
     }
 }

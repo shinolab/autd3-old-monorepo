@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 08/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,9 +13,9 @@
 
 use crate::{
     datagram::{DatagramHeader, Empty, Filled, Sendable},
+    error::AUTDInternalError,
     geometry::{Geometry, Transducer},
 };
-use anyhow::Result;
 
 pub struct SilencerConfig {
     step: u16,
@@ -35,7 +35,7 @@ impl SilencerConfig {
 impl DatagramHeader for SilencerConfig {
     type O = autd3_driver::ConfigSilencer;
 
-    fn operation(&mut self) -> Result<Self::O> {
+    fn operation(&mut self) -> Result<Self::O, AUTDInternalError> {
         Ok(autd3_driver::ConfigSilencer::new(self.step, self.cycle))
     }
 }
@@ -45,7 +45,7 @@ impl<T: Transducer> Sendable<T> for SilencerConfig {
     type B = Empty;
     type O = <Self as DatagramHeader>::O;
 
-    fn operation(&mut self, _: &Geometry<T>) -> Result<Self::O> {
+    fn operation(&mut self, _: &Geometry<T>) -> Result<Self::O, AUTDInternalError> {
         <Self as DatagramHeader>::operation(self)
     }
 }
