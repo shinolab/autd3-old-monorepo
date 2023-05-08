@@ -4,90 +4,125 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/03/2023
+ * Last Modified: 08/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::marker::PhantomData;
+use crate::error::AUTDInternalError;
 
-use super::{AdvancedPhaseTransducer, AdvancedTransducer, Geometry, LegacyTransducer};
+use super::{
+    AdvancedPhaseTransducer, AdvancedTransducer, Device, Geometry, LegacyTransducer, Transducer,
+};
 
-pub struct Advanced;
-pub struct AdvancedPhase;
-pub struct Legacy;
+use autd3_driver::{float, METER};
 
-pub struct GeometryBuilder<M> {
-    attenuation: f64,
-    sound_speed: f64,
-    _mode: PhantomData<M>,
+pub struct GeometryBuilder<T: Transducer> {
+    attenuation: float,
+    sound_speed: float,
+    transducers: Vec<T>,
+    device_map: Vec<usize>,
 }
 
-impl<M> GeometryBuilder<M> {
-    pub fn attenuation(mut self, attenuation: f64) -> Self {
+impl<T: Transducer> GeometryBuilder<T> {
+    pub fn attenuation(mut self, attenuation: float) -> Self {
         self.attenuation = attenuation;
         self
     }
 
-    pub fn sound_speed(mut self, sound_speed: f64) -> Self {
+    pub fn sound_speed(mut self, sound_speed: float) -> Self {
         self.sound_speed = sound_speed;
         self
     }
 }
 
-impl GeometryBuilder<Advanced> {
-    pub fn legacy_mode(self) -> GeometryBuilder<Legacy> {
-        unsafe { std::mem::transmute(self) }
-    }
-
-    pub fn advanced_phase_mode(self) -> GeometryBuilder<AdvancedPhase> {
-        unsafe { std::mem::transmute(self) }
-    }
-
-    pub fn build(self) -> Geometry<AdvancedTransducer> {
-        Geometry::<AdvancedTransducer>::new()
-    }
-}
-
-impl GeometryBuilder<Legacy> {
+impl GeometryBuilder<LegacyTransducer> {
     pub fn new() -> Self {
         Self {
             attenuation: 0.0,
-            sound_speed: 340.0e3,
-            _mode: PhantomData,
+            sound_speed: 340.0 * METER,
+            transducers: vec![],
+            device_map: vec![],
         }
     }
 
-    pub fn advanced_mode(self) -> GeometryBuilder<Advanced> {
-        unsafe { std::mem::transmute(self) }
+    pub fn add_device<D: Device<LegacyTransducer>>(mut self, dev: D) -> Self {
+        let id = self.transducers.len();
+        let mut transducers = dev.get_transducers(id);
+        self.device_map.push(transducers.len());
+        self.transducers.append(&mut transducers);
+        self
     }
 
-    pub fn advanced_phase_mode(self) -> GeometryBuilder<AdvancedPhase> {
-        unsafe { std::mem::transmute(self) }
-    }
-
-    pub fn build(self) -> Geometry<LegacyTransducer> {
-        Geometry::<LegacyTransducer>::new()
-    }
-}
-
-impl GeometryBuilder<AdvancedPhase> {
-    pub fn advanced_mode(self) -> GeometryBuilder<Advanced> {
-        unsafe { std::mem::transmute(self) }
-    }
-
-    pub fn legacy_mode(self) -> GeometryBuilder<Legacy> {
-        unsafe { std::mem::transmute(self) }
-    }
-
-    pub fn build(self) -> Geometry<AdvancedPhaseTransducer> {
-        Geometry::<AdvancedPhaseTransducer>::new()
+    pub fn build(self) -> Result<Geometry<LegacyTransducer>, AUTDInternalError> {
+        Geometry::<LegacyTransducer>::new(
+            self.transducers,
+            self.device_map,
+            self.sound_speed,
+            self.attenuation,
+        )
     }
 }
 
-impl Default for GeometryBuilder<Legacy> {
+impl GeometryBuilder<AdvancedTransducer> {
+    pub fn new() -> Self {
+        Self {
+            attenuation: 0.0,
+            sound_speed: 340.0 * METER,
+            transducers: vec![],
+            device_map: vec![],
+        }
+    }
+
+    pub fn add_device<D: Device<AdvancedTransducer>>(mut self, dev: D) -> Self {
+        let id = self.transducers.len();
+        let mut transducers = dev.get_transducers(id);
+        self.device_map.push(transducers.len());
+        self.transducers.append(&mut transducers);
+        self
+    }
+
+    pub fn build(self) -> Result<Geometry<AdvancedTransducer>, AUTDInternalError> {
+        Geometry::<AdvancedTransducer>::new(
+            self.transducers,
+            self.device_map,
+            self.sound_speed,
+            self.attenuation,
+        )
+    }
+}
+
+impl GeometryBuilder<AdvancedPhaseTransducer> {
+    pub fn new() -> Self {
+        Self {
+            attenuation: 0.0,
+            sound_speed: 340.0 * METER,
+            transducers: vec![],
+            device_map: vec![],
+        }
+    }
+
+    pub fn add_device<D: Device<AdvancedPhaseTransducer>>(mut self, dev: D) -> Self {
+        let id = self.transducers.len();
+        let mut transducers = dev.get_transducers(id);
+        self.device_map.push(transducers.len());
+        self.transducers.append(&mut transducers);
+        self
+    }
+
+    pub fn build(self) -> Result<Geometry<AdvancedPhaseTransducer>, AUTDInternalError> {
+        Geometry::<AdvancedPhaseTransducer>::new(
+            self.transducers,
+            self.device_map,
+            self.sound_speed,
+            self.attenuation,
+        )
+    }
+}
+
+impl Default for GeometryBuilder<LegacyTransducer> {
     fn default() -> Self {
         Self::new()
     }

@@ -1,25 +1,26 @@
 /*
  * File: autd3_device.rs
  * Project: src
- * Created Date: 05/12/2022
+ * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/12/2022
+ * Last Modified: 08/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_core::geometry::{Device, Matrix4, Transducer, UnitQuaternion, Vector3, Vector4};
+use crate::geometry::{Device, Matrix4, Transducer, UnitQuaternion, Vector3, Vector4};
+use autd3_driver::float;
 use num::FromPrimitive;
 
 pub const NUM_TRANS_IN_UNIT: usize = 249;
 pub const NUM_TRANS_X: usize = 18;
 pub const NUM_TRANS_Y: usize = 14;
-pub const TRANS_SPACING_MM: f64 = 10.16;
-pub const DEVICE_WIDTH: f64 = 192.0;
-pub const DEVICE_HEIGHT: f64 = 151.4;
+pub const TRANS_SPACING_MM: float = 10.16;
+pub const DEVICE_WIDTH: float = 192.0;
+pub const DEVICE_HEIGHT: float = 151.4;
 
 pub struct AUTD3 {
     position: Vector3,
@@ -72,8 +73,8 @@ impl<T: Transducer> Device<T> for AUTD3 {
             .filter(|&(y, x)| !Self::is_missing_transducer(x, y))
             .map(|(y, x)| {
                 Vector4::new(
-                    x as f64 * TRANS_SPACING_MM,
-                    y as f64 * TRANS_SPACING_MM,
+                    x as float * TRANS_SPACING_MM,
+                    y as float * TRANS_SPACING_MM,
                     0.,
                     1.,
                 )
@@ -82,5 +83,21 @@ impl<T: Transducer> Device<T> for AUTD3 {
             .zip(start_id..)
             .map(|(p, i)| T::new(i, Vector3::new(p.x, p.y, p.z), self.rotation))
             .collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::geometry::LegacyTransducer;
+
+    use super::*;
+
+    #[test]
+    fn autd3_device() {
+        let dev = AUTD3::new(Vector3::zeros(), Vector3::zeros());
+        assert_eq!(
+            Device::<LegacyTransducer>::get_transducers(&dev, 0).len(),
+            249
+        );
     }
 }
