@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/03/2023
+ * Last Modified: 08/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -337,6 +337,12 @@ impl Operation for GainSTMAdvanced {
             return Ok(());
         }
 
+        if self.sent == 0 {
+            self.pack_phase(tx)?;
+            self.sent += 1;
+            return Ok(());
+        }
+
         match self.props.mode {
             Mode::PhaseDutyFull => {
                 if self.next_duty {
@@ -364,5 +370,650 @@ impl Operation for GainSTMAdvanced {
 
     fn is_finished(&self) -> bool {
         self.sent > self.drives.len()
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use rand::prelude::*;
+
+    use crate::{AdvancedDriveDuty, AdvancedDrivePhase, LegacyDrive};
+
+    use super::*;
+
+    const NUM_TRANS_IN_UNIT: usize = 249;
+
+    #[test]
+    fn gain_stm_legacy() {
+        let device_map = [
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+        ];
+        let mut tx = TxDatagram::new(&device_map);
+
+        let mut rng = rand::thread_rng();
+        let d = (0..NUM_TRANS_IN_UNIT * 10)
+            .map(|_| Drive {
+                phase: rng.gen_range(0.0..1.0),
+                amp: rng.gen_range(0.0..1.0),
+            })
+            .collect::<Vec<_>>();
+        let drives = vec![d.clone(); 2];
+
+        let props = GainSTMProps {
+            freq_div: 152,
+            mode: Mode::PhaseDutyFull,
+            start_idx: Some(1),
+            finish_idx: Some(1),
+        };
+
+        let mut op = GainSTMLegacy::new(drives.clone(), props);
+
+        op.init();
+        assert!(!op.is_finished());
+
+        op.pack(&mut tx).unwrap();
+        assert!(!op.is_finished());
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::LEGACY_MODE));
+        assert!(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::STM_GAIN_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+        for i in 0..10 {
+            let stm = tx.body(i).gain_stm_initial();
+            assert_eq!((stm.data[1] as u32) << 16 | stm.data[0] as u32, 152);
+            assert_eq!(stm.data[2], Mode::PhaseDutyFull as u16);
+            assert_eq!(stm.data[3], 2);
+            assert_eq!(stm.data[4], 1);
+            assert_eq!(stm.data[5], 1);
+        }
+        assert_eq!(tx.num_bodies, 10);
+
+        op.pack(&mut tx).unwrap();
+        assert!(!op.is_finished());
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::LEGACY_MODE));
+        assert!(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::STM_GAIN_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+        for i in 0..10 {
+            assert_eq!(
+                (tx.body_raw_mut()[i] & 0xFF) as u8,
+                LegacyDrive::to_phase(&drives[0][i])
+            );
+            assert_eq!(
+                (tx.body_raw_mut()[i] >> 8) as u8,
+                LegacyDrive::to_duty(&drives[0][i])
+            );
+        }
+        assert_eq!(tx.num_bodies, 10);
+
+        op.pack(&mut tx).unwrap();
+        assert!(op.is_finished());
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::LEGACY_MODE));
+        assert!(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::STM_GAIN_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+        for i in 0..10 {
+            assert_eq!(
+                (tx.body_raw_mut()[i] & 0xFF) as u8,
+                LegacyDrive::to_phase(&drives[1][i])
+            );
+            assert_eq!(
+                (tx.body_raw_mut()[i] >> 8) as u8,
+                LegacyDrive::to_duty(&drives[1][i])
+            );
+        }
+        assert_eq!(tx.num_bodies, 10);
+
+        op.init();
+        assert!(!op.is_finished());
+
+        let props = GainSTMProps {
+            start_idx: None,
+            ..props
+        };
+
+        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        op.init();
+        op.pack(&mut tx).unwrap();
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+
+        let props = GainSTMProps {
+            finish_idx: None,
+            ..props
+        };
+
+        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        op.init();
+        op.pack(&mut tx).unwrap();
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+
+        let props = GainSTMProps {
+            start_idx: Some(2),
+            ..props
+        };
+        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        op.init();
+        assert!(op.pack(&mut tx).is_err());
+
+        let props = GainSTMProps {
+            start_idx: None,
+            finish_idx: Some(2),
+            ..props
+        };
+        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        op.init();
+        assert!(op.pack(&mut tx).is_err());
+    }
+
+    #[test]
+    fn gain_stm_advanced() {
+        let device_map = [
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+        ];
+        let mut tx = TxDatagram::new(&device_map);
+
+        let mut rng = rand::thread_rng();
+        let d = (0..NUM_TRANS_IN_UNIT * 10)
+            .map(|_| Drive {
+                phase: rng.gen_range(0.0..1.0),
+                amp: rng.gen_range(0.0..1.0),
+            })
+            .collect::<Vec<_>>();
+        let drives = vec![d.clone(); 2];
+
+        let cycles = (0..NUM_TRANS_IN_UNIT * 10)
+            .map(|_| rng.gen_range(2..0xFFFF))
+            .collect::<Vec<_>>();
+
+        let props = GainSTMProps {
+            freq_div: 276,
+            mode: Mode::PhaseDutyFull,
+            start_idx: Some(1),
+            finish_idx: Some(1),
+        };
+
+        let mut op = GainSTMAdvanced::new(drives.clone(), cycles.clone(), props);
+
+        op.init();
+        assert!(!op.is_finished());
+
+        op.pack(&mut tx).unwrap();
+        assert!(!op.is_finished());
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::LEGACY_MODE));
+        assert!(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::STM_GAIN_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+        for i in 0..10 {
+            let stm = tx.body(i).gain_stm_initial();
+            assert_eq!((stm.data[1] as u32) << 16 | stm.data[0] as u32, 276);
+            assert_eq!(stm.data[2], Mode::PhaseDutyFull as u16);
+            assert_eq!(stm.data[3], 2);
+            assert_eq!(stm.data[4], 1);
+            assert_eq!(stm.data[5], 1);
+        }
+        assert_eq!(tx.num_bodies, 10);
+
+        op.pack(&mut tx).unwrap();
+        assert!(!op.is_finished());
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::LEGACY_MODE));
+        assert!(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::STM_GAIN_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+        for i in 0..10 {
+            assert_eq!(
+                tx.body_raw_mut()[i],
+                AdvancedDrivePhase::to_phase(&drives[0][i], cycles[i])
+            )
+        }
+        assert_eq!(tx.num_bodies, 10);
+
+        op.pack(&mut tx).unwrap();
+        assert!(!op.is_finished());
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::LEGACY_MODE));
+        assert!(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::STM_GAIN_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+        for i in 0..10 {
+            assert_eq!(
+                tx.body_raw_mut()[i],
+                AdvancedDriveDuty::to_duty(&drives[0][i], cycles[i])
+            )
+        }
+        assert_eq!(tx.num_bodies, 10);
+
+        op.pack(&mut tx).unwrap();
+        assert!(!op.is_finished());
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::LEGACY_MODE));
+        assert!(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::STM_GAIN_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+        for i in 0..10 {
+            assert_eq!(
+                tx.body_raw_mut()[i],
+                AdvancedDrivePhase::to_phase(&drives[1][i], cycles[i])
+            )
+        }
+        assert_eq!(tx.num_bodies, 10);
+
+        op.pack(&mut tx).unwrap();
+        assert!(op.is_finished());
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::LEGACY_MODE));
+        assert!(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::STM_GAIN_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+        for i in 0..10 {
+            assert_eq!(
+                tx.body_raw_mut()[i],
+                AdvancedDriveDuty::to_duty(&drives[1][i], cycles[i])
+            )
+        }
+        assert_eq!(tx.num_bodies, 10);
+
+        op.init();
+        assert!(!op.is_finished());
+
+        let props = GainSTMProps {
+            start_idx: None,
+            ..props
+        };
+
+        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        op.init();
+        op.pack(&mut tx).unwrap();
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+
+        let props = GainSTMProps {
+            finish_idx: None,
+            ..props
+        };
+
+        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        op.init();
+        op.pack(&mut tx).unwrap();
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+
+        let props = GainSTMProps {
+            start_idx: Some(2),
+            ..props
+        };
+        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        op.init();
+        assert!(op.pack(&mut tx).is_err());
+
+        let props = GainSTMProps {
+            start_idx: None,
+            finish_idx: Some(2),
+            ..props
+        };
+        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        op.init();
+        assert!(op.pack(&mut tx).is_err());
+    }
+
+    #[test]
+    fn gain_stm_advanced_phase() {
+        let device_map = [
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+        ];
+        let mut tx = TxDatagram::new(&device_map);
+
+        let mut rng = rand::thread_rng();
+        let d = (0..NUM_TRANS_IN_UNIT * 10)
+            .map(|_| Drive {
+                phase: rng.gen_range(0.0..1.0),
+                amp: rng.gen_range(0.0..1.0),
+            })
+            .collect::<Vec<_>>();
+        let drives = vec![d.clone(); 2];
+
+        let cycles = (0..NUM_TRANS_IN_UNIT * 10)
+            .map(|_| rng.gen_range(2..0xFFFF))
+            .collect::<Vec<_>>();
+
+        let props = GainSTMProps {
+            freq_div: 276,
+            mode: Mode::PhaseFull,
+            start_idx: Some(1),
+            finish_idx: Some(1),
+        };
+
+        let mut op = GainSTMAdvanced::new(drives.clone(), cycles.clone(), props);
+
+        op.init();
+        assert!(!op.is_finished());
+
+        op.pack(&mut tx).unwrap();
+        assert!(!op.is_finished());
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::LEGACY_MODE));
+        assert!(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::STM_GAIN_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+        for i in 0..10 {
+            let stm = tx.body(i).gain_stm_initial();
+            assert_eq!((stm.data[1] as u32) << 16 | stm.data[0] as u32, 276);
+            assert_eq!(stm.data[2], Mode::PhaseFull as u16);
+            assert_eq!(stm.data[3], 2);
+            assert_eq!(stm.data[4], 1);
+            assert_eq!(stm.data[5], 1);
+        }
+        assert_eq!(tx.num_bodies, 10);
+
+        op.pack(&mut tx).unwrap();
+        assert!(!op.is_finished());
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::LEGACY_MODE));
+        assert!(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::STM_GAIN_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+        for i in 0..10 {
+            assert_eq!(
+                tx.body_raw_mut()[i],
+                AdvancedDrivePhase::to_phase(&drives[0][i], cycles[i])
+            )
+        }
+        assert_eq!(tx.num_bodies, 10);
+
+        op.pack(&mut tx).unwrap();
+        assert!(op.is_finished());
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::LEGACY_MODE));
+        assert!(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::STM_GAIN_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+        for i in 0..10 {
+            assert_eq!(
+                tx.body_raw_mut()[i],
+                AdvancedDrivePhase::to_phase(&drives[1][i], cycles[i])
+            )
+        }
+        assert_eq!(tx.num_bodies, 10);
+
+        op.init();
+        assert!(!op.is_finished());
+
+        let props = GainSTMProps {
+            start_idx: None,
+            ..props
+        };
+
+        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        op.init();
+        op.pack(&mut tx).unwrap();
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+
+        let props = GainSTMProps {
+            finish_idx: None,
+            ..props
+        };
+
+        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        op.init();
+        op.pack(&mut tx).unwrap();
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+
+        let props = GainSTMProps {
+            start_idx: Some(2),
+            ..props
+        };
+        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        op.init();
+        assert!(op.pack(&mut tx).is_err());
+
+        let props = GainSTMProps {
+            start_idx: None,
+            finish_idx: Some(2),
+            ..props
+        };
+        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        op.init();
+        assert!(op.pack(&mut tx).is_err());
     }
 }

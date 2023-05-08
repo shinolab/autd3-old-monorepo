@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 08/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -64,5 +64,52 @@ impl Operation for ModDelay {
 
     fn is_finished(&self) -> bool {
         self.sent
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use rand::prelude::*;
+
+    use super::*;
+
+    const NUM_TRANS_IN_UNIT: usize = 249;
+
+    #[test]
+    fn mod_delay() {
+        let mut tx = TxDatagram::new(&[
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+        ]);
+
+        let mut rng = rand::thread_rng();
+
+        let delays = (0..NUM_TRANS_IN_UNIT * 10)
+            .map(|_| rng.gen_range(0x0000..0xFFFFu16))
+            .collect::<Vec<_>>();
+
+        let mut op = ModDelay::new(delays.clone());
+        op.init();
+        assert!(!op.is_finished());
+
+        op.pack(&mut tx).unwrap();
+        assert!(op.is_finished());
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::MOD_DELAY));
+        for i in 0..NUM_TRANS_IN_UNIT * 10 {
+            assert_eq!(tx.body_raw_mut()[i], delays[i]);
+        }
+        assert_eq!(tx.num_bodies, 10);
+
+        op.init();
+        assert!(!op.is_finished());
     }
 }

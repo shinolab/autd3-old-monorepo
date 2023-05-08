@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/03/2023
+ * Last Modified: 08/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,8 +13,8 @@
 
 use super::Operation;
 use crate::{
-    CPUControlFlags, DriverError, TxDatagram, MOD_BUF_SIZE_MAX, MOD_HEADER_INITIAL_DATA_SIZE,
-    MOD_HEADER_SUBSEQUENT_DATA_SIZE, MOD_SAMPLING_FREQ_DIV_MIN,
+    float, CPUControlFlags, DriverError, TxDatagram, MOD_BUF_SIZE_MAX,
+    MOD_HEADER_INITIAL_DATA_SIZE, MOD_HEADER_SUBSEQUENT_DATA_SIZE, MOD_SAMPLING_FREQ_DIV_MIN, PI,
 };
 use anyhow::Result;
 
@@ -25,7 +25,7 @@ pub struct Modulation {
 }
 
 impl Modulation {
-    pub fn new(mod_data: Vec<f64>, freq_div: u32) -> Self {
+    pub fn new(mod_data: Vec<float>, freq_div: u32) -> Self {
         Self {
             mod_data: mod_data.into_iter().map(Self::to_duty).collect(),
             sent: 0,
@@ -33,8 +33,8 @@ impl Modulation {
         }
     }
 
-    pub fn to_duty(amp: f64) -> u8 {
-        (amp.clamp(0., 1.).asin() * 2.0 / std::f64::consts::PI * 255.0) as u8
+    pub fn to_duty(amp: float) -> u8 {
+        (amp.clamp(0., 1.).asin() * 2.0 / PI * 255.0) as u8
     }
 }
 
@@ -71,10 +71,10 @@ impl Operation for Modulation {
                 .set(CPUControlFlags::MOD_BEGIN, true);
             tx.header_mut().mod_initial_mut().freq_div = self.freq_div;
             tx.header_mut().mod_initial_mut().data[0..mod_size]
-                .copy_from_slice(&self.mod_data[self.sent..]);
+                .copy_from_slice(&self.mod_data[self.sent..self.sent + mod_size]);
         } else {
             tx.header_mut().mod_subsequent_mut().data[0..mod_size]
-                .copy_from_slice(&self.mod_data[self.sent..]);
+                .copy_from_slice(&self.mod_data[self.sent..self.sent + mod_size]);
         }
 
         if is_last_frame {
@@ -92,5 +92,91 @@ impl Operation for Modulation {
 
     fn is_finished(&self) -> bool {
         self.sent == self.mod_data.len()
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::float;
+
+    const NUM_TRANS_IN_UNIT: usize = 249;
+
+    #[test]
+    fn modulation() {
+        let mut tx = TxDatagram::new(&[
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+        ]);
+
+        let size = MOD_HEADER_INITIAL_DATA_SIZE + MOD_HEADER_SUBSEQUENT_DATA_SIZE + 1;
+        let mod_data = (0..size)
+            .map(|i| (i as float) / (size as float))
+            .collect::<Vec<_>>();
+
+        let mut op = Modulation::new(mod_data.clone(), 1160);
+        op.init();
+        assert!(!op.is_finished());
+
+        op.pack(&mut tx).unwrap();
+        assert!(!op.is_finished());
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::MOD));
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::MOD_BEGIN));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::MOD_END));
+        assert_eq!(tx.header().size as usize, MOD_HEADER_INITIAL_DATA_SIZE);
+        assert_eq!(tx.header().mod_initial().freq_div, 1160);
+        for i in 0..MOD_HEADER_INITIAL_DATA_SIZE {
+            assert_eq!(
+                tx.header().mod_initial().data[i],
+                Modulation::to_duty(mod_data[i])
+            );
+        }
+
+        op.pack(&mut tx).unwrap();
+        assert!(!op.is_finished());
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::MOD));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::MOD_BEGIN));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::MOD_END));
+        assert_eq!(tx.header().size as usize, MOD_HEADER_SUBSEQUENT_DATA_SIZE);
+        for i in 0..MOD_HEADER_SUBSEQUENT_DATA_SIZE {
+            assert_eq!(
+                tx.header().mod_subsequent().data[i],
+                Modulation::to_duty(mod_data[MOD_HEADER_INITIAL_DATA_SIZE + i])
+            );
+        }
+
+        op.pack(&mut tx).unwrap();
+        assert!(op.is_finished());
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::MOD));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::MOD_BEGIN));
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::MOD_END));
+        assert_eq!(tx.header().size as usize, 1);
+        for i in 0..1 {
+            assert_eq!(
+                tx.header().mod_subsequent().data[i],
+                Modulation::to_duty(
+                    mod_data[MOD_HEADER_INITIAL_DATA_SIZE + MOD_HEADER_SUBSEQUENT_DATA_SIZE + i]
+                )
+            );
+        }
+
+        op.init();
+        assert!(!op.is_finished());
+
+        let mut op = Modulation::new(mod_data.clone(), 1159);
+        op.init();
+        assert!(op.pack(&mut tx).is_err());
+
+        let mut op = Modulation::new(vec![0.0; MOD_BUF_SIZE_MAX + 1], 1160);
+        op.init();
+        assert!(op.pack(&mut tx).is_err());
     }
 }
