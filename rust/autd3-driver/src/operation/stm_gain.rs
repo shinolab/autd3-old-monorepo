@@ -11,8 +11,6 @@
  *
  */
 
-use anyhow::Result;
-
 use super::Operation;
 use crate::{
     CPUControlFlags, Drive, DriverError, FPGAControlFlags, Mode, TxDatagram, GAIN_STM_BUF_SIZE_MAX,
@@ -45,7 +43,7 @@ impl GainSTMLegacy {
 }
 
 impl Operation for GainSTMLegacy {
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
         tx.header_mut().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
         tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
         tx.header_mut().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
@@ -68,14 +66,14 @@ impl Operation for GainSTMLegacy {
         }
 
         if self.drives.len() > GAIN_STM_LEGACY_BUF_SIZE_MAX {
-            return Err(DriverError::GainSTMLegacySizeOutOfRange(self.drives.len()).into());
+            return Err(DriverError::GainSTMLegacySizeOutOfRange(self.drives.len()));
         }
 
         let mut is_last_frame = false;
 
         if let Some(idx) = self.props.start_idx {
             if idx as usize >= self.drives.len() {
-                return Err(DriverError::STMStartIndexOutOfRange.into());
+                return Err(DriverError::STMStartIndexOutOfRange);
             }
             tx.header_mut()
                 .fpga_flag
@@ -87,7 +85,7 @@ impl Operation for GainSTMLegacy {
         }
         if let Some(idx) = self.props.finish_idx {
             if idx as usize >= self.drives.len() {
-                return Err(DriverError::STMFinishIndexOutOfRange.into());
+                return Err(DriverError::STMFinishIndexOutOfRange);
             }
             tx.header_mut()
                 .fpga_flag
@@ -100,9 +98,9 @@ impl Operation for GainSTMLegacy {
 
         if self.sent == 0 {
             if self.props.freq_div < GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN {
-                return Err(
-                    DriverError::GainSTMLegacyFreqDivOutOfRange(self.props.freq_div).into(),
-                );
+                return Err(DriverError::GainSTMLegacyFreqDivOutOfRange(
+                    self.props.freq_div,
+                ));
             }
             tx.header_mut()
                 .cpu_flag
@@ -217,16 +215,16 @@ impl GainSTMAdvanced {
         }
     }
 
-    fn pack_phase(&self, tx: &mut TxDatagram) -> Result<()> {
+    fn pack_phase(&self, tx: &mut TxDatagram) -> Result<(), DriverError> {
         if self.drives.len() > GAIN_STM_BUF_SIZE_MAX {
-            return Err(DriverError::GainSTMSizeOutOfRange(self.drives.len()).into());
+            return Err(DriverError::GainSTMSizeOutOfRange(self.drives.len()));
         }
 
         tx.header_mut().cpu_flag.remove(CPUControlFlags::IS_DUTY);
 
         if let Some(idx) = self.props.start_idx {
             if idx as usize >= self.drives.len() {
-                return Err(DriverError::STMStartIndexOutOfRange.into());
+                return Err(DriverError::STMStartIndexOutOfRange);
             }
             tx.header_mut()
                 .fpga_flag
@@ -238,7 +236,7 @@ impl GainSTMAdvanced {
         }
         if let Some(idx) = self.props.finish_idx {
             if idx as usize >= self.drives.len() {
-                return Err(DriverError::STMFinishIndexOutOfRange.into());
+                return Err(DriverError::STMFinishIndexOutOfRange);
             }
             tx.header_mut()
                 .fpga_flag
@@ -251,7 +249,7 @@ impl GainSTMAdvanced {
 
         if self.sent == 0 {
             if self.props.freq_div < GAIN_STM_SAMPLING_FREQ_DIV_MIN {
-                return Err(DriverError::GainSTMFreqDivOutOfRange(self.props.freq_div).into());
+                return Err(DriverError::GainSTMFreqDivOutOfRange(self.props.freq_div));
             }
             tx.header_mut()
                 .cpu_flag
@@ -287,9 +285,9 @@ impl GainSTMAdvanced {
         Ok(())
     }
 
-    fn pack_duty(&self, tx: &mut TxDatagram) -> Result<()> {
+    fn pack_duty(&self, tx: &mut TxDatagram) -> Result<(), DriverError> {
         if self.drives.len() > GAIN_STM_BUF_SIZE_MAX {
-            return Err(DriverError::GainSTMSizeOutOfRange(self.drives.len()).into());
+            return Err(DriverError::GainSTMSizeOutOfRange(self.drives.len()));
         }
 
         tx.header_mut().cpu_flag.set(CPUControlFlags::IS_DUTY, true);
@@ -315,7 +313,7 @@ impl GainSTMAdvanced {
 }
 
 impl Operation for GainSTMAdvanced {
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
         tx.header_mut().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
         tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
         tx.header_mut().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
@@ -357,7 +355,7 @@ impl Operation for GainSTMAdvanced {
                 self.pack_phase(tx)?;
                 self.sent += 1;
             }
-            Mode::PhaseHalf => return Err(DriverError::PhaseHalfNotSupported.into()),
+            Mode::PhaseHalf => return Err(DriverError::PhaseHalfNotSupported),
         }
 
         Ok(())

@@ -4,14 +4,12 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 08/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
-
-use anyhow::Result;
 
 mod clear;
 mod flag;
@@ -37,10 +35,10 @@ pub use stm_focus::*;
 pub use stm_gain::*;
 pub use sync::*;
 
-use crate::TxDatagram;
+use crate::{DriverError, TxDatagram};
 
 pub trait Operation {
     fn init(&mut self);
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()>;
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError>;
     fn is_finished(&self) -> bool;
 }

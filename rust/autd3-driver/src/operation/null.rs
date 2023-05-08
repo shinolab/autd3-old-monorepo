@@ -11,10 +11,8 @@
  *
  */
 
-use anyhow::Result;
-
 use super::Operation;
-use crate::{CPUControlFlags, TxDatagram};
+use crate::{CPUControlFlags, DriverError, TxDatagram};
 
 #[derive(Default)]
 pub struct NullHeader {
@@ -22,7 +20,7 @@ pub struct NullHeader {
 }
 
 impl Operation for NullHeader {
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
         tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD);
         tx.header_mut()
             .cpu_flag
@@ -52,7 +50,7 @@ pub struct NullBody {
 }
 
 impl Operation for NullBody {
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
         tx.header_mut().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
         tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
         tx.num_bodies = 0;

@@ -16,7 +16,6 @@ use crate::{
     float, CPUControlFlags, DriverError, TxDatagram, MOD_BUF_SIZE_MAX,
     MOD_HEADER_INITIAL_DATA_SIZE, MOD_HEADER_SUBSEQUENT_DATA_SIZE, MOD_SAMPLING_FREQ_DIV_MIN, PI,
 };
-use anyhow::Result;
 
 pub struct Modulation {
     mod_data: Vec<u8>,
@@ -39,9 +38,9 @@ impl Modulation {
 }
 
 impl Operation for Modulation {
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
         if self.mod_data.len() > MOD_BUF_SIZE_MAX {
-            return Err(DriverError::ModulationSizeOutOfRange(self.mod_data.len()).into());
+            return Err(DriverError::ModulationSizeOutOfRange(self.mod_data.len()));
         }
 
         let is_first_frame = self.sent == 0;
@@ -64,7 +63,7 @@ impl Operation for Modulation {
 
         if is_first_frame {
             if self.freq_div < MOD_SAMPLING_FREQ_DIV_MIN {
-                return Err(DriverError::ModFreqDivOutOfRange(self.freq_div).into());
+                return Err(DriverError::ModFreqDivOutOfRange(self.freq_div));
             }
             tx.header_mut()
                 .cpu_flag

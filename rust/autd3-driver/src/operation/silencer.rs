@@ -13,7 +13,6 @@
 
 use super::Operation;
 use crate::{CPUControlFlags, DriverError, TxDatagram, SILENCER_CYCLE_MIN};
-use anyhow::Result;
 
 #[derive(Default)]
 pub struct ConfigSilencer {
@@ -33,13 +32,13 @@ impl ConfigSilencer {
 }
 
 impl Operation for ConfigSilencer {
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
         if self.is_finished() {
             return Ok(());
         }
 
         if self.cycle < SILENCER_CYCLE_MIN {
-            return Err(DriverError::SilencerCycleOutOfRange(self.cycle).into());
+            return Err(DriverError::SilencerCycleOutOfRange(self.cycle));
         }
 
         tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD);
