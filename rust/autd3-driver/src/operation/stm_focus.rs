@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/01/2023
+ * Last Modified: 08/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use super::Operation;
 use crate::{
-    CPUControlFlags, DriverError, FPGAControlFlags, STMFocus, TxDatagram,
+    float, CPUControlFlags, DriverError, FPGAControlFlags, STMFocus, TxDatagram,
     FOCUS_STM_BODY_INITIAL_SIZE, FOCUS_STM_BODY_SUBSEQUENT_SIZE, FOCUS_STM_BUF_SIZE_MAX,
     FOCUS_STM_SAMPLING_FREQ_DIV_MIN,
 };
@@ -22,7 +22,7 @@ use anyhow::Result;
 #[derive(Default, Clone, Copy)]
 pub struct FocusSTMProps {
     pub freq_div: u32,
-    pub sound_speed: f64,
+    pub sound_speed: float,
     pub start_idx: Option<u16>,
     pub finish_idx: Option<u16>,
 }
@@ -157,5 +157,221 @@ impl Operation for FocusSTM {
 
     fn is_finished(&self) -> bool {
         self.sent == self.points[0].len()
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use rand::prelude::*;
+
+    use super::*;
+
+    const NUM_TRANS_IN_UNIT: usize = 249;
+
+    #[test]
+    fn stm_focus() {
+        let device_map = [
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+        ];
+        let mut tx = TxDatagram::new(&device_map);
+
+        let mut rng = rand::thread_rng();
+
+        let size = 150;
+        let p = (0..size)
+            .map(|_| {
+                STMFocus::new(
+                    rng.gen_range(-1000.0..1000.0),
+                    rng.gen_range(-1000.0..1000.0),
+                    rng.gen_range(-1000.0..1000.0),
+                    rng.gen_range(0..0xFF),
+                )
+            })
+            .collect::<Vec<_>>();
+        let points = vec![p.clone(); tx.num_devices()];
+
+        let sound_speed = 340e3;
+        let sp = (sound_speed / 1e3) as u32 * 1024;
+
+        let props = FocusSTMProps {
+            freq_div: 1612,
+            sound_speed,
+            start_idx: Some(1),
+            finish_idx: Some(2),
+        };
+
+        let mut op = FocusSTM::new(points.clone(), *device_map.iter().min().unwrap(), props);
+
+        op.init();
+        assert!(!op.is_finished());
+
+        op.pack(&mut tx).unwrap();
+        assert!(!op.is_finished());
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+        assert!(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::STM_GAIN_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+        for i in 0..10 {
+            let stm = tx.body(i).focus_stm_initial();
+            assert_eq!(stm.data[0], 60);
+            assert_eq!((stm.data[2] as u32) << 16 | stm.data[1] as u32, 1612);
+            assert_eq!((stm.data[4] as u32) << 16 | stm.data[3] as u32, sp);
+            assert_eq!(stm.data[5], 1);
+            assert_eq!(stm.data[6], 2);
+        }
+        assert_eq!(tx.num_bodies, 10);
+
+        op.pack(&mut tx).unwrap();
+        assert!(!op.is_finished());
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+        assert!(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::STM_GAIN_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+        for i in 0..10 {
+            let stm = tx.body(i).focus_stm_subsequent();
+            assert_eq!(stm.data[0], 62);
+        }
+        assert_eq!(tx.num_bodies, 10);
+
+        op.pack(&mut tx).unwrap();
+        assert!(op.is_finished());
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+        assert!(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::STM_GAIN_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+        for i in 0..10 {
+            let stm = tx.body(i).focus_stm_subsequent();
+            assert_eq!(stm.data[0], 28);
+        }
+        assert_eq!(tx.num_bodies, 10);
+
+        op.pack(&mut tx).unwrap();
+        assert!(op.is_finished());
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::STM_END));
+        assert!(tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::STM_GAIN_MODE));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+        assert_eq!(tx.num_bodies, 0);
+
+        op.init();
+        assert!(!op.is_finished());
+
+        let props = FocusSTMProps {
+            start_idx: None,
+            ..props
+        };
+
+        let mut op = FocusSTM::new(points.clone(), *device_map.iter().min().unwrap(), props);
+        op.init();
+        op.pack(&mut tx).unwrap();
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+
+        let props = FocusSTMProps {
+            finish_idx: None,
+            ..props
+        };
+
+        let mut op = FocusSTM::new(points.clone(), *device_map.iter().min().unwrap(), props);
+        op.init();
+        op.pack(&mut tx).unwrap();
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_START_IDX));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::USE_FINISH_IDX));
+
+        let props = FocusSTMProps {
+            start_idx: Some(size),
+            ..props
+        };
+        let mut op = FocusSTM::new(points.clone(), *device_map.iter().min().unwrap(), props);
+        op.init();
+        assert!(op.pack(&mut tx).is_err());
+
+        let props = FocusSTMProps {
+            start_idx: None,
+            finish_idx: Some(size),
+            ..props
+        };
+        let mut op = FocusSTM::new(points.clone(), *device_map.iter().min().unwrap(), props);
+        op.init();
+        assert!(op.pack(&mut tx).is_err());
+
+        let props = FocusSTMProps {
+            freq_div: 1611,
+            start_idx: None,
+            finish_idx: None,
+            ..props
+        };
+        let mut op = FocusSTM::new(points.clone(), *device_map.iter().min().unwrap(), props);
+        op.init();
+        assert!(op.pack(&mut tx).is_err());
     }
 }

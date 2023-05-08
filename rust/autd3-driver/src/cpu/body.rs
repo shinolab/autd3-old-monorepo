@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/05/2023
+ * Last Modified: 08/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,6 +17,7 @@ use crate::{
     Drive, FOCUS_STM_FIXED_NUM_UNIT,
 };
 
+#[derive(Clone)]
 #[repr(C)]
 pub struct STMFocus {
     pub(crate) buf: [u16; 4],
@@ -45,7 +46,7 @@ pub const FOCUS_STM_BODY_INITIAL_SIZE: usize = 14;
 
 #[repr(C)]
 pub struct FocusSTMBodyInitial<T: ?Sized> {
-    data: T,
+    pub(crate) data: T,
 }
 
 impl FocusSTMBodyInitial<[u16]> {
@@ -83,7 +84,7 @@ pub const FOCUS_STM_BODY_SUBSEQUENT_SIZE: usize = 2;
 
 #[repr(C)]
 pub struct FocusSTMBodySubsequent<T: ?Sized> {
-    data: T,
+    pub(crate) data: T,
 }
 
 impl FocusSTMBodySubsequent<[u16]> {
@@ -114,7 +115,7 @@ pub enum Mode {
 
 #[repr(C)]
 pub struct GainSTMBodyInitial<T: ?Sized> {
-    data: T,
+    pub(crate) data: T,
 }
 
 impl GainSTMBodyInitial<[u16]> {

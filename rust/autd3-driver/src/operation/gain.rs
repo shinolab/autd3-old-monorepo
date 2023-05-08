@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/03/2023
+ * Last Modified: 08/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -46,6 +46,7 @@ impl Operation for GainLegacy {
             return Ok(());
         }
 
+        tx.num_bodies = tx.num_devices();
         if self.drives.len() != tx.num_transducers() {
             return Err(DriverError::NumberOfTransducerMismatch {
                 a: tx.num_transducers(),
@@ -62,8 +63,6 @@ impl Operation for GainLegacy {
             .iter_mut()
             .zip(self.drives.iter())
             .for_each(|(d, s)| d.set(s));
-
-        tx.num_bodies = tx.num_devices();
 
         self.sent = true;
         Ok(())
@@ -96,6 +95,8 @@ impl GainAdvanced {
     }
 
     fn pack_duty(&self, tx: &mut TxDatagram) -> Result<()> {
+        tx.num_bodies = tx.num_devices();
+
         if self.drives.len() != tx.num_transducers() {
             return Err(DriverError::NumberOfTransducerMismatch {
                 a: tx.num_transducers(),
@@ -115,12 +116,12 @@ impl GainAdvanced {
             .zip(self.cycles.iter())
             .for_each(|((d, s), &c)| d.set(s, c));
 
-        tx.num_bodies = tx.num_devices();
-
         Ok(())
     }
 
     fn pack_phase(&self, tx: &mut TxDatagram) -> Result<()> {
+        tx.num_bodies = tx.num_devices();
+
         if self.drives.len() != tx.num_transducers() {
             return Err(DriverError::NumberOfTransducerMismatch {
                 a: tx.num_transducers(),
@@ -139,8 +140,6 @@ impl GainAdvanced {
             .zip(self.drives.iter())
             .zip(self.cycles.iter())
             .for_each(|((d, s), &c)| d.set(s, c));
-
-        tx.num_bodies = tx.num_devices();
 
         Ok(())
     }
@@ -216,6 +215,8 @@ impl Operation for GainAdvancedPhase {
             return Ok(());
         }
 
+        tx.num_bodies = tx.num_devices();
+
         if self.drives.len() != tx.num_transducers() {
             return Err(DriverError::NumberOfTransducerMismatch {
                 a: tx.num_transducers(),
@@ -234,8 +235,6 @@ impl Operation for GainAdvancedPhase {
             .zip(self.drives.iter())
             .zip(self.cycles.iter())
             .for_each(|((d, s), &c)| d.set(s, c));
-
-        tx.num_bodies = tx.num_devices();
 
         self.sent = true;
         Ok(())
@@ -282,6 +281,8 @@ impl Operation for GainAdvancedDuty {
             return Ok(());
         }
 
+        tx.num_bodies = tx.num_devices();
+
         if self.drives.len() != tx.num_transducers() {
             return Err(DriverError::NumberOfTransducerMismatch {
                 a: tx.num_transducers(),
@@ -301,8 +302,6 @@ impl Operation for GainAdvancedDuty {
             .zip(self.cycles.iter())
             .for_each(|((d, s), &c)| d.set(s, c));
 
-        tx.num_bodies = tx.num_devices();
-
         self.sent = true;
         Ok(())
     }
@@ -313,5 +312,278 @@ impl Operation for GainAdvancedDuty {
 
     fn is_finished(&self) -> bool {
         self.sent
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use rand::prelude::*;
+
+    use crate::{AdvancedDriveDuty, AdvancedDrivePhase, LegacyDrive};
+
+    use super::*;
+
+    const NUM_TRANS_IN_UNIT: usize = 249;
+
+    #[test]
+    fn legacy_gain() {
+        let mut tx = TxDatagram::new(&[
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+        ]);
+
+        let mut rng = rand::thread_rng();
+
+        let drives = (0..NUM_TRANS_IN_UNIT * 10)
+            .map(|_| Drive {
+                amp: rng.gen_range(0.0..1.0),
+                phase: rng.gen_range(0.0..1.0),
+            })
+            .collect::<Vec<_>>();
+
+        let mut op = GainLegacy::new(drives.clone());
+        op.init();
+        assert!(!op.is_finished());
+
+        op.pack(&mut tx).unwrap();
+        assert!(op.is_finished());
+
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::LEGACY_MODE));
+        assert!(!tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        for i in 0..NUM_TRANS_IN_UNIT * 10 {
+            assert_eq!(
+                (tx.body_raw_mut()[i] & 0xFF) as u8,
+                LegacyDrive::to_phase(&drives[i])
+            );
+            assert_eq!(
+                (tx.body_raw_mut()[i] >> 8) as u8,
+                LegacyDrive::to_duty(&drives[i])
+            );
+        }
+        assert_eq!(tx.num_bodies, 10);
+
+        op.pack(&mut tx).unwrap();
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::LEGACY_MODE));
+        assert!(!tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        assert_eq!(tx.num_bodies, 0);
+
+        op.init();
+        assert!(!op.is_finished());
+    }
+
+    #[test]
+    fn advanced_gain() {
+        let mut tx = TxDatagram::new(&[
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+        ]);
+
+        let mut rng = rand::thread_rng();
+
+        let drives = (0..NUM_TRANS_IN_UNIT * 10)
+            .map(|_| Drive {
+                amp: rng.gen_range(0.0..1.0),
+                phase: rng.gen_range(0.0..1.0),
+            })
+            .collect::<Vec<_>>();
+        let cycles = (0..NUM_TRANS_IN_UNIT * 10)
+            .map(|_| rng.gen_range(2u16..0xFFFFu16))
+            .collect::<Vec<_>>();
+
+        let mut op = GainAdvanced::new(drives.clone(), cycles.clone());
+        op.init();
+        assert!(!op.is_finished());
+
+        op.pack(&mut tx).unwrap();
+        assert!(!op.is_finished());
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::LEGACY_MODE));
+        assert!(!tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        for i in 0..NUM_TRANS_IN_UNIT * 10 {
+            assert_eq!(
+                tx.body_raw_mut()[i],
+                AdvancedDrivePhase::to_phase(&drives[i], cycles[i])
+            );
+        }
+        assert_eq!(tx.num_bodies, 10);
+
+        op.pack(&mut tx).unwrap();
+        assert!(op.is_finished());
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::LEGACY_MODE));
+        assert!(!tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        for i in 0..NUM_TRANS_IN_UNIT * 10 {
+            assert_eq!(
+                tx.body_raw_mut()[i],
+                AdvancedDriveDuty::to_duty(&drives[i], cycles[i])
+            );
+        }
+        assert_eq!(tx.num_bodies, 10);
+
+        op.pack(&mut tx).unwrap();
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::LEGACY_MODE));
+        assert!(!tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        assert_eq!(tx.num_bodies, 0);
+
+        op.init();
+        assert!(!op.is_finished());
+    }
+
+    #[test]
+    fn advanced_phase_gain() {
+        let mut tx = TxDatagram::new(&[
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+        ]);
+
+        let mut rng = rand::thread_rng();
+
+        let drives = (0..NUM_TRANS_IN_UNIT * 10)
+            .map(|_| Drive {
+                amp: 0.0,
+                phase: rng.gen_range(0.0..1.0),
+            })
+            .collect::<Vec<_>>();
+        let cycles = (0..NUM_TRANS_IN_UNIT * 10)
+            .map(|_| rng.gen_range(2u16..0xFFFFu16))
+            .collect::<Vec<_>>();
+
+        let mut op = GainAdvancedPhase::new(drives.clone(), cycles.clone());
+        op.init();
+        assert!(!op.is_finished());
+
+        op.pack(&mut tx).unwrap();
+        assert!(op.is_finished());
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::LEGACY_MODE));
+        assert!(!tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        for i in 0..NUM_TRANS_IN_UNIT * 10 {
+            assert_eq!(
+                tx.body_raw_mut()[i],
+                AdvancedDrivePhase::to_phase(&drives[i], cycles[i])
+            );
+        }
+        assert_eq!(tx.num_bodies, 10);
+
+        op.pack(&mut tx).unwrap();
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::LEGACY_MODE));
+        assert!(!tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        assert_eq!(tx.num_bodies, 0);
+
+        op.init();
+        assert!(!op.is_finished());
+    }
+
+    #[test]
+    fn advanced_duty_gain() {
+        let mut tx = TxDatagram::new(&[
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+            NUM_TRANS_IN_UNIT,
+        ]);
+
+        let mut rng = rand::thread_rng();
+
+        let drives = (0..NUM_TRANS_IN_UNIT * 10)
+            .map(|_| Drive {
+                amp: 0.0,
+                phase: rng.gen_range(0.0..1.0),
+            })
+            .collect::<Vec<_>>();
+        let cycles = (0..NUM_TRANS_IN_UNIT * 10)
+            .map(|_| rng.gen_range(2u16..0xFFFFu16))
+            .collect::<Vec<_>>();
+
+        let mut op = GainAdvancedDuty::new(drives.clone(), cycles.clone());
+        op.init();
+        assert!(!op.is_finished());
+
+        op.pack(&mut tx).unwrap();
+        assert!(op.is_finished());
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(tx.header().cpu_flag.contains(CPUControlFlags::IS_DUTY));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::LEGACY_MODE));
+        assert!(!tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        for i in 0..NUM_TRANS_IN_UNIT * 10 {
+            assert_eq!(
+                tx.body_raw_mut()[i],
+                AdvancedDriveDuty::to_duty(&drives[i], cycles[i])
+            );
+        }
+        assert_eq!(tx.num_bodies, 10);
+
+        op.pack(&mut tx).unwrap();
+        assert!(!tx.header().cpu_flag.contains(CPUControlFlags::WRITE_BODY));
+        assert!(!tx
+            .header()
+            .fpga_flag
+            .contains(FPGAControlFlags::LEGACY_MODE));
+        assert!(!tx.header().fpga_flag.contains(FPGAControlFlags::STM_MODE));
+        assert_eq!(tx.num_bodies, 0);
+
+        op.init();
+        assert!(!op.is_finished());
     }
 }
