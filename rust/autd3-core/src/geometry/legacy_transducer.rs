@@ -4,14 +4,16 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/03/2023
+ * Last Modified: 08/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
 
-use super::{Transducer, UnitQuaternion, Vector3};
+use super::{Matrix4, Transducer, UnitQuaternion, Vector3, Vector4};
+
+use autd3_driver::float;
 
 pub struct LegacyTransducer {
     idx: usize,
@@ -30,6 +32,15 @@ impl Transducer for LegacyTransducer {
         }
     }
 
+    fn affine(&mut self, t: Vector3, r: UnitQuaternion) {
+        let rot_mat: Matrix4 = From::from(r);
+        let trans_mat = rot_mat.append_translation(&t);
+        let homo = Vector4::new(self.pos[0], self.pos[1], self.pos[2], 1.0);
+        let new_pos = trans_mat * homo;
+        self.pos = Vector3::new(new_pos[0], new_pos[1], new_pos[2]);
+        self.rot = r * self.rot;
+    }
+
     fn position(&self) -> &Vector3 {
         &self.pos
     }
@@ -42,7 +53,7 @@ impl Transducer for LegacyTransducer {
         self.idx
     }
 
-    fn frequency(&self) -> f64 {
+    fn frequency(&self) -> float {
         40e3
     }
 
