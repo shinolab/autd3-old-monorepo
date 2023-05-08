@@ -11,9 +11,19 @@ readme = "README.md"
 keywords = ["autd"]
 
 [dependencies]
-anyhow = "1.0.57"
 autd3-driver = {path = "../autd3-driver", version="10.0.0"}
 bitflags = "2.0.2"
 itertools = "0.10.3"
 nalgebra = "0.32.1"
+num = "0.4.0"
+num-derive = "0.3.3"
+num-traits = "0.2.15"
 thiserror = "1.0.30"
+
+[dev-dependencies]
+assert_approx_eq = "1.1.0"
+
+[features]
+default = []
+single_float = ["autd3-driver/single_float"]
+use_meter = ["autd3-driver/use_meter"]
