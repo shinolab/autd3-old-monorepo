@@ -17,7 +17,6 @@ use crate::{
     FOCUS_STM_BODY_INITIAL_SIZE, FOCUS_STM_BODY_SUBSEQUENT_SIZE, FOCUS_STM_BUF_SIZE_MAX,
     FOCUS_STM_SAMPLING_FREQ_DIV_MIN,
 };
-use anyhow::Result;
 
 #[derive(Default, Clone, Copy)]
 pub struct FocusSTMProps {
@@ -58,7 +57,7 @@ impl FocusSTM {
 }
 
 impl Operation for FocusSTM {
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
         tx.header_mut().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
         tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
         tx.header_mut().cpu_flag.remove(CPUControlFlags::STM_BEGIN);
@@ -77,12 +76,14 @@ impl Operation for FocusSTM {
         }
 
         if self.points[0].len() > FOCUS_STM_BUF_SIZE_MAX {
-            return Err(DriverError::FocusSTMPointSizeOutOfRange(self.points[0].len()).into());
+            return Err(DriverError::FocusSTMPointSizeOutOfRange(
+                self.points[0].len(),
+            ));
         }
 
         if let Some(idx) = self.props.start_idx {
             if idx as usize >= self.points[0].len() {
-                return Err(DriverError::STMStartIndexOutOfRange.into());
+                return Err(DriverError::STMStartIndexOutOfRange);
             }
             tx.header_mut()
                 .fpga_flag
@@ -94,7 +95,7 @@ impl Operation for FocusSTM {
         }
         if let Some(idx) = self.props.finish_idx {
             if idx as usize >= self.points[0].len() {
-                return Err(DriverError::STMFinishIndexOutOfRange.into());
+                return Err(DriverError::STMFinishIndexOutOfRange);
             }
             tx.header_mut()
                 .fpga_flag
@@ -108,7 +109,7 @@ impl Operation for FocusSTM {
         let send_size = Self::get_send_size(self.points[0].len(), self.sent, self.tr_num_min);
         if self.sent == 0 {
             if self.props.freq_div < FOCUS_STM_SAMPLING_FREQ_DIV_MIN {
-                return Err(DriverError::FocusSTMFreqDivOutOfRange(self.props.freq_div).into());
+                return Err(DriverError::FocusSTMFreqDivOutOfRange(self.props.freq_div));
             }
             tx.header_mut()
                 .cpu_flag

@@ -13,7 +13,6 @@
 
 use super::Operation;
 use crate::{CPUControlFlags, DriverError, TxDatagram};
-use anyhow::Result;
 
 #[derive(Default)]
 pub struct ModDelay {
@@ -31,7 +30,7 @@ impl ModDelay {
 }
 
 impl Operation for ModDelay {
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
         if self.is_finished() {
             return Ok(());
         }
@@ -40,8 +39,7 @@ impl Operation for ModDelay {
             return Err(DriverError::NumberOfTransducerMismatch {
                 a: tx.num_transducers(),
                 b: self.delays.len(),
-            }
-            .into());
+            });
         }
 
         tx.header_mut()
