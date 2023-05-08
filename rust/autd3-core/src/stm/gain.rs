@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/03/2023
+ * Last Modified: 08/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,13 +13,13 @@
 
 use crate::{
     datagram::{DatagramBody, Empty, Filled, Sendable},
+    error::AUTDInternalError,
     gain::Gain,
     geometry::{
         AdvancedPhaseTransducer, AdvancedTransducer, Geometry, LegacyTransducer, Transducer,
     },
 };
 
-use anyhow::{Ok, Result};
 use autd3_driver::{GainSTMProps, Mode};
 
 use super::STM;
@@ -44,9 +44,8 @@ impl<'a, T: Transducer> GainSTM<'a, T> {
         }
     }
 
-    pub fn add<G: Gain<T> + 'a>(&mut self, gain: G) -> Result<()> {
+    pub fn add<G: Gain<T> + 'a>(&mut self, gain: G) {
         self.gains.push(Box::new(gain));
-        Ok(())
     }
 }
 
@@ -67,12 +66,15 @@ impl<'a, T: Transducer> STM for GainSTM<'a, T> {
 impl<'a> DatagramBody<LegacyTransducer> for GainSTM<'a, LegacyTransducer> {
     type O = autd3_driver::GainSTMLegacy;
 
-    fn operation(&mut self, geometry: &Geometry<LegacyTransducer>) -> Result<Self::O> {
+    fn operation(
+        &mut self,
+        geometry: &Geometry<LegacyTransducer>,
+    ) -> Result<Self::O, AUTDInternalError> {
         let drives = self
             .gains
             .iter_mut()
             .map(|g| g.calc(geometry))
-            .collect::<Result<_>>()?;
+            .collect::<Result<_, AUTDInternalError>>()?;
         let props = GainSTMProps {
             mode: self.mode,
             freq_div: self.freq_div,
@@ -88,7 +90,10 @@ impl<'a> Sendable<LegacyTransducer> for GainSTM<'a, LegacyTransducer> {
     type B = Filled;
     type O = <Self as DatagramBody<LegacyTransducer>>::O;
 
-    fn operation(&mut self, geometry: &Geometry<LegacyTransducer>) -> Result<Self::O> {
+    fn operation(
+        &mut self,
+        geometry: &Geometry<LegacyTransducer>,
+    ) -> Result<Self::O, AUTDInternalError> {
         <Self as DatagramBody<LegacyTransducer>>::operation(self, geometry)
     }
 }
@@ -96,13 +101,16 @@ impl<'a> Sendable<LegacyTransducer> for GainSTM<'a, LegacyTransducer> {
 impl<'a> DatagramBody<AdvancedTransducer> for GainSTM<'a, AdvancedTransducer> {
     type O = autd3_driver::GainSTMAdvanced;
 
-    fn operation(&mut self, geometry: &Geometry<AdvancedTransducer>) -> Result<Self::O> {
+    fn operation(
+        &mut self,
+        geometry: &Geometry<AdvancedTransducer>,
+    ) -> Result<Self::O, AUTDInternalError> {
         let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
         let drives = self
             .gains
             .iter_mut()
             .map(|g| g.calc(geometry))
-            .collect::<Result<_>>()?;
+            .collect::<Result<_, AUTDInternalError>>()?;
         let props = GainSTMProps {
             mode: self.mode,
             freq_div: self.freq_div,
@@ -118,7 +126,10 @@ impl<'a> Sendable<AdvancedTransducer> for GainSTM<'a, AdvancedTransducer> {
     type B = Filled;
     type O = <Self as DatagramBody<AdvancedTransducer>>::O;
 
-    fn operation(&mut self, geometry: &Geometry<AdvancedTransducer>) -> Result<Self::O> {
+    fn operation(
+        &mut self,
+        geometry: &Geometry<AdvancedTransducer>,
+    ) -> Result<Self::O, AUTDInternalError> {
         <Self as DatagramBody<AdvancedTransducer>>::operation(self, geometry)
     }
 }
@@ -126,13 +137,16 @@ impl<'a> Sendable<AdvancedTransducer> for GainSTM<'a, AdvancedTransducer> {
 impl<'a> DatagramBody<AdvancedPhaseTransducer> for GainSTM<'a, AdvancedPhaseTransducer> {
     type O = autd3_driver::GainSTMAdvanced;
 
-    fn operation(&mut self, geometry: &Geometry<AdvancedPhaseTransducer>) -> Result<Self::O> {
+    fn operation(
+        &mut self,
+        geometry: &Geometry<AdvancedPhaseTransducer>,
+    ) -> Result<Self::O, AUTDInternalError> {
         let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
         let drives = self
             .gains
             .iter_mut()
             .map(|g| g.calc(geometry))
-            .collect::<Result<_>>()?;
+            .collect::<Result<_, AUTDInternalError>>()?;
         let props = GainSTMProps {
             mode: Mode::PhaseDutyFull,
             freq_div: self.freq_div,
@@ -148,7 +162,10 @@ impl<'a> Sendable<AdvancedPhaseTransducer> for GainSTM<'a, AdvancedPhaseTransduc
     type B = Filled;
     type O = <Self as DatagramBody<AdvancedPhaseTransducer>>::O;
 
-    fn operation(&mut self, geometry: &Geometry<AdvancedPhaseTransducer>) -> Result<Self::O> {
+    fn operation(
+        &mut self,
+        geometry: &Geometry<AdvancedPhaseTransducer>,
+    ) -> Result<Self::O, AUTDInternalError> {
         <Self as DatagramBody<AdvancedPhaseTransducer>>::operation(self, geometry)
     }
 }

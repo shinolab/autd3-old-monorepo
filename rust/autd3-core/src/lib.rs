@@ -26,5 +26,6 @@ pub mod silencer_config;
 pub mod stm;
 pub mod stop;
 pub mod synchronize;
+pub mod timer_strategy;
 
 pub use autd3_driver::*;
