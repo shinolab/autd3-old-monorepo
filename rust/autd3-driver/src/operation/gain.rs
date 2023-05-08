@@ -11,8 +11,6 @@
  *
  */
 
-use anyhow::Result;
-
 use super::Operation;
 use crate::{CPUControlFlags, Drive, DriverError, FPGAControlFlags, TxDatagram};
 
@@ -31,7 +29,7 @@ impl GainLegacy {
 }
 
 impl Operation for GainLegacy {
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
         tx.header_mut().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
         tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
 
@@ -51,8 +49,7 @@ impl Operation for GainLegacy {
             return Err(DriverError::NumberOfTransducerMismatch {
                 a: tx.num_transducers(),
                 b: self.drives.len(),
-            }
-            .into());
+            });
         }
 
         tx.header_mut()
@@ -94,15 +91,14 @@ impl GainAdvanced {
         }
     }
 
-    fn pack_duty(&self, tx: &mut TxDatagram) -> Result<()> {
+    fn pack_duty(&self, tx: &mut TxDatagram) -> Result<(), DriverError> {
         tx.num_bodies = tx.num_devices();
 
         if self.drives.len() != tx.num_transducers() {
             return Err(DriverError::NumberOfTransducerMismatch {
                 a: tx.num_transducers(),
                 b: self.drives.len(),
-            }
-            .into());
+            });
         }
 
         tx.header_mut()
@@ -119,15 +115,14 @@ impl GainAdvanced {
         Ok(())
     }
 
-    fn pack_phase(&self, tx: &mut TxDatagram) -> Result<()> {
+    fn pack_phase(&self, tx: &mut TxDatagram) -> Result<(), DriverError> {
         tx.num_bodies = tx.num_devices();
 
         if self.drives.len() != tx.num_transducers() {
             return Err(DriverError::NumberOfTransducerMismatch {
                 a: tx.num_transducers(),
                 b: self.drives.len(),
-            }
-            .into());
+            });
         }
 
         tx.header_mut()
@@ -146,7 +141,7 @@ impl GainAdvanced {
 }
 
 impl Operation for GainAdvanced {
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
         tx.header_mut().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
         tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
 
@@ -200,7 +195,7 @@ impl GainAdvancedPhase {
 }
 
 impl Operation for GainAdvancedPhase {
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
         tx.header_mut().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
         tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
 
@@ -221,8 +216,7 @@ impl Operation for GainAdvancedPhase {
             return Err(DriverError::NumberOfTransducerMismatch {
                 a: tx.num_transducers(),
                 b: self.drives.len(),
-            }
-            .into());
+            });
         }
 
         tx.header_mut()
@@ -266,7 +260,7 @@ impl GainAdvancedDuty {
 }
 
 impl Operation for GainAdvancedDuty {
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
         tx.header_mut().cpu_flag.remove(CPUControlFlags::WRITE_BODY);
         tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD_DELAY);
 
@@ -287,8 +281,7 @@ impl Operation for GainAdvancedDuty {
             return Err(DriverError::NumberOfTransducerMismatch {
                 a: tx.num_transducers(),
                 b: self.drives.len(),
-            }
-            .into());
+            });
         }
 
         tx.header_mut()

@@ -19,8 +19,8 @@ pub const FOCUS_STM_FIXED_NUM_UNIT: float = 0.025e-3 * METER;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Drive {
-    pub phase: f64,
-    pub amp: f64,
+    pub phase: float,
+    pub amp: float,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -53,7 +53,7 @@ pub struct AdvancedDrivePhase {
 
 impl AdvancedDrivePhase {
     pub fn to_phase(d: &Drive, cycle: u16) -> u16 {
-        ((d.phase / (2.0 * PI) * cycle as f64).round() as i32).rem_euclid(cycle as i32) as _
+        ((d.phase / (2.0 * PI) * cycle as float).round() as i32).rem_euclid(cycle as i32) as _
     }
 
     pub fn set(&mut self, d: &Drive, cycle: u16) {
@@ -69,7 +69,7 @@ pub struct AdvancedDriveDuty {
 
 impl AdvancedDriveDuty {
     pub fn to_duty(d: &Drive, cycle: u16) -> u16 {
-        (cycle as f64 * d.amp.clamp(0., 1.).asin() / PI).round() as _
+        (cycle as float * d.amp.clamp(0., 1.).asin() / PI).round() as _
     }
 
     pub fn set(&mut self, d: &Drive, cycle: u16) {

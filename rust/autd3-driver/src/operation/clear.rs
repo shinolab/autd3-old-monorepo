@@ -12,8 +12,7 @@
  */
 
 use super::Operation;
-use crate::{TxDatagram, MSG_CLEAR};
-use anyhow::Result;
+use crate::{DriverError, TxDatagram, MSG_CLEAR};
 
 #[derive(Default)]
 pub struct Clear {
@@ -21,7 +20,7 @@ pub struct Clear {
 }
 
 impl Operation for Clear {
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
         tx.header_mut().msg_id = MSG_CLEAR;
         tx.num_bodies = 0;
         self.sent = true;

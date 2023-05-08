@@ -11,8 +11,6 @@
  *
  */
 
-use anyhow::Result;
-
 use super::Operation;
 use crate::{CPUControlFlags, DriverError, TxDatagram};
 
@@ -22,7 +20,7 @@ pub struct SyncLegacy {
 }
 
 impl Operation for SyncLegacy {
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
         if self.is_finished() {
             return Ok(());
         }
@@ -67,7 +65,7 @@ impl SyncAdvanced {
 }
 
 impl Operation for SyncAdvanced {
-    fn pack(&mut self, tx: &mut TxDatagram) -> Result<()> {
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
         if self.is_finished() {
             return Ok(());
         }
@@ -76,8 +74,7 @@ impl Operation for SyncAdvanced {
             return Err(DriverError::NumberOfTransducerMismatch {
                 a: tx.num_transducers(),
                 b: self.cycles.len(),
-            }
-            .into());
+            });
         }
 
         tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD);
