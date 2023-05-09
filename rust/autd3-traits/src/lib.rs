@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/03/2023
+ * Last Modified: 09/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,6 +23,7 @@ pub fn modulation_derive(input: TokenStream) -> TokenStream {
 fn impl_modulation_macro(ast: &syn::DeriveInput) -> TokenStream {
     let name = &ast.ident;
     let generics = &ast.generics;
+    let type_params = generics.type_params();
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let gen = quote! {
         impl #impl_generics #name #ty_generics #where_clause {
@@ -31,46 +32,23 @@ fn impl_modulation_macro(ast: &syn::DeriveInput) -> TokenStream {
             }
 
             fn sampling_freq(&self) -> f64 {
-                autd3_driver::FPGA_CLK_FREQ as f64 / self.freq_div as f64
+                autd3_core::FPGA_CLK_FREQ as f64 / self.freq_div as f64
             }
         }
 
-        impl #impl_generics autd3_core::datagram::DatagramHeader for #name #ty_generics #where_clause {
-            type O = autd3_core::Modulation;
+        impl <#(#type_params),* T: autd3_core::geometry::Transducer> autd3_core::sendable::Sendable<T> for #name #ty_generics #where_clause {
+            type H = autd3_core::Modulation;
+            type B = autd3_core::NullBody;
 
-            fn operation(&mut self) -> Result<Self::O> {
-                let data = self.calc()?;
-                Ok(Self::O::new(data, self.freq_div))
+            fn header_operation(&mut self) -> Result<Self::H, autd3_core::error::AUTDInternalError> {
+                Ok(Self::H::new(self.calc()?, self.freq_div))
             }
-        }
 
-        impl #impl_generics autd3_core::datagram::Sendable<autd3_core::geometry::LegacyTransducer> for #name #ty_generics #where_clause {
-            type H = autd3_core::datagram::Filled;
-            type B = autd3_core::datagram::Empty;
-            type O = <Self as autd3_core::datagram::DatagramHeader>::O;
-
-            fn operation(&mut self, _: &autd3_core::geometry::Geometry<autd3_core::geometry::LegacyTransducer>) -> Result<Self::O> {
-                <Self as autd3_core::datagram::DatagramHeader>::operation(self)
-            }
-        }
-
-        impl #impl_generics autd3_core::datagram::Sendable<autd3_core::geometry::AdvancedTransducer> for #name #ty_generics #where_clause {
-            type H = autd3_core::datagram::Filled;
-            type B = autd3_core::datagram::Empty;
-            type O = <Self as autd3_core::datagram::DatagramHeader>::O;
-
-            fn operation(&mut self, _: &autd3_core::geometry::Geometry<autd3_core::geometry::AdvancedTransducer>) -> Result<Self::O> {
-                <Self as autd3_core::datagram::DatagramHeader>::operation(self)
-            }
-        }
-
-        impl #impl_generics autd3_core::datagram::Sendable<autd3_core::geometry::AdvancedPhaseTransducer> for #name #ty_generics #where_clause {
-            type H = autd3_core::datagram::Filled;
-            type B = autd3_core::datagram::Empty;
-            type O = <Self as autd3_core::datagram::DatagramHeader>::O;
-
-            fn operation(&mut self, _: &autd3_core::geometry::Geometry<autd3_core::geometry::AdvancedPhaseTransducer>) -> Result<Self::O> {
-                <Self as autd3_core::datagram::DatagramHeader>::operation(self)
+            fn body_operation(
+                &mut self,
+                _geometry: &autd3_core::geometry::Geometry<T>,
+            ) -> Result<Self::B, autd3_core::error::AUTDInternalError> {
+                Ok(Self::B::default())
             }
         }
     };
@@ -88,89 +66,56 @@ fn impl_gain_macro(ast: syn::DeriveInput) -> TokenStream {
     let generics = &ast.generics;
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let gen = quote! {
-        impl #impl_generics autd3_core::datagram::DatagramBody<autd3_core::geometry::LegacyTransducer> for #name #ty_generics #where_clause {
-            type O = autd3_driver::GainLegacy;
+        impl #impl_generics autd3_core::sendable::Sendable<autd3_core::geometry::LegacyTransducer> for #name #ty_generics #where_clause {
+            type H = autd3_core::NullHeader;
+            type B = autd3_core::GainLegacy;
 
-            fn operation(
-                &mut self,
-                geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::LegacyTransducer>,
-            ) -> anyhow::Result<Self::O> {
-                let drives = self.calc(geometry)?;
-                Ok(Self::O::new(drives))
+            fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
+                Ok(Self::H::default())
             }
-        }
 
-        impl #impl_generics autd3_core::datagram::Sendable<autd3_core::geometry::LegacyTransducer> for #name #ty_generics #where_clause {
-            type H = autd3_core::datagram::Empty;
-            type B = autd3_core::datagram::Filled;
-            type O =
-                <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::LegacyTransducer>>::O;
-
-            fn operation(
+            fn body_operation(
                 &mut self,
                 geometry: &Geometry<autd3_core::geometry::LegacyTransducer>,
-            ) -> anyhow::Result<Self::O> {
-                <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::LegacyTransducer>>::operation(self, geometry)
+            ) -> Result<Self::B, autd3_core::error::AUTDInternalError> {
+                Ok(Self::B::new(self.calc(geometry)?))
             }
         }
 
-        impl #impl_generics autd3_core::datagram::DatagramBody<autd3_core::geometry::AdvancedTransducer> for #name #ty_generics #where_clause {
-            type O = autd3_driver::GainAdvanced;
+        impl #impl_generics autd3_core::sendable::Sendable<autd3_core::geometry::AdvancedTransducer> for #name #ty_generics #where_clause {
+            type H = autd3_core::NullHeader;
+            type B = autd3_core::GainAdvanced;
 
-            fn operation(
-                &mut self,
-                geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::AdvancedTransducer>,
-            ) -> anyhow::Result<Self::O> {
-                let drives = self.calc(geometry)?;
-                let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
-                Ok(Self::O::new(drives, cycles))
+            fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
+                Ok(Self::H::default())
             }
-        }
 
-        impl #impl_generics autd3_core::datagram::Sendable<autd3_core::geometry::AdvancedTransducer> for #name #ty_generics #where_clause {
-            type H = autd3_core::datagram::Empty;
-            type B = autd3_core::datagram::Filled;
-            type O =
-                <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::AdvancedTransducer>>::O;
-
-            fn operation(
+            fn body_operation(
                 &mut self,
                 geometry: &Geometry<autd3_core::geometry::AdvancedTransducer>,
-            ) -> anyhow::Result<Self::O> {
-                <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::AdvancedTransducer>>::operation(self, geometry)
+            ) -> Result<Self::B, autd3_core::error::AUTDInternalError> {
+                Ok(Self::B::new(self.calc(geometry)?, geometry.transducers().map(|tr| tr.cycle()).collect()))
             }
         }
 
-        impl #impl_generics autd3_core::datagram::DatagramBody<autd3_core::geometry::AdvancedPhaseTransducer> for #name #ty_generics #where_clause {
-            type O = autd3_driver::GainAdvancedPhase;
+        impl #impl_generics autd3_core::sendable::Sendable<autd3_core::geometry::AdvancedPhaseTransducer> for #name #ty_generics #where_clause {
+            type H = autd3_core::NullHeader;
+            type B = autd3_core::GainAdvancedPhase;
 
-            fn operation(
-                &mut self,
-                geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::AdvancedPhaseTransducer>,
-            ) -> anyhow::Result<Self::O> {
-                let drives = self.calc(geometry)?;
-                let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
-                Ok(
-                    Self::O::new(
-                        drives,
-                        cycles,
-                    ),
-                )
+            fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
+                Ok(Self::H::default())
             }
-        }
 
-        impl #impl_generics autd3_core::datagram::Sendable<autd3_core::geometry::AdvancedPhaseTransducer> for #name #ty_generics #where_clause {
-            type H = autd3_core::datagram::Empty;
-            type B = autd3_core::datagram::Filled;
-            type O = <Self as autd3_core::datagram::DatagramBody<
-                autd3_core::geometry::AdvancedPhaseTransducer,
-            >>::O;
-
-            fn operation(
+            fn body_operation(
                 &mut self,
                 geometry: &Geometry<autd3_core::geometry::AdvancedPhaseTransducer>,
-            ) -> anyhow::Result<Self::O> {
-                <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::AdvancedPhaseTransducer>>::operation(self, geometry)
+            ) -> Result<Self::B, autd3_core::error::AUTDInternalError> {
+                Ok(
+                    Self::B::new(
+                        self.calc(geometry)?,
+                        geometry.transducers().map(|tr| tr.cycle()).collect(),
+                    ),
+                )
             }
         }
     };
