@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/04/2023
+ * Last Modified: 09/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,191 +12,20 @@
  */
 
 use std::{
-    marker::PhantomData,
     sync::atomic::{self, AtomicU8},
+    time::Duration,
 };
 
-use anyhow::Result;
-
 use autd3_core::{
-    amplitude::Amplitudes,
     clear::Clear,
-    datagram::{
-        DatagramBody, DatagramHeader, Empty, EmptySendable, Filled, NullBody, NullHeader, Sendable,
-    },
-    geometry::{
-        AdvancedPhaseTransducer, AdvancedTransducer, Geometry, LegacyTransducer, Transducer,
-    },
+    geometry::{Geometry, Transducer},
     link::Link,
+    sendable::Sendable,
+    stop::Stop,
     FirmwareInfo, Operation, RxDatagram, TxDatagram, MSG_BEGIN, MSG_END,
 };
 
-use crate::gain::Null;
-
-static MSG_ID: AtomicU8 = AtomicU8::new(MSG_BEGIN);
-
-pub struct Sender<'a, 'b, L: Link, T: Transducer, S: Sendable<T>, H, B> {
-    cnt: &'a mut Controller<L, T>,
-    buf: Option<&'b mut S>,
-    sent: bool,
-    timeout: Option<std::time::Duration>,
-    _head: PhantomData<H>,
-    _body: PhantomData<B>,
-}
-
-impl<'a, 'b, L: Link, T: Transducer, S: Sendable<T>> Sender<'a, 'b, L, T, S, Empty, Empty> {
-    pub fn new(cnt: &'a mut Controller<L, T>, s: &'b mut S) -> Sender<'a, 'b, L, T, S, S::H, S::B> {
-        Sender {
-            cnt,
-            buf: Some(s),
-            sent: false,
-            timeout: None,
-            _head: PhantomData,
-            _body: PhantomData,
-        }
-    }
-}
-
-impl<'a, 'b, L: Link, T: Transducer> Sender<'a, 'b, L, T, EmptySendable<T>, Empty, Empty> {
-    pub fn with_timeout(
-        cnt: &'a mut Controller<L, T>,
-        timeout: std::time::Duration,
-    ) -> Sender<'a, 'b, L, T, EmptySendable<T>, Empty, Empty> {
-        Sender {
-            cnt,
-            buf: None,
-            sent: false,
-            timeout: Some(timeout),
-            _head: PhantomData,
-            _body: PhantomData,
-        }
-    }
-
-    pub fn send<'c, S: Sendable<T>>(self, s: &'c mut S) -> Sender<'a, 'c, L, T, S, S::H, S::B> {
-        unsafe {
-            let mut res: Sender<'a, 'c, L, T, S, S::H, S::B> = std::mem::transmute(self);
-            res.buf = Some(s);
-            res
-        }
-    }
-}
-
-impl<'a, 'b, L: Link, T: Transducer, S: Sendable<T>> Sender<'a, 'b, L, T, S, Filled, Empty> {
-    pub fn send<B: DatagramBody<T>>(mut self, b: &'b mut B) -> Result<bool> {
-        let mut op_header = self.buf.as_mut().unwrap().operation(&self.cnt.geometry)?;
-        let mut op_body = b.operation(&self.cnt.geometry)?;
-
-        op_header.init();
-        op_body.init();
-
-        self.cnt.force_fan.pack(&mut self.cnt.tx_buf);
-        self.cnt.reads_fpga_info.pack(&mut self.cnt.tx_buf);
-
-        let timeout = self.timeout.unwrap_or(self.cnt.link.timeout());
-        loop {
-            let msg_id = self.cnt.get_id();
-            self.cnt.tx_buf.header_mut().msg_id = msg_id;
-            op_header.pack(&mut self.cnt.tx_buf)?;
-            op_body.pack(&mut self.cnt.tx_buf)?;
-            self.cnt.link.send(&self.cnt.tx_buf)?;
-            let success = self.cnt.wait_msg_processed(timeout)?;
-            if !timeout.is_zero() && !success {
-                self.sent = true;
-                return Ok(false);
-            }
-            if op_header.is_finished() && op_body.is_finished() {
-                break;
-            }
-            if timeout.is_zero() {
-                std::thread::sleep(std::time::Duration::from_millis(1));
-            }
-        }
-        self.sent = true;
-        Ok(true)
-    }
-
-    pub fn flush(self) -> Result<bool> {
-        let mut b = NullBody::new();
-        self.send(&mut b)
-    }
-}
-
-impl<'a, 'b, L: Link, T: Transducer, S: Sendable<T>> Sender<'a, 'b, L, T, S, Empty, Filled> {
-    pub fn send<H: DatagramHeader>(mut self, b: &'b mut H) -> Result<bool> {
-        let mut op_header = b.operation()?;
-        let mut op_body = self.buf.as_mut().unwrap().operation(&self.cnt.geometry)?;
-
-        op_header.init();
-        op_body.init();
-
-        self.cnt.force_fan.pack(&mut self.cnt.tx_buf);
-        self.cnt.reads_fpga_info.pack(&mut self.cnt.tx_buf);
-
-        let timeout = self.timeout.unwrap_or(self.cnt.link.timeout());
-
-        loop {
-            let msg_id = self.cnt.get_id();
-            self.cnt.tx_buf.header_mut().msg_id = msg_id;
-            op_header.pack(&mut self.cnt.tx_buf)?;
-            op_body.pack(&mut self.cnt.tx_buf)?;
-            self.cnt.link.send(&self.cnt.tx_buf)?;
-            let success = self.cnt.wait_msg_processed(timeout)?;
-            if !timeout.is_zero() && !success {
-                self.sent = true;
-                return Ok(false);
-            }
-            if op_header.is_finished() && op_body.is_finished() {
-                break;
-            }
-            if timeout.is_zero() {
-                std::thread::sleep(std::time::Duration::from_millis(1));
-            }
-        }
-        self.sent = true;
-        Ok(true)
-    }
-
-    pub fn flush(self) -> Result<bool> {
-        let mut h = NullHeader::new();
-        self.send(&mut h)
-    }
-}
-
-impl<'a, 'b, L: Link, T: Transducer, S: Sendable<T>, H, B> Drop for Sender<'a, 'b, L, T, S, H, B> {
-    fn drop(&mut self) {
-        if self.sent {
-            return;
-        }
-        let mut op = match self.buf.as_mut().unwrap().operation(&self.cnt.geometry) {
-            Ok(op) => op,
-            Err(_) => return,
-        };
-        op.init();
-
-        self.cnt.force_fan.pack(&mut self.cnt.tx_buf);
-        self.cnt.reads_fpga_info.pack(&mut self.cnt.tx_buf);
-
-        let timeout = self.timeout.unwrap_or(self.cnt.link.timeout());
-
-        loop {
-            let msg_id = self.cnt.get_id();
-            self.cnt.tx_buf.header_mut().msg_id = msg_id;
-            if op.pack(&mut self.cnt.tx_buf).is_err() {
-                return;
-            }
-            if self.cnt.link.send(&self.cnt.tx_buf).is_err() {
-                return;
-            }
-            if !self.cnt.wait_msg_processed(timeout).unwrap_or(false) || op.is_finished() {
-                break;
-            }
-
-            if timeout.is_zero() {
-                std::thread::sleep(std::time::Duration::from_millis(1));
-            }
-        }
-    }
-}
+use crate::error::AUTDError;
 
 pub struct Controller<L: Link, T: Transducer> {
     link: L,
@@ -205,10 +34,11 @@ pub struct Controller<L: Link, T: Transducer> {
     rx_buf: RxDatagram,
     force_fan: autd3_core::ForceFan,
     reads_fpga_info: autd3_core::ReadsFPGAInfo,
+    msg_id: AtomicU8,
 }
 
 impl<L: Link, T: Transducer> Controller<L, T> {
-    pub fn open(geometry: Geometry<T>, link: L) -> Result<Controller<L, T>> {
+    pub fn open(geometry: Geometry<T>, link: L) -> Result<Controller<L, T>, AUTDError> {
         let mut link = link;
         link.open(&geometry)?;
         let num_devices = geometry.num_devices();
@@ -220,6 +50,7 @@ impl<L: Link, T: Transducer> Controller<L, T> {
             rx_buf: RxDatagram::new(num_devices),
             force_fan: autd3_core::ForceFan::default(),
             reads_fpga_info: autd3_core::ReadsFPGAInfo::default(),
+            msg_id: AtomicU8::new(MSG_BEGIN),
         })
     }
 
@@ -248,33 +79,46 @@ impl<L: Link, T: Transducer> Controller<L, T> {
     /// * `header` - Header
     /// * `body` - Body
     ///
-    pub fn send<'a, 'b, S: Sendable<T>>(
-        &'a mut self,
-        s: &'b mut S,
-    ) -> Sender<'a, 'b, L, T, S, S::H, S::B> {
-        Sender::new(self, s)
-    }
+    pub fn send<'a, 'b, S: Sendable<T>>(&'a mut self, s: S) -> Result<bool, AUTDError> {
+        let mut s = s;
+        let mut op_header = s.header_operation()?;
+        let mut op_body = s.body_operation(&self.geometry)?;
 
-    /// Send header and body to the devices
-    ///
-    /// # Arguments
-    ///
-    /// * `header` - Header
-    /// * `body` - Body
-    ///
-    pub fn timeout(
-        &mut self,
-        timeout: std::time::Duration,
-    ) -> Sender<L, T, EmptySendable<T>, Empty, Empty> {
-        Sender::with_timeout(self, timeout)
+        op_header.init();
+        op_body.init();
+
+        self.force_fan.pack(&mut self.tx_buf);
+        self.reads_fpga_info.pack(&mut self.tx_buf);
+
+        let timeout = S::timeout().unwrap_or(self.link.timeout());
+        loop {
+            self.tx_buf.header_mut().msg_id = self.get_id();
+
+            op_header.pack(&mut self.tx_buf)?;
+            op_body.pack(&mut self.tx_buf)?;
+
+            if !self
+                .link
+                .send_receive(&self.tx_buf, &mut self.rx_buf, timeout)?
+            {
+                return Ok(false);
+            }
+            if op_header.is_finished() && op_body.is_finished() {
+                break;
+            }
+            if timeout.is_zero() {
+                std::thread::sleep(Duration::from_millis(1));
+            }
+        }
+        Ok(true)
     }
 
     /// Return firmware information of the devices
-    pub fn firmware_infos(&mut self) -> Result<Vec<FirmwareInfo>> {
+    pub fn firmware_infos(&mut self) -> Result<Vec<FirmwareInfo>, AUTDError> {
         let mut op = autd3_core::CPUVersionMajor::default();
-        op.pack(&mut self.tx_buf)?;
-        self.link.send(&self.tx_buf)?;
-        self.wait_msg_processed(std::time::Duration::from_millis(100))?;
+        op.pack(&mut self.tx_buf);
+        self.link
+            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
         let cpu_versions = self
             .rx_buf
             .messages()
@@ -283,8 +127,9 @@ impl<L: Link, T: Transducer> Controller<L, T> {
             .collect::<Vec<_>>();
 
         let mut op = autd3_core::FPGAVersionMajor::default();
-        op.pack(&mut self.tx_buf)?;
-        self.wait_msg_processed(std::time::Duration::from_millis(100))?;
+        op.pack(&mut self.tx_buf);
+        self.link
+            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
         let fpga_versions = self
             .rx_buf
             .messages()
@@ -293,9 +138,9 @@ impl<L: Link, T: Transducer> Controller<L, T> {
             .collect::<Vec<_>>();
 
         let mut op = autd3_core::FPGAFunctions::default();
-        op.pack(&mut self.tx_buf)?;
-        self.link.send(&self.tx_buf)?;
-        self.wait_msg_processed(std::time::Duration::from_millis(100))?;
+        op.pack(&mut self.tx_buf);
+        self.link
+            .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))?;
         let fpga_functions = self
             .rx_buf
             .messages()
@@ -304,10 +149,12 @@ impl<L: Link, T: Transducer> Controller<L, T> {
             .collect::<Vec<_>>();
 
         let mut op = autd3_core::FPGAVersionMinor::default();
-        op.pack(&mut self.tx_buf)?;
-        self.link.send(&self.tx_buf)?;
+        op.pack(&mut self.tx_buf);
         let fpga_versions_minor =
-            match self.wait_msg_processed(std::time::Duration::from_millis(100)) {
+            match self
+                .link
+                .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))
+            {
                 Ok(_) => self
                     .rx_buf
                     .messages()
@@ -318,10 +165,12 @@ impl<L: Link, T: Transducer> Controller<L, T> {
             };
 
         let mut op = autd3_core::CPUVersionMinor::default();
-        op.pack(&mut self.tx_buf)?;
-        self.link.send(&self.tx_buf)?;
+        op.pack(&mut self.tx_buf);
         let cpu_versions_minor =
-            match self.wait_msg_processed(std::time::Duration::from_millis(100)) {
+            match self
+                .link
+                .send_receive(&self.tx_buf, &mut self.rx_buf, Duration::from_millis(200))
+            {
                 Ok(_) => self
                     .rx_buf
                     .messages()
@@ -336,8 +185,8 @@ impl<L: Link, T: Transducer> Controller<L, T> {
                 FirmwareInfo::new(
                     i,
                     cpu_versions[i],
-                    fpga_versions[i],
                     cpu_versions_minor[i],
+                    fpga_versions[i],
                     fpga_versions_minor[i],
                     fpga_functions[i],
                 )
@@ -347,8 +196,9 @@ impl<L: Link, T: Transducer> Controller<L, T> {
 }
 
 impl<L: Link, T: Transducer> Controller<L, T> {
-    pub fn get_id(&self) -> u8 {
-        if MSG_ID
+    pub fn get_id(&mut self) -> u8 {
+        if self
+            .msg_id
             .compare_exchange(
                 MSG_END,
                 MSG_BEGIN,
@@ -357,74 +207,99 @@ impl<L: Link, T: Transducer> Controller<L, T> {
             )
             .is_err()
         {
-            MSG_ID.fetch_add(1, atomic::Ordering::SeqCst);
+            self.msg_id.fetch_add(1, atomic::Ordering::SeqCst);
         }
-        MSG_ID.load(atomic::Ordering::SeqCst)
+        self.msg_id.load(atomic::Ordering::SeqCst)
     }
 
-    fn wait_msg_processed(&mut self, timeout: std::time::Duration) -> Result<bool> {
-        let msg_id = self.tx_buf.header().msg_id;
-        let start = std::time::Instant::now();
-        while std::time::Instant::now() - start < timeout {
-            if self.link.receive(&mut self.rx_buf)? && self.rx_buf.is_msg_processed(msg_id) {
-                return Ok(true);
-            }
-            std::thread::sleep(std::time::Duration::from_millis(1));
+    pub fn close(&mut self) -> Result<bool, AUTDError> {
+        let res = self.send(Stop::new())?;
+        let res = res & self.send(Clear::new())?;
+        self.link.close()?;
+        Ok(res)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use autd3_core::{
+        autd3_device::AUTD3,
+        geometry::{GeometryBuilder, LegacyTransducer, Vector3},
+        silencer_config::SilencerConfig,
+        synchronize::Synchronize,
+    };
+
+    use crate::prelude::{Focus, Sine};
+
+    use super::*;
+
+    struct EmulatorLink {
+        is_open: bool,
+    }
+
+    impl EmulatorLink {
+        pub fn new() -> Self {
+            Self { is_open: false }
         }
-        Ok(false)
     }
-}
 
-impl<L: Link> Controller<L, LegacyTransducer> {
-    pub fn close(&mut self) -> Result<bool> {
-        let mut stop = Null::new();
-        let res = self
-            .timeout(std::time::Duration::from_millis(20))
-            .send(&mut stop)
-            .flush()?;
-        let mut clear = Clear::new();
-        let res = res
-            & self
-                .timeout(std::time::Duration::from_millis(20))
-                .send(&mut clear)
-                .flush()?;
-        self.link.close()?;
-        Ok(res)
+    impl Link for EmulatorLink {
+        fn open<T: Transducer>(
+            &mut self,
+            _geometry: &Geometry<T>,
+        ) -> Result<(), autd3_core::error::AUTDInternalError> {
+            self.is_open = true;
+            Ok(())
+        }
+
+        fn close(&mut self) -> Result<(), autd3_core::error::AUTDInternalError> {
+            self.is_open = false;
+            Ok(())
+        }
+
+        fn send(&mut self, _tx: &TxDatagram) -> Result<bool, autd3_core::error::AUTDInternalError> {
+            Ok(true)
+        }
+
+        fn receive(
+            &mut self,
+            _rx: &mut RxDatagram,
+        ) -> Result<bool, autd3_core::error::AUTDInternalError> {
+            Ok(true)
+        }
+
+        fn is_open(&self) -> bool {
+            self.is_open
+        }
+
+        fn timeout(&self) -> Duration {
+            std::time::Duration::ZERO
+        }
     }
-}
 
-impl<L: Link> Controller<L, AdvancedTransducer> {
-    pub fn close(&mut self) -> Result<bool> {
-        let mut stop = Null::new();
-        let res = self
-            .timeout(std::time::Duration::from_millis(20))
-            .send(&mut stop)
-            .flush()?;
-        let mut clear = Clear::new();
-        let res = res
-            & self
-                .timeout(std::time::Duration::from_millis(20))
-                .send(&mut clear)
-                .flush()?;
-        self.link.close()?;
-        Ok(res)
-    }
-}
+    #[test]
+    fn basic_usage() {
+        let geometry = GeometryBuilder::<LegacyTransducer>::new()
+            .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+            .build()
+            .unwrap();
 
-impl<L: Link> Controller<L, AdvancedPhaseTransducer> {
-    pub fn close(&mut self) -> Result<bool> {
-        let mut stop = Amplitudes::none();
-        let res = self
-            .timeout(std::time::Duration::from_millis(20))
-            .send(&mut stop)
-            .flush()?;
-        let mut clear = Clear::new();
-        let res = res
-            & self
-                .timeout(std::time::Duration::from_millis(20))
-                .send(&mut clear)
-                .flush()?;
-        self.link.close()?;
-        Ok(res)
+        let link = EmulatorLink::new();
+
+        let mut autd = Controller::open(geometry, link).unwrap();
+
+        let _firm_infos = autd.firmware_infos().unwrap();
+
+        autd.send(Clear::new()).unwrap();
+        autd.send(Synchronize::new()).unwrap();
+
+        let silencer = SilencerConfig::default();
+        autd.send(silencer).unwrap();
+
+        let m = Sine::new(150);
+        let g = Focus::new(autd.geometry().center() + Vector3::new(0.0, 0.0, 150.0));
+
+        autd.send((m, g)).unwrap();
     }
 }
