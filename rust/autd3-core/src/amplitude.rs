@@ -4,7 +4,7 @@
  * Created Date: 07/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/05/2023
+ * Last Modified: 09/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,7 +14,7 @@
 use autd3_driver::{float, Drive};
 
 use crate::{
-    datagram::{DatagramBody, Empty, Filled, Sendable},
+    sendable::Sendable,
     error::AUTDInternalError,
     geometry::{AdvancedPhaseTransducer, Geometry},
 };
@@ -33,34 +33,27 @@ impl Amplitudes {
     }
 }
 
-impl DatagramBody<AdvancedPhaseTransducer> for Amplitudes {
-    type O = autd3_driver::GainAdvancedDuty;
-
-    fn operation(
-        &mut self,
-        geometry: &Geometry<AdvancedPhaseTransducer>,
-    ) -> Result<Self::O, AUTDInternalError> {
-        let drives = vec![
-            Drive {
-                phase: 0.0,
-                amp: self.amp,
-            };
-            geometry.num_transducers()
-        ];
-        let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
-        Ok(Self::O::new(drives, cycles))
-    }
-}
-
 impl Sendable<AdvancedPhaseTransducer> for Amplitudes {
-    type H = Empty;
-    type B = Filled;
-    type O = <Self as DatagramBody<AdvancedPhaseTransducer>>::O;
+    type H = autd3_driver::NullHeader;
+    type B = autd3_driver::GainAdvancedDuty;
 
-    fn operation(
+    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
+        Ok(Self::H::default())
+    }
+
+    fn body_operation(
         &mut self,
         geometry: &Geometry<AdvancedPhaseTransducer>,
-    ) -> Result<Self::O, AUTDInternalError> {
-        <Self as DatagramBody<AdvancedPhaseTransducer>>::operation(self, geometry)
+    ) -> Result<Self::B, AUTDInternalError> {
+        Ok(Self::B::new(
+            vec![
+                Drive {
+                    phase: 0.0,
+                    amp: self.amp,
+                };
+                geometry.num_transducers()
+            ],
+            geometry.transducers().map(|tr| tr.cycle()).collect(),
+        ))
     }
 }

@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/05/2023
+ * Last Modified: 09/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ use autd3_driver::{float, PI};
 
 use super::{Quaternion, UnitQuaternion, Vector3};
 
-pub trait Transducer: Sized {
+pub trait Transducer: Sized + Send + Sync {
     fn get_direction(dir: Vector3, rotation: &UnitQuaternion) -> Vector3 {
         let dir: UnitQuaternion = UnitQuaternion::from_quaternion(Quaternion::from_imag(dir));
         (rotation * dir * rotation.conjugate()).imag().normalize()

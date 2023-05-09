@@ -18,6 +18,7 @@ nalgebra = "0.32.1"
 num = "0.4.0"
 num-derive = "0.3.3"
 num-traits = "0.2.15"
+rayon = {version="1.7.0", optional=true}
 thiserror = "1.0.30"
 
 [dev-dependencies]
@@ -27,3 +28,4 @@ assert_approx_eq = "1.1.0"
 default = []
 single_float = ["autd3-driver/single_float"]
 use_meter = ["autd3-driver/use_meter"]
+parallel = ["rayon"]

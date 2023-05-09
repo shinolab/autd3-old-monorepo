@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/05/2023
+ * Last Modified: 09/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,4 +28,37 @@ pub trait Link: Send {
     fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError>;
     fn is_open(&self) -> bool;
     fn timeout(&self) -> Duration;
+
+    fn send_receive(
+        &mut self,
+        tx: &TxDatagram,
+        rx: &mut RxDatagram,
+        timeout: Duration,
+    ) -> Result<bool, AUTDInternalError> {
+        if !self.send(tx)? {
+            return Ok(false);
+        }
+        if timeout.is_zero() {
+            return self.receive(rx);
+        }
+        self.wait_msg_processed(tx.header().msg_id, rx, timeout)
+    }
+
+    fn wait_msg_processed(
+        &mut self,
+        msg_id: u8,
+        rx: &mut RxDatagram,
+        timeout: Duration,
+    ) -> Result<bool, AUTDInternalError> {
+        let start = std::time::Instant::now();
+        loop {
+            std::thread::sleep(std::time::Duration::from_millis(1));
+            if self.receive(rx)? && rx.is_msg_processed(msg_id) {
+                return Ok(true);
+            }
+            if start.elapsed() > timeout {
+                return Ok(false);
+            }
+        }
+    }
 }
