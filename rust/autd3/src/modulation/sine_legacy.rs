@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/03/2023
+ * Last Modified: 09/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,8 +13,7 @@
 
 use std::f64::consts::PI;
 
-use anyhow::Result;
-use autd3_core::modulation::Modulation;
+use autd3_core::{error::AUTDInternalError, modulation::Modulation};
 use autd3_traits::Modulation;
 
 /// Sine wave modulation in ultrasound amplitude
@@ -57,7 +56,7 @@ impl SineLegacy {
 }
 
 impl Modulation for SineLegacy {
-    fn calc(&self) -> Result<Vec<f64>> {
+    fn calc(&self) -> Result<Vec<f64>, AUTDInternalError> {
         let sf = self.sampling_freq();
         let freq = self
             .freq

@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/03/2023
+ * Last Modified: 09/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,13 +13,17 @@
 
 use std::collections::HashMap;
 
-use anyhow::Result;
-
 use autd3_core::{
+    sendable::Sendable,
+    error::AUTDInternalError,
     gain::Gain,
-    geometry::{Geometry, Transducer},
+    geometry::{
+        AdvancedPhaseTransducer, AdvancedTransducer, Geometry, LegacyTransducer, Transducer,
+    },
     Drive,
 };
+
+use crate::error::AUTDError;
 
 /// Gain to produce single focal point
 #[derive(Default)]
@@ -35,14 +39,14 @@ impl<'a, T: Transducer> Grouped<'a, T> {
         }
     }
 
-    pub fn add<G: 'a + Gain<T>>(&mut self, id: usize, gain: G) -> Result<()> {
+    pub fn add<G: 'a + Gain<T>>(&mut self, id: usize, gain: G) -> Result<(), AUTDError> {
         self.gain_map.insert(id, Box::new(gain));
         Ok(())
     }
 }
 
 impl<'a, T: Transducer> Gain<T> for Grouped<'a, T> {
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>> {
+    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         Ok((0..geometry.num_devices())
             .flat_map(|i| {
                 self.gain_map
@@ -73,97 +77,56 @@ impl<'a, T: Transducer> Gain<T> for Grouped<'a, T> {
     }
 }
 
-impl<'a> autd3_core::datagram::DatagramBody<autd3_core::geometry::LegacyTransducer>
-    for Grouped<'a, autd3_core::geometry::LegacyTransducer>
-{
-    type O = autd3_driver::GainLegacy;
+impl<'a> Sendable<LegacyTransducer> for Grouped<'a, LegacyTransducer> {
+    type H = autd3_core::NullHeader;
+    type B = autd3_core::GainLegacy;
 
-    fn operation(
+    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
+        Ok(Self::H::default())
+    }
+
+    fn body_operation(
         &mut self,
-        geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::LegacyTransducer>,
-    ) -> anyhow::Result<Self::O> {
-        let drives = self.calc(geometry)?;
-        Ok(Self::O::new(drives))
+        geometry: &Geometry<LegacyTransducer>,
+    ) -> Result<Self::B, AUTDInternalError> {
+        Ok(Self::B::new(self.calc(geometry)?))
     }
 }
 
-impl<'a> autd3_core::datagram::Sendable<autd3_core::geometry::LegacyTransducer>
-    for Grouped<'a, autd3_core::geometry::LegacyTransducer>
-{
-    type H = autd3_core::datagram::Empty;
-    type B = autd3_core::datagram::Filled;
-    type O =
-        <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::LegacyTransducer>>::O;
+impl<'a> Sendable<AdvancedTransducer> for Grouped<'a, AdvancedTransducer> {
+    type H = autd3_core::NullHeader;
+    type B = autd3_core::GainAdvanced;
 
-    fn operation(
+    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
+        Ok(Self::H::default())
+    }
+
+    fn body_operation(
         &mut self,
-        geometry: &Geometry<autd3_core::geometry::LegacyTransducer>,
-    ) -> anyhow::Result<Self::O> {
-        <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::LegacyTransducer>>::operation(self, geometry)
+        geometry: &Geometry<AdvancedTransducer>,
+    ) -> Result<Self::B, AUTDInternalError> {
+        Ok(Self::B::new(
+            self.calc(geometry)?,
+            geometry.transducers().map(|tr| tr.cycle()).collect(),
+        ))
     }
 }
 
-impl<'a> autd3_core::datagram::DatagramBody<autd3_core::geometry::AdvancedTransducer>
-    for Grouped<'a, autd3_core::geometry::AdvancedTransducer>
-{
-    type O = autd3_driver::GainAdvanced;
+impl<'a> Sendable<AdvancedPhaseTransducer> for Grouped<'a, AdvancedPhaseTransducer> {
+    type H = autd3_core::NullHeader;
+    type B = autd3_core::GainAdvancedPhase;
 
-    fn operation(
-        &mut self,
-        geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::AdvancedTransducer>,
-    ) -> anyhow::Result<Self::O> {
-        let drives = self.calc(geometry)?;
-        let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
-        Ok(Self::O::new(drives, cycles))
+    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
+        Ok(Self::H::default())
     }
-}
 
-impl<'a> autd3_core::datagram::Sendable<autd3_core::geometry::AdvancedTransducer>
-    for Grouped<'a, autd3_core::geometry::AdvancedTransducer>
-{
-    type H = autd3_core::datagram::Empty;
-    type B = autd3_core::datagram::Filled;
-    type O =
-        <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::AdvancedTransducer>>::O;
-
-    fn operation(
+    fn body_operation(
         &mut self,
-        geometry: &Geometry<autd3_core::geometry::AdvancedTransducer>,
-    ) -> anyhow::Result<Self::O> {
-        <Self as autd3_core::datagram::DatagramBody<autd3_core::geometry::AdvancedTransducer>>::operation(self, geometry)
-    }
-}
-
-impl<'a> autd3_core::datagram::DatagramBody<autd3_core::geometry::AdvancedPhaseTransducer>
-    for Grouped<'a, autd3_core::geometry::AdvancedPhaseTransducer>
-{
-    type O = autd3_driver::GainAdvancedPhase;
-
-    fn operation(
-        &mut self,
-        geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::AdvancedPhaseTransducer>,
-    ) -> anyhow::Result<Self::O> {
-        let drives = self.calc(geometry)?;
-        let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
-        Ok(Self::O::new(drives, cycles))
-    }
-}
-
-impl<'a> autd3_core::datagram::Sendable<autd3_core::geometry::AdvancedPhaseTransducer>
-    for Grouped<'a, autd3_core::geometry::AdvancedPhaseTransducer>
-{
-    type H = autd3_core::datagram::Empty;
-    type B = autd3_core::datagram::Filled;
-    type O = <Self as autd3_core::datagram::DatagramBody<
-        autd3_core::geometry::AdvancedPhaseTransducer,
-    >>::O;
-
-    fn operation(
-        &mut self,
-        geometry: &Geometry<autd3_core::geometry::AdvancedPhaseTransducer>,
-    ) -> anyhow::Result<Self::O> {
-        <Self as autd3_core::datagram::DatagramBody<
-            autd3_core::geometry::AdvancedPhaseTransducer,
-        >>::operation(self, geometry)
+        geometry: &Geometry<AdvancedPhaseTransducer>,
+    ) -> Result<Self::B, AUTDInternalError> {
+        Ok(Self::B::new(
+            self.calc(geometry)?,
+            geometry.transducers().map(|tr| tr.cycle()).collect(),
+        ))
     }
 }

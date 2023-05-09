@@ -4,25 +4,21 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/03/2023
+ * Last Modified: 09/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
 
-pub use crate::{
+pub use crate::{controller::Controller, gain::*, modulation::*};
+
+pub use autd3_core::{
+    amplitude::Amplitudes,
     autd3_device::{
         AUTD3, DEVICE_HEIGHT, DEVICE_WIDTH, NUM_TRANS_IN_UNIT, NUM_TRANS_X, NUM_TRANS_Y,
         TRANS_SPACING_MM,
     },
-    controller::Controller,
-    gain::*,
-    modulation::*,
-};
-
-pub use autd3_core::{
-    amplitude::Amplitudes,
     clear::Clear,
     delay::ModDelay,
     geometry::{
