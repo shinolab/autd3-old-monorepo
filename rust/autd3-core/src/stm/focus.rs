@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/05/2023
+ * Last Modified: 09/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,9 +12,9 @@
  */
 
 use crate::{
-    datagram::{DatagramBody, Empty, Filled, Sendable},
     error::AUTDInternalError,
     geometry::{Geometry, Matrix3, Transducer, Vector3},
+    sendable::Sendable,
 };
 
 use autd3_driver::*;
@@ -51,10 +51,15 @@ impl FocusSTM {
     }
 }
 
-impl<T: Transducer> DatagramBody<T> for FocusSTM {
-    type O = autd3_driver::FocusSTM;
+impl<T: Transducer> Sendable<T> for FocusSTM {
+    type H = autd3_driver::NullHeader;
+    type B = autd3_driver::FocusSTM;
 
-    fn operation(&mut self, geometry: &Geometry<T>) -> Result<Self::O, AUTDInternalError> {
+    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
+        Ok(Default::default())
+    }
+
+    fn body_operation(&mut self, geometry: &Geometry<T>) -> Result<Self::B, AUTDInternalError> {
         let points = geometry
             .device_map()
             .iter()
@@ -86,17 +91,7 @@ impl<T: Transducer> DatagramBody<T> for FocusSTM {
             start_idx: self.start_idx,
             finish_idx: self.finish_idx,
         };
-        Ok(Self::O::new(points, *tr_num_min, props))
-    }
-}
-
-impl<T: Transducer> Sendable<T> for FocusSTM {
-    type H = Empty;
-    type B = Filled;
-    type O = <Self as DatagramBody<T>>::O;
-
-    fn operation(&mut self, geometry: &Geometry<T>) -> Result<Self::O, AUTDInternalError> {
-        <Self as DatagramBody<T>>::operation(self, geometry)
+        Ok(Self::B::new(points, *tr_num_min, props))
     }
 }
 

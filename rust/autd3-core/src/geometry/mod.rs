@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/05/2023
+ * Last Modified: 09/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -42,7 +42,7 @@ use crate::error::AUTDInternalError;
 
 #[derive(Default)]
 pub struct Geometry<T: Transducer> {
-    transducers: Vec<T>,
+    pub(crate) transducers: Vec<T>,
     device_map: Vec<usize>,
     pub sound_speed: float,
     pub attenuation: float,
