@@ -4,17 +4,21 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/05/2023
+ * Last Modified: 09/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
 
+use std::time::Duration;
+
+use autd3_driver::NullHeader;
+
 use crate::{
-    datagram::{DatagramBody, Empty, Filled, Sendable},
     error::AUTDInternalError,
     geometry::{AdvancedPhaseTransducer, AdvancedTransducer, Geometry, LegacyTransducer},
+    sendable::Sendable,
 };
 
 #[derive(Default)]
@@ -26,73 +30,66 @@ impl Synchronize {
     }
 }
 
-impl DatagramBody<LegacyTransducer> for Synchronize {
-    type O = autd3_driver::SyncLegacy;
+impl Sendable<LegacyTransducer> for Synchronize {
+    type H = NullHeader;
+    type B = autd3_driver::SyncLegacy;
 
-    fn operation(&mut self, _: &Geometry<LegacyTransducer>) -> Result<Self::O, AUTDInternalError> {
+    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
         Ok(Default::default())
     }
-}
 
-impl Sendable<LegacyTransducer> for Synchronize {
-    type H = Empty;
-    type B = Filled;
-    type O = <Self as DatagramBody<LegacyTransducer>>::O;
-
-    fn operation(
+    fn body_operation(
         &mut self,
-        geometry: &Geometry<LegacyTransducer>,
-    ) -> Result<Self::O, AUTDInternalError> {
-        <Self as DatagramBody<LegacyTransducer>>::operation(self, geometry)
+        _geometry: &Geometry<LegacyTransducer>,
+    ) -> Result<Self::B, AUTDInternalError> {
+        Ok(Self::B::default())
     }
-}
 
-impl DatagramBody<AdvancedTransducer> for Synchronize {
-    type O = autd3_driver::SyncAdvanced;
-
-    fn operation(
-        &mut self,
-        geometry: &Geometry<AdvancedTransducer>,
-    ) -> Result<Self::O, AUTDInternalError> {
-        let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
-        Ok(Self::O::new(cycles))
+    fn timeout() -> Option<Duration> {
+        Some(Duration::from_millis(200))
     }
 }
 
 impl Sendable<AdvancedTransducer> for Synchronize {
-    type H = Empty;
-    type B = Filled;
-    type O = <Self as DatagramBody<AdvancedTransducer>>::O;
+    type H = NullHeader;
+    type B = autd3_driver::SyncAdvanced;
 
-    fn operation(
+    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
+        Ok(Default::default())
+    }
+
+    fn body_operation(
         &mut self,
         geometry: &Geometry<AdvancedTransducer>,
-    ) -> Result<Self::O, AUTDInternalError> {
-        <Self as DatagramBody<AdvancedTransducer>>::operation(self, geometry)
+    ) -> Result<Self::B, AUTDInternalError> {
+        Ok(Self::B::new(
+            geometry.transducers().map(|tr| tr.cycle()).collect(),
+        ))
     }
-}
 
-impl DatagramBody<AdvancedPhaseTransducer> for Synchronize {
-    type O = autd3_driver::SyncAdvanced;
-
-    fn operation(
-        &mut self,
-        geometry: &Geometry<AdvancedPhaseTransducer>,
-    ) -> Result<Self::O, AUTDInternalError> {
-        let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
-        Ok(Self::O::new(cycles))
+    fn timeout() -> Option<Duration> {
+        Some(Duration::from_millis(200))
     }
 }
 
 impl Sendable<AdvancedPhaseTransducer> for Synchronize {
-    type H = Empty;
-    type B = Filled;
-    type O = <Self as DatagramBody<AdvancedPhaseTransducer>>::O;
+    type H = NullHeader;
+    type B = autd3_driver::SyncAdvanced;
 
-    fn operation(
+    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
+        Ok(Default::default())
+    }
+
+    fn body_operation(
         &mut self,
         geometry: &Geometry<AdvancedPhaseTransducer>,
-    ) -> Result<Self::O, AUTDInternalError> {
-        <Self as DatagramBody<AdvancedPhaseTransducer>>::operation(self, geometry)
+    ) -> Result<Self::B, AUTDInternalError> {
+        Ok(Self::B::new(
+            geometry.transducers().map(|tr| tr.cycle()).collect(),
+        ))
+    }
+
+    fn timeout() -> Option<Duration> {
+        Some(Duration::from_millis(200))
     }
 }
