@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/03/2023
+ * Last Modified: 10/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,8 +20,9 @@ use autd3::prelude::*;
 use autd3_link_soem::{Config, SOEM};
 
 fn main() -> Result<()> {
-    let mut geometry = GeometryBuilder::new().build();
-    geometry.add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))?;
+    let geometry = Geometry::builder()
+        .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+        .build()?;
 
     let config = Config::default();
     let link = SOEM::new(config, |msg| {
@@ -29,7 +30,7 @@ fn main() -> Result<()> {
         std::process::exit(-1);
     });
 
-    let autd = Controller::open(geometry, link).expect("Failed to open");
+    let autd = Controller::open(geometry, link)?;
 
     run!(autd);
 
