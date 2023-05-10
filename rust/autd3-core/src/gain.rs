@@ -13,7 +13,6 @@
 
 use crate::{
     error::AUTDInternalError,
-    float,
     geometry::{Geometry, Transducer},
 };
 
@@ -26,7 +25,7 @@ use rayon::prelude::*;
 /// Note that the amplitude means duty ratio of Pulse Width Modulation, respectively.
 pub trait Gain<T: Transducer> {
     fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError>;
-    fn transform<F: Fn(&T) -> float + Sync + Send>(geometry: &Geometry<T>, f: F) -> Vec<float>
+    fn transform<F: Fn(&T) -> Drive + Sync + Send>(geometry: &Geometry<T>, f: F) -> Vec<Drive>
     where
         Self: Sized,
     {
