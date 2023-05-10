@@ -14,6 +14,7 @@
 pub mod controller;
 pub mod error;
 pub mod gain;
+pub mod link;
 pub mod modulation;
 pub mod prelude;
 
