@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/05/2023
+ * Last Modified: 10/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -33,12 +33,12 @@ macro_rules! run {
             println!("[0]: Single Focal Point Test");
             println!("[1]: BesselBeam Test");
             // println!("[2]: Multiple foci Test");
-            println!("[3]: FocusSTM Test");
-            println!("[4]: GainSTM Test");
+            println!("[3]: Wav modulation Test");
+            println!("[4]: FocusSTM Test");
+            println!("[5]: GainSTM Test");
             if autd.geometry().num_devices() == 2 {
-                println!("[5]: Grouped Gain Test");
+                println!("[10]: Grouped Gain Test");
             }
-            println!("[9]: Transducer Test");
             println!("[Others]: Finish");
             print!("{}", "Choose number: ".green().bold());
             io::stdout().flush()?;
@@ -49,10 +49,10 @@ macro_rules! run {
                 Ok(0) => focus!(autd),
                 Ok(1) => bessel!(autd),
                 // Ok(2) => holo!(autd),
-                Ok(3) => focus_stm!(autd),
-                Ok(4) => gain_stm!(autd),
-                Ok(5) => grouped!(autd),
-                Ok(9) => trans_test!(autd),
+                Ok(3) => audio_file!(autd),
+                Ok(4) => focus_stm!(autd),
+                Ok(5) => gain_stm!(autd),
+                Ok(10) => grouped!(autd),
                 _ => break,
             };
 

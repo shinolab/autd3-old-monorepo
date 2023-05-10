@@ -30,6 +30,7 @@ autd3 = {path="../autd3"}
 autd3-link-simulator = {path="../autd3-link-simulator", optional = true, version="10.0.0"}
 autd3-link-soem = {path="../autd3-link-soem", optional = true, version="10.0.0"}
 autd3-link-twincat = {path="../autd3-link-twincat", optional = true, version="10.0.0"}
+autd3-modulation-audio-file = {path="../autd3-modulation-audio-file", version="10.0.0"}
 colored = "2.0.0"
 
 [features] 
