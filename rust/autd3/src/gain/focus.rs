@@ -12,9 +12,10 @@
  */
 
 use autd3_core::{
+    error::AUTDInternalError,
     gain::Gain,
     geometry::{Geometry, Transducer, Vector3},
-    Drive, error::AUTDInternalError,
+    Drive,
 };
 
 use autd3_traits::Gain;
@@ -52,15 +53,12 @@ impl Focus {
 impl<T: Transducer> Gain<T> for Focus {
     fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         let sound_speed = geometry.sound_speed;
-        Ok(geometry
-            .transducers()
-            .map(|tr| {
-                let phase = tr.align_phase_at(self.pos, sound_speed);
-                Drive {
-                    phase,
-                    amp: self.amp,
-                }
-            })
-            .collect())
+        Ok(Self::transform(geometry, |tr| {
+            let phase = tr.align_phase_at(self.pos, sound_speed);
+            Drive {
+                phase,
+                amp: self.amp,
+            }
+        }))
     }
 }

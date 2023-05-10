@@ -71,20 +71,16 @@ impl<T: Transducer> Gain<T> for Bessel {
         };
 
         let sound_speed = geometry.sound_speed;
-        Ok(geometry
-            .transducers()
-            .map(|tr| {
-                let r = tr.position() - self.pos;
-                let r = Vector3::new(r.x, r.y, r.z);
-                let r = rot * r;
-                let dist =
-                    self.theta.sin() * (r.x * r.x + r.y * r.y).sqrt() - self.theta.cos() * r.z;
-                let phase = dist * tr.wavenumber(sound_speed);
-                Drive {
-                    phase,
-                    amp: self.amp,
-                }
-            })
-            .collect())
+        Ok(Self::transform(geometry, |tr| {
+            let r = tr.position() - self.pos;
+            let r = Vector3::new(r.x, r.y, r.z);
+            let r = rot * r;
+            let dist = self.theta.sin() * (r.x * r.x + r.y * r.y).sqrt() - self.theta.cos() * r.z;
+            let phase = dist * tr.wavenumber(sound_speed);
+            Drive {
+                phase,
+                amp: self.amp,
+            }
+        }))
     }
 }
