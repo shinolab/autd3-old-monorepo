@@ -24,7 +24,7 @@ fn main() -> Result<()> {
         .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
         .build()?;
 
-    let link = TwinCAT::new();
+    let link = TwinCAT::builder().build();
 
     let autd = Controller::open(geometry, link).expect("Failed to open");
 

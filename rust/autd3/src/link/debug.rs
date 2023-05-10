@@ -43,17 +43,17 @@ impl Debug {
         }
     }
 
-    pub fn builder() -> DebugBuilfer {
-        DebugBuilfer::new()
+    pub fn builder() -> DebugBuilder {
+        DebugBuilder::new()
     }
 }
 
-pub struct DebugBuilfer {
+pub struct DebugBuilder {
     timeout: Duration,
     level: Level,
 }
 
-impl DebugBuilfer {
+impl DebugBuilder {
     fn new() -> Self {
         Self {
             timeout: Duration::ZERO,
@@ -67,7 +67,7 @@ impl DebugBuilfer {
     }
 }
 
-impl LinkBuilder for DebugBuilfer {
+impl LinkBuilder for DebugBuilder {
     type L = Debug;
 
     fn timeout(mut self, timeout: Duration) -> Self {
