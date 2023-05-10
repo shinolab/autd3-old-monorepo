@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/04/2023
+ * Last Modified: 10/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,8 +21,6 @@ use std::{
     usize,
 };
 
-use anyhow::Result;
-use autd3_timer::{Timer, TimerCallback};
 use crossbeam_channel::{bounded, Receiver, Sender};
 use libc::{c_void, timeval};
 
@@ -30,6 +28,7 @@ use autd3_core::{
     error::AUTDInternalError,
     geometry::{Geometry, Transducer},
     link::Link,
+    osal_timer::{Timer, TimerCallback},
     RxDatagram, TxDatagram, EC_CYCLE_TIME_BASE_NANO_SEC,
 };
 
@@ -106,7 +105,7 @@ impl<F: Fn(&str) + Send> SOEM<F> {
     }
 }
 
-fn lookup_autd() -> anyhow::Result<String> {
+fn lookup_autd() -> Result<String, AUTDInternalError> {
     let adapters: EthernetAdapters = Default::default();
 
     if let Some(adapter) = adapters.into_iter().find(|adapter| unsafe {
@@ -148,7 +147,7 @@ unsafe extern "C" fn dc_config(context: *mut ecx_contextt, slave: u16) -> i32 {
 }
 
 impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
-    fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> anyhow::Result<()> {
+    fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         if self.is_open() {
             return Ok(());
         }
@@ -328,7 +327,7 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
         Ok(())
     }
 
-    fn close(&mut self) -> Result<()> {
+    fn close(&mut self) -> Result<(), AUTDInternalError> {
         if !self.is_open() {
             return Ok(());
         }
@@ -365,20 +364,20 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
         Ok(())
     }
 
-    fn send(&mut self, tx: &TxDatagram) -> Result<bool> {
+    fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
         if !self.is_open() {
-            return Err(AUTDInternalError::LinkClosed.into());
+            return Err(AUTDInternalError::LinkClosed);
         }
 
         let buf = tx.clone();
-        self.sender.as_mut().unwrap().send(buf)?;
+        self.sender.as_mut().unwrap().send(buf).unwrap();
 
         Ok(true)
     }
 
-    fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool> {
+    fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError> {
         if !self.is_open() {
-            return Err(AUTDInternalError::LinkClosed.into());
+            return Err(AUTDInternalError::LinkClosed);
         }
         unsafe {
             std::ptr::copy_nonoverlapping(

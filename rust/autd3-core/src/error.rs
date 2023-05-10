@@ -21,7 +21,7 @@ pub enum AUTDInternalError {
     #[error("Link is closed.")]
     LinkClosed,
     #[error("{0}")]
-    LinkError(&'static str),
+    LinkError(String),
     #[error("Maximum cycle is {} , but {0} is specified", MAX_CYCLE)]
     CycleOutOfRange(u16),
     #[error("The maximum number of transducers per device is 256")]

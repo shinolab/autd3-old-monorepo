@@ -4,13 +4,14 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/01/2023
+ * Last Modified: 10/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
 
+use autd3_core::error::AUTDInternalError;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -27,4 +28,10 @@ pub enum SOEMError {
     NotReachedSafeOp(u16),
     #[error("Non-AUTD3 device detected")]
     NotAUTD3Device,
+}
+
+impl Into<AUTDInternalError> for SOEMError {
+    fn into(self) -> AUTDInternalError {
+        AUTDInternalError::LinkError(self.to_string())
+    }
 }
