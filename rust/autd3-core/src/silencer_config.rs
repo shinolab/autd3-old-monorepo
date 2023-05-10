@@ -11,7 +11,7 @@
  *
  */
 
-use crate::{sendable::Sendable, error::AUTDInternalError, geometry::Transducer};
+use crate::{error::AUTDInternalError, geometry::Transducer, sendable::Sendable};
 
 pub struct SilencerConfig {
     step: u16,

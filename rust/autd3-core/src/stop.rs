@@ -14,9 +14,9 @@
 use autd3_driver::{ConfigSilencer, Drive, GainAdvancedDuty};
 
 use crate::{
-    sendable::Sendable,
     error::AUTDInternalError,
     geometry::{Geometry, Transducer},
+    sendable::Sendable,
 };
 
 #[derive(Default)]

@@ -16,9 +16,9 @@ use std::time::Duration;
 use autd3_driver::NullBody;
 
 use crate::{
-    sendable::Sendable,
     error::AUTDInternalError,
     geometry::{Geometry, Transducer},
+    sendable::Sendable,
 };
 
 #[derive(Default)]
