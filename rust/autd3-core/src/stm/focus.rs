@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/05/2023
+ * Last Modified: 10/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -55,11 +55,7 @@ impl<T: Transducer> Sendable<T> for FocusSTM {
     type H = autd3_driver::NullHeader;
     type B = autd3_driver::FocusSTM;
 
-    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
-        Ok(Default::default())
-    }
-
-    fn body_operation(&mut self, geometry: &Geometry<T>) -> Result<Self::B, AUTDInternalError> {
+    fn operation(self, geometry: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
         let points = geometry
             .device_map()
             .iter()
@@ -91,7 +87,7 @@ impl<T: Transducer> Sendable<T> for FocusSTM {
             start_idx: self.start_idx,
             finish_idx: self.finish_idx,
         };
-        Ok(Self::B::new(points, *tr_num_min, props))
+        Ok((Self::H::default(), Self::B::new(points, *tr_num_min, props)))
     }
 }
 

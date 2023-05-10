@@ -4,7 +4,7 @@
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/05/2023
+ * Last Modified: 10/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,8 +22,7 @@ pub trait Sendable<T: Transducer> {
     type H: autd3_driver::Operation;
     type B: autd3_driver::Operation;
 
-    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError>;
-    fn body_operation(&mut self, geometry: &Geometry<T>) -> Result<Self::B, AUTDInternalError>;
+    fn operation(self, geometry: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError>;
 
     fn timeout() -> Option<Duration> {
         None
@@ -38,12 +37,10 @@ where
     type H = H::H;
     type B = B::B;
 
-    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
-        self.0.header_operation()
-    }
-
-    fn body_operation(&mut self, geometry: &Geometry<T>) -> Result<Self::B, AUTDInternalError> {
-        self.1.body_operation(geometry)
+    fn operation(self, geometry: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
+        let (h, _) = self.0.operation(geometry)?;
+        let (_, b) = self.1.operation(geometry)?;
+        Ok((h, b))
     }
 }
 
@@ -60,12 +57,8 @@ impl<T: Transducer> Sendable<T> for NullHeader {
     type H = autd3_driver::NullHeader;
     type B = autd3_driver::NullBody;
 
-    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
-        Ok(Self::H::default())
-    }
-
-    fn body_operation(&mut self, _geometry: &Geometry<T>) -> Result<Self::B, AUTDInternalError> {
-        Ok(Self::B::default())
+    fn operation(self, _: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
+        Ok((Self::H::default(), Self::B::default()))
     }
 }
 
@@ -82,11 +75,7 @@ impl<T: Transducer> Sendable<T> for NullBody {
     type H = autd3_driver::NullHeader;
     type B = autd3_driver::NullBody;
 
-    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
-        Ok(Self::H::default())
-    }
-
-    fn body_operation(&mut self, _geometry: &Geometry<T>) -> Result<Self::B, AUTDInternalError> {
-        Ok(Self::B::default())
+    fn operation(self, _: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
+        Ok((Self::H::default(), Self::B::default()))
     }
 }

@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/05/2023
+ * Last Modified: 10/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -26,13 +26,17 @@ fn impl_modulation_macro(ast: &syn::DeriveInput) -> TokenStream {
     let type_params = generics.type_params();
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let gen = quote! {
-        impl #impl_generics #name #ty_generics #where_clause {
-            fn sampling_frequency_division(&mut self) -> &mut u32 {
-                &mut self.freq_div
+        impl #impl_generics autd3_core::modulation::ModulationProperty for #name #ty_generics #where_clause {
+            fn sampling_frequency_division(&self) -> u32 {
+                self.freq_div
             }
 
-            fn sampling_freq(&self) -> f64 {
-                autd3_core::FPGA_CLK_FREQ as f64 / self.freq_div as f64
+            fn set_sampling_frequency_division(&mut self, freq_div: u32) {
+                self.freq_div = freq_div;
+            }
+
+            fn sampling_freq(&self) -> autd3_core::float {
+                autd3_core::FPGA_CLK_FREQ as autd3_core::float / self.freq_div as autd3_core::float
             }
         }
 
@@ -40,15 +44,12 @@ fn impl_modulation_macro(ast: &syn::DeriveInput) -> TokenStream {
             type H = autd3_core::Modulation;
             type B = autd3_core::NullBody;
 
-            fn header_operation(&mut self) -> Result<Self::H, autd3_core::error::AUTDInternalError> {
-                Ok(Self::H::new(self.calc()?, self.freq_div))
-            }
-
-            fn body_operation(
-                &mut self,
+            fn operation(
+                self,
                 _geometry: &autd3_core::geometry::Geometry<T>,
-            ) -> Result<Self::B, autd3_core::error::AUTDInternalError> {
-                Ok(Self::B::default())
+            ) -> Result<(Self::H, Self::B), autd3_core::error::AUTDInternalError> {
+                let freq_div = self.freq_div;
+                Ok((Self::H::new(self.calc()?, freq_div), Self::B::default()))
             }
         }
     };
@@ -66,19 +67,21 @@ fn impl_gain_macro(ast: syn::DeriveInput) -> TokenStream {
     let generics = &ast.generics;
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let gen = quote! {
+        impl<T: autd3_core::geometry::Transducer> autd3_core::gain::GainBoxed<T> for #name #ty_generics #where_clause {
+            fn calc_box(self: Box<Self>, geometry: &autd3_core::geometry::Geometry<T>) -> Result<Vec<autd3_core::Drive>, autd3_core::error::AUTDInternalError> {
+                self.calc(geometry)
+            }
+        }
+
         impl #impl_generics autd3_core::sendable::Sendable<autd3_core::geometry::LegacyTransducer> for #name #ty_generics #where_clause {
             type H = autd3_core::NullHeader;
             type B = autd3_core::GainLegacy;
 
-            fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
-                Ok(Self::H::default())
-            }
-
-            fn body_operation(
-                &mut self,
+            fn operation(
+                self,
                 geometry: &Geometry<autd3_core::geometry::LegacyTransducer>,
-            ) -> Result<Self::B, autd3_core::error::AUTDInternalError> {
-                Ok(Self::B::new(self.calc(geometry)?))
+            ) -> Result<(Self::H, Self::B), autd3_core::error::AUTDInternalError> {
+                Ok((Self::H::default(), Self::B::new(self.calc(geometry)?)))
             }
         }
 
@@ -86,15 +89,11 @@ fn impl_gain_macro(ast: syn::DeriveInput) -> TokenStream {
             type H = autd3_core::NullHeader;
             type B = autd3_core::GainAdvanced;
 
-            fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
-                Ok(Self::H::default())
-            }
-
-            fn body_operation(
-                &mut self,
+            fn operation(
+                self,
                 geometry: &Geometry<autd3_core::geometry::AdvancedTransducer>,
-            ) -> Result<Self::B, autd3_core::error::AUTDInternalError> {
-                Ok(Self::B::new(self.calc(geometry)?, geometry.transducers().map(|tr| tr.cycle()).collect()))
+            ) -> Result<(Self::H, Self::B), autd3_core::error::AUTDInternalError> {
+                Ok((Self::H::default(), Self::B::new(self.calc(geometry)?, geometry.transducers().map(|tr| tr.cycle()).collect())))
             }
         }
 
@@ -102,20 +101,11 @@ fn impl_gain_macro(ast: syn::DeriveInput) -> TokenStream {
             type H = autd3_core::NullHeader;
             type B = autd3_core::GainAdvancedPhase;
 
-            fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
-                Ok(Self::H::default())
-            }
-
-            fn body_operation(
-                &mut self,
+            fn operation(
+                self,
                 geometry: &Geometry<autd3_core::geometry::AdvancedPhaseTransducer>,
-            ) -> Result<Self::B, autd3_core::error::AUTDInternalError> {
-                Ok(
-                    Self::B::new(
-                        self.calc(geometry)?,
-                        geometry.transducers().map(|tr| tr.cycle()).collect(),
-                    ),
-                )
+            ) -> Result<(Self::H, Self::B), autd3_core::error::AUTDInternalError> {
+                Ok((Self::H::default(), Self::B::new(self.calc(geometry)?, geometry.transducers().map(|tr| tr.cycle()).collect())))
             }
         }
     };

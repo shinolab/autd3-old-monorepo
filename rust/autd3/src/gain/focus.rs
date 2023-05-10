@@ -13,6 +13,7 @@
 
 use autd3_core::{
     error::AUTDInternalError,
+    float,
     gain::Gain,
     geometry::{Geometry, Transducer, Vector3},
     Drive,
@@ -23,7 +24,7 @@ use autd3_traits::Gain;
 /// Gain to produce single focal point
 #[derive(Gain, Clone, Copy)]
 pub struct Focus {
-    amp: f64,
+    amp: float,
     pos: Vector3,
 }
 
@@ -45,13 +46,13 @@ impl Focus {
     /// * `pos` - position of focal point
     /// * `amp` - normalized amp (from 0 to 1)
     ///
-    pub fn with_amp(pos: Vector3, amp: f64) -> Self {
+    pub fn with_amp(pos: Vector3, amp: float) -> Self {
         Self { amp, pos }
     }
 }
 
 impl<T: Transducer> Gain<T> for Focus {
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+    fn calc(self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         let sound_speed = geometry.sound_speed;
         Ok(Self::transform(geometry, |tr| {
             let phase = tr.align_phase_at(self.pos, sound_speed);
