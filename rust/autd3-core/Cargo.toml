@@ -11,6 +11,7 @@ readme = "README.md"
 keywords = ["autd"]
 
 [dependencies]
+atomic = "0.5.1"
 autd3-driver = {path = "../autd3-driver", version="10.0.0"}
 bitflags = "2.0.2"
 itertools = "0.10.3"
@@ -19,6 +20,8 @@ num = "0.4.0"
 num-derive = "0.3.3"
 num-traits = "0.2.15"
 rayon = {version="1.7.0", optional=true}
+spdlog-rs = "0.3.8"
+spin = "0.9.8"
 thiserror = "1.0.30"
 
 [target.'cfg(windows)'.dependencies]
