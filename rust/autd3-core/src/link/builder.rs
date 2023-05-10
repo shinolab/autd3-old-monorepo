@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/05/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,10 +13,10 @@
 
 use std::time::Duration;
 
-use autd3_core::link::Link;
+use super::Link;
 use spdlog::prelude::*;
 
-use super::Log;
+use super::log::Log;
 
 pub trait LinkBuilder {
     type L: Link;

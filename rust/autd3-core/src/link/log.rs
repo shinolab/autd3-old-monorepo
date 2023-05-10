@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/05/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use std::time::Duration;
 
-use autd3_core::{
+use crate::{
     error::AUTDInternalError,
     geometry::{Geometry, Transducer},
     link::Link,
@@ -67,7 +67,7 @@ impl<L: Link> Link for Log<L> {
         trace!(logger: self.logger, "Close Log link");
 
         if !self.is_open() {
-            log::warn!("Log link is already closed.");
+            warn!(logger: self.logger, "Log link is already closed.");
             return Ok(());
         }
 

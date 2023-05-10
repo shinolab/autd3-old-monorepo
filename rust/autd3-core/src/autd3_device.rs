@@ -4,7 +4,7 @@
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/05/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -75,7 +75,7 @@ impl AUTD3 {
             offset += 1;
         }
         let uid = local_id + offset;
-        return (uid % NUM_TRANS_X, uid / NUM_TRANS_X);
+        (uid % NUM_TRANS_X, uid / NUM_TRANS_X)
     }
 }
 
