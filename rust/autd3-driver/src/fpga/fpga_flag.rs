@@ -4,12 +4,14 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/05/2023
+ * Last Modified: 09/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
+
+use std::fmt;
 
 bitflags::bitflags! {
     #[derive(Clone, Copy)]
@@ -23,6 +25,45 @@ bitflags::bitflags! {
         const STM_MODE        = 1 << 5;
         const STM_GAIN_MODE   = 1 << 6;
         const READS_FPGA_INFO = 1 << 7;
+    }
+}
+
+impl fmt::Display for FPGAControlFlags {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut flags = Vec::new();
+        if self.contains(FPGAControlFlags::LEGACY_MODE) {
+            flags.push("LEGACY_MODE")
+        }
+        if self.contains(FPGAControlFlags::USE_FINISH_IDX) {
+            flags.push("USE_FINISH_IDX")
+        }
+        if self.contains(FPGAControlFlags::USE_START_IDX) {
+            flags.push("USE_START_IDX")
+        }
+        if self.contains(FPGAControlFlags::FORCE_FAN) {
+            flags.push("FORCE_FAN")
+        }
+        if self.contains(FPGAControlFlags::STM_MODE) {
+            flags.push("STM_MODE")
+        }
+        if self.contains(FPGAControlFlags::STM_GAIN_MODE) {
+            flags.push("STM_GAIN_MODE")
+        }
+        if self.contains(FPGAControlFlags::READS_FPGA_INFO) {
+            flags.push("READS_FPGA_INFO")
+        }
+        if self.is_empty() {
+            flags.push("NONE")
+        }
+        write!(
+            f,
+            "{}",
+            flags
+                .iter()
+                .map(|s| s.to_string())
+                .collect::<Vec<_>>()
+                .join(" | ")
+        )
     }
 }
 

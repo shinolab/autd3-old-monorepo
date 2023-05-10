@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/05/2023
+ * Last Modified: 09/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -50,6 +50,10 @@ pub struct FocusSTMBodyInitial<T: ?Sized> {
 }
 
 impl FocusSTMBodyInitial<[u16]> {
+    pub fn data(&self) -> &[u16] {
+        &self.data
+    }
+
     pub fn set_size(&mut self, size: u16) {
         self.data[0] = size;
     }

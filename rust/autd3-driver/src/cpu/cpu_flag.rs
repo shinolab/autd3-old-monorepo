@@ -4,12 +4,14 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/05/2023
+ * Last Modified: 09/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
+
+use std::fmt;
 
 bitflags::bitflags! {
     #[derive(Clone, Copy)]
@@ -27,6 +29,54 @@ bitflags::bitflags! {
         const STM_END         = 1 << 5;
         const IS_DUTY         = 1 << 6;
         const MOD_DELAY       = 1 << 7;
+    }
+}
+
+impl fmt::Display for CPUControlFlags {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut flags = Vec::new();
+        if self.contains(CPUControlFlags::MOD) {
+            if self.contains(CPUControlFlags::MOD_BEGIN) {
+                flags.push("MOD_BEGIN")
+            }
+            if self.contains(CPUControlFlags::MOD_END) {
+                flags.push("MOD_END")
+            }
+        } else {
+            if self.contains(CPUControlFlags::CONFIG_SILENCER) {
+                flags.push("CONFIG_SILENCER")
+            }
+            if self.contains(CPUControlFlags::CONFIG_SYNC) {
+                flags.push("CONFIG_SYNC")
+            }
+        };
+        if self.contains(CPUControlFlags::WRITE_BODY) {
+            flags.push("WRITE_BODY")
+        }
+        if self.contains(CPUControlFlags::STM_BEGIN) {
+            flags.push("STM_BEGIN")
+        }
+        if self.contains(CPUControlFlags::STM_END) {
+            flags.push("STM_END")
+        }
+        if self.contains(CPUControlFlags::IS_DUTY) {
+            flags.push("IS_DUTY")
+        }
+        if self.contains(CPUControlFlags::MOD_DELAY) {
+            flags.push("MOD_DELAY")
+        }
+        if self.is_empty() {
+            flags.push("NONE")
+        }
+        write!(
+            f,
+            "{}",
+            flags
+                .iter()
+                .map(|s| s.to_string())
+                .collect::<Vec<_>>()
+                .join(" | ")
+        )
     }
 }
 

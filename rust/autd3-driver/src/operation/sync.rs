@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/05/2023
+ * Last Modified: 09/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -70,6 +70,8 @@ impl Operation for SyncAdvanced {
             return Ok(());
         }
 
+        tx.num_bodies = tx.num_devices();
+
         if self.cycles.len() != tx.num_transducers() {
             return Err(DriverError::NumberOfTransducerMismatch {
                 a: tx.num_transducers(),
@@ -84,7 +86,6 @@ impl Operation for SyncAdvanced {
         tx.header_mut()
             .cpu_flag
             .set(CPUControlFlags::CONFIG_SYNC, true);
-        tx.num_bodies = tx.num_devices();
 
         tx.body_raw_mut().clone_from_slice(&self.cycles);
 
