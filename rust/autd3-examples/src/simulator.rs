@@ -4,7 +4,7 @@
  * Created Date: 10/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/03/2023
+ * Last Modified: 10/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -20,16 +20,17 @@ use autd3::prelude::*;
 use autd3_link_simulator::Simulator;
 
 fn main() -> Result<()> {
-    let mut geometry = GeometryBuilder::new().build();
-    geometry.add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))?;
-    geometry.add_device(AUTD3::new(
-        Vector3::new(DEVICE_WIDTH, 0.0, 0.0),
-        Vector3::zeros(),
-    ))?;
+    let geometry = Geometry::builder()
+        .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+        .add_device(AUTD3::new(
+            Vector3::new(DEVICE_WIDTH, 0.0, 0.0),
+            Vector3::zeros(),
+        ))
+        .build()?;
 
     let link = Simulator::new();
 
-    let autd = Controller::open(geometry, link).expect("Failed to open");
+    let autd = Controller::open(geometry, link)?;
 
     run!(autd);
 
