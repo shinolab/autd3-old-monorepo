@@ -22,12 +22,11 @@ use autd3::prelude::*;
 fn main() -> Result<()> {
     let geometry = Geometry::builder()
         .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-        .build()
-        .unwrap();
+        .build()?;
 
     let link = Debug::builder().build();
 
-    let autd = Controller::open(geometry, link).expect("Failed to open");
+    let autd = Controller::open(geometry, link)?;
 
     run!(autd);
 

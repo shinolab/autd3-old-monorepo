@@ -21,7 +21,6 @@ macro_rules! audio_file {
         let g = Focus::new(center);
         const WAV_FILE: &'static str =
             concat!(env!("CARGO_MANIFEST_DIR"), "/src/resources/sin150.wav");
-        dbg!(WAV_FILE);
         let m = autd3_modulation_audio_file::Wav::new(WAV_FILE)?;
 
         $autd.send((m, g))?;
