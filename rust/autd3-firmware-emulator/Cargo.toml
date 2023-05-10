@@ -1,0 +1,16 @@
+[package]
+name = "autd3-firmware-emulator"
+version = "10.0.0"
+authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
+edition = "2021"
+
+license-file = "LICENSE"
+description = "AUTD3 firmware emulator"
+repository = "https://github.com/shinolab/autd3"
+readme = "README.md"
+keywords = ["autd"]
+
+[dependencies]
+autd3-core = {path = "../autd3-core", version="10.0.0"}
+num-integer = "0.1.45"
+thiserror = "1.0.40"
