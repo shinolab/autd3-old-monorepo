@@ -4,7 +4,7 @@
  * Created Date: 30/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/05/2023
+ * Last Modified: 10/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ use autd3_core::{error::AUTDInternalError, modulation::Modulation};
 use autd3_traits::Modulation;
 
 /// Sine wave modulation in ultrasound amplitude
-#[derive(Modulation)]
+#[derive(Modulation, Clone, Copy)]
 pub struct Static {
     amp: f64,
     freq_div: u32,
@@ -37,7 +37,7 @@ impl Static {
 }
 
 impl Modulation for Static {
-    fn calc(&self) -> Result<Vec<f64>, AUTDInternalError> {
+    fn calc(self) -> Result<Vec<f64>, AUTDInternalError> {
         Ok(vec![self.amp; 2])
     }
 }

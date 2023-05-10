@@ -12,7 +12,7 @@
  */
 
 pub mod bessel;
-pub mod cache;
+mod cache;
 pub mod focus;
 pub mod grouped;
 pub mod null;

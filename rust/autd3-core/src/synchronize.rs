@@ -4,7 +4,7 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/05/2023
+ * Last Modified: 10/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -34,15 +34,11 @@ impl Sendable<LegacyTransducer> for Synchronize {
     type H = NullHeader;
     type B = autd3_driver::SyncLegacy;
 
-    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
-        Ok(Default::default())
-    }
-
-    fn body_operation(
-        &mut self,
-        _geometry: &Geometry<LegacyTransducer>,
-    ) -> Result<Self::B, AUTDInternalError> {
-        Ok(Self::B::default())
+    fn operation(
+        self,
+        _: &Geometry<LegacyTransducer>,
+    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
+        Ok((Default::default(), Self::B::default()))
     }
 
     fn timeout() -> Option<Duration> {
@@ -54,16 +50,13 @@ impl Sendable<AdvancedTransducer> for Synchronize {
     type H = NullHeader;
     type B = autd3_driver::SyncAdvanced;
 
-    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
-        Ok(Default::default())
-    }
-
-    fn body_operation(
-        &mut self,
+    fn operation(
+        self,
         geometry: &Geometry<AdvancedTransducer>,
-    ) -> Result<Self::B, AUTDInternalError> {
-        Ok(Self::B::new(
-            geometry.transducers().map(|tr| tr.cycle()).collect(),
+    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
+        Ok((
+            Self::H::default(),
+            Self::B::new(geometry.transducers().map(|tr| tr.cycle()).collect()),
         ))
     }
 
@@ -76,16 +69,13 @@ impl Sendable<AdvancedPhaseTransducer> for Synchronize {
     type H = NullHeader;
     type B = autd3_driver::SyncAdvanced;
 
-    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
-        Ok(Default::default())
-    }
-
-    fn body_operation(
-        &mut self,
+    fn operation(
+        self,
         geometry: &Geometry<AdvancedPhaseTransducer>,
-    ) -> Result<Self::B, AUTDInternalError> {
-        Ok(Self::B::new(
-            geometry.transducers().map(|tr| tr.cycle()).collect(),
+    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
+        Ok((
+            Self::H::default(),
+            Self::B::new(geometry.transducers().map(|tr| tr.cycle()).collect()),
         ))
     }
 

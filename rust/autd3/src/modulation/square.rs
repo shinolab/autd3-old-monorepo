@@ -1,7 +1,7 @@
 /*
- * File: sine_pressure.rs
+ * File: sine.rs
  * Project: modulation
- * Created Date: 05/05/2022
+ * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
  * Last Modified: 10/05/2023
@@ -15,7 +15,6 @@ use autd3_core::{
     error::AUTDInternalError,
     float,
     modulation::{Modulation, ModulationProperty},
-    PI,
 };
 use autd3_traits::Modulation;
 
@@ -23,14 +22,15 @@ use num::integer::gcd;
 
 /// Sine wave modulation in ultrasound amplitude
 #[derive(Modulation, Clone, Copy)]
-pub struct SinePressure {
+pub struct Square {
     freq: usize,
-    amp: float,
-    offset: float,
+    low: float,
+    high: float,
+    duty: float,
     freq_div: u32,
 }
 
-impl SinePressure {
+impl Square {
     /// constructor.
     ///
     /// # Arguments
@@ -38,41 +38,41 @@ impl SinePressure {
     /// * `freq` - Frequency of the sine wave
     ///
     pub fn new(freq: usize) -> Self {
-        Self::with_params(freq, 1.0, 0.5)
+        Self::with_params(freq, 0.0, 1.0, 0.5)
     }
 
     /// constructor.
-    /// Sine wave oscillate from `offset`-`amp`/2 to `offset`+`amp`/2
     ///
     /// # Arguments
     ///
     /// * `freq` - Frequency of the sine wave
-    /// * `amp` - peek to peek amplitude of the wave (Maximum value is 1.0)
-    /// * `offset` - Offset of the wave
     ///
-    pub fn with_params(freq: usize, amp: float, offset: float) -> Self {
+    pub fn with_params(freq: usize, low: float, high: float, duty: float) -> Self {
         Self {
             freq,
-            amp,
-            offset,
+            low,
+            high,
+            duty,
             freq_div: 40960,
         }
     }
 }
 
-impl Modulation for SinePressure {
+impl Modulation for Square {
     fn calc(self) -> Result<Vec<float>, AUTDInternalError> {
         let sf = self.sampling_freq() as usize;
         let freq = self.freq.clamp(1, sf / 2);
-        let d = gcd(sf, freq);
-        let n = sf / d;
-        let rep = freq / d;
+        let k = gcd(sf, freq);
+        let n = sf / k;
+        let d = freq / k;
 
-        Ok((0..n)
-            .map(|i| {
-                (self.amp / 2.0 * (2.0 * PI * (rep * i) as float / n as float).sin() + self.offset)
-                    .sqrt()
-            })
-            .collect())
+        let mut buffer = vec![self.low; n];
+        let mut cursor = 0;
+        for i in 0..d {
+            let size = (n + i) / d;
+            buffer[cursor..cursor + (size as float * self.duty) as usize].fill(self.high);
+            cursor += size;
+        }
+        Ok(buffer)
     }
 }

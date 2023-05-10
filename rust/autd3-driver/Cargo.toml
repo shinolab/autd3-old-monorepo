@@ -17,7 +17,6 @@ use_meter = []
 
 [dependencies]
 bitflags = "2.0.2"
-num = "0.4.0"
 thiserror = "1.0.31"
 
 [dev-dependencies]

@@ -4,24 +4,27 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/05/2023
+ * Last Modified: 10/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::f64::consts::PI;
-
-use autd3_core::{error::AUTDInternalError, modulation::Modulation};
+use autd3_core::{
+    error::AUTDInternalError,
+    float,
+    modulation::{Modulation, ModulationProperty},
+    PI,
+};
 use autd3_traits::Modulation;
 
 /// Sine wave modulation in ultrasound amplitude
-#[derive(Modulation)]
+#[derive(Modulation, Clone, Copy)]
 pub struct SineLegacy {
-    freq: f64,
-    amp: f64,
-    offset: f64,
+    freq: float,
+    amp: float,
+    offset: float,
     freq_div: u32,
 }
 
@@ -32,7 +35,7 @@ impl SineLegacy {
     ///
     /// * `freq` - Frequency of the sine wave
     ///
-    pub fn new(freq: f64) -> Self {
+    pub fn new(freq: float) -> Self {
         Self::with_params(freq, 1.0, 0.5)
     }
 
@@ -45,7 +48,7 @@ impl SineLegacy {
     /// * `amp` - peek to peek amplitude of the wave (Maximum value is 1.0)
     /// * `offset` - Offset of the wave
     ///
-    pub fn with_params(freq: f64, amp: f64, offset: f64) -> Self {
+    pub fn with_params(freq: float, amp: float, offset: float) -> Self {
         Self {
             freq,
             amp,
@@ -56,14 +59,15 @@ impl SineLegacy {
 }
 
 impl Modulation for SineLegacy {
-    fn calc(&self) -> Result<Vec<f64>, AUTDInternalError> {
+    fn calc(self) -> Result<Vec<float>, AUTDInternalError> {
         let sf = self.sampling_freq();
-        let freq = self
-            .freq
-            .clamp(autd3_core::FPGA_CLK_FREQ as f64 / u32::MAX as f64, sf / 2.0);
+        let freq = self.freq.clamp(
+            autd3_core::FPGA_CLK_FREQ as float / u32::MAX as float,
+            sf / 2.0,
+        );
         let n = (1.0 / freq * sf).round() as usize;
         Ok((0..n)
-            .map(|i| self.amp / 2.0 * (2.0 * PI * i as f64 / n as f64).sin() + self.offset)
+            .map(|i| self.amp / 2.0 * (2.0 * PI * i as float / n as float).sin() + self.offset)
             .collect())
     }
 }

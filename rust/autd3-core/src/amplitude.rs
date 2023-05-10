@@ -4,7 +4,7 @@
  * Created Date: 07/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/05/2023
+ * Last Modified: 10/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -37,23 +37,22 @@ impl Sendable<AdvancedPhaseTransducer> for Amplitudes {
     type H = autd3_driver::NullHeader;
     type B = autd3_driver::GainAdvancedDuty;
 
-    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
-        Ok(Self::H::default())
-    }
-
-    fn body_operation(
-        &mut self,
+    fn operation(
+        self,
         geometry: &Geometry<AdvancedPhaseTransducer>,
-    ) -> Result<Self::B, AUTDInternalError> {
-        Ok(Self::B::new(
-            vec![
-                Drive {
-                    phase: 0.0,
-                    amp: self.amp,
-                };
-                geometry.num_transducers()
-            ],
-            geometry.transducers().map(|tr| tr.cycle()).collect(),
+    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
+        Ok((
+            Self::H::default(),
+            Self::B::new(
+                vec![
+                    Drive {
+                        phase: 0.0,
+                        amp: self.amp,
+                    };
+                    geometry.num_transducers()
+                ],
+                geometry.transducers().map(|tr| tr.cycle()).collect(),
+            ),
         ))
     }
 }

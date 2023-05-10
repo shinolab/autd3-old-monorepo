@@ -13,7 +13,12 @@
 
 pub use spdlog::Level;
 
-pub use crate::{controller::Controller, gain::*, link::LinkBuilder, modulation::*};
+pub use crate::{
+    controller::Controller,
+    gain::{Bessel, Focus, Grouped, Null, Plane, TransducerTest},
+    link::LinkBuilder,
+    modulation::{Sine, SineLegacy, SinePressure, Square, Static},
+};
 
 pub use autd3_core::{
     amplitude::Amplitudes,

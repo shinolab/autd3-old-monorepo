@@ -15,6 +15,7 @@ use std::collections::HashMap;
 
 use autd3_core::{
     error::AUTDInternalError,
+    float,
     gain::Gain,
     geometry::{Geometry, Transducer},
     Drive,
@@ -25,7 +26,7 @@ use autd3_traits::Gain;
 /// Gain to produce single focal point
 #[derive(Gain, Default, Clone)]
 pub struct TransducerTest {
-    test_drive: HashMap<usize, (f64, f64)>,
+    test_drive: HashMap<usize, (float, float)>,
 }
 
 impl TransducerTest {
@@ -36,13 +37,13 @@ impl TransducerTest {
         }
     }
 
-    pub fn set(&mut self, id: usize, phase: f64, amp: f64) {
+    pub fn set(&mut self, id: usize, phase: float, amp: float) {
         self.test_drive.insert(id, (phase, amp));
     }
 }
 
 impl<T: Transducer> Gain<T> for TransducerTest {
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+    fn calc(self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         Ok(Self::transform(geometry, |tr| {
             if let Some(&(phase, amp)) = self.test_drive.get(&tr.idx()) {
                 Drive { phase, amp }

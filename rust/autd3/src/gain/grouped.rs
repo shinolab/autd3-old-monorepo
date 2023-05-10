@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/05/2023
+ * Last Modified: 10/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ use std::collections::HashMap;
 
 use autd3_core::{
     error::AUTDInternalError,
-    gain::Gain,
+    gain::{Gain, GainBoxed},
     geometry::{
         AdvancedPhaseTransducer, AdvancedTransducer, Geometry, LegacyTransducer, Transducer,
     },
@@ -45,23 +45,35 @@ impl<'a, T: Transducer> Grouped<'a, T> {
     }
 }
 
+impl<'a, T: Transducer> GainBoxed<T> for Grouped<'a, T> {
+    fn calc_box(
+        self: Box<Self>,
+        geometry: &autd3_core::geometry::Geometry<T>,
+    ) -> Result<Vec<autd3_core::Drive>, autd3_core::error::AUTDInternalError> {
+        self.calc(geometry)
+    }
+}
+
 impl<'a, T: Transducer> Gain<T> for Grouped<'a, T> {
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+    fn calc(self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+        let mut drives = HashMap::new();
+        for (i, gain) in self.gain_map {
+            let d = gain.calc_box(geometry)?;
+            drives.insert(i, d);
+        }
+
         Ok((0..geometry.num_devices())
             .flat_map(|i| {
-                self.gain_map
+                drives
                     .get_mut(&i)
-                    .and_then(|g| match g.calc(geometry) {
-                        Ok(g) => {
-                            let start = if i == 0 {
-                                0
-                            } else {
-                                geometry.device_map()[i - 1]
-                            };
-                            let end = start + geometry.device_map()[i];
-                            Some(g[start..end].to_vec())
-                        }
-                        Err(_) => None,
+                    .and_then(|g| {
+                        let start = if i == 0 {
+                            0
+                        } else {
+                            geometry.device_map()[i - 1]
+                        };
+                        let end = start + geometry.device_map()[i];
+                        Some(g[start..end].to_vec())
                     })
                     .unwrap_or_else(|| {
                         vec![
@@ -81,15 +93,11 @@ impl<'a> Sendable<LegacyTransducer> for Grouped<'a, LegacyTransducer> {
     type H = autd3_core::NullHeader;
     type B = autd3_core::GainLegacy;
 
-    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
-        Ok(Self::H::default())
-    }
-
-    fn body_operation(
-        &mut self,
+    fn operation(
+        self,
         geometry: &Geometry<LegacyTransducer>,
-    ) -> Result<Self::B, AUTDInternalError> {
-        Ok(Self::B::new(self.calc(geometry)?))
+    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
+        Ok((Self::H::default(), Self::B::new(self.calc(geometry)?)))
     }
 }
 
@@ -97,17 +105,16 @@ impl<'a> Sendable<AdvancedTransducer> for Grouped<'a, AdvancedTransducer> {
     type H = autd3_core::NullHeader;
     type B = autd3_core::GainAdvanced;
 
-    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
-        Ok(Self::H::default())
-    }
-
-    fn body_operation(
-        &mut self,
+    fn operation(
+        self,
         geometry: &Geometry<AdvancedTransducer>,
-    ) -> Result<Self::B, AUTDInternalError> {
-        Ok(Self::B::new(
-            self.calc(geometry)?,
-            geometry.transducers().map(|tr| tr.cycle()).collect(),
+    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
+        Ok((
+            Self::H::default(),
+            Self::B::new(
+                self.calc(geometry)?,
+                geometry.transducers().map(|tr| tr.cycle()).collect(),
+            ),
         ))
     }
 }
@@ -116,17 +123,16 @@ impl<'a> Sendable<AdvancedPhaseTransducer> for Grouped<'a, AdvancedPhaseTransduc
     type H = autd3_core::NullHeader;
     type B = autd3_core::GainAdvancedPhase;
 
-    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
-        Ok(Self::H::default())
-    }
-
-    fn body_operation(
-        &mut self,
+    fn operation(
+        self,
         geometry: &Geometry<AdvancedPhaseTransducer>,
-    ) -> Result<Self::B, AUTDInternalError> {
-        Ok(Self::B::new(
-            self.calc(geometry)?,
-            geometry.transducers().map(|tr| tr.cycle()).collect(),
+    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
+        Ok((
+            Self::H::default(),
+            Self::B::new(
+                self.calc(geometry)?,
+                geometry.transducers().map(|tr| tr.cycle()).collect(),
+            ),
         ))
     }
 }
