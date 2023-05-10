@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/03/2023
+ * Last Modified: 09/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -26,16 +26,13 @@ macro_rules! run {
         });
         println!("*************************************************************************************************");
 
-        let mut clear = Clear::new();
-        autd.timeout(std::time::Duration::from_millis(20)).send(&mut clear).flush()?;
-
-        let mut sync = Synchronize::new();
-        autd.timeout(std::time::Duration::from_millis(20)).send(&mut sync).flush()?;
+        autd.send(Clear::new())?;
+        autd.send(Synchronize::new())?;
 
         loop {
             println!("[0]: Single Focal Point Test");
             println!("[1]: BesselBeam Test");
-            println!("[2]: Multiple foci Test");
+            // println!("[2]: Multiple foci Test");
             println!("[3]: FocusSTM Test");
             println!("[4]: GainSTM Test");
             if autd.geometry().num_devices() == 2 {
@@ -51,7 +48,7 @@ macro_rules! run {
             match s.trim().parse::<usize>() {
                 Ok(0) => focus!(autd),
                 Ok(1) => bessel!(autd),
-                Ok(2) => holo!(autd),
+                // Ok(2) => holo!(autd),
                 Ok(3) => focus_stm!(autd),
                 Ok(4) => gain_stm!(autd),
                 Ok(5) => grouped!(autd),
@@ -63,8 +60,7 @@ macro_rules! run {
             let mut _s = String::new();
             io::stdin().read_line(&mut _s)?;
 
-            let mut stop = Stop::new();
-            let res = autd.timeout(std::time::Duration::from_millis(20)).send(&mut stop).flush()?;
+            let res = autd.send(Stop::new())?;
             println!("stop: {}", res);
         }
 
