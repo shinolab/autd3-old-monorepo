@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/05/2023
+ * Last Modified: 10/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ use autd3_core::{
 use autd3_traits::Gain;
 
 /// Gain to produce single focal point
-#[derive(Gain)]
+#[derive(Gain, Clone, Copy)]
 pub struct Focus {
     amp: f64,
     pos: Vector3,
