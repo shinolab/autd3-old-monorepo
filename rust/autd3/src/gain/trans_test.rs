@@ -43,18 +43,15 @@ impl TransducerTest {
 
 impl<T: Transducer> Gain<T> for TransducerTest {
     fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
-        Ok(geometry
-            .transducers()
-            .map(|tr| {
-                if let Some(&(phase, amp)) = self.test_drive.get(&tr.idx()) {
-                    Drive { phase, amp }
-                } else {
-                    Drive {
-                        phase: 0.0,
-                        amp: 0.0,
-                    }
+        Ok(Self::transform(geometry, |tr| {
+            if let Some(&(phase, amp)) = self.test_drive.get(&tr.idx()) {
+                Drive { phase, amp }
+            } else {
+                Drive {
+                    phase: 0.0,
+                    amp: 0.0,
                 }
-            })
-            .collect())
+            }
+        }))
     }
 }
