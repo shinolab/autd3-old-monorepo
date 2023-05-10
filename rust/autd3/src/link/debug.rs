@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/05/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,17 +16,13 @@ use std::time::Duration;
 use autd3_core::{
     error::AUTDInternalError,
     geometry::{Geometry, Transducer},
-    link::Link,
+    link::{get_logger, get_logger_with_custom_func, Link, LinkBuilder, Log},
     CPUControlFlags, RxDatagram, TxDatagram, MSG_CLEAR, MSG_RD_CPU_VERSION,
     MSG_RD_CPU_VERSION_MINOR, MSG_RD_FPGA_FUNCTION, MSG_RD_FPGA_VERSION, MSG_RD_FPGA_VERSION_MINOR,
 };
 use autd3_firmware_emulator::CPUEmulator;
 
 use spdlog::prelude::*;
-
-use super::Log;
-
-use super::builder::LinkBuilder;
 
 pub struct Debug {
     is_open: bool,
@@ -35,11 +31,11 @@ pub struct Debug {
 }
 
 impl Debug {
-    pub(crate) fn new(level: Level) -> Self {
-        Self::with_logger(super::logger::get_logger(level))
+    fn new(level: Level) -> Self {
+        Self::with_logger(get_logger(level))
     }
 
-    pub(crate) fn with_logger(logger: Logger) -> Self {
+    fn with_logger(logger: Logger) -> Self {
         Self {
             is_open: false,
             logger,
@@ -58,7 +54,7 @@ pub struct DebugBuilfer {
 }
 
 impl DebugBuilfer {
-    pub(crate) fn new() -> Self {
+    fn new() -> Self {
         Self {
             timeout: Duration::ZERO,
             level: Level::Debug,
@@ -94,7 +90,7 @@ impl LinkBuilder for DebugBuilfer {
         } else {
             level
         };
-        let logger = super::logger::get_logger_with_custom_func(level, out, flush);
+        let logger = get_logger_with_custom_func(level, out, flush);
         Log::with_logger(Debug::with_logger(logger.clone()), logger)
     }
 
@@ -107,7 +103,7 @@ impl LinkBuilder for DebugBuilfer {
         } else {
             level
         };
-        let logger = super::logger::get_logger(level);
+        let logger = get_logger(level);
         Log::with_logger(Debug::with_logger(logger.clone()), logger)
     }
 }

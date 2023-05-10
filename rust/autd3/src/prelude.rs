@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/05/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -16,7 +16,6 @@ pub use spdlog::Level;
 pub use crate::{
     controller::Controller,
     gain::{Bessel, Focus, Grouped, Null, Plane, TransducerTest},
-    link::LinkBuilder,
     modulation::{Sine, SineLegacy, SinePressure, Square, Static},
 };
 
@@ -32,7 +31,7 @@ pub use autd3_core::{
         AdvancedPhaseTransducer, AdvancedTransducer, Geometry, GeometryBuilder, LegacyTransducer,
         Transducer, Vector3,
     },
-    link::Link,
+    link::{Link, LinkBuilder},
     silencer_config::SilencerConfig,
     stm::{FocusSTM, GainSTM, STM},
     stop::Stop,
