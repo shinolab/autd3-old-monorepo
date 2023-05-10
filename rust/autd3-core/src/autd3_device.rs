@@ -11,7 +11,7 @@
  *
  */
 
-use crate::geometry::{Device, Matrix4, Transducer, UnitQuaternion, Vector3, Vector4};
+use crate::geometry::{Device, Matrix4, UnitQuaternion, Vector3, Vector4};
 use autd3_driver::float;
 use num::FromPrimitive;
 
@@ -22,6 +22,7 @@ pub const TRANS_SPACING_MM: float = 10.16;
 pub const DEVICE_WIDTH: float = 192.0;
 pub const DEVICE_HEIGHT: float = 151.4;
 
+#[derive(Clone, Copy)]
 pub struct AUTD3 {
     position: Vector3,
     rotation: UnitQuaternion,
@@ -78,8 +79,8 @@ impl AUTD3 {
     }
 }
 
-impl<T: Transducer> Device<T> for AUTD3 {
-    fn get_transducers(&self, start_id: usize) -> Vec<T> {
+impl Device for AUTD3 {
+    fn get_transducers(&self, start_id: usize) -> Vec<(usize, Vector3, UnitQuaternion)> {
         let rot_mat: Matrix4 = From::from(self.rotation);
         let trans_mat = rot_mat.append_translation(&self.position);
         itertools::iproduct!((0..NUM_TRANS_Y), (0..NUM_TRANS_X))
@@ -94,24 +95,19 @@ impl<T: Transducer> Device<T> for AUTD3 {
             })
             .map(|p| trans_mat * p)
             .zip(start_id..)
-            .map(|(p, i)| T::new(i, Vector3::new(p.x, p.y, p.z), self.rotation))
+            .map(|(p, i)| (i, Vector3::new(p.x, p.y, p.z), self.rotation))
             .collect()
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::geometry::LegacyTransducer;
-
     use super::*;
 
     #[test]
     fn autd3_device() {
         let dev = AUTD3::new(Vector3::zeros(), Vector3::zeros());
-        assert_eq!(
-            Device::<LegacyTransducer>::get_transducers(&dev, 0).len(),
-            249
-        );
+        assert_eq!(Device::get_transducers(&dev, 0).len(), 249);
     }
 
     #[test]
