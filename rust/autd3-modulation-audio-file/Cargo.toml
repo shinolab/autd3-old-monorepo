@@ -14,3 +14,9 @@ keywords = ["autd"]
 hound = "3.5.0"
 autd3-core = {path="../autd3-core", version="10.0.0"}
 autd3-traits = {path="../autd3-traits", version="10.0.0"}
+wav_io = "0.1.8"
+thiserror = "1.0.40"
+
+[features]
+default = []
+single_float = ["autd3-core/single_float"]
