@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/05/2023
+ * Last Modified: 10/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -67,26 +67,22 @@ impl<'a> Sendable<LegacyTransducer> for GainSTM<'a, LegacyTransducer> {
     type H = autd3_driver::NullHeader;
     type B = autd3_driver::GainSTMLegacy;
 
-    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
-        Ok(Default::default())
-    }
-
-    fn body_operation(
-        &mut self,
+    fn operation(
+        self,
         geometry: &Geometry<LegacyTransducer>,
-    ) -> Result<Self::B, AUTDInternalError> {
-        let drives = self
-            .gains
-            .iter_mut()
-            .map(|g| g.calc(geometry))
-            .collect::<Result<_, AUTDInternalError>>()?;
+    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
+        let mut drives = Vec::with_capacity(self.gains.len());
+        for gain in self.gains {
+            let drive = gain.calc_box(geometry)?;
+            drives.push(drive);
+        }
         let props = GainSTMProps {
             mode: self.mode,
             freq_div: self.freq_div,
             finish_idx: self.finish_idx,
             start_idx: self.start_idx,
         };
-        Ok(Self::B::new(drives, props))
+        Ok((Self::H::default(), Self::B::new(drives, props)))
     }
 }
 
@@ -94,27 +90,23 @@ impl<'a> Sendable<AdvancedTransducer> for GainSTM<'a, AdvancedTransducer> {
     type H = autd3_driver::NullHeader;
     type B = autd3_driver::GainSTMAdvanced;
 
-    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
-        Ok(Default::default())
-    }
-
-    fn body_operation(
-        &mut self,
+    fn operation(
+        self,
         geometry: &Geometry<AdvancedTransducer>,
-    ) -> Result<Self::B, AUTDInternalError> {
+    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
         let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
-        let drives = self
-            .gains
-            .iter_mut()
-            .map(|g| g.calc(geometry))
-            .collect::<Result<_, AUTDInternalError>>()?;
+        let mut drives = Vec::with_capacity(self.gains.len());
+        for gain in self.gains {
+            let drive = gain.calc_box(geometry)?;
+            drives.push(drive);
+        }
         let props = GainSTMProps {
             mode: self.mode,
             freq_div: self.freq_div,
             finish_idx: self.finish_idx,
             start_idx: self.start_idx,
         };
-        Ok(Self::B::new(drives, cycles, props))
+        Ok((Self::H::default(), Self::B::new(drives, cycles, props)))
     }
 }
 
@@ -122,26 +114,22 @@ impl<'a> Sendable<AdvancedPhaseTransducer> for GainSTM<'a, AdvancedPhaseTransduc
     type H = autd3_driver::NullHeader;
     type B = autd3_driver::GainSTMAdvanced;
 
-    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
-        Ok(Default::default())
-    }
-
-    fn body_operation(
-        &mut self,
+    fn operation(
+        self,
         geometry: &Geometry<AdvancedPhaseTransducer>,
-    ) -> Result<Self::B, AUTDInternalError> {
+    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
         let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
-        let drives = self
-            .gains
-            .iter_mut()
-            .map(|g| g.calc(geometry))
-            .collect::<Result<_, AUTDInternalError>>()?;
+        let mut drives = Vec::with_capacity(self.gains.len());
+        for gain in self.gains {
+            let drive = gain.calc_box(geometry)?;
+            drives.push(drive);
+        }
         let props = GainSTMProps {
-            mode: Mode::PhaseDutyFull,
+            mode: self.mode,
             freq_div: self.freq_div,
             finish_idx: self.finish_idx,
             start_idx: self.start_idx,
         };
-        Ok(Self::B::new(drives, cycles, props))
+        Ok((Self::H::default(), Self::B::new(drives, cycles, props)))
     }
 }

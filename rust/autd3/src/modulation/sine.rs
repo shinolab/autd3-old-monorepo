@@ -4,26 +4,29 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/05/2023
+ * Last Modified: 10/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::f64::consts::PI;
-
-use autd3_core::{error::AUTDInternalError, modulation::Modulation};
+use autd3_core::{
+    error::AUTDInternalError,
+    float,
+    modulation::{Modulation, ModulationProperty},
+    PI,
+};
 use autd3_traits::Modulation;
 
 use num::integer::gcd;
 
 /// Sine wave modulation in ultrasound amplitude
-#[derive(Modulation)]
+#[derive(Modulation, Clone, Copy)]
 pub struct Sine {
     freq: usize,
-    amp: f64,
-    offset: f64,
+    amp: float,
+    offset: float,
     freq_div: u32,
 }
 
@@ -47,7 +50,7 @@ impl Sine {
     /// * `amp` - peek to peek amplitude of the wave (Maximum value is 1.0)
     /// * `offset` - Offset of the wave
     ///
-    pub fn with_params(freq: usize, amp: f64, offset: f64) -> Self {
+    pub fn with_params(freq: usize, amp: float, offset: float) -> Self {
         Self {
             freq,
             amp,
@@ -58,14 +61,16 @@ impl Sine {
 }
 
 impl Modulation for Sine {
-    fn calc(&self) -> Result<Vec<f64>, AUTDInternalError> {
+    fn calc(self) -> Result<Vec<float>, AUTDInternalError> {
         let sf = self.sampling_freq() as usize;
         let freq = self.freq.clamp(1, sf / 2);
         let d = gcd(sf, freq);
         let n = sf / d;
         let rep = freq / d;
         Ok((0..n)
-            .map(|i| self.amp / 2.0 * (2.0 * PI * (rep * i) as f64 / n as f64).sin() + self.offset)
+            .map(|i| {
+                self.amp / 2.0 * (2.0 * PI * (rep * i) as float / n as float).sin() + self.offset
+            })
             .collect())
     }
 }

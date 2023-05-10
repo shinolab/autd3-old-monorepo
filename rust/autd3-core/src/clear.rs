@@ -4,7 +4,7 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/05/2023
+ * Last Modified: 10/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -38,11 +38,7 @@ impl<T: Transducer> Sendable<T> for Clear {
         Some(Duration::from_millis(200))
     }
 
-    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
-        Ok(Self::H::default())
-    }
-
-    fn body_operation(&mut self, _: &Geometry<T>) -> Result<Self::B, AUTDInternalError> {
-        Ok(Self::B::default())
+    fn operation(self, _: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
+        Ok((Self::H::default(), Self::B::default()))
     }
 }

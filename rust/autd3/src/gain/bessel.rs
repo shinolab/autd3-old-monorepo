@@ -13,6 +13,7 @@
 
 use autd3_core::{
     error::AUTDInternalError,
+    float,
     gain::Gain,
     geometry::{Geometry, Transducer, UnitQuaternion, Vector3},
     Drive,
@@ -23,10 +24,10 @@ use autd3_traits::Gain;
 /// Gain to produce single focal point
 #[derive(Gain, Clone, Copy)]
 pub struct Bessel {
-    amp: f64,
+    amp: float,
     pos: Vector3,
     dir: Vector3,
-    theta: f64,
+    theta: float,
 }
 
 impl Bessel {
@@ -38,7 +39,7 @@ impl Bessel {
     /// * `dir` - Direction of the beam
     /// * `theta` - Angle between the conical wavefront of the beam and the direction
     ///
-    pub fn new(pos: Vector3, dir: Vector3, theta: f64) -> Self {
+    pub fn new(pos: Vector3, dir: Vector3, theta: float) -> Self {
         Self::with_duty(pos, dir, theta, 1.0)
     }
 
@@ -49,7 +50,7 @@ impl Bessel {
     /// * `pos` - position of focal point
     /// * `amp` - normalized amp (from 0 to 1)
     ///
-    pub fn with_duty(pos: Vector3, dir: Vector3, theta: f64, amp: f64) -> Self {
+    pub fn with_duty(pos: Vector3, dir: Vector3, theta: float, amp: float) -> Self {
         Self {
             amp,
             pos,
@@ -60,7 +61,7 @@ impl Bessel {
 }
 
 impl<T: Transducer> Gain<T> for Bessel {
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+    fn calc(self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         let dir = self.dir.normalize();
         let v = Vector3::new(dir.y, -dir.x, 0.);
         let theta_v = v.norm().asin();

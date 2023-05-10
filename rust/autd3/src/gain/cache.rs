@@ -13,7 +13,7 @@
 
 use autd3_core::{
     error::AUTDInternalError,
-    gain::Gain,
+    gain::{Gain, GainBoxed},
     geometry::{
         AdvancedPhaseTransducer, AdvancedTransducer, Geometry, LegacyTransducer, Transducer,
     },
@@ -21,35 +21,29 @@ use autd3_core::{
     Drive,
 };
 
-use std::{
-    marker::PhantomData,
-    ops::{Index, IndexMut},
-};
+use std::ops::{Index, IndexMut};
 
-pub struct Cache<T: Transducer, G: Gain<T> + Clone> {
-    pub gain: G,
+pub struct Cache {
     cache: Vec<Drive>,
-    phantom: PhantomData<T>,
 }
 
-impl<T: Transducer, G: Gain<T> + Clone> Clone for Cache<T, G> {
+impl Clone for Cache {
     fn clone(&self) -> Self {
         Self {
-            gain: self.gain.clone(),
             cache: self.cache.clone(),
-            phantom: PhantomData,
         }
     }
 }
 
-impl<T: Transducer, G: Gain<T> + Clone> Cache<T, G> {
+impl Cache {
     /// constructor
-    pub fn new(gain: G) -> Self {
-        Self {
-            gain,
-            cache: Vec::new(),
-            phantom: PhantomData,
-        }
+    pub fn new<T: Transducer, G: Gain<T>>(
+        gain: G,
+        geometry: &Geometry<T>,
+    ) -> Result<Self, AUTDInternalError> {
+        Ok(Self {
+            cache: gain.calc(geometry)?,
+        })
     }
 
     pub fn drives(&self) -> &[Drive] {
@@ -61,36 +55,35 @@ impl<T: Transducer, G: Gain<T> + Clone> Cache<T, G> {
     }
 }
 
-impl<T: Transducer, G: Gain<T> + Clone> Gain<T> for Cache<T, G> {
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
-        if self.cache.is_empty() {
-            self.cache = self.gain.calc(geometry)?;
-        }
-        Ok(self.cache.clone())
-    }
-}
-
-impl<T: Transducer, G: Gain<T> + Clone> Cache<T, G> {
-    pub fn recalc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
-        self.cache.clear();
+impl<T: Transducer> GainBoxed<T> for Cache {
+    fn calc_box(
+        self: Box<Self>,
+        geometry: &autd3_core::geometry::Geometry<T>,
+    ) -> Result<Vec<autd3_core::Drive>, autd3_core::error::AUTDInternalError> {
         self.calc(geometry)
     }
 }
 
-impl<T: Transducer, G: Gain<T> + Clone> Index<usize> for Cache<T, G> {
+impl<T: Transducer> Gain<T> for Cache {
+    fn calc(self, _geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+        Ok(self.cache)
+    }
+}
+
+impl Index<usize> for Cache {
     type Output = Drive;
     fn index(&self, idx: usize) -> &Self::Output {
         &self.cache[idx]
     }
 }
 
-impl<T: Transducer, G: Gain<T> + Clone> IndexMut<usize> for Cache<T, G> {
+impl IndexMut<usize> for Cache {
     fn index_mut(&mut self, idx: usize) -> &mut Drive {
         &mut self.cache[idx]
     }
 }
 
-impl<'a, T: Transducer, G: Gain<T> + Clone> IntoIterator for &'a Cache<T, G> {
+impl<'a> IntoIterator for &'a Cache {
     type Item = &'a Drive;
     type IntoIter = std::slice::Iter<'a, Drive>;
 
@@ -99,7 +92,7 @@ impl<'a, T: Transducer, G: Gain<T> + Clone> IntoIterator for &'a Cache<T, G> {
     }
 }
 
-impl<'a, T: Transducer, G: Gain<T> + Clone> IntoIterator for &'a mut Cache<T, G> {
+impl<'a> IntoIterator for &'a mut Cache {
     type Item = &'a mut Drive;
     type IntoIter = std::slice::IterMut<'a, Drive>;
 
@@ -108,60 +101,50 @@ impl<'a, T: Transducer, G: Gain<T> + Clone> IntoIterator for &'a mut Cache<T, G>
     }
 }
 
-impl<G: Gain<LegacyTransducer> + Clone> Sendable<LegacyTransducer> for Cache<LegacyTransducer, G> {
+impl Sendable<LegacyTransducer> for Cache {
     type H = autd3_core::NullHeader;
     type B = autd3_core::GainLegacy;
 
-    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
-        Ok(Self::H::default())
-    }
-
-    fn body_operation(
-        &mut self,
+    fn operation(
+        self,
         geometry: &Geometry<LegacyTransducer>,
-    ) -> Result<Self::B, AUTDInternalError> {
-        Ok(Self::B::new(self.calc(geometry)?))
+    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
+        Ok((Self::H::default(), Self::B::new(self.calc(geometry)?)))
     }
 }
 
-impl<G: Gain<AdvancedTransducer> + Clone> Sendable<AdvancedTransducer>
-    for Cache<AdvancedTransducer, G>
-{
+impl Sendable<AdvancedTransducer> for Cache {
     type H = autd3_core::NullHeader;
     type B = autd3_core::GainAdvanced;
 
-    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
-        Ok(Self::H::default())
-    }
-
-    fn body_operation(
-        &mut self,
+    fn operation(
+        self,
         geometry: &Geometry<AdvancedTransducer>,
-    ) -> Result<Self::B, AUTDInternalError> {
-        Ok(Self::B::new(
-            self.calc(geometry)?,
-            geometry.transducers().map(|tr| tr.cycle()).collect(),
+    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
+        Ok((
+            Self::H::default(),
+            Self::B::new(
+                self.calc(geometry)?,
+                geometry.transducers().map(|tr| tr.cycle()).collect(),
+            ),
         ))
     }
 }
 
-impl<G: Gain<AdvancedPhaseTransducer> + Clone> Sendable<AdvancedPhaseTransducer>
-    for Cache<AdvancedPhaseTransducer, G>
-{
+impl Sendable<AdvancedPhaseTransducer> for Cache {
     type H = autd3_core::NullHeader;
     type B = autd3_core::GainAdvancedPhase;
 
-    fn header_operation(&mut self) -> Result<Self::H, AUTDInternalError> {
-        Ok(Self::H::default())
-    }
-
-    fn body_operation(
-        &mut self,
+    fn operation(
+        self,
         geometry: &Geometry<AdvancedPhaseTransducer>,
-    ) -> Result<Self::B, AUTDInternalError> {
-        Ok(Self::B::new(
-            self.calc(geometry)?,
-            geometry.transducers().map(|tr| tr.cycle()).collect(),
+    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
+        Ok((
+            Self::H::default(),
+            Self::B::new(
+                self.calc(geometry)?,
+                geometry.transducers().map(|tr| tr.cycle()).collect(),
+            ),
         ))
     }
 }
