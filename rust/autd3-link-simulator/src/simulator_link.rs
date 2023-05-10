@@ -11,10 +11,12 @@
  *
  */
 
+use std::time::Duration;
+
 use autd3_core::{
     error::AUTDInternalError,
     geometry::{Geometry, Transducer},
-    link::Link,
+    link::{Link, LinkBuilder},
     CPUControlFlags, FPGAControlFlags, RxDatagram, RxMessage, TxDatagram, HEADER_SIZE,
     MSG_SIMULATOR_CLOSE, MSG_SIMULATOR_INIT,
 };
@@ -24,20 +26,45 @@ use crate::native_methods::*;
 pub struct Simulator {
     input_offset: usize,
     is_open: bool,
-    timeout: std::time::Duration,
+    timeout: Duration,
+}
+
+pub struct SimulatorBuilder {
+    timeout: Duration,
 }
 
 impl Simulator {
-    pub fn new() -> Self {
-        Self::with_timeout(std::time::Duration::from_millis(20))
-    }
-
-    pub fn with_timeout(timeout: std::time::Duration) -> Self {
+    fn with_timeout(timeout: Duration) -> Self {
         Self {
             input_offset: 0,
             is_open: false,
             timeout,
         }
+    }
+
+    pub fn builder() -> SimulatorBuilder {
+        SimulatorBuilder::new()
+    }
+}
+
+impl SimulatorBuilder {
+    fn new() -> Self {
+        Self {
+            timeout: Duration::ZERO,
+        }
+    }
+}
+
+impl LinkBuilder for SimulatorBuilder {
+    type L = Simulator;
+
+    fn timeout(mut self, timeout: Duration) -> Self {
+        self.timeout = timeout;
+        self
+    }
+
+    fn build(self) -> Self::L {
+        Simulator::with_timeout(self.timeout)
     }
 }
 
@@ -108,7 +135,7 @@ impl Link for Simulator {
 
         unsafe {
             for _ in 0..20 {
-                std::thread::sleep(std::time::Duration::from_millis(100));
+                std::thread::sleep(Duration::from_millis(100));
                 let mut msg: u8 = 0;
                 shmem_copy_from(&mut msg as *mut u8, 0, 1);
                 if msg != MSG_SIMULATOR_INIT {
@@ -173,13 +200,7 @@ impl Link for Simulator {
         self.is_open
     }
 
-    fn timeout(&self) -> std::time::Duration {
+    fn timeout(&self) -> Duration {
         self.timeout
-    }
-}
-
-impl Default for Simulator {
-    fn default() -> Self {
-        Self::new()
     }
 }

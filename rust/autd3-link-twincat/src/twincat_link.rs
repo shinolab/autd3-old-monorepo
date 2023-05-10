@@ -11,12 +11,14 @@
  *
  */
 
+use std::time::Duration;
+
 use libc::c_void;
 
 use autd3_core::{
     error::AUTDInternalError,
     geometry::{Geometry, Transducer},
-    link::Link,
+    link::{Link, LinkBuilder},
     RxDatagram, RxMessage, TxDatagram,
 };
 
@@ -30,10 +32,15 @@ const PORT: u16 = 301;
 pub struct TwinCAT {
     port: i32,
     send_addr: AmsAddr,
+    timeout: Duration,
+}
+
+pub struct TwinCATBuilder {
+    timeout: Duration,
 }
 
 impl TwinCAT {
-    pub fn new() -> Self {
+    fn with_timeout(timeout: Duration) -> Self {
         unsafe {
             let ams_addr: AmsAddr = std::mem::zeroed();
             Self {
@@ -42,14 +49,34 @@ impl TwinCAT {
                     net_id: ams_addr.net_id,
                     port: PORT,
                 },
+                timeout,
             }
+        }
+    }
+
+    pub fn builder() -> TwinCATBuilder {
+        TwinCATBuilder::new()
+    }
+}
+
+impl TwinCATBuilder {
+    fn new() -> Self {
+        Self {
+            timeout: Duration::ZERO,
         }
     }
 }
 
-impl Default for TwinCAT {
-    fn default() -> Self {
-        Self::new()
+impl LinkBuilder for TwinCATBuilder {
+    type L = TwinCAT;
+
+    fn timeout(mut self, timeout: Duration) -> Self {
+        self.timeout = timeout;
+        self
+    }
+
+    fn build(self) -> Self::L {
+        Self::L::with_timeout(self.timeout)
     }
 }
 
@@ -125,7 +152,7 @@ impl Link for TwinCAT {
         self.port > 0
     }
 
-    fn timeout(&self) -> std::time::Duration {
-        std::time::Duration::from_millis(0)
+    fn timeout(&self) -> Duration {
+        self.timeout
     }
 }
