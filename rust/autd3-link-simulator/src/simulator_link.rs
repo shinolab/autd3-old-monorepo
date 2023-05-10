@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/04/2023
+ * Last Modified: 10/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,13 +12,13 @@
  */
 
 use autd3_core::{
+    error::AUTDInternalError,
     geometry::{Geometry, Transducer},
     link::Link,
     CPUControlFlags, FPGAControlFlags, RxDatagram, RxMessage, TxDatagram, HEADER_SIZE,
     MSG_SIMULATOR_CLOSE, MSG_SIMULATOR_INIT,
 };
 
-use crate::error::SimulatorLinkError;
 use crate::native_methods::*;
 
 pub struct Simulator {
@@ -44,7 +44,7 @@ impl Simulator {
 unsafe impl Send for Simulator {}
 
 impl Link for Simulator {
-    fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> anyhow::Result<()> {
+    fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         if self.is_open() {
             return Ok(());
         }
@@ -58,7 +58,9 @@ impl Link for Simulator {
 
         unsafe {
             if !shmem_create() {
-                return Err(SimulatorLinkError::SimulatorOpenFailed.into());
+                return Err(AUTDInternalError::LinkOpenFailed(
+                    "Shared memory open failed",
+                ));
             }
 
             let mut geometry_buf: Vec<u8> = vec![0x00; geometry_size];
@@ -116,10 +118,12 @@ impl Link for Simulator {
             }
         }
 
-        Err(SimulatorLinkError::SimulatorOpenFailed.into())
+        return Err(AUTDInternalError::LinkOpenFailed(
+            "Simulator is not responding",
+        ));
     }
 
-    fn close(&mut self) -> anyhow::Result<()> {
+    fn close(&mut self) -> Result<(), AUTDInternalError> {
         if !self.is_open() {
             return Ok(());
         }
@@ -137,7 +141,7 @@ impl Link for Simulator {
         Ok(())
     }
 
-    fn send(&mut self, tx: &TxDatagram) -> anyhow::Result<bool> {
+    fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
         if !self.is_open() {
             return Ok(false);
         }
@@ -149,7 +153,7 @@ impl Link for Simulator {
         Ok(true)
     }
 
-    fn receive(&mut self, rx: &mut RxDatagram) -> anyhow::Result<bool> {
+    fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError> {
         if !self.is_open() {
             return Ok(false);
         }
