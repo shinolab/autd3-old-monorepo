@@ -1,14 +1,14 @@
 /*
- * File: debug_link.rs
+ * File: debug.rs
  * Project: link
- * Created Date: 09/05/2023
+ * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/05/2023
+ * Last Modified: 10/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
- * 
+ *
  */
 
 use std::time::Duration;
@@ -24,32 +24,100 @@ use autd3_firmware_emulator::CPUEmulator;
 
 use spdlog::prelude::*;
 
-pub use spdlog::Level;
+use super::Log;
+
+use super::builder::LinkBuilder;
 
 pub struct Debug {
     is_open: bool,
+    logger: Logger,
     cpus: Vec<CPUEmulator>,
 }
 
 impl Debug {
-    pub fn new() -> Self {
-        // default_logger.set_level_filter(LevelFilter::MoreSevere(Level::Trace));
+    pub(crate) fn new(level: Level) -> Self {
+        Self::with_logger(super::logger::get_logger(level))
+    }
+
+    pub(crate) fn with_logger(logger: Logger) -> Self {
         Self {
             is_open: false,
+            logger,
             cpus: vec![],
         }
     }
-}  
+
+    pub fn builder() -> DebugBuilfer {
+        DebugBuilfer::new()
+    }
+}
+
+pub struct DebugBuilfer {
+    timeout: Duration,
+    level: Level,
+}
+
+impl DebugBuilfer {
+    pub(crate) fn new() -> Self {
+        Self {
+            timeout: Duration::ZERO,
+            level: Level::Debug,
+        }
+    }
+
+    pub fn level(mut self, level: Level) -> Self {
+        self.level = level;
+        self
+    }
+}
+
+impl LinkBuilder for DebugBuilfer {
+    type L = Debug;
+
+    fn timeout(mut self, timeout: Duration) -> Self {
+        self.timeout = timeout;
+        self
+    }
+
+    fn build(self) -> Self::L {
+        Debug::new(self.level)
+    }
+
+    fn build_with_custom_logger<O, F>(self, level: Level, out: O, flush: F) -> Log<Self::L>
+    where
+        Self: Sized,
+        O: Fn(&str) -> spdlog::Result<()> + Send + Sync + 'static,
+        F: Fn() -> spdlog::Result<()> + Send + Sync + 'static,
+    {
+        let level = if self.level as u16 > level as u16 {
+            self.level
+        } else {
+            level
+        };
+        let logger = super::logger::get_logger_with_custom_func(level, out, flush);
+        Log::with_logger(Debug::with_logger(logger.clone()), logger)
+    }
+
+    fn build_with_default_logger(self, level: Level) -> Log<Self::L>
+    where
+        Self: Sized,
+    {
+        let level = if self.level as u16 > level as u16 {
+            self.level
+        } else {
+            level
+        };
+        let logger = super::logger::get_logger(level);
+        Log::with_logger(Debug::with_logger(logger.clone()), logger)
+    }
+}
 
 impl Link for Debug {
     fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
-        let default_logger = spdlog::default_logger();
-        default_logger.set_level_filter(LevelFilter::All);
-        
-        log::debug!("Open Debug link");
+        debug!(logger: self.logger,"Open Debug link");
 
         if self.is_open() {
-            log::warn!("Debug link is already opened.");
+            warn!(logger: self.logger,"Debug link is already opened.");
             return Ok(());
         }
 
@@ -64,7 +132,7 @@ impl Link for Debug {
             })
             .collect();
 
-        log::trace!("Initialize emulator");
+        trace!(logger: self.logger,"Initialize emulator");
 
         self.is_open = true;
 
@@ -72,10 +140,10 @@ impl Link for Debug {
     }
 
     fn close(&mut self) -> Result<(), AUTDInternalError> {
-        log::debug!("Close Debug link");
+        debug!(logger: self.logger,"Close Debug link");
 
         if !self.is_open() {
-            log::warn!("Debug link is already closed.");
+            warn!(logger: self.logger,"Debug link is already closed.");
             return Ok(());
         }
 
@@ -90,57 +158,57 @@ impl Link for Debug {
 
         match tx.header().msg_id {
             MSG_CLEAR => {
-                log::debug!("\tOP: CLEAR");
+                debug!(logger: self.logger,"\tOP: CLEAR");
             }
             MSG_RD_CPU_VERSION => {
-                log::debug!("\tOP: RD_CPU_VERSION");
+                debug!(logger: self.logger,"\tOP: RD_CPU_VERSION");
             }
             MSG_RD_CPU_VERSION_MINOR => {
-                log::debug!("\tOP: RD_CPU_VERSION_MINOR");
+                debug!(logger: self.logger,"\tOP: RD_CPU_VERSION_MINOR");
             }
             MSG_RD_FPGA_VERSION => {
-                log::debug!("\tOP: RD_FPGA_VERSION");
+                debug!(logger: self.logger,"\tOP: RD_FPGA_VERSION");
             }
             MSG_RD_FPGA_VERSION_MINOR => {
-                log::debug!("\tOP: RD_FPGA_VERSION_MINOR");
+                debug!(logger: self.logger,"\tOP: RD_FPGA_VERSION_MINOR");
             }
             MSG_RD_FPGA_FUNCTION => {
-                log::debug!("\tOP: RD_FPGA_FUNCTION");
+                debug!(logger: self.logger,"\tOP: RD_FPGA_FUNCTION");
             }
             _ => {}
         }
 
-        log::debug!("\tCPU Flag: {}", tx.header().cpu_flag);
-        log::debug!("\tFPGA Flag: {}", tx.header().fpga_flag);
+        debug!(logger: self.logger,"\tCPU Flag: {}", tx.header().cpu_flag);
+        debug!(logger: self.logger,"\tFPGA Flag: {}", tx.header().fpga_flag);
 
         self.cpus.iter().for_each(|cpu| {
-            log::debug!("Status: {}", cpu.id());
-            let fpga = cpu.fpga();  
+            debug!(logger: self.logger,"Status: {}", cpu.id());
+            let fpga = cpu.fpga();
             if fpga.is_stm_mode() {
                 if fpga.is_stm_gain_mode() {
                     if fpga.is_legacy_mode() {
-                        log::debug!("\tGain STM Legacy mode");
+                        debug!(logger: self.logger,"\tGain STM Legacy mode");
                     } else {
-                        log::debug!("\tGain STM mode");
+                        debug!(logger: self.logger,"\tGain STM mode");
                     }
                 } else {
-                    log::debug!("\tFocus STM mode");
+                    debug!(logger: self.logger,"\tFocus STM mode"); 
                 }
                 if tx.header().cpu_flag.contains(CPUControlFlags::STM_BEGIN) {
-                    log::debug!("\t\tSTM BEGIN");
+                    debug!(logger: self.logger,"\t\tSTM BEGIN");
                 }
                 if tx.header().cpu_flag.contains(CPUControlFlags::STM_END) {
-                    log::debug!(
+                    debug!(logger: self.logger,
                         "\t\tSTM END (cycle = {}, frequency_division = {})",
                         fpga.stm_cycle(),
                         fpga.stm_frequency_division()
                     );
-                    if log::max_level() >= log::Level::Trace {
+                    if self.logger.should_log(Level::Trace) {
                         let cycles = fpga.cycles();
                         for j in 0..fpga.stm_cycle() {
                             let (duty, phase) = fpga.drives(j);
-                            log::trace!("\tSTM[{}]:", j);
-                            log::trace!(
+                            trace!(logger: self.logger,"\tSTM[{}]:", j);
+                            trace!(logger: self.logger,
                                 "{}",
                                 duty.iter()
                                     .zip(phase.iter())
@@ -156,29 +224,29 @@ impl Link for Debug {
                     }
                 }
             } else if fpga.is_legacy_mode() {
-                log::debug!("\tNormal Legacy mode");
+                debug!(logger: self.logger,"\tNormal Legacy mode");
             } else {
-                log::debug!("\tNormal Advanced mode");
+                debug!(logger: self.logger,"\tNormal Advanced mode");
             }
-            log::debug!(
+            debug!(logger: self.logger,
                 "\tSilencer step = {}, cycle={}",
                 fpga.silencer_step(),
                 fpga.silencer_cycle()
             );
             let m = fpga.modulation();
             let freq_div_m = fpga.modulation_frequency_division();
-            log::debug!(
+            debug!(logger: self.logger,
                 "\tModulation size = {}, frequency_division = {}",
                 m.len(),
                 freq_div_m
             );
             if fpga.is_outputting() {
-                log::debug!("\t\t modulation = {:?}", m);
-                if !fpga.is_stm_mode() && log::max_level() >= log::Level::Trace {
+                debug!(logger: self.logger,"\t\t modulation = {:?}", m);
+                if !fpga.is_stm_mode() && self.logger.should_log(Level::Trace) {
                     let cycles = fpga.cycles();
                     let (duty, phase) = fpga.drives(0);
-                    log::trace!(
-                        "{}",
+                    trace!(logger: self.logger,
+                        "{}", 
                         duty.iter()
                             .zip(phase.iter())
                             .zip(cycles.iter())
@@ -191,7 +259,7 @@ impl Link for Debug {
                     );
                 }
             } else {
-                log::info!("\tWithout output");
+                info!(logger: self.logger,"\tWithout output");
             }
         });
 
@@ -213,11 +281,5 @@ impl Link for Debug {
 
     fn timeout(&self) -> Duration {
         Duration::ZERO
-    }
-}
-
-impl Default for Debug {
-    fn default() -> Self {
-        Self::new()
     }
 }
