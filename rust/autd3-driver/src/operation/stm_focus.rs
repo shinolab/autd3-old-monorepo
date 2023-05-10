@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/05/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -198,7 +198,7 @@ mod test {
                 )
             })
             .collect::<Vec<_>>();
-        let points = vec![p.clone(); tx.num_devices()];
+        let points = vec![p; tx.num_devices()];
 
         let sound_speed = 340e3;
         let sp = (sound_speed / 1e3) as u32 * 1024;
@@ -371,7 +371,7 @@ mod test {
             finish_idx: None,
             ..props
         };
-        let mut op = FocusSTM::new(points.clone(), *device_map.iter().min().unwrap(), props);
+        let mut op = FocusSTM::new(points, *device_map.iter().min().unwrap(), props);
         op.init();
         assert!(op.pack(&mut tx).is_err());
     }

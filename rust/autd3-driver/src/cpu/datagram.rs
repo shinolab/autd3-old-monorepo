@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 06/05/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -252,9 +252,9 @@ mod tests {
                 tx.body_raw_mut().as_ptr() as *const u8
             );
             let mut cursor = tx.data().as_ptr().add(128);
-            for i in 0..device_map.len() {
+            for (i, dev) in device_map.iter().enumerate() {
                 assert_eq!(cursor, tx.body(i) as *const _ as *const u8);
-                cursor = cursor.add(size_of::<u16>() * device_map[i]);
+                cursor = cursor.add(size_of::<u16>() * dev);
             }
         }
     }

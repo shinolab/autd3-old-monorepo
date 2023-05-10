@@ -4,17 +4,17 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/04/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
  *
  */
 
-use anyhow::Result;
 use libc::c_void;
 
 use autd3_core::{
+    error::AUTDInternalError,
     geometry::{Geometry, Transducer},
     link::Link,
     RxDatagram, RxMessage, TxDatagram,
@@ -54,7 +54,7 @@ impl Default for TwinCAT {
 }
 
 impl Link for TwinCAT {
-    fn open<T: Transducer>(&mut self, _geometry: &Geometry<T>) -> anyhow::Result<()> {
+    fn open<T: Transducer>(&mut self, _geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         unsafe {
             let port = (TC_ADS.tc_ads_port_open)();
             if port == 0 {
@@ -73,7 +73,7 @@ impl Link for TwinCAT {
         Ok(())
     }
 
-    fn close(&mut self) -> Result<()> {
+    fn close(&mut self) -> Result<(), AUTDInternalError> {
         unsafe {
             (TC_ADS.tc_ads_port_close)(self.port);
         }
@@ -81,7 +81,7 @@ impl Link for TwinCAT {
         Ok(())
     }
 
-    fn send(&mut self, tx: &TxDatagram) -> Result<bool> {
+    fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
         unsafe {
             let n_err = (TC_ADS.tc_ads_sync_write_req)(
                 self.port,
@@ -100,7 +100,7 @@ impl Link for TwinCAT {
         }
     }
 
-    fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool> {
+    fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError> {
         let mut read_bytes: u32 = 0;
         unsafe {
             let n_err = (TC_ADS.tc_ads_sync_read_req)(

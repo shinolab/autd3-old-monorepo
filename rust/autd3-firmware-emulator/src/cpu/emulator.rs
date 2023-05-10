@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/05/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -102,11 +102,11 @@ impl CPUEmulator {
 
     pub fn update(&mut self) {
         match self.msg_id {
-            MSG_RD_CPU_VERSION => return,
-            MSG_RD_CPU_VERSION_MINOR => return,
-            MSG_RD_FPGA_VERSION => return,
-            MSG_RD_FPGA_VERSION_MINOR => return,
-            MSG_RD_FPGA_FUNCTION => return,
+            MSG_RD_CPU_VERSION
+            | MSG_RD_CPU_VERSION_MINOR
+            | MSG_RD_FPGA_VERSION
+            | MSG_RD_FPGA_VERSION_MINOR
+            | MSG_RD_FPGA_FUNCTION => {}
             _ => {
                 if self.read_fpga_info {
                     self.ack = self.read_fpga_info() as _;
@@ -159,7 +159,7 @@ impl CPUEmulator {
             cycles.len(),
         );
 
-        self.cycles.copy_from_slice(&body.data());
+        self.cycles.copy_from_slice(body.data());
 
         self.synchronized = true;
 

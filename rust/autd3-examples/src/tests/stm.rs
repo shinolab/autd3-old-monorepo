@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/05/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ macro_rules! focus_stm {
         let point_num = 200;
         let radius = 30.0;
         for i in 0..point_num {
-            let theta = 2.0 * std::f64::consts::PI * i as f64 / point_num as f64;
+            let theta = 2.0 * PI * i as float / point_num as float;
             let p = radius * Vector3::new(theta.cos(), theta.sin(), 0.0);
             stm.add(center + p);
         }
@@ -49,7 +49,7 @@ macro_rules! gain_stm {
         let point_num = 200;
         for i in 0..point_num {
             let radius = 30.0;
-            let theta = 2.0 * std::f64::consts::PI * i as f64 / point_num as f64;
+            let theta = 2.0 * PI * i as float / point_num as float;
             let p = radius * Vector3::new(theta.cos(), theta.sin(), 0.0);
 
             let g = Focus::new(center + p);

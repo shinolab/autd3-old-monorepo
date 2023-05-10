@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/05/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -79,7 +79,7 @@ impl<L: Link, T: Transducer> Controller<L, T> {
     /// * `header` - Header
     /// * `body` - Body
     ///
-    pub fn send<'a, 'b, S: Sendable<T>>(&'a mut self, s: S) -> Result<bool, AUTDError> {
+    pub fn send<S: Sendable<T>>(&mut self, s: S) -> Result<bool, AUTDError> {
         let (mut op_header, mut op_body) = s.operation(&self.geometry)?;
 
         op_header.init();

@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/05/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -152,7 +152,7 @@ impl<T: Transducer> Geometry<T> {
     }
 
     pub fn set_sound_speed_from_temp(&mut self, temp: float) {
-        self.set_sound_speed_from_temp_with(temp, 1.4, 8.31446261815324, 28.9647e-3);
+        self.set_sound_speed_from_temp_with(temp, 1.4, 8.314_463, 28.9647e-3);
     }
 
     pub fn set_sound_speed_from_temp_with(&mut self, temp: float, k: float, r: float, m: float) {
@@ -409,24 +409,24 @@ mod tests {
         );
 
         assert_vec3_approx_eq!(
-            geometry[0 + 1 * NUM_TRANS_IN_UNIT].position(),
+            geometry[NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) + origin
         );
         assert_vec3_approx_eq!(
-            geometry[17 + 1 * NUM_TRANS_IN_UNIT].position(),
+            geometry[17 + NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) + right_bottom
         );
         assert_vec3_approx_eq!(
-            geometry[231 + 1 * NUM_TRANS_IN_UNIT].position(),
+            geometry[231 + NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) - left_top
         );
         assert_vec3_approx_eq!(
-            geometry[248 + 1 * NUM_TRANS_IN_UNIT].position(),
+            geometry[248 + NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) + right_bottom - left_top
         );
 
         assert_vec3_approx_eq!(
-            geometry[0 + 2 * NUM_TRANS_IN_UNIT].position(),
+            geometry[2 * NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) + origin
         );
         assert_vec3_approx_eq!(
@@ -443,7 +443,7 @@ mod tests {
         );
 
         assert_vec3_approx_eq!(
-            geometry[0 + 3 * NUM_TRANS_IN_UNIT].position(),
+            geometry[3 * NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) + origin
         );
         assert_vec3_approx_eq!(
@@ -460,7 +460,7 @@ mod tests {
         );
 
         assert_vec3_approx_eq!(
-            geometry[0 + 4 * NUM_TRANS_IN_UNIT].position(),
+            geometry[4 * NUM_TRANS_IN_UNIT].position(),
             Vector3::new(40., 60., 50.) + origin
         );
         assert_vec3_approx_eq!(
@@ -488,25 +488,22 @@ mod tests {
             .add_device(AUTD3::new_with_quaternion(
                 Vector3::new(0., 0., 0.),
                 UnitQuaternion::identity()
-                    * UnitQuaternion::from_axis_angle(&UnitVector3::from(Vector3::x_axis()), PI),
+                    * UnitQuaternion::from_axis_angle(&Vector3::x_axis(), PI),
             ))
             .add_device(AUTD3::new_with_quaternion(
                 Vector3::new(0., 0., 0.),
                 UnitQuaternion::identity()
-                    * UnitQuaternion::from_axis_angle(&UnitVector3::from(Vector3::y_axis()), PI),
+                    * UnitQuaternion::from_axis_angle(&Vector3::y_axis(), PI),
             ))
             .add_device(AUTD3::new_with_quaternion(
                 Vector3::new(0., 0., 0.),
                 UnitQuaternion::identity()
-                    * UnitQuaternion::from_axis_angle(&UnitVector3::from(Vector3::z_axis()), PI),
+                    * UnitQuaternion::from_axis_angle(&Vector3::z_axis(), PI),
             ))
             .add_device(AUTD3::new_with_quaternion(
                 Vector3::new(40., 60., 50.),
                 UnitQuaternion::identity()
-                    * UnitQuaternion::from_axis_angle(
-                        &UnitVector3::from(Vector3::z_axis()),
-                        PI / 2.,
-                    ),
+                    * UnitQuaternion::from_axis_angle(&Vector3::z_axis(), PI / 2.),
             ))
             .build()
             .unwrap();
@@ -530,24 +527,24 @@ mod tests {
         );
 
         assert_vec3_approx_eq!(
-            geometry[0 + 1 * NUM_TRANS_IN_UNIT].position(),
+            geometry[NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) + origin
         );
         assert_vec3_approx_eq!(
-            geometry[17 + 1 * NUM_TRANS_IN_UNIT].position(),
+            geometry[17 + NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) + right_bottom
         );
         assert_vec3_approx_eq!(
-            geometry[231 + 1 * NUM_TRANS_IN_UNIT].position(),
+            geometry[231 + NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) - left_top
         );
         assert_vec3_approx_eq!(
-            geometry[248 + 1 * NUM_TRANS_IN_UNIT].position(),
+            geometry[248 + NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) + right_bottom - left_top
         );
 
         assert_vec3_approx_eq!(
-            geometry[0 + 2 * NUM_TRANS_IN_UNIT].position(),
+            geometry[2 * NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) + origin
         );
         assert_vec3_approx_eq!(
@@ -564,7 +561,7 @@ mod tests {
         );
 
         assert_vec3_approx_eq!(
-            geometry[0 + 3 * NUM_TRANS_IN_UNIT].position(),
+            geometry[3 * NUM_TRANS_IN_UNIT].position(),
             Vector3::new(0., 0., 0.) + origin
         );
         assert_vec3_approx_eq!(
@@ -581,7 +578,7 @@ mod tests {
         );
 
         assert_vec3_approx_eq!(
-            geometry[0 + 4 * NUM_TRANS_IN_UNIT].position(),
+            geometry[4 * NUM_TRANS_IN_UNIT].position(),
             Vector3::new(40., 60., 50.) + origin
         );
         assert_vec3_approx_eq!(
@@ -704,9 +701,9 @@ mod tests {
             .build()
             .unwrap();
 
-        let rot = UnitQuaternion::from_axis_angle(&UnitVector3::from(Vector3::x_axis()), 0.)
-            * UnitQuaternion::from_axis_angle(&UnitVector3::from(Vector3::y_axis()), 0.)
-            * UnitQuaternion::from_axis_angle(&UnitVector3::from(Vector3::z_axis()), PI / 2.);
+        let rot = UnitQuaternion::from_axis_angle(&Vector3::x_axis(), 0.)
+            * UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.)
+            * UnitQuaternion::from_axis_angle(&Vector3::z_axis(), PI / 2.);
         geometry.rotate(rot);
         let expect_x = Vector3::new(0., 1., 0.);
         let expect_y = Vector3::new(-1., 0., 0.);
@@ -717,9 +714,9 @@ mod tests {
             assert_vec3_approx_eq!(expect_z, tr.z_direction());
         }
 
-        let rot = UnitQuaternion::from_axis_angle(&UnitVector3::from(Vector3::x_axis()), PI / 2.)
-            * UnitQuaternion::from_axis_angle(&UnitVector3::from(Vector3::y_axis()), 0.)
-            * UnitQuaternion::from_axis_angle(&UnitVector3::from(Vector3::z_axis()), 0.);
+        let rot = UnitQuaternion::from_axis_angle(&Vector3::x_axis(), PI / 2.)
+            * UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.)
+            * UnitQuaternion::from_axis_angle(&Vector3::z_axis(), 0.);
         geometry.rotate(rot);
         let expect_x = Vector3::new(0., 0., 1.);
         let expect_y = Vector3::new(-1., 0., 0.);
@@ -739,9 +736,9 @@ mod tests {
             .build()
             .unwrap();
 
-        let rot = UnitQuaternion::from_axis_angle(&UnitVector3::from(Vector3::x_axis()), 0.)
-            * UnitQuaternion::from_axis_angle(&UnitVector3::from(Vector3::y_axis()), 0.)
-            * UnitQuaternion::from_axis_angle(&UnitVector3::from(Vector3::z_axis()), PI / 2.);
+        let rot = UnitQuaternion::from_axis_angle(&Vector3::x_axis(), 0.)
+            * UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.)
+            * UnitQuaternion::from_axis_angle(&Vector3::z_axis(), PI / 2.);
         geometry.rotate_of(0, rot);
         let expect_x = Vector3::new(0., 1., 0.);
         let expect_y = Vector3::new(-1., 0., 0.);
@@ -774,9 +771,9 @@ mod tests {
             .unwrap();
 
         let t = Vector3::new(40., 50., 60.);
-        let rot = UnitQuaternion::from_axis_angle(&UnitVector3::from(Vector3::x_axis()), 0.)
-            * UnitQuaternion::from_axis_angle(&UnitVector3::from(Vector3::y_axis()), 0.)
-            * UnitQuaternion::from_axis_angle(&UnitVector3::from(Vector3::z_axis()), PI / 2.);
+        let rot = UnitQuaternion::from_axis_angle(&Vector3::x_axis(), 0.)
+            * UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.)
+            * UnitQuaternion::from_axis_angle(&Vector3::z_axis(), PI / 2.);
         geometry.affine(t, rot);
 
         let expect_x = Vector3::new(0., 1., 0.);

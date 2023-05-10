@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/05/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -385,7 +385,7 @@ mod tests {
     #[test]
     fn focus_stm_body_subsequent() {
         let point_size = 1000;
-        let size = 1 * size_of::<u16>() + point_size * size_of::<STMFocus>();
+        let size = size_of::<u16>() + point_size * size_of::<STMFocus>();
 
         let mut d = vec![0x00u8; size];
 

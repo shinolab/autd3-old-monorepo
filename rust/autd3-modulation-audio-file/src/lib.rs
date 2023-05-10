@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/05/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -60,15 +60,15 @@ impl Wav {
         let raw_buffer = match (sample_format, bits_per_sample) {
             (SampleFormat::Int, 8) => reader
                 .samples::<i32>()
-                .map(|i| (i.unwrap() as i32 - std::i8::MIN as i32) as f32 / 255.)
+                .map(|i| (i.unwrap() - std::i8::MIN as i32) as f32 / 255.)
                 .collect(),
             (SampleFormat::Int, 16) => reader
                 .samples::<i32>()
-                .map(|i| (i.unwrap() as i32 - std::i16::MIN as i32) as f32 / 65535.)
+                .map(|i| (i.unwrap() - std::i16::MIN as i32) as f32 / 65535.)
                 .collect(),
             (SampleFormat::Int, 24) => reader
                 .samples::<i32>()
-                .map(|i| (i.unwrap() as i32 - 8388608i32) as f32 / 16777215.)
+                .map(|i| (i.unwrap() - 8388608i32) as f32 / 16777215.)
                 .collect(),
             (SampleFormat::Int, 32) => reader
                 .samples::<i32>()
@@ -88,6 +88,7 @@ impl Wav {
 }
 
 impl Modulation for Wav {
+    #[allow(clippy::unnecessary_cast)]
     fn calc(self) -> Result<Vec<float>, AUTDInternalError> {
         let sample_rate = self.sampling_freq() as u32;
         let samples = wav_io::resample::linear(

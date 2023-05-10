@@ -27,6 +27,7 @@ pub use autd3_core::{
     },
     clear::Clear,
     delay::ModDelay,
+    float,
     geometry::{
         AdvancedPhaseTransducer, AdvancedTransducer, Geometry, GeometryBuilder, LegacyTransducer,
         Transducer, Vector3,
@@ -36,5 +37,5 @@ pub use autd3_core::{
     stm::{FocusSTM, GainSTM, STM},
     stop::Stop,
     synchronize::Synchronize,
-    Mode,
+    Mode, PI,
 };
