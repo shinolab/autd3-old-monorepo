@@ -14,9 +14,9 @@
 use autd3_driver::{float, Drive};
 
 use crate::{
-    sendable::Sendable,
     error::AUTDInternalError,
     geometry::{AdvancedPhaseTransducer, Geometry},
+    sendable::Sendable,
 };
 
 pub struct Amplitudes {

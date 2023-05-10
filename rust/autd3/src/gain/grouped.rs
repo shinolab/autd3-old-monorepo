@@ -14,12 +14,12 @@
 use std::collections::HashMap;
 
 use autd3_core::{
-    sendable::Sendable,
     error::AUTDInternalError,
     gain::Gain,
     geometry::{
         AdvancedPhaseTransducer, AdvancedTransducer, Geometry, LegacyTransducer, Transducer,
     },
+    sendable::Sendable,
     Drive,
 };
 
