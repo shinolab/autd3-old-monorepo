@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/05/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -66,14 +66,14 @@ impl<'a, T: Transducer> Gain<T> for Grouped<'a, T> {
             .flat_map(|i| {
                 drives
                     .get_mut(&i)
-                    .and_then(|g| {
+                    .map(|g| {
                         let start = if i == 0 {
                             0
                         } else {
                             geometry.device_map()[i - 1]
                         };
                         let end = start + geometry.device_map()[i];
-                        Some(g[start..end].to_vec())
+                        g[start..end].to_vec()
                     })
                     .unwrap_or_else(|| {
                         vec![

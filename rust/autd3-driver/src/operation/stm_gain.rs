@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/05/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -404,7 +404,7 @@ mod test {
                 amp: rng.gen_range(0.0..1.0),
             })
             .collect::<Vec<_>>();
-        let drives = vec![d.clone(); 2];
+        let drives = vec![d; 2];
 
         let props = GainSTMProps {
             freq_div: 152,
@@ -568,7 +568,7 @@ mod test {
             finish_idx: Some(2),
             ..props
         };
-        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        let mut op = GainSTMLegacy::new(drives, props);
         op.init();
         assert!(op.pack(&mut tx).is_err());
     }
@@ -596,7 +596,7 @@ mod test {
                 amp: rng.gen_range(0.0..1.0),
             })
             .collect::<Vec<_>>();
-        let drives = vec![d.clone(); 2];
+        let drives = vec![d; 2];
 
         let cycles = (0..NUM_TRANS_IN_UNIT * 10)
             .map(|_| rng.gen_range(2..0xFFFF))
@@ -669,11 +669,13 @@ mod test {
             .header()
             .fpga_flag
             .contains(FPGAControlFlags::USE_FINISH_IDX));
-        for i in 0..10 {
-            assert_eq!(
-                tx.body_raw_mut()[i],
-                AdvancedDrivePhase::to_phase(&drives[0][i], cycles[i])
-            )
+        for ((&d, drive), &cycle) in tx
+            .body_raw_mut()
+            .iter()
+            .zip(drives[0].iter())
+            .zip(cycles.iter())
+        {
+            assert_eq!(d, AdvancedDrivePhase::to_phase(drive, cycle))
         }
         assert_eq!(tx.num_bodies, 10);
 
@@ -700,11 +702,13 @@ mod test {
             .header()
             .fpga_flag
             .contains(FPGAControlFlags::USE_FINISH_IDX));
-        for i in 0..10 {
-            assert_eq!(
-                tx.body_raw_mut()[i],
-                AdvancedDriveDuty::to_duty(&drives[0][i], cycles[i])
-            )
+        for ((&d, drive), &cycle) in tx
+            .body_raw_mut()
+            .iter()
+            .zip(drives[0].iter())
+            .zip(cycles.iter())
+        {
+            assert_eq!(d, AdvancedDriveDuty::to_duty(drive, cycle))
         }
         assert_eq!(tx.num_bodies, 10);
 
@@ -731,11 +735,13 @@ mod test {
             .header()
             .fpga_flag
             .contains(FPGAControlFlags::USE_FINISH_IDX));
-        for i in 0..10 {
-            assert_eq!(
-                tx.body_raw_mut()[i],
-                AdvancedDrivePhase::to_phase(&drives[1][i], cycles[i])
-            )
+        for ((&d, drive), &cycle) in tx
+            .body_raw_mut()
+            .iter()
+            .zip(drives[1].iter())
+            .zip(cycles.iter())
+        {
+            assert_eq!(d, AdvancedDrivePhase::to_phase(drive, cycle))
         }
         assert_eq!(tx.num_bodies, 10);
 
@@ -762,11 +768,13 @@ mod test {
             .header()
             .fpga_flag
             .contains(FPGAControlFlags::USE_FINISH_IDX));
-        for i in 0..10 {
-            assert_eq!(
-                tx.body_raw_mut()[i],
-                AdvancedDriveDuty::to_duty(&drives[1][i], cycles[i])
-            )
+        for ((&d, drive), &cycle) in tx
+            .body_raw_mut()
+            .iter()
+            .zip(drives[1].iter())
+            .zip(cycles.iter())
+        {
+            assert_eq!(d, AdvancedDriveDuty::to_duty(drive, cycle))
         }
         assert_eq!(tx.num_bodies, 10);
 
@@ -820,7 +828,7 @@ mod test {
             finish_idx: Some(2),
             ..props
         };
-        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        let mut op = GainSTMLegacy::new(drives, props);
         op.init();
         assert!(op.pack(&mut tx).is_err());
     }
@@ -848,7 +856,7 @@ mod test {
                 amp: rng.gen_range(0.0..1.0),
             })
             .collect::<Vec<_>>();
-        let drives = vec![d.clone(); 2];
+        let drives = vec![d; 2];
 
         let cycles = (0..NUM_TRANS_IN_UNIT * 10)
             .map(|_| rng.gen_range(2..0xFFFF))
@@ -921,11 +929,13 @@ mod test {
             .header()
             .fpga_flag
             .contains(FPGAControlFlags::USE_FINISH_IDX));
-        for i in 0..10 {
-            assert_eq!(
-                tx.body_raw_mut()[i],
-                AdvancedDrivePhase::to_phase(&drives[0][i], cycles[i])
-            )
+        for ((&d, drive), &cycle) in tx
+            .body_raw_mut()
+            .iter()
+            .zip(drives[0].iter())
+            .zip(cycles.iter())
+        {
+            assert_eq!(d, AdvancedDrivePhase::to_phase(drive, cycle))
         }
         assert_eq!(tx.num_bodies, 10);
 
@@ -952,11 +962,13 @@ mod test {
             .header()
             .fpga_flag
             .contains(FPGAControlFlags::USE_FINISH_IDX));
-        for i in 0..10 {
-            assert_eq!(
-                tx.body_raw_mut()[i],
-                AdvancedDrivePhase::to_phase(&drives[1][i], cycles[i])
-            )
+        for ((&d, drive), &cycle) in tx
+            .body_raw_mut()
+            .iter()
+            .zip(drives[1].iter())
+            .zip(cycles.iter())
+        {
+            assert_eq!(d, AdvancedDrivePhase::to_phase(drive, cycle))
         }
         assert_eq!(tx.num_bodies, 10);
 
@@ -1010,7 +1022,7 @@ mod test {
             finish_idx: Some(2),
             ..props
         };
-        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        let mut op = GainSTMLegacy::new(drives, props);
         op.init();
         assert!(op.pack(&mut tx).is_err());
     }

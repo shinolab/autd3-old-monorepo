@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/05/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -58,8 +58,8 @@ impl Link for Simulator {
 
         unsafe {
             if !shmem_create() {
-                return Err(AUTDInternalError::LinkOpenFailed(
-                    "Shared memory open failed",
+                return Err(AUTDInternalError::LinkError(
+                    "Shared memory open failed".to_string(),
                 ));
             }
 
@@ -118,9 +118,9 @@ impl Link for Simulator {
             }
         }
 
-        return Err(AUTDInternalError::LinkOpenFailed(
-            "Simulator is not responding",
-        ));
+        Err(AUTDInternalError::LinkError(
+            "Simulator is not responding".to_string(),
+        ))
     }
 
     fn close(&mut self) -> Result<(), AUTDInternalError> {
