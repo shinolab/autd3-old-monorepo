@@ -4,7 +4,7 @@
  * Created Date: 24/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/03/2023
+ * Last Modified: 10/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -13,7 +13,7 @@
 
 use windows::Win32::{Media::*, System::Threading::*};
 
-use crate::error::TimerError;
+use super::error::TimerError;
 
 pub struct NativeTimerWrapper {
     timer_id: u32,

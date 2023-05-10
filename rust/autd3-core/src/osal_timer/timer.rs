@@ -4,14 +4,14 @@
  * Created Date: 24/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/03/2023
+ * Last Modified: 10/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
  *
  */
 
-use crate::{error::TimerError, NativeTimerWrapper};
+use super::{error::TimerError, NativeTimerWrapper};
 #[cfg(target_os = "macos")]
 use libc::c_void;
 #[cfg(target_os = "linux")]

@@ -13,16 +13,25 @@
 
 use thiserror::Error;
 
+use super::osal_timer::error::TimerError;
 use autd3_driver::MAX_CYCLE;
 
 #[derive(Error, Debug)]
 pub enum AUTDInternalError {
     #[error("Link is closed.")]
     LinkClosed,
-    #[error("Failed to open link: {0}")]
-    LinkOpenFailed(&'static str),
+    #[error("{0}")]
+    LinkError(&'static str),
     #[error("Maximum cycle is {} , but {0} is specified", MAX_CYCLE)]
     CycleOutOfRange(u16),
     #[error("The maximum number of transducers per device is 256")]
     TransducersNumInDeviceOutOfRange,
+    #[error("{0}")]
+    TimerError(TimerError),
+}
+
+impl From<TimerError> for AUTDInternalError {
+    fn from(e: TimerError) -> Self {
+        AUTDInternalError::TimerError(e)
+    }
 }
