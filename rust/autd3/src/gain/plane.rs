@@ -53,16 +53,13 @@ impl Plane {
 impl<T: Transducer> Gain<T> for Plane {
     fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         let sound_speed = geometry.sound_speed;
-        Ok(geometry
-            .transducers()
-            .map(|tr| {
-                let dist = self.dir.dot(tr.position());
-                let phase = dist * tr.wavenumber(sound_speed);
-                Drive {
-                    phase,
-                    amp: self.amp,
-                }
-            })
-            .collect())
+        Ok(Self::transform(geometry, |tr| {
+            let dist = self.dir.dot(tr.position());
+            let phase = dist * tr.wavenumber(sound_speed);
+            Drive {
+                phase,
+                amp: self.amp,
+            }
+        }))
     }
 }

@@ -33,9 +33,6 @@ impl Null {
 
 impl<T: Transducer> Gain<T> for Null {
     fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
-        Ok(geometry
-            .transducers()
-            .map(|_| Drive { phase: 0., amp: 0. })
-            .collect())
+        Ok(Self::transform(geometry, |_| Drive { phase: 0., amp: 0. }))
     }
 }

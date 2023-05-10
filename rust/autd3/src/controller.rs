@@ -224,9 +224,7 @@ impl<L: Link, T: Transducer> Controller<L, T> {
 mod tests {
 
     use autd3_core::{
-        autd3_device::AUTD3,
-        geometry::{GeometryBuilder, LegacyTransducer, Vector3},
-        silencer_config::SilencerConfig,
+        autd3_device::AUTD3, geometry::Vector3, silencer_config::SilencerConfig,
         synchronize::Synchronize,
     };
 
@@ -280,7 +278,7 @@ mod tests {
 
     #[test]
     fn basic_usage() {
-        let geometry = GeometryBuilder::<LegacyTransducer>::new()
+        let geometry = Geometry::builder()
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
             .build()
             .unwrap();
