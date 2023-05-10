@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/05/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -132,11 +132,8 @@ mod test {
         assert!(!tx.header().cpu_flag.contains(CPUControlFlags::MOD_END));
         assert_eq!(tx.header().size as usize, MOD_HEADER_INITIAL_DATA_SIZE);
         assert_eq!(tx.header().mod_initial().freq_div, 1160);
-        for i in 0..MOD_HEADER_INITIAL_DATA_SIZE {
-            assert_eq!(
-                tx.header().mod_initial().data[i],
-                Modulation::to_duty(mod_data[i])
-            );
+        for (&h, &d) in tx.header().mod_initial().data.iter().zip(mod_data.iter()) {
+            assert_eq!(h, Modulation::to_duty(d));
         }
 
         op.pack(&mut tx).unwrap();
@@ -170,7 +167,7 @@ mod test {
         op.init();
         assert!(!op.is_finished());
 
-        let mut op = Modulation::new(mod_data.clone(), 1159);
+        let mut op = Modulation::new(mod_data, 1159);
         op.init();
         assert!(op.pack(&mut tx).is_err());
 

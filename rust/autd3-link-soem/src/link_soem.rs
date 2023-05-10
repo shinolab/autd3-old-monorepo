@@ -292,7 +292,7 @@ impl<F: Fn(&str) + Send> SOEM<F> {
     }
 }
 
-fn lookup_autd() -> Result<String, AUTDInternalError> {
+fn lookup_autd() -> Result<String, SOEMError> {
     let adapters: EthernetAdapters = Default::default();
 
     if let Some(adapter) = adapters.into_iter().find(|adapter| unsafe {
@@ -323,7 +323,7 @@ fn lookup_autd() -> Result<String, AUTDInternalError> {
     }) {
         Ok(adapter.name.to_owned())
     } else {
-        Err(SOEMError::NoDeviceFound.into())
+        Err(SOEMError::NoDeviceFound)
     }
 }
 
