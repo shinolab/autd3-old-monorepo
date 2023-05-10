@@ -11,4 +11,5 @@ members = [
     "autd3-link-twincat",
     "autd3-traits",
     "autd3-firmware-emulator",
+    "autd3-modulation-audio-file",
 ]
