@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/03/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -12,61 +12,51 @@
  */
 
 use crate::{
-    constraint::Constraint, macros::generate_propagation_matrix, Backend, Complex, MatrixXc,
-    Transpose, VectorXc,
+    constraint::Constraint, impl_holo, macros::generate_propagation_matrix, Backend, Complex,
+    MatrixXc, Transpose, VectorXc,
 };
-use anyhow::Result;
 use autd3_core::{
+    error::AUTDInternalError,
+    float,
     gain::Gain,
     geometry::{Geometry, Transducer, Vector3},
-    Drive,
+    Drive, PI,
 };
 use autd3_traits::Gain;
 use nalgebra::ComplexField;
 use rand::{thread_rng, Rng};
-use std::{f64::consts::PI, marker::PhantomData, ops::MulAssign};
 
 /// Reference
 /// * Inoue, Seki, Yasutoshi Makino, and Hiroyuki Shinoda. "Active touch perception produced by airborne ultrasonic haptic hologram." 2015 IEEE World Haptics Conference (WHC). IEEE, 2015.
 #[derive(Gain)]
-pub struct SDP<B: Backend, C: Constraint> {
+pub struct SDP<B: Backend> {
     foci: Vec<Vector3>,
-    amps: Vec<f64>,
-    alpha: f64,
-    lambda: f64,
-    repeat: usize,
-    backend: PhantomData<B>,
-    constraint: C,
+    amps: Vec<float>,
+    pub alpha: float,
+    pub lambda: float,
+    pub repeat: usize,
+    pub constraint: Constraint,
+    backend: B,
 }
 
-impl<B: Backend, C: Constraint> SDP<B, C> {
-    pub fn new(foci: Vec<Vector3>, amps: Vec<f64>, constraint: C) -> Self {
-        Self::with_params(foci, amps, constraint, 1e-3, 0.9, 100)
-    }
+impl_holo!(SDP<B>);
 
-    pub fn with_params(
-        foci: Vec<Vector3>,
-        amps: Vec<f64>,
-        constraint: C,
-        alpha: f64,
-        lambda: f64,
-        repeat: usize,
-    ) -> Self {
-        assert!(foci.len() == amps.len());
+impl<B: Backend> SDP<B> {
+    pub fn new() -> Self {
         Self {
-            foci,
-            amps,
-            alpha,
-            lambda,
-            repeat,
-            backend: PhantomData,
-            constraint,
+            foci: vec![],
+            amps: vec![],
+            alpha: 1e-3,
+            lambda: 0.9,
+            repeat: 100,
+            backend: B::new(),
+            constraint: Constraint::Normalize,
         }
     }
 }
 
-impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for SDP<B, C> {
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>> {
+impl<B: Backend, T: Transducer> Gain<T> for SDP<B> {
+    fn calc(mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         let m = self.foci.len();
         let n = geometry.num_transducers();
 
@@ -76,10 +66,11 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for SDP<B, C> {
         ));
         let b = generate_propagation_matrix(geometry, &self.foci);
         let mut pseudo_inv_b = MatrixXc::zeros(n, m);
-        B::pseudo_inverse_svd(b.clone(), self.alpha, &mut pseudo_inv_b);
+        self.backend
+            .pseudo_inverse_svd(b.clone(), self.alpha, &mut pseudo_inv_b);
 
         let mut mm = MatrixXc::identity(m, m);
-        B::matrix_mul(
+        self.backend.matrix_mul(
             Transpose::NoTrans,
             Transpose::NoTrans,
             Complex::new(1., 0.),
@@ -89,7 +80,7 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for SDP<B, C> {
             &mut mm,
         );
         let mut tmp = MatrixXc::zeros(m, m);
-        B::matrix_mul(
+        self.backend.matrix_mul(
             Transpose::NoTrans,
             Transpose::NoTrans,
             Complex::new(1., 0.),
@@ -98,7 +89,7 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for SDP<B, C> {
             Complex::new(0., 0.),
             &mut tmp,
         );
-        B::matrix_mul(
+        self.backend.matrix_mul(
             Transpose::NoTrans,
             Transpose::NoTrans,
             Complex::new(1., 0.),
@@ -126,12 +117,12 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for SDP<B, C> {
         }
 
         for _ in 0..self.repeat {
-            let ii = (m as f64 * rng.gen_range(0.0..1.0)) as usize;
+            let ii = (m as float * rng.gen_range(0.0..1.0)) as usize;
 
             let mut mmc: VectorXc = mm.column(ii).into();
             mmc[ii] = Complex::new(0., 0.);
 
-            B::matrix_mul_vec(
+            self.backend.matrix_mul_vec(
                 Transpose::NoTrans,
                 Complex::new(1., 0.),
                 &x_mat,
@@ -139,19 +130,19 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for SDP<B, C> {
                 Complex::new(0., 0.),
                 &mut x,
             );
-            let gamma = B::dot_c(&x, &mmc);
+            let gamma = self.backend.dot_c(&x, &mmc);
             if gamma.real() > 0.0 {
-                x.mul_assign(Complex::new((self.lambda / gamma.real()).sqrt(), 0.));
+                x *= Complex::new((self.lambda / gamma.real()).sqrt(), 0.);
                 set_bcd_result(&mut x_mat, &x, ii);
             } else {
                 set_bcd_result(&mut x_mat, &zero, ii);
             }
         }
 
-        let u = B::max_eigen_vector(x_mat);
+        let u = self.backend.max_eigen_vector(x_mat);
 
         let mut ut = VectorXc::zeros(m);
-        B::matrix_mul_vec(
+        self.backend.matrix_mul_vec(
             Transpose::NoTrans,
             Complex::new(1., 0.),
             &p,
@@ -161,7 +152,7 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for SDP<B, C> {
         );
 
         let mut q = VectorXc::zeros(n);
-        B::matrix_mul_vec(
+        self.backend.matrix_mul_vec(
             Transpose::NoTrans,
             Complex::new(1., 0.),
             &pseudo_inv_b,
@@ -170,7 +161,7 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for SDP<B, C> {
             &mut q,
         );
 
-        let max_coefficient = B::max_coefficient_c(&q).abs();
+        let max_coefficient = self.backend.max_coefficient_c(&q).abs();
         Ok(geometry
             .transducers()
             .map(|tr| {
@@ -179,5 +170,11 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for SDP<B, C> {
                 Drive { amp, phase }
             })
             .collect())
+    }
+}
+
+impl<B: Backend> Default for SDP<B> {
+    fn default() -> Self {
+        Self::new()
     }
 }

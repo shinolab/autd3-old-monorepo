@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/03/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -12,51 +12,48 @@
  */
 
 use crate::{
-    constraint::Constraint, macros::generate_propagation_matrix, Backend, Complex, MatrixXc,
-    Transpose, VectorXc,
+    constraint::Constraint, impl_holo, macros::generate_propagation_matrix, Backend, Complex,
+    MatrixXc, Transpose, VectorXc,
 };
-use anyhow::Result;
 use autd3_core::{
+    error::AUTDInternalError,
+    float,
     gain::Gain,
     geometry::{Geometry, Transducer, Vector3},
-    Drive,
+    Drive, PI,
 };
 use autd3_traits::Gain;
 use nalgebra::ComplexField;
-use std::{f64::consts::PI, marker::PhantomData};
 
 /// Reference
 /// * Diego Martinez Plasencia et al. "Gs-pat: high-speed multi-point sound-fields for phased arrays of transducers," ACMTrans-actions on Graphics (TOG), 39(4):138–1, 2020.
 ///
 /// Not yet been implemented with GPU.
 #[derive(Gain)]
-pub struct GSPAT<B: Backend, C: Constraint> {
+pub struct GSPAT<B: Backend> {
     foci: Vec<Vector3>,
-    amps: Vec<f64>,
-    repeat: usize,
-    backend: PhantomData<B>,
-    constraint: C,
+    amps: Vec<float>,
+    pub repeat: usize,
+    pub constraint: Constraint,
+    backend: B,
 }
 
-impl<B: Backend, C: Constraint> GSPAT<B, C> {
-    pub fn new(foci: Vec<Vector3>, amps: Vec<f64>, constraint: C) -> Self {
-        Self::with_param(foci, amps, constraint, 100)
-    }
+impl_holo!(GSPAT<B>);
 
-    pub fn with_param(foci: Vec<Vector3>, amps: Vec<f64>, constraint: C, repeat: usize) -> Self {
-        assert!(foci.len() == amps.len());
+impl<B: Backend> GSPAT<B> {
+    pub fn new() -> Self {
         Self {
-            foci,
-            amps,
-            repeat,
-            backend: PhantomData,
-            constraint,
+            foci: vec![],
+            amps: vec![],
+            repeat: 100,
+            backend: B::new(),
+            constraint: Constraint::Normalize,
         }
     }
 }
 
-impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for GSPAT<B, C> {
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>> {
+impl<B: Backend, T: Transducer> Gain<T> for GSPAT<B> {
+    fn calc(mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         let m = self.foci.len();
         let n = geometry.num_transducers();
 
@@ -68,7 +65,7 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for GSPAT<B, C> {
             .transpose();
 
         let mut r = MatrixXc::zeros(m, m);
-        B::matrix_mul(
+        self.backend.matrix_mul(
             Transpose::NoTrans,
             Transpose::NoTrans,
             Complex::new(1., 0.),
@@ -81,7 +78,7 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for GSPAT<B, C> {
         let mut p = VectorXc::from_iterator(m, self.amps.iter().map(|&a| Complex::new(a, 0.)));
 
         let mut gamma = VectorXc::zeros(m);
-        B::matrix_mul_vec(
+        self.backend.matrix_mul_vec(
             Transpose::NoTrans,
             Complex::new(1., 0.),
             &r,
@@ -93,7 +90,7 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for GSPAT<B, C> {
             for i in 0..m {
                 p[i] = gamma[i] / gamma[i].abs() * self.amps[i];
             }
-            B::matrix_mul_vec(
+            self.backend.matrix_mul_vec(
                 Transpose::NoTrans,
                 Complex::new(1., 0.),
                 &r,
@@ -108,7 +105,7 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for GSPAT<B, C> {
         }
 
         let mut q = VectorXc::zeros(n);
-        B::matrix_mul_vec(
+        self.backend.matrix_mul_vec(
             Transpose::NoTrans,
             Complex::new(1., 0.),
             &b,
@@ -117,7 +114,7 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for GSPAT<B, C> {
             &mut q,
         );
 
-        let max_coefficient = B::max_coefficient_c(&q).abs();
+        let max_coefficient = self.backend.max_coefficient_c(&q).abs();
         Ok(geometry
             .transducers()
             .map(|tr| {
@@ -126,5 +123,11 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for GSPAT<B, C> {
                 Drive { amp, phase }
             })
             .collect())
+    }
+}
+
+impl<B: Backend> Default for GSPAT<B> {
+    fn default() -> Self {
+        Self::new()
     }
 }
