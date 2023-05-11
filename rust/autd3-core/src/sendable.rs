@@ -4,7 +4,7 @@
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/05/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,6 +26,18 @@ pub trait Sendable<T: Transducer> {
 
     fn timeout() -> Option<Duration> {
         None
+    }
+}
+
+impl<T: Transducer, B> Sendable<T> for Box<B>
+where
+    B: Sendable<T>,
+{
+    type H = B::H;
+    type B = B::B;
+
+    fn operation(self, geometry: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
+        B::operation(*self, geometry)
     }
 }
 

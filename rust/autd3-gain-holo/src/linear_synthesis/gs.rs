@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/03/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -12,49 +12,46 @@
  */
 
 use crate::{
-    constraint::Constraint, macros::generate_propagation_matrix, Backend, Complex, Transpose,
-    VectorXc,
+    constraint::Constraint, impl_holo, macros::generate_propagation_matrix, Backend, Complex,
+    Transpose, VectorXc,
 };
-use anyhow::Result;
 use autd3_core::{
+    error::AUTDInternalError,
+    float,
     gain::Gain,
     geometry::{Geometry, Transducer, Vector3},
-    Drive,
+    Drive, PI,
 };
 use autd3_traits::Gain;
 use nalgebra::ComplexField;
-use std::{f64::consts::PI, marker::PhantomData};
 
 /// Reference
 /// * Asier Marzo and Bruce W Drinkwater. Holographic acoustic tweezers.Proceedings of theNational Academy of Sciences, 116(1):84–89, 2019.
 #[derive(Gain)]
-pub struct GS<B: Backend, C: Constraint> {
+pub struct GS<B: Backend> {
     foci: Vec<Vector3>,
-    amps: Vec<f64>,
-    repeat: usize,
-    backend: PhantomData<B>,
-    constraint: C,
+    amps: Vec<float>,
+    pub repeat: usize,
+    pub constraint: Constraint,
+    backend: B,
 }
 
-impl<B: Backend, C: Constraint> GS<B, C> {
-    pub fn new(foci: Vec<Vector3>, amps: Vec<f64>, constraint: C) -> Self {
-        Self::with_param(foci, amps, constraint, 100)
-    }
+impl_holo!(GS<B>);
 
-    pub fn with_param(foci: Vec<Vector3>, amps: Vec<f64>, constraint: C, repeat: usize) -> Self {
-        assert!(foci.len() == amps.len());
+impl<B: Backend> GS<B> {
+    pub fn new() -> Self {
         Self {
-            foci,
-            amps,
-            repeat,
-            backend: PhantomData,
-            constraint,
+            foci: vec![],
+            amps: vec![],
+            repeat: 100,
+            backend: B::new(),
+            constraint: Constraint::Normalize,
         }
     }
 }
 
-impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for GS<B, C> {
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>> {
+impl<B: Backend, T: Transducer> Gain<T> for GS<B> {
+    fn calc(mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         let m = self.foci.len();
         let n = geometry.num_transducers();
 
@@ -67,7 +64,7 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for GS<B, C> {
         let mut p = VectorXc::zeros(m);
         let mut xi = VectorXc::zeros(n);
         for _ in 0..self.repeat {
-            B::matrix_mul_vec(
+            self.backend.matrix_mul_vec(
                 Transpose::NoTrans,
                 Complex::new(1., 0.),
                 &g,
@@ -78,7 +75,7 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for GS<B, C> {
             for i in 0..m {
                 p[i] = gamma[i] / gamma[i].abs() * self.amps[i];
             }
-            B::matrix_mul_vec(
+            self.backend.matrix_mul_vec(
                 Transpose::ConjTrans,
                 Complex::new(1., 0.),
                 &g,
@@ -91,7 +88,7 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for GS<B, C> {
             }
         }
 
-        let max_coefficient = B::max_coefficient_c(&q).abs();
+        let max_coefficient = self.backend.max_coefficient_c(&q).abs();
         Ok(geometry
             .transducers()
             .map(|tr| {
@@ -100,5 +97,11 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for GS<B, C> {
                 Drive { amp, phase }
             })
             .collect())
+    }
+}
+
+impl<B: Backend> Default for GS<B> {
+    fn default() -> Self {
+        Self::new()
     }
 }

@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/05/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -40,7 +40,7 @@ fn impl_modulation_macro(ast: &syn::DeriveInput) -> TokenStream {
             }
         }
 
-        impl <#(#type_params),* T: autd3_core::geometry::Transducer> autd3_core::sendable::Sendable<T> for #name #ty_generics #where_clause {
+        impl <#(#type_params,)* T: autd3_core::geometry::Transducer> autd3_core::sendable::Sendable<T> for #name #ty_generics #where_clause {
             type H = autd3_core::Modulation;
             type B = autd3_core::NullBody;
 
@@ -65,9 +65,10 @@ pub fn gain_derive(input: TokenStream) -> TokenStream {
 fn impl_gain_macro(ast: syn::DeriveInput) -> TokenStream {
     let name = &ast.ident;
     let generics = &ast.generics;
+    let type_params = generics.type_params();
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let gen = quote! {
-        impl<T: autd3_core::geometry::Transducer> autd3_core::gain::GainBoxed<T> for #name #ty_generics #where_clause {
+        impl <#(#type_params,)* T: autd3_core::geometry::Transducer> autd3_core::gain::GainBoxed<T> for #name #ty_generics #where_clause {
             fn calc_box(self: Box<Self>, geometry: &autd3_core::geometry::Geometry<T>) -> Result<Vec<autd3_core::Drive>, autd3_core::error::AUTDInternalError> {
                 self.calc(geometry)
             }

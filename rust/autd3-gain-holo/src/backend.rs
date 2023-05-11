@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/01/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -14,11 +14,13 @@
 use nalgebra::{Dyn, Matrix, VecStorage, U1};
 use std::ops::{AddAssign, Mul, MulAssign};
 
-pub type Complex = nalgebra::Complex<f64>;
+use autd3_core::float;
+
+pub type Complex = nalgebra::Complex<float>;
 pub type MatrixXc = Matrix<Complex, Dyn, Dyn, VecStorage<Complex, Dyn, Dyn>>;
-pub type MatrixX = Matrix<f64, Dyn, Dyn, VecStorage<f64, Dyn, Dyn>>;
+pub type MatrixX = Matrix<float, Dyn, Dyn, VecStorage<float, Dyn, Dyn>>;
 pub type VectorXc = Matrix<Complex, Dyn, U1, VecStorage<Complex, Dyn, U1>>;
-pub type VectorX = Matrix<f64, Dyn, U1, VecStorage<f64, Dyn, U1>>;
+pub type VectorX = Matrix<float, Dyn, U1, VecStorage<float, Dyn, U1>>;
 
 pub enum Transpose {
     NoTrans = 111,
@@ -28,13 +30,16 @@ pub enum Transpose {
 }
 
 pub trait Backend {
-    fn hadamard_product(a: &MatrixXc, b: &MatrixXc, c: &mut MatrixXc);
-    fn real(a: &MatrixXc, b: &mut MatrixX);
-    fn imag(a: &VectorXc, b: &mut VectorX);
-    fn pseudo_inverse_svd(matrix: MatrixXc, alpha: f64, result: &mut MatrixXc);
-    fn max_eigen_vector(matrix: MatrixXc) -> VectorXc;
-    fn matrix_add(alpha: f64, a: &MatrixX, beta: f64, b: &mut MatrixX);
+    fn new() -> Self;
+    fn hadamard_product(&mut self, a: &MatrixXc, b: &MatrixXc, c: &mut MatrixXc);
+    fn real(&mut self, a: &MatrixXc, b: &mut MatrixX);
+    fn imag(&mut self, a: &VectorXc, b: &mut VectorX);
+    fn pseudo_inverse_svd(&mut self, matrix: MatrixXc, alpha: float, result: &mut MatrixXc);
+    fn max_eigen_vector(&mut self, matrix: MatrixXc) -> VectorXc;
+    fn matrix_add(&mut self, alpha: float, a: &MatrixX, beta: float, b: &mut MatrixX);
+    #[allow(clippy::too_many_arguments)]
     fn matrix_mul(
+        &mut self,
         trans_a: Transpose,
         trans_b: Transpose,
         alpha: Complex,
@@ -44,6 +49,7 @@ pub trait Backend {
         c: &mut MatrixXc,
     );
     fn matrix_mul_vec(
+        &mut self,
         trans_a: Transpose,
         alpha: Complex,
         a: &MatrixXc,
@@ -51,33 +57,37 @@ pub trait Backend {
         beta: Complex,
         c: &mut VectorXc,
     );
-    fn vector_add(alpha: f64, a: &VectorX, b: &mut VectorX);
-    fn solve_ch(a: MatrixXc, b: &mut VectorXc) -> bool;
-    fn solve_g(a: MatrixX, b: &mut VectorX) -> bool;
-    fn dot(a: &VectorX, b: &VectorX) -> f64;
-    fn dot_c(a: &VectorXc, b: &VectorXc) -> Complex;
-    fn max_coefficient(a: &VectorX) -> f64;
-    fn max_coefficient_c(a: &VectorXc) -> f64;
-    fn concat_row(a: MatrixXc, b: &MatrixXc) -> MatrixXc;
-    fn concat_col(a: MatrixXc, b: &MatrixXc) -> MatrixXc;
+    fn vector_add(&mut self, alpha: float, a: &VectorX, b: &mut VectorX);
+    fn solve_ch(&mut self, a: MatrixXc, b: &mut VectorXc) -> bool;
+    fn solve_g(&mut self, a: MatrixX, b: &mut VectorX) -> bool;
+    fn dot(&mut self, a: &VectorX, b: &VectorX) -> float;
+    fn dot_c(&mut self, a: &VectorXc, b: &VectorXc) -> Complex;
+    fn max_coefficient(&mut self, a: &VectorX) -> float;
+    fn max_coefficient_c(&mut self, a: &VectorXc) -> float;
+    fn concat_row(&mut self, a: MatrixXc, b: &MatrixXc) -> MatrixXc;
+    fn concat_col(&mut self, a: MatrixXc, b: &MatrixXc) -> MatrixXc;
 }
 
 pub struct NalgebraBackend {}
 
 impl Backend for NalgebraBackend {
-    fn hadamard_product(a: &MatrixXc, b: &MatrixXc, c: &mut MatrixXc) {
+    fn new() -> Self {
+        Self {}
+    }
+
+    fn hadamard_product(&mut self, a: &MatrixXc, b: &MatrixXc, c: &mut MatrixXc) {
         *c = a.component_mul(b);
     }
 
-    fn real(a: &MatrixXc, b: &mut MatrixX) {
+    fn real(&mut self, a: &MatrixXc, b: &mut MatrixX) {
         *b = a.map(|x| x.re);
     }
 
-    fn imag(a: &VectorXc, b: &mut VectorX) {
+    fn imag(&mut self, a: &VectorXc, b: &mut VectorX) {
         *b = a.map(|x| x.im);
     }
 
-    fn pseudo_inverse_svd(matrix: MatrixXc, alpha: f64, result: &mut MatrixXc) {
+    fn pseudo_inverse_svd(&mut self, matrix: MatrixXc, alpha: float, result: &mut MatrixXc) {
         let svd = matrix.svd(true, true);
         let s_inv = MatrixXc::from_diagonal(
             &svd.singular_values
@@ -89,17 +99,18 @@ impl Backend for NalgebraBackend {
         };
     }
 
-    fn max_eigen_vector(matrix: MatrixXc) -> VectorXc {
+    fn max_eigen_vector(&mut self, matrix: MatrixXc) -> VectorXc {
         let eig = nalgebra::SymmetricEigen::new(matrix);
         eig.eigenvectors.column(eig.eigenvalues.imax()).into()
     }
 
-    fn matrix_add(alpha: f64, a: &MatrixX, beta: f64, b: &mut MatrixX) {
+    fn matrix_add(&mut self, alpha: float, a: &MatrixX, beta: float, b: &mut MatrixX) {
         b.mul_assign(beta);
         b.add_assign(a.mul(alpha));
     }
 
     fn matrix_mul(
+        &mut self,
         trans_a: Transpose,
         trans_b: Transpose,
         alpha: Complex,
@@ -156,6 +167,7 @@ impl Backend for NalgebraBackend {
     }
 
     fn matrix_mul_vec(
+        &mut self,
         trans_a: Transpose,
         alpha: Complex,
         a: &MatrixXc,
@@ -172,35 +184,35 @@ impl Backend for NalgebraBackend {
         };
     }
 
-    fn vector_add(alpha: f64, a: &VectorX, b: &mut VectorX) {
+    fn vector_add(&mut self, alpha: float, a: &VectorX, b: &mut VectorX) {
         b.add_assign(a.mul(alpha));
     }
 
-    fn solve_ch(a: MatrixXc, b: &mut VectorXc) -> bool {
+    fn solve_ch(&mut self, a: MatrixXc, b: &mut VectorXc) -> bool {
         a.qr().solve_mut(b)
     }
 
-    fn solve_g(a: MatrixX, b: &mut VectorX) -> bool {
+    fn solve_g(&mut self, a: MatrixX, b: &mut VectorX) -> bool {
         a.qr().solve_mut(b)
     }
 
-    fn dot(a: &VectorX, b: &VectorX) -> f64 {
+    fn dot(&mut self, a: &VectorX, b: &VectorX) -> float {
         a.dot(b)
     }
 
-    fn dot_c(a: &VectorXc, b: &VectorXc) -> Complex {
+    fn dot_c(&mut self, a: &VectorXc, b: &VectorXc) -> Complex {
         a.dot(b)
     }
 
-    fn max_coefficient(a: &VectorX) -> f64 {
+    fn max_coefficient(&mut self, a: &VectorX) -> float {
         a.camax()
     }
 
-    fn max_coefficient_c(a: &VectorXc) -> f64 {
+    fn max_coefficient_c(&mut self, a: &VectorXc) -> float {
         a.camax()
     }
 
-    fn concat_row(a: MatrixXc, b: &MatrixXc) -> MatrixXc {
+    fn concat_row(&mut self, a: MatrixXc, b: &MatrixXc) -> MatrixXc {
         let arows = a.nrows();
         let acols = a.ncols();
         let mut new_mat = a.resize(arows + b.nrows(), acols, Default::default());
@@ -211,7 +223,7 @@ impl Backend for NalgebraBackend {
         new_mat
     }
 
-    fn concat_col(a: MatrixXc, b: &MatrixXc) -> MatrixXc {
+    fn concat_col(&mut self, a: MatrixXc, b: &MatrixXc) -> MatrixXc {
         let arows = a.nrows();
         let acols = a.ncols();
         let mut new_mat = a.resize(arows, acols + b.ncols(), Default::default());
