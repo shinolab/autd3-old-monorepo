@@ -4,18 +4,14 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/05/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{
-    error::AUTDInternalError,
-    geometry::{Geometry, Matrix3, Transducer, Vector3},
-    sendable::Sendable,
-};
+use crate::{error::AUTDInternalError, geometry::*, sendable::Sendable};
 
 use autd3_driver::*;
 
@@ -51,6 +47,7 @@ impl FocusSTM {
     }
 }
 
+#[cfg(not(feature = "dynamic"))]
 impl<T: Transducer> Sendable<T> for FocusSTM {
     type H = autd3_driver::NullHeader;
     type B = autd3_driver::FocusSTM;
@@ -88,6 +85,56 @@ impl<T: Transducer> Sendable<T> for FocusSTM {
             finish_idx: self.finish_idx,
         };
         Ok((Self::H::default(), Self::B::new(points, *tr_num_min, props)))
+    }
+}
+
+#[cfg(feature = "dynamic")]
+impl Sendable for FocusSTM {
+    fn operation(
+        &mut self,
+        geometry: &Geometry<DynamicTransducer>,
+    ) -> Result<
+        (
+            Box<dyn autd3_driver::Operation>,
+            Box<dyn autd3_driver::Operation>,
+        ),
+        AUTDInternalError,
+    > {
+        let points = geometry
+            .device_map()
+            .iter()
+            .scan(0, |state, tr_num| {
+                let r = Some(*state);
+                *state += tr_num;
+                r
+            })
+            .map(|origin_idx| {
+                let tr = &geometry[origin_idx];
+                let origin = tr.position();
+                let trans_inv =
+                    Matrix3::from_columns(&[tr.x_direction(), tr.y_direction(), tr.z_direction()])
+                        .transpose();
+                self.control_points
+                    .iter()
+                    .map(|(p, shift)| {
+                        let lp = trans_inv * (p - origin);
+                        STMFocus::new(lp.x, lp.y, lp.z, *shift)
+                    })
+                    .collect()
+            })
+            .collect();
+        let tr_num_min = geometry.device_map().iter().min().unwrap();
+
+        let props = autd3_driver::FocusSTMProps {
+            freq_div: self.freq_div,
+            sound_speed: geometry.sound_speed,
+            start_idx: self.start_idx,
+            finish_idx: self.finish_idx,
+        };
+        Ok((
+            Box::new(autd3_driver::NullHeader::default()),
+            Box::new(autd3_driver::FocusSTM::new(points, *tr_num_min, props)),
+        ))
     }
 }
 

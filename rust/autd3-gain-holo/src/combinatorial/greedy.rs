@@ -71,7 +71,7 @@ impl Greedy {
 }
 
 impl<T: Transducer> Gain<T> for Greedy {
-    fn calc(self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         let phase_candidates = (0..self.phase_div)
             .map(|i| Complex::new(0., 2.0 * PI * i as float / self.phase_div as float).exp())
             .collect::<Vec<_>>();

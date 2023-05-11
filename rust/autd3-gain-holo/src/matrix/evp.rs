@@ -51,7 +51,7 @@ impl<B: Backend> EVP<B> {
 }
 
 impl<B: Backend, T: Transducer> Gain<T> for EVP<B> {
-    fn calc(mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         let m = self.foci.len();
         let n = geometry.num_transducers();
 

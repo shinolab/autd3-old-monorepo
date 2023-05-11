@@ -40,16 +40,37 @@ fn impl_modulation_macro(ast: &syn::DeriveInput) -> TokenStream {
             }
         }
 
+        #[cfg(not(feature = "dynamic"))]
         impl <#(#type_params,)* T: autd3_core::geometry::Transducer> autd3_core::sendable::Sendable<T> for #name #ty_generics #where_clause {
             type H = autd3_core::Modulation;
             type B = autd3_core::NullBody;
 
             fn operation(
-                self,
+                mut self,
                 _geometry: &autd3_core::geometry::Geometry<T>,
             ) -> Result<(Self::H, Self::B), autd3_core::error::AUTDInternalError> {
                 let freq_div = self.freq_div;
                 Ok((Self::H::new(self.calc()?, freq_div), Self::B::default()))
+            }
+        }
+
+        #[cfg(feature = "dynamic")]
+        impl #impl_generics autd3_core::sendable::Sendable for #name #ty_generics #where_clause {
+            fn operation(
+                &mut self,
+                _: &autd3_core::geometry::Geometry<autd3_core::geometry::DynamicTransducer>,
+            ) -> Result<
+                (
+                    Box<dyn autd3_core::Operation>,
+                    Box<dyn autd3_core::Operation>,
+                ),
+                autd3_core::error::AUTDInternalError,
+            > {
+                let freq_div = self.freq_div;
+                Ok((
+                    Box::new(autd3_core::Modulation::new(self.calc()?, freq_div)),
+                    Box::new(autd3_core::NullBody::default()),
+                ))
             }
         }
     };
@@ -65,50 +86,77 @@ pub fn gain_derive(input: TokenStream) -> TokenStream {
 fn impl_gain_macro(ast: syn::DeriveInput) -> TokenStream {
     let name = &ast.ident;
     let generics = &ast.generics;
-    let type_params = generics.type_params();
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let gen = quote! {
-        impl <#(#type_params,)* T: autd3_core::geometry::Transducer> autd3_core::gain::GainBoxed<T> for #name #ty_generics #where_clause {
-            fn calc_box(self: Box<Self>, geometry: &autd3_core::geometry::Geometry<T>) -> Result<Vec<autd3_core::Drive>, autd3_core::error::AUTDInternalError> {
-                self.calc(geometry)
-            }
-        }
-
+        #[cfg(not(feature = "dynamic"))]
         impl #impl_generics autd3_core::sendable::Sendable<autd3_core::geometry::LegacyTransducer> for #name #ty_generics #where_clause {
             type H = autd3_core::NullHeader;
             type B = autd3_core::GainLegacy;
 
             fn operation(
-                self,
+                mut self,
                 geometry: &Geometry<autd3_core::geometry::LegacyTransducer>,
             ) -> Result<(Self::H, Self::B), autd3_core::error::AUTDInternalError> {
                 Ok((Self::H::default(), Self::B::new(self.calc(geometry)?)))
             }
         }
 
+        #[cfg(not(feature = "dynamic"))]
         impl #impl_generics autd3_core::sendable::Sendable<autd3_core::geometry::AdvancedTransducer> for #name #ty_generics #where_clause {
             type H = autd3_core::NullHeader;
             type B = autd3_core::GainAdvanced;
 
             fn operation(
-                self,
+                mut self,
                 geometry: &Geometry<autd3_core::geometry::AdvancedTransducer>,
             ) -> Result<(Self::H, Self::B), autd3_core::error::AUTDInternalError> {
                 Ok((Self::H::default(), Self::B::new(self.calc(geometry)?, geometry.transducers().map(|tr| tr.cycle()).collect())))
             }
         }
 
+        #[cfg(not(feature = "dynamic"))]
         impl #impl_generics autd3_core::sendable::Sendable<autd3_core::geometry::AdvancedPhaseTransducer> for #name #ty_generics #where_clause {
             type H = autd3_core::NullHeader;
             type B = autd3_core::GainAdvancedPhase;
 
             fn operation(
-                self,
+                mut self,
                 geometry: &Geometry<autd3_core::geometry::AdvancedPhaseTransducer>,
             ) -> Result<(Self::H, Self::B), autd3_core::error::AUTDInternalError> {
                 Ok((Self::H::default(), Self::B::new(self.calc(geometry)?, geometry.transducers().map(|tr| tr.cycle()).collect())))
             }
         }
+
+
+        #[cfg(feature = "dynamic")]
+        impl #impl_generics autd3_core::sendable::Sendable for #name #ty_generics #where_clause  {
+            fn operation(
+                &mut self,
+                geometry: &autd3_core::geometry::Geometry<autd3_core::geometry::DynamicTransducer>,
+            ) -> Result<
+                (
+                    Box<dyn autd3_core::Operation>,
+                    Box<dyn autd3_core::Operation>,
+                ),
+                autd3_core::error::AUTDInternalError,
+            > {
+                match geometry.mode() {
+                    autd3_core::geometry::TransMode::Legacy => Ok((
+                        Box::new(autd3_core::NullHeader::default()),
+                        Box::new(autd3_core::GainLegacy::new(self.calc(geometry)?)),
+                    )),
+                    autd3_core::geometry::TransMode::Advanced => Ok((
+                        Box::new(autd3_core::NullHeader::default()),
+                        Box::new(autd3_core::GainAdvanced::new(self.calc(geometry)?, geometry.transducers().map(|tr| tr.cycle().unwrap()).collect())),
+                    )),
+                    autd3_core::geometry::TransMode::AdvancedPhase => Ok((
+                        Box::new(autd3_core::NullHeader::default()),
+                        Box::new(autd3_core::GainAdvancedPhase::new(self.calc(geometry)?, geometry.transducers().map(|tr| tr.cycle().unwrap()).collect())),
+                    )),
+                }
+            }
+        }
+
     };
     gen.into()
 }

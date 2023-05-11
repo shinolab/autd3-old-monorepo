@@ -16,7 +16,7 @@ use std::time::Duration;
 use autd3_core::{
     error::AUTDInternalError,
     geometry::{Geometry, Transducer},
-    link::{Link, LinkBuilder},
+    link::Link,
     CPUControlFlags, FPGAControlFlags, RxDatagram, RxMessage, TxDatagram, HEADER_SIZE,
     MSG_SIMULATOR_CLOSE, MSG_SIMULATOR_INIT,
 };
@@ -53,26 +53,22 @@ impl SimulatorBuilder {
             timeout: Duration::ZERO,
         }
     }
-}
 
-impl LinkBuilder for SimulatorBuilder {
-    type L = Simulator;
-
-    fn timeout(mut self, timeout: Duration) -> Self {
+    pub fn timeout(mut self, timeout: Duration) -> Self {
         self.timeout = timeout;
         self
     }
 
-    fn build(self) -> Self::L {
+    pub fn build(self) -> Simulator {
         Simulator::with_timeout(self.timeout)
     }
 }
 
 unsafe impl Send for Simulator {}
 
-impl Link for Simulator {
-    fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
-        if self.is_open() {
+impl<T: Transducer> Link<T> for Simulator {
+    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+        if self.is_open {
             return Ok(());
         }
 
@@ -151,7 +147,7 @@ impl Link for Simulator {
     }
 
     fn close(&mut self) -> Result<(), AUTDInternalError> {
-        if !self.is_open() {
+        if !self.is_open {
             return Ok(());
         }
 
@@ -163,13 +159,13 @@ impl Link for Simulator {
         header.size = 0x00;
         geometry_buf.num_bodies = 0;
 
-        self.send(&geometry_buf)?;
+        <Simulator as Link<T>>::send(self, &geometry_buf)?;
 
         Ok(())
     }
 
     fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
-        if !self.is_open() {
+        if !self.is_open {
             return Ok(false);
         }
 
@@ -181,7 +177,7 @@ impl Link for Simulator {
     }
 
     fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError> {
-        if !self.is_open() {
+        if !self.is_open {
             return Ok(false);
         }
 

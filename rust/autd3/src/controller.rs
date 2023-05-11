@@ -27,7 +27,7 @@ use autd3_core::{
 
 use crate::error::AUTDError;
 
-pub struct Controller<L: Link, T: Transducer> {
+pub struct Controller<T: Transducer, L: Link<T>> {
     link: L,
     geometry: Geometry<T>,
     tx_buf: TxDatagram,
@@ -37,8 +37,8 @@ pub struct Controller<L: Link, T: Transducer> {
     msg_id: AtomicU8,
 }
 
-impl<L: Link, T: Transducer> Controller<L, T> {
-    pub fn open(geometry: Geometry<T>, link: L) -> Result<Controller<L, T>, AUTDError> {
+impl<T: Transducer, L: Link<T>> Controller<T, L> {
+    pub fn open(geometry: Geometry<T>, link: L) -> Result<Controller<T, L>, AUTDError> {
         let mut link = link;
         link.open(&geometry)?;
         let num_devices = geometry.num_devices();
@@ -63,7 +63,7 @@ impl<L: Link, T: Transducer> Controller<L, T> {
     }
 }
 
-impl<L: Link, T: Transducer> Controller<L, T> {
+impl<T: Transducer, L: Link<T>> Controller<T, L> {
     pub fn geometry(&self) -> &Geometry<T> {
         &self.geometry
     }
@@ -79,6 +79,8 @@ impl<L: Link, T: Transducer> Controller<L, T> {
     /// * `header` - Header
     /// * `body` - Body
     ///
+    ///
+    #[cfg(not(feature = "dynamic"))]
     pub fn send<S: Sendable<T>>(&mut self, s: S) -> Result<bool, AUTDError> {
         let (mut op_header, mut op_body) = s.operation(&self.geometry)?;
 
@@ -109,6 +111,14 @@ impl<L: Link, T: Transducer> Controller<L, T> {
             }
         }
         Ok(true)
+    }
+
+    #[cfg(not(feature = "dynamic"))]
+    pub fn close(&mut self) -> Result<bool, AUTDError> {
+        let res = self.send(Stop::new())?;
+        let res = res & self.send(Clear::new())?;
+        self.link.close()?;
+        Ok(res)
     }
 
     /// Return firmware information of the devices
@@ -193,7 +203,7 @@ impl<L: Link, T: Transducer> Controller<L, T> {
     }
 }
 
-impl<L: Link, T: Transducer> Controller<L, T> {
+impl<T: Transducer, L: Link<T>> Controller<T, L> {
     pub fn get_id(&mut self) -> u8 {
         if self
             .msg_id
@@ -208,13 +218,6 @@ impl<L: Link, T: Transducer> Controller<L, T> {
             self.msg_id.fetch_add(1, atomic::Ordering::SeqCst);
         }
         self.msg_id.load(atomic::Ordering::SeqCst)
-    }
-
-    pub fn close(&mut self) -> Result<bool, AUTDError> {
-        let res = self.send(Stop::new())?;
-        let res = res & self.send(Clear::new())?;
-        self.link.close()?;
-        Ok(res)
     }
 }
 
@@ -240,8 +243,8 @@ mod tests {
         }
     }
 
-    impl Link for EmulatorLink {
-        fn open<T: Transducer>(
+    impl<T: Transducer> Link<T> for EmulatorLink {
+        fn open(
             &mut self,
             _geometry: &Geometry<T>,
         ) -> Result<(), autd3_core::error::AUTDInternalError> {
