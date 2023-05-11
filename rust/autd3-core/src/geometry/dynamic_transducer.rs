@@ -1,0 +1,117 @@
+/*
+ * File: dynamic_transducer.rs
+ * Project: geometry
+ * Created Date: 11/05/2023
+ * Author: Shun Suzuki
+ * -----
+ * Last Modified: 11/05/2023
+ * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+ * -----
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
+ *
+ */
+
+use autd3_driver::{FPGA_CLK_FREQ, MAX_CYCLE};
+
+use crate::{error::AUTDInternalError, float};
+
+use super::{Matrix4, Transducer, UnitQuaternion, Vector3, Vector4};
+
+#[derive(Clone, Copy, PartialEq, Default)]
+pub enum TransMode {
+    #[default]
+    Legacy,
+    Advanced,
+    AdvancedPhase,
+}
+
+pub struct DynamicTransducer {
+    idx: usize,
+    pos: Vector3,
+    rot: UnitQuaternion,
+    cycle: u16,
+    mod_delay: u16,
+    mode: TransMode,
+}
+
+impl Transducer for DynamicTransducer {
+    fn new(idx: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
+        Self {
+            idx,
+            pos,
+            rot,
+            cycle: 4096,
+            mod_delay: 0,
+            mode: TransMode::Legacy,
+        }
+    }
+
+    fn affine(&mut self, t: Vector3, r: UnitQuaternion) {
+        let rot_mat: Matrix4 = From::from(r);
+        let trans_mat = rot_mat.append_translation(&t);
+        let homo = Vector4::new(self.pos[0], self.pos[1], self.pos[2], 1.0);
+        let new_pos = trans_mat * homo;
+        self.pos = Vector3::new(new_pos[0], new_pos[1], new_pos[2]);
+        self.rot = r * self.rot;
+    }
+
+    fn position(&self) -> &Vector3 {
+        &self.pos
+    }
+
+    fn rotation(&self) -> &UnitQuaternion {
+        &self.rot
+    }
+
+    fn idx(&self) -> usize {
+        self.idx
+    }
+
+    fn frequency(&self) -> float {
+        FPGA_CLK_FREQ as float / self.cycle as float
+    }
+
+    fn mod_delay(&self) -> u16 {
+        self.mod_delay
+    }
+
+    fn set_mod_delay(&mut self, delay: u16) {
+        self.mod_delay = delay;
+    }
+}
+
+impl DynamicTransducer {
+    pub fn cycle(&self) -> Result<u16, AUTDInternalError> {
+        if self.mode == TransMode::Legacy {
+            return Err(AUTDInternalError::NotSupportedTransducerOperation);
+        }
+        Ok(self.cycle)
+    }
+
+    pub fn set_cycle(&mut self, cycle: u16) -> Result<(), AUTDInternalError> {
+        if self.mode == TransMode::Legacy {
+            return Err(AUTDInternalError::NotSupportedTransducerOperation);
+        }
+        if cycle > MAX_CYCLE {
+            return Err(AUTDInternalError::CycleOutOfRange(cycle));
+        }
+        self.cycle = cycle;
+        Ok(())
+    }
+
+    pub fn set_frequency(&mut self, freq: float) -> Result<(), AUTDInternalError> {
+        if self.mode == TransMode::Legacy {
+            return Err(AUTDInternalError::NotSupportedTransducerOperation);
+        }
+        let cycle = (FPGA_CLK_FREQ as float / freq).round() as u16;
+        self.set_cycle(cycle)
+    }
+
+    pub fn set_mode(&mut self, mode: TransMode) {
+        self.mode = mode;
+    }
+
+    pub fn mode(&self) -> &TransMode {
+        &self.mode
+    }
+}

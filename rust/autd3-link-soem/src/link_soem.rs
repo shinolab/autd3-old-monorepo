@@ -28,9 +28,9 @@ use libc::{c_void, timeval};
 use autd3_core::{
     error::AUTDInternalError,
     geometry::{Geometry, Transducer},
-    link::{get_logger, get_logger_with_custom_func, Link, LinkBuilder, Log},
+    link::{get_logger, Link},
     osal_timer::{Timer, TimerCallback},
-    spdlog::{self, prelude::*},
+    spdlog::prelude::*,
     timer_strategy::TimerStrategy,
     RxDatagram, TxDatagram, EC_CYCLE_TIME_BASE_NANO_SEC,
 };
@@ -112,6 +112,7 @@ pub struct SOEMBuilder<F: Fn(&str) + Send> {
     on_lost: Option<F>,
     timeout: Duration,
     level: Level,
+    logger: Option<Logger>,
 }
 
 impl<F: Fn(&str) + Send> SOEMBuilder<F> {
@@ -127,6 +128,7 @@ impl<F: Fn(&str) + Send> SOEMBuilder<F> {
             on_lost: None,
             timeout: Duration::from_millis(20),
             level: Level::Info,
+            logger: None,
         }
     }
 
@@ -174,46 +176,19 @@ impl<F: Fn(&str) + Send> SOEMBuilder<F> {
         self.level = level;
         self
     }
-}
 
-impl<F: Fn(&str) + Send + 'static> LinkBuilder for SOEMBuilder<F> {
-    type L = SOEM<F>;
-
-    fn timeout(mut self, timeout: Duration) -> Self {
+    pub fn timeout(mut self, timeout: Duration) -> Self {
         self.timeout = timeout;
         self
     }
 
-    fn build(self) -> Self::L {
-        SOEM::new(
-            Config {
-                sync0_cycle: self.sync0_cycle,
-                send_cycle: self.send_cycle,
-                buf_size: self.buf_size,
-                timer_strategy: self.timer_strategy,
-                sync_mode: self.sync_mode,
-                ifname: self.ifname,
-                state_check_interval: self.state_check_interval,
-                timeout: self.timeout,
-            },
-            self.on_lost,
-            self.level,
-        )
+    pub fn logger(mut self, logger: Logger) -> Self {
+        self.logger = Some(logger);
+        self
     }
 
-    fn build_with_custom_logger<O, Flush>(self, level: Level, out: O, flush: Flush) -> Log<Self::L>
-    where
-        Self: Sized,
-        O: Fn(&str) -> spdlog::Result<()> + Send + Sync + 'static,
-        Flush: Fn() -> spdlog::Result<()> + Send + Sync + 'static,
-    {
-        let level = if self.level as u16 > level as u16 {
-            self.level
-        } else {
-            level
-        };
-        let logger = get_logger_with_custom_func(level, out, flush);
-        Log::with_logger(
+    pub fn build(self) -> SOEM<F> {
+        if let Some(logger) = self.logger {
             SOEM::with_logger(
                 Config {
                     sync0_cycle: self.sync0_cycle,
@@ -226,24 +201,10 @@ impl<F: Fn(&str) + Send + 'static> LinkBuilder for SOEMBuilder<F> {
                     timeout: self.timeout,
                 },
                 self.on_lost,
-                logger.clone(),
-            ),
-            logger,
-        )
-    }
-
-    fn build_with_default_logger(self, level: Level) -> Log<Self::L>
-    where
-        Self: Sized,
-    {
-        let level = if self.level as u16 > level as u16 {
-            self.level
+                logger,
+            )
         } else {
-            level
-        };
-        let logger = get_logger(level);
-        Log::with_logger(
-            SOEM::with_logger(
+            SOEM::new(
                 Config {
                     sync0_cycle: self.sync0_cycle,
                     send_cycle: self.send_cycle,
@@ -255,10 +216,9 @@ impl<F: Fn(&str) + Send + 'static> LinkBuilder for SOEMBuilder<F> {
                     timeout: self.timeout,
                 },
                 self.on_lost,
-                logger.clone(),
-            ),
-            logger,
-        )
+                self.level,
+            )
+        }
     }
 }
 
@@ -333,9 +293,9 @@ unsafe extern "C" fn dc_config(context: *mut ecx_contextt, slave: u16) -> i32 {
     0
 }
 
-impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
-    fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
-        if self.is_open() {
+impl<T: Transducer, F: 'static + Fn(&str) + Send> Link<T> for SOEM<F> {
+    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+        if self.is_open.load(Ordering::Acquire) {
             return Ok(());
         }
 
@@ -515,7 +475,7 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
     }
 
     fn close(&mut self) -> Result<(), AUTDInternalError> {
-        if !self.is_open() {
+        if !self.is_open.load(Ordering::Acquire) {
             return Ok(());
         }
 
@@ -550,7 +510,7 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
     }
 
     fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
-        if !self.is_open() {
+        if !self.is_open.load(Ordering::Acquire) {
             return Err(AUTDInternalError::LinkClosed);
         }
 
@@ -561,7 +521,7 @@ impl<F: 'static + Fn(&str) + Send> Link for SOEM<F> {
     }
 
     fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError> {
-        if !self.is_open() {
+        if !self.is_open.load(Ordering::Acquire) {
             return Err(AUTDInternalError::LinkClosed);
         }
         unsafe {

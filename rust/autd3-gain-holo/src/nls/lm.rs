@@ -97,7 +97,7 @@ impl<B: Backend> LM<B> {
 
 impl<B: Backend, T: Transducer> Gain<T> for LM<B> {
     #[allow(clippy::many_single_char_names)]
-    fn calc(mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         let m = self.foci.len();
         let n = geometry.num_transducers();
         let n_param = n + m;

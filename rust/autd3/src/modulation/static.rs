@@ -37,7 +37,7 @@ impl Static {
 }
 
 impl Modulation for Static {
-    fn calc(self) -> Result<Vec<float>, AUTDInternalError> {
+    fn calc(&mut self) -> Result<Vec<float>, AUTDInternalError> {
         Ok(vec![self.amp; 2])
     }
 }

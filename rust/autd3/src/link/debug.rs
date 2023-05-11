@@ -16,7 +16,7 @@ use std::time::Duration;
 use autd3_core::{
     error::AUTDInternalError,
     geometry::{Geometry, Transducer},
-    link::{get_logger, get_logger_with_custom_func, Link, LinkBuilder, Log},
+    link::{get_logger, Link},
     CPUControlFlags, RxDatagram, TxDatagram, MSG_CLEAR, MSG_RD_CPU_VERSION,
     MSG_RD_CPU_VERSION_MINOR, MSG_RD_FPGA_FUNCTION, MSG_RD_FPGA_VERSION, MSG_RD_FPGA_VERSION_MINOR,
 };
@@ -51,6 +51,7 @@ impl Debug {
 pub struct DebugBuilder {
     timeout: Duration,
     level: Level,
+    logger: Option<Logger>,
 }
 
 impl DebugBuilder {
@@ -58,6 +59,7 @@ impl DebugBuilder {
         Self {
             timeout: Duration::ZERO,
             level: Level::Debug,
+            logger: None,
         }
     }
 
@@ -65,54 +67,31 @@ impl DebugBuilder {
         self.level = level;
         self
     }
-}
 
-impl LinkBuilder for DebugBuilder {
-    type L = Debug;
-
-    fn timeout(mut self, timeout: Duration) -> Self {
+    pub fn timeout(mut self, timeout: Duration) -> Self {
         self.timeout = timeout;
         self
     }
 
-    fn build(self) -> Self::L {
-        Debug::new(self.level)
+    pub fn logger(mut self, logger: Logger) -> Self {
+        self.logger = Some(logger);
+        self
     }
 
-    fn build_with_custom_logger<O, F>(self, level: Level, out: O, flush: F) -> Log<Self::L>
-    where
-        Self: Sized,
-        O: Fn(&str) -> spdlog::Result<()> + Send + Sync + 'static,
-        F: Fn() -> spdlog::Result<()> + Send + Sync + 'static,
-    {
-        let level = if self.level as u16 > level as u16 {
-            self.level
+    pub fn build(self) -> Debug {
+        if let Some(logger) = self.logger {
+            Debug::with_logger(logger)
         } else {
-            level
-        };
-        let logger = get_logger_with_custom_func(level, out, flush);
-        Log::with_logger(Debug::with_logger(logger.clone()), logger)
-    }
-
-    fn build_with_default_logger(self, level: Level) -> Log<Self::L>
-    where
-        Self: Sized,
-    {
-        let level = if self.level as u16 > level as u16 {
-            self.level
-        } else {
-            level
-        };
-        let logger = get_logger(level);
-        Log::with_logger(Debug::with_logger(logger.clone()), logger)
+            Debug::new(self.level)
+        }
     }
 }
 
-impl Link for Debug {
-    fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+impl<T: Transducer> Link<T> for Debug {
+    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         debug!(logger: self.logger,"Open Debug link");
 
-        if self.is_open() {
+        if self.is_open {
             warn!(logger: self.logger,"Debug link is already opened.");
             return Ok(());
         }
@@ -138,7 +117,7 @@ impl Link for Debug {
     fn close(&mut self) -> Result<(), AUTDInternalError> {
         debug!(logger: self.logger,"Close Debug link");
 
-        if !self.is_open() {
+        if !self.is_open {
             warn!(logger: self.logger,"Debug link is already closed.");
             return Ok(());
         }

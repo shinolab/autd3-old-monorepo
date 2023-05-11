@@ -11,12 +11,8 @@
  *
  */
 
-mod builder;
-mod log;
 mod logger;
 
-pub use builder::LinkBuilder;
-pub use log::Log;
 pub use logger::get_logger;
 pub use logger::get_logger_with_custom_func;
 
@@ -30,8 +26,8 @@ use crate::{
 use autd3_driver::{RxDatagram, TxDatagram};
 
 /// Link is a interface to the AUTD device.
-pub trait Link: Send {
-    fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError>;
+pub trait Link<T: Transducer>: Send {
+    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError>;
     fn close(&mut self) -> Result<(), AUTDInternalError>;
     fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError>;
     fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError>;
