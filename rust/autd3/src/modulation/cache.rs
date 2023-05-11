@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/05/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,7 +33,7 @@ impl Clone for Cache {
 
 impl Cache {
     /// constructor
-    pub fn new<M: Modulation>(modulation: M) -> Result<Self, AUTDInternalError> {
+    pub fn new<M: Modulation>(mut modulation: M) -> Result<Self, AUTDInternalError> {
         let freq_div = modulation.sampling_frequency_division();
         Ok(Self {
             cache: modulation.calc()?,
@@ -51,8 +51,8 @@ impl Cache {
 }
 
 impl Modulation for Cache {
-    fn calc(self) -> Result<Vec<float>, AUTDInternalError> {
-        Ok(self.cache)
+    fn calc(&mut self) -> Result<Vec<float>, AUTDInternalError> {
+        Ok(self.cache.clone())
     }
 }
 

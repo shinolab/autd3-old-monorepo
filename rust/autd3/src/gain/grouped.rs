@@ -13,15 +13,7 @@
 
 use std::collections::HashMap;
 
-use autd3_core::{
-    error::AUTDInternalError,
-    gain::{Gain, GainBoxed},
-    geometry::{
-        AdvancedPhaseTransducer, AdvancedTransducer, Geometry, LegacyTransducer, Transducer,
-    },
-    sendable::Sendable,
-    Drive,
-};
+use autd3_core::{error::AUTDInternalError, gain::Gain, geometry::*, sendable::Sendable, Drive};
 
 use crate::error::AUTDError;
 
@@ -45,20 +37,11 @@ impl<'a, T: Transducer> Grouped<'a, T> {
     }
 }
 
-impl<'a, T: Transducer> GainBoxed<T> for Grouped<'a, T> {
-    fn calc_box(
-        self: Box<Self>,
-        geometry: &autd3_core::geometry::Geometry<T>,
-    ) -> Result<Vec<autd3_core::Drive>, autd3_core::error::AUTDInternalError> {
-        self.calc(geometry)
-    }
-}
-
 impl<'a, T: Transducer> Gain<T> for Grouped<'a, T> {
-    fn calc(self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         let mut drives = HashMap::new();
-        for (i, gain) in self.gain_map {
-            let d = gain.calc_box(geometry)?;
+        for (i, gain) in &mut self.gain_map {
+            let d = gain.calc(geometry)?;
             drives.insert(i, d);
         }
 
@@ -89,24 +72,26 @@ impl<'a, T: Transducer> Gain<T> for Grouped<'a, T> {
     }
 }
 
+#[cfg(not(feature = "dynamic"))]
 impl<'a> Sendable<LegacyTransducer> for Grouped<'a, LegacyTransducer> {
     type H = autd3_core::NullHeader;
     type B = autd3_core::GainLegacy;
 
     fn operation(
-        self,
+        mut self,
         geometry: &Geometry<LegacyTransducer>,
     ) -> Result<(Self::H, Self::B), AUTDInternalError> {
         Ok((Self::H::default(), Self::B::new(self.calc(geometry)?)))
     }
 }
 
+#[cfg(not(feature = "dynamic"))]
 impl<'a> Sendable<AdvancedTransducer> for Grouped<'a, AdvancedTransducer> {
     type H = autd3_core::NullHeader;
     type B = autd3_core::GainAdvanced;
 
     fn operation(
-        self,
+        mut self,
         geometry: &Geometry<AdvancedTransducer>,
     ) -> Result<(Self::H, Self::B), AUTDInternalError> {
         Ok((
@@ -119,12 +104,13 @@ impl<'a> Sendable<AdvancedTransducer> for Grouped<'a, AdvancedTransducer> {
     }
 }
 
+#[cfg(not(feature = "dynamic"))]
 impl<'a> Sendable<AdvancedPhaseTransducer> for Grouped<'a, AdvancedPhaseTransducer> {
     type H = autd3_core::NullHeader;
     type B = autd3_core::GainAdvancedPhase;
 
     fn operation(
-        self,
+        mut self,
         geometry: &Geometry<AdvancedPhaseTransducer>,
     ) -> Result<(Self::H, Self::B), AUTDInternalError> {
         Ok((
@@ -134,5 +120,46 @@ impl<'a> Sendable<AdvancedPhaseTransducer> for Grouped<'a, AdvancedPhaseTransduc
                 geometry.transducers().map(|tr| tr.cycle()).collect(),
             ),
         ))
+    }
+}
+
+#[cfg(feature = "dynamic")]
+impl<'a> Sendable for Grouped<'a, DynamicTransducer> {
+    fn operation(
+        &mut self,
+        geometry: &Geometry<DynamicTransducer>,
+    ) -> Result<
+        (
+            Box<dyn autd3_core::Operation>,
+            Box<dyn autd3_core::Operation>,
+        ),
+        AUTDInternalError,
+    > {
+        match geometry.mode() {
+            TransMode::Legacy => Ok((
+                Box::new(autd3_core::NullHeader::default()),
+                Box::new(autd3_core::GainLegacy::new(self.calc(geometry)?)),
+            )),
+            TransMode::Advanced => Ok((
+                Box::new(autd3_core::NullHeader::default()),
+                Box::new(autd3_core::GainAdvanced::new(
+                    self.calc(geometry)?,
+                    geometry
+                        .transducers()
+                        .map(|tr| tr.cycle().unwrap())
+                        .collect(),
+                )),
+            )),
+            TransMode::AdvancedPhase => Ok((
+                Box::new(autd3_core::NullHeader::default()),
+                Box::new(autd3_core::GainAdvancedPhase::new(
+                    self.calc(geometry)?,
+                    geometry
+                        .transducers()
+                        .map(|tr| tr.cycle().unwrap())
+                        .collect(),
+                )),
+            )),
+        }
     }
 }

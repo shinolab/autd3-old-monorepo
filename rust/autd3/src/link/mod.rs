@@ -12,5 +12,7 @@
  */
 
 pub mod debug;
+pub mod log;
 
 pub use debug::Debug;
+pub use log::Log;

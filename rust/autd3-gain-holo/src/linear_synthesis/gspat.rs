@@ -53,7 +53,7 @@ impl<B: Backend> GSPAT<B> {
 }
 
 impl<B: Backend, T: Transducer> Gain<T> for GSPAT<B> {
-    fn calc(mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         let m = self.foci.len();
         let n = geometry.num_transducers();
 

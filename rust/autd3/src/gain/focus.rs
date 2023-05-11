@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/05/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -52,7 +52,7 @@ impl Focus {
 }
 
 impl<T: Transducer> Gain<T> for Focus {
-    fn calc(self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         let sound_speed = geometry.sound_speed;
         Ok(Self::transform(geometry, |tr| {
             let phase = tr.align_phase_at(self.pos, sound_speed);

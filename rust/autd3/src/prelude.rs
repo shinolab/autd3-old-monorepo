@@ -28,11 +28,8 @@ pub use autd3_core::{
     clear::Clear,
     delay::ModDelay,
     float,
-    geometry::{
-        AdvancedPhaseTransducer, AdvancedTransducer, Geometry, GeometryBuilder, LegacyTransducer,
-        Transducer, Vector3,
-    },
-    link::{Link, LinkBuilder},
+    geometry::*,
+    link::Link,
     silencer_config::SilencerConfig,
     stm::{FocusSTM, GainSTM, STM},
     stop::Stop,

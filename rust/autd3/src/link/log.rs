@@ -11,9 +11,9 @@
  *
  */
 
-use std::time::Duration;
+use std::{marker::PhantomData, time::Duration};
 
-use crate::{
+use crate::core::{
     error::AUTDInternalError,
     geometry::{Geometry, Transducer},
     link::Link,
@@ -25,15 +25,16 @@ use spdlog::prelude::*;
 
 pub use spdlog::Level;
 
-pub struct Log<L: Link> {
+pub struct Log<T: Transducer, L: Link<T>> {
     link: L,
     logger: Logger,
     synchronized: bool,
+    phantom: PhantomData<T>,
 }
 
-impl<L: Link> Log<L> {
+impl<T: Transducer, L: Link<T>> Log<T, L> {
     pub fn new(link: L, level: Level) -> Self {
-        Self::with_logger(link, super::logger::get_logger(level))
+        Self::with_logger(link, crate::core::link::get_logger(level))
     }
 
     pub fn with_logger(link: L, logger: Logger) -> Self {
@@ -41,12 +42,13 @@ impl<L: Link> Log<L> {
             link,
             logger,
             synchronized: false,
+            phantom: PhantomData,
         }
     }
 }
 
-impl<L: Link> Link for Log<L> {
-    fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+impl<T: Transducer, L: Link<T>> Link<T> for Log<T, L> {
+    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         trace!(logger: self.logger, "Open Log link");
 
         if self.is_open() {

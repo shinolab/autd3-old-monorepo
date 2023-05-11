@@ -18,7 +18,7 @@ use autd3_driver::MAX_CYCLE;
 
 #[derive(Error, Debug)]
 pub enum AUTDInternalError {
-    #[error("Link is closed.")]
+    #[error("Link is closed")]
     LinkClosed,
     #[error("{0}")]
     LinkError(String),
@@ -30,6 +30,8 @@ pub enum AUTDInternalError {
     TransducersNumInDeviceOutOfRange,
     #[error("{0}")]
     TimerError(TimerError),
+    #[error("This operation is not supported for the transducer mode")]
+    NotSupportedTransducerOperation,
 }
 
 impl From<TimerError> for AUTDInternalError {

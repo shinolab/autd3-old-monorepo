@@ -18,7 +18,7 @@ use libc::c_void;
 use autd3_core::{
     error::AUTDInternalError,
     geometry::{Geometry, Transducer},
-    link::{Link, LinkBuilder},
+    link::Link,
     RxDatagram, RxMessage, TxDatagram,
 };
 
@@ -65,23 +65,19 @@ impl TwinCATBuilder {
             timeout: Duration::ZERO,
         }
     }
-}
 
-impl LinkBuilder for TwinCATBuilder {
-    type L = TwinCAT;
-
-    fn timeout(mut self, timeout: Duration) -> Self {
+    pub fn timeout(mut self, timeout: Duration) -> Self {
         self.timeout = timeout;
         self
     }
 
-    fn build(self) -> Self::L {
-        Self::L::with_timeout(self.timeout)
+    pub fn build(self) -> TwinCAT {
+        TwinCAT::with_timeout(self.timeout)
     }
 }
 
-impl Link for TwinCAT {
-    fn open<T: Transducer>(&mut self, _geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+impl<T: Transducer> Link<T> for TwinCAT {
+    fn open(&mut self, _geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         unsafe {
             let port = (TC_ADS.tc_ads_port_open)();
             if port == 0 {

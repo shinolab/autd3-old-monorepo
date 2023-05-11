@@ -18,3 +18,7 @@ proc-macro = true
 [dependencies]
 quote = "1.0.18"
 syn = "2.0.3"
+
+[features]
+default = []
+dynamic = []

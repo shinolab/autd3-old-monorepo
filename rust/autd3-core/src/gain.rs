@@ -21,14 +21,10 @@ use autd3_driver::Drive;
 #[cfg(feature = "parallel")]
 use rayon::prelude::*;
 
-pub trait GainBoxed<T: Transducer> {
-    fn calc_box(self: Box<Self>, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError>;
-}
-
 /// Gain contains amplitude and phase of each transducer in the AUTD.
 /// Note that the amplitude means duty ratio of Pulse Width Modulation, respectively.
-pub trait Gain<T: Transducer>: GainBoxed<T> {
-    fn calc(self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError>;
+pub trait Gain<T: Transducer> {
+    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError>;
     fn transform<F: Fn(&T) -> Drive + Sync + Send>(geometry: &Geometry<T>, f: F) -> Vec<Drive>
     where
         Self: Sized,

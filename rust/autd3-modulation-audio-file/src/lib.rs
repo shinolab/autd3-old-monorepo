@@ -89,10 +89,10 @@ impl Wav {
 
 impl Modulation for Wav {
     #[allow(clippy::unnecessary_cast)]
-    fn calc(self) -> Result<Vec<float>, AUTDInternalError> {
+    fn calc(&mut self) -> Result<Vec<float>, AUTDInternalError> {
         let sample_rate = self.sampling_freq() as u32;
         let samples = wav_io::resample::linear(
-            self.raw_buffer,
+            self.raw_buffer.clone(),
             self.channels,
             self.sample_rate,
             sample_rate,
