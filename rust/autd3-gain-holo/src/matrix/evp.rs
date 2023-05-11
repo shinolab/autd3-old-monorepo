@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/03/2023
+ * Last Modified: 11/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -12,47 +12,46 @@
  */
 
 use crate::{
-    constraint::Constraint, error::HoloError, macros::generate_propagation_matrix, Backend,
-    Complex, MatrixXc, Transpose, VectorXc,
+    constraint::Constraint, error::HoloError, impl_holo, macros::generate_propagation_matrix,
+    Backend, Complex, MatrixXc, Transpose, VectorXc,
 };
-use anyhow::Result;
-use autd3_core::gain::Gain;
-use autd3_core::geometry::{Geometry, Transducer, Vector3};
-use autd3_core::Drive;
+use autd3_core::{
+    error::AUTDInternalError,
+    float,
+    gain::Gain,
+    geometry::{Geometry, Transducer, Vector3},
+    Drive, PI,
+};
 use autd3_traits::Gain;
 use nalgebra::ComplexField;
-use std::{f64::consts::PI, marker::PhantomData};
 
 /// Reference
 /// * Long, Benjamin, et al. "Rendering volumetric haptic shapes in mid-air using ultrasound." ACM Transactions on Graphics (TOG) 33.6 (2014): 1-10.
 #[derive(Gain)]
-pub struct EVP<B: Backend, C: Constraint> {
+pub struct EVP<B: Backend> {
     foci: Vec<Vector3>,
-    amps: Vec<f64>,
-    gamma: f64,
-    backend: PhantomData<B>,
-    constraint: C,
+    amps: Vec<float>,
+    pub gamma: float,
+    pub constraint: Constraint,
+    backend: B,
 }
 
-impl<B: Backend, C: Constraint> EVP<B, C> {
-    pub fn new(foci: Vec<Vector3>, amps: Vec<f64>, constraint: C) -> Self {
-        Self::with_params(foci, amps, constraint, 1.0)
-    }
+impl_holo!(EVP<B>);
 
-    pub fn with_params(foci: Vec<Vector3>, amps: Vec<f64>, constraint: C, gamma: f64) -> Self {
-        assert!(foci.len() == amps.len());
+impl<B: Backend> EVP<B> {
+    pub fn new() -> Self {
         Self {
-            foci,
-            amps,
-            gamma,
-            backend: PhantomData,
-            constraint,
+            foci: vec![],
+            amps: vec![],
+            gamma: 1.0,
+            backend: B::new(),
+            constraint: Constraint::Uniform(1.),
         }
     }
 }
 
-impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for EVP<B, C> {
-    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>> {
+impl<B: Backend, T: Transducer> Gain<T> for EVP<B> {
+    fn calc(mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         let m = self.foci.len();
         let n = geometry.num_transducers();
 
@@ -64,7 +63,7 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for EVP<B, C> {
             .transpose();
 
         let mut r = MatrixXc::zeros(m, m);
-        B::matrix_mul(
+        self.backend.matrix_mul(
             Transpose::NoTrans,
             Transpose::NoTrans,
             Complex::new(1., 0.),
@@ -73,7 +72,7 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for EVP<B, C> {
             Complex::new(0., 0.),
             &mut r,
         );
-        let max_ev = B::max_eigen_vector(r);
+        let max_ev = self.backend.max_eigen_vector(r);
 
         let sigma = MatrixXc::from_diagonal(&VectorXc::from_iterator(
             n,
@@ -84,10 +83,10 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for EVP<B, C> {
                         .map(|(a, &amp)| a.abs() * amp)
                         .sum()
                 })
-                .map(|s: f64| Complex::new((s / m as f64).sqrt().powf(self.gamma), 0.0)),
+                .map(|s: float| Complex::new((s / m as float).sqrt().powf(self.gamma), 0.0)),
         ));
 
-        let gr = B::concat_row(g, &sigma);
+        let gr = self.backend.concat_row(g, &sigma);
         let f = VectorXc::from_iterator(
             m + n,
             self.amps
@@ -98,7 +97,7 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for EVP<B, C> {
         );
 
         let mut gtg = MatrixXc::zeros(n, n);
-        B::matrix_mul(
+        self.backend.matrix_mul(
             Transpose::ConjTrans,
             Transpose::NoTrans,
             Complex::new(1., 0.),
@@ -109,7 +108,7 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for EVP<B, C> {
         );
 
         let mut gtf = VectorXc::zeros(n);
-        B::matrix_mul_vec(
+        self.backend.matrix_mul_vec(
             Transpose::ConjTrans,
             Complex::new(1., 0.),
             &gr,
@@ -118,11 +117,11 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for EVP<B, C> {
             &mut gtf,
         );
 
-        if !B::solve_ch(gtg, &mut gtf) {
+        if !self.backend.solve_ch(gtg, &mut gtf) {
             return Err(HoloError::SolveFailed.into());
         }
 
-        let max_coefficient = B::max_coefficient_c(&gtf).abs();
+        let max_coefficient = self.backend.max_coefficient_c(&gtf).abs();
         Ok(geometry
             .transducers()
             .map(|tr| {
@@ -133,5 +132,11 @@ impl<B: Backend, C: Constraint, T: Transducer> Gain<T> for EVP<B, C> {
                 Drive { amp, phase }
             })
             .collect())
+    }
+}
+
+impl<B: Backend> Default for EVP<B> {
+    fn default() -> Self {
+        Self::new()
     }
 }
