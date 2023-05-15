@@ -145,7 +145,7 @@ module pwm_preconditioner #(
         // step 1
         a_phase <= {2'b00, CYCLE[cnt]};
         b_phase <= {2'b00, PHASE[cnt]};
-        a_duty_r <= {3'b000, DUTY[cnt][WIDTH+1:1]};
+        a_duty_r <= {3'b000, DUTY[cnt][WIDTH-1:1]};
         b_duty_r <= DUTY[cnt][0];
         cnt <= cnt + 1;
 
