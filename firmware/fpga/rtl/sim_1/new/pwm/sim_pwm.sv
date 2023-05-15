@@ -4,11 +4,11 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 15/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
- * 
+ *
  */
 
 
@@ -31,13 +31,13 @@ module sim_pwm ();
   localparam int DEPTH = 249;
   localparam int CYCLE = 4096;
 
-  bit [WIDTH-1:0] cycle[0:DEPTH-1];
-  bit [WIDTH-1:0] duty[0:DEPTH-1];
-  bit [WIDTH-1:0] phase[0:DEPTH-1];
-  bit pwm_out[0:DEPTH-1];
-  bit done;
+  bit [WIDTH-1:0] cycle[DEPTH];
+  bit [WIDTH-1:0] duty[DEPTH];
+  bit [WIDTH-1:0] phase[DEPTH];
+  bit pwm_out[DEPTH];
+  bit din_valid, dout_valid;
 
-  bit [WIDTH-1:0] time_cnt[0:DEPTH-1];
+  bit [WIDTH-1:0] time_cnt[DEPTH];
 
   pwm #(
       .WIDTH(WIDTH),
@@ -46,27 +46,25 @@ module sim_pwm ();
       .CLK(CLK_163P84M),
       .CLK_L(CLK_20P48M),
       .SYS_TIME(SYS_TIME),
+      .DIN_VALID(din_valid),
       .CYCLE(cycle),
       .DUTY(duty),
       .PHASE(phase),
       .PWM_OUT(pwm_out),
-      .DONE(done),
-      .TIME_CNT(time_cnt)
+      .TIME_CNT(time_cnt),
+      .DOUT_VALID(dout_valid)
   );
 
-  task wait_calc();
-    // capture values
-    while (1) begin
-      @(posedge CLK_20P48M);
-      if (done) begin
-        break;
-      end
-    end
+  task automatic wait_calc();
+    @(posedge CLK_20P48M);
+    din_valid = 1;
 
-    // wait calc
+    @(posedge CLK_20P48M);
+    din_valid = 0;
+
     while (1) begin
       @(posedge CLK_20P48M);
-      if (done) begin
+      if (dout_valid) begin
         break;
       end
     end
@@ -74,20 +72,21 @@ module sim_pwm ();
     @(posedge CLK_20P48M);
   endtask
 
-  task set(int idx, bit [WIDTH-1:0] d, bit [WIDTH-1:0] p);
+  task automatic set(int idx, bit [WIDTH-1:0] c, bit [WIDTH-1:0] d, bit [WIDTH-1:0] p);
     @(posedge CLK_20P48M);
+    cycle[idx] = c;
     duty[idx]  = d;
     phase[idx] = p;
 
     wait_calc();
 
-    // wait buffer
     while (time_cnt[idx] != cycle[idx] - 1) @(posedge CLK_163P84M);
     @(posedge CLK_163P84M);
   endtask
 
-  task set_and_check(int idx, bit [WIDTH-1:0] d, bit [WIDTH-1:0] p);
-    set(idx, d, p);
+  task automatic set_and_check(int idx, bit [WIDTH-1:0] c, bit [WIDTH-1:0] d,
+                               bit [WIDTH-1:0] p);
+    set(idx, c, d, p);
 
     $display("check start\tidx=%d, duty=%d, phase=%d \t@t=%d", idx[$clog2(DEPTH)-1:0], d, p,
              SYS_TIME);
@@ -96,7 +95,8 @@ module sim_pwm ();
       automatic int f = (cycle[idx] - phase[idx] + (duty[idx] + 1) / 2) % cycle[idx];
       automatic int t = time_cnt[idx];
       @(posedge CLK_163P84M);
-      if (pwm_out[idx] != (((r <= f) & ((r <= t) & (t < f))) | ((f < r) & ((r <= t) | (t < f))))) begin
+      if (pwm_out[idx] != (((r <= f) & ((r <= t) & (t < f)))
+          | ((f < r) & ((r <= t) | (t < f))))) begin
         $error("\tFailed at v=%u, t=%d, T=%d, duty=%d, phase=%d, R=%d, F=%d", pwm_out[idx], t,
                cycle[idx], duty[idx], phase[idx], r, f);
         $finish();
@@ -107,28 +107,25 @@ module sim_pwm ();
     end
   endtask
 
-  task set_and_check_random();
+  task automatic set_and_check_random();
     automatic int idx = sim_helper_random.range(DEPTH - 1, 0);
+    automatic int c = sim_helper_random.range(8000, 2000);
     automatic int d = sim_helper_random.range(cycle[idx], 0);
     automatic int p = sim_helper_random.range(cycle[idx], 0);
-    set_and_check(idx, d, p);
+    set_and_check(idx, c, d, p);
   endtask
 
   initial begin
     sim_helper_random.init();
-    cycle[0] = CYCLE;
-    for (int i = 1; i < DEPTH; i++) begin
-      cycle[i] = sim_helper_random.range(8000, 2000);
-    end
+    cycle = '{DEPTH{0}};
     duty  = '{DEPTH{0}};
     phase = '{DEPTH{0}};
     @(posedge locked);
 
-    // set(0, CYCLE, CYCLE/2);
-    // set(0, 1000, CYCLE/2);
-    // set(0, 0, 0);
+    set_and_check(0, CYCLE, CYCLE, CYCLE / 2);
+    set_and_check(0, CYCLE, 1000, CYCLE / 2);
+    set_and_check(0, CYCLE, 0, 0);
 
-    // at random
     for (int i = 0; i < 100; i++) begin
       set_and_check_random();
     end

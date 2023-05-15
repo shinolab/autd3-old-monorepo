@@ -4,11 +4,11 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/10/2022
+ * Last Modified: 15/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
- * 
+ *
  */
 
 module pwm #(
@@ -18,19 +18,20 @@ module pwm #(
     input var CLK,
     input var CLK_L,
     input var [63:0] SYS_TIME,
-    input var [WIDTH-1:0] CYCLE[0:TRANS_NUM-1],
-    input var [WIDTH-1:0] DUTY[0:TRANS_NUM-1],
-    input var [WIDTH-1:0] PHASE[0:TRANS_NUM-1],
-    output var PWM_OUT[0:TRANS_NUM-1],
-    output var DONE,
-    output var [WIDTH-1:0] TIME_CNT[0:TRANS_NUM-1]
+    input var DIN_VALID,
+    input var [WIDTH-1:0] CYCLE[TRANS_NUM],
+    input var [WIDTH-1:0] DUTY[TRANS_NUM],
+    input var [WIDTH-1:0] PHASE[TRANS_NUM],
+    output var PWM_OUT[TRANS_NUM],
+    output var [WIDTH-1:0] TIME_CNT[TRANS_NUM],
+    output var DOUT_VALID
 );
 
-  bit [WIDTH-1:0] R[0:TRANS_NUM-1];
-  bit [WIDTH-1:0] F[0:TRANS_NUM-1];
+  bit [WIDTH-1:0] R[TRANS_NUM];
+  bit [WIDTH-1:0] F[TRANS_NUM];
 
-  bit [WIDTH-1:0] cycle_m1[0:TRANS_NUM-1];
-  bit [WIDTH-1:0] cycle_m2[0:TRANS_NUM-1];
+  bit [WIDTH-1:0] cycle_m1[TRANS_NUM];
+  bit [WIDTH-1:0] cycle_m2[TRANS_NUM];
 
   cycle_buffer #(
       .WIDTH(WIDTH),
@@ -58,16 +59,17 @@ module pwm #(
       .WIDTH(WIDTH),
       .DEPTH(TRANS_NUM)
   ) pwm_preconditioner (
-      .CLK  (CLK_L),
+      .CLK(CLK_L),
+      .DIN_VALID(DIN_VALID),
       .CYCLE(CYCLE),
-      .DUTY (DUTY),
+      .DUTY(DUTY),
       .PHASE(PHASE),
-      .RISE (R),
-      .FALL (F),
-      .DONE (DONE)
+      .RISE(R),
+      .FALL(F),
+      .DOUT_VALID(DOUT_VALID)
   );
 
-  for (genvar i = 0; i < TRANS_NUM; i++) begin
+  for (genvar i = 0; i < TRANS_NUM; i++) begin : gen_pwm
     bit [WIDTH-1:0] R_buf, F_buf;
     pwm_buffer #(
         .WIDTH(WIDTH)

@@ -1,14 +1,14 @@
 /*
- * File: sim_generator.sv
+ * File: sim_pwm_generator.sv
  * Project: pwm
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 15/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
- * 
+ *
  */
 
 module sim_pwm_generator ();
@@ -43,7 +43,7 @@ module sim_pwm_generator ();
       .PWM_OUT(pwm_out)
   );
 
-  task set(bit [WIDTH-1:0] r, bit [WIDTH-1:0] f);
+  task automatic set(bit [WIDTH-1:0] r, bit [WIDTH-1:0] f);
     while (time_cnt != CYCLE - 1) @(posedge CLK_163P84M);
     rise = r;
     fall = f;
