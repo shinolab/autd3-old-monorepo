@@ -24,7 +24,7 @@ module modulator #(
     input var DIN_VALID,
     input var [WIDTH-1:0] DUTY_IN,
     input var [WIDTH-1:0] PHASE_IN,
-    input var [15:0] DELAY_M,
+    input var [15:0] DELAY_M[DEPTH],
     output var [WIDTH-1:0] DUTY_OUT,
     output var [WIDTH-1:0] PHASE_OUT,
     output var DOUT_VALID,

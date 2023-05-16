@@ -21,7 +21,7 @@ module modulation_multiplier #(
     input var DIN_VALID,
     input var [15:0] IDX,
     modulation_bus_if.sampler_port M_BUS,
-    input var [15:0] DELAY_M,
+    input var [15:0] DELAY_M[DEPTH],
     input var [WIDTH-1:0] DUTY_IN,
     output var [WIDTH-1:0] DUTY_OUT,
     input var [WIDTH-1:0] PHASE_IN,
@@ -46,7 +46,7 @@ module modulation_multiplier #(
 
   bit [WIDTH-1:0] duty_m;
 
-  bit [17:0] idx_offset_a, idx_offset_s;
+  bit [17:0] idx_offset_a, idx_offset_b, idx_offset_s;
   bit [17:0] idx_oc_a, idx_oc_b, idx_oc_s;
 
   bit signed [WIDTH+9:0] p;
@@ -54,7 +54,7 @@ module modulation_multiplier #(
   bit [31:0] quo;
   bit [7:0] _unused;
 
-  bit [$clog2(DEPTH+(Latency+1))-1:0] cnt, calc_cnt, set_cnt;
+  bit [$clog2(DEPTH+(Latency+1))-1:0] cnt, delay_cnt, calc_cnt, set_cnt;
   bit dout_valid = 0;
 
   assign M_BUS.ADDR = idx_oc_s[15:0];
@@ -68,7 +68,7 @@ module modulation_multiplier #(
   ) addsub_o (
       .CLK(CLK),
       .A  (idx_offset_a),
-      .B  ({2'b00, DELAY_M}),
+      .B  (idx_offset_b),
       .ADD(1'b0),
       .S  (idx_offset_s)
   );
@@ -123,6 +123,8 @@ module modulation_multiplier #(
           phase_set_cnt <= 1;
 
           idx_offset_a <= {2'b00, IDX};
+          idx_offset_b <= {2'b00, DELAY_M[0]};
+          delay_cnt <= 1;
           cycle <= CYCLE_M + 1;
 
           state <= RUN;
@@ -134,6 +136,8 @@ module modulation_multiplier #(
           phase_set_cnt <= phase_set_cnt + 1;
         end
 
+        delay_cnt <= delay_cnt + 1;
+        idx_offset_b <= {2'b00, DELAY_M[delay_cnt]};
         idx_oc_a <= idx_offset_s;
         idx_oc_b <= idx_offset_s[17] == 1'b1 ? {1'b0, cycle[16:0]} : 0;
         cnt <= cnt + 1;

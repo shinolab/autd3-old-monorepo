@@ -33,7 +33,7 @@ module sim_modulator ();
   bit [15:0] idx;
   bit [15:0] cycle_m;
   bit [31:0] freq_div_m;
-  bit [15:0] delay_m;
+  bit [15:0] delay_m[DEPTH];
   bit [WIDTH-1:0] duty;
   bit [WIDTH-1:0] duty_out;
   bit [WIDTH-1:0] phase;
@@ -42,7 +42,6 @@ module sim_modulator ();
   bit [7:0] mod[65536];
   bit [WIDTH-1:0] duty_buf[DEPTH];
   bit [WIDTH-1:0] phase_buf[DEPTH];
-  bit [15:0] delay_m_buf[DEPTH];
   bit [15:0] idx_buf;
 
   modulator #(
@@ -74,8 +73,6 @@ module sim_modulator ();
       phase = sim_helper_random.range(8000, 0);
       duty_buf[i] = duty;
       phase_buf[i] = phase;
-      delay_m = sim_helper_random.range(16'hFFFF, 0);
-      delay_m_buf[i] = delay_m;
     end
     @(posedge CLK_20P48M);
     din_valid = 1'b0;
@@ -90,10 +87,9 @@ module sim_modulator ();
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-      if (duty_out
-          != (duty_buf[i] * mod[(idx_buf-delay_m_buf[i]+cycle_m+1)%(cycle_m+1)] / 255)) begin
+      if (duty_out != (duty_buf[i] * mod[(idx_buf-delay_m[i]+cycle_m+1)%(cycle_m+1)] / 255)) begin
         $error("Failed at %d: d=%d, m=%d, d_m=%d", i, duty_buf[i],
-               mod[(idx_buf-delay_m_buf[i]+cycle_m+1)%(cycle_m+1)], duty_out);
+               mod[(idx_buf-delay_m[i]+cycle_m+1)%(cycle_m+1)], duty_out);
         $finish();
       end
       if (phase_out != phase_buf[i]) begin
@@ -110,6 +106,11 @@ module sim_modulator ();
     cycle_m = 16'hFFFF;
     freq_div_m = 4096;
     sim_helper_random.init();
+
+    for (int i = 0; i < DEPTH; i++) begin
+      delay_m[i] = sim_helper_random.range(16'hFFFF, 0);
+    end
+
     @(posedge locked);
 
     for (int i = 0; i < cycle_m + 1; i++) begin
