@@ -1,18 +1,18 @@
 /*
- * File: ss_bus_if.sv
+ * File: stm_bus_if.sv
  * Project: stm
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 16/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
- * 
+ * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
+ *
  */
 
 `timescale 1ns / 1ps
-interface ss_bus_if ();
+interface stm_bus_if ();
 
   bit [15:0] ADDR;
   bit [127:0] DATA_OUT;
