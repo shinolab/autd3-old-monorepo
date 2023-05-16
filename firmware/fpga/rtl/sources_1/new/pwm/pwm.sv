@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/05/2023
+ * Last Modified: 17/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -20,8 +20,8 @@ module pwm #(
     input var [63:0] SYS_TIME,
     input var DIN_VALID,
     input var [WIDTH-1:0] CYCLE[TRANS_NUM],
-    input var [WIDTH-1:0] DUTY[TRANS_NUM],
-    input var [WIDTH-1:0] PHASE[TRANS_NUM],
+    input var [WIDTH-1:0] DUTY,
+    input var [WIDTH-1:0] PHASE,
     output var PWM_OUT[TRANS_NUM],
     output var [WIDTH-1:0] TIME_CNT[TRANS_NUM],
     output var DOUT_VALID

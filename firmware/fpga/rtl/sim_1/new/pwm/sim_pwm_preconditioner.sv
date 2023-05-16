@@ -25,7 +25,7 @@ module sim_pwm_preconditioner ();
   sim_helper_random sim_helper_random ();
 
   localparam int WIDTH = 13;
-  localparam int DEPTH = 2;
+  localparam int DEPTH = 249;
   localparam int CYCLE = 4096;
 
   bit [WIDTH-1:0] cycle [DEPTH];
