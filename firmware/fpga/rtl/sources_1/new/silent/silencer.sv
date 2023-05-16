@@ -4,7 +4,7 @@
  * Created Date: 22/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/05/2023
+ * Last Modified: 16/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -19,10 +19,10 @@ module silencer #(
     input var DIN_VALID,
     input var [WIDTH-1:0] STEP,
     input var [WIDTH-1:0] CYCLE[DEPTH],
-    input var [WIDTH-1:0] DUTY[DEPTH],
-    input var [WIDTH-1:0] PHASE[DEPTH],
-    output var [WIDTH-1:0] DUTY_S[DEPTH],
-    output var [WIDTH-1:0] PHASE_S[DEPTH],
+    input var [WIDTH-1:0] DUTY,
+    input var [WIDTH-1:0] PHASE,
+    output var [WIDTH-1:0] DUTY_S,
+    output var [WIDTH-1:0] PHASE_S,
     output var DOUT_VALID
 );
 
@@ -30,6 +30,7 @@ module silencer #(
 
   bit signed [WIDTH:0] step, step_n;
   bit signed [WIDTH:0] cycle_buf[6], cycle_n_buf[3];
+  bit [WIDTH-1:0] duty_buf, phase_buf;
 
   bit signed [WIDTH:0] current_duty [DEPTH] = '{DEPTH{0}};
   bit signed [WIDTH:0] current_phase[DEPTH] = '{DEPTH{0}};
@@ -42,8 +43,12 @@ module silencer #(
   bit add, add_fold;
   bit [$clog2(DEPTH+(AddSubLatency+1)*3)-1:0] calc_cnt, calc_step_cnt, fold_cnt, set_cnt;
 
+  bit [WIDTH-1:0] duty_s, phase_s;
+
   bit dout_valid = 0;
 
+  assign DUTY_S = duty_s;
+  assign PHASE_S = phase_s;
   assign DOUT_VALID = dout_valid;
 
   typedef enum bit {
@@ -52,11 +57,6 @@ module silencer #(
   } state_t;
 
   state_t state = WAITING;
-
-  for (genvar i = 0; i < DEPTH; i++) begin : gen_duty_phase
-    assign DUTY_S[i]  = current_duty[i][WIDTH-1:0];
-    assign PHASE_S[i] = current_phase[i][WIDTH-1:0];
-  end
 
   addsub #(
       .WIDTH(WIDTH + 1)
@@ -111,6 +111,7 @@ module silencer #(
   always_ff @(posedge CLK) begin
     case (state)
       WAITING: begin
+        dout_valid <= 1'b0;
         if (DIN_VALID) begin
           step <= {1'b0, STEP};
           step_n <= -{1'b0, STEP};
@@ -124,21 +125,10 @@ module silencer #(
         end
       end
       RUN: begin
-        dout_valid <= 1'b0;
-        cycle_buf[0] <= {1'b0, CYCLE[calc_step_cnt]};
-        cycle_buf[1] <= cycle_buf[0];
-        cycle_buf[2] <= cycle_buf[1];
-        cycle_buf[3] <= cycle_buf[2];
-        cycle_buf[4] <= cycle_buf[3];
-        cycle_buf[5] <= cycle_buf[4];
-        cycle_n_buf[0] <= -{1'b0, CYCLE[calc_step_cnt]};
-        cycle_n_buf[1] <= cycle_n_buf[0];
-        cycle_n_buf[2] <= cycle_n_buf[1];
-
         // step 1: calculate duty/phase step
-        a_duty_step <= {1'b0, DUTY[calc_step_cnt]};
+        a_duty_step <= {1'b0, duty_buf};
         b_duty_step <= current_duty[calc_step_cnt];
-        a_phase_step <= {1'b0, PHASE[calc_step_cnt]};
+        a_phase_step <= {1'b0, phase_buf};
         b_phase_step <= current_phase[calc_step_cnt];
         calc_step_cnt <= calc_step_cnt + 1;
 
@@ -183,6 +173,8 @@ module silencer #(
         if (fold_cnt > AddSubLatency) begin
           dout_valid <= 1'b1;
           current_phase[set_cnt] <= s_phase_fold;
+          duty_s <= current_duty[set_cnt][WIDTH-1:0];
+          phase_s <= s_phase_fold[WIDTH-1:0];
           set_cnt <= set_cnt + 1;
           if (set_cnt == DEPTH - 1) begin
             state <= WAITING;
@@ -192,6 +184,21 @@ module silencer #(
       default: begin
       end
     endcase
+  end
+
+  always_ff @(posedge CLK) begin
+    duty_buf <= DUTY;
+    phase_buf <= PHASE;
+
+    cycle_buf[0] <= {1'b0, CYCLE[calc_step_cnt]};
+    cycle_buf[1] <= cycle_buf[0];
+    cycle_buf[2] <= cycle_buf[1];
+    cycle_buf[3] <= cycle_buf[2];
+    cycle_buf[4] <= cycle_buf[3];
+    cycle_buf[5] <= cycle_buf[4];
+    cycle_n_buf[0] <= -{1'b0, CYCLE[calc_step_cnt]};
+    cycle_n_buf[1] <= cycle_n_buf[0];
+    cycle_n_buf[2] <= cycle_n_buf[1];
   end
 
 endmodule
