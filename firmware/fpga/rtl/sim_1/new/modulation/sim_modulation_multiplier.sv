@@ -1,5 +1,5 @@
 /*
- * File: sim_modulator.sv
+ * File: sim_modulation_multiplier.sv
  * Project: modulation
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
@@ -11,16 +11,15 @@
  *
  */
 
-module sim_modulator ();
+module sim_modulation_multiplier ();
 
-  bit [63:0] SYS_TIME;
   bit CLK_20P48M;
   bit locked;
   sim_helper_clk sim_helper_clk (
       .CLK_163P84M(),
       .CLK_20P48M(CLK_20P48M),
       .LOCKED(locked),
-      .SYS_TIME(SYS_TIME)
+      .SYS_TIME()
   );
 
   sim_helper_random sim_helper_random ();
@@ -32,7 +31,6 @@ module sim_modulator ();
   bit din_valid, dout_valid;
   bit [15:0] idx;
   bit [15:0] cycle_m;
-  bit [31:0] freq_div_m;
   bit [15:0] delay_m;
   bit [WIDTH-1:0] duty;
   bit [WIDTH-1:0] duty_out;
@@ -45,24 +43,32 @@ module sim_modulator ();
   bit [15:0] delay_m_buf[DEPTH];
   bit [15:0] idx_buf;
 
-  modulator #(
+  modulation_bus_if m_bus ();
+
+  modulation_memory modulation_memory (
+      .CLK(CLK_20P48M),
+      .CPU_BUS(sim_helper_bram.cpu_bus.mod_port),
+      .M_BUS(m_bus.memory_port)
+  );
+
+  modulation_multiplier #(
       .WIDTH(WIDTH),
       .DEPTH(DEPTH)
-  ) modulator (
+  ) modulation_multiplier (
       .CLK(CLK_20P48M),
-      .SYS_TIME(SYS_TIME),
       .CYCLE_M(cycle_m),
-      .FREQ_DIV_M(freq_div_m),
-      .CPU_BUS(sim_helper_bram.cpu_bus.mod_port),
       .DIN_VALID(din_valid),
+      .IDX(idx),
+      .M_BUS(m_bus.sampler_port),
+      .DELAY_M(delay_m),
       .DUTY_IN(duty),
       .PHASE_IN(phase),
-      .DELAY_M(delay_m),
       .DUTY_OUT(duty_out),
       .PHASE_OUT(phase_out),
-      .DOUT_VALID(dout_valid),
-      .IDX(idx)
+      .DOUT_VALID(dout_valid)
   );
+
+  always @(posedge CLK_20P48M) idx = idx + 1'b1;
 
   always @(posedge din_valid) idx_buf = idx;
 
@@ -107,8 +113,7 @@ module sim_modulator ();
 
   initial begin
     din_valid = 0;
-    cycle_m = 16'hFFFF;
-    freq_div_m = 4096;
+    cycle_m   = 16'hFFFF;
     sim_helper_random.init();
     @(posedge locked);
 
@@ -125,7 +130,7 @@ module sim_modulator ();
       join
     end
 
-    $display("OK! sim_modulator");
+    $display("OK! sim_modulation_multiplier");
     $finish();
   end
 
