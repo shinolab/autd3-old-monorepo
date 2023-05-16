@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/05/2023
+ * Last Modified: 17/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -31,7 +31,8 @@ module pwm_preconditioner #(
 
   bit [WIDTH-1:0] rise[DEPTH], fall[DEPTH];
 
-  bit signed [WIDTH-1:0] cycle_buf[6], duty_buf[3], phase_buf;
+  bit signed [WIDTH+1:0] cycle_buf[6];
+  bit [WIDTH-1:0] duty_buf[4], phase_buf;
   bit [WIDTH-1:0] rise_buf[DEPTH], fall_buf[DEPTH];
 
   bit signed [WIDTH+1:0] a_phase, b_phase, s_phase;
@@ -121,12 +122,12 @@ module pwm_preconditioner #(
   always_ff @(posedge CLK) begin
     case (state)
       WAITING: begin
+        dout_valid <= 1'b0;
         if (DIN_VALID) begin
           cnt <= 0;
           lr_cnt <= 0;
           fold_cnt <= 0;
           set_cnt <= 0;
-          dout_valid <= 1'b0;
 
           state <= RUN;
         end
@@ -141,7 +142,7 @@ module pwm_preconditioner #(
 
         // step 2
         a_rise <= s_phase;
-        b_rise <= {3'b000, duty_buf[AddSubLatency][WIDTH-1:1]};
+        b_rise <= {3'b000, duty_buf[1+AddSubLatency][WIDTH-1:1]};
         a_fall <= s_phase;
         b_fall <= s_duty_r;
         if (cnt > AddSubLatency) begin
@@ -196,10 +197,11 @@ module pwm_preconditioner #(
     duty_buf[0] <= DUTY;
     duty_buf[1] <= duty_buf[0];
     duty_buf[2] <= duty_buf[1];
+    duty_buf[3] <= duty_buf[2];
 
     phase_buf <= PHASE;
 
-    cycle_buf[0] <= CYCLE[cnt];
+    cycle_buf[0] <= {2'b00, CYCLE[cnt]};
     cycle_buf[1] <= cycle_buf[0];
     cycle_buf[2] <= cycle_buf[1];
     cycle_buf[3] <= cycle_buf[2];
