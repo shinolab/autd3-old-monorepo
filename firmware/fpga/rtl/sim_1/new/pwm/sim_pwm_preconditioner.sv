@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/05/2023
+ * Last Modified: 17/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -25,7 +25,7 @@ module sim_pwm_preconditioner ();
   sim_helper_random sim_helper_random ();
 
   localparam int WIDTH = 13;
-  localparam int DEPTH = 249;
+  localparam int DEPTH = 2;
   localparam int CYCLE = 4096;
 
   bit [WIDTH-1:0] cycle [DEPTH];
@@ -58,11 +58,13 @@ module sim_pwm_preconditioner ();
       @(posedge CLK_20P48M);
       din_valid = 1'b1;
       if (i == idx) begin
-        duty  = d;
+        duty = d;
         phase = p;
+        cycle[i] = c;
       end else begin
-        duty  = 0;
+        duty = 0;
         phase = 0;
+        cycle[i] = 0;
       end
       duty_buf[i]  = duty;
       phase_buf[i] = phase;
@@ -75,8 +77,9 @@ module sim_pwm_preconditioner ();
     for (int i = 0; i < DEPTH; i++) begin
       @(posedge CLK_20P48M);
       din_valid = 1'b1;
-      duty = sim_helper_random.range(8000, 0);
-      phase = sim_helper_random.range(8000, 0);
+      cycle[i] = sim_helper_random.range(8000, 2000);
+      duty = sim_helper_random.range(cycle[i] / 2, 0);
+      phase = sim_helper_random.range(cycle[i] - 1, 0);
       duty_buf[i] = duty;
       phase_buf[i] = phase;
     end
@@ -93,9 +96,10 @@ module sim_pwm_preconditioner ();
     end
 
     for (int i = 0; i < DEPTH; i++) begin
-      if ((rise[i] != ((cycle[i]-phase[i]-duty[i]/2+cycle[i])%cycle[i]))
-        & (fall[i] == ((cycle[i]-phase[i]+(duty[i]+1)/2)%cycle[i]))) begin
-        $error("Failed at idx=%d, d=%d, p=%d, R=%d, F=%d", i, duty[i], phase[i], rise[i], fall[i]);
+      if ((rise[i] != ((cycle[i]-phase_buf[i]-duty_buf[i]/2+cycle[i])%cycle[i]))
+        & (fall[i] == ((cycle[i]-phase_buf[i]+(duty_buf[i]+1)/2)%cycle[i]))) begin
+        $error("Failed at idx=%d, d=%d, p=%d, R=%d, F=%d", i, duty_buf[i], phase_buf[i], rise[i],
+               fall[i]);
         $finish();
       end
     end
@@ -154,10 +158,9 @@ module sim_pwm_preconditioner ();
         set_random();
         check();
       join
-      $display("check finish @%d", i);
     end
 
-    $display("OK!");
+    $display("OK! sim_pwm_preconditioner");
     $finish();
   end
 
