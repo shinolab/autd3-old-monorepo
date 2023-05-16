@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/05/2023
+ * Last Modified: 16/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -20,8 +20,8 @@ module pwm_preconditioner #(
     input var CLK,
     input var DIN_VALID,
     input var [WIDTH-1:0] CYCLE[DEPTH],
-    input var [WIDTH-1:0] DUTY[DEPTH],
-    input var [WIDTH-1:0] PHASE[DEPTH],
+    input var [WIDTH-1:0] DUTY,
+    input var [WIDTH-1:0] PHASE,
     output var [WIDTH-1:0] RISE[DEPTH],
     output var [WIDTH-1:0] FALL[DEPTH],
     output var DOUT_VALID
@@ -31,7 +31,7 @@ module pwm_preconditioner #(
 
   bit [WIDTH-1:0] rise[DEPTH], fall[DEPTH];
 
-  bit signed [WIDTH+1:0] cycle_buf[6], duty_buf[3];
+  bit signed [WIDTH-1:0] cycle_buf[6], duty_buf[3], phase_buf;
   bit [WIDTH-1:0] rise_buf[DEPTH], fall_buf[DEPTH];
 
   bit signed [WIDTH+1:0] a_phase, b_phase, s_phase;
@@ -132,26 +132,16 @@ module pwm_preconditioner #(
         end
       end
       RUN: begin
-        duty_buf[0] <= {2'b00, DUTY[cnt]};
-        duty_buf[1] <= duty_buf[0];
-        duty_buf[2] <= duty_buf[1];
-        cycle_buf[0] <= {2'b00, CYCLE[cnt]};
-        cycle_buf[1] <= cycle_buf[0];
-        cycle_buf[2] <= cycle_buf[1];
-        cycle_buf[3] <= cycle_buf[2];
-        cycle_buf[4] <= cycle_buf[3];
-        cycle_buf[5] <= cycle_buf[4];
-
         // step 1
         a_phase <= {2'b00, CYCLE[cnt]};
-        b_phase <= {2'b00, PHASE[cnt]};
-        a_duty_r <= {3'b000, DUTY[cnt][WIDTH-1:1]};
-        b_duty_r <= DUTY[cnt][0];
+        b_phase <= {2'b00, phase_buf};
+        a_duty_r <= {3'b000, duty_buf[0][WIDTH-1:1]};
+        b_duty_r <= duty_buf[0][0];
         cnt <= cnt + 1;
 
         // step 2
         a_rise <= s_phase;
-        b_rise <= {1'b0, duty_buf[AddSubLatency][WIDTH+1:1]};
+        b_rise <= {3'b000, duty_buf[AddSubLatency][WIDTH-1:1]};
         a_fall <= s_phase;
         b_fall <= s_duty_r;
         if (cnt > AddSubLatency) begin
@@ -200,6 +190,21 @@ module pwm_preconditioner #(
       default: begin
       end
     endcase
+  end
+
+  always_ff @(posedge CLK) begin
+    duty_buf[0] <= DUTY;
+    duty_buf[1] <= duty_buf[0];
+    duty_buf[2] <= duty_buf[1];
+
+    phase_buf <= PHASE;
+
+    cycle_buf[0] <= CYCLE[cnt];
+    cycle_buf[1] <= cycle_buf[0];
+    cycle_buf[2] <= cycle_buf[1];
+    cycle_buf[3] <= cycle_buf[2];
+    cycle_buf[4] <= cycle_buf[3];
+    cycle_buf[5] <= cycle_buf[4];
   end
 
   for (genvar i = 0; i < DEPTH; i++) begin : gen_copy_buf
