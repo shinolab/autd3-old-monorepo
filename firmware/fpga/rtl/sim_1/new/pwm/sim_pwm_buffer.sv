@@ -4,7 +4,7 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/05/2023
+ * Last Modified: 17/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -26,7 +26,7 @@ module sim_pwm_buffer ();
 
   localparam int WIDTH = 13;
 
-  bit [WIDTH-1:0] cycle;
+  bit [WIDTH-1:0] cycle_m1;
   bit [WIDTH-1:0] time_cnt;
   bit [WIDTH-1:0] rise_in;
   bit [WIDTH-1:0] fall_in;
@@ -38,7 +38,7 @@ module sim_pwm_buffer ();
       .WIDTH(WIDTH)
   ) pwm_buffer (
       .CLK(CLK_163P84M),
-      .CYCLE(cycle),
+      .CYCLE_M1(cycle_m1),
       .TIME_CNT(time_cnt),
       .RISE_IN(rise_in),
       .FALL_IN(fall_in),
@@ -48,10 +48,10 @@ module sim_pwm_buffer ();
 
 
   initial begin
-    cycle = 4096;
+    cycle_m1 = 4096 - 1;
     time_cnt = 0;
-    rise_in = 0;
-    fall_in = 0;
+    rise_in  = 0;
+    fall_in  = 0;
     @(posedge locked);
 
     rise_in = 100;
@@ -79,7 +79,7 @@ module sim_pwm_buffer ();
   end
 
   always @(posedge CLK_163P84M) begin
-    time_cnt = (time_cnt == cycle - 1) ? 0 : time_cnt + 1;
+    time_cnt = (time_cnt == cycle_m1) ? 0 : time_cnt + 1;
   end
 
 endmodule
