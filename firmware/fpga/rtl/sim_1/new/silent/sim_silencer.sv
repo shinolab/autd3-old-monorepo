@@ -4,7 +4,7 @@
  * Created Date: 22/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/05/2023
+ * Last Modified: 16/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -30,11 +30,14 @@ module sim_silencer ();
 
   bit [WIDTH-1:0] step;
   bit [WIDTH-1:0] cycle[DEPTH];
-  bit [WIDTH-1:0] duty[DEPTH];
-  bit [WIDTH-1:0] phase[DEPTH];
-  bit [WIDTH-1:0] duty_s[DEPTH];
-  bit [WIDTH-1:0] phase_s[DEPTH];
+  bit [WIDTH-1:0] duty;
+  bit [WIDTH-1:0] phase;
+  bit [WIDTH-1:0] duty_s;
+  bit [WIDTH-1:0] phase_s;
   bit din_valid, dout_valid;
+
+  bit [WIDTH-1:0] duty_buf [DEPTH];
+  bit [WIDTH-1:0] phase_buf[DEPTH];
 
   silencer #(
       .WIDTH(WIDTH),
@@ -51,71 +54,83 @@ module sim_silencer ();
       .DOUT_VALID(dout_valid)
   );
 
-  task automatic wait_calc();
-    @(negedge dout_valid);
-    @(posedge dout_valid);
-  endtask
-
   localparam int MaxCycle = 8000;
   int n_repeat;
 
-  initial begin
-    cycle = '{DEPTH{4096}};
-    step = 100;
+  task automatic set();
+    for (int i = 0; i < DEPTH; i++) begin
+      @(posedge CLK_20P48M);
+      din_valid = 1'b1;
+      duty = duty_buf[i];
+      phase = phase_buf[i];
+    end
+    @(posedge CLK_20P48M);
+    din_valid = 1'b0;
+  endtask
 
+  task automatic wait_calc();
+    while (1) begin
+      @(posedge CLK_20P48M);
+      if (dout_valid) begin
+        break;
+      end
+    end
+
+    for (int i = 0; i < DEPTH; i++) begin
+      @(posedge CLK_20P48M);
+    end
+  endtask
+
+  task automatic check();
+    while (1) begin
+      @(posedge CLK_20P48M);
+      if (dout_valid) begin
+        break;
+      end
+    end
+
+    for (int i = 0; i < DEPTH; i++) begin
+      if (phase_s !== phase_buf[i]) begin
+        $display("ASSERTION FAILED: PHASE(%d) != PHASE_S(%d) in %d-th transducer", phase_buf[i],
+                 phase_s, i);
+        $finish;
+      end
+      if (duty_s !== duty_buf[i]) begin
+        $display("ASSERTION FAILED: DUTY(%d) != DUTY_S(%d) in %d-th transducer", duty_buf[i],
+                 duty_s, i);
+        $finish;
+      end
+      @(posedge CLK_20P48M);
+    end
+  endtask
+
+  initial begin
+    step = 100;
     n_repeat = int'(MaxCycle / step / 2);
 
-    // from 0 to random
-    sim_helper_random.init();
     for (int i = 0; i < DEPTH; i++) begin
       cycle[i] = sim_helper_random.range(MaxCycle, 2000);
-      duty[i]  = sim_helper_random.range(cycle[i], 0);
-      phase[i] = sim_helper_random.range(cycle[i] - 1, 0);
-    end
-    din_valid = 1;
-
-    n_repeat  = int'(MaxCycle / step / 2);
-    repeat (n_repeat) wait_calc();
-    for (int i = 0; i < DEPTH; i++) begin
-      if (phase_s[i] !== phase[i]) begin
-        $display("ASSERTION FAILED: PHASE(%d) != PHASE_S(%d) in %d-th transducer", phase[i],
-                 phase_s[i], i);
-        $finish;
-      end
-    end
-    repeat (n_repeat) wait_calc();
-    for (int i = 0; i < DEPTH; i++) begin
-      if (duty_s[i] !== duty[i]) begin
-        $display("ASSERTION FAILED: DUTY(%d) != DUTY_S(%d) in %d-th transducer", duty[i],
-                 duty_s[i], i);
-        $finish;
-      end
     end
 
-    // from random to random
-    for (int i = 0; i < DEPTH; i++) begin
-      duty[i]  = sim_helper_random.range(cycle[i], 0);
-      phase[i] = sim_helper_random.range(cycle[i] - 1, 0);
-    end
+    @(posedge locked);
 
-    repeat (n_repeat) wait_calc();
+    // from 0 to random
     for (int i = 0; i < DEPTH; i++) begin
-      if (phase_s[i] !== phase[i]) begin
-        $display("ASSERTION FAILED: PHASE(%d) != PHASE_S(%d) in %d-th transducer", phase[i],
-                 phase_s[i], i);
-        $finish;
-      end
+      duty_buf[i]  = sim_helper_random.range(cycle[i] / 2, 0);
+      phase_buf[i] = sim_helper_random.range(cycle[i] - 1, 0);
     end
-    repeat (n_repeat) wait_calc();
-    for (int i = 0; i < DEPTH; i++) begin
-      if (duty_s[i] !== duty[i]) begin
-        $display("ASSERTION FAILED: DUTY(%d) != DUTY_S(%d) in %d-th transducer", duty[i],
-                 duty_s[i], i);
-        $finish;
-      end
+    repeat (n_repeat) begin
+      fork
+        set();
+        wait_calc();
+      join
     end
+    fork
+      set();
+      check();
+    join
 
-    $display("Ok!");
+    $display("Ok! sim_silencer");
     $finish;
   end
 
