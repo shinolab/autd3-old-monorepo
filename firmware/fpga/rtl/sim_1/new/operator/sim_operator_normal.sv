@@ -4,7 +4,7 @@
  * Created Date: 12/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/05/2023
+ * Last Modified: 17/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -64,11 +64,7 @@ module sim_operator_normal ();
 
     sim_helper_random.init();
     for (int i = 0; i < DEPTH; i++) begin
-      if (legacy_mode) begin
-        cycle[i] = 4096;
-      end else begin
-        cycle[i] = sim_helper_random.range(8000, 2000);
-      end
+      cycle[i] = sim_helper_random.range(8000, 2000);
     end
 
     @(posedge locked);
@@ -79,6 +75,12 @@ module sim_operator_normal ();
       sim_helper_bram.write_duty_phase(i, duty_buf[i], phase_buf[i]);
     end
 
+    while (1) begin
+      @(posedge CLK_20P48M);
+      if (~dout_valid) begin
+        break;
+      end
+    end
     while (1) begin
       @(posedge CLK_20P48M);
       if (dout_valid) begin
@@ -95,11 +97,12 @@ module sim_operator_normal ();
         $display("failed at phase[%d], %d!=%d", i, phase_buf[i], phase);
         $finish();
       end
-
       @(posedge CLK_20P48M);
     end
 
     legacy_mode = 1;
+
+    cycle = '{DEPTH{4096}};
 
     for (int i = 0; i < DEPTH; i++) begin
       duty_buf[i]  = sim_helper_random.range(8'hFF, 0);
@@ -107,6 +110,12 @@ module sim_operator_normal ();
       sim_helper_bram.write_duty_phase(i, 0, {duty_buf[i][7:0], phase_buf[i][7:0]});
     end
 
+    while (1) begin
+      @(posedge CLK_20P48M);
+      if (~dout_valid) begin
+        break;
+      end
+    end
     while (1) begin
       @(posedge CLK_20P48M);
       if (dout_valid) begin
