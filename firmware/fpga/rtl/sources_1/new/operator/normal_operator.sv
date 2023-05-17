@@ -4,7 +4,7 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/05/2023
+ * Last Modified: 17/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ module normal_operator #(
 
   bit dout_valid;
 
-  bit [$clog2(DEPTH + 2):0] read_addr = 0;
+  bit [8:0] read_addr = 0;
   bit [31:0] dout;
 
   bit [WIDTH-1:0] duty;
@@ -59,7 +59,7 @@ module normal_operator #(
       .douta(),
       .clkb (CLK_L),
       .web  ('0),
-      .addrb(read_addr),
+      .addrb(read_addr[7:0]),
       .dinb ('0),
       .doutb(dout)
   );
