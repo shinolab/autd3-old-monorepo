@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/05/2023
+ * Last Modified: 17/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -103,6 +103,13 @@ module sim_operator_stm_gain ();
       sim_helper_bram.write_stm_gain_duty_phase(i, duty_buf[i], phase_buf[i]);
     end
 
+    while (1) begin
+      @(posedge CLK_20P48M);
+      if (~dout_valid) begin
+        break;
+      end
+    end
+
     for (int j = 0; j < cycle_stm + 1; j++) begin
       while (1) begin
         @(posedge CLK_20P48M);
@@ -135,6 +142,13 @@ module sim_operator_stm_gain ();
         phase_buf[i][j] = sim_helper_random.range(8'hFF, 0);
       end
       sim_helper_bram.write_stm_gain_duty_phase_legacy(i, duty_buf[i], phase_buf[i]);
+    end
+
+    while (1) begin
+      @(posedge CLK_20P48M);
+      if (~dout_valid) begin
+        break;
+      end
     end
 
     for (int j = 0; j < cycle_stm + 1; j++) begin
