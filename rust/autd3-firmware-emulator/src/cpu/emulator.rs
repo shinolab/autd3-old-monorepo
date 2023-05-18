@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 18/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -230,9 +230,7 @@ impl CPUEmulator {
 
     fn config_silencer(&mut self, header: &GlobalHeader) {
         let step = header.silencer().step;
-        let cycle = header.silencer().cycle;
         self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP, step);
-        self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_CYCLE, cycle);
     }
 
     fn set_mod_delay(&mut self, body: &Body<[u16]>) {
@@ -558,7 +556,6 @@ impl CPUEmulator {
         );
 
         self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP, 10);
-        self.bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_CYCLE, 4096);
 
         self.stm_cycle = 0;
 

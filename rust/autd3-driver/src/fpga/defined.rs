@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/05/2023
+ * Last Modified: 18/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -14,6 +14,8 @@
 use crate::{float, METER, PI};
 
 pub const FPGA_CLK_FREQ: usize = 163840000;
+pub const FPGA_SUB_CLK_FREQ_DIV: usize = 8;
+pub const FPGA_SUB_CLK_FREQ: usize = FPGA_CLK_FREQ / FPGA_SUB_CLK_FREQ_DIV;
 
 pub const FOCUS_STM_FIXED_NUM_UNIT: float = 0.025e-3 * METER;
 

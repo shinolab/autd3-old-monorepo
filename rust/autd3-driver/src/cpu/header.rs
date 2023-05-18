@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 07/05/2023
+ * Last Modified: 18/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -51,7 +51,7 @@ pub struct ModSubsequent {
 
 #[repr(C)]
 pub struct SilencerHeader {
-    pub cycle: u16,
+    _cycle: u16,
     pub step: u16,
     _unused: [u8; 120],
 }
@@ -140,7 +140,7 @@ mod tests {
         assert_eq!(size_of::<SilencerHeader>(), 124);
 
         let header = SilencerHeader {
-            cycle: 0x0123,
+            _cycle: 0,
             step: 0x4567,
             _unused: [0x00; 120],
         };
@@ -149,8 +149,6 @@ mod tests {
         unsafe {
             std::ptr::copy_nonoverlapping(&header as *const _ as *const u8, buf.as_mut_ptr(), 124);
         }
-        assert_eq!(buf[0], 0x23);
-        assert_eq!(buf[1], 0x01);
         assert_eq!(buf[2], 0x67);
         assert_eq!(buf[3], 0x45);
     }

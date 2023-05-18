@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 18/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -204,9 +204,8 @@ impl<T: Transducer> Link<T> for Debug {
                 debug!(logger: self.logger,"\tNormal Advanced mode");
             }
             debug!(logger: self.logger,
-                "\tSilencer step = {}, cycle={}",
+                "\tSilencer step = {}",
                 fpga.silencer_step(),
-                fpga.silencer_cycle()
             );
             let m = fpga.modulation();
             let freq_div_m = fpga.modulation_frequency_division();

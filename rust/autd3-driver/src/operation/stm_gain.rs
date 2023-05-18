@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 18/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,9 +13,8 @@
 
 use super::Operation;
 use crate::{
-    CPUControlFlags, Drive, DriverError, FPGAControlFlags, Mode, TxDatagram, GAIN_STM_BUF_SIZE_MAX,
-    GAIN_STM_LEGACY_BUF_SIZE_MAX, GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN,
-    GAIN_STM_SAMPLING_FREQ_DIV_MIN,
+    CPUControlFlags, Drive, DriverError, FPGAControlFlags, Mode, TxDatagram, FPGA_SUB_CLK_FREQ_DIV,
+    GAIN_STM_BUF_SIZE_MAX, GAIN_STM_LEGACY_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MIN,
 };
 
 #[derive(Default, Clone, Copy)]
@@ -97,7 +96,8 @@ impl Operation for GainSTMLegacy {
         }
 
         if self.sent == 0 {
-            if self.props.freq_div < GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN {
+            let freq_div = self.props.freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
+            if freq_div < SAMPLING_FREQ_DIV_MIN {
                 return Err(DriverError::GainSTMLegacyFreqDivOutOfRange(
                     self.props.freq_div,
                 ));
@@ -107,7 +107,7 @@ impl Operation for GainSTMLegacy {
                 .set(CPUControlFlags::STM_BEGIN, true);
             (0..tx.num_devices()).for_each(|idx| {
                 let d = tx.body_mut(idx);
-                d.gain_stm_initial_mut().set_freq_div(self.props.freq_div);
+                d.gain_stm_initial_mut().set_freq_div(freq_div);
                 d.gain_stm_initial_mut().set_mode(self.props.mode);
                 d.gain_stm_initial_mut().set_cycle(self.drives.len());
                 d.gain_stm_initial_mut()
@@ -248,7 +248,8 @@ impl GainSTMAdvanced {
         }
 
         if self.sent == 0 {
-            if self.props.freq_div < GAIN_STM_SAMPLING_FREQ_DIV_MIN {
+            let freq_div = self.props.freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
+            if freq_div < SAMPLING_FREQ_DIV_MIN {
                 return Err(DriverError::GainSTMFreqDivOutOfRange(self.props.freq_div));
             }
             tx.header_mut()
@@ -256,7 +257,7 @@ impl GainSTMAdvanced {
                 .set(CPUControlFlags::STM_BEGIN, true);
             (0..tx.num_devices()).for_each(|idx| {
                 let d = tx.body_mut(idx);
-                d.gain_stm_initial_mut().set_freq_div(self.props.freq_div);
+                d.gain_stm_initial_mut().set_freq_div(freq_div);
                 d.gain_stm_initial_mut().set_mode(self.props.mode);
                 d.gain_stm_initial_mut().set_cycle(self.drives.len());
                 d.gain_stm_initial_mut()
@@ -407,7 +408,7 @@ mod test {
         let drives = vec![d; 2];
 
         let props = GainSTMProps {
-            freq_div: 152,
+            freq_div: 512,
             mode: Mode::PhaseDutyFull,
             start_idx: Some(1),
             finish_idx: Some(1),
@@ -442,7 +443,7 @@ mod test {
             .contains(FPGAControlFlags::USE_FINISH_IDX));
         for i in 0..10 {
             let stm = tx.body(i).gain_stm_initial();
-            assert_eq!((stm.data[1] as u32) << 16 | stm.data[0] as u32, 152);
+            assert_eq!((stm.data[1] as u32) << 16 | stm.data[0] as u32, 4096);
             assert_eq!(stm.data[2], Mode::PhaseDutyFull as u16);
             assert_eq!(stm.data[3], 2);
             assert_eq!(stm.data[4], 1);
@@ -603,7 +604,7 @@ mod test {
             .collect::<Vec<_>>();
 
         let props = GainSTMProps {
-            freq_div: 276,
+            freq_div: 512,
             mode: Mode::PhaseDutyFull,
             start_idx: Some(1),
             finish_idx: Some(1),
@@ -638,7 +639,7 @@ mod test {
             .contains(FPGAControlFlags::USE_FINISH_IDX));
         for i in 0..10 {
             let stm = tx.body(i).gain_stm_initial();
-            assert_eq!((stm.data[1] as u32) << 16 | stm.data[0] as u32, 276);
+            assert_eq!((stm.data[1] as u32) << 16 | stm.data[0] as u32, 4096);
             assert_eq!(stm.data[2], Mode::PhaseDutyFull as u16);
             assert_eq!(stm.data[3], 2);
             assert_eq!(stm.data[4], 1);
@@ -863,7 +864,7 @@ mod test {
             .collect::<Vec<_>>();
 
         let props = GainSTMProps {
-            freq_div: 276,
+            freq_div: 512,
             mode: Mode::PhaseFull,
             start_idx: Some(1),
             finish_idx: Some(1),
@@ -898,7 +899,7 @@ mod test {
             .contains(FPGAControlFlags::USE_FINISH_IDX));
         for i in 0..10 {
             let stm = tx.body(i).gain_stm_initial();
-            assert_eq!((stm.data[1] as u32) << 16 | stm.data[0] as u32, 276);
+            assert_eq!((stm.data[1] as u32) << 16 | stm.data[0] as u32, 4096);
             assert_eq!(stm.data[2], Mode::PhaseFull as u16);
             assert_eq!(stm.data[3], 2);
             assert_eq!(stm.data[4], 1);

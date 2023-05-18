@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/03/2023
+ * Last Modified: 18/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -12,6 +12,8 @@
  */
 
 use thiserror::Error;
+
+use crate::FPGA_SUB_CLK_FREQ_DIV;
 
 #[derive(Error, Debug)]
 pub enum DriverError {
@@ -25,14 +27,9 @@ pub enum DriverError {
     ModulationSizeOutOfRange(usize),
     #[error(
         "Minimum modulation frequency division is {}, but {0} is used",
-        crate::MOD_SAMPLING_FREQ_DIV_MIN
+        crate::SAMPLING_FREQ_DIV_MIN / FPGA_SUB_CLK_FREQ_DIV as u32
     )]
     ModFreqDivOutOfRange(u32),
-    #[error(
-        "Minimum silencer cycle is {}, but {0} is used",
-        crate::SILENCER_CYCLE_MIN
-    )]
-    SilencerCycleOutOfRange(u16),
     #[error("STM index is out of range")]
     STMStartIndexOutOfRange,
     #[error("STM finish is out of range")]
@@ -40,8 +37,8 @@ pub enum DriverError {
     #[error("Maximum size is {}, but {0} is used", crate::FOCUS_STM_BUF_SIZE_MAX)]
     FocusSTMPointSizeOutOfRange(usize),
     #[error(
-        "FocusSTM frequency division is {}, but {0} is used",
-        crate::FOCUS_STM_SAMPLING_FREQ_DIV_MIN
+        "Minimum FocusSTM frequency division is {}, but {0} is used",
+        crate::SAMPLING_FREQ_DIV_MIN / FPGA_SUB_CLK_FREQ_DIV as u32
     )]
     FocusSTMFreqDivOutOfRange(u32),
     #[error(
@@ -52,13 +49,13 @@ pub enum DriverError {
     #[error("Maximum size is {}, but {0} is used", crate::GAIN_STM_BUF_SIZE_MAX)]
     GainSTMSizeOutOfRange(usize),
     #[error(
-        "GainSTM frequency division is {}, but {0} is used",
-        crate::GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN
+        "Minimum GainSTM frequency division is {}, but {0} is used",
+        crate::SAMPLING_FREQ_DIV_MIN / FPGA_SUB_CLK_FREQ_DIV as u32
     )]
     GainSTMLegacyFreqDivOutOfRange(u32),
     #[error(
-        "GainSTM frequency division is {}, but {0} is used",
-        crate::GAIN_STM_SAMPLING_FREQ_DIV_MIN
+        "Minimum GainSTM frequency division is {}, but {0} is used",
+        crate::SAMPLING_FREQ_DIV_MIN / FPGA_SUB_CLK_FREQ_DIV as u32
     )]
     GainSTMFreqDivOutOfRange(u32),
     #[error("PhaseHalf is not supported in Advanced mode")]

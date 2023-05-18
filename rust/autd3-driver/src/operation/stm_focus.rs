@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 18/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ use super::Operation;
 use crate::{
     float, CPUControlFlags, DriverError, FPGAControlFlags, STMFocus, TxDatagram,
     FOCUS_STM_BODY_INITIAL_SIZE, FOCUS_STM_BODY_SUBSEQUENT_SIZE, FOCUS_STM_BUF_SIZE_MAX,
-    FOCUS_STM_SAMPLING_FREQ_DIV_MIN,
+    FPGA_SUB_CLK_FREQ_DIV, METER, SAMPLING_FREQ_DIV_MIN,
 };
 
 #[derive(Default, Clone, Copy)]
@@ -75,7 +75,7 @@ impl Operation for FocusSTM {
             return Ok(());
         }
 
-        if self.points[0].len() > FOCUS_STM_BUF_SIZE_MAX {
+        if self.points[0].len() < 2 || self.points[0].len() > FOCUS_STM_BUF_SIZE_MAX {
             return Err(DriverError::FocusSTMPointSizeOutOfRange(
                 self.points[0].len(),
             ));
@@ -108,21 +108,21 @@ impl Operation for FocusSTM {
 
         let send_size = Self::get_send_size(self.points[0].len(), self.sent, self.tr_num_min);
         if self.sent == 0 {
-            if self.props.freq_div < FOCUS_STM_SAMPLING_FREQ_DIV_MIN {
-                return Err(DriverError::FocusSTMFreqDivOutOfRange(self.props.freq_div));
+            let freq_div = self.props.freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
+            if freq_div < SAMPLING_FREQ_DIV_MIN {
+                return Err(DriverError::FocusSTMFreqDivOutOfRange(freq_div));
             }
             tx.header_mut()
                 .cpu_flag
                 .set(CPUControlFlags::STM_BEGIN, true);
-            let sound_speed = (self.props.sound_speed / 1e3 * 1024.0).round() as u32;
+            let sound_speed = (self.props.sound_speed / METER * 1024.0).round() as u32;
             (0..tx.num_devices()).for_each(|idx| {
                 let d = tx.body_mut(idx);
                 let s = &self.points[idx];
                 d.focus_stm_initial_mut().set_size(send_size as _);
-                d.focus_stm_initial_mut().set_freq_div(self.props.freq_div);
+                d.focus_stm_initial_mut().set_freq_div(freq_div);
                 d.focus_stm_initial_mut().set_sound_speed(sound_speed);
-                d.focus_stm_initial_mut()
-                    .set_points(&s[self.sent..self.sent + send_size]);
+                d.focus_stm_initial_mut().set_points(&s[..send_size]);
                 d.focus_stm_initial_mut()
                     .set_start_idx(self.props.start_idx.unwrap_or(0));
                 d.focus_stm_initial_mut()
@@ -204,7 +204,7 @@ mod test {
         let sp = (sound_speed / 1e3) as u32 * 1024;
 
         let props = FocusSTMProps {
-            freq_div: 1612,
+            freq_div: 512,
             sound_speed,
             start_idx: Some(1),
             finish_idx: Some(2),
@@ -236,7 +236,7 @@ mod test {
         for i in 0..10 {
             let stm = tx.body(i).focus_stm_initial();
             assert_eq!(stm.data[0], 60);
-            assert_eq!((stm.data[2] as u32) << 16 | stm.data[1] as u32, 1612);
+            assert_eq!((stm.data[2] as u32) << 16 | stm.data[1] as u32, 4096);
             assert_eq!((stm.data[4] as u32) << 16 | stm.data[3] as u32, sp);
             assert_eq!(stm.data[5], 1);
             assert_eq!(stm.data[6], 2);
@@ -366,7 +366,7 @@ mod test {
         assert!(op.pack(&mut tx).is_err());
 
         let props = FocusSTMProps {
-            freq_div: 1611,
+            freq_div: 511,
             start_idx: None,
             finish_idx: None,
             ..props

@@ -4,7 +4,7 @@
  * Created Date: 07/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/05/2023
+ * Last Modified: 18/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,8 +13,8 @@
 
 use autd3_core::{float, METER};
 
-pub const VERSION_NUM_MAJOR: u8 = 0x88;
-pub const VERSION_NUM_MINOR: u8 = 0x01;
+pub const VERSION_NUM_MAJOR: u8 = 0x89;
+pub const VERSION_NUM_MINOR: u8 = 0x00;
 
 pub const TRANS_SIZE_FIXED_POINT_UNIT: float = 40000. / METER;
 
@@ -31,7 +31,6 @@ pub const ADDR_MOD_FREQ_DIV_0: usize = 0x0022;
 pub const ADDR_MOD_FREQ_DIV_1: usize = 0x0023;
 pub const ADDR_VERSION_NUM: usize = 0x003F;
 pub const ADDR_VERSION_NUM_MINOR: usize = 0x003E;
-pub const ADDR_SILENT_CYCLE: usize = 0x0040;
 pub const ADDR_SILENT_STEP: usize = 0x0041;
 pub const ADDR_STM_ADDR_OFFSET: usize = 0x0050;
 pub const ADDR_STM_CYCLE: usize = 0x0051;
