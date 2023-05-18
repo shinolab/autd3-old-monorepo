@@ -13,29 +13,29 @@
 
 module pwm #(
     parameter int WIDTH = 13,
-    parameter int TRANS_NUM = 249
+    parameter int DEPTH = 249
 ) (
     input var CLK,
     input var CLK_L,
     input var [63:0] SYS_TIME,
     input var DIN_VALID,
-    input var [WIDTH-1:0] CYCLE[TRANS_NUM],
+    input var [WIDTH-1:0] CYCLE[DEPTH],
     input var [WIDTH-1:0] DUTY,
     input var [WIDTH-1:0] PHASE,
-    output var PWM_OUT[TRANS_NUM],
-    output var [WIDTH-1:0] TIME_CNT[TRANS_NUM],
+    output var PWM_OUT[DEPTH],
+    output var [WIDTH-1:0] TIME_CNT[DEPTH],
     output var DOUT_VALID
 );
 
-  bit [WIDTH-1:0] R[TRANS_NUM];
-  bit [WIDTH-1:0] F[TRANS_NUM];
+  bit [WIDTH-1:0] R[DEPTH];
+  bit [WIDTH-1:0] F[DEPTH];
 
-  bit [WIDTH-1:0] cycle_m1[TRANS_NUM];
-  bit [WIDTH-1:0] cycle_m2[TRANS_NUM];
+  bit [WIDTH-1:0] cycle_m1[DEPTH];
+  bit [WIDTH-1:0] cycle_m2[DEPTH];
 
   cycle_buffer #(
       .WIDTH(WIDTH),
-      .DEPTH(TRANS_NUM)
+      .DEPTH(DEPTH)
   ) cycle_buffer (
       .CLK(CLK),
       .CYCLE(CYCLE),
@@ -45,7 +45,7 @@ module pwm #(
 
   time_cnt_generator #(
       .WIDTH(WIDTH),
-      .DEPTH(TRANS_NUM)
+      .DEPTH(DEPTH)
   ) time_cnt_generator (
       .CLK(CLK),
       .SYS_TIME(SYS_TIME),
@@ -57,7 +57,7 @@ module pwm #(
 
   pwm_preconditioner #(
       .WIDTH(WIDTH),
-      .DEPTH(TRANS_NUM)
+      .DEPTH(DEPTH)
   ) pwm_preconditioner (
       .CLK(CLK_L),
       .DIN_VALID(DIN_VALID),
@@ -69,7 +69,7 @@ module pwm #(
       .DOUT_VALID(DOUT_VALID)
   );
 
-  for (genvar i = 0; i < TRANS_NUM; i++) begin : gen_pwm
+  for (genvar i = 0; i < DEPTH; i++) begin : gen_pwm
     bit [WIDTH-1:0] R_buf, F_buf;
     pwm_buffer #(
         .WIDTH(WIDTH)

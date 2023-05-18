@@ -4,7 +4,7 @@
  * Created Date: 13/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/05/2023
+ * Last Modified: 17/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -71,7 +71,6 @@ module stm_operator #(
       .IDX(idx),
       .STM_BUS(stm_bus_if.gain_port),
       .LEGACY_MODE(LEGACY_MODE),
-      .CYCLE(CYCLE),
       .DUTY(duty_gain),
       .PHASE(phase_gain),
       .DOUT_VALID(dout_valid_gain)
