@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 18/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -17,12 +17,8 @@ use std::{
 };
 
 use autd3_core::{
-    clear::Clear,
-    geometry::{Geometry, Transducer},
-    link::Link,
-    sendable::Sendable,
-    stop::Stop,
-    FirmwareInfo, Operation, RxDatagram, TxDatagram, MSG_BEGIN, MSG_END,
+    clear::Clear, geometry::*, link::Link, sendable::Sendable, stop::Stop, FirmwareInfo, Operation,
+    RxDatagram, TxDatagram, MSG_BEGIN, MSG_END,
 };
 
 use crate::error::AUTDError;
@@ -218,6 +214,48 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
             self.msg_id.fetch_add(1, atomic::Ordering::SeqCst);
         }
         self.msg_id.load(atomic::Ordering::SeqCst)
+    }
+}
+
+#[cfg(feature = "dynamic")]
+impl Controller<DynamicTransducer, crate::core::link::DynamicLink> {
+    pub fn send<S: Sendable>(&mut self, mut s: S) -> Result<bool, AUTDError> {
+        let (mut op_header, mut op_body) = s.operation(&self.geometry)?;
+
+        op_header.init();
+        op_body.init();
+
+        self.force_fan.pack(&mut self.tx_buf);
+        self.reads_fpga_info.pack(&mut self.tx_buf);
+
+        let timeout = s.timeout().unwrap_or(self.link.timeout());
+        loop {
+            self.tx_buf.header_mut().msg_id = self.get_id();
+
+            op_header.pack(&mut self.tx_buf)?;
+            op_body.pack(&mut self.tx_buf)?;
+
+            if !self
+                .link
+                .send_receive(&self.tx_buf, &mut self.rx_buf, timeout)?
+            {
+                return Ok(false);
+            }
+            if op_header.is_finished() && op_body.is_finished() {
+                break;
+            }
+            if timeout.is_zero() {
+                std::thread::sleep(Duration::from_millis(1));
+            }
+        }
+        Ok(true)
+    }
+
+    pub fn close(&mut self) -> Result<bool, AUTDError> {
+        let res = self.send(Stop::new())?;
+        let res = res & self.send(Clear::new())?;
+        self.link.close()?;
+        Ok(res)
     }
 }
 
