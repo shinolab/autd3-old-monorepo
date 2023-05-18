@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/05/2023
+ * Last Modified: 18/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -145,10 +145,6 @@ impl FPGAEmulator {
 
     pub fn is_stm_gain_mode(&self) -> bool {
         (self.controller_bram[ADDR_CTL_REG] & (1 << CTL_REG_STM_GAIN_MODE_BIT)) != 0
-    }
-
-    pub fn silencer_cycle(&self) -> u16 {
-        self.controller_bram[ADDR_SILENT_CYCLE]
     }
 
     pub fn silencer_step(&self) -> u16 {

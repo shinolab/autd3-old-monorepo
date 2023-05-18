@@ -4,7 +4,7 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/05/2023
+ * Last Modified: 18/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -40,14 +40,10 @@ pub const VERSION_NUM_MINOR: u8 = 0x01;
 
 pub const MAX_CYCLE: u16 = 8191;
 
-pub const MOD_SAMPLING_FREQ_DIV_MIN: u32 = 1160;
+pub const SAMPLING_FREQ_DIV_MIN: u32 = 4096;
+
 pub const MOD_BUF_SIZE_MAX: usize = 65536;
 
-pub const FOCUS_STM_SAMPLING_FREQ_DIV_MIN: u32 = 1612;
-pub const GAIN_STM_SAMPLING_FREQ_DIV_MIN: u32 = 276;
-pub const GAIN_STM_LEGACY_SAMPLING_FREQ_DIV_MIN: u32 = 152;
 pub const FOCUS_STM_BUF_SIZE_MAX: usize = 65536;
 pub const GAIN_STM_BUF_SIZE_MAX: usize = 1024;
 pub const GAIN_STM_LEGACY_BUF_SIZE_MAX: usize = 2048;
-
-pub const SILENCER_CYCLE_MIN: u16 = 1044;
