@@ -22,7 +22,7 @@ if {[string equal [get_filesets -quiet sim_1] ""]} {
     create_fileset -simset sim_1
 }
 
-set synth_flow              "Vivado Synthesis 2022"
+set synth_flow              "Vivado Synthesis 2023"
 set synth_strategy_default  "Vivado Synthesis Defaults"
 set synth_strategy_perf     "Flow_PerfOptimized_high"
 set synth_strategy_area     "Flow_AreaOptimized_high"
@@ -31,7 +31,7 @@ create_run -name synth_perf -flow $synth_flow -strategy $synth_strategy_perf -co
 create_run -name synth_area -flow $synth_flow -strategy $synth_strategy_area -constrset constrs_1
 current_run -synthesis [get_runs synth_default]
 
-set impl_flow               "Vivado Implementation 2022"
+set impl_flow               "Vivado Implementation 2023"
 set impl_strategy_default   "Vivado Implementation Defaults"
 set impl_strategy_netdelay  "Performance_NetDelay_high"
 set impl_strategy_area      "Area_ExploreWithRemap"
