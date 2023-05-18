@@ -11,7 +11,12 @@
  *
  */
 
+#[cfg(feature = "dynamic")]
+mod dynamic_link;
 mod logger;
+
+#[cfg(feature = "dynamic")]
+pub use dynamic_link::*;
 
 pub use logger::get_logger;
 pub use logger::get_logger_with_custom_func;
