@@ -4,7 +4,7 @@
  * Created Date: 24/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/05/2023
+ * Last Modified: 17/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -26,7 +26,7 @@ module modulation_sampler (
   bit [31:0] _unused_rem;
   bit [63:0] _unused_quo;
   bit [31:0] cycle;
-  bit [31:0] rem = 0;
+  bit [31:0] rem;
 
   assign IDX = rem;
 

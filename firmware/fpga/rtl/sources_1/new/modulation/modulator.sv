@@ -4,7 +4,7 @@
  * Created Date: 24/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 16/05/2023
+ * Last Modified: 17/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -39,9 +39,7 @@ module modulator #(
       .M_BUS(m_bus_if.memory_port)
   );
 
-  modulation_sampler #(
-      .DEPTH(DEPTH)
-  ) modulation_sampler (
+  modulation_sampler modulation_sampler (
       .CLK(CLK),
       .SYS_TIME(SYS_TIME),
       .CYCLE_M(CYCLE_M),

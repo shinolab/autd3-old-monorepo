@@ -54,7 +54,7 @@ module modulation_multiplier #(
   bit [31:0] quo;
   bit [7:0] _unused;
 
-  bit [$clog2(DEPTH+(Latency+1))-1:0] cnt, delay_cnt, calc_cnt, set_cnt;
+  bit [$clog2(DEPTH+(Latency+1))-1:0] cnt, delay_cnt, set_cnt;
   bit dout_valid = 0;
 
   assign M_BUS.ADDR = idx_oc_s[15:0];
@@ -116,7 +116,6 @@ module modulation_multiplier #(
         dout_valid <= 1'b0;
         if (DIN_VALID) begin
           cnt <= 0;
-          calc_cnt <= 0;
           set_cnt <= 0;
 
           phase_buf[0] <= PHASE_IN;

@@ -3,7 +3,7 @@
 # Created Date: 17/03/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 16/05/2023
+# Last Modified: 17/05/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -75,12 +75,13 @@ function RunSimulation($sim_target) {
 
 if ($target -eq "all") {
     $all_simulations = @(
-        'sim_modulator'
+        'sim_controller'
         'sim_operator_normal'
         'sim_operator_stm_focus'
         'sim_operator_stm_gain'
         'sim_pwm'
         'sim_silencer'
+        'sim_modulator'
     );
     foreach ($sim_target in $all_simulations){
         RunSimulation($sim_target);
