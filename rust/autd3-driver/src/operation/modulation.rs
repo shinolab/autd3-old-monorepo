@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 18/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -39,9 +39,13 @@ impl Modulation {
 
 impl Operation for Modulation {
     fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
-        if self.mod_data.len() > MOD_BUF_SIZE_MAX {
+        if self.mod_data.len() < 2 || self.mod_data.len() > MOD_BUF_SIZE_MAX {
             return Err(DriverError::ModulationSizeOutOfRange(self.mod_data.len()));
         }
+
+        tx.header_mut().cpu_flag.set(CPUControlFlags::MOD, true);
+        tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD_BEGIN);
+        tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD_END);
 
         let is_first_frame = self.sent == 0;
         let max_size = if is_first_frame {
@@ -56,9 +60,6 @@ impl Operation for Modulation {
         }
         let is_last_frame = self.sent + mod_size == self.mod_data.len();
 
-        tx.header_mut().cpu_flag.set(CPUControlFlags::MOD, true);
-        tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD_BEGIN);
-        tx.header_mut().cpu_flag.remove(CPUControlFlags::MOD_END);
         tx.header_mut().size = mod_size as _;
 
         if is_first_frame {
