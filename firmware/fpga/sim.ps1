@@ -3,7 +3,7 @@
 # Created Date: 17/03/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 17/05/2023
+# Last Modified: 18/05/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
 # Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -81,6 +81,7 @@ if ($target -eq "all") {
         'sim_operator_stm_gain'
         'sim_pwm'
         'sim_silencer'
+        'sim_mux'
         'sim_modulator'
     );
     foreach ($sim_target in $all_simulations){
