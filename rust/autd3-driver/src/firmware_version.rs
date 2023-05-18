@@ -267,7 +267,11 @@ mod tests {
         assert_eq!("v2.8.1", info.fpga_version());
 
         let info = FirmwareInfo::new(0, 137, 0, 137, 0, 0);
-        assert_eq!("unknown (137)", info.cpu_version());
-        assert_eq!("unknown (137)", info.fpga_version());
+        assert_eq!("v2.9.0", info.cpu_version());
+        assert_eq!("v2.9.0", info.fpga_version());
+
+        let info = FirmwareInfo::new(0, 138, 0, 138, 0, 0);
+        assert_eq!("unknown (138)", info.cpu_version());
+        assert_eq!("unknown (138)", info.fpga_version());
     }
 }
