@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 18/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,16 +15,15 @@ use crate::{error::AUTDInternalError, geometry::*, sendable::Sendable};
 
 pub struct SilencerConfig {
     step: u16,
-    cycle: u16,
 }
 
 impl SilencerConfig {
-    pub fn new(step: u16, cycle: u16) -> Self {
-        SilencerConfig { step, cycle }
+    pub fn new(step: u16) -> Self {
+        SilencerConfig { step }
     }
 
     pub fn none() -> Self {
-        Self::new(0xFFFF, 4096)
+        Self::new(0xFFFF)
     }
 }
 
@@ -34,7 +33,7 @@ impl<T: Transducer> Sendable<T> for SilencerConfig {
     type B = autd3_driver::NullBody;
 
     fn operation(self, _: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
-        Ok((Self::H::new(self.cycle, self.step), Self::B::default()))
+        Ok((Self::H::new(self.step), Self::B::default()))
     }
 }
 
@@ -51,7 +50,7 @@ impl Sendable for SilencerConfig {
         AUTDInternalError,
     > {
         Ok((
-            Box::new(autd3_driver::ConfigSilencer::new(self.cycle, self.step)),
+            Box::new(autd3_driver::ConfigSilencer::new(self.step)),
             Box::new(autd3_driver::NullBody::default()),
         ))
     }
@@ -59,6 +58,6 @@ impl Sendable for SilencerConfig {
 
 impl Default for SilencerConfig {
     fn default() -> Self {
-        Self::new(10, 4096)
+        Self::new(10)
     }
 }

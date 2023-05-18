@@ -13,8 +13,8 @@
 
 use super::Operation;
 use crate::{
-    float, CPUControlFlags, DriverError, TxDatagram, MOD_BUF_SIZE_MAX,
-    MOD_HEADER_INITIAL_DATA_SIZE, MOD_HEADER_SUBSEQUENT_DATA_SIZE, MOD_SAMPLING_FREQ_DIV_MIN, PI,
+    float, CPUControlFlags, DriverError, TxDatagram, FPGA_SUB_CLK_FREQ_DIV, MOD_BUF_SIZE_MAX,
+    MOD_HEADER_INITIAL_DATA_SIZE, MOD_HEADER_SUBSEQUENT_DATA_SIZE, PI, SAMPLING_FREQ_DIV_MIN,
 };
 
 pub struct Modulation {
@@ -63,13 +63,14 @@ impl Operation for Modulation {
         tx.header_mut().size = mod_size as _;
 
         if is_first_frame {
-            if self.freq_div < MOD_SAMPLING_FREQ_DIV_MIN {
+            let freq_div = self.freq_div * FPGA_SUB_CLK_FREQ_DIV as u32;
+            if freq_div < SAMPLING_FREQ_DIV_MIN {
                 return Err(DriverError::ModFreqDivOutOfRange(self.freq_div));
             }
             tx.header_mut()
                 .cpu_flag
                 .set(CPUControlFlags::MOD_BEGIN, true);
-            tx.header_mut().mod_initial_mut().freq_div = self.freq_div;
+            tx.header_mut().mod_initial_mut().freq_div = freq_div;
             tx.header_mut().mod_initial_mut().data[0..mod_size]
                 .copy_from_slice(&self.mod_data[self.sent..self.sent + mod_size]);
         } else {
@@ -122,7 +123,7 @@ mod test {
             .map(|i| (i as float) / (size as float))
             .collect::<Vec<_>>();
 
-        let mut op = Modulation::new(mod_data.clone(), 1160);
+        let mut op = Modulation::new(mod_data.clone(), 512);
         op.init();
         assert!(!op.is_finished());
 
@@ -132,7 +133,7 @@ mod test {
         assert!(tx.header().cpu_flag.contains(CPUControlFlags::MOD_BEGIN));
         assert!(!tx.header().cpu_flag.contains(CPUControlFlags::MOD_END));
         assert_eq!(tx.header().size as usize, MOD_HEADER_INITIAL_DATA_SIZE);
-        assert_eq!(tx.header().mod_initial().freq_div, 1160);
+        assert_eq!(tx.header().mod_initial().freq_div, 4096);
         for (&h, &d) in tx.header().mod_initial().data.iter().zip(mod_data.iter()) {
             assert_eq!(h, Modulation::to_duty(d));
         }
@@ -168,11 +169,11 @@ mod test {
         op.init();
         assert!(!op.is_finished());
 
-        let mut op = Modulation::new(mod_data, 1159);
+        let mut op = Modulation::new(mod_data, 511);
         op.init();
         assert!(op.pack(&mut tx).is_err());
 
-        let mut op = Modulation::new(vec![0.0; MOD_BUF_SIZE_MAX + 1], 1160);
+        let mut op = Modulation::new(vec![0.0; MOD_BUF_SIZE_MAX + 1], 512);
         op.init();
         assert!(op.pack(&mut tx).is_err());
     }

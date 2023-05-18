@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/05/2023
+ * Last Modified: 18/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -85,7 +85,7 @@ impl FirmwareInfo {
             0 => "older than v0.4".to_string(),
             0x01..=0x06 => format!("v0.{}", version_number_major + 3),
             0x0A..=0x15 => format!("v1.{}", version_number_major - 0x0A),
-            0x80..=0x88 => format!(
+            0x80..=0x89 => format!(
                 "v2.{}.{}",
                 version_number_major - 0x80,
                 version_number_minor
