@@ -3,10 +3,10 @@
 // Created Date: 22/04/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 02/03/2023
+// Last Modified: 18/05/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
-// Copyright (c) 2022 Shun Suzuki. All rights reserved.
+// Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 //
 
 #ifndef INC_PARAMS_H_
@@ -29,7 +29,6 @@
 #define BRAM_ADDR_MOD_FREQ_DIV_1 (0x023)
 #define BRAM_ADDR_VERSION_NUM (0x03F)
 #define BRAM_ADDR_VERSION_NUM_MINOR (0x03E)
-#define BRAM_ADDR_SILENT_CYCLE (0x040)
 #define BRAM_ADDR_SILENT_STEP (0x041)
 #define BRAM_ADDR_STM_MEM_SEGMENT (0x050)
 #define BRAM_ADDR_STM_CYCLE (0x051)

@@ -4,10 +4,10 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/03/2023
+ * Last Modified: 18/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
@@ -17,8 +17,8 @@
 #include "params.h"
 #include "utils.h"
 
-#define CPU_VERSION_MAJOR (0x88) /* v2.8 */
-#define CPU_VERSION_MINOR (0x01)
+#define CPU_VERSION_MAJOR (0x89) /* v2.9 */
+#define CPU_VERSION_MINOR (0x00)
 
 #define MOD_BUF_SEGMENT_SIZE_WIDTH (15)
 #define MOD_BUF_SEGMENT_SIZE (1 << MOD_BUF_SEGMENT_SIZE_WIDTH)
@@ -99,7 +99,7 @@ typedef struct {
       uint8_t data[124];
     } MOD_SUBSEQUENT;
     struct {
-      uint16_t cycle;
+      uint16_t _cycle;  // for backward compatibility
       uint16_t step;
       uint8_t _data[120];
     } SILENT;
@@ -209,9 +209,7 @@ void write_mod(const volatile GlobalHeader* header) {
 
 void config_silencer(const volatile GlobalHeader* header) {
   uint16_t step = header->DATA.SILENT.step;
-  uint16_t cycle = header->DATA.SILENT.cycle;
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP, step);
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_CYCLE, cycle);
 }
 
 static void set_mod_delay(const volatile Body* body) {
@@ -509,7 +507,6 @@ static void clear(void) {
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_CTL_FLAG, 0x0000);
 
   bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_STEP, 10);
-  bram_write(BRAM_SELECT_CONTROLLER, BRAM_ADDR_SILENT_CYCLE, 4096);
 
   _stm_write = 0;
   _stm_cycle = 0;
