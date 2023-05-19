@@ -4,16 +4,23 @@
  * Created Date: 01/06/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 19/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
 use crate::{error::AUTDInternalError, geometry::*, sendable::Sendable};
 
+#[derive(Default)]
 pub struct ModDelay {}
+
+impl ModDelay {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
 
 #[cfg(not(feature = "dynamic"))]
 impl<T: Transducer> Sendable<T> for ModDelay {

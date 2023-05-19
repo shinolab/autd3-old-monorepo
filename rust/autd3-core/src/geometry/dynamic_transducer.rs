@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 18/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -81,11 +81,8 @@ impl Transducer for DynamicTransducer {
 }
 
 impl DynamicTransducer {
-    pub fn cycle(&self) -> Result<u16, AUTDInternalError> {
-        if self.mode == TransMode::Legacy {
-            return Err(AUTDInternalError::NotSupportedTransducerOperation);
-        }
-        Ok(self.cycle)
+    pub fn cycle(&self) -> u16 {
+        self.cycle
     }
 
     pub fn set_cycle(&mut self, cycle: u16) -> Result<(), AUTDInternalError> {

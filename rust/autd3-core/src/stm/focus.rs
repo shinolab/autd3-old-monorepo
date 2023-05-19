@@ -4,10 +4,10 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 19/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
@@ -19,9 +19,9 @@ use super::STM;
 
 pub struct FocusSTM {
     control_points: Vec<(Vector3, u8)>,
-    pub freq_div: u32,
-    pub start_idx: Option<u16>,
-    pub finish_idx: Option<u16>,
+    freq_div: u32,
+    start_idx: Option<u16>,
+    finish_idx: Option<u16>,
 }
 
 impl FocusSTM {
@@ -149,6 +149,22 @@ impl STM for FocusSTM {
 
     fn sampling_freq_div(&self) -> u32 {
         self.freq_div
+    }
+
+    fn set_start_idx(&mut self, idx: Option<u16>) {
+        self.start_idx = idx;
+    }
+
+    fn start_idx(&self) -> Option<u16> {
+        self.start_idx
+    }
+
+    fn set_finish_idx(&mut self, idx: Option<u16>) {
+        self.finish_idx = idx;
+    }
+
+    fn finish_idx(&self) -> Option<u16> {
+        self.finish_idx
     }
 }
 

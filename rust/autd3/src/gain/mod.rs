@@ -4,14 +4,15 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 10/05/2023
+ * Last Modified: 19/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
 pub mod bessel;
+#[cfg(not(feature = "dynamic"))]
 mod cache;
 pub mod focus;
 pub mod grouped;
@@ -20,6 +21,7 @@ pub mod plane;
 pub mod trans_test;
 
 pub use bessel::Bessel;
+#[cfg(not(feature = "dynamic"))]
 pub use cache::Cache;
 pub use focus::Focus;
 pub use grouped::Grouped;

@@ -4,10 +4,10 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/05/2023
+ * Last Modified: 19/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
@@ -17,9 +17,12 @@ use std::{
 };
 
 use autd3_core::{
-    clear::Clear, geometry::*, link::Link, sendable::Sendable, stop::Stop, FirmwareInfo, Operation,
+    clear::Clear, geometry::*, link::Link, sendable::Sendable, stop::Stop, FirmwareInfo,
     RxDatagram, TxDatagram, MSG_BEGIN, MSG_END,
 };
+
+#[cfg(not(feature = "dynamic"))]
+use autd3_core::Operation;
 
 use crate::error::AUTDError;
 
@@ -57,9 +60,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
     pub fn reads_fpga_info(&mut self, value: bool) {
         self.reads_fpga_info.value = value
     }
-}
 
-impl<T: Transducer, L: Link<T>> Controller<T, L> {
     pub fn geometry(&self) -> &Geometry<T> {
         &self.geometry
     }
@@ -197,6 +198,11 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
             })
             .collect())
     }
+
+    pub fn fpga_info(&mut self) -> Result<Vec<u8>, AUTDError> {
+        self.link.receive(&mut self.rx_buf)?;
+        Ok(self.rx_buf.messages().iter().map(|m| m.ack).collect())
+    }
 }
 
 impl<T: Transducer, L: Link<T>> Controller<T, L> {
@@ -219,7 +225,11 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
 
 #[cfg(feature = "dynamic")]
 impl Controller<DynamicTransducer, crate::core::link::DynamicLink> {
-    pub fn send<S: Sendable>(&mut self, mut s: S) -> Result<bool, AUTDError> {
+    pub fn send_with_timeout<S: Sendable>(
+        &mut self,
+        s: &mut S,
+        timeout: Option<Duration>,
+    ) -> Result<bool, AUTDError> {
         let (mut op_header, mut op_body) = s.operation(&self.geometry)?;
 
         op_header.init();
@@ -228,7 +238,7 @@ impl Controller<DynamicTransducer, crate::core::link::DynamicLink> {
         self.force_fan.pack(&mut self.tx_buf);
         self.reads_fpga_info.pack(&mut self.tx_buf);
 
-        let timeout = s.timeout().unwrap_or(self.link.timeout());
+        let timeout = timeout.unwrap_or(s.timeout().unwrap_or(self.link.timeout()));
         loop {
             self.tx_buf.header_mut().msg_id = self.get_id();
 
@@ -252,8 +262,8 @@ impl Controller<DynamicTransducer, crate::core::link::DynamicLink> {
     }
 
     pub fn close(&mut self) -> Result<bool, AUTDError> {
-        let res = self.send(Stop::new())?;
-        let res = res & self.send(Clear::new())?;
+        let res = self.send_with_timeout(&mut Stop::new(), None)?;
+        let res = res & self.send_with_timeout(&mut Clear::new(), None)?;
         self.link.close()?;
         Ok(res)
     }
