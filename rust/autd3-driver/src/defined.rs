@@ -4,10 +4,10 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/05/2023
+ * Last Modified: 19/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
@@ -35,8 +35,8 @@ mod unit {
 pub use unit::*;
 pub const MILLIMETER: float = METER / 1000.0;
 
-pub const VERSION_NUM_MAJOR: u8 = 0x88;
-pub const VERSION_NUM_MINOR: u8 = 0x01;
+pub const VERSION_NUM_MAJOR: u8 = 0x89;
+pub const VERSION_NUM_MINOR: u8 = 0x00;
 
 pub const MAX_CYCLE: u16 = 8191;
 

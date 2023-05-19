@@ -4,7 +4,7 @@
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 19/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -118,7 +118,7 @@ mod internal {
         }
     }
 
-    impl Sendable for (Box<dyn Sendable>, Box<dyn Sendable>) {
+    impl Sendable for (&mut Box<dyn Sendable>, &mut Box<dyn Sendable>) {
         fn operation(
             &mut self,
             geometry: &Geometry<DynamicTransducer>,
@@ -126,6 +126,15 @@ mod internal {
             let (h, _) = self.0.operation(geometry)?;
             let (_, b) = self.1.operation(geometry)?;
             Ok((h, b))
+        }
+    }
+
+    impl Sendable for (&mut Box<dyn Sendable>,) {
+        fn operation(
+            &mut self,
+            geometry: &Geometry<DynamicTransducer>,
+        ) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
+            self.0.operation(geometry)
         }
     }
 

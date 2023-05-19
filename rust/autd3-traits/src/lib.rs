@@ -4,10 +4,10 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/05/2023
+ * Last Modified: 19/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
@@ -147,11 +147,11 @@ fn impl_gain_macro(ast: syn::DeriveInput) -> TokenStream {
                     )),
                     autd3_core::geometry::TransMode::Advanced => Ok((
                         Box::new(autd3_core::NullHeader::default()),
-                        Box::new(autd3_core::GainAdvanced::new(self.calc(geometry)?, geometry.transducers().map(|tr| tr.cycle().unwrap()).collect())),
+                        Box::new(autd3_core::GainAdvanced::new(self.calc(geometry)?, geometry.transducers().map(|tr| tr.cycle()).collect())),
                     )),
                     autd3_core::geometry::TransMode::AdvancedPhase => Ok((
                         Box::new(autd3_core::NullHeader::default()),
-                        Box::new(autd3_core::GainAdvancedPhase::new(self.calc(geometry)?, geometry.transducers().map(|tr| tr.cycle().unwrap()).collect())),
+                        Box::new(autd3_core::GainAdvancedPhase::new(self.calc(geometry)?, geometry.transducers().map(|tr| tr.cycle()).collect())),
                     )),
                 }
             }

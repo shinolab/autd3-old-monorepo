@@ -4,18 +4,16 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 19/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
 use std::collections::HashMap;
 
 use autd3_core::{error::AUTDInternalError, gain::Gain, geometry::*, sendable::Sendable, Drive};
-
-use crate::error::AUTDError;
 
 /// Gain to produce single focal point
 #[derive(Default)]
@@ -30,13 +28,16 @@ impl<'a, T: Transducer> Grouped<'a, T> {
             gain_map: HashMap::new(),
         }
     }
+}
 
-    pub fn add<G: 'a + Gain<T>>(&mut self, id: usize, gain: G) -> Result<(), AUTDError> {
+#[cfg(not(feature = "dynamic"))]
+impl<'a, T: Transducer> Grouped<'a, T> {
+    pub fn add<G: 'a + Gain<T>>(&mut self, id: usize, gain: G) {
         self.gain_map.insert(id, Box::new(gain));
-        Ok(())
     }
 }
 
+#[cfg(not(feature = "dynamic"))]
 impl<'a, T: Transducer> Gain<T> for Grouped<'a, T> {
     fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         let mut drives = HashMap::new();
@@ -144,22 +145,62 @@ impl<'a> Sendable for Grouped<'a, DynamicTransducer> {
                 Box::new(autd3_core::NullHeader::default()),
                 Box::new(autd3_core::GainAdvanced::new(
                     self.calc(geometry)?,
-                    geometry
-                        .transducers()
-                        .map(|tr| tr.cycle().unwrap())
-                        .collect(),
+                    geometry.transducers().map(|tr| tr.cycle()).collect(),
                 )),
             )),
             TransMode::AdvancedPhase => Ok((
                 Box::new(autd3_core::NullHeader::default()),
                 Box::new(autd3_core::GainAdvancedPhase::new(
                     self.calc(geometry)?,
-                    geometry
-                        .transducers()
-                        .map(|tr| tr.cycle().unwrap())
-                        .collect(),
+                    geometry.transducers().map(|tr| tr.cycle()).collect(),
                 )),
             )),
         }
+    }
+}
+
+#[cfg(feature = "dynamic")]
+impl<'a> Grouped<'a, DynamicTransducer> {
+    pub fn add(&mut self, id: usize, gain: Box<dyn Gain<DynamicTransducer>>) {
+        self.gain_map.insert(id, gain);
+    }
+}
+
+#[cfg(feature = "dynamic")]
+impl<'a> Gain<DynamicTransducer> for Grouped<'a, DynamicTransducer> {
+    fn calc(
+        &mut self,
+        geometry: &Geometry<DynamicTransducer>,
+    ) -> Result<Vec<Drive>, AUTDInternalError> {
+        let mut drives = HashMap::new();
+        for (i, gain) in &mut self.gain_map {
+            let d = gain.calc(geometry)?;
+            drives.insert(i, d);
+        }
+
+        Ok((0..geometry.num_devices())
+            .flat_map(|i| {
+                drives
+                    .get_mut(&i)
+                    .map(|g| {
+                        let start = if i == 0 {
+                            0
+                        } else {
+                            geometry.device_map()[i - 1]
+                        };
+                        let end = start + geometry.device_map()[i];
+                        g[start..end].to_vec()
+                    })
+                    .unwrap_or_else(|| {
+                        vec![
+                            Drive {
+                                phase: 0.0,
+                                amp: 0.0,
+                            };
+                            geometry.device_map()[i]
+                        ]
+                    })
+            })
+            .collect())
     }
 }

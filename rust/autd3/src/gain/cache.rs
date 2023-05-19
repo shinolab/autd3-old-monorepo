@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 19/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -84,7 +84,6 @@ impl<'a> IntoIterator for &'a mut Cache {
     }
 }
 
-#[cfg(not(feature = "dynamic"))]
 impl autd3_core::sendable::Sendable<LegacyTransducer> for Cache {
     type H = autd3_core::NullHeader;
     type B = autd3_core::GainLegacy;
@@ -97,7 +96,6 @@ impl autd3_core::sendable::Sendable<LegacyTransducer> for Cache {
     }
 }
 
-#[cfg(not(feature = "dynamic"))]
 impl autd3_core::sendable::Sendable<AdvancedTransducer> for Cache {
     type H = autd3_core::NullHeader;
     type B = autd3_core::GainAdvanced;
@@ -116,7 +114,6 @@ impl autd3_core::sendable::Sendable<AdvancedTransducer> for Cache {
     }
 }
 
-#[cfg(not(feature = "dynamic"))]
 impl autd3_core::sendable::Sendable<AdvancedPhaseTransducer> for Cache {
     type H = autd3_core::NullHeader;
     type B = autd3_core::GainAdvancedPhase;

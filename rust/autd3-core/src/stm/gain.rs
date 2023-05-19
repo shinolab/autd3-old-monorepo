@@ -4,10 +4,10 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 19/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
@@ -21,9 +21,9 @@ use super::STM;
 pub struct GainSTM<'a, T: Transducer> {
     gains: Vec<Box<dyn Gain<T> + 'a>>,
     mode: Mode,
-    pub freq_div: u32,
-    pub start_idx: Option<u16>,
-    pub finish_idx: Option<u16>,
+    freq_div: u32,
+    start_idx: Option<u16>,
+    finish_idx: Option<u16>,
 }
 
 impl<'a, T: Transducer> GainSTM<'a, T> {
@@ -36,12 +36,16 @@ impl<'a, T: Transducer> GainSTM<'a, T> {
             finish_idx: None,
         }
     }
+}
 
+#[cfg(not(feature = "dynamic"))]
+impl<'a, T: Transducer> GainSTM<'a, T> {
     pub fn add<G: Gain<T> + 'a>(&mut self, gain: G) {
         self.gains.push(Box::new(gain));
     }
 }
 
+#[cfg(not(feature = "dynamic"))]
 impl<'a, T: Transducer> STM for GainSTM<'a, T> {
     fn size(&self) -> usize {
         self.gains.len()
@@ -53,6 +57,22 @@ impl<'a, T: Transducer> STM for GainSTM<'a, T> {
 
     fn sampling_freq_div(&self) -> u32 {
         self.freq_div
+    }
+
+    fn set_start_idx(&mut self, idx: Option<u16>) {
+        self.start_idx = idx;
+    }
+
+    fn start_idx(&self) -> Option<u16> {
+        self.start_idx
+    }
+
+    fn set_finish_idx(&mut self, idx: Option<u16>) {
+        self.finish_idx = idx;
+    }
+
+    fn finish_idx(&self) -> Option<u16> {
+        self.finish_idx
     }
 }
 
@@ -131,6 +151,44 @@ impl<'a> Sendable<AdvancedPhaseTransducer> for GainSTM<'a, AdvancedPhaseTransduc
 }
 
 #[cfg(feature = "dynamic")]
+impl<'a> GainSTM<'a, DynamicTransducer> {
+    pub fn add(&mut self, gain: Box<dyn Gain<DynamicTransducer>>) {
+        self.gains.push(gain);
+    }
+}
+
+#[cfg(feature = "dynamic")]
+impl<'a> STM for GainSTM<'a, DynamicTransducer> {
+    fn size(&self) -> usize {
+        self.gains.len()
+    }
+
+    fn set_sampling_freq_div(&mut self, freq_div: u32) {
+        self.freq_div = freq_div;
+    }
+
+    fn sampling_freq_div(&self) -> u32 {
+        self.freq_div
+    }
+
+    fn set_start_idx(&mut self, idx: Option<u16>) {
+        self.start_idx = idx;
+    }
+
+    fn start_idx(&self) -> Option<u16> {
+        self.start_idx
+    }
+
+    fn set_finish_idx(&mut self, idx: Option<u16>) {
+        self.finish_idx = idx;
+    }
+
+    fn finish_idx(&self) -> Option<u16> {
+        self.finish_idx
+    }
+}
+
+#[cfg(feature = "dynamic")]
 impl<'a> Sendable for GainSTM<'a, DynamicTransducer> {
     fn operation(
         &mut self,
@@ -161,10 +219,7 @@ impl<'a> Sendable for GainSTM<'a, DynamicTransducer> {
                 ))
             }
             TransMode::Advanced => {
-                let cycles = geometry
-                    .transducers()
-                    .map(|tr| tr.cycle().unwrap())
-                    .collect();
+                let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
                 let mut drives = Vec::with_capacity(self.gains.len());
                 for gain in &mut self.gains {
                     let drive = gain.calc(geometry)?;
@@ -182,10 +237,7 @@ impl<'a> Sendable for GainSTM<'a, DynamicTransducer> {
                 ))
             }
             TransMode::AdvancedPhase => {
-                let cycles = geometry
-                    .transducers()
-                    .map(|tr| tr.cycle().unwrap())
-                    .collect();
+                let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
                 let mut drives = Vec::with_capacity(self.gains.len());
                 for gain in &mut self.gains {
                     let drive = gain.calc(geometry)?;

@@ -4,10 +4,10 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/05/2023
+ * Last Modified: 19/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
@@ -236,7 +236,11 @@ impl FPGAEmulator {
         }
         if !self.is_stm_mode() {
             let (duty, _) = self.drives(0);
-            return duty.iter().any(|&d| d != 0);
+            return if self.is_legacy_mode() {
+                duty.iter().any(|&d| d > 8)
+            } else {
+                duty.iter().any(|&d| d != 0)
+            };
         }
         true
     }

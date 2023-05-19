@@ -4,10 +4,10 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/05/2023
+ * Last Modified: 19/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
@@ -53,7 +53,7 @@ impl Sendable for Stop {
         AUTDInternalError,
     > {
         Ok((
-            Box::new(ConfigSilencer::new(4096, 10)),
+            Box::new(ConfigSilencer::new(10)),
             Box::new(GainAdvancedDuty::new(
                 vec![Drive { amp: 0., phase: 0. }; geometry.num_transducers()],
                 vec![4096u16; geometry.num_transducers()],

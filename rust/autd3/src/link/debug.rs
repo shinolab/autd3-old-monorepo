@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/05/2023
+ * Last Modified: 19/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,8 +17,9 @@ use autd3_core::{
     error::AUTDInternalError,
     geometry::{Geometry, Transducer},
     link::{get_logger, Link},
-    CPUControlFlags, RxDatagram, TxDatagram, MSG_CLEAR, MSG_RD_CPU_VERSION,
-    MSG_RD_CPU_VERSION_MINOR, MSG_RD_FPGA_FUNCTION, MSG_RD_FPGA_VERSION, MSG_RD_FPGA_VERSION_MINOR,
+    CPUControlFlags, RxDatagram, TxDatagram, FPGA_SUB_CLK_FREQ, FPGA_SUB_CLK_FREQ_DIV, MSG_CLEAR,
+    MSG_RD_CPU_VERSION, MSG_RD_CPU_VERSION_MINOR, MSG_RD_FPGA_FUNCTION, MSG_RD_FPGA_VERSION,
+    MSG_RD_FPGA_VERSION_MINOR,
 };
 use autd3_firmware_emulator::CPUEmulator;
 
@@ -26,18 +27,20 @@ use spdlog::prelude::*;
 
 pub struct Debug {
     is_open: bool,
+    timeout: Duration,
     logger: Logger,
     cpus: Vec<CPUEmulator>,
 }
 
 impl Debug {
-    fn new(level: Level) -> Self {
-        Self::with_logger(get_logger(level))
+    fn new(timeout: Duration, level: Level) -> Self {
+        Self::with_logger(timeout, get_logger(level))
     }
 
-    fn with_logger(logger: Logger) -> Self {
+    fn with_logger(timeout: Duration, logger: Logger) -> Self {
         Self {
             is_open: false,
+            timeout,
             logger,
             cpus: vec![],
         }
@@ -63,26 +66,26 @@ impl DebugBuilder {
         }
     }
 
-    pub fn level(mut self, level: Level) -> Self {
+    pub fn level(&mut self, level: Level) -> &mut Self {
         self.level = level;
         self
     }
 
-    pub fn timeout(mut self, timeout: Duration) -> Self {
+    pub fn timeout(&mut self, timeout: Duration) -> &mut Self {
         self.timeout = timeout;
         self
     }
 
-    pub fn logger(mut self, logger: Logger) -> Self {
+    pub fn logger(&mut self, logger: Logger) -> &mut Self {
         self.logger = Some(logger);
         self
     }
 
     pub fn build(self) -> Debug {
         if let Some(logger) = self.logger {
-            Debug::with_logger(logger)
+            Debug::with_logger(self.timeout, logger)
         } else {
-            Debug::new(self.level)
+            Debug::new(self.timeout, self.level)
         }
     }
 }
@@ -127,6 +130,13 @@ impl<T: Transducer> Link<T> for Debug {
     }
 
     fn send(&mut self, tx: &TxDatagram) -> Result<bool, AUTDInternalError> {
+        debug!(logger: self.logger, "Send data");
+
+        if !self.is_open {
+            warn!(logger: self.logger, "Link is not opened");
+            return Ok(false);
+        }
+
         for cpu in &mut self.cpus {
             cpu.send(tx);
         }
@@ -173,10 +183,13 @@ impl<T: Transducer> Link<T> for Debug {
                     debug!(logger: self.logger,"\t\tSTM BEGIN");
                 }
                 if tx.header().cpu_flag.contains(CPUControlFlags::STM_END) {
+                    let freq_div_stm = fpga.stm_frequency_division() as usize / FPGA_SUB_CLK_FREQ_DIV;
                     debug!(logger: self.logger,
-                        "\t\tSTM END (cycle = {}, frequency_division = {})",
+                        "\t\tSTM END: cycle = {}, sampling_frequency = {} ({}/{}))",
                         fpga.stm_cycle(),
-                        fpga.stm_frequency_division()
+                        FPGA_SUB_CLK_FREQ / freq_div_stm,
+                        FPGA_SUB_CLK_FREQ,
+                        freq_div_stm
                     );
                     if self.logger.should_log(Level::Trace) {
                         let cycles = fpga.cycles();
@@ -208,10 +221,12 @@ impl<T: Transducer> Link<T> for Debug {
                 fpga.silencer_step(),
             );
             let m = fpga.modulation();
-            let freq_div_m = fpga.modulation_frequency_division();
+            let freq_div_m = fpga.modulation_frequency_division() as usize / FPGA_SUB_CLK_FREQ_DIV;
             debug!(logger: self.logger,
-                "\tModulation size = {}, frequency_division = {}",
+                "\tModulation size = {}, sampling_frequency = {} ({}/{})",
                 m.len(),
+                FPGA_SUB_CLK_FREQ / freq_div_m,
+                FPGA_SUB_CLK_FREQ,
                 freq_div_m
             );
             if fpga.is_outputting() {
@@ -241,6 +256,13 @@ impl<T: Transducer> Link<T> for Debug {
     }
 
     fn receive(&mut self, rx: &mut RxDatagram) -> Result<bool, AUTDInternalError> {
+        debug!(logger: self.logger, "Receive data");
+
+        if !self.is_open {
+            warn!(logger: self.logger, "Link is not opened");
+            return Ok(false);
+        }
+
         for cpu in &mut self.cpus {
             rx.messages_mut()[cpu.id()].ack = cpu.ack();
             rx.messages_mut()[cpu.id()].msg_id = cpu.msg_id();
@@ -254,6 +276,6 @@ impl<T: Transducer> Link<T> for Debug {
     }
 
     fn timeout(&self) -> Duration {
-        Duration::ZERO
+        self.timeout
     }
 }
