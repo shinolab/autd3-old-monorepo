@@ -12,7 +12,6 @@
  */
 
 pub mod bessel;
-#[cfg(not(feature = "dynamic"))]
 mod cache;
 pub mod focus;
 pub mod grouped;
@@ -21,7 +20,6 @@ pub mod plane;
 pub mod trans_test;
 
 pub use bessel::Bessel;
-#[cfg(not(feature = "dynamic"))]
 pub use cache::Cache;
 pub use focus::Focus;
 pub use grouped::Grouped;

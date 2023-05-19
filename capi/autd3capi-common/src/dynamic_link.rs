@@ -4,19 +4,16 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 19/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_driver::{RxDatagram, TxDatagram};
+use autd3::core::{error::AUTDInternalError, geometry::Geometry, RxDatagram, TxDatagram};
 
-use crate::{
-    error::AUTDInternalError,
-    geometry::{DynamicTransducer, Geometry},
-};
+use crate::dynamic_transducer::DynamicTransducer;
 
 use super::Link;
 

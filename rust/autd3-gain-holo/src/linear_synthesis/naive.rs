@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 19/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -38,11 +38,11 @@ pub struct Naive<B: Backend> {
 impl_holo!(Naive<B>);
 
 impl<B: Backend> Naive<B> {
-    pub fn new() -> Self {
+    pub fn new(backend: B) -> Self {
         Self {
             foci: vec![],
             amps: vec![],
-            backend: B::new(),
+            backend,
             constraint: Constraint::Normalize,
         }
     }
@@ -74,11 +74,5 @@ impl<B: Backend, T: Transducer> Gain<T> for Naive<B> {
                 Drive { amp, phase }
             })
             .collect())
-    }
-}
-
-impl<B: Backend> Default for Naive<B> {
-    fn default() -> Self {
-        Self::new()
     }
 }

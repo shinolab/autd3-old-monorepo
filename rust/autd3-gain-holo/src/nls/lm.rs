@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 19/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -45,7 +45,7 @@ pub struct LM<B: Backend> {
 impl_holo!(LM<B>);
 
 impl<B: Backend> LM<B> {
-    pub fn new() -> Self {
+    pub fn new(backend: B) -> Self {
         Self {
             foci: vec![],
             amps: vec![],
@@ -54,7 +54,7 @@ impl<B: Backend> LM<B> {
             tau: 1e-3,
             k_max: 5,
             initial: vec![],
-            backend: B::new(),
+            backend,
             constraint: Constraint::Normalize,
         }
     }
@@ -206,11 +206,5 @@ impl<B: Backend, T: Transducer> Gain<T> for LM<B> {
                 Drive { amp, phase }
             })
             .collect())
-    }
-}
-
-impl<B: Backend> Default for LM<B> {
-    fn default() -> Self {
-        Self::new()
     }
 }

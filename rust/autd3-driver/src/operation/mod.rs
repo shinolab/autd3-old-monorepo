@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/05/2023
+ * Last Modified: 19/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -41,4 +41,18 @@ pub trait Operation {
     fn init(&mut self);
     fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError>;
     fn is_finished(&self) -> bool;
+}
+
+impl Operation for Box<dyn Operation> {
+    fn init(&mut self) {
+        (**self).init()
+    }
+
+    fn pack(&mut self, tx: &mut TxDatagram) -> Result<(), DriverError> {
+        (**self).pack(tx)
+    }
+
+    fn is_finished(&self) -> bool {
+        (**self).is_finished()
+    }
 }

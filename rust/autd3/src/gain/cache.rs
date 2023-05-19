@@ -89,7 +89,7 @@ impl autd3_core::sendable::Sendable<LegacyTransducer> for Cache {
     type B = autd3_core::GainLegacy;
 
     fn operation(
-        mut self,
+        &mut self,
         geometry: &Geometry<LegacyTransducer>,
     ) -> Result<(Self::H, Self::B), AUTDInternalError> {
         Ok((Self::H::default(), Self::B::new(self.calc(geometry)?)))
@@ -101,7 +101,7 @@ impl autd3_core::sendable::Sendable<AdvancedTransducer> for Cache {
     type B = autd3_core::GainAdvanced;
 
     fn operation(
-        mut self,
+        &mut self,
         geometry: &Geometry<AdvancedTransducer>,
     ) -> Result<(Self::H, Self::B), AUTDInternalError> {
         Ok((
@@ -119,7 +119,7 @@ impl autd3_core::sendable::Sendable<AdvancedPhaseTransducer> for Cache {
     type B = autd3_core::GainAdvancedPhase;
 
     fn operation(
-        mut self,
+        &mut self,
         geometry: &Geometry<AdvancedPhaseTransducer>,
     ) -> Result<(Self::H, Self::B), AUTDInternalError> {
         Ok((

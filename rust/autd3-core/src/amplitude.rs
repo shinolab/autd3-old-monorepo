@@ -13,7 +13,7 @@
 
 use autd3_driver::{float, Drive};
 
-use crate::{error::AUTDInternalError, geometry::*, sendable::Sendable};
+use crate::{error::AUTDInternalError, geometry::*, sendable::*};
 
 pub struct Amplitudes {
     amp: float,
@@ -27,15 +27,18 @@ impl Amplitudes {
     pub fn none() -> Self {
         Self::uniform(0.0)
     }
+
+    pub fn amp(&self) -> float {
+        self.amp
+    }
 }
 
-#[cfg(not(feature = "dynamic"))]
 impl Sendable<AdvancedPhaseTransducer> for Amplitudes {
     type H = autd3_driver::NullHeader;
     type B = autd3_driver::GainAdvancedDuty;
 
     fn operation(
-        self,
+        &mut self,
         geometry: &Geometry<AdvancedPhaseTransducer>,
     ) -> Result<(Self::H, Self::B), AUTDInternalError> {
         Ok((
@@ -50,34 +53,6 @@ impl Sendable<AdvancedPhaseTransducer> for Amplitudes {
                 ],
                 geometry.transducers().map(|tr| tr.cycle()).collect(),
             ),
-        ))
-    }
-}
-
-#[cfg(feature = "dynamic")]
-impl Sendable for Amplitudes {
-    fn operation(
-        &mut self,
-        geometry: &Geometry<DynamicTransducer>,
-    ) -> Result<
-        (
-            Box<dyn autd3_driver::Operation>,
-            Box<dyn autd3_driver::Operation>,
-        ),
-        AUTDInternalError,
-    > {
-        Ok((
-            Box::new(autd3_driver::NullHeader::default()),
-            Box::new(autd3_driver::GainAdvancedDuty::new(
-                vec![
-                    Drive {
-                        phase: 0.0,
-                        amp: self.amp,
-                    };
-                    geometry.num_transducers()
-                ],
-                geometry.transducers().map(|tr| tr.cycle()).collect(),
-            )),
         ))
     }
 }
