@@ -11,7 +11,7 @@
  *
  */
 
-use crate::{error::AUTDInternalError, geometry::*, sendable::Sendable};
+use crate::{error::AUTDInternalError, geometry::*, sendable::*};
 
 pub struct SilencerConfig {
     step: u16,
@@ -27,32 +27,12 @@ impl SilencerConfig {
     }
 }
 
-#[cfg(not(feature = "dynamic"))]
 impl<T: Transducer> Sendable<T> for SilencerConfig {
     type H = autd3_driver::ConfigSilencer;
     type B = autd3_driver::NullBody;
 
-    fn operation(self, _: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
+    fn operation(&mut self, _: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
         Ok((Self::H::new(self.step), Self::B::default()))
-    }
-}
-
-#[cfg(feature = "dynamic")]
-impl Sendable for SilencerConfig {
-    fn operation(
-        &mut self,
-        _: &Geometry<DynamicTransducer>,
-    ) -> Result<
-        (
-            Box<dyn autd3_driver::Operation>,
-            Box<dyn autd3_driver::Operation>,
-        ),
-        AUTDInternalError,
-    > {
-        Ok((
-            Box::new(autd3_driver::ConfigSilencer::new(self.step)),
-            Box::new(autd3_driver::NullBody::default()),
-        ))
     }
 }
 

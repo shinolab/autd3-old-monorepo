@@ -4,16 +4,14 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/05/2023
+ * Last Modified: 19/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_driver::{FPGA_CLK_FREQ, MAX_CYCLE};
-
-use crate::{error::AUTDInternalError, float};
+use autd3::core::{error::AUTDInternalError, float, FPGA_CLK_FREQ, MAX_CYCLE};
 
 use super::{Matrix4, Transducer, UnitQuaternion, Vector3, Vector4};
 
@@ -102,13 +100,5 @@ impl DynamicTransducer {
         }
         let cycle = (FPGA_CLK_FREQ as float / freq).round() as u16;
         self.set_cycle(cycle)
-    }
-
-    pub fn set_mode(&mut self, mode: TransMode) {
-        self.mode = mode;
-    }
-
-    pub fn mode(&self) -> &TransMode {
-        &self.mode
     }
 }

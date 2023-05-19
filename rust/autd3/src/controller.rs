@@ -17,12 +17,9 @@ use std::{
 };
 
 use autd3_core::{
-    clear::Clear, geometry::*, link::Link, sendable::Sendable, stop::Stop, FirmwareInfo,
+    clear::Clear, geometry::*, link::Link, sendable::Sendable, stop::Stop, FirmwareInfo, Operation,
     RxDatagram, TxDatagram, MSG_BEGIN, MSG_END,
 };
-
-#[cfg(not(feature = "dynamic"))]
-use autd3_core::Operation;
 
 use crate::error::AUTDError;
 
@@ -76,9 +73,16 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
     /// * `header` - Header
     /// * `body` - Body
     ///
-    ///
-    #[cfg(not(feature = "dynamic"))]
     pub fn send<S: Sendable<T>>(&mut self, s: S) -> Result<bool, AUTDError> {
+        self.send_with_timeout(s, None)
+    }
+
+    pub fn send_with_timeout<S: Sendable<T>>(
+        &mut self,
+        s: S,
+        timeout: Option<Duration>,
+    ) -> Result<bool, AUTDError> {
+        let mut s = s;
         let (mut op_header, mut op_body) = s.operation(&self.geometry)?;
 
         op_header.init();
@@ -87,7 +91,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         self.force_fan.pack(&mut self.tx_buf);
         self.reads_fpga_info.pack(&mut self.tx_buf);
 
-        let timeout = S::timeout().unwrap_or(self.link.timeout());
+        let timeout = timeout.unwrap_or(S::timeout().unwrap_or(self.link.timeout()));
         loop {
             self.tx_buf.header_mut().msg_id = self.get_id();
 
@@ -110,7 +114,6 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         Ok(true)
     }
 
-    #[cfg(not(feature = "dynamic"))]
     pub fn close(&mut self) -> Result<bool, AUTDError> {
         let res = self.send(Stop::new())?;
         let res = res & self.send(Clear::new())?;
@@ -220,52 +223,6 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
             self.msg_id.fetch_add(1, atomic::Ordering::SeqCst);
         }
         self.msg_id.load(atomic::Ordering::SeqCst)
-    }
-}
-
-#[cfg(feature = "dynamic")]
-impl Controller<DynamicTransducer, crate::core::link::DynamicLink> {
-    pub fn send_with_timeout<S: Sendable>(
-        &mut self,
-        s: &mut S,
-        timeout: Option<Duration>,
-    ) -> Result<bool, AUTDError> {
-        let (mut op_header, mut op_body) = s.operation(&self.geometry)?;
-
-        op_header.init();
-        op_body.init();
-
-        self.force_fan.pack(&mut self.tx_buf);
-        self.reads_fpga_info.pack(&mut self.tx_buf);
-
-        let timeout = timeout.unwrap_or(s.timeout().unwrap_or(self.link.timeout()));
-        loop {
-            self.tx_buf.header_mut().msg_id = self.get_id();
-
-            op_header.pack(&mut self.tx_buf)?;
-            op_body.pack(&mut self.tx_buf)?;
-
-            if !self
-                .link
-                .send_receive(&self.tx_buf, &mut self.rx_buf, timeout)?
-            {
-                return Ok(false);
-            }
-            if op_header.is_finished() && op_body.is_finished() {
-                break;
-            }
-            if timeout.is_zero() {
-                std::thread::sleep(Duration::from_millis(1));
-            }
-        }
-        Ok(true)
-    }
-
-    pub fn close(&mut self) -> Result<bool, AUTDError> {
-        let res = self.send_with_timeout(&mut Stop::new(), None)?;
-        let res = res & self.send_with_timeout(&mut Clear::new(), None)?;
-        self.link.close()?;
-        Ok(res)
     }
 }
 
