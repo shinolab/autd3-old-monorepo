@@ -1,7 +1,0 @@
-.DS_Store
-/Manifest.toml
-/dev/
-/test.jl
-.vscode
-bin/
-simple.jl
