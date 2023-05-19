@@ -3,3 +3,8 @@
 members = [
     "autd3capi",
 ]
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
