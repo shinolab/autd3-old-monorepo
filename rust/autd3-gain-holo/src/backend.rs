@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 19/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -30,7 +30,6 @@ pub enum Transpose {
 }
 
 pub trait Backend {
-    fn new() -> Self;
     fn hadamard_product(&mut self, a: &MatrixXc, b: &MatrixXc, c: &mut MatrixXc);
     fn real(&mut self, a: &MatrixXc, b: &mut MatrixX);
     fn imag(&mut self, a: &VectorXc, b: &mut VectorX);
@@ -68,13 +67,16 @@ pub trait Backend {
     fn concat_col(&mut self, a: MatrixXc, b: &MatrixXc) -> MatrixXc;
 }
 
+#[derive(Default)]
 pub struct NalgebraBackend {}
 
-impl Backend for NalgebraBackend {
-    fn new() -> Self {
+impl NalgebraBackend {
+    pub fn new() -> Self {
         Self {}
     }
+}
 
+impl Backend for NalgebraBackend {
     fn hadamard_product(&mut self, a: &MatrixXc, b: &MatrixXc, c: &mut MatrixXc) {
         *c = a.component_mul(b);
     }

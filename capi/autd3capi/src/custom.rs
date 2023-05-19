@@ -11,13 +11,9 @@
  *
  */
 
-use autd3::{
-    core::{gain::Gain, modulation::Modulation},
-    prelude::*,
-};
-
-use autd3_core::{error::AUTDInternalError, Drive};
+use autd3_core::{error::AUTDInternalError, modulation::ModulationProperty, Drive};
 use autd3_traits::*;
+use autd3capi_common::*;
 
 #[derive(Gain)]
 pub struct CustomGain {
@@ -39,11 +35,8 @@ impl CustomGain {
     }
 }
 
-impl Gain<DynamicTransducer> for CustomGain {
-    fn calc(
-        &mut self,
-        geometry: &Geometry<DynamicTransducer>,
-    ) -> Result<Vec<Drive>, AUTDInternalError> {
+impl<T: Transducer> Gain<T> for CustomGain {
+    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         Ok(Self::transform(geometry, |tr| {
             let amp = self.amp[tr.idx()];
             let phase = self.phase[tr.idx()];
@@ -51,6 +44,8 @@ impl Gain<DynamicTransducer> for CustomGain {
         }))
     }
 }
+
+impl_sendable_for_gain!(CustomGain);
 
 #[derive(Modulation)]
 pub struct CustomModulation {
@@ -73,3 +68,5 @@ impl Modulation for CustomModulation {
         Ok(self.buf.clone())
     }
 }
+
+impl_sendable_for_modulation!(CustomModulation);

@@ -15,7 +15,7 @@ use std::time::Duration;
 
 use autd3_driver::NullBody;
 
-use crate::{error::AUTDInternalError, geometry::*, sendable::Sendable};
+use crate::{error::AUTDInternalError, geometry::*, sendable::*};
 
 #[derive(Default)]
 pub struct Clear {}
@@ -26,7 +26,6 @@ impl Clear {
     }
 }
 
-#[cfg(not(feature = "dynamic"))]
 impl<T: Transducer> Sendable<T> for Clear {
     type H = autd3_driver::Clear;
     type B = NullBody;
@@ -35,30 +34,7 @@ impl<T: Transducer> Sendable<T> for Clear {
         Some(Duration::from_millis(200))
     }
 
-    fn operation(self, _: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
+    fn operation(&mut self, _: &Geometry<T>) -> Result<(Self::H, Self::B), AUTDInternalError> {
         Ok((Self::H::default(), Self::B::default()))
-    }
-}
-
-#[cfg(feature = "dynamic")]
-impl Sendable for Clear {
-    fn operation(
-        &mut self,
-        _: &Geometry<DynamicTransducer>,
-    ) -> Result<
-        (
-            Box<dyn autd3_driver::Operation>,
-            Box<dyn autd3_driver::Operation>,
-        ),
-        AUTDInternalError,
-    > {
-        Ok((
-            Box::new(autd3_driver::Clear::default()),
-            Box::new(NullBody::default()),
-        ))
-    }
-
-    fn timeout(&self) -> Option<Duration> {
-        Some(Duration::from_millis(200))
     }
 }

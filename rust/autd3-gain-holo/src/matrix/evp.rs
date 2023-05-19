@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 19/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -39,12 +39,12 @@ pub struct EVP<B: Backend> {
 impl_holo!(EVP<B>);
 
 impl<B: Backend> EVP<B> {
-    pub fn new() -> Self {
+    pub fn new(backend: B) -> Self {
         Self {
             foci: vec![],
             amps: vec![],
             gamma: 1.0,
-            backend: B::new(),
+            backend,
             constraint: Constraint::Uniform(1.),
         }
     }
@@ -132,11 +132,5 @@ impl<B: Backend, T: Transducer> Gain<T> for EVP<B> {
                 Drive { amp, phase }
             })
             .collect())
-    }
-}
-
-impl<B: Backend> Default for EVP<B> {
-    fn default() -> Self {
-        Self::new()
     }
 }

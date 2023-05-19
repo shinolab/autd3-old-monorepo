@@ -2,7 +2,6 @@
 
 mod custom;
 
-use autd3_core::update_flag::UpdateFlag;
 use custom::{CustomGain, CustomModulation};
 
 use std::{
@@ -11,61 +10,12 @@ use std::{
     time::Duration,
 };
 
-use autd3::{
-    core::{
-        gain::Gain,
-        link::{DynamicLink, Link},
-        modulation::Modulation,
-        sendable::Sendable,
-        spdlog, FirmwareInfo,
-    },
-    link::{debug::DebugBuilder, Debug},
-    prelude::*,
-};
-
-type ConstPtr = *const c_void;
-type Cnt = Controller<DynamicTransducer, DynamicLink>;
-type L = dyn Link<DynamicTransducer>;
-type G = dyn Gain<DynamicTransducer>;
-type M = dyn Modulation;
-type S = dyn STM;
-
-const OK: i32 = 1;
-const TRUE: i32 = 1;
-const FALSE: i32 = 0;
-const ERR: i32 = -1;
-
-pub fn to_level(level: u16) -> Option<Level> {
-    match level {
-        0 => Some(Level::Critical),
-        1 => Some(Level::Error),
-        2 => Some(Level::Warn),
-        3 => Some(Level::Info),
-        4 => Some(Level::Debug),
-        5 => Some(Level::Trace),
-        _ => None,
-    }
-}
-
-macro_rules! try_or_return {
-    ($expr:expr, $err:ident) => {
-        match $expr {
-            Ok(v) => v,
-            Err(e) => {
-                let msg = std::ffi::CString::new(e.to_string()).unwrap();
-                libc::strcpy($err, msg.as_ptr());
-                return ERR;
-            }
-        }
-    };
-}
+use autd3capi_common::*;
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDCreateGeometryBuilder(out: *mut ConstPtr) {
     unsafe {
-        let builder = Box::new(Geometry::builder());
-        let builder = Box::into_raw(builder);
-        *out = builder as *mut c_void;
+        *out = Box::into_raw(Box::new(GeometryBuilder::<DynamicTransducer>::new())) as *mut c_void;
     }
 }
 
@@ -80,7 +30,7 @@ pub unsafe extern "C" fn AUTDAddDevice(
     rz2: float,
 ) {
     unsafe {
-        (builder as *mut GeometryBuilder)
+        (builder as *mut GeometryBuilder<DynamicTransducer>)
             .as_mut()
             .unwrap()
             .add_device(AUTD3::new(
@@ -102,7 +52,7 @@ pub unsafe extern "C" fn AUTDAddDeviceQuaternion(
     qz: float,
 ) {
     unsafe {
-        (builder as *mut GeometryBuilder)
+        (builder as *mut GeometryBuilder<DynamicTransducer>)
             .as_mut()
             .unwrap()
             .add_device(AUTD3::new_with_quaternion(
@@ -113,30 +63,17 @@ pub unsafe extern "C" fn AUTDAddDeviceQuaternion(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDSetMode(builder: ConstPtr, mode: u8) {
-    unsafe {
-        let builder = (builder as *mut GeometryBuilder).as_mut().unwrap();
-        match mode {
-            0 => builder.legacy(),
-            1 => builder.advanced(),
-            2 => builder.advanced_phase(),
-            _ => {}
-        }
-    }
-}
-
-#[no_mangle]
 pub unsafe extern "C" fn AUTDBuildGeometry(
     out: *mut ConstPtr,
     builder: *const c_void,
     err: *mut c_char,
 ) -> i32 {
     unsafe {
-        let builder = Box::from_raw(builder as *mut GeometryBuilder);
-        let geometry = try_or_return!(builder.build(), err);
-        let geometry = Box::new(geometry);
-        let geometry = Box::into_raw(geometry);
-        *out = geometry as *mut c_void;
+        let geometry = try_or_return!(
+            Box::from_raw(builder as *mut GeometryBuilder<DynamicTransducer>).build(),
+            err
+        );
+        *out = Box::into_raw(Box::new(geometry)) as *mut c_void;
     }
     OK
 }
@@ -486,11 +423,11 @@ pub unsafe extern "C" fn AUTDGainGroupedAdd(
     gain: ConstPtr,
 ) {
     unsafe {
-        let g = Box::from_raw(gain as *mut Box<G>);
+        let g = Box::from_raw(gain as *mut Box<G> as *mut Box<dyn Gain<DynamicTransducer>>);
         (grouped_gain as *mut Box<G> as *mut Box<Grouped<DynamicTransducer>>)
             .as_mut()
             .unwrap()
-            .add(device_id as _, *g);
+            .add_boxed(device_id as _, *g);
     }
 }
 
@@ -729,11 +666,11 @@ pub unsafe extern "C" fn AUTDGainSTM(out: *mut ConstPtr) {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainSTMAdd(grouped_gain: ConstPtr, gain: ConstPtr) {
     unsafe {
-        let g = Box::from_raw(gain as *mut Box<G>);
+        let g = Box::from_raw(gain as *mut Box<G> as *mut Box<dyn Gain<DynamicTransducer>>);
         (grouped_gain as *mut Box<G> as *mut Box<GainSTM<DynamicTransducer>>)
             .as_mut()
             .unwrap()
-            .add(*g);
+            .add_boxed(*g);
     }
 }
 
@@ -825,7 +762,7 @@ pub unsafe extern "C" fn AUTDDeleteSTM(stm: ConstPtr) {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDSynchronize(out: *mut ConstPtr) {
     unsafe {
-        let m: Box<Box<dyn Sendable>> = Box::new(Box::new(Synchronize::new()));
+        let m: Box<Box<dyn DynamicSendable>> = Box::new(Box::new(Synchronize::new()));
         *out = Box::into_raw(m) as _;
     }
 }
@@ -833,7 +770,7 @@ pub unsafe extern "C" fn AUTDSynchronize(out: *mut ConstPtr) {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDClear(out: *mut ConstPtr) {
     unsafe {
-        let m: Box<Box<dyn Sendable>> = Box::new(Box::new(Clear::new()));
+        let m: Box<Box<dyn DynamicSendable>> = Box::new(Box::new(Clear::new()));
         *out = Box::into_raw(m) as _;
     }
 }
@@ -841,7 +778,7 @@ pub unsafe extern "C" fn AUTDClear(out: *mut ConstPtr) {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDUpdateFlags(out: *mut ConstPtr) {
     unsafe {
-        let m: Box<Box<dyn Sendable>> = Box::new(Box::new(UpdateFlag::new()));
+        let m: Box<Box<dyn DynamicSendable>> = Box::new(Box::new(UpdateFlag::new()));
         *out = Box::into_raw(m) as _;
     }
 }
@@ -849,7 +786,7 @@ pub unsafe extern "C" fn AUTDUpdateFlags(out: *mut ConstPtr) {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDStop(out: *mut ConstPtr) {
     unsafe {
-        let m: Box<Box<dyn Sendable>> = Box::new(Box::new(Stop::new()));
+        let m: Box<Box<dyn DynamicSendable>> = Box::new(Box::new(Stop::new()));
         *out = Box::into_raw(m) as _;
     }
 }
@@ -857,7 +794,7 @@ pub unsafe extern "C" fn AUTDStop(out: *mut ConstPtr) {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDModDelayConfig(out: *mut ConstPtr) {
     unsafe {
-        let m: Box<Box<dyn Sendable>> = Box::new(Box::new(ModDelay::new()));
+        let m: Box<Box<dyn DynamicSendable>> = Box::new(Box::new(ModDelay::new()));
         *out = Box::into_raw(m) as _;
     }
 }
@@ -865,14 +802,14 @@ pub unsafe extern "C" fn AUTDModDelayConfig(out: *mut ConstPtr) {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDDeleteSpecialData(out: *mut ConstPtr) {
     unsafe {
-        let _ = Box::from_raw(*out as *mut Box<dyn Sendable>);
+        let _ = Box::from_raw(*out as *mut Box<dyn DynamicSendable>);
     }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDCreateSilencer(out: *mut ConstPtr, step: u16) {
     unsafe {
-        let m: Box<Box<dyn Sendable>> = Box::new(Box::new(SilencerConfig::new(step)));
+        let m: Box<Box<dyn DynamicSendable>> = Box::new(Box::new(SilencerConfig::new(step)));
         *out = Box::into_raw(m) as _;
     }
 }
@@ -880,14 +817,14 @@ pub unsafe extern "C" fn AUTDCreateSilencer(out: *mut ConstPtr, step: u16) {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDDeleteSilencer(out: *mut ConstPtr) {
     unsafe {
-        let _ = Box::from_raw(*out as *mut Box<dyn Sendable>);
+        let _ = Box::from_raw(*out as *mut Box<dyn DynamicSendable>);
     }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDCreateAmplitudes(out: *mut ConstPtr, amp: float) {
     unsafe {
-        let m: Box<Box<dyn Sendable>> = Box::new(Box::new(Amplitudes::uniform(amp)));
+        let m: Box<Box<dyn DynamicSendable>> = Box::new(Box::new(Amplitudes::uniform(amp)));
         *out = Box::into_raw(m) as _;
     }
 }
@@ -895,13 +832,14 @@ pub unsafe extern "C" fn AUTDCreateAmplitudes(out: *mut ConstPtr, amp: float) {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDDeleteAmplitudes(out: *mut ConstPtr) {
     unsafe {
-        let _ = Box::from_raw(*out as *mut Box<dyn Sendable>);
+        let _ = Box::from_raw(*out as *mut Box<dyn DynamicSendable>);
     }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDSend(
     cnt: ConstPtr,
+    mode: u8,
     header: ConstPtr,
     body: ConstPtr,
     timeout_ns: i64,
@@ -912,45 +850,50 @@ pub unsafe extern "C" fn AUTDSend(
     } else {
         Some(Duration::from_nanos(timeout_ns as _))
     };
-    unsafe {
-        if !header.is_null() && !body.is_null() {
-            let header = (header as *mut Box<dyn Sendable>).as_mut().unwrap();
-            let body = (body as *mut Box<dyn Sendable>).as_mut().unwrap();
-            try_or_return!(
-                (cnt as *mut Cnt)
-                    .as_mut()
-                    .unwrap()
-                    .send_with_timeout(&mut (header, body), timeout),
-                err
-            );
-        } else if !header.is_null() {
-            let header = (header as *mut Box<dyn Sendable>).as_mut().unwrap();
-            try_or_return!(
-                (cnt as *mut Cnt)
-                    .as_mut()
-                    .unwrap()
-                    .send_with_timeout(&mut (header,), timeout),
-                err
-            );
-        } else if !body.is_null() {
-            let body = (body as *mut Box<dyn Sendable>).as_mut().unwrap();
-            try_or_return!(
-                (cnt as *mut Cnt)
-                    .as_mut()
-                    .unwrap()
-                    .send_with_timeout(&mut (body,), timeout),
-                err
-            );
-        } else {
-            return FALSE;
+    if let Some(mode) = to_mode(mode) {
+        unsafe {
+            if !header.is_null() && !body.is_null() {
+                let header = (header as *mut Box<dyn DynamicSendable>).as_mut().unwrap();
+                let body = (body as *mut Box<dyn DynamicSendable>).as_mut().unwrap();
+                try_or_return!(
+                    (cnt as *mut Cnt)
+                        .as_mut()
+                        .unwrap()
+                        .send_with_timeout((mode, header, body), timeout),
+                    err
+                );
+            } else if !header.is_null() {
+                let header = (header as *mut Box<dyn DynamicSendable>).as_mut().unwrap();
+                try_or_return!(
+                    (cnt as *mut Cnt)
+                        .as_mut()
+                        .unwrap()
+                        .send_with_timeout((mode, header), timeout),
+                    err
+                );
+            } else if !body.is_null() {
+                let body = (body as *mut Box<dyn DynamicSendable>).as_mut().unwrap();
+                try_or_return!(
+                    (cnt as *mut Cnt)
+                        .as_mut()
+                        .unwrap()
+                        .send_with_timeout((mode, body), timeout),
+                    err
+                );
+            } else {
+                return FALSE;
+            }
         }
+        TRUE
+    } else {
+        FALSE
     }
-    TRUE
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDSendSpecial(
     cnt: ConstPtr,
+    mode: u8,
     special: ConstPtr,
     timeout_ns: i64,
     err: *mut c_char,
@@ -960,17 +903,21 @@ pub unsafe extern "C" fn AUTDSendSpecial(
     } else {
         Some(Duration::from_nanos(timeout_ns as _))
     };
-    unsafe {
-        let special = (special as *mut Box<dyn Sendable>).as_mut().unwrap();
-        try_or_return!(
-            (cnt as *mut Cnt)
-                .as_mut()
-                .unwrap()
-                .send_with_timeout(&mut (special,), timeout),
-            err
-        );
+    if let Some(mode) = to_mode(mode) {
+        unsafe {
+            let special = (special as *mut Box<dyn DynamicSendable>).as_mut().unwrap();
+            try_or_return!(
+                (cnt as *mut Cnt)
+                    .as_mut()
+                    .unwrap()
+                    .send_with_timeout((mode, special), timeout),
+                err
+            );
+        }
+        TRUE
+    } else {
+        FALSE
     }
-    TRUE
 }
 
 #[no_mangle]
@@ -1024,7 +971,7 @@ pub unsafe extern "C" fn AUTDLinkDebugLogFunc(
         };
 
         let level = to_level(level).unwrap_or(Level::Debug);
-        let logger = autd3::core::link::get_logger_with_custom_func(level, out_func, flush_func);
+        let logger = get_logger_with_custom_func(level, out_func, flush_func);
 
         (builder as *mut DebugBuilder)
             .as_mut()

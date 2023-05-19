@@ -30,14 +30,16 @@ impl<'a, T: Transducer> Grouped<'a, T> {
     }
 }
 
-#[cfg(not(feature = "dynamic"))]
 impl<'a, T: Transducer> Grouped<'a, T> {
     pub fn add<G: 'a + Gain<T>>(&mut self, id: usize, gain: G) {
         self.gain_map.insert(id, Box::new(gain));
     }
+
+    pub fn add_boxed(&mut self, id: usize, gain: Box<dyn Gain<T>>) {
+        self.gain_map.insert(id, gain);
+    }
 }
 
-#[cfg(not(feature = "dynamic"))]
 impl<'a, T: Transducer> Gain<T> for Grouped<'a, T> {
     fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
         let mut drives = HashMap::new();
@@ -73,26 +75,24 @@ impl<'a, T: Transducer> Gain<T> for Grouped<'a, T> {
     }
 }
 
-#[cfg(not(feature = "dynamic"))]
 impl<'a> Sendable<LegacyTransducer> for Grouped<'a, LegacyTransducer> {
     type H = autd3_core::NullHeader;
     type B = autd3_core::GainLegacy;
 
     fn operation(
-        mut self,
+        &mut self,
         geometry: &Geometry<LegacyTransducer>,
     ) -> Result<(Self::H, Self::B), AUTDInternalError> {
         Ok((Self::H::default(), Self::B::new(self.calc(geometry)?)))
     }
 }
 
-#[cfg(not(feature = "dynamic"))]
 impl<'a> Sendable<AdvancedTransducer> for Grouped<'a, AdvancedTransducer> {
     type H = autd3_core::NullHeader;
     type B = autd3_core::GainAdvanced;
 
     fn operation(
-        mut self,
+        &mut self,
         geometry: &Geometry<AdvancedTransducer>,
     ) -> Result<(Self::H, Self::B), AUTDInternalError> {
         Ok((
@@ -105,13 +105,12 @@ impl<'a> Sendable<AdvancedTransducer> for Grouped<'a, AdvancedTransducer> {
     }
 }
 
-#[cfg(not(feature = "dynamic"))]
 impl<'a> Sendable<AdvancedPhaseTransducer> for Grouped<'a, AdvancedPhaseTransducer> {
     type H = autd3_core::NullHeader;
     type B = autd3_core::GainAdvancedPhase;
 
     fn operation(
-        mut self,
+        &mut self,
         geometry: &Geometry<AdvancedPhaseTransducer>,
     ) -> Result<(Self::H, Self::B), AUTDInternalError> {
         Ok((
@@ -121,86 +120,5 @@ impl<'a> Sendable<AdvancedPhaseTransducer> for Grouped<'a, AdvancedPhaseTransduc
                 geometry.transducers().map(|tr| tr.cycle()).collect(),
             ),
         ))
-    }
-}
-
-#[cfg(feature = "dynamic")]
-impl<'a> Sendable for Grouped<'a, DynamicTransducer> {
-    fn operation(
-        &mut self,
-        geometry: &Geometry<DynamicTransducer>,
-    ) -> Result<
-        (
-            Box<dyn autd3_core::Operation>,
-            Box<dyn autd3_core::Operation>,
-        ),
-        AUTDInternalError,
-    > {
-        match geometry.mode() {
-            TransMode::Legacy => Ok((
-                Box::new(autd3_core::NullHeader::default()),
-                Box::new(autd3_core::GainLegacy::new(self.calc(geometry)?)),
-            )),
-            TransMode::Advanced => Ok((
-                Box::new(autd3_core::NullHeader::default()),
-                Box::new(autd3_core::GainAdvanced::new(
-                    self.calc(geometry)?,
-                    geometry.transducers().map(|tr| tr.cycle()).collect(),
-                )),
-            )),
-            TransMode::AdvancedPhase => Ok((
-                Box::new(autd3_core::NullHeader::default()),
-                Box::new(autd3_core::GainAdvancedPhase::new(
-                    self.calc(geometry)?,
-                    geometry.transducers().map(|tr| tr.cycle()).collect(),
-                )),
-            )),
-        }
-    }
-}
-
-#[cfg(feature = "dynamic")]
-impl<'a> Grouped<'a, DynamicTransducer> {
-    pub fn add(&mut self, id: usize, gain: Box<dyn Gain<DynamicTransducer>>) {
-        self.gain_map.insert(id, gain);
-    }
-}
-
-#[cfg(feature = "dynamic")]
-impl<'a> Gain<DynamicTransducer> for Grouped<'a, DynamicTransducer> {
-    fn calc(
-        &mut self,
-        geometry: &Geometry<DynamicTransducer>,
-    ) -> Result<Vec<Drive>, AUTDInternalError> {
-        let mut drives = HashMap::new();
-        for (i, gain) in &mut self.gain_map {
-            let d = gain.calc(geometry)?;
-            drives.insert(i, d);
-        }
-
-        Ok((0..geometry.num_devices())
-            .flat_map(|i| {
-                drives
-                    .get_mut(&i)
-                    .map(|g| {
-                        let start = if i == 0 {
-                            0
-                        } else {
-                            geometry.device_map()[i - 1]
-                        };
-                        let end = start + geometry.device_map()[i];
-                        g[start..end].to_vec()
-                    })
-                    .unwrap_or_else(|| {
-                        vec![
-                            Drive {
-                                phase: 0.0,
-                                amp: 0.0,
-                            };
-                            geometry.device_map()[i]
-                        ]
-                    })
-            })
-            .collect())
     }
 }
