@@ -4,10 +4,10 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 19/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
@@ -103,19 +103,13 @@ impl Sendable for Synchronize {
             TransMode::Advanced => Ok((
                 Box::new(NullHeader::default()),
                 Box::new(autd3_driver::SyncAdvanced::new(
-                    geometry
-                        .transducers()
-                        .map(|tr| tr.cycle().unwrap())
-                        .collect(),
+                    geometry.transducers().map(|tr| tr.cycle()).collect(),
                 )),
             )),
             TransMode::AdvancedPhase => Ok((
                 Box::new(NullHeader::default()),
                 Box::new(autd3_driver::SyncAdvanced::new(
-                    geometry
-                        .transducers()
-                        .map(|tr| tr.cycle().unwrap())
-                        .collect(),
+                    geometry.transducers().map(|tr| tr.cycle()).collect(),
                 )),
             )),
         }

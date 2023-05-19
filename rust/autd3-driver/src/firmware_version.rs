@@ -4,10 +4,10 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/05/2023
+ * Last Modified: 19/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
@@ -94,7 +94,7 @@ impl FirmwareInfo {
         }
     }
 
-    pub fn matched_version(&self) -> bool {
+    pub fn is_valid(&self) -> bool {
         self.cpu_version_number_major == self.fpga_version_number_major
             && self.cpu_version_number_minor == self.fpga_version_number_minor
     }
