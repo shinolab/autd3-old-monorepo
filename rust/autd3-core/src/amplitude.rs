@@ -4,7 +4,7 @@
  * Created Date: 07/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 20/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -43,7 +43,7 @@ impl Sendable<AdvancedPhaseTransducer> for Amplitudes {
     ) -> Result<(Self::H, Self::B), AUTDInternalError> {
         Ok((
             Self::H::default(),
-            Self::B::new(
+            <Self::B as autd3_driver::operation::GainOp>::new(
                 vec![
                     Drive {
                         phase: 0.0,
@@ -51,7 +51,7 @@ impl Sendable<AdvancedPhaseTransducer> for Amplitudes {
                     };
                     geometry.num_transducers()
                 ],
-                geometry.transducers().map(|tr| tr.cycle()).collect(),
+                || geometry.transducers().map(|tr| tr.cycle()).collect(),
             ),
         ))
     }

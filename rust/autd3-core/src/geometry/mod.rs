@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 20/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -200,6 +200,12 @@ pub struct GeometryBuilder<T: Transducer> {
     transducers: Vec<(usize, Vector3, UnitQuaternion)>,
     device_map: Vec<usize>,
     phantom: PhantomData<T>,
+}
+
+impl<T: Transducer> Default for GeometryBuilder<T> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<T: Transducer> GeometryBuilder<T> {

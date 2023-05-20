@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 20/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,9 +14,19 @@
 use super::Operation;
 use crate::{CPUControlFlags, DriverError, TxDatagram};
 
+pub trait SyncOp: Operation {
+    fn new<F: Fn() -> Vec<u16>>(cycles_fn: F) -> Self;
+}
+
 #[derive(Default)]
 pub struct SyncLegacy {
     sent: bool,
+}
+
+impl SyncOp for SyncLegacy {
+    fn new<F: Fn() -> Vec<u16>>(_: F) -> Self {
+        Self { sent: false }
+    }
 }
 
 impl Operation for SyncLegacy {
@@ -49,17 +59,16 @@ impl Operation for SyncLegacy {
     }
 }
 
-#[derive(Default)]
 pub struct SyncAdvanced {
     sent: bool,
     cycles: Vec<u16>,
 }
 
-impl SyncAdvanced {
-    pub fn new(cycles: Vec<u16>) -> Self {
+impl SyncOp for SyncAdvanced {
+    fn new<F: Fn() -> Vec<u16>>(cycles_fn: F) -> Self {
         Self {
             sent: false,
-            cycles,
+            cycles: cycles_fn(),
         }
     }
 }
@@ -171,7 +180,7 @@ mod test {
             .map(|_| rng.gen_range(0..0xFFFFu16))
             .collect::<Vec<_>>();
 
-        let mut op = SyncAdvanced::new(cycles.clone());
+        let mut op = SyncAdvanced::new(|| cycles.clone());
         op.init();
         assert!(!op.is_finished());
 
@@ -192,7 +201,7 @@ mod test {
         op.init();
         assert!(!op.is_finished());
 
-        let mut op = SyncAdvanced::new(vec![1]);
+        let mut op = SyncAdvanced::new(|| vec![1]);
         op.init();
 
         assert!(op.pack(&mut tx).is_err());

@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 20/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,6 +16,10 @@ use autd3_driver::{float, PI};
 use super::{Quaternion, UnitQuaternion, Vector3};
 
 pub trait Transducer: Sized + Send + Sync {
+    type Gain: autd3_driver::operation::GainOp;
+    type Sync: autd3_driver::operation::SyncOp;
+    type GainSTM: autd3_driver::operation::GainSTMOp;
+
     fn get_direction(dir: Vector3, rotation: &UnitQuaternion) -> Vector3 {
         let dir: UnitQuaternion = UnitQuaternion::from_quaternion(Quaternion::from_imag(dir));
         (rotation * dir * rotation.conjugate()).imag().normalize()
@@ -46,4 +50,5 @@ pub trait Transducer: Sized + Send + Sync {
     fn wavenumber(&self, sound_speed: float) -> float {
         2.0 * PI * self.frequency() / sound_speed
     }
+    fn cycle(&self) -> u16;
 }

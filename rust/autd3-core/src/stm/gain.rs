@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 20/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -90,13 +90,13 @@ impl<'a, T: Transducer> STM for GainSTM<'a, T> {
     }
 }
 
-impl<'a> Sendable<LegacyTransducer> for GainSTM<'a, LegacyTransducer> {
+impl<'a, T: Transducer> Sendable<T> for GainSTM<'a, T> {
     type H = autd3_driver::NullHeader;
-    type B = autd3_driver::GainSTMLegacy;
+    type B = T::GainSTM;
 
     fn operation(
         &mut self,
-        geometry: &Geometry<LegacyTransducer>,
+        geometry: &Geometry<T>,
     ) -> Result<(Self::H, Self::B), AUTDInternalError> {
         let mut drives = Vec::with_capacity(self.gains.len());
         for gain in &mut self.gains {
@@ -109,60 +109,11 @@ impl<'a> Sendable<LegacyTransducer> for GainSTM<'a, LegacyTransducer> {
             finish_idx: self.finish_idx,
             start_idx: self.start_idx,
         };
-        Ok((Self::H::default(), Self::B::new(drives, props)))
+        Ok((
+            Self::H::default(),
+            <Self::B as autd3_driver::operation::GainSTMOp>::new(drives, props, || {
+                geometry.transducers().map(|tr| tr.cycle()).collect()
+            }),
+        ))
     }
 }
-
-impl<'a> Sendable<AdvancedTransducer> for GainSTM<'a, AdvancedTransducer> {
-    type H = autd3_driver::NullHeader;
-    type B = autd3_driver::GainSTMAdvanced;
-
-    fn operation(
-        &mut self,
-        geometry: &Geometry<AdvancedTransducer>,
-    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
-        let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
-        let mut drives = Vec::with_capacity(self.gains.len());
-        for gain in &mut self.gains {
-            let drive = gain.calc(geometry)?;
-            drives.push(drive);
-        }
-        let props = GainSTMProps {
-            mode: self.mode,
-            freq_div: self.freq_div,
-            finish_idx: self.finish_idx,
-            start_idx: self.start_idx,
-        };
-        Ok((Self::H::default(), Self::B::new(drives, cycles, props)))
-    }
-}
-
-impl<'a> Sendable<AdvancedPhaseTransducer> for GainSTM<'a, AdvancedPhaseTransducer> {
-    type H = autd3_driver::NullHeader;
-    type B = autd3_driver::GainSTMAdvanced;
-
-    fn operation(
-        &mut self,
-        geometry: &Geometry<AdvancedPhaseTransducer>,
-    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
-        let cycles = geometry.transducers().map(|tr| tr.cycle()).collect();
-        let mut drives = Vec::with_capacity(self.gains.len());
-        for gain in &mut self.gains {
-            let drive = gain.calc(geometry)?;
-            drives.push(drive);
-        }
-        let props = GainSTMProps {
-            mode: self.mode,
-            freq_div: self.freq_div,
-            finish_idx: self.finish_idx,
-            start_idx: self.start_idx,
-        };
-        Ok((Self::H::default(), Self::B::new(drives, cycles, props)))
-    }
-}
-
-// impl<'a> GainSTM<'a, DynamicTransducer> {
-//     pub fn add_boxed(&mut self, gain: Box<dyn Gain<DynamicTransducer>>) {
-//         self.gains.push(gain);
-//     }
-// }
