@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/05/2023
+ * Last Modified: 20/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,6 +16,11 @@ use crate::{
     CPUControlFlags, Drive, DriverError, FPGAControlFlags, Mode, TxDatagram, FPGA_SUB_CLK_FREQ_DIV,
     GAIN_STM_BUF_SIZE_MAX, GAIN_STM_LEGACY_BUF_SIZE_MAX, SAMPLING_FREQ_DIV_MIN,
 };
+
+pub trait GainSTMOp: Operation {
+    fn new<F: Fn() -> Vec<u16>>(drives: Vec<Vec<Drive>>, props: GainSTMProps, cycles_fn: F)
+        -> Self;
+}
 
 #[derive(Default, Clone, Copy)]
 pub struct GainSTMProps {
@@ -31,8 +36,8 @@ pub struct GainSTMLegacy {
     props: GainSTMProps,
 }
 
-impl GainSTMLegacy {
-    pub fn new(drives: Vec<Vec<Drive>>, props: GainSTMProps) -> Self {
+impl GainSTMOp for GainSTMLegacy {
+    fn new<F: Fn() -> Vec<u16>>(drives: Vec<Vec<Drive>>, props: GainSTMProps, _: F) -> Self {
         Self {
             sent: 0,
             drives,
@@ -195,7 +200,6 @@ impl Operation for GainSTMLegacy {
     }
 }
 
-#[derive(Default)]
 pub struct GainSTMAdvanced {
     sent: usize,
     next_duty: bool,
@@ -204,17 +208,23 @@ pub struct GainSTMAdvanced {
     props: GainSTMProps,
 }
 
-impl GainSTMAdvanced {
-    pub fn new(drives: Vec<Vec<Drive>>, cycles: Vec<u16>, props: GainSTMProps) -> Self {
+impl GainSTMOp for GainSTMAdvanced {
+    fn new<F: Fn() -> Vec<u16>>(
+        drives: Vec<Vec<Drive>>,
+        props: GainSTMProps,
+        cycles_fn: F,
+    ) -> Self {
         Self {
             sent: 0,
             next_duty: false,
             drives,
-            cycles,
+            cycles: cycles_fn(),
             props,
         }
     }
+}
 
+impl GainSTMAdvanced {
     fn pack_phase(&self, tx: &mut TxDatagram) -> Result<(), DriverError> {
         if self.drives.len() > GAIN_STM_BUF_SIZE_MAX {
             return Err(DriverError::GainSTMSizeOutOfRange(self.drives.len()));
@@ -414,7 +424,7 @@ mod test {
             finish_idx: Some(1),
         };
 
-        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        let mut op = GainSTMLegacy::new(drives.clone(), props, Vec::new);
 
         op.init();
         assert!(!op.is_finished());
@@ -527,7 +537,7 @@ mod test {
             ..props
         };
 
-        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        let mut op = GainSTMLegacy::new(drives.clone(), props, Vec::new);
         op.init();
         op.pack(&mut tx).unwrap();
         assert!(!tx
@@ -544,7 +554,7 @@ mod test {
             ..props
         };
 
-        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        let mut op = GainSTMLegacy::new(drives.clone(), props, Vec::new);
         op.init();
         op.pack(&mut tx).unwrap();
         assert!(!tx
@@ -560,7 +570,7 @@ mod test {
             start_idx: Some(2),
             ..props
         };
-        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        let mut op = GainSTMLegacy::new(drives.clone(), props, Vec::new);
         op.init();
         assert!(op.pack(&mut tx).is_err());
 
@@ -569,7 +579,7 @@ mod test {
             finish_idx: Some(2),
             ..props
         };
-        let mut op = GainSTMLegacy::new(drives, props);
+        let mut op = GainSTMLegacy::new(drives, props, Vec::new);
         op.init();
         assert!(op.pack(&mut tx).is_err());
     }
@@ -610,7 +620,7 @@ mod test {
             finish_idx: Some(1),
         };
 
-        let mut op = GainSTMAdvanced::new(drives.clone(), cycles.clone(), props);
+        let mut op = GainSTMAdvanced::new(drives.clone(), props, || cycles.clone());
 
         op.init();
         assert!(!op.is_finished());
@@ -787,7 +797,7 @@ mod test {
             ..props
         };
 
-        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        let mut op = GainSTMLegacy::new(drives.clone(), props, Vec::new);
         op.init();
         op.pack(&mut tx).unwrap();
         assert!(!tx
@@ -804,7 +814,7 @@ mod test {
             ..props
         };
 
-        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        let mut op = GainSTMLegacy::new(drives.clone(), props, Vec::new);
         op.init();
         op.pack(&mut tx).unwrap();
         assert!(!tx
@@ -820,7 +830,7 @@ mod test {
             start_idx: Some(2),
             ..props
         };
-        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        let mut op = GainSTMLegacy::new(drives.clone(), props, Vec::new);
         op.init();
         assert!(op.pack(&mut tx).is_err());
 
@@ -829,7 +839,7 @@ mod test {
             finish_idx: Some(2),
             ..props
         };
-        let mut op = GainSTMLegacy::new(drives, props);
+        let mut op = GainSTMLegacy::new(drives, props, Vec::new);
         op.init();
         assert!(op.pack(&mut tx).is_err());
     }
@@ -870,7 +880,7 @@ mod test {
             finish_idx: Some(1),
         };
 
-        let mut op = GainSTMAdvanced::new(drives.clone(), cycles.clone(), props);
+        let mut op = GainSTMAdvanced::new(drives.clone(), props, || cycles.clone());
 
         op.init();
         assert!(!op.is_finished());
@@ -981,7 +991,7 @@ mod test {
             ..props
         };
 
-        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        let mut op = GainSTMLegacy::new(drives.clone(), props, Vec::new);
         op.init();
         op.pack(&mut tx).unwrap();
         assert!(!tx
@@ -998,7 +1008,7 @@ mod test {
             ..props
         };
 
-        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        let mut op = GainSTMLegacy::new(drives.clone(), props, Vec::new);
         op.init();
         op.pack(&mut tx).unwrap();
         assert!(!tx
@@ -1014,7 +1024,7 @@ mod test {
             start_idx: Some(2),
             ..props
         };
-        let mut op = GainSTMLegacy::new(drives.clone(), props);
+        let mut op = GainSTMLegacy::new(drives.clone(), props, Vec::new);
         op.init();
         assert!(op.pack(&mut tx).is_err());
 
@@ -1023,7 +1033,7 @@ mod test {
             finish_idx: Some(2),
             ..props
         };
-        let mut op = GainSTMLegacy::new(drives, props);
+        let mut op = GainSTMLegacy::new(drives, props, Vec::new);
         op.init();
         assert!(op.pack(&mut tx).is_err());
     }

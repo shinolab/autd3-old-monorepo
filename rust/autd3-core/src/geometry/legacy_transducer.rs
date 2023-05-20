@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 20/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -23,6 +23,10 @@ pub struct LegacyTransducer {
 }
 
 impl Transducer for LegacyTransducer {
+    type Gain = autd3_driver::operation::GainLegacy;
+    type Sync = autd3_driver::SyncLegacy;
+    type GainSTM = autd3_driver::operation::GainSTMLegacy;
+
     fn new(idx: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
         Self {
             idx,
@@ -81,5 +85,9 @@ impl Transducer for LegacyTransducer {
 
     fn z_direction(&self) -> Vector3 {
         Self::get_direction(Vector3::z(), self.rotation())
+    }
+
+    fn cycle(&self) -> u16 {
+        4096
     }
 }
