@@ -2,15 +2,28 @@
 
 mod backend;
 
+use std::time::Duration;
+
+use autd3::core::GainOp;
 use autd3_gain_holo::{Backend, Holo, NalgebraBackend, SDP};
 use autd3capi_common::*;
 use backend::DynamicBackend;
 
-struct DynamicHolo<H: Holo<DynamicTransducer>> {
+struct DynamicHolo<H: Holo + Gain<DynamicTransducer>> {
     holo: H,
 }
 
-impl<H: Holo<DynamicTransducer>> Gain<DynamicTransducer> for DynamicHolo<H> {
+impl<H: Holo + Gain<DynamicTransducer>> DynamicGain for DynamicHolo<H> {
+    fn gain(&self) -> &dyn Gain<DynamicTransducer> {
+        &self.holo
+    }
+
+    fn gain_mut(&mut self) -> &mut dyn Gain<DynamicTransducer> {
+        &mut self.holo
+    }
+}
+
+impl<H: Holo + Gain<DynamicTransducer>> Gain<DynamicTransducer> for DynamicHolo<H> {
     fn calc(
         &mut self,
         geometry: &Geometry<DynamicTransducer>,
@@ -19,7 +32,7 @@ impl<H: Holo<DynamicTransducer>> Gain<DynamicTransducer> for DynamicHolo<H> {
     }
 }
 
-impl<H: Holo<DynamicTransducer>> DynamicSendable for DynamicHolo<H> {
+impl<H: Holo + Gain<DynamicTransducer>> DynamicSendable for DynamicHolo<H> {
     fn operation(
         &mut self,
         mode: TransMode,
@@ -33,24 +46,31 @@ impl<H: Holo<DynamicTransducer>> DynamicSendable for DynamicHolo<H> {
     > {
         match mode {
             TransMode::Legacy => Ok((
-                Box::new(autd3::core::NullHeader::default()),
-                Box::new(autd3::core::GainLegacy::new(self.holo.calc(geometry)?)),
+                Box::<autd3::core::NullHeader>::default(),
+                Box::new(autd3::core::GainLegacy::new(
+                    self.holo.calc(geometry)?,
+                    || geometry.transducers().map(|tr| tr.cycle()).collect(),
+                )),
             )),
             TransMode::Advanced => Ok((
-                Box::new(autd3::core::NullHeader::default()),
+                Box::<autd3::core::NullHeader>::default(),
                 Box::new(autd3::core::GainAdvanced::new(
                     self.holo.calc(geometry)?,
-                    geometry.transducers().map(|tr| tr.cycle()).collect(),
+                    || geometry.transducers().map(|tr| tr.cycle()).collect(),
                 )),
             )),
             TransMode::AdvancedPhase => Ok((
-                Box::new(autd3::core::NullHeader::default()),
+                Box::<autd3::core::NullHeader>::default(),
                 Box::new(autd3::core::GainAdvancedPhase::new(
                     self.holo.calc(geometry)?,
-                    geometry.transducers().map(|tr| tr.cycle()).collect(),
+                    || geometry.transducers().map(|tr| tr.cycle()).collect(),
                 )),
             )),
         }
+    }
+
+    fn timeout(&self) -> Option<Duration> {
+        None
     }
 }
 
