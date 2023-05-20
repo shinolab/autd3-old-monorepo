@@ -4,14 +4,14 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 20/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_core::{error::AUTDInternalError, modulation::ModulationProperty, Drive};
+use autd3_core::{error::AUTDInternalError, Drive};
 use autd3_traits::*;
 use autd3capi_common::*;
 
@@ -45,8 +45,6 @@ impl<T: Transducer> Gain<T> for CustomGain {
     }
 }
 
-impl_sendable_for_gain!(CustomGain);
-
 #[derive(Modulation)]
 pub struct CustomModulation {
     buf: Vec<float>,
@@ -68,5 +66,3 @@ impl Modulation for CustomModulation {
         Ok(self.buf.clone())
     }
 }
-
-impl_sendable_for_modulation!(CustomModulation);
