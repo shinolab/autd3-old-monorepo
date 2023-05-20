@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 20/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -42,7 +42,7 @@ pub struct LM<B: Backend> {
     backend: B,
 }
 
-impl_holo!(LM<B>);
+impl_holo!(B, LM<B>);
 
 impl<B: Backend> LM<B> {
     pub fn new(backend: B) -> Self {

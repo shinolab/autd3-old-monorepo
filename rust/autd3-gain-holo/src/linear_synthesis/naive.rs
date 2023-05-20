@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 20/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -35,7 +35,7 @@ pub struct Naive<B: Backend> {
     backend: B,
 }
 
-impl_holo!(Naive<B>);
+impl_holo!(B, Naive<B>);
 
 impl<B: Backend> Naive<B> {
     pub fn new(backend: B) -> Self {

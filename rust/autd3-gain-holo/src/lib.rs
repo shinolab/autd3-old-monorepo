@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 20/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -21,11 +21,7 @@ mod macros;
 mod matrix;
 mod nls;
 
-use autd3_core::{
-    float,
-    gain::Gain,
-    geometry::{Transducer, Vector3},
-};
+use autd3_core::{float, geometry::Vector3};
 pub use backend::*;
 pub use combinatorial::*;
 pub use constraint::*;
@@ -33,7 +29,7 @@ pub use linear_synthesis::*;
 pub use matrix::*;
 pub use nls::*;
 
-pub trait Holo<T: Transducer>: Gain<T> {
+pub trait Holo {
     fn set_constraint(&mut self, constraint: Constraint);
     fn add_focus(&mut self, focus: Vector3, amp: float);
 }

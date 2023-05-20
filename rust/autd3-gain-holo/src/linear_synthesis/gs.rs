@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 20/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -36,7 +36,7 @@ pub struct GS<B: Backend> {
     backend: B,
 }
 
-impl_holo!(GS<B>);
+impl_holo!(B, GS<B>);
 
 impl<B: Backend> GS<B> {
     pub fn new(backend: B) -> Self {
