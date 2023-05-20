@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 20/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ use autd3::core::{error::AUTDInternalError, float, FPGA_CLK_FREQ, MAX_CYCLE};
 
 use super::{Matrix4, Transducer, UnitQuaternion, Vector3, Vector4};
 
-#[derive(Clone, Copy, PartialEq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub enum TransMode {
     #[default]
     Legacy,
@@ -29,10 +29,13 @@ pub struct DynamicTransducer {
     rot: UnitQuaternion,
     cycle: u16,
     mod_delay: u16,
-    mode: TransMode,
 }
 
 impl Transducer for DynamicTransducer {
+    type Gain = autd3::core::operation::GainLegacy;
+    type GainSTM = autd3::core::operation::GainSTMLegacy;
+    type Sync = autd3::core::operation::SyncLegacy;
+
     fn new(idx: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
         Self {
             idx,
@@ -40,7 +43,6 @@ impl Transducer for DynamicTransducer {
             rot,
             cycle: 4096,
             mod_delay: 0,
-            mode: TransMode::Legacy,
         }
     }
 
@@ -76,17 +78,14 @@ impl Transducer for DynamicTransducer {
     fn set_mod_delay(&mut self, delay: u16) {
         self.mod_delay = delay;
     }
+
+    fn cycle(&self) -> u16 {
+        self.cycle
+    }
 }
 
 impl DynamicTransducer {
-    pub fn cycle(&self) -> u16 {
-        self.cycle
-    }
-
     pub fn set_cycle(&mut self, cycle: u16) -> Result<(), AUTDInternalError> {
-        if self.mode == TransMode::Legacy {
-            return Err(AUTDInternalError::NotSupportedTransducerOperation);
-        }
         if cycle > MAX_CYCLE {
             return Err(AUTDInternalError::CycleOutOfRange(cycle));
         }
@@ -95,9 +94,6 @@ impl DynamicTransducer {
     }
 
     pub fn set_frequency(&mut self, freq: float) -> Result<(), AUTDInternalError> {
-        if self.mode == TransMode::Legacy {
-            return Err(AUTDInternalError::NotSupportedTransducerOperation);
-        }
         let cycle = (FPGA_CLK_FREQ as float / freq).round() as u16;
         self.set_cycle(cycle)
     }

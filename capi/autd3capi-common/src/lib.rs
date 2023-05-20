@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 20/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,6 +15,7 @@ mod dynamic_gain;
 mod dynamic_link;
 mod dynamic_modulation;
 mod dynamic_sendable;
+mod dynamic_stm;
 mod dynamic_transducer;
 
 pub use autd3::{
@@ -26,10 +27,11 @@ pub use autd3::{
     prelude::*,
 };
 
-pub use dynamic_gain::DynamicGain;
+pub use dynamic_gain::*;
 pub use dynamic_link::DynamicLink;
-pub use dynamic_modulation::DynamicModulation;
+pub use dynamic_modulation::*;
 pub use dynamic_sendable::DynamicSendable;
+pub use dynamic_stm::*;
 pub use dynamic_transducer::DynamicTransducer;
 pub use dynamic_transducer::TransMode;
 
@@ -40,7 +42,8 @@ pub type Cnt = Controller<DynamicTransducer, DynamicLink>;
 pub type L = dyn Link<DynamicTransducer>;
 pub type G = dyn DynamicGain;
 pub type M = dyn DynamicModulation;
-pub type S = dyn STM;
+pub type SF = dyn DynamicFocusSTM;
+pub type SG = dyn DynamicGainSTM;
 
 pub const OK: i32 = 1;
 pub const TRUE: i32 = 1;
