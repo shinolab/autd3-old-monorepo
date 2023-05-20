@@ -4,7 +4,7 @@
  * Created Date: 05/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 20/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -26,56 +26,23 @@ impl Synchronize {
     }
 }
 
-impl Sendable<LegacyTransducer> for Synchronize {
+impl<T: Transducer> Sendable<T> for Synchronize {
     type H = NullHeader;
-    type B = autd3_driver::SyncLegacy;
+    type B = T::Sync;
 
     fn operation(
         &mut self,
-        _: &Geometry<LegacyTransducer>,
-    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
-        Ok((Default::default(), Self::B::default()))
-    }
-
-    fn timeout() -> Option<Duration> {
-        Some(Duration::from_millis(200))
-    }
-}
-
-impl Sendable<AdvancedTransducer> for Synchronize {
-    type H = NullHeader;
-    type B = autd3_driver::SyncAdvanced;
-
-    fn operation(
-        &mut self,
-        geometry: &Geometry<AdvancedTransducer>,
+        geometry: &Geometry<T>,
     ) -> Result<(Self::H, Self::B), AUTDInternalError> {
         Ok((
-            Self::H::default(),
-            Self::B::new(geometry.transducers().map(|tr| tr.cycle()).collect()),
+            Default::default(),
+            <Self::B as autd3_driver::SyncOp>::new(|| {
+                geometry.transducers().map(|tr| tr.cycle()).collect()
+            }),
         ))
     }
 
-    fn timeout() -> Option<Duration> {
-        Some(Duration::from_millis(200))
-    }
-}
-
-impl Sendable<AdvancedPhaseTransducer> for Synchronize {
-    type H = NullHeader;
-    type B = autd3_driver::SyncAdvanced;
-
-    fn operation(
-        &mut self,
-        geometry: &Geometry<AdvancedPhaseTransducer>,
-    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
-        Ok((
-            Self::H::default(),
-            Self::B::new(geometry.transducers().map(|tr| tr.cycle()).collect()),
-        ))
-    }
-
-    fn timeout() -> Option<Duration> {
+    fn timeout(&self) -> Option<Duration> {
         Some(Duration::from_millis(200))
     }
 }

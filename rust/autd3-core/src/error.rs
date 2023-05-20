@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 20/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -30,8 +30,6 @@ pub enum AUTDInternalError {
     TransducersNumInDeviceOutOfRange,
     #[error("{0}")]
     TimerError(TimerError),
-    #[error("This operation is not supported for the transducer mode")]
-    NotSupportedTransducerOperation,
 }
 
 impl From<TimerError> for AUTDInternalError {

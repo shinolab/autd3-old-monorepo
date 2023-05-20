@@ -4,7 +4,7 @@
  * Created Date: 31/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 20/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -26,6 +26,10 @@ pub struct AdvancedPhaseTransducer {
 }
 
 impl Transducer for AdvancedPhaseTransducer {
+    type Gain = autd3_driver::operation::GainAdvancedPhase;
+    type Sync = autd3_driver::SyncAdvanced;
+    type GainSTM = autd3_driver::operation::GainSTMAdvanced;
+
     fn new(idx: usize, pos: Vector3, rot: UnitQuaternion) -> Self {
         Self {
             idx,
@@ -68,13 +72,13 @@ impl Transducer for AdvancedPhaseTransducer {
     fn frequency(&self) -> float {
         FPGA_CLK_FREQ as float / self.cycle as float
     }
+
+    fn cycle(&self) -> u16 {
+        self.cycle
+    }
 }
 
 impl AdvancedPhaseTransducer {
-    pub fn cycle(&self) -> u16 {
-        self.cycle
-    }
-
     pub fn set_cycle(&mut self, cycle: u16) -> Result<(), AUTDInternalError> {
         if cycle > MAX_CYCLE {
             return Err(AUTDInternalError::CycleOutOfRange(cycle));

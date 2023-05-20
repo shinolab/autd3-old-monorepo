@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 20/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,13 +14,17 @@
 use super::Operation;
 use crate::{CPUControlFlags, Drive, DriverError, FPGAControlFlags, TxDatagram};
 
+pub trait GainOp: Operation {
+    fn new<F: Fn() -> Vec<u16>>(drives: Vec<Drive>, cycles_fn: F) -> Self;
+}
+
 pub struct GainLegacy {
     sent: bool,
     drives: Vec<Drive>,
 }
 
-impl GainLegacy {
-    pub fn new(drives: Vec<Drive>) -> Self {
+impl GainOp for GainLegacy {
+    fn new<F: Fn() -> Vec<u16>>(drives: Vec<Drive>, _: F) -> Self {
         Self {
             sent: false,
             drives,
@@ -81,16 +85,18 @@ pub struct GainAdvanced {
     cycles: Vec<u16>,
 }
 
-impl GainAdvanced {
-    pub fn new(drives: Vec<Drive>, cycles: Vec<u16>) -> Self {
+impl GainOp for GainAdvanced {
+    fn new<F: Fn() -> Vec<u16>>(drives: Vec<Drive>, cycles_fn: F) -> Self {
         Self {
             phase_sent: false,
             duty_sent: false,
             drives,
-            cycles,
+            cycles: cycles_fn(),
         }
     }
+}
 
+impl GainAdvanced {
     fn pack_duty(&self, tx: &mut TxDatagram) -> Result<(), DriverError> {
         tx.num_bodies = tx.num_devices();
 
@@ -184,12 +190,12 @@ pub struct GainAdvancedPhase {
     cycles: Vec<u16>,
 }
 
-impl GainAdvancedPhase {
-    pub fn new(drives: Vec<Drive>, cycles: Vec<u16>) -> Self {
+impl GainOp for GainAdvancedPhase {
+    fn new<F: Fn() -> Vec<u16>>(drives: Vec<Drive>, cycles_fn: F) -> Self {
         Self {
             sent: false,
             drives,
-            cycles,
+            cycles: cycles_fn(),
         }
     }
 }
@@ -249,12 +255,12 @@ pub struct GainAdvancedDuty {
     cycles: Vec<u16>,
 }
 
-impl GainAdvancedDuty {
-    pub fn new(drives: Vec<Drive>, cycles: Vec<u16>) -> Self {
+impl GainOp for GainAdvancedDuty {
+    fn new<F: Fn() -> Vec<u16>>(drives: Vec<Drive>, cycles_fn: F) -> Self {
         Self {
             sent: false,
             drives,
-            cycles,
+            cycles: cycles_fn(),
         }
     }
 }
@@ -342,7 +348,7 @@ mod test {
             })
             .collect::<Vec<_>>();
 
-        let mut op = GainLegacy::new(drives.clone());
+        let mut op = GainLegacy::new(drives.clone(), || vec![4096; NUM_TRANS_IN_UNIT * 10]);
         op.init();
         assert!(!op.is_finished());
 
@@ -400,8 +406,7 @@ mod test {
         let cycles = (0..NUM_TRANS_IN_UNIT * 10)
             .map(|_| rng.gen_range(2u16..0xFFFFu16))
             .collect::<Vec<_>>();
-
-        let mut op = GainAdvanced::new(drives.clone(), cycles.clone());
+        let mut op = GainAdvanced::new(drives.clone(), || cycles.clone());
         op.init();
         assert!(!op.is_finished());
 
@@ -479,7 +484,7 @@ mod test {
             .map(|_| rng.gen_range(2u16..0xFFFFu16))
             .collect::<Vec<_>>();
 
-        let mut op = GainAdvancedPhase::new(drives.clone(), cycles.clone());
+        let mut op = GainAdvancedPhase::new(drives.clone(), || cycles.clone());
         op.init();
         assert!(!op.is_finished());
 
@@ -540,7 +545,7 @@ mod test {
             .map(|_| rng.gen_range(2u16..0xFFFFu16))
             .collect::<Vec<_>>();
 
-        let mut op = GainAdvancedDuty::new(drives.clone(), cycles.clone());
+        let mut op = GainAdvancedDuty::new(drives.clone(), || cycles.clone());
         op.init();
         assert!(!op.is_finished());
 
