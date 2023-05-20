@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 20/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -91,7 +91,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
         self.force_fan.pack(&mut self.tx_buf);
         self.reads_fpga_info.pack(&mut self.tx_buf);
 
-        let timeout = timeout.unwrap_or(S::timeout().unwrap_or(self.link.timeout()));
+        let timeout = timeout.unwrap_or(s.timeout().unwrap_or(self.link.timeout()));
         loop {
             self.tx_buf.header_mut().msg_id = self.get_id();
 
