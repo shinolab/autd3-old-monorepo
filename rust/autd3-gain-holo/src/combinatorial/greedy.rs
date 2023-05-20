@@ -4,14 +4,14 @@
  * Created Date: 03/06/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 20/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{constraint::Constraint, Complex};
+use crate::{constraint::Constraint, impl_holo, Complex};
 use autd3_core::{
     acoustics::{propagate, Sphere},
     error::AUTDInternalError,
@@ -33,16 +33,7 @@ pub struct Greedy {
     pub constraint: Constraint,
 }
 
-impl<T: Transducer> crate::Holo<T> for Greedy {
-    fn add_focus(&mut self, focus: Vector3, amp: float) {
-        self.foci.push(focus);
-        self.amps.push(amp);
-    }
-
-    fn set_constraint(&mut self, constraint: Constraint) {
-        self.constraint = constraint;
-    }
-}
+impl_holo!(Greedy);
 
 impl Greedy {
     pub fn new() -> Self {
