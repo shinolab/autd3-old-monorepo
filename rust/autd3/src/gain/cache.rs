@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 20/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,9 +12,11 @@
  */
 
 use autd3_core::{error::AUTDInternalError, gain::Gain, geometry::*, Drive};
+use autd3_traits::Gain;
 
 use std::ops::{Index, IndexMut};
 
+#[derive(Gain)]
 pub struct Cache {
     cache: Vec<Drive>,
 }
@@ -81,53 +83,5 @@ impl<'a> IntoIterator for &'a mut Cache {
 
     fn into_iter(self) -> Self::IntoIter {
         self.cache.iter_mut()
-    }
-}
-
-impl autd3_core::sendable::Sendable<LegacyTransducer> for Cache {
-    type H = autd3_core::NullHeader;
-    type B = autd3_core::GainLegacy;
-
-    fn operation(
-        &mut self,
-        geometry: &Geometry<LegacyTransducer>,
-    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
-        Ok((Self::H::default(), Self::B::new(self.calc(geometry)?)))
-    }
-}
-
-impl autd3_core::sendable::Sendable<AdvancedTransducer> for Cache {
-    type H = autd3_core::NullHeader;
-    type B = autd3_core::GainAdvanced;
-
-    fn operation(
-        &mut self,
-        geometry: &Geometry<AdvancedTransducer>,
-    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
-        Ok((
-            Self::H::default(),
-            Self::B::new(
-                self.calc(geometry)?,
-                geometry.transducers().map(|tr| tr.cycle()).collect(),
-            ),
-        ))
-    }
-}
-
-impl autd3_core::sendable::Sendable<AdvancedPhaseTransducer> for Cache {
-    type H = autd3_core::NullHeader;
-    type B = autd3_core::GainAdvancedPhase;
-
-    fn operation(
-        &mut self,
-        geometry: &Geometry<AdvancedPhaseTransducer>,
-    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
-        Ok((
-            Self::H::default(),
-            Self::B::new(
-                self.calc(geometry)?,
-                geometry.transducers().map(|tr| tr.cycle()).collect(),
-            ),
-        ))
     }
 }
