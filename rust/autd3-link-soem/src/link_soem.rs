@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 21/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -252,53 +252,8 @@ impl<F: Fn(&str) + Send> SOEM<F> {
     }
 }
 
-fn lookup_autd() -> Result<String, SOEMError> {
-    let adapters: EthernetAdapters = Default::default();
-
-    if let Some(adapter) = adapters.into_iter().find(|adapter| unsafe {
-        let ifname = std::ffi::CString::new(adapter.name.to_owned()).unwrap();
-        if ec_init(ifname.as_ptr()) <= 0 {
-            ec_close();
-            return false;
-        }
-        let wc = ec_config_init(0);
-        if wc <= 0 {
-            ec_close();
-            return false;
-        }
-        let found = (1..=wc).all(|i| {
-            let slave_name = String::from_utf8(
-                ec_slave[i as usize]
-                    .name
-                    .iter()
-                    .take_while(|&&c| c != 0)
-                    .map(|&c| c as u8)
-                    .collect(),
-            )
-            .unwrap();
-            slave_name == "AUTD"
-        });
-        ec_close();
-        found
-    }) {
-        Ok(adapter.name.to_owned())
-    } else {
-        Err(SOEMError::NoDeviceFound)
-    }
-}
-
-unsafe extern "C" fn dc_config(context: *mut ecx_contextt, slave: u16) -> i32 {
-    let cyc_time = *((*context).userdata as *mut u32);
-    ec_dcsync0(slave, 1, cyc_time, 0);
-    0
-}
-
-impl<T: Transducer, F: 'static + Fn(&str) + Send> Link<T> for SOEM<F> {
-    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
-        if self.is_open.load(Ordering::Acquire) {
-            return Ok(());
-        }
-
+impl<F: 'static + Fn(&str) + Send> SOEM<F> {
+    pub fn open_impl(&mut self, device_map: &[usize]) -> Result<i32, AUTDInternalError> {
         let ifname = if self.config.ifname.is_empty() {
             lookup_autd()?
         } else {
@@ -306,8 +261,6 @@ impl<T: Transducer, F: 'static + Fn(&str) + Send> Link<T> for SOEM<F> {
         };
 
         let ifname = std::ffi::CString::new(ifname).unwrap();
-
-        let dev_num = geometry.num_devices() as u16;
 
         let (tx_sender, tx_receiver) = bounded(self.config.buf_size);
 
@@ -319,12 +272,6 @@ impl<T: Transducer, F: 'static + Fn(&str) + Send> Link<T> for SOEM<F> {
             }
 
             let wc = ec_config_init(0);
-            if wc <= 0 {
-                return Err(SOEMError::SlaveNotFound(0, dev_num).into());
-            }
-            if wc as u16 != dev_num {
-                return Err(SOEMError::SlaveNotFound(wc as u16, dev_num).into());
-            }
 
             if (1..=wc as usize).any(|i| {
                 if let Ok(name) = String::from_utf8(
@@ -352,7 +299,12 @@ impl<T: Transducer, F: 'static + Fn(&str) + Send> Link<T> for SOEM<F> {
 
             ec_configdc();
 
-            self.io_map = Arc::new(Mutex::new(IOMap::new(geometry.device_map())));
+            let dev_map = if device_map.is_empty() {
+                vec![249; wc as _]
+            } else {
+                device_map.to_vec()
+            };
+            self.io_map = Arc::new(Mutex::new(IOMap::new(&dev_map)));
             ec_config_map(self.io_map.lock().unwrap().data() as *mut c_void);
 
             ec_statecheck(0, ec_state_EC_STATE_SAFE_OP as u16, EC_TIMEOUTSTATE as i32);
@@ -467,9 +419,70 @@ impl<T: Transducer, F: 'static + Fn(&str) + Send> Link<T> for SOEM<F> {
                     std::thread::sleep(state_check_interval);
                 }
             }));
+
+            self.sender = Some(tx_sender);
+
+            Ok(wc)
+        }
+    }
+}
+
+fn lookup_autd() -> Result<String, SOEMError> {
+    let adapters: EthernetAdapters = Default::default();
+
+    if let Some(adapter) = adapters.into_iter().find(|adapter| unsafe {
+        let ifname = std::ffi::CString::new(adapter.name().to_owned()).unwrap();
+        if ec_init(ifname.as_ptr()) <= 0 {
+            ec_close();
+            return false;
+        }
+        let wc = ec_config_init(0);
+        if wc <= 0 {
+            ec_close();
+            return false;
+        }
+        let found = (1..=wc).all(|i| {
+            let slave_name = String::from_utf8(
+                ec_slave[i as usize]
+                    .name
+                    .iter()
+                    .take_while(|&&c| c != 0)
+                    .map(|&c| c as u8)
+                    .collect(),
+            )
+            .unwrap();
+            slave_name == "AUTD"
+        });
+        ec_close();
+        found
+    }) {
+        Ok(adapter.name().to_owned())
+    } else {
+        Err(SOEMError::NoDeviceFound)
+    }
+}
+
+unsafe extern "C" fn dc_config(context: *mut ecx_contextt, slave: u16) -> i32 {
+    let cyc_time = *((*context).userdata as *mut u32);
+    ec_dcsync0(slave, 1, cyc_time, 0);
+    0
+}
+
+impl<T: Transducer, F: 'static + Fn(&str) + Send> Link<T> for SOEM<F> {
+    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+        if self.is_open.load(Ordering::Acquire) {
+            return Ok(());
         }
 
-        self.sender = Some(tx_sender);
+        let found_dev = self.open_impl(geometry.device_map())?;
+        if found_dev <= 0 {
+            return Err(SOEMError::SlaveNotFound(0, geometry.num_devices() as _).into());
+        }
+        if found_dev as usize != geometry.num_devices() {
+            return Err(
+                SOEMError::SlaveNotFound(found_dev as u16, geometry.num_devices() as _).into(),
+            );
+        }
 
         Ok(())
     }
