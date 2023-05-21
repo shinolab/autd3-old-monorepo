@@ -14,7 +14,7 @@
 use std::fmt;
 use std::vec::Vec;
 
-use crate::native_methods;
+use crate::local::native_methods;
 
 use std::ffi::CStr;
 use std::ops::Index;
