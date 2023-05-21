@@ -4,22 +4,19 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 21/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-mod ecat;
-mod error;
-mod error_handler;
-mod ethernet_adapters;
-mod iomap;
-mod link_soem;
-mod native_methods;
-mod sync_mode;
+#[cfg(feature = "local")]
+mod local;
+#[cfg(feature = "local")]
+pub use local::*;
 
-pub use ethernet_adapters::EthernetAdapters;
-pub use link_soem::SOEM;
-pub use sync_mode::SyncMode;
+#[cfg(feature = "remote")]
+mod remote;
+#[cfg(feature = "remote")]
+pub use remote::*;
