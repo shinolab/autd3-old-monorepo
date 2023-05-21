@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 21/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -22,8 +22,18 @@ use std::slice;
 
 #[derive(Clone)]
 pub struct EthernetAdapter {
-    pub desc: String,
-    pub name: String,
+    desc: String,
+    name: String,
+}
+
+impl EthernetAdapter {
+    pub fn desc(&self) -> &str {
+        &self.desc
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
 }
 
 #[derive(Clone)]
@@ -86,6 +96,6 @@ impl<'a> IntoIterator for &'a EthernetAdapters {
 
 impl fmt::Display for EthernetAdapter {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}, {}", self.desc, self.name)
+        write!(f, "{}, {}", self.name, self.desc)
     }
 }

@@ -1,0 +1,19 @@
+[package]
+name = "SOEMAUTDServer"
+version = "10.0.0"
+authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
+edition = "2021"
+
+license-file = "LICENSE"
+description = "AUTDServer"
+repository = "https://github.com/shinolab/autd3"
+readme = "../README.md"
+keywords = ["autd"]
+
+[dependencies]
+clap = { version = "4.3.0", features = ["derive"] }
+autd3-link-soem = {path="../../rust/autd3-link-soem", version="10.0.0"}
+autd3-core = {path="../../rust/autd3-core", version="10.0.0"}
+anyhow = "1.0.71"
+ctrlc = "3.3.0"
+spdlog-rs = "0.3.8"
