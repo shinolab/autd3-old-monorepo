@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 21/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -27,6 +27,7 @@ macro_rules! add {
     };
 }
 
+#[cfg(feature = "local")]
 #[cfg(target_os = "windows")]
 fn main() {
     let home_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
@@ -106,6 +107,7 @@ fn main() {
         .expect("Couldn't write bindings!");
 }
 
+#[cfg(feature = "local")]
 #[cfg(target_os = "macos")]
 fn main() {
     println!("cargo:rustc-link-lib=pthread");
@@ -169,6 +171,7 @@ fn main() {
         .expect("Couldn't write bindings!");
 }
 
+#[cfg(feature = "local")]
 #[cfg(target_os = "linux")]
 fn main() {
     println!("cargo:rustc-link-lib=pthread");

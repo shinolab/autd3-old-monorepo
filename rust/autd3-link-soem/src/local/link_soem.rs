@@ -35,7 +35,7 @@ use autd3_core::{
     RxDatagram, TxDatagram, EC_CYCLE_TIME_BASE_NANO_SEC,
 };
 
-use crate::{
+use crate::local::{
     ecat::{add_timespec, ec_sync, ecat_setup, gettimeofday},
     error::SOEMError,
     error_handler::EcatErrorHandler,
