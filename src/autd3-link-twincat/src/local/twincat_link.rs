@@ -4,7 +4,7 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 22/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -22,7 +22,7 @@ use autd3_core::{
     RxDatagram, RxMessage, TxDatagram,
 };
 
-use crate::{error::AdsError, native_methods::*};
+use crate::{error::AdsError, local::native_methods::*};
 
 const INDEX_GROUP: u32 = 0x0304_0030;
 const INDEX_OFFSET_BASE: u32 = 0x8100_0000;
