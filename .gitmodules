@@ -1,3 +1,6 @@
-[submodule "rust/autd3-link-soem/3rdparty/SOEM"]
-	path = rust/autd3-link-soem/3rdparty/SOEM
+[submodule "src/autd3-link-twincat/3rdparty/ADS"]
+	path = src/autd3-link-twincat/3rdparty/ADS
+	url = https://github.com/Beckhoff/ADS.git
+[submodule "src/autd3-link-soem/3rdparty/SOEM"]
+	path = src/autd3-link-soem/3rdparty/SOEM
 	url = https://github.com/OpenEtherCATsociety/SOEM.git
