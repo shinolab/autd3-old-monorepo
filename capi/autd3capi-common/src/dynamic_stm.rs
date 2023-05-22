@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/05/2023
+ * Last Modified: 22/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,9 +13,9 @@
 
 use autd3::prelude::{FocusSTM, GainSTM};
 
-use crate::{DynamicSendable, DynamicTransducer, GainWrap};
+use crate::{DynamicDatagram, DynamicTransducer, GainWrap};
 
-pub trait DynamicFocusSTM: DynamicSendable {
+pub trait DynamicFocusSTM: DynamicDatagram {
     fn stm(&self) -> &FocusSTM;
     fn stm_mut(&mut self) -> &mut FocusSTM;
 }
@@ -42,7 +42,7 @@ impl DynamicFocusSTM for FocusSTMWrap {
     }
 }
 
-impl DynamicSendable for FocusSTMWrap {
+impl DynamicDatagram for FocusSTMWrap {
     fn operation(
         &mut self,
         mode: crate::TransMode,
@@ -54,15 +54,15 @@ impl DynamicSendable for FocusSTMWrap {
         ),
         autd3::core::error::AUTDInternalError,
     > {
-        DynamicSendable::operation(&mut self.stm, mode, geometry)
+        DynamicDatagram::operation(&mut self.stm, mode, geometry)
     }
 
     fn timeout(&self) -> Option<std::time::Duration> {
-        DynamicSendable::timeout(&self.stm)
+        DynamicDatagram::timeout(&self.stm)
     }
 }
 
-pub trait DynamicGainSTM: DynamicSendable {
+pub trait DynamicGainSTM: DynamicDatagram {
     fn stm(&self) -> &GainSTM<'static, DynamicTransducer>;
     fn stm_mut(&mut self) -> &mut GainSTM<'static, DynamicTransducer>;
     fn add(&mut self, gain: Box<GainWrap>);
@@ -96,7 +96,7 @@ impl DynamicGainSTM for GainSTMWrap {
     }
 }
 
-impl DynamicSendable for GainSTMWrap {
+impl DynamicDatagram for GainSTMWrap {
     fn operation(
         &mut self,
         mode: crate::TransMode,
@@ -108,10 +108,10 @@ impl DynamicSendable for GainSTMWrap {
         ),
         autd3::core::error::AUTDInternalError,
     > {
-        DynamicSendable::operation(&mut self.stm, mode, geometry)
+        DynamicDatagram::operation(&mut self.stm, mode, geometry)
     }
 
     fn timeout(&self) -> Option<std::time::Duration> {
-        DynamicSendable::timeout(&self.stm)
+        DynamicDatagram::timeout(&self.stm)
     }
 }
