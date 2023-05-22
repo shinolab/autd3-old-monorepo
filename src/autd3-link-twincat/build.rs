@@ -11,97 +11,43 @@
  *
  */
 
-use std::env;
-use std::path::PathBuf;
-
-macro_rules! add {
-    ($path:expr, $p:ident, $work: expr) => {
-        for entry in glob::glob($path).unwrap() {
-            match entry {
-                Ok($p) => {
-                    $work;
-                }
-                Err(e) => println!("{:?}", e),
-            }
-        }
-    };
-}
-
 #[cfg(feature = "remote")]
 fn main() {
-    let home_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    println!("cargo:rustc-link-lib=winmm");
-    println!("cargo:rustc-link-lib=ws2_32");
-    if cfg!(target_arch = "arm") {
-        println!("cargo:rustc-link-search={home_dir}\\Lib\\ARM64");
-    } else {
-        println!(
-            "cargo:rustc-link-search={home_dir}\\3rdparty\\SOEM\\oshw\\win32\\wpcap\\Lib\\x64"
-        );
+    if cfg!(target_os = "windows") {
+        println!("cargo:rustc-link-lib=wsock32");
+        println!("cargo:rustc-link-lib=ws2_32");
     }
-    println!("cargo:rustc-link-lib=Packet");
-    println!("cargo:rustc-link-lib=wpcap");
 
     let mut build = cc::Build::new();
-    build.flag("/DWIN32").warnings(true).cpp(false);
-    add!("3rdparty/SOEM/soem/*.c", path, build.file(path));
-    add!("3rdparty/SOEM/osal/win32/*.c", path, build.file(path));
-    add!("3rdparty/SOEM/oshw/win32/*.c", path, build.file(path));
+    if cfg!(target_os = "windows") {
+        build.flag("/DWIN32").flag("/DNOMINMAX");
+    }
     build
-        .include("3rdparty/SOEM/soem")
-        .include("3rdparty/SOEM/osal")
-        .include("3rdparty/SOEM/osal/win32")
-        .include("3rdparty/SOEM/oshw/win32")
-        .include("3rdparty/SOEM/oshw/win32/wpcap/Include")
-        .include("3rdparty/SOEM/oshw/win32/wpcap/Include/pcap")
-        .compile("soem");
+        .define("CONFIG_DEFAULT_LOGLEVEL", "1")
+        .warnings(true)
+        .cpp(true);
 
-    let bindings = bindgen::Builder::default()
-        .clang_arg("-DWIN32")
-        .clang_arg("-I3rdparty/SOEM/soem")
-        .clang_arg("-I3rdparty/SOEM/osal")
-        .clang_arg("-I3rdparty/SOEM/osal/win32")
-        .clang_arg("-I3rdparty/SOEM/oshw/win32")
-        .clang_arg("-I3rdparty/SOEM/oshw/win32/wpcap/Include")
-        .clang_arg("-I3rdparty/SOEM/oshw/win32/wpcap/Include/pcap")
-        .header("3rdparty/SOEM/osal/win32/osal_defs.h")
-        .header("3rdparty/SOEM/osal/win32/osal_win32.h")
-        .header("3rdparty/SOEM/soem/ethercattype.h")
-        .header("3rdparty/SOEM/oshw/win32/nicdrv.h")
-        .header("3rdparty/SOEM/soem/ethercatmain.h")
-        .header("3rdparty/SOEM/soem/ethercatdc.h")
-        .header("3rdparty/SOEM/soem/ethercatconfig.h")
-        .header("3rdparty/SOEM/soem/ethercatprint.h")
-        .allowlist_function("ec_init")
-        .allowlist_function("ec_find_adapters")
-        .allowlist_function("ec_free_adapters")
-        .allowlist_function("ec_send_processdata")
-        .allowlist_function("ec_receive_processdata")
-        .allowlist_function("ec_config_init")
-        .allowlist_function("ec_config_map")
-        .allowlist_function("ec_dcsync0")
-        .allowlist_function("ec_configdc")
-        .allowlist_function("ec_writestate")
-        .allowlist_function("ec_statecheck")
-        .allowlist_function("ec_close")
-        .allowlist_function("ec_readstate")
-        .allowlist_function("ec_reconfig_slave")
-        .allowlist_function("ec_recover_slave")
-        .allowlist_function("ec_ALstatuscode2string")
-        .allowlist_var("ec_slave")
-        .allowlist_var("ec_group")
-        .allowlist_var("ec_DCtime")
-        .allowlist_var("ecx_context")
-        .allowlist_var("ec_slavecount")
-        .allowlist_var("EC_TIMEOUTSTATE")
-        .allowlist_var("EC_TIMEOUTRET")
-        .allowlist_type("ec_state")
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
-        .generate()
-        .expect("Unable to generate bindings");
+    build
+        .file("ads_c.cpp")
+        .file("3rdparty/ADS/AdsLib/AdsDef.cpp")
+        .file("3rdparty/ADS/AdsLib/AdsDevice.cpp")
+        .file("3rdparty/ADS/AdsLib/AdsFile.cpp")
+        .file("3rdparty/ADS/AdsLib/AdsLib.cpp")
+        .file("3rdparty/ADS/AdsLib/Frame.cpp")
+        .file("3rdparty/ADS/AdsLib/LicenseAccess.cpp")
+        .file("3rdparty/ADS/AdsLib/Log.cpp")
+        .file("3rdparty/ADS/AdsLib/RouterAccess.cpp")
+        .file("3rdparty/ADS/AdsLib/RTimeAccess.cpp")
+        .file("3rdparty/ADS/AdsLib/Sockets.cpp")
+        .file("3rdparty/ADS/AdsLib/standalone/AdsLib.cpp")
+        .file("3rdparty/ADS/AdsLib/standalone/AmsConnection.cpp")
+        .file("3rdparty/ADS/AdsLib/standalone/AmsNetId.cpp")
+        .file("3rdparty/ADS/AdsLib/standalone/AmsPort.cpp")
+        .file("3rdparty/ADS/AdsLib/standalone/AmsRouter.cpp")
+        .file("3rdparty/ADS/AdsLib/standalone/NotificationDispatcher.cpp");
 
-    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
-    bindings
-        .write_to_file(out_path.join("soem_bindings.rs"))
-        .expect("Couldn't write bindings!");
+    build
+        .include("3rdparty/ADS/AdsLib")
+        .include("3rdparty/ADS/AdsLib/standalone")
+        .compile("ads");
 }
