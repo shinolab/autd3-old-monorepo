@@ -4,14 +4,14 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/05/2023
+ * Last Modified: 22/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{error::AUTDInternalError, gain::Gain, geometry::*, sendable::*};
+use crate::{datagram::*, error::AUTDInternalError, gain::Gain, geometry::*};
 
 use autd3_driver::{GainSTMProps, Mode};
 
@@ -90,7 +90,7 @@ impl<'a, T: Transducer> STM for GainSTM<'a, T> {
     }
 }
 
-impl<'a, T: Transducer> Sendable<T> for GainSTM<'a, T> {
+impl<'a, T: Transducer> Datagram<T> for GainSTM<'a, T> {
     type H = autd3_driver::NullHeader;
     type B = T::GainSTM;
 

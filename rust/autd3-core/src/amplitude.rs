@@ -4,7 +4,7 @@
  * Created Date: 07/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/05/2023
+ * Last Modified: 22/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use autd3_driver::{float, Drive};
 
-use crate::{error::AUTDInternalError, geometry::*, sendable::*};
+use crate::{datagram::*, error::AUTDInternalError, geometry::*};
 
 pub struct Amplitudes {
     amp: float,
@@ -33,7 +33,7 @@ impl Amplitudes {
     }
 }
 
-impl Sendable<AdvancedPhaseTransducer> for Amplitudes {
+impl Datagram<AdvancedPhaseTransducer> for Amplitudes {
     type H = autd3_driver::NullHeader;
     type B = autd3_driver::GainAdvancedDuty;
 

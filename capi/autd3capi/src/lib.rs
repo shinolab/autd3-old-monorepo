@@ -923,7 +923,7 @@ pub unsafe extern "C" fn AUTDDeleteGainSTM(stm: ConstPtr) {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDSynchronize(out: *mut ConstPtr) {
     unsafe {
-        let m: Box<Box<dyn DynamicSendable>> = Box::new(Box::new(Synchronize::new()));
+        let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(Synchronize::new()));
         *out = Box::into_raw(m) as _;
     }
 }
@@ -931,7 +931,7 @@ pub unsafe extern "C" fn AUTDSynchronize(out: *mut ConstPtr) {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDClear(out: *mut ConstPtr) {
     unsafe {
-        let m: Box<Box<dyn DynamicSendable>> = Box::new(Box::new(Clear::new()));
+        let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(Clear::new()));
         *out = Box::into_raw(m) as _;
     }
 }
@@ -939,7 +939,7 @@ pub unsafe extern "C" fn AUTDClear(out: *mut ConstPtr) {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDUpdateFlags(out: *mut ConstPtr) {
     unsafe {
-        let m: Box<Box<dyn DynamicSendable>> = Box::new(Box::new(UpdateFlag::new()));
+        let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(UpdateFlag::new()));
         *out = Box::into_raw(m) as _;
     }
 }
@@ -947,7 +947,7 @@ pub unsafe extern "C" fn AUTDUpdateFlags(out: *mut ConstPtr) {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDStop(out: *mut ConstPtr) {
     unsafe {
-        let m: Box<Box<dyn DynamicSendable>> = Box::new(Box::new(Stop::new()));
+        let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(Stop::new()));
         *out = Box::into_raw(m) as _;
     }
 }
@@ -955,7 +955,7 @@ pub unsafe extern "C" fn AUTDStop(out: *mut ConstPtr) {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDModDelayConfig(out: *mut ConstPtr) {
     unsafe {
-        let m: Box<Box<dyn DynamicSendable>> = Box::new(Box::new(ModDelay::new()));
+        let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(ModDelay::new()));
         *out = Box::into_raw(m) as _;
     }
 }
@@ -963,14 +963,14 @@ pub unsafe extern "C" fn AUTDModDelayConfig(out: *mut ConstPtr) {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDDeleteSpecialData(out: ConstPtr) {
     unsafe {
-        let _ = Box::from_raw(out as *mut Box<dyn DynamicSendable>);
+        let _ = Box::from_raw(out as *mut Box<dyn DynamicDatagram>);
     }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDCreateSilencer(out: *mut ConstPtr, step: u16) {
     unsafe {
-        let m: Box<Box<dyn DynamicSendable>> = Box::new(Box::new(SilencerConfig::new(step)));
+        let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(SilencerConfig::new(step)));
         *out = Box::into_raw(m) as _;
     }
 }
@@ -978,14 +978,14 @@ pub unsafe extern "C" fn AUTDCreateSilencer(out: *mut ConstPtr, step: u16) {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDDeleteSilencer(out: ConstPtr) {
     unsafe {
-        let _ = Box::from_raw(out as *mut Box<dyn DynamicSendable>);
+        let _ = Box::from_raw(out as *mut Box<dyn DynamicDatagram>);
     }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDCreateAmplitudes(out: *mut ConstPtr, amp: float) {
     unsafe {
-        let m: Box<Box<dyn DynamicSendable>> = Box::new(Box::new(Amplitudes::uniform(amp)));
+        let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(Amplitudes::uniform(amp)));
         *out = Box::into_raw(m) as _;
     }
 }
@@ -993,7 +993,7 @@ pub unsafe extern "C" fn AUTDCreateAmplitudes(out: *mut ConstPtr, amp: float) {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDDeleteAmplitudes(out: ConstPtr) {
     unsafe {
-        let _ = Box::from_raw(out as *mut Box<dyn DynamicSendable>);
+        let _ = Box::from_raw(out as *mut Box<dyn DynamicDatagram>);
     }
 }
 
@@ -1014,8 +1014,8 @@ pub unsafe extern "C" fn AUTDSend(
     if let Some(mode) = to_mode(mode) {
         unsafe {
             if !header.is_null() && !body.is_null() {
-                let header = (header as *mut Box<dyn DynamicSendable>).as_mut().unwrap();
-                let body = (body as *mut Box<dyn DynamicSendable>).as_mut().unwrap();
+                let header = (header as *mut Box<dyn DynamicDatagram>).as_mut().unwrap();
+                let body = (body as *mut Box<dyn DynamicDatagram>).as_mut().unwrap();
                 try_or_return!(
                     (cnt as *mut Cnt)
                         .as_mut()
@@ -1024,7 +1024,7 @@ pub unsafe extern "C" fn AUTDSend(
                     err
                 );
             } else if !header.is_null() {
-                let header = (header as *mut Box<dyn DynamicSendable>).as_mut().unwrap();
+                let header = (header as *mut Box<dyn DynamicDatagram>).as_mut().unwrap();
                 try_or_return!(
                     (cnt as *mut Cnt)
                         .as_mut()
@@ -1033,7 +1033,7 @@ pub unsafe extern "C" fn AUTDSend(
                     err
                 );
             } else if !body.is_null() {
-                let body = (body as *mut Box<dyn DynamicSendable>).as_mut().unwrap();
+                let body = (body as *mut Box<dyn DynamicDatagram>).as_mut().unwrap();
                 try_or_return!(
                     (cnt as *mut Cnt)
                         .as_mut()
@@ -1066,7 +1066,7 @@ pub unsafe extern "C" fn AUTDSendSpecial(
     };
     if let Some(mode) = to_mode(mode) {
         unsafe {
-            let special = (special as *mut Box<dyn DynamicSendable>).as_mut().unwrap();
+            let special = (special as *mut Box<dyn DynamicDatagram>).as_mut().unwrap();
             try_or_return!(
                 (cnt as *mut Cnt)
                     .as_mut()

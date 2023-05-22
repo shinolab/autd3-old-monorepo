@@ -4,33 +4,33 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/05/2023
+ * Last Modified: 22/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
+mod dynamic_datagram;
 mod dynamic_gain;
 mod dynamic_link;
 mod dynamic_modulation;
-mod dynamic_sendable;
 mod dynamic_stm;
 mod dynamic_transducer;
 
 pub use autd3::{
     core::{
-        firmware_version::FirmwareInfo, gain::Gain, link::get_logger_with_custom_func,
-        modulation::Modulation, sendable::Sendable, spdlog,
+        datagram::Datagram, firmware_version::FirmwareInfo, gain::Gain,
+        link::get_logger_with_custom_func, modulation::Modulation, spdlog,
     },
     link::debug::{Debug, DebugBuilder},
     prelude::*,
 };
 
+pub use dynamic_datagram::DynamicDatagram;
 pub use dynamic_gain::*;
 pub use dynamic_link::DynamicLink;
 pub use dynamic_modulation::*;
-pub use dynamic_sendable::DynamicSendable;
 pub use dynamic_stm::*;
 pub use dynamic_transducer::DynamicTransducer;
 pub use dynamic_transducer::TransMode;

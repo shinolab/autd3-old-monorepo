@@ -1,10 +1,10 @@
 /*
- * File: sendable.rs
+ * File: Datagram.rs
  * Project: src
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/05/2023
+ * Last Modified: 22/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ use autd3_driver::Operation;
 
 use crate::{error::AUTDInternalError, geometry::*};
 
-pub trait Sendable<T: Transducer> {
+pub trait Datagram<T: Transducer> {
     type H: Operation;
     type B: Operation;
 
@@ -31,9 +31,9 @@ pub trait Sendable<T: Transducer> {
     }
 }
 
-impl<T: Transducer, B> Sendable<T> for Box<B>
+impl<T: Transducer, B> Datagram<T> for Box<B>
 where
-    B: Sendable<T>,
+    B: Datagram<T>,
 {
     type H = B::H;
     type B = B::B;
@@ -46,10 +46,10 @@ where
     }
 }
 
-impl<T: Transducer, H, B> Sendable<T> for (H, B)
+impl<T: Transducer, H, B> Datagram<T> for (H, B)
 where
-    H: Sendable<T, B = autd3_driver::NullBody>,
-    B: Sendable<T, H = autd3_driver::NullHeader>,
+    H: Datagram<T, B = autd3_driver::NullBody>,
+    B: Datagram<T, H = autd3_driver::NullHeader>,
 {
     type H = H::H;
     type B = B::B;
@@ -73,7 +73,7 @@ impl NullHeader {
     }
 }
 
-impl<T: Transducer> Sendable<T> for NullHeader {
+impl<T: Transducer> Datagram<T> for NullHeader {
     type H = autd3_driver::NullHeader;
     type B = autd3_driver::NullBody;
 
@@ -91,7 +91,7 @@ impl NullBody {
     }
 }
 
-impl<T: Transducer> Sendable<T> for NullBody {
+impl<T: Transducer> Datagram<T> for NullBody {
     type H = autd3_driver::NullHeader;
     type B = autd3_driver::NullBody;
 

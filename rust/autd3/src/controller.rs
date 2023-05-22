@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/05/2023
+ * Last Modified: 22/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ use std::{
 };
 
 use autd3_core::{
-    clear::Clear, geometry::*, link::Link, sendable::Sendable, stop::Stop, FirmwareInfo, Operation,
+    clear::Clear, datagram::Datagram, geometry::*, link::Link, stop::Stop, FirmwareInfo, Operation,
     RxDatagram, TxDatagram, MSG_BEGIN, MSG_END,
 };
 
@@ -73,11 +73,11 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
     /// * `header` - Header
     /// * `body` - Body
     ///
-    pub fn send<S: Sendable<T>>(&mut self, s: S) -> Result<bool, AUTDError> {
+    pub fn send<S: Datagram<T>>(&mut self, s: S) -> Result<bool, AUTDError> {
         self.send_with_timeout(s, None)
     }
 
-    pub fn send_with_timeout<S: Sendable<T>>(
+    pub fn send_with_timeout<S: Datagram<T>>(
         &mut self,
         s: S,
         timeout: Option<Duration>,
