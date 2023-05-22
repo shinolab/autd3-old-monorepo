@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/05/2023
+ * Last Modified: 22/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,9 +13,9 @@
 
 use autd3::core::modulation::Modulation;
 
-use crate::DynamicSendable;
+use crate::DynamicDatagram;
 
-pub trait DynamicModulation: DynamicSendable {
+pub trait DynamicModulation: DynamicDatagram {
     fn modulation(&self) -> &dyn Modulation;
     fn modulation_mut(&mut self) -> &mut dyn Modulation;
 }
@@ -34,7 +34,7 @@ impl DynamicModulation for ModulationWrap {
     }
 }
 
-impl DynamicSendable for ModulationWrap {
+impl DynamicDatagram for ModulationWrap {
     fn operation(
         &mut self,
         _: crate::TransMode,

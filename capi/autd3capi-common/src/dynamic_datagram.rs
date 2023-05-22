@@ -1,10 +1,10 @@
 /*
- * File: dynamic_sendable.rs
+ * File: dynamic_Datagram.rs
  * Project: src
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/05/2023
+ * Last Modified: 22/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -15,8 +15,8 @@ use std::time::Duration;
 
 use autd3::{
     core::{
+        datagram::{Datagram, NullBody, NullHeader},
         error::AUTDInternalError,
-        sendable::{NullBody, NullHeader, Sendable},
         Drive, GainOp, GainSTMOp, GainSTMProps, Operation, SyncOp,
     },
     prelude::*,
@@ -24,7 +24,7 @@ use autd3::{
 
 use crate::dynamic_transducer::{DynamicTransducer, TransMode};
 
-pub trait DynamicSendable {
+pub trait DynamicDatagram {
     #[allow(clippy::type_complexity)]
     fn operation(
         &mut self,
@@ -35,7 +35,7 @@ pub trait DynamicSendable {
     fn timeout(&self) -> Option<Duration>;
 }
 
-impl Sendable<DynamicTransducer> for (TransMode, &mut Box<dyn DynamicSendable>) {
+impl Datagram<DynamicTransducer> for (TransMode, &mut Box<dyn DynamicDatagram>) {
     type H = Box<dyn Operation>;
     type B = Box<dyn Operation>;
 
@@ -52,11 +52,11 @@ impl Sendable<DynamicTransducer> for (TransMode, &mut Box<dyn DynamicSendable>) 
     }
 }
 
-impl Sendable<DynamicTransducer>
+impl Datagram<DynamicTransducer>
     for (
         TransMode,
-        &mut Box<dyn DynamicSendable>,
-        &mut Box<dyn DynamicSendable>,
+        &mut Box<dyn DynamicDatagram>,
+        &mut Box<dyn DynamicDatagram>,
     )
 {
     type H = Box<dyn Operation>;
@@ -73,37 +73,37 @@ impl Sendable<DynamicTransducer>
     }
 }
 
-impl DynamicSendable for NullHeader {
+impl DynamicDatagram for NullHeader {
     fn operation(
         &mut self,
         _: TransMode,
         geometry: &Geometry<DynamicTransducer>,
     ) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
-        let (h, b) = <Self as Sendable<DynamicTransducer>>::operation(self, geometry)?;
+        let (h, b) = <Self as Datagram<DynamicTransducer>>::operation(self, geometry)?;
         Ok((Box::new(h), Box::new(b)))
     }
 
     fn timeout(&self) -> Option<Duration> {
-        <Self as Sendable<DynamicTransducer>>::timeout(self)
+        <Self as Datagram<DynamicTransducer>>::timeout(self)
     }
 }
 
-impl DynamicSendable for NullBody {
+impl DynamicDatagram for NullBody {
     fn operation(
         &mut self,
         _: TransMode,
         geometry: &Geometry<DynamicTransducer>,
     ) -> Result<(Box<dyn Operation>, Box<dyn Operation>), AUTDInternalError> {
-        let (h, b) = <Self as Sendable<DynamicTransducer>>::operation(self, geometry)?;
+        let (h, b) = <Self as Datagram<DynamicTransducer>>::operation(self, geometry)?;
         Ok((Box::new(h), Box::new(b)))
     }
 
     fn timeout(&self) -> Option<Duration> {
-        <Self as Sendable<DynamicTransducer>>::timeout(self)
+        <Self as Datagram<DynamicTransducer>>::timeout(self)
     }
 }
 
-impl DynamicSendable for UpdateFlag {
+impl DynamicDatagram for UpdateFlag {
     fn operation(
         &mut self,
         _: TransMode,
@@ -115,16 +115,16 @@ impl DynamicSendable for UpdateFlag {
         ),
         AUTDInternalError,
     > {
-        let (h, b) = <Self as Sendable<DynamicTransducer>>::operation(self, geometry)?;
+        let (h, b) = <Self as Datagram<DynamicTransducer>>::operation(self, geometry)?;
         Ok((Box::new(h), Box::new(b)))
     }
 
     fn timeout(&self) -> Option<Duration> {
-        <Self as Sendable<DynamicTransducer>>::timeout(self)
+        <Self as Datagram<DynamicTransducer>>::timeout(self)
     }
 }
 
-impl DynamicSendable for Synchronize {
+impl DynamicDatagram for Synchronize {
     fn operation(
         &mut self,
         mode: TransMode,
@@ -159,11 +159,11 @@ impl DynamicSendable for Synchronize {
     }
 
     fn timeout(&self) -> Option<Duration> {
-        <Self as Sendable<LegacyTransducer>>::timeout(self)
+        <Self as Datagram<LegacyTransducer>>::timeout(self)
     }
 }
 
-impl DynamicSendable for Stop {
+impl DynamicDatagram for Stop {
     fn operation(
         &mut self,
         _: TransMode,
@@ -175,16 +175,16 @@ impl DynamicSendable for Stop {
         ),
         AUTDInternalError,
     > {
-        let (h, b) = <Self as Sendable<DynamicTransducer>>::operation(self, geometry)?;
+        let (h, b) = <Self as Datagram<DynamicTransducer>>::operation(self, geometry)?;
         Ok((Box::new(h), Box::new(b)))
     }
 
     fn timeout(&self) -> Option<Duration> {
-        <Self as Sendable<DynamicTransducer>>::timeout(self)
+        <Self as Datagram<DynamicTransducer>>::timeout(self)
     }
 }
 
-impl DynamicSendable for SilencerConfig {
+impl DynamicDatagram for SilencerConfig {
     fn operation(
         &mut self,
         _: TransMode,
@@ -196,16 +196,16 @@ impl DynamicSendable for SilencerConfig {
         ),
         AUTDInternalError,
     > {
-        let (h, b) = <Self as Sendable<DynamicTransducer>>::operation(self, geometry)?;
+        let (h, b) = <Self as Datagram<DynamicTransducer>>::operation(self, geometry)?;
         Ok((Box::new(h), Box::new(b)))
     }
 
     fn timeout(&self) -> Option<Duration> {
-        <Self as Sendable<DynamicTransducer>>::timeout(self)
+        <Self as Datagram<DynamicTransducer>>::timeout(self)
     }
 }
 
-impl DynamicSendable for Clear {
+impl DynamicDatagram for Clear {
     fn operation(
         &mut self,
         _: TransMode,
@@ -217,16 +217,16 @@ impl DynamicSendable for Clear {
         ),
         AUTDInternalError,
     > {
-        let (h, b) = <Self as Sendable<DynamicTransducer>>::operation(self, geometry)?;
+        let (h, b) = <Self as Datagram<DynamicTransducer>>::operation(self, geometry)?;
         Ok((Box::new(h), Box::new(b)))
     }
 
     fn timeout(&self) -> Option<Duration> {
-        <Self as Sendable<DynamicTransducer>>::timeout(self)
+        <Self as Datagram<DynamicTransducer>>::timeout(self)
     }
 }
 
-impl DynamicSendable for ModDelay {
+impl DynamicDatagram for ModDelay {
     fn operation(
         &mut self,
         _: TransMode,
@@ -238,16 +238,16 @@ impl DynamicSendable for ModDelay {
         ),
         AUTDInternalError,
     > {
-        let (h, b) = <Self as Sendable<DynamicTransducer>>::operation(self, geometry)?;
+        let (h, b) = <Self as Datagram<DynamicTransducer>>::operation(self, geometry)?;
         Ok((Box::new(h), Box::new(b)))
     }
 
     fn timeout(&self) -> Option<Duration> {
-        <Self as Sendable<DynamicTransducer>>::timeout(self)
+        <Self as Datagram<DynamicTransducer>>::timeout(self)
     }
 }
 
-impl DynamicSendable for FocusSTM {
+impl DynamicDatagram for FocusSTM {
     fn operation(
         &mut self,
         _: TransMode,
@@ -259,16 +259,16 @@ impl DynamicSendable for FocusSTM {
         ),
         AUTDInternalError,
     > {
-        let (h, b) = <Self as Sendable<DynamicTransducer>>::operation(self, geometry)?;
+        let (h, b) = <Self as Datagram<DynamicTransducer>>::operation(self, geometry)?;
         Ok((Box::new(h), Box::new(b)))
     }
 
     fn timeout(&self) -> Option<Duration> {
-        <Self as Sendable<DynamicTransducer>>::timeout(self)
+        <Self as Datagram<DynamicTransducer>>::timeout(self)
     }
 }
 
-impl<'a> DynamicSendable for GainSTM<'a, DynamicTransducer> {
+impl<'a> DynamicDatagram for GainSTM<'a, DynamicTransducer> {
     fn operation(
         &mut self,
         mode: TransMode,
@@ -318,7 +318,7 @@ impl<'a> DynamicSendable for GainSTM<'a, DynamicTransducer> {
     }
 }
 
-impl DynamicSendable for Amplitudes {
+impl DynamicDatagram for Amplitudes {
     fn operation(
         &mut self,
         _: TransMode,
@@ -346,6 +346,6 @@ impl DynamicSendable for Amplitudes {
     }
 
     fn timeout(&self) -> Option<Duration> {
-        <Self as Sendable<AdvancedPhaseTransducer>>::timeout(self)
+        <Self as Datagram<AdvancedPhaseTransducer>>::timeout(self)
     }
 }

@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/05/2023
+ * Last Modified: 22/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,9 +18,9 @@ use autd3::{
     prelude::{Geometry, Grouped, Transducer},
 };
 
-use crate::{DynamicSendable, DynamicTransducer, TransMode};
+use crate::{DynamicDatagram, DynamicTransducer, TransMode};
 
-pub trait DynamicGain: DynamicSendable {
+pub trait DynamicGain: DynamicDatagram {
     fn gain(&self) -> &dyn Gain<DynamicTransducer>;
     fn gain_mut(&mut self) -> &mut dyn Gain<DynamicTransducer>;
 }
@@ -48,7 +48,7 @@ impl DynamicGain for GainWrap {
     }
 }
 
-impl DynamicSendable for GainWrap {
+impl DynamicDatagram for GainWrap {
     fn operation(
         &mut self,
         mode: TransMode,

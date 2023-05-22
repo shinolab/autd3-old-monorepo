@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/05/2023
+ * Last Modified: 22/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -40,7 +40,7 @@ fn impl_modulation_macro(ast: &syn::DeriveInput) -> TokenStream {
             }
         }
 
-        impl <#(#type_params,)* T: autd3_core::geometry::Transducer> autd3_core::sendable::Sendable<T> for #name #ty_generics #where_clause {
+        impl <#(#type_params,)* T: autd3_core::geometry::Transducer> autd3_core::datagram::Datagram<T> for #name #ty_generics #where_clause {
             type H = autd3_core::Modulation;
             type B = autd3_core::NullBody;
 
@@ -70,7 +70,7 @@ fn impl_gain_macro(ast: syn::DeriveInput) -> TokenStream {
     let (_, ty_generics, where_clause) = generics.split_for_impl();
     if generics.type_params().any(|ty| ty.ident == "T") {
         let gen = quote! {
-            impl <#(#linetimes,)* #(#type_params,)*> autd3_core::sendable::Sendable<T> for #name #ty_generics #where_clause {
+            impl <#(#linetimes,)* #(#type_params,)*> autd3_core::datagram::Datagram<T> for #name #ty_generics #where_clause {
                 type H = autd3_core::NullHeader;
                 type B = T::Gain;
 
@@ -87,7 +87,7 @@ fn impl_gain_macro(ast: syn::DeriveInput) -> TokenStream {
         gen.into()
     } else {
         let gen = quote! {
-            impl <#(#linetimes,)* #(#type_params,)* T: autd3_core::geometry::Transducer> autd3_core::sendable::Sendable<T> for #name #ty_generics #where_clause {
+            impl <#(#linetimes,)* #(#type_params,)* T: autd3_core::geometry::Transducer> autd3_core::datagram::Datagram<T> for #name #ty_generics #where_clause {
                 type H = autd3_core::NullHeader;
                 type B = T::Gain;
 

@@ -32,7 +32,7 @@ impl<H: Holo + Gain<DynamicTransducer>> Gain<DynamicTransducer> for DynamicHolo<
     }
 }
 
-impl<H: Holo + Gain<DynamicTransducer>> DynamicSendable for DynamicHolo<H> {
+impl<H: Holo + Gain<DynamicTransducer>> DynamicDatagram for DynamicHolo<H> {
     fn operation(
         &mut self,
         mode: TransMode,
