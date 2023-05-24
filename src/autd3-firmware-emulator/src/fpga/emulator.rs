@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 24/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -327,8 +327,7 @@ impl FPGAEmulator {
         (
             self.stm_op_bram
                 .iter()
-                .skip(512 * idx + 1)
-                .step_by(2)
+                .skip(256 * idx)
                 .take(self.num_transducers)
                 .map(|&d| {
                     let duty = (d >> 8) & 0xFF;
@@ -337,8 +336,7 @@ impl FPGAEmulator {
                 .collect(),
             self.stm_op_bram
                 .iter()
-                .skip(512 * idx)
-                .step_by(2)
+                .skip(256 * idx)
                 .take(self.num_transducers)
                 .map(|d| {
                     let phase = d & 0xFF;

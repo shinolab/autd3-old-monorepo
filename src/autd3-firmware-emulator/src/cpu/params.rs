@@ -4,7 +4,7 @@
  * Created Date: 07/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 24/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -48,6 +48,9 @@ pub const POINT_STM_BUF_SEGMENT_SIZE_MASK: u32 = POINT_STM_BUF_SEGMENT_SIZE - 1;
 pub const GAIN_STM_BUF_SEGMENT_SIZE_WIDTH: u32 = 5;
 pub const GAIN_STM_BUF_SEGMENT_SIZE: u32 = 1 << GAIN_STM_BUF_SEGMENT_SIZE_WIDTH;
 pub const GAIN_STM_BUF_SEGMENT_SIZE_MASK: u32 = GAIN_STM_BUF_SEGMENT_SIZE - 1;
+pub const GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH: u32 = 6;
+pub const GAIN_STM_LEGACY_BUF_SEGMENT_SIZE: u32 = 1 << GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_WIDTH;
+pub const GAIN_STM_LEGACY_BUF_SEGMENT_SIZE_MASK: u32 = GAIN_STM_LEGACY_BUF_SEGMENT_SIZE - 1;
 
 pub const GAIN_STM_MODE_PHASE_DUTY_FULL: u16 = 0x0001;
 pub const GAIN_STM_MODE_PHASE_FULL: u16 = 0x0002;
