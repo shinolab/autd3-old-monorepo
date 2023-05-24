@@ -4,7 +4,7 @@
  * Created Date: 03/06/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/05/2023
+ * Last Modified: 24/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -22,6 +22,7 @@ use autd3_core::{
 };
 use autd3_traits::Gain;
 use nalgebra::ComplexField;
+use rand::seq::SliceRandom;
 
 /// Reference
 /// * Shun Suzuki, Masahiro Fujiwara, Yasutoshi Makino, and Hiroyuki Shinoda, “Radiation Pressure Field Reconstruction for Ultrasound Midair Haptics by Greedy Algorithm with Brute-Force Search,” in IEEE Transactions on Haptics, doi: 10.1109/TOH.2021.3076489
@@ -57,8 +58,8 @@ impl Greedy {
             res[i] = propagate::<Sphere>(
                 trans.position(),
                 &trans.z_direction(),
-                sound_speed,
                 attenuation,
+                trans.wavenumber(sound_speed),
                 &foci[i],
             ) * phase;
         }
@@ -80,40 +81,45 @@ impl<T: Transducer> Gain<T> for Greedy {
         let sound_speed = geometry.sound_speed;
         let attenuation = geometry.attenuation;
 
-        Ok(geometry
-            .transducers()
-            .map(|trans| {
-                let mut min_idx = 0;
-                let mut min_v = float::INFINITY;
-                for (idx, &phase) in phase_candidates.iter().enumerate() {
-                    Self::transfer_foci(
-                        trans,
-                        phase,
-                        sound_speed,
-                        attenuation,
-                        &self.foci,
-                        &mut tmp[idx],
-                    );
-                    let mut v = 0.0;
-                    for (j, c) in cache.iter().enumerate() {
-                        v += (self.amps[j] - (tmp[idx][j] + c).abs()).abs();
-                    }
+        let amp = self.constraint.convert(1.0, 1.0);
+        let mut res = vec![Drive { amp, phase: 0.0 }; geometry.num_transducers()];
+        let mut tr_idx: Vec<_> = (0..geometry.num_transducers()).collect();
+        let mut rng = rand::thread_rng();
+        tr_idx.shuffle(&mut rng);
 
-                    if v < min_v {
-                        min_v = v;
-                        min_idx = idx;
-                    }
+        for i in tr_idx {
+            let trans = &geometry[i];
+
+            let mut min_idx = 0;
+            let mut min_v = float::INFINITY;
+            for (idx, &phase) in phase_candidates.iter().enumerate() {
+                Self::transfer_foci(
+                    trans,
+                    phase,
+                    sound_speed,
+                    attenuation,
+                    &self.foci,
+                    &mut tmp[idx],
+                );
+                let mut v = 0.0;
+                for (j, c) in cache.iter().enumerate() {
+                    v += (self.amps[j] - (tmp[idx][j] + c).abs()).abs();
                 }
 
-                for (j, c) in cache.iter_mut().enumerate() {
-                    *c += tmp[min_idx][j];
+                if v < min_v {
+                    min_v = v;
+                    min_idx = idx;
                 }
+            }
 
-                let phase = phase_candidates[min_idx].argument() + PI;
-                let amp = self.constraint.convert(1.0, 1.0);
-                Drive { amp, phase }
-            })
-            .collect())
+            for (j, c) in cache.iter_mut().enumerate() {
+                *c += tmp[min_idx][j];
+            }
+
+            res[i].phase = phase_candidates[min_idx].argument() + PI;
+        }
+
+        Ok(res)
     }
 }
 
