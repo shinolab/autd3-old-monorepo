@@ -11,8 +11,6 @@
  *
  */
 
-use anyhow::Result;
-
 use autd3_simulator::{Simulator, ViewerSettings};
 
 fn main() -> ! {

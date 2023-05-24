@@ -210,6 +210,7 @@ impl Simulator {
         let mut is_running = true;
         event_loop.run(move |event, _, control_flow| {
             if is_initialized {
+                cpus.iter_mut().for_each(|c| c.update());
                 let rx = cpus.iter().flat_map(|c| [c.ack(), c.msg_id()]).collect();
                 sender_s2c.send(rx).unwrap();
             }
