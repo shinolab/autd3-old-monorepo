@@ -19,6 +19,7 @@ use std::{
         atomic::{AtomicBool, Ordering},
         Arc,
     },
+    thread::JoinHandle,
 };
 
 use crate::{
@@ -58,12 +59,14 @@ const CLIENT_DISCONNECT: u8 = 4;
 #[derive(Default)]
 pub struct Simulator {
     settings: ViewerSettings,
+    server_th: Option<JoinHandle<()>>,
 }
 
 impl Simulator {
     pub fn new() -> Self {
         Self {
             settings: ViewerSettings::default(),
+            server_th: None,
         }
     }
 
@@ -72,7 +75,7 @@ impl Simulator {
         self
     }
 
-    pub fn run(self) {
+    pub fn run(mut self) -> ! {
         spdlog::info!("Initializing window...");
 
         let (sender_c2s, receiver_c2s) = bounded(32);
@@ -81,20 +84,16 @@ impl Simulator {
         let settings = self.settings.clone();
         let exit = Arc::new(AtomicBool::new(false));
         let exit_server = exit.clone();
-        let server_th = std::thread::spawn(|| {
+        self.server_th = Some(std::thread::spawn(|| {
             match Self::run_server(settings, receiver_s2c, sender_c2s, exit_server) {
                 Ok(_) => {}
                 Err(e) => {
                     spdlog::error!("{}", e);
                 }
             }
-        });
+        }));
 
-        self.run_simulator(receiver_c2s, sender_s2c);
-
-        exit.store(true, Ordering::Release);
-
-        server_th.join().unwrap();
+        self.run_simulator(exit, receiver_c2s, sender_s2c)
     }
 
     fn run_server(
@@ -180,7 +179,12 @@ impl Simulator {
         Ok(())
     }
 
-    fn run_simulator(mut self, receiver_c2s: Receiver<Vec<u8>>, sender_s2c: Sender<Vec<u8>>) {
+    fn run_simulator(
+        mut self,
+        exit: Arc<AtomicBool>,
+        receiver_c2s: Receiver<Vec<u8>>,
+        sender_s2c: Sender<Vec<u8>>,
+    ) -> ! {
         let event_loop = EventLoop::new();
         let mut render = Renderer::new(
             &event_loop,
@@ -466,7 +470,16 @@ impl Simulator {
                     imgui.handle_event(render.window(), &event);
                 }
             }
+
             if !is_running {
+                exit.store(true, Ordering::Release);
+
+                if let Some(handle) = self.server_th.take() {
+                    handle.join().unwrap();
+                }
+
+                spdlog::default_logger().flush();
+
                 *control_flow = ControlFlow::Exit;
             }
         });
