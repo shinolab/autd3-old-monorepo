@@ -294,7 +294,6 @@ dependencies = [
  "serde",
  "serde_derive",
  "spdlog-rs",
- "vecmath",
  "vulkano",
  "vulkano-shaders",
  "vulkano-win",

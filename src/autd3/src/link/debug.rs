@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 24/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -66,17 +66,17 @@ impl DebugBuilder {
         }
     }
 
-    pub fn level(&mut self, level: Level) -> &mut Self {
+    pub fn level(mut self, level: Level) -> Self {
         self.level = level;
         self
     }
 
-    pub fn timeout(&mut self, timeout: Duration) -> &mut Self {
+    pub fn timeout(mut self, timeout: Duration) -> Self {
         self.timeout = timeout;
         self
     }
 
-    pub fn logger(&mut self, logger: Logger) -> &mut Self {
+    pub fn logger(mut self, logger: Logger) -> Self {
         self.logger = Some(logger);
         self
     }

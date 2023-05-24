@@ -4,14 +4,14 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 24/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{float, METER, PI};
+use crate::{float, RxMessage, METER, PI};
 
 pub const FPGA_CLK_FREQ: usize = 163840000;
 pub const FPGA_SUB_CLK_FREQ_DIV: usize = 8;
@@ -88,6 +88,12 @@ pub struct FPGAInfo {
 impl FPGAInfo {
     pub fn is_thermal_assert(&self) -> bool {
         (self.info & 0x01) != 0
+    }
+}
+
+impl From<&RxMessage> for FPGAInfo {
+    fn from(msg: &RxMessage) -> Self {
+        Self { info: msg.ack }
     }
 }
 
