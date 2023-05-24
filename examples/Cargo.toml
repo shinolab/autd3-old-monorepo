@@ -45,6 +45,7 @@ path = "src/freq_config.rs"
 [dependencies]
 anyhow = "1.0.57"
 autd3 = {path="../src/autd3"}
+autd3-core = {path="../src/autd3-core", version="10.0.0"}
 autd3-gain-holo = {path="../src/autd3-gain-holo", version="10.0.0"}
 autd3-link-simulator = {path="../src/autd3-link-simulator", optional = true, version="10.0.0"}
 autd3-simulator = {path="../src/autd3-simulator", optional = true, version="10.0.0"}

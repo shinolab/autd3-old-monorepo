@@ -39,6 +39,7 @@ pub fn run<T: Transducer, L: Link<T>>(mut autd: Controller<T, L>) -> anyhow::Res
         ("FocusSTM test", &focus_stm),
         ("GainSTM test", &gain_stm),
         ("Multiple foci test", &holo),
+        ("Custom Gain & Modulation test", &custom),
         ("Flag test", &flag),
     ];
     if autd.geometry().num_devices() == 2 {
