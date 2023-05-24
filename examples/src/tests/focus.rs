@@ -4,23 +4,22 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/05/2023
+ * Last Modified: 24/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
  *
  */
 
-#[macro_export]
-macro_rules! focus {
-    ($autd:ident) => {{
-        $autd.send(SilencerConfig::default())?;
+use autd3::prelude::*;
 
-        let center = $autd.geometry().center() + Vector3::new(0., 0., 150.0);
+pub fn focus<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> Result<bool, AUTDError> {
+    autd.send(SilencerConfig::default())?;
 
-        let g = Focus::new(center);
-        let m = Sine::new(150);
+    let center = autd.geometry().center() + Vector3::new(0., 0., 150.0);
 
-        $autd.send((m, g))?;
-    }};
+    let g = Focus::new(center);
+    let m = Sine::new(150);
+
+    autd.send((m, g))
 }

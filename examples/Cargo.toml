@@ -29,8 +29,13 @@ path = "src/remote_twincat.rs"
 required-features = ["twincat"]
 
 [[bin]]
-name = "simulator"
-path = "src/simulator.rs"
+name = "simulator_client"
+path = "src/simulator_client.rs"
+required-features = ["simulator"]
+
+[[bin]]
+name = "simulator_server"
+path = "src/simulator_server.rs"
 required-features = ["simulator"]
 
 [dependencies]
@@ -38,14 +43,16 @@ anyhow = "1.0.57"
 autd3 = {path="../src/autd3"}
 autd3-gain-holo = {path="../src/autd3-gain-holo", version="10.0.0"}
 autd3-link-simulator = {path="../src/autd3-link-simulator", optional = true, version="10.0.0"}
+autd3-simulator = {path="../src/autd3-simulator", optional = true, version="10.0.0"}
 autd3-link-soem = {path="../src/autd3-link-soem", optional = true, version="10.0.0"}
 autd3-link-twincat = {path="../src/autd3-link-twincat", optional = true, version="10.0.0"}
 autd3-modulation-audio-file = {path="../src/autd3-modulation-audio-file", version="10.0.0"}
 colored = "2.0.0"
+serde_derive = "1.0.163"
 
 [features] 
 default = []
-simulator = ["autd3-link-simulator"]
+simulator = ["autd3-link-simulator", "autd3-simulator"]
 soem = ["autd3-link-soem"]
 twincat = ["autd3-link-twincat"]
 all = ["soem", "twincat", "simulator"]
