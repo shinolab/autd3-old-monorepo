@@ -4,7 +4,7 @@
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 24/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -50,8 +50,14 @@ impl AUTD3 {
     /// * `pos` - Global position of AUTD.
     /// * `rot` - Rotation quaternion.
     ///
-    pub fn new_with_quaternion(position: Vector3, rotation: UnitQuaternion) -> Self {
-        Self { position, rotation }
+    pub fn new_with_quaternion<Q>(position: Vector3, rotation: Q) -> Self
+    where
+        UnitQuaternion: From<Q>,
+    {
+        Self {
+            position,
+            rotation: UnitQuaternion::from(rotation),
+        }
     }
 
     pub fn is_missing_transducer<T1, T2>(x: T1, y: T2) -> bool
