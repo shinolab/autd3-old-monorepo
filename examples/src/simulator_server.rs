@@ -15,11 +15,9 @@ use anyhow::Result;
 
 use autd3_simulator::{Simulator, ViewerSettings};
 
-fn main() -> Result<()> {
+fn main() -> ! {
     let mut settings = ViewerSettings::default();
     settings.port = 8080;
 
-    Simulator::new().settings(settings).run();
-
-    Ok(())
+    Simulator::new().settings(settings).run()
 }
