@@ -4,17 +4,20 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 24/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use autd3_core::{
-    error::AUTDInternalError,
-    float,
-    modulation::{Modulation, ModulationProperty},
+use autd3::{
+    core::{
+        error::AUTDInternalError,
+        float,
+        modulation::{Modulation, ModulationProperty},
+    },
+    error::AUTDError,
 };
 use autd3_traits::Modulation;
 use hound::SampleFormat;
@@ -39,6 +42,12 @@ impl From<std::io::Error> for AudioFileError {
 impl From<hound::Error> for AudioFileError {
     fn from(e: hound::Error) -> Self {
         AudioFileError::Wav(e)
+    }
+}
+
+impl From<AudioFileError> for AUTDError {
+    fn from(value: AudioFileError) -> Self {
+        AUTDError::Internal(AUTDInternalError::ModulationError(value.to_string()))
     }
 }
 

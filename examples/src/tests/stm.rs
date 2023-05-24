@@ -4,61 +4,61 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/05/2023
+ * Last Modified: 24/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
  *
  */
 
-#[macro_export]
-macro_rules! focus_stm {
-    ($autd:ident) => {{
-        use autd3::prelude::*;
+use autd3::prelude::*;
 
-        $autd.send(SilencerConfig::none())?;
+pub fn focus_stm<T: Transducer, L: Link<T>>(
+    autd: &mut Controller<T, L>,
+) -> anyhow::Result<bool, AUTDError> {
+    use autd3::prelude::*;
 
-        let center = $autd.geometry().center() + Vector3::new(0., 0., 150.0);
+    autd.send(SilencerConfig::none())?;
 
-        let mut stm = FocusSTM::new();
-        let point_num = 200;
-        let radius = 30.0;
-        for i in 0..point_num {
-            let theta = 2.0 * PI * i as float / point_num as float;
-            let p = radius * Vector3::new(theta.cos(), theta.sin(), 0.0);
-            stm.add(center + p);
-        }
-        stm.set_freq(1.0);
+    let center = autd.geometry().center() + Vector3::new(0., 0., 150.0);
 
-        let m = Static::new();
+    let mut stm = FocusSTM::new();
+    let point_num = 200;
+    let radius = 30.0;
+    for i in 0..point_num {
+        let theta = 2.0 * PI * i as float / point_num as float;
+        let p = radius * Vector3::new(theta.cos(), theta.sin(), 0.0);
+        stm.add(center + p);
+    }
+    stm.set_freq(1.0);
 
-        $autd.send((m, stm))?;
-    }};
+    let m = Static::new();
+
+    autd.send((m, stm))
 }
 
-#[macro_export]
-macro_rules! gain_stm {
-    ($autd:ident) => {{
-        use autd3::prelude::*;
+pub fn gain_stm<T: Transducer, L: Link<T>>(
+    autd: &mut Controller<T, L>,
+) -> anyhow::Result<bool, AUTDError> {
+    use autd3::prelude::*;
 
-        $autd.send(SilencerConfig::none())?;
+    autd.send(SilencerConfig::none())?;
 
-        let center = $autd.geometry().center() + Vector3::new(0., 0., 150.0);
+    let center = autd.geometry().center() + Vector3::new(0., 0., 150.0);
 
-        let mut stm = GainSTM::new();
-        let point_num = 50;
-        for i in 0..point_num {
-            let radius = 30.0;
-            let theta = 2.0 * PI * i as float / point_num as float;
-            let p = radius * Vector3::new(theta.cos(), theta.sin(), 0.0);
+    let mut stm = GainSTM::new();
+    let point_num = 50;
+    for i in 0..point_num {
+        let radius = 30.0;
+        let theta = 2.0 * PI * i as float / point_num as float;
+        let p = radius * Vector3::new(theta.cos(), theta.sin(), 0.0);
 
-            let g = Focus::new(center + p);
-            stm.add(g);
-        }
-        stm.set_freq(1.0);
+        let g = Focus::new(center + p);
+        stm.add(g);
+    }
+    stm.set_freq(1.0);
 
-        let m = Static::new();
+    let m = Static::new();
 
-        $autd.send((m, stm))?;
-    }};
+    autd.send((m, stm))
 }
