@@ -17,6 +17,7 @@ use autd3::prelude::*;
 use colored::*;
 use std::io::{self, Write};
 
+#[allow(clippy::type_complexity)]
 pub fn run<T: Transducer, L: Link<T>>(mut autd: Controller<T, L>) -> anyhow::Result<()> {
     println!("*********************************** Firmware information ****************************************");
     autd.firmware_infos()?.iter().for_each(|firm_info| {
