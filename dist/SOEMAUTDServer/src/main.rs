@@ -1,10 +1,10 @@
 #![allow(non_snake_case)]
 
-use autd3_core::{link::Link, timer_strategy::TimerStrategy};
+use autd3_core::{autd3_device::NUM_TRANS_IN_UNIT, link::Link, timer_strategy::TimerStrategy};
 use autd3_link_soem::{SyncMode, SOEM};
 
 use clap::{Args, Parser, Subcommand, ValueEnum};
-use ctrlc;
+
 use spdlog::Level;
 
 use std::io::Read;
@@ -92,7 +92,7 @@ fn run<F: 'static + Fn(&str) + Send>(soem: SOEM<F>, port: u16) -> anyhow::Result
 
     spdlog::info!("{} AUTDs found", dev_num);
 
-    let dev_map = vec![249; dev_num];
+    let dev_map = vec![NUM_TRANS_IN_UNIT; dev_num];
     let mut tx = autd3_core::TxDatagram::new(&dev_map);
     let mut rx = autd3_core::RxDatagram::new(dev_num);
 
@@ -141,7 +141,7 @@ fn run<F: 'static + Fn(&str) + Send>(soem: SOEM<F>, port: u16) -> anyhow::Result
                             let len = len - 1;
                             let header_size = std::mem::size_of::<autd3_core::GlobalHeader>();
                             if len > header_size {
-                                let body_size = std::mem::size_of::<u16>() * 249;
+                                let body_size = std::mem::size_of::<u16>() * NUM_TRANS_IN_UNIT;
                                 if (len - header_size) % body_size != 0 {
                                     spdlog::warn!("Invalid message size: {}", len);
                                     continue;
@@ -178,7 +178,7 @@ fn run<F: 'static + Fn(&str) + Send>(soem: SOEM<F>, port: u16) -> anyhow::Result
                                     rx_buf_size,
                                 );
                             }
-                            socket.write(&rx_buf)?;
+                            let _ = socket.write(&rx_buf)?;
                         }
                         _ => {}
                     }
