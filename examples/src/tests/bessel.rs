@@ -4,24 +4,25 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 24/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
  *
  */
 
-#[macro_export]
-macro_rules! bessel {
-    ($autd:ident) => {{
-        $autd.send(SilencerConfig::default())?;
+use autd3::prelude::*;
 
-        let center = $autd.geometry().center();
-        let dir = Vector3::z();
+pub fn bessel<T: Transducer, L: Link<T>>(
+    autd: &mut Controller<T, L>,
+) -> anyhow::Result<bool, AUTDError> {
+    autd.send(SilencerConfig::default())?;
 
-        let g = Bessel::new(center, dir, 18. / 180. * PI);
-        let m = Sine::new(150);
+    let center = autd.geometry().center();
+    let dir = Vector3::z();
 
-        $autd.send((m, g))?;
-    }};
+    let g = Bessel::new(center, dir, 18. / 180. * PI);
+    let m = Sine::new(150);
+
+    autd.send((m, g))
 }

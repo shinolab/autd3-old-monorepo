@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 24/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -15,6 +15,7 @@ pub use spdlog::Level;
 
 pub use crate::{
     controller::Controller,
+    error::AUTDError,
     gain::{Bessel, Focus, Grouped, Null, Plane, TransducerTest},
     modulation::{Sine, SineLegacy, SinePressure, Square, Static},
 };

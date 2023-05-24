@@ -1,13 +1,13 @@
 /*
- * File: simulator.rs
+ * File: simulator_client.rs
  * Project: src
- * Created Date: 10/10/2022
+ * Created Date: 10/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 24/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
@@ -28,11 +28,9 @@ fn main() -> Result<()> {
         ))
         .build()?;
 
-    let link = Simulator::builder().build();
+    let link = Simulator::builder().port(8080).build();
 
     let autd = Controller::open(geometry, link)?;
 
-    run!(autd);
-
-    Ok(())
+    test_runner::run(autd)
 }
