@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 24/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -35,8 +35,8 @@ pub fn generate_propagation_matrix<T: Transducer>(
                 propagate::<Sphere>(
                     trans.position(),
                     &trans.z_direction(),
-                    sound_speed,
                     attenuation,
+                    trans.wavenumber(sound_speed),
                     fp,
                 )
             })
