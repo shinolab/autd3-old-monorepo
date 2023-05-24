@@ -4,7 +4,7 @@
  * Created Date: 21/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/05/2023
+ * Last Modified: 24/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -97,7 +97,7 @@ impl<Port> RemoteSOEMBuilder<Empty, Port> {
 impl<Addr, Port> RemoteSOEMBuilder<Addr, Port> {
     pub fn timeout(mut self, timeout: Duration) -> RemoteSOEMBuilder<Addr, Port> {
         self.timeout = timeout;
-        unsafe { std::mem::transmute(self) }
+        self
     }
 }
 
@@ -187,7 +187,7 @@ impl<T: Transducer> Link<T> for RemoteSOEM {
             return Ok(true);
         }
 
-        return Err(AUTDInternalError::LinkClosed);
+        Err(AUTDInternalError::LinkClosed)
     }
 
     fn is_open(&self) -> bool {
