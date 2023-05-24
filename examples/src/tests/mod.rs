@@ -13,14 +13,20 @@
 
 mod audio_file;
 mod bessel;
+mod custom;
+mod flag;
 mod focus;
 mod grouped;
 mod holo;
+mod plane;
 mod stm;
 
 pub use audio_file::*;
 pub use bessel::*;
+pub use custom::*;
+pub use flag::*;
 pub use focus::*;
 pub use grouped::*;
 pub use holo::*;
+pub use plane::*;
 pub use stm::*;

@@ -22,7 +22,6 @@ imgui-winit-support = { git = "https://github.com/imgui-rs/imgui-rs.git", rev = 
 png = "0.17.8"
 scarlet = "1.1.0"
 serde = "1.0.163"
-vecmath = "1.0.0"
 vulkano = "0.33.0"
 vulkano-shaders = "0.33.0"
 vulkano-win = "0.33.0"

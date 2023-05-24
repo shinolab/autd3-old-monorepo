@@ -38,6 +38,10 @@ name = "simulator_server"
 path = "src/simulator_server.rs"
 required-features = ["simulator"]
 
+[[bin]]
+name = "freq_config"
+path = "src/freq_config.rs"
+
 [dependencies]
 anyhow = "1.0.57"
 autd3 = {path="../src/autd3"}

@@ -32,12 +32,14 @@ pub fn run<T: Transducer, L: Link<T>>(mut autd: Controller<T, L>) -> anyhow::Res
         &'static str,
         &dyn Fn(&mut Controller<T, L>) -> Result<bool, AUTDError>,
     )> = vec![
-        ("Single Focal Point Test", &focus),
-        ("BesselBeam Test", &bessel),
-        ("Wav modulation Test", &audio_file),
-        ("FocusSTM Test", &focus_stm),
-        ("GainSTM Test", &gain_stm),
-        ("Multiple foci Test", &holo),
+        ("Single focus test", &focus),
+        ("Bessel beam test", &bessel),
+        ("Plane wave test", &plane),
+        ("Wav modulation test", &audio_file),
+        ("FocusSTM test", &focus_stm),
+        ("GainSTM test", &gain_stm),
+        ("Multiple foci test", &holo),
+        ("Flag test", &flag),
     ];
     if autd.geometry().num_devices() == 2 {
         examples.push(("Grouped Gain Test", &grouped));

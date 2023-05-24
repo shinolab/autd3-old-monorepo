@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/05/2023
+ * Last Modified: 24/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -17,8 +17,8 @@ use std::{
 };
 
 use autd3_core::{
-    clear::Clear, datagram::Datagram, geometry::*, link::Link, stop::Stop, FirmwareInfo, Operation,
-    RxDatagram, TxDatagram, MSG_BEGIN, MSG_END,
+    clear::Clear, datagram::Datagram, geometry::*, link::Link, stop::Stop, FPGAInfo, FirmwareInfo,
+    Operation, RxDatagram, TxDatagram, MSG_BEGIN, MSG_END,
 };
 
 use crate::error::AUTDError;
@@ -202,9 +202,9 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
             .collect())
     }
 
-    pub fn fpga_info(&mut self) -> Result<Vec<u8>, AUTDError> {
+    pub fn fpga_info(&mut self) -> Result<Vec<FPGAInfo>, AUTDError> {
         self.link.receive(&mut self.rx_buf)?;
-        Ok(self.rx_buf.messages().iter().map(|m| m.ack).collect())
+        Ok(self.rx_buf.messages().iter().map(FPGAInfo::from).collect())
     }
 }
 
