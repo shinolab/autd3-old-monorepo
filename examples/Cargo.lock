@@ -194,6 +194,7 @@ version = "10.0.0"
 dependencies = [
  "anyhow",
  "autd3",
+ "autd3-core",
  "autd3-gain-holo",
  "autd3-link-simulator",
  "autd3-link-soem",
