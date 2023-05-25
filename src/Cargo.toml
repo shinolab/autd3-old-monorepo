@@ -12,4 +12,5 @@ members = [
     "autd3-modulation-audio-file",
     "autd3-firmware-emulator",
     "autd3-simulator",
+    "autd3-geometry-viewer",
 ]
