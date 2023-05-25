@@ -4,7 +4,7 @@
  * Created Date: 05/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/05/2023
+ * Last Modified: 25/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -22,13 +22,9 @@ layout(set = 0, binding = 0) buffer Data {
 } data;
 
 layout(push_constant) uniform PushConstsConfig {
-    mat4 _model;
-    mat4 _view;
-    mat4 _proj;
+    mat4 pvm;
     uint width;
     uint height;
-    uint dummy0;
-    uint dummy1;
 } config;
 
 void main() {
@@ -36,5 +32,4 @@ void main() {
   uint h = uint(floor(v_tex_coords.y * config.height));
   uint idx = w + config.width * h;
   f_color = data.data[idx];
-  // f_color = vec4(1, 0, 0, 1);
 }
