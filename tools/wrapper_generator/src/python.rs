@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/10/2022
+ * Last Modified: 25/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -42,6 +42,7 @@ impl PythonGenerator {
             Type::Float32 => "ctypes.c_float",
             Type::Float64 => "ctypes.c_double",
             Type::Bool => "ctypes.c_bool",
+            Type::VoidPtr => unimplemented!(),
         }
     }
 
@@ -61,6 +62,7 @@ impl PythonGenerator {
                 Type::Float32 => "ctypes.c_float",
                 Type::Float64 => "ctypes.c_double",
                 Type::Bool => "ctypes.c_bool",
+                Type::VoidPtr => "ctypes.c_void_p",
             },
             1 => match arg.ty() {
                 Type::Int8 => "ctypes.POINTER(ctypes.c_int8)",
@@ -71,18 +73,15 @@ impl PythonGenerator {
                 Type::UInt16 => "ctypes.POINTER(ctypes.c_uint16)",
                 Type::UInt32 => "ctypes.POINTER(ctypes.c_uint32)",
                 Type::UInt64 => "ctypes.POINTER(ctypes.c_uint64)",
-                Type::Void => "ctypes.c_void_p",
+                Type::Void => unimplemented!(),
                 Type::Char => "ctypes.c_char_p",
                 Type::Float32 => "ctypes.POINTER(ctypes.c_float)",
                 Type::Float64 => "ctypes.POINTER(ctypes.c_double)",
                 Type::Bool => "ctypes.POINTER(ctypes.c_bool)",
-            },
-            2 => match arg.ty() {
-                Type::Void => "ctypes.POINTER(ctypes.c_void_p)",
-                _ => panic!("double pointer is not supported, but void**"),
+                Type::VoidPtr => "ctypes.POINTER(ctypes.c_void_p)",
             },
             _ => {
-                panic!("triple or more pointer is not supported")
+                panic!("double or more pointer is not supported")
             }
         }
     }

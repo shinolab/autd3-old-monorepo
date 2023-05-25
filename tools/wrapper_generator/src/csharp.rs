@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/12/2022
+ * Last Modified: 25/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -75,6 +75,7 @@ impl CSharpGenerator {
             Type::Float32 => "float",
             Type::Float64 => "double",
             Type::Bool => "bool",
+            _ => unimplemented!(),
         }
     }
 
@@ -94,6 +95,7 @@ impl CSharpGenerator {
                 Type::Float32 => "float",
                 Type::Float64 => "double",
                 Type::Bool => "[MarshalAs(UnmanagedType.U1)] bool",
+                Type::VoidPtr => "IntPtr",
             },
             1 => match arg.ty() {
                 Type::Int8 => match arg.inout() {
@@ -136,10 +138,9 @@ impl CSharpGenerator {
                     InOut::OUT => "out ulong",
                     InOut::INOUT => panic!("INOUT ulong is not supported."),
                 },
-                Type::Void => "IntPtr",
                 Type::Char => match arg.inout() {
                     InOut::IN => "string",
-                    InOut::OUT => "System.Text.StringBuilder?",
+                    InOut::OUT => "System.Text.StringBuilder",
                     InOut::INOUT => panic!("INOUT char* is not supported."),
                 },
                 Type::Float32 => match arg.inout() {
@@ -157,17 +158,15 @@ impl CSharpGenerator {
                     InOut::OUT => "out bool",
                     InOut::INOUT => panic!("INOUT bool is not supported."),
                 },
-            },
-            2 => match arg.ty() {
-                Type::Void => match arg.inout() {
-                    InOut::IN => "IntPtr[]?",
+                Type::VoidPtr => match arg.inout() {
+                    InOut::IN => panic!("void** is not supported."),
                     InOut::OUT => "out IntPtr",
-                    InOut::INOUT => panic!("INOUT void** is not supported."),
+                    InOut::INOUT => panic!("INOUT double is not supported."),
                 },
-                _ => panic!("double pointer is not supported, but void**"),
+                _ => unimplemented!(),
             },
             _ => {
-                panic!("triple or more pointer is not supported")
+                panic!("double or more pointer is not supported")
             }
         }
     }
