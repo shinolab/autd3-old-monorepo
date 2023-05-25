@@ -4,17 +4,16 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/12/2022
+ * Last Modified: 25/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::{fs, path::Path};
+use std::{fs::File, io::Read, path::Path};
 
 use anyhow::Result;
-use regex::Regex;
 
 use crate::types::{InOut, Type};
 
@@ -23,17 +22,15 @@ pub struct Arg {
     name: String,
     ty: Type,
     inout: InOut,
-    is_const: bool,
     pointer: usize,
 }
 
 impl Arg {
-    pub fn new(name: &str, ty: Type, inout: InOut, is_const: bool, pointer: usize) -> Self {
+    pub fn new(name: String, ty: Type, inout: InOut, pointer: usize) -> Self {
         Self {
-            name: name.to_string(),
+            name,
             ty,
             inout,
-            is_const,
             pointer,
         }
     }
@@ -41,15 +38,15 @@ impl Arg {
     pub fn name(&self) -> &str {
         &self.name
     }
+
     pub fn ty(&self) -> Type {
         self.ty
     }
+
     pub fn inout(&self) -> InOut {
         self.inout
     }
-    pub fn is_const(&self) -> bool {
-        self.is_const
-    }
+
     pub fn pointer(&self) -> usize {
         self.pointer
     }
@@ -88,45 +85,33 @@ pub fn parse<P>(header: P, use_single: bool) -> Result<Vec<Function>>
 where
     P: AsRef<Path>,
 {
-    let mut funcutions = Vec::new();
-    let data = fs::read_to_string(header)?;
+    let mut file = File::open(header)?;
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)?;
 
-    let re = Regex::new(r"(?ms)EXPORT_AUTD (.*?) (.*?)\((.*?)\);").unwrap();
-    let re_arg = Regex::new(r"(IN |OUT |INOUT )?(const)? ?(.*?) (.*)$").unwrap();
+    let syntax_tree = syn::parse_file(&contents)?;
 
-    for cap in re.captures_iter(&data) {
-        let return_ty = Type::parse(&cap[1], use_single);
-        let name = cap[2].to_string();
-        let mut args = Vec::new();
-        for arg in cap[3].split(',') {
-            if let Some(matches) = re_arg.captures(arg.trim()) {
-                let inout = if let Some(m) = matches.get(1) {
-                    m.as_str().trim().into()
-                } else {
-                    panic!("Cannot find IN/OUT attribute: {} of {}", &arg, &name);
-                };
-                let is_const = matches.get(2).is_some();
-                let name = matches.get(4).unwrap().as_str().to_string();
-                let types_token = matches.get(3).unwrap().as_str();
-                let pointer = types_token.chars().filter(|&c| c == '*').count();
-                let ty = Type::parse(types_token.replace('*', "").trim(), use_single);
-                args.push(Arg {
+    Ok(syntax_tree
+        .items
+        .into_iter()
+        .filter_map(|item| match item {
+            syn::Item::Fn(item_fn) => {
+                let name = item_fn.sig.ident.to_string();
+                let return_ty = Type::parse_return(item_fn.sig.output, use_single);
+                let args = item_fn
+                    .sig
+                    .inputs
+                    .into_iter()
+                    .map(|i| Type::parse_arg(i, use_single))
+                    .collect::<Vec<_>>();
+
+                Some(Function {
                     name,
-                    ty,
-                    inout,
-                    is_const,
-                    pointer,
-                });
-            } else {
-                panic!("Cannot parse argument: {}", arg.trim());
+                    return_ty,
+                    args,
+                })
             }
-        }
-        funcutions.push(Function {
-            name,
-            return_ty,
-            args,
-        });
-    }
-
-    Ok(funcutions)
+            _ => None,
+        })
+        .collect())
 }
