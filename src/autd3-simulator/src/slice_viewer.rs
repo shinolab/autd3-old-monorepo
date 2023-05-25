@@ -4,7 +4,7 @@
  * Created Date: 11/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 23/05/2023
+ * Last Modified: 25/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -159,13 +159,10 @@ impl SliceViewer {
         settings: &ViewerSettings,
         builder: &mut AutoCommandBufferBuilder<PrimaryAutoCommandBuffer>,
     ) {
-        let pc = Data {
-            world: self.model.into(),
-            view: view.into(),
-            proj: proj.into(),
+        let pc = fs::PushConstsConfig {
+            pvm: (proj * view * self.model).into(),
             width: (settings.slice_width / settings.slice_pixel_size) as _,
             height: (settings.slice_height / settings.slice_pixel_size) as _,
-            ..Default::default()
         };
 
         let layout = self.pipeline.layout().set_layouts().get(0).unwrap();
