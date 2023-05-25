@@ -65,7 +65,7 @@ pub unsafe extern "C" fn AUTDAddDeviceQuaternion(
 #[no_mangle]
 pub unsafe extern "C" fn AUTDBuildGeometry(
     out: *mut ConstPtr,
-    builder: *const c_void,
+    builder: ConstPtr,
     err: *mut c_char,
 ) -> i32 {
     unsafe {
@@ -961,7 +961,7 @@ pub unsafe extern "C" fn AUTDModDelayConfig(out: *mut ConstPtr) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDDeleteSpecialData(out: ConstPtr) {
+pub unsafe extern "C" fn AUTDDeleteSpecialData(special: ConstPtr) {
     unsafe {
         let _ = Box::from_raw(out as *mut Box<dyn DynamicDatagram>);
     }
@@ -976,7 +976,7 @@ pub unsafe extern "C" fn AUTDCreateSilencer(out: *mut ConstPtr, step: u16) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDDeleteSilencer(out: ConstPtr) {
+pub unsafe extern "C" fn AUTDDeleteSilencer(silencer: ConstPtr) {
     unsafe {
         let _ = Box::from_raw(out as *mut Box<dyn DynamicDatagram>);
     }
@@ -991,7 +991,7 @@ pub unsafe extern "C" fn AUTDCreateAmplitudes(out: *mut ConstPtr, amp: float) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDDeleteAmplitudes(out: ConstPtr) {
+pub unsafe extern "C" fn AUTDDeleteAmplitudes(amplitudes: ConstPtr) {
     unsafe {
         let _ = Box::from_raw(out as *mut Box<dyn DynamicDatagram>);
     }
@@ -1152,7 +1152,7 @@ pub unsafe extern "C" fn AUTDLinkDebugTimeout(builder: ConstPtr, timeout_ns: u64
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkDebugBuild(out: *mut ConstPtr, builder: *mut c_void) {
+pub unsafe extern "C" fn AUTDLinkDebugBuild(out: *mut ConstPtr, builder: ConstPtr) {
     unsafe {
         let builder = Box::from_raw(builder as *mut DebugBuilder);
         let link: Box<Box<L>> = Box::new(Box::new(builder.build()));
