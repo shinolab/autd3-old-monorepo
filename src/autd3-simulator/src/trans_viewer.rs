@@ -4,7 +4,7 @@
  * Created Date: 30/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 25/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -52,13 +52,6 @@ struct CircleVertex {
     position: [f32; 4],
     #[format(R32G32_SFLOAT)]
     tex_coords: [f32; 2],
-}
-
-#[repr(C)]
-#[derive(Default, Debug, Copy, Clone, Zeroable, Pod)]
-struct Data {
-    view: [[f32; 4]; 4],
-    proj: [[f32; 4]; 4],
 }
 
 #[repr(C)]
@@ -164,8 +157,7 @@ impl TransViewer {
         builder: &mut AutoCommandBufferBuilder<PrimaryAutoCommandBuffer>,
     ) {
         let pc = vs::PushConsts {
-            view: view.into(),
-            proj: proj.into(),
+            proj_view: (proj * view).into(),
         };
 
         if let (Some(model), Some(color)) = (&self.model_instance_data, &self.color_instance_data) {

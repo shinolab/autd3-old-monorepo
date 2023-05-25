@@ -4,7 +4,7 @@
  * Created Date: 26/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/05/2023
+ * Last Modified: 25/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -22,12 +22,11 @@ layout(location = 0) out vec2 o_tex_coords;
 layout(location = 1) out vec4 o_color;
 
 layout(push_constant) uniform PushConsts {
-    mat4 view;
-    mat4 proj;
+    mat4 proj_view;
 } primitive;
 
 void main() {
     o_tex_coords = tex_coords;
     o_color = color;
-    gl_Position = primitive.proj * primitive.view * model * position;
+    gl_Position = primitive.proj_view * model * position;
 }

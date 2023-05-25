@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 25/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -69,7 +69,7 @@ impl ImGuiRenderer {
             &mut imgui,
             renderer.device(),
             renderer.queue(),
-            vulkano::format::Format::B8G8R8A8_UNORM,
+            renderer.image_format(),
         )
         .expect("Failed to initialize renderer");
 

@@ -4,7 +4,7 @@
  * Created Date: 11/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 25/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -319,8 +319,9 @@ impl Renderer {
         let alpha = caps.supported_composite_alpha.into_iter().next().unwrap();
         let format = physical
             .surface_formats(&surface, Default::default())
-            .unwrap()[0]
-            .0;
+            .unwrap()
+            .into_iter()
+            .find(|&(f, c)| f == Format::B8G8R8A8_UNORM && c == ColorSpace::SrgbNonLinear);
         let image_extent: [u32; 2] = surface
             .object()
             .unwrap()
@@ -333,8 +334,8 @@ impl Renderer {
             surface,
             SwapchainCreateInfo {
                 min_image_count: caps.min_image_count,
-                image_format: Some(format),
-                image_color_space: ColorSpace::SrgbNonLinear,
+                image_format: format.map(|f| f.0),
+                image_color_space: format.map_or(ColorSpace::SrgbNonLinear, |f| f.1),
                 image_extent,
                 image_array_layers: 1,
                 image_usage: ImageUsage::COLOR_ATTACHMENT,
@@ -527,5 +528,9 @@ impl Renderer {
                 viewer_settings.camera_rot_z,
             ),
         );
+    }
+
+    pub(crate) fn image_format(&self) -> Format {
+        self.swap_chain.image_format()
     }
 }

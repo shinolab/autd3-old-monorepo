@@ -23,14 +23,6 @@ mod trans_viewer;
 mod update_flag;
 mod viewer_settings;
 
-// pub use field_compute_pipeline::{Config, FieldComputePipeline};
-// pub use imgui_renderer::ImGuiRenderer;
-// pub use renderer::Renderer;
-// pub use slice_viewer::SliceViewer;
-// pub use sound_sources::{Drive, SoundSources};
-// pub use trans_viewer::TransViewer;
-// pub use update_flag::UpdateFlag;
-// pub use viewer_settings::{ColorMapType, ViewerSettings};
 pub use simulator::Simulator;
 pub use viewer_settings::ViewerSettings;
 
