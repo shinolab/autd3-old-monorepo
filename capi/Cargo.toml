@@ -1,7 +1,6 @@
 [workspace]
 
 members = [
-    "autd3capi-common",
     "autd3capi",
     "autd3capi-gain-holo",
 ]
