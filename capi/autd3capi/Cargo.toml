@@ -4,7 +4,7 @@ version = "10.0.0"
 edition = "2021"
 
 [lib]
-crate-type = ["cdylib", "staticlib"]
+crate-type = ["lib", "cdylib", "staticlib"]
 
 [dependencies]
 autd3capi-common = {path="../autd3capi-common", version="10.0.0"}

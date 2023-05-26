@@ -73,3 +73,40 @@ macro_rules! cast_without_ownership_mut {
         ($ptr as *mut $type).as_mut().unwrap()
     };
 }
+
+pub struct NullLink {}
+
+impl Link<DynamicTransducer> for NullLink {
+    fn open(
+        &mut self,
+        _geometry: &Geometry<DynamicTransducer>,
+    ) -> Result<(), autd3::core::error::AUTDInternalError> {
+        Ok(())
+    }
+
+    fn close(&mut self) -> Result<(), autd3::core::error::AUTDInternalError> {
+        Ok(())
+    }
+
+    fn send(
+        &mut self,
+        _tx: &autd3::core::TxDatagram,
+    ) -> Result<bool, autd3::core::error::AUTDInternalError> {
+        Ok(true)
+    }
+
+    fn receive(
+        &mut self,
+        _rx: &mut autd3::core::RxDatagram,
+    ) -> Result<bool, autd3::core::error::AUTDInternalError> {
+        Ok(true)
+    }
+
+    fn is_open(&self) -> bool {
+        true
+    }
+
+    fn timeout(&self) -> std::time::Duration {
+        std::time::Duration::ZERO
+    }
+}

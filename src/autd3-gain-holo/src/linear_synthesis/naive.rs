@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/05/2023
+ * Last Modified: 26/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ use nalgebra::ComplexField;
 pub struct Naive<B: Backend> {
     foci: Vec<Vector3>,
     amps: Vec<float>,
-    pub constraint: Constraint,
+    constraint: Constraint,
     backend: B,
 }
 

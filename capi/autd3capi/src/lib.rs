@@ -417,10 +417,12 @@ pub unsafe extern "C" fn AUTDGainGroupedAdd(
 ) {
     unsafe {
         let g = Box::from_raw(gain as *mut Box<G> as *mut Box<GainWrap>).gain;
-        (*((grouped_gain as *mut Box<G> as *mut Box<GainWrap>)
+        ((grouped_gain as *mut Box<G> as *mut Box<GainWrap>)
             .as_mut()
             .unwrap()
-            .gain_mut() as *mut _ as *mut Grouped<'static, DynamicTransducer>))
+            .gain_mut() as *mut _ as *mut Grouped<'static, DynamicTransducer>)
+            .as_mut()
+            .unwrap()
             .add_boxed(device_id as _, g);
     }
 }

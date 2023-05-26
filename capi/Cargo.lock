@@ -188,6 +188,7 @@ version = "10.0.0"
 dependencies = [
  "autd3",
  "autd3-gain-holo",
+ "autd3capi",
  "autd3capi-common",
  "libc",
  "wrapper-generator",
