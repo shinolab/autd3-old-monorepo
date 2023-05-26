@@ -4,7 +4,7 @@
  * Created Date: 03/06/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 26/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ pub struct Greedy {
     foci: Vec<Vector3>,
     amps: Vec<float>,
     pub phase_div: usize,
-    pub constraint: Constraint,
+    constraint: Constraint,
 }
 
 impl_holo!(Greedy);

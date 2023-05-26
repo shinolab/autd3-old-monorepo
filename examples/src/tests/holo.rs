@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 26/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -41,6 +41,7 @@ pub fn holo<T: Transducer, L: Link<T>>(
     let mut s = String::new();
     io::stdin().read_line(&mut s).unwrap();
     let backend = NalgebraBackend::new();
+
     match s.trim().parse::<usize>() {
         Ok(0) => {
             let mut g = SDP::new(backend);
