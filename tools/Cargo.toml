@@ -1,6 +1,0 @@
-[workspace]
-
-members = [
-    "capi_header_parser",
-    "wrapper_generator",
-]
