@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/05/2023
+ * Last Modified: 26/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,6 +16,7 @@ use autd3::core::{error::AUTDInternalError, float, FPGA_CLK_FREQ, MAX_CYCLE};
 use super::{Matrix4, Transducer, UnitQuaternion, Vector3, Vector4};
 
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
+#[repr(u8)]
 pub enum TransMode {
     #[default]
     Legacy,

@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/05/2023
+ * Last Modified: 26/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,6 +24,15 @@ pub struct ModulationWrap {
     pub modulation: Box<dyn Modulation>,
 }
 
+impl ModulationWrap {
+    #[allow(clippy::new_ret_no_self)]
+    pub fn new<M: 'static + Modulation>(m: M) -> Box<Box<dyn DynamicModulation>> {
+        Box::new(Box::new(Self {
+            modulation: Box::new(m),
+        }))
+    }
+}
+
 impl DynamicModulation for ModulationWrap {
     fn modulation(&self) -> &dyn Modulation {
         &*self.modulation
@@ -37,7 +46,7 @@ impl DynamicModulation for ModulationWrap {
 impl DynamicDatagram for ModulationWrap {
     fn operation(
         &mut self,
-        _: crate::TransMode,
+        _: crate::dynamic_transducer::TransMode,
         _: &autd3::prelude::Geometry<crate::DynamicTransducer>,
     ) -> Result<
         (

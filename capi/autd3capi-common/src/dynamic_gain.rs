@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/05/2023
+ * Last Modified: 26/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,11 +14,11 @@
 use std::time::Duration;
 
 use autd3::{
-    core::{error::AUTDInternalError, gain::Gain, Drive, GainOp},
-    prelude::{Geometry, Grouped, Transducer},
+    core::{gain::Gain, GainOp},
+    prelude::{Geometry, Transducer},
 };
 
-use crate::{DynamicDatagram, DynamicTransducer, TransMode};
+use crate::{dynamic_transducer::TransMode, DynamicDatagram, DynamicTransducer};
 
 pub trait DynamicGain: DynamicDatagram {
     fn gain(&self) -> &dyn Gain<DynamicTransducer>;
@@ -87,37 +87,5 @@ impl DynamicDatagram for GainWrap {
 
     fn timeout(&self) -> Option<Duration> {
         None
-    }
-}
-
-pub struct GroupedGainWrap {
-    grouped: Grouped<'static, DynamicTransducer>,
-}
-
-impl GroupedGainWrap {
-    pub fn new() -> Self {
-        Self {
-            grouped: Grouped::new(),
-        }
-    }
-
-    pub fn add(&mut self, id: usize, gain: GainWrap) {
-        let gain = gain.gain;
-        self.grouped.add_boxed(id, gain);
-    }
-}
-
-impl Gain<DynamicTransducer> for GroupedGainWrap {
-    fn calc(
-        &mut self,
-        geometry: &Geometry<DynamicTransducer>,
-    ) -> Result<Vec<Drive>, AUTDInternalError> {
-        self.grouped.calc(geometry)
-    }
-}
-
-impl Default for GroupedGainWrap {
-    fn default() -> Self {
-        Self::new()
     }
 }

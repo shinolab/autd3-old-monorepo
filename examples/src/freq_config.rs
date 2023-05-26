@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 26/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,7 +22,9 @@ fn main() -> Result<()> {
         .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
         .build()?;
 
-    let link = Debug::builder().level(Level::Debug).build();
+    let link = Debug::builder()
+        .level(LevelFilter::MoreSevereEqual(Level::Debug))
+        .build();
 
     let mut autd = Controller::open(geometry, link)?;
 

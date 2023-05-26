@@ -2,21 +2,33 @@
 
 mod custom;
 
+use autd3_core::spdlog::LevelFilter;
 use custom::{CustomGain, CustomModulation};
 
 use std::{
-    ffi::{c_char, c_void},
+    ffi::c_char,
     sync::{Arc, Mutex},
     time::Duration,
 };
 
 use autd3capi_common::*;
 
+pub const NUM_TRANS_IN_UNIT: u32 = 249;
+pub const NUM_TRANS_IN_X: u32 = 18;
+pub const NUM_TRANS_IN_Y: u32 = 14;
+pub const TRANS_SPACING_MM: float = 10.16;
+pub const DEVICE_HEIGHT: float = 151.4;
+pub const DEVICE_WIDTH: float = 192.0;
+pub const FPGA_CLK_FREQ: u32 = 163840000;
+pub const FPGA_SUB_CLK_FREQ: u32 = 20480000;
+
+pub const ERR: i32 = -1;
+pub const TRUE: i32 = 1;
+pub const FALSE: i32 = 0;
+
 #[no_mangle]
-pub unsafe extern "C" fn AUTDCreateGeometryBuilder(out: *mut ConstPtr) {
-    unsafe {
-        *out = Box::into_raw(Box::new(GeometryBuilder::<DynamicTransducer>::new())) as *mut c_void;
-    }
+pub unsafe extern "C" fn AUTDCreateGeometryBuilder() -> ConstPtr {
+    Box::into_raw(Box::new(GeometryBuilder::<DynamicTransducer>::new())) as _
 }
 
 #[no_mangle]
@@ -30,13 +42,9 @@ pub unsafe extern "C" fn AUTDAddDevice(
     rz2: float,
 ) {
     unsafe {
-        (builder as *mut GeometryBuilder<DynamicTransducer>)
-            .as_mut()
-            .unwrap()
-            .add_device(AUTD3::new(
-                Vector3::new(x, y, z),
-                Vector3::new(rz1, ry, rz2),
-            ));
+        cast_without_ownership_mut!(builder, GeometryBuilder<DynamicTransducer>).add_device(
+            AUTD3::new(Vector3::new(x, y, z), Vector3::new(rz1, ry, rz2)),
+        );
     }
 }
 
@@ -52,55 +60,48 @@ pub unsafe extern "C" fn AUTDAddDeviceQuaternion(
     qz: float,
 ) {
     unsafe {
-        (builder as *mut GeometryBuilder<DynamicTransducer>)
-            .as_mut()
-            .unwrap()
-            .add_device(AUTD3::new_with_quaternion(
+        cast_without_ownership_mut!(builder, GeometryBuilder<DynamicTransducer>).add_device(
+            AUTD3::new_with_quaternion(
                 Vector3::new(x, y, z),
                 UnitQuaternion::from_quaternion(Quaternion::new(qw, qx, qy, qz)),
-            ));
+            ),
+        );
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDBuildGeometry(
-    out: *mut ConstPtr,
-    builder: ConstPtr,
-    err: *mut c_char,
-) -> i32 {
+pub unsafe extern "C" fn AUTDBuildGeometry(builder: ConstPtr, err: *mut c_char) -> ConstPtr {
     unsafe {
         let geometry = try_or_return!(
             Box::from_raw(builder as *mut GeometryBuilder<DynamicTransducer>).build(),
-            err
+            err,
+            NULL
         );
-        *out = Box::into_raw(Box::new(geometry)) as *mut c_void;
+        Box::into_raw(Box::new(geometry)) as _
     }
-    OK
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDOpenController(
-    out: *mut ConstPtr,
     geometry: ConstPtr,
     link: ConstPtr,
     err: *mut c_char,
-) -> i32 {
+) -> ConstPtr {
     unsafe {
         let link: Box<Box<L>> = Box::from_raw(link as *mut _);
         let link = DynamicLink::new(*link);
         let geometry: Box<Geometry<DynamicTransducer>> = Box::from_raw(geometry as *mut _);
-        let cnt = try_or_return!(Controller::open(*geometry, link), err);
-        *out = Box::into_raw(Box::new(cnt)) as _;
+        let cnt = try_or_return!(Controller::open(*geometry, link), err, NULL);
+        Box::into_raw(Box::new(cnt)) as _
     }
-    OK
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDClose(cnt: ConstPtr, err: *mut c_char) -> i32 {
+pub unsafe extern "C" fn AUTDClose(cnt: ConstPtr, err: *mut c_char) -> bool {
     unsafe {
-        try_or_return!((cnt as *mut Cnt).as_mut().unwrap().close(), err);
+        try_or_return!(cast_without_ownership_mut!(cnt, Cnt).close(), err, false);
     }
-    OK
+    true
 }
 
 #[no_mangle]
@@ -112,25 +113,23 @@ pub unsafe extern "C" fn AUTDFreeController(cnt: ConstPtr) {
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDSetReadsFPGAInfo(cnt: ConstPtr, value: bool) {
-    unsafe { (cnt as *mut Cnt).as_mut().unwrap().reads_fpga_info(value) }
+    unsafe { cast_without_ownership_mut!(cnt, Cnt).reads_fpga_info(value) }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDSetForceFan(cnt: ConstPtr, value: bool) {
-    unsafe { (cnt as *mut Cnt).as_mut().unwrap().force_fan(value) }
+    unsafe { cast_without_ownership_mut!(cnt, Cnt).force_fan(value) }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGetSoundSpeed(cnt: ConstPtr) -> float {
-    unsafe { (cnt as *mut Cnt).as_mut().unwrap().geometry().sound_speed }
+    unsafe { cast_without_ownership_mut!(cnt, Cnt).geometry().sound_speed }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDSetSoundSpeed(cnt: ConstPtr, value: float) {
     unsafe {
-        (cnt as *mut Cnt)
-            .as_mut()
-            .unwrap()
+        cast_without_ownership_mut!(cnt, Cnt)
             .geometry_mut()
             .sound_speed = value;
     }
@@ -145,103 +144,103 @@ pub unsafe extern "C" fn AUTDSetSoundSpeedFromTemp(
     m: float,
 ) {
     unsafe {
-        (cnt as *mut Cnt)
-            .as_mut()
-            .unwrap()
+        cast_without_ownership_mut!(cnt, Cnt)
             .geometry_mut()
             .set_sound_speed_from_temp_with(temp, k, r, m);
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGetTransFrequency(cnt: ConstPtr, idx: i32) -> float {
-    unsafe { (cnt as *mut Cnt).as_mut().unwrap().geometry()[idx as _].frequency() }
+pub unsafe extern "C" fn AUTDGetTransFrequency(cnt: ConstPtr, idx: u32) -> float {
+    unsafe { cast_without_ownership!(cnt, Cnt).geometry()[idx as _].frequency() }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDSetTransFrequency(
     cnt: ConstPtr,
-    idx: i32,
+    idx: u32,
     value: float,
     err: *mut c_char,
-) -> i32 {
+) -> bool {
     unsafe {
         try_or_return!(
-            (cnt as *mut Cnt).as_mut().unwrap().geometry_mut()[idx as _].set_frequency(value),
-            err
+            cast_without_ownership_mut!(cnt, Cnt).geometry_mut()[idx as _].set_frequency(value),
+            err,
+            false
         )
     }
-    OK
+    true
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGetTransCycle(cnt: ConstPtr, idx: i32) -> u16 {
-    unsafe { (cnt as *mut Cnt).as_mut().unwrap().geometry()[idx as _].cycle() }
+pub unsafe extern "C" fn AUTDGetTransCycle(cnt: ConstPtr, idx: u32) -> u16 {
+    unsafe { cast_without_ownership!(cnt, Cnt).geometry()[idx as _].cycle() }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDSetTransCycle(
     cnt: ConstPtr,
-    idx: i32,
+    idx: u32,
     value: u16,
     err: *mut c_char,
-) -> i32 {
+) -> bool {
     unsafe {
         try_or_return!(
-            (cnt as *mut Cnt).as_mut().unwrap().geometry_mut()[idx as _].set_cycle(value),
-            err
+            cast_without_ownership_mut!(cnt, Cnt).geometry_mut()[idx as _].set_cycle(value),
+            err,
+            false
         )
     }
-    OK
+    true
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGetWavelength(cnt: ConstPtr, idx: i32) -> float {
+pub unsafe extern "C" fn AUTDGetWavelength(cnt: ConstPtr, idx: u32) -> float {
     unsafe {
-        let geometry = (cnt as *mut Cnt).as_mut().unwrap().geometry();
+        let geometry = cast_without_ownership!(cnt, Cnt).geometry();
         geometry[idx as _].wavelength(geometry.sound_speed)
     }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGetAttenuation(cnt: ConstPtr) -> float {
-    unsafe { (cnt as *mut Cnt).as_mut().unwrap().geometry().attenuation }
+    unsafe { cast_without_ownership!(cnt, Cnt).geometry().attenuation }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDSetAttenuation(cnt: ConstPtr, value: float) {
     unsafe {
-        (cnt as *mut Cnt)
-            .as_mut()
-            .unwrap()
+        cast_without_ownership_mut!(cnt, Cnt)
             .geometry_mut()
             .attenuation = value;
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGetFPGAInfo(cnt: ConstPtr, out: *mut u8, err: *mut c_char) -> i32 {
+pub unsafe extern "C" fn AUTDGetFPGAInfo(cnt: ConstPtr, out: *const u8, err: *mut c_char) -> bool {
     unsafe {
-        let fpga_info = try_or_return!((cnt as *mut Cnt).as_mut().unwrap().fpga_info(), err);
-        std::ptr::copy_nonoverlapping(fpga_info.as_ptr(), out, fpga_info.len());
+        let fpga_info = try_or_return!(
+            cast_without_ownership_mut!(cnt, Cnt).fpga_info(),
+            err,
+            false
+        );
+        std::ptr::copy_nonoverlapping(fpga_info.as_ptr() as _, out as *mut _, fpga_info.len());
     }
-    OK
+    true
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDNumTransducers(cnt: ConstPtr) -> i32 {
+pub unsafe extern "C" fn AUTDNumTransducers(cnt: ConstPtr) -> u32 {
     unsafe {
-        (cnt as *mut Cnt)
-            .as_mut()
-            .unwrap()
+        cast_without_ownership!(cnt, Cnt)
             .geometry()
             .num_transducers() as _
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDNumDevices(cnt: ConstPtr) -> i32 {
-    unsafe { (cnt as *mut Cnt).as_mut().unwrap().geometry().num_devices() as _ }
+pub unsafe extern "C" fn AUTDNumDevices(cnt: ConstPtr) -> u32 {
+    unsafe { cast_without_ownership!(cnt, Cnt).geometry().num_devices() as _ }
 }
 
 #[no_mangle]
@@ -252,7 +251,7 @@ pub unsafe extern "C" fn AUTDGeometryCenter(
     z: *mut float,
 ) {
     unsafe {
-        let center = (cnt as *mut Cnt).as_mut().unwrap().geometry().center();
+        let center = cast_without_ownership!(cnt, Cnt).geometry().center();
         *x = center.x;
         *y = center.y;
         *z = center.z;
@@ -262,15 +261,13 @@ pub unsafe extern "C" fn AUTDGeometryCenter(
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGeometryCenterOf(
     cnt: ConstPtr,
-    dev_idx: i32,
+    dev_idx: u32,
     x: *mut float,
     y: *mut float,
     z: *mut float,
 ) {
     unsafe {
-        let center = (cnt as *const Cnt)
-            .as_ref()
-            .unwrap()
+        let center = cast_without_ownership!(cnt, Cnt)
             .geometry()
             .center_of(dev_idx as _);
         *x = center.x;
@@ -282,13 +279,13 @@ pub unsafe extern "C" fn AUTDGeometryCenterOf(
 #[no_mangle]
 pub unsafe extern "C" fn AUTDTransPosition(
     cnt: ConstPtr,
-    tr_idx: i32,
+    tr_idx: u32,
     x: *mut float,
     y: *mut float,
     z: *mut float,
 ) {
     unsafe {
-        let pos = (cnt as *const Cnt).as_ref().unwrap().geometry()[tr_idx as _].position();
+        let pos = cast_without_ownership!(cnt, Cnt).geometry()[tr_idx as _].position();
         *x = pos.x;
         *y = pos.y;
         *z = pos.z;
@@ -298,13 +295,13 @@ pub unsafe extern "C" fn AUTDTransPosition(
 #[no_mangle]
 pub unsafe extern "C" fn AUTDTransXDirection(
     cnt: ConstPtr,
-    tr_idx: i32,
+    tr_idx: u32,
     x: *mut float,
     y: *mut float,
     z: *mut float,
 ) {
     unsafe {
-        let dir = (cnt as *const Cnt).as_ref().unwrap().geometry()[tr_idx as _].x_direction();
+        let dir = cast_without_ownership!(cnt, Cnt).geometry()[tr_idx as _].x_direction();
         *x = dir.x;
         *y = dir.y;
         *z = dir.z;
@@ -314,13 +311,13 @@ pub unsafe extern "C" fn AUTDTransXDirection(
 #[no_mangle]
 pub unsafe extern "C" fn AUTDTransYDirection(
     cnt: ConstPtr,
-    tr_idx: i32,
+    tr_idx: u32,
     x: *mut float,
     y: *mut float,
     z: *mut float,
 ) {
     unsafe {
-        let dir = (cnt as *const Cnt).as_ref().unwrap().geometry()[tr_idx as _].y_direction();
+        let dir = cast_without_ownership!(cnt, Cnt).geometry()[tr_idx as _].y_direction();
         *x = dir.x;
         *y = dir.y;
         *z = dir.z;
@@ -330,13 +327,13 @@ pub unsafe extern "C" fn AUTDTransYDirection(
 #[no_mangle]
 pub unsafe extern "C" fn AUTDTransZDirection(
     cnt: ConstPtr,
-    tr_idx: i32,
+    tr_idx: u32,
     x: *mut float,
     y: *mut float,
     z: *mut float,
 ) {
     unsafe {
-        let dir = (cnt as *const Cnt).as_ref().unwrap().geometry()[tr_idx as _].z_direction();
+        let dir = cast_without_ownership!(cnt, Cnt).geometry()[tr_idx as _].z_direction();
         *x = dir.x;
         *y = dir.y;
         *z = dir.z;
@@ -344,40 +341,42 @@ pub unsafe extern "C" fn AUTDTransZDirection(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGetTransModDelay(cnt: ConstPtr, tr_idx: i32) -> u16 {
-    unsafe { (cnt as *mut Cnt).as_mut().unwrap().geometry()[tr_idx as _].mod_delay() }
+pub unsafe extern "C" fn AUTDGetTransModDelay(cnt: ConstPtr, tr_idx: u32) -> u16 {
+    unsafe { cast_without_ownership!(cnt, Cnt).geometry()[tr_idx as _].mod_delay() }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDSetTransModDelay(cnt: ConstPtr, tr_idx: i32, delay: u16) {
-    unsafe { (cnt as *mut Cnt).as_mut().unwrap().geometry_mut()[tr_idx as _].set_mod_delay(delay) }
+pub unsafe extern "C" fn AUTDSetTransModDelay(cnt: ConstPtr, tr_idx: u32, delay: u16) {
+    unsafe {
+        cast_without_ownership_mut!(cnt, Cnt).geometry_mut()[tr_idx as _].set_mod_delay(delay)
+    }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGetFirmwareInfoListPointer(
     cnt: ConstPtr,
-    out: *mut ConstPtr,
     err: *mut c_char,
-) -> i32 {
+) -> ConstPtr {
     unsafe {
-        let firmware_infos =
-            try_or_return!((cnt as *mut Cnt).as_mut().unwrap().firmware_infos(), err);
-        let len = firmware_infos.len() as _;
-        *out = Box::into_raw(Box::new(firmware_infos)) as _;
-        len
+        let firmware_infos = try_or_return!(
+            cast_without_ownership_mut!(cnt, Cnt).firmware_infos(),
+            err,
+            NULL
+        );
+        Box::into_raw(Box::new(firmware_infos)) as _
     }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGetFirmwareInfo(
     p_info_list: ConstPtr,
-    idx: i32,
+    idx: u32,
     info: *mut c_char,
     is_valid: *mut bool,
     is_supported: *mut bool,
 ) {
     unsafe {
-        let firm_info = &(p_info_list as *mut Vec<FirmwareInfo>).as_ref().unwrap()[idx as usize];
+        let firm_info = &cast_without_ownership_mut!(p_info_list, Vec<FirmwareInfo>)[idx as usize];
         let info_str = std::ffi::CString::new(firm_info.to_string()).unwrap();
         libc::strcpy(info, info_str.as_ptr());
         *is_valid = firm_info.is_valid();
@@ -401,56 +400,38 @@ pub unsafe extern "C" fn AUTDGetLatestFirmware(latest: *mut c_char) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGainNull(out: *mut ConstPtr) {
-    unsafe {
-        let gain = GainWrap::new(Null::new());
-        *out = Box::into_raw(gain) as _;
-    }
+pub unsafe extern "C" fn AUTDGainNull() -> ConstPtr {
+    Box::into_raw(GainWrap::new(Null::new())) as _
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGainGrouped(out: *mut ConstPtr) {
-    unsafe {
-        let gain = GainWrap::new(GroupedGainWrap::new());
-        *out = Box::into_raw(gain) as _;
-    }
+pub unsafe extern "C" fn AUTDGainGrouped() -> ConstPtr {
+    Box::into_raw(GainWrap::new(Grouped::<'static, DynamicTransducer>::new())) as _
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainGroupedAdd(
     grouped_gain: ConstPtr,
-    device_id: i32,
+    device_id: u32,
     gain: ConstPtr,
 ) {
     unsafe {
-        let g = *Box::from_raw(gain as *mut Box<G> as *mut Box<GainWrap>);
-        ((grouped_gain as *mut Box<G> as *mut Box<GainWrap>)
+        let g = Box::from_raw(gain as *mut Box<G> as *mut Box<GainWrap>).gain;
+        (*((grouped_gain as *mut Box<G> as *mut Box<GainWrap>)
             .as_mut()
             .unwrap()
-            .gain_mut() as *mut _ as *mut Box<GroupedGainWrap>)
-            .as_mut()
-            .unwrap()
-            .add(device_id as _, *g);
+            .gain_mut() as *mut _ as *mut Grouped<'static, DynamicTransducer>))
+            .add_boxed(device_id as _, g);
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGainFocus(
-    out: *mut ConstPtr,
-    x: float,
-    y: float,
-    z: float,
-    amp: float,
-) {
-    unsafe {
-        let gain = GainWrap::new(Focus::with_amp(Vector3::new(x, y, z), amp));
-        *out = Box::into_raw(gain) as _;
-    }
+pub unsafe extern "C" fn AUTDGainFocus(x: float, y: float, z: float, amp: float) -> ConstPtr {
+    Box::into_raw(GainWrap::new(Focus::with_amp(Vector3::new(x, y, z), amp))) as _
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainBesselBeam(
-    out: *mut ConstPtr,
     x: float,
     y: float,
     z: float,
@@ -459,44 +440,37 @@ pub unsafe extern "C" fn AUTDGainBesselBeam(
     nz: float,
     theta_z: float,
     amp: float,
-) {
-    unsafe {
-        let gain = GainWrap::new(Bessel::with_amp(
-            Vector3::new(x, y, z),
-            Vector3::new(nx, ny, nz),
-            theta_z,
-            amp,
-        ));
-        *out = Box::into_raw(gain) as _;
-    }
+) -> ConstPtr {
+    Box::into_raw(GainWrap::new(Bessel::with_amp(
+        Vector3::new(x, y, z),
+        Vector3::new(nx, ny, nz),
+        theta_z,
+        amp,
+    ))) as _
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainPlaneWave(
-    out: *mut ConstPtr,
     nx: float,
     ny: float,
     nz: float,
     amp: float,
-) {
-    unsafe {
-        let gain = GainWrap::new(Plane::with_amp(Vector3::new(nx, ny, nz), amp));
-        *out = Box::into_raw(gain) as _;
-    }
+) -> ConstPtr {
+    Box::into_raw(GainWrap::new(Plane::with_amp(
+        Vector3::new(nx, ny, nz),
+        amp,
+    ))) as _
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGainTransducerTest(out: *mut ConstPtr) {
-    unsafe {
-        let gain = GainWrap::new(TransducerTest::new());
-        *out = Box::into_raw(gain) as _;
-    }
+pub unsafe extern "C" fn AUTDGainTransducerTest() -> ConstPtr {
+    Box::into_raw(GainWrap::new(TransducerTest::new())) as _
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainTransducerTestSet(
     trans_test: ConstPtr,
-    id: i32,
+    id: u32,
     phase: float,
     amp: float,
 ) {
@@ -504,7 +478,7 @@ pub unsafe extern "C" fn AUTDGainTransducerTestSet(
         ((trans_test as *mut Box<G> as *mut Box<GainWrap>)
             .as_mut()
             .unwrap()
-            .gain_mut() as *mut _ as *mut Box<TransducerTest>)
+            .gain_mut() as *mut _ as *mut TransducerTest)
             .as_mut()
             .unwrap()
             .set(id as _, phase, amp)
@@ -513,15 +487,11 @@ pub unsafe extern "C" fn AUTDGainTransducerTestSet(
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainCustom(
-    out: *mut ConstPtr,
     amp: *const float,
     phase: *const float,
     size: u64,
-) {
-    unsafe {
-        let gain = GainWrap::new(CustomGain::new(amp, phase, size));
-        *out = Box::into_raw(gain) as _;
-    }
+) -> ConstPtr {
+    Box::into_raw(GainWrap::new(CustomGain::new(amp, phase, size))) as _
 }
 
 #[no_mangle]
@@ -532,97 +502,66 @@ pub unsafe extern "C" fn AUTDDeleteGain(gain: ConstPtr) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDModulationStatic(out: *mut ConstPtr, amp: float) {
-    unsafe {
-        let m: Box<Box<M>> = Box::new(Box::new(ModulationWrap {
-            modulation: Box::new(Static::with_amp(amp)),
-        }));
-        *out = Box::into_raw(m) as _;
-    }
+pub unsafe extern "C" fn AUTDModulationStatic(amp: float) -> ConstPtr {
+    Box::into_raw(ModulationWrap::new(Static::with_amp(amp))) as _
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDModulationSine(
-    out: *mut ConstPtr,
-    freq: i32,
-    amp: float,
-    offset: float,
-) {
-    unsafe {
-        let m: Box<Box<M>> = Box::new(Box::new(ModulationWrap {
-            modulation: Box::new(Sine::with_params(freq as _, amp, offset)),
-        }));
-        *out = Box::into_raw(m) as _;
-    }
+pub unsafe extern "C" fn AUTDModulationSine(freq: u32, amp: float, offset: float) -> ConstPtr {
+    Box::into_raw(ModulationWrap::new(Sine::with_params(
+        freq as _, amp, offset,
+    ))) as _
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDModulationSineSquared(
-    out: *mut ConstPtr,
-    freq: i32,
+    freq: u32,
     amp: float,
     offset: float,
-) {
-    unsafe {
-        let m: Box<Box<M>> = Box::new(Box::new(ModulationWrap {
-            modulation: Box::new(SinePressure::with_params(freq as _, amp, offset)),
-        }));
-        *out = Box::into_raw(m) as _;
-    }
+) -> ConstPtr {
+    Box::into_raw(ModulationWrap::new(SinePressure::with_params(
+        freq as _, amp, offset,
+    ))) as _
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDModulationSineLegacy(
-    out: *mut ConstPtr,
     freq: float,
     amp: float,
     offset: float,
-) {
-    unsafe {
-        let m: Box<Box<M>> = Box::new(Box::new(ModulationWrap {
-            modulation: Box::new(SineLegacy::with_params(freq, amp, offset)),
-        }));
-        *out = Box::into_raw(m) as _;
-    }
+) -> ConstPtr {
+    Box::into_raw(ModulationWrap::new(SineLegacy::with_params(
+        freq, amp, offset,
+    ))) as _
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDModulationSquare(
-    out: *mut ConstPtr,
-    freq: i32,
+    freq: u32,
     low: float,
     high: float,
     duty: float,
-) {
-    unsafe {
-        let m: Box<Box<M>> = Box::new(Box::new(ModulationWrap {
-            modulation: Box::new(Square::with_params(freq as _, low, high, duty)),
-        }));
-        *out = Box::into_raw(m) as _;
-    }
+) -> ConstPtr {
+    Box::into_raw(ModulationWrap::new(Square::with_params(
+        freq as _, low, high, duty,
+    ))) as _
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDModulationCustom(
-    out: *mut ConstPtr,
     amp: *const float,
     size: u64,
     freq_div: u32,
-) {
-    unsafe {
-        let m: Box<Box<M>> = Box::new(Box::new(ModulationWrap {
-            modulation: Box::new(CustomModulation::new(amp, size, freq_div)),
-        }));
-        *out = Box::into_raw(m) as _;
-    }
+) -> ConstPtr {
+    Box::into_raw(ModulationWrap::new(CustomModulation::new(
+        amp, size, freq_div,
+    ))) as _
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDModulationSamplingFrequencyDivision(m: ConstPtr) -> u32 {
     unsafe {
-        (m as *const Box<M>)
-            .as_ref()
-            .unwrap()
+        cast_without_ownership!(m, Box<M>)
             .modulation()
             .sampling_frequency_division() as _
     }
@@ -631,9 +570,7 @@ pub unsafe extern "C" fn AUTDModulationSamplingFrequencyDivision(m: ConstPtr) ->
 #[no_mangle]
 pub unsafe extern "C" fn AUTDModulationSetSamplingFrequencyDivision(m: ConstPtr, freq_div: u32) {
     unsafe {
-        (m as *mut Box<M>)
-            .as_mut()
-            .unwrap()
+        cast_without_ownership_mut!(m, Box<M>)
             .modulation_mut()
             .set_sampling_frequency_division(freq_div)
     }
@@ -642,9 +579,7 @@ pub unsafe extern "C" fn AUTDModulationSetSamplingFrequencyDivision(m: ConstPtr,
 #[no_mangle]
 pub unsafe extern "C" fn AUTDModulationSamplingFrequency(m: ConstPtr) -> float {
     unsafe {
-        (m as *const Box<M>)
-            .as_ref()
-            .unwrap()
+        cast_without_ownership!(m, Box<M>)
             .modulation()
             .sampling_freq()
     }
@@ -658,19 +593,14 @@ pub unsafe extern "C" fn AUTDDeleteModulation(m: ConstPtr) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDFocusSTM(out: *mut ConstPtr) {
-    unsafe {
-        let stm: Box<Box<SF>> = FocusSTMWrap::new();
-        *out = Box::into_raw(stm) as _;
-    }
+pub unsafe extern "C" fn AUTDFocusSTM() -> ConstPtr {
+    Box::into_raw(FocusSTMWrap::new()) as _
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDFocusSTMAdd(stm: ConstPtr, x: float, y: float, z: float, shift: u8) {
     unsafe {
-        (stm as *mut Box<SF>)
-            .as_mut()
-            .unwrap()
+        cast_without_ownership_mut!(stm, Box<SF>)
             .stm_mut()
             .add_with_shift(Vector3::new(x, y, z), shift)
     }
@@ -679,9 +609,7 @@ pub unsafe extern "C" fn AUTDFocusSTMAdd(stm: ConstPtr, x: float, y: float, z: f
 #[no_mangle]
 pub unsafe extern "C" fn AUTDFocusSTMSetFrequency(stm: ConstPtr, freq: float) -> float {
     unsafe {
-        (stm as *mut Box<SF>)
-            .as_mut()
-            .unwrap()
+        cast_without_ownership_mut!(stm, Box<SF>)
             .stm_mut()
             .set_freq(freq)
     }
@@ -690,7 +618,7 @@ pub unsafe extern "C" fn AUTDFocusSTMSetFrequency(stm: ConstPtr, freq: float) ->
 #[no_mangle]
 pub unsafe extern "C" fn AUTDFocusSTMGetStartIdx(stm: ConstPtr) -> i32 {
     unsafe {
-        match (stm as *mut Box<SF>).as_ref().unwrap().stm().start_idx() {
+        match cast_without_ownership!(stm, Box<SF>).stm().start_idx() {
             Some(idx) => idx as _,
             None => -1,
         }
@@ -700,7 +628,7 @@ pub unsafe extern "C" fn AUTDFocusSTMGetStartIdx(stm: ConstPtr) -> i32 {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDFocusSTMGetFinishIdx(stm: ConstPtr) -> i32 {
     unsafe {
-        match (stm as *mut Box<SF>).as_ref().unwrap().stm().finish_idx() {
+        match cast_without_ownership!(stm, Box<SF>).stm().finish_idx() {
             Some(idx) => idx as _,
             None => -1,
         }
@@ -711,15 +639,11 @@ pub unsafe extern "C" fn AUTDFocusSTMGetFinishIdx(stm: ConstPtr) -> i32 {
 pub unsafe extern "C" fn AUTDFocusSTMSetStartIdx(stm: ConstPtr, idx: i32) {
     unsafe {
         if idx < 0 {
-            (stm as *mut Box<SF>)
-                .as_mut()
-                .unwrap()
+            cast_without_ownership_mut!(stm, Box<SF>)
                 .stm_mut()
                 .set_start_idx(None)
         } else {
-            (stm as *mut Box<SF>)
-                .as_mut()
-                .unwrap()
+            cast_without_ownership_mut!(stm, Box<SF>)
                 .stm_mut()
                 .set_start_idx(Some(idx as _))
         }
@@ -730,15 +654,11 @@ pub unsafe extern "C" fn AUTDFocusSTMSetStartIdx(stm: ConstPtr, idx: i32) {
 pub unsafe extern "C" fn AUTDFocusSTMSetFinishIdx(stm: ConstPtr, idx: i32) {
     unsafe {
         if idx < 0 {
-            (stm as *mut Box<SF>)
-                .as_mut()
-                .unwrap()
+            cast_without_ownership_mut!(stm, Box<SF>)
                 .stm_mut()
                 .set_start_idx(None)
         } else {
-            (stm as *mut Box<SF>)
-                .as_mut()
-                .unwrap()
+            cast_without_ownership_mut!(stm, Box<SF>)
                 .stm_mut()
                 .set_finish_idx(Some(idx as _))
         }
@@ -747,26 +667,18 @@ pub unsafe extern "C" fn AUTDFocusSTMSetFinishIdx(stm: ConstPtr, idx: i32) {
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDFocusSTMFrequency(stm: ConstPtr) -> float {
-    unsafe { (stm as *mut Box<SF>).as_ref().unwrap().stm().freq() }
+    unsafe { cast_without_ownership!(stm, Box<SF>).stm().freq() }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDFocusSTMSamplingFrequency(stm: ConstPtr) -> float {
-    unsafe {
-        (stm as *mut Box<SF>)
-            .as_ref()
-            .unwrap()
-            .stm()
-            .sampling_freq()
-    }
+    unsafe { cast_without_ownership!(stm, Box<SF>).stm().sampling_freq() }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDFocusSTMSamplingFrequencyDivision(stm: ConstPtr) -> u32 {
     unsafe {
-        (stm as *mut Box<SF>)
-            .as_ref()
-            .unwrap()
+        cast_without_ownership!(stm, Box<SF>)
             .stm()
             .sampling_freq_div()
     }
@@ -775,9 +687,7 @@ pub unsafe extern "C" fn AUTDFocusSTMSamplingFrequencyDivision(stm: ConstPtr) ->
 #[no_mangle]
 pub unsafe extern "C" fn AUTDFocusSTMSetSamplingFrequencyDivision(stm: ConstPtr, freq_div: u32) {
     unsafe {
-        (stm as *mut Box<SF>)
-            .as_mut()
-            .unwrap()
+        cast_without_ownership_mut!(stm, Box<SF>)
             .stm_mut()
             .set_sampling_freq_div(freq_div)
     }
@@ -791,11 +701,8 @@ pub unsafe extern "C" fn AUTDDeleteFocusSTM(stm: ConstPtr) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGainSTM(out: *mut ConstPtr) {
-    unsafe {
-        let stm: Box<Box<SG>> = GainSTMWrap::new();
-        *out = Box::into_raw(stm) as _;
-    }
+pub unsafe extern "C" fn AUTDGainSTM() -> ConstPtr {
+    Box::into_raw(GainSTMWrap::new()) as _
 }
 
 #[no_mangle]
@@ -806,12 +713,36 @@ pub unsafe extern "C" fn AUTDGainSTMAdd(stm: ConstPtr, gain: ConstPtr) {
     }
 }
 
+#[repr(u8)]
+pub enum GainSTMMode {
+    PhaseDutyFull = 0,
+    PhaseFull = 1,
+    PhaseHalf = 2,
+}
+
+impl From<GainSTMMode> for autd3::prelude::Mode {
+    fn from(mode: GainSTMMode) -> Self {
+        match mode {
+            GainSTMMode::PhaseDutyFull => autd3::prelude::Mode::PhaseDutyFull,
+            GainSTMMode::PhaseFull => autd3::prelude::Mode::PhaseFull,
+            GainSTMMode::PhaseHalf => autd3::prelude::Mode::PhaseHalf,
+        }
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainSTMSetMode(stm: ConstPtr, mode: GainSTMMode) {
+    unsafe {
+        cast_without_ownership_mut!(stm, Box<SG>)
+            .stm_mut()
+            .set_mode(mode.into())
+    }
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainSTMSetFrequency(stm: ConstPtr, freq: float) -> float {
     unsafe {
-        (stm as *mut Box<SG>)
-            .as_mut()
-            .unwrap()
+        cast_without_ownership_mut!(stm, Box<SG>)
             .stm_mut()
             .set_freq(freq)
     }
@@ -820,7 +751,7 @@ pub unsafe extern "C" fn AUTDGainSTMSetFrequency(stm: ConstPtr, freq: float) -> 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainSTMGetStartIdx(stm: ConstPtr) -> i32 {
     unsafe {
-        match (stm as *mut Box<SG>).as_ref().unwrap().stm().start_idx() {
+        match cast_without_ownership!(stm, Box<SG>).stm().start_idx() {
             Some(idx) => idx as _,
             None => -1,
         }
@@ -830,7 +761,7 @@ pub unsafe extern "C" fn AUTDGainSTMGetStartIdx(stm: ConstPtr) -> i32 {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainSTMGetFinishIdx(stm: ConstPtr) -> i32 {
     unsafe {
-        match (stm as *mut Box<SG>).as_ref().unwrap().stm().finish_idx() {
+        match cast_without_ownership!(stm, Box<SG>).stm().finish_idx() {
             Some(idx) => idx as _,
             None => -1,
         }
@@ -841,15 +772,11 @@ pub unsafe extern "C" fn AUTDGainSTMGetFinishIdx(stm: ConstPtr) -> i32 {
 pub unsafe extern "C" fn AUTDGainSTMSetStartIdx(stm: ConstPtr, idx: i32) {
     unsafe {
         if idx < 0 {
-            (stm as *mut Box<SG>)
-                .as_mut()
-                .unwrap()
+            cast_without_ownership_mut!(stm, Box<SG>)
                 .stm_mut()
                 .set_start_idx(None)
         } else {
-            (stm as *mut Box<SG>)
-                .as_mut()
-                .unwrap()
+            cast_without_ownership_mut!(stm, Box<SG>)
                 .stm_mut()
                 .set_start_idx(Some(idx as _))
         }
@@ -860,15 +787,11 @@ pub unsafe extern "C" fn AUTDGainSTMSetStartIdx(stm: ConstPtr, idx: i32) {
 pub unsafe extern "C" fn AUTDGainSTMSetFinishIdx(stm: ConstPtr, idx: i32) {
     unsafe {
         if idx < 0 {
-            (stm as *mut Box<SG>)
-                .as_mut()
-                .unwrap()
+            cast_without_ownership_mut!(stm, Box<SG>)
                 .stm_mut()
                 .set_start_idx(None)
         } else {
-            (stm as *mut Box<SG>)
-                .as_mut()
-                .unwrap()
+            cast_without_ownership_mut!(stm, Box<SG>)
                 .stm_mut()
                 .set_finish_idx(Some(idx as _))
         }
@@ -877,26 +800,18 @@ pub unsafe extern "C" fn AUTDGainSTMSetFinishIdx(stm: ConstPtr, idx: i32) {
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainSTMFrequency(stm: ConstPtr) -> float {
-    unsafe { (stm as *mut Box<SG>).as_ref().unwrap().stm().freq() }
+    unsafe { cast_without_ownership!(stm, Box<SG>).stm().freq() }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainSTMSamplingFrequency(stm: ConstPtr) -> float {
-    unsafe {
-        (stm as *mut Box<SG>)
-            .as_ref()
-            .unwrap()
-            .stm()
-            .sampling_freq()
-    }
+    unsafe { cast_without_ownership!(stm, Box<SG>).stm().sampling_freq() }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainSTMSamplingFrequencyDivision(stm: ConstPtr) -> u32 {
     unsafe {
-        (stm as *mut Box<SG>)
-            .as_ref()
-            .unwrap()
+        cast_without_ownership!(stm, Box<SG>)
             .stm()
             .sampling_freq_div()
     }
@@ -905,9 +820,7 @@ pub unsafe extern "C" fn AUTDGainSTMSamplingFrequencyDivision(stm: ConstPtr) -> 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainSTMSetSamplingFrequencyDivision(stm: ConstPtr, freq_div: u32) {
     unsafe {
-        (stm as *mut Box<SG>)
-            .as_mut()
-            .unwrap()
+        cast_without_ownership_mut!(stm, Box<SG>)
             .stm_mut()
             .set_sampling_freq_div(freq_div)
     }
@@ -921,86 +834,87 @@ pub unsafe extern "C" fn AUTDDeleteGainSTM(stm: ConstPtr) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDSynchronize(out: *mut ConstPtr) {
-    unsafe {
-        let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(Synchronize::new()));
-        *out = Box::into_raw(m) as _;
-    }
+pub unsafe extern "C" fn AUTDSynchronize() -> ConstPtr {
+    let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(Synchronize::new()));
+    Box::into_raw(m) as _
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDClear(out: *mut ConstPtr) {
-    unsafe {
-        let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(Clear::new()));
-        *out = Box::into_raw(m) as _;
-    }
+pub unsafe extern "C" fn AUTDClear() -> ConstPtr {
+    let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(Clear::new()));
+    Box::into_raw(m) as _
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDUpdateFlags(out: *mut ConstPtr) {
-    unsafe {
-        let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(UpdateFlag::new()));
-        *out = Box::into_raw(m) as _;
-    }
+pub unsafe extern "C" fn AUTDUpdateFlags() -> ConstPtr {
+    let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(UpdateFlag::new()));
+    Box::into_raw(m) as _
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDStop(out: *mut ConstPtr) {
-    unsafe {
-        let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(Stop::new()));
-        *out = Box::into_raw(m) as _;
-    }
+pub unsafe extern "C" fn AUTDStop() -> ConstPtr {
+    let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(Stop::new()));
+    Box::into_raw(m) as _
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDModDelayConfig(out: *mut ConstPtr) {
-    unsafe {
-        let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(ModDelay::new()));
-        *out = Box::into_raw(m) as _;
-    }
+pub unsafe extern "C" fn AUTDModDelayConfig() -> ConstPtr {
+    let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(ModDelay::new()));
+    Box::into_raw(m) as _
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDDeleteSpecialData(special: ConstPtr) {
-    unsafe {
-        let _ = Box::from_raw(out as *mut Box<dyn DynamicDatagram>);
-    }
+    let _ = Box::from_raw(special as *mut Box<dyn DynamicDatagram>);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDCreateSilencer(out: *mut ConstPtr, step: u16) {
-    unsafe {
-        let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(SilencerConfig::new(step)));
-        *out = Box::into_raw(m) as _;
-    }
+pub unsafe extern "C" fn AUTDCreateSilencer(step: u16) -> ConstPtr {
+    let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(SilencerConfig::new(step)));
+    Box::into_raw(m) as _
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDDeleteSilencer(silencer: ConstPtr) {
     unsafe {
-        let _ = Box::from_raw(out as *mut Box<dyn DynamicDatagram>);
+        let _ = Box::from_raw(silencer as *mut Box<dyn DynamicDatagram>);
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDCreateAmplitudes(out: *mut ConstPtr, amp: float) {
-    unsafe {
-        let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(Amplitudes::uniform(amp)));
-        *out = Box::into_raw(m) as _;
-    }
+pub unsafe extern "C" fn AUTDCreateAmplitudes(amp: float) -> ConstPtr {
+    let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(Amplitudes::uniform(amp)));
+    Box::into_raw(m) as _
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDDeleteAmplitudes(amplitudes: ConstPtr) {
-    unsafe {
-        let _ = Box::from_raw(out as *mut Box<dyn DynamicDatagram>);
+    let _ = Box::from_raw(amplitudes as *mut Box<dyn DynamicDatagram>);
+}
+
+#[repr(u8)]
+pub enum TransMode {
+    Legacy = 0,
+    Advanced = 1,
+    AdvancedPhase = 2,
+}
+
+impl From<TransMode> for autd3capi_common::dynamic_transducer::TransMode {
+    fn from(value: TransMode) -> Self {
+        match value {
+            TransMode::Legacy => autd3capi_common::dynamic_transducer::TransMode::Legacy,
+            TransMode::Advanced => autd3capi_common::dynamic_transducer::TransMode::Advanced,
+            TransMode::AdvancedPhase => {
+                autd3capi_common::dynamic_transducer::TransMode::AdvancedPhase
+            }
+        }
     }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDSend(
     cnt: ConstPtr,
-    mode: u8,
+    mode: TransMode,
     header: ConstPtr,
     body: ConstPtr,
     timeout_ns: i64,
@@ -1011,50 +925,46 @@ pub unsafe extern "C" fn AUTDSend(
     } else {
         Some(Duration::from_nanos(timeout_ns as _))
     };
-    if let Some(mode) = to_mode(mode) {
-        unsafe {
-            if !header.is_null() && !body.is_null() {
-                let header = (header as *mut Box<dyn DynamicDatagram>).as_mut().unwrap();
-                let body = (body as *mut Box<dyn DynamicDatagram>).as_mut().unwrap();
-                try_or_return!(
-                    (cnt as *mut Cnt)
-                        .as_mut()
-                        .unwrap()
-                        .send_with_timeout((mode, header, body), timeout),
-                    err
-                );
-            } else if !header.is_null() {
-                let header = (header as *mut Box<dyn DynamicDatagram>).as_mut().unwrap();
-                try_or_return!(
-                    (cnt as *mut Cnt)
-                        .as_mut()
-                        .unwrap()
-                        .send_with_timeout((mode, header), timeout),
-                    err
-                );
-            } else if !body.is_null() {
-                let body = (body as *mut Box<dyn DynamicDatagram>).as_mut().unwrap();
-                try_or_return!(
-                    (cnt as *mut Cnt)
-                        .as_mut()
-                        .unwrap()
-                        .send_with_timeout((mode, body), timeout),
-                    err
-                );
-            } else {
-                return FALSE;
-            }
+    let mode = mode.into();
+    unsafe {
+        let res = if !header.is_null() && !body.is_null() {
+            let header = (header as *mut Box<dyn DynamicDatagram>).as_mut().unwrap();
+            let body = (body as *mut Box<dyn DynamicDatagram>).as_mut().unwrap();
+            try_or_return!(
+                cast_without_ownership_mut!(cnt, Cnt)
+                    .send_with_timeout((mode, header, body), timeout),
+                err,
+                ERR
+            )
+        } else if !header.is_null() {
+            let header = (header as *mut Box<dyn DynamicDatagram>).as_mut().unwrap();
+            try_or_return!(
+                cast_without_ownership_mut!(cnt, Cnt).send_with_timeout((mode, header), timeout),
+                err,
+                ERR
+            )
+        } else if !body.is_null() {
+            let body = (body as *mut Box<dyn DynamicDatagram>).as_mut().unwrap();
+            try_or_return!(
+                cast_without_ownership_mut!(cnt, Cnt).send_with_timeout((mode, body), timeout),
+                err,
+                ERR
+            )
+        } else {
+            return FALSE;
+        };
+        if res {
+            TRUE
+        } else {
+            FALSE
         }
-        TRUE
-    } else {
-        FALSE
     }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDSendSpecial(
     cnt: ConstPtr,
-    mode: u8,
+    mode: TransMode,
     special: ConstPtr,
     timeout_ns: i64,
     err: *mut c_char,
@@ -1064,54 +974,71 @@ pub unsafe extern "C" fn AUTDSendSpecial(
     } else {
         Some(Duration::from_nanos(timeout_ns as _))
     };
-    if let Some(mode) = to_mode(mode) {
-        unsafe {
-            let special = (special as *mut Box<dyn DynamicDatagram>).as_mut().unwrap();
-            try_or_return!(
-                (cnt as *mut Cnt)
-                    .as_mut()
-                    .unwrap()
-                    .send_with_timeout((mode, special), timeout),
-                err
-            );
+    let mode = mode.into();
+    unsafe {
+        let special = (special as *mut Box<dyn DynamicDatagram>).as_mut().unwrap();
+        if try_or_return!(
+            cast_without_ownership_mut!(cnt, Cnt).send_with_timeout((mode, special), timeout),
+            err,
+            ERR
+        ) {
+            TRUE
+        } else {
+            FALSE
         }
-        TRUE
-    } else {
-        FALSE
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkDebug(out: *mut ConstPtr) {
-    unsafe {
-        *out = Box::into_raw(Box::new(Debug::builder())) as _;
+pub unsafe extern "C" fn AUTDLinkDebug() -> ConstPtr {
+    Box::into_raw(Box::new(Debug::builder())) as _
+}
+
+#[repr(u8)]
+pub enum Level {
+    Critical = 0,
+    Error = 1,
+    Warn = 2,
+    Info = 3,
+    Debug = 4,
+    Trace = 5,
+    Off = 6,
+}
+
+impl From<Level> for autd3::prelude::LevelFilter {
+    fn from(level: Level) -> Self {
+        match level {
+            Level::Critical => LevelFilter::MoreSevereEqual(autd3::prelude::Level::Critical),
+            Level::Error => LevelFilter::MoreSevereEqual(autd3::prelude::Level::Error),
+            Level::Warn => LevelFilter::MoreSevereEqual(autd3::prelude::Level::Warn),
+            Level::Info => LevelFilter::MoreSevereEqual(autd3::prelude::Level::Info),
+            Level::Debug => LevelFilter::MoreSevereEqual(autd3::prelude::Level::Debug),
+            Level::Trace => LevelFilter::MoreSevereEqual(autd3::prelude::Level::Trace),
+            Level::Off => LevelFilter::Off,
+        }
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkDebugLogLevel(builder: ConstPtr, level: u16) {
-    unsafe {
-        if let Some(level) = to_level(level) {
-            (builder as *mut DebugBuilder)
-                .as_mut()
-                .unwrap()
-                .level(level);
-        }
-    }
+pub unsafe extern "C" fn AUTDLinkDebugLogLevel(builder: ConstPtr, level: Level) -> ConstPtr {
+    Box::into_raw(Box::new(
+        Box::from_raw(builder as *mut DebugBuilder).level(level.into()),
+    )) as _
 }
+
 struct Callback(ConstPtr);
 unsafe impl Send for Callback {}
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDLinkDebugLogFunc(
     builder: ConstPtr,
-    level: u16,
+    level: Level,
     out_func: ConstPtr,
     flush_func: ConstPtr,
-) {
+) -> ConstPtr {
     unsafe {
         if out_func.is_null() || flush_func.is_null() {
-            return;
+            return builder;
         }
 
         let out_f = Arc::new(Mutex::new(Callback(out_func)));
@@ -1131,32 +1058,29 @@ pub unsafe extern "C" fn AUTDLinkDebugLogFunc(
             Ok(())
         };
 
-        let level = to_level(level).unwrap_or(Level::Debug);
-        let logger = get_logger_with_custom_func(level, out_func, flush_func);
+        let logger = get_logger_with_custom_func(level.into(), out_func, flush_func);
 
-        (builder as *mut DebugBuilder)
-            .as_mut()
-            .unwrap()
-            .logger(logger);
+        Box::into_raw(Box::new(
+            Box::from_raw(builder as *mut DebugBuilder).logger(logger),
+        )) as _
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkDebugTimeout(builder: ConstPtr, timeout_ns: u64) {
+pub unsafe extern "C" fn AUTDLinkDebugTimeout(builder: ConstPtr, timeout_ns: u64) -> ConstPtr {
     unsafe {
-        (builder as *mut DebugBuilder)
-            .as_mut()
-            .unwrap()
-            .timeout(Duration::from_nanos(timeout_ns));
+        Box::into_raw(Box::new(
+            Box::from_raw(builder as *mut DebugBuilder).timeout(Duration::from_nanos(timeout_ns)),
+        )) as _
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkDebugBuild(out: *mut ConstPtr, builder: ConstPtr) {
+pub unsafe extern "C" fn AUTDLinkDebugBuild(builder: ConstPtr) -> ConstPtr {
     unsafe {
         let builder = Box::from_raw(builder as *mut DebugBuilder);
         let link: Box<Box<L>> = Box::new(Box::new(builder.build()));
-        *out = Box::into_raw(link) as _;
+        Box::into_raw(link) as _
     }
 }
 
@@ -1167,30 +1091,25 @@ mod tests {
     use std::ffi::CStr;
 
     unsafe fn make_debug_link() -> *const c_void {
-        let mut builder: *const c_void = std::ptr::null();
-        AUTDLinkDebug(&mut builder as *mut _);
-        AUTDLinkDebugLogLevel(builder, 4);
-        AUTDLinkDebugTimeout(builder, 0);
-        let mut link: *const c_void = std::ptr::null();
-        AUTDLinkDebugBuild(&mut link as *mut _, builder as _);
-        link
+        let builder = AUTDLinkDebug();
+        let builder = AUTDLinkDebugLogLevel(builder, Level::Debug);
+        let builder = AUTDLinkDebugTimeout(builder, 0);
+        AUTDLinkDebugBuild(builder as _)
     }
 
     #[test]
     fn basic() {
         unsafe {
-            let mut geo_builder: *const c_void = std::ptr::null();
-            AUTDCreateGeometryBuilder(&mut geo_builder as _);
+            let geo_builder = AUTDCreateGeometryBuilder();
             AUTDAddDevice(geo_builder, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
             AUTDAddDeviceQuaternion(geo_builder, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
-            let mut geometry: *const c_void = std::ptr::null();
             let mut err = vec![c_char::default(); 256];
-            AUTDBuildGeometry(&mut geometry as _, geo_builder, err.as_mut_ptr());
+            let geometry = AUTDBuildGeometry(geo_builder, err.as_mut_ptr());
 
             let link = make_debug_link();
 
-            let mut cnt: *const c_void = std::ptr::null();
-            if AUTDOpenController(&mut cnt as _, geometry, link, err.as_mut_ptr()) == -1 {
+            let cnt = AUTDOpenController(geometry, link, err.as_mut_ptr());
+            if cnt == NULL {
                 eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
             }
 
@@ -1205,13 +1124,13 @@ mod tests {
             dbg!(AUTDGetSoundSpeed(cnt));
 
             let f = 70e3;
-            if AUTDSetTransFrequency(cnt, 0, f, err.as_mut_ptr()) == -1 {
+            if !AUTDSetTransFrequency(cnt, 0, f, err.as_mut_ptr()) {
                 eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
             }
             dbg!(AUTDGetTransFrequency(cnt, 0));
 
             let f = 4096;
-            if AUTDSetTransCycle(cnt, 0, f, err.as_mut_ptr()) == -1 {
+            if !AUTDSetTransCycle(cnt, 0, f, err.as_mut_ptr()) {
                 eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
             }
             dbg!(AUTDGetTransCycle(cnt, 0));
@@ -1228,7 +1147,7 @@ mod tests {
             dbg!(num_devices);
 
             let mut fpga_info = vec![0xFFu8; num_devices];
-            if AUTDGetFPGAInfo(cnt, fpga_info.as_mut_ptr() as _, err.as_mut_ptr()) == -1 {
+            if !AUTDGetFPGAInfo(cnt, fpga_info.as_mut_ptr() as _, err.as_mut_ptr()) {
                 eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
             }
             dbg!(fpga_info);
@@ -1254,163 +1173,248 @@ mod tests {
             AUTDSetTransModDelay(cnt, 0, delay);
             assert_eq!(delay, AUTDGetTransModDelay(cnt, 0));
 
-            let mut firm_p: *const c_void = std::ptr::null();
-            if AUTDGetFirmwareInfoListPointer(cnt, &mut firm_p as _, err.as_mut_ptr()) == -1 {
+            let firm_p = AUTDGetFirmwareInfoListPointer(cnt, err.as_mut_ptr());
+            if firm_p == NULL {
                 eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
             }
-            let mut info = vec![c_char::default(); 256];
-            let mut is_valid = false;
-            let mut is_supported = false;
-            AUTDGetFirmwareInfo(
-                firm_p,
-                0,
-                info.as_mut_ptr(),
-                &mut is_valid as _,
-                &mut is_supported as _,
-            );
-            dbg!(CStr::from_ptr(info.as_ptr()).to_str().unwrap());
-            dbg!(is_valid);
-            dbg!(is_supported);
+            for i in 0..num_devices {
+                let mut info = vec![c_char::default(); 256];
+                let mut is_valid = false;
+                let mut is_supported = false;
+                AUTDGetFirmwareInfo(
+                    firm_p,
+                    i as _,
+                    info.as_mut_ptr(),
+                    &mut is_valid as _,
+                    &mut is_supported as _,
+                );
+                dbg!(CStr::from_ptr(info.as_ptr()).to_str().unwrap());
+                dbg!(is_valid);
+                dbg!(is_supported);
+            }
             AUTDFreeFirmwareInfoListPointer(firm_p);
 
             {
-                let mut g: *const c_void = std::ptr::null();
-                AUTDGainNull(&mut g as _);
-                if AUTDSend(cnt, 0, std::ptr::null(), g, -1, err.as_mut_ptr()) == -1 {
+                let g = AUTDGainNull();
+                if AUTDSend(
+                    cnt,
+                    TransMode::Legacy,
+                    std::ptr::null(),
+                    g,
+                    -1,
+                    err.as_mut_ptr(),
+                ) == ERR
+                {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
                 AUTDDeleteGain(g);
             }
 
             {
-                let mut g: *const c_void = std::ptr::null();
-                AUTDGainGrouped(&mut g as _);
+                let g = AUTDGainGrouped();
 
-                let mut g0: *const c_void = std::ptr::null();
-                AUTDGainNull(&mut g0 as _);
+                let g0 = AUTDGainNull();
                 AUTDGainGroupedAdd(g, 0, g0);
 
-                let mut g1: *const c_void = std::ptr::null();
-                AUTDGainNull(&mut g1 as _);
+                let g1 = AUTDGainNull();
                 AUTDGainGroupedAdd(g, 1, g1);
 
-                if AUTDSend(cnt, 0, std::ptr::null(), g, -1, err.as_mut_ptr()) == -1 {
+                if AUTDSend(
+                    cnt,
+                    TransMode::Legacy,
+                    std::ptr::null(),
+                    g,
+                    -1,
+                    err.as_mut_ptr(),
+                ) == ERR
+                {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
                 AUTDDeleteGain(g);
             }
 
             {
-                let mut g: *const c_void = std::ptr::null();
-                AUTDGainFocus(&mut g as _, 0., 0., 0., 1.);
-                if AUTDSend(cnt, 0, std::ptr::null(), g, -1, err.as_mut_ptr()) == -1 {
+                let g = AUTDGainFocus(0., 0., 0., 1.);
+                if AUTDSend(
+                    cnt,
+                    TransMode::Legacy,
+                    std::ptr::null(),
+                    g,
+                    -1,
+                    err.as_mut_ptr(),
+                ) == ERR
+                {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
                 AUTDDeleteGain(g);
             }
 
             {
-                let mut g: *const c_void = std::ptr::null();
-                AUTDGainBesselBeam(&mut g as _, 0., 0., 0., 0., 0., 1., 1., 1.);
-                if AUTDSend(cnt, 0, std::ptr::null(), g, -1, err.as_mut_ptr()) == -1 {
+                let g = AUTDGainBesselBeam(0., 0., 0., 0., 0., 1., 1., 1.);
+                if AUTDSend(
+                    cnt,
+                    TransMode::Legacy,
+                    std::ptr::null(),
+                    g,
+                    -1,
+                    err.as_mut_ptr(),
+                ) == ERR
+                {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
                 AUTDDeleteGain(g);
             }
 
             {
-                let mut g: *const c_void = std::ptr::null();
-                AUTDGainPlaneWave(&mut g as _, 0., 0., 1., 1.);
-                if AUTDSend(cnt, 0, std::ptr::null(), g, -1, err.as_mut_ptr()) == -1 {
+                let g = AUTDGainPlaneWave(0., 0., 1., 1.);
+                if AUTDSend(
+                    cnt,
+                    TransMode::Legacy,
+                    std::ptr::null(),
+                    g,
+                    -1,
+                    err.as_mut_ptr(),
+                ) == ERR
+                {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
                 AUTDDeleteGain(g);
             }
 
             {
-                let mut g: *const c_void = std::ptr::null();
-                AUTDGainTransducerTest(&mut g as _);
+                let g = AUTDGainTransducerTest();
                 AUTDGainTransducerTestSet(g, 0, 1., 1.);
-                if AUTDSend(cnt, 0, std::ptr::null(), g, -1, err.as_mut_ptr()) == -1 {
+                if AUTDSend(
+                    cnt,
+                    TransMode::Legacy,
+                    std::ptr::null(),
+                    g,
+                    -1,
+                    err.as_mut_ptr(),
+                ) == ERR
+                {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
                 AUTDDeleteGain(g);
             }
 
             {
-                let mut g: *const c_void = std::ptr::null();
                 let amp = vec![1.0; num_transducers as _];
                 let phase = vec![0.0; num_transducers as _];
-                AUTDGainCustom(
-                    &mut g as _,
-                    amp.as_ptr(),
-                    phase.as_ptr(),
-                    num_transducers as _,
-                );
-                if AUTDSend(cnt, 0, std::ptr::null(), g, -1, err.as_mut_ptr()) == -1 {
+                let g = AUTDGainCustom(amp.as_ptr(), phase.as_ptr(), num_transducers as _);
+                if AUTDSend(
+                    cnt,
+                    TransMode::Legacy,
+                    std::ptr::null(),
+                    g,
+                    -1,
+                    err.as_mut_ptr(),
+                ) == ERR
+                {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
                 AUTDDeleteGain(g);
             }
 
             {
-                let mut m: *const c_void = std::ptr::null();
-                AUTDModulationStatic(&mut m as _, 1.);
-                if AUTDSend(cnt, 0, m, std::ptr::null(), -1, err.as_mut_ptr()) == -1 {
+                let m = AUTDModulationStatic(1.);
+                if AUTDSend(
+                    cnt,
+                    TransMode::Legacy,
+                    m,
+                    std::ptr::null(),
+                    -1,
+                    err.as_mut_ptr(),
+                ) == ERR
+                {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
                 AUTDDeleteModulation(m);
             }
 
             {
-                let mut m: *const c_void = std::ptr::null();
-                AUTDModulationSine(&mut m as _, 150, 1., 0.5);
-                if AUTDSend(cnt, 0, m, std::ptr::null(), -1, err.as_mut_ptr()) == -1 {
+                let m = AUTDModulationSine(150, 1., 0.5);
+                if AUTDSend(
+                    cnt,
+                    TransMode::Legacy,
+                    m,
+                    std::ptr::null(),
+                    -1,
+                    err.as_mut_ptr(),
+                ) == ERR
+                {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
                 AUTDDeleteModulation(m);
             }
 
             {
-                let mut m: *const c_void = std::ptr::null();
-                AUTDModulationSineSquared(&mut m as _, 150, 1., 0.5);
-                if AUTDSend(cnt, 0, m, std::ptr::null(), -1, err.as_mut_ptr()) == -1 {
+                let m = AUTDModulationSineSquared(150, 1., 0.5);
+                if AUTDSend(
+                    cnt,
+                    TransMode::Legacy,
+                    m,
+                    std::ptr::null(),
+                    -1,
+                    err.as_mut_ptr(),
+                ) == ERR
+                {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
                 AUTDDeleteModulation(m);
             }
 
             {
-                let mut m: *const c_void = std::ptr::null();
-                AUTDModulationSineLegacy(&mut m as _, 150., 1., 0.5);
-                if AUTDSend(cnt, 0, m, std::ptr::null(), -1, err.as_mut_ptr()) == -1 {
+                let m = AUTDModulationSineLegacy(150., 1., 0.5);
+                if AUTDSend(
+                    cnt,
+                    TransMode::Legacy,
+                    m,
+                    std::ptr::null(),
+                    -1,
+                    err.as_mut_ptr(),
+                ) == ERR
+                {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
                 AUTDDeleteModulation(m);
             }
 
             {
-                let mut m: *const c_void = std::ptr::null();
-                AUTDModulationSquare(&mut m as _, 150, 0., 1., 0.5);
-                if AUTDSend(cnt, 0, m, std::ptr::null(), -1, err.as_mut_ptr()) == -1 {
+                let m = AUTDModulationSquare(150, 0., 1., 0.5);
+                if AUTDSend(
+                    cnt,
+                    TransMode::Legacy,
+                    m,
+                    std::ptr::null(),
+                    -1,
+                    err.as_mut_ptr(),
+                ) == ERR
+                {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
                 AUTDDeleteModulation(m);
             }
 
             {
-                let mut m: *const c_void = std::ptr::null();
                 let amp = vec![1.0; 10];
-                AUTDModulationCustom(&mut m as _, amp.as_ptr(), amp.len() as _, 5000);
-                if AUTDSend(cnt, 0, m, std::ptr::null(), -1, err.as_mut_ptr()) == -1 {
+                let m = AUTDModulationCustom(amp.as_ptr(), amp.len() as _, 5000);
+                if AUTDSend(
+                    cnt,
+                    TransMode::Legacy,
+                    m,
+                    std::ptr::null(),
+                    -1,
+                    err.as_mut_ptr(),
+                ) == ERR
+                {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
                 AUTDDeleteModulation(m);
             }
 
             {
-                let mut m: *const c_void = std::ptr::null();
-                AUTDModulationStatic(&mut m as _, 1.);
+                let m = AUTDModulationStatic(1.);
                 let div = 1000;
                 AUTDModulationSetSamplingFrequencyDivision(m, div);
                 assert_eq!(div, AUTDModulationSamplingFrequencyDivision(m));
@@ -1419,8 +1423,7 @@ mod tests {
             }
 
             {
-                let mut stm: *const c_void = std::ptr::null();
-                AUTDFocusSTM(&mut stm as _);
+                let stm = AUTDFocusSTM();
                 AUTDFocusSTMAdd(stm, 0., 0., 0., 0);
                 AUTDFocusSTMAdd(stm, 0., 0., 0., 0);
 
@@ -1439,7 +1442,15 @@ mod tests {
                 assert_eq!(start_idx, AUTDFocusSTMGetStartIdx(stm));
                 assert_eq!(finish_idx, AUTDFocusSTMGetFinishIdx(stm));
 
-                if AUTDSend(cnt, 0, std::ptr::null(), stm, -1, err.as_mut_ptr()) == -1 {
+                if AUTDSend(
+                    cnt,
+                    TransMode::Legacy,
+                    std::ptr::null(),
+                    stm,
+                    -1,
+                    err.as_mut_ptr(),
+                ) == ERR
+                {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
 
@@ -1447,12 +1458,9 @@ mod tests {
             }
 
             {
-                let mut stm: *const c_void = std::ptr::null();
-                AUTDGainSTM(&mut stm as _);
-                let mut g0: *const c_void = std::ptr::null();
-                AUTDGainNull(&mut g0 as _);
-                let mut g1: *const c_void = std::ptr::null();
-                AUTDGainNull(&mut g1 as _);
+                let stm = AUTDGainSTM();
+                let g0 = AUTDGainNull();
+                let g1 = AUTDGainNull();
                 AUTDGainSTMAdd(stm, g0);
                 AUTDGainSTMAdd(stm, g1);
 
@@ -1471,7 +1479,15 @@ mod tests {
                 assert_eq!(start_idx, AUTDGainSTMGetStartIdx(stm));
                 assert_eq!(finish_idx, AUTDGainSTMGetFinishIdx(stm));
 
-                if AUTDSend(cnt, 0, std::ptr::null(), stm, -1, err.as_mut_ptr()) == -1 {
+                if AUTDSend(
+                    cnt,
+                    TransMode::Legacy,
+                    std::ptr::null(),
+                    stm,
+                    -1,
+                    err.as_mut_ptr(),
+                ) == ERR
+                {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
 
@@ -1479,10 +1495,9 @@ mod tests {
             }
 
             {
-                let mut s: *const c_void = std::ptr::null();
-                AUTDSynchronize(&mut s as _);
+                let s = AUTDSynchronize();
 
-                if AUTDSendSpecial(cnt, 0, s, -1, err.as_mut_ptr()) == -1 {
+                if AUTDSendSpecial(cnt, TransMode::Legacy, s, -1, err.as_mut_ptr()) == -1 {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
 
@@ -1490,10 +1505,8 @@ mod tests {
             }
 
             {
-                let mut s: *const c_void = std::ptr::null();
-                AUTDClear(&mut s as _);
-
-                if AUTDSendSpecial(cnt, 0, s, -1, err.as_mut_ptr()) == -1 {
+                let s = AUTDClear();
+                if AUTDSendSpecial(cnt, TransMode::Legacy, s, -1, err.as_mut_ptr()) == -1 {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
 
@@ -1501,10 +1514,8 @@ mod tests {
             }
 
             {
-                let mut s: *const c_void = std::ptr::null();
-                AUTDUpdateFlags(&mut s as _);
-
-                if AUTDSendSpecial(cnt, 0, s, -1, err.as_mut_ptr()) == -1 {
+                let s = AUTDUpdateFlags();
+                if AUTDSendSpecial(cnt, TransMode::Legacy, s, -1, err.as_mut_ptr()) == -1 {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
 
@@ -1512,10 +1523,8 @@ mod tests {
             }
 
             {
-                let mut s: *const c_void = std::ptr::null();
-                AUTDStop(&mut s as _);
-
-                if AUTDSendSpecial(cnt, 0, s, -1, err.as_mut_ptr()) == -1 {
+                let s = AUTDStop();
+                if AUTDSendSpecial(cnt, TransMode::Legacy, s, -1, err.as_mut_ptr()) == ERR {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
 
@@ -1523,10 +1532,8 @@ mod tests {
             }
 
             {
-                let mut s: *const c_void = std::ptr::null();
-                AUTDModDelayConfig(&mut s as _);
-
-                if AUTDSendSpecial(cnt, 0, s, -1, err.as_mut_ptr()) == -1 {
+                let s = AUTDModDelayConfig();
+                if AUTDSendSpecial(cnt, TransMode::Legacy, s, -1, err.as_mut_ptr()) == ERR {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
 
@@ -1534,10 +1541,16 @@ mod tests {
             }
 
             {
-                let mut s: *const c_void = std::ptr::null();
-                AUTDCreateSilencer(&mut s as _, 10);
-
-                if AUTDSend(cnt, 0, s, std::ptr::null(), -1, err.as_mut_ptr()) == -1 {
+                let s = AUTDCreateSilencer(10);
+                if AUTDSend(
+                    cnt,
+                    TransMode::Legacy,
+                    s,
+                    std::ptr::null(),
+                    -1,
+                    err.as_mut_ptr(),
+                ) == ERR
+                {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
 
@@ -1545,17 +1558,23 @@ mod tests {
             }
 
             {
-                let mut s: *const c_void = std::ptr::null();
-                AUTDCreateAmplitudes(&mut s as _, 1.);
-
-                if AUTDSend(cnt, 0, s, std::ptr::null(), -1, err.as_mut_ptr()) == -1 {
+                let s = AUTDCreateAmplitudes(1.);
+                if AUTDSend(
+                    cnt,
+                    TransMode::Legacy,
+                    s,
+                    std::ptr::null(),
+                    -1,
+                    err.as_mut_ptr(),
+                ) == ERR
+                {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
 
                 AUTDDeleteAmplitudes(s);
             }
 
-            if AUTDClose(cnt, err.as_mut_ptr()) == -1 {
+            if !AUTDClose(cnt, err.as_mut_ptr()) {
                 eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
             }
 

@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/05/2023
+ * Last Modified: 26/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -33,7 +33,7 @@ fn main() {
     let home_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     println!("cargo:rustc-link-lib=winmm");
     println!("cargo:rustc-link-lib=ws2_32");
-    if cfg!(target_arch = "arm") {
+    if cfg!(target_arch = "arm") || cfg!(target_arch = "aarch64") {
         println!("cargo:rustc-link-search={home_dir}\\Lib\\ARM64");
     } else {
         println!(
