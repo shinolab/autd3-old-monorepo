@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 26/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -88,7 +88,9 @@ struct Config {
     pub timeout: std::time::Duration,
 }
 
-pub struct SOEM<F: Fn(&str) + Send> {
+type OnLostCallBack = Box<dyn Fn(&str) + Send>;
+
+pub struct SOEM {
     ecatth_handle: Option<JoinHandle<()>>,
     ecat_check_th: Option<JoinHandle<()>>,
     timer_handle: Option<Box<Timer<SoemCallback>>>,
@@ -97,12 +99,12 @@ pub struct SOEM<F: Fn(&str) + Send> {
     is_open: Arc<AtomicBool>,
     ec_sync0_cycle_time_ns: u32,
     ec_send_cycle_time_ns: u32,
-    on_lost: Option<F>,
+    on_lost: Option<OnLostCallBack>,
     io_map: Arc<Mutex<IOMap>>,
     logger: Logger,
 }
 
-pub struct SOEMBuilder<F: Fn(&str) + Send> {
+pub struct SOEMBuilder {
     sync0_cycle: u16,
     send_cycle: u16,
     buf_size: usize,
@@ -110,13 +112,13 @@ pub struct SOEMBuilder<F: Fn(&str) + Send> {
     sync_mode: SyncMode,
     ifname: String,
     state_check_interval: Duration,
-    on_lost: Option<F>,
+    on_lost: Option<OnLostCallBack>,
     timeout: Duration,
-    level: Level,
+    level: LevelFilter,
     logger: Option<Logger>,
 }
 
-impl<F: Fn(&str) + Send> SOEMBuilder<F> {
+impl SOEMBuilder {
     fn new() -> Self {
         Self {
             sync0_cycle: 2,
@@ -128,7 +130,7 @@ impl<F: Fn(&str) + Send> SOEMBuilder<F> {
             state_check_interval: Duration::from_millis(100),
             on_lost: None,
             timeout: Duration::from_millis(20),
-            level: Level::Info,
+            level: LevelFilter::MoreSevereEqual(Level::Info),
             logger: None,
         }
     }
@@ -158,8 +160,8 @@ impl<F: Fn(&str) + Send> SOEMBuilder<F> {
         self
     }
 
-    pub fn ifname(mut self, ifname: String) -> Self {
-        self.ifname = ifname;
+    pub fn ifname<S: Into<String>>(mut self, ifname: S) -> Self {
+        self.ifname = ifname.into();
         self
     }
 
@@ -168,13 +170,16 @@ impl<F: Fn(&str) + Send> SOEMBuilder<F> {
         self
     }
 
-    pub fn on_lost(mut self, on_lost: F) -> Self {
-        self.on_lost = Some(on_lost);
+    pub fn on_lost<F: 'static + Fn(&str) + Send>(mut self, on_lost: F) -> Self {
+        self.on_lost = Some(Box::new(on_lost));
         self
     }
 
-    pub fn level(mut self, level: Level) -> Self {
+    pub fn level(mut self, level: LevelFilter) -> Self {
         self.level = level;
+        if let Some(logger) = self.logger.as_mut() {
+            logger.set_level_filter(level);
+        }
         self
     }
 
@@ -188,7 +193,7 @@ impl<F: Fn(&str) + Send> SOEMBuilder<F> {
         self
     }
 
-    pub fn build(self) -> SOEM<F> {
+    pub fn build(self) -> SOEM {
         if let Some(logger) = self.logger {
             SOEM::with_logger(
                 Config {
@@ -223,18 +228,18 @@ impl<F: Fn(&str) + Send> SOEMBuilder<F> {
     }
 }
 
-impl SOEM<fn(&str)> {
-    pub fn builder() -> SOEMBuilder<fn(&str)> {
+impl SOEM {
+    pub fn builder() -> SOEMBuilder {
         SOEMBuilder::new()
     }
 }
 
-impl<F: Fn(&str) + Send> SOEM<F> {
-    fn new(config: Config, on_lost: Option<F>, level: Level) -> Self {
+impl SOEM {
+    fn new(config: Config, on_lost: Option<OnLostCallBack>, level: LevelFilter) -> Self {
         Self::with_logger(config, on_lost, get_logger(level))
     }
 
-    fn with_logger(config: Config, on_lost: Option<F>, logger: Logger) -> Self {
+    fn with_logger(config: Config, on_lost: Option<OnLostCallBack>, logger: Logger) -> Self {
         let ec_send_cycle_time_ns = EC_CYCLE_TIME_BASE_NANO_SEC * config.send_cycle as u32;
         let ec_sync0_cycle_time_ns = EC_CYCLE_TIME_BASE_NANO_SEC * config.sync0_cycle as u32;
         Self {
@@ -253,7 +258,7 @@ impl<F: Fn(&str) + Send> SOEM<F> {
     }
 }
 
-impl<F: 'static + Fn(&str) + Send> SOEM<F> {
+impl SOEM {
     pub fn open_impl(&mut self, device_map: &[usize]) -> Result<i32, AUTDInternalError> {
         let ifname = if self.config.ifname.is_empty() {
             lookup_autd()?
@@ -469,7 +474,7 @@ unsafe extern "C" fn dc_config(context: *mut ecx_contextt, slave: u16) -> i32 {
     0
 }
 
-impl<T: Transducer, F: 'static + Fn(&str) + Send> Link<T> for SOEM<F> {
+impl<T: Transducer> Link<T> for SOEM {
     fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         if self.is_open.load(Ordering::Acquire) {
             return Ok(());
@@ -557,7 +562,7 @@ impl<T: Transducer, F: 'static + Fn(&str) + Send> Link<T> for SOEM<F> {
     }
 }
 
-impl<F: 'static + Fn(&str) + Send> SOEM<F> {
+impl SOEM {
     #[allow(clippy::unnecessary_cast)]
     fn ecat_run_with_sleep(
         is_open: Arc<AtomicBool>,

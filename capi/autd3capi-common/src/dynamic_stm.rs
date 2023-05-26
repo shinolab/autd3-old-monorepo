@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/05/2023
+ * Last Modified: 26/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -45,7 +45,7 @@ impl DynamicFocusSTM for FocusSTMWrap {
 impl DynamicDatagram for FocusSTMWrap {
     fn operation(
         &mut self,
-        mode: crate::TransMode,
+        mode: crate::dynamic_transducer::TransMode,
         geometry: &autd3::prelude::Geometry<crate::DynamicTransducer>,
     ) -> Result<
         (
@@ -99,7 +99,7 @@ impl DynamicGainSTM for GainSTMWrap {
 impl DynamicDatagram for GainSTMWrap {
     fn operation(
         &mut self,
-        mode: crate::TransMode,
+        mode: crate::dynamic_transducer::TransMode,
         geometry: &autd3::prelude::Geometry<crate::DynamicTransducer>,
     ) -> Result<
         (
