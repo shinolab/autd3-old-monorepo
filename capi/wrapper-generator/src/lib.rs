@@ -62,9 +62,9 @@ fn gen<G: Generator, P1: AsRef<Path>, P2: AsRef<Path>>(
 
 pub fn generate<P: AsRef<Path>>(crate_path: P) -> Result<()> {
     gen::<PythonGenerator, _, _>("../../python/pyautd3/native_methods", &crate_path, false)?;
-    gen::<CSharpGenerator, _, _>("../../cs/src/NativeMethods", &crate_path, false)?;
+    gen::<CSharpGenerator, _, _>("../../dotnet/cs/src/NativeMethods", &crate_path, false)?;
     gen::<CSharpGenerator, _, _>(
-        "../../cs/unity/Assets/autd3/Scripts/NativeMethods",
+        "../../dotnet/unity/Assets/autd3/Scripts/NativeMethods",
         &crate_path,
         true,
     )?;
