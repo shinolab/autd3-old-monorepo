@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! impl_holo {
     ($backend:tt, $t:ty) => {
-        impl<$backend> $crate::Holo for $t
+        impl<$backend> $crate::HoloProps for $t
         where
             $backend: $crate::Backend,
         {
@@ -14,10 +14,12 @@ macro_rules! impl_holo {
                 self.constraint = constraint;
             }
         }
+
+        impl<$backend, T: Transducer> $crate::Holo<T> for $t where $backend: $crate::Backend {}
     };
 
     ($t:ty) => {
-        impl $crate::Holo for $t {
+        impl $crate::HoloProps for $t {
             fn add_focus(&mut self, focus: Vector3, amp: float) {
                 self.foci.push(focus);
                 self.amps.push(amp);
@@ -27,5 +29,7 @@ macro_rules! impl_holo {
                 self.constraint = constraint;
             }
         }
+
+        impl<T: Transducer> $crate::Holo<T> for $t {}
     };
 }

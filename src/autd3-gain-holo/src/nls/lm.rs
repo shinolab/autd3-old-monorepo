@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/05/2023
+ * Last Modified: 26/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -38,7 +38,7 @@ pub struct LM<B: Backend> {
     pub tau: float,
     pub k_max: usize,
     pub initial: Vec<float>,
-    pub constraint: Constraint,
+    constraint: Constraint,
     backend: B,
 }
 
