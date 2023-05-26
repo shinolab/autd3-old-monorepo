@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use autd3::core::GainOp;
 use autd3_gain_holo::{Backend, Holo, NalgebraBackend, SDP};
-use autd3capi_common::*;
+use autd3capi_common::{dynamic_transducer::TransMode, *};
 use backend::DynamicBackend;
 
 struct DynamicHolo<H: Holo + Gain<DynamicTransducer>> {
@@ -75,19 +75,17 @@ impl<H: Holo + Gain<DynamicTransducer>> DynamicDatagram for DynamicHolo<H> {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDDefaultBackend(out: *mut ConstPtr) {
-    unsafe {
-        let backend: Box<Box<dyn Backend>> = Box::new(Box::new(NalgebraBackend::new()));
-        *out = Box::into_raw(backend) as _;
-    }
+pub unsafe extern "C" fn AUTDDefaultBackend() -> ConstPtr {
+    let backend: Box<Box<dyn Backend>> = Box::new(Box::new(NalgebraBackend::new()));
+    Box::into_raw(backend) as _
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGainHoloSDP(out: *mut ConstPtr, backend: ConstPtr) {
+pub unsafe extern "C" fn AUTDGainHoloSDP(backend: ConstPtr) -> ConstPtr {
     unsafe {
         let gain: Box<Box<G>> = Box::new(Box::new(DynamicHolo {
             holo: SDP::new(DynamicBackend::new(*Box::from_raw(backend as _))),
         }));
-        *out = Box::into_raw(gain) as _;
+        Box::into_raw(gain) as _
     }
 }

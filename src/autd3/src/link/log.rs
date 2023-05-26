@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 26/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,7 +33,7 @@ pub struct Log<T: Transducer, L: Link<T>> {
 }
 
 impl<T: Transducer, L: Link<T>> Log<T, L> {
-    pub fn new(link: L, level: Level) -> Self {
+    pub fn new(link: L, level: LevelFilter) -> Self {
         Self::with_logger(link, crate::core::link::get_logger(level))
     }
 

@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 26/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,7 +33,7 @@ pub struct Debug {
 }
 
 impl Debug {
-    fn new(timeout: Duration, level: Level) -> Self {
+    fn new(timeout: Duration, level: LevelFilter) -> Self {
         Self::with_logger(timeout, get_logger(level))
     }
 
@@ -53,7 +53,7 @@ impl Debug {
 
 pub struct DebugBuilder {
     timeout: Duration,
-    level: Level,
+    level: LevelFilter,
     logger: Option<Logger>,
 }
 
@@ -61,13 +61,16 @@ impl DebugBuilder {
     fn new() -> Self {
         Self {
             timeout: Duration::ZERO,
-            level: Level::Debug,
+            level: LevelFilter::MoreSevereEqual(Level::Debug),
             logger: None,
         }
     }
 
-    pub fn level(mut self, level: Level) -> Self {
+    pub fn level(mut self, level: LevelFilter) -> Self {
         self.level = level;
+        if let Some(logger) = &mut self.logger {
+            logger.set_level_filter(level);
+        }
         self
     }
 
