@@ -11,7 +11,6 @@
  *
  */
 
-use std::env;
 use std::path::PathBuf;
 
 macro_rules! add {
@@ -54,8 +53,6 @@ fn main() {
             eprintln!("Failed to update submodule: {}", e);
         }
     }
-
-    let home_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
 
     let os = if cfg!(target_os = "windows") {
         "win32"
@@ -144,6 +141,8 @@ fn main() {
 
     #[cfg(target_os = "windows")]
     {
+        let home_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+
         println!("cargo:rustc-link-lib=winmm");
         println!("cargo:rustc-link-lib=ws2_32");
         if cfg!(target_arch = "arm") || cfg!(target_arch = "aarch64") {
@@ -168,7 +167,7 @@ fn main() {
     }
 
     let bindings = bindings.generate().expect("Unable to generate bindings");
-    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+    let out_path = PathBuf::from(std::env::var("OUT_DIR").unwrap());
     bindings
         .write_to_file(out_path.join("soem_bindings.rs"))
         .expect("Couldn't write bindings!");
