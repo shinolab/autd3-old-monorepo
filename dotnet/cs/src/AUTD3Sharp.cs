@@ -4,10 +4,10 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/05/2023
+ * Last Modified: 27/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  * 
  */
 
@@ -148,9 +148,9 @@ namespace AUTD3Sharp
     public sealed class Geometry : IEnumerable<Transducer>
     {
         internal IntPtr Ptr;
-        internal readonly NativeMethods.TransMode Mode;
+        internal readonly TransMode Mode;
 
-        internal Geometry(IntPtr cnt, NativeMethods.TransMode mode)
+        internal Geometry(IntPtr cnt, TransMode mode)
         {
             Ptr = cnt;
             Mode = mode;
@@ -232,12 +232,12 @@ namespace AUTD3Sharp
         public sealed class Builder
         {
             private readonly IntPtr _builderPtr;
-            private NativeMethods.TransMode _mode;
+            private TransMode _mode;
 
             public Builder()
             {
                 _builderPtr = Base.AUTDCreateGeometryBuilder();
-                _mode = NativeMethods.TransMode.Legacy;
+                _mode = TransMode.Legacy;
             }
 
             public Builder AddDevice(Vector3 position, Vector3 rotation)
@@ -254,19 +254,19 @@ namespace AUTD3Sharp
 
             public Builder LegacyMode()
             {
-                _mode = NativeMethods.TransMode.Legacy;
+                _mode = TransMode.Legacy;
                 return this;
             }
 
             public Builder AdvancedMode()
             {
-                _mode = NativeMethods.TransMode.Advanced;
+                _mode = TransMode.Advanced;
                 return this;
             }
 
             public Builder AdvancedPhaseMode()
             {
-                _mode = NativeMethods.TransMode.AdvancedPhase;
+                _mode = TransMode.AdvancedPhase;
                 return this;
             }
 
@@ -759,7 +759,7 @@ namespace AUTD3Sharp
                 return true;
             }
 
-            public NativeMethods.GainSTMMode Mode
+            public GainSTMMode Mode
             {
                 set => Base.AUTDGainSTMSetMode(handle, value);
             }

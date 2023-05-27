@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-
+from enum import IntEnum
 
 class Singleton(type):
     _instances = {}
@@ -27,50 +27,77 @@ class NativeMethods(metaclass=Singleton):
             return
         self.dll = ctypes.CDLL(os.path.join(self.bin, f'{self.prefix}autd3capi-link-soem{self.ext}'))
 
-        self.dll.AUTDGetAdapterPointer.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
-        self.dll.AUTDGetAdapterPointer.restype = ctypes.c_int32
 
-        self.dll.AUTDGetAdapter.argtypes = [ctypes.c_void_p, ctypes.c_int32, ctypes.c_char_p, ctypes.c_char_p] 
+        self.dll.AUTDGetAdapterPointer.argtypes = [ctypes.POINTER(ctypes.c_uint32)] 
+        self.dll.AUTDGetAdapterPointer.restype = ctypes.c_void_p
+
+        self.dll.AUTDGetAdapter.argtypes = [ctypes.c_void_p, ctypes.c_uint32, ctypes.c_char_p, ctypes.c_char_p] 
         self.dll.AUTDGetAdapter.restype = None
 
         self.dll.AUTDFreeAdapterPointer.argtypes = [ctypes.c_void_p] 
         self.dll.AUTDFreeAdapterPointer.restype = None
 
-        self.dll.AUTDLinkSOEM.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
-        self.dll.AUTDLinkSOEM.restype = None
-
-        self.dll.AUTDLinkSOEMIfname.argtypes = [ctypes.c_void_p, ctypes.c_char_p] 
-        self.dll.AUTDLinkSOEMIfname.restype = None
-
-        self.dll.AUTDLinkSOEMBufSize.argtypes = [ctypes.c_void_p, ctypes.c_uint64] 
-        self.dll.AUTDLinkSOEMBufSize.restype = None
-
-        self.dll.AUTDLinkSOEMSync0Cycle.argtypes = [ctypes.c_void_p, ctypes.c_uint16] 
-        self.dll.AUTDLinkSOEMSync0Cycle.restype = None
+        self.dll.AUTDLinkSOEM.argtypes = [] 
+        self.dll.AUTDLinkSOEM.restype = ctypes.c_void_p
 
         self.dll.AUTDLinkSOEMSendCycle.argtypes = [ctypes.c_void_p, ctypes.c_uint16] 
-        self.dll.AUTDLinkSOEMSendCycle.restype = None
+        self.dll.AUTDLinkSOEMSendCycle.restype = ctypes.c_void_p
 
-        self.dll.AUTDLinkSOEMFreerun.argtypes = [ctypes.c_void_p, ctypes.c_bool] 
-        self.dll.AUTDLinkSOEMFreerun.restype = None
+        self.dll.AUTDLinkSOEMSync0Cycle.argtypes = [ctypes.c_void_p, ctypes.c_uint16] 
+        self.dll.AUTDLinkSOEMSync0Cycle.restype = ctypes.c_void_p
+
+        self.dll.AUTDLinkSOEMBufSize.argtypes = [ctypes.c_void_p, ctypes.c_uint32] 
+        self.dll.AUTDLinkSOEMBufSize.restype = ctypes.c_void_p
+
+        self.dll.AUTDLinkSOEMTimerStrategy.argtypes = [ctypes.c_void_p, TimerStrategy] 
+        self.dll.AUTDLinkSOEMTimerStrategy.restype = ctypes.c_void_p
+
+        self.dll.AUTDLinkSOEMSyncMode.argtypes = [ctypes.c_void_p, SyncMode] 
+        self.dll.AUTDLinkSOEMSyncMode.restype = ctypes.c_void_p
+
+        self.dll.AUTDLinkSOEMIfname.argtypes = [ctypes.c_void_p, ctypes.c_char_p] 
+        self.dll.AUTDLinkSOEMIfname.restype = ctypes.c_void_p
+
+        self.dll.AUTDLinkSOEMStateCheckInterval.argtypes = [ctypes.c_void_p, ctypes.c_uint32] 
+        self.dll.AUTDLinkSOEMStateCheckInterval.restype = ctypes.c_void_p
 
         self.dll.AUTDLinkSOEMOnLost.argtypes = [ctypes.c_void_p, ctypes.c_void_p] 
-        self.dll.AUTDLinkSOEMOnLost.restype = None
+        self.dll.AUTDLinkSOEMOnLost.restype = ctypes.c_void_p
 
-        self.dll.AUTDLinkSOEMTimerStrategy.argtypes = [ctypes.c_void_p, ctypes.c_uint8] 
-        self.dll.AUTDLinkSOEMTimerStrategy.restype = None
+        self.dll.AUTDLinkSOEMLogLevel.argtypes = [ctypes.c_void_p, Level] 
+        self.dll.AUTDLinkSOEMLogLevel.restype = ctypes.c_void_p
 
-        self.dll.AUTDLinkSOEMStateCheckInterval.argtypes = [ctypes.c_void_p, ctypes.c_uint64] 
-        self.dll.AUTDLinkSOEMStateCheckInterval.restype = None
-
-        self.dll.AUTDLinkSOEMLogLevel.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
-        self.dll.AUTDLinkSOEMLogLevel.restype = None
-
-        self.dll.AUTDLinkSOEMLogFunc.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p] 
-        self.dll.AUTDLinkSOEMLogFunc.restype = None
+        self.dll.AUTDLinkSOEMLogFunc.argtypes = [ctypes.c_void_p, Level, ctypes.c_void_p, ctypes.c_void_p] 
+        self.dll.AUTDLinkSOEMLogFunc.restype = ctypes.c_void_p
 
         self.dll.AUTDLinkSOEMTimeout.argtypes = [ctypes.c_void_p, ctypes.c_uint64] 
-        self.dll.AUTDLinkSOEMTimeout.restype = None
+        self.dll.AUTDLinkSOEMTimeout.restype = ctypes.c_void_p
 
-        self.dll.AUTDLinkSOEMBuild.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p] 
-        self.dll.AUTDLinkSOEMBuild.restype = None
+        self.dll.AUTDLinkSOEMBuild.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDLinkSOEMBuild.restype = ctypes.c_void_p
+
+        self.dll.AUTDLinkRemoteSOEM.argtypes = [ctypes.c_char_p, ctypes.c_uint16] 
+        self.dll.AUTDLinkRemoteSOEM.restype = ctypes.c_void_p
+
+        self.dll.AUTDLinkRemoteSOEMTimeout.argtypes = [ctypes.c_void_p, ctypes.c_uint64] 
+        self.dll.AUTDLinkRemoteSOEMTimeout.restype = ctypes.c_void_p
+
+        self.dll.AUTDLinkRemoteSOEMBuild.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDLinkRemoteSOEMBuild.restype = ctypes.c_void_p
+
+class TimerStrategy(IntEnum):
+    Sleep = 0
+    NativeTimer = 1
+    BusyWait = 2
+
+    @classmethod
+    def from_param(cls, obj):
+            return int(obj)
+
+class SyncMode(IntEnum):
+    FreeRun = 0
+    DC = 1
+
+    @classmethod
+    def from_param(cls, obj):
+            return int(obj)
