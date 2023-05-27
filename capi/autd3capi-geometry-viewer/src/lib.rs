@@ -5,12 +5,12 @@ use autd3capi_common::*;
 use autd3_geometry_viewer::GeometryViewer;
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkGeometryViewer() -> ConstPtr {
+pub unsafe extern "C" fn AUTDGeometryViewer() -> ConstPtr {
     Box::into_raw(Box::new(GeometryViewer::new())) as _
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkGeometryViewerSize(
+pub unsafe extern "C" fn AUTDGeometryViewerSize(
     viewer: ConstPtr,
     width: u32,
     height: u32,
@@ -20,13 +20,13 @@ pub unsafe extern "C" fn AUTDLinkGeometryViewerSize(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkGeometryViewerVsync(viewer: ConstPtr, vsync: bool) -> ConstPtr {
+pub unsafe extern "C" fn AUTDGeometryViewerVsync(viewer: ConstPtr, vsync: bool) -> ConstPtr {
     let viewer = Box::from_raw(viewer as *mut GeometryViewer).vsync(vsync);
     Box::into_raw(Box::new(viewer)) as _
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkSimulatorRun(viewer: ConstPtr, cnt: ConstPtr) -> i32 {
+pub unsafe extern "C" fn AUTDGeometryViewerRun(viewer: ConstPtr, cnt: ConstPtr) -> i32 {
     Box::from_raw(viewer as *mut GeometryViewer)
         .run(cast_without_ownership_mut!(cnt, Cnt).geometry())
 }

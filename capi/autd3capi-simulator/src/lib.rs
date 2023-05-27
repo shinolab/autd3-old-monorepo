@@ -14,18 +14,18 @@ use autd3capi_common::*;
 use autd3_simulator::{Simulator, ViewerSettings};
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkSimulator() -> ConstPtr {
+pub unsafe extern "C" fn AUTDSimulator() -> ConstPtr {
     Box::into_raw(Box::new(Simulator::new())) as _
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkSimulatorPort(simulator: ConstPtr, port: u16) -> ConstPtr {
+pub unsafe extern "C" fn AUTDSimulatorPort(simulator: ConstPtr, port: u16) -> ConstPtr {
     let simulator = Box::from_raw(simulator as *mut Simulator).port(port);
     Box::into_raw(Box::new(simulator)) as _
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkSimulatorWindowSize(
+pub unsafe extern "C" fn AUTDSimulatorWindowSize(
     simulator: ConstPtr,
     width: u32,
     height: u32,
@@ -35,19 +35,19 @@ pub unsafe extern "C" fn AUTDLinkSimulatorWindowSize(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkSimulatorVsync(simulator: ConstPtr, vsync: bool) -> ConstPtr {
+pub unsafe extern "C" fn AUTDSimulatorVsync(simulator: ConstPtr, vsync: bool) -> ConstPtr {
     let simulator = Box::from_raw(simulator as *mut Simulator).vsync(vsync);
     Box::into_raw(Box::new(simulator)) as _
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkSimulatorGpuIdx(simulator: ConstPtr, idx: i32) -> ConstPtr {
+pub unsafe extern "C" fn AUTDSimulatorGpuIdx(simulator: ConstPtr, idx: i32) -> ConstPtr {
     let simulator = Box::from_raw(simulator as *mut Simulator).gpu_idx(idx);
     Box::into_raw(Box::new(simulator)) as _
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkSimulatorSettingsPath(
+pub unsafe extern "C" fn AUTDSimulatorSettingsPath(
     simulator: ConstPtr,
     path: *const c_char,
     err: *mut c_char,
@@ -64,19 +64,19 @@ pub unsafe extern "C" fn AUTDLinkSimulatorSettingsPath(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDLinkSimulatorRun(
+pub unsafe extern "C" fn AUTDSimulatorRun(simulator: ConstPtr) -> i32 {
+    cast_without_ownership_mut!(simulator, Simulator).run()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDSimulatorSaveSettings(
     simulator: ConstPtr,
     path: *const c_char,
     err: *mut c_char,
-) -> i32 {
-    let mut simulator = Box::from_raw(simulator as *mut Simulator);
-    let res = simulator.run();
+) -> bool {
+    let settings = cast_without_ownership!(simulator, Simulator).get_settings();
 
-    let settings_str = try_or_return!(
-        serde_json::to_string_pretty(simulator.get_settings()),
-        err,
-        ERR
-    );
+    let settings_str = try_or_return!(serde_json::to_string_pretty(settings), err, false);
 
     let path = CStr::from_ptr(path).to_str().unwrap();
 
@@ -91,12 +91,12 @@ pub unsafe extern "C" fn AUTDLinkSimulatorRun(
             .append(false)
             .open(path),
         err,
-        ERR
+        false
     );
 
-    try_or_return!(write!(file, "{}", settings_str), err, ERR);
+    try_or_return!(write!(file, "{}", settings_str), err, false);
 
-    res
+    true
 }
 
 #[cfg(test)]
@@ -108,13 +108,13 @@ mod tests {
     #[test]
     fn run_simulator() {
         unsafe {
-            let simulator = AUTDLinkSimulator();
-            let simulator = AUTDLinkSimulatorPort(simulator, 8080);
-            let simulator = AUTDLinkSimulatorWindowSize(simulator, 800, 600);
-            let simulator = AUTDLinkSimulatorVsync(simulator, true);
-            let simulator = AUTDLinkSimulatorGpuIdx(simulator, -1);
+            let simulator = AUTDSimulator();
+            let simulator = AUTDSimulatorPort(simulator, 8080);
+            let simulator = AUTDSimulatorWindowSize(simulator, 800, 600);
+            let simulator = AUTDSimulatorVsync(simulator, true);
+            let simulator = AUTDSimulatorGpuIdx(simulator, -1);
             let mut err = vec![c_char::default(); 256];
-            let simulator_ = AUTDLinkSimulatorSettingsPath(
+            let simulator_ = AUTDSimulatorSettingsPath(
                 simulator,
                 CStr::from_bytes_with_nul(b"settings.json\0")
                     .unwrap()
@@ -130,7 +130,7 @@ mod tests {
                 simulator_
             };
 
-            // let res = AUTDLinkSimulatorRun(
+            // let res = AUTDSimulatorRun(
             //     simulator,
             //     CStr::from_bytes_with_nul(b"settings.json\0")
             //         .unwrap()

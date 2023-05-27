@@ -276,6 +276,18 @@ name = "autd3-model"
 version = "10.0.0"
 
 [[package]]
+name = "autd3-modulation-audio-file"
+version = "10.0.0"
+dependencies = [
+ "autd3",
+ "autd3-core",
+ "autd3-traits",
+ "hound",
+ "thiserror",
+ "wav_io",
+]
+
+[[package]]
 name = "autd3-simulator"
 version = "10.0.0"
 dependencies = [
@@ -370,6 +382,7 @@ dependencies = [
  "autd3",
  "autd3-core",
  "autd3-link-soem",
+ "autd3capi",
  "autd3capi-common",
  "libc",
  "wrapper-generator",
@@ -382,6 +395,16 @@ dependencies = [
  "autd3",
  "autd3-core",
  "autd3-link-twincat",
+ "autd3capi-common",
+ "libc",
+ "wrapper-generator",
+]
+
+[[package]]
+name = "autd3capi-modulation-audio-file"
+version = "10.0.0"
+dependencies = [
+ "autd3-modulation-audio-file",
  "autd3capi-common",
  "libc",
  "wrapper-generator",
@@ -1066,6 +1089,12 @@ name = "hermit-abi"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fed44880c466736ef9a5c5b5facefb5ed0785676d0c02d612db14e54f0d84286"
+
+[[package]]
+name = "hound"
+version = "3.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4d13cdbd5dbb29f9c88095bbdc2590c9cba0d0a1269b983fef6b2cdd7e9f4db1"
 
 [[package]]
 name = "iana-time-zone"
@@ -2659,6 +2688,12 @@ name = "wasm-bindgen-shared"
 version = "0.2.85"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a901d592cafaa4d711bc324edfaff879ac700b19c3dfd60058d2b445be2691eb"
+
+[[package]]
+name = "wav_io"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3928c7bd1fd63be09cceac0dca94e0f56f78d829e0a77af08d4d3f538a8166f2"
 
 [[package]]
 name = "wayland-client"

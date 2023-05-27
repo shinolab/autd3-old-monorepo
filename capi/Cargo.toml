@@ -7,6 +7,7 @@ members = [
     "autd3capi-link-simulator",
     "autd3capi-link-soem",
     "autd3capi-link-twincat",
+    "autd3capi-modulation-audio-file",
     "autd3capi-simulator",
     "autd3capi-geometry-viewer",
 ]
