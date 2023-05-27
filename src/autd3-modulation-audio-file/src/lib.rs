@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 27/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -91,7 +91,7 @@ impl Wav {
             channels,
             sample_rate,
             raw_buffer,
-            freq_div: 40960,
+            freq_div: 5120,
         })
     }
 }

@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/05/2023
+ * Last Modified: 27/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -182,15 +182,13 @@ impl Generator for CSharpGenerator {
 using System;
 using System.Runtime.InteropServices;
 
-#if UNITY_2020_2_OR_NEWER
-#nullable enable
-#endif
-
-namespace AUTD3Sharp.NativeMethods
+namespace AUTD3Sharp
 {{
-    internal static class {}
+    namespace NativeMethods
     {{
-        private const string DLL = "{}";
+        internal static class {}
+        {{
+            private const string DLL = "{}";
 "#,
             Self::to_class_name(bin_name),
             bin_name,
@@ -202,7 +200,7 @@ namespace AUTD3Sharp.NativeMethods
         writeln!(
             w,
             r"
-        public const {} {} = {};",
+            public const {} {} = {};",
             Self::to_return_ty(&constant.ty),
             Self::to_pascal(&constant.name),
             if Self::to_return_ty(&constant.ty) == "float" {
@@ -240,7 +238,7 @@ namespace AUTD3Sharp.NativeMethods
         writeln!(
             w,
             r"
-        {}{} public static extern {} {}({});",
+            {}{} public static extern {} {}({});",
             attr,
             ret_attr,
             Self::to_return_ty(&function.return_ty),
@@ -275,19 +273,16 @@ namespace AUTD3Sharp.NativeMethods
     }
 
     fn start_other_types<W: Write>(w: &mut W) -> Result<()> {
-        writeln!(w, r"    }}")?;
+        writeln!(
+            w,
+            r"    }}
+    }}"
+        )?;
         Ok(())
     }
 
     fn print_footer<W: Write>(w: &mut W) -> Result<()> {
-        writeln!(
-            w,
-            r"}}
-
-#if UNITY_2020_2_OR_NEWER
-#nullable disable
-#endif"
-        )?;
+        writeln!(w, r"}}")?;
         Ok(())
     }
 
