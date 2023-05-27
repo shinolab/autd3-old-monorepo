@@ -1,4 +1,4 @@
-name: build
+name: build-rust
 
 on:
   push:
@@ -14,63 +14,61 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-    
+
     steps:
     - uses: actions/checkout@v3
-    - name: setup-msbuild
-      if: matrix.os == 'windows-latest'
-      uses: microsoft/setup-msbuild@v1
-    - name: build for Windows x64
-      if: matrix.os == 'windows-latest'
-      run: |
-        cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF -DCMAKE_BUILD_TYPE=Debug
-        cd build
-        cmake --build . --parallel 8 --config Debug
-    - name: build for Windows ARM
+    - name: Checkout submodules
+      run: git submodule update --init --force --recursive
+    - name: Build src on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |
-        cmake -G "Visual Studio 17 2022" -A ARM64 -B "build_arm" -DBUILD_TARGET=ARM -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF -DCMAKE_BUILD_TYPE=Debug
-        cd build_arm
-        cmake --build . --parallel 8 --config Debug
-    - name: install compile tools
-      if: matrix.os == 'ubuntu-latest'
+        cd src
+        cargo build
+        cargo test --workspace --exclude autd3-link-soem --exclude autd3-simulator --exclude autd3-geometry-viewer
+    - name: Build src on ${{ matrix.os }}
+      if: matrix.os != 'windows-latest'
       run: |
-        sudo apt update
-        sudo apt install g++-arm-linux-gnueabihf g++-aarch64-linux-gnu -y
-      shell: bash
-    - name: build for Linux
-      if: matrix.os == 'ubuntu-latest'
+        cd src
+        cargo build
+        cargo test
+    - name: Build examples on ${{ matrix.os }}
+      if: matrix.os == 'windows-latest'
       run: |
-        mkdir -p build && cd build
-        cmake .. -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF -DCMAKE_BUILD_TYPE=Debug
-        cmake --build . --parallel $(nproc) --config Debug
-      shell: bash
-      env:
-        CC: gcc-10
-        CXX: g++-10
-    - name: build for Linux ARM32
-      if: matrix.os == 'ubuntu-latest'
+        cd examples
+        cargo build --bins --features "remote_soem twincat remote_twincat simulator_client" 
+    - name: Build examples on ${{ matrix.os }}
+      if: matrix.os != 'windows-latest'
       run: |
-        mkdir -p build_arm32 && cd build_arm32
-        cmake .. -DBUILD_TARGET=ARM32 -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF -DCMAKE_BUILD_TYPE=Debug
-        cmake --build . --parallel $(nproc) --config Debug
-      shell: bash
-      env:
-        CC: gcc-10
-        CXX: g++-10
-    - name: build for Linux ARM64
-      if: matrix.os == 'ubuntu-latest'
+        cd examples
+        cargo build --bins --features "soem remote_soem twincat remote_twincat simulator_client" 
+    - name: Build capi on ${{ matrix.os }}
+      if: matrix.os == 'windows-latest'
       run: |
-        mkdir -p build_arm64 && cd build_arm64
-        cmake .. -DBUILD_TARGET=ARM64 -DBUILD_ALL=ON -DBUILD_BACKEND_CUDA=OFF -DCMAKE_BUILD_TYPE=Debug
-        cmake --build . --parallel $(nproc) --config Debug
-      shell: bash
-      env:
-        CC: gcc-10
-        CXX: g++-10
-    - name: build for macOS
-      if: matrix.os == 'macos-latest'
+        cd capi
+        cargo build
+        cargo test --workspace --exclude autd3capi-link-soem --exclude autd3capi-simulator --exclude autd3capi-geometry-viewer
+    - name: Build capi on ${{ matrix.os }}
+      if: matrix.os != 'windows-latest'
       run: |
-        mkdir -p build && cd build
-        cmake .. -DBUILD_ALL=ON -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DBUILD_BACKEND_CUDA=OFF -DAUTD3_PARALLEL_FOR=OFF -DHOLO_PARALLEL_FOR=OFF -DCMAKE_BUILD_TYPE=Debug
-        cmake --build . --parallel 8 --config Debug
+        cd capi
+        cargo build
+        cargo test
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Checkout submodules
+      run: git submodule update --init --force --recursive
+    - name: lint src
+      run: |
+        cd src
+        cargo clippy -- -D warnings
+    - name: lint examples
+      run: |
+        cd examples
+        cargo clippy -- -D warnings
+    - name: lint capi
+      run: |
+        cd src
+        cargo clippy -- -D warnings

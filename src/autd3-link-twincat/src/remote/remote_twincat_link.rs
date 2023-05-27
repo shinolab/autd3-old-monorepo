@@ -14,6 +14,7 @@
 use std::{ffi::CString, marker::PhantomData, time::Duration};
 
 use itertools::Itertools;
+use libc::c_long;
 
 use autd3_core::{
     error::AUTDInternalError,
@@ -30,7 +31,7 @@ const INDEX_OFFSET_BASE_READ: u32 = 0x8000_0000;
 const PORT: u16 = 301;
 
 pub struct RemoteTwinCAT {
-    port: i32,
+    port: c_long,
     ip: String,
     net_id: AmsNetId,
     timeout: Duration,

@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 27/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -24,9 +24,9 @@ fn main() -> Result<()> {
         .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
         .build()?;
 
-    let link = TwinCAT::builder().build();
+    let link = TwinCAT::builder().build()?;
 
-    let autd = Controller::open(geometry, link).expect("Failed to open");
+    let autd = Controller::open(geometry, link)?;
 
     test_runner::run(autd)
 }
