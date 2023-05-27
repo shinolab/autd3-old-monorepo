@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-
+from enum import IntEnum
 
 class Singleton(type):
     _instances = {}
@@ -27,17 +27,27 @@ class NativeMethods(metaclass=Singleton):
             return
         self.dll = ctypes.CDLL(os.path.join(self.bin, f'{self.prefix}autd3capi-link-twincat{self.ext}'))
 
-        self.dll.AUTDLinkTwinCAT.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
-        self.dll.AUTDLinkTwinCAT.restype = None
 
-        self.dll.AUTDLinkTwinCATLogLevel.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
-        self.dll.AUTDLinkTwinCATLogLevel.restype = None
-
-        self.dll.AUTDLinkTwinCATLogFunc.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p] 
-        self.dll.AUTDLinkTwinCATLogFunc.restype = None
+        self.dll.AUTDLinkTwinCAT.argtypes = [] 
+        self.dll.AUTDLinkTwinCAT.restype = ctypes.c_void_p
 
         self.dll.AUTDLinkTwinCATTimeout.argtypes = [ctypes.c_void_p, ctypes.c_uint64] 
-        self.dll.AUTDLinkTwinCATTimeout.restype = None
+        self.dll.AUTDLinkTwinCATTimeout.restype = ctypes.c_void_p
 
-        self.dll.AUTDLinkTwinCATBuild.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p] 
-        self.dll.AUTDLinkTwinCATBuild.restype = None
+        self.dll.AUTDLinkTwinCATBuild.argtypes = [ctypes.c_void_p, ctypes.c_char_p] 
+        self.dll.AUTDLinkTwinCATBuild.restype = ctypes.c_void_p
+
+        self.dll.AUTDLinkRemoteTwinCAT.argtypes = [ctypes.c_char_p] 
+        self.dll.AUTDLinkRemoteTwinCAT.restype = ctypes.c_void_p
+
+        self.dll.AUTDLinkRemoteTwinCATServerIP.argtypes = [ctypes.c_void_p, ctypes.c_char_p] 
+        self.dll.AUTDLinkRemoteTwinCATServerIP.restype = ctypes.c_void_p
+
+        self.dll.AUTDLinkRemoteTwinCATClientAmsNetId.argtypes = [ctypes.c_void_p, ctypes.c_char_p] 
+        self.dll.AUTDLinkRemoteTwinCATClientAmsNetId.restype = ctypes.c_void_p
+
+        self.dll.AUTDLinkRemoteTwinCATTimeout.argtypes = [ctypes.c_void_p, ctypes.c_uint64] 
+        self.dll.AUTDLinkRemoteTwinCATTimeout.restype = ctypes.c_void_p
+
+        self.dll.AUTDLinkRemoteTwinCATBuild.argtypes = [ctypes.c_void_p, ctypes.c_char_p] 
+        self.dll.AUTDLinkRemoteTwinCATBuild.restype = ctypes.c_void_p

@@ -25,8 +25,17 @@ class NativeMethods(metaclass=Singleton):
     def init_dll(self):
         if hasattr(self, 'dll'):
             return
-        self.dll = ctypes.CDLL(os.path.join(self.bin, f'{self.prefix}autd3capi-modulation-audio-file{self.ext}'))
+        self.dll = ctypes.CDLL(os.path.join(self.bin, f'{self.prefix}autd3capi-geometry-viewer{self.ext}'))
 
 
-        self.dll.AUTDModulationWav.argtypes = [ctypes.c_char_p, ctypes.c_char_p] 
-        self.dll.AUTDModulationWav.restype = ctypes.c_void_p
+        self.dll.AUTDGeometryViewer.argtypes = [] 
+        self.dll.AUTDGeometryViewer.restype = ctypes.c_void_p
+
+        self.dll.AUTDGeometryViewerSize.argtypes = [ctypes.c_void_p, ctypes.c_uint32, ctypes.c_uint32] 
+        self.dll.AUTDGeometryViewerSize.restype = ctypes.c_void_p
+
+        self.dll.AUTDGeometryViewerVsync.argtypes = [ctypes.c_void_p, ctypes.c_bool] 
+        self.dll.AUTDGeometryViewerVsync.restype = ctypes.c_void_p
+
+        self.dll.AUTDGeometryViewerRun.argtypes = [ctypes.c_void_p, ctypes.c_void_p] 
+        self.dll.AUTDGeometryViewerRun.restype = ctypes.c_int32
