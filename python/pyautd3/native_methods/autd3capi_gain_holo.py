@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-
+from enum import IntEnum
 
 class Singleton(type):
     _instances = {}
@@ -27,53 +27,81 @@ class NativeMethods(metaclass=Singleton):
             return
         self.dll = ctypes.CDLL(os.path.join(self.bin, f'{self.prefix}autd3capi-gain-holo{self.ext}'))
 
-        self.dll.AUTDEigenBackend.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
-        self.dll.AUTDEigenBackend.restype = None
 
-        self.dll.AUTDDeleteBackend.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDDeleteBackend.restype = None
+        self.dll.AUTDDefaultBackend.argtypes = [] 
+        self.dll.AUTDDefaultBackend.restype = ctypes.c_void_p
 
-        self.dll.AUTDGainHoloSDP.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_uint64] 
-        self.dll.AUTDGainHoloSDP.restype = None
+        self.dll.AUTDGainHoloSDP.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDGainHoloSDP.restype = ctypes.c_void_p
 
-        self.dll.AUTDGainHoloEVP.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p, ctypes.c_double] 
-        self.dll.AUTDGainHoloEVP.restype = None
+        self.dll.AUTDGainHoloSDPAlpha.argtypes = [ctypes.c_void_p, ctypes.c_double] 
+        self.dll.AUTDGainHoloSDPAlpha.restype = None
 
-        self.dll.AUTDGainHoloNaive.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p] 
-        self.dll.AUTDGainHoloNaive.restype = None
+        self.dll.AUTDGainHoloSDPLambda.argtypes = [ctypes.c_void_p, ctypes.c_double] 
+        self.dll.AUTDGainHoloSDPLambda.restype = None
 
-        self.dll.AUTDGainHoloGS.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p, ctypes.c_uint64] 
-        self.dll.AUTDGainHoloGS.restype = None
+        self.dll.AUTDGainHoloSDPRepeat.argtypes = [ctypes.c_void_p, ctypes.c_uint32] 
+        self.dll.AUTDGainHoloSDPRepeat.restype = None
 
-        self.dll.AUTDGainHoloGSPAT.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p, ctypes.c_uint64] 
-        self.dll.AUTDGainHoloGSPAT.restype = None
+        self.dll.AUTDGainHoloEVP.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDGainHoloEVP.restype = ctypes.c_void_p
 
-        self.dll.AUTDGainHoloLM.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_uint64, ctypes.POINTER(ctypes.c_double), ctypes.c_int32] 
-        self.dll.AUTDGainHoloLM.restype = None
+        self.dll.AUTDGainHoloEVPGamma.argtypes = [ctypes.c_void_p, ctypes.c_double] 
+        self.dll.AUTDGainHoloEVPGamma.restype = None
 
-        self.dll.AUTDGainHoloGreedy.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p, ctypes.c_int32] 
-        self.dll.AUTDGainHoloGreedy.restype = None
+        self.dll.AUTDGainHoloGS.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDGainHoloGS.restype = ctypes.c_void_p
 
-        self.dll.AUTDGainHoloLSSGreedy.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p, ctypes.c_int32] 
-        self.dll.AUTDGainHoloLSSGreedy.restype = None
+        self.dll.AUTDGainHoloGSRepeat.argtypes = [ctypes.c_void_p, ctypes.c_uint32] 
+        self.dll.AUTDGainHoloGSRepeat.restype = None
 
-        self.dll.AUTDGainHoloAPO.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_int32, ctypes.c_int32] 
-        self.dll.AUTDGainHoloAPO.restype = None
+        self.dll.AUTDGainHoloGSPAT.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDGainHoloGSPAT.restype = ctypes.c_void_p
+
+        self.dll.AUTDGainHoloGSPATRepeat.argtypes = [ctypes.c_void_p, ctypes.c_uint32] 
+        self.dll.AUTDGainHoloGSPATRepeat.restype = None
+
+        self.dll.AUTDGainHoloNaive.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDGainHoloNaive.restype = ctypes.c_void_p
+
+        self.dll.AUTDGainHoloGreedy.argtypes = [] 
+        self.dll.AUTDGainHoloGreedy.restype = ctypes.c_void_p
+
+        self.dll.AUTDGainHoloGreedyPhaseDiv.argtypes = [ctypes.c_void_p, ctypes.c_uint32] 
+        self.dll.AUTDGainHoloGreedyPhaseDiv.restype = None
+
+        self.dll.AUTDGainHoloLM.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDGainHoloLM.restype = ctypes.c_void_p
+
+        self.dll.AUTDGainHoloLMEps1.argtypes = [ctypes.c_void_p, ctypes.c_double] 
+        self.dll.AUTDGainHoloLMEps1.restype = None
+
+        self.dll.AUTDGainHoloLMEps2.argtypes = [ctypes.c_void_p, ctypes.c_double] 
+        self.dll.AUTDGainHoloLMEps2.restype = None
+
+        self.dll.AUTDGainHoloLMTau.argtypes = [ctypes.c_void_p, ctypes.c_double] 
+        self.dll.AUTDGainHoloLMTau.restype = None
+
+        self.dll.AUTDGainHoloLMKMax.argtypes = [ctypes.c_void_p, ctypes.c_uint32] 
+        self.dll.AUTDGainHoloLMKMax.restype = None
+
+        self.dll.AUTDGainHoloLMInitial.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_double), ctypes.c_uint64] 
+        self.dll.AUTDGainHoloLMInitial.restype = None
 
         self.dll.AUTDGainHoloAdd.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double] 
         self.dll.AUTDGainHoloAdd.restype = None
 
-        self.dll.AUTDConstraintDontCare.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
-        self.dll.AUTDConstraintDontCare.restype = None
+        self.dll.AUTDGainHoloSetDotCareConstraint.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDGainHoloSetDotCareConstraint.restype = None
 
-        self.dll.AUTDConstraintNormalize.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
-        self.dll.AUTDConstraintNormalize.restype = None
+        self.dll.AUTDGainHoloSetNormalizeConstraint.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDGainHoloSetNormalizeConstraint.restype = None
 
-        self.dll.AUTDConstraintUniform.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_double] 
-        self.dll.AUTDConstraintUniform.restype = None
+        self.dll.AUTDGainHoloSetUniformConstraint.argtypes = [ctypes.c_void_p, ctypes.c_double] 
+        self.dll.AUTDGainHoloSetUniformConstraint.restype = None
 
-        self.dll.AUTDConstraintClamp.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
-        self.dll.AUTDConstraintClamp.restype = None
+        self.dll.AUTDGainHoloSetClampConstraint.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double] 
+        self.dll.AUTDGainHoloSetClampConstraint.restype = None
 
-        self.dll.AUTDSetConstraint.argtypes = [ctypes.c_void_p, ctypes.c_void_p] 
-        self.dll.AUTDSetConstraint.restype = None
+        self.dll.AUTDDeleteGainHolo.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDDeleteGainHolo.restype = None

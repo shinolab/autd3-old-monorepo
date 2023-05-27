@@ -2,7 +2,7 @@
 
 [autd3](https://github.com/shinolab/autd3) wrapper for .Net Standard 2.1
 
-version: 8.1.1
+version: 10.0.0
 
 ## Install
 
@@ -27,4 +27,4 @@ See [LICENSE](../LICENSE).
 
 # Author
 
-Shun Suzuki 2022
+Shun Suzuki 2022-2023

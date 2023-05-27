@@ -2,7 +2,7 @@
 import threading
 import ctypes
 import os
-
+from enum import IntEnum
 
 class Singleton(type):
     _instances = {}
@@ -27,17 +27,15 @@ class NativeMethods(metaclass=Singleton):
             return
         self.dll = ctypes.CDLL(os.path.join(self.bin, f'{self.prefix}autd3capi-link-simulator{self.ext}'))
 
-        self.dll.AUTDLinkSimulator.argtypes = [ctypes.POINTER(ctypes.c_void_p)] 
-        self.dll.AUTDLinkSimulator.restype = None
 
-        self.dll.AUTDLinkSimulatorLogLevel.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
-        self.dll.AUTDLinkSimulatorLogLevel.restype = None
+        self.dll.AUTDLinkSimulator.argtypes = [ctypes.c_uint16] 
+        self.dll.AUTDLinkSimulator.restype = ctypes.c_void_p
 
-        self.dll.AUTDLinkSimulatorLogFunc.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p] 
-        self.dll.AUTDLinkSimulatorLogFunc.restype = None
+        self.dll.AUTDLinkSimulatorAddr.argtypes = [ctypes.c_void_p, ctypes.c_char_p] 
+        self.dll.AUTDLinkSimulatorAddr.restype = ctypes.c_void_p
 
         self.dll.AUTDLinkSimulatorTimeout.argtypes = [ctypes.c_void_p, ctypes.c_uint64] 
-        self.dll.AUTDLinkSimulatorTimeout.restype = None
+        self.dll.AUTDLinkSimulatorTimeout.restype = ctypes.c_void_p
 
-        self.dll.AUTDLinkSimulatorBuild.argtypes = [ctypes.POINTER(ctypes.c_void_p), ctypes.c_void_p] 
-        self.dll.AUTDLinkSimulatorBuild.restype = None
+        self.dll.AUTDLinkSimulatorBuild.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDLinkSimulatorBuild.restype = ctypes.c_void_p
