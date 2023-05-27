@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/05/2023
+ * Last Modified: 27/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,5 +32,6 @@ fn main() {
         .build()
         .unwrap();
 
-    GeometryViewer::new().run(&geometry);
+    let res = GeometryViewer::new().run(&geometry);
+    std::process::exit(res);
 }

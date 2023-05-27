@@ -4,7 +4,7 @@
  * Created Date: 11/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/05/2023
+ * Last Modified: 27/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -76,6 +76,7 @@ impl Renderer {
         width: f64,
         height: f64,
         v_sync: bool,
+        gpu_idx: i32,
     ) -> Self {
         let library = VulkanLibrary::new().unwrap();
         let mut required_extensions = vulkano_win::required_extensions(&library);
@@ -153,7 +154,7 @@ impl Renderer {
             .build_vk_surface(event_loop, instance.clone())
             .unwrap();
 
-        let (device, queue) = Self::create_device(instance, surface.clone());
+        let (device, queue) = Self::create_device(gpu_idx, instance, surface.clone());
 
         let mut viewport = Viewport {
             origin: [0.0, 0.0],
@@ -252,13 +253,17 @@ impl Renderer {
         Matrix4::from(self.camera.orthogonal())
     }
 
-    fn create_device(instance: Arc<Instance>, surface: Arc<Surface>) -> (Arc<Device>, Arc<Queue>) {
+    fn create_device(
+        gpu_idx: i32,
+        instance: Arc<Instance>,
+        surface: Arc<Surface>,
+    ) -> (Arc<Device>, Arc<Queue>) {
         let device_extensions = DeviceExtensions {
             khr_swapchain: true,
             ..DeviceExtensions::default()
         };
 
-        let (physical_device, queue_family) = instance
+        let available_properties = instance
             .enumerate_physical_devices()
             .unwrap()
             .filter(|p| p.supported_extensions().contains(&device_extensions))
@@ -272,15 +277,51 @@ impl Renderer {
                     })
                     .map(|i| (p, i as u32))
             })
-            .min_by_key(|(p, _)| match p.properties().device_type {
-                PhysicalDeviceType::DiscreteGpu => 0,
-                PhysicalDeviceType::IntegratedGpu => 1,
-                PhysicalDeviceType::VirtualGpu => 2,
-                PhysicalDeviceType::Cpu => 3,
-                PhysicalDeviceType::Other => 4,
-                _ => 5,
-            })
-            .unwrap();
+            .collect::<Vec<_>>();
+
+        spdlog::debug!("Available GPUS:");
+        available_properties
+            .iter()
+            .enumerate()
+            .for_each(|(i, (p, _))| {
+                spdlog::debug!(
+                    "  [{}]: Available GPUS: {} (type: {:?})",
+                    i,
+                    p.properties().device_name,
+                    p.properties().device_type
+                );
+            });
+
+        let (physical_device, queue_family) = match gpu_idx {
+            idx if idx < 0 => available_properties
+                .into_iter()
+                .min_by_key(|(p, _)| match p.properties().device_type {
+                    PhysicalDeviceType::DiscreteGpu => 0,
+                    PhysicalDeviceType::IntegratedGpu => 1,
+                    PhysicalDeviceType::VirtualGpu => 2,
+                    PhysicalDeviceType::Cpu => 3,
+                    PhysicalDeviceType::Other => 4,
+                    _ => 5,
+                })
+                .unwrap(),
+            idx if (idx as usize) < available_properties.len() => {
+                available_properties[gpu_idx as usize].clone()
+            }
+            _ => {
+                spdlog::warn!("GPU {} not found. Using default GPU.", gpu_idx);
+                available_properties
+                    .into_iter()
+                    .min_by_key(|(p, _)| match p.properties().device_type {
+                        PhysicalDeviceType::DiscreteGpu => 0,
+                        PhysicalDeviceType::IntegratedGpu => 1,
+                        PhysicalDeviceType::VirtualGpu => 2,
+                        PhysicalDeviceType::Cpu => 3,
+                        PhysicalDeviceType::Other => 4,
+                        _ => 5,
+                    })
+                    .unwrap()
+            }
+        };
 
         spdlog::info!(
             "Using device: {} (type: {:?})",
