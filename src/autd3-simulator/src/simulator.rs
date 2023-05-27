@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 27/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -48,7 +48,8 @@ use vulkano::{
 };
 use winit::{
     event::{Event, WindowEvent},
-    event_loop::{ControlFlow, EventLoop},
+    event_loop::{ControlFlow, EventLoopBuilder},
+    platform::run_return::EventLoopExtRunReturn,
 };
 
 const WRITE: u8 = 1;
@@ -58,16 +59,45 @@ const CLIENT_DISCONNECT: u8 = 4;
 
 #[derive(Default)]
 pub struct Simulator {
+    window_width: Option<u32>,
+    window_height: Option<u32>,
+    vsync: Option<bool>,
+    port: Option<u16>,
+    gpu_idx: Option<i32>,
     settings: ViewerSettings,
-    server_th: Option<JoinHandle<()>>,
 }
 
 impl Simulator {
     pub fn new() -> Self {
         Self {
+            window_width: None,
+            window_height: None,
+            vsync: None,
+            port: None,
+            gpu_idx: None,
             settings: ViewerSettings::default(),
-            server_th: None,
         }
+    }
+
+    pub fn window_size(mut self, width: u32, height: u32) -> Self {
+        self.window_width = Some(width);
+        self.window_height = Some(height);
+        self
+    }
+
+    pub fn vsync(mut self, vsync: bool) -> Self {
+        self.vsync = Some(vsync);
+        self
+    }
+
+    pub fn port(mut self, port: u16) -> Self {
+        self.port = Some(port);
+        self
+    }
+
+    pub fn gpu_idx(mut self, gpu_idx: i32) -> Self {
+        self.gpu_idx = Some(gpu_idx);
+        self
     }
 
     pub fn settings(mut self, settings: ViewerSettings) -> Self {
@@ -75,43 +105,48 @@ impl Simulator {
         self
     }
 
-    pub fn run(mut self) -> ! {
+    pub fn get_settings(&self) -> &ViewerSettings {
+        &self.settings
+    }
+
+    pub fn run(&mut self) -> i32 {
         spdlog::info!("Initializing window...");
 
         let (sender_c2s, receiver_c2s) = bounded(32);
         let (sender_s2c, receiver_s2c) = bounded(32);
 
-        let settings = self.settings.clone();
+        let max_dev_num = self.settings.max_dev_num;
         let exit = Arc::new(AtomicBool::new(false));
         let exit_server = exit.clone();
-        self.server_th = Some(std::thread::spawn(|| {
-            match Self::run_server(settings, receiver_s2c, sender_c2s, exit_server) {
+        let port = self.port.unwrap_or(self.settings.port);
+        let server_th = std::thread::spawn(move || {
+            match Self::run_server(port, max_dev_num, receiver_s2c, sender_c2s, exit_server) {
                 Ok(_) => {}
                 Err(e) => {
                     spdlog::error!("{}", e);
                 }
             }
-        }));
+        });
 
-        self.run_simulator(exit, receiver_c2s, sender_s2c)
+        self.run_simulator(server_th, exit, receiver_c2s, sender_s2c)
     }
 
     fn run_server(
-        settings: ViewerSettings,
+        port: u16,
+        max_dev_num: usize,
         receiver_s2c: Receiver<Vec<u8>>,
         sender_c2s: Sender<Vec<u8>>,
         exit: Arc<AtomicBool>,
     ) -> anyhow::Result<()> {
-        let buf_size = 1
-            + std::mem::size_of::<autd3_core::GlobalHeader>()
-            + settings.max_dev_num * NUM_TRANS_IN_UNIT;
+        let buf_size =
+            1 + std::mem::size_of::<autd3_core::GlobalHeader>() + max_dev_num * NUM_TRANS_IN_UNIT;
 
-        let addr = format!("0.0.0.0:{}", settings.port);
+        let addr = format!("0.0.0.0:{}", port);
         let listener = TcpListener::bind(addr)?;
         listener
             .set_nonblocking(true)
             .expect("Cannot set non-blocking");
-        spdlog::info!("Waiting for client connection on {}", settings.port);
+        spdlog::info!("Waiting for client connection on {}", port);
 
         for stream in listener.incoming() {
             let mut rx = Vec::new();
@@ -133,7 +168,7 @@ impl Simulator {
                             Err(e) if e.kind() == std::io::ErrorKind::ConnectionReset => {
                                 spdlog::info!("Client disconnected");
                                 sender_c2s.send(vec![CLIENT_DISCONNECT]).unwrap();
-                                spdlog::info!("Waiting for client connection on {}", settings.port);
+                                spdlog::info!("Waiting for client connection on {}", port);
                                 break;
                             }
                             Err(e) => {
@@ -144,7 +179,7 @@ impl Simulator {
                         if len == 0 {
                             spdlog::info!("Client disconnected");
                             sender_c2s.send(vec![CLIENT_DISCONNECT]).unwrap();
-                            spdlog::info!("Waiting for client connection on {}", settings.port);
+                            spdlog::info!("Waiting for client connection on {}", port);
                             break;
                         }
                         match buf[0] {
@@ -180,18 +215,21 @@ impl Simulator {
     }
 
     fn run_simulator(
-        mut self,
+        &mut self,
+        server_th: JoinHandle<()>,
         exit: Arc<AtomicBool>,
         receiver_c2s: Receiver<Vec<u8>>,
         sender_s2c: Sender<Vec<u8>>,
-    ) -> ! {
-        let event_loop = EventLoop::new();
+    ) -> i32 {
+        let mut event_loop = EventLoopBuilder::<()>::with_user_event().build();
+
         let mut render = Renderer::new(
             &event_loop,
             "AUTD Simulator",
-            self.settings.window_width as _,
-            self.settings.window_height as _,
-            self.settings.vsync,
+            self.window_width.unwrap_or(self.settings.window_width) as _,
+            self.window_height.unwrap_or(self.settings.window_height) as _,
+            self.vsync.unwrap_or(self.settings.vsync),
+            self.gpu_idx.unwrap_or(self.settings.gpu_idx),
         );
 
         render.move_camera(&self.settings);
@@ -208,7 +246,8 @@ impl Simulator {
         let mut is_initialized = false;
         let mut is_source_update = false;
         let mut is_running = true;
-        event_loop.run(move |event, _, control_flow| {
+
+        let res = event_loop.run_return(move |event, _, control_flow| {
             if is_initialized {
                 cpus.iter_mut().for_each(|c| c.update());
                 let rx = cpus.iter().flat_map(|c| [c.ack(), c.msg_id()]).collect();
@@ -475,14 +514,14 @@ impl Simulator {
             if !is_running {
                 exit.store(true, Ordering::Release);
 
-                if let Some(handle) = self.server_th.take() {
-                    handle.join().unwrap();
-                }
-
                 spdlog::default_logger().flush();
 
                 *control_flow = ControlFlow::Exit;
             }
         });
+
+        server_th.join().unwrap();
+
+        res
     }
 }

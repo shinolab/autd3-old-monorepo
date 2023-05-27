@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/05/2023
+ * Last Modified: 27/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -29,7 +29,8 @@ use vulkano::{
 };
 use winit::{
     event::{Event, WindowEvent},
-    event_loop::{ControlFlow, EventLoop},
+    event_loop::{ControlFlow, EventLoopBuilder},
+    platform::run_return::EventLoopExtRunReturn,
 };
 
 #[derive(Default)]
@@ -48,8 +49,19 @@ impl GeometryViewer {
         }
     }
 
-    pub fn run<T: Transducer>(self, geometry: &Geometry<T>) -> ! {
-        let event_loop = EventLoop::new();
+    pub fn window_size(mut self, width: u32, height: u32) -> Self {
+        self.window_width = width;
+        self.window_height = height;
+        self
+    }
+
+    pub fn vsync(mut self, vsync: bool) -> Self {
+        self.vsync = vsync;
+        self
+    }
+
+    pub fn run<T: Transducer>(&mut self, geometry: &Geometry<T>) -> i32 {
+        let mut event_loop = EventLoopBuilder::<()>::with_user_event().build();
         let mut render = Renderer::new(
             &event_loop,
             "AUTD GeometryViewer",
@@ -83,7 +95,7 @@ impl GeometryViewer {
         let mut imgui = ImGuiRenderer::new(&render);
 
         let mut is_running = true;
-        event_loop.run(move |event, _, control_flow| {
+        event_loop.run_return(move |event, _, control_flow| {
             match event {
                 Event::WindowEvent {
                     event: WindowEvent::CloseRequested,
@@ -170,6 +182,6 @@ impl GeometryViewer {
             if !is_running {
                 *control_flow = ControlFlow::Exit;
             }
-        });
+        })
     }
 }
