@@ -267,7 +267,6 @@ dependencies = [
  "crossbeam-channel",
  "glob",
  "libc",
- "libloading 0.8.0",
  "once_cell",
  "thiserror",
  "windows",
