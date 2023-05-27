@@ -4,7 +4,7 @@
  * Created Date: 22/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 27/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,7 +28,7 @@ fn main() -> Result<()> {
         .server_ams_net_id("0.0.0.0.0.0")
         .build()?;
 
-    let autd = Controller::open(geometry, link).expect("Failed to open");
+    let autd = Controller::open(geometry, link)?;
 
     test_runner::run(autd)
 }

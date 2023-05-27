@@ -16,7 +16,7 @@ required-features = ["soem"]
 [[bin]]
 name = "remote_soem"
 path = "src/remote_soem.rs"
-required-features = ["soem"]
+required-features = ["remote_soem"]
 
 [[bin]]
 name = "twincat"
@@ -26,17 +26,17 @@ required-features = ["twincat"]
 [[bin]]
 name = "remote_twincat"
 path = "src/remote_twincat.rs"
-required-features = ["twincat"]
+required-features = ["remote_twincat"]
 
 [[bin]]
 name = "simulator_client"
 path = "src/simulator_client.rs"
-required-features = ["simulator"]
+required-features = ["simulator_client"]
 
 [[bin]]
 name = "simulator_server"
 path = "src/simulator_server.rs"
-required-features = ["simulator"]
+required-features = ["simulator_server"]
 
 [[bin]]
 name = "freq_config"
@@ -63,8 +63,11 @@ serde_derive = "1.0.163"
 
 [features] 
 default = []
-simulator = ["autd3-link-simulator", "autd3-simulator"]
-soem = ["autd3-link-soem"]
-twincat = ["autd3-link-twincat"]
+simulator_client = ["autd3-link-simulator"]
+simulator_server = ["autd3-simulator"]
+soem = ["autd3-link-soem/local"]
+remote_soem = ["autd3-link-soem/remote"]
+twincat = ["autd3-link-twincat/local"]
+remote_twincat = ["autd3-link-twincat/remote"]
 geometry_viewer = ["autd3-geometry-viewer"]
-all = ["soem", "twincat", "simulator", "geometry_viewer"]
+all = ["soem", "remote_soem", "twincat", "remote_twincat", "simulator_client", "simulator_server", "geometry_viewer"]
