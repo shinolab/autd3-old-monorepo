@@ -4,7 +4,7 @@
  * Created Date: 26/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 27/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -25,8 +25,8 @@ pub enum ColorMapType {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ViewerSettings {
-    pub window_width: i32,
-    pub window_height: i32,
+    pub window_width: u32,
+    pub window_height: u32,
     pub vsync: bool,
     pub gpu_idx: i32,
     pub slice_pos_x: f32,
@@ -100,8 +100,8 @@ impl ViewerSettings {
 impl Default for ViewerSettings {
     fn default() -> Self {
         ViewerSettings {
-            window_width: 1200,
-            window_height: 900,
+            window_width: 800,
+            window_height: 600,
             vsync: true,
             gpu_idx: 0,
             slice_pos_x: 86.6252 * SCALE,
