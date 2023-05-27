@@ -17,8 +17,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Checkout submodules
-      run: git submodule update --init --force --recursive
     - name: Build src on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |
@@ -58,8 +56,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Checkout submodules
-      run: git submodule update --init --force --recursive
     - name: lint src
       run: |
         cd src
