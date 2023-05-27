@@ -13,6 +13,32 @@
 
 #[cfg(feature = "remote")]
 fn main() {
+    match std::process::Command::new("git")
+        .args([
+            "submodule",
+            "update",
+            "--init",
+            "--recursive",
+            "--",
+            "./3rdparty/ADS",
+        ])
+        .output()
+    {
+        Ok(r) => {
+            if !r.status.success() {
+                eprintln!(
+                    "Failed to update submodule: {}",
+                    String::from_utf8_lossy(&r.stderr)
+                );
+            } else {
+                println!("Submodule updated");
+            }
+        }
+        Err(e) => {
+            eprintln!("Failed to update submodule: {}", e);
+        }
+    }
+
     if cfg!(target_os = "windows") {
         println!("cargo:rustc-link-lib=wsock32");
         println!("cargo:rustc-link-lib=ws2_32");
