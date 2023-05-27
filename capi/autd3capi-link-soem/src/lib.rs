@@ -6,12 +6,45 @@ use std::{
     time::Duration,
 };
 
+use autd3capi::Level;
 use autd3capi_common::*;
 
 use autd3_link_soem::{
     local::{SOEMBuilder, SOEM},
     remote::{Filled, RemoteSOEM, RemoteSOEMBuilder},
+    EthernetAdapters,
 };
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGetAdapterPointer(len: *mut u32) -> ConstPtr {
+    let adapters = EthernetAdapters::new();
+    unsafe {
+        *len = adapters.len() as u32;
+    }
+    Box::into_raw(Box::new(adapters)) as _
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGetAdapter(
+    adapters: ConstPtr,
+    idx: u32,
+    desc: *mut c_char,
+    name: *mut c_char,
+) {
+    let adapter = &cast_without_ownership!(adapters, EthernetAdapters)[idx as usize];
+
+    let name_ = std::ffi::CString::new(adapter.name().to_string()).unwrap();
+    libc::strcpy(name, name_.as_ptr());
+    let desc_ = std::ffi::CString::new(adapter.desc().to_string()).unwrap();
+    libc::strcpy(desc, desc_.as_ptr());
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDFreeAdapterPointer(adapters: ConstPtr) {
+    unsafe {
+        let _ = Box::from_raw(adapters as *mut EthernetAdapters);
+    }
+}
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDLinkSOEM() -> ConstPtr {
@@ -142,31 +175,6 @@ pub unsafe extern "C" fn AUTDLinkSOEMOnLost(builder: ConstPtr, on_lost_func: Con
         Box::into_raw(Box::new(
             Box::from_raw(builder as *mut SOEMBuilder).on_lost(out_func),
         )) as _
-    }
-}
-
-#[repr(u8)]
-pub enum Level {
-    Critical = 0,
-    Error = 1,
-    Warn = 2,
-    Info = 3,
-    Debug = 4,
-    Trace = 5,
-    Off = 6,
-}
-
-impl From<Level> for autd3::prelude::LevelFilter {
-    fn from(level: Level) -> Self {
-        match level {
-            Level::Critical => LevelFilter::MoreSevereEqual(autd3::prelude::Level::Critical),
-            Level::Error => LevelFilter::MoreSevereEqual(autd3::prelude::Level::Error),
-            Level::Warn => LevelFilter::MoreSevereEqual(autd3::prelude::Level::Warn),
-            Level::Info => LevelFilter::MoreSevereEqual(autd3::prelude::Level::Info),
-            Level::Debug => LevelFilter::MoreSevereEqual(autd3::prelude::Level::Debug),
-            Level::Trace => LevelFilter::MoreSevereEqual(autd3::prelude::Level::Trace),
-            Level::Off => LevelFilter::Off,
-        }
     }
 }
 
