@@ -21,16 +21,16 @@ class Modulation(Header):
         super().__init__()
 
     def __del__(self):
-        Base().dll.AUTDDeleteModulation(self.ptr)
+        Base().delete_modulation(self.ptr)
 
     @property
-    def sampling_frequency_division(self):
-        return Base().dll.AUTDModulationSamplingFrequencyDivision(self.ptr)
+    def sampling_frequency_division(self) -> int:
+        return int(Base().modulation_sampling_frequency_division(self.ptr))
 
     @sampling_frequency_division.setter
     def sampling_frequency_division(self, value: int):
-        return Base().dll.AUTDModulationSetSamplingFrequencyDivision(self.ptr, value)
+        return Base().modulation_set_sampling_frequency_division(self.ptr, value)
 
     @property
-    def sampling_frequency(self):
-        return Base().dll.AUTDModulationSamplingFrequency(self.ptr)
+    def sampling_frequency(self) -> float:
+        return float(Base().modulation_sampling_frequency(self.ptr))

@@ -34,7 +34,7 @@ class FocusSTM(Body):
 
     @property
     def frequency(self) -> float:
-        return Base().focus_stm_frequency(self.ptr).value
+        return float(Base().focus_stm_frequency(self.ptr))
 
     @frequency.setter
     def frequency(self, freq: float):
@@ -42,7 +42,7 @@ class FocusSTM(Body):
 
     @property
     def start_idx(self) -> Optional[int]:
-        idx = Base().focus_stm_get_start_idx(self.ptr).value
+        idx = int(Base().focus_stm_get_start_idx(self.ptr))
         if idx < 0:
             return None
         return idx
@@ -53,7 +53,7 @@ class FocusSTM(Body):
 
     @property
     def finish_idx(self) -> Optional[int]:
-        idx = Base().focus_stm_get_finish_idx(self.ptr).value
+        idx = int(Base().focus_stm_get_finish_idx(self.ptr))
         if idx < 0:
             return None
         return idx
@@ -64,11 +64,11 @@ class FocusSTM(Body):
 
     @property
     def sampling_frequency(self) -> float:
-        return Base().focus_stm_sampling_frequency(self.ptr).value
+        return float(Base().focus_stm_sampling_frequency(self.ptr))
 
     @property
     def sampling_frequency_division(self) -> int:
-        return Base().focus_stm_sampling_frequency_division(self.ptr).value
+        return int(Base().focus_stm_sampling_frequency_division(self.ptr))
 
     @sampling_frequency_division.setter
     def sampling_frequency_division(self, value: int):
@@ -92,7 +92,7 @@ class GainSTM(Body):
 
     @property
     def frequency(self) -> float:
-        return Base().gain_stm_frequency(self.ptr).value
+        return float(Base().gain_stm_frequency(self.ptr))
 
     @frequency.setter
     def frequency(self, freq: float):
@@ -100,7 +100,7 @@ class GainSTM(Body):
 
     @property
     def start_idx(self) -> Optional[int]:
-        idx = Base().gain_stm_get_start_idx(self.ptr).value
+        idx = int(Base().gain_stm_get_start_idx(self.ptr))
         if idx < 0:
             return None
         return idx
@@ -111,7 +111,7 @@ class GainSTM(Body):
 
     @property
     def finish_idx(self) -> Optional[int]:
-        idx = Base().gain_stm_get_finish_idx(self.ptr).value
+        idx = int(Base().gain_stm_get_finish_idx(self.ptr))
         if idx < 0:
             return None
         return idx
@@ -122,11 +122,11 @@ class GainSTM(Body):
 
     @property
     def sampling_frequency(self) -> float:
-        return Base().gain_stm_sampling_frequency(self.ptr).value
+        return float(Base().gain_stm_sampling_frequency(self.ptr))
 
     @property
     def sampling_frequency_division(self) -> int:
-        return Base().gain_stm_sampling_frequency_division(self.ptr).value
+        return int(Base().gain_stm_sampling_frequency_division(self.ptr))
 
     @sampling_frequency_division.setter
     def sampling_frequency_division(self, value: int):
