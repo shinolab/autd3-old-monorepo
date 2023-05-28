@@ -26,3 +26,18 @@ jobs:
         cp LICENSE dotnet/cs/src/LICENSE.md
         cd ./dotnet/cs/src
         dotnet build -c:Release
+    - name: Build with dotnet
+      if : matrix.os == 'windows-latest'
+      run: |
+        dotnet nuget add source $pwd/dotnet/cs/src/bin/Release -n autd3sharp_local
+        cd ./dotnet/cs/example
+        dotnet build -c:Release
+      shell: bash
+    - name: Build with dotnet
+      if : matrix.os != 'windows-latest'
+      run: |
+        BASE_DIR=$(cd $(dirname $0); pwd)
+        dotnet nuget add source $BASE_DIR/dotnet/cs/src/bin/Release -n autd3sharp_local
+        cd ./dotnet/cs/example
+        dotnet build -c:Release
+      shell: bash
