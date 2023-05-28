@@ -26,7 +26,7 @@ if __name__ == "__main__":
         .build()
     )
 
-    link = Simulator().build()
+    link = Simulator(8080).build()
 
     autd = Controller.open(geometry, link)
 

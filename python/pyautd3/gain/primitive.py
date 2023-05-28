@@ -49,7 +49,7 @@ class BesselBeam(Gain):
 class PlaneWave(Gain):
     def __init__(self, dir: np.ndarray, amp: float = 1.0):
         super().__init__()
-        self.ptr = Base().dll.AUTDGainPlaneWave(dir[0], dir[1], dir[2], amp)
+        self.ptr = Base().gain_plane_wave(dir[0], dir[1], dir[2], amp)
 
     def __del__(self):
         super().__del__()

@@ -13,7 +13,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 
 from .primitive import Static, Custom, Sine, SineSquared, SineLegacy, Square
-from .audio_file import RawPCM, Wav
+from .audio_file import Wav
 
 
 __all__ = [
@@ -23,6 +23,5 @@ __all__ = [
     "SineSquared",
     "SineLegacy",
     "Square",
-    "RawPCM",
     "Wav",
 ]

@@ -302,7 +302,7 @@ class NativeMethods(metaclass=Singleton):",
             self.dll = ctypes.CDLL(os.path.join(bin_location, f'{{bin_prefix}}{}{{bin_ext}}'))
         except FileNotFoundError:
             return",
-            crate_name
+            crate_name.replace("-", "_")
         )?;
 
         for function in self.functions.iter() {
