@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 21/02/2023
+ * Last Modified: 28/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ namespace AUTD3Sharp
     public readonly struct FirmwareInfo : IEquatable<FirmwareInfo>
     {
         public string Info { get; }
-        public bool MatchesVersion { get; }
+        public bool IsValid { get; }
         public bool IsSupported { get; }
 
         public static string LatestVersion
@@ -36,10 +36,10 @@ namespace AUTD3Sharp
             }
         }
 
-        internal FirmwareInfo(string info, bool matchesVersion, bool isSupported)
+        internal FirmwareInfo(string info, bool isValid, bool isSupported)
         {
             Info = info;
-            MatchesVersion = matchesVersion;
+            IsValid = isValid;
             IsSupported = isSupported;
         }
 
