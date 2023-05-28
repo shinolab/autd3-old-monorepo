@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/05/2023
+ * Last Modified: 28/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
 * Copyright (c) 2021-2023 Shun Suzuki. All rights reserved.
@@ -166,10 +166,10 @@ namespace AUTD3Sharp
                 var handle = NativeMethods.LinkSOEM.AUTDGetAdapterPointer(out var len);
                 for (uint i = 0; i < len; i++)
                 {
-                    var sbDesc = new StringBuilder(128);
-                    var sbName = new StringBuilder(128);
+                    var sbDesc = new byte[128];
+                    var sbName = new byte[128];
                     NativeMethods.LinkSOEM.AUTDGetAdapter(handle, i, sbDesc, sbName);
-                    yield return new EtherCATAdapter(sbDesc.ToString(), sbName.ToString());
+                    yield return new EtherCATAdapter(System.Text.Encoding.UTF8.GetString(sbDesc), System.Text.Encoding.UTF8.GetString(sbName));
                 }
                 NativeMethods.LinkSOEM.AUTDFreeAdapterPointer(handle);
             }
@@ -214,7 +214,7 @@ namespace AUTD3Sharp
 
             public Link Build()
             {
-                var err = new StringBuilder(256);
+                var err = new byte[256];
                 var handle = NativeMethods.LinkTwinCAT.AUTDLinkTwinCATBuild(_builder, err);
                 if (handle == IntPtr.Zero)
                 {
@@ -253,7 +253,7 @@ namespace AUTD3Sharp
 
             public Link Build()
             {
-                var err = new StringBuilder(256);
+                var err = new byte[256];
                 var handle = NativeMethods.LinkTwinCAT.AUTDLinkRemoteTwinCATBuild(_builder, err);
                 if (handle == IntPtr.Zero)
                 {

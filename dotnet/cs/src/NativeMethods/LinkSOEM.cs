@@ -8,11 +8,11 @@ namespace AUTD3Sharp
     {
         internal static class LinkSOEM
         {
-            private const string DLL = "autd3capi-link-soem";
+            private const string DLL = "autd3capi_link_soem";
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDGetAdapterPointer(out uint len);
 
-            [DllImport(DLL, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDGetAdapter(IntPtr adapters, uint idx, System.Text.StringBuilder desc, System.Text.StringBuilder name);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDGetAdapter(IntPtr adapters, uint idx, byte[] desc, byte[] name);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDFreeAdapterPointer(IntPtr adapters);
 
@@ -28,7 +28,7 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDLinkSOEMSyncMode(IntPtr builder, SyncMode mode);
 
-            [DllImport(DLL, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDLinkSOEMIfname(IntPtr builder, string ifname);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDLinkSOEMIfname(IntPtr builder, string ifname);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDLinkSOEMStateCheckInterval(IntPtr builder, uint intervalMs);
 
@@ -42,7 +42,7 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDLinkSOEMBuild(IntPtr builder);
 
-            [DllImport(DLL, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDLinkRemoteSOEM(string addr, ushort port);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDLinkRemoteSOEM(string addr, ushort port);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDLinkRemoteSOEMTimeout(IntPtr builder, ulong timeoutNs);
 

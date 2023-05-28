@@ -13,11 +13,13 @@
 
 using System;
 using System.Text;
+using System.Runtime.InteropServices;
 
 namespace AUTD3Sharp
 {
     namespace Extra
     {
+        [ComVisible(false)]
         public class GeometryViewer
         {
             private IntPtr _handle;
@@ -46,6 +48,8 @@ namespace AUTD3Sharp
 
         }
 
+
+        [ComVisible(false)]
         public class Simulator
         {
             private IntPtr _handle;
@@ -81,7 +85,7 @@ namespace AUTD3Sharp
 
             public Simulator SettingsPath(string settingsPath)
             {
-                var err = new StringBuilder(256);
+                var err = new byte[256];
                 var handle = NativeMethods.Simulator.AUTDSimulatorSettingsPath(_handle, settingsPath, err);
                 if (handle != IntPtr.Zero)
                     _handle = handle;
@@ -95,7 +99,7 @@ namespace AUTD3Sharp
 
             public void SaveSettings(string path)
             {
-                var err = new StringBuilder(256);
+                var err = new byte[256];
                 if (!NativeMethods.Simulator.AUTDSimulatorSaveSettings(_handle, path, err))
                     throw new AUTDException(err);
             }

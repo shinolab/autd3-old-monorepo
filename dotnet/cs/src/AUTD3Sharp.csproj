@@ -41,7 +41,6 @@
   <Target Name="GetNativeLibraryFiles">
   <ItemGroup>
     <BuildOutputInPackage Include="native\windows\x64\*.dll" />
-    <BuildOutputInPackage Include="native\windows\arm\*.dll" />
     <BuildOutputInPackage Include="native\linux\x64\*.so" />
     <BuildOutputInPackage Include="native\osx\universal\*.dylib" />
   </ItemGroup>

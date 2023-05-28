@@ -2,79 +2,19 @@
 
 mod backend;
 
-use std::time::Duration;
-
-use autd3::core::GainOp;
 use autd3_gain_holo::*;
-use autd3capi_common::{dynamic_transducer::TransMode, *};
+use autd3capi_common::*;
 use backend::DynamicBackend;
 
-pub type HG = dyn DynamicHolo;
-
-pub trait DynamicHolo: DynamicDatagram {}
-
-struct HoloWrap {
-    pub holo: Box<dyn Holo<DynamicTransducer>>,
-}
-
-impl HoloWrap {
-    pub fn cast<H>(&mut self) -> &mut H {
-        let h: &mut dyn Holo<DynamicTransducer> = &mut *self.holo;
-        unsafe { (h as *mut _ as *mut H).as_mut().unwrap() }
-    }
-}
-
-impl HoloWrap {
-    #[allow(clippy::new_ret_no_self)]
-    pub fn new<H: 'static + Holo<DynamicTransducer>>(holo: H) -> Box<Box<HG>> {
-        Box::new(Box::new(HoloWrap {
-            holo: Box::new(holo),
-        }))
-    }
-}
-
-impl DynamicHolo for HoloWrap {}
-
-impl DynamicDatagram for HoloWrap {
-    fn operation(
-        &mut self,
-        mode: TransMode,
-        geometry: &Geometry<DynamicTransducer>,
-    ) -> Result<
-        (
-            Box<dyn autd3::core::Operation>,
-            Box<dyn autd3::core::Operation>,
-        ),
-        autd3::core::error::AUTDInternalError,
-    > {
-        match mode {
-            TransMode::Legacy => Ok((
-                Box::<autd3::core::NullHeader>::default(),
-                Box::new(autd3::core::GainLegacy::new(
-                    self.holo.calc(geometry)?,
-                    || geometry.transducers().map(|tr| tr.cycle()).collect(),
-                )),
-            )),
-            TransMode::Advanced => Ok((
-                Box::<autd3::core::NullHeader>::default(),
-                Box::new(autd3::core::GainAdvanced::new(
-                    self.holo.calc(geometry)?,
-                    || geometry.transducers().map(|tr| tr.cycle()).collect(),
-                )),
-            )),
-            TransMode::AdvancedPhase => Ok((
-                Box::<autd3::core::NullHeader>::default(),
-                Box::new(autd3::core::GainAdvancedPhase::new(
-                    self.holo.calc(geometry)?,
-                    || geometry.transducers().map(|tr| tr.cycle()).collect(),
-                )),
-            )),
-        }
-    }
-
-    fn timeout(&self) -> Option<Duration> {
-        None
-    }
+macro_rules! holo_cast {
+    ($holo:ident, $ty:ty) => {
+        (($holo as *mut Box<G> as *mut Box<GainWrap>)
+            .as_mut()
+            .unwrap()
+            .gain_mut() as *mut _ as *mut $ty)
+            .as_mut()
+            .unwrap()
+    };
 }
 
 #[no_mangle]
@@ -88,7 +28,7 @@ pub unsafe extern "C" fn AUTDDefaultBackend() -> ConstPtr {
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloSDP(backend: ConstPtr) -> ConstPtr {
     unsafe {
-        Box::into_raw(HoloWrap::new(SDP::new(DynamicBackend::new(
+        Box::into_raw(GainWrap::new(SDP::new(DynamicBackend::new(
             *Box::from_raw(backend as _),
         )))) as _
     }
@@ -97,33 +37,62 @@ pub unsafe extern "C" fn AUTDGainHoloSDP(backend: ConstPtr) -> ConstPtr {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainHoloSDPAlpha(holo: ConstPtr, alpha: float) {
     unsafe {
-        (holo as *mut Box<HG> as *mut Box<HoloWrap>)
-            .as_mut()
-            .unwrap()
-            .cast::<SDP<DynamicBackend>>()
-            .alpha = alpha;
+        holo_cast!(holo, SDP<DynamicBackend>).alpha = alpha;
     }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainHoloSDPLambda(holo: ConstPtr, lambda: float) {
     unsafe {
-        (holo as *mut Box<HG> as *mut Box<HoloWrap>)
-            .as_mut()
-            .unwrap()
-            .cast::<SDP<DynamicBackend>>()
-            .lambda = lambda;
+        holo_cast!(holo, SDP<DynamicBackend>).lambda = lambda;
     }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainHoloSDPRepeat(holo: ConstPtr, repeat: u32) {
     unsafe {
-        (holo as *mut Box<HG> as *mut Box<HoloWrap>)
-            .as_mut()
-            .unwrap()
-            .cast::<SDP<DynamicBackend>>()
-            .repeat = repeat as _;
+        holo_cast!(holo, SDP<DynamicBackend>).repeat = repeat as _;
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloSDPAdd(
+    holo: ConstPtr,
+    x: float,
+    y: float,
+    z: float,
+    amp: float,
+) {
+    unsafe {
+        holo_cast!(holo, SDP<DynamicBackend>).add_focus(Vector3::new(x, y, z), amp);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloSDPSetDotCareConstraint(holo: ConstPtr) {
+    unsafe {
+        holo_cast!(holo, SDP<DynamicBackend>).set_constraint(Constraint::DontCare);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloSDPSetNormalizeConstraint(holo: ConstPtr) {
+    unsafe {
+        holo_cast!(holo, SDP<DynamicBackend>).set_constraint(Constraint::Normalize);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloSDPSetUniformConstraint(holo: ConstPtr, value: float) {
+    unsafe {
+        holo_cast!(holo, SDP<DynamicBackend>).set_constraint(Constraint::Uniform(value));
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloSDPSetClampConstraint(holo: ConstPtr, min: float, max: float) {
+    unsafe {
+        holo_cast!(holo, SDP<DynamicBackend>).set_constraint(Constraint::Clamp(min, max));
     }
 }
 
@@ -131,7 +100,7 @@ pub unsafe extern "C" fn AUTDGainHoloSDPRepeat(holo: ConstPtr, repeat: u32) {
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloEVP(backend: ConstPtr) -> ConstPtr {
     unsafe {
-        Box::into_raw(HoloWrap::new(EVP::new(DynamicBackend::new(
+        Box::into_raw(GainWrap::new(EVP::new(DynamicBackend::new(
             *Box::from_raw(backend as _),
         )))) as _
     }
@@ -140,11 +109,48 @@ pub unsafe extern "C" fn AUTDGainHoloEVP(backend: ConstPtr) -> ConstPtr {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainHoloEVPGamma(holo: ConstPtr, gamma: float) {
     unsafe {
-        (holo as *mut Box<HG> as *mut Box<HoloWrap>)
-            .as_mut()
-            .unwrap()
-            .cast::<EVP<DynamicBackend>>()
-            .gamma = gamma;
+        holo_cast!(holo, EVP<DynamicBackend>).gamma = gamma;
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloEVPAdd(
+    holo: ConstPtr,
+    x: float,
+    y: float,
+    z: float,
+    amp: float,
+) {
+    unsafe {
+        holo_cast!(holo, EVP<DynamicBackend>).add_focus(Vector3::new(x, y, z), amp);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloEVPSetDotCareConstraint(holo: ConstPtr) {
+    unsafe {
+        holo_cast!(holo, EVP<DynamicBackend>).set_constraint(Constraint::DontCare);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloEVPSetNormalizeConstraint(holo: ConstPtr) {
+    unsafe {
+        holo_cast!(holo, EVP<DynamicBackend>).set_constraint(Constraint::Normalize);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloEVPSetUniformConstraint(holo: ConstPtr, value: float) {
+    unsafe {
+        holo_cast!(holo, EVP<DynamicBackend>).set_constraint(Constraint::Uniform(value));
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloEVPSetClampConstraint(holo: ConstPtr, min: float, max: float) {
+    unsafe {
+        holo_cast!(holo, EVP<DynamicBackend>).set_constraint(Constraint::Clamp(min, max));
     }
 }
 
@@ -152,7 +158,7 @@ pub unsafe extern "C" fn AUTDGainHoloEVPGamma(holo: ConstPtr, gamma: float) {
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloGS(backend: ConstPtr) -> ConstPtr {
     unsafe {
-        Box::into_raw(HoloWrap::new(GS::new(DynamicBackend::new(*Box::from_raw(
+        Box::into_raw(GainWrap::new(GS::new(DynamicBackend::new(*Box::from_raw(
             backend as _,
         ))))) as _
     }
@@ -161,11 +167,48 @@ pub unsafe extern "C" fn AUTDGainHoloGS(backend: ConstPtr) -> ConstPtr {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainHoloGSRepeat(holo: ConstPtr, repeat: u32) {
     unsafe {
-        (holo as *mut Box<HG> as *mut Box<HoloWrap>)
-            .as_mut()
-            .unwrap()
-            .cast::<GS<DynamicBackend>>()
-            .repeat = repeat as _;
+        holo_cast!(holo, GS<DynamicBackend>).repeat = repeat as _;
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloGSAdd(
+    holo: ConstPtr,
+    x: float,
+    y: float,
+    z: float,
+    amp: float,
+) {
+    unsafe {
+        holo_cast!(holo, GS<DynamicBackend>).add_focus(Vector3::new(x, y, z), amp);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloGSSetDotCareConstraint(holo: ConstPtr) {
+    unsafe {
+        holo_cast!(holo, GS<DynamicBackend>).set_constraint(Constraint::DontCare);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloGSSetNormalizeConstraint(holo: ConstPtr) {
+    unsafe {
+        holo_cast!(holo, GS<DynamicBackend>).set_constraint(Constraint::Normalize);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloGSSetUniformConstraint(holo: ConstPtr, value: float) {
+    unsafe {
+        holo_cast!(holo, GS<DynamicBackend>).set_constraint(Constraint::Uniform(value));
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloGSSetClampConstraint(holo: ConstPtr, min: float, max: float) {
+    unsafe {
+        holo_cast!(holo, GS<DynamicBackend>).set_constraint(Constraint::Clamp(min, max));
     }
 }
 
@@ -173,7 +216,7 @@ pub unsafe extern "C" fn AUTDGainHoloGSRepeat(holo: ConstPtr, repeat: u32) {
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloGSPAT(backend: ConstPtr) -> ConstPtr {
     unsafe {
-        Box::into_raw(HoloWrap::new(GSPAT::new(DynamicBackend::new(
+        Box::into_raw(GainWrap::new(GSPAT::new(DynamicBackend::new(
             *Box::from_raw(backend as _),
         )))) as _
     }
@@ -182,11 +225,52 @@ pub unsafe extern "C" fn AUTDGainHoloGSPAT(backend: ConstPtr) -> ConstPtr {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainHoloGSPATRepeat(holo: ConstPtr, repeat: u32) {
     unsafe {
-        (holo as *mut Box<HG> as *mut Box<HoloWrap>)
-            .as_mut()
-            .unwrap()
-            .cast::<GSPAT<DynamicBackend>>()
-            .repeat = repeat as _;
+        holo_cast!(holo, GSPAT<DynamicBackend>).repeat = repeat as _;
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloGSPATAdd(
+    holo: ConstPtr,
+    x: float,
+    y: float,
+    z: float,
+    amp: float,
+) {
+    unsafe {
+        holo_cast!(holo, GSPAT<DynamicBackend>).add_focus(Vector3::new(x, y, z), amp);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloGSPATSetDotCareConstraint(holo: ConstPtr) {
+    unsafe {
+        holo_cast!(holo, GSPAT<DynamicBackend>).set_constraint(Constraint::DontCare);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloGSPATSetNormalizeConstraint(holo: ConstPtr) {
+    unsafe {
+        holo_cast!(holo, GSPAT<DynamicBackend>).set_constraint(Constraint::Normalize);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloGSPATSetUniformConstraint(holo: ConstPtr, value: float) {
+    unsafe {
+        holo_cast!(holo, GSPAT<DynamicBackend>).set_constraint(Constraint::Uniform(value));
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloGSPATSetClampConstraint(
+    holo: ConstPtr,
+    min: float,
+    max: float,
+) {
+    unsafe {
+        holo_cast!(holo, GSPAT<DynamicBackend>).set_constraint(Constraint::Clamp(min, max));
     }
 }
 
@@ -194,26 +278,112 @@ pub unsafe extern "C" fn AUTDGainHoloGSPATRepeat(holo: ConstPtr, repeat: u32) {
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloNaive(backend: ConstPtr) -> ConstPtr {
     unsafe {
-        Box::into_raw(HoloWrap::new(Naive::new(DynamicBackend::new(
+        Box::into_raw(GainWrap::new(Naive::new(DynamicBackend::new(
             *Box::from_raw(backend as _),
         )))) as _
     }
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloNaiveAdd(
+    holo: ConstPtr,
+    x: float,
+    y: float,
+    z: float,
+    amp: float,
+) {
+    unsafe {
+        holo_cast!(holo, Naive<DynamicBackend>).add_focus(Vector3::new(x, y, z), amp);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloNaiveSetDotCareConstraint(holo: ConstPtr) {
+    unsafe {
+        holo_cast!(holo, Naive<DynamicBackend>).set_constraint(Constraint::DontCare);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloNaiveSetNormalizeConstraint(holo: ConstPtr) {
+    unsafe {
+        holo_cast!(holo, Naive<DynamicBackend>).set_constraint(Constraint::Normalize);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloNaiveSetUniformConstraint(holo: ConstPtr, value: float) {
+    unsafe {
+        holo_cast!(holo, Naive<DynamicBackend>).set_constraint(Constraint::Uniform(value));
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloNaiveSetClampConstraint(
+    holo: ConstPtr,
+    min: float,
+    max: float,
+) {
+    unsafe {
+        holo_cast!(holo, Naive<DynamicBackend>).set_constraint(Constraint::Clamp(min, max));
+    }
+}
+
+#[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloGreedy() -> ConstPtr {
-    Box::into_raw(HoloWrap::new(Greedy::new())) as _
+    Box::into_raw(GainWrap::new(Greedy::new())) as _
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainHoloGreedyPhaseDiv(holo: ConstPtr, div: u32) {
     unsafe {
-        (holo as *mut Box<HG> as *mut Box<HoloWrap>)
-            .as_mut()
-            .unwrap()
-            .cast::<Greedy>()
-            .phase_div = div as _;
+        holo_cast!(holo, Greedy).phase_div = div as _;
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloGreedyAdd(
+    holo: ConstPtr,
+    x: float,
+    y: float,
+    z: float,
+    amp: float,
+) {
+    unsafe {
+        holo_cast!(holo, Greedy).add_focus(Vector3::new(x, y, z), amp);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloGreedySetDotCareConstraint(holo: ConstPtr) {
+    unsafe {
+        holo_cast!(holo, Greedy).set_constraint(Constraint::DontCare);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloGreedySetNormalizeConstraint(holo: ConstPtr) {
+    unsafe {
+        holo_cast!(holo, Greedy).set_constraint(Constraint::Normalize);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloGreedySetUniformConstraint(holo: ConstPtr, value: float) {
+    unsafe {
+        holo_cast!(holo, Greedy).set_constraint(Constraint::Uniform(value));
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDGainHoloGreedySetClampConstraint(
+    holo: ConstPtr,
+    min: float,
+    max: float,
+) {
+    unsafe {
+        holo_cast!(holo, Greedy).set_constraint(Constraint::Clamp(min, max));
     }
 }
 
@@ -221,7 +391,7 @@ pub unsafe extern "C" fn AUTDGainHoloGreedyPhaseDiv(holo: ConstPtr, div: u32) {
 #[must_use]
 pub unsafe extern "C" fn AUTDGainHoloLM(backend: ConstPtr) -> ConstPtr {
     unsafe {
-        Box::into_raw(HoloWrap::new(LM::new(DynamicBackend::new(*Box::from_raw(
+        Box::into_raw(GainWrap::new(LM::new(DynamicBackend::new(*Box::from_raw(
             backend as _,
         ))))) as _
     }
@@ -230,44 +400,28 @@ pub unsafe extern "C" fn AUTDGainHoloLM(backend: ConstPtr) -> ConstPtr {
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainHoloLMEps1(holo: ConstPtr, eps_1: float) {
     unsafe {
-        (holo as *mut Box<HG> as *mut Box<HoloWrap>)
-            .as_mut()
-            .unwrap()
-            .cast::<LM<DynamicBackend>>()
-            .eps_1 = eps_1;
+        holo_cast!(holo, LM<DynamicBackend>).eps_1 = eps_1;
     }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainHoloLMEps2(holo: ConstPtr, eps_2: float) {
     unsafe {
-        (holo as *mut Box<HG> as *mut Box<HoloWrap>)
-            .as_mut()
-            .unwrap()
-            .cast::<LM<DynamicBackend>>()
-            .eps_2 = eps_2;
+        holo_cast!(holo, LM<DynamicBackend>).eps_2 = eps_2;
     }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainHoloLMTau(holo: ConstPtr, tau: float) {
     unsafe {
-        (holo as *mut Box<HG> as *mut Box<HoloWrap>)
-            .as_mut()
-            .unwrap()
-            .cast::<LM<DynamicBackend>>()
-            .tau = tau;
+        holo_cast!(holo, LM<DynamicBackend>).tau = tau;
     }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainHoloLMKMax(holo: ConstPtr, k_max: u32) {
     unsafe {
-        (holo as *mut Box<HG> as *mut Box<HoloWrap>)
-            .as_mut()
-            .unwrap()
-            .cast::<LM<DynamicBackend>>()
-            .k_max = k_max as _;
+        holo_cast!(holo, LM<DynamicBackend>).k_max = k_max as _;
     }
 }
 
@@ -276,73 +430,48 @@ pub unsafe extern "C" fn AUTDGainHoloLMInitial(holo: ConstPtr, ptr: *const float
     unsafe {
         let mut initial = vec![0.; len as _];
         std::ptr::copy_nonoverlapping(ptr, initial.as_mut_ptr(), len as _);
-        (holo as *mut Box<HG> as *mut Box<HoloWrap>)
-            .as_mut()
-            .unwrap()
-            .cast::<LM<DynamicBackend>>()
-            .initial = initial;
+        holo_cast!(holo, LM<DynamicBackend>).initial = initial;
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGainHoloAdd(holo: ConstPtr, x: float, y: float, z: float, amp: float) {
+pub unsafe extern "C" fn AUTDGainHoloLMAdd(
+    holo: ConstPtr,
+    x: float,
+    y: float,
+    z: float,
+    amp: float,
+) {
     unsafe {
-        (holo as *mut Box<HG> as *mut Box<HoloWrap>)
-            .as_mut()
-            .unwrap()
-            .holo
-            .add_focus(Vector3::new(x, y, z), amp);
+        holo_cast!(holo, LM<DynamicBackend>).add_focus(Vector3::new(x, y, z), amp);
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGainHoloSetDotCareConstraint(holo: ConstPtr) {
+pub unsafe extern "C" fn AUTDGainHoloLMSetDotCareConstraint(holo: ConstPtr) {
     unsafe {
-        (holo as *mut Box<HG> as *mut Box<HoloWrap>)
-            .as_mut()
-            .unwrap()
-            .holo
-            .set_constraint(Constraint::DontCare);
+        holo_cast!(holo, LM<DynamicBackend>).set_constraint(Constraint::DontCare);
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGainHoloSetNormalizeConstraint(holo: ConstPtr) {
+pub unsafe extern "C" fn AUTDGainHoloLMSetNormalizeConstraint(holo: ConstPtr) {
     unsafe {
-        (holo as *mut Box<HG> as *mut Box<HoloWrap>)
-            .as_mut()
-            .unwrap()
-            .holo
-            .set_constraint(Constraint::Normalize);
+        holo_cast!(holo, LM<DynamicBackend>).set_constraint(Constraint::Normalize);
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGainHoloSetUniformConstraint(holo: ConstPtr, value: float) {
+pub unsafe extern "C" fn AUTDGainHoloLMSetUniformConstraint(holo: ConstPtr, value: float) {
     unsafe {
-        (holo as *mut Box<HG> as *mut Box<HoloWrap>)
-            .as_mut()
-            .unwrap()
-            .holo
-            .set_constraint(Constraint::Uniform(value));
+        holo_cast!(holo, LM<DynamicBackend>).set_constraint(Constraint::Uniform(value));
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDGainHoloSetClampConstraint(holo: ConstPtr, min: float, max: float) {
+pub unsafe extern "C" fn AUTDGainHoloLMSetClampConstraint(holo: ConstPtr, min: float, max: float) {
     unsafe {
-        (holo as *mut Box<HG> as *mut Box<HoloWrap>)
-            .as_mut()
-            .unwrap()
-            .holo
-            .set_constraint(Constraint::Clamp(min, max));
-    }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn AUTDDeleteGainHolo(holo: ConstPtr) {
-    unsafe {
-        let _ = Box::from_raw(holo as *mut Box<HG>);
+        holo_cast!(holo, LM<DynamicBackend>).set_constraint(Constraint::Clamp(min, max));
     }
 }
 
@@ -370,11 +499,11 @@ mod tests {
             {
                 let backend = AUTDDefaultBackend();
                 let holo = AUTDGainHoloSDP(backend);
-                AUTDGainHoloAdd(holo, 10., 20., 30., 1.);
-                AUTDGainHoloSetDotCareConstraint(holo);
-                AUTDGainHoloSetNormalizeConstraint(holo);
-                AUTDGainHoloSetUniformConstraint(holo, 1.);
-                AUTDGainHoloSetClampConstraint(holo, 0., 1.);
+                AUTDGainHoloSDPAdd(holo, 10., 20., 30., 1.);
+                AUTDGainHoloSDPSetDotCareConstraint(holo);
+                AUTDGainHoloSDPSetNormalizeConstraint(holo);
+                AUTDGainHoloSDPSetUniformConstraint(holo, 1.);
+                AUTDGainHoloSDPSetClampConstraint(holo, 0., 1.);
                 AUTDGainHoloSDPAlpha(holo, 1.);
                 AUTDGainHoloSDPLambda(holo, 1.);
                 AUTDGainHoloSDPRepeat(holo, 1);
@@ -391,17 +520,17 @@ mod tests {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
 
-                AUTDDeleteGainHolo(holo);
+                AUTDDeleteGain(holo);
             }
 
             {
                 let backend = AUTDDefaultBackend();
                 let holo = AUTDGainHoloEVP(backend);
-                AUTDGainHoloAdd(holo, 10., 20., 30., 1.);
-                AUTDGainHoloSetDotCareConstraint(holo);
-                AUTDGainHoloSetNormalizeConstraint(holo);
-                AUTDGainHoloSetUniformConstraint(holo, 1.);
-                AUTDGainHoloSetClampConstraint(holo, 0., 1.);
+                AUTDGainHoloEVPAdd(holo, 10., 20., 30., 1.);
+                AUTDGainHoloEVPSetDotCareConstraint(holo);
+                AUTDGainHoloEVPSetNormalizeConstraint(holo);
+                AUTDGainHoloEVPSetUniformConstraint(holo, 1.);
+                AUTDGainHoloEVPSetClampConstraint(holo, 0., 1.);
                 AUTDGainHoloEVPGamma(holo, 1.);
 
                 if AUTDSend(
@@ -416,18 +545,17 @@ mod tests {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
 
-                AUTDDeleteGainHolo(holo);
+                AUTDDeleteGain(holo);
             }
 
             {
                 let backend = AUTDDefaultBackend();
                 let holo = AUTDGainHoloNaive(backend);
-                AUTDGainHoloAdd(holo, 10., 20., 30., 1.);
-                AUTDGainHoloSetDotCareConstraint(holo);
-                AUTDGainHoloSetNormalizeConstraint(holo);
-                AUTDGainHoloSetUniformConstraint(holo, 1.);
-                AUTDGainHoloSetClampConstraint(holo, 0., 1.);
-
+                AUTDGainHoloNaiveAdd(holo, 10., 20., 30., 1.);
+                AUTDGainHoloNaiveSetDotCareConstraint(holo);
+                AUTDGainHoloNaiveSetNormalizeConstraint(holo);
+                AUTDGainHoloNaiveSetUniformConstraint(holo, 1.);
+                AUTDGainHoloNaiveSetClampConstraint(holo, 0., 1.);
                 if AUTDSend(
                     cnt,
                     autd3capi::TransMode::Legacy,
@@ -440,17 +568,17 @@ mod tests {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
 
-                AUTDDeleteGainHolo(holo);
+                AUTDDeleteGain(holo);
             }
 
             {
                 let backend = AUTDDefaultBackend();
                 let holo = AUTDGainHoloGS(backend);
-                AUTDGainHoloAdd(holo, 10., 20., 30., 1.);
-                AUTDGainHoloSetDotCareConstraint(holo);
-                AUTDGainHoloSetNormalizeConstraint(holo);
-                AUTDGainHoloSetUniformConstraint(holo, 1.);
-                AUTDGainHoloSetClampConstraint(holo, 0., 1.);
+                AUTDGainHoloGSAdd(holo, 10., 20., 30., 1.);
+                AUTDGainHoloGSSetDotCareConstraint(holo);
+                AUTDGainHoloGSSetNormalizeConstraint(holo);
+                AUTDGainHoloGSSetUniformConstraint(holo, 1.);
+                AUTDGainHoloGSSetClampConstraint(holo, 0., 1.);
                 AUTDGainHoloGSRepeat(holo, 1);
 
                 if AUTDSend(
@@ -465,17 +593,17 @@ mod tests {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
 
-                AUTDDeleteGainHolo(holo);
+                AUTDDeleteGain(holo);
             }
 
             {
                 let backend = AUTDDefaultBackend();
                 let holo = AUTDGainHoloGSPAT(backend);
-                AUTDGainHoloAdd(holo, 10., 20., 30., 1.);
-                AUTDGainHoloSetDotCareConstraint(holo);
-                AUTDGainHoloSetNormalizeConstraint(holo);
-                AUTDGainHoloSetUniformConstraint(holo, 1.);
-                AUTDGainHoloSetClampConstraint(holo, 0., 1.);
+                AUTDGainHoloGSPATAdd(holo, 10., 20., 30., 1.);
+                AUTDGainHoloGSPATSetDotCareConstraint(holo);
+                AUTDGainHoloGSPATSetNormalizeConstraint(holo);
+                AUTDGainHoloGSPATSetUniformConstraint(holo, 1.);
+                AUTDGainHoloGSPATSetClampConstraint(holo, 0., 1.);
                 AUTDGainHoloGSPATRepeat(holo, 1);
 
                 if AUTDSend(
@@ -490,17 +618,17 @@ mod tests {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
 
-                AUTDDeleteGainHolo(holo);
+                AUTDDeleteGain(holo);
             }
 
             {
                 let backend = AUTDDefaultBackend();
                 let holo = AUTDGainHoloLM(backend);
-                AUTDGainHoloAdd(holo, 10., 20., 30., 1.);
-                AUTDGainHoloSetDotCareConstraint(holo);
-                AUTDGainHoloSetNormalizeConstraint(holo);
-                AUTDGainHoloSetUniformConstraint(holo, 1.);
-                AUTDGainHoloSetClampConstraint(holo, 0., 1.);
+                AUTDGainHoloLMAdd(holo, 10., 20., 30., 1.);
+                AUTDGainHoloLMSetDotCareConstraint(holo);
+                AUTDGainHoloLMSetNormalizeConstraint(holo);
+                AUTDGainHoloLMSetUniformConstraint(holo, 1.);
+                AUTDGainHoloLMSetClampConstraint(holo, 0., 1.);
                 AUTDGainHoloLMEps1(holo, 1.);
                 AUTDGainHoloLMEps2(holo, 1.);
                 AUTDGainHoloLMTau(holo, 1.);
@@ -520,16 +648,16 @@ mod tests {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
 
-                AUTDDeleteGainHolo(holo);
+                AUTDDeleteGain(holo);
             }
 
             {
                 let holo = AUTDGainHoloGreedy();
-                AUTDGainHoloAdd(holo, 10., 20., 30., 1.);
-                AUTDGainHoloSetDotCareConstraint(holo);
-                AUTDGainHoloSetNormalizeConstraint(holo);
-                AUTDGainHoloSetUniformConstraint(holo, 1.);
-                AUTDGainHoloSetClampConstraint(holo, 0., 1.);
+                AUTDGainHoloGreedyAdd(holo, 10., 20., 30., 1.);
+                AUTDGainHoloGreedySetDotCareConstraint(holo);
+                AUTDGainHoloGreedySetNormalizeConstraint(holo);
+                AUTDGainHoloGreedySetUniformConstraint(holo, 1.);
+                AUTDGainHoloGreedySetClampConstraint(holo, 0., 1.);
                 AUTDGainHoloGreedyPhaseDiv(holo, 1);
 
                 if AUTDSend(
@@ -544,7 +672,7 @@ mod tests {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
 
-                AUTDDeleteGainHolo(holo);
+                AUTDDeleteGain(holo);
             }
         }
     }

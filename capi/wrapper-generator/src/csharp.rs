@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/05/2023
+ * Last Modified: 28/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -150,7 +150,7 @@ impl CSharpGenerator {
                 },
                 Type::Char => match arg.inout {
                     InOut::In => "string",
-                    InOut::Out => "System.Text.StringBuilder",
+                    InOut::Out => "byte[]",
                     InOut::InOut => panic!("INOUT char* is not supported."),
                 },
                 Type::Float32 => match arg.inout {
@@ -230,7 +230,7 @@ namespace AUTD3Sharp
             private const string DLL = "{}";
 "#,
             Self::to_class_name(crate_name),
-            crate_name,
+            crate_name.replace("-", "_"),
         )?;
 
         for constant in self.constants {
@@ -255,15 +255,7 @@ namespace AUTD3Sharp
                 .map(|arg| format!("{} {}", Self::to_arg_ty(arg), Self::to_camel(&arg.name)))
                 .join(", ");
 
-            let attr = if function
-                .args
-                .iter()
-                .any(|arg| (arg.ty == Type::Char) && (arg.pointer == 1))
-            {
-                "[DllImport(DLL, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true, CallingConvention = CallingConvention.Cdecl)]"
-            } else {
-                "[DllImport(DLL, CallingConvention = CallingConvention.Cdecl)]"
-            };
+            let attr = "[DllImport(DLL, CallingConvention = CallingConvention.Cdecl)]";
             let ret_attr = if function.return_ty == Type::Bool {
                 "[return: MarshalAs(UnmanagedType.U1)]"
             } else {
