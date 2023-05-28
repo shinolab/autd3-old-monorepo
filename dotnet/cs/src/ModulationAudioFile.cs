@@ -24,12 +24,13 @@ namespace AUTD3Sharp
     {
         public sealed class Wav : Modulation
         {
-            public Wav(string filename)
+            public Wav(string filename) : base(IntPtr.Zero)
             {
-                var err = new StringBuilder(256);
-                handle = NativeMethods.ModulationAudioFile.AUTDModulationWav(filename, err);
-                if (handle == IntPtr.Zero)
+                var err = new byte[256];
+                Ptr = NativeMethods.ModulationAudioFile.AUTDModulationWav(filename, err);
+                if (Ptr == IntPtr.Zero)
                     throw new AUTDException(err);
+                ;
             }
         }
     }

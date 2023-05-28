@@ -8,7 +8,7 @@ namespace AUTD3Sharp
     {
         internal static class Simulator
         {
-            private const string DLL = "autd3capi-simulator";
+            private const string DLL = "autd3capi_simulator";
 
             public const int Err = -1;
 
@@ -22,11 +22,11 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDSimulatorGpuIdx(IntPtr simulator, int idx);
 
-            [DllImport(DLL, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDSimulatorSettingsPath(IntPtr simulator, string path, System.Text.StringBuilder err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDSimulatorSettingsPath(IntPtr simulator, string path, byte[] err);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDSimulatorRun(IntPtr simulator);
 
-            [DllImport(DLL, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDSimulatorSaveSettings(IntPtr simulator, string path, System.Text.StringBuilder err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDSimulatorSaveSettings(IntPtr simulator, string path, byte[] err);
         }
     }
 }

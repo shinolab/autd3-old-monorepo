@@ -4,10 +4,10 @@
  * Created Date: 13/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/03/2023
+ * Last Modified: 28/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
+ * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
  * 
  */
 
@@ -22,7 +22,7 @@ var geometry = new Geometry.Builder()
     .AdvancedMode()
     .Build();
 
-var link = new Simulator().Build();
+var link = new Simulator(8080).Build();
 var autd = Controller.Open(geometry, link);
 
 foreach (var tr in autd.Geometry)
