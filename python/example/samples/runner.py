@@ -13,7 +13,7 @@ Copyright (c) 2020 Shun Suzuki. All rights reserved.
 
 from pyautd3 import Controller, Clear, Synchronize, Stop, FirmwareInfo
 
-from . import focus, bessel, holo, custom, stm_gain, stm_focus
+from . import focus, bessel, holo, custom, stm_gain, stm_focus, grouped
 
 
 def run(autd: Controller):
@@ -25,6 +25,9 @@ def run(autd: Controller):
         (stm_gain.stm_gain, "GainSTM (Hardware STM with arbitrary Gain) Sample"),
         (custom.custom, "Custom Focus Sample"),
     ]
+
+    if autd.geometry.num_devices == 2:
+        samples.append((grouped.grouped, "Grouped Sample"))
 
     autd.send(Clear())
     autd.send(Synchronize())
