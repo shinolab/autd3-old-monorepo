@@ -32,12 +32,12 @@ jobs:
         dotnet nuget add source $pwd/dotnet/cs/src/bin/Release -n autd3sharp_local
         cd ./dotnet/cs/example
         dotnet build -c:Release
-      shell: bash
     - name: Build with dotnet
       if : matrix.os != 'windows-latest'
       run: |
+        cd ./dotnet/cs
         BASE_DIR=$(cd $(dirname $0); pwd)
-        dotnet nuget add source $BASE_DIR/dotnet/cs/src/bin/Release -n autd3sharp_local
-        cd ./dotnet/cs/example
+        dotnet nuget add source $BASE_DIR/src/bin/Release -n autd3sharp_local
+        cd ./example
         dotnet build -c:Release
       shell: bash
