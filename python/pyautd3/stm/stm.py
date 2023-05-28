@@ -1,95 +1,133 @@
-'''
+"""
 File: stm.py
 Project: stm
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 08/03/2023
+Last Modified: 28/05/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
-Copyright (c) 2022 Shun Suzuki. All rights reserved.
+Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
-from ctypes import byref
-from enum import IntEnum
+from typing import Optional
+
+import numpy as np
 
 from pyautd3.autd import Body
 from pyautd3.gain.gain import Gain
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
+from pyautd3.native_methods.autd3capi import GainSTMMode
 
 
-class STM(Body):
+class FocusSTM(Body):
     def __init__(self):
         super().__init__()
+        self.ptr = Base().focus_stm()
 
     def __del__(self):
-        Base().dll.AUTDDeleteSTM(self.ptr)
+        Base().delete_focus_stm(self.ptr)
 
-    @ property
-    def frequency(self):
-        return Base().dll.AUTDSTMFrequency(self.ptr)
+    def add(self, point: np.ndarray, duty_shift: int = 0):
+        Base().focus_stm_add(self.ptr, point[0], point[1], point[2], duty_shift)
 
-    @ frequency.setter
+    @property
+    def frequency(self) -> float:
+        return Base().focus_stm_frequency(self.ptr).value
+
+    @frequency.setter
     def frequency(self, freq: float):
-        return Base().dll.AUTDSTMSetFrequency(self.ptr, freq)
+        return Base().focus_stm_set_frequency(self.ptr, freq)
 
-    @ property
-    def start_idx(self):
-        return Base().dll.AUTDSTMGetStartIdx(self.ptr)
+    @property
+    def start_idx(self) -> Optional[int]:
+        idx = Base().focus_stm_get_start_idx(self.ptr).value
+        if idx < 0:
+            return None
+        return idx
 
-    @ start_idx.setter
-    def start_idx(self, value: int):
-        return Base().dll.AUTDSTMSetStartIdx(self.ptr, value)
+    @start_idx.setter
+    def start_idx(self, value: Optional[int]):
+        return Base().focus_stm_set_start_idx(self.ptr, -1 if value is None else value)
 
-    @ property
-    def finish_idx(self):
-        return Base().dll.AUTDSTMGetFinishIdx(self.ptr)
+    @property
+    def finish_idx(self) -> Optional[int]:
+        idx = Base().focus_stm_get_finish_idx(self.ptr).value
+        if idx < 0:
+            return None
+        return idx
 
-    @ finish_idx.setter
-    def finish_idx(self, value: int):
-        return Base().dll.AUTDSTMSetFinishIdx(self.ptr, value)
+    @finish_idx.setter
+    def finish_idx(self, value: Optional[int]):
+        return Base().focus_stm_set_finish_idx(self.ptr, -1 if value is None else value)
 
-    @ property
-    def sampling_frequency(self):
-        return Base().dll.AUTDSTMSamplingFrequency(self.ptr)
+    @property
+    def sampling_frequency(self) -> float:
+        return Base().focus_stm_sampling_frequency(self.ptr).value
 
-    @ property
-    def sampling_frequency_division(self):
-        return Base().dll.AUTDSTMSamplingFrequencyDivision(self.ptr)
+    @property
+    def sampling_frequency_division(self) -> int:
+        return Base().focus_stm_sampling_frequency_division(self.ptr).value
 
-    @ sampling_frequency_division.setter
+    @sampling_frequency_division.setter
     def sampling_frequency_division(self, value: int):
-        return Base().dll.AUTDSTMSetSamplingFrequencyDivision(self.ptr, value)
+        return Base().focus_stm_set_sampling_frequency_division(self.ptr, value)
 
 
-class FocusSTM(STM):
+class GainSTM(Body):
     def __init__(self):
         super().__init__()
-        Base().dll.AUTDFocusSTM(byref(self.ptr))
+        self.ptr = Base().gain_stm()
 
     def __del__(self):
-        super().__del__()
-
-    def add(self, point, duty_shift: int = 0):
-        Base().dll.AUTDFocusSTMAdd(self.ptr, point[0], point[1], point[2], duty_shift)
-
-
-class Mode(IntEnum):
-    PhaseDutyFull = 0x01
-    PhaseFull = 0x02
-    PhaseHalf = 0x04
-
-
-class GainSTM(STM):
-    def __init__(self, mode: Mode = Mode.PhaseDutyFull):
-        super().__init__()
-        Base().dll.AUTDGainSTM(byref(self.ptr), int(mode))
-        self._gains = []
-
-    def __del__(self):
-        super().__del__()
+        Base().delete_gain_stm(self.ptr)
 
     def add(self, gain: Gain):
-        Base().dll.AUTDGainSTMAdd(self.ptr, gain.ptr)
-        self._gains.append(gain)
+        Base().gain_stm_add(self.ptr, gain.ptr)
+        gain._disposed = True
+
+    def set_mode(self, mode: GainSTMMode):
+        return Base().gain_stm_set_mode(self.ptr, mode)
+
+    @property
+    def frequency(self) -> float:
+        return Base().gain_stm_frequency(self.ptr).value
+
+    @frequency.setter
+    def frequency(self, freq: float):
+        return Base().gain_stm_set_frequency(self.ptr, freq)
+
+    @property
+    def start_idx(self) -> Optional[int]:
+        idx = Base().gain_stm_get_start_idx(self.ptr).value
+        if idx < 0:
+            return None
+        return idx
+
+    @start_idx.setter
+    def start_idx(self, value: Optional[int]):
+        return Base().gain_stm_set_start_idx(self.ptr, -1 if value is None else value)
+
+    @property
+    def finish_idx(self) -> Optional[int]:
+        idx = Base().gain_stm_get_finish_idx(self.ptr).value
+        if idx < 0:
+            return None
+        return idx
+
+    @finish_idx.setter
+    def finish_idx(self, value: Optional[int]):
+        return Base().gain_stm_set_finish_idx(self.ptr, -1 if value is None else value)
+
+    @property
+    def sampling_frequency(self) -> float:
+        return Base().gain_stm_sampling_frequency(self.ptr).value
+
+    @property
+    def sampling_frequency_division(self) -> int:
+        return Base().gain_stm_sampling_frequency_division(self.ptr).value
+
+    @sampling_frequency_division.setter
+    def sampling_frequency_division(self, value: int):
+        return Base().gain_stm_set_sampling_frequency_division(self.ptr, value)

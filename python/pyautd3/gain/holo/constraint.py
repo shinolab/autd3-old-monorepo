@@ -1,46 +1,62 @@
-'''
+"""
 File: constraint.py
 Project: holo
 Created Date: 25/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 25/10/2022
+Last Modified: 28/05/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
-Copyright (c) 2022 Shun Suzuki. All rights reserved.
+Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
 
-from ctypes import c_void_p, byref
+from abc import ABCMeta, abstractmethod
+from pyautd3.gain.holo.holo import Holo
 
 from pyautd3.native_methods.autd3capi_gain_holo import NativeMethods as GainHolo
 
 
-class AmplitudeConstraint():
-    def __init__(self):
-        self.ptr = c_void_p()
+class AmplitudeConstraint(metaclass=ABCMeta):
+    @abstractmethod
+    def set(self, holo: Holo):
+        pass
 
 
 class DontCare(AmplitudeConstraint):
     def __init__(self):
-        super().__init__()
-        GainHolo().dll.AUTDConstraintDontCare(byref(self.ptr))
+        pass
+
+    def set(self, holo: Holo):
+        GainHolo().gain_holo_set_dot_care_constraint(holo.ptr)
 
 
 class Normalize(AmplitudeConstraint):
     def __init__(self):
-        super().__init__()
-        GainHolo().dll.AUTDConstraintNormalize(byref(self.ptr))
+        pass
+
+    def set(self, holo: Holo):
+        GainHolo().gain_holo_set_normalize_constraint(holo.ptr)
 
 
 class Uniform(AmplitudeConstraint):
+    value: float
+
     def __init__(self, value: float):
-        super().__init__()
-        GainHolo().dll.AUTDConstraintUniform(byref(self.ptr), value)
+        self.value = value
+
+    def set(self, holo: Holo):
+        GainHolo().gain_holo_set_uniform_constraint(holo.ptr, self.value)
 
 
 class Clamp(AmplitudeConstraint):
-    def __init__(self):
-        super().__init__()
-        GainHolo().dll.AUTDConstraintClamp(byref(self.ptr))
+    min: float
+    max: float
+
+    def __init__(self, min: float, max: float):
+        self.min = min
+        self.max = max
+
+    def set(self, holo: Holo):
+        GainHolo().gain_holo_set_clamp_constraint(holo.ptr, self.min, self.max)
