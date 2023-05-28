@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/05/2023
+ * Last Modified: 28/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -280,6 +280,20 @@ namespace AUTD3Sharp
         }
     }
 
+    public struct FPGAInfo
+    {
+        private byte _info;
+
+
+        internal FPGAInfo(byte info)
+        {
+            _info = info;
+        }
+
+        public bool IsThermalAssert => (_info & 0x01) != 0;
+    }
+
+
     public sealed class Controller : IDisposable
     {
         #region field
@@ -316,8 +330,8 @@ namespace AUTD3Sharp
             for (uint i = 0; i < Geometry.NumDevices; i++)
             {
                 var info = new StringBuilder(256);
-                Base.AUTDGetFirmwareInfo(handle, i, info, out var matchesVersion, out var isSupported);
-                yield return new FirmwareInfo(info.ToString(), matchesVersion, isSupported);
+                Base.AUTDGetFirmwareInfo(handle, i, info, out var isValid, out var isSupported);
+                yield return new FirmwareInfo(info.ToString(), isValid, isSupported);
             }
 
             Base.AUTDFreeFirmwareInfoListPointer(handle);
@@ -367,7 +381,7 @@ namespace AUTD3Sharp
             Base.AUTDSetReadsFPGAInfo(CntPtr, value);
         }
 
-        public byte[] FPGAInfo
+        public FPGAInfo[] FPGAInfo
         {
             get
             {
@@ -375,7 +389,7 @@ namespace AUTD3Sharp
                 var err = new StringBuilder(256);
                 if (!Base.AUTDGetFPGAInfo(CntPtr, infos, err))
                     throw new AUTDException(err);
-                return infos;
+                return infos.Select(x => new FPGAInfo(x)).ToArray();
             }
         }
         #endregion
