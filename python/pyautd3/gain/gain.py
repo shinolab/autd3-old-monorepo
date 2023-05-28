@@ -24,5 +24,5 @@ class Gain(Body):
 
     def __del__(self):
         if not self._disposed:
-            Base().dll.AUTDDeleteGain(self.ptr)
+            Base().delete_gain(self.ptr)
         self._disposed = True

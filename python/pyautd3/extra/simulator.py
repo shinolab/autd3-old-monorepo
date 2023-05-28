@@ -24,17 +24,17 @@ class Simulator:
     def __init__(self):
         self._handle = ExtraSimulator().simulator()
 
-    def port(self, port: int) -> Simulator:
+    def port(self, port: int) -> "Simulator":
         self._handle = ExtraSimulator().simulator_port(self._handle, port)
         return self
 
-    def window_size(self, width: int, height: int) -> Simulator:
+    def window_size(self, width: int, height: int) -> "Simulator":
         self._handle = ExtraSimulator().simulator_window_size(
             self._handle, width, height
         )
         return self
 
-    def settings_path(self, value: str) -> Simulator:
+    def settings_path(self, value: str) -> "Simulator":
         err = ctypes.create_string_buffer(256)
         handle = ExtraSimulator().simulator_settings_path(
             self._handle, value.encode("utf-8"), err
@@ -43,16 +43,16 @@ class Simulator:
             self._handle = handle
         return self
 
-    def vsync(self, value: bool) -> Simulator:
+    def vsync(self, value: bool) -> "Simulator":
         self._handle = ExtraSimulator().simulator_vsync(self._handle, value)
         return self
 
-    def gpu_idx(self, value: int) -> Simulator:
+    def gpu_idx(self, value: int) -> "Simulator":
         self._handle = ExtraSimulator().simulator_gpu_idx(self._handle, value)
         return self
 
     def run(self) -> int:
-        return ExtraSimulator().simulator_run(self._handle).value
+        return int(ExtraSimulator().simulator_run(self._handle))
 
     def save_settings(self, value: str):
         err = ctypes.create_string_buffer(256)

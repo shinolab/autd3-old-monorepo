@@ -26,4 +26,4 @@ if __name__ == "__main__":
         .build()
     )
 
-    GeometryViewer().window_size(800, 600).vsync(True).view(geometry)
+    GeometryViewer().window_size(800, 600).vsync(True).run(geometry)

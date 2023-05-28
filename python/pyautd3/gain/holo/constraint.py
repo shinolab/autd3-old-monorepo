@@ -13,14 +13,14 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 
 from abc import ABCMeta, abstractmethod
-from pyautd3.gain.holo.holo import Holo
+from ctypes import c_void_p
 
 from pyautd3.native_methods.autd3capi_gain_holo import NativeMethods as GainHolo
 
 
 class AmplitudeConstraint(metaclass=ABCMeta):
     @abstractmethod
-    def set(self, holo: Holo):
+    def set(self, holo: c_void_p):
         pass
 
 
@@ -28,16 +28,16 @@ class DontCare(AmplitudeConstraint):
     def __init__(self):
         pass
 
-    def set(self, holo: Holo):
-        GainHolo().gain_holo_set_dot_care_constraint(holo.ptr)
+    def set(self, holo: c_void_p):
+        GainHolo().gain_holo_set_dot_care_constraint(holo)
 
 
 class Normalize(AmplitudeConstraint):
     def __init__(self):
         pass
 
-    def set(self, holo: Holo):
-        GainHolo().gain_holo_set_normalize_constraint(holo.ptr)
+    def set(self, holo: c_void_p):
+        GainHolo().gain_holo_set_normalize_constraint(holo)
 
 
 class Uniform(AmplitudeConstraint):
@@ -46,8 +46,8 @@ class Uniform(AmplitudeConstraint):
     def __init__(self, value: float):
         self.value = value
 
-    def set(self, holo: Holo):
-        GainHolo().gain_holo_set_uniform_constraint(holo.ptr, self.value)
+    def set(self, holo: c_void_p):
+        GainHolo().gain_holo_set_uniform_constraint(holo, self.value)
 
 
 class Clamp(AmplitudeConstraint):
@@ -58,5 +58,5 @@ class Clamp(AmplitudeConstraint):
         self.min = min
         self.max = max
 
-    def set(self, holo: Holo):
-        GainHolo().gain_holo_set_clamp_constraint(holo.ptr, self.min, self.max)
+    def set(self, holo: c_void_p):
+        GainHolo().gain_holo_set_clamp_constraint(holo, self.min, self.max)

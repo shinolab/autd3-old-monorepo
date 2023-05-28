@@ -28,4 +28,4 @@ class Holo(Gain):
         GainHolo().gain_holo_add(self.ptr, focus[0], focus[1], focus[2], amp)
 
     def constraint(self, constraint: AmplitudeConstraint):
-        constraint.set(self)
+        constraint.set(self.ptr)

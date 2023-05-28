@@ -13,7 +13,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 import ctypes
 from datetime import timedelta
-from ctypes import c_void_p, byref
+from ctypes import c_void_p
 
 from pyautd3.autd_error import AUTDError
 
@@ -50,19 +50,19 @@ class RemoteTwinCAT:
             server_ams_net_id.encode("utf-8")
         )
 
-    def server_ip(self, ip: str) -> RemoteTwinCAT:
+    def server_ip(self, ip: str) -> "RemoteTwinCAT":
         self._builder = LinkTwinCAT().link_remote_twin_cat_server_ip(
             self._builder, ip.encode("utf-8")
         )
         return self
 
-    def client_ams_net_id(self, id: str) -> RemoteTwinCAT:
+    def client_ams_net_id(self, id: str) -> "RemoteTwinCAT":
         self._builder = LinkTwinCAT().link_remote_twin_cat_client_ams_net_id(
             self._builder, id.encode("utf-8")
         )
         return self
 
-    def timeout(self, timeout: timedelta) -> RemoteTwinCAT:
+    def timeout(self, timeout: timedelta) -> "RemoteTwinCAT":
         self._builder = LinkTwinCAT().link_remote_twin_cat_timeout(
             self._builder, int(timeout.total_seconds() * 1000 * 1000 * 1000)
         )

@@ -28,13 +28,13 @@ class Simulator:
     def __init__(self, port: int):
         self._builder = LinkSimulator().link_simulator(port)
 
-    def addr(self, addr: str) -> Simulator:
+    def addr(self, addr: str) -> "Simulator":
         self._builder = LinkSimulator().link_simulator_addr(
             self._builder, addr.encode("utf-8")
         )
         return self
 
-    def timeout(self, timeout: timedelta) -> Simulator:
+    def timeout(self, timeout: timedelta) -> "Simulator":
         self._builder = LinkSimulator().link_simulator_timeout(
             self._builder, int(timeout.total_seconds() * 1000 * 1000 * 1000)
         )

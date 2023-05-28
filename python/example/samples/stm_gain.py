@@ -36,4 +36,4 @@ def stm_gain(autd: Controller):
 
     stm.frequency = 1.0
 
-    autd.send(m, stm)
+    autd.send((m, stm))

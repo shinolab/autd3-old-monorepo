@@ -57,7 +57,7 @@ class SilencerConfig(Header):
         Base().delete_silencer(self.ptr)
 
     @staticmethod
-    def none() -> SilencerConfig:
+    def none() -> "SilencerConfig":
         return SilencerConfig(0xFFFF)
 
 
@@ -68,7 +68,7 @@ class FPGAInfo:
         self.info = info
 
     def is_thernal_assert(self) -> bool:
-        return (self.info.value & 0x01) != 0
+        return (int(self.info) & 0x01) != 0
 
 
 class Transducer:
@@ -93,7 +93,7 @@ class Transducer:
 
     @property
     def frequency(self) -> float:
-        return Base().get_trans_frequency(self._cnt, self._tr_id).value
+        return float(Base().get_trans_frequency(self._cnt, self._tr_id))
 
     @frequency.setter
     def frequency(self, freq: float):
@@ -103,7 +103,7 @@ class Transducer:
 
     @property
     def cycle(self) -> int:
-        return Base().get_trans_cycle(self._cnt, self._tr_id).value
+        return int(Base().get_trans_cycle(self._cnt, self._tr_id))
 
     @cycle.setter
     def cycle(self, cycle: int):
@@ -113,7 +113,7 @@ class Transducer:
 
     @property
     def mod_delay(self) -> int:
-        return Base().get_trans_mod_delay(self._cnt, self._tr_id).value
+        return int(Base().get_trans_mod_delay(self._cnt, self._tr_id))
 
     @mod_delay.setter
     def mod_delay(self, delay: int):
@@ -121,7 +121,7 @@ class Transducer:
 
     @property
     def wavelength(self) -> float:
-        return Base().get_wavelength(self._cnt, self._tr_id).value
+        return float(Base().get_wavelength(self._cnt, self._tr_id))
 
     @property
     def x_direction(self) -> np.ndarray:
@@ -161,7 +161,7 @@ class Geometry:
 
     @property
     def sound_speed(self) -> float:
-        return Base().get_sound_speed(self._ptr).value
+        return float(Base().get_sound_speed(self._ptr))
 
     @sound_speed.setter
     def sound_speed(self, sound_speed: float):
@@ -169,7 +169,7 @@ class Geometry:
 
     @property
     def attenuation(self) -> float:
-        return Base().get_attenuation(self._ptr).value
+        return float(Base().get_attenuation(self._ptr))
 
     @attenuation.setter
     def attenuation(self, attenuation: float):
@@ -177,11 +177,11 @@ class Geometry:
 
     @property
     def num_transducers(self) -> int:
-        return Base().num_transducers(self._ptr).value
+        return int(Base().num_transducers(self._ptr))
 
     @property
     def num_devices(self) -> int:
-        return Base().num_devices(self._ptr).value
+        return int(Base().num_devices(self._ptr))
 
     @property
     def center(self) -> np.ndarray:
@@ -218,7 +218,7 @@ class Geometry:
         def __init__(self, ptr: c_void_p):
             self._ptr = ptr
             self._i = 0
-            self._num_trans = Base().num_transducers(ptr).value
+            self._num_trans = int(Base().num_transducers(ptr))
 
         def __next__(self) -> Transducer:
             if self._i == self._num_trans:
@@ -238,29 +238,29 @@ class Geometry:
             self._ptr = Base().create_geometry_builder()
             self._mode = TransMode.Legacy
 
-        def add_device(self, pos, rot) -> Geometry.Builder:
+        def add_device(self, pos, rot) -> "Geometry.Builder":
             Base().add_device(self._ptr, pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
             return self
 
-        def add_device_quaternion(self, pos, q) -> Geometry.Builder:
+        def add_device_quaternion(self, pos, q) -> "Geometry.Builder":
             Base().add_device_quaternion(
                 self._ptr, pos[0], pos[1], pos[2], q[0], q[1], q[2], q[3]
             )
             return self
 
-        def legacy_mode(self) -> Geometry.Builder:
+        def legacy_mode(self) -> "Geometry.Builder":
             self._mode = TransMode.Legacy
             return self
 
-        def advanced_mode(self) -> Geometry.Builder:
+        def advanced_mode(self) -> "Geometry.Builder":
             self._mode = TransMode.Advanced
             return self
 
-        def advanced_phase_mode(self) -> Geometry.Builder:
+        def advanced_phase_mode(self) -> "Geometry.Builder":
             self._mode = TransMode.AdvancedPhase
             return self
 
-        def build(self) -> Geometry:
+        def build(self) -> "Geometry":
             err = ctypes.create_string_buffer(256)
             ptr = Base().build_geometry(self._ptr, err)
             if not ptr:
@@ -318,7 +318,7 @@ class Controller:
         return self._geometry
 
     @staticmethod
-    def open(geometry: Geometry, link: Link) -> Controller:
+    def open(geometry: Geometry, link: Link) -> "Controller":
         err = ctypes.create_string_buffer(256)
         cnt = Base().open_controller(geometry._ptr, link.link_ptr, err)
         if not cnt:
@@ -370,7 +370,9 @@ class Controller:
     def fpga_info(self) -> List[FPGAInfo]:
         infos = np.zeros([self.geometry.num_devices]).astype(np.ubyte)
         pinfos = np.ctypeslib.as_ctypes(infos)
-        Base().dll.AUTDGetFPGAInfo(self.p_cnt, pinfos)
+        err = ctypes.create_string_buffer(256)
+        if not Base().get_fpga_info(self.p_cnt, pinfos, err):
+            raise AUTDError(err)
         return list(map(lambda x: FPGAInfo(x), infos))
 
     def send(
@@ -452,7 +454,7 @@ class UpdateFlag(SpecialData):
 class Synchronize(SpecialData):
     def __init__(self):
         super().__init__()
-        self.ptr = Base().dll.AUTDSynchronize()
+        self.ptr = Base().synchronize()
 
     def __del__(self):
         Base().delete_special_data(self.ptr)

@@ -40,4 +40,4 @@ def custom(autd: Controller):
     f = focus(autd, autd.geometry.center + np.array([0.0, 0.0, 150.0]))
     m = Sine(150)
 
-    autd.send(m, f)
+    autd.send((m, f))

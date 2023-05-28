@@ -35,4 +35,4 @@ def stm_focus(autd: Controller):
 
     stm.frequency = 1.0
 
-    autd.send(m, stm)
+    autd.send((m, stm))

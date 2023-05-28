@@ -44,7 +44,7 @@ class NativeMethods(metaclass=Singleton):
 
     def init_dll(self, bin_location: str, bin_prefix: str, bin_ext: str):
         try:
-            self.dll = ctypes.CDLL(os.path.join(bin_location, f'{bin_prefix}autd3capi-link-soem{bin_ext}'))
+            self.dll = ctypes.CDLL(os.path.join(bin_location, f'{bin_prefix}autd3capi_link_soem{bin_ext}'))
         except FileNotFoundError:
             return
 

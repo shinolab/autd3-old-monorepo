@@ -26,17 +26,17 @@ class Debug:
     def __init__(self):
         self._builder = LinkDebug().link_debug()
 
-    def log_level(self, level: Level) -> Debug:
+    def log_level(self, level: Level) -> "Debug":
         self._builder = LinkDebug().link_debug_log_level(self._builder, level)
         return self
 
-    def log_func(self, level: Level, log_out, log_flush) -> Debug:
+    def log_func(self, level: Level, log_out, log_flush) -> "Debug":
         self._builder = LinkDebug().link_debug_log_func(
             self._builder, level, log_out, log_flush
         )
         return self
 
-    def timeout(self, timeout: timedelta) -> Debug:
+    def timeout(self, timeout: timedelta) -> "Debug":
         self._builder = LinkDebug().link_debug_timeout(
             self._builder, int(timeout.total_seconds() * 1000 * 1000 * 1000)
         )

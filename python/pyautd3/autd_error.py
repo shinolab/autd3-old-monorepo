@@ -11,10 +11,17 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 """
 
-
 import ctypes
 
 
 class AUTDError(Exception):
+    msg: str
+
     def __init__(self, err: ctypes.Array[ctypes.c_char]):
-        self.arg = err.value.decode("utf-8")
+        self.msg = err.value.decode("utf-8")
+
+    def __str__(self):
+        return self.msg
+
+    def __repr__(self):
+        return self.msg
