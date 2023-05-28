@@ -4,7 +4,7 @@
  * Created Date: 26/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/05/2023
+ * Last Modified: 28/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -138,7 +138,7 @@ impl Default for ViewerSettings {
             image_save_path: "image.png".to_string(),
             max_dev_num: 50,
             max_trans_num: 10000,
-            port: 0,
+            port: 8080,
         }
     }
 }
