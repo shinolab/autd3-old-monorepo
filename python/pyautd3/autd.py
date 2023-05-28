@@ -16,7 +16,7 @@ from datetime import timedelta
 import ctypes
 from ctypes import c_void_p, byref, c_double, c_bool
 import numpy as np
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 from .autd_error import AUTDError
 from .native_methods.autd3capi import NativeMethods as Base
@@ -377,7 +377,7 @@ class Controller:
 
     def send(
         self,
-        d: SpecialData | Header | Body | Tuple[Header, Body],
+        d: Union[SpecialData, Header, Body, Tuple[Header, Body]],
         timeout: Optional[timedelta] = None,
     ) -> bool:
         timeout_ = (
