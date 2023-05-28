@@ -12,13 +12,13 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 
-from .holo import Holo
-
-
+import numpy as np
+from pyautd3.gain.gain import Gain
+from .constraint import AmplitudeConstraint, DontCare, Normalize, Uniform, Clamp
 from pyautd3.native_methods.autd3capi_gain_holo import NativeMethods as GainHolo
 
 
-class Greedy(Holo):
+class Greedy(Gain):
     def __init__(self):
         super().__init__()
         self.ptr = GainHolo().gain_holo_greedy()
@@ -28,3 +28,22 @@ class Greedy(Holo):
 
     def __del__(self):
         super().__del__()
+
+    def add(self, focus: np.ndarray, amp: float):
+        GainHolo().gain_holo_greedy_add(self.ptr, focus[0], focus[1], focus[2], amp)
+
+    def constraint(self, constraint: AmplitudeConstraint):
+        if isinstance(constraint, DontCare):
+            GainHolo().gain_holo_greedy_set_dot_care_constraint(self.ptr)
+        elif isinstance(constraint, Normalize):
+            GainHolo().gain_holo_greedy_set_normalize_constraint(self.ptr)
+        elif isinstance(constraint, Uniform):
+            GainHolo().gain_holo_greedy_set_uniform_constraint(
+                self.ptr, constraint.value
+            )
+        elif isinstance(constraint, Clamp):
+            GainHolo().gain_holo_greedy_set_clamp_constraint(
+                self.ptr, constraint.min, constraint.max
+            )
+        else:
+            raise ValueError("constraint must be DontCare, Normalize, Uniform or Clamp")
