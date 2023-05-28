@@ -18,23 +18,83 @@ void AUTDGainHoloSDPLambda(void* holo, double lambda);
 
 void AUTDGainHoloSDPRepeat(void* holo, uint32_t repeat);
 
+void AUTDGainHoloSDPAdd(void* holo, double x, double y, double z, double amp);
+
+void AUTDGainHoloSDPSetDotCareConstraint(void* holo);
+
+void AUTDGainHoloSDPSetNormalizeConstraint(void* holo);
+
+void AUTDGainHoloSDPSetUniformConstraint(void* holo, double value);
+
+void AUTDGainHoloSDPSetClampConstraint(void* holo, double min, double max);
+
 [[nodiscard]] void* AUTDGainHoloEVP(void* backend);
 
 void AUTDGainHoloEVPGamma(void* holo, double gamma);
+
+void AUTDGainHoloEVPAdd(void* holo, double x, double y, double z, double amp);
+
+void AUTDGainHoloEVPSetDotCareConstraint(void* holo);
+
+void AUTDGainHoloEVPSetNormalizeConstraint(void* holo);
+
+void AUTDGainHoloEVPSetUniformConstraint(void* holo, double value);
+
+void AUTDGainHoloEVPSetClampConstraint(void* holo, double min, double max);
 
 [[nodiscard]] void* AUTDGainHoloGS(void* backend);
 
 void AUTDGainHoloGSRepeat(void* holo, uint32_t repeat);
 
+void AUTDGainHoloGSAdd(void* holo, double x, double y, double z, double amp);
+
+void AUTDGainHoloGSSetDotCareConstraint(void* holo);
+
+void AUTDGainHoloGSSetNormalizeConstraint(void* holo);
+
+void AUTDGainHoloGSSetUniformConstraint(void* holo, double value);
+
+void AUTDGainHoloGSSetClampConstraint(void* holo, double min, double max);
+
 [[nodiscard]] void* AUTDGainHoloGSPAT(void* backend);
 
 void AUTDGainHoloGSPATRepeat(void* holo, uint32_t repeat);
 
+void AUTDGainHoloGSPATAdd(void* holo, double x, double y, double z, double amp);
+
+void AUTDGainHoloGSPATSetDotCareConstraint(void* holo);
+
+void AUTDGainHoloGSPATSetNormalizeConstraint(void* holo);
+
+void AUTDGainHoloGSPATSetUniformConstraint(void* holo, double value);
+
+void AUTDGainHoloGSPATSetClampConstraint(void* holo, double min, double max);
+
 [[nodiscard]] void* AUTDGainHoloNaive(void* backend);
+
+void AUTDGainHoloNaiveAdd(void* holo, double x, double y, double z, double amp);
+
+void AUTDGainHoloNaiveSetDotCareConstraint(void* holo);
+
+void AUTDGainHoloNaiveSetNormalizeConstraint(void* holo);
+
+void AUTDGainHoloNaiveSetUniformConstraint(void* holo, double value);
+
+void AUTDGainHoloNaiveSetClampConstraint(void* holo, double min, double max);
 
 [[nodiscard]] void* AUTDGainHoloGreedy();
 
 void AUTDGainHoloGreedyPhaseDiv(void* holo, uint32_t div);
+
+void AUTDGainHoloGreedyAdd(void* holo, double x, double y, double z, double amp);
+
+void AUTDGainHoloGreedySetDotCareConstraint(void* holo);
+
+void AUTDGainHoloGreedySetNormalizeConstraint(void* holo);
+
+void AUTDGainHoloGreedySetUniformConstraint(void* holo, double value);
+
+void AUTDGainHoloGreedySetClampConstraint(void* holo, double min, double max);
 
 [[nodiscard]] void* AUTDGainHoloLM(void* backend);
 
@@ -48,17 +108,15 @@ void AUTDGainHoloLMKMax(void* holo, uint32_t k_max);
 
 void AUTDGainHoloLMInitial(void* holo, const double *ptr, uint64_t len);
 
-void AUTDGainHoloAdd(void* holo, double x, double y, double z, double amp);
+void AUTDGainHoloLMAdd(void* holo, double x, double y, double z, double amp);
 
-void AUTDGainHoloSetDotCareConstraint(void* holo);
+void AUTDGainHoloLMSetDotCareConstraint(void* holo);
 
-void AUTDGainHoloSetNormalizeConstraint(void* holo);
+void AUTDGainHoloLMSetNormalizeConstraint(void* holo);
 
-void AUTDGainHoloSetUniformConstraint(void* holo, double value);
+void AUTDGainHoloLMSetUniformConstraint(void* holo, double value);
 
-void AUTDGainHoloSetClampConstraint(void* holo, double min, double max);
-
-void AUTDDeleteGainHolo(void* holo);
+void AUTDGainHoloLMSetClampConstraint(void* holo, double min, double max);
 
 } // extern "C"
 
