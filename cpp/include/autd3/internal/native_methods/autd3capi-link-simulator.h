@@ -8,13 +8,13 @@ namespace autd3::internal::native_methods {
 
 extern "C" {
 
-void* AUTDLinkSimulator(uint16_t port);
+[[nodiscard]] void* AUTDLinkSimulator(uint16_t port);
 
-void* AUTDLinkSimulatorAddr(void* builder, const char *addr);
+[[nodiscard]] void* AUTDLinkSimulatorAddr(void* builder, const char *addr);
 
-void* AUTDLinkSimulatorTimeout(void* builder, uint64_t timeout_ns);
+[[nodiscard]] void* AUTDLinkSimulatorTimeout(void* builder, uint64_t timeout_ns);
 
-void* AUTDLinkSimulatorBuild(void* builder);
+[[nodiscard]] void* AUTDLinkSimulatorBuild(void* builder);
 
 } // extern "C"
 

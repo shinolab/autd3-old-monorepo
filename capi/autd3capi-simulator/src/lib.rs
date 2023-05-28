@@ -14,17 +14,20 @@ use autd3capi_common::*;
 use autd3_simulator::{Simulator, ViewerSettings};
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDSimulator() -> ConstPtr {
     Box::into_raw(Box::new(Simulator::new())) as _
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDSimulatorPort(simulator: ConstPtr, port: u16) -> ConstPtr {
     let simulator = Box::from_raw(simulator as *mut Simulator).port(port);
     Box::into_raw(Box::new(simulator)) as _
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDSimulatorWindowSize(
     simulator: ConstPtr,
     width: u32,
@@ -35,18 +38,21 @@ pub unsafe extern "C" fn AUTDSimulatorWindowSize(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDSimulatorVsync(simulator: ConstPtr, vsync: bool) -> ConstPtr {
     let simulator = Box::from_raw(simulator as *mut Simulator).vsync(vsync);
     Box::into_raw(Box::new(simulator)) as _
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDSimulatorGpuIdx(simulator: ConstPtr, idx: i32) -> ConstPtr {
     let simulator = Box::from_raw(simulator as *mut Simulator).gpu_idx(idx);
     Box::into_raw(Box::new(simulator)) as _
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDSimulatorSettingsPath(
     simulator: ConstPtr,
     path: *const c_char,
@@ -64,11 +70,13 @@ pub unsafe extern "C" fn AUTDSimulatorSettingsPath(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDSimulatorRun(simulator: ConstPtr) -> i32 {
     cast_without_ownership_mut!(simulator, Simulator).run()
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDSimulatorSaveSettings(
     simulator: ConstPtr,
     path: *const c_char,

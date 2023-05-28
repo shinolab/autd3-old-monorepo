@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/05/2023
+ * Last Modified: 27/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -13,16 +13,14 @@
 
 use anyhow::Result;
 
-use std::io::Write;
+use std::path::Path;
 
 use crate::parse::{Const, Enum, Function};
 
 pub trait Generator {
-    fn print_header<W: Write>(w: &mut W, bin_name: &str) -> Result<()>;
-    fn get_filename(name: &str) -> String;
-    fn register_func<W: Write>(w: &mut W, function: &Function) -> Result<()>;
-    fn register_const<W: Write>(w: &mut W, constant: &Const) -> Result<()>;
-    fn register_enum<W: Write>(w: &mut W, e: &Enum) -> Result<()>;
-    fn start_other_types<W: Write>(w: &mut W) -> Result<()>;
-    fn print_footer<W: Write>(w: &mut W) -> Result<()>;
+    fn new() -> Self;
+    fn register_func(self, function: Vec<Function>) -> Self;
+    fn register_const(self, constant: Vec<Const>) -> Self;
+    fn register_enum(self, e: Vec<Enum>) -> Self;
+    fn write<P: AsRef<Path>>(self, path: P, crate_name: &str) -> Result<()>;
 }

@@ -27,6 +27,7 @@ pub const TRUE: i32 = 1;
 pub const FALSE: i32 = 0;
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDCreateGeometryBuilder() -> ConstPtr {
     Box::into_raw(Box::new(GeometryBuilder::<DynamicTransducer>::new())) as _
 }
@@ -70,6 +71,7 @@ pub unsafe extern "C" fn AUTDAddDeviceQuaternion(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDBuildGeometry(builder: ConstPtr, err: *mut c_char) -> ConstPtr {
     unsafe {
         let geometry = try_or_return!(
@@ -82,6 +84,7 @@ pub unsafe extern "C" fn AUTDBuildGeometry(builder: ConstPtr, err: *mut c_char) 
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDOpenController(
     geometry: ConstPtr,
     link: ConstPtr,
@@ -97,6 +100,7 @@ pub unsafe extern "C" fn AUTDOpenController(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDClose(cnt: ConstPtr, err: *mut c_char) -> bool {
     unsafe {
         try_or_return!(cast_without_ownership_mut!(cnt, Cnt).close(), err, false);
@@ -122,6 +126,7 @@ pub unsafe extern "C" fn AUTDSetForceFan(cnt: ConstPtr, value: bool) {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGetSoundSpeed(cnt: ConstPtr) -> float {
     unsafe { cast_without_ownership_mut!(cnt, Cnt).geometry().sound_speed }
 }
@@ -151,11 +156,13 @@ pub unsafe extern "C" fn AUTDSetSoundSpeedFromTemp(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGetTransFrequency(cnt: ConstPtr, idx: u32) -> float {
     unsafe { cast_without_ownership!(cnt, Cnt).geometry()[idx as _].frequency() }
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDSetTransFrequency(
     cnt: ConstPtr,
     idx: u32,
@@ -173,11 +180,13 @@ pub unsafe extern "C" fn AUTDSetTransFrequency(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGetTransCycle(cnt: ConstPtr, idx: u32) -> u16 {
     unsafe { cast_without_ownership!(cnt, Cnt).geometry()[idx as _].cycle() }
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDSetTransCycle(
     cnt: ConstPtr,
     idx: u32,
@@ -195,6 +204,7 @@ pub unsafe extern "C" fn AUTDSetTransCycle(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGetWavelength(cnt: ConstPtr, idx: u32) -> float {
     unsafe {
         let geometry = cast_without_ownership!(cnt, Cnt).geometry();
@@ -203,6 +213,7 @@ pub unsafe extern "C" fn AUTDGetWavelength(cnt: ConstPtr, idx: u32) -> float {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGetAttenuation(cnt: ConstPtr) -> float {
     unsafe { cast_without_ownership!(cnt, Cnt).geometry().attenuation }
 }
@@ -217,6 +228,7 @@ pub unsafe extern "C" fn AUTDSetAttenuation(cnt: ConstPtr, value: float) {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGetFPGAInfo(cnt: ConstPtr, out: *const u8, err: *mut c_char) -> bool {
     unsafe {
         let fpga_info = try_or_return!(
@@ -230,6 +242,7 @@ pub unsafe extern "C" fn AUTDGetFPGAInfo(cnt: ConstPtr, out: *const u8, err: *mu
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDNumTransducers(cnt: ConstPtr) -> u32 {
     unsafe {
         cast_without_ownership!(cnt, Cnt)
@@ -239,6 +252,7 @@ pub unsafe extern "C" fn AUTDNumTransducers(cnt: ConstPtr) -> u32 {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDNumDevices(cnt: ConstPtr) -> u32 {
     unsafe { cast_without_ownership!(cnt, Cnt).geometry().num_devices() as _ }
 }
@@ -341,6 +355,7 @@ pub unsafe extern "C" fn AUTDTransZDirection(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGetTransModDelay(cnt: ConstPtr, tr_idx: u32) -> u16 {
     unsafe { cast_without_ownership!(cnt, Cnt).geometry()[tr_idx as _].mod_delay() }
 }
@@ -353,6 +368,7 @@ pub unsafe extern "C" fn AUTDSetTransModDelay(cnt: ConstPtr, tr_idx: u32, delay:
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGetFirmwareInfoListPointer(
     cnt: ConstPtr,
     err: *mut c_char,
@@ -400,11 +416,13 @@ pub unsafe extern "C" fn AUTDGetLatestFirmware(latest: *mut c_char) {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGainNull() -> ConstPtr {
     Box::into_raw(GainWrap::new(Null::new())) as _
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGainGrouped() -> ConstPtr {
     Box::into_raw(GainWrap::new(Grouped::<'static, DynamicTransducer>::new())) as _
 }
@@ -428,11 +446,13 @@ pub unsafe extern "C" fn AUTDGainGroupedAdd(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGainFocus(x: float, y: float, z: float, amp: float) -> ConstPtr {
     Box::into_raw(GainWrap::new(Focus::with_amp(Vector3::new(x, y, z), amp))) as _
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGainBesselBeam(
     x: float,
     y: float,
@@ -452,6 +472,7 @@ pub unsafe extern "C" fn AUTDGainBesselBeam(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGainPlaneWave(
     nx: float,
     ny: float,
@@ -465,6 +486,7 @@ pub unsafe extern "C" fn AUTDGainPlaneWave(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGainTransducerTest() -> ConstPtr {
     Box::into_raw(GainWrap::new(TransducerTest::new())) as _
 }
@@ -488,6 +510,7 @@ pub unsafe extern "C" fn AUTDGainTransducerTestSet(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGainCustom(
     amp: *const float,
     phase: *const float,
@@ -504,11 +527,13 @@ pub unsafe extern "C" fn AUTDDeleteGain(gain: ConstPtr) {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDModulationStatic(amp: float) -> ConstPtr {
     Box::into_raw(ModulationWrap::new(Static::with_amp(amp))) as _
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDModulationSine(freq: u32, amp: float, offset: float) -> ConstPtr {
     Box::into_raw(ModulationWrap::new(Sine::with_params(
         freq as _, amp, offset,
@@ -516,6 +541,7 @@ pub unsafe extern "C" fn AUTDModulationSine(freq: u32, amp: float, offset: float
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDModulationSineSquared(
     freq: u32,
     amp: float,
@@ -527,6 +553,7 @@ pub unsafe extern "C" fn AUTDModulationSineSquared(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDModulationSineLegacy(
     freq: float,
     amp: float,
@@ -538,6 +565,7 @@ pub unsafe extern "C" fn AUTDModulationSineLegacy(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDModulationSquare(
     freq: u32,
     low: float,
@@ -550,6 +578,7 @@ pub unsafe extern "C" fn AUTDModulationSquare(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDModulationCustom(
     amp: *const float,
     size: u64,
@@ -561,6 +590,7 @@ pub unsafe extern "C" fn AUTDModulationCustom(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDModulationSamplingFrequencyDivision(m: ConstPtr) -> u32 {
     unsafe {
         cast_without_ownership!(m, Box<M>)
@@ -579,6 +609,7 @@ pub unsafe extern "C" fn AUTDModulationSetSamplingFrequencyDivision(m: ConstPtr,
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDModulationSamplingFrequency(m: ConstPtr) -> float {
     unsafe {
         cast_without_ownership!(m, Box<M>)
@@ -595,6 +626,7 @@ pub unsafe extern "C" fn AUTDDeleteModulation(m: ConstPtr) {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDFocusSTM() -> ConstPtr {
     Box::into_raw(FocusSTMWrap::new()) as _
 }
@@ -609,6 +641,7 @@ pub unsafe extern "C" fn AUTDFocusSTMAdd(stm: ConstPtr, x: float, y: float, z: f
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDFocusSTMSetFrequency(stm: ConstPtr, freq: float) -> float {
     unsafe {
         cast_without_ownership_mut!(stm, Box<SF>)
@@ -618,6 +651,7 @@ pub unsafe extern "C" fn AUTDFocusSTMSetFrequency(stm: ConstPtr, freq: float) ->
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDFocusSTMGetStartIdx(stm: ConstPtr) -> i32 {
     unsafe {
         match cast_without_ownership!(stm, Box<SF>).stm().start_idx() {
@@ -628,6 +662,7 @@ pub unsafe extern "C" fn AUTDFocusSTMGetStartIdx(stm: ConstPtr) -> i32 {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDFocusSTMGetFinishIdx(stm: ConstPtr) -> i32 {
     unsafe {
         match cast_without_ownership!(stm, Box<SF>).stm().finish_idx() {
@@ -668,16 +703,19 @@ pub unsafe extern "C" fn AUTDFocusSTMSetFinishIdx(stm: ConstPtr, idx: i32) {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDFocusSTMFrequency(stm: ConstPtr) -> float {
     unsafe { cast_without_ownership!(stm, Box<SF>).stm().freq() }
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDFocusSTMSamplingFrequency(stm: ConstPtr) -> float {
     unsafe { cast_without_ownership!(stm, Box<SF>).stm().sampling_freq() }
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDFocusSTMSamplingFrequencyDivision(stm: ConstPtr) -> u32 {
     unsafe {
         cast_without_ownership!(stm, Box<SF>)
@@ -703,6 +741,7 @@ pub unsafe extern "C" fn AUTDDeleteFocusSTM(stm: ConstPtr) {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGainSTM() -> ConstPtr {
     Box::into_raw(GainSTMWrap::new()) as _
 }
@@ -742,6 +781,7 @@ pub unsafe extern "C" fn AUTDGainSTMSetMode(stm: ConstPtr, mode: GainSTMMode) {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGainSTMSetFrequency(stm: ConstPtr, freq: float) -> float {
     unsafe {
         cast_without_ownership_mut!(stm, Box<SG>)
@@ -751,6 +791,7 @@ pub unsafe extern "C" fn AUTDGainSTMSetFrequency(stm: ConstPtr, freq: float) -> 
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGainSTMGetStartIdx(stm: ConstPtr) -> i32 {
     unsafe {
         match cast_without_ownership!(stm, Box<SG>).stm().start_idx() {
@@ -761,6 +802,7 @@ pub unsafe extern "C" fn AUTDGainSTMGetStartIdx(stm: ConstPtr) -> i32 {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGainSTMGetFinishIdx(stm: ConstPtr) -> i32 {
     unsafe {
         match cast_without_ownership!(stm, Box<SG>).stm().finish_idx() {
@@ -801,16 +843,19 @@ pub unsafe extern "C" fn AUTDGainSTMSetFinishIdx(stm: ConstPtr, idx: i32) {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGainSTMFrequency(stm: ConstPtr) -> float {
     unsafe { cast_without_ownership!(stm, Box<SG>).stm().freq() }
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGainSTMSamplingFrequency(stm: ConstPtr) -> float {
     unsafe { cast_without_ownership!(stm, Box<SG>).stm().sampling_freq() }
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGainSTMSamplingFrequencyDivision(stm: ConstPtr) -> u32 {
     unsafe {
         cast_without_ownership!(stm, Box<SG>)
@@ -836,30 +881,35 @@ pub unsafe extern "C" fn AUTDDeleteGainSTM(stm: ConstPtr) {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDSynchronize() -> ConstPtr {
     let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(Synchronize::new()));
     Box::into_raw(m) as _
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDClear() -> ConstPtr {
     let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(Clear::new()));
     Box::into_raw(m) as _
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDUpdateFlags() -> ConstPtr {
     let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(UpdateFlag::new()));
     Box::into_raw(m) as _
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDStop() -> ConstPtr {
     let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(Stop::new()));
     Box::into_raw(m) as _
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDModDelayConfig() -> ConstPtr {
     let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(ModDelay::new()));
     Box::into_raw(m) as _
@@ -871,6 +921,7 @@ pub unsafe extern "C" fn AUTDDeleteSpecialData(special: ConstPtr) {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDCreateSilencer(step: u16) -> ConstPtr {
     let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(SilencerConfig::new(step)));
     Box::into_raw(m) as _
@@ -884,6 +935,7 @@ pub unsafe extern "C" fn AUTDDeleteSilencer(silencer: ConstPtr) {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDCreateAmplitudes(amp: float) -> ConstPtr {
     let m: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(Amplitudes::uniform(amp)));
     Box::into_raw(m) as _
@@ -914,6 +966,7 @@ impl From<TransMode> for autd3capi_common::dynamic_transducer::TransMode {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDSend(
     cnt: ConstPtr,
     mode: TransMode,
@@ -964,6 +1017,7 @@ pub unsafe extern "C" fn AUTDSend(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDSendSpecial(
     cnt: ConstPtr,
     mode: TransMode,
@@ -992,6 +1046,7 @@ pub unsafe extern "C" fn AUTDSendSpecial(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkDebug() -> ConstPtr {
     Box::into_raw(Box::new(Debug::builder())) as _
 }
@@ -1022,6 +1077,7 @@ impl From<Level> for autd3::prelude::LevelFilter {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkDebugLogLevel(builder: ConstPtr, level: Level) -> ConstPtr {
     Box::into_raw(Box::new(
         Box::from_raw(builder as *mut DebugBuilder).level(level.into()),
@@ -1032,6 +1088,7 @@ struct Callback(ConstPtr);
 unsafe impl Send for Callback {}
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkDebugLogFunc(
     builder: ConstPtr,
     level: Level,
@@ -1069,6 +1126,7 @@ pub unsafe extern "C" fn AUTDLinkDebugLogFunc(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkDebugTimeout(builder: ConstPtr, timeout_ns: u64) -> ConstPtr {
     unsafe {
         Box::into_raw(Box::new(
@@ -1078,6 +1136,7 @@ pub unsafe extern "C" fn AUTDLinkDebugTimeout(builder: ConstPtr, timeout_ns: u64
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkDebugBuild(builder: ConstPtr) -> ConstPtr {
     unsafe {
         let builder = Box::from_raw(builder as *mut DebugBuilder);

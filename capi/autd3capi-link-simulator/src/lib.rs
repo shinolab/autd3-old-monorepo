@@ -10,11 +10,13 @@ use autd3capi_common::*;
 use autd3_link_simulator::{Filled, Simulator, SimulatorBuilder};
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkSimulator(port: u16) -> ConstPtr {
     Box::into_raw(Box::new(Simulator::builder().port(port))) as _
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkSimulatorAddr(builder: ConstPtr, addr: *const c_char) -> ConstPtr {
     unsafe {
         Box::into_raw(Box::new(
@@ -25,6 +27,7 @@ pub unsafe extern "C" fn AUTDLinkSimulatorAddr(builder: ConstPtr, addr: *const c
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkSimulatorTimeout(builder: ConstPtr, timeout_ns: u64) -> ConstPtr {
     unsafe {
         Box::into_raw(Box::new(
@@ -35,6 +38,7 @@ pub unsafe extern "C" fn AUTDLinkSimulatorTimeout(builder: ConstPtr, timeout_ns:
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkSimulatorBuild(builder: ConstPtr) -> ConstPtr {
     unsafe {
         let builder = Box::from_raw(builder as *mut SimulatorBuilder<Filled>);
