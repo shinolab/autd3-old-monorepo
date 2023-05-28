@@ -8,7 +8,7 @@ namespace AUTD3Sharp
     {
         internal static class GeometryViewer
         {
-            private const string DLL = "autd3capi-geometry-viewer";
+            private const string DLL = "autd3capi_geometry_viewer";
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDGeometryViewer();
 

@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Linq;
 
 #if UNITY_2018_3_OR_NEWER
 using UnityEngine;
@@ -121,7 +122,7 @@ namespace AUTD3Sharp
             get => Base.AUTDGetTransFrequency(_cnt, Id);
             set
             {
-                var err = new StringBuilder(256);
+                var err = new byte[256];
                 if (!Base.AUTDSetTransFrequency(_cnt, Id, value, err))
                     throw new AUTDException(err);
             }
@@ -132,7 +133,7 @@ namespace AUTD3Sharp
             get => Base.AUTDGetTransCycle(_cnt, Id);
             set
             {
-                var err = new StringBuilder(256);
+                var err = new byte[256];
                 if (!Base.AUTDSetTransCycle(_cnt, Id, value, err))
                     throw new AUTDException(err);
             }
@@ -272,7 +273,7 @@ namespace AUTD3Sharp
 
             public Geometry Build()
             {
-                var err = new StringBuilder(256);
+                var err = new byte[256];
                 var geometryPtr = Base.AUTDBuildGeometry(_builderPtr, err);
                 if (geometryPtr == IntPtr.Zero) throw new AUTDException(err);
                 return new Geometry(geometryPtr, _mode);
@@ -299,7 +300,7 @@ namespace AUTD3Sharp
         #region field
 
         private bool _isDisposed;
-        internal readonly IntPtr CntPtr;
+        internal IntPtr CntPtr;
 
         #endregion
 
@@ -307,7 +308,7 @@ namespace AUTD3Sharp
 
         public static Controller Open(Geometry geometry, Link.Link link)
         {
-            var err = new StringBuilder(256);
+            var err = new byte[256];
             var cnt = Base.AUTDOpenController(geometry.Ptr, link.LinkPtr, err);
             if (cnt == IntPtr.Zero)
                 throw new AUTDException(err);
@@ -322,16 +323,16 @@ namespace AUTD3Sharp
 
         public IEnumerable<FirmwareInfo> FirmwareInfoList()
         {
-            var err = new StringBuilder(256);
+            var err = new byte[256];
             var handle = Base.AUTDGetFirmwareInfoListPointer(CntPtr, err);
             if (handle == IntPtr.Zero)
                 throw new AUTDException(err);
 
             for (uint i = 0; i < Geometry.NumDevices; i++)
             {
-                var info = new StringBuilder(256);
+                var info = new byte[256];
                 Base.AUTDGetFirmwareInfo(handle, i, info, out var isValid, out var isSupported);
-                yield return new FirmwareInfo(info.ToString(), isValid, isSupported);
+                yield return new FirmwareInfo(System.Text.Encoding.UTF8.GetString(info), isValid, isSupported);
             }
 
             Base.AUTDFreeFirmwareInfoListPointer(handle);
@@ -339,7 +340,8 @@ namespace AUTD3Sharp
 
         public void Close()
         {
-            var err = new StringBuilder(256);
+            if (CntPtr == IntPtr.Zero) return;
+            var err = new byte[256];
             if (!Base.AUTDClose(CntPtr, err))
                 throw new AUTDException(err);
         }
@@ -354,9 +356,8 @@ namespace AUTD3Sharp
         {
             if (_isDisposed) return;
 
-            if (disposing) Close();
-
-            Base.AUTDFreeController(CntPtr);
+            if (CntPtr != IntPtr.Zero) Base.AUTDFreeController(CntPtr);
+            CntPtr = IntPtr.Zero;
 
             _isDisposed = true;
         }
@@ -386,7 +387,7 @@ namespace AUTD3Sharp
             get
             {
                 var infos = new byte[Geometry.NumDevices];
-                var err = new StringBuilder(256);
+                var err = new byte[256];
                 if (!Base.AUTDGetFPGAInfo(CntPtr, infos, err))
                     throw new AUTDException(err);
                 return infos.Select(x => new FPGAInfo(x)).ToArray();
@@ -397,7 +398,7 @@ namespace AUTD3Sharp
         public bool Send(SpecialData special, TimeSpan? timeout = null)
         {
             if (special == null) throw new ArgumentNullException(nameof(special));
-            var err = new StringBuilder(256);
+            var err = new byte[256];
             var res = Base.AUTDSendSpecial(CntPtr, Geometry.Mode, special.Ptr, (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
             if (res == Base.Err)
             {
@@ -409,7 +410,7 @@ namespace AUTD3Sharp
         public bool Send(Header header, TimeSpan? timeout = null)
         {
             if (header == null) throw new ArgumentNullException(nameof(header));
-            var err = new StringBuilder(256);
+            var err = new byte[256];
             var res = Base.AUTDSend(CntPtr, Geometry.Mode, header.Ptr, IntPtr.Zero, (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
             if (res == Base.Err)
             {
@@ -421,7 +422,7 @@ namespace AUTD3Sharp
         public bool Send(Body body, TimeSpan? timeout = null)
         {
             if (body == null) throw new ArgumentNullException(nameof(body));
-            var err = new StringBuilder(256);
+            var err = new byte[256];
             var res = Base.AUTDSend(CntPtr, Geometry.Mode, IntPtr.Zero, body.Ptr, (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
             if (res == Base.Err)
             {
@@ -434,7 +435,7 @@ namespace AUTD3Sharp
         {
             if (header == null) throw new ArgumentNullException(nameof(header));
             if (body == null) throw new ArgumentNullException(nameof(body));
-            var err = new StringBuilder(256);
+            var err = new byte[256];
             var res = Base.AUTDSend(CntPtr, Geometry.Mode, header.Ptr, body.Ptr, (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
             if (res == Base.Err)
             {
@@ -448,7 +449,7 @@ namespace AUTD3Sharp
         {
             if (header == null) throw new ArgumentNullException(nameof(header));
             if (body == null) throw new ArgumentNullException(nameof(body));
-            var err = new StringBuilder(256);
+            var err = new byte[256];
             var res = Base.AUTDSend(CntPtr, Geometry.Mode, header.Ptr, body.Ptr, (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
             if (res == Base.Err)
             {
@@ -460,84 +461,47 @@ namespace AUTD3Sharp
 
     public sealed class UpdateFlag : SpecialData
     {
-        public UpdateFlag()
+        public UpdateFlag() : base(Base.AUTDUpdateFlags())
         {
-            handle = Base.AUTDUpdateFlags();
-        }
-
-        protected override bool ReleaseHandle()
-        {
-            Base.AUTDDeleteSpecialData(handle);
-            return true;
         }
     }
 
     public sealed class Clear : SpecialData
     {
-        public Clear()
+        public Clear() : base(Base.AUTDClear())
         {
-            handle = Base.AUTDClear();
-        }
-
-        protected override bool ReleaseHandle()
-        {
-            Base.AUTDDeleteSpecialData(handle);
-            return true;
         }
     }
 
     public sealed class Synchronize : SpecialData
     {
-        public Synchronize()
+        public Synchronize() : base(Base.AUTDSynchronize())
         {
-            handle = Base.AUTDSynchronize();
-        }
-
-        protected override bool ReleaseHandle()
-        {
-            Base.AUTDDeleteSpecialData(handle);
-            return true;
         }
     }
 
     public sealed class Stop : SpecialData
     {
-        public Stop()
+        public Stop() : base(Base.AUTDStop())
         {
-            handle = Base.AUTDStop();
-        }
-
-        protected override bool ReleaseHandle()
-        {
-            Base.AUTDDeleteSpecialData(handle);
-            return true;
         }
     }
     public sealed class ModDelayConfig : SpecialData
     {
-        public ModDelayConfig()
+        public ModDelayConfig() : base(Base.AUTDModDelayConfig())
         {
-            handle = Base.AUTDModDelayConfig();
-        }
-
-        protected override bool ReleaseHandle()
-        {
-            Base.AUTDDeleteSpecialData(handle);
-            return true;
         }
     }
 
     public sealed class SilencerConfig : Header
     {
-        public SilencerConfig(ushort step = 10)
+        public SilencerConfig(ushort step = 10) : base(Base.AUTDCreateSilencer(step))
         {
-            handle = Base.AUTDCreateSilencer(step);
         }
 
-        protected override bool ReleaseHandle()
+        ~SilencerConfig()
         {
-            Base.AUTDDeleteSilencer(handle);
-            return true;
+            Base.AUTDDeleteSilencer(Ptr);
         }
 
         public static SilencerConfig None()
@@ -548,15 +512,13 @@ namespace AUTD3Sharp
 
     public sealed class Amplitudes : Body
     {
-        public Amplitudes(float_t amp = (float_t)1.0)
+        public Amplitudes(float_t amp = (float_t)1.0) : base(Base.AUTDCreateAmplitudes(amp))
         {
-            handle = Base.AUTDCreateAmplitudes(amp);
         }
 
-        protected override bool ReleaseHandle()
+        ~Amplitudes()
         {
-            Base.AUTDDeleteAmplitudes(handle);
-            return true;
+            Base.AUTDDeleteAmplitudes(Ptr);
         }
     }
 
@@ -566,62 +528,56 @@ namespace AUTD3Sharp
         [ComVisible(false)]
         public abstract class Gain : Body
         {
-            internal Gain()
+            internal Gain(IntPtr ptr) : base(ptr)
             {
             }
 
-            protected override bool ReleaseHandle()
+            ~Gain()
             {
-                if (handle == IntPtr.Zero) return true;
-                Base.AUTDDeleteGain(handle);
-                return true;
+                if (Ptr == IntPtr.Zero) return;
+                Base.AUTDDeleteGain(Ptr);
             }
         }
 
         public sealed class Focus : Gain
         {
-            public Focus(Vector3 point, float_t amp = (float_t)1.0) => handle = Base.AUTDGainFocus(point.x, point.y, point.z, amp);
+            public Focus(Vector3 point, float_t amp = (float_t)1.0) : base(Base.AUTDGainFocus(point.x, point.y, point.z, amp)) { }
         }
 
         public sealed class Grouped : Gain
         {
-            public Grouped()
+            public Grouped() : base(Base.AUTDGainGrouped())
             {
-                handle = Base.AUTDGainGrouped();
             }
 
             public void Add(int deviceIdx, Gain gain)
             {
-                Base.AUTDGainGroupedAdd(handle, (uint)deviceIdx, gain.Ptr);
-                gain.SetHandleAsInvalid();
+                Base.AUTDGainGroupedAdd(Ptr, (uint)deviceIdx, gain.Ptr);
+                gain.Ptr = IntPtr.Zero;
             }
         }
 
         public sealed class BesselBeam : Gain
         {
-            public BesselBeam(Vector3 point, Vector3 dir, float_t thetaZ, float_t amp = (float_t)1.0) => handle = Base.AUTDGainBesselBeam(point.x, point.y, point.z, dir.x, dir.y, dir.z, thetaZ, amp);
+            public BesselBeam(Vector3 point, Vector3 dir, float_t thetaZ, float_t amp = (float_t)1.0) : base(Base.AUTDGainBesselBeam(point.x, point.y, point.z, dir.x, dir.y, dir.z, thetaZ, amp)) { }
         }
 
         public sealed class PlaneWave : Gain
         {
-            public PlaneWave(Vector3 dir, float_t amp = (float_t)1.0) => handle = Base.AUTDGainPlaneWave(dir.x, dir.y, dir.z, amp);
+            public PlaneWave(Vector3 dir, float_t amp = (float_t)1.0) : base(Base.AUTDGainPlaneWave(dir.x, dir.y, dir.z, amp)) { }
         }
 
         public sealed class Custom : Gain
         {
-            public Custom(float_t[] amp, float_t[] phase)
+            public Custom(float_t[] amp, float_t[] phase) : base(Base.AUTDGainCustom(amp, phase, (ulong)amp.Length))
             {
-                if (amp.Length != phase.Length) throw new ArgumentException();
-                var length = amp.Length;
-                handle = Base.AUTDGainCustom(amp, phase, (ulong)length);
             }
         }
 
         public sealed class Null : Gain
         {
-            public Null()
+            public Null() : base(Base.AUTDGainNull())
             {
-                handle = Base.AUTDGainNull();
             }
         }
     }
@@ -632,71 +588,63 @@ namespace AUTD3Sharp
         [ComVisible(false)]
         public abstract class Modulation : Header
         {
-            internal Modulation()
+            internal Modulation(IntPtr ptr) : base(ptr)
             {
             }
 
-            protected override bool ReleaseHandle()
+            ~Modulation()
             {
-                Base.AUTDDeleteModulation(handle);
-                return true;
+                Base.AUTDDeleteModulation(Ptr);
             }
 
-            public float_t SamplingFrequency => Base.AUTDModulationSamplingFrequency(handle);
+            public float_t SamplingFrequency => Base.AUTDModulationSamplingFrequency(Ptr);
             public uint SamplingFrequencyDivision
             {
-                get => Base.AUTDModulationSamplingFrequencyDivision(handle);
-                set => Base.AUTDModulationSetSamplingFrequencyDivision(handle, value);
+                get => Base.AUTDModulationSamplingFrequencyDivision(Ptr);
+                set => Base.AUTDModulationSetSamplingFrequencyDivision(Ptr, value);
             }
         }
 
         public sealed class Static : Modulation
         {
-            public Static(float_t amp = (float_t)1.0)
+            public Static(float_t amp = (float_t)1.0) : base(Base.AUTDModulationStatic(amp))
             {
-                handle = Base.AUTDModulationStatic(amp);
-
             }
         }
 
         public sealed class Sine : Modulation
         {
-            public Sine(int freq, float_t amp = (float_t)1.0, float_t offset = (float_t)0.5)
+            public Sine(int freq, float_t amp = (float_t)1.0, float_t offset = (float_t)0.5) : base(Base.AUTDModulationSine((uint)freq, amp, offset))
             {
-                handle = Base.AUTDModulationSine((uint)freq, amp, offset);
             }
         }
 
         public sealed class SineSquared : Modulation
         {
-            public SineSquared(int freq, float_t amp = (float_t)1.0, float_t offset = (float_t)0.5)
+            public SineSquared(int freq, float_t amp = (float_t)1.0, float_t offset = (float_t)0.5) : base(Base.AUTDModulationSineSquared((uint)freq, amp, offset))
             {
-                handle = Base.AUTDModulationSineSquared((uint)freq, amp, offset);
             }
         }
 
         public sealed class SineLegacy : Modulation
         {
-            public SineLegacy(float_t freq, float_t amp = (float_t)1.0, float_t offset = (float_t)0.5)
+            public SineLegacy(float_t freq, float_t amp = (float_t)1.0, float_t offset = (float_t)0.5) : base(Base.AUTDModulationSineLegacy(freq, amp, offset))
             {
-                handle = Base.AUTDModulationSineLegacy(freq, amp, offset);
             }
         }
 
 
         public sealed class Square : Modulation
         {
-            public Square(int freq, float_t low = (float_t)0.0, float_t high = (float_t)1.0, float_t duty = (float_t)0.5)
+            public Square(int freq, float_t low = (float_t)0.0, float_t high = (float_t)1.0, float_t duty = (float_t)0.5) : base(Base.AUTDModulationSquare((uint)freq, low, high, duty))
             {
-                handle = Base.AUTDModulationSquare((uint)freq, low, high, duty);
             }
         }
 
         public sealed class Custom : Modulation
         {
-            public Custom(float_t[] data, uint freqDiv)
+            public Custom(float_t[] data, uint freqDiv) : base(Base.AUTDModulationCustom(data, (ulong)data.Length, freqDiv))
             {
-                handle = Base.AUTDModulationCustom(data, (ulong)data.Length, freqDiv);
             }
         }
     }
@@ -705,112 +653,108 @@ namespace AUTD3Sharp
     {
         public sealed class FocusSTM : Body
         {
-            public FocusSTM()
+            public FocusSTM() : base(Base.AUTDFocusSTM())
             {
-                handle = Base.AUTDFocusSTM();
             }
 
-            public void Add(Vector3 point, byte shift = 0) => Base.AUTDFocusSTMAdd(handle, point.x, point.y, point.z, shift);
+            public void Add(Vector3 point, byte shift = 0) => Base.AUTDFocusSTMAdd(Ptr, point.x, point.y, point.z, shift);
 
-            protected override bool ReleaseHandle()
+            ~FocusSTM()
             {
-                Base.AUTDDeleteFocusSTM(handle);
-                return true;
+                Base.AUTDDeleteFocusSTM(Ptr);
             }
 
             public float_t Frequency
             {
-                get => Base.AUTDFocusSTMFrequency(handle);
-                set => Base.AUTDFocusSTMSetFrequency(handle, value);
+                get => Base.AUTDFocusSTMFrequency(Ptr);
+                set => Base.AUTDFocusSTMSetFrequency(Ptr, value);
             }
 
             public int? StartIdx
             {
                 get
                 {
-                    var idx = Base.AUTDFocusSTMGetStartIdx(handle);
+                    var idx = Base.AUTDFocusSTMGetStartIdx(Ptr);
                     if (idx < 0) return null;
                     return idx;
                 }
-                set => Base.AUTDFocusSTMSetStartIdx(handle, value == null ? -1 : value.Value);
+                set => Base.AUTDFocusSTMSetStartIdx(Ptr, value == null ? -1 : value.Value);
             }
 
             public int? FinishIdx
             {
                 get
                 {
-                    var idx = Base.AUTDFocusSTMGetFinishIdx(handle);
+                    var idx = Base.AUTDFocusSTMGetFinishIdx(Ptr);
                     if (idx < 0) return null;
                     return idx;
                 }
-                set => Base.AUTDFocusSTMSetFinishIdx(handle, value == null ? -1 : value.Value);
+                set => Base.AUTDFocusSTMSetFinishIdx(Ptr, value == null ? -1 : value.Value);
             }
 
-            public float_t SamplingFrequency => Base.AUTDFocusSTMSamplingFrequency(handle);
+            public float_t SamplingFrequency => Base.AUTDFocusSTMSamplingFrequency(Ptr);
             public uint SamplingFrequencyDivision
             {
-                get => Base.AUTDFocusSTMSamplingFrequencyDivision(handle);
-                set => Base.AUTDFocusSTMSetSamplingFrequencyDivision(handle, value);
+                get => Base.AUTDFocusSTMSamplingFrequencyDivision(Ptr);
+                set => Base.AUTDFocusSTMSetSamplingFrequencyDivision(Ptr, value);
             }
         }
 
         public sealed class GainSTM : Body
         {
-            public GainSTM()
+            public GainSTM() : base(Base.AUTDGainSTM())
             {
-                handle = Base.AUTDGainSTM();
             }
 
             public void Add(AUTD3Sharp.Gain.Gain gain)
             {
-                Base.AUTDGainSTMAdd(handle, gain.Ptr);
-                gain.SetHandleAsInvalid();
+                Base.AUTDGainSTMAdd(Ptr, gain.Ptr);
+                gain.Ptr = IntPtr.Zero;
             }
 
-            protected override bool ReleaseHandle()
+            ~GainSTM()
             {
-                Base.AUTDDeleteGainSTM(handle);
-                return true;
+                Base.AUTDDeleteGainSTM(Ptr);
             }
 
             public GainSTMMode Mode
             {
-                set => Base.AUTDGainSTMSetMode(handle, value);
+                set => Base.AUTDGainSTMSetMode(Ptr, value);
             }
 
             public float_t Frequency
             {
-                get => Base.AUTDGainSTMFrequency(handle);
-                set => Base.AUTDGainSTMSetFrequency(handle, value);
+                get => Base.AUTDGainSTMFrequency(Ptr);
+                set => Base.AUTDGainSTMSetFrequency(Ptr, value);
             }
 
             public int? StartIdx
             {
                 get
                 {
-                    var idx = Base.AUTDGainSTMGetStartIdx(handle);
+                    var idx = Base.AUTDGainSTMGetStartIdx(Ptr);
                     if (idx < 0) return null;
                     return idx;
                 }
-                set => Base.AUTDGainSTMSetStartIdx(handle, value == null ? -1 : value.Value);
+                set => Base.AUTDGainSTMSetStartIdx(Ptr, value == null ? -1 : value.Value);
             }
 
             public int? FinishIdx
             {
                 get
                 {
-                    var idx = Base.AUTDGainSTMGetFinishIdx(handle);
+                    var idx = Base.AUTDGainSTMGetFinishIdx(Ptr);
                     if (idx < 0) return null;
                     return idx;
                 }
-                set => Base.AUTDGainSTMSetFinishIdx(handle, value == null ? -1 : value.Value);
+                set => Base.AUTDGainSTMSetFinishIdx(Ptr, value == null ? -1 : value.Value);
             }
 
-            public float_t SamplingFrequency => Base.AUTDGainSTMSamplingFrequency(handle);
+            public float_t SamplingFrequency => Base.AUTDGainSTMSamplingFrequency(Ptr);
             public uint SamplingFrequencyDivision
             {
-                get => Base.AUTDGainSTMSamplingFrequencyDivision(handle);
-                set => Base.AUTDGainSTMSetSamplingFrequencyDivision(handle, value);
+                get => Base.AUTDGainSTMSamplingFrequencyDivision(Ptr);
+                set => Base.AUTDGainSTMSetSamplingFrequencyDivision(Ptr, value);
             }
         }
     }

@@ -8,11 +8,11 @@ namespace AUTD3Sharp
     {
         internal static class LinkSimulator
         {
-            private const string DLL = "autd3capi-link-simulator";
+            private const string DLL = "autd3capi_link_simulator";
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDLinkSimulator(ushort port);
 
-            [DllImport(DLL, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDLinkSimulatorAddr(IntPtr builder, string addr);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDLinkSimulatorAddr(IntPtr builder, string addr);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDLinkSimulatorTimeout(IntPtr builder, ulong timeoutNs);
 

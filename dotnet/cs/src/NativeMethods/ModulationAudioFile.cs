@@ -8,9 +8,9 @@ namespace AUTD3Sharp
     {
         internal static class ModulationAudioFile
         {
-            private const string DLL = "autd3capi-modulation-audio-file";
+            private const string DLL = "autd3capi_modulation_audio_file";
 
-            [DllImport(DLL, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDModulationWav(string path, System.Text.StringBuilder err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDModulationWav(string path, byte[] err);
         }
     }
 }

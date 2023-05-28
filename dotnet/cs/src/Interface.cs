@@ -4,7 +4,7 @@
  * Created Date: 17/12/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/05/2023
+ * Last Modified: 28/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
 * Copyright (c) 2021-2023 Shun Suzuki. All rights reserved.
@@ -13,55 +13,44 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Microsoft.Win32.SafeHandles;
 
 namespace AUTD3Sharp
 {
     [ComVisible(false)]
-    public abstract class SpecialData : SafeHandleZeroOrMinusOneIsInvalid
+    public abstract class SpecialData
     {
-        internal IntPtr Ptr
+        internal IntPtr Ptr { get; set; }
+
+        internal SpecialData(IntPtr ptr)
         {
-            get => handle;
-            set => handle = value;
+            Ptr = ptr;
         }
 
-        internal SpecialData() : base(true)
+        ~SpecialData()
         {
-            var ptr = new IntPtr();
-            SetHandle(ptr);
+            AUTD3Sharp.NativeMethods.Base.AUTDDeleteSpecialData(Ptr);
         }
     }
 
     [ComVisible(false)]
-    public abstract class Header : SafeHandleZeroOrMinusOneIsInvalid
+    public abstract class Header
     {
-        internal IntPtr Ptr
-        {
-            get => handle;
-            set => handle = value;
-        }
+        internal IntPtr Ptr { get; set; }
 
-        internal Header() : base(true)
+        internal Header(IntPtr ptr)
         {
-            var ptr = new IntPtr();
-            SetHandle(ptr);
+            Ptr = ptr;
         }
     }
 
     [ComVisible(false)]
-    public abstract class Body : SafeHandleZeroOrMinusOneIsInvalid
+    public abstract class Body
     {
-        internal IntPtr Ptr
-        {
-            get => handle;
-            set => handle = value;
-        }
+        internal IntPtr Ptr { get; set; }
 
-        internal Body() : base(true)
+        internal Body(IntPtr ptr)
         {
-            var ptr = new IntPtr();
-            SetHandle(ptr);
+            Ptr = ptr;
         }
     }
 }

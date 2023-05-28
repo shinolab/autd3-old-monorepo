@@ -17,7 +17,6 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Microsoft.Win32.SafeHandles;
 
 #if UNITY_2018_3_OR_NEWER
 using UnityEngine;
@@ -39,67 +38,29 @@ namespace AUTD3Sharp
         namespace Holo
         {
             [ComVisible(false)]
-            public abstract class Backend : SafeHandleZeroOrMinusOneIsInvalid
+            public abstract class Backend
             {
-                internal IntPtr Ptr => handle;
+                internal IntPtr Ptr { get; set; }
 
-                internal Backend() : base(true)
+                internal Backend(IntPtr ptr)
                 {
-                    var ptr = new IntPtr();
-                    SetHandle(ptr);
-                }
-
-                protected override bool ReleaseHandle()
-                {
-                    return true;
+                    Ptr = ptr;
                 }
             }
 
             public sealed class BackendDefault : Backend
             {
-                public BackendDefault()
+                public BackendDefault() : base(NativeMethods.GainHolo.AUTDDefaultBackend())
                 {
-                    handle = NativeMethods.GainHolo.AUTDDefaultBackend();
                 }
             }
 
-            public class Holo : Gain
-            {
-                public Holo(Backend backend)
-                {
-                    Backend = backend;
-                }
-
-                public Holo()
-                {
-                    Backend = new BackendDefault();
-                }
-
-                public Backend Backend { get; set; }
-
-                public AmplitudeConstraint Constraint
-                {
-                    set => value.Set(handle);
-                }
-
-                public void Add(Vector3 focus, float_t amp) => NativeMethods.GainHolo.AUTDGainHoloAdd(handle, focus.x, focus.y, focus.z, amp);
-            }
-
-
-            public abstract class AmplitudeConstraint
-            {
-                internal abstract void Set(IntPtr handle);
-            }
+            public abstract class AmplitudeConstraint { }
 
             public sealed class DontCare : AmplitudeConstraint
             {
                 public DontCare()
                 {
-                }
-
-                internal override void Set(IntPtr handle)
-                {
-                    NativeMethods.GainHolo.AUTDGainHoloSetDotCareConstraint(handle);
                 }
             }
 
@@ -107,161 +68,301 @@ namespace AUTD3Sharp
             {
                 public Normalize()
                 {
-
-                }
-
-                internal override void Set(IntPtr handle)
-                {
-                    NativeMethods.GainHolo.AUTDGainHoloSetNormalizeConstraint(handle);
                 }
             }
 
             public sealed class Uniform : AmplitudeConstraint
             {
 
-                private readonly float_t _value;
+                internal readonly float_t Value;
 
                 public Uniform(float_t value = (float_t)1.0)
                 {
-                    _value = value;
-                }
-
-                internal override void Set(IntPtr handle)
-                {
-                    NativeMethods.GainHolo.AUTDGainHoloSetUniformConstraint(handle, _value);
+                    Value = value;
                 }
             }
 
             public sealed class Clamp : AmplitudeConstraint
             {
-                private readonly float_t _min;
-                private readonly float_t _max;
+                internal readonly float_t Min;
+                internal readonly float_t Max;
 
                 public Clamp(float_t min = (float_t)0.0, float_t max = (float_t)1.0)
                 {
-                    _min = min;
-                    _max = max;
-                }
-
-                internal override void Set(IntPtr handle)
-                {
-                    NativeMethods.GainHolo.AUTDGainHoloSetClampConstraint(handle, _min, _max);
+                    Min = min;
+                    Max = max;
                 }
             }
 
-            public sealed class SDP : Holo
+            public sealed class SDP : Gain
             {
-                public SDP()
+                public SDP(Backend backend) : base(NativeMethods.GainHolo.AUTDGainHoloSDP(backend.Ptr))
                 {
-                    handle = NativeMethods.GainHolo.AUTDGainHoloSDP(Backend.Ptr);
                 }
 
                 public float_t Alpha
                 {
-                    set => NativeMethods.GainHolo.AUTDGainHoloSDPAlpha(handle, value);
+                    set => NativeMethods.GainHolo.AUTDGainHoloSDPAlpha(Ptr, value);
                 }
 
                 public float_t Lambda
                 {
-                    set => NativeMethods.GainHolo.AUTDGainHoloSDPLambda(handle, value);
+                    set => NativeMethods.GainHolo.AUTDGainHoloSDPLambda(Ptr, value);
                 }
 
                 public uint Repeat
                 {
-                    set => NativeMethods.GainHolo.AUTDGainHoloSDPRepeat(handle, value);
+                    set => NativeMethods.GainHolo.AUTDGainHoloSDPRepeat(Ptr, value);
+                }
+
+                public void Add(Vector3 focus, float_t amp) => NativeMethods.GainHolo.AUTDGainHoloSDPAdd(Ptr, focus.x, focus.y, focus.z, amp);
+
+                public void SetConstraint(AmplitudeConstraint constraint)
+                {
+                    switch (constraint)
+                    {
+                        case DontCare _:
+                            NativeMethods.GainHolo.AUTDGainHoloSDPSetDotCareConstraint(Ptr);
+                            break;
+                        case Normalize _:
+                            NativeMethods.GainHolo.AUTDGainHoloSDPSetNormalizeConstraint(Ptr);
+                            break;
+                        case Uniform c:
+                            NativeMethods.GainHolo.AUTDGainHoloSDPSetUniformConstraint(Ptr, c.Value);
+                            break;
+                        case Clamp c:
+                            NativeMethods.GainHolo.AUTDGainHoloSDPSetClampConstraint(Ptr, c.Min, c.Max);
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
                 }
             }
 
-            public sealed class EVP : Holo
+            public sealed class EVP : Gain
             {
-                public EVP()
+                public EVP(Backend backend)
+                    : base(NativeMethods.GainHolo.AUTDGainHoloEVP(backend.Ptr))
                 {
-                    handle = NativeMethods.GainHolo.AUTDGainHoloEVP(Backend.Ptr);
                 }
 
                 public float_t Gamma
                 {
-                    set => NativeMethods.GainHolo.AUTDGainHoloEVPGamma(handle, value);
+                    set => NativeMethods.GainHolo.AUTDGainHoloEVPGamma(Ptr, value);
+                }
+
+                public void Add(Vector3 focus, float_t amp) => NativeMethods.GainHolo.AUTDGainHoloEVPAdd(Ptr, focus.x, focus.y, focus.z, amp);
+
+                public void SetConstraint(AmplitudeConstraint constraint)
+                {
+                    switch (constraint)
+                    {
+                        case DontCare _:
+                            NativeMethods.GainHolo.AUTDGainHoloEVPSetDotCareConstraint(Ptr);
+                            break;
+                        case Normalize _:
+                            NativeMethods.GainHolo.AUTDGainHoloEVPSetNormalizeConstraint(Ptr);
+                            break;
+                        case Uniform c:
+                            NativeMethods.GainHolo.AUTDGainHoloEVPSetUniformConstraint(Ptr, c.Value);
+                            break;
+                        case Clamp c:
+                            NativeMethods.GainHolo.AUTDGainHoloEVPSetClampConstraint(Ptr, c.Min, c.Max);
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
                 }
             }
 
-            public sealed class Naive : Holo
+            public sealed class Naive : Gain
             {
-                public Naive()
+                public Naive(Backend backend)
+                : base(NativeMethods.GainHolo.AUTDGainHoloNaive(backend.Ptr))
                 {
-                    handle = NativeMethods.GainHolo.AUTDGainHoloNaive(Backend.Ptr);
+                }
+
+                public void Add(Vector3 focus, float_t amp) => NativeMethods.GainHolo.AUTDGainHoloNaiveAdd(Ptr, focus.x, focus.y, focus.z, amp);
+
+                public void SetConstraint(AmplitudeConstraint constraint)
+                {
+                    switch (constraint)
+                    {
+                        case DontCare _:
+                            NativeMethods.GainHolo.AUTDGainHoloNaiveSetDotCareConstraint(Ptr);
+                            break;
+                        case Normalize _:
+                            NativeMethods.GainHolo.AUTDGainHoloNaiveSetNormalizeConstraint(Ptr);
+                            break;
+                        case Uniform c:
+                            NativeMethods.GainHolo.AUTDGainHoloNaiveSetUniformConstraint(Ptr, c.Value);
+                            break;
+                        case Clamp c:
+                            NativeMethods.GainHolo.AUTDGainHoloNaiveSetClampConstraint(Ptr, c.Min, c.Max);
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
                 }
             }
 
-            public sealed class GS : Holo
+            public sealed class GS : Gain
             {
-                public GS()
+                public GS(Backend backend) : base(NativeMethods.GainHolo.AUTDGainHoloGS(backend.Ptr))
                 {
-                    handle = NativeMethods.GainHolo.AUTDGainHoloGS(Backend.Ptr);
                 }
 
                 public uint Repeat
                 {
-                    set => NativeMethods.GainHolo.AUTDGainHoloGSRepeat(handle, value);
+                    set => NativeMethods.GainHolo.AUTDGainHoloGSRepeat(Ptr, value);
+                }
+
+                public void Add(Vector3 focus, float_t amp) => NativeMethods.GainHolo.AUTDGainHoloGSAdd(Ptr, focus.x, focus.y, focus.z, amp);
+
+                public void SetConstraint(AmplitudeConstraint constraint)
+                {
+                    switch (constraint)
+                    {
+                        case DontCare _:
+                            NativeMethods.GainHolo.AUTDGainHoloGSSetDotCareConstraint(Ptr);
+                            break;
+                        case Normalize _:
+                            NativeMethods.GainHolo.AUTDGainHoloGSSetNormalizeConstraint(Ptr);
+                            break;
+                        case Uniform c:
+                            NativeMethods.GainHolo.AUTDGainHoloGSSetUniformConstraint(Ptr, c.Value);
+                            break;
+                        case Clamp c:
+                            NativeMethods.GainHolo.AUTDGainHoloGSSetClampConstraint(Ptr, c.Min, c.Max);
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
                 }
             }
 
-            public sealed class GSPAT : Holo
+            public sealed class GSPAT : Gain
             {
-                public GSPAT()
+                public GSPAT(Backend backend) : base(NativeMethods.GainHolo.AUTDGainHoloGSPAT(backend.Ptr))
                 {
-                    handle = NativeMethods.GainHolo.AUTDGainHoloGSPAT(Backend.Ptr);
                 }
 
                 public uint Repeat
                 {
-                    set => NativeMethods.GainHolo.AUTDGainHoloGSPATRepeat(handle, value);
+                    set => NativeMethods.GainHolo.AUTDGainHoloGSPATRepeat(Ptr, value);
+                }
+
+                public void Add(Vector3 focus, float_t amp) => NativeMethods.GainHolo.AUTDGainHoloGSPATAdd(Ptr, focus.x, focus.y, focus.z, amp);
+
+                public void SetConstraint(AmplitudeConstraint constraint)
+                {
+                    switch (constraint)
+                    {
+                        case DontCare _:
+                            NativeMethods.GainHolo.AUTDGainHoloGSPATSetDotCareConstraint(Ptr);
+                            break;
+                        case Normalize _:
+                            NativeMethods.GainHolo.AUTDGainHoloGSPATSetNormalizeConstraint(Ptr);
+                            break;
+                        case Uniform c:
+                            NativeMethods.GainHolo.AUTDGainHoloGSPATSetUniformConstraint(Ptr, c.Value);
+                            break;
+                        case Clamp c:
+                            NativeMethods.GainHolo.AUTDGainHoloGSPATSetClampConstraint(Ptr, c.Min, c.Max);
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
                 }
             }
 
-            public sealed class LM : Holo
+            public sealed class LM : Gain
             {
-                public LM()
+                public LM(Backend backend) : base(NativeMethods.GainHolo.AUTDGainHoloLM(backend.Ptr))
                 {
-                    handle = NativeMethods.GainHolo.AUTDGainHoloLM(Backend.Ptr);
                 }
 
                 public float_t Eps1
                 {
-                    set => NativeMethods.GainHolo.AUTDGainHoloLMEps1(handle, value);
+                    set => NativeMethods.GainHolo.AUTDGainHoloLMEps1(Ptr, value);
                 }
 
                 public float_t Eps2
                 {
-                    set => NativeMethods.GainHolo.AUTDGainHoloLMEps2(handle, value);
+                    set => NativeMethods.GainHolo.AUTDGainHoloLMEps2(Ptr, value);
                 }
 
                 public float_t Tau
                 {
-                    set => NativeMethods.GainHolo.AUTDGainHoloLMTau(handle, value);
+                    set => NativeMethods.GainHolo.AUTDGainHoloLMTau(Ptr, value);
                 }
 
                 public uint KMax
                 {
-                    set => NativeMethods.GainHolo.AUTDGainHoloLMKMax(handle, value);
+                    set => NativeMethods.GainHolo.AUTDGainHoloLMKMax(Ptr, value);
                 }
 
                 public float_t[]? Initial
                 {
-                    set => NativeMethods.GainHolo.AUTDGainHoloLMInitial(handle, value, (ulong)(value?.Length ?? 0));
+                    set => NativeMethods.GainHolo.AUTDGainHoloLMInitial(Ptr, value, (ulong)(value?.Length ?? 0));
+                }
+
+                public void Add(Vector3 focus, float_t amp) => NativeMethods.GainHolo.AUTDGainHoloLMAdd(Ptr, focus.x, focus.y, focus.z, amp);
+
+                public void SetConstraint(AmplitudeConstraint constraint)
+                {
+                    switch (constraint)
+                    {
+                        case DontCare _:
+                            NativeMethods.GainHolo.AUTDGainHoloLMSetDotCareConstraint(Ptr);
+                            break;
+                        case Normalize _:
+                            NativeMethods.GainHolo.AUTDGainHoloLMSetNormalizeConstraint(Ptr);
+                            break;
+                        case Uniform c:
+                            NativeMethods.GainHolo.AUTDGainHoloLMSetUniformConstraint(Ptr, c.Value);
+                            break;
+                        case Clamp c:
+                            NativeMethods.GainHolo.AUTDGainHoloLMSetClampConstraint(Ptr, c.Min, c.Max);
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
                 }
             }
 
-            public sealed class Greedy : Holo
+            public sealed class Greedy : Gain
             {
-                public Greedy()
+                public Greedy() : base(NativeMethods.GainHolo.AUTDGainHoloGreedy())
                 {
-                    handle = NativeMethods.GainHolo.AUTDGainHoloGreedy();
                 }
 
                 public uint PhaseDiv
                 {
-                    set => NativeMethods.GainHolo.AUTDGainHoloGreedyPhaseDiv(handle, value);
+                    set => NativeMethods.GainHolo.AUTDGainHoloGreedyPhaseDiv(Ptr, value);
+                }
+
+                public void Add(Vector3 focus, float_t amp) => NativeMethods.GainHolo.AUTDGainHoloGreedyAdd(Ptr, focus.x, focus.y, focus.z, amp);
+
+                public void SetConstraint(AmplitudeConstraint constraint)
+                {
+                    switch (constraint)
+                    {
+                        case DontCare _:
+                            NativeMethods.GainHolo.AUTDGainHoloGreedySetDotCareConstraint(Ptr);
+                            break;
+                        case Normalize _:
+                            NativeMethods.GainHolo.AUTDGainHoloGreedySetNormalizeConstraint(Ptr);
+                            break;
+                        case Uniform c:
+                            NativeMethods.GainHolo.AUTDGainHoloGreedySetUniformConstraint(Ptr, c.Value);
+                            break;
+                        case Clamp c:
+                            NativeMethods.GainHolo.AUTDGainHoloGreedySetClampConstraint(Ptr, c.Min, c.Max);
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
                 }
             }
         }

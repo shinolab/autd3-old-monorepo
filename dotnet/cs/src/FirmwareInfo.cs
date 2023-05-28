@@ -30,9 +30,9 @@ namespace AUTD3Sharp
         {
             get
             {
-                var latest = new StringBuilder(256);
+                var latest = new byte[256];
                 NativeMethods.Base.AUTDGetLatestFirmware(latest);
-                return latest.ToString();
+                return System.Text.Encoding.UTF8.GetString(latest);
             }
         }
 
