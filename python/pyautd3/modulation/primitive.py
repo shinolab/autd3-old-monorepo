@@ -1,15 +1,15 @@
-'''
+"""
 File: primitive.py
 Project: gain
 Created Date: 21/10/2022
 Author: Shun Suzuki
 -----
-Last Modified: 24/01/2023
+Last Modified: 28/05/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
-Copyright (c) 2022 Shun Suzuki. All rights reserved.
+Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
 from ctypes import byref
 import numpy as np
@@ -68,7 +68,9 @@ class SineLegacy(Modulation):
 
 
 class Square(Modulation):
-    def __init__(self, freq: int, low: float = 0.0, high: float = 1.0, duty: float = 0.5):
+    def __init__(
+        self, freq: int, low: float = 0.0, high: float = 1.0, duty: float = 0.5
+    ):
         super().__init__()
         Base().dll.AUTDModulationSquare(byref(self.ptr), freq, low, high, duty)
 
