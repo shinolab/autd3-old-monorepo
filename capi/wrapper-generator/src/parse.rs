@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/05/2023
+ * Last Modified: 27/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -100,7 +100,8 @@ where
                 let name = item_const.ident.to_string();
                 let ty =
                     Type::parse_str(&item_const.ty.into_token_stream().to_string(), use_single);
-                let value = item_const.expr.into_token_stream().to_string();
+                let mut value = item_const.expr.into_token_stream().to_string();
+                value.retain(|c| !c.is_whitespace());
 
                 Some(Const { name, ty, value })
             }

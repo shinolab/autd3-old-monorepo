@@ -4,7 +4,7 @@
  * Created Date: 10/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/05/2023
+ * Last Modified: 27/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@ mod python;
 mod traits;
 mod types;
 
-use std::{fs::File, io::BufWriter, path::Path};
+use std::path::Path;
 
 use anyhow::Result;
 
@@ -36,28 +36,11 @@ fn gen<G: Generator, P1: AsRef<Path>, P2: AsRef<Path>>(
     let capi_path = crate_path.as_ref().join("src").join("lib.rs");
     let crate_name = crate_path.as_ref().file_name().unwrap().to_str().unwrap();
 
-    let mut writer = BufWriter::new(File::create(
-        path.as_ref().join(G::get_filename(crate_name)),
-    )?);
-    G::print_header(&mut writer, crate_name)?;
-
-    for constant in parse_const(&capi_path, use_single)? {
-        G::register_const(&mut writer, &constant)?;
-    }
-
-    for func in parse_func(&capi_path, use_single)? {
-        G::register_func(&mut writer, &func)?;
-    }
-
-    G::start_other_types(&mut writer)?;
-
-    for e in parse_enum(&capi_path, use_single)? {
-        G::register_enum(&mut writer, &e)?;
-    }
-
-    G::print_footer(&mut writer)?;
-
-    Ok(())
+    G::new()
+        .register_func(parse_func(&capi_path, use_single)?)
+        .register_const(parse_const(&capi_path, use_single)?)
+        .register_enum(parse_enum(&capi_path, use_single)?)
+        .write(path, crate_name)
 }
 
 pub fn generate<P: AsRef<Path>>(crate_path: P) -> Result<()> {
@@ -73,7 +56,6 @@ pub fn generate<P: AsRef<Path>>(crate_path: P) -> Result<()> {
         "{}.h",
         crate_path.as_ref().file_name().unwrap().to_str().unwrap()
     ));
-    dbg!(out_file.clone());
     cbindgen::Builder::new()
         .with_crate(crate_path)
         .with_config(cbindgen::Config {
@@ -99,6 +81,7 @@ pub fn generate<P: AsRef<Path>>(crate_path: P) -> Result<()> {
             },
             function: cbindgen::FunctionConfig {
                 sort_by: None,
+                must_use: Some("[[nodiscard]]".to_string()),
                 ..Default::default()
             },
             constant: cbindgen::ConstantConfig {

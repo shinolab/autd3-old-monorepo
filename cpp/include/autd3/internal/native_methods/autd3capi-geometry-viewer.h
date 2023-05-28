@@ -8,13 +8,13 @@ namespace autd3::internal::native_methods {
 
 extern "C" {
 
-void* AUTDGeometryViewer();
+[[nodiscard]] void* AUTDGeometryViewer();
 
-void* AUTDGeometryViewerSize(void* viewer, uint32_t width, uint32_t height);
+[[nodiscard]] void* AUTDGeometryViewerSize(void* viewer, uint32_t width, uint32_t height);
 
-void* AUTDGeometryViewerVsync(void* viewer, bool vsync);
+[[nodiscard]] void* AUTDGeometryViewerVsync(void* viewer, bool vsync);
 
-int32_t AUTDGeometryViewerRun(void* viewer, void* cnt);
+[[nodiscard]] int32_t AUTDGeometryViewerRun(void* viewer, void* cnt);
 
 } // extern "C"
 

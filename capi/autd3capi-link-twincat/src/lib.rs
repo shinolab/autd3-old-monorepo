@@ -13,11 +13,13 @@ use autd3_link_twincat::{
 };
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkTwinCAT() -> ConstPtr {
     Box::into_raw(Box::new(TwinCAT::builder())) as _
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkTwinCATTimeout(builder: ConstPtr, timeout_ns: u64) -> ConstPtr {
     unsafe {
         Box::into_raw(Box::new(
@@ -27,6 +29,7 @@ pub unsafe extern "C" fn AUTDLinkTwinCATTimeout(builder: ConstPtr, timeout_ns: u
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkTwinCATBuild(builder: ConstPtr, err: *mut c_char) -> ConstPtr {
     unsafe {
         let builder = Box::from_raw(builder as *mut TwinCATBuilder);
@@ -37,6 +40,7 @@ pub unsafe extern "C" fn AUTDLinkTwinCATBuild(builder: ConstPtr, err: *mut c_cha
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkRemoteTwinCAT(server_ams_net_id: *const c_char) -> ConstPtr {
     Box::into_raw(Box::new(RemoteTwinCAT::builder().server_ams_net_id(
         CStr::from_ptr(server_ams_net_id).to_str().unwrap(),
@@ -44,6 +48,7 @@ pub unsafe extern "C" fn AUTDLinkRemoteTwinCAT(server_ams_net_id: *const c_char)
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkRemoteTwinCATServerIP(
     builder: ConstPtr,
     addr: *const c_char,
@@ -57,6 +62,7 @@ pub unsafe extern "C" fn AUTDLinkRemoteTwinCATServerIP(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkRemoteTwinCATClientAmsNetId(
     builder: ConstPtr,
     id: *const c_char,
@@ -70,6 +76,7 @@ pub unsafe extern "C" fn AUTDLinkRemoteTwinCATClientAmsNetId(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkRemoteTwinCATTimeout(
     builder: ConstPtr,
     timeout_ns: u64,
@@ -83,6 +90,7 @@ pub unsafe extern "C" fn AUTDLinkRemoteTwinCATTimeout(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkRemoteTwinCATBuild(
     builder: ConstPtr,
     err: *mut c_char,

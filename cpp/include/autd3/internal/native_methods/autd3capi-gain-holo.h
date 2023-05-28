@@ -8,9 +8,9 @@ namespace autd3::internal::native_methods {
 
 extern "C" {
 
-void* AUTDDefaultBackend();
+[[nodiscard]] void* AUTDDefaultBackend();
 
-void* AUTDGainHoloSDP(void* backend);
+[[nodiscard]] void* AUTDGainHoloSDP(void* backend);
 
 void AUTDGainHoloSDPAlpha(void* holo, double alpha);
 
@@ -18,25 +18,25 @@ void AUTDGainHoloSDPLambda(void* holo, double lambda);
 
 void AUTDGainHoloSDPRepeat(void* holo, uint32_t repeat);
 
-void* AUTDGainHoloEVP(void* backend);
+[[nodiscard]] void* AUTDGainHoloEVP(void* backend);
 
 void AUTDGainHoloEVPGamma(void* holo, double gamma);
 
-void* AUTDGainHoloGS(void* backend);
+[[nodiscard]] void* AUTDGainHoloGS(void* backend);
 
 void AUTDGainHoloGSRepeat(void* holo, uint32_t repeat);
 
-void* AUTDGainHoloGSPAT(void* backend);
+[[nodiscard]] void* AUTDGainHoloGSPAT(void* backend);
 
 void AUTDGainHoloGSPATRepeat(void* holo, uint32_t repeat);
 
-void* AUTDGainHoloNaive(void* backend);
+[[nodiscard]] void* AUTDGainHoloNaive(void* backend);
 
-void* AUTDGainHoloGreedy();
+[[nodiscard]] void* AUTDGainHoloGreedy();
 
 void AUTDGainHoloGreedyPhaseDiv(void* holo, uint32_t div);
 
-void* AUTDGainHoloLM(void* backend);
+[[nodiscard]] void* AUTDGainHoloLM(void* backend);
 
 void AUTDGainHoloLMEps1(void* holo, double eps_1);
 

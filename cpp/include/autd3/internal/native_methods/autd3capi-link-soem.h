@@ -19,43 +19,47 @@ enum class TimerStrategy : uint8_t {
 
 extern "C" {
 
-void* AUTDGetAdapterPointer(uint32_t *len);
+[[nodiscard]] void* AUTDGetAdapterPointer(uint32_t *len);
 
 void AUTDGetAdapter(void* adapters, uint32_t idx, char *desc, char *name);
 
 void AUTDFreeAdapterPointer(void* adapters);
 
-void* AUTDLinkSOEM();
+[[nodiscard]] void* AUTDLinkSOEM();
 
-void* AUTDLinkSOEMSendCycle(void* builder, uint16_t cycle);
+[[nodiscard]] void* AUTDLinkSOEMSendCycle(void* builder, uint16_t cycle);
 
-void* AUTDLinkSOEMSync0Cycle(void* builder, uint16_t cycle);
+[[nodiscard]] void* AUTDLinkSOEMSync0Cycle(void* builder, uint16_t cycle);
 
-void* AUTDLinkSOEMBufSize(void* builder, uint32_t buf_size);
+[[nodiscard]] void* AUTDLinkSOEMBufSize(void* builder, uint32_t buf_size);
 
-void* AUTDLinkSOEMTimerStrategy(void* builder, TimerStrategy timer_strategy);
+[[nodiscard]] void* AUTDLinkSOEMTimerStrategy(void* builder, TimerStrategy timer_strategy);
 
-void* AUTDLinkSOEMSyncMode(void* builder, SyncMode mode);
+[[nodiscard]] void* AUTDLinkSOEMSyncMode(void* builder, SyncMode mode);
 
-void* AUTDLinkSOEMIfname(void* builder, const char *ifname);
+[[nodiscard]] void* AUTDLinkSOEMIfname(void* builder, const char *ifname);
 
-void* AUTDLinkSOEMStateCheckInterval(void* builder, uint32_t interval_ms);
+[[nodiscard]] void* AUTDLinkSOEMStateCheckInterval(void* builder, uint32_t interval_ms);
 
-void* AUTDLinkSOEMOnLost(void* builder, void* on_lost_func);
+[[nodiscard]] void* AUTDLinkSOEMOnLost(void* builder, void* on_lost_func);
 
-void* AUTDLinkSOEMLogLevel(void* builder, Level level);
+[[nodiscard]] void* AUTDLinkSOEMLogLevel(void* builder, Level level);
 
-void* AUTDLinkSOEMLogFunc(void* builder, Level level, void* out_func, void* flush_func);
+[[nodiscard]]
+void* AUTDLinkSOEMLogFunc(void* builder,
+                          Level level,
+                          void* out_func,
+                          void* flush_func);
 
-void* AUTDLinkSOEMTimeout(void* builder, uint64_t timeout_ns);
+[[nodiscard]] void* AUTDLinkSOEMTimeout(void* builder, uint64_t timeout_ns);
 
-void* AUTDLinkSOEMBuild(void* builder);
+[[nodiscard]] void* AUTDLinkSOEMBuild(void* builder);
 
-void* AUTDLinkRemoteSOEM(const char *addr, uint16_t port);
+[[nodiscard]] void* AUTDLinkRemoteSOEM(const char *addr, uint16_t port);
 
-void* AUTDLinkRemoteSOEMTimeout(void* builder, uint64_t timeout_ns);
+[[nodiscard]] void* AUTDLinkRemoteSOEMTimeout(void* builder, uint64_t timeout_ns);
 
-void* AUTDLinkRemoteSOEMBuild(void* builder);
+[[nodiscard]] void* AUTDLinkRemoteSOEMBuild(void* builder);
 
 } // extern "C"
 
