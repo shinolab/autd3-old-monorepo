@@ -16,6 +16,7 @@ use autd3_link_soem::{
 };
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGetAdapterPointer(len: *mut u32) -> ConstPtr {
     let adapters = EthernetAdapters::new();
     unsafe {
@@ -47,11 +48,13 @@ pub unsafe extern "C" fn AUTDFreeAdapterPointer(adapters: ConstPtr) {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkSOEM() -> ConstPtr {
     Box::into_raw(Box::new(SOEM::builder())) as _
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkSOEMSendCycle(builder: ConstPtr, cycle: u16) -> ConstPtr {
     unsafe {
         Box::into_raw(Box::new(
@@ -61,6 +64,7 @@ pub unsafe extern "C" fn AUTDLinkSOEMSendCycle(builder: ConstPtr, cycle: u16) ->
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkSOEMSync0Cycle(builder: ConstPtr, cycle: u16) -> ConstPtr {
     unsafe {
         Box::into_raw(Box::new(
@@ -70,6 +74,7 @@ pub unsafe extern "C" fn AUTDLinkSOEMSync0Cycle(builder: ConstPtr, cycle: u16) -
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkSOEMBufSize(builder: ConstPtr, buf_size: u32) -> ConstPtr {
     unsafe {
         Box::into_raw(Box::new(
@@ -96,6 +101,7 @@ impl From<TimerStrategy> for autd3::prelude::TimerStrategy {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkSOEMTimerStrategy(
     builder: ConstPtr,
     timer_strategy: TimerStrategy,
@@ -123,6 +129,7 @@ impl From<SyncMode> for autd3_link_soem::SyncMode {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkSOEMSyncMode(builder: ConstPtr, mode: SyncMode) -> ConstPtr {
     unsafe {
         Box::into_raw(Box::new(
@@ -132,6 +139,7 @@ pub unsafe extern "C" fn AUTDLinkSOEMSyncMode(builder: ConstPtr, mode: SyncMode)
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkSOEMIfname(builder: ConstPtr, ifname: *const c_char) -> ConstPtr {
     unsafe {
         Box::into_raw(Box::new(
@@ -142,6 +150,7 @@ pub unsafe extern "C" fn AUTDLinkSOEMIfname(builder: ConstPtr, ifname: *const c_
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkSOEMStateCheckInterval(
     builder: ConstPtr,
     interval_ms: u32,
@@ -158,6 +167,7 @@ struct Callback(ConstPtr);
 unsafe impl Send for Callback {}
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkSOEMOnLost(builder: ConstPtr, on_lost_func: ConstPtr) -> ConstPtr {
     unsafe {
         if on_lost_func.is_null() {
@@ -179,6 +189,7 @@ pub unsafe extern "C" fn AUTDLinkSOEMOnLost(builder: ConstPtr, on_lost_func: Con
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkSOEMLogLevel(builder: ConstPtr, level: Level) -> ConstPtr {
     Box::into_raw(Box::new(
         Box::from_raw(builder as *mut SOEMBuilder).level(level.into()),
@@ -186,6 +197,7 @@ pub unsafe extern "C" fn AUTDLinkSOEMLogLevel(builder: ConstPtr, level: Level) -
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkSOEMLogFunc(
     builder: ConstPtr,
     level: Level,
@@ -223,6 +235,7 @@ pub unsafe extern "C" fn AUTDLinkSOEMLogFunc(
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkSOEMTimeout(builder: ConstPtr, timeout_ns: u64) -> ConstPtr {
     unsafe {
         Box::into_raw(Box::new(
@@ -232,6 +245,7 @@ pub unsafe extern "C" fn AUTDLinkSOEMTimeout(builder: ConstPtr, timeout_ns: u64)
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkSOEMBuild(builder: ConstPtr) -> ConstPtr {
     unsafe {
         let builder = Box::from_raw(builder as *mut SOEMBuilder);
@@ -241,6 +255,7 @@ pub unsafe extern "C" fn AUTDLinkSOEMBuild(builder: ConstPtr) -> ConstPtr {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkRemoteSOEM(addr: *const c_char, port: u16) -> ConstPtr {
     Box::into_raw(Box::new(
         RemoteSOEM::builder()
@@ -250,6 +265,7 @@ pub unsafe extern "C" fn AUTDLinkRemoteSOEM(addr: *const c_char, port: u16) -> C
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkRemoteSOEMTimeout(builder: ConstPtr, timeout_ns: u64) -> ConstPtr {
     unsafe {
         Box::into_raw(Box::new(
@@ -260,6 +276,7 @@ pub unsafe extern "C" fn AUTDLinkRemoteSOEMTimeout(builder: ConstPtr, timeout_ns
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDLinkRemoteSOEMBuild(builder: ConstPtr) -> ConstPtr {
     unsafe {
         let builder = Box::from_raw(builder as *mut RemoteSOEMBuilder<Filled, Filled>);

@@ -10,21 +10,21 @@ constexpr const int32_t ERR = -1;
 
 extern "C" {
 
-void* AUTDSimulator();
+[[nodiscard]] void* AUTDSimulator();
 
-void* AUTDSimulatorPort(void* simulator, uint16_t port);
+[[nodiscard]] void* AUTDSimulatorPort(void* simulator, uint16_t port);
 
-void* AUTDSimulatorWindowSize(void* simulator, uint32_t width, uint32_t height);
+[[nodiscard]] void* AUTDSimulatorWindowSize(void* simulator, uint32_t width, uint32_t height);
 
-void* AUTDSimulatorVsync(void* simulator, bool vsync);
+[[nodiscard]] void* AUTDSimulatorVsync(void* simulator, bool vsync);
 
-void* AUTDSimulatorGpuIdx(void* simulator, int32_t idx);
+[[nodiscard]] void* AUTDSimulatorGpuIdx(void* simulator, int32_t idx);
 
-void* AUTDSimulatorSettingsPath(void* simulator, const char *path, char *err);
+[[nodiscard]] void* AUTDSimulatorSettingsPath(void* simulator, const char *path, char *err);
 
-int32_t AUTDSimulatorRun(void* simulator);
+[[nodiscard]] int32_t AUTDSimulatorRun(void* simulator);
 
-bool AUTDSimulatorSaveSettings(void* simulator, const char *path, char *err);
+[[nodiscard]] bool AUTDSimulatorSaveSettings(void* simulator, const char *path, char *err);
 
 } // extern "C"
 

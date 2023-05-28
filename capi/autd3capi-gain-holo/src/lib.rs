@@ -78,12 +78,14 @@ impl DynamicDatagram for HoloWrap {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDDefaultBackend() -> ConstPtr {
     let backend: Box<Box<dyn Backend>> = Box::new(Box::new(NalgebraBackend::new()));
     Box::into_raw(backend) as _
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGainHoloSDP(backend: ConstPtr) -> ConstPtr {
     unsafe {
         Box::into_raw(HoloWrap::new(SDP::new(DynamicBackend::new(
@@ -126,6 +128,7 @@ pub unsafe extern "C" fn AUTDGainHoloSDPRepeat(holo: ConstPtr, repeat: u32) {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGainHoloEVP(backend: ConstPtr) -> ConstPtr {
     unsafe {
         Box::into_raw(HoloWrap::new(EVP::new(DynamicBackend::new(
@@ -146,6 +149,7 @@ pub unsafe extern "C" fn AUTDGainHoloEVPGamma(holo: ConstPtr, gamma: float) {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGainHoloGS(backend: ConstPtr) -> ConstPtr {
     unsafe {
         Box::into_raw(HoloWrap::new(GS::new(DynamicBackend::new(*Box::from_raw(
@@ -166,6 +170,7 @@ pub unsafe extern "C" fn AUTDGainHoloGSRepeat(holo: ConstPtr, repeat: u32) {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGainHoloGSPAT(backend: ConstPtr) -> ConstPtr {
     unsafe {
         Box::into_raw(HoloWrap::new(GSPAT::new(DynamicBackend::new(
@@ -186,6 +191,7 @@ pub unsafe extern "C" fn AUTDGainHoloGSPATRepeat(holo: ConstPtr, repeat: u32) {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGainHoloNaive(backend: ConstPtr) -> ConstPtr {
     unsafe {
         Box::into_raw(HoloWrap::new(Naive::new(DynamicBackend::new(
@@ -195,6 +201,7 @@ pub unsafe extern "C" fn AUTDGainHoloNaive(backend: ConstPtr) -> ConstPtr {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGainHoloGreedy() -> ConstPtr {
     Box::into_raw(HoloWrap::new(Greedy::new())) as _
 }
@@ -211,6 +218,7 @@ pub unsafe extern "C" fn AUTDGainHoloGreedyPhaseDiv(holo: ConstPtr, div: u32) {
 }
 
 #[no_mangle]
+#[must_use]
 pub unsafe extern "C" fn AUTDGainHoloLM(backend: ConstPtr) -> ConstPtr {
     unsafe {
         Box::into_raw(HoloWrap::new(LM::new(DynamicBackend::new(*Box::from_raw(
