@@ -84,7 +84,7 @@ enum Commands {
     List,
 }
 
-fn run<F: 'static + Fn(&str) + Send>(soem: SOEM<F>, port: u16) -> anyhow::Result<()> {
+fn run(soem: SOEM, port: u16) -> anyhow::Result<()> {
     spdlog::info!("Connecting SOEM server...");
 
     let mut soem = soem;
@@ -245,7 +245,7 @@ fn main_() -> anyhow::Result<()> {
             let soem = autd3_link_soem::SOEM::builder()
                 .buf_size(buf_size)
                 .ifname(ifname)
-                .level(level)
+                .level(spdlog::LevelFilter::MoreSevereEqual(level))
                 .send_cycle(send_cycle)
                 .state_check_interval(std::time::Duration::from_millis(state_check_interval))
                 .sync0_cycle(sync0_cycle)
