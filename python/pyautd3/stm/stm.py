@@ -18,7 +18,7 @@ import numpy as np
 from pyautd3.autd import Body
 from pyautd3.gain.gain import Gain
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
-from pyautd3.native_methods.autd3capi import GainSTMMode
+from pyautd3.native_methods.autd3capi_def import GainSTMMode
 
 
 class FocusSTM(Body):

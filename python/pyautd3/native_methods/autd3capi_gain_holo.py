@@ -6,7 +6,6 @@ from typing import Any
 
 
 
-
 class Singleton(type):
     _instances = {} # type: ignore
     _lock = threading.Lock()

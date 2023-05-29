@@ -3,19 +3,8 @@ import threading
 import ctypes
 import os
 from typing import Any
-from .autd3capi import Level
+from .autd3capi_def import *
 from enum import IntEnum
-
-
-class TimerStrategy(IntEnum):
-    Sleep = 0
-    NativeTimer = 1
-    BusyWait = 2
-
-    @classmethod
-    def from_param(cls, obj):
-        return int(obj)
-
 
 class SyncMode(IntEnum):
     FreeRun = 0
