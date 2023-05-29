@@ -6,8 +6,6 @@
 
 namespace autd3::internal::native_methods {
 
-constexpr const int32_t ERR = -1;
-
 extern "C" {
 
 [[nodiscard]] void* AUTDSimulator();
