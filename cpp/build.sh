@@ -9,6 +9,7 @@ mkdir -p cpp/lib
 cd capi
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   cargo build --release --all
+  cd ..
   cp ./capi/target/release/*.so cpp/lib
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   cargo build --release --all --target=x86_64-apple-darwin
