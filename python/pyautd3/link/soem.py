@@ -18,8 +18,8 @@ from typing import List
 from .link import Link
 
 from pyautd3.native_methods.autd3capi_link_soem import NativeMethods as LinkSOEM
-from pyautd3.native_methods.autd3capi import Level
-from pyautd3.native_methods.autd3capi_link_soem import SyncMode, TimerStrategy
+from pyautd3.native_methods.autd3capi_def import Level, TimerStrategy
+from pyautd3.native_methods.autd3capi_link_soem import SyncMode
 
 
 OnLostFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)

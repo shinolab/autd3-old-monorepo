@@ -15,7 +15,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 from pyautd3.autd import SilencerConfig
 from pyautd3.autd import Controller, Geometry, FirmwareInfo
 from pyautd3.autd import Amplitudes
-from pyautd3.native_methods.autd3capi import (
+from pyautd3.native_methods.autd3capi_def import (
     NUM_TRANS_IN_UNIT,
     NUM_TRANS_IN_X,
     NUM_TRANS_IN_Y,

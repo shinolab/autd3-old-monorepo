@@ -17,7 +17,7 @@ from datetime import timedelta
 from .link import Link
 
 from pyautd3.native_methods.autd3capi import NativeMethods as LinkDebug
-from pyautd3.native_methods.autd3capi import Level
+from pyautd3.native_methods.autd3capi_def import Level
 
 
 class Debug:

@@ -4,8 +4,6 @@ import ctypes
 import os
 
 
-ERR: int = -1
-
 
 class Singleton(type):
     _instances = {} # type: ignore
