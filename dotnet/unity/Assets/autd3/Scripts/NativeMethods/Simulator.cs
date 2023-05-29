@@ -10,8 +10,6 @@ namespace AUTD3Sharp
         {
             private const string DLL = "autd3capi_simulator";
 
-            public const int Err = -1;
-
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDSimulator();
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDSimulatorPort(IntPtr simulator, ushort port);

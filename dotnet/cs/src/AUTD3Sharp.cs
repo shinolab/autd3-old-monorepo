@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/05/2023
+ * Last Modified: 29/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -41,6 +41,7 @@ using float_t = System.Double;
 namespace AUTD3Sharp
 {
     using Base = NativeMethods.Base;
+    using Def = NativeMethods.Def;
 
     public static class AUTD3
     {
@@ -54,15 +55,15 @@ namespace AUTD3Sharp
 
         public const float_t Pi = Math.PI;
 
-        public const uint NumTransInUnit = Base.NumTransInUnit;
-        public const float_t TransSpacingMm = Base.TransSpacingMm;
-        public const float_t TransSpacing = Base.TransSpacingMm * Millimeter;
-        public const uint NumTransInX = Base.NumTransInX;
-        public const uint FpgaClkFreq = Base.FpgaClkFreq;
-        public const float_t DeviceHeight = Base.DeviceHeight * Millimeter;
-        public const float_t DeviceWidth = Base.DeviceWidth * Millimeter;
-        public const uint NumTransInY = Base.NumTransInY;
-        public const uint FpgaSubClkFreq = Base.FpgaSubClkFreq;
+        public const uint NumTransInUnit = Def.NumTransInUnit;
+        public const float_t TransSpacingMm = Def.TransSpacingMm;
+        public const float_t TransSpacing = Def.TransSpacingMm * Millimeter;
+        public const uint NumTransInX = Def.NumTransInX;
+        public const uint FpgaClkFreq = Def.FpgaClkFreq;
+        public const float_t DeviceHeight = Def.DeviceHeight * Millimeter;
+        public const float_t DeviceWidth = Def.DeviceWidth * Millimeter;
+        public const uint NumTransInY = Def.NumTransInY;
+        public const uint FpgaSubClkFreq = Def.FpgaSubClkFreq;
 
         #endregion
     }
@@ -400,11 +401,11 @@ namespace AUTD3Sharp
             if (special == null) throw new ArgumentNullException(nameof(special));
             var err = new byte[256];
             var res = Base.AUTDSendSpecial(CntPtr, Geometry.Mode, special.Ptr, (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
-            if (res == Base.Err)
+            if (res == Def.Err)
             {
                 throw new AUTDException(err);
             }
-            return res == Base.True;
+            return res == Def.True;
         }
 
         public bool Send(Header header, TimeSpan? timeout = null)
@@ -412,11 +413,11 @@ namespace AUTD3Sharp
             if (header == null) throw new ArgumentNullException(nameof(header));
             var err = new byte[256];
             var res = Base.AUTDSend(CntPtr, Geometry.Mode, header.Ptr, IntPtr.Zero, (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
-            if (res == Base.Err)
+            if (res == Def.Err)
             {
                 throw new AUTDException(err);
             }
-            return res == Base.True;
+            return res == Def.True;
         }
 
         public bool Send(Body body, TimeSpan? timeout = null)
@@ -424,11 +425,11 @@ namespace AUTD3Sharp
             if (body == null) throw new ArgumentNullException(nameof(body));
             var err = new byte[256];
             var res = Base.AUTDSend(CntPtr, Geometry.Mode, IntPtr.Zero, body.Ptr, (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
-            if (res == Base.Err)
+            if (res == Def.Err)
             {
                 throw new AUTDException(err);
             }
-            return res == Base.True;
+            return res == Def.True;
         }
 
         public bool Send(Header header, Body body, TimeSpan? timeout = null)
@@ -437,11 +438,11 @@ namespace AUTD3Sharp
             if (body == null) throw new ArgumentNullException(nameof(body));
             var err = new byte[256];
             var res = Base.AUTDSend(CntPtr, Geometry.Mode, header.Ptr, body.Ptr, (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
-            if (res == Base.Err)
+            if (res == Def.Err)
             {
                 throw new AUTDException(err);
             }
-            return res == Base.True;
+            return res == Def.True;
 
         }
 
@@ -451,11 +452,11 @@ namespace AUTD3Sharp
             if (body == null) throw new ArgumentNullException(nameof(body));
             var err = new byte[256];
             var res = Base.AUTDSend(CntPtr, Geometry.Mode, header.Ptr, body.Ptr, (long)(timeout?.TotalMilliseconds * 1000 * 1000 ?? -1), err);
-            if (res == Base.Err)
+            if (res == Def.Err)
             {
                 throw new AUTDException(err);
             }
-            return res == Base.True;
+            return res == Def.True;
         }
     }
 
