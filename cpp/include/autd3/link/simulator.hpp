@@ -31,8 +31,8 @@ class Simulator {
 
   template <typename Rep, typename Period>
   Simulator& timeout(const std::chrono::duration<Rep, Period> timeout) {
-    const ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
-    _builder = native_methods::AUTDLinkSimulatorTimeout(_builder, static_cast<uint64_t>(ns));
+    const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
+    _builder = internal::native_methods::AUTDLinkSimulatorTimeout(_builder, static_cast<uint64_t>(ns));
     return *this;
   }
 
