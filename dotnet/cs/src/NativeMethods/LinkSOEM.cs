@@ -50,13 +50,6 @@ namespace AUTD3Sharp
         }
     }
 
-    public enum TimerStrategy : byte
-    {
-        Sleep = 0,
-        NativeTimer = 1,
-        BusyWait = 2,
-    }
-
     public enum SyncMode : byte
     {
         FreeRun = 0,

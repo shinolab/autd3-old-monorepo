@@ -10,28 +10,6 @@ namespace AUTD3Sharp
         {
             private const string DLL = "autd3capi";
 
-            public const uint NumTransInUnit = 249;
-
-            public const uint NumTransInX = 18;
-
-            public const uint NumTransInY = 14;
-
-            public const double TransSpacingMm = 10.16;
-
-            public const double DeviceHeight = 151.4;
-
-            public const double DeviceWidth = 192.0;
-
-            public const uint FpgaClkFreq = 163840000;
-
-            public const uint FpgaSubClkFreq = 20480000;
-
-            public const int Err = -1;
-
-            public const int True = 1;
-
-            public const int False = 0;
-
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDCreateGeometryBuilder();
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDAddDevice(IntPtr builder, double x, double y, double z, double rz1, double ry, double rz2);
@@ -224,30 +202,5 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDLinkDebugBuild(IntPtr builder);
         }
-    }
-
-    public enum GainSTMMode : byte
-    {
-        PhaseDutyFull = 0,
-        PhaseFull = 1,
-        PhaseHalf = 2,
-    }
-
-    public enum TransMode : byte
-    {
-        Legacy = 0,
-        Advanced = 1,
-        AdvancedPhase = 2,
-    }
-
-    public enum Level : byte
-    {
-        Critical = 0,
-        Error = 1,
-        Warn = 2,
-        Info = 3,
-        Debug = 4,
-        Trace = 5,
-        Off = 6,
     }
 }
