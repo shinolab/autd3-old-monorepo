@@ -17,6 +17,7 @@ wrapper-generator = {path="../wrapper-generator"}
 
 [dev-dependencies]
 autd3capi = {path="../autd3capi", version="10.0.0"}
+autd3capi-def = {path="../autd3capi-def", version="10.0.0"}
 
 [features]
 single_float = ["autd3capi-common/single_float", "autd3-gain-holo/single_float"]

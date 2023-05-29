@@ -1,3 +1,16 @@
+/*
+ * File: lib.rs
+ * Project: src
+ * Created Date: 27/05/2023
+ * Author: Shun Suzuki
+ * -----
+ * Last Modified: 29/05/2023
+ * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+ * -----
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
+ *
+ */
+
 #![allow(clippy::missing_safety_doc)]
 
 use autd3capi_common::*;
@@ -30,7 +43,9 @@ pub unsafe extern "C" fn AUTDGeometryViewerVsync(viewer: ConstPtr, vsync: bool) 
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGeometryViewerRun(viewer: ConstPtr, cnt: ConstPtr) -> i32 {
-    Box::from_raw(viewer as *mut GeometryViewer)
-        .run(cast_without_ownership_mut!(cnt, Cnt).geometry())
+pub unsafe extern "C" fn AUTDGeometryViewerRun(viewer: ConstPtr, geometry: ConstPtr) -> i32 {
+    Box::from_raw(viewer as *mut GeometryViewer).run(cast_without_ownership!(
+        geometry,
+        Geometry<DynamicTransducer>
+    ))
 }

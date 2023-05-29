@@ -1,3 +1,16 @@
+/*
+ * File: lib.rs
+ * Project: src
+ * Created Date: 27/05/2023
+ * Author: Shun Suzuki
+ * -----
+ * Last Modified: 29/05/2023
+ * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+ * -----
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
+ *
+ */
+
 #![allow(clippy::missing_safety_doc)]
 
 use std::{
@@ -6,8 +19,8 @@ use std::{
     time::Duration,
 };
 
-use autd3capi::Level;
 use autd3capi_common::*;
+use autd3capi_def::{Level, TimerStrategy};
 
 use autd3_link_soem::{
     local::{SOEMBuilder, SOEM},
@@ -80,23 +93,6 @@ pub unsafe extern "C" fn AUTDLinkSOEMBufSize(builder: ConstPtr, buf_size: u32) -
         Box::into_raw(Box::new(
             Box::from_raw(builder as *mut SOEMBuilder).buf_size(buf_size as _),
         )) as _
-    }
-}
-
-#[repr(u8)]
-pub enum TimerStrategy {
-    Sleep = 0,
-    NativeTimer = 1,
-    BusyWait = 2,
-}
-
-impl From<TimerStrategy> for autd3::prelude::TimerStrategy {
-    fn from(strategy: TimerStrategy) -> Self {
-        match strategy {
-            TimerStrategy::Sleep => autd3::prelude::TimerStrategy::Sleep,
-            TimerStrategy::NativeTimer => autd3::prelude::TimerStrategy::NativeTimer,
-            TimerStrategy::BusyWait => autd3::prelude::TimerStrategy::BusyWait,
-        }
     }
 }
 

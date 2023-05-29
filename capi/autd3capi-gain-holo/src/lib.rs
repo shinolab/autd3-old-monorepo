@@ -1,3 +1,16 @@
+/*
+ * File: lib.rs
+ * Project: src
+ * Created Date: 19/05/2023
+ * Author: Shun Suzuki
+ * -----
+ * Last Modified: 29/05/2023
+ * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+ * -----
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
+ *
+ */
+
 #![allow(clippy::missing_safety_doc)]
 
 mod backend;
@@ -510,12 +523,12 @@ mod tests {
 
                 if AUTDSend(
                     cnt,
-                    autd3capi::TransMode::Legacy,
+                    autd3capi_def::TransMode::Legacy,
                     std::ptr::null(),
                     holo,
                     -1,
                     err.as_mut_ptr(),
-                ) == ERR
+                ) == autd3capi_def::ERR
                 {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
@@ -535,12 +548,12 @@ mod tests {
 
                 if AUTDSend(
                     cnt,
-                    autd3capi::TransMode::Legacy,
+                    autd3capi_def::TransMode::Legacy,
                     std::ptr::null(),
                     holo,
                     -1,
                     err.as_mut_ptr(),
-                ) == ERR
+                ) == autd3capi_def::ERR
                 {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
@@ -558,12 +571,12 @@ mod tests {
                 AUTDGainHoloNaiveSetClampConstraint(holo, 0., 1.);
                 if AUTDSend(
                     cnt,
-                    autd3capi::TransMode::Legacy,
+                    autd3capi_def::TransMode::Legacy,
                     std::ptr::null(),
                     holo,
                     -1,
                     err.as_mut_ptr(),
-                ) == ERR
+                ) == autd3capi_def::ERR
                 {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
@@ -583,12 +596,12 @@ mod tests {
 
                 if AUTDSend(
                     cnt,
-                    autd3capi::TransMode::Legacy,
+                    autd3capi_def::TransMode::Legacy,
                     std::ptr::null(),
                     holo,
                     -1,
                     err.as_mut_ptr(),
-                ) == ERR
+                ) == autd3capi_def::ERR
                 {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
@@ -608,12 +621,12 @@ mod tests {
 
                 if AUTDSend(
                     cnt,
-                    autd3capi::TransMode::Legacy,
+                    autd3capi_def::TransMode::Legacy,
                     std::ptr::null(),
                     holo,
                     -1,
                     err.as_mut_ptr(),
-                ) == ERR
+                ) == autd3capi_def::ERR
                 {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
@@ -638,12 +651,12 @@ mod tests {
 
                 if AUTDSend(
                     cnt,
-                    autd3capi::TransMode::Legacy,
+                    autd3capi_def::TransMode::Legacy,
                     std::ptr::null(),
                     holo,
                     -1,
                     err.as_mut_ptr(),
-                ) == ERR
+                ) == autd3capi_def::ERR
                 {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
@@ -662,12 +675,12 @@ mod tests {
 
                 if AUTDSend(
                     cnt,
-                    autd3capi::TransMode::Legacy,
+                    autd3capi_def::TransMode::Legacy,
                     std::ptr::null(),
                     holo,
                     -1,
                     err.as_mut_ptr(),
-                ) == ERR
+                ) == autd3capi_def::ERR
                 {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
