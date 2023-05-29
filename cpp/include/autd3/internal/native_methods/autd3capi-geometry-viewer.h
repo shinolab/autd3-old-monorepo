@@ -14,7 +14,7 @@ extern "C" {
 
 [[nodiscard]] void* AUTDGeometryViewerVsync(void* viewer, bool vsync);
 
-[[nodiscard]] int32_t AUTDGeometryViewerRun(void* viewer, void* cnt);
+[[nodiscard]] int32_t AUTDGeometryViewerRun(void* viewer, void* geometry);
 
 } // extern "C"
 

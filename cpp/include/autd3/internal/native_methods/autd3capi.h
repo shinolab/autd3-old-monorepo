@@ -6,50 +6,6 @@
 
 namespace autd3::internal::native_methods {
 
-constexpr const uint32_t NUM_TRANS_IN_UNIT = 249;
-
-constexpr const uint32_t NUM_TRANS_IN_X = 18;
-
-constexpr const uint32_t NUM_TRANS_IN_Y = 14;
-
-constexpr const uint32_t FPGA_CLK_FREQ = 163840000;
-
-constexpr const uint32_t FPGA_SUB_CLK_FREQ = 20480000;
-
-constexpr const int32_t ERR = -1;
-
-constexpr const int32_t TRUE = 1;
-
-constexpr const int32_t FALSE = 0;
-
-enum class GainSTMMode : uint8_t {
-  PhaseDutyFull = 0,
-  PhaseFull = 1,
-  PhaseHalf = 2,
-};
-
-enum class Level : uint8_t {
-  Critical = 0,
-  Error = 1,
-  Warn = 2,
-  Info = 3,
-  Debug = 4,
-  Trace = 5,
-  Off = 6,
-};
-
-enum class TransMode : uint8_t {
-  Legacy = 0,
-  Advanced = 1,
-  AdvancedPhase = 2,
-};
-
-constexpr const double TRANS_SPACING_MM = 10.16;
-
-constexpr const double DEVICE_HEIGHT = 151.4;
-
-constexpr const double DEVICE_WIDTH = 192.0;
-
 extern "C" {
 
 [[nodiscard]] void* AUTDCreateGeometryBuilder();

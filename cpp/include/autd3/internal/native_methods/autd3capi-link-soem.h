@@ -11,12 +11,6 @@ enum class SyncMode : uint8_t {
   DC = 1,
 };
 
-enum class TimerStrategy : uint8_t {
-  Sleep = 0,
-  NativeTimer = 1,
-  BusyWait = 2,
-};
-
 extern "C" {
 
 [[nodiscard]] void* AUTDGetAdapterPointer(uint32_t *len);
