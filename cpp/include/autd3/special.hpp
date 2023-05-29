@@ -33,7 +33,7 @@ class UpdateFlag final : public internal::SpecialData {
 
 class Synchronize final : public internal::SpecialData {
  public:
-  Synchronize() final : internal::SpecialData(internal::native_methods::AUTDSynchronize()) {}
+  Synchronize() : internal::SpecialData(internal::native_methods::AUTDSynchronize()) {}
 };
 
 class Stop final : public internal::SpecialData {

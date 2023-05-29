@@ -30,13 +30,13 @@ class Debug {
   }
 
   Debug& log_func(const internal::native_methods::Level level, internal::LogOutCallback out, internal::LogFlushCallback flush) {
-    _builder = internal::native_methods::AUTDLinkDebugLogFunc(_builder, level, out, flush);
+    _builder = internal::native_methods::AUTDLinkDebugLogFunc(_builder, level, reinterpret_cast<void*>(out), reinterpret_cast<void*>(flush));
     return *this;
   }
 
   template <typename Rep, typename Period>
   Debug& timeout(const std::chrono::duration<Rep, Period> timeout) {
-    const ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
+    const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
     _builder = internal::native_methods::AUTDLinkDebugTimeout(_builder, static_cast<uint64_t>(ns));
     return *this;
   }

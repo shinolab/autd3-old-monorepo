@@ -47,7 +47,7 @@ class SOEM {
   }
 
   SOEM& on_lost(internal::LogOutCallback value) {
-    _builder = internal::native_methods::AUTDLinkSOEMOnLost(_builder, value);
+    _builder = internal::native_methods::AUTDLinkSOEMOnLost(_builder, reinterpret_cast<void*>(value));
     return *this;
   }
 
@@ -63,7 +63,7 @@ class SOEM {
 
   template <typename Rep, typename Period>
   SOEM& state_check_interval(const std::chrono::duration<Rep, Period> value) {
-    const ms = std::chrono::duration_cast<std::chrono::milliseconds>(value).count();
+    const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(value).count();
     _builder = internal::native_methods::AUTDLinkSOEMStateCheckInterval(_builder, static_cast<uint64_t>(ms));
     return *this;
   }
@@ -74,13 +74,13 @@ class SOEM {
   }
 
   SOEM& log_func(const internal::native_methods::Level level, internal::LogOutCallback out, internal::LogFlushCallback flush) {
-    _builder = internal::native_methods::AUTDLinkSOEMLogFunc(_builder, level, out, flush);
+    _builder = internal::native_methods::AUTDLinkSOEMLogFunc(_builder, level, reinterpret_cast<void*>(out), reinterpret_cast<void*>(flush));
     return *this;
   }
 
   template <typename Rep, typename Period>
   SOEM& timeout(const std::chrono::duration<Rep, Period> timeout) {
-    const ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
+    const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
     _builder = internal::native_methods::AUTDLinkSOEMTimeout(_builder, static_cast<uint64_t>(ns));
     return *this;
   }
@@ -97,8 +97,8 @@ class RemoteSOEM {
 
   template <typename Rep, typename Period>
   RemoteSOEM& timeout(const std::chrono::duration<Rep, Period> timeout) {
-    const ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
-    _builder = native_methods::AUTDLinkRemoteSOEMTimeout(_builder, static_cast<uint64_t>(ns));
+    const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
+    _builder = internal::native_methods::AUTDLinkRemoteSOEMTimeout(_builder, static_cast<uint64_t>(ns));
     return *this;
   }
 
