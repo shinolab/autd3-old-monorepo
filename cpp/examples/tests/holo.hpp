@@ -31,15 +31,13 @@ inline void holo_test(autd3::Controller& autd) {
 
   std::cout << "Select Optimization Method (default is GSPAT)" << std::endl;
 
-  auto backend = autd3::gain::holo::default_backend();
-
   std::vector<std::pair<std::string, std::shared_ptr<autd3::gain::holo::Holo>>> opts;
-  opts.emplace_back("SDP", std::make_shared<autd3::gain::holo::SDP>(backend));
-  opts.emplace_back("EVP", std::make_shared<autd3::gain::holo::EVP>(backend));
-  opts.emplace_back("GS", std::make_shared<autd3::gain::holo::GS>(backend));
-  opts.emplace_back("GSPAT", std::make_shared<autd3::gain::holo::GSPAT>(backend));
-  opts.emplace_back("Naive", std::make_shared<autd3::gain::holo::Naive>(backend));
-  opts.emplace_back("LM", std::make_shared<autd3::gain::holo::LM>(backend));
+  opts.emplace_back("SDP", std::make_shared<autd3::gain::holo::SDP>(autd3::gain::holo::default_backend()));
+  opts.emplace_back("EVP", std::make_shared<autd3::gain::holo::EVP>(autd3::gain::holo::default_backend()));
+  opts.emplace_back("GS", std::make_shared<autd3::gain::holo::GS>(autd3::gain::holo::default_backend()));
+  opts.emplace_back("GSPAT", std::make_shared<autd3::gain::holo::GSPAT>(autd3::gain::holo::default_backend()));
+  opts.emplace_back("Naive", std::make_shared<autd3::gain::holo::Naive>(autd3::gain::holo::default_backend()));
+  opts.emplace_back("LM", std::make_shared<autd3::gain::holo::LM>(autd3::gain::holo::default_backend()));
   opts.emplace_back("Greedy", std::make_shared<autd3::gain::holo::Greedy>());
 
   size_t i = 0;
