@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/05/2023
+ * Last Modified: 29/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -224,21 +224,20 @@ import os"
             writeln!(w, r"from typing import Any")?;
         }
 
-        if crate_name != "autd3capi"
+        if crate_name != "autd3capi-def"
             && self.functions.iter().any(|f| {
-                f.args
-                    .iter()
-                    .any(|arg| Self::to_python_arg(&arg) == "Level")
+                f.args.iter().any(|arg| match arg.ty {
+                    Type::Custom(_) => true,
+                    _ => false,
+                })
             })
         {
-            writeln!(w, r"from .autd3capi import Level")?;
+            writeln!(w, r"from .autd3capi_def import *")?;
         }
 
         if !self.enums.is_empty() {
             writeln!(w, r"from enum import IntEnum")?;
         }
-
-        writeln!(w, r"")?;
 
         for e in self.enums {
             writeln!(
@@ -271,6 +270,11 @@ class {}(IntEnum):",
                 Self::to_python_ty(&constant.ty),
                 constant.value
             )?;
+        }
+
+        if crate_name == "autd3capi-def" {
+            writeln!(w)?;
+            return Ok(());
         }
 
         write!(

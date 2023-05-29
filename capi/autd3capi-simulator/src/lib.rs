@@ -1,3 +1,16 @@
+/*
+ * File: lib.rs
+ * Project: src
+ * Created Date: 27/05/2023
+ * Author: Shun Suzuki
+ * -----
+ * Last Modified: 29/05/2023
+ * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+ * -----
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
+ *
+ */
+
 #![allow(clippy::missing_safety_doc)]
 
 use std::{
@@ -6,8 +19,6 @@ use std::{
     io::{BufReader, Write},
     path::Path,
 };
-
-pub const ERR: i32 = -1;
 
 use autd3capi_common::*;
 

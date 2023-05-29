@@ -1,0 +1,17 @@
+[package]
+name = "autd3capi-def"
+version = "10.0.0"
+edition = "2021"
+
+[lib]
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[dependencies]
+autd3 = {path="../../src/autd3", version="10.0.0"}
+autd3capi-common = {path="../autd3capi-common", version="10.0.0"}
+
+[build-dependencies]
+wrapper-generator = {path="../wrapper-generator"}
+
+[features]
+single_float = ["autd3capi-common/single_float"]

@@ -3,6 +3,7 @@
 members = [
     "wrapper-generator",
     "autd3capi",
+    "autd3capi-def",
     "autd3capi-gain-holo",
     "autd3capi-link-simulator",
     "autd3capi-link-soem",
@@ -14,6 +15,7 @@ members = [
 default-members = [
     "wrapper-generator",
     "autd3capi",
+    "autd3capi-def",
     "autd3capi-gain-holo",
     "autd3capi-link-simulator",
     "autd3capi-link-soem",
@@ -23,5 +25,5 @@ default-members = [
 
 [profile.release]
 strip = true
-lto = true
+lto = false
 codegen-units = 1

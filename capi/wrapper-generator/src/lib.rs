@@ -4,7 +4,7 @@
  * Created Date: 10/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/05/2023
+ * Last Modified: 29/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -71,6 +71,12 @@ pub fn generate<P: AsRef<Path>>(crate_path: P) -> Result<()> {
             sort_by: cbindgen::SortKey::None,
             usize_is_size_t: true,
             export: cbindgen::ExportConfig {
+                include: vec![
+                    "TransMode".to_string(),
+                    "Level".to_string(),
+                    "TimerStrategy".to_string(),
+                    "GainSTMMode".to_string(),
+                ],
                 rename: vec![
                     ("float".to_string(), "double".to_string()),
                     ("ConstPtr".to_string(), "void*".to_string()),
