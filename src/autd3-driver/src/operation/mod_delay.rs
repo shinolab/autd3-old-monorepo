@@ -4,7 +4,7 @@
  * Created Date: 08/01/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/05/2023
+ * Last Modified: 29/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -35,13 +35,6 @@ impl Operation for ModDelay {
             return Ok(());
         }
 
-        if self.delays.len() != tx.num_transducers() {
-            return Err(DriverError::NumberOfTransducerMismatch {
-                a: tx.num_transducers(),
-                b: self.delays.len(),
-            });
-        }
-
         tx.header_mut()
             .cpu_flag
             .set(CPUControlFlags::WRITE_BODY, true);
@@ -49,6 +42,13 @@ impl Operation for ModDelay {
             .cpu_flag
             .set(CPUControlFlags::MOD_DELAY, true);
         tx.num_bodies = tx.num_devices();
+
+        if self.delays.len() != tx.num_transducers() {
+            return Err(DriverError::NumberOfTransducerMismatch {
+                a: tx.num_transducers(),
+                b: self.delays.len(),
+            });
+        }
 
         tx.body_raw_mut().clone_from_slice(&self.delays);
 
