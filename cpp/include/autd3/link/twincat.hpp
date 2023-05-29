@@ -27,17 +27,16 @@ class TwinCAT {
 
   template <typename Rep, typename Period>
   TwinCAT& timeout(const std::chrono::duration<Rep, Period> timeout) {
-    const ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
-    _builder = native_methods::AUTDLinkTwinCATTimeout(_builder, static_cast<uint64_t>(ns));
+    const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
+    _builder = internal::native_methods::AUTDLinkTwinCATTimeout(_builder, static_cast<uint64_t>(ns));
     return *this;
   }
 
   internal::Link build() {
-      char err[256]{};
-      auto* ptr = internal::native_methods::AUTDLinkTwinCATBuild(_builder,err);
-      if (ptr == nullptr)
-          throw internal::AUTDException(err);
-      return internal::Link(ptr); 
+    char err[256]{};
+    auto* ptr = internal::native_methods::AUTDLinkTwinCATBuild(_builder, err);
+    if (ptr == nullptr) throw internal::AUTDException(err);
+    return internal::Link(ptr);
   }
 
  private:
@@ -60,17 +59,16 @@ class RemoteTwinCAT {
 
   template <typename Rep, typename Period>
   RemoteTwinCAT& timeout(const std::chrono::duration<Rep, Period> timeout) {
-    const ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
-    _builder = native_methods::AUTDLinkRemoteTwinCATTimeout(_builder, static_cast<uint64_t>(ns));
+    const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
+    _builder = internal::native_methods::AUTDLinkRemoteTwinCATTimeout(_builder, static_cast<uint64_t>(ns));
     return *this;
   }
 
-  internal::Link build() { 
-      char err[256]{};
-      auto* ptr = internal::native_methods::AUTDLinkRemoteTwinCATBuild(_builder, err);
-      if (ptr == nullptr)
-          throw internal::AUTDException(err);
-      return internal::Link(ptr);
+  internal::Link build() {
+    char err[256]{};
+    auto* ptr = internal::native_methods::AUTDLinkRemoteTwinCATBuild(_builder, err);
+    if (ptr == nullptr) throw internal::AUTDException(err);
+    return internal::Link(ptr);
   }
 
  private:
