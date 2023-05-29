@@ -11,6 +11,7 @@ mkdir python/pyautd3/bin/win_x64 > NUL 2>&1
 cd capi
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   cargo build --release --all
+  cd ..
   mkdir -p python/pyautd3/bin/linux_x64
   cp ./capi/target/release/*.so python/pyautd3/bin/linux_x64
 elif [[ "$OSTYPE" == "darwin"* ]]; then
