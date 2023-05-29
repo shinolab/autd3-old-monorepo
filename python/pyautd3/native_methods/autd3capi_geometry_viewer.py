@@ -5,7 +5,6 @@ import os
 
 
 
-
 class Singleton(type):
     _instances = {} # type: ignore
     _lock = threading.Lock()
@@ -47,5 +46,5 @@ class NativeMethods(metaclass=Singleton):
     def geometry_viewer_vsync(self, viewer: ctypes.c_void_p, vsync: bool) -> ctypes.c_void_p:
         return self.dll.AUTDGeometryViewerVsync(viewer, vsync)
 
-    def geometry_viewer_run(self, viewer: ctypes.c_void_p, cnt: ctypes.c_void_p) -> ctypes.c_int32:
-        return self.dll.AUTDGeometryViewerRun(viewer, cnt)
+    def geometry_viewer_run(self, viewer: ctypes.c_void_p, geometry: ctypes.c_void_p) -> ctypes.c_int32:
+        return self.dll.AUTDGeometryViewerRun(viewer, geometry)

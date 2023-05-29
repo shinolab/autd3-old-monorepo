@@ -20,7 +20,7 @@ from typing import List, Optional, Tuple, Union
 
 from .autd_error import AUTDError
 from .native_methods.autd3capi import NativeMethods as Base
-from .native_methods.autd3capi import TransMode, ERR, TRUE, FALSE
+from .native_methods.autd3capi_def import TransMode, ERR, TRUE, FALSE
 from .link.link import Link
 
 LogOutputFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
@@ -67,7 +67,7 @@ class FPGAInfo:
     def __init__(self, info: ctypes.c_uint8):
         self.info = info
 
-    def is_thernal_assert(self) -> bool:
+    def is_thermal_assert(self) -> bool:
         return (int(self.info) & 0x01) != 0
 
 
