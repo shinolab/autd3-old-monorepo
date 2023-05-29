@@ -330,6 +330,7 @@ dependencies = [
  "autd3-core",
  "autd3-traits",
  "autd3capi-common",
+ "autd3capi-def",
  "libc",
  "wrapper-generator",
 ]
@@ -343,6 +344,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "autd3capi-def"
+version = "10.0.0"
+dependencies = [
+ "autd3",
+ "autd3capi-common",
+ "wrapper-generator",
+]
+
+[[package]]
 name = "autd3capi-gain-holo"
 version = "10.0.0"
 dependencies = [
@@ -350,6 +360,7 @@ dependencies = [
  "autd3-gain-holo",
  "autd3capi",
  "autd3capi-common",
+ "autd3capi-def",
  "libc",
  "wrapper-generator",
 ]
@@ -383,8 +394,8 @@ dependencies = [
  "autd3",
  "autd3-core",
  "autd3-link-soem",
- "autd3capi",
  "autd3capi-common",
+ "autd3capi-def",
  "libc",
  "wrapper-generator",
 ]

@@ -1,8 +1,20 @@
+/*
+ * File: lib.rs
+ * Project: src
+ * Created Date: 11/05/2023
+ * Author: Shun Suzuki
+ * -----
+ * Last Modified: 29/05/2023
+ * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+ * -----
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
+ *
+ */
+
 #![allow(clippy::missing_safety_doc)]
 
 mod custom;
 
-use autd3_core::spdlog::LevelFilter;
 use custom::{CustomGain, CustomModulation};
 
 use std::{
@@ -12,19 +24,7 @@ use std::{
 };
 
 use autd3capi_common::*;
-
-pub const NUM_TRANS_IN_UNIT: u32 = 249;
-pub const NUM_TRANS_IN_X: u32 = 18;
-pub const NUM_TRANS_IN_Y: u32 = 14;
-pub const TRANS_SPACING_MM: float = 10.16;
-pub const DEVICE_HEIGHT: float = 151.4;
-pub const DEVICE_WIDTH: float = 192.0;
-pub const FPGA_CLK_FREQ: u32 = 163840000;
-pub const FPGA_SUB_CLK_FREQ: u32 = 20480000;
-
-pub const ERR: i32 = -1;
-pub const TRUE: i32 = 1;
-pub const FALSE: i32 = 0;
+use autd3capi_def::{GainSTMMode, Level, TransMode, ERR, FALSE, TRUE};
 
 #[no_mangle]
 #[must_use]
@@ -753,24 +753,6 @@ pub unsafe extern "C" fn AUTDGainSTMAdd(stm: ConstPtr, gain: ConstPtr) {
         (stm as *mut Box<SG>).as_mut().unwrap().add(g)
     }
 }
-
-#[repr(u8)]
-pub enum GainSTMMode {
-    PhaseDutyFull = 0,
-    PhaseFull = 1,
-    PhaseHalf = 2,
-}
-
-impl From<GainSTMMode> for autd3::prelude::Mode {
-    fn from(mode: GainSTMMode) -> Self {
-        match mode {
-            GainSTMMode::PhaseDutyFull => autd3::prelude::Mode::PhaseDutyFull,
-            GainSTMMode::PhaseFull => autd3::prelude::Mode::PhaseFull,
-            GainSTMMode::PhaseHalf => autd3::prelude::Mode::PhaseHalf,
-        }
-    }
-}
-
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGainSTMSetMode(stm: ConstPtr, mode: GainSTMMode) {
     unsafe {
@@ -946,25 +928,6 @@ pub unsafe extern "C" fn AUTDDeleteAmplitudes(amplitudes: ConstPtr) {
     let _ = Box::from_raw(amplitudes as *mut Box<dyn DynamicDatagram>);
 }
 
-#[repr(u8)]
-pub enum TransMode {
-    Legacy = 0,
-    Advanced = 1,
-    AdvancedPhase = 2,
-}
-
-impl From<TransMode> for autd3capi_common::dynamic_transducer::TransMode {
-    fn from(value: TransMode) -> Self {
-        match value {
-            TransMode::Legacy => autd3capi_common::dynamic_transducer::TransMode::Legacy,
-            TransMode::Advanced => autd3capi_common::dynamic_transducer::TransMode::Advanced,
-            TransMode::AdvancedPhase => {
-                autd3capi_common::dynamic_transducer::TransMode::AdvancedPhase
-            }
-        }
-    }
-}
-
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDSend(
@@ -1051,31 +1014,6 @@ pub unsafe extern "C" fn AUTDLinkDebug() -> ConstPtr {
     Box::into_raw(Box::new(Debug::builder())) as _
 }
 
-#[repr(u8)]
-pub enum Level {
-    Critical = 0,
-    Error = 1,
-    Warn = 2,
-    Info = 3,
-    Debug = 4,
-    Trace = 5,
-    Off = 6,
-}
-
-impl From<Level> for autd3::prelude::LevelFilter {
-    fn from(level: Level) -> Self {
-        match level {
-            Level::Critical => LevelFilter::MoreSevereEqual(autd3::prelude::Level::Critical),
-            Level::Error => LevelFilter::MoreSevereEqual(autd3::prelude::Level::Error),
-            Level::Warn => LevelFilter::MoreSevereEqual(autd3::prelude::Level::Warn),
-            Level::Info => LevelFilter::MoreSevereEqual(autd3::prelude::Level::Info),
-            Level::Debug => LevelFilter::MoreSevereEqual(autd3::prelude::Level::Debug),
-            Level::Trace => LevelFilter::MoreSevereEqual(autd3::prelude::Level::Trace),
-            Level::Off => LevelFilter::Off,
-        }
-    }
-}
-
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkDebugLogLevel(builder: ConstPtr, level: Level) -> ConstPtr {
@@ -1153,7 +1091,7 @@ mod tests {
 
     unsafe fn make_debug_link() -> *const c_void {
         let builder = AUTDLinkDebug();
-        let builder = AUTDLinkDebugLogLevel(builder, Level::Debug);
+        let builder = AUTDLinkDebugLogLevel(builder, Level::Off);
         let builder = AUTDLinkDebugTimeout(builder, 0);
         AUTDLinkDebugBuild(builder as _)
     }
