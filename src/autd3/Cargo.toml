@@ -4,10 +4,10 @@ version = "10.0.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
-license-file = "LICENSE"
-description = "AUTD library for Rust."
+license = "MIT"
+description = "AUTD3 library"
 repository = "https://github.com/shinolab/autd3"
-readme = "../README.md"
+readme = "README.md"
 keywords = ["autd"]
 
 [dependencies]

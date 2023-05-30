@@ -1,4 +1,4 @@
-name: build-rust
+name: build
 
 on:
   push:

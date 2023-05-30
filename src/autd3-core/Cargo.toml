@@ -4,7 +4,7 @@ version = "10.0.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
-license-file = "LICENSE"
+license = "MIT"
 description = "Core functions of AUTD3"
 repository = "https://github.com/shinolab/autd3"
 readme = "README.md"
