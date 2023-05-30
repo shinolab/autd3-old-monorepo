@@ -234,7 +234,7 @@ namespace AUTD3Sharp
             private const string DLL = "{}";
 "#,
             Self::to_class_name(crate_name),
-            crate_name.replace("-", "_"),
+            crate_name.replace('-', "_"),
         )?;
 
         for constant in self.constants {
