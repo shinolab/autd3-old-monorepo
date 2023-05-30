@@ -3,3 +3,4 @@ lib/
 *.tar.gz
 LICENSE
 build/
+bin/
