@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/05/2023
+// Last Modified: 30/05/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,11 +26,11 @@
 namespace autd3::internal {
 class Controller {
  public:
-     Controller() = delete;
-     Controller(const Controller& v) = default;
-     Controller& operator=(const Controller& obj) = default;
-     Controller(Controller&& obj) = default;
-     Controller& operator=(Controller&& obj) = default;
+  Controller() = delete;
+  Controller(const Controller& v) = default;
+  Controller& operator=(const Controller& obj) = default;
+  Controller(Controller&& obj) = default;
+  Controller& operator=(Controller&& obj) = default;
 
   ~Controller() noexcept {
     try {
@@ -42,7 +42,7 @@ class Controller {
     }
   }
 
-  static Controller open(Geometry geometry, Link link) {
+  static Controller open(const Geometry& geometry, const Link link) {
     const auto mode = geometry.mode();
 
     char err[256]{};
@@ -57,14 +57,13 @@ class Controller {
   [[nodiscard]] const Geometry& geometry() const { return _geometry; }
   [[nodiscard]] Geometry& geometry() { return _geometry; }
 
-  void close() {
-    char err[256]{};
-    if (!native_methods::AUTDClose(_ptr, err)) throw AUTDException(err);
+  void close() const {
+    if (char err[256]{}; !native_methods::AUTDClose(_ptr, err)) throw AUTDException(err);
   }
 
   std::vector<FPGAInfo> fpga_info() {
     char err[256]{};
-    size_t num_devices = geometry().num_devices();
+    const size_t num_devices = geometry().num_devices();
     std::vector<uint8_t> info(num_devices);
     if (!native_methods::AUTDGetFPGAInfo(_ptr, info.data(), err)) throw AUTDException(err);
     std::vector<FPGAInfo> ret;
@@ -134,16 +133,16 @@ class Controller {
     return res == native_methods::TRUE;
   }
 
-  void force_fan(const bool value) { native_methods::AUTDSetForceFan(_ptr, value); }
-  void reads_fpga_info(const bool value) { native_methods::AUTDSetReadsFPGAInfo(_ptr, value); }
+  void force_fan(const bool value) const { native_methods::AUTDSetForceFan(_ptr, value); }
+  void reads_fpga_info(const bool value) const { native_methods::AUTDSetReadsFPGAInfo(_ptr, value); }
 
  private:
-  Controller(Geometry geometry, void* ptr, native_methods::TransMode mode) : _geometry(std::move(geometry)), _ptr(ptr), _mode(mode) {}
+  Controller(Geometry geometry, void* ptr, const native_methods::TransMode mode) : _geometry(std::move(geometry)), _ptr(ptr), _mode(mode) {}
 
   bool send(Header* header, Body* body, const std::optional<std::chrono::nanoseconds> timeout) {
     char err[256]{};
     const int64_t timeout_ns = timeout.has_value() ? static_cast<int64_t>(timeout.value().count()) : -1;
-    const auto res = native_methods::AUTDSend(_ptr, _mode, header->ptr(), body->calc_ptr(geometry()), timeout_ns, err);
+    const auto res = AUTDSend(_ptr, _mode, header->ptr(), body->calc_ptr(geometry()), timeout_ns, err);
     if (res == native_methods::ERR) throw AUTDException(err);
     return res == native_methods::TRUE;
   }

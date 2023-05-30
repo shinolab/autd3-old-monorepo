@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/05/2023
+// Last Modified: 30/05/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,7 +12,6 @@
 #pragma once
 
 #include <chrono>
-#include <functional>
 #include <string>
 
 #include "autd3/internal/link.hpp"
@@ -22,7 +21,7 @@ namespace autd3::link {
 
 class Simulator {
  public:
-  Simulator(const uint16_t port) : _builder(internal::native_methods::AUTDLinkSimulator(port)) {}
+  explicit Simulator(const uint16_t port) : _builder(internal::native_methods::AUTDLinkSimulator(port)) {}
 
   Simulator& addr(const std::string& ip) {
     _builder = internal::native_methods::AUTDLinkSimulatorAddr(_builder, ip.c_str());
@@ -36,7 +35,7 @@ class Simulator {
     return *this;
   }
 
-  internal::Link build() { return internal::Link(internal::native_methods::AUTDLinkSimulatorBuild(_builder)); }
+  [[nodiscard]] internal::Link build() const { return internal::Link{internal::native_methods::AUTDLinkSimulatorBuild(_builder)}; }
 
  private:
   void* _builder;

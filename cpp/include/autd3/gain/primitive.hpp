@@ -3,13 +3,17 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/05/2023
+// Last Modified: 30/05/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
+
+#include <algorithm>
+#include <iterator>
+#include <vector>
 
 #include "autd3/internal/def.hpp"
 #include "autd3/internal/gain.hpp"
@@ -18,30 +22,30 @@
 
 namespace autd3::gain {
 
-class Focus : public internal::Gain {
+class Focus final : public internal::Gain {
  public:
-  Focus(const internal::Vector3 p, const double amp = 1.0) : internal::Gain(internal::native_methods::AUTDGainFocus(p.x(), p.y(), p.z(), amp)) {}
+  explicit Focus(const internal::Vector3 p, const double amp = 1.0) : Gain(internal::native_methods::AUTDGainFocus(p.x(), p.y(), p.z(), amp)) {}
 };
 
-class BesselBeam : public internal::Gain {
+class BesselBeam final : public internal::Gain {
  public:
-  BesselBeam(const internal::Vector3 p, const internal::Vector3 d, const double theta, const double amp = 1.0)
-      : internal::Gain(internal::native_methods::AUTDGainBesselBeam(p.x(), p.y(), p.z(), d.x(), d.y(), d.z(), theta, amp)) {}
+  explicit BesselBeam(const internal::Vector3 p, const internal::Vector3 d, const double theta, const double amp = 1.0)
+      : Gain(internal::native_methods::AUTDGainBesselBeam(p.x(), p.y(), p.z(), d.x(), d.y(), d.z(), theta, amp)) {}
 };
 
-class PlaneWave : public internal::Gain {
+class PlaneWave final : public internal::Gain {
  public:
-  PlaneWave(const internal::Vector3 d, const double amp = 1.0)
-      : internal::Gain(internal::native_methods::AUTDGainPlaneWave(d.x(), d.y(), d.z(), amp)) {}
+  explicit PlaneWave(const internal::Vector3 d, const double amp = 1.0)
+      : Gain(internal::native_methods::AUTDGainPlaneWave(d.x(), d.y(), d.z(), amp)) {}
 };
 
-class Grouped : public internal::Gain {
+class Grouped final : public internal::Gain {
  public:
-  Grouped() : internal::Gain(internal::native_methods::AUTDGainGrouped()) {}
+  Grouped() : Gain(internal::native_methods::AUTDGainGrouped()) {}
 
   template <class G>
   void add(const size_t device_idx, G&& gain) {
-    static_assert(std::is_base_of_v<internal::Gain, std::remove_reference_t<G>>, "This is not Gain");
+    static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
     internal::native_methods::AUTDGainGroupedAdd(_ptr, static_cast<uint32_t>(device_idx), gain.ptr());
     gain.set_released();
   }

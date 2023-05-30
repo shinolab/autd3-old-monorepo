@@ -3,7 +3,7 @@
 // Created Date: 26/08/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/05/2023
+// Last Modified: 30/05/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,12 +16,10 @@
 #include "util.hpp"
 
 int main() try {
-  auto geometry = autd3::Geometry::Builder()
-                      .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
-                      .build();
+  const auto geometry = autd3::Geometry::Builder().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero())).build();
 
-  auto link = autd3::link::Debug().build();
-  auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
+  const auto link = autd3::link::Debug().build();
+  auto autd = autd3::Controller::open(geometry, link);
 
   return run(autd);
 } catch (std::exception& e) {

@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/05/2023
+// Last Modified: 30/05/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -20,7 +20,7 @@ namespace autd3::internal {
 
 class FirmwareInfo {
  public:
-  FirmwareInfo(std::string info, bool is_valid, bool is_supported) noexcept
+  FirmwareInfo(std::string info, const bool is_valid, const bool is_supported) noexcept
       : _info(std::move(info)), _is_valid(is_valid), _is_supported(is_supported) {}
 
   [[nodiscard]] std::string info() const { return _info; }

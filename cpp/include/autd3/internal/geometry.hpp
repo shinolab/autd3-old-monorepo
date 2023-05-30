@@ -36,14 +36,14 @@ class AUTD3 {
   [[nodiscard]] std::optional<Quaternion> quaternion() const { return _quat; }
 
  private:
-  Vector3 _pos;
-  std::optional<Vector3> _rot;
-  std::optional<Quaternion> _quat;
+  Vector3 _pos{};
+  std::optional<Vector3> _rot{std::nullopt};
+  std::optional<Quaternion> _quat{std::nullopt};
 };
 
 class Geometry {
  public:
-  Geometry(void* ptr, native_methods::TransMode mode) : _mode(mode), _ptr(ptr) {}
+  Geometry(void* ptr, const native_methods::TransMode mode) : _mode(mode), _ptr(ptr) {}
 
   ~Geometry() = default;
   Geometry(const Geometry& v) noexcept = default;
@@ -65,26 +65,26 @@ class Geometry {
     return Vector3(x, y, z);
   }
 
-  [[nodiscard]] Vector3 center_of(size_t idx) const {
+  [[nodiscard]] Vector3 center_of(const size_t idx) const {
     double x, y, z;
     native_methods::AUTDGeometryCenterOf(_ptr, static_cast<uint32_t>(idx), &x, &y, &z);
     return Vector3(x, y, z);
   }
 
   [[nodiscard]] double sound_speed() const { return native_methods::AUTDGetSoundSpeed(_ptr); }
-  void set_sound_speed(const double value) { native_methods::AUTDSetSoundSpeed(_ptr, value); }
-  void set_sound_speed_from_temp(const double temp, const double k = 1.4, const double r = 8.31446261815324, const double m = 28.9647e-3) {
+  void set_sound_speed(const double value) const { native_methods::AUTDSetSoundSpeed(_ptr, value); }
+  void set_sound_speed_from_temp(const double temp, const double k = 1.4, const double r = 8.31446261815324, const double m = 28.9647e-3) const {
     native_methods::AUTDSetSoundSpeedFromTemp(_ptr, temp, k, r, m);
   }
 
   [[nodiscard]] double attenuation() const { return native_methods::AUTDGetAttenuation(_ptr); }
-  void set_attenuation(const double value) { native_methods::AUTDSetAttenuation(_ptr, value); }
+  void set_attenuation(const double value) const { native_methods::AUTDSetAttenuation(_ptr, value); }
 
   class Builder {
    public:
     Builder() : _mode(native_methods::TransMode::Legacy), _ptr(native_methods::AUTDCreateGeometryBuilder()) {}
 
-    Builder& add_device(AUTD3 device) {
+    Builder& add_device(const AUTD3 device) {
       if (device.euler().has_value()) {
         native_methods::AUTDAddDevice(_ptr, device.position().x(), device.position().y(), device.position().z(), device.euler().value().x(),
                                       device.euler().value().y(), device.euler().value().z());
@@ -111,11 +111,11 @@ class Geometry {
       return *this;
     }
 
-    Geometry build() {
+    [[nodiscard]] Geometry build() const {
       char err[256]{};
       void* geometry = native_methods::AUTDBuildGeometry(_ptr, err);
       if (geometry == nullptr) throw AUTDException(err);
-      return Geometry(geometry, _mode);
+      return {geometry, _mode};
     }
 
    private:
@@ -141,7 +141,7 @@ class Geometry {
  private:
   native_methods::TransMode _mode;
   void* _ptr;
-  std::vector<Transducer> _transducers;
+  std::vector<Transducer> _transducers{};
 };
 
 }  // namespace autd3::internal
