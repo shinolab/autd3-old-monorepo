@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/05/2023
+ * Last Modified: 30/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,6 +23,7 @@ use std::{
 };
 
 use crate::{
+    common::transform::{to_gl_pos, to_gl_rot},
     field_compute_pipeline::{Config, FieldComputePipeline},
     imgui_renderer::ImGuiRenderer,
     renderer::Renderer,
@@ -325,8 +326,10 @@ impl Simulator {
                                     AUTD3::new_with_quaternion(pos, rot).get_transducers(0)
                                 {
                                     sources.add(
-                                        Vector3::new(p.x as _, p.y as _, p.z as _),
-                                        Quaternion::new(r.w as _, r.i as _, r.j as _, r.k as _),
+                                        to_gl_pos(Vector3::new(p.x as _, p.y as _, p.z as _)),
+                                        to_gl_rot(Quaternion::new(
+                                            r.w as _, r.i as _, r.j as _, r.k as _,
+                                        )),
                                         Drive::new(1.0, 0.0, 1.0, 40e3, self.settings.sound_speed),
                                         1.0,
                                     );

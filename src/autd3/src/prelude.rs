@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/05/2023
+ * Last Modified: 30/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -38,5 +38,5 @@ pub use autd3_core::{
     synchronize::Synchronize,
     timer_strategy::TimerStrategy,
     update_flag::UpdateFlag,
-    Mode, PI,
+    Mode, METER, MILLIMETER, PI,
 };

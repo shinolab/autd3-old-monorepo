@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/05/2023
+ * Last Modified: 30/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,7 +33,7 @@ use crate::{
     sound_sources::SoundSources,
     update_flag::UpdateFlag,
     viewer_settings::{ColorMapType, ViewerSettings},
-    Matrix4, Vector4, SCALE,
+    Matrix4, Vector4, SCALE, ZPARITY,
 };
 
 pub struct ImGuiRenderer {
@@ -61,7 +61,7 @@ impl ImGuiRenderer {
         platform.attach_window(imgui.io_mut(), renderer.window(), HiDpiMode::Default);
 
         let hidpi_factor = platform.hidpi_factor();
-        let font_size = (16.0 * hidpi_factor) as f32;
+        let font_size = 16.0;
 
         imgui.io_mut().font_global_scale = (1.0 / hidpi_factor) as f32;
 
@@ -809,10 +809,10 @@ impl ImGuiRenderer {
             if ui.small_button("Auto") {
                 let rot = settings.slice_rotation();
                 let sr = Matrix4::from(rot);
-                let srf = sr * Vector4::new(0.0, 0.0, 1.0, 1.0);
+                let srf = sr * Vector4::new(0.0, 0.0, 1.0 * ZPARITY, 1.0);
 
-                let camera_pos = settings.slice_pos() + srf * 600.0 * SCALE;
-                settings.set_camera_pos(camera_pos.truncate());
+                let camera_pos = settings.slice_pos() + srf.truncate() * 600.0 * SCALE;
+                settings.set_camera_pos(camera_pos);
                 settings.set_camera_rot(settings.slice_rotation());
             }
             ui.same_line();

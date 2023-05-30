@@ -4,7 +4,7 @@
  * Created Date: 11/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/05/2023
+ * Last Modified: 30/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -30,7 +30,11 @@ use vulkano::{
 };
 
 use crate::{
-    renderer::Renderer, update_flag::UpdateFlag, viewer_settings::ViewerSettings, Matrix4,
+    common::transform::{to_gl_pos, to_gl_rot},
+    renderer::Renderer,
+    update_flag::UpdateFlag,
+    viewer_settings::ViewerSettings,
+    Matrix4,
 };
 
 #[repr(C)]
@@ -118,9 +122,9 @@ impl SliceViewer {
     }
 
     fn update_pos(&mut self, settings: &ViewerSettings) {
-        let rotation = settings.slice_rotation();
+        let rotation = to_gl_rot(settings.slice_rotation());
         let mut model = Matrix4::from(rotation);
-        model[3] = settings.slice_pos();
+        model[3] = to_gl_pos(settings.slice_pos()).extend(1.);
         self.model = model;
     }
 
