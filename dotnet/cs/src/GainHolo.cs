@@ -18,6 +18,10 @@
 using System;
 using System.Runtime.InteropServices;
 
+#if UNITY_2020_2_OR_NEWER
+#nullable enable
+#endif
+
 #if UNITY_2018_3_OR_NEWER
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
@@ -368,3 +372,7 @@ namespace AUTD3Sharp
         }
     }
 }
+
+#if UNITY_2020_2_OR_NEWER
+#nullable disable
+#endif

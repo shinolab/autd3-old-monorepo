@@ -2,6 +2,10 @@
 using System;
 using System.Runtime.InteropServices;
 
+#if UNITY_2020_2_OR_NEWER
+#nullable enable
+#endif
+
 namespace AUTD3Sharp
 {
     namespace NativeMethods
@@ -55,4 +59,11 @@ namespace AUTD3Sharp
         FreeRun = 0,
         Dc = 1,
     }
+
 }
+
+#if UNITY_2020_2_OR_NEWER
+#nullable disable
+#endif
+
+
