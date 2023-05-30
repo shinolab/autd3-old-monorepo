@@ -63,16 +63,10 @@ namespace AUTD3Sharp
 
             public sealed class DontCare : AmplitudeConstraint
             {
-                public DontCare()
-                {
-                }
             }
 
             public sealed class Normalize : AmplitudeConstraint
             {
-                public Normalize()
-                {
-                }
             }
 
             public sealed class Uniform : AmplitudeConstraint
@@ -80,7 +74,7 @@ namespace AUTD3Sharp
 
                 internal readonly float_t Value;
 
-                public Uniform(float_t value = (float_t)1.0)
+                public Uniform(float_t value = 1)
                 {
                     Value = value;
                 }
@@ -91,7 +85,7 @@ namespace AUTD3Sharp
                 internal readonly float_t Min;
                 internal readonly float_t Max;
 
-                public Clamp(float_t min = (float_t)0.0, float_t max = (float_t)1.0)
+                public Clamp(float_t min = 0, float_t max = 1)
                 {
                     Min = min;
                     Max = max;

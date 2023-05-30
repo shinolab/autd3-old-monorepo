@@ -19,7 +19,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Linq;
 
 #if UNITY_2018_3_OR_NEWER
@@ -284,10 +283,9 @@ namespace AUTD3Sharp
         }
     }
 
-    public struct FPGAInfo
+    public readonly struct FPGAInfo
     {
-        private byte _info;
-
+        private readonly byte _info;
 
         internal FPGAInfo(byte info)
         {
@@ -351,23 +349,17 @@ namespace AUTD3Sharp
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void Dispose(bool disposing)
-        {
             if (_isDisposed) return;
 
             if (CntPtr != IntPtr.Zero) Base.AUTDFreeController(CntPtr);
             CntPtr = IntPtr.Zero;
 
-            _isDisposed = true;
+            _isDisposed = true; GC.SuppressFinalize(this);
         }
 
         ~Controller()
         {
-            Dispose(false);
+            Dispose();
         }
 
         #endregion
@@ -515,7 +507,7 @@ namespace AUTD3Sharp
 
     public sealed class Amplitudes : Body
     {
-        public Amplitudes(float_t amp = (float_t)1.0) : base(Base.AUTDCreateAmplitudes(amp))
+        public Amplitudes(float_t amp = 1) : base(Base.AUTDCreateAmplitudes(amp))
         {
         }
 
@@ -544,7 +536,7 @@ namespace AUTD3Sharp
 
         public sealed class Focus : Gain
         {
-            public Focus(Vector3 point, float_t amp = (float_t)1.0) : base(Base.AUTDGainFocus(point.x, point.y, point.z, amp)) { }
+            public Focus(Vector3 point, float_t amp = 1) : base(Base.AUTDGainFocus(point.x, point.y, point.z, amp)) { }
         }
 
         public sealed class Grouped : Gain
@@ -562,12 +554,12 @@ namespace AUTD3Sharp
 
         public sealed class BesselBeam : Gain
         {
-            public BesselBeam(Vector3 point, Vector3 dir, float_t thetaZ, float_t amp = (float_t)1.0) : base(Base.AUTDGainBesselBeam(point.x, point.y, point.z, dir.x, dir.y, dir.z, thetaZ, amp)) { }
+            public BesselBeam(Vector3 point, Vector3 dir, float_t thetaZ, float_t amp = 1) : base(Base.AUTDGainBesselBeam(point.x, point.y, point.z, dir.x, dir.y, dir.z, thetaZ, amp)) { }
         }
 
         public sealed class PlaneWave : Gain
         {
-            public PlaneWave(Vector3 dir, float_t amp = (float_t)1.0) : base(Base.AUTDGainPlaneWave(dir.x, dir.y, dir.z, amp)) { }
+            public PlaneWave(Vector3 dir, float_t amp = 1) : base(Base.AUTDGainPlaneWave(dir.x, dir.y, dir.z, amp)) { }
         }
 
         public sealed class Custom : Gain
@@ -610,28 +602,28 @@ namespace AUTD3Sharp
 
         public sealed class Static : Modulation
         {
-            public Static(float_t amp = (float_t)1.0) : base(Base.AUTDModulationStatic(amp))
+            public Static(float_t amp = 1) : base(Base.AUTDModulationStatic(amp))
             {
             }
         }
 
         public sealed class Sine : Modulation
         {
-            public Sine(int freq, float_t amp = (float_t)1.0, float_t offset = (float_t)0.5) : base(Base.AUTDModulationSine((uint)freq, amp, offset))
+            public Sine(int freq, float_t amp = 1, float_t offset = (float_t)0.5) : base(Base.AUTDModulationSine((uint)freq, amp, offset))
             {
             }
         }
 
         public sealed class SineSquared : Modulation
         {
-            public SineSquared(int freq, float_t amp = (float_t)1.0, float_t offset = (float_t)0.5) : base(Base.AUTDModulationSineSquared((uint)freq, amp, offset))
+            public SineSquared(int freq, float_t amp = 1, float_t offset = (float_t)0.5) : base(Base.AUTDModulationSineSquared((uint)freq, amp, offset))
             {
             }
         }
 
         public sealed class SineLegacy : Modulation
         {
-            public SineLegacy(float_t freq, float_t amp = (float_t)1.0, float_t offset = (float_t)0.5) : base(Base.AUTDModulationSineLegacy(freq, amp, offset))
+            public SineLegacy(float_t freq, float_t amp = 1, float_t offset = (float_t)0.5) : base(Base.AUTDModulationSineLegacy(freq, amp, offset))
             {
             }
         }
@@ -639,7 +631,7 @@ namespace AUTD3Sharp
 
         public sealed class Square : Modulation
         {
-            public Square(int freq, float_t low = (float_t)0.0, float_t high = (float_t)1.0, float_t duty = (float_t)0.5) : base(Base.AUTDModulationSquare((uint)freq, low, high, duty))
+            public Square(int freq, float_t low = 0, float_t high = 1, float_t duty = (float_t)0.5) : base(Base.AUTDModulationSquare((uint)freq, low, high, duty))
             {
             }
         }
@@ -681,7 +673,7 @@ namespace AUTD3Sharp
                     if (idx < 0) return null;
                     return idx;
                 }
-                set => Base.AUTDFocusSTMSetStartIdx(Ptr, value == null ? -1 : value.Value);
+                set => Base.AUTDFocusSTMSetStartIdx(Ptr, value ?? -1);
             }
 
             public int? FinishIdx
@@ -692,7 +684,7 @@ namespace AUTD3Sharp
                     if (idx < 0) return null;
                     return idx;
                 }
-                set => Base.AUTDFocusSTMSetFinishIdx(Ptr, value == null ? -1 : value.Value);
+                set => Base.AUTDFocusSTMSetFinishIdx(Ptr, value ?? -1);
             }
 
             public float_t SamplingFrequency => Base.AUTDFocusSTMSamplingFrequency(Ptr);
@@ -739,7 +731,7 @@ namespace AUTD3Sharp
                     if (idx < 0) return null;
                     return idx;
                 }
-                set => Base.AUTDGainSTMSetStartIdx(Ptr, value == null ? -1 : value.Value);
+                set => Base.AUTDGainSTMSetStartIdx(Ptr, value ?? -1);
             }
 
             public int? FinishIdx
@@ -750,7 +742,7 @@ namespace AUTD3Sharp
                     if (idx < 0) return null;
                     return idx;
                 }
-                set => Base.AUTDGainSTMSetFinishIdx(Ptr, value == null ? -1 : value.Value);
+                set => Base.AUTDGainSTMSetFinishIdx(Ptr, value ?? -1);
             }
 
             public float_t SamplingFrequency => Base.AUTDGainSTMSamplingFrequency(Ptr);

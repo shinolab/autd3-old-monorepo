@@ -4,7 +4,7 @@
  * Created Date: 17/12/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/05/2023
+ * Last Modified: 30/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
 * Copyright (c) 2021-2023 Shun Suzuki. All rights reserved.
@@ -28,7 +28,7 @@ namespace AUTD3Sharp
 
         ~SpecialData()
         {
-            AUTD3Sharp.NativeMethods.Base.AUTDDeleteSpecialData(Ptr);
+            NativeMethods.Base.AUTDDeleteSpecialData(Ptr);
         }
     }
 
