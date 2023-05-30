@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/05/2023
+ * Last Modified: 30/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -221,6 +221,10 @@ impl Generator for CSharpGenerator {
 using System;
 using System.Runtime.InteropServices;
 
+#if UNITY_2020_2_OR_NEWER
+#nullable enable
+#endif
+
 namespace AUTD3Sharp
 {{
     namespace NativeMethods
@@ -302,7 +306,17 @@ namespace AUTD3Sharp
             writeln!(w, r"    }}",)?;
         }
 
-        writeln!(w, r"}}")?;
+        writeln!(
+            w,
+            r"
+}}
+
+#if UNITY_2020_2_OR_NEWER
+#nullable disable
+#endif
+
+"
+        )?;
 
         Ok(())
     }
