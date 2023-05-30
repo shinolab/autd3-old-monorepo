@@ -24,34 +24,40 @@ jobs:
         cd src
         cargo build --all
         cargo test --workspace --exclude autd3-link-soem
+        cargo clean
     - name: Build src on ${{ matrix.os }}
       if: matrix.os != 'windows-latest'
       run: |
         cd src
         cargo build --all
         cargo test --all
+        cargo clean
     - name: Build examples on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |
         cd examples
         cargo build --bins --features "remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
+        cargo clean
     - name: Build examples on ${{ matrix.os }}
       if: matrix.os != 'windows-latest'
       run: |
         cd examples
         cargo build --bins --features "soem remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
+        cargo clean
     - name: Build capi on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |
         cd capi
         cargo build --all
         cargo test --workspace --exclude autd3capi-link-soem
+        cargo clean
     - name: Build capi on ${{ matrix.os }}
       if: matrix.os != 'windows-latest'
       run: |
         cd capi
         cargo build --all
         cargo test --all
+        cargo clean
 
   lint:
     runs-on: ubuntu-latest
@@ -61,11 +67,14 @@ jobs:
       run: |
         cd src
         cargo clippy --all -- -D warnings
+        cargo clean
     - name: lint examples
       run: |
         cd examples
         cargo clippy --all -- -D warnings
+        cargo clean
     - name: lint capi
       run: |
         cd capi
         cargo clippy --all -- -D warnings
+        cargo clean

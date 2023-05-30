@@ -3,7 +3,7 @@
 // Created Date: 28/09/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/05/2023
+// Last Modified: 30/05/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -24,9 +24,7 @@ int main() try {
           .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0, 0), autd3::Vector3(0, -autd3::pi / 2.0, 0)))            // right
           .build();
 
-  autd3::extra::GeometryViewer().window_size(800, 600).vsync(true).run(geometry);
-
-  return 0;
+  return autd3::extra::GeometryViewer().window_size(800, 600).vsync(true).run(geometry);
 } catch (std::exception& e) {
   print_err(e);
   return -1;
