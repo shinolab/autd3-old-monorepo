@@ -4,7 +4,7 @@
  * Created Date: 30/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/05/2023
+ * Last Modified: 30/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -13,7 +13,7 @@
 
 use std::{f32::consts::PI, io::Cursor, sync::Arc};
 
-use autd3_core::autd3_device::TRANS_SPACING_MM;
+use autd3_core::autd3_device::TRANS_SPACING;
 use bytemuck::{Pod, Zeroable};
 use vulkano::{
     buffer::{Buffer, BufferCreateInfo, BufferUsage, Subbuffer},
@@ -195,7 +195,7 @@ impl TransViewer {
                 .positions()
                 .zip(sources.rotations())
                 .map(|(pos, rot)| {
-                    let s = 0.5 * TRANS_SPACING_MM as f32;
+                    let s = 0.5 * TRANS_SPACING as f32;
                     let mut m = Matrix4::from_scale(s);
                     m[3][0] = pos[0];
                     m[3][1] = pos[1];

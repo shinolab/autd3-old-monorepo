@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/05/2023
+ * Last Modified: 30/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -53,8 +53,8 @@ impl Settings {
             camera_rot_y: 0.,
             camera_rot_z: 0.,
             camera_fov: 45.,
-            camera_near_clip: 0.1,
-            camera_far_clip: 1000.,
+            camera_near_clip: 0.1 * SCALE,
+            camera_far_clip: 1000. * SCALE,
             background: [0.3, 0.3, 0.3, 1.],
             shows: vec![true; num_dev],
         }
