@@ -56,9 +56,6 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 * [C#](./cs)
 * [F#](./fs)
 * [Python](./python)
-* [Nim](./nim)
-* [Julia](./julia)
-* [MATLAB](./matlab)
 
 ## Citing
 
