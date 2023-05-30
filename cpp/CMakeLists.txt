@@ -32,7 +32,6 @@ endif()
 
 add_library(autd3 INTERFACE)
 target_include_directories(autd3 INTERFACE ${PROJECT_SOURCE_DIR}/include)
-target_link_directories(autd3 INTERFACE ${PROJECT_SOURCE_DIR}/lib)
 target_link_libraries(autd3 INTERFACE Eigen3::Eigen)
 target_compile_definitions(autd3 INTERFACE EIGEN_MPL2_ONLY)
 
@@ -51,6 +50,9 @@ if(WIN32)
   target_link_libraries(autd3 INTERFACE winmm ws2_32 bcrypt userenv uxtheme dwmapi Imm32)
   target_link_directories(autd3 INTERFACE ${PROJECT_SOURCE_DIR}/lib/wpcap)
   target_link_libraries(autd3 INTERFACE Packet wpcap)
+  target_link_directories(autd3 INTERFACE ${PROJECT_SOURCE_DIR}/lib)
+else()
+  target_link_directories(autd3 INTERFACE ${PROJECT_SOURCE_DIR}/bin)
 endif()
 
 target_link_libraries(autd3 INTERFACE autd3capi)
