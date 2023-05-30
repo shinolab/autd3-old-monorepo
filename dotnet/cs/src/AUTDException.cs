@@ -4,7 +4,7 @@
  * Created Date: 26/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/05/2023
+ * Last Modified: 30/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,18 +12,16 @@
  */
 
 using System;
-using System.Text;
-using System.Runtime.Serialization;
 
 namespace AUTD3Sharp
 {
     [Serializable]
-    class AUTDException : Exception
+    internal class AUTDException : Exception
     {
         public AUTDException() { }
 
         public AUTDException(byte[] value)
-            : base(String.Format("AUTDException: {0}", System.Text.Encoding.UTF8.GetString(value)))
+            : base($"AUTDException: {System.Text.Encoding.UTF8.GetString(value)}")
         {
         }
     }

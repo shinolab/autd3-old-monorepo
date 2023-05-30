@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/05/2023
+ * Last Modified: 30/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
 * Copyright (c) 2021-2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,6 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Runtime.InteropServices;
-using System.Text;
 using Microsoft.Win32.SafeHandles;
 
 #if UNITY_2020_2_OR_NEWER
@@ -45,7 +44,7 @@ namespace AUTD3Sharp
 
         public sealed class Debug
         {
-            private IntPtr _builder = IntPtr.Zero;
+            private IntPtr _builder;
 
             public Debug()
             {
@@ -177,7 +176,7 @@ namespace AUTD3Sharp
 
         public sealed class RemoteSOEM
         {
-            private IntPtr _builder = IntPtr.Zero;
+            private IntPtr _builder;
 
             public RemoteSOEM(IPAddress ip, ushort port)
             {
@@ -199,7 +198,7 @@ namespace AUTD3Sharp
 
         public sealed class TwinCAT
         {
-            IntPtr _builder = IntPtr.Zero;
+            private IntPtr _builder;
 
             public TwinCAT()
             {
@@ -226,7 +225,7 @@ namespace AUTD3Sharp
 
         public sealed class RemoteTwinCAT
         {
-            IntPtr _builder = IntPtr.Zero;
+            private IntPtr _builder;
 
             public RemoteTwinCAT(string serverAmsNetId)
             {
@@ -265,7 +264,7 @@ namespace AUTD3Sharp
 
         public sealed class Simulator
         {
-            IntPtr _builder = IntPtr.Zero;
+            private IntPtr _builder;
 
             public Simulator(ushort port)
             {
