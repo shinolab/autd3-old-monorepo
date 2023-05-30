@@ -3,10 +3,10 @@
 # Created Date: 17/03/2022
 # Author: Shun Suzuki
 # -----
-# Last Modified: 30/05/2022
+# Last Modified: 18/05/2023
 # Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 # -----
-# Copyright (c) 2022 Shun Suzuki. All rights reserved.
+# Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 # 
 
 Param(
@@ -29,44 +29,64 @@ function FindVivado() {
     }
 }
 
-ColorEcho "Green" "INFO" "Simulation target is $target"
-ColorEcho "Green" "INFO" "Invoking Vivado..."
-if (-not (Get-Command vivado -ea SilentlyContinue)) {
-    if ($vivado_dir -eq "NULL") {
-        ColorEcho "Green" "INFO" "Vivado is not found in PATH. Looking for Vivado..."
-        $xilinx_path = FindVivado
-        if (($xilinx_path -eq "NULL")) {
-            ColorEcho "Red" "Error" "Vivado is not found. Install Vivado."
-            Stop-Transcript | Out-Null
-            $host.UI.RawUI.ReadKey() | Out-Null
-            exit
-        }
-        
-        $vivado_path = Join-Path $xilinx_path "Vivado"
-        if (-not (Test-Path $vivado_path)) {
-            ColorEcho "Red" "Error" "Vivado is not found. Install Vivado."
-            Stop-Transcript | Out-Null
-            $host.UI.RawUI.ReadKey() | Out-Null
-            exit
-        }
-        
-        $vivados = Get-ChildItem $vivado_path
-        if ($vivados.Length -eq 0) {
-            ColorEcho "Red" "Error" "Vivado is not found. Install Vivado."
-            Stop-Transcript | Out-Null
-            $host.UI.RawUI.ReadKey() | Out-Null
-            exit
+function RunSimulation($sim_target) {
+    ColorEcho "Green" "INFO" "Simulation target is $sim_target"
+    ColorEcho "Green" "INFO" "Invoking Vivado..."
+    if (-not (Get-Command vivado -ea SilentlyContinue)) {
+        if ($vivado_dir -eq "NULL") {
+            ColorEcho "Green" "INFO" "Vivado is not found in PATH. Looking for Vivado..."
+            $xilinx_path = FindVivado
+            if (($xilinx_path -eq "NULL")) {
+                ColorEcho "Red" "Error" "Vivado is not found. Install Vivado."
+                Stop-Transcript | Out-Null
+                $host.UI.RawUI.ReadKey() | Out-Null
+                exit
+            }
+            
+            $vivado_path = Join-Path $xilinx_path "Vivado"
+            if (-not (Test-Path $vivado_path)) {
+                ColorEcho "Red" "Error" "Vivado is not found. Install Vivado."
+                Stop-Transcript | Out-Null
+                $host.UI.RawUI.ReadKey() | Out-Null
+                exit
+            }
+            
+            $vivados = Get-ChildItem $vivado_path
+            if ($vivados.Length -eq 0) {
+                ColorEcho "Red" "Error" "Vivado is not found. Install Vivado."
+                Stop-Transcript | Out-Null
+                $host.UI.RawUI.ReadKey() | Out-Null
+                exit
+            }
+
+            $vivado_ver = $vivados | Select-Object -first 1
+            ColorEcho "Green" "INFO" "Vivado", $vivado_ver.Name, "found"
+            $vivado_dir = $vivado_ver.FullName
         }
 
-        $vivado_ver = $vivados | Select-Object -first 1
-        ColorEcho "Green" "INFO" "Vivado", $vivado_ver.Name, "found"
-        $vivado_dir = $vivado_ver.FullName
+        $vivado_bin = Join-Path $vivado_dir "bin"
+        $vivado_lib = Join-Path $vivado_dir "lib" | Join-Path -ChildPath "win64.o" 
+        $env:Path = $env:Path + ";" + $vivado_bin + ";" + $vivado_lib
     }
 
-    $vivado_bin = Join-Path $vivado_dir "bin"
-    $vivado_lib = Join-Path $vivado_dir "lib" | Join-Path -ChildPath "win64.o" 
-    $env:Path = $env:Path + ";" + $vivado_bin + ";" + $vivado_lib
+    $command = "vivado -mode batch -source sim.tcl -tclargs $sim_target"
+    Invoke-Expression $command
 }
 
-$command = "vivado -mode batch -source sim.tcl -tclargs $target"
-Invoke-Expression $command
+if ($target -eq "all") {
+    $all_simulations = @(
+        'sim_controller'
+        'sim_operator_normal'
+        'sim_operator_stm_focus'
+        'sim_operator_stm_gain'
+        'sim_pwm'
+        'sim_silencer'
+        'sim_mux'
+        'sim_modulator'
+    );
+    foreach ($sim_target in $all_simulations){
+        RunSimulation($sim_target);
+    }
+} else {
+    RunSimulation($target);
+}

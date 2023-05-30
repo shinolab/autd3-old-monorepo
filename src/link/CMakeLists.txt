@@ -1,7 +1,0 @@
-add_subdirectory(soem)
-add_subdirectory(twincat)
-add_subdirectory(remote_twincat)
-add_subdirectory(simulator)
-add_subdirectory(remote_simulator)
-add_subdirectory(remote_soem)
-add_subdirectory(emem)

@@ -1,307 +1,348 @@
-'''
+"""
 File: autd.py
 Project: pyautd3
 Created Date: 24/05/2021
 Author: Shun Suzuki
 -----
-Last Modified: 18/04/2023
+Last Modified: 28/05/2023
 Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 -----
-Copyright (c) 2022 Shun Suzuki. All rights reserved.
+Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
-'''
+"""
 
 
 from datetime import timedelta
 import ctypes
 from ctypes import c_void_p, byref, c_double, c_bool
 import numpy as np
-from typing import Optional
+from typing import List, Optional, Tuple, Union
 
+from .autd_error import AUTDError
 from .native_methods.autd3capi import NativeMethods as Base
+from .native_methods.autd3capi_def import TransMode, ERR, TRUE, FALSE
 from .link.link import Link
-
-
-NUM_TRANS_IN_UNIT = 249
-NUM_TRANS_X = 18
-NUM_TRANS_Y = 14
-TRANS_SPACING = 10.16
-DEVICE_WIDTH = 192.0
-DEVICE_HEIGHT = 151.4
 
 LogOutputFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 LogFlushFunc = ctypes.CFUNCTYPE(None)
 
 
-def set_log_level(level: int):
-    Base().dll.AUTDSetLogLevel(level)
-
-
-def set_log_func(output, flush):
-    Base().dll.AUTDSetDefaultLogger(output, flush)
-
-
 class SpecialData:
+    ptr: c_void_p
+
     def __init__(self):
         self.ptr = c_void_p()
 
 
 class Body:
+    ptr: c_void_p
+
     def __init__(self):
         self.ptr = c_void_p()
 
 
 class Header:
+    ptr: c_void_p
+
     def __init__(self):
         self.ptr = c_void_p()
 
 
 class SilencerConfig(Header):
-    def __init__(self, step: int = 10, cycle: int = 4096):
+    def __init__(self, step: int = 10):
         super().__init__()
-        Base().dll.AUTDCreateSilencer(byref(self.ptr), step, cycle)
+        self.ptr = Base().create_silencer(step)
 
     def __del__(self):
-        Base().dll.AUTDDeleteSilencer(self.ptr)
+        Base().delete_silencer(self.ptr)
 
     @staticmethod
-    def none():
-        return SilencerConfig(0xFFFF, 4096)
+    def none() -> "SilencerConfig":
+        return SilencerConfig(0xFFFF)
+
+
+class FPGAInfo:
+    info: ctypes.c_uint8
+
+    def __init__(self, info: ctypes.c_uint8):
+        self.info = info
+
+    def is_thermal_assert(self) -> bool:
+        return (int(self.info) & 0x01) != 0
 
 
 class Transducer:
+    _tr_id: int
+    _cnt: c_void_p
+
     def __init__(self, tr_id: int, cnt: c_void_p):
         self._tr_id = tr_id
         self._cnt = cnt
 
-    @ property
+    @property
     def id(self) -> int:
         return self._tr_id
 
-    @ property
-    def position(self):
+    @property
+    def position(self) -> np.ndarray:
         x = c_double(0.0)
         y = c_double(0.0)
         z = c_double(0.0)
-        Base().dll.AUTDTransPosition(self._cnt, self._tr_id, byref(x), byref(y), byref(z))
+        Base().trans_position(self._cnt, self._tr_id, byref(x), byref(y), byref(z))
         return np.array([x.value, y.value, z.value])
 
-    @ property
-    def frequency(self):
-        return Base().dll.AUTDGetTransFrequency(self._cnt, self._tr_id)
+    @property
+    def frequency(self) -> float:
+        return float(Base().get_trans_frequency(self._cnt, self._tr_id))
 
-    @ frequency.setter
+    @frequency.setter
     def frequency(self, freq: float):
-        return Base().dll.AUTDSetTransFrequency(self._cnt, self._tr_id, freq)
+        err = ctypes.create_string_buffer(256)
+        if not Base().set_trans_frequency(self._cnt, self._tr_id, freq, err):
+            raise AUTDError(err)
 
-    @ property
-    def cycle(self):
-        return Base().dll.AUTDGetTransCycle(self._cnt, self._tr_id)
+    @property
+    def cycle(self) -> int:
+        return int(Base().get_trans_cycle(self._cnt, self._tr_id))
 
-    @ cycle.setter
+    @cycle.setter
     def cycle(self, cycle: int):
-        return Base().dll.AUTDSetTransCycle(self._cnt, self._tr_id, cycle)
+        err = ctypes.create_string_buffer(256)
+        if not Base().set_trans_cycle(self._cnt, self._tr_id, cycle, err):
+            raise AUTDError(err)
 
-    @ property
-    def mod_delay(self):
-        return Base().dll.AUTDGetTransModDelay(self._cnt, self._tr_id)
+    @property
+    def mod_delay(self) -> int:
+        return int(Base().get_trans_mod_delay(self._cnt, self._tr_id))
 
-    @ mod_delay.setter
+    @mod_delay.setter
     def mod_delay(self, delay: int):
-        return Base().dll.AUTDSetTransModDelay(self._cnt, self._tr_id, delay)
+        return Base().set_trans_mod_delay(self._cnt, self._tr_id, delay)
 
-    @ property
-    def wavelength(self):
-        return Base().dll.AUTDGetWavelength(self._cnt, self._tr_id)
+    @property
+    def wavelength(self) -> float:
+        return float(Base().get_wavelength(self._cnt, self._tr_id))
 
-    @ property
-    def x_direction(self):
+    @property
+    def x_direction(self) -> np.ndarray:
         x = c_double(0.0)
         y = c_double(0.0)
         z = c_double(0.0)
-        Base().dll.AUTDTransXDirection(self._cnt, self._tr_id, byref(x), byref(y), byref(z))
+        Base().trans_x_direction(self._cnt, self._tr_id, byref(x), byref(y), byref(z))
         return np.array([x.value, y.value, z.value])
 
-    @ property
-    def y_direction(self):
+    @property
+    def y_direction(self) -> np.ndarray:
         x = c_double(0.0)
         y = c_double(0.0)
         z = c_double(0.0)
-        Base().dll.AUTDTransYDirection(self._cnt, self._tr_id, byref(x), byref(y), byref(z))
+        Base().trans_y_direction(self._cnt, self._tr_id, byref(x), byref(y), byref(z))
         return np.array([x.value, y.value, z.value])
 
-    @ property
-    def z_direction(self):
+    @property
+    def z_direction(self) -> np.ndarray:
         x = c_double(0.0)
         y = c_double(0.0)
         z = c_double(0.0)
-        Base().dll.AUTDTransZDirection(self._cnt, self._tr_id, byref(x), byref(y), byref(z))
+        Base().trans_z_direction(self._cnt, self._tr_id, byref(x), byref(y), byref(z))
         return np.array([x.value, y.value, z.value])
 
 
 class Geometry:
-    def __init__(self, ptr: c_void_p):
+    _ptr: c_void_p
+    _mode: TransMode
+
+    def __init__(self, ptr: c_void_p, mode: TransMode):
         self._ptr = ptr
+        self._mode = mode
 
-    @ property
-    def sound_speed(self):
-        return Base().dll.AUTDGetSoundSpeed(self._ptr)
-
-    @ sound_speed.setter
-    def sound_speed(self, sound_speed: float):
-        Base().dll.AUTDSetSoundSpeed(self._ptr, sound_speed)
-
-    @ property
-    def attenuation(self):
-        return Base().dll.AUTDGetAttenuation(self._ptr)
-
-    @ attenuation.setter
-    def attenuation(self, attenuation: float):
-        Base().dll.AUTDSetAttenuation(self._ptr, attenuation)
-
-    @ property
-    def num_transducers(self) -> int:
-        return Base().dll.AUTDNumTransducers(self._ptr)
-
-    @ property
-    def num_devices(self) -> int:
-        return Base().dll.AUTDNumDevices(self._ptr)
+    def mode(self) -> TransMode:
+        return self._mode
 
     @property
-    def center(self):
+    def sound_speed(self) -> float:
+        return float(Base().get_sound_speed(self._ptr))
+
+    @sound_speed.setter
+    def sound_speed(self, sound_speed: float):
+        Base().set_sound_speed(self._ptr, sound_speed)
+
+    @property
+    def attenuation(self) -> float:
+        return float(Base().get_attenuation(self._ptr))
+
+    @attenuation.setter
+    def attenuation(self, attenuation: float):
+        Base().set_attenuation(self._ptr, attenuation)
+
+    @property
+    def num_transducers(self) -> int:
+        return int(Base().num_transducers(self._ptr))
+
+    @property
+    def num_devices(self) -> int:
+        return int(Base().num_devices(self._ptr))
+
+    @property
+    def center(self) -> np.ndarray:
         x = c_double(0.0)
         y = c_double(0.0)
         z = c_double(0.0)
-        Base().dll.AUTDGeometryCenter(self._ptr, byref(x), byref(y), byref(z))
+        Base().geometry_center(self._ptr, byref(x), byref(y), byref(z))
         return np.array([x.value, y.value, z.value])
 
-    def set_sound_speed_from_temp(self, temp: float, k: float = 1.4, r: float = 8.31446261815324, m: float = 28.9647e-3):
-        Base().dll.AUTDSetSoundSpeed(self._ptr, temp, k, r, m)
+    def set_sound_speed_from_temp(
+        self,
+        temp: float,
+        k: float = 1.4,
+        r: float = 8.31446261815324,
+        m: float = 28.9647e-3,
+    ):
+        Base().set_sound_speed_from_temp(self._ptr, temp, k, r, m)
 
-    def center_of(self, dev_idx: int):
+    def center_of(self, dev_idx: int) -> np.ndarray:
         x = c_double(0.0)
         y = c_double(0.0)
         z = c_double(0.0)
-        Base().dll.AUTDGeometryCenterOf(self._ptr, dev_idx, byref(x), byref(y), byref(z))
+        Base().geometry_center_of(self._ptr, dev_idx, byref(x), byref(y), byref(z))
         return np.array([x.value, y.value, z.value])
 
-    def __getitem__(self, key: int):
+    def __getitem__(self, key: int) -> Transducer:
         return Transducer(key, self._ptr)
 
     class TransdducerIterator:
+        _ptr: c_void_p
+        _i: int
+        _num_trans: int
+
         def __init__(self, ptr: c_void_p):
             self._ptr = ptr
             self._i = 0
-            self._num_trans = Base().dll.AUTDNumTransducers(ptr)
+            self._num_trans = int(Base().num_transducers(ptr))
 
-        def __next__(self):
+        def __next__(self) -> Transducer:
             if self._i == self._num_trans:
                 raise StopIteration()
             value = Transducer(self._i, self._ptr)
             self._i += 1
             return value
 
-    def __iter__(self):
+    def __iter__(self) -> TransdducerIterator:
         return Geometry.TransdducerIterator(self._ptr)
 
     class Builder:
+        _ptr: c_void_p
+        _mode: TransMode
+
         def __init__(self):
-            self._ptr = c_void_p()
-            Base().dll.AUTDCreateGeometryBuilder(byref(self._ptr))
+            self._ptr = Base().create_geometry_builder()
+            self._mode = TransMode.Legacy
 
-        def add_device(self, pos, rot):
-            Base().dll.AUTDAddDevice(self._ptr, pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
+        def add_device(self, pos, rot) -> "Geometry.Builder":
+            Base().add_device(self._ptr, pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
             return self
 
-        def add_device_quaternion(self, pos, q):
-            Base().dll.AUTDAddDeviceQuaternion(self._ptr, pos[0], pos[1], pos[2], q[0], q[1], q[2], q[3])
+        def add_device_quaternion(self, pos, q) -> "Geometry.Builder":
+            Base().add_device_quaternion(
+                self._ptr, pos[0], pos[1], pos[2], q[0], q[1], q[2], q[3]
+            )
             return self
 
-        def legacy_mode(self):
-            Base().dll.AUTDSetMode(self._ptr, 0)
+        def legacy_mode(self) -> "Geometry.Builder":
+            self._mode = TransMode.Legacy
             return self
 
-        def advanced_mode(self):
-            Base().dll.AUTDSetMode(self._ptr, 1)
+        def advanced_mode(self) -> "Geometry.Builder":
+            self._mode = TransMode.Advanced
             return self
 
-        def advanced_phase_mode(self):
-            Base().dll.AUTDSetMode(self._ptr, 2)
+        def advanced_phase_mode(self) -> "Geometry.Builder":
+            self._mode = TransMode.AdvancedPhase
             return self
 
-        def build(self):
-            geometry_ptr = c_void_p()
-            Base().dll.AUTDBuildGeometry(byref(geometry_ptr), self._ptr)
-            return Geometry(geometry_ptr)
+        def build(self) -> "Geometry":
+            err = ctypes.create_string_buffer(256)
+            ptr = Base().build_geometry(self._ptr, err)
+            if not ptr:
+                raise AUTDError(err)
+            return Geometry(ptr, self._mode)
 
 
 class FirmwareInfo:
-    def __init__(self, info: str, matches_version: bool, is_supported: bool):
+    _info: str
+    _is_valid: bool
+    _is_supported: bool
+
+    def __init__(self, info: str, is_valid: bool, is_supported: bool):
         self._info = info
-        self._matches_version = matches_version
+        self._is_valid = is_valid
         self._is_supported = is_supported
 
-    @ property
-    def info(self):
+    @property
+    def info(self) -> str:
         return self._info
 
-    @ property
-    def matches_version(self):
-        return self._matches_version
+    @property
+    def is_valid(self) -> bool:
+        return self._is_valid
 
-    @ property
-    def is_supported(self):
+    @property
+    def is_supported(self) -> bool:
         return self._is_supported
 
     @staticmethod
-    def latest_version():
+    def latest_version() -> str:
         sb = ctypes.create_string_buffer(256)
-        Base().dll.AUTDGetLatestFirmware(sb)
-        return sb.value.decode('utf-8')
+        Base().get_latest_firmware(sb)
+        return sb.value.decode("utf-8")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self._info
 
 
 class Controller:
-    def __init__(self, cnt: c_void_p, geometry: Geometry):
+    p_cnt: c_void_p
+    _geometry: Geometry
+    __disposed: bool
+
+    def __init__(self, cnt: c_void_p, mode: TransMode):
         self.p_cnt = cnt
-        self._geometry = geometry
+        self._geometry = Geometry(cnt, mode)
         self.__disposed = False
 
     def __del__(self):
         self.dispose()
 
-    @ property
-    def geometry(self):
+    @property
+    def geometry(self) -> Geometry:
         return self._geometry
 
     @staticmethod
-    def open(geometry: Geometry, link: Link):
-        cnt = c_void_p()
-        if not Base().dll.AUTDOpenController(cnt, geometry._ptr, link.link_ptr):
-            raise Exception('Failed to open controller')
-        g = c_void_p()
-        Base().dll.AUTDGetGeometry(byref(g), cnt)
-        geometry._ptr = None
-        return Controller(cnt, Geometry(g))
+    def open(geometry: Geometry, link: Link) -> "Controller":
+        err = ctypes.create_string_buffer(256)
+        cnt = Base().open_controller(geometry._ptr, link.link_ptr, err)
+        if not cnt:
+            raise AUTDError(err)
+        return Controller(cnt, geometry.mode())
 
-    def firmware_info_list(self):
+    def firmware_info_list(self) -> List[FirmwareInfo]:
+        err = ctypes.create_string_buffer(256)
+        handle = Base().get_firmware_info_list_pointer(self.p_cnt, err)
+        if not handle:
+            raise AUTDError(err)
+
         res = []
-        handle = c_void_p()
-        size = Base().dll.AUTDGetFirmwareInfoListPointer(self.p_cnt, byref(handle))
-        if size < 0:
-            raise Exception('Failed to get firmware version.')
-
-        for i in range(size):
+        for i in range(self.geometry.num_devices):
             sb = ctypes.create_string_buffer(256)
-            matches_version = c_bool(False)
+            is_valid = c_bool(False)
             is_supported = c_bool(False)
-            Base().dll.AUTDGetFirmwareInfo(handle, i, sb, byref(matches_version), byref(is_supported))
-            info = sb.value.decode('utf-8')
-            res.append(FirmwareInfo(info, matches_version, is_supported))
+            Base().get_firmware_info(
+                handle, i, sb, byref(is_valid), byref(is_supported)
+            )
+            info = sb.value.decode("utf-8")
+            res.append(FirmwareInfo(info, is_valid.value, is_supported.value))
 
-        Base().dll.AUTDFreeFirmwareInfoListPointer(handle)
+        Base().free_firmware_info_list_pointer(handle)
 
         return res
 
@@ -312,90 +353,117 @@ class Controller:
             self.__disposed = True
 
     def close(self):
-        return Base().dll.AUTDClose(self.p_cnt)
+        err = ctypes.create_string_buffer(256)
+        if not Base().close(self.p_cnt, err):
+            raise AUTDError(err)
 
     def _free(self):
-        Base().dll.AUTDFreeController(self.p_cnt)
-
-    @ property
-    def is_open(self):
-        return Base().dll.AUTDIsOpen(self.p_cnt)
+        Base().free_controller(self.p_cnt)
 
     def force_fan(self, value: bool):
-        return Base().dll.AUTDSetForceFan(self.p_cnt, value)
+        return Base().set_force_fan(self.p_cnt, value)
 
     def reads_fpga_info(self, value: bool):
-        Base().dll.AUTDSetReadsFPGAInfo(self.p_cnt, value)
+        Base().set_reads_fpga_info(self.p_cnt, value)
 
-    @ property
-    def fpga_info(self):
+    @property
+    def fpga_info(self) -> List[FPGAInfo]:
         infos = np.zeros([self.geometry.num_devices]).astype(np.ubyte)
         pinfos = np.ctypeslib.as_ctypes(infos)
-        Base().dll.AUTDGetFPGAInfo(self.p_cnt, pinfos)
-        return infos
+        err = ctypes.create_string_buffer(256)
+        if not Base().get_fpga_info(self.p_cnt, pinfos, err):
+            raise AUTDError(err)
+        return list(map(lambda x: FPGAInfo(x), infos))
 
-    def send(self, a, b=None, timeout: Optional[timedelta] = None):
-        timeout = -1 if timeout is None else int(timeout.total_seconds() * 1000 * 1000 * 1000)
-        if b is None and isinstance(a, SpecialData):
-            return Base().dll.AUTDSendSpecial(self.p_cnt, a.ptr, timeout)
-        if b is None and isinstance(a, Header):
-            return Base().dll.AUTDSend(self.p_cnt, a.ptr, None, timeout)
-        if b is None and isinstance(a, Body):
-            return Base().dll.AUTDSend(self.p_cnt, None, a.ptr, timeout)
-        if isinstance(a, Header) and isinstance(b, Body):
-            return Base().dll.AUTDSend(self.p_cnt, a.ptr, b.ptr, timeout)
-        raise NotImplementedError()
+    def send(
+        self,
+        d: Union[SpecialData, Header, Body, Tuple[Header, Body]],
+        timeout: Optional[timedelta] = None,
+    ) -> bool:
+        timeout_ = (
+            -1 if timeout is None else int(timeout.total_seconds() * 1000 * 1000 * 1000)
+        )
+        err = ctypes.create_string_buffer(256)
+        res: ctypes.c_int32 = ctypes.c_int32(FALSE)
+        if isinstance(d, SpecialData):
+            res = Base().send_special(
+                self.p_cnt, self.geometry.mode(), d.ptr, timeout_, err
+            )
+        if isinstance(d, Header):
+            res = Base().send(
+                self.p_cnt, self.geometry.mode(), d.ptr, c_void_p(None), timeout_, err
+            )
+        if isinstance(d, Body):
+            res = Base().send(
+                self.p_cnt, self.geometry.mode(), c_void_p(None), d.ptr, timeout_, err
+            )
+        if isinstance(d, tuple) and len(d) == 2:
+            (h, b) = d
+            if isinstance(h, Header) and isinstance(b, Body):
+                res = Base().send(
+                    self.p_cnt,
+                    self.geometry.mode(),
+                    h.ptr,
+                    b.ptr,
+                    timeout_,
+                    err,
+                )
+
+        if res == ERR:
+            raise AUTDError(err)
+
+        return res == TRUE
 
 
 class Amplitudes(Body):
     def __init__(self, amp: float):
         super().__init__()
-        Base().dll.AUTDCreateAmplitudes(byref(self.ptr), amp)
+        self.ptr = Base().create_amplitudes(amp)
 
     def __del__(self):
-        Base().dll.AUTDDeleteAmplitudes(self.ptr)
+        Base().delete_amplitudes(self.ptr)
 
 
 class Clear(SpecialData):
     def __init__(self):
         super().__init__()
-        Base().dll.AUTDClear(byref(self.ptr))
+        self.ptr = Base().clear()
 
     def __del__(self):
-        Base().dll.AUTDDeleteSpecialData(self.ptr)
+        Base().delete_special_data(self.ptr)
 
 
 class Stop(SpecialData):
     def __init__(self):
         super().__init__()
-        Base().dll.AUTDStop(byref(self.ptr))
+        self.ptr = Base().stop()
 
     def __del__(self):
-        Base().dll.AUTDDeleteSpecialData(self.ptr)
+        Base().delete_special_data(self.ptr)
 
 
 class UpdateFlag(SpecialData):
     def __init__(self):
         super().__init__()
-        Base().dll.AUTDUpdateFlags(byref(self.ptr))
+        self.ptr = Base().update_flags()
 
     def __del__(self):
-        Base().dll.AUTDDeleteSpecialData(self.ptr)
+        Base().delete_special_data(self.ptr)
 
 
 class Synchronize(SpecialData):
     def __init__(self):
         super().__init__()
-        Base().dll.AUTDSynchronize(byref(self.ptr))
+        self.ptr = Base().synchronize()
 
     def __del__(self):
-        Base().dll.AUTDDeleteSpecialData(self.ptr)
+        Base().delete_special_data(self.ptr)
 
 
 class ModDelayConfig(SpecialData):
     def __init__(self):
         super().__init__()
-        Base().dll.AUTDModDelayConfig(byref(self.ptr))
+        self.ptr = Base().mod_delay_config()
 
     def __del__(self):
-        Base().dll.AUTDDeleteSpecialData(self.ptr)
+        Base().delete_special_data(self.ptr)

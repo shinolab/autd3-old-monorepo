@@ -1,0 +1,41 @@
+name: build-cpp
+
+on:
+  push:
+    tags-ignore:
+      - v*
+    branches:
+      - 'release'
+
+jobs:
+  build:
+    name: build ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: install aarch64 target on macos
+      if: matrix.os == 'macos-latest'
+      run: |
+        rustup target add aarch64-apple-darwin
+    - name: Build capi on ${{ matrix.os }}
+      if : matrix.os == 'windows-latest'
+      run: |
+        cd cpp
+        ./build.ps1
+    - name: Build capi on ${{ matrix.os }}
+      if : matrix.os != 'windows-latest'
+      run: |
+        cd cpp
+        chmod +x build.sh
+        ./build.sh
+    - name: Build C++ example on ${{ matrix.os }}
+      run: |
+        cd cpp/examples
+        mkdir build
+        cd build
+        cmake .. -DAUTD_LOCAL_TEST=ON
+        cmake --build . --config Release

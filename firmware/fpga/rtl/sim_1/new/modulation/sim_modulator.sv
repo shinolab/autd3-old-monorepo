@@ -4,16 +4,17 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 16/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
- * 
+ * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
+ *
  */
 
 module sim_modulator ();
 
   bit [63:0] SYS_TIME;
+  bit CLK_20P48M;
   bit locked;
   sim_helper_clk sim_helper_clk (
       .CLK_163P84M(),
@@ -26,20 +27,22 @@ module sim_modulator ();
   sim_helper_bram sim_helper_bram ();
 
   localparam int WIDTH = 13;
-  localparam int DEPTH = 10;
+  localparam int DEPTH = 249;
 
-  bit [15:0] cycle;
-  bit [31:0] freq_div;
-  bit [WIDTH-1:0] duty[0:DEPTH-1];
-  bit [WIDTH-1:0] phase[0:DEPTH-1];
-  bit [WIDTH-1:0] duty_out[0:DEPTH-1];
-  bit [WIDTH-1:0] phase_out[0:DEPTH-1];
-  bit [15:0] delay_m[0:DEPTH-1];
-  bit start;
-  bit done;
+  bit din_valid, dout_valid;
   bit [15:0] idx;
+  bit [15:0] cycle_m;
+  bit [31:0] freq_div_m;
+  bit [15:0] delay_m[DEPTH];
+  bit [WIDTH-1:0] duty;
+  bit [WIDTH-1:0] duty_out;
+  bit [WIDTH-1:0] phase;
+  bit [WIDTH-1:0] phase_out;
 
-  bit [7:0] mod_data[0:65535];
+  bit [7:0] mod[65536];
+  bit [WIDTH-1:0] duty_buf[DEPTH];
+  bit [WIDTH-1:0] phase_buf[DEPTH];
+  bit [15:0] idx_buf;
 
   modulator #(
       .WIDTH(WIDTH),
@@ -47,69 +50,83 @@ module sim_modulator ();
   ) modulator (
       .CLK(CLK_20P48M),
       .SYS_TIME(SYS_TIME),
-      .CYCLE(cycle),
-      .FREQ_DIV(freq_div),
-      .DELAY_M(delay_m),
+      .CYCLE_M(cycle_m),
+      .FREQ_DIV_M(freq_div_m),
       .CPU_BUS(sim_helper_bram.cpu_bus.mod_port),
+      .DIN_VALID(din_valid),
       .DUTY_IN(duty),
       .PHASE_IN(phase),
+      .DELAY_M(delay_m),
       .DUTY_OUT(duty_out),
       .PHASE_OUT(phase_out),
-      .START(start),
-      .DONE(done),
+      .DOUT_VALID(dout_valid),
       .IDX(idx)
   );
 
-  localparam int DIV_LATENCY = 66;
+  always @(posedge din_valid) idx_buf = idx;
 
-  bit [15:0] idx_buf;
-  task set_random();
+  task automatic set();
+    for (int i = 0; i < DEPTH; i++) begin
+      @(posedge CLK_20P48M);
+      din_valid = 1'b1;
+      duty = sim_helper_random.range(8000, 0);
+      phase = sim_helper_random.range(8000, 0);
+      duty_buf[i] = duty;
+      phase_buf[i] = phase;
+    end
     @(posedge CLK_20P48M);
-    // cycle = 16'hFFFF;
-    cycle = 16'd999;
-    for (int i = 0; i < DEPTH; i++) begin
-      duty[i] = sim_helper_random.range(8000, 0);
-    end
-    for (int j = 0; j < cycle + 1; j++) begin
-      mod_data[j] = sim_helper_random.range(8'hFF, 0);
-    end
-    sim_helper_bram.write_mod(mod_data, cycle + 1);
+    din_valid = 1'b0;
+  endtask
 
-    for (int i = 0; i < DEPTH; i++) begin
-      delay_m[i] = sim_helper_random.range(cycle + 1, 0);
-    end
-
-    for (int j = 0; j < cycle + 1; j++) begin
-      @(posedge start);
-      idx_buf = idx;
-      $display("check %d @%d", idx_buf, SYS_TIME);
-      @(posedge done);
+  task automatic check();
+    while (1) begin
       @(posedge CLK_20P48M);
-      @(posedge CLK_20P48M);
-      for (int i = 0; i < DEPTH; i++) begin
-        if (duty_out[i] != (duty[i] * mod_data[(idx_buf-delay_m[i]+cycle+1)%(cycle+1)] / 255)) begin
-          $error("Failed at d=%d, m[%d]=%d, d_m=%d @ %d", duty[i],
-                 (idx_buf - delay_m[i] + cycle + 1) % (cycle + 1),
-                 mod_data[(idx_buf-delay_m[i]+cycle+1)%(cycle+1)], duty_out[i], i);
-          $finish();
-        end
+      if (dout_valid) begin
+        break;
       end
+    end
+
+    for (int i = 0; i < DEPTH; i++) begin
+      if (duty_out != (duty_buf[i] * mod[(idx_buf-delay_m[i]+cycle_m+1)%(cycle_m+1)] / 255)) begin
+        $error("Failed at %d: d=%d, m=%d, d_m=%d", i, duty_buf[i],
+               mod[(idx_buf-delay_m[i]+cycle_m+1)%(cycle_m+1)], duty_out);
+        $finish();
+      end
+      if (phase_out != phase_buf[i]) begin
+        $error("Failed at %d: p=%d, p_m=%d", i, phase_buf[i], phase_out);
+        $finish();
+      end
+
+      @(posedge CLK_20P48M);
     end
   endtask
 
-  localparam int MULT_LATENCY = 38;
-
   initial begin
-    cycle = 0;
-    freq_div = 8 * (1 + MULT_LATENCY + DEPTH + 2);
-    duty = '{DEPTH{2500}};
-    phase = '{DEPTH{2500}};
+    din_valid = 0;
+    cycle_m = 16'hFFFF;
+    freq_div_m = 4096;
     sim_helper_random.init();
+
+    for (int i = 0; i < DEPTH; i++) begin
+      delay_m[i] = sim_helper_random.range(16'hFFFF, 0);
+    end
+
     @(posedge locked);
 
-    set_random();
+    for (int i = 0; i < cycle_m + 1; i++) begin
+      mod[i] = sim_helper_random.range(8'hFF, 0);
+    end
+    sim_helper_bram.write_mod(mod, cycle_m + 1);
 
-    $display("OK!");
+    for (int j = 0; j < 5000; j++) begin
+      $display("check %d", j);
+      fork
+        set();
+        check();
+      join
+    end
+
+    $display("OK! sim_modulator");
     $finish();
   end
 

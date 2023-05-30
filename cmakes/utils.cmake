@@ -1,8 +1,0 @@
-include(CheckCXXCompilerFlag)
-function(enable_cxx_compiler_flag_if_supported target scope flag)
-  check_cxx_compiler_flag("${flag}" flag_supported)
-  if(flag_supported)
-    target_compile_options(${target} ${scope} ${flag})
-    endif()
-  unset(flag_supported CACHE)
-endfunction()

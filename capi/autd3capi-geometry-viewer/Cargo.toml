@@ -1,0 +1,21 @@
+[package]
+name = "autd3capi-geometry-viewer"
+version = "10.0.0"
+edition = "2021"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+autd3capi-def = {path="../autd3capi-def", version="10.0.0"}
+autd3-geometry-viewer = {path="../../src/autd3-geometry-viewer", version="10.0.0"}
+
+[build-dependencies]
+wrapper-generator = {path="../wrapper-generator"}
+
+[features]
+single_float = ["autd3capi-def/single_float"]
+left_handed = ["autd3-geometry-viewer/left_handed"]
+use_meter = ["autd3capi-def/use_meter", "autd3-geometry-viewer/left_handed"]
+parallel = ["autd3capi-def/parallel"]

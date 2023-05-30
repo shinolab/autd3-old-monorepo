@@ -1,4 +1,4 @@
-name: release-check
+name: Release Check
 
 on:
   push:
@@ -7,237 +7,74 @@ on:
     branches:
       - 'release'
 
+
 jobs:
-  publish_win:
-    name: Release Check on Windows
-    runs-on: windows-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: setup-msbuild
-        uses: microsoft/setup-msbuild@v1
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: 6.0.x
-      - name: Install Vulkan SDK
-        uses: humbletim/install-vulkan-sdk@v1.1.1
-        with:
-          version: 1.3.236.0
-          cache: false
-      - uses: okazunori2013/cuda-toolkit@v0.3.2
-        id: cuda-toolkit
-        with:
-          cuda: '11.8.0'
-      - name: Build project x64
-        run: |
-          cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=ON -DDISABLE_EXAMPLES=ON -DEXPORT_SOEM_AUTD_SERVER=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON -DHOLO_PARALLEL_FOR=ON
-          cd build
-          cmake --build . --parallel 8 --config Release
-          mkdir publish
-          mkdir publish/bin
-          mkdir publish/simulator
-          mkdir publish/gui-controller
-          mkdir publish/SOEMAUTDServer
-          cd ..
-          foreach($dll in Get-ChildItem -Path build/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/src/native/windows/x64}
-          cp LICENSE cs/src/LICENSE.md
-          cd cs/src
-          dotnet clean
-          dotnet build -c:Release
-          cd ../..
-          dotnet nuget add source $pwd/cs/src/bin/Release -n autd3sharp_local
-          cd dist/GUI
-          dotnet publish -c:Release -r win-x64 --self-contained false -o bin
-          copy AUTD3-GUI-Controller/Strings -Recurse bin/
-          cd ../..
-          copy build/bin/Release/*.dll build/publish/bin
-          copy dist/GUI/bin -Recurse publish/gui-controller/bin
-          copy dist/GUI/AUTD3-GUI-Controller.exe publish/gui-controller
-          copy build/dist/simulator/Release/*.exe build/publish/simulator
-          copy build/dist/SOEMAUTDServer/Release/*.exe build/publish/SOEMAUTDServer
-          copy dist/SOEMAUTDServer/README.md build/publish/SOEMAUTDServer
-          copy dist/simulator/settings.json build/publish/simulator
-          Remove-Item -Recurse -Force dist/TwinCATAUTDServer/src
-          Compress-Archive -Path LICENSE, dist/TwinCATAUTDServer, dist/firmware, build/publish/bin, build/publish/simulator, build/publish/SOEMAUTDServer, publish/gui-controller -DestinationPath assets_x64.zip
-      - name: Build project arm
-        run: |
-          cmake -G "Visual Studio 17 2022" -A ARM64 -B "build_arm" -DBUILD_TARGET=ARM -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=OFF -DEXPORT_AUTD_SIMULATOR=OFF -DDISABLE_EXAMPLES=ON -DEXPORT_SOEM_AUTD_SERVER=ON -DHOLO_PARALLEL_FOR=ON
-          cd build_arm
-          cmake --build . --parallel 8 --config Release
-          mkdir publish
-          mkdir publish/bin
-          mkdir publish/SOEMAUTDServer
-          cd ..
-          copy build_arm/bin/Release/*.dll build_arm/publish/bin
-          copy build_arm/dist/SOEMAUTDServer/Release/*.exe build_arm/publish/SOEMAUTDServer
-          copy dist/SOEMAUTDServer/README.md build_arm/publish/SOEMAUTDServer
-          Compress-Archive -Path LICENSE, build_arm/publish/bin, build_arm/publish/SOEMAUTDServer -DestinationPath assets_arm.zip
-    
-      - name: Build project x64 for Unity
-        run: |
-          cmake -G "Visual Studio 17 2022" -A x64 -B "build_unity" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=ON -DDISABLE_EXAMPLES=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON -DUSE_METER=ON -DUSE_LEFT_HANDED=ON -DUSE_SINGLE_FLOAT=ON -DHOLO_PARALLEL_FOR=ON
-          cd build_unity
-          cmake --build . --parallel 8 --config Release
-          cd ..
-          foreach($dll in Get-ChildItem -Path build_unity/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/unity/Assets/autd3/Plugins/x86_64}
-          copy build_unity/dist/simulator/Release/*.exe ./cs/unity/Assets/autd3/Editor
-      - name: Replace latest scripts
-        run: |
-          cp LICENSE cs/unity/Assets/autd3/LICENSE.md
-          cp CHANGELOG.md cs/unity/Assets/autd3/CHANGELOG.md
-          foreach($src in Get-ChildItem -Path ./cs/src | Where {$_.extension -like ".cs"}){Copy-Item -Path $src -Destination ./cs/unity/Assets/autd3/Scripts}
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-          registry-url: 'https://registry.npmjs.org'
-      - name: Publish on npmjs
-        run: |
-          mv cs/unity/Assets/autd3/Samples cs/unity/Assets/autd3/Samples~
-          rm -Force cs/unity/Assets/autd3/Samples.meta
-          cd cs/unity/Assets/autd3
-          npm install
-          npm publish --dry-run
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  publish_linux:
-    name: Release Check on Linux
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: install compile tools
-        run: |
-          sudo apt update
-          sudo apt install g++-arm-linux-gnueabihf g++-aarch64-linux-gnu mesa-common-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev -y
-        shell: bash
-      - name: Install Vulkan SDK
-        uses: humbletim/install-vulkan-sdk@v1.1.1
-        with:
-          version: 1.3.236.0
-          cache: false
-      - uses: okazunori2013/cuda-toolkit@v0.3.2
-        id: cuda-toolkit
-        with:
-          cuda: '11.8.0'
-      - name: Build project x64
-        run: |
-          mkdir -p build && cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DDISABLE_EXAMPLES=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON -DHOLO_PARALLEL_FOR=ON
-          cmake --build . --parallel $(nproc) --config Release
-          cd ..
-          mkdir -p bin
-          cp -f build/bin/Release/*.so bin
-          tar -zcvf assets_x64.tar.gz bin LICENSE
-          rm -rf build bin
-        shell: bash
-        env:
-          CC: gcc-10
-          CXX: g++-10
-      - name: Build project arm32
-        run: |
-          mkdir -p build && cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM32 -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DDISABLE_EXAMPLES=ON -DBUILD_BACKEND_CUDA=OFF -DBUILD_GEOMETRY_VIEWER=OFF -DBUILD_SIMULATOR=OFF -DCMAKE_C_COMPILER=/usr/bin/arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=/usr/bin/arm-linux-gnueabihf-g++ -DHOLO_PARALLEL_FOR=ON
-          cmake --build . --parallel $(nproc) --config Release
-          cd ..
-          mkdir -p bin
-          cp -f build/bin/Release/*.so bin
-          tar -zcvf assets_arm32.tar.gz bin LICENSE
-          rm -rf build bin
-        shell: bash
-        env:
-          CC: gcc-10
-          CXX: g++-10
-      - name: Build project arm64
-        run: |
-          mkdir -p build && cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM64 -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DDISABLE_EXAMPLES=ON -DBUILD_BACKEND_CUDA=OFF -DBUILD_GEOMETRY_VIEWER=OFF -DBUILD_SIMULATOR=OFF -DCMAKE_C_COMPILER=/usr/bin/aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=/usr/bin/aarch64-linux-gnu-g++ -DHOLO_PARALLEL_FOR=ON
-          cmake --build . --parallel $(nproc) --config Release
-          cd ..
-          mkdir -p bin
-          cp -f build/bin/Release/*.so bin
-          tar -zcvf assets_arm64.tar.gz bin LICENSE
-          rm -rf build bin
-        shell: bash
-        env:
-          CC: gcc-10
-          CXX: g++-10
-  
-  publish_mac:
-    name: Release Check on macOS
-    runs-on: macos-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Install Vulkan SDK
-        uses: humbletim/install-vulkan-sdk@v1.1.1
-        with:
-          version: 1.3.236.0
-          cache: false
-      - name: Build project
-        run: |
-          mkdir -p build && cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=OFF -DDISABLE_EXAMPLES=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON -DAUTD3_PARALLEL_FOR=OFF -DHOLO_PARALLEL_FOR=OFF -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
-          make -j8
-          cd ..
-          mkdir -p bin
-          cp -f build/bin/Release/*.dylib bin
-          tar -zcvf assets.tar.gz bin LICENSE
-
-  lint:
-    name: lint
+  build:
+    name: build ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
-    steps: 
+    steps:
     - uses: actions/checkout@v3
-    - name: lint
+    - name: Build src on ${{ matrix.os }}
+      if: matrix.os == 'windows-latest'
       run: |
-        mkdir -p build && cd build
-        cmake .. -DBUILD_ALL=ON -DENABLE_LINT=ON
-        make cpplint
+        cd src
+        cargo build --all
+        cargo test --workspace --exclude autd3-link-soem
+        cargo clean
+    - name: Build src on ${{ matrix.os }}
+      if: matrix.os != 'windows-latest'
+      run: |
+        cd src
+        cargo build --all
+        cargo test --all
+        cargo clean
+    - name: Build examples on ${{ matrix.os }}
+      if: matrix.os == 'windows-latest'
+      run: |
+        cd examples
+        cargo build --bins --features "remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
+        cargo clean
+    - name: Build examples on ${{ matrix.os }}
+      if: matrix.os != 'windows-latest'
+      run: |
+        cd examples
+        cargo build --bins --features "soem remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
+        cargo clean
+    - name: Build capi on ${{ matrix.os }}
+      if: matrix.os == 'windows-latest'
+      run: |
+        cd capi
+        cargo build --all
+        cargo test --workspace --exclude autd3capi-link-soem
+        cargo clean
+    - name: Build capi on ${{ matrix.os }}
+      if: matrix.os != 'windows-latest'
+      run: |
+        cd capi
+        cargo build --all
+        cargo test --all
+        cargo clean
 
-  build-cs:
-    name: build cs in windows-latest
-    runs-on: windows-latest
-    steps: 
+  lint:
+    runs-on: ubuntu-latest
+    steps:
     - uses: actions/checkout@v3
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: '6.0.x'
-    - name: build
+    - name: lint src
       run: |
-        cp LICENSE cs/src/LICENSE.md   
-        mkdir build
-        cd build
-        cmake .. -DBUILD_ALL=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON -DHOLO_PARALLEL_FOR=ON
-        cmake --build . --parallel 8 --config Release
-        cd ..
-        foreach($dll in Get-ChildItem -Path build/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/src/native/windows/x64}
-        cd cs/src
-        dotnet clean
-        dotnet build -c:Release
-        cd ..
-        dotnet nuget add source $pwd/src/bin/Release -n autd3sharp_local
-        cd example
-        dotnet clean example.sln
-        dotnet nuget locals global-packages --clear
-        dotnet build example.sln -c:Release
-
-  check-cpp-sample:
-      name: build cpp
-      runs-on: ubuntu-latest
-      steps: 
-      - uses: actions/checkout@v3
-      - name: build
-        run: |
-          cd ./doc/book/samples/cpp
-          mkdir build
-          cd build
-          cmake ..
-          cmake --build . --parallel $(nproc)
+        cd src
+        cargo clippy --all -- -D warnings
+        cargo clean
+    - name: lint examples
+      run: |
+        cd examples
+        cargo clippy --all -- -D warnings
+        cargo clean
+    - name: lint capi
+      run: |
+        cd capi
+        cargo clippy --all -- -D warnings
+        cargo clean
