@@ -17,6 +17,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: install aarch64 target on macos
+      if: matrix.os == 'macos-latest'
+      run: |
+        rustup toolchain install stable-aarch64-apple-darwin
+        rustup target add aarch64-apple-darwin
     - name: Build capi on ${{ matrix.os }}
       if : matrix.os == 'windows-latest'
       run: |
