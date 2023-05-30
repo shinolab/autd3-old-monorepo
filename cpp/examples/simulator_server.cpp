@@ -18,11 +18,11 @@ int main() try {
   const auto path = std::filesystem::path("settings.json");
 
   auto simulator = autd3::extra::Simulator().settings_path(path);
-  simulator.run();
+  const auto res = simulator.run();
 
   simulator.save_settings(path);
 
-  return 0;
+  return res;
 } catch (std::exception& e) {
   print_err(e);
   return -1;
