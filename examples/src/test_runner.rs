@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 30/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -41,6 +41,7 @@ pub fn run<T: Transducer, L: Link<T>>(mut autd: Controller<T, L>) -> anyhow::Res
         ("Multiple foci test", &holo),
         ("Custom Gain & Modulation test", &custom),
         ("Flag test", &flag),
+        ("TransducerTest test", &transtest),
     ];
     if autd.geometry().num_devices() == 2 {
         examples.push(("Grouped Gain Test", &grouped));
