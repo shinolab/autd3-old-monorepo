@@ -16,7 +16,6 @@
 #endif
 
 using System;
-using System.Text;
 
 namespace AUTD3Sharp
 {
@@ -30,7 +29,6 @@ namespace AUTD3Sharp
                 Ptr = NativeMethods.ModulationAudioFile.AUTDModulationWav(filename, err);
                 if (Ptr == IntPtr.Zero)
                     throw new AUTDException(err);
-                ;
             }
         }
     }
