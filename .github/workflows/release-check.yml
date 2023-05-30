@@ -19,16 +19,35 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build src on ${{ matrix.os }}
+      if: matrix.os == 'windows-latest'
       run: |
         cd src
         cargo build --all
-        cargo test --all 
-    - name: Build examples on ${{ matrix.os }}
+        cargo test --workspace --exclude autd3-link-soem
+    - name: Build src on ${{ matrix.os }}
+      if: matrix.os != 'windows-latest'
       run: |
-        cd examples
+        cd src
         cargo build --all
         cargo test --all
+    - name: Build examples on ${{ matrix.os }}
+      if: matrix.os == 'windows-latest'
+      run: |
+        cd examples
+        cargo build --bins --features "remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
+    - name: Build examples on ${{ matrix.os }}
+      if: matrix.os != 'windows-latest'
+      run: |
+        cd examples
+        cargo build --bins --features "soem remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
     - name: Build capi on ${{ matrix.os }}
+      if: matrix.os == 'windows-latest'
+      run: |
+        cd capi
+        cargo build --all
+        cargo test --workspace --exclude autd3capi-link-soem
+    - name: Build capi on ${{ matrix.os }}
+      if: matrix.os != 'windows-latest'
       run: |
         cd capi
         cargo build --all
@@ -48,5 +67,5 @@ jobs:
         cargo clippy --all -- -D warnings
     - name: lint capi
       run: |
-        cd src
+        cd capi
         cargo clippy --all -- -D warnings
