@@ -71,3 +71,6 @@ twincat = ["autd3-link-twincat/local"]
 remote_twincat = ["autd3-link-twincat/remote"]
 geometry_viewer = ["autd3-geometry-viewer"]
 all = ["soem", "remote_soem", "twincat", "remote_twincat", "simulator_client", "simulator_server", "geometry_viewer"]
+
+single_float = ["autd3/single_float"]
+use_meter = ["autd3/use_meter", "autd3-geometry-viewer/use_meter", "autd3-simulator/use_meter"]
