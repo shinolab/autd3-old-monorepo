@@ -4,11 +4,11 @@
  * Created Date: 01/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/03/2023
+ * Last Modified: 17/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Hapis Lab. All rights reserved.
- * 
+ * Copyright (c) 2022-2023 Hapis Lab. All rights reserved.
+ *
  */
 
 `timescale 1ns / 1ps
@@ -26,8 +26,7 @@ module controller #(
     output var STM_GAIN_MODE,
     output var [15:0] CYCLE_M,
     output var [31:0] FREQ_DIV_M,
-    output var [15:0] DELAY_M[0:DEPTH-1],
-    output var [15:0] CYCLE_S,
+    output var [15:0] DELAY_M[DEPTH],
     output var [WIDTH-1:0] STEP_S,
     output var [15:0] CYCLE_STM,
     output var [31:0] FREQ_DIV_STM,
@@ -36,7 +35,7 @@ module controller #(
     output var USE_STM_START_IDX,
     output var [15:0] STM_FINISH_IDX,
     output var USE_STM_FINISH_IDX,
-    output var [WIDTH-1:0] CYCLE[0:DEPTH-1],
+    output var [WIDTH-1:0] CYCLE[DEPTH],
     output var LEGACY_MODE
 );
 
@@ -66,15 +65,14 @@ module controller #(
 
   bit [15:0] cycle_m;
   bit [31:0] freq_div_m;
-  bit [15:0] delay_m[0:DEPTH-1];
-  bit [15:0] cycle_s;
+  bit [15:0] delay_m[DEPTH];
   bit [WIDTH-1:0] step_s;
   bit [15:0] cycle_stm;
   bit [31:0] freq_div_stm;
   bit [31:0] sound_speed;
   bit [15:0] stm_start_idx;
   bit [15:0] stm_finish_idx;
-  bit [WIDTH-1:0] cycle[0:DEPTH-1];
+  bit [WIDTH-1:0] cycle[DEPTH];
 
   assign bus_clk = CPU_BUS.BUS_CLK;
   assign ctl_ena = CPU_BUS.CTL_EN & ~CPU_BUS.BRAM_ADDR[9];
@@ -96,7 +94,6 @@ module controller #(
   assign SYNC_SET = sync_set;
   assign CYCLE_M = cycle_m;
   assign FREQ_DIV_M = freq_div_m;
-  assign CYCLE_S = cycle_s;
   assign STEP_S = step_s;
   assign CYCLE_STM = cycle_stm;
   assign FREQ_DIV_STM = freq_div_stm;
@@ -104,7 +101,7 @@ module controller #(
   assign STM_START_IDX = stm_start_idx;
   assign STM_FINISH_IDX = stm_finish_idx;
 
-  for (genvar i = 0; i < DEPTH; i++) begin
+  for (genvar i = 0; i < DEPTH; i++) begin : gen_cycle_delay
     assign CYCLE[i]   = cycle[i];
     assign DELAY_M[i] = delay_m[i];
   end
@@ -137,7 +134,7 @@ module controller #(
       .doutb(dly_dout)
   );
 
-  enum bit [4:0] {
+  typedef enum bit [4:0] {
     REQ_WR_VER_MINOR,
     REQ_WR_VER,
     WAIT_WR_VER_0_REQ_RD_CTL_FLAG,
@@ -170,7 +167,9 @@ module controller #(
     WAIT_CLR_SYNC_BIT_0,
     WAIT_CLR_SYNC_BIT_1,
     CLR_SYNC_BIT
-  } state = REQ_WR_VER_MINOR;
+  } state_t;
+
+  state_t state = REQ_WR_VER_MINOR;
 
   always_ff @(posedge CLK) begin
     case (state)
@@ -184,8 +183,8 @@ module controller #(
         state <= REQ_WR_VER;
       end
       REQ_WR_VER: begin
-        din <= {ENABLED_FEATURES_BITS, VERSION_NUM};
-        addr <= ADDR_VERSION_NUM_MAJOR;
+        din   <= {ENABLED_FEATURES_BITS, VERSION_NUM};
+        addr  <= ADDR_VERSION_NUM_MAJOR;
 
         state <= WAIT_WR_VER_0_REQ_RD_CTL_FLAG;
       end
@@ -224,11 +223,9 @@ module controller #(
         state <= RD_MOD_CYCLE_REQ_RD_SILENT_CYCLE;
       end
       RD_MOD_CYCLE_REQ_RD_SILENT_CYCLE: begin
-        addr <= ADDR_SILENT_CYCLE;
-
         cycle_m <= dout;
 
-        state <= RD_MOD_FREQ_DIV_0_REQ_RD_SILENT_STEP;
+        state   <= RD_MOD_FREQ_DIV_0_REQ_RD_SILENT_STEP;
       end
       RD_MOD_FREQ_DIV_0_REQ_RD_SILENT_STEP: begin
         addr <= ADDR_SILENT_STEP;
@@ -245,9 +242,7 @@ module controller #(
         state <= RD_SILENT_CYCLE_REQ_RD_STM_FREQ_DIV_0;
       end
       RD_SILENT_CYCLE_REQ_RD_STM_FREQ_DIV_0: begin
-        addr <= ADDR_STM_FREQ_DIV_0;
-
-        cycle_s <= dout;
+        addr  <= ADDR_STM_FREQ_DIV_0;
 
         state <= RD_SILENT_STEP_REQ_RD_STM_FREQ_DIV_1;
       end
@@ -388,6 +383,9 @@ module controller #(
         state   <= RD_CTL_FLAG_REQ_RD_MOD_FREQ_DIV_0;
       end
       //////////////////////// synchronize ////////////////////////
+
+      default: begin
+      end
     endcase
   end
 

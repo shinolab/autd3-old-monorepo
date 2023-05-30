@@ -1,21 +1,21 @@
 /*
- * File: memory.sv
+ * File: modulation_memory.sv
  * Project: modulation
  * Created Date: 24/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/03/2023
+ * Last Modified: 15/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
- * 
+ * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
+ *
  */
 
 `timescale 1ns / 1ps
 module modulation_memory (
     input var CLK,
     cpu_bus_if.mod_port CPU_BUS,
-    ms_bus_if.memory_port MS_BUS
+    modulation_bus_if.memory_port M_BUS
 );
 
   bit bus_clk;
@@ -32,8 +32,8 @@ module modulation_memory (
   assign we = CPU_BUS.WE;
   assign mod_addr = {CPU_BUS.MOD_MEM_SEGMENT, CPU_BUS.BRAM_ADDR};
   assign data_in = CPU_BUS.DATA_IN;
-  assign idx = MS_BUS.ADDR;
-  assign MS_BUS.M = m;
+  assign idx = M_BUS.ADDR;
+  assign M_BUS.M = m;
 
   BRAM_MOD mod_bram (
       .clka (bus_clk),

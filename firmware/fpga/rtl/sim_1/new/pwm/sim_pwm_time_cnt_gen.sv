@@ -1,14 +1,14 @@
 /*
- * File: sim_time_cnt_gen.sv
+ * File: sim_pwm_time_cnt_gen.sv
  * Project: pwm
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/07/2022
+ * Last Modified: 15/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
- * 
+ * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
+ *
  */
 
 module sim_pwm_time_cnt_gen ();
@@ -27,9 +27,9 @@ module sim_pwm_time_cnt_gen ();
   localparam int WIDTH = 13;
   localparam int DEPTH = 249;
 
-  bit [WIDTH-1:0] cycle[0:DEPTH-1];
+  bit [WIDTH-1:0] cycle[DEPTH];
 
-  bit [WIDTH-1:0] time_cnt[0:DEPTH-1];
+  bit [WIDTH-1:0] time_cnt[DEPTH];
 
   bit [WIDTH-1:0] t_0, t_1;
 

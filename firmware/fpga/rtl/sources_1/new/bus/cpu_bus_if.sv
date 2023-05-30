@@ -4,11 +4,11 @@
  * Created Date: 25/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/03/2023
+ * Last Modified: 17/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
- * 
+ * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
+ *
  */
 
 interface cpu_bus_if ();
@@ -28,7 +28,7 @@ interface cpu_bus_if ();
 
   bit [2:0] ctl_we_edge = 3'b000;
 
-  assign CPU_DATA = (EN & RD & RDWR) ? DATA_OUT : 16'bz;
+  assign CPU_DATA = (EN & RD & RDWR) ? DATA_OUT : 16'bzzzzzzzzzzzzzzzz;
   assign DATA_IN  = CPU_DATA;
 
   //////////////////////////// Controller ////////////////////////////
@@ -89,6 +89,8 @@ interface cpu_bus_if ();
         ADDR_MOD_MEM_SEGMENT: MOD_MEM_SEGMENT <= DATA_IN[0];
         ADDR_STM_MEM_SEGMENT: begin
           STM_MEM_SEGMENT <= DATA_IN[4:0];
+        end
+        default: begin
         end
       endcase
     end

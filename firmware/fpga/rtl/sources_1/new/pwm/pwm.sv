@@ -4,37 +4,38 @@
  * Created Date: 15/03/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 31/10/2022
+ * Last Modified: 17/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
- * 
+ * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
+ *
  */
 
 module pwm #(
     parameter int WIDTH = 13,
-    parameter int TRANS_NUM = 249
+    parameter int DEPTH = 249
 ) (
     input var CLK,
     input var CLK_L,
     input var [63:0] SYS_TIME,
-    input var [WIDTH-1:0] CYCLE[0:TRANS_NUM-1],
-    input var [WIDTH-1:0] DUTY[0:TRANS_NUM-1],
-    input var [WIDTH-1:0] PHASE[0:TRANS_NUM-1],
-    output var PWM_OUT[0:TRANS_NUM-1],
-    output var DONE,
-    output var [WIDTH-1:0] TIME_CNT[0:TRANS_NUM-1]
+    input var DIN_VALID,
+    input var [WIDTH-1:0] CYCLE[DEPTH],
+    input var [WIDTH-1:0] DUTY,
+    input var [WIDTH-1:0] PHASE,
+    output var PWM_OUT[DEPTH],
+    output var [WIDTH-1:0] TIME_CNT[DEPTH],
+    output var DOUT_VALID
 );
 
-  bit [WIDTH-1:0] R[0:TRANS_NUM-1];
-  bit [WIDTH-1:0] F[0:TRANS_NUM-1];
+  bit [WIDTH-1:0] R[DEPTH];
+  bit [WIDTH-1:0] F[DEPTH];
 
-  bit [WIDTH-1:0] cycle_m1[0:TRANS_NUM-1];
-  bit [WIDTH-1:0] cycle_m2[0:TRANS_NUM-1];
+  bit [WIDTH-1:0] cycle_m1[DEPTH];
+  bit [WIDTH-1:0] cycle_m2[DEPTH];
 
   cycle_buffer #(
       .WIDTH(WIDTH),
-      .DEPTH(TRANS_NUM)
+      .DEPTH(DEPTH)
   ) cycle_buffer (
       .CLK(CLK),
       .CYCLE(CYCLE),
@@ -44,7 +45,7 @@ module pwm #(
 
   time_cnt_generator #(
       .WIDTH(WIDTH),
-      .DEPTH(TRANS_NUM)
+      .DEPTH(DEPTH)
   ) time_cnt_generator (
       .CLK(CLK),
       .SYS_TIME(SYS_TIME),
@@ -56,18 +57,19 @@ module pwm #(
 
   pwm_preconditioner #(
       .WIDTH(WIDTH),
-      .DEPTH(TRANS_NUM)
+      .DEPTH(DEPTH)
   ) pwm_preconditioner (
-      .CLK  (CLK_L),
+      .CLK(CLK_L),
+      .DIN_VALID(DIN_VALID),
       .CYCLE(CYCLE),
-      .DUTY (DUTY),
+      .DUTY(DUTY),
       .PHASE(PHASE),
-      .RISE (R),
-      .FALL (F),
-      .DONE (DONE)
+      .RISE(R),
+      .FALL(F),
+      .DOUT_VALID(DOUT_VALID)
   );
 
-  for (genvar i = 0; i < TRANS_NUM; i++) begin
+  for (genvar i = 0; i < DEPTH; i++) begin : gen_pwm
     bit [WIDTH-1:0] R_buf, F_buf;
     pwm_buffer #(
         .WIDTH(WIDTH)

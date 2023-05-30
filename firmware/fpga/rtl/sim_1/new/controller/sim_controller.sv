@@ -4,11 +4,11 @@
  * Created Date: 22/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/12/2022
+ * Last Modified: 17/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
- * Copyright (c) 2022 Shun Suzuki. All rights reserved.
- * 
+ * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
+ *
  */
 
 module sim_controller ();
@@ -36,14 +36,13 @@ module sim_controller ();
   bit sync_set;
   bit [15:0] cycle_m;
   bit [31:0] freq_div_m;
-  bit [15:0] delay_m[0:DEPTH-1];
-  bit [15:0] cycle_s;
+  bit [15:0] delay_m[DEPTH];
   bit [WIDTH-1:0] step_s;
   bit [15:0] cycle_stm;
   bit [31:0] freq_div_stm;
   bit [31:0] sound_speed;
   bit [15:0] stm_start_idx;
-  bit [WIDTH-1:0] cycle[0:DEPTH-1];
+  bit [WIDTH-1:0] cycle[DEPTH];
 
   controller #(
       .WIDTH(WIDTH),
@@ -58,7 +57,6 @@ module sim_controller ();
       .CYCLE_M(cycle_m),
       .FREQ_DIV_M(freq_div_m),
       .DELAY_M(delay_m),
-      .CYCLE_S(cycle_s),
       .STEP_S(step_s),
       .CYCLE_STM(cycle_stm),
       .FREQ_DIV_STM(freq_div_stm),
@@ -73,14 +71,13 @@ module sim_controller ();
     bit [63:0] ecat_sync_time_buf;
     bit [15:0] cycle_m_buf;
     bit [31:0] freq_div_m_buf;
-    bit [15:0] cycle_s_buf;
     bit [WIDTH-1:0] step_s_buf;
     bit [15:0] cycle_stm_buf;
     bit [31:0] freq_div_stm_buf;
     bit [31:0] sound_speed_buf;
     bit [15:0] stm_start_idx_buf;
-    bit [WIDTH-1:0] cycle_buf[0:DEPTH-1];
-    bit [15:0] delay_buf[0:DEPTH-1];
+    bit [WIDTH-1:0] cycle_buf[DEPTH];
+    bit [15:0] delay_buf[DEPTH];
     @(posedge locked);
 
     sim_helper_random.init();
@@ -94,9 +91,6 @@ module sim_controller ();
 
     freq_div_m_buf = sim_helper_random.range(32'hFFFFFFFF, 0);
     sim_helper_bram.write_mod_freq_div(freq_div_m_buf);
-
-    cycle_s_buf = sim_helper_random.range(16'hFFFF, 0);
-    sim_helper_bram.write_silent_cycle(cycle_s_buf);
 
     step_s_buf = sim_helper_random.range(MAX, 0);
     sim_helper_bram.write_silent_step(step_s_buf);
@@ -133,10 +127,6 @@ module sim_controller ();
     end
     if (freq_div_m_buf != freq_div_m) begin
       $error("Failed at freq_div_m");
-      $finish();
-    end
-    if (cycle_s_buf != cycle_s) begin
-      $error("Failed at cycle_s");
       $finish();
     end
     if (step_s_buf != step_s) begin
@@ -180,7 +170,7 @@ module sim_controller ();
       end
     end
 
-    $display("OK!");
+    $display("OK! sim_controller");
     $finish();
   end
 
