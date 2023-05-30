@@ -23,6 +23,12 @@ jobs:
         dotnet-version: '6.0.x'
     - name: Build with dotnet
       run: |
-        cp LICENSE cs/src/LICENSE.md
-        cd ./cs/src
+        cp LICENSE dotnet/cs/src/LICENSE.md
+        cd ./dotnet/cs/src
+        dotnet build -c:Release
+    - name: Build example with dotnet
+      if : matrix.os == 'windows-latest'
+      run: |
+        dotnet nuget add source $pwd/dotnet/cs/src/bin/Release -n autd3sharp_local
+        cd ./dotnet/cs/example
         dotnet build -c:Release

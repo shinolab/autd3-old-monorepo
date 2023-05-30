@@ -5,16 +5,6 @@ on:
     branches: [ doc ]  
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Document check
-      run: |
-        cd tools/doc_checker
-        cargo run -- "../../doc/book/src/jp/FFI/reference.md"
-        cargo run -- "../../doc/book/src/en/FFI/reference.md"
-
   check-cs:
     name: build cs
     runs-on: ubuntu-latest
@@ -54,17 +44,6 @@ jobs:
         cmake ..
         cmake --build . --parallel $(nproc)
 
-  check-nim:
-    name: build nim
-    runs-on: ubuntu-latest
-    steps: 
-    - uses: actions/checkout@v3
-    - uses: jiro4989/setup-nim-action@v1
-    - name: build
-      run: |
-        cd doc/book/samples/nim/sample
-        nimble build -Y
-
   check-rust:
     name: build rust
     runs-on: ubuntu-latest
@@ -74,24 +53,6 @@ jobs:
       run: |
         cd doc/book/samples/rust/sample
         cargo build
-
-  check-julia:
-    name: build julia
-    runs-on: ubuntu-latest
-    steps: 
-    - uses: actions/checkout@v3
-    - name: Set up Julia
-      uses: julia-actions/setup-julia@v1
-      with:
-        version: 1.8.2
-    - name: build deps
-      run: |
-        julia -e 'using Pkg; Pkg.add("StaticArrays"); Pkg.build("StaticArrays")'
-        julia -e 'using Pkg; Pkg.add(url="https://github.com/shinolab/autd3.git", subdir="julia"); Pkg.build("AUTD3")'
-    - name: build
-      run: |
-        cd doc/book/samples/julia
-        echo a | julia sample.jl || true
 
   check-python:
     name: build python
@@ -108,16 +69,10 @@ jobs:
         echo a | python main.py || true
 
   build:
-    needs: [check, check-cs, check-fs, check-rust, check-nim, check-cpp, check-julia, check-python]
+    needs: [check-cs, check-fs, check-rust, check-cpp, check-python]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Doxygen
-      uses: ./.github/actions/cmake-doxygen-actions
-    - name: mv doxygen doc_build
-      run: |
-        mkdir -p doc_build
-        sudo mv ./build/doc/doxygen/html ./doc_build/api
     - name: Setup mdbook
       uses: peaceiris/actions-mdbook@v1
       with:
@@ -148,14 +103,14 @@ jobs:
         sudo ln -s $PWD/mdbook-katex /usr/local/bin/mdbook-katex
     - name: Build book
       run: |
-        cd ./doc/book
+        cd ./doc
         MDBOOK_BOOK__src=src/en mdbook build --dest-dir book/en
         MDBOOK_BOOK__src=src/jp mdbook build --dest-dir book/jp
     - name: mv mdbook doc
       run: |
         mkdir -p doc_build/book
-        sudo mv ./doc/book/book/en/html ./doc_build/book/en
-        sudo mv ./doc/book/book/jp/html ./doc_build/book/jp
+        sudo mv ./doc/book/en/html ./doc_build/book/en
+        sudo mv ./doc/book/jp/html ./doc_build/book/jp
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:

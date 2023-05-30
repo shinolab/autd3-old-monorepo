@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <authors>$authors$</authors>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <license type="file">LICENSE.md</license>
+    <readme>README.md</readme>
+    <description>$description$</description>
+    <dependencies>
+      <group targetFramework=".NETStandard2.1">
+        <dependency id="NETStandard.Library" version="2.0.3" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+    <repository type="git" url="https://github.com/shinolab/autd3.git" />
+  </metadata>
+  <files>
+    <file src="LICENSE.md" target=""/>
+    <file src="../README.md" target=""/>
+    <file src="bin\$config$\netstandard2.1\$id$.dll" target="lib\netstandard2.1" />
+    <file src="native\windows\x64\*.dll" target="runtimes\win-x64\native" />
+    <file src="native\linux\x64\*.so" target="runtimes\linux-x64\native" />
+    <file src="native\osx\universal\*.dylib" target="runtimes\osx-x64\native" />
+    <file src="native\osx\universal\*.dylib" target="runtimes\osx-arm64\native" />
+  </files>
+</package>
