@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 30/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ pub fn audio_file<T: Transducer, L: Link<T>>(
 ) -> anyhow::Result<bool, AUTDError> {
     autd.send(SilencerConfig::default())?;
 
-    let center = autd.geometry().center() + Vector3::new(0., 0., 150.0);
+    let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
 
     let g = Focus::new(center);
     const WAV_FILE: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/src/resources/sin150.wav");
