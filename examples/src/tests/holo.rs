@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/05/2023
+ * Last Modified: 30/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -24,8 +24,8 @@ pub fn holo<T: Transducer, L: Link<T>>(
 
     let m = Sine::new(150);
 
-    let center = autd.geometry().center() + Vector3::new(0., 0., 150.0);
-    let p = Vector3::new(30., 0., 0.);
+    let center = autd.geometry().center() + Vector3::new(0., 0., 150.0 * MILLIMETER);
+    let p = Vector3::new(30. * MILLIMETER, 0., 0.);
 
     println!("[0]: SDP");
     println!("[1]: EVP");
