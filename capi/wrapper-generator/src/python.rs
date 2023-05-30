@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/05/2023
+ * Last Modified: 30/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -219,18 +219,16 @@ import os"
         if self
             .functions
             .iter()
-            .any(|f| f.args.iter().any(|arg| Self::to_python_arg(&arg) == "Any"))
+            .any(|f| f.args.iter().any(|arg| Self::to_python_arg(arg) == "Any"))
         {
             writeln!(w, r"from typing import Any")?;
         }
 
         if crate_name != "autd3capi-def"
-            && self.functions.iter().any(|f| {
-                f.args.iter().any(|arg| match arg.ty {
-                    Type::Custom(_) => true,
-                    _ => false,
-                })
-            })
+            && self
+                .functions
+                .iter()
+                .any(|f| f.args.iter().any(|arg| matches!(arg.ty, Type::Custom(_))))
         {
             writeln!(w, r"from .autd3capi_def import *")?;
         }
@@ -306,7 +304,7 @@ class NativeMethods(metaclass=Singleton):",
             self.dll = ctypes.CDLL(os.path.join(bin_location, f'{{bin_prefix}}{}{{bin_ext}}'))
         except FileNotFoundError:
             return",
-            crate_name.replace("-", "_")
+            crate_name.replace('-', "_")
         )?;
 
         for function in self.functions.iter() {
@@ -318,10 +316,11 @@ class NativeMethods(metaclass=Singleton):",
         self.dll.{}.argtypes = [{}]{}",
                 function.name,
                 args,
-                if function.args.iter().any(|arg| match arg.ty {
-                    Type::Custom(_) => true,
-                    _ => false,
-                }) {
+                if function
+                    .args
+                    .iter()
+                    .any(|arg| matches!(arg.ty, Type::Custom(_)))
+                {
                     " # type: ignore"
                 } else {
                     ""
@@ -345,7 +344,7 @@ class NativeMethods(metaclass=Singleton):",
                     format!(
                         "{}: {}",
                         Self::sub_reserve(arg.name.to_owned()),
-                        Self::to_python_arg(&arg)
+                        Self::to_python_arg(arg)
                     )
                 })
                 .join(", ");
