@@ -69,8 +69,6 @@ def download_bin():
         Target("win", "x64", "dll", "zip"),
         Target("macos", "universal", "dylib", "tar.gz"),
         Target("linux", "x64", "so", "tar.gz"),
-        Target("linux", "arm64", "so", "tar.gz"),
-        Target("linux", "arm32", "so", "tar.gz"),
     ]
 
     for target in targets:
