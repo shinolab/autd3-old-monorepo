@@ -3,6 +3,7 @@ name = "autd3-examples"
 version = "10.0.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
+license = "MIT"
 
 [[bin]]
 name = "debug"

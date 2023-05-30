@@ -1,6 +1,6 @@
 # autd3-link-simulator
 
-This crate provides Simulator link for [autd-simulator](https://github.com/shinolab/autd3).
+This crate provides a link for AUTD Simulator.
 
 # Author
 

@@ -22,7 +22,6 @@ elseif(WIN32)
   FetchContent_Declare(
     autd3
     URL https://github.com/shinolab/autd3/releases/download/v10.0.0/autd3-v10.0.0-win-x64.zip
-    SOURCE_DIR ${PROJECT_SOURCE_DIR}/..
   )
 elseif(APPLE)
   FetchContent_Declare(
