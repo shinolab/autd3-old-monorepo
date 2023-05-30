@@ -52,8 +52,8 @@ enum class TransMode : uint8_t {
 
 constexpr const double TRANS_SPACING_MM = 10.16;
 
-constexpr const double DEVICE_HEIGHT = 151.4;
+constexpr const double DEVICE_HEIGHT_MM = 151.4;
 
-constexpr const double DEVICE_WIDTH = 192.0;
+constexpr const double DEVICE_WIDTH_MM = 192.0;
 
 } // namespace autd3::internal::native_methods

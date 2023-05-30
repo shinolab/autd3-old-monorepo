@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/05/2023
+// Last Modified: 30/05/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,8 +24,9 @@ class AUTD3 {
   static constexpr size_t NUM_TRANS_IN_UNIT = static_cast<size_t>(native_methods::NUM_TRANS_IN_UNIT);
   static constexpr size_t NUM_TRANS_IN_X = static_cast<size_t>(native_methods::NUM_TRANS_IN_X);
   static constexpr size_t NUM_TRANS_IN_Y = static_cast<size_t>(native_methods::NUM_TRANS_IN_Y);
-  static constexpr double DEVICE_WIDTH = native_methods::DEVICE_WIDTH;
-  static constexpr double DEVICE_HEIGHT = native_methods::DEVICE_HEIGHT;
+  static constexpr double TRANS_SPACING = native_methods::TRANS_SPACING_MM;
+  static constexpr double DEVICE_WIDTH = native_methods::DEVICE_WIDTH_MM;
+  static constexpr double DEVICE_HEIGHT = native_methods::DEVICE_HEIGHT_MM;
 
   AUTD3(Vector3 pos, Vector3 rot) : _pos(pos), _rot(rot), _quat(std::nullopt) {}
   AUTD3(Vector3 pos, Quaternion rot) : _pos(pos), _rot(std::nullopt), _quat(rot) {}

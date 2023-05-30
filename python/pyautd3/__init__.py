@@ -19,13 +19,13 @@ from pyautd3.native_methods.autd3capi_def import (
     NUM_TRANS_IN_UNIT,
     NUM_TRANS_IN_X,
     NUM_TRANS_IN_Y,
-    TRANS_SPACING_MM,
-    DEVICE_HEIGHT,
-    DEVICE_WIDTH,
     FPGA_CLK_FREQ,
     FPGA_SUB_CLK_FREQ,
     Level,
 )
+from pyautd3.native_methods.autd3capi_def import TRANS_SPACING_MM as TRANS_SPACING
+from pyautd3.native_methods.autd3capi_def import DEVICE_WIDTH_MM as DEVICE_WIDTH
+from pyautd3.native_methods.autd3capi_def import DEVICE_HEIGHT_MM as DEVICE_HEIGHT
 from pyautd3.autd import Clear, UpdateFlag, Synchronize, ModDelayConfig, Stop
 
 __all__ = [
@@ -42,7 +42,7 @@ __all__ = [
     "NUM_TRANS_IN_UNIT",
     "NUM_TRANS_IN_X",
     "NUM_TRANS_IN_Y",
-    "TRANS_SPACING_MM",
+    "TRANS_SPACING",
     "DEVICE_WIDTH",
     "DEVICE_HEIGHT",
     "FPGA_CLK_FREQ",

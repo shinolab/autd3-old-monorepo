@@ -2,6 +2,10 @@
 using System;
 using System.Runtime.InteropServices;
 
+#if UNITY_2020_2_OR_NEWER
+#nullable enable
+#endif
+
 namespace AUTD3Sharp
 {
     namespace NativeMethods
@@ -18,9 +22,9 @@ namespace AUTD3Sharp
 
             public const double TransSpacingMm = 10.16;
 
-            public const double DeviceHeight = 151.4;
+            public const double DeviceHeightMm = 151.4;
 
-            public const double DeviceWidth = 192.0;
+            public const double DeviceWidthMm = 192.0;
 
             public const uint FpgaClkFreq = 163840000;
 
@@ -65,4 +69,11 @@ namespace AUTD3Sharp
         NativeTimer = 1,
         BusyWait = 2,
     }
+
 }
+
+#if UNITY_2020_2_OR_NEWER
+#nullable disable
+#endif
+
+

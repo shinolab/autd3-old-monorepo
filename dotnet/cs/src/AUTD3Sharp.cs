@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/05/2023
+ * Last Modified: 30/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -48,10 +48,12 @@ namespace AUTD3Sharp
         #region const
 
 #if DIMENSION_M
-        public const float_t Millimeter = 1 / 1000;
+        public const float_t Meter = 1;
 #else
-        public const float_t Millimeter = 1;
+        public const float_t Meter = 1000;
 #endif
+
+        public const float_t Millimeter = Meter / 1000;
 
         public const float_t Pi = Math.PI;
 
@@ -60,8 +62,8 @@ namespace AUTD3Sharp
         public const float_t TransSpacing = Def.TransSpacingMm * Millimeter;
         public const uint NumTransInX = Def.NumTransInX;
         public const uint FpgaClkFreq = Def.FpgaClkFreq;
-        public const float_t DeviceHeight = Def.DeviceHeight * Millimeter;
-        public const float_t DeviceWidth = Def.DeviceWidth * Millimeter;
+        public const float_t DeviceHeight = Def.DeviceHeightMm * Millimeter;
+        public const float_t DeviceWidth = Def.DeviceWidthMm * Millimeter;
         public const uint NumTransInY = Def.NumTransInY;
         public const uint FpgaSubClkFreq = Def.FpgaSubClkFreq;
 
