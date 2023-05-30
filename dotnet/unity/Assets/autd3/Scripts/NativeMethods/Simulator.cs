@@ -2,6 +2,10 @@
 using System;
 using System.Runtime.InteropServices;
 
+#if UNITY_2020_2_OR_NEWER
+#nullable enable
+#endif
+
 namespace AUTD3Sharp
 {
     namespace NativeMethods
@@ -27,4 +31,11 @@ namespace AUTD3Sharp
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDSimulatorSaveSettings(IntPtr simulator, string path, byte[] err);
         }
     }
+
 }
+
+#if UNITY_2020_2_OR_NEWER
+#nullable disable
+#endif
+
+

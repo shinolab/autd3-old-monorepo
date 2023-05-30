@@ -7,7 +7,6 @@ edition = "2021"
 crate-type = ["lib", "cdylib", "staticlib"]
 
 [dependencies]
-autd3 = {path="../../src/autd3", version="10.0.0"}
 autd3capi-common = {path="../autd3capi-common", version="10.0.0"}
 
 [build-dependencies]
@@ -15,3 +14,5 @@ wrapper-generator = {path="../wrapper-generator"}
 
 [features]
 single_float = ["autd3capi-common/single_float"]
+use_meter = ["autd3capi-common/use_meter"]
+parallel = ["autd3capi-common/parallel"]
