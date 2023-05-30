@@ -4,7 +4,7 @@
  * Created Date: 11/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/05/2023
+ * Last Modified: 30/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -556,13 +556,13 @@ impl Renderer {
     }
 
     pub fn move_camera(&mut self, viewer_settings: &ViewerSettings) {
-        self.camera.position = [
-            viewer_settings.camera_pos_x,
-            viewer_settings.camera_pos_y,
-            viewer_settings.camera_pos_z,
-        ];
-        camera_helper::set_camera_angle(
+        camera_helper::set_camera(
             &mut self.camera,
+            Vector3::new(
+                viewer_settings.camera_pos_x,
+                viewer_settings.camera_pos_y,
+                viewer_settings.camera_pos_z,
+            ),
             Vector3::new(
                 viewer_settings.camera_rot_x,
                 viewer_settings.camera_rot_y,

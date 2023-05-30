@@ -4,7 +4,7 @@
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 30/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,15 +12,16 @@
  */
 
 use crate::geometry::{Device, Matrix4, UnitQuaternion, Vector3, Vector4};
-use autd3_driver::float;
+use autd3_driver::{float, MILLIMETER};
 use num::FromPrimitive;
 
 pub const NUM_TRANS_IN_UNIT: usize = 249;
 pub const NUM_TRANS_X: usize = 18;
 pub const NUM_TRANS_Y: usize = 14;
 pub const TRANS_SPACING_MM: float = 10.16;
-pub const DEVICE_WIDTH: float = 192.0;
-pub const DEVICE_HEIGHT: float = 151.4;
+pub const TRANS_SPACING: float = TRANS_SPACING_MM * MILLIMETER;
+pub const DEVICE_WIDTH: float = 192.0 * MILLIMETER;
+pub const DEVICE_HEIGHT: float = 151.4 * MILLIMETER;
 
 #[derive(Clone, Copy)]
 pub struct AUTD3 {
@@ -93,8 +94,8 @@ impl Device for AUTD3 {
             .filter(|&(y, x)| !Self::is_missing_transducer(x, y))
             .map(|(y, x)| {
                 Vector4::new(
-                    x as float * TRANS_SPACING_MM,
-                    y as float * TRANS_SPACING_MM,
+                    x as float * TRANS_SPACING,
+                    y as float * TRANS_SPACING,
                     0.,
                     1.,
                 )

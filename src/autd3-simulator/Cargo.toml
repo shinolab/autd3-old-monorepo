@@ -34,6 +34,6 @@ serde_derive = "1.0.163"
 
 [features]
 default = []
-use_meter = []
+use_meter = ["autd3-core/use_meter"]
 left_handed = []
 enable_debug = []

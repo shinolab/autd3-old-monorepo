@@ -4,14 +4,14 @@
  * Created Date: 26/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/05/2023
+ * Last Modified: 30/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
  *
  */
 
-use crate::{Quaternion, Vector3, Vector4, SCALE, ZPARITY};
+use crate::{Quaternion, Vector3, SCALE, ZPARITY};
 use cgmath::{Deg, Euler};
 use serde_derive::{Deserialize, Serialize};
 
@@ -71,8 +71,8 @@ impl ViewerSettings {
         Self::default()
     }
 
-    pub(crate) fn slice_pos(&self) -> Vector4 {
-        Vector4::new(self.slice_pos_x, self.slice_pos_y, self.slice_pos_z, 1.)
+    pub(crate) fn slice_pos(&self) -> Vector3 {
+        Vector3::new(self.slice_pos_x, self.slice_pos_y, self.slice_pos_z)
     }
 
     pub(crate) fn slice_rotation(&self) -> Quaternion {

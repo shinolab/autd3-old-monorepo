@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/05/2023
+ * Last Modified: 30/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -41,7 +41,7 @@ impl ImGuiRenderer {
         platform.attach_window(imgui.io_mut(), renderer.window(), HiDpiMode::Default);
 
         let hidpi_factor = platform.hidpi_factor();
-        let font_size = (16.0 * hidpi_factor) as f32;
+        let font_size = 16.0;
 
         imgui.io_mut().font_global_scale = (1.0 / hidpi_factor) as f32;
 
