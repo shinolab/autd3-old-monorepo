@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/05/2023
+// Last Modified: 30/05/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -19,14 +19,18 @@ namespace autd3::internal {
 
 class Gain : public Body {
  public:
-  Gain(void* ptr) : Body(ptr) {}
-  ~Gain() {
+  explicit Gain(void* ptr) : Body(ptr) {}
+  Gain(const Gain& v) noexcept = default;
+  Gain& operator=(const Gain& obj) = default;
+  Gain(Gain&& obj) = default;
+  Gain& operator=(Gain&& obj) = default;
+  ~Gain() override {
     if (_ptr != nullptr) {
       native_methods::AUTDDeleteGain(_ptr);
     }
   }
 
-  [[nodiscard]] virtual void* calc_ptr(const Geometry& _geometry) { return _ptr; }
+  [[nodiscard]] void* calc_ptr(const Geometry&) override { return _ptr; }
 
   void set_released() { _ptr = nullptr; }
 };

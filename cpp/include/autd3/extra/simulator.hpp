@@ -3,13 +3,15 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/05/2023
+// Last Modified: 30/05/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 //
 
 #pragma once
+
+#include <filesystem>
 
 #include "autd3/internal/exception.hpp"
 #include "autd3/internal/native_methods.hpp"
@@ -35,23 +37,21 @@ class Simulator {
     return *this;
   }
 
-  [[nodiscard]] Simulator& gpu_idx(const uint32_t idx) {
+  [[nodiscard]] Simulator& gpu_idx(const int32_t idx) {
     _ptr = internal::native_methods::AUTDSimulatorGpuIdx(_ptr, idx);
     return *this;
   }
 
   [[nodiscard]] Simulator& settings_path(const std::filesystem::path& path) {
     char err[256]{};
-    auto* ptr = internal::native_methods::AUTDSimulatorSettingsPath(_ptr, path.string().c_str(), err);
-    if (ptr != nullptr) _ptr = ptr;
+    if (auto* ptr = internal::native_methods::AUTDSimulatorSettingsPath(_ptr, path.string().c_str(), err); ptr != nullptr) _ptr = ptr;
     return *this;
   }
 
-  int32_t run() { return internal::native_methods::AUTDSimulatorRun(_ptr); }
+  [[nodiscard]] int32_t run() const { return internal::native_methods::AUTDSimulatorRun(_ptr); }
 
-  void save_settings(const std::filesystem::path& path) {
-    char err[256]{};
-    if (!internal::native_methods::AUTDSimulatorSaveSettings(_ptr, path.string().c_str(), err)) throw internal::AUTDException(err);
+  void save_settings(const std::filesystem::path& path) const {
+    if (char err[256]{}; !internal::native_methods::AUTDSimulatorSaveSettings(_ptr, path.string().c_str(), err)) throw internal::AUTDException(err);
   }
 
  private:

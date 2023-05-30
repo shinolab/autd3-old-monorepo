@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/05/2023
+// Last Modified: 30/05/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,38 +16,38 @@
 
 namespace autd3::modulation {
 
-class Static : public internal::Modulation {
+class Static final : public internal::Modulation {
  public:
-  Static(const double amp = 1.0) : internal::Modulation(internal::native_methods::AUTDModulationStatic(amp)) {}
+  explicit Static(const double amp = 1.0) : Modulation(internal::native_methods::AUTDModulationStatic(amp)) {}
 };
 
-class Sine : public internal::Modulation {
+class Sine final : public internal::Modulation {
  public:
-  Sine(const int32_t freq, const double amp = 1.0, const double offset = 0.5)
-      : internal::Modulation(internal::native_methods::AUTDModulationSine(freq, amp, offset)) {}
+  explicit Sine(const int32_t freq, const double amp = 1.0, const double offset = 0.5)
+      : Modulation(internal::native_methods::AUTDModulationSine(freq, amp, offset)) {}
 };
 
-class SineSquared : public internal::Modulation {
+class SineSquared final : public internal::Modulation {
  public:
-  SineSquared(const int32_t freq, const double amp = 1.0, const double offset = 0.5)
-      : internal::Modulation(internal::native_methods::AUTDModulationSineSquared(freq, amp, offset)) {}
+  explicit SineSquared(const int32_t freq, const double amp = 1.0, const double offset = 0.5)
+      : Modulation(internal::native_methods::AUTDModulationSineSquared(freq, amp, offset)) {}
 };
 
-class SineLegacy : public internal::Modulation {
+class SineLegacy final : public internal::Modulation {
  public:
-  SineLegacy(const double freq, const double amp = 1.0, const double offset = 0.5)
-      : internal::Modulation(internal::native_methods::AUTDModulationSineLegacy(freq, amp, offset)) {}
+  explicit SineLegacy(const double freq, const double amp = 1.0, const double offset = 0.5)
+      : Modulation(internal::native_methods::AUTDModulationSineLegacy(freq, amp, offset)) {}
 };
 
-class Square : public internal::Modulation {
+class Square final : public internal::Modulation {
  public:
-  Square(const int32_t freq, const double low = 0.0, const double high = 1.0, const double duty = 0.5)
-      : internal::Modulation(internal::native_methods::AUTDModulationSquare(freq, low, high, duty)) {}
+  explicit Square(const int32_t freq, const double low = 0.0, const double high = 1.0, const double duty = 0.5)
+      : Modulation(internal::native_methods::AUTDModulationSquare(freq, low, high, duty)) {}
 };
 
 class Modulation : public internal::Modulation {
  public:
-  Modulation(const uint16_t freq_div = 5120) : internal::Modulation(nullptr), _freq_div(freq_div) {}
+  explicit Modulation(const uint16_t freq_div = 5120) : internal::Modulation(nullptr), _freq_div(freq_div) {}
 
   virtual std::vector<double> calc() = 0;
 

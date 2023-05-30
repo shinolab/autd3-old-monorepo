@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/05/2023
+// Last Modified: 30/05/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,9 +14,9 @@
 #include <stdexcept>
 
 namespace autd3::internal {
-class AUTDException : public std::runtime_error {
+class AUTDException final : public std::runtime_error {
  public:
-  AUTDException(const char *_Message) : runtime_error(_Message) {}
+  explicit AUTDException(const char *message) : runtime_error(message) {}
 };
 
 }  // namespace autd3::internal
