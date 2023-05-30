@@ -244,6 +244,9 @@ jobs:
           result-encoding: string
           script: |
             return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-macos-universal.tar.gz';
+      - name: install aarch64 target on macos
+        run: |
+          rustup target add aarch64-apple-darwin
       - name: Build project
         run: |
           cp LICENSE cpp/
