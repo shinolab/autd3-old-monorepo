@@ -66,5 +66,5 @@ jobs:
         cargo clippy -- -D warnings
     - name: lint capi
       run: |
-        cd src
+        cd capi
         cargo clippy -- -D warnings
