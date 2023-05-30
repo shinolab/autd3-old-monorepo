@@ -1,3 +1,8 @@
+# 10.0.0
+
+- Fix [#62](https://github.com/shinolab/autd3/issues/62)
+- All codes are rewritten in Rust
+
 # 9.0.1
 
 - Minimize dependence on boost

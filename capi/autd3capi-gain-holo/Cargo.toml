@@ -1,0 +1,23 @@
+[package]
+name = "autd3capi-gain-holo"
+version = "10.0.0"
+edition = "2021"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+autd3capi-def = {path="../autd3capi-def", version="10.0.0"}
+autd3-gain-holo = {path="../../src/autd3-gain-holo", version="10.0.0"}
+
+[build-dependencies]
+wrapper-generator = {path="../wrapper-generator"}
+
+[dev-dependencies]
+autd3capi = {path="../autd3capi", version="10.0.0"}
+
+[features]
+single_float = ["autd3capi-def/single_float", "autd3-gain-holo/single_float"]
+use_meter = ["autd3capi-def/use_meter", "autd3-gain-holo/use_meter"]
+parallel = ["autd3capi-def/parallel", "autd3-gain-holo/parallel"]

@@ -2,7 +2,7 @@
 
 [autd3 library](https://github.com/shinolab/autd3) for python3.7+
 
-version: 9.0.1
+version: 10.0.0
 
 ## Install
 
@@ -32,7 +32,7 @@ see [example](./example)
 
 ## LICENSE
 
-See [LICENSE](https://github.com/shinolab/autd3/blob/master/LICENSE).
+MIT
 
 # Author
 

@@ -1,11 +1,58 @@
+name: Release
+
 on:
   push:
     tags:
     - 'v*'
 
-name: release
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: publish to carate.io
+      run: |
+        cd src
+        cd autd3-driver
+        cargo publish --dry-run
+        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cd .. && sleep 60
+        cd autd3-core
+        cargo publish --dry-run
+        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cd ..
+        cd autd3-traits
+        cargo publish --dry-run
+        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cd .. && sleep 60
+        cd autd3-firmware-emulator
+        cargo publish --dry-run
+        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cd .. && sleep 60
+        cd autd3
+        cargo publish --dry-run
+        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cd ..
+        cd autd3-link-soem
+        cargo publish --dry-run
+        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cd ..
+        cd autd3-link-twincat
+        cargo publish --dry-run
+        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cd ..
+        cd autd3-link-simulator
+        cargo publish --dry-run
+        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cd ..
+        cd autd3-gain-holo
+        cargo publish --dry-run
+        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cd ..
+        cd autd3-modulation-audio-file
+        cargo publish --dry-run
+        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
 
-jobs:   
   release:
     name: Create Github Release
     runs-on: ubuntu-latest
@@ -24,7 +71,7 @@ jobs:
       with:
         name: release_url
         path: release_url.txt
-        
+
   publish_win:
     needs: [release]
     name: Upload Release Asset Windows
@@ -40,65 +87,12 @@ jobs:
           result-encoding: string
           script: |
             return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-win';
-      - name: setup-msbuild
-        uses: microsoft/setup-msbuild@v1
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: 6.0.x
-      - name: Install Vulkan SDK
-        uses: humbletim/install-vulkan-sdk@v1.1.1
-        with:
-          version: 1.3.236.0
-          cache: false
-      - uses: okazunori2013/cuda-toolkit@v0.3.2
-        id: cuda-toolkit
-        with:
-          cuda: '11.8.0'
       - name: Build project x64
         run: |
-          cmake -G "Visual Studio 17 2022" -A x64 -B "build" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=ON -DDISABLE_EXAMPLES=ON -DEXPORT_SOEM_AUTD_SERVER=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON -DHOLO_PARALLEL_FOR=ON
-          cd build
-          cmake --build . --parallel 8 --config Release
-          mkdir publish
-          mkdir publish/bin
-          mkdir publish/simulator
-          mkdir publish/gui-controller
-          mkdir publish/SOEMAUTDServer
+          cd cpp
+          ./build.ps1
           cd ..
-          foreach($dll in Get-ChildItem -Path build/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/src/native/windows/x64}
-          cp LICENSE cs/src/LICENSE.md
-          cd cs/src
-          dotnet clean
-          dotnet build -c:Release
-          cd ../..
-          dotnet nuget add source $pwd/cs/src/bin/Release -n autd3sharp_local
-          cd dist/GUI
-          dotnet publish -c:Release -r win-x64 --self-contained false -o bin
-          copy AUTD3-GUI-Controller/Strings -Recurse bin/
-          cd ../..
-          copy build/bin/Release/*.dll build/publish/bin
-          copy dist/GUI/bin -Recurse publish/gui-controller/bin
-          copy dist/GUI/AUTD3-GUI-Controller.exe publish/gui-controller
-          copy build/dist/simulator/Release/*.exe build/publish/simulator
-          copy build/dist/SOEMAUTDServer/Release/*.exe build/publish/SOEMAUTDServer
-          copy dist/SOEMAUTDServer/README.md build/publish/SOEMAUTDServer
-          copy dist/simulator/settings.json build/publish/simulator
-          Remove-Item -Recurse -Force dist/TwinCATAUTDServer/src
-          Compress-Archive -Path LICENSE, dist/TwinCATAUTDServer, dist/firmware, build/publish/bin, build/publish/simulator, build/publish/SOEMAUTDServer, publish/gui-controller -DestinationPath assets_x64.zip
-      - name: Build project arm
-        run: |
-          cmake -G "Visual Studio 17 2022" -A ARM64 -B "build_arm" -DBUILD_TARGET=ARM -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=OFF -DEXPORT_AUTD_SIMULATOR=OFF -DDISABLE_EXAMPLES=ON -DEXPORT_SOEM_AUTD_SERVER=ON -DHOLO_PARALLEL_FOR=ON
-          cd build_arm
-          cmake --build . --parallel 8 --config Release
-          mkdir publish
-          mkdir publish/bin
-          mkdir publish/SOEMAUTDServer
-          cd ..
-          copy build_arm/bin/Release/*.dll build_arm/publish/bin
-          copy build_arm/dist/SOEMAUTDServer/Release/*.exe build_arm/publish/SOEMAUTDServer
-          copy dist/SOEMAUTDServer/README.md build_arm/publish/SOEMAUTDServer
-          Compress-Archive -Path LICENSE, build_arm/publish/bin, build_arm/publish/SOEMAUTDServer -DestinationPath assets_arm.zip
+          Compress-Archive -Path LICENSE, cpp/bin, cpp/lib, cpp/include, cpp/CMakeLists.txt, cpp/README.md -DestinationPath assets_x64.zip
       - name: Load Release URL File from release job
         uses: actions/download-artifact@v1
         with:
@@ -117,29 +111,11 @@ jobs:
           asset_path: ./assets_x64.zip
           asset_name: ${{ steps.get_version.outputs.result }}-x64.zip
           asset_content_type: application/zip
-      - name: Upload Release Asset Win arm
-        id: upload-release-asset-arm
-        uses: shogo82148/actions-upload-release-asset@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          upload_url: ${{ steps.get_release_info.outputs.content }}
-          asset_path: ./assets_arm.zip
-          asset_name: ${{ steps.get_version.outputs.result }}-arm.zip
-          asset_content_type: application/zip
 
       - name: Build project x64 for Unity
         run: |
-          cmake -G "Visual Studio 17 2022" -A x64 -B "build_unity" -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DEXPORT_AUTD_SIMULATOR=ON -DDISABLE_EXAMPLES=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON -DUSE_METER=ON -DUSE_LEFT_HANDED=ON -DUSE_SINGLE_FLOAT=ON -DHOLO_PARALLEL_FOR=ON
-          cd build_unity
-          cmake --build . --parallel 8 --config Release
-          cd ..
-          foreach($dll in Get-ChildItem -Path build_unity/bin/Release | Where {$_.extension -like ".dll"}){Copy-Item -Path $dll -Destination cs/unity/Assets/autd3/Plugins/x86_64}
-          copy build_unity/dist/simulator/Release/*.exe ./cs/unity/Assets/autd3/Editor
-      - name: Replace latest scripts
-        run: |
-          cp LICENSE cs/unity/Assets/autd3/LICENSE.md
-          cp CHANGELOG.md cs/unity/Assets/autd3/CHANGELOG.md
-          foreach($src in Get-ChildItem -Path ./cs/src | Where {$_.extension -like ".cs"}){Copy-Item -Path $src -Destination ./cs/unity/Assets/autd3/Scripts}
+          cd dotnet/unity
+          ./build.ps1
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -148,13 +124,65 @@ jobs:
       - name: Publish on npmjs
         continue-on-error: true
         run: |
-          mv cs/unity/Assets/autd3/Samples cs/unity/Assets/autd3/Samples~
-          rm -Force cs/unity/Assets/autd3/Samples.meta
-          cd cs/unity/Assets/autd3
+          mv dotnet/unity/Assets/autd3/Samples dotnet/unity/Assets/autd3/Samples~
+          rm -Force dotnet/unity/Assets/autd3/Samples.meta
+          cd dotnet/unity/Assets/autd3
           npm install
           npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+
+  publish_win_assets:
+    needs: [release]
+    name: Upload Release Asset Windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Get the version
+        id: get_version
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          result-encoding: string
+          script: |
+            return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-assets';
+      - name: Build project x64
+        run: |
+          cd dist
+          cd simulator
+          cargo build --release
+          cd ..
+          cd SOEMAUTDServer
+          cargo build --release
+          cd ..
+          cd ..
+          mkdir publish
+          mkdir publish/simulator
+          mkdir publish/SOEMAUTDServer
+          copy dist/simulator/target/release/*.exe publish/simulator
+          copy dist/SOEMAUTDServer/target/release/*.exe publish/SOEMAUTDServer
+          Remove-Item -Recurse -Force dist/TwinCATAUTDServer/src
+          Compress-Archive -Path dist/TwinCATAUTDServer, dist/firmware, publish/simulator, publish/SOEMAUTDServer -DestinationPath assets_x64.zip
+      - name: Load Release URL File from release job
+        uses: actions/download-artifact@v1
+        with:
+          name: release_url
+      - name: Get Release File Name & Upload URL
+        id: get_release_info
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: ./release_url/release_url.txt
+      - name: Upload Release Asset Win x64
+        id: upload-release-asset-win64
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          upload_url: ${{ steps.get_release_info.outputs.content }}
+          asset_path: ./assets_x64.zip
+          asset_name: ${{ steps.get_version.outputs.result }}.zip
+          asset_content_type: application/zip
 
   publish_linux:
     needs: [release]
@@ -171,58 +199,13 @@ jobs:
           result-encoding: string
           script: |
             return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-linux';
-      - name: install compile tools
-        run: |
-          sudo apt update
-          sudo apt install g++-arm-linux-gnueabihf g++-aarch64-linux-gnu mesa-common-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev -y
-        shell: bash
-      - name: Install Vulkan SDK
-        uses: humbletim/install-vulkan-sdk@v1.1.1
-        with:
-          version: 1.3.236.0
-          cache: false
-      - uses: okazunori2013/cuda-toolkit@v0.3.2
-        id: cuda-toolkit
-        with:
-          cuda: '11.8.0'
       - name: Build project x64
         run: |
-          mkdir -p build && cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=ON -DDISABLE_EXAMPLES=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON -DHOLO_PARALLEL_FOR=ON
-          make -j8
-          cd ..
-          mkdir -p bin
-          cp -f build/bin/Release/*.so bin
-          tar -zcvf assets_x64.tar.gz bin LICENSE
-          rm -rf build bin
-        shell: bash
-        env:
-          CC: gcc-10
-          CXX: g++-10
-      - name: Build project arm32
-        run: |
-          mkdir -p build && cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM32 -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DDISABLE_EXAMPLES=ON -DBUILD_BACKEND_CUDA=OFF -DBUILD_GEOMETRY_VIEWER=OFF -DBUILD_SIMULATOR=OFF -DCMAKE_C_COMPILER=/usr/bin/arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=/usr/bin/arm-linux-gnueabihf-g++ -DHOLO_PARALLEL_FOR=ON
-          make -j8
-          cd ..
-          mkdir -p bin
-          cp -f build/bin/Release/*.so bin
-          tar -zcvf assets_arm32.tar.gz bin LICENSE
-          rm -rf build bin
-        shell: bash
-        env:
-          CC: gcc-10
-          CXX: g++-10
-      - name: Build project arm64
-        run: |
-          mkdir -p build && cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TARGET=ARM64 -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DDISABLE_EXAMPLES=ON -DBUILD_BACKEND_CUDA=OFF -DBUILD_GEOMETRY_VIEWER=OFF -DBUILD_SIMULATOR=OFF -DCMAKE_C_COMPILER=/usr/bin/aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=/usr/bin/aarch64-linux-gnu-g++ -DHOLO_PARALLEL_FOR=ON
-          make -j8
-          cd ..
-          mkdir -p bin
-          cp -f build/bin/Release/*.so bin
-          tar -zcvf assets_arm64.tar.gz bin LICENSE
-          rm -rf build bin
+          cp LICENSE cpp/
+          cd cpp
+          chmod +x build.sh
+          ./build.sh
+          tar -zcvf assets_x64.tar.gz bin include CMakeLists.txt LICENSE README.md
         shell: bash
         env:
           CC: gcc-10
@@ -245,24 +228,6 @@ jobs:
           asset_path: ./assets_x64.tar.gz
           asset_name: ${{ steps.get_version.outputs.result }}-x64.tar.gz
           asset_content_type: application/octet-stream
-      - name: Upload Release Asset ARM32
-        id: upload-release-asset-arm32
-        uses: shogo82148/actions-upload-release-asset@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
-          asset_path: ./assets_arm32.tar.gz
-          asset_name: ${{ steps.get_version.outputs.result }}-arm32.tar.gz
-          asset_content_type: application/octet-stream
-      - name: Upload Release Asset ARM64
-        id: upload-release-asset-arm64
-        uses: shogo82148/actions-upload-release-asset@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
-          asset_path: ./assets_arm64.tar.gz
-          asset_name: ${{ steps.get_version.outputs.result }}-arm64.tar.gz
-          asset_content_type: application/octet-stream
   
   publish_mac:
     needs: [release]
@@ -279,20 +244,16 @@ jobs:
           result-encoding: string
           script: |
             return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-macos-universal.tar.gz';
-      - name: Install Vulkan SDK
-        uses: humbletim/install-vulkan-sdk@v1.1.1
-        with:
-          version: 1.3.236.0
-          cache: false
+      - name: install aarch64 target on macos
+        run: |
+          rustup target add aarch64-apple-darwin
       - name: Build project
         run: |
-          mkdir -p build && cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_ALL=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_BACKEND_CUDA=OFF -DDISABLE_EXAMPLES=ON -DBUILD_GEOMETRY_VIEWER=ON -DBUILD_SIMULATOR=ON -DAUTD3_PARALLEL_FOR=OFF -DHOLO_PARALLEL_FOR=OFF -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
-          make -j8
-          cd ..
-          mkdir -p bin
-          cp -f build/bin/Release/*.dylib bin
-          tar -zcvf assets.tar.gz bin LICENSE
+          cp LICENSE cpp/
+          cd cpp
+          chmod +x build.sh
+          ./build.sh
+          tar -zcvf assets.tar.gz bin include CMakeLists.txt LICENSE README.md
       - name: Load Release URL File from release job
         uses: actions/download-artifact@v1
         with:
@@ -348,26 +309,21 @@ jobs:
         wget https://github.com/shinolab/autd3/releases/download/${{ steps.get_version.outputs.VERSION }}/autd3-${{ steps.get_version.outputs.VERSION }}-linux-x64.tar.gz
         wget https://github.com/shinolab/autd3/releases/download/${{ steps.get_version.outputs.VERSION }}/autd3-${{ steps.get_version.outputs.VERSION }}-macos-universal.tar.gz
         wget https://github.com/shinolab/autd3/releases/download/${{ steps.get_version.outputs.VERSION }}/autd3-${{ steps.get_version.outputs.VERSION }}-win-x64.zip
-        wget https://github.com/shinolab/autd3/releases/download/${{ steps.get_version.outputs.VERSION }}/autd3-${{ steps.get_version.outputs.VERSION }}-win-arm.zip
     - name: Replace latest binary
       run: |
-        cp LICENSE cs/src/LICENSE.md
+        cp LICENSE dotnet/cs/src/LICENSE.md
         tar -zxvf autd3-${{ steps.get_version.outputs.VERSION }}-linux-x64.tar.gz
-        rm -f ./cs/src/native/linux/x64/*
-        \cp bin/*.so ./cs/src/native/linux/x64/
+        rm -f ./dotnet/cs/src/native/linux/x64/*
+        \cp bin/*.so ./dotnet/cs/src/native/linux/x64/
         tar -zxvf autd3-${{ steps.get_version.outputs.VERSION }}-macos-universal.tar.gz
-        rm -f ./cs/src/native/osx/universal/*
-        \cp bin/*.dylib ./cs/src/native/osx/universal/
+        rm -f ./dotnet/cs/src/native/osx/universal/*
+        \cp bin/*.dylib ./dotnet/cs/src/native/osx/universal/
         unzip -o autd3-${{ steps.get_version.outputs.VERSION }}-win-x64.zip
-        rm -f ./cs/src/native/windows/x64/*
-        \cp bin/*.dll ./cs/src/native/windows/x64/
-        rm -rf bin/
-        unzip -o autd3-${{ steps.get_version.outputs.VERSION }}-win-arm.zip
-        rm -f ./cs/src/native/windows/arm/*
-        \cp bin/*.dll ./cs/src/native/windows/arm/
+        rm -f ./dotnet/cs/src/native/windows/x64/*
+        \cp bin/*.dll ./dotnet/cs/src/native/windows/x64/
     - name: Build with dotnet and publish to NuGet
       run: |
         dotnet build -c:Release
         cd bin/Release
         dotnet nuget push autd3sharp.*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate --no-symbols
-      working-directory: ./cs/src
+      working-directory: ./dotnet/cs/src

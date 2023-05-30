@@ -1,0 +1,6 @@
+lib/
+*.zip
+*.tar.gz
+LICENSE
+build/
+bin/

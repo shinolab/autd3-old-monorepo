@@ -5,10 +5,9 @@ AUTD3: Airborne Ultrasound Tactile Display 3
 <div align="center">
 
 ![build](https://github.com/shinolab/autd3/workflows/build/badge.svg)
+![build](https://github.com/shinolab/autd3/workflows/build-cpp/badge.svg)
 ![build](https://github.com/shinolab/autd3/workflows/build-cs/badge.svg)
 ![build](https://github.com/shinolab/autd3/workflows/build-python/badge.svg)
-![build](https://github.com/shinolab/autd3/workflows/build-julia/badge.svg)
-![build](https://github.com/shinolab/autd3/workflows/build-rust/badge.svg)
 
 </div>
 
@@ -19,7 +18,6 @@ AUTD3: Airborne Ultrasound Tactile Display 3
 [![NuGet stable version](https://img.shields.io/nuget/v/autd3sharp)](https://nuget.org/packages/AUTD3Sharp)
 [![autd3-unity](https://img.shields.io/npm/v/com.shinolab.autd3?label=autd3-unity)](https://www.npmjs.com/package/com.shinolab.autd3)
 [![PyPI version](https://img.shields.io/pypi/v/pyautd3)](https://pypi.org/project/pyautd3/)
-[![Julia release](https://img.shields.io/github/v/release/shinolab/autd3?label=Julia)](https://github.com/shinolab/autd3/releases/latest)
 
 </div>
 
@@ -43,73 +41,21 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 
 ## Requirements
 
-* If you use `link::SOEM` on Windows, install [Npcap](https://nmap.org/npcap/) with WinPcap API-compatible mode.
-* If you use `link::TwinCAT` or `link::RemoteTwinCAT`, please see [how to install TwinCAT](https://shinolab.github.io/autd3/book/en/Users_Manual/link.html#how-to-install-twincat).
-
-## Build
-
-* Install CMake version 3.21 or higher and follow the instructions below.
-    ```
-    git clone https://github.com/shinolab/autd3.git
-    cd autd3
-    mkdir build && cd build
-    cmake ..
-    cmake --build . --config Release
-    ```
-
-    * Some projects are disabled by default. Please enable them by switching their flags on
-
-        * For example, if you want to use TwinCATLink:
-            ```
-            cmake .. -DBUILD_LINK_TWINCAT=ON
-            ```
+* If you use a `SOEM` link on Windows, install [Npcap](https://nmap.org/npcap/) with WinPcap API-compatible mode.
+* If you use a `TwinCAT` or a `RemoteTwinCAT` link, please see [how to install TwinCAT](https://shinolab.github.io/autd3/book/en/Users_Manual/link.html#how-to-install-twincat).
 
 ## Example
 
 * See [examples](./examples)
 
-* If you are using Linux/macOS, you may need to run as root.
-
-## CMake options list
-
-| Option                      | default | description                          |
-| -------------------------   | ------- | ------------------------------------ |
-| USE_SYSTEM_EIGEN            | OFF     | use system installed Eigen3          |
-| USE_SYSTEM_BOOST            | OFF     | use system installed Boost           |
-| BUILD_ALL                   | OFF     | build all basic options              |
-| BUILD_DOC                   | OFF     | build doxygen documents              |
-| AUTD3_PARALLEL_FOR          | OFF     | enable parallell for                 |
-| BUILD_GAIN_HOLO             | OFF     | build Holo gain                      |
-| HOLO_PARALLEL_FOR           | OFF     | enable parallell for in holo gain    |
-| BUILD_BACKEND_CUDA          | OFF     | build CUDABackend for Holo gain      |
-| BUILD_BACKEND_ARRAYFIRE     | OFF     | build ArrayFireBackend for Holo gain |
-| BUILD_BACKEND_BLAS          | OFF     | build BLASBackend for Holo gain      |
-| BLAS_LIB_DIR                | OFF     | BLAS lib dir                         |
-| BLAS_DEPEND_LIB_DIR         | OFF     | BLAS depends lib dir                 |
-| BLAS_INCLUDE_DIR            | OFF     | BLAS include dir                     |
-| USE_MKL                     | OFF     | ON if use intel MKL                  |
-| BUILD_MODULATION_AUDIO_FILE | OFF     | build Wav and RawPCM modulation      |
-| BUILD_LINK_SOEM             | OFF     | build SOEM link                      |
-| BUILD_LINK_TWINCAT          | OFF     | build TwinCAT link                   |
-| BUILD_LINK_REMOTE_TWINCAT   | OFF     | build RemoteTwinCAT link             |
-| BUILD_LINK_REMOTE_SOEM      | OFF     | build RemoteSOEM link                |
-| BUILD_LINK_SIMULATOR        | OFF     | build Simulator link                 |
-| BUILD_GEOMETRY_VIEWER       | OFF     | build GeometryViewer                 |
-| BUILD_SIMULATOR             | OFF     | build Simulator                      |
-| BUILD_EXAMPLES              | ON      | build examples                       |
-| BUILD_CAPI                  | OFF     | build C-API                          |
-| ENABLE_LINT                 | OFF     | enable cpp lint                      |
-| BUILD_TEST                  | OFF     | build tests                          |
+    * If you are using Linux/macOS, you may need to run as root.
 
 ## For other programming languages
 
-* [Rust](./rust)
+* [C++](./cpp)
 * [C#](./cs)
 * [F#](./fs)
 * [Python](./python)
-* [Nim](./nim)
-* [Julia](./julia)
-* [MATLAB](./matlab)
 
 ## Citing
 
