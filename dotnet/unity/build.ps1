@@ -15,7 +15,6 @@ cd ../..
 cd capi
 cargo build --release --all --features "single_float left_handed use_meter"
 cd ..
-mkdir dotnet/unity/Assets/autd3/Plugins/x86_64 > NUL 2>&1
 foreach($dll in Get-ChildItem -Path capi/target/release | Where {$_.extension -like ".dll"}){
     Copy-Item -Path $dll -Destination dotnet/unity/Assets/autd3/Plugins/x86_64
 }

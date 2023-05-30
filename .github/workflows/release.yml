@@ -12,6 +12,7 @@ jobs:
     - uses: actions/checkout@v3
     - name: publish to carate.io
       run: |
+        git submodule update --init --recursive
         cd src
         cd autd3-driver
         cargo publish --dry-run
@@ -225,7 +226,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           upload_url: ${{ steps.get_release_info.outputs.upload_url }}
-          asset_path: ./assets_x64.tar.gz
+          asset_path: ./cpp/assets_x64.tar.gz
           asset_name: ${{ steps.get_version.outputs.result }}-x64.tar.gz
           asset_content_type: application/octet-stream
   
@@ -269,12 +270,12 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           upload_url: ${{ steps.get_release_info.outputs.upload_url }}
-          asset_path: ./assets.tar.gz
+          asset_path: ./cpp/assets.tar.gz
           asset_name: ${{ steps.get_version.outputs.result }}
           asset_content_type: application/octet-stream
 
   publish_pypi:
-    needs: [publish_win, publish_linux, publish_mac]
+    needs: [build, publish_win_assets, publish_win, publish_linux, publish_mac]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -293,7 +294,7 @@ jobs:
         twine upload dist/* -u ${{ secrets.TWINE_USERNAME }} -p ${{ secrets.TWINE_PASS }} --non-interactive --skip-existing
 
   publish_nuget:
-    needs: [publish_win, publish_linux, publish_mac]
+    needs: [build, publish_win_assets, publish_win, publish_linux, publish_mac]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
