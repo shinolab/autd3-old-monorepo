@@ -326,12 +326,8 @@ dependencies = [
 name = "autd3capi"
 version = "10.0.0"
 dependencies = [
- "autd3",
  "autd3-core",
- "autd3-traits",
- "autd3capi-common",
  "autd3capi-def",
- "libc",
  "wrapper-generator",
 ]
 
@@ -340,6 +336,8 @@ name = "autd3capi-common"
 version = "10.0.0"
 dependencies = [
  "autd3",
+ "autd3-core",
+ "autd3-traits",
  "libc",
 ]
 
@@ -347,7 +345,6 @@ dependencies = [
 name = "autd3capi-def"
 version = "10.0.0"
 dependencies = [
- "autd3",
  "autd3capi-common",
  "wrapper-generator",
 ]
@@ -356,12 +353,9 @@ dependencies = [
 name = "autd3capi-gain-holo"
 version = "10.0.0"
 dependencies = [
- "autd3",
  "autd3-gain-holo",
  "autd3capi",
- "autd3capi-common",
  "autd3capi-def",
- "libc",
  "wrapper-generator",
 ]
 
@@ -370,8 +364,7 @@ name = "autd3capi-geometry-viewer"
 version = "10.0.0"
 dependencies = [
  "autd3-geometry-viewer",
- "autd3capi-common",
- "libc",
+ "autd3capi-def",
  "wrapper-generator",
 ]
 
@@ -379,11 +372,8 @@ dependencies = [
 name = "autd3capi-link-simulator"
 version = "10.0.0"
 dependencies = [
- "autd3",
- "autd3-core",
  "autd3-link-simulator",
- "autd3capi-common",
- "libc",
+ "autd3capi-def",
  "wrapper-generator",
 ]
 
@@ -391,12 +381,8 @@ dependencies = [
 name = "autd3capi-link-soem"
 version = "10.0.0"
 dependencies = [
- "autd3",
- "autd3-core",
  "autd3-link-soem",
- "autd3capi-common",
  "autd3capi-def",
- "libc",
  "wrapper-generator",
 ]
 
@@ -404,11 +390,8 @@ dependencies = [
 name = "autd3capi-link-twincat"
 version = "10.0.0"
 dependencies = [
- "autd3",
- "autd3-core",
  "autd3-link-twincat",
- "autd3capi-common",
- "libc",
+ "autd3capi-def",
  "wrapper-generator",
 ]
 
@@ -417,8 +400,7 @@ name = "autd3capi-modulation-audio-file"
 version = "10.0.0"
 dependencies = [
  "autd3-modulation-audio-file",
- "autd3capi-common",
- "libc",
+ "autd3capi-def",
  "wrapper-generator",
 ]
 
@@ -427,8 +409,7 @@ name = "autd3capi-simulator"
 version = "10.0.0"
 dependencies = [
  "autd3-simulator",
- "autd3capi-common",
- "libc",
+ "autd3capi-def",
  "serde_json",
  "wrapper-generator",
 ]

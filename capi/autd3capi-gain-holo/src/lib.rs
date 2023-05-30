@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/05/2023
+ * Last Modified: 30/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -16,7 +16,7 @@
 mod backend;
 
 use autd3_gain_holo::*;
-use autd3capi_common::*;
+use autd3capi_def::common::*;
 use backend::DynamicBackend;
 
 macro_rules! holo_cast {

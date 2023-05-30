@@ -7,15 +7,15 @@ edition = "2021"
 crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
-autd3capi-common = {path="../autd3capi-common", version="10.0.0"}
+autd3capi-def = {path="../autd3capi-def", version="10.0.0"}
 autd3-simulator = {path="../../src/autd3-simulator", version="10.0.0"}
-libc = "0.2.144"
 serde_json = "1.0.96"
 
 [build-dependencies]
 wrapper-generator = {path="../wrapper-generator"}
 
 [features]
-single_float = ["autd3capi-common/single_float"]
-use_meter = ["autd3capi-common/use_meter"]
-parallel = ["autd3capi-common/parallel"]
+single_float = ["autd3capi-def/single_float"]
+left_handed = ["autd3-simulator/left_handed"]
+use_meter = ["autd3capi-def/use_meter", "autd3-simulator/use_meter"]
+parallel = ["autd3capi-def/parallel"]

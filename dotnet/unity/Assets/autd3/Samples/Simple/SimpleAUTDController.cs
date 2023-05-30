@@ -4,7 +4,7 @@
  * Created Date: 10/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 18/04/2023
+ * Last Modified: 30/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -48,8 +48,8 @@ public class SimpleAUTDController : MonoBehaviour
     }
 
     private readonly AUTD3Sharp.Link.SOEM.OnLostCallbackDelegate _onLost = new(OnLost);
-    private readonly AUTD3Sharp.Link.SOEM.OnLogOutputCallback _output = new(LogOutput);
-    private readonly AUTD3Sharp.Link.SOEM.OnLogFlushCallback _flush = new(LogFlush);
+    private readonly AUTD3Sharp.Link.OnLogOutputCallback _output = new(LogOutput);
+    private readonly AUTD3Sharp.Link.OnLogFlushCallback _flush = new(LogFlush);
 
     private void Awake()
     {
@@ -59,7 +59,7 @@ public class SimpleAUTDController : MonoBehaviour
 
         var link = new AUTD3Sharp.Link.SOEM()
            .OnLost(_onLost)
-           .DebugLogFunc(_output, _flush)
+           .LogFunc(Level.Info, _output, _flush)
            .Build();
 
         try
