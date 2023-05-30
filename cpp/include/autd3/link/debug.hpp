@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/05/2023
+// Last Modified: 30/05/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,8 +12,6 @@
 #pragma once
 
 #include <chrono>
-#include <functional>
-#include <string>
 
 #include "autd3/internal/link.hpp"
 #include "autd3/internal/native_methods.hpp"
@@ -25,12 +23,12 @@ class Debug {
   Debug() : _builder(internal::native_methods::AUTDLinkDebug()) {}
 
   Debug& log_level(const internal::native_methods::Level level) {
-    _builder = internal::native_methods::AUTDLinkDebugLogLevel(_builder, level);
+    _builder = AUTDLinkDebugLogLevel(_builder, level);
     return *this;
   }
 
-  Debug& log_func(const internal::native_methods::Level level, internal::LogOutCallback out, internal::LogFlushCallback flush) {
-    _builder = internal::native_methods::AUTDLinkDebugLogFunc(_builder, level, reinterpret_cast<void*>(out), reinterpret_cast<void*>(flush));
+  Debug& log_func(const internal::native_methods::Level level, const internal::LogOutCallback out, const internal::LogFlushCallback flush) {
+    _builder = AUTDLinkDebugLogFunc(_builder, level, reinterpret_cast<void*>(out), reinterpret_cast<void*>(flush));
     return *this;
   }
 
@@ -41,7 +39,7 @@ class Debug {
     return *this;
   }
 
-  internal::Link build() { return internal::Link(internal::native_methods::AUTDLinkDebugBuild(_builder)); }
+  [[nodiscard]] internal::Link build() const { return internal::Link{internal::native_methods::AUTDLinkDebugBuild(_builder)}; }
 
  private:
   void* _builder;

@@ -3,7 +3,7 @@
 // Created Date: 07/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/05/2023
+// Last Modified: 30/05/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -17,14 +17,14 @@
 // Run example_simulator_server before running this example
 
 int main() try {
-  auto geometry = autd3::Geometry::Builder()
-                      .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
-                      .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0.0, 0.0), autd3::Vector3::Zero()))
-                      // .advanced_mode()
-                      .build();
+  const auto geometry = autd3::Geometry::Builder()
+                            .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+                            .add_device(autd3::AUTD3(autd3::Vector3(autd3::AUTD3::DEVICE_WIDTH, 0.0, 0.0), autd3::Vector3::Zero()))
+                            // .advanced_mode()
+                            .build();
 
-  auto link = autd3::link::Simulator(8080).build();
-  auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
+  const auto link = autd3::link::Simulator(8080).build();
+  auto autd = autd3::Controller::open(geometry, link);
 
   // std::for_each(autd.geometry().begin(), autd.geometry().end(), [](auto& tr) { tr.set_frequency(70e3); });
 

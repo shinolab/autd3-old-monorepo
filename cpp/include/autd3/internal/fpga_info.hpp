@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/05/2023
+// Last Modified: 30/05/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,13 +12,12 @@
 #pragma once
 
 #include <cstdint>
-#include <ostream>
 
 namespace autd3::internal {
 
 class FPGAInfo {
  public:
-  FPGAInfo(const uint8_t info) noexcept : _info(info) {}
+  explicit FPGAInfo(const uint8_t info) noexcept : _info(info) {}
   ~FPGAInfo() = default;
   FPGAInfo(const FPGAInfo& v) = default;
   FPGAInfo& operator=(const FPGAInfo& obj) = default;

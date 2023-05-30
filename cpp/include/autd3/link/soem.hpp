@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 29/05/2023
+// Last Modified: 30/05/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,12 +12,9 @@
 #pragma once
 
 #include <chrono>
-#include <functional>
 #include <string>
 
 #include "autd3/internal/link.hpp"
-#include "autd3/internal/native_methods.hpp"
-// include Level
 #include "autd3/internal/native_methods.hpp"
 
 namespace autd3::link {
@@ -32,7 +29,7 @@ class SOEM {
   }
 
   SOEM& buf_size(const size_t value) {
-    _builder = internal::native_methods::AUTDLinkSOEMBufSize(_builder, value);
+    _builder = internal::native_methods::AUTDLinkSOEMBufSize(_builder, static_cast<uint32_t>(value));
     return *this;
   }
 
@@ -46,18 +43,18 @@ class SOEM {
     return *this;
   }
 
-  SOEM& on_lost(internal::LogOutCallback value) {
+  SOEM& on_lost(const internal::LogOutCallback value) {
     _builder = internal::native_methods::AUTDLinkSOEMOnLost(_builder, reinterpret_cast<void*>(value));
     return *this;
   }
 
   SOEM& timer_strategy(const internal::native_methods::TimerStrategy value) {
-    _builder = internal::native_methods::AUTDLinkSOEMTimerStrategy(_builder, value);
+    _builder = AUTDLinkSOEMTimerStrategy(_builder, value);
     return *this;
   }
 
   SOEM& sync_mode(const internal::native_methods::SyncMode value) {
-    _builder = internal::native_methods::AUTDLinkSOEMSyncMode(_builder, value);
+    _builder = AUTDLinkSOEMSyncMode(_builder, value);
     return *this;
   }
 
@@ -69,12 +66,12 @@ class SOEM {
   }
 
   SOEM& log_level(const internal::native_methods::Level value) {
-    _builder = internal::native_methods::AUTDLinkSOEMLogLevel(_builder, value);
+    _builder = AUTDLinkSOEMLogLevel(_builder, value);
     return *this;
   }
 
-  SOEM& log_func(const internal::native_methods::Level level, internal::LogOutCallback out, internal::LogFlushCallback flush) {
-    _builder = internal::native_methods::AUTDLinkSOEMLogFunc(_builder, level, reinterpret_cast<void*>(out), reinterpret_cast<void*>(flush));
+  SOEM& log_func(const internal::native_methods::Level level, const internal::LogOutCallback out, const internal::LogFlushCallback flush) {
+    _builder = AUTDLinkSOEMLogFunc(_builder, level, reinterpret_cast<void*>(out), reinterpret_cast<void*>(flush));
     return *this;
   }
 
@@ -85,7 +82,7 @@ class SOEM {
     return *this;
   }
 
-  internal::Link build() { return internal::Link(internal::native_methods::AUTDLinkSOEMBuild(_builder)); }
+  [[nodiscard]] internal::Link build() const { return internal::Link{internal::native_methods::AUTDLinkSOEMBuild(_builder)}; }
 
  private:
   void* _builder;
@@ -102,7 +99,7 @@ class RemoteSOEM {
     return *this;
   }
 
-  internal::Link build() { return internal::Link(internal::native_methods::AUTDLinkSOEMBuild(_builder)); }
+  [[nodiscard]] internal::Link build() const { return internal::Link{internal::native_methods::AUTDLinkSOEMBuild(_builder)}; }
 
  private:
   void* _builder;
