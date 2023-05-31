@@ -21,7 +21,7 @@ let geometry =
         .AdvancedMode()
         .Build()
 
-let link = Simulator().Build()
+let link = Simulator(8080us).Build()
 
 let autd = Controller.Open (geometry, link)
 
