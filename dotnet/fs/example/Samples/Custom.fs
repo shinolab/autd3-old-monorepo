@@ -18,7 +18,7 @@ open AUTD3Sharp.Modulation
 
 module CustomTest =
     let Focus (autd:Controller) (point: Vector3d) =
-        let amps = [| for _ in 1..autd.Geometry.NumTransducers -> 1.0 |]
+        let amps = [| for _ in 1u..autd.Geometry.NumTransducers -> 1.0 |]
         let phases = 
             autd.Geometry
                 |> Seq.map (fun tr -> (2.0 * AUTD3.Pi * (tr.Position - point).L2Norm) / tr.Wavelength)

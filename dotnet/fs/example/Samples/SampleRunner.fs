@@ -25,7 +25,7 @@ module SampleRunner =
                 (AdvancedTest.Test, "Advanced Test (Custom gain/modulation)");
                 (CustomTest.Test, "Custom Test (Custom Focus)")];
         let examples = 
-            if autd.Geometry.NumDevices = 2 then examples @ [(GroupTest.Test, "Grouped gain Test")] else examples;
+            if autd.Geometry.NumDevices = 2u then examples @ [(GroupTest.Test, "Grouped gain Test")] else examples;
 
         (new Clear()) |> autd.Send |> ignore;
         (new Synchronize()) |> autd.Send |> ignore;
@@ -35,7 +35,7 @@ module SampleRunner =
                 System.Console.ForegroundColor <- System.ConsoleColor.Yellow
                 printfn "%s" msg
                 System.Console.ResetColor()
-        if firmwareList |> Seq.exists (fun firm -> not firm.MatchesVersion) then print_warn "WARN: FPGA and CPU firmware version do not match."
+        if firmwareList |> Seq.exists (fun firm -> not firm.IsValid) then print_warn "WARN: FPGA and CPU firmware version do not match."
         if firmwareList |> Seq.exists (fun firm -> not firm.IsSupported) then print_warn (sprintf "WARN: You are using old firmware. Please consider updating to %s." FirmwareInfo.LatestVersion)
         printfn "==================================== Firmware information ======================================"
         autd.FirmwareInfoList() |> Seq.iter (fun firm -> printfn $"{firm}")

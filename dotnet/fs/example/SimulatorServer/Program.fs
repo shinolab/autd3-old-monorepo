@@ -9,4 +9,4 @@
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
 // 
 
-(new AUTD3Sharp.Extra.Simulator()).SettingsPath("settings.json").Vsync(true).GpuIdx(0).Run();
+(new AUTD3Sharp.Extra.Simulator()).SettingsPath("settings.json").Vsync(true).GpuIdx(0).Run() |> exit

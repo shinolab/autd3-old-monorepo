@@ -11,7 +11,6 @@
 
 namespace Samples
 
-open System
 open AUTD3Sharp
 open AUTD3Sharp.Gain
 open AUTD3Sharp.Gain.Holo
@@ -23,7 +22,7 @@ module GroupTest =
         (new SilencerConfig()) |> autd.Send |> ignore
 
         let g1 = new Focus(autd.Geometry.CenterOf(0) + Vector3d(0, 0, 150));
-        let g2 = new GSPAT();
+        let g2 = new GSPAT(new BackendDefault());
         g2.Add(autd.Geometry.CenterOf(1) + new Vector3d(30.0, 0.0, 150.0), 1.0);
         g2.Add(autd.Geometry.CenterOf(1) - new Vector3d(30.0, 0.0, 150.0), 1.0);
 
