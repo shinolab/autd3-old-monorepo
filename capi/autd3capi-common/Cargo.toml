@@ -1,13 +1,13 @@
 [package]
 name = "autd3capi-common"
-version = "10.0.0"
+version = "10.0.1"
 edition = "2021"
 license = "MIT"
 
 [dependencies]
-autd3 = {path="../../src/autd3", version="10.0.0"}
-autd3-core = {path="../../src/autd3-core", version="10.0.0"}
-autd3-traits = {path="../../src/autd3-traits", version="10.0.0"}
+autd3 = {path="../../src/autd3", version="10.0.1"}
+autd3-core = {path="../../src/autd3-core", version="10.0.1"}
+autd3-traits = {path="../../src/autd3-traits", version="10.0.1"}
 libc = "0.2.144"
 
 [features]
