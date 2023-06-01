@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 31/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -36,18 +36,17 @@ impl Plane {
     /// * `dir` - direction
     ///
     pub fn new(dir: Vector3) -> Self {
-        Self::with_amp(dir, 1.0)
+        Self { dir, amp: 1.0 }
     }
 
-    /// constructor with amp
+    /// set amplitude
     ///
     /// # Arguments
     ///
-    /// * `dir` - direction
     /// * `amp` - normalized amp (from 0 to 1)
     ///
-    pub fn with_amp(dir: Vector3, amp: float) -> Self {
-        Self { amp, dir }
+    pub fn with_amp(self, amp: float) -> Self {
+        Self { amp, ..self }
     }
 }
 

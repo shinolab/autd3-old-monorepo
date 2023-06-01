@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 01/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use autd3::prelude::*;
 
-pub fn plane<T: Transducer, L: Link<T>>(
+pub fn plane<T: Transducer, L: Link>(
     autd: &mut Controller<T, L>,
 ) -> anyhow::Result<bool, AUTDError> {
     autd.send(SilencerConfig::default())?;

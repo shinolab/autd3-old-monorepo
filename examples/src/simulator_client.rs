@@ -4,7 +4,7 @@
  * Created Date: 10/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 01/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -28,7 +28,7 @@ fn main() -> Result<()> {
         ))
         .build()?;
 
-    let link = Simulator::builder().port(8080).build();
+    let link = Simulator::new(8080);
 
     let autd = Controller::open(geometry, link)?;
 

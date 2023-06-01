@@ -4,7 +4,7 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/05/2023
+ * Last Modified: 01/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -51,12 +51,8 @@ pub struct TwinCAT {
     dll: Library,
 }
 
-pub struct TwinCATBuilder {
-    timeout: Duration,
-}
-
 impl TwinCAT {
-    fn with_timeout(timeout: Duration) -> Result<Self, AUTDInternalError> {
+    pub fn new() -> Result<Self, AUTDInternalError> {
         let dll = match unsafe { lib::Library::new("TcAdsDll") } {
             Ok(dll) => dll,
             Err(_) => {
@@ -74,30 +70,13 @@ impl TwinCAT {
                 },
                 port: PORT,
             },
-            timeout,
+            timeout: Duration::ZERO,
             dll,
         })
     }
 
-    pub fn builder() -> TwinCATBuilder {
-        TwinCATBuilder::new()
-    }
-}
-
-impl TwinCATBuilder {
-    fn new() -> Self {
-        Self {
-            timeout: Duration::ZERO,
-        }
-    }
-
-    pub fn timeout(mut self, timeout: Duration) -> Self {
-        self.timeout = timeout;
-        self
-    }
-
-    pub fn build(self) -> Result<TwinCAT, AUTDInternalError> {
-        TwinCAT::with_timeout(self.timeout)
+    pub fn with_timeout(self, timeout: Duration) -> Self {
+        Self { timeout, ..self }
     }
 }
 
@@ -130,8 +109,8 @@ impl TwinCAT {
     }
 }
 
-impl<T: Transducer> Link<T> for TwinCAT {
-    fn open(&mut self, _geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+impl Link for TwinCAT {
+    fn open<T: Transducer>(&mut self, _geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         unsafe {
             let port = self.port_open()();
             if port == 0 {

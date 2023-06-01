@@ -4,7 +4,7 @@
  * Created Date: 22/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/05/2023
+ * Last Modified: 01/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,9 +24,8 @@ fn main() -> Result<()> {
         .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
         .build()?;
 
-    let link = RemoteTwinCAT::builder()
-        .server_ams_net_id("0.0.0.0.0.0")
-        .build()?;
+    let server_ams_net_id = "0.0.0.0.0.0";
+    let link = RemoteTwinCAT::new(server_ams_net_id)?;
 
     let autd = Controller::open(geometry, link)?;
 

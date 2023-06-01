@@ -4,7 +4,7 @@
  * Created Date: 30/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 31/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -23,16 +23,21 @@ pub struct Static {
 
 impl Static {
     /// constructor.
-    pub fn with_amp(amp: float) -> Self {
+    pub fn new() -> Self {
         Self {
-            amp,
+            amp: 1.0,
             freq_div: 5120,
         }
     }
 
-    /// constructor.
-    pub fn new() -> Self {
-        Self::with_amp(1.0)
+    /// set amplitude
+    ///
+    /// # Arguments
+    ///
+    /// * `amp` - peek to peek amplitude of the wave (Maximum value is 1.0)
+    ///
+    pub fn with_amp(self, amp: float) -> Self {
+        Self { amp, ..self }
     }
 }
 
