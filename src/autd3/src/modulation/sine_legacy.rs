@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 31/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -36,25 +36,32 @@ impl SineLegacy {
     /// * `freq` - Frequency of the sine wave
     ///
     pub fn new(freq: float) -> Self {
-        Self::with_params(freq, 1.0, 0.5)
+        Self {
+            freq,
+            amp: 1.0,
+            offset: 0.5,
+            freq_div: 5120,
+        }
     }
 
-    /// constructor.
-    /// Sine wave oscillate from `offset`-`amp`/2 to `offset`+`amp`/2
+    /// set amplitude
     ///
     /// # Arguments
     ///
-    /// * `freq` - Frequency of the sine wave
     /// * `amp` - peek to peek amplitude of the wave (Maximum value is 1.0)
+    ///
+    pub fn with_amp(self, amp: float) -> Self {
+        Self { amp, ..self }
+    }
+
+    /// set offset
+    ///
+    /// # Arguments
+    ///
     /// * `offset` - Offset of the wave
     ///
-    pub fn with_params(freq: float, amp: float, offset: float) -> Self {
-        Self {
-            freq,
-            amp,
-            offset,
-            freq_div: 5120,
-        }
+    pub fn with_offset(self, offset: float) -> Self {
+        Self { offset, ..self }
     }
 }
 

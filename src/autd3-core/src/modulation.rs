@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 01/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -16,9 +16,9 @@ use autd3_driver::float;
 
 /// Modulation contains the amplitude modulation data.
 pub trait ModulationProperty {
-    fn sampling_frequency_division(&self) -> u32;
-    fn set_sampling_frequency_division(&mut self, freq_div: u32);
+    fn with_sampling_frequency_division(self, freq_div: u32) -> Self;
     fn sampling_freq(&self) -> float;
+    fn sampling_frequency_division(&self) -> u32;
 }
 
 /// Modulation contains the amplitude modulation data.

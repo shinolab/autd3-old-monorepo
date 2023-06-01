@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 01/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ use autd3_core::{
 
 use crate::error::AUTDError;
 
-pub struct Controller<T: Transducer, L: Link<T>> {
+pub struct Controller<T: Transducer, L: Link> {
     link: L,
     geometry: Geometry<T>,
     tx_buf: TxDatagram,
@@ -33,7 +33,7 @@ pub struct Controller<T: Transducer, L: Link<T>> {
     msg_id: AtomicU8,
 }
 
-impl<T: Transducer, L: Link<T>> Controller<T, L> {
+impl<T: Transducer, L: Link> Controller<T, L> {
     pub fn open(geometry: Geometry<T>, link: L) -> Result<Controller<T, L>, AUTDError> {
         let mut link = link;
         link.open(&geometry)?;
@@ -208,7 +208,7 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
     }
 }
 
-impl<T: Transducer, L: Link<T>> Controller<T, L> {
+impl<T: Transducer, L: Link> Controller<T, L> {
     pub fn get_id(&mut self) -> u8 {
         if self
             .msg_id
@@ -248,8 +248,8 @@ mod tests {
         }
     }
 
-    impl<T: Transducer> Link<T> for EmulatorLink {
-        fn open(
+    impl Link for EmulatorLink {
+        fn open<T: Transducer>(
             &mut self,
             _geometry: &Geometry<T>,
         ) -> Result<(), autd3_core::error::AUTDInternalError> {

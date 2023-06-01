@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/05/2023
+ * Last Modified: 31/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -60,12 +60,14 @@ impl<'a, T: Transducer> Grouped<'a, T> {
             .collect())
     }
 
-    pub fn add<G: 'a + Gain<T>>(&mut self, id: usize, gain: G) {
+    pub fn add<G: 'a + Gain<T>>(mut self, id: usize, gain: G) -> Self {
         self.gain_map.insert(id, Box::new(gain));
+        self
     }
 
-    pub fn add_boxed(&mut self, id: usize, gain: Box<dyn Gain<T> + 'a>) {
+    pub fn add_boxed(mut self, id: usize, gain: Box<dyn Gain<T> + 'a>) -> Self {
         self.gain_map.insert(id, gain);
+        self
     }
 }
 
