@@ -4,7 +4,7 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/05/2023
+ * Last Modified: 01/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -12,9 +12,8 @@
  */
 
 use std::{
-    io::{Read, Write},
-    marker::PhantomData,
-    net::{Shutdown, TcpStream},
+    io::{self, Read, Write},
+    net::{Ipv4Addr, Shutdown, SocketAddr, SocketAddrV4, TcpStream, ToSocketAddrs},
     time::Duration,
 };
 
@@ -27,88 +26,44 @@ use autd3_core::{
 };
 
 pub struct Simulator {
-    addr: String,
-    port: u16,
+    server_addr: Vec<SocketAddr>,
     socket: Option<TcpStream>,
     tx_buf: Vec<u8>,
     rx_buf: Vec<u8>,
     timeout: Duration,
 }
 
-pub struct Empty;
-pub struct Filled;
-
-pub struct SimulatorBuilder<Port> {
-    addr: String,
-    port: u16,
-    port_: PhantomData<Port>,
-    timeout: Duration,
-}
-
 impl Simulator {
-    fn new(addr: String, port: u16, timeout: Duration) -> Self {
+    pub fn new(port: u16) -> Self {
         Self {
-            addr,
-            port,
+            server_addr: vec![SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, port))],
             socket: None,
-            tx_buf: vec![],
-            rx_buf: vec![],
-            timeout,
-        }
-    }
-
-    pub fn builder() -> SimulatorBuilder<Empty> {
-        SimulatorBuilder::new()
-    }
-}
-
-impl SimulatorBuilder<Empty> {
-    fn new() -> Self {
-        Self {
-            addr: "127.0.0.1".to_string(),
-            port: 0,
-            port_: PhantomData,
+            tx_buf: Vec::new(),
+            rx_buf: Vec::new(),
             timeout: Duration::from_millis(200),
         }
     }
-}
 
-impl SimulatorBuilder<Filled> {
-    pub fn build(self) -> Simulator {
-        Simulator::new(self.addr, self.port, self.timeout)
+    pub fn with_server_ip<A: ToSocketAddrs>(self, server_addr: A) -> io::Result<Self> {
+        Ok(Self {
+            server_addr: server_addr.to_socket_addrs()?.collect(),
+            ..self
+        })
+    }
+
+    pub fn with_timeout(self, timeout: Duration) -> Self {
+        Self { timeout, ..self }
     }
 }
 
-impl SimulatorBuilder<Empty> {
-    pub fn port(mut self, port: u16) -> SimulatorBuilder<Filled> {
-        self.port = port;
-        unsafe { std::mem::transmute(self) }
-    }
-}
-
-impl<Port> SimulatorBuilder<Port> {
-    pub fn addr<S: Into<String>>(mut self, addr: S) -> SimulatorBuilder<Port> {
-        self.addr = addr.into();
-        self
-    }
-}
-
-impl<Port> SimulatorBuilder<Port> {
-    pub fn timeout(mut self, timeout: Duration) -> SimulatorBuilder<Port> {
-        self.timeout = timeout;
-        self
-    }
-}
-
-impl<T: Transducer> Link<T> for Simulator {
-    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
-        let addr = format!("{}:{}", self.addr, self.port);
-        self.socket = Some(match TcpStream::connect(&addr) {
+impl Link for Simulator {
+    fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+        self.socket = Some(match TcpStream::connect(&self.server_addr[..]) {
             Ok(s) => s,
             Err(e) => {
                 return Err(AUTDInternalError::LinkError(format!(
-                    "Failed to connect to {}: {}",
-                    addr, e
+                    "Failed to connect to {:?}: {}",
+                    self.server_addr, e
                 )))
             }
         });

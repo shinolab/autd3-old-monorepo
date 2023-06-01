@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2023
+ * Last Modified: 01/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -18,7 +18,7 @@ use colored::*;
 use std::io::{self, Write};
 
 #[allow(clippy::type_complexity)]
-pub fn run<T: Transducer, L: Link<T>>(mut autd: Controller<T, L>) -> anyhow::Result<()> {
+pub fn run<T: Transducer, L: Link>(mut autd: Controller<T, L>) -> anyhow::Result<()> {
     println!("*********************************** Firmware information ****************************************");
     autd.firmware_infos()?.iter().for_each(|firm_info| {
         println!("{}", firm_info);

@@ -4,51 +4,55 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/05/2023
+ * Last Modified: 01/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::{marker::PhantomData, time::Duration};
+use std::time::Duration;
 
 use crate::core::{
-    error::AUTDInternalError,
-    geometry::{Geometry, Transducer},
-    link::Link,
-    CPUControlFlags, RxDatagram, TxDatagram, MSG_CLEAR, MSG_RD_CPU_VERSION,
-    MSG_RD_CPU_VERSION_MINOR, MSG_RD_FPGA_FUNCTION, MSG_RD_FPGA_VERSION, MSG_RD_FPGA_VERSION_MINOR,
+    error::AUTDInternalError, link::Link, CPUControlFlags, RxDatagram, TxDatagram, MSG_CLEAR,
+    MSG_RD_CPU_VERSION, MSG_RD_CPU_VERSION_MINOR, MSG_RD_FPGA_FUNCTION, MSG_RD_FPGA_VERSION,
+    MSG_RD_FPGA_VERSION_MINOR,
 };
 
+use autd3_core::geometry::{Geometry, Transducer};
 use spdlog::prelude::*;
 
 pub use spdlog::Level;
 
-pub struct Log<T: Transducer, L: Link<T>> {
+pub struct Log<L: Link> {
     link: L,
     logger: Logger,
     synchronized: bool,
-    phantom: PhantomData<T>,
 }
 
-impl<T: Transducer, L: Link<T>> Log<T, L> {
-    pub fn new(link: L, level: LevelFilter) -> Self {
-        Self::with_logger(link, crate::core::link::get_logger(level))
-    }
-
-    pub fn with_logger(link: L, logger: Logger) -> Self {
+impl<L: Link> Log<L> {
+    pub fn new(link: L) -> Self {
+        let logger = crate::core::link::get_logger();
+        logger.set_level_filter(spdlog::LevelFilter::MoreSevereEqual(spdlog::Level::Info));
         Self {
             link,
             logger,
             synchronized: false,
-            phantom: PhantomData,
         }
+    }
+
+    pub fn with_level(self, level: LevelFilter) -> Self {
+        self.logger.set_level_filter(level);
+        self
+    }
+
+    pub fn with_logger(self, logger: Logger) -> Self {
+        Self { logger, ..self }
     }
 }
 
-impl<T: Transducer, L: Link<T>> Link<T> for Log<T, L> {
-    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+impl<L: Link> Link for Log<L> {
+    fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         trace!(logger: self.logger, "Open Log link");
 
         if self.is_open() {

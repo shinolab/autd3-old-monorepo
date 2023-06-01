@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/05/2023
+ * Last Modified: 01/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -77,24 +77,18 @@ impl TimerCallback for SoemCallback {
     }
 }
 
-struct Config {
-    pub sync0_cycle: u16,
-    pub send_cycle: u16,
-    pub buf_size: usize,
-    pub timer_strategy: TimerStrategy,
-    pub sync_mode: SyncMode,
-    pub ifname: String,
-    pub state_check_interval: std::time::Duration,
-    pub timeout: std::time::Duration,
-}
-
 type OnLostCallBack = Box<dyn Fn(&str) + Send>;
 
 pub struct SOEM {
     ecatth_handle: Option<JoinHandle<()>>,
     ecat_check_th: Option<JoinHandle<()>>,
     timer_handle: Option<Box<Timer<SoemCallback>>>,
-    config: Config,
+    buf_size: usize,
+    timer_strategy: TimerStrategy,
+    sync_mode: SyncMode,
+    ifname: String,
+    state_check_interval: std::time::Duration,
+    timeout: std::time::Duration,
     sender: Option<Sender<TxDatagram>>,
     is_open: Arc<AtomicBool>,
     ec_sync0_cycle_time_ns: u32,
@@ -104,25 +98,11 @@ pub struct SOEM {
     logger: Logger,
 }
 
-pub struct SOEMBuilder {
-    sync0_cycle: u16,
-    send_cycle: u16,
-    buf_size: usize,
-    timer_strategy: TimerStrategy,
-    sync_mode: SyncMode,
-    ifname: String,
-    state_check_interval: Duration,
-    on_lost: Option<OnLostCallBack>,
-    timeout: Duration,
-    level: LevelFilter,
-    logger: Option<Logger>,
-}
-
-impl SOEMBuilder {
-    fn new() -> Self {
+impl SOEM {
+    pub fn new() -> Self {
+        let logger = get_logger();
+        logger.set_level_filter(LevelFilter::MoreSevereEqual(Level::Info));
         Self {
-            sync0_cycle: 2,
-            send_cycle: 2,
             buf_size: 32,
             timer_strategy: TimerStrategy::Sleep,
             sync_mode: SyncMode::FreeRun,
@@ -130,145 +110,99 @@ impl SOEMBuilder {
             state_check_interval: Duration::from_millis(100),
             on_lost: None,
             timeout: Duration::from_millis(20),
-            level: LevelFilter::MoreSevereEqual(Level::Info),
-            logger: None,
-        }
-    }
-
-    pub fn sync0_cycle(mut self, sync0_cycle: u16) -> Self {
-        self.sync0_cycle = sync0_cycle;
-        self
-    }
-
-    pub fn send_cycle(mut self, send_cycle: u16) -> Self {
-        self.send_cycle = send_cycle;
-        self
-    }
-
-    pub fn buf_size(mut self, buf_size: usize) -> Self {
-        self.buf_size = buf_size;
-        self
-    }
-
-    pub fn timer_strategy(mut self, timer_strategy: TimerStrategy) -> Self {
-        self.timer_strategy = timer_strategy;
-        self
-    }
-
-    pub fn sync_mode(mut self, sync_mode: SyncMode) -> Self {
-        self.sync_mode = sync_mode;
-        self
-    }
-
-    pub fn ifname<S: Into<String>>(mut self, ifname: S) -> Self {
-        self.ifname = ifname.into();
-        self
-    }
-
-    pub fn state_check_interval(mut self, state_check_interval: Duration) -> Self {
-        self.state_check_interval = state_check_interval;
-        self
-    }
-
-    pub fn on_lost<F: 'static + Fn(&str) + Send>(mut self, on_lost: F) -> Self {
-        self.on_lost = Some(Box::new(on_lost));
-        self
-    }
-
-    pub fn level(mut self, level: LevelFilter) -> Self {
-        self.level = level;
-        if let Some(logger) = self.logger.as_mut() {
-            logger.set_level_filter(level);
-        }
-        self
-    }
-
-    pub fn timeout(mut self, timeout: Duration) -> Self {
-        self.timeout = timeout;
-        self
-    }
-
-    pub fn logger(mut self, logger: Logger) -> Self {
-        self.logger = Some(logger);
-        self
-    }
-
-    pub fn build(self) -> SOEM {
-        if let Some(logger) = self.logger {
-            SOEM::with_logger(
-                Config {
-                    sync0_cycle: self.sync0_cycle,
-                    send_cycle: self.send_cycle,
-                    buf_size: self.buf_size,
-                    timer_strategy: self.timer_strategy,
-                    sync_mode: self.sync_mode,
-                    ifname: self.ifname,
-                    state_check_interval: self.state_check_interval,
-                    timeout: self.timeout,
-                },
-                self.on_lost,
-                logger,
-            )
-        } else {
-            SOEM::new(
-                Config {
-                    sync0_cycle: self.sync0_cycle,
-                    send_cycle: self.send_cycle,
-                    buf_size: self.buf_size,
-                    timer_strategy: self.timer_strategy,
-                    sync_mode: self.sync_mode,
-                    ifname: self.ifname,
-                    state_check_interval: self.state_check_interval,
-                    timeout: self.timeout,
-                },
-                self.on_lost,
-                self.level,
-            )
-        }
-    }
-}
-
-impl SOEM {
-    pub fn builder() -> SOEMBuilder {
-        SOEMBuilder::new()
-    }
-}
-
-impl SOEM {
-    fn new(config: Config, on_lost: Option<OnLostCallBack>, level: LevelFilter) -> Self {
-        Self::with_logger(config, on_lost, get_logger(level))
-    }
-
-    fn with_logger(config: Config, on_lost: Option<OnLostCallBack>, logger: Logger) -> Self {
-        let ec_send_cycle_time_ns = EC_CYCLE_TIME_BASE_NANO_SEC * config.send_cycle as u32;
-        let ec_sync0_cycle_time_ns = EC_CYCLE_TIME_BASE_NANO_SEC * config.sync0_cycle as u32;
-        Self {
+            logger,
             ecatth_handle: None,
             ecat_check_th: None,
             timer_handle: None,
-            on_lost,
             sender: None,
             is_open: Arc::new(AtomicBool::new(false)),
-            config,
-            ec_sync0_cycle_time_ns,
-            ec_send_cycle_time_ns,
+            ec_sync0_cycle_time_ns: EC_CYCLE_TIME_BASE_NANO_SEC * 2,
+            ec_send_cycle_time_ns: EC_CYCLE_TIME_BASE_NANO_SEC * 2,
             io_map: Arc::new(Mutex::new(IOMap::new(&[0]))),
-            logger,
         }
+    }
+
+    pub fn with_sync0_cycle(self, sync0_cycle: u16) -> Self {
+        Self {
+            ec_sync0_cycle_time_ns: EC_CYCLE_TIME_BASE_NANO_SEC * sync0_cycle as u32,
+            ..self
+        }
+    }
+
+    pub fn with_send_cycle(self, send_cycle: u16) -> Self {
+        Self {
+            ec_send_cycle_time_ns: EC_CYCLE_TIME_BASE_NANO_SEC * send_cycle as u32,
+            ..self
+        }
+    }
+
+    pub fn with_buf_size(self, buf_size: usize) -> Self {
+        Self { buf_size, ..self }
+    }
+
+    pub fn with_timer_strategy(self, timer_strategy: TimerStrategy) -> Self {
+        Self {
+            timer_strategy,
+            ..self
+        }
+    }
+
+    pub fn with_sync_mode(self, sync_mode: SyncMode) -> Self {
+        Self { sync_mode, ..self }
+    }
+
+    pub fn with_ifname<S: Into<String>>(self, ifname: S) -> Self {
+        Self {
+            ifname: ifname.into(),
+            ..self
+        }
+    }
+
+    pub fn with_state_check_interval(self, state_check_interval: Duration) -> Self {
+        Self {
+            state_check_interval,
+            ..self
+        }
+    }
+
+    pub fn with_on_lost<F: 'static + Fn(&str) + Send>(self, on_lost: F) -> Self {
+        Self {
+            on_lost: Some(Box::new(on_lost)),
+            ..self
+        }
+    }
+
+    pub fn with_log_level(self, level: LevelFilter) -> Self {
+        self.logger.set_level_filter(level);
+        self
+    }
+
+    pub fn with_timeout(self, timeout: Duration) -> Self {
+        Self { timeout, ..self }
+    }
+
+    pub fn with_logger(self, logger: Logger) -> Self {
+        Self { logger, ..self }
+    }
+}
+
+impl Default for SOEM {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
 impl SOEM {
     pub fn open_impl(&mut self, device_map: &[usize]) -> Result<i32, AUTDInternalError> {
-        let ifname = if self.config.ifname.is_empty() {
+        let ifname = if self.ifname.is_empty() {
             lookup_autd()?
         } else {
-            self.config.ifname.clone()
+            self.ifname.clone()
         };
 
         let ifname = std::ffi::CString::new(ifname).unwrap();
 
-        let (tx_sender, tx_receiver) = bounded(self.config.buf_size);
+        let (tx_sender, tx_receiver) = bounded(self.buf_size);
 
         unsafe {
             if ec_init(ifname.as_ptr()) <= 0 {
@@ -297,7 +231,7 @@ impl SOEM {
             }
 
             ecx_context.userdata = &mut self.ec_sync0_cycle_time_ns as *mut _ as *mut c_void;
-            if self.config.sync_mode == SyncMode::DC {
+            if self.sync_mode == SyncMode::DC {
                 (1..=ec_slavecount as usize).for_each(|i| {
                     ec_slave[i].PO2SOconfigx = Some(dc_config);
                 });
@@ -343,7 +277,7 @@ impl SOEM {
             let wkc = Arc::new(AtomicI32::new(0));
             let wkc_clone = wkc.clone();
             let io_map = self.io_map.clone();
-            match self.config.timer_strategy {
+            match self.timer_strategy {
                 TimerStrategy::Sleep => {
                     self.ecatth_handle = Some(std::thread::spawn(move || {
                         Self::ecat_run_with_sleep(
@@ -406,7 +340,7 @@ impl SOEM {
                 return Err(SOEMError::NotResponding.into());
             }
 
-            if self.config.sync_mode == SyncMode::FreeRun {
+            if self.sync_mode == SyncMode::FreeRun {
                 (1..=ec_slavecount as u16).for_each(|i| {
                     dc_config(&mut ecx_context as *mut _, i);
                 });
@@ -415,7 +349,7 @@ impl SOEM {
             let is_open = self.is_open.clone();
             let on_lost = self.on_lost.take();
             let logger = self.logger.clone();
-            let state_check_interval = self.config.state_check_interval;
+            let state_check_interval = self.state_check_interval;
             self.ecat_check_th = Some(std::thread::spawn(move || {
                 let error_handler = EcatErrorHandler { on_lost, logger };
                 while is_open.load(Ordering::Acquire) {
@@ -474,8 +408,8 @@ unsafe extern "C" fn dc_config(context: *mut ecx_contextt, slave: u16) -> i32 {
     0
 }
 
-impl<T: Transducer> Link<T> for SOEM {
-    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+impl Link for SOEM {
+    fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         if self.is_open.load(Ordering::Acquire) {
             return Ok(());
         }
@@ -558,7 +492,7 @@ impl<T: Transducer> Link<T> for SOEM {
     }
 
     fn timeout(&self) -> Duration {
-        self.config.timeout
+        self.timeout
     }
 }
 
