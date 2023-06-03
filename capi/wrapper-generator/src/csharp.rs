@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2023
+ * Last Modified: 02/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -88,90 +88,95 @@ impl CSharpGenerator {
         }
     }
 
-    fn to_arg_ty(arg: &Arg) -> &str {
+    fn to_arg_ty(arg: &Arg) -> String {
         match arg.pointer {
             0 => match arg.ty {
-                Type::Int8 => "sbyte",
-                Type::Int16 => "short",
-                Type::Int32 => "int",
-                Type::Int64 => "long",
-                Type::UInt8 => "byte",
-                Type::UInt16 => "ushort",
-                Type::UInt32 => "uint",
-                Type::UInt64 => "ulong",
+                Type::Int8 => "sbyte".to_owned(),
+                Type::Int16 => "short".to_owned(),
+                Type::Int32 => "int".to_owned(),
+                Type::Int64 => "long".to_owned(),
+                Type::UInt8 => "byte".to_owned(),
+                Type::UInt16 => "ushort".to_owned(),
+                Type::UInt32 => "uint".to_owned(),
+                Type::UInt64 => "ulong".to_owned(),
                 Type::Void => panic!("void is not supported in argument"),
-                Type::Char => "char",
-                Type::Float32 => "float",
-                Type::Float64 => "double",
-                Type::Bool => "[MarshalAs(UnmanagedType.U1)] bool",
-                Type::VoidPtr => "IntPtr",
-                Type::Custom(ref s) => s,
+                Type::Char => "char".to_owned(),
+                Type::Float32 => "float".to_owned(),
+                Type::Float64 => "double".to_owned(),
+                Type::Bool => "[MarshalAs(UnmanagedType.U1)] bool".to_owned(),
+                Type::VoidPtr => "IntPtr".to_owned(),
+                Type::Custom(ref s) => s.to_owned(),
             },
             1 => match arg.ty {
                 Type::Int8 => match arg.inout {
-                    InOut::In => "sbyte[]?",
-                    InOut::Out => "out sbyte",
+                    InOut::In => "sbyte[]?".to_owned(),
+                    InOut::Out => "out sbyte".to_owned(),
                     InOut::InOut => panic!("INOUT sbyte is not supported."),
                 },
                 Type::Int16 => match arg.inout {
-                    InOut::In => "short[]?",
-                    InOut::Out => "out short",
+                    InOut::In => "short[]?".to_owned(),
+                    InOut::Out => "out short".to_owned(),
                     InOut::InOut => panic!("INOUT short is not supported."),
                 },
                 Type::Int32 => match arg.inout {
-                    InOut::In => "short[]?",
-                    InOut::Out => "out short",
+                    InOut::In => "short[]?".to_owned(),
+                    InOut::Out => "out short".to_owned(),
                     InOut::InOut => panic!("INOUT short is not supported."),
                 },
                 Type::Int64 => match arg.inout {
-                    InOut::In => "short[]?",
-                    InOut::Out => "out short",
+                    InOut::In => "short[]?".to_owned(),
+                    InOut::Out => "out short".to_owned(),
                     InOut::InOut => panic!("INOUT short is not supported."),
                 },
                 Type::UInt8 => match arg.inout {
-                    InOut::In => "byte[]?",
-                    InOut::Out => "out byte",
+                    InOut::In => "byte[]?".to_owned(),
+                    InOut::Out => "out byte".to_owned(),
                     InOut::InOut => panic!("INOUT byte is not supported."),
                 },
                 Type::UInt16 => match arg.inout {
-                    InOut::In => "ushort[]?",
-                    InOut::Out => "out ushort",
+                    InOut::In => "ushort[]?".to_owned(),
+                    InOut::Out => "out ushort".to_owned(),
                     InOut::InOut => panic!("INOUT ushort is not supported."),
                 },
                 Type::UInt32 => match arg.inout {
-                    InOut::In => "uint[]?",
-                    InOut::Out => "out uint",
+                    InOut::In => "uint[]?".to_owned(),
+                    InOut::Out => "out uint".to_owned(),
                     InOut::InOut => panic!("INOUT uint is not supported."),
                 },
                 Type::UInt64 => match arg.inout {
-                    InOut::In => "ulong[]?",
-                    InOut::Out => "out ulong",
+                    InOut::In => "ulong[]?".to_owned(),
+                    InOut::Out => "out ulong".to_owned(),
                     InOut::InOut => panic!("INOUT ulong is not supported."),
                 },
                 Type::Char => match arg.inout {
-                    InOut::In => "string",
-                    InOut::Out => "byte[]",
+                    InOut::In => "string".to_owned(),
+                    InOut::Out => "byte[]".to_owned(),
                     InOut::InOut => panic!("INOUT char* is not supported."),
                 },
                 Type::Float32 => match arg.inout {
-                    InOut::In => "float[]?",
-                    InOut::Out => "out float",
+                    InOut::In => "float[]?".to_owned(),
+                    InOut::Out => "out float".to_owned(),
                     InOut::InOut => panic!("INOUT float is not supported."),
                 },
                 Type::Float64 => match arg.inout {
-                    InOut::In => "double[]?",
-                    InOut::Out => "out double",
+                    InOut::In => "double[]?".to_owned(),
+                    InOut::Out => "out double".to_owned(),
                     InOut::InOut => panic!("INOUT double is not supported."),
                 },
                 Type::Bool => match arg.inout {
-                    InOut::In => "bool[]?",
-                    InOut::Out => "out bool",
+                    InOut::In => "bool[]?".to_owned(),
+                    InOut::Out => "out bool".to_owned(),
                     InOut::InOut => panic!("INOUT bool is not supported."),
                 },
                 Type::VoidPtr => match arg.inout {
-                    InOut::In => panic!("void** is not supported."),
-                    InOut::Out => "out IntPtr",
+                    InOut::In => "IntPtr[]?".to_owned(),
+                    InOut::Out => "out IntPtr".to_owned(),
                     InOut::InOut => panic!("INOUT double is not supported."),
+                },
+                Type::Custom(ref s) => match arg.inout {
+                    InOut::In => format!("{}[]?", s),
+                    InOut::Out => unimplemented!(),
+                    InOut::InOut => panic!("INOUT {} is not supported.", s),
                 },
                 _ => unimplemented!(),
             },

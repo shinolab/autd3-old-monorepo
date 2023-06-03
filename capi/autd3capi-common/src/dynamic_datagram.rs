@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/05/2023
+ * Last Modified: 02/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -22,7 +22,10 @@ use autd3::{
     prelude::*,
 };
 
-use crate::dynamic_transducer::{DynamicTransducer, TransMode};
+use crate::{
+    dynamic_transducer::{DynamicTransducer, TransMode},
+    G, M,
+};
 
 pub trait DynamicDatagram {
     #[allow(clippy::type_complexity)]
@@ -35,7 +38,7 @@ pub trait DynamicDatagram {
     fn timeout(&self) -> Option<Duration>;
 }
 
-impl Datagram<DynamicTransducer> for (TransMode, &mut Box<dyn DynamicDatagram>) {
+impl Datagram<DynamicTransducer> for (TransMode, Box<Box<dyn DynamicDatagram>>) {
     type H = Box<dyn Operation>;
     type B = Box<dyn Operation>;
 
@@ -55,8 +58,8 @@ impl Datagram<DynamicTransducer> for (TransMode, &mut Box<dyn DynamicDatagram>) 
 impl Datagram<DynamicTransducer>
     for (
         TransMode,
-        &mut Box<dyn DynamicDatagram>,
-        &mut Box<dyn DynamicDatagram>,
+        Box<Box<dyn DynamicDatagram>>,
+        Box<Box<dyn DynamicDatagram>>,
     )
 {
     type H = Box<dyn Operation>;
@@ -67,8 +70,8 @@ impl Datagram<DynamicTransducer>
         geometry: &Geometry<DynamicTransducer>,
     ) -> Result<(Self::H, Self::B), AUTDInternalError> {
         let mode = self.0;
-        let (h, _) = (**self.1).operation(mode, geometry)?;
-        let (_, b) = (**self.2).operation(mode, geometry)?;
+        let (h, _) = self.1.operation(mode, geometry)?;
+        let (_, b) = self.2.operation(mode, geometry)?;
         Ok((h, b))
     }
 }
@@ -347,5 +350,69 @@ impl DynamicDatagram for Amplitudes {
 
     fn timeout(&self) -> Option<Duration> {
         <Self as Datagram<AdvancedPhaseTransducer>>::timeout(self)
+    }
+}
+
+impl DynamicDatagram for Box<G> {
+    fn operation(
+        &mut self,
+        mode: TransMode,
+        geometry: &Geometry<DynamicTransducer>,
+    ) -> Result<
+        (
+            Box<dyn autd3::core::Operation>,
+            Box<dyn autd3::core::Operation>,
+        ),
+        autd3::core::error::AUTDInternalError,
+    > {
+        match mode {
+            TransMode::Legacy => Ok((
+                Box::<autd3::core::NullHeader>::default(),
+                Box::new(autd3::core::GainLegacy::new(self.calc(geometry)?, || {
+                    geometry.transducers().map(|tr| tr.cycle()).collect()
+                })),
+            )),
+            TransMode::Advanced => Ok((
+                Box::<autd3::core::NullHeader>::default(),
+                Box::new(autd3::core::GainAdvanced::new(self.calc(geometry)?, || {
+                    geometry.transducers().map(|tr| tr.cycle()).collect()
+                })),
+            )),
+            TransMode::AdvancedPhase => Ok((
+                Box::<autd3::core::NullHeader>::default(),
+                Box::new(autd3::core::GainAdvancedPhase::new(
+                    self.calc(geometry)?,
+                    || geometry.transducers().map(|tr| tr.cycle()).collect(),
+                )),
+            )),
+        }
+    }
+
+    fn timeout(&self) -> Option<Duration> {
+        None
+    }
+}
+
+impl DynamicDatagram for Box<M> {
+    fn operation(
+        &mut self,
+        _: TransMode,
+        _: &Geometry<DynamicTransducer>,
+    ) -> Result<
+        (
+            Box<dyn autd3::core::Operation>,
+            Box<dyn autd3::core::Operation>,
+        ),
+        autd3::core::error::AUTDInternalError,
+    > {
+        let freq_div = self.sampling_frequency_division();
+        Ok((
+            Box::new(autd3::core::Modulation::new(self.calc()?, freq_div)),
+            Box::<autd3::core::NullBody>::default(),
+        ))
+    }
+
+    fn timeout(&self) -> Option<Duration> {
+        None
     }
 }
