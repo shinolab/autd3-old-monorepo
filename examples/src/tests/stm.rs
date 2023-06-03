@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/06/2023
+ * Last Modified: 03/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -13,7 +13,7 @@
 
 use autd3::prelude::*;
 
-pub fn focus_stm<T: Transducer, L: Link>(
+pub fn focus_stm<T: Transducer, L: Link<T>>(
     autd: &mut Controller<T, L>,
 ) -> anyhow::Result<bool, AUTDError> {
     use autd3::prelude::*;
@@ -35,7 +35,7 @@ pub fn focus_stm<T: Transducer, L: Link>(
     autd.send((m, stm))
 }
 
-pub fn gain_stm<T: Transducer, L: Link>(
+pub fn gain_stm<T: Transducer, L: Link<T>>(
     autd: &mut Controller<T, L>,
 ) -> anyhow::Result<bool, AUTDError> {
     use autd3::prelude::*;
