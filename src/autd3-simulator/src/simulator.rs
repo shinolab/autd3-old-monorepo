@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2023
+ * Last Modified: 03/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -322,8 +322,7 @@ impl Simulator {
                                         qw as _, qx as _, qy as _, qz as _,
                                     ),
                                 );
-                                for (_, p, r) in
-                                    AUTD3::new_with_quaternion(pos, rot).get_transducers(0)
+                                for (_, p, r) in AUTD3::with_quaternion(pos, rot).get_transducers(0)
                                 {
                                     sources.add(
                                         to_gl_pos(Vector3::new(p.x as _, p.y as _, p.z as _)),
