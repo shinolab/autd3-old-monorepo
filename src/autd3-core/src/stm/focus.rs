@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/06/2023
+ * Last Modified: 02/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -15,7 +15,7 @@ use crate::{datagram::Datagram, error::AUTDInternalError, geometry::*};
 
 use autd3_driver::*;
 
-use super::STM;
+use super::STMProps;
 
 pub struct ControlPoint {
     point: Vector3,
@@ -54,15 +54,13 @@ impl From<(Vector3, u8)> for ControlPoint {
 
 pub struct FocusSTM {
     control_points: Vec<ControlPoint>,
-    freq_div: Option<u32>,
-    freq: float,
-    start_idx: Option<u16>,
-    finish_idx: Option<u16>,
+    props: STMProps,
 }
 
 impl FocusSTM {
     pub fn add_focus<C: Into<ControlPoint>>(mut self, point: C) -> Self {
         self.control_points.push(point.into());
+        self.props.size = self.control_points.len();
         self
     }
 
@@ -72,11 +70,19 @@ impl FocusSTM {
     ) -> Self {
         self.control_points
             .extend(iter.into_iter().map(|c| c.into()));
+        self.props.size = self.control_points.len();
         self
     }
 
     pub fn control_points(&self) -> &[ControlPoint] {
         &self.control_points
+    }
+
+    pub fn with_props(props: STMProps) -> Self {
+        Self {
+            control_points: Vec::new(),
+            props,
+        }
     }
 }
 
@@ -116,86 +122,71 @@ impl<T: Transducer> Datagram<T> for FocusSTM {
         let props = autd3_driver::FocusSTMProps {
             freq_div: self.sampling_freq_div(),
             sound_speed: geometry.sound_speed,
-            start_idx: self.start_idx,
-            finish_idx: self.finish_idx,
+            start_idx: self.props.start_idx,
+            finish_idx: self.props.finish_idx,
         };
         Ok((Self::H::default(), Self::B::new(points, *tr_num_min, props)))
     }
 }
 
-impl STM for FocusSTM {
-    fn new(freq: float) -> Self {
+impl FocusSTM {
+    pub fn new(freq: float) -> Self {
         Self {
             control_points: vec![],
-            freq_div: None,
-            freq,
-            start_idx: None,
-            finish_idx: None,
+            props: STMProps::new(freq),
         }
     }
 
-    fn with_sampling_freq_div(freq_div: u32) -> Self {
+    pub fn with_sampling_freq_div(freq_div: u32) -> Self {
         Self {
             control_points: vec![],
-            freq_div: Some(freq_div),
-            freq: 0.,
-            start_idx: None,
-            finish_idx: None,
+            props: STMProps::with_sampling_freq_div(freq_div),
         }
     }
 
-    fn with_sampling_freq(freq: float) -> Self {
+    pub fn with_sampling_freq(freq: float) -> Self {
         Self {
             control_points: vec![],
-            freq_div: Some((FPGA_SUB_CLK_FREQ as float / freq) as u32),
-            freq: 0.,
-            start_idx: None,
-            finish_idx: None,
+            props: STMProps::with_sampling_freq(freq),
         }
     }
 
-    fn size(&self) -> usize {
-        self.control_points.len()
-    }
-
-    fn with_start_idx(self, idx: Option<u16>) -> Self {
+    pub fn with_start_idx(self, idx: Option<u16>) -> Self {
         Self {
-            start_idx: idx,
+            props: self.props.with_start_idx(idx),
             ..self
         }
     }
 
-    fn with_finish_idx(self, idx: Option<u16>) -> Self {
+    pub fn with_finish_idx(self, idx: Option<u16>) -> Self {
         Self {
-            finish_idx: idx,
+            props: self.props.with_finish_idx(idx),
             ..self
         }
     }
 
-    fn start_idx(&self) -> Option<u16> {
-        self.start_idx
+    pub fn start_idx(&self) -> Option<u16> {
+        self.props.start_idx()
     }
 
-    fn finish_idx(&self) -> Option<u16> {
-        self.finish_idx
+    pub fn finish_idx(&self) -> Option<u16> {
+        self.props.finish_idx()
     }
 
-    fn freq(&self) -> f64 {
-        self.freq_div.map_or(self.freq, |div| {
-            FPGA_SUB_CLK_FREQ as float / div as float / self.size() as float
-        })
+    pub fn size(&self) -> usize {
+        self.props.size()
     }
 
-    fn sampling_freq(&self) -> f64 {
-        self.freq_div
-            .map_or((self.freq * self.size() as float) as _, |div| {
-                FPGA_SUB_CLK_FREQ as float / div as float
-            })
+    pub fn freq(&self) -> f64 {
+        self.props.freq()
     }
 
-    fn sampling_freq_div(&self) -> u32 {
-        self.freq_div
-            .unwrap_or((FPGA_SUB_CLK_FREQ as float / (self.freq * self.size() as float)) as _)
+    pub fn sampling_freq(&self) -> f64 {
+        self.props.sampling_freq()
+    }
+
+    pub fn sampling_freq_div(&self) -> u32 {
+        self.props.sampling_freq_div()
     }
 }
 

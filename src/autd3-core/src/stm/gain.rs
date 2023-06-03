@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/06/2023
+ * Last Modified: 02/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -13,18 +13,14 @@
 
 use crate::{datagram::*, error::AUTDInternalError, gain::Gain, geometry::*};
 
-use autd3_driver::{float, GainSTMProps, Mode, FPGA_SUB_CLK_FREQ};
+use autd3_driver::{float, GainSTMProps, Mode};
 
-use super::STM;
+use super::STMProps;
 
-#[derive(Default)]
 pub struct GainSTM<'a, T: Transducer> {
     gains: Vec<Box<dyn Gain<T> + 'a>>,
     mode: Mode,
-    freq: float,
-    freq_div: Option<u32>,
-    start_idx: Option<u16>,
-    finish_idx: Option<u16>,
+    props: STMProps,
 }
 
 impl<'a, T: Transducer> GainSTM<'a, T> {
@@ -36,11 +32,13 @@ impl<'a, T: Transducer> GainSTM<'a, T> {
 impl<'a, T: Transducer> GainSTM<'a, T> {
     pub fn add_gain<G: Gain<T> + 'a>(mut self, gain: G) -> Self {
         self.gains.push(Box::new(gain));
+        self.props.size = self.gains.len();
         self
     }
 
     pub fn add_gain_boxed(mut self, gain: Box<dyn Gain<T>>) -> Self {
         self.gains.push(gain);
+        self.props.size = self.gains.len();
         self
     }
 
@@ -49,6 +47,7 @@ impl<'a, T: Transducer> GainSTM<'a, T> {
         iter: I,
     ) -> Self {
         self.gains.extend(iter);
+        self.props.size = self.gains.len();
         self
     }
 
@@ -59,84 +58,89 @@ impl<'a, T: Transducer> GainSTM<'a, T> {
     pub fn gains_mut(&mut self) -> &mut [Box<dyn Gain<T> + 'a>] {
         &mut self.gains
     }
+
+    pub fn mode(&self) -> Mode {
+        self.mode
+    }
+
+    pub fn with_props(props: STMProps) -> Self {
+        Self {
+            gains: Vec::new(),
+            mode: Mode::PhaseDutyFull,
+            props,
+        }
+    }
+
+    pub fn with_props_mode(props: STMProps, mode: Mode) -> Self {
+        Self {
+            gains: Vec::new(),
+            mode,
+            props,
+        }
+    }
 }
 
-impl<'a, T: Transducer> STM for GainSTM<'a, T> {
-    fn new(freq: float) -> Self {
+impl<'a, T: Transducer> GainSTM<'a, T> {
+    pub fn new(freq: float) -> Self {
         Self {
             gains: vec![],
             mode: Mode::PhaseDutyFull,
-            freq,
-            freq_div: None,
-            start_idx: None,
-            finish_idx: None,
+            props: STMProps::new(freq),
         }
     }
 
-    fn with_sampling_freq_div(freq_div: u32) -> Self {
+    pub fn with_sampling_freq_div(freq_div: u32) -> Self {
         Self {
             gains: vec![],
             mode: Mode::PhaseDutyFull,
-            freq_div: Some(freq_div),
-            freq: 0.,
-            start_idx: None,
-            finish_idx: None,
+            props: STMProps::with_sampling_freq_div(freq_div),
         }
     }
 
-    fn with_sampling_freq(freq: float) -> Self {
+    pub fn with_sampling_freq(freq: float) -> Self {
         Self {
             gains: vec![],
             mode: Mode::PhaseDutyFull,
-            freq_div: Some((FPGA_SUB_CLK_FREQ as float / freq) as u32),
-            freq: 0.,
-            start_idx: None,
-            finish_idx: None,
+            props: STMProps::with_sampling_freq(freq),
         }
     }
 
-    fn with_start_idx(self, idx: Option<u16>) -> Self {
+    pub fn with_start_idx(self, idx: Option<u16>) -> Self {
         Self {
-            start_idx: idx,
+            props: self.props.with_start_idx(idx),
             ..self
         }
     }
 
-    fn with_finish_idx(self, idx: Option<u16>) -> Self {
+    pub fn with_finish_idx(self, idx: Option<u16>) -> Self {
         Self {
-            finish_idx: idx,
+            props: self.props.with_finish_idx(idx),
             ..self
         }
     }
 
-    fn size(&self) -> usize {
-        self.gains.len()
+    pub fn start_idx(&self) -> Option<u16> {
+        self.props.start_idx()
     }
 
-    fn start_idx(&self) -> Option<u16> {
-        self.start_idx
+    pub fn finish_idx(&self) -> Option<u16> {
+        self.props.finish_idx()
     }
 
-    fn finish_idx(&self) -> Option<u16> {
-        self.finish_idx
+    pub fn size(&self) -> usize {
+        self.props.size()
     }
 
-    fn freq(&self) -> f64 {
-        self.freq_div.map_or(self.freq, |div| {
-            FPGA_SUB_CLK_FREQ as float / div as float / self.size() as float
-        })
+    pub fn freq(&self) -> f64 {
+        self.props.freq()
     }
 
-    fn sampling_freq(&self) -> f64 {
-        self.freq_div
-            .map_or((self.freq * self.size() as float) as _, |div| {
-                FPGA_SUB_CLK_FREQ as float / div as float
-            })
+    pub fn sampling_freq(&self) -> f64 {
+        self.props.sampling_freq()
     }
 
-    fn sampling_freq_div(&self) -> u32 {
-        self.freq_div
-            .unwrap_or((FPGA_SUB_CLK_FREQ as float / (self.freq * self.size() as float)) as _)
+    pub fn sampling_freq_div(&self) -> u32 {
+        self.props.sampling_freq_div()
     }
 }
 
@@ -156,8 +160,8 @@ impl<'a, T: Transducer> Datagram<T> for GainSTM<'a, T> {
         let props = GainSTMProps {
             mode: self.mode,
             freq_div: self.sampling_freq_div(),
-            finish_idx: self.finish_idx,
-            start_idx: self.start_idx,
+            finish_idx: self.props.finish_idx,
+            start_idx: self.props.start_idx,
         };
         Ok((
             Self::H::default(),
@@ -172,6 +176,7 @@ impl<'a, T: Transducer> Datagram<T> for GainSTM<'a, T> {
 mod tests {
     use super::*;
     use assert_approx_eq::assert_approx_eq;
+    use autd3_driver::FPGA_SUB_CLK_FREQ;
 
     struct NullGain {}
 
