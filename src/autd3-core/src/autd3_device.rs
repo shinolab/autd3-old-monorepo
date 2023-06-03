@@ -4,7 +4,7 @@
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2023
+ * Last Modified: 03/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -41,7 +41,7 @@ impl AUTD3 {
         let q = UnitQuaternion::from_axis_angle(&Vector3::z_axis(), euler_angles.x)
             * UnitQuaternion::from_axis_angle(&Vector3::y_axis(), euler_angles.y)
             * UnitQuaternion::from_axis_angle(&Vector3::z_axis(), euler_angles.z);
-        Self::new_with_quaternion(position, q)
+        Self::with_quaternion(position, q)
     }
 
     /// Create AUTD3 device
@@ -51,7 +51,7 @@ impl AUTD3 {
     /// * `pos` - Global position of AUTD.
     /// * `rot` - Rotation quaternion.
     ///
-    pub fn new_with_quaternion<Q>(position: Vector3, rotation: Q) -> Self
+    pub fn with_quaternion<Q>(position: Vector3, rotation: Q) -> Self
     where
         UnitQuaternion: From<Q>,
     {
