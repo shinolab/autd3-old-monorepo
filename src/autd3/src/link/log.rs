@@ -4,14 +4,14 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/06/2023
+ * Last Modified: 02/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
-use std::time::Duration;
+use std::{marker::PhantomData, time::Duration};
 
 use crate::core::{
     error::AUTDInternalError, link::Link, CPUControlFlags, RxDatagram, TxDatagram, MSG_CLEAR,
@@ -24,13 +24,14 @@ use spdlog::prelude::*;
 
 pub use spdlog::Level;
 
-pub struct Log<L: Link> {
+pub struct Log<T: Transducer, L: Link<T>> {
     link: L,
     logger: Logger,
     synchronized: bool,
+    _trans: PhantomData<T>,
 }
 
-impl<L: Link> Log<L> {
+impl<T: Transducer, L: Link<T>> Log<T, L> {
     pub fn new(link: L) -> Self {
         let logger = crate::core::link::get_logger();
         logger.set_level_filter(spdlog::LevelFilter::MoreSevereEqual(spdlog::Level::Info));
@@ -38,6 +39,7 @@ impl<L: Link> Log<L> {
             link,
             logger,
             synchronized: false,
+            _trans: PhantomData,
         }
     }
 
@@ -51,8 +53,8 @@ impl<L: Link> Log<L> {
     }
 }
 
-impl<L: Link> Link for Log<L> {
-    fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+impl<T: Transducer, L: Link<T>> Link<T> for Log<T, L> {
+    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         trace!(logger: self.logger, "Open Log link");
 
         if self.is_open() {

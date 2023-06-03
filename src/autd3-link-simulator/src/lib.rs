@@ -4,7 +4,7 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/06/2023
+ * Last Modified: 02/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -56,8 +56,8 @@ impl Simulator {
     }
 }
 
-impl Link for Simulator {
-    fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+impl<T: Transducer> Link<T> for Simulator {
+    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         self.socket = Some(match TcpStream::connect(&self.server_addr[..]) {
             Ok(s) => s,
             Err(e) => {

@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/06/2023
+ * Last Modified: 02/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -408,8 +408,8 @@ unsafe extern "C" fn dc_config(context: *mut ecx_contextt, slave: u16) -> i32 {
     0
 }
 
-impl Link for SOEM {
-    fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+impl<T: Transducer> Link<T> for SOEM {
+    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         if self.is_open.load(Ordering::Acquire) {
             return Ok(());
         }

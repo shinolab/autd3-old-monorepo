@@ -4,7 +4,7 @@
  * Created Date: 27/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/06/2023
+ * Last Modified: 03/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -66,8 +66,8 @@ impl RemoteTwinCAT {
     }
 }
 
-impl Link for RemoteTwinCAT {
-    fn open<T: Transducer>(&mut self, _geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+impl<T: Transducer> Link<T> for RemoteTwinCAT {
+    fn open(&mut self, _geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         let octets = self
             .server_ams_net_id
             .split('.')
@@ -186,7 +186,7 @@ impl Link for RemoteTwinCAT {
                 &addr as _,
                 INDEX_GROUP,
                 INDEX_OFFSET_BASE_READ,
-                (rx.messages().len() * std::mem::size_of::<autd3_core::RxMessage>()) as _,
+                std::mem::size_of_val(rx.messages()) as _,
                 rx.messages_mut().as_mut_ptr() as _,
                 &mut receive_bytes as _,
             )
