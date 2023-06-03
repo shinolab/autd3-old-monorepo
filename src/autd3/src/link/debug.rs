@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/06/2023
+ * Last Modified: 02/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -64,8 +64,8 @@ impl Default for Debug {
     }
 }
 
-impl Link for Debug {
-    fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+impl<T: Transducer> Link<T> for Debug {
+    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         debug!(logger: self.logger,"Open Debug link");
 
         if self.is_open {
@@ -250,5 +250,38 @@ impl Link for Debug {
 
     fn timeout(&self) -> Duration {
         self.timeout
+    }
+
+    fn send_receive(
+        &mut self,
+        tx: &TxDatagram,
+        rx: &mut RxDatagram,
+        timeout: Duration,
+    ) -> Result<bool, AUTDInternalError> {
+        if !<Self as Link<T>>::send(self, tx)? {
+            return Ok(false);
+        }
+        if timeout.is_zero() {
+            return <Self as Link<T>>::receive(self, rx);
+        }
+        <Self as Link<T>>::wait_msg_processed(self, tx.header().msg_id, rx, timeout)
+    }
+
+    fn wait_msg_processed(
+        &mut self,
+        msg_id: u8,
+        rx: &mut RxDatagram,
+        timeout: Duration,
+    ) -> Result<bool, AUTDInternalError> {
+        let start = std::time::Instant::now();
+        loop {
+            std::thread::sleep(std::time::Duration::from_millis(1));
+            if <Self as Link<T>>::receive(self, rx)? && rx.is_msg_processed(msg_id) {
+                return Ok(true);
+            }
+            if start.elapsed() > timeout {
+                return Ok(false);
+            }
+        }
     }
 }
