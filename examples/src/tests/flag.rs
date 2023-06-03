@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/06/2023
+ * Last Modified: 03/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,7 +21,7 @@ use std::{
 
 use autd3::prelude::*;
 
-pub fn flag<T: Transducer, L: Link>(autd: &mut Controller<T, L>) -> Result<bool, AUTDError> {
+pub fn flag<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> Result<bool, AUTDError> {
     autd.reads_fpga_info(true);
 
     println!("press any key to force fan...");
@@ -32,12 +32,11 @@ pub fn flag<T: Transducer, L: Link>(autd: &mut Controller<T, L>) -> Result<bool,
     autd.send(UpdateFlag::default())?;
 
     let fin = Arc::new(AtomicBool::new(false));
-    let fin_ = fin.clone();
     std::thread::scope(|s| {
         s.spawn(|| {
             let prompts = ['-', '/', '|', '\\'];
             let mut idx = 0;
-            while !fin_.load(Ordering::Relaxed) {
+            while !fin.load(Ordering::Relaxed) {
                 let states = autd.fpga_info().unwrap();
                 println!("{} FPGA Status...", prompts[idx / 1000 % prompts.len()]);
                 idx += 1;
