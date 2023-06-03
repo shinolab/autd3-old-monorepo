@@ -4,7 +4,7 @@
  * Created Date: 21/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/06/2023
+ * Last Modified: 02/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -48,8 +48,8 @@ impl RemoteSOEM {
     }
 }
 
-impl Link for RemoteSOEM {
-    fn open<T: Transducer>(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
+impl<T: Transducer> Link<T> for RemoteSOEM {
+    fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         self.socket = Some(match TcpStream::connect(&self.server_addrs[..]) {
             Ok(s) => s,
             Err(e) => {
