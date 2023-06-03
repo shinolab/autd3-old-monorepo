@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 01/06/2023
+ * Last Modified: 03/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -12,18 +12,112 @@
  */
 
 use std::{
+    marker::PhantomData,
     sync::atomic::{self, AtomicU8},
     time::Duration,
 };
 
 use autd3_core::{
-    clear::Clear, datagram::Datagram, geometry::*, link::Link, stop::Stop, FPGAInfo, FirmwareInfo,
-    Operation, RxDatagram, TxDatagram, MSG_BEGIN, MSG_END,
+    clear::Clear, datagram::Datagram, float, geometry::*, link::Link, stop::Stop, FPGAInfo,
+    FirmwareInfo, Operation, RxDatagram, TxDatagram, METER, MSG_BEGIN, MSG_END,
 };
 
-use crate::error::AUTDError;
+use crate::{error::AUTDError, link::NullLink};
 
-pub struct Controller<T: Transducer, L: Link> {
+pub struct ControllerBuilder<T: Transducer> {
+    attenuation: float,
+    sound_speed: float,
+    transducers: Vec<(usize, Vector3, UnitQuaternion)>,
+    device_map: Vec<usize>,
+    phantom: PhantomData<T>,
+}
+
+impl<T: Transducer> Default for ControllerBuilder<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T: Transducer> ControllerBuilder<T> {
+    pub fn new() -> ControllerBuilder<T> {
+        Self {
+            attenuation: 0.0,
+            sound_speed: 340.0 * METER,
+            transducers: vec![],
+            device_map: vec![],
+            phantom: PhantomData,
+        }
+    }
+
+    pub fn attenuation(self, attenuation: float) -> Self {
+        Self {
+            attenuation,
+            ..self
+        }
+    }
+
+    pub fn sound_speed(self, sound_speed: float) -> Self {
+        Self {
+            sound_speed,
+            ..self
+        }
+    }
+
+    pub fn add_device<D: Device>(mut self, dev: D) -> Self {
+        let id = self.transducers.len();
+        let mut t = dev.get_transducers(id);
+        self.device_map.push(t.len());
+        self.transducers.append(&mut t);
+        self
+    }
+
+    pub fn open_with<L: Link<T>>(self, link: L) -> Result<Controller<T, L>, AUTDError> {
+        Controller::open_impl(
+            Geometry::<T>::new(
+                self.transducers
+                    .iter()
+                    .map(|&(id, pos, rot)| T::new(id, pos, rot))
+                    .collect(),
+                self.device_map.clone(),
+                self.sound_speed,
+                self.attenuation,
+            )?,
+            link,
+        )
+    }
+}
+
+impl ControllerBuilder<LegacyTransducer> {
+    pub fn advanced(self) -> ControllerBuilder<AdvancedTransducer> {
+        unsafe { std::mem::transmute(self) }
+    }
+
+    pub fn advanced_phase(self) -> ControllerBuilder<AdvancedPhaseTransducer> {
+        unsafe { std::mem::transmute(self) }
+    }
+}
+
+impl ControllerBuilder<AdvancedTransducer> {
+    pub fn legacy(self) -> ControllerBuilder<LegacyTransducer> {
+        unsafe { std::mem::transmute(self) }
+    }
+
+    pub fn advanced_phase(self) -> ControllerBuilder<AdvancedPhaseTransducer> {
+        unsafe { std::mem::transmute(self) }
+    }
+}
+
+impl ControllerBuilder<AdvancedPhaseTransducer> {
+    pub fn advanced(self) -> ControllerBuilder<AdvancedTransducer> {
+        unsafe { std::mem::transmute(self) }
+    }
+
+    pub fn legacy(self) -> ControllerBuilder<LegacyTransducer> {
+        unsafe { std::mem::transmute(self) }
+    }
+}
+
+pub struct Controller<T: Transducer, L: Link<T>> {
     link: L,
     geometry: Geometry<T>,
     tx_buf: TxDatagram,
@@ -33,8 +127,14 @@ pub struct Controller<T: Transducer, L: Link> {
     msg_id: AtomicU8,
 }
 
-impl<T: Transducer, L: Link> Controller<T, L> {
-    pub fn open(geometry: Geometry<T>, link: L) -> Result<Controller<T, L>, AUTDError> {
+impl Controller<LegacyTransducer, NullLink> {
+    pub fn builder() -> ControllerBuilder<LegacyTransducer> {
+        ControllerBuilder::<LegacyTransducer>::new()
+    }
+}
+
+impl<T: Transducer, L: Link<T>> Controller<T, L> {
+    pub(crate) fn open_impl(geometry: Geometry<T>, link: L) -> Result<Controller<T, L>, AUTDError> {
         let mut link = link;
         link.open(&geometry)?;
         let num_devices = geometry.num_devices();
@@ -92,6 +192,7 @@ impl<T: Transducer, L: Link> Controller<T, L> {
         self.reads_fpga_info.pack(&mut self.tx_buf);
 
         let timeout = timeout.unwrap_or(s.timeout().unwrap_or(self.link.timeout()));
+
         loop {
             self.tx_buf.header_mut().msg_id = self.get_id();
 
@@ -208,7 +309,7 @@ impl<T: Transducer, L: Link> Controller<T, L> {
     }
 }
 
-impl<T: Transducer, L: Link> Controller<T, L> {
+impl<T: Transducer, L: Link<T>> Controller<T, L> {
     pub fn get_id(&mut self) -> u8 {
         if self
             .msg_id
@@ -248,8 +349,8 @@ mod tests {
         }
     }
 
-    impl Link for EmulatorLink {
-        fn open<T: Transducer>(
+    impl<T: Transducer> Link<T> for EmulatorLink {
+        fn open(
             &mut self,
             _geometry: &Geometry<T>,
         ) -> Result<(), autd3_core::error::AUTDInternalError> {
@@ -284,14 +385,10 @@ mod tests {
 
     #[test]
     fn basic_usage() {
-        let geometry = Geometry::builder()
+        let mut autd = Controller::builder()
             .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
-            .build()
+            .open_with(EmulatorLink::new())
             .unwrap();
-
-        let link = EmulatorLink::new();
-
-        let mut autd = Controller::open(geometry, link).unwrap();
 
         let _firm_infos = autd.firmware_infos().unwrap();
 
