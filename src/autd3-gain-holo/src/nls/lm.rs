@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/05/2023
+ * Last Modified: 03/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -33,11 +33,11 @@ use nalgebra::ComplexField;
 pub struct LM<B: Backend> {
     foci: Vec<Vector3>,
     amps: Vec<float>,
-    pub eps_1: float,
-    pub eps_2: float,
-    pub tau: float,
-    pub k_max: usize,
-    pub initial: Vec<float>,
+    eps_1: float,
+    eps_2: float,
+    tau: float,
+    k_max: usize,
+    initial: Vec<float>,
     constraint: Constraint,
     backend: B,
 }
@@ -57,6 +57,26 @@ impl<B: Backend> LM<B> {
             backend,
             constraint: Constraint::Normalize,
         }
+    }
+
+    pub fn with_eps_1(self, eps_1: float) -> Self {
+        Self { eps_1, ..self }
+    }
+
+    pub fn with_eps_2(self, eps_2: float) -> Self {
+        Self { eps_2, ..self }
+    }
+
+    pub fn with_tau(self, tau: float) -> Self {
+        Self { tau, ..self }
+    }
+
+    pub fn with_k_max(self, k_max: usize) -> Self {
+        Self { k_max, ..self }
+    }
+
+    pub fn with_initial(self, initial: Vec<float>) -> Self {
+        Self { initial, ..self }
     }
 
     #[allow(clippy::many_single_char_names)]

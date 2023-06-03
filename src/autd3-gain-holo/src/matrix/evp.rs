@@ -4,7 +4,7 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/05/2023
+ * Last Modified: 03/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -31,7 +31,7 @@ use nalgebra::ComplexField;
 pub struct EVP<B: Backend> {
     foci: Vec<Vector3>,
     amps: Vec<float>,
-    pub gamma: float,
+    gamma: float,
     constraint: Constraint,
     backend: B,
 }
@@ -47,6 +47,10 @@ impl<B: Backend> EVP<B> {
             backend,
             constraint: Constraint::Uniform(1.),
         }
+    }
+
+    pub fn with_gamma(self, gamma: float) -> Self {
+        Self { gamma, ..self }
     }
 }
 
