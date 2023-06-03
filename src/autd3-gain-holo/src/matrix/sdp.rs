@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/05/2023
+ * Last Modified: 02/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -32,9 +32,9 @@ use rand::{thread_rng, Rng};
 pub struct SDP<B: Backend> {
     foci: Vec<Vector3>,
     amps: Vec<float>,
-    pub alpha: float,
-    pub lambda: float,
-    pub repeat: usize,
+    alpha: float,
+    lambda: float,
+    repeat: usize,
     constraint: Constraint,
     backend: B,
 }
@@ -52,6 +52,18 @@ impl<B: Backend> SDP<B> {
             backend,
             constraint: Constraint::Normalize,
         }
+    }
+
+    pub fn with_alpha(self, alpha: float) -> Self {
+        Self { alpha, ..self }
+    }
+
+    pub fn with_lambda(self, lambda: float) -> Self {
+        Self { lambda, ..self }
+    }
+
+    pub fn with_repeat(self, repeat: usize) -> Self {
+        Self { repeat, ..self }
     }
 }
 

@@ -1,35 +1,63 @@
 #[macro_export]
 macro_rules! impl_holo {
     ($backend:tt, $t:ty) => {
-        impl<$backend> $crate::HoloProps for $t
+        impl<$backend> $t
         where
             $backend: $crate::Backend,
         {
-            fn add_focus(&mut self, focus: Vector3, amp: float) {
-                self.foci.push(focus);
-                self.amps.push(amp);
+            pub fn add_focus(self, focus: Vector3, amp: float) -> Self {
+                let mut foci = self.foci;
+                let mut amps = self.amps;
+                foci.push(focus);
+                amps.push(amp);
+                Self { foci, amps, ..self }
             }
 
-            fn set_constraint(&mut self, constraint: Constraint) {
-                self.constraint = constraint;
+            pub fn with_constraint(self, constraint: Constraint) -> Self {
+                Self { constraint, ..self }
+            }
+
+            pub fn add_foci_from_iter<I: IntoIterator<Item = (Vector3, float)>>(
+                self,
+                iter: I,
+            ) -> Self {
+                let mut foci = self.foci;
+                let mut amps = self.amps;
+                for (focus, amp) in iter {
+                    foci.push(focus);
+                    amps.push(amp);
+                }
+                Self { foci, amps, ..self }
             }
         }
-
-        impl<$backend, T: Transducer> $crate::Holo<T> for $t where $backend: $crate::Backend {}
     };
 
     ($t:ty) => {
-        impl $crate::HoloProps for $t {
-            fn add_focus(&mut self, focus: Vector3, amp: float) {
-                self.foci.push(focus);
-                self.amps.push(amp);
+        impl $t {
+            pub fn add_focus(self, focus: Vector3, amp: float) -> Self {
+                let mut foci = self.foci;
+                let mut amps = self.amps;
+                foci.push(focus);
+                amps.push(amp);
+                Self { foci, amps, ..self }
             }
 
-            fn set_constraint(&mut self, constraint: Constraint) {
-                self.constraint = constraint;
+            pub fn with_constraint(self, constraint: Constraint) -> Self {
+                Self { constraint, ..self }
+            }
+
+            pub fn add_foci_from_iter<I: IntoIterator<Item = (Vector3, float)>>(
+                self,
+                iter: I,
+            ) -> Self {
+                let mut foci = self.foci;
+                let mut amps = self.amps;
+                for (focus, amp) in iter {
+                    foci.push(focus);
+                    amps.push(amp);
+                }
+                Self { foci, amps, ..self }
             }
         }
-
-        impl<T: Transducer> $crate::Holo<T> for $t {}
     };
 }
