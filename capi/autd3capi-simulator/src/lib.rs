@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2023
+ * Last Modified: 02/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -83,7 +83,7 @@ pub unsafe extern "C" fn AUTDSimulatorSettingsPath(
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDSimulatorRun(simulator: ConstPtr) -> i32 {
-    cast_without_ownership_mut!(simulator, Simulator).run()
+    cast_mut!(simulator, Simulator).run()
 }
 
 #[no_mangle]
@@ -93,7 +93,7 @@ pub unsafe extern "C" fn AUTDSimulatorSaveSettings(
     path: *const c_char,
     err: *mut c_char,
 ) -> bool {
-    let settings = cast_without_ownership!(simulator, Simulator).get_settings();
+    let settings = cast!(simulator, Simulator).get_settings();
 
     let settings_str = try_or_return!(serde_json::to_string_pretty(settings), err, false);
 

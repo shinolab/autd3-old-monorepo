@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2023
+ * Last Modified: 02/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -44,8 +44,5 @@ pub unsafe extern "C" fn AUTDGeometryViewerVsync(viewer: ConstPtr, vsync: bool) 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDGeometryViewerRun(viewer: ConstPtr, geometry: ConstPtr) -> i32 {
-    Box::from_raw(viewer as *mut GeometryViewer).run(cast_without_ownership!(
-        geometry,
-        Geometry<DynamicTransducer>
-    ))
+    Box::from_raw(viewer as *mut GeometryViewer).run(cast!(geometry, Geometry<DynamicTransducer>))
 }
