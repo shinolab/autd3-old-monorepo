@@ -4,7 +4,7 @@
  * Created Date: 10/11/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 29/05/2023
+ * Last Modified: 02/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -76,6 +76,15 @@ pub fn generate<P: AsRef<Path>>(crate_path: P) -> Result<()> {
                     "Level".to_string(),
                     "TimerStrategy".to_string(),
                     "GainSTMMode".to_string(),
+                    "ControllerPtr".to_string(),
+                    "GeometryPtr".to_string(),
+                    "ModulationPtr".to_string(),
+                    "GainPtr".to_string(),
+                    "LinkPtr".to_string(),
+                    "DatagramBodyPtr".to_string(),
+                    "DatagramHeaderPtr".to_string(),
+                    "DatagramSpecialPtr".to_string(),
+                    "STMPropsPtr".to_string()
                 ],
                 rename: vec![
                     ("float".to_string(), "double".to_string()),
@@ -83,6 +92,7 @@ pub fn generate<P: AsRef<Path>>(crate_path: P) -> Result<()> {
                 ]
                 .into_iter()
                 .collect(),
+                
                 ..Default::default()
             },
             function: cbindgen::FunctionConfig {

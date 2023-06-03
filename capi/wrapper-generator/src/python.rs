@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2023
+ * Last Modified: 02/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -65,7 +65,7 @@ impl PythonGenerator {
             Type::Float64 => "ctypes.c_double",
             Type::Bool => "ctypes.c_bool",
             Type::VoidPtr => "ctypes.c_void_p",
-            _ => unimplemented!(),
+            Type::Custom(ref s) => s,
         }
     }
 
@@ -82,45 +82,47 @@ impl PythonGenerator {
             Type::Float32 => "float",
             Type::Float64 => "float",
             Type::Bool => "bool",
-            _ => unimplemented!(),
+            Type::Custom(ref s) => s,
+            Type::VoidPtr => "ctypes.c_void_p",
+            t => unimplemented!("{:?}", t),
         }
     }
 
-    fn to_arg(arg: &Arg) -> &str {
+    fn to_arg(arg: &Arg) -> String {
         match arg.pointer {
             0 => match arg.ty {
-                Type::Int8 => "ctypes.c_int8",
-                Type::Int16 => "ctypes.c_int16",
-                Type::Int32 => "ctypes.c_int32",
-                Type::Int64 => "ctypes.c_int64",
-                Type::UInt8 => "ctypes.c_uint8",
-                Type::UInt16 => "ctypes.c_uint16",
-                Type::UInt32 => "ctypes.c_uint32",
-                Type::UInt64 => "ctypes.c_uint64",
+                Type::Int8 => "ctypes.c_int8".to_owned(),
+                Type::Int16 => "ctypes.c_int16".to_owned(),
+                Type::Int32 => "ctypes.c_int32".to_owned(),
+                Type::Int64 => "ctypes.c_int64".to_owned(),
+                Type::UInt8 => "ctypes.c_uint8".to_owned(),
+                Type::UInt16 => "ctypes.c_uint16".to_owned(),
+                Type::UInt32 => "ctypes.c_uint32".to_owned(),
+                Type::UInt64 => "ctypes.c_uint64".to_owned(),
                 Type::Void => panic!("void is not supported in argument"),
-                Type::Char => "ctypes.c_char",
-                Type::Float32 => "ctypes.c_float",
-                Type::Float64 => "ctypes.c_double",
-                Type::Bool => "ctypes.c_bool",
-                Type::VoidPtr => "ctypes.c_void_p",
-                Type::Custom(ref s) => s,
+                Type::Char => "ctypes.c_char".to_owned(),
+                Type::Float32 => "ctypes.c_float".to_owned(),
+                Type::Float64 => "ctypes.c_double".to_owned(),
+                Type::Bool => "ctypes.c_bool".to_owned(),
+                Type::VoidPtr => "ctypes.c_void_p".to_owned(),
+                Type::Custom(ref s) => s.to_string(),
             },
             1 => match arg.ty {
-                Type::Int8 => "ctypes.POINTER(ctypes.c_int8)",
-                Type::Int16 => "ctypes.POINTER(ctypes.c_int16)",
-                Type::Int32 => "ctypes.POINTER(ctypes.c_int32)",
-                Type::Int64 => "ctypes.POINTER(ctypes.c_int64)",
-                Type::UInt8 => "ctypes.POINTER(ctypes.c_uint8)",
-                Type::UInt16 => "ctypes.POINTER(ctypes.c_uint16)",
-                Type::UInt32 => "ctypes.POINTER(ctypes.c_uint32)",
-                Type::UInt64 => "ctypes.POINTER(ctypes.c_uint64)",
+                Type::Int8 => "ctypes.POINTER(ctypes.c_int8)".to_owned(),
+                Type::Int16 => "ctypes.POINTER(ctypes.c_int16)".to_owned(),
+                Type::Int32 => "ctypes.POINTER(ctypes.c_int32)".to_owned(),
+                Type::Int64 => "ctypes.POINTER(ctypes.c_int64)".to_owned(),
+                Type::UInt8 => "ctypes.POINTER(ctypes.c_uint8)".to_owned(),
+                Type::UInt16 => "ctypes.POINTER(ctypes.c_uint16)".to_owned(),
+                Type::UInt32 => "ctypes.POINTER(ctypes.c_uint32)".to_owned(),
+                Type::UInt64 => "ctypes.POINTER(ctypes.c_uint64)".to_owned(),
                 Type::Void => unimplemented!(),
-                Type::Char => "ctypes.c_char_p",
-                Type::Float32 => "ctypes.POINTER(ctypes.c_float)",
-                Type::Float64 => "ctypes.POINTER(ctypes.c_double)",
-                Type::Bool => "ctypes.POINTER(ctypes.c_bool)",
-                Type::VoidPtr => "ctypes.POINTER(ctypes.c_void_p)",
-                _ => unimplemented!(),
+                Type::Char => "ctypes.c_char_p".to_owned(),
+                Type::Float32 => "ctypes.POINTER(ctypes.c_float)".to_owned(),
+                Type::Float64 => "ctypes.POINTER(ctypes.c_double)".to_owned(),
+                Type::Bool => "ctypes.POINTER(ctypes.c_bool)".to_owned(),
+                Type::VoidPtr => "ctypes.POINTER(ctypes.c_void_p)".to_owned(),
+                Type::Custom(ref s) => format!("ctypes.POINTER({})", s),
             },
             _ => {
                 panic!("double or more pointer is not supported")
@@ -166,7 +168,7 @@ impl PythonGenerator {
                 Type::Float64 => "Any",
                 Type::Bool => "Any",
                 Type::VoidPtr => "Any",
-                _ => unimplemented!(),
+                Type::Custom(_) => "Any",
             },
             _ => {
                 panic!("double or more pointer is not supported")
