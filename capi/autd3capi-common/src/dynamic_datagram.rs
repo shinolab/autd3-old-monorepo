@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/06/2023
+ * Last Modified: 04/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -285,7 +285,7 @@ impl<'a> DynamicDatagram for GainSTM<'a, DynamicTransducer> {
     > {
         let props = GainSTMProps {
             mode: self.mode(),
-            freq_div: self.sampling_freq_div(),
+            freq_div: self.sampling_frequency_division(),
             finish_idx: self.finish_idx(),
             start_idx: self.start_idx(),
         };

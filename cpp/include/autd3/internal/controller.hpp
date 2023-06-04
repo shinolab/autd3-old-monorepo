@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2023
+// Last Modified: 04/06/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -26,6 +26,55 @@
 namespace autd3::internal {
 class Controller {
  public:
+  class Builder {
+    friend class Controller;
+
+   public:
+    Builder add_device(const AUTD3& device) {
+      if (const auto euler = device.euler(); euler.has_value()) {
+        _ptr = AUTDAddDevice(_ptr, device.position().x(), device.position().y(), device.position().z(), euler.value().x(), euler.value().y(),
+                             euler.value().z());
+      } else {
+        if (const auto quat = device.quaternion(); quat.has_value())
+          _ptr = AUTDAddDeviceQuaternion(_ptr, device.position().x(), device.position().y(), device.position().z(), quat.value().w(),
+                                         quat.value().x(), quat.value().y(), quat.value().z());
+        else {
+          throw std::runtime_error("unreachable!");
+        }
+      }
+      return *this;
+    }
+
+    Builder legacy_mode() {
+      _mode = native_methods::TransMode::Legacy;
+      return *this;
+    }
+
+    Builder advanced_mode() {
+      _mode = native_methods::TransMode::Advanced;
+      return *this;
+    }
+
+    Builder advanced_phase_mode() {
+      _mode = native_methods::TransMode::AdvancedPhase;
+      return *this;
+    }
+
+    template <class L>
+    Controller open_with(L&& link) {
+      static_assert(std::is_base_of_v<Link, std::remove_reference_t<L>>, "This is not Link");
+      return Controller::open_impl(_ptr, _mode, link.ptr());
+    }
+
+   private:
+    Builder() : _ptr(native_methods::AUTDCreateControllerBuilder()), _mode(native_methods::TransMode::Legacy) {}
+
+    native_methods::ControllerBuilderPtr _ptr;
+    native_methods::TransMode _mode;
+  };
+
+  static Builder builder() noexcept { return {}; }
+
   Controller() = delete;
   Controller(const Controller& v) = default;
   Controller& operator=(const Controller& obj) = default;
@@ -34,38 +83,26 @@ class Controller {
 
   ~Controller() noexcept {
     try {
-      if (_ptr != nullptr) {
-        native_methods::AUTDFreeController(_ptr);
-        _ptr = nullptr;
+      if (_ptr._0 != nullptr) {
+        AUTDFreeController(_ptr);
+        _ptr._0 = nullptr;
       }
     } catch (std::exception&) {
     }
-  }
-
-  static Controller open(const Geometry& geometry, const Link link) {
-    const auto mode = geometry.mode();
-
-    char err[256]{};
-    void* ptr = native_methods::AUTDOpenController(geometry.ptr(), link.ptr(), err);
-    if (ptr == nullptr) throw AUTDException(err);
-    auto geometry_ = Geometry(ptr, mode);
-    auto cnt = Controller(std::move(geometry_), ptr, geometry.mode());
-    cnt.geometry().configure_transducers();
-    return cnt;
   }
 
   [[nodiscard]] const Geometry& geometry() const { return _geometry; }
   [[nodiscard]] Geometry& geometry() { return _geometry; }
 
   void close() const {
-    if (char err[256]{}; !native_methods::AUTDClose(_ptr, err)) throw AUTDException(err);
+    if (char err[256]{}; !AUTDClose(_ptr, err)) throw AUTDException(err);
   }
 
   std::vector<FPGAInfo> fpga_info() {
     char err[256]{};
     const size_t num_devices = geometry().num_devices();
     std::vector<uint8_t> info(num_devices);
-    if (!native_methods::AUTDGetFPGAInfo(_ptr, info.data(), err)) throw AUTDException(err);
+    if (!AUTDGetFPGAInfo(_ptr, info.data(), err)) throw AUTDException(err);
     std::vector<FPGAInfo> ret;
     ret.reserve(num_devices);
     std::transform(info.begin(), info.end(), std::back_inserter(ret), [](const uint8_t i) { return FPGAInfo(i); });
@@ -74,16 +111,16 @@ class Controller {
 
   [[nodiscard]] std::vector<FirmwareInfo> firmware_infos() {
     char err[256]{};
-    auto* handle = native_methods::AUTDGetFirmwareInfoListPointer(_ptr, err);
-    if (handle == nullptr) throw AUTDException(err);
+    const auto handle = AUTDGetFirmwareInfoListPointer(_ptr, err);
+    if (handle._0 == nullptr) throw AUTDException(err);
     std::vector<FirmwareInfo> ret;
     for (uint32_t i = 0; i < static_cast<uint32_t>(geometry().num_devices()); i++) {
       char info[256]{};
       bool is_valid, is_supported;
-      native_methods::AUTDGetFirmwareInfo(handle, i, info, &is_valid, &is_supported);
-      ret.emplace_back(FirmwareInfo(std::string(info), is_valid, is_supported));
+      AUTDGetFirmwareInfo(handle, i, info, &is_valid, &is_supported);
+      ret.emplace_back(std::string(info), is_valid, is_supported);
     }
-    native_methods::AUTDFreeFirmwareInfoListPointer(handle);
+    AUTDFreeFirmwareInfoListPointer(handle);
     return ret;
   }
 
@@ -129,26 +166,43 @@ class Controller {
     const int64_t timeout_ns =
         timeout.has_value() ? static_cast<int64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(timeout.value()).count()) : -1;
     const auto res = native_methods::AUTDSendSpecial(_ptr, _mode, s.ptr(), timeout_ns, err);
-    if (res == native_methods::ERR) throw AUTDException(err);
-    return res == native_methods::TRUE;
+    if (res == native_methods::AUTD3_ERR) throw AUTDException(err);
+    return res == native_methods::AUTD3_TRUE;
   }
 
-  void force_fan(const bool value) const { native_methods::AUTDSetForceFan(_ptr, value); }
-  void reads_fpga_info(const bool value) const { native_methods::AUTDSetReadsFPGAInfo(_ptr, value); }
+  void force_fan(const bool value) const { AUTDSetForceFan(_ptr, value); }
+  void reads_fpga_info(const bool value) const { AUTDSetReadsFPGAInfo(_ptr, value); }
 
  private:
-  Controller(Geometry geometry, void* ptr, const native_methods::TransMode mode) : _geometry(std::move(geometry)), _ptr(ptr), _mode(mode) {}
+  static Controller open_impl(const native_methods::ControllerBuilderPtr builder, const native_methods::TransMode mode,
+                              const native_methods::LinkPtr link) {
+    char err[256]{};
 
-  bool send(Header* header, Body* body, const std::optional<std::chrono::nanoseconds> timeout) {
+    const auto ptr = AUTDControllerOpenWith(builder, link, err);
+    if (ptr._0 == nullptr) throw AUTDException(err);
+
+    auto geometry = Geometry(AUTDGetGeometry(ptr), mode);
+
+    auto cnt = Controller(std::move(geometry), ptr, mode);
+
+    cnt.geometry().configure_transducers();
+
+    return cnt;
+  }
+
+  Controller(Geometry geometry, const native_methods::ControllerPtr ptr, const native_methods::TransMode mode)
+      : _geometry(std::move(geometry)), _ptr(ptr), _mode(mode) {}
+
+  bool send(const Header* header, const Body* body, const std::optional<std::chrono::nanoseconds> timeout) {
     char err[256]{};
     const int64_t timeout_ns = timeout.has_value() ? static_cast<int64_t>(timeout.value().count()) : -1;
-    const auto res = AUTDSend(_ptr, _mode, header->ptr(), body->calc_ptr(geometry()), timeout_ns, err);
-    if (res == native_methods::ERR) throw AUTDException(err);
-    return res == native_methods::TRUE;
+    const auto res = AUTDSend(_ptr, _mode, header->ptr(), body->ptr(geometry()), timeout_ns, err);
+    if (res == native_methods::AUTD3_ERR) throw AUTDException(err);
+    return res == native_methods::AUTD3_TRUE;
   }
 
   Geometry _geometry;
-  void* _ptr;
+  native_methods::ControllerPtr _ptr;
   native_methods::TransMode _mode;
 };
 

@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2023
+// Last Modified: 03/06/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -11,7 +11,6 @@
 
 #pragma once
 
-#include <sstream>
 #include <string>
 
 #include "autd3/internal/native_methods.hpp"
@@ -30,7 +29,7 @@ class FirmwareInfo {
   [[nodiscard]] static std::string latest_version() {
     char info[256];
     native_methods::AUTDGetLatestFirmware(info);
-    return std::string(info);
+    return {info};
   }
 
  private:

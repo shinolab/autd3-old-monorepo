@@ -19,41 +19,33 @@ void AUTDGetAdapter(void* adapters, uint32_t idx, char *desc, char *name);
 
 void AUTDFreeAdapterPointer(void* adapters);
 
-[[nodiscard]] void* AUTDLinkSOEM();
+[[nodiscard]] LinkPtr AUTDLinkSOEM();
 
-[[nodiscard]] void* AUTDLinkSOEMSendCycle(void* builder, uint16_t cycle);
+[[nodiscard]] LinkPtr AUTDLinkSOEMSendCycle(LinkPtr soem, uint16_t cycle);
 
-[[nodiscard]] void* AUTDLinkSOEMSync0Cycle(void* builder, uint16_t cycle);
+[[nodiscard]] LinkPtr AUTDLinkSOEMSync0Cycle(LinkPtr soem, uint16_t cycle);
 
-[[nodiscard]] void* AUTDLinkSOEMBufSize(void* builder, uint32_t buf_size);
+[[nodiscard]] LinkPtr AUTDLinkSOEMBufSize(LinkPtr soem, uint32_t buf_size);
 
-[[nodiscard]] void* AUTDLinkSOEMTimerStrategy(void* builder, TimerStrategy timer_strategy);
+[[nodiscard]] LinkPtr AUTDLinkSOEMTimerStrategy(LinkPtr soem, TimerStrategy timer_strategy);
 
-[[nodiscard]] void* AUTDLinkSOEMSyncMode(void* builder, SyncMode mode);
+[[nodiscard]] LinkPtr AUTDLinkSOEMSyncMode(LinkPtr soem, SyncMode mode);
 
-[[nodiscard]] void* AUTDLinkSOEMIfname(void* builder, const char *ifname);
+[[nodiscard]] LinkPtr AUTDLinkSOEMIfname(LinkPtr soem, const char *ifname);
 
-[[nodiscard]] void* AUTDLinkSOEMStateCheckInterval(void* builder, uint32_t interval_ms);
+[[nodiscard]] LinkPtr AUTDLinkSOEMStateCheckInterval(LinkPtr soem, uint32_t interval_ms);
 
-[[nodiscard]] void* AUTDLinkSOEMOnLost(void* builder, void* on_lost_func);
+[[nodiscard]] LinkPtr AUTDLinkSOEMOnLost(LinkPtr soem, void* on_lost_func);
 
-[[nodiscard]] void* AUTDLinkSOEMLogLevel(void* builder, Level level);
+[[nodiscard]] LinkPtr AUTDLinkSOEMLogLevel(LinkPtr soem, Level level);
 
-[[nodiscard]]
-void* AUTDLinkSOEMLogFunc(void* builder,
-                          Level level,
-                          void* out_func,
-                          void* flush_func);
+[[nodiscard]] LinkPtr AUTDLinkSOEMLogFunc(LinkPtr soem, void* out_func, void* flush_func);
 
-[[nodiscard]] void* AUTDLinkSOEMTimeout(void* builder, uint64_t timeout_ns);
+[[nodiscard]] LinkPtr AUTDLinkSOEMTimeout(LinkPtr soem, uint64_t timeout_ns);
 
-[[nodiscard]] void* AUTDLinkSOEMBuild(void* builder);
+[[nodiscard]] LinkPtr AUTDLinkRemoteSOEM(const char *addr, char *err);
 
-[[nodiscard]] void* AUTDLinkRemoteSOEM(const char *addr, uint16_t port);
-
-[[nodiscard]] void* AUTDLinkRemoteSOEMTimeout(void* builder, uint64_t timeout_ns);
-
-[[nodiscard]] void* AUTDLinkRemoteSOEMBuild(void* builder);
+[[nodiscard]] LinkPtr AUTDLinkRemoteSOEMTimeout(LinkPtr soem, uint64_t timeout_ns);
 
 } // extern "C"
 

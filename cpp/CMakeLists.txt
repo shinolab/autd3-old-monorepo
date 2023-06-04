@@ -35,6 +35,13 @@ target_include_directories(autd3 INTERFACE ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(autd3 INTERFACE Eigen3::Eigen)
 target_compile_definitions(autd3 INTERFACE EIGEN_MPL2_ONLY)
 
+#file(GLOB_RECURSE autd3_src ${PROJECT_SOURCE_DIR}/include/**/*.hpp)
+#add_library(autd3 ${autd3_src})
+#set_target_properties(autd3 PROPERTIES LINKER_LANGUAGE CXX)
+#target_include_directories(autd3 PUBLIC ${PROJECT_SOURCE_DIR}/include)
+#target_link_libraries(autd3 PUBLIC Eigen3::Eigen)
+#target_compile_definitions(autd3 PUBLIC EIGEN_MPL2_ONLY)
+
 include(CheckCXXCompilerFlag)
 function(enable_cxx_compiler_flag_if_supported target scope flag)
   check_cxx_compiler_flag("${flag}" flag_supported)
