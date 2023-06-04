@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/06/2023
+ * Last Modified: 04/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -60,7 +60,6 @@ pub struct FocusSTM {
 impl FocusSTM {
     pub fn add_focus<C: Into<ControlPoint>>(mut self, point: C) -> Self {
         self.control_points.push(point.into());
-        self.props.size = self.control_points.len();
         self
     }
 
@@ -70,7 +69,6 @@ impl FocusSTM {
     ) -> Self {
         self.control_points
             .extend(iter.into_iter().map(|c| c.into()));
-        self.props.size = self.control_points.len();
         self
     }
 
@@ -120,7 +118,7 @@ impl<T: Transducer> Datagram<T> for FocusSTM {
         let tr_num_min = geometry.device_map().iter().min().unwrap();
 
         let props = autd3_driver::FocusSTMProps {
-            freq_div: self.sampling_freq_div(),
+            freq_div: self.sampling_frequency_division(),
             sound_speed: geometry.sound_speed,
             start_idx: self.props.start_idx,
             finish_idx: self.props.finish_idx,
@@ -137,17 +135,17 @@ impl FocusSTM {
         }
     }
 
-    pub fn with_sampling_freq_div(freq_div: u32) -> Self {
+    pub fn with_sampling_frequency_division(freq_div: u32) -> Self {
         Self {
             control_points: vec![],
-            props: STMProps::with_sampling_freq_div(freq_div),
+            props: STMProps::with_sampling_frequency_division(freq_div),
         }
     }
 
-    pub fn with_sampling_freq(freq: float) -> Self {
+    pub fn with_sampling_frequency(freq: float) -> Self {
         Self {
             control_points: vec![],
-            props: STMProps::with_sampling_freq(freq),
+            props: STMProps::with_sampling_frequency(freq),
         }
     }
 
@@ -174,19 +172,19 @@ impl FocusSTM {
     }
 
     pub fn size(&self) -> usize {
-        self.props.size()
+        self.control_points.len()
     }
 
     pub fn freq(&self) -> f64 {
-        self.props.freq()
+        self.props.freq(self.size())
     }
 
-    pub fn sampling_freq(&self) -> f64 {
-        self.props.sampling_freq()
+    pub fn sampling_frequency(&self) -> f64 {
+        self.props.sampling_frequency(self.size())
     }
 
-    pub fn sampling_freq_div(&self) -> u32 {
-        self.props.sampling_freq_div()
+    pub fn sampling_frequency_division(&self) -> u32 {
+        self.props.sampling_frequency_division(self.size())
     }
 }
 
@@ -200,42 +198,42 @@ mod tests {
         let stm = FocusSTM::new(1.0);
         assert_eq!(stm.freq(), 1.0);
 
-        let stm = FocusSTM::with_sampling_freq_div(512)
+        let stm = FocusSTM::with_sampling_frequency_division(512)
             .add_foci_from_iter((0..10).map(|_| (Vector3::zeros(), 0)));
         assert_approx_eq!(stm.freq(), FPGA_SUB_CLK_FREQ as float / 512. / 10.);
 
-        let stm = FocusSTM::with_sampling_freq(40e3)
+        let stm = FocusSTM::with_sampling_frequency(40e3)
             .add_foci_from_iter((0..10).map(|_| (Vector3::zeros(), 0)));
         assert_approx_eq!(stm.freq(), 40e3 / 10.);
     }
 
     #[test]
-    fn sampling_freq_div() {
-        let stm = FocusSTM::with_sampling_freq_div(512);
-        assert_eq!(stm.sampling_freq_div(), 512);
+    fn sampling_frequency_division() {
+        let stm = FocusSTM::with_sampling_frequency_division(512);
+        assert_eq!(stm.sampling_frequency_division(), 512);
 
         let stm = FocusSTM::new(1.0).add_foci_from_iter((0..10).map(|_| (Vector3::zeros(), 0)));
         assert_eq!(
-            stm.sampling_freq_div(),
+            stm.sampling_frequency_division(),
             (FPGA_SUB_CLK_FREQ as float / 10.) as u32
         );
 
-        let stm = FocusSTM::with_sampling_freq(40e3);
+        let stm = FocusSTM::with_sampling_frequency(40e3);
         assert_eq!(
-            stm.sampling_freq_div(),
+            stm.sampling_frequency_division(),
             (FPGA_SUB_CLK_FREQ as float / 40e3) as u32
         );
     }
 
     #[test]
-    fn sampling_freq() {
-        let stm = FocusSTM::with_sampling_freq(40e3);
-        assert_eq!(stm.sampling_freq(), 40e3);
+    fn sampling_frequency() {
+        let stm = FocusSTM::with_sampling_frequency(40e3);
+        assert_eq!(stm.sampling_frequency(), 40e3);
 
-        let stm = FocusSTM::with_sampling_freq_div(512);
-        assert_approx_eq!(stm.sampling_freq(), FPGA_SUB_CLK_FREQ as float / 512.);
+        let stm = FocusSTM::with_sampling_frequency_division(512);
+        assert_approx_eq!(stm.sampling_frequency(), FPGA_SUB_CLK_FREQ as float / 512.);
 
         let stm = FocusSTM::new(1.0).add_foci_from_iter((0..10).map(|_| (Vector3::zeros(), 0)));
-        assert_approx_eq!(stm.sampling_freq(), 1. * 10.);
+        assert_approx_eq!(stm.sampling_frequency(), 1. * 10.);
     }
 }
