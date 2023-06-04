@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2023
+ * Last Modified: 04/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -55,7 +55,7 @@ pub struct CustomModulation {
 }
 
 impl CustomModulation {
-    pub fn new(data: *const float, size: u64, freq_div: u32) -> Self {
+    pub fn new(freq_div: u32, data: *const float, size: u64) -> Self {
         let mut buf = vec![0.0; size as _];
         unsafe {
             std::ptr::copy_nonoverlapping(data, buf.as_mut_ptr(), size as _);

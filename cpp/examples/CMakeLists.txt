@@ -37,35 +37,33 @@ else()
 endif()
 FetchContent_MakeAvailable(autd3)
 
+add_library(autd3-example INTERFACE)
+target_link_libraries(autd3-example INTERFACE autd3)
+target_compile_definitions(autd3-example INTERFACE AUTD3_RESOURCE_PATH="${PROJECT_SOURCE_DIR}/resources")
+
 add_executable(soem soem.cpp)
-target_link_libraries(soem PRIVATE autd3)
-target_compile_definitions(soem PRIVATE AUTD3_RESOURCE_PATH="${PROJECT_SOURCE_DIR}/resources")
+target_link_libraries(soem PRIVATE autd3-example)
 
 add_executable(twincat twincat.cpp)
-target_link_libraries(twincat PRIVATE autd3)
-target_compile_definitions(twincat PRIVATE AUTD3_RESOURCE_PATH="${PROJECT_SOURCE_DIR}/resources")
+target_link_libraries(twincat PRIVATE autd3-example)
 
 add_executable(remote_twincat remote_twincat.cpp)
-target_link_libraries(remote_twincat PRIVATE autd3)
-target_compile_definitions(remote_twincat PRIVATE AUTD3_RESOURCE_PATH="${PROJECT_SOURCE_DIR}/resources")
+target_link_libraries(remote_twincat PRIVATE autd3-example)
 
 add_executable(remote_soem remote_soem.cpp)
-target_link_libraries(remote_soem PRIVATE autd3)
-target_compile_definitions(remote_soem PRIVATE AUTD3_RESOURCE_PATH="${PROJECT_SOURCE_DIR}/resources")
+target_link_libraries(remote_soem PRIVATE autd3-example)
 
 add_executable(geometry_viewer geometry_viewer.cpp)
-target_link_libraries(geometry_viewer PRIVATE autd3)
+target_link_libraries(geometry_viewer PRIVATE autd3-example)
 
 add_executable(simulator_server simulator_server.cpp)
-target_link_libraries(simulator_server PRIVATE autd3)
+target_link_libraries(simulator_server PRIVATE autd3-example)
 
 add_executable(simulator_client simulator_client.cpp)
-target_link_libraries(simulator_client PRIVATE autd3)
-target_compile_definitions(simulator_client PRIVATE AUTD3_RESOURCE_PATH="${PROJECT_SOURCE_DIR}/resources")
+target_link_libraries(simulator_client PRIVATE autd3-example)
 
 add_executable(debug debug.cpp)
-target_link_libraries(debug PRIVATE autd3)
-target_compile_definitions(debug PRIVATE AUTD3_RESOURCE_PATH="${PROJECT_SOURCE_DIR}/resources")
+target_link_libraries(debug PRIVATE autd3-example)
 
 add_executable(freq_config freq_config.cpp)
-target_link_libraries(freq_config PRIVATE autd3)
+target_link_libraries(freq_config PRIVATE autd3-example)

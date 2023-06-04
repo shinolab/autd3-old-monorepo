@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2023
+// Last Modified: 04/06/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,57 @@
 
 namespace autd3::internal {
 
-class FocusSTM final : public Body {
+class STM : public Body {
+ public:
+  explicit STM(std::optional<double> freq, std::optional<double> sampling_freq, std::optional<uint32_t> sampling_freq_div)
+      : _freq(freq), _sampling_freq(sampling_freq), _sampling_freq_div(sampling_freq_div) {}
+
+  STM(const STM& obj) = default;
+  STM& operator=(const STM& obj) = default;
+  STM(STM&& obj) = default;
+  STM& operator=(STM&& obj) = default;
+  ~STM() override = default;
+
+  [[nodiscard]] std::optional<uint16_t> finish_idx() const {
+    const auto idx = AUTDSTMPropsFinishIdx(props());
+    return idx < 0 ? std::nullopt : std::optional(static_cast<uint16_t>(idx));
+  }
+
+  [[nodiscard]] std::optional<uint16_t> start_idx() const {
+    const auto idx = AUTDSTMPropsStartIdx(props());
+    return idx < 0 ? std::nullopt : std::optional(static_cast<uint16_t>(idx));
+  }
+
+ protected:
+  [[nodiscard]] native_methods::STMPropsPtr props() const {
+    native_methods::STMPropsPtr ptr{nullptr};
+    if (_freq.has_value()) ptr = native_methods::AUTDSTMProps(_freq.value());
+    if (_sampling_freq.has_value()) ptr = native_methods::AUTDSTMPropsWithSamplingFreq(_sampling_freq.value());
+    if (_sampling_freq_div.has_value()) ptr = native_methods::AUTDSTMPropsWithSamplingFreqDiv(_sampling_freq_div.value());
+    if (ptr._0 == nullptr) std::runtime_error("unreachable!");
+    ptr = AUTDSTMPropsWithStartIdx(ptr, _start_idx);
+    ptr = AUTDSTMPropsWithFinishIdx(ptr, _finish_idx);
+    return ptr;
+  }
+
+  [[nodiscard]] double frequency_from_size(const size_t size) const { return AUTDSTMPropsFrequency(props(), static_cast<uint64_t>(size)); }
+
+  [[nodiscard]] double sampling_frequency_from_size(const size_t size) const {
+    return AUTDSTMPropsSamplingFrequency(props(), static_cast<uint64_t>(size));
+  }
+
+  [[nodiscard]] uint32_t sampling_frequency_division_from_size(const size_t size) const {
+    return AUTDSTMPropsSamplingFrequencyDivision(props(), static_cast<uint64_t>(size));
+  }
+
+  std::optional<double> _freq;
+  std::optional<double> _sampling_freq;
+  std::optional<uint32_t> _sampling_freq_div;
+  int16_t _start_idx{-1};
+  int16_t _finish_idx{-1};
+};
+
+class FocusSTM final : public STM {
  public:
   struct Focus {
     Vector3 point;
@@ -32,85 +82,98 @@ class FocusSTM final : public Body {
     Focus& operator=(Focus&& obj) = default;
   };
 
-  using value_type = Focus;
+  explicit FocusSTM(const double freq) : STM(freq, std::nullopt, std::nullopt) {}
 
-  FocusSTM() : Body(native_methods::AUTDFocusSTM()) {}
-  ~FocusSTM() override {
-    if (_ptr != nullptr) native_methods::AUTDDeleteFocusSTM(_ptr);
+  FocusSTM(const FocusSTM& obj) = default;
+  FocusSTM& operator=(const FocusSTM& obj) = default;
+  FocusSTM(FocusSTM&& obj) = default;
+  FocusSTM& operator=(FocusSTM&& obj) = default;
+  ~FocusSTM() override = default;
+
+  static FocusSTM with_sampling_frequency(const double freq) { return FocusSTM(std::nullopt, freq, std::nullopt); }
+
+  static FocusSTM with_sampling_frequency_division(const uint32_t div) { return FocusSTM(std::nullopt, std::nullopt, div); }
+
+  [[nodiscard]] native_methods::DatagramBodyPtr ptr(const Geometry&) const override {
+    return AUTDFocusSTM(props(), reinterpret_cast<const double*>(_points.data()), _shifts.data(), static_cast<uint64_t>(_shifts.size()));
   }
 
-  void add(const Vector3& point, const uint8_t duty_shift = 0) { native_methods::AUTDFocusSTMAdd(_ptr, point.x(), point.y(), point.z(), duty_shift); }
-
-  void push_back(const value_type& v) { add(v.point, v.shift); }
-
-  [[nodiscard]] double frequency() const { return native_methods::AUTDFocusSTMFrequency(_ptr); }
-  double set_frequency(const double freq) const { return native_methods::AUTDFocusSTMSetFrequency(_ptr, freq); }
-
-  [[nodiscard]] double sampling_frequency() const { return native_methods::AUTDFocusSTMSamplingFrequency(_ptr); }
-
-  [[nodiscard]] uint32_t sampling_frequency_division() const { return native_methods::AUTDFocusSTMSamplingFrequencyDivision(_ptr); }
-
-  void set_sampling_frequency(const uint32_t value) const { native_methods::AUTDFocusSTMSetSamplingFrequencyDivision(_ptr, value); }
-
-  [[nodiscard]] std::optional<uint16_t> start_idx() const {
-    const auto idx = native_methods::AUTDFocusSTMGetStartIdx(_ptr);
-    return idx < 0 ? std::nullopt : std::optional(static_cast<uint16_t>(idx));
-  }
-  void set_start_idx(const std::optional<uint16_t> start_idx) const {
-    const int32_t idx = start_idx.has_value() ? static_cast<int32_t>(start_idx.value()) : -1;
-    native_methods::AUTDFocusSTMSetStartIdx(_ptr, idx);
+  void add_focus(Vector3 point, const uint8_t duty_shift = 0) {
+    _points.emplace_back(std::move(point));
+    _shifts.emplace_back(duty_shift);
   }
 
-  [[nodiscard]] std::optional<uint16_t> finish_idx() const {
-    const auto idx = native_methods::AUTDFocusSTMGetFinishIdx(_ptr);
-    return idx < 0 ? std::nullopt : std::optional(static_cast<uint16_t>(idx));
+  [[nodiscard]] double frequency() const { return frequency_from_size(_points.size()); }
+
+  [[nodiscard]] double sampling_frequency() const { return sampling_frequency_from_size(_points.size()); }
+
+  [[nodiscard]] uint32_t sampling_frequency_division() const { return sampling_frequency_division_from_size(_points.size()); }
+
+  FocusSTM with_start_idx(const std::optional<uint16_t> start_idx) {
+    _start_idx = start_idx.has_value() ? static_cast<int32_t>(start_idx.value()) : -1;
+    return std::move(*this);
   }
-  void set_finish_idx(const std::optional<uint16_t> finish_idx) const {
-    const int32_t idx = finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
-    native_methods::AUTDFocusSTMSetFinishIdx(_ptr, idx);
+
+  FocusSTM with_finish_idx(const std::optional<uint16_t> finish_idx) {
+    _finish_idx = finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
+    return std::move(*this);
   }
+
+ private:
+  explicit FocusSTM(std::optional<double> freq, std::optional<double> sampling_freq, std::optional<uint32_t> sampling_freq_div)
+      : STM(freq, sampling_freq, sampling_freq_div) {}
+
+  std::vector<Vector3> _points;
+  std::vector<uint8_t> _shifts;
 };
 
-class GainSTM final : public Body {
+class GainSTM final : public STM {
  public:
-  GainSTM() : Body(native_methods::AUTDGainSTM()) {}
-  ~GainSTM() override {
-    if (_ptr != nullptr) native_methods::AUTDDeleteGainSTM(_ptr);
+  explicit GainSTM(const double freq) : STM(freq, std::nullopt, std::nullopt) {}
+  GainSTM(const GainSTM& obj) = default;
+  GainSTM& operator=(const GainSTM& obj) = default;
+  GainSTM(GainSTM&& obj) = default;
+  GainSTM& operator=(GainSTM&& obj) = default;
+  ~GainSTM() override = default;
+
+  static GainSTM with_sampling_frequency(const double freq) { return GainSTM(std::nullopt, freq, std::nullopt); }
+
+  static GainSTM with_sampling_frequency_division(const uint32_t div) { return GainSTM(std::nullopt, std::nullopt, div); }
+
+  [[nodiscard]] native_methods::DatagramBodyPtr ptr(const Geometry& geometry) const override {
+    std::vector<native_methods::GainPtr> gains;
+    gains.reserve(_gains.size());
+    for (const auto& gain : _gains) gains.emplace_back(gain->gain_ptr(geometry));
+    return AUTDGainSTM(props(), gains.data(), static_cast<uint64_t>(gains.size()));
   }
 
   template <typename G>
-  void add(G&& gain) {
+  void add_gain(G&& gain) {
     static_assert(std::is_base_of_v<Gain, std::remove_reference_t<G>>, "This is not Gain");
-    native_methods::AUTDGainSTMAdd(_ptr, gain.ptr());
-    gain.set_released();
+    _gains.emplace_back(std::make_shared<std::remove_reference_t<G>>(std::forward<G>(gain)));
   }
 
-  [[nodiscard]] double frequency() const { return native_methods::AUTDGainSTMFrequency(_ptr); }
-  double set_frequency(const double freq) const { return native_methods::AUTDGainSTMSetFrequency(_ptr, freq); }
+  [[nodiscard]] double frequency() const { return frequency_from_size(_gains.size()); }
 
-  [[nodiscard]] double sampling_frequency() const { return native_methods::AUTDGainSTMSamplingFrequency(_ptr); }
+  [[nodiscard]] double sampling_frequency() const { return sampling_frequency_from_size(_gains.size()); }
 
-  [[nodiscard]] uint32_t sampling_frequency_division() const { return native_methods::AUTDGainSTMSamplingFrequencyDivision(_ptr); }
+  [[nodiscard]] uint32_t sampling_frequency_division() const { return sampling_frequency_division_from_size(_gains.size()); }
 
-  void set_sampling_frequency(const uint32_t value) const { native_methods::AUTDGainSTMSetSamplingFrequencyDivision(_ptr, value); }
-
-  [[nodiscard]] std::optional<uint16_t> start_idx() const {
-    const auto idx = native_methods::AUTDGainSTMGetStartIdx(_ptr);
-    return idx < 0 ? std::nullopt : std::optional(static_cast<uint16_t>(idx));
-  }
-  void set_start_idx(const std::optional<uint16_t> start_idx) const {
-    const int32_t idx = start_idx.has_value() ? static_cast<int32_t>(start_idx.value()) : -1;
-    native_methods::AUTDGainSTMSetStartIdx(_ptr, idx);
+  GainSTM with_start_idx(const std::optional<uint16_t> start_idx) {
+    _start_idx = start_idx.has_value() ? static_cast<int32_t>(start_idx.value()) : -1;
+    return std::move(*this);
   }
 
-  [[nodiscard]] std::optional<uint16_t> finish_idx() const {
-    const auto idx = native_methods::AUTDGainSTMGetFinishIdx(_ptr);
-    return idx < 0 ? std::nullopt : std::optional(static_cast<uint16_t>(idx));
+  GainSTM with_finish_idx(const std::optional<uint16_t> finish_idx) {
+    _finish_idx = finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
+    return std::move(*this);
   }
-  void set_finish_idx(const std::optional<uint16_t> finish_idx) const {
-    const int32_t idx = finish_idx.has_value() ? static_cast<int32_t>(finish_idx.value()) : -1;
-    native_methods::AUTDGainSTMSetFinishIdx(_ptr, idx);
-  }
+
+ private:
+  explicit GainSTM(std::optional<double> freq, std::optional<double> sampling_freq, std::optional<uint32_t> sampling_freq_div)
+      : STM(freq, sampling_freq, sampling_freq_div) {}
+
+  std::vector<std::shared_ptr<Gain>> _gains;
 };
 
 }  // namespace autd3::internal

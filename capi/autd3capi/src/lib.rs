@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/06/2023
+ * Last Modified: 04/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -602,7 +602,7 @@ pub unsafe extern "C" fn AUTDModulationSquare(freq: u32) -> ModulationPtr {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationSquareyWithLow(
+pub unsafe extern "C" fn AUTDModulationSquareWithLow(
     m: ModulationPtr,
     low: float,
 ) -> ModulationPtr {
@@ -611,7 +611,7 @@ pub unsafe extern "C" fn AUTDModulationSquareyWithLow(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationSquareyWithHigh(
+pub unsafe extern "C" fn AUTDModulationSquareWithHigh(
     m: ModulationPtr,
     high: float,
 ) -> ModulationPtr {
@@ -620,7 +620,7 @@ pub unsafe extern "C" fn AUTDModulationSquareyWithHigh(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDModulationSquareyWithDuty(
+pub unsafe extern "C" fn AUTDModulationSquareWithDuty(
     m: ModulationPtr,
     duty: float,
 ) -> ModulationPtr {
@@ -639,23 +639,23 @@ pub unsafe extern "C" fn AUTDModulationSquareWithSamplingFrequencyDivision(
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDModulationCustom(
+    freq_div: u32,
     amp: *const float,
     size: u64,
-    freq_div: u32,
 ) -> ModulationPtr {
-    ModulationPtr::new(CustomModulation::new(amp, size, freq_div))
+    ModulationPtr::new(CustomModulation::new(freq_div, amp, size))
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDModulationSamplingFrequencyDivision(m: ModulationPtr) -> u32 {
-    cast!(m.0, Box<M>).sampling_frequency_division() as _
+    Box::from_raw(m.0 as *mut Box<M>).sampling_frequency_division() as _
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDModulationSamplingFrequency(m: ModulationPtr) -> float {
-    cast!(m.0, Box<M>).sampling_freq()
+    Box::from_raw(m.0 as *mut Box<M>).sampling_frequency() as _
 }
 
 #[no_mangle]
@@ -673,13 +673,13 @@ pub unsafe extern "C" fn AUTDSTMProps(freq: float) -> STMPropsPtr {
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDSTMPropsWithSamplingFreq(freq: float) -> STMPropsPtr {
-    STMPropsPtr::new(STMProps::with_sampling_freq(freq))
+    STMPropsPtr::new(STMProps::with_sampling_frequency(freq))
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDSTMPropsWithSamplingFreqDiv(div: u32) -> STMPropsPtr {
-    STMPropsPtr::new(STMProps::with_sampling_freq_div(div))
+    STMPropsPtr::new(STMProps::with_sampling_frequency_division(div))
 }
 
 #[no_mangle]
@@ -706,20 +706,23 @@ pub unsafe extern "C" fn AUTDSTMPropsWithFinishIdx(props: STMPropsPtr, idx: i32)
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDSTMPropsFrequency(props: STMPropsPtr) -> float {
-    cast!(props.0, STMProps).freq()
+pub unsafe extern "C" fn AUTDSTMPropsFrequency(props: STMPropsPtr, size: u64) -> float {
+    Box::from_raw(props.0 as *mut STMProps).freq(size as usize)
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDSTMPropsSamplingFrequency(props: STMPropsPtr) -> float {
-    cast!(props.0, STMProps).sampling_freq()
+pub unsafe extern "C" fn AUTDSTMPropsSamplingFrequency(props: STMPropsPtr, size: u64) -> float {
+    Box::from_raw(props.0 as *mut STMProps).sampling_frequency(size as usize)
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDSTMPropsSamplingFrequencyDivision(props: STMPropsPtr) -> u32 {
-    cast!(props.0, STMProps).sampling_freq_div()
+pub unsafe extern "C" fn AUTDSTMPropsSamplingFrequencyDivision(
+    props: STMPropsPtr,
+    size: u64,
+) -> u32 {
+    Box::from_raw(props.0 as *mut STMProps).sampling_frequency_division(size as usize)
 }
 
 #[no_mangle]
@@ -916,7 +919,7 @@ pub unsafe extern "C" fn AUTDLinkDebug() -> LinkPtr {
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkDebugLogLevel(debug: LinkPtr, level: Level) -> LinkPtr {
+pub unsafe extern "C" fn AUTDLinkDebugWithLogLevel(debug: LinkPtr, level: Level) -> LinkPtr {
     LinkPtr::new(take_link!(debug, Debug).with_log_level(level.into()))
 }
 
@@ -925,7 +928,7 @@ unsafe impl Send for Callback {}
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkDebugLogFunc(
+pub unsafe extern "C" fn AUTDLinkDebugWithLogFunc(
     debug: LinkPtr,
     out_func: ConstPtr,
     flush_func: ConstPtr,
@@ -956,7 +959,7 @@ pub unsafe extern "C" fn AUTDLinkDebugLogFunc(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkDebugTimeout(debug: LinkPtr, timeout_ns: u64) -> LinkPtr {
+pub unsafe extern "C" fn AUTDLinkDebugWithTimeout(debug: LinkPtr, timeout_ns: u64) -> LinkPtr {
     LinkPtr::new(take_link!(debug, Debug).with_timeout(Duration::from_nanos(timeout_ns)))
 }
 
@@ -970,8 +973,8 @@ mod tests {
 
     unsafe fn make_debug_link() -> LinkPtr {
         let debug = AUTDLinkDebug();
-        let debug = AUTDLinkDebugLogLevel(debug, Level::Off);
-        AUTDLinkDebugTimeout(debug, 0)
+        let debug = AUTDLinkDebugWithLogLevel(debug, Level::Off);
+        AUTDLinkDebugWithTimeout(debug, 0)
     }
 
     #[test]
@@ -1198,13 +1201,18 @@ mod tests {
             }
 
             {
+                let div = 10240;
+                let m = AUTDModulationStatic();
+                let m = AUTDModulationStaticWithSamplingFrequencyDivision(m, div);
+                assert_eq!(div, AUTDModulationSamplingFrequencyDivision(m));
+            }
+
+            {
                 let m = AUTDModulationStatic();
                 let m = AUTDModulationStaticWithAmp(m, 1.);
 
                 let div = 10240;
                 let m = AUTDModulationStaticWithSamplingFrequencyDivision(m, div);
-                assert_eq!(div, AUTDModulationSamplingFrequencyDivision(m));
-                dbg!(AUTDModulationSamplingFrequency(m));
 
                 let m = AUTDModulationIntoDatagram(m);
                 if AUTDSend(
@@ -1227,8 +1235,6 @@ mod tests {
 
                 let div = 10240;
                 let m = AUTDModulationSineWithSamplingFrequencyDivision(m, div);
-                assert_eq!(div, AUTDModulationSamplingFrequencyDivision(m));
-                dbg!(AUTDModulationSamplingFrequency(m));
 
                 let m = AUTDModulationIntoDatagram(m);
                 if AUTDSend(
@@ -1251,8 +1257,6 @@ mod tests {
 
                 let div = 10240;
                 let m = AUTDModulationSinePressureWithSamplingFrequencyDivision(m, div);
-                assert_eq!(div, AUTDModulationSamplingFrequencyDivision(m));
-                dbg!(AUTDModulationSamplingFrequency(m));
 
                 let m = AUTDModulationIntoDatagram(m);
 
@@ -1276,8 +1280,6 @@ mod tests {
 
                 let div = 10240;
                 let m = AUTDModulationSineLegacyWithSamplingFrequencyDivision(m, div);
-                assert_eq!(div, AUTDModulationSamplingFrequencyDivision(m));
-                dbg!(AUTDModulationSamplingFrequency(m));
 
                 let m = AUTDModulationIntoDatagram(m);
                 if AUTDSend(
@@ -1295,14 +1297,12 @@ mod tests {
 
             {
                 let m = AUTDModulationSquare(150);
-                let m = AUTDModulationSquareyWithLow(m, 0.);
-                let m = AUTDModulationSquareyWithHigh(m, 1.);
-                let m = AUTDModulationSquareyWithDuty(m, 0.5);
+                let m = AUTDModulationSquareWithLow(m, 0.);
+                let m = AUTDModulationSquareWithHigh(m, 1.);
+                let m = AUTDModulationSquareWithDuty(m, 0.5);
 
                 let div = 10240;
                 let m = AUTDModulationSquareWithSamplingFrequencyDivision(m, div);
-                assert_eq!(div, AUTDModulationSamplingFrequencyDivision(m));
-                dbg!(AUTDModulationSamplingFrequency(m));
 
                 let m = AUTDModulationIntoDatagram(m);
 
@@ -1321,9 +1321,7 @@ mod tests {
 
             {
                 let amp = vec![1.0; 10];
-                let m = AUTDModulationCustom(amp.as_ptr(), amp.len() as _, 5000);
-                assert_eq!(5000, AUTDModulationSamplingFrequencyDivision(m));
-                dbg!(AUTDModulationSamplingFrequency(m));
+                let m = AUTDModulationCustom(5000, amp.as_ptr(), amp.len() as _);
                 let m = AUTDModulationIntoDatagram(m);
                 if AUTDSend(
                     cnt,
@@ -1340,68 +1338,21 @@ mod tests {
 
             {
                 let props = AUTDSTMProps(1.);
-                let props = AUTDSTMPropsWithStartIdx(props, 0);
-                assert_eq!(0, AUTDSTMPropsStartIdx(props));
-                let props = AUTDSTMPropsWithFinishIdx(props, 1);
-                assert_eq!(1, AUTDSTMPropsFinishIdx(props));
+                assert_eq!(1., AUTDSTMPropsFrequency(props, 0));
 
-                assert_eq!(1., AUTDSTMPropsFrequency(props));
-
-                let len = 2;
-                let points = vec![0.; len * 3];
-                let shifts = vec![0; len];
-
-                let stm = AUTDFocusSTM(props, points.as_ptr(), shifts.as_ptr(), len as _);
-
-                if AUTDSend(
-                    cnt,
-                    TransMode::Legacy,
-                    DatagramHeaderPtr(std::ptr::null()),
-                    stm,
-                    -1,
-                    err.as_mut_ptr(),
-                ) == AUTD3_ERR
-                {
-                    eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
-                }
-            }
-
-            {
                 let props = AUTDSTMPropsWithSamplingFreq(1.);
-                let props = AUTDSTMPropsWithStartIdx(props, 0);
-                assert_eq!(0, AUTDSTMPropsStartIdx(props));
-                let props = AUTDSTMPropsWithFinishIdx(props, 1);
-                assert_eq!(1, AUTDSTMPropsFinishIdx(props));
+                assert_eq!(1., AUTDSTMPropsSamplingFrequency(props, 0));
 
-                assert_eq!(1., AUTDSTMPropsSamplingFrequency(props));
-
-                let len = 2;
-                let points = vec![0.; len * 3];
-                let shifts = vec![0; len];
-
-                let stm = AUTDFocusSTM(props, points.as_ptr(), shifts.as_ptr(), len as _);
-
-                if AUTDSend(
-                    cnt,
-                    TransMode::Legacy,
-                    DatagramHeaderPtr(std::ptr::null()),
-                    stm,
-                    -1,
-                    err.as_mut_ptr(),
-                ) == AUTD3_ERR
-                {
-                    eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
-                }
+                let props = AUTDSTMPropsWithSamplingFreqDiv(512);
+                assert_eq!(512, AUTDSTMPropsSamplingFrequencyDivision(props, 0));
             }
 
             {
-                let props = AUTDSTMPropsWithSamplingFreqDiv(512);
+                let props = AUTDSTMProps(1.);
                 let props = AUTDSTMPropsWithStartIdx(props, 0);
                 assert_eq!(0, AUTDSTMPropsStartIdx(props));
                 let props = AUTDSTMPropsWithFinishIdx(props, 1);
                 assert_eq!(1, AUTDSTMPropsFinishIdx(props));
-
-                assert_eq!(512, AUTDSTMPropsSamplingFrequencyDivision(props));
 
                 let len = 2;
                 let points = vec![0.; len * 3];
