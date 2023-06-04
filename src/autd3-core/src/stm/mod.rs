@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/06/2023
+ * Last Modified: 04/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -20,7 +20,6 @@ pub use gain::GainSTM;
 
 #[derive(Clone, Copy)]
 pub struct STMProps {
-    size: usize,
     freq_div: Option<u32>,
     freq: float,
     start_idx: Option<u16>,
@@ -30,7 +29,6 @@ pub struct STMProps {
 impl STMProps {
     pub fn new(freq: float) -> Self {
         Self {
-            size: 0,
             freq_div: None,
             freq,
             start_idx: None,
@@ -38,9 +36,8 @@ impl STMProps {
         }
     }
 
-    pub fn with_sampling_freq_div(freq_div: u32) -> Self {
+    pub fn with_sampling_frequency_division(freq_div: u32) -> Self {
         Self {
-            size: 0,
             freq_div: Some(freq_div),
             freq: 0.,
             start_idx: None,
@@ -48,9 +45,8 @@ impl STMProps {
         }
     }
 
-    pub fn with_sampling_freq(freq: float) -> Self {
+    pub fn with_sampling_frequency(freq: float) -> Self {
         Self {
-            size: 0,
             freq_div: Some((FPGA_SUB_CLK_FREQ as float / freq) as u32),
             freq: 0.,
             start_idx: None,
@@ -80,25 +76,21 @@ impl STMProps {
         self.finish_idx
     }
 
-    pub fn size(&self) -> usize {
-        self.size
-    }
-
-    pub fn freq(&self) -> f64 {
+    pub fn freq(&self, size: usize) -> f64 {
         self.freq_div.map_or(self.freq, |div| {
-            FPGA_SUB_CLK_FREQ as float / div as float / self.size() as float
+            FPGA_SUB_CLK_FREQ as float / div as float / size as float
         })
     }
 
-    pub fn sampling_freq(&self) -> f64 {
+    pub fn sampling_frequency(&self, size: usize) -> f64 {
         self.freq_div
-            .map_or((self.freq * self.size() as float) as _, |div| {
+            .map_or((self.freq * size as float) as _, |div| {
                 FPGA_SUB_CLK_FREQ as float / div as float
             })
     }
 
-    pub fn sampling_freq_div(&self) -> u32 {
+    pub fn sampling_frequency_division(&self, size: usize) -> u32 {
         self.freq_div
-            .unwrap_or((FPGA_SUB_CLK_FREQ as float / (self.freq * self.size() as float)) as _)
+            .unwrap_or((FPGA_SUB_CLK_FREQ as float / (self.freq * size as float)) as _)
     }
 }

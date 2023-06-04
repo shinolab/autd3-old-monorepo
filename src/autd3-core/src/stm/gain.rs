@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/06/2023
+ * Last Modified: 04/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -32,13 +32,11 @@ impl<'a, T: Transducer> GainSTM<'a, T> {
 impl<'a, T: Transducer> GainSTM<'a, T> {
     pub fn add_gain<G: Gain<T> + 'a>(mut self, gain: G) -> Self {
         self.gains.push(Box::new(gain));
-        self.props.size = self.gains.len();
         self
     }
 
     pub fn add_gain_boxed(mut self, gain: Box<dyn Gain<T>>) -> Self {
         self.gains.push(gain);
-        self.props.size = self.gains.len();
         self
     }
 
@@ -47,7 +45,6 @@ impl<'a, T: Transducer> GainSTM<'a, T> {
         iter: I,
     ) -> Self {
         self.gains.extend(iter);
-        self.props.size = self.gains.len();
         self
     }
 
@@ -89,19 +86,19 @@ impl<'a, T: Transducer> GainSTM<'a, T> {
         }
     }
 
-    pub fn with_sampling_freq_div(freq_div: u32) -> Self {
+    pub fn with_sampling_frequency_division(freq_div: u32) -> Self {
         Self {
             gains: vec![],
             mode: Mode::PhaseDutyFull,
-            props: STMProps::with_sampling_freq_div(freq_div),
+            props: STMProps::with_sampling_frequency_division(freq_div),
         }
     }
 
-    pub fn with_sampling_freq(freq: float) -> Self {
+    pub fn with_sampling_frequency(freq: float) -> Self {
         Self {
             gains: vec![],
             mode: Mode::PhaseDutyFull,
-            props: STMProps::with_sampling_freq(freq),
+            props: STMProps::with_sampling_frequency(freq),
         }
     }
 
@@ -128,19 +125,19 @@ impl<'a, T: Transducer> GainSTM<'a, T> {
     }
 
     pub fn size(&self) -> usize {
-        self.props.size()
+        self.gains.len()
     }
 
     pub fn freq(&self) -> f64 {
-        self.props.freq()
+        self.props.freq(self.size())
     }
 
-    pub fn sampling_freq(&self) -> f64 {
-        self.props.sampling_freq()
+    pub fn sampling_frequency(&self) -> f64 {
+        self.props.sampling_frequency(self.size())
     }
 
-    pub fn sampling_freq_div(&self) -> u32 {
-        self.props.sampling_freq_div()
+    pub fn sampling_frequency_division(&self) -> u32 {
+        self.props.sampling_frequency_division(self.size())
     }
 }
 
@@ -159,7 +156,7 @@ impl<'a, T: Transducer> Datagram<T> for GainSTM<'a, T> {
         }
         let props = GainSTMProps {
             mode: self.mode,
-            freq_div: self.sampling_freq_div(),
+            freq_div: self.sampling_frequency_division(),
             finish_idx: self.props.finish_idx,
             start_idx: self.props.start_idx,
         };
@@ -191,44 +188,44 @@ mod tests {
         let stm = GainSTM::<LegacyTransducer>::new(1.0);
         assert_eq!(stm.freq(), 1.0);
 
-        let stm = GainSTM::<LegacyTransducer>::with_sampling_freq_div(512)
+        let stm = GainSTM::<LegacyTransducer>::with_sampling_frequency_division(512)
             .add_gains_from_iter((0..10).map(|_| Box::new(NullGain {}) as _));
         assert_approx_eq!(stm.freq(), FPGA_SUB_CLK_FREQ as float / 512. / 10.);
 
-        let stm = GainSTM::<LegacyTransducer>::with_sampling_freq(40e3)
+        let stm = GainSTM::<LegacyTransducer>::with_sampling_frequency(40e3)
             .add_gains_from_iter((0..10).map(|_| Box::new(NullGain {}) as _));
         assert_approx_eq!(stm.freq(), 40e3 / 10.);
     }
 
     #[test]
-    fn sampling_freq_div() {
-        let stm = GainSTM::<LegacyTransducer>::with_sampling_freq_div(512);
-        assert_eq!(stm.sampling_freq_div(), 512);
+    fn sampling_frequency_division() {
+        let stm = GainSTM::<LegacyTransducer>::with_sampling_frequency_division(512);
+        assert_eq!(stm.sampling_frequency_division(), 512);
 
         let stm = GainSTM::<LegacyTransducer>::new(1.0)
             .add_gains_from_iter((0..10).map(|_| Box::new(NullGain {}) as _));
         assert_eq!(
-            stm.sampling_freq_div(),
+            stm.sampling_frequency_division(),
             (FPGA_SUB_CLK_FREQ as float / 10.) as u32
         );
 
-        let stm = GainSTM::<LegacyTransducer>::with_sampling_freq(40e3);
+        let stm = GainSTM::<LegacyTransducer>::with_sampling_frequency(40e3);
         assert_eq!(
-            stm.sampling_freq_div(),
+            stm.sampling_frequency_division(),
             (FPGA_SUB_CLK_FREQ as float / 40e3) as u32
         );
     }
 
     #[test]
-    fn sampling_freq() {
-        let stm = GainSTM::<LegacyTransducer>::with_sampling_freq(40e3);
-        assert_eq!(stm.sampling_freq(), 40e3);
+    fn sampling_frequency() {
+        let stm = GainSTM::<LegacyTransducer>::with_sampling_frequency(40e3);
+        assert_eq!(stm.sampling_frequency(), 40e3);
 
-        let stm = GainSTM::<LegacyTransducer>::with_sampling_freq_div(512);
-        assert_approx_eq!(stm.sampling_freq(), FPGA_SUB_CLK_FREQ as float / 512.);
+        let stm = GainSTM::<LegacyTransducer>::with_sampling_frequency_division(512);
+        assert_approx_eq!(stm.sampling_frequency(), FPGA_SUB_CLK_FREQ as float / 512.);
 
         let stm = GainSTM::<LegacyTransducer>::new(1.0)
             .add_gains_from_iter((0..10).map(|_| Box::new(NullGain {}) as _));
-        assert_approx_eq!(stm.sampling_freq(), 1. * 10.);
+        assert_approx_eq!(stm.sampling_frequency(), 1. * 10.);
     }
 }
