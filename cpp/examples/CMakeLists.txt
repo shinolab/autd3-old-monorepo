@@ -12,7 +12,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(AUTD_LOCAL_TEST "For local test build" OFF)
 
-cmake_policy(SET CMP0135 NEW)
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0") 
+  cmake_policy(SET CMP0135 NEW)
+endif()
+
 include(FetchContent)
 if(AUTD_LOCAL_TEST)
   FetchContent_Declare(
