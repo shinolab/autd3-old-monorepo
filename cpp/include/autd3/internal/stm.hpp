@@ -45,7 +45,7 @@ class STM : public Body {
     if (_freq.has_value()) ptr = native_methods::AUTDSTMProps(_freq.value());
     if (_sampling_freq.has_value()) ptr = native_methods::AUTDSTMPropsWithSamplingFreq(_sampling_freq.value());
     if (_sampling_freq_div.has_value()) ptr = native_methods::AUTDSTMPropsWithSamplingFreqDiv(_sampling_freq_div.value());
-    if (ptr._0 == nullptr) std::runtime_error("unreachable!");
+    if (ptr._0 == nullptr) throw std::runtime_error("unreachable!");
     ptr = AUTDSTMPropsWithStartIdx(ptr, _start_idx);
     ptr = AUTDSTMPropsWithFinishIdx(ptr, _finish_idx);
     return ptr;
