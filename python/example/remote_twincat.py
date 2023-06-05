@@ -12,24 +12,25 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 
-from pyautd3 import Controller, Geometry
+from pyautd3 import Controller, AUTD3
 from pyautd3.link import RemoteTwinCAT
 
 from samples import runner
 
 
 if __name__ == "__main__":
-    geometry = Geometry.Builder().add_device([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]).build()
-
     remote_ip_addr = "remote ip addr"
     remore_ams_net_id = "remote ams net id"
     local_ams_net_id = "local ams net is"
-    link = (
-        RemoteTwinCAT(remote_ip_addr, remore_ams_net_id)
-        .local_ams_net_id(local_ams_net_id)
-        .build()
-    )
 
-    autd = Controller.open(geometry, link)
+    autd = (
+        Controller.builder()
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
+        .open_with(
+            RemoteTwinCAT(remore_ams_net_id)
+            .with_server_ip(remote_ip_addr)
+            .with_client_ams_net_id(local_ams_net_id)
+        )
+    )
 
     runner.run(autd)

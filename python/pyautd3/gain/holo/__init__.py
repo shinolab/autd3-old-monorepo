@@ -13,7 +13,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 from .backend import DefaultBackend
 
-from .constraint import Clamp, DontCare, Normalize, Uniform
+from .constraint import AmplitudeConstraint
 
 from .evp import EVP
 from .sdp import SDP
@@ -25,10 +25,7 @@ from .naive import Naive
 
 __all__ = [
     "DefaultBackend",
-    "Clamp",
-    "DontCare",
-    "Normalize",
-    "Uniform",
+    "AmplitudeConstraint",
     "EVP",
     "SDP",
     "GS",

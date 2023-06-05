@@ -12,90 +12,163 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 import numpy as np
+from typing import Optional, List, Callable
+from abc import ABCMeta, abstractmethod
 
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
-from .gain import Gain
+from pyautd3.native_methods.autd3capi_def import GainPtr
+from pyautd3.geometry import Geometry, Transducer
+from .gain import IGain
 
 
-class Focus(Gain):
-    def __init__(self, pos: np.ndarray, amp: float = 1.0):
+class Focus(IGain):
+    _p: np.ndarray
+    _amp: Optional[float]
+
+    def __init__(self, pos: np.ndarray):
         super().__init__()
-        self.ptr = Base().gain_focus(pos[0], pos[1], pos[2], amp)
+        self._p = pos
+        self._amp = None
 
-    def __del__(self):
-        super().__del__()
+    def with_amp(self, amp: float) -> "Focus":
+        self._amp = amp
+        return self
+
+    def gain_ptr(self, geometry: Geometry) -> GainPtr:
+        ptr = Base().gain_focus(self._p[0], self._p[1], self._p[2])
+        if self._amp is not None:
+            ptr = Base().gain_focus_with_amp(ptr, self._amp)
+        return ptr
 
 
-class BesselBeam(Gain):
-    def __init__(
-        self, pos: np.ndarray, dir: np.ndarray, theta_z: float, amp: float = 1.0
-    ):
+class Bessel(IGain):
+    _p: np.ndarray
+    _d: np.ndarray
+    _theta: float
+    _amp: Optional[float]
+
+    def __init__(self, pos: np.ndarray, dir: np.ndarray, theta_z: float):
         super().__init__()
-        self.ptr = Base().gain_bessel_beam(
-            pos[0],
-            pos[1],
-            pos[2],
-            dir[0],
-            dir[1],
-            dir[2],
-            theta_z,
-            amp,
+        self._p = pos
+        self._d = dir
+        self._theta = theta_z
+        self._amp = None
+
+    def with_amp(self, amp: float) -> "Bessel":
+        self._amp = amp
+        return self
+
+    def gain_ptr(self, geometry: Geometry) -> GainPtr:
+        ptr = Base().gain_bessel(
+            self._p[0],
+            self._p[1],
+            self._p[2],
+            self._d[0],
+            self._d[1],
+            self._d[2],
+            self._theta,
         )
+        if self._amp is not None:
+            ptr = Base().gain_bessel_with_amp(ptr, self._amp)
+        return ptr
 
-    def __del__(self):
-        super().__del__()
 
+class Plane(IGain):
+    _d: np.ndarray
+    _amp: Optional[float]
 
-class PlaneWave(Gain):
-    def __init__(self, dir: np.ndarray, amp: float = 1.0):
+    def __init__(self, dir: np.ndarray):
         super().__init__()
-        self.ptr = Base().gain_plane_wave(dir[0], dir[1], dir[2], amp)
+        self._d = dir
+        self._amp = None
 
-    def __del__(self):
-        super().__del__()
-
-
-class Custom(Gain):
-    def __init__(self, amp: np.ndarray, phase: np.ndarray):
-        super().__init__()
-        p_size = len(phase)
-        phase_ = np.ctypeslib.as_ctypes(phase.astype(np.double))
-        amp_ = np.ctypeslib.as_ctypes(amp.astype(np.double))
-        self.ptr = Base().gain_custom(amp_, phase_, p_size)
-
-    def __del__(self):
-        super().__del__()
+    def gain_ptr(self, geometry: Geometry) -> GainPtr:
+        ptr = Base().gain_plane(self._d[0], self._d[1], self._d[2])
+        if self._amp is not None:
+            ptr = Base().gain_plane_with_amp(ptr, self._amp)
+        return ptr
 
 
-class Null(Gain):
+class Null(IGain):
     def __init__(self):
         super().__init__()
-        self.ptr = Base().gain_null()
 
-    def __del__(self):
-        super().__del__()
+    def gain_ptr(self, geometry: Geometry) -> GainPtr:
+        return Base().gain_null()
 
 
-class Grouped(Gain):
+class Grouped(IGain):
+    _gains: List[IGain]
+    _indices: List[int]
+
     def __init__(self):
         super().__init__()
-        self.ptr = Base().gain_grouped()
+        self._gains = []
+        self._indices = []
 
-    def __del__(self):
-        super().__del__()
+    def add_gain(self, device_idx: int, gain: IGain):
+        self._gains.append(gain)
+        self._indices.append(device_idx)
 
-    def add(self, dev_idx: int, gain: Gain):
-        Base().gain_grouped_add(self.ptr, dev_idx, gain.ptr)
-        gain._disposed = True
+    def gain_ptr(self, geometry: Geometry) -> GainPtr:
+        ptr = Base().gain_grouped()
+        for i in range(len(self._gains)):
+            ptr = Base().gain_grouped_add(
+                ptr, self._indices[i], self._gains[i].gain_ptr(geometry)
+            )
+        return ptr
 
 
-class TransTest(Gain):
+class TransTest(IGain):
+    _indices: List[int]
+    _amps: List[float]
+    _phases: List[float]
+
     def __init__(self):
         super().__init__()
-        self.ptr = Base().gain_transducer_test()
-
-    def __del__(self):
-        super().__del__()
+        self._indices = []
+        self._amps = []
+        self._phases = []
 
     def set(self, tr_idx: int, amp: float, phase: float):
-        Base().gain_transducer_test_set(self.ptr, tr_idx, amp, phase)
+        self._indices.append(tr_idx)
+        self._amps.append(amp)
+        self._phases.append(phase)
+
+    def gain_ptr(self, geometry: Geometry) -> GainPtr:
+        ptr = Base().gain_transducer_test()
+        for i in range(len(self._indices)):
+            ptr = Base().gain_transducer_test_set(
+                ptr, self._indices[i], self._amps[i], self._phases[i]
+            )
+        return ptr
+
+
+class Drive:
+    amp: float
+    phase: float
+
+    def __init__(self, amp: float, phase: float):
+        self.amp = amp
+        self.phase = phase
+
+
+class Gain(IGain, metaclass=ABCMeta):
+    @abstractmethod
+    def calc(self, geometry: Geometry) -> np.ndarray:
+        pass
+
+    def gain_ptr(self, geometry: Geometry) -> GainPtr:
+        drives = self.calc(geometry)
+        size = len(drives)
+        phases = np.ctypeslib.as_ctypes(
+            np.fromiter(map(lambda d: d.phase, drives), float).astype(np.double)
+        )
+        amps = np.ctypeslib.as_ctypes(
+            np.fromiter(map(lambda d: d.amp, drives), float).astype(np.double)
+        )
+        return Base().gain_custom(amps, phases, size)
+
+    @staticmethod
+    def transform(geometry: Geometry, f: Callable[[Transducer], Drive]) -> np.ndarray:
+        return np.fromiter(map(lambda tr: f(tr), geometry), Drive)

@@ -12,18 +12,21 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 
-from pyautd3 import Geometry, DEVICE_WIDTH
+from pyautd3 import AUTD3, DEVICE_WIDTH, Controller, Level
+from pyautd3.link import Debug
 from pyautd3.extra import GeometryViewer
 from math import pi
 
 if __name__ == "__main__":
-    geometry = (
-        Geometry.Builder()
-        .add_device([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])
-        .add_device([0.0, 0.0, DEVICE_WIDTH], [0.0, pi / 2, 0.0])
-        .add_device([DEVICE_WIDTH, 0.0, DEVICE_WIDTH], [0.0, pi, 0.0])
-        .add_device([DEVICE_WIDTH, 0.0, 0.0], [0.0, -pi / 2, 0.0])
-        .build()
+    autd = (
+        Controller.builder()
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, DEVICE_WIDTH], [0.0, pi / 2, 0.0]))
+        .add_device(
+            AUTD3.from_euler_zyz([DEVICE_WIDTH, 0.0, DEVICE_WIDTH], [0.0, pi, 0.0])
+        )
+        .add_device(AUTD3.from_euler_zyz([DEVICE_WIDTH, 0.0, 0.0], [0.0, -pi / 2, 0.0]))
+        .open_with(Debug().with_log_level(Level.Off))
     )
 
-    GeometryViewer().window_size(800, 600).vsync(True).run(geometry)
+    GeometryViewer().window_size(800, 600).vsync(True).run(autd.geometry)

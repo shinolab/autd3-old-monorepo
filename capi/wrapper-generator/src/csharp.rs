@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/06/2023
+ * Last Modified: 04/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -23,7 +23,7 @@ use std::{
 use itertools::Itertools;
 
 use crate::{
-    parse::{Arg, Const, Enum, Function},
+    parse::{Arg, Const, Enum, Function, PtrTuple},
     types::{InOut, Type},
 };
 
@@ -33,6 +33,7 @@ pub struct CSharpGenerator {
     functions: Vec<Function>,
     constants: Vec<Const>,
     enums: Vec<Enum>,
+    ptr_tuple: Vec<PtrTuple>,
 }
 
 impl CSharpGenerator {
@@ -207,11 +208,17 @@ impl Generator for CSharpGenerator {
         self
     }
 
+    fn register_ptr_tuple(mut self, e: Vec<PtrTuple>) -> Self {
+        self.ptr_tuple = e;
+        self
+    }
+
     fn new() -> Self {
         Self {
             functions: Vec::new(),
             constants: Vec::new(),
             enums: Vec::new(),
+            ptr_tuple: Vec::new(),
         }
     }
 

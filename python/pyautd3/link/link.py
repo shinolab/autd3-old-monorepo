@@ -12,13 +12,17 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 import ctypes
+from pyautd3.native_methods.autd3capi_def import LinkPtr
 
 LogOutputFunc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 LogFlushFunc = ctypes.CFUNCTYPE(None)
 
 
 class Link:
-    link_ptr: ctypes.c_void_p
+    _ptr: LinkPtr
 
-    def __init__(self, link: ctypes.c_void_p):
-        self.link_ptr = link
+    def __init__(self, ptr: LinkPtr):
+        self._ptr = ptr
+
+    def ptr(self) -> LinkPtr:
+        return self._ptr
