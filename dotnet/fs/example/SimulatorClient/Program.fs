@@ -14,16 +14,12 @@ open AUTD3Sharp
 open AUTD3Sharp.Link
 open Samples
 
-let geometry = 
-    Geometry.Builder()
-        .AddDevice(Vector3d.zero, Vector3d.zero)
-        .AddDevice(Vector3d(AUTD3.DeviceWidth, 0, 0), Vector3d.zero)
-        .AdvancedMode()
-        .Build()
 
-let link = Simulator(8080us).Build()
-
-let autd = Controller.Open (geometry, link)
+let autd = Controller.Builder()
+                .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
+                .AddDevice(new AUTD3(Vector3d(AUTD3.DeviceWidth, 0, 0), Vector3d.zero))
+                .AdvancedMode()
+                .OpenWith(Simulator 8080us)
 
 for tr in autd.Geometry do
     tr.Frequency <- 70e3

@@ -4,7 +4,7 @@
  * Created Date: 30/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/05/2023
+ * Last Modified: 05/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -27,10 +27,9 @@ internal static class GainHoloTest
 
         var center = autd.Geometry.Center + new Vector3d(0, 0, 150);
 
-        var gain = new GSPAT(new BackendDefault());
-        gain.Add(center + 20.0 * Vector3d.UnitX, 1.0);
-        gain.Add(center - 20.0 * Vector3d.UnitX, 1.0);
-        gain.SetConstraint(new Uniform(1.0));
+        var gain = new GSPAT().WithConstraint(new Uniform());
+        gain.AddFocus(center + 20.0 * Vector3d.UnitX, 1.0);
+        gain.AddFocus(center - 20.0 * Vector3d.UnitX, 1.0);
 
         var mod = new Sine(150);
 
