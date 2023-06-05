@@ -1,3 +1,10 @@
+# 11.0.0
+
+- Fix [#63](https://github.com/shinolab/autd3/issues/63)
+- Fix [#64](https://github.com/shinolab/autd3/issues/64)
+- Fix [#65](https://github.com/shinolab/autd3/issues/65)
+- Fix [#71](https://github.com/shinolab/autd3/issues/71)
+
 # 10.0.0
 
 - Fix [#62](https://github.com/shinolab/autd3/issues/62)
