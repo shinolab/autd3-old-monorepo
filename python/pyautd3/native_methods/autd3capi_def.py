@@ -48,6 +48,42 @@ class TimerStrategy(IntEnum):
         return int(obj)
 
 
+class ControllerPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
+class GeometryPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
+class LinkPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
+class DatagramBodyPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
+class DatagramHeaderPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
+class DatagramSpecialPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
+class GainPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
+class ModulationPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
+class STMPropsPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
 NUM_TRANS_IN_UNIT: int = 249
 NUM_TRANS_IN_X: int = 18
 NUM_TRANS_IN_Y: int = 14
@@ -56,6 +92,6 @@ DEVICE_HEIGHT_MM: float = 151.4
 DEVICE_WIDTH_MM: float = 192.0
 FPGA_CLK_FREQ: int = 163840000
 FPGA_SUB_CLK_FREQ: int = 20480000
-ERR: int = -1
-TRUE: int = 1
-FALSE: int = 0
+AUTD3_ERR: int = -1
+AUTD3_TRUE: int = 1
+AUTD3_FALSE: int = 0

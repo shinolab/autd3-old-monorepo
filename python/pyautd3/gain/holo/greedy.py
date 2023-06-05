@@ -13,37 +13,43 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 
 import numpy as np
-from pyautd3.gain.gain import Gain
-from .constraint import AmplitudeConstraint, DontCare, Normalize, Uniform, Clamp
+from typing import Optional
+
+from .constraint import AmplitudeConstraint
+
 from pyautd3.native_methods.autd3capi_gain_holo import NativeMethods as GainHolo
+from pyautd3.native_methods.autd3capi_def import GainPtr
+from pyautd3.geometry import Geometry
+
+from .holo import Holo
 
 
-class Greedy(Gain):
+class Greedy(Holo):
+    _div: Optional[int]
+    _constraint: Optional[AmplitudeConstraint]
+
     def __init__(self):
         super().__init__()
-        self.ptr = GainHolo().gain_holo_greedy()
+        self._div = None
+        self._constraint = None
 
-    def phase_div(self, value: int):
-        GainHolo().gain_holo_greedy_phase_div(self.ptr, value)
+    def with_phase_div(self, div: int) -> "Greedy":
+        self._div = div
+        return self
 
-    def __del__(self):
-        super().__del__()
+    def with_constraint(self, constraint: AmplitudeConstraint) -> "Greedy":
+        self._constraint = constraint
+        return self
 
-    def add(self, focus: np.ndarray, amp: float):
-        GainHolo().gain_holo_greedy_add(self.ptr, focus[0], focus[1], focus[2], amp)
-
-    def constraint(self, constraint: AmplitudeConstraint):
-        if isinstance(constraint, DontCare):
-            GainHolo().gain_holo_greedy_set_dot_care_constraint(self.ptr)
-        elif isinstance(constraint, Normalize):
-            GainHolo().gain_holo_greedy_set_normalize_constraint(self.ptr)
-        elif isinstance(constraint, Uniform):
-            GainHolo().gain_holo_greedy_set_uniform_constraint(
-                self.ptr, constraint.value
+    def gain_ptr(self, geometry: Geometry) -> GainPtr:
+        size = len(self._amps)
+        foci_ = np.ctypeslib.as_ctypes(np.array(self._foci).astype(np.double))
+        amps = np.ctypeslib.as_ctypes(np.array(self._amps).astype(np.double))
+        ptr = GainHolo().gain_holo_evp(self._backend.ptr(), foci_, amps, size)
+        if self._div is not None:
+            ptr = GainHolo().gain_holo_greedy_with_phase_div(ptr, self._div)
+        if self._constraint is not None:
+            ptr = GainHolo().gain_holo_greedy_with_constraint(
+                ptr, self._constraint.ptr()
             )
-        elif isinstance(constraint, Clamp):
-            GainHolo().gain_holo_greedy_set_clamp_constraint(
-                self.ptr, constraint.min, constraint.max
-            )
-        else:
-            raise ValueError("constraint must be DontCare, Normalize, Uniform or Clamp")
+        return ptr

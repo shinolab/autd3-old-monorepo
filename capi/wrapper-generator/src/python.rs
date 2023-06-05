@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/06/2023
+ * Last Modified: 04/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -15,6 +15,7 @@ use anyhow::Result;
 use convert_case::{Case, Casing};
 
 use std::{
+    collections::HashSet,
     fs::File,
     io::{BufWriter, Write},
     path::Path,
@@ -23,7 +24,7 @@ use std::{
 use itertools::Itertools;
 
 use crate::{
-    parse::{Arg, Const, Enum, Function},
+    parse::{Arg, Const, Enum, Function, PtrTuple},
     types::{InOut, Type},
 };
 
@@ -33,6 +34,7 @@ pub struct PythonGenerator {
     functions: Vec<Function>,
     constants: Vec<Const>,
     enums: Vec<Enum>,
+    ptr_tuple: Vec<PtrTuple>,
 }
 
 impl PythonGenerator {
@@ -49,41 +51,41 @@ impl PythonGenerator {
         name.to_case(Case::Snake)
     }
 
-    fn to_return_ty(ty: &Type) -> &str {
+    fn to_return_ty(ty: &Type) -> String {
         match ty {
-            Type::Int8 => "ctypes.c_int8",
-            Type::Int16 => "ctypes.c_int16",
-            Type::Int32 => "ctypes.c_int32",
-            Type::Int64 => "ctypes.c_int64",
-            Type::UInt8 => "ctypes.c_uint8",
-            Type::UInt16 => "ctypes.c_uint16",
-            Type::UInt32 => "ctypes.c_uint32",
-            Type::UInt64 => "ctypes.c_uint64",
-            Type::Void => "None",
-            Type::Char => "ctypes.c_char",
-            Type::Float32 => "ctypes.c_float",
-            Type::Float64 => "ctypes.c_double",
-            Type::Bool => "ctypes.c_bool",
-            Type::VoidPtr => "ctypes.c_void_p",
-            Type::Custom(ref s) => s,
+            Type::Int8 => "ctypes.c_int8".to_string(),
+            Type::Int16 => "ctypes.c_int16".to_string(),
+            Type::Int32 => "ctypes.c_int32".to_string(),
+            Type::Int64 => "ctypes.c_int64".to_string(),
+            Type::UInt8 => "ctypes.c_uint8".to_string(),
+            Type::UInt16 => "ctypes.c_uint16".to_string(),
+            Type::UInt32 => "ctypes.c_uint32".to_string(),
+            Type::UInt64 => "ctypes.c_uint64".to_string(),
+            Type::Void => "None".to_string(),
+            Type::Char => "ctypes.c_char".to_string(),
+            Type::Float32 => "ctypes.c_float".to_string(),
+            Type::Float64 => "ctypes.c_double".to_string(),
+            Type::Bool => "ctypes.c_bool".to_string(),
+            Type::VoidPtr => "ctypes.c_void_p".to_string(),
+            Type::Custom(ref s) => format!("{}", s),
         }
     }
 
-    fn to_python_ty(ty: &Type) -> &str {
+    fn to_python_ty(ty: &Type) -> String {
         match ty {
-            Type::Int8 => "int",
-            Type::Int16 => "int",
-            Type::Int32 => "int",
-            Type::Int64 => "int",
-            Type::UInt8 => "int",
-            Type::UInt16 => "int",
-            Type::UInt32 => "int",
-            Type::UInt64 => "int",
-            Type::Float32 => "float",
-            Type::Float64 => "float",
-            Type::Bool => "bool",
-            Type::Custom(ref s) => s,
-            Type::VoidPtr => "ctypes.c_void_p",
+            Type::Int8 => "int".to_string(),
+            Type::Int16 => "int".to_string(),
+            Type::Int32 => "int".to_string(),
+            Type::Int64 => "int".to_string(),
+            Type::UInt8 => "int".to_string(),
+            Type::UInt16 => "int".to_string(),
+            Type::UInt32 => "int".to_string(),
+            Type::UInt64 => "int".to_string(),
+            Type::Float32 => "float".to_string(),
+            Type::Float64 => "float".to_string(),
+            Type::Bool => "bool".to_string(),
+            Type::Custom(ref s) => format!("\"{}\"", s),
+            Type::VoidPtr => "ctypes.c_void_p".to_string(),
             t => unimplemented!("{:?}", t),
         }
     }
@@ -105,7 +107,7 @@ impl PythonGenerator {
                 Type::Float64 => "ctypes.c_double".to_owned(),
                 Type::Bool => "ctypes.c_bool".to_owned(),
                 Type::VoidPtr => "ctypes.c_void_p".to_owned(),
-                Type::Custom(ref s) => s.to_string(),
+                Type::Custom(ref s) => format!("{}", s),
             },
             1 => match arg.ty {
                 Type::Int8 => "ctypes.POINTER(ctypes.c_int8)".to_owned(),
@@ -197,11 +199,17 @@ impl Generator for PythonGenerator {
         self
     }
 
+    fn register_ptr_tuple(mut self, e: Vec<PtrTuple>) -> Self {
+        self.ptr_tuple = e;
+        self
+    }
+
     fn new() -> Self {
         Self {
             functions: Vec::new(),
             constants: Vec::new(),
             enums: Vec::new(),
+            ptr_tuple: Vec::new(),
         }
     }
 
@@ -226,13 +234,35 @@ import os"
             writeln!(w, r"from typing import Any")?;
         }
 
-        if crate_name != "autd3capi-def"
-            && self
-                .functions
-                .iter()
-                .any(|f| f.args.iter().any(|arg| matches!(arg.ty, Type::Custom(_))))
-        {
-            writeln!(w, r"from .autd3capi_def import *")?;
+        let mut used_ty = HashSet::new();
+        for f in &self.functions {
+            for arg in &f.args {
+                if let Type::Custom(ref s) = arg.ty {
+                    if self.enums.iter().any(|e| &e.name == s)
+                        || self.ptr_tuple.iter().any(|e| &e.name == s)
+                    {
+                        continue;
+                    }
+                    used_ty.insert(s.to_string());
+                }
+            }
+            if let Type::Custom(ref s) = &f.return_ty {
+                if self.enums.iter().any(|e| &e.name == s)
+                    || self.ptr_tuple.iter().any(|e| &e.name == s)
+                {
+                    continue;
+                }
+                used_ty.insert(s.to_string());
+            }
+        }
+
+        if crate_name != "autd3capi-def" && !used_ty.is_empty() {
+            writeln!(
+                w,
+                r"from .autd3capi_def import {}
+",
+                used_ty.iter().join(", ")
+            )?;
         }
 
         if !self.enums.is_empty() {
@@ -261,6 +291,21 @@ class {}(IntEnum):",
             )?;
         }
 
+        for p in self.ptr_tuple {
+            writeln!(
+                w,
+                r"
+class {}(ctypes.Structure):",
+                p.name
+            )?;
+
+            writeln!(
+                w,
+                "    _fields_ = [(\"_0\", ctypes.c_void_p)]
+"
+            )?;
+        }
+
         for constant in self.constants {
             write!(
                 w,
@@ -280,10 +325,8 @@ class {}(IntEnum):",
         write!(
             w,
             r"
-
-
 class Singleton(type):
-    _instances = {{}} # type: ignore
+    _instances = {{}}  # type: ignore
     _lock = threading.Lock()
 
     def __call__(cls, *args, **kwargs):
@@ -323,7 +366,7 @@ class NativeMethods(metaclass=Singleton):",
                     .iter()
                     .any(|arg| matches!(arg.ty, Type::Custom(_)))
                 {
-                    " # type: ignore"
+                    "  # type: ignore"
                 } else {
                     ""
                 }
@@ -365,7 +408,7 @@ class NativeMethods(metaclass=Singleton):",
                 if function.args.is_empty() { "" } else { ", " },
                 args,
                 if function.return_ty == Type::Void {
-                    "None"
+                    "None".to_string()
                 } else {
                     Self::to_return_ty(&function.return_ty)
                 },

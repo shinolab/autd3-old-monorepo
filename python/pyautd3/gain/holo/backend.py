@@ -11,18 +11,24 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 """
 
-
-from ctypes import c_void_p
+from abc import ABCMeta, abstractmethod
 
 from pyautd3.native_methods.autd3capi_gain_holo import NativeMethods as GainHolo
+from pyautd3.native_methods.autd3capi_gain_holo import BackendPtr
 
 
-class Backend:
+class Backend(metaclass=ABCMeta):
     def __init__(self):
-        self.ptr = c_void_p()
+        pass
+
+    @abstractmethod
+    def ptr(self) -> BackendPtr:
+        pass
 
 
 class DefaultBackend(Backend):
     def __init__(self):
         super().__init__()
-        self.ptr = GainHolo().default_backend()
+
+    def ptr(self) -> BackendPtr:
+        return GainHolo().default_backend()
