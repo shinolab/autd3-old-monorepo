@@ -3,7 +3,7 @@ import threading
 import ctypes
 import os
 from typing import Any
-from .autd3capi_def import ControllerPtr, ModulationPtr, STMPropsPtr, GainSTMMode, GeometryPtr, Level, DatagramBodyPtr, TransMode, GainPtr, LinkPtr, DatagramSpecialPtr, DatagramHeaderPtr
+from .autd3capi_def import ControllerPtr, DatagramBodyPtr, DatagramHeaderPtr, DatagramSpecialPtr, GainPtr, GainSTMMode, GeometryPtr, Level, LinkPtr, ModulationPtr, STMPropsPtr, TransMode
 
 
 class ControllerBuilderPtr(ctypes.Structure):
