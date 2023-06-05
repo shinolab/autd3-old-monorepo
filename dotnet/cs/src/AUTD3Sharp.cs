@@ -633,12 +633,19 @@ namespace AUTD3Sharp
 
         public struct Drive
         {
-            public float_t Phase; public float_t Amp;
+            public float_t Phase;
+            public float_t Amp;
+
+            public Drive(float_t amp, float_t phase)
+            {
+                Amp = amp;
+                Phase = phase;
+            }
         }
 
         public abstract class Gain : GainBase
         {
-            public override GainPtr GainPtr(Geometry geometry)
+            sealed public override GainPtr GainPtr(Geometry geometry)
             {
                 var drives = Calc(geometry);
                 var amps = drives.Select(d => d.Amp).ToArray();
@@ -865,7 +872,7 @@ namespace AUTD3Sharp
                 _freqDiv = (uint)(Def.FpgaSubClkFreq / samplingFreq);
             }
 
-            public override ModulationPtr ModulationPtr()
+            sealed public override ModulationPtr ModulationPtr()
             {
                 var data = Calc();
                 return Base.AUTDModulationCustom(_freqDiv, data, (ulong)data.Length);

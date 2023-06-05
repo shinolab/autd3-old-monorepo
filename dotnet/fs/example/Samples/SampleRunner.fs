@@ -25,7 +25,7 @@ module SampleRunner =
                 (AdvancedTest.Test, "Advanced Test (Custom gain/modulation)");
                 (CustomTest.Test, "Custom Test (Custom Focus)")];
         let examples = 
-            if autd.Geometry.NumDevices = 2u then examples @ [(GroupTest.Test, "Grouped gain Test")] else examples;
+            if autd.Geometry.NumDevices = 2 then examples @ [(GroupTest.Test, "Grouped gain Test")] else examples;
 
         (new Clear()) |> autd.Send |> ignore;
         (new Synchronize()) |> autd.Send |> ignore;
