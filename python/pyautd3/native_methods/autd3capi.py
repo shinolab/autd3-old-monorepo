@@ -3,14 +3,14 @@ import threading
 import ctypes
 import os
 from typing import Any
-from .autd3capi_def import GainSTMMode, ControllerPtr, ModulationPtr, DatagramSpecialPtr, Level, LinkPtr, STMPropsPtr, DatagramBodyPtr, TransMode, GainPtr, DatagramHeaderPtr, GeometryPtr
+from .autd3capi_def import ControllerPtr, ModulationPtr, STMPropsPtr, GainSTMMode, GeometryPtr, Level, DatagramBodyPtr, TransMode, GainPtr, LinkPtr, DatagramSpecialPtr, DatagramHeaderPtr
 
 
 class ControllerBuilderPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
-class FirmwareInfoListPointer(ctypes.Structure):
+class FirmwareInfoListPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
@@ -129,12 +129,12 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDGetFPGAInfo.restype = ctypes.c_bool
 
         self.dll.AUTDGetFirmwareInfoListPointer.argtypes = [ControllerPtr, ctypes.c_char_p]  # type: ignore 
-        self.dll.AUTDGetFirmwareInfoListPointer.restype = FirmwareInfoListPointer
+        self.dll.AUTDGetFirmwareInfoListPointer.restype = FirmwareInfoListPtr
 
-        self.dll.AUTDGetFirmwareInfo.argtypes = [FirmwareInfoListPointer, ctypes.c_uint32, ctypes.c_char_p, ctypes.POINTER(ctypes.c_bool), ctypes.POINTER(ctypes.c_bool)]  # type: ignore 
+        self.dll.AUTDGetFirmwareInfo.argtypes = [FirmwareInfoListPtr, ctypes.c_uint32, ctypes.c_char_p, ctypes.POINTER(ctypes.c_bool), ctypes.POINTER(ctypes.c_bool)]  # type: ignore 
         self.dll.AUTDGetFirmwareInfo.restype = None
 
-        self.dll.AUTDFreeFirmwareInfoListPointer.argtypes = [FirmwareInfoListPointer]  # type: ignore 
+        self.dll.AUTDFreeFirmwareInfoListPointer.argtypes = [FirmwareInfoListPtr]  # type: ignore 
         self.dll.AUTDFreeFirmwareInfoListPointer.restype = None
 
         self.dll.AUTDGetLatestFirmware.argtypes = [ctypes.c_char_p] 
@@ -422,13 +422,13 @@ class NativeMethods(metaclass=Singleton):
     def get_fpga_info(self, cnt: ControllerPtr, out: Any, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
         return self.dll.AUTDGetFPGAInfo(cnt, out, err)
 
-    def get_firmware_info_list_pointer(self, cnt: ControllerPtr, err: ctypes.Array[ctypes.c_char]) -> FirmwareInfoListPointer:
+    def get_firmware_info_list_pointer(self, cnt: ControllerPtr, err: ctypes.Array[ctypes.c_char]) -> FirmwareInfoListPtr:
         return self.dll.AUTDGetFirmwareInfoListPointer(cnt, err)
 
-    def get_firmware_info(self, p_info_list: FirmwareInfoListPointer, idx: int, info: ctypes.Array[ctypes.c_char], is_valid: Any, is_supported: Any) -> None:
+    def get_firmware_info(self, p_info_list: FirmwareInfoListPtr, idx: int, info: ctypes.Array[ctypes.c_char], is_valid: Any, is_supported: Any) -> None:
         return self.dll.AUTDGetFirmwareInfo(p_info_list, idx, info, is_valid, is_supported)
 
-    def free_firmware_info_list_pointer(self, p_info_list: FirmwareInfoListPointer) -> None:
+    def free_firmware_info_list_pointer(self, p_info_list: FirmwareInfoListPtr) -> None:
         return self.dll.AUTDFreeFirmwareInfoListPointer(p_info_list)
 
     def get_latest_firmware(self, latest: ctypes.Array[ctypes.c_char]) -> None:

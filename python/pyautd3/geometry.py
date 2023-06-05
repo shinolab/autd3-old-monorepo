@@ -187,7 +187,7 @@ class Geometry:
         return np.array([x.value, y.value, z.value])
 
     def __getitem__(self, key: int) -> Transducer:
-        return Transducer(key, self._ptr)
+        return self._transducers[key]
 
     def __iter__(self) -> Iterator[Transducer]:
         return iter(self._transducers)
