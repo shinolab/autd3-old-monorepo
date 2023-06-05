@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/06/2023
+ * Last Modified: 05/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -314,6 +314,30 @@ namespace AUTD3Sharp
             for (i, v) in &e.values {
                 writeln!(w, r"        {} = {},", Self::to_pascal(i), v)?;
             }
+
+            writeln!(w, r"    }}",)?;
+        }
+
+        for e in self.ptr_tuple {
+            if !e.name.ends_with("Ptr") {
+                continue;
+            }
+
+            write!(
+                w,
+                r"
+    [StructLayout(LayoutKind.Sequential)]
+    public struct {}",
+                e.name,
+            )?;
+
+            writeln!(
+                w,
+                r"
+    {{",
+            )?;
+
+            writeln!(w, r"        public IntPtr _0;")?;
 
             writeln!(w, r"    }}",)?;
         }

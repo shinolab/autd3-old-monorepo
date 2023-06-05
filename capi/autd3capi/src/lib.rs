@@ -324,25 +324,25 @@ pub unsafe extern "C" fn AUTDGetFPGAInfo(
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C)]
-pub struct FirmwareInfoListPointer(pub ConstPtr);
+pub struct FirmwareInfoListPtr(pub ConstPtr);
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDGetFirmwareInfoListPointer(
     cnt: ControllerPtr,
     err: *mut c_char,
-) -> FirmwareInfoListPointer {
+) -> FirmwareInfoListPtr {
     let firmware_infos = try_or_return!(
         cast_mut!(cnt.0, Cnt).firmware_infos(),
         err,
-        FirmwareInfoListPointer(NULL)
+        FirmwareInfoListPtr(NULL)
     );
-    FirmwareInfoListPointer(Box::into_raw(Box::new(firmware_infos)) as _)
+    FirmwareInfoListPtr(Box::into_raw(Box::new(firmware_infos)) as _)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn AUTDGetFirmwareInfo(
-    p_info_list: FirmwareInfoListPointer,
+    p_info_list: FirmwareInfoListPtr,
     idx: u32,
     info: *mut c_char,
     is_valid: *mut bool,
@@ -356,7 +356,7 @@ pub unsafe extern "C" fn AUTDGetFirmwareInfo(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn AUTDFreeFirmwareInfoListPointer(p_info_list: FirmwareInfoListPointer) {
+pub unsafe extern "C" fn AUTDFreeFirmwareInfoListPointer(p_info_list: FirmwareInfoListPtr) {
     let _ = Box::from_raw(p_info_list.0 as *mut Vec<FirmwareInfo>);
 }
 

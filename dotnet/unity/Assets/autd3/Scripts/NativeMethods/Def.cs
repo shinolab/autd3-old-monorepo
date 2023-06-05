@@ -30,11 +30,11 @@ namespace AUTD3Sharp
 
             public const uint FpgaSubClkFreq = 20480000;
 
-            public const int Err = -1;
+            public const int Autd3Err = -1;
 
-            public const int True = 1;
+            public const int Autd3True = 1;
 
-            public const int False = 0;
+            public const int Autd3False = 0;
         }
     }
 
@@ -68,6 +68,60 @@ namespace AUTD3Sharp
         Sleep = 0,
         NativeTimer = 1,
         BusyWait = 2,
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct ControllerPtr
+    {
+        public IntPtr _0;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct GeometryPtr
+    {
+        public IntPtr _0;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct LinkPtr
+    {
+        public IntPtr _0;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct DatagramBodyPtr
+    {
+        public IntPtr _0;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct DatagramHeaderPtr
+    {
+        public IntPtr _0;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct DatagramSpecialPtr
+    {
+        public IntPtr _0;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct GainPtr
+    {
+        public IntPtr _0;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct ModulationPtr
+    {
+        public IntPtr _0;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct STMPropsPtr
+    {
+        public IntPtr _0;
     }
 
 }

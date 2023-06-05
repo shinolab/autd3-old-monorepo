@@ -14,7 +14,7 @@ namespace AUTD3Sharp
         {
             private const string DLL = "autd3capi_modulation_audio_file";
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDModulationWav(string path, byte[] err);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ModulationPtr AUTDModulationWav(string path, byte[] err);
         }
     }
 
