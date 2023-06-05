@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/06/2023
+ * Last Modified: 05/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -67,7 +67,7 @@ impl PythonGenerator {
             Type::Float64 => "ctypes.c_double".to_string(),
             Type::Bool => "ctypes.c_bool".to_string(),
             Type::VoidPtr => "ctypes.c_void_p".to_string(),
-            Type::Custom(ref s) => format!("{}", s),
+            Type::Custom(ref s) => s.to_owned(),
         }
     }
 
@@ -107,7 +107,7 @@ impl PythonGenerator {
                 Type::Float64 => "ctypes.c_double".to_owned(),
                 Type::Bool => "ctypes.c_bool".to_owned(),
                 Type::VoidPtr => "ctypes.c_void_p".to_owned(),
-                Type::Custom(ref s) => format!("{}", s),
+                Type::Custom(ref s) => s.to_owned(),
             },
             1 => match arg.ty {
                 Type::Int8 => "ctypes.POINTER(ctypes.c_int8)".to_owned(),
@@ -261,7 +261,7 @@ import os"
                 w,
                 r"from .autd3capi_def import {}
 ",
-                used_ty.iter().join(", ")
+                used_ty.iter().sorted().join(", ")
             )?;
         }
 
