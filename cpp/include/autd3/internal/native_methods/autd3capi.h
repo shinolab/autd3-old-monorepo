@@ -228,13 +228,11 @@ DatagramBodyPtr AUTDFocusSTM(STMPropsPtr props,
                              const uint8_t *shift,
                              uint64_t size);
 
-[[nodiscard]]
-DatagramBodyPtr AUTDGainSTMWithMode(STMPropsPtr props,
-                                    GainSTMMode mode,
-                                    const GainPtr *gains,
-                                    uint64_t size);
+[[nodiscard]] DatagramBodyPtr AUTDGainSTMWithMode(STMPropsPtr props, GainSTMMode mode);
 
-[[nodiscard]] DatagramBodyPtr AUTDGainSTM(STMPropsPtr props, const GainPtr *gains, uint64_t size);
+[[nodiscard]] DatagramBodyPtr AUTDGainSTM(STMPropsPtr props);
+
+[[nodiscard]] DatagramBodyPtr AUTDGainSTMAddGain(DatagramBodyPtr stm, GainPtr gain);
 
 [[nodiscard]] DatagramSpecialPtr AUTDSynchronize();
 

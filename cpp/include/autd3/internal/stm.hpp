@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 04/06/2023
+// Last Modified: 05/06/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -141,10 +141,9 @@ class GainSTM final : public STM {
   static GainSTM with_sampling_frequency_division(const uint32_t div) { return GainSTM(std::nullopt, std::nullopt, div); }
 
   [[nodiscard]] native_methods::DatagramBodyPtr ptr(const Geometry& geometry) const override {
-    std::vector<native_methods::GainPtr> gains;
-    gains.reserve(_gains.size());
-    for (const auto& gain : _gains) gains.emplace_back(gain->gain_ptr(geometry));
-    return AUTDGainSTM(props(), gains.data(), static_cast<uint64_t>(gains.size()));
+    auto ptr = _mode.has_value() ? AUTDGainSTMWithMode(props(), _mode.value()) : AUTDGainSTM(props());
+    for (const auto& gain : _gains) ptr = AUTDGainSTMAddGain(ptr, gain->gain_ptr(geometry));
+    return ptr;
   }
 
   template <typename G>
@@ -158,6 +157,11 @@ class GainSTM final : public STM {
   [[nodiscard]] double sampling_frequency() const { return sampling_frequency_from_size(_gains.size()); }
 
   [[nodiscard]] uint32_t sampling_frequency_division() const { return sampling_frequency_division_from_size(_gains.size()); }
+
+  GainSTM with_mode(const native_methods::GainSTMMode mode) {
+    _mode = mode;
+    return std::move(*this);
+  }
 
   GainSTM with_start_idx(const std::optional<uint16_t> start_idx) {
     _start_idx = start_idx.has_value() ? static_cast<int32_t>(start_idx.value()) : -1;
@@ -174,6 +178,7 @@ class GainSTM final : public STM {
       : STM(freq, sampling_freq, sampling_freq_div) {}
 
   std::vector<std::shared_ptr<Gain>> _gains;
+  std::optional<native_methods::GainSTMMode> _mode;
 };
 
 }  // namespace autd3::internal
