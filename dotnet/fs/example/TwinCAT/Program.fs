@@ -15,11 +15,4 @@ open AUTD3Sharp
 open AUTD3Sharp.Link
 open Samples
 
-let geometry = 
-    Geometry.Builder()
-        .AddDevice(Vector3d.zero, Vector3d.zero)
-        .Build()
-
-let link = (new TwinCAT()).Build()
-
-(geometry, link) |> Controller.Open |> SampleRunner.Run
+Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(TwinCAT ()) |> SampleRunner.Run

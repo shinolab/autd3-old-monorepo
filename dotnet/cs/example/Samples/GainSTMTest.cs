@@ -4,7 +4,7 @@
  * Created Date: 21/07/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 28/05/2023
+ * Last Modified: 05/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -29,7 +29,7 @@ internal static class GainSTMTest
         var mod = new Static();
 
         var center = autd.Geometry.Center + new Vector3d(0, 0, 150);
-        var stm = new GainSTM();
+        var stm = new GainSTM(1.0);
         const int pointNum = 200;
         for (var i = 0; i < pointNum; i++)
         {
@@ -37,10 +37,9 @@ internal static class GainSTMTest
             var theta = 2.0 * Math.PI * i / pointNum;
             var p = radius * new Vector3d(Math.Cos(theta), Math.Sin(theta), 0);
             var gain = new Focus(center + p);
-            stm.Add(gain);
+            stm.AddGain(gain);
         }
 
-        stm.Frequency = 1;
         Console.WriteLine($"Actual frequency is {stm.Frequency}");
         autd.Send(mod, stm);
     }

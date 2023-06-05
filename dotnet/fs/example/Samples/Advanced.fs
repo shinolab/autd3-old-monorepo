@@ -11,20 +11,26 @@
 
 namespace Samples
 
-open System
 open AUTD3Sharp
+open AUTD3Sharp.Gain
+open AUTD3Sharp.Modulation
 
 module AdvancedTest =
+    type UniformGain () =
+        inherit Gain()
+        override this.Calc (geometry: Geometry) = Gain.Transform(geometry, fun tr -> new Drive(1., 0.));
+        
+    type Burst (size: int) =
+        inherit Modulation(5120)
+        override this.Calc () = 
+            let buf: float array = Array.zeroCreate size
+            buf[0] <- 1.
+            buf
+        
     let Test (autd : Controller) = 
         (SilencerConfig.None()) |> autd.Send |> ignore
 
-        let amp = [| for _ in 1u..autd.Geometry.NumTransducers -> 1.0 |]
-        let phase = [| for _ in 1u..autd.Geometry.NumTransducers -> 0.0 |]
-        
-        let burst : float array = Array.zeroCreate 4000
-        burst[0] <- 1.0;
-
-        let m = new Modulation.Custom(burst, 40960u);
-        let g = new Gain.Custom(amp, phase);
+        let m = new Burst(4000);
+        let g = new UniformGain();
 
         (m, g) |> autd.Send |> ignore
