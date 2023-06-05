@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <iterator>
 #include <vector>
+#include <memory>
 
 #include "autd3/internal/def.hpp"
 #include "autd3/internal/gain.hpp"
