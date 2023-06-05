@@ -3,12 +3,23 @@ import threading
 import ctypes
 import os
 from typing import Any
-from .autd3capi_def import *
+from .autd3capi_def import GainSTMMode, ControllerPtr, ModulationPtr, DatagramSpecialPtr, Level, LinkPtr, STMPropsPtr, DatagramBodyPtr, TransMode, GainPtr, DatagramHeaderPtr, GeometryPtr
 
+
+class ControllerBuilderPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
+class FirmwareInfoListPointer(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
+class Callback(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
 
 
 class Singleton(type):
-    _instances = {} # type: ignore
+    _instances = {}  # type: ignore
     _lock = threading.Lock()
 
     def __call__(cls, *args, **kwargs):
@@ -27,578 +38,590 @@ class NativeMethods(metaclass=Singleton):
         except FileNotFoundError:
             return
 
-        self.dll.AUTDCreateGeometryBuilder.argtypes = [] 
-        self.dll.AUTDCreateGeometryBuilder.restype = ctypes.c_void_p
+        self.dll.AUTDCreateControllerBuilder.argtypes = [] 
+        self.dll.AUTDCreateControllerBuilder.restype = ControllerBuilderPtr
 
-        self.dll.AUTDAddDevice.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double] 
-        self.dll.AUTDAddDevice.restype = None
+        self.dll.AUTDAddDevice.argtypes = [ControllerBuilderPtr, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDAddDevice.restype = ControllerBuilderPtr
 
-        self.dll.AUTDAddDeviceQuaternion.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double] 
-        self.dll.AUTDAddDeviceQuaternion.restype = None
+        self.dll.AUTDAddDeviceQuaternion.argtypes = [ControllerBuilderPtr, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDAddDeviceQuaternion.restype = ControllerBuilderPtr
 
-        self.dll.AUTDBuildGeometry.argtypes = [ctypes.c_void_p, ctypes.c_char_p] 
-        self.dll.AUTDBuildGeometry.restype = ctypes.c_void_p
+        self.dll.AUTDControllerOpenWith.argtypes = [ControllerBuilderPtr, LinkPtr, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDControllerOpenWith.restype = ControllerPtr
 
-        self.dll.AUTDOpenController.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_char_p] 
-        self.dll.AUTDOpenController.restype = ctypes.c_void_p
-
-        self.dll.AUTDClose.argtypes = [ctypes.c_void_p, ctypes.c_char_p] 
+        self.dll.AUTDClose.argtypes = [ControllerPtr, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDClose.restype = ctypes.c_bool
 
-        self.dll.AUTDFreeController.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDFreeController.argtypes = [ControllerPtr]  # type: ignore 
         self.dll.AUTDFreeController.restype = None
 
-        self.dll.AUTDSetReadsFPGAInfo.argtypes = [ctypes.c_void_p, ctypes.c_bool] 
+        self.dll.AUTDSetReadsFPGAInfo.argtypes = [ControllerPtr, ctypes.c_bool]  # type: ignore 
         self.dll.AUTDSetReadsFPGAInfo.restype = None
 
-        self.dll.AUTDSetForceFan.argtypes = [ctypes.c_void_p, ctypes.c_bool] 
+        self.dll.AUTDSetForceFan.argtypes = [ControllerPtr, ctypes.c_bool]  # type: ignore 
         self.dll.AUTDSetForceFan.restype = None
 
-        self.dll.AUTDGetSoundSpeed.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDGetGeometry.argtypes = [ControllerPtr]  # type: ignore 
+        self.dll.AUTDGetGeometry.restype = GeometryPtr
+
+        self.dll.AUTDGetSoundSpeed.argtypes = [GeometryPtr]  # type: ignore 
         self.dll.AUTDGetSoundSpeed.restype = ctypes.c_double
 
-        self.dll.AUTDSetSoundSpeed.argtypes = [ctypes.c_void_p, ctypes.c_double] 
+        self.dll.AUTDSetSoundSpeed.argtypes = [GeometryPtr, ctypes.c_double]  # type: ignore 
         self.dll.AUTDSetSoundSpeed.restype = None
 
-        self.dll.AUTDSetSoundSpeedFromTemp.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double] 
+        self.dll.AUTDSetSoundSpeedFromTemp.argtypes = [GeometryPtr, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double]  # type: ignore 
         self.dll.AUTDSetSoundSpeedFromTemp.restype = None
 
-        self.dll.AUTDGetTransFrequency.argtypes = [ctypes.c_void_p, ctypes.c_uint32] 
+        self.dll.AUTDGetTransFrequency.argtypes = [GeometryPtr, ctypes.c_uint32]  # type: ignore 
         self.dll.AUTDGetTransFrequency.restype = ctypes.c_double
 
-        self.dll.AUTDSetTransFrequency.argtypes = [ctypes.c_void_p, ctypes.c_uint32, ctypes.c_double, ctypes.c_char_p] 
+        self.dll.AUTDSetTransFrequency.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.c_double, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDSetTransFrequency.restype = ctypes.c_bool
 
-        self.dll.AUTDGetTransCycle.argtypes = [ctypes.c_void_p, ctypes.c_uint32] 
+        self.dll.AUTDGetTransCycle.argtypes = [GeometryPtr, ctypes.c_uint32]  # type: ignore 
         self.dll.AUTDGetTransCycle.restype = ctypes.c_uint16
 
-        self.dll.AUTDSetTransCycle.argtypes = [ctypes.c_void_p, ctypes.c_uint32, ctypes.c_uint16, ctypes.c_char_p] 
+        self.dll.AUTDSetTransCycle.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.c_uint16, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDSetTransCycle.restype = ctypes.c_bool
 
-        self.dll.AUTDGetWavelength.argtypes = [ctypes.c_void_p, ctypes.c_uint32] 
+        self.dll.AUTDGetWavelength.argtypes = [GeometryPtr, ctypes.c_uint32]  # type: ignore 
         self.dll.AUTDGetWavelength.restype = ctypes.c_double
 
-        self.dll.AUTDGetAttenuation.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDGetAttenuation.argtypes = [GeometryPtr]  # type: ignore 
         self.dll.AUTDGetAttenuation.restype = ctypes.c_double
 
-        self.dll.AUTDSetAttenuation.argtypes = [ctypes.c_void_p, ctypes.c_double] 
+        self.dll.AUTDSetAttenuation.argtypes = [GeometryPtr, ctypes.c_double]  # type: ignore 
         self.dll.AUTDSetAttenuation.restype = None
 
-        self.dll.AUTDGetFPGAInfo.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint8), ctypes.c_char_p] 
-        self.dll.AUTDGetFPGAInfo.restype = ctypes.c_bool
-
-        self.dll.AUTDNumTransducers.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDNumTransducers.argtypes = [GeometryPtr]  # type: ignore 
         self.dll.AUTDNumTransducers.restype = ctypes.c_uint32
 
-        self.dll.AUTDNumDevices.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDNumDevices.argtypes = [GeometryPtr]  # type: ignore 
         self.dll.AUTDNumDevices.restype = ctypes.c_uint32
 
-        self.dll.AUTDGeometryCenter.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)] 
+        self.dll.AUTDGeometryCenter.argtypes = [GeometryPtr, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDGeometryCenter.restype = None
 
-        self.dll.AUTDGeometryCenterOf.argtypes = [ctypes.c_void_p, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)] 
+        self.dll.AUTDGeometryCenterOf.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDGeometryCenterOf.restype = None
 
-        self.dll.AUTDTransPosition.argtypes = [ctypes.c_void_p, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)] 
+        self.dll.AUTDTransPosition.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDTransPosition.restype = None
 
-        self.dll.AUTDTransXDirection.argtypes = [ctypes.c_void_p, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)] 
+        self.dll.AUTDTransXDirection.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDTransXDirection.restype = None
 
-        self.dll.AUTDTransYDirection.argtypes = [ctypes.c_void_p, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)] 
+        self.dll.AUTDTransYDirection.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDTransYDirection.restype = None
 
-        self.dll.AUTDTransZDirection.argtypes = [ctypes.c_void_p, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)] 
+        self.dll.AUTDTransZDirection.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDTransZDirection.restype = None
 
-        self.dll.AUTDGetTransModDelay.argtypes = [ctypes.c_void_p, ctypes.c_uint32] 
+        self.dll.AUTDGetTransModDelay.argtypes = [GeometryPtr, ctypes.c_uint32]  # type: ignore 
         self.dll.AUTDGetTransModDelay.restype = ctypes.c_uint16
 
-        self.dll.AUTDSetTransModDelay.argtypes = [ctypes.c_void_p, ctypes.c_uint32, ctypes.c_uint16] 
+        self.dll.AUTDSetTransModDelay.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.c_uint16]  # type: ignore 
         self.dll.AUTDSetTransModDelay.restype = None
 
-        self.dll.AUTDGetFirmwareInfoListPointer.argtypes = [ctypes.c_void_p, ctypes.c_char_p] 
-        self.dll.AUTDGetFirmwareInfoListPointer.restype = ctypes.c_void_p
+        self.dll.AUTDGetFPGAInfo.argtypes = [ControllerPtr, ctypes.POINTER(ctypes.c_uint8), ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDGetFPGAInfo.restype = ctypes.c_bool
 
-        self.dll.AUTDGetFirmwareInfo.argtypes = [ctypes.c_void_p, ctypes.c_uint32, ctypes.c_char_p, ctypes.POINTER(ctypes.c_bool), ctypes.POINTER(ctypes.c_bool)] 
+        self.dll.AUTDGetFirmwareInfoListPointer.argtypes = [ControllerPtr, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDGetFirmwareInfoListPointer.restype = FirmwareInfoListPointer
+
+        self.dll.AUTDGetFirmwareInfo.argtypes = [FirmwareInfoListPointer, ctypes.c_uint32, ctypes.c_char_p, ctypes.POINTER(ctypes.c_bool), ctypes.POINTER(ctypes.c_bool)]  # type: ignore 
         self.dll.AUTDGetFirmwareInfo.restype = None
 
-        self.dll.AUTDFreeFirmwareInfoListPointer.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDFreeFirmwareInfoListPointer.argtypes = [FirmwareInfoListPointer]  # type: ignore 
         self.dll.AUTDFreeFirmwareInfoListPointer.restype = None
 
         self.dll.AUTDGetLatestFirmware.argtypes = [ctypes.c_char_p] 
         self.dll.AUTDGetLatestFirmware.restype = None
 
         self.dll.AUTDGainNull.argtypes = [] 
-        self.dll.AUTDGainNull.restype = ctypes.c_void_p
+        self.dll.AUTDGainNull.restype = GainPtr
 
         self.dll.AUTDGainGrouped.argtypes = [] 
-        self.dll.AUTDGainGrouped.restype = ctypes.c_void_p
+        self.dll.AUTDGainGrouped.restype = GainPtr
 
-        self.dll.AUTDGainGroupedAdd.argtypes = [ctypes.c_void_p, ctypes.c_uint32, ctypes.c_void_p] 
-        self.dll.AUTDGainGroupedAdd.restype = None
+        self.dll.AUTDGainGroupedAdd.argtypes = [GainPtr, ctypes.c_uint32, GainPtr]  # type: ignore 
+        self.dll.AUTDGainGroupedAdd.restype = GainPtr
 
-        self.dll.AUTDGainFocus.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double] 
-        self.dll.AUTDGainFocus.restype = ctypes.c_void_p
+        self.dll.AUTDGainFocus.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double] 
+        self.dll.AUTDGainFocus.restype = GainPtr
 
-        self.dll.AUTDGainBesselBeam.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double] 
-        self.dll.AUTDGainBesselBeam.restype = ctypes.c_void_p
+        self.dll.AUTDGainFocusWithAmp.argtypes = [GainPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDGainFocusWithAmp.restype = GainPtr
 
-        self.dll.AUTDGainPlaneWave.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double] 
-        self.dll.AUTDGainPlaneWave.restype = ctypes.c_void_p
+        self.dll.AUTDGainBessel.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double] 
+        self.dll.AUTDGainBessel.restype = GainPtr
+
+        self.dll.AUTDGainBesselWithAmp.argtypes = [GainPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDGainBesselWithAmp.restype = GainPtr
+
+        self.dll.AUTDGainPlane.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double] 
+        self.dll.AUTDGainPlane.restype = GainPtr
+
+        self.dll.AUTDGainPlaneWithAmp.argtypes = [GainPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDGainPlaneWithAmp.restype = GainPtr
 
         self.dll.AUTDGainTransducerTest.argtypes = [] 
-        self.dll.AUTDGainTransducerTest.restype = ctypes.c_void_p
+        self.dll.AUTDGainTransducerTest.restype = GainPtr
 
-        self.dll.AUTDGainTransducerTestSet.argtypes = [ctypes.c_void_p, ctypes.c_uint32, ctypes.c_double, ctypes.c_double] 
-        self.dll.AUTDGainTransducerTestSet.restype = None
+        self.dll.AUTDGainTransducerTestSet.argtypes = [GainPtr, ctypes.c_uint32, ctypes.c_double, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDGainTransducerTestSet.restype = GainPtr
 
         self.dll.AUTDGainCustom.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_uint64] 
-        self.dll.AUTDGainCustom.restype = ctypes.c_void_p
+        self.dll.AUTDGainCustom.restype = GainPtr
 
-        self.dll.AUTDDeleteGain.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDDeleteGain.restype = None
+        self.dll.AUTDGainIntoDatagram.argtypes = [GainPtr]  # type: ignore 
+        self.dll.AUTDGainIntoDatagram.restype = DatagramBodyPtr
 
-        self.dll.AUTDModulationStatic.argtypes = [ctypes.c_double] 
-        self.dll.AUTDModulationStatic.restype = ctypes.c_void_p
+        self.dll.AUTDModulationStatic.argtypes = [] 
+        self.dll.AUTDModulationStatic.restype = ModulationPtr
 
-        self.dll.AUTDModulationSine.argtypes = [ctypes.c_uint32, ctypes.c_double, ctypes.c_double] 
-        self.dll.AUTDModulationSine.restype = ctypes.c_void_p
+        self.dll.AUTDModulationStaticWithAmp.argtypes = [ModulationPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDModulationStaticWithAmp.restype = ModulationPtr
 
-        self.dll.AUTDModulationSineSquared.argtypes = [ctypes.c_uint32, ctypes.c_double, ctypes.c_double] 
-        self.dll.AUTDModulationSineSquared.restype = ctypes.c_void_p
+        self.dll.AUTDModulationStaticWithSamplingFrequencyDivision.argtypes = [ModulationPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDModulationStaticWithSamplingFrequencyDivision.restype = ModulationPtr
 
-        self.dll.AUTDModulationSineLegacy.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double] 
-        self.dll.AUTDModulationSineLegacy.restype = ctypes.c_void_p
+        self.dll.AUTDModulationSine.argtypes = [ctypes.c_uint32] 
+        self.dll.AUTDModulationSine.restype = ModulationPtr
 
-        self.dll.AUTDModulationSquare.argtypes = [ctypes.c_uint32, ctypes.c_double, ctypes.c_double, ctypes.c_double] 
-        self.dll.AUTDModulationSquare.restype = ctypes.c_void_p
+        self.dll.AUTDModulationSineWithAmp.argtypes = [ModulationPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDModulationSineWithAmp.restype = ModulationPtr
 
-        self.dll.AUTDModulationCustom.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_uint64, ctypes.c_uint32] 
-        self.dll.AUTDModulationCustom.restype = ctypes.c_void_p
+        self.dll.AUTDModulationSineWithOffset.argtypes = [ModulationPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDModulationSineWithOffset.restype = ModulationPtr
 
-        self.dll.AUTDModulationSamplingFrequencyDivision.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDModulationSineWithSamplingFrequencyDivision.argtypes = [ModulationPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDModulationSineWithSamplingFrequencyDivision.restype = ModulationPtr
+
+        self.dll.AUTDModulationSinePressure.argtypes = [ctypes.c_uint32] 
+        self.dll.AUTDModulationSinePressure.restype = ModulationPtr
+
+        self.dll.AUTDModulationSinePressureWithAmp.argtypes = [ModulationPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDModulationSinePressureWithAmp.restype = ModulationPtr
+
+        self.dll.AUTDModulationSinePressureWithOffset.argtypes = [ModulationPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDModulationSinePressureWithOffset.restype = ModulationPtr
+
+        self.dll.AUTDModulationSinePressureWithSamplingFrequencyDivision.argtypes = [ModulationPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDModulationSinePressureWithSamplingFrequencyDivision.restype = ModulationPtr
+
+        self.dll.AUTDModulationSineLegacy.argtypes = [ctypes.c_double] 
+        self.dll.AUTDModulationSineLegacy.restype = ModulationPtr
+
+        self.dll.AUTDModulationSineLegacyWithAmp.argtypes = [ModulationPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDModulationSineLegacyWithAmp.restype = ModulationPtr
+
+        self.dll.AUTDModulationSineLegacyWithOffset.argtypes = [ModulationPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDModulationSineLegacyWithOffset.restype = ModulationPtr
+
+        self.dll.AUTDModulationSineLegacyWithSamplingFrequencyDivision.argtypes = [ModulationPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDModulationSineLegacyWithSamplingFrequencyDivision.restype = ModulationPtr
+
+        self.dll.AUTDModulationSquare.argtypes = [ctypes.c_uint32] 
+        self.dll.AUTDModulationSquare.restype = ModulationPtr
+
+        self.dll.AUTDModulationSquareWithLow.argtypes = [ModulationPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDModulationSquareWithLow.restype = ModulationPtr
+
+        self.dll.AUTDModulationSquareWithHigh.argtypes = [ModulationPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDModulationSquareWithHigh.restype = ModulationPtr
+
+        self.dll.AUTDModulationSquareWithDuty.argtypes = [ModulationPtr, ctypes.c_double]  # type: ignore 
+        self.dll.AUTDModulationSquareWithDuty.restype = ModulationPtr
+
+        self.dll.AUTDModulationSquareWithSamplingFrequencyDivision.argtypes = [ModulationPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDModulationSquareWithSamplingFrequencyDivision.restype = ModulationPtr
+
+        self.dll.AUTDModulationCustom.argtypes = [ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.c_uint64] 
+        self.dll.AUTDModulationCustom.restype = ModulationPtr
+
+        self.dll.AUTDModulationSamplingFrequencyDivision.argtypes = [ModulationPtr]  # type: ignore 
         self.dll.AUTDModulationSamplingFrequencyDivision.restype = ctypes.c_uint32
 
-        self.dll.AUTDModulationSetSamplingFrequencyDivision.argtypes = [ctypes.c_void_p, ctypes.c_uint32] 
-        self.dll.AUTDModulationSetSamplingFrequencyDivision.restype = None
-
-        self.dll.AUTDModulationSamplingFrequency.argtypes = [ctypes.c_void_p] 
+        self.dll.AUTDModulationSamplingFrequency.argtypes = [ModulationPtr]  # type: ignore 
         self.dll.AUTDModulationSamplingFrequency.restype = ctypes.c_double
 
-        self.dll.AUTDDeleteModulation.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDDeleteModulation.restype = None
+        self.dll.AUTDModulationIntoDatagram.argtypes = [ModulationPtr]  # type: ignore 
+        self.dll.AUTDModulationIntoDatagram.restype = DatagramHeaderPtr
 
-        self.dll.AUTDFocusSTM.argtypes = [] 
-        self.dll.AUTDFocusSTM.restype = ctypes.c_void_p
+        self.dll.AUTDSTMProps.argtypes = [ctypes.c_double] 
+        self.dll.AUTDSTMProps.restype = STMPropsPtr
 
-        self.dll.AUTDFocusSTMAdd.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_uint8] 
-        self.dll.AUTDFocusSTMAdd.restype = None
+        self.dll.AUTDSTMPropsWithSamplingFreq.argtypes = [ctypes.c_double] 
+        self.dll.AUTDSTMPropsWithSamplingFreq.restype = STMPropsPtr
 
-        self.dll.AUTDFocusSTMSetFrequency.argtypes = [ctypes.c_void_p, ctypes.c_double] 
-        self.dll.AUTDFocusSTMSetFrequency.restype = ctypes.c_double
+        self.dll.AUTDSTMPropsWithSamplingFreqDiv.argtypes = [ctypes.c_uint32] 
+        self.dll.AUTDSTMPropsWithSamplingFreqDiv.restype = STMPropsPtr
 
-        self.dll.AUTDFocusSTMGetStartIdx.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDFocusSTMGetStartIdx.restype = ctypes.c_int32
+        self.dll.AUTDSTMPropsWithStartIdx.argtypes = [STMPropsPtr, ctypes.c_int32]  # type: ignore 
+        self.dll.AUTDSTMPropsWithStartIdx.restype = STMPropsPtr
 
-        self.dll.AUTDFocusSTMGetFinishIdx.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDFocusSTMGetFinishIdx.restype = ctypes.c_int32
+        self.dll.AUTDSTMPropsWithFinishIdx.argtypes = [STMPropsPtr, ctypes.c_int32]  # type: ignore 
+        self.dll.AUTDSTMPropsWithFinishIdx.restype = STMPropsPtr
 
-        self.dll.AUTDFocusSTMSetStartIdx.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
-        self.dll.AUTDFocusSTMSetStartIdx.restype = None
+        self.dll.AUTDSTMPropsFrequency.argtypes = [STMPropsPtr, ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDSTMPropsFrequency.restype = ctypes.c_double
 
-        self.dll.AUTDFocusSTMSetFinishIdx.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
-        self.dll.AUTDFocusSTMSetFinishIdx.restype = None
+        self.dll.AUTDSTMPropsSamplingFrequency.argtypes = [STMPropsPtr, ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDSTMPropsSamplingFrequency.restype = ctypes.c_double
 
-        self.dll.AUTDFocusSTMFrequency.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDFocusSTMFrequency.restype = ctypes.c_double
+        self.dll.AUTDSTMPropsSamplingFrequencyDivision.argtypes = [STMPropsPtr, ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDSTMPropsSamplingFrequencyDivision.restype = ctypes.c_uint32
 
-        self.dll.AUTDFocusSTMSamplingFrequency.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDFocusSTMSamplingFrequency.restype = ctypes.c_double
+        self.dll.AUTDSTMPropsStartIdx.argtypes = [STMPropsPtr]  # type: ignore 
+        self.dll.AUTDSTMPropsStartIdx.restype = ctypes.c_int32
 
-        self.dll.AUTDFocusSTMSamplingFrequencyDivision.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDFocusSTMSamplingFrequencyDivision.restype = ctypes.c_uint32
+        self.dll.AUTDSTMPropsFinishIdx.argtypes = [STMPropsPtr]  # type: ignore 
+        self.dll.AUTDSTMPropsFinishIdx.restype = ctypes.c_int32
 
-        self.dll.AUTDFocusSTMSetSamplingFrequencyDivision.argtypes = [ctypes.c_void_p, ctypes.c_uint32] 
-        self.dll.AUTDFocusSTMSetSamplingFrequencyDivision.restype = None
+        self.dll.AUTDFocusSTM.argtypes = [STMPropsPtr, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_uint8), ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDFocusSTM.restype = DatagramBodyPtr
 
-        self.dll.AUTDDeleteFocusSTM.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDDeleteFocusSTM.restype = None
+        self.dll.AUTDGainSTMWithMode.argtypes = [STMPropsPtr, GainSTMMode]  # type: ignore 
+        self.dll.AUTDGainSTMWithMode.restype = DatagramBodyPtr
 
-        self.dll.AUTDGainSTM.argtypes = [] 
-        self.dll.AUTDGainSTM.restype = ctypes.c_void_p
+        self.dll.AUTDGainSTM.argtypes = [STMPropsPtr]  # type: ignore 
+        self.dll.AUTDGainSTM.restype = DatagramBodyPtr
 
-        self.dll.AUTDGainSTMAdd.argtypes = [ctypes.c_void_p, ctypes.c_void_p] 
-        self.dll.AUTDGainSTMAdd.restype = None
-
-        self.dll.AUTDGainSTMSetMode.argtypes = [ctypes.c_void_p, GainSTMMode] # type: ignore 
-        self.dll.AUTDGainSTMSetMode.restype = None
-
-        self.dll.AUTDGainSTMSetFrequency.argtypes = [ctypes.c_void_p, ctypes.c_double] 
-        self.dll.AUTDGainSTMSetFrequency.restype = ctypes.c_double
-
-        self.dll.AUTDGainSTMGetStartIdx.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDGainSTMGetStartIdx.restype = ctypes.c_int32
-
-        self.dll.AUTDGainSTMGetFinishIdx.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDGainSTMGetFinishIdx.restype = ctypes.c_int32
-
-        self.dll.AUTDGainSTMSetStartIdx.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
-        self.dll.AUTDGainSTMSetStartIdx.restype = None
-
-        self.dll.AUTDGainSTMSetFinishIdx.argtypes = [ctypes.c_void_p, ctypes.c_int32] 
-        self.dll.AUTDGainSTMSetFinishIdx.restype = None
-
-        self.dll.AUTDGainSTMFrequency.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDGainSTMFrequency.restype = ctypes.c_double
-
-        self.dll.AUTDGainSTMSamplingFrequency.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDGainSTMSamplingFrequency.restype = ctypes.c_double
-
-        self.dll.AUTDGainSTMSamplingFrequencyDivision.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDGainSTMSamplingFrequencyDivision.restype = ctypes.c_uint32
-
-        self.dll.AUTDGainSTMSetSamplingFrequencyDivision.argtypes = [ctypes.c_void_p, ctypes.c_uint32] 
-        self.dll.AUTDGainSTMSetSamplingFrequencyDivision.restype = None
-
-        self.dll.AUTDDeleteGainSTM.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDDeleteGainSTM.restype = None
+        self.dll.AUTDGainSTMAddGain.argtypes = [DatagramBodyPtr, GainPtr]  # type: ignore 
+        self.dll.AUTDGainSTMAddGain.restype = DatagramBodyPtr
 
         self.dll.AUTDSynchronize.argtypes = [] 
-        self.dll.AUTDSynchronize.restype = ctypes.c_void_p
+        self.dll.AUTDSynchronize.restype = DatagramSpecialPtr
 
         self.dll.AUTDClear.argtypes = [] 
-        self.dll.AUTDClear.restype = ctypes.c_void_p
+        self.dll.AUTDClear.restype = DatagramSpecialPtr
 
         self.dll.AUTDUpdateFlags.argtypes = [] 
-        self.dll.AUTDUpdateFlags.restype = ctypes.c_void_p
+        self.dll.AUTDUpdateFlags.restype = DatagramSpecialPtr
 
         self.dll.AUTDStop.argtypes = [] 
-        self.dll.AUTDStop.restype = ctypes.c_void_p
+        self.dll.AUTDStop.restype = DatagramSpecialPtr
 
         self.dll.AUTDModDelayConfig.argtypes = [] 
-        self.dll.AUTDModDelayConfig.restype = ctypes.c_void_p
-
-        self.dll.AUTDDeleteSpecialData.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDDeleteSpecialData.restype = None
+        self.dll.AUTDModDelayConfig.restype = DatagramSpecialPtr
 
         self.dll.AUTDCreateSilencer.argtypes = [ctypes.c_uint16] 
-        self.dll.AUTDCreateSilencer.restype = ctypes.c_void_p
-
-        self.dll.AUTDDeleteSilencer.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDDeleteSilencer.restype = None
+        self.dll.AUTDCreateSilencer.restype = DatagramHeaderPtr
 
         self.dll.AUTDCreateAmplitudes.argtypes = [ctypes.c_double] 
-        self.dll.AUTDCreateAmplitudes.restype = ctypes.c_void_p
+        self.dll.AUTDCreateAmplitudes.restype = DatagramBodyPtr
 
-        self.dll.AUTDDeleteAmplitudes.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDDeleteAmplitudes.restype = None
-
-        self.dll.AUTDSend.argtypes = [ctypes.c_void_p, TransMode, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int64, ctypes.c_char_p] # type: ignore 
+        self.dll.AUTDSend.argtypes = [ControllerPtr, TransMode, DatagramHeaderPtr, DatagramBodyPtr, ctypes.c_int64, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDSend.restype = ctypes.c_int32
 
-        self.dll.AUTDSendSpecial.argtypes = [ctypes.c_void_p, TransMode, ctypes.c_void_p, ctypes.c_int64, ctypes.c_char_p] # type: ignore 
+        self.dll.AUTDSendSpecial.argtypes = [ControllerPtr, TransMode, DatagramSpecialPtr, ctypes.c_int64, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDSendSpecial.restype = ctypes.c_int32
 
         self.dll.AUTDLinkDebug.argtypes = [] 
-        self.dll.AUTDLinkDebug.restype = ctypes.c_void_p
+        self.dll.AUTDLinkDebug.restype = LinkPtr
 
-        self.dll.AUTDLinkDebugLogLevel.argtypes = [ctypes.c_void_p, Level] # type: ignore 
-        self.dll.AUTDLinkDebugLogLevel.restype = ctypes.c_void_p
+        self.dll.AUTDLinkDebugWithLogLevel.argtypes = [LinkPtr, Level]  # type: ignore 
+        self.dll.AUTDLinkDebugWithLogLevel.restype = LinkPtr
 
-        self.dll.AUTDLinkDebugLogFunc.argtypes = [ctypes.c_void_p, Level, ctypes.c_void_p, ctypes.c_void_p] # type: ignore 
-        self.dll.AUTDLinkDebugLogFunc.restype = ctypes.c_void_p
+        self.dll.AUTDLinkDebugWithLogFunc.argtypes = [LinkPtr, ctypes.c_void_p, ctypes.c_void_p]  # type: ignore 
+        self.dll.AUTDLinkDebugWithLogFunc.restype = LinkPtr
 
-        self.dll.AUTDLinkDebugTimeout.argtypes = [ctypes.c_void_p, ctypes.c_uint64] 
-        self.dll.AUTDLinkDebugTimeout.restype = ctypes.c_void_p
+        self.dll.AUTDLinkDebugWithTimeout.argtypes = [LinkPtr, ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDLinkDebugWithTimeout.restype = LinkPtr
 
-        self.dll.AUTDLinkDebugBuild.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDLinkDebugBuild.restype = ctypes.c_void_p
+    def create_controller_builder(self) -> ControllerBuilderPtr:
+        return self.dll.AUTDCreateControllerBuilder()
 
-    def create_geometry_builder(self) -> ctypes.c_void_p:
-        return self.dll.AUTDCreateGeometryBuilder()
-
-    def add_device(self, builder: ctypes.c_void_p, x: float, y: float, z: float, rz1: float, ry: float, rz2: float) -> None:
+    def add_device(self, builder: ControllerBuilderPtr, x: float, y: float, z: float, rz1: float, ry: float, rz2: float) -> ControllerBuilderPtr:
         return self.dll.AUTDAddDevice(builder, x, y, z, rz1, ry, rz2)
 
-    def add_device_quaternion(self, builder: ctypes.c_void_p, x: float, y: float, z: float, qw: float, qx: float, qy: float, qz: float) -> None:
+    def add_device_quaternion(self, builder: ControllerBuilderPtr, x: float, y: float, z: float, qw: float, qx: float, qy: float, qz: float) -> ControllerBuilderPtr:
         return self.dll.AUTDAddDeviceQuaternion(builder, x, y, z, qw, qx, qy, qz)
 
-    def build_geometry(self, builder: ctypes.c_void_p, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_void_p:
-        return self.dll.AUTDBuildGeometry(builder, err)
+    def controller_open_with(self, builder: ControllerBuilderPtr, link: LinkPtr, err: ctypes.Array[ctypes.c_char]) -> ControllerPtr:
+        return self.dll.AUTDControllerOpenWith(builder, link, err)
 
-    def open_controller(self, geometry: ctypes.c_void_p, link: ctypes.c_void_p, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_void_p:
-        return self.dll.AUTDOpenController(geometry, link, err)
-
-    def close(self, cnt: ctypes.c_void_p, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
+    def close(self, cnt: ControllerPtr, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
         return self.dll.AUTDClose(cnt, err)
 
-    def free_controller(self, cnt: ctypes.c_void_p) -> None:
+    def free_controller(self, cnt: ControllerPtr) -> None:
         return self.dll.AUTDFreeController(cnt)
 
-    def set_reads_fpga_info(self, cnt: ctypes.c_void_p, value: bool) -> None:
+    def set_reads_fpga_info(self, cnt: ControllerPtr, value: bool) -> None:
         return self.dll.AUTDSetReadsFPGAInfo(cnt, value)
 
-    def set_force_fan(self, cnt: ctypes.c_void_p, value: bool) -> None:
+    def set_force_fan(self, cnt: ControllerPtr, value: bool) -> None:
         return self.dll.AUTDSetForceFan(cnt, value)
 
-    def get_sound_speed(self, cnt: ctypes.c_void_p) -> ctypes.c_double:
-        return self.dll.AUTDGetSoundSpeed(cnt)
+    def get_geometry(self, cnt: ControllerPtr) -> GeometryPtr:
+        return self.dll.AUTDGetGeometry(cnt)
 
-    def set_sound_speed(self, cnt: ctypes.c_void_p, value: float) -> None:
-        return self.dll.AUTDSetSoundSpeed(cnt, value)
+    def get_sound_speed(self, geo: GeometryPtr) -> ctypes.c_double:
+        return self.dll.AUTDGetSoundSpeed(geo)
 
-    def set_sound_speed_from_temp(self, cnt: ctypes.c_void_p, temp: float, k: float, r: float, m: float) -> None:
-        return self.dll.AUTDSetSoundSpeedFromTemp(cnt, temp, k, r, m)
+    def set_sound_speed(self, geo: GeometryPtr, value: float) -> None:
+        return self.dll.AUTDSetSoundSpeed(geo, value)
 
-    def get_trans_frequency(self, cnt: ctypes.c_void_p, idx: int) -> ctypes.c_double:
-        return self.dll.AUTDGetTransFrequency(cnt, idx)
+    def set_sound_speed_from_temp(self, geo: GeometryPtr, temp: float, k: float, r: float, m: float) -> None:
+        return self.dll.AUTDSetSoundSpeedFromTemp(geo, temp, k, r, m)
 
-    def set_trans_frequency(self, cnt: ctypes.c_void_p, idx: int, value: float, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
-        return self.dll.AUTDSetTransFrequency(cnt, idx, value, err)
+    def get_trans_frequency(self, geo: GeometryPtr, idx: int) -> ctypes.c_double:
+        return self.dll.AUTDGetTransFrequency(geo, idx)
 
-    def get_trans_cycle(self, cnt: ctypes.c_void_p, idx: int) -> ctypes.c_uint16:
-        return self.dll.AUTDGetTransCycle(cnt, idx)
+    def set_trans_frequency(self, geo: GeometryPtr, idx: int, value: float, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
+        return self.dll.AUTDSetTransFrequency(geo, idx, value, err)
 
-    def set_trans_cycle(self, cnt: ctypes.c_void_p, idx: int, value: int, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
-        return self.dll.AUTDSetTransCycle(cnt, idx, value, err)
+    def get_trans_cycle(self, geo: GeometryPtr, idx: int) -> ctypes.c_uint16:
+        return self.dll.AUTDGetTransCycle(geo, idx)
 
-    def get_wavelength(self, cnt: ctypes.c_void_p, idx: int) -> ctypes.c_double:
-        return self.dll.AUTDGetWavelength(cnt, idx)
+    def set_trans_cycle(self, geo: GeometryPtr, idx: int, value: int, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
+        return self.dll.AUTDSetTransCycle(geo, idx, value, err)
 
-    def get_attenuation(self, cnt: ctypes.c_void_p) -> ctypes.c_double:
-        return self.dll.AUTDGetAttenuation(cnt)
+    def get_wavelength(self, geo: GeometryPtr, idx: int) -> ctypes.c_double:
+        return self.dll.AUTDGetWavelength(geo, idx)
 
-    def set_attenuation(self, cnt: ctypes.c_void_p, value: float) -> None:
-        return self.dll.AUTDSetAttenuation(cnt, value)
+    def get_attenuation(self, geo: GeometryPtr) -> ctypes.c_double:
+        return self.dll.AUTDGetAttenuation(geo)
 
-    def get_fpga_info(self, cnt: ctypes.c_void_p, out: Any, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
+    def set_attenuation(self, geo: GeometryPtr, value: float) -> None:
+        return self.dll.AUTDSetAttenuation(geo, value)
+
+    def num_transducers(self, geo: GeometryPtr) -> ctypes.c_uint32:
+        return self.dll.AUTDNumTransducers(geo)
+
+    def num_devices(self, geo: GeometryPtr) -> ctypes.c_uint32:
+        return self.dll.AUTDNumDevices(geo)
+
+    def geometry_center(self, geo: GeometryPtr, x: Any, y: Any, z: Any) -> None:
+        return self.dll.AUTDGeometryCenter(geo, x, y, z)
+
+    def geometry_center_of(self, geo: GeometryPtr, dev_idx: int, x: Any, y: Any, z: Any) -> None:
+        return self.dll.AUTDGeometryCenterOf(geo, dev_idx, x, y, z)
+
+    def trans_position(self, geo: GeometryPtr, tr_idx: int, x: Any, y: Any, z: Any) -> None:
+        return self.dll.AUTDTransPosition(geo, tr_idx, x, y, z)
+
+    def trans_x_direction(self, geo: GeometryPtr, tr_idx: int, x: Any, y: Any, z: Any) -> None:
+        return self.dll.AUTDTransXDirection(geo, tr_idx, x, y, z)
+
+    def trans_y_direction(self, geo: GeometryPtr, tr_idx: int, x: Any, y: Any, z: Any) -> None:
+        return self.dll.AUTDTransYDirection(geo, tr_idx, x, y, z)
+
+    def trans_z_direction(self, geo: GeometryPtr, tr_idx: int, x: Any, y: Any, z: Any) -> None:
+        return self.dll.AUTDTransZDirection(geo, tr_idx, x, y, z)
+
+    def get_trans_mod_delay(self, geo: GeometryPtr, tr_idx: int) -> ctypes.c_uint16:
+        return self.dll.AUTDGetTransModDelay(geo, tr_idx)
+
+    def set_trans_mod_delay(self, geo: GeometryPtr, tr_idx: int, delay: int) -> None:
+        return self.dll.AUTDSetTransModDelay(geo, tr_idx, delay)
+
+    def get_fpga_info(self, cnt: ControllerPtr, out: Any, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
         return self.dll.AUTDGetFPGAInfo(cnt, out, err)
 
-    def num_transducers(self, cnt: ctypes.c_void_p) -> ctypes.c_uint32:
-        return self.dll.AUTDNumTransducers(cnt)
-
-    def num_devices(self, cnt: ctypes.c_void_p) -> ctypes.c_uint32:
-        return self.dll.AUTDNumDevices(cnt)
-
-    def geometry_center(self, cnt: ctypes.c_void_p, x: Any, y: Any, z: Any) -> None:
-        return self.dll.AUTDGeometryCenter(cnt, x, y, z)
-
-    def geometry_center_of(self, cnt: ctypes.c_void_p, dev_idx: int, x: Any, y: Any, z: Any) -> None:
-        return self.dll.AUTDGeometryCenterOf(cnt, dev_idx, x, y, z)
-
-    def trans_position(self, cnt: ctypes.c_void_p, tr_idx: int, x: Any, y: Any, z: Any) -> None:
-        return self.dll.AUTDTransPosition(cnt, tr_idx, x, y, z)
-
-    def trans_x_direction(self, cnt: ctypes.c_void_p, tr_idx: int, x: Any, y: Any, z: Any) -> None:
-        return self.dll.AUTDTransXDirection(cnt, tr_idx, x, y, z)
-
-    def trans_y_direction(self, cnt: ctypes.c_void_p, tr_idx: int, x: Any, y: Any, z: Any) -> None:
-        return self.dll.AUTDTransYDirection(cnt, tr_idx, x, y, z)
-
-    def trans_z_direction(self, cnt: ctypes.c_void_p, tr_idx: int, x: Any, y: Any, z: Any) -> None:
-        return self.dll.AUTDTransZDirection(cnt, tr_idx, x, y, z)
-
-    def get_trans_mod_delay(self, cnt: ctypes.c_void_p, tr_idx: int) -> ctypes.c_uint16:
-        return self.dll.AUTDGetTransModDelay(cnt, tr_idx)
-
-    def set_trans_mod_delay(self, cnt: ctypes.c_void_p, tr_idx: int, delay: int) -> None:
-        return self.dll.AUTDSetTransModDelay(cnt, tr_idx, delay)
-
-    def get_firmware_info_list_pointer(self, cnt: ctypes.c_void_p, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_void_p:
+    def get_firmware_info_list_pointer(self, cnt: ControllerPtr, err: ctypes.Array[ctypes.c_char]) -> FirmwareInfoListPointer:
         return self.dll.AUTDGetFirmwareInfoListPointer(cnt, err)
 
-    def get_firmware_info(self, p_info_list: ctypes.c_void_p, idx: int, info: ctypes.Array[ctypes.c_char], is_valid: Any, is_supported: Any) -> None:
+    def get_firmware_info(self, p_info_list: FirmwareInfoListPointer, idx: int, info: ctypes.Array[ctypes.c_char], is_valid: Any, is_supported: Any) -> None:
         return self.dll.AUTDGetFirmwareInfo(p_info_list, idx, info, is_valid, is_supported)
 
-    def free_firmware_info_list_pointer(self, p_info_list: ctypes.c_void_p) -> None:
+    def free_firmware_info_list_pointer(self, p_info_list: FirmwareInfoListPointer) -> None:
         return self.dll.AUTDFreeFirmwareInfoListPointer(p_info_list)
 
     def get_latest_firmware(self, latest: ctypes.Array[ctypes.c_char]) -> None:
         return self.dll.AUTDGetLatestFirmware(latest)
 
-    def gain_null(self) -> ctypes.c_void_p:
+    def gain_null(self) -> GainPtr:
         return self.dll.AUTDGainNull()
 
-    def gain_grouped(self) -> ctypes.c_void_p:
+    def gain_grouped(self) -> GainPtr:
         return self.dll.AUTDGainGrouped()
 
-    def gain_grouped_add(self, grouped_gain: ctypes.c_void_p, device_id: int, gain: ctypes.c_void_p) -> None:
+    def gain_grouped_add(self, grouped_gain: GainPtr, device_id: int, gain: GainPtr) -> GainPtr:
         return self.dll.AUTDGainGroupedAdd(grouped_gain, device_id, gain)
 
-    def gain_focus(self, x: float, y: float, z: float, amp: float) -> ctypes.c_void_p:
-        return self.dll.AUTDGainFocus(x, y, z, amp)
+    def gain_focus(self, x: float, y: float, z: float) -> GainPtr:
+        return self.dll.AUTDGainFocus(x, y, z)
 
-    def gain_bessel_beam(self, x: float, y: float, z: float, nx: float, ny: float, nz: float, theta_z: float, amp: float) -> ctypes.c_void_p:
-        return self.dll.AUTDGainBesselBeam(x, y, z, nx, ny, nz, theta_z, amp)
+    def gain_focus_with_amp(self, focus: GainPtr, amp: float) -> GainPtr:
+        return self.dll.AUTDGainFocusWithAmp(focus, amp)
 
-    def gain_plane_wave(self, nx: float, ny: float, nz: float, amp: float) -> ctypes.c_void_p:
-        return self.dll.AUTDGainPlaneWave(nx, ny, nz, amp)
+    def gain_bessel(self, x: float, y: float, z: float, nx: float, ny: float, nz: float, theta_z: float) -> GainPtr:
+        return self.dll.AUTDGainBessel(x, y, z, nx, ny, nz, theta_z)
 
-    def gain_transducer_test(self) -> ctypes.c_void_p:
+    def gain_bessel_with_amp(self, bessel: GainPtr, amp: float) -> GainPtr:
+        return self.dll.AUTDGainBesselWithAmp(bessel, amp)
+
+    def gain_plane(self, nx: float, ny: float, nz: float) -> GainPtr:
+        return self.dll.AUTDGainPlane(nx, ny, nz)
+
+    def gain_plane_with_amp(self, plane: GainPtr, amp: float) -> GainPtr:
+        return self.dll.AUTDGainPlaneWithAmp(plane, amp)
+
+    def gain_transducer_test(self) -> GainPtr:
         return self.dll.AUTDGainTransducerTest()
 
-    def gain_transducer_test_set(self, trans_test: ctypes.c_void_p, id: int, phase: float, amp: float) -> None:
+    def gain_transducer_test_set(self, trans_test: GainPtr, id: int, phase: float, amp: float) -> GainPtr:
         return self.dll.AUTDGainTransducerTestSet(trans_test, id, phase, amp)
 
-    def gain_custom(self, amp: Any, phase: Any, size: int) -> ctypes.c_void_p:
+    def gain_custom(self, amp: Any, phase: Any, size: int) -> GainPtr:
         return self.dll.AUTDGainCustom(amp, phase, size)
 
-    def delete_gain(self, gain: ctypes.c_void_p) -> None:
-        return self.dll.AUTDDeleteGain(gain)
+    def gain_into_datagram(self, gain: GainPtr) -> DatagramBodyPtr:
+        return self.dll.AUTDGainIntoDatagram(gain)
 
-    def modulation_static(self, amp: float) -> ctypes.c_void_p:
-        return self.dll.AUTDModulationStatic(amp)
+    def modulation_static(self) -> ModulationPtr:
+        return self.dll.AUTDModulationStatic()
 
-    def modulation_sine(self, freq: int, amp: float, offset: float) -> ctypes.c_void_p:
-        return self.dll.AUTDModulationSine(freq, amp, offset)
+    def modulation_static_with_amp(self, m: ModulationPtr, amp: float) -> ModulationPtr:
+        return self.dll.AUTDModulationStaticWithAmp(m, amp)
 
-    def modulation_sine_squared(self, freq: int, amp: float, offset: float) -> ctypes.c_void_p:
-        return self.dll.AUTDModulationSineSquared(freq, amp, offset)
+    def modulation_static_with_sampling_frequency_division(self, m: ModulationPtr, div: int) -> ModulationPtr:
+        return self.dll.AUTDModulationStaticWithSamplingFrequencyDivision(m, div)
 
-    def modulation_sine_legacy(self, freq: float, amp: float, offset: float) -> ctypes.c_void_p:
-        return self.dll.AUTDModulationSineLegacy(freq, amp, offset)
+    def modulation_sine(self, freq: int) -> ModulationPtr:
+        return self.dll.AUTDModulationSine(freq)
 
-    def modulation_square(self, freq: int, low: float, high: float, duty: float) -> ctypes.c_void_p:
-        return self.dll.AUTDModulationSquare(freq, low, high, duty)
+    def modulation_sine_with_amp(self, m: ModulationPtr, amp: float) -> ModulationPtr:
+        return self.dll.AUTDModulationSineWithAmp(m, amp)
 
-    def modulation_custom(self, amp: Any, size: int, freq_div: int) -> ctypes.c_void_p:
-        return self.dll.AUTDModulationCustom(amp, size, freq_div)
+    def modulation_sine_with_offset(self, m: ModulationPtr, offset: float) -> ModulationPtr:
+        return self.dll.AUTDModulationSineWithOffset(m, offset)
 
-    def modulation_sampling_frequency_division(self, m: ctypes.c_void_p) -> ctypes.c_uint32:
+    def modulation_sine_with_sampling_frequency_division(self, m: ModulationPtr, div: int) -> ModulationPtr:
+        return self.dll.AUTDModulationSineWithSamplingFrequencyDivision(m, div)
+
+    def modulation_sine_pressure(self, freq: int) -> ModulationPtr:
+        return self.dll.AUTDModulationSinePressure(freq)
+
+    def modulation_sine_pressure_with_amp(self, m: ModulationPtr, amp: float) -> ModulationPtr:
+        return self.dll.AUTDModulationSinePressureWithAmp(m, amp)
+
+    def modulation_sine_pressure_with_offset(self, m: ModulationPtr, offset: float) -> ModulationPtr:
+        return self.dll.AUTDModulationSinePressureWithOffset(m, offset)
+
+    def modulation_sine_pressure_with_sampling_frequency_division(self, m: ModulationPtr, div: int) -> ModulationPtr:
+        return self.dll.AUTDModulationSinePressureWithSamplingFrequencyDivision(m, div)
+
+    def modulation_sine_legacy(self, freq: float) -> ModulationPtr:
+        return self.dll.AUTDModulationSineLegacy(freq)
+
+    def modulation_sine_legacy_with_amp(self, m: ModulationPtr, amp: float) -> ModulationPtr:
+        return self.dll.AUTDModulationSineLegacyWithAmp(m, amp)
+
+    def modulation_sine_legacy_with_offset(self, m: ModulationPtr, offset: float) -> ModulationPtr:
+        return self.dll.AUTDModulationSineLegacyWithOffset(m, offset)
+
+    def modulation_sine_legacy_with_sampling_frequency_division(self, m: ModulationPtr, div: int) -> ModulationPtr:
+        return self.dll.AUTDModulationSineLegacyWithSamplingFrequencyDivision(m, div)
+
+    def modulation_square(self, freq: int) -> ModulationPtr:
+        return self.dll.AUTDModulationSquare(freq)
+
+    def modulation_square_with_low(self, m: ModulationPtr, low: float) -> ModulationPtr:
+        return self.dll.AUTDModulationSquareWithLow(m, low)
+
+    def modulation_square_with_high(self, m: ModulationPtr, high: float) -> ModulationPtr:
+        return self.dll.AUTDModulationSquareWithHigh(m, high)
+
+    def modulation_square_with_duty(self, m: ModulationPtr, duty: float) -> ModulationPtr:
+        return self.dll.AUTDModulationSquareWithDuty(m, duty)
+
+    def modulation_square_with_sampling_frequency_division(self, m: ModulationPtr, div: int) -> ModulationPtr:
+        return self.dll.AUTDModulationSquareWithSamplingFrequencyDivision(m, div)
+
+    def modulation_custom(self, freq_div: int, amp: Any, size: int) -> ModulationPtr:
+        return self.dll.AUTDModulationCustom(freq_div, amp, size)
+
+    def modulation_sampling_frequency_division(self, m: ModulationPtr) -> ctypes.c_uint32:
         return self.dll.AUTDModulationSamplingFrequencyDivision(m)
 
-    def modulation_set_sampling_frequency_division(self, m: ctypes.c_void_p, freq_div: int) -> None:
-        return self.dll.AUTDModulationSetSamplingFrequencyDivision(m, freq_div)
-
-    def modulation_sampling_frequency(self, m: ctypes.c_void_p) -> ctypes.c_double:
+    def modulation_sampling_frequency(self, m: ModulationPtr) -> ctypes.c_double:
         return self.dll.AUTDModulationSamplingFrequency(m)
 
-    def delete_modulation(self, m: ctypes.c_void_p) -> None:
-        return self.dll.AUTDDeleteModulation(m)
+    def modulation_into_datagram(self, m: ModulationPtr) -> DatagramHeaderPtr:
+        return self.dll.AUTDModulationIntoDatagram(m)
 
-    def focus_stm(self) -> ctypes.c_void_p:
-        return self.dll.AUTDFocusSTM()
+    def stm_props(self, freq: float) -> STMPropsPtr:
+        return self.dll.AUTDSTMProps(freq)
 
-    def focus_stm_add(self, stm: ctypes.c_void_p, x: float, y: float, z: float, shift: int) -> None:
-        return self.dll.AUTDFocusSTMAdd(stm, x, y, z, shift)
+    def stm_props_with_sampling_freq(self, freq: float) -> STMPropsPtr:
+        return self.dll.AUTDSTMPropsWithSamplingFreq(freq)
 
-    def focus_stm_set_frequency(self, stm: ctypes.c_void_p, freq: float) -> ctypes.c_double:
-        return self.dll.AUTDFocusSTMSetFrequency(stm, freq)
+    def stm_props_with_sampling_freq_div(self, div: int) -> STMPropsPtr:
+        return self.dll.AUTDSTMPropsWithSamplingFreqDiv(div)
 
-    def focus_stm_get_start_idx(self, stm: ctypes.c_void_p) -> ctypes.c_int32:
-        return self.dll.AUTDFocusSTMGetStartIdx(stm)
+    def stm_props_with_start_idx(self, props: STMPropsPtr, idx: int) -> STMPropsPtr:
+        return self.dll.AUTDSTMPropsWithStartIdx(props, idx)
 
-    def focus_stm_get_finish_idx(self, stm: ctypes.c_void_p) -> ctypes.c_int32:
-        return self.dll.AUTDFocusSTMGetFinishIdx(stm)
+    def stm_props_with_finish_idx(self, props: STMPropsPtr, idx: int) -> STMPropsPtr:
+        return self.dll.AUTDSTMPropsWithFinishIdx(props, idx)
 
-    def focus_stm_set_start_idx(self, stm: ctypes.c_void_p, idx: int) -> None:
-        return self.dll.AUTDFocusSTMSetStartIdx(stm, idx)
+    def stm_props_frequency(self, props: STMPropsPtr, size: int) -> ctypes.c_double:
+        return self.dll.AUTDSTMPropsFrequency(props, size)
 
-    def focus_stm_set_finish_idx(self, stm: ctypes.c_void_p, idx: int) -> None:
-        return self.dll.AUTDFocusSTMSetFinishIdx(stm, idx)
+    def stm_props_sampling_frequency(self, props: STMPropsPtr, size: int) -> ctypes.c_double:
+        return self.dll.AUTDSTMPropsSamplingFrequency(props, size)
 
-    def focus_stm_frequency(self, stm: ctypes.c_void_p) -> ctypes.c_double:
-        return self.dll.AUTDFocusSTMFrequency(stm)
+    def stm_props_sampling_frequency_division(self, props: STMPropsPtr, size: int) -> ctypes.c_uint32:
+        return self.dll.AUTDSTMPropsSamplingFrequencyDivision(props, size)
 
-    def focus_stm_sampling_frequency(self, stm: ctypes.c_void_p) -> ctypes.c_double:
-        return self.dll.AUTDFocusSTMSamplingFrequency(stm)
+    def stm_props_start_idx(self, props: STMPropsPtr) -> ctypes.c_int32:
+        return self.dll.AUTDSTMPropsStartIdx(props)
 
-    def focus_stm_sampling_frequency_division(self, stm: ctypes.c_void_p) -> ctypes.c_uint32:
-        return self.dll.AUTDFocusSTMSamplingFrequencyDivision(stm)
+    def stm_props_finish_idx(self, props: STMPropsPtr) -> ctypes.c_int32:
+        return self.dll.AUTDSTMPropsFinishIdx(props)
 
-    def focus_stm_set_sampling_frequency_division(self, stm: ctypes.c_void_p, freq_div: int) -> None:
-        return self.dll.AUTDFocusSTMSetSamplingFrequencyDivision(stm, freq_div)
+    def focus_stm(self, props: STMPropsPtr, points: Any, shift: Any, size: int) -> DatagramBodyPtr:
+        return self.dll.AUTDFocusSTM(props, points, shift, size)
 
-    def delete_focus_stm(self, stm: ctypes.c_void_p) -> None:
-        return self.dll.AUTDDeleteFocusSTM(stm)
+    def gain_stm_with_mode(self, props: STMPropsPtr, mode: GainSTMMode) -> DatagramBodyPtr:
+        return self.dll.AUTDGainSTMWithMode(props, mode)
 
-    def gain_stm(self) -> ctypes.c_void_p:
-        return self.dll.AUTDGainSTM()
+    def gain_stm(self, props: STMPropsPtr) -> DatagramBodyPtr:
+        return self.dll.AUTDGainSTM(props)
 
-    def gain_stm_add(self, stm: ctypes.c_void_p, gain: ctypes.c_void_p) -> None:
-        return self.dll.AUTDGainSTMAdd(stm, gain)
+    def gain_stm_add_gain(self, stm: DatagramBodyPtr, gain: GainPtr) -> DatagramBodyPtr:
+        return self.dll.AUTDGainSTMAddGain(stm, gain)
 
-    def gain_stm_set_mode(self, stm: ctypes.c_void_p, mode: GainSTMMode) -> None:
-        return self.dll.AUTDGainSTMSetMode(stm, mode)
-
-    def gain_stm_set_frequency(self, stm: ctypes.c_void_p, freq: float) -> ctypes.c_double:
-        return self.dll.AUTDGainSTMSetFrequency(stm, freq)
-
-    def gain_stm_get_start_idx(self, stm: ctypes.c_void_p) -> ctypes.c_int32:
-        return self.dll.AUTDGainSTMGetStartIdx(stm)
-
-    def gain_stm_get_finish_idx(self, stm: ctypes.c_void_p) -> ctypes.c_int32:
-        return self.dll.AUTDGainSTMGetFinishIdx(stm)
-
-    def gain_stm_set_start_idx(self, stm: ctypes.c_void_p, idx: int) -> None:
-        return self.dll.AUTDGainSTMSetStartIdx(stm, idx)
-
-    def gain_stm_set_finish_idx(self, stm: ctypes.c_void_p, idx: int) -> None:
-        return self.dll.AUTDGainSTMSetFinishIdx(stm, idx)
-
-    def gain_stm_frequency(self, stm: ctypes.c_void_p) -> ctypes.c_double:
-        return self.dll.AUTDGainSTMFrequency(stm)
-
-    def gain_stm_sampling_frequency(self, stm: ctypes.c_void_p) -> ctypes.c_double:
-        return self.dll.AUTDGainSTMSamplingFrequency(stm)
-
-    def gain_stm_sampling_frequency_division(self, stm: ctypes.c_void_p) -> ctypes.c_uint32:
-        return self.dll.AUTDGainSTMSamplingFrequencyDivision(stm)
-
-    def gain_stm_set_sampling_frequency_division(self, stm: ctypes.c_void_p, freq_div: int) -> None:
-        return self.dll.AUTDGainSTMSetSamplingFrequencyDivision(stm, freq_div)
-
-    def delete_gain_stm(self, stm: ctypes.c_void_p) -> None:
-        return self.dll.AUTDDeleteGainSTM(stm)
-
-    def synchronize(self) -> ctypes.c_void_p:
+    def synchronize(self) -> DatagramSpecialPtr:
         return self.dll.AUTDSynchronize()
 
-    def clear(self) -> ctypes.c_void_p:
+    def clear(self) -> DatagramSpecialPtr:
         return self.dll.AUTDClear()
 
-    def update_flags(self) -> ctypes.c_void_p:
+    def update_flags(self) -> DatagramSpecialPtr:
         return self.dll.AUTDUpdateFlags()
 
-    def stop(self) -> ctypes.c_void_p:
+    def stop(self) -> DatagramSpecialPtr:
         return self.dll.AUTDStop()
 
-    def mod_delay_config(self) -> ctypes.c_void_p:
+    def mod_delay_config(self) -> DatagramSpecialPtr:
         return self.dll.AUTDModDelayConfig()
 
-    def delete_special_data(self, special: ctypes.c_void_p) -> None:
-        return self.dll.AUTDDeleteSpecialData(special)
-
-    def create_silencer(self, step: int) -> ctypes.c_void_p:
+    def create_silencer(self, step: int) -> DatagramHeaderPtr:
         return self.dll.AUTDCreateSilencer(step)
 
-    def delete_silencer(self, silencer: ctypes.c_void_p) -> None:
-        return self.dll.AUTDDeleteSilencer(silencer)
-
-    def create_amplitudes(self, amp: float) -> ctypes.c_void_p:
+    def create_amplitudes(self, amp: float) -> DatagramBodyPtr:
         return self.dll.AUTDCreateAmplitudes(amp)
 
-    def delete_amplitudes(self, amplitudes: ctypes.c_void_p) -> None:
-        return self.dll.AUTDDeleteAmplitudes(amplitudes)
-
-    def send(self, cnt: ctypes.c_void_p, mode: TransMode, header: ctypes.c_void_p, body: ctypes.c_void_p, timeout_ns: int, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
+    def send(self, cnt: ControllerPtr, mode: TransMode, header: DatagramHeaderPtr, body: DatagramBodyPtr, timeout_ns: int, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
         return self.dll.AUTDSend(cnt, mode, header, body, timeout_ns, err)
 
-    def send_special(self, cnt: ctypes.c_void_p, mode: TransMode, special: ctypes.c_void_p, timeout_ns: int, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
+    def send_special(self, cnt: ControllerPtr, mode: TransMode, special: DatagramSpecialPtr, timeout_ns: int, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_int32:
         return self.dll.AUTDSendSpecial(cnt, mode, special, timeout_ns, err)
 
-    def link_debug(self) -> ctypes.c_void_p:
+    def link_debug(self) -> LinkPtr:
         return self.dll.AUTDLinkDebug()
 
-    def link_debug_log_level(self, builder: ctypes.c_void_p, level: Level) -> ctypes.c_void_p:
-        return self.dll.AUTDLinkDebugLogLevel(builder, level)
+    def link_debug_with_log_level(self, debug: LinkPtr, level: Level) -> LinkPtr:
+        return self.dll.AUTDLinkDebugWithLogLevel(debug, level)
 
-    def link_debug_log_func(self, builder: ctypes.c_void_p, level: Level, out_func: ctypes.c_void_p, flush_func: ctypes.c_void_p) -> ctypes.c_void_p:
-        return self.dll.AUTDLinkDebugLogFunc(builder, level, out_func, flush_func)
+    def link_debug_with_log_func(self, debug: LinkPtr, out_func: ctypes.c_void_p, flush_func: ctypes.c_void_p) -> LinkPtr:
+        return self.dll.AUTDLinkDebugWithLogFunc(debug, out_func, flush_func)
 
-    def link_debug_timeout(self, builder: ctypes.c_void_p, timeout_ns: int) -> ctypes.c_void_p:
-        return self.dll.AUTDLinkDebugTimeout(builder, timeout_ns)
-
-    def link_debug_build(self, builder: ctypes.c_void_p) -> ctypes.c_void_p:
-        return self.dll.AUTDLinkDebugBuild(builder)
+    def link_debug_with_timeout(self, debug: LinkPtr, timeout_ns: int) -> LinkPtr:
+        return self.dll.AUTDLinkDebugWithTimeout(debug, timeout_ns)

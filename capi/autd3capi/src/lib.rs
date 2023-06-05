@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/06/2023
+ * Last Modified: 05/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -773,25 +773,29 @@ pub unsafe extern "C" fn AUTDFocusSTM(
 pub unsafe extern "C" fn AUTDGainSTMWithMode(
     props: STMPropsPtr,
     mode: GainSTMMode,
-    gains: *const GainPtr,
-    size: u64,
 ) -> DatagramBodyPtr {
-    DatagramBodyPtr::new(
-        GainSTM::with_props_mode(*Box::from_raw(props.0 as *mut STMProps), mode.into())
-            .add_gains_from_iter(
-                (0..size as usize).map(|i| *Box::from_raw(gains.add(i).read().0 as *mut Box<G>)),
-            ),
-    )
+    DatagramBodyPtr::new(GainSTM::with_props_mode(
+        *Box::from_raw(props.0 as *mut STMProps),
+        mode.into(),
+    ))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGainSTM(
-    props: STMPropsPtr,
-    gains: *const GainPtr,
-    size: u64,
+pub unsafe extern "C" fn AUTDGainSTM(props: STMPropsPtr) -> DatagramBodyPtr {
+    AUTDGainSTMWithMode(props, GainSTMMode::PhaseDutyFull)
+}
+
+#[no_mangle]
+#[must_use]
+pub unsafe extern "C" fn AUTDGainSTMAddGain(
+    stm: DatagramBodyPtr,
+    gain: GainPtr,
 ) -> DatagramBodyPtr {
-    AUTDGainSTMWithMode(props, GainSTMMode::PhaseDutyFull, gains, size)
+    DatagramBodyPtr::new(
+        Box::from_raw(stm.0 as *mut Box<GainSTM<DynamicTransducer>>)
+            .add_gain_boxed(*Box::from_raw(gain.0 as *mut Box<G>)),
+    )
 }
 
 #[no_mangle]
@@ -1379,9 +1383,9 @@ mod tests {
                 let g0 = AUTDGainNull();
                 let g1 = AUTDGainNull();
 
-                let gains = vec![g0, g1];
-
-                let stm = AUTDGainSTM(props, gains.as_ptr(), gains.len() as _);
+                let stm = AUTDGainSTM(props);
+                let stm = AUTDGainSTMAddGain(stm, g0);
+                let stm = AUTDGainSTMAddGain(stm, g1);
 
                 if AUTDSend(
                     cnt,

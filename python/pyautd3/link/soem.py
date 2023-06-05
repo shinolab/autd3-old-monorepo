@@ -13,7 +13,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 from datetime import timedelta
 import ctypes
-from ctypes import c_void_p, byref
+from ctypes import byref
 from typing import List
 from .link import Link
 
@@ -37,67 +37,57 @@ class EtherCATAdapter:
         return f"{self.desc}, {self.name}"
 
 
-class SOEM:
-    _builder: c_void_p
-
+class SOEM(Link):
     def __init__(self):
-        self._builder = LinkSOEM().link_soem()
+        super().__init__(LinkSOEM().link_soem())
 
-    def ifname(self, ifname: str) -> "SOEM":
-        self._builder = LinkSOEM().link_soem_ifname(
-            self._builder, ifname.encode("utf-8")
+    def with_ifname(self, ifname: str) -> "SOEM":
+        self._ptr = LinkSOEM().link_soem_ifname(self._ptr, ifname.encode("utf-8"))
+        return self
+
+    def with_buf_size(self, size: int) -> "SOEM":
+        self._ptr = LinkSOEM().link_soem_buf_size(self._ptr, size)
+        return self
+
+    def with_send_cycle(self, cycle: int) -> "SOEM":
+        self._ptr = LinkSOEM().link_soem_send_cycle(self._ptr, cycle)
+        return self
+
+    def with_sync0_cycle(self, cycle: int) -> "SOEM":
+        self._ptr = LinkSOEM().link_soem_sync_0_cycle(self._ptr, cycle)
+        return self
+
+    def with_on_lost(self, handle) -> "SOEM":
+        self._ptr = LinkSOEM().link_soem_on_lost(self._ptr, handle)
+        return self
+
+    def with_timer_strategy(self, strategy: TimerStrategy) -> "SOEM":
+        self._ptr = LinkSOEM().link_soem_timer_strategy(self._ptr, strategy)
+        return self
+
+    def with_sync_mode(self, mode: SyncMode) -> "SOEM":
+        self._ptr = LinkSOEM().link_soem_sync_mode(self._ptr, mode)
+        return self
+
+    def with_state_check_interval(self, interval: timedelta) -> "SOEM":
+        self._ptr = LinkSOEM().link_soem_state_check_interval(
+            self._ptr, int(interval.total_seconds() / 1000)
         )
         return self
 
-    def buf_size(self, size: int) -> "SOEM":
-        self._builder = LinkSOEM().link_soem_buf_size(self._builder, size)
+    def with_log_level(self, level: Level) -> "SOEM":
+        self._ptr = LinkSOEM().link_soem_log_level(self._ptr, level)
         return self
 
-    def send_cycle(self, cycle: int) -> "SOEM":
-        self._builder = LinkSOEM().link_soem_send_cycle(self._builder, cycle)
+    def with_log_func(self, log_out, log_flush) -> "SOEM":
+        self._ptr = LinkSOEM().link_soem_log_func(self._ptr, log_out, log_flush)
         return self
 
-    def sync0_cycle(self, cycle: int) -> "SOEM":
-        self._builder = LinkSOEM().link_soem_sync_0_cycle(self._builder, cycle)
-        return self
-
-    def on_lost(self, handle) -> "SOEM":
-        self._builder = LinkSOEM().link_soem_on_lost(self._builder, handle)
-        return self
-
-    def timer_strategy(self, strategy: TimerStrategy) -> "SOEM":
-        self._builder = LinkSOEM().link_soem_timer_strategy(self._builder, strategy)
-        return self
-
-    def sync_mode(self, mode: SyncMode) -> "SOEM":
-        self._builder = LinkSOEM().link_soem_sync_mode(self._builder, mode)
-        return self
-
-    def state_check_interval(self, interval: timedelta) -> "SOEM":
-        self._builder = LinkSOEM().link_soem_state_check_interval(
-            self._builder, int(interval.total_seconds() / 1000)
+    def with_timeout(self, timeout: timedelta) -> "SOEM":
+        self._ptr = LinkSOEM().link_soem_timeout(
+            self._ptr, int(timeout.total_seconds() * 1000 * 1000 * 1000)
         )
         return self
-
-    def log_level(self, level: Level) -> "SOEM":
-        self._builder = LinkSOEM().link_soem_log_level(self._builder, level)
-        return self
-
-    def log_func(self, level: Level, log_out, log_flush) -> "SOEM":
-        self._builder = LinkSOEM().link_soem_log_func(
-            self._builder, level, log_out, log_flush
-        )
-        return self
-
-    def timeout(self, timeout: timedelta) -> "SOEM":
-        self._builder = LinkSOEM().link_soem_timeout(
-            self._builder, int(timeout.total_seconds() * 1000 * 1000 * 1000)
-        )
-        return self
-
-    def build(self) -> Link:
-        link = LinkSOEM().link_soem_build(self._builder)
-        return Link(link)
 
     @staticmethod
     def enumerate_adapters() -> List[EtherCATAdapter]:
@@ -119,18 +109,15 @@ class SOEM:
         return res
 
 
-class RemoteSOEM:
-    _builder = c_void_p()
+class RemoteSOEM(Link):
+    def __init__(self, addr: str):
+        err = ctypes.create_string_buffer(256)
+        super().__init__(LinkSOEM().link_remote_soem(addr.encode("utf-8"), err))
+        if self._ptr._0 is None:
+            raise RuntimeError(err.value.decode("utf-8"))
 
-    def __init__(self, ip: str, port: int):
-        self._builder = LinkSOEM().link_remote_soem(ip.encode("utf-8"), port)
-
-    def timeout(self, timeout: timedelta) -> "RemoteSOEM":
-        self._builder = LinkSOEM().link_remote_soem_timeout(
-            self._builder, int(timeout.total_seconds() * 1000 * 1000 * 1000)
+    def with_timeout(self, timeout: timedelta) -> "RemoteSOEM":
+        self._ptr = LinkSOEM().link_remote_soem_timeout(
+            self._ptr, int(timeout.total_seconds() * 1000 * 1000 * 1000)
         )
         return self
-
-    def build(self) -> Link:
-        link = LinkSOEM().link_remote_soem_build(self._builder)
-        return Link(link)
