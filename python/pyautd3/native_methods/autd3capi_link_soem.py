@@ -3,7 +3,7 @@ import threading
 import ctypes
 import os
 from typing import Any
-from .autd3capi_def import Level, LinkPtr, TimerStrategy
+from .autd3capi_def import LinkPtr, TimerStrategy, Level
 
 from enum import IntEnum
 
