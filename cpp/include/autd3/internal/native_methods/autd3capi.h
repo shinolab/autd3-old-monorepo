@@ -10,7 +10,7 @@ struct ControllerBuilderPtr {
   void* _0;
 };
 
-struct FirmwareInfoListPointer {
+struct FirmwareInfoListPtr {
   void* _0;
 };
 
@@ -92,15 +92,15 @@ void AUTDSetTransModDelay(GeometryPtr geo, uint32_t tr_idx, uint16_t delay);
 
 [[nodiscard]] bool AUTDGetFPGAInfo(ControllerPtr cnt, const uint8_t *out, char *err);
 
-[[nodiscard]] FirmwareInfoListPointer AUTDGetFirmwareInfoListPointer(ControllerPtr cnt, char *err);
+[[nodiscard]] FirmwareInfoListPtr AUTDGetFirmwareInfoListPointer(ControllerPtr cnt, char *err);
 
-void AUTDGetFirmwareInfo(FirmwareInfoListPointer p_info_list,
+void AUTDGetFirmwareInfo(FirmwareInfoListPtr p_info_list,
                          uint32_t idx,
                          char *info,
                          bool *is_valid,
                          bool *is_supported);
 
-void AUTDFreeFirmwareInfoListPointer(FirmwareInfoListPointer p_info_list);
+void AUTDFreeFirmwareInfoListPointer(FirmwareInfoListPtr p_info_list);
 
 void AUTDGetLatestFirmware(char *latest);
 
