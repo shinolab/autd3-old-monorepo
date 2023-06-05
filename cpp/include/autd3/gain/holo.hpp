@@ -131,7 +131,7 @@ class EVP final : public Holo {
  public:
   EVP() = default;
 
-  EVP with_lambda(const double value) {
+  EVP with_gamma(const double value) {
     _gamma = value;
     return std::move(*this);
   }
