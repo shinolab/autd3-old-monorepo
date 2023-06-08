@@ -16,6 +16,8 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern BackendPtr AUTDDefaultBackend();
 
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDDeleteBackend(BackendPtr backend);
+
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ConstraintPtr AUTDGainHoloDotCareConstraint();
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern ConstraintPtr AUTDGainHoloNormalizeConstraint();
@@ -76,12 +78,6 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GainPtr AUTDGainHoloLMWithInitial(GainPtr holo, float[]? initialPtr, ulong len);
         }
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct BackendPtr
-    {
-        public IntPtr _0;
     }
 
     [StructLayout(LayoutKind.Sequential)]

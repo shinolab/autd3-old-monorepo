@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2023
+// Last Modified: 08/06/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,3 +21,5 @@
 #include "autd3/internal/native_methods/autd3capi-modulation-audio-file.h"
 #include "autd3/internal/native_methods/autd3capi-simulator.h"
 #include "autd3/internal/native_methods/autd3capi.h"
+//
+#include "autd3/internal/native_methods/autd3capi-backend-cuda.h"

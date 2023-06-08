@@ -15,7 +15,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 import numpy as np
 from typing import Optional
 
-from .backend import Backend
+from .backend import Backend, DefaultBackend
 from .constraint import AmplitudeConstraint
 
 from pyautd3.native_methods.autd3capi_gain_holo import NativeMethods as GainHolo
@@ -31,8 +31,8 @@ class SDP(Holo):
     _repeat: Optional[int]
     _constraint: Optional[AmplitudeConstraint]
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, backend: Backend = DefaultBackend()):
+        super().__init__(backend)
         self._alpha = None
         self._lambda = None
         self._repeat = None

@@ -15,7 +15,7 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 import numpy as np
 from typing import Optional
 
-from .backend import Backend
+from .backend import Backend, DefaultBackend
 from .constraint import AmplitudeConstraint
 
 from pyautd3.native_methods.autd3capi_gain_holo import NativeMethods as GainHolo
@@ -28,20 +28,16 @@ from .holo import Holo
 class Naive(Holo):
     _constraint: Optional[AmplitudeConstraint]
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, backend: Backend = DefaultBackend()):
+        super().__init__(backend)
         self._repeat = None
         self._constraint = None
-
-    def with_backend(self, backend: Backend) -> "Naive":
-        self._backend = backend
-        return self
 
     def with_constraint(self, constraint: AmplitudeConstraint) -> "Naive":
         self._constraint = constraint
         return self
 
-    def gain_ptr(self, geometry: Geometry) -> GainPtr:
+    def gain_ptr(self, _: Geometry) -> GainPtr:
         size = len(self._amps)
         foci_ = np.ctypeslib.as_ctypes(np.array(self._foci).astype(np.double))
         amps = np.ctypeslib.as_ctypes(np.array(self._amps).astype(np.double))

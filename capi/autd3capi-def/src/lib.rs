@@ -4,7 +4,7 @@
  * Created Date: 29/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/06/2023
+ * Last Modified: 08/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,6 +12,7 @@
  */
 
 pub use autd3capi_common as common;
+pub use autd3capi_common::holo as holo;
 
 use autd3capi_common::float;
 use common::{
@@ -223,3 +224,7 @@ impl STMPropsPtr {
         Self(Box::into_raw(Box::new(props)) as _)
     }
 }
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub struct BackendPtr(pub ConstPtr);

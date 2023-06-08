@@ -84,6 +84,10 @@ class STMPropsPtr(ctypes.Structure):
     _fields_ = [("_0", ctypes.c_void_p)]
 
 
+class BackendPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
+
+
 NUM_TRANS_IN_UNIT: int = 249
 NUM_TRANS_IN_X: int = 18
 NUM_TRANS_IN_Y: int = 14

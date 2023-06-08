@@ -5,6 +5,7 @@ members = [
     "autd3capi",
     "autd3capi-def",
     "autd3capi-gain-holo",
+    "autd3capi-backend-cuda",
     "autd3capi-link-simulator",
     "autd3capi-link-soem",
     "autd3capi-link-twincat",
