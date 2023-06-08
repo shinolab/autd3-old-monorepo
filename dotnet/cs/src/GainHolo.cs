@@ -42,14 +42,21 @@ namespace AUTD3Sharp
         namespace Holo
         {
             [ComVisible(false)]
-            public interface IBackend
+            public class Backend
             {
-                public BackendPtr Ptr();
+                ~Backend()
+                {
+                    NativeMethods.GainHolo.AUTDDeleteBackend(Ptr);
+                }
+                internal BackendPtr Ptr;
             }
 
-            public sealed class BackendDefault : IBackend
+            public sealed class BackendDefault : Backend
             {
-                public BackendPtr Ptr() => NativeMethods.GainHolo.AUTDDefaultBackend();
+                public BackendDefault()
+                {
+                    Ptr = NativeMethods.GainHolo.AUTDDefaultBackend();
+                }
             }
 
             public interface IAmplitudeConstraint
@@ -98,13 +105,17 @@ namespace AUTD3Sharp
             {
                 protected List<float_t> Foci;
                 protected List<float_t> Amps;
-                protected IBackend Backend;
+                protected Backend Backend;
 
-                protected Holo()
+                protected Holo() : this(new BackendDefault())
+                {
+                }
+
+                protected Holo(Backend backend)
                 {
                     Foci = new List<float_t>();
                     Amps = new List<float_t>();
-                    Backend = new BackendDefault();
+                    Backend = backend;
                 }
 
                 public void AddFocus(Vector3 focus, float_t amp)
@@ -122,6 +133,11 @@ namespace AUTD3Sharp
                 private float_t? _lambda;
                 private uint? _repeat;
                 private IAmplitudeConstraint? _constraint;
+
+                public SDP() : base()
+                { }
+                public SDP(Backend backend) : base(backend)
+                { }
 
                 public SDP WithAlpha(float_t value)
                 {
@@ -147,15 +163,9 @@ namespace AUTD3Sharp
                     return this;
                 }
 
-                public SDP WithBackend(IBackend backend)
-                {
-                    Backend = backend;
-                    return this;
-                }
-
                 public override GainPtr GainPtr(Geometry geometry)
                 {
-                    var ptr = NativeMethods.GainHolo.AUTDGainHoloSDP(Backend.Ptr(), Foci.ToArray(), Amps.ToArray(),
+                    var ptr = NativeMethods.GainHolo.AUTDGainHoloSDP(Backend.Ptr, Foci.ToArray(), Amps.ToArray(),
                         (ulong)Amps.Count);
                     if (_alpha.HasValue) ptr = NativeMethods.GainHolo.AUTDGainHoloSDPWithAlpha(ptr, _alpha.Value);
                     if (_lambda.HasValue) ptr = NativeMethods.GainHolo.AUTDGainHoloSDPWithLambda(ptr, _lambda.Value);
@@ -171,6 +181,12 @@ namespace AUTD3Sharp
                 private float_t? _gamma;
                 private IAmplitudeConstraint? _constraint;
 
+                public EVP() : base()
+                { }
+
+                public EVP(Backend backend) : base(backend)
+                { }
+
                 public EVP WithGamma(float_t value)
                 {
                     _gamma = value;
@@ -183,15 +199,9 @@ namespace AUTD3Sharp
                     return this;
                 }
 
-                public EVP WithBackend(IBackend backend)
-                {
-                    Backend = backend;
-                    return this;
-                }
-
                 public override GainPtr GainPtr(Geometry geometry)
                 {
-                    var ptr = NativeMethods.GainHolo.AUTDGainHoloEVP(Backend.Ptr(), Foci.ToArray(), Amps.ToArray(),
+                    var ptr = NativeMethods.GainHolo.AUTDGainHoloEVP(Backend.Ptr, Foci.ToArray(), Amps.ToArray(),
                         (ulong)Amps.Count);
                     if (_gamma.HasValue) ptr = NativeMethods.GainHolo.AUTDGainHoloEVPWithGamma(ptr, _gamma.Value);
                     if (_constraint != null) ptr = NativeMethods.GainHolo.AUTDGainHoloEVPWithConstraint(ptr, _constraint.Ptr());
@@ -203,6 +213,13 @@ namespace AUTD3Sharp
             {
                 private uint? _repeat;
                 private IAmplitudeConstraint? _constraint;
+
+                public GS() : base()
+                { }
+
+                public GS(Backend backend) : base(backend)
+                { }
+
 
                 public GS WithRepeat(uint value)
                 {
@@ -216,15 +233,9 @@ namespace AUTD3Sharp
                     return this;
                 }
 
-                public GS WithBackend(IBackend backend)
-                {
-                    Backend = backend;
-                    return this;
-                }
-
                 public override GainPtr GainPtr(Geometry geometry)
                 {
-                    var ptr = NativeMethods.GainHolo.AUTDGainHoloGS(Backend.Ptr(), Foci.ToArray(), Amps.ToArray(),
+                    var ptr = NativeMethods.GainHolo.AUTDGainHoloGS(Backend.Ptr, Foci.ToArray(), Amps.ToArray(),
                         (ulong)Amps.Count);
                     if (_repeat.HasValue) ptr = NativeMethods.GainHolo.AUTDGainHoloGSWithRepeat(ptr, _repeat.Value);
                     if (_constraint != null) ptr = NativeMethods.GainHolo.AUTDGainHoloGSWithConstraint(ptr, _constraint.Ptr());
@@ -236,6 +247,11 @@ namespace AUTD3Sharp
             {
                 private uint? _repeat;
                 private IAmplitudeConstraint? _constraint;
+
+                public GSPAT() : base()
+                { }
+                public GSPAT(Backend backend) : base(backend)
+                { }
 
                 public GSPAT WithRepeat(uint value)
                 {
@@ -249,15 +265,9 @@ namespace AUTD3Sharp
                     return this;
                 }
 
-                public GSPAT WithBackend(IBackend backend)
-                {
-                    Backend = backend;
-                    return this;
-                }
-
                 public override GainPtr GainPtr(Geometry geometry)
                 {
-                    var ptr = NativeMethods.GainHolo.AUTDGainHoloGSPAT(Backend.Ptr(), Foci.ToArray(), Amps.ToArray(),
+                    var ptr = NativeMethods.GainHolo.AUTDGainHoloGSPAT(Backend.Ptr, Foci.ToArray(), Amps.ToArray(),
                         (ulong)Amps.Count);
                     if (_repeat.HasValue) ptr = NativeMethods.GainHolo.AUTDGainHoloGSPATWithRepeat(ptr, _repeat.Value);
                     if (_constraint != null) ptr = NativeMethods.GainHolo.AUTDGainHoloGSPATWithConstraint(ptr, _constraint.Ptr());
@@ -269,13 +279,20 @@ namespace AUTD3Sharp
             {
                 private IAmplitudeConstraint? _constraint;
 
+                public Naive() : base()
+                { }
+
+                public Naive(Backend backend) : base(backend)
+                {
+                }
+
                 public Naive WithConstraint(IAmplitudeConstraint constraint)
                 {
                     _constraint = constraint;
                     return this;
                 }
 
-                public Naive WithBackend(IBackend backend)
+                public Naive WithBackend(Backend backend)
                 {
                     Backend = backend;
                     return this;
@@ -283,7 +300,7 @@ namespace AUTD3Sharp
 
                 public override GainPtr GainPtr(Geometry geometry)
                 {
-                    var ptr = NativeMethods.GainHolo.AUTDGainHoloNaive(Backend.Ptr(), Foci.ToArray(), Amps.ToArray(),
+                    var ptr = NativeMethods.GainHolo.AUTDGainHoloNaive(Backend.Ptr, Foci.ToArray(), Amps.ToArray(),
                         (ulong)Amps.Count);
                     if (_constraint != null) ptr = NativeMethods.GainHolo.AUTDGainHoloNaiveWithConstraint(ptr, _constraint.Ptr());
                     return ptr;
@@ -299,6 +316,12 @@ namespace AUTD3Sharp
                 private float_t[]? _initial;
 
                 private IAmplitudeConstraint? _constraint;
+
+                public LM() : base()
+                { }
+                public LM(Backend backend) : base(backend)
+                {
+                }
 
                 public LM WithEps1(float_t value)
                 {
@@ -324,27 +347,21 @@ namespace AUTD3Sharp
                     return this;
                 }
 
-                public LM WithInitial(float_t[] value)
-                {
-                    _initial = value;
-                    return this;
-                }
-
                 public LM WithConstraint(IAmplitudeConstraint constraint)
                 {
                     _constraint = constraint;
                     return this;
                 }
 
-                public LM WithBackend(IBackend backend)
+                public LM WithInitial(float_t[] initial)
                 {
-                    Backend = backend;
+                    _initial = initial;
                     return this;
                 }
 
                 public override GainPtr GainPtr(Geometry geometry)
                 {
-                    var ptr = NativeMethods.GainHolo.AUTDGainHoloLM(Backend.Ptr(), Foci.ToArray(), Amps.ToArray(),
+                    var ptr = NativeMethods.GainHolo.AUTDGainHoloLM(Backend.Ptr, Foci.ToArray(), Amps.ToArray(),
                         (ulong)Amps.Count);
                     if (_eps1.HasValue) ptr = NativeMethods.GainHolo.AUTDGainHoloLMWithEps1(ptr, _eps1.Value);
                     if (_eps2.HasValue) ptr = NativeMethods.GainHolo.AUTDGainHoloLMWithEps2(ptr, _eps2.Value);

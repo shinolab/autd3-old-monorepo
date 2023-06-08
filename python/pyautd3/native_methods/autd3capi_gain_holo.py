@@ -3,11 +3,7 @@ import threading
 import ctypes
 import os
 from typing import Any
-from .autd3capi_def import GainPtr
-
-
-class BackendPtr(ctypes.Structure):
-    _fields_ = [("_0", ctypes.c_void_p)]
+from .autd3capi_def import BackendPtr, GainPtr
 
 
 class ConstraintPtr(ctypes.Structure):
@@ -36,6 +32,9 @@ class NativeMethods(metaclass=Singleton):
 
         self.dll.AUTDDefaultBackend.argtypes = [] 
         self.dll.AUTDDefaultBackend.restype = BackendPtr
+
+        self.dll.AUTDDeleteBackend.argtypes = [BackendPtr]  # type: ignore 
+        self.dll.AUTDDeleteBackend.restype = None
 
         self.dll.AUTDGainHoloDotCareConstraint.argtypes = [] 
         self.dll.AUTDGainHoloDotCareConstraint.restype = ConstraintPtr
@@ -129,6 +128,9 @@ class NativeMethods(metaclass=Singleton):
 
     def default_backend(self) -> BackendPtr:
         return self.dll.AUTDDefaultBackend()
+
+    def delete_backend(self, backend: BackendPtr) -> None:
+        return self.dll.AUTDDeleteBackend(backend)
 
     def gain_holo_dot_care_constraint(self) -> ConstraintPtr:
         return self.dll.AUTDGainHoloDotCareConstraint()

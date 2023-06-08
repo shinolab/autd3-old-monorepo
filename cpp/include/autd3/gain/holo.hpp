@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/06/2023
+// Last Modified: 08/06/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,21 +21,24 @@ namespace autd3::gain::holo {
 
 class Backend {
  public:
-  Backend() noexcept = default;
+  Backend() noexcept : _ptr(internal::native_methods::BackendPtr{nullptr}){};
+  explicit Backend(internal::native_methods::BackendPtr ptr) noexcept : _ptr(ptr){};
   Backend(const Backend& obj) = default;
   Backend& operator=(const Backend& obj) = default;
   Backend(Backend&& obj) = default;
   Backend& operator=(Backend&& obj) = default;
-  virtual ~Backend() = default;
+  virtual ~Backend() { internal::native_methods::AUTDDeleteBackend(_ptr); }
 
-  [[nodiscard]] virtual internal::native_methods::BackendPtr ptr() const = 0;
+  [[nodiscard]] internal::native_methods::BackendPtr ptr() { return _ptr; }
+
+ protected:
+  internal::native_methods::BackendPtr _ptr;
 };
 
 class DefaultBackend final : public Backend {
  public:
-  DefaultBackend() = default;
-
-  [[nodiscard]] internal::native_methods::BackendPtr ptr() const override { return internal::native_methods::AUTDDefaultBackend(); }
+  DefaultBackend() : Backend(internal::native_methods::AUTDDefaultBackend()) {}
+  ~DefaultBackend() override = default;
 };
 
 class AmplitudeConstraint {
@@ -62,7 +65,8 @@ class AmplitudeConstraint {
 
 class Holo : public internal::Gain {
  public:
-  explicit Holo() : _backend(std::make_shared<DefaultBackend>()) {}
+     Holo() : _backend(std::make_shared<DefaultBackend>()) {}
+     explicit Holo(std::shared_ptr<Backend> backend) : _backend(std::move(backend)) {}
 
   Holo(const Holo& obj) = default;
   Holo& operator=(const Holo& obj) = default;
@@ -84,6 +88,8 @@ class Holo : public internal::Gain {
 class SDP final : public Holo {
  public:
   SDP() = default;
+  explicit SDP(std::shared_ptr<Backend> backend) : Holo(std::move(backend)) {}
+
 
   SDP with_alpha(const double value) {
     _alpha = value;
@@ -101,13 +107,6 @@ class SDP final : public Holo {
 
   SDP with_constraint(const AmplitudeConstraint constraint) {
     _constraint = constraint;
-    return std::move(*this);
-  }
-
-  template <class B>
-  SDP with_backend(B&& backend) {
-    static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
-    _backend = std::make_shared<std::remove_reference_t<B>>(std::forward<B>(backend));
     return std::move(*this);
   }
 
@@ -130,6 +129,7 @@ class SDP final : public Holo {
 class EVP final : public Holo {
  public:
   EVP() = default;
+  explicit EVP(std::shared_ptr<Backend> backend) : Holo(std::move(backend)) {}
 
   EVP with_gamma(const double value) {
     _gamma = value;
@@ -138,13 +138,6 @@ class EVP final : public Holo {
 
   EVP with_constraint(const AmplitudeConstraint constraint) {
     _constraint = constraint;
-    return std::move(*this);
-  }
-
-  template <class B>
-  EVP with_backend(B&& backend) {
-    static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
-    _backend = std::make_shared<std::remove_reference_t<B>>(std::forward<B>(backend));
     return std::move(*this);
   }
 
@@ -163,6 +156,7 @@ class EVP final : public Holo {
 class GS final : public Holo {
  public:
   GS() = default;
+  explicit GS(std::shared_ptr<Backend> backend) : Holo(std::move(backend)) {}
 
   GS with_repeat(const uint32_t value) {
     _repeat = value;
@@ -171,13 +165,6 @@ class GS final : public Holo {
 
   GS with_constraint(const AmplitudeConstraint constraint) {
     _constraint = constraint;
-    return std::move(*this);
-  }
-
-  template <class B>
-  GS with_backend(B&& backend) {
-    static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
-    _backend = std::make_shared<std::remove_reference_t<B>>(std::forward<B>(backend));
     return std::move(*this);
   }
 
@@ -196,6 +183,7 @@ class GS final : public Holo {
 class GSPAT final : public Holo {
  public:
   GSPAT() = default;
+  explicit GSPAT(std::shared_ptr<Backend> backend) : Holo(std::move(backend)) {}
 
   GSPAT with_repeat(const uint32_t value) {
     _repeat = value;
@@ -206,14 +194,7 @@ class GSPAT final : public Holo {
     _constraint = constraint;
     return std::move(*this);
   }
-
-  template <class B>
-  GSPAT with_backend(B&& backend) {
-    static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
-    _backend = std::make_shared<std::remove_reference_t<B>>(std::forward<B>(backend));
-    return std::move(*this);
-  }
-
+  
   [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
     auto ptr = AUTDGainHoloGSPAT(_backend->ptr(), reinterpret_cast<const double*>(_foci.data()), _amps.data(), static_cast<uint64_t>(_amps.size()));
     if (_repeat.has_value()) ptr = AUTDGainHoloGSPATWithRepeat(ptr, _repeat.value());
@@ -229,16 +210,10 @@ class GSPAT final : public Holo {
 class Naive final : public Holo {
  public:
   Naive() = default;
+  explicit Naive(std::shared_ptr<Backend> backend) : Holo(std::move(backend)) {}
 
   Naive with_constraint(const AmplitudeConstraint constraint) {
     _constraint = constraint;
-    return std::move(*this);
-  }
-
-  template <class B>
-  Naive with_backend(B&& backend) {
-    static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
-    _backend = std::make_shared<std::remove_reference_t<B>>(std::forward<B>(backend));
     return std::move(*this);
   }
 
@@ -255,6 +230,7 @@ class Naive final : public Holo {
 class LM final : public Holo {
  public:
   LM() = default;
+  explicit LM(std::shared_ptr<Backend> backend) : Holo(std::move(backend)) {}
 
   LM with_eps1(const double value) {
     _eps1 = value;
@@ -283,13 +259,6 @@ class LM final : public Holo {
 
   LM with_constraint(const AmplitudeConstraint constraint) {
     _constraint = constraint;
-    return std::move(*this);
-  }
-
-  template <class B>
-  LM with_backend(B&& backend) {
-    static_assert(std::is_base_of_v<Backend, std::remove_reference_t<B>>, "This is not Backend");
-    _backend = std::make_shared<std::remove_reference_t<B>>(std::forward<B>(backend));
     return std::move(*this);
   }
 

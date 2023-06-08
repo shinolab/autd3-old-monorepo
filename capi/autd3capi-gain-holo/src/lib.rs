@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/06/2023
+ * Last Modified: 08/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,21 +13,21 @@
 
 #![allow(clippy::missing_safety_doc)]
 
-mod backend;
+use std::rc::Rc;
 
-use autd3_gain_holo::*;
-use autd3capi_def::{common::*, take_gain, GainPtr};
-use backend::DynamicBackend;
-
-#[derive(Debug, Clone, Copy)]
-#[repr(C)]
-pub struct BackendPtr(pub ConstPtr);
+use autd3capi_def::common::dynamic_backend::DynamicBackend;
+use autd3capi_def::{common::*, holo::*, take_gain, BackendPtr, GainPtr};
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDDefaultBackend() -> BackendPtr {
-    let backend: Box<Box<dyn Backend>> = Box::new(Box::new(NalgebraBackend::new()));
+    let backend: Box<Rc<dyn Backend>> = Box::new(NalgebraBackend::new());
     BackendPtr(Box::into_raw(backend) as _)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDDeleteBackend(backend: BackendPtr) {
+    let _ = Box::from_raw(backend.0 as *mut Rc<dyn Backend>);
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -62,17 +62,21 @@ pub unsafe extern "C" fn AUTDGainHoloClampConstraint(min_v: float, max_v: float)
 macro_rules! create_holo {
     ($type:tt, $backend:expr, $points:expr, $amps:expr, $size:expr) => {
         GainPtr::new(
-            $type::new(DynamicBackend::new(*Box::from_raw($backend.0 as _))).add_foci_from_iter(
-                (0..$size as usize).map(|i| {
-                    let p = Vector3::new(
-                        $points.add(i * 3).read(),
-                        $points.add(i * 3 + 1).read(),
-                        $points.add(i * 3 + 2).read(),
-                    );
-                    let amp = *$amps.add(i);
-                    (p, amp)
-                }),
-            ),
+            $type::new(DynamicBackend::new(
+                ($backend.0 as *const Rc<dyn Backend>)
+                    .as_ref()
+                    .unwrap()
+                    .clone(),
+            ))
+            .add_foci_from_iter((0..$size as usize).map(|i| {
+                let p = Vector3::new(
+                    $points.add(i * 3).read(),
+                    $points.add(i * 3 + 1).read(),
+                    $points.add(i * 3 + 2).read(),
+                );
+                let amp = *$amps.add(i);
+                (p, amp)
+            })),
         )
     };
 
@@ -341,9 +345,9 @@ mod tests {
             let mut err = vec![c_char::default(); 256];
             let cnt = AUTDControllerOpenWith(builder, link, err.as_mut_ptr());
 
-            {
-                let backend = AUTDDefaultBackend();
+            let backend = AUTDDefaultBackend();
 
+            {
                 let size = 2;
                 let points = vec![10., 20., 30., 40., 50., 60.];
                 let amps = vec![1.; size];
@@ -444,8 +448,6 @@ mod tests {
             }
 
             {
-                let backend = AUTDDefaultBackend();
-
                 let size = 2;
                 let points = vec![10., 20., 30., 40., 50., 60.];
                 let amps = vec![1.; size];
@@ -581,6 +583,8 @@ mod tests {
                     eprintln!("{}", CStr::from_ptr(err.as_ptr()).to_str().unwrap());
                 }
             }
+
+            AUTDDeleteBackend(backend);
         }
     }
 }
