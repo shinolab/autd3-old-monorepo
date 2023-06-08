@@ -11,6 +11,7 @@
  *
  */
 
+#![allow(unknown_lints)]
 #![allow(clippy::manual_slice_size_calculation)]
 
 mod cusolver;
@@ -86,7 +87,7 @@ extern "C" {
     fn cu_real(a: *const CuComplex, row: u32, col: u32, b: *mut float);
     fn cu_imag(a: *const CuComplex, row: u32, col: u32, b: *mut float);
 
-    fn cu_reduce_col_buffer_size(m: u32, n: u32) -> u32;
+    fn cu_reduce_col_buffer_size(m: u32) -> u32;
     fn cu_reduce_col(mat: *const float, m: u32, n: u32, result: *mut float, buffer: *mut float);
 }
 
@@ -850,7 +851,7 @@ impl CUDABackend {
         cublas_call!(cuda_sys::cublas::cublasZcopy_v2(
             self.handle,
             (end - begin) as _,
-            src_p.add(begin ),
+            src_p.add(begin),
             1,
             dst_p.add(i + begin * row),
             row as _,
@@ -1075,7 +1076,7 @@ impl CUDABackend {
     ) -> Result<(), CUDABackendError> {
         let m = a.1;
         let n = a.2;
-        let buf_size = cu_call!(cu_reduce_col_buffer_size(m as _, n as _)) as usize;
+        let buf_size = cu_call!(cu_reduce_col_buffer_size(m as _)) as usize;
         let buffer = alloc_uninitialized!(float, buf_size);
         cu_call!(cu_reduce_col(
             a.0 as _,
