@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/06/2023
+ * Last Modified: 08/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -128,11 +128,11 @@ impl<'a, T: Transducer> GainSTM<'a, T> {
         self.gains.len()
     }
 
-    pub fn freq(&self) -> f64 {
+    pub fn freq(&self) -> float {
         self.props.freq(self.size())
     }
 
-    pub fn sampling_frequency(&self) -> f64 {
+    pub fn sampling_frequency(&self) -> float {
         self.props.sampling_frequency(self.size())
     }
 
