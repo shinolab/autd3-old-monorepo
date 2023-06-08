@@ -29,7 +29,7 @@ class Greedy(Holo):
     _constraint: Optional[AmplitudeConstraint]
 
     def __init__(self):
-        super().__init__()
+        super().__init__(None)
         self._div = None
         self._constraint = None
 
@@ -41,11 +41,11 @@ class Greedy(Holo):
         self._constraint = constraint
         return self
 
-    def gain_ptr(self, geometry: Geometry) -> GainPtr:
+    def gain_ptr(self, _: Geometry) -> GainPtr:
         size = len(self._amps)
         foci_ = np.ctypeslib.as_ctypes(np.array(self._foci).astype(np.double))
         amps = np.ctypeslib.as_ctypes(np.array(self._amps).astype(np.double))
-        ptr = GainHolo().gain_holo_evp(self._backend.ptr(), foci_, amps, size)
+        ptr = GainHolo().gain_holo_greedy(foci_, amps, size)
         if self._div is not None:
             ptr = GainHolo().gain_holo_greedy_with_phase_div(ptr, self._div)
         if self._constraint is not None:
