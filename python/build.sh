@@ -15,8 +15,8 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   mkdir -p python/pyautd3/bin/linux_x64
   cp ./capi/target/release/*.so python/pyautd3/bin/linux_x64
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-  cargo build --release --all --target=x86_64-apple-darwin
-  cargo build --release --all --target=aarch64-apple-darwin
+  cargo build --release --all --exclude autd3capi-backend-cuda --target=x86_64-apple-darwin
+  cargo build --release --all --exclude autd3capi-backend-cuda --target=aarch64-apple-darwin
   cd ..
   mkdir -p python/pyautd3/bin/macos_universal
   for x64_file in `ls ./capi/target/x86_64-apple-darwin/release/*.dylib`; do
