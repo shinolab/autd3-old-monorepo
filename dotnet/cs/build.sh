@@ -11,8 +11,8 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   cd ..
   cp ./capi/target/release/*.so ./dotnet/cs/src/native/linux/x64
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-  cargo build --release --all --target=x86_64-apple-darwin
-  cargo build --release --all --target=aarch64-apple-darwin
+  cargo build --release --all --exclude autd3capi-backend-cuda --target=x86_64-apple-darwin
+  cargo build --release --all --exclude autd3capi-backend-cuda --target=aarch64-apple-darwin
   cd ..
   for x64_file in `ls ./capi/target/x86_64-apple-darwin/release/*.dylib`; do
     file_basename=`basename $x64_file`
