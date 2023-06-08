@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/05/2023
+ * Last Modified: 02/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,63 +33,34 @@ pub struct Debug {
 }
 
 impl Debug {
-    fn new(timeout: Duration, level: LevelFilter) -> Self {
-        Self::with_logger(timeout, get_logger(level))
-    }
-
-    fn with_logger(timeout: Duration, logger: Logger) -> Self {
+    pub fn new() -> Self {
+        let logger = get_logger();
+        logger.set_level_filter(LevelFilter::MoreSevereEqual(Level::Debug));
         Self {
             is_open: false,
-            timeout,
-            logger,
-            cpus: vec![],
-        }
-    }
-
-    pub fn builder() -> DebugBuilder {
-        DebugBuilder::new()
-    }
-}
-
-pub struct DebugBuilder {
-    timeout: Duration,
-    level: LevelFilter,
-    logger: Option<Logger>,
-}
-
-impl DebugBuilder {
-    fn new() -> Self {
-        Self {
             timeout: Duration::ZERO,
-            level: LevelFilter::MoreSevereEqual(Level::Debug),
-            logger: None,
+            logger,
+            cpus: Vec::new(),
         }
     }
 
-    pub fn level(mut self, level: LevelFilter) -> Self {
-        self.level = level;
-        if let Some(logger) = &mut self.logger {
-            logger.set_level_filter(level);
-        }
+    pub fn with_timeout(self, timeout: Duration) -> Self {
+        Self { timeout, ..self }
+    }
+
+    pub fn with_log_level(self, level: LevelFilter) -> Self {
+        self.logger.set_level_filter(level);
         self
     }
 
-    pub fn timeout(mut self, timeout: Duration) -> Self {
-        self.timeout = timeout;
-        self
+    pub fn with_logger(self, logger: Logger) -> Self {
+        Self { logger, ..self }
     }
+}
 
-    pub fn logger(mut self, logger: Logger) -> Self {
-        self.logger = Some(logger);
-        self
-    }
-
-    pub fn build(self) -> Debug {
-        if let Some(logger) = self.logger {
-            Debug::with_logger(self.timeout, logger)
-        } else {
-            Debug::new(self.timeout, self.level)
-        }
+impl Default for Debug {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -112,7 +83,6 @@ impl<T: Transducer> Link<T> for Debug {
                 cpu
             })
             .collect();
-
         trace!(logger: self.logger,"Initialize emulator");
 
         self.is_open = true;
@@ -280,5 +250,38 @@ impl<T: Transducer> Link<T> for Debug {
 
     fn timeout(&self) -> Duration {
         self.timeout
+    }
+
+    fn send_receive(
+        &mut self,
+        tx: &TxDatagram,
+        rx: &mut RxDatagram,
+        timeout: Duration,
+    ) -> Result<bool, AUTDInternalError> {
+        if !<Self as Link<T>>::send(self, tx)? {
+            return Ok(false);
+        }
+        if timeout.is_zero() {
+            return <Self as Link<T>>::receive(self, rx);
+        }
+        <Self as Link<T>>::wait_msg_processed(self, tx.header().msg_id, rx, timeout)
+    }
+
+    fn wait_msg_processed(
+        &mut self,
+        msg_id: u8,
+        rx: &mut RxDatagram,
+        timeout: Duration,
+    ) -> Result<bool, AUTDInternalError> {
+        let start = std::time::Instant::now();
+        loop {
+            std::thread::sleep(std::time::Duration::from_millis(1));
+            if <Self as Link<T>>::receive(self, rx)? && rx.is_msg_processed(msg_id) {
+                return Ok(true);
+            }
+            if start.elapsed() > timeout {
+                return Ok(false);
+            }
+        }
     }
 }

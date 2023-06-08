@@ -4,7 +4,7 @@
  * Created Date: 29/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2023
+ * Last Modified: 08/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,8 +12,12 @@
  */
 
 pub use autd3capi_common as common;
+pub use autd3capi_common::holo as holo;
 
 use autd3capi_common::float;
+use common::{
+    ConstPtr, DynamicDatagram, DynamicTransducer, Gain, Link, Modulation, STMProps, G, L, M,
+};
 
 pub const NUM_TRANS_IN_UNIT: u32 = 249;
 pub const NUM_TRANS_IN_X: u32 = 18;
@@ -24,9 +28,9 @@ pub const DEVICE_WIDTH_MM: float = 192.0;
 pub const FPGA_CLK_FREQ: u32 = 163840000;
 pub const FPGA_SUB_CLK_FREQ: u32 = 20480000;
 
-pub const ERR: i32 = -1;
-pub const TRUE: i32 = 1;
-pub const FALSE: i32 = 0;
+pub const AUTD3_ERR: i32 = -1;
+pub const AUTD3_TRUE: i32 = 1;
+pub const AUTD3_FALSE: i32 = 0;
 
 #[repr(u8)]
 pub enum GainSTMMode {
@@ -115,3 +119,112 @@ impl From<TimerStrategy> for common::autd3::prelude::TimerStrategy {
         }
     }
 }
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub struct ControllerPtr(pub ConstPtr);
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub struct GeometryPtr(pub ConstPtr);
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub struct LinkPtr(pub ConstPtr);
+
+impl LinkPtr {
+    pub fn new<T: Link<DynamicTransducer> + 'static>(link: T) -> Self {
+        let l: Box<Box<L>> = Box::new(Box::new(link));
+        Self(Box::into_raw(l) as _)
+    }
+}
+
+#[macro_export]
+macro_rules! take_link {
+    ($ptr:expr, $type:ty) => {
+        Box::from_raw($ptr.0 as *mut Box<L> as *mut Box<$type>)
+    };
+}
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub struct DatagramBodyPtr(pub ConstPtr);
+
+impl DatagramBodyPtr {
+    pub fn new<T: DynamicDatagram>(d: T) -> Self {
+        let d: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(d));
+        Self(Box::into_raw(d) as _)
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub struct DatagramHeaderPtr(pub ConstPtr);
+
+impl DatagramHeaderPtr {
+    pub fn new<T: DynamicDatagram>(d: T) -> Self {
+        let d: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(d));
+        Self(Box::into_raw(d) as _)
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub struct DatagramSpecialPtr(pub ConstPtr);
+
+impl DatagramSpecialPtr {
+    pub fn new<T: DynamicDatagram>(d: T) -> Self {
+        let d: Box<Box<dyn DynamicDatagram>> = Box::new(Box::new(d));
+        Self(Box::into_raw(d) as _)
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub struct GainPtr(pub ConstPtr);
+
+impl GainPtr {
+    pub fn new<T: Gain<DynamicTransducer> + 'static>(g: T) -> Self {
+        let g: Box<Box<G>> = Box::new(Box::new(g));
+        Self(Box::into_raw(g) as _)
+    }
+}
+
+#[macro_export]
+macro_rules! take_gain {
+    ($ptr:expr, $type:ty) => {
+        Box::from_raw($ptr.0 as *mut Box<G> as *mut Box<$type>)
+    };
+}
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub struct ModulationPtr(pub ConstPtr);
+
+impl ModulationPtr {
+    pub fn new<T: Modulation + 'static>(m: T) -> Self {
+        let m: Box<Box<M>> = Box::new(Box::new(m));
+        Self(Box::into_raw(m) as _)
+    }
+}
+
+#[macro_export]
+macro_rules! take_mod {
+    ($ptr:expr, $type:ty) => {
+        Box::from_raw($ptr.0 as *mut Box<M> as *mut Box<$type>)
+    };
+}
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub struct STMPropsPtr(pub ConstPtr);
+
+impl STMPropsPtr {
+    pub fn new(props: STMProps) -> Self {
+        Self(Box::into_raw(Box::new(props)) as _)
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C)]
+pub struct BackendPtr(pub ConstPtr);

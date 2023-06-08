@@ -2,11 +2,11 @@
 import threading
 import ctypes
 import os
-
+from .autd3capi_def import ModulationPtr
 
 
 class Singleton(type):
-    _instances = {} # type: ignore
+    _instances = {}  # type: ignore
     _lock = threading.Lock()
 
     def __call__(cls, *args, **kwargs):
@@ -26,7 +26,7 @@ class NativeMethods(metaclass=Singleton):
             return
 
         self.dll.AUTDModulationWav.argtypes = [ctypes.c_char_p, ctypes.c_char_p] 
-        self.dll.AUTDModulationWav.restype = ctypes.c_void_p
+        self.dll.AUTDModulationWav.restype = ModulationPtr
 
-    def modulation_wav(self, path: bytes, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_void_p:
+    def modulation_wav(self, path: bytes, err: ctypes.Array[ctypes.c_char]) -> ModulationPtr:
         return self.dll.AUTDModulationWav(path, err)

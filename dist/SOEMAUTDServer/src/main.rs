@@ -242,21 +242,20 @@ fn main_() -> anyhow::Result<()> {
             };
             let timeout = args.timeout;
 
-            let soem = autd3_link_soem::SOEM::builder()
-                .buf_size(buf_size)
-                .ifname(ifname)
-                .level(spdlog::LevelFilter::MoreSevereEqual(level))
-                .send_cycle(send_cycle)
-                .state_check_interval(std::time::Duration::from_millis(state_check_interval))
-                .sync0_cycle(sync0_cycle)
-                .timer_strategy(timer_strategy)
-                .sync_mode(sync_mode)
-                .timeout(std::time::Duration::from_millis(timeout))
-                .on_lost(|msg| {
+            let soem = autd3_link_soem::SOEM::new()
+                .with_buf_size(buf_size)
+                .with_ifname(ifname)
+                .with_log_level(spdlog::LevelFilter::MoreSevereEqual(level))
+                .with_send_cycle(send_cycle)
+                .with_state_check_interval(std::time::Duration::from_millis(state_check_interval))
+                .with_sync0_cycle(sync0_cycle)
+                .with_timer_strategy(timer_strategy)
+                .with_sync_mode(sync_mode)
+                .with_timeout(std::time::Duration::from_millis(timeout))
+                .with_on_lost(|msg| {
                     spdlog::error!("{}", msg);
                     std::process::exit(-1);
-                })
-                .build();
+                });
 
             run(soem, port)?;
         }

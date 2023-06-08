@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2023
+ * Last Modified: 02/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,100 +18,67 @@ use std::{
     time::Duration,
 };
 
-use autd3capi_def::common::*;
+use autd3capi_def::{common::*, take_link, LinkPtr};
 
-use autd3_link_twincat::{
-    local::{TwinCAT, TwinCATBuilder},
-    remote::{Filled, RemoteTwinCAT, RemoteTwinCATBuilder},
-};
+use autd3_link_twincat::{local::TwinCAT, remote::RemoteTwinCAT};
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTwinCAT() -> ConstPtr {
-    Box::into_raw(Box::new(TwinCAT::builder())) as _
+pub unsafe extern "C" fn AUTDLinkTwinCAT(err: *mut c_char) -> LinkPtr {
+    LinkPtr::new(try_or_return!(TwinCAT::new(), err, LinkPtr(NULL)))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTwinCATTimeout(builder: ConstPtr, timeout_ns: u64) -> ConstPtr {
-    unsafe {
-        Box::into_raw(Box::new(
-            Box::from_raw(builder as *mut TwinCATBuilder).timeout(Duration::from_nanos(timeout_ns)),
-        )) as _
-    }
+pub unsafe extern "C" fn AUTDLinkTwinCATTimeout(twincat: LinkPtr, timeout_ns: u64) -> LinkPtr {
+    LinkPtr::new(take_link!(twincat, TwinCAT).with_timeout(Duration::from_nanos(timeout_ns)))
 }
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDLinkTwinCATBuild(builder: ConstPtr, err: *mut c_char) -> ConstPtr {
-    unsafe {
-        let builder = Box::from_raw(builder as *mut TwinCATBuilder);
-        let link = try_or_return!(builder.build(), err, NULL);
-        let link: Box<Box<L>> = Box::new(Box::new(link));
-        Box::into_raw(link) as _
-    }
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDLinkRemoteTwinCAT(server_ams_net_id: *const c_char) -> ConstPtr {
-    Box::into_raw(Box::new(RemoteTwinCAT::builder().server_ams_net_id(
-        CStr::from_ptr(server_ams_net_id).to_str().unwrap(),
-    ))) as _
+pub unsafe extern "C" fn AUTDLinkRemoteTwinCAT(
+    server_ams_net_id: *const c_char,
+    err: *mut c_char,
+) -> LinkPtr {
+    LinkPtr::new(try_or_return!(
+        RemoteTwinCAT::new(try_or_return!(
+            CStr::from_ptr(server_ams_net_id).to_str(),
+            err,
+            LinkPtr(NULL)
+        )),
+        err,
+        LinkPtr(NULL)
+    ))
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkRemoteTwinCATServerIP(
-    builder: ConstPtr,
+    twincat: LinkPtr,
     addr: *const c_char,
-) -> ConstPtr {
-    unsafe {
-        Box::into_raw(Box::new(
-            Box::from_raw(builder as *mut RemoteTwinCATBuilder<Filled>)
-                .server_ip_addr(CStr::from_ptr(addr).to_str().unwrap()),
-        )) as _
-    }
+) -> LinkPtr {
+    LinkPtr::new(
+        take_link!(twincat, RemoteTwinCAT).with_server_ip(CStr::from_ptr(addr).to_str().unwrap()),
+    )
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkRemoteTwinCATClientAmsNetId(
-    builder: ConstPtr,
+    twincat: LinkPtr,
     id: *const c_char,
-) -> ConstPtr {
-    unsafe {
-        Box::into_raw(Box::new(
-            Box::from_raw(builder as *mut RemoteTwinCATBuilder<Filled>)
-                .client_ams_net_id(CStr::from_ptr(id).to_str().unwrap()),
-        )) as _
-    }
+) -> LinkPtr {
+    LinkPtr::new(
+        take_link!(twincat, RemoteTwinCAT)
+            .with_client_ams_net_id(CStr::from_ptr(id).to_str().unwrap()),
+    )
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDLinkRemoteTwinCATTimeout(
-    builder: ConstPtr,
+    twincat: LinkPtr,
     timeout_ns: u64,
-) -> ConstPtr {
-    unsafe {
-        Box::into_raw(Box::new(
-            Box::from_raw(builder as *mut RemoteTwinCATBuilder<Filled>)
-                .timeout(Duration::from_nanos(timeout_ns)),
-        )) as _
-    }
-}
-
-#[no_mangle]
-#[must_use]
-pub unsafe extern "C" fn AUTDLinkRemoteTwinCATBuild(
-    builder: ConstPtr,
-    err: *mut c_char,
-) -> ConstPtr {
-    unsafe {
-        let builder = Box::from_raw(builder as *mut RemoteTwinCATBuilder<Filled>);
-        let link = try_or_return!(builder.build(), err, NULL);
-        let link: Box<Box<L>> = Box::new(Box::new(link));
-        Box::into_raw(link) as _
-    }
+) -> LinkPtr {
+    LinkPtr::new(take_link!(twincat, RemoteTwinCAT).with_timeout(Duration::from_nanos(timeout_ns)))
 }

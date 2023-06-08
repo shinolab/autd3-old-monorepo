@@ -4,7 +4,7 @@
  * Created Date: 09/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 31/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -37,8 +37,9 @@ impl TransducerTest {
         }
     }
 
-    pub fn set(&mut self, id: usize, phase: float, amp: float) {
+    pub fn set(mut self, id: usize, phase: float, amp: float) -> Self {
         self.test_drive.insert(id, (phase, amp));
+        self
     }
 }
 

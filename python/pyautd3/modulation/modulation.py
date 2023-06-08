@@ -12,25 +12,29 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 
+from abc import ABCMeta, abstractmethod
+
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
+from pyautd3.native_methods.autd3capi_def import DatagramHeaderPtr, ModulationPtr
+
 from pyautd3.autd import Header
 
 
-class Modulation(Header):
+class IModulation(Header, metaclass=ABCMeta):
     def __init__(self):
         super().__init__()
 
-    def __del__(self):
-        Base().delete_modulation(self.ptr)
+    def ptr(self) -> DatagramHeaderPtr:
+        return Base().modulation_into_datagram(self.modulator_ptr())
 
     @property
     def sampling_frequency_division(self) -> int:
-        return int(Base().modulation_sampling_frequency_division(self.ptr))
-
-    @sampling_frequency_division.setter
-    def sampling_frequency_division(self, value: int):
-        return Base().modulation_set_sampling_frequency_division(self.ptr, value)
+        return int(Base().modulation_sampling_frequency_division(self.modulator_ptr()))
 
     @property
     def sampling_frequency(self) -> float:
-        return float(Base().modulation_sampling_frequency(self.ptr))
+        return float(Base().modulation_sampling_frequency(self.modulator_ptr()))
+
+    @abstractmethod
+    def modulator_ptr(self) -> ModulationPtr:
+        pass

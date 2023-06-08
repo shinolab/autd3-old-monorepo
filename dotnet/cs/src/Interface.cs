@@ -4,53 +4,32 @@
  * Created Date: 17/12/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2023
+ * Last Modified: 05/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
 * Copyright (c) 2021-2023 Shun Suzuki. All rights reserved.
  * 
  */
 
-using System;
 using System.Runtime.InteropServices;
 
 namespace AUTD3Sharp
 {
     [ComVisible(false)]
-    public abstract class SpecialData
+    public interface ISpecialData
     {
-        internal IntPtr Ptr { get; set; }
-
-        internal SpecialData(IntPtr ptr)
-        {
-            Ptr = ptr;
-        }
-
-        ~SpecialData()
-        {
-            NativeMethods.Base.AUTDDeleteSpecialData(Ptr);
-        }
+        public DatagramSpecialPtr Ptr();
     }
 
     [ComVisible(false)]
-    public abstract class Header
+    public interface IHeader
     {
-        internal IntPtr Ptr { get; set; }
-
-        internal Header(IntPtr ptr)
-        {
-            Ptr = ptr;
-        }
+        public DatagramHeaderPtr Ptr();
     }
 
     [ComVisible(false)]
-    public abstract class Body
+    public interface IBody
     {
-        internal IntPtr Ptr { get; set; }
-
-        internal Body(IntPtr ptr)
-        {
-            Ptr = ptr;
-        }
+        public DatagramBodyPtr Ptr(Geometry geometry);
     }
 }

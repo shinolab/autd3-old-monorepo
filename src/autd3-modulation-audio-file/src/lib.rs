@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/05/2023
+ * Last Modified: 04/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -99,7 +99,7 @@ impl Wav {
 impl Modulation for Wav {
     #[allow(clippy::unnecessary_cast)]
     fn calc(&mut self) -> Result<Vec<float>, AUTDInternalError> {
-        let sample_rate = self.sampling_freq() as u32;
+        let sample_rate = self.sampling_frequency() as u32;
         let samples = wav_io::resample::linear(
             self.raw_buffer.clone(),
             self.channels,

@@ -13,7 +13,7 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 
 
 from pyautd3 import Controller, SilencerConfig
-from pyautd3.gain import Focus, Grouped, BesselBeam
+from pyautd3.gain import Focus, Grouped, Bessel
 from pyautd3.modulation import Sine
 import numpy as np
 
@@ -24,11 +24,9 @@ def grouped(autd: Controller):
 
     f = Grouped()
     f1 = Focus(autd.geometry.center_of(0) + np.array([0.0, 0.0, 150.0]))
-    f2 = BesselBeam(
-        autd.geometry.center_of(1), np.array([0.0, 0.0, 1.0]), 13 / 180 * np.pi
-    )
-    f.add(0, f1)
-    f.add(1, f2)
+    f2 = Bessel(autd.geometry.center_of(1), np.array([0.0, 0.0, 1.0]), 13 / 180 * np.pi)
+    f.add_gain(0, f1)
+    f.add_gain(1, f2)
     m = Sine(150)
 
     autd.send((m, f))

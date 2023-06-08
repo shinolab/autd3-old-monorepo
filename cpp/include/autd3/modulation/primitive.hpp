@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2023
+// Last Modified: 04/06/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,48 +18,198 @@ namespace autd3::modulation {
 
 class Static final : public internal::Modulation {
  public:
-  explicit Static(const double amp = 1.0) : Modulation(internal::native_methods::AUTDModulationStatic(amp)) {}
+  Static() = default;
+
+  Static with_amp(const double amp) {
+    _amp = amp;
+    return *this;
+  }
+
+  [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
+    auto ptr = internal::native_methods::AUTDModulationStatic();
+    if (_amp.has_value()) ptr = AUTDModulationStaticWithAmp(ptr, _amp.value());
+    return ptr;
+  }
+
+ private:
+  std::optional<double> _amp;
 };
 
 class Sine final : public internal::Modulation {
  public:
-  explicit Sine(const int32_t freq, const double amp = 1.0, const double offset = 0.5)
-      : Modulation(internal::native_methods::AUTDModulationSine(freq, amp, offset)) {}
+  explicit Sine(const int32_t freq) : _freq(freq) {}
+
+  Sine with_amp(const double amp) {
+    _amp = amp;
+    return *this;
+  }
+
+  Sine with_offset(const double offset) {
+    _offset = offset;
+    return *this;
+  }
+
+  Sine with_sampling_frequency_division(const uint32_t div) {
+    _freq_div = div;
+    return *this;
+  }
+
+  Sine with_sampling_frequency(const double freq) {
+    return with_sampling_frequency_division(static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq));
+  }
+
+  [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
+    auto ptr = internal::native_methods::AUTDModulationSine(_freq);
+    if (_amp.has_value()) ptr = AUTDModulationSineWithAmp(ptr, _amp.value());
+    if (_offset.has_value()) ptr = AUTDModulationSineWithOffset(ptr, _offset.value());
+    if (_freq_div.has_value()) ptr = AUTDModulationSineWithSamplingFrequencyDivision(ptr, _freq_div.value());
+    return ptr;
+  }
+
+ private:
+  int32_t _freq;
+  std::optional<double> _amp;
+  std::optional<double> _offset;
+  std::optional<uint32_t> _freq_div;
 };
 
-class SineSquared final : public internal::Modulation {
+class SinePressure final : public internal::Modulation {
  public:
-  explicit SineSquared(const int32_t freq, const double amp = 1.0, const double offset = 0.5)
-      : Modulation(internal::native_methods::AUTDModulationSineSquared(freq, amp, offset)) {}
+  explicit SinePressure(const int32_t freq) : _freq(freq) {}
+
+  SinePressure with_amp(const double amp) {
+    _amp = amp;
+    return *this;
+  }
+
+  SinePressure with_offset(const double offset) {
+    _offset = offset;
+    return *this;
+  }
+
+  SinePressure with_sampling_frequency_division(const uint32_t div) {
+    _freq_div = div;
+    return *this;
+  }
+
+  SinePressure with_sampling_frequency(const double freq) {
+    return with_sampling_frequency_division(static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq));
+  }
+
+  [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
+    auto ptr = internal::native_methods::AUTDModulationSinePressure(_freq);
+    if (_amp.has_value()) ptr = AUTDModulationSinePressureWithAmp(ptr, _amp.value());
+    if (_offset.has_value()) ptr = AUTDModulationSinePressureWithOffset(ptr, _offset.value());
+    if (_freq_div.has_value()) ptr = AUTDModulationSinePressureWithSamplingFrequencyDivision(ptr, _freq_div.value());
+    return ptr;
+  }
+
+ private:
+  int32_t _freq;
+  std::optional<double> _amp;
+  std::optional<double> _offset;
+  std::optional<uint32_t> _freq_div;
 };
 
 class SineLegacy final : public internal::Modulation {
  public:
-  explicit SineLegacy(const double freq, const double amp = 1.0, const double offset = 0.5)
-      : Modulation(internal::native_methods::AUTDModulationSineLegacy(freq, amp, offset)) {}
+  explicit SineLegacy(const double freq) : _freq(freq) {}
+
+  SineLegacy with_amp(const double amp) {
+    _amp = amp;
+    return *this;
+  }
+
+  SineLegacy with_offset(const double offset) {
+    _offset = offset;
+    return *this;
+  }
+
+  SineLegacy with_sampling_frequency_division(const uint32_t div) {
+    _freq_div = div;
+    return *this;
+  }
+
+  SineLegacy with_sampling_frequency(const double freq) {
+    return with_sampling_frequency_division(static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq));
+  }
+
+  [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
+    auto ptr = internal::native_methods::AUTDModulationSineLegacy(_freq);
+    if (_amp.has_value()) ptr = AUTDModulationSineLegacyWithAmp(ptr, _amp.value());
+    if (_offset.has_value()) ptr = AUTDModulationSineLegacyWithOffset(ptr, _offset.value());
+    if (_freq_div.has_value()) ptr = AUTDModulationSineLegacyWithSamplingFrequencyDivision(ptr, _freq_div.value());
+    return ptr;
+  }
+
+ private:
+  double _freq;
+  std::optional<double> _amp;
+  std::optional<double> _offset;
+  std::optional<uint32_t> _freq_div;
 };
 
 class Square final : public internal::Modulation {
  public:
-  explicit Square(const int32_t freq, const double low = 0.0, const double high = 1.0, const double duty = 0.5)
-      : Modulation(internal::native_methods::AUTDModulationSquare(freq, low, high, duty)) {}
+  explicit Square(const int32_t freq) : _freq(freq) {}
+
+  Square with_low(const double low) {
+    _low = low;
+    return *this;
+  }
+
+  Square with_high(const double high) {
+    _high = high;
+    return *this;
+  }
+
+  Square with_duty(const double duty) {
+    _duty = duty;
+    return *this;
+  }
+
+  Square with_sampling_frequency_division(const uint32_t div) {
+    _freq_div = div;
+    return *this;
+  }
+
+  Square with_sampling_frequency(const double freq) {
+    return with_sampling_frequency_division(static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / freq));
+  }
+
+  [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
+    auto ptr = internal::native_methods::AUTDModulationSquare(_freq);
+    if (_low.has_value()) ptr = AUTDModulationSquareWithLow(ptr, _low.value());
+    if (_high.has_value()) ptr = AUTDModulationSquareWithHigh(ptr, _high.value());
+    if (_duty.has_value()) ptr = AUTDModulationSquareWithDuty(ptr, _duty.value());
+    if (_freq_div.has_value()) ptr = AUTDModulationSquareWithSamplingFrequencyDivision(ptr, _freq_div.value());
+    return ptr;
+  }
+
+ private:
+  int32_t _freq;
+  std::optional<double> _low;
+  std::optional<double> _high;
+  std::optional<double> _duty;
+  std::optional<uint32_t> _freq_div;
 };
 
 class Modulation : public internal::Modulation {
  public:
-  explicit Modulation(const uint16_t freq_div = 5120) : internal::Modulation(nullptr), _freq_div(freq_div) {}
+  explicit Modulation(const double sampling_freq)
+      : _freq_div(static_cast<uint32_t>(static_cast<double>(internal::native_methods::FPGA_SUB_CLK_FREQ) / sampling_freq)) {}
+  explicit Modulation(const uint32_t freq_div) : _freq_div(freq_div) {}
 
-  virtual std::vector<double> calc() = 0;
+  [[nodiscard]] virtual std::vector<double> calc() const = 0;
 
-  void* ptr() override {
+  [[nodiscard]] internal::native_methods::ModulationPtr modulation_ptr() const override {
     const auto buffer = calc();
     const auto size = static_cast<uint64_t>(buffer.size());
-    _ptr = internal::native_methods::AUTDModulationCustom(buffer.data(), size, _freq_div);
-    return _ptr;
+    return internal::native_methods::AUTDModulationCustom(_freq_div, buffer.data(), size);
   }
 
  private:
-  uint16_t _freq_div;
+  uint32_t _freq_div;
 };
 
 }  // namespace autd3::modulation

@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2023
+// Last Modified: 08/06/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -21,238 +21,292 @@ namespace autd3::gain::holo {
 
 class Backend {
  public:
-  explicit Backend(void *ptr) noexcept : _ptr(ptr) {}
+  Backend() noexcept : _ptr(internal::native_methods::BackendPtr{nullptr}){};
+  explicit Backend(internal::native_methods::BackendPtr ptr) noexcept : _ptr(ptr){};
+  Backend(const Backend& obj) = default;
+  Backend& operator=(const Backend& obj) = default;
+  Backend(Backend&& obj) = default;
+  Backend& operator=(Backend&& obj) = default;
+  virtual ~Backend() { internal::native_methods::AUTDDeleteBackend(_ptr); }
 
-  [[nodiscard]] void *ptr() const { return _ptr; }
+  [[nodiscard]] internal::native_methods::BackendPtr ptr() { return _ptr; }
 
  protected:
-  void *_ptr;
+  internal::native_methods::BackendPtr _ptr;
 };
 
-[[nodiscard]] inline Backend default_backend() { return Backend{internal::native_methods::AUTDDefaultBackend()}; }
-
-class DontCare {
+class DefaultBackend final : public Backend {
  public:
-  DontCare() = default;
+  DefaultBackend() : Backend(internal::native_methods::AUTDDefaultBackend()) {}
+  ~DefaultBackend() override = default;
 };
 
-class Normalize {
+class AmplitudeConstraint {
  public:
-  Normalize() = default;
-};
+  static AmplitudeConstraint dont_care() { return AmplitudeConstraint{internal::native_methods::AUTDGainHoloDotCareConstraint()}; }
 
-class Uniform {
- public:
-  explicit Uniform(const double value) : _value(value) {}
+  static AmplitudeConstraint normalize() { return AmplitudeConstraint{internal::native_methods::AUTDGainHoloNormalizeConstraint()}; }
 
-  [[nodiscard]] double value() const { return _value; }
+  static AmplitudeConstraint uniform(const double value) {
+    return AmplitudeConstraint{internal::native_methods::AUTDGainHoloUniformConstraint(value)};
+  }
+
+  static AmplitudeConstraint clamp(const double min_v, const double max_v) {
+    return AmplitudeConstraint{internal::native_methods::AUTDGainHoloClampConstraint(min_v, max_v)};
+  }
+
+  [[nodiscard]] internal::native_methods::ConstraintPtr ptr() const { return _ptr; }
 
  private:
-  double _value;
+  explicit AmplitudeConstraint(const internal::native_methods::ConstraintPtr ptr) : _ptr(ptr) {}
+
+  internal::native_methods::ConstraintPtr _ptr;
 };
-
-class Clamp {
- public:
-  Clamp(const double min, const double max) : _min(min), _max(max) {}
-
-  [[nodiscard]] double min() const { return _min; }
-  [[nodiscard]] double max() const { return _max; }
-
- private:
-  double _min;
-  double _max;
-};
-
-using AmplitudeConstraint = std::variant<DontCare, Normalize, Uniform, Clamp>;
 
 class Holo : public internal::Gain {
  public:
-  explicit Holo(void *ptr) : Gain(ptr) {}
+     Holo() : _backend(std::make_shared<DefaultBackend>()) {}
+     explicit Holo(std::shared_ptr<Backend> backend) : _backend(std::move(backend)) {}
 
-  virtual void add_focus(const internal::Vector3 &focus, double amp) = 0;
-  virtual void set_constraint(AmplitudeConstraint constraint) = 0;
+  Holo(const Holo& obj) = default;
+  Holo& operator=(const Holo& obj) = default;
+  Holo(Holo&& obj) = default;
+  Holo& operator=(Holo&& obj) = default;
+  ~Holo() override = default;
+
+  void add_focus(internal::Vector3 focus, double amp) {
+    _foci.emplace_back(std::move(focus));
+    _amps.emplace_back(amp);
+  }
+
+ protected:
+  std::vector<internal::Vector3> _foci;
+  std::vector<double> _amps;
+  std::shared_ptr<Backend> _backend;
 };
 
 class SDP final : public Holo {
  public:
-  explicit SDP(const Backend backend) : Holo(internal::native_methods::AUTDGainHoloSDP(backend.ptr())) {}
+  SDP() = default;
+  explicit SDP(std::shared_ptr<Backend> backend) : Holo(std::move(backend)) {}
 
-  void alpha(const double value) const { internal::native_methods::AUTDGainHoloSDPAlpha(_ptr, value); }
-  void repeat(const size_t value) const { internal::native_methods::AUTDGainHoloSDPRepeat(_ptr, static_cast<uint32_t>(value)); }
-  void lambda(const double value) const { internal::native_methods::AUTDGainHoloSDPLambda(_ptr, value); }
 
-  void add_focus(const internal::Vector3 &focus, const double amp) override {
-    internal::native_methods::AUTDGainHoloSDPAdd(_ptr, focus.x(), focus.y(), focus.z(), amp);
+  SDP with_alpha(const double value) {
+    _alpha = value;
+    return std::move(*this);
   }
 
-  void set_constraint(const AmplitudeConstraint constraint) override {
-    if (std::holds_alternative<DontCare>(constraint)) {
-      internal::native_methods::AUTDGainHoloSDPSetDotCareConstraint(_ptr);
-    } else if (std::holds_alternative<Normalize>(constraint)) {
-      internal::native_methods::AUTDGainHoloSDPSetNormalizeConstraint(_ptr);
-    } else if (std::holds_alternative<Uniform>(constraint)) {
-      const Uniform &c = std::get<Uniform>(constraint);
-      internal::native_methods::AUTDGainHoloSDPSetUniformConstraint(_ptr, c.value());
-    } else if (std::holds_alternative<Clamp>(constraint)) {
-      const Clamp &c = std::get<Clamp>(constraint);
-      internal::native_methods::AUTDGainHoloSDPSetClampConstraint(_ptr, c.min(), c.max());
-    }
+  SDP with_repeat(const uint32_t value) {
+    _repeat = value;
+    return std::move(*this);
   }
+  SDP with_lambda(const double value) {
+    _lambda = value;
+    return std::move(*this);
+  }
+
+  SDP with_constraint(const AmplitudeConstraint constraint) {
+    _constraint = constraint;
+    return std::move(*this);
+  }
+
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
+    auto ptr = AUTDGainHoloSDP(_backend->ptr(), reinterpret_cast<const double*>(_foci.data()), _amps.data(), static_cast<uint64_t>(_amps.size()));
+    if (_alpha.has_value()) ptr = AUTDGainHoloSDPWithAlpha(ptr, _alpha.value());
+    if (_repeat.has_value()) ptr = AUTDGainHoloSDPWithRepeat(ptr, _repeat.value());
+    if (_lambda.has_value()) ptr = AUTDGainHoloSDPWithLambda(ptr, _lambda.value());
+    if (_constraint.has_value()) ptr = AUTDGainHoloSDPWithConstraint(ptr, _constraint.value().ptr());
+    return ptr;
+  }
+
+ private:
+  std::optional<double> _alpha;
+  std::optional<uint32_t> _repeat;
+  std::optional<double> _lambda;
+  std::optional<AmplitudeConstraint> _constraint;
 };
 
 class EVP final : public Holo {
  public:
-  explicit EVP(const Backend backend) : Holo(internal::native_methods::AUTDGainHoloEVP(backend.ptr())) {}
+  EVP() = default;
+  explicit EVP(std::shared_ptr<Backend> backend) : Holo(std::move(backend)) {}
 
-  void gamma(const double value) const { internal::native_methods::AUTDGainHoloEVPGamma(_ptr, value); }
-
-  void add_focus(const internal::Vector3 &focus, const double amp) override {
-    internal::native_methods::AUTDGainHoloEVPAdd(_ptr, focus.x(), focus.y(), focus.z(), amp);
+  EVP with_gamma(const double value) {
+    _gamma = value;
+    return std::move(*this);
   }
 
-  void set_constraint(const AmplitudeConstraint constraint) override {
-    if (std::holds_alternative<DontCare>(constraint)) {
-      internal::native_methods::AUTDGainHoloEVPSetDotCareConstraint(_ptr);
-    } else if (std::holds_alternative<Normalize>(constraint)) {
-      internal::native_methods::AUTDGainHoloEVPSetNormalizeConstraint(_ptr);
-    } else if (std::holds_alternative<Uniform>(constraint)) {
-      const Uniform &c = std::get<Uniform>(constraint);
-      internal::native_methods::AUTDGainHoloEVPSetUniformConstraint(_ptr, c.value());
-    } else if (std::holds_alternative<Clamp>(constraint)) {
-      const Clamp &c = std::get<Clamp>(constraint);
-      internal::native_methods::AUTDGainHoloEVPSetClampConstraint(_ptr, c.min(), c.max());
-    }
+  EVP with_constraint(const AmplitudeConstraint constraint) {
+    _constraint = constraint;
+    return std::move(*this);
   }
+
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
+    auto ptr = AUTDGainHoloEVP(_backend->ptr(), reinterpret_cast<const double*>(_foci.data()), _amps.data(), static_cast<uint64_t>(_amps.size()));
+    if (_gamma.has_value()) ptr = AUTDGainHoloEVPWithGamma(ptr, _gamma.value());
+    if (_constraint.has_value()) ptr = AUTDGainHoloEVPWithConstraint(ptr, _constraint.value().ptr());
+    return ptr;
+  }
+
+ private:
+  std::optional<double> _gamma;
+  std::optional<AmplitudeConstraint> _constraint;
 };
 
 class GS final : public Holo {
  public:
-  explicit GS(const Backend backend) : Holo(internal::native_methods::AUTDGainHoloGS(backend.ptr())) {}
+  GS() = default;
+  explicit GS(std::shared_ptr<Backend> backend) : Holo(std::move(backend)) {}
 
-  void repeat(const size_t value) const { internal::native_methods::AUTDGainHoloGSRepeat(_ptr, static_cast<uint32_t>(value)); }
-
-  void add_focus(const internal::Vector3 &focus, const double amp) override {
-    internal::native_methods::AUTDGainHoloGSAdd(_ptr, focus.x(), focus.y(), focus.z(), amp);
+  GS with_repeat(const uint32_t value) {
+    _repeat = value;
+    return std::move(*this);
   }
 
-  void set_constraint(const AmplitudeConstraint constraint) override {
-    if (std::holds_alternative<DontCare>(constraint)) {
-      internal::native_methods::AUTDGainHoloGSSetDotCareConstraint(_ptr);
-    } else if (std::holds_alternative<Normalize>(constraint)) {
-      internal::native_methods::AUTDGainHoloGSSetNormalizeConstraint(_ptr);
-    } else if (std::holds_alternative<Uniform>(constraint)) {
-      const Uniform &c = std::get<Uniform>(constraint);
-      internal::native_methods::AUTDGainHoloGSSetUniformConstraint(_ptr, c.value());
-    } else if (std::holds_alternative<Clamp>(constraint)) {
-      const Clamp &c = std::get<Clamp>(constraint);
-      internal::native_methods::AUTDGainHoloGSSetClampConstraint(_ptr, c.min(), c.max());
-    }
+  GS with_constraint(const AmplitudeConstraint constraint) {
+    _constraint = constraint;
+    return std::move(*this);
   }
+
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
+    auto ptr = AUTDGainHoloGS(_backend->ptr(), reinterpret_cast<const double*>(_foci.data()), _amps.data(), static_cast<uint64_t>(_amps.size()));
+    if (_repeat.has_value()) ptr = AUTDGainHoloGSWithRepeat(ptr, _repeat.value());
+    if (_constraint.has_value()) ptr = AUTDGainHoloGSWithConstraint(ptr, _constraint.value().ptr());
+    return ptr;
+  }
+
+ private:
+  std::optional<uint32_t> _repeat;
+  std::optional<AmplitudeConstraint> _constraint;
 };
 
 class GSPAT final : public Holo {
  public:
-  explicit GSPAT(const Backend backend) : Holo(internal::native_methods::AUTDGainHoloGSPAT(backend.ptr())) {}
+  GSPAT() = default;
+  explicit GSPAT(std::shared_ptr<Backend> backend) : Holo(std::move(backend)) {}
 
-  void repeat(const size_t value) const { internal::native_methods::AUTDGainHoloGSPATRepeat(_ptr, static_cast<uint32_t>(value)); }
-
-  void add_focus(const internal::Vector3 &focus, const double amp) override {
-    internal::native_methods::AUTDGainHoloGSPATAdd(_ptr, focus.x(), focus.y(), focus.z(), amp);
+  GSPAT with_repeat(const uint32_t value) {
+    _repeat = value;
+    return std::move(*this);
   }
 
-  void set_constraint(const AmplitudeConstraint constraint) override {
-    if (std::holds_alternative<DontCare>(constraint)) {
-      internal::native_methods::AUTDGainHoloGSPATSetDotCareConstraint(_ptr);
-    } else if (std::holds_alternative<Normalize>(constraint)) {
-      internal::native_methods::AUTDGainHoloGSPATSetNormalizeConstraint(_ptr);
-    } else if (std::holds_alternative<Uniform>(constraint)) {
-      const Uniform &c = std::get<Uniform>(constraint);
-      internal::native_methods::AUTDGainHoloGSPATSetUniformConstraint(_ptr, c.value());
-    } else if (std::holds_alternative<Clamp>(constraint)) {
-      const Clamp &c = std::get<Clamp>(constraint);
-      internal::native_methods::AUTDGainHoloGSPATSetClampConstraint(_ptr, c.min(), c.max());
-    }
+  GSPAT with_constraint(const AmplitudeConstraint constraint) {
+    _constraint = constraint;
+    return std::move(*this);
   }
+  
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
+    auto ptr = AUTDGainHoloGSPAT(_backend->ptr(), reinterpret_cast<const double*>(_foci.data()), _amps.data(), static_cast<uint64_t>(_amps.size()));
+    if (_repeat.has_value()) ptr = AUTDGainHoloGSPATWithRepeat(ptr, _repeat.value());
+    if (_constraint.has_value()) ptr = AUTDGainHoloGSPATWithConstraint(ptr, _constraint.value().ptr());
+    return ptr;
+  }
+
+ private:
+  std::optional<uint32_t> _repeat;
+  std::optional<AmplitudeConstraint> _constraint;
 };
 
 class Naive final : public Holo {
  public:
-  explicit Naive(const Backend backend) : Holo(internal::native_methods::AUTDGainHoloNaive(backend.ptr())) {}
+  Naive() = default;
+  explicit Naive(std::shared_ptr<Backend> backend) : Holo(std::move(backend)) {}
 
-  void add_focus(const internal::Vector3 &focus, const double amp) override {
-    internal::native_methods::AUTDGainHoloNaiveAdd(_ptr, focus.x(), focus.y(), focus.z(), amp);
+  Naive with_constraint(const AmplitudeConstraint constraint) {
+    _constraint = constraint;
+    return std::move(*this);
   }
 
-  void set_constraint(const AmplitudeConstraint constraint) override {
-    if (std::holds_alternative<DontCare>(constraint)) {
-      internal::native_methods::AUTDGainHoloNaiveSetDotCareConstraint(_ptr);
-    } else if (std::holds_alternative<Normalize>(constraint)) {
-      internal::native_methods::AUTDGainHoloNaiveSetNormalizeConstraint(_ptr);
-    } else if (std::holds_alternative<Uniform>(constraint)) {
-      const Uniform &c = std::get<Uniform>(constraint);
-      internal::native_methods::AUTDGainHoloNaiveSetUniformConstraint(_ptr, c.value());
-    } else if (std::holds_alternative<Clamp>(constraint)) {
-      const Clamp &c = std::get<Clamp>(constraint);
-      internal::native_methods::AUTDGainHoloNaiveSetClampConstraint(_ptr, c.min(), c.max());
-    }
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
+    auto ptr = AUTDGainHoloNaive(_backend->ptr(), reinterpret_cast<const double*>(_foci.data()), _amps.data(), static_cast<uint64_t>(_amps.size()));
+    if (_constraint.has_value()) ptr = AUTDGainHoloNaiveWithConstraint(ptr, _constraint.value().ptr());
+    return ptr;
   }
+
+ private:
+  std::optional<AmplitudeConstraint> _constraint;
 };
 
 class LM final : public Holo {
  public:
-  explicit LM(const Backend backend) : Holo(internal::native_methods::AUTDGainHoloLM(backend.ptr())) {}
+  LM() = default;
+  explicit LM(std::shared_ptr<Backend> backend) : Holo(std::move(backend)) {}
 
-  void eps1(const double value) const { internal::native_methods::AUTDGainHoloLMEps1(_ptr, value); }
-  void eps2(const double value) const { internal::native_methods::AUTDGainHoloLMEps2(_ptr, value); }
-  void tau(const double value) const { internal::native_methods::AUTDGainHoloLMTau(_ptr, value); }
-  void k_max(const size_t value) const { internal::native_methods::AUTDGainHoloLMKMax(_ptr, static_cast<uint32_t>(value)); }
-  void initial(const std::vector<double> &value) const {
-    const auto size = static_cast<uint64_t>(value.size());
-    internal::native_methods::AUTDGainHoloLMInitial(_ptr, value.data(), size);
+  LM with_eps1(const double value) {
+    _eps1 = value;
+    return std::move(*this);
   }
 
-  void add_focus(const internal::Vector3 &focus, const double amp) override {
-    internal::native_methods::AUTDGainHoloLMAdd(_ptr, focus.x(), focus.y(), focus.z(), amp);
+  LM with_eps2(const double value) {
+    _eps2 = value;
+    return std::move(*this);
   }
 
-  void set_constraint(const AmplitudeConstraint constraint) override {
-    if (std::holds_alternative<DontCare>(constraint)) {
-      internal::native_methods::AUTDGainHoloLMSetDotCareConstraint(_ptr);
-    } else if (std::holds_alternative<Normalize>(constraint)) {
-      internal::native_methods::AUTDGainHoloLMSetNormalizeConstraint(_ptr);
-    } else if (std::holds_alternative<Uniform>(constraint)) {
-      const Uniform &c = std::get<Uniform>(constraint);
-      internal::native_methods::AUTDGainHoloLMSetUniformConstraint(_ptr, c.value());
-    } else if (std::holds_alternative<Clamp>(constraint)) {
-      const Clamp &c = std::get<Clamp>(constraint);
-      internal::native_methods::AUTDGainHoloLMSetClampConstraint(_ptr, c.min(), c.max());
-    }
+  LM with_tau(const double value) {
+    _tau = value;
+    return std::move(*this);
   }
+
+  LM with_kmax(const uint32_t value) {
+    _kmax = value;
+    return std::move(*this);
+  }
+
+  LM with_initial(std::vector<double> value) {
+    _initial = std::move(value);
+    return std::move(*this);
+  }
+
+  LM with_constraint(const AmplitudeConstraint constraint) {
+    _constraint = constraint;
+    return std::move(*this);
+  }
+
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
+    auto ptr = AUTDGainHoloLM(_backend->ptr(), reinterpret_cast<const double*>(_foci.data()), _amps.data(), static_cast<uint64_t>(_amps.size()));
+    if (_eps1.has_value()) ptr = AUTDGainHoloLMWithEps1(ptr, _eps1.value());
+    if (_eps2.has_value()) ptr = AUTDGainHoloLMWithEps2(ptr, _eps2.value());
+    if (_tau.has_value()) ptr = AUTDGainHoloLMWithTau(ptr, _tau.value());
+    if (_kmax.has_value()) ptr = AUTDGainHoloLMWithKMax(ptr, _kmax.value());
+    if (!_initial.empty()) ptr = AUTDGainHoloLMWithInitial(ptr, _initial.data(), static_cast<uint64_t>(_initial.size()));
+    if (_constraint.has_value()) ptr = AUTDGainHoloLMWithConstraint(ptr, _constraint.value().ptr());
+    return ptr;
+  }
+
+ private:
+  std::optional<double> _eps1;
+  std::optional<double> _eps2;
+  std::optional<double> _tau;
+  std::optional<uint32_t> _kmax;
+  std::vector<double> _initial;
+  std::optional<AmplitudeConstraint> _constraint;
 };
 
 class Greedy final : public Holo {
  public:
-  Greedy() : Holo(internal::native_methods::AUTDGainHoloGreedy()) {}
+  Greedy() = default;
 
-  void phase_div(const size_t value) const { internal::native_methods::AUTDGainHoloGreedyPhaseDiv(_ptr, static_cast<uint32_t>(value)); }
-
-  void add_focus(const internal::Vector3 &focus, const double amp) override {
-    internal::native_methods::AUTDGainHoloGreedyAdd(_ptr, focus.x(), focus.y(), focus.z(), amp);
+  Greedy with_phase_div(const uint32_t value) {
+    _div = value;
+    return std::move(*this);
   }
 
-  void set_constraint(const AmplitudeConstraint constraint) override {
-    if (std::holds_alternative<DontCare>(constraint)) {
-      internal::native_methods::AUTDGainHoloGreedySetDotCareConstraint(_ptr);
-    } else if (std::holds_alternative<Normalize>(constraint)) {
-      internal::native_methods::AUTDGainHoloGreedySetNormalizeConstraint(_ptr);
-    } else if (std::holds_alternative<Uniform>(constraint)) {
-      const Uniform &c = std::get<Uniform>(constraint);
-      internal::native_methods::AUTDGainHoloGreedySetUniformConstraint(_ptr, c.value());
-    } else if (std::holds_alternative<Clamp>(constraint)) {
-      const Clamp &c = std::get<Clamp>(constraint);
-      internal::native_methods::AUTDGainHoloGreedySetClampConstraint(_ptr, c.min(), c.max());
-    }
+  Greedy with_constraint(const AmplitudeConstraint constraint) {
+    _constraint = constraint;
+    return std::move(*this);
   }
+
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
+    auto ptr = internal::native_methods::AUTDGainHoloGreedy(reinterpret_cast<const double*>(_foci.data()), _amps.data(),
+                                                            static_cast<uint64_t>(_amps.size()));
+    if (_div.has_value()) ptr = AUTDGainHoloGreedyWithPhaseDiv(ptr, _div.value());
+    if (_constraint.has_value()) ptr = AUTDGainHoloLMWithConstraint(ptr, _constraint.value().ptr());
+    return ptr;
+  }
+
+ private:
+  std::optional<uint32_t> _div;
+  std::optional<AmplitudeConstraint> _constraint;
 };
 
 }  // namespace autd3::gain::holo

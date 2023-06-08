@@ -4,7 +4,7 @@
  * Created Date: 03/06/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/05/2023
+ * Last Modified: 03/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -30,7 +30,7 @@ use rand::seq::SliceRandom;
 pub struct Greedy {
     foci: Vec<Vector3>,
     amps: Vec<float>,
-    pub phase_div: usize,
+    phase_div: usize,
     constraint: Constraint,
 }
 
@@ -44,6 +44,10 @@ impl Greedy {
             phase_div: 16,
             constraint: Constraint::Uniform(1.),
         }
+    }
+
+    pub fn with_phase_div(self, phase_div: usize) -> Self {
+        Self { phase_div, ..self }
     }
 
     fn transfer_foci<T: Transducer>(

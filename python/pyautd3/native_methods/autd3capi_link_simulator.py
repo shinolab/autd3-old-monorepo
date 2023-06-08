@@ -2,11 +2,11 @@
 import threading
 import ctypes
 import os
-
+from .autd3capi_def import LinkPtr
 
 
 class Singleton(type):
-    _instances = {} # type: ignore
+    _instances = {}  # type: ignore
     _lock = threading.Lock()
 
     def __call__(cls, *args, **kwargs):
@@ -26,25 +26,19 @@ class NativeMethods(metaclass=Singleton):
             return
 
         self.dll.AUTDLinkSimulator.argtypes = [ctypes.c_uint16] 
-        self.dll.AUTDLinkSimulator.restype = ctypes.c_void_p
+        self.dll.AUTDLinkSimulator.restype = LinkPtr
 
-        self.dll.AUTDLinkSimulatorAddr.argtypes = [ctypes.c_void_p, ctypes.c_char_p] 
-        self.dll.AUTDLinkSimulatorAddr.restype = ctypes.c_void_p
+        self.dll.AUTDLinkSimulatorAddr.argtypes = [LinkPtr, ctypes.c_char_p, ctypes.c_char_p]  # type: ignore 
+        self.dll.AUTDLinkSimulatorAddr.restype = LinkPtr
 
-        self.dll.AUTDLinkSimulatorTimeout.argtypes = [ctypes.c_void_p, ctypes.c_uint64] 
-        self.dll.AUTDLinkSimulatorTimeout.restype = ctypes.c_void_p
+        self.dll.AUTDLinkSimulatorTimeout.argtypes = [LinkPtr, ctypes.c_uint64]  # type: ignore 
+        self.dll.AUTDLinkSimulatorTimeout.restype = LinkPtr
 
-        self.dll.AUTDLinkSimulatorBuild.argtypes = [ctypes.c_void_p] 
-        self.dll.AUTDLinkSimulatorBuild.restype = ctypes.c_void_p
-
-    def link_simulator(self, port: int) -> ctypes.c_void_p:
+    def link_simulator(self, port: int) -> LinkPtr:
         return self.dll.AUTDLinkSimulator(port)
 
-    def link_simulator_addr(self, builder: ctypes.c_void_p, addr: bytes) -> ctypes.c_void_p:
-        return self.dll.AUTDLinkSimulatorAddr(builder, addr)
+    def link_simulator_addr(self, simulator: LinkPtr, addr: bytes, err: ctypes.Array[ctypes.c_char]) -> LinkPtr:
+        return self.dll.AUTDLinkSimulatorAddr(simulator, addr, err)
 
-    def link_simulator_timeout(self, builder: ctypes.c_void_p, timeout_ns: int) -> ctypes.c_void_p:
-        return self.dll.AUTDLinkSimulatorTimeout(builder, timeout_ns)
-
-    def link_simulator_build(self, builder: ctypes.c_void_p) -> ctypes.c_void_p:
-        return self.dll.AUTDLinkSimulatorBuild(builder)
+    def link_simulator_timeout(self, simulator: LinkPtr, timeout_ns: int) -> LinkPtr:
+        return self.dll.AUTDLinkSimulatorTimeout(simulator, timeout_ns)

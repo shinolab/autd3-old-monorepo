@@ -11,123 +11,192 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 """
 
-from typing import Optional
+from abc import ABCMeta, abstractmethod
+from typing import Optional, List
 
 import numpy as np
 
 from pyautd3.autd import Body
-from pyautd3.gain.gain import Gain
+from pyautd3.geometry import Geometry
+from pyautd3.gain.gain import IGain
 from pyautd3.native_methods.autd3capi import NativeMethods as Base
-from pyautd3.native_methods.autd3capi_def import GainSTMMode
+from pyautd3.native_methods.autd3capi_def import (
+    GainSTMMode,
+    DatagramBodyPtr,
+    GainPtr,
+    STMPropsPtr,
+)
 
 
-class FocusSTM(Body):
-    def __init__(self):
+class STM(Body, metaclass=ABCMeta):
+    _freq: Optional[float]
+    _sampling_freq: Optional[float]
+    _sampling_freq_div: Optional[int]
+    _start_idx: int
+    _finish_idx: int
+
+    def __init__(
+        self,
+        freq: Optional[float],
+        sampling_freq: Optional[float],
+        sampling_freq_div: Optional[int],
+    ):
         super().__init__()
-        self.ptr = Base().focus_stm()
-
-    def __del__(self):
-        Base().delete_focus_stm(self.ptr)
-
-    def add(self, point: np.ndarray, duty_shift: int = 0):
-        Base().focus_stm_add(self.ptr, point[0], point[1], point[2], duty_shift)
-
-    @property
-    def frequency(self) -> float:
-        return float(Base().focus_stm_frequency(self.ptr))
-
-    @frequency.setter
-    def frequency(self, freq: float):
-        return Base().focus_stm_set_frequency(self.ptr, freq)
+        self._freq = freq
+        self._sampling_freq = sampling_freq
+        self._sampling_freq_div = sampling_freq_div
+        self._start_idx = -1
+        self._finish_idx = -1
 
     @property
     def start_idx(self) -> Optional[int]:
-        idx = int(Base().focus_stm_get_start_idx(self.ptr))
+        idx = int(Base().stm_props_start_idx(self.props()))
         if idx < 0:
             return None
         return idx
-
-    @start_idx.setter
-    def start_idx(self, value: Optional[int]):
-        return Base().focus_stm_set_start_idx(self.ptr, -1 if value is None else value)
 
     @property
     def finish_idx(self) -> Optional[int]:
-        idx = int(Base().focus_stm_get_finish_idx(self.ptr))
+        idx = int(Base().stm_props_finish_idx(self.props()))
         if idx < 0:
             return None
         return idx
 
-    @finish_idx.setter
-    def finish_idx(self, value: Optional[int]):
-        return Base().focus_stm_set_finish_idx(self.ptr, -1 if value is None else value)
+    def props(self) -> STMPropsPtr:
+        ptr: STMPropsPtr
+        if self._freq is not None:
+            ptr = Base().stm_props(self._freq)
+        if self._sampling_freq is not None:
+            ptr = Base().stm_props_with_sampling_freq(self._sampling_freq)
+        if self._sampling_freq_div is not None:
+            ptr = Base().stm_props_with_sampling_freq_div(self._sampling_freq_div)
+        ptr = Base().stm_props_with_start_idx(ptr, self._start_idx)
+        ptr = Base().stm_props_with_finish_idx(ptr, self._finish_idx)
+        return ptr
 
-    @property
-    def sampling_frequency(self) -> float:
-        return float(Base().focus_stm_sampling_frequency(self.ptr))
+    def frequency_from_size(self, size: int) -> float:
+        return float(Base().stm_props_frequency(self.props(), size))
 
-    @property
-    def sampling_frequency_division(self) -> int:
-        return int(Base().focus_stm_sampling_frequency_division(self.ptr))
+    def sampling_frequency_from_size(self, size: int) -> float:
+        return float(Base().stm_props_sampling_frequency(self.props(), size))
 
-    @sampling_frequency_division.setter
-    def sampling_frequency_division(self, value: int):
-        return Base().focus_stm_set_sampling_frequency_division(self.ptr, value)
+    def sampling_frequency_division_from_size(self, size: int) -> int:
+        return int(Base().stm_props_sampling_frequency_division(self.props(), size))
+
+    @abstractmethod
+    def ptr(self, geometry: Geometry) -> DatagramBodyPtr:
+        pass
 
 
-class GainSTM(Body):
-    def __init__(self):
-        super().__init__()
-        self.ptr = Base().gain_stm()
+class FocusSTM(STM):
+    _points: List[float]
+    _duty_shifts: List[int]
 
-    def __del__(self):
-        Base().delete_gain_stm(self.ptr)
+    def __init__(
+        self,
+        freq: Optional[float],
+        sampling_freq: Optional[float] = None,
+        sampling_freq_div: Optional[int] = None,
+    ):
+        super().__init__(freq, sampling_freq, sampling_freq_div)
+        self._points = []
+        self._duty_shifts = []
 
-    def add(self, gain: Gain):
-        Base().gain_stm_add(self.ptr, gain.ptr)
-        gain._disposed = True
+    def ptr(self, geometry: Geometry) -> DatagramBodyPtr:
+        points = np.ctypeslib.as_ctypes(np.array(self._points).astype(np.double))
+        shifts = np.ctypeslib.as_ctypes(np.array(self._duty_shifts).astype(np.uint8))
+        return Base().focus_stm(self.props(), points, shifts, len(self._duty_shifts))
 
-    def set_mode(self, mode: GainSTMMode):
-        return Base().gain_stm_set_mode(self.ptr, mode)
+    @staticmethod
+    def from_sampling_frequency(sampling_freq: float) -> "FocusSTM":
+        return FocusSTM(None, sampling_freq, None)
+
+    @staticmethod
+    def from_sampling_frequency_division(sampling_freq_div: int) -> "FocusSTM":
+        return FocusSTM(None, None, sampling_freq_div)
+
+    def add_focus(self, point: np.ndarray, duty_shift: int = 0):
+        self._points.append(point[0])
+        self._points.append(point[1])
+        self._points.append(point[2])
+        self._duty_shifts.append(duty_shift)
 
     @property
     def frequency(self) -> float:
-        return float(Base().gain_stm_frequency(self.ptr))
-
-    @frequency.setter
-    def frequency(self, freq: float):
-        return Base().gain_stm_set_frequency(self.ptr, freq)
-
-    @property
-    def start_idx(self) -> Optional[int]:
-        idx = int(Base().gain_stm_get_start_idx(self.ptr))
-        if idx < 0:
-            return None
-        return idx
-
-    @start_idx.setter
-    def start_idx(self, value: Optional[int]):
-        return Base().gain_stm_set_start_idx(self.ptr, -1 if value is None else value)
-
-    @property
-    def finish_idx(self) -> Optional[int]:
-        idx = int(Base().gain_stm_get_finish_idx(self.ptr))
-        if idx < 0:
-            return None
-        return idx
-
-    @finish_idx.setter
-    def finish_idx(self, value: Optional[int]):
-        return Base().gain_stm_set_finish_idx(self.ptr, -1 if value is None else value)
+        return self.frequency_from_size(len(self._duty_shifts))
 
     @property
     def sampling_frequency(self) -> float:
-        return float(Base().gain_stm_sampling_frequency(self.ptr))
+        return self.sampling_frequency_from_size(len(self._duty_shifts))
 
     @property
     def sampling_frequency_division(self) -> int:
-        return int(Base().gain_stm_sampling_frequency_division(self.ptr))
+        return self.sampling_frequency_division_from_size(len(self._duty_shifts))
 
-    @sampling_frequency_division.setter
-    def sampling_frequency_division(self, value: int):
-        return Base().gain_stm_set_sampling_frequency_division(self.ptr, value)
+    def with_start_idx(self, value: Optional[int]) -> "FocusSTM":
+        self._start_idx = -1 if value is None else value
+        return self
+
+    def with_finish_idx(self, value: Optional[int]) -> "FocusSTM":
+        self._finish_idx = -1 if value is None else value
+        return self
+
+
+class GainSTM(STM):
+    _gains: List[IGain]
+    _mode: Optional[GainSTMMode]
+
+    def __init__(
+        self,
+        freq: Optional[float],
+        sampling_freq: Optional[float] = None,
+        sampling_freq_div: Optional[int] = None,
+    ):
+        super().__init__(freq, sampling_freq, sampling_freq_div)
+        self._gains = []
+        self._mode = None
+
+    def ptr(self, geometry: Geometry) -> DatagramBodyPtr:
+        ptr = (
+            Base().gain_stm(self.props())
+            if self._mode is None
+            else Base().gain_stm_with_mode(self.props(), self._mode)
+        )
+        for gain in self._gains:
+            ptr = Base().gain_stm_add_gain(ptr, gain.gain_ptr(geometry))
+        return ptr
+
+    @staticmethod
+    def from_sampling_frequency(sampling_freq: float) -> "GainSTM":
+        return GainSTM(None, sampling_freq, None)
+
+    @staticmethod
+    def from_sampling_frequency_division(sampling_freq_div: int) -> "GainSTM":
+        return GainSTM(None, None, sampling_freq_div)
+
+    def add_gain(self, gain: IGain):
+        self._gains.append(gain)
+
+    @property
+    def frequency(self) -> float:
+        return self.frequency_from_size(len(self._gains))
+
+    @property
+    def sampling_frequency(self) -> float:
+        return self.sampling_frequency_from_size(len(self._gains))
+
+    @property
+    def sampling_frequency_division(self) -> int:
+        return self.sampling_frequency_division_from_size(len(self._gains))
+
+    def with_mode(self, mode: GainSTMMode) -> "GainSTM":
+        self._mode = mode
+        return self
+
+    def with_start_idx(self, value: Optional[int]) -> "GainSTM":
+        self._start_idx = -1 if value is None else value
+        return self
+
+    def with_finish_idx(self, value: Optional[int]) -> "GainSTM":
+        self._finish_idx = -1 if value is None else value
+        return self

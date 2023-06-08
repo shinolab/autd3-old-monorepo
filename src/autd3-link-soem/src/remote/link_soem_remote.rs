@@ -4,7 +4,7 @@
  * Created Date: 21/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 02/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,8 +13,7 @@
 
 use std::{
     io::{Read, Write},
-    marker::PhantomData,
-    net::{Shutdown, TcpStream},
+    net::{Shutdown, SocketAddr, TcpStream, ToSocketAddrs},
     time::Duration,
 };
 
@@ -26,90 +25,37 @@ use autd3_core::{
 };
 
 pub struct RemoteSOEM {
-    addr: String,
-    port: u16,
+    server_addrs: Vec<SocketAddr>,
     socket: Option<TcpStream>,
     tx_buf: Vec<u8>,
     rx_buf: Vec<u8>,
     timeout: Duration,
 }
 
-pub struct Empty;
-pub struct Filled;
-
-pub struct RemoteSOEMBuilder<Addr, Port> {
-    addr: String,
-    addr_: PhantomData<Addr>,
-    port: u16,
-    port_: PhantomData<Port>,
-    timeout: Duration,
-}
-
 impl RemoteSOEM {
-    fn new(addr: String, port: u16, timeout: Duration) -> Self {
-        Self {
-            addr,
-            port,
+    pub fn new<A: ToSocketAddrs>(addr: A) -> std::io::Result<Self> {
+        Ok(Self {
+            server_addrs: addr.to_socket_addrs()?.collect(),
             socket: None,
             tx_buf: vec![],
             rx_buf: vec![],
-            timeout,
-        }
-    }
-
-    pub fn builder() -> RemoteSOEMBuilder<Empty, Empty> {
-        RemoteSOEMBuilder::new()
-    }
-}
-
-impl RemoteSOEMBuilder<Empty, Empty> {
-    fn new() -> Self {
-        Self {
-            addr: String::new(),
-            addr_: PhantomData,
-            port: 0,
-            port_: PhantomData,
             timeout: Duration::from_millis(20),
-        }
+        })
     }
-}
 
-impl RemoteSOEMBuilder<Filled, Filled> {
-    pub fn build(self) -> RemoteSOEM {
-        RemoteSOEM::new(self.addr, self.port, self.timeout)
-    }
-}
-
-impl<Addr> RemoteSOEMBuilder<Addr, Empty> {
-    pub fn port(mut self, port: u16) -> RemoteSOEMBuilder<Addr, Filled> {
-        self.port = port;
-        unsafe { std::mem::transmute(self) }
-    }
-}
-
-impl<Port> RemoteSOEMBuilder<Empty, Port> {
-    pub fn addr<S: Into<String>>(mut self, addr: S) -> RemoteSOEMBuilder<Filled, Port> {
-        self.addr = addr.into();
-        unsafe { std::mem::transmute(self) }
-    }
-}
-
-impl<Addr, Port> RemoteSOEMBuilder<Addr, Port> {
-    pub fn timeout(mut self, timeout: Duration) -> RemoteSOEMBuilder<Addr, Port> {
-        self.timeout = timeout;
-        self
+    pub fn with_timeout(self, timeout: Duration) -> Self {
+        Self { timeout, ..self }
     }
 }
 
 impl<T: Transducer> Link<T> for RemoteSOEM {
     fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
-        let addr = format!("{}:{}", self.addr, self.port);
-        self.socket = Some(match TcpStream::connect(&addr) {
+        self.socket = Some(match TcpStream::connect(&self.server_addrs[..]) {
             Ok(s) => s,
             Err(e) => {
                 return Err(AUTDInternalError::LinkError(format!(
-                    "Failed to connect to {}: {}",
-                    addr, e
+                    "Failed to connect to {:?}: {}",
+                    self.server_addrs, e
                 )))
             }
         });

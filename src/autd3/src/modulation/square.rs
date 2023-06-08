@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 04/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -38,29 +38,49 @@ impl Square {
     /// * `freq` - Frequency of the sine wave
     ///
     pub fn new(freq: usize) -> Self {
-        Self::with_params(freq, 0.0, 1.0, 0.5)
+        Self {
+            freq,
+            low: 0.0,
+            high: 1.0,
+            duty: 0.5,
+            freq_div: 5120,
+        }
     }
 
-    /// constructor.
+    /// set low
     ///
     /// # Arguments
     ///
-    /// * `freq` - Frequency of the sine wave
+    /// * `low` - low value
     ///
-    pub fn with_params(freq: usize, low: float, high: float, duty: float) -> Self {
-        Self {
-            freq,
-            low,
-            high,
-            duty,
-            freq_div: 5120,
-        }
+    pub fn with_low(self, low: float) -> Self {
+        Self { low, ..self }
+    }
+
+    /// set high
+    ///
+    /// # Arguments
+    ///
+    /// * `high` - high value
+    ///     
+    pub fn with_high(self, high: float) -> Self {
+        Self { high, ..self }
+    }
+
+    /// set duty
+    ///
+    /// # Arguments
+    ///     
+    /// * `duty` - duty
+    ///
+    pub fn with_duty(self, duty: float) -> Self {
+        Self { duty, ..self }
     }
 }
 
 impl Modulation for Square {
     fn calc(&mut self) -> Result<Vec<float>, AUTDInternalError> {
-        let sf = self.sampling_freq() as usize;
+        let sf = self.sampling_frequency() as usize;
         let freq = self.freq.clamp(1, sf / 2);
         let k = gcd(sf, freq);
         let n = sf / k;

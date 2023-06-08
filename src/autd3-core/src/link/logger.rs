@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/05/2023
+ * Last Modified: 31/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -99,23 +99,21 @@ where
     vec![Arc::new(CustomSink::new(out, flush))]
 }
 
-pub fn get_logger(level: LevelFilter) -> Logger {
+pub fn get_logger() -> Logger {
     Logger::builder()
         .sinks(get_default_sink())
-        .level_filter(level)
         .name("AUTD3")
         .build()
         .unwrap()
 }
 
-pub fn get_logger_with_custom_func<O, F>(level: LevelFilter, out: O, flush: F) -> Logger
+pub fn get_logger_with_custom_func<O, F>(out: O, flush: F) -> Logger
 where
     O: Fn(&str) -> spdlog::Result<()> + Send + Sync + 'static,
     F: Fn() -> spdlog::Result<()> + Send + Sync + 'static,
 {
     Logger::builder()
         .sinks(get_custom_sink(out, flush))
-        .level_filter(level)
         .name("AUTD3")
         .build()
         .unwrap()

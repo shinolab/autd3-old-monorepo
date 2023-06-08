@@ -12,34 +12,32 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 
-from ctypes import c_void_p
 from datetime import timedelta
+import ctypes
 
 from .link import Link
 
 from pyautd3.native_methods.autd3capi_link_simulator import (
     NativeMethods as LinkSimulator,
 )
+from pyautd3.autd_error import AUTDError
 
 
-class Simulator:
-    _builder: c_void_p
-
+class Simulator(Link):
     def __init__(self, port: int):
-        self._builder = LinkSimulator().link_simulator(port)
+        super().__init__(LinkSimulator().link_simulator(port))
 
-    def addr(self, addr: str) -> "Simulator":
-        self._builder = LinkSimulator().link_simulator_addr(
-            self._builder, addr.encode("utf-8")
+    def with_addr(self, addr: str) -> "Simulator":
+        err = ctypes.create_string_buffer(256)
+        self._ptr = LinkSimulator().link_simulator_addr(
+            self._ptr, addr.encode("utf-8"), err
         )
+        if self._ptr._0 is None:
+            raise AUTDError(err)
         return self
 
-    def timeout(self, timeout: timedelta) -> "Simulator":
-        self._builder = LinkSimulator().link_simulator_timeout(
-            self._builder, int(timeout.total_seconds() * 1000 * 1000 * 1000)
+    def with_timeout(self, timeout: timedelta) -> "Simulator":
+        self._ptr = LinkSimulator().link_simulator_timeout(
+            self._ptr, int(timeout.total_seconds() * 1000 * 1000 * 1000)
         )
         return self
-
-    def build(self) -> Link:
-        link = LinkSimulator().link_simulator_build(self._builder)
-        return Link(link)

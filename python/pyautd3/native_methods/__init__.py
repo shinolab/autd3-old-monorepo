@@ -23,6 +23,7 @@ from .autd3capi_link_twincat import NativeMethods as LinkTwincAT
 from .autd3capi_link_soem import NativeMethods as LinkSOEM
 from .autd3capi_simulator import NativeMethods as ExtraSimulator
 from .autd3capi_geometry_viewer import NativeMethods as ExtraGeometryViewer
+from .autd3capi_backend_cuda import NativeMethods as BackendCUDA
 
 _PLATFORM = platform.system()
 _TARGET_OS = ""
@@ -67,3 +68,4 @@ LinkSOEM().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
 LinkTwincAT().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
 ExtraSimulator().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
 ExtraGeometryViewer().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)
+BackendCUDA().init_dll(_LIB_PATH, _PREFIX, _BIN_EXT)

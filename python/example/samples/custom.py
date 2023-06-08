@@ -11,33 +11,31 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 """
 
-from pyautd3 import Controller, SilencerConfig
-from pyautd3.gain import Custom
+from pyautd3 import Controller, SilencerConfig, Geometry
+from pyautd3.gain import Gain, Drive
 from pyautd3.modulation import Sine
 
 import numpy as np
 
 
-def focus(autd: Controller, point):
-    point = np.array(point)
+class Focus(Gain):
+    def __init__(self, point):
+        self.point = np.array(point)
 
-    amp = np.zeros(autd.geometry.num_transducers)
-    phase = np.zeros(autd.geometry.num_transducers)
-
-    for tr in autd.geometry:
-        tp = tr.position
-        dist = np.linalg.norm(tp - point)
-        phase[tr.id] = 2 * np.pi * dist / tr.wavelength
-        amp[tr.id] = 1.0
-
-    return Custom(amp, phase)
+    def calc(self, geometry: Geometry):
+        return Gain.transform(
+            geometry,
+            lambda tr: Drive(
+                1.0, np.linalg.norm(tr.position - self.point) * tr.wavenumber
+            ),
+        )
 
 
 def custom(autd: Controller):
     config = SilencerConfig()
     autd.send(config)
 
-    f = focus(autd, autd.geometry.center + np.array([0.0, 0.0, 150.0]))
+    f = Focus(autd.geometry.center + np.array([0.0, 0.0, 150.0]))
     m = Sine(150)
 
     autd.send((m, f))

@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2023
+// Last Modified: 03/06/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,95 +14,90 @@
 #include <chrono>
 #include <string>
 
+#include "autd3/internal/exception.hpp"
 #include "autd3/internal/link.hpp"
 #include "autd3/internal/native_methods.hpp"
 
 namespace autd3::link {
 
-class SOEM {
+class SOEM : public internal::Link {
  public:
-  SOEM() : _builder(internal::native_methods::AUTDLinkSOEM()) {}
+  SOEM() : Link(internal::native_methods::AUTDLinkSOEM()) {}
 
-  SOEM& ifname(const std::string& ifname) {
-    _builder = internal::native_methods::AUTDLinkSOEMIfname(_builder, ifname.c_str());
+  SOEM with_ifname(const std::string& ifname) {
+    _ptr = AUTDLinkSOEMIfname(_ptr, ifname.c_str());
     return *this;
   }
 
-  SOEM& buf_size(const size_t value) {
-    _builder = internal::native_methods::AUTDLinkSOEMBufSize(_builder, static_cast<uint32_t>(value));
+  SOEM with_buf_size(const size_t value) {
+    _ptr = AUTDLinkSOEMBufSize(_ptr, static_cast<uint32_t>(value));
     return *this;
   }
 
-  SOEM& send_cycle(const uint16_t value) {
-    _builder = internal::native_methods::AUTDLinkSOEMSendCycle(_builder, value);
+  SOEM with_send_cycle(const uint16_t value) {
+    _ptr = AUTDLinkSOEMSendCycle(_ptr, value);
     return *this;
   }
 
-  SOEM& sync0_cycle(const uint16_t value) {
-    _builder = internal::native_methods::AUTDLinkSOEMSync0Cycle(_builder, value);
+  SOEM with_sync0_cycle(const uint16_t value) {
+    _ptr = AUTDLinkSOEMSync0Cycle(_ptr, value);
     return *this;
   }
 
-  SOEM& on_lost(const internal::LogOutCallback value) {
-    _builder = internal::native_methods::AUTDLinkSOEMOnLost(_builder, reinterpret_cast<void*>(value));
+  SOEM with_on_lost(const internal::LogOutCallback value) {
+    _ptr = AUTDLinkSOEMOnLost(_ptr, reinterpret_cast<void*>(value));
     return *this;
   }
 
-  SOEM& timer_strategy(const internal::native_methods::TimerStrategy value) {
-    _builder = AUTDLinkSOEMTimerStrategy(_builder, value);
+  SOEM with_timer_strategy(const internal::native_methods::TimerStrategy value) {
+    _ptr = AUTDLinkSOEMTimerStrategy(_ptr, value);
     return *this;
   }
 
-  SOEM& sync_mode(const internal::native_methods::SyncMode value) {
-    _builder = AUTDLinkSOEMSyncMode(_builder, value);
+  SOEM with_sync_mode(const internal::native_methods::SyncMode value) {
+    _ptr = AUTDLinkSOEMSyncMode(_ptr, value);
     return *this;
   }
 
   template <typename Rep, typename Period>
-  SOEM& state_check_interval(const std::chrono::duration<Rep, Period> value) {
+  SOEM with_state_check_interval(const std::chrono::duration<Rep, Period> value) {
     const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(value).count();
-    _builder = internal::native_methods::AUTDLinkSOEMStateCheckInterval(_builder, static_cast<uint64_t>(ms));
+    _ptr = AUTDLinkSOEMStateCheckInterval(_ptr, static_cast<uint64_t>(ms));
+    return std::move(*this);
+  }
+
+  SOEM with_log_level(const internal::native_methods::Level value) {
+    _ptr = AUTDLinkSOEMLogLevel(_ptr, value);
     return *this;
   }
 
-  SOEM& log_level(const internal::native_methods::Level value) {
-    _builder = AUTDLinkSOEMLogLevel(_builder, value);
-    return *this;
-  }
-
-  SOEM& log_func(const internal::native_methods::Level level, const internal::LogOutCallback out, const internal::LogFlushCallback flush) {
-    _builder = AUTDLinkSOEMLogFunc(_builder, level, reinterpret_cast<void*>(out), reinterpret_cast<void*>(flush));
+  SOEM with_log_func(const internal::LogOutCallback out, const internal::LogFlushCallback flush) {
+    _ptr = AUTDLinkSOEMLogFunc(_ptr, reinterpret_cast<void*>(out), reinterpret_cast<void*>(flush));
     return *this;
   }
 
   template <typename Rep, typename Period>
-  SOEM& timeout(const std::chrono::duration<Rep, Period> timeout) {
+  SOEM with_timeout(const std::chrono::duration<Rep, Period> timeout) {
     const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
-    _builder = internal::native_methods::AUTDLinkSOEMTimeout(_builder, static_cast<uint64_t>(ns));
-    return *this;
+    _ptr = AUTDLinkSOEMTimeout(_ptr, static_cast<uint64_t>(ns));
+    return std::move(*this);
   }
-
-  [[nodiscard]] internal::Link build() const { return internal::Link{internal::native_methods::AUTDLinkSOEMBuild(_builder)}; }
-
- private:
-  void* _builder;
 };
 
-class RemoteSOEM {
+class RemoteSOEM : public internal::Link {
  public:
-  RemoteSOEM(const std::string& ip, const uint16_t port) : _builder(internal::native_methods::AUTDLinkRemoteSOEM(ip.c_str(), port)) {}
-
-  template <typename Rep, typename Period>
-  RemoteSOEM& timeout(const std::chrono::duration<Rep, Period> timeout) {
-    const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
-    _builder = internal::native_methods::AUTDLinkRemoteSOEMTimeout(_builder, static_cast<uint64_t>(ns));
-    return *this;
+  explicit RemoteSOEM(const std::string& addr) : Link(internal::native_methods::LinkPtr{nullptr}) {
+    char err[256];
+    _ptr = internal::native_methods::AUTDLinkRemoteSOEM(addr.c_str(), err);
+    if (_ptr._0 == nullptr) throw internal::AUTDException(err);
   }
 
-  [[nodiscard]] internal::Link build() const { return internal::Link{internal::native_methods::AUTDLinkSOEMBuild(_builder)}; }
-
- private:
-  void* _builder;
+  template <typename Rep, typename Period>
+  RemoteSOEM with_timeout(const std::chrono::duration<Rep, Period> timeout) {
+    const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count();
+    _ptr = AUTDLinkRemoteSOEMTimeout(_ptr, static_cast<uint64_t>(ns));
+    return std::move(*this);
+  }
 };
 
 }  // namespace autd3::link

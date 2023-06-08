@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2023
+// Last Modified: 04/06/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -18,17 +18,20 @@ namespace autd3::internal {
 
 class Modulation : public Header {
  public:
-  explicit Modulation(void* ptr) : Header(ptr) {}
-  ~Modulation() override {
-    if (_ptr != nullptr) {
-      native_methods::AUTDDeleteModulation(_ptr);
-    }
-  }
+  explicit Modulation() : Header() {}
+  Modulation(const Modulation& obj) = default;
+  Modulation& operator=(const Modulation& obj) = default;
+  Modulation(Modulation&& obj) = default;
+  Modulation& operator=(Modulation&& obj) = default;
+  ~Modulation() override = default;
 
-  uint32_t sampling_frequency_division() const { return native_methods::AUTDModulationSamplingFrequencyDivision(_ptr); }
-  void set_sampling_frequency_division(const uint32_t div) const { native_methods::AUTDModulationSetSamplingFrequencyDivision(_ptr, div); }
+  [[nodiscard]] uint32_t sampling_frequency_division() const { return AUTDModulationSamplingFrequencyDivision(modulation_ptr()); }
 
-  double sampling_frequency() const { return native_methods::AUTDModulationSamplingFrequency(_ptr); }
+  [[nodiscard]] double sampling_frequency() const { return AUTDModulationSamplingFrequency(modulation_ptr()); }
+
+  [[nodiscard]] native_methods::DatagramHeaderPtr ptr() const override { return AUTDModulationIntoDatagram(modulation_ptr()); }
+
+  [[nodiscard]] virtual native_methods::ModulationPtr modulation_ptr() const = 0;
 };
 
 }  // namespace autd3::internal

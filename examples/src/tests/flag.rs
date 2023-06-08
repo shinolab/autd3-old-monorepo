@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 03/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -32,12 +32,11 @@ pub fn flag<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> Result<bo
     autd.send(UpdateFlag::default())?;
 
     let fin = Arc::new(AtomicBool::new(false));
-    let fin_ = fin.clone();
     std::thread::scope(|s| {
         s.spawn(|| {
             let prompts = ['-', '/', '|', '\\'];
             let mut idx = 0;
-            while !fin_.load(Ordering::Relaxed) {
+            while !fin.load(Ordering::Relaxed) {
                 let states = autd.fpga_info().unwrap();
                 println!("{} FPGA Status...", prompts[idx / 1000 % prompts.len()]);
                 idx += 1;

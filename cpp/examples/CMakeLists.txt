@@ -12,6 +12,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(AUTD_LOCAL_TEST "For local test build" OFF)
 
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0") 
+  cmake_policy(SET CMP0135 NEW)
+endif()
+
 include(FetchContent)
 if(AUTD_LOCAL_TEST)
   FetchContent_Declare(
@@ -21,50 +25,48 @@ if(AUTD_LOCAL_TEST)
 elseif(WIN32)
   FetchContent_Declare(
     autd3
-    URL https://github.com/shinolab/autd3/releases/download/v10.0.0/autd3-v10.0.0-win-x64.zip
+    URL https://github.com/shinolab/autd3/releases/download/v11.0.0/autd3-v11.0.0-win-x64.zip
   )
 elseif(APPLE)
   FetchContent_Declare(
     autd3
-    URL https://github.com/shinolab/autd3/releases/download/v10.0.0/autd3-v10.0.0-macos-universal.tar.gz
+    URL https://github.com/shinolab/autd3/releases/download/v11.0.0/autd3-v11.0.0-macos-universal.tar.gz
   )
 else()
   FetchContent_Declare(
     autd3
-    URL https://github.com/shinolab/autd3/releases/download/v10.0.0/autd3-v10.0.0-linux-x64.tar.gz
+    URL https://github.com/shinolab/autd3/releases/download/v11.0.0/autd3-v11.0.0-linux-x64.tar.gz
   )
 endif()
 FetchContent_MakeAvailable(autd3)
 
+add_library(autd3-example INTERFACE)
+target_link_libraries(autd3-example INTERFACE autd3)
+target_compile_definitions(autd3-example INTERFACE AUTD3_RESOURCE_PATH="${PROJECT_SOURCE_DIR}/resources")
+
 add_executable(soem soem.cpp)
-target_link_libraries(soem PRIVATE autd3)
-target_compile_definitions(soem PRIVATE AUTD3_RESOURCE_PATH="${PROJECT_SOURCE_DIR}/resources")
+target_link_libraries(soem PRIVATE autd3-example)
 
 add_executable(twincat twincat.cpp)
-target_link_libraries(twincat PRIVATE autd3)
-target_compile_definitions(twincat PRIVATE AUTD3_RESOURCE_PATH="${PROJECT_SOURCE_DIR}/resources")
+target_link_libraries(twincat PRIVATE autd3-example)
 
 add_executable(remote_twincat remote_twincat.cpp)
-target_link_libraries(remote_twincat PRIVATE autd3)
-target_compile_definitions(remote_twincat PRIVATE AUTD3_RESOURCE_PATH="${PROJECT_SOURCE_DIR}/resources")
+target_link_libraries(remote_twincat PRIVATE autd3-example)
 
 add_executable(remote_soem remote_soem.cpp)
-target_link_libraries(remote_soem PRIVATE autd3)
-target_compile_definitions(remote_soem PRIVATE AUTD3_RESOURCE_PATH="${PROJECT_SOURCE_DIR}/resources")
+target_link_libraries(remote_soem PRIVATE autd3-example)
 
 add_executable(geometry_viewer geometry_viewer.cpp)
-target_link_libraries(geometry_viewer PRIVATE autd3)
+target_link_libraries(geometry_viewer PRIVATE autd3-example)
 
 add_executable(simulator_server simulator_server.cpp)
-target_link_libraries(simulator_server PRIVATE autd3)
+target_link_libraries(simulator_server PRIVATE autd3-example)
 
 add_executable(simulator_client simulator_client.cpp)
-target_link_libraries(simulator_client PRIVATE autd3)
-target_compile_definitions(simulator_client PRIVATE AUTD3_RESOURCE_PATH="${PROJECT_SOURCE_DIR}/resources")
+target_link_libraries(simulator_client PRIVATE autd3-example)
 
 add_executable(debug debug.cpp)
-target_link_libraries(debug PRIVATE autd3)
-target_compile_definitions(debug PRIVATE AUTD3_RESOURCE_PATH="${PROJECT_SOURCE_DIR}/resources")
+target_link_libraries(debug PRIVATE autd3-example)
 
 add_executable(freq_config freq_config.cpp)
-target_link_libraries(freq_config PRIVATE autd3)
+target_link_libraries(freq_config PRIVATE autd3-example)

@@ -12,15 +12,15 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 
-from .primitive import Static, Custom, Sine, SineSquared, SineLegacy, Square
+from .primitive import Static, Modulation, Sine, SinePressure, SineLegacy, Square
 from .audio_file import Wav
 
 
 __all__ = [
     "Static",
-    "Custom",
+    "Modulation",
     "Sine",
-    "SineSquared",
+    "SinePressure",
     "SineLegacy",
     "Square",
     "Wav",

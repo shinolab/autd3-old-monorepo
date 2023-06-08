@@ -6,15 +6,22 @@
 
 namespace autd3::internal::native_methods {
 
+struct GeometryViewerPtr {
+  void* _0;
+};
+
 extern "C" {
 
-[[nodiscard]] void* AUTDGeometryViewer();
+[[nodiscard]] GeometryViewerPtr AUTDGeometryViewer();
 
-[[nodiscard]] void* AUTDGeometryViewerSize(void* viewer, uint32_t width, uint32_t height);
+[[nodiscard]]
+GeometryViewerPtr AUTDGeometryViewerSize(GeometryViewerPtr viewer,
+                                         uint32_t width,
+                                         uint32_t height);
 
-[[nodiscard]] void* AUTDGeometryViewerVsync(void* viewer, bool vsync);
+[[nodiscard]] GeometryViewerPtr AUTDGeometryViewerVsync(GeometryViewerPtr viewer, bool vsync);
 
-[[nodiscard]] int32_t AUTDGeometryViewerRun(void* viewer, void* geometry);
+[[nodiscard]] int32_t AUTDGeometryViewerRun(GeometryViewerPtr viewer, GeometryPtr geometry);
 
 } // extern "C"
 

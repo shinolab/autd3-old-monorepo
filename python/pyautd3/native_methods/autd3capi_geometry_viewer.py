@@ -2,11 +2,15 @@
 import threading
 import ctypes
 import os
+from .autd3capi_def import GeometryPtr
 
+
+class GeometryViewerPtr(ctypes.Structure):
+    _fields_ = [("_0", ctypes.c_void_p)]
 
 
 class Singleton(type):
-    _instances = {} # type: ignore
+    _instances = {}  # type: ignore
     _lock = threading.Lock()
 
     def __call__(cls, *args, **kwargs):
@@ -26,25 +30,25 @@ class NativeMethods(metaclass=Singleton):
             return
 
         self.dll.AUTDGeometryViewer.argtypes = [] 
-        self.dll.AUTDGeometryViewer.restype = ctypes.c_void_p
+        self.dll.AUTDGeometryViewer.restype = GeometryViewerPtr
 
-        self.dll.AUTDGeometryViewerSize.argtypes = [ctypes.c_void_p, ctypes.c_uint32, ctypes.c_uint32] 
-        self.dll.AUTDGeometryViewerSize.restype = ctypes.c_void_p
+        self.dll.AUTDGeometryViewerSize.argtypes = [GeometryViewerPtr, ctypes.c_uint32, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDGeometryViewerSize.restype = GeometryViewerPtr
 
-        self.dll.AUTDGeometryViewerVsync.argtypes = [ctypes.c_void_p, ctypes.c_bool] 
-        self.dll.AUTDGeometryViewerVsync.restype = ctypes.c_void_p
+        self.dll.AUTDGeometryViewerVsync.argtypes = [GeometryViewerPtr, ctypes.c_bool]  # type: ignore 
+        self.dll.AUTDGeometryViewerVsync.restype = GeometryViewerPtr
 
-        self.dll.AUTDGeometryViewerRun.argtypes = [ctypes.c_void_p, ctypes.c_void_p] 
+        self.dll.AUTDGeometryViewerRun.argtypes = [GeometryViewerPtr, GeometryPtr]  # type: ignore 
         self.dll.AUTDGeometryViewerRun.restype = ctypes.c_int32
 
-    def geometry_viewer(self) -> ctypes.c_void_p:
+    def geometry_viewer(self) -> GeometryViewerPtr:
         return self.dll.AUTDGeometryViewer()
 
-    def geometry_viewer_size(self, viewer: ctypes.c_void_p, width: int, height: int) -> ctypes.c_void_p:
+    def geometry_viewer_size(self, viewer: GeometryViewerPtr, width: int, height: int) -> GeometryViewerPtr:
         return self.dll.AUTDGeometryViewerSize(viewer, width, height)
 
-    def geometry_viewer_vsync(self, viewer: ctypes.c_void_p, vsync: bool) -> ctypes.c_void_p:
+    def geometry_viewer_vsync(self, viewer: GeometryViewerPtr, vsync: bool) -> GeometryViewerPtr:
         return self.dll.AUTDGeometryViewerVsync(viewer, vsync)
 
-    def geometry_viewer_run(self, viewer: ctypes.c_void_p, geometry: ctypes.c_void_p) -> ctypes.c_int32:
+    def geometry_viewer_run(self, viewer: GeometryViewerPtr, geometry: GeometryPtr) -> ctypes.c_int32:
         return self.dll.AUTDGeometryViewerRun(viewer, geometry)
