@@ -4,17 +4,16 @@
  * Created Date: 29/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/05/2023
+ * Last Modified: 07/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{
-    constraint::Constraint, impl_holo, macros::generate_propagation_matrix, Backend, Complex,
-    MatrixXc, Transpose, VectorXc,
-};
+use std::rc::Rc;
+
+use crate::{constraint::Constraint, impl_holo, macros::generate_propagation_matrix, Backend};
 use autd3_core::{
     error::AUTDInternalError,
     float,
@@ -33,15 +32,15 @@ use nalgebra::ComplexField;
 pub struct GSPAT<B: Backend> {
     foci: Vec<Vector3>,
     amps: Vec<float>,
-    pub repeat: usize,
+    repeat: usize,
     constraint: Constraint,
-    backend: B,
+    backend: Rc<B>,
 }
 
 impl_holo!(B, GSPAT<B>);
 
 impl<B: Backend> GSPAT<B> {
-    pub fn new(backend: B) -> Self {
+    pub fn new(backend: Rc<B>) -> Self {
         Self {
             foci: vec![],
             amps: vec![],
@@ -50,71 +49,17 @@ impl<B: Backend> GSPAT<B> {
             constraint: Constraint::Normalize,
         }
     }
+
+    pub fn with_repeat(self, repeat: usize) -> Self {
+        Self { repeat, ..self }
+    }
 }
 
 impl<B: Backend, T: Transducer> Gain<T> for GSPAT<B> {
     fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
-        let m = self.foci.len();
-        let n = geometry.num_transducers();
-
         let g = generate_propagation_matrix(geometry, &self.foci);
-
-        let denomi = g.column_sum();
-        let b = g
-            .map_with_location(|i, _, a| Complex::new(self.amps[i], 0.0) * a.conj() / denomi[i])
-            .transpose();
-
-        let mut r = MatrixXc::zeros(m, m);
-        self.backend.matrix_mul(
-            Transpose::NoTrans,
-            Transpose::NoTrans,
-            Complex::new(1., 0.),
-            &g,
-            &b,
-            Complex::new(0., 0.),
-            &mut r,
-        );
-
-        let mut p = VectorXc::from_iterator(m, self.amps.iter().map(|&a| Complex::new(a, 0.)));
-
-        let mut gamma = VectorXc::zeros(m);
-        self.backend.matrix_mul_vec(
-            Transpose::NoTrans,
-            Complex::new(1., 0.),
-            &r,
-            &p,
-            Complex::new(0., 0.),
-            &mut gamma,
-        );
-        for _ in 0..self.repeat {
-            for i in 0..m {
-                p[i] = gamma[i] / gamma[i].abs() * self.amps[i];
-            }
-            self.backend.matrix_mul_vec(
-                Transpose::NoTrans,
-                Complex::new(1., 0.),
-                &r,
-                &p,
-                Complex::new(0., 0.),
-                &mut gamma,
-            );
-        }
-
-        for i in 0..m {
-            p[i] = gamma[i] / gamma[i].norm_sqr() * self.amps[i] * self.amps[i];
-        }
-
-        let mut q = VectorXc::zeros(n);
-        self.backend.matrix_mul_vec(
-            Transpose::NoTrans,
-            Complex::new(1., 0.),
-            &b,
-            &p,
-            Complex::new(0., 0.),
-            &mut q,
-        );
-
-        let max_coefficient = self.backend.max_coefficient_c(&q).abs();
+        let q = self.backend.gspat(self.repeat, &self.amps, g)?;
+        let max_coefficient = q.camax().abs();
         Ok(geometry
             .transducers()
             .map(|tr| {

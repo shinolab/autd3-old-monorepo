@@ -3,7 +3,7 @@
 // Created Date: 16/05/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2023
+// Last Modified: 03/06/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -29,11 +29,9 @@
 }
 
 int main() try {
-  const auto geometry = autd3::Geometry::Builder().add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero())).build();
-
-  const auto link = autd3::link::SOEM().on_lost(&on_lost).build();
-
-  auto autd = autd3::Controller::open(geometry, link);
+  auto autd = autd3::Controller::builder()
+                  .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+                  .open_with(autd3::link::SOEM().with_on_lost(&on_lost));
 
   return run(autd);
 } catch (std::exception& e) {

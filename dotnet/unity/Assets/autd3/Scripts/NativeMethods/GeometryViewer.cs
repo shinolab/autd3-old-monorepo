@@ -14,14 +14,20 @@ namespace AUTD3Sharp
         {
             private const string DLL = "autd3capi_geometry_viewer";
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDGeometryViewer();
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GeometryViewerPtr AUTDGeometryViewer();
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDGeometryViewerSize(IntPtr viewer, uint width, uint height);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GeometryViewerPtr AUTDGeometryViewerSize(GeometryViewerPtr viewer, uint width, uint height);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr AUTDGeometryViewerVsync(IntPtr viewer, [MarshalAs(UnmanagedType.U1)] bool vsync);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern GeometryViewerPtr AUTDGeometryViewerVsync(GeometryViewerPtr viewer, [MarshalAs(UnmanagedType.U1)] bool vsync);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDGeometryViewerRun(IntPtr viewer, IntPtr geometry);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern int AUTDGeometryViewerRun(GeometryViewerPtr viewer, GeometryPtr geometry);
         }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct GeometryViewerPtr
+    {
+        public IntPtr _0;
     }
 
 }

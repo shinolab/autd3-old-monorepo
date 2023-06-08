@@ -22,17 +22,15 @@ def stm_focus(autd: Controller):
     config = SilencerConfig.none()
     autd.send(config)
 
-    m = Static(1.0)
+    m = Static()
 
-    stm = FocusSTM()
+    stm = FocusSTM(1.0)
     radius = 30.0
     size = 200
     center = autd.geometry.center + np.array([0.0, 0.0, 150.0])
     for i in range(size):
         theta = 2.0 * np.pi * i / size
         p = radius * np.array([np.cos(theta), np.sin(theta), 0])
-        stm.add(center + p)
-
-    stm.frequency = 1.0
+        stm.add_focus(center + p)
 
     autd.send((m, stm))

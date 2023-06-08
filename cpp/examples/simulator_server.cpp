@@ -3,7 +3,7 @@
 // Created Date: 07/10/2022
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2023
+// Last Modified: 04/06/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -17,7 +17,7 @@
 int main() try {
   const auto path = std::filesystem::path("settings.json");
 
-  auto simulator = autd3::extra::Simulator().settings_path(path);
+  const auto simulator = autd3::extra::Simulator().settings_path(path);
   const auto res = simulator.run();
 
   simulator.save_settings(path);

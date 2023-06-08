@@ -1,0 +1,20 @@
+[package]
+name = "autd3capi-backend-cuda"
+version = "11.0.0"
+edition = "2021"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+autd3capi-def = {path="../autd3capi-def", version="11.0.0"}
+autd3-backend-cuda = {path="../../src/autd3-backend-cuda", version="11.0.0"}
+libc = "0.2.144"
+
+[build-dependencies]
+wrapper-generator = {path="../wrapper-generator"}
+
+[features]
+single_float = ["autd3capi-def/single_float", "autd3-backend-cuda/single_float"]
+parallel = ["autd3capi-def/parallel"]

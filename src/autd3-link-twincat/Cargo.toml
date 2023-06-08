@@ -1,6 +1,6 @@
 [package]
 name = "autd3-link-twincat"
-version = "10.0.0"
+version = "11.0.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -11,7 +11,7 @@ readme = "README.md"
 keywords = ["autd"]
 
 [dependencies]
-autd3-core = {path="../autd3-core", version="10.0.0"}
+autd3-core = {path="../autd3-core", version="11.0.0"}
 itertools = "0.10.5"
 libc = "0.2.125"
 libloading = "0.8.0"

@@ -15,12 +15,6 @@ open AUTD3Sharp
 open AUTD3Sharp.Link
 open Samples
 
-let geometry = 
-    Geometry.Builder()
-        .AddDevice(Vector3d.zero, Vector3d.zero)
-        .Build()
-
 let serverAmsNetId = "your TwinCATAUTDServer AMS net id (e.g. 172.16.99.2.1.1)"
-let link = (RemoteTwinCAT serverAmsNetId).Build()
-
-(geometry, link) |> Controller.Open |> SampleRunner.Run
+ 
+Controller.Builder().AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero)).OpenWith(RemoteTwinCAT serverAmsNetId) |> SampleRunner.Run

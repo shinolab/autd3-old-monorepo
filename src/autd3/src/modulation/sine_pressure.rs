@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 04/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -38,31 +38,39 @@ impl SinePressure {
     /// * `freq` - Frequency of the sine wave
     ///
     pub fn new(freq: usize) -> Self {
-        Self::with_params(freq, 1.0, 0.5)
+        Self {
+            freq,
+            amp: 1.0,
+            offset: 0.5,
+            freq_div: 5120,
+        }
     }
 
-    /// constructor.
-    /// Sine wave oscillate from `offset`-`amp`/2 to `offset`+`amp`/2
+    /// Set amplitude
     ///
     /// # Arguments
     ///
-    /// * `freq` - Frequency of the sine wave
     /// * `amp` - peek to peek amplitude of the wave (Maximum value is 1.0)
     /// * `offset` - Offset of the wave
     ///
-    pub fn with_params(freq: usize, amp: float, offset: float) -> Self {
-        Self {
-            freq,
-            amp,
-            offset,
-            freq_div: 5120,
-        }
+    pub fn with_amp(self, amp: float) -> Self {
+        Self { amp, ..self }
+    }
+
+    /// Set offset
+    ///
+    /// # Arguments
+    ///
+    /// * `offset` - Offset of the wave
+    ///
+    pub fn with_offset(self, offset: float) -> Self {
+        Self { offset, ..self }
     }
 }
 
 impl Modulation for SinePressure {
     fn calc(&mut self) -> Result<Vec<float>, AUTDInternalError> {
-        let sf = self.sampling_freq() as usize;
+        let sf = self.sampling_frequency() as usize;
         let freq = self.freq.clamp(1, sf / 2);
         let d = gcd(sf, freq);
         let n = sf / d;

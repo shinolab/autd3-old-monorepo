@@ -12,34 +12,31 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 
-from abc import ABCMeta
+from pyautd3.native_methods.autd3capi_gain_holo import NativeMethods as GainHolo
+from pyautd3.native_methods.autd3capi_gain_holo import ConstraintPtr
 
 
-class AmplitudeConstraint(metaclass=ABCMeta):
-    pass
+class AmplitudeConstraint:
+    _ptr: ConstraintPtr
 
+    def __init__(self, ptr: ConstraintPtr):
+        self._ptr = ptr
 
-class DontCare(AmplitudeConstraint):
-    def __init__(self):
-        pass
+    @staticmethod
+    def dont_care() -> "AmplitudeConstraint":
+        return AmplitudeConstraint(GainHolo().gain_holo_dot_care_constraint())
 
+    @staticmethod
+    def normalize() -> "AmplitudeConstraint":
+        return AmplitudeConstraint(GainHolo().gain_holo_normalize_constraint())
 
-class Normalize(AmplitudeConstraint):
-    def __init__(self):
-        pass
+    @staticmethod
+    def uniform(value: float) -> "AmplitudeConstraint":
+        return AmplitudeConstraint(GainHolo().gain_holo_uniform_constraint(value))
 
+    @staticmethod
+    def clamp(min: float, max: float) -> "AmplitudeConstraint":
+        return AmplitudeConstraint(GainHolo().gain_holo_clamp_constraint(min, max))
 
-class Uniform(AmplitudeConstraint):
-    value: float
-
-    def __init__(self, value: float):
-        self.value = value
-
-
-class Clamp(AmplitudeConstraint):
-    min: float
-    max: float
-
-    def __init__(self, min: float, max: float):
-        self.min = min
-        self.max = max
+    def ptr(self) -> ConstraintPtr:
+        return self._ptr

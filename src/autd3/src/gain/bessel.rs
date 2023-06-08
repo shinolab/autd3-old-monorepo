@@ -4,7 +4,7 @@
  * Created Date: 02/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 01/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -40,23 +40,22 @@ impl Bessel {
     /// * `theta` - Angle between the conical wavefront of the beam and the direction
     ///
     pub fn new(pos: Vector3, dir: Vector3, theta: float) -> Self {
-        Self::with_amp(pos, dir, theta, 1.0)
-    }
-
-    /// constructor with duty
-    ///
-    /// # Arguments
-    ///
-    /// * `pos` - position of focal point
-    /// * `amp` - normalized amp (from 0 to 1)
-    ///
-    pub fn with_amp(pos: Vector3, dir: Vector3, theta: float, amp: float) -> Self {
         Self {
-            amp,
             pos,
             dir,
             theta,
+            amp: 1.0,
         }
+    }
+
+    /// set amplitude
+    ///
+    /// # Arguments
+    ///
+    /// * `amp` - normalized amp (from 0 to 1)
+    ///
+    pub fn with_amp(self, amp: float) -> Self {
+        Self { amp, ..self }
     }
 }
 

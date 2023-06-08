@@ -8,7 +8,7 @@ namespace autd3::internal::native_methods {
 
 extern "C" {
 
-[[nodiscard]] void* AUTDModulationWav(const char *path, char *err);
+[[nodiscard]] ModulationPtr AUTDModulationWav(const char *path, char *err);
 
 } // extern "C"
 

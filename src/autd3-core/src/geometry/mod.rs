@@ -4,7 +4,7 @@
  * Created Date: 04/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 24/05/2023
+ * Last Modified: 03/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -18,7 +18,6 @@ mod legacy_transducer;
 mod transducer;
 
 use autd3_driver::{float, METER};
-use std::marker::PhantomData;
 
 pub type Vector3 = nalgebra::Vector3<float>;
 pub type UnitVector3 = nalgebra::UnitVector3<float>;
@@ -47,7 +46,7 @@ pub struct Geometry<T: Transducer> {
 }
 
 impl<T: Transducer> Geometry<T> {
-    fn new(
+    pub fn new(
         transducers: Vec<T>,
         device_map: Vec<usize>,
         sound_speed: float,
@@ -55,7 +54,7 @@ impl<T: Transducer> Geometry<T> {
     ) -> Result<Geometry<T>, AUTDInternalError> {
         for &transducers in &device_map {
             if transducers > 256 {
-                return Err(AUTDInternalError::TransducersNumInDeviceOutOfRange);
+                return Err(AUTDInternalError::TooManyTransducers);
             }
         }
 
@@ -188,100 +187,10 @@ impl<'a, T: Transducer> IntoIterator for &'a mut Geometry<T> {
     }
 }
 
-impl Geometry<LegacyTransducer> {
-    pub fn builder() -> GeometryBuilder<LegacyTransducer> {
-        GeometryBuilder::<LegacyTransducer>::new()
-    }
-}
-
-pub struct GeometryBuilder<T: Transducer> {
-    attenuation: float,
-    sound_speed: float,
-    transducers: Vec<(usize, Vector3, UnitQuaternion)>,
-    device_map: Vec<usize>,
-    phantom: PhantomData<T>,
-}
-
-impl<T: Transducer> Default for GeometryBuilder<T> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl<T: Transducer> GeometryBuilder<T> {
-    pub fn new() -> GeometryBuilder<T> {
-        GeometryBuilder::<T> {
-            attenuation: 0.0,
-            sound_speed: 340.0 * METER,
-            transducers: vec![],
-            device_map: vec![],
-            phantom: PhantomData,
-        }
-    }
-
-    pub fn attenuation(&mut self, attenuation: float) -> &mut Self {
-        self.attenuation = attenuation;
-        self
-    }
-
-    pub fn sound_speed(&mut self, sound_speed: float) -> &mut Self {
-        self.sound_speed = sound_speed;
-        self
-    }
-
-    pub fn add_device<D: Device>(&mut self, dev: D) -> &mut Self {
-        let id = self.transducers.len();
-        let mut t = dev.get_transducers(id);
-        self.device_map.push(t.len());
-        self.transducers.append(&mut t);
-        self
-    }
-
-    pub fn build(&mut self) -> Result<Geometry<T>, AUTDInternalError> {
-        Geometry::<T>::new(
-            self.transducers
-                .iter()
-                .map(|&(id, pos, rot)| T::new(id, pos, rot))
-                .collect(),
-            self.device_map.clone(),
-            self.sound_speed,
-            self.attenuation,
-        )
-    }
-}
-
-impl GeometryBuilder<LegacyTransducer> {
-    pub fn advanced(&mut self) -> &mut GeometryBuilder<AdvancedTransducer> {
-        unsafe { std::mem::transmute(self) }
-    }
-
-    pub fn advanced_phase(&mut self) -> &mut GeometryBuilder<AdvancedPhaseTransducer> {
-        unsafe { std::mem::transmute(self) }
-    }
-}
-
-impl GeometryBuilder<AdvancedTransducer> {
-    pub fn legacy(&mut self) -> &mut GeometryBuilder<LegacyTransducer> {
-        unsafe { std::mem::transmute(self) }
-    }
-
-    pub fn advanced_phase(&mut self) -> &mut GeometryBuilder<AdvancedPhaseTransducer> {
-        unsafe { std::mem::transmute(self) }
-    }
-}
-
-impl GeometryBuilder<AdvancedPhaseTransducer> {
-    pub fn advanced(&mut self) -> &mut GeometryBuilder<AdvancedTransducer> {
-        unsafe { std::mem::transmute(self) }
-    }
-
-    pub fn legacy(&mut self) -> &mut GeometryBuilder<LegacyTransducer> {
-        unsafe { std::mem::transmute(self) }
-    }
-}
-
 #[cfg(test)]
 mod tests {
+    use std::marker::PhantomData;
+
     use assert_approx_eq::assert_approx_eq;
     use autd3_driver::PI;
 
@@ -295,6 +204,52 @@ mod tests {
             assert_approx_eq!($a.y, $b.y, 1e-3);
             assert_approx_eq!($a.z, $b.z, 1e-3);
         };
+    }
+
+    pub struct GeometryBuilder<T: Transducer> {
+        attenuation: float,
+        sound_speed: float,
+        transducers: Vec<(usize, Vector3, UnitQuaternion)>,
+        device_map: Vec<usize>,
+        phantom: PhantomData<T>,
+    }
+
+    impl<T: Transducer> Default for GeometryBuilder<T> {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
+
+    impl<T: Transducer> GeometryBuilder<T> {
+        pub fn new() -> GeometryBuilder<T> {
+            GeometryBuilder::<T> {
+                attenuation: 0.0,
+                sound_speed: 340.0 * METER,
+                transducers: vec![],
+                device_map: vec![],
+                phantom: PhantomData,
+            }
+        }
+
+        pub fn add_device<D: Device>(&mut self, dev: D) -> &mut Self {
+            let id = self.transducers.len();
+            let mut t = dev.get_transducers(id);
+            self.device_map.push(t.len());
+            self.transducers.append(&mut t);
+            self
+        }
+
+        pub fn build(&mut self) -> Result<Geometry<T>, AUTDInternalError> {
+            Geometry::<T>::new(
+                self.transducers
+                    .iter()
+                    .map(|&(id, pos, rot)| T::new(id, pos, rot))
+                    .collect(),
+                self.device_map.clone(),
+                self.sound_speed,
+                self.attenuation,
+            )
+        }
     }
 
     #[test]
@@ -484,26 +439,26 @@ mod tests {
     #[test]
     fn add_device_quaternion() {
         let geometry = GeometryBuilder::<LegacyTransducer>::new()
-            .add_device(AUTD3::new_with_quaternion(
+            .add_device(AUTD3::with_quaternion(
                 Vector3::new(10., 20., 30.),
                 UnitQuaternion::identity(),
             ))
-            .add_device(AUTD3::new_with_quaternion(
+            .add_device(AUTD3::with_quaternion(
                 Vector3::new(0., 0., 0.),
                 UnitQuaternion::identity()
                     * UnitQuaternion::from_axis_angle(&Vector3::x_axis(), PI),
             ))
-            .add_device(AUTD3::new_with_quaternion(
+            .add_device(AUTD3::with_quaternion(
                 Vector3::new(0., 0., 0.),
                 UnitQuaternion::identity()
                     * UnitQuaternion::from_axis_angle(&Vector3::y_axis(), PI),
             ))
-            .add_device(AUTD3::new_with_quaternion(
+            .add_device(AUTD3::with_quaternion(
                 Vector3::new(0., 0., 0.),
                 UnitQuaternion::identity()
                     * UnitQuaternion::from_axis_angle(&Vector3::z_axis(), PI),
             ))
-            .add_device(AUTD3::new_with_quaternion(
+            .add_device(AUTD3::with_quaternion(
                 Vector3::new(40., 60., 50.),
                 UnitQuaternion::identity()
                     * UnitQuaternion::from_axis_angle(&Vector3::z_axis(), PI / 2.),

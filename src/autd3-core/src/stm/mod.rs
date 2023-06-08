@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/05/2023
+ * Last Modified: 08/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -15,30 +15,82 @@ mod focus;
 mod gain;
 
 use autd3_driver::{float, FPGA_SUB_CLK_FREQ};
-pub use focus::FocusSTM;
+pub use focus::{ControlPoint, FocusSTM};
 pub use gain::GainSTM;
 
-pub trait STM {
-    fn size(&self) -> usize;
-    fn set_freq(&mut self, freq: float) -> float {
-        let sample_freq = self.size() as float * freq;
-        self.set_sampling_freq_div((FPGA_SUB_CLK_FREQ as float / sample_freq) as _);
-        STM::freq(self)
+#[derive(Clone, Copy)]
+pub struct STMProps {
+    freq_div: Option<u32>,
+    freq: float,
+    start_idx: Option<u16>,
+    finish_idx: Option<u16>,
+}
+
+impl STMProps {
+    pub fn new(freq: float) -> Self {
+        Self {
+            freq_div: None,
+            freq,
+            start_idx: None,
+            finish_idx: None,
+        }
     }
-    fn freq(&self) -> float {
-        self.sampling_freq() / self.size() as float
+
+    pub fn with_sampling_frequency_division(freq_div: u32) -> Self {
+        Self {
+            freq_div: Some(freq_div),
+            freq: 0.,
+            start_idx: None,
+            finish_idx: None,
+        }
     }
-    fn sampling_freq(&self) -> float {
-        FPGA_SUB_CLK_FREQ as float / self.sampling_freq_div() as float
+
+    pub fn with_sampling_frequency(freq: float) -> Self {
+        Self {
+            freq_div: Some((FPGA_SUB_CLK_FREQ as float / freq) as u32),
+            freq: 0.,
+            start_idx: None,
+            finish_idx: None,
+        }
     }
-    fn set_sampling_freq(&mut self, sample_freq: float) -> float {
-        self.set_sampling_freq_div((FPGA_SUB_CLK_FREQ as float / sample_freq) as _);
-        STM::sampling_freq(self)
+
+    pub fn with_start_idx(self, idx: Option<u16>) -> Self {
+        Self {
+            start_idx: idx,
+            ..self
+        }
     }
-    fn set_sampling_freq_div(&mut self, freq_div: u32);
-    fn sampling_freq_div(&self) -> u32;
-    fn start_idx(&self) -> Option<u16>;
-    fn finish_idx(&self) -> Option<u16>;
-    fn set_start_idx(&mut self, idx: Option<u16>);
-    fn set_finish_idx(&mut self, idx: Option<u16>);
+
+    pub fn with_finish_idx(self, idx: Option<u16>) -> Self {
+        Self {
+            finish_idx: idx,
+            ..self
+        }
+    }
+
+    pub fn start_idx(&self) -> Option<u16> {
+        self.start_idx
+    }
+
+    pub fn finish_idx(&self) -> Option<u16> {
+        self.finish_idx
+    }
+
+    pub fn freq(&self, size: usize) -> float {
+        self.freq_div.map_or(self.freq, |div| {
+            FPGA_SUB_CLK_FREQ as float / div as float / size as float
+        })
+    }
+
+    pub fn sampling_frequency(&self, size: usize) -> float {
+        self.freq_div
+            .map_or((self.freq * size as float) as _, |div| {
+                FPGA_SUB_CLK_FREQ as float / div as float
+            })
+    }
+
+    pub fn sampling_frequency_division(&self, size: usize) -> u32 {
+        self.freq_div
+            .unwrap_or((FPGA_SUB_CLK_FREQ as float / (self.freq * size as float)) as _)
+    }
 }

@@ -22,7 +22,7 @@ namespace AUTD3Sharp
         [ComVisible(false)]
         public class GeometryViewer
         {
-            private IntPtr _handle;
+            private GeometryViewerPtr _handle;
 
             public GeometryViewer()
             {

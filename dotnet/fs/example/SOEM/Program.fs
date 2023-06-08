@@ -15,17 +15,12 @@ open AUTD3Sharp
 open AUTD3Sharp.Link
 open Samples
 
-let geometry = 
-    Geometry.Builder()
-        .AddDevice(Vector3d.zero, Vector3d.zero)
-        .Build()
-
 let onLost (msg:string): unit = 
     printfn $"Unrecoverable error occurred: {msg}"
     System.Environment.Exit(-1)
 
-let link = (new SOEM()).OnLost(new SOEM.OnLostCallbackDelegate(onLost)).Build()
-
-let autd = Controller.Open (geometry, link)
+let autd = Controller.Builder()
+            .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
+            .OpenWith((new SOEM()).WithOnLost(new SOEM.OnLostCallbackDelegate(onLost)))
 
 SampleRunner.Run autd
