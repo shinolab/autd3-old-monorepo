@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/05/2023
+ * Last Modified: 04/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -12,55 +12,9 @@
  */
 
 use autd3::prelude::{FocusSTM, GainSTM};
+use autd3_core::stm::ControlPoint;
 
-use crate::{DynamicDatagram, DynamicTransducer, GainWrap};
-
-pub trait DynamicFocusSTM: DynamicDatagram {
-    fn stm(&self) -> &FocusSTM;
-    fn stm_mut(&mut self) -> &mut FocusSTM;
-}
-
-pub struct FocusSTMWrap {
-    stm: FocusSTM,
-}
-
-impl FocusSTMWrap {
-    #[allow(clippy::new_ret_no_self)]
-    pub fn new() -> Box<Box<dyn DynamicFocusSTM>> {
-        Box::new(Box::new(Self {
-            stm: FocusSTM::new(),
-        }))
-    }
-}
-
-impl DynamicFocusSTM for FocusSTMWrap {
-    fn stm(&self) -> &FocusSTM {
-        &self.stm
-    }
-    fn stm_mut(&mut self) -> &mut FocusSTM {
-        &mut self.stm
-    }
-}
-
-impl DynamicDatagram for FocusSTMWrap {
-    fn operation(
-        &mut self,
-        mode: crate::dynamic_transducer::TransMode,
-        geometry: &autd3::prelude::Geometry<crate::DynamicTransducer>,
-    ) -> Result<
-        (
-            Box<dyn autd3::core::Operation>,
-            Box<dyn autd3::core::Operation>,
-        ),
-        autd3::core::error::AUTDInternalError,
-    > {
-        DynamicDatagram::operation(&mut self.stm, mode, geometry)
-    }
-
-    fn timeout(&self) -> Option<std::time::Duration> {
-        DynamicDatagram::timeout(&self.stm)
-    }
-}
+use crate::{float, DynamicDatagram, DynamicTransducer, GainWrap};
 
 pub trait DynamicGainSTM: DynamicDatagram {
     fn stm(&self) -> &GainSTM<'static, DynamicTransducer>;
@@ -74,9 +28,9 @@ pub struct GainSTMWrap {
 
 impl GainSTMWrap {
     #[allow(clippy::new_ret_no_self)]
-    pub fn new() -> Box<Box<dyn DynamicGainSTM>> {
+    pub fn new(freq: float) -> Box<Box<dyn DynamicGainSTM>> {
         Box::new(Box::new(Self {
-            stm: GainSTM::new(),
+            stm: GainSTM::new(freq),
         }))
     }
 }

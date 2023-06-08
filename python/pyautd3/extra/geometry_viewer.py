@@ -12,15 +12,15 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 """
 
 
-from ctypes import c_void_p
 from pyautd3.autd import Geometry
 from pyautd3.native_methods.autd3capi_geometry_viewer import (
     NativeMethods as ExtraGeometryViewer,
 )
+from pyautd3.native_methods.autd3capi_geometry_viewer import GeometryViewerPtr
 
 
 class GeometryViewer:
-    _handle: c_void_p
+    _handle: GeometryViewerPtr
 
     def __init__(self):
         self._handle = ExtraGeometryViewer().geometry_viewer()

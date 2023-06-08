@@ -13,7 +13,8 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 
 from pyautd3.autd import SilencerConfig
-from pyautd3.autd import Controller, Geometry, FirmwareInfo
+from pyautd3.autd import Controller, FirmwareInfo
+from pyautd3.geometry import AUTD3, Geometry, Transducer
 from pyautd3.autd import Amplitudes
 from pyautd3.native_methods.autd3capi_def import (
     NUM_TRANS_IN_UNIT,
@@ -26,16 +27,18 @@ from pyautd3.native_methods.autd3capi_def import (
 from pyautd3.native_methods.autd3capi_def import TRANS_SPACING_MM as TRANS_SPACING
 from pyautd3.native_methods.autd3capi_def import DEVICE_WIDTH_MM as DEVICE_WIDTH
 from pyautd3.native_methods.autd3capi_def import DEVICE_HEIGHT_MM as DEVICE_HEIGHT
-from pyautd3.autd import Clear, UpdateFlag, Synchronize, ModDelayConfig, Stop
+from pyautd3.autd import Clear, UpdateFlags, Synchronize, ModDelayConfig, Stop
 
 __all__ = [
     "SilencerConfig",
     "Controller",
+    "AUTD3",
     "Geometry",
+    "Transducer",
     "FirmwareInfo",
     "Amplitudes",
     "Clear",
-    "UpdateFlag",
+    "UpdateFlags",
     "Synchronize",
     "ModDelayConfig",
     "Stop",
@@ -50,4 +53,4 @@ __all__ = [
     "Level",
 ]
 
-__version__ = "10.0.0"
+__version__ = "11.0.0"

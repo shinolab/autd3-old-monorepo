@@ -11,24 +11,20 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 """
 
-from pyautd3 import Controller, Geometry, DEVICE_WIDTH
+from pyautd3 import Controller, AUTD3, DEVICE_WIDTH
 from pyautd3.link import Simulator
 
 from samples import runner
 
 
 if __name__ == "__main__":
-    geometry = (
-        Geometry.Builder()
-        .add_device([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])
-        .add_device([DEVICE_WIDTH, 0.0, 0.0], [0.0, 0.0, 0.0])
+    autd = (
+        Controller.builder()
+        .add_device(AUTD3.from_euler_zyz([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]))
+        .add_device(AUTD3.from_euler_zyz([DEVICE_WIDTH, 0.0, 0.0], [0.0, 0.0, 0.0]))
         .advanced_mode()
-        .build()
+        .open_with(Simulator(8080))
     )
-
-    link = Simulator(8080).build()
-
-    autd = Controller.open(geometry, link)
 
     for tr in autd.geometry:
         tr.frequency = 70e3

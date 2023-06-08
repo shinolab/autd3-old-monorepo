@@ -8,21 +8,17 @@ namespace autd3::internal::native_methods {
 
 extern "C" {
 
-[[nodiscard]] void* AUTDLinkTwinCAT();
+[[nodiscard]] LinkPtr AUTDLinkTwinCAT(char *err);
 
-[[nodiscard]] void* AUTDLinkTwinCATTimeout(void* builder, uint64_t timeout_ns);
+[[nodiscard]] LinkPtr AUTDLinkTwinCATTimeout(LinkPtr twincat, uint64_t timeout_ns);
 
-[[nodiscard]] void* AUTDLinkTwinCATBuild(void* builder, char *err);
+[[nodiscard]] LinkPtr AUTDLinkRemoteTwinCAT(const char *server_ams_net_id, char *err);
 
-[[nodiscard]] void* AUTDLinkRemoteTwinCAT(const char *server_ams_net_id);
+[[nodiscard]] LinkPtr AUTDLinkRemoteTwinCATServerIP(LinkPtr twincat, const char *addr);
 
-[[nodiscard]] void* AUTDLinkRemoteTwinCATServerIP(void* builder, const char *addr);
+[[nodiscard]] LinkPtr AUTDLinkRemoteTwinCATClientAmsNetId(LinkPtr twincat, const char *id);
 
-[[nodiscard]] void* AUTDLinkRemoteTwinCATClientAmsNetId(void* builder, const char *id);
-
-[[nodiscard]] void* AUTDLinkRemoteTwinCATTimeout(void* builder, uint64_t timeout_ns);
-
-[[nodiscard]] void* AUTDLinkRemoteTwinCATBuild(void* builder, char *err);
+[[nodiscard]] LinkPtr AUTDLinkRemoteTwinCATTimeout(LinkPtr twincat, uint64_t timeout_ns);
 
 } // extern "C"
 

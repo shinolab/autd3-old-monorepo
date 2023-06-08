@@ -4,7 +4,7 @@
  * Created Date: 25/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 27/05/2023
+ * Last Modified: 04/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -45,6 +45,11 @@ pub struct Enum {
     pub name: String,
     pub ty: Type,
     pub values: Vec<(String, String)>,
+}
+
+#[derive(Debug, PartialEq, Eq, Hash)]
+pub struct PtrTuple {
+    pub name: String,
 }
 
 pub fn parse_func<P>(header: P, use_single: bool) -> Result<Vec<Function>>
@@ -147,6 +152,29 @@ where
                     .collect();
 
                 Some(Enum { name, ty, values })
+            }
+            _ => None,
+        })
+        .collect())
+}
+
+pub fn parse_ptr_tuple<P>(header: P) -> Result<Vec<PtrTuple>>
+where
+    P: AsRef<Path>,
+{
+    let mut file = File::open(header)?;
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)?;
+
+    let syntax_tree = syn::parse_file(&contents)?;
+
+    Ok(syntax_tree
+        .items
+        .into_iter()
+        .filter_map(|item| match item {
+            syn::Item::Struct(item_struct) => {
+                let name = item_struct.ident.to_string();
+                Some(PtrTuple { name })
             }
             _ => None,
         })

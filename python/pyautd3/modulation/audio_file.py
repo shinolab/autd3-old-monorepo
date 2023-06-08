@@ -16,18 +16,22 @@ import ctypes
 from pyautd3.native_methods.autd3capi_modulation_audio_file import (
     NativeMethods as ModulationAudioFile,
 )
+from pyautd3.native_methods.autd3capi_def import ModulationPtr
 from pyautd3.autd_error import AUTDError
 
-from .modulation import Modulation
+from .modulation import IModulation
 
 
-class Wav(Modulation):
+class Wav(IModulation):
+    _path: str
+
     def __init__(self, path: str):
         super().__init__()
-        err = ctypes.create_string_buffer(256)
-        self.ptr = ModulationAudioFile().modulation_wav(path.encode("utf-8"), err)
-        if not self.ptr:
-            raise AUTDError(err)
+        self._path = path
 
-    def __del__(self):
-        super().__del__()
+    def modulation_ptr(self) -> ModulationPtr:
+        err = ctypes.create_string_buffer(256)
+        ptr = ModulationAudioFile().modulation_wav(self._path.encode("utf-8"), err)
+        if ptr._0 is None:
+            raise AUTDError(err)
+        return ptr

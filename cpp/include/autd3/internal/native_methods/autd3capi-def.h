@@ -16,11 +16,11 @@ constexpr const uint32_t FPGA_CLK_FREQ = 163840000;
 
 constexpr const uint32_t FPGA_SUB_CLK_FREQ = 20480000;
 
-constexpr const int32_t ERR = -1;
+constexpr const int32_t AUTD3_ERR = -1;
 
-constexpr const int32_t TRUE = 1;
+constexpr const int32_t AUTD3_TRUE = 1;
 
-constexpr const int32_t FALSE = 0;
+constexpr const int32_t AUTD3_FALSE = 0;
 
 enum class GainSTMMode : uint8_t {
   PhaseDutyFull = 0,
@@ -48,6 +48,46 @@ enum class TransMode : uint8_t {
   Legacy = 0,
   Advanced = 1,
   AdvancedPhase = 2,
+};
+
+struct ControllerPtr {
+  void* _0;
+};
+
+struct GeometryPtr {
+  void* _0;
+};
+
+struct ModulationPtr {
+  void* _0;
+};
+
+struct GainPtr {
+  void* _0;
+};
+
+struct LinkPtr {
+  void* _0;
+};
+
+struct DatagramBodyPtr {
+  void* _0;
+};
+
+struct DatagramHeaderPtr {
+  void* _0;
+};
+
+struct DatagramSpecialPtr {
+  void* _0;
+};
+
+struct STMPropsPtr {
+  void* _0;
+};
+
+struct BackendPtr {
+  void* _0;
 };
 
 constexpr const double TRANS_SPACING_MM = 10.16;

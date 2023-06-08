@@ -17,6 +17,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - uses: okazunori2013/cuda-toolkit@v0.3.6
+      if: matrix.os != 'macos-latest'
     - name: install aarch64 target on macos
       if: matrix.os == 'macos-latest'
       run: |

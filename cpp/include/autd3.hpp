@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 30/05/2023
+// Last Modified: 04/06/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -14,6 +14,7 @@
 #include <string>
 
 #include "autd3/gain/primitive.hpp"
+#include "autd3/internal/amplitudes.hpp"
 #include "autd3/internal/controller.hpp"
 #include "autd3/internal/def.hpp"
 #include "autd3/internal/geometry.hpp"
@@ -27,7 +28,7 @@ namespace autd3 {
 
 constexpr double pi = internal::pi;
 
-static inline std::string version = "10.0.0";
+static inline std::string version = "11.0.0";
 
 using internal::Geometry;
 using internal::Transducer;
@@ -44,7 +45,7 @@ using internal::Clear;
 using internal::ModDelayConfig;
 using internal::Stop;
 using internal::Synchronize;
-using internal::UpdateFlag;
+using internal::UpdateFlags;
 
 using internal::FocusSTM;
 using internal::GainSTM;
@@ -58,5 +59,7 @@ using internal::Quaternion;
 using internal::Vector3;
 
 using internal::Controller;
+
+using internal::Amplitudes;
 
 }  // namespace autd3

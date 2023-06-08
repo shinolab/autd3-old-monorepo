@@ -3,10 +3,8 @@ import threading
 import ctypes
 import os
 
-
-
 class Singleton(type):
-    _instances = {} # type: ignore
+    _instances = {}  # type: ignore
     _lock = threading.Lock()
 
     def __call__(cls, *args, **kwargs):

@@ -13,37 +13,46 @@ Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
 
 
 import numpy as np
-from pyautd3.gain.gain import Gain
-from .backend import Backend
-from .constraint import AmplitudeConstraint, DontCare, Normalize, Uniform, Clamp
+from typing import Optional
+
+from .backend import Backend, DefaultBackend
+from .constraint import AmplitudeConstraint
 
 from pyautd3.native_methods.autd3capi_gain_holo import NativeMethods as GainHolo
+from pyautd3.native_methods.autd3capi_def import GainPtr
+from pyautd3.geometry import Geometry
+
+from .holo import Holo
 
 
-class GS(Gain):
-    def __init__(self, backend: Backend):
-        super().__init__()
-        self.ptr = GainHolo().gain_holo_gs(backend.ptr)
+class GS(Holo):
+    _repeat: Optional[int]
+    _constraint: Optional[AmplitudeConstraint]
 
-    def repeat(self, value: int):
-        GainHolo().gain_holo_gs_repeat(self.ptr, value)
+    def __init__(self, backend: Backend = DefaultBackend()):
+        super().__init__(backend)
+        self._repeat = None
+        self._constraint = None
 
-    def __del__(self):
-        super().__del__()
+    def with_repeat(self, value: int) -> "GS":
+        self._repeat = value
+        return self
 
-    def add(self, focus: np.ndarray, amp: float):
-        GainHolo().gain_holo_evp_add(self.ptr, focus[0], focus[1], focus[2], amp)
+    def with_backend(self, backend: Backend) -> "GS":
+        self._backend = backend
+        return self
 
-    def constraint(self, constraint: AmplitudeConstraint):
-        if isinstance(constraint, DontCare):
-            GainHolo().gain_holo_gs_set_dot_care_constraint(self.ptr)
-        elif isinstance(constraint, Normalize):
-            GainHolo().gain_holo_gs_set_normalize_constraint(self.ptr)
-        elif isinstance(constraint, Uniform):
-            GainHolo().gain_holo_gs_set_uniform_constraint(self.ptr, constraint.value)
-        elif isinstance(constraint, Clamp):
-            GainHolo().gain_holo_gs_set_clamp_constraint(
-                self.ptr, constraint.min, constraint.max
-            )
-        else:
-            raise ValueError("constraint must be DontCare, Normalize, Uniform or Clamp")
+    def with_constraint(self, constraint: AmplitudeConstraint) -> "GS":
+        self._constraint = constraint
+        return self
+
+    def gain_ptr(self, _: Geometry) -> GainPtr:
+        size = len(self._amps)
+        foci_ = np.ctypeslib.as_ctypes(np.array(self._foci).astype(np.double))
+        amps = np.ctypeslib.as_ctypes(np.array(self._amps).astype(np.double))
+        ptr = GainHolo().gain_holo_gs(self._backend.ptr(), foci_, amps, size)
+        if self._repeat is not None:
+            ptr = GainHolo().gain_holo_gs_with_repeat(ptr, self._repeat)
+        if self._constraint is not None:
+            ptr = GainHolo().gain_holo_gs_with_constraint(ptr, self._constraint.ptr())
+        return ptr

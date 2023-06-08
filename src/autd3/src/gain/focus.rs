@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 20/05/2023
+ * Last Modified: 31/05/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -36,18 +36,17 @@ impl Focus {
     /// * `pos` - position of focal point
     ///
     pub fn new(pos: Vector3) -> Self {
-        Self::with_amp(pos, 1.0)
+        Self { pos, amp: 1.0 }
     }
 
-    /// constructor with duty
+    /// set amplitude
     ///
     /// # Arguments
     ///
-    /// * `pos` - position of focal point
     /// * `amp` - normalized amp (from 0 to 1)
     ///
-    pub fn with_amp(pos: Vector3, amp: float) -> Self {
-        Self { amp, pos }
+    pub fn with_amp(self, amp: float) -> Self {
+        Self { amp, ..self }
     }
 }
 

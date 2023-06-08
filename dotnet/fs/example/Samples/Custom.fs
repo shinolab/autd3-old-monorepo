@@ -11,25 +11,25 @@
 
 namespace Samples
 
-open System
 open AUTD3Sharp
+open AUTD3Sharp.Gain
 open AUTD3Sharp.Utils
 open AUTD3Sharp.Modulation
 
 module CustomTest =
-    let Focus (autd:Controller) (point: Vector3d) =
-        let amps = [| for _ in 1..autd.Geometry.NumTransducers -> 1.0 |]
-        let phases = 
-            autd.Geometry
-                |> Seq.map (fun tr -> (2.0 * AUTD3.Pi * (tr.Position - point).L2Norm) / tr.Wavelength)
-                |> Seq.toArray
-
-        new Gain.Custom(amps, phases);
+    type Focus (point: Vector3d) =
+        inherit Gain()
+        let Calc_ (tr:Transducer) = 
+            let dist = (tr.Position - point).L2Norm;
+            let phase = dist * tr.Wavenumber;
+            new Drive(1., phase)
+        override this.Calc (geometry: Geometry) = Gain.Transform(geometry, Calc_);
+        
 
     let Test (autd : Controller) = 
         (SilencerConfig.None()) |> autd.Send |> ignore
 
         let m = new Sine 150;
-        let g = Focus autd (autd.Geometry.Center + Vector3d(0, 0, 150))
+        let g = new Focus (autd.Geometry.Center + Vector3d(0, 0, 150))
 
         (m, g) |> autd.Send |> ignore
