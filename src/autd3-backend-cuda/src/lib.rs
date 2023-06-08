@@ -11,6 +11,8 @@
  *
  */
 
+#![allow(clippy::manual_slice_size_calculation)]
+
 mod cusolver;
 
 use std::{ffi::CStr, fmt::Display, rc::Rc};
@@ -309,7 +311,7 @@ impl CUDABackend {
         let len = a.1;
         let mut tmp: Vec<float> = vec![0.; len];
         cpy_device_to_host!(float, a, tmp.as_mut_ptr(), len);
-        Ok(tmp.into_iter().fold(0., |a, b| float::max(a, b)))
+        Ok(tmp.into_iter().fold(0., float::max))
     }
 
     unsafe fn add_mat(
@@ -370,6 +372,7 @@ impl CUDABackend {
         Ok(())
     }
 
+    #[allow(clippy::too_many_arguments)]
     unsafe fn mul_mat_mat_c(
         &self,
         transa: cuda_sys::cublas::cublasOperation_t,
@@ -586,7 +589,7 @@ impl CUDABackend {
 
         cuda_call!(cuda_sys::cudart::cudaMemcpy(
             max_ev.0 as _,
-            r.0.offset((r.2 - 1) as isize) as _,
+            r.0.add(r.2 * (r.2 - 1)) as _,
             std::mem::size_of::<CuComplex>() * r.2,
             cuda_sys::cudart::cudaMemcpyKind_cudaMemcpyDeviceToDevice,
         ));
@@ -750,15 +753,15 @@ impl CUDABackend {
     ) -> Result<(), CUDABackendError> {
         for i in 0..a.2 {
             cuda_call!(cuda_sys::cudart::cudaMemcpy(
-                c.0.offset((i * (a.1 + b.1)) as isize) as _,
-                a.0.offset((i * a.1) as isize) as _,
-                std::mem::size_of::<CuComplex>() * a.1 as usize,
+                c.0.add(i * (a.1 + b.1)) as _,
+                a.0.add(i * a.1) as _,
+                std::mem::size_of::<CuComplex>() * a.1,
                 cuda_sys::cudart::cudaMemcpyKind_cudaMemcpyDeviceToDevice,
             ));
             cuda_call!(cuda_sys::cudart::cudaMemcpy(
-                c.0.offset((i * (a.1 + b.1) + a.1) as isize) as _,
-                b.0.offset((i * b.1) as isize) as _,
-                std::mem::size_of::<CuComplex>() * b.1 as usize,
+                c.0.add(i * (a.1 + b.1) + a.1) as _,
+                b.0.add(i * b.1) as _,
+                std::mem::size_of::<CuComplex>() * b.1,
                 cuda_sys::cudart::cudaMemcpyKind_cudaMemcpyDeviceToDevice,
             ));
         }
@@ -779,7 +782,7 @@ impl CUDABackend {
             cuda_sys::cudart::cudaMemcpyKind_cudaMemcpyDeviceToDevice
         ));
         cuda_call!(cuda_sys::cudart::cudaMemcpy(
-            c.0.offset((a.1 * a.2) as isize) as _,
+            c.0.add(a.1 * a.2) as _,
             b.0 as _,
             b.1 * b.2 * std::mem::size_of::<CuComplex>(),
             cuda_sys::cudart::cudaMemcpyKind_cudaMemcpyDeviceToDevice
@@ -793,11 +796,11 @@ impl CUDABackend {
         b: (*mut CuComplex, usize),
         c: (*mut CuComplex, usize),
     ) -> Result<(), CUDABackendError> {
-        cpy_device_to_device!(CuComplex, a, c, a.1 as usize);
+        cpy_device_to_device!(CuComplex, a, c, a.1);
         cu_call!(cuda_sys::cudart::cudaMemcpy(
-            c.0.offset(a.1 as isize) as _,
+            c.0.add(a.1) as _,
             b.0 as _,
-            std::mem::size_of::<CuComplex>() * b.1 as usize,
+            std::mem::size_of::<CuComplex>() * b.1,
             cuda_sys::cudart::cudaMemcpyKind_cudaMemcpyDeviceToDevice,
         ));
         Ok(())
@@ -815,8 +818,8 @@ impl CUDABackend {
         let src_p = src.0;
         let dst_p = dst.0;
         cu_call!(cuda_sys::cudart::cudaMemcpy(
-            dst_p.offset((i * row + begin) as isize) as _,
-            src_p.offset(begin as isize) as _,
+            dst_p.add(i * row + begin) as _,
+            src_p.add(begin) as _,
             std::mem::size_of::<CuComplex>() * (end - begin),
             cuda_sys::cudart::cudaMemcpyKind_cudaMemcpyDeviceToDevice,
         ));
@@ -838,18 +841,18 @@ impl CUDABackend {
         cublas_call!(cuda_sys::cublas::cublasCcopy_v2(
             self.handle,
             (end - begin) as _,
-            src_p.offset(begin as isize),
+            src_p.add(begin),
             1,
-            dst_p.offset((i + begin * row) as isize),
+            dst_p.add(i + begin * row),
             row as _,
         ));
         #[cfg(not(feature = "single_float"))]
         cublas_call!(cuda_sys::cublas::cublasZcopy_v2(
             self.handle,
             (end - begin) as _,
-            src_p.offset(begin as isize),
+            src_p.add(begin ),
             1,
-            dst_p.offset((i + begin * row) as isize),
+            dst_p.add(i + begin * row),
             row as _,
         ));
         Ok(())
@@ -920,7 +923,7 @@ impl CUDABackend {
         dst: (*mut CuComplex, usize),
     ) -> Result<(), CUDABackendError> {
         cu_call!(cuda_sys::cudart::cudaMemcpy(
-            dst.0.offset(i as isize) as _,
+            dst.0.add(i) as _,
             &value as *const CuComplex as _,
             std::mem::size_of::<CuComplex>(),
             cuda_sys::cudart::cudaMemcpyKind_cudaMemcpyHostToDevice,
@@ -937,7 +940,7 @@ impl CUDABackend {
         let row = src.1;
         cu_call!(cuda_sys::cudart::cudaMemcpy(
             dst.0 as _,
-            src.0.offset((i * row) as isize) as _,
+            src.0.add(i * row) as _,
             std::mem::size_of::<CuComplex>() * row,
             cuda_sys::cudart::cudaMemcpyKind_cudaMemcpyDeviceToDevice,
         ));
