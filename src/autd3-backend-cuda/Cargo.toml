@@ -1,0 +1,34 @@
+[package]
+name = "autd3-backend-cuda"
+version = "11.0.0"
+authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
+edition = "2021"
+
+license = "MIT"
+description = "CUDA Backend for AUTD3"
+repository = "https://github.com/shinolab/autd3"
+readme = "README.md"
+keywords = ["autd"]
+
+[dependencies]
+assert_approx_eq = "1.1.0"
+autd3-core = {path="../autd3-core", version="11.0.0"}
+autd3-gain-holo = {path="../autd3-gain-holo", version="11.0.0"}
+cuda-sys = "0.2.0"
+nalgebra = {version = "0.32.1", features = ["rand"]}
+rand = "0.8.5"
+rayon = {version="1.7.0", optional=true}
+thiserror = "1.0.31"
+
+[dev-dependencies]
+rand = "0.8.5"
+
+[build-dependencies]
+cc = "1.0.79"
+cuda-config = "0.1.0"
+
+[features]
+default = []
+single_float = ["autd3-core/single_float", "autd3-gain-holo/single_float"]
+use_meter = ["autd3-core/use_meter"]
+parallel = ["rayon", "autd3-core/parallel"]

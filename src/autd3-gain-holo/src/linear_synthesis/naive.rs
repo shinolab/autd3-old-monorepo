@@ -4,17 +4,16 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 26/05/2023
+ * Last Modified: 07/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
  *
  */
 
-use crate::{
-    constraint::Constraint, impl_holo, macros::generate_propagation_matrix, Backend, Complex,
-    Transpose, VectorXc,
-};
+use std::rc::Rc;
+
+use crate::{constraint::Constraint, impl_holo, macros::generate_propagation_matrix, Backend};
 use autd3_core::{
     error::AUTDInternalError,
     float,
@@ -32,13 +31,13 @@ pub struct Naive<B: Backend> {
     foci: Vec<Vector3>,
     amps: Vec<float>,
     constraint: Constraint,
-    backend: B,
+    backend: Rc<B>,
 }
 
 impl_holo!(B, Naive<B>);
 
 impl<B: Backend> Naive<B> {
-    pub fn new(backend: B) -> Self {
+    pub fn new(backend: Rc<B>) -> Self {
         Self {
             foci: vec![],
             amps: vec![],
@@ -50,22 +49,9 @@ impl<B: Backend> Naive<B> {
 
 impl<B: Backend, T: Transducer> Gain<T> for Naive<B> {
     fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
-        let m = self.foci.len();
-        let n = geometry.num_transducers();
-
         let g = generate_propagation_matrix(geometry, &self.foci);
-        let p = VectorXc::from_iterator(m, self.amps.iter().map(|&a| Complex::new(a, 0.0)));
-        let mut q = VectorXc::zeros(n);
-        self.backend.matrix_mul_vec(
-            Transpose::ConjTrans,
-            Complex::new(1.0, 0.0),
-            &g,
-            &p,
-            Complex::new(0.0, 0.0),
-            &mut q,
-        );
-
-        let max_coefficient = self.backend.max_coefficient_c(&q).abs();
+        let q = self.backend.naive(&self.amps, g)?;
+        let max_coefficient = q.camax().abs();
         Ok(geometry
             .transducers()
             .map(|tr| {
