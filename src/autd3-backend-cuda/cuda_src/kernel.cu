@@ -357,7 +357,7 @@ void cu_imag(const autd3_complex_t *src, const uint32_t row, const uint32_t col,
   imag_kernel<<<grid, block>>>(src, row, col, dst);
 }
 
-uint32_t cu_reduce_col_buffer_size(const uint32_t m, const uint32_t n) { return m * BLOCK_SIZE / 2 * sizeof(autd3_float_t); }
+uint32_t cu_reduce_col_buffer_size(const uint32_t m) { return m * BLOCK_SIZE / 2 * sizeof(autd3_float_t); }
 
 void cu_reduce_col(const autd3_float_t *mat, const uint32_t m, const uint32_t n, autd3_float_t *result, autd3_float_t *buffer) {
   dim3 block(BLOCK_SIZE / 2, 1, 1);
