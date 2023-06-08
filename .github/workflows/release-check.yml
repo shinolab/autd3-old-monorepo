@@ -28,11 +28,18 @@ jobs:
         cargo test --workspace --exclude autd3-link-soem
         cargo clean
     - name: Build src on ${{ matrix.os }}
-      if: matrix.os != 'windows-latest'
+      if: matrix.os == 'ubuntu-latest'
       run: |
         cd src
         cargo build --all
         cargo test --all
+        cargo clean
+    - name: Build src on ${{ matrix.os }}
+      if: matrix.os == 'macos-latest'
+      run: |
+        cd src
+        cargo build --all --exclude autd3-backend-cuda
+        cargo test --all --exclude autd3-backend-cuda
         cargo clean
     - name: Build examples on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
@@ -54,11 +61,18 @@ jobs:
         cargo test --workspace --exclude autd3capi-link-soem
         cargo clean
     - name: Build capi on ${{ matrix.os }}
-      if: matrix.os != 'windows-latest'
+      if: matrix.os == 'ubuntu-latest'
       run: |
         cd capi
         cargo build --all
         cargo test --all
+        cargo clean
+    - name: Build capi on ${{ matrix.os }}
+      if: matrix.os == 'macos-latest'
+      run: |
+        cd capi
+        cargo build --all --exclude autd3capi-backend-cuda
+        cargo test --all --exclude autd3capi-backend-cuda
         cargo clean
 
   lint:
