@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/06/2023
+ * Last Modified: 08/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -76,13 +76,13 @@ impl STMProps {
         self.finish_idx
     }
 
-    pub fn freq(&self, size: usize) -> f64 {
+    pub fn freq(&self, size: usize) -> float {
         self.freq_div.map_or(self.freq, |div| {
             FPGA_SUB_CLK_FREQ as float / div as float / size as float
         })
     }
 
-    pub fn sampling_frequency(&self, size: usize) -> f64 {
+    pub fn sampling_frequency(&self, size: usize) -> float {
         self.freq_div
             .map_or((self.freq * size as float) as _, |div| {
                 FPGA_SUB_CLK_FREQ as float / div as float
