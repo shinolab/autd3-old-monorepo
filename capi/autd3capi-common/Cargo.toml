@@ -7,10 +7,11 @@ license = "MIT"
 [dependencies]
 autd3 = {path="../../src/autd3", version="11.0.0"}
 autd3-core = {path="../../src/autd3-core", version="11.0.0"}
+autd3-gain-holo = {path="../../src/autd3-gain-holo", version="11.0.0"}
 autd3-traits = {path="../../src/autd3-traits", version="11.0.0"}
 libc = "0.2.144"
 
 [features]
-single_float = ["autd3/single_float", "autd3-core/single_float"]
-use_meter = ["autd3/use_meter", "autd3-core/use_meter"]
-parallel = ["autd3/parallel", "autd3-core/parallel"]
+single_float = ["autd3/single_float", "autd3-core/single_float", "autd3-gain-holo/single_float"]
+use_meter = ["autd3/use_meter", "autd3-core/use_meter", "autd3-gain-holo/use_meter"]
+parallel = ["autd3/parallel", "autd3-core/parallel", "autd3-gain-holo/parallel"]

@@ -12,22 +12,21 @@ Copyright (c) 2023 Shun Suzuki. All rights reserved.
 """
 
 import numpy as np
-from typing import List
+from typing import List, Optional
 
 from pyautd3.gain.gain import IGain
-
-from .backend import Backend, DefaultBackend
+from .backend import Backend
 
 
 class Holo(IGain):
     _foci: List[float]
     _amps: List[float]
-    _backend: Backend
+    _backend: Optional[Backend]
 
-    def __init__(self):
+    def __init__(self, backend: Backend = None):
         self._foci = []
         self._amps = []
-        self._backend = DefaultBackend()
+        self._backend = backend
 
     def add_focus(self, focus: np.ndarray, amp: float):
         self._foci.append(focus[0])

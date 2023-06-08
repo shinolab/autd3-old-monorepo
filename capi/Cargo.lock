@@ -136,6 +136,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "assert_approx_eq"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c07dab4369547dbe5114677b33fbbf724971019f3818172d59a97a61c774ffd"
+
+[[package]]
 name = "atomic"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -165,6 +171,21 @@ dependencies = [
  "num 0.4.0",
  "spdlog-rs",
  "spin",
+ "thiserror",
+]
+
+[[package]]
+name = "autd3-backend-cuda"
+version = "11.0.0"
+dependencies = [
+ "assert_approx_eq",
+ "autd3-core",
+ "autd3-gain-holo",
+ "cc",
+ "cuda-config",
+ "cuda-sys",
+ "nalgebra",
+ "rand",
  "thiserror",
 ]
 
@@ -335,11 +356,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "autd3capi-backend-cuda"
+version = "11.0.0"
+dependencies = [
+ "autd3-backend-cuda",
+ "autd3capi-def",
+ "libc",
+ "wrapper-generator",
+]
+
+[[package]]
 name = "autd3capi-common"
 version = "11.0.0"
 dependencies = [
  "autd3",
  "autd3-core",
+ "autd3-gain-holo",
  "autd3-traits",
  "libc",
 ]
@@ -356,7 +388,6 @@ dependencies = [
 name = "autd3capi-gain-holo"
 version = "11.0.0"
 dependencies = [
- "autd3-gain-holo",
  "autd3capi",
  "autd3capi-def",
  "wrapper-generator",
@@ -811,6 +842,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "cuda-config"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4ee74643f7430213a1a78320f88649de309b20b80818325575e393f848f79f5d"
+dependencies = [
+ "glob",
+]
+
+[[package]]
+name = "cuda-sys"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b34be17513126fc87acdbb851bc430fdcdbfcd2945eb4e38171d4e1601cae6c3"
+
+[[package]]
 name = "dispatch"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1260,6 +1306,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "libm"
+version = "0.2.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f7012b1bbb0719e1097c47611d3898568c546d597c2e74d66f6087edd5233ff4"
+
+[[package]]
 name = "linux-raw-sys"
 version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1394,6 +1446,8 @@ dependencies = [
  "num-complex 0.4.3",
  "num-rational 0.4.1",
  "num-traits",
+ "rand",
+ "rand_distr",
  "simba",
  "typenum",
 ]
@@ -1616,6 +1670,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "578ede34cf02f8924ab9447f50c28075b4d3e5b269972345e7e0372b38c6cdcd"
 dependencies = [
  "autocfg",
+ "libm",
 ]
 
 [[package]]
@@ -1898,6 +1953,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
  "getrandom",
+]
+
+[[package]]
+name = "rand_distr"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "32cb0b9bc82b0a0876c2dd994a7e7a2683d3e7390ca40e6886785ef0c7e3ee31"
+dependencies = [
+ "num-traits",
+ "rand",
 ]
 
 [[package]]

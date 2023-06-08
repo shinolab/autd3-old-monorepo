@@ -6,10 +6,6 @@
 
 namespace autd3::internal::native_methods {
 
-struct BackendPtr {
-  void* _0;
-};
-
 struct ConstraintPtr {
   void* _0;
 };
@@ -17,6 +13,8 @@ struct ConstraintPtr {
 extern "C" {
 
 [[nodiscard]] BackendPtr AUTDDefaultBackend();
+
+void AUTDDeleteBackend(BackendPtr backend);
 
 [[nodiscard]] ConstraintPtr AUTDGainHoloDotCareConstraint();
 
