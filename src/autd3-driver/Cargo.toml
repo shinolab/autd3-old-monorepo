@@ -1,6 +1,6 @@
 [package]
 name = "autd3-driver"
-version = "11.0.0"
+version = "11.0.1"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
