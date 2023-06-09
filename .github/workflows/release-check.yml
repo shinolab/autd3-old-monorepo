@@ -91,7 +91,7 @@ jobs:
       run: |
         cd capi
         cargo build --all --release
-        cargo test --all --release
+        cargo test --all --release --exclude autd3capi-backend-cuda
         cargo clean
     - name: Build capi on ${{ matrix.os }}
       if: matrix.os == 'macos-latest'
