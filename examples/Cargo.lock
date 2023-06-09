@@ -154,7 +154,7 @@ dependencies = [
 
 [[package]]
 name = "autd3"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "atomic",
  "autd3-core",
@@ -170,7 +170,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-core"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "atomic",
  "autd3-driver",
@@ -189,7 +189,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-driver"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "bitflags 2.3.1",
  "thiserror",
@@ -197,7 +197,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-examples"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "anyhow",
  "autd3",
@@ -215,7 +215,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-firmware-emulator"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "autd3-core",
  "num-integer",
@@ -224,7 +224,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-gain-holo"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "autd3-core",
  "autd3-traits",
@@ -235,7 +235,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-geometry-viewer"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "autd3-core",
  "autd3-model",
@@ -255,7 +255,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-link-simulator"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "autd3-core",
  "bindgen",
@@ -265,7 +265,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-link-soem"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "autd3-core",
  "bindgen",
@@ -280,7 +280,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-link-twincat"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "autd3-core",
  "cc",
@@ -293,11 +293,11 @@ dependencies = [
 
 [[package]]
 name = "autd3-model"
-version = "11.0.1"
+version = "11.0.2"
 
 [[package]]
 name = "autd3-modulation-audio-file"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "autd3",
  "autd3-core",
@@ -309,7 +309,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-simulator"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "anyhow",
  "autd3-core",
@@ -335,7 +335,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-traits"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "quote",
  "syn 2.0.18",

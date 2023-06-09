@@ -28,7 +28,7 @@ namespace autd3 {
 
 constexpr double pi = internal::pi;
 
-static inline std::string version = "11.0.1";
+static inline std::string version = "11.0.2";
 
 using internal::Geometry;
 using internal::Transducer;
