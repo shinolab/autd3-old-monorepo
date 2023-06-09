@@ -11,7 +11,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: okazunori2013/cuda-toolkit@v0.3.6
-      if: matrix.os != 'macos-latest'
+    - name: install shaderc
+      run: |
+        curl -L https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/linux/continuous_clang_release/418/20230531-104531/install.tgz > shaderc.tgz
+        tar -xzf shaderc.tgz
+        echo "SHADERC_LIB_DIR=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
+        echo "LD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
+        rm shaderc.tgz
     - name: publish to carate.io
       run: |
         git submodule update --init --recursive
@@ -95,6 +101,12 @@ jobs:
           result-encoding: string
           script: |
             return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-win';
+      - name: install shaderc
+        run: |
+          Invoke-WebRequest -URI https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/windows/continuous_release_2019/10/20230531-104731/install.zip -OutFile shaderc.zip
+          Expand-Archive -Path shaderc.zip -DestinationPath shaderc
+          echo "SHADERC_LIB_DIR=$Env:GITHUB_WORKSPACE/shaderc/install/lib" >> $Env:GITHUB_ENV
+          rm shaderc.zip
       - name: Build project x64
         run: |
           cd cpp
@@ -122,6 +134,9 @@ jobs:
 
       - name: Build project x64 for Unity
         run: |
+          cd capi
+          cargo clean
+          cd ..
           cd dotnet/unity
           ./build.ps1
       - name: Setup Node.js
@@ -208,6 +223,13 @@ jobs:
           result-encoding: string
           script: |
             return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-linux';
+      - name: install shaderc
+        run: |
+          curl -L https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/linux/continuous_clang_release/418/20230531-104531/install.tgz > shaderc.tgz
+          tar -xzf shaderc.tgz
+          echo "SHADERC_LIB_DIR=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
+          rm shaderc.tgz
       - name: Build project x64
         run: |
           cp LICENSE cpp/
@@ -216,9 +238,6 @@ jobs:
           ./build.sh
           tar -zcvf assets_x64.tar.gz bin include CMakeLists.txt LICENSE README.md
         shell: bash
-        env:
-          CC: gcc-10
-          CXX: g++-10
       - name: Load Release URL File from release job
         uses: actions/download-artifact@v1
         with:
@@ -253,6 +272,14 @@ jobs:
           result-encoding: string
           script: |
             return 'autd3-'+context.payload.ref.replace(/refs\/tags\//, '')+'-macos-universal.tar.gz';
+      - name: install shaderc
+        run: |
+          curl -L https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/macos/continuous_clang_release/426/20230531-104534/install.tgz > shaderc.tgz
+          tar -xzf shaderc.tgz
+          echo "SHADERC_LIB_DIR=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
+          echo "DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
+          cp install/lib/*.dylib /usr/local/lib/
+          rm shaderc.tgz
       - name: install aarch64 target on macos
         run: |
           rustup target add aarch64-apple-darwin
