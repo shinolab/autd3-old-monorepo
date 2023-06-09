@@ -7,6 +7,9 @@ on:
     branches:
       - 'release'
 
+env:
+  CARGO_INCREMENTAL: 0
+
 jobs:
   build:
     name: build ${{ matrix.os }}
