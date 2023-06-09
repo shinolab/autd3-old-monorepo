@@ -4,7 +4,7 @@
  * Created Date: 10/10/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2023
+ * Last Modified: 09/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -53,18 +53,13 @@ public class SimpleAUTDController : MonoBehaviour
 
     private void Awake()
     {
-        var geometry = new Geometry.Builder()
-            .AddDevice(gameObject.transform.position, gameObject.transform.rotation)
-            .Build();
-
-        var link = new AUTD3Sharp.Link.SOEM()
-           .OnLost(_onLost)
-           .LogFunc(Level.Info, _output, _flush)
-           .Build();
-
         try
         {
-            _autd = Controller.Open(geometry, link);
+            _autd = Controller.Builder()
+                .AddDevice(new AUTD3(gameObject.transform.position, gameObject.transform.rotation))
+                .OpenWith(new AUTD3Sharp.Link.SOEM()
+                    .WithOnLost(_onLost)
+                    .WithLogFunc(_output, _flush));
         }
         catch (Exception)
         {
