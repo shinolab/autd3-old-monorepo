@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/06/2023
+ * Last Modified: 09/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -930,12 +930,12 @@ namespace AUTD3Sharp
 
         public sealed class FocusSTM : STM
         {
-            private readonly List<double> _points;
+            private readonly List<float_t> _points;
             private readonly List<byte> _shifts;
 
             private FocusSTM(float_t? freq, float_t? samplFreq, uint? sampleFreqDiv) : base(freq, samplFreq, sampleFreqDiv)
             {
-                _points = new List<double>();
+                _points = new List<float_t>();
                 _shifts = new List<byte>();
             }
 
