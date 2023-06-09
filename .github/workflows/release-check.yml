@@ -7,6 +7,8 @@ on:
     branches:
       - 'release'
 
+env:
+  CARGO_INCREMENTAL: 0
 
 jobs:
   build:
@@ -48,55 +50,55 @@ jobs:
       if: matrix.os == 'windows-latest'
       run: |
         cd src
-        cargo build --all
-        cargo test --workspace --exclude autd3-link-soem
+        cargo build --all --release
+        cargo test --workspace --release --exclude autd3-link-soem
         cargo clean
     - name: Build src on ${{ matrix.os }}
       if: matrix.os == 'ubuntu-latest'
       run: |
         cd src
-        cargo build --all
-        cargo test --all
+        cargo build --all --release
+        cargo test --all --release
         cargo clean
     - name: Build src on ${{ matrix.os }}
       if: matrix.os == 'macos-latest'
       run: |
         cd src
-        cargo build --all --exclude autd3-backend-cuda
-        cargo test --all --exclude autd3-backend-cuda
+        cargo build --all --release --exclude autd3-backend-cuda
+        cargo test --all --release --exclude autd3-backend-cuda
         cargo clean
     - name: Build examples on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |
         cd examples
-        cargo build --bins --features "remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
+        cargo build --bins --release --features "remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
         cargo clean
     - name: Build examples on ${{ matrix.os }}
       if: matrix.os != 'windows-latest'
       run: |
         cd examples
-        cargo build --bins --features "soem remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
+        cargo build --bins --release --features "soem remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
         cargo clean
     - name: Build capi on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |
         cd capi
-        cargo build --all
-        cargo test --workspace --exclude autd3capi-link-soem
+        cargo build --all --release
+        cargo test --workspace --release --exclude autd3capi-link-soem
         cargo clean
     - name: Build capi on ${{ matrix.os }}
       if: matrix.os == 'ubuntu-latest'
       run: |
         cd capi
-        cargo build --all
-        cargo test --all
+        cargo build --all --release
+        cargo test --all --release
         cargo clean
     - name: Build capi on ${{ matrix.os }}
       if: matrix.os == 'macos-latest'
       run: |
         cd capi
-        cargo build --all --exclude autd3capi-backend-cuda
-        cargo test --all --exclude autd3capi-backend-cuda
+        cargo build --all --release --exclude autd3capi-backend-cuda
+        cargo test --all --release --exclude autd3capi-backend-cuda
         cargo clean
 
   lint:
@@ -114,15 +116,15 @@ jobs:
     - name: lint src
       run: |
         cd src
-        cargo clippy --all -- -D warnings
+        cargo clippy --all --release -- -D warnings
         cargo clean
     - name: lint examples
       run: |
         cd examples
-        cargo clippy --all -- -D warnings
+        cargo clippy --all --release -- -D warnings
         cargo clean
     - name: lint capi
       run: |
         cd capi
-        cargo clippy --all -- -D warnings
+        cargo clippy --all --release -- -D warnings
         cargo clean
