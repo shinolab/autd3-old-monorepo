@@ -1,3 +1,7 @@
+# 11.0.2
+
+- Fix [#74](https://github.com/shinolab/autd3/issues/74)
+
 # 11.0.1
 
 - minor fix

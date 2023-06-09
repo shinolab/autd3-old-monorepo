@@ -4,7 +4,7 @@
  * Created Date: 27/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2023
+ * Last Modified: 09/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022 Shun Suzuki. All rights reserved.
@@ -28,16 +28,13 @@ public class MultiAUTD3Controller : MonoBehaviour
 
     void Awake()
     {
-        var builder = new Geometry.Builder();
+        var builder = Controller.Builder();
         foreach (var obj in FindObjectsOfType<AUTD3Device>(false).OrderBy(obj => obj.ID))
-            builder.AddDevice(obj.transform.position, obj.transform.rotation);
-        var geometry = builder.Build();
-
-        var link = new AUTD3Sharp.Link.Simulator(8080).Build();
+            builder.AddDevice(new AUTD3(obj.transform.position, obj.transform.rotation));
 
         try
         {
-            _autd = Controller.Open(geometry, link);
+            _autd = builder.OpenWith(new AUTD3Sharp.Link.Simulator(8080));
         }
         catch (Exception)
         {
@@ -56,7 +53,7 @@ public class MultiAUTD3Controller : MonoBehaviour
         _autd!.Send(new AUTD3Sharp.Modulation.Sine(150)); // 150 Hz
 
         if (Target == null) return;
-        _autd!.Send(new AUTD3Sharp.Gain.Focus(Target.transform.position, 1.0f));
+        _autd!.Send(new AUTD3Sharp.Gain.Focus(Target.transform.position));
         _oldPosition = Target.transform.position;
     }
 
