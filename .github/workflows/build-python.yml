@@ -7,6 +7,10 @@ on:
     branches:
       - 'dev'
 
+env:
+  CARGO_INCREMENTAL: 0
+
+
 jobs:
   build:
     name: build ${{ matrix.os }} with python ${{ matrix.python-version }}

@@ -7,6 +7,8 @@ on:
     branches:
       - 'release'
 
+env:
+  CARGO_INCREMENTAL: 0
 
 jobs:
   build:
@@ -20,59 +22,83 @@ jobs:
     - uses: actions/checkout@v3
     - uses: okazunori2013/cuda-toolkit@v0.3.6
       if: matrix.os != 'macos-latest'
+    - name: install shaderc
+      if: matrix.os == 'windows-latest'
+      run: |
+        Invoke-WebRequest -URI https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/windows/continuous_release_2019/10/20230531-104731/install.zip -OutFile shaderc.zip
+        Expand-Archive -Path shaderc.zip -DestinationPath shaderc
+        echo "SHADERC_LIB_DIR=$Env:GITHUB_WORKSPACE/shaderc/install/lib" >> $Env:GITHUB_ENV
+        rm shaderc.zip
+    - name: install shaderc
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        curl -L https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/linux/continuous_clang_release/418/20230531-104531/install.tgz > shaderc.tgz
+        tar -xzf shaderc.tgz
+        echo "SHADERC_LIB_DIR=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
+        echo "LD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
+        rm shaderc.tgz
+    - name: install shaderc
+      if: matrix.os == 'macos-latest'
+      run: |
+        curl -L https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/macos/continuous_clang_release/426/20230531-104534/install.tgz > shaderc.tgz
+        tar -xzf shaderc.tgz
+        echo "SHADERC_LIB_DIR=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
+        echo "DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
+        cp install/lib/*.dylib /usr/local/lib/
+        rm shaderc.tgz
     - name: Build src on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |
         cd src
-        cargo build --all
-        cargo test --workspace --exclude autd3-link-soem
+        cargo build --all --release
+        cargo test --workspace --release --exclude autd3-link-soem
         cargo clean
     - name: Build src on ${{ matrix.os }}
       if: matrix.os == 'ubuntu-latest'
       run: |
         cd src
-        cargo build --all
-        cargo test --all
+        cargo build --all --release
+        cargo test --all --release
         cargo clean
     - name: Build src on ${{ matrix.os }}
       if: matrix.os == 'macos-latest'
       run: |
         cd src
-        cargo build --all --exclude autd3-backend-cuda
-        cargo test --all --exclude autd3-backend-cuda
+        cargo build --all --release --exclude autd3-backend-cuda
+        cargo test --all --release --exclude autd3-backend-cuda
         cargo clean
     - name: Build examples on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |
         cd examples
-        cargo build --bins --features "remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
+        cargo build --bins --release --features "remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
         cargo clean
     - name: Build examples on ${{ matrix.os }}
       if: matrix.os != 'windows-latest'
       run: |
         cd examples
-        cargo build --bins --features "soem remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
+        cargo build --bins --release --features "soem remote_soem twincat remote_twincat simulator_client simulator_server geometry_viewer" 
         cargo clean
     - name: Build capi on ${{ matrix.os }}
       if: matrix.os == 'windows-latest'
       run: |
         cd capi
-        cargo build --all
-        cargo test --workspace --exclude autd3capi-link-soem
+        cargo build --all --release
+        cargo test --workspace --release --exclude autd3capi-link-soem
         cargo clean
     - name: Build capi on ${{ matrix.os }}
       if: matrix.os == 'ubuntu-latest'
       run: |
         cd capi
-        cargo build --all
-        cargo test --all
+        cargo build --all --release
+        cargo test --all --release --exclude autd3capi-backend-cuda
         cargo clean
     - name: Build capi on ${{ matrix.os }}
       if: matrix.os == 'macos-latest'
       run: |
         cd capi
-        cargo build --all --exclude autd3capi-backend-cuda
-        cargo test --all --exclude autd3capi-backend-cuda
+        cargo build --all --release --exclude autd3capi-backend-cuda
+        cargo test --all --release --exclude autd3capi-backend-cuda
         cargo clean
 
   lint:
@@ -80,18 +106,25 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: okazunori2013/cuda-toolkit@v0.3.6
+    - name: install shaderc
+      run: |
+        curl -L https://storage.googleapis.com/shaderc/artifacts/prod/graphics_shader_compiler/shaderc/linux/continuous_clang_release/418/20230531-104531/install.tgz > shaderc.tgz
+        tar -xzf shaderc.tgz
+        echo "SHADERC_LIB_DIR=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
+        echo "LD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/lib" >> $GITHUB_ENV
+        rm shaderc.tgz
     - name: lint src
       run: |
         cd src
-        cargo clippy --all -- -D warnings
+        cargo clippy --all --release -- -D warnings
         cargo clean
     - name: lint examples
       run: |
         cd examples
-        cargo clippy --all -- -D warnings
+        cargo clippy --all --release -- -D warnings
         cargo clean
     - name: lint capi
       run: |
         cd capi
-        cargo clippy --all -- -D warnings
+        cargo clippy --all --release -- -D warnings
         cargo clean
