@@ -4,7 +4,7 @@
  * Created Date: 28/05/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/06/2023
+ * Last Modified: 09/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Shun Suzuki. All rights reserved.
@@ -255,6 +255,15 @@ impl CUDABackend {
         unsafe { cusolver_call!(cusolver::cusolverDnCreate(&mut handle_s as _)) }
 
         Ok(Rc::new(Self { handle, handle_s }))
+    }
+}
+
+impl Drop for CUDABackend {
+    fn drop(&mut self) {
+        unsafe {
+            cuda_sys::cublas::cublasDestroy_v2(self.handle);
+            cusolver::cusolverDnDestroy(self.handle_s);
+        }
     }
 }
 
