@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/06/2023
+ * Last Modified: 11/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -87,9 +87,8 @@ pub unsafe extern "C" fn AUTDControllerOpenWith(
     err: *mut c_char,
 ) -> ControllerPtr {
     let link: Box<Box<L>> = Box::from_raw(link.0 as *mut Box<L>);
-    let link = DynamicLink::new(*link);
     let cnt = try_or_return!(
-        Box::from_raw(builder.0 as *mut ControllerBuilder<DynamicTransducer>).open_with(link),
+        Box::from_raw(builder.0 as *mut ControllerBuilder<DynamicTransducer>).open_with(*link),
         err,
         ControllerPtr(NULL)
     );
