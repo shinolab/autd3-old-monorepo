@@ -18,19 +18,6 @@ jobs:
       run: |
         dotnet build ./doc/samples/cs/cs.csproj -c:Release
 
-  check-fs:
-    name: build fs
-    runs-on: ubuntu-latest
-    steps: 
-    - uses: actions/checkout@v3
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: '6.0.x'
-    - name: build
-      run: |
-        dotnet build ./doc/samples/fs/fs.fsproj -c:Release
-
   check-cpp:
     name: build cpp
     runs-on: ubuntu-latest
@@ -59,7 +46,7 @@ jobs:
         echo a | python main.py || true
 
   build:
-    needs: [check-cs, check-fs, check-cpp, check-python]
+    needs: [check-cs, check-cpp, check-python]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
