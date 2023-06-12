@@ -271,9 +271,9 @@ pub unsafe extern "C" fn AUTDTransRotation(
 ) {
     let rot = cast!(geo.0, Geo)[tr_idx as _].rotation();
     *w = rot.w;
-    *x = rot.x;
-    *y = rot.y;
-    *z = rot.z;
+    *x = rot.i;
+    *y = rot.j;
+    *z = rot.k;
 }
 
 #[no_mangle]
