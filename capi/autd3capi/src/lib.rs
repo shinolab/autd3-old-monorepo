@@ -1038,7 +1038,7 @@ mod tests {
             }
             dbg!(AUTDGetTransCycle(geo, 0));
 
-            dbg!(AUTDGetWavelength(geo, 0));
+            dbg!(AUTDGetWavelength(geo, 0, c));
 
             let atten = 0.1;
             AUTDSetAttenuation(geo, atten);
