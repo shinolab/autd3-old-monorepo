@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2023
+ * Last Modified: 12/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -468,20 +468,6 @@ impl ImGuiRenderer {
                             0,
                         );
                     }
-                    ui.separator();
-
-                    unsafe {
-                        igDragFloat(
-                            CString::new("Move speed").unwrap().as_c_str().as_ptr(),
-                            &mut settings.camera_move_speed as _,
-                            1. * SCALE,
-                            0.,
-                            std::f32::MAX / 2.,
-                            CString::new("%.3f").unwrap().as_c_str().as_ptr(),
-                            0,
-                        );
-                    }
-
                     tab.end();
                 }
 
