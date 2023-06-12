@@ -2,7 +2,7 @@
 
 [autd3 library](https://github.com/shinolab/autd3) for C++17.
 
-version: 11.0.2
+version: 11.1.0
 
 ## Install
 
@@ -12,17 +12,17 @@ version: 11.0.2
     if(WIN32)
     FetchContent_Declare(
         autd3
-        URL https://github.com/shinolab/autd3/releases/download/v11.0.2/autd3-v11.0.2-win-x64.zip
+        URL https://github.com/shinolab/autd3/releases/download/v11.1.0/autd3-v11.1.0-win-x64.zip
     )
     elseif(APPLE)
     FetchContent_Declare(
         autd3
-        URL https://github.com/shinolab/autd3/releases/download/v11.0.2/autd3-v11.0.2-macos-universal.tar.gz
+        URL https://github.com/shinolab/autd3/releases/download/v11.1.0/autd3-v11.1.0-macos-universal.tar.gz
     )
     else()
     FetchContent_Declare(
         autd3
-        URL https://github.com/shinolab/autd3/releases/download/v11.0.2/autd3-v11.0.2-linux-x64.tar.gz
+        URL https://github.com/shinolab/autd3/releases/download/v11.1.0/autd3-v11.1.0-linux-x64.tar.gz
     )
     endif()
     FetchContent_MakeAvailable(autd3)
