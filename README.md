@@ -47,8 +47,8 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 ## For other programming languages
 
 * [C++](./cpp)
-* [C#](./cs)
-* [F#](./fs)
+* [C#](./dotnet/cs)
+* [F#](./dotnet/fs)
 * [Python](./python)
 
 ## Citing
