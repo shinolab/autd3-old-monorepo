@@ -62,14 +62,11 @@ stm = FocusSTM(1).with_start_idx(0)
 これらの設定を無効 (デフォルト) にするには, 以下のようにする.
 
 
-```rust,should_panic
+```rust
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
-# fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
-let stm = FocusSTM::new(1.0).with_start_idx(None)
-#    ;
-# Ok(())
+# fn main() {
+let stm = FocusSTM::new(1.0).with_start_idx(None);
 # }
 ```
 
