@@ -1,3 +1,8 @@
+# 11.1.0
+
+- Fix [#68](https://github.com/shinolab/autd3/issues/68)
+- Improve Simulator stability
+
 # 11.0.2
 
 - Fix [#74](https://github.com/shinolab/autd3/issues/74)

@@ -1,6 +1,6 @@
 [package]
 name = "autd3-model"
-version = "11.0.2"
+version = "11.1.0"
 edition = "2021"
 license = "MIT"
 

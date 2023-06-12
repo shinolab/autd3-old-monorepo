@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/06/2023
+// Last Modified: 12/06/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -25,6 +25,12 @@ class Transducer {
     double x, y, z;
     AUTDTransPosition(_ptr, _idx, &x, &y, &z);
     return {x, y, z};
+  }
+
+  [[nodiscard]] Quaternion rotation() const noexcept {
+    double w, x, y, z;
+    AUTDTransRotation(_ptr, _idx, &w, &x, &y, &z);
+    return {w, x, y, z};
   }
 
   [[nodiscard]] size_t idx() const noexcept { return static_cast<size_t>(_idx); }
@@ -53,9 +59,9 @@ class Transducer {
     if (char err[256]{}; !AUTDSetTransFrequency(_ptr, _idx, freq, err)) throw AUTDException(err);
   }
 
-  [[nodiscard]] double wavelength() const { return AUTDGetWavelength(_ptr, _idx); }
+  [[nodiscard]] double wavelength(const double sound_speed) const { return AUTDGetWavelength(_ptr, _idx, sound_speed); }
 
-  [[nodiscard]] double wavenumber() const { return 2 * pi / wavelength(); }
+  [[nodiscard]] double wavenumber(const double sound_speed) const { return 2 * pi / wavelength(sound_speed); }
 
   [[nodiscard]] uint16_t mod_delay() const { return AUTDGetTransModDelay(_ptr, _idx); }
 

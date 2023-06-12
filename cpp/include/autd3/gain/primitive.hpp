@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 05/06/2023
+// Last Modified: 12/06/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,8 +13,8 @@
 
 #include <algorithm>
 #include <iterator>
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include "autd3/internal/def.hpp"
 #include "autd3/internal/gain.hpp"
@@ -22,6 +22,15 @@
 #include "autd3/internal/native_methods.hpp"
 
 namespace autd3::gain {
+
+class Null final : public internal::Gain {
+ public:
+  Null() = default;
+
+  [[nodiscard]] internal::native_methods::GainPtr gain_ptr(const internal::Geometry&) const override {
+    return internal::native_methods::AUTDGainNull();
+  }
+};
 
 class Focus final : public internal::Gain {
  public:
