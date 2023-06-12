@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/06/2023
+ * Last Modified: 12/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -80,28 +80,59 @@ impl Simulator {
         }
     }
 
+    #[deprecated(since = "11.1.0", note = "Use with_window_size instead")]
     pub fn window_size(mut self, width: u32, height: u32) -> Self {
         self.window_width = Some(width);
         self.window_height = Some(height);
         self
     }
 
+    pub fn with_window_size(mut self, width: u32, height: u32) -> Self {
+        self.window_width = Some(width);
+        self.window_height = Some(height);
+        self
+    }
+
+    #[deprecated(since = "11.1.0", note = "Use with_vsync instead")]
     pub fn vsync(mut self, vsync: bool) -> Self {
         self.vsync = Some(vsync);
         self
     }
 
+    pub fn with_vsync(mut self, vsync: bool) -> Self {
+        self.vsync = Some(vsync);
+        self
+    }
+
+    #[deprecated(since = "11.1.0", note = "Use with_port instead")]
     pub fn port(mut self, port: u16) -> Self {
         self.port = Some(port);
         self
     }
 
+    pub fn with_port(mut self, port: u16) -> Self {
+        self.port = Some(port);
+        self
+    }
+
+    #[deprecated(since = "11.1.0", note = "Use with_gpu_idx instead")]
     pub fn gpu_idx(mut self, gpu_idx: i32) -> Self {
         self.gpu_idx = Some(gpu_idx);
         self
     }
 
+    pub fn with_gpu_idx(mut self, gpu_idx: i32) -> Self {
+        self.gpu_idx = Some(gpu_idx);
+        self
+    }
+
+    #[deprecated(since = "11.1.0", note = "Use with_settings instead")]
     pub fn settings(mut self, settings: ViewerSettings) -> Self {
+        self.settings = settings;
+        self
+    }
+
+    pub fn with_settings(mut self, settings: ViewerSettings) -> Self {
         self.settings = settings;
         self
     }
