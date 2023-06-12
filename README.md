@@ -32,17 +32,11 @@ This cross-platform library supports Windows, macOS, and Linux (including Single
 
 * [日本語/Japanese](https://shinolab.github.io/autd3/book/jp)
 * [English](https://shinolab.github.io/autd3/book/en)
-    * [API References](https://shinolab.github.io/autd3/api/)
 
 ## CAUTION
 
 * Before using, write the latest firmware in `dist/firmware`. 
     * For more information, please see [README](/dist/firmware/README.md).
-
-## Requirements
-
-* If you use a `SOEM` link on Windows, install [Npcap](https://nmap.org/npcap/) with WinPcap API-compatible mode.
-* If you use a `TwinCAT` or a `RemoteTwinCAT` link, please see [how to install TwinCAT](https://shinolab.github.io/autd3/book/en/Users_Manual/link.html#how-to-install-twincat).
 
 ## Example
 
