@@ -38,7 +38,13 @@ pub trait DynamicDatagram {
     fn timeout(&self) -> Option<Duration>;
 }
 
-impl Datagram<DynamicTransducer> for (TransMode, Box<Box<dyn DynamicDatagram>>) {
+impl Datagram<DynamicTransducer>
+    for (
+        TransMode,
+        Box<Box<dyn DynamicDatagram>>,
+        Option<std::time::Duration>,
+    )
+{
     type H = Box<dyn Operation>;
     type B = Box<dyn Operation>;
 
@@ -51,7 +57,11 @@ impl Datagram<DynamicTransducer> for (TransMode, Box<Box<dyn DynamicDatagram>>) 
     }
 
     fn timeout(&self) -> Option<Duration> {
-        self.1.timeout()
+        if self.2.is_some() {
+            self.2
+        } else {
+            self.1.timeout()
+        }
     }
 }
 
@@ -60,6 +70,7 @@ impl Datagram<DynamicTransducer>
         TransMode,
         Box<Box<dyn DynamicDatagram>>,
         Box<Box<dyn DynamicDatagram>>,
+        Option<std::time::Duration>,
     )
 {
     type H = Box<dyn Operation>;
@@ -73,6 +84,10 @@ impl Datagram<DynamicTransducer>
         let (h, _) = self.1.operation(mode, geometry)?;
         let (_, b) = self.2.operation(mode, geometry)?;
         Ok((h, b))
+    }
+
+    fn timeout(&self) -> Option<Duration> {
+        self.3
     }
 }
 
