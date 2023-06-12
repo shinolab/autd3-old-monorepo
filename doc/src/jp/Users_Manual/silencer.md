@@ -22,16 +22,88 @@ Silencerは, 振動子の駆動信号の急激な変動を抑制し, 静音化�
 
 Silencerの設定には`SilencerConfig`を送信する.
 
-```cpp
-  autd3::SilencerConfig silencer;
-  autd << silencer;
+```rust,should_panic
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+let config = SilencerConfig::default();
+autd.send(config)?;
+# Ok(())
+# }
 ```
 
-`SilencerConfig`には`step`と`cycle`の2つの設定がある.
-詳細は以下を参照されたいが, 大まかには`step`を小さく, `cycle`を大きくするほどより静かになる.
+```cpp
+autd3::SilencerConfig config;
+autd.send(config);
+```
 
-> NOTE: Silencerはデフォルトで適当な値に設定されている.
-> Silencerを無効化する場合は, 明示的に`autd3::SilencerConfig::none()`を送信する必要がある.
+```cs
+var config = new SilencerConfig();
+autd.Send(config);
+```
+
+```python
+from pyautd3 import SilencerConfig
+
+config = SilencerConfig()
+autd.send(config)
+```
+
+`SilencerConfig`には`step`を設定できる.
+詳細は以下を参照されたいが, 大まかには`step`を小さくするほどより静かになる.
+
+
+```rust,should_panic
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+# let step = 10;
+let config = SilencerConfig::new(step);
+# Ok(())
+# }
+```
+
+```cpp
+autd3::SilencerConfig config(step);
+```
+
+```cs
+var config = new SilencerConfig(step);
+```
+
+```python
+config = SilencerConfig(step)
+```
+
+## Silencerの無効化
+
+Silencerはデフォルトで適当な値に設定されている.
+
+Silencerを無効化する場合は, 以下のようにする.
+
+```rust,should_panic
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+let config = SilencerConfig::none();
+# Ok(())
+# }
+```
+
+```cpp
+const auto config = autd3::SilencerConfig::none();
+```
+
+```cs
+var config = SilencerConfig.None();
+```
+
+```python
+config = SilencerConfig.none()
+```
 
 ## Silencerによる位相の変化
 
@@ -66,9 +138,9 @@ $$
 $$
 として位相$P$を更新する.
 ここで, $\Delta$は1ステップ当たりの更新量 (`SilencerConfig`の`step`) を表す.
-また, 更新周波数は`SilencerConfig`の`cycle`で設定でき, $\clkf/\text{cycle}$となる.
+なお, 更新周波数は$\ufreq$となっている.
 
-$\Delta$が小さいほど, また, 更新周期が遅いほど, 位相変化はなだらかになり騒音が抑制される.
+$\Delta$が小さいほど, 位相変化はなだらかになり騒音が抑制される.
 
 <figure>
   <img src="../fig/Users_Manual/silent/duty.svg"/>
