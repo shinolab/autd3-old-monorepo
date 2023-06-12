@@ -35,7 +35,7 @@ pub use autd3_core::{
     link::Link,
     modulation::ModulationProperty,
     silencer_config::SilencerConfig,
-    stm::{ControlPoint, FocusSTM, GainSTM},
+    stm::{ControlPoint, FocusSTM, GainSTM, GainSTMMode},
     stop::Stop,
     synchronize::Synchronize,
     timer_strategy::TimerStrategy,
