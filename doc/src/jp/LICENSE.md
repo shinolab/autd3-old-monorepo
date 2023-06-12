@@ -6,35 +6,6 @@ autd3ライブラリ自体はMITライセンスである.
 
 ## 3rdparty library license
 
-- このプログラムは以下のライブラリに依存している. 
-  - [Eigen3](https://gitlab.com/libeigen/eigen) 
-  - [spdlog](https://github.com/gabime/spdlog)
-
-  - さらに,
-    - SOEM link は[SOEM](https://github.com/OpenEtherCATsociety/SOEM)を使用している
-    - RemoteSOEM linkは[Boost](https://www.boost.org/)を使用している
-    - RemoteTwinCAT linkは以下のライブラリを使用している
-      - [ADS](https://github.com/Beckhoff/ADS)
-      - [Boost](https://www.boost.org/)
-    - Simulator linkは[Boost](https://www.boost.org/)を使用している
-    - RemoteSimulator linkは[Boost](https://www.boost.org/)を使用している
-    - GeometryViewerは以下のライブラリを使用している
-      - [fx-gltf](https://github.com/jessey-git/fx-gltf)
-      - [glfw](https://github.com/glfw/glfw)
-      - [glm](https://github.com/g-truc/glm)
-      - [Dear ImGui](https://github.com/ocornut/imgui)
-      - [nlohmann-json](https://github.com/nlohmann/json)
-      - [stb](https://github.com/nothings/stb)
-      - [NotoFont](https://github.com/notofonts/noto-fonts/blob/main/LICENSE)
-    - Simulatorは以下のライブラリを使用している
-      - [glfw](https://github.com/glfw/glfw)
-      - [glm](https://github.com/g-truc/glm)
-      - [Dear ImGui](https://github.com/ocornut/imgui)
-      - [stb](https://github.com/nothings/stb)
-      - [tinycolormap](https://github.com/yuki-koyama/tinycolormap)
-      - [NotoFont](https://github.com/notofonts/noto-fonts/blob/main/LICENSE)
-      - [Boost](https://www.boost.org/)
-    - SOEMAUTDServerは以下のライブラリを使用している
-      - [SOEM](https://github.com/OpenEtherCATsociety/SOEM)
-      - [argparse](https://github.com/p-ranav/argparse)
-      - [Boost](https://www.boost.org/)
+- SOEM link は[SOEM](https://github.com/OpenEtherCATsociety/SOEM)を使用している
+- RemoteTwinCAT linkは以下のライブラリを使用している
+  - [ADS](https://github.com/Beckhoff/ADS)

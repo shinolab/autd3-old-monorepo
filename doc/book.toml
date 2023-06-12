@@ -2,7 +2,7 @@
 authors = ["shun suzuki"]
 language = "en"
 multilingual = true
-title = "AUTD3 Developers Manual v9.0.1"
+title = "AUTD3 Developers Manual v11.1.0"
 
 src = "src"
 destination = "book"
@@ -17,18 +17,20 @@ marker = "[[_TOC_]]"
 max-level = 3
 
 [output.html]
-mathjax-support = true
+mathjax-support = false
 default-theme = "navy"
 preferred-dark-theme = "navy"
 git-repository-url = "https://github.com/shinolab/autd3"
 git-branch = "master"
 curly-quotes = true
-
-[output.katex]
-
-[output.linkcheck]
+additional-js = ["./theme/codeblock_filename.js"]
+additional-css = ["./theme/codeblock_filename.css"]
+ 
+[output.html.playground]
+runnable = false
 
 [preprocessor.katex]
+after = ["links"]
 macros = "katex_macro.txt"
 
 [language-en]
@@ -38,3 +40,8 @@ destination = "book/en"
 [language-jp]
 src = "src/jp"
 destination = "book/jp"
+
+[preprocessor.keeper]
+command = "mdbook-keeper"
+manifest_dir = "../src"
+externs = ["autd3", "autd3_link_soem", "autd3_link_twincat", "autd3_link_simulator", "autd3_gain_holo", "autd3_modulation_audio_file"]
