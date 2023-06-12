@@ -832,7 +832,7 @@ pub unsafe extern "C" fn AUTDClear() -> DatagramSpecialPtr {
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDUpdateFlags() -> DatagramSpecialPtr {
-    DatagramSpecialPtr::new(UpdateFlag::new())
+    DatagramSpecialPtr::new(UpdateFlags::new())
 }
 
 #[no_mangle]
