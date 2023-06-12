@@ -64,7 +64,7 @@ void AUTDSetSoundSpeedFromTemp(GeometryPtr geo, double temp, double k, double r,
 
 [[nodiscard]] bool AUTDSetTransCycle(GeometryPtr geo, uint32_t idx, uint16_t value, char *err);
 
-[[nodiscard]] double AUTDGetWavelength(GeometryPtr geo, uint32_t idx);
+[[nodiscard]] double AUTDGetWavelength(GeometryPtr geo, uint32_t idx, double sound_speed);
 
 [[nodiscard]] double AUTDGetAttenuation(GeometryPtr geo);
 
@@ -79,6 +79,13 @@ void AUTDGeometryCenter(GeometryPtr geo, double *x, double *y, double *z);
 void AUTDGeometryCenterOf(GeometryPtr geo, uint32_t dev_idx, double *x, double *y, double *z);
 
 void AUTDTransPosition(GeometryPtr geo, uint32_t tr_idx, double *x, double *y, double *z);
+
+void AUTDTransRotation(GeometryPtr geo,
+                       uint32_t tr_idx,
+                       double *w,
+                       double *x,
+                       double *y,
+                       double *z);
 
 void AUTDTransXDirection(GeometryPtr geo, uint32_t tr_idx, double *x, double *y, double *z);
 
