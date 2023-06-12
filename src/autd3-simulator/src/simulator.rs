@@ -203,6 +203,12 @@ impl Simulator {
                                 spdlog::info!("Waiting for client connection on {}", port);
                                 break;
                             }
+                            Err(e) if e.kind() == std::io::ErrorKind::ConnectionAborted => {
+                                spdlog::info!("Client disconnected");
+                                sender_c2s.send(vec![CLIENT_DISCONNECT]).unwrap();
+                                spdlog::info!("Waiting for client connection on {}", port);
+                                break;
+                            }
                             Err(e) => {
                                 return Err(e.into());
                             }
