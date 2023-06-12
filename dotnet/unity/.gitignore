@@ -1,1 +1,6 @@
 !*.meta
+Library/
+Packages/
+ProjectSettings/
+Temp/
+UserSettings/
