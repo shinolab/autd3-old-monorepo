@@ -14,7 +14,6 @@
   "camera_pos_z": -0.15,
   "camera_near_clip": 0.000100000005,
   "camera_far_clip": 1.0,
-  "camera_move_speed": 0.010000001,
   "sound_speed": 340.00003,
   "slice_rot_x": -90.0,
   "slice_rot_y": 0.0,
