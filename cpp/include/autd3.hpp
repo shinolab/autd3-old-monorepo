@@ -62,4 +62,6 @@ using internal::Controller;
 
 using internal::Amplitudes;
 
+using internal::native_methods::TimerStrategy;
+
 }  // namespace autd3
