@@ -1,17 +1,18 @@
-﻿using System;
-using AUTD3Sharp;
+﻿using AUTD3Sharp;
 using AUTD3Sharp.Utils;
 using AUTD3Sharp.Link;
 using AUTD3Sharp.Gain;
 using AUTD3Sharp.Modulation;
 
-var geometry = new Geometry.Builder()
-    .AddDevice(Vector3d.zero, Vector3d.zero)
-    .Build();
+var onLost = new SOEM.OnLostCallbackDelegate((string msg) =>
+{
+    Console.WriteLine($"Unrecoverable error occurred: {msg}");
+    Environment.Exit(-1);
+});
 
-var link = new SOEM().Build();
-
-var autd = Controller.Open(geometry, link);
+var autd = Controller.Builder()
+        .AddDevice(new AUTD3(Vector3d.zero, Vector3d.zero))
+        .OpenWith(new SOEM().WithOnLost(onLost));
 
 autd.Send(new Clear());
 autd.Send(new Synchronize());
@@ -20,8 +21,7 @@ var firmList = autd.FirmwareInfoList().ToArray();
 foreach (var firm in firmList)
     Console.WriteLine(firm);
 
-var config = new SilencerConfig();
-autd.Send(config);
+autd.Send(new SilencerConfig());
 
 var g = new Focus(autd.Geometry.Center + new Vector3d(0, 0, 150));
 var m = new Sine(150);

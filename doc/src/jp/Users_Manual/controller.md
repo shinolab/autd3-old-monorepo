@@ -4,16 +4,6 @@
 
 [[_TOC_]]
 
-## open/close/is_open
-
-`Controller`をopen/closeする.
-
-Controllerがopenしているかどうかは`is_open`で取得できる.
-
-## geometry
-
-`Geometry`を取得する.
-
 ## force_fan
 
 AUTD3にはファンがついており, Auto, Off, Onの3つのファンモードが有る.
@@ -30,16 +20,56 @@ Offモードではファンは常時オフであり, Onモードでは常時オ�
 Autoモードの場合は温度が高くなると自動的にファンが起動する.
 `force_fan`フラグはこのAutoモードでファンを強制的に起動するためのフラグである.
 
+```rust,should_panic
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+autd.force_fan(true);
+# Ok(())
+# }
+```
+
 ```cpp
 autd.force_fan(true);
 ```
 
+```cs
+autd.ForceFan(true);
+```
+
+```python
+autd.force_fan(True)
+```
+
 実際にフラグが更新されるのは`send`を呼んで, 何らかのデータを送信したときになる.
-フラグの更新だけがしたい場合は`UpdateFlag`を送信すれば良い.
+フラグの更新だけがしたい場合は`UpdateFlags`を送信すれば良い.
+
+
+```rust,should_panic
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+autd.force_fan(true);
+autd.send(UpdateFlags::new());
+# Ok(())
+# }
+```
 
 ```cpp
 autd.force_fan(true);
-autd.send(autd3::UpdateFlag());
+autd.send(autd3::UpdateFlags());
+```
+
+```cs
+autd.ForceFan(true);
+autd.Send(new UpdateFlags());
+```
+
+```python
+autd.force_fan(True)
+autd.send(UpdateFlags())
 ```
 
 ## fpga_info
@@ -47,20 +77,44 @@ autd.send(autd3::UpdateFlag());
 FPGAの状態を取得する.
 これを使用する前に, `reads_fpga_info`フラグをセットしておく必要がある.
 
+
+```rust,should_panic
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+autd.reads_fpga_info(true);
+autd.send(UpdateFlags::new());
+
+let info = autd.fpga_info();
+# Ok(())
+# }
+```
+
 ```cpp
 autd.reads_fpga_info(true);
-autd.send(autd3::update_flag());
+autd.send(autd3::UpdateFlags());
 
-const auto infos = autd.fpga_info();
+const auto info = autd.fpga_info();
+```
+
+```cs
+autd.ReadsFPGAInfo(true);
+autd.Send(new UpdateFlags());
+
+var info = autd.FPGAInfo;
+```
+
+```python
+autd.reads_fpga_info(True)
+autd.send(UpdateFlags())
+
+info = autd.fpga_info
 ```
 
 FPGAの状態としては, 現在以下の情報が取得できる.
 
 - ファン制御用の温度センサがアサートされているかどうか
-
-## firmware_infos
-
-ファームウェアのバージョン情報を取得する.
 
 ## send
 
@@ -71,8 +125,28 @@ FPGAの状態としては, 現在以下の情報が取得できる.
 `send`の最終引数でタイムアウト時間を指定できる.
 この引数を省略した場合は[Link](./link.md)で設定したタイムアウト時間が使用される.
 
+```rust,should_panic
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+# let m = Static::new();
+# let g = Null::new();
+autd.send((m, g, std::time::Duration::from_millis(20)))?;
+# Ok(())
+# }
+```
+
 ```cpp
-autd.send(..., autd3::Milliseconds(20));
+autd.send(m, g, std::chrono::milliseconds(20));
+```
+
+```cs
+autd.Send(m, g, TimeSpan.FromMilliseconds(20));
+```
+
+```python
+autd.send(m, g, timeout=timedelta(milliseconds=20))
 ```
 
 タイムアウトの値が0より大きい場合, 送信時に送信データがデバイスで処理されるか, 指定したタイムアウト時間が経過するまで待機する.
@@ -84,18 +158,10 @@ autd.send(..., autd3::Milliseconds(20));
 
 ### stop
 
-`autd3::Stop`を送信すると, 出力を止めることができる.
+`Stop`を送信すると, 出力を止めることができる.
 
-```cpp
-autd.send(autd3::Stop());
-```
-
-`autd3::Stop`を送信すると, `SilencerConfig`がデフォルトの値で上書きされるので注意されたい.
+`Stop`を送信すると, Silencerの設定がリセットされるので注意されたい.
 
 ### clear
 
-`autd3::Clear`を送信すると, デバイス内のフラグや`Gain`/`Modulation`データ等をクリアする.
-
-```cpp
-autd.send(autd3::Clear());
-```
+`Clear`を送信すると, デバイス内のフラグや`Gain`/`Modulation`データ等をクリアする.
