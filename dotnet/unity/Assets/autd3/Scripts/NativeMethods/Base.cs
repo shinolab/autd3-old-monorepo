@@ -46,7 +46,7 @@ namespace AUTD3Sharp
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)][return: MarshalAs(UnmanagedType.U1)] public static extern bool AUTDSetTransCycle(GeometryPtr geo, uint idx, ushort value, byte[] err);
 
-            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern float AUTDGetWavelength(GeometryPtr geo, uint idx);
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern float AUTDGetWavelength(GeometryPtr geo, uint idx, float soundSpeed);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern float AUTDGetAttenuation(GeometryPtr geo);
 
@@ -61,6 +61,8 @@ namespace AUTD3Sharp
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDGeometryCenterOf(GeometryPtr geo, uint devIdx, out float x, out float y, out float z);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDTransPosition(GeometryPtr geo, uint trIdx, out float x, out float y, out float z);
+
+            [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDTransRotation(GeometryPtr geo, uint trIdx, out float w, out float x, out float y, out float z);
 
             [DllImport(DLL, CallingConvention = CallingConvention.Cdecl)] public static extern void AUTDTransXDirection(GeometryPtr geo, uint trIdx, out float x, out float y, out float z);
 

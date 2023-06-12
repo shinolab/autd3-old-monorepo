@@ -4,7 +4,7 @@
  * Created Date: 05/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/06/2023
+ * Last Modified: 12/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -14,6 +14,7 @@
 mod focus;
 mod gain;
 
+pub use autd3_driver::Mode as GainSTMMode;
 use autd3_driver::{float, FPGA_SUB_CLK_FREQ};
 pub use focus::{ControlPoint, FocusSTM};
 pub use gain::GainSTM;

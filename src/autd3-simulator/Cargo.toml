@@ -1,6 +1,6 @@
 [package]
 name = "autd3-simulator"
-version = "11.0.2"
+version = "11.1.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -10,8 +10,8 @@ repository = "https://github.com/shinolab/autd3"
 keywords = ["autd"]
 
 [dependencies]
-autd3-core = {path="../autd3-core", version="11.0.2"}
-autd3-firmware-emulator = {path="../autd3-firmware-emulator", version="11.0.2"}
+autd3-core = {path="../autd3-core", version="11.1.0"}
+autd3-firmware-emulator = {path="../autd3-firmware-emulator", version="11.1.0"}
 bitflags = "2.3.1"
 bytemuck = { version = "1.13.1", features = ["derive", "extern_crate_std", "min_const_generics"] }
 camera_controllers = "0.33.0"
@@ -30,6 +30,7 @@ spdlog-rs = "0.3.8"
 crossbeam-channel = "0.5.8"
 anyhow = "1.0.71"
 serde_derive = "1.0.163"
+image = "0.24.6"
 
 [features]
 default = []

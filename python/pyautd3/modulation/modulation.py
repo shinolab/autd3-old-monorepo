@@ -25,16 +25,16 @@ class IModulation(Header, metaclass=ABCMeta):
         super().__init__()
 
     def ptr(self) -> DatagramHeaderPtr:
-        return Base().modulation_into_datagram(self.modulator_ptr())
+        return Base().modulation_into_datagram(self.modulation_ptr())
 
     @property
     def sampling_frequency_division(self) -> int:
-        return int(Base().modulation_sampling_frequency_division(self.modulator_ptr()))
+        return int(Base().modulation_sampling_frequency_division(self.modulation_ptr()))
 
     @property
     def sampling_frequency(self) -> float:
-        return float(Base().modulation_sampling_frequency(self.modulator_ptr()))
+        return float(Base().modulation_sampling_frequency(self.modulation_ptr()))
 
     @abstractmethod
-    def modulator_ptr(self) -> ModulationPtr:
+    def modulation_ptr(self) -> ModulationPtr:
         pass
