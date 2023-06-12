@@ -122,17 +122,17 @@ FPGAの状態としては, 現在以下の情報が取得できる.
 
 ### タイムアウト
 
-`send_with_timeout`でタイムアウト時間を指定できる.
-この引数を省略した場合は[Link](./link.md)で設定したタイムアウト時間が使用される.
+`send`ではタイムアウト時間を指定できる.
+これを省略した場合は[Link](./link.md)で設定したタイムアウト時間が使用される.
 
-```rust,should_panic
+```rust
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
 # let m = Static::new();
 # let g = Null::new();
-autd.send_with_timeout((m, g), Some(std::time::Duration::from_millis(20)))?;
+autd.send((m, g, std::time::Duration::from_millis(20)))?;
 # Ok(())
 # }
 ```
