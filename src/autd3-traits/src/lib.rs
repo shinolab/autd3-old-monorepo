@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/06/2023
+ * Last Modified: 12/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -40,6 +40,13 @@ fn impl_modulation_macro(ast: &syn::DeriveInput) -> TokenStream {
             #[allow(clippy::needless_update)]
             pub fn with_sampling_frequency_division(self, freq_div: u32) -> Self {
                 Self {freq_div, ..self}
+            }
+
+
+            #[allow(clippy::needless_update)]
+            pub fn with_sampling_frequency(self, freq: autd3_core::float) -> Self {
+                let freq_div = autd3_core::FPGA_SUB_CLK_FREQ as autd3_core::float / freq;
+                self.with_sampling_frequency_division(freq_div as _)
             }
         }
 
