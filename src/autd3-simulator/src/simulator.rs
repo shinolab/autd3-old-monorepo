@@ -501,6 +501,30 @@ impl Simulator {
                             let command_buffer = builder.build().unwrap();
 
                             let field_image = slice_viewer.field_image_view();
+
+                            if update_flag.contains(UpdateFlag::SAVE_IMAGE) {
+                                let image_buffer_content = field_image.read().unwrap();
+                                let img_x = (self.settings.slice_width
+                                    / self.settings.slice_pixel_size)
+                                    as u32;
+                                let img_y = (self.settings.slice_height
+                                    / self.settings.slice_pixel_size)
+                                    as u32;
+                                let mut img_buf = image::ImageBuffer::new(img_x, img_y);
+                                for ((_, _, pixel), [r, g, b, a]) in img_buf
+                                    .enumerate_pixels_mut()
+                                    .zip(image_buffer_content.iter())
+                                {
+                                    let r = (r * 255.0) as u8;
+                                    let g = (g * 255.0) as u8;
+                                    let b = (b * 255.0) as u8;
+                                    let a = (a * 255.0) as u8;
+                                    *pixel = image::Rgba([r, g, b, a]);
+                                }
+                                let img_buf = image::imageops::flip_vertical(&img_buf);
+                                img_buf.save(&self.settings.image_save_path).unwrap();
+                            }
+
                             let config = Config {
                                 source_num: sources.len() as _,
                                 color_scale: self.settings.slice_color_scale,
