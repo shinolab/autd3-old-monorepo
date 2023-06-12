@@ -31,7 +31,7 @@ class Static(IModulation):
         self._amp = amp
         return self
 
-    def modulator_ptr(self) -> ModulationPtr:
+    def modulation_ptr(self) -> ModulationPtr:
         ptr = Base().modulation_static()
         if self._amp is not None:
             ptr = Base().modulation_static_with_amp(ptr, self._amp)
@@ -57,7 +57,7 @@ class Sine(IModulation):
         self._offset = offset
         return self
 
-    def modulator_ptr(self) -> ModulationPtr:
+    def modulation_ptr(self) -> ModulationPtr:
         ptr = Base().modulation_sine(self._freq)
         if self._amp is not None:
             ptr = Base().modulation_sine_with_amp(ptr, self._amp)
@@ -85,7 +85,7 @@ class SinePressure(IModulation):
         self._offset = offset
         return self
 
-    def modulator_ptr(self) -> ModulationPtr:
+    def modulation_ptr(self) -> ModulationPtr:
         ptr = Base().modulation_sine_pressure(self._freq)
         if self._amp is not None:
             ptr = Base().modulation_sine_pressure_with_amp(ptr, self._amp)
@@ -113,7 +113,7 @@ class SineLegacy(IModulation):
         self._offset = offset
         return self
 
-    def modulator_ptr(self) -> ModulationPtr:
+    def modulation_ptr(self) -> ModulationPtr:
         ptr = Base().modulation_sine_legacy(self._freq)
         if self._amp is not None:
             ptr = Base().modulation_sine_legacy_with_amp(ptr, self._amp)
@@ -147,7 +147,7 @@ class Square(IModulation):
         self._duty = duty
         return self
 
-    def modulator_ptr(self) -> ModulationPtr:
+    def modulation_ptr(self) -> ModulationPtr:
         ptr = Base().modulation_square(self._freq)
         if self._low is not None:
             ptr = Base().modulation_square_with_low(ptr, self._low)
