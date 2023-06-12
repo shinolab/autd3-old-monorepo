@@ -4,7 +4,7 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 04/06/2023
+ * Last Modified: 12/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -106,7 +106,7 @@ impl DynamicDatagram for NullBody {
     }
 }
 
-impl DynamicDatagram for UpdateFlag {
+impl DynamicDatagram for UpdateFlags {
     fn operation(
         &mut self,
         _: TransMode,

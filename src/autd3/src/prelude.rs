@@ -39,6 +39,9 @@ pub use autd3_core::{
     stop::Stop,
     synchronize::Synchronize,
     timer_strategy::TimerStrategy,
-    update_flag::UpdateFlag,
+    update_flag::UpdateFlags,
     Mode, METER, MILLIMETER, PI,
 };
+
+#[deprecated(since = "11.1.0", note = "Use UpdateFlags instead")]
+pub use UpdateFlags as UpdateFlag;
