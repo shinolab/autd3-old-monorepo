@@ -12,131 +12,117 @@
 
 SDKにはデフォルトでいくつかの種類のAMを生成するための`Modulation`がデフォルトで用意されている.
 
-[[_TOC_]]
-
-## Static
-
-変調なし.
-
-```cpp
-  autd3::modulation::Static m(amp);
-```
-第1引数は規格化された振幅である.
-$\[0, 1\]$の範囲外の値は$\[0, 1\]$にクランプされる (すなわち, $0$未満の値は$0$に, $1$より大きい値は$1$になる).
-第1引数を省略した場合は1となる.
-
-## Sine
-
-音圧をSin波状に変形するための`Modulation`.
-```cpp
-  autd3::modulation::Sine m(f, amplitude, offset); 
-```
-
-第1引数は周波数$f$, 第2引数は$amplitude$ (デフォルトで1), 第3引数は$offset$ (デフォルトで0.5)になっており, 音圧の波形が
-$$
-    \frac{amplitude}{2} \times \sin(2\pi ft) + offset
-$$
-となるようなAMをかける.
-ただし, 上記で$\[0, 1\]$を超えるような値は$\[0, 1\]$に収まるように変換される.
-また, サンプリング周波数はデフォルトで$\SI{4}{kHz}$ ($N=40960$) になっている.
-
-## SineSquared
-
-放射圧, すなわち, 音圧の二乗をSin波状に変形するための`Modulation`.
-引数等は`Sine`と同じ.
-
-## SineLegacy
-
-古いversionにあった`Sine Modulation`と互換.
-周波数として, `double`の値を取れるが, 厳密に指定周波数になるのではなく, 出力可能な周波数の内, 最も近い周波数が選ばれる.
-また, 音圧ではなくDuty比がSin波状になる.
-
-## Square
-
-矩形波状の`Modulation`.
-
-```cpp
-  autd3::modulation::Square m(f, low, high, duty); 
-```
-第1引数は周波数$f$, 第2引数はlow (デフォルトで0), 第3引数はhigh (デフォルトで1)になっており, 音圧の波形はlowとhighが周波数$f$で繰り返される.
-また, 第4引数にduty比を指定できる.
-duty比は$t_\text{high}/T = t_\text{high}f$で定義される, ここで, $t_\text{high}$は1周期$T=1/f$の内, highを出力する時間である.
-
-## Cache
-
-`Cache`は`Modulation`の計算結果をキャッシュしておくための`Modulation`である.
-変調データ計算が重く, かつ, 複数回同じ`Modulation`を送信する場合に使用する.
-また, 変調データ計算後に変調データを確認, 変更するために使うこともできる.
-
-`Cache`を使用するには, 任意の`Modulation`型を型引数に指定し, コンストラクタに元の型のコンストラクタ引数を指定する.
-```cpp
-  autd3::modulation::Cache<autd3::modulation::Sine> m(...);
-```
-
-変調データには, `buffer`関数, または, インデクサでアクセスできる.
-ただし, `calc`関数を事前に呼び出す必要がある.
-
-```cpp
-  autd3::modulation::Cache<autd3::modulation::Sine> m(...);
-  m.calc();
-  m[0] = 0;
-```
-上記の例では, 0番目の変調データを0にしている.
-
-## Transform
-
-`Transform`は`Modulation`の計算結果を改変する`Modulation`である.
-
-`Transform`を使用するには, 任意の`Modulation`型を型引数に指定し, コンストラクタの第1引数に`double`を引数に`double`を返す変換関数を, 第2引数以降に元の型のコンストラクタ引数を指定する.
-```cpp
-  autd3::modulation::Transform<autd3::modulation::Sine> m([](const double v) {return std::clamp(v, 0.5, 1.0); }, 150);
-```
-例えば, 上記の例では, $\SI{150}{Hz}$のSin波を半波整流したような変調データになる.
-
-## Wav
-
-`Wav`はWavファイルをもとに構成される`Modulation`である.
-
-```cpp
-  const std::filesystem::path path("sin150.wav");
-  autd3::modulation::Wav m(path);
-```
-
-`Wav`を使用するには`BUILD_MODULATION_AUDIO_FILE`フラグをONにしてビルドし, `autd3::modulation::audio_file`ライブラリをリンクされたい.
-
-## RawPCM
-
-`RawPCM`は符号なし8-bitのバイナリデータファイルをもとに構成される`Modulation`である.
-
-```cpp
-  const std::filesystem::path path = std::filesystem::path("sin150.wav");
-  autd3::modulation::RawPCM m(path, 4e3);
-```
-
-`RawPCM`を使用するには`BUILD_MODULATION_AUDIO_FILE`フラグをONにしてビルドし, `autd3::modulation::audio_file`ライブラリをリンクされたい.
+* [Static](./modulation/static.md)
+* [Sine](./modulation/sine.md)
+* [SinePressure](./modulation/sine_pressure.md)
+* [SineLegacy](./modulation/sine_legacy.md)
+* [Square](./modulation/square.md)
+* [Wav](./modulation/wav.md)
 
 ## Modulationの共通API
-
-### sampling_frequency_division
-
-`sampling_frequency_division`でサンプリング周波数の分周比$N$の確認, 設定ができる.
-サンプリング周波数の基本周波数は$\SI{163.84}{MHz}$である.
-`sampling_frequency_division`は$1160$以上の整数が指定できる.
-
-```cpp
-    m.sampling_frequency_division = 20480; // 163.84MHz/20480 = 8kHz
-```
 
 ### Sampling周波数
 
 `sampling_frequency`でサンプリング周波数を取得できる.
 
-また, `set_sampling_frequency`でサンプリング周波数を設定できる.
-ただし, `Modulation`の制約上, 指定したサンプリング周波数になるとは限らない.
+```rust
+# use autd3::prelude::*;
+# use autd3::core::modulation::ModulationProperty;
 
-### size
+# #[allow(unused_variables)]
+# fn main()  {
+# let m = autd3::modulation::SineLegacy::new(150.);
+let fs = m.sampling_frequency();
+# }
+```
 
-`size`で変調データバッファの長さを取得できる.
+```cpp
+const auto fs = m.sampling_frequency();
+```
+
+```cs
+var fs = m.SamplingFrequency;
+```
+
+```python
+fs = m.sampling_frequency
+```
+
+また, 一部の`Modulation`は`with_sampling_frequency`でサンプリング周波数を設定できる.
+ただし, `Modulation`の制約上, 必ずしも指定したサンプリング周波数になるとは限らない.
+
+- e.g.,
+  ```rust
+  # use autd3::prelude::*;
+  # #[allow(unused_variables)]
+  # fn main()  {
+  let m = autd3::modulation::Sine::new(150).with_sampling_frequency(4e3);
+  # }
+  ```
+
+  ```cpp
+  const auto m = autd3::modulation::Sine(150).with_sampling_frequency(4e3);
+  ```
+
+  ```cs
+  var m = new Sine(150).WithSamplingFrequency(4e3);
+  ```
+
+  ```python
+  m = Sine(150).with_sampling_frequency(4e3)
+  ```
+
+### Sampling周波数分周比
+
+`sampling_frequency_division`でサンプリング周波数の分周比$N$を取得できる.
+
+サンプリング周波数の基本周波数は$\clklf$である.
+
+```rust
+# use autd3::prelude::*;
+# use autd3::core::modulation::ModulationProperty;
+
+# #[allow(unused_variables)]
+# fn main()  {
+# let m = autd3::modulation::SineLegacy::new(150.);
+let div = m.sampling_frequency_division();
+# }
+```
+
+```cpp
+const auto fs = m.sampling_frequency_division();
+```
+
+```cs
+var fs = m.SamplingFrequencyDivision;
+```
+
+```python
+fs = m.sampling_frequency_division
+```
+
+また, 一部の`Modulation`は`with_sampling_frequency_division`でサンプリング周波数分周比を設定できる.
+
+- e.g.,
+  ```rust
+  # use autd3::prelude::*;
+  # #[allow(unused_variables)]
+  # fn main()  {
+  let m = autd3::modulation::Sine::new(150).with_sampling_frequency_division(5120);
+  # }
+  ```
+
+  ```cpp
+  const auto m = autd3::modulation::Sine(150).with_sampling_frequency_division(5120);
+  ```
+
+  ```cs
+  var m = new Sine(150).WithSamplingFrequencyDivision(5120);
+  ```
+
+  ```python
+  m = Sine(150).with_sampling_frequency_division(5120)
+  ```
 
 ## Modulation Delay
 
@@ -147,12 +133,33 @@ Modulationはすべての振動子に同時に作用し, 伝搬遅延を考慮�
 
 例えば, 以下のようにすると, $0$番目の振動子は他のすべての振動子に対して, サンプリングするインデックスが一つ遅れる.
 
+```rust,should_panic
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+autd.geometry_mut()[0].set_mod_delay(1);
+autd.send(ModDelay::new())?;
+# Ok(())
+# }
+```
+
 ```cpp
-  autd.geometry()[0].mod_delay = 1;
-  autd.send(autd3::ModDelayConfig());
+autd.geometry()[0].set_mod_delay(1);
+autd.send(autd3::ModDelayConfig());
+```
+
+```cs
+autd.Geometry[0].ModDelay = 1;
+autd.Send(new ModDelayConfig());
+```
+
+```python
+from pyautd3 import ModDelayConfig
+
+autd.geometry[0].mod_delay = 1
+autd.send(ModDelayConfig())
 ```
 
 サンプリングされるインデックスに対する遅れであるため, どの程度遅れるかは`Modulation`のサンプリング周波数に依存する.
 `mod_delay`が$1$でサンプリング周波数が$\SI{40}{kHz}$の場合は$\SI{25}{\text{μ}s}$, $\SI{4}{kHz}$の場合は$\SI{250}{\text{μ}s}$の遅れになる.
-
-また, `mod_delay`の値は変調データバッファの長さ未満でなくてはならない.

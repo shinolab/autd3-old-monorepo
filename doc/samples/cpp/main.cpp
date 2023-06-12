@@ -3,21 +3,21 @@
 #include "autd3.hpp"
 #include "autd3/link/soem.hpp"
 
+void on_lost(const char* msg) {
+  std::cerr << "Link is lost\n";
+  std::cerr << msg;
+  exit(-1);
+}
+
 int main() try {
-  // geometry contains information about where devices are placed
-  auto geometry = autd3::Geometry::Builder()
-                      // The first argument is the position, the second is the rotation.
-                      // The position is the origin of the device in the global coordinate system you set.
-                      // The rotation is specified in ZYZ Euler angles or quaternions.
-                      // Here, neither rotation nor translation is assumed.
-                      .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
-                      .build();
-
-  // create SOEM link
-  auto link = autd3::link::SOEM().build();
-
   // create and open controller
-  auto autd = autd3::Controller::open(std::move(geometry), std::move(link));
+  auto autd = autd3::Controller::builder()
+                  // The first argument is the position, the second is the rotation.
+                  // The position is the origin of the device in the global coordinate system you set.
+                  // The rotation is specified in ZYZ Euler angles or quaternions.
+                  // Here, neither rotation nor translation is assumed.
+                  .add_device(autd3::AUTD3(autd3::Vector3::Zero(), autd3::Vector3::Zero()))
+                  .open_with(autd3::link::SOEM().with_on_lost(&on_lost));
 
   // initialize and synchronize devices
   // You MUST synchronize devices once after initialization, even if you are using only one device.

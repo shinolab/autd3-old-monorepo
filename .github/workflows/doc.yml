@@ -16,20 +16,7 @@ jobs:
         dotnet-version: '6.0.x'
     - name: build
       run: |
-        dotnet build ./doc/book/samples/cs/cs.csproj -c:Release
-
-  check-fs:
-    name: build fs
-    runs-on: ubuntu-latest
-    steps: 
-    - uses: actions/checkout@v3
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: '6.0.x'
-    - name: build
-      run: |
-        dotnet build ./doc/book/samples/fs/fs.fsproj -c:Release
+        dotnet build ./doc/samples/cs/cs.csproj -c:Release
 
   check-cpp:
     name: build cpp
@@ -38,21 +25,11 @@ jobs:
     - uses: actions/checkout@v3
     - name: build
       run: |
-        cd ./doc/book/samples/cpp
+        cd ./doc/samples/cpp
         mkdir build
         cd build
         cmake ..
         cmake --build . --parallel $(nproc)
-
-  check-rust:
-    name: build rust
-    runs-on: ubuntu-latest
-    steps: 
-    - uses: actions/checkout@v3
-    - name: build
-      run: |
-        cd doc/book/samples/rust/sample
-        cargo build
 
   check-python:
     name: build python
@@ -65,31 +42,23 @@ jobs:
         python -m pip install --upgrade numpy
     - name: build
       run: |
-        cd doc/book/samples/python
+        cd doc/samples/python
         echo a | python main.py || true
 
   build:
-    needs: [check-cs, check-fs, check-rust, check-cpp, check-python]
+    needs: [check-cs, check-cpp, check-python]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - name: Setup mdbook
       uses: peaceiris/actions-mdbook@v1
       with:
-        mdbook-version: '0.4.25'
-    - name: Setup mdbook-linkcheck
-      run: |
-        mkdir -p mdbook-linkcheck
-        cd mdbook-linkcheck
-        curl -L https://github.com/Michael-F-Bryan/mdbook-linkcheck/releases/latest/download/mdbook-linkcheck.x86_64-unknown-linux-gnu.zip -o mdbook-linkcheck.zip
-        unzip mdbook-linkcheck.zip
-        chmod +x mdbook-linkcheck
-        sudo ln -s $PWD/mdbook-linkcheck /usr/local/bin/mdbook-linkcheck
+        mdbook-version: '0.4.30'
     - name: Setup mdbook-toc
       run: |
         mkdir -p mdbook-toc
         cd mdbook-toc
-        curl -L https://github.com/badboy/mdbook-toc/releases/download/0.11.0/mdbook-toc-0.11.0-x86_64-unknown-linux-gnu.tar.gz -o mdbook-toc.tar.gz
+        curl -L https://github.com/badboy/mdbook-toc/releases/download/0.12.0/mdbook-toc-0.12.0-x86_64-unknown-linux-gnu.tar.gz -o mdbook-toc.tar.gz
         tar -xvf mdbook-toc.tar.gz
         chmod +x mdbook-toc
         sudo ln -s $PWD/mdbook-toc /usr/local/bin/mdbook-toc
@@ -97,7 +66,7 @@ jobs:
       run: |
         mkdir -p mdbook-katex
         cd mdbook-katex
-        curl -L https://github.com/lzanini/mdbook-katex/releases/download/v0.3.3/mdbook-katex-v0.3.3-x86_64-unknown-linux-gnu.tar.gz -o mdbook-katex.tar.gz
+        curl -L https://github.com/lzanini/mdbook-katex/releases/download/v0.5.3/mdbook-katex-v0.5.3-x86_64-unknown-linux-gnu.tar.gz -o mdbook-katex.tar.gz
         tar -xvf mdbook-katex.tar.gz
         chmod +x mdbook-katex
         sudo ln -s $PWD/mdbook-katex /usr/local/bin/mdbook-katex
