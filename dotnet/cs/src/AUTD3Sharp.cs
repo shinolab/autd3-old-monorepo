@@ -1092,6 +1092,12 @@ namespace AUTD3Sharp
                 return this;
             }
 
+            public GainSTM WithMode(GainSTMMode mode)
+            {
+                _mode = mode;
+                return this;
+            }
+
             public float_t Frequency => FreqFromSize(_gains.Count);
             public float_t SamplingFrequency => SamplFreqFromSize(_gains.Count);
             public uint SamplingFrequencyDivision => SamplFreqDivFromSize(_gains.Count);
