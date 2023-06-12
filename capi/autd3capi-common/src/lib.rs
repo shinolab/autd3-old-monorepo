@@ -4,18 +4,16 @@
  * Created Date: 19/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 08/06/2023
+ * Last Modified: 11/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
  *
  */
 
- pub use autd3_gain_holo as holo;
-
+pub use autd3_gain_holo as holo;
 pub mod dynamic_backend;
 mod dynamic_datagram;
-mod dynamic_link;
 pub mod dynamic_transducer;
 
 pub use autd3;
@@ -34,18 +32,17 @@ pub use autd3::{
 };
 
 pub use dynamic_datagram::DynamicDatagram;
-pub use dynamic_link::DynamicLink;
 pub use dynamic_transducer::DynamicTransducer;
 
 pub use libc::c_void;
 
 pub type ConstPtr = *const c_void;
-pub type Cnt = Controller<DynamicTransducer, DynamicLink>;
+pub type Cnt = Controller<DynamicTransducer, Box<dyn Link<DynamicTransducer>>>;
 pub type Geo = Geometry<DynamicTransducer>;
 pub type L = dyn Link<DynamicTransducer>;
 pub type G = dyn Gain<DynamicTransducer>;
 pub type M = dyn Modulation;
- 
+
 pub const NULL: ConstPtr = std::ptr::null();
 
 #[macro_export]

@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/06/2023
+ * Last Modified: 12/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -174,9 +174,39 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
     /// * `body` - Body
     ///
     pub fn send<S: Datagram<T>>(&mut self, s: S) -> Result<bool, AUTDError> {
-        self.send_with_timeout(s, None)
+        let mut s = s;
+        let (mut op_header, mut op_body) = s.operation(&self.geometry)?;
+
+        op_header.init();
+        op_body.init();
+
+        self.force_fan.pack(&mut self.tx_buf);
+        self.reads_fpga_info.pack(&mut self.tx_buf);
+
+        let timeout = s.timeout().unwrap_or(self.link.timeout());
+        loop {
+            self.tx_buf.header_mut().msg_id = self.get_id();
+
+            op_header.pack(&mut self.tx_buf)?;
+            op_body.pack(&mut self.tx_buf)?;
+
+            if !self
+                .link
+                .send_receive(&self.tx_buf, &mut self.rx_buf, timeout)?
+            {
+                return Ok(false);
+            }
+            if op_header.is_finished() && op_body.is_finished() {
+                break;
+            }
+            if timeout.is_zero() {
+                std::thread::sleep(Duration::from_millis(1));
+            }
+        }
+        Ok(true)
     }
 
+    #[deprecated(since = "11.1.0", note = "Use send instead")]
     pub fn send_with_timeout<S: Datagram<T>>(
         &mut self,
         s: S,
