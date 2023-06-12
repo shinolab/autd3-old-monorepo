@@ -23,6 +23,7 @@ from pyautd3.native_methods.autd3capi_def import (
     FPGA_CLK_FREQ,
     FPGA_SUB_CLK_FREQ,
     Level,
+    TimerStrategy,
 )
 from pyautd3.native_methods.autd3capi_def import TRANS_SPACING_MM as TRANS_SPACING
 from pyautd3.native_methods.autd3capi_def import DEVICE_WIDTH_MM as DEVICE_WIDTH
@@ -51,6 +52,7 @@ __all__ = [
     "FPGA_CLK_FREQ",
     "FPGA_SUB_CLK_FREQ",
     "Level",
+    "TimerStrategy",
 ]
 
 __version__ = "11.1.0"
