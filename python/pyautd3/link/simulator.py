@@ -27,7 +27,7 @@ class Simulator(Link):
     def __init__(self, port: int):
         super().__init__(LinkSimulator().link_simulator(port))
 
-    def with_addr(self, addr: str) -> "Simulator":
+    def with_server_ip(self, addr: str) -> "Simulator":
         err = ctypes.create_string_buffer(256)
         self._ptr = LinkSimulator().link_simulator_addr(
             self._ptr, addr.encode("utf-8"), err

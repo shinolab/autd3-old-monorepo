@@ -3,7 +3,7 @@
 // Created Date: 29/05/2023
 // Author: Shun Suzuki
 // -----
-// Last Modified: 03/06/2023
+// Last Modified: 12/06/2023
 // Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
 // -----
 // Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -24,7 +24,7 @@ class Simulator : public internal::Link {
  public:
   explicit Simulator(const uint16_t port) : Link(internal::native_methods::AUTDLinkSimulator(port)) {}
 
-  Simulator with_addr(const std::string& ip) {
+  Simulator with_server_ip(const std::string& ip) {
     char err[256];
     _ptr = AUTDLinkSimulatorAddr(_ptr, ip.c_str(), err);
     if (_ptr._0 == nullptr) throw internal::AUTDException(err);
