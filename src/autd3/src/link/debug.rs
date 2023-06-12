@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/06/2023
+ * Last Modified: 12/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -258,6 +258,7 @@ impl<T: Transducer> Link<T> for Debug {
         rx: &mut RxDatagram,
         timeout: Duration,
     ) -> Result<bool, AUTDInternalError> {
+        debug!(logger: self.logger, "Timeout: {:?}", timeout);
         if !<Self as Link<T>>::send(self, tx)? {
             return Ok(false);
         }
