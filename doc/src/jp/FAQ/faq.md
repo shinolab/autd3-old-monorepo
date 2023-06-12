@@ -6,15 +6,10 @@
 
 - macOS, linuxで`link::SOEM`を使用する場合, root権限が必要
 
-   ```
-   sudo ./examples/example_soem
-   ```
-
    - linuxの場合, `setcap`コマンドで以下の権限を設定することで回避することもできる
    
-      ```
+      ```shell
       sudo setcap cap_net_raw,cap_net_admin=eip ./examples/example_soem
-      ./examples/example_soem
       ```
 
 - (Windows) 最新のnpcapを使用する
@@ -30,14 +25,6 @@
 - (Windows) 最新のnpcapを使用する
 
 - `send_cycle`と`sync0_cycle`の値を増やす
-   ```cpp
-     auto link = autd3::link::SOEM()
-                  ︙
-                  .sync0_cycle(4)
-                  .send_cycle(4)
-                  ︙
-                  .build();
-   ```
 
 ## `link::SOEM`使用時に送信が頻繁に失敗する
 
@@ -64,7 +51,7 @@
   1. `sync_mode`を`FreeRun`にする
   1. Linuxやmacを使用する.
      - ただし, 仮想マシンはNG
-  1. `link::TwinCAT`, `link::RemoteTwinCAT`, または, `link::RemoteSOEM`を使用する
+  1. `TwinCAT`, `RemoteTwinCAT`, または, `RemoteSOEM`リンクを使用する
   1. USB to Ethernetアダプターを使用する
      - 少なくとも「ASIX AX88179」のチップを採用しているもので正常に動作することが確認されている
      - なお, オンボードではなくとも, PCIe接続のethernetアダプターでも同様の問題が発生する
@@ -76,7 +63,7 @@
 - 超音波の出力時にこれが頻発する場合は, 電力が足りているかを確認すること
    - デバイス一台で最大50W消費する
 
-## `link::RemoteTwinCAT`使用時にエラーが出る
+## `RemoteTwinCAT`リンク使用時にエラーが出る
 
 - ファイアウォールでブロックされている可能性があるため, ファイアウォールを切るか, TCP/UDPの48898番ポートを開ける.
 - クライアントPCのサーバー以外とのLANをすべて切断する.
@@ -84,48 +71,15 @@
 ## 振動子の位相/振幅データにアクセスするには?
 
 1. 自分で所望の`Gain`を作成する. [Gainの自作](../Users_Manual/advanced_examples/custom_gain.md)を参照.
-2. `gain::Cache`経由でアクセスする. `gain::Cache`に定義されているインデクサでアクセスできる.
-
-   ```cpp
-   autd3::Controller autd;
-
-   ...
-
-   autd3::gain::Cache<autd3::gain::Focus> g(autd3::Vector3(x, y, z));
-
-   g.calc(autd.geometry()); // initialize drive data
-   g[0].phase = autd3::Phase(0); // overwrite phase of 0-th transducer
-   ```
-
-   先に手動で`calc`を呼んで初期化する必要がある点に注意する.
 
 ## AM変調データにアクセスするには?
 
 1. 自分で所望の`Modulation`を作成する. [Modulationの自作](../Users_Manual/advanced_examples/custom_modulation.md)を参照.
-2. `modulation::Cache`経由でアクセスする. `modulation::Cache`に定義されているインデクサでアクセスできる.
-
-   ```cpp
-   autd3::Controller autd;
-
-   ...
-
-   autd3::modulation::Cache<autd3::modulation::Static> m;
-
-   m.calc(); // initialize buffer data
-   m[0] = autd3::Amp(0); // overwrite amp of 0-th modulation data
-   ```
-
-   先に手動で`calc`を呼んで初期化する必要がある点に注意する.
 
 ## 超音波の出力が異常に弱い/周波数がおかしい
 
 - 初期化/同期を行っているか確認する.
    - 同期は, たとえ1台のデバイスしか使っていない場合でも必要
-
-   ```cpp
-   autd.send(autd3::Clear());
-   autd.send(autd3::Synchronize());
-   ```
 
 ## その他
 
