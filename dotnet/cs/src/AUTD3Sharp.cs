@@ -898,13 +898,13 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public SineLegacy with_sampling_frequency_division(uint div)
+            public Square with_sampling_frequency_division(uint div)
             {
                 _freq_div = div;
                 return this;
             }
 
-            public SineLegacy with_sampling_frequency(float_t freq)
+            public Square with_sampling_frequency(float_t freq)
             {
                 return with_sampling_frequency_division((uint)((float_t)Def.FpgaSubClkFreq / freq));
             }
