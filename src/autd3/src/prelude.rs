@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/06/2023
+ * Last Modified: 12/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -33,6 +33,7 @@ pub use autd3_core::{
     fpga::{FPGA_CLK_FREQ, FPGA_SUB_CLK_FREQ},
     geometry::*,
     link::Link,
+    modulation::ModulationProperty,
     silencer_config::SilencerConfig,
     stm::{ControlPoint, FocusSTM, GainSTM},
     stop::Stop,

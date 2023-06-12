@@ -714,12 +714,14 @@ namespace AUTD3Sharp
             private readonly int _freq;
             private float_t? _amp;
             private float_t? _offset;
+            private uint? _freq_div;
 
             public Sine(int freq)
             {
                 _freq = freq;
                 _amp = null;
                 _offset = null;
+                _freq_div = null;
             }
 
             public Sine WithAmp(float_t amp)
@@ -734,6 +736,17 @@ namespace AUTD3Sharp
                 return this;
             }
 
+            public Sine with_sampling_frequency_division(uint div)
+            {
+                _freq_div = div;
+                return this;
+            }
+
+            public Sine with_sampling_frequency(float_t freq)
+            {
+                return with_sampling_frequency_division((uint)((float_t)Def.FpgaSubClkFreq / freq));
+            }
+
             public override ModulationPtr ModulationPtr()
             {
                 var ptr = Base.AUTDModulationSine((uint)_freq);
@@ -741,6 +754,8 @@ namespace AUTD3Sharp
                     ptr = Base.AUTDModulationSineWithAmp(ptr, _amp.Value);
                 if (_offset != null)
                     ptr = Base.AUTDModulationSineWithOffset(ptr, _offset.Value);
+                if (_freq_div != null)
+                    ptr = Base.AUTDModulationSineWithSamplingFrequencyDivision(ptr, _freq_div.Value);
                 return ptr;
             }
         }
@@ -751,12 +766,14 @@ namespace AUTD3Sharp
             private readonly int _freq;
             private float_t? _amp;
             private float_t? _offset;
+            private uint? _freq_div;
 
             public SinePressure(int freq)
             {
                 _freq = freq;
                 _amp = null;
                 _offset = null;
+                _freq_div = null;
             }
 
             public SinePressure WithAmp(float_t amp)
@@ -771,6 +788,17 @@ namespace AUTD3Sharp
                 return this;
             }
 
+            public SinePressure with_sampling_frequency_division(uint div)
+            {
+                _freq_div = div;
+                return this;
+            }
+
+            public SinePressure with_sampling_frequency(float_t freq)
+            {
+                return with_sampling_frequency_division((uint)((float_t)Def.FpgaSubClkFreq / freq));
+            }
+
             public override ModulationPtr ModulationPtr()
             {
                 var ptr = Base.AUTDModulationSinePressure((uint)_freq);
@@ -778,23 +806,25 @@ namespace AUTD3Sharp
                     ptr = Base.AUTDModulationSinePressureWithAmp(ptr, _amp.Value);
                 if (_offset != null)
                     ptr = Base.AUTDModulationSinePressureWithOffset(ptr, _offset.Value);
+                if (_freq_div != null)
+                    ptr = Base.AUTDModulationSinePressureWithSamplingFrequencyDivision(ptr, _freq_div.Value);
                 return ptr;
             }
         }
-
-
 
         public sealed class SineLegacy : ModulationBase
         {
             private readonly float_t _freq;
             private float_t? _amp;
             private float_t? _offset;
+            private uint? _freq_div;
 
             public SineLegacy(float_t freq)
             {
                 _freq = freq;
                 _amp = null;
                 _offset = null;
+                _freq_div = null;
             }
 
             public SineLegacy WithAmp(float_t amp)
@@ -809,6 +839,17 @@ namespace AUTD3Sharp
                 return this;
             }
 
+            public SineLegacy with_sampling_frequency_division(uint div)
+            {
+                _freq_div = div;
+                return this;
+            }
+
+            public SineLegacy with_sampling_frequency(float_t freq)
+            {
+                return with_sampling_frequency_division((uint)((float_t)Def.FpgaSubClkFreq / freq));
+            }
+
             public override ModulationPtr ModulationPtr()
             {
                 var ptr = Base.AUTDModulationSineLegacy(_freq);
@@ -816,10 +857,11 @@ namespace AUTD3Sharp
                     ptr = Base.AUTDModulationSineLegacyWithAmp(ptr, _amp.Value);
                 if (_offset != null)
                     ptr = Base.AUTDModulationSineLegacyWithOffset(ptr, _offset.Value);
+                if (_freq_div != null)
+                    ptr = Base.AUTDModulationSineLegacyWithSamplingFrequencyDivision(ptr, _freq_div.Value);
                 return ptr;
             }
         }
-
 
         public sealed class Square : ModulationBase
         {
@@ -827,6 +869,7 @@ namespace AUTD3Sharp
             private float_t? _low;
             private float_t? _high;
             private float_t? _duty;
+            private uint? _freq_div;
 
             public Square(int freq)
             {
@@ -834,6 +877,7 @@ namespace AUTD3Sharp
                 _low = null;
                 _high = null;
                 _duty = null;
+                _freq_div = null;
             }
 
             public Square WithLow(float_t low)
@@ -854,6 +898,17 @@ namespace AUTD3Sharp
                 return this;
             }
 
+            public SineLegacy with_sampling_frequency_division(uint div)
+            {
+                _freq_div = div;
+                return this;
+            }
+
+            public SineLegacy with_sampling_frequency(float_t freq)
+            {
+                return with_sampling_frequency_division((uint)((float_t)Def.FpgaSubClkFreq / freq));
+            }
+
             public override ModulationPtr ModulationPtr()
             {
                 var ptr = Base.AUTDModulationSquare((uint)_freq);
@@ -863,6 +918,8 @@ namespace AUTD3Sharp
                     ptr = Base.AUTDModulationSquareWithHigh(ptr, _high.Value);
                 if (_duty != null)
                     ptr = Base.AUTDModulationSquareWithDuty(ptr, _duty.Value);
+                if (_freq_div != null)
+                    ptr = Base.AUTDModulationSquareWithSamplingFrequencyDivision(ptr, _freq_div.Value);
                 return ptr;
             }
         }
