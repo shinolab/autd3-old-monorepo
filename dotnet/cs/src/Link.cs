@@ -4,7 +4,7 @@
  * Created Date: 28/04/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/06/2023
+ * Last Modified: 12/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
 * Copyright (c) 2021-2023 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ namespace AUTD3Sharp
                 Ptr = ptr;
             }
 
-            internal Link(): this(new LinkPtr())
+            internal Link() : this(new LinkPtr())
             {
             }
         }
@@ -43,9 +43,9 @@ namespace AUTD3Sharp
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate void OnLogFlushCallback();
 
-        public sealed class Debug: Link
+        public sealed class Debug : Link
         {
-            public Debug(): base(NativeMethods.Base.AUTDLinkDebug())
+            public Debug() : base(NativeMethods.Base.AUTDLinkDebug())
             {
             }
 
@@ -68,11 +68,11 @@ namespace AUTD3Sharp
             }
         }
 
-        public sealed class SOEM: Link
+        public sealed class SOEM : Link
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)] public delegate void OnLostCallbackDelegate(string str);
 
-            public SOEM(): base(NativeMethods.LinkSOEM.AUTDLinkSOEM())
+            public SOEM() : base(NativeMethods.LinkSOEM.AUTDLinkSOEM())
             {
 
             }
@@ -142,7 +142,7 @@ namespace AUTD3Sharp
                 Ptr = NativeMethods.LinkSOEM.AUTDLinkSOEMTimeout(Ptr, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
                 return this;
             }
-            
+
             public static IEnumerable<EtherCATAdapter> EnumerateAdapters()
             {
                 var handle = NativeMethods.LinkSOEM.AUTDGetAdapterPointer(out var len);
@@ -157,7 +157,7 @@ namespace AUTD3Sharp
             }
         }
 
-        public sealed class RemoteSOEM: Link
+        public sealed class RemoteSOEM : Link
         {
             public RemoteSOEM(IPEndPoint ip)
             {
@@ -175,7 +175,7 @@ namespace AUTD3Sharp
 
         }
 
-        public sealed class TwinCAT: Link
+        public sealed class TwinCAT : Link
         {
             public TwinCAT()
             {
@@ -192,7 +192,7 @@ namespace AUTD3Sharp
             }
         }
 
-        public sealed class RemoteTwinCAT: Link
+        public sealed class RemoteTwinCAT : Link
         {
             public RemoteTwinCAT(string serverAmsNetId)
             {
@@ -221,14 +221,14 @@ namespace AUTD3Sharp
             }
         }
 
-        public sealed class Simulator: Link
+        public sealed class Simulator : Link
         {
             public Simulator(ushort port)
             {
                 Ptr = NativeMethods.LinkSimulator.AUTDLinkSimulator(port);
             }
 
-            public Simulator Addr(IPAddress addr)
+            public Simulator WithServerIp(IPAddress addr)
             {
                 var err = new byte[256];
                 Ptr = NativeMethods.LinkSimulator.AUTDLinkSimulatorAddr(Ptr, addr.ToString(), err);
@@ -237,7 +237,7 @@ namespace AUTD3Sharp
                 return this;
             }
 
-            public Simulator Timeout(TimeSpan timeout)
+            public Simulator WithTimeout(TimeSpan timeout)
             {
                 Ptr = NativeMethods.LinkSimulator.AUTDLinkSimulatorTimeout(Ptr, (ulong)(timeout.TotalMilliseconds * 1000 * 1000));
                 return this;

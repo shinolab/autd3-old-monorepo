@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/06/2023
+ * Last Modified: 12/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -87,9 +87,8 @@ pub unsafe extern "C" fn AUTDControllerOpenWith(
     err: *mut c_char,
 ) -> ControllerPtr {
     let link: Box<Box<L>> = Box::from_raw(link.0 as *mut Box<L>);
-    let link = DynamicLink::new(*link);
     let cnt = try_or_return!(
-        Box::from_raw(builder.0 as *mut ControllerBuilder<DynamicTransducer>).open_with(link),
+        Box::from_raw(builder.0 as *mut ControllerBuilder<DynamicTransducer>).open_with(*link),
         err,
         ControllerPtr(NULL)
     );
@@ -188,9 +187,13 @@ pub unsafe extern "C" fn AUTDSetTransCycle(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGetWavelength(geo: GeometryPtr, idx: u32) -> float {
+pub unsafe extern "C" fn AUTDGetWavelength(
+    geo: GeometryPtr,
+    idx: u32,
+    sound_speed: float,
+) -> float {
     let geometry = cast!(geo.0, Geo);
-    geometry[idx as _].wavelength(geometry.sound_speed)
+    geometry[idx as _].wavelength(sound_speed)
 }
 
 #[no_mangle]
@@ -255,6 +258,22 @@ pub unsafe extern "C" fn AUTDTransPosition(
     *x = pos.x;
     *y = pos.y;
     *z = pos.z;
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDTransRotation(
+    geo: GeometryPtr,
+    tr_idx: u32,
+    w: *mut float,
+    x: *mut float,
+    y: *mut float,
+    z: *mut float,
+) {
+    let rot = cast!(geo.0, Geo)[tr_idx as _].rotation();
+    *w = rot.w;
+    *x = rot.i;
+    *y = rot.j;
+    *z = rot.k;
 }
 
 #[no_mangle]
@@ -813,7 +832,7 @@ pub unsafe extern "C" fn AUTDClear() -> DatagramSpecialPtr {
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDUpdateFlags() -> DatagramSpecialPtr {
-    DatagramSpecialPtr::new(UpdateFlag::new())
+    DatagramSpecialPtr::new(UpdateFlags::new())
 }
 
 #[no_mangle]
@@ -1019,7 +1038,7 @@ mod tests {
             }
             dbg!(AUTDGetTransCycle(geo, 0));
 
-            dbg!(AUTDGetWavelength(geo, 0));
+            dbg!(AUTDGetWavelength(geo, 0, c));
 
             let atten = 0.1;
             AUTDSetAttenuation(geo, atten);

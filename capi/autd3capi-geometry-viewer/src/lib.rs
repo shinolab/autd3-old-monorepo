@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/06/2023
+ * Last Modified: 12/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -34,7 +34,7 @@ pub unsafe extern "C" fn AUTDGeometryViewerSize(
     width: u32,
     height: u32,
 ) -> GeometryViewerPtr {
-    let viewer = Box::from_raw(viewer.0 as *mut GeometryViewer).window_size(width, height);
+    let viewer = Box::from_raw(viewer.0 as *mut GeometryViewer).with_window_size(width, height);
     GeometryViewerPtr(Box::into_raw(Box::new(viewer)) as _)
 }
 
@@ -44,7 +44,7 @@ pub unsafe extern "C" fn AUTDGeometryViewerVsync(
     viewer: GeometryViewerPtr,
     vsync: bool,
 ) -> GeometryViewerPtr {
-    let viewer = Box::from_raw(viewer.0 as *mut GeometryViewer).vsync(vsync);
+    let viewer = Box::from_raw(viewer.0 as *mut GeometryViewer).with_vsync(vsync);
     GeometryViewerPtr(Box::into_raw(Box::new(viewer)) as _)
 }
 

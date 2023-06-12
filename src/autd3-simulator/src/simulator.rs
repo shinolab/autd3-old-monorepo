@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/06/2023
+ * Last Modified: 12/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -80,28 +80,59 @@ impl Simulator {
         }
     }
 
+    #[deprecated(since = "11.1.0", note = "Use with_window_size instead")]
     pub fn window_size(mut self, width: u32, height: u32) -> Self {
         self.window_width = Some(width);
         self.window_height = Some(height);
         self
     }
 
+    pub fn with_window_size(mut self, width: u32, height: u32) -> Self {
+        self.window_width = Some(width);
+        self.window_height = Some(height);
+        self
+    }
+
+    #[deprecated(since = "11.1.0", note = "Use with_vsync instead")]
     pub fn vsync(mut self, vsync: bool) -> Self {
         self.vsync = Some(vsync);
         self
     }
 
+    pub fn with_vsync(mut self, vsync: bool) -> Self {
+        self.vsync = Some(vsync);
+        self
+    }
+
+    #[deprecated(since = "11.1.0", note = "Use with_port instead")]
     pub fn port(mut self, port: u16) -> Self {
         self.port = Some(port);
         self
     }
 
+    pub fn with_port(mut self, port: u16) -> Self {
+        self.port = Some(port);
+        self
+    }
+
+    #[deprecated(since = "11.1.0", note = "Use with_gpu_idx instead")]
     pub fn gpu_idx(mut self, gpu_idx: i32) -> Self {
         self.gpu_idx = Some(gpu_idx);
         self
     }
 
+    pub fn with_gpu_idx(mut self, gpu_idx: i32) -> Self {
+        self.gpu_idx = Some(gpu_idx);
+        self
+    }
+
+    #[deprecated(since = "11.1.0", note = "Use with_settings instead")]
     pub fn settings(mut self, settings: ViewerSettings) -> Self {
+        self.settings = settings;
+        self
+    }
+
+    pub fn with_settings(mut self, settings: ViewerSettings) -> Self {
         self.settings = settings;
         self
     }
@@ -167,6 +198,12 @@ impl Simulator {
                                 continue;
                             }
                             Err(e) if e.kind() == std::io::ErrorKind::ConnectionReset => {
+                                spdlog::info!("Client disconnected");
+                                sender_c2s.send(vec![CLIENT_DISCONNECT]).unwrap();
+                                spdlog::info!("Waiting for client connection on {}", port);
+                                break;
+                            }
+                            Err(e) if e.kind() == std::io::ErrorKind::ConnectionAborted => {
                                 spdlog::info!("Client disconnected");
                                 sender_c2s.send(vec![CLIENT_DISCONNECT]).unwrap();
                                 spdlog::info!("Waiting for client connection on {}", port);
@@ -470,6 +507,30 @@ impl Simulator {
                             let command_buffer = builder.build().unwrap();
 
                             let field_image = slice_viewer.field_image_view();
+
+                            if update_flag.contains(UpdateFlag::SAVE_IMAGE) {
+                                let image_buffer_content = field_image.read().unwrap();
+                                let img_x = (self.settings.slice_width
+                                    / self.settings.slice_pixel_size)
+                                    as u32;
+                                let img_y = (self.settings.slice_height
+                                    / self.settings.slice_pixel_size)
+                                    as u32;
+                                let mut img_buf = image::ImageBuffer::new(img_x, img_y);
+                                for ((_, _, pixel), [r, g, b, a]) in img_buf
+                                    .enumerate_pixels_mut()
+                                    .zip(image_buffer_content.iter())
+                                {
+                                    let r = (r * 255.0) as u8;
+                                    let g = (g * 255.0) as u8;
+                                    let b = (b * 255.0) as u8;
+                                    let a = (a * 255.0) as u8;
+                                    *pixel = image::Rgba([r, g, b, a]);
+                                }
+                                let img_buf = image::imageops::flip_vertical(&img_buf);
+                                img_buf.save(&self.settings.image_save_path).unwrap();
+                            }
+
                             let config = Config {
                                 source_num: sources.len() as _,
                                 color_scale: self.settings.slice_color_scale,

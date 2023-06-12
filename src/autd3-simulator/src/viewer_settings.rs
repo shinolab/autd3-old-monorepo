@@ -4,7 +4,7 @@
  * Created Date: 26/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2023
+ * Last Modified: 12/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -40,7 +40,6 @@ pub struct ViewerSettings {
     pub camera_pos_z: f32,
     pub camera_near_clip: f32,
     pub camera_far_clip: f32,
-    pub camera_move_speed: f32,
     pub sound_speed: f32,
     pub slice_rot_x: f32,
     pub slice_rot_y: f32,
@@ -115,7 +114,6 @@ impl Default for ViewerSettings {
             camera_pos_z: 150.0 * SCALE * ZPARITY,
             camera_near_clip: 0.1 * SCALE,
             camera_far_clip: 1000. * SCALE,
-            camera_move_speed: 10.0 * SCALE,
             sound_speed: 340.0e3 * SCALE,
             slice_rot_x: 90.0 * ZPARITY,
             slice_rot_y: 0.,

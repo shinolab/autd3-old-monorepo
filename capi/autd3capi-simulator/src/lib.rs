@@ -4,7 +4,7 @@
  * Created Date: 27/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 02/06/2023
+ * Last Modified: 12/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,7 +33,7 @@ pub unsafe extern "C" fn AUTDSimulator() -> ConstPtr {
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDSimulatorPort(simulator: ConstPtr, port: u16) -> ConstPtr {
-    let simulator = Box::from_raw(simulator as *mut Simulator).port(port);
+    let simulator = Box::from_raw(simulator as *mut Simulator).with_port(port);
     Box::into_raw(Box::new(simulator)) as _
 }
 
@@ -44,21 +44,21 @@ pub unsafe extern "C" fn AUTDSimulatorWindowSize(
     width: u32,
     height: u32,
 ) -> ConstPtr {
-    let simulator = Box::from_raw(simulator as *mut Simulator).window_size(width, height);
+    let simulator = Box::from_raw(simulator as *mut Simulator).with_window_size(width, height);
     Box::into_raw(Box::new(simulator)) as _
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDSimulatorVsync(simulator: ConstPtr, vsync: bool) -> ConstPtr {
-    let simulator = Box::from_raw(simulator as *mut Simulator).vsync(vsync);
+    let simulator = Box::from_raw(simulator as *mut Simulator).with_vsync(vsync);
     Box::into_raw(Box::new(simulator)) as _
 }
 
 #[no_mangle]
 #[must_use]
 pub unsafe extern "C" fn AUTDSimulatorGpuIdx(simulator: ConstPtr, idx: i32) -> ConstPtr {
-    let simulator = Box::from_raw(simulator as *mut Simulator).gpu_idx(idx);
+    let simulator = Box::from_raw(simulator as *mut Simulator).with_gpu_idx(idx);
     Box::into_raw(Box::new(simulator)) as _
 }
 
@@ -76,7 +76,7 @@ pub unsafe extern "C" fn AUTDSimulatorSettingsPath(
     );
     let reader = BufReader::new(file);
     let settings: ViewerSettings = try_or_return!(serde_json::from_reader(reader), err, NULL);
-    let simulator = Box::from_raw(simulator as *mut Simulator).settings(settings);
+    let simulator = Box::from_raw(simulator as *mut Simulator).with_settings(settings);
     Box::into_raw(Box::new(simulator)) as _
 }
 

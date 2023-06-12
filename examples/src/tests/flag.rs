@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/06/2023
+ * Last Modified: 12/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -29,7 +29,7 @@ pub fn flag<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> Result<bo
     io::stdin().read_line(&mut _s).unwrap();
 
     autd.force_fan(true);
-    autd.send(UpdateFlag::default())?;
+    autd.send(UpdateFlags::default())?;
 
     let fin = Arc::new(AtomicBool::new(false));
     std::thread::scope(|s| {
@@ -57,5 +57,5 @@ pub fn flag<T: Transducer, L: Link<T>>(autd: &mut Controller<T, L>) -> Result<bo
 
     autd.reads_fpga_info(false);
     autd.force_fan(false);
-    autd.send(UpdateFlag::default())
+    autd.send(UpdateFlags::default())
 }

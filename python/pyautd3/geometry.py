@@ -66,6 +66,17 @@ class Transducer:
         return np.array([x.value, y.value, z.value])
 
     @property
+    def rotation(self) -> np.ndarray:
+        w = c_double(0.0)
+        x = c_double(0.0)
+        y = c_double(0.0)
+        z = c_double(0.0)
+        Base().trans_rotation(
+            self._ptr, self._tr_id, byref(w), byref(x), byref(y), byref(z)
+        )
+        return np.array([w.value, x.value, y.value, z.value])
+
+    @property
     def x_direction(self) -> np.ndarray:
         x = c_double(0.0)
         y = c_double(0.0)
@@ -117,13 +128,11 @@ class Transducer:
     def mod_delay(self, delay: int):
         return Base().set_trans_mod_delay(self._ptr, self._tr_id, delay)
 
-    @property
-    def wavelength(self) -> float:
-        return float(Base().get_wavelength(self._ptr, self._tr_id))
+    def wavelength(self, sound_speed: float) -> float:
+        return float(Base().get_wavelength(self._ptr, self._tr_id, sound_speed))
 
-    @property
-    def wavenumber(self) -> float:
-        return 2.0 * np.pi / self.wavelength
+    def wavenumber(self, sound_speed: float) -> float:
+        return 2.0 * np.pi / self.wavelength(sound_speed)
 
 
 class Geometry:
