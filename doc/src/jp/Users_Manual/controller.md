@@ -20,7 +20,7 @@ Offモードではファンは常時オフであり, Onモードでは常時オ�
 Autoモードの場合は温度が高くなると自動的にファンが起動する.
 `force_fan`フラグはこのAutoモードでファンを強制的に起動するためのフラグである.
 
-```rust,should_panic
+```rust
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -46,13 +46,13 @@ autd.force_fan(True)
 フラグの更新だけがしたい場合は`UpdateFlags`を送信すれば良い.
 
 
-```rust,should_panic
+```rust
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
 autd.force_fan(true);
-autd.send(UpdateFlags::new());
+autd.send(UpdateFlags::new())?;
 # Ok(())
 # }
 ```
@@ -78,13 +78,13 @@ FPGAの状態を取得する.
 これを使用する前に, `reads_fpga_info`フラグをセットしておく必要がある.
 
 
-```rust,should_panic
+```rust
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
 autd.reads_fpga_info(true);
-autd.send(UpdateFlags::new());
+autd.send(UpdateFlags::new())?;
 
 let info = autd.fpga_info();
 # Ok(())
@@ -122,7 +122,7 @@ FPGAの状態としては, 現在以下の情報が取得できる.
 
 ### タイムアウト
 
-`send`の最終引数でタイムアウト時間を指定できる.
+`send_with_timeout`でタイムアウト時間を指定できる.
 この引数を省略した場合は[Link](./link.md)で設定したタイムアウト時間が使用される.
 
 ```rust,should_panic
@@ -132,7 +132,7 @@ FPGAの状態としては, 現在以下の情報が取得できる.
 # let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
 # let m = Static::new();
 # let g = Null::new();
-autd.send((m, g, std::time::Duration::from_millis(20)))?;
+autd.send_with_timeout((m, g), Some(std::time::Duration::from_millis(20)))?;
 # Ok(())
 # }
 ```

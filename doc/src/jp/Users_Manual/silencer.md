@@ -54,7 +54,7 @@ autd.send(config)
 詳細は以下を参照されたいが, 大まかには`step`を小さくするほどより静かになる.
 
 
-```rust,should_panic
+```rust
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
