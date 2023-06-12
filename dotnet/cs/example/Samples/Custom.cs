@@ -4,7 +4,7 @@
  * Created Date: 14/10/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 05/06/2023
+ * Last Modified: 12/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -32,11 +32,12 @@ internal static class CustomTest
 
         public override Drive[] Calc(Geometry geometry)
         {
+            var soundSpeed = geometry.SoundSpeed;
             return Transform(geometry, tr =>
             {
                 var tp = tr.Position;
                 var dist = (tp - _point).L2Norm;
-                var phase = dist * tr.Wavenumber;
+                var phase = dist * tr.Wavenumber(soundSpeed);
                 return new Drive(1.0, phase);
             });
         }

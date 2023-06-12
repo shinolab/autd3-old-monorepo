@@ -23,10 +23,12 @@ class Focus(Gain):
         self.point = np.array(point)
 
     def calc(self, geometry: Geometry):
+        sound_speed = geometry.sound_speed
         return Gain.transform(
             geometry,
             lambda tr: Drive(
-                1.0, np.linalg.norm(tr.position - self.point) * tr.wavenumber
+                1.0,
+                np.linalg.norm(tr.position - self.point) * tr.wavenumber(sound_speed),
             ),
         )
 

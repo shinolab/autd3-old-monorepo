@@ -86,7 +86,7 @@ class NativeMethods(metaclass=Singleton):
         self.dll.AUTDSetTransCycle.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.c_uint16, ctypes.c_char_p]  # type: ignore 
         self.dll.AUTDSetTransCycle.restype = ctypes.c_bool
 
-        self.dll.AUTDGetWavelength.argtypes = [GeometryPtr, ctypes.c_uint32]  # type: ignore 
+        self.dll.AUTDGetWavelength.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.c_double]  # type: ignore 
         self.dll.AUTDGetWavelength.restype = ctypes.c_double
 
         self.dll.AUTDGetAttenuation.argtypes = [GeometryPtr]  # type: ignore 
@@ -109,6 +109,9 @@ class NativeMethods(metaclass=Singleton):
 
         self.dll.AUTDTransPosition.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDTransPosition.restype = None
+
+        self.dll.AUTDTransRotation.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]  # type: ignore 
+        self.dll.AUTDTransRotation.restype = None
 
         self.dll.AUTDTransXDirection.argtypes = [GeometryPtr, ctypes.c_uint32, ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double)]  # type: ignore 
         self.dll.AUTDTransXDirection.restype = None
@@ -380,8 +383,8 @@ class NativeMethods(metaclass=Singleton):
     def set_trans_cycle(self, geo: GeometryPtr, idx: int, value: int, err: ctypes.Array[ctypes.c_char]) -> ctypes.c_bool:
         return self.dll.AUTDSetTransCycle(geo, idx, value, err)
 
-    def get_wavelength(self, geo: GeometryPtr, idx: int) -> ctypes.c_double:
-        return self.dll.AUTDGetWavelength(geo, idx)
+    def get_wavelength(self, geo: GeometryPtr, idx: int, sound_speed: float) -> ctypes.c_double:
+        return self.dll.AUTDGetWavelength(geo, idx, sound_speed)
 
     def get_attenuation(self, geo: GeometryPtr) -> ctypes.c_double:
         return self.dll.AUTDGetAttenuation(geo)
@@ -403,6 +406,9 @@ class NativeMethods(metaclass=Singleton):
 
     def trans_position(self, geo: GeometryPtr, tr_idx: int, x: Any, y: Any, z: Any) -> None:
         return self.dll.AUTDTransPosition(geo, tr_idx, x, y, z)
+
+    def trans_rotation(self, geo: GeometryPtr, tr_idx: int, w: Any, x: Any, y: Any, z: Any) -> None:
+        return self.dll.AUTDTransRotation(geo, tr_idx, w, x, y, z)
 
     def trans_x_direction(self, geo: GeometryPtr, tr_idx: int, x: Any, y: Any, z: Any) -> None:
         return self.dll.AUTDTransXDirection(geo, tr_idx, x, y, z)

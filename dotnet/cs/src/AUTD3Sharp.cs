@@ -4,7 +4,7 @@
  * Created Date: 23/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 09/06/2023
+ * Last Modified: 12/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -109,6 +109,15 @@ namespace AUTD3Sharp
             }
         }
 
+        public Quaternion Rotation
+        {
+            get
+            {
+                Base.AUTDTransRotation(_ptr, (uint)Idx, out var w, out var x, out var y, out var z);
+                return new Quaternion(x, y, z, w);
+            }
+        }
+
         public Vector3 XDirection
         {
             get
@@ -135,11 +144,6 @@ namespace AUTD3Sharp
                 return new Vector3(x, y, z);
             }
         }
-
-        public float_t Wavelength => Base.AUTDGetWavelength(_ptr, (uint)Idx);
-
-        public float_t Wavenumber => 2 * AUTD3.Pi / Wavelength;
-
         public float_t Frequency
         {
             get => Base.AUTDGetTransFrequency(_ptr, (uint)Idx);
@@ -167,6 +171,11 @@ namespace AUTD3Sharp
             get => Base.AUTDGetTransModDelay(_ptr, (uint)Idx);
             set => Base.AUTDSetTransModDelay(_ptr, (uint)Idx, value);
         }
+
+
+        public float_t Wavelength(float_t soundSpeed) => Base.AUTDGetWavelength(_ptr, (uint)Idx, soundSpeed);
+
+        public float_t Wavenumber(float_t soundSpeed) => 2 * AUTD3.Pi / Wavelength(soundSpeed);
     }
 
     public sealed class Geometry : IEnumerable<Transducer>

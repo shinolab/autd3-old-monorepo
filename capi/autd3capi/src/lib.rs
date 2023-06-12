@@ -4,7 +4,7 @@
  * Created Date: 11/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 11/06/2023
+ * Last Modified: 12/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -187,9 +187,13 @@ pub unsafe extern "C" fn AUTDSetTransCycle(
 
 #[no_mangle]
 #[must_use]
-pub unsafe extern "C" fn AUTDGetWavelength(geo: GeometryPtr, idx: u32) -> float {
+pub unsafe extern "C" fn AUTDGetWavelength(
+    geo: GeometryPtr,
+    idx: u32,
+    sound_speed: float,
+) -> float {
     let geometry = cast!(geo.0, Geo);
-    geometry[idx as _].wavelength(geometry.sound_speed)
+    geometry[idx as _].wavelength(sound_speed)
 }
 
 #[no_mangle]
@@ -254,6 +258,22 @@ pub unsafe extern "C" fn AUTDTransPosition(
     *x = pos.x;
     *y = pos.y;
     *z = pos.z;
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn AUTDTransRotation(
+    geo: GeometryPtr,
+    tr_idx: u32,
+    w: *mut float,
+    x: *mut float,
+    y: *mut float,
+    z: *mut float,
+) {
+    let rot = cast!(geo.0, Geo)[tr_idx as _].rotation();
+    *w = rot.w;
+    *x = rot.x;
+    *y = rot.y;
+    *z = rot.z;
 }
 
 #[no_mangle]
