@@ -4,7 +4,7 @@
  * Created Date: 06/12/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 22/05/2023
+ * Last Modified: 12/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -61,6 +61,28 @@ where
         let (h, _) = self.0.operation(geometry)?;
         let (_, b) = self.1.operation(geometry)?;
         Ok((h, b))
+    }
+}
+
+impl<T: Transducer, H, B> Datagram<T> for (H, B, std::time::Duration)
+where
+    H: Datagram<T, B = autd3_driver::NullBody>,
+    B: Datagram<T, H = autd3_driver::NullHeader>,
+{
+    type H = H::H;
+    type B = B::B;
+
+    fn operation(
+        &mut self,
+        geometry: &Geometry<T>,
+    ) -> Result<(Self::H, Self::B), AUTDInternalError> {
+        let (h, _) = self.0.operation(geometry)?;
+        let (_, b) = self.1.operation(geometry)?;
+        Ok((h, b))
+    }
+
+    fn timeout(&self) -> Option<Duration> {
+        Some(self.2)
     }
 }
 

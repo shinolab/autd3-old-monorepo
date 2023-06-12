@@ -879,21 +879,21 @@ pub unsafe extern "C" fn AUTDSend(
         let header = Box::from_raw(header.0 as *mut Box<dyn DynamicDatagram>);
         let body = Box::from_raw(body.0 as *mut Box<dyn DynamicDatagram>);
         try_or_return!(
-            cast_mut!(cnt.0, Cnt).send_with_timeout((mode, header, body), timeout),
+            cast_mut!(cnt.0, Cnt).send((mode, header, body, timeout)),
             err,
             AUTD3_ERR
         )
     } else if !header.0.is_null() {
         let header = Box::from_raw(header.0 as *mut Box<dyn DynamicDatagram>);
         try_or_return!(
-            cast_mut!(cnt.0, Cnt).send_with_timeout((mode, header), timeout),
+            cast_mut!(cnt.0, Cnt).send((mode, header, timeout)),
             err,
             AUTD3_ERR
         )
     } else if !body.0.is_null() {
         let body = Box::from_raw(body.0 as *mut Box<dyn DynamicDatagram>);
         try_or_return!(
-            cast_mut!(cnt.0, Cnt).send_with_timeout((mode, body), timeout),
+            cast_mut!(cnt.0, Cnt).send((mode, body, timeout)),
             err,
             AUTD3_ERR
         )
@@ -924,7 +924,7 @@ pub unsafe extern "C" fn AUTDSendSpecial(
     let mode = mode.into();
     let special = Box::from_raw(special.0 as *mut Box<dyn DynamicDatagram>);
     if try_or_return!(
-        cast_mut!(cnt.0, Cnt).send_with_timeout((mode, special), timeout),
+        cast_mut!(cnt.0, Cnt).send((mode, special, timeout)),
         err,
         AUTD3_ERR
     ) {
