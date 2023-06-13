@@ -1,160 +1,160 @@
 # Modulation
 
-`Modulation` controls AM modulation.
-The `Modulation` is realized by sequentially sampling $\SI{8}{bit}$ data stored in a buffer at a constant sampling rate and multiplying it by the duty ratio.
+`Modulation` is a mechanism to control AM modulation.
+`Modulation` samples data from the buffer at a constant sampling rate and multiplies it by the duty ratio to realize AM modulation.
 Currently, `Modulation` has the following restrictions.
 
-* Maximum buffer size is 65536
-* Sampling rate is $\SI{163.84}{MHz}/N$, where $N$ is a 32-bit unsigned integer and must be greater than $1160$
-* Modulation is uniform to all devices
-* Modulation loops automatically
-* Modulation start/end timing cannot be controlled
+- The buffer size is up to 65536.
+- The sampling rate is $\clklf/N$, where $N$ is a 32-bit unsigned integer and must be at least 512.
+- Modulation is common to all devices.
+- Modulation automatically loops. It is not possible to control only one loop, etc.
+- The start/end timing of Modulation cannot be controlled.
 
-The SDK provides some `Modulation` to generate several types of AM.
+The SDK has `Modulation` by default to generate several types of AM.
 
-[[_TOC_]]
-
-## Static
-
-Static is used for an unmodulated ultrasound.
-
-```cpp
-  autd3::modulation::Static m;
-```
-
-Note that the first argument is a normalized amplitude of 0-1 (1 by default), which can be used to modify the ultrasound output uniformly.
-
-## Sine
-
-`Modulation` for deforming the sound pressure into a sinusoidal shape.
-
-```cpp
-  autd3::modulation::Sine m(f, amplitude, offset); 
-```
-
-The first argument is the frequency $f$, the second is $amplitude$ (1 by default), and the third is $offset$ (0.5 by default), so that the sound pressure waveform is
-$$
-    \frac{amplitude}{2} \times \sin(2\pi ft) + offset.
-$$
-
-Values exceeding $\[0,1\]$ in the above are clamped into $\[0,1\]$.
-The sampling frequency is set to $\SI{4}{kHz}$ ($N=40960$) by default.
-
-## SineSquared
-
-`Modulation` to transform the radiation pressure, i.e., the square of the sound pressure, into a sinusoidal shape.
-Arguments are the same as for `Sine`.
-
-## SineLegacy
-
-Compatible with the old version of `Sine`.
-
-You can take `double` value as frequency, but the frequency is not exactly the specified frequency, but the closest frequency among the possible output frequencies.
-Also, the duty ratio, not the sound pressure, will be sinusoidal.
-
-## Square
-
-Square wave modulation.
-
-```cpp
-  autd3::modulation::Square m(f, low, high); 
-```
-
-The first argument is the frequency $f$, the second is the low value (0 by default), and the third is the high value (1 by default), so that the sound pressure waveform repeats low and high with frequency $f$.
-
-You can specify the duty ratio as the fourth argument.
-The duty ratio is defined as $t_\text{high}/T = t_\text{high}f$, where $t_\text{high}$ is the time to output high in one cycle $T=1/f$.
-
-## Cache
-
-`Cache` is a cache of `Modulation` to store the result of modulation data calculation.
-It is used when the calculation of modulation data is heavy and the same `Modulation` is sent more than once.
-It can also be used to check or change the modulation data after the modulation data calculation.
-
-To use `Cache`, specify any `Modulation` type as a type argument and pass the constructor arguments of the original type in the constructor.
-
-```cpp
-  autd3::modulation::Cache<autd3::modulation::Sine> m(...) ;
-```
-
-The modulation data can be accessed with the `buffer` function or with the indexer.
-Note that you need to call the `calc` function first.
-
-```cpp
-  autd3::modulation::Cache<autd3::modulation::Sine> m(...) ;
-  m.calc();
-  m[0] = 0;
-```
-In the above example, the 0-th modulation data is set to 0.
-
-## Transform
-
-`Transform` is a `Modulation` that modifies the result of `Modulation` calculation.
-
-To use `Transform`, specify any `Modulation` type as a type argument.
-The first argument of the constructor is a transformation function, the second and subsequent arguments are constructor arguments of the original type.
-```cpp
-  autd3::modulation::Transform<autd3::modulation::Sine> m([](const double v) {return std::clamp(v, 0.5, 1.0); }, 150);
-```
-For example, in the above example, the modulation data is like a half-rectified sine wave of $\SI{150}{Hz}$.
-
-## Wav
-
-`Wav` is a `Modulation` based on a wav file.
-
-```cpp
-  const std::filesystem::path path("sin150.wav");
-  autd3::modulation::Wav m(path);
-```
-
-You must compile with the `BUILD_MODULATION_AUDIO_FILE` option turned on to use `Wav`.
-
-## RawPCM
-
-RawPCM` is a `Modulation` built from unsigned 8-bit binary data files.
-
-```cpp
-  const std::filesystem::path path = std::filesystem::path("sin150.wav");
-  autd3::modulation::RawPCM m(path, 4e3);
-```
-
-You must compile with the `BUILD_MODULATION_AUDIO_FILE` option turned on to use `RawPCM`.
+* [Static](./modulation/static.md)
+* [Sine](./modulation/sine.md)
+* [SinePressure](./modulation/sine_pressure.md)
+* [SineLegacy](./modulation/sine_legacy.md)
+* [Square](./modulation/square.md)
+* [Wav](./modulation/wav.md)
 
 ## Modulation API
 
-### sampling_frequency_division 
-
-The `sampling_frequency_division` is used to check and set the division ratio $N$ of the sampling frequency.
-The fundamental frequency of sampling frequency is $\SI{163.84}{MHz}$.
-The value of `sampling_frequency_division` can be an integer larger than 1160.
-
-```cpp
-    m.sampling_frequency_division() = 20480; // 163.84MHz/20480 = 8kHz
-```
-
-### sampling frequency
+### Sampling frequency
 
 You can get the sampling frequency with `sampling_frequency`.
 
-### size
+```rust
+# use autd3::prelude::*;
+# use autd3::core::modulation::ModulationProperty;
+# #[allow(unused_variables)]
+# fn main()  {
+# let m = autd3::modulation::SineLegacy::new(150.);
+let fs = m.sampling_frequency();
+# }
+```
 
-You can get the length of the modulation data buffer with `size`.
+```cpp
+const auto fs = m.sampling_frequency();
+```
+
+```cs
+var fs = m.SamplingFrequency;
+```
+
+```python
+fs = m.sampling_frequency
+```
+
+Some `Modulation` can set the sampling frequency with `with_sampling_frequency`.
+However, due to the constraints of `Modulation`, the sampling frequency may not be exactly the specified value.
+
+- e.g.,
+  ```rust
+  # use autd3::prelude::*;
+  # #[allow(unused_variables)]
+  # fn main()  {
+  let m = autd3::modulation::Sine::new(150).with_sampling_frequency(4e3);
+  # }
+  ```
+
+  ```cpp
+  const auto m = autd3::modulation::Sine(150).with_sampling_frequency(4e3);
+  ```
+
+  ```cs
+  var m = new Sine(150).WithSamplingFrequency(4e3);
+  ```
+
+  ```python
+  m = Sine(150).with_sampling_frequency(4e3)
+  ```
+
+### Sampling frequency division
+
+You can get the sampling frequency division $N$ with `sampling_frequency_division`.
+
+```rust
+# use autd3::prelude::*;
+# use autd3::core::modulation::ModulationProperty;
+# #[allow(unused_variables)]
+# fn main()  {
+# let m = autd3::modulation::SineLegacy::new(150.);
+let div = m.sampling_frequency_division();
+# }
+```
+
+```cpp
+const auto fs = m.sampling_frequency_division();
+```
+
+```cs
+var fs = m.SamplingFrequencyDivision;
+```
+
+```python
+fs = m.sampling_frequency_division
+```
+
+Some `Modulation` can set the sampling frequency division with `with_sampling_frequency_division`.
+
+- e.g.,
+  ```rust
+  # use autd3::prelude::*;
+  # #[allow(unused_variables)]
+  # fn main()  {
+  let m = autd3::modulation::Sine::new(150).with_sampling_frequency_division(5120);
+  # }
+  ```
+
+  ```cpp
+  const auto m = autd3::modulation::Sine(150).with_sampling_frequency_division(5120);
+  ```
+
+  ```cs
+  var m = new Sine(150).WithSamplingFrequencyDivision(5120);
+  ```
+
+  ```python
+  m = Sine(150).with_sampling_frequency_division(5120)
+  ```
 
 ## Modulation Delay
 
-Modulation works on all transducers simultaneously and does not take propagation delay into account.
-Therefore, there is a possibility that the modulation is out of phase with the distance between the transducer and the focal point.
+`Modulation` is applied to all transducers at the same time without considering propagation delay.
+Therefore, there is a possibility that modulation is shifted depending on the distance between the transducer and the focal position.
 
-To compensate for this, a `ModDelay` function is provided to delay the sampling index for each transducer.
+To compensate for this, each transducer has a function to delay the sampling index to be sampled.
 
-For example, if you want to delay the $17$-th transducer of the $0$-th device by one sampling index relative to all other transducers, you can do so as follows:
+The following example shows how to set the delay of the $0$th transducer to $1$.
 
-```cpp
-  autd.geometry()[0][17].mod_delay() = 1;
-  autd.send(autd3::ModDelayConfig());
+```rust,should_panic
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+autd.geometry_mut()[0].set_mod_delay(1);
+autd.send(ModDelay::new())?;
+# Ok(())
+# }
 ```
 
-Since this is a delay of the sampling index, the actual delay time depends on the sampling frequency.
-If `mod_delay` is $1$ and the sampling frequency is $\SI{40}{kHz}$, the delay is $\SI{25}{\text{μ}s}$, and if $\SI{4}{kHz}$, the delay is $\SI{250}{\text{μ}s}$.
+```cpp
+autd.geometry()[0].set_mod_delay(1);
+autd.send(autd3::ModDelayConfig());
+```
 
-Also, the value of `mod_delay` must be less than the modulation length, i.e., `buffer` size.
+```cs
+autd.Geometry[0].ModDelay = 1;
+autd.Send(new ModDelayConfig());
+```
+
+```python
+from pyautd3 import ModDelayConfig
+
+autd.geometry[0].mod_delay = 1
+autd.send(ModDelayConfig())
+```
+
+The delay is the delay for the index to be sampled, so the delay time depends on the sampling frequency of `Modulation`.

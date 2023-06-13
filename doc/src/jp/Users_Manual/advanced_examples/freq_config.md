@@ -5,26 +5,64 @@ AUTD3のSDKでは, 超音波の周波数を$\ufreq$から変更できる.
 
 デフォルトはLegacyモードになっており, Advancedモードを使用する場合は, 以下のようにする.
 
+```rust
+# use autd3::prelude::*;
+# use autd3::link::Debug;
+
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+let mut autd = Controller::builder()
+                  .advanced()
+#        .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#        .open_with(Debug::new())?;
+#
+#    Ok(())
+# }
+```
 ```cpp
-  auto geometry = autd3::Geometry::Builder()
-                      ...
-                      .advanced_mode()
-                      .build();
+auto autd = autd3::Controller::builder()
+               .advanced_mode()
+```
+```cs
+var autd = Controller.Builder()
+        .AdvancedMode()
+```
+```python
+autd = Controller.builder().advanced_mode()
 ```
 
 振動子の周波数は`Transducer`の`set_frequency`で指定するか, `cycle`を直接変更する.
-`Transducer`には, `Geometry`のイテレータ, または, インデクサを経由してアクセスできる.
 指定できる周波数は$\clkf/N,N=2,...,8191$となっている[^freq_range].
 `cycle`はこの$N$を表している.
 `set_frequency`の場合は可能な$N$の中でもっとも近い$N$が選ばれる.
 
 周波数, または, 周期の変更は, `Synchronize`を送信する前に行う必要があることに注意する.
 
-```cpp
-  for (auto& tr : autd.geometry())
-    tr.set_frequency(70e3); // 163.84MHz/2341 ~ 69987 Hz
+```rust
+# use autd3::prelude::*;
+# use autd3::link::Debug;
 
-  autd.send(autd3::Synchronize());
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder()
+#                  .advanced()
+#        .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#        .open_with(Debug::new())?;
+for tr in autd.geometry_mut() {
+  tr.set_frequency(70e3)?;
+}
+#    Ok(())
+# }
+```
+```cpp
+for (auto& tr : autd.geometry())
+    tr.set_frequency(70e3);
+```
+```cs
+foreach (var tr in autd.Geometry)
+    tr.Frequency = 70e3;
+```
+```python
+for tr in autd.geometry:
+    tr.frequency = 70e3
 ```
 
 ## AdvancedPhaseモード
@@ -32,18 +70,62 @@ AUTD3のSDKでは, 超音波の周波数を$\ufreq$から変更できる.
 Advancedモードは振幅/位相データをそれぞれ1フレームで送信する必要があるため, 通信のレイテンシがLegacyモードの2倍になる.
 実際には振幅データは頻繁に更新されることはないと考えられるため, 位相データのみを送信するAdvancedPhaseモードが用意されている.
 
+```rust
+# use autd3::prelude::*;
+# use autd3::link::Debug;
+
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+let mut autd = Controller::builder()
+                  .advanced_phase()
+#        .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#        .open_with(Debug::new())?;
+#
+#    Ok(())
+# }
+```
 ```cpp
-  auto geometry = autd3::Geometry::Builder()
-                      ...
-                      .advanced_phase_mode()
-                      .build();
+auto autd = autd3::Controller::builder()
+               .advanced_phase_mode()
+```
+```cs
+var autd = Controller.Builder()
+        .AdvancedPhaseMode()
+```
+```python
+autd = Controller.builder().advanced_phase_mode()
 ```
 
 このモードの場合, 振幅はあらかじめ`Amplitudes`クラスを送信することで制御する.
 `Gain`の振幅パラメータはすべて無視される.
+
+
+```rust
+# use autd3::prelude::*;
+# use autd3::link::Debug;
+
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder()
+#                  .advanced_phase()
+#        .add_device(AUTD3::new(Vector3::zeros(), Vector3::zeros()))
+#        .open_with(Debug::new())?;
+let amp = Amplitudes::uniform(1.);
+autd.send(amp)?;
+#    Ok(())
+# }
+```
 ```cpp
-  autd3::Amplitudes amp(1.0);
-  autd.send(amp);
+const auto amp = autd3::Amplitudes(1.0);
+autd.send(amp);
+```
+```cs
+var amp = new Amplitudes(1.0);
+autd.Send(amp);
+```
+```python
+from pyautd3 import Amplitudes
+
+amp = Amplitudes(1.)
+autd.send(amp)
 ```
 
 [^freq_range]: ただし, 当然ながら振動子の共振周波数は$\ufreq$であるため, ここから大きく異なる周波数を指定しても, 超音波はほとんど出力されない.

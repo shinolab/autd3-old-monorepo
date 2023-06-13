@@ -4,9 +4,8 @@
 
 ```rust
 # use autd3::prelude::*;
-
 # #[allow(unused_variables)]
-# fn main()  {
+# fn main() {
 # let x = 0.;
 # let y = 0.;
 # let z = 0.;
@@ -35,7 +34,6 @@ $\[0, 1\]$の範囲外の値は$\[0, 1\]$にクランプされる (すなわち,
 
 ```rust
 # use autd3::prelude::*;
-
 # #[allow(unused_variables)]
 # fn main()  {
 # let x = 0.;

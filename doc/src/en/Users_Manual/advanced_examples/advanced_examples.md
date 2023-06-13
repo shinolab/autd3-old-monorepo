@@ -1,4 +1,4 @@
-# 上級者向けサンプル
+# Advanced examples
 
 Below are some samples for advanced users.
 

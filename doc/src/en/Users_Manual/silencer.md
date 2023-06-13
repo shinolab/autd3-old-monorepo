@@ -1,41 +1,116 @@
 # Silencer
 
-AUTD3 has a `Silencer` that suppresses a rapid fluctuation of the transducer drive signal and makes it quiet.
+AUTD3 has a silencer to mute the output.
+The silencer suppresses the rapid change in the drive signal of the transducer and mutes the output.
 
 ## Theory
 
-For details, please refer to the paper by Suzuki et al.[^suzuki2020]
+The silencer is based on the paper by Suzuki et al.[^suzuki2020].
 
-The following is a summary, 
+As a rough outline,
+- Amplitude modulation of ultrasound produces audible sound.
+- When driving an ultrasound transducer, phase changes cause amplitude fluctuations.
+  - Therefore, audible noise is generated.
+- Amplitude fluctuations can be suppressed by linearly interpolating phase changes and changing them stepwise.
+  - Therefore, noise can be reduced by doing fine interpolation.
+- The silencer is a method to reduce noise by doing fine interpolation.
 
-* Amplitude-modulated ultrasound produces audible sound
-* Phase changes cause amplitude fluctuations when the transducers are driven.
-    * Thus, audible noise is produced.
-* Amplitude fluctuation can be suppressed by changing the phase shift step by step.
-    * Therefore, the noise can be reduced.
-* The finer the interpolation is, the more noise can be reduced.
+## Silencer Config
 
-## Silencer settings
+To configure the silencer, send `SilencerConfig` to the controller.
 
-To configure `Silencer`, send `SilencerConfig`.
-
-```cpp
-  autd3::SilencerConfig silencer;
-  autd << silencer;
+```rust
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+let config = SilencerConfig::default();
+autd.send(config)?;
+# Ok(())
+# }
 ```
 
-`SilencerConfig` has two settings: `step` and `cycle`.
-See below for details, but as a rule of thumb, the smaller the `step` and the larger the `cycle`, the quieter it will be.
+```cpp
+autd3::SilencerConfig config;
+autd.send(config);
+```
+
+```cs
+var config = new SilencerConfig();
+autd.Send(config);
+```
+
+```python
+from pyautd3 import SilencerConfig
+
+config = SilencerConfig()
+autd.send(config)
+```
+
+You can set `step` to `SilencerConfig`.
+Refer to the followwing for details.
+Roughly, the smaller the `step`, the quieter it becomes.
+
+```rust
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+# let step = 10;
+let config = SilencerConfig::new(step);
+# Ok(())
+# }
+```
+
+```cpp
+autd3::SilencerConfig config(step);
+```
+
+```cs
+var config = new SilencerConfig(step);
+```
+
+```python
+config = SilencerConfig(step)
+```
+
+## Disabling Silencer
+
+The silencer is enabled by default.
+To disable the silencer, do the following.
+
+```rust
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+let config = SilencerConfig::none();
+# Ok(())
+# }
+```
+
+```cpp
+const auto config = autd3::SilencerConfig::none();
+```
+
+```cs
+var config = SilencerConfig.None();
+```
+
+```python
+config = SilencerConfig.none()
+```
 
 ## Phase change by Silencer
 
-`Silencer` linearly interpolates phase change: it is almost equivalent to passing the time series data of phase $P$ through a (simple) moving average filter.
-However, the difference is that the periodicity of the phase data is taken into account.
+Silencer changes the phase $P$ linearly and stepwise to mute the output.
+In other words, it is almost equivalent to passing the phase $P$ time series data through a (simple) moving average filter.
+However, it differs in that it takes into account the fact that the phase data is periodic.
 
-For example, consider the case where the ultrasound period $T$ is $T=12$.
-That is, $P=0$ corresponds to $0\,\mathrm{rad}$ and $P=12$ corresponds to $2\pi\,\mathrm{rad}$. 
-Suppose that the phase changes from $P=2$ to $P=6$ at time $t_s$.
-In this case, the phase change by `Silencer` is shown in the following figure.
+For example, consider the case where the period $T$ of the ultrasound is $T=12$.
+In other words, $P=0$ corresponds to $0\,\mathrm{rad}$ and $P=12$ corresponds to $2\pi\,\mathrm{rad}$.
+Here, suppose that the phase changes from $P=2$ to $P=6$ at time $t_s$.
+The phase change by Silencer is as follows.
 
 <figure>
   <img src="../fig/Users_Manual/silent/phase.svg"/>
@@ -43,48 +118,49 @@ In this case, the phase change by `Silencer` is shown in the following figure.
 </figure>
 
 On the other hand, suppose that the phase changes from $P=2$ to $P=10$ at time $t_s$.
-The phase change by `Silencer` at this time is shown in the following figure.
-This is because $P=-2$ is closer to $P=2$ than $P=10$.
+The phase change by Silencer is as follows.
+This is because $P=-2$ is closer to $P=2$ than $P=10$ in terms of the phase.
 
 <figure>
   <img src="../fig/Users_Manual/silent/phase2.svg"/>
-<figcaption>Change of phase $P$ (when phase change is larger than $\pi$)</figcaption>
+<figcaption>Change of phase $P$</figcaption>
 </figure>
 
-In other words, the `Silencer` calculated next phase from current phase $P$ target value $P_r$ using the following formula:
+That is, Silencer updates the phase $P$ as follows for the current $P$ and the target value $P_r$.
 $$
     P \leftarrow \begin{cases}
         P + \mathrm{sign}(P_r - P) \min (|P_r - P|, \Delta) & \text{if } |P_r - P| \le T/2\\
         P - \mathrm{sign}(P_r - P) \min (|P_r - P|, \Delta) & \text{(otherwise)}\\
-    \end{cases},
+    \end{cases}.
 $$
-where $\Delta$ is the amount of update per step (`step` in `SilencerConfig`).
-The update frequency can be set by `cycle` of `SilencerConfig`, which is $\SI{163.84}{MHz}/cycle$.
+Where $\Delta$ is the update amount per step (`step` of `SilencerConfig`).
+And the update frequency is $\ufreq$.
 
-The smaller $\Delta$ is, and the slower the update cycle is, the smoother the phase change becomes, and the noise is suppressed.
+Small $\Delta$ makes the phase change smoother and reduces noise.
 
 <figure>
-    <img src="../fig/Users_Manual/silent/duty.svg"/>
-<figcaption>Difference of change by $\Delta$</figcaption>
+  <img src="../fig/Users_Manual/silent/duty.svg"/>
+<figcaption>Phase change over $\Delta$</figcaption>
 </figure>
 
-Due to this implementation, there are cases where the behavior is different from that of the moving average filter.
-One is the case that the amount of phase change is larger than $\pi$, and the other is the case that the phase changes once more during the process.
-An example of a later case is shown below.
-Although the moving average filter is correct in terms of fidelity to the original time series, it is difficult to consider the case where the phase change is larger than $\pi$ and to make $\Delta$ variable (that is, to make the filter length variable), so the current implementation is used.
+According to this implementation, the behavior is different from the moving average filter.
+One is when the phase change amount shown above is larger than $\pi$, and the other is when the phase changes again in the middle.
+Examples of phase changes at this time are shown below.
 
 <figure>
   <img src="../fig/Users_Manual/silent/mean.svg"/>
-<figcaption>Comparison with moving average filter</figcaption>
+<figcaption>Comparison against moving average filter</figcaption>
 </figure>
 
-## Changes in duty ratio
+## Duty change by Silencer
 
-Since amplitude variation causes noise, filtering the duty ratio $D$ equivalently can suppress noise caused by AM.
+Amplitude modulation of ultrasound produces audible sound.
+So, AM noise can be reduced by applying a filter to the duty ratio $D$.
 
-Since the duty ratio $D$ is not periodic, unlike the phase, `Silencer` update duty ration by the following equation for the current $D$ and the target $D_r$,
+Unlike the phase, the duty ratio $D$ is not periodic with respect to the period $T$.
+Therefore, the duty ratio $D$ is updated as follows for the current $D$ and the target value $D_r$.
 $$
-    D \leftarrow D + \mathrm{sign}(D_r - D) \min (|D_r - D|, \Delta).
+    D \leftarrow D + \mathrm{sign}(D_r - D) \min (|D_r - D|, \Delta),
 $$
 
 [^suzuki2020]: Suzuki, Shun, et al. "Reducing amplitude fluctuation by gradual phase shift in midair ultrasound haptics." IEEE transactions on haptics 13.1 (2020): 87-93.

@@ -1,4 +1,4 @@
-## FAQ
+# FAQ
 
 [[_TOC_]]
 
@@ -6,15 +6,10 @@
 
 - If you use `link::SOEM` on macOS or linux, you need root privileges.
 
-   ```
-   sudo ./examples/example_soem
-   ```
-
    - On linux, you can bypass this by setting the following privileges with the `setcap` command:
    
-      ```
+      ```shell
       sudo setcap cap_net_raw,cap_net_admin=eip ./examples/example_soem
-      ./examples/example_soem
       ```
 
 - (Windows) Use the latest npcap
@@ -31,15 +26,6 @@
 - (Windows) Use the latest npcap.
 
 - Increase the values of `send_cycle` and `sync0_cycle`.
-
-   ```cpp
-     auto link = autd3::link::SOEM()
-                  ︙
-                  .sync0_cycle(2)
-                  .send_cycle(2)
-                  ︙
-                  .build();
-   ```
 
 ## Frequent send failures when using `link::SOEM`.
 
@@ -78,11 +64,6 @@
 
 - Check if initialization/synchronization has been done.
    - Synchronization is necessary even if you use only one device
-
-   ```cpp
-   autd.send(autd3::Clear());
-   autd.send(autd3::Synchronize());
-   ```
 
 ## Miscellaneous
 
