@@ -7,9 +7,9 @@ LinkはAUTD3デバイスとのインターフェースである.
 - [SOEM/RemoteSOEM](./link/soem.md)
 - [Simulator](./link/simulator.md)
 
-# Linkに共通のオプション
+## Linkに共通のオプション
 
-## タイムアウト時間
+### タイムアウト時間
 
 `with_timeout`でデフォルトのタイムアウト時間を設定する.
 
@@ -18,7 +18,6 @@ LinkはAUTD3デバイスとのインターフェースである.
 ```rust,should_panic
 # use autd3::prelude::*;
 # use autd3_link_soem::SOEM;
-
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let autd = Controller::builder()
