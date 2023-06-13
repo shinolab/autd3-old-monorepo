@@ -7,5 +7,4 @@ autd3ライブラリ自体はMITライセンスである.
 ## 3rdparty library license
 
 - SOEM link は[SOEM](https://github.com/OpenEtherCATsociety/SOEM)を使用している
-- RemoteTwinCAT linkは以下のライブラリを使用している
-  - [ADS](https://github.com/Beckhoff/ADS)
+- RemoteTwinCAT linkは[ADS](https://github.com/Beckhoff/ADS)ライブラリを使用している

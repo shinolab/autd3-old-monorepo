@@ -4,26 +4,96 @@ You can create your own `Modulation` as well as `Gain`.
 Here, we try to create a `Burst` that outputs only for a certain moment in a cycle.
 
 The following is a sample of `Burst`.
+
+```rust
+use autd3::{
+    core::{
+        error::AUTDInternalError,
+        modulation::Modulation,
+    },
+    prelude::*,
+    traits::Modulation,
+};
+
+#[derive(Modulation, Clone, Copy)]
+pub struct Burst {
+    freq_div: u32,
+}
+
+impl Burst {
+    pub fn new() -> Self {
+        Self { freq_div: 5120 }
+    }
+}
+
+impl Modulation for Burst {
+    fn calc(&mut self) -> Result<Vec<float>, AUTDInternalError> {
+        Ok((0..4000)
+            .map(|i| if i == 3999 { 1.0 } else { 0.0 })
+            .collect())
+    }
+}
+
+# fn main() { 
+# }
+#
+```
+
 ```cpp
-class Burst final : public autd3::Modulation {
- public:
-  std::vector<autd3::Amp> calc() override {
-    std::vector buffer(_buf_size, autd3::Amp(0));
-    buffer()[_buf_size - 1] = autd3::Amp(1);
-  }
+class BurstModulation final : public autd3::Modulation {
+public:
+    std::vector<double> calc() const override {
+        std::vector<double> buffer(_buf_size, 0);
+        buffer[_buf_size - 1] = 1.0;
+        return buffer;
+    }
 
-  explicit Burst(const size_t buf_size = 4000, const uint16_t freq_div = 40960) noexcept : Modulation(freq_div), _buf_size(buf_size) {}
+    explicit BurstModulation(const size_t buf_size = 4000, const uint32_t sampling_freq_div = 5120) noexcept
+        : autd3::Modulation(sampling_freq_div), _buf_size(buf_size) {}
 
- private:
-  size_t _buf_size;
+    explicit BurstModulation(const size_t buf_size = 4000, const double sampling_freq = 4e3) noexcept
+        : autd3::Modulation(sampling_freq), _buf_size(buf_size) {}
+
+private:
+    size_t _buf_size;
 };
 ```
 
-Like `Gain`, `Modulation::calc` method is called inside `Controller::send`.
-In this `calc`, you have to calculate and return modulation data.
+```cs
+public class Burst : Modulation
+{
+    private readonly int _length;
 
-The argument of `Modualation` constructor is the sampling frequency divisionv $N$, which determines the `Modulation` sampling frequency $\SI{163.84}{MHz}/N$.
-In this example, the sampling frequency is $\SI{4}{kHz}$ ($N=40960$) by default.
+    public Burst(int length, uint sampleFreqDiv = 5120) : base(sampleFreqDiv)
+    {
+        _length = length;
+    }
+    public Burst(int length, double sampleFreq = 4e3) : base(sampleFreq)
+    {
+        _length = length;
+    }
 
-And, for example, if `buf_size` is set to 4000, $0$ is sampled $3999$ times, and then $1$ is sampled once.
-Thus, AM is such that $\SI{0.25}{ms}=1/\SI{4}{kHz}$ is output in the period $\SI{1}{s}$.
+    public override double[] Calc()
+    {
+        var buf = new double[_length];
+        buf[0] = 1;
+        return buf;
+    }
+}
+```
+
+```python
+from pyautd3.modulation import Modulation
+
+class Burst(Modulation):
+    _length: int
+
+    def __init__(self, length: int, freq_div = 5120):
+        super().__init__(freq_div)
+        self._length = length
+
+    def calc(self):
+        buf = np.zeros(self._length)
+        buf[0] = 1.0
+        return buf
+```

@@ -20,7 +20,7 @@
     - [Focus](./Users_Manual/gain/focus.md)
     - [Bessel](./Users_Manual/gain/bessel.md)
     - [Plane](./Users_Manual/gain/plane.md)
-    - [Grouped](./Users_Manual/gain/Grouped.md)
+    - [Grouped](./Users_Manual/gain/grouped.md)
     - [Holo](./Users_Manual/gain/holo.md)
   - [Modulation](./Users_Manual/modulation.md)
     - [Static](./Users_Manual/modulation/static.md)

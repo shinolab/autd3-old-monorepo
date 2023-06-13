@@ -141,9 +141,6 @@ autd = Controller.builder()\
         .add_device(AUTD3.from_euler_zyz([0.0, 0.0, DEVICE_WIDTH], [0.0, np.pi/2, 0.0]))\
 ```
 
-```0
-```
-
 のように指定する.
 
 <figure>
