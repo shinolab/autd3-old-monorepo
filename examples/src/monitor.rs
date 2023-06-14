@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/06/2023
+ * Last Modified: 15/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -31,71 +31,80 @@ fn main() -> Result<()> {
 
     autd.send((m, g))?;
 
-    autd.link().save_phase(
-        "phase.png",
+    // autd.link().save_phase(
+    //     "phase.png",
+    //     PlotConfig {
+    //         figsize: (6, 4),
+    //         dpi: 72,
+    //         ..PlotConfig::default()
+    //     },
+    //     autd.geometry(),
+    // )?;
+    // autd.link().save_field(
+    //     "x.png",
+    //     center.x - 50.0..center.x + 50.0,
+    //     center.y..center.y,
+    //     center.z..center.z,
+    //     1.,
+    //     PlotConfig {
+    //         figsize: (6, 4),
+    //         dpi: 72,
+    //         fontsize: 8,
+    //         ..PlotConfig::default()
+    //     },
+    //     autd.geometry(),
+    // )?;
+    // autd.link().save_field(
+    //     "xy.png",
+    //     center.x - 20.0..center.x + 20.0,
+    //     center.y - 30.0..center.y + 30.0,
+    //     center.z..center.z,
+    //     1.,
+    //     PlotConfig {
+    //         figsize: (6, 6),
+    //         dpi: 72,
+    //         fontsize: 8,
+    //         ..PlotConfig::default()
+    //     },
+    //     autd.geometry(),
+    // )?;
+    // autd.link().save_field(
+    //     "yz.png",
+    //     center.x..center.x,
+    //     center.y - 30.0..center.y + 30.0,
+    //     0.0..center.z + 50.0,
+    //     2.,
+    //     PlotConfig {
+    //         figsize: (6, 6),
+    //         dpi: 72,
+    //         fontsize: 8,
+    //         ..PlotConfig::default()
+    //     },
+    //     autd.geometry(),
+    // )?;
+    // autd.link().save_field(
+    //     "zx.png",
+    //     center.x - 30.0..center.x + 30.0,
+    //     center.y..center.y,
+    //     0.0..center.z + 50.0,
+    //     2.,
+    //     PlotConfig {
+    //         figsize: (6, 6),
+    //         dpi: 72,
+    //         fontsize: 8,
+    //         ticks_step: 20.,
+    //         ..PlotConfig::default()
+    //     },
+    //     autd.geometry(),
+    // )?;
+
+    autd.link().save_modulation(
+        "mod.png",
         PlotConfig {
             figsize: (6, 4),
             dpi: 72,
             ..PlotConfig::default()
         },
-        autd.geometry(),
-    )?;
-    autd.link().save_field(
-        "x.png",
-        center.x - 50.0..center.x + 50.0,
-        center.y..center.y,
-        center.z..center.z,
-        1.,
-        PlotConfig {
-            figsize: (6, 4),
-            dpi: 72,
-            fontsize: 8,
-            ..PlotConfig::default()
-        },
-        autd.geometry(),
-    )?;
-    autd.link().save_field(
-        "xy.png",
-        center.x - 20.0..center.x + 20.0,
-        center.y - 30.0..center.y + 30.0,
-        center.z..center.z,
-        1.,
-        PlotConfig {
-            figsize: (6, 6),
-            dpi: 72,
-            fontsize: 8,
-            ..PlotConfig::default()
-        },
-        autd.geometry(),
-    )?;
-    autd.link().save_field(
-        "yz.png",
-        center.x..center.x,
-        center.y - 30.0..center.y + 30.0,
-        0.0..center.z + 50.0,
-        2.,
-        PlotConfig {
-            figsize: (6, 6),
-            dpi: 72,
-            fontsize: 8,
-            ..PlotConfig::default()
-        },
-        autd.geometry(),
-    )?;
-    autd.link().save_field(
-        "zx.png",
-        center.x - 30.0..center.x + 30.0,
-        center.y..center.y,
-        0.0..center.z + 50.0,
-        2.,
-        PlotConfig {
-            figsize: (6, 6),
-            dpi: 72,
-            fontsize: 8,
-            ticks_step: 20.,
-            ..PlotConfig::default()
-        },
-        autd.geometry(),
     )?;
 
     autd.close()?;
