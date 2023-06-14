@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 03/06/2023
+ * Last Modified: 15/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -23,6 +23,9 @@ pub fn audio_file<T: Transducer, L: Link<T>>(
     let g = Focus::new(center);
     const WAV_FILE: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/src/resources/sin150.wav");
     let m = autd3_modulation_audio_file::Wav::new(WAV_FILE)?;
+
+    // const WAV_FILE: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/src/resources/sin150.dat");
+    // let m = autd3_modulation_audio_file::RawPCM::new(WAV_FILE, 4000)?;
 
     autd.send((m, g))
 }
