@@ -10,6 +10,7 @@ members = [
     "autd3-link-simulator",
     "autd3-link-soem",
     "autd3-link-twincat",
+    "autd3-link-monitor",
     "autd3-modulation-audio-file",
     "autd3-firmware-emulator",
     "autd3-simulator",
