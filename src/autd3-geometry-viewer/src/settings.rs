@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2023
+ * Last Modified: 15/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -30,6 +30,7 @@ pub struct Settings {
     pub camera_fov: f32,
     pub camera_near_clip: f32,
     pub camera_far_clip: f32,
+    pub camera_move_speed: f32,
     pub background: [f32; 4],
     pub shows: Vec<bool>,
 }
@@ -55,6 +56,7 @@ impl Settings {
             camera_fov: 45.,
             camera_near_clip: 0.1 * SCALE,
             camera_far_clip: 1000. * SCALE,
+            camera_move_speed: 10. * SCALE,
             background: [0.3, 0.3, 0.3, 1.],
             shows: vec![true; num_dev],
         }
