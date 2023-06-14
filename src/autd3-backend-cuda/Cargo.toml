@@ -11,7 +11,6 @@ readme = "README.md"
 keywords = ["autd"]
 
 [dependencies]
-assert_approx_eq = "1.1.0"
 autd3-core = {path="../autd3-core", version="11.1.0"}
 autd3-gain-holo = {path="../autd3-gain-holo", version="11.1.0"}
 cuda-sys = "0.2.0"
