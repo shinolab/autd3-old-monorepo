@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/06/2023
+ * Last Modified: 15/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -456,6 +456,7 @@ impl Simulator {
                             render.move_camera(&self.settings);
                             let view = render.get_view();
                             let proj = render.get_projection(&self.settings);
+                            let slice_model = slice_viewer.model();
                             trans_viewer.render(view, proj, &mut builder);
                             slice_viewer.render(&render, view, proj, &self.settings, &mut builder);
                             builder.end_render_pass().unwrap();
@@ -541,7 +542,7 @@ impl Simulator {
                                     as _,
                                 pixel_size: self.settings.slice_pixel_size as _,
                                 scale: SCALE,
-                                model: slice_viewer.model().into(),
+                                model: slice_model.into(),
                                 ..Default::default()
                             };
                             let after_compute = field_compute_pipeline
