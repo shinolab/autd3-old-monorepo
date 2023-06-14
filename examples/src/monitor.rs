@@ -31,72 +31,74 @@ fn main() -> Result<()> {
 
     autd.send((m, g))?;
 
-    // autd.link().save_phase(
-    //     "phase.png",
-    //     PlotConfig {
-    //         figsize: (6, 4),
-    //         dpi: 72,
-    //         ..PlotConfig::default()
-    //     },
-    //     autd.geometry(),
-    // )?;
-    // autd.link().save_field(
-    //     "x.png",
-    //     center.x - 50.0..center.x + 50.0,
-    //     center.y..center.y,
-    //     center.z..center.z,
-    //     1.,
-    //     PlotConfig {
-    //         figsize: (6, 4),
-    //         dpi: 72,
-    //         fontsize: 8,
-    //         ..PlotConfig::default()
-    //     },
-    //     autd.geometry(),
-    // )?;
-    // autd.link().save_field(
-    //     "xy.png",
-    //     center.x - 20.0..center.x + 20.0,
-    //     center.y - 30.0..center.y + 30.0,
-    //     center.z..center.z,
-    //     1.,
-    //     PlotConfig {
-    //         figsize: (6, 6),
-    //         dpi: 72,
-    //         fontsize: 8,
-    //         ..PlotConfig::default()
-    //     },
-    //     autd.geometry(),
-    // )?;
-    // autd.link().save_field(
-    //     "yz.png",
-    //     center.x..center.x,
-    //     center.y - 30.0..center.y + 30.0,
-    //     0.0..center.z + 50.0,
-    //     2.,
-    //     PlotConfig {
-    //         figsize: (6, 6),
-    //         dpi: 72,
-    //         fontsize: 8,
-    //         ..PlotConfig::default()
-    //     },
-    //     autd.geometry(),
-    // )?;
-    // autd.link().save_field(
-    //     "zx.png",
-    //     center.x - 30.0..center.x + 30.0,
-    //     center.y..center.y,
-    //     0.0..center.z + 50.0,
-    //     2.,
-    //     PlotConfig {
-    //         figsize: (6, 6),
-    //         dpi: 72,
-    //         fontsize: 8,
-    //         ticks_step: 20.,
-    //         ..PlotConfig::default()
-    //     },
-    //     autd.geometry(),
-    // )?;
+    autd.link().save_phase(
+        "phase.png",
+        PlotConfig {
+            figsize: (6, 4),
+            dpi: 72,
+            ..PlotConfig::default()
+        },
+        autd.geometry(),
+    )?;
+    autd.link().save_field(
+        "x.png",
+        center.x - 50.0..center.x + 50.0,
+        center.y..center.y,
+        center.z..center.z,
+        1.,
+        PlotConfig {
+            figsize: (6, 4),
+            dpi: 72,
+            fontsize: 8,
+            ..PlotConfig::default()
+        },
+        autd.geometry(),
+    )?;
+    let now = std::time::Instant::now();
+    autd.link().save_field(
+        "xy.png",
+        center.x - 20.0..center.x + 20.0,
+        center.y - 30.0..center.y + 30.0,
+        center.z..center.z,
+        1.,
+        PlotConfig {
+            figsize: (6, 6),
+            dpi: 72,
+            fontsize: 8,
+            ..PlotConfig::default()
+        },
+        autd.geometry(),
+    )?;
+    println!("elapsed: {} ms", now.elapsed().as_millis());
+    autd.link().save_field(
+        "yz.png",
+        center.x..center.x,
+        center.y - 30.0..center.y + 30.0,
+        0.0..center.z + 50.0,
+        2.,
+        PlotConfig {
+            figsize: (6, 6),
+            dpi: 72,
+            fontsize: 8,
+            ..PlotConfig::default()
+        },
+        autd.geometry(),
+    )?;
+    autd.link().save_field(
+        "zx.png",
+        center.x - 30.0..center.x + 30.0,
+        center.y..center.y,
+        0.0..center.z + 50.0,
+        2.,
+        PlotConfig {
+            figsize: (6, 6),
+            dpi: 72,
+            fontsize: 8,
+            ticks_step: 20.,
+            ..PlotConfig::default()
+        },
+        autd.geometry(),
+    )?;
 
     autd.link().save_modulation(
         "mod.png",

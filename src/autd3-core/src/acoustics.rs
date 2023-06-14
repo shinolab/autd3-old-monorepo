@@ -4,7 +4,7 @@
  * Created Date: 06/05/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 19/05/2023
+ * Last Modified: 15/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -69,7 +69,7 @@ static DIR_COEF_D: &[float] = &[
     -4.79372835035e-06,
 ];
 
-pub trait Directivity {
+pub trait Directivity: Send + Sync {
     fn directivity(theta_deg: float) -> float;
 }
 

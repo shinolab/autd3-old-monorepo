@@ -13,10 +13,10 @@
 
 mod error;
 
-use std::{ffi::OsStr, path::Path, time::Duration};
+use std::{ffi::OsStr, marker::PhantomData, path::Path, time::Duration};
 
 use autd3_core::{
-    acoustics::{propagate, Complex},
+    acoustics::{propagate, Complex, Directivity, Sphere},
     error::AUTDInternalError,
     float,
     geometry::{Geometry, Transducer, Vector3},
@@ -29,10 +29,11 @@ use error::MonitorError;
 
 use pyo3::prelude::*;
 
-pub struct Monitor {
+pub struct Monitor<D: Directivity> {
     is_open: bool,
     timeout: Duration,
     cpus: Vec<CPUEmulator>,
+    _d: PhantomData<D>,
 }
 
 #[pyclass]
@@ -54,6 +55,8 @@ pub struct PlotConfig {
     pub ticks_step: float,
     #[pyo3(get)]
     pub cmap: String,
+    #[pyo3(get)]
+    pub show: bool,
 }
 
 impl Default for PlotConfig {
@@ -67,27 +70,35 @@ impl Default for PlotConfig {
             fontsize: 12,
             ticks_step: 10.,
             cmap: "jet".to_string(),
+            show: false,
         }
     }
 }
 
-impl Monitor {
+impl Monitor<Sphere> {
     pub fn new() -> Self {
         Self {
             is_open: false,
             timeout: Duration::ZERO,
             cpus: Vec::new(),
+            _d: PhantomData,
         }
     }
 }
 
-impl Default for Monitor {
+impl<D: Directivity> Monitor<D> {
+    pub fn with_directivity<U: Directivity>(self) -> Monitor<U> {
+        unsafe { std::mem::transmute(self) }
+    }
+}
+
+impl Default for Monitor<Sphere> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl Monitor {
+impl<D: Directivity> Monitor<D> {
     fn initialize_python() -> PyResult<()> {
         let python_exe = which::which("python").unwrap();
         let python_home = python_exe.parent().unwrap();
@@ -163,7 +174,7 @@ impl Monitor {
     fn plot_1d(
         path: &OsStr,
         observe_points: Vec<float>,
-        acoustic_pressures: Vec<float>,
+        acoustic_pressures: Vec<Complex>,
         resolution: float,
         x_label: &str,
         config: PlotConfig,
@@ -171,6 +182,11 @@ impl Monitor {
         if cfg!(target_os = "windows") {
             Self::initialize_python()?;
         }
+
+        let acoustic_pressures = acoustic_pressures
+            .iter()
+            .map(|&x| x.norm())
+            .collect::<Vec<_>>();
 
         Python::with_gil(|py| -> PyResult<()> {
             let fun = PyModule::from_code(
@@ -200,7 +216,10 @@ def plot(observe, acoustic_pressures, resolution, x_label, path, config):
     ax.set_ylabel("Amplitude [-]")
 
     plt.tight_layout()
-    plt.savefig(path, dpi=fig.dpi, bbox_inches='tight')            
+    plt.savefig(path, dpi=fig.dpi, bbox_inches='tight')
+    if config.show:
+        plt.show()
+    plt.close()
                 "#,
                 "",
                 "",
@@ -224,7 +243,7 @@ def plot(observe, acoustic_pressures, resolution, x_label, path, config):
         path: &OsStr,
         observe_x: Vec<float>,
         observe_y: Vec<float>,
-        acoustic_pressures: Vec<float>,
+        acoustic_pressures: Vec<Complex>,
         resolution: float,
         x_label: &str,
         y_label: &str,
@@ -233,6 +252,11 @@ def plot(observe, acoustic_pressures, resolution, x_label, path, config):
         if cfg!(target_os = "windows") {
             Self::initialize_python()?;
         }
+
+        let acoustic_pressures = acoustic_pressures
+            .iter()
+            .map(|&x| x.norm())
+            .collect::<Vec<_>>();
 
         Python::with_gil(|py| -> PyResult<()> {
             let fun = PyModule::from_code(
@@ -282,7 +306,10 @@ def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label,
     ax.set_ylabel(y_label)
 
     plt.tight_layout()
-    plt.savefig(path, dpi=fig.dpi, bbox_inches='tight')            
+    plt.savefig(path, dpi=fig.dpi, bbox_inches='tight')      
+    if config.show:
+        plt.show()
+    plt.close()
                 "#,
                 "",
                 "",
@@ -333,7 +360,10 @@ def plot(modulation, path, config):
     ax.set_ylabel("Modulation")
 
     plt.tight_layout()
-    plt.savefig(path, dpi=fig.dpi, bbox_inches='tight')            
+    plt.savefig(path, dpi=fig.dpi, bbox_inches='tight')
+    if config.show:
+        plt.show()
+    plt.close()      
                 "#,
                 "",
                 "",
@@ -350,7 +380,7 @@ def plot(modulation, path, config):
         &self,
         observe_points: I,
         geometry: &Geometry<T>,
-    ) -> Vec<float> {
+    ) -> Vec<Complex> {
         let sound_speed = geometry.sound_speed;
         observe_points
             .map(|target| {
@@ -366,7 +396,7 @@ def plot(modulation, path, config):
                             .fold(Complex::new(0., 0.), |acc, ((t, &d), &p)| {
                                 let amp = (PI * d as f64 / t.cycle() as f64).sin();
                                 let phase = 2. * PI * p as f64 / t.cycle() as f64;
-                                acc + propagate::<autd3_core::acoustics::Sphere>(
+                                acc + propagate::<D>(
                                     &t.position(),
                                     &t.z_direction(),
                                     0.0,
@@ -375,7 +405,6 @@ def plot(modulation, path, config):
                                 ) * Complex::from_polar(amp, phase)
                             })
                     })
-                    .norm()
             })
             .collect()
     }
@@ -598,7 +627,10 @@ def plot(trans_x, trans_y, trans_phase, path, config, trans_size):
     ax.set_ylim((y_min, y_max))
     scat = plot_phase_2d(fig, ax, trans_x, trans_y, trans_phase, trans_size, config)
     plt.tight_layout()
-    plt.savefig(path, dpi=fig.dpi, bbox_inches='tight')            
+    plt.savefig(path, dpi=fig.dpi, bbox_inches='tight')
+    if config.show:
+        plt.show()
+    plt.close()
                 "#,
                 "",
                 "",
@@ -639,7 +671,7 @@ def plot(trans_x, trans_y, trans_phase, path, config, trans_size):
     }
 }
 
-impl<T: Transducer> Link<T> for Monitor {
+impl<T: Transducer, D: Directivity> Link<T> for Monitor<D> {
     fn open(&mut self, geometry: &Geometry<T>) -> Result<(), AUTDInternalError> {
         if self.is_open {
             return Ok(());
