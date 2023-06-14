@@ -4,7 +4,7 @@
  * Created Date: 28/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/06/2023
+ * Last Modified: 14/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -23,10 +23,15 @@ pub fn modulation_derive(input: TokenStream) -> TokenStream {
 fn impl_modulation_macro(ast: &syn::DeriveInput) -> TokenStream {
     let name = &ast.ident;
     let generics = &ast.generics;
-    let type_params = generics.type_params();
-    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    let linetimes_prop = generics.lifetimes();
+    let linetimes_impl = generics.lifetimes();
+    let linetimes_datagram = generics.lifetimes();
+    let type_params_prop = generics.type_params();
+    let type_params_impl = generics.type_params();
+    let type_params_datagram = generics.type_params();
+    let (_, ty_generics, where_clause) = generics.split_for_impl();
     let gen = quote! {
-        impl #impl_generics autd3_core::modulation::ModulationProperty for #name #ty_generics #where_clause {
+        impl <#(#linetimes_prop,)* #(#type_params_prop,)*> autd3_core::modulation::ModulationProperty for #name #ty_generics #where_clause {
             fn sampling_frequency_division(&self) -> u32 {
                 self.freq_div
             }
@@ -36,7 +41,7 @@ fn impl_modulation_macro(ast: &syn::DeriveInput) -> TokenStream {
             }
         }
 
-        impl #name #ty_generics #where_clause {
+        impl <#(#linetimes_impl,)* #(#type_params_impl,)*> #name #ty_generics #where_clause {
             #[allow(clippy::needless_update)]
             pub fn with_sampling_frequency_division(self, freq_div: u32) -> Self {
                 Self {freq_div, ..self}
@@ -50,7 +55,7 @@ fn impl_modulation_macro(ast: &syn::DeriveInput) -> TokenStream {
             }
         }
 
-        impl <#(#type_params,)* T: autd3_core::geometry::Transducer> autd3_core::datagram::Datagram<T> for #name #ty_generics #where_clause {
+        impl <#(#linetimes_datagram,)* #(#type_params_datagram,)* T: autd3_core::geometry::Transducer> autd3_core::datagram::Datagram<T> for #name #ty_generics #where_clause {
             type H = autd3_core::Modulation;
             type B = autd3_core::NullBody;
 
