@@ -4,7 +4,7 @@
  * Created Date: 26/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/06/2023
+ * Last Modified: 15/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -63,6 +63,7 @@ pub struct ViewerSettings {
     pub max_dev_num: usize,
     pub max_trans_num: usize,
     pub port: u16,
+    pub camera_move_speed: f32,
 }
 
 impl ViewerSettings {
@@ -137,6 +138,7 @@ impl Default for ViewerSettings {
             max_dev_num: 50,
             max_trans_num: 10000,
             port: 8080,
+            camera_move_speed: 10. * SCALE,
         }
     }
 }
