@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/06/2023
+ * Last Modified: 15/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -142,6 +142,22 @@ impl Monitor {
 
     pub fn duties(&self) -> Vec<float> {
         self.duties_of(0)
+    }
+
+    pub fn modulation_raw(&self) -> Vec<float> {
+        self.cpus[0]
+            .fpga()
+            .modulation()
+            .iter()
+            .map(|&x| x as float / 255.)
+            .collect()
+    }
+
+    pub fn modulation(&self) -> Vec<float> {
+        self.modulation_raw()
+            .iter()
+            .map(|&x| (0.5 * PI * x).sin())
+            .collect()
     }
 
     fn plot_1d(
@@ -282,6 +298,48 @@ def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label,
                 path,
                 config,
             ))?;
+            Ok(())
+        })?;
+
+        Ok(())
+    }
+
+    fn plot_modulation(
+        path: &OsStr,
+        modulation: Vec<float>,
+        config: PlotConfig,
+    ) -> Result<(), MonitorError> {
+        if cfg!(target_os = "windows") {
+            Self::initialize_python()?;
+        }
+
+        Python::with_gil(|py| -> PyResult<()> {
+            let fun = PyModule::from_code(
+                py,
+                r#"
+import matplotlib.pyplot as plt
+import numpy as np
+
+def plot(modulation, path, config):
+    plt.rcParams["font.size"] = config.fontsize
+    fig = plt.figure(figsize=config.figsize, dpi=config.dpi)
+    ax = fig.add_subplot(111)
+
+    ax.plot(modulation)
+
+    ax.set_ylim(0, 1)
+
+    ax.set_xlabel("Index")
+    ax.set_ylabel("Modulation")
+
+    plt.tight_layout()
+    plt.savefig(path, dpi=fig.dpi, bbox_inches='tight')            
+                "#,
+                "",
+                "",
+            )?
+            .getattr("plot")?;
+            fun.call1((modulation, path, config))?;
             Ok(())
         })?;
 
@@ -557,6 +615,26 @@ def plot(trans_x, trans_y, trans_phase, path, config, trans_size):
             Ok(())
         })?;
 
+        Ok(())
+    }
+
+    pub fn save_modulation<P: AsRef<Path>>(
+        &self,
+        path: P,
+        config: PlotConfig,
+    ) -> Result<(), MonitorError> {
+        let path = path.as_ref().as_os_str();
+        Self::plot_modulation(path, self.modulation(), config)?;
+        Ok(())
+    }
+
+    pub fn save_modulation_raw<P: AsRef<Path>>(
+        &self,
+        path: P,
+        config: PlotConfig,
+    ) -> Result<(), MonitorError> {
+        let path = path.as_ref().as_os_str();
+        Self::plot_modulation(path, self.modulation_raw(), config)?;
         Ok(())
     }
 }
