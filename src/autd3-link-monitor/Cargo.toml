@@ -1,0 +1,23 @@
+[package]
+name = "autd3-link-monitor"
+version = "11.1.0"
+authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
+edition = "2021"
+
+license = "MIT"
+description = "Link for monitoring"
+repository = "https://github.com/shinolab/autd3"
+readme = "README.md"
+keywords = ["autd"]
+
+[dependencies]
+autd3-firmware-emulator = {path="../autd3-firmware-emulator", version="11.1.0"}
+autd3-core = {path="../autd3-core", version="11.1.0"}
+thiserror = "1.0.30"
+pyo3 = { version = "0.19.0", features = ["auto-initialize"] }
+which = "4.4.0"
+itertools = "0.10.5"
+
+[features]
+default = []
+single_float = ["autd3-core/single_float"]
