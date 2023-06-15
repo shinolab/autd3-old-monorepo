@@ -2,21 +2,14 @@
 
 `GainSTM`は`FocusSTM`とは異なり, 任意の`Gain`を扱える. ただし, 使用できる`Gain`の個数は
 - Legacyモードの場合2048
-- Normlaモードの場合1024
-
-となる.
-また, サンプリング周波数分周比$N$の最小値が
-
-- Legacyモードの場合152
-- Normlaモードの場合276
-
+- Advanced/AdvancedPhaseモードの場合1024
 となる.
 
 `GainSTM`の使用方法は以下のようになる.
 これは, アレイの中心から直上$\SI{150}{mm}$の点を中心とした半径$\SI{30}{mm}$の円周上で焦点を回すサンプルである.
 円周上を200点サンプリングし, 一周を$\SI{1}{Hz}$で回るようにしている. (すなわち, サンプリング周波数は$\SI{200}{Hz}$である.)
 
-```rust,should_panic
+```rust
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -30,8 +23,7 @@ let stm = GainSTM::new(1.0).add_gains_from_iter((0..point_num).map(|i| {
     let g = Focus::new(center + p);
     Box::new(g) as _
 }));
-autd.send(stm);
-
+autd.send(stm)?;
 # Ok(())
 # }
 ```
@@ -76,6 +68,8 @@ for i in range(size):
 autd.send(stm)
 ```
 
+## GainSTMMode
+
 `GainSTM`は位相/振幅データをすべて送信するため, レイテンシが大きい[^fn_gain_seq].
 この問題に対処するため, `GainSTM`には位相のみを送信して送信にかかる時間を半分にする`PhaseFull`モードと, 位相を4bitに圧縮して送信時間を4分の1にする`PhaseHalf`モード[^phase_half]が用意されている.
 
@@ -87,7 +81,7 @@ autd.send(stm)
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
 let stm = GainSTM::new(1.0).with_mode(GainSTMMode::PhaseFull);
-#    ;
+# autd.send(stm)?;
 # Ok(())
 # }
 ```

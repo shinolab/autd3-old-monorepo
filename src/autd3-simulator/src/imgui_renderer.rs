@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/06/2023
+ * Last Modified: 15/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -17,6 +17,7 @@ use autd3_core::{
     autd3_device::NUM_TRANS_IN_UNIT, CPUControlFlags, FPGAControlFlags, FPGA_CLK_FREQ,
 };
 use autd3_firmware_emulator::CPUEmulator;
+use cgmath::{Deg, Euler};
 use imgui::{
     sys::{igDragFloat, igDragFloat2},
     Context, FontConfig, FontGlyphRanges, FontSource,
@@ -29,11 +30,12 @@ use vulkano::{
 use winit::{event::Event, window::Window};
 
 use crate::{
+    common::transform::quaternion_to,
     renderer::Renderer,
     sound_sources::SoundSources,
     update_flag::UpdateFlag,
     viewer_settings::{ColorMapType, ViewerSettings},
-    Matrix4, Vector4, SCALE, ZPARITY,
+    Matrix4, Quaternion, Vector3, Vector4, SCALE, ZPARITY,
 };
 
 pub struct ImGuiRenderer {
@@ -129,6 +131,8 @@ impl ImGuiRenderer {
         builder: &mut AutoCommandBufferBuilder<PrimaryAutoCommandBuffer>,
         settings: &mut ViewerSettings,
     ) -> UpdateFlag {
+        let mut update_flag = UpdateFlag::empty();
+
         self.update_font(render);
 
         let io = self.imgui.io_mut();
@@ -141,7 +145,48 @@ impl ImGuiRenderer {
 
         let ui = self.imgui.new_frame();
 
-        let mut update_flag = UpdateFlag::empty();
+        {
+            let rotation = Quaternion::from(Euler {
+                x: Deg(settings.camera_rot_x),
+                y: Deg(settings.camera_rot_y),
+                z: Deg(settings.camera_rot_z),
+            });
+
+            let r = rotation * Vector3::unit_x();
+            let u = rotation * Vector3::unit_y();
+            let f = rotation * Vector3::unit_z();
+
+            if !ui.io().want_capture_mouse {
+                let mouse_wheel = ui.io().mouse_wheel;
+                let trans = -f * mouse_wheel * settings.camera_move_speed * ZPARITY;
+                settings.camera_pos_x += trans.x;
+                settings.camera_pos_y += trans.y;
+                settings.camera_pos_z += trans.z;
+            }
+
+            if !ui.io().want_capture_mouse {
+                let mouse_delta = ui.io().mouse_delta;
+                if ui.io().mouse_down[0] {
+                    if ui.io().key_shift {
+                        let delta_x = mouse_delta[0] * settings.camera_move_speed / 3000.;
+                        let delta_y = mouse_delta[1] * settings.camera_move_speed / 3000.;
+                        let to = -r * delta_x + u * delta_y + f;
+                        let rot = Euler::from(quaternion_to(f, to) * rotation);
+                        settings.camera_rot_x = Deg::from(rot.x).0;
+                        settings.camera_rot_y = Deg::from(rot.y).0;
+                        settings.camera_rot_z = Deg::from(rot.z).0;
+                    } else {
+                        let delta_x = mouse_delta[0] * settings.camera_move_speed / 10.;
+                        let delta_y = mouse_delta[1] * settings.camera_move_speed / 10.;
+                        let trans = -r * delta_x + u * delta_y;
+                        settings.camera_pos_x += trans.x;
+                        settings.camera_pos_y += trans.y;
+                        settings.camera_pos_z += trans.z;
+                    }
+                }
+            }
+        }
+
         let mut font_size = self.font_size;
         let mut update_font = false;
         ui.window("Dear ImGui").build(|| {
@@ -436,6 +481,20 @@ impl ImGuiRenderer {
                             0,
                         );
                     }
+                    ui.separator();
+
+                    unsafe {
+                        igDragFloat(
+                            CString::new("Move speed").unwrap().as_c_str().as_ptr(),
+                            &mut settings.camera_move_speed as _,
+                            1.,
+                            1. * SCALE,
+                            100. * SCALE,
+                            CString::new("%.3f").unwrap().as_c_str().as_ptr(),
+                            0,
+                        );
+                    }
+
                     ui.separator();
 
                     ui.text("Perspective");

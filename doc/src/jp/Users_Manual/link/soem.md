@@ -11,7 +11,7 @@ SOEMを使用するのはやむを得ない理由があるか, 開発時のみ�
 Windowsの場合は, [npcap](https://nmap.org/npcap/)を**WinPcap API compatible mode**でインストールしておくこと.
 Linux/macOSの場合は, 特に準備は必要ない.
 
-> NOTE: `SOEM`を使用する場合, `Controllero`をopen[^soem_init_sync]してから10-20秒ほどはEtherCATスレーブ同士の同期が完了していない可能性があるので注意されたい. (この時間は個体差や同期信号/送信サイクルによって変化する.)
+> NOTE: `SOEM`を使用する場合, `Controller`をopen[^soem_init_sync]してから10-20秒ほどはEtherCATスレーブ同士の同期が完了していない可能性があるので注意されたい. (この時間は個体差や同期信号/送信サイクルによって変化する.)
 > この期間, デバイス間の超音波の同期は保証されない.
 
 ## SOEMリンクのAPI
@@ -172,7 +172,7 @@ SOEM()\
 ### Timer strategy
 
 EtherCATは、一定の間隔で周期的にフレームを送信することで動作する.
-`timer_strategy`でこの周期的な送信をどのように行うかを指定できる.
+`with_timer_strategy`でこの周期的な送信をどのように行うかを指定できる.
 
 ```rust,should_panic
 # use autd3::prelude::*;
@@ -211,7 +211,7 @@ SOEM()\
     .with_timer_strategy(TimerStrategy.BusyWait)
 ```
 
-* `Sleep`       : 標準ライブラリの`std::chrono::sleep_for`を用いる
+* `Sleep`       : 標準ライブラリのsleepを用いる
 * `BusyWait`    : ビジーウェイトを用いる. 高解像度だが, CPU負荷が高い.
 * `NativeTimer` : OSのタイマー機能を用いる
   * Windowsではマルチメディアタイマー, linuxではPOSIXタイマー, macOSではGrand Central Dispatch Timer
@@ -220,7 +220,7 @@ SOEM()\
 
 ### 同期モード
 
-`sync_mode`でEtherCATの同期モードを設定する.
+`with_sync_mode`でEtherCATの同期モードを設定する.
 同期モードには, `DC`と`FreeRun`が存在する.
 
 * 詳細は[Beckhoffの説明](https://infosys.beckhoff.com/english.php?content=../content/1033/ethercatsystem/2469122443.html&id=)を参照されたい.
@@ -247,7 +247,7 @@ SOEM::new()
 #include "autd3/link/soem.hpp"
 
 autd3::link::SOEM()
-    .with_sync_mode(autd3::internal::native_methods::SyncMode::DC)
+    .with_sync_mode(autd3::link::SyncMode::DC)
 ```
 
 ```cs

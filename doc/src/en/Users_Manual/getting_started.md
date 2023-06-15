@@ -1,84 +1,35 @@
-# Getting Started
+# Tutorial
 
-This section describe the actual procedure for running AUTD3.
-Windows 11 64bit is used in this section, however, it can be run on other operating systems such as Linux and macOS.
+## Installation of dependencies
 
-## Install
+This tutorial uses SOEM.
+If you are using Windows, install [Npcap](https://npcap.com/) in **WinPcap API-compatible Mode**.
 
-First, install the necessary tools.
-The tools and versions used in this section are as follows. 
+## Setup devices
 
-- Visual Studio Community 2022 17.3.5
-- CMake 3.24.2
-- git 2.38.0.windows.1
-- npcap 1.71[^fn_npcap] (only for Windows)
-
-Follow the official instructions to install each of them.
-For Visual Studio Community 2022, install "Desktop development with C++".
-
-Make sure you setup PATH to use `cmake` from a terminal. 
-
-## Setup Device
-
-Next, set up the device. 
-We will use only one AUTD3 device here.
-Connect the ethernet port of the PC to the `EtherCAT In` of the AUTD3 device with an Ethernet cable (see [Concept](./concept.md)).
+First, set up the devices.
+Here, we assume that only one AUTD3 is used.
+Connect the PC's Ethernet port and the AUTD3 device's EtherCAT In ([Concept](concept.md)) with an Ethernet cable.
 Next, connect the $\SI{24}{V}$ power supply.
 
 ### Firmware update
 
-If the firmware is out of date, the operation is not guaranteed. The version of firmware in this document is assumed to be 2.8.
+If the firmware is old, normal operation is not guaranteed.
+The firmware version in this document is assumed to be v2.9.
 
-To update the firmware, [Vivado](https://www.xilinx.com/products/design-tools/vivado.html) and [J-Link Software](https://www.segger.com/downloads/jlink/) on Windows 10/11 64-bit PC are required.
+To update the firmware, you need a Windows 10/11 64bit PC with [Vivado](https://www.xilinx.com/products/design-tools/vivado.html) and [J-Link Software](https://www.segger.com/downloads/jlink/) installed.
 
-> NOTE: If you only want to update the firmware, we strongly recommend you to use Vivado Lab edition.
+> Note: If you only want to update the firmware, we strongly recommend using "Vivado Lab Edition".
+> The "Vivado ML Edition" requires more than 60 GB of disk space to install, while the "Vivado Lab Edition" requires only about 6 GB.
 
-First, connect the AUTD3 device and the PC to [XILINX Platform Cable](https://www.xilinx.com/products/boards-and-kits/hw-usb-ii-g.html), and [J-Link Plus](https://www.segger.com/products/debug-probes/j-link/models/j-link-plus/) with [J-Link 9-Pin Cortex-M Adapter](https://www.segger-pocjapan.com/j-link-9-pin-cortex-m-adapter).
-Next, connect AUTD3 to the power supply and power it on.
-Next, run `dist/firmware/autd_firmware_writer.ps1` from PowerShell and follow the instructions.
-The update will take a few minutes.
+First, connect the AUTD3 device and the PC with [XILINX Platform Cable](https://www.xilinx.com/products/boards-and-kits/hw-usb-ii-g.html) and [J-Link Plus](https://www.segger.com/products/debug-probes/j-link/models/j-link-plus/) with [J-Link 9-Pin Cortex-M Adapter](https://www.segger-pocjapan.com/j-link-9-pin-cortex-m-adapter), and turn on the power of the AUTD3.
 
-## Building first program
+Then, run `dist/firmware/autd_firmware_writer.ps1` in [SDK](https://github.com/shinolab/autd3) on powershell.
 
-First, open a terminal and prepare a directory for the sample.
+## Language-specific tutorials
 
-```
-mkdir autd3_sample
-cd autd3_sample
-```
-
-Then, make `CMakeLists.txt` and `main.cpp` files.
-
-```
-└─autd3_sample
-        CMakeLists.txt
-        main.cpp
-```
-
-Next, edit `CMakeLists.txt` as follows,
-
-```
-{{#include ../../../samples/cpp/CMakeLists.txt}}
-```
-
-And, edit `main.cpp` as follows.
-This is the source code for generating a focus with $\SI{150}{Hz}$ AM modulation. 
-
-```cpp
-{{#include ../../../samples/cpp/main.cpp}}
-```
-
-Next, build with CMake.
-
-```
-mkdir build
-cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-```
-
-Now, `autd3_sample.sln` should be generated under the build directory.
-Open it and execute the main project.
-**Note that you must change the build configuration of Visual Studio from Debug to Release when executing the main project.**
-Also, if you use Linux/macOS, root privileges may be required to run the main project.
-
-[^fn_npcap]: Used to use SOEM link. Not necessary for other links.
+- [Rust](./getting_started/rust.md)
+- [C++](./getting_started/cpp.md)
+- [C#](./getting_started/cs.md)
+- [Unity](./getting_started/unity.md)
+- [Python](./getting_started/python.md)

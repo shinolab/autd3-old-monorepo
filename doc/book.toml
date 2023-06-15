@@ -2,7 +2,7 @@
 authors = ["shun suzuki"]
 language = "en"
 multilingual = true
-title = "AUTD3 Developers Manual v11.1.0"
+title = "AUTD3 Developers Manual v11.2.0"
 
 src = "src"
 destination = "book"
@@ -44,4 +44,4 @@ destination = "book/jp"
 [preprocessor.keeper]
 command = "mdbook-keeper"
 manifest_dir = "../src"
-externs = ["autd3", "autd3_link_soem", "autd3_link_twincat", "autd3_link_simulator", "autd3_gain_holo", "autd3_modulation_audio_file"]
+externs = ["autd3", "autd3_core", "autd3_link_soem", "autd3_link_twincat", "autd3_link_simulator",  "autd3_link_monitor", "autd3_gain_holo", "autd3_modulation_audio_file"]

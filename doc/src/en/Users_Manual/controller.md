@@ -1,106 +1,166 @@
 # Controller
 
-This section introduces functions that exist in the `Controller` class.
+The followings are introductino of APIs in `Controller` class.
 
-## open/close/is_open
+[[_TOC_]]
 
-Open and close `Controller`.
+## force_fan
 
-You can check if the `Controller` is open by `is_open`.
+AUTD3 has a fan to cool the device.
+The fan has three modes, Auto, Off, and On.
+With Auto mode, the fan is automatically turned on when the temperature monitoring IC monitors the temperature of the IC and the temperature exceeds a certain temperature.
+With Off mode, the fan is always off, and with On mode, the fan is always on.
 
-## geometry
-
-Get `Geometry`.
-
-## Force fan
-
-AUTD3 has a fan to cool the device, and three modes of fan control: Auto, Off and On.
-In Auto mode, the temperature monitoring IC automatically activates the fan when the temperature exceeds a certain level. 
-In Off mode, the fan is always off, and in On mode, the fan is always on.
-
-The mode is switched by a jumper switch next to the fan.
-It is shown in the figure below.
-When the fan side is shorted, the mode is Auto.
-Off in the middle is shorted, and On on the right side is shorted.
+The switching of the fan mode is done by a jumper switch next to the fan.
+If you short the fan side as shown in the following figure, it will be Auto, Off in the middle, and On on the right.
 
 <figure>
   <img src="../fig/Users_Manual/fan.jpg"/>
-  <figcaption>AUTD Fan jumper switch</figcaption>
+  <figcaption>Jumper switch</figcaption>
 </figure>
 
-In Auto mode, the fan is automatically activated when the temperature becomes high.
-The `force_fan` flag is used to force the fan to start in Auto mode.
+In Auto mode, the fan starts automatically when the temperature rises.
+You can also force the fan to start by setting the `force_fan` flag.
+
+```rust
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+autd.force_fan(true);
+# Ok(())
+# }
+```
 
 ```cpp
 autd.force_fan(true);
 ```
 
-The flag is updated after calling `send`.
-If you only want to update the flag, send `UpdateFlag`.
+```cs
+autd.ForceFan(true);
+```
+
+```python
+autd.force_fan(True)
+```
+
+The flag is updated when `send` is called and some data is sent.
+If you only want to update the flag, you can send `UpdateFlags`.
+
+```rust
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+autd.force_fan(true);
+autd.send(UpdateFlags::new())?;
+# Ok(())
+# }
+```
 
 ```cpp
 autd.force_fan(true);
-autd.send(autd3::UpdateFlag());
+autd.send(autd3::UpdateFlags());
 ```
 
-## Read FPGA info
+```cs
+autd.ForceFan(true);
+autd.Send(new UpdateFlags());
+```
 
-Turn on the `reads_fpga_info` flag so that the device returns the FPGA status.
+```python
+autd.force_fan(True)
+autd.send(UpdateFlags())
+```
 
-You can get the FPGA state with the `fpga_info` function.
+## fpga_info
+
+Get the FPGA status.
+Before using this, you need to set the `reads_fpga_info` flag.
+
+```rust
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+autd.reads_fpga_info(true);
+autd.send(UpdateFlags::new())?;
+
+let info = autd.fpga_info();
+# Ok(())
+# }
+```
 
 ```cpp
 autd.reads_fpga_info(true);
-autd.send(autd3::update_flag());
+autd.send(autd3::UpdateFlags());
 
-const auto infos = autd.fpga_info();
+const auto info = autd.fpga_info();
 ```
 
-The return value of `fpga_info` is `vector` for `FPGAInfo` devices.
+```cs
+autd.ReadsFPGAInfo(true);
+autd.Send(new UpdateFlags());
 
-
-## Firmware information
-
-The `firmware_infos` function allows you to get the firmware version information.
-
-```cpp
-for (auto&& firm_info : autd.firmware_infos()) std::cout << firm_info << std::endl;
+var info = autd.FPGAInfo;
 ```
 
-## Send functions
+```python
+autd.reads_fpga_info(True)
+autd.send(UpdateFlags())
 
-Send data to devices.
+info = autd.fpga_info
+```
+
+You can get the following information about the FPGA.
+- thermal sensor for fan control is asserted or not
+
+## send
+
+Send the data to the device.
 
 ### Timeout
 
-Timeout of `send` function can be specified by the last argument.
-If this argument is omitted, the timeout set in [Link](./link.md) is used.
+You can specify the timeout time with `send`.
+If you omit this, the timeout time set by [Link](./link.md) will be used.
 
-```cpp
-autd.send(..., autd3::Milliseconds(20));
+```rust
+# use autd3::prelude::*;
+# #[allow(unused_variables)]
+# fn main() -> Result<(), Box<dyn std::error::Error>> {
+# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+# let m = Static::new();
+# let g = Null::new();
+autd.send((m, g, std::time::Duration::from_millis(20)))?;
+# Ok(())
+# }
 ```
 
-If the timeout is greater than zero, wait until the data to be sent has been processed by the device or until the specified timeout period has elapsed.
-The `send` function returns `true` if it is sure that the device has processed the sent data, otherwise it returns `false`.
+```cpp
+autd.send(m, g, std::chrono::milliseconds(20));
+```
 
-If the timeout value is zero, the `send` function does not check data and return void.
+```cs
+autd.Send(m, g, TimeSpan.FromMilliseconds(20));
+```
 
-It is recommended to set this to an appropriate value if you want to send data reliably.
+```python
+autd.send(m, g, timeout=timedelta(milliseconds=20))
+```
+
+If the timeout time is greater than 0, the `send` function waits until the sent data is processed by the device or the specified timeout time elapses.
+If it is confirmed that the sent data has been processed by the device, the `send` function returns `true`, otherwise it returns `false`.
+
+If the timeout time is 0, the `send` function does not check whether the sent data has been processed by the device or not.
+
+If you want to data to be sent surely, it is recommended to set this to an appropriate value.
 
 ### stop
 
-You can stop output by sending `autd3::Stop`.
+You can stop the output by sending `Stop` data.
 
-```cpp
-autd.send(autd3::Stop());
-```
-
-Note that this will overwrite `SilencerConfig` with its default value.
+Note that the `Stop` data resets the settings of Silencer.
 
 ### clear
 
-You can clear flags, `Gain`/`Modulation` data, etc. in the device by sending `autd3::Clear`.
-
-```cpp
-autd.send(autd3::Clear());
-```
+You can clear the flags and `Gain`/`Modulation` data in the device by sending `Clear` data.

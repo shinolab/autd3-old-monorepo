@@ -22,7 +22,7 @@ Silencerは, 振動子の駆動信号の急激な変動を抑制し, 静音化�
 
 Silencerの設定には`SilencerConfig`を送信する.
 
-```rust,should_panic
+```rust
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -83,7 +83,7 @@ Silencerはデフォルトで適当な値に設定されている.
 
 Silencerを無効化する場合は, 以下のようにする.
 
-```rust,should_panic
+```rust
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {

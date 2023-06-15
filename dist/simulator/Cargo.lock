@@ -192,7 +192,7 @@ checksum = "c59bdb34bc650a32731b31bd8f0829cc15d24a708ee31559e0bb34f2bc320cba"
 
 [[package]]
 name = "autd3-core"
-version = "11.1.0"
+version = "11.2.0"
 dependencies = [
  "atomic",
  "autd3-driver",
@@ -211,7 +211,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-driver"
-version = "11.1.0"
+version = "11.2.0"
 dependencies = [
  "bitflags 2.3.1",
  "thiserror",
@@ -219,7 +219,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-firmware-emulator"
-version = "11.1.0"
+version = "11.2.0"
 dependencies = [
  "autd3-core",
  "num-integer",
@@ -228,7 +228,7 @@ dependencies = [
 
 [[package]]
 name = "autd3-simulator"
-version = "11.1.0"
+version = "11.2.0"
 dependencies = [
  "anyhow",
  "autd3-core",
@@ -1691,7 +1691,7 @@ checksum = "238abfbb77c1915110ad968465608b68e869e0772622c9656714e73e5a1a522f"
 
 [[package]]
 name = "simulator"
-version = "11.1.0"
+version = "11.2.0"
 dependencies = [
  "anyhow",
  "autd3-simulator",

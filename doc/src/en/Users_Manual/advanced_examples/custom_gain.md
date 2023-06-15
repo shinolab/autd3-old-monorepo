@@ -3,31 +3,102 @@
 You can create your own `Gain` by inheriting from the `Gain` class.
 Here, we will define a `FocalPoint` that generates a single focus just like `Focus`.
 
+```rust
+use autd3::{
+    core::{
+        error::AUTDInternalError,
+        gain::Gain,
+        geometry::{Geometry, Transducer},
+        Drive,
+    },
+    prelude::*,
+    traits::Gain,
+};
+
+#[derive(Gain, Clone, Copy)]
+pub struct FocalPoint {
+    position: Vector3,
+}
+
+impl FocalPoint {
+    pub fn new(position: Vector3) -> Self {
+        Self {position}
+    }
+}
+
+impl<T: Transducer> Gain<T> for FocalPoint {
+    fn calc(&mut self, geometry: &Geometry<T>) -> Result<Vec<Drive>, AUTDInternalError> {
+        let sound_speed = geometry.sound_speed; 
+        Ok(Self::transform(geometry, |tr| Drive {
+            phase: (tr.position() - self.position).norm() * tr.wavelength(sound_speed),
+            amp: 1.0,
+        }))
+    }
+}
+
+# fn main() { 
+# }
+#
+```
+
 ```cpp
 #include "autd3.hpp"
 
 class FocalPoint final : public autd3::Gain {
- public:
-  explicit FocalPoint(autd3::Vector3 point) : _point(std::move(point)) {}
+public:
+    explicit FocalPoint(autd3::Vector3 point) : _point(std::move(point)) {}
 
-  std::vector<autd3::driver::Drive> calc(const autd3::Geometry& geometry) override {
-    std::vector<autd3::driver::Drive> drives;
-    drives.reserve(geometry.num_transducers());
-    std::transform(geometry.begin(), geometry.end(), std::back_inserter(drives), [&](const auto& transducer) {
-        const auto phase = transducer.align_phase_at(_point, geometry.sound_speed);
-        return driver::Drive{phase, 1.0};
-      });
-    return drives;
-  } 
+    std::vector<autd3::Drive> calc(const autd3::Geometry& geometry) const override {
+        const auto sound_speed = geometry.sound_speed();
+        return autd3::Gain::transform(geometry, [&](const auto& tr) {
+            const auto phase = (tr.position() - _point).norm() * tr.wavelength(sound_speed);
+            return autd3::Drive{phase, 1.0};
+            });
+    }
 
- private:
-  autd::Vector3 _point;
+private:
+    autd3::Vector3 _point;
 };
 ```
 
-The `Gain::calc` method is called in the `Controller::send` function whose argument is `Geometry`.
-In this function, you have to calculate and return the phase/amplitude data.
-`Geometry` defines an iterator that return `Transducer`, from which the position of the transducer can be obtained.
+```cs
+public class FocalPoint : Gain
+{
+    private readonly Vector3d _point;
 
-In order to maximize the sound pressure of the emitted ultrasound from transducers at a certain point $\bp$, the phases at $\bp$ should be aligned.
-This can be calculated by the function `align_phase_at` provided in the `Transducer` class.
+    public FocalPoint(Vector3d point)
+    {
+        _point = point;
+    }
+
+    public override Drive[] Calc(Geometry geometry)
+    {
+        var soundSpeed = geometry.SoundSpeed;
+        return Transform(geometry, tr =>
+        {
+            var tp = tr.Position;
+            var dist = (tp - _point).L2Norm;
+            var phase = dist * tr.Wavenumber(soundSpeed);
+            return new Drive(1.0, phase);
+        });
+    }
+}
+```
+
+```python
+from pyautd3.gain import Gain, Drive
+
+class FocalPoint(Gain):
+    def __init__(self, point):
+        self.point = np.array(point)
+
+    def calc(self, geometry: Geometry):
+        sound_speed = geometry.sound_speed
+        return Gain.transform(
+            geometry,
+            lambda tr: Drive(
+                1.0,
+                np.linalg.norm(tr.position - self.point) * tr.wavenumber(sound_speed),
+            ),
+        )
+```

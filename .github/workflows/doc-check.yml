@@ -1,0 +1,39 @@
+name: Document check
+
+on:
+  push:
+    branches: [ release ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup mdbook
+      uses: peaceiris/actions-mdbook@v1
+      with:
+        mdbook-version: '0.4.30'
+    - name: Setup mdbook-toc
+      run: |
+        mkdir -p mdbook-toc
+        cd mdbook-toc
+        curl -L https://github.com/badboy/mdbook-toc/releases/download/0.12.0/mdbook-toc-0.12.0-x86_64-unknown-linux-gnu.tar.gz -o mdbook-toc.tar.gz
+        tar -xvf mdbook-toc.tar.gz
+        chmod +x mdbook-toc
+        sudo ln -s $PWD/mdbook-toc /usr/local/bin/mdbook-toc
+    - name: Setup mdbook-katex
+      run: |
+        mkdir -p mdbook-katex
+        cd mdbook-katex
+        curl -L https://github.com/lzanini/mdbook-katex/releases/download/v0.5.3/mdbook-katex-v0.5.3-x86_64-unknown-linux-gnu.tar.gz -o mdbook-katex.tar.gz
+        tar -xvf mdbook-katex.tar.gz
+        chmod +x mdbook-katex
+        sudo ln -s $PWD/mdbook-katex /usr/local/bin/mdbook-katex
+    - name: Setup mdbook-keeper
+      run: |
+        cargo install mdbook-keeper
+    - name: Build book
+      run: |
+        cd ./doc
+        MDBOOK_BOOK__src=src/en mdbook build --dest-dir book/en
+        MDBOOK_BOOK__src=src/jp mdbook build --dest-dir book/jp

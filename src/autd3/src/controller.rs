@@ -4,7 +4,7 @@
  * Created Date: 27/04/2022
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/06/2023
+ * Last Modified: 14/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2022-2023 Shun Suzuki. All rights reserved.
@@ -164,6 +164,14 @@ impl<T: Transducer, L: Link<T>> Controller<T, L> {
 
     pub fn geometry_mut(&mut self) -> &mut Geometry<T> {
         &mut self.geometry
+    }
+
+    pub fn link(&self) -> &L {
+        &self.link
+    }
+
+    pub fn link_mut(&self) -> &L {
+        &self.link
     }
 
     /// Send header and body to the devices

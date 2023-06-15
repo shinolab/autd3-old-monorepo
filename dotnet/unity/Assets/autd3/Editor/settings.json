@@ -41,5 +41,6 @@
   "image_save_path": "image.png",
   "max_dev_num": 50,
   "max_trans_num": 10000,
-  "port": 8080
+  "port": 8080,
+  "camera_move_speed": 0.010000001
 }

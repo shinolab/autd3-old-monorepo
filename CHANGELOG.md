@@ -1,3 +1,14 @@
+# 11.2.0
+
+- Fix [#69](https://github.com/shinolab/autd3/issues/69)
+- Fix [#70](https://github.com/shinolab/autd3/issues/70)
+- Add `Bundle` link
+- Add `Monitor` link
+- Add `FIR` modulation
+- Add `Transform` modulation
+- Add `RawPCM` modulation
+- Fix fluctuation when moving slice in simulator
+
 # 11.1.0
 
 - Fix [#68](https://github.com/shinolab/autd3/issues/68)
