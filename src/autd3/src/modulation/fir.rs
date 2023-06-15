@@ -15,6 +15,7 @@
  * sdr_rs module is downloaded from https://github.com/adamgreig/sdr-rs, which is distributed under the MIT License.
  * This crate is not maintained, so minor modifications have been made to make it work with the latest version of Rust.
  */
+#[allow(clippy::all)]
 mod sdr_rs;
 
 use sdr_rs::fir;

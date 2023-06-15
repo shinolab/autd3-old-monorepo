@@ -116,6 +116,7 @@ impl Default for Monitor<Sphere> {
 }
 
 impl<D: Directivity> Monitor<D> {
+    #[cfg(target_os = "windows")]
     fn initialize_python() -> PyResult<()> {
         let python_exe = which::which("python").unwrap();
         let python_home = python_exe.parent().unwrap();
@@ -196,7 +197,8 @@ impl<D: Directivity> Monitor<D> {
         x_label: &str,
         config: PlotConfig,
     ) -> Result<(), MonitorError> {
-        if cfg!(target_os = "windows") {
+        #[cfg(target_os = "windows")]
+        {
             Self::initialize_python()?;
         }
 
@@ -256,6 +258,7 @@ def plot(observe, acoustic_pressures, resolution, x_label, path, config):
         Ok(())
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn plot_2d(
         path: &OsStr,
         observe_x: Vec<float>,
@@ -266,7 +269,8 @@ def plot(observe, acoustic_pressures, resolution, x_label, path, config):
         y_label: &str,
         config: PlotConfig,
     ) -> Result<(), MonitorError> {
-        if cfg!(target_os = "windows") {
+        #[cfg(target_os = "windows")]
+        {
             Self::initialize_python()?;
         }
 
@@ -353,7 +357,8 @@ def plot(observe_x, observe_y, acoustic_pressures, resolution, x_label, y_label,
         modulation: Vec<float>,
         config: PlotConfig,
     ) -> Result<(), MonitorError> {
-        if cfg!(target_os = "windows") {
+        #[cfg(target_os = "windows")]
+        {
             Self::initialize_python()?;
         }
 
@@ -393,7 +398,7 @@ def plot(modulation, path, config):
         Ok(())
     }
 
-    pub fn calc_field<'a, T: Transducer, I: Iterator<Item = Vector3>>(
+    pub fn calc_field<T: Transducer, I: Iterator<Item = Vector3>>(
         &self,
         observe_points: I,
         geometry: &Geometry<T>,
@@ -420,7 +425,7 @@ def plot(modulation, path, config):
                                 let amp = (PI * d as float / t.cycle() as float).sin();
                                 let phase = 2. * PI * p as float / t.cycle() as float;
                                 acc + propagate::<D>(
-                                    &t.position(),
+                                    t.position(),
                                     &t.z_direction(),
                                     0.0,
                                     t.wavenumber(sound_speed),
@@ -432,6 +437,7 @@ def plot(modulation, path, config):
             .collect()
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn save_field<P: AsRef<Path>, T: Transducer>(
         &self,
         path: P,
@@ -586,7 +592,8 @@ def plot(modulation, path, config):
         config: PlotConfig,
         geometry: &Geometry<T>,
     ) -> Result<(), MonitorError> {
-        if cfg!(target_os = "windows") {
+        #[cfg(target_os = "windows")]
+        {
             Self::initialize_python()?;
         }
 
