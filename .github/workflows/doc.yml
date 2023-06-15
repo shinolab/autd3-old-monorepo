@@ -1,4 +1,4 @@
-name: Doxygen
+name: Document
 
 on:
   push:
@@ -78,8 +78,8 @@ jobs:
     - name: mv mdbook doc
       run: |
         mkdir -p doc_build/book
-        sudo mv ./doc/book/en/html ./doc_build/book/en
-        sudo mv ./doc/book/jp/html ./doc_build/book/jp
+        sudo mv ./doc/book/en ./doc_build/book/en
+        sudo mv ./doc/book/jp ./doc_build/book/jp
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:

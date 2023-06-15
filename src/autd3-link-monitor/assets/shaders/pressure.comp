@@ -1,0 +1,83 @@
+/*
+ * File: pressure.comp
+ * Project: shaders
+ * Created Date: 15/06/2023
+ * Author: Shun Suzuki
+ * -----
+ * Last Modified: 15/06/2023
+ * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
+ * -----
+ * Copyright (c) 2023 Shun Suzuki. All rights reserved.
+ * 
+ */
+
+#version 450 core
+
+layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+
+layout(push_constant) uniform PushConsts {
+    uint source_num;
+    uint observe_num;
+    uint _dummy1;
+    uint _dummy2;
+} pc;
+
+layout(set = 0, binding = 0) buffer Data {
+    vec2 data[];
+} data;
+
+layout(set = 1, binding = 0) buffer SourcePos {
+    vec4 pos[];
+} source_pos;
+
+layout(set = 2, binding = 0) buffer SourceDrive {
+    vec4 drive[];
+} source_drive;
+
+layout(set = 3, binding = 0) buffer ObservePos {
+    vec4 pos[];
+} observe_pos;
+
+layout(set = 4, binding = 0) buffer DirectivityBuf {
+    float d[];
+} directivity_buf;
+
+layout(set = 5, binding = 0) buffer SourceDir {
+    vec4 dir[];
+} source_dir;
+
+const float PI = 3.1415926535897932384626433832795;
+
+float directivity(float angle)
+{
+  float a = angle - floor(angle);
+  uint idx = uint(floor(angle));
+  float x = directivity_buf.d[idx];
+  float y = directivity_buf.d[idx + 1];
+  return mix(x, y, a);
+}
+
+void main() {
+    uint dst_idx = gl_GlobalInvocationID.x;
+    if(dst_idx >= pc.observe_num) return;
+    vec3 point = vec3(observe_pos.pos[dst_idx]); 
+    float re = 0.0; 
+    float im = 0.0; 
+    for(uint idx = 0; idx < 65536; idx++){ 
+        if(idx >= pc.source_num) break; 
+        vec3 tp = vec3(source_pos.pos[idx]); 
+        float r = length(point - tp); 
+        float p = source_drive.drive[idx].y - source_drive.drive[idx].w * r;
+
+        vec3 dir = vec3(source_dir.dir[idx]);
+        vec3 diff = point - tp;
+        float dst = length(diff);
+        float angle = atan(length(cross(dir, diff)), dot(dir, diff)) * 180.0 / PI;
+
+        float amp = directivity(angle) * source_drive.drive[idx].x / r;
+        re += amp * cos(p);
+        im += amp * sin(p);
+    } 
+    data.data[dst_idx].x = re;
+    data.data[dst_idx].y = im;
+}

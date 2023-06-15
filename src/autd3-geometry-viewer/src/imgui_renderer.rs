@@ -4,7 +4,7 @@
  * Created Date: 23/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2023
+ * Last Modified: 15/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -13,6 +13,7 @@
 
 use std::{ffi::CString, time::Instant};
 
+use cgmath::{Deg, Euler, InnerSpace};
 use imgui::{sys::igDragFloat, Context, FontConfig, FontGlyphRanges, FontSource};
 use imgui_winit_support::{HiDpiMode, WinitPlatform};
 use vulkano::{
@@ -21,7 +22,28 @@ use vulkano::{
 };
 use winit::{event::Event, window::Window};
 
-use crate::{renderer::Renderer, settings::Settings, Quaternion, Vector3, SCALE};
+use crate::{renderer::Renderer, settings::Settings, Quaternion, Vector3, SCALE, ZPARITY};
+
+fn quaternion_to(v: Vector3, to: Vector3) -> Quaternion {
+    let a = v.normalize();
+    let b = to.normalize();
+    let c = b.cross(a).normalize();
+    if c.x.is_nan() || c.y.is_nan() || c.z.is_nan() {
+        return Quaternion::new(1., 0., 0., 0.);
+    }
+    let ip = a.dot(b);
+    const EPS: f32 = 1e-4;
+    if c.magnitude() < EPS || 1. < ip {
+        if ip < EPS - 1. {
+            let a2 = Vector3::new(-a.y, a.z, a.x);
+            let c2 = a2.cross(a).normalize();
+            return Quaternion::new(0., c2.x, c2.y, c2.z);
+        }
+        return Quaternion::new(1., 0., 0., 0.);
+    }
+    let e = c * (0.5 * (1. - ip)).sqrt();
+    Quaternion::new((0.5 * (1. + ip)).sqrt(), e.x, e.y, e.z)
+}
 
 pub struct ImGuiRenderer {
     imgui: Context,
@@ -107,6 +129,48 @@ impl ImGuiRenderer {
 
         let ui = self.imgui.new_frame();
 
+        {
+            let rotation = Quaternion::from(Euler {
+                x: Deg(settings.camera_rot_x),
+                y: Deg(settings.camera_rot_y),
+                z: Deg(settings.camera_rot_z),
+            });
+
+            let r = rotation * Vector3::unit_x();
+            let u = rotation * Vector3::unit_y();
+            let f = rotation * Vector3::unit_z();
+
+            if !ui.io().want_capture_mouse {
+                let mouse_wheel = ui.io().mouse_wheel;
+                let trans = -f * mouse_wheel * settings.camera_move_speed * ZPARITY;
+                settings.camera_pos_x += trans.x;
+                settings.camera_pos_y += trans.y;
+                settings.camera_pos_z += trans.z;
+            }
+
+            if !ui.io().want_capture_mouse {
+                let mouse_delta = ui.io().mouse_delta;
+                if ui.io().mouse_down[0] {
+                    if ui.io().key_shift {
+                        let delta_x = mouse_delta[0] * settings.camera_move_speed / 3000.;
+                        let delta_y = mouse_delta[1] * settings.camera_move_speed / 3000.;
+                        let to = -r * delta_x + u * delta_y + f;
+                        let rot = Euler::from(quaternion_to(f, to) * rotation);
+                        settings.camera_rot_x = Deg::from(rot.x).0;
+                        settings.camera_rot_y = Deg::from(rot.y).0;
+                        settings.camera_rot_z = Deg::from(rot.z).0;
+                    } else {
+                        let delta_x = mouse_delta[0] * settings.camera_move_speed / 10.;
+                        let delta_y = mouse_delta[1] * settings.camera_move_speed / 10.;
+                        let trans = -r * delta_x + u * delta_y;
+                        settings.camera_pos_x += trans.x;
+                        settings.camera_pos_y += trans.y;
+                        settings.camera_pos_z += trans.z;
+                    }
+                }
+            }
+        }
+
         let mut font_size = self.font_size;
         let mut update_font = false;
         ui.window("Dear ImGui").build(|| {
@@ -174,6 +238,20 @@ impl ImGuiRenderer {
                             0,
                         );
                     }
+                    ui.separator();
+
+                    unsafe {
+                        igDragFloat(
+                            CString::new("Move speed").unwrap().as_c_str().as_ptr(),
+                            &mut settings.camera_move_speed as _,
+                            1.,
+                            1. * SCALE,
+                            100. * SCALE,
+                            CString::new("%.3f").unwrap().as_c_str().as_ptr(),
+                            0,
+                        );
+                    }
+
                     ui.separator();
 
                     ui.text("Perspective");

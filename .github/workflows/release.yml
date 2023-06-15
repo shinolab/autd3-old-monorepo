@@ -58,6 +58,10 @@ jobs:
         cargo publish --dry-run
         cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
         cd ..
+        cd autd3-link-monitor
+        cargo publish --dry-run
+        cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
+        cd ..
         cd autd3-gain-holo
         cargo publish --dry-run
         cargo publish --token ${{ secrets.CRATEIO_TOKEN }} || true
