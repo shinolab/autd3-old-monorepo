@@ -4,7 +4,7 @@
  * Created Date: 30/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 30/05/2023
+ * Last Modified: 15/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -28,7 +28,8 @@ use vulkano::{
     pipeline::{
         graphics::{
             color_blend::ColorBlendState, depth_stencil::DepthStencilState,
-            input_assembly::InputAssemblyState, vertex_input::Vertex, viewport::ViewportState,
+            input_assembly::InputAssemblyState, multisample::MultisampleState,
+            vertex_input::Vertex, viewport::ViewportState,
         },
         GraphicsPipeline, Pipeline, PipelineBindPoint,
     },
@@ -116,6 +117,10 @@ impl TransViewer {
             .fragment_shader(fs.entry_point("main").unwrap(), ())
             .color_blend_state(ColorBlendState::new(subpass.num_color_attachments()).blend_alpha())
             .depth_stencil_state(DepthStencilState::simple_depth_test())
+            .multisample_state(MultisampleState {
+                rasterization_samples: renderer.sample_count(),
+                ..MultisampleState::default()
+            })
             .render_pass(subpass)
             .build(device)
             .unwrap();

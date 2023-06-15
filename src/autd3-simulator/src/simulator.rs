@@ -439,8 +439,11 @@ impl Simulator {
                         )
                         .unwrap();
 
-                        let clear_values =
-                            vec![Some(self.settings.background.into()), Some(1f32.into())];
+                        let clear_values = vec![
+                            Some(self.settings.background.into()),
+                            Some(1f32.into()),
+                            None,
+                        ];
                         builder
                             .begin_render_pass(
                                 RenderPassBeginInfo {
