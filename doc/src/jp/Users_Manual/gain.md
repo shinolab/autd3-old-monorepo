@@ -9,3 +9,4 @@ AUTDは各振動子の位相/振幅を個別に制御することができ, こ�
 - [Plane](./gain/plane.md)
 - [Grouped](./gain/grouped.md)
 - [Holo](./gain/holo.md)
+- [Cache](./gain/cache.md)
