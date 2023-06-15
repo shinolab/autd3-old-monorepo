@@ -54,7 +54,6 @@ fn main() -> Result<()> {
         },
         autd.geometry(),
     )?;
-    let now = std::time::Instant::now();
     autd.link().save_field(
         "xy.png",
         center.x - 20.0..center.x + 20.0,
@@ -69,7 +68,6 @@ fn main() -> Result<()> {
         },
         autd.geometry(),
     )?;
-    println!("elapsed: {} ms", now.elapsed().as_millis());
     autd.link().save_field(
         "yz.png",
         center.x..center.x,

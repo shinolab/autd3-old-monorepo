@@ -13,6 +13,9 @@
 
 mod error;
 
+#[cfg(feature = "gpu")]
+mod gpu;
+
 use std::{ffi::OsStr, marker::PhantomData, path::Path, time::Duration};
 
 use autd3_core::{
@@ -34,6 +37,8 @@ pub struct Monitor<D: Directivity> {
     timeout: Duration,
     cpus: Vec<CPUEmulator>,
     _d: PhantomData<D>,
+    #[cfg(feature = "gpu")]
+    gpu_compute: Option<gpu::FieldCompute>,
 }
 
 #[pyclass]
@@ -82,6 +87,8 @@ impl Monitor<Sphere> {
             timeout: Duration::ZERO,
             cpus: Vec::new(),
             _d: PhantomData,
+            #[cfg(feature = "gpu")]
+            gpu_compute: None,
         }
     }
 }
@@ -89,6 +96,16 @@ impl Monitor<Sphere> {
 impl<D: Directivity> Monitor<D> {
     pub fn with_directivity<U: Directivity>(self) -> Monitor<U> {
         unsafe { std::mem::transmute(self) }
+    }
+}
+
+#[cfg(feature = "gpu")]
+impl<D: Directivity> Monitor<D> {
+    pub fn with_gpu(self, gpu_idx: i32) -> Monitor<D> {
+        Self {
+            gpu_compute: Some(gpu::FieldCompute::new(gpu_idx)),
+            ..self
+        }
     }
 }
 
@@ -381,6 +398,12 @@ def plot(modulation, path, config):
         observe_points: I,
         geometry: &Geometry<T>,
     ) -> Vec<Complex> {
+        #[cfg(feature = "gpu")]
+        {
+            if let Some(gpu) = &self.gpu_compute {
+                return gpu.calc_field::<T, D>(observe_points.collect(), geometry, &self.cpus);
+            }
+        }
         let sound_speed = geometry.sound_speed;
         observe_points
             .map(|target| {
@@ -394,8 +417,8 @@ def plot(modulation, path, config):
                             .zip(duty.iter())
                             .zip(phase.iter())
                             .fold(Complex::new(0., 0.), |acc, ((t, &d), &p)| {
-                                let amp = (PI * d as f64 / t.cycle() as f64).sin();
-                                let phase = 2. * PI * p as f64 / t.cycle() as f64;
+                                let amp = (PI * d as float / t.cycle() as float).sin();
+                                let phase = 2. * PI * p as float / t.cycle() as float;
                                 acc + propagate::<D>(
                                     &t.position(),
                                     &t.z_direction(),
