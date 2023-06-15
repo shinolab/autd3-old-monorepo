@@ -1,6 +1,6 @@
 [package]
 name = "autd3-link-monitor"
-version = "11.1.0"
+version = "11.2.0"
 authors = ["shun suzuki <suzuki@hapis.k.u-tokyo.ac.jp>"]
 edition = "2021"
 
@@ -11,8 +11,8 @@ readme = "README.md"
 keywords = ["autd"]
 
 [dependencies]
-autd3-firmware-emulator = {path="../autd3-firmware-emulator", version="11.1.0"}
-autd3-core = {path="../autd3-core", version="11.1.0"}
+autd3-firmware-emulator = {path="../autd3-firmware-emulator", version="11.2.0"}
+autd3-core = {path="../autd3-core", version="11.2.0"}
 thiserror = "1.0.30"
 pyo3 = { version = "0.19.0", features = ["auto-initialize"] }
 which = "4.4.0"
