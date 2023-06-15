@@ -93,8 +93,6 @@ use autd3_gain_holo::{NalgebraBackend, GSPAT, Constraint};
 let backend = NalgebraBackend::new();
 
 let g = GSPAT::new(backend)
-      .add_focus(Vector3::new(x1, y1, z1), 1.)
-      .add_focus(Vector3::new(x2, y2, z2), 1.)
       .with_constraint(Constraint::Uniform(1.));
 # }
 ```

@@ -2,17 +2,6 @@
 
 AUTD Simulator is a simulator for AUTD3 supporting Windows, Linux, and macOS.
 
-## Build
-
-To build AUTD Simulator, you need to turn on `BUILD_SIMULATOR` flag of CMake.
-You also need to install Vulkan SDK.
-
-```
-cmake .. -DBUILD_SIMULATOR=ON
-```
-
-See [sample](https://github.com/shinolab/autd3/blob/master/examples/simulator_server.cpp) for running AUTD Simulator.
-
 ## Usage
 
 When you run the simulator, it is waiting for connection.
@@ -40,9 +29,6 @@ If you use a large number of devices, colors may become saturated, in which case
 
 In Camera tab, you can change camera position, rotation, field of view, near clip, and far clip.
 The rotation is specified in terms of XYZ Euler angles.
-
-In addition, you can move the camera by "Drag" and rotate it by "Shift+Drag" in other scenes than GUI.
-The speed of movement can be changed by the "Move speed" setting.
 
 ### Config tab
 

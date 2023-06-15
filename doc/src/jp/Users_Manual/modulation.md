@@ -5,12 +5,12 @@
 現在, `Modulation`には以下の制約がある.
 
 * バッファサイズは最大で65536
-* サンプリングレートは$\SI{163.84}{MHz}/N$で, $N$は32-bit符号なし整数であり, $1160$以上の値である必要がある.
+* サンプリングレートは$\clklf/N$で, $N$は32-bit符号なし整数であり, $512$以上の値である必要がある.
 * Modulationは全デバイスで共通
 * Modulationは自動でループする. 1ループだけ, 等の制御は不可能.
 * Modulationの開始/終了タイミングは制御できない.
 
-SDKにはデフォルトでいくつかの種類のAMを生成するための`Modulation`がデフォルトで用意されている.
+SDKにはデフォルトでいくつかの種類のAMを生成するための`Modulation`が用意されている.
 
 * [Static](./modulation/static.md)
 * [Sine](./modulation/sine.md)
@@ -18,6 +18,13 @@ SDKにはデフォルトでいくつかの種類のAMを生成するための`Mo
 * [SineLegacy](./modulation/sine_legacy.md)
 * [Square](./modulation/square.md)
 * [Wav](./modulation/wav.md)
+* [RawPCM](./modulation/rawpcm.md)
+* [Cache](./modulation/cache.md)
+
+また, これらを加工するための機能も用意されている.
+
+* [FIR](./modulation/fir.md)
+* [Transform](./modulation/transform.md)
 
 ## Modulationの共通API
 
@@ -28,7 +35,6 @@ SDKにはデフォルトでいくつかの種類のAMを生成するための`Mo
 ```rust
 # use autd3::prelude::*;
 # use autd3::core::modulation::ModulationProperty;
-
 # #[allow(unused_variables)]
 # fn main()  {
 # let m = autd3::modulation::SineLegacy::new(150.);
@@ -81,7 +87,6 @@ fs = m.sampling_frequency
 ```rust
 # use autd3::prelude::*;
 # use autd3::core::modulation::ModulationProperty;
-
 # #[allow(unused_variables)]
 # fn main()  {
 # let m = autd3::modulation::SineLegacy::new(150.);

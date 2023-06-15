@@ -1,9 +1,8 @@
 # Spatio-Temporal Modulation/時空間変調
 
 SDKでは, `Gain`を周期的に切り替えるための機能 (Spatio-Temporal Modulation, STM) が用意されている.
-SDKには単一焦点のみをサポートする`FocusSTM`と, 任意の`Gain`をサポートする`GainSTM`と`SoftwareSTM`が用意されている.
+SDKには単一焦点のみをサポートする`FocusSTM`と, 任意の`Gain`をサポートする`GainSTM`が用意されている.
 `FocusSTM`と`GainSTM`はAUTD3ハードウェア上のタイマを使用するので時間精度が高いが, 制約も多い.
-一方, `SoftwareSTM`はSDKを使用するPC上のタイマを使用するので時間精度は低いが制約が少ない.
 
 - [FocusSTM](./stm/focus.md)
 - [GainSTM](./stm/gain.md)
@@ -25,15 +24,14 @@ STMの周波数を取得する.
 ### start_idx/finish_idx
 
 `FocusSTM`/`GainSTM`は通常, 何番目の焦点/`Gain`からスタートするかは決められていない.
-これを指定するには, 以下のように`start_idx`を指定する.
+これを指定するには, 以下のように`with_start_idx`で指定する.
 
-```rust,should_panic
+```rust
 # use autd3::prelude::*;
 # #[allow(unused_variables)]
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
-# let mut autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
-let stm = FocusSTM::new(1.0).with_start_idx(Some(0))
-#    ;
+# let autd = Controller::builder().open_with(autd3::link::Debug::new()).unwrap();
+let stm = FocusSTM::new(1.0).with_start_idx(Some(0));
 # Ok(())
 # }
 ```

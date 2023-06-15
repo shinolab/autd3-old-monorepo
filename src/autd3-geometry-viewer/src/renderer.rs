@@ -4,7 +4,7 @@
  * Created Date: 11/11/2021
  * Author: Shun Suzuki
  * -----
- * Last Modified: 25/05/2023
+ * Last Modified: 15/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2021 Hapis Lab. All rights reserved.
@@ -23,7 +23,10 @@ use vulkano::{
         Device, DeviceCreateInfo, DeviceExtensions, Features, Queue, QueueCreateInfo, QueueFlags,
     },
     format::{Format, FormatFeatures},
-    image::{view::ImageView, AttachmentImage, ImageAccess, ImageUsage, SwapchainImage},
+    image::{
+        view::ImageView, AttachmentImage, ImageAccess, ImageUsage, SampleCount, SampleCounts,
+        SwapchainImage,
+    },
     instance::{
         debug::{
             DebugUtilsMessageSeverity, DebugUtilsMessageType, DebugUtilsMessenger,
@@ -68,6 +71,7 @@ pub struct Renderer {
     camera: Camera<f32>,
     depth_format: Format,
     _debug_callback: Option<DebugUtilsMessenger>,
+    msaa_sample: SampleCounts,
 }
 
 impl Renderer {
@@ -156,6 +160,8 @@ impl Renderer {
 
         let (device, queue) = Self::create_device(instance, surface.clone());
 
+        let msaa_sample = Self::get_max_usable_sample_count(device.physical_device().clone());
+
         let mut viewport = Viewport {
             origin: [0.0, 0.0],
             dimensions: [0.0, 0.0],
@@ -192,22 +198,29 @@ impl Renderer {
         let render_pass = vulkano::single_pass_renderpass!(
             device.clone(),
             attachments: {
-                color: {
+                intermediary: {
                     load: Clear,
-                    store: Store,
+                    store: DontCare,
                     format: swap_chain.image_format(),
-                    samples: 1,
+                    samples: msaa_sample.max_count(),
                 },
                 depth: {
                     load: Clear,
                     store: DontCare,
                     format: depth_format,
-                    samples: 1,
+                    samples: msaa_sample.max_count(),
                 },
+                color: {
+                    load: DontCare,
+                    store: Store,
+                    format: swap_chain.image_format(),
+                    samples: 1,
+                }
             },
             pass: {
-                color: [color],
+                color: [intermediary],
                 depth_stencil: {depth},
+                resolve: [color],
             }
         )
         .unwrap();
@@ -217,7 +230,9 @@ impl Renderer {
             &images,
             render_pass.clone(),
             &mut viewport,
+            swap_chain.image_format(),
             depth_format,
+            msaa_sample.max_count(),
         );
 
         let mut camera =
@@ -249,7 +264,25 @@ impl Renderer {
             camera,
             depth_format,
             _debug_callback,
+            msaa_sample,
         }
+    }
+
+    fn get_max_usable_sample_count(physical: Arc<PhysicalDevice>) -> SampleCounts {
+        let properties = physical.properties();
+        let counts =
+            properties.framebuffer_color_sample_counts & properties.framebuffer_depth_sample_counts;
+        [
+            SampleCounts::SAMPLE_64,
+            SampleCounts::SAMPLE_32,
+            SampleCounts::SAMPLE_16,
+            SampleCounts::SAMPLE_8,
+            SampleCounts::SAMPLE_4,
+            SampleCounts::SAMPLE_2,
+        ]
+        .into_iter()
+        .find(|c| counts.contains(*c))
+        .unwrap_or(SampleCounts::SAMPLE_1)
     }
 
     pub fn get_projection(&self, fov: f32, near_clip: f32, far_clip: f32) -> Matrix4 {
@@ -353,7 +386,7 @@ impl Renderer {
                 image_color_space: format.map_or(ColorSpace::SrgbNonLinear, |f| f.1),
                 image_extent,
                 image_array_layers: 1,
-                image_usage: ImageUsage::COLOR_ATTACHMENT,
+                image_usage: ImageUsage::TRANSFER_DST | ImageUsage::COLOR_ATTACHMENT,
                 pre_transform: SurfaceTransform::Identity,
                 composite_alpha: alpha,
                 present_mode,
@@ -371,6 +404,10 @@ impl Renderer {
 
     pub fn color_format(&self) -> Format {
         self.swap_chain.image_format()
+    }
+
+    pub fn sample_count(&self) -> SampleCount {
+        self.msaa_sample.max_count()
     }
 
     pub fn window(&self) -> &Window {
@@ -493,12 +530,15 @@ impl Renderer {
 
         self.swap_chain = new_swapchain;
         let memory_allocator = Arc::new(StandardMemoryAllocator::new_default(self.device.clone()));
+        let format = self.color_format();
         self.frame_buffers = Self::window_size_dependent_setup(
             memory_allocator,
             &new_images,
             self.render_pass.clone(),
             &mut self.viewport,
+            format,
             self.depth_format,
+            self.msaa_sample.max_count(),
         );
         self.images = new_images;
         self.recreate_swapchain = false;
@@ -509,16 +549,35 @@ impl Renderer {
         images: &[Arc<SwapchainImage>],
         render_pass: Arc<RenderPass>,
         viewport: &mut Viewport,
+        color_format: Format,
         depth_format: Format,
+        samples: SampleCount,
     ) -> Vec<Arc<Framebuffer>> {
         let dimensions = images[0].dimensions().width_height();
+        viewport.dimensions = [dimensions[0] as f32, dimensions[1] as f32];
 
-        let depth_buffer = ImageView::new_default(
-            AttachmentImage::transient(&memory_allocator, dimensions, depth_format).unwrap(),
+        let color_image = ImageView::new_default(
+            AttachmentImage::transient_multisampled(
+                &memory_allocator,
+                dimensions,
+                samples,
+                color_format,
+            )
+            .unwrap(),
         )
         .unwrap();
 
-        viewport.dimensions = [dimensions[0] as f32, dimensions[1] as f32];
+        let depth_buffer = ImageView::new_default(
+            AttachmentImage::transient_multisampled(
+                &memory_allocator,
+                dimensions,
+                samples,
+                depth_format,
+            )
+            .unwrap(),
+        )
+        .unwrap();
+
         images
             .iter()
             .map(|image| {
@@ -526,7 +585,7 @@ impl Renderer {
                 Framebuffer::new(
                     render_pass.clone(),
                     FramebufferCreateInfo {
-                        attachments: vec![view, depth_buffer.clone()],
+                        attachments: vec![color_image.clone(), depth_buffer.clone(), view],
                         ..Default::default()
                     },
                 )
