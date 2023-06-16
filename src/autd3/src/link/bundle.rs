@@ -4,7 +4,7 @@
  * Created Date: 14/06/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 14/06/2023
+ * Last Modified: 16/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -33,6 +33,22 @@ impl<T: Transducer, L1: Link<T>, L2: Link<T>> Bundle<T, L1, L2> {
             sub_link,
             _t: PhantomData,
         }
+    }
+
+    pub fn link_main(&self) -> &L1 {
+        &self.main_link
+    }
+
+    pub fn link_main_mut(&mut self) -> &mut L1 {
+        &mut self.main_link
+    }
+
+    pub fn link_sub(&self) -> &L2 {
+        &self.sub_link
+    }
+
+    pub fn link_sub_mut(&mut self) -> &mut L2 {
+        &mut self.sub_link
     }
 }
 
