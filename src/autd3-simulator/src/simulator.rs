@@ -4,7 +4,7 @@
  * Created Date: 24/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 15/06/2023
+ * Last Modified: 17/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -479,7 +479,7 @@ impl Simulator {
                             if update_flag.contains(UpdateFlag::UPDATE_SOURCE_DRIVE) {
                                 for cpu in &cpus {
                                     let cycles = cpu.fpga().cycles();
-                                    let (amp, phase) = cpu.fpga().drives(imgui.stm_idx());
+                                    let drives = cpu.fpga().duties_and_phases(imgui.stm_idx());
                                     let m = if self.settings.mod_enable {
                                         cpu.fpga().modulation_at(imgui.mod_idx()) as f32 / 255.
                                     } else {
@@ -491,8 +491,9 @@ impl Simulator {
                                         .take(NUM_TRANS_IN_UNIT)
                                         .enumerate()
                                     {
-                                        d.amp = (PI * amp[i] as f32 * m / cycles[i] as f32).sin();
-                                        d.phase = 2. * PI * phase[i] as f32 / cycles[i] as f32;
+                                        d.amp =
+                                            (PI * drives[i].0 as f32 * m / cycles[i] as f32).sin();
+                                        d.phase = 2. * PI * drives[i].1 as f32 / cycles[i] as f32;
                                         let freq = FPGA_CLK_FREQ as f32 / cycles[i] as f32;
                                         d.set_wave_number(freq, self.settings.sound_speed);
                                     }

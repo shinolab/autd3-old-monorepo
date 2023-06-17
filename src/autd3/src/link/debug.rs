@@ -4,7 +4,7 @@
  * Created Date: 10/05/2023
  * Author: Shun Suzuki
  * -----
- * Last Modified: 12/06/2023
+ * Last Modified: 17/06/2023
  * Modified By: Shun Suzuki (suzuki@hapis.k.u-tokyo.ac.jp)
  * -----
  * Copyright (c) 2023 Shun Suzuki. All rights reserved.
@@ -167,16 +167,14 @@ impl<T: Transducer> Link<T> for Debug {
                     if self.logger.should_log(Level::Trace) {
                         let cycles = fpga.cycles();
                         for j in 0..fpga.stm_cycle() {
-                            let (duty, phase) = fpga.drives(j);
                             trace!(logger: self.logger,"\tSTM[{}]:", j);
                             trace!(logger: self.logger,
                                 "{}",
-                                duty.iter()
-                                    .zip(phase.iter())
+                                fpga.duties_and_phases(j).iter()
                                     .zip(cycles.iter())
                                     .enumerate()
-                                    .map(|(i, ((d, p), c))| {
-                                        format!("\n\t\t{:<3}: duty = {:<4}, phase = {:<4}, cycle = {:<4}", i, d, p, c)
+                                    .map(|(i, (d, c))| {
+                                        format!("\n\t\t{:<3}: duty = {:<4}, phase = {:<4}, cycle = {:<4}", i, d.0, d.1, c)
                                     })
                                     .collect::<Vec<_>>()
                                     .join("")
@@ -205,16 +203,13 @@ impl<T: Transducer> Link<T> for Debug {
             if fpga.is_outputting() {
                 debug!(logger: self.logger,"\t\t modulation = {:?}", m);
                 if !fpga.is_stm_mode() && self.logger.should_log(Level::Trace) {
-                    let cycles = fpga.cycles();
-                    let (duty, phase) = fpga.drives(0);
                     trace!(logger: self.logger,
                         "{}", 
-                        duty.iter()
-                            .zip(phase.iter())
-                            .zip(cycles.iter())
+                        fpga.duties_and_phases(0).iter()
+                            .zip(fpga.cycles().iter())
                             .enumerate()
-                            .map(|(i, ((d, p), c))| {
-                                format!("\n\t\t{:<3}: duty = {:<4}, phase = {:<4}, cycle = {:<4}", i, d, p, c)
+                            .map(|(i, (d, c))| {
+                                format!("\n\t\t{:<3}: duty = {:<4}, phase = {:<4}, cycle = {:<4}", i, d.0, d.1, c)
                             })
                             .collect::<Vec<_>>()
                             .join("")
